@@ -21,6 +21,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include "misc.h"
 
 using namespace std;
 
@@ -84,8 +85,11 @@ private:
 						case INTEGER : {
 							if(destination)
 								destination->holder = pAgent->CreateIntWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atoi(value.c_str()));
-							else
-								pAgent->CreateIntWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atoi(value.c_str()));
+							else {
+								int ivalue = 0;
+								from_string(ivalue, value.c_str());
+								pAgent->CreateIntWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), ivalue);
+							}
 							break;
 						}
 						case STRING : {
@@ -96,10 +100,13 @@ private:
 							break;
 						}
 						case FLOAT : {
-							if(destination)
-								destination->holder = pAgent->CreateFloatWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atof(value.c_str()));
-							else
-								pAgent->CreateFloatWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), atof(value.c_str()));
+							double dvalue = 0;
+							from_string(dvalue, value.c_str());
+							if(destination) {
+								destination->holder = pAgent->CreateFloatWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), dvalue);
+							} else {
+								pAgent->CreateFloatWME(parent->holder->ConvertToIdentifier(), attribute.c_str(), dvalue);
+							}
 							break;
 						}
 						case ID : {

@@ -13,7 +13,6 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 #include "agent.h"
 
@@ -83,7 +82,7 @@ bool CommandLineInterface::DoNumericIndifferentMode( bool query, const ni_mode m
 		{
 			std::stringstream modeString;
 			modeString << static_cast< int >( m_pAgentSoar->numeric_indifferent_mode );
-			AppendArgTagFast(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, modeString.str().c_str() );
+			AppendArgTagFast(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, modeString.str() );
 		}
 	}
 	else // !query

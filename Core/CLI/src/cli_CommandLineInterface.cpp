@@ -350,7 +350,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 			// Add text result to response tags
 			if ( m_Result.str().length() )
 			{
-				AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str() );
+				AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str() );
 				m_Result.str("");
 			}
 		}
@@ -685,6 +685,22 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory) {
 	// Store directory in output parameter and return success
 	directory = buf;
 	return true;
+}
+
+void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const std::string& value) {
+	AppendArgTag(pParam, pType, value.c_str());
+}
+
+void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const std::string& value) {
+	AppendArgTagFast(pParam, pType, value.c_str());
+}
+
+void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, const std::string& value) {
+	PrependArgTag(pParam, pType, value.c_str());
+}
+
+void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const std::string& value) {
+	PrependArgTagFast(pParam, pType, value.c_str());
 }
 
 void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue) {

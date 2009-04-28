@@ -14,7 +14,6 @@
 #include "cli_Commands.h"
 #include "cli_CLIError.h"
 
-#include "sml_StringOps.h"
 #include "sml_Names.h"
 
 #include "sml_KernelSML.h"
@@ -415,7 +414,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			m_Result << "\n  Waterfall:  " << (pSysparams[TRACE_WATERFALL_SYSPARAM] ? "on" : "off");
 
 		} else {
-			char buf[kMinBufferSize];
+			std::string temp;
 			AppendArgTag(sml_Names::kParamWatchDecisions, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
@@ -439,7 +438,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 			// Subtract one here because the kernel constants (e.g. TIMETAG_WME_TRACE) are one plus the number we use
 			AppendArgTag(sml_Names::kParamWatchWMEDetail, sml_Names::kTypeInt, 
-				Int2String(pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]-1, buf, kMinBufferSize));
+				to_string(pSysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM]-1, temp));
 
 			AppendArgTag(sml_Names::kParamWatchWorkingMemoryChanges, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_WM_CHANGES_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
@@ -448,7 +447,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 				pSysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
 			AppendArgTag(sml_Names::kParamWatchLearning, sml_Names::kTypeInt, 
-				Int2String(learning, buf, kMinBufferSize));
+				to_string(learning, temp));
 
 			AppendArgTag(sml_Names::kParamWatchBacktracing, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_BACKTRACING_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);

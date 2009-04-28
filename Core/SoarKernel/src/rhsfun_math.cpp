@@ -553,7 +553,7 @@ Symbol *float_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
     double float_val;
 
     errno = 0;
-    float_val = my_strtod(symbol_to_string (thisAgent, sym, FALSE, NIL, 0), NULL, 10);
+    float_val = strtod(symbol_to_string (thisAgent, sym, FALSE, NIL, 0), NULL);
     if (errno) {
       print (thisAgent, "Error: bad float (%y) given to 'float' RHS function\n",
 	     sym);

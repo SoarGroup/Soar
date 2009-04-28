@@ -2489,12 +2489,12 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 		char** charArgv = new char*[vectorArgv.size() + 1]; // plus 1 for null-termination
 		for (std::vector<std::string>::size_type index = 0; index < vectorArgv.size(); ++index) {
 
-			// copy (StringCopy requires a null terminated string. c_str guarantees this)
-			// StringCopy allocates the string for us
-			charArgv[index] = StringCopy( vectorArgv[index].c_str() );
+			// copy
+			charArgv[index] = new char[vectorArgv[index].size() + 1];
+			strncpy( charArgv[index], vectorArgv[index].data(), vectorArgv[index].size() );
 
 			// verify it is null-terminated
-			assert(charArgv[index][ vectorArgv[index].size() ] == 0);
+			charArgv[index][ vectorArgv[index].size() ] = 0;
 		}
 
 		// Null-terminate the whole array
@@ -2507,7 +2507,7 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 
 		// First delete the leaves
 		for (std::vector<std::string>::size_type index = 0; index < vectorArgv.size(); ++index) {
-			StringDelete(charArgv[index]);
+			delete [] charArgv[index];
 		}
 
 		// finally, delete the whole array

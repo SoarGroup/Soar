@@ -12,7 +12,6 @@
 
 #include "sml_ClientIntElement.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 
 #include "sml_EmbeddedConnection.h"	// For direct methods
 #include "sml_ClientAgent.h"

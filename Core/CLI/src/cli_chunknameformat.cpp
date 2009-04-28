@@ -14,7 +14,6 @@
 #include "cli_Commands.h"
 #include "cli_CLIError.h"
 
-#include "sml_StringOps.h"
 #include "sml_Names.h"
 
 #include "sml_KernelHelpers.h"
@@ -103,8 +102,8 @@ bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int*
 			if (m_RawOutput) {
 				m_Result << "Chunk count: " << m_pAgentSML->GetSoarAgent()->chunk_count;
 			} else {
-				char buf[kMinBufferSize];
-				AppendArgTagFast(sml_Names::kParamChunkCount, sml_Names::kTypeInt, Int2String(m_pAgentSML->GetSoarAgent()->chunk_count, buf, kMinBufferSize));
+				std::string temp;
+				AppendArgTagFast(sml_Names::kParamChunkCount, sml_Names::kTypeInt, to_string(m_pAgentSML->GetSoarAgent()->chunk_count, temp));
 			}
 		}
 	}

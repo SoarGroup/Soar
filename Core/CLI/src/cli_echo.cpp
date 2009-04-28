@@ -106,7 +106,7 @@ bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv, bool ech
 	if (m_RawOutput) {
 		m_Result << message;
 	} else {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, message.c_str());
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, message);
 	}
 	return true;
 }

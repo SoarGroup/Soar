@@ -17,7 +17,6 @@
 #include "sml_Connection.h"
 #include "sml_ClientIdentifier.h"
 #include "sml_OutputDeltaList.h"
-#include "sml_StringOps.h"
 #include "sml_Events.h"
 #include "sml_ClientXML.h"
 #include "sml_ClientTraceXML.h"

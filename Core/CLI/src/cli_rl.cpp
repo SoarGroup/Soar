@@ -152,7 +152,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		
 		temp = "temporal-extension: ";
 		temp2 = m_pAgentSoar->rl_params->temporal_extension->get_string();
@@ -162,7 +162,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			m_Result << temp << "\n\n";
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 						
@@ -170,12 +170,12 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		temp = "--------";
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 						
 		temp = "discount-rate: ";
 		temp2 = m_pAgentSoar->rl_params->discount_rate->get_string();
@@ -185,7 +185,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			m_Result << temp << "\n\n";
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 		
@@ -194,12 +194,12 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		temp = "--------";
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		
 		temp = "learning-policy: ";
 		temp2 = m_pAgentSoar->rl_params->learning_policy->get_string();
@@ -208,7 +208,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		
 		temp = "learning-rate: ";
 		temp2 = m_pAgentSoar->rl_params->learning_rate->get_string();
@@ -218,7 +218,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			m_Result << temp << "\n";
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );			
 		}
 		
 		temp = "hrl-discount: ";
@@ -229,7 +229,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			m_Result << temp << "\n\n";
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 		
@@ -237,12 +237,12 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		temp = "------------------";
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		
 		temp = "eligibility-trace-decay-rate: ";
 		temp2 = m_pAgentSoar->rl_params->et_decay_rate->get_string();
@@ -251,7 +251,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		if ( m_RawOutput )
 			m_Result << temp << "\n";
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		
 		temp = "eligibility-trace-tolerance: ";
 		temp2 = m_pAgentSoar->rl_params->et_tolerance->get_string();
@@ -261,7 +261,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			m_Result << temp << "\n\n";
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 		
@@ -277,7 +277,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		if ( m_RawOutput )
 			m_Result << output;
 		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
 		
 		return true;
 	}
@@ -300,7 +300,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
 			
 			output = "Total reward in last cycle: ";
 			temp = m_pAgentSoar->rl_stats->total_reward->get_string();			
@@ -309,7 +309,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
 			
 			output = "Global reward since init: ";
 			temp = m_pAgentSoar->rl_stats->global_reward->get_string();			
@@ -318,7 +318,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			if ( m_RawOutput )
 				m_Result << output << "\n";
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
 		}
 		else
 		{
@@ -330,7 +330,7 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			if ( m_RawOutput )
 				m_Result << output;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output );
 		}
 		
 		return true;

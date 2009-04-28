@@ -13,7 +13,6 @@
 #include "cli_Commands.h"
 #include "cli_CLIError.h"
 
-#include "sml_StringOps.h"
 #include "sml_Names.h"
 
 #include "agent.h"
@@ -179,7 +178,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 		if (!m_RawOutput) 
 		{
 			// Save the name for the structured response
-			AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, pProduction->c_str() );
+			AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, *pProduction );
 		}
 
 		// Increment the count for the structured response
@@ -192,8 +191,8 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 		m_Result << "\n" << exciseCount << " production" << (exciseCount == 1 ? " " : "s ") << "excised.";
 	} else {
 		// Add the count tag to the front
-		char buf[kMinBufferSize];
-		PrependArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(exciseCount, buf, kMinBufferSize));
+		std::string temp;
+		PrependArgTag(sml_Names::kParamCount, sml_Names::kTypeInt, to_string(exciseCount, temp));
 	}
 
 	return true;

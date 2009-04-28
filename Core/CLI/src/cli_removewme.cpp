@@ -15,7 +15,6 @@
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 #include "sml_KernelSML.h"
 #include "sml_KernelHelpers.h"
@@ -27,6 +26,7 @@
 #include "gdatastructs.h"
 #include "print.h"
 #include "soar_TraceNames.h"
+#include "misc.h"
 
 using namespace cli;
 using namespace sml;
@@ -42,7 +42,8 @@ bool CommandLineInterface::ParseRemoveWME(std::vector<std::string>& argv) {
 		return SetError(CLIError::kTooManyArgs);
 	}
 
-	int timetag = atoi(argv[1].c_str());
+	unsigned long timetag = 0;
+	from_string(timetag, argv[1]);
 	if (!timetag) return SetError(CLIError::kIntegerMustBePositive);
 
 	return DoRemoveWME(timetag);

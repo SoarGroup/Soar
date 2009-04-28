@@ -853,7 +853,7 @@ Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input
   /* --- check whether it's a floating point number --- */
   if (possible_fc) {
     errno = 0;
-    float_val = my_strtod (input_string,NULL,10); 
+    float_val = strtod (input_string,NULL); 
     if (errno) {
       print (thisAgent, "Text Input Error: bad floating point number\n");
       return NIL;
