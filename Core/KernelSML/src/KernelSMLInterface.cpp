@@ -30,12 +30,10 @@
 
 using namespace sml ;
 
-soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* pIncoming, void* pUserData)
+soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::ElementXML* pIncoming, void* /*pUserData*/)
 {
-	unused(pUserData) ;
-
 	// This must be initialized when the connection was created.
-	KernelSML* pKernel = reinterpret_cast<KernelSML*>(pConnection->GetUserData()) ;
+	KernelSML* pKernel = static_cast<KernelSML*>(pConnection->GetUserData()) ;
 
 	return pKernel->ProcessIncomingSML(pConnection, pIncoming) ;
 }
@@ -138,7 +136,7 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 	if (action == SML_MESSAGE_ACTION_ASYNCH)
 	{
 		// Store the incoming message on a queue and execute it on the receiver's thread (our thread) at a later point.
-		EmbeddedConnectionAsynch* eca = reinterpret_cast<EmbeddedConnectionAsynch*>(pConnection);
+		EmbeddedConnectionAsynch* eca = static_cast<EmbeddedConnectionAsynch*>(pConnection);
 		eca->AddToIncomingMessageQueue(hIncomingMsg) ;
 
 		// There is no immediate response to an asynch message.

@@ -353,7 +353,7 @@ capitalize_symbol_rhs_function_code (agent* thisAgent, list *args, void* /*user_
     return NIL;
   }
 
-  sym = reinterpret_cast<Symbol *>(args->first);
+  sym = static_cast<Symbol *>(args->first);
   if (sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-symbol (%y) passed to capitalize-symbol function.\n", sym);
     return NIL;
@@ -454,12 +454,12 @@ Symbol *ifeq_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
 
   if (arg1 == arg2)
     {
-      symbol_add_ref(reinterpret_cast<Symbol *>(c->first));
+      symbol_add_ref(static_cast<Symbol *>(c->first));
       return static_cast<symbol_union *>(c->first);
     }
   else if (c->rest)
     {
-      symbol_add_ref(reinterpret_cast<Symbol *>(c->rest->first));
+      symbol_add_ref(static_cast<Symbol *>(c->rest->first));
       return static_cast<symbol_union *>(c->rest->first);
     }
   else return NIL;
@@ -534,7 +534,7 @@ Symbol *dont_learn_rhs_function_code (agent* thisAgent, list *args, void* /*user
     return NIL;
   }
 
-  state = reinterpret_cast<Symbol *>(args->first);
+  state = static_cast<Symbol *>(args->first);
   if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-identifier (%y) passed to dont-learn function.\n", state);
     return NIL;
@@ -570,7 +570,7 @@ Symbol *force_learn_rhs_function_code (agent* thisAgent, list *args, void* /*use
     return NIL;
   }
 
-  state = reinterpret_cast<Symbol *>(args->first);
+  state = static_cast<Symbol *>(args->first);
   if (state->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) {
     print_with_symbols (thisAgent, "Error: non-identifier (%y) passed to force-learn function.\n", state);
     return NIL;
@@ -719,7 +719,7 @@ void recursive_deep_copy_helper(agent* thisAgent,
 Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/) {
 
    /* Getting the argument symbol */
-   Symbol* baseid = reinterpret_cast<Symbol *>(args->first);
+   Symbol* baseid = static_cast<Symbol *>(args->first);
    if ( baseid->common.symbol_type != 1 ) {
       return make_sym_constant(thisAgent,"*symbol not id*");
    }

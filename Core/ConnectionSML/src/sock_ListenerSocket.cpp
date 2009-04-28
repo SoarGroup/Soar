@@ -48,8 +48,6 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 {
 	CTDEBUG_ENTER_METHOD("ListenerSocket::CreateListener");
 
-	unused(local);
-
 	// Should only call this once
 	if (m_hSocket)
 	{
@@ -68,6 +66,8 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		hListener = socket(AF_UNIX, SOCK_STREAM, 0);
 	}
 	else 
+#else
+	unused(local);
 #endif
 	{
 		hListener = socket(AF_INET, SOCK_STREAM, 0) ;

@@ -52,8 +52,8 @@ void xml_create( agent* pAgent )
 	soarxml::XMLTrace* pTrace = new soarxml::XMLTrace();
 	soarxml::XMLTrace* pCommands = new soarxml::XMLTrace();
 	
-	pAgent->xml_trace = reinterpret_cast< xml_handle >( pTrace );
-	pAgent->xml_commands = reinterpret_cast< xml_handle >( pCommands );
+	pAgent->xml_trace = static_cast< xml_handle >( pTrace );
+	pAgent->xml_commands = static_cast< xml_handle >( pCommands );
 	
 	pAgent->xml_destination = pAgent->xml_trace;
 }
@@ -68,8 +68,8 @@ void xml_reset( agent* pAgent )
 		return;
 	}
 
-	soarxml::XMLTrace* pTrace = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_trace );
-	soarxml::XMLTrace* pCommands = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_commands );
+	soarxml::XMLTrace* pTrace = static_cast< soarxml::XMLTrace* >( pAgent->xml_trace );
+	soarxml::XMLTrace* pCommands = static_cast< soarxml::XMLTrace* >( pAgent->xml_commands );
 
 	pTrace->Reset();
 	pCommands->Reset();
@@ -85,8 +85,8 @@ void xml_destroy( agent* pAgent )
 		return;
 	}
 
-	soarxml::XMLTrace* pTrace = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_trace );
-	soarxml::XMLTrace* pCommands = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_commands );
+	soarxml::XMLTrace* pTrace = static_cast< soarxml::XMLTrace* >( pAgent->xml_trace );
+	soarxml::XMLTrace* pCommands = static_cast< soarxml::XMLTrace* >( pAgent->xml_commands );
 
 	delete pTrace;
 	delete pCommands;
@@ -99,13 +99,13 @@ void xml_destroy( agent* pAgent )
 
 void xml_begin_tag( agent* pAgent, char const* pTag )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->BeginTag( pTag ) ;
 }
 
 void xml_end_tag( agent* pAgent, char const* pTag )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->EndTag( pTag ) ;
 }
 
@@ -113,19 +113,19 @@ void xml_end_tag( agent* pAgent, char const* pTag )
 // around in the existing structure.  That's not often required but occassionally is helpful.
 void xml_move_current_to_parent( agent* pAgent )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->MoveCurrentToParent();
 }
 
 void xml_move_current_to_child( agent* pAgent, int index )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->MoveCurrentToChild( index );
 }
 
 void xml_move_current_to_last_child( agent* pAgent )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->MoveCurrentToLastChild();
 }
 
@@ -134,7 +134,7 @@ void xml_att_val( agent* pAgent, char const* pAttribute, unsigned long value )
 	char buf[51];
 	SNPRINTF(buf, 50, "%lu", value);
 
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, buf ) ;
 }
 
@@ -143,7 +143,7 @@ void xml_att_val( agent* pAgent, char const* pAttribute, int value )
 	char buf[51];
 	SNPRINTF(buf, 50, "%d", value);
 
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, buf ) ;
 }
 
@@ -152,7 +152,7 @@ void xml_att_val( agent* pAgent, char const* pAttribute, long value )
 	char buf[51];
 	SNPRINTF(buf, 50, "%ld", value);
 
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, buf ) ;
 }
 
@@ -161,13 +161,13 @@ void xml_att_val( agent* pAgent, char const* pAttribute, double value )
 	char buf[51];
 	SNPRINTF(buf, 50, "%f", value);
 
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, buf ) ;
 }
 
 void xml_att_val( agent* pAgent, char const* pAttribute, char const* pValue )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, pValue ) ;
 }
 
@@ -175,13 +175,13 @@ void xml_att_val( agent* pAgent, char const* pAttribute, Symbol* pSymbol )
 {
 	// Passing 0, 0 as buffer to symbol to string causes it to use internal, temporary buffers
 	// which is fine because we immediately copy that string in XMLAddAttribute.
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, symbol_to_string( pAgent, pSymbol, true, 0, 0 ) ) ;
 }
 
 void xml_object( agent* pAgent, char const* pTag )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
 	pXML->BeginTag( pTag ) ;
 	pXML->EndTag( pTag ) ;
@@ -189,7 +189,7 @@ void xml_object( agent* pAgent, char const* pTag )
 
 void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, char const* pValue )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
 	pXML->BeginTag( pTag ) ;
 	pXML->AddAttribute( pAttribute, pValue ) ;
@@ -198,7 +198,7 @@ void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, char c
 
 void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, unsigned long value )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
 	pXML->BeginTag( pTag ) ;
 	xml_att_val( pAgent, pAttribute, value );
@@ -207,7 +207,7 @@ void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, unsign
 
 void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, long value )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
 	pXML->BeginTag( pTag ) ;
 	xml_att_val( pAgent, pAttribute, value );
@@ -216,7 +216,7 @@ void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, long v
 
 void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, double value )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
 	pXML->BeginTag( pTag ) ;
 	xml_att_val( pAgent, pAttribute, value );
@@ -226,7 +226,7 @@ void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, double
 void xml_object( agent* pAgent, wme* pWME, bool printTimetag ) {
 	// <wme tag="123" id="s1" attr="foo" attrtype="string" val="123" valtype="string"></wme>
 
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
 	pXML->BeginTag( stn::kTagWME ) ;
 
@@ -270,7 +270,7 @@ void xml_generate_verbose( agent* pAgent, const char* pMessage )
 
 void xml_invoke_callback( agent* pAgent )
 {
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	if ( pXML->IsEmpty() )
 	{
 		return;
@@ -291,10 +291,10 @@ void xml_invoke_callback( agent* pAgent )
 		soarxml::ElementXML* pCallbackData = new soarxml::ElementXML( pResult->GetXMLHandle() );
 		pCallbackData->AddRefOnHandle();
 
-		soar_callback* cb = reinterpret_cast< soar_callback* >( c->first );
+		soar_callback* cb = static_cast< soar_callback* >( c->first );
 
 		// handler responsible for deleting pCallbackData
-		cb->function( pAgent, cb->eventid, cb->data, reinterpret_cast< soar_call_data >( pCallbackData ) );
+		cb->function( pAgent, cb->eventid, cb->data, static_cast< soar_call_data >( pCallbackData ) );
 	}
 
 	delete pResult;
@@ -309,7 +309,7 @@ soarxml::ElementXML* xml_get_xml( agent* pAgent )
 		return 0;
 	}
 
-	soarxml::XMLTrace* pXML = reinterpret_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
+	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
 	soarxml::ElementXML* pReturn = pXML->DetatchObject();
 	pXML->Reset();

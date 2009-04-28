@@ -272,10 +272,10 @@ struct rusage {
 #define NSPERSEC 10000000LL
 #define FACTOR (0x19db1ded53e8000LL)
 
-static unsigned long long
+static uint64_t
 __to_clock_t (FILETIME * src, int flag)
 {
-  unsigned long long total = (static_cast<unsigned long long>(src->dwHighDateTime) << 32) + static_cast<unsigned>(src->dwLowDateTime);
+  uint64_t total = (static_cast<uint64_t>(src->dwHighDateTime) << 32) + static_cast<uint32_t>(src->dwLowDateTime);
 
   /* Convert into clock ticks - the total is in 10ths of a usec.  */
   if (flag)
@@ -286,13 +286,13 @@ __to_clock_t (FILETIME * src, int flag)
 }
 static void totimeval (struct timeval *dst, FILETIME *src, int sub, int flag)
 {
-  long long x = __to_clock_t (src, flag);
+  uint64_t x = __to_clock_t (src, flag);
 
-  x *= (int) (1e6) / CLOCKS_PER_SEC; /* Turn x into usecs */
-  x -= (long long) sub * (int) (1e6);
+  x *= ONE_MILLION / CLOCKS_PER_SEC; /* Turn x into usecs */
+  x -= sub * ONE_MILLION;
   
-  dst->tv_usec = (long)(x % (long long) (1e6)); /* And split */
-  dst->tv_sec = (long)(x / (long long) (1e6));
+  dst->tv_usec = static_cast<long>(x % ONE_MILLION); /* And split */
+  dst->tv_sec = static_cast<long>(x / ONE_MILLION);
 }
 
 int getrusage(int /*who*/, struct rusage* r)

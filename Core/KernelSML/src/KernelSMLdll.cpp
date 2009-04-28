@@ -27,16 +27,12 @@
 
 bool __stdcall DllMain( void * hModule, 
                        unsigned long  ul_reason_for_call, 
-                       void * lpReserved
+                       void * /*lpReserved*/
 					 )
 {
 #ifdef _DEBUG
 //	_crtBreakAlloc = 165;
 #endif // _DEBUG
-
-	unused(hModule) ;
-	unused(ul_reason_for_call) ;
-	unused(lpReserved) ;
 
 // Define this ourselves to save bringing in the entire windows headers for this one value.
 #ifndef DLL_PROCESS_DETACH

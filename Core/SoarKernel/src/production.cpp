@@ -133,14 +133,14 @@ list *copy_symbol_list_adding_references (agent* thisAgent,
   if (! sym_list) return NIL;
   allocate_cons (thisAgent, &first);
   first->first = sym_list->first;
-  symbol_add_ref (reinterpret_cast<Symbol *>(first->first));
+  symbol_add_ref (static_cast<Symbol *>(first->first));
   sym_list = sym_list->rest;
   prev = first;
   while (sym_list) {
     allocate_cons (thisAgent, &c);
     prev->rest = c;
     c->first = sym_list->first;
-    symbol_add_ref (reinterpret_cast<Symbol *>(c->first));
+    symbol_add_ref (static_cast<Symbol *>(c->first));
     sym_list = sym_list->rest;
     prev = c;
   }
@@ -159,7 +159,7 @@ void deallocate_symbol_list_removing_references (agent* thisAgent,
   while (sym_list) {
     c = sym_list;
     sym_list = sym_list->rest;
-    symbol_remove_ref (thisAgent, reinterpret_cast<Symbol *>(c->first));
+    symbol_remove_ref (thisAgent, static_cast<Symbol *>(c->first));
     free_cons (thisAgent, c);
   }
 }
@@ -449,16 +449,16 @@ Bool tests_are_equal (test t1, test t2) {
    Returns a hash value for the given test.
 ---------------------------------------------------------------- */
 
-unsigned long hash_test (agent* thisAgent, test t) {
+uint32_t hash_test (agent* thisAgent, test t) {
   complex_test *ct;
   cons *c;
-  unsigned long result;
+  uint32_t result;
   
   if (test_is_blank_test(t))
     return 0;
 
   if (test_is_blank_or_equality_test(t))
-    return (referent_of_equality_test(t))->common.hash_id;
+    return referent_of_equality_test(t)->common.hash_id;
 
   ct = complex_test_from_test(t);
 
@@ -468,7 +468,7 @@ unsigned long hash_test (agent* thisAgent, test t) {
   case DISJUNCTION_TEST:
     result = 7245;
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      result = result + reinterpret_cast<Symbol *>(c->first)->common.hash_id;
+      result = result + static_cast<Symbol *>(c->first)->common.hash_id;
     return result;
   case CONJUNCTIVE_TEST:
     result = 100276;
@@ -502,7 +502,7 @@ unsigned long hash_test (agent* thisAgent, test t) {
 
 #define NON_EQUAL_TEST_RETURN_VAL 0  /* some unusual number */
 
-unsigned long canonical_test(test t)
+uint32_t canonical_test(test t)
 {
   Symbol *sym;
 
@@ -516,7 +516,7 @@ unsigned long canonical_test(test t)
         sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
         sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
       {
-        return (sym->common.hash_id);
+        return sym->common.hash_id;
       }
       else
       return NON_EQUAL_TEST_RETURN_VAL;
@@ -699,8 +699,8 @@ test copy_of_equality_test_found_in_test (agent* thisAgent, test t) {
   ct = complex_test_from_test(t);
   if (ct->type==CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank_test (reinterpret_cast<test>(c->first))) &&
-           (test_is_blank_or_equality_test (reinterpret_cast<test>(c->first))) )
+      if ( (! test_is_blank_test (static_cast<test>(c->first))) &&
+           (test_is_blank_or_equality_test (static_cast<test>(c->first))) )
         return copy_test (thisAgent, static_cast<char *>(c->first));
   }
   strncpy (msg, "Internal error: can't find equality test in test\n",BUFFER_MSG_SIZE);
@@ -827,9 +827,9 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
    Returns a hash value for the given condition.
 ---------------------------------------------------------------- */
 
-unsigned long hash_condition (agent* thisAgent, 
+uint32_t hash_condition (agent* thisAgent, 
 							  condition *cond) {
-  unsigned long result;
+  uint32_t result;
   condition *c;
 
   switch (cond->type) {
@@ -1455,7 +1455,7 @@ void reset_variable_generator (agent* thisAgent,
   add_all_variables_in_condition_list (thisAgent, conds_with_vars_to_avoid,tc, &var_list);
   add_all_variables_in_action_list (thisAgent, actions_with_vars_to_avoid, tc, &var_list);
   for (c=var_list; c!=NIL; c=c->rest)
-    reinterpret_cast<Symbol *>(c->first)->var.gensym_number = thisAgent->current_variable_gensym_number;
+    static_cast<Symbol *>(c->first)->var.gensym_number = thisAgent->current_variable_gensym_number;
   free_list (thisAgent, var_list);
 }
 

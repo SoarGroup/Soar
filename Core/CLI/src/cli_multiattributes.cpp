@@ -109,7 +109,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 	}
 
 	/* sym wasn't in the table if we get here, so add it */
-	maList = reinterpret_cast<multi_attribute *>(allocate_memory(m_pAgentSoar, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
+	maList = static_cast<multi_attribute *>(allocate_memory(m_pAgentSoar, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
 	assert(maList);
 
 	maList->value = n;

@@ -68,4 +68,9 @@ T compare_num( const void *arg1, const void *arg2 )
     return *( (T *) arg1 ) - *( (T *) arg2 );
 }
 
+template <class T> inline T cast_and_possibly_truncate( void * ptr )
+{
+	return static_cast<T>( reinterpret_cast<uintptr_t>( ptr ) );
+}
+
 #endif /*MISC_H_*/

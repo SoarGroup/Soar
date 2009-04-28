@@ -2139,6 +2139,10 @@
 				RelativePath="..\shared\soarversion.h"
 				>
 			</File>
+			<File
+				RelativePath="..\shared\msvc\stdint.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

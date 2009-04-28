@@ -314,7 +314,7 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
   //  member of memory_pool, but I tried changing that and it still works, so now I'm at a loss
   // if it helps, we think this line is equivalent to the following
   //  (at least, everything appears to work properly if you swap these lines):
-  // (p)->free_list = (*reinterpret_cast<P*>(dest_item_pointer))->free_list;
+  // (p)->free_list = (*static_cast<P*>(dest_item_pointer))->free_list;
   (p)->free_list =  *(void * *)(*(dest_item_pointer));
 
   fill_with_garbage (*(dest_item_pointer), (p)->item_size);
@@ -460,17 +460,15 @@ extern ::list *extract_list_elements (agent* thisAgent, ::list **header, cons_te
 
 extern dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_test_fn f);
 
+extern Bool cons_equality_fn (agent*, cons *c, void *data);
+
 /* ----------------------------- */
 /* Resizable hash table routines */
 /* ----------------------------- */
 
-#ifdef SOAR_64
-extern unsigned long masks_for_n_low_order_bits[65];
-#else
-extern unsigned long masks_for_n_low_order_bits[33];
-#endif
+extern uint32_t masks_for_n_low_order_bits[33];
 
-typedef unsigned long ((*hash_function)(void *item, short num_bits));
+typedef uint32_t ((*hash_function)(void *item, short num_bits));
 
 typedef struct item_in_hash_table_struct {
   struct item_in_hash_table_struct *next;
@@ -481,7 +479,7 @@ typedef item_in_hash_table *bucket_array;
 
 typedef struct hash_table_struct {
   unsigned long count;      /* number of items in the table */
-  unsigned long size;       /* number of buckets */
+  uint32_t size;       /* number of buckets */
   short log2size;           /* log (base 2) of size */
   short minimum_log2size;   /* table never shrinks below this size */
   bucket_array *buckets;
@@ -501,7 +499,7 @@ extern void do_for_all_items_in_hash_table (agent* thisAgent, struct hash_table_
                                             hash_table_callback_fn2 f, FILE* fn);
 extern void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
                                              hash_table_callback_fn f,
-                                             unsigned long hash_value);
+                                             uint32_t hash_value);
 
 #ifdef __cplusplus
 //}

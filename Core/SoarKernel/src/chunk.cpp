@@ -339,7 +339,7 @@ void init_chunk_cond_set (chunk_cond_set *set) {
 
 chunk_cond *make_chunk_cond_for_condition (agent* thisAgent, condition *cond) {
   chunk_cond *cc;
-  unsigned long remainder, hv;
+  uint32_t remainder, hv;
   
   allocate_with_pool (thisAgent, &thisAgent->chunk_cond_pool, &cc);
   cc->cond = cond;

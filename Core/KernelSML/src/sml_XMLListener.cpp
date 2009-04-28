@@ -70,7 +70,7 @@ void XMLListener::OnKernelEvent(int eventIDIn, AgentSML* pAgentSML, void* pCallD
 	if (!m_EnablePrintCallback)
 		return ;
 
-	ElementXML* pXMLTrace = reinterpret_cast< ElementXML* >( pCallDataIn );
+	ElementXML* pXMLTrace = static_cast< ElementXML* >( pCallDataIn );
 	smlXMLEventId eventID = static_cast< smlXMLEventId >( eventIDIn );
 	
 	// Nothing waiting to be sent, so we're done.

@@ -119,7 +119,7 @@ void ConnectionManager::Shutdown()
 		pConnection->CloseConnection() ;
 
 		// Remove any events that this connection is listening to
-		KernelSML* pKernelSML = reinterpret_cast<KernelSML*>(pConnection->GetUserData());
+		KernelSML* pKernelSML = static_cast<KernelSML*>(pConnection->GetUserData());
 		pKernelSML->RemoveAllListeners(pConnection) ;
 
 		// Not clear that we can just delete connections as we might be inside a connection callback
@@ -236,7 +236,7 @@ bool ConnectionManager::ReceiveAllMessages()
 			RemoveConnection(pConnection) ;
 			
 			// Remove any events that this connection is listening to
-			KernelSML* pKernelSML = reinterpret_cast<KernelSML*>(pConnection->GetUserData());
+			KernelSML* pKernelSML = static_cast<KernelSML*>(pConnection->GetUserData());
 			pKernelSML->RemoveAllListeners(pConnection) ;
 
 			// Not clear that we can just delete connections as we might be inside a connection callback
