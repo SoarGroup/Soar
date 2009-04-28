@@ -741,30 +741,19 @@ protected:
 
 	eRunInterleaveMode ParseRunInterleaveOptarg();
 
-	/*************************************************************
-	* @brief 
-	*************************************************************/
 	void HandleSourceError(int errorLine, const std::string* pFilename);
 
-	/*************************************************************
-	* @brief 
-	*************************************************************/
 	void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
+	void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
 
-	/*************************************************************
-	* @brief 
-	*************************************************************/
 	void AppendArgTagFast(const char* pParam, const char* pType, const char* pValue);
+	void AppendArgTagFast(const char* pParam, const char* pType, const std::string& value);
 
-	/*************************************************************
-	* @brief 
-	*************************************************************/
 	void PrependArgTag(const char* pParam, const char* pType, const char* pValue);
+	void PrependArgTag(const char* pParam, const char* pType, const std::string& value);
 
-	/*************************************************************
-	* @brief 
-	*************************************************************/
 	void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
+	void PrependArgTagFast(const char* pParam, const char* pType, const std::string& value);
 
 	/************************************************************* 	 
 	* @brief This is a utility function used by DoLS 	 

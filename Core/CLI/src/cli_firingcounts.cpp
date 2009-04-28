@@ -16,7 +16,6 @@
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 #include "agent.h"
 #include "production.h"
@@ -111,19 +110,17 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 	sort(firings.begin(), firings.end(), s);
 
 	// print the list
-	char buf[1024];
 	int i = 0;
 	for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = firings.rbegin(); 
 		j != firings.rend() && (numberToList <= 0 || i < numberToList); 
 		++j, ++i) 
 	{
 		if (m_RawOutput) {
-			SNPRINTF(buf, 1023, "\n%6lu:  %s", j->second, j->first.c_str());
-			buf[1023] = 0;
-			m_Result << buf;
+			m_Result << "\n"<< std::setw(6) << j->second << ":  " << j->first;
 		} else {
-			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first.c_str());
-			AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
+			std::string temp;
+			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first);
+			AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, to_string(j->second, temp));
 		}
 	}
 	return true;

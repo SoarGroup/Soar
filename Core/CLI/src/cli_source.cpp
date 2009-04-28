@@ -363,15 +363,15 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 			}
 
 		} else {
-			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, pFilename->c_str());
-			AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsSourced, buf, kMinBufferSize));
-			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsExcised, buf, kMinBufferSize));
-			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(m_NumProductionsIgnored, buf, kMinBufferSize));
+			std::string temp;
+			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, *pFilename);
+			AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, to_string(m_NumProductionsSourced, temp));
+			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, to_string(m_NumProductionsExcised, temp));
+			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, to_string(m_NumProductionsIgnored, temp));
 
 			std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 			while (iter != m_ExcisedDuringSource.end()) {
-				AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, (*iter).c_str() );
+				AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, *iter );
 				++iter;
 			}
 		}
@@ -421,15 +421,15 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 
 		} else {
 			if (m_SourceMode != SOURCE_DISABLE) {
-				char buf[kMinBufferSize];
-				AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsSourced, buf, kMinBufferSize));
-				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsExcised, buf, kMinBufferSize));
-				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, Int2String(numTotalProductionsIgnored, buf, kMinBufferSize));
+				std::string temp;
+				AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, to_string(numTotalProductionsSourced, temp));
+				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, to_string(numTotalProductionsExcised, temp));
+				AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, to_string(numTotalProductionsIgnored, temp));
 
 				if (m_SourceVerbose) {
 					std::list< std::string >::iterator iter = m_ExcisedDuringSource.begin();
 					while (iter != m_ExcisedDuringSource.end()) {
-						AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, (*iter).c_str() );
+						AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, *iter );
 						++iter;
 					}
 				}
@@ -468,8 +468,8 @@ void CommandLineInterface::HandleSourceError( int errorLine, const std::string* 
 		m_SourceErrorDetail.clear();
 		m_SourceErrorDetail += "\nSource command error on (or near) line ";
 
-		char buf[kMinBufferSize];
-		m_SourceErrorDetail += Int2String(errorLine, buf, kMinBufferSize);
+		std::string temp;
+		m_SourceErrorDetail += to_string(errorLine, temp);
 
 		if ( pFilename )
 		{
@@ -490,8 +490,8 @@ void CommandLineInterface::HandleSourceError( int errorLine, const std::string* 
 		m_SourceError = true;
 
 	} else if ( pFilename ) {
-		char buf[kMinBufferSize];
-		m_SourceErrorDetail += "\n\t--> Sourced by: " + *pFilename + " (line " + Int2String(errorLine, buf, kMinBufferSize) + ")";
+		std::string temp;
+		m_SourceErrorDetail += "\n\t--> Sourced by: " + *pFilename + " (line " + to_string(errorLine, temp) + ")";
 	}
 
 	// Reset depth to zero

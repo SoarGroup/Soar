@@ -15,7 +15,7 @@
 #include "ElementXML.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
-
+#include "misc.h"
 namespace sml
 {
 
@@ -37,10 +37,8 @@ public:
 
 	void SetID(int id)
 	{
-		char buffer[kMinBufferSize] ;
-		Int2String(id, buffer, kMinBufferSize) ;
-
-		this->AddAttributeFast(sml_Names::kID, buffer) ;
+		std::string temp;
+		this->AddAttributeFast (sml_Names::kID, to_string( id, temp ).c_str() ) ;
 	}
 
 	void SetDocType(char const* pType)

@@ -18,7 +18,6 @@
 #include "sml_Utils.h"
 #include "sml_AgentSML.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 #include "sml_OutputListener.h"
 #include "sml_ConnectionManager.h"
 #include "sml_Events.h"
@@ -472,10 +471,8 @@ bool KernelSML::ReturnResult(Connection* pConnection, soarxml::ElementXML* pResp
 *************************************************************/
 bool KernelSML::ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int result)
 {
-	char buffer[kMinBufferSize] ;
-	Int2String(result, buffer, kMinBufferSize) ;
-
-	pConnection->AddSimpleResultToSMLResponse(pResponse, buffer) ;
+	std::string temp;
+	pConnection->AddSimpleResultToSMLResponse( pResponse, to_string( result, temp ).c_str() ) ;
 
 	return true ;
 }

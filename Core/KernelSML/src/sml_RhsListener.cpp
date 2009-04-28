@@ -17,7 +17,6 @@
 
 #include "sml_Utils.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
@@ -129,10 +128,6 @@ bool RhsListener::HandleFilterEvent(smlRhsEventId eventID, AgentSML* pAgent, cha
 	// Convert eventID to a string
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
-	// Also convert the length to a string
-	char length[kMinBufferSize] ;
-	Int2String(maxLengthReturnValue, length, sizeof(length)) ;
-
 	// Copy the initial command line into the return buffer and send that over.
 	// This will be sequentially replaced by each filter in turn and whatever
 	// is left in here at the end is the result of the filtering.
@@ -236,10 +231,6 @@ bool RhsListener::HandleEvent(smlRhsEventId eventID, AgentSML* pAgent, bool comm
 
 	// Convert eventID to a string
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
-
-	// Also convert the length to a string
-	char length[kMinBufferSize] ;
-	Int2String(maxLengthReturnValue, length, sizeof(length)) ;
 
 	// Build the SML message we're doing to send.
 	// Pass the agent in the "name" parameter not the "agent" parameter as this is a kernel

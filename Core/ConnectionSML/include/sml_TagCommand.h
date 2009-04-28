@@ -13,7 +13,6 @@
 #define SML_TAG_COMMANDH
 
 #include "ElementXML.h"
-#include "sml_StringOps.h"
 #include "sml_Names.h"
 
 namespace sml

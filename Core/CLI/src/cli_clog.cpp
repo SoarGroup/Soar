@@ -192,6 +192,6 @@ void CommandLineInterface::LogQuery() {
 		const char* setting = m_pLogFile ? sml_Names::kTrue : sml_Names::kFalse;
 		AppendArgTagFast(sml_Names::kParamLogSetting, sml_Names::kTypeBoolean, setting);
 
-		if (m_LogFilename.size()) AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename.c_str());
+		if (m_LogFilename.size()) AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_LogFilename);
 	}
 }

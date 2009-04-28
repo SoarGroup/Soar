@@ -34,7 +34,7 @@ bool CommandLineInterface::DoDirs() {
 	if (m_RawOutput) {
 		m_Result << cwd;
 	} else {
-		AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, cwd.c_str());
+		AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, cwd);
 	}
 
 	// print rest of stack making a new one
@@ -42,7 +42,7 @@ bool CommandLineInterface::DoDirs() {
 		if (m_RawOutput) {
 			m_Result << ' ' << m_DirectoryStack.top();
 		} else {
-			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_DirectoryStack.top().c_str());
+			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_DirectoryStack.top());
 		}
 
 		tempStack.push(m_DirectoryStack.top());
