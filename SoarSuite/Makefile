@@ -2,7 +2,7 @@ all:
 	scons
 
 32:
-	scons m64=no
+	scons m64=no python=no
 
 clean:
 	scons -c
