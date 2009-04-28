@@ -13,6 +13,8 @@
 #ifndef SOAR_MODULE_H
 #define SOAR_MODULE_H
 
+#include <portability.h>
+
 #include <map>
 #include <string>
 #include <set>
@@ -695,9 +697,13 @@ namespace soar_module
 			}
 	};
 
-	// these are easy definitions for int and double parameters
+	// these are easy definitions for int and double stats
 	typedef primitive_stat<long> integer_stat;
-	typedef primitive_stat<double> decimal_stat;
+	typedef primitive_stat<double> decimal_stat;	
+	
+	// ptr size stats
+	typedef primitive_stat<intptr_t> intptr_stat;
+	typedef primitive_stat<uintptr_t> uintptr_stat;
 
 	///////////////////////////////////////////////////////////////////////////
 	// Statistic Containers

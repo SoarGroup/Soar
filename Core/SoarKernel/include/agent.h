@@ -849,7 +849,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_rit_state epmem_rit_state_tree;
   epmem_rit_state epmem_rit_state_graph[2];
 
-  epmem_time_id epmem_validation;
+  uintptr_t epmem_validation;
   bool epmem_first_switch;
 
 

@@ -148,7 +148,9 @@ typedef struct agent_struct agent;
 typedef struct dl_cons_struct dl_cons;
 typedef cons list;
 
-typedef unsigned long epmem_node_id;
+typedef intptr_t epmem_node_id;
+typedef uintptr_t epmem_hash_id;
+typedef uintptr_t epmem_time_id;
 
 /* WARNING:  In the following structure, next_in_hash_table MUST be the
    first field.  This field is used by the resizable hash table routines. */
@@ -164,8 +166,8 @@ typedef struct symbol_common_data_struct {
   } a;
   uint32_t hash_id;           /* used for hashing in the rete */
 
-  long epmem_hash;
-  long epmem_valid;
+  epmem_hash_id epmem_hash;
+  uintptr_t epmem_valid;
 } symbol_common_data;
 
 /* WARNING:  In the following structures (the five kinds of symbols),

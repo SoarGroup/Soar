@@ -1574,8 +1574,8 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi,ha,hv), w);
   }
 
-  w->epmem_id = NULL;  
-  w->epmem_valid = NULL;
+  w->epmem_id = NIL;  
+  w->epmem_valid = NIL;
 }
 
 /* --- Removes a WME from the Rete. --- */

@@ -47,7 +47,7 @@ enum epmem_variable_key
 };
 
 // algorithm constants
-#define EPMEM_MEMID_NONE							-1
+#define EPMEM_MEMID_NONE							0
 #define EPMEM_NODEID_ROOT							0
 
 #define EPMEM_NODE_POS								0
@@ -66,6 +66,20 @@ enum epmem_variable_key
 
 #define EPMEM_RIT_STATE_NODE						0
 #define EPMEM_RIT_STATE_EDGE						1
+
+
+//////////////////////////////////////////////////////////
+// EpMem Typedefs
+//////////////////////////////////////////////////////////
+
+// represents a unique node identifier in the episodic store
+typedef intptr_t epmem_node_id;
+
+// represents a unique temporal hash in the episodic store
+typedef uintptr_t epmem_hash_id;
+
+// represents a unique episode identifier in the episodic store
+typedef uintptr_t epmem_time_id;
 
 
 //////////////////////////////////////////////////////////
@@ -146,58 +160,61 @@ class epmem_db_predicate: public soar_module::agent_predicate<T>
 // EpMem Statistics
 //////////////////////////////////////////////////////////
 
+typedef soar_module::primitive_stat<epmem_time_id> epmem_time_id_stat;
+typedef soar_module::primitive_stat<epmem_node_id> epmem_node_id_stat;
+
 class epmem_mem_usage_stat;
 class epmem_mem_high_stat;
 
 class epmem_stat_container: public soar_module::stat_container
 {
 	public:
-		soar_module::integer_stat *time;
+		epmem_time_id_stat *time;
 		epmem_mem_usage_stat *mem_usage;
 		epmem_mem_high_stat *mem_high;
 		soar_module::integer_stat *ncb_wmes;
 
 		soar_module::integer_stat *qry_pos;
 		soar_module::integer_stat *qry_neg;
-		soar_module::integer_stat *qry_ret;
+		epmem_time_id_stat *qry_ret;
 		soar_module::integer_stat *qry_card;
 		soar_module::integer_stat *qry_lits;
 
-		soar_module::integer_stat *next_id;
+		epmem_node_id_stat *next_id;
 
-		soar_module::integer_stat *rit_offset_1;
-		soar_module::integer_stat *rit_left_root_1;
-		soar_module::integer_stat *rit_right_root_1;
-		soar_module::integer_stat *rit_min_step_1;
+		soar_module::intptr_stat *rit_offset_1;
+		soar_module::intptr_stat *rit_left_root_1;
+		soar_module::intptr_stat *rit_right_root_1;
+		soar_module::intptr_stat *rit_min_step_1;
 
-		soar_module::integer_stat *rit_offset_2;
-		soar_module::integer_stat *rit_left_root_2;
-		soar_module::integer_stat *rit_right_root_2;
-		soar_module::integer_stat *rit_min_step_2;
+		soar_module::intptr_stat *rit_offset_2;
+		soar_module::intptr_stat *rit_left_root_2;
+		soar_module::intptr_stat *rit_right_root_2;
+		soar_module::intptr_stat *rit_min_step_2;
 
 		epmem_stat_container( agent *my_agent );
 };
 
-class epmem_mem_usage_stat: public soar_module::integer_stat
+class epmem_mem_usage_stat: public soar_module::intptr_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
-		long get_value();
+		epmem_mem_usage_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred );
+		intptr_t get_value();
 };
 
 //
 
-class epmem_mem_high_stat: public soar_module::integer_stat
+class epmem_mem_high_stat: public soar_module::intptr_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
-		long get_value();
+		epmem_mem_high_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred );
+		intptr_t get_value();
 };
 
 
@@ -357,12 +374,6 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 // Common Types
 //////////////////////////////////////////////////////////
 
-// represents a unique node identifier in the episodic store
-typedef unsigned long epmem_node_id;
-
-// represents a unique episode identifier in the episodic store
-typedef long epmem_time_id;
-
 // represents a vector of times
 typedef std::vector<epmem_time_id> epmem_time_list;
 
@@ -372,7 +383,7 @@ typedef std::list<wme *> epmem_wme_list;
 // keeping state for multiple RIT's
 typedef struct epmem_rit_state_param_struct
 {
-	soar_module::integer_stat *stat;
+	soar_module::intptr_stat *stat;
 	epmem_variable_key var_key;
 } epmem_rit_state_param;
 
@@ -466,13 +477,13 @@ typedef std::map<epmem_node_id, Symbol *> epmem_reverse_constraint_list;
 
 // types/structures to facilitate re-use of identifiers
 typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
-typedef std::map<long, epmem_id_pool *> epmem_hashed_id_pool;
+typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
 typedef struct epmem_id_reservation_struct
 {
 	epmem_node_id my_id;
-	long my_hash;
+	epmem_hash_id my_hash;
 	epmem_id_pool *my_pool;
 } epmem_id_reservation;
 
