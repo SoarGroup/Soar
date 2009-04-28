@@ -1881,7 +1881,9 @@ void epmem_new_episode( agent *my_agent )
 	if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 	{
 		char buf[256];
-		SNPRINTF( buf, 254, "NEW EPISODE: (%c%lu, %ld)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number, time_counter );
+		unsigned long temp_time = static_cast<unsigned long>( time_counter );
+
+		SNPRINTF( buf, 254, "NEW EPISODE: (%c%lu, %ld)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number, temp_time );
 
 		print( my_agent, buf );
 		xml_generate_warning( my_agent, buf );
@@ -3947,7 +3949,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 									if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 									{
 										char buf[256];
-										SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%ld, %ld, %f)", current_valid_end, sum_ct, current_score );
+										unsigned long temp_end = static_cast<unsigned long>( current_valid_end );
+
+										SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%ld, %ld, %f)", temp_end, sum_ct, current_score );
 
 										print( my_agent, buf );
 										xml_generate_warning( my_agent, buf );
@@ -4813,7 +4817,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 							{
 								char buf[256];
-								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%ld, %ld, %f)", current_valid_end, sum_ct, current_score );
+								unsigned long temp_end = static_cast<unsigned long>( current_valid_end );
+
+								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%ld, %ld, %f)", temp_end, sum_ct, current_score );
 
 								print( my_agent, buf );
 								xml_generate_warning( my_agent, buf );
