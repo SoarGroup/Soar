@@ -1373,7 +1373,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 		// mode - read if existing
 		epmem_param_container::mode_choices mode;
 		{
-			intptr_t stored_mode;
+			intptr_t stored_mode = NIL;
 			if ( epmem_get_variable( my_agent, var_mode, &stored_mode ) )
 			{
 				my_agent->epmem_params->mode->set_value( (epmem_param_container::mode_choices) stored_mode );
@@ -1408,7 +1408,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 
 			// get/set RIT variables
 			{
-				intptr_t var_val;
+				intptr_t var_val = NIL;
 
 				// offset
 				if ( epmem_get_variable( my_agent, my_agent->epmem_rit_state_tree.offset.var_key, &var_val ) )
@@ -1563,7 +1563,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 
 			// get/set RIT variables
 			{
-				intptr_t var_val;
+				intptr_t var_val = NIL;
 
 				for ( int i=EPMEM_RIT_STATE_NODE; i<=EPMEM_RIT_STATE_EDGE; i++ )
 				{
