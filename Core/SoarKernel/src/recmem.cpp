@@ -898,8 +898,23 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 								continue;
 							}
 
-							assert( !cond->bt.trace->next_clone );
-							assert( !cond->bt.trace->prev_clone );
+							// The clones are hopefully a simple case so we just call deallocate_preference on them.
+							// Someone needs to create a test case to push this boundary...
+							{
+								preference* clone = cond->bt.trace->next_clone;
+								preference* next;
+								while (clone) {
+									next = clone->next_clone;
+									deallocate_preference (thisAgent, clone);
+									clone = next;
+								}
+								clone = cond->bt.trace->prev_clone;
+								while (clone) {
+									next = clone->prev_clone;
+									deallocate_preference (thisAgent, clone);
+									clone = next;
+								}
+							}
 
 							/* --- deallocate pref --- */
 							/* --- remove it from the list of bt.trace's for its match goal --- */
