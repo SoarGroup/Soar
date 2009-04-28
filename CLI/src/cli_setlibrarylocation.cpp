@@ -33,7 +33,7 @@ bool CommandLineInterface::DoSetLibraryLocation(const std::string* pLocation) {
 		if (m_RawOutput) {
 			m_Result << "Current library location: " << m_LibraryDirectory;
 		} else {
-			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_LibraryDirectory.c_str());
+			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_LibraryDirectory);
 		}
 	} else {
 		m_LibraryDirectory = *pLocation;

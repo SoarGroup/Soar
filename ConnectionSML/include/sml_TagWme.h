@@ -18,7 +18,6 @@
 #define SML_TAG_WME_H
 
 #include "ElementXML.h"
-#include "sml_StringOps.h"
 #include "sml_Names.h"
 
 namespace sml
@@ -52,10 +51,8 @@ public:
 
 	void SetTimeTag(long timeTag)
 	{
-		char buffer[kMinBufferSize] ;
-		Int2String(timeTag, buffer, sizeof(buffer)) ;
-
-		this->AddAttributeFast(sml_Names::kWME_TimeTag, CopyString(buffer), false) ;
+		std::string temp;
+		this->AddAttributeFast(sml_Names::kWME_TimeTag, CopyString(to_string(timeTag, temp).c_str()), false) ;
 	}
 
 	void SetActionAdd()

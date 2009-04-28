@@ -15,7 +15,6 @@
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
@@ -106,7 +105,7 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
 			} else if (!m_RawOutput) {
 				std::stringstream buffer;
 				buffer << productionCount;
-				PrependArgTagFast( sml_Names::kParamCount, sml_Names::kTypeInt, buffer.str().c_str() );
+				PrependArgTagFast( sml_Names::kParamCount, sml_Names::kTypeInt, buffer.str() );
 			}
 		}
 

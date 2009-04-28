@@ -53,7 +53,7 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 		} else {
 			AliasMap::const_iterator citer = m_Aliases.GetAliasMapBegin();
 			while (citer != m_Aliases.GetAliasMapEnd()) {
-				AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first.c_str());
+				AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first);
 
 				std::string aliasedCommand;
 				for (std::vector<std::string>::const_iterator iter = citer->second.begin(); iter != citer->second.end(); ++iter) {
@@ -61,7 +61,7 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 					aliasedCommand += ' ';
 				}
 				aliasedCommand = aliasedCommand.substr(0, aliasedCommand.length() - 1);
-				AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand.c_str());
+				AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand);
 				++citer;
 			}
 			return true;
@@ -96,7 +96,7 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 			AliasMap::const_iterator citer = m_Aliases.GetAliasMapBegin();
 			while (citer != m_Aliases.GetAliasMapEnd()) {
 				if (citer->first == *pCommand) {
-					AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first.c_str());
+					AppendArgTagFast(sml_Names::kParamAlias, sml_Names::kTypeString, citer->first);
 
 					std::string aliasedCommand;
 					for (std::vector<std::string>::const_iterator iter = citer->second.begin(); iter != citer->second.end(); ++iter) {
@@ -104,7 +104,7 @@ bool CommandLineInterface::DoAlias(const std::string* pCommand, const std::vecto
 						aliasedCommand += ' ';
 					}
 					aliasedCommand = aliasedCommand.substr(0, aliasedCommand.length() - 1);
-					AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand.c_str());
+					AppendArgTagFast(sml_Names::kParamAliasedCommand, sml_Names::kTypeString, aliasedCommand);
 					break;
 				}
 				++citer;

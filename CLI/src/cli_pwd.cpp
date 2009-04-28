@@ -36,7 +36,7 @@ bool CommandLineInterface::DoPWD() {
 		if (m_RawOutput) {
 			m_Result << directory;
 		} else {
-			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, directory.c_str());
+			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, directory);
 		}
 	}
 

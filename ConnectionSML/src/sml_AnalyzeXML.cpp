@@ -25,6 +25,7 @@
 #include "sml_Names.h"
 #include "sml_StringOps.h"
 #include "ElementXMLInterface.h"
+#include "misc.h"
 
 using namespace sml ;
 using namespace soarxml;
@@ -78,9 +79,8 @@ int AnalyzeXML::GetResultInt(int defaultValue) const
 	if (!m_pResult || m_pResult->GetCharacterData() == NULL)
 		return defaultValue ;
 
-	// BADBAD: If char data is not valid, we'll get back "0" from atoi, when
-	// we should really return defaultValue.  Perhaps we should use sscanf instead?
-	int value = atoi(m_pResult->GetCharacterData()) ;
+	int value = defaultValue;
+	from_string(value, m_pResult->GetCharacterData());
 
 	return value ;
 }
@@ -108,7 +108,8 @@ double AnalyzeXML::GetResultFloat(double defaultValue) const
 	if (!m_pResult || m_pResult->GetCharacterData() == NULL)
 		return defaultValue ;
 
-	double value = atof(m_pResult->GetCharacterData()) ;
+	double value = 0;
+	from_string(value, m_pResult->GetCharacterData()) ;
 
 	return value ;
 }
@@ -142,9 +143,8 @@ int AnalyzeXML::GetArgInt(char const* pArgName, int argPos, int defaultValue) co
 	if (!pValue)
 		return defaultValue ;
 
-	// BADBAD: If pValue is not valid, we'll get back "0" from atoi, when
-	// we should really return defaultValue.  Perhaps we should use sscanf instead?
-	int value = atoi(pValue) ;
+	int value = defaultValue;
+	from_string(value, pValue);
 
 	return value ;
 }
@@ -159,7 +159,8 @@ double AnalyzeXML::GetArgFloat(char const* pArgName, int argPos, double defaultV
 	if (!pValue)
 		return defaultValue ;
 
-	double value = atof(pValue) ;
+	double value = 0;
+	from_string(value, pValue);
 
 	return value ;
 }

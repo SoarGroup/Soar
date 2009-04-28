@@ -14,7 +14,6 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 #include "cli_CLIError.h"
 
 #include "agent.h"
@@ -191,19 +190,17 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 	sort(memories.begin(), memories.end(), s);
 
 	// print them
-	char buf[1024];
 	int i = 0;
 	for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = memories.rbegin(); 
 		j != memories.rend() && (n == 0 || i < n); 
 		++j, ++i) 
 	{
 		if (m_RawOutput) {
-			SNPRINTF(buf, 1023, "\n%6lu:  %s", j->second, j->first.c_str());
-			buf[1023] = 0;
-			m_Result << buf;
+			m_Result << "\n" << std::setw(6) << j->second << ":  " << j->first;
 		} else {
-			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first.c_str());
-			AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, Int2String(j->second, buf, 1024));
+			std::string temp;
+			AppendArgTagFast(sml_Names::kParamName, sml_Names::kTypeString, j->first);
+			AppendArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, to_string(j->second, temp));
 		}
 	}
 	return true;
