@@ -6430,7 +6430,7 @@ void reteload_all_symbols (agent* thisAgent, FILE* f) {
   for (i=0; i<num_float_constants; i++) {
     reteload_string(f);
     *(current_place_in_symtab++) = 
-      make_float_constant (thisAgent, my_strtod(reteload_string_buf,NULL,10));
+      make_float_constant (thisAgent, strtod(reteload_string_buf,NULL));
   }
 }
 

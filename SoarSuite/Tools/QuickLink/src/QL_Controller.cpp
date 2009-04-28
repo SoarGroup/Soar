@@ -23,6 +23,7 @@
 #include <iterator>
 
 #include <stdlib.h>
+#include "misc.h"
 
 /* end mem check */
 
@@ -211,10 +212,18 @@ void add_object(istringstream& command)
 				create_value_wme(id, att, value);
 				break;
 			case e_INT :
-				create_value_wme(id, att, atoi(value.c_str()));
+				{
+					int ivalue = 0;
+					from_string(ivalue, value);
+					create_value_wme(id, att, ivalue);
+				}
 				break;
 			case e_FLOAT :
-				create_value_wme(id, att, atof(value.c_str()));
+				{
+					double dvalue = 0;
+					from_string(dvalue, value);
+					create_value_wme(id, att, dvalue);
+				}
 				break;
 			default :
 				assert(false && "Bad value_type in add_object");
@@ -240,10 +249,18 @@ void delete_object(istringstream& command)
 				delete_value_wme(id, att, value);
 				break;
 			case e_INT :
-				delete_value_wme(id, att, atoi(value.c_str()));
+				{
+					int ivalue = 0;
+					from_string(ivalue, value);
+					delete_value_wme(id, att, ivalue);
+				}
 				break;
 			case e_FLOAT :
-				delete_value_wme(id, att, atof(value.c_str()));
+				{
+					double dvalue = 0;
+					from_string(dvalue, value);
+					delete_value_wme(id, att, dvalue);
+				}
 				break;
 			default :
 				assert(false && "Bad value_type in delete_object");
@@ -267,10 +284,22 @@ void update_object(istringstream& command)
 				change_value_wme(id, att, old_value, new_value);
 				break;
 			case e_INT :
-				change_value_wme(id, att, atoi(old_value.c_str()), atoi(new_value.c_str()));
+				{
+					int new_ivalue = 0;
+					from_string(new_ivalue, new_value);
+					int old_ivalue = 0;
+					from_string(old_ivalue, old_value);
+					change_value_wme(id, att, old_ivalue, new_ivalue);
+				}
 				break;
 			case e_FLOAT :
-				change_value_wme(id, att, atof(old_value.c_str()), atof(new_value.c_str()));
+				{
+					int new_dvalue = 0;
+					from_string(new_dvalue, new_value);
+					int old_dvalue = 0;
+					from_string(old_dvalue, old_value);
+					change_value_wme(id, att, old_dvalue, new_dvalue);
+				}
 				break;
 			default :
 				assert(false && "Bad value_type in delete_object");

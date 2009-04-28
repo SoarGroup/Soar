@@ -26,7 +26,6 @@
 
 #include "sml_Utils.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 #include "sml_KernelSML.h"
 #include "sml_Events.h"
 #include "sml_AgentSML.h"

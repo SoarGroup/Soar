@@ -18,7 +18,7 @@
 #include <string>
 
 // Conversion of value to string
-template<class T> std::string *to_string( T &x )
+template<class T> std::string *to_string( const T &x )
 {
 	std::string *return_val;
 	
@@ -36,7 +36,7 @@ template<class T> std::string *to_string( T &x )
 }
 
 // Conversion of value to string
-template<class T> std::string& to_string( T &x, std::string& dest )
+template<class T> std::string& to_string( const T &x, std::string& dest )
 {
 	// instantiate stream
 	std::ostringstream o;
@@ -52,12 +52,17 @@ template<class T> std::string& to_string( T &x, std::string& dest )
 }
 
 // Conversion from string to value
-template <class T> bool from_string( T &val, std::string str )
+template <class T> bool from_string( T &val, const std::string& str )
 {
 	std::stringstream i( str );
 	i >> val;
 
 	return !i.fail();
+}
+
+template <class T> bool from_string( T &val, const char* const pStr )
+{
+	return from_string( val, std::string( pStr ) );
 }
 
 template <class T> inline T cast_and_possibly_truncate( void * ptr )

@@ -128,9 +128,9 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 
 			} else {
 				pKernelHack->GetForceLearnStates(m_pAgentSML, output);
-				AppendArgTagFast(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.str().c_str());
+				AppendArgTagFast(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.str());
 				pKernelHack->GetDontLearnStates(m_pAgentSML, output);
-				AppendArgTagFast(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.str().c_str());
+				AppendArgTagFast(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.str());
 			}
 		}
 		return true;

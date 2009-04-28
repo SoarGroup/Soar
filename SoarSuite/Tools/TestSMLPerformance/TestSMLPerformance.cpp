@@ -19,9 +19,9 @@
 #include <iostream>
 #include <time.h>
 #include "sml_Client.h"
-#include "sml_StringOps.h"
 #include "sml_Connection.h"
 #include "thread_OSspecific.h"
+#include "misc.h"
 
 using namespace sml;
 using namespace std;
@@ -55,9 +55,8 @@ public:
 		// Create wmes
 		Identifier* pInputLink = agent->GetInputLink();
 		for(int i=0; i<numWmes; i++) {
-			char buffer[25];
-			Int2String(i, buffer, sizeof(buffer)) ;
-			wmes->push_back(agent->CreateIntWME(pInputLink, buffer, 0));
+			std::string temp;
+			wmes->push_back(agent->CreateIntWME(pInputLink, to_string(i, temp).c_str(), 0));
 		}
 	}
 
@@ -103,9 +102,8 @@ public:
 		// Create agents
 		pAgents = new vector<TestAgent*>();
 		for(int i=0; i<numAgents; i++) {
-			char buffer[25];
-			Int2String(i, buffer, sizeof(buffer)) ;
-			pAgents->push_back(new TestAgent(kernel, buffer, numWmes));
+			std::string temp;
+			pAgents->push_back(new TestAgent(kernel, to_string(i, temp).c_str(), numWmes));
 		}
 
 		for(int agent=0; agent<numAgents; agent++) {
@@ -181,7 +179,9 @@ void UpdateAgent(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phas
 	numInputEvents++;
 	Environment* env = static_cast<Environment*>(pUserData);
 	// the agent's name is it's index
-	env->UpdateAgent(atoi(pAgent->GetAgentName()));
+	int agentNum = 0;
+	from_string(agentNum, pAgent->GetAgentName());
+	env->UpdateAgent(agentNum);
 }
 
 void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {

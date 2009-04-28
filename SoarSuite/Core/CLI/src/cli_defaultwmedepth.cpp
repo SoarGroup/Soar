@@ -13,7 +13,6 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 #include "agent.h"
 
 using namespace cli;
@@ -27,7 +26,7 @@ bool CommandLineInterface::ParseDefaultWMEDepth(std::vector<std::string>& argv) 
 
 	// one argument, figure out if it is a positive integer
 	if (argv.size() == 2) {
-		n = atoi(argv[1].c_str());
+		from_string(n, argv[1]);
 		if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	}
 
@@ -39,8 +38,8 @@ bool CommandLineInterface::DoDefaultWMEDepth(const int* pDepth) {
 		if (m_RawOutput) {
 			m_Result << m_pAgentSoar->default_wme_depth;
 		} else {
-			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(m_pAgentSoar->default_wme_depth, buf, kMinBufferSize));
+			std::string temp;
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(m_pAgentSoar->default_wme_depth, temp));
 		}
 		return true;
 	}

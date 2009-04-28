@@ -16,7 +16,6 @@
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 using namespace cli;
 using namespace sml;
@@ -73,12 +72,12 @@ bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 	double procElapsed = (procFinish - procStart) / static_cast<double>(CLOCKS_PER_SEC);
 
 	// Print elapsed time and return
-	char buf[kMinBufferSize];
 	if (m_RawOutput) {
 		m_Result << "\n(" << procElapsed << "s) proc" << "\n(" << realElapsed << "s) real";
 	} else {
-		AppendArgTagFast(sml_Names::kParamRealSeconds, sml_Names::kTypeDouble, Double2String(realElapsed, buf, kMinBufferSize));
-		AppendArgTagFast(sml_Names::kParamProcSeconds, sml_Names::kTypeDouble, Double2String(procElapsed, buf, kMinBufferSize));
+		std::string temp;
+		AppendArgTagFast(sml_Names::kParamRealSeconds, sml_Names::kTypeDouble, to_string(realElapsed, temp));
+		AppendArgTagFast(sml_Names::kParamProcSeconds, sml_Names::kTypeDouble, to_string(procElapsed, temp));
 	}
 	return ret;
 }

@@ -14,7 +14,6 @@
 #include "cli_Commands.h"
 #include "cli_CLIError.h"
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 #include "agent.h"
 #include "sml_Names.h"
@@ -339,14 +338,14 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 		if ( !p1 )
 		{
 			double param_value = exploration_get_parameter_value( m_pAgentSoar, "epsilon" ); 
-			std::string *temp = to_string( param_value );
+			std::string temp;
+			to_string( param_value, temp );
 
 			if ( m_RawOutput )
-				m_Result << (*temp);
+				m_Result << temp;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp );
 
-			delete temp;
 			return true;
 		}
 		else
@@ -362,14 +361,14 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 		if ( !p1 )
 		{
 			double param_value = exploration_get_parameter_value( m_pAgentSoar, "temperature" ); 
-			std::string *temp = to_string( param_value );
+			std::string temp;
+			to_string( param_value, temp );
 
 			if ( m_RawOutput )
-				m_Result << (*temp);
+				m_Result << temp;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp );
 
-			delete temp;
 			return true;
 		}
 		else
@@ -405,14 +404,14 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 		if ( !p3 )
 		{
 			double reduction_rate = exploration_get_reduction_rate( m_pAgentSoar, p1->c_str(), p2->c_str() );
-			std::string *temp = to_string( reduction_rate );
+			std::string temp;
+			to_string( reduction_rate, temp );
 
 			if ( m_RawOutput )
-				m_Result << (*temp);
+				m_Result << temp;
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp->c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, temp );
 
-			delete temp;
 			return true;
 		}
 		else
@@ -439,7 +438,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 			m_Result << temp << "\n"; 
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 		}
 		temp = "";
 
@@ -450,7 +449,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 			m_Result << temp << "\n\n"; 
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 		temp = "";
@@ -468,7 +467,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 			if ( m_RawOutput )
 				m_Result << temp << "\n"; 
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 
 			// reduction policy
 			temp = exploration_convert_parameter( m_pAgentSoar, i );
@@ -477,7 +476,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 			if ( m_RawOutput )
 				m_Result << temp << "\n";
 			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 
 			// rates			
 			temp2 = "";
@@ -504,7 +503,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 				m_Result << temp << "\n\n"; 
 			else
 			{
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 			}
 
