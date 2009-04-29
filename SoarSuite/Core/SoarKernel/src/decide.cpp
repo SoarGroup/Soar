@@ -2142,9 +2142,9 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
 					temp += candidates->value->id.name_letter;
 
 					// get number
-					std::string *temp2 = to_string( candidates->value->id.name_number );
-					temp += (*temp2);
-					delete temp2;
+					std::string temp2;
+					to_string( candidates->value->id.name_number, temp2 );
+					temp += temp2;
 
 					predict_set( thisAgent, temp.c_str() );
 				}

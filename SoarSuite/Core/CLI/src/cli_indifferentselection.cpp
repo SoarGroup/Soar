@@ -428,7 +428,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 	{
 		// used for output
 		std::string temp, temp2, temp3;
-		std::string *temp4;
+		std::string temp4;
 		double temp_value;
 
 		temp = "Exploration Policy: ";
@@ -460,9 +460,8 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 			temp = exploration_convert_parameter( m_pAgentSoar, i );
 			temp += ": ";
 			temp_value = exploration_get_parameter_value( m_pAgentSoar, i ); 
-			temp4 = to_string( temp_value );
-			temp += (*temp4);
-			delete temp4;
+			to_string( temp_value, temp4 );
+			temp += temp4;
 
 			if ( m_RawOutput )
 				m_Result << temp << "\n"; 
@@ -488,9 +487,8 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 					temp2 += "/";
 
 				temp_value = exploration_get_reduction_rate( m_pAgentSoar, i, j );
-				temp4 = to_string( temp_value );
-				temp3 += (*temp4);
-				delete temp4;
+				to_string( temp_value, temp4 );
+				temp3 += temp4;
 				if ( j != ( EXPLORATION_REDUCTIONS - 1 ) )
 					temp3 += "/";
 			}

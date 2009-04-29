@@ -37,8 +37,8 @@ public:
 
 	void SetID(int id)
 	{
-		std::string temp;
-		this->AddAttributeFast (sml_Names::kID, to_string( id, temp ).c_str() ) ;
+		char buf[TO_C_STRING_BUFSIZE];
+		this->AddAttributeFast (sml_Names::kID, to_c_string( id, buf ) ) ;
 	}
 
 	void SetDocType(char const* pType)

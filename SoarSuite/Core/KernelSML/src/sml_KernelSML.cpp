@@ -471,8 +471,8 @@ bool KernelSML::ReturnResult(Connection* pConnection, soarxml::ElementXML* pResp
 *************************************************************/
 bool KernelSML::ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int result)
 {
-	std::string temp;
-	pConnection->AddSimpleResultToSMLResponse( pResponse, to_string( result, temp ).c_str() ) ;
+	char buf[TO_C_STRING_BUFSIZE];
+	pConnection->AddSimpleResultToSMLResponse( pResponse, to_c_string( result, buf ) ) ;
 
 	return true ;
 }
