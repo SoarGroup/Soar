@@ -64,7 +64,8 @@ namespace sml
                       bool        internal,
 					  bool        tree,
                       bool        full_prod,
-                      int         depth);
+                      int         depth,
+					  bool        exact);
      void PrintUser(AgentSML*       thisAgent,
                     char*         arg,
                     bool          internal,

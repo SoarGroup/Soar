@@ -132,6 +132,7 @@ namespace cli {
 		PRINT_TEMPLATE,
 		PRINT_USER,
 		PRINT_VARPRINT,
+		PRINT_EXACT,
 		PRINT_NUM_OPTIONS, // must be last
 	};
 
