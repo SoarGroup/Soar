@@ -201,6 +201,12 @@ public class SoarDocument extends DefaultStyledDocument
                 colorRange(begin, length, currToken.kind);
                 break;
                                     
+            case SoarParserConstants.GP :
+                begin = startOffset + currToken.beginColumn;
+                length = 2;
+                colorRange(begin, length, currToken.kind);
+                break;
+                                    
             case SoarParserConstants.CARET : // followed by a STRING
                 begin = startOffset + currToken.beginColumn;
                 colorRange(begin, 1, SoarParserConstants.DEFAULT);
@@ -299,6 +305,12 @@ public class SoarDocument extends DefaultStyledDocument
                 if (currToken.image.equals("sp"))
                 {
                     currToken.kind = SoarParserConstants.SP;
+                    colorRange(begin, 2, currToken.kind);
+                    inRHS = false;
+                }
+                else if (currToken.image.equals("gp"))
+                {
+                    currToken.kind = SoarParserConstants.GP;
                     colorRange(begin, 2, currToken.kind);
                     inRHS = false;
                 }
@@ -736,9 +748,10 @@ public class SoarDocument extends DefaultStyledDocument
             if ((newCurrLine.length() != 0)
                 && ( (newCurrLine.charAt(0) == '}')
                      || (newCurrLine.startsWith("-->"))
-                     || (newCurrLine.startsWith("sp")) ) )
+                     || (newCurrLine.startsWith("sp"))
+                     || (newCurrLine.startsWith("gp"))) )
             {
-                if(newCurrLine.startsWith("sp"))
+                if(newCurrLine.startsWith("sp") || newCurrLine.startsWith("gp"))
                 {
                     firstProduction = true;
                 }
@@ -751,7 +764,7 @@ public class SoarDocument extends DefaultStyledDocument
             }
             else if(prevLine == null)
             {
-                if(newCurrLine.startsWith("sp"))
+                if(newCurrLine.startsWith("sp") || newCurrLine.startsWith("gp"))
                 {
                     numSpaces = 0;
                     firstProduction = true;
@@ -763,7 +776,7 @@ public class SoarDocument extends DefaultStyledDocument
                 prevLine = cropComments(prevLine);  // omit comments from the end of the string
                 lastChar = prevLine.charAt(prevLine.length() - 1);
 
-                if(prevLine.startsWith("sp") || prevLine.endsWith("-->"))
+                if(prevLine.startsWith("sp") || prevLine.startsWith("gp") || prevLine.endsWith("-->"))
                 {
                     numSpaces = 3;
                 }
@@ -1046,6 +1059,7 @@ public class SoarDocument extends DefaultStyledDocument
             //Attempt to indent the appropriate number of spaces
             String trimmed = prevLine.trim();
             if ( ((trimmed.startsWith("sp")) && (trimmed.indexOf("{") != -1))
+            	 || ((trimmed.startsWith("gp")) && (trimmed.indexOf("{") != -1))
                  || ((trimmed.startsWith("(")) && (trimmed.endsWith(")")))
                  || ((trimmed.startsWith("^")) && (trimmed.endsWith(")")))
                  || (trimmed.startsWith("-->")) )
@@ -1071,7 +1085,7 @@ public class SoarDocument extends DefaultStyledDocument
             prevLine = cropComments(prevLine);  // omit comments from the end of the string
             lastChar = prevLine.charAt(prevLine.length() - 1);
 
-            if(prevLine.startsWith("sp") || (prevLine.endsWith("-->")) )
+            if(prevLine.startsWith("sp") || prevLine.startsWith("gp") || prevLine.endsWith("-->") )
             {
                 numSpaces = 3;
             }
