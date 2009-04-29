@@ -191,7 +191,7 @@ typedef struct alpha_mem_struct {
   Symbol *attr;                /* (NIL if this alpha mem ignores that field) */
   Symbol *value;
   Bool acceptable;             /* does it test for acceptable pref? */
-  unsigned long am_id;            /* id for hashing */
+  uint32_t am_id;            /* id for hashing */
   unsigned long reference_count;  /* number of beta nodes using this mem */
   unsigned long retesave_amindex;
 } alpha_mem;
@@ -412,7 +412,7 @@ typedef struct rete_node_struct {
   /* left_hash_loc_levels_up: 0=current node's alphamem, 1=parent's, etc. */
   rete_node_level left_hash_loc_levels_up; 
   /* node_id: used for hash function */
-  unsigned long node_id;                   
+  uint32_t node_id;                   
 
 #ifdef SHARING_FACTORS
   unsigned long sharing_factor;
@@ -631,17 +631,11 @@ inline void new_left_token(token * New, rete_node * current_node,
 ---------------------------------------------------------------------- */
 
 /* --- Hash table sizes (actual sizes are powers of 2) --- */
-// FIXME: investigate hash table sizes
-//#ifdef _WINDOWS
-//#define LOG2_LEFT_HT_SIZE 13
-//#define LOG2_RIGHT_HT_SIZE 13
-//#else
 #define LOG2_LEFT_HT_SIZE 14
 #define LOG2_RIGHT_HT_SIZE 14
-//#endif
 
-#define LEFT_HT_SIZE (((long) 1) << LOG2_LEFT_HT_SIZE)
-#define RIGHT_HT_SIZE (((long) 1) << LOG2_RIGHT_HT_SIZE)
+#define LEFT_HT_SIZE (1 << LOG2_LEFT_HT_SIZE)
+#define RIGHT_HT_SIZE (1 << LOG2_RIGHT_HT_SIZE)
 
 #define LEFT_HT_MASK (LEFT_HT_SIZE - 1)
 #define RIGHT_HT_MASK (RIGHT_HT_SIZE - 1)
@@ -656,14 +650,14 @@ inline void new_left_token(token * New, rete_node * current_node,
 
 /* The return value is modified by the calling function, 
    hence the call by reference, */
-inline token * & left_ht_bucket(agent* thisAgent, unsigned long hv)
+inline token * & left_ht_bucket(agent* thisAgent, uint32_t hv)
 {
-  return (* ( ((token **) thisAgent->left_ht) + ((hv) & LEFT_HT_MASK)));
+  return * (reinterpret_cast<token **>(thisAgent->left_ht) + (hv & LEFT_HT_MASK));
 }
 
-inline right_mem * right_ht_bucket(agent* thisAgent, unsigned long hv)
+inline right_mem * right_ht_bucket(agent* thisAgent, uint32_t hv)
 {
-  return (* ( ((right_mem **) thisAgent->right_ht) + ((hv) & RIGHT_HT_MASK)));
+  return * (reinterpret_cast<right_mem **>(thisAgent->right_ht) + (hv & RIGHT_HT_MASK));
 }
 
 /*#define insert_token_into_left_ht(tok,hv) { \
@@ -671,18 +665,18 @@ inline right_mem * right_ht_bucket(agent* thisAgent, unsigned long hv)
   header_zy37 = ((token **) thisAgent->left_ht) + ((hv) & LEFT_HT_MASK); \
   insert_at_head_of_dll (*header_zy37, (tok), \
                          a.ht.next_in_bucket, a.ht.prev_in_bucket); }*/
-inline void insert_token_into_left_ht(agent* thisAgent, token * tok, unsigned long hv) 
+inline void insert_token_into_left_ht(agent* thisAgent, token * tok, uint32_t hv) 
 {
   token **header_zy37;
-  header_zy37 = ((token **) thisAgent->left_ht) + ((hv) & LEFT_HT_MASK);
-  insert_at_head_of_dll (*header_zy37, (tok),
+  header_zy37 = reinterpret_cast<token **>(thisAgent->left_ht) + (hv & LEFT_HT_MASK);
+  insert_at_head_of_dll (*header_zy37, tok,
                          a.ht.next_in_bucket, a.ht.prev_in_bucket);
 }
 
 /*#define remove_token_from_left_ht(tok,hv) { \
   fast_remove_from_dll (left_ht_bucket(hv), tok, token, \
                         a.ht.next_in_bucket, a.ht.prev_in_bucket); }*/
-inline void remove_token_from_left_ht(agent* thisAgent, token * tok, unsigned long hv)
+inline void remove_token_from_left_ht(agent* thisAgent, token * tok, uint32_t hv)
 {
   fast_remove_from_dll (left_ht_bucket(thisAgent, hv), tok, token,
                         a.ht.next_in_bucket, a.ht.prev_in_bucket);
@@ -1362,7 +1356,7 @@ inline Bool wme_matches_alpha_mem(wme * w, alpha_mem * am)
      ((a) ? ((Symbol *)(a))->common.hash_id : 0) ^ \
      ((v) ? ((Symbol *)(v))->common.hash_id : 0) ) & \
    masks_for_n_low_order_bits[(num_bits)] )*/
-inline unsigned long alpha_hash_value(Symbol * i, Symbol * a, Symbol * v, short num_bits)
+inline uint32_t alpha_hash_value(Symbol * i, Symbol * a, Symbol * v, short num_bits)
 {
   return 
 	  ( ( (i ? i->common.hash_id : 0) ^
@@ -1372,7 +1366,7 @@ inline unsigned long alpha_hash_value(Symbol * i, Symbol * a, Symbol * v, short 
 }
 
 /* --- rehash funciton for resizable hash table routines --- */
-unsigned long hash_alpha_mem (void *item, short num_bits) {
+uint32_t hash_alpha_mem (void *item, short num_bits) {
   alpha_mem *am;
 
   am = static_cast<alpha_mem_struct *>(item);
@@ -1385,16 +1379,16 @@ unsigned long hash_alpha_mem (void *item, short num_bits) {
                                      ((value) ? 4 : 0) + \
                                      ((acceptable) ? 8 : 0) ]*/
 inline hash_table * table_for_tests(agent* thisAgent, 
-                                                                        Symbol * id, Symbol * attr, Symbol * value, 
+                                    Symbol * id, Symbol * attr, Symbol * value, 
                                     Bool acceptable)
 {
-  return thisAgent->alpha_hash_tables [ ((id) ? 1 : 0) + ((attr) ? 2 : 0) +
-    ((value) ? 4 : 0) +
-    ((acceptable) ? 8 : 0) ];
+  return thisAgent->alpha_hash_tables [ (id ? 1 : 0) + (attr ? 2 : 0) +
+    (value ? 4 : 0) +
+    (acceptable ? 8 : 0) ];
 }
 
 //#define get_next_alpha_mem_id() (thisAgent->alpha_mem_id_counter++)
-inline unsigned long get_next_alpha_mem_id(agent* thisAgent)
+inline uint32_t get_next_alpha_mem_id(agent* thisAgent)
 {
   return thisAgent->alpha_mem_id_counter++;
 }
@@ -1403,7 +1397,7 @@ inline unsigned long get_next_alpha_mem_id(agent* thisAgent)
    inform any successors --- */
 void add_wme_to_alpha_mem (agent* thisAgent, wme *w, alpha_mem *am) {
   right_mem **header, *rm;
-  unsigned long hv;
+  uint32_t hv;
 
   /* --- allocate new right_mem, fill it fields --- */
   allocate_with_pool (thisAgent, &thisAgent->right_mem_pool, &rm);
@@ -1412,7 +1406,7 @@ void add_wme_to_alpha_mem (agent* thisAgent, wme *w, alpha_mem *am) {
 
   /* --- add it to dll's for the hash bucket, alpha mem, and wme --- */
   hv = am->am_id ^ w->id->common.hash_id;
-  header = ((right_mem **)thisAgent->right_ht) + (hv & RIGHT_HT_MASK);
+  header = reinterpret_cast<right_mem **>(thisAgent->right_ht) + (hv & RIGHT_HT_MASK);
   insert_at_head_of_dll (*header, rm, next_in_bucket, prev_in_bucket);
   insert_at_head_of_dll (am->right_mems, rm, next_in_am, prev_in_am);
   insert_at_head_of_dll (w->right_mems, rm, next_from_wme, prev_from_wme);
@@ -1423,7 +1417,7 @@ void add_wme_to_alpha_mem (agent* thisAgent, wme *w, alpha_mem *am) {
 void remove_wme_from_alpha_mem (agent* thisAgent, right_mem *rm) {
   wme *w;
   alpha_mem *am;
-  unsigned long hv;
+  uint32_t hv;
   right_mem **header;
 
   w = rm->w;  
@@ -1431,7 +1425,7 @@ void remove_wme_from_alpha_mem (agent* thisAgent, right_mem *rm) {
 
   /* --- remove it from dll's for the hash bucket, alpha mem, and wme --- */
   hv = am->am_id ^ w->id->common.hash_id;
-  header = ((right_mem **)thisAgent->right_ht) + (hv & RIGHT_HT_MASK);
+  header = reinterpret_cast<right_mem **>(thisAgent->right_ht) + (hv & RIGHT_HT_MASK);
   remove_from_dll (*header, rm, next_in_bucket, prev_in_bucket);
   remove_from_dll (am->right_mems, rm, next_in_am, prev_in_am);
   remove_from_dll (w->right_mems, rm, next_from_wme, prev_from_wme);
@@ -1445,7 +1439,7 @@ alpha_mem *find_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
                            Symbol *value, Bool acceptable) {
   hash_table *ht;
   alpha_mem *am;
-  unsigned long hash_value;
+  uint32_t hash_value;
 
   ht = table_for_tests (thisAgent, id, attr, value, acceptable);
   hash_value = alpha_hash_value (id, attr, value, ht->log2size);
@@ -1515,7 +1509,7 @@ alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
 /* --- Using the given hash table and hash value, try to find a 
    matching alpha memory in the indicated hash bucket.  If we find one,
    we add the wme to it and inform successor nodes. --- */
-void add_wme_to_aht (agent* thisAgent, hash_table *ht, unsigned long hash_value, wme *w) {
+void add_wme_to_aht (agent* thisAgent, hash_table *ht, uint32_t hash_value, wme *w) {
   alpha_mem *am;
   rete_node *node, *next;
  
@@ -1539,14 +1533,14 @@ void add_wme_to_aht (agent* thisAgent, hash_table *ht, unsigned long hash_value,
      
 /* We cannot use 'xor' as the name of a function because it is defined in UNIX. */
 //#define xor_op(i,a,v) ((i) ^ (a) ^ (v))
-inline unsigned long xor_op(unsigned long i, unsigned long a, unsigned long v)
+inline uint32_t xor_op(uint32_t i, uint32_t a, uint32_t v)
 {
   return ((i) ^ (a) ^ (v));
 }
 
 /* --- Adds a WME to the Rete. --- */
 void add_wme_to_rete (agent* thisAgent, wme *w) {
-  unsigned long hi, ha, hv;
+  uint32_t hi, ha, hv;
 
   /* --- add w to all_wmes_in_rete --- */
   insert_at_head_of_dll (thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
@@ -1581,8 +1575,8 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi,ha,hv), w);
   }
 
-  w->epmem_id = NULL;  
-  w->epmem_valid = NULL;
+  w->epmem_id = NIL;  
+  w->epmem_valid = NIL;
 }
 
 /* --- Removes a WME from the Rete. --- */
@@ -1717,7 +1711,7 @@ void remove_ref_to_alpha_mem (agent* thisAgent, alpha_mem *am) {
 ********************************************************************** */
 
 //#define get_next_beta_node_id() (thisAgent->beta_node_id_counter++)
-inline unsigned long get_next_beta_node_id(agent* thisAgent)
+inline uint32_t get_next_beta_node_id(agent* thisAgent)
 {
   return (thisAgent->beta_node_id_counter++);
 }
@@ -2332,30 +2326,27 @@ void deallocate_rete_node (agent* thisAgent, rete_node *node) {
 ********************************************************************** */
 
 //#define var_is_bound(v) (((Symbol *)(v))->var.rete_binding_locations != NIL)
-inline Bool var_is_bound(Symbol * v)
+inline bool var_is_bound(Symbol * v)
 {
   return v->var.rete_binding_locations != NIL;
 }
 
-/*
-#define varloc_to_dummy(depth,field_num) ((void *)(((depth)<<2) + (field_num)))
-#define dummy_to_varloc_depth(d)     (((unsigned long)(d))>>2)
-#define dummy_to_varloc_field_num(d) (((unsigned long)(d)) & 3)
-*/
-
+//#define varloc_to_dummy(depth,field_num) ((void *)(((depth)<<2) + (field_num)))
 inline void * varloc_to_dummy(rete_node_level depth, byte field_num)
 {
   return reinterpret_cast<void *>((depth << 2) + field_num);
 }
 
-inline unsigned long dummy_to_varloc_depth(void * d)
+//#define dummy_to_varloc_depth(d)     (((unsigned long)(d))>>2)
+inline rete_node_level dummy_to_varloc_depth(void * d)
 {
-  return reinterpret_cast<unsigned long>(d) >> 2;
+  return static_cast<rete_node_level>(reinterpret_cast<uintptr_t>(d) >> 2);
 }
 
-inline unsigned long dummy_to_varloc_field_num(void * d)
+//#define dummy_to_varloc_field_num(d) (((unsigned long)(d)) & 3)
+inline byte dummy_to_varloc_field_num(void * d)
 {
-  return reinterpret_cast<unsigned long>(d) & 3;
+  return static_cast<byte>(reinterpret_cast<uintptr_t>(d) & 3);
 }
 
 /*#define push_var_binding(v,depth,field_num) { \
@@ -2377,8 +2368,8 @@ inline void push_var_binding(agent* thisAgent, Symbol * v, rete_node_level depth
 inline void pop_var_binding(agent* thisAgent, void * v)
 {
   cons *c_xy312;
-  c_xy312 = reinterpret_cast<Symbol *>(v)->var.rete_binding_locations;
-  reinterpret_cast<Symbol *>(v)->var.rete_binding_locations = c_xy312->rest;
+  c_xy312 = static_cast<Symbol *>(v)->var.rete_binding_locations;
+  static_cast<Symbol *>(v)->var.rete_binding_locations = c_xy312->rest;
   free_cons (thisAgent, c_xy312);
 }
 
@@ -2397,8 +2388,8 @@ Bool find_var_location (Symbol *var, rete_node_level current_depth,
   void *dummy;
   if (! var->var.rete_binding_locations) return FALSE;
   dummy = var->var.rete_binding_locations->first;
-  result->levels_up = current_depth - static_cast<rete_node_level>(dummy_to_varloc_depth (dummy));
-  result->field_num = static_cast<byte>(dummy_to_varloc_field_num (dummy));
+  result->levels_up = current_depth - dummy_to_varloc_depth (dummy);
+  result->field_num = dummy_to_varloc_field_num (dummy);
   return TRUE;
 }
 
@@ -2520,7 +2511,7 @@ inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varna
 inline unsigned long varnames_is_var_list(varnames * x) { return reinterpret_cast<unsigned long>(x) & 1; }
 inline Bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
 inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
-inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(reinterpret_cast<char *>(x) - 1); }
+inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(static_cast<char *>(x) - 1); }
 
 typedef struct three_field_varnames_struct {
   varnames *id_varnames;
@@ -3730,7 +3721,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	}
 
 	/* --- invoke callback functions --- */
-	soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, reinterpret_cast<soar_call_data>(p));
+	soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(p));
 
 	//#ifdef _WINDOWS
 	//        add_production_to_stat_lists(new_prod);
@@ -3751,7 +3742,7 @@ void excise_production_from_rete (agent* thisAgent, production *p)
   rete_node *p_node, *parent;
   ms_change *msc;
 
-  soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, reinterpret_cast<soar_call_data>(p));
+  soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK, static_cast<soar_call_data>(p));
    
 //#ifdef _WINDOWS
 //        remove_production_from_stat_lists(prod_to_be_excised);
@@ -3883,9 +3874,9 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
   ct = complex_test_from_test(t);
   if (ct->type==CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-      if ( (! test_is_blank_test (reinterpret_cast<test>(c->first))) &&
-           (test_is_blank_or_equality_test (reinterpret_cast<test>(c->first))) )
-        return referent_of_equality_test (reinterpret_cast<test>(c->first));
+      if ( (! test_is_blank_test (static_cast<test>(c->first))) &&
+           (test_is_blank_or_equality_test (static_cast<test>(c->first))) )
+        return referent_of_equality_test (static_cast<test>(c->first));
   }
 
   abort_var_bound_in_reconstructed_conds:
@@ -4079,7 +4070,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t) {
     add_new_test_to_test (thisAgent, t, New);
   } else {
     for (c=varnames_to_var_list(vn); c!=NIL; c=c->rest) {
-      New = make_equality_test (reinterpret_cast<Symbol *>(c->first));
+      New = make_equality_test (static_cast<Symbol *>(c->first));
       add_new_test_to_test (thisAgent, t, New);
     }
   }
@@ -4257,8 +4248,8 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   
   if (rhs_value_is_reteloc(rv)) {
     sym = var_bound_in_reconstructed_conds (thisAgent, cond,
-                                 static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),
-                                 static_cast<rete_node_level>(rhs_value_to_reteloc_levels_up(rv)));
+                                 rhs_value_to_reteloc_field_num(rv),
+                                 rhs_value_to_reteloc_levels_up(rv));
     symbol_add_ref (sym);
     return symbol_to_rhs_value (sym);
   }
@@ -4739,7 +4730,7 @@ void rete_error_right (agent* thisAgent, rete_node *node, wme * /*w*/) {
 
 void beta_memory_node_left_addition (agent* thisAgent, rete_node *node, 
                                                                          token *tok, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   Symbol *referent;
   rete_node *child, *next;
   token *New;
@@ -4780,7 +4771,7 @@ void beta_memory_node_left_addition (agent* thisAgent, rete_node *node,
 void unhashed_beta_memory_node_left_addition (agent* thisAgent, 
                                                                                           rete_node *node, token *tok,
                                               wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   rete_node *child, *next;
   token *New;
 
@@ -4807,7 +4798,7 @@ void unhashed_beta_memory_node_left_addition (agent* thisAgent,
 void positive_node_left_addition (agent* thisAgent, 
                                                                   rete_node *node, token *New,
                                   Symbol *hash_referent) {
-  unsigned long right_hv;
+  uint32_t right_hv;
   right_mem *rm;
   alpha_mem *am;
   rete_test *rt;
@@ -4885,11 +4876,11 @@ rm=rm->next_in_am) {
 }   
 
 void mp_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   Symbol *referent;
   rete_node *child;
   token *New;
-  unsigned long right_hv;
+  uint32_t right_hv;
   right_mem *rm;
   alpha_mem *am;
   rete_test *rt;
@@ -4959,7 +4950,7 @@ void mp_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
 
 void unhashed_mp_node_left_addition (agent* thisAgent, rete_node *node, 
                                                                          token *tok, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   rete_node *child;
   token *New;
   right_mem *rm;
@@ -5008,7 +4999,7 @@ rm=rm->next_in_am) {
 }
 
 void positive_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   token *tok;
   Symbol *referent;
   rete_test *rt;
@@ -5049,7 +5040,7 @@ void positive_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
 }
 
 void unhashed_positive_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   token *tok;
   rete_test *rt;
   Bool failed_a_test;
@@ -5087,7 +5078,7 @@ void unhashed_positive_node_right_addition (agent* thisAgent, rete_node *node, w
 }
 
 void mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   token *tok;
   Symbol *referent;
   rete_test *rt;
@@ -5128,7 +5119,7 @@ void mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
 }
 
 void unhashed_mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   token *tok;
   rete_test *rt;
   Bool failed_a_test;
@@ -5173,7 +5164,7 @@ void unhashed_mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w)
 
 void negative_node_left_addition (agent* thisAgent, rete_node *node, 
                                                                   token *tok, wme *w) {
-  unsigned long hv, right_hv;
+  uint32_t hv, right_hv;
   Symbol *referent;
   right_mem *rm;
   alpha_mem *am;
@@ -5247,7 +5238,7 @@ void negative_node_left_addition (agent* thisAgent, rete_node *node,
 
 void unhashed_negative_node_left_addition (agent* thisAgent, rete_node *node, 
                                                                                    token *tok, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   rete_test *rt;
   Bool failed_a_test;
   right_mem *rm;
@@ -5301,7 +5292,7 @@ void unhashed_negative_node_left_addition (agent* thisAgent, rete_node *node,
 }
 
 void negative_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   token *tok;
   Symbol *referent;
   rete_test *rt;
@@ -5342,7 +5333,7 @@ void negative_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
 }
 
 void unhashed_negative_node_right_addition (agent* thisAgent, rete_node *node, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   token *tok;
   rete_test *rt;
   Bool failed_a_test;
@@ -5389,14 +5380,14 @@ void unhashed_negative_node_right_addition (agent* thisAgent, rete_node *node, w
 ************************************************************************ */
 
 void cn_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w) {
-  unsigned long hv;
+  uint32_t hv;
   token *t, *New;
   rete_node *child;
 
   activation_entry_sanity_check();
   left_node_activation(node,TRUE);
 
-  hv = node->node_id ^ reinterpret_cast<unsigned long>(tok) ^ reinterpret_cast<unsigned long>(w);
+  hv = node->node_id ^ cast_and_possibly_truncate<uint32_t>(tok) ^ cast_and_possibly_truncate<uint32_t>(w);
 
   /* --- look for a matching left token (since the partner node might have
      heard about this new token already, in which case it would have done
@@ -5421,7 +5412,7 @@ void cn_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
 void cn_partner_node_left_addition (agent* thisAgent, rete_node *node, 
                                                                         token *tok, wme *w) {
   rete_node *partner, *temp;
-  unsigned long hv;
+  uint32_t hv;
   token *left, *negrm_tok;
   
   activation_entry_sanity_check();
@@ -5443,7 +5434,7 @@ void cn_partner_node_left_addition (agent* thisAgent, rete_node *node,
   }
 
   /* --- look for the matching left token --- */
-  hv = partner->node_id ^ reinterpret_cast<unsigned long>(tok) ^ reinterpret_cast<unsigned long>(w);
+  hv = partner->node_id ^ cast_and_possibly_truncate<uint32_t>(tok) ^ cast_and_possibly_truncate<uint32_t>(w);
   for (left=left_ht_bucket(thisAgent, hv); left!=NIL; left=left->a.ht.next_in_bucket)
     if ((left->node==partner)&&(left->parent==tok)&&(left->w==w)) break;
 
@@ -5761,7 +5752,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 														op_elab = TRUE;
 												} else if ( (thisAgent->o_support_calculation_type == 4) 
 													&& (rhs_value_is_reteloc(act->id)) 
-													&& (temp_tok->w->value == get_symbol_from_rete_loc( static_cast<byte>(rhs_value_to_reteloc_levels_up(act->id)),static_cast<byte>(rhs_value_to_reteloc_field_num(act->id)), tok, w ))) {
+													&& (temp_tok->w->value == get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up(act->id), rhs_value_to_reteloc_field_num(act->id), tok, w ))) {
 														op_elab = TRUE;
 												} else {
 													/* this is not an operator elaboration */
@@ -6289,35 +6280,35 @@ FILE *rete_fs_file;  /* File handle we're using -- "fs" for "fast-save" */
    types (big-endian vs. little-endian).
 ---------------------------------------------------------------------- */
 
-void retesave_one_byte (byte b, FILE* /*f*/) {
+void retesave_one_byte (uint8_t b, FILE* /*f*/) {
   fputc (b, rete_fs_file); 
 }
 
-byte reteload_one_byte (FILE* f) {
-  return static_cast<byte>(fgetc (f));
+uint8_t reteload_one_byte (FILE* f) {
+  return static_cast<uint8_t>(fgetc (f));
 }
 
-void retesave_two_bytes (unsigned long w, FILE* f) {
-  retesave_one_byte (static_cast<byte>(w & 0xFF),f );
-  retesave_one_byte (static_cast<byte>((w >> 8) & 0xFF),f );
+void retesave_two_bytes (uint16_t w, FILE* f) {
+  retesave_one_byte (static_cast<uint8_t>(w & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 8) & 0xFF), f);
 }
 
-unsigned long reteload_two_bytes (FILE* f) {
-  unsigned long i;
-  i = reteload_one_byte (f);
+uint16_t reteload_two_bytes (FILE* f) {
+  uint16_t i;
+  i = reteload_one_byte(f);
   i += (reteload_one_byte(f) << 8);
   return i;
 }
 
-void retesave_four_bytes (unsigned long w, FILE* f) {
-  retesave_one_byte (static_cast<byte>(w & 0xFF),f);
-  retesave_one_byte (static_cast<byte>((w >> 8) & 0xFF),f);
-  retesave_one_byte (static_cast<byte>((w >> 16) & 0xFF),f);
-  retesave_one_byte (static_cast<byte>((w >> 24) & 0xFF),f);
+void retesave_four_bytes (uint32_t w, FILE* f) {
+  retesave_one_byte (static_cast<uint8_t>(w & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 8) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 16) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 24) & 0xFF), f);
 }
 
-unsigned long reteload_four_bytes (FILE* f) {
-  unsigned long i;
+uint32_t reteload_four_bytes (FILE* f) {
+  uint32_t i;
   i = reteload_one_byte (f);
   i += (reteload_one_byte(f) << 8);
   i += (reteload_one_byte(f) << 16);
@@ -6591,7 +6582,7 @@ void retesave_varnames (varnames *names, FILE* f) {
     for (i=0, c=varnames_to_var_list(names); c!=NIL; i++, c=c->rest);
     retesave_four_bytes (i,f);
     for (c=varnames_to_var_list(names); c!=NIL; c=c->rest)
-      retesave_four_bytes (reinterpret_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
@@ -6683,16 +6674,16 @@ void retesave_rhs_value (rhs_value rv, FILE* f) {
   } else if (rhs_value_is_funcall(rv)) {
     retesave_one_byte (1,f);
     c = rhs_value_to_funcall_list (rv);
-    sym = reinterpret_cast<rhs_function *>(c->first)->name;
+    sym = static_cast<rhs_function *>(c->first)->name;
     retesave_four_bytes (sym->common.a.retesave_symindex,f);
     c=c->rest;
     for (i=0; c!=NIL; i++, c=c->rest);
     retesave_four_bytes (i,f);
     for (c=rhs_value_to_funcall_list(rv)->rest; c!=NIL; c=c->rest)
-      retesave_rhs_value (reinterpret_cast<rhs_value>(c->first),f);
+      retesave_rhs_value (static_cast<rhs_value>(c->first),f);
   } else if (rhs_value_is_reteloc(rv)) {
     retesave_one_byte (2,f);
-    retesave_one_byte (static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),f);
+    retesave_one_byte (rhs_value_to_reteloc_field_num(rv),f);
     retesave_two_bytes (rhs_value_to_reteloc_levels_up(rv),f);
   } else {
     retesave_one_byte (3,f);
@@ -6864,9 +6855,9 @@ void retesave_rete_test (rete_test *rt, FILE* f) {
     retesave_two_bytes (rt->data.variable_referent.levels_up,f);
   } else if (rt->type==DISJUNCTION_RETE_TEST) {
     for (i=0, c=rt->data.disjunction_list; c!=NIL; i++, c=c->rest);
-    retesave_two_bytes (i,f);
+    retesave_two_bytes (static_cast<uint16_t>(i),f);
     for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
-      retesave_four_bytes (reinterpret_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
@@ -6904,7 +6895,7 @@ void retesave_rete_test_list (rete_test *first_rt, FILE* f) {
   rete_test *rt;
 
   for (i=0, rt=first_rt; rt!=NIL; i++, rt=rt->next);
-  retesave_two_bytes (i,f);
+  retesave_two_bytes (static_cast<uint16_t>(i),f);
   for (rt=first_rt; rt!=NIL; rt=rt->next)
     retesave_rete_test (rt,f);
 }
@@ -7215,7 +7206,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     update_node_with_matches_from_above (thisAgent, New);
 
      /* --- invoke callback on the production --- */
-    soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, reinterpret_cast<soar_call_data>(prod));
+    soar_invoke_callbacks (thisAgent, PRODUCTION_JUST_ADDED_CALLBACK, static_cast<soar_call_data>(prod));
  
     break;
 

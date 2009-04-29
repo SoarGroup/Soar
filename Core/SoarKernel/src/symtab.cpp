@@ -59,22 +59,8 @@
    resizable hash table routines.
 ------------------------------------------------------------------- */
 
-#ifdef SOAR_64
-unsigned long compress (unsigned long h, short num_bits) {
-  unsigned long result;
-  if (num_bits < 32) h = (h & 0xFFFFFFFF) ^ (h >> 32);
-  if (num_bits < 16) h = (h & 0xFFFF) ^ (h >> 16);
-  if (num_bits < 8) h = (h & 0xFF) ^ (h >> 8);
-  result = 0;
-  while (h) {
-    result ^= (h & masks_for_n_low_order_bits[num_bits]);
-    h = h >> num_bits;
-  }
-  return result;
-}
-#else
-unsigned long compress (unsigned long h, short num_bits) {
-  unsigned long result;
+uint32_t compress (uint32_t h, short num_bits) {
+  uint32_t result;
 
   if (num_bits < 16) h = (h & 0xFFFF) ^ (h >> 16);
   if (num_bits < 8) h = (h & 0xFF) ^ (h >> 8);
@@ -85,10 +71,9 @@ unsigned long compress (unsigned long h, short num_bits) {
   }
   return result;
 }
-#endif
 
-unsigned long hash_string (const char *s) {   /* AGR 600 */
-  unsigned long h;
+uint32_t hash_string (const char *s) {   /* AGR 600 */
+  uint32_t h;
 
   h = 0;
   while (*s != 0) {
@@ -102,60 +87,60 @@ unsigned long hash_string (const char *s) {   /* AGR 600 */
    Hashing symbols using their basic info 
 ----------------------------------------- */
 
-unsigned long hash_variable_raw_info (const char *name, short num_bits) {
+uint32_t hash_variable_raw_info (const char *name, short num_bits) {
   return compress (hash_string(name), num_bits);
 }
 
-unsigned long hash_identifier_raw_info (char name_letter,
-                                        unsigned long name_number,
+uint32_t hash_identifier_raw_info (char name_letter,
+                                        uint32_t name_number,
                                         short num_bits) {
   return compress (name_number | (name_letter << 24), num_bits);
 }
 
-unsigned long hash_sym_constant_raw_info (const char *name, short num_bits) {
+uint32_t hash_sym_constant_raw_info (const char *name, short num_bits) {
   return compress (hash_string(name), num_bits);
 }
 
-unsigned long hash_int_constant_raw_info (long value, short num_bits) {
-  return compress (static_cast<unsigned long>(value), num_bits);
+uint32_t hash_int_constant_raw_info (long value, short num_bits) {
+  return compress (static_cast<uint32_t>(value), num_bits);
 }
 
-unsigned long hash_float_constant_raw_info (double value, short num_bits) {
-  return compress (static_cast<unsigned long>(value), num_bits);
+uint32_t hash_float_constant_raw_info (double value, short num_bits) {
+  return compress (static_cast<uint32_t>(value), num_bits);
 }
 
 /* ---------------------------------------------------
    Hashing symbols using their symbol table entries
 --------------------------------------------------- */
 
-unsigned long hash_variable (void *item, short num_bits) {
+uint32_t hash_variable (void *item, short num_bits) {
   variable *var;
   var = static_cast<variable_struct *>(item);
   return compress (hash_string(var->name),num_bits);
 }
 
-unsigned long hash_identifier (void *item, short num_bits) {
+uint32_t hash_identifier (void *item, short num_bits) {
   identifier *id;
   id = static_cast<identifier_struct *>(item);
   return compress (id->name_number ^ (id->name_letter << 24), num_bits);
 }
 
-unsigned long hash_sym_constant (void *item, short num_bits) {
+uint32_t hash_sym_constant (void *item, short num_bits) {
   sym_constant *sc;
   sc = static_cast<sym_constant_struct *>(item);
   return compress (hash_string(sc->name),num_bits);
 }
 
-unsigned long hash_int_constant (void *item, short num_bits) {
+uint32_t hash_int_constant (void *item, short num_bits) {
   int_constant *ic;
   ic = static_cast<int_constant_struct *>(item);
-  return compress (static_cast<unsigned long>(ic->value),num_bits);
+  return compress (static_cast<uint32_t>(ic->value),num_bits);
 }
 
-unsigned long hash_float_constant (void *item, short num_bits) {
+uint32_t hash_float_constant (void *item, short num_bits) {
   float_constant *fc;
   fc = static_cast<float_constant_struct *>(item);
-  return compress (static_cast<unsigned long>(fc->value),num_bits);
+  return compress (static_cast<uint32_t>(fc->value),num_bits);
 }
 
 /* -------------------------------------------------------------------
@@ -165,7 +150,7 @@ unsigned long hash_float_constant (void *item, short num_bits) {
 ------------------------------------------------------------------- */
 
 //#define get_next_symbol_hash_id() (thisAgent->current_symbol_hash_id += 137)
-inline unsigned long get_next_symbol_hash_id(agent* thisAgent) 
+inline uint32_t get_next_symbol_hash_id(agent* thisAgent) 
 {
   return (thisAgent->current_symbol_hash_id += 137);
 }
@@ -206,7 +191,7 @@ void init_symbol_tables (agent* thisAgent) {
 ------------------------------------------------------------------- */
 
 Symbol *find_variable (agent* thisAgent, const char *name) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   Symbol *sym;
 
   hash_value = hash_variable_raw_info (name,thisAgent->variable_hash_table->log2size);
@@ -218,7 +203,7 @@ Symbol *find_variable (agent* thisAgent, const char *name) {
 }
 
 Symbol *find_identifier (agent* thisAgent, char name_letter, unsigned long name_number) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   Symbol *sym;
 
   hash_value = hash_identifier_raw_info (name_letter,name_number,
@@ -232,7 +217,7 @@ Symbol *find_identifier (agent* thisAgent, char name_letter, unsigned long name_
 }
 
 Symbol *find_sym_constant (agent* thisAgent, const char *name) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   Symbol *sym;
 
   hash_value = hash_sym_constant_raw_info (name,
@@ -245,7 +230,7 @@ Symbol *find_sym_constant (agent* thisAgent, const char *name) {
 }
 
 Symbol *find_int_constant (agent* thisAgent, long value) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   Symbol *sym;
 
   hash_value = hash_int_constant_raw_info (value,
@@ -258,7 +243,7 @@ Symbol *find_int_constant (agent* thisAgent, long value) {
 }
 
 Symbol *find_float_constant (agent* thisAgent, double value) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   Symbol *sym;
 
   hash_value = hash_float_constant_raw_info (value,
@@ -376,8 +361,8 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
-	sym->common.epmem_hash = NULL;
-	sym->common.epmem_valid = NULL;
+	sym->common.epmem_hash = NIL;
+	sym->common.epmem_valid = NIL;
 	sym->common.smem_hash = NULL;
 	sym->common.smem_valid = NULL;
     sym->sc.name = make_memory_block_for_string (thisAgent, name);
@@ -398,8 +383,8 @@ Symbol *make_int_constant (agent* thisAgent, long value) {
     sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
-	sym->common.epmem_hash = NULL;
-	sym->common.epmem_valid = NULL;
+	sym->common.epmem_hash = NIL;
+	sym->common.epmem_valid = NIL;
 	sym->common.smem_hash = NULL;
 	sym->common.smem_valid = NULL;
     sym->ic.value = value;
@@ -419,8 +404,8 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
-	sym->common.epmem_hash = NULL;
-	sym->common.epmem_valid = NULL;
+	sym->common.epmem_hash = NIL;
+	sym->common.epmem_valid = NIL;
 	sym->common.smem_hash = NULL;
 	sym->common.smem_valid = NULL;
     sym->fc.value = value;

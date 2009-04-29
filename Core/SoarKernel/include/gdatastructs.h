@@ -347,7 +347,7 @@ inline Bool test_is_blank_test(test t)
   return (t == NIL); 
 }
 
-// This is to silence a warning (warning C4311: 'reinterpret_cast' : pointer truncation from 'test' to 'unsigned long')
+// This is to silence a warning (warning C4311: 'static_cast' : pointer truncation from 'test' to 'unsigned long')
 // that only appears when the project settings are set to warn on possible 64-bit portability issues.
 #ifdef _MSC_VER
 #pragma warning (disable : 4311)
@@ -392,7 +392,7 @@ inline test make_blank_or_equality_test(Symbol * sym_or_nil)
 
 inline char * make_test_from_complex_test(complex_test * ct)
 {
-  return static_cast<test>(reinterpret_cast<char *>(ct) + 1);
+  return reinterpret_cast<test>(ct) + 1;
 }
 
 inline Symbol * referent_of_equality_test(test t)
@@ -402,7 +402,7 @@ inline Symbol * referent_of_equality_test(test t)
 
 inline complex_test * complex_test_from_test(test t)
 {
-  return reinterpret_cast<complex_test *>(static_cast<char *>(t) - 1);
+  return reinterpret_cast<complex_test *>(t - 1);
 }
 
 #endif /* USE_MACROS */

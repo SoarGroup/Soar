@@ -674,7 +674,7 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 		soar_alternate_input(agnt, NIL, NIL, FALSE); 
 		agnt->current_char = ' ';
 		for (c = wmes; c != NIL; c = c->rest)
-			do_print_for_wme (agnt, reinterpret_cast<wme *>(c->first), depth, internal, tree);
+			do_print_for_wme (agnt, static_cast<wme *>(c->first), depth, internal, tree);
 		free_list (agnt, wmes);
 		break;
 
@@ -689,14 +689,12 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 }
 
 void KernelHelpers::PrintUser(AgentSML*       thisAgent,
-	char*         arg,
+	char*         /*arg*/,
 	bool          internal,
 	bool          print_filename,
 	bool          full_prod,
 	unsigned int  productionType)
 {
-	unused(arg) ;
-
 	//bool output_arg = true; /* TEST for Soar-Bugs #161 */
 	for (production* prod=thisAgent->GetSoarAgent()->all_productions_of_type[productionType];  
 		prod != NIL; prod = prod->next)
@@ -1078,8 +1076,8 @@ Symbol *get_binding (Symbol *f, list *bindings)
 
 	for (c=bindings;c!=NIL;c=c->rest) 
 	{
-		if (reinterpret_cast<Binding *>(c->first)->from == f)
-			return reinterpret_cast<Binding *>(c->first)->to;
+		if (static_cast<Binding *>(c->first)->from == f)
+			return static_cast<Binding *>(c->first)->to;
 	}
 	return NIL;
 }
@@ -1106,7 +1104,7 @@ bool symbols_are_equal_with_bindings (agent* agnt, Symbol *s1, Symbol *s2, list 
 	/* Both are variables */
 	bvar = get_binding(s1,*bindings);
 	if (bvar == NIL) {
-		b = reinterpret_cast<Binding *>(allocate_memory(agnt, sizeof(Binding),MISCELLANEOUS_MEM_USAGE));
+		b = static_cast<Binding *>(allocate_memory(agnt, sizeof(Binding),MISCELLANEOUS_MEM_USAGE));
 		b->from = s1;
 		b->to = s2;
 		push(agnt, b,*bindings);
@@ -1221,7 +1219,7 @@ void print_binding_list (agent* agnt, list *bindings)
 
 	for (c = bindings ; c != NIL ; c = c->rest)
 	{
-		print_with_symbols (agnt, "   (%y -> %y)\n", reinterpret_cast<Binding *>(c->first)->from, reinterpret_cast<Binding *>(c->first)->to);
+		print_with_symbols (agnt, "   (%y -> %y)\n", static_cast<Binding *>(c->first)->from, static_cast<Binding *>(c->first)->to);
 	}
 }
 
@@ -1415,7 +1413,7 @@ bool tests_are_equal_with_bindings (agent* agnt, test t1, test test2, list **bin
 		for (c1=ct1->data.conjunct_list, c2=ct2->data.conjunct_list;
 			((c1!=NIL)&&(c2!=NIL)); c1=c1->rest, c2=c2->rest)
 		{
-			if (! tests_are_equal_with_bindings(agnt, reinterpret_cast<test>(c1->first), reinterpret_cast<test>(c2->first), bindings)) 
+			if (! tests_are_equal_with_bindings(agnt, static_cast<test>(c1->first), static_cast<test>(c2->first), bindings)) 
 				dealloc_and_return(agnt, t2,FALSE)
 		}
 		if (c1==c2) 
@@ -1674,7 +1672,7 @@ void KernelHelpers::GetForceLearnStates(AgentSML* pAgent, std::stringstream& res
 	char buff[1024];
 
 	for (c = pSoarAgent->chunky_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, reinterpret_cast<Symbol *>(c->first), TRUE, buff, 1024);
+		symbol_to_string(pSoarAgent, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
 		res << buff;
 	}
 }
@@ -1686,7 +1684,7 @@ void KernelHelpers::GetDontLearnStates(AgentSML* pAgent, std::stringstream& res)
 	char buff[1024];
 
 	for (c = pSoarAgent->chunk_free_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, reinterpret_cast<Symbol *>(c->first), TRUE, buff, 1024);
+		symbol_to_string(pSoarAgent, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
 		res << buff;
 	}
 }

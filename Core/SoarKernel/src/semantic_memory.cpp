@@ -135,28 +135,28 @@ bool smem_enabled( agent *my_agent )
 smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
 	// mem-usage
-	mem_usage = new smem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<long>() );
+	mem_usage = new smem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<intptr_t>() );
 	add( mem_usage );
 
 	// mem-high
-	mem_high = new smem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<long>() );
+	mem_high = new smem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<intptr_t>() );
 	add( mem_high );
 }
 
 //
 
-smem_mem_usage_stat::smem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+smem_mem_usage_stat::smem_mem_usage_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred ): soar_module::intptr_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
-long smem_mem_usage_stat::get_value()
+intptr_t smem_mem_usage_stat::get_value()
 {
 	return my_agent->smem_db->memory_usage();
 }
 
 //
 
-smem_mem_high_stat::smem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+smem_mem_high_stat::smem_mem_high_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred ): soar_module::intptr_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
-long smem_mem_high_stat::get_value()
+intptr_t smem_mem_high_stat::get_value()
 {
 	return my_agent->smem_db->memory_highwater();
 }
@@ -466,7 +466,7 @@ inline Symbol *smem_statement_to_symbol( agent *my_agent, soar_module::sqlite_st
 			break;
 
 		case INT_CONSTANT_SYMBOL_TYPE:
-			return_val = make_int_constant( my_agent, q->column_int( val_field ) );
+			return_val = make_int_constant( my_agent, static_cast<long>( q->column_int( val_field ) ) );
 			break;
 
 		case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -522,7 +522,7 @@ void smem_add_meta_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr
  * Author		: Nate Derbinsky
  * Notes		: Gets an SMem variable from the database
  **************************************************************************/
-inline bool smem_variable_get( agent *my_agent, smem_variable_key variable_id, long *variable_value )
+inline bool smem_variable_get( agent *my_agent, smem_variable_key variable_id, intptr_t *variable_value )
 {
 	soar_module::exec_result status;
 	soar_module::sqlite_statement *var_get = my_agent->smem_stmts->var_get;
@@ -543,7 +543,7 @@ inline bool smem_variable_get( agent *my_agent, smem_variable_key variable_id, l
  * Author		: Nate Derbinsky
  * Notes		: Sets an EpMem variable in the database
  **************************************************************************/
-inline void smem_variable_set( agent *my_agent, smem_variable_key variable_id, long variable_value )
+inline void smem_variable_set( agent *my_agent, smem_variable_key variable_id, intptr_t variable_value )
 {
 	soar_module::sqlite_statement *var_set = my_agent->smem_stmts->var_set;
 
@@ -573,9 +573,9 @@ inline void smem_variable_set( agent *my_agent, smem_variable_key variable_id, l
  * Notes		: Returns a temporally unique integer representing
  *                a symbol constant.
  **************************************************************************/
-long smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
+smem_hash_id smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 {
-	long return_val = NULL;
+	smem_hash_id return_val = NIL;
 
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->hash->start();
@@ -585,7 +585,7 @@ long smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 	{
 		if ( ( !sym->common.smem_hash ) || ( sym->common.smem_valid != my_agent->smem_validation ) )
 		{		
-			sym->common.smem_hash = NULL;
+			sym->common.smem_hash = NIL;
 			sym->common.smem_valid = my_agent->smem_validation;
 			
 			// basic process:
@@ -596,7 +596,7 @@ long smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 			smem_symbol_to_bind( sym, my_agent->smem_stmts->hash_get, 1, 2 );
 			if ( my_agent->smem_stmts->hash_get->execute() == soar_module::row )
 			{
-				return_val = my_agent->smem_stmts->hash_get->column_int( 0 );
+				return_val = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get->column_int( 0 ) );
 			}
 			my_agent->smem_stmts->hash_get->reinitialize();
 
@@ -606,7 +606,7 @@ long smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 			{
 				smem_symbol_to_bind( sym, my_agent->smem_stmts->hash_add, 1, 2 );				
 				my_agent->smem_stmts->hash_add->execute( soar_module::op_reinit );
-				return_val = my_agent->smem_db->last_insert_rowid();
+				return_val = static_cast<smem_hash_id>( my_agent->smem_db->last_insert_rowid() );
 			}
 
 			// cache results for later re-use
@@ -656,8 +656,8 @@ inline smem_lti_id smem_lti_get_id( agent *my_agent, char name_letter, unsigned 
 	smem_lti_id return_val = NIL;
 
 	// letter=? AND number=?
-	my_agent->smem_stmts->lti_get->bind_int( 1, static_cast<unsigned long>( name_letter ) );
-	my_agent->smem_stmts->lti_get->bind_int( 2, static_cast<unsigned long>( name_number ) );
+	my_agent->smem_stmts->lti_get->bind_int( 1, static_cast<uintptr_t>( name_letter ) );
+	my_agent->smem_stmts->lti_get->bind_int( 2, static_cast<uintptr_t>( name_number ) );
 
 	if ( my_agent->smem_stmts->lti_get->execute() == soar_module::row )
 	{
@@ -675,8 +675,8 @@ inline smem_lti_id smem_lti_add_id( agent *my_agent, char name_letter, unsigned 
 	smem_lti_id return_val;
 
 	// create lti: letter, number
-	my_agent->smem_stmts->lti_add->bind_int( 1, static_cast<unsigned long>( name_letter ) );
-	my_agent->smem_stmts->lti_add->bind_int( 2, static_cast<unsigned long>( name_number ) );
+	my_agent->smem_stmts->lti_add->bind_int( 1, static_cast<uintptr_t>( name_letter ) );
+	my_agent->smem_stmts->lti_add->bind_int( 2, static_cast<uintptr_t>( name_number ) );
 	my_agent->smem_stmts->lti_add->execute( soar_module::op_reinit );
 
 	return_val = static_cast<smem_lti_id>( my_agent->smem_db->last_insert_rowid() );
@@ -834,13 +834,13 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 	smem_slot_map::iterator s;
 	smem_slot::iterator v;
 
-	long attr_hash = NULL;
-	long value_hash = NULL;
+	smem_hash_id attr_hash = NULL;
+	smem_hash_id value_hash = NULL;
 	smem_lti_id value_lti = NULL;
 
-	std::map<long, unsigned long> attr_ct_adjust;
-	std::map<long, std::map<long, unsigned long> > const_ct_adjust;
-	std::map<long, std::map<smem_lti_id, unsigned long> > lti_ct_adjust;
+	std::map<smem_hash_id, unsigned long> attr_ct_adjust;
+	std::map<smem_hash_id, std::map<smem_hash_id, unsigned long> > const_ct_adjust;
+	std::map<smem_hash_id, std::map<smem_lti_id, unsigned long> > lti_ct_adjust;
 	
 	// clear web, adjust counts
 	smem_disconnect_chunk( my_agent, parent_id );
@@ -898,7 +898,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 
 	// update attribute counts
 	{
-		std::map<long, unsigned long>::iterator p;
+		std::map<smem_hash_id, unsigned long>::iterator p;
 
 		for ( p=attr_ct_adjust.begin(); p!= attr_ct_adjust.end(); p++ )
 		{
@@ -915,8 +915,8 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 
 	// update constant counts
 	{
-		std::map<long, std::map<long, unsigned long> >::iterator p1;
-		std::map<long, unsigned long>::iterator p2;
+		std::map<smem_hash_id, std::map<smem_hash_id, unsigned long> >::iterator p1;
+		std::map<smem_hash_id, unsigned long>::iterator p2;
 
 		for ( p1=const_ct_adjust.begin(); p1!=const_ct_adjust.end(); p1++ )
 		{
@@ -938,7 +938,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 
 	// update lti counts
 	{
-		std::map<long, std::map<smem_lti_id, unsigned long> >::iterator p1;
+		std::map<smem_hash_id, std::map<smem_lti_id, unsigned long> >::iterator p1;
 		std::map<smem_lti_id, unsigned long>::iterator p2;
 
 		for ( p1=lti_ct_adjust.begin(); p1!=lti_ct_adjust.end(); p1++ )
@@ -1169,8 +1169,8 @@ void smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti
 	{
 		smem_wme_list::iterator cue_p;
 
-		long attr_hash;
-		long value_hash;
+		smem_hash_id attr_hash;
+		smem_hash_id value_hash;
 		smem_lti_id value_lti;
 		smem_cue_element_type element_type = attr_t;
 

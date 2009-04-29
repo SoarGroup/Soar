@@ -53,6 +53,7 @@
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
+#include <stack>
 
 using namespace soar_TraceNames;
 
@@ -237,8 +238,8 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   }
 
   if (rhs_value_is_reteloc(rv)) {
-    result = get_symbol_from_rete_loc (static_cast<unsigned short>(rhs_value_to_reteloc_levels_up(rv)), 
-                                       static_cast<byte>(rhs_value_to_reteloc_field_num(rv)),
+    result = get_symbol_from_rete_loc (rhs_value_to_reteloc_levels_up(rv), 
+                                       rhs_value_to_reteloc_field_num(rv),
                                        tok, w);
     symbol_add_ref (result);
     return result;
@@ -286,7 +287,7 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   
   /* --- scan through arglist, dereference symbols and deallocate conses --- */
   for (c=arglist; c!=NIL; c=c->rest)
-    if (c->first) symbol_remove_ref (thisAgent, reinterpret_cast<Symbol *>(c->first));
+    if (c->first) symbol_remove_ref (thisAgent, static_cast<Symbol *>(c->first));
   free_list (thisAgent, arglist);
 
   return result;
@@ -642,6 +643,25 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 
 		/* SoarTech changed from an IF stmt to a WHILE loop to support GlobalDeepCpy */
 		while (pref) {   
+      /* The parser assumes that any rhs preference of the form 
+       *
+       * (<s> ^operator <o> = <x>)
+       * 
+       * is a binary indifferent preference, because it assumes <x> is an
+       * operator. However, it could be the case that <x> is actually bound to
+       * a number, which would make this a numeric indifferent preference. The
+       * parser had no way of easily figuring this out, but it's easy to check
+       * here.
+       *
+       * jzxu April 22, 2009
+       */
+      if ((pref->type == BINARY_INDIFFERENT_PREFERENCE_TYPE) &&
+          ((pref->referent->var.common_symbol_info.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) || 
+           (pref->referent->var.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE)))
+      {
+        pref->type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+      }
+
 			pref->inst = inst;
 			insert_at_head_of_dll (inst->preferences_generated, pref,
 				inst_next, inst_prev);
@@ -711,7 +731,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 		/* --- invoke callback function --- */
 		soar_invoke_callbacks(thisAgent, 
 			FIRING_CALLBACK,
-			reinterpret_cast<soar_call_data>(inst));
+			static_cast<soar_call_data>(inst));
 
 	}
 }
@@ -749,8 +769,8 @@ Bool shouldCreateInstantiation (agent* thisAgent, production *prod, struct token
 			sym = rhs_value_to_symbol(a->id);
 		} else {
 			if (rhs_value_is_reteloc(a->id)) {
-				sym = get_symbol_from_rete_loc (static_cast<unsigned short>(rhs_value_to_reteloc_levels_up(a->id)),
-					static_cast<byte>(rhs_value_to_reteloc_field_num(a->id)),
+				sym = get_symbol_from_rete_loc (rhs_value_to_reteloc_levels_up(a->id),
+					rhs_value_to_reteloc_field_num(a->id),
 					tok, w);
 			}
 		}
@@ -774,55 +794,188 @@ Bool shouldCreateInstantiation (agent* thisAgent, production *prod, struct token
    via the possibly_deallocate_instantiation() macro.
 ----------------------------------------------------------------------- */
 
-void deallocate_instantiation (agent* thisAgent, instantiation *inst) {
-  condition *cond;
+void deallocate_instantiation (agent* thisAgent, instantiation *inst) 
+{
+	condition *cond;
 
-  /* mvp 5-17-94 */
-  list *c, *c_old;
-  preference *pref;
-  goal_stack_level level;
-  
-  level = inst->match_goal_level;
- 
+	/* mvp 5-17-94 */
+	list *c, *c_old;
+	preference *pref;
+	goal_stack_level level;
+
+	std::stack<condition*> cond_stack;
+	std::list<instantiation*> inst_list;
+	inst_list.push_back(inst);
+	std::list<instantiation*>::iterator next_iter = inst_list.begin();
+
+	while ( next_iter != inst_list.end() ) 
+	{
+		inst = *next_iter;
+		assert(inst);
+		++next_iter;
+
 #ifdef DEBUG_INSTANTIATIONS
-  if (inst->prod)
-    print_with_symbols (thisAgent, "\nDeallocate instantiation of %y",inst->prod->name);
+		if (inst->prod)
+			print_with_symbols (thisAgent, "\nDeallocate instantiation of %y",inst->prod->name);
 #endif
 
-  for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next)
-    if (cond->type==POSITIVE_CONDITION) {
+		level = inst->match_goal_level;
 
-      /* mvp 6-22-94, modified 94.01.17 by AGR with lotsa help from GAP */
-     if (cond->bt.prohibits) {
-       c_old = c = cond->bt.prohibits;
-       cond->bt.prohibits = NIL;
-       for (; c!=NIL; c=c->rest) {
- 		   pref = reinterpret_cast<preference *>(c->first);
-           #ifdef DO_TOP_LEVEL_REF_CTS
-		   preference_remove_ref (thisAgent, pref);
-           #else
-	       if (level > TOP_GOAL_LEVEL)  preference_remove_ref (thisAgent, pref);
-           #endif
-       }
-       free_list (thisAgent, c_old);
-     }
-     /* mvp done */  
+		for (cond=inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next) 
+		{
+			if (cond->type==POSITIVE_CONDITION) 
+			{
 
-     #ifdef DO_TOP_LEVEL_REF_CTS
-       wme_remove_ref (thisAgent, cond->bt.wme_);
-       if (cond->bt.trace) preference_remove_ref (thisAgent, cond->bt.trace);
-     #else
-	   if (level > TOP_GOAL_LEVEL) {
-		   wme_remove_ref (thisAgent, cond->bt.wme_);
-           if (cond->bt.trace) preference_remove_ref (thisAgent, cond->bt.trace);
-	   }
-     #endif
-   }
+				/* mvp 6-22-94, modified 94.01.17 by AGR with lotsa help from GAP */
+				if (cond->bt.prohibits) 
+				{
+					c_old = c = cond->bt.prohibits;
+					cond->bt.prohibits = NIL;
+					for (; c!=NIL; c=c->rest) 
+					{
+						pref = static_cast<preference *>(c->first);
+#ifdef DO_TOP_LEVEL_REF_CTS
+						if (level > TOP_GOAL_LEVEL) 
+#endif
+						{
+							preference_remove_ref (thisAgent, pref);
+						}
+					}
+					free_list (thisAgent, c_old);
+				}
+				/* mvp done */  
 
-  deallocate_condition_list (thisAgent, inst->top_of_instantiated_conditions);
-  deallocate_list_of_nots (thisAgent, inst->nots);
-  if (inst->prod) production_remove_ref (thisAgent, inst->prod);
-  free_with_pool (&thisAgent->instantiation_pool, inst);
+				/*	voigtjr, nlderbin:
+					We flattened out the following recursive loop in order to prevent a stack
+					overflow that happens when the chain of backtrace instantiations is very long:
+
+						retract_instantiation
+						possibly_deallocate_instantiation
+						loop start:
+						deallocate_instantiation (here)
+						preference_remove_ref
+						possibly_deallocate_preferences_and_clones
+						deallocate_preference
+						possibly_deallocate_instantiation
+						goto loop start
+				*/
+#ifndef DO_TOP_LEVEL_REF_CTS
+				if (level > TOP_GOAL_LEVEL) 
+#endif
+				{
+					wme_remove_ref (thisAgent, cond->bt.wme_);
+					if (cond->bt.trace) 
+					{
+						cond->bt.trace->reference_count--;
+						if (cond->bt.trace->reference_count == 0) 
+						{
+							preference *clone;
+
+							if (cond->bt.trace->reference_count) 
+							{
+								continue;
+							}
+							bool has_active_clones = false;
+							for (clone=cond->bt.trace->next_clone; clone!=NIL; clone=clone->next_clone) 
+							{
+								if ( clone->reference_count ) 
+								{
+									has_active_clones = true;
+								}
+							}
+							if ( has_active_clones ) 
+							{
+								continue;
+							}
+							for ( clone = cond->bt.trace->prev_clone; clone != NIL; clone = clone->prev_clone ) 
+							{
+								if ( clone->reference_count ) 
+								{
+									has_active_clones = true;
+								}
+							}
+							if ( has_active_clones ) 
+							{
+								continue;
+							}
+
+							// The clones are hopefully a simple case so we just call deallocate_preference on them.
+							// Someone needs to create a test case to push this boundary...
+							{
+								preference* clone = cond->bt.trace->next_clone;
+								preference* next;
+								while (clone) {
+									next = clone->next_clone;
+									deallocate_preference (thisAgent, clone);
+									clone = next;
+								}
+								clone = cond->bt.trace->prev_clone;
+								while (clone) {
+									next = clone->prev_clone;
+									deallocate_preference (thisAgent, clone);
+									clone = next;
+								}
+							}
+
+							/* --- deallocate pref --- */
+							/* --- remove it from the list of bt.trace's for its match goal --- */
+							if ( cond->bt.trace->on_goal_list ) 
+							{
+								remove_from_dll( 
+									cond->bt.trace->inst->match_goal->id.preferences_from_goal, 
+									cond->bt.trace, all_of_goal_next, all_of_goal_prev );
+							}
+
+							/* --- remove it from the list of bt.trace's from that instantiation --- */
+							remove_from_dll( cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev );
+							if ( ( !cond->bt.trace->inst->preferences_generated ) && ( !cond->bt.trace->inst->in_ms ) ) 
+							{
+								next_iter = inst_list.insert( next_iter, cond->bt.trace->inst );
+							}
+
+							cond_stack.push( cond );
+						} // if
+					} // if
+				} // if
+				/* voigtjr, nlderbin end */
+			} // if
+		} // for
+	} // while
+
+	// free condition symbols and pref
+	while( !cond_stack.empty() ) 
+	{
+		condition* temp = cond_stack.top();
+		cond_stack.pop();
+
+		/* --- dereference component symbols --- */
+		symbol_remove_ref( thisAgent, temp->bt.trace->id );
+		symbol_remove_ref( thisAgent, temp->bt.trace->attr );
+		symbol_remove_ref( thisAgent, temp->bt.trace->value );
+		if ( preference_is_binary( temp->bt.trace->type ) ) 
+		{
+			symbol_remove_ref( thisAgent, temp->bt.trace->referent );
+		}
+
+		/* --- free the memory --- */
+		free_with_pool( &thisAgent->preference_pool, temp->bt.trace );
+	}
+
+	// free instantiations in the reverse order
+	std::list<instantiation*>::reverse_iterator riter = inst_list.rbegin();
+	while( riter != inst_list.rend() ) 
+	{
+		instantiation* temp = *riter;
+		++riter;
+
+		deallocate_condition_list( thisAgent, temp->top_of_instantiated_conditions );
+		deallocate_list_of_nots( thisAgent, temp->nots );
+		if ( temp->prod ) 
+		{
+			production_remove_ref( thisAgent, temp->prod );
+		}
+		free_with_pool( &thisAgent->instantiation_pool, temp );
+	}
 }
 
 /* -----------------------------------------------------------------------
@@ -839,7 +992,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
   /* --- invoke callback function --- */
   soar_invoke_callbacks(thisAgent, 
 			RETRACTION_CALLBACK,
-			reinterpret_cast<soar_call_data>(inst));
+			static_cast<soar_call_data>(inst));
    
   retracted_a_preference = FALSE;
   

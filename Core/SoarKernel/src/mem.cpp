@@ -46,16 +46,16 @@ void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
 
 	thisAgent->memory_for_usage[usage_code] += size;
 	size += sizeof(size_t);
-	thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] += sizeof(char *);
+	thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] += sizeof(size_t);
 
-	p = reinterpret_cast<char *>(malloc (size));
+	p = static_cast<char *>(malloc (size));
 	if (p==NULL) {
 		char msg[BUFFER_MSG_SIZE];
 		SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", static_cast<unsigned long>(size));
 		msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
 		abort_with_fatal_error (thisAgent, msg);
 	}
-	if (reinterpret_cast<size_t>(p) & 3) {
+	if (reinterpret_cast<uintptr_t>(p) & 3) {
 		char msg[BUFFER_MSG_SIZE];
 		strncpy (msg,"\nmem.c: Error:  Memory allocator returned an address that's not a multiple of 4.\n", BUFFER_MSG_SIZE);
 		msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
@@ -67,7 +67,7 @@ void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
 	*(reinterpret_cast<size_t *>(p)) = size;
 	p += sizeof(size_t);
 
-	return reinterpret_cast<void *>(p);
+	return p;
 }
 
 void *allocate_memory_and_zerofill (agent* thisAgent, size_t size, int usage_code) {
@@ -83,8 +83,8 @@ void free_memory (agent* thisAgent, void *mem, int usage_code) {
   
   if ( mem == 0 ) return;
   
-  mem = reinterpret_cast<char *>(mem) - sizeof(size_t);
-  size = *(reinterpret_cast<size_t *>(mem));
+  mem = static_cast<char *>(mem) - sizeof(size_t);
+  size = *(static_cast<size_t *>(mem));
   fill_with_garbage (mem, size);
 
   thisAgent->memory_for_usage[STATS_OVERHEAD_MEM_USAGE] -= sizeof(size_t);
@@ -450,6 +450,11 @@ dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_t
   return first_extracted_element;
 }
 
+Bool cons_equality_fn (agent*, cons *c, void *data) 
+{
+  return (c->first == data);
+}
+
 /* ====================================================================
 
                    Resizable Hash Table Routines
@@ -484,26 +489,7 @@ dl_list *extract_dl_list_elements (agent* thisAgent, dl_list **header, dl_cons_t
    routine returns immediately.  
 ==================================================================== */
 
-#ifdef SOAR_64
-unsigned long masks_for_n_low_order_bits[65] = { 0x0000000000000000,
-  0x0000000000000001, 0x0000000000000003, 0x0000000000000007, 0x000000000000000F,
-  0x000000000000001F, 0x000000000000003F, 0x000000000000007F, 0x00000000000000FF,
-  0x00000000000001FF, 0x00000000000003FF, 0x00000000000007FF, 0x0000000000000FFF,
-  0x0000000000001FFF, 0x0000000000003FFF, 0x0000000000007FFF, 0x000000000000FFFF,
-  0x000000000001FFFF, 0x000000000003FFFF, 0x000000000007FFFF, 0x00000000000FFFFF,
-  0x00000000001FFFFF, 0x00000000003FFFFF, 0x00000000007FFFFF, 0x0000000000FFFFFF,
-  0x0000000001FFFFFF, 0x0000000003FFFFFF, 0x0000000007FFFFFF, 0x000000000FFFFFFF,
-  0x000000001FFFFFFF, 0x000000003FFFFFFF, 0x000000007FFFFFFF, 0x00000000FFFFFFFF,
-  0x00000001FFFFFFFF, 0x00000003FFFFFFFF, 0x00000007FFFFFFFF, 0x0000000FFFFFFFFF,
-  0x0000001FFFFFFFFF, 0x0000003FFFFFFFFF, 0x0000007FFFFFFFFF, 0x000000FFFFFFFFFF,
-  0x000001FFFFFFFFFF, 0x000003FFFFFFFFFF, 0x000007FFFFFFFFFF, 0x00000FFFFFFFFFFF,
-  0x00001FFFFFFFFFFF, 0x00003FFFFFFFFFFF, 0x00007FFFFFFFFFFF, 0x0000FFFFFFFFFFFF,
-  0x0001FFFFFFFFFFFF, 0x0003FFFFFFFFFFFF, 0x0007FFFFFFFFFFFF, 0x000FFFFFFFFFFFFF,
-  0x001FFFFFFFFFFFFF, 0x003FFFFFFFFFFFFF, 0x007FFFFFFFFFFFFF, 0x00FFFFFFFFFFFFFF,
-  0x01FFFFFFFFFFFFFF, 0x03FFFFFFFFFFFFFF, 0x07FFFFFFFFFFFFFF, 0x0FFFFFFFFFFFFFFF,
-  0x1FFFFFFFFFFFFFFF, 0x3FFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF };
-#else
-unsigned long masks_for_n_low_order_bits[33] = { 0x00000000,
+uint32_t masks_for_n_low_order_bits[33] = { 0x00000000,
   0x00000001, 0x00000003, 0x00000007, 0x0000000F,
   0x0000001F, 0x0000003F, 0x0000007F, 0x000000FF,
   0x000001FF, 0x000003FF, 0x000007FF, 0x00000FFF,
@@ -512,7 +498,6 @@ unsigned long masks_for_n_low_order_bits[33] = { 0x00000000,
   0x001FFFFF, 0x003FFFFF, 0x007FFFFF, 0x00FFFFFF,
   0x01FFFFFF, 0x03FFFFFF, 0x07FFFFFF, 0x0FFFFFFF,
   0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF };
-#endif
 
 struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2size,
                                            hash_function h) {
@@ -522,7 +507,7 @@ struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2s
                                                          HASH_TABLE_MEM_USAGE));
   ht->count = 0;
   if (minimum_log2size < 1) minimum_log2size = 1;
-  ht->size = (((unsigned long)1) << minimum_log2size);
+  ht->size = static_cast<uint32_t>(1) << minimum_log2size;
   ht->log2size = minimum_log2size;
   ht->minimum_log2size = minimum_log2size;
   ht->buckets = static_cast<item_in_hash_table_struct **>(allocate_memory_and_zerofill (thisAgent, ht->size * sizeof(char *),
@@ -532,13 +517,13 @@ struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2s
 }
 
 void resize_hash_table (agent* thisAgent, hash_table *ht, short new_log2size) {
-  unsigned long i;
+  uint32_t i;
   bucket_array *new_buckets;
   item_in_hash_table *item, *next;
-  unsigned long hash_value;
-  unsigned long new_size;
+  uint32_t hash_value;
+  uint32_t new_size;
 
-  new_size = (((unsigned long)1) << new_log2size);
+  new_size = static_cast<uint32_t>(1) << new_log2size;
   new_buckets =
     (bucket_array *) allocate_memory_and_zerofill (thisAgent, new_size*sizeof(char *),
                                                    HASH_TABLE_MEM_USAGE);
@@ -567,7 +552,7 @@ void free_hash_table(agent* thisAgent, struct hash_table_struct *ht) {
 
 void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht, 
 							 void *item) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   item_in_hash_table *this_one, *prev;
 
   this_one = static_cast<item_in_hash_table_struct *>(item);
@@ -590,18 +575,18 @@ void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht,
   /* --- update count and possibly resize the table --- */
   ht->count--;
   if ((ht->count < ht->size/2) && (ht->log2size > ht->minimum_log2size))
-    resize_hash_table (thisAgent, ht, (short)(ht->log2size-1));
+    resize_hash_table (thisAgent, ht, ht->log2size-1);
 }
 
 void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht, 
 						void *item) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   item_in_hash_table *this_one;
 
   this_one = static_cast<item_in_hash_table_struct *>(item);
   ht->count++;
   if (ht->count >= ht->size*2)
-    resize_hash_table (thisAgent, ht, (short)(ht->log2size+1));
+    resize_hash_table (thisAgent, ht, ht->log2size+1);
   hash_value = (*(ht->h))(item, ht->log2size);
   this_one->next = *(ht->buckets+hash_value);
   *(ht->buckets+hash_value) = this_one;
@@ -612,7 +597,7 @@ void do_for_all_items_in_hash_table (agent* thisAgent,
                                      hash_table_callback_fn2 f,
                                      FILE* fn) 
 {
-  unsigned long hash_value;
+  uint32_t hash_value;
   item_in_hash_table *item;
 
   for (hash_value=0; hash_value < ht->size; hash_value++) {
@@ -624,7 +609,7 @@ void do_for_all_items_in_hash_table (agent* thisAgent,
 
 void do_for_all_items_in_hash_bucket (struct hash_table_struct *ht,
                                       hash_table_callback_fn f,
-                                      unsigned long hash_value) {
+                                      uint32_t hash_value) {
   item_in_hash_table *item;
 
   hash_value = hash_value & masks_for_n_low_order_bits[ht->log2size];

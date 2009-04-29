@@ -65,7 +65,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\Tests\lib\cppunitd_dll.lib"
+				AdditionalDependencies="..\..\Tests\lib\cppunitd_dllvs9.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -144,7 +144,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\Tests\lib\cppunitd64_dll.lib"
+				AdditionalDependencies="..\..\Tests\lib\cppunitd64_dllvs9.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -218,7 +218,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\Tests\lib\cppunit_dll.lib"
+				AdditionalDependencies="..\..\Tests\lib\cppunit_dllvs9.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -297,7 +297,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\Tests\lib\cppunit64_dll.lib"
+				AdditionalDependencies="..\..\Tests\lib\cppunit64_dllvs9.lib"
 				OutputFile="$(SolutionDir)\SoarLibrary\bin\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -385,6 +385,10 @@
 			</File>
 			<File
 				RelativePath="..\..\Tests\src\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tests\src\misctests.cpp"
 				>
 			</File>
 			<File

@@ -91,26 +91,26 @@ class smem_stat_container: public soar_module::stat_container
 		smem_stat_container( agent *my_agent );
 };
 
-class smem_mem_usage_stat: public soar_module::integer_stat
+class smem_mem_usage_stat: public soar_module::intptr_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		smem_mem_usage_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
-		long get_value();
+		smem_mem_usage_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred );
+		intptr_t get_value();
 };
 
 //
 
-class smem_mem_high_stat: public soar_module::integer_stat
+class smem_mem_high_stat: public soar_module::intptr_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		smem_mem_high_stat( agent *new_agent, const char *new_name, long new_value, soar_module::predicate<long> *new_prot_pred );
-		long get_value();
+		smem_mem_high_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred );
+		intptr_t get_value();
 };
 
 
@@ -219,7 +219,10 @@ enum smem_variable_key
 
 // represents the unique identification of a
 // long-term identifier
-typedef unsigned long smem_lti_id;
+typedef uintptr_t smem_lti_id;
+
+// represents a temporal hash
+typedef uintptr_t smem_hash_id;
 
 // represents a collection of long-term identifiers
 typedef std::list<smem_lti_id> smem_lti_list;
@@ -250,11 +253,11 @@ enum smem_cue_element_type { attr_t, value_const_t, value_lti_t };
 
 typedef struct smem_weighted_cue_element_struct
 {
-	unsigned long weight;
+	uintptr_t weight;
 	
 	struct wme_struct *cue_element;
-	long attr_hash;
-	long value_hash;
+	smem_hash_id attr_hash;
+	smem_hash_id value_hash;
 	smem_lti_id value_lti;
 
 	smem_cue_element_type element_type;

@@ -377,10 +377,8 @@ bool WorkingMemory::ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing)
 * @param pIncoming	The output command (list of wmes added/removed from output link)
 * @param pResponse	The reply (no real need to fill anything in here currently)
 *************************************************************/
-bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
+bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
-	unused(pResponse) ;	// No need to reply
-
 #ifdef _DEBUG
 	char * pMsgText = pIncoming->GetCommandTag()->GenerateXMLString(true, true) ;
 #endif

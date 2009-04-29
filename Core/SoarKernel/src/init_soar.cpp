@@ -957,12 +957,12 @@ void do_one_top_level_phase (agent* thisAgent)
 
 		  soar_invoke_callbacks(thisAgent, thisAgent, 
 			  BEFORE_DECISION_PHASE_CALLBACK,
-			  reinterpret_cast<soar_call_data>(thisAgent->current_phase) );
+			  static_cast<soar_call_data>(thisAgent->current_phase) );
 
 		  do_decision_phase(thisAgent);
 
 		  soar_invoke_callbacks(thisAgent, thisAgent, AFTER_DECISION_PHASE_CALLBACK,
-			  reinterpret_cast<soar_call_data>(thisAgent->current_phase) );
+			  static_cast<soar_call_data>(thisAgent->current_phase) );
 
 		  if (thisAgent->sysparams[TRACE_CONTEXT_DECISIONS_SYSPARAM]) {
 			  //                  #ifdef USE_TCL

@@ -13,6 +13,8 @@
 #ifndef SOAR_DB_H
 #define SOAR_DB_H
 
+#include <portability.h>
+
 #include <list>
 #include <assert.h>
 
@@ -26,19 +28,6 @@ namespace soar_module
 	///////////////////////////////////////////////////////////////////////////
 	// Constants/Enums
 	///////////////////////////////////////////////////////////////////////////
-
-	// 32 vs. 64-bit integer functions
-	#ifdef SOAR_64
-
-		#define SQLITE_BIND_INT sqlite3_bind_int64
-		#define SQLITE_COLUMN_INT sqlite3_column_int64
-
-	#else
-
-		#define SQLITE_BIND_INT sqlite3_bind_int
-		#define SQLITE_COLUMN_INT sqlite3_column_int
-
-	#endif
 
 	// when preparing statements with strings, read till the first zero terminator
 	#define SQLITE_PREP_STR_MAX -1
@@ -299,9 +288,9 @@ namespace soar_module
 
 			//
 
-			inline long last_insert_rowid() { return (long) sqlite3_last_insert_rowid( my_db ); }
-			inline long memory_usage() { return (long) sqlite3_memory_used(); }
-			inline long memory_highwater() { return (long) sqlite3_memory_highwater( false ); }
+			inline intptr_t last_insert_rowid() { return static_cast<intptr_t>( sqlite3_last_insert_rowid( my_db ) ); }
+			inline intptr_t memory_usage() { return static_cast<intptr_t>( sqlite3_memory_used() ); }
+			inline intptr_t memory_highwater() { return static_cast<intptr_t>( sqlite3_memory_highwater( false ) ); }
 	};
 
 
@@ -381,9 +370,21 @@ namespace soar_module
 
 			//
 
-			inline void bind_int( int param, long val )
+			inline void bind_int( int param, intptr_t val )
 			{
-				SQLITE_BIND_INT( my_stmt, param, val );
+				if ( sizeof(intptr_t) == 4 )
+				{
+					sqlite3_bind_int( my_stmt, param, static_cast<int>( val ) );
+				}
+				else if ( sizeof(intptr_t) == 8 )
+				{
+					sqlite3_bind_int64( my_stmt, param, static_cast<sqlite3_int64>( val ) );
+				}
+				else
+				{
+					// something other than a 32/64-bit platform
+					assert( false );
+				}
 			}
 
 			inline void bind_double( int param, double val )
@@ -403,19 +404,31 @@ namespace soar_module
 
 			//
 
-			inline long column_int( int col )
+			inline intptr_t column_int( int col )
 			{
-				return SQLITE_COLUMN_INT( my_stmt, col );
+				if ( sizeof(intptr_t) == 4 )
+				{
+					return static_cast<intptr_t>( sqlite3_column_int( my_stmt, col ) );
+				}
+				else if ( sizeof(intptr_t) == 8 )
+				{
+					return static_cast<intptr_t>( sqlite3_column_int64( my_stmt, col ) );
+				}
+				else
+				{
+					// something other than a 32/64-bit platform
+					assert( false );
+				}
 			}
 
 			inline double column_double( int col )
 			{
-				return sqlite3_column_int( my_stmt, col );
+				return sqlite3_column_double( my_stmt, col );
 			}
 
 			inline const char *column_text( int col )
 			{
-				return (const char *) sqlite3_column_text( my_stmt, col );
+				return reinterpret_cast<const char *>( sqlite3_column_text( my_stmt, col ) );
 			}
 
 			inline value_type column_type( int col )

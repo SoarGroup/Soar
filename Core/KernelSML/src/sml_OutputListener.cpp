@@ -108,10 +108,8 @@ void OutputListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCall
 // #define MODIFIED_OUTPUT_COMMAND 2
 // #define REMOVED_OUTPUT_COMMAND 3
 
-void OutputListener::SendOutput(smlWorkingMemoryEventId eventId, AgentSML* pAgentSML, int outputMode, io_wme* io_wmelist)
+void OutputListener::SendOutput(smlWorkingMemoryEventId eventId, AgentSML* pAgentSML, int /*outputMode*/, io_wme* io_wmelist)
 {
-	unused(outputMode) ;
-
 	if (eventId != smlEVENT_OUTPUT_PHASE_CALLBACK)
 		return ;
 

@@ -539,7 +539,7 @@ void print_trace_format_list (agent* thisAgent, trace_format *tf) {
       else print_string (thisAgent, "%ao[");
       if (tf->data.attribute_path) {
         for (c=tf->data.attribute_path; c!=NIL; c=c->rest) {
-          print_string (thisAgent, reinterpret_cast<Symbol *>(c->first)->sc.name);
+          print_string (thisAgent, static_cast<Symbol *>(c->first)->sc.name);
           if (c->rest) print_string (thisAgent, ".");
         }
       } else {
@@ -635,13 +635,13 @@ typedef struct tracing_rule_struct {
 
 /*#define hash_name_restriction(name,num_bits) \
   ((name)->common.hash_id & masks_for_n_low_order_bits[(num_bits)])*/
-inline unsigned long hash_name_restriction(Symbol * name, short num_bits)
+inline uint32_t hash_name_restriction(Symbol * name, short num_bits)
 {
-  return ((name)->common.hash_id & masks_for_n_low_order_bits[(num_bits)]);
+  return name->common.hash_id & masks_for_n_low_order_bits[num_bits];
 }
 
 /* --- hash function for resizable hash table routines --- */
-unsigned long tracing_rule_hash_function (void *item, short num_bits) {
+uint32_t tracing_rule_hash_function (void *item, short num_bits) {
   tracing_rule *tr;
   
   tr = static_cast<tracing_rule_struct *>(item);
@@ -666,7 +666,7 @@ trace_format *lookup_trace_format (agent* thisAgent,
 								   Bool stack_trace,
                                    int type_restriction,
                                    Symbol *name_restriction) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   hash_table *ht;
   tracing_rule *tr;
 
@@ -692,7 +692,7 @@ Bool remove_trace_format (agent* thisAgent,
 						  Bool stack_trace,
                           int type_restriction,
                           Symbol *name_restriction) {
-  unsigned long hash_value;
+  uint32_t hash_value;
   hash_table *ht;
   tracing_rule *tr;
   trace_format **format;

@@ -228,8 +228,8 @@ typedef struct agent_struct {
   
   
   /* Miscellaneous other stuff */
-  unsigned long       alpha_mem_id_counter; /* node id's for hashing */
-  unsigned long       beta_node_id_counter;
+  uint32_t       alpha_mem_id_counter; /* node id's for hashing */
+  uint32_t       beta_node_id_counter;
   struct ms_change_struct * ms_assertions;  /* changes to match set */
   struct ms_change_struct * ms_retractions;
 
@@ -337,7 +337,7 @@ typedef struct agent_struct {
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
-  unsigned long       current_symbol_hash_id;
+  uint32_t       current_symbol_hash_id;
   unsigned long       id_counter[26]; 
   
   struct hash_table_struct * float_constant_hash_table;
@@ -867,7 +867,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_rit_state epmem_rit_state_tree;
   epmem_rit_state epmem_rit_state_graph[2];
 
-  epmem_time_id epmem_validation;
+  uintptr_t epmem_validation;
   bool epmem_first_switch;
 
 
@@ -879,9 +879,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   soar_module::sqlite_database *smem_db;
   smem_statement_container *smem_stmts;
 
-  long smem_validation;
+  uintptr_t smem_validation;
   bool smem_first_switch;
-  long smem_max_cycle;
+  intptr_t smem_max_cycle;
 
 
   // JRV: Added to support XML management inside Soar

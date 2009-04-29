@@ -184,7 +184,7 @@ extern void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t
 extern Bool tests_are_equal (test t1, test t2);
 
 /* --- Returns a hash value for the given test. --- */
-extern unsigned long hash_test (agent* thisAgent, test t);
+extern uint32_t hash_test (agent* thisAgent, test t);
 
 /* --- Returns TRUE iff the test contains an equality test for the given
    symbol.  If sym==NIL, returns TRUE iff the test contains any equality
@@ -225,7 +225,7 @@ extern void copy_condition_list (agent* thisAgent, condition *top_cond, conditio
 extern Bool conditions_are_equal (condition *c1, condition *c2);
 
 /* --- Returns a hash value for the given condition. --- */
-extern unsigned long hash_condition (agent* thisAgent, condition *cond);
+extern uint32_t hash_condition (agent* thisAgent, condition *cond);
 
 /* ------------------------------------ */
 /* Utilities for actions and RHS values */

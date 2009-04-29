@@ -382,7 +382,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 															op_elab = TRUE;
 													} else if ( thisAgent->o_support_calculation_type == 4 
 														&& (rhs_value_is_reteloc(act->id)) 
-														&& w->value == get_symbol_from_rete_loc( static_cast<unsigned short>(rhs_value_to_reteloc_levels_up( act->id )), static_cast<byte>(rhs_value_to_reteloc_field_num( act->id )), inst->rete_token, w )) {
+														&& w->value == get_symbol_from_rete_loc( rhs_value_to_reteloc_levels_up( act->id ), rhs_value_to_reteloc_field_num( act->id ), inst->rete_token, w )) {
 															op_elab = TRUE;
 													} else {
 														/* this is not an operator elaboration */
