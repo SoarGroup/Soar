@@ -50,13 +50,7 @@
 // Use named pipes instead of sockets for same-machine interprocess communication
 #define ENABLE_NAMED_PIPES
 
-// FIXME: This is for gSKI. We do need to address the whole sleep issue though.
-// Sleep on windows is in milliseconds, hence the multiplication by 1000
-#define sys_sleep( seconds )    Sleep( seconds * 1000 )
-
 // This maps some constants to values that can be used on any platform
-//#ifndef __STDC__  // FIXME: what does this mean?
-
 #define NET_CLOSESOCKET		closesocket
 #define ERROR_NUMBER		GetLastError()
 
@@ -79,7 +73,5 @@
 #define NET_NOTINITIALISED	WSANOTINITIALISED
 
 #define NET_SD_BOTH			SD_BOTH
-
-//#endif // not __STDC__
 
 #endif // PORTABILITY_WINDOWS_H

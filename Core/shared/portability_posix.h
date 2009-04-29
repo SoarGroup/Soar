@@ -39,10 +39,6 @@
 #define SNPRINTF snprintf
 #define VSNPRINTF vsnprintf
 
-// FIXME: This is for gSKI. We do need to address the whole sleep issue though.
-#define sys_sleep( seconds )    sleep( seconds )
-
-
 /* socket support stuff */
 
 ///////

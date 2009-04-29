@@ -141,7 +141,7 @@ WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const*
 	if (strcmp(pType, sml_Names::kTypeInt) == 0)
 	{
 		int value = 0;
-		from_string(value, pValue);
+		from_c_string(value, pValue);
 		return new IntElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
 
@@ -149,7 +149,7 @@ WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const*
 	if (strcmp(pType, sml_Names::kTypeDouble) == 0)
 	{
 		double value = 0;
-		from_string(value, pValue);
+		from_c_string(value, pValue);
 		return new FloatElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
 
@@ -226,7 +226,7 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 	}
 
 	long timeTag = 0;
-	from_string(timeTag, pTimeTag);
+	from_c_string(timeTag, pTimeTag);
 
 	// Find the parent wme that we're adding this new wme to
 	// (Actually, there can be multiple WMEs that have this identifier
@@ -341,7 +341,7 @@ bool WorkingMemory::ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing)
 	char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will usually be kernel side time tags (e.g. +5 not -7)
 
 	long timeTag = 0;
-	from_string(timeTag, pTimeTag);
+	from_c_string(timeTag, pTimeTag);
 
 	// If we have no output link we can't delete things from it.
 	if (!m_OutputLink)
@@ -590,7 +590,7 @@ bool WorkingMemory::SynchronizeInputLink()
 		}
 
 		long timeTag = 0;
-		from_string(timeTag, pTimeTag);
+		from_c_string(timeTag, pTimeTag);
 
 		// Find the parent wme that we're adding this new wme to
 		// (Actually, there can be multiple WMEs that have this identifier

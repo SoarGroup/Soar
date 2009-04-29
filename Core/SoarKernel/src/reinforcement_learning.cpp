@@ -316,14 +316,13 @@ void rl_revert_template_id( agent *my_agent )
 	Symbol *new_name_symbol;
 	std::string new_name = "";
 	std::string empty_string = "";
-	std::string *temp_id;
+	std::string temp_id;
 	int new_id;
 	do
 	{
 		new_id = rl_next_template_id( my_agent );
-		temp_id = to_string( new_id );
-		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + (*temp_id) );
-		delete temp_id;
+		to_string( new_id, temp_id );
+		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + temp_id );
 	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
 	new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
 	
