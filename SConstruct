@@ -58,6 +58,7 @@ opts.AddOptions(
 	BoolOption('verbose', 'Verbose compiler output', 'no'),
 	BoolOption('gcc42', 'Use GCC-4.2 (experimental, Darwin only)', 'no'),
 	BoolOption('m64', 'Compile to 64-bit (experimental)', m64_default),
+	BoolOption('gprof', 'Add gprof symbols for profiling', 'no'),
 )
 
 # Create the environment using the options
@@ -183,11 +184,15 @@ if env['m64']:
 	print "*"
 	print "* Note: Targeting x86_64 (64-bit native)"
 	print "*"
-	conf.env.Append(CPPFLAGS = ' -m64 -DSOAR_64 -fPIC')
+	conf.env.Append(CPPFLAGS = ' -m64 -fPIC')
 	conf.env.Append(LINKFLAGS = ' -m64')
 else:
 	conf.env.Append(CPPFLAGS = ' -m32')
 	conf.env.Append(LINKFLAGS = ' -m32')
+
+if env['gprof']:
+	conf.env.Append(CPPFLAGS = ' -pg')
+	conf.env.Append(LINKFLAGS = ' -pg')
 
 env = conf.Finish()
 Export('env')
