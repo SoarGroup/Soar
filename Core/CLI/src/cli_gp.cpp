@@ -257,7 +257,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 			// find the end of the production name and add a number to differentiate it
 			if(valueItersIter == valueIters.begin())
 			{
-				pos = generatedProduction.find_first_of("\n");
+				pos = generatedProduction.find_first_of("\n \t\r");
 				std::stringstream numsstr; numsstr << "*" << prodnum;
 				generatedProduction.insert(pos, numsstr.str());
 				++prodnum;
