@@ -1,6 +1,9 @@
 all:
 	scons
 
+prof:
+	scons gprof=yes
+
 32:
 	scons m64=no python=no
 
