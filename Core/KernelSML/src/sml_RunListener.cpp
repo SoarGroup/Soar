@@ -85,15 +85,14 @@ void RunListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallDat
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
 	// Convert phase to a string
-	intptr_t phase = reinterpret_cast<intptr_t>(pCallData) ;
-
-	std::string temp;
+	int phase = static_cast<int>(reinterpret_cast<intptr_t>(pCallData)) ;
 
 	// Build the SML message we're doing to send.
 	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, pAgentSML->GetName()) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamPhase, to_string( phase, temp ).c_str() ) ;
+	char buf[TO_C_STRING_BUFSIZE];
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamPhase, to_c_string( phase, buf ) ) ;
 
 	// Send the message out
 	AnalyzeXML response ;

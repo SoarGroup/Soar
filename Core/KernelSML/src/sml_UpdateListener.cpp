@@ -61,13 +61,11 @@ void UpdateListener::OnKernelEvent(int eventIDIn, AgentSML* pAgentSML, void* pCa
 	// Convert eventID to a string
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
-	// Convert phase to a string
-	std::string runStr;
-
 	// Build the SML message we're doing to send.
 	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, to_string(*pRunFlags, runStr).c_str()) ;
+	char buf[TO_C_STRING_BUFSIZE];
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, to_c_string(*pRunFlags, buf)) ;
 
 	// Send the message out
 	AnalyzeXML response ;

@@ -10,6 +10,7 @@
 // The number of agents to create, wmes to update, and decision cycles to run can be changed at the beginning of the main function.
 
 #include <portability.h>
+#include "misc.h"
 
 #include <stdlib.h>
 
@@ -21,7 +22,6 @@
 #include "sml_Client.h"
 #include "sml_Connection.h"
 #include "thread_OSspecific.h"
-#include "misc.h"
 
 using namespace sml;
 using namespace std;
@@ -180,7 +180,7 @@ void UpdateAgent(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phas
 	Environment* env = static_cast<Environment*>(pUserData);
 	// the agent's name is it's index
 	int agentNum = 0;
-	from_string(agentNum, pAgent->GetAgentName());
+	from_c_string(agentNum, pAgent->GetAgentName());
 	env->UpdateAgent(agentNum);
 }
 

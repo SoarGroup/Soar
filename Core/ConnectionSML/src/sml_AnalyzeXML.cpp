@@ -80,7 +80,7 @@ int AnalyzeXML::GetResultInt(int defaultValue) const
 		return defaultValue ;
 
 	int value = defaultValue;
-	from_string(value, m_pResult->GetCharacterData());
+	from_c_string(value, m_pResult->GetCharacterData());
 
 	return value ;
 }
@@ -109,7 +109,7 @@ double AnalyzeXML::GetResultFloat(double defaultValue) const
 		return defaultValue ;
 
 	double value = 0;
-	from_string(value, m_pResult->GetCharacterData()) ;
+	from_c_string(value, m_pResult->GetCharacterData()) ;
 
 	return value ;
 }
@@ -144,7 +144,7 @@ int AnalyzeXML::GetArgInt(char const* pArgName, int argPos, int defaultValue) co
 		return defaultValue ;
 
 	int value = defaultValue;
-	from_string(value, pValue);
+	from_c_string(value, pValue);
 
 	return value ;
 }
@@ -160,7 +160,7 @@ double AnalyzeXML::GetArgFloat(char const* pArgName, int argPos, double defaultV
 		return defaultValue ;
 
 	double value = 0;
-	from_string(value, pValue);
+	from_c_string(value, pValue);
 
 	return value ;
 }

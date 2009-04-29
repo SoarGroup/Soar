@@ -51,8 +51,8 @@ public:
 
 	void SetTimeTag(long timeTag)
 	{
-		std::string temp;
-		this->AddAttributeFast(sml_Names::kWME_TimeTag, CopyString(to_string(timeTag, temp).c_str()), false) ;
+		char buf[TO_C_STRING_BUFSIZE];
+		this->AddAttributeFast(sml_Names::kWME_TimeTag, CopyString(to_c_string(timeTag, buf)), false) ;
 	}
 
 	void SetActionAdd()
