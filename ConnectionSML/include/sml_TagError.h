@@ -30,8 +30,8 @@ public:
 
 	void SetErrorCode(int error)
 	{
-		std::string temp;
-		this->AddAttributeFast( sml_Names::kErrorCode, to_string( error, temp ).c_str() ) ;
+		char buf[TO_C_STRING_BUFSIZE];
+		this->AddAttributeFast( sml_Names::kErrorCode, to_c_string( error, buf ) ) ;
 	}
 
 };

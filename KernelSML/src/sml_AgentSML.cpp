@@ -749,7 +749,7 @@ unsigned long AgentSML::ConvertTime(char const* pTimeTag)
 		return 0 ;
 
 	long value = 0;
-	from_string( value, std::string(pTimeTag) );
+	from_c_string(value, pTimeTag);
 	return ConvertTime(value);
 }
 
@@ -887,7 +887,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 
 	char idLetter = idKernel[0] ;
 	unsigned long idNumber = 0;
-	from_string( idNumber, idKernel.substr(1) );
+	from_c_string(idNumber, idKernel.substr(1).c_str());
 
 	// Now create the wme
 	Symbol* pIDSymbol   = get_io_identifier( m_agent, idLetter, idNumber) ;
@@ -1006,7 +1006,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
 		// we found a kernel side mapping, shared id
 		didntFindId = false;	// for sanity check below
 		idValueLetter = idValue[0];
-		from_string( idValueNumber, idValue.substr(1) );
+		from_c_string(idValueNumber, idValue.substr(1).c_str());
 	}
 	else 
 	{
@@ -1079,7 +1079,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
 	// must have client side timetag
 	CHECK_RET_FALSE( pClientTimeTag );
 	long clientTimeTag = 0;
-	from_string(clientTimeTag, pClientTimeTag);
+	from_c_string(clientTimeTag, pClientTimeTag);
 	CHECK_RET_FALSE( clientTimeTag < 0 ) ;
 	// End sanity check
 
@@ -1096,7 +1096,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
 	{
 		// Creating a WME with an int value
 		int value = 0;
-		from_string(value, pValue);
+		from_c_string(value, pValue);
 		return AddIntInputWME(pID, pAttribute, value, clientTimeTag);
 
 	} 
@@ -1104,7 +1104,7 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
 	{
 		// Creating a WME with a float value
 		double value = 0;
-		from_string(value, pValue);
+		from_c_string(value, pValue);
 		return AddDoubleInputWME(pID, pAttribute, value, clientTimeTag);
 
 	} 
@@ -1175,7 +1175,7 @@ bool AgentSML::RemoveInputWME(long clientTimeTag)
 bool AgentSML::RemoveInputWME(char const* pTimeTag)
 {
 	long timeTag = 0;
-	from_string(timeTag, pTimeTag);
+	from_c_string(timeTag, pTimeTag);
 	return RemoveInputWME(timeTag);
 }
 
