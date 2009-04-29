@@ -165,6 +165,19 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	timers->add_mapping( soar_module::timer::two, "two" );
 	timers->add_mapping( soar_module::timer::three, "three" );
 	add( timers );
+
+	// cache
+	cache = new soar_module::constant_param<cache_choices>( "cache", cache_L, new epmem_db_predicate<cache_choices>( my_agent ) );
+	cache->add_mapping( cache_S, "small" );
+	cache->add_mapping( cache_M, "medium" );
+	cache->add_mapping( cache_L, "large" );
+	add( cache );
+
+	// opt
+	opt = new soar_module::constant_param<opt_choices>( "optimization", opt_speed, new epmem_db_predicate<opt_choices>( my_agent ) );
+	opt->add_mapping( opt_safety, "safety" );
+	opt->add_mapping( opt_speed, "performance" );	
+	add( opt );
 }
 
 //
@@ -1357,6 +1370,60 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 		epmem_time_id time_max;
 		soar_module::sqlite_statement *temp_q = NULL;
 		soar_module::sqlite_statement *temp_q2 = NULL;
+
+		// apply performance options
+		{
+			// cache
+			{
+				switch ( my_agent->epmem_params->cache->get_value() )
+				{
+					// 5MB cache
+					case ( epmem_param_container::cache_S ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA cache_size = 5000" );
+						break;
+
+					// 20MB cache
+					case ( epmem_param_container::cache_M ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA cache_size = 20000" );
+						break;
+
+					// 100MB cache
+					case ( epmem_param_container::cache_L ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA cache_size = 100000" );
+						break;
+				}
+
+				temp_q->prepare();
+				temp_q->execute();
+				delete temp_q;
+				temp_q = NULL;
+			}
+
+			// optimization
+			if ( my_agent->epmem_params->opt->get_value() == epmem_param_container::opt_speed )
+			{
+				// synchronous - don't wait for writes to complete (can corrupt the db in case unexpected crash during transaction)
+				temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA synchronous = OFF" );
+				temp_q->prepare();
+				temp_q->execute();
+				delete temp_q;
+				temp_q = NULL;
+
+				// journal_mode - no atomic transactions (can result in database corruption if crash during transaction)
+				temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA journal_mode = OFF" );
+				temp_q->prepare();
+				temp_q->execute();
+				delete temp_q;
+				temp_q = NULL;
+				
+				// locking_mode - no one else can view the database after our first write
+				temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA locking_mode = EXCLUSIVE" );
+				temp_q->prepare();
+				temp_q->execute();
+				delete temp_q;
+				temp_q = NULL;
+			}
+		}
 
 		// point stuff
 		epmem_time_id range_start;
