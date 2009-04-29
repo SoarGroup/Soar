@@ -53,47 +53,57 @@ template <class T> inline T cast_and_possibly_truncate( void* ptr )
 const size_t TO_C_STRING_BUFSIZE = 24; // uint64: 18446744073709551615 plus a few extra
 inline const char* const to_c_string( const char& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hhd", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hhi", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const unsigned char& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hhu", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hhu", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const short& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hd", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hd", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const unsigned short& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hu", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%hu", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const int& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%d", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%d", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const unsigned int& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%u", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%u", v ); 
+	return buf; 
+}
+inline const char* const to_c_string( const long int& v, char* buf ) 
+{ 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%ld", v ); 
+	return buf; 
+}
+inline const char* const to_c_string( const unsigned long& v, char* buf ) 
+{ 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%lu", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const float& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%f", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%f", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const double& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%lf", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%lf", v ); 
 	return buf; 
 }
 inline const char* const to_c_string( const long double& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%Lf", &v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%Lf", v ); 
 	return buf; 
 }
 
