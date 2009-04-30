@@ -1950,7 +1950,7 @@ void epmem_new_episode( agent *my_agent )
 		char buf[256];
 		unsigned long temp_time = static_cast<unsigned long>( time_counter );
 
-		SNPRINTF( buf, 254, "NEW EPISODE: (%c%lu, %ld)", my_agent->bottom_goal->id.name_letter, my_agent->bottom_goal->id.name_number, temp_time );
+		SNPRINTF( buf, 254, "NEW EPISODE: %ld", temp_time );
 
 		print( my_agent, buf );
 		xml_generate_warning( my_agent, buf );
@@ -5214,7 +5214,7 @@ void epmem_consider_new_episode( agent *my_agent )
 		{
 			slot *s;
 			wme *w;
-			Symbol *ol = my_agent->io_header_output;			
+			Symbol *ol = my_agent->io_header_output;
 
 			// examine all commands on the output-link for any
 			// that appeared since last memory was recorded
@@ -5222,10 +5222,10 @@ void epmem_consider_new_episode( agent *my_agent )
 			{
 				for ( w = s->wmes; w != NIL; w = w->next )
 				{
-					if ( w->timetag > my_agent->bottom_goal->id.epmem_info->last_ol_time )
+					if ( w->timetag > my_agent->top_goal->id.epmem_info->last_ol_time )
 					{
 						new_memory = true;
-						my_agent->bottom_goal->id.epmem_info->last_ol_time = w->timetag;
+						my_agent->top_goal->id.epmem_info->last_ol_time = w->timetag;
 					}
 				}
 			}
