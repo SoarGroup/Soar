@@ -271,11 +271,10 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		temp += temp2;
 		delete temp2;
 		if ( m_RawOutput )
-			m_Result << temp << "\n\n";
+			m_Result << temp << "\n";
 		else
 		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
 		}
 
 		temp = "trigger: ";
@@ -334,6 +333,39 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 		{
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+
+		temp = "Performance";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		temp = "-----------";
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+
+		temp = "cache: ";
+		temp2 = m_pAgentSoar->epmem_params->cache->get_string();
+		temp += temp2;
+		delete temp2;
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
+
+		temp = "optimization: ";
+		temp2 = m_pAgentSoar->epmem_params->opt->get_string();
+		temp += temp2;
+		delete temp2;
+		if ( m_RawOutput )
+			m_Result << temp << "\n";
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
 		}
 
 		temp = "timers: ";

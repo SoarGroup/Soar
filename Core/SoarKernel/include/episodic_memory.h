@@ -99,6 +99,9 @@ class epmem_param_container: public soar_module::param_container
 		enum trigger_choices { none, output, dc };
 		enum force_choices { remember, ignore, force_off };
 
+		enum cache_choices { cache_S, cache_M, cache_L };
+		enum opt_choices { opt_safety, opt_speed };
+
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
 		epmem_path_param *path;
@@ -113,6 +116,9 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::decimal_param *balance;
 		soar_module::set_param *exclusions;
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
+
+		soar_module::constant_param<cache_choices> *cache;
+		soar_module::constant_param<opt_choices> *opt;
 
 		epmem_param_container( agent *new_agent );
 };
