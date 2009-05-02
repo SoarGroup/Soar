@@ -486,6 +486,7 @@ typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
+typedef std::map<epmem_node_id, uintptr_t> epmem_id_ref_counter;
 typedef struct epmem_id_reservation_struct
 {
 	epmem_node_id my_id;

@@ -1259,9 +1259,7 @@ void epmem_close( agent *my_agent )
 
 			my_agent->epmem_id_repository->clear();
 			my_agent->epmem_id_replacement->clear();
-
-			my_agent->epmem_identifier_to_id->clear();
-			my_agent->epmem_id_to_identifier->clear();
+			my_agent->epmem_id_ref_counts->clear();
 		}
 
 		// close the database
@@ -1300,7 +1298,9 @@ void epmem_clear_result( agent *my_agent, Symbol *state )
 void epmem_reset( agent *my_agent, Symbol *state )
 {
 	if ( state == NULL )
+	{
 		state = my_agent->top_goal;
+	}
 
 	while( state )
 	{
@@ -1604,7 +1604,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// initialize next_id
 			my_agent->epmem_stats->next_id->set_value( 1 );
 			{
-				intptr_t stored_id = NULL;
+				intptr_t stored_id = NIL;
 				if ( epmem_get_variable( my_agent, var_next_id, &stored_id ) )
 				{
 					my_agent->epmem_stats->next_id->set_value( stored_id );
@@ -2269,8 +2269,8 @@ void epmem_new_episode( agent *my_agent )
 							(*w_p)->epmem_valid = my_agent->epmem_validation;
 							(*w_p)->epmem_id = NIL;
 
-							my_hash = NULL;							
-							my_id_repo2 = NULL;
+							my_hash = NIL;							
+							my_id_repo2 = NIL;
 
 							// in the case of a known child, we already have a reservation (case 1)						
 							if ( (*w_p)->value->id.epmem_id )
@@ -2335,20 +2335,15 @@ void epmem_new_episode( agent *my_agent )
 								my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ my_hash ];
 								if ( (*my_id_repo) )
 								{
-									// if something leftover, use it
+									// if something leftover, try to use it
 									if ( !(*my_id_repo)->empty() )
-									{
-										epmem_reverse_constraint_list::iterator rcp;
+									{										
 										pool_p = (*my_id_repo)->begin();
 
 										do
 										{
-											rcp = my_agent->epmem_id_to_identifier->find( pool_p->first );
-											if ( rcp == my_agent->epmem_id_to_identifier->end() )
+											if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ] == 0 )
 											{
-												(*my_agent->epmem_identifier_to_id)[ (*w_p)->value ] = pool_p->first;
-												(*my_agent->epmem_id_to_identifier)[ pool_p->first ] = (*w_p)->value;
-
 												(*w_p)->epmem_id = pool_p->second;
 												(*w_p)->value->id.epmem_id = pool_p->first;
 												(*my_id_repo)->erase( pool_p );
@@ -2413,6 +2408,11 @@ void epmem_new_episode( agent *my_agent )
 									(*my_agent->epmem_edge_maxes)[ (*w_p)->epmem_id - 1 ] = false;
 								}
 							}
+
+							// if we are in this block, the wme (with id value) was new.
+							// this means that we add a ref-count to the shared-id of the
+							// identifier, irrespective of the case above.
+							(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]++;
 						}						
 
 						// path id in cache?
@@ -2429,7 +2429,7 @@ void epmem_new_episode( agent *my_agent )
 						// have we seen this node in this database?
 						if ( ( (*w_p)->epmem_id == NIL ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) )
 						{
-							(*w_p)->epmem_id = NULL;
+							(*w_p)->epmem_id = NIL;
 							(*w_p)->epmem_valid = my_agent->epmem_validation;
 
 							my_hash = epmem_temporal_hash( my_agent, (*w_p)->attr );
@@ -2887,7 +2887,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					existing_identifier = ( (*value) != NULL );
 
 					if ( !existing_identifier )
+					{
 						(*value) = make_new_identifier( my_agent, ( ( w_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
+					}
 
 					epmem_add_retrieved_wme( my_agent, state, parent, attr, (*value) );
 					num_wmes++;
@@ -2927,7 +2929,9 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					existing_identifier = ( (*value) != NULL );
 
 					if ( !existing_identifier )
+					{
 						(*value) = make_new_identifier( my_agent, ( ( attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )?( attr->sc.name[0] ):('E') ), parent->id.level );
+					}
 
 					epmem_add_retrieved_wme( my_agent, state, parent, orphan->w, (*value) );
 					num_wmes++;
@@ -3692,11 +3696,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	
 	epmem_wme_list *wmes_query = NULL;
 	if ( query != NULL )
+	{
 		wmes_query = epmem_get_augs_of_id( query, get_new_tc_number( my_agent ) );
+	}
 
 	epmem_wme_list *wmes_neg_query = NULL;
 	if ( neg_query != NULL )
+	{
 		wmes_neg_query = epmem_get_augs_of_id( neg_query, get_new_tc_number( my_agent ) );
+	}
 
 	// only perform a query if there potentially valid cue(s)
 	if ( wmes_query || wmes_neg_query )
@@ -3704,7 +3712,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 		epmem_param_container::mode_choices mode = my_agent->epmem_params->mode->get_value();
 
 		if ( !prohibit->empty() )
+		{
 			std::sort( prohibit->begin(), prohibit->end() );
+		}
 
 		if ( mode == epmem_param_container::tree )
 		{
