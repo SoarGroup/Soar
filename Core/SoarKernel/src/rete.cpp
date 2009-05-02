@@ -1595,12 +1595,18 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 	    {
 	      (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
 		
+		  // return to the id pool
 		  epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find( w->epmem_id );
 		  (*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
-		  thisAgent->epmem_id_replacement->erase( p );		
+		  thisAgent->epmem_id_replacement->erase( p );
+
+		  // reduce the ref count on the identifier
+		  (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
 	    }
 	    else
+		{
 	      (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
+		}
 	  }
 	  else
 	  {

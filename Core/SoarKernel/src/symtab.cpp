@@ -407,17 +407,6 @@ void deallocate_symbol (agent* thisAgent, Symbol *sym) {
     free_with_pool (&thisAgent->variable_pool, sym);
     break;
   case IDENTIFIER_SYMBOL_TYPE:
-	if ( sym->id.epmem_id )
-	{
-	  epmem_constraint_list::iterator cp = thisAgent->epmem_identifier_to_id->find( sym );
-	  if ( cp != thisAgent->epmem_identifier_to_id->end() )
-	  {
-		epmem_reverse_constraint_list::iterator rcp = thisAgent->epmem_id_to_identifier->find( cp->second );
-		thisAgent->epmem_id_to_identifier->erase( rcp );
-		thisAgent->epmem_identifier_to_id->erase( cp );
-	  }
-	}
-
     remove_from_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
     free_with_pool (&thisAgent->identifier_pool, sym);
     break;
