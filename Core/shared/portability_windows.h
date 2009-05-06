@@ -1,13 +1,7 @@
 #ifndef PORTABILITY_WINDOWS_H
 #define PORTABILITY_WINDOWS_H
 
-#ifdef _MSC_VER
-// The kernel uses while(TRUE) a lot
-#pragma warning (disable : 4127) // conditional expression is constant
-#endif
-
 /* This file contains code specific to the windows platforms */
-
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 #define _WIN32_WINNT 0x0400		// This is required since our target is NT4+
 
@@ -73,5 +67,34 @@
 #define NET_NOTINITIALISED	WSANOTINITIALISED
 
 #define NET_SD_BOTH			SD_BOTH
+
+#if defined(_MSC_VER)
+
+// The kernel uses while(TRUE) a lot
+#pragma warning (disable : 4127) // conditional expression is constant
+
+#if defined(_WIN64)
+// on 64 bit, removes warning C4985: 'ceil': attributes not present on previous declaration.
+// see http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=294649
+#include <math.h>
+#endif // _WIN64
+
+#include <intrin.h>
+
+#pragma intrinsic (_InterlockedIncrement)
+
+static inline long atomic_inc( volatile long  *v ) 
+{
+       return _InterlockedIncrement(v);
+}
+
+static inline long atomic_dec( volatile long *v ) 
+{
+       return _InterlockedDecrement(v);
+}
+
+#define HAVE_ATOMICS 1
+
+#endif // _MSC_VER
 
 #endif // PORTABILITY_WINDOWS_H

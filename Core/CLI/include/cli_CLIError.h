@@ -99,6 +99,8 @@ namespace cli {
 			kFileOpen							= 94,
 			kFileNotOpen						= 95,
 			kRealExpected						= 96,
+			kValuesError						= 97,
+			kGPMaxExceeded						= 98,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -185,6 +187,8 @@ namespace cli {
 				case kFileOpen:							return "File already open.";
 				case kFileNotOpen:						return "File is not open.";
 				case kRealExpected:						return "Real number expected.";
+				case kValuesError:						return "gp values error.";
+				case kGPMaxExceeded:					return "gp maximum exceeded. Set it to higher value with gp-max command.";
 				default:								return "Unknown error code.";
 			}
 		}

@@ -58,6 +58,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Commands::kCLIGDSPrint]					= &cli::CommandLineInterface::ParseGDSPrint;
 	m_CommandMap[Commands::kCLIGP]							= &cli::CommandLineInterface::ParseGP;
+	m_CommandMap[Commands::kCLIGPMax]						= &cli::CommandLineInterface::ParseGPMax;
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Commands::kCLIInitSoar]					= &cli::CommandLineInterface::ParseInitSoar;
@@ -123,6 +124,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
 	m_EchoMap[Commands::kCLIExcise]						= true ;
 	m_EchoMap[Commands::kCLIGP]							= true ;
+	m_EchoMap[Commands::kCLIGPMax]						= true ;
 	m_EchoMap[Commands::kCLIIndifferentSelection]		= true ;
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
 	m_EchoMap[Commands::kCLILearn]						= true ;
@@ -168,6 +170,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_pAgentSML = 0 ;
 	m_pAgentSoar = 0;
 	m_VarPrint = false;
+	m_GPMax = 20000;
 
 	m_XMLResult = new XMLTrace() ;
 }
