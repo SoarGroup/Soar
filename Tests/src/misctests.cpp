@@ -9,6 +9,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
 #if !defined(_DEBUG)
 	// this test takes forever in debug mode on windows (it needs to count high enough to overflow a 64-bit stack)
 	CPPUNIT_TEST( testInstiationDeallocationStackOverflow );
+	CPPUNIT_TEST( testGP );
 #endif
 
 	CPPUNIT_TEST_SUITE_END();
@@ -19,6 +20,7 @@ public:
 
 protected:
 	void testInstiationDeallocationStackOverflow();
+	void testGP();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( MiscTest );
@@ -57,6 +59,25 @@ void MiscTest::testInstiationDeallocationStackOverflow()
 	pAgent->ExecuteCommandLine("w 0");
 
 	pKernel->RunAllAgentsForever();
+	pKernel->Shutdown();
+	delete pKernel ;
+}
+
+void MiscTest::testGP()
+{
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread( "SoarKernelSML" ) ;
+	CPPUNIT_ASSERT( pKernel != NULL );
+	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
+
+	sml::Agent* pAgent = pKernel->CreateAgent( "soar1" );
+	CPPUNIT_ASSERT( pAgent != NULL );
+
+	std::stringstream productionsPath;
+	productionsPath << pKernel->GetLibraryLocation() << "/Tests/testgp.soar";
+
+	pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+	CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
+
 	pKernel->Shutdown();
 	delete pKernel ;
 }
