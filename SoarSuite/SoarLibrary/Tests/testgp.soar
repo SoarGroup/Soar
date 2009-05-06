@@ -78,16 +78,16 @@ gp {gp*test9
 }
 
 # this command generates 540,000 rules
-gp {gp*test10
-(state <s> ^operator <o> +
-           ^someflag [ <var> true false ]
-           ^<< [ a1 a2 a3 a4 a5] [a6 a7 a8 a9 a10] >> << [v1 v2 v3] [v4 v5 v6] [v7 v8 v9 v10] >>)
-(<o> ^name foo
-     ^att [ val1 1.3 |another val| |\|another val\|| ]
-     ^[ att1 att2 att3 att4 att5] [val1 val2 val3 val4 <var>])
--->
-(<s> ^[<var> att] <var>)
-}
+#gp {gp*test10
+#(state <s> ^operator <o> +
+#           ^someflag [ <var> true false ]
+#           ^<< [ a1 a2 a3 a4 a5] [a6 a7 a8 a9 a10] >> << [v1 v2 v3] [v4 v5 v6] [v7 v8 v9 v10] >>)
+#(<o> ^name foo
+#     ^att [ val1 1.3 |another val| |\|another val\|| ]
+#     ^[ att1 att2 att3 att4 att5] [val1 val2 val3 val4 <var>])
+#-->
+#(<s> ^[<var> att] <var>)
+#}
 
 ### Failure cases ###
 
