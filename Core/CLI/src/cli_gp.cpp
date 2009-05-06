@@ -238,7 +238,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 	}
 
 	if (m_GPMax != 0) {
-		if (total > m_GPMax) {
+		if (total > static_cast<size_t>(m_GPMax)) {
 			std::ostringstream message;
 			message << "Current production produces " << total << " productions.";
 			SetErrorDetail( message.str() );
