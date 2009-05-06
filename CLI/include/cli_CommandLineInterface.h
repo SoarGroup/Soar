@@ -201,6 +201,7 @@ public:
 	bool ParseFiringCounts(std::vector<std::string>& argv);
 	bool ParseGDSPrint(std::vector<std::string>& argv);
 	bool ParseGP(std::vector<std::string>& argv);
+	bool ParseGPMax(std::vector<std::string>& argv);
 	bool ParseHelp(std::vector<std::string>& argv);
 	bool ParseIndifferentSelection(std::vector<std::string>& argv);
 	bool ParseInitSoar(std::vector<std::string>& argv);
@@ -370,6 +371,12 @@ public:
 	* @param productionString The general soar production to generate more productions to load to memory
 	*************************************************************/
 	bool DoGP(const std::string& productionString);
+
+	/*************************************************************
+	* @brief gp-max command
+	* @param maximum The maximum number of productions to allow generation of
+	*************************************************************/
+	bool DoGPMax(const long& maximum);
 
 	/*************************************************************
 	* @brief help command
@@ -830,6 +837,7 @@ protected:
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
 	bool				m_VarPrint;				// Used in print command to put <>'s around identifiers.
+	long				m_GPMax;				// Max number of productions to allow gp to produce
 
 	soarxml::XMLTrace*	m_XMLResult;			// Used to collect up XML output from commands that directly support that.
 	ElementXMLList		m_ResponseTags;			// List of tags for the response.

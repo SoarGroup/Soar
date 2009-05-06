@@ -30,6 +30,7 @@ namespace cli {
 		static char const* kCLIFiringCounts;
 		static char const* kCLIGDSPrint;
 		static char const* kCLIGP;
+		static char const* kCLIGPMax;
 		static char const* kCLIHelp;
 		static char const* kCLIIndifferentSelection;
 		static char const* kCLIInitSoar;

@@ -91,6 +91,21 @@
 
 #define NET_SD_BOTH			SHUT_RDWR
 
+#if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 2 || (__GNUC_MINOR__ == 2)))
+// requires GCC>=4.2.0
+static inline long atomic_inc( volatile long  *v )
+{
+      return __sync_add_and_fetch(v, 1);
+}
+
+static inline long atomic_dec( volatile long *v )
+{
+      return __sync_sub_and_fetch(v, 1);
+}
+
+#define HAVE_ATOMICS 1
+
+#endif // GCC<4.2.0
 
 #endif // PORTABILITY_POSIX_H
 
