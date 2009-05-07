@@ -1027,6 +1027,20 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 	assert(m_Agent == parent->GetAgent()) ;
 	assert(m_Agent == pSharedValue->GetAgent()) ;
 
+	// bug 1060
+	// need to check and make sure that this shared wme will not violate the set
+	{
+		// find other wmes on parent with same attribute
+		WMElement* wme = 0;
+		for (int i = 0; (wme = parent->FindByAttribute(pAttribute, i)) != 0; ++i)
+		{
+			if (wme == pSharedValue)
+			{
+				return 0;
+			}
+		}
+	}	
+
 	// Look up the id from the existing identifier
 	std::string id = pSharedValue->GetValueAsString() ;
 
