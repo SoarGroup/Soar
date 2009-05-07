@@ -63,6 +63,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testEventOrdering ); // bug 1100
 	CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
 	CPPUNIT_TEST( testStopSoarVsInterrupt ); // bug 782
+	CPPUNIT_TEST( testSharedWmeSetViolation ); // bug 1060
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -86,6 +87,7 @@ public:
 	TEST_DECLARATION( testEventOrdering );
 	TEST_DECLARATION( testStatusCompleteDuplication );
 	TEST_DECLARATION( testStopSoarVsInterrupt );
+	TEST_DECLARATION( testSharedWmeSetViolation );
 
 	void testShutdownHandlerShutdown();
 
@@ -985,8 +987,6 @@ TEST_DEFINITION( testSimpleCopy )
 	sml::Identifier* pWord1 = m_pAgent->CreateIdWME(pSentence, "word") ;
 	CPPUNIT_ASSERT( std::string( pWord1->GetAttribute() ) == "word" );
 
-	// BADBAD: This should be illegal, but is not!
-	//sml::Identifier* pWord5 = m_pAgent->CreateSharedIdWME(pSentence, "word", pWord1) ;
 	sml::Identifier* pWord5 = m_pAgent->CreateSharedIdWME(pSentence, "word2", pWord1) ;
 	CPPUNIT_ASSERT( std::string( pWord5->GetAttribute() ) == "word2" );
 
@@ -1393,4 +1393,18 @@ TEST_DEFINITION( testStopSoarVsInterrupt )
 		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 1);
 	}
 
+}
+
+TEST_DEFINITION( testSharedWmeSetViolation )
+{
+	//io.input-link.foo <f>
+	sml::Identifier* pFoo1 = m_pAgent->CreateIdWME(m_pAgent->GetInputLink(), "foo") ;
+	CPPUNIT_ASSERT(pFoo1);
+
+	// TODO: This is illegal, but is probably too expensive to test for in release.
+	// See bug 1060
+	sml::Identifier* pFoo2 = m_pAgent->CreateSharedIdWME(m_pAgent->GetInputLink(), "foo", pFoo1) ;
+	CPPUNIT_ASSERT_MESSAGE("CreateSharedIdWME was able to create duplicate wme", pFoo2 == 0);
+
+	CPPUNIT_ASSERT(m_pAgent->Commit());
 }
