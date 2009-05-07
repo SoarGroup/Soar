@@ -15,7 +15,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
 #if !defined(_DEBUG)
 	// this test takes forever in debug mode on windows (it needs to count high enough to overflow a 64-bit stack)
 	CPPUNIT_TEST( testInstiationDeallocationStackOverflow );
-#endif
+#endif // _DEBUG
 	CPPUNIT_TEST( test_gp );
 	CPPUNIT_TEST( test_echo );
 
