@@ -52,10 +52,15 @@ namespace sml {
 	int Tokenize(std::string cmdline, std::vector<std::string>& argumentVector);
 
 	/*************************************************************
+	* @brief Trim leading whitespace off of a line (for command parsing)
+	*************************************************************/
+	void TrimLeadingWhitespace(std::string& line);
+
+	/*************************************************************
 	* @brief Trim comments off of a line (for command parsing)
 	* @return true on success, false if there is a new-line before a pipe quotation ends
 	*************************************************************/
-	bool Trim(std::string& line);
+	bool TrimComments(std::string& line);
 
 }
 
