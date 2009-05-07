@@ -45,7 +45,7 @@ static inline void elementxml_atomic_init()
 #ifndef HAVE_ATOMICS
 	if (!global_locks_initialized)
 	{
-		for (int i = 0; i < NUM_LOCKS; ++i)
+		for (size_t i = 0; i < NUM_LOCKS; ++i)
 		{
 #ifdef _MSC_VER
 			//tickers[i] = 0;
