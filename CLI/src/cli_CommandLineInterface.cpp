@@ -1019,12 +1019,6 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
 	m_XMLResult->Reset() ;
 }
 
-bool TokenizeEcho(std::string line, std::vector<std::string>& argumentVector)
-{
-	// remove leading whitespace
-	return false;
-}
-
 int CommandLineInterface::CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector) 
 {
 	// bug 987: echo needs special handling
