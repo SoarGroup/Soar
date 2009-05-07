@@ -1019,7 +1019,28 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
 	m_XMLResult->Reset() ;
 }
 
-int CommandLineInterface::CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector) {
+bool TokenizeEcho(std::string line, std::vector<std::string>& argumentVector)
+{
+	// remove leading whitespace
+	return false;
+}
+
+int CommandLineInterface::CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector) 
+{
+	// bug 987: echo needs special handling
+	TrimLeadingWhitespace(cmdline);
+
+	// if it is echo, put echo in first arg and everything else in second arg
+	if (cmdline.substr(0, 4) == "echo")
+	{
+		argumentVector.push_back("echo");
+		std::string::size_type pos = cmdline.find_first_not_of(" \t", 4);
+		if (pos != std::string::npos)
+		{
+			argumentVector.push_back(cmdline.substr(pos));
+		}
+		return 0;
+	}
 
 	int ret = Tokenize(cmdline, argumentVector);
 	
