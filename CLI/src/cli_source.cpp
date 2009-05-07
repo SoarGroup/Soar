@@ -189,7 +189,12 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 		command.clear();
 
 		// Trim whitespace and comments
-		if (!Trim(line)) {
+		TrimLeadingWhitespace(line);
+
+		// bug 987: if it is echo, special handling is required
+		bool isEcho = line.substr(0, 4) == "echo";
+
+		if (!isEcho && !TrimComments(line)) {
 			SetError(CLIError::kNewlineBeforePipe);
 			HandleSourceError(lineCount, pFilename);
 			return false;
@@ -200,7 +205,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 		// If there is a brace on the line, concatenate lines until the closing brace
 		pos = line.find_first_of("{\"");
 
-		if (pos != std::string::npos) {
+		if (!isEcho && pos != std::string::npos) {
 			
 			// Save this line number for error messages
 			lineCountCache = lineCount;
@@ -208,7 +213,8 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 			// While we are inside braces, stay in special parsing mode
 			do {
 				if (lineCountCache != lineCount) {
-					if (!Trim(line)) { // Trim whitespace and comments on additional lines
+					TrimLeadingWhitespace(line);
+					if (!TrimComments(line)) { // Trim whitespace and comments on additional lines
 						SetError(CLIError::kNewlineBeforePipe);
 						HandleSourceError(lineCount, pFilename);
 						return false; 

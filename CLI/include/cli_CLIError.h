@@ -115,7 +115,7 @@ namespace cli {
 				case kExtraClosingParen:				return "Closing bracket found without opening counterpart.";
 				case kUnmatchedBracketOrQuote:			return "No closing quotes/brackets/parens found.";
 				case kExtraClosingBrace:				return "Closing brace found without opening counterpart.";
-				case kUnmatchedBrace:					return "Unexpected end of file. Unmatched opening brace.";
+				case kUnmatchedBrace:					return "Unexpected end of input. Unmatched opening brace.";
 				case kTooManyArgs:						return "Too many arguments for the specified (or unspecified) options, check syntax.";
 				case kTooFewArgs:						return "Too few arguments for the specified (or unspecified) options, check syntax.";
 				case kUnrecognizedOption:				return "Unrecognized option.";
