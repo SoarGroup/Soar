@@ -46,7 +46,7 @@ CRITICAL_SECTION global_locks[NUM_LOCKS];
 pthread_mutex_t global_locks[NUM_LOCKS];
 #endif // !_MSC_VER
 
-#define DEBUG_LOCKS 1
+//#define DEBUG_LOCKS 1
 #if defined(DEBUG_LOCKS)
 size_t tickers[NUM_LOCKS];
 #endif // DEBUG_LOCKS
