@@ -31,22 +31,25 @@
 bool global_locks_initialized = false;
 static const size_t NUM_LOCKS = 16;
 
+// define NUM_BITS
 #if defined(_WIN64)
 static const size_t NUM_BITS = 4;
-#else // define NUM_BITS
+#elif defined(_WIN32)
 static const size_t NUM_BITS = 3;
+#else
+static const size_t NUM_BITS = 4;
 #endif // define NUM_BITS
 
 #ifdef _MSC_VER
 //#define DEBUG_TRY 1
-//#define DEBUG_LOCKS 1
 CRITICAL_SECTION global_locks[NUM_LOCKS];
 #else // !_MSC_VER
 #include <pthread.h>
 pthread_mutex_t global_locks[NUM_LOCKS];
 #endif // !_MSC_VER
 
-#ifdef DEBUG_LOCKS
+//#define DEBUG_LOCKS 1
+#if defined(DEBUG_LOCKS)
 size_t tickers[NUM_LOCKS];
 #endif // DEBUG_LOCKS
 
@@ -96,10 +99,10 @@ static inline long elementxml_atomic_inc( volatile long  *v )
 		pthread_mutex_lock( &(global_locks[i]) );
 #endif // _MSC_VER
 
-#ifdef DEBUG_LOCKS
+#if defined(DEBUG_LOCKS)
 	tickers[i] += 1;
 	std::cout << "tickers[";
-	for (int j=0;j<NUM_LOCKS;++j)
+	for (size_t j = 0;j < NUM_LOCKS; ++j)
 	{
 		std::cout << tickers[j] << ",";
 	}
