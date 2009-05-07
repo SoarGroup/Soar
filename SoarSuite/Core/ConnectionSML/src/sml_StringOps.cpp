@@ -55,7 +55,8 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 	int parens = 0;
 
 	// Trim leading whitespace and comments from line
-	if (!Trim(cmdline)) return -1;
+	TrimLeadingWhitespace(cmdline);
+	if (!TrimComments(cmdline)) return -1;
 
 	iter = cmdline.begin();
 	for (;;) {
@@ -148,24 +149,22 @@ int sml::Tokenize(std::string cmdline, std::vector<std::string>& argumentVector)
 	return argc;
 }
 
-/*************************************************************
-* @brief Trim comments off of a line (for command parsing)
-* @return true on success, false if there is a new-line before a pipe quotation ends
-*************************************************************/
-bool sml::Trim(std::string& line) {
-	// trim whitespace and comments from line
-	if (!line.size()) return true; // nothing on the line
-
-	// remove leading whitespace
+void sml::TrimLeadingWhitespace(std::string& line)
+{
 	std::string::size_type pos = line.find_first_not_of(" \t");
 	if (pos != std::string::npos) line = line.substr(pos);
+}
+
+bool sml::TrimComments(std::string& line)
+{
+	if (!line.size()) return true; // nothing on the line
 
 	bool pipe = false;
 	bool quote = false;
 	std::string::size_type searchpos = 0;
 
 	const char* targets = "\\#|\"";
-	for (pos = line.find_first_of(targets, searchpos); pos != std::string::npos; pos = line.find_first_of(targets, searchpos)) {
+	for (std::string::size_type pos = line.find_first_of(targets, searchpos); pos != std::string::npos; pos = line.find_first_of(targets, searchpos)) {
 		switch (line[pos]) {
 			case '\\': // skip backslashes
 				searchpos = pos + 2;
@@ -205,4 +204,3 @@ bool sml::Trim(std::string& line) {
 	}
 	return true;
 }
-
