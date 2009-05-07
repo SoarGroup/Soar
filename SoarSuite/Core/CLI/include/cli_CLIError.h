@@ -86,7 +86,7 @@ namespace cli {
 			kAmbiguousOption					= 80, 
 			kProductionMemoryNotEmpty			= 81, 
 			kSoar7Command						= 82, 
-			kInvalidBackslashEscapeCharacter	= 83, 
+			//kInvalidBackslashEscapeCharacter	= 83, 
 			kInitSoarFailed						= 84, 
 			kPreferencesError					= 85, // FIXME: document in wiki
 			kInvalidRunInterleaveSetting		= 86,
@@ -174,7 +174,7 @@ namespace cli {
 				case kAmbiguousOption:					return "Ambiguous option.";
 				case kProductionMemoryNotEmpty:			return "Can't change modes unless production memory is empty."; 
 				case kSoar7Command:						return "Command valid in Soar 7 mode only.";
-				case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
+				//case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
 				case kInitSoarFailed:					return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
 				case kPreferencesError:					return "Preferences command failed." ;
 				case kInvalidRunInterleaveSetting:		return "Invalid setting for run interleave option." ;
