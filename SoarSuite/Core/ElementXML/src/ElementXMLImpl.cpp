@@ -32,12 +32,10 @@ bool global_locks_initialized = false;
 static const size_t NUM_LOCKS = 16;
 
 // define NUM_BITS
-#if defined(_WIN64)
+#if defined(_WIN64) || defined(__LP64__)
 static const size_t NUM_BITS = 4;
-#elif defined(_WIN32)
-static const size_t NUM_BITS = 3;
 #else
-static const size_t NUM_BITS = 4;
+static const size_t NUM_BITS = 3;
 #endif // define NUM_BITS
 
 #ifdef _MSC_VER
@@ -48,7 +46,7 @@ CRITICAL_SECTION global_locks[NUM_LOCKS];
 pthread_mutex_t global_locks[NUM_LOCKS];
 #endif // !_MSC_VER
 
-//#define DEBUG_LOCKS 1
+#define DEBUG_LOCKS 1
 #if defined(DEBUG_LOCKS)
 size_t tickers[NUM_LOCKS];
 #endif // DEBUG_LOCKS
