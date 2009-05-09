@@ -64,3 +64,8 @@ void FloatElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 	pConnection->DirectAddWME_Double( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif
+
+void FloatElement::Update(double value) 
+{ 
+	this->m_Agent->GetWM()->UpdateFloat(this, value); 
+}
