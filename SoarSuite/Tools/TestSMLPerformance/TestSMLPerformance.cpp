@@ -56,7 +56,7 @@ public:
 		Identifier* pInputLink = agent->GetInputLink();
 		for(int i=0; i<numWmes; i++) {
 			std::string temp;
-			wmes->push_back(agent->CreateIntWME(pInputLink, to_string(i, temp).c_str(), 0));
+			wmes->push_back(pInputLink->CreateIntWME(to_string(i, temp).c_str(), 0));
 		}
 	}
 

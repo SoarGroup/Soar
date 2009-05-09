@@ -67,13 +67,13 @@ void MultiAgentTest::createInput( sml::Agent* pAgent, int value )
 	sml::Identifier* pInputLink = pAgent->GetInputLink() ;
 	CPPUNIT_ASSERT( pInputLink != NULL );
 
-	sml::Identifier* pAdd = pAgent->CreateIdWME( pInputLink, "add" ) ;
+	sml::Identifier* pAdd = pInputLink->CreateIdWME( "add" ) ;
 	CPPUNIT_ASSERT( pAdd != NULL );
 
-	sml::WMElement* pValue1 = pAgent->CreateIntWME( pAdd, "value1", 2 ) ;
+	sml::WMElement* pValue1 = pAdd->CreateIntWME( "value1", 2 ) ;
 	CPPUNIT_ASSERT( pValue1 != NULL );
 
-	sml::WMElement* pValue2 = pAgent->CreateIntWME( pAdd, "value2", value ) ;
+	sml::WMElement* pValue2 = pAdd->CreateIntWME( "value2", value ) ;
 	CPPUNIT_ASSERT( pValue2 != NULL );
 
 	CPPUNIT_ASSERT( pAgent->Commit() );
