@@ -291,3 +291,28 @@ void Identifier::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 	pConnection->DirectAddID( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValueAsString(), timeTag);
 }
 #endif
+
+StringElement* Identifier::CreateStringWME(char const* pAttribute, char const* pValue)
+{
+	return this->m_Agent->GetWM()->CreateStringWME(this, pAttribute, pValue);
+}
+
+IntElement* Identifier::CreateIntWME(char const* pAttribute, int value)
+{
+	return this->m_Agent->GetWM()->CreateIntWME(this, pAttribute, value);
+}
+
+FloatElement* Identifier::CreateFloatWME(char const* pAttribute, double value)
+{
+	return this->m_Agent->GetWM()->CreateFloatWME(this, pAttribute, value);
+}
+
+Identifier* Identifier::CreateIdWME(char const* pAttribute)
+{
+	return this->m_Agent->GetWM()->CreateIdWME(this, pAttribute);
+}
+
+Identifier* Identifier::CreateSharedIdWME(char const* pAttribute, Identifier* pSharedValue)
+{
+	return this->m_Agent->GetWM()->CreateSharedIdWME(this, pAttribute, pSharedValue);
+}

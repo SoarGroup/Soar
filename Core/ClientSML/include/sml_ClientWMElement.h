@@ -93,6 +93,21 @@ public:
 
 	Agent*		GetAgent()	{ return m_Agent ; }
 
+	/*************************************************************
+	* @brief Schedules a WME from deletion from the input link and removes
+	*		 it from the client's model of working memory.
+	*
+	*		 If this is an identifier then all of its children will be
+	*		 deleted too (assuming it's the only parent -- i.e. part of a tree not a full graph).
+	*
+	*		 The caller should not access this WME after calling
+	*		 DestroyWME() or any of its children if this is an identifier.
+	*		 If "auto commit" is turned off in ClientKernel,
+	*		 the WME is not removed from the input link until
+	*		 the client calls "Commit"
+	*************************************************************/
+	bool DestroyWME();
+
 protected:
 	// Keep these protected, so user can only create and destroy WMEs through
 	// the methods exposed in the agent class.  This makes it clear that the
