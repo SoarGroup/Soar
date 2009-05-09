@@ -48,3 +48,8 @@ void StringElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 	pConnection->DirectAddWME_String( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif
+
+void StringElement::Update(char const* pValue) 
+{ 
+	this->m_Agent->GetWM()->UpdateString(this, pValue); 
+}

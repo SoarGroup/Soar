@@ -60,3 +60,8 @@ void IntElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 	pConnection->DirectAddWME_Double( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif
+
+void IntElement::Update(int value) 
+{ 
+	this->m_Agent->GetWM()->UpdateInt(this, value); 
+}
