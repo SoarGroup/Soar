@@ -19,6 +19,8 @@ class MiscTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( test_gp );
 	CPPUNIT_TEST( test_echo );
 
+	CPPUNIT_TEST( testWrongAgentWmeFunctions );
+
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -29,6 +31,7 @@ protected:
 	void testInstiationDeallocationStackOverflow();
 	void test_gp();
 	void test_echo();
+	void testWrongAgentWmeFunctions();
 
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
@@ -138,4 +141,31 @@ void MiscTest::test_echo()
 
 	pAgent->ExecuteCommandLine("echo ~!@#$%^&*()_+`1234567890-=\\:,.?/");
 	CPPUNIT_ASSERT_MESSAGE("misc chars", pAgent->GetLastCommandLineResult());
+}
+
+void MiscTest::testWrongAgentWmeFunctions()
+{
+	sml::Agent* pAgent2 = 0;
+	pAgent2 = pKernel->CreateAgent( "soar2" );
+	CPPUNIT_ASSERT( pAgent2 != NULL );
+
+	sml::Identifier* il1 = pAgent->GetInputLink();
+	sml::Identifier* il2 = pAgent2->GetInputLink();
+
+	sml::Identifier* foo1 = il1->CreateIdWME("foo");
+	sml::Identifier* foo2 = il2->CreateIdWME("foo");
+
+	CPPUNIT_ASSERT(pAgent->CreateStringWME(foo2, "fail", "fail") == 0);
+	CPPUNIT_ASSERT(pAgent->CreateIntWME(foo2, "fail", 1) == 0);
+	CPPUNIT_ASSERT(pAgent->CreateFloatWME(foo2, "fail", 1.0f) == 0);
+	CPPUNIT_ASSERT(pAgent->CreateIdWME(foo2, "fail") == 0);
+	CPPUNIT_ASSERT(pAgent->CreateSharedIdWME(foo2, "fail", il1) == 0);
+	CPPUNIT_ASSERT(pAgent->DestroyWME(foo2) == 0);
+
+	CPPUNIT_ASSERT(pAgent2->CreateStringWME(foo1, "fail", "fail") == 0);
+	CPPUNIT_ASSERT(pAgent2->CreateIntWME(foo1, "fail", 1) == 0);
+	CPPUNIT_ASSERT(pAgent2->CreateFloatWME(foo1, "fail", 1.0f) == 0);
+	CPPUNIT_ASSERT(pAgent2->CreateIdWME(foo1, "fail") == 0);
+	CPPUNIT_ASSERT(pAgent2->CreateSharedIdWME(foo1, "fail", il2) == 0);
+	CPPUNIT_ASSERT(pAgent2->DestroyWME(foo1) == 0);
 }
