@@ -1123,7 +1123,7 @@ Identifier* Agent::GetCommand(int index)
 *************************************************************/
 StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
-	if (!parent)
+	if (!parent || parent->GetAgent() != this)
 		return NULL ;
 
 	return GetWM()->CreateStringWME(parent, pAttribute, pValue) ;
@@ -1139,7 +1139,7 @@ StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute
 *************************************************************/
 Identifier* Agent::CreateIdWME(Identifier* parent, char const* pAttribute)
 {
-	if (!parent)
+	if (!parent || parent->GetAgent() != this)
 		return NULL ;
 
 	return GetWM()->CreateIdWME(parent, pAttribute) ;
@@ -1152,7 +1152,7 @@ Identifier* Agent::CreateIdWME(Identifier* parent, char const* pAttribute)
 *************************************************************/
 Identifier*	Agent::CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue)
 {
-	if (!parent || !pSharedValue)
+	if (!parent || parent->GetAgent() != this || !pSharedValue)
 		return NULL ;
 
 	return GetWM()->CreateSharedIdWME(parent, pAttribute, pSharedValue) ;
@@ -1164,7 +1164,7 @@ Identifier*	Agent::CreateSharedIdWME(Identifier* parent, char const* pAttribute,
 *************************************************************/
 IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
 {
-	if (!parent)
+	if (!parent || parent->GetAgent() != this)
 		return NULL ;
 
 	return GetWM()->CreateIntWME(parent, pAttribute, value) ;
@@ -1176,7 +1176,7 @@ IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, int 
 *************************************************************/
 FloatElement* Agent::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
 {
-	if (!parent)
+	if (!parent || parent->GetAgent() != this)
 		return NULL ;
 
 	return GetWM()->CreateFloatWME(parent, pAttribute, value) ;
@@ -1187,9 +1187,18 @@ FloatElement* Agent::CreateFloatWME(Identifier* parent, char const* pAttribute, 
 *		 The value is not actually sent to the kernel
 *		 until "Commit" is called.
 *************************************************************/
-void Agent::Update(StringElement* pWME, char const* pValue) { GetWM()->UpdateString(pWME, pValue) ; }
-void Agent::Update(IntElement* pWME, int value)				{ GetWM()->UpdateInt(pWME, value) ; }
-void Agent::Update(FloatElement* pWME, double value)		{ GetWM()->UpdateFloat(pWME, value) ; }
+void Agent::Update(StringElement* pWME, char const* pValue) 
+{ 
+	GetWM()->UpdateString(pWME, pValue) ; 
+}
+void Agent::Update(IntElement* pWME, int value)				
+{ 
+	GetWM()->UpdateInt(pWME, value) ; 
+}
+void Agent::Update(FloatElement* pWME, double value)		
+{ 
+	GetWM()->UpdateFloat(pWME, value) ; 
+}
 
 /*************************************************************
 * @brief Schedules a WME from deletion from the input link and removes
@@ -1205,7 +1214,7 @@ void Agent::Update(FloatElement* pWME, double value)		{ GetWM()->UpdateFloat(pWM
 *************************************************************/
 bool Agent::DestroyWME(WMElement* pWME)
 {
-	if (!pWME)
+	if (!pWME || pWME->GetAgent() != this)
 		return false ;
 
 	return GetWM()->DestroyWME(pWME) ;
