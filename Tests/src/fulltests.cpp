@@ -447,13 +447,13 @@ TEST_DEFINITION( testRHSHandler )
 	CPPUNIT_ASSERT_MESSAGE( "Duplicate RHS function registration should be detected and be ignored", callback_rhs_dup == callback_rhs1 );
 
 	// need this to fire production that calls test-rhs
-	sml::Identifier* pSquare = m_pAgent->CreateIdWME( m_pAgent->GetInputLink(), "square" ) ;
+	sml::Identifier* pSquare = m_pAgent->GetInputLink()->CreateIdWME( "square" ) ;
 	CPPUNIT_ASSERT( pSquare );
-	sml::StringElement* pEmpty = m_pAgent->CreateStringWME( pSquare, "content", "EMPTY" ) ;
+	sml::StringElement* pEmpty = pSquare->CreateStringWME( "content", "EMPTY" ) ;
 	CPPUNIT_ASSERT( pEmpty );
-	sml::IntElement* pRow = m_pAgent->CreateIntWME( pSquare, "row", 1 ) ;
+	sml::IntElement* pRow = pSquare->CreateIntWME( "row", 1 ) ;
 	CPPUNIT_ASSERT( pRow );
-	sml::IntElement* pCol = m_pAgent->CreateIntWME( pSquare, "col", 2 ) ;
+	sml::IntElement* pCol = pSquare->CreateIntWME( "col", 2 ) ;
 	CPPUNIT_ASSERT( pCol );
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
 
@@ -467,7 +467,7 @@ TEST_DEFINITION( testRHSHandler )
 	// Re-add it without the bool that is getting popped off the stack
 	CPPUNIT_ASSERT( m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, 0 ) ); 
 
-	CPPUNIT_ASSERT( m_pAgent->DestroyWME( pSquare ) );
+	CPPUNIT_ASSERT( pSquare->DestroyWME(  ) );
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
 }
 
@@ -514,21 +514,21 @@ TEST_DEFINITION( testWMEs )
 	CPPUNIT_ASSERT( pInputLink );
 
 	// Some simple tests
-	sml::StringElement* pWME = m_pAgent->CreateStringWME( pInputLink, "my-att", "my-value" ) ;
+	sml::StringElement* pWME = pInputLink->CreateStringWME( "my-att", "my-value" ) ;
 	CPPUNIT_ASSERT( pWME );
 
 	// This is to test a bug where an identifier isn't fully removed from working memory (you can still print it) after it is destroyed.
-	sml::Identifier* pIDRemoveTest = m_pAgent->CreateIdWME( pInputLink, "foo" ) ;
+	sml::Identifier* pIDRemoveTest = pInputLink->CreateIdWME( "foo" ) ;
 	CPPUNIT_ASSERT( pIDRemoveTest );
-	CPPUNIT_ASSERT( m_pAgent->CreateFloatWME( pIDRemoveTest, "bar", 1.23 ) );
+	CPPUNIT_ASSERT( pIDRemoveTest->CreateFloatWME( "bar", 1.23 ) );
 
 	CPPUNIT_ASSERT( pIDRemoveTest->GetValueAsString() );
 
-	sml::Identifier* pID = m_pAgent->CreateIdWME( pInputLink, "plane" ) ;
+	sml::Identifier* pID = pInputLink->CreateIdWME( "plane" ) ;
 	CPPUNIT_ASSERT( pID );
 
 	// Trigger for inputWme update change problem
-	sml::StringElement* pWMEtest = m_pAgent->CreateStringWME( pID, "typeTest", "Boeing747" ) ;
+	sml::StringElement* pWMEtest = pID->CreateStringWME( "typeTest", "Boeing747" ) ;
 	CPPUNIT_ASSERT( pWMEtest );
 
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
@@ -536,7 +536,7 @@ TEST_DEFINITION( testWMEs )
 	m_pAgent->RunSelf(1) ;
 	CPPUNIT_ASSERT_MESSAGE( "RunSelf", m_pAgent->GetLastCommandLineResult() );
 
-	CPPUNIT_ASSERT( m_pAgent->DestroyWME( pIDRemoveTest ) );
+	CPPUNIT_ASSERT( pIDRemoveTest->DestroyWME(  ) );
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
 
 	//m_pAgent->RunSelf(1) ;
@@ -549,12 +549,12 @@ TEST_DEFINITION( testWMEs )
 	m_pAgent->InitSoar();
 	CPPUNIT_ASSERT_MESSAGE( "init-soar", m_pAgent->GetLastCommandLineResult() );
 
-	CPPUNIT_ASSERT( m_pAgent->CreateStringWME(pID, "type", "Boeing747") );
+	CPPUNIT_ASSERT( pID->CreateStringWME("type", "Boeing747") );
 
-	sml::IntElement* pWME2    = m_pAgent->CreateIntWME(pID, "speed", 200) ;
+	sml::IntElement* pWME2    = pID->CreateIntWME("speed", 200) ;
 	CPPUNIT_ASSERT( pWME2 );
 
-	sml::FloatElement* pWME3  = m_pAgent->CreateFloatWME(pID, "direction", 50.5) ;
+	sml::FloatElement* pWME3  = pID->CreateFloatWME("direction", 50.5) ;
 	CPPUNIT_ASSERT( pWME3 );
 
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
@@ -578,7 +578,7 @@ TEST_DEFINITION( testWMEs )
 	CPPUNIT_ASSERT_MESSAGE( "Error in handling of SetBlinkIfNoChange flag", timeTag2 != timeTag3 );
 
 	// Remove a wme
-	CPPUNIT_ASSERT( m_pAgent->DestroyWME( pWME3 ) );
+	CPPUNIT_ASSERT( pWME3->DestroyWME(  ) );
 
 	// Change the speed to 300
 	m_pAgent->Update( pWME2, 300 ) ;
@@ -712,7 +712,7 @@ TEST_DEFINITION( testAgent )
 	//Some temp code to generate more complex watch traces.  Not usually part of the test
 	/*
 	Identifier* pSquare1 = m_pAgent->CreateIdWME(pInputLink, "square") ;
-	StringElement* pEmpty1 = m_pAgent->CreateStringWME(pSquare1, "content", "RANDOM") ;
+	StringElement* pEmpty1 = pSquare1->CreateStringWME("content", "RANDOM") ;
 	IntElement* pRow1 = m_pAgent->CreateIntWME(pSquare1, "row", 1) ;
 	IntElement* pCol1 = m_pAgent->CreateIntWME(pSquare1, "col", 2) ;
 	m_pAgent->Update(pEmpty1, "EMPTY") ;
@@ -788,13 +788,13 @@ TEST_DEFINITION( testAgent )
 	*/
 
 	// Then add some tic tac toe stuff which should trigger output
-	sml::Identifier* pSquare = m_pAgent->CreateIdWME(m_pAgent->GetInputLink(), "square") ;
+	sml::Identifier* pSquare = m_pAgent->GetInputLink()->CreateIdWME("square") ;
 	CPPUNIT_ASSERT( pSquare );
-	sml::StringElement* pEmpty = m_pAgent->CreateStringWME(pSquare, "content", "RANDOM") ;
+	sml::StringElement* pEmpty = pSquare->CreateStringWME("content", "RANDOM") ;
 	CPPUNIT_ASSERT( pEmpty );
-	sml::IntElement* pRow = m_pAgent->CreateIntWME(pSquare, "row", 1) ;
+	sml::IntElement* pRow = pSquare->CreateIntWME("row", 1) ;
 	CPPUNIT_ASSERT( pRow );
-	sml::IntElement* pCol = m_pAgent->CreateIntWME(pSquare, "col", 2) ;
+	sml::IntElement* pCol = pSquare->CreateIntWME("col", 2) ;
 	CPPUNIT_ASSERT( pCol );
 
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
@@ -967,41 +967,41 @@ TEST_DEFINITION( testSimpleCopy )
 
 	sml::Identifier* map = m_pAgent->GetInputLink() ;
 
-	sml::Identifier* square2 = m_pAgent->CreateIdWME(map, "square");
+	sml::Identifier* square2 = map->CreateIdWME("square");
 	CPPUNIT_ASSERT( std::string( square2->GetAttribute() ) == "square" );
 
-	sml::Identifier* square5 = m_pAgent->CreateIdWME(map, "square");
+	sml::Identifier* square5 = map->CreateIdWME("square");
 	CPPUNIT_ASSERT( std::string( square5->GetAttribute() ) == "square" );
 
-	m_pAgent->CreateSharedIdWME(square2, "north", square5) ;
+	square2->CreateSharedIdWME("north", square5) ;
 
-	m_pAgent->CreateSharedIdWME(square5, "south", square2) ;
+	square5->CreateSharedIdWME("south", square2) ;
 
-	sml::Identifier* pSentence = m_pAgent->CreateIdWME(m_pAgent->GetInputLink(), "sentence") ;
+	sml::Identifier* pSentence = m_pAgent->GetInputLink()->CreateIdWME("sentence") ;
 	CPPUNIT_ASSERT( std::string( pSentence->GetAttribute() ) == "sentence" );
 
-	m_pAgent->CreateStringWME(pSentence, "newest", "ye s") ;
+	pSentence->CreateStringWME("newest", "ye s") ;
 
-	m_pAgent->CreateIntWME(pSentence, "num-words", 3) ;
+	pSentence->CreateIntWME("num-words", 3) ;
 
-	sml::Identifier* pWord1 = m_pAgent->CreateIdWME(pSentence, "word") ;
+	sml::Identifier* pWord1 = pSentence->CreateIdWME("word") ;
 	CPPUNIT_ASSERT( std::string( pWord1->GetAttribute() ) == "word" );
 
-	sml::Identifier* pWord5 = m_pAgent->CreateSharedIdWME(pSentence, "word2", pWord1) ;
+	sml::Identifier* pWord5 = pSentence->CreateSharedIdWME("word2", pWord1) ;
 	CPPUNIT_ASSERT( std::string( pWord5->GetAttribute() ) == "word2" );
 
-	sml::Identifier* pWord2 = m_pAgent->CreateIdWME(pSentence, "word") ;
+	sml::Identifier* pWord2 = pSentence->CreateIdWME("word") ;
 	CPPUNIT_ASSERT( std::string( pWord2->GetAttribute() ) == "word" );
 
-	sml::Identifier* pWord3 = m_pAgent->CreateIdWME(pSentence, "word") ;
+	sml::Identifier* pWord3 = pSentence->CreateIdWME("word") ;
 	CPPUNIT_ASSERT( std::string( pWord3->GetAttribute() ) == "word" );
 
-	m_pAgent->CreateIntWME(pWord1, "num-word", 1) ;
-	m_pAgent->CreateIntWME(pWord2, "num-word", 2) ;
-	m_pAgent->CreateIntWME(pWord3, "num-word", 3) ;
-	m_pAgent->CreateStringWME(pWord1, "word", "the") ;
-	m_pAgent->CreateStringWME(pWord2, "word", "cat") ;
-	m_pAgent->CreateStringWME(pWord3, "word", "in") ;
+	pWord1->CreateIntWME("num-word", 1) ;
+	pWord2->CreateIntWME("num-word", 2) ;
+	pWord3->CreateIntWME("num-word", 3) ;
+	pWord1->CreateStringWME("word", "the") ;
+	pWord2->CreateStringWME("word", "cat") ;
+	pWord3->CreateStringWME("word", "in") ;
 	m_pAgent->Commit() ;
 
 	// Register for the trace output
@@ -1111,13 +1111,13 @@ TEST_DEFINITION( testOSupportCopyDestroy )
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
 
-	sml::Identifier* pFoo = m_pAgent->CreateIdWME( pInputLink, "foo" );
+	sml::Identifier* pFoo = pInputLink->CreateIdWME( "foo" );
 	CPPUNIT_ASSERT( pFoo );
 
-	sml::Identifier* pBar = m_pAgent->CreateIdWME( pFoo, "bar" );
+	sml::Identifier* pBar = pFoo->CreateIdWME( "bar" );
 	CPPUNIT_ASSERT( pBar );
 
-	sml::StringElement* pToy = m_pAgent->CreateStringWME( pBar, "toy", "jig" );
+	sml::StringElement* pToy = pBar->CreateStringWME( "toy", "jig" );
 	CPPUNIT_ASSERT( pToy );
 
 	bool badCopyExists( false );
@@ -1125,9 +1125,9 @@ TEST_DEFINITION( testOSupportCopyDestroy )
 
 	m_pAgent->RunSelf(1);
 
-	m_pAgent->DestroyWME( pToy );
-	m_pAgent->DestroyWME( pBar );
-	m_pAgent->DestroyWME( pFoo );
+	pToy->DestroyWME(  );
+	pBar->DestroyWME(  );
+	pFoo->DestroyWME(  );
 
 	m_pAgent->RunSelf(1);
 
@@ -1141,13 +1141,13 @@ TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
 
-	sml::Identifier* pFoo = m_pAgent->CreateIdWME( pInputLink, "foo" );
+	sml::Identifier* pFoo = pInputLink->CreateIdWME( "foo" );
 	CPPUNIT_ASSERT( pFoo );
 
-	sml::Identifier* pBar = m_pAgent->CreateIdWME( pFoo, "bar" );
+	sml::Identifier* pBar = pFoo->CreateIdWME( "bar" );
 	CPPUNIT_ASSERT( pBar );
 
-	sml::Identifier* pToy = m_pAgent->CreateSharedIdWME( pBar, "toy", pFoo );
+	sml::Identifier* pToy = pBar->CreateSharedIdWME( "toy", pFoo );
 	CPPUNIT_ASSERT( pToy );
 
 	bool badCopyExists( false );
@@ -1155,7 +1155,7 @@ TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 
 	m_pAgent->RunSelf(1);
 
-	m_pAgent->DestroyWME( pFoo );
+	pFoo->DestroyWME(  );
 
 	m_pAgent->RunSelf(1);
 
@@ -1169,13 +1169,13 @@ TEST_DEFINITION( testOSupportCopyDestroyCircular )
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
 
-	sml::Identifier* pFoo = m_pAgent->CreateIdWME( pInputLink, "foo" );
+	sml::Identifier* pFoo = pInputLink->CreateIdWME( "foo" );
 	CPPUNIT_ASSERT( pFoo );
 
-	sml::Identifier* pBar = m_pAgent->CreateIdWME( pFoo, "bar" );
+	sml::Identifier* pBar = pFoo->CreateIdWME( "bar" );
 	CPPUNIT_ASSERT( pBar );
 
-	sml::Identifier* pToy = m_pAgent->CreateSharedIdWME( pBar, "toy", pFoo );
+	sml::Identifier* pToy = pBar->CreateSharedIdWME( "toy", pFoo );
 	CPPUNIT_ASSERT( pToy );
 
 	bool badCopyExists( false );
@@ -1183,9 +1183,9 @@ TEST_DEFINITION( testOSupportCopyDestroyCircular )
 
 	m_pAgent->RunSelf(1);
 
-	m_pAgent->DestroyWME( pToy );
-	m_pAgent->DestroyWME( pBar );
-	m_pAgent->DestroyWME( pFoo );
+	pToy->DestroyWME(  );
+	pBar->DestroyWME(  );
+	pFoo->DestroyWME(  );
 
 	m_pAgent->RunSelf(1);
 
@@ -1398,12 +1398,12 @@ TEST_DEFINITION( testStopSoarVsInterrupt )
 TEST_DEFINITION( testSharedWmeSetViolation )
 {
 	//io.input-link.foo <f>
-	sml::Identifier* pFoo1 = m_pAgent->CreateIdWME(m_pAgent->GetInputLink(), "foo") ;
+	sml::Identifier* pFoo1 = m_pAgent->GetInputLink()->CreateIdWME("foo") ;
 	CPPUNIT_ASSERT(pFoo1);
 
 	// TODO: This is illegal, but is probably too expensive to test for in release.
 	// See bug 1060
-	sml::Identifier* pFoo2 = m_pAgent->CreateSharedIdWME(m_pAgent->GetInputLink(), "foo", pFoo1) ;
+	sml::Identifier* pFoo2 = m_pAgent->GetInputLink()->CreateSharedIdWME("foo", pFoo1) ;
 	CPPUNIT_ASSERT_MESSAGE("CreateSharedIdWME was able to create duplicate wme", pFoo2 == 0);
 
 	CPPUNIT_ASSERT(m_pAgent->Commit());

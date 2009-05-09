@@ -198,6 +198,12 @@ public:
 	*************************************************************/
 	bool AreChildrenModified() { return m_pSymbol->AreChildrenModified() ; }
 
+	StringElement*	CreateStringWME(char const* pAttribute, char const* pValue);
+	IntElement*		CreateIntWME(char const* pAttribute, int value) ;
+	FloatElement*	CreateFloatWME(char const* pAttribute, double value) ;
+	Identifier*		CreateIdWME(char const* pAttribute) ;
+	Identifier*		CreateSharedIdWME(char const* pAttribute, Identifier* pSharedValue) ;
+
 protected:
 	// This version is only needed at the top of the tree (e.g. the input link)
 	Identifier(Agent* pAgent, char const* pIdentifier, long timeTag);
