@@ -1,4 +1,5 @@
 import sml.Agent;
+import sml.ElementXML;
 import sml.Identifier;
 import sml.Kernel;
 import sml.StringElement;
@@ -283,6 +284,17 @@ public class Application
 		
 		//String trace2 = pAgent.RunSelfTilOutput(20) ;
 		//System.out.println(trace2) ;
+
+		// bug 1028
+		ElementXML element = ElementXML.ParseXMLFromString("<sml><result>=</result></sml>");
+		if (element == null)
+		{
+			// failure
+			System.err.println(ElementXML.GetLastParseErrorDescription());
+			throw new IllegalStateException("bug 1028 test fail");
+		}
+		
+
 		
 		// Clean up
 		m_Kernel.Shutdown() ;
