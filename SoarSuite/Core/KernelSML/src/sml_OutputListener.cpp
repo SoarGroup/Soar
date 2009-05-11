@@ -68,7 +68,7 @@ TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
 
 	// For additions we send everything
 	pTag->SetIdentifier( symbol_to_string( pAgent->GetSoarAgent(), wme->id, true, 0, 0 ) ) ;
-	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, true, 0, 0 ) ) ;
+	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, false, 0, 0 ) ) ;
 	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, false, 0, 0 ), pValueType ) ;
 
 	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
