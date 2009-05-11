@@ -64,6 +64,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testStatusCompleteDuplication ); // bug 1042
 	CPPUNIT_TEST( testStopSoarVsInterrupt ); // bug 782
 	CPPUNIT_TEST( testSharedWmeSetViolation ); // bug 1060
+	CPPUNIT_TEST( testEchoEquals ); // bug 1028
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -88,6 +89,7 @@ public:
 	TEST_DECLARATION( testStatusCompleteDuplication );
 	TEST_DECLARATION( testStopSoarVsInterrupt );
 	TEST_DECLARATION( testSharedWmeSetViolation );
+	TEST_DECLARATION( testEchoEquals );
 
 	void testShutdownHandlerShutdown();
 
@@ -1408,3 +1410,10 @@ TEST_DEFINITION( testSharedWmeSetViolation )
 
 	CPPUNIT_ASSERT(m_pAgent->Commit());
 }
+
+TEST_DEFINITION( testEchoEquals )
+{
+	sml::ClientAnalyzedXML response;
+	CPPUNIT_ASSERT(m_pAgent->ExecuteCommandLineXML("echo =", &response));
+}
+
