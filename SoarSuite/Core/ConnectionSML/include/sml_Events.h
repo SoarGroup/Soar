@@ -167,7 +167,7 @@ enum smlStringEventId
 {
 	smlEVENT_EDIT_PRODUCTION = smlEVENT_LAST_UPDATE_EVENT + 1,	// Arg is "char const*" -- the name of the production to edit
 	smlEVENT_LOAD_LIBRARY,
-	smlEVENT_LAST_STRING_EVENT = smlEVENT_LOAD_LIBRARY,
+	smlEVENT_LAST_STRING_EVENT = smlEVENT_LOAD_LIBRARY
 } ;
 
 enum smlGenericEventId 
@@ -278,7 +278,7 @@ enum smlRunResult
     sml_RUN_INTERRUPTED,
     sml_RUN_COMPLETED,
     sml_RUN_COMPLETED_AND_INTERRUPTED,	// Stop was requested but run completed before agent was interrupted.
-    sml_RUN_ERROR_ALREADY_RUNNING,				
+    sml_RUN_ERROR_ALREADY_RUNNING				
 };
 
 enum smlRunState
@@ -293,7 +293,7 @@ enum smlStopLocationFlags
 {
 	sml_STOP_AFTER_SMALLEST_STEP			= 1 << 0,	// Keep in synch with egSKIStopLocation
 	sml_STOP_AFTER_PHASE					= 1 << 1,
-	sml_STOP_AFTER_DECISION_CYCLE			= 1 << 2,
+	sml_STOP_AFTER_DECISION_CYCLE			= 1 << 2
 } ;
 
 /////////////////////////////////////////////////////////////////
@@ -383,6 +383,6 @@ public:
 	}
 } ;
 
-} ;	// End of namespace
+} 	// End of namespace
 
 #endif	// Header
