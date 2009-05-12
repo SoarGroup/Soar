@@ -189,9 +189,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
@@ -262,9 +266,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
@@ -477,9 +485,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
@@ -550,9 +562,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"

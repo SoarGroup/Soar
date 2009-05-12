@@ -223,9 +223,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
@@ -315,9 +319,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
+				Optimization="3"
 				InlineFunctionExpansion="2"
-				OmitFramePointers="true"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
