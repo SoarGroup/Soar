@@ -168,6 +168,12 @@ void Handlers::MyDuplicateRunEventHandler( sml::smlRunEventId, void* pUserData, 
 	CPPUNIT_ASSERT( *pInt == 25 );
 }
 
+void Handlers::DebugPrintEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMessage )
+{
+	std::cout << pMessage;
+	std::cout.flush();
+}
+
 void Handlers::MyPrintEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMessage )
 {
 	// In this case the user data is a string we're building up

@@ -1406,3 +1406,28 @@ void AgentSML::ReplayInputWMEs()
 		}
 	}
 }
+
+void AgentSML::BufferedAddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(DirectInputDelta::kAddString, pID, pAttribute, pValue, clientTimeTag));
+}
+
+void AgentSML::BufferedAddIntInputWME(char const* pID, char const* pAttribute, int value, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(pID, pAttribute, value, clientTimeTag));
+}
+
+void AgentSML::BufferedAddDoubleInputWME(char const* pID, char const* pAttribute, double value, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(pID, pAttribute, value, clientTimeTag));
+}
+
+void AgentSML::BufferedAddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(DirectInputDelta::kAddId, pID, pAttribute, pValue, clientTimeTag));
+}
+
+void AgentSML::BufferedRemoveInputWME(long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(clientTimeTag));
+}
