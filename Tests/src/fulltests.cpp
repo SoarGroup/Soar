@@ -447,6 +447,7 @@ TEST_DEFINITION( testRHSHandler )
 	// Record a RHS function
 	int callback_rhs1 = m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived ) ; 
 	int callback_rhs_dup = m_pKernel->AddRhsFunction( "test-rhs", Handlers::MyRhsFunctionHandler, &rhsFunctionHandlerReceived ) ;
+	//m_pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, Handlers::DebugPrintEventHandler, 0) ;
 
 	CPPUNIT_ASSERT_MESSAGE( "Duplicate RHS function registration should be detected and be ignored", callback_rhs_dup == callback_rhs1 );
 
@@ -463,6 +464,8 @@ TEST_DEFINITION( testRHSHandler )
 
 	m_pKernel->RunAllAgents( 1 ) ;
 	CPPUNIT_ASSERT_MESSAGE( "RunAllAgents", m_pAgent->GetLastCommandLineResult() );
+
+	//std::cout << m_pAgent->ExecuteCommandLine("p i2 --depth 4") << std::endl;
 
 	CPPUNIT_ASSERT( rhsFunctionHandlerReceived );
 
