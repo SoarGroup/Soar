@@ -87,16 +87,16 @@ struct DirectInputDelta
 	double dvalue;
 
 	DirectInputDelta(DirectInputType type, char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag) 
-		: type(type), id(pID), attribute(pAttribute), svalue(pValue), clientTimeTag(clientTimeTag) {}
+		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(type), svalue(pValue) {}
 
 	DirectInputDelta(char const* pID, char const* pAttribute, int value, long clientTimeTag)
-		: type(kAddInt), id(pID), attribute(pAttribute), ivalue(value), clientTimeTag(clientTimeTag) {}
+		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(kAddInt), ivalue(value) {}
 	
 	DirectInputDelta(char const* pID, char const* pAttribute, double value, long clientTimeTag)
-		: type(kAddDouble), id(pID), attribute(pAttribute), dvalue(value), clientTimeTag(clientTimeTag) {}
+		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(kAddDouble), dvalue(value) {}
 	
 	DirectInputDelta(long clientTimeTag)
-		: type(kRemove), clientTimeTag(clientTimeTag) {}
+		: clientTimeTag(clientTimeTag), type(kRemove) {}
 };
 
 class AgentSML
