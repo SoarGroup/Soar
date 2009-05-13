@@ -68,7 +68,7 @@ void InputListener::ProcessPendingInput(AgentSML* pAgentSML, int )
 
 	bool ok = true ;
 
-	for (PendingInputListIter iter = pPending->begin() ; iter != pPending->end() ; iter++) {
+	for (PendingInputListIter iter = pPending->begin() ; iter != pPending->end() ; iter = pPending->erase(iter)) {
 		soarxml::ElementXML* pInputMsg = *iter ;
 
 		// Analyze the message and find important tags
@@ -150,7 +150,32 @@ void InputListener::ProcessPendingInput(AgentSML* pAgentSML, int )
 		delete pInputMsg ;
 	}
 
-	pPending->clear() ;
+	std::list<DirectInputDelta>* pBufferedDirect = pAgentSML->GetBufferedDirectList();
+	for (std::list<DirectInputDelta>::iterator iter = pBufferedDirect->begin() ; iter != pBufferedDirect->end() ; iter = pBufferedDirect->erase(iter)) 
+	{
+		DirectInputDelta& delta = *iter;
+		switch (delta.type)
+		{
+		case DirectInputDelta::kRemove:
+			pAgentSML->RemoveInputWME(delta.clientTimeTag);
+			break;
+		case DirectInputDelta::kAddString:
+			pAgentSML->AddStringInputWME(delta.id.c_str(), delta.attribute.c_str(), delta.svalue.c_str(), delta.clientTimeTag);
+			break;
+		case DirectInputDelta::kAddInt:
+			pAgentSML->AddIntInputWME(delta.id.c_str(), delta.attribute.c_str(), delta.ivalue, delta.clientTimeTag);
+			break;
+		case DirectInputDelta::kAddDouble:
+			pAgentSML->AddDoubleInputWME(delta.id.c_str(), delta.attribute.c_str(), delta.dvalue, delta.clientTimeTag);
+			break;
+		case DirectInputDelta::kAddId:
+			pAgentSML->AddIdInputWME(delta.id.c_str(), delta.attribute.c_str(), delta.svalue.c_str(), delta.clientTimeTag);
+			break;
+		default:
+			assert(false);
+			break;
+		}
+	}
 }
 
 // Register for the events that KernelSML itself needs to know about in order to work correctly.
