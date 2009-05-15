@@ -50,6 +50,7 @@ public class FoldingText
 		protected String 	m_Text ;			// The text itself
 		protected boolean 	m_SubText ;			// If true this text goes at a sub level
 		protected long		m_Type ;		// The type of information stored here, against which we filter.  (This is treated as a bit field).
+		protected boolean   m_WasExpanded ; // TEMP variable for regenerating screen
 		
 		public FilterRecord(String text, boolean subText, long type)
 		{
@@ -74,7 +75,7 @@ public class FoldingText
 	
 	public static class FilterDoc
 	{
-		protected ArrayList		m_AllRecords = new ArrayList() ;
+		protected ArrayList<FilterRecord> m_AllRecords = new ArrayList<FilterRecord>() ;
 		protected FoldingText	m_FoldingText ;
 		
 		// If type & excludeFilter != 0 we won't display it
@@ -113,6 +114,26 @@ public class FoldingText
 			return m_ExcludeFilter ;
 		}
 		
+		protected void setWasExpanded(int from, int to)
+		{
+			// from == -1: don't expand anything
+			// to == -1: expand to end
+			// from < to: expand [from, to) (not including to)
+			if (from >= 0)
+			{
+				while (to < 0 || from < to)
+				{
+					if (from >= m_AllRecords.size())
+					{
+						return;
+					}
+					//System.out.println(from + "+");
+					FilterRecord r = m_AllRecords.get(from++);
+					r.m_WasExpanded = true;
+				}
+			}
+		}
+		
 		public void regenerateDisplay()
 		{
 			// Turn off tree updates
@@ -133,6 +154,26 @@ public class FoldingText
 			int selectionIndex = (selectedBlock != null ? selectedBlock.getRecordIndex() : -1) ;
 			boolean selectionExpanded = (selectedBlock != null ? selectedBlock.isExpanded() : false ) ;
 
+			// reset m_WasExpanded
+			for (FilterRecord r : m_AllRecords)
+				r.m_WasExpanded = false;
+			
+			int expandedIndexStart = -1;
+			for (Block b : m_FoldingText.m_FoldingDoc.m_TextBlocks)
+			{
+				if (b.isExpanded())
+				{
+					if (expandedIndexStart < 0)
+						expandedIndexStart = b.getRecordIndex();
+				}
+				else
+				{
+					setWasExpanded(expandedIndexStart, b.getRecordIndex());
+					expandedIndexStart = -1;
+				}
+			}
+			setWasExpanded(expandedIndexStart, -1);
+			
 			Block newSelection = null ;
 			
 			// Clear the existing text window
@@ -144,14 +185,14 @@ public class FoldingText
 			int size = m_AllRecords.size() ;
 			for (int i = 0 ; i < size ; i++)
 			{
-				FilterRecord record = (FilterRecord)m_AllRecords.get(i) ;
+				FilterRecord record = m_AllRecords.get(i) ;
 				
 				if (show(record.getType()))
 				{
 					if (record.isSubText())
-						m_FoldingText.appendSubTextInternal(record.getText(), false, i) ;
+						m_FoldingText.appendSubTextInternal(record.getText(), record.m_WasExpanded, i) ;
 					else
-						m_FoldingText.appendTextInternal(record.getText(), i) ;
+						m_FoldingText.appendTextInternal(record.getText(), record.m_WasExpanded, i) ;
 				}
 				
 				// If we reach the point where the previous selection occured record
@@ -190,7 +231,7 @@ public class FoldingText
 	
 	public static class FoldingTextDoc
 	{
-		protected	ArrayList	m_TextBlocks = new ArrayList() ;
+		protected	ArrayList<Block>	m_TextBlocks = new ArrayList<Block>() ;
 		protected	int			m_ShowFilter ;
 		protected	int			m_HideFilter ;
 		
@@ -507,8 +548,8 @@ public class FoldingText
 		}
 		
 		public int getFirstLineCharCount()	{ return getFirst().length() ; }
-		public int getAllCharCount()		{ return m_All.length() ; }	
 		public int getVisibleCharCount()	{ return isExpanded() ? getAllCharCount() : getFirstLineCharCount() ; }
+		public int getAllCharCount()		{ return m_All.length() ; }	
 		
 		/** Returns (line, offset) */
 		public Point findLineFromCharCount(int charCount)
@@ -915,7 +956,7 @@ public class FoldingText
 	
 	// This method can be called either as a result of new input coming from outside
 	// or because of a change to a filter as we re-process the old information.
-	private void appendTextInternal(String text, int recordIndex)
+	private void appendTextInternal(String text, boolean autoExpand, int recordIndex)
 	{
 		Block last = m_FoldingDoc.m_LastBlock ;
 		
@@ -927,6 +968,7 @@ public class FoldingText
 		}
 		
 		last.appendLine(text) ;
+		last.setExpand(autoExpand);
 		appendTextToWidget(m_Text, text) ;
 	}
 	
@@ -953,7 +995,7 @@ public class FoldingText
 
 		if (show)
 		{
-			appendTextInternal(text, recordIndex) ;
+			appendTextInternal(text, false, recordIndex) ;
 
 			// Decide if we have caused the window to scroll or not
 			if (m_LastTopIndex != m_Text.getTopIndex())
