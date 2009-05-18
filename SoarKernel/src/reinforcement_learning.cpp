@@ -288,29 +288,10 @@ void rl_revert_template_id( agent *my_agent )
 	action *my_action = my_template->action_list;
 	char first_letter;
 	double init_value = 0;
-
-	Bool chunk_var = my_agent->variablize_this_chunk;
 	condition *cond_top, *cond_bottom;
 
-	// get the preference value
-	id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
-	attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
-	first_letter = first_letter_from_symbol( attr );
-	value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
-	referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
-
-	// clean up after yourself :)
-	symbol_remove_ref( my_agent, id );
-	symbol_remove_ref( my_agent, attr );
-	symbol_remove_ref( my_agent, value );
-	symbol_remove_ref( my_agent, referent );
-
-	// make new action list
-	// small hack on variablization: the artificial tc gets dealt with later, just needs to be explicit non-zero
+	Bool chunk_var = my_agent->variablize_this_chunk;
 	my_agent->variablize_this_chunk = TRUE;
-	my_agent->variablization_tc = (0u - 1);
-	action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
-	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
 	// make unique production name
 	Symbol *new_name_symbol;
@@ -334,9 +315,26 @@ void rl_revert_template_id( agent *my_agent )
 	variablize_condition_list( my_agent, cond_top );
 	variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
 
+	// get the preference value
+	id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
+	attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
+	first_letter = first_letter_from_symbol( attr );
+	value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
+	referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
+
+	// clean up after yourself :)
+	symbol_remove_ref( my_agent, id );
+	symbol_remove_ref( my_agent, attr );
+	symbol_remove_ref( my_agent, value );
+	symbol_remove_ref( my_agent, referent );
+
+	// make new action list
+	action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
+	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+
 	// make new production
 	production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
-	my_agent->variablize_this_chunk = chunk_var;
+	my_agent->variablize_this_chunk = chunk_var; // restored to original value
 
 	// set initial expected reward values
 	{
