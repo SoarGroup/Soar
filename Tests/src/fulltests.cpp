@@ -66,6 +66,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testSharedWmeSetViolation ); // bug 1060
 	CPPUNIT_TEST( testEchoEquals ); // bug 1028
 	CPPUNIT_TEST( testFindAttrPipes ); // bug 1138
+	CPPUNIT_TEST( testTemplateVariableNameBug ); // bug 1121
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -92,6 +93,7 @@ public:
 	TEST_DECLARATION( testSharedWmeSetViolation );
 	TEST_DECLARATION( testEchoEquals );
 	TEST_DECLARATION( testFindAttrPipes );
+	TEST_DECLARATION( testTemplateVariableNameBug );
 
 	void testShutdownHandlerShutdown();
 
@@ -1435,5 +1437,16 @@ TEST_DEFINITION( testFindAttrPipes )
 	pWME = 0;
 	pWME = m_pAgent->GetInputLink()->FindByAttribute("B", 0);
 	CPPUNIT_ASSERT(pWME);
+}
+
+TEST_DEFINITION( testTemplateVariableNameBug )
+{
+	loadProductions( "/Tests/test1121.soar" );
+	m_pAgent->ExecuteCommandLine("run");
+	sml::ClientAnalyzedXML response;
+	m_pAgent->ExecuteCommandLineXML("stats", &response);
+	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
+	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 4);
+
 }
 
