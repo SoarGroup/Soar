@@ -338,7 +338,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
 										 test *t,
                                          Bool is_id_field,
                                          tc_number bound_vars_tc_number,
-                                         saved_test *tests_to_restore) {
+                                         saved_test *tests_to_restore, bool neg) {
   saved_test *st, *prev_st, *next_st;
   Bool added_it;
   Symbol *referent;
@@ -357,7 +357,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
       /* ... otherwise fall through to the next case below ... */
     case DISJUNCTION_TEST:
       if (test_includes_equality_test_for_symbol (*t, st->var)) {
-        add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test);
+        add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
         added_it = TRUE;
       }
       break;
@@ -367,7 +367,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
         if (symbol_is_constant_or_marked_variable (referent,
                                                    bound_vars_tc_number) ||
            (st->var == referent)) {
-          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test);
+          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
           added_it = TRUE;
         } 
       } else if (test_includes_equality_test_for_symbol (*t, referent)) {
@@ -377,7 +377,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
           ct->type = reverse_direction_of_relational_test (thisAgent, ct->type);
           ct->data.referent = st->var;
           st->var = referent;
-          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test);
+          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
           added_it = TRUE;
         }
       }
@@ -406,14 +406,15 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
   new_vars = NIL;
   for (cond=conds_list; cond!=NIL; cond=cond->next) {
     if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) continue;
+    bool neg = cond->type == NEGATIVE_CONDITION;
     tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore);
+      (thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.id_test, tc, &new_vars);
     tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.attr_test), FALSE, tc, tests_to_restore);
+      (thisAgent, (&cond->data.tests.attr_test), FALSE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.attr_test, tc, &new_vars);
     tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.value_test), FALSE, tc, tests_to_restore);
+      (thisAgent, (&cond->data.tests.value_test), FALSE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.value_test, tc, &new_vars);
   }
   if (tests_to_restore) {
