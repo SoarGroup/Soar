@@ -67,6 +67,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testEchoEquals ); // bug 1028
 	CPPUNIT_TEST( testFindAttrPipes ); // bug 1138
 	CPPUNIT_TEST( testTemplateVariableNameBug ); // bug 1121
+	CPPUNIT_TEST( testNegatedConjunctiveChunkLoopBug510 ); // bug 510
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -94,6 +95,7 @@ public:
 	TEST_DECLARATION( testEchoEquals );
 	TEST_DECLARATION( testFindAttrPipes );
 	TEST_DECLARATION( testTemplateVariableNameBug );
+	TEST_DECLARATION( testNegatedConjunctiveChunkLoopBug510 );
 
 	void testShutdownHandlerShutdown();
 
@@ -1447,6 +1449,17 @@ TEST_DEFINITION( testTemplateVariableNameBug )
 	m_pAgent->ExecuteCommandLineXML("stats", &response);
 	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
 	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 4);
+
+}
+
+TEST_DEFINITION( testNegatedConjunctiveChunkLoopBug510 )
+{
+	loadProductions( "/Tests/testNegatedConjunctiveChunkLoopBug510.soar" );
+	m_pAgent->ExecuteCommandLine("run");
+	sml::ClientAnalyzedXML response;
+	m_pAgent->ExecuteCommandLineXML("stats", &response);
+	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
 
 }
 

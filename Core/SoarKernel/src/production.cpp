@@ -380,12 +380,11 @@ void add_new_test_to_test (agent* thisAgent,
    test is already included in the first one.
 ---------------------------------------------------------------- */
 
-void add_new_test_to_test_if_not_already_there (agent* thisAgent, 
-												test *t, test add_me) {
+void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg) {
   complex_test *ct;
   cons *c;
 
-  if (tests_are_equal (*t, add_me)) {
+  if (tests_are_equal (*t, add_me, neg)) {
     deallocate_test (thisAgent, add_me);
     return;
   }
@@ -394,7 +393,7 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent,
     ct = complex_test_from_test (*t);
     if (ct->type == CONJUNCTIVE_TEST)
       for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
-        if (tests_are_equal (static_cast<char *>(c->first), add_me)) {
+        if (tests_are_equal (static_cast<char *>(c->first), add_me, neg)) {
           deallocate_test (thisAgent, add_me);
           return;
         }
@@ -404,45 +403,96 @@ void add_new_test_to_test_if_not_already_there (agent* thisAgent,
 }
 
 /* ----------------------------------------------------------------
-   Returns TRUE iff the two tests are identical.
+   Returns TRUE iff the two tests are identical. 
+   If neg is true, ignores order of members in conjunctive tests
+   and assumes variables are all equal.
 ---------------------------------------------------------------- */
 
-Bool tests_are_equal (test t1, test t2) {
-  cons *c1, *c2;
-  complex_test *ct1, *ct2;
+Bool tests_are_equal (test t1, test t2, bool neg) {
+	cons *c1, *c2;
+	complex_test *ct1, *ct2;
 
-  if (test_is_blank_or_equality_test(t1))
-    return (t1==t2); /* Warning: this relies on the representation of tests */
+	if (test_is_blank_or_equality_test(t1))
+	{
+		if (!test_is_blank_or_equality_test(t2))
+			return FALSE;
 
-  ct1 = complex_test_from_test(t1);
-  ct2 = complex_test_from_test(t2);
-  
-  if (ct1->type != ct2->type) return FALSE;
+		if (t1 == t2) /* Warning: this relies on the representation of tests */
+			return TRUE; 
+		
+		if (!neg)
+			return FALSE;
 
-  switch(ct1->type) {
-  case GOAL_ID_TEST: return TRUE;
-  case IMPASSE_ID_TEST: return TRUE;
+		// ignore variables in negation tests
+		Symbol* s1 = referent_of_equality_test(t1);
+		Symbol* s2 = referent_of_equality_test(t2);
 
-  case DISJUNCTION_TEST:
-    for (c1=ct1->data.disjunction_list, c2=ct2->data.disjunction_list;
-         ((c1!=NIL)&&(c2!=NIL));
-         c1=c1->rest, c2=c2->rest)
-      if (c1->first != c2->first) return FALSE;
-    if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
-    return FALSE;
+		if ((s1->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE) && (s2->var.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE))
+		{
+			return TRUE;
+		}
+		return FALSE;
+	}
 
-  case CONJUNCTIVE_TEST:
-    for (c1=ct1->data.conjunct_list, c2=ct2->data.conjunct_list;
-         ((c1!=NIL)&&(c2!=NIL));
-         c1=c1->rest, c2=c2->rest)
-      if (! tests_are_equal(static_cast<char *>(c1->first),static_cast<char *>(c2->first))) return FALSE;
-    if (c1==c2) return TRUE;  /* make sure they both hit end-of-list */
-    return FALSE;
+	ct1 = complex_test_from_test(t1);
+	ct2 = complex_test_from_test(t2);
 
-  default:  /* relational tests other than equality */
-    if (ct1->data.referent == ct2->data.referent) return TRUE;
-    return FALSE;
-  }
+	if (ct1->type != ct2->type) 
+		return FALSE;
+
+	switch(ct1->type) {
+	case GOAL_ID_TEST: 
+		return TRUE;
+
+	case IMPASSE_ID_TEST: 
+		return TRUE;
+
+	case DISJUNCTION_TEST:
+		for (c1 = ct1->data.disjunction_list, c2 = ct2->data.disjunction_list; (c1!=NIL) && (c2!=NIL); c1 = c1->rest, c2 = c2->rest)
+		{
+			if (c1->first != c2->first) 
+				return FALSE;
+		}
+		if (c1 == c2) 
+			return TRUE;  /* make sure they both hit end-of-list */
+		return FALSE;
+
+	case CONJUNCTIVE_TEST:
+		// bug 510 fix: ignore order of test members in conjunctions
+		{
+			std::list<test> copy2;
+			for (c2 = ct2->data.conjunct_list; c2 != NIL; c2 = c2->rest)
+				copy2.push_back(static_cast<test>(c2->first));
+
+			std::list<test>::iterator iter;
+			for (c1 = ct1->data.conjunct_list; c1 != NIL; c1 = c1->rest)
+			{
+				// check against copy
+				for(iter = copy2.begin(); iter != copy2.end(); ++iter)
+				{
+					if (tests_are_equal(static_cast<test>(c1->first), *iter, neg)) 
+						break;
+				}
+
+				// iter will be end if no match
+				if (iter == copy2.end())
+					return FALSE;
+
+				// there was a match, remove it from unmatched
+				copy2.erase(iter);
+			}
+
+			// make sure no unmatched remain
+			if (copy2.empty()) 
+				return TRUE;
+		}
+		return FALSE;
+
+	default:  /* relational tests other than equality */
+		if (ct1->data.referent == ct2->data.referent) 
+			return TRUE;
+		return FALSE;
+	}
 }
 
 /* ----------------------------------------------------------------
@@ -472,8 +522,9 @@ uint32_t hash_test (agent* thisAgent, test t) {
     return result;
   case CONJUNCTIVE_TEST:
     result = 100276;
-    for (c=ct->data.disjunction_list; c!=NIL; c=c->rest)
-      result = result + hash_test (thisAgent, static_cast<char *>(c->first));
+	// bug 510: conjunctive tests' order needs to be ignored
+    //for (c=ct->data.disjunction_list; c!=NIL; c=c->rest)
+    //  result = result + hash_test (thisAgent, static_cast<char *>(c->first));
     return result;
   case NOT_EQUAL_TEST:
   case LESS_TEST:
@@ -795,17 +846,19 @@ void copy_condition_list (agent* thisAgent,
 
 Bool conditions_are_equal (condition *c1, condition *c2) {
   if (c1->type != c2->type) return FALSE;
+  bool neg = true;
   switch (c1->type) {
   case POSITIVE_CONDITION:
+	  neg = false;
   case NEGATIVE_CONDITION:
     if (! tests_are_equal (c1->data.tests.id_test,
-                           c2->data.tests.id_test))
+                           c2->data.tests.id_test, neg))
       return FALSE;
     if (! tests_are_equal (c1->data.tests.attr_test,
-                           c2->data.tests.attr_test))
+                           c2->data.tests.attr_test, neg))
       return FALSE;
     if (! tests_are_equal (c1->data.tests.value_test,
-                           c2->data.tests.value_test))
+                           c2->data.tests.value_test, neg))
       return FALSE;
     if (c1->test_for_acceptable_preference !=
         c2->test_for_acceptable_preference)

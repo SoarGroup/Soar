@@ -476,7 +476,7 @@ Bool pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
   condition *cond;
   cond = static_cast<condition_struct *>(dc->item);
   if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return FALSE;
-  return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test);
+  return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test, false);
 }
 
 /*

@@ -178,10 +178,12 @@ extern void add_new_test_to_test (agent* thisAgent, test *t, test add_me);
 
 /* --- Same as above, only has no effect if the second test is already
    included in the first one. --- */
-extern void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me);
+extern void add_new_test_to_test_if_not_already_there (agent* thisAgent, test *t, test add_me, bool neg);
 
-/* --- Returns TRUE iff the two tests are identical. --- */
-extern Bool tests_are_equal (test t1, test t2);
+/* --- Returns TRUE iff the two tests are identical. 
+   If neg is true, ignores order of members in conjunctive tests
+   and assumes variables are all equal. --- */
+extern Bool tests_are_equal (test t1, test t2, bool neg);
 
 /* --- Returns a hash value for the given test. --- */
 extern uint32_t hash_test (agent* thisAgent, test t);
