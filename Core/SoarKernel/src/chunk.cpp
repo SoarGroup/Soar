@@ -433,10 +433,13 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
       cc->prev = prev_cc;
       cc->variablized_cond->prev = prev_cc->variablized_cond;
       prev_cc->variablized_cond->next = cc->variablized_cond;
+      cc->instantiated_cond->prev = prev_cc->instantiated_cond;
+      prev_cc->instantiated_cond->next = cc->instantiated_cond;
     } else {
       first_cc = cc;
       cc->prev = NIL;
       cc->variablized_cond->prev = NIL;
+      cc->instantiated_cond->prev = NIL;
     }
     prev_cc = cc;
     /* --- add this in to the TC --- */
@@ -464,10 +467,13 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
         cc->prev = prev_cc;
         cc->variablized_cond->prev = prev_cc->variablized_cond;
         prev_cc->variablized_cond->next = cc->variablized_cond;
+        cc->instantiated_cond->prev = prev_cc->instantiated_cond;
+        prev_cc->instantiated_cond->next = cc->instantiated_cond;
       } else {
         first_cc = cc;
         cc->prev = NIL;
         cc->variablized_cond->prev = NIL;
+        cc->instantiated_cond->prev = NIL;
       }
       prev_cc = cc;
     } else {
@@ -492,6 +498,7 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
   if (prev_cc) {
     prev_cc->next = NIL;
     prev_cc->variablized_cond->next = NIL;
+    prev_cc->instantiated_cond->next = NIL;
   } else {
     first_cc = NIL;
   }
@@ -1223,7 +1230,23 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 		print (thisAgent, "\n  -->\n   ");
 		print_action_list (thisAgent, rhs, 3, FALSE);
 		print (thisAgent, "\n\n(Ignoring this chunk.  Weird things could happen from now on...)\n");
-		goto chunking_done; /* this leaks memory but who cares */
+
+		deallocate_condition_list (thisAgent, top_cc->variablized_cond);
+		deallocate_condition_list (thisAgent, top_cc->instantiated_cond);
+		{ 
+			chunk_cond *cc;
+			while (top_cc) 
+			{
+				cc = top_cc;
+				top_cc = cc->next;
+				free_with_pool (&thisAgent->chunk_cond_pool, cc);
+			}
+		}
+
+		deallocate_action_list (thisAgent, rhs);
+		symbol_remove_ref(thisAgent, prod_name);
+
+		goto chunking_done;
 	}
 
 	{ 
@@ -1313,7 +1336,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 	deallocate_condition_list (thisAgent, lhs_top);
 	{ 
 		chunk_cond *cc;
-		while (top_cc) {
+		while (top_cc) 
+		{
 			cc = top_cc;
 			top_cc = cc->next;
 			free_with_pool (&thisAgent->chunk_cond_pool, cc);
