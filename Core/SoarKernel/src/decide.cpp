@@ -1641,11 +1641,18 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 									* level and never elaborate it (resulting in a memory
 									* leak). 
 									*/
+
+									// Turns out this can happen with basic, legal rules, 
+									// see attachment on bug 1144
+
+									// Commenting out error, warning instead.
 							} else {
 								char msg[256];
-								strncpy(msg,"**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n",256);
+								//strncpy(msg,"**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n",256);
+								strncpy(msg,"**** Warning: Wanted to create a GDS for a WME level different from the instantiation level. This should be rare. See bug 1144. ****\n\n",256);
 								msg[255] = 0; /* ensure null termination */
-								abort_with_fatal_error(thisAgent, msg);
+								//abort_with_fatal_error(thisAgent, msg);
+								print(thisAgent, "%s", msg);
 							}
 						} /* end if no GDS yet for goal... */
 
