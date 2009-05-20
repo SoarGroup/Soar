@@ -899,443 +899,473 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
 ==================================================================== */
 
 
-void chunk_instantiation (agent* thisAgent, 
-						  instantiation *inst, 
-						  Bool allow_variablization) {
-  Bool making_topmost_chunk = FALSE;   /* RCHONG:  10.11 */
-  goal_stack_level grounds_level;
-  preference *results, *pref;
-  action *rhs;
-  production *prod;
-  instantiation *chunk_inst;
-  Symbol *prod_name;
-  byte prod_type;
-  Bool print_name, print_prod;
-  byte rete_addition_result;
-  condition *lhs_top, *lhs_bottom;
-  not_struct *nots;
-  chunk_cond *top_cc, *bottom_cc;
-  
-  explain_chunk_str temp_explain_chunk;
-  memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
+void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_variablization) 
+{
+	Bool making_topmost_chunk = FALSE;   /* RCHONG:  10.11 */
+	goal_stack_level grounds_level;
+	preference *results, *pref;
+	action *rhs;
+	production *prod;
+	instantiation *chunk_inst;
+	Symbol *prod_name;
+	byte prod_type;
+	Bool print_name, print_prod;
+	byte rete_addition_result;
+	condition *lhs_top, *lhs_bottom;
+	not_struct *nots;
+	chunk_cond *top_cc, *bottom_cc;
+
+	explain_chunk_str temp_explain_chunk;
+	memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  struct timeval saved_start_tv;
+	struct timeval saved_start_tv;
 #endif
 #endif
-  
-  /* --- if it only matched an attribute impasse, don't chunk --- */
-  if (! inst->match_goal) return; 
-  
-  /* --- if no preference is above the match goal level, exit --- */
-  for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next) {
-	  if (pref->id->id.level < inst->match_goal_level)
-		  break;
-  }
-  if (! pref) return;
-  
+
+	/* --- if it only matched an attribute impasse, don't chunk --- */
+	if (! inst->match_goal) 
+		return; 
+
+	/* --- if no preference is above the match goal level, exit --- */
+	for (pref=inst->preferences_generated; pref!=NIL; pref=pref->inst_next) 
+	{
+		if (pref->id->id.level < inst->match_goal_level)
+			break;
+	}
+	if (! pref) 
+		return;
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  start_timer (thisAgent, &saved_start_tv);
+	start_timer (thisAgent, &saved_start_tv);
 #endif
 #endif
-  
-  /* REW: begin 09.15.96 */
-  
-  /*
-  
+
+	/* REW: begin 09.15.96 */
+
+	/*
+
 	in OPERAND, we only wanna built a chunk for the top goal; i.e. no
 	intermediate chunks are build.  we're essentially creating
 	"top-down chunking"; just the opposite of the "bottom-up chunking"
 	that is available through a soar prompt-level comand.
-	
-	  (why do we do this??  i don't remember...)
-	  
-		we accomplish this by forcing only justifications to be built for
-		subgoal chunks.  and when we're about to build the top level
-		result, we make a chunk.  a cheat, but it appears to work.  of
-		course, this only kicks in if learning is turned on.
-		
-		  i get the behavior i want by twiddling the allow_variablization
-		  flag.  i set it to FALSE for intermediate results.  then for the
-		  last (top-most) result, i set it to whatever it was when the
-		  function was called.
-		  
-			by the way, i need the lower level justificiations because they
-			support the upper level justifications; i.e. a justification at
-			level i supports the justification at level i-1.  i'm talkin' outa
-			my butt here since i don't know that for a fact.  it's just that
-			i tried building only the top level chunk and ignored the
-			intermediate justifications and the system complained.  my
-			explanation seemed reasonable, at the moment.
-			
-  */
-  
-  
-  if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == TRUE) {
-	  if (pref->id->id.level < (inst->match_goal_level - 1)) {
-		  making_topmost_chunk     = FALSE;
-		  allow_variablization     = FALSE;
-		  inst->okay_to_variablize = FALSE;
 
-		  if (thisAgent->soar_verbose_flag == TRUE) {
-			  printf("\n   in chunk_instantiation: making justification only");
-			  xml_generate_verbose(thisAgent, "in chunk_instantiation: making justification only");
-		  }
-	  }
-	  else {
-		  making_topmost_chunk     = TRUE;
-		  allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
-		  inst->okay_to_variablize = static_cast<byte>(thisAgent->sysparams[LEARNING_ON_SYSPARAM]);
+	(why do we do this??  i don't remember...)
 
-		  if (thisAgent->soar_verbose_flag == TRUE) {
-			  printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
-			  if(allow_variablization) {
-				  xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
-			  } else {
-				  xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
-			  }
-		  }
-	  }
-  }
-  else {
-	  making_topmost_chunk = TRUE;
-  }
-  /* REW: end   09.15.96 */
-  
-  
-  results = get_results_for_instantiation (thisAgent, inst);
-  if (!results) goto chunking_done;
-  
-  /* --- update flags on goal stack for bottom-up chunking --- */
-  { Symbol *g;
-  for (g=inst->match_goal->id.higher_goal;
-  g && g->id.allow_bottom_up_chunks;
-  g=g->id.higher_goal)
-      g->id.allow_bottom_up_chunks = FALSE;
-  }
-  
-  grounds_level = inst->match_goal_level - 1;
-  
-  thisAgent->backtrace_number++; 
-  if (thisAgent->backtrace_number==0) 
-	  thisAgent->backtrace_number=1;
-  thisAgent->grounds_tc++; 
-  if (thisAgent->grounds_tc==0) 
-	  thisAgent->grounds_tc=1;
-  thisAgent->potentials_tc++; 
-  if (thisAgent->potentials_tc==0) 
-	  thisAgent->potentials_tc=1;
-  thisAgent->locals_tc++; 
-  if (thisAgent->locals_tc==0) 
-	  thisAgent->locals_tc=1;
-  thisAgent->grounds = NIL;
-  thisAgent->positive_potentials = NIL;
-  thisAgent->locals = NIL;
-  thisAgent->instantiations_with_nots = NIL;
-  
-  if (allow_variablization &&
-      (! thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM]))
-	  allow_variablization = inst->match_goal->id.allow_bottom_up_chunks;
-  
-	  /* DJP : Need to initialize chunk_free_flag to be FALSE, as default before
-  looking for problem spaces and setting the chunk_free_flag below  */
-  
-  thisAgent->chunk_free_flag = FALSE ;
-  /* DJP : Noticed this also isn't set if no ps_name */
-  thisAgent->chunky_flag = FALSE ;   
-  
-  
-  /* --- check whether ps name is in chunk_free_problem_spaces --- */
-  if (allow_variablization) {
-  /* KJC new implementation of learn cmd:  old SPECIFY ==> ONLY,
-  * old ON ==> EXCEPT,  now ON is just ON always
-  * checking if state is chunky or chunk-free...
-	  */
-	  if ( thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM]) {
-		  if (member_of_list(inst->match_goal,thisAgent->chunk_free_problem_spaces))
-		  {
-			  allow_variablization = FALSE; 
-			  thisAgent->chunk_free_flag = TRUE;
-		  }
-	  }
-	  else if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM]) {
-		  if (member_of_list(inst->match_goal,thisAgent->chunky_problem_spaces))
-		  {
-			  allow_variablization = TRUE; 
-			  thisAgent->chunky_flag = TRUE;
-		  }
-		  else {
-			  allow_variablization = FALSE; 
-			  thisAgent->chunky_flag = FALSE;
-		  }
-	  }
-  }   /* end KJC mods */
-  
-  thisAgent->variablize_this_chunk = allow_variablization;
-  
-  /* Start a new structure for this potential chunk */
-  
-  if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) {
-	  temp_explain_chunk.conds       = NULL;
-	  temp_explain_chunk.actions     = NULL;
-	  temp_explain_chunk.backtrace   = NULL;
-	  temp_explain_chunk.name[0]     = '\0';
-	  temp_explain_chunk.all_grounds = NIL;
-	  temp_explain_chunk.next_chunk  = NULL;
-	  reset_backtrace_list(thisAgent);
-  }
-  
-  /* --- backtrace through the instantiation that produced each result --- */
-  for (pref=results; pref!=NIL; pref=pref->next_result) {
-	  if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-		  print_string (thisAgent, "\nFor result preference ");
-          xml_begin_tag(thisAgent, kTagBacktraceResult);
-		  print_preference (thisAgent, pref);
-		  print_string (thisAgent, " ");
-	  }
-	  backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
-      
-      if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
-          xml_end_tag(thisAgent, kTagBacktraceResult);
-      }
-  }
-  
-  thisAgent->quiescence_t_flag = FALSE;
-  
-  while (TRUE) {
-	  trace_locals (thisAgent, grounds_level);
-	  trace_grounded_potentials (thisAgent);
-	  if (! trace_ungrounded_potentials (thisAgent, grounds_level)) break;
-  }
+	we accomplish this by forcing only justifications to be built for
+	subgoal chunks.  and when we're about to build the top level
+	result, we make a chunk.  a cheat, but it appears to work.  of
+	course, this only kicks in if learning is turned on.
 
-  free_list (thisAgent, thisAgent->positive_potentials);
-  
-  /* --- backtracing done; collect the grounds into the chunk --- */
-  { tc_number tc_for_grounds;
-  tc_for_grounds = get_new_tc_number(thisAgent);
-  build_chunk_conds_for_grounds_and_add_negateds (thisAgent, &top_cc, &bottom_cc,
-	  tc_for_grounds);
-  nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots,
-	  tc_for_grounds);
-  }
-  
-  /* --- get symbol for name of new chunk or justification --- */
-  if (thisAgent->variablize_this_chunk) {
-	  /* kjh (B14) begin */
-	  thisAgent->chunks_this_d_cycle++;
-	  prod_name = generate_chunk_name_sym_constant(thisAgent, inst); 
-	  /* kjh (B14) end */
-	  
-	  /*   old way of generating chunk names ...
-	  prod_name = generate_new_sym_constant ("chunk-",&thisAgent->chunk_count);
-	  thisAgent->chunks_this_d_cycle)++;
-	  */
-	  
-	  prod_type = CHUNK_PRODUCTION_TYPE;
-	  print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
-	  print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
-  } else {
-	  prod_name = generate_new_sym_constant (thisAgent, "justification-",
-		  &thisAgent->justification_count);
-	  prod_type = JUSTIFICATION_PRODUCTION_TYPE;
-	  print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
-	  print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
-  }
-  
-  /* AGR 617/634 begin */
-  if (print_name) {
-	  if (get_printer_output_column(thisAgent)!=1) print (thisAgent, "\n");
-	  print_with_symbols (thisAgent, "Building %y", prod_name);
+	i get the behavior i want by twiddling the allow_variablization
+	flag.  i set it to FALSE for intermediate results.  then for the
+	last (top-most) result, i set it to whatever it was when the
+	function was called.
 
-	  xml_begin_tag(thisAgent, kTagLearning);
-      xml_begin_tag(thisAgent, kTagProduction);
-      xml_att_val(thisAgent, kProduction_Name, prod_name);
-      xml_end_tag(thisAgent, kTagProduction);
-	  xml_end_tag(thisAgent, kTagLearning);
-  }
-  /* AGR 617/634 end */
-  
-  /* --- if there aren't any grounds, exit --- */
-  if (! top_cc) {
-	  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-		  print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
-		  xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
-	  }
-	  goto chunking_done;
-  }
-  
-  /* MVP 6-8-94 */
-  if (thisAgent->chunks_this_d_cycle >
-      static_cast<unsigned long>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) ) {
-		  if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-		  print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
-		  xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
-		  }
-	  thisAgent->max_chunks_reached = TRUE;
-	  goto chunking_done;
-  }
-  
-  /* --- variablize it --- */
-  lhs_top = top_cc->variablized_cond;
-  lhs_bottom = bottom_cc->variablized_cond;
-  reset_variable_generator (thisAgent, lhs_top, NIL);
-  thisAgent->variablization_tc = get_new_tc_number(thisAgent);
-  variablize_condition_list (thisAgent, lhs_top);
-  variablize_nots_and_insert_into_conditions (thisAgent, nots, lhs_top);
-  rhs = copy_and_variablize_result_list (thisAgent, results);
-  
-  /* --- add goal/impasse tests to it --- */
-  add_goal_or_impasse_tests (thisAgent, top_cc);
-  
-  /* --- reorder lhs and make the production --- */
-  
-  prod = make_production (thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs,
-	  FALSE);
-  
-  if (!prod) {
-	  print (thisAgent, "\nUnable to reorder this chunk:\n  ");
-	  print_condition_list (thisAgent, lhs_top, 2, FALSE);
-	  print (thisAgent, "\n  -->\n   ");
-	  print_action_list (thisAgent, rhs, 3, FALSE);
-	  print (thisAgent, "\n\n(Ignoring this chunk.  Weird things could happen from now on...)\n");
-	  goto chunking_done; /* this leaks memory but who cares */
-  }
-  
-  { condition *inst_lhs_top = 0, *inst_lhs_bottom = 0;
-  
-  reorder_instantiated_conditions (top_cc, &inst_lhs_top, &inst_lhs_bottom);
-  
-  /* Record the list of grounds in the order they will appear in the chunk. */
-  if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
-      temp_explain_chunk.all_grounds = inst_lhs_top;   /* Not a copy yet */
-  
-  allocate_with_pool (thisAgent, &thisAgent->instantiation_pool, &chunk_inst);
-  chunk_inst->prod = prod;
-  chunk_inst->top_of_instantiated_conditions = inst_lhs_top;
-  chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
-  chunk_inst->nots = nots;
-  
-  chunk_inst->GDS_evaluated_already = FALSE;  /* REW:  09.15.96 */
-  
-  
-											  /* If:
-											  - you don't want to variablize this chunk, and
-											  - the reason is ONLY that it's chunk free, and
-											  - NOT that it's also quiescence, then
-											  it's okay to variablize through this instantiation later.
-  */
-  
-  /* AGR MVL1 begin */
-  if (! thisAgent->sysparams[LEARNING_ONLY_SYSPARAM]) {
-      if ((! thisAgent->variablize_this_chunk) 
-		  && (thisAgent->chunk_free_flag) 
-		  && (! thisAgent->quiescence_t_flag))
-		  chunk_inst->okay_to_variablize = TRUE;
-      else
-		  chunk_inst->okay_to_variablize = thisAgent->variablize_this_chunk;
-  }
-  else {
-      if ((! thisAgent->variablize_this_chunk) 
-		  && (! thisAgent->chunky_flag) 
-		  && (! thisAgent->quiescence_t_flag))
-		  chunk_inst->okay_to_variablize = TRUE;
-      else
-		  chunk_inst->okay_to_variablize = thisAgent->variablize_this_chunk;
-  }
-  /* AGR MVL1 end */
-  
-  chunk_inst->in_ms = TRUE;  /* set TRUE for now, we'll find out later... */
-  make_clones_of_results (thisAgent, results, chunk_inst);
-  fill_in_new_instantiation_stuff (thisAgent, chunk_inst, TRUE);
-  
-  }  /* matches { condition *inst_lhs_top, *inst_lhs_bottom ...  */
-  
-	 /* RBD 4/6/95 Need to copy cond's and actions for the production here,
-     otherwise some of the variables might get deallocated by the call to
-  add_production_to_rete() when it throws away chunk variable names. */
-  if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) {
-	  condition *new_top = 0;
-	  condition *new_bottom = 0;
-	  copy_condition_list (thisAgent, lhs_top, &new_top, &new_bottom);
-	  temp_explain_chunk.conds = new_top;
-	  temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results);
-  }
-  
-  rete_addition_result = add_production_to_rete (thisAgent, prod, lhs_top, chunk_inst,
-	  print_name);
-  
-	  /* If didn't immediately excise the chunk from the rete net   
-  then record the temporary structure in the list of explained chunks. */
-  
-  if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) {
-	  if ((rete_addition_result != DUPLICATE_PRODUCTION) &&
-		  ((prod_type != JUSTIFICATION_PRODUCTION_TYPE) ||
-		  (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH) )) {
-		  strncpy(temp_explain_chunk.name,prod_name->sc.name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
-		  temp_explain_chunk.name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
-		  explain_add_temp_to_chunk_list (thisAgent, &temp_explain_chunk);
-	  } else {
-		  /* RBD 4/6/95 if excised the chunk, discard previously-copied stuff */
-		  deallocate_condition_list (thisAgent, temp_explain_chunk.conds);
-		  deallocate_action_list (thisAgent, temp_explain_chunk.actions);
-	  }
-  }
-	  
-	  /* --- deallocate chunks conds and variablized conditions --- */
-	  deallocate_condition_list (thisAgent, lhs_top);
-	  { chunk_cond *cc;
-	  while (top_cc) {
-		  cc = top_cc;
-		  top_cc = cc->next;
-		  free_with_pool (&thisAgent->chunk_cond_pool, cc);
-	  }
-	  }
-	  
-	  if (print_prod && (rete_addition_result!=DUPLICATE_PRODUCTION)) {
-		  print_string (thisAgent, "\n");
-          xml_begin_tag(thisAgent, kTagLearning);
-		  print_production (thisAgent, prod, FALSE);
-          xml_end_tag(thisAgent, kTagLearning);
-	  }
-	  
-	  if (rete_addition_result==DUPLICATE_PRODUCTION) {
-		  excise_production (thisAgent, prod, FALSE);
-	  } else if ((prod_type==JUSTIFICATION_PRODUCTION_TYPE) &&
-		  (rete_addition_result==REFRACTED_INST_DID_NOT_MATCH)) {
-		  excise_production (thisAgent, prod, FALSE);
-	  }
-	  
-	  if (rete_addition_result!=REFRACTED_INST_MATCHED) {
-		  /* --- it didn't match, or it was a duplicate production --- */
-		  /* --- tell the firer it didn't match, so it'll only assert the
-		  o-supported preferences --- */
-		  chunk_inst->in_ms = FALSE;
-	  }
-	  
-	  /* --- assert the preferences --- */
-	  chunk_inst->next = thisAgent->newly_created_instantiations;
-	  thisAgent->newly_created_instantiations = chunk_inst;
-	  
-	  
-	  
-	  /* MVP 6-8-94 */
-	  if (!thisAgent->max_chunks_reached)
-		  chunk_instantiation (thisAgent, chunk_inst, thisAgent->variablize_this_chunk);
-	  
+	by the way, i need the lower level justificiations because they
+	support the upper level justifications; i.e. a justification at
+	level i supports the justification at level i-1.  i'm talkin' outa
+	my butt here since i don't know that for a fact.  it's just that
+	i tried building only the top level chunk and ignored the
+	intermediate justifications and the system complained.  my
+	explanation seemed reasonable, at the moment.
+
+	*/
+
+
+	if (thisAgent->sysparams[LEARNING_ON_SYSPARAM] == TRUE) 
+	{
+		if (pref->id->id.level < (inst->match_goal_level - 1)) 
+		{
+			making_topmost_chunk     = FALSE;
+			allow_variablization     = FALSE;
+			inst->okay_to_variablize = FALSE;
+
+			if (thisAgent->soar_verbose_flag == TRUE) 
+			{
+				printf("\n   in chunk_instantiation: making justification only");
+				xml_generate_verbose(thisAgent, "in chunk_instantiation: making justification only");
+			}
+		}
+		else 
+		{
+			making_topmost_chunk     = TRUE;
+			allow_variablization     = (thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
+			inst->okay_to_variablize = static_cast<byte>(thisAgent->sysparams[LEARNING_ON_SYSPARAM]);
+
+			if (thisAgent->soar_verbose_flag == TRUE) 
+			{
+				printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
+				if(allow_variablization)
+					xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
+				else 
+					xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to FALSE");
+			}
+		}
+	}
+	else 
+	{
+		making_topmost_chunk = TRUE;
+	}
+	/* REW: end   09.15.96 */
+
+	results = get_results_for_instantiation (thisAgent, inst);
+	if (!results) goto chunking_done;
+
+	/* --- update flags on goal stack for bottom-up chunking --- */
+	{ 
+		Symbol *g;
+		for (g=inst->match_goal->id.higher_goal; g && g->id.allow_bottom_up_chunks; g=g->id.higher_goal)
+			g->id.allow_bottom_up_chunks = FALSE;
+	}
+
+	grounds_level = inst->match_goal_level - 1;
+
+	thisAgent->backtrace_number++; 
+	if (thisAgent->backtrace_number==0) 
+		thisAgent->backtrace_number=1;
+
+	thisAgent->grounds_tc++; 
+	if (thisAgent->grounds_tc==0) 
+		thisAgent->grounds_tc=1;
+
+	thisAgent->potentials_tc++; 
+	if (thisAgent->potentials_tc==0) 
+		thisAgent->potentials_tc=1;
+
+	thisAgent->locals_tc++; 
+	if (thisAgent->locals_tc==0) 
+		thisAgent->locals_tc=1;
+
+	thisAgent->grounds = NIL;
+	thisAgent->positive_potentials = NIL;
+	thisAgent->locals = NIL;
+	thisAgent->instantiations_with_nots = NIL;
+
+	if (allow_variablization && (! thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM]))
+		allow_variablization = inst->match_goal->id.allow_bottom_up_chunks;
+
+	/* DJP : Need to initialize chunk_free_flag to be FALSE, as default before
+	looking for problem spaces and setting the chunk_free_flag below  */
+
+	thisAgent->chunk_free_flag = FALSE ;
+	/* DJP : Noticed this also isn't set if no ps_name */
+	thisAgent->chunky_flag = FALSE ;   
+
+
+	/* --- check whether ps name is in chunk_free_problem_spaces --- */
+	if (allow_variablization) 
+	{
+		/* KJC new implementation of learn cmd:  old SPECIFY ==> ONLY,
+		* old ON ==> EXCEPT,  now ON is just ON always
+		* checking if state is chunky or chunk-free...
+		*/
+		if ( thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM]) 
+		{
+			if (member_of_list(inst->match_goal,thisAgent->chunk_free_problem_spaces))
+			{
+				allow_variablization = FALSE; 
+				thisAgent->chunk_free_flag = TRUE;
+			}
+		}
+		else if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM]) 
+		{
+			if (member_of_list(inst->match_goal,thisAgent->chunky_problem_spaces))
+			{
+				allow_variablization = TRUE; 
+				thisAgent->chunky_flag = TRUE;
+			}
+			else 
+			{
+				allow_variablization = FALSE; 
+				thisAgent->chunky_flag = FALSE;
+			}
+		}
+	}   /* end KJC mods */
+
+	thisAgent->variablize_this_chunk = allow_variablization;
+
+	/* Start a new structure for this potential chunk */
+
+	if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) 
+	{
+		temp_explain_chunk.conds       = NULL;
+		temp_explain_chunk.actions     = NULL;
+		temp_explain_chunk.backtrace   = NULL;
+		temp_explain_chunk.name[0]     = '\0';
+		temp_explain_chunk.all_grounds = NIL;
+		temp_explain_chunk.next_chunk  = NULL;
+		reset_backtrace_list(thisAgent);
+	}
+
+	/* --- backtrace through the instantiation that produced each result --- */
+	for (pref=results; pref!=NIL; pref=pref->next_result) 
+	{
+		if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) 
+		{
+			print_string (thisAgent, "\nFor result preference ");
+			xml_begin_tag(thisAgent, kTagBacktraceResult);
+			print_preference (thisAgent, pref);
+			print_string (thisAgent, " ");
+		}
+		backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, 0);
+
+		if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) 
+		{
+			xml_end_tag(thisAgent, kTagBacktraceResult);
+		}
+	}
+
+	thisAgent->quiescence_t_flag = FALSE;
+
+	while (TRUE) 
+	{
+		trace_locals (thisAgent, grounds_level);
+		trace_grounded_potentials (thisAgent);
+		if (! trace_ungrounded_potentials (thisAgent, grounds_level)) break;
+	}
+
+	free_list (thisAgent, thisAgent->positive_potentials);
+
+	/* --- backtracing done; collect the grounds into the chunk --- */
+	{ 
+		tc_number tc_for_grounds;
+		tc_for_grounds = get_new_tc_number(thisAgent);
+		build_chunk_conds_for_grounds_and_add_negateds (thisAgent, &top_cc, &bottom_cc, tc_for_grounds);
+		nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots, tc_for_grounds);
+	}
+
+	/* --- get symbol for name of new chunk or justification --- */
+	if (thisAgent->variablize_this_chunk) 
+	{
+		/* kjh (B14) begin */
+		thisAgent->chunks_this_d_cycle++;
+		prod_name = generate_chunk_name_sym_constant(thisAgent, inst); 
+		/* kjh (B14) end */
+
+		/*   old way of generating chunk names ...
+		prod_name = generate_new_sym_constant ("chunk-",&thisAgent->chunk_count);
+		thisAgent->chunks_this_d_cycle)++;
+		*/
+
+		prod_type = CHUNK_PRODUCTION_TYPE;
+		print_name = (thisAgent->sysparams[TRACE_CHUNK_NAMES_SYSPARAM] != 0);
+		print_prod = (thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM] != 0);
+	} 
+	else 
+	{
+		prod_name = generate_new_sym_constant (thisAgent, "justification-", &thisAgent->justification_count);
+		prod_type = JUSTIFICATION_PRODUCTION_TYPE;
+		print_name = (thisAgent->sysparams[TRACE_JUSTIFICATION_NAMES_SYSPARAM] != 0);
+		print_prod = (thisAgent->sysparams[TRACE_JUSTIFICATIONS_SYSPARAM] != 0);
+	}
+
+	/* AGR 617/634 begin */
+	if (print_name) 
+	{
+		if (get_printer_output_column(thisAgent)!=1) 
+			print (thisAgent, "\n");
+		print_with_symbols (thisAgent, "Building %y", prod_name);
+
+		xml_begin_tag(thisAgent, kTagLearning);
+		xml_begin_tag(thisAgent, kTagProduction);
+		xml_att_val(thisAgent, kProduction_Name, prod_name);
+		xml_end_tag(thisAgent, kTagProduction);
+		xml_end_tag(thisAgent, kTagLearning);
+	}
+	/* AGR 617/634 end */
+
+	/* --- if there aren't any grounds, exit --- */
+	if (! top_cc) 
+	{
+		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) 
+		{
+			print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
+			xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
+		}
+		goto chunking_done;
+	}
+
+	/* MVP 6-8-94 */
+	if (thisAgent->chunks_this_d_cycle > static_cast<unsigned long>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) ) 
+	{
+		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) 
+		{
+			print (thisAgent, "\nWarning: reached max-chunks! Halting system.");
+			xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
+		}
+		thisAgent->max_chunks_reached = TRUE;
+		goto chunking_done;
+	}
+
+	/* --- variablize it --- */
+	lhs_top = top_cc->variablized_cond;
+	lhs_bottom = bottom_cc->variablized_cond;
+	reset_variable_generator (thisAgent, lhs_top, NIL);
+	thisAgent->variablization_tc = get_new_tc_number(thisAgent);
+	variablize_condition_list (thisAgent, lhs_top);
+	variablize_nots_and_insert_into_conditions (thisAgent, nots, lhs_top);
+	rhs = copy_and_variablize_result_list (thisAgent, results);
+
+	/* --- add goal/impasse tests to it --- */
+	add_goal_or_impasse_tests (thisAgent, top_cc);
+
+	/* --- reorder lhs and make the production --- */
+
+	prod = make_production (thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, FALSE);
+
+	if (!prod) 
+	{
+		print (thisAgent, "\nUnable to reorder this chunk:\n  ");
+		print_condition_list (thisAgent, lhs_top, 2, FALSE);
+		print (thisAgent, "\n  -->\n   ");
+		print_action_list (thisAgent, rhs, 3, FALSE);
+		print (thisAgent, "\n\n(Ignoring this chunk.  Weird things could happen from now on...)\n");
+		goto chunking_done; /* this leaks memory but who cares */
+	}
+
+	{ 
+		condition *inst_lhs_top = 0, *inst_lhs_bottom = 0;
+
+		reorder_instantiated_conditions (top_cc, &inst_lhs_top, &inst_lhs_bottom);
+
+		/* Record the list of grounds in the order they will appear in the chunk. */
+		if (thisAgent->sysparams[EXPLAIN_SYSPARAM])
+			temp_explain_chunk.all_grounds = inst_lhs_top;   /* Not a copy yet */
+
+		allocate_with_pool (thisAgent, &thisAgent->instantiation_pool, &chunk_inst);
+		chunk_inst->prod = prod;
+		chunk_inst->top_of_instantiated_conditions = inst_lhs_top;
+		chunk_inst->bottom_of_instantiated_conditions = inst_lhs_bottom;
+		chunk_inst->nots = nots;
+
+		chunk_inst->GDS_evaluated_already = FALSE;  /* REW:  09.15.96 */
+
+
+		/* If:
+		- you don't want to variablize this chunk, and
+		- the reason is ONLY that it's chunk free, and
+		- NOT that it's also quiescence, then
+		it's okay to variablize through this instantiation later.
+		*/
+
+		/* AGR MVL1 begin */
+		if (! thisAgent->sysparams[LEARNING_ONLY_SYSPARAM]) 
+		{
+			if ((! thisAgent->variablize_this_chunk) && (thisAgent->chunk_free_flag) && (! thisAgent->quiescence_t_flag))
+				chunk_inst->okay_to_variablize = TRUE;
+			else
+				chunk_inst->okay_to_variablize = thisAgent->variablize_this_chunk;
+		}
+		else 
+		{
+			if ((! thisAgent->variablize_this_chunk) && (! thisAgent->chunky_flag) && (! thisAgent->quiescence_t_flag))
+				chunk_inst->okay_to_variablize = TRUE;
+			else
+				chunk_inst->okay_to_variablize = thisAgent->variablize_this_chunk;
+		}
+		/* AGR MVL1 end */
+
+		chunk_inst->in_ms = TRUE;  /* set TRUE for now, we'll find out later... */
+		make_clones_of_results (thisAgent, results, chunk_inst);
+		fill_in_new_instantiation_stuff (thisAgent, chunk_inst, TRUE);
+
+	}  /* matches { condition *inst_lhs_top, *inst_lhs_bottom ...  */
+
+	/* RBD 4/6/95 Need to copy cond's and actions for the production here,
+	otherwise some of the variables might get deallocated by the call to
+	add_production_to_rete() when it throws away chunk variable names. */
+	if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) 
+	{
+		condition *new_top = 0;
+		condition *new_bottom = 0;
+		copy_condition_list (thisAgent, lhs_top, &new_top, &new_bottom);
+		temp_explain_chunk.conds = new_top;
+		temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results);
+	}
+
+	rete_addition_result = add_production_to_rete (thisAgent, prod, lhs_top, chunk_inst, print_name);
+
+	/* If didn't immediately excise the chunk from the rete net   
+	then record the temporary structure in the list of explained chunks. */
+
+	if (thisAgent->sysparams[EXPLAIN_SYSPARAM]) 
+	{
+		if ((rete_addition_result != DUPLICATE_PRODUCTION) 
+			&& ((prod_type != JUSTIFICATION_PRODUCTION_TYPE) 
+			|| (rete_addition_result != REFRACTED_INST_DID_NOT_MATCH) )) 
+		{
+			strncpy(temp_explain_chunk.name,prod_name->sc.name, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
+			temp_explain_chunk.name[EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE - 1] = 0;
+			explain_add_temp_to_chunk_list (thisAgent, &temp_explain_chunk);
+		} 
+		else 
+		{
+			/* RBD 4/6/95 if excised the chunk, discard previously-copied stuff */
+			deallocate_condition_list (thisAgent, temp_explain_chunk.conds);
+			deallocate_action_list (thisAgent, temp_explain_chunk.actions);
+		}
+	}
+
+	/* --- deallocate chunks conds and variablized conditions --- */
+	deallocate_condition_list (thisAgent, lhs_top);
+	{ 
+		chunk_cond *cc;
+		while (top_cc) {
+			cc = top_cc;
+			top_cc = cc->next;
+			free_with_pool (&thisAgent->chunk_cond_pool, cc);
+		}
+	}
+
+	if (print_prod && (rete_addition_result!=DUPLICATE_PRODUCTION)) 
+	{
+		print_string (thisAgent, "\n");
+		xml_begin_tag(thisAgent, kTagLearning);
+		print_production (thisAgent, prod, FALSE);
+		xml_end_tag(thisAgent, kTagLearning);
+	}
+
+	if (rete_addition_result==DUPLICATE_PRODUCTION) 
+	{
+		excise_production (thisAgent, prod, FALSE);
+	} 
+	else if ((prod_type==JUSTIFICATION_PRODUCTION_TYPE) 
+		&& (rete_addition_result==REFRACTED_INST_DID_NOT_MATCH)) 
+	{
+			excise_production (thisAgent, prod, FALSE);
+	}
+
+	if (rete_addition_result!=REFRACTED_INST_MATCHED) 
+	{
+		/* --- it didn't match, or it was a duplicate production --- */
+		/* --- tell the firer it didn't match, so it'll only assert the
+		o-supported preferences --- */
+		chunk_inst->in_ms = FALSE;
+	}
+
+	/* --- assert the preferences --- */
+	chunk_inst->next = thisAgent->newly_created_instantiations;
+	thisAgent->newly_created_instantiations = chunk_inst;
+
+	/* MVP 6-8-94 */
+	if (!thisAgent->max_chunks_reached)
+		chunk_instantiation (thisAgent, chunk_inst, thisAgent->variablize_this_chunk);
+
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	  stop_timer(thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
+	stop_timer(thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
 #endif
 #endif
-	  
-	  return;
-	  
+
+	return;
+
 chunking_done: {}
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-			   stop_timer (thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
+	stop_timer (thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
 #endif
 #endif
 }
