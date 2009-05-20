@@ -273,6 +273,11 @@ Symbol *make_variable (agent* thisAgent, const char *name) {
     sym->var.tc_num = 0;
     sym->var.rete_binding_locations = NIL;
     add_to_hash_table (thisAgent, thisAgent->variable_hash_table, sym);
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+    char buf[64];
+    OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
+    OutputDebugString(":+ \n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   }
   return sym;
 }
@@ -322,6 +327,11 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.reward_header = NIL;
 
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+  char buf[64];
+  OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
+  OutputDebugString(":+ \n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   return sym;
 }
 
@@ -339,6 +349,11 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->sc.name = make_memory_block_for_string (thisAgent, name);
     sym->sc.production = NIL;
     add_to_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+    char buf[64];
+    OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
+    OutputDebugString(":+ \n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   }
   return sym;
 }
@@ -356,6 +371,11 @@ Symbol *make_int_constant (agent* thisAgent, long value) {
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->ic.value = value;
     add_to_hash_table (thisAgent, thisAgent->int_constant_hash_table, sym);
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+    char buf[64];
+    OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
+    OutputDebugString(":+ \n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   }
   return sym;
 }
@@ -373,6 +393,11 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
     sym->fc.value = value;
     add_to_hash_table (thisAgent, thisAgent->float_constant_hash_table, sym);
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+    char buf[64];
+    OutputDebugString(symbol_to_string(thisAgent, sym, FALSE, buf, 64));
+    OutputDebugString(":+ \n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   }
   return sym;
 }
