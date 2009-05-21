@@ -1,0 +1,209 @@
+learn --on
+#watch 5
+#watch -b
+#watch -L fullprint
+#verbose -e
+
+## condense.pl: extracting from file cc.soar
+
+## condense.pl: extracting from file tss.soar
+
+sp {elaborate*tss*gen-symbol
+   (state <s> ^superstate.operator <o>)
+   (<o> ^use-tss
+        ^name <match>) # so chunks don't make, eg, tss.constant1, for every operator
+-->
+   (<s> ^tss-key (make-constant-symbol)
+        ^do-tss-init true)
+}
+
+sp {propose*init-tss
+   (state <s> ^tss-key <key>
+              ^do-tss-init true)
+-->
+   (<s> ^operator <o> + > =)
+   (<o> ^name init-tss)
+}
+
+sp {apply*init-tss*first
+   (state <s> ^operator <o>
+              ^tss-key <key>
+              ^top-state <ts>)
+  -(<ts> ^top-state-space <anything>)
+   (<o> ^name init-tss)
+-->
+   (<ts> ^top-state-space <tss>)
+}
+
+sp {apply*init-tss*rest
+   (state <s> ^operator <o>
+              ^do-tss-init <dt>
+              ^tss-key <key>
+              ^top-state <ts>
+              ^superstate.operator <sso>)
+   (<ts> ^top-state-space <tss>)
+   (<o> ^name init-tss)
+-->
+   (<tss> ^<key> <x>)
+   (<s> ^do-tss-init <dt> -)
+}
+
+sp {elaborate*tss-key-to-sso
+   (state <s> ^tss-key <key>
+              ^superstate.operator <sso>)
+-->
+   (<sso> ^tss-key <key>)
+}
+
+sp {elaborate*tss-to-state
+   (state <s> ^tss-key <key>
+              ^top-state.top-state-space <tss>)
+   (<tss> ^<key> <space>)
+-->
+   (<s> ^tss <space>)
+}
+
+sp {elaborate*remove-tss-when-operator-goes-away
+   :o-support
+   (state <s> ^superstate nil
+              ^top-state-space <tss>)
+   (<tss> ^<key> <x>)
+  -(state <s2> ^operator.tss-key <key>)
+-->
+   (<tss> ^<key> <x> -)
+}
+
+sp {propose*first-mode
+   (state <s> ^superstate nil
+             -^initted)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name init)
+}
+sp {apply*first-mode
+   (state <s> ^operator.name init)
+-->
+   (<s> ^toggle a
+        ^initted true)
+}
+
+sp {elaborate*state-name
+   (state <s> ^superstate.operator.name <n>)
+   -->
+   (<s> ^name <n>)
+}
+
+sp {elaborate*top-state*init
+   (state <s> ^superstate <s2>)
+   (<s2> ^superstate nil)
+-->
+   (<s> ^top-state <s2>)
+}
+
+sp {elaborate*b-has-data
+   (state <s> ^toggle b)
+-->
+   (<s> ^first-number 2
+        ^second-number 5)
+}
+
+sp {propose*add
+   (state <s> ^superstate nil
+              ^initted
+             -^final-sum)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name add
+        ^use-tss true)
+}
+
+sp {add*elab-foo
+   (state <s> ^superstate.operator.name add)
+-->
+   (<s> ^foo <oo>)
+}
+
+sp {add*propose*toggle-to-b
+   (state <s> ^superstate.operator.name add
+              ^tss <tss>
+             #-^sum
+              ^superstate.toggle a)
+            # -^superstate.toggle b)
+   (<tss> -^sum)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name toggle-to-b)
+}
+
+sp {add*apply*toggle-to-b
+   (state <s> ^operator.name toggle-to-b
+              ^superstate <ss>)
+   (<ss> ^toggle a)
+-->
+#   (<s> ^foo <foo>)
+   (<ss># ^toggle a -
+         ^toggle b)
+}
+
+sp {add*propose*do-add
+   (state <s> ^superstate.first-number <a>
+              ^superstate.second-number <b>
+              ^superstate <ss>
+           #  -^sum)
+              ^tss <tss>)
+   (<tss> -^sum)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name do-add
+        ^first <a>
+        ^second <b>)
+}
+
+sp {add*apply*do-add
+   (state <s> ^operator <o>
+              ^tss <tss>
+              ^foo <foo>
+              ^superstate <ss>)
+   (<o> ^name do-add
+        ^first <a>
+        ^second <b>)
+-->
+   (<tss> ^sum (+ <a> <b>))
+    #      ^foo <foo>)
+   (<ss> ^foo <foo>)
+  # (<s> ^sum (+ <a> <b>))
+}
+
+sp {add*propose*toggle-to-c
+   (state <s> ^tss.sum <su>
+              ^superstate.operator.name add
+              ^superstate.toggle b)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name toggle-to-c)
+}
+
+sp {add*apply*toggle-to-c
+   (state <s> ^operator.name toggle-to-c
+              ^superstate <ss>
+              ^foo <foo>)
+   (<ss> ^toggle b)
+-->
+   (<ss> #^toggle b -
+         ^toggle c)
+   (<foo> ^bar b)
+}
+
+sp {add*elaborate*done
+   (state <s> ^tss.sum <su>
+              ^superstate <ss>)
+   (<ss> ^toggle c)
+-->
+   (<ss> ^final-sum <su>)
+}
+
+sp {elaborate*halt
+   (state <s> ^final-sum <f>)
+-->
+   (halt)
+}
