@@ -3022,68 +3022,70 @@ approaches may be better */
 
 void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
 
-  /* REW: begin 11.25.96 */ 
-  #ifndef NO_TIMING_STUFF
-  #ifdef DETAILED_TIMING_STATS
-  start_timer(thisAgent, &thisAgent->start_gds_tv);
-  #endif
-  #endif
-  /* REW: end   11.25.96 */ 
+	/* REW: begin 11.25.96 */ 
+#ifndef NO_TIMING_STUFF
+#ifdef DETAILED_TIMING_STATS
+	start_timer(thisAgent, &thisAgent->start_gds_tv);
+#endif
+#endif
+	/* REW: end   11.25.96 */ 
 
-  /* This call to GDS_PrintCmd will have to be uncommented later. -ajc */
-  if (thisAgent->soar_verbose_flag) {} //GDS_PrintCmd();
+	/* This call to GDS_PrintCmd will have to be uncommented later. -ajc */
+	//if (thisAgent->soar_verbose_flag) {} //GDS_PrintCmd();
 
-  /* REW: BUG.  I have no idea right now if this is a terrible hack or
-   * actually what we want to do.  The idea here is that the context of
-   * the immediately higher goal above a retraction should be marked as
-   * having its context changed in order that the architecture doesn't
-   * look below this level for context changes.  I think it's a hack b/c
-   * it seems like there should aready be mechanisms for doing this in
-   * the architecture but I couldn't find any.
-   */
-  /* Note: the inner 'if' is correct -- we only want to change
-   * highest_goal_whose_context_changed if the pointer is currently at
-   * or below (greater than) the goal which we are going to retract.
-   * However, I'm not so sure about the outer 'else.'  If we don't set
-   * this to the goal above the retraction, even if the current value
-   * is NIL, we still seg fault in certain cases.  But setting it as we do 
-   * in the inner 'if' seems to clear up the difficulty.
-   */
+	/* REW: BUG.  I have no idea right now if this is a terrible hack or
+	* actually what we want to do.  The idea here is that the context of
+	* the immediately higher goal above a retraction should be marked as
+	* having its context changed in order that the architecture doesn't
+	* look below this level for context changes.  I think it's a hack b/c
+	* it seems like there should aready be mechanisms for doing this in
+	* the architecture but I couldn't find any.
+	*/
+	/* Note: the inner 'if' is correct -- we only want to change
+	* highest_goal_whose_context_changed if the pointer is currently at
+	* or below (greater than) the goal which we are going to retract.
+	* However, I'm not so sure about the outer 'else.'  If we don't set
+	* this to the goal above the retraction, even if the current value
+	* is NIL, we still seg fault in certain cases.  But setting it as we do 
+	* in the inner 'if' seems to clear up the difficulty.
+	*/
 
-   if (thisAgent->highest_goal_whose_context_changed) {
-      if (thisAgent->highest_goal_whose_context_changed->id.level >=
-          w->gds->goal->id.level) {
-        thisAgent->highest_goal_whose_context_changed =
-	  w->gds->goal->id.higher_goal;
-      }
-   } else {
-     /* If nothing has yet changed (highest_ ... = NIL) then set
-      * the goal automatically */
-     thisAgent->highest_goal_whose_context_changed =
-       w->gds->goal->id.higher_goal; 
-   }
+	if (thisAgent->highest_goal_whose_context_changed) 
+	{
+		if (thisAgent->highest_goal_whose_context_changed->id.level >= w->gds->goal->id.level) 
+		{
+			thisAgent->highest_goal_whose_context_changed = w->gds->goal->id.higher_goal;
+		}
+	} 
+	else 
+	{
+		/* If nothing has yet changed (highest_ ... = NIL) then set
+		* the goal automatically */
+		thisAgent->highest_goal_whose_context_changed = w->gds->goal->id.higher_goal; 
+	}
 
-   if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM]) {
-     print_with_symbols(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ",
-			w->gds->goal);
-     print_wme(thisAgent, w);
-   }
-   remove_existing_context_and_descendents(thisAgent, w->gds->goal);
-   /* BUG: Need to reset highest_goal here ???*/
+	if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM]) 
+	{
+		print_with_symbols(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
+		print_wme(thisAgent, w);
+	}
 
-   /* usually, we'd call do_buffered_wm_and_ownership_changes() here, but
-    * we don't need to because it will be done at the end of the working
-    * memory phase; cf. the end of do_working_memory_phase().
-    */
+	remove_existing_context_and_descendents(thisAgent, w->gds->goal);
 
-  /* REW: begin 11.25.96 */ 
-  #ifndef NO_TIMING_STUFF
-  #ifdef DETAILED_TIMING_STATS
-  stop_timer(thisAgent, &thisAgent->start_gds_tv, 
-             &thisAgent->gds_cpu_time[thisAgent->current_phase]);
-  #endif
-  #endif
-  /* REW: end   11.25.96 */ 
+	/* BUG: Need to reset highest_goal here ???*/
+
+	/* usually, we'd call do_buffered_wm_and_ownership_changes() here, but
+	* we don't need to because it will be done at the end of the working
+	* memory phase; cf. the end of do_working_memory_phase().
+	*/
+
+	/* REW: begin 11.25.96 */ 
+#ifndef NO_TIMING_STUFF
+#ifdef DETAILED_TIMING_STATS
+	stop_timer(thisAgent, &thisAgent->start_gds_tv, &thisAgent->gds_cpu_time[thisAgent->current_phase]);
+#endif
+#endif
+	/* REW: end   11.25.96 */ 
 }
 
 
