@@ -53,6 +53,9 @@ public class TankSoarVisualWorld extends VisualWorld {
 			generateBackground();
 		}
 		
+		if (System.getProperty("os.name").contains("Mac OS X"))
+			painted = false;
+		
 		// Draw world
 		List<DrawMissile> drawMissiles = new ArrayList<DrawMissile>();
 		int [] location = new int [2];
