@@ -1612,104 +1612,110 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 				WMEs should be added to the goal's GDS (the goal here being the
 				goal to which the added memory is attached). */
 
-				if ((w->preference->o_supported == TRUE) &&
-					(w->preference->inst->match_goal_level != 1)) {
+				if ((w->preference->o_supported == TRUE) && (w->preference->inst->match_goal_level != 1)) 
+				{
+					if (w->preference->inst->match_goal->id.gds == NIL) 
+					{
+						/* If there is no GDS yet for this goal,
+						* then we need to create one */
+						if (w->preference->inst->match_goal_level == w->preference->id->id.level) 
+						{
+							create_gds_for_goal( thisAgent, w->preference->inst->match_goal );
 
-						if (w->preference->inst->match_goal->id.gds == NIL) {
-							/* If there is no GDS yet for this goal,
-							* then we need to create one */
-							if (w->preference->inst->match_goal_level ==
-								w->preference->id->id.level) {
+							/* REW: BUG When chunks and result instantiations both create
+							* preferences for the same WME, then we only want to create
+							* the GDS for the highest goal.  Right now I ensure that we
+							* elaborate the correct GDS with the tests in the loop just
+							* below this code, but the GDS creation above assumes that
+							* the chunk will be first on the GDS list.  This order
+							* appears to be always true, although I am not 100% certain
+							* (I think it occurs this way because the chunk is
+							* necessarily added to the instantiaton list after the
+							* original instantiation and lists get built such older items
+							* appear further from the head of the list) . If not true,
+							* then we need to keep track of any GDS's that get created
+							* here to remove them later if we find a higher match goal
+							* for the WME. For now, the program just exits in this
+							* situation; otherwise, we would build a GDS for the wrong
+							* level and never elaborate it (resulting in a memory
+							* leak). 
+							*/
 
-									create_gds_for_goal( thisAgent, w->preference->inst->match_goal );
+							// Turns out this can happen with basic, legal rules, 
+							// see attachment on bug 1144
 
-									/* REW: BUG When chunks and result instantiations both create
-									* preferences for the same WME, then we only want to create
-									* the GDS for the highest goal.  Right now I ensure that we
-									* elaborate the correct GDS with the tests in the loop just
-									* below this code, but the GDS creation above assumes that
-									* the chunk will be first on the GDS list.  This order
-									* appears to be always true, although I am not 100% certain
-									* (I think it occurs this way because the chunk is
-									* necessarily added to the instantiaton list after the
-									* original instantiation and lists get built such older items
-									* appear further from the head of the list) . If not true,
-									* then we need to keep track of any GDS's that get created
-									* here to remove them later if we find a higher match goal
-									* for the WME. For now, the program just exits in this
-									* situation; otherwise, we would build a GDS for the wrong
-									* level and never elaborate it (resulting in a memory
-									* leak). 
-									*/
+							// Commenting out error, warning instead.
+						} 
+						else 
+						{
+							char msg[256];
+							//strncpy(msg,"**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n",256);
+							strncpy(msg,"**** Warning: Wanted to create a GDS for a WME level different from the instantiation level. This should be rare. See bug 1144. ****\n\n",256);
+							msg[255] = 0; /* ensure null termination */
+							//abort_with_fatal_error(thisAgent, msg);
+							print(thisAgent, "%s", msg);
+						}
+					} /* end if no GDS yet for goal... */
 
-									// Turns out this can happen with basic, legal rules, 
-									// see attachment on bug 1144
+					/* Loop over all the preferences for this WME:
+					*   If the instantiation that lead to the preference has not 
+					*         been already explored; OR
+					*   If the instantiation is not an subgoal instantiation
+					*          for a chunk instantiation we are already exploring
+					*   Then
+					*      Add the instantiation to a list of instantiations that
+					*          will be explored in elaborate_gds().
+					*/
 
-									// Commenting out error, warning instead.
-							} else {
-								char msg[256];
-								//strncpy(msg,"**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n",256);
-								strncpy(msg,"**** Warning: Wanted to create a GDS for a WME level different from the instantiation level. This should be rare. See bug 1144. ****\n\n",256);
-								msg[255] = 0; /* ensure null termination */
-								//abort_with_fatal_error(thisAgent, msg);
-								print(thisAgent, "%s", msg);
+					for (pref=w->preference; pref!=NIL; pref=pref->next) 
+					{
+#ifdef DEBUG_GDS_HIGH
+						print(thisAgent, thisAgent, "\n\n   "); print_preference(pref);
+						print(thisAgent, "   Goal level of preference: %d\n",
+							pref->id->id.level);
+#endif
+
+						if (pref->inst->GDS_evaluated_already == FALSE) 
+						{
+#ifdef DEBUG_GDS_HIGH
+							print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
+								pref->inst->prod->name);
+							print(thisAgent, "is %d\n", pref->inst->match_goal_level);
+#endif
+							if (pref->inst->match_goal_level > pref->id->id.level) 
+							{
+#ifdef DEBUG_GDS_HIGH
+								print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
+#endif
+
+							} 
+							else 
+							{
+#ifdef DEBUG_GDS_HIGH
+								print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name); 
+#endif
+								uniquely_add_to_head_of_dll(thisAgent, pref->inst);
+								pref->inst->GDS_evaluated_already = TRUE;
 							}
-						} /* end if no GDS yet for goal... */
-
-						/* Loop over all the preferences for this WME:
-						*   If the instantiation that lead to the preference has not 
-						*         been already explored; OR
-						*   If the instantiation is not an subgoal instantiation
-						*          for a chunk instantiation we are already exploring
-						*   Then
-						*      Add the instantiation to a list of instantiations that
-						*          will be explored in elaborate_gds().
-						*/
-
-						for (pref=w->preference; pref!=NIL; pref=pref->next) {
+						}  /* end if GDS_evaluated_already is FALSE */
 #ifdef DEBUG_GDS_HIGH
-							print(thisAgent, thisAgent, "\n\n   "); print_preference(pref);
-							print(thisAgent, "   Goal level of preference: %d\n",
-								pref->id->id.level);
+						else
+							print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
 #endif
 
-							if (pref->inst->GDS_evaluated_already == FALSE) {
-#ifdef DEBUG_GDS_HIGH
-								print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
-									pref->inst->prod->name);
-								print(thisAgent, "is %d\n", pref->inst->match_goal_level);
-#endif
-								if (pref->inst->match_goal_level > pref->id->id.level) {
-#ifdef DEBUG_GDS_HIGH
-									print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
-#endif
-
-								} else {
-#ifdef DEBUG_GDS_HIGH
-									print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name); 
-#endif
-									uniquely_add_to_head_of_dll(thisAgent, pref->inst);
-									pref->inst->GDS_evaluated_already = TRUE;
-								}
-							}  /* end if GDS_evaluated_already is FALSE */
-#ifdef DEBUG_GDS_HIGH
-							else
-								print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
-#endif
-
-						}  /* end of forloop over preferences for this wme */
+					}  /* end of forloop over preferences for this wme */
 
 
 #ifdef DEBUG_GDS_HIGH
-						print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
+					print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
 #endif 
-						elaborate_gds(thisAgent);
+					elaborate_gds(thisAgent);
 
-						/* technically, the list should be empty at this point ??? */
+					/* technically, the list should be empty at this point ??? */
 
-						free_parent_list(thisAgent); 
+					free_parent_list(thisAgent); 
 #ifdef DEBUG_GDS_HIGH
-						print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
+					print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
 #endif
 				}  /* end if w->preference->o_supported == TRUE ... */
 
