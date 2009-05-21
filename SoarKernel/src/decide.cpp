@@ -1640,85 +1640,93 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 							* level and never elaborate it (resulting in a memory
 							* leak). 
 							*/
-
-							// Turns out this can happen with basic, legal rules, 
-							// see attachment on bug 1144
-
-							// Commenting out error, warning instead.
 						} 
 						else 
 						{
-							char msg[256];
-							//strncpy(msg,"**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n",256);
-							strncpy(msg,"**** Warning: Wanted to create a GDS for a WME level different from the instantiation level. This should be rare. See bug 1144. ****\n\n",256);
-							msg[255] = 0; /* ensure null termination */
-							//abort_with_fatal_error(thisAgent, msg);
-							print(thisAgent, "%s", msg);
+							// Turns out this can happen with basic, legal rules like this one:
+							/*	sp {add*apply*toggle-to-c
+								   (state <s> ^operator.name toggle-to-c ^superstate <ss> ^foo <foo>)
+								   (<ss> ^toggle b)
+								-->
+								   (<ss> ^toggle c)
+								   (<foo> ^bar b)
+								}
+
+								preference inst (S1 ^toggle c +  :O ) match_goal_level == 2 (from <s>) but id.level == 1 (from <ss>)
+								see attachment on bug 1144
+							*/
+							print_string(thisAgent, "**** Warning: Wanted to create a GDS for a WME level different from the instantiation level. This should be rare. See bug 1144. ****\n\n");
+
+							// old message:
+							// abort_with_fatal_error(thisAgent, "**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n");
 						}
 					} /* end if no GDS yet for goal... */
 
-					/* Loop over all the preferences for this WME:
-					*   If the instantiation that lead to the preference has not 
-					*         been already explored; OR
-					*   If the instantiation is not an subgoal instantiation
-					*          for a chunk instantiation we are already exploring
-					*   Then
-					*      Add the instantiation to a list of instantiations that
-					*          will be explored in elaborate_gds().
-					*/
-
-					for (pref=w->preference; pref!=NIL; pref=pref->next) 
+					// Added this test because abort_with_fatal_error is commented out above so
+					// id.gds could be null now, see bug 1144 for example
+					if (w->preference->inst->match_goal->id.gds != NIL)
 					{
-#ifdef DEBUG_GDS_HIGH
-						print(thisAgent, thisAgent, "\n\n   "); print_preference(pref);
-						print(thisAgent, "   Goal level of preference: %d\n",
-							pref->id->id.level);
-#endif
+						/* Loop over all the preferences for this WME:
+						*   If the instantiation that lead to the preference has not 
+						*         been already explored; OR
+						*   If the instantiation is not an subgoal instantiation
+						*          for a chunk instantiation we are already exploring
+						*   Then
+						*      Add the instantiation to a list of instantiations that
+						*          will be explored in elaborate_gds().
+						*/
 
-						if (pref->inst->GDS_evaluated_already == FALSE) 
+						for (pref=w->preference; pref!=NIL; pref=pref->next) 
 						{
 #ifdef DEBUG_GDS_HIGH
-							print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
-								pref->inst->prod->name);
-							print(thisAgent, "is %d\n", pref->inst->match_goal_level);
+							print(thisAgent, thisAgent, "\n\n   "); print_preference(pref);
+							print(thisAgent, "   Goal level of preference: %d\n",
+								pref->id->id.level);
 #endif
-							if (pref->inst->match_goal_level > pref->id->id.level) 
+
+							if (pref->inst->GDS_evaluated_already == FALSE) 
 							{
 #ifdef DEBUG_GDS_HIGH
-								print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
+								print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
+									pref->inst->prod->name);
+								print(thisAgent, "is %d\n", pref->inst->match_goal_level);
+#endif
+								if (pref->inst->match_goal_level > pref->id->id.level) 
+								{
+#ifdef DEBUG_GDS_HIGH
+									print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
 #endif
 
-							} 
-							else 
-							{
+								} 
+								else 
+								{
 #ifdef DEBUG_GDS_HIGH
-								print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name); 
+									print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name); 
 #endif
-								uniquely_add_to_head_of_dll(thisAgent, pref->inst);
-								pref->inst->GDS_evaluated_already = TRUE;
-							}
-						}  /* end if GDS_evaluated_already is FALSE */
+									uniquely_add_to_head_of_dll(thisAgent, pref->inst);
+									pref->inst->GDS_evaluated_already = TRUE;
+								}
+							}  /* end if GDS_evaluated_already is FALSE */
 #ifdef DEBUG_GDS_HIGH
-						else
-							print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
+							else
+								print_with_symbols(thisAgent, "\n    Instantiation %y was already explored; skipping it\n", pref->inst->prod->name);
 #endif
 
-					}  /* end of forloop over preferences for this wme */
-
+						}  /* end of forloop over preferences for this wme */
 
 #ifdef DEBUG_GDS_HIGH
-					print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
+						print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
 #endif 
-					elaborate_gds(thisAgent);
+						elaborate_gds(thisAgent);
 
-					/* technically, the list should be empty at this point ??? */
+						/* technically, the list should be empty at this point ??? */
 
-					free_parent_list(thisAgent); 
+						free_parent_list(thisAgent); 
 #ifdef DEBUG_GDS_HIGH
-					print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
+						print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
 #endif
+					} /* end if w->preference->inst->match_goal->id.gds != NIL */
 				}  /* end if w->preference->o_supported == TRUE ... */
-
 
 				/* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
