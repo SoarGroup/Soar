@@ -1469,9 +1469,5 @@ TEST_DEFINITION( testGDSBug1144 )
 {
 	loadProductions( "/Tests/testGDSBug1144.soar" );
 	m_pAgent->ExecuteCommandLine("run");
-	sml::ClientAnalyzedXML response;
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 7);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 26);
 }
 
