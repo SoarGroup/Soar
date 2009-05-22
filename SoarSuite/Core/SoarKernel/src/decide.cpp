@@ -2232,7 +2232,12 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
 			preference_add_ref(temp);
 
 		if (goal->id.lower_goal)
+		{
+			if ( thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
+				print_with_symbols(thisAgent, "Removing state %y because of a decision.\n", goal->id.lower_goal);
+
 			remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal);
+		}
 
 		w = make_wme (thisAgent, s->id, s->attr, candidates->value, FALSE);
 		insert_at_head_of_dll (s->wmes, w, next, prev);
@@ -2266,7 +2271,12 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
 		preference_add_ref(temp);
 
 	if (goal->id.lower_goal)
+	{
+		if ( thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
+			print_with_symbols(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id.lower_goal);
+
 		remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal);
+	}
 
 	/* REW: begin 10.24.97 */
 	if (thisAgent->waitsnc && (impasse_type == NO_CHANGE_IMPASSE_TYPE) && (attribute_of_impasse == thisAgent->state_symbol)) 
