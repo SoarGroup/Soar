@@ -517,12 +517,20 @@ structures to one.
 
 \subsection{Revising the substructure of a previous result}
 
-This occurs when a subgoal creates a local structure, which it then links to a
-superstate as a result. Things added to this structure are also results, as
-they are linked to the superstate. However, if that substructure is created
-with rules that match the local state only, Soar cannot build a chunk for the
+This can occur when a subgoal creates a local structure, which is then linked to a
+superstate, becoming a result. A new WME added to this structure is also a result, as
+as it is linked to the superstate. However, if that WME is created
+with a rule that matches the local state only (not the superstate), Soar cannot build a chunk for the
 result, as it is unable to determine how the new WME is linked to the
 superstate.
+
+For example, assume that an agent builds up a structure consisting of an identifier called \soar{\carat thing} attached to a substate, and then adds
+\soar{\carat property foo} as an augmentation to \soar{thing}. If the agent now matches \soar{thing} on the substate, and creates a WME on a
+superstate linked to the same identifier, that identifier, along with its augmentation \soar{\carat property foo}, becomes a result, and a chunk is formed.
+Now, if a rule in the subgoal adds another augmentation to the \soar{thing} identifier, (\soar{\carat property bar}, say), that augmentation will also be 
+a result, as it is linked to an identifier which is linked to a superstate. However, if that rule matches the identifier through the substate, the chunking
+process cannot determine how it is linked to the superstate, and a chunk cannot be created.
+
 
 \textbf{Solution:} If the substructure of a result must be revised, the rules
 that modify it should match the result through the superstate, not through the
