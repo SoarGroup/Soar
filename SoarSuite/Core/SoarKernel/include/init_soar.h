@@ -46,7 +46,7 @@ extern void setup_signal_handling (void);
 --------------------------------------------------------------------- */
 
 //extern void exit_soar (agent* thisAgent);
-extern void abort_with_fatal_error (agent* thisAgent, char *);
+extern void abort_with_fatal_error (agent* thisAgent, const char *);
 //extern void just_before_exit_soar (agent* thisAgent);
 
 /* ---------------------------------------------------------------------
