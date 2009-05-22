@@ -1229,7 +1229,11 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 		print_condition_list (thisAgent, lhs_top, 2, FALSE);
 		print (thisAgent, "\n  -->\n   ");
 		print_action_list (thisAgent, rhs, 3, FALSE);
-		print (thisAgent, "\n\n(Ignoring this chunk.  Weird things could happen from now on...)\n");
+		print (thisAgent, "\n\nThis error is likely caused by the reasons outlined section 4 of the Soar\n");
+		print (thisAgent, "manual, subsection \"revising the substructure of a previous result\".\n");
+		print (thisAgent, "\n");
+		print (thisAgent, "Check that the rules are not revising substructure of a result matched only\n");
+		print (thisAgent, "through the local state.\n");
 
 		deallocate_condition_list (thisAgent, top_cc->variablized_cond);
 		deallocate_condition_list (thisAgent, top_cc->instantiated_cond);
@@ -1245,6 +1249,10 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 
 		deallocate_action_list (thisAgent, rhs);
 		symbol_remove_ref(thisAgent, prod_name);
+
+		// We cannot proceed, the GDS will crash in decide.cpp:decide_non_context_slot
+		thisAgent->stop_soar = TRUE;
+		thisAgent->system_halted = TRUE;
 
 		goto chunking_done;
 	}
