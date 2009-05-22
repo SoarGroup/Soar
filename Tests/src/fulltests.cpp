@@ -69,6 +69,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testTemplateVariableNameBug ); // bug 1121
 	CPPUNIT_TEST( testNegatedConjunctiveChunkLoopBug510 ); // bug 510
 	CPPUNIT_TEST( testGDSBug1144 ); // bug 1144
+	CPPUNIT_TEST( testGDSBug1011 ); // bug 1011
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -98,6 +99,7 @@ public:
 	TEST_DECLARATION( testTemplateVariableNameBug );
 	TEST_DECLARATION( testNegatedConjunctiveChunkLoopBug510 );
 	TEST_DECLARATION( testGDSBug1144 );
+	TEST_DECLARATION( testGDSBug1011 );
 
 	void testShutdownHandlerShutdown();
 
@@ -1469,5 +1471,16 @@ TEST_DEFINITION( testGDSBug1144 )
 {
 	loadProductions( "/Tests/testGDSBug1144.soar" );
 	m_pAgent->ExecuteCommandLine("run");
+}
+
+TEST_DEFINITION( testGDSBug1011 )
+{
+	loadProductions( "/Tests/testGDSBug1011.soar" );
+	m_pAgent->ExecuteCommandLine("run");
+	sml::ClientAnalyzedXML response;
+	m_pAgent->ExecuteCommandLineXML("stats", &response);
+	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 8);
+	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 19);
+
 }
 
