@@ -94,7 +94,7 @@ long lapse_duration;
 ////#endif
 //}
 
-void abort_with_fatal_error (agent* thisAgent, char *msg) {
+void abort_with_fatal_error (agent* thisAgent, const char *msg) {
   FILE *f;
   const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
   
