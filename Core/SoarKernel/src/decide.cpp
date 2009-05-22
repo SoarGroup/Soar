@@ -1643,39 +1643,34 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 						} 
 						else 
 						{
-							// Turns out this can happen with basic, legal rules like this one:
-							/*	sp {add*apply*toggle-to-c
-								   (state <s> ^operator.name toggle-to-c ^superstate <ss> ^foo <foo>)
-								   (<ss> ^toggle b)
-								-->
-								   (<ss> ^toggle c)
-								   (<foo> ^bar b)
-								}
-
-								preference inst (S1 ^toggle c +  :O ) match_goal_level == 2 (from <s>) but id.level == 1 (from <ss>)
-								see attachment on bug 1144
-							*/
-							print_string(thisAgent, "**** Warning: Wanted to create a GDS for a WME level different from the instantiation level. This should be rare. See bug 1144. ****\n\n");
-
-							// old message:
-							// abort_with_fatal_error(thisAgent, "**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n");
+							// If this happens, we better be halted, see chunk.cpp:chunk_instantiation
+							// This can happen if a chunk can't be created, because then the match level 
+							// of the preference instantiation can map back to the original matching 
+							// production which can be at a different level than the id wme.
+							// Normally, there would be a chunk or justification firing at the higher
+							// goal with a match level equal to the id level.
+							// See more comments in chunk_instantiation.
+							if (!thisAgent->system_halted)
+							{
+								abort_with_fatal_error(thisAgent, "**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n");
+							}
 						}
 					} /* end if no GDS yet for goal... */
 
-					// Added this test because abort_with_fatal_error is commented out above so
-					// id.gds could be null now, see bug 1144 for example
-					if (w->preference->inst->match_goal->id.gds != NIL)
-					{
-						/* Loop over all the preferences for this WME:
-						*   If the instantiation that lead to the preference has not 
-						*         been already explored; OR
-						*   If the instantiation is not an subgoal instantiation
-						*          for a chunk instantiation we are already exploring
-						*   Then
-						*      Add the instantiation to a list of instantiations that
-						*          will be explored in elaborate_gds().
-						*/
+					/* Loop over all the preferences for this WME:
+					*   If the instantiation that lead to the preference has not 
+					*         been already explored; OR
+					*   If the instantiation is not an subgoal instantiation
+					*          for a chunk instantiation we are already exploring
+					*   Then
+					*      Add the instantiation to a list of instantiations that
+					*          will be explored in elaborate_gds().
+					*/
 
+					// Added halt test because chunk_instantiation can cause problems, 
+					// see comment a few lines above and in chunk_instantiation.
+					if (!thisAgent->system_halted)
+					{
 						for (pref=w->preference; pref!=NIL; pref=pref->next) 
 						{
 #ifdef DEBUG_GDS_HIGH
@@ -1725,7 +1720,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 #ifdef DEBUG_GDS_HIGH
 						print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
 #endif
-					} /* end if w->preference->inst->match_goal->id.gds != NIL */
+					} /* end if not halted */
 				}  /* end if w->preference->o_supported == TRUE ... */
 
 				/* REW: begin 11.25.96 */ 
