@@ -3067,6 +3067,14 @@ void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
 		/* If nothing has yet changed (highest_ ... = NIL) then set
 		* the goal automatically */
 		thisAgent->highest_goal_whose_context_changed = w->gds->goal->id.higher_goal; 
+
+		// Tell those slots they are changed so that the impasses can be regenerated
+		// bug 1011
+		for ( slot* s = thisAgent->highest_goal_whose_context_changed->id.slots; s != 0; s = s->next ) 
+		{
+			if (s->isa_context_slot && !s->changed)
+				s->changed = reinterpret_cast<dl_cons*>(1); // use non-zero value to indicate change, see definition of slot::changed
+		}
 	}
 
 	if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM]) 
