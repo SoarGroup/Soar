@@ -514,8 +514,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   memory_pool         chunk_cond_pool;
   unsigned long       chunk_count;
   unsigned long       justification_count;
-  Bool                chunk_free_flag;
-  Bool                chunky_flag;     /* AGR MVL1 */
   ::list            * grounds;
   tc_number           grounds_tc;
   ::list            * instantiations_with_nots;
