@@ -992,7 +992,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 
 			if (thisAgent->soar_verbose_flag == TRUE) 
 			{
-				printf("\n   in chunk_instantiation: making justification only");
+				print_string(thisAgent, "\n   in chunk_instantiation: making justification only");
 				xml_generate_verbose(thisAgent, "in chunk_instantiation: making justification only");
 			}
 		}
@@ -1004,7 +1004,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 
 			if (thisAgent->soar_verbose_flag == TRUE) 
 			{
-				printf("\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
+				print(thisAgent, "\n   in chunk_instantiation: resetting allow_variablization to %s", ((allow_variablization) ? "TRUE" : "FALSE"));
 				if(allow_variablization)
 					xml_generate_verbose(thisAgent, "in chunk_instantiation: resetting allow_variablization to TRUE");
 				else 
@@ -1069,6 +1069,14 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 		{
 			if (member_of_list(inst->match_goal,thisAgent->chunk_free_problem_spaces))
 			{
+				if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+				{
+					char buf[64];
+					std::ostringstream message;
+					message << "\nnot chunking due to chunk-free state " << symbol_to_string(thisAgent, inst->match_goal, false, buf, 64);
+					print(thisAgent, message.str().c_str());
+					xml_generate_verbose(thisAgent, message.str().c_str());
+				}
 				allow_variablization = FALSE; 
 				chunk_free_flag = TRUE;
 			}
@@ -1078,7 +1086,17 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 			if (member_of_list(inst->match_goal,thisAgent->chunky_problem_spaces))
 				chunky_flag = TRUE;
 			else 
+			{
+				if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
+				{
+					char buf[64];
+					std::ostringstream message;
+					message << "\nnot chunking due to non-chunky state " << symbol_to_string(thisAgent, inst->match_goal, false, buf, 64);
+					print(thisAgent, message.str().c_str());
+					xml_generate_verbose(thisAgent, message.str().c_str());
+				}
 				allow_variablization = FALSE; 
+			}
 		}
 	}   /* end KJC mods */
 
