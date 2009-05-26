@@ -1054,41 +1054,31 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 	if (allow_variablization && (! thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM]))
 		allow_variablization = inst->match_goal->id.allow_bottom_up_chunks;
 
-	/* DJP : Need to initialize chunk_free_flag to be FALSE, as default before
-	looking for problem spaces and setting the chunk_free_flag below  */
-
-	thisAgent->chunk_free_flag = FALSE ;
-	/* DJP : Noticed this also isn't set if no ps_name */
-	thisAgent->chunky_flag = FALSE ;   
-
+	Bool chunk_free_flag = FALSE;
+	Bool chunky_flag = FALSE;
 
 	/* --- check whether ps name is in chunk_free_problem_spaces --- */
+	// if allow_variablization is true, need to disable it if
+	//   learn --except is on and the state is in chunk_free_problem_spaces
+	//   learn --only is on and the state is not in chunky_problem_spaces
+	// if chunk_free_flag, variablize_this_chunk is initialized to false because of dont-learn
+	// if chunky_flag, variablize_this_chunk is initialized to true because of force-learn
 	if (allow_variablization) 
 	{
-		/* KJC new implementation of learn cmd:  old SPECIFY ==> ONLY,
-		* old ON ==> EXCEPT,  now ON is just ON always
-		* checking if state is chunky or chunk-free...
-		*/
 		if ( thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM]) 
 		{
 			if (member_of_list(inst->match_goal,thisAgent->chunk_free_problem_spaces))
 			{
 				allow_variablization = FALSE; 
-				thisAgent->chunk_free_flag = TRUE;
+				chunk_free_flag = TRUE;
 			}
 		}
 		else if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM]) 
 		{
 			if (member_of_list(inst->match_goal,thisAgent->chunky_problem_spaces))
-			{
-				allow_variablization = TRUE; 
-				thisAgent->chunky_flag = TRUE;
-			}
+				chunky_flag = TRUE;
 			else 
-			{
 				allow_variablization = FALSE; 
-				thisAgent->chunky_flag = FALSE;
-			}
 		}
 	}   /* end KJC mods */
 
@@ -1282,17 +1272,22 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 		it's okay to variablize through this instantiation later.
 		*/
 
+		// set chunk_inst->okay_to_variablize to thisAgent->variablize_this_chunk unless:
+		//   - we didn't variablize it because of dont-learn (implies learning mode is "except" because if "off" or "on", chunk_free_flag is false)
+		//   - or, learn mode is "only" and we didn't variablize it because of force-learn
+		// if one of those two cases is true, we set chunk_inst->okay_to_variablize to TRUE saying we could variablize through it in the future
+
 		/* AGR MVL1 begin */
-		if (! thisAgent->sysparams[LEARNING_ONLY_SYSPARAM]) 
+		if (!thisAgent->sysparams[LEARNING_ONLY_SYSPARAM]) 
 		{
-			if ((! thisAgent->variablize_this_chunk) && (thisAgent->chunk_free_flag) && (! thisAgent->quiescence_t_flag))
+			if ((! thisAgent->variablize_this_chunk) && ( chunk_free_flag) && (! thisAgent->quiescence_t_flag))
 				chunk_inst->okay_to_variablize = TRUE;
 			else
 				chunk_inst->okay_to_variablize = thisAgent->variablize_this_chunk;
 		}
 		else 
 		{
-			if ((! thisAgent->variablize_this_chunk) && (! thisAgent->chunky_flag) && (! thisAgent->quiescence_t_flag))
+			if ((! thisAgent->variablize_this_chunk) && (! chunky_flag) && (! thisAgent->quiescence_t_flag))
 				chunk_inst->okay_to_variablize = TRUE;
 			else
 				chunk_inst->okay_to_variablize = thisAgent->variablize_this_chunk;
