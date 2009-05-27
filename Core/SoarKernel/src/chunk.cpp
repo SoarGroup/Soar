@@ -922,6 +922,9 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 	not_struct *nots;
 	chunk_cond *top_cc, *bottom_cc;
 
+	Bool chunk_free_flag = FALSE;
+	Bool chunky_flag = FALSE;
+
 	explain_chunk_str temp_explain_chunk;
 	memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
 
@@ -1054,8 +1057,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 	if (allow_variablization && (! thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM]))
 		allow_variablization = inst->match_goal->id.allow_bottom_up_chunks;
 
-	Bool chunk_free_flag = FALSE;
-	Bool chunky_flag = FALSE;
+	chunk_free_flag = FALSE;
+	chunky_flag = FALSE;
 
 	/* --- check whether ps name is in chunk_free_problem_spaces --- */
 	// if allow_variablization is true, need to disable it if
