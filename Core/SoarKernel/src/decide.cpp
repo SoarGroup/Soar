@@ -927,6 +927,115 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	}
 
 	/* === Better/Worse === */
+#define NEW_PREFERENCES_SCHEME 1 // bug 234
+#if(NEW_PREFERENCES_SCHEME == 1)
+	// new algorithm:
+	// for each j > k:
+	//   if j is (candidate or conflicted) and k is (candidate or conflicted):
+	//     if one of (j, k) is candidate:
+	//       candidate -= k, if not already true
+	//       conflicted += k, if not already true
+	// for each j < k:
+	//   if j is (candidate or conflicted) and k is (candidate or conflicted):
+	//     if one of (j, k) is candidate:
+	//       candidate -= j, if not already true
+	//       conflicted += j, if not already true
+	// if no remaning candidates:
+	//   conflict impasse using conflicted as candidates
+	// else
+	//   pass on candidates to next filter
+	if (s->preferences[BETTER_PREFERENCE_TYPE] || s->preferences[WORSE_PREFERENCE_TYPE]) 
+	{
+		Symbol *j, *k;
+
+		// initialize
+		for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+			p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
+		}
+		for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+			p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
+		}
+		for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+			cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+		}
+
+		for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			j = p->value;
+			k = p->referent;
+			if (j==k) 
+				continue;
+			if (j->common.decider_flag && k->common.decider_flag) 
+			{
+				if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG || k->common.decider_flag == CANDIDATE_DECIDER_FLAG)
+					k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+			}
+		}
+
+		for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			j = p->value;
+			k = p->referent;
+			if (j==k) 
+				continue;
+			if (j->common.decider_flag && k->common.decider_flag) 
+			{
+				if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG || k->common.decider_flag == CANDIDATE_DECIDER_FLAG)
+					j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+			}
+		}
+
+		/* --- now scan through candidates list, look for remaining candidates --- */
+		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+		{
+			if (cand->value->common.decider_flag==CANDIDATE_DECIDER_FLAG) 
+				break;
+		}
+		if (!cand) {
+			/* --- collect conflicted candidates into new candidates list --- */
+			prev_cand = NIL;
+			cand = candidates;
+			while (cand) 
+			{
+				if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) 
+				{
+					if (prev_cand)
+						prev_cand->next_candidate = cand->next_candidate;
+					else
+						candidates = cand->next_candidate;
+				} 
+				else 
+				{
+					prev_cand = cand;
+				}
+				cand = cand->next_candidate;
+			}
+			*result_candidates = candidates;
+			return CONFLICT_IMPASSE_TYPE;
+		}
+		/* --- non-conflict candidates found, remove conflicts from candidates --- */
+		prev_cand = NIL;
+		while (cand) 
+		{
+			if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG) 
+			{
+				if (prev_cand)
+					prev_cand->next_candidate = cand->next_candidate;
+				else
+					candidates = cand->next_candidate;
+			} 
+			else 
+			{
+				prev_cand = cand;
+			}
+			cand = cand->next_candidate;
+		}
+	}
+#else // !NEW_PREFERENCES_SCHEME
 	if (s->preferences[BETTER_PREFERENCE_TYPE] ||
 		s->preferences[WORSE_PREFERENCE_TYPE]) {
 			Symbol *j, *k;
@@ -1044,6 +1153,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 				cand = cand->next_candidate;
 			}
 	}
+#endif // !NEW_PREFERENCES_SCHEME
 
 	/* === Bests === */
 	if (s->preferences[BEST_PREFERENCE_TYPE]) {
