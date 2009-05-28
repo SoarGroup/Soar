@@ -1,0 +1,3 @@
+pushd pref-semantics-test
+source pref-semantics-test_source.soar
+popd

@@ -1,0 +1,34 @@
+VERSION 4
+\pref-semantics-test\pref-semantics-test.dm
+0	ROOT pref-semantics-test pref-semantics-test 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	FOPERATOR sequence sequence.soar 7
+7	0	HLOPERATOR best-over-conflict best-over-conflict.soar best-over-conflict 33 8
+8	7	FOPERATOR elaborations elaborations.soar 9
+9	7	OPERATOR a a.soar 10
+10	7	OPERATOR b b.soar 11
+11	7	OPERATOR c c.soar 12
+12	0	OPERATOR initialize-pref-semantics-test initialize-pref-semantics-test.soar 13
+13	0	HLOPERATOR simple-conflict simple-conflict.soar simple-conflict 11 14
+14	13	FOPERATOR elaborations elaborations.soar 15
+15	13	OPERATOR a a.soar 16
+16	13	OPERATOR b b.soar 17
+17	0	HLOPERATOR simple-conflict-worse simple-conflict-worse.soar simple-conflict-worse 53 18
+18	17	FOPERATOR elaborations elaborations.soar 19
+19	17	OPERATOR a a.soar 20
+20	17	OPERATOR b b.soar 21
+21	0	HLOPERATOR three-way-conflict three-way-conflict.soar three-way-conflict 20 22
+22	21	FOPERATOR elaborations elaborations.soar 23
+23	21	OPERATOR a a.soar 24
+24	21	OPERATOR b b.soar 25
+25	21	OPERATOR c c.soar 26
+26	0	HLOPERATOR worst-over-conflict worst-over-conflict.soar worst-over-conflict 42 27
+27	26	FOPERATOR elaborations elaborations.soar 28
+28	26	OPERATOR a a.soar 29
+29	26	OPERATOR b b.soar 30
+30	26	OPERATOR c c.soar 31
+END

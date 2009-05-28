@@ -1,0 +1,8 @@
+sp {best-over-conflict*success
+   (state <s> ^superstate <ss>)
+   (<ss> ^name best-over-conflict
+         ^operator.name c
+         ^top-state <ts>)
+-->
+   (<ts> ^best-over-conflict success)
+}

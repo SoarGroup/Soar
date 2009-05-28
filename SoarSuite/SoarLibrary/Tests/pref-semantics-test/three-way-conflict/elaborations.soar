@@ -1,0 +1,10 @@
+sp {three-way-conflict*success
+   (state <s> ^superstate <ss>
+              ^impasse conflict
+              ^attribute operator
+              ^item-count 3)
+   (<ss> ^name three-way-conflict
+         ^top-state <ts>)
+-->
+   (<ts> ^three-way-conflict success)
+}
