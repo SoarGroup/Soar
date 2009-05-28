@@ -1143,10 +1143,14 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 				// Simply append to message result
 				if (m_TrapPrintEvents) {
 					CommandLineInterface::m_Result << message;
+				} else if (m_pLogFile) {
+					(*m_pLogFile) << msg;
 				}
 			} else {
 				if (m_TrapPrintEvents) {
 					CommandLineInterface::m_Result << msg;
+				} else if (m_pLogFile) {
+					(*m_pLogFile) << msg;
 				}
 			}
 		}
