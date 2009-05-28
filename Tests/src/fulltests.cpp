@@ -71,6 +71,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testGDSBug1144 ); // bug 1144
 	CPPUNIT_TEST( testGDSBug1011 ); // bug 1011
 	CPPUNIT_TEST( testLearn ); // bug 1145
+	CPPUNIT_TEST( testPreferenceSemantics ); // bug 234
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -102,6 +103,7 @@ public:
 	TEST_DECLARATION( testGDSBug1144 );
 	TEST_DECLARATION( testGDSBug1011 );
 	TEST_DECLARATION( testLearn );
+	TEST_DECLARATION( testPreferenceSemantics );
 
 	void testShutdownHandlerShutdown();
 
@@ -1489,79 +1491,115 @@ TEST_DEFINITION( testLearn )
 {
 	loadProductions( "/Tests/testLearn.soar" );
 	m_pAgent->ExecuteCommandLine("learn --except");
-	m_pAgent->ExecuteCommandLine("run");
-	sml::ClientAnalyzedXML response;
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
 
 	// learning is off, same behavior expected
 	m_pAgent->ExecuteCommandLine("init");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
 
 	// turn learn except on
 	m_pAgent->ExecuteCommandLine("init");
 	m_pAgent->ExecuteCommandLine("learn --except");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
 
 	// don't learn is active so same result expected
 	m_pAgent->ExecuteCommandLine("init");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
 
 	// get rid of dont learn
 	m_pAgent->ExecuteCommandLine("init");
 	m_pAgent->ExecuteCommandLine("excise dont*learn");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
 
 	// expect improvement
 	m_pAgent->ExecuteCommandLine("init");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 3);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 3);
+	}
 
 	// go to only mode
 	m_pAgent->ExecuteCommandLine("init");
 	m_pAgent->ExecuteCommandLine("excise -c");
 	m_pAgent->ExecuteCommandLine("learn --only");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
 
 	// force learn is active, expect improvement
 	m_pAgent->ExecuteCommandLine("init");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 3);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 1);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 3);
+	}
 
 	// get rid of chunk and force learn
 	m_pAgent->ExecuteCommandLine("init");
 	m_pAgent->ExecuteCommandLine("excise -c");
 	m_pAgent->ExecuteCommandLine("excise force*learn");
-	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
 
 	// expect no improvement
 	m_pAgent->ExecuteCommandLine("init");
+	m_pKernel->RunAllAgentsForever();
+	{
+		sml::ClientAnalyzedXML response;
+		m_pAgent->ExecuteCommandLineXML("stats", &response);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
+		CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
+	}
+}
+
+TEST_DEFINITION( testPreferenceSemantics )
+{
+	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
+	loadProductions( "/Tests/pref-semantics-test.soar" );
 	m_pAgent->ExecuteCommandLine("run");
-	m_pAgent->ExecuteCommandLineXML("stats", &response);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 3);
-	CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 5);
 }
 

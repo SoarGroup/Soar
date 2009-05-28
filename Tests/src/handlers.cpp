@@ -406,3 +406,11 @@ void Handlers::MyOrderingRunHandler( sml::smlRunEventId /*id*/, void* pUserData,
 	CPPUNIT_ASSERT_MESSAGE( value.str().c_str(), *pInt == 1 || *pInt == 3 );
 	++(*pInt);
 }
+
+std::string Handlers::MyRhsFunctionFailureHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pArgument)
+{
+	std::ostringstream message;
+	message << "test-failure handler called for: " << pArgument;
+	CPPUNIT_ASSERT_MESSAGE(message.str().c_str(), false);
+	return "";
+}

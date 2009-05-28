@@ -1,4 +1,4 @@
-sp {three-way-conflict*success
+sp {three-way-conflict*new-scheme*success
    (state <s> ^superstate <ss>
               ^impasse conflict
               ^attribute operator
@@ -8,3 +8,13 @@ sp {three-way-conflict*success
 -->
    (<ts> ^three-way-conflict success)
 }
+
+#sp {three-way-conflict*soar-9_0_0*success
+#   (state <s> ^superstate <ss>
+#              ^impasse no-change
+#              ^attribute state)
+#   (<ss> ^name three-way-conflict
+#         ^top-state <ts>)
+#-->
+#   (<ts> ^three-way-conflict success)
+#}

@@ -1,3 +1,5 @@
+# A > B, B > A, C <
+
 sp {pref-semantics-test*propose*worst-over-conflict
    (state <s> ^name pref-semantics-test
              -^worst-over-conflict)

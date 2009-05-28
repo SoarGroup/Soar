@@ -1,3 +1,5 @@
+# A > B, B > C, C > A
+
 sp {pref-semantics-test*propose*three-way-conflict
    (state <s> ^name pref-semantics-test
              -^three-way-conflict)
