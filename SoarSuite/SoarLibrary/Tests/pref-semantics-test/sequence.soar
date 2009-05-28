@@ -1,15 +1,3 @@
-sp {disabled*tests
-   (state <s> ^name pref-semantics-test)
--->
-   (<s> ^to-enable-tests comment-out-lines-below
-        #^simple-conflict disabled
-        #^three-way-conflict disabled
-        #^best-over-conflict disabled
-        #^worst-over-conflict disabled
-        #^simple-conflict-worse disabled
-                             )
-}
-
 sp {sequence*propose*done
    (state <s> ^name pref-semantics-test)
 -->
@@ -38,6 +26,7 @@ sp {sequence*monitor*failure
               ^<test> failure)
 -->
    (write | Failed test: | <test>)
+   (write (crlf))
 }
 
 sp {sequence*test*fail

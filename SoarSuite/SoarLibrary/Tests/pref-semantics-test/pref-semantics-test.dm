@@ -1,4 +1,4 @@
-60
+99
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -59,7 +59,46 @@ ENUMERATION 56 1 a
 SOAR_ID 57
 ENUMERATION 58 1 b
 SOAR_ID 59
-65
+SOAR_ID 60
+ENUMERATION 61 1 four-way-unclear
+SOAR_ID 62
+ENUMERATION 63 1 three-way-two
+SOAR_ID 64
+ENUMERATION 65 1 state
+ENUMERATION 66 1 three-way-two
+ENUMERATION 67 1 a
+SOAR_ID 68
+ENUMERATION 69 1 b
+SOAR_ID 70
+ENUMERATION 71 1 c
+SOAR_ID 72
+SOAR_ID 73
+ENUMERATION 74 1 four-acceptable-worst
+SOAR_ID 75
+ENUMERATION 76 1 state
+ENUMERATION 77 1 four-acceptable-worst
+ENUMERATION 78 1 a
+SOAR_ID 79
+ENUMERATION 80 1 b
+SOAR_ID 81
+ENUMERATION 82 1 c
+SOAR_ID 83
+ENUMERATION 84 1 d
+SOAR_ID 85
+SOAR_ID 86
+ENUMERATION 87 1 four-acceptable-best
+SOAR_ID 88
+ENUMERATION 89 1 state
+ENUMERATION 90 1 four-acceptable-best
+ENUMERATION 91 1 a
+SOAR_ID 92
+ENUMERATION 93 1 b
+SOAR_ID 94
+ENUMERATION 95 1 c
+SOAR_ID 96
+ENUMERATION 97 1 d
+SOAR_ID 98
+107
 0 io 1
 0 name 7
 0 operator 4
@@ -68,6 +107,10 @@ SOAR_ID 59
 0 operator 29
 0 operator 31
 0 operator 51
+0 operator 60
+0 operator 62
+0 operator 73
+0 operator 86
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -125,3 +168,41 @@ SOAR_ID 59
 53 type 54
 57 name 56
 59 name 58
+60 name 61
+62 name 63
+64 name 66
+64 operator 68
+64 operator 70
+64 operator 72
+64 superstate 0
+64 top-state 0
+64 type 65
+68 name 67
+70 name 69
+72 name 71
+73 name 74
+75 name 77
+75 operator 79
+75 operator 81
+75 operator 83
+75 operator 85
+75 superstate 0
+75 top-state 0
+75 type 76
+79 name 78
+81 name 80
+83 name 82
+85 name 84
+86 name 87
+88 name 90
+88 operator 92
+88 operator 94
+88 operator 96
+88 operator 98
+88 superstate 0
+88 top-state 0
+88 type 89
+92 name 91
+94 name 93
+96 name 95
+98 name 97
