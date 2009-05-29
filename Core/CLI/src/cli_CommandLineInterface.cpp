@@ -222,9 +222,6 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse) {
 	if (!m_pKernelSML) return false;
 
-	// No way to return data
-	if (!pConnection) return false;
-	if (!pResponse) return false;
 	PushCall( CallData(pAgent, rawOutput) );
 
 	// Log input
@@ -249,7 +246,8 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
 	SetTrapPrintCallbacks( false );
 
-	GetLastResultSML(pConnection, pResponse);
+	if (pConnection && pResponse)
+		GetLastResultSML(pConnection, pResponse);
 
 	PopCall();
 

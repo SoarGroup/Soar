@@ -16,6 +16,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
 	// this test takes forever in debug mode on windows (it needs to count high enough to overflow a 64-bit stack)
 	CPPUNIT_TEST( testInstiationDeallocationStackOverflow );
 #endif // _DEBUG
+	CPPUNIT_TEST( test_clog );
 	CPPUNIT_TEST( test_gp );
 	CPPUNIT_TEST( test_echo );
 
@@ -29,6 +30,7 @@ public:
 
 protected:
 	void testInstiationDeallocationStackOverflow();
+	void test_clog();
 	void test_gp();
 	void test_echo();
 	void testWrongAgentWmeFunctions();
@@ -141,6 +143,27 @@ void MiscTest::test_echo()
 
 	pAgent->ExecuteCommandLine("echo ~!@#$%^&*()_+`1234567890-=\\:,.?/");
 	CPPUNIT_ASSERT_MESSAGE("misc chars", pAgent->GetLastCommandLineResult());
+}
+
+void MiscTest::test_clog()
+{
+	pAgent->ExecuteCommandLine("clog clog-test.txt");
+	CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+	pAgent->ExecuteCommandLine("watch 5");
+	CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
+	pAgent->RunSelf(5);
+	pAgent->InitSoar();
+	pAgent->RunSelf(5);
+	pKernel->DestroyAgent(pAgent);
+	pAgent = pKernel->CreateAgent( "soar1" );
+	CPPUNIT_ASSERT( pAgent != NULL );
+	pAgent->ExecuteCommandLine("clog clog-test.txt");
+	CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+	pAgent->ExecuteCommandLine("watch 5");
+	CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
+	pAgent->RunSelf(5);
+	pAgent->InitSoar();
+	pAgent->RunSelf(5);
 }
 
 void MiscTest::testWrongAgentWmeFunctions()
