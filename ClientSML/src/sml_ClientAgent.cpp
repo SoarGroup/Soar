@@ -40,6 +40,19 @@
 using namespace sml;
 using namespace soarxml;
 
+namespace sml
+{
+	struct DebuggerProcessInformation
+	{
+#ifdef _WIN32
+		STARTUPINFO debuggerStartupInfo;
+		PROCESS_INFORMATION debuggerProcessInformation;
+#else // _WIN32
+		pid_t debuggerPid;
+#endif // _WIN32
+	};
+}
+
 Agent::Agent(Kernel* pKernel, char const* pName)
 {
 	m_Kernel = pKernel ;
@@ -51,11 +64,14 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 
 	m_WorkingMemory.SetAgent(this) ;
 
+	m_pDPI = 0;
+
 	ClearError() ;
 }
 
 Agent::~Agent()
 {
+	KillDebugger();
 }
 
 Connection* Agent::GetConnection() const
@@ -1626,11 +1642,18 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 		return false;
 	}
 
+	if (m_pDPI) 
+	{
+		return false;
+	}
+
+	m_pDPI = new DebuggerProcessInformation();
+
 #ifdef _WIN32
 
-	ZeroMemory( &debuggerStartupInfo, sizeof( debuggerStartupInfo ) );
-	debuggerStartupInfo.cb = sizeof( debuggerStartupInfo );
-	ZeroMemory( &debuggerProcessInformation, sizeof( debuggerProcessInformation ) );
+	ZeroMemory( &m_pDPI->debuggerStartupInfo, sizeof( m_pDPI->debuggerStartupInfo ) );
+	m_pDPI->debuggerStartupInfo.cb = sizeof( m_pDPI->debuggerStartupInfo );
+	ZeroMemory( &m_pDPI->debuggerProcessInformation, sizeof( m_pDPI->debuggerProcessInformation ) );
 
 	// Start the child process. 
 	std::stringstream commandLine;
@@ -1650,8 +1673,8 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 		0,								// No creation flags
 		0,								// Use parent's environment block
 		0,								// Use parent's starting directory 
-		&debuggerStartupInfo,			// Pointer to STARTUPINFO structure
-		&debuggerProcessInformation );	// Pointer to PROCESS_INFORMATION structure
+		&m_pDPI->debuggerStartupInfo,			// Pointer to STARTUPINFO structure
+		&m_pDPI->debuggerProcessInformation );	// Pointer to PROCESS_INFORMATION structure
 
 	if ( ret == 0 ) 
 	{
@@ -1667,13 +1690,13 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 	return true;
 
 #else // _WIN32
-	debuggerPid = fork();
-	if ( debuggerPid < 0 ) 
+	m_pDPI->debuggerPid = fork();
+	if ( m_pDPI->debuggerPid < 0 ) 
 	{ 
 		return false;
 	}
 
-	if ( debuggerPid == 0 ) 
+	if ( m_pDPI->debuggerPid == 0 ) 
 	{
 		// child
 		std::stringstream jarstring;
@@ -1734,12 +1757,17 @@ bool Agent::WaitForDebugger()
 
 bool Agent::KillDebugger()
 {
+	if (!m_pDPI)
+	{
+		return false;
+	}
+
 #ifdef _WIN32
 
 	// Wait until child process exits.
-	BOOL ret = TerminateProcess(debuggerProcessInformation.hProcess, 0);
-	CloseHandle( debuggerProcessInformation.hProcess );
-	CloseHandle( debuggerProcessInformation.hThread );
+	BOOL ret = TerminateProcess(m_pDPI->debuggerProcessInformation.hProcess, 0);
+	CloseHandle( m_pDPI->debuggerProcessInformation.hProcess );
+	CloseHandle( m_pDPI->debuggerProcessInformation.hThread );
 	if (ret == 0) 
 	{
 		return false;
@@ -1747,7 +1775,7 @@ bool Agent::KillDebugger()
 	return true;
 
 #else // _WIN32
-	if ( kill( debuggerPid, SIGTERM ) )
+	if ( kill( m_pDPI->debuggerPid, SIGTERM ) )
 	{
 		return false;
 	}
