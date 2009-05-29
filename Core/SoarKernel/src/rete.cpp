@@ -7167,6 +7167,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     prod->instantiations = NIL;
     prod->filename = NIL;
     prod->p_node = NIL;
+	prod->interrupt = FALSE;
     
     sym = reteload_symbol_from_index (thisAgent,f);
     symbol_add_ref (sym);
