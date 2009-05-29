@@ -487,8 +487,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
 	   }
    }
 
-   if ((m_interruptFlags & sml_STOP_AFTER_SMALLEST_STEP) || 
-	   (m_interruptFlags & sml_STOP_AFTER_PHASE))
+   if (m_agent->stop_soar || (m_interruptFlags & sml_STOP_AFTER_SMALLEST_STEP) || (m_interruptFlags & sml_STOP_AFTER_PHASE))
    {
 	   interrupted = true;
    }

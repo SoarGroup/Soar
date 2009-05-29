@@ -72,6 +72,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testGDSBug1011 ); // bug 1011
 	CPPUNIT_TEST( testLearn ); // bug 1145
 	CPPUNIT_TEST( testPreferenceSemantics ); // bug 234
+	CPPUNIT_TEST( testMatchTimeInterrupt ); // bug 873
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -104,6 +105,7 @@ public:
 	TEST_DECLARATION( testGDSBug1011 );
 	TEST_DECLARATION( testLearn );
 	TEST_DECLARATION( testPreferenceSemantics );
+	TEST_DECLARATION( testMatchTimeInterrupt );
 
 	void testShutdownHandlerShutdown();
 
@@ -1603,3 +1605,9 @@ TEST_DEFINITION( testPreferenceSemantics )
 	m_pAgent->ExecuteCommandLine("run");
 }
 
+TEST_DEFINITION( testMatchTimeInterrupt )
+{
+	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
+	loadProductions( "/Tests/testMatchTimeInterrupt.soar" );
+	m_pAgent->ExecuteCommandLine("run");
+}

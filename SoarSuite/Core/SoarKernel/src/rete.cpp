@@ -5860,8 +5860,22 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 	}
 	/* REW: end   09.15.96 */
 
-	///
-	// Location for Match Interrupt
+	// :interrupt
+	if (node->b.p.prod->interrupt) {
+		node->b.p.prod->interrupt++;
+		thisAgent->stop_soar++;
+
+		// Note that this production name might not be completely accurate.
+		// If two productions match, the last matched production name will be
+		// saved, but if this production then gets retracted on the same
+		// elaboration cycle, while the first matching production remains
+		// on the assertion list, Soar will still halt, but the production
+		// named will be inaccurate.
+		print_with_symbols(thisAgent, "\n*** Production match-time interrupt (:interrupt), probably from %y\n", node->b.p.prod->name);
+		print(thisAgent, "    [Phase] (Interrupt, Stop) is [%d] (%d,%d)\n", thisAgent->current_phase, node->b.p.prod->interrupt, thisAgent->stop_soar);
+
+		thisAgent->reason_for_stopping = ":interrupt";
+	}
 
 	/* RCHONG: end 10.11 */
 
@@ -5895,9 +5909,16 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
 	for (msc=node->b.p.tentative_assertions; msc!=NIL; msc=msc->next_of_node) {
 		if ((msc->tok==tok) && (msc->w==w)) {
 			/* --- match found in tentative_assertions, so remove it --- */
-			remove_from_dll (node->b.p.tentative_assertions, msc,
-				next_of_node, prev_of_node);
+			remove_from_dll (node->b.p.tentative_assertions, msc, next_of_node, prev_of_node);
 
+			// :interrupt
+			if (node->b.p.prod->interrupt > 1) {
+				node->b.p.prod->interrupt--;
+				thisAgent->stop_soar--;
+				if (thisAgent->soar_verbose_flag == TRUE) {
+					print(thisAgent, "RETRACTION (1) reset interrupt to READY -- (Interrupt, Stop) to (%d, %d)\n", node->b.p.prod->interrupt, thisAgent->stop_soar);
+				}
+			}
 
 			/* REW: begin 09.15.96 */
 			if (node->b.p.prod->OPERAND_which_assert_list == O_LIST) {
