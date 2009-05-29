@@ -49,7 +49,7 @@ namespace sml
 #ifdef WINDOWS_SHARED
 		HMODULE hLibrary;
 #elif defined(LINUX_SHARED) 
-		void* hLibrary
+		void* hLibrary;
 #endif
 	};
 }
