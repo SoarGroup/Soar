@@ -33,6 +33,7 @@ class Connection ;
 class AnalyzeXML ;
 class ClientXML ;
 class ClientAnalyzedXML ;
+struct DebuggerProcessInformation;
 
 class RunEventHandlerPlusData : public EventHandlerPlusData
 {
@@ -782,12 +783,7 @@ protected:
 	// for {Spawn, Kill}Debugger()
 	bool WaitForDebugger();
 
-#ifdef _WIN32
-    STARTUPINFO debuggerStartupInfo;
-    PROCESS_INFORMATION debuggerProcessInformation;
-#else // _WIN32
-    pid_t debuggerPid;
-#endif // _WIN32
+	DebuggerProcessInformation* m_pDPI;
 
 };
 
