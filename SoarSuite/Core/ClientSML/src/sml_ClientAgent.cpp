@@ -1762,23 +1762,26 @@ bool Agent::KillDebugger()
 		return false;
 	}
 
+	bool successful = false;
+
 #ifdef _WIN32
 
 	// Wait until child process exits.
 	BOOL ret = TerminateProcess(m_pDPI->debuggerProcessInformation.hProcess, 0);
 	CloseHandle( m_pDPI->debuggerProcessInformation.hProcess );
 	CloseHandle( m_pDPI->debuggerProcessInformation.hThread );
-	if (ret == 0) 
+	if (ret) 
 	{
-		return false;
+		successful = true;
 	}
-	return true;
 
 #else // _WIN32
-	if ( kill( m_pDPI->debuggerPid, SIGTERM ) )
+	if ( !kill( m_pDPI->debuggerPid, SIGTERM ) )
 	{
-		return false;
+		successful = true;
 	}
-	return true;
 #endif // _WIN32
+
+	delete m_pDPI;
+	return successful;
 }
