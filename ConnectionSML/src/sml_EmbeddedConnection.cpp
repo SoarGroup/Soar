@@ -26,6 +26,14 @@
 using namespace sml ;
 using namespace soarxml ;
 
+#ifdef SCONS // scons has detected a posix environment
+#  ifdef STATIC_LINKED
+#    define LINUX_STATIC
+#  else
+#    define LINUX_SHARED
+#  endif
+#endif
+
 #ifdef _WIN32
 #  ifdef STATIC_LINKED
 #    define WINDOWS_STATIC
@@ -190,14 +198,6 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	{
 		libraryName.erase(pos) ;
 	}
-
-#ifdef SCONS // scons has detected a posix environment
-#  ifdef STATIC_LINKED
-#    define LINUX_STATIC
-#  else
-#    define LINUX_SHARED
-#  endif
-#endif
 
 	if (m_pLH)
 	{
