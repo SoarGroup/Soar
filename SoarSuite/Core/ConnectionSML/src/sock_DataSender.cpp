@@ -76,7 +76,7 @@ bool DataSender::ReceiveString(std::string* pString)
 	}
 
 	// Release our temp buffer
-	delete buffer ;
+	delete [] buffer ;
 
 	return ok ;
 }
