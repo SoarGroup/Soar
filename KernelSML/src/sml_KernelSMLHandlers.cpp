@@ -343,6 +343,9 @@ bool KernelSML::HandleDestroyAgent(AgentSML* pAgentSML, char const* /*pCommandNa
 
 	FireAgentEvent( pAgentSML, smlEVENT_BEFORE_AGENT_DESTROYED );
 
+	// Close log
+	m_CommandLineInterface.DoCommand(0, pAgentSML, "clog --close", false, true, 0) ;
+
 	// Release any wmes or other objects we're keeping
 	pAgentSML->DeleteSelf() ;
 	pAgentSML = NULL ;	// At this point the pointer is invalid so clear it.
