@@ -70,6 +70,8 @@ void AgentSML::Init()
 	// Temporary HACK.  This should be fixed in the kernel.
 	m_agent->stop_soar = FALSE;
 
+	ResetCaptureReplay();
+
 	// Initializing the soar agent
 	init_soar_agent( m_agent );
 
@@ -85,8 +87,6 @@ void AgentSML::Init()
 	// Set counters and flags used to control runs
 	InitializeRuntimeState() ;
 	
-	ResetCaptureReplay();
-
 	// Register for the new INPUT_WME_GARBAGE_COLLECTED_CALLBACK
 	// Base the id on the address of this object which ensures it's unique
 	std::ostringstream callbackId;
