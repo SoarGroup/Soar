@@ -26,12 +26,33 @@
 using namespace sml ;
 using namespace soarxml ;
 
+#ifdef _WIN32
+#  ifdef STATIC_LINKED
+#    define WINDOWS_STATIC
+#  else
+#    define WINDOWS_SHARED
+#  endif
+#endif
+
+namespace sml
+{
+	struct LibraryHandle
+	{
+#ifdef WINDOWS_SHARED
+		HMODULE hLibrary;
+#elif defined(LINUX_SHARED) 
+		void* hLibrary
+#endif
+	};
+}
+
 EmbeddedConnection::EmbeddedConnection()
 {
 	m_pLastResponse = new ElementXML() ;
 	m_hConnection   = NULL ;
 	m_pProcessMessageFunction = NULL ;
 	m_pCreateEmbeddedFunction = NULL ;
+	m_pLH = 0;
 }
 
 EmbeddedConnection::~EmbeddedConnection()
@@ -170,14 +191,6 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 		libraryName.erase(pos) ;
 	}
 
-#ifdef _WIN32
-#  ifdef STATIC_LINKED
-#    define WINDOWS_STATIC
-#  else
-#    define WINDOWS_SHARED
-#  endif
-#endif
-
 #ifdef SCONS // scons has detected a posix environment
 #  ifdef STATIC_LINKED
 #    define LINUX_STATIC
@@ -186,12 +199,20 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 #  endif
 #endif
 
+	if (m_pLH)
+	{
+		PrintDebugFormat("****Error: %s", "AttachConnection called twice");
+		return false;
+	}
+	m_pLH = new LibraryHandle();
+
 #ifdef WINDOWS_SHARED
 	// The windows shared library
 	libraryName = libraryName + ".dll";
 	
 	// Now load the library itself.
-	HMODULE hLibrary = LoadLibrary(libraryName.c_str()) ;
+	m_pLH->hLibrary = 0;
+	m_pLH->hLibrary = LoadLibrary(libraryName.c_str()) ;
 
 #elif defined(LINUX_SHARED) 
 
@@ -203,12 +224,12 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 #else
 	newLibraryName.append(".so");
 #endif
-	void* hLibrary = 0;
-	hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
+	m_pLH->hLibrary = 0;
+	m_pLH->hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
 #endif
 
 #if defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
-	if (!hLibrary)
+	if (!m_pLH->hLibrary)
 	{
 		SetError(Error::kLibraryNotFound) ;
       
@@ -241,20 +262,20 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	}
 
 	// Get the functions that a DLL must export to support an embedded connection.
-	m_pProcessMessageFunction = reinterpret_cast<ProcessMessageFunction>(GetProcAddress(hLibrary, "sml_ProcessMessage")) ;
-	m_pCreateEmbeddedFunction = reinterpret_cast<CreateEmbeddedConnectionFunction>(GetProcAddress(hLibrary, "sml_CreateEmbeddedConnection")) ;
+	m_pProcessMessageFunction = reinterpret_cast<ProcessMessageFunction>(GetProcAddress(m_pLH->hLibrary, "sml_ProcessMessage")) ;
+	m_pCreateEmbeddedFunction = reinterpret_cast<CreateEmbeddedConnectionFunction>(GetProcAddress(m_pLH->hLibrary, "sml_CreateEmbeddedConnection")) ;
 
 #ifdef KERNEL_SML_DIRECT
-	m_pDirectAddWMEStringFunction =		reinterpret_cast<DirectAddWMEStringFunction>(GetProcAddress(hLibrary, "sml_DirectAddWME_String")) ;
-	m_pDirectAddWMEIntFunction =		reinterpret_cast<DirectAddWMEIntFunction>(GetProcAddress(hLibrary, "sml_DirectAddWME_Int")) ;
-	m_pDirectAddWMEDoubleFunction =		reinterpret_cast<DirectAddWMEDoubleFunction>(GetProcAddress(hLibrary, "sml_DirectAddWME_Double")) ;
-	m_pDirectRemoveWMEFunction =		reinterpret_cast<DirectRemoveWMEFunction>(GetProcAddress(hLibrary, "sml_DirectRemoveWME")) ;
+	m_pDirectAddWMEStringFunction =		reinterpret_cast<DirectAddWMEStringFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_String")) ;
+	m_pDirectAddWMEIntFunction =		reinterpret_cast<DirectAddWMEIntFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Int")) ;
+	m_pDirectAddWMEDoubleFunction =		reinterpret_cast<DirectAddWMEDoubleFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Double")) ;
+	m_pDirectRemoveWMEFunction =		reinterpret_cast<DirectRemoveWMEFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectRemoveWME")) ;
 
-	m_pDirectAddIDFunction =			reinterpret_cast<DirectAddIDFunction>(GetProcAddress(hLibrary, "sml_DirectAddID")) ;
+	m_pDirectAddIDFunction =			reinterpret_cast<DirectAddIDFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddID")) ;
 
-	m_pDirectGetAgentSMLHandleFunction = reinterpret_cast<DirectGetAgentSMLHandleFunction>(GetProcAddress(hLibrary, "sml_DirectGetAgentSMLHandle")) ;
+	m_pDirectGetAgentSMLHandleFunction = reinterpret_cast<DirectGetAgentSMLHandleFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectGetAgentSMLHandle")) ;
 
-	m_pDirectRunFunction =			    reinterpret_cast<DirectRunFunction>(GetProcAddress(hLibrary, "sml_DirectRun")) ;
+	m_pDirectRunFunction =			    reinterpret_cast<DirectRunFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectRun")) ;
 	
 	// Check that we got the list of functions and if so enable the direct connection
 	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
@@ -338,6 +359,17 @@ void EmbeddedConnection::CloseConnection()
 	}
 	
 	m_hConnection = NULL ;
+
+	if (m_pLH)
+	{
+#ifdef WINDOWS_SHARED
+		FreeLibrary(m_pLH->hLibrary);
+#elif defined(LINUX_SHARED) 
+		dlclose(m_pLH->hLibrary);
+#endif
+		delete m_pLH;
+		m_pLH = 0;
+	}
 }
 
 /*************************************************************
