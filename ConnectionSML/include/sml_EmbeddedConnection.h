@@ -31,6 +31,8 @@ namespace sml
 class EmbeddedConnectionSynch ;
 class EmbeddedConnectionAsynch ;
 
+struct LibraryHandle;
+
 // Abstract base class for embedded connections
 class EmbeddedConnection : public Connection
 {
@@ -70,6 +72,7 @@ protected:
 	/** We need to cache the responses to calls **/
 	soarxml::ElementXML* m_pLastResponse ;
 
+	LibraryHandle* m_pLH;
 public:
 	virtual ~EmbeddedConnection() ;
 
