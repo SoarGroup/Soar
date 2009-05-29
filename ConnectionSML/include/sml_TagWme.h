@@ -19,6 +19,7 @@
 
 #include "ElementXML.h"
 #include "sml_Names.h"
+#include "misc.h"
 
 namespace sml
 {
