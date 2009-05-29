@@ -16,6 +16,7 @@
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
+#include "misc.h"
 
 using namespace cli;
 using namespace sml;

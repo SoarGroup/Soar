@@ -12,6 +12,8 @@
 
 #include "cli_Commands.h"
 #include "cli_CLIError.h"
+#include "misc.h"
+#include "sml_Names.h"
 
 using namespace cli;
 
@@ -37,7 +39,7 @@ bool CommandLineInterface::DoGPMax(const long& maximum) {
 			m_Result << m_GPMax;
 		} else {
 			std::string temp;
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(m_GPMax, temp));
+			AppendArgTagFast(sml::sml_Names::kParamValue, sml::sml_Names::kTypeInt, to_string(m_GPMax, temp));
 		}
 		return true;
 	}

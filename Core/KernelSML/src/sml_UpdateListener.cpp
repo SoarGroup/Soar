@@ -17,6 +17,7 @@
 #include "sml_Connection.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
+#include "misc.h"
 
 #include "assert.h"
 
