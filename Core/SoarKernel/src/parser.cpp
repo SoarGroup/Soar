@@ -1890,8 +1890,7 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
       continue;
     }
 	if (!strcmp(thisAgent->lexeme.string, ":interrupt")) {
-	  print(thisAgent, "WARNING :interrupt is not supported with the current build options...");
-	  xml_generate_warning(thisAgent, "WARNING :interrupt is not supported with the current build options...");
+	  interrupt_on_match = TRUE;
 	  get_lexeme(thisAgent);
 	  continue;
 	}

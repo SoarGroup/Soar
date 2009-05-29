@@ -631,9 +631,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* ----------------------- RHS Function Stuff -------------------------- */
   
-  /* --- "interrupt" fun. uses this to build "reason_for_stopping" msg. --- */
-  //char                interrupt_source[2*MAX_LEXEME_LENGTH+100];
-  
   /* --- "make-constant-symbol" counter --- */
   unsigned long       mcs_counter;
 
