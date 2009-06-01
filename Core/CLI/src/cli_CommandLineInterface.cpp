@@ -285,20 +285,20 @@ void CommandLineInterface::PopCall()
 		const CallData& callData = m_pCallDataStack.top();
 		pAgent = callData.pAgent;
 		m_RawOutput = callData.rawOutput;
-	}
 
-	// reset these for the next command
-	SetAgentSML( pAgent ) ;
+		// reset these for the next command
+		SetAgentSML( pAgent ) ;
 
-	m_pAgentSML = pAgent;
-	if (pAgent) 
-	{
-		m_pAgentSoar = pAgent->GetSoarAgent();
-		assert( m_pAgentSoar );
-	}
-	else 
-	{
-		m_pAgentSoar = 0;
+		m_pAgentSML = pAgent;
+		if (pAgent) 
+		{
+			m_pAgentSoar = pAgent->GetSoarAgent();
+			assert( m_pAgentSoar );
+		}
+		else 
+		{
+			m_pAgentSoar = 0;
+		}
 	}
 }
 
