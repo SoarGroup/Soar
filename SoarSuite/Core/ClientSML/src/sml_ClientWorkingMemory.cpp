@@ -258,7 +258,7 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 		// See if this is the output-link itself (we want to keep a handle to that specially)
 		if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 		{
-			m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
+			m_OutputLink = new Identifier(GetAgent(), "output-link", pValue, timeTag) ;
 
 		} else if (m_OutputLink && (IsStringEqual(m_OutputLink->GetValueAsString(), pValue) && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName)))
 		{
@@ -509,7 +509,7 @@ Identifier* WorkingMemory::GetInputLink()
 
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
 		{
-			m_InputLink = new Identifier(GetAgent(), response.GetResultString(), GenerateTimeTag()) ;
+			m_InputLink = new Identifier(GetAgent(), "input-link", response.GetResultString(), GenerateTimeTag()) ;
 		}
 	}
 
