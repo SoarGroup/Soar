@@ -58,14 +58,14 @@ public:
 	~IdentifierSymbol() ;
 
 	char const* GetIdentifierSymbol()			{ return m_Symbol.c_str() ; }
-	void SetIdentifierSymbol(char const* pID)   { m_Symbol = pID ; }
+	void SetIdentifierSymbol(char const* pID);
 
 	bool AreChildrenModified()				{ return m_AreChildrenModified ; }
 	void SetAreChildrenModified(bool state) { m_AreChildrenModified = state ; }
 
 	// Indicates that an identifier is no longer using this as its value
-	void NoLongerUsedBy(Identifier* pIdentifier)  { m_UsedBy.remove(pIdentifier) ; }
-	void UsedBy(Identifier* pIdentifier)		  { m_UsedBy.push_back(pIdentifier) ; }
+	void NoLongerUsedBy(Identifier* pIdentifier); 
+	void UsedBy(Identifier* pIdentifier);
 
 	bool IsFirstUser(Identifier* pIdentifier)
 	{
@@ -206,7 +206,7 @@ public:
 
 protected:
 	// This version is only needed at the top of the tree (e.g. the input link)
-	Identifier(Agent* pAgent, char const* pIdentifier, long timeTag);
+	Identifier(Agent* pAgent, char const* pAttributeName, char const* pIdentifier, long timeTag);
 
 	// The normal case (where there is a parent id)
 	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
