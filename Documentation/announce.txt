@@ -1,11 +1,12 @@
-Soar 9.0.0 Release Notes
+Soar 9.0.1 Release Notes
 ========================
 
-This release of Soar begins the 9.x series of releases during which we 
-expect to introduce several new mechanisms. 9.0.0 includes reinforcement
+This release of Soar continues the 9.x series of releases during which we 
+expect to introduce several new mechanisms. 9.0.x includes reinforcement
 learning code (Soar-RL), which was first released alongside the 8.6.4
 beta. 9.0.0 is also the first release to include the SML interface 
-without gSKI.
+without gSKI. 9.0.1 is primarily a maintenance release, many bugs have
+been fixed and minor features added.
 
 Soar-RL is the architectural integration of reinforcement learning (RL) with
 Soar.  The RL mechanism will automatically tune the values of
@@ -22,7 +23,7 @@ to see it reach optimal behavior. (Note: the agent may occasionally perform
 non-optimal behavior even after it has converged because of its exploration 
 policy. See the RL manual and tutorial for details).
 
-Soar-9.0.0 includes all source code, many demo programs, and a 
+Soar-9.0.1 includes all source code, many demo programs, and a 
 number of applications that serve as examples of how to interface 
 Soar to an external Environment.  There is support for integrating 
 Soar with C++, Java, Tcl, Python and C# applications.  Many Tools
@@ -33,9 +34,10 @@ latest release.  More detailed information can be obtained at
 http://winter.eecs.umich.edu/soarwiki
 
 This release was generated for Windows, Linux, and OSX systems.  
-Windows XP and Vista are supported.
+Windows XP and Vista are supported, as well as 32 and 64 bit
+architectures.
 
-Soar 9.0.0 can be downloaded from the Soar homepage at:
+Soar 9.0.1 can be downloaded from the Soar homepage at:
 
         http://sitemaker.umich.edu/soar
 
@@ -58,8 +60,8 @@ Installation Requirements
   Java).  Also note that we do not currently support threaded builds
   of Tcl (e.g. ActiveTcl 8.4.11.2 or later).
 
-* The included Python libraries support Python 2.4.  Python 2.5 support
-  requires a rebuild of the ClientSMLPython project.
+* The included Python libraries support Python 2.5.  Python 2.6 and 3
+  support requires a rebuild of the ClientSMLPython project.
 
 Build Requirements
 ==================
@@ -67,77 +69,110 @@ Binaries are released for Windows/Linux/OS X, so building is not required.
 For those on other platforms or developers:
 * On all platforms, SWIG 1.3.31 or later is required to build with 
   cross-language support (e.g. to use the Java debugger).
-* On Windows, Visual Studio 2005 SP1 is required.
+* On Windows, Visual Studio 2005 SP1 or 2008 is required.
 * On Linux/Unix/OS X, Python, SCons, gcc 3.3 or later required.
+* Apache ant is required to build Java projects.
 
-Components of Soar 9.0.0
+Components of Soar 9.0.1
 ========================
-* Pre-built libraries and executables for Windows (SoarLibrary/bin)
-* all source code, config files, and OS tools for automated Soar builds
+* Pre-built libraries and executables (SoarLibrary/bin)
+* All source code, config files, and OS tools for automated Soar builds
 * SoarJavaDebugger 
 * VisualSoar
-* JavaEaters, JavaTankSoar, TclEaters
+* Soar2D (Eaters and TankSoar)
 * Test and Demo programs
 * Documentation
 
-New in 9.0.0
+New in 9.0.1
 ============
+* Native 64 bit platform support for Windows, Linux, OSX (bugs 1139, 
+  1064, 1036, 531) resulting in different, usually better performance
+  on these platforms, and definite ease of compilation. Note: Hash 
+  tables are still only 32 bits, so the maximum number of identifiers
+  hasn't been increased yet.
+* Visual Studio 2009 support, its use is recommended. Visual Studio 2005
+  support is probably going to be dropped with the next release.
+* Soar 7 mode has been completely removed.
+* Preference semantics regarding the generation of operator conflict
+  impasses have been changed, see appendix D in the Soar Manual for
+  details.
+* Apache ant is now used to build java projects. This results in much
+  faster and reliable Java builds.
 
-* Components and Capabilities added
-  -- RL commands and documentation added (see RL manual and tutorial
-     in Documentation directory).
-  -- indifferent-selection command updated to support options primarily
-     intended for (but not limited to) RL.
-  -- select and predict commands added to control operator selection
-     (essentially replaces defunct indifferent-selection --ask functionality).
-  -- New "gp" command added. Generates rules based on simple patterns
-     (intended for use with RL).
-  -- Added iterative deepening support to selection space. To see this
-     in action, load the Water Jug Look-Ahead demo, then source
-     selection-iterative-deepening.soar (in SoarLibrary/Demos/default)
-     and run. Init-soar and run again. Iterative deepening is guaranteed
-     to find the path with the fewest steps.
-  -- Added options to learn command to turn chunking through local negations
-     on or off (on by default for backwards compatibility). If off, a message
-     will be generated if "watch --learning print" is enabled that says a chunk
-     was not created because of local negations, and what those negations were.
-  -- Updated selection space to remove local negations (for compatibility with 
-     new --disable-through-local-negations chunking mode). 
-  -- In a tie impasse, an item-count WME containing the number of tied operators 
-     is now architecturally generated.
-  -- Depth at which productions are firing is reported at watch 5.
-  -- Multiple rules can be loaded via the Java debugger's Edit Production
-     widget, scratch pad, and by pasting into the trace window. This is the
-     result of an underlying change to SML in which arguments to
-     ExecuteCommandLine are passed through logic associated with the source
-     command, and thus multiple commands can be given at once.
-  -- Command boxes in the Java debugger have been enhanced so that history
-     browsing with the up/down arrows works on all platforms.
-  -- New "single compilation unit" build configurations (greatly speeds build time).
-  -- Unit test suite added.
-  -- Other minor enhancements.
-
-* Bug fixes
-  -- Output link supports circular structures.
-  -- Duplicate productions no longer cause sourcing to stop.
-  -- Various memory leaks fixed.
-  -- Several other minor fixes.
-
-* Other updates
-  -- Removed gSKI (10-30% speed increase in simple benchmarking).
-  -- The Soar Java Debugger now uses its default layout the first time
-     it is run with a new version of Soar. Old layouts are preserved
-     and can be loaded if desired (which makes them the default).
-
-
-Known issues:
-=============
-
-* ^status complete appears on the ^output-link immediately instead 
-  of during the next input phase.
-* The Soar 7 mode implementation currently relies on an ugly hack. If
-  you experience problems in this mode, please let us know.
-* Many other minor issues (see bugzilla for details).
+Detailed fixes:
+* Bug 873: Match-time interrupt with :interrupt production tag re-
+  enabled. 
+* Bug 234: Preference semantics changed regarding operator conflicts.
+* Bug 1145: dont-learn/force-learn RHS actions fixed.
+* Bug 1144: Crash bug related to chunking caveat mentioned in manual 
+  section 4.6.5 fixed, helpful error message displayed instead.
+* Bug 1011: Impasses that existed in a superstate were not getting 
+  regenerated if the sub-state was removed due to the GDS, this has 
+  been fixed.
+* Bug 878: With verbose enabled, the general reason states are getting 
+  removed is printed when the state is removed.
+* Bug 510: Chunking bug fixed when trying to chunk over negated, 
+  conjuntive conditions.
+* Bug 1121: RL template production (:template) bug fixed that was 
+  failing to correctly generate productions if variables starting with 
+  "o" were used.
+* Bug 882: Changing trace filters in the Soar Java Debugger no longer
+  collapses the whole trace.
+* Bug 1143: Direct I/O functions for WMEs in SML were acting in the wrong 
+  phase (usually the output phase instead of the input phase), changed 
+  these functions to instead buffer their actions for later execution in 
+  the input phase.
+* Bug 866: Optimization settings with Visual Studio tweaked.
+* Bug 517: Fixed a bug where an unbound variable included in a negated
+  condition where a bound variable was required would crash Soar.
+* Bug 1138: Fixed FindByAttribute bug not handling piped strings
+  correctly and, as a result, made it impossible to find some WMEs 
+  created on the kernel side.
+* Bug 867: Extended SML Identifier interface adding a number of methods
+  that don't have the redundant Agent pointer in their argument list.
+* Bug 1049: Fixed io_header_output memory leak.
+* Bug 1060: CreateSharedIdWME now explicitly fails if an existing WME is
+  specified, violating the working memory set restriction.
+* Bug 987, 1013: Echo command now ignores braces, pipes and other Soar 
+  characters so that better ascii art is possible.
+* Bug 1084, 1124, 1141: gp command extended with better error messages, 
+  maximum rule threshold, VisualSoar support, newline indifference.
+* Bug 1057: Many buffers replaced with growable, safer containers such as 
+  std::string and std::stringstream in performance-indifferent code.
+* Bug 776: New random command implemented and random right hand side 
+  functions implemented for random numbers on command.
+* Bug 1106: New print --exact flag added to avoid printing unnecessary 
+  copies of objects with multi-valued attributes. 
+* Bug 927: Command line interface made more reentrant to avoid weird
+  "true" results output with multiple clients connected to the agent.
+* Bug 952: New agents can now be created on the fly, during a run.
+* Bug 1104: Fixed TestCLI hang if exited during run.
+* Bug 1033: CreateKernelInNewThread error message fixed.
+* Bug 794: edit-production now reports failure if visual soar is not 
+  connected.
+* Bug 1043: Added SML Agent methods to launch the debugger.
+* Bug 1140: RHS halt does not cancel multiple Soar2D runs.
+* Bug 1099: Find function in Soar Java Debugger scrolls window to result 
+  now.
+* Bug 638: Tutorials updated.
+* Bug 931: Multiple productions can be pasted in to debugger at same
+  time now.
+* Bug 1012: Unterminated strings in productions fail at parse-time now.
+* Bug 1025: GetOutputLink() no longer returns null.
+* Bug 1042: Debugger command line options fixed.
+* Bug 1045: Status complete was getting added twice on output link 
+  commands.
+* Bug 1056: Kernel changed to use const char more.
+* Bug 627: Help command lists folder instead of using command-names file,
+  allowing arbitrary help topics to be easily added.
+* Bug 1105: Capture/replay input implemented.
+* Large Soar production file parsing speed improvements.
+* Soar2d rewritten, faster, easier to configure.
+* Various memory leaks fixed, some major.
+* Console logging fixed (clog command).
+* Build procedure streamlined on all platforms.
+* Removed all build warnings.
+* Added many regression tests.
 
 If any other issues or bugs are found, please send mail to:
 
