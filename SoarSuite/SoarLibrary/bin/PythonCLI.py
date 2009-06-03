@@ -1,14 +1,15 @@
 #!/usr/bin/env python
+import sys
 #############
 # Configuration
 c = {}
 c['agent'] = 'soar'
 
+sys.path.append('../lib')
 #############
 
 import threading
 import Queue
-import sys
 import Python_sml_ClientInterface
 import curses
 import curses.ascii
