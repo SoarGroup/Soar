@@ -133,20 +133,12 @@ Section \ref{ARCH-impasses} on page \pageref{ARCH-impasses}).
 \index{reject preference}
 \index{-}
 
-\item[BetterWorseFilter ($>$), ($<$) ] This filter checks for better
-	worse conflicts, and otherwise filters out candidates based on
-	better and worse preferences.
+\item[BetterWorseFilter ($>$), ($<$) ] This filter removes any candidates that are worse
+	than another candidate.
 \begin{itemize}
-\item A better/worse conflict occurs when one candidate has both better and
-	worse preferences with respect to another operator (i.e., \textbf{A $<$ B} 
-	\& \textbf{B $<$ A}). Since preferences are not transitive, the situation 
-	\textbf{A $<$ B $<$ C $<$ A} is not a conflict. If there are better/worse conflicts, 
-	preference semantics terminates by declaring a conflict impasse and returning the
-	set of conflicted items.
-\item Otherwise ---
-	Filter out of the candidates the ones that have
-	another candidate that is better, or are worse than another candidate. 
-	The resulting candidates are passed to the BestFilter.
+\item If the set of remaining candidates is empty, a conflict impasse is created
+	returning the set of conflicted operators (all candidates passed to this filter).
+\item Otherwise, pass any remaining candidates to the BestFilter.
 \end{itemize}
 \index{preference!worse}
 \index{worse preference}
