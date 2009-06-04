@@ -1,9 +1,6 @@
 @echo off
 
-if defined VS80COMNTOOLS set VSCOMNTOOLS=%VS80COMNTOOLS%
-if defined VS90COMNTOOLS set VSCOMNTOOLS=%VS90COMNTOOLS%
-
-call "%VSCOMNTOOLS%\vsvars32.bat"
+call "%VS80COMNTOOLS%\vsvars32.bat"
 
 call %ANT_HOME%\bin\ant clean
 
