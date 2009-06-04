@@ -2,11 +2,10 @@ Soar 9.0.1 Release Notes
 ========================
 
 This release of Soar continues the 9.x series of releases during which we 
-expect to introduce several new mechanisms. 9.0.x includes reinforcement
-learning code (Soar-RL), which was first released alongside the 8.6.4
-beta. 9.0.0 is also the first release to include the SML interface 
-without gSKI. 9.0.1 is primarily a maintenance release, many bugs have
-been fixed and minor features added.
+expect to introduce several new mechanisms. 9.0.1 is primarily a maintenance 
+release, many bugs have been fixed and minor features added.9.0.x includes
+reinforcement learning code (Soar-RL), which was first released alongside 
+the 8.6.4 beta. 
 
 Soar-RL is the architectural integration of reinforcement learning (RL) with
 Soar.  The RL mechanism will automatically tune the values of
@@ -30,27 +29,30 @@ Soar with C++, Java, Tcl, Python and C# applications.  Many Tools
 that aid in development of Soar programs are also included.
 
 These Release Notes describe the primary changes in this 
-latest release.  More detailed information can be obtained at 
-http://winter.eecs.umich.edu/soarwiki
+latest release.  More detailed information can be obtained at:
+        http://winter.eecs.umich.edu/soarwiki
 
 This release was generated for Windows, Linux, and OSX systems.  
 Windows XP and Vista are supported, as well as 32 and 64 bit
 architectures.
 
 Soar 9.0.1 can be downloaded from the Soar homepage at:
-
         http://sitemaker.umich.edu/soar
 
 Installation Requirements
 =========================
 
-* On Windows, the 19MB download file expands to ~45MB when extracted.  
-  Linux and OSX disk requirements are similar. Note that Windows has
-  a 255 character path length limit; some parts of the directory 
-  structure are deep, so users wishing to put Soar in a deep location
-  on their machines may run into issues.
+* The Soar Suite needs under 100 MB for regular use, but closer to 1 GB
+  of disk space for object and debugging files if rebuilding all projects.
+  
+* Due to path length limits on some versions of Windows, it is recommended
+  to extract Soar to the C:\ root or similar. Some parts of the Soar Suite
+  directory structure are deep, so users wishing to put Soar in a deep location
+  on their machines 
+  (such as C:\Documents and Settings\username\My Documents\Visual Studio Projects) 
+  may run into issues.
 
-* Java 1.5.0 or newer is required to use the Java applications,
+* Java 1.5 or newer is required to use the Java applications,
   including the debugger (Java must be available in the path). Get it 
   at http://java.sun.com/. Most operating systems probably already have 
   Java installed. NOTE: Java 1.4.2 is no longer supported.
@@ -72,6 +74,7 @@ For those on other platforms or developers:
 * On Windows, Visual Studio 2005 SP1 or 2008 is required.
 * On Linux/Unix/OS X, Python, SCons, gcc 3.3 or later required.
 * Apache ant is required to build Java projects.
+* Please see detailed build instructions available on http://msoar.org
 
 Components of Soar 9.0.1
 ========================
@@ -87,15 +90,14 @@ New in 9.0.1
 ============
 * Native 64 bit platform support for Windows, Linux, OSX (bugs 1139, 
   1064, 1036, 531) resulting in different, usually better performance
-  on these platforms, and definite ease of compilation. Note: Hash 
-  tables are still only 32 bits, so the maximum number of identifiers
-  hasn't been increased yet.
-* Visual Studio 2009 support, its use is recommended. Visual Studio 2005
-  support is probably going to be dropped with the next release.
+  on these platforms, and definite ease of compilation and integration
+  with tools such as Java and Python.
+* Visual Studio 2009 is now supported and its use is recommended. 
+  Visual Studio 2005 support will likely be dropped with the next
+  release.
 * Soar 7 mode has been completely removed.
 * Preference semantics regarding the generation of operator conflict
-  impasses have been changed, see appendix D in the Soar Manual for
-  details.
+  impasses have changed, see appendix D in the Soar Manual for details.
 * Apache ant is now used to build java projects. This results in much
   faster and reliable Java builds.
 
