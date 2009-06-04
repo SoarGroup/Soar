@@ -21,13 +21,9 @@ import urllib2
 import xml.dom.minidom
 import xml.sax.saxutils
 import htmlentitydefs
-import md5
 import zipfile
 import zlib
 import sys
-
-# swt.jar 3.3 digests
-WIN_DIGEST = '33ac049c1f70126f5fe190da2bd9ff77'
 
 ####
 # Configuration
@@ -85,6 +81,7 @@ else:
 generatorConfig[ 'baseurl' ] = 'https://winter.eecs.umich.edu/svn/soar/tags/'
 generatorConfig[ 'binarybaseurl' ] = 'http://winter.eecs.umich.edu/soar/release-binaries/'
 generatorConfig[ 'windowsjava' ] = 'C:\\Program Files\\Java\\jdk1.5.0_16\\'
+generatorConfig[ 'vs9' ] = True
 
 ####
 class Generator:
@@ -113,71 +110,19 @@ class Generator:
         for x in self.config:
             logging.debug( 'config: %s: %s' % ( x, repr( self.config[x] ), ) )
             
-    def checkJarmd5( self ):
-        # open the swt.jar file
-        try:
-            f = file( os.path.join( "SoarLibrary", "bin", "swt.jar" ), 'rb')
-        except:
-            return False
-        
-        # compute digest
-        m = md5.new()
-        while True:
-            d = f.read(8096)
-            if not d:
-                break
-            m.update(d)
-        
-        return WIN_DIGEST == m.hexdigest()
-                       
-    def checkForSWTJar( self ):
-        jarPath = os.path.join('SoarLibrary', 'bin', 'swt.jar')
-        if os.path.exists( jarPath ):
-            if self.checkJarmd5():
-                return True
-            else:
-                logging.info( "md5 of swt.jar failed, removing old jar." )
-                os.remove( jarPath )
-            
-        try:
-            urllib.urlretrieve( 'http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/windows/swt.jar', jarPath )
-        except IOError:
-            logging.critical( "Error downloading swt.jar to SoarLibrary/bin: IOError" )
-            return False
-        except ContentTooShortError:
-            logging.critical( "Error downloading swt.jar to SoarLibrary/bin: IOError" )
-            return False
-            
-        if not self.checkJarmd5():
-            logging.critical( "Error downloading swt.jar to SoarLibrary/bin, md5 failed again." )
-            return False
-        
-        logging.info( "Successfully downloaded swt.jar to SoarLibrary/bin." )
-        return True
-
     def build( self ):
-        if os.name != 'posix':
-            if not self.checkForSWTJar():
-                sys.exit(1)
-            
         logging.info( 'Building everything' )
         if os.name != 'posix':
             environment = os.environ.copy()
             environment['JAVA_BIN'] = '%sbin' % ( self.config[ 'windowsjava' ], ) 
             environment['JAVA_INCLUDE'] = '%sinclude' % ( self.config[ 'windowsjava' ], )
 
-            retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+            if ( self.config[ 'vs9' ] ):
+                retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+            else:
+                retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
         else:
-            retcode = subprocess.call( ["scons", "-c", "Core/ClientSMLSWIG" ] )
-            
-            if retcode == 0:
-                retcode = subprocess.call( ["scons", "debug=no", "Core/ClientSMLSWIG/Java" ] )
-                
-                if retcode == 0:
-                    retcode = subprocess.call( ["scons", "debug=no", "Core/ClientSMLSWIG/Python" ] )
-                    
-                    if retcode == 0:
-                        retcode = subprocess.call( ["scons", "debug=no" ] )
+            retcode = subprocess.call( ["scons", "debug=no" ] )
         
         if retcode != 0:
             logging.critical( "build failed" )
@@ -336,13 +281,15 @@ def usage():
     print "\t-q, --quiet: Decrease logger verbosity, use multiple times for greater effect."
     print "\t-v, --verbose: Increase logger verbosity, use multiple times for greater effect."
     print "\t-b, --build: Build everything before generating package."
+    print "\t-8, --vs8: Build using Visual Studio 8 (2005)."
+    print "\t-9, --vs9: Build using Visual Studio 9 (2008) (default)."
     
 def main():
     
     loglevel = logging.INFO
     
     try:
-        opts, args = getopt.getopt( sys.argv[1:], "hqvbt:", [ "help", "quiet", "verbose", "build", "tag=", ] )
+        opts, args = getopt.getopt( sys.argv[1:], "89hqvbt:", [ "vs8", "vs9", "help", "quiet", "verbose", "build", "tag=", ] )
     except getopt.GetoptError:
         logging.critical( "Unrecognized option." )
         usage()
@@ -363,6 +310,10 @@ def main():
             build = True
         if o in ( "-t", "--tag" ):
             tag = a
+        if o in ( "-8", "--vs8" ):
+            generatorConfig[ 'vs9' ] = False
+        if o in ( "-9", "--vs9" ):
+            generatorConfig[ 'vs9' ] = True
     
     if tag == None:
         logging.critical( 'Version tag required (option: -t|--tag)' )
