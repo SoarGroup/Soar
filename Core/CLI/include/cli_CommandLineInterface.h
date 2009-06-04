@@ -701,6 +701,10 @@ public:
 	*************************************************************/
 	bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
 
+	// utility for kernel SML
+	bool IsLogOpen();
+
+
 protected:
 
 	void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse);
