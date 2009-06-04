@@ -1121,8 +1121,9 @@ void run_for_n_modifications_of_output (agent* thisAgent, long n) {
 		  count++;
 	} }
 	if (count >= thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM]) {
-		thisAgent->stop_soar = TRUE;
-		thisAgent->reason_for_stopping = "exceeded max_nil_output_cycles with no output";
+		break;
+		//thisAgent->stop_soar = TRUE;
+		//thisAgent->reason_for_stopping = "exceeded max_nil_output_cycles with no output";
 	}
   }
 #ifndef NO_TIMING_STUFF
