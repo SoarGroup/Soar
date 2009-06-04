@@ -118,7 +118,7 @@ class Generator:
             environment['JAVA_INCLUDE'] = '%sinclude' % ( self.config[ 'windowsjava' ], )
 
             if ( self.config[ 'vs9' ] ):
-                retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+                retcode = subprocess.call( ["rebuild-all9.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
             else:
                 retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
         else:
