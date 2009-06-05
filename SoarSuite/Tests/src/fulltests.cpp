@@ -73,6 +73,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testLearn ); // bug 1145
 	CPPUNIT_TEST( testPreferenceSemantics ); // bug 234
 	CPPUNIT_TEST( testMatchTimeInterrupt ); // bug 873
+	CPPUNIT_TEST( testNegatedConjunctiveTestReorder );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -106,6 +107,7 @@ public:
 	TEST_DECLARATION( testLearn );
 	TEST_DECLARATION( testPreferenceSemantics );
 	TEST_DECLARATION( testMatchTimeInterrupt );
+	TEST_DECLARATION( testNegatedConjunctiveTestReorder );
 
 	void testShutdownHandlerShutdown();
 
@@ -1611,3 +1613,12 @@ TEST_DEFINITION( testMatchTimeInterrupt )
 	loadProductions( "/Tests/testMatchTimeInterrupt.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
+TEST_DEFINITION( testNegatedConjunctiveTestReorder )
+{
+	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^a <val> -^a {<val> < 1}) --> }");
+	std::string production(m_pAgent->ExecuteCommandLine("print test"));
+	CPPUNIT_ASSERT(production == "sp {test\n    (state <s> ^a <val> -^a { <val> < 1 })\n    -->\n    \n}\n\n\n");
+}
+
+
+
