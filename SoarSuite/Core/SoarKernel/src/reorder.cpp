@@ -306,7 +306,12 @@ saved_test *simplify_condition_list (agent* thisAgent, condition *conds_list) {
 
   sts = NIL;
   for (c=conds_list; c!=NIL; c=c->next) {
+//#define CONSIDER_NEGATIVE 1
+#ifdef CONSIDER_NEGATIVE
     if (c->type!=CONJUNCTIVE_NEGATION_CONDITION) {
+#else
+    if (c->type==POSITIVE_CONDITION) {
+#endif
       sts = simplify_test (thisAgent, &(c->data.tests.id_test), sts);
       sts = simplify_test (thisAgent, &(c->data.tests.attr_test), sts);
       sts = simplify_test (thisAgent, &(c->data.tests.value_test), sts);
@@ -405,7 +410,11 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
 
   new_vars = NIL;
   for (cond=conds_list; cond!=NIL; cond=cond->next) {
+#ifdef CONSIDER_NEGATIVE
     if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) continue;
+#else
+    if (cond->type!=POSITIVE_CONDITION) continue;
+#endif
     bool neg = cond->type == NEGATIVE_CONDITION;
     tests_to_restore = restore_saved_tests_to_test
       (thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore, neg);
