@@ -16,6 +16,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstdio>
 
 // Conversion of value to string
 template<class T> std::string& to_string( const T& x, std::string& dest )
