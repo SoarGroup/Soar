@@ -1062,7 +1062,7 @@ Bool test_tests_for_root(test t, list *roots) {
 	until the production addition failed as the bad production
 	was added to the rete.
 
-	These two productions specifically check that all referents
+	These two functions specifically check that all referents
 	of non-equality relational tests are bound and return false
 	if an unbound referent is discovered.
 
