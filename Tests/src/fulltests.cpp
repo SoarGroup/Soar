@@ -1624,5 +1624,29 @@ TEST_DEFINITION( testNegatedConjunctiveTestReorder )
 
 TEST_DEFINITION( testNegatedConjunctiveTestUnbound )
 {
-	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^superstate nil -^foo { <> <x> }) --> }");
+	// all of these should fail without crashing:
+	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^superstate nil -^foo { <> <bad> }) --> }");
+	// <bad> is unbound referent in value test
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult() == false);
+
+	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^superstate nil -^{ <> <bad> } <s>) --> }");
+	// <bad> is unbound referent in attr test
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult() == false);
+
+	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^superstate nil -^foo { <> <b> }) -{(<s> ^bar <b>) (<s> -^bar { <> <b>})} --> }");
+	// <b> is unbound referent in test, defined in ncc out of scope
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult() == false);
+
+	m_pAgent->ExecuteCommandLine("sp {test  (state <s> ^superstate <d> -^foo { <> <b> }) -{(<s> ^bar <b>) (<s> -^bar { <> <d>})} --> }");
+	// <d> is unbound referent in value test in ncc
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult() == false);
+
+	// these should succeed
+	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^superstate <d>) -{(<s> ^bar <b>) (<s> -^bar { <> <d>})} --> }");
+	// <d> is bound outside of ncc but in scope
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+
+	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^superstate nil) -{(<s> ^bar <d>) (<s> -^bar { <> <d>})} --> }");
+	// <d> is bound inside of ncc
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
 }
