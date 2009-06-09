@@ -82,6 +82,7 @@ generatorConfig[ 'baseurl' ] = 'https://winter.eecs.umich.edu/svn/soar/tags/'
 generatorConfig[ 'binarybaseurl' ] = 'http://winter.eecs.umich.edu/soar/release-binaries/'
 generatorConfig[ 'windowsjava' ] = 'C:\\Program Files\\Java\\jdk1.5.0_16\\'
 generatorConfig[ 'vs9' ] = True
+generatorConfig[ 'x64' ] = False
 
 ####
 class Generator:
@@ -118,9 +119,15 @@ class Generator:
             environment['JAVA_INCLUDE'] = '%sinclude' % ( self.config[ 'windowsjava' ], )
 
             if ( self.config[ 'vs9' ] ):
-                retcode = subprocess.call( ["rebuild-all9.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+		if ( self.config[ 'x64' ] ):
+		    retcode = subprocess.call( ["rebuild-all-vs9-x64.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+		else:
+		    retcode = subprocess.call( ["rebuild-all-vs9.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
             else:
-                retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+	        if ( self.config[ 'x64' ] ):
+                    retcode = subprocess.call( ["rebuild-all-x64.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+		else:
+                    retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
         else:
             retcode = subprocess.call( ["scons", "debug=no" ] )
         
@@ -280,13 +287,14 @@ def usage():
     print "\t-b, --build: Build everything before generating package."
     print "\t-8, --vs8: Build using Visual Studio 8 (2005)."
     print "\t-9, --vs9: Build using Visual Studio 9 (2008) (default)."
+    print "\t-x, --x64: Target 64-bit."
     
 def main():
     
     loglevel = logging.INFO
     
     try:
-        opts, args = getopt.getopt( sys.argv[1:], "89hqvbt:", [ "vs8", "vs9", "help", "quiet", "verbose", "build", "tag=", ] )
+        opts, args = getopt.getopt( sys.argv[1:], "89hqvbt:x", [ "vs8", "vs9", "help", "quiet", "verbose", "build", "tag=", "x64" ] )
     except getopt.GetoptError:
         logging.critical( "Unrecognized option." )
         usage()
@@ -311,6 +319,8 @@ def main():
             generatorConfig[ 'vs9' ] = False
         if o in ( "-9", "--vs9" ):
             generatorConfig[ 'vs9' ] = True
+        if o in ( "-x", "--x64" ):
+            generatorConfig[ 'x64' ] = True
     
     if tag == None:
         logging.critical( 'Version tag required (option: -t|--tag)' )
