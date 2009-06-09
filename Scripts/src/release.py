@@ -101,12 +101,21 @@ class Generator:
         self.config[ 'target-binaryurl' ] = "%s%s" % ( self.config[ 'binarybaseurl' ], self.config[ 'target-basename' ], )
 
         if os.name != 'posix':
-            self.config[ 'target-file' ] = "%s-windows.zip" % ( self.config[ 'target-basename' ], )
+            if ( self.config[ 'x64' ] ):
+                self.config[ 'target-file' ] = "%s-windows-x64.zip" % ( self.config[ 'target-basename' ], )
+            else:
+                self.config[ 'target-file' ] = "%s-windows.zip" % ( self.config[ 'target-basename' ], )
         else:
             if sys.platform == 'darwin':
-                self.config[ 'target-file' ] = "%s-osx.tar.gz" % ( self.config[ 'target-basename' ], )
+                if ( self.config[ 'x64' ] ):
+                    self.config[ 'target-file' ] = "%s-osx-x64.tar.gz" % ( self.config[ 'target-basename' ], )
+                else:
+                    self.config[ 'target-file' ] = "%s-osx.tar.gz" % ( self.config[ 'target-basename' ], )
             else:
-                self.config[ 'target-file' ] = "%s-linux.tar.gz" % ( self.config[ 'target-basename' ], )
+                if ( self.config[ 'x64' ] ):
+                    self.config[ 'target-file' ] = "%s-linux-x64.tar.gz" % ( self.config[ 'target-basename' ], )
+                else:
+                    self.config[ 'target-file' ] = "%s-linux.tar.gz" % ( self.config[ 'target-basename' ], )
             
         for x in self.config:
             logging.debug( 'config: %s: %s' % ( x, repr( self.config[x] ), ) )
@@ -129,7 +138,11 @@ class Generator:
 		else:
                     retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
         else:
-            retcode = subprocess.call( ["scons", "debug=no" ] )
+            subprocess.call( ["make", "distclean"] )
+            if ( self.config[ 'x64' ] ):
+                retcode = subprocess.call( ["scons", "debug=no", "m64=yes" ] )
+            else:
+                retcode = subprocess.call( ["scons", "debug=no", "m64=no" ] )
         
         if retcode != 0:
             logging.critical( "build failed" )
