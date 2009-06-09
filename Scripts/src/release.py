@@ -254,9 +254,6 @@ class Generator:
             logging.debug( '%s -> %s' % ( srcurl, dst, ) )
             urllib.urlretrieve( self.percentTwentificate( srcurl ), dst )
         
-        logging.info( 'Remove java build directory' )
-        shutil.rmtree( os.path.join( self.config[ 'target-path' ], 'Core', 'ClientSMLSWIG', 'Java', 'build' ) )
-
         logging.info( 'Remove ManualSource' )
         shutil.rmtree( os.path.join( self.config[ 'target-path' ], 'Documentation', 'ManualSource' ) )
 
