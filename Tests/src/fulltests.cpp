@@ -75,6 +75,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testMatchTimeInterrupt ); // bug 873
 	CPPUNIT_TEST( testNegatedConjunctiveTestReorder );
 	CPPUNIT_TEST( testNegatedConjunctiveTestUnbound ); // bug 517
+	CPPUNIT_TEST( testCommandToFile ); 
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -110,6 +111,7 @@ public:
 	TEST_DECLARATION( testMatchTimeInterrupt );
 	TEST_DECLARATION( testNegatedConjunctiveTestReorder );
 	TEST_DECLARATION( testNegatedConjunctiveTestUnbound );
+	TEST_DECLARATION( testCommandToFile );
 
 	void testShutdownHandlerShutdown();
 
@@ -1649,4 +1651,16 @@ TEST_DEFINITION( testNegatedConjunctiveTestUnbound )
 	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^superstate nil) -{(<s> ^bar <d>) (<s> -^bar { <> <d>})} --> }");
 	// <d> is bound inside of ncc
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+}
+
+TEST_DEFINITION( testCommandToFile )
+{
+	loadProductions( "/Demos/water-jug/water-jug-rl.soar" );
+	m_pKernel->RunAllAgentsForever();
+	m_pAgent->ExecuteCommandLine("command-to-file testCommandToFile-output.soar print --rl --full");
+	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
+	const char* result = m_pAgent->ExecuteCommandLine( "source testCommandToFile-output.soar" );
+	CPPUNIT_ASSERT(result);
+	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\nSource finished.\n");
+	CPPUNIT_ASSERT(result == resultString);
 }
