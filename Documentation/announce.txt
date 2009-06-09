@@ -49,8 +49,8 @@ Installation Requirements
   to extract Soar to the C:\ root or similar. Some parts of the Soar Suite
   directory structure are deep, so users wishing to put Soar in a deep location
   on their machines 
-  (such as C:\Documents and Settings\username\My Documents\Visual Studio Projects) 
-  may run into issues.
+  (such as C:\Documents and Settings\username\My Documents\Visual Studio 
+  Projects) may run into issues.
 
 * Java 1.5 or newer is required to use the Java applications,
   including the debugger (Java must be available in the path). Get it 
