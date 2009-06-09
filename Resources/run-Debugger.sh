@@ -1,8 +1,7 @@
 #!/bin/sh
-platform=$(uname)
-
 cd SoarSuite/SoarLibrary/bin
 
+platform=$(uname)
 if [ $platform = "Darwin" ]
 then
 	export DYLD_LIBRARY_PATH="../lib"
