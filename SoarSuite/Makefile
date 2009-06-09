@@ -24,4 +24,6 @@ distclean: clean
 	rm -f Environments/Soar2D/config/eaters-console.cnf
 	rm -f Environments/Soar2D/config/taxi.cnf
 	rm -f SoarLibrary/bin/testjavasml-success.txt
+	rm -f SoarLibrary/bin/clog-test.txt
+	rm -f SoarLibrary/bin/testCommandToFile-output.soar
 
