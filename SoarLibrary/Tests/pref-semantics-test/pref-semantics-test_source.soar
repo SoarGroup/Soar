@@ -19,6 +19,10 @@ pushd four-acceptable-worst
 source four-acceptable-worst_source.soar
 popd
 source initialize-pref-semantics-test.soar
+source last-better.soar
+pushd last-better
+source last-better_source.soar
+popd
 source simple-conflict.soar
 pushd simple-conflict
 source simple-conflict_source.soar
