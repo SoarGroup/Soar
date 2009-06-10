@@ -1,4 +1,4 @@
-99
+110
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -98,7 +98,18 @@ ENUMERATION 95 1 c
 SOAR_ID 96
 ENUMERATION 97 1 d
 SOAR_ID 98
-107
+SOAR_ID 99
+ENUMERATION 100 1 last-better
+SOAR_ID 101
+ENUMERATION 102 1 state
+ENUMERATION 103 1 last-better
+ENUMERATION 104 1 a
+SOAR_ID 105
+ENUMERATION 106 1 b
+SOAR_ID 107
+ENUMERATION 108 1 c
+SOAR_ID 109
+119
 0 io 1
 0 name 7
 0 operator 4
@@ -111,6 +122,7 @@ SOAR_ID 98
 0 operator 62
 0 operator 73
 0 operator 86
+0 operator 99
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -206,3 +218,14 @@ SOAR_ID 98
 94 name 93
 96 name 95
 98 name 97
+99 name 100
+101 name 103
+101 operator 105
+101 operator 107
+101 operator 109
+101 superstate 0
+101 top-state 0
+101 type 102
+105 name 104
+107 name 106
+109 name 108

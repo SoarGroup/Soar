@@ -1,0 +1,8 @@
+sp {last-better*success
+   (state <s> ^superstate <ss>)
+   (<ss> ^name last-better
+         ^operator.name a
+         ^top-state <ts>)
+-->
+   (<ts> ^last-better success)
+}
