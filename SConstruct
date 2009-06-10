@@ -223,6 +223,9 @@ if env['java']:
 if env['python']:
 	SConscript('#Core/ClientSMLSWIG/Python/SConscript')
 
+if env['tcl']:
+	SConscript('#Core/ClientSMLSWIG/Tcl/SConscript')
+
 SConscript('#Tools/TestCLI/SConscript')
 SConscript('#Tools/FilterC/SConscript')
 SConscript('#Tools/QuickLink/SConscript')
