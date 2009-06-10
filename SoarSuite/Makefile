@@ -8,7 +8,7 @@ prof:
 	scons m64=no python=no
 
 clean:
-	scons -c
+	scons tcl=yes python=yes java=yes -c
 
 distclean: clean
 	rm -f config.log
