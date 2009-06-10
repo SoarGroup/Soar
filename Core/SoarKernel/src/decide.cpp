@@ -1019,6 +1019,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 		}
 		/* --- non-conflict candidates found, remove conflicts from candidates --- */
 		prev_cand = NIL;
+		cand = candidates;
 		while (cand) 
 		{
 			if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG) 
