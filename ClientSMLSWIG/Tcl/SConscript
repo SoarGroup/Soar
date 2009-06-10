@@ -32,8 +32,10 @@ if sys.platform == 'darwin':
 	shlib_env['SHLIBSUFFIX'] = '.so'
 shlib_env.Append(CPPFLAGS = ' -w')
 tcl_sml_interface_shlib_target = 'Tcl_sml_ClientInterface'
+Depends(tcl_sml_interface_shlib_target, tcl_sml_interface_wrap_target)
 tcl_sml_interface_shlib = shlib_env.SharedLibrary(tcl_sml_interface_shlib_target, tcl_sml_interface_wrap_target) 
 tcl_sml_interface_install = shlib_env.Install('#SoarLibrary/bin/Tcl_sml_ClientInterface', tcl_sml_interface_shlib)
 shlib_env.Command('#SoarLibrary/bin/Tcl_sml_ClientInterface/pkgIndex.tcl', tcl_sml_interface_install, 'tclsh Core/ClientSMLSWIG/Tcl/SconsMakeTclSMLPackage.tcl')
+shlib_env.Clean(tcl_sml_interface_shlib, '#SoarLibrary/bin/Tcl_sml_ClientInterface')
 #### (end shlib)
 
