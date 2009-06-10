@@ -526,7 +526,7 @@
 		return (intptr_t)tud;
     }
     
-    bool UnregisterForRunEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForRunEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForRunEvent(tud->callbackid);
@@ -534,7 +534,7 @@
 		return true;
     }
     
-    bool UnregisterForProductionEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForProductionEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForProductionEvent(tud->callbackid);
@@ -542,7 +542,7 @@
 		return true;
     }
     
-    bool UnregisterForPrintEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForPrintEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForPrintEvent(tud->callbackid);
@@ -550,7 +550,7 @@
 		return true;
     }
     
-    bool UnregisterForXMLEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForXMLEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForXMLEvent(tud->callbackid);
@@ -558,7 +558,7 @@
 		return true;
     }
     
-    bool UnregisterForOutputNotification(Tcl_Interp* interp, int id) {
+    bool UnregisterForOutputNotification(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForOutputNotification(tud->callbackid);
@@ -566,7 +566,7 @@
 		return true;
     }
     
-    bool RemoveOutputHandler(Tcl_Interp* interp, int id) {
+    bool RemoveOutputHandler(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->RemoveOutputHandler(tud->callbackid);
@@ -615,7 +615,7 @@
 		return (intptr_t)tud;
     }
 
-	bool UnregisterForSystemEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForSystemEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForSystemEvent(tud->callbackid);
@@ -623,7 +623,7 @@
 		return true;
     }
     
-    bool UnregisterForUpdateEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForUpdateEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForUpdateEvent(tud->callbackid);
@@ -631,7 +631,7 @@
 		return true;
     }
     
-    bool UnregisterForStringEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForStringEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForStringEvent(tud->callbackid);
@@ -639,7 +639,7 @@
 		return true;
     }
     
-    bool UnregisterForAgentEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForAgentEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForAgentEvent(tud->callbackid);
@@ -647,7 +647,7 @@
 		return true;
     }
     
-    bool RemoveRhsFunction(Tcl_Interp* interp, int id) {
+    bool RemoveRhsFunction(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->RemoveRhsFunction(tud->callbackid);
@@ -655,7 +655,7 @@
 		return true;
     }
     
-    bool UnregisterForClientMessageEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForClientMessageEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForClientMessageEvent(tud->callbackid);
