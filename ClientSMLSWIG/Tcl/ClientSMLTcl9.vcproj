@@ -439,7 +439,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.1  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -449,7 +449,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.1  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -459,7 +459,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.1  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -469,7 +469,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.0  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo TCL_HOME: %TCL_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -tcl -pkgversion 9.0.1  -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir build &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
