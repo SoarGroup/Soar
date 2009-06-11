@@ -2,7 +2,7 @@
 
                                       Name
 
-   'select - Force the next selected operator
+   select - Force the next selected operator
 
                                     Synopsis
 
@@ -14,7 +14,8 @@
    displayed
 
    +------------------------------------------------------------------------+
-   |id|operator id of the operator to be selected in the next decision phase|
+   |id|case-insensitive operator id of the operator to be selected in the   |
+   |  |next decision phase                                                  |
    +------------------------------------------------------------------------+
 
                                   Description
