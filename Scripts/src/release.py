@@ -140,9 +140,9 @@ class Generator:
         else:
             subprocess.call( ["make", "distclean"] )
             if ( self.config[ 'x64' ] ):
-                retcode = subprocess.call( ["scons", "debug=no", "m64=yes" ] )
+                retcode = subprocess.call( ["scons", "tcl=yes", "java=yes", "python=yes", "debug=no", "m64=yes" ] )
             else:
-                retcode = subprocess.call( ["scons", "debug=no", "m64=no" ] )
+                retcode = subprocess.call( ["scons", "tcl=yes", "java=yes", "python=yes", "debug=no", "m64=no" ] )
         
         if retcode != 0:
             logging.critical( "build failed" )
