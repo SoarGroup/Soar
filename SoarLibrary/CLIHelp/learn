@@ -7,31 +7,42 @@
                                     Synopsis
 
  learn [-l]
- learn -[d|E|o]
- learn -e [ab]
+ learn [-d|E|o]
+ learn [-eabnN]
 
                                     Options
 
    +------------------------------------------------------------------------+
-   |-e, --enable, --on  |Turn chunking on. Can be modified by -a or -b.     |
-   |--------------------+---------------------------------------------------|
-   |-d, --disable, --off|Turn all chunking off. (default)                   |
-   |--------------------+---------------------------------------------------|
-   |-E, --except        |Learning is on, except as specified by RHS         |
-   |                    |dont-learn actions.                                |
-   |--------------------+---------------------------------------------------|
-   |-o, --only          |Chunking is on only as specified by RHS force-learn|
-   |                    |actions.                                           |
-   |--------------------+---------------------------------------------------|
-   |-l, --list          |Prints listings of dont-learn and force-learn      |
-   |                    |states.                                            |
-   |--------------------+---------------------------------------------------|
-   |-a, --all-levels    |Build chunks whenever a subgoal returns a result.  |
-   |                    |Learning must be --enabled.                        |
-   |--------------------+---------------------------------------------------|
-   |                    |Build chunks only for subgoals that have not yet   |
-   |-b, --bottom-up     |had any subgoals with chunks built. Learning must  |
-   |                    |be --enabled.                                      |
+   |-e, --enable, --on                   |Turn chunking on. Can be modified |
+   |                                     |by -a or -b.                      |
+   |-------------------------------------+----------------------------------|
+   |-d, --disable, --off                 |Turn all chunking off. (default)  |
+   |-------------------------------------+----------------------------------|
+   |                                     |Learning is on, except as         |
+   |-E, --except                         |specified by RHS dont-learn       |
+   |                                     |actions.                          |
+   |-------------------------------------+----------------------------------|
+   |-o, --only                           |Chunking is on only as specified  |
+   |                                     |by RHS force-learn actions.       |
+   |-------------------------------------+----------------------------------|
+   |-l, --list                           |Prints listings of dont-learn and |
+   |                                     |force-learn states.               |
+   |-------------------------------------+----------------------------------|
+   |                                     |Build chunks whenever a subgoal   |
+   |-a, --all-levels                     |returns a result. Learning must be|
+   |                                     |--enabled.                        |
+   |-------------------------------------+----------------------------------|
+   |                                     |Build chunks only for subgoals    |
+   |-b, --bottom-up                      |that have not yet had any subgoals|
+   |                                     |with chunks built. Learning must  |
+   |                                     |be --enabled.                     |
+   |-------------------------------------+----------------------------------|
+   |                                     |Build chunks when local negation  |
+   |-n, --enable-through-local-negations |encountered in backtrace.         |
+   |                                     |(default)                         |
+   |-------------------------------------+----------------------------------|
+   |-N, --disable-through-local-negations|Do not build chunks when local    |
+   |                                     |negation encountered in backtrace.|
    +------------------------------------------------------------------------+
 
                                   Description
@@ -66,6 +77,17 @@
    only for the "bottom" of the subgoal hierarchy and not the intermediate
    levels. With experience, the subgoals at the bottom will be replaced by
    the chunks, allowing higher level subgoals to be chunked.
+
+   Similarly, "--enable-through-local-negations" and
+   "--disable-though-local-negations" are orthogonal to the rest of the learn
+   options. These options control whether or not chunks can be created that
+   are derived from rules that check for negated WMEs on the substate (local
+   negations). Chunking through local negations can result in overgeneral
+   chunks, but disabling this ability will reduce the number of chunks
+   formed. The default is to enable chunking through local negations.
+
+   If chunking through local negations is disabled, to see when chunks are
+   discarded (and why), set "watch --learning print".
 
    Learning can be turned on or off at any point during a run.
 

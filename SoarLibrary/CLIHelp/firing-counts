@@ -7,19 +7,18 @@
                                     Synopsis
 
  firing-counts [n]
- firing-counts production_names
+ firing-counts production_name
 
                                     Options
 
-   If given, an option can take one of two forms -- an integer or a list of
-   production names:
+   If given, an option can take one of two forms -- an integer or a
+   production name:
 
    +------------------------------------------------------------------------+
    |n              |List the top n productions. If n is 0, only the         |
    |               |productions which haven't fired are listed              |
    |---------------+--------------------------------------------------------|
-   |production_name|For each production in production_names, print how many |
-   |               |times the production has fired                          |
+   |production_name|Print how many times the production has fired           |
    +------------------------------------------------------------------------+
 
                                   Description
@@ -29,8 +28,8 @@
    frequently fired. With no arguments, it lists all productions. If an
    integer argument, n, is given, only the top n productions are listed. If n
    is zero (0), only the productions that haven't fired at all are listed. If
-   one or more production names are given as arguments, only firing counts
-   for these productions are printed.
+   a production name is given as an argument, the firing count for that
+   production is printed.
 
    Note that firing counts are reset by a call to init-soar.
 
@@ -41,10 +40,9 @@
 
  firing-counts 10
 
-   This example prints the firing counts of productions my*first*production
-   and my*second*production:
+   This example prints the firing counts of production my*first*production:
 
- firing-counts my*first*production my*second*production
+ firing-counts my*first*production
 
 
                                     Warnings
