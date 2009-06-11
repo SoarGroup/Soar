@@ -128,14 +128,14 @@ class Generator:
             environment['JAVA_INCLUDE'] = '%sinclude' % ( self.config[ 'windowsjava' ], )
 
             if ( self.config[ 'vs9' ] ):
-		if ( self.config[ 'x64' ] ):
-		    retcode = subprocess.call( ["rebuild-all-vs9-x64.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
-		else:
-		    retcode = subprocess.call( ["rebuild-all-vs9.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+                if ( self.config[ 'x64' ] ):
+                    retcode = subprocess.call( ["rebuild-all-vs9-x64.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
+                else:
+                    retcode = subprocess.call( ["rebuild-all-vs9.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
             else:
-	        if ( self.config[ 'x64' ] ):
+                if ( self.config[ 'x64' ] ):
                     retcode = subprocess.call( ["rebuild-all-x64.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
-		else:
+                else:
                     retcode = subprocess.call( ["rebuild-all.bat", "%sbin\\" % self.config[ 'windowsjava' ] ], env = environment )
         else:
             subprocess.call( ["make", "distclean"] )
