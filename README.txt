@@ -1,6 +1,12 @@
-Build notes:
-Build using SCons:
+Build notes for non-Windows platforms:
+
+Build using SCons (http://www.scons.org/):
     scons
+
+Note scons switches:
+	scons -h
+
+Note that there are some scons shortcuts in the Makefile, open and look at it.
 
 ------
 Linux:
@@ -8,7 +14,7 @@ The following environment variables need to be set:
     JAVA_HOME="/path/to/sun-jdk-root"
     LD_LIBRARY_PATH="/full/path/to/SoarSuite/SoarLibrary/lib"
 
-Note, on Ubuntu, the Sun JDK root is here: /usr/lib/jvm/java-6-sun
+On Ubuntu, the Sun JDK root is here: /usr/lib/jvm/java-6-sun
 
 ------
 Mac:

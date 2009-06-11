@@ -15,9 +15,9 @@
 
 #include "sml_Utils.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
+#include "misc.h"
 
 #include "assert.h"
 
@@ -62,14 +62,11 @@ void UpdateListener::OnKernelEvent(int eventIDIn, AgentSML* pAgentSML, void* pCa
 	// Convert eventID to a string
 	char const* event = m_pKernelSML->ConvertEventToString(eventID) ;
 
-	// Convert phase to a string
-	char runStr[kMinBufferSize] ;
-	Int2String(*pRunFlags, runStr, sizeof(runStr)) ;
-
 	// Build the SML message we're doing to send.
 	soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_Event) ;
 	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamEventID, event) ;
-	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, runStr) ;
+	char buf[TO_C_STRING_BUFSIZE];
+	pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamValue, to_c_string(*pRunFlags, buf)) ;
 
 	// Send the message out
 	AnalyzeXML response ;

@@ -10,6 +10,7 @@
 // The number of agents to create, wmes to update, and decision cycles to run can be changed at the beginning of the main function.
 
 #include <portability.h>
+#include "misc.h"
 
 #include <stdlib.h>
 
@@ -19,7 +20,6 @@
 #include <iostream>
 #include <time.h>
 #include "sml_Client.h"
-#include "sml_StringOps.h"
 #include "sml_Connection.h"
 #include "thread_OSspecific.h"
 
@@ -55,9 +55,8 @@ public:
 		// Create wmes
 		Identifier* pInputLink = agent->GetInputLink();
 		for(int i=0; i<numWmes; i++) {
-			char buffer[25];
-			Int2String(i, buffer, sizeof(buffer)) ;
-			wmes->push_back(agent->CreateIntWME(pInputLink, buffer, 0));
+			std::string temp;
+			wmes->push_back(pInputLink->CreateIntWME(to_string(i, temp).c_str(), 0));
 		}
 	}
 
@@ -103,9 +102,8 @@ public:
 		// Create agents
 		pAgents = new vector<TestAgent*>();
 		for(int i=0; i<numAgents; i++) {
-			char buffer[25];
-			Int2String(i, buffer, sizeof(buffer)) ;
-			pAgents->push_back(new TestAgent(kernel, buffer, numWmes));
+			std::string temp;
+			pAgents->push_back(new TestAgent(kernel, to_string(i, temp).c_str(), numWmes));
 		}
 
 		for(int agent=0; agent<numAgents; agent++) {
@@ -175,13 +173,16 @@ void UpdateEnvironment(smlUpdateEventId id, void* pUserData, Kernel* pKernel, sm
 	numUpdateEvents++;
 	Environment* env = static_cast<Environment*>(pUserData);
 	env->UpdateEnvironment();
+	//pKernel->CheckForIncomingCommands();
 }
 
 void UpdateAgent(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase) {
 	numInputEvents++;
 	Environment* env = static_cast<Environment*>(pUserData);
 	// the agent's name is it's index
-	env->UpdateAgent(atoi(pAgent->GetAgentName()));
+	int agentNum = 0;
+	from_c_string(agentNum, pAgent->GetAgentName());
+	env->UpdateAgent(agentNum);
 }
 
 void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage) {
@@ -258,6 +259,76 @@ void RunTest2(int numAgents, int numWmes, int numCycles) {
 	delete kernel;
 }
 
+void RunTest3(int numAgents, int numWmes, int numCycles) {
+	Kernel* kernel = Kernel::CreateKernelInCurrentThread("SoarKernelSML", true);
+	if(kernel->HadError()) {
+		cout << "Error: " << kernel->GetLastErrorDescription() << endl;
+	}
+
+	// go for maximum performance
+	kernel->SetAutoCommit(false);
+
+	// Create environment
+	Environment* pEnv = new Environment(kernel, numAgents, numWmes);
+
+	kernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, UpdateEnvironmentAndAgents, pEnv);
+
+	ostringstream oss;
+	oss << "time run " << numCycles;
+	const char* result = kernel->ExecuteCommandLine(oss.str().c_str(), "0");
+	cout << "Time: " << result << endl;
+	cout << "Num Update Events: " << numUpdateEvents << endl;
+	cout << "Num Input Events : " << numInputEvents << endl;
+
+#ifdef PROFILE_CONNECTIONS  // from sml_Connection.h
+	double incoming = kernel->GetConnection()->GetIncomingTime() ;
+	cout << "Incoming time: " << incoming/1000.0 << endl ;
+#endif
+	cout << "Input time : " << pEnv->m_InputTime/1000.0 << endl ;
+
+
+	delete pEnv;
+
+	kernel->Shutdown();
+	delete kernel;
+}
+
+void RunTest4(int numAgents, int numWmes, int numCycles) {
+	Kernel* kernel = Kernel::CreateKernelInCurrentThread("SoarKernelSML", true);
+	if(kernel->HadError()) {
+		cout << "Error: " << kernel->GetLastErrorDescription() << endl;
+	}
+
+	// go for maximum performance
+	kernel->SetAutoCommit(false);
+
+	// Create environment
+	Environment* pEnv = new Environment(kernel, numAgents, numWmes);
+
+	kernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, UpdateEnvironment, pEnv);
+	pEnv->RegisterAgentsForInputEvent();
+
+	ostringstream oss;
+	oss << "time run " << numCycles;
+	const char* result = kernel->ExecuteCommandLine(oss.str().c_str(), "0");
+	cout << "Time: " << result << endl;
+	cout << "Num Update Events: " << numUpdateEvents << endl;
+	cout << "Num Input Events : " << numInputEvents << endl;
+
+#ifdef PROFILE_CONNECTIONS  // from sml_Connection.h
+	double incoming = kernel->GetConnection()->GetIncomingTime() ;
+	cout << "Incoming time: " << incoming/1000.0 << endl ;
+#endif
+
+   // Doesn't make sense to include this, since the time is only updated in Environment::UpdateAll, which isn't used in this test
+   //cout << "Input time : " << pEnv->m_InputTime/1000.0 << endl ;
+
+   delete pEnv;
+
+	kernel->Shutdown();
+	delete kernel;
+}
+
 int main() {
 #ifdef _DEBUG
 	// When we have a memory leak, set this variable to
@@ -270,13 +341,17 @@ int main() {
 	{ // create local scope to allow for local memory cleanup before we check at end
 		int numAgents = 4;
 		int numWmes = 25;
-		int numCycles = 1000;
+		int numCycles = 5000;
 
 		srand( static_cast<unsigned>(time( 0 )) );
 
 		RunTest1(numAgents, numWmes, numCycles);
 		ResetEventCounts();
 		RunTest2(numAgents, numWmes, numCycles);
+		ResetEventCounts();
+		RunTest3(numAgents, numWmes, numCycles);
+		ResetEventCounts();
+		RunTest4(numAgents, numWmes, numCycles);
 
 		//cout << endl << endl << "Press enter to exit.";
 		//cin.get();

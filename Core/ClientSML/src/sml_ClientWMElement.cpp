@@ -81,3 +81,8 @@ void WMElement::Refresh()
 
 	GetAgent()->GetWM()->GetInputDeltaList()->AddWME(this) ;
 }
+
+bool WMElement::DestroyWME()
+{
+	return this->m_Agent->GetWM()->DestroyWME(this);
+}

@@ -305,32 +305,6 @@ void read_rest_of_floating_point_number (agent* thisAgent) {
 #endif
 }
 
-/* --- BUGBUG: these routines are here because the ANSI routine strtod() isn't
-   available at CMU and the ANSI routine strtoul() isn't at ISI --- */
-#if !defined(__NeXT__) && !defined(__linux__) && !defined(MACINTOSH)
-extern double atof();
-#endif /* #ifndef __NeXT__ */
-
-double my_strtod (char *ch, char ** /*p*/, int /*base*/) {
-  /* BUGBUG without ANSI's strtod(), there's no way to check for floating
-     point overflow here.  If someone types "1.5E2000" weird things could
-     happen. */
-  return atof(ch);
-}
-
-unsigned long my_strtoul (char *ch, char **p, int base) {
-  long result;
-  
-  errno = 0;
-  result = strtol (ch,p,base);
-  if (errno) return 0;
-  if (result < 0) {
-    errno = ERANGE;
-    return 0;
-  }
-  return static_cast<unsigned long>(result);
-}
-
 Bool determine_type_of_constituent_string (agent* thisAgent) {
   Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
   Bool rereadable;
@@ -367,7 +341,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
   if (possible_fc) {
     errno = 0;
     thisAgent->lexeme.type = FLOAT_CONSTANT_LEXEME;
-    thisAgent->lexeme.float_val = my_strtod (thisAgent->lexeme.string,NULL,10); 
+    thisAgent->lexeme.float_val = strtod (thisAgent->lexeme.string,NULL); 
     if (errno) {
       print (thisAgent, "Error: bad floating point number\n");
       print_location_of_most_recent_lexeme(thisAgent);
@@ -381,7 +355,7 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
     thisAgent->lexeme.id_letter = static_cast<char>(toupper(thisAgent->lexeme.string[0]));
     errno = 0;
     thisAgent->lexeme.type = IDENTIFIER_LEXEME;
-    thisAgent->lexeme.id_number = my_strtoul (&(thisAgent->lexeme.string[1]),NULL,10);
+    thisAgent->lexeme.id_number = strtoul (&(thisAgent->lexeme.string[1]),NULL,10);
     if (errno) {
       print (thisAgent, "Error: bad number for identifier (probably too large)\n");
       print_location_of_most_recent_lexeme(thisAgent);

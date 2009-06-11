@@ -14,6 +14,7 @@
 #include "cli_CLIError.h"
 
 #include <iostream>
+#include <sstream>
 
 using namespace cli;
 
@@ -52,6 +53,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 	const char* targets = "\\|[] \n\r\t";
 	valueCollection currentValueCollection;
 	std::string currentValueToken;
+	size_t total = 0;
 
 	for ( pos = productionString.find_first_of(targets, searchpos); pos != std::string::npos; pos = productionString.find_first_of(targets, searchpos) ) {
 		switch ( productionString[ pos ] ) {
@@ -95,15 +97,13 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 					// make sure there is not a square bracket immediately following this one
 					if ( productionString.size() < pos + 2 )
 					{
-						// productionString ends on [, bad
-						// TODO: error code
-						return SetError( CLIError::kNotImplemented );
+						SetErrorDetail( "gp production ends with [");
+						return SetError( CLIError::kValuesError );
 					}
 					if ( productionString[ pos + 1 ] == ']' )
 					{
-						// can't have empty value collections
-						// TODO: error code
-						return SetError( CLIError::kNotImplemented );;
+						SetErrorDetail( "gp can't have empty value collections");
+						return SetError( CLIError::kValuesError );;
 					}
 
 					// we've started a values list, finish and save the previous segment
@@ -131,15 +131,13 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 					// make sure there is not a square bracket immediately following this one
 					if ( productionString.size() < pos + 2 )
 					{
-						// productionString ends on ], bad
-						// TODO: error code
-						return SetError( CLIError::kNotImplemented );
+						SetErrorDetail( "gp production ends with ]");
+						return SetError( CLIError::kValuesError );
 					}
 					if ( productionString[ pos + 1 ] == '[' )
 					{
-						// space required between value lists
-						// TODO: error code
-						return SetError( CLIError::kNotImplemented );;
+						SetErrorDetail( "gp production requires space between value lists");
+						return SetError( CLIError::kValuesError );;
 					}
 
 					// end of values list
@@ -152,6 +150,12 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 					}
 					if ( currentValueCollection.size() )
 					{
+						if (total == 0) {
+							total += currentValueCollection.size();
+						} else {
+							total *= currentValueCollection.size();
+						}
+						//std::cout << "total: " << total << std::endl;
 						topLevel.push_back( currentValueCollection );
 					}
 
@@ -217,8 +221,29 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 	topLevel.push_back( currentValueCollection );
 
 	if (pipe || inValues) {
-		// TODO: error code
-		return SetError( CLIError::kNotImplemented );;
+		std::ostringstream message;
+		message << "gp syntax error, unmatched ";
+		if (pipe) {
+			message << "pipe";
+		}
+		if (pipe && inValues) {
+			message << ", ";
+		}
+		if (inValues) {
+			message << "values bracket";
+		}
+		message << ".";
+		SetErrorDetail( message.str() );
+		return SetError( CLIError::kValuesError );;
+	}
+
+	if (m_GPMax != 0) {
+		if (total > static_cast<size_t>(m_GPMax)) {
+			std::ostringstream message;
+			message << "Current production produces " << total << " productions.";
+			SetErrorDetail( message.str() );
+			return SetError( CLIError::kGPMaxExceeded );
+		}
 	}
 
 	// final output
@@ -257,7 +282,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 			// find the end of the production name and add a number to differentiate it
 			if(valueItersIter == valueIters.begin())
 			{
-				pos = generatedProduction.find_first_of("\n");
+				pos = generatedProduction.find_first_of("\n \t\r");
 				std::stringstream numsstr; numsstr << "*" << prodnum;
 				generatedProduction.insert(pos, numsstr.str());
 				++prodnum;
@@ -269,9 +294,6 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 		generatedProduction = generatedProduction.substr(1, generatedProduction.length() - 2);
 		if(!DoSP(generatedProduction))
 		{
-			// FIXME: this error message doesn't appear
-			std::string error = "The following production failed to load: \nsp {" + generatedProduction + "}";
-			SetErrorDetail(error);
 			return false;
 		}
 

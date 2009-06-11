@@ -18,6 +18,7 @@
 #include "src/cli_firingcounts.cpp"
 #include "src/cli_gdsprint.cpp"
 #include "src/cli_gp.cpp"
+#include "src/cli_gpmax.cpp"
 #include "src/cli_help.cpp"
 #include "src/cli_indifferentselection.cpp"
 #include "src/cli_initsoar.cpp"

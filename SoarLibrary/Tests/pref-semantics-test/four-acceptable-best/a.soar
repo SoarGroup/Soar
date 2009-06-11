@@ -1,0 +1,16 @@
+sp {four-acceptable-best*propose*a
+   (state <s> ^name four-acceptable-best)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name a)
+}
+
+sp {four-acceptable-best*compare*a
+   (state <s> ^name four-acceptable-best
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name a)
+   (<op2> ^name b)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

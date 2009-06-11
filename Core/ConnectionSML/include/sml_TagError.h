@@ -13,8 +13,8 @@
 #define SML_TAG_ERROR_H
 
 #include "ElementXML.h"
-#include "sml_StringOps.h"
 #include "sml_Names.h"
+#include "misc.h"
 
 namespace sml {
 
@@ -31,10 +31,8 @@ public:
 
 	void SetErrorCode(int error)
 	{
-		char errorBuffer[kMinBufferSize] ;
-		Int2String(error, errorBuffer, kMinBufferSize) ;
-
-		this->AddAttributeFast(sml_Names::kErrorCode, errorBuffer) ;
+		char buf[TO_C_STRING_BUFSIZE];
+		this->AddAttributeFast( sml_Names::kErrorCode, to_c_string( error, buf ) ) ;
 	}
 
 };

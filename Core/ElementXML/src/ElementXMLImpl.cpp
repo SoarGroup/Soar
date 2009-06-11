@@ -27,11 +27,133 @@
 
 #include <algorithm>	// For "for_each"
 
-#ifdef DEBUG_REFCOUNTS
-#ifndef _MSC_VER
+#ifndef HAVE_ATOMICS
+bool global_locks_initialized = false;
+static const size_t NUM_LOCKS = 16;
+
+// define NUM_BITS
+#if defined(_WIN64) || defined(__LP64__)
+static const size_t NUM_BITS = 4;
+#else
+static const size_t NUM_BITS = 3;
+#endif // define NUM_BITS
+
+#ifdef _MSC_VER
+//#define DEBUG_TRY 1
+CRITICAL_SECTION global_locks[NUM_LOCKS];
+#else // !_MSC_VER
 #include <pthread.h>
-#endif //_MSC_VER
-#endif //DEBUG_REFCOUNTS
+pthread_mutex_t global_locks[NUM_LOCKS];
+#endif // !_MSC_VER
+
+//#define DEBUG_LOCKS 1
+#if defined(DEBUG_LOCKS)
+size_t tickers[NUM_LOCKS];
+#endif // DEBUG_LOCKS
+
+#endif // !HAVE_ATOMICS
+
+static inline void elementxml_atomic_init()
+{
+#ifndef HAVE_ATOMICS
+	if (!global_locks_initialized)
+	{
+		for (size_t i = 0; i < NUM_LOCKS; ++i)
+		{
+#ifdef _MSC_VER
+			//tickers[i] = 0;
+			InitializeCriticalSection(&(global_locks[i]));
+#else // !_MSC_VER
+			pthread_mutexattr_t attr;
+			pthread_mutexattr_init(&attr);
+			pthread_mutex_init( &(global_locks[i]), &attr );
+#endif // !_MSC_VER
+		}
+		global_locks_initialized = true;
+	}
+#endif // !HAVE_ATOMICS
+}
+
+static inline long elementxml_atomic_inc( volatile long  *v ) 
+{
+#ifndef HAVE_ATOMICS
+	uintptr_t i = reinterpret_cast<uintptr_t>(v);
+	i >>= NUM_BITS;
+	i %= NUM_LOCKS;
+
+#ifdef _MSC_VER
+#ifdef DEBUG_TRY
+	if (TryEnterCriticalSection(&(global_locks[i])) == 0)
+#endif // DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		EnterCriticalSection(&(global_locks[i]));
+#else // _MSC_VER
+#ifdef DEBUG_TRY
+	if (pthread_mutex_trylock(&(global_locks[i])) != 0)
+#endif // DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		pthread_mutex_lock( &(global_locks[i]) );
+#endif // _MSC_VER
+
+#if defined(DEBUG_LOCKS)
+	tickers[i] += 1;
+	std::cout << "tickers[";
+	for (size_t j = 0;j < NUM_LOCKS; ++j)
+	{
+		std::cout << tickers[j] << ",";
+	}
+	std::cout << "]" << std::endl;
+#endif // DEBUG_LOCKS
+	*v = atomic_inc(v);
+
+#ifdef _MSC_VER
+	LeaveCriticalSection(&(global_locks[i]));
+#else // !_MSC_VER
+	pthread_mutex_unlock( &(global_locks[i]) );
+#endif // !_MSC_VER
+	return *v;
+#else // HAVE_ATOMICS
+	return atomic_inc(v);
+#endif // !HAVE_ATOMICS
+}
+
+static inline long elementxml_atomic_dec( volatile long *v ) 
+{
+#ifndef HAVE_ATOMICS
+	uintptr_t i = reinterpret_cast<uintptr_t>(v);
+	i >>= NUM_BITS;
+	i %= NUM_LOCKS;
+
+#ifdef _MSC_VER
+#ifdef DEBUG_TRY
+	if (TryEnterCriticalSection(&(global_locks[i])) == 0)
+#endif // DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		EnterCriticalSection(&(global_locks[i]));
+#else // _MSC_VER
+#ifdef DEBUG_TRY
+	if (pthread_mutex_trylock(&(global_locks[i])) != 0)
+#endif // DEBUG_TRY
+		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
+		// right when two threads are trying to access the ref count at the same time
+		pthread_mutex_lock( &(global_locks[i]) );
+#endif // _MSC_VER
+
+	*v = atomic_dec(v);
+
+#ifdef _MSC_VER
+	LeaveCriticalSection(&(global_locks[i]));
+#else // !_MSC_VER
+	pthread_mutex_unlock( &(global_locks[i]) );
+#endif // !_MSC_VER
+	return *v;
+#else // HAVE_ATOMICS
+	return atomic_dec(v);
+#endif // HAVE_ATOMICS
+}
 
 using namespace soarxml;
 
@@ -285,15 +407,7 @@ ElementXMLImpl::ElementXMLImpl(void)
 	// attributes substantially faster.
 	m_StringsToDelete.reserve(20) ;
 
-#ifdef DEBUG_REFCOUNTS
-#ifdef _MSC_VER
-	InitializeCriticalSection(&m_CS);
-#else //_MSC_VER
-	pthread_mutexattr_t attr;
-	pthread_mutexattr_init(&attr);
-	pthread_mutex_init( &mlock, &attr );
-#endif //_MSC_VER
-#endif //DEBUG_REFCOUNTS
+	elementxml_atomic_init();
 }
 
 // Provide a static way to call release ref to get round an STL challenge.
@@ -307,14 +421,6 @@ static inline void StaticReleaseRef(ElementXMLImpl* pXML)
 *************************************************************/
 ElementXMLImpl::~ElementXMLImpl(void)
 {
-#ifdef DEBUG_REFCOUNTS
-#ifdef _MSC_VER
-	DeleteCriticalSection(&m_CS);
-#else //_MSC_VER
-	pthread_mutex_destroy(&mlock);
-#endif //_MSC_VER
-#endif //DEBUG_REFCOUNTS
-
 	// Delete the comment
 	DeleteString(m_Comment) ;
 
@@ -419,44 +525,11 @@ ElementXMLImpl* ElementXMLImpl::MakeCopy() const
 *************************************************************/
 int ElementXMLImpl::ReleaseRef()
 {
-#ifdef DEBUG_REFCOUNTS
-#ifdef _MSC_VER
-#ifdef DEBUG_TRY
-	if (TryEnterCriticalSection(&m_CS) == 0)
-#endif //DEBUG_TRY
-		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
-		// right when two threads are trying to access the ref count at the same time
-		EnterCriticalSection(&m_CS);
-#else //_MSC_VER
-#ifdef DEBUG_TRY
-	if (pthread_mutex_trylock(&mlock) != 0)
-#endif //DEBUG_TRY
-		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
-		// right when two threads are trying to access the ref count at the same time
-		pthread_mutex_lock( &mlock );
-#endif //_MSC_VER
-#endif //DEBUG_REFCOUNTS
-
    // Have to store this locally, before we call "delete this"
-   volatile long refCount = atomic_dec(&m_RefCount);
-
-   // The above is the atomic (thread-safe) equivalent of this
-   //m_RefCount-- ;
-	//int refCount = m_RefCount ;
-
-#ifdef DEBUG_REFCOUNTS
-#ifdef _MSC_VER
-	LeaveCriticalSection(&m_CS);
-#else //_MSC_VER
-	pthread_mutex_unlock( &mlock );
-#endif //_MSC_VER
-#endif //DEBUG_REFCOUNTS
-
-	//	printf("Release Ref for hXML = 0x%x making ref count %d\n", (int)this, refCount) ;
+   volatile long refCount = elementxml_atomic_dec(&m_RefCount);
 
 	if (refCount == 0)
 		delete this ;
-
 
 	return refCount ;
 }
@@ -469,40 +542,8 @@ int ElementXMLImpl::ReleaseRef()
 *************************************************************/
 int ElementXMLImpl::AddRef()
 {
-#ifdef DEBUG_REFCOUNTS
-#ifdef _MSC_VER
-#ifdef DEBUG_TRY
-	if (TryEnterCriticalSection(&m_CS) == 0)
-#endif //DEBUG_TRY
-		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
-		// right when two threads are trying to access the ref count at the same time
-		EnterCriticalSection(&m_CS);
-#else //_MSC_VER
-#ifdef DEBUG_TRY
-	if (pthread_mutex_trylock(&mlock) != 0)
-#endif //DEBUG_TRY
-		// with DEBUG_TRY defined, setting a breakpoint on this line will stop things
-		// right when two threads are trying to access the ref count at the same time
-		pthread_mutex_lock( &mlock );
-#endif //_MSC_VER
-#endif //DEBUG_REFCOUNTS
-      
-
-	atomic_inc(&m_RefCount);
+	elementxml_atomic_inc(&m_RefCount);
    
-   // The above is the atomic (thread-safe) equivalent of this
-   //m_RefCount++ ;
-
-//	printf("Add Ref for hXML = 0x%x making ref count %d\n", (int)this, m_RefCount) ;
-
-#ifdef DEBUG_REFCOUNTS
-#ifdef _MSC_VER
-	LeaveCriticalSection(&m_CS);
-#else //_MSC_VER
-	pthread_mutex_unlock( &mlock );
-#endif //_MSC_VER
-#endif //DEBUG_REFCOUNTS
-
 	return m_RefCount ;
 }
 
@@ -1259,82 +1300,6 @@ char* ElementXMLImpl::GenerateXMLString(int depth, char* pStart, int maxLength, 
 
 	return pStr ;
 }
-
-////////////////////////////////////////////////////////////////
-//
-// String and memory functions
-//
-// These operations allow a client to allocate memory that ElementXMLImpl will later release,
-// or similarly, allow a client to release memory that ElementXMLImpl has allocated.
-//
-// We may decide that a particular allocator will be used to do this (e.g. new[] and delete[]),
-// but in general it's safest to use these functions.
-//
-////////////////////////////////////////////////////////////////
-
-/*************************************************************
-* @brief Utility function to allocate memory that the client will pass to the other ElementXMLImpl functions.
-*
-* @param length		The length is the number of characters in the string, so length+1 bytes will be allocated
-*					(so that a trailing null is always included).  Thus passing length 0 is valid and will allocate a single byte.
-*************************************************************/
-/*
-char* ElementXMLImpl::AllocateString(int length)
-{
-	// Switching to malloc and free, specifically so that we can use strdup() for CopyString
-	// which gets called a lot.  Using the library implementation (which should be in assembler) will
-	// be a lot faster than doing this manually.
-	xmlString str = (xmlString)malloc(length+1) ;
-//	xmlString str = new char[length+1] ;
-	str[0] = 0 ;
-
-	return str ;
-}
-*/
-/*************************************************************
-* @brief Utility function to release memory allocated by this element and returned to the caller.
-*
-* @param string		The string to release.  Passing NULL is valid and does nothing.
-*************************************************************/
-/*
-void ElementXMLImpl::DeleteString(char* string)
-{
-	if (string == NULL)
-		return ;
-
-//	delete[] string ;
-	free(string) ;
-}
-*/
-/*************************************************************
-* @brief	Performs an allocation and then copies the contents of the passed in string to the newly allocated string.
-*
-* @param string		The string to copy.  Passing NULL is valid and returns NULL.
-*************************************************************/
-/*
-char* ElementXMLImpl::CopyString(char const* original)
-{
-	if (original == NULL)
-		return NULL ;
-
-	return strdup(original) ;
-
-	//int len = static_cast<int>(strlen(original)) ;
-	//xmlString str = AllocateString(len) ;
-
-	//char* q = str ;
-	//for (const char* p = original ; *p != NUL ; p++)
-	//{
-	//	*q = *p ;
-	//	q++ ;
-	//}
-	//
-	//// Make sure it's null terminated.
-	// *q = NUL ;
-
-	//return str ;
-}
-*/
 
 /*************************************************************
 * @brief	Performs an allocation and then copies the contents of the passed in buffer to the newly allocated buffer.

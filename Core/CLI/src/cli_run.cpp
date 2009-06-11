@@ -13,7 +13,6 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 #include "sml_KernelSML.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
@@ -227,7 +226,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 				m_Result << "\nRun stopped (still executing).";
 			} else {
 				std::string temp;
-				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, to_string( runResult, temp ).c_str() );
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, to_string( runResult, temp ) );
 			}
 			break;
 
@@ -238,7 +237,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 				m_Result << "\nRun stopped (interrupted).";
 			} else {
 				std::string temp;
-				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, to_string( runResult, temp ).c_str());
+				AppendArgTagFast(sml_Names::kParamRunResult, sml_Names::kTypeInt, to_string( runResult, temp ));
 			}
 			if (pScheduler->AnAgentHaltedDuringRun())
 			{

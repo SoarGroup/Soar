@@ -1589,15 +1589,14 @@ inline std::string *smem_parse_lti_name( struct lexeme_info *lexeme, char *id_le
 
 	if ( (*lexeme).type == IDENTIFIER_LEXEME )
 	{
-		std::string *num = to_string( (*lexeme).id_number );
+		std::string num;
+		to_string( (*lexeme).id_number, num );
 
 		return_val->append( 1, (*lexeme).id_letter );
-		return_val->append( (*num) );
+		return_val->append( num );
 
 		(*id_letter) = (*lexeme).id_letter;
 		(*id_number) = (*lexeme).id_number;
-
-		delete num;
 	}
 	else
 	{
@@ -1706,13 +1705,13 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks )
 					s->push_back( chunk_value );
 
 					// create a key guaranteed to be unique
-					temp_key2 = to_string( temp_chunk->lti_number );					
+					std::string temp_key3;
+					to_string( temp_chunk->lti_number, temp_key3 );					
 					temp_key.assign( "<" );
 					temp_key.append( 1, temp_chunk->lti_letter );
 					temp_key.append( "#" );
-					temp_key.append( (*temp_key2) );
+					temp_key.append( temp_key3 );
 					temp_key.append( ">" );
-					delete temp_key2;
 
 					// insert the new chunk
 					(*chunks)[ temp_key ] = temp_chunk;
@@ -1952,12 +1951,11 @@ bool smem_parse_chunks( agent *my_agent, const std::string *chunks, std::string 
 	// produce error message on failure
 	if ( !return_val )
 	{	
-		std::string *num = to_string( chunk_count );
+		std::string num;
+		to_string( chunk_count, num );
 		
 		(*err_msg) = new std::string( "Error parsing chunk #" );
-		(*err_msg)->append( (*num) );
-
-		delete num;
+		(*err_msg)->append( num );
 	}
 
 	return return_val;

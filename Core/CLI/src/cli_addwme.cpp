@@ -15,7 +15,6 @@
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 #include "sml_KernelSML.h"
 #include "sml_KernelHelpers.h"
@@ -159,7 +158,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 	{
 		std::stringstream timetagString;
 		timetagString << pWme->timetag;
-		AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeInt, timetagString.str().c_str() );
+		AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeInt, timetagString.str() );
 	}
 	return true;
 }

@@ -1745,7 +1745,9 @@ in an error.
         and otherwise return a real number, and the last two functions
         always return a real number.  The \soar{-} symbol is also a
 	unary function which, given a single argument, returns the
-	product of the argument and \soar{-1}.
+	product of the argument and \soar{-1}.  The \soar{/} symbol is
+	also a unary function which, given a single argument, returns the
+	reciprocal of the argument (1/x).
 
 \begin{verbatim}
 sp {
@@ -2193,6 +2195,11 @@ this
         item augmentations without terminating the existing impasse.\vspace{-
 8pt}
         \index{item (attribute)}
+
+\item [\soar{\carat item-count}] For multi-choice and constraint-failure impasses, 
+this 
+        contains the number of values listed under the item augmentation above.\vspace{-8pt}
+        \index{item-count (attribute)}
 
 \item [\soar{\carat quiescence}] States are the only objects with 
 \soar{quiescence

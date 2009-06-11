@@ -1231,10 +1231,10 @@ void do_preference_phase (agent* thisAgent) {
 					xml_att_val( thisAgent, kPhase_FiringType, kPhaseFiringType_IE );
 					break;
 		  }
-		std::string* levelString = to_string(thisAgent->active_level);
-		xml_att_val( thisAgent, kPhase_LevelNum, levelString->c_str()); // SBW 8/4/2008: active_level for XML output mode
+		std::string levelString;
+		to_string(thisAgent->active_level, levelString);
+		xml_att_val( thisAgent, kPhase_LevelNum, levelString.c_str()); // SBW 8/4/2008: active_level for XML output mode
 		xml_end_tag( thisAgent, kTagSubphase );
-		delete levelString;
 	  }
   }
 

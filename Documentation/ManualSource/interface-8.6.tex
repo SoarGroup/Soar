@@ -228,7 +228,6 @@ The specific commands described in this section are:
 \paragraph{Summary}
 \begin{quote}
 \begin{description}
-\item[attribute-preferences-mode] For Soar 7 mode, controls handling of preferences for non-context slots.
 \item[explain-backtraces] - Print information about chunk and justification backtraces.
 \item[indifferent-selection] -  Controls indifferent preference arbitration.
 \item[learn] - Set the parameters for chunking, Soar's learning mechanism.
@@ -244,14 +243,12 @@ The specific commands described in this section are:
 \item[save-backtraces] - Save trace information to explain chunks and justifications.
 \item[select] - Force the next selected operator 
 \item[set-stop-phase] -  Controls the phase where agents stop when running by decision.
-\item[soar8] - Toggle between Soar 8 methodology and Soar 7 methodology.
 \item[timers] - Toggle on or off the internal timers used to profile Soar.
 \item[waitsnc] - Generate a wait state rather than a state-no-change impasse.
 \end{description}
 \end{quote}
 
 % ----------------------------------------------------------------------------
-\input{commands/attribute-preferences-mode}
 \input{commands/explain-backtraces}
 \input{commands/indifferent-selection}
 \input{commands/learn}
@@ -267,7 +264,6 @@ The specific commands described in this section are:
 \input{commands/save-backtraces}
 \input{commands/select}
 \input{commands/set-stop-phase}
-\input{commands/soar8}
 \input{commands/timers}
 \input{commands/waitsnc}
 
@@ -376,7 +372,6 @@ The specific commands described in this section are:
 \begin{description}
 \item[alias] - Define a new alias, or command, using existing commands and arguments. 
 \item[edit-production] - Fire event to Move focus in an open editor to this production.
-\item[input-period] -  For Soar7-mode, controls the rate of input to the Soar agent.
 %\item  Default Rules
 %\item  Predefined Aliases 
 %\item  The soar.tcl file
@@ -391,7 +386,6 @@ The specific commands described in this section are:
 
 \input{commands/alias}
 \input{commands/edit-production}
-\input{commands/input-period}
 \input{commands/srand}
 \input{commands/soarnews}
 \input{commands/time}
@@ -903,38 +897,6 @@ These variables are set and displayed using the Tcl \soar{set} command.
 
 
 % ----------------------------------------------------------------------------
-\subsection{\soarb{attribute\_preferences\_mode} \soar{ [ 0 | 1 | 2 ] }}
-\funsum{attribute\_preferences\_mode}{Experimental variation to attribute preferences.}
-\label{attribute-preferences-mode}
-\index{attribute\_preferences\_mode}
-
-The \soar{attribute\_preferences\_mode} variable is used to control the way
-that preferences are evaluated for non-operator augmentations (these are
-called ``attribute preferences'', as opposed to ``operator preferences'').
-
-The \soar{attribute\_preferences\_mode} variable must be one of three values:
-
-\begin{tabular}{| l | l | } \hline
-value    & effect  \\ \hline
-\soar{0} & Attribute preferences work as described in this manual \\ \hline
-\soar{1} & Attribute preferences work as described in this manual, \emph{but} \\
-	 &  a message is printed whenever the alternative scheme would have \\
-	 &  made a difference in the Soar program. \\ \hline
-\soar{2} & The only preferences allowed for attribute preferences are \\ 
-	 &  \soar{acceptable} and \soar{reject}. If other preferences are created \\
-	 &  for non-operator augmentations, an error message is printed and the \\
-         &  preference is ignored. \\ \hline
-\end{tabular} \vspace{10pt}
-
-When \soar{attribute\_preferences\_mode} is set to \soar{2}, the evaluation of
-non-operator preferences is greatly simplified. Any working memory element
-with an acceptable preference will be created as long as there is not also a
-reject preference for the same working memory element. (This means that
-multi-attributes will be created when there are multiple acceptable values for
-the same attribute.)
-
-
-% ----------------------------------------------------------------------------
 % ----------------------------------------------------------------------------
 % ----------------------------------------------------------------------------
 \section{Advanced: Running Multiple Agents and Interpreters}
@@ -956,8 +918,8 @@ The following commands are independent of agents:
 The following commands by default apply only to the currently selected agent:
 
 \begin{verbatim}
-add-wme, alias, attribute-preferences-mode, default-wme-depth, echo, 
-excise, explain, firing-counts, init-soar, input-period, learn, 
+add-wme, alias, default-wme-depth, echo, 
+excise, explain, firing-counts, init-soar, learn, 
 matches, max-chunks, max-elaborations, memories, monitor, ms, 
 multi-attributes, o-support-mode, output-strings-destination, pf, pgs, 
 preferences, print, print-alias, print-all-symbols, print-stats, pwatch, 
@@ -1164,49 +1126,5 @@ itself), how often input is accepted, and manually changing working memory
 
 
 % ----------------------------------------------------------------------------
-\subsection{\soarb{input-period} \soar{[n]}}
-\funsum{input-period}{Set the time interval for receiving new input.}
-\label{input-period}
-\index{input-period}
 
-\nocomment{does this command still exist? I think we may have legislated it to
-	1. NOPE; still exists.} 
-
-\comment{KJC says that this should be a variable, and I agree}
-
-The \soar{input-period} command sets and displays the input period, which is
-the number of Soar elaboration cycles or decision cycles that are allowed to
-pass before the next input cycle. By default, an input cycle happens before
-each elaboration cycle, which corresponds to an \soar{input-period} setting of
-\soar{0}. A setting of \soar{1} tells Soar to accept input only at the
-beginning of each \emph{decision} cycle.
-
-Without any arguments, \soar{input-period} prints the current setting. The
-optional argument, \soar{n}, must be a non-negative integer. Positive values
-of \soar{n} set the number of decision cycles that pass before Soar accepts
-new input; an \soar{n} value of 0 sets Soar to accept new input each
-elaboration cycle.
-
-This command is useful for Soar applications that interact with a very dynamic
-world. In these situations, input may be coming so fast that Soar never has an
-opportunity to reach quiescence because there is always new input available.
-Often in these cases, the new input does not reflect a situation that must be
-responded to immediately, but rather, an environment that is continually
-changing. 
-
-\comment{[typical settings are 0 and 1, I assume; higher than 1 seems weird.]}
-
-\paragraph{Note}
-
-This command will likely be changing to a variable name \soar{input\_period}
-in future releases of Soar. Soar variables are set and displayed using the Tcl
-\soar{set} command, as described in Section \ref{INTERFACE-int-variables}.
-
-\paragraph{Example}
-\begin{verbatim}
-soar> input-period 1
-\end{verbatim}
-
-% ----------------------------------------------------------------------------
-% ----------------------------------------------------------------------------
 }

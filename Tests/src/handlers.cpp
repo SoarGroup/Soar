@@ -168,6 +168,12 @@ void Handlers::MyDuplicateRunEventHandler( sml::smlRunEventId, void* pUserData, 
 	CPPUNIT_ASSERT( *pInt == 25 );
 }
 
+void Handlers::DebugPrintEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMessage )
+{
+	std::cout << pMessage;
+	std::cout.flush();
+}
+
 void Handlers::MyPrintEventHandler( sml::smlPrintEventId, void* pUserData, sml::Agent*, char const* pMessage )
 {
 	// In this case the user data is a string we're building up
@@ -286,21 +292,21 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 	switch ( step % 3 )
 	{
 	case 0:
-		pRootID1 = pAgent->CreateIdWME( pAgent->GetInputLink(), "a" ) ;
-		pRootID2 = pAgent->CreateIdWME( pAgent->GetInputLink(), "b" ) ;
-		pRootString = pAgent->CreateStringWME( pAgent->GetInputLink(), "g", "gvalue" ) ;
-		pRootFloat = pAgent->CreateFloatWME( pAgent->GetInputLink(), "h", 1.0 ) ;
-		pRootInt = pAgent->CreateIntWME( pAgent->GetInputLink(), "i", 1 ) ;
+		pRootID1 = pAgent->GetInputLink()->CreateIdWME( "a" ) ;
+		pRootID2 = pAgent->GetInputLink()->CreateIdWME( "b" ) ;
+		pRootString = pAgent->GetInputLink()->CreateStringWME( "g", "gvalue" ) ;
+		pRootFloat = pAgent->GetInputLink()->CreateFloatWME( "h", 1.0 ) ;
+		pRootInt = pAgent->GetInputLink()->CreateIntWME( "i", 1 ) ;
 
-		pChildID1 = pAgent->CreateIdWME( pRootID1, "c" ) ;
-		pChildID2 = pAgent->CreateIdWME( pRootID1, "d" ) ;
-		pChildID3 = pAgent->CreateIdWME( pRootID2, "e" ) ;
-		pChildID4 = pAgent->CreateIdWME( pRootID2, "f" ) ;
-		pChildString = pAgent->CreateStringWME( pRootID1, "j", "jvalue" ) ;
-		pChildFloat = pAgent->CreateFloatWME( pRootID1, "k", 2.0 ) ;
-		pChildInt = pAgent->CreateIntWME( pRootID1, "l", 2 ) ;
+		pChildID1 = pRootID1->CreateIdWME( "c" ) ;
+		pChildID2 = pRootID1->CreateIdWME( "d" ) ;
+		pChildID3 = pRootID2->CreateIdWME( "e" ) ;
+		pChildID4 = pRootID2->CreateIdWME( "f" ) ;
+		pChildString = pRootID1->CreateStringWME( "j", "jvalue" ) ;
+		pChildFloat = pRootID1->CreateFloatWME( "k", 2.0 ) ;
+		pChildInt = pRootID1->CreateIntWME( "l", 2 ) ;
 
-		pSharedID = pAgent->CreateSharedIdWME( pRootID1, "m", pChildID1 );
+		pSharedID = pRootID1->CreateSharedIdWME( "m", pChildID1 );
 
 		CPPUNIT_ASSERT( pAgent->Commit() );
 		break;
@@ -309,26 +315,26 @@ void Handlers::MyMemoryLeakUpdateHandlerInternal( bool destroyChildren, sml::sml
 		if ( destroyChildren )
 		{
 			// Destroying the children should be unnecessary but should not be illegal
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID1 ) );
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID2 ) );
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID3 ) );
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildID4 ) );
+			CPPUNIT_ASSERT( pChildID1->DestroyWME() );
+			CPPUNIT_ASSERT( pChildID2->DestroyWME() );
+			CPPUNIT_ASSERT( pChildID3->DestroyWME() );
+			CPPUNIT_ASSERT( pChildID4->DestroyWME() );
 
 			// These three child leaks are not detected by looking at GetIWMObjMapSize
 			// TODO: figure out how to detect these
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildString ) );	
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildFloat ) );	
-			CPPUNIT_ASSERT( pAgent->DestroyWME( pChildInt ) );		
+			CPPUNIT_ASSERT( pChildString->DestroyWME() );	
+			CPPUNIT_ASSERT( pChildFloat->DestroyWME() );	
+			CPPUNIT_ASSERT( pChildInt->DestroyWME() );		
 		}
 
 		// Destroying the original apparently destroys this.
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pSharedID ) );
+		CPPUNIT_ASSERT( pSharedID->DestroyWME(  ) );
 
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID1 ) );		
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootID2 ) );		
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootString ) );
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootFloat ) );
-		CPPUNIT_ASSERT( pAgent->DestroyWME( pRootInt ) );
+		CPPUNIT_ASSERT( pRootID1->DestroyWME() );		
+		CPPUNIT_ASSERT( pRootID2->DestroyWME() );		
+		CPPUNIT_ASSERT( pRootString->DestroyWME() );
+		CPPUNIT_ASSERT( pRootFloat->DestroyWME() );
+		CPPUNIT_ASSERT( pRootInt->DestroyWME() );
 
 		CPPUNIT_ASSERT( pAgent->Commit() );
 
@@ -399,4 +405,12 @@ void Handlers::MyOrderingRunHandler( sml::smlRunEventId /*id*/, void* pUserData,
 	//std::cout << value.str() << std::endl;
 	CPPUNIT_ASSERT_MESSAGE( value.str().c_str(), *pInt == 1 || *pInt == 3 );
 	++(*pInt);
+}
+
+std::string Handlers::MyRhsFunctionFailureHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pArgument)
+{
+	std::ostringstream message;
+	message << "test-failure handler called for: " << pArgument;
+	CPPUNIT_ASSERT_MESSAGE(message.str().c_str(), false);
+	return "";
 }

@@ -59,6 +59,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
 	m_CommandMap[Commands::kCLIGDSPrint]					= &cli::CommandLineInterface::ParseGDSPrint;
 	m_CommandMap[Commands::kCLIGP]							= &cli::CommandLineInterface::ParseGP;
+	m_CommandMap[Commands::kCLIGPMax]						= &cli::CommandLineInterface::ParseGPMax;
 	m_CommandMap[Commands::kCLIHelp]						= &cli::CommandLineInterface::ParseHelp;
 	m_CommandMap[Commands::kCLIIndifferentSelection]		= &cli::CommandLineInterface::ParseIndifferentSelection;
 	m_CommandMap[Commands::kCLIInitSoar]					= &cli::CommandLineInterface::ParseInitSoar;
@@ -127,6 +128,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIEpMem]						= true ;
 	m_EchoMap[Commands::kCLIExcise]						= true ;
 	m_EchoMap[Commands::kCLIGP]							= true ;
+	m_EchoMap[Commands::kCLIGPMax]						= true ;
 	m_EchoMap[Commands::kCLIIndifferentSelection]		= true ;
 	m_EchoMap[Commands::kCLIInitSoar]					= true ;
 	m_EchoMap[Commands::kCLILearn]						= true ;
@@ -173,6 +175,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_pAgentSML = 0 ;
 	m_pAgentSoar = 0;
 	m_VarPrint = false;
+	m_GPMax = 20000;
 
 	m_XMLResult = new XMLTrace() ;
 }
@@ -224,9 +227,6 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse) {
 	if (!m_pKernelSML) return false;
 
-	// No way to return data
-	if (!pConnection) return false;
-	if (!pResponse) return false;
 	PushCall( CallData(pAgent, rawOutput) );
 
 	// Log input
@@ -251,7 +251,8 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
 	SetTrapPrintCallbacks( false );
 
-	GetLastResultSML(pConnection, pResponse);
+	if (pConnection && pResponse)
+		GetLastResultSML(pConnection, pResponse);
 
 	PopCall();
 
@@ -289,20 +290,20 @@ void CommandLineInterface::PopCall()
 		const CallData& callData = m_pCallDataStack.top();
 		pAgent = callData.pAgent;
 		m_RawOutput = callData.rawOutput;
-	}
 
-	// reset these for the next command
-	SetAgentSML( pAgent ) ;
+		// reset these for the next command
+		SetAgentSML( pAgent ) ;
 
-	m_pAgentSML = pAgent;
-	if (pAgent) 
-	{
-		m_pAgentSoar = pAgent->GetSoarAgent();
-		assert( m_pAgentSoar );
-	}
-	else 
-	{
-		m_pAgentSoar = 0;
+		m_pAgentSML = pAgent;
+		if (pAgent) 
+		{
+			m_pAgentSoar = pAgent->GetSoarAgent();
+			assert( m_pAgentSoar );
+		}
+		else 
+		{
+			m_pAgentSoar = 0;
+		}
 	}
 }
 
@@ -355,7 +356,7 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 			// Add text result to response tags
 			if ( m_Result.str().length() )
 			{
-				AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str().c_str() );
+				AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, m_Result.str() );
 				m_Result.str("");
 			}
 		}
@@ -692,6 +693,22 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory) {
 	return true;
 }
 
+void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const std::string& value) {
+	AppendArgTag(pParam, pType, value.c_str());
+}
+
+void CommandLineInterface::AppendArgTagFast(const char* pParam, const char* pType, const std::string& value) {
+	AppendArgTagFast(pParam, pType, value.c_str());
+}
+
+void CommandLineInterface::PrependArgTag(const char* pParam, const char* pType, const std::string& value) {
+	PrependArgTag(pParam, pType, value.c_str());
+}
+
+void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pType, const std::string& value) {
+	PrependArgTagFast(pParam, pType, value.c_str());
+}
+
 void CommandLineInterface::AppendArgTag(const char* pParam, const char* pType, const char* pValue) {
 	TagArg* pTag = new TagArg();
 	pTag->SetParam(pParam);
@@ -1005,7 +1022,22 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
 	m_XMLResult->Reset() ;
 }
 
-int CommandLineInterface::CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector) {
+int CommandLineInterface::CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector) 
+{
+	// bug 987: echo needs special handling
+	TrimLeadingWhitespace(cmdline);
+
+	// if it is echo, put echo in first arg and everything else in second arg
+	if (cmdline.substr(0, 4) == "echo")
+	{
+		argumentVector.push_back("echo");
+		std::string::size_type pos = cmdline.find_first_not_of(" \t", 4);
+		if (pos != std::string::npos)
+		{
+			argumentVector.push_back(cmdline.substr(pos));
+		}
+		return 0;
+	}
 
 	int ret = Tokenize(cmdline, argumentVector);
 	
@@ -1114,10 +1146,18 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 				// Simply append to message result
 				if (m_TrapPrintEvents) {
 					CommandLineInterface::m_Result << message;
+					//std::cout << msg;
+					//std::cout.flush();
+				} else if (m_pLogFile) {
+					(*m_pLogFile) << msg;
 				}
 			} else {
 				if (m_TrapPrintEvents) {
 					CommandLineInterface::m_Result << msg;
+					//std::cout << msg;
+					//std::cout.flush();
+				} else if (m_pLogFile) {
+					(*m_pLogFile) << msg;
 				}
 			}
 		}

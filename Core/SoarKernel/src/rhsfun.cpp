@@ -207,44 +207,6 @@ Symbol *halt_rhs_function_code (agent* thisAgent, list * /*args*/, void* /*user_
 }
 
 /* --------------------------------------------------------------------
-                              Interrupt
-
-   This causes an interrupt at the end of the current preference phase.
-   It sets stop_soar to TRUE, and reason_for_stopping to an appropriate
-   string.
--------------------------------------------------------------------- */
-
-// MVP 6-27-94 */
-//
-const char * RHS_interrupt_msg = "*** RHS Function Interrupt ***";
-//
-/*
-  Replacing this with a new style rhs function through gSKI.
-
-Symbol *interrupt_rhs_function_code (agent* thisAgent, list *args, void* user_data) {
-char *ch;
-
-cons * c;
-agent * the_agent;
-
-for(c = thisAgent->kernel->all_soar_agents; c != NIL; c = c->rest) {
-the_agent = ((agent *) c->first);
-the_agent->stop_soar = TRUE;
-the_agent->reason_for_stopping =  RHS_interrupt_msg;
-}
-
-strcpy (thisAgent->interrupt_source, "*** Interrupt from production ");
-ch = thisAgent->interrupt_source;
-while (*ch) ch++;
-symbol_to_string (thisAgent, thisAgent->production_being_fired->name, TRUE, ch); 
-while (*ch) ch++;
-strcpy (ch, " ***");
-thisAgent->reason_for_stopping = thisAgent->interrupt_source;
-return NIL;
-}
-*/
-
-/* --------------------------------------------------------------------
                          Make-constant-symbol
 
    Returns a newly generated sym_constant.  If no arguments are given,

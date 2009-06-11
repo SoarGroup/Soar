@@ -32,6 +32,7 @@ char const* Commands::kCLIExplainBacktraces			= "explain-backtraces";
 char const* Commands::kCLIFiringCounts				= "firing-counts";
 char const* Commands::kCLIGDSPrint					= "gds-print";
 char const* Commands::kCLIGP						= "gp";
+char const* Commands::kCLIGPMax						= "gp-max";
 char const* Commands::kCLIHelp						= "help";
 char const* Commands::kCLIIndifferentSelection		= "indifferent-selection";
 char const* Commands::kCLIInitSoar					= "init-soar";

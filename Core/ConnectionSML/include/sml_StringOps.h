@@ -19,51 +19,48 @@
 
 namespace sml {
 
-/*************************************************************
-* @brief Returns true if strings are equal (case sensitive).
-*************************************************************/
-bool IsStringEqual(char const* pStr1, char const* pStr2) ;
+	/*************************************************************
+	* @brief Returns true if strings are equal (case sensitive).
+	*************************************************************/
+	inline bool IsStringEqual(char const* pStr1, char const* pStr2)
+	{
+		if (pStr1 == NULL || pStr2 == NULL) 
+		{
+			return false ;
+		}
 
-/*************************************************************
-* @brief Returns true if strings are equal (case insensitive).
-*************************************************************/
-bool IsStringEqualIgnoreCase(char const* pStr1, char const* pStr2) ;
+		return strcmp(pStr1, pStr2) == 0 ;
+	}
 
-/*************************************************************
-* @brief Convert int to string.
-*		 Minimum buffer size is 25 (for a 64-bit int).
-*************************************************************/
-const int kMinBufferSize = 25 ;
-char* Int2String(long value, char* buffer, int maxChars) ;
+	/*************************************************************
+	* @brief Returns true if strings are equal (case insensitive).
+	*************************************************************/
+	inline bool IsStringEqualIgnoreCase(char const* pStr1, char const* pStr2)
+	{
+		if (pStr1 == NULL || pStr2 == NULL)
+		{
+			return false ;
+		}
+		
+		return strcasecmp(pStr1, pStr2) == 0 ;
+	}
 
-/*************************************************************
-* @brief Convert double to string.
-*************************************************************/
-char* Double2String(double value, char* buffer, int maxChars);
+	/*************************************************************
+	* @brief A utility function, splits a command line into argument
+	*		 tokens and stores them in the argumentVector string.
+	*************************************************************/
+	int Tokenize(std::string cmdline, std::vector<std::string>& argumentVector);
 
-/*************************************************************
-* @brief Returns a copy of the string.
-*		 Some libraries may not have strdup().  If so we
-*		 can fix it here.
-*************************************************************/
-char* StringCopy(char const* pStr) ;
+	/*************************************************************
+	* @brief Trim leading whitespace off of a line (for command parsing)
+	*************************************************************/
+	void TrimLeadingWhitespace(std::string& line);
 
-/*************************************************************
-* @brief Deletes copied strings
-*************************************************************/
-void StringDelete(char* pStr) ;
-
-/*************************************************************
-* @brief A utility function, splits a command line into argument
-*		 tokens and stores them in the argumentVector string.
-*************************************************************/
-int Tokenize(std::string cmdline, std::vector<std::string>& argumentVector);
-
-/*************************************************************
-* @brief Trim comments off of a line (for command parsing)
-* @return true on success, false if there is a new-line before a pipe quotation ends
-*************************************************************/
-bool Trim(std::string& line);
+	/*************************************************************
+	* @brief Trim comments off of a line (for command parsing)
+	* @return true on success, false if there is a new-line before a pipe quotation ends
+	*************************************************************/
+	bool TrimComments(std::string& line);
 
 }
 

@@ -10,6 +10,7 @@
 #include <ctime>
 
 #include "simplelistener.h"
+#include "misc.h"
 
 bool g_Cancel = false;
 
@@ -42,7 +43,7 @@ int main( int argc, char** argv )
 			int port = 12121;
 			if ( argc >= 3 )
 			{
-				port = atoi( argv[2] );
+				from_string(port, argv[2]);
 			}
 			SimpleListener simpleListener( 600, port );
 			return simpleListener.run();

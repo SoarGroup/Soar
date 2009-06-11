@@ -74,6 +74,31 @@ typedef PendingInputList::iterator			PendingInputListIter ;
 typedef std::map< unsigned long, wme* >				WmeMap;
 typedef std::map< unsigned long, wme* >::iterator	WmeMapIter;
 
+// This struct supports the buffered direct input calls
+struct DirectInputDelta
+{
+	enum DirectInputType { kRemove, kAddString, kAddInt, kAddDouble, kAddId };
+	std::string id;
+	std::string attribute;
+	long clientTimeTag;
+	DirectInputType type;
+	std::string svalue;
+	int ivalue;
+	double dvalue;
+
+	DirectInputDelta(DirectInputType type, char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag) 
+		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(type), svalue(pValue) {}
+
+	DirectInputDelta(char const* pID, char const* pAttribute, int value, long clientTimeTag)
+		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(kAddInt), ivalue(value) {}
+	
+	DirectInputDelta(char const* pID, char const* pAttribute, double value, long clientTimeTag)
+		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(kAddDouble), dvalue(value) {}
+	
+	DirectInputDelta(long clientTimeTag)
+		: clientTimeTag(clientTimeTag), type(kRemove) {}
+};
+
 class AgentSML
 {
 	friend class KernelSML ;
@@ -87,20 +112,31 @@ protected:
    // Currently, only the functions below call this, so it's protected
    bool AddInputWME(char const* pID, char const* pAttribute, Symbol* pValueSymbol, long clientTimeTag);
 public:
-   // These functions convert values into Symbols so the above function can be called
-   // These functions are called directly in "optimized" mode (set when the client-side kernel is created)
-   bool AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
-   bool AddIntInputWME(char const* pID, char const* pAttribute, int value, long clientTimeTag);
-   bool AddDoubleInputWME(char const* pID, char const* pAttribute, double value, long clientTimeTag);
+	// These functions convert values into Symbols so the above function can be called
+	bool AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
+	bool AddIntInputWME(char const* pID, char const* pAttribute, int value, long clientTimeTag);
+	bool AddDoubleInputWME(char const* pID, char const* pAttribute, double value, long clientTimeTag);
 
-    // This function converts string values into typed values so the above functions can be called
-    // This function is called by InputListener and passed info taken from XML objects
-    bool AddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
+	// This function converts string values into typed values so the above functions can be called
+	// This function is called by InputListener and passed info taken from XML objects
+	bool AddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
 
 	bool AddInputWME(char const* pID, char const* pAttribute, char const* pValue, char const* pType, char const* pTimeTag) ;
 	bool RemoveInputWME(long timeTag) ;
-    bool RemoveInputWME(char const* pTimeTag) ;
-   
+	bool RemoveInputWME(char const* pTimeTag) ;
+
+protected:
+	std::list<DirectInputDelta> m_DirectInputDeltaList;
+
+public:
+	// These functions are for direct, fast IO, called by the sml_Direct family
+	void BufferedAddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
+	void BufferedAddIntInputWME(char const* pID, char const* pAttribute, int value, long clientTimeTag);
+	void BufferedAddDoubleInputWME(char const* pID, char const* pAttribute, double value, long clientTimeTag);
+	void BufferedAddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
+	void BufferedRemoveInputWME(long timeTag) ;
+	std::list<DirectInputDelta>*	GetBufferedDirectList() { return &m_DirectInputDeltaList ; }
+
 protected:
 
 	// A reference to the underlying kernel agent object

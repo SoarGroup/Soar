@@ -26,6 +26,7 @@
 #include "ParseXMLString.h"
 
 #include <string>
+#include <cstdio>
 
 using namespace soarxml;
 

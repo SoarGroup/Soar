@@ -40,8 +40,8 @@ public:
   inline ~TOH_Game();
 
   static inline void run_trials(const int &num_trials);
-  static void remote_trials(const int &num_trials,
-                            const std::string &ip_address, const int &port);
+  static inline void remote_trials(const int &num_trials,
+                                   const std::string &ip_address, const int &port);
 
   // Returns the "disk size" stacks for all towers
   inline std::vector<std::vector<int> > get_tower_stacks() const;

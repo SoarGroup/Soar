@@ -33,6 +33,7 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 		{'c', "chunks",			OPTARG_NONE},
 		{'d', "depth",			OPTARG_REQUIRED},
 		{'D', "defaults",		OPTARG_NONE},
+		{'e', "exact",			OPTARG_NONE},
 		{'f', "full",			OPTARG_NONE},
 		{'F', "filename",		OPTARG_NONE},
 		{'i', "internal",		OPTARG_NONE},
@@ -71,6 +72,9 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 			case 'D':
 				options.set(PRINT_DEFAULTS);
 				break;
+			case 'e':
+				options.set(PRINT_EXACT);
+				break;
 			case 'f':
 				options.set(PRINT_FULL);
 				break;
@@ -106,6 +110,7 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 				break;
 			case 'u':
 				options.set(PRINT_USER);
+				break;
 			case 'v':
 				options.set(PRINT_VARPRINT);
 				break;
@@ -137,6 +142,11 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 				|| options.test(PRINT_STACK)) 
 			{
 				SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/rl/template/user/stack.");
+				return SetError(CLIError::kTooManyArgs);
+			}
+			if (options.test(PRINT_EXACT) && (options.test(PRINT_DEPTH) || options.test(PRINT_TREE))) 
+			{
+				SetErrorDetail("No depth/tree flags allowed when printing exact.");
 				return SetError(CLIError::kTooManyArgs);
 			}
 			return DoPrint(options, depth, &(argv[m_Argument - m_NonOptionArguments]));
@@ -182,6 +192,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
 	bool filename = options.test(PRINT_FILENAME);
 	bool full = options.test(PRINT_FULL);
 	bool name = options.test(PRINT_NAME);
+	bool exact = options.test(PRINT_EXACT);
 
 	// Check for the five general print options (all, chunks, defaults, justifications, user)
 	if (options.test(PRINT_ALL)) {
@@ -222,7 +233,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
 		m_VarPrint = true;
 	}
 	if (pArg) {
-		pKernelHack->PrintSymbol(m_pAgentSML, const_cast<char*>(pArg->c_str()), name, filename, internal, tree, full, depth);
+		pKernelHack->PrintSymbol(m_pAgentSML, const_cast<char*>(pArg->c_str()), name, filename, internal, tree, full, depth, exact);
 	} else {
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, DEFAULT_PRODUCTION_TYPE);
         pKernelHack->PrintUser(m_pAgentSML, 0, internal, filename, full, USER_PRODUCTION_TYPE);

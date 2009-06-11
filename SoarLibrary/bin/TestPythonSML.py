@@ -5,6 +5,8 @@
 #  several kinds of callbacks, inreinitializing, agent destruction, and kernel
 #  destruction (and maybe some other things, too).
 #
+import sys
+sys.path.append('../lib')
 
 from Python_sml_ClientInterface import *
 

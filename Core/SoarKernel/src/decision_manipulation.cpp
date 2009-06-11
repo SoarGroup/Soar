@@ -62,7 +62,6 @@ preference *select_force( agent *my_agent, preference *candidates, bool reinit )
 	preference *return_val = NULL;
 	preference *cand = candidates;
 	std::string temp;
-	std::string *temp2;
 
 	if ( my_agent->select->select_enabled )
 	{
@@ -78,9 +77,9 @@ preference *select_force( agent *my_agent, preference *candidates, bool reinit )
 				temp += cand->value->id.name_letter;
 
 				// get number of comparison string
-				temp2 = to_string( cand->value->id.name_number );
-				temp += (*temp2);
-				delete temp2;
+				std::string temp2;
+				to_string( cand->value->id.name_number, temp2 );
+				temp += temp2;
 
 				if ( !my_agent->select->select_operator.compare( temp ) )
 					return_val = cand;

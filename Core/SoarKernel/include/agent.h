@@ -568,8 +568,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   memory_pool         chunk_cond_pool;
   unsigned long       chunk_count;
   unsigned long       justification_count;
-  Bool                chunk_free_flag;
-  Bool                chunky_flag;     /* AGR MVL1 */
   ::list            * grounds;
   tc_number           grounds_tc;
   ::list            * instantiations_with_nots;
@@ -686,9 +684,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   ::list            * wme_filter_list; /* kjh(CUSP-B2) */
 
   /* ----------------------- RHS Function Stuff -------------------------- */
-  
-  /* --- "interrupt" fun. uses this to build "reason_for_stopping" msg. --- */
-  //char                interrupt_source[2*MAX_LEXEME_LENGTH+100];
   
   /* --- "make-constant-symbol" counter --- */
   unsigned long       mcs_counter;

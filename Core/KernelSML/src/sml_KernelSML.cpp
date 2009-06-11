@@ -18,7 +18,6 @@
 #include "sml_Utils.h"
 #include "sml_AgentSML.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 #include "sml_OutputListener.h"
 #include "sml_ConnectionManager.h"
 #include "sml_Events.h"
@@ -472,10 +471,8 @@ bool KernelSML::ReturnResult(Connection* pConnection, soarxml::ElementXML* pResp
 *************************************************************/
 bool KernelSML::ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int result)
 {
-	char buffer[kMinBufferSize] ;
-	Int2String(result, buffer, kMinBufferSize) ;
-
-	pConnection->AddSimpleResultToSMLResponse(pResponse, buffer) ;
+	char buf[TO_C_STRING_BUFSIZE];
+	pConnection->AddSimpleResultToSMLResponse( pResponse, to_c_string( result, buf ) ) ;
 
 	return true ;
 }
@@ -759,11 +756,7 @@ EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char con
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
 
-	//std::stringstream timetagString;
-	//timetagString << clientTimetag;
-
-	//pAgentSML->AddInputWME( pId, pAttribute, pValue, sml_Names::kTypeString, timetagString.str().c_str() );
-   pAgentSML->AddStringInputWME( pId, pAttribute, pValue, clientTimetag );
+	pAgentSML->BufferedAddStringInputWME( pId, pAttribute, pValue, clientTimetag );
 }
 
 EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, int value, long clientTimetag)
@@ -771,15 +764,7 @@ EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const*
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
 
-	// BADBAD conversion happening twice
-	//std::stringstream valueString;
-	//valueString << value;
-
-	//std::stringstream timetagString;
-	//timetagString << clientTimetag;
-
-	//pAgentSML->AddInputWME( pId, pAttribute, valueString.str().c_str(), sml_Names::kTypeInt, timetagString.str().c_str() );
-   pAgentSML->AddIntInputWME( pId, pAttribute, value, clientTimetag );
+	pAgentSML->BufferedAddIntInputWME( pId, pAttribute, value, clientTimetag );
 }
 
 EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, long clientTimetag)
@@ -787,15 +772,7 @@ EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char con
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
 
-	// BADBAD conversion happening twice
-	//std::stringstream valueString;
-	//valueString << value;
-
-	//std::stringstream timetagString;
-	//timetagString << clientTimetag;
-
-	//pAgentSML->AddInputWME( pId, pAttribute, valueString.str().c_str(), sml_Names::kTypeDouble, timetagString.str().c_str() );
-   pAgentSML->AddDoubleInputWME( pId, pAttribute, value, clientTimetag );
+	pAgentSML->BufferedAddDoubleInputWME( pId, pAttribute, value, clientTimetag );
 }
 
 /*************************************************************
@@ -809,10 +786,7 @@ EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, long clientT
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
 
-//	std::stringstream timetagString;
-//	timetagString << clientTimetag;
-
-	pAgentSML->RemoveInputWME( clientTimetag );
+	pAgentSML->BufferedRemoveInputWME( clientTimetag );
 }
 
 /*************************************************************
@@ -826,11 +800,7 @@ EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSMLIn, char const* pId,
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
 
-	//std::stringstream timetagString;
-	//timetagString << clientTimetag;
-
-	//pAgentSML->AddInputWME( pId, pAttribute, pValueId, sml_Names::kTypeID, timetagString.str().c_str() );
-   pAgentSML->AddIdInputWME( pId, pAttribute, pValueId, clientTimetag );
+	pAgentSML->BufferedAddIdInputWME( pId, pAttribute, pValueId, clientTimetag );
 }
 
 EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(char const* pAgentName) 

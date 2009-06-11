@@ -270,13 +270,9 @@ namespace soar_module
 			
 			virtual char *get_string()
 			{
-				std::string *temp_str = to_string( value );
-				char *return_val = new char[ temp_str->length() + 1 ];
-				strcpy( return_val, temp_str->c_str() );
-				return_val[ temp_str->length() ] = '\0';
-				delete temp_str;
-
-				return return_val;
+				std::string temp_str;
+				to_string( value, temp_str );
+				return strdup( temp_str.c_str() );
 			}
 
 			virtual bool set_string( const char *new_string )
@@ -447,19 +443,18 @@ namespace soar_module
 
 					if ( test_sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
 					{
-						std::string *temp_str;
+						std::string temp_str;
 
 						if ( test_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
 						{
-							temp_str = to_string( test_sym->ic.value );
+							to_string( test_sym->ic.value, temp_str );
 						}
 						else
 						{
-							temp_str = to_string( test_sym->fc.value );
+							to_string( test_sym->fc.value, temp_str );
 						}
 
-						test_sym = make_sym_constant( my_agent, temp_str->c_str() );
-						delete temp_str;
+						test_sym = make_sym_constant( my_agent, temp_str.c_str() );
 					}
 
 					std::set<Symbol *>::iterator p = my_set->find( my_sym );
@@ -669,13 +664,9 @@ namespace soar_module
 			{
 				T my_val = get_value();
 
-				std::string *temp_str = to_string( my_val );
-				char *return_val = new char[ temp_str->length() + 1 ];
-				strcpy( return_val, temp_str->c_str() );
-				return_val[ temp_str->length() ] = '\0';
-				delete temp_str;
-
-				return return_val;
+				std::string temp_str;
+				to_string( my_val, temp_str );
+				return strdup(temp_str.c_str());
 			}
 
 			void reset()
@@ -759,13 +750,9 @@ namespace soar_module
 			{
 				double my_value = value();
 
-				std::string *temp_str = to_string( my_value );
-				char *return_val = new char[ temp_str->length() + 1 ];
-				strcpy( return_val, temp_str->c_str() );
-				return_val[ temp_str->length() ] = '\0';
-				delete temp_str;
-
-				return return_val;
+				std::string temp_str;
+				to_string( my_value, temp_str );
+				return strdup(temp_str.c_str());
 			}
 
 			//

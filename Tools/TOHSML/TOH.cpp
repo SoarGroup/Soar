@@ -55,6 +55,8 @@
  * 3 = Missing mandatory argument for --port
  */
 
+#include "misc.h"
+
 inline bool arg_remote(bool &remote,
                        std::string &ip_address,
                        int &port,
@@ -79,7 +81,7 @@ inline bool arg_remote(bool &remote,
 
 	if(colon != std::string::npos) {
       ip_address = ip_port.substr(0, colon);
-      port = atoi(*arg + (colon + 1));
+	  from_string(port, *arg + (colon + 1));
     }
     else
       ip_address = ip_port;
@@ -123,7 +125,7 @@ inline bool arg_port(bool &remote,
     exit(3);
   }
 
-  port = atoi(*arg);
+  from_string(port, *arg);
 
   return true;
 }
