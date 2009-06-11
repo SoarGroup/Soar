@@ -41,6 +41,21 @@ public:
 	
 	virtual FloatElement* ConvertToFloatElement() { return this; }
 
+	/*************************************************************
+	* @brief Update the value of an existing WME.
+	*		 If "auto commit" is turned off in ClientKernel,
+	*		 the value is not actually sent to the kernel
+	*		 until "Commit" is called.
+	*
+	*		 If "BlinkIfNoChange" is false then updating a wme to the
+	*		 same value it already had will be ignored.
+	*		 This value is true by default, so updating a wme to the same
+	*		 value causes the wme to be deleted and a new identical one to be added
+	*		 which will trigger rules to rematch.
+	*		 You can turn this flag on and off around a set of calls to update if you wish.
+	*************************************************************/
+	void	Update(double value);
+
 protected:
 	FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long timeTag) ;
 	FloatElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, double value, long timeTag) ;

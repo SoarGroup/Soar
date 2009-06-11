@@ -7,47 +7,43 @@ public interface SoarParserConstants {
   int SP = 7;
   int GP = 8;
   int SOARCMD = 9;
-  int G_LBRACE = 11;
-  int G_RBRACE = 12;
-  int G_QUOTE = 13;
-  int RARROW = 20;
-  int SAME_TYPE = 21;
-  int GEQUAL = 22;
-  int LDISJUNCT = 23;
-  int LEQUAL = 24;
-  int NEQUAL = 25;
-  int RDISJUNCT = 26;
-  int AMPERSAND = 27;
-  int ATSIGN = 28;
-  int CARET = 29;
-  int COMMA = 30;
-  int EMARK = 31;
-  int EQUAL = 32;
-  int GREATER = 33;
-  int HYPHEN = 34;
-  int LBRACE = 35;
-  int LESS = 36;
-  int LPAREN = 37;
-  int PERIOD = 38;
-  int PLUS = 39;
-  int QMARK = 40;
-  int RBRACE = 41;
-  int RPAREN = 42;
-  int TILDE = 43;
-  int LSQBRACET = 44;
-  int RSQBRACET = 45;
-  int QUOTE = 46;
-  int PRODTYPE = 47;
-  int VARIABLE = 48;
-  int INTEGER_CONST = 49;
-  int SYMBOLIC_CONST = 50;
-  int FLOATING_POINT_CONST = 51;
-  int EXPONENT = 52;
-  int TCL_PREPROCESS = 53;
+  int RARROW = 16;
+  int SAME_TYPE = 17;
+  int GEQUAL = 18;
+  int LDISJUNCT = 19;
+  int LEQUAL = 20;
+  int NEQUAL = 21;
+  int RDISJUNCT = 22;
+  int AMPERSAND = 23;
+  int ATSIGN = 24;
+  int CARET = 25;
+  int COMMA = 26;
+  int EMARK = 27;
+  int EQUAL = 28;
+  int GREATER = 29;
+  int HYPHEN = 30;
+  int LBRACE = 31;
+  int LESS = 32;
+  int LPAREN = 33;
+  int PERIOD = 34;
+  int PLUS = 35;
+  int QMARK = 36;
+  int RBRACE = 37;
+  int RPAREN = 38;
+  int TILDE = 39;
+  int LSQBRACET = 40;
+  int RSQBRACET = 41;
+  int QUOTE = 42;
+  int PRODTYPE = 43;
+  int VARIABLE = 44;
+  int INTEGER_CONST = 45;
+  int SYMBOLIC_CONST = 46;
+  int FLOATING_POINT_CONST = 47;
+  int EXPONENT = 48;
+  int TCL_PREPROCESS = 49;
 
   int DEFAULT = 0;
-  int IN_GP = 1;
-  int IN_SOAR_PRODUCTION = 2;
+  int IN_SOAR_PRODUCTION = 1;
 
   String[] tokenImage = {
     "<EOF>",
@@ -61,11 +57,7 @@ public interface SoarParserConstants {
     "\"gp\"",
     "<SOARCMD>",
     "<token of kind 10>",
-    "\"{\"",
-    "\"}\"",
-    "\"\\\"\"",
-    "<token of kind 14>",
-    "<token of kind 15>",
+    "<token of kind 11>",
     "\" \"",
     "\"\\t\"",
     "\"\\n\"",

@@ -490,43 +490,43 @@
 
 %extend sml::Agent {
 
-	int RegisterForRunEvent(Tcl_Interp* interp, sml::smlRunEventId id, char* proc, char* userData, bool addToBack = true) {
+    intptr_t RegisterForRunEvent(Tcl_Interp* interp, sml::smlRunEventId id, char* proc, char* userData, bool addToBack = true) {
         TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForRunEvent(id, TclRunEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int RegisterForProductionEvent(Tcl_Interp* interp, sml::smlProductionEventId id, char* proc, char* userData, bool addToBack = true) {
+    intptr_t RegisterForProductionEvent(Tcl_Interp* interp, sml::smlProductionEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForProductionEvent(id, TclProductionEventCallback, (void*)tud, addToBack);
-	    return (int)tud;
+	    return (intptr_t)tud;
     }
 
-    int RegisterForPrintEvent(Tcl_Interp* interp, sml::smlPrintEventId id, char* proc, char* userData, bool ignoreOwnEchos = true, bool addToBack = true) {	    
+    intptr_t RegisterForPrintEvent(Tcl_Interp* interp, sml::smlPrintEventId id, char* proc, char* userData, bool ignoreOwnEchos = true, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForPrintEvent(id, TclPrintEventCallback, (void*)tud, ignoreOwnEchos, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int RegisterForXMLEvent(Tcl_Interp* interp, sml::smlXMLEventId id, char* proc, char* userData, bool addToBack = true) {	    
+    intptr_t RegisterForXMLEvent(Tcl_Interp* interp, sml::smlXMLEventId id, char* proc, char* userData, bool addToBack = true) {	    
 	    TclUserData* tud = CreateTclAgentUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForXMLEvent(id, TclXMLEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int AddOutputHandler(Tcl_Interp* interp, char* attributeName, char* proc, char* userData, bool addToBack = true) {
+    intptr_t AddOutputHandler(Tcl_Interp* interp, char* attributeName, char* proc, char* userData, bool addToBack = true) {
 		TclUserData* tud = CreateTclOutputUserData(self, attributeName, proc, userData, interp);
 		tud->callbackid = self->AddOutputHandler(attributeName, TclOutputEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int RegisterForOutputNotification(Tcl_Interp* interp, char* proc, char* userData, bool addToBack = true) {
+    intptr_t RegisterForOutputNotification(Tcl_Interp* interp, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclOutputNotificationUserData(proc, userData, self, interp);
 	    tud->callbackid = self->RegisterForOutputNotification(TclOutputNotificationEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    bool UnregisterForRunEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForRunEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForRunEvent(tud->callbackid);
@@ -534,7 +534,7 @@
 		return true;
     }
     
-    bool UnregisterForProductionEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForProductionEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForProductionEvent(tud->callbackid);
@@ -542,7 +542,7 @@
 		return true;
     }
     
-    bool UnregisterForPrintEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForPrintEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForPrintEvent(tud->callbackid);
@@ -550,7 +550,7 @@
 		return true;
     }
     
-    bool UnregisterForXMLEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForXMLEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForXMLEvent(tud->callbackid);
@@ -558,7 +558,7 @@
 		return true;
     }
     
-    bool UnregisterForOutputNotification(Tcl_Interp* interp, int id) {
+    bool UnregisterForOutputNotification(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForOutputNotification(tud->callbackid);
@@ -566,7 +566,7 @@
 		return true;
     }
     
-    bool RemoveOutputHandler(Tcl_Interp* interp, int id) {
+    bool RemoveOutputHandler(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->RemoveOutputHandler(tud->callbackid);
@@ -577,45 +577,45 @@
 
 %extend sml::Kernel {
 	
-    int RegisterForSystemEvent(Tcl_Interp* interp, sml::smlSystemEventId id, char* proc, char* userData, bool addToBack = true) {
+    intptr_t RegisterForSystemEvent(Tcl_Interp* interp, sml::smlSystemEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForSystemEvent(id, TclSystemEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int RegisterForUpdateEvent(Tcl_Interp* interp, sml::smlUpdateEventId id, char* proc, char* userData, bool addToBack = true) {
+    intptr_t RegisterForUpdateEvent(Tcl_Interp* interp, sml::smlUpdateEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForUpdateEvent(id, TclUpdateEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int RegisterForStringEvent(Tcl_Interp* interp, sml::smlStringEventId id, char* proc, char* userData, bool addToBack = true) {
+    intptr_t RegisterForStringEvent(Tcl_Interp* interp, sml::smlStringEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclSystemUserData(self, id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForStringEvent(id, TclStringEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int RegisterForAgentEvent(Tcl_Interp* interp, sml::smlAgentEventId id, char* proc, char* userData, bool addToBack = true) {
+    intptr_t RegisterForAgentEvent(Tcl_Interp* interp, sml::smlAgentEventId id, char* proc, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(id, proc, userData, interp);
 	    tud->callbackid = self->RegisterForAgentEvent(id, TclAgentEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
     // Note that we're not exposing both the function name and callback as separate parameters, because it doesn't make much sense
     // to have different names in Tcl (and they are both strings -- in C++ they're not the same type; hence the separation there)
-    int AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
+    intptr_t AddRhsFunction(Tcl_Interp* interp, char const* pRhsFunctionName, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pRhsFunctionName, userData, interp);
 	    tud->callbackid = self->AddRhsFunction(pRhsFunctionName, TclRhsEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
     
-    int RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pClientName, char const* pMessageHandler, char* userData, bool addToBack = true) {
+    intptr_t RegisterForClientMessageEvent(Tcl_Interp* interp, char const* pClientName, char const* pMessageHandler, char* userData, bool addToBack = true) {
 	    TclUserData* tud = CreateTclUserData(sml::smlEVENT_RHS_USER_FUNCTION, pMessageHandler, userData, interp);
 	    tud->callbackid = self->RegisterForClientMessageEvent(pClientName, TclClientMessageEventCallback, (void*)tud, addToBack);
-		return (int)tud;
+		return (intptr_t)tud;
     }
 
-	bool UnregisterForSystemEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForSystemEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForSystemEvent(tud->callbackid);
@@ -623,7 +623,7 @@
 		return true;
     }
     
-    bool UnregisterForUpdateEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForUpdateEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForUpdateEvent(tud->callbackid);
@@ -631,7 +631,7 @@
 		return true;
     }
     
-    bool UnregisterForStringEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForStringEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForStringEvent(tud->callbackid);
@@ -639,7 +639,7 @@
 		return true;
     }
     
-    bool UnregisterForAgentEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForAgentEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForAgentEvent(tud->callbackid);
@@ -647,7 +647,7 @@
 		return true;
     }
     
-    bool RemoveRhsFunction(Tcl_Interp* interp, int id) {
+    bool RemoveRhsFunction(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->RemoveRhsFunction(tud->callbackid);
@@ -655,7 +655,7 @@
 		return true;
     }
     
-    bool UnregisterForClientMessageEvent(Tcl_Interp* interp, int id) {
+    bool UnregisterForClientMessageEvent(Tcl_Interp* interp, intptr_t id) {
 		TclUserData* tud = (TclUserData *)id;
 		if(!IsValidCallbackData(tud)) return false;
 		self->UnregisterForClientMessageEvent(tud->callbackid);

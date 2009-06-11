@@ -140,14 +140,16 @@ WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const*
 	// Value is an int
 	if (strcmp(pType, sml_Names::kTypeInt) == 0)
 	{
-		int value = atoi(pValue) ;
+		int value = 0;
+		from_c_string(value, pValue);
 		return new IntElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
 
 	// Value is a float
 	if (strcmp(pType, sml_Names::kTypeDouble) == 0)
 	{
-		double value = atof(pValue) ;
+		double value = 0;
+		from_c_string(value, pValue);
 		return new FloatElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
 
@@ -223,7 +225,8 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 		sml::PrintDebugFormat("Received output wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
 	}
 
-	long timeTag = atoi(pTimeTag) ;
+	long timeTag = 0;
+	from_c_string(timeTag, pTimeTag);
 
 	// Find the parent wme that we're adding this new wme to
 	// (Actually, there can be multiple WMEs that have this identifier
@@ -255,7 +258,7 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 		// See if this is the output-link itself (we want to keep a handle to that specially)
 		if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 		{
-			m_OutputLink = new Identifier(GetAgent(), pValue, timeTag) ;
+			m_OutputLink = new Identifier(GetAgent(), "output-link", pValue, timeTag) ;
 
 		} else if (m_OutputLink && (IsStringEqual(m_OutputLink->GetValueAsString(), pValue) && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName)))
 		{
@@ -337,7 +340,8 @@ bool WorkingMemory::ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing)
 	// We're removing structure from the output link
 	char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will usually be kernel side time tags (e.g. +5 not -7)
 
-	long timeTag = atoi(pTimeTag) ;
+	long timeTag = 0;
+	from_c_string(timeTag, pTimeTag);
 
 	// If we have no output link we can't delete things from it.
 	if (!m_OutputLink)
@@ -505,7 +509,7 @@ Identifier* WorkingMemory::GetInputLink()
 
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
 		{
-			m_InputLink = new Identifier(GetAgent(), response.GetResultString(), GenerateTimeTag()) ;
+			m_InputLink = new Identifier(GetAgent(), "input-link", response.GetResultString(), GenerateTimeTag()) ;
 		}
 	}
 
@@ -585,7 +589,8 @@ bool WorkingMemory::SynchronizeInputLink()
 			sml::PrintDebugFormat("Received input wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
 		}
 
-		long timeTag = atoi(pTimeTag) ;
+		long timeTag = 0;
+		from_c_string(timeTag, pTimeTag);
 
 		// Find the parent wme that we're adding this new wme to
 		// (Actually, there can be multiple WMEs that have this identifier
@@ -953,9 +958,6 @@ void WorkingMemory::GenerateNewID(char const* pAttribute, std::string* pID)
 {
 	int id = GetAgent()->GetKernel()->GenerateNextID() ;
 
-	char buffer[kMinBufferSize] ;
-	Int2String(id, buffer, sizeof(buffer)) ;
-
 	// we'll start our ids with lower case so we can distinguish them
 	// from soar id's.  We'll take the first letter of the attribute,
 	// much as soar does, but always add a unique number to the back,
@@ -972,7 +974,8 @@ void WorkingMemory::GenerateNewID(char const* pAttribute, std::string* pID)
 
 	// Return the result
 	*pID = letter ;
-	pID->append(buffer) ;
+	std::string temp;
+	pID->append(to_string(id, temp)) ;
 }
 
 /*************************************************************
@@ -1023,6 +1026,20 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 {
 	assert(m_Agent == parent->GetAgent()) ;
 	assert(m_Agent == pSharedValue->GetAgent()) ;
+
+	// bug 1060
+	// need to check and make sure that this shared wme will not violate the set
+	{
+		// find other wmes on parent with same attribute
+		WMElement* wme = 0;
+		for (int i = 0; (wme = parent->FindByAttribute(pAttribute, i)) != 0; ++i)
+		{
+			if (wme == pSharedValue)
+			{
+				return 0;
+			}
+		}
+	}	
 
 	// Look up the id from the existing identifier
 	std::string id = pSharedValue->GetValueAsString() ;

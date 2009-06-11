@@ -377,6 +377,13 @@ inline test make_blank_test()
 inline test make_equality_test(Symbol * sym) // is this equivalent to the macro above??
 {
   (sym)->common.reference_count++;
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+  char buf[64];
+  OutputDebugString(symbol_to_string(0, (sym), FALSE, buf, 64));
+  OutputDebugString(":+ ");
+  OutputDebugString(_itoa((sym)->common.reference_count, buf, 10));
+  OutputDebugString("\n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   return reinterpret_cast<test>(sym);
 }
 

@@ -52,10 +52,15 @@
    When an ID and the --object flag are specified, Soar prints the
    preferences / wme support for all WMEs comprising the specified ID.
 
-Note
+Notes
 
    For the time being, numeric-indifferent preferences are listed under the
    heading "binary indifferents:".
+
+   By default, using the --wmes option with a wme on the top state will only
+   print the timetags. To change this, the kernel can be recompiled with
+   DO_TOP_LEVEL_REF_CTS, but this has other consequences (see comments in
+   kernel.h).
 
                                     Examples
 

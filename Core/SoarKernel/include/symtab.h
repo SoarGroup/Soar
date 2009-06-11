@@ -365,10 +365,21 @@ extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix,u
  
 #else
 
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
+#endif
+
 inline unsigned long symbol_add_ref(Symbol * x) 
 {
   (x)->common.reference_count++;
   unsigned long refCount = (x)->common.reference_count ;
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+  char buf[64];
+  OutputDebugString(symbol_to_string(0, x, FALSE, buf, 64));
+  OutputDebugString(":+ ");
+  OutputDebugString(_itoa(refCount, buf, 10));
+  OutputDebugString("\n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   return refCount ;
 }
 
@@ -376,6 +387,13 @@ inline unsigned long symbol_remove_ref(agent* thisAgent, Symbol * x)
 {
   (x)->common.reference_count--;
   unsigned long refCount = (x)->common.reference_count ;
+#ifdef DEBUG_SYMBOL_REFCOUNTS
+  char buf[64];
+  OutputDebugString(symbol_to_string(thisAgent, x, FALSE, buf, 64));
+  OutputDebugString(":- ");
+  OutputDebugString(_itoa(refCount, buf, 10));
+  OutputDebugString("\n");
+#endif // DEBUG_SYMBOL_REFCOUNTS
   if ((x)->common.reference_count == 0)
     deallocate_symbol(thisAgent, x);
 

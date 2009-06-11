@@ -99,7 +99,7 @@ long lapse_duration;
 ////#endif
 //}
 
-void abort_with_fatal_error (agent* thisAgent, char *msg) {
+void abort_with_fatal_error (agent* thisAgent, const char *msg) {
   FILE *f;
   const char* warning = "Soar cannot recover from this error. \nYou will have to restart Soar to run an agent.\nData is still available for inspection, but may be corrupt.\nIf a log was open, it has been closed for safety.";
   
@@ -393,6 +393,11 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
 	/* kjh (CUSP-B4) end */
 
+	free_list(thisAgent, thisAgent->chunk_free_problem_spaces);
+	thisAgent->chunk_free_problem_spaces = NIL;
+	free_list(thisAgent, thisAgent->chunky_problem_spaces);
+	thisAgent->chunky_problem_spaces = NIL;
+
 	rl_reset_data( thisAgent );
 	wma_deinit( thisAgent );
 	clear_goal_stack (thisAgent);
@@ -419,7 +424,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	/* RDF 01282003: Reinitializing the various halt and stop flags */
 	thisAgent->system_halted = FALSE;
 	thisAgent->stop_soar = FALSE;			// voigtjr:  this line doesn't exist in other kernel
-	thisAgent->reason_for_stopping = "";  // voigtjr: nor does this one
+	thisAgent->reason_for_stopping = 0;
 
 	thisAgent->go_number = 1;
 	thisAgent->go_type = GO_DECISION;
@@ -1042,22 +1047,8 @@ void do_one_top_level_phase (agent* thisAgent)
   }
   
   if (thisAgent->stop_soar) {
-        /* (voigtjr)
-           this old test is nonsense, it compares pointers:
-
-           if (thisAgent->reason_for_stopping != "")
-
-           what really should happen here is reason_for_stopping should be
-           set to NULL in the cases where nothing should be printed, instead 
-           of being assigned a pointer to a zero length (NULL) string, then
-           we could simply say:
-
-           if (thisAgent->reason_for_stopping) 
-         */
         if (thisAgent->reason_for_stopping) {
-            if (strcmp(thisAgent->reason_for_stopping, "") != 0) {
-                print(thisAgent, "\n%s", thisAgent->reason_for_stopping);
-            }
+            print(thisAgent, "\n%s\n", thisAgent->reason_for_stopping);
         }
   }
 }
@@ -1069,7 +1060,7 @@ void run_forever (agent* thisAgent) {
     #endif
 
 	thisAgent->stop_soar = FALSE;
-	thisAgent->reason_for_stopping = "";
+	thisAgent->reason_for_stopping = 0;
 	while (! thisAgent->stop_soar) {
 		do_one_top_level_phase(thisAgent);
 	}
@@ -1110,7 +1101,7 @@ void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
   start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
-  thisAgent->reason_for_stopping = "";
+  thisAgent->reason_for_stopping = 0;
   e_cycles_at_start = thisAgent->e_cycle_count;
   d_cycles_at_start = thisAgent->d_cycle_count;
   elapsed_cycles = -1; 
@@ -1142,7 +1133,7 @@ void run_for_n_modifications_of_output (agent* thisAgent, long n) {
   start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
-  thisAgent->reason_for_stopping = "";
+  thisAgent->reason_for_stopping = 0;
   while (!thisAgent->stop_soar && n) {
     was_output_phase = (thisAgent->current_phase==OUTPUT_PHASE);
     do_one_top_level_phase(thisAgent);
@@ -1153,8 +1144,9 @@ void run_for_n_modifications_of_output (agent* thisAgent, long n) {
 		  count++;
 	} }
 	if (count >= thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM]) {
-		thisAgent->stop_soar = TRUE;
-		thisAgent->reason_for_stopping = "exceeded max_nil_output_cycles with no output";
+		break;
+		//thisAgent->stop_soar = TRUE;
+		//thisAgent->reason_for_stopping = "exceeded max_nil_output_cycles with no output";
 	}
   }
 #ifndef NO_TIMING_STUFF
@@ -1173,7 +1165,7 @@ void run_for_n_decision_cycles (agent* thisAgent, long n) {
   start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
-  thisAgent->reason_for_stopping = "";
+  thisAgent->reason_for_stopping = 0;
   d_cycles_at_start = thisAgent->d_cycle_count;
   /* need next line or runs only the input phase for "d 1" after init-soar */
   if (d_cycles_at_start == 0)
@@ -1205,7 +1197,7 @@ void run_for_n_selections_of_slot (agent* thisAgent, long n, Symbol *attr_of_slo
   start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
-  thisAgent->reason_for_stopping = "";
+  thisAgent->reason_for_stopping = 0;
   count = 0;
   while (!thisAgent->stop_soar && (count < n)) {
     was_decision_phase = (thisAgent->current_phase==DECISION_PHASE);
@@ -1232,7 +1224,7 @@ void run_for_n_selections_of_slot_at_level (agent* thisAgent, long n,
   start_timer (thisAgent, &thisAgent->start_kernel_tv);
 #endif
   thisAgent->stop_soar = FALSE;
-  thisAgent->reason_for_stopping = "";
+  thisAgent->reason_for_stopping = 0;
   count = 0;
   while (!thisAgent->stop_soar && (count < n)) {
     was_decision_phase = (thisAgent->current_phase==DECISION_PHASE);

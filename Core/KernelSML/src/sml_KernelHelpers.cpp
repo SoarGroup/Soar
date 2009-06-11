@@ -610,7 +610,8 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 	bool        internal,
 	bool		tree,
 	bool        full_prod,
-	int         depth)
+	int         depth,
+	bool		exact)
 {
 	cons *c;
 	Symbol *id;
@@ -673,8 +674,57 @@ void KernelHelpers::PrintSymbol(AgentSML* thisAgent,
 		wmes = read_pattern_and_get_matching_wmes (agnt);
 		soar_alternate_input(agnt, NIL, NIL, FALSE); 
 		agnt->current_char = ' ';
-		for (c = wmes; c != NIL; c = c->rest)
-			do_print_for_wme (agnt, static_cast<wme *>(c->first), depth, internal, tree);
+		if (exact)
+		{
+			// When printing exact, we want to list only those wmes who match.
+			// Group up the wmes in objects (id ^attr value ^attr value ...)
+			std::map< Symbol*, std::list< wme* > > objects;
+			for (c = wmes; c != NIL; c = c->rest) {
+				wme* current = static_cast<wme *>(c->first);
+				objects[current->id].push_back(current);
+			}
+			// Loop through objects and print its wmes
+			std::map< Symbol*, std::list<wme*> >::iterator iter = objects.begin();
+			while ( iter != objects.end() ) 
+			{
+				std::list<wme*> wmelist = iter->second;
+				std::list<wme*>::iterator wmeiter = wmelist.begin();
+
+				// If we're printing internally, we just print the wme
+				// taken from print_wme_without_timetag
+				if (!internal) {
+					print_with_symbols(agnt, "(%y", iter->first);
+				}
+
+				while ( wmeiter != wmelist.end() ) {
+					wme* w = *wmeiter;
+					if (internal) {
+						// This does everything for us in the internal case, including xml
+						print_wme(agnt, w);
+					} else {
+						// taken from print_wme_without_timetag
+						print_with_symbols (agnt, " ^%y %y", w->attr, w->value);
+						if (w->acceptable) {
+							print_string (agnt, " +");
+						}
+						
+						// this handles xml case for the wme
+						xml_object( agnt, w, XML_WME_NO_TIMETAG );
+					}
+					++wmeiter;
+				}
+
+				if (!internal) {
+					print_string(agnt, ")\n");
+				}
+				++iter;
+			}
+		} 
+		else {
+			for (c = wmes; c != NIL; c = c->rest) {
+				do_print_for_wme (agnt, static_cast<wme *>(c->first), depth, internal, tree);
+			}
+		}
 		free_list (agnt, wmes);
 		break;
 

@@ -7,8 +7,8 @@
                                     Synopsis
 
  clog -[Ae] filename
- clog aEUR"a string
- clog [aEUR"cdoq]
+ clog -a string
+ clog [-cdoq]
 
                                     Options
 

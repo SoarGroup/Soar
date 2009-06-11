@@ -70,6 +70,8 @@ void AgentSML::Init()
 	// Temporary HACK.  This should be fixed in the kernel.
 	m_agent->stop_soar = FALSE;
 
+	ResetCaptureReplay();
+
 	// Initializing the soar agent
 	init_soar_agent( m_agent );
 
@@ -85,8 +87,6 @@ void AgentSML::Init()
 	// Set counters and flags used to control runs
 	InitializeRuntimeState() ;
 	
-	ResetCaptureReplay();
-
 	// Register for the new INPUT_WME_GARBAGE_COLLECTED_CALLBACK
 	// Base the id on the address of this object which ensures it's unique
 	std::ostringstream callbackId;
@@ -487,8 +487,7 @@ smlRunResult AgentSML::Step(smlRunStepSize stepSize)
 	   }
    }
 
-   if ((m_interruptFlags & sml_STOP_AFTER_SMALLEST_STEP) || 
-	   (m_interruptFlags & sml_STOP_AFTER_PHASE))
+   if (m_agent->stop_soar || (m_interruptFlags & sml_STOP_AFTER_SMALLEST_STEP) || (m_interruptFlags & sml_STOP_AFTER_PHASE))
    {
 	   interrupted = true;
    }
@@ -748,7 +747,9 @@ unsigned long AgentSML::ConvertTime(char const* pTimeTag)
 	if (pTimeTag == NULL)
 		return 0 ;
 
-   return ConvertTime(atoi(pTimeTag));
+	long value = 0;
+	from_c_string(value, pTimeTag);
+	return ConvertTime(value);
 }
 
 void AgentSML::RecordTime(long clientTimeTag, long kernelTimeTag)
@@ -884,7 +885,8 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pVal
 	ConvertID(pID, &idKernel) ;
 
 	char idLetter = idKernel[0] ;
-	int idNumber = atoi( &(idKernel.c_str()[1]) ) ;
+	unsigned long idNumber = 0;
+	from_c_string(idNumber, idKernel.substr(1).c_str());
 
 	// Now create the wme
 	Symbol* pIDSymbol   = get_io_identifier( m_agent, idLetter, idNumber) ;
@@ -994,7 +996,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
 	// If that identifier is not found when we try to convert it, we make a new identifier.
 
 	std::string idValue ;
-	int idValueNumber = 0 ;
+	long idValueNumber = 0 ;
 	char idValueLetter = 0;
 	bool didntFindId = true;
 
@@ -1003,7 +1005,7 @@ bool AgentSML::AddIdInputWME(char const* pID, char const* pAttribute, char const
 		// we found a kernel side mapping, shared id
 		didntFindId = false;	// for sanity check below
 		idValueLetter = idValue[0];
-		idValueNumber = atoi( &(idValue.c_str()[1]) ) ;
+		from_c_string(idValueNumber, idValue.substr(1).c_str());
 	}
 	else 
 	{
@@ -1075,13 +1077,14 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
 
 	// must have client side timetag
 	CHECK_RET_FALSE( pClientTimeTag );
-	CHECK_RET_FALSE( atoi( pClientTimeTag ) < 0 ) ;
+	long clientTimeTag = 0;
+	from_c_string(clientTimeTag, pClientTimeTag);
+	CHECK_RET_FALSE( clientTimeTag < 0 ) ;
 	// End sanity check
 
 	// Convert ID to kernel side.
 	CHECK_RET_FALSE(strlen(pID) >= 2) ;
 
-	long clientTimeTag = atoi(pClientTimeTag);
 	if (IsStringEqual(sml_Names::kTypeString, pType)) 
 	{
 		// Creating a wme with a string constant value
@@ -1091,14 +1094,17 @@ bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, char const* 
 	else if (IsStringEqual(sml_Names::kTypeInt, pType)) 
 	{
 		// Creating a WME with an int value
-		int value = atoi(pValue) ;
+		int value = 0;
+		from_c_string(value, pValue);
 		return AddIntInputWME(pID, pAttribute, value, clientTimeTag);
 
 	} 
 	else if (IsStringEqual(sml_Names::kTypeDouble, pType)) 
 	{
 		// Creating a WME with a float value
-		return AddDoubleInputWME(pID, pAttribute, atof(pValue), clientTimeTag);
+		double value = 0;
+		from_c_string(value, pValue);
+		return AddDoubleInputWME(pID, pAttribute, value, clientTimeTag);
 
 	} 
 	else if (IsStringEqual(sml_Names::kTypeID, pType)) 
@@ -1167,7 +1173,9 @@ bool AgentSML::RemoveInputWME(long clientTimeTag)
 
 bool AgentSML::RemoveInputWME(char const* pTimeTag)
 {
-   return RemoveInputWME(atoi(pTimeTag));
+	long timeTag = 0;
+	from_c_string(timeTag, pTimeTag);
+	return RemoveInputWME(timeTag);
 }
 
 void AgentSML::AddWmeToWmeMap( long clientTimeTag, wme* w ) 
@@ -1396,4 +1404,29 @@ void AgentSML::ReplayInputWMEs()
 			}
 		}
 	}
+}
+
+void AgentSML::BufferedAddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(DirectInputDelta::kAddString, pID, pAttribute, pValue, clientTimeTag));
+}
+
+void AgentSML::BufferedAddIntInputWME(char const* pID, char const* pAttribute, int value, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(pID, pAttribute, value, clientTimeTag));
+}
+
+void AgentSML::BufferedAddDoubleInputWME(char const* pID, char const* pAttribute, double value, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(pID, pAttribute, value, clientTimeTag));
+}
+
+void AgentSML::BufferedAddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(DirectInputDelta::kAddId, pID, pAttribute, pValue, clientTimeTag));
+}
+
+void AgentSML::BufferedRemoveInputWME(long clientTimeTag)
+{
+	m_DirectInputDeltaList.push_back(DirectInputDelta(clientTimeTag));
 }

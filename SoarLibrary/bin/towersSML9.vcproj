@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="TOHSML"
 	ProjectGUID="{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
+	RootNamespace="TOHSML"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -230,8 +231,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
@@ -328,8 +334,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="2"
-				InlineFunctionExpansion="1"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="0"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="true"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\..\Core\ClientSML\include;..\..\Core\ConnectionSML\include;..\..\Core\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"

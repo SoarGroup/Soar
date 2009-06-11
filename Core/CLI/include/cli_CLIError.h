@@ -86,7 +86,7 @@ namespace cli {
 			kAmbiguousOption					= 80, 
 			kProductionMemoryNotEmpty			= 81, 
 			kSoar7Command						= 82, 
-			kInvalidBackslashEscapeCharacter	= 83, 
+			//kInvalidBackslashEscapeCharacter	= 83, 
 			kInitSoarFailed						= 84, 
 			kPreferencesError					= 85, // FIXME: document in wiki
 			kInvalidRunInterleaveSetting		= 86,
@@ -99,6 +99,8 @@ namespace cli {
 			kFileOpen							= 94,
 			kFileNotOpen						= 95,
 			kRealExpected						= 96,
+			kValuesError						= 97,
+			kGPMaxExceeded						= 98,
 		};
 
 		static char const* GetErrorDescription(ErrorCode code) {
@@ -113,7 +115,7 @@ namespace cli {
 				case kExtraClosingParen:				return "Closing bracket found without opening counterpart.";
 				case kUnmatchedBracketOrQuote:			return "No closing quotes/brackets/parens found.";
 				case kExtraClosingBrace:				return "Closing brace found without opening counterpart.";
-				case kUnmatchedBrace:					return "Unexpected end of file. Unmatched opening brace.";
+				case kUnmatchedBrace:					return "Unexpected end of input. Unmatched opening brace.";
 				case kTooManyArgs:						return "Too many arguments for the specified (or unspecified) options, check syntax.";
 				case kTooFewArgs:						return "Too few arguments for the specified (or unspecified) options, check syntax.";
 				case kUnrecognizedOption:				return "Unrecognized option.";
@@ -172,7 +174,7 @@ namespace cli {
 				case kAmbiguousOption:					return "Ambiguous option.";
 				case kProductionMemoryNotEmpty:			return "Can't change modes unless production memory is empty."; 
 				case kSoar7Command:						return "Command valid in Soar 7 mode only.";
-				case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
+				//case kInvalidBackslashEscapeCharacter:	return "Invalid backslash escape character, see documentation.";
 				case kInitSoarFailed:					return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
 				case kPreferencesError:					return "Preferences command failed." ;
 				case kInvalidRunInterleaveSetting:		return "Invalid setting for run interleave option." ;
@@ -185,6 +187,8 @@ namespace cli {
 				case kFileOpen:							return "File already open.";
 				case kFileNotOpen:						return "File is not open.";
 				case kRealExpected:						return "Real number expected.";
+				case kValuesError:						return "gp values error.";
+				case kGPMaxExceeded:					return "gp maximum exceeded. Set it to higher value with gp-max command.";
 				default:								return "Unknown error code.";
 			}
 		}

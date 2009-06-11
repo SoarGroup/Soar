@@ -84,7 +84,7 @@ void print_string (agent* thisAgent, const char *s) {
 			thisAgent->printer_output_column++;
 	}
 
-	soar_invoke_first_callback(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
+	soar_invoke_callbacks(thisAgent, PRINT_CALLBACK, static_cast<soar_call_data>(const_cast<char *>(s)));
 }
 
 /* ---------------------------------------------------------------
@@ -476,7 +476,7 @@ Bool pick_conds_with_matching_id_test (dl_cons *dc, agent* thisAgent) {
   condition *cond;
   cond = static_cast<condition_struct *>(dc->item);
   if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) return FALSE;
-  return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test);
+  return tests_are_equal (thisAgent->id_test_to_match, cond->data.tests.id_test, false);
 }
 
 /*
@@ -825,6 +825,9 @@ void print_production (agent* thisAgent, production *p, Bool internal) {
     print_string (thisAgent, "    :i-support\n");
     xml_att_val(thisAgent, kProductionDeclaredSupport, kProductionDeclaredISupport);
   }
+
+  if (p->interrupt)
+    print_string(thisAgent, "    :interrupt\n");
 
   /* 
   --- print the LHS and RHS --- 

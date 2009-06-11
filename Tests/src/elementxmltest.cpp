@@ -17,6 +17,7 @@ class ElementXMLTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testChildren );
 	CPPUNIT_TEST( testParse );
 	CPPUNIT_TEST( testBinaryData );
+	CPPUNIT_TEST( testEquals ); // bug 1028
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -29,6 +30,7 @@ protected:
 	void testChildren();
 	void testParse();
 	void testBinaryData();
+	void testEquals();
 
 private:
 	soarxml::ElementXML* createXML1();
@@ -324,4 +326,10 @@ void ElementXMLTest::testBinaryData()
 
 	delete pXML4 ;
 	delete pParsedXML ;
+}
+
+void ElementXMLTest::testEquals()
+{
+	soarxml::ElementXML* element = soarxml::ElementXML::ParseXMLFromString("<sml><result>=</result></sml>");
+	CPPUNIT_ASSERT_MESSAGE(soarxml::ElementXML::GetLastParseErrorDescription(), element != 0);
 }

@@ -1,0 +1,20 @@
+sp {propose*not-so-fast
+   (state <s> ^superstate nil)
+-->
+   (<s> ^operator not-so-fast +)   
+}
+
+sp {apply*not-so-fast
+:interrupt
+   (state <s> ^operator <o>)
+-->
+   (<s> ^foo bar)
+}
+
+sp {failure
+   (state <s> ^foo bar)
+-->
+   (exec test-failure)
+   (write (crlf) |test-failure|)
+   (halt)
+}

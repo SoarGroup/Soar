@@ -306,7 +306,12 @@ saved_test *simplify_condition_list (agent* thisAgent, condition *conds_list) {
 
   sts = NIL;
   for (c=conds_list; c!=NIL; c=c->next) {
+//#define CONSIDER_NEGATIVE 1
+#ifdef CONSIDER_NEGATIVE
+    if (c->type!=CONJUNCTIVE_NEGATION_CONDITION) {
+#else
     if (c->type==POSITIVE_CONDITION) {
+#endif
       sts = simplify_test (thisAgent, &(c->data.tests.id_test), sts);
       sts = simplify_test (thisAgent, &(c->data.tests.attr_test), sts);
       sts = simplify_test (thisAgent, &(c->data.tests.value_test), sts);
@@ -338,7 +343,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
 										 test *t,
                                          Bool is_id_field,
                                          tc_number bound_vars_tc_number,
-                                         saved_test *tests_to_restore) {
+                                         saved_test *tests_to_restore, bool neg) {
   saved_test *st, *prev_st, *next_st;
   Bool added_it;
   Symbol *referent;
@@ -357,7 +362,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
       /* ... otherwise fall through to the next case below ... */
     case DISJUNCTION_TEST:
       if (test_includes_equality_test_for_symbol (*t, st->var)) {
-        add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test);
+        add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
         added_it = TRUE;
       }
       break;
@@ -367,7 +372,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
         if (symbol_is_constant_or_marked_variable (referent,
                                                    bound_vars_tc_number) ||
            (st->var == referent)) {
-          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test);
+          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
           added_it = TRUE;
         } 
       } else if (test_includes_equality_test_for_symbol (*t, referent)) {
@@ -377,7 +382,7 @@ saved_test *restore_saved_tests_to_test (agent* thisAgent,
           ct->type = reverse_direction_of_relational_test (thisAgent, ct->type);
           ct->data.referent = st->var;
           st->var = referent;
-          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test);
+          add_new_test_to_test_if_not_already_there (thisAgent, t, st->the_test, neg);
           added_it = TRUE;
         }
       }
@@ -405,15 +410,20 @@ void restore_and_deallocate_saved_tests (agent* thisAgent,
 
   new_vars = NIL;
   for (cond=conds_list; cond!=NIL; cond=cond->next) {
+#ifdef CONSIDER_NEGATIVE
+    if (cond->type==CONJUNCTIVE_NEGATION_CONDITION) continue;
+#else
     if (cond->type!=POSITIVE_CONDITION) continue;
+#endif
+    bool neg = cond->type == NEGATIVE_CONDITION;
     tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore);
+      (thisAgent, (&cond->data.tests.id_test), TRUE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.id_test, tc, &new_vars);
     tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.attr_test), FALSE, tc, tests_to_restore);
+      (thisAgent, (&cond->data.tests.attr_test), FALSE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.attr_test, tc, &new_vars);
     tests_to_restore = restore_saved_tests_to_test
-      (thisAgent, (&cond->data.tests.value_test), FALSE, tc, tests_to_restore);
+      (thisAgent, (&cond->data.tests.value_test), FALSE, tc, tests_to_restore, neg);
     add_bound_variables_in_test (thisAgent, cond->data.tests.value_test, tc, &new_vars);
   }
   if (tests_to_restore) {
@@ -1038,6 +1048,106 @@ Bool test_tests_for_root(test t, list *roots) {
   }
 }
 
+/* -------------------------------------------------------------
+	check_unbound_negative_relational_test_referents
+	check_negative_relational_test_bindings
+
+	These two functions are for fixing bug 517. The bug stems
+	from two different code paths being used to check the bound
+	variables after reordering the left hand side; one for 
+	positive conditions and one for negated conditions.
+
+	Specifically, the old system would let unbound referents of 
+	non-equality relational tests continue past the reordering
+	until the production addition failed as the bad production
+	was added to the rete.
+
+	These two functions specifically check that all referents
+	of non-equality relational tests are bound and return false
+	if an unbound referent is discovered.
+
+	There may be a faster way of checking for this inside of
+	the existing calls to fill_in_vars_requiring_bindings and
+	reorder_condition_list, but my last attempt at fixing it
+	there failed.
+
+	Example bad production:
+	sp {test
+	    (state <s> ^superstate nil -^foo {<> <bar>})
+    -->
+	}
+------------------------------------------------------------- */
+bool check_unbound_negative_relational_test_referents (agent* thisAgent, test t, tc_number tc) 
+{
+  cons *c;
+  complex_test *ct;
+  Symbol *referent;
+
+  // we only care about relational tests other than equality
+  if (test_is_blank_test(t)) return true;
+  if (test_is_blank_or_equality_test(t)) return true;
+
+  ct = complex_test_from_test(t);
+  switch (ct->type) {
+  case GOAL_ID_TEST:
+  case IMPASSE_ID_TEST:
+  case DISJUNCTION_TEST:
+    break;
+    
+  case CONJUNCTIVE_TEST:
+	// we do need to loop over conjunctive tests, however
+    for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
+      if (!check_unbound_negative_relational_test_referents (thisAgent, static_cast<test>(c->first), tc))
+		  return false;
+	break;
+    
+  default:
+    /* --- relational tests other than equality --- */
+    referent = ct->data.referent;
+	if (referent->common.symbol_type==VARIABLE_SYMBOL_TYPE) {
+      if (referent->var.tc_num != tc) {
+        print (thisAgent, 
+			"Error: production %s has an unbound referent in negated relational test %s",
+			thisAgent->name_of_production_being_reordered,
+			test_to_string (thisAgent, t, NULL, 0));
+		return false;
+	  }
+	}
+    break;
+  }
+  return true;
+}
+
+bool check_negative_relational_test_bindings(agent* thisAgent, condition *cond_list, tc_number tc)
+{
+  list* bound_vars = NIL;	// this list necessary pop variables bound inside ncc's out of scope on return
+  condition *c;
+  bool ret = true;
+
+  /* --- add anything bound in a positive condition at this level --- */
+  /* --- recurse in to NCCs --- */
+  for (c=cond_list; ret && c!=NIL; c=c->next) {
+    if (c->type==POSITIVE_CONDITION)
+      add_bound_variables_in_condition (thisAgent, c, tc, &bound_vars);
+	else if (c->type==CONJUNCTIVE_NEGATION_CONDITION) {
+	  ret = check_negative_relational_test_bindings (thisAgent, c->data.ncc.top, tc);
+	}
+  }
+
+  /* --- find referents of non-equality tests in conjunctive tests in negated conditions ---*/
+  for (c=cond_list; ret && c!=NIL; c=c->next) {
+	if (c->type==NEGATIVE_CONDITION) {
+	  ret = check_unbound_negative_relational_test_referents (thisAgent, c->data.tests.id_test, tc);
+	  ret = ret && check_unbound_negative_relational_test_referents (thisAgent, c->data.tests.attr_test, tc);
+	  ret = ret && check_unbound_negative_relational_test_referents (thisAgent, c->data.tests.value_test, tc);
+	}
+  }
+
+  // unmark anything bound on this level
+  unmark_variables_and_free_list (thisAgent, bound_vars);
+  return ret;
+}
+
 void remove_isa_state_tests_for_non_roots(agent* thisAgent, condition **lhs_top, 
 										  condition ** /*lhs_bottom*/, list *roots)
 {
@@ -1101,7 +1211,8 @@ Bool reorder_lhs (agent* thisAgent, condition **lhs_top,
   reorder_condition_list (thisAgent, lhs_top, lhs_bottom, roots, tc, reorder_nccs);
   remove_vars_requiring_bindings (thisAgent, *lhs_top);
   free_list (thisAgent, roots);
-  return TRUE;
+
+  return check_negative_relational_test_bindings (thisAgent, *lhs_top, get_new_tc_number (thisAgent));
 }
 
 void init_reorderer (agent* thisAgent) {  /* called from init_production_utilities() */

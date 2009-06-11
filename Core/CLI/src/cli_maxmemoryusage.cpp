@@ -12,7 +12,6 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 #include "cli_CLIError.h"
 
 #include "agent.h"
@@ -30,7 +29,7 @@ bool CommandLineInterface::ParseMaxMemoryUsage(std::vector<std::string>& argv) {
 
 	// one argument, figure out if it is a positive integer
 	if (argv.size() == 2) {
-		n = atoi(argv[1].c_str());
+		from_string(n, argv[1]);
 		if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
 	}
 
@@ -43,8 +42,8 @@ bool CommandLineInterface::DoMaxMemoryUsage(const int n) {
 		if (m_RawOutput) {
 			m_Result << m_pAgentSoar->sysparams[MAX_MEMORY_USAGE_SYSPARAM] << " bytes";
 		} else {
-			char buf[kMinBufferSize];
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, Int2String(m_pAgentSoar->sysparams[MAX_CHUNKS_SYSPARAM], buf, kMinBufferSize));
+			std::string temp;
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(m_pAgentSoar->sysparams[MAX_CHUNKS_SYSPARAM], temp));
 		}
 		return true;
 	}

@@ -17,7 +17,6 @@
 #include "sml_Utils.h"
 #include "sml_AgentSML.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 #include "sml_OutputListener.h"
 #include "sml_ConnectionManager.h"
 #include "sml_TagResult.h"
@@ -343,6 +342,12 @@ bool KernelSML::HandleDestroyAgent(AgentSML* pAgentSML, char const* /*pCommandNa
 		return false ;
 
 	FireAgentEvent( pAgentSML, smlEVENT_BEFORE_AGENT_DESTROYED );
+
+	// Close log
+	if (m_CommandLineInterface.IsLogOpen())
+	{
+		m_CommandLineInterface.DoCommand(0, pAgentSML, "clog --close", false, true, 0) ;
+	}
 
 	// Release any wmes or other objects we're keeping
 	pAgentSML->DeleteSelf() ;

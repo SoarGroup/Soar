@@ -14,7 +14,7 @@ import string
 import re
 import shutil
 import urllib
-import md5
+import hashlib
 import subprocess
 
 def Mac_m64_Capable():
@@ -54,7 +54,7 @@ def CheckJarmd5(env, jarpath):
 		return False
 	
 	# compute digest
-	m = md5.new()
+	m = hashlib.md5()
 	while True:
 	    d = f.read(8096)
 	    if not d:

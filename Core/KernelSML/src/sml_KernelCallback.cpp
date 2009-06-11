@@ -192,7 +192,8 @@ void KernelCallback::UnregisterWithKernel(int eventID)
 
 	if (eventID == smlEVENT_OUTPUT_PHASE_CALLBACK)
 	{
-		remove_output_function(pAgent, "output-link") ;
+		// NLD: proposed fix to bug 1049 
+		// remove_output_function(pAgent, "output-link") ;
 	}
 	else if (eventID != smlEVENT_BEFORE_PHASE_EXECUTED && eventID != smlEVENT_AFTER_PHASE_EXECUTED)
 	{

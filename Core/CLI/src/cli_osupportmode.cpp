@@ -12,7 +12,6 @@
 #include "cli_CLIError.h"
 
 #include "cli_Commands.h"
-#include "sml_StringOps.h"
 #include "sml_Names.h"
 
 #include "agent.h"
@@ -30,7 +29,7 @@ bool CommandLineInterface::ParseOSupportMode(std::vector<std::string>& argv) {
 			SetErrorDetail("Expected an integer 0, 2, 3, or 4.");
 			return SetError(CLIError::kIntegerOutOfRange);
 		}
-		mode = atoi(argv[1].c_str());
+		from_string(mode, argv[1]);
 		if (mode < 0 || mode > 4 || mode == 1) {
 			SetErrorDetail("Expected an integer 0, 2, 3, or 4.");
 			return SetError(CLIError::kIntegerOutOfRange);
@@ -49,7 +48,7 @@ bool CommandLineInterface::DoOSupportMode(int mode) {
 		} else {
 			std::stringstream buffer;
 			buffer << mode;
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, buffer.str().c_str());
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, buffer.str());
 		}
 	} else {
 		assert(mode != 1);

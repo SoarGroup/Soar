@@ -12,7 +12,6 @@
 
 #include "sml_ClientFloatElement.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 
 #include "sml_EmbeddedConnection.h"	// For direct methods
 #include "sml_ClientAgent.h"
@@ -65,3 +64,8 @@ void FloatElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 	pConnection->DirectAddWME_Double( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif
+
+void FloatElement::Update(double value) 
+{ 
+	this->m_Agent->GetWM()->UpdateFloat(this, value); 
+}

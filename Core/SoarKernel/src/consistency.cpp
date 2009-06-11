@@ -40,70 +40,76 @@
 
 void remove_operator_if_necessary(agent* thisAgent, slot *s, wme *w){
 
-  /* REW: begin 11.25.96 */ 
-  #ifndef NO_TIMING_STUFF
-  #ifdef DETAILED_TIMING_STATS
-  start_timer(thisAgent, &thisAgent->start_gds_tv);
-  #endif
-  #endif
-  /* REW: end   11.25.96 */ 
+/* REW: begin 11.25.96 */ 
+#ifndef NO_TIMING_STUFF
+#ifdef DETAILED_TIMING_STATS
+start_timer(thisAgent, &thisAgent->start_gds_tv);
+#endif
+#endif
+/* REW: end   11.25.96 */ 
 
-  /*         printf("Examining slot (next)\n");
-    for (next = s; next; next=next->next){
-         print_with_symbols("Slot ID:   [%y]\n", next->id);
-	 print_with_symbols("Slot Attr: [%y]\n", next->attr);
-    }
+/*         printf("Examining slot (next)\n");
+for (next = s; next; next=next->next){
+     print_with_symbols("Slot ID:   [%y]\n", next->id);
+ print_with_symbols("Slot Attr: [%y]\n", next->attr);
+}
 
-         printf("Examining slot (prev)\n");
-    for (prev = s->prev; prev; prev=prev->prev){
-         print_with_symbols("Slot ID:   [%y]\n", prev->id);
-	 print_with_symbols("Slot Attr: [%y]\n", prev->attr);
-    }
+     printf("Examining slot (prev)\n");
+for (prev = s->prev; prev; prev=prev->prev){
+     print_with_symbols("Slot ID:   [%y]\n", prev->id);
+ print_with_symbols("Slot Attr: [%y]\n", prev->attr);
+}
 
-    printf("Examining slot WMEs\n");
-    for (slot_wmes=s->wmes; slot_wmes; slot_wmes=slot_wmes->next){
-      print_wme(thisAgent, slot_wmes);
-    }
+printf("Examining slot WMEs\n");
+for (slot_wmes=s->wmes; slot_wmes; slot_wmes=slot_wmes->next){
+  print_wme(thisAgent, slot_wmes);
+}
 
-    printf("Examining acceptable preference WMEs\n");
-    for (slot_wmes=s->acceptable_preference_wmes; slot_wmes; slot_wmes=slot_wmes->next){
-      print_wme(thisAgent, slot_wmes);
-    }
+printf("Examining acceptable preference WMEs\n");
+for (slot_wmes=s->acceptable_preference_wmes; slot_wmes; slot_wmes=slot_wmes->next){
+  print_wme(thisAgent, slot_wmes);
+}
 
-   if (thisAgent->highest_goal_whose_context_changed) print_with_symbols("Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
+if (thisAgent->highest_goal_whose_context_changed) print_with_symbols("Highest goal with changed context: [%y]\n", thisAgent->highest_goal_whose_context_changed);
 
-   print_with_symbols("Slot ID:   [%y]\n", s->id);
-   print_with_symbols("Slot Attr: [%y]\n", s->attr);
-   if (s->isa_context_slot) printf("this is a context slot.\n");
-   if (s->impasse_id) print_with_symbols("Impasse: [%y]\n", s->impasse_id);
-   if (s->acceptable_preference_changed) printf("Acceptable pref changed\n");
-   
-   print_with_symbols("WME ID:    [%y]\n", w->id);
-   print_with_symbols("WME Attr:  [%y]\n", w->attr);
-   print_with_symbols("WME Value: [%y]\n", w->value);
-   if (w->value->id.isa_operator) printf("This is an operator\n");
+print_with_symbols("Slot ID:   [%y]\n", s->id);
+print_with_symbols("Slot Attr: [%y]\n", s->attr);
+if (s->isa_context_slot) printf("this is a context slot.\n");
+if (s->impasse_id) print_with_symbols("Impasse: [%y]\n", s->impasse_id);
+if (s->acceptable_preference_changed) printf("Acceptable pref changed\n");
 
-   print_with_symbols("s->id->id.operator_slot->id: [%y]\n", s->id->id.operator_slot->id); */
+print_with_symbols("WME ID:    [%y]\n", w->id);
+print_with_symbols("WME Attr:  [%y]\n", w->attr);
+print_with_symbols("WME Value: [%y]\n", w->value);
+if (w->value->id.isa_operator) printf("This is an operator\n");
 
-   if (s->wmes) { /* If there is something in the context slot */
-     if (s->wmes->value == w->value) { /* The WME in the context slot is WME whose pref changed */
-       if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM]) {
-	 print(thisAgent, "\n        REMOVING: Operator from context slot (proposal no longer matches): "); 
-	 print_wme(thisAgent, w); 
-       }
-       remove_wmes_for_context_slot (thisAgent, s);
-       if (s->id->id.lower_goal) remove_existing_context_and_descendents(thisAgent, s->id->id.lower_goal);
-     }
+print_with_symbols("s->id->id.operator_slot->id: [%y]\n", s->id->id.operator_slot->id); */
+
+if (s->wmes) { /* If there is something in the context slot */
+ if (s->wmes->value == w->value) { /* The WME in the context slot is WME whose pref changed */
+   if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM]) {
+ print(thisAgent, "\n        REMOVING: Operator from context slot (proposal no longer matches): "); 
+ print_wme(thisAgent, w); 
    }
+   remove_wmes_for_context_slot (thisAgent, s);
+   if (s->id->id.lower_goal) 
+   {
+     if ( thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
+       print_with_symbols(thisAgent, "Removing state %y because of an operator removal.\n", s->id->id.lower_goal);
 
-  /* REW: begin 11.25.96 */ 
-  #ifndef NO_TIMING_STUFF
-  #ifdef DETAILED_TIMING_STATS
-  stop_timer(thisAgent, &thisAgent->start_gds_tv, 
-             &thisAgent->gds_cpu_time[thisAgent->current_phase]);
-  #endif
-  #endif
-  /* REW: end   11.25.96 */    
+     remove_existing_context_and_descendents(thisAgent, s->id->id.lower_goal);
+   }
+ }
+}
+
+/* REW: begin 11.25.96 */ 
+#ifndef NO_TIMING_STUFF
+#ifdef DETAILED_TIMING_STATS
+stop_timer(thisAgent, &thisAgent->start_gds_tv, 
+         &thisAgent->gds_cpu_time[thisAgent->current_phase]);
+#endif
+#endif
+/* REW: end   11.25.96 */    
 }
 
 
@@ -356,6 +362,8 @@ Bool check_context_slot_decisions (agent* thisAgent, goal_stack_level level) {
 #ifdef DEBUG_CONSISTENCY_CHECK 
 	    print_with_symbols(thisAgent, "   The current preferences indicate that the decision at [%y] needs to be removed.\n", goal);
 #endif 
+        if ( thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
+          print_with_symbols(thisAgent, "Removing state %y because of a failed consistency check.\n", goal);
 	    /* This doesn;t seem like it should be necessary but evidently it is: see 2.008 */
 	    remove_current_decision(thisAgent, s);
 	    return FALSE;

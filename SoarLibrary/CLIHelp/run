@@ -2,11 +2,11 @@
 
                                       Name
 
-   run - Begin SoaraEUR(TM)s execution cycle.
+   run - Begin Soar's execution cycle.
 
                                     Synopsis
 
- run  [f|count]
+ run  [-f|count]
  run -[d|e|o|p][s][un] [f|count]
  run -[d|e|o|p][un] count [-i <e|p|d|o>]
 
@@ -35,7 +35,7 @@
    |-n, --noupdate   |that an environment does not update. This is the      |
    |                 |default if --self is specified.                       |
    |-----------------+------------------------------------------------------|
-   |f, forever       |Run until halted by problem-solving completion or     |
+   |-f, forever      |Run until halted by problem-solving completion or     |
    |                 |until stopped by an interrupt.                        |
    |-----------------+------------------------------------------------------|
    |count            |A single integer which specifies the number of cycles |
@@ -115,15 +115,14 @@ Setting an interleave size
    Some use cases include:
 
    +------------------------------------------------------------------------+
-   |                      |run the agent one phase and then move to the next|
-   |run -d 5 -inteleave p |agent,                                           |
-   |                      |looping over agents until they have run for 5    |
-   |                      |decision cycles                                  |
-   |----------------------+-------------------------------------------------|
-   |                      |run the agent one decision cycle and then move to|
-   |run -o 3 -interleave d|the next agent. When an agent                    |
-   |                      |generates output for the 3rd time, it no longer  |
-   |                      |runs even if other agents continue.              |
+   |                     |run the agent one phase and then move to the next |
+   |run -d 5 -inteleave p|agent, looping over agents until they have run for|
+   |                     |5 decision cycles                                 |
+   |---------------------+--------------------------------------------------|
+   |                     |run the agent one decision cycle and then move to |
+   |run -o 3 -interleave |the next agent. When an agent generates output for|
+   |d                    |the 3rd time, it no longer runs even if other     |
+   |                     |agents continue.                                  |
    +------------------------------------------------------------------------+
 
    The interleave parameter must always be equal to or smaller than the

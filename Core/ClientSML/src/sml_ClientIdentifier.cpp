@@ -35,12 +35,22 @@ IdentifierSymbol::~IdentifierSymbol()
 	DeleteAllChildren() ;
 }
 
+void IdentifierSymbol::SetIdentifierSymbol(char const* pID)   
+{ 
+	// this really should be in the ctor
+	assert(pID);
+	assert(m_Symbol.empty()); 
+	m_Symbol = pID ; 
+	//std::cout << "new symbol " << pID << std::endl;
+}
+
 void IdentifierSymbol::DeleteAllChildren()
 {
 	// We own all of these children, so delete them when we are deleted.
 	for (Identifier::ChildrenIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
 	{
 		WMElement* pWME = *iter ;
+		//std::cout << "deleting symbol child timetag " << pWME->GetTimeTag() << std::endl;
 		delete pWME ;
 	}
 	m_Children.clear() ;
@@ -84,30 +94,70 @@ void IdentifierSymbol::RemoveChild(WMElement* pWME)
 	}
 }
 
-// This version is only needed at the top of the tree (e.g. the input link)
-Identifier::Identifier(Agent* pAgent, char const* pIdentifier, long timeTag) 
-: WMElement(pAgent, NULL, pIdentifier, NULL, timeTag)
+void IdentifierSymbol::NoLongerUsedBy(Identifier* pIdentifier)  
+{ 
+	m_UsedBy.remove(pIdentifier) ; 
+}
+
+void IdentifierSymbol::UsedBy(Identifier* pIdentifier)		  
 {
-	m_pSymbol = new IdentifierSymbol(this) ;
-	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
-	RecordSymbolInMap();
+	m_UsedBy.push_back(pIdentifier) ; 
+}
+
+// This version is only needed at the top of the tree (e.g. the input link)
+Identifier::Identifier(Agent* pAgent, char const* pAttributeName, char const* pIdentifier, long timeTag) 
+: WMElement(pAgent, NULL, pIdentifier, pAttributeName, timeTag)
+{
+	//m_pSymbol = GetAgent()->GetWM()->FindIdentifierSymbol(pIdentifier);
+	//if (m_pSymbol)
+	//{
+	//	m_pSymbol->UsedBy(this);
+	//}
+	//else
+	//{
+		m_pSymbol = new IdentifierSymbol(this) ;
+		m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
+		RecordSymbolInMap();
+	//}
+	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
 }
 
 // The normal case (where there is a parent id)
 Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) 
 : WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
-	m_pSymbol = new IdentifierSymbol(this) ;
-	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
-	RecordSymbolInMap();
+	//m_pSymbol = GetAgent()->GetWM()->FindIdentifierSymbol(pIdentifier);
+	//if (m_pSymbol)
+	//{
+	//	m_pSymbol->UsedBy(this);
+	//}
+	//else
+	//{
+		m_pSymbol = new IdentifierSymbol(this) ;
+		m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
+		RecordSymbolInMap();
+	//}
+	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
 }
 
 Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) 
 : WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
-	m_pSymbol = new IdentifierSymbol(this) ;
-	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
-	RecordSymbolInMap();
+	//m_pSymbol = GetAgent()->GetWM()->FindIdentifierSymbol(pIdentifier);
+	//if (m_pSymbol)
+	//{
+	//	m_pSymbol->UsedBy(this);
+	//}
+	//else
+	//{
+		m_pSymbol = new IdentifierSymbol(this) ;
+		m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
+		RecordSymbolInMap();
+	//}
+	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
 }
 
 // Creating one identifier to have the same value as another
@@ -117,6 +167,8 @@ Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char
 	m_pSymbol = pLinkedIdentifier->m_pSymbol ;
 	m_pSymbol->UsedBy(this) ;
 	RecordSymbolInMap();
+	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
 }
 
 Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, IdentifierSymbol* pLinkedIdentifierSymbol, long timeTag) 
@@ -125,6 +177,8 @@ Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char cons
 	m_pSymbol = pLinkedIdentifierSymbol;
 	m_pSymbol->UsedBy(this) ;
 	RecordSymbolInMap();
+	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
 }
 
 void Identifier::RecordSymbolInMap()
@@ -134,14 +188,22 @@ void Identifier::RecordSymbolInMap()
 
 Identifier::~Identifier(void)
 {
+	//std::cout << "deleting (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
+
 	// Indicate this identifier is no longer using the identifier symbol
 	m_pSymbol->NoLongerUsedBy(this) ;
 
 	// Decide if we need to delete the identifier symbol (or is someone else still using it)
 	if (m_pSymbol->GetNumberUsing() == 0)
 	{
+		//std::cout << "  references of " << m_pSymbol->GetIdentifierSymbol() << " zero, deleting symbol" << std::endl;
 		this->GetAgent()->GetWM()->RemoveSymbolFromMap( m_pSymbol );
 		delete m_pSymbol ;
+	}
+	else
+	{
+		//std::cout << "  references of " << m_pSymbol->GetIdentifierSymbol() << " not zero" << std::endl;
 	}
 
 	m_pSymbol = NULL ;
@@ -291,3 +353,28 @@ void Identifier::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 	pConnection->DirectAddID( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValueAsString(), timeTag);
 }
 #endif
+
+StringElement* Identifier::CreateStringWME(char const* pAttribute, char const* pValue)
+{
+	return this->m_Agent->GetWM()->CreateStringWME(this, pAttribute, pValue);
+}
+
+IntElement* Identifier::CreateIntWME(char const* pAttribute, int value)
+{
+	return this->m_Agent->GetWM()->CreateIntWME(this, pAttribute, value);
+}
+
+FloatElement* Identifier::CreateFloatWME(char const* pAttribute, double value)
+{
+	return this->m_Agent->GetWM()->CreateFloatWME(this, pAttribute, value);
+}
+
+Identifier* Identifier::CreateIdWME(char const* pAttribute)
+{
+	return this->m_Agent->GetWM()->CreateIdWME(this, pAttribute);
+}
+
+Identifier* Identifier::CreateSharedIdWME(char const* pAttribute, Identifier* pSharedValue)
+{
+	return this->m_Agent->GetWM()->CreateSharedIdWME(this, pAttribute, pSharedValue);
+}

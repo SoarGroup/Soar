@@ -14,7 +14,6 @@
 #include "cli_CLIError.h"
 
 #include "sml_Names.h"
-#include "sml_StringOps.h"
 
 #include "agent.h"
 #include "production.h"
@@ -70,8 +69,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 			} else {
 				buffer << maList->value;
 				// Value
-
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeInt, buffer.str().c_str() );
+				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeInt, buffer.str() );
 				buffer.clear();
 
 				// Symbol
@@ -85,7 +83,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 
 		buffer << count;
 		if (!m_RawOutput) {
-			PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, buffer.str().c_str() );
+			PrependArgTagFast(sml_Names::kParamCount, sml_Names::kTypeInt, buffer.str() );
 		}
 		return true;
 	}

@@ -444,6 +444,7 @@ public class Preferences
         int             size = SoarParserConstants.RARROW;
         
         size = Math.max(size, SoarParserConstants.SP);
+        size = Math.max(size, SoarParserConstants.GP);
         size = Math.max(size, SoarParserConstants.CARET);
         size = Math.max(size, SoarParserConstants.VARIABLE);
         size = Math.max(size, SoarParserConstants.SYMBOLIC_CONST);
@@ -455,6 +456,8 @@ public class Preferences
             new SyntaxColor(Color.red, "\"-->\"");
         temp[SoarParserConstants.SP] = 
             new SyntaxColor(Color.red, "\"sp\"");
+        temp[SoarParserConstants.GP] = 
+            new SyntaxColor(Color.decode("-65332"), "\"gp\"");
         temp[SoarParserConstants.CARET] = 
             new SyntaxColor(Color.orange.darker(), "Literal Attributes");
         temp[SoarParserConstants.VARIABLE] = 

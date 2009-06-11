@@ -12,7 +12,6 @@
 
 #include "sml_ClientIntElement.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 
 #include "sml_EmbeddedConnection.h"	// For direct methods
 #include "sml_ClientAgent.h"
@@ -61,3 +60,8 @@ void IntElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
 	pConnection->DirectAddWME_Double( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif
+
+void IntElement::Update(int value) 
+{ 
+	this->m_Agent->GetWM()->UpdateInt(this, value); 
+}

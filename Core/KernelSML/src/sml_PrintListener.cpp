@@ -18,7 +18,6 @@
 
 #include "sml_Utils.h"
 #include "sml_Connection.h"
-#include "sml_StringOps.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 
@@ -102,6 +101,8 @@ void PrintListener::OnEvent(smlPrintEventId eventID, AgentSML* pAgentSML, const 
 
 	// Buffer print output to be flushed later
 	m_BufferedPrintOutput[nBuffer] << msg;
+	//std::cout << msg;
+	//std::cout.flush();
 }
 
 void PrintListener::FlushOutput(Connection* pSourceConnection, smlPrintEventId eventID) 

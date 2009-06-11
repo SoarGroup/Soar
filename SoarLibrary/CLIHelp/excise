@@ -6,8 +6,8 @@
 
                                     Synopsis
 
- excise production_name [production_name ...]
- excise -[acdtu]
+ excise production_name
+ excise -[acdrtTu]
 
                                     Options
 
@@ -20,24 +20,18 @@
    |---------------+--------------------------------------------------------|
    |-d, --default  |Remove all default productions (:default) from memory   |
    |---------------+--------------------------------------------------------|
+   |-r, --rl       |Excise Soar-RL rules                                    |
+   |---------------+--------------------------------------------------------|
    |-t, --task     |Remove chunks, justifications, and user productions from|
    |               |memory                                                  |
+   |---------------+--------------------------------------------------------|
+   |-T, --templates|Excise Soar-RL templates                                |
    |---------------+--------------------------------------------------------|
    |-u, --user     |Remove all user productions (but not chunks or default  |
    |               |rules) from memory                                      |
    |---------------+--------------------------------------------------------|
    |production_name|Remove the specific production with this name.          |
    +------------------------------------------------------------------------+
-
-                             Reinforcement Learning
-
-   These are only available with 8.6.4-rl.
-
-   +----------------------------------------+
-   |-r, --rl       |Excise Soar-RL rules    |
-   |---------------+------------------------|
-   |-T, --templates|Excise Soar-RL templates|
-   +----------------------------------------+
 
                                   Description
 

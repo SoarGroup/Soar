@@ -288,9 +288,32 @@ void rl_revert_template_id( agent *my_agent )
 	action *my_action = my_template->action_list;
 	char first_letter;
 	double init_value = 0;
+	condition *cond_top, *cond_bottom;
 
 	Bool chunk_var = my_agent->variablize_this_chunk;
-	condition *cond_top, *cond_bottom;
+	my_agent->variablize_this_chunk = TRUE;
+
+	// make unique production name
+	Symbol *new_name_symbol;
+	std::string new_name = "";
+	std::string empty_string = "";
+	std::string temp_id;
+	int new_id;
+	do
+	{
+		new_id = rl_next_template_id( my_agent );
+		to_string( new_id, temp_id );
+		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + temp_id );
+	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
+	new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
+	
+	// prep conditions
+	copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
+	rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
+	reset_variable_generator( my_agent, cond_top, NIL );
+	my_agent->variablization_tc = get_new_tc_number( my_agent );
+	variablize_condition_list( my_agent, cond_top );
+	variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
 
 	// get the preference value
 	id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
@@ -306,38 +329,12 @@ void rl_revert_template_id( agent *my_agent )
 	symbol_remove_ref( my_agent, referent );
 
 	// make new action list
-	// small hack on variablization: the artificial tc gets dealt with later, just needs to be explicit non-zero
-	my_agent->variablize_this_chunk = TRUE;
-	my_agent->variablization_tc = (0u - 1);
 	action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
 	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 
-	// make unique production name
-	Symbol *new_name_symbol;
-	std::string new_name = "";
-	std::string empty_string = "";
-	std::string *temp_id;
-	int new_id;
-	do
-	{
-		new_id = rl_next_template_id( my_agent );
-		temp_id = to_string( new_id );
-		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + (*temp_id) );
-		delete temp_id;
-	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
-	new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
-	
-	// prep conditions
-	copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
-	rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
-	reset_variable_generator( my_agent, cond_top, NIL );
-	my_agent->variablization_tc = get_new_tc_number( my_agent );
-	variablize_condition_list( my_agent, cond_top );
-	variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
-
 	// make new production
 	production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
-	my_agent->variablize_this_chunk = chunk_var;
+	my_agent->variablize_this_chunk = chunk_var; // restored to original value
 
 	// set initial expected reward values
 	{

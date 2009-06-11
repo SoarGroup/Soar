@@ -7,9 +7,10 @@
                                     Synopsis
 
  print [-fFin] production_name
- print -[a|c|D|j|u][fFin]
- print [-i] [-d <depth>] identifier|timetag|pattern
+ print -[a|c|D|j|r|T|u][fFin]
+ print [-it] [-d <depth>] identifier|timetag|pattern
  print -s[oS]
+ print -e pattern
 
                                     Options
 
@@ -42,6 +43,10 @@ Printing items in production memory
    |                    |printing any category of productions, as opposed to|
    |                    |a named production.                                |
    |--------------------+---------------------------------------------------|
+   |-r, --rl            |Print Soar-RL rules                                |
+   |--------------------+---------------------------------------------------|
+   |-T, --template      |Print Soar-RL templates                            |
+   |--------------------+---------------------------------------------------|
    |-u, --user          |print the names of all user productions currently  |
    |                    |loaded                                             |
    |--------------------+---------------------------------------------------|
@@ -54,9 +59,14 @@ Printing items in working memory
    |-d, --depth n |This option overrides the default printing depth (see the|
    |              |default-wme-depth command for more detail).              |
    |--------------+---------------------------------------------------------|
+   |-e, --exact   |Print only the wmes that match the pattern               |
+   |--------------+---------------------------------------------------------|
    |              |items should be printed in their internal form. For      |
    |-i, --internal|working memory, this means printing the individual       |
    |              |elements with their timetags, rather than the objects.   |
+   |--------------+---------------------------------------------------------|
+   |-t, --tree    |wmes should be printed in in a tree form (one wme per    |
+   |              |line).                                                   |
    |--------------+---------------------------------------------------------|
    |-v, --varprint|Print identifiers enclosed in angle brackets.            |
    |--------------+---------------------------------------------------------|
@@ -81,16 +91,6 @@ Printing the current subgoal stack
    |-S, --states   |When printing the stack, print only states.             |
    +------------------------------------------------------------------------+
 
-Reinforcement Learning
-
-   These are only available with 8.6.4-rl.
-
-   +--------------------------------------+
-   |-r, --rl      |Print Soar-RL rules    |
-   |--------------+-----------------------|
-   |-T, --template|Print Soar-RL templates|
-   +--------------------------------------+
-
                                   Description
 
    The print command is used to print items from production memory or working
@@ -102,13 +102,16 @@ Reinforcement Learning
 
    The pattern is surrounded by parentheses. The identifier, attribute, and
    value must be valid Soar symbols or the wildcard symbol * which matches
-   all occurences. The optional + symbol restricts pattern matches to
-   acceptable preferences.
+   all occurrences. The optional + symbol restricts pattern matches to
+   acceptable preferences. If wildcards are included, an object will be
+   printed for each pattern match, even if this results in the same object
+   being printed multiple times.
 
                                     Examples
 
-   Print the working memory elements (and their timetags) which have the
-   identifier s1 as object and v2 as value:
+   Print the objects in working memory (and their timetags) which have wmes
+   with identifier s1 and value v2 (note: this will print the entire s1
+   object for each match found):
 
  print --internal (s1 ^* v2)
 
@@ -123,6 +126,20 @@ Reinforcement Learning
    Print the names of all user productions currently loaded:
 
  print -u
+
+   Default print vs tree print:
+
+ print s1 --depth 2
+ (S1 ^io I1 ^reward-link R1 ^superstate nil ^type state)
+   (I1 ^input-link I2 ^output-link I3)
+
+ print s1 --depth 2 --tree
+ (S1 ^io I1)
+   (I1 ^input-link I2)
+   (I1 ^output-link I3)
+ (S1 ^reward-link R1)
+ (S1 ^superstate nil)
+ (S1 ^type state)
 
                                 Default Aliases
 

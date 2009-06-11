@@ -32,6 +32,7 @@ public:
 	static void MyRunSelfRemovingHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase );
 	static std::string MyStringEventHandler( sml::smlStringEventId id, void* pUserData, sml::Kernel* pKernel, char const* pData );
 	static void MyDuplicateRunEventHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase );
+	static void DebugPrintEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage );
 	static void MyPrintEventHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage );
 	static void MyXMLEventHandler( sml::smlXMLEventId id, void* pUserData, sml::Agent* pAgent, sml::ClientXML* pXML );
 	static void MyInterruptHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase );
@@ -42,6 +43,7 @@ public:
 	static void MyAgentCreationUpdateEventHandler( sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );
 	static void MyOrderingPrintHandler( sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage );
 	static void MyOrderingRunHandler( sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase );
+	static std::string MyRhsFunctionFailureHandler( sml::smlRhsEventId id, void* pUserData, sml::Agent* pAgent, char const* pFunctionName, char const* pArgument );
 
 private:
 	static void MyMemoryLeakUpdateHandlerInternal( bool destroyAll, sml::smlUpdateEventId id, void* pUserData, sml::Kernel* pKernel, sml::smlRunFlags runFlags );

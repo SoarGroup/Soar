@@ -178,7 +178,7 @@ void IOTest::testInputLeak()
 			// creating the wme
 			CPPUNIT_ASSERT( pFooBar == 0 );
 			
-			pFooBar = pAgent->CreateStringWME(pInputLink, "foo", "bar");
+			pFooBar = pInputLink->CreateStringWME("foo", "bar");
 			CPPUNIT_ASSERT( pFooBar != 0 );
 
 			pKernel->RunAllAgents(1);
@@ -188,7 +188,7 @@ void IOTest::testInputLeak()
 			// odd case
 			// deleting the wme
 			CPPUNIT_ASSERT( pFooBar != 0 );
-			pAgent->DestroyWME( pFooBar );
+			pFooBar->DestroyWME(  );
 
 			pFooBar = 0;
 
@@ -229,10 +229,10 @@ void IOTest::testInputLeak2()
 			CPPUNIT_ASSERT( pIdentifier == 0 );
 			CPPUNIT_ASSERT( pFooBar == 0 );
 			
-			pIdentifier = pAgent->CreateIdWME(pInputLink, "alpha");
+			pIdentifier = pInputLink->CreateIdWME("alpha");
 			CPPUNIT_ASSERT( pIdentifier != 0 );
 
-			pFooBar = pAgent->CreateStringWME(pIdentifier, "foo", "bar");
+			pFooBar = pIdentifier->CreateStringWME("foo", "bar");
 			CPPUNIT_ASSERT( pFooBar != 0 );
 
 			pKernel->RunAllAgents(1);
@@ -242,10 +242,10 @@ void IOTest::testInputLeak2()
 			// odd case
 			// deleting the wme
 			CPPUNIT_ASSERT( pFooBar != 0 );
-			pAgent->DestroyWME( pFooBar );
+			pFooBar->DestroyWME(  );
 
 			CPPUNIT_ASSERT( pIdentifier != 0 );
-			pAgent->DestroyWME( pIdentifier );
+			pIdentifier->DestroyWME(  );
 
 			pIdentifier = 0;
 			pFooBar = 0;
@@ -287,10 +287,10 @@ void IOTest::testInputLeak3()
 			CPPUNIT_ASSERT( pIdentifier == 0 );
 			CPPUNIT_ASSERT( pFooBar == 0 );
 			
-			pIdentifier = pAgent->CreateIdWME(pInputLink, "alpha");
+			pIdentifier = pInputLink->CreateIdWME("alpha");
 			CPPUNIT_ASSERT( pIdentifier != 0 );
 
-			pFooBar = pAgent->CreateStringWME(pIdentifier, "foo", "bar");
+			pFooBar = pIdentifier->CreateStringWME("foo", "bar");
 			CPPUNIT_ASSERT( pFooBar != 0 );
 
 			pKernel->RunAllAgents(1);
@@ -300,7 +300,7 @@ void IOTest::testInputLeak3()
 			// odd case
 			// deleting the wme
 			CPPUNIT_ASSERT( pIdentifier != 0 );
-			pAgent->DestroyWME( pIdentifier );
+			pIdentifier->DestroyWME(  );
 
 			pIdentifier = 0;
 			pFooBar = 0;
@@ -344,13 +344,13 @@ void IOTest::testInputLeak4()
 			CPPUNIT_ASSERT( pFooBar == 0 );
 			CPPUNIT_ASSERT( pSharedIdentifier == 0 );
 			
-			pIdentifier = pAgent->CreateIdWME(pInputLink, "alpha");
+			pIdentifier = pInputLink->CreateIdWME("alpha");
 			CPPUNIT_ASSERT( pIdentifier != 0 );
 
-			pFooBar = pAgent->CreateStringWME(pIdentifier, "foo", "bar");
+			pFooBar = pIdentifier->CreateStringWME("foo", "bar");
 			CPPUNIT_ASSERT( pFooBar != 0 );
 
-			pSharedIdentifier = pAgent->CreateSharedIdWME(pInputLink, "alpha", pIdentifier);
+			pSharedIdentifier = pInputLink->CreateSharedIdWME("alpha", pIdentifier);
 			CPPUNIT_ASSERT( pSharedIdentifier != 0 );
 
 			pKernel->RunAllAgents(1);
@@ -360,10 +360,10 @@ void IOTest::testInputLeak4()
 			// odd case
 			// deleting the wme
 			CPPUNIT_ASSERT( pIdentifier != 0 );
-			pAgent->DestroyWME( pIdentifier );
+			pIdentifier->DestroyWME();
 
 			CPPUNIT_ASSERT( pSharedIdentifier != 0 );
-			pAgent->DestroyWME( pSharedIdentifier );
+			pSharedIdentifier->DestroyWME();
 
 			pIdentifier = 0;
 			pFooBar = 0;

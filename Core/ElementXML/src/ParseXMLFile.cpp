@@ -16,6 +16,8 @@
 #include "ParseXMLFile.h"
 #include "ElementXMLImpl.h"
 
+#include <cstdio>
+
 using namespace soarxml;
 
 ParseXMLFile::ParseXMLFile(FILE* pInputFile)

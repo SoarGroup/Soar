@@ -15,19 +15,24 @@
    | |structure of working memory that is tested and modified. Testing an   |
    |0|operator or operator acceptable preference results in state or        |
    | |operator augmentations being o-supported. The support computation is  |
-   | |very complex (see soar manual).                                       |
+   | |very complex (see Soar manual).                                       |
    |-+----------------------------------------------------------------------|
-   |1|Not available through gSKI.                                           |
+   |1|Mode 1 is the same as mode 2, but a message is printed whenever the   |
+   | |alternative scheme would have made a difference in the Soar program.  |
    |-+----------------------------------------------------------------------|
    | |Mode 2 is the same as mode 0 except that all support is calculated the|
    |2|production structure, not from working memory structure. Augmentations|
    | |of operators are still o-supported.                                   |
    |-+----------------------------------------------------------------------|
    | |Mode 3 is the same as mode 2 except that operator elaborations (adding|
-   |3|attributes to operators) now get i-support even though you have to    |
-   | |test the operator to elaborate an operator.                           |
+   | |attributes to operators) now get i-support even though you have to    |
+   |3|test the operator to elaborate an operator. In cases where the rule   |
+   | |mixes support types, support defaults to o-support (and a warning is  |
+   | |printed).                                                             |
    |-+----------------------------------------------------------------------|
-   |4|Mode 4 is the default.                                                |
+   | |Mode 4 is the default. It is the same as mode 3 except where a rule   |
+   |4|mixes support types, support defaults to i-support (and a warning is  |
+   | |still printed).                                                       |
    +------------------------------------------------------------------------+
 
                                   Description

@@ -131,8 +131,6 @@ extern void set_lexer_allow_ids (agent* thisAgent, Bool allow_identifiers);
 
 extern Bool determine_type_of_constituent_string (agent* thisAgent);
 
-extern double my_strtod (char *ch, char **p, int base); /* in lexer.cpp */
-
 /* (RBD) the rest of this stuff shouldn't be in the module interface... */
 
 #define BUFSIZE (MAX_LEXER_LINE_LENGTH+2) /* +2 for newline and null at end */

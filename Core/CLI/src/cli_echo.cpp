@@ -66,35 +66,42 @@ bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv, bool ech
 	for(std::string::size_type pos = 0; (pos = message.find('\\', pos)) != std::string::npos; ++pos) {
 		if (message.size() <= pos + 1) break;
 		// Found a backslash with a character after it, remove it
-		message.erase(pos, 1);
-		switch (message[pos]) {
+		switch (message[pos + 1]) {
 			case '\\':
+				message.erase(pos, 1);
 				break;
 			case 'b': // backspace
+				message.erase(pos, 1);
 				message[pos] = '\b';
 				break;
 			case 'c': // supress trailing newline
+				message.erase(pos, 1);
 				message.erase(pos, 1);
 				--pos;
 				echoNewline = false;
 				break;
 			case 'f': // form feed
+				message.erase(pos, 1);
 				message[pos] = '\f';
 				break;
 			case 'n': // newline
+				message.erase(pos, 1);
 				message[pos] = '\n';
 				break;
 			case 'r': // carriage return
+				message.erase(pos, 1);
 				message[pos] = '\r';
 				break;
 			case 't': // horizontal tab
+				message.erase(pos, 1);
 				message[pos] = '\t';
 				break;
 			case 'v': // vertical tab
+				message.erase(pos, 1);
 				message[pos] = '\v';
 				break;
-			default: // error
-				return SetError(CLIError::kInvalidBackslashEscapeCharacter);
+			default: // ignore it
+				break;
 		} 
 	}
 
@@ -106,7 +113,7 @@ bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv, bool ech
 	if (m_RawOutput) {
 		m_Result << message;
 	} else {
-		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, message.c_str());
+		AppendArgTagFast(sml_Names::kParamMessage, sml_Names::kTypeString, message);
 	}
 	return true;
 }

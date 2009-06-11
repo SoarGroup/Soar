@@ -931,6 +931,116 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	}
 
 	/* === Better/Worse === */
+#define NEW_PREFERENCES_SCHEME 1 // bug 234
+#if(NEW_PREFERENCES_SCHEME == 1)
+	// new algorithm:
+	// for each j > k:
+	//   if j is (candidate or conflicted) and k is (candidate or conflicted):
+	//     if one of (j, k) is candidate:
+	//       candidate -= k, if not already true
+	//       conflicted += k, if not already true
+	// for each j < k:
+	//   if j is (candidate or conflicted) and k is (candidate or conflicted):
+	//     if one of (j, k) is candidate:
+	//       candidate -= j, if not already true
+	//       conflicted += j, if not already true
+	// if no remaning candidates:
+	//   conflict impasse using conflicted as candidates
+	// else
+	//   pass on candidates to next filter
+	if (s->preferences[BETTER_PREFERENCE_TYPE] || s->preferences[WORSE_PREFERENCE_TYPE]) 
+	{
+		Symbol *j, *k;
+
+		// initialize
+		for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+			p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
+		}
+		for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			p->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+			p->referent->common.decider_flag = NOTHING_DECIDER_FLAG;
+		}
+		for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
+			cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+		}
+
+		for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			j = p->value;
+			k = p->referent;
+			if (j==k) 
+				continue;
+			if (j->common.decider_flag && k->common.decider_flag) 
+			{
+				if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG || k->common.decider_flag == CANDIDATE_DECIDER_FLAG)
+					k->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+			}
+		}
+
+		for (p=s->preferences[WORSE_PREFERENCE_TYPE]; p!=NIL; p=p->next) 
+		{
+			j = p->value;
+			k = p->referent;
+			if (j==k) 
+				continue;
+			if (j->common.decider_flag && k->common.decider_flag) 
+			{
+				if (j->common.decider_flag == CANDIDATE_DECIDER_FLAG || k->common.decider_flag == CANDIDATE_DECIDER_FLAG)
+					j->common.decider_flag = CONFLICTED_DECIDER_FLAG;
+			}
+		}
+
+		/* --- now scan through candidates list, look for remaining candidates --- */
+		for (cand=candidates; cand!=NIL; cand=cand->next_candidate)
+		{
+			if (cand->value->common.decider_flag==CANDIDATE_DECIDER_FLAG) 
+				break;
+		}
+		if (!cand) {
+			/* --- collect conflicted candidates into new candidates list --- */
+			prev_cand = NIL;
+			cand = candidates;
+			while (cand) 
+			{
+				if (cand->value->common.decider_flag != CONFLICTED_DECIDER_FLAG) 
+				{
+					if (prev_cand)
+						prev_cand->next_candidate = cand->next_candidate;
+					else
+						candidates = cand->next_candidate;
+				} 
+				else 
+				{
+					prev_cand = cand;
+				}
+				cand = cand->next_candidate;
+			}
+			*result_candidates = candidates;
+			return CONFLICT_IMPASSE_TYPE;
+		}
+		/* --- non-conflict candidates found, remove conflicts from candidates --- */
+		prev_cand = NIL;
+		cand = candidates;
+		while (cand) 
+		{
+			if (cand->value->common.decider_flag == CONFLICTED_DECIDER_FLAG) 
+			{
+				if (prev_cand)
+					prev_cand->next_candidate = cand->next_candidate;
+				else
+					candidates = cand->next_candidate;
+			} 
+			else 
+			{
+				prev_cand = cand;
+			}
+			cand = cand->next_candidate;
+		}
+	}
+#else // !NEW_PREFERENCES_SCHEME
 	if (s->preferences[BETTER_PREFERENCE_TYPE] ||
 		s->preferences[WORSE_PREFERENCE_TYPE]) {
 			Symbol *j, *k;
@@ -1048,6 +1158,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 				cand = cand->next_candidate;
 			}
 	}
+#endif // !NEW_PREFERENCES_SCHEME
 
 	/* === Bests === */
 	if (s->preferences[BEST_PREFERENCE_TYPE]) {
@@ -1623,72 +1734,89 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 				WMEs should be added to the goal's GDS (the goal here being the
 				goal to which the added memory is attached). */
 
-				if ((w->preference->o_supported == TRUE) &&
-					(w->preference->inst->match_goal_level != 1)) {
+				if ((w->preference->o_supported == TRUE) && (w->preference->inst->match_goal_level != 1)) 
+				{
+					if (w->preference->inst->match_goal->id.gds == NIL) 
+					{
+						/* If there is no GDS yet for this goal,
+						* then we need to create one */
+						if (w->preference->inst->match_goal_level == w->preference->id->id.level) 
+						{
+							create_gds_for_goal( thisAgent, w->preference->inst->match_goal );
 
-						if (w->preference->inst->match_goal->id.gds == NIL) {
-							/* If there is no GDS yet for this goal,
-							* then we need to create one */
-							if (w->preference->inst->match_goal_level ==
-								w->preference->id->id.level) {
-
-									create_gds_for_goal( thisAgent, w->preference->inst->match_goal );
-
-									/* REW: BUG When chunks and result instantiations both create
-									* preferences for the same WME, then we only want to create
-									* the GDS for the highest goal.  Right now I ensure that we
-									* elaborate the correct GDS with the tests in the loop just
-									* below this code, but the GDS creation above assumes that
-									* the chunk will be first on the GDS list.  This order
-									* appears to be always true, although I am not 100% certain
-									* (I think it occurs this way because the chunk is
-									* necessarily added to the instantiaton list after the
-									* original instantiation and lists get built such older items
-									* appear further from the head of the list) . If not true,
-									* then we need to keep track of any GDS's that get created
-									* here to remove them later if we find a higher match goal
-									* for the WME. For now, the program just exits in this
-									* situation; otherwise, we would build a GDS for the wrong
-									* level and never elaborate it (resulting in a memory
-									* leak). 
-									*/
-							} else {
-								char msg[256];
-								strncpy(msg,"**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n",256);
-								msg[255] = 0; /* ensure null termination */
-								abort_with_fatal_error(thisAgent, msg);
+							/* REW: BUG When chunks and result instantiations both create
+							* preferences for the same WME, then we only want to create
+							* the GDS for the highest goal.  Right now I ensure that we
+							* elaborate the correct GDS with the tests in the loop just
+							* below this code, but the GDS creation above assumes that
+							* the chunk will be first on the GDS list.  This order
+							* appears to be always true, although I am not 100% certain
+							* (I think it occurs this way because the chunk is
+							* necessarily added to the instantiaton list after the
+							* original instantiation and lists get built such older items
+							* appear further from the head of the list) . If not true,
+							* then we need to keep track of any GDS's that get created
+							* here to remove them later if we find a higher match goal
+							* for the WME. For now, the program just exits in this
+							* situation; otherwise, we would build a GDS for the wrong
+							* level and never elaborate it (resulting in a memory
+							* leak). 
+							*/
+						} 
+						else 
+						{
+							// If this happens, we better be halted, see chunk.cpp:chunk_instantiation
+							// This can happen if a chunk can't be created, because then the match level 
+							// of the preference instantiation can map back to the original matching 
+							// production which can be at a different level than the id wme.
+							// Normally, there would be a chunk or justification firing at the higher
+							// goal with a match level equal to the id level.
+							// See more comments in chunk_instantiation.
+							if (!thisAgent->system_halted)
+							{
+								abort_with_fatal_error(thisAgent, "**** Wanted to create a GDS for a WME level different from the instantiation level.....Big problems....exiting....****\n\n");
 							}
-						} /* end if no GDS yet for goal... */
+						}
+					} /* end if no GDS yet for goal... */
 
-						/* Loop over all the preferences for this WME:
-						*   If the instantiation that lead to the preference has not 
-						*         been already explored; OR
-						*   If the instantiation is not an subgoal instantiation
-						*          for a chunk instantiation we are already exploring
-						*   Then
-						*      Add the instantiation to a list of instantiations that
-						*          will be explored in elaborate_gds().
-						*/
+					/* Loop over all the preferences for this WME:
+					*   If the instantiation that lead to the preference has not 
+					*         been already explored; OR
+					*   If the instantiation is not an subgoal instantiation
+					*          for a chunk instantiation we are already exploring
+					*   Then
+					*      Add the instantiation to a list of instantiations that
+					*          will be explored in elaborate_gds().
+					*/
 
-						for (pref=w->preference; pref!=NIL; pref=pref->next) {
+					// Added halt test because chunk_instantiation can cause problems, 
+					// see comment a few lines above and in chunk_instantiation.
+					if (!thisAgent->system_halted)
+					{
+						for (pref=w->preference; pref!=NIL; pref=pref->next) 
+						{
 #ifdef DEBUG_GDS_HIGH
 							print(thisAgent, thisAgent, "\n\n   "); print_preference(pref);
 							print(thisAgent, "   Goal level of preference: %d\n",
 								pref->id->id.level);
 #endif
 
-							if (pref->inst->GDS_evaluated_already == FALSE) {
+							if (pref->inst->GDS_evaluated_already == FALSE) 
+							{
 #ifdef DEBUG_GDS_HIGH
 								print_with_symbols(thisAgent, "   Match goal lev of instantiation %y ",
 									pref->inst->prod->name);
 								print(thisAgent, "is %d\n", pref->inst->match_goal_level);
 #endif
-								if (pref->inst->match_goal_level > pref->id->id.level) {
+								if (pref->inst->match_goal_level > pref->id->id.level) 
+								{
 #ifdef DEBUG_GDS_HIGH
 									print_with_symbols(thisAgent, "        %y  is simply the instantiation that led to a chunk.\n        Not adding it the current instantiations.\n", pref->inst->prod->name);
 #endif
 
-								} else {
+								} 
+								else 
+								{
 #ifdef DEBUG_GDS_HIGH
 									print_with_symbols(thisAgent, "\n   Adding %y to list of parent instantiations\n", pref->inst->prod->name); 
 #endif
@@ -1703,7 +1831,6 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 
 						}  /* end of forloop over preferences for this wme */
 
-
 #ifdef DEBUG_GDS_HIGH
 						print(thisAgent, "\n    CALLING ELABORATE GDS....\n");
 #endif 
@@ -1715,8 +1842,8 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 #ifdef DEBUG_GDS_HIGH
 						print(thisAgent, "    FINISHED ELABORATING GDS.\n\n");
 #endif
+					} /* end if not halted */
 				}  /* end if w->preference->o_supported == TRUE ... */
-
 
 				/* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
@@ -2175,9 +2302,9 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
 					temp += candidates->value->id.name_letter;
 
 					// get number
-					std::string *temp2 = to_string( candidates->value->id.name_number );
-					temp += (*temp2);
-					delete temp2;
+					std::string temp2;
+					to_string( candidates->value->id.name_number, temp2 );
+					temp += temp2;
 
 					predict_set( thisAgent, temp.c_str() );
 				}
@@ -2244,7 +2371,12 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
 			preference_add_ref(temp);
 
 		if (goal->id.lower_goal)
+		{
+			if ( thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
+				print_with_symbols(thisAgent, "Removing state %y because of a decision.\n", goal->id.lower_goal);
+
 			remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal);
+		}
 
 		w = make_wme (thisAgent, s->id, s->attr, candidates->value, FALSE);
 		insert_at_head_of_dll (s->wmes, w, next, prev);
@@ -2278,7 +2410,12 @@ Bool decide_context_slot (agent* thisAgent, Symbol *goal, slot *s, bool predict 
 		preference_add_ref(temp);
 
 	if (goal->id.lower_goal)
+	{
+		if ( thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
+			print_with_symbols(thisAgent, "Removing state %y because it's the wrong type of impasse.\n", goal->id.lower_goal);
+
 		remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal);
+	}
 
 	/* REW: begin 10.24.97 */
 	if (thisAgent->waitsnc && (impasse_type == NO_CHANGE_IMPASSE_TYPE) && (attribute_of_impasse == thisAgent->state_symbol)) 
@@ -3036,68 +3173,78 @@ approaches may be better */
 
 void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
 
-  /* REW: begin 11.25.96 */ 
-  #ifndef NO_TIMING_STUFF
-  #ifdef DETAILED_TIMING_STATS
-  start_timer(thisAgent, &thisAgent->start_gds_tv);
-  #endif
-  #endif
-  /* REW: end   11.25.96 */ 
+	/* REW: begin 11.25.96 */ 
+#ifndef NO_TIMING_STUFF
+#ifdef DETAILED_TIMING_STATS
+	start_timer(thisAgent, &thisAgent->start_gds_tv);
+#endif
+#endif
+	/* REW: end   11.25.96 */ 
 
-  /* This call to GDS_PrintCmd will have to be uncommented later. -ajc */
-  if (thisAgent->soar_verbose_flag) {} //GDS_PrintCmd();
+	/* This call to GDS_PrintCmd will have to be uncommented later. -ajc */
+	//if (thisAgent->soar_verbose_flag) {} //GDS_PrintCmd();
 
-  /* REW: BUG.  I have no idea right now if this is a terrible hack or
-   * actually what we want to do.  The idea here is that the context of
-   * the immediately higher goal above a retraction should be marked as
-   * having its context changed in order that the architecture doesn't
-   * look below this level for context changes.  I think it's a hack b/c
-   * it seems like there should aready be mechanisms for doing this in
-   * the architecture but I couldn't find any.
-   */
-  /* Note: the inner 'if' is correct -- we only want to change
-   * highest_goal_whose_context_changed if the pointer is currently at
-   * or below (greater than) the goal which we are going to retract.
-   * However, I'm not so sure about the outer 'else.'  If we don't set
-   * this to the goal above the retraction, even if the current value
-   * is NIL, we still seg fault in certain cases.  But setting it as we do 
-   * in the inner 'if' seems to clear up the difficulty.
-   */
+	/* REW: BUG.  I have no idea right now if this is a terrible hack or
+	* actually what we want to do.  The idea here is that the context of
+	* the immediately higher goal above a retraction should be marked as
+	* having its context changed in order that the architecture doesn't
+	* look below this level for context changes.  I think it's a hack b/c
+	* it seems like there should aready be mechanisms for doing this in
+	* the architecture but I couldn't find any.
+	*/
+	/* Note: the inner 'if' is correct -- we only want to change
+	* highest_goal_whose_context_changed if the pointer is currently at
+	* or below (greater than) the goal which we are going to retract.
+	* However, I'm not so sure about the outer 'else.'  If we don't set
+	* this to the goal above the retraction, even if the current value
+	* is NIL, we still seg fault in certain cases.  But setting it as we do 
+	* in the inner 'if' seems to clear up the difficulty.
+	*/
 
-   if (thisAgent->highest_goal_whose_context_changed) {
-      if (thisAgent->highest_goal_whose_context_changed->id.level >=
-          w->gds->goal->id.level) {
-        thisAgent->highest_goal_whose_context_changed =
-	  w->gds->goal->id.higher_goal;
-      }
-   } else {
-     /* If nothing has yet changed (highest_ ... = NIL) then set
-      * the goal automatically */
-     thisAgent->highest_goal_whose_context_changed =
-       w->gds->goal->id.higher_goal; 
-   }
+	if (thisAgent->highest_goal_whose_context_changed) 
+	{
+		if (thisAgent->highest_goal_whose_context_changed->id.level >= w->gds->goal->id.level) 
+		{
+			thisAgent->highest_goal_whose_context_changed = w->gds->goal->id.higher_goal;
+		}
+	} 
+	else 
+	{
+		/* If nothing has yet changed (highest_ ... = NIL) then set
+		* the goal automatically */
+		thisAgent->highest_goal_whose_context_changed = w->gds->goal->id.higher_goal; 
 
-   if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM]) {
-     print_with_symbols(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ",
-			w->gds->goal);
-     print_wme(thisAgent, w);
-   }
-   remove_existing_context_and_descendents(thisAgent, w->gds->goal);
-   /* BUG: Need to reset highest_goal here ???*/
+		// Tell those slots they are changed so that the impasses can be regenerated
+		// bug 1011
+		for ( slot* s = thisAgent->highest_goal_whose_context_changed->id.slots; s != 0; s = s->next ) 
+		{
+			if (s->isa_context_slot && !s->changed)
+				s->changed = reinterpret_cast<dl_cons*>(1); // use non-zero value to indicate change, see definition of slot::changed
+		}
+	}
 
-   /* usually, we'd call do_buffered_wm_and_ownership_changes() here, but
-    * we don't need to because it will be done at the end of the working
-    * memory phase; cf. the end of do_working_memory_phase().
-    */
+	if (thisAgent->sysparams[TRACE_OPERAND2_REMOVALS_SYSPARAM]) 
+	{
+		print_with_symbols(thisAgent, "\n    REMOVING GOAL [%y] due to change in GDS WME ", w->gds->goal);
+		print_wme(thisAgent, w);
+	}
 
-  /* REW: begin 11.25.96 */ 
-  #ifndef NO_TIMING_STUFF
-  #ifdef DETAILED_TIMING_STATS
-  stop_timer(thisAgent, &thisAgent->start_gds_tv, 
-             &thisAgent->gds_cpu_time[thisAgent->current_phase]);
-  #endif
-  #endif
-  /* REW: end   11.25.96 */ 
+	remove_existing_context_and_descendents(thisAgent, w->gds->goal);
+
+	/* BUG: Need to reset highest_goal here ???*/
+
+	/* usually, we'd call do_buffered_wm_and_ownership_changes() here, but
+	* we don't need to because it will be done at the end of the working
+	* memory phase; cf. the end of do_working_memory_phase().
+	*/
+
+	/* REW: begin 11.25.96 */ 
+#ifndef NO_TIMING_STUFF
+#ifdef DETAILED_TIMING_STATS
+	stop_timer(thisAgent, &thisAgent->start_gds_tv, &thisAgent->gds_cpu_time[thisAgent->current_phase]);
+#endif
+#endif
+	/* REW: end   11.25.96 */ 
 }
 
 
