@@ -7,7 +7,7 @@
                                     Synopsis
 
  watch
- watch [--level] [0|1|2|3|4|5]
+ watch [--level 0|1|2|3|4|5]
  watch -N
  watch -[dpPwrDujcbi] [<remove>] -[n|t|f]
  watch --learning [<print|noprint|fullprint>]
@@ -61,7 +61,7 @@ Basic Watch Settings
    Use of the --level (-l) flag is optional but recommended.
 
    +------------------------------------------------------------------------+
-   |0|watch nothing; equivalent to aEUR"N                                   |
+   |0|watch nothing; equivalent to -N                                       |
    |-+----------------------------------------------------------------------|
    |1|watch decisions; equivalent to -d                                     |
    |-+----------------------------------------------------------------------|
@@ -103,6 +103,8 @@ Watching Productions
    |--------------------+------------------+--------------------------------|
    |-j, --justifications|remove (optional) |Control only justifications as  |
    |                    |                  |they fire and retract           |
+   |--------------------+------------------+--------------------------------|
+   |-T, --template      |remote (optional) |Soar-RL template firing trace   |
    +------------------------------------------------------------------------+
 
    Note: The pwatch command is used to watch individual productions specified
@@ -169,19 +171,10 @@ Watching other Functions
    |-i, --indifferent-selection|remove     |scores for tied operators in    |
    |                           |(optional) |random indifferent selection    |
    |                           |           |mode                            |
+   |---------------------------+-----------+--------------------------------|
+   |-R, --rl                   |remove     |Soar-RL debugging trace         |
+   |                           |(optional) |                                |
    +------------------------------------------------------------------------+
-
-Reinforcement Learning
-
-   These are only available with 8.6.4-rl.
-
-   +---------------------------------------------------------------+
-   |Option Flag   |Argument to Option|Description                  |
-   |--------------+------------------+-----------------------------|
-   |-R, --rl      |No argument.      |Soar-RL debugging trace      |
-   |--------------+------------------+-----------------------------|
-   |-T, --template|No argument.      |Soar-RL template firing trace|
-   +---------------------------------------------------------------+
 
                                   Description
 
@@ -228,64 +221,68 @@ Reinforcement Learning
    indicate watch levels. To turn off all printing of Soar internals, do any
    one of the following (not all possibilities listed):
 
- watch --level 0
- watch -l 0
- watch -N
+   watch --level 0
+   watch -l 0
+   watch -N
 
    Although the --level flag is optional, its use is recommended:
 
- watch --level 5 ... OK
- watch 5         ... OK, but try to avoid
+   watch --level 5 ... OK
+   watch 5         ... OK, but try to avoid
 
    Be careful of where the level is on the command line, for example, if you
    want level 2 and preferences:
 
- watch -r -l 2 ... Incorrect: -r flag ignored, level 2 parsed after it and overrides the setting
- watch -r 2    ... Syntax error: 0 or remove expected as optional argument to -r
- watch -r -l 2 ... Incorrect: -r flag ignored, level 2 parsed after it and overrides the setting
- watch 2 -r    ... OK, but try to avoid
- watch -l 2 -r ... OK
+   watch -r -l 2 ... Incorrect: -r flag ignored, level 2 parsed after it and
+                 overrides the setting
+   watch -r 2    ... Syntax error: 0 or remove expected as optional argument
+                 to -r
+   watch -r -l 2 ... Incorrect: -r flag ignored, level 2 parsed after it and
+                 overrides the setting
+   watch 2 -r    ... OK, but try to avoid
+   watch -l 2 -r ... OK
 
    To turn on printing of decisions, phases and productions, do any one of
    the following (not all possibilities listed):
 
- watch --level 3
- watch -l 3
- watch --decisions --phases --productions
- watch -d -p -P
+   watch --level 3
+   watch -l 3
+   watch --decisions --phases --productions
+   watch -d -p -P
 
    Individual options can be changed as well. To turn on printing of
    decisions and wmes, but not phases and productions, do any one of the
    following (not all possibilities listed):
 
- watch --level 1 --wmes
- watch -l 1 -w
- watch --decisions --wmes
- watch -d --wmes
- watch -w --decisions
- watch -w -d
+   watch --level 1 --wmes
+   watch -l 1 -w
+   watch --decisions --wmes
+   watch -d --wmes
+   watch -w --decisions
+   watch -w -d
 
    To turn on printing of decisions, productions and wmes, and turns phases
    off, do any one of the following (not all possibilities listed):
 
- watch --level 4 --phases remove
- watch -l 4 -p remove
- watch -l 4 -p 0
- watch -d -P -w -p remove
+   watch --level 4 --phases remove
+   watch -l 4 -p remove
+   watch -l 4 -p 0
+   watch -d -P -w -p remove
 
    To watch the firing and retraction of decisions and only user productions,
    do any one of the following (not all possibilities listed):
 
- watch -l 1 -u
- watch -d -u
+   watch -l 1 -u
+   watch -d -u
 
    To watch decisions, phases and all productions except user productions and
    justifications, and to see full wmes, do any one of the following (not all
    possibilities listed):
 
- watch --decisions --phases --productions --user remove --justifications remove --fullwmes
- watch -d -p -P -f -u remove -j 0
- watch -f -l 3 -u 0 -j 0
+   watch --decisions --phases --productions --user remove --justifications
+   remove --fullwmes
+   watch -d -p -P -f -u remove -j 0
+   watch -f -l 3 -u 0 -j 0
 
                                 Default Aliases
 

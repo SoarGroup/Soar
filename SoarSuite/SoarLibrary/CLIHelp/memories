@@ -26,6 +26,14 @@
    |                    |that use the most memory.                          |
    +------------------------------------------------------------------------+
 
+Reinforcement Learning
+
+   These are only available with 8.6.4-rl.
+
+   +-------------------------------------------------------+
+   |-T, --template|Print memory usage of Soar-RL templates.|
+   +-------------------------------------------------------+
+
                                   Description
 
    The memories command prints out the internal memory usage for full and
