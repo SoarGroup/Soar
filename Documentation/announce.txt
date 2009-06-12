@@ -38,6 +38,9 @@ policy. See the RL manual and tutorial for details).
 Soar 9.1.1 (Episodic Memory)
 ============================
 
+Soar 9.1 includes Episodic Memory code, which was first released as Soar 9.1.0. Soar 9.1.1 is primarily a maintenance release with bugs fixed and minor
+features added. 9.1 also includes all of the code from 9.0 (Soar-RL).
+
 Soar-EpMem is a task-independent, architectural integration of an artificial
 episodic memory (EpMem) with Soar.  The EpMem mechanism will automatically
 record episodes as a Soar agent executes.  These episodes can later be queried
@@ -45,6 +48,10 @@ and retrieved in order to improve performance on future tasks.
 
 Soar 9.2.0 (Semantic Memory)
 ============================
+
+Soar 9.2 includes Semantic Memory code, and this release of Soar 9.2.0 is the
+first official release of this Semantic Memory module. 9.2 also includes all
+of the code from 9.1 (EpMem) and 9.0 (Soar-RL).
 
 Soar-SMem is a task-independent, architectural integration of an artificial
 semantic memory (SMem) with Soar.  The SMem mechanism facilitates deliberate
