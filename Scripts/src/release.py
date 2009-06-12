@@ -290,6 +290,13 @@ class Generator:
         else:
             retcode = subprocess.call( ["tar", "cfzp", os.path.join( "..", self.config[ 'target-file' ] ), self.config['target-parent'] ] )
             
+def version_bump_help():
+    print "Places to change the version number:\n"
+    print "\t* announce.txt"
+    print "\t* Core/shared/soarversion.h\n"
+    print "\t* SoarJavaDebugger/src/doc/Document.java: kVersion\n"
+    print "\t* Move dlf files in SoarJavaDebugger/src to new version names\n"
+    print
 
 def usage():
     print sys.argv[0], "usage:"
@@ -348,6 +355,8 @@ def main():
     generatorConfig[ 'log-level' ] = loglevel
     logging.basicConfig( level=loglevel, format='%(asctime)s %(levelname)s %(message)s' )
     
+    version_bump_help()
+
     logging.info( 'Starting generator in %s' % os.getcwd() )
     generator = Generator( generatorConfig )
     
