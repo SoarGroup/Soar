@@ -10,8 +10,8 @@ Soar can be downloaded from the Soar homepage at:
 
 These Soar releases include all source code, many demo programs, and a number
 of applications that serve as examples of how to interface Soar to an external
-Environment.  There is support for integrating Soar with C++, Java, Tcl, Python
-and C# applications.  Many Tools that aid in development of Soar programs are
+environment.  There is support for integrating Soar with C++, Java, Tcl, Python
+and C# applications.  Many tools that aid in development of Soar programs are
 also included.
 
 Soar 9.0.1 (Soar-RL)
@@ -19,7 +19,7 @@ Soar 9.0.1 (Soar-RL)
 
 Soar 9.0 includes reinforcement learning code (Soar-RL), which was first
 released alongside the 8.6.4 beta. Soar 9.0.1 is primarily a maintenance
-release, many bugs have been fixed and minor features added.
+release, although many bugs have been fixed and minor features added.
 
 Soar-RL is the architectural integration of reinforcement learning (RL) with
 Soar. The RL mechanism will automatically tune the values of
@@ -38,20 +38,22 @@ policy. See the RL manual and tutorial for details).
 Soar 9.1.1 (Episodic Memory)
 ============================
 
-Soar 9.1 includes Episodic Memory code, which was first released as Soar 9.1.0. Soar 9.1.1 is primarily a maintenance release with bugs fixed and minor
-features added. 9.1 also includes all of the code from 9.0 (Soar-RL).
+Soar 9.1 includes an Episodic Memory module, which was first released as Soar
+9.1.0.  Soar 9.1.1 is primarily a maintenance release with bugs fixed and minor
+features added. 9.1 also includes all of the features from 9.0 (Soar-RL).
 
 Soar-EpMem is a task-independent, architectural integration of an artificial
 episodic memory (EpMem) with Soar.  The EpMem mechanism will automatically
 record episodes as a Soar agent executes.  These episodes can later be queried
-and retrieved in order to improve performance on future tasks.
+and retrieved in order to improve performance on future tasks. See the EpMem
+manual for details.
 
 Soar 9.2.0 (Semantic Memory)
 ============================
 
-Soar 9.2 includes Semantic Memory code, and this release of Soar 9.2.0 is the
-first official release of this Semantic Memory module. 9.2 also includes all
-of the code from 9.1 (EpMem) and 9.0 (Soar-RL).
+Soar 9.2 includes a Semantic Memory module, and this release of Soar 9.2.0 is
+the first official release of Soar with semantic memory capabilities. 9.2 also
+includes all features from 9.1 (EpMem) and 9.0 (Soar-RL).
 
 Soar-SMem is a task-independent, architectural integration of an artificial
 semantic memory (SMem) with Soar.  The SMem mechanism facilitates deliberate
@@ -61,7 +63,7 @@ Installation Requirements
 =========================
 
 These releases are generated for Windows, Linux, and OSX systems.  Windows XP
-and Vista are supported, as well as 32 and 64 bit architectures.
+and Vista are supported, as well as 32- and 64-bit architectures.
 
 * IMPORTANT NOTE ABOUT 64-BIT BINARIES: To use the 64-bit Soar tools with Java
   (such as the Java debugger) you must be using the 64-bit JVM. Attempting to
@@ -119,7 +121,7 @@ those on other platforms or developers:
 New in 9.0.1, 9.1.1, 9.2.0
 ==========================
 
-* Native 64 bit platform support for Windows, Linux, OSX (bugs 1139, 
+* Native 64-bit platform support for Windows, Linux, OSX (bugs 1139, 
   1064, 1036, 531) resulting in different, usually better performance
   on these platforms, and definite ease of compilation and integration
   with tools such as Java and Python.

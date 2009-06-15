@@ -60,6 +60,9 @@ public class EatersVisualWorld extends VisualWorld {
 			}
 		}
 		
+		if (System.getProperty("os.name").contains("Mac OS X"))
+			painted = false;
+		
 		// Draw world
 		int fill1, fill2, xDraw, yDraw;
 		int [] location = new int [2];
