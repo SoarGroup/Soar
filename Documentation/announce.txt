@@ -121,6 +121,9 @@ those on other platforms or developers:
 New in 9.0.1, 9.1.1, 9.2.0
 ==========================
 
+* Soar-RL reward link is now limited to reward-link.reward.value instead of
+  reward-link.<id>.value, see documentation.
+
 * Native 64-bit platform support for Windows, Linux, OSX (bugs 1139, 
   1064, 1036, 531) resulting in different, usually better performance
   on these platforms, and definite ease of compilation and integration
