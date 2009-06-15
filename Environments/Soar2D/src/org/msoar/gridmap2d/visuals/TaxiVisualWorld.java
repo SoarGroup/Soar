@@ -41,6 +41,9 @@ public class TaxiVisualWorld extends VisualWorld {
 			}
 		}
 		
+		if (System.getProperty("os.name").contains("Mac OS X"))
+			painted = false;
+		
 		// Draw world
 		int fill;
 		int [] location = new int [2];
