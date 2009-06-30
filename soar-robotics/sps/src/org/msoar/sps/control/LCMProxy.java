@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.SharedNames;
 
 import lcm.lcm.LCM;
+import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
@@ -37,7 +38,7 @@ final class LCMProxy implements LCMSubscriber {
 		return lcmPose;
 	}
 	
-	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
 		if (channel.equals(SharedNames.POSE_CHANNEL)) {
 			try {
 				lcmPose = new pose_t(ins);

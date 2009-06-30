@@ -32,13 +32,13 @@ public class odom_t implements lcm.lcm.LCMEncodable
         return (hash<<1) + ((hash>>63)&1);
     }
  
-    public void encode(DataOutputStream outs) throws IOException
+    public void encode(DataOutput outs) throws IOException
     {
         outs.writeLong(LCM_FINGERPRINT);
         _encodeRecursive(outs);
     }
  
-    public void _encodeRecursive(DataOutputStream outs) throws IOException
+    public void _encodeRecursive(DataOutput outs) throws IOException
     {
         byte[] __strbuf = null;
         outs.writeLong(this.utime); 

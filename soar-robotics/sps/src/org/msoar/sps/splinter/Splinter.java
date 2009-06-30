@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import lcm.lcm.LCM;
+import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
@@ -326,7 +327,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 		new Splinter(config);
 	}
 
-	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
 		if (channel.equals(SharedNames.DRIVE_CHANNEL)) {
 			try {
 				dc = new differential_drive_command_t(ins);

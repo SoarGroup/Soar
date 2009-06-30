@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.SharedNames;
 
 import lcm.lcm.LCM;
+import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 import sml.Agent;
@@ -66,7 +67,7 @@ final class RangerIL implements LCMSubscriber {
 		}
 	}
 	
-	public void messageReceived(LCM lcm, String channel, DataInputStream ins) {
+	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
 		if (channel.equals(SharedNames.LASER_CHANNEL)) {
 			try {
 				laser = new laser_t(ins);
