@@ -1,5 +1,7 @@
 package org.msoar.sps.control;
 
+import java.util.Arrays;
+
 import jmat.LinAlg;
 import jmat.MathUtil;
 import lcmtypes.pose_t;
@@ -212,5 +214,9 @@ final class SplinterModel implements SplinterState {
 			throw new AssertionError();
 		}
 		System.arraycopy(offset, 0, this.offset, 0, offset.length);
+	}
+
+	public double[] getOffset() {
+		return Arrays.copyOf(this.offset, offset.length);
 	}
 }

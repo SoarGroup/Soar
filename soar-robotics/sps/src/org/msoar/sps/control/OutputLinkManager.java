@@ -20,7 +20,7 @@ final class OutputLinkManager {
 	private final Agent agent;
 	private final InputLinkInterface inputLink;
 	private final HashMap<String, Command> commands = new HashMap<String, Command>();
-	private final Set<Integer> errorTimeTags = new HashSet<Integer>();
+	private final Set<Integer> completedTimeTags = new HashSet<Integer>();
 	
 	boolean useFloatYawWmes = true;
 	
@@ -58,11 +58,12 @@ final class OutputLinkManager {
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandWme = agent.GetCommand(i);
 
-			// is it already an error?
+			// is it already complete?
 			Integer timetag = Integer.valueOf(commandWme.GetTimeTag());
-			if (errorTimeTags.contains(timetag)) {
+			if (completedTimeTags.contains(timetag)) {
 				continue;
 			}
+			completedTimeTags.add(timetag);
 			
 			// is it already running?
 			synchronized (this) {
@@ -78,7 +79,6 @@ final class OutputLinkManager {
 			if (commandObject == null) {
 				logger.warn("Unknown command: " + commandName);
 				CommandStatus.error.addStatus(agent, commandWme);
-				errorTimeTags.add(timetag);
 				continue;
 			}
 			
@@ -86,7 +86,6 @@ final class OutputLinkManager {
 				if (ddc != null) {
 					logger.warn("Ignoring command " + commandName + " because already have " + ddc);
 					CommandStatus.error.addStatus(agent, commandWme);
-					errorTimeTags.add(timetag);
 					continue;
 				}
 				if (runningCommand != null) {
@@ -100,7 +99,6 @@ final class OutputLinkManager {
 					logger.warn("Error with new drive command, commanding estop.");
 					ddc = DifferentialDriveCommand.newEStopCommand();
 				}
-				errorTimeTags.add(timetag);
 				continue;
 			}
 

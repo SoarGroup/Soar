@@ -9,6 +9,6 @@ VERSION 4
 6	3	FOPERATOR ranges ranges.soar 7
 7	3	FOPERATOR top-state top-state.soar 8
 8	0	OPERATOR action action.soar 9
-9	0	OPERATOR announce-self announce-self.soar 11
-10	0	OPERATOR initialize initialize.soar 10
+9	0	OPERATOR announce-self announce-self.soar 10
+10	0	OPERATOR initialize initialize.soar 11
 END

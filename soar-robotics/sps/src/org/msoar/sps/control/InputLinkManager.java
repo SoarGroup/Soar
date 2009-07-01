@@ -17,6 +17,7 @@ final class InputLinkManager {
 	private static final Logger logger = Logger.getLogger(InputLinkManager.class);
 
 	private final Agent agent;
+	private final ConfigurationIL configurationIL;
 	private final TimeIL timeIL;
 	private final SelfIL selfIL;
 	private final RangerIL rangerIL;
@@ -37,6 +38,9 @@ final class InputLinkManager {
 		Identifier self = agent.CreateIdWME(inputLink, "self");
 		selfIL = new SelfIL(agent, self, splinter);
 
+		Identifier configuration = agent.CreateIdWME(inputLink, "configuration");
+		configurationIL = new ConfigurationIL(agent, configuration, splinter);
+
 		Identifier ranges = agent.CreateIdWME(inputLink, "ranges");
 		rangerIL = new RangerIL(agent, ranges, rangesCount);
 
@@ -46,6 +50,7 @@ final class InputLinkManager {
 	void update(List<String> tokens, boolean useFloatYawWmes) {
 		timeIL.update();
 		selfIL.update(tokens, useFloatYawWmes);
+		configurationIL.update(useFloatYawWmes);
 		rangerIL.update(useFloatYawWmes);
 	}
 	
