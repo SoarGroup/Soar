@@ -112,8 +112,8 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	
 	private void getOdometry(odom_t dest, OrcStatus currentStatus) {
 		dest.utime = currentStatus.utime;
-		dest.left = currentStatus.qeiPosition[ports[LEFT]] * (invert[LEFT] ? -1 : 1);
-		dest.right = currentStatus.qeiPosition[ports[RIGHT]] * (invert[RIGHT] ? 1 : -1);
+		dest.left = currentStatus.qeiPosition[ports[LEFT]] * -1;
+		dest.right = currentStatus.qeiPosition[ports[RIGHT]];
 	}
 	
 	private void calibrate(OrcStatus currentStatus) {
