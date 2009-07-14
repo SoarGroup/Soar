@@ -388,6 +388,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\Tests\src\misctests.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Tests\src\multiagenttest.cpp"
 				>
 			</File>

@@ -1,0 +1,16 @@
+sp {propose*initialize-count-and-die
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-count-and-die)
+}
+
+sp {apply*initialize-count-and-die
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-count-and-die)
+-->
+   (<s> ^name count-and-die
+        ^phase one)
+}
+

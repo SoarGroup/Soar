@@ -60,4 +60,9 @@ template <class T> bool from_string( T &val, std::string str )
 	return !i.fail();
 }
 
+template <class T> inline T cast_and_possibly_truncate( void * ptr )
+{
+	return static_cast<T>( reinterpret_cast<uintptr_t>( ptr ) );
+}
+
 #endif /*MISC_H_*/

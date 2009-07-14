@@ -1,0 +1,3 @@
+pushd count-and-die
+source count-and-die_source.soar
+popd
