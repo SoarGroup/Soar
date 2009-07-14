@@ -1,0 +1,14 @@
+sp {count-and-die*propose*two
+   (state <s> ^name count-and-die
+              ^phase two)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name two)
+}
+
+sp {apply*two
+   (state <s> ^operator <op>)
+   (<op> ^name two)
+-->
+   (halt)
+}

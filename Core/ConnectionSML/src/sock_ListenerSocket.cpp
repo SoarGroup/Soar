@@ -67,7 +67,7 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 	}
 	else 
 #else
-        unused(local);
+	unused(local);
 #endif
 	{
 		hListener = socket(AF_INET, SOCK_STREAM, 0) ;

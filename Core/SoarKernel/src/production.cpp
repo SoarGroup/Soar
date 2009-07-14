@@ -449,16 +449,16 @@ Bool tests_are_equal (test t1, test t2) {
    Returns a hash value for the given test.
 ---------------------------------------------------------------- */
 
-unsigned long hash_test (agent* thisAgent, test t) {
+uint32_t hash_test (agent* thisAgent, test t) {
   complex_test *ct;
   cons *c;
-  unsigned long result;
+  uint32_t result;
   
   if (test_is_blank_test(t))
     return 0;
 
   if (test_is_blank_or_equality_test(t))
-    return (referent_of_equality_test(t))->common.hash_id;
+    return referent_of_equality_test(t)->common.hash_id;
 
   ct = complex_test_from_test(t);
 
@@ -502,7 +502,7 @@ unsigned long hash_test (agent* thisAgent, test t) {
 
 #define NON_EQUAL_TEST_RETURN_VAL 0  /* some unusual number */
 
-unsigned long canonical_test(test t)
+uint32_t canonical_test(test t)
 {
   Symbol *sym;
 
@@ -516,7 +516,7 @@ unsigned long canonical_test(test t)
         sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ||
         sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE)
       {
-        return (sym->common.hash_id);
+        return sym->common.hash_id;
       }
       else
       return NON_EQUAL_TEST_RETURN_VAL;
@@ -827,9 +827,9 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
    Returns a hash value for the given condition.
 ---------------------------------------------------------------- */
 
-unsigned long hash_condition (agent* thisAgent, 
+uint32_t hash_condition (agent* thisAgent, 
 							  condition *cond) {
-  unsigned long result;
+  uint32_t result;
   condition *c;
 
   switch (cond->type) {

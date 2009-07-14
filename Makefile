@@ -1,6 +1,9 @@
 all:
 	scons
 
+32:
+	scons m64=no
+
 clean:
 	scons -c
 
