@@ -91,78 +91,85 @@ typedef union symbol_union Symbol;
 
 #else
 
-#ifdef _MSC_VER
-#pragma warning (disable : 4311 4312)
-#endif
-
-inline unsigned long rhs_value_is_symbol(rhs_value rv) 
+//#define rhs_value_is_symbol(rv) ((((unsigned long)(rv)) & 3)==0)
+inline bool rhs_value_is_symbol(rhs_value rv) 
 { 
-  return ((((unsigned long)(rv)) & 3)==0); 
+  return (reinterpret_cast<uintptr_t>(rv) & 3) == 0; 
 }
 
-inline unsigned long rhs_value_is_funcall(rhs_value rv) 
+//#define rhs_value_is_funcall(rv) ((((unsigned long)(rv)) & 3)==1)
+inline bool rhs_value_is_funcall(rhs_value rv) 
 {
-  return ((((unsigned long)(rv)) & 3)==1);
+  return (reinterpret_cast<uintptr_t>(rv) & 3) == 1;
 }
 
-inline unsigned long rhs_value_is_reteloc(rhs_value rv) 
+//#define rhs_value_is_reteloc(rv) ((((unsigned long)(rv)) & 3)==2)
+inline bool rhs_value_is_reteloc(rhs_value rv) 
 { 
-  return ((((unsigned long)(rv)) & 3)==2); 
+  return (reinterpret_cast<uintptr_t>(rv) & 3) == 2;
 }
 
-inline unsigned long rhs_value_is_unboundvar(rhs_value rv) 
+//#define rhs_value_is_unboundvar(rv) ((((unsigned long)(rv)) & 3)==3)
+inline bool rhs_value_is_unboundvar(rhs_value rv) 
 { 
-  return ((((unsigned long)(rv)) & 3)==3);
+  return (reinterpret_cast<uintptr_t>(rv) & 3) == 3;
 }
 
+/* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
+   do the reference count update */
+//#define symbol_to_rhs_value(sym) ((rhs_value) (sym))
 inline rhs_value symbol_to_rhs_value(Symbol * sym) 
 { 
-  return ((rhs_value) (sym)); 
+  return reinterpret_cast<rhs_value>(sym);
 }
 
+//#define funcall_list_to_rhs_value(fl) ((rhs_value) (((char *)(fl))+1))
 inline rhs_value funcall_list_to_rhs_value(::list * fl) 
 {
-  return ((rhs_value) (((char *)(fl))+1));
+  return reinterpret_cast<rhs_value>(reinterpret_cast<char *>(fl) + 1);
 }
 
+//#define reteloc_to_rhs_value(field_num,levels_up) ((rhs_value) ( (levels_up)<<4) + ((field_num)<<2) + 2 )
 inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up) 
 {
-  return ((rhs_value) ( (levels_up)<<4) + ((field_num)<<2) + 2 );
+  return reinterpret_cast<rhs_value>(levels_up << 4) + (field_num << 2) + 2;
 }
 
+//#define unboundvar_to_rhs_value(n) ((rhs_value) (((n)<<2) + 3))
 inline rhs_value unboundvar_to_rhs_value(unsigned long n) 
 { 
-  return ((rhs_value) (((n)<<2) + 3));
+  return reinterpret_cast<rhs_value>((n << 2) + 3);
 }
 
+//#define rhs_value_to_symbol(rv) ((Symbol *)(rv))
 inline Symbol * rhs_value_to_symbol(rhs_value rv)
 {
-  return ((Symbol *)(rv));
+  return reinterpret_cast<Symbol *>(rv);
 }
 
+//#define rhs_value_to_funcall_list(rv) ((list *) (((char *)(rv))-1))
 inline ::list * rhs_value_to_funcall_list(rhs_value rv)
 {
-  return ((::list *) (((char *)(rv))-1));
+  return reinterpret_cast< ::list * >(reinterpret_cast<char *>(rv) - 1);
 }
 
-inline unsigned long rhs_value_to_reteloc_field_num(rhs_value rv)
+//#define rhs_value_to_reteloc_field_num(rv) ((((unsigned long)(rv))>>2) & 3)
+inline uint8_t rhs_value_to_reteloc_field_num(rhs_value rv)
 {
-  return ((((unsigned long)(rv))>>2) & 3);
+  return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3);
 }
 
-inline unsigned long rhs_value_to_reteloc_levels_up(rhs_value rv)
+//#define rhs_value_to_reteloc_levels_up(rv) ((((unsigned long)(rv))>>4)& 0xFFFF)
+inline uint16_t rhs_value_to_reteloc_levels_up(rhs_value rv)
 {
-  return ((((unsigned long)(rv))>>4)& 0xFFFF);
+  return static_cast<uint16_t>((reinterpret_cast<uintptr_t>(rv) >> 4) & 0xFFFF);
 }
 
-inline unsigned long rhs_value_to_unboundvar(rhs_value rv)
+//#define rhs_value_to_unboundvar(rv) (((unsigned long)(rv))>>2)
+inline uint32_t rhs_value_to_unboundvar(rhs_value rv)
 {
-  return (((unsigned long)(rv))>>2);
+  return static_cast<uint32_t>((reinterpret_cast<uintptr_t>(rv) >> 2));
 }
-
-#ifdef _MSC_VER
-#pragma warning (default : 4311 4312)
-#endif
 
 #endif /* USE_MACROS */
 

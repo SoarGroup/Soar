@@ -37,8 +37,8 @@ typedef struct chunk_cond_struct {
   /* dll of cond's in this particular hash bucket for this set */
   struct chunk_cond_struct *next_in_bucket, *prev_in_bucket; 
 
-  unsigned long hash_value;             /* equals hash_condition(cond) */
-  unsigned long compressed_hash_value;  /* above, compressed to a few bits */
+  uint32_t hash_value;             /* equals hash_condition(cond) */
+  uint32_t compressed_hash_value;  /* above, compressed to a few bits */
 } chunk_cond;
 
 
