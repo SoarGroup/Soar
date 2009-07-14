@@ -160,7 +160,7 @@ typedef struct symbol_common_data_struct {
     struct wme_struct *decider_wme;  /* used only by the decider */
     unsigned long retesave_symindex; /* used for rete fastsave/fastload */
   } a;
-  unsigned long hash_id;           /* used for hashing in the rete */
+  uint32_t hash_id;           /* used for hashing in the rete */
 } symbol_common_data;
 
 /* WARNING:  In the following structures (the five kinds of symbols),

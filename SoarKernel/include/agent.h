@@ -220,8 +220,8 @@ typedef struct agent_struct {
   
   
   /* Miscellaneous other stuff */
-  unsigned long       alpha_mem_id_counter; /* node id's for hashing */
-  unsigned long       beta_node_id_counter;
+  uint32_t       alpha_mem_id_counter; /* node id's for hashing */
+  uint32_t       beta_node_id_counter;
   struct ms_change_struct * ms_assertions;  /* changes to match set */
   struct ms_change_struct * ms_retractions;
 
@@ -283,7 +283,7 @@ typedef struct agent_struct {
   
   /* ----------------------- Symbol table stuff -------------------------- */
 
-  unsigned long       current_symbol_hash_id;
+  uint32_t       current_symbol_hash_id;
   unsigned long       id_counter[26]; 
   
   struct hash_table_struct * float_constant_hash_table;
