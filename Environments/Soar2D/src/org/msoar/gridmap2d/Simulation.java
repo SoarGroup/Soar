@@ -14,6 +14,7 @@ import org.msoar.gridmap2d.map.Cell;
 import org.msoar.gridmap2d.players.Player;
 import org.msoar.gridmap2d.soar.Soar;
 import org.msoar.gridmap2d.world.EatersWorld;
+import org.msoar.gridmap2d.world.RoomWorld;
 import org.msoar.gridmap2d.world.TankSoarWorld;
 import org.msoar.gridmap2d.world.TaxiWorld;
 import org.msoar.gridmap2d.world.World;
@@ -74,16 +75,13 @@ public class Simulation {
 		case EATERS:
 			world = new EatersWorld(cogArch);
 			break;
-//		case KITCHEN:
-//			world = new KitchenWorld(config.generalConfig().map);
-//			break;
 		case TAXI:
 			TaxiConfig tc = Gridmap2D.config.taxiConfig();
 			world = new TaxiWorld(cogArch, tc.fuel_starting_minimum, tc.fuel_starting_maximum, tc.fuel_maximum, tc.disable_fuel);
 			break;
-//		case ROOM:
-//			world = new BookWorld(config.generalConfig().map);
-//			break;
+		case ROOM:
+			world = new RoomWorld(cogArch);
+			break;
 		}
 		world.setForceHumanInput(config.generalConfig().force_human);
 		Gridmap2D.control.setRunsTerminal(config.generalConfig().runs);
@@ -292,4 +290,29 @@ public class Simulation {
 	public String getCurrentMapName() {
 		return world.getMap().getCurrentMapName();
 	}
+	
+    static double twopi_inv = 0.5/Math.PI;
+    static double twopi = 2.0*Math.PI;
+
+    // only good for positive numbers.
+    static private double mod2pi_pos(double vin)
+    {
+        double q = vin * twopi_inv + 0.5;
+        int qi = (int) q;
+
+        return vin - qi*twopi;
+    }
+
+    /** Ensure that v is [-PI, PI] **/
+    static public double mod2pi(double vin)
+    {
+        double v;
+
+        if (vin < 0)
+            v = -mod2pi_pos(-vin);
+        else
+            v = mod2pi_pos(vin);
+
+        return v;
+    }
 }

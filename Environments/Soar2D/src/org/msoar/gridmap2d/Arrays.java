@@ -11,6 +11,16 @@ public class Arrays {
 		return a;
 	}
 	
+	public static double[] copyOf(double[] original, int newLength) {
+		double[] a = new double[newLength];
+		for (int i = 0; i < newLength; ++i) {
+			if (i >= original.length)
+				break;
+			a[i] = original[i];
+		}
+		return a;
+	}
+	
 	private Arrays() {
 		assert false;
 	}

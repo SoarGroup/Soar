@@ -109,6 +109,7 @@ public class Controller implements Runnable {
 		try {
 			Gridmap2D.simulation.reset();
 		} catch (Exception e) {
+			e.printStackTrace();
 			error(e.getMessage());
 		}
 		
@@ -197,7 +198,7 @@ public class Controller implements Runnable {
 	 */
 	public void tickEvent() throws Exception {
 		logger.trace("Tick event.");
-		// this is 50 except for book, where it is configurable
+		// this is 50 except for room, where it is configurable
 		timeSlice = Gridmap2D.config.generalConfig().cycle_time_slice / 1000.0f;
 		totalTime += timeSlice;
 

@@ -36,7 +36,8 @@ public class EatersMap implements GridMap, CellObjectObserver {
 		foodCount = 0;
 		scoreCount = 0;
 		unopenedBoxes = new HashSet<CellObject>();
-		data = GridMapUtil.loadFromConfigFile(mapPath, this, lowProbability, highProbability);
+		data = new GridMapData();
+		GridMapUtil.loadFromConfigFile(data, mapPath, this, lowProbability, highProbability);
 	}
 	
 	public int size() {
