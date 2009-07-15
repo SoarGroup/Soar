@@ -51,7 +51,7 @@ public class PlayersManager<P extends Player> {
 		locations.put(player, location);
 	}
 	
-	double [] getFloatLocation(P player) {
+	public double [] getFloatLocation(P player) {
 		return floatLocations.get(player);
 	}
 	

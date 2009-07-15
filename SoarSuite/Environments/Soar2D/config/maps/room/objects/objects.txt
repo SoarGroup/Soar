@@ -1,0 +1,25 @@
+objects {
+	w {
+		name = wall;
+		id = wall;
+		wall = true;
+		block = true;
+	}
+	m {
+		name = mblock;
+		id = block;
+		mblock = true;
+		height = 1;
+	}
+	g {
+		name = gateway;
+		id = gateway;
+		gateway = true;
+		gateway-render = true;
+	}
+	r {
+		name = room;
+		id = room;
+		room = true;
+	}
+}

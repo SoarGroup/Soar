@@ -18,10 +18,13 @@ import org.msoar.gridmap2d.config.ClientConfig;
 import org.msoar.gridmap2d.config.SoarConfig;
 import org.msoar.gridmap2d.players.Eater;
 import org.msoar.gridmap2d.players.EaterCommander;
+import org.msoar.gridmap2d.players.RoomCommander;
+import org.msoar.gridmap2d.players.RoomPlayer;
 import org.msoar.gridmap2d.players.Tank;
 import org.msoar.gridmap2d.players.TankCommander;
 import org.msoar.gridmap2d.players.Taxi;
 import org.msoar.gridmap2d.players.TaxiCommander;
+import org.msoar.gridmap2d.world.RoomWorld;
 
 import sml.Agent;
 import sml.ConnectionInfo;
@@ -34,6 +37,7 @@ import sml.sml_Names;
 import sml.smlRunFlags;
 
 public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
+
 	private static Logger logger = Logger.getLogger(Soar.class);
 
 	private boolean runTilOutput = false;
@@ -411,6 +415,14 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return new SoarTaxi(taxi, agent, shutdownCommands, commonMetadataFile, mapMetadataFile);
 	}
 	   
+	@Override
+	public RoomCommander createRoomCommander(RoomPlayer player, RoomWorld world, String productions,
+			String[] shutdownCommands, File metadataFile, boolean debug)
+			throws Exception {
+		Agent agent = createSoarAgent(player.getName(), productions, debug);
+		return new SoarRoomPlayer(player, agent, world, shutdownCommands, commonMetadataFile, metadataFile);
+	}
+
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 
   		// check for override

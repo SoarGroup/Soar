@@ -19,7 +19,7 @@ public class Player {
 	private Direction facing;	// what direction I'm currently facing
 	private String color;	// valid color string
 	private int[] location;
-	private boolean moved;
+	protected boolean moved;
 	private boolean fragged;
 
 	public Player(String playerID) throws Exception {

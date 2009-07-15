@@ -89,14 +89,10 @@ public class SimConfig implements GameConfig {
 			gameConfig = new TaxiConfig();
 			loadSubConfig(childConfig, TaxiConfig.class.getFields(), gameConfig);
 			break;
-//		case KITCHEN:
-//			gameConfig = new KitchenConfig();
-//			loadSubConfig(childConfig, KitchenConfig.class.getFields(), gameConfig);
-//			break;
-//		case ROOM:
-//			gameConfig = new RoomConfig();
-//			loadSubConfig(childConfig, RoomConfig.class.getFields(), gameConfig);
-//			break;
+		case ROOM:
+			gameConfig = new RoomConfig();
+			loadSubConfig(childConfig, RoomConfig.class.getFields(), gameConfig);
+			break;
 		}
 
 		try {
@@ -213,13 +209,9 @@ public class SimConfig implements GameConfig {
 		return (TaxiConfig)gameConfig;
 	}
 	
-//	public KitchenConfig kitchenConfig() {
-//		return (KitchenConfig)gameConfig;
-//	}
-//	
-//	public RoomConfig roomConfig() {
-//		return (RoomConfig)gameConfig;
-//	}
+	public RoomConfig roomConfig() {
+		return (RoomConfig)gameConfig;
+	}
 	
 	public Map<String, PlayerConfig> playerConfigs() {
 		return playerConfigs;
