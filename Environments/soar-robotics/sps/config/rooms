@@ -1,0 +1,7 @@
+include = common-rooms;
+
+all = [viewer, sim, control, debugger];
+
+control_config {
+	productions = "agents/avoider-robot.soar";	
+}

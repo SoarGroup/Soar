@@ -1,0 +1,8 @@
+sp {wander*elaborate*at
+   (state <s> ^name wander
+              ^top-state.io.input-link.self.waypoints.waypoint <w>)
+   (<w> ^distance <= 0.5
+        ^id <id>)
+-->
+   (<s> ^at <id>)
+}

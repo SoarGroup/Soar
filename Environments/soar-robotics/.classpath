@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/.svn/" kind="src" path="sps/src"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="sps/test"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/usr/local/share/java/lcm.jar"/>
+	<classpathentry kind="lib" path="/uorc/user/java/orc.jar"/>
+	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/lib/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="/SoarSuite/SoarLibrary/lib/sml.jar"/>
+	<classpathentry kind="lib" path="/home/voigtjr/soar/april-code/java/april/april.jar"/>
+	<classpathentry kind="lib" path="/home/voigtjr/soar/april-code/java/jmat/jmat.jar"/>
+	<classpathentry kind="lib" path="/home/voigtjr/soar/april-code/java/lcmtypes/lcmtypes.jar"/>
+	<classpathentry kind="lib" path="/home/voigtjr/soar/april-code/java/vis/vis.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
