@@ -1,0 +1,26 @@
+sp {Impasse__Operator_Tie*elaborate*superstate-set
+   (state <s> ^impasse tie
+              ^superstate <ss>)
+-->
+   (<s> ^superstate-set <ss>)}
+
+sp {Impasse__Operator_Conflict*elaborate*stop
+   (state <s> ^impasse conflict)
+-->
+   (interrupt)}
+
+sp {Impasse__Operator_tie*elaborate*stop
+   (state <s> ^impasse tie
+              ^superstate.top-state.io <io>)
+   (<io> ^input-link.self.pose <self>
+         ^output-link <ol>)
+  - (<self> ^yaw-velocity 0.0
+            ^x-velocity 0.0
+            ^y-velocity 0.0)
+-->
+   (<ol> #^stop <x>)
+            ^set-velocity <sv>)
+   (<sv> ^angular-velocity 0.0
+         ^linear-velocity 0.0)
+}
+

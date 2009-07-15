@@ -1,0 +1,103 @@
+
+# we must evaluate each operator, decrementing remaining-operators in between
+# this must be done without checking local negations
+
+# initially, mark each operator as unevaluated, then remove the unevaluated-operator WMEs as they are evaluated
+# this prevents local negations
+sp {selection*mark-item-unevaluated
+   (state <s> ^name selection
+              ^item <i>
+              ^current-evaluation-depth <ced>)
+-->
+   (<s> ^unevaluated-operator <i>)
+}
+
+# each assignment of remaining-operators allows one evaluation
+# this will re-fire each time remaining-operators is decremented
+sp {selection*mark-remaining-operators-unused
+   (state <s> ^name selection
+              ^remaining-operators <ro>)
+-->
+   (<s> ^allow-one-evaluation <a>)
+}
+
+# if some sort of evaluation result shows up, remove the WME in the superstate that marks
+# the operator as unevaluated, and the WME that allows evaluations to occur
+# this removal is a result of the evaluate-operator goal, along with the evaluation itself
+#sp {evaluate-operator*elaborate*mark-operator-evaluated
+#   (state <ss> ^superstate <s>
+#               ^<< required-success success partial-success
+#                   indifferent partial-failure failure prohibit-failure
+#                   depth-exceeded numeric-value
+#                   >> <eb>)
+#   (<s> ^operator <so>
+#        ^evaluation <e>
+#        ^unevaluated-operator <u>
+#        ^allow-one-evaluation <a>)
+#   (<so> ^name evaluate-operator
+#         ^evaluation <e>
+#         ^superoperator <u>
+#         ^evaluation.desired <eb>)
+#-->
+#   (<s> ^unevaluated-operator <u> -
+#        ^allow-one-evaluation <a> -)}
+#
+# this functionality has been moved to the productions that actually copy the evaluation result, so
+# only one chunk is created per evaluate-operator goal. see evaluate-operator/elaborations
+
+
+sp {selection*propose*evaluate-operator
+   :default
+   (state <s> ^name selection
+              ^item <i>
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>
+              ^allow-one-evaluation <al>
+              ^unevaluated-operator <i>)
+   
+# the previous version used these to make sure each operator is evalutated once,
+# and only one is evaluated at each r-o count
+# -{(state <s> ^evaluation <e>)
+#    (<e> ^superoperator <i>
+#         ^current-evaluation-depth <ced>
+#         ^value true)}
+#  -{(state <s> ^evaluation <e>)
+#    (<e> ^remaining-operators <ro>
+#         ^current-evaluation-depth <ced>
+#         ^value true)}
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name evaluate-operator
+        ^superoperator <i>
+        ^current-evaluation-depth <ced>
+        ^remaining-operators <ro>)}
+
+
+sp {apply*evaluate-operator*clean-up-evaluations
+   (state <s> ^operator <op>
+              ^evaluation <e2>)
+   (<op> ^name evaluate-operator
+         ^current-evaluation-depth <ced>
+         ^remaining-operators <ro>)
+   (<e2> ^value true)
+  -(<e2> ^current-evaluation-depth <ced>)
+-->
+   (<s> ^evaluation <e2> -)
+}
+
+
+
+sp {selection*elaborate*evaluate-operator*remaining-operators*current-evaluation-depth
+   :default
+   (state <s> ^name selection
+              ^current-evaluation-depth <ced>
+              ^remaining-operators <ro>
+              ^operator <o>
+              ^evaluation <e>)
+   (<o> ^name evaluate-operator
+        ^evaluation <e>)
+-->
+   (<e> ^remaining-operators <ro>
+        ^current-evaluation-depth <ced>)}
+
+

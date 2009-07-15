@@ -1,0 +1,17 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source done.soar
+source initialize.soar
+pushd initialize
+source initialize_source.soar
+popd
+source initialize-jon-agent.soar
+source wander.soar
+pushd wander
+source wander_source.soar
+popd

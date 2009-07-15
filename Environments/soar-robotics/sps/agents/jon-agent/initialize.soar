@@ -1,0 +1,14 @@
+sp {jon-agent*elaborate*initialize
+   (state <s> ^name jon-agent
+              ^<< configure waypoints >>)
+-->
+   (<s> ^initialized false)
+}
+
+sp {jon-agent*propose*initialize
+   (state <s> ^name jon-agent
+              ^initialized false)
+-->
+   (<s> ^operator <op> + > =)
+   (<op> ^name initialize)
+}

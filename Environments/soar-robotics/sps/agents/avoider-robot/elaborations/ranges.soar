@@ -1,0 +1,81 @@
+sp {go-to-waypoint*elaborate*range*blocked
+   (state <s> ^name simple-robot
+              ^parameters.range-tolerance <rt>
+              ^io.input-link.ranges.range <r>)
+   (<r> ^distance <= <rt>)
+-->
+   (<r> ^blocked true)
+}
+
+sp {go-to-waypoint*elaborate*range*not-blocked
+   (state <s> ^name simple-robot
+              ^parameters.range-tolerance <rt>
+              ^io.input-link.ranges.range <r>)
+   (<r> ^distance > <rt>)
+-->
+   (<r> ^blocked false)
+}
+
+sp {go-to-waypoint*elaborate*range*move-forward
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r>
+              ^parameters.linear-velocity <lv>)
+   (<r> ^id 0)
+-->
+   (<r> ^action <a>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity <lv>
+        ^angular-velocity 0.)
+}
+
+sp {go-to-waypoint*elaborate*range*rotate-left
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r>
+              ^parameters.angular-velocity <av>)
+   (<r> ^id > 0)
+-->
+   (<r> ^action <a>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity 0.0
+        ^angular-velocity <av>)
+}
+
+sp {go-to-waypoint*elaborate*range*rotate-right
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r>
+              ^parameters.angular-velocity <av>)
+   (<r> ^id < 0)
+-->
+   (<r> ^action <a>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity 0.0
+        ^angular-velocity (- 0 <av>))
+}
+
+sp {go-to-waypoint*elaborate*range*dist-from-goal*0
+   (state <s> ^name simple-robot
+              ^io.input-link <il>)
+   (<il> ^ranges.range <r>)
+   (<r> ^start <= 0
+        ^end >= 0)
+-->
+   (<r> ^ang-distance 0)
+}
+
+sp {go-to-waypoint*elaborate*range*dist-from-goal*left
+   (state <s> ^name simple-robot
+              ^io.input-link <il>)
+   (<il> ^ranges.range <r>)
+   (<r> ^start {<start> > 0})
+-->
+   (<r> ^ang-distance (- <start> 0) )
+}
+
+sp {go-to-waypoint*elaborate*range*dist-from-goal*right
+   (state <s> ^name simple-robot
+              ^io.input-link <il>)
+   (<il> ^ranges.range <r>)
+   (<r> ^end {<end> < 0})
+-->
+   (<r> ^ang-distance (- 0 <end>) )
+}
