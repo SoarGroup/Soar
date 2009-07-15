@@ -13,8 +13,8 @@ class GridMapData implements CellObjectObserver {
 	private static Logger logger = Logger.getLogger(GridMapData.class);
 
 	CellObjectManager cellObjectManager;
-	GridMapCells cells;
 	File metadataFile;
+	GridMapCells cells;
 
 	Set<CellObject> updatables = new HashSet<CellObject>();
 	Map<CellObject, int []> updatablesLocations = new HashMap<CellObject, int []>();

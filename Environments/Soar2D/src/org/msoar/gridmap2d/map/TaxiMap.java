@@ -35,8 +35,9 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 		destinations.clear();
 		passengerDestination = null;
 		passengerSourceColor = null;
-		
-		data = GridMapUtil.loadFromConfigFile(mapPath, this);
+
+		data = new GridMapData();
+		GridMapUtil.loadFromConfigFile(data, mapPath, this);
 		
 		passengerDelivered = false;
 		passengerLocation = null;

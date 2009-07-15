@@ -65,8 +65,7 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 			tanks[Direction.WEST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/tank_left.gif"));
 			break;
 			
-//		case KITCHEN:
-//		case ROOM:
+		case ROOM:
 		case TAXI:
 		case EATERS:
 			break;

@@ -1,0 +1,12 @@
+VERSION 4
+\robot-template\robot-template.dm
+0	ROOT robot-template robot-template 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR wait wait.soar 4
+4	0	FOLDER elaborations elaborations 5
+5	4	FOPERATOR _all _all.soar 6
+6	4	FOPERATOR monitor monitor.soar 7
+7	4	FOPERATOR output output.soar 8
+8	4	FOPERATOR top-state top-state.soar 9
+END

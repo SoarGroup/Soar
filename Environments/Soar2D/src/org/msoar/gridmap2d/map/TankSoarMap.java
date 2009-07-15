@@ -45,7 +45,8 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		energy = false;
 		missilePacks = 0;
 		health = false;
-		data = GridMapUtil.loadFromConfigFile(mapPath, this);
+		data = new GridMapData();
+		GridMapUtil.loadFromConfigFile(data, mapPath, this);
 		
 		// Add ground to cells that don't have a background.
 		int size = data.cells.size();

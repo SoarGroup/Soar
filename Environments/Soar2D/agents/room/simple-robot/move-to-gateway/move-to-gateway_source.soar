@@ -1,0 +1,4 @@
+source elaborations.soar
+source blocked.soar
+source move.soar
+source rotate.soar
