@@ -1,0 +1,23 @@
+<project name="soar-smljava" default="build" basedir=".">
+
+	<property name="manifest.classpath" value="sml.jar" />
+	<property name="jar.main.class" value="edu.umich.smljava.TestJavaSML" />
+
+	<path id="compile.libs">
+		<fileset dir="${lib}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${smljava.lib}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${sml.lib}">
+			<include name="sml.jar" />
+		</fileset>
+	</path>
+
+	<import file="build-common.xml" />
+
+	<target name="build" depends="jar,doc" />
+
+</project>
+
