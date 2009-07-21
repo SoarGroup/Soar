@@ -4,7 +4,7 @@
 // Date Created: 24 March 2005
 //------------------------------------------------------------------------------
 
-package edu.umich.mac;
+package edu.umich.soar.missionaries;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
