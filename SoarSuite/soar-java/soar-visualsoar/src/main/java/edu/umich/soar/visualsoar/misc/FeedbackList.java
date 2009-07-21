@@ -1,7 +1,6 @@
 package edu.umich.soar.visualsoar.misc;
 import edu.umich.soar.visualsoar.MainFrame;
 import edu.umich.soar.visualsoar.datamap.DataMap;
-import edu.umich.visualsoar.datamap.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;

@@ -4,7 +4,6 @@ import edu.umich.soar.visualsoar.util.EnumerationIteratorWrapper;
 import edu.umich.soar.visualsoar.util.PreOrder;
 import edu.umich.soar.visualsoar.util.PrePostVisitor;
 import edu.umich.soar.visualsoar.util.Visitor;
-import edu.umich.visualsoar.util.*;
 import java.util.*;
 
 /**

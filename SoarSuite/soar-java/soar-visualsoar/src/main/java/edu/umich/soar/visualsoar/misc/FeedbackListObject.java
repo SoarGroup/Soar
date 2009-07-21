@@ -5,8 +5,6 @@ import edu.umich.soar.visualsoar.datamap.SoarWorkingMemoryModel;
 import edu.umich.soar.visualsoar.graph.NamedEdge;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.operatorwindow.OperatorNode;
-import edu.umich.visualsoar.graph.*;
-import edu.umich.visualsoar.datamap.*;
 
 
 

@@ -2,7 +2,6 @@ package edu.umich.soar.visualsoar.parser;
 import java.util.*;
 
 import edu.umich.soar.visualsoar.util.QueueAsLinkedList;
-import edu.umich.visualsoar.util.*;
 
 /**
  * This class extracts triples from the passed in soar production

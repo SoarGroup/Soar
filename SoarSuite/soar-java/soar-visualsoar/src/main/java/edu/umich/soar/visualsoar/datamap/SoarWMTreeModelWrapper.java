@@ -4,8 +4,6 @@ import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.util.AddingVisitor;
 import edu.umich.soar.visualsoar.util.EnumerationIteratorWrapper;
 import edu.umich.soar.visualsoar.util.RemovingVisitor;
-import edu.umich.visualsoar.graph.*;
-import edu.umich.visualsoar.util.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;
 import javax.swing.*;

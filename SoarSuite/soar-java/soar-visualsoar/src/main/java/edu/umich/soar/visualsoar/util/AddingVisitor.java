@@ -1,7 +1,6 @@
 package edu.umich.soar.visualsoar.util;
 import edu.umich.soar.visualsoar.datamap.FakeTreeNode;
 import edu.umich.soar.visualsoar.graph.NamedEdge;
-import edu.umich.visualsoar.graph.*;
 import java.util.*;
 import javax.swing.*;
 

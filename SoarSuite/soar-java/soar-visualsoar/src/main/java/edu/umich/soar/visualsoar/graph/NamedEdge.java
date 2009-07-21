@@ -5,10 +5,6 @@ import edu.umich.soar.visualsoar.operatorwindow.OperatorNode;
 import edu.umich.soar.visualsoar.parser.Triple;
 import edu.umich.soar.visualsoar.parser.TripleUtils;
 import edu.umich.soar.visualsoar.util.QueueAsLinkedList;
-import edu.umich.visualsoar.parser.*;
-import edu.umich.visualsoar.operatorwindow.*;
-import edu.umich.visualsoar.datamap.*;
-import edu.umich.visualsoar.util.*;
 import javax.swing.JOptionPane;
 import java.util.*;
 

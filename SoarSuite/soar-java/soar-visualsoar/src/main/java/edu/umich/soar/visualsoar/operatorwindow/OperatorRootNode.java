@@ -5,9 +5,6 @@ import edu.umich.soar.visualsoar.datamap.DataMap;
 import edu.umich.soar.visualsoar.datamap.SoarWorkingMemoryModel;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.graph.SoarVertex;
-import edu.umich.visualsoar.datamap.*;
-import edu.umich.visualsoar.graph.*;
-import edu.umich.visualsoar.operatorwindow.*;
 
 import java.io.*;
 import java.awt.Component;

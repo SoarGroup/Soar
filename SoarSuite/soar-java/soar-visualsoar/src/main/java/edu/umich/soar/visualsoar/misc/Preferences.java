@@ -6,7 +6,6 @@ import java.util.*;
 import javax.swing.*;
 
 import edu.umich.soar.visualsoar.parser.SoarParserConstants;
-import edu.umich.visualsoar.parser.*;
 
 public class Preferences
 {
