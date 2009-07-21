@@ -17,7 +17,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
 
-import doc.* ;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Module;
 import edu.umich.soar.debugger.doc.ModuleList;

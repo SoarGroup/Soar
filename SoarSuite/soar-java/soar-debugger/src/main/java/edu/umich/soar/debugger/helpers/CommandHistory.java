@@ -12,7 +12,6 @@
 package edu.umich.soar.debugger.helpers;
 
 import edu.umich.soar.debugger.general.JavaElementXML;
-import general.* ;
 
 /********************************************************************************************
 * 

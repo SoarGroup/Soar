@@ -37,7 +37,6 @@ import edu.umich.soar.debugger.helpers.TraceType;
 import edu.umich.soar.debugger.helpers.XmlOutput;
 import edu.umich.soar.debugger.manager.Pane;
 import edu.umich.soar.debugger.menu.ParseSelectedText;
-import helpers.* ;
 
 /************************************************************************
  * 

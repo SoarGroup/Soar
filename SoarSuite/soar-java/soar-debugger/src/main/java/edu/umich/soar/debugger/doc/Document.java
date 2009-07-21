@@ -11,10 +11,8 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger.doc;
 
-import doc.events.*;
 import sml.* ;
 import sml.Kernel.RhsFunctionInterface;
-import debugger.* ;
 import edu.umich.soar.debugger.FrameList;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.DocumentThread2.CommandExecCommandLine;
@@ -25,7 +23,6 @@ import edu.umich.soar.debugger.doc.events.SoarChangeListener;
 import edu.umich.soar.debugger.doc.events.SoarConnectionEvent;
 import edu.umich.soar.debugger.general.AppProperties;
 import edu.umich.soar.debugger.modules.FoldingTextView;
-import modules.*;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -22,9 +22,6 @@ import sml.Agent;
 
 import java.util.*;
 
-import modules.* ;
-import debugger.* ;
-import doc.* ;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.general.JavaElementXML;
