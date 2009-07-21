@@ -11,8 +11,6 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger.manager;
 
-import modules.* ;
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;

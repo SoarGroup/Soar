@@ -13,8 +13,6 @@ package edu.umich.soar.debugger.doc;
 
 import edu.umich.soar.debugger.general.Debug;
 import edu.umich.soar.debugger.modules.AbstractView;
-import general.* ;
-import modules.* ;
 
 /********************************************************************************************
 * 

@@ -20,9 +20,6 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 
-import doc.* ;
-import doc.events.*;
-import debugger.* ;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.doc.events.AgentFocusEvent;
