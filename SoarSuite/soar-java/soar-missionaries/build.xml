@@ -1,69 +1,11 @@
-<?xml version="1.0" ?>
+<project name="soar-missionaries" default="build" basedir=".">
 
-<project name="JavaMissionaries" default="build" basedir=".">
+	<property name="manifest.classpath" value="soar-smljava-${version}.jar swt.jar" />
+	<property name="jar.main.class" value="edu.umich.mac.MissionariesAndCannibals" />
+      
+	<import file="../soar-smljava/build-common.xml" />
 
-  <target name="build" depends="build-java,build-jar"/>
-
-  <target name="clean" depends="clean-java"/>
-
-  <target name="distclean" depends="clean">
-    <delete dir="build" quiet="true" />
-    <delete dir="docs" quiet="true" />
-  </target>
-
-  <target name="docs">
-    <mkdir dir="docs" />
-    <javadoc sourcepath="src/"
-             packagenames="*"
-             defaultexcludes="yes"
-             destdir="docs/api"
-             Public="yes"
-             source="1.5"
-	     />
-  </target>
-
-  <target name="build-jar">
-    <jar destfile="JavaMissionaries.jar">
-      <fileset dir="build">
-		<include name="**/*.class" />
-      </fileset>
-      <fileset dir="src">
-		<include name="mac/*" />
-      </fileset>
-      <manifest>
-	<attribute name="Main-Class" value="edu.umich.mac.MissionariesAndCannibals" />
-	<attribute name="Class-Path" value="../../SoarLibrary/lib/swt.jar ../../SoarLibrary/lib/sml.jar" />
-      </manifest>
-    </jar>
-  </target>
-
-  <target name="build-java">
-    <mkdir dir="build" />
-    <javac
-       srcdir="src"
-       includes="**/*.java"
-       debug="on"
-       optimize="off"
-       destdir="build"
-       compiler="extJavac"
-       deprecation="yes"
-       source="1.5"
-       target="1.5"
-       >
-      <classpath>
-        <pathelement location="src/"/>
-        <pathelement location="../../Core/ClientSMLSWIG/Java/sml.jar"/>
-        <pathelement location="../../SoarLibrary/lib/swt.jar"/>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="clean-java" >
-    <delete quiet="true">
-      <fileset dir="build" includes="**/*.class"/>
-      <fileset dir="." includes="JavaMissionaries.jar"/>
-    </delete>
-    <delete dir="build" />
-  </target>
+	<target name="build" depends="jar" />
 
 </project>
+
