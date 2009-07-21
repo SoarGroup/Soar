@@ -1,4 +1,4 @@
-package org.umich.edu.soar;
+package edu.umich.soar;
 
 import sml.* ;
 
