@@ -4,7 +4,7 @@
 //   Date: 16 November 2004
 //-----------------------------------------------------------------------------------
 
-package edu.umich.toh;
+package edu.umich.soar.toh;
 
 import sml.Kernel;
 
