@@ -4,14 +4,17 @@
 //   Date: 16 November 2004
 //------------------------------------------------------------------------------
 
-package edu.umich.toh;
+package edu.umich.soar.toh;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+
+import edu.umich.soar.ProductionUtils;
 
 import sml.Agent;
 import sml.Identifier;
@@ -68,8 +71,12 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
         m_StopNow = false ;
         
         agent = kernel.CreateAgent(AGENT_NAME);
-        boolean load = agent.LoadProductions("towers-of-hanoi-SML.soar");
-        if (!load || agent.HadError()) {
+        try {
+        	ProductionUtils.sourceSingleFileAgentFromJar(agent, "/towers-of-hanoi-SML.soar");
+        } catch (IOException e) {
+        	throw new IllegalStateException(e.getMessage());
+        }
+        if (agent.HadError()) {
             throw new IllegalStateException("Error loading productions: "
                     + agent.GetLastErrorDescription());
         }

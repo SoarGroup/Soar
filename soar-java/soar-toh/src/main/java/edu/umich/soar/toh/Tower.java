@@ -4,7 +4,7 @@
 //   Date: 9 November 2004
 //------------------------------------------------------------------------------
 
-package edu.umich.toh;
+package edu.umich.soar.toh;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@
 //   Date: 9 November 2004
 //------------------------------------------------------------------------------
 
-package edu.umich.toh;
+package edu.umich.soar.toh;
 
 import sml.Agent;
 import sml.Identifier;
