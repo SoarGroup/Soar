@@ -24,7 +24,7 @@
 
 	<property name="manifest.classpath" value=""/>
 
-	<property name="doc.packagenames" value="edu.umich.*"/>
+	<property name="doc.packagenames" value="edu.umich.soar.*"/>
 	<property name="doc.sourcepath" location="${src}"/>
 	<property name="doc.excludepackagenames" value="edu.umich.demos.*"/>
 	<property name="doc.destdir" location="${doc}/${ant.project.name}/api"/>
