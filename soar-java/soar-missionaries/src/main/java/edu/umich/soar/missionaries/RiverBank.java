@@ -4,7 +4,7 @@
 // Date Created: 25 March 2005
 //-----------------------------------------------------------------------------------
 
-package edu.umich.mac;
+package edu.umich.soar.missionaries;
 
 import sml.Agent;
 import sml.Identifier;
