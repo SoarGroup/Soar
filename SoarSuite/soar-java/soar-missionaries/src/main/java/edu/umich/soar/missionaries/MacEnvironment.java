@@ -6,9 +6,12 @@
 
 package edu.umich.soar.missionaries;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+
+import edu.umich.soar.ProductionUtils;
 
 import sml.Agent;
 import sml.Identifier;
@@ -59,8 +62,15 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
         }
         
         agent = kernel.CreateAgent("MAC");
-        boolean load = agent.LoadProductions("mac.soar");
-        if (!load || agent.HadError()) {
+        try {
+			ProductionUtils.sourceSingleFileAgentFromJar(agent, "/mac.soar");
+		} catch (IOException e) {
+            System.out.println("Error sourcing productions: "
+                    + e.getMessage());
+			e.printStackTrace();
+            System.exit(1);
+		}
+        if (agent.HadError()) {
             throw new IllegalStateException("Error loading productions: "
                     + agent.GetLastErrorDescription());
         }
