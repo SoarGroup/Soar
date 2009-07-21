@@ -1,55 +1,11 @@
-<?xml version="1.0" ?>
+<project name="soar-visualsoar" default="build" basedir=".">
 
-<project name="VisualSoar" default="build" basedir=".">
+	<property name="manifest.classpath" value="soar-smljava-${version}.jar" />
+	<property name="jar.main.class" value="edu.umich.visualsoar.VisualSoar" />
+      
+	<import file="../soar-smljava/build-common.xml" />
 
-  <target name="build" depends="build-java,build-jar"/>
-
-  <target name="clean" depends="clean-java"/>
-
-  <target name="distclean" depends="clean">
-    <delete dir="build" quiet="true" />
-  </target>
-
-  <target name="build-jar">
-    <jar destfile="VisualSoar.jar">
-      <fileset dir="build">
-		<include name="**/*.class" />
-      </fileset>
-      <manifest>
-	<attribute name="Main-Class" value="edu.umich.visualsoar.VisualSoar" />
-	<attribute name="Class-Path" value="../lib/sml.jar" />
-      </manifest>
-    </jar>
-    <copy file="VisualSoar.jar" todir="../../SoarLibrary/bin" />
-  </target>
-
-  <target name="build-java">
-    <mkdir dir="build" />
-    <javac
-       srcdir="src"
-       includes="**/*.java"
-       debug="on"
-       optimize="off"
-       destdir="build"
-       compiler="extJavac"
-       deprecation="yes"
-       source="1.4"
-       target="1.4"
-       >
-      <classpath>
-        <pathelement location="src/"/>
-        <pathelement location="../../Core/ClientSMLSWIG/Java/sml.jar"/>
-      </classpath>
-    </javac>
-  </target>
-
-  <target name="clean-java" >
-    <delete quiet="true">
-      <fileset dir="build" includes="**/*.class"/>
-      <fileset dir="." includes="VisualSoar.jar"/>
-      <fileset dir="../../SoarLibrary/bin" includes="VisualSoar.jar"/>
-    </delete>
-    <delete dir="build" />
-  </target>
+	<target name="build" depends="jar" />
 
 </project>
+
