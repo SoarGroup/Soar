@@ -1,5 +1,7 @@
 package edu.umich.soar;
 
+import java.io.IOException;
+
 import sml.* ;
 
 /********************************************************************************************
@@ -160,16 +162,14 @@ public class TestJavaSML {
 		// we store errors in the kernel in this case.
 		if (m_Kernel.HadError())
 			throw new IllegalStateException("Error creating agent: " + m_Kernel.GetLastErrorDescription()) ;
-		
-		//String cwd = 
-		agent.ExecuteCommandLine("pwd") ;
-		String path = pKernel.GetLibraryLocation() ;
-		path += "/Tests/testjavasml.soar" ;
-		
-		// Load some productions
-		boolean load = agent.LoadProductions(path) ;
 
-		if (!load || agent.HadError())
+		try {
+			ProductionUtils.sourceSingleFileAgentFromJar(agent, "/testjavasml.soar");
+		} catch (IOException e) {
+			throw new IllegalStateException(e.getMessage());
+		}
+		
+		if (agent.HadError())
 			throw new IllegalStateException("Error loading productions from testjavasml.soar: " + agent.GetLastErrorDescription()) ;
 
 		Identifier pInputLink = agent.GetInputLink() ;
@@ -380,7 +380,7 @@ public class TestJavaSML {
 	public TestJavaSML(String[] args)
 	{
 		boolean success = true ;
-		String  msg = "" ;
+		//String  msg = "" ;
 		
 		boolean remote = false ;
 		boolean listener = false ;
@@ -422,11 +422,11 @@ public class TestJavaSML {
 		catch (Throwable t)
 		{
 			success = false ;
-			msg = t.toString() ;
+			//msg = t.toString() ;
 		}
 		finally
 		{
-			reportResult("testjavasml", success, msg) ;
+			//reportResult("testjavasml", success, msg) ;
 			System.exit(success ? 0 : 1);
 		}
 	}
