@@ -1,7 +1,7 @@
 <project name="soar-smljava" default="build" basedir=".">
 
 	<property name="manifest.classpath" value="sml.jar" />
-	<property name="jar.main.class" value="edu.umich.soar.smljava.TestJavaSML" />
+	<property name="jar.main.class" value="edu.umich.soar.TestJavaSML" />
 
 	<path id="compile.libs">
 		<fileset dir="${lib}">

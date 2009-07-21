@@ -1,4 +1,4 @@
-package org.umich.edu.soar.smljava;
+package org.umich.edu.soar;
 
 import sml.* ;
 
