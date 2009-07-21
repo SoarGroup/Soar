@@ -4,7 +4,7 @@
 // Date Created: 25 March 2005
 //-----------------------------------------------------------------------------------
 
-package edu.umich.mac;
+package edu.umich.soar.missionaries;
 
 /**
  * Class that implement this interface provide methods to deal with events when the
