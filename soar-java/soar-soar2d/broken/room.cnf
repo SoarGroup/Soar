@@ -1,6 +1,0 @@
-# See http://winter.eecs.umich.edu/soarwiki/Environments/Soar2D/Configuration_File_Format
-general.game = "room";
-general.map = "maps/book/default.bmap";
-players.active_players = [ "dog", "mouse" ];
-players.dog.name = "dog";
-players.mouse.name = "mouse";
