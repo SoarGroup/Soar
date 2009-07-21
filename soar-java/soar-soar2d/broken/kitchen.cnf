@@ -1,3 +1,0 @@
-# See http://winter.eecs.umich.edu/soarwiki/Environments/Soar2D/Configuration_File_Format
-general.game = "kitchen";
-general.map = "maps/kitchen/default.xml";
