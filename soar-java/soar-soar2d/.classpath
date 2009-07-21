@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="**/.svn/" kind="src" path="src/main/java"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="src/main/resources"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="src/test/resources"/>
 	<classpathentry excluding="**/.svn/" kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/commons-logging-1.1.1.jar"/>
