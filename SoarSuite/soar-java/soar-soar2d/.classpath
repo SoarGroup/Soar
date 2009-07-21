@@ -10,5 +10,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/tosca.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
