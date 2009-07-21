@@ -9,7 +9,6 @@
 		<ant dir="soar-missionaries" />
 		<ant dir="soar-soar2d" />
 		<ant dir="soar-sps" />
-		<ant dir="soar-testjavasml" />
 		<ant dir="soar-toh" />
 		<ant dir="soar-visualsoar" /-->
 	</target>
@@ -21,7 +20,6 @@
 		<ant dir="soar-missionaries" target="clean" />
 		<ant dir="soar-soar2d" target="clean" />
 		<ant dir="soar-sps" target="clean" />
-		<ant dir="soar-testjavasml" target="clean" />
 		<ant dir="soar-toh" target="clean" />
 		<ant dir="soar-visualsoar" target="clean" /-->
 	</target>
