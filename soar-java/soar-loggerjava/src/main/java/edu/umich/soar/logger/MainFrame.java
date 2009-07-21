@@ -16,7 +16,7 @@
 * 
 * Developed by ThreePenny Software <a href="http://www.threepenny.net">www.threepenny.net</a>
 ********************************************************************************************/
-package soarLogger;
+package edu.umich.soar.logger;
 
 import java.awt.GridLayout;
 
