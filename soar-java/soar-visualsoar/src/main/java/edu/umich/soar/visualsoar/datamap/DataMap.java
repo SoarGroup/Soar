@@ -5,8 +5,6 @@ import edu.umich.soar.visualsoar.graph.NamedEdge;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.misc.CustomInternalFrame;
 import edu.umich.soar.visualsoar.misc.Preferences;
-import edu.umich.visualsoar.graph.*;
-import edu.umich.visualsoar.misc.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;

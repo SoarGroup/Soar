@@ -14,8 +14,6 @@ import edu.umich.soar.visualsoar.parser.SoarParserConstants;
 import edu.umich.soar.visualsoar.parser.SoarParserTokenManager;
 import edu.umich.soar.visualsoar.parser.Token;
 import edu.umich.soar.visualsoar.parser.TokenMgrError;
-import edu.umich.visualsoar.parser.*;
-import edu.umich.visualsoar.misc.*;
 import javax.swing.*;
 
 public class SoarDocument extends DefaultStyledDocument

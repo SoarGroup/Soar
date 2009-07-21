@@ -7,11 +7,6 @@ import edu.umich.soar.visualsoar.operatorwindow.OperatorWindow;
 import edu.umich.soar.visualsoar.operatorwindow.TreeNode;
 import edu.umich.soar.visualsoar.ruleeditor.RuleEditor;
 
-import edu.umich.visualsoar.parser.*;
-import edu.umich.visualsoar.datamap.*;
-import edu.umich.visualsoar.dialogs.*;
-import edu.umich.visualsoar.graph.*;
-import edu.umich.visualsoar.util.*;
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.filechooser.FileFilter;

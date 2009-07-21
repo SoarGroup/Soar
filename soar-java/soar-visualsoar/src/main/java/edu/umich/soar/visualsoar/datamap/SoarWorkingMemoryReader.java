@@ -7,7 +7,6 @@ import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.graph.SoarVertex;
 import edu.umich.soar.visualsoar.graph.StringVertex;
 import edu.umich.soar.visualsoar.util.ReaderUtils;
-import edu.umich.visualsoar.graph.*;
 import java.util.Vector;
 import java.io.*;
 import javax.swing.*;

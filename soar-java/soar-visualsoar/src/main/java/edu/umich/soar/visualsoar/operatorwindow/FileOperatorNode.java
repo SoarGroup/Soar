@@ -5,8 +5,6 @@ import edu.umich.soar.visualsoar.datamap.SoarWorkingMemoryModel;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.parser.ParseException;
 import edu.umich.soar.visualsoar.ruleeditor.RuleEditor;
-import edu.umich.visualsoar.datamap.*;
-import edu.umich.visualsoar.graph.*;
 import javax.swing.tree.*;
 import java.io.*;
 import java.awt.Component;

@@ -3,7 +3,6 @@ package edu.umich.soar.visualsoar.graph;
 import java.util.*;
 
 import edu.umich.soar.visualsoar.dialogs.EditEnumerationDialog;
-import edu.umich.visualsoar.dialogs.*;
 
 /**
  * This class encapsulates the notion of an enumeration

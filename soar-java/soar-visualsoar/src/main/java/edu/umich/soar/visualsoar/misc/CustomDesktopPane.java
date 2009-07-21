@@ -1,7 +1,5 @@
 package edu.umich.soar.visualsoar.misc;
 import edu.umich.soar.visualsoar.datamap.DataMap;
-import edu.umich.visualsoar.graph.*;
-import edu.umich.visualsoar.datamap.*;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import java.util.*;
