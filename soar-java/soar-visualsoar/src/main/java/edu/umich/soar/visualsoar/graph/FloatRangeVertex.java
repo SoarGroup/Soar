@@ -1,7 +1,6 @@
 package edu.umich.soar.visualsoar.graph;
 
 import edu.umich.soar.visualsoar.dialogs.EditNumberDialog;
-import edu.umich.visualsoar.dialogs.*;
 
 public class FloatRangeVertex extends SoarVertex {
 //////////////////////////////////////////

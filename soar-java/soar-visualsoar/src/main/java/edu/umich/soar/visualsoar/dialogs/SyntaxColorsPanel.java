@@ -10,7 +10,6 @@ import javax.swing.border.*;
 import edu.umich.soar.visualsoar.misc.Preferences;
 import edu.umich.soar.visualsoar.misc.SyntaxColor;
 import edu.umich.soar.visualsoar.ruleeditor.SoarDocument;
-import edu.umich.visualsoar.misc.*;
 
 /**
  * Panel containing editing facilities for selecting custom colors

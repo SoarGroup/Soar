@@ -4,7 +4,6 @@ import edu.umich.soar.visualsoar.MainFrame;
 import edu.umich.soar.visualsoar.datamap.SoarWorkingMemoryAppender;
 import edu.umich.soar.visualsoar.datamap.SoarWorkingMemoryModel;
 import edu.umich.soar.visualsoar.util.ReaderUtils;
-import edu.umich.visualsoar.datamap.*;
 import java.io.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.JOptionPane;

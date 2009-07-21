@@ -24,11 +24,6 @@ import edu.umich.soar.visualsoar.parser.TriplesExtractor;
 import edu.umich.soar.visualsoar.util.ActionButtonAssociation;
 import edu.umich.soar.visualsoar.util.EnumerationIteratorWrapper;
 import edu.umich.soar.visualsoar.util.MenuAdapter;
-import edu.umich.visualsoar.operatorwindow.*;
-import edu.umich.visualsoar.util.*;
-import edu.umich.visualsoar.misc.*;
-import edu.umich.visualsoar.dialogs.*;
-import edu.umich.visualsoar.graph.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -48,7 +43,6 @@ import java.util.*;
 // 3P
 import sml.Agent;
 import sml.Kernel;
-import threepenny.*;
 
 /**
  * This is the rule editor window

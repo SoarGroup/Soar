@@ -4,8 +4,6 @@ import edu.umich.soar.visualsoar.util.CountingVisitor;
 import edu.umich.soar.visualsoar.util.PreOrder;
 import edu.umich.soar.visualsoar.util.QueueAsLinkedList;
 import edu.umich.soar.visualsoar.util.Visitor;
-import edu.umich.visualsoar.util.*;
-import edu.umich.visualsoar.datamap.*;
 import java.util.*;
 import javax.swing.*;
 

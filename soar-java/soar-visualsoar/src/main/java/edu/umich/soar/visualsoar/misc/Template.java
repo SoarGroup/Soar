@@ -13,7 +13,6 @@ import java.text.SimpleDateFormat;
 import edu.umich.soar.visualsoar.operatorwindow.OperatorRootNode;
 import edu.umich.soar.visualsoar.operatorwindow.OperatorWindow;
 import edu.umich.soar.visualsoar.ruleeditor.RuleEditor;
-import edu.umich.visualsoar.operatorwindow.*;
 
 /**
  * Represents an insertable code template. 

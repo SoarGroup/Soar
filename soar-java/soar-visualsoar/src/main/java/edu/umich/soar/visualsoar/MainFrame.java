@@ -27,20 +27,12 @@ import edu.umich.soar.visualsoar.ruleeditor.RuleEditor;
 import edu.umich.soar.visualsoar.threepenny.SoarRuntimeSendRawCommandDialog;
 import edu.umich.soar.visualsoar.util.ActionButtonAssociation;
 import edu.umich.soar.visualsoar.util.MenuAdapter;
-import edu.umich.visualsoar.misc.*;
-import edu.umich.visualsoar.dialogs.*;
-import edu.umich.visualsoar.operatorwindow.*;
-import edu.umich.visualsoar.graph.*;
-import edu.umich.visualsoar.datamap.*;
-import edu.umich.visualsoar.ruleeditor.*;
-import edu.umich.visualsoar.util.*;
 
 // 3P
 import sml.Agent;
 import sml.Kernel;
 import sml.smlStringEventId;
 import sml.sml_Names;
-import threepenny.*;
 
 import java.awt.*;
 import java.awt.dnd.*;

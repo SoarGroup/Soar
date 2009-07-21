@@ -7,7 +7,6 @@ import edu.umich.soar.visualsoar.util.PrePostVisitor;
 import edu.umich.soar.visualsoar.util.Queue;
 import edu.umich.soar.visualsoar.util.QueueAsLinkedList;
 import edu.umich.soar.visualsoar.util.Visitor;
-import edu.umich.visualsoar.util.*;
 
 /**
  * This class is a graph class that provides an interface for different kinds of graphs

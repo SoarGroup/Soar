@@ -7,10 +7,6 @@ import edu.umich.soar.visualsoar.parser.SoarParser;
 import edu.umich.soar.visualsoar.parser.TokenMgrError;
 import edu.umich.soar.visualsoar.ruleeditor.RuleEditor;
 import edu.umich.soar.visualsoar.util.EnumerationIteratorWrapper;
-import edu.umich.visualsoar.parser.*;
-import edu.umich.visualsoar.datamap.*;
-import edu.umich.visualsoar.util.*;
-import edu.umich.visualsoar.misc.*;
 
 import java.io.*;
 import java.awt.Component;

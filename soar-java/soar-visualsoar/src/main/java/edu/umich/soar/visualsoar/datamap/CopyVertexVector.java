@@ -5,7 +5,6 @@ import java.awt.datatransfer.*;
 import java.io.IOException;
 
 import edu.umich.soar.visualsoar.graph.SoarVertex;
-import edu.umich.visualsoar.graph.*;
 
 /**
  * This allows verticies to be copied in a shallow manner

@@ -3,7 +3,6 @@ import edu.umich.soar.visualsoar.graph.EnumerationVertex;
 import edu.umich.soar.visualsoar.graph.NamedEdge;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.graph.SoarVertex;
-import edu.umich.visualsoar.graph.*;
 import java.util.*;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.*;

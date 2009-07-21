@@ -3,7 +3,6 @@ package edu.umich.soar.visualsoar.operatorwindow;
 import java.awt.*;
 
 import edu.umich.soar.visualsoar.datamap.SoarWorkingMemoryModel;
-import edu.umich.visualsoar.datamap.*;
 import javax.swing.tree.*;
 import java.io.*;
 import java.util.Enumeration;

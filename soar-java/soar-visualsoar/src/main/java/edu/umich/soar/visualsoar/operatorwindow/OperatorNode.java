@@ -7,10 +7,6 @@ import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.misc.FeedbackListObject;
 import edu.umich.soar.visualsoar.parser.ParseException;
 import edu.umich.soar.visualsoar.parser.TokenMgrError;
-import edu.umich.visualsoar.dialogs.*;
-import edu.umich.visualsoar.misc.*;
-import edu.umich.visualsoar.util.*;
-import edu.umich.visualsoar.parser.*;                           
 
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;

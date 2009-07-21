@@ -1,7 +1,6 @@
 package edu.umich.soar.visualsoar.datamap;
 
 import edu.umich.soar.visualsoar.graph.NamedEdge;
-import edu.umich.visualsoar.graph.*;
 
 /**
  * A Working Memory Element is basically an edge in the graph

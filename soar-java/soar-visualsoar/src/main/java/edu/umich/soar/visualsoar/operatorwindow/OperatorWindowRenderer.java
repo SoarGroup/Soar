@@ -2,7 +2,6 @@ package edu.umich.soar.visualsoar.operatorwindow;
 
 import edu.umich.soar.visualsoar.util.TextFolderIcons;
 import edu.umich.soar.visualsoar.util.TextIcons;
-import edu.umich.visualsoar.util.*;
 import java.util.*;
 import java.awt.*;
 import javax.swing.*;

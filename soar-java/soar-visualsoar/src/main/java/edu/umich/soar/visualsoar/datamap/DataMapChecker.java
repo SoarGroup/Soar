@@ -2,7 +2,6 @@ package edu.umich.soar.visualsoar.datamap;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.operatorwindow.OperatorNode;
 import edu.umich.soar.visualsoar.parser.TriplesExtractor;
-import edu.umich.visualsoar.operatorwindow.*;
 import java.util.*;
 import javax.swing.*;
 import java.io.FileWriter;

@@ -11,7 +11,6 @@ import edu.umich.soar.visualsoar.MainFrame;
 import edu.umich.soar.visualsoar.misc.Preferences;
 import edu.umich.soar.visualsoar.misc.SyntaxColor;
 import edu.umich.soar.visualsoar.ruleeditor.SoarDocument;
-import edu.umich.visualsoar.misc.*;
           
 /**
  * Dialog that allows preferences to be edited
