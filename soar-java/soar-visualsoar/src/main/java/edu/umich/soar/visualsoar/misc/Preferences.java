@@ -5,6 +5,8 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
+import sml.Kernel;
+
 import edu.umich.soar.visualsoar.parser.SoarParserConstants;
 
 public class Preferences
@@ -29,7 +31,14 @@ public class Preferences
     public static String getVisualSoarFolder()
     {
     	// SoarLibrary/bin/../../Tools/VisualSoar
-    	File folder = new File(System.getProperty("user.dir") + File.separator + ".." + File.separator + ".." + File.separator + "Tools" + File.separator + "VisualSoar") ;
+    	Kernel kernel = Kernel.CreateKernelInCurrentThread();
+    	// If no kernel, assume we're in SoarLibrary/bin
+    	String base = kernel.HadError() ? System.getProperty("user.dir") + File.separator + ".." : kernel.GetLibraryLocation();
+    	kernel.Shutdown();
+    	kernel.delete();
+    	kernel = null;
+    			
+    	File folder = new File(base + File.separator + ".." + File.separator + "soar-java" + File.separator + "soar-visualsoar") ;
     	return folder.toString() ;
     }
     
