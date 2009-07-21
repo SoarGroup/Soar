@@ -435,5 +435,5 @@ public class TestJavaSML {
 	{
 		new TestJavaSML(args);
 	}
-}}
+}
 
