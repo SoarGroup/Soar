@@ -11,7 +11,6 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger.menu;
 
-import debugger.* ;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 

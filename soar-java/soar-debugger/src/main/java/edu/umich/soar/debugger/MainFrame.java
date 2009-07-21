@@ -18,11 +18,6 @@ import org.eclipse.swt.events.*;
 import java.io.*;
 import java.util.*;
 
-import manager.*;
-import menu.*;
-import general.*;
-import doc.*;
-import doc.events.*;
 import edu.umich.soar.debugger.dialogs.SwtInputDialog;
 import edu.umich.soar.debugger.doc.DebuggerCommands;
 import edu.umich.soar.debugger.doc.Document;
@@ -46,7 +41,6 @@ import edu.umich.soar.debugger.menu.KernelMenu;
 import edu.umich.soar.debugger.menu.LayoutMenu;
 import edu.umich.soar.debugger.menu.PrintMenu;
 import edu.umich.soar.debugger.modules.AbstractView;
-import modules.*;
 
 import sml.*;
 
