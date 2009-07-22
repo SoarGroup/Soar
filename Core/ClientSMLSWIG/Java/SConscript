@@ -63,6 +63,6 @@ shlib_env.Install('#SoarLibrary/lib', java_sml_interface_shlib)
 jar_env = env.Clone()
 sml_jar_target = '#Core/ClientSMLSWIG/Java/sml.jar'
 Depends(sml_jar_target, 'build.xml')
-jar_env.Command(sml_jar_target, 'src/sml/*.java', 'ant -q', chdir=1)
+jar_env.Command(sml_jar_target, 'src/sml/*.java', 'ant -q')
 #### (end jar)
 

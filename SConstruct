@@ -212,13 +212,6 @@ if env['java']:
 	if env.GetOption('clean'):
 		Execute('ant -q clean')
 	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
-	SConscript('#Tools/LoggerJava/SConscript')
-	SConscript('#Tools/TestJavaSML/SConscript')
-	SConscript('#Tools/VisualSoar/SConscript')
-	SConscript('#Tools/SoarJavaDebugger/SConscript')
-	SConscript('#Environments/Soar2D/SConscript')
-	SConscript('#Environments/JavaMissionaries/SConscript')
-	SConscript('#Environments/JavaTOH/SConscript')
 
 if env['python']:
 	SConscript('#Core/ClientSMLSWIG/Python/SConscript')

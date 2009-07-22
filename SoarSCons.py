@@ -73,7 +73,7 @@ def CheckJarmd5(env, jarpath):
 			return GTK_DIGEST == m.hexdigest()
 	
 def CheckForSWTJar(env):
-	jarpath = os.path.join('SoarLibrary', 'lib', 'swt.jar')
+	jarpath = os.path.join('soar-java', 'soar-smljava', 'lib', 'swt.jar')
 	if os.path.exists(jarpath):
 		if CheckJarmd5(env, jarpath):
 			return True
