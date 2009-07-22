@@ -1,6 +1,9 @@
-package edu.umich.soar.gridmap2d.config;
+package edu.umich.soar.config;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
 
 /**
  * A view into a ConfigSource. The view can have a specific "scope", i.e., a
@@ -20,7 +23,7 @@ public class Config {
 	}
 	
 	public void save(String path) throws FileNotFoundException {
-		source.save(path);
+		source.save(path, this.prefix);
 	}
 	
 	public Config copy() {
@@ -235,4 +238,56 @@ public class Config {
 	public String[] getKeys() {
 		return source.getKeys(this.prefix);
 	}
+	
+	public static void loadSubConfig(Config childConfig, Field [] fields, Object target) {
+		// use reflection to load fields
+		try {
+			for (Field f : fields) {
+				if (f.getType().getName() == "boolean") {
+					f.set(target, childConfig.getBoolean(f.getName(), f.getBoolean(target)));
+					
+				} else if (f.getType().getName() == "double") {
+					f.set(target, childConfig.getDouble(f.getName(), f.getDouble(target)));
+					
+				} else if (f.getType().getName() == "int") {
+					f.set(target, childConfig.getInt(f.getName(), f.getInt(target)));
+					
+				} else if (f.getType().getName() == "java.lang.String") {
+					f.set(target, childConfig.getString(f.getName(), (String)f.get(target)));
+					
+				} else 	if (f.getType().getName() == "[Z") {
+					f.set(target, childConfig.getBooleans(f.getName(), (boolean [])f.get(target)));
+					
+				} else if (f.getType().getName() == "[D") {
+					f.set(target, childConfig.getDoubles(f.getName(), (double [])f.get(target)));
+					
+				} else if (f.getType().getName() == "[I") {
+					f.set(target, childConfig.getInts(f.getName(), (int [])f.get(target)));
+					
+				} else if (f.getType().getName() == "[Ljava.lang.String;") {
+					f.set(target, childConfig.getStrings(f.getName(), (String [])f.get(target)));
+				} else {
+					throw new IllegalStateException("Unsupported type encountered: " + f.getType().getName());
+				}
+			}
+		} catch (IllegalAccessException e) {
+			// This shouldn't happen as long as all fields are public.
+			throw new AssertionError();
+		}
+	}
+
+	public void merge(Config includedConfig) {
+		for (String key : includedConfig.getKeys()) {
+			this.setStrings(key, includedConfig.getStrings(key));
+		}
+	}
+	
+	@Override
+	public String toString() {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		PrintStream p = new PrintStream(stream);
+		source.writeToStream(p, prefix);
+		return stream.toString();
+	}
+	
 }

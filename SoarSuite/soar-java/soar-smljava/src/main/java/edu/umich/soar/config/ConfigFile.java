@@ -1,4 +1,4 @@
-package org.msoar.sps.config;
+package edu.umich.soar.config;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -18,11 +18,12 @@ public class ConfigFile extends ConfigSource {
 	String path;
 	Map<String, String[]> keys = new HashMap<String, String[]>();
 
-	public ConfigFile(String path) throws IOException {
+	public ConfigFile(String path) throws IOException, ParseError {
 		this.path = path;
 
 		Tokenizer t = new Tokenizer(path);
 		parse(t, "");
+		t.close();
 	}
 
 	public ConfigFile() {
@@ -166,13 +167,7 @@ public class ConfigFile extends ConfigSource {
 
 	// ///////////////////////////////////////////////////////
 	// File parsing below
-
-	void parseError(Tokenizer t, String msg) {
-		System.out.println("Parse error: " + msg);
-		System.out.println("Near line " + t.lineNumber + ": " + t.line);
-	}
-
-	void parse(Tokenizer t, String keyroot) throws IOException {
+	void parse(Tokenizer t, String keyroot) throws IOException, ParseError {
 		while (true) {
 
 			if (!t.hasNext())
@@ -181,7 +176,7 @@ public class ConfigFile extends ConfigSource {
 			// end of block?
 			if (t.consume("}")) {
 				if (keyroot.equals(""))
-					parseError(t, "Unmatched } in input");
+					throw new ParseError("Unmatched } in input", t.lineNumber, t.line);
 
 				return;
 			}
@@ -193,8 +188,7 @@ public class ConfigFile extends ConfigSource {
 			String keypart = t.next();
 
 			if (!t.hasNext()) {
-				parseError(t, "Premature EOF");
-				return;
+				throw new ParseError("Premature EOF", t.lineNumber, t.line);
 			}
 
 			// we have an enclosure block?
@@ -226,26 +220,22 @@ public class ConfigFile extends ConfigSource {
 				}
 
 				if (!t.consume(";")) {
-					parseError(t, "Expected ; got " + tok);
-					return;
+					throw new ParseError("Expected ; got ", t.lineNumber, t.line);
 				} 
 
 				if (values.size() == 0) {
-					parseError(t, "Expected values, didn't get any");
-					return;
+					throw new ParseError("Expected values, didn't get any", t.lineNumber, t.line);
 				}
 				valuesArray = values.toArray(new String[values.size()]);
 
 			} else {
-				parseError(t, "Expected = got " + tok);
-				return;
+				throw new ParseError("Expected = got ", t.lineNumber, t.line);
 			}
 
 			String key = keyroot + keypart;
 
 			if (keys.get(key) != null) {
-				parseError(t, "Duplicate key definition for: " + key);
-				return;
+				throw new ParseError("Duplicate key definition for: ", t.lineNumber, t.line);
 			}
 			
 			keys.put(key, valuesArray);
@@ -267,6 +257,13 @@ public class ConfigFile extends ConfigSource {
 
 		public Tokenizer(String path) throws IOException {
 			ins = new BufferedReader(new FileReader(path));
+		}
+		
+		public void close() {
+			try {
+				ins.close();
+			} catch (IOException ignored) {
+			}
 		}
 
 		// doesn't support string literals spread across multiple lines.

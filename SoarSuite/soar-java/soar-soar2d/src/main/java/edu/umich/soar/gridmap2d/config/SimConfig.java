@@ -7,6 +7,10 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.umich.soar.config.Config;
+import edu.umich.soar.config.ConfigFile;
+import edu.umich.soar.config.ConfigUtil;
+import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.Game;
 import edu.umich.soar.gridmap2d.Names;
 

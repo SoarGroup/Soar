@@ -4,8 +4,9 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.config.Config;
-import org.msoar.sps.config.ConfigFile;
+import edu.umich.soar.config.Config;
+import edu.umich.soar.config.ConfigFile;
+import edu.umich.soar.config.ParseError;
 
 final class SessionManager {
 	private static class Names {
@@ -68,7 +69,7 @@ final class SessionManager {
 						Config includedConfig = new Config(new ConfigFile("config" + File.separator + include));
 						config.merge(includedConfig);
 					}
-				} catch (IOException e) {
+				} catch (ParseError e) {
 					System.err.println(e.getMessage());
 					System.err.print(Names.USAGE);
 					System.exit(1);

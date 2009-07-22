@@ -14,11 +14,11 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.config.Config;
+import edu.umich.soar.config.ConfigFile;
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Simulation;
-import edu.umich.soar.gridmap2d.config.Config;
-import edu.umich.soar.gridmap2d.config.ConfigFile;
 import edu.umich.soar.gridmap2d.map.RoomMap.RoomObjectInfo;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
 

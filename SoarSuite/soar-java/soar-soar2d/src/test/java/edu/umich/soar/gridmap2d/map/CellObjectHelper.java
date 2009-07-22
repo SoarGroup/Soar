@@ -1,7 +1,7 @@
 package edu.umich.soar.gridmap2d.map;
 
-import edu.umich.soar.gridmap2d.config.Config;
-import edu.umich.soar.gridmap2d.config.ConfigFile;
+import edu.umich.soar.config.Config;
+import edu.umich.soar.config.ConfigFile;
 
 public class CellObjectHelper {
 	static Config createNewConfig(String objectName) {
