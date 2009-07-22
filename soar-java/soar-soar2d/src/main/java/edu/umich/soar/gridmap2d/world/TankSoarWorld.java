@@ -255,7 +255,7 @@ public class TankSoarWorld implements World {
 			}
 			
 			// we moved, calcuate new location
-			int [] newLocation = edu.umich.soar.gridmap2d.Arrays.copyOf(oldLocation, oldLocation.length);
+			int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 			Direction.translate(newLocation, playerMove.moveDirection);
 			
 			//Cell dest = map.getCell(newLocation);
@@ -486,7 +486,7 @@ public class TankSoarWorld implements World {
 		
 		// Spawn new Missiles in front of Tanks
 		for (Tank tank : firedTanks) {
-			int [] missileLoc = edu.umich.soar.gridmap2d.Arrays.copyOf(players.getLocation(tank), players.getLocation(tank).length);
+			int [] missileLoc = Arrays.copyOf(players.getLocation(tank), players.getLocation(tank).length);
 			
 			Direction direction = tank.getFacing();
 			Direction.translate(missileLoc, direction);

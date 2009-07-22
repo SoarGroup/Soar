@@ -5,6 +5,8 @@ package edu.umich.soar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 
@@ -18,7 +20,7 @@ final class DisableWaypointCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "disable-waypoint";
 	
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, SplinterState splinter,
+			Identifier command, OffsetPose splinter,
 			OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {

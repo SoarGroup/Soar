@@ -1,5 +1,7 @@
 package edu.umich.soar.gridmap2d.players;
 
+import java.util.Arrays;
+
 import org.apache.log4j.Logger;
 
 import edu.umich.soar.gridmap2d.Direction;
@@ -150,12 +152,12 @@ public class Player {
 	protected void update(int[] newLocation) {
 		moved = (newLocation[0] != this.location[0]) || (newLocation[1] != this.location[1]);
 		if (moved) {
-			this.location = edu.umich.soar.gridmap2d.Arrays.copyOf(newLocation, newLocation.length);
+			this.location = Arrays.copyOf(newLocation, newLocation.length);
 		}
 	}
 	
 	public int[] getLocation() {
-		return edu.umich.soar.gridmap2d.Arrays.copyOf(location, location.length);
+		return Arrays.copyOf(location, location.length);
 	}
 	
 	public boolean getMoved() {

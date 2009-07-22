@@ -106,7 +106,7 @@ public class PlayersManager<P extends Player> {
 		playersMap.put(player.getName(), player);
 		
 		if (initialLocation != null) {
-			initialLocations.put(player, edu.umich.soar.gridmap2d.Arrays.copyOf(initialLocation, initialLocation.length));
+			initialLocations.put(player, Arrays.copyOf(initialLocation, initialLocation.length));
 		}
 	}
 	

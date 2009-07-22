@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 
@@ -16,7 +18,7 @@ import sml.Identifier;
 final class OutputLinkManager {
 	private static final Logger logger = Logger.getLogger(OutputLinkManager.class);
 
-	private final SplinterState splinter;
+	private final OffsetPose splinter;
 	private final Agent agent;
 	private final InputLinkInterface inputLink;
 	private final HashMap<String, Command> commands = new HashMap<String, Command>();
@@ -26,7 +28,7 @@ final class OutputLinkManager {
 	
 	private Command runningCommand;
 
-	OutputLinkManager(Agent agent, InputLinkInterface inputLink, SplinterState splinter) {
+	OutputLinkManager(Agent agent, InputLinkInterface inputLink, OffsetPose splinter) {
 		this.splinter = splinter;
 		this.agent = agent;
 		this.inputLink = inputLink;

@@ -1,6 +1,8 @@
 package edu.umich.soar.gridmap2d.players;
 
 
+import java.util.Arrays;
+
 import edu.umich.soar.gridmap2d.Simulation;
 import edu.umich.soar.gridmap2d.map.CellObject;
 
@@ -152,12 +154,12 @@ public class RoomPlayerState {
 	}
 	
 	public double[] getFloatLocation() {
-		return edu.umich.soar.gridmap2d.Arrays.copyOf(floatLocation, floatLocation.length);
+		return Arrays.copyOf(floatLocation, floatLocation.length);
 	}
 	
 	void setFloatLocation(double[] newFloatLocation) {
 		assert newFloatLocation.length == floatLocation.length;
-		floatLocation = edu.umich.soar.gridmap2d.Arrays.copyOf(newFloatLocation, newFloatLocation.length);
+		floatLocation = Arrays.copyOf(newFloatLocation, newFloatLocation.length);
 	}
 	
 	

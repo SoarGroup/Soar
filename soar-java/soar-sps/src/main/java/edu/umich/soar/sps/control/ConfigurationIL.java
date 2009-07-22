@@ -1,5 +1,6 @@
 package edu.umich.soar.sps.control;
 
+import edu.umich.soar.waypoints.OffsetPose;
 import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
@@ -11,9 +12,9 @@ final class ConfigurationIL {
 	private final FloatElement offsetxwme;
 	private final FloatElement offsetywme;
 	private final Agent agent;
-	private final SplinterState splinter;
+	private final OffsetPose splinter;
 
-	ConfigurationIL(Agent agent, Identifier configuration, SplinterState splinter) {
+	ConfigurationIL(Agent agent, Identifier configuration, OffsetPose splinter) {
 		this.agent = agent;
 		this.splinter = splinter;
 

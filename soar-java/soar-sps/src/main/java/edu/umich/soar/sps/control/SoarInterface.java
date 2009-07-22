@@ -7,6 +7,7 @@ import java.util.Timer;
 import org.apache.log4j.Logger;
 import edu.umich.soar.config.Config;
 import edu.umich.soar.sps.HzChecker;
+import edu.umich.soar.waypoints.OffsetPose;
 
 import sml.Agent;
 import sml.Kernel;
@@ -18,7 +19,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 
 	private final static int DEFAULT_RANGES_COUNT = 5;
 	
-	static SoarInterface newInstance(Config config, SplinterState splinter) {
+	static SoarInterface newInstance(Config config, OffsetPose splinter) {
 		return new SoarInterface(config, splinter);
 	}
 
@@ -35,7 +36,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	private DifferentialDriveCommand ddc;
 	private DifferentialDriveCommand soarddc;
 	
-	private SoarInterface(Config config, SplinterState splinter) {
+	private SoarInterface(Config config, OffsetPose splinter) {
 		kernel = Kernel.CreateKernelInNewThread();
 		if (kernel.HadError()) {
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());

@@ -2,6 +2,9 @@ package edu.umich.soar.sps.control;
 
 import java.util.List;
 
+import edu.umich.soar.waypoints.OffsetPose;
+import edu.umich.soar.waypoints.WaypointsIL;
+
 
 import jmat.LinAlg;
 import jmat.MathUtil;
@@ -23,12 +26,12 @@ final class SelfIL implements InputLinkInterface {
 	private final Identifier posewme;
 	private final long utimeLast = 0;
 	private final ReceivedMessagesIL receivedMessagesIL;
-	private final SplinterState splinter;
+	private final OffsetPose splinter;
 	
 	private IntElement yawwmei;
 	private FloatElement yawwmef;
 	
-	SelfIL(Agent agent, Identifier self, SplinterState splinter) {
+	SelfIL(Agent agent, Identifier self, OffsetPose splinter) {
 		this.agent = agent;
 		this.splinter = splinter;
 		
@@ -73,25 +76,25 @@ final class SelfIL implements InputLinkInterface {
 	}
 	
 	void update(List<String> tokens, boolean useFloatYawWmes) {
-		if (splinter.getSplinterPose() == null) {
+		if (splinter.getPose() == null) {
 			return; // no info
 		}
 		
-		if (utimeLast == splinter.getSplinterPose().utime) {
+		if (utimeLast == splinter.getPose().utime) {
 			return; // same info
 		}
 
-		agent.Update(xwme, splinter.getSplinterPose().pos[0]);
-		agent.Update(ywme, splinter.getSplinterPose().pos[1]);
-		agent.Update(zwme, splinter.getSplinterPose().pos[2]);
-		agent.Update(xvelwme, splinter.getSplinterPose().vel[0]);
-		agent.Update(yvelwme, splinter.getSplinterPose().vel[1]);
-		agent.Update(speedwme, LinAlg.magnitude(splinter.getSplinterPose().vel));
+		agent.Update(xwme, splinter.getPose().pos[0]);
+		agent.Update(ywme, splinter.getPose().pos[1]);
+		agent.Update(zwme, splinter.getPose().pos[2]);
+		agent.Update(xvelwme, splinter.getPose().vel[0]);
+		agent.Update(yvelwme, splinter.getPose().vel[1]);
+		agent.Update(speedwme, LinAlg.magnitude(splinter.getPose().vel));
 
-		double yawRadians = LinAlg.quatToRollPitchYaw(splinter.getSplinterPose().orientation)[2];
+		double yawRadians = LinAlg.quatToRollPitchYaw(splinter.getPose().orientation)[2];
 		yawRadians = MathUtil.mod2pi(yawRadians);
 		updateYawWme(useFloatYawWmes, yawRadians);
-		agent.Update(yawvelwme, Math.toDegrees(splinter.getSplinterPose().rotation_rate[2]));
+		agent.Update(yawvelwme, Math.toDegrees(splinter.getPose().rotation_rate[2]));
 		
 		waypointsIL.update(splinter);
 		
@@ -126,7 +129,7 @@ final class SelfIL implements InputLinkInterface {
 		return waypointsIL.disable(id);
 	}
 
-	public boolean enableWaypoint(String id, SplinterState splinter) {
+	public boolean enableWaypoint(String id, OffsetPose splinter) {
 		return waypointsIL.enable(id, splinter);
 	}
 

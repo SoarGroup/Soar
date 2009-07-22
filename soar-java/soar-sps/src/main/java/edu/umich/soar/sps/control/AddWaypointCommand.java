@@ -7,6 +7,8 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 
@@ -19,7 +21,7 @@ final class AddWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(AddWaypointCommand.class);
 	static final String NAME = "add-waypoint";
 
-	public boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager) {
+	public boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, OffsetPose splinter, OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn(NAME + ": No id on command");
@@ -31,7 +33,7 @@ final class AddWaypointCommand extends NoDDCAdapter implements Command {
 			throw new AssertionError();
 		}
 		
-		double[] pos = Arrays.copyOf(splinter.getSplinterPose().pos, splinter.getSplinterPose().pos.length);
+		double[] pos = Arrays.copyOf(splinter.getPose().pos, splinter.getPose().pos.length);
 		try {
 			pos[0] = Double.parseDouble(command.GetParameterValue("x"));
 		} catch (NullPointerException ignored) {
