@@ -9,7 +9,7 @@ all:    $(LCMTYPES_JAVA)
 
 
 %.java: %.lcm
-	$(LCM) -j  --jpath=../src $<
+	$(LCM) -j  --jpath=../src/main/java $<
 
 clean:
-	rm -f ../src/org/msoar/sps/lcmtypes/*.java
+	rm -f ../src/main/java/edu/umich/soar/sps/lcmtypes/*.java
