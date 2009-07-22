@@ -5,6 +5,8 @@ package edu.umich.soar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 
@@ -22,7 +24,7 @@ final class EStopCommand extends DDCCommand implements Command {
 	}
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, SplinterState splinter,
+			Identifier command, OffsetPose splinter,
 			OutputLinkManager outputLinkManager) {
 		logger.debug(NAME + ":");
 		CommandStatus.accepted.addStatus(agent, command);

@@ -1,5 +1,6 @@
 package edu.umich.soar.sps.control;
 
+import edu.umich.soar.waypoints.OffsetPose;
 import sml.Agent;
 import sml.Identifier;
 
@@ -26,7 +27,7 @@ abstract class DDCCommand implements Command {
 		command = null;
 	}
 
-	public boolean update(SplinterState splinter) {
+	public boolean update(OffsetPose splinter) {
 		return false; // still executing
 	}
 }

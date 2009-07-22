@@ -5,6 +5,8 @@ package edu.umich.soar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 import sml.WMElement;
@@ -19,7 +21,7 @@ final class SendMessageCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "send-message";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, SplinterState splinter,
+			Identifier command, OffsetPose splinter,
 			OutputLinkManager outputLinkManager) {
 
 		if (splinter == null) {

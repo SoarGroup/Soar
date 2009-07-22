@@ -1,21 +1,21 @@
-package edu.umich.soar.sps.control;
+package edu.umich.soar.waypoints;
 
 import java.util.HashMap;
 
 import sml.Agent;
 import sml.Identifier;
 
-final class WaypointsIL {
+public final class WaypointsIL {
 	private final Agent agent;
 	private final Identifier waypoints;
 	private final HashMap<String, WaypointIL> waypointList = new HashMap<String, WaypointIL>();
 
-	WaypointsIL(Agent agent, Identifier waypoints) {
+	public WaypointsIL(Agent agent, Identifier waypoints) {
 		this.agent = agent;
 		this.waypoints = waypoints;
 	}
 
-	void add(double[] waypointxyz, String name, boolean useFloatWmes) {
+	public void add(double[] waypointxyz, String name, boolean useFloatWmes) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint != null) {
 			waypoint.disable();
@@ -24,7 +24,7 @@ final class WaypointsIL {
 		waypointList.put(name, new WaypointIL(agent, waypointxyz, name, waypoints, useFloatWmes));
 	}
 
-	boolean remove(String name) {
+	public boolean remove(String name) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint == null) {
 			return false;
@@ -33,7 +33,7 @@ final class WaypointsIL {
 		return true;
 	}
 
-	boolean enable(String name, SplinterState splinter) {
+	public boolean enable(String name, OffsetPose splinter) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
@@ -43,7 +43,7 @@ final class WaypointsIL {
 		return true;
 	}
 
-	boolean disable(String name) {
+	public boolean disable(String name) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
@@ -53,7 +53,7 @@ final class WaypointsIL {
 		return true;
 	}
 
-	void update(SplinterState splinter) {
+	public void update(OffsetPose splinter) {
 		for (WaypointIL waypoint : waypointList.values()) {
 			waypoint.update(splinter);
 		}

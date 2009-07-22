@@ -155,7 +155,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		List<int []> explosions = new ArrayList<int []>();
 		List<MissileData> newMissiles = new ArrayList<MissileData>();
 		for (CellObject cellObject : copy) {
-			int [] location = edu.umich.soar.gridmap2d.Arrays.copyOf(data.updatablesLocations.get(cellObject), data.updatablesLocations.get(cellObject).length);
+			int [] location = Arrays.copyOf(data.updatablesLocations.get(cellObject), data.updatablesLocations.get(cellObject).length);
 			Cell cell = getCell(location);
 
 			if (cellObject.hasProperty("update.fly-missile")) {
@@ -449,7 +449,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		
 		int [] location;
 		
-		location = edu.umich.soar.gridmap2d.Arrays.copyOf(myLocation, myLocation.length);
+		location = Arrays.copyOf(myLocation, myLocation.length);
 		Direction.translate(location, facing.left());
 		radar[0][distance] = getRadarCell(location);
 		if (radar[0][distance].player != null) {
@@ -462,7 +462,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 			}
 		}
 		
-		location = edu.umich.soar.gridmap2d.Arrays.copyOf(myLocation, myLocation.length);
+		location = Arrays.copyOf(myLocation, myLocation.length);
 		Direction.translate(location, facing.right());
 		radar[2][distance] = getRadarCell(location);
 		if (radar[2][distance].player != null) {
@@ -477,7 +477,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 
 		distance += 1;
 
-		location = edu.umich.soar.gridmap2d.Arrays.copyOf(myLocation, myLocation.length);
+		location = Arrays.copyOf(myLocation, myLocation.length);
 		Direction.translate(location, facing);
 		radar[1][distance] = getRadarCell(location);
 		if (radar[1][distance].player != null) {

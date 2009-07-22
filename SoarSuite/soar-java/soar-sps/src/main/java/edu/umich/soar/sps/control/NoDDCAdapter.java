@@ -1,5 +1,6 @@
 package edu.umich.soar.sps.control;
 
+import edu.umich.soar.waypoints.OffsetPose;
 import sml.Identifier;
 
 abstract class NoDDCAdapter implements Command {
@@ -19,7 +20,7 @@ abstract class NoDDCAdapter implements Command {
 		throw new AssertionError();
 	}
 
-	public boolean update(SplinterState splinter) {
+	public boolean update(OffsetPose splinter) {
 		throw new AssertionError();
 	}
 }

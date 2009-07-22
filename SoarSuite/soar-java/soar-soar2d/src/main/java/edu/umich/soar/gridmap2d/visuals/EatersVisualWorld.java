@@ -1,5 +1,6 @@
 package edu.umich.soar.gridmap2d.visuals;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.swt.events.PaintEvent;
@@ -23,7 +24,7 @@ public class EatersVisualWorld extends VisualWorld {
 	int [] agentLocation;
 	
 	public void setAgentLocation(int [] location) {
-		agentLocation = edu.umich.soar.gridmap2d.Arrays.copyOf(location, location.length);
+		agentLocation = Arrays.copyOf(location, location.length);
 	}
 	
 	public int getMiniWidth() {

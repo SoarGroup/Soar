@@ -5,6 +5,8 @@ package edu.umich.soar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 
@@ -18,7 +20,7 @@ final class ClearMessagesCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "clear-messages";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, SplinterState splinter,
+			Identifier command, OffsetPose splinter,
 			OutputLinkManager outputLinkManager) {
 		inputLink.clearMessages();
 		logger.info(NAME + ":");

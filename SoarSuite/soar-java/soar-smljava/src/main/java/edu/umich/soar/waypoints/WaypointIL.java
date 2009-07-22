@@ -1,8 +1,4 @@
-package edu.umich.soar.sps.control;
-
-import java.util.Arrays;
-
-import org.apache.log4j.Logger;
+package edu.umich.soar.waypoints;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
@@ -12,8 +8,6 @@ import sml.Identifier;
 import sml.IntElement;
 
 final class WaypointIL {
-	private static final Logger logger = Logger.getLogger(WaypointIL.class);
-
 	private final double[] xyz = new double[3];
 	private final String name;
 	private final Identifier waypoints;
@@ -75,25 +69,17 @@ final class WaypointIL {
 		}
 	}
 	
-	String getName() {
-		return name;
-	}
-
 	boolean equals(String other) {
 		return other.equals(name);
 	}
 
-	void update(SplinterState splinter) {
-		double distanceValue = LinAlg.distance(splinter.getSplinterPose().pos, xyz, 2);
-		double[] delta = LinAlg.subtract(xyz, splinter.getSplinterPose().pos);
+	void update(OffsetPose opose) {
+		double distanceValue = LinAlg.distance(opose.getPose().pos, xyz, 2);
+		double[] delta = LinAlg.subtract(xyz, opose.getPose().pos);
 		yawValueRad = Math.atan2(delta[1], delta[0]);
-		relativeBearingValueRad = yawValueRad - LinAlg.quatToRollPitchYaw(splinter.getSplinterPose().orientation)[2];
+		relativeBearingValueRad = yawValueRad - LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2];
 		relativeBearingValueRad = MathUtil.mod2pi(relativeBearingValueRad);
 
-		if (logger.isTraceEnabled()) {
-			logger.trace(String.format("xyz%s y%1.2f rb%1.2f", Arrays.toString(xyz), yawValueRad, relativeBearingValueRad));
-		}
-		
 		if (waypoint == null) {
 			waypoint = agent.CreateIdWME(waypoints, "waypoint");
 			

@@ -7,6 +7,8 @@ import jmat.LinAlg;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 
@@ -29,7 +31,7 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 	}
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, SplinterState splinter,
+			Identifier command, OffsetPose splinter,
 			OutputLinkManager outputLinkManager) {
 		if (this.agent != null || this.command != null || this.status == null) {
 			//throw new IllegalStateException();
@@ -68,12 +70,12 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 		status = null;
 	}
 
-	public boolean update(SplinterState splinter) {
+	public boolean update(OffsetPose splinter) {
 		if (agent == null || command == null || status == null) {
 			throw new IllegalStateException();
 		}
 		
-		double splinterYaw = LinAlg.quatToRollPitchYaw(splinter.getSplinterPose().orientation)[2];
+		double splinterYaw = LinAlg.quatToRollPitchYaw(splinter.getPose().orientation)[2];
 		splinterYaw = Math.abs(splinterYaw);
 		
 		if (Double.compare(splinterYaw, TOLERANCE) < 0) {

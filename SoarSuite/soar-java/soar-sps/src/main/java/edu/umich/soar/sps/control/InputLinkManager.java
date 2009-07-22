@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 import sml.Kernel;
@@ -22,7 +24,7 @@ final class InputLinkManager {
 	private final SelfIL selfIL;
 	private final RangerIL rangerIL;
 
-	InputLinkManager(Agent agent, Kernel kernel, int rangesCount, SplinterState splinter) {
+	InputLinkManager(Agent agent, Kernel kernel, int rangesCount, OffsetPose splinter) {
 		this.agent = agent;
 		this.agent.SetBlinkIfNoChange(false);
 

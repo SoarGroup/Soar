@@ -3,6 +3,7 @@
  */
 package edu.umich.soar.sps.control;
 
+import edu.umich.soar.waypoints.OffsetPose;
 import sml.Agent;
 import sml.Identifier;
 
@@ -15,12 +16,12 @@ interface Command {
 	 * @param outputLinkManager The calling instance.
 	 * @return true on success
 	 */
-	boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, SplinterState splinter, OutputLinkManager outputLinkManager);
+	boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, OffsetPose splinter, OutputLinkManager outputLinkManager);
 	/**
 	 * @param splinter Current state.
 	 * @return true if command is done executing.
 	 */
-	boolean update(SplinterState splinter);
+	boolean update(OffsetPose splinter);
 	/**
 	 * Command is interrupted.
 	 */
