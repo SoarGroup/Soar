@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
-import org.msoar.sps.config.Config;
+import edu.umich.soar.config.Config;
 
 final class Components implements DoneListener {
 	private static final Logger logger = Logger.getLogger(Components.class);

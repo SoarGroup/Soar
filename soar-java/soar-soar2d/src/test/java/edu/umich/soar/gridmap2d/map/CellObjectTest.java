@@ -4,7 +4,7 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
-import edu.umich.soar.gridmap2d.config.Config;
+import edu.umich.soar.config.Config;
 import edu.umich.soar.gridmap2d.map.CellObject;
 
 

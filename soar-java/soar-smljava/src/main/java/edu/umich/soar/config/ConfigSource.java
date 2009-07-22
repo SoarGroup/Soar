@@ -1,4 +1,4 @@
-package org.msoar.sps.config;
+package edu.umich.soar.config;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;

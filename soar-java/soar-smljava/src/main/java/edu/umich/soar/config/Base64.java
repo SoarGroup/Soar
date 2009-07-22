@@ -1,4 +1,4 @@
-package org.msoar.sps.config;
+package edu.umich.soar.config;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -103,11 +103,11 @@ public class Base64 {
 
 			byte out[] = decode(enc);
 
-			if (false) {
-				for (int i = 0; i < enc.length; i++)
-					System.out.println(enc[i]);
-				System.out.println("");
-			}
+//			if (false) {
+//				for (int i = 0; i < enc.length; i++)
+//					System.out.println(enc[i]);
+//				System.out.println("");
+//			}
 
 			System.out.printf("%4d %4d\n", in.length, out.length);
 

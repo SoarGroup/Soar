@@ -13,7 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.umich.soar.gridmap2d.config.Config;
+import edu.umich.soar.config.Config;
 import edu.umich.soar.gridmap2d.map.Cell;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.CellObjectObserver;

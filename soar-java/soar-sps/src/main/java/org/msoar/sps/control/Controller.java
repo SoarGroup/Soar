@@ -9,8 +9,9 @@ import jmat.LinAlg;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.HzChecker;
-import org.msoar.sps.config.Config;
-import org.msoar.sps.config.ConfigFile;
+import edu.umich.soar.config.Config;
+import edu.umich.soar.config.ConfigFile;
+import edu.umich.soar.config.ParseError;
 
 final class Controller extends TimerTask {
 	private static final Logger logger = Logger.getLogger(Controller.class);
@@ -206,6 +207,9 @@ final class Controller extends TimerTask {
 			try {
 				config = new Config(new ConfigFile(args[0]));
 			} catch (IOException e) {
+				logger.error(e.getMessage());
+				System.exit(1);
+			} catch (ParseError e) {
 				logger.error(e.getMessage());
 				System.exit(1);
 			}

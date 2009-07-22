@@ -4,8 +4,8 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-import edu.umich.soar.gridmap2d.config.Config;
-import edu.umich.soar.gridmap2d.config.ConfigFile;
+import edu.umich.soar.config.Config;
+import edu.umich.soar.config.ConfigFile;
 
 
 // TODO: use string constants

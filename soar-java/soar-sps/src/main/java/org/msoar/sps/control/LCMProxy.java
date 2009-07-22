@@ -1,6 +1,5 @@
 package org.msoar.sps.control;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.log4j.Logger;
