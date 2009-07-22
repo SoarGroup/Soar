@@ -1,6 +1,7 @@
 package edu.umich.soar.gridmap2d.world;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -91,7 +92,7 @@ public class TaxiWorld implements World {
 			int [] location = players.getLocation(taxi);
 			if (command.move) {
 				// Calculate new location
-				int [] newLocation = edu.umich.soar.gridmap2d.Arrays.copyOf(location, location.length);
+				int [] newLocation = Arrays.copyOf(location, location.length);
 				Direction.translate(newLocation, command.moveDirection);
 				
 				// Verify legal move and commit move

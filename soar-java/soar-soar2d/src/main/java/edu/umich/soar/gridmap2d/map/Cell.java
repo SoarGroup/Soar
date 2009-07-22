@@ -27,11 +27,11 @@ public class Cell {
 	}
 	
 	protected Cell(int[] xy) {
-		this.location = edu.umich.soar.gridmap2d.Arrays.copyOf(xy, xy.length);
+		this.location = Arrays.copyOf(xy, xy.length);
 	}
 	int [] location;
 	public int[] getLocation() {
-		return edu.umich.soar.gridmap2d.Arrays.copyOf(location, location.length);
+		return Arrays.copyOf(location, location.length);
 	}
 	
 	private List<CellObjectObserver> observers = new ArrayList<CellObjectObserver>();

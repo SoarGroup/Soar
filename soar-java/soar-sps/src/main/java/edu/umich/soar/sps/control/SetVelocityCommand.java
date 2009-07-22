@@ -5,6 +5,8 @@ package edu.umich.soar.sps.control;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.waypoints.OffsetPose;
+
 import sml.Agent;
 import sml.Identifier;
 
@@ -29,7 +31,7 @@ class SetVelocityCommand extends DDCCommand implements Command {
 	}
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, SplinterState splinter,
+			Identifier command, OffsetPose splinter,
 			OutputLinkManager outputLinkManager) {
 		if (this.agent != null || this.command != null) {
 			throw new IllegalStateException();

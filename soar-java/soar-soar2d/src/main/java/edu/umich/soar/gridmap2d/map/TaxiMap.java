@@ -103,7 +103,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 		}
 		
 		if (added.hasProperty("passenger")) {
-			passengerLocation = edu.umich.soar.gridmap2d.Arrays.copyOf(location, location.length);
+			passengerLocation = Arrays.copyOf(location, location.length);
 			if (passengerSourceColor == null) {
 				List<CellObject> dests = data.cells.getCell(passengerLocation).getAllWithProperty("destination");
 				if (dests.size() != 0) {
