@@ -6,7 +6,7 @@ import java.util.Timer;
 
 import org.apache.log4j.Logger;
 import org.msoar.sps.HzChecker;
-import org.msoar.sps.config.Config;
+import edu.umich.soar.config.Config;
 
 import sml.Agent;
 import sml.Kernel;

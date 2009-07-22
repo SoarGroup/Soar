@@ -1,4 +1,4 @@
-package edu.umich.soar.gridmap2d.config;
+package edu.umich.soar.config;
 
 import java.io.File;
 import java.io.IOException;

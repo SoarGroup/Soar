@@ -1,4 +1,4 @@
-package edu.umich.soar.gridmap2d.config;
+package edu.umich.soar.config;
 
 public class ParseError extends Exception {
 	private static final long serialVersionUID = 1L;

@@ -1,6 +1,5 @@
 package org.msoar.sps.splinter;
 
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,8 +18,10 @@ import org.apache.log4j.Logger;
 import org.msoar.sps.HzChecker;
 import org.msoar.sps.SharedNames;
 import org.msoar.sps.Odometry;
-import org.msoar.sps.config.Config;
-import org.msoar.sps.config.ConfigFile;
+import edu.umich.soar.config.Config;
+import edu.umich.soar.config.ConfigFile;
+import edu.umich.soar.config.ParseError;
+
 import org.msoar.sps.lcmtypes.odom_t;
 
 public final class Splinter extends TimerTask implements LCMSubscriber {
@@ -318,6 +319,9 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 			try {
 				config = new Config(new ConfigFile(args[0]));
 			} catch (IOException e) {
+				logger.error(e.getMessage());
+				System.exit(1);
+			} catch (ParseError e) {
 				logger.error(e.getMessage());
 				System.exit(1);
 			}
