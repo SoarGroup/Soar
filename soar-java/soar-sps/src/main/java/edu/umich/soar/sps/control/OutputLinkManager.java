@@ -18,7 +18,7 @@ import sml.Identifier;
 final class OutputLinkManager {
 	private static final Logger logger = Logger.getLogger(OutputLinkManager.class);
 
-	private final OffsetPose splinter;
+	private final OffsetPose opose;
 	private final Agent agent;
 	private final InputLinkInterface inputLink;
 	private final HashMap<String, Command> commands = new HashMap<String, Command>();
@@ -28,8 +28,8 @@ final class OutputLinkManager {
 	
 	private Command runningCommand;
 
-	OutputLinkManager(Agent agent, InputLinkInterface inputLink, OffsetPose splinter) {
-		this.splinter = splinter;
+	OutputLinkManager(Agent agent, InputLinkInterface inputLink, OffsetPose opose) {
+		this.opose = opose;
 		this.agent = agent;
 		this.inputLink = inputLink;
 
@@ -96,7 +96,7 @@ final class OutputLinkManager {
 				}
 			}
 			
-			if (!commandObject.execute(inputLink, agent, commandWme, splinter, this)) {
+			if (!commandObject.execute(inputLink, agent, commandWme, opose, this)) {
 				if (commandObject.createsDDC()) {
 					logger.warn("Error with new drive command, commanding estop.");
 					ddc = DifferentialDriveCommand.newEStopCommand();
@@ -111,7 +111,7 @@ final class OutputLinkManager {
 			}
 		}
 		
-		if (runningCommand != null && runningCommand.update(splinter)) {
+		if (runningCommand != null && runningCommand.update(opose)) {
 			runningCommand = null;
 		}
 		

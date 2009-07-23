@@ -20,7 +20,7 @@ final class DisableWaypointCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "disable-waypoint";
 	
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {

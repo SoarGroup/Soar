@@ -20,9 +20,9 @@ final class ConfigureCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "configure";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
-		if (splinter == null) {
+		if (opose == null) {
 			throw new AssertionError();
 		}
 		
@@ -60,7 +60,7 @@ final class ConfigureCommand extends NoDDCAdapter implements Command {
 				CommandStatus.error.addStatus(agent, command);
 				return false;
 			}
-			splinter.setOffset(offset);
+			opose.setOffset(offset);
 			logger.debug(String.format("%s: offset set to x%10.3f y%10.3f", NAME, offset[0], offset[1]));
 		}
 		

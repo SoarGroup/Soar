@@ -20,7 +20,7 @@ final class RemoveMessageCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "remove-message";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 
 		int id = -1;
