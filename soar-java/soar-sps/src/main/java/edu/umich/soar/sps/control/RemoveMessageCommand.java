@@ -38,7 +38,7 @@ final class RemoveMessageCommand extends NoDDCAdapter implements Command {
 
 		logger.debug(String.format(NAME + ": %d", id));
 		
-		if (waypoints.removeMessage(id) == false) {
+		if (messages.removeMessage(id) == false) {
 			logger.warn(NAME + ": Unable to remove message " + id + ", no such message");
 			CommandStatus.error.addStatus(agent, command);
 			return false;
