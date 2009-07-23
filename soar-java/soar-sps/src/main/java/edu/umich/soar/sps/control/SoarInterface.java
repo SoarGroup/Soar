@@ -6,6 +6,8 @@ import java.util.Timer;
 
 import org.apache.log4j.Logger;
 import edu.umich.soar.config.Config;
+import edu.umich.soar.robot.ConfigureInterface;
+import edu.umich.soar.robot.DifferentialDriveCommand;
 import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.sps.HzChecker;
 
@@ -14,7 +16,7 @@ import sml.Kernel;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
 
-final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
+final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, ConfigureInterface {
 	private static final Logger logger = Logger.getLogger(SoarInterface.class);
 
 	private final static int DEFAULT_RANGES_COUNT = 5;
@@ -35,6 +37,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	private List<String> tokens;
 	private DifferentialDriveCommand ddc;
 	private DifferentialDriveCommand soarddc;
+	private boolean floatYawWmes = true;
 	
 	private SoarInterface(Config config, OffsetPose splinter) {
 		kernel = Kernel.CreateKernelInNewThread();
@@ -62,7 +65,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		
 		int rangesCount = config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
 		input = new InputLinkManager(agent, kernel, rangesCount, splinter);
-		output = new OutputLinkManager(agent, input.getInterface(), splinter);
+		output = new OutputLinkManager(agent, input.getWaypointInterface(), input.getMessagesInterface(), this, splinter);
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
@@ -111,7 +114,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 			}
 			
 			synchronized (this) {
-				input.update(tokens, output.getUseFloatYawWmes());
+				input.update(tokens, this.isFloatYawWmes());
 				tokens = null;
 			}
 			
@@ -170,5 +173,15 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		DifferentialDriveCommand temp = ddc;
 		ddc = null;
 		return temp;
+	}
+
+	@Override
+	public boolean isFloatYawWmes() {
+		return floatYawWmes;
+	}
+
+	@Override
+	public void setFloatYawWmes(boolean setting) {
+		floatYawWmes = setting;
 	}
 }

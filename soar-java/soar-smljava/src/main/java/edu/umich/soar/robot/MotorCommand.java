@@ -1,11 +1,9 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -15,20 +13,25 @@ import sml.Identifier;
  *
  * Command motors directly with throttles. 
  */
-final class MotorCommand extends DDCCommand implements Command {
+final public class MotorCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(MotorCommand.class);
-	static final String NAME = "motor";
+	public static final String NAME = "motor";
 
+	public static Command newInstance() {
+		return new MotorCommand();
+	}
+	
 	private double left;
 	private double right;
 	
+	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newMotorCommand(left, right);
 	}
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 		if (this.agent != null || this.command != null) {
 			throw new IllegalStateException();
 		}

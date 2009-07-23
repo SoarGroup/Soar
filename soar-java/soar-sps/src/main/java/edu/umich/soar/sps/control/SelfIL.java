@@ -3,6 +3,8 @@ package edu.umich.soar.sps.control;
 import java.util.List;
 
 import edu.umich.soar.robot.OffsetPose;
+import edu.umich.soar.robot.MessagesInterface;
+import edu.umich.soar.robot.WaypointInterface;
 import edu.umich.soar.robot.WaypointsIL;
 
 
@@ -13,7 +15,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-final class SelfIL implements WaypointInterface {
+final class SelfIL implements WaypointInterface, MessagesInterface {
 	private final Agent agent;
 	private final WaypointsIL waypointsIL;
 	private final FloatElement xwme;
@@ -140,5 +142,13 @@ final class SelfIL implements WaypointInterface {
 	public boolean removeWaypoint(String id) {
 		return waypointsIL.remove(id);
 	}
+
+	@Override
+	public void newMessage(String dest, String message) {
+		if (dest.equals("say")) {
+			Say.newMessage(message);
+		}
+	}
+
 }
 

@@ -1,37 +1,37 @@
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
-final class DifferentialDriveCommand {
+final public class DifferentialDriveCommand {
 	private static final DifferentialDriveCommand ESTOP = new DifferentialDriveCommand();
 
-	static DifferentialDriveCommand newEStopCommand() {
+	public static DifferentialDriveCommand newEStopCommand() {
 		return ESTOP;
 	}
 	
-	static DifferentialDriveCommand newMotorCommand(double left, double right) {
+	public static DifferentialDriveCommand newMotorCommand(double left, double right) {
 		return new SplinterDriveCommandBuilder(CommandType.MOTOR).left(left).right(right).build();
 	}
 	
-	static DifferentialDriveCommand newVelocityCommand(double angularVelocity, double linearVelocity) {
+	public static DifferentialDriveCommand newVelocityCommand(double angularVelocity, double linearVelocity) {
 		return new SplinterDriveCommandBuilder(CommandType.VEL).angularVelocity(angularVelocity).linearVelocity(linearVelocity).build();
 	}
 	
-	static DifferentialDriveCommand newAngularVelocityCommand(double angularVelocity) {
+	public static DifferentialDriveCommand newAngularVelocityCommand(double angularVelocity) {
 		return new SplinterDriveCommandBuilder(CommandType.ANGVEL).angularVelocity(angularVelocity).build();
 	}
 	
-	static DifferentialDriveCommand newLinearVelocityCommand(double linearVelocity) {
+	public static DifferentialDriveCommand newLinearVelocityCommand(double linearVelocity) {
 		return new SplinterDriveCommandBuilder(CommandType.LINVEL).linearVelocity(linearVelocity).build();
 	}
 	
-	static DifferentialDriveCommand newHeadingCommand(double heading) {
+	public static DifferentialDriveCommand newHeadingCommand(double heading) {
 		return new SplinterDriveCommandBuilder(CommandType.HEADING).heading(heading).build();
 	}
 	
-	static DifferentialDriveCommand newHeadingLinearVelocityCommand(double heading, double linearVelocity) {
+	public static DifferentialDriveCommand newHeadingLinearVelocityCommand(double heading, double linearVelocity) {
 		return new SplinterDriveCommandBuilder(CommandType.HEADING_LINVEL).heading(heading).linearVelocity(linearVelocity).build();
 	}
 	
-	static DifferentialDriveCommand newMoveToCommand(double x, double y, double theta) {
+	public static DifferentialDriveCommand newMoveToCommand(double x, double y, double theta) {
 		return new SplinterDriveCommandBuilder(CommandType.MOVE_TO).x(x).y(y).theta(theta).build();
 	}
 	
@@ -106,7 +106,7 @@ final class DifferentialDriveCommand {
 		}
 	}
 	
-	enum CommandType {
+	public enum CommandType {
 		ESTOP(), 
 		MOTOR(), 
 		ANGVEL(), 
@@ -136,39 +136,39 @@ final class DifferentialDriveCommand {
 		arg2 = builder.arg2;
 	}
 	
-	CommandType getType() {
+	public CommandType getType() {
 		return type;
 	}
 	
-	double getLeft() {
+	public double getLeft() {
 		if (type != CommandType.MOTOR) {
 			throw new IllegalStateException();
 		}
 		return arg0;
 	}
 	
-	double getRight() {
+	public double getRight() {
 		if (type != CommandType.MOTOR) {
 			throw new IllegalStateException();
 		}
 		return arg1;
 	}
 	
-	double getAngularVelocity() {
+	public double getAngularVelocity() {
 		if (type != CommandType.ANGVEL && type != CommandType.LINVEL && type != CommandType.VEL) {
 			throw new IllegalStateException();
 		}
 		return arg0;
 	}
 	
-	double getLinearVelocity() {
+	public double getLinearVelocity() {
 		if (type != CommandType.ANGVEL && type != CommandType.LINVEL && type != CommandType.VEL && type != CommandType.HEADING_LINVEL) {
 			throw new IllegalStateException();
 		}
 		return arg1;
 	}
 	
-	double getHeading() {
+	public double getHeading() {
 		if (type != CommandType.HEADING && type != CommandType.HEADING_LINVEL) {
 			throw new IllegalStateException();
 		}
@@ -196,6 +196,7 @@ final class DifferentialDriveCommand {
 		return arg2;
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(type);

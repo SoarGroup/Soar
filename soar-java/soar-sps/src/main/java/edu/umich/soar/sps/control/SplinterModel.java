@@ -8,8 +8,9 @@ import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.robot.DifferentialDriveCommand;
 import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.sps.control.DifferentialDriveCommand.CommandType;
+import edu.umich.soar.robot.DifferentialDriveCommand.CommandType;
 import edu.umich.soar.sps.control.PIDController.Gains;
 
 final class SplinterModel implements OffsetPose {
@@ -23,7 +24,7 @@ final class SplinterModel implements OffsetPose {
 	private final SplinterHardware hardware;
 	private final pose_t pose = new pose_t();
 	private DifferentialDriveCommand ddc;
-	private CommandType previousType;
+	private DifferentialDriveCommand.CommandType previousType;
 	private PIDController headingController = new PIDController();	// experimentally derived in lab
 	private double previousHeading;
 	private final double[] offset = new double[] {0, 0, 0};

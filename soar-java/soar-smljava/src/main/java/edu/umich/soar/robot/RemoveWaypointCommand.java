@@ -1,11 +1,9 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -15,13 +13,23 @@ import sml.Identifier;
  *
  * Remove waypoint from waypoint system.
  */
-final class RemoveWaypointCommand extends NoDDCAdapter implements Command {
+final public class RemoveWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(RemoveWaypointCommand.class);
-	static final String NAME = "remove-waypoint";
+	public static final String NAME = "remove-waypoint";
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	public static Command newInstance(WaypointInterface waypoints) {
+		return new RemoveWaypointCommand(waypoints);
+	}
+	
+	public RemoveWaypointCommand(WaypointInterface waypoints) {
+		this.waypoints = waypoints;
+	}
+
+	private WaypointInterface waypoints;
+
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 
 		String id = command.GetParameterValue("id");
 		if (id == null) {

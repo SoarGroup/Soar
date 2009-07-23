@@ -1,11 +1,9 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -16,22 +14,27 @@ import sml.Identifier;
  * Set target heading and speed. Note, does not "complete" like set-heading (without
  * linear velocity) does.
  */
-final class SetHeadingLinearCommand extends DDCCommand implements Command {
+final public class SetHeadingLinearCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(SetHeadingLinearCommand.class);
 	private static final String YAW = "yaw";
 	private static final String LINVEL = "linear-velocity";
 	static final String NAME = "set-heading-linear";
 
+	public static Command newInstance() {
+		return new SetHeadingLinearCommand();
+	}
+	
 	private double yaw;
 	private double linearVelocity;
 	
+	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newHeadingLinearVelocityCommand(yaw, linearVelocity);
 	}
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 		if (this.agent != null || this.command != null) {
 			throw new IllegalStateException();
 		}

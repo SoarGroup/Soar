@@ -1,14 +1,12 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import jmat.LinAlg;
 import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -20,20 +18,25 @@ import sml.Identifier;
  * 
  * Returns accepted. Not interruptible. Creates DDC.
  */
-final class StopCommand extends DDCCommand implements Command {
+final public class StopCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(StopCommand.class);
 	private static final double TOLERANCE = 0.01; // meters per second
-	static final String NAME = "stop";
+	public static final String NAME = "stop";
 
+	public static Command newInstance() {
+		return new StopCommand();
+	}
+	
 	private CommandStatus status;
 	
+	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newVelocityCommand(0, 0);
 	}
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 		if (this.agent != null || this.command != null || this.status != null) {
 			throw new IllegalStateException();
 		}
@@ -47,6 +50,7 @@ final class StopCommand extends DDCCommand implements Command {
 		return true;
 	}
 
+	@Override
 	public void interrupt() {
 		if (agent == null || command == null || status == null) {
 			throw new IllegalStateException();
@@ -58,6 +62,7 @@ final class StopCommand extends DDCCommand implements Command {
 		status = null;
 	}
 
+	@Override
 	public boolean update(OffsetPose opose) {
 		if (agent != null || command != null || status != null) {
 			throw new IllegalStateException();
