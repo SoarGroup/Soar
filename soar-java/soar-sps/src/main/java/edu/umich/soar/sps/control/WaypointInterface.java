@@ -7,6 +7,5 @@ interface WaypointInterface {
 	void addWaypoint(double[] pos, String id, boolean useFloatYawWmes);
 	boolean disableWaypoint(String id);
 	boolean enableWaypoint(String id, OffsetPose splinter);
-	boolean removeMessage(int id);
 	boolean removeWaypoint(String id);
 }
