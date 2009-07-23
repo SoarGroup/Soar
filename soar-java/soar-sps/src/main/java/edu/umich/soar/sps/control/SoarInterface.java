@@ -6,8 +6,8 @@ import java.util.Timer;
 
 import org.apache.log4j.Logger;
 import edu.umich.soar.config.Config;
+import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.sps.HzChecker;
-import edu.umich.soar.waypoints.OffsetPose;
 
 import sml.Agent;
 import sml.Kernel;

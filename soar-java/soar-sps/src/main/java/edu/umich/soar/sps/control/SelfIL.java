@@ -2,8 +2,8 @@ package edu.umich.soar.sps.control;
 
 import java.util.List;
 
-import edu.umich.soar.waypoints.OffsetPose;
-import edu.umich.soar.waypoints.WaypointsIL;
+import edu.umich.soar.robot.OffsetPose;
+import edu.umich.soar.robot.WaypointsIL;
 
 
 import jmat.LinAlg;

@@ -1,6 +1,6 @@
 package edu.umich.soar.sps.control;
 
-import edu.umich.soar.waypoints.OffsetPose;
+import edu.umich.soar.robot.OffsetPose;
 import sml.Identifier;
 
 abstract class NoDDCAdapter implements Command {
