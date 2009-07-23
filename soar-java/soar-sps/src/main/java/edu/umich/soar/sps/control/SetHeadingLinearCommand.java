@@ -29,9 +29,9 @@ final class SetHeadingLinearCommand extends DDCCommand implements Command {
 		return DifferentialDriveCommand.newHeadingLinearVelocityCommand(yaw, linearVelocity);
 	}
 
-	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose opose,
-			OutputLinkManager outputLinkManager) {
+	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
+			Agent agent, Identifier command,
+			OffsetPose opose, OutputLinkManager outputLinkManager) {
 		if (this.agent != null || this.command != null) {
 			throw new IllegalStateException();
 		}

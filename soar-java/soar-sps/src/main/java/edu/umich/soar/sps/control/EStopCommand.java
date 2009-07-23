@@ -23,9 +23,9 @@ final class EStopCommand extends DDCCommand implements Command {
 		return DifferentialDriveCommand.newEStopCommand();
 	}
 
-	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose opose,
-			OutputLinkManager outputLinkManager) {
+	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
+			Agent agent, Identifier command,
+			OffsetPose opose, OutputLinkManager outputLinkManager) {
 		logger.debug(NAME + ":");
 		CommandStatus.accepted.addStatus(agent, command);
 		CommandStatus.complete.addStatus(agent, command);

@@ -19,9 +19,9 @@ final class ConfigureCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(ConfigureCommand.class);
 	static final String NAME = "configure";
 
-	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose opose,
-			OutputLinkManager outputLinkManager) {
+	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
+			Agent agent, Identifier command,
+			OffsetPose opose, OutputLinkManager outputLinkManager) {
 		if (opose == null) {
 			throw new AssertionError();
 		}
