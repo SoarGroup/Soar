@@ -1,13 +1,11 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import jmat.LinAlg;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -17,22 +15,27 @@ import sml.Identifier;
  *
  * Set target heading to rotate to.
  */
-final class SetHeadingCommand extends DDCCommand implements Command {
+final public class SetHeadingCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(SetHeadingCommand.class);
 	private static final String YAW = "yaw";
 	private static final double TOLERANCE = Math.toRadians(3);
-	static final String NAME = "set-heading";
+	public static final String NAME = "set-heading";
 
+	public static Command newInstance() {
+		return new SetHeadingCommand();
+	}
+	
 	private CommandStatus status;
 	private double yaw;
 	
+	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newHeadingCommand(yaw);
 	}
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 		if (this.agent != null || this.command != null || this.status == null) {
 			//throw new IllegalStateException();
 		}
@@ -59,6 +62,7 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 		return true;
 	}
 
+	@Override
 	public void interrupt() {
 		if (agent == null || command == null || status == null) {
 			throw new IllegalStateException();
@@ -70,6 +74,7 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 		status = null;
 	}
 
+	@Override
 	public boolean update(OffsetPose opose) {
 		if (agent == null || command == null || status == null) {
 			throw new IllegalStateException();

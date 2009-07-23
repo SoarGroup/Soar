@@ -6,7 +6,26 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.robot.AddWaypointCommand;
+import edu.umich.soar.robot.ClearMessagesCommand;
+import edu.umich.soar.robot.Command;
+import edu.umich.soar.robot.CommandStatus;
+import edu.umich.soar.robot.ConfigureCommand;
+import edu.umich.soar.robot.DifferentialDriveCommand;
+import edu.umich.soar.robot.DisableWaypointCommand;
+import edu.umich.soar.robot.EStopCommand;
+import edu.umich.soar.robot.EnableWaypointCommand;
+import edu.umich.soar.robot.MotorCommand;
 import edu.umich.soar.robot.OffsetPose;
+import edu.umich.soar.robot.RemoveMessageCommand;
+import edu.umich.soar.robot.RemoveWaypointCommand;
+import edu.umich.soar.robot.SendMessageCommand;
+import edu.umich.soar.robot.SetHeadingCommand;
+import edu.umich.soar.robot.SetVelocityCommand;
+import edu.umich.soar.robot.StopCommand;
+import edu.umich.soar.robot.MessagesInterface;
+import edu.umich.soar.robot.ConfigureInterface;
+import edu.umich.soar.robot.WaypointInterface;
 
 import sml.Agent;
 import sml.Identifier;
@@ -20,36 +39,30 @@ final class OutputLinkManager {
 
 	private final OffsetPose opose;
 	private final Agent agent;
-	private final WaypointInterface waypoints;
 	private final HashMap<String, Command> commands = new HashMap<String, Command>();
 	private final Set<Integer> completedTimeTags = new HashSet<Integer>();
 	
-	boolean useFloatYawWmes = true;
-	
 	private Command runningCommand;
 
-	OutputLinkManager(Agent agent, WaypointInterface waypoints, OffsetPose opose) {
+	OutputLinkManager(Agent agent, WaypointInterface waypoints, 
+			MessagesInterface messages, ConfigureInterface configure,
+			OffsetPose opose) {
 		this.opose = opose;
 		this.agent = agent;
-		this.waypoints = waypoints;
 
-		commands.put(MotorCommand.NAME, new MotorCommand());
-		commands.put(SetVelocityCommand.NAME, new SetVelocityCommand());
-		commands.put(SetHeadingCommand.NAME, new SetHeadingCommand());
-		commands.put(StopCommand.NAME, new StopCommand());
-		commands.put(EStopCommand.NAME, new EStopCommand());
-		commands.put(AddWaypointCommand.NAME, new AddWaypointCommand());
-		commands.put(RemoveWaypointCommand.NAME, new RemoveWaypointCommand());
-		commands.put(EnableWaypointCommand.NAME, new EnableWaypointCommand());
-		commands.put(DisableWaypointCommand.NAME, new DisableWaypointCommand());
-		commands.put(SendMessageCommand.NAME, new SendMessageCommand());
-		commands.put(RemoveMessageCommand.NAME, new RemoveMessageCommand());
-		commands.put(ClearMessagesCommand.NAME, new ClearMessagesCommand());
-		commands.put(ConfigureCommand.NAME, new ConfigureCommand());
-	}
-
-	boolean getUseFloatYawWmes() {
-		return useFloatYawWmes;
+		commands.put(MotorCommand.NAME, MotorCommand.newInstance());
+		commands.put(SetVelocityCommand.NAME, SetVelocityCommand.newInstance());
+		commands.put(SetHeadingCommand.NAME, SetHeadingCommand.newInstance());
+		commands.put(StopCommand.NAME, StopCommand.newInstance());
+		commands.put(EStopCommand.NAME, EStopCommand.newInstance());
+		commands.put(AddWaypointCommand.NAME, AddWaypointCommand.newInstance(waypoints, configure));
+		commands.put(RemoveWaypointCommand.NAME, RemoveWaypointCommand.newInstance(waypoints));
+		commands.put(EnableWaypointCommand.NAME, EnableWaypointCommand.newInstance(waypoints));
+		commands.put(DisableWaypointCommand.NAME, DisableWaypointCommand.newInstance(waypoints));
+		commands.put(SendMessageCommand.NAME, SendMessageCommand.newInstance(messages));
+		commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.newInstance(messages));
+		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.newInstance(messages));
+		commands.put(ConfigureCommand.NAME, ConfigureCommand.newInstance(configure));
 	}
 
 	DifferentialDriveCommand update() {
@@ -96,7 +109,7 @@ final class OutputLinkManager {
 				}
 			}
 			
-			if (!commandObject.execute(waypoints, null, agent, commandWme, opose, this)) {
+			if (!commandObject.execute(agent, commandWme, opose)) {
 				if (commandObject.createsDDC()) {
 					logger.warn("Error with new drive command, commanding estop.");
 					ddc = DifferentialDriveCommand.newEStopCommand();

@@ -1,11 +1,9 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -16,13 +14,23 @@ import sml.WMElement;
  *
  * Broadcasts a message to all listeners.
  */
-final class SendMessageCommand extends NoDDCAdapter implements Command {
+final public class SendMessageCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(SendMessageCommand.class);
-	static final String NAME = "send-message";
+	public static final String NAME = "send-message";
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	public static Command newInstance(MessagesInterface messages) {
+		return new SendMessageCommand(messages);
+	}
+	
+	public SendMessageCommand(MessagesInterface messages) {
+		this.messages = messages;
+	}
+
+	private MessagesInterface messages;
+
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 
 		if (opose == null) {
 			throw new AssertionError();
@@ -78,15 +86,9 @@ final class SendMessageCommand extends NoDDCAdapter implements Command {
 			return false;
 		} 
 		
-		if (destination.equals("say")) {
-			Say.newMessage(message.toString());
-			CommandStatus.accepted.addStatus(agent, command);
-			CommandStatus.complete.addStatus(agent, command);
-			return true;
-		}
-
-		logger.warn(NAME + ": Unsupported destination: " + destination);
-		CommandStatus.error.addStatus(agent, command);
-		return false;
+		messages.newMessage(destination, message.toString());
+		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.complete.addStatus(agent, command);
+		return true;
 	}
 }

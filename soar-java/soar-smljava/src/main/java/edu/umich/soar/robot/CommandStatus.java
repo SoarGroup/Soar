@@ -1,10 +1,10 @@
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import sml.Agent;
 import sml.Identifier;
 import sml.StringElement;
 
-enum CommandStatus {
+public enum CommandStatus {
 	accepted,
 	executing,
 	complete,
@@ -13,7 +13,7 @@ enum CommandStatus {
 	
 	private static final String STATUS = "status";
 	
-	StringElement addStatus(Agent agent, Identifier command) {
+	public StringElement addStatus(Agent agent, Identifier command) {
 		return agent.CreateStringWME(command, STATUS, this.toString());
 	}
 }

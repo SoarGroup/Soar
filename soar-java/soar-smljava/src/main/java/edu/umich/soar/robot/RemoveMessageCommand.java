@@ -1,11 +1,9 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -15,13 +13,23 @@ import sml.Identifier;
  *
  * Removes a message from the received message list.
  */
-final class RemoveMessageCommand extends NoDDCAdapter implements Command {
+final public class RemoveMessageCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(RemoveMessageCommand.class);
-	static final String NAME = "remove-message";
+	public static final String NAME = "remove-message";
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	public static Command newInstance(MessagesInterface messages) {
+		return new RemoveMessageCommand(messages);
+	}
+	
+	public RemoveMessageCommand(MessagesInterface messages) {
+		this.messages = messages;
+	}
+
+	private MessagesInterface messages;
+
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 
 		int id = -1;
 		try {
