@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -14,6 +13,7 @@ import org.apache.log4j.Logger;
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
+import edu.umich.soar.robot.DifferentialDriveCommand;
 
 
 /**
@@ -36,7 +36,7 @@ public class CommandInfo {
 	public boolean jump = false;	// jump if we move
 	public boolean dontEat = false;	// don't eat food
 	
-	// tanksoar + room
+	// tanksoar
 	public boolean rotate = false;	// rotate
 	public String rotateDirection;	// Which way to rotate, must be valid if rotate true
 	
@@ -50,30 +50,18 @@ public class CommandInfo {
 	public boolean shieldsSetting = false;	// setting to change shields to
 	
 	// room
-	public boolean forward = false;	// move forward
-	public boolean backward = false;	// move backward
-	public boolean rotateAbsolute = false;	// rotate to a heading
-	public double rotateAbsoluteHeading;	// what heading to stop at
-	public boolean rotateRelative = false;	// rotate tank
-	public double rotateRelativeYaw;		// how far to rotate
-	public boolean get = false;
-	public int [] getLocation = null;
-	public int getId;
-	public boolean drop = false;
-	public int dropId;
+	public DifferentialDriveCommand ddc;
 
 	// taxi
 	public boolean pickup = false;
 	public boolean putdown = false;
 	public boolean fillup = false;
 	
-	public class Communication {
-		public String to;
-		public String message;
-	}
-	public List<Communication> messages = new ArrayList<Communication>();
-	
 	public CommandInfo() {
+	}
+	
+	public CommandInfo(DifferentialDriveCommand ddc) {
+		this.ddc = ddc;
 	}
 	
 	private static void parseError(Tokenizer t, String msg) {
@@ -280,32 +268,7 @@ public class CommandInfo {
 			break;
 			
 		case ROOM:
-			if (forward) {
-				output += "(" + Names.kForwardID + ")";
-			}
-			if (backward) {
-				output += "(" + Names.kBackwardID + ")";
-			}
-			if (rotate) {
-				output += "(" + Names.kRotateID + ": " + rotateDirection + ")";			
-			}
-			if (rotateAbsolute) {
-				output += "(" + Names.kRotateAbsoluteID + ": " + rotateAbsoluteHeading + ")";			
-			}
-			if (rotateRelative) {
-				output += "(" + Names.kRotateRelativeID + ": " + rotateRelativeYaw + ")";			
-			}
-			if (get) {
-				output += "(" + Names.kGetID + ": " + getId + ": " + getLocation[0] + "," + getLocation[1] + ")";
-			}
-			if (drop) {
-				output += "(" + Names.kDropID + ": " + dropId + ")";
-			}
-			Iterator<Communication> iter = messages.iterator();
-			while (iter.hasNext()) {
-				Communication comm = iter.next();
-				output += "(comm: " + comm.to + ": " + comm.message + ")";
-			}
+			output += ddc;
 			break;
 
 		case TAXI:

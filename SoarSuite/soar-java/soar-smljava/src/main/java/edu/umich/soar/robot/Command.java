@@ -6,7 +6,7 @@ package edu.umich.soar.robot;
 import sml.Agent;
 import sml.Identifier;
 
-public interface Command {
+interface Command {
 	/**
 	 * @param agent Soar agent.
 	 * @param command The command wme to store.

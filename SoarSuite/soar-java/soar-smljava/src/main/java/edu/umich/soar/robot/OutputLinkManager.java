@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-
 import sml.Agent;
 import sml.Identifier;
 
@@ -23,24 +22,8 @@ final public class OutputLinkManager {
 	
 	private Command runningCommand;
 
-	public OutputLinkManager(Agent agent, WaypointInterface waypoints, 
-			MessagesInterface messages, ConfigureInterface configure,
-			OffsetPose opose) {
+	public OutputLinkManager(Agent agent) {
 		this.agent = agent;
-
-		commands.put(MotorCommand.NAME, MotorCommand.newInstance());
-		commands.put(SetVelocityCommand.NAME, SetVelocityCommand.newInstance());
-		commands.put(SetHeadingCommand.NAME, SetHeadingCommand.newInstance(opose));
-		commands.put(StopCommand.NAME, StopCommand.newInstance(opose));
-		commands.put(EStopCommand.NAME, EStopCommand.newInstance());
-		commands.put(AddWaypointCommand.NAME, AddWaypointCommand.newInstance(opose, waypoints, configure));
-		commands.put(RemoveWaypointCommand.NAME, RemoveWaypointCommand.newInstance(waypoints));
-		commands.put(EnableWaypointCommand.NAME, EnableWaypointCommand.newInstance(opose, waypoints));
-		commands.put(DisableWaypointCommand.NAME, DisableWaypointCommand.newInstance(waypoints));
-		commands.put(SendMessageCommand.NAME, SendMessageCommand.newInstance(messages));
-		commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.newInstance(messages));
-		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.newInstance(messages));
-		commands.put(ConfigureCommand.NAME, ConfigureCommand.newInstance(opose, configure));
 	}
 
 	public DifferentialDriveCommand update() {
@@ -107,5 +90,30 @@ final public class OutputLinkManager {
 		}
 		
 		return ddc;
+	}
+
+	public void destroy() {
+		commands.clear();
+		completedTimeTags.clear();
+		runningCommand = null;
+	}
+
+	public void create(WaypointInterface waypoints, SendMessagesInterface msgSend,
+			ReceiveMessagesInterface msgRcv, ConfigureInterface configure,
+			OffsetPose opose) {
+
+		commands.put(MotorCommand.NAME, MotorCommand.newInstance());
+		commands.put(SetVelocityCommand.NAME, SetVelocityCommand.newInstance());
+		commands.put(SetHeadingCommand.NAME, SetHeadingCommand.newInstance(opose));
+		commands.put(StopCommand.NAME, StopCommand.newInstance(opose));
+		commands.put(EStopCommand.NAME, EStopCommand.newInstance());
+		commands.put(AddWaypointCommand.NAME, AddWaypointCommand.newInstance(opose, waypoints));
+		commands.put(RemoveWaypointCommand.NAME, RemoveWaypointCommand.newInstance(waypoints));
+		commands.put(EnableWaypointCommand.NAME, EnableWaypointCommand.newInstance(waypoints));
+		commands.put(DisableWaypointCommand.NAME, DisableWaypointCommand.newInstance(waypoints));
+		commands.put(SendMessageCommand.NAME, SendMessageCommand.newInstance(msgSend));
+		commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.newInstance(msgRcv));
+		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.newInstance(msgRcv));
+		commands.put(ConfigureCommand.NAME, ConfigureCommand.newInstance(opose, configure));
 	}
 }

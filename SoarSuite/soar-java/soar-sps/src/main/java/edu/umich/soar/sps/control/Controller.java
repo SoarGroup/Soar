@@ -90,7 +90,7 @@ final class Controller extends TimerTask {
 	
 			List<String> messageTokens = httpController.getMessageTokens();
 			if (messageTokens != null) {
-				soar.setStringInput(messageTokens);
+				soar.newMessage("http", messageTokens);
 			}
 	
 			if (Buttons.SOAR.checkAndDisable()) {

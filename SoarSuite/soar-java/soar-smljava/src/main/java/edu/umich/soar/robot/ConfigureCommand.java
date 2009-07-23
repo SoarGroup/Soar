@@ -15,9 +15,9 @@ import sml.Identifier;
  */
 final public class ConfigureCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(ConfigureCommand.class);
-	public static final String NAME = "configure";
+	static final String NAME = "configure";
 
-	public static Command newInstance(OffsetPose opose, ConfigureInterface configure) {
+	static Command newInstance(OffsetPose opose, ConfigureInterface configure) {
 		return new ConfigureCommand(opose, configure);
 	}
 	

@@ -4,7 +4,6 @@ package edu.umich.soar.gridmap2d.players;
 import java.util.Arrays;
 
 import edu.umich.soar.gridmap2d.Simulation;
-import edu.umich.soar.gridmap2d.map.CellObject;
 
 public class RoomPlayerState {
 
@@ -12,11 +11,8 @@ public class RoomPlayerState {
 	private Double destinationHeading;
 	private double heading;
 	
-	private double speed;
 	private boolean collisionX;
 	private boolean collisionY;
-	private double[] velocity;
-	private CellObject carriedObject;
 	private int locationId;
 	private double[] floatLocation;
 	boolean rotated;
@@ -25,11 +21,8 @@ public class RoomPlayerState {
 		setAngularVelocity(0);
 		setDestinationHeading(null);
 		setHeading(0);
-		setSpeed(0);
 		setCollisionX(false);
 		setCollisionY(false);
-		setVelocity(new double[] {0,0});
-		carriedObject = null;
 		setLocationId(-1);
 		floatLocation = new double[] { -1, -1 };
 		rotated = true;
@@ -83,14 +76,6 @@ public class RoomPlayerState {
 		return heading;
 	}
 
-	public void setSpeed(double speed) {
-		this.speed = speed;
-	}
-
-	public double getSpeed() {
-		return speed;
-	}
-
 	public void setCollisionX(boolean collisionX) {
 		this.collisionX = collisionX;
 	}
@@ -107,42 +92,9 @@ public class RoomPlayerState {
 		return collisionY;
 	}
 
-	public void setVelocity(double[] velocity) {
-		this.velocity = velocity;
-	}
-
-	public double[] getVelocity() {
-		return velocity;
-	}
-	
-	void carry(CellObject object) {
-		assert carriedObject == null;
-		carriedObject = object;
-	}
-	
-	CellObject drop() {
-		assert carriedObject != null;
-		CellObject temp = carriedObject;
-		carriedObject = null;
-		return temp;
-	}
-	
-	public boolean isCarrying() {
-		return carriedObject != null;
-	}
-	
-	public String getCarryType() {
-		if (carriedObject == null) {
-			return "none";
-		}
-		return carriedObject.getProperty("id");
-	}
-	
-	public int getCarryId() {
-		if (carriedObject == null) {
-			return -1;
-		}
-		return carriedObject.getIntProperty("number", -1);
+	public void setLinearVelocity(double linVel) {
+		// TODO: convert to x,y
+		assert false;
 	}
 
 	public void setLocationId(int locationId) {
@@ -194,5 +146,11 @@ public class RoomPlayerState {
 			return Math.acos(dotProduct);
 		}
 		return Math.acos(dotProduct) * -1;
+	}
+
+	public void stop() {
+		// TODO Auto-generated method stub
+		assert false;
+		
 	}
 }

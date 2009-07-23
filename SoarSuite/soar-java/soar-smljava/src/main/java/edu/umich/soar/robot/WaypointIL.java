@@ -2,7 +2,6 @@ package edu.umich.soar.robot;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
-import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
@@ -11,19 +10,20 @@ final class WaypointIL {
 	private final double[] xyz = new double[3];
 	private final String name;
 	private final Identifier waypoints;
-	private final Agent agent;
-
+	private final OffsetPose opose;
+	
 	private Identifier waypoint;
 	private FloatElement distance;
 	private YawWmes yawWmes;
 	private double yawValueRad = 0;
 	private double relativeBearingValueRad = 0;
 	
-	WaypointIL(Agent agent, double[] waypointxyz, String name, Identifier waypoints, boolean useFloatWmes) {
-		this.agent = agent;
+	WaypointIL(double[] waypointxyz, String name, Identifier waypoints, 
+			boolean useFloatWmes, OffsetPose opose) {
 		System.arraycopy(waypointxyz, 0, this.xyz, 0, waypointxyz.length);
 		this.name = new String(name);
 		this.waypoints = waypoints;
+		this.opose = opose;
 		
 		yawWmes = useFloatWmes ? new YawFloatWmes() : new YawIntWmes();
 	}
@@ -39,15 +39,15 @@ final class WaypointIL {
 		private IntElement absRelativeBearingWmeI;
 
 		public void create() {
-			yawWmeI = agent.CreateIntWME(waypoint, "yaw", 0);
-			relativeBearingWmeI = agent.CreateIntWME(waypoint, "relative-bearing", 0);
-			absRelativeBearingWmeI = agent.CreateIntWME(waypoint, "abs-relative-bearing", 0);
+			yawWmeI = waypoint.CreateIntWME("yaw", 0);
+			relativeBearingWmeI = waypoint.CreateIntWME("relative-bearing", 0);
+			absRelativeBearingWmeI = waypoint.CreateIntWME("abs-relative-bearing", 0);
 		}
 		
 		public void update(double yawValueDeg, double relativeBearingValueDeg, double absRelativeBearingValueDeg) {
-			agent.Update(yawWmeI, (int)Math.round(yawValueDeg));
-			agent.Update(relativeBearingWmeI, (int)Math.round(relativeBearingValueDeg));
-			agent.Update(absRelativeBearingWmeI, (int)Math.round(absRelativeBearingValueDeg));
+			yawWmeI.Update((int)Math.round(yawValueDeg));
+			relativeBearingWmeI.Update((int)Math.round(relativeBearingValueDeg));
+			absRelativeBearingWmeI.Update((int)Math.round(absRelativeBearingValueDeg));
 		}
 	}
 
@@ -57,15 +57,15 @@ final class WaypointIL {
 		private FloatElement absRelativeBearingWmeF;
 
 		public void create() {
-			yawWmeF = agent.CreateFloatWME(waypoint, "yaw", 0);
-			relativeBearingWmeF = agent.CreateFloatWME(waypoint, "relative-bearing", 0);
-			absRelativeBearingWmeF = agent.CreateFloatWME(waypoint, "abs-relative-bearing", 0);
+			yawWmeF = waypoint.CreateFloatWME("yaw", 0);
+			relativeBearingWmeF = waypoint.CreateFloatWME("relative-bearing", 0);
+			absRelativeBearingWmeF = waypoint.CreateFloatWME("abs-relative-bearing", 0);
 		}
 		
 		public void update(double yawValueDeg, double relativeBearingValueDeg, double absRelativeBearingValueDeg) {
-			agent.Update(yawWmeF, yawValueDeg);
-			agent.Update(relativeBearingWmeF, relativeBearingValueDeg);
-			agent.Update(absRelativeBearingWmeF, absRelativeBearingValueDeg);
+			yawWmeF.Update(yawValueDeg);
+			relativeBearingWmeF.Update(relativeBearingValueDeg);
+			absRelativeBearingWmeF.Update(absRelativeBearingValueDeg);
 		}
 	}
 	
@@ -73,7 +73,7 @@ final class WaypointIL {
 		return other.equals(name);
 	}
 
-	void update(OffsetPose opose) {
+	void update() {
 		double distanceValue = LinAlg.distance(opose.getPose().pos, xyz, 2);
 		double[] delta = LinAlg.subtract(xyz, opose.getPose().pos);
 		yawValueRad = Math.atan2(delta[1], delta[0]);
@@ -81,19 +81,19 @@ final class WaypointIL {
 		relativeBearingValueRad = MathUtil.mod2pi(relativeBearingValueRad);
 
 		if (waypoint == null) {
-			waypoint = agent.CreateIdWME(waypoints, "waypoint");
+			waypoint = waypoints.CreateIdWME("waypoint");
 			
-			agent.CreateStringWME(waypoint, "id", name);
-			agent.CreateFloatWME(waypoint, "x", xyz[0]);
-			agent.CreateFloatWME(waypoint, "y", xyz[1]);
-			agent.CreateFloatWME(waypoint, "z", xyz[2]);
+			waypoint.CreateStringWME("id", name);
+			waypoint.CreateFloatWME("x", xyz[0]);
+			waypoint.CreateFloatWME("y", xyz[1]);
+			waypoint.CreateFloatWME("z", xyz[2]);
 
-			distance = agent.CreateFloatWME(waypoint, "distance", 0);
+			distance = waypoint.CreateFloatWME("distance", 0);
 
 			yawWmes.create();
 		}
 		
-		agent.Update(distance, distanceValue);
+		distance.Update(distanceValue);
 		
 		double yawValueDeg = Math.toDegrees(yawValueRad);
 		double relativeBearingValueDeg = Math.toDegrees(relativeBearingValueRad);
@@ -103,7 +103,7 @@ final class WaypointIL {
 	}
 
 	void disable() {
-		agent.DestroyWME(waypoint);
+		waypoint.DestroyWME();
 		waypoint = null;
 	}
 	
