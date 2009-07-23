@@ -1,11 +1,9 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
-
-import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
@@ -15,17 +13,22 @@ import sml.Identifier;
  *
  * Emergency stop.
  */
-final class EStopCommand extends DDCCommand implements Command {
+final public class EStopCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(EStopCommand.class);
-	static final String NAME = "estop";
+	public static final String NAME = "estop";
 
+	public static Command newInstance() {
+		return new EStopCommand();
+	}
+	
+	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newEStopCommand();
 	}
 
-	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
-			Agent agent, Identifier command,
-			OffsetPose opose, OutputLinkManager outputLinkManager) {
+	@Override
+	public boolean execute(Agent agent, Identifier command,
+			OffsetPose opose) {
 		logger.debug(NAME + ":");
 		CommandStatus.accepted.addStatus(agent, command);
 		CommandStatus.complete.addStatus(agent, command);

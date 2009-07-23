@@ -1,6 +1,5 @@
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
-import edu.umich.soar.robot.OffsetPose;
 import sml.Agent;
 import sml.Identifier;
 
@@ -9,14 +8,17 @@ abstract class DDCCommand implements Command {
 	protected Agent agent;
 	protected Identifier command;
 	
+	@Override
 	public boolean createsDDC() {
 		return true;
 	}
 
+	@Override
 	public Identifier wme() {
 		return command;
 	}
 
+	@Override
 	public void interrupt() {
 		if (agent == null || command == null) {
 			throw new IllegalStateException();
@@ -27,6 +29,7 @@ abstract class DDCCommand implements Command {
 		command = null;
 	}
 
+	@Override
 	public boolean update(OffsetPose opose) {
 		return false; // still executing
 	}

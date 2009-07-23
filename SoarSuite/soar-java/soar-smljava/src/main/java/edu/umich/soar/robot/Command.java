@@ -1,23 +1,20 @@
 /**
  * 
  */
-package edu.umich.soar.sps.control;
+package edu.umich.soar.robot;
 
-import edu.umich.soar.robot.OffsetPose;
 import sml.Agent;
 import sml.Identifier;
 
-interface Command {
+public interface Command {
 	/**
-	 * @param waypoints Input link for waypoint stuff.
-	 * @param messages TODO
 	 * @param agent Soar agent.
 	 * @param command The command wme to store.
 	 * @param opose Current state.
 	 * @param outputLinkManager The calling instance.
 	 * @return true on success
 	 */
-	boolean execute(WaypointInterface waypoints, MessagesInterface messages, Agent agent, Identifier command, OffsetPose opose, OutputLinkManager outputLinkManager);
+	boolean execute(Agent agent, Identifier command, OffsetPose opose);
 	/**
 	 * @param opose Current state.
 	 * @return true if command is done executing.

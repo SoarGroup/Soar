@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.robot.MessagesInterface;
 import edu.umich.soar.robot.OffsetPose;
+import edu.umich.soar.robot.WaypointInterface;
 
 import sml.Agent;
 import sml.Identifier;
@@ -56,8 +58,11 @@ final class InputLinkManager {
 		rangerIL.update(useFloatYawWmes);
 	}
 	
-	WaypointInterface getInterface() {
+	WaypointInterface getWaypointInterface() {
 		return selfIL;
 	}
 
+	public MessagesInterface getMessagesInterface() {
+		return selfIL;
+	}
 }
