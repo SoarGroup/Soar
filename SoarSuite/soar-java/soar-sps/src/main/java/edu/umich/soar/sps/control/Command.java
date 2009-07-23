@@ -9,14 +9,15 @@ import sml.Identifier;
 
 interface Command {
 	/**
-	 * @param inputLink Input link for waypoint stuff.
+	 * @param waypoints Input link for waypoint stuff.
+	 * @param messages TODO
 	 * @param agent Soar agent.
 	 * @param command The command wme to store.
 	 * @param opose Current state.
 	 * @param outputLinkManager The calling instance.
 	 * @return true on success
 	 */
-	boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, OffsetPose opose, OutputLinkManager outputLinkManager);
+	boolean execute(WaypointInterface waypoints, MessagesInterface messages, Agent agent, Identifier command, OffsetPose opose, OutputLinkManager outputLinkManager);
 	/**
 	 * @param opose Current state.
 	 * @return true if command is done executing.

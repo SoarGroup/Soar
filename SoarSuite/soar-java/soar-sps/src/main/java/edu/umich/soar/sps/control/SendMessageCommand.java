@@ -20,9 +20,9 @@ final class SendMessageCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(SendMessageCommand.class);
 	static final String NAME = "send-message";
 
-	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose opose,
-			OutputLinkManager outputLinkManager) {
+	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
+			Agent agent, Identifier command,
+			OffsetPose opose, OutputLinkManager outputLinkManager) {
 
 		if (opose == null) {
 			throw new AssertionError();

@@ -56,7 +56,7 @@ final class InputLinkManager {
 		rangerIL.update(useFloatYawWmes);
 	}
 	
-	InputLinkInterface getInterface() {
+	WaypointInterface getInterface() {
 		return selfIL;
 	}
 

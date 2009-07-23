@@ -19,9 +19,9 @@ final class RemoveMessageCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(RemoveMessageCommand.class);
 	static final String NAME = "remove-message";
 
-	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose opose,
-			OutputLinkManager outputLinkManager) {
+	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
+			Agent agent, Identifier command,
+			OffsetPose opose, OutputLinkManager outputLinkManager) {
 
 		int id = -1;
 		try {
@@ -38,7 +38,7 @@ final class RemoveMessageCommand extends NoDDCAdapter implements Command {
 
 		logger.debug(String.format(NAME + ": %d", id));
 		
-		if (inputLink.removeMessage(id) == false) {
+		if (waypoints.removeMessage(id) == false) {
 			logger.warn(NAME + ": Unable to remove message " + id + ", no such message");
 			CommandStatus.error.addStatus(agent, command);
 			return false;
