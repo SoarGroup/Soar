@@ -13,5 +13,7 @@
 	<classpathentry kind="lib" path="lib/jdom.jar"/>
 	<classpathentry kind="lib" path="lib/tosca.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
+	<classpathentry kind="lib" path="/soar-smljava/lib/lcmtypes.jar"/>
+	<classpathentry kind="lib" path="/soar-smljava/lib/jmat.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

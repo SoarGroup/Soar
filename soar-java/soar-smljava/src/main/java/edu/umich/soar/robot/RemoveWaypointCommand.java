@@ -15,9 +15,9 @@ import sml.Identifier;
  */
 final public class RemoveWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(RemoveWaypointCommand.class);
-	public static final String NAME = "remove-waypoint";
+	static final String NAME = "remove-waypoint";
 
-	public static Command newInstance(WaypointInterface waypoints) {
+	static Command newInstance(WaypointInterface waypoints) {
 		return new RemoveWaypointCommand(waypoints);
 	}
 	

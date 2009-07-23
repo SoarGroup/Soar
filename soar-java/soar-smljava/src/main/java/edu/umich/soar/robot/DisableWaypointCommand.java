@@ -15,9 +15,9 @@ import sml.Identifier;
  */
 final public class DisableWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(DisableWaypointCommand.class);
-	public static final String NAME = "disable-waypoint";
+	static final String NAME = "disable-waypoint";
 	
-	public static Command newInstance(WaypointInterface waypoints) {
+	static Command newInstance(WaypointInterface waypoints) {
 		return new DisableWaypointCommand(waypoints);
 	}
 	

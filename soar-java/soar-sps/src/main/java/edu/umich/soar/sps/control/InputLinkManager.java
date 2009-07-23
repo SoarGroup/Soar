@@ -1,11 +1,12 @@
 package edu.umich.soar.sps.control;
 
-import java.util.List;
-
 import org.apache.log4j.Logger;
 
-import edu.umich.soar.robot.MessagesInterface;
+import edu.umich.soar.robot.ConfigurationIL;
+import edu.umich.soar.robot.ReceiveMessagesInterface;
+import edu.umich.soar.robot.ConfigureInterface;
 import edu.umich.soar.robot.OffsetPose;
+import edu.umich.soar.robot.TimeIL;
 import edu.umich.soar.robot.WaypointInterface;
 
 import sml.Agent;
@@ -20,49 +21,47 @@ import sml.smlSystemEventId;
 final class InputLinkManager {
 	private static final Logger logger = Logger.getLogger(InputLinkManager.class);
 
-	private final Agent agent;
 	private final ConfigurationIL configurationIL;
 	private final TimeIL timeIL;
 	private final SelfIL selfIL;
 	private final RangerIL rangerIL;
 
-	InputLinkManager(Agent agent, Kernel kernel, int rangesCount, OffsetPose splinter) {
-		this.agent = agent;
-		this.agent.SetBlinkIfNoChange(false);
-
+	InputLinkManager(Agent agent, Kernel kernel, int rangesCount, OffsetPose opose) {
 		logger.debug("Initializing input-link");
 
 		Identifier inputLink = agent.GetInputLink();
 
+		Identifier configuration = agent.CreateIdWME(inputLink, "configuration");
+		configurationIL = new ConfigurationIL(configuration, opose);
+
 		Identifier time = agent.CreateIdWME(inputLink, "time");
-		timeIL = new TimeIL(agent, time);
+		timeIL = new TimeIL(time);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, timeIL, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, timeIL, null);
 
 		Identifier self = agent.CreateIdWME(inputLink, "self");
-		selfIL = new SelfIL(agent, self, splinter);
-
-		Identifier configuration = agent.CreateIdWME(inputLink, "configuration");
-		configurationIL = new ConfigurationIL(agent, configuration, splinter);
+		selfIL = new SelfIL(agent, self, opose, configurationIL);
 
 		Identifier ranges = agent.CreateIdWME(inputLink, "ranges");
-		rangerIL = new RangerIL(agent, ranges, rangesCount);
-
-		agent.Commit();
+		rangerIL = new RangerIL(agent, ranges, rangesCount, configurationIL);
 	}
 
-	void update(List<String> tokens, boolean useFloatYawWmes) {
+	void update() {
 		timeIL.update();
-		selfIL.update(tokens, useFloatYawWmes);
-		configurationIL.update(useFloatYawWmes);
-		rangerIL.update(useFloatYawWmes);
+		selfIL.update();
+		configurationIL.update();
+		rangerIL.update();
 	}
 	
 	WaypointInterface getWaypointInterface() {
-		return selfIL;
+		return selfIL.getWaypointsIL();
 	}
 
-	public MessagesInterface getMessagesInterface() {
-		return selfIL;
+	ReceiveMessagesInterface getReceiveMessagesInterface() {
+		return selfIL.getMessagesIL();
+	}
+	
+	ConfigureInterface getConfigurationInterface() {
+		return configurationIL;
 	}
 }

@@ -19,9 +19,9 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(SetHeadingCommand.class);
 	private static final String YAW = "yaw";
 	private static final double TOLERANCE = Math.toRadians(3);
-	public static final String NAME = "set-heading";
+	static final String NAME = "set-heading";
 
-	public static Command newInstance(OffsetPose opose) {
+	static Command newInstance(OffsetPose opose) {
 		return new SetHeadingCommand(opose);
 	}
 	

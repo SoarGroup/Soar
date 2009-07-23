@@ -15,9 +15,9 @@ import sml.Identifier;
  */
 final public class MotorCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(MotorCommand.class);
-	public static final String NAME = "motor";
+	static final String NAME = "motor";
 
-	public static Command newInstance() {
+	static Command newInstance() {
 		return new MotorCommand();
 	}
 	

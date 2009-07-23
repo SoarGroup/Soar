@@ -15,17 +15,17 @@ import sml.Identifier;
  */
 final public class ClearMessagesCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(ClearMessagesCommand.class);
-	public static final String NAME = "clear-messages";
+	static final String NAME = "clear-messages";
 
-	public static Command newInstance(MessagesInterface messages) {
+	static Command newInstance(ReceiveMessagesInterface messages) {
 		return new ClearMessagesCommand(messages);
 	}
 	
-	public ClearMessagesCommand(MessagesInterface messages) {
+	public ClearMessagesCommand(ReceiveMessagesInterface messages) {
 		this.messages = messages;
 	}
 
-	private final MessagesInterface messages;
+	private final ReceiveMessagesInterface messages;
 
 	@Override
 	public boolean execute(Agent agent, Identifier command) {

@@ -9,9 +9,7 @@ import org.apache.log4j.Logger;
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
-import edu.umich.soar.gridmap2d.Simulation;
 import edu.umich.soar.gridmap2d.config.PlayerConfig;
-import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.GridMap;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
@@ -19,6 +17,7 @@ import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RoomCommander;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.gridmap2d.players.RoomPlayerState;
+import edu.umich.soar.robot.DifferentialDriveCommand;
 
 public class RoomWorld implements World {
 	private static Logger logger = Logger.getLogger(RoomWorld.class);
@@ -27,7 +26,8 @@ public class RoomWorld implements World {
 	private PlayersManager<RoomPlayer> players = new PlayersManager<RoomPlayer>();
 	private boolean forceHuman = false;
 	private List<String> stopMessages = new ArrayList<String>();
-	private double speed = 16;
+	// TODO fix
+	//private double speed = 16;
 	public static final int cell_size = 16;
 	private double rotate_speed = Math.PI / 4.0;
 	private CognitiveArchitecture cogArch;
@@ -186,33 +186,39 @@ public class RoomWorld implements World {
 			CommandInfo command = players.getCommand(player);	
 			RoomPlayerState state = player.getState();
 			
-			// update rotation speed
-			if (command.rotate) {
-				if (command.rotateDirection.equals(Names.kRotateLeft)) {
-					logger.debug("Rotate: left");
-					state.setAngularVelocity(rotate_speed * -1 * time);
-				} 
-				else if (command.rotateDirection.equals(Names.kRotateRight)) {
-					logger.debug("Rotate: right");
-					state.setAngularVelocity(rotate_speed * time);
-				} 
-				else if (command.rotateDirection.equals(Names.kRotateStop)) {
-					logger.debug("Rotate: stop");
-					state.setAngularVelocity(0);
-				}
+			DifferentialDriveCommand ddc = command.ddc;
+			switch(ddc.getType()) {
+			case ANGVEL:
+				state.setAngularVelocity(ddc.getAngularVelocity());
 				state.resetDestinationHeading();
-			} 
-			else if (command.rotateAbsolute) {
-				command.rotateAbsoluteHeading = Simulation.mod2pi(command.rotateAbsoluteHeading);
-				calculateAndSetAngularVelocity(command.rotateAbsoluteHeading, player, time);
+				break;
+			case ESTOP:
+				state.stop();
+				break;
+			case HEADING:
+				calculateAndSetAngularVelocity(ddc.getHeading(), player, time);
+				break;
+			case HEADING_LINVEL:
+				calculateAndSetAngularVelocity(ddc.getHeading(), player, time);
+				state.setLinearVelocity(ddc.getLinearVelocity());
+				break;
+			case LINVEL:
+				state.setLinearVelocity(ddc.getLinearVelocity());
+				break;
+			case MOTOR:
+				// TODO: other than stop
+				state.stop();
+				break;
+			case MOVE_TO:
+				// TODO: implement
+				assert false;
+				break;
+			case VEL:
+				state.setAngularVelocity(ddc.getAngularVelocity());
+				state.setLinearVelocity(ddc.getLinearVelocity());
+				break;
 			}
-			else if (command.rotateRelative) {
-				double absoluteHeading = player.getState().getHeading();
-				absoluteHeading += command.rotateRelativeYaw;
-				absoluteHeading = Simulation.mod2pi(absoluteHeading);
-				calculateAndSetAngularVelocity(absoluteHeading, player, time);
-			}
-
+			
 			// update heading if we rotate
 			if (state.getAngularVelocity() != 0) {
 				double heading = state.getHeading();
@@ -222,7 +228,6 @@ public class RoomWorld implements World {
 						if (Double.compare(heading, state.getDestinationHeading()) >= 0) {
 							heading = state.getDestinationHeading();
 							logger.debug("Destination heading reached: " + heading);
-							player.rotateComplete();
 							player.getState().setAngularVelocity(0);
 							state.resetDestinationHeading();
 						} 
@@ -234,7 +239,6 @@ public class RoomWorld implements World {
 						if (Double.compare(heading, state.getDestinationHeading()) <= 0) {
 							heading = state.getDestinationHeading();
 							logger.debug("Destination heading reached: " + heading);
-							player.rotateComplete();
 							player.getState().setAngularVelocity(0);
 							state.resetDestinationHeading();
 						} 
@@ -247,62 +251,12 @@ public class RoomWorld implements World {
 				state.setHeading(heading); // does mod2pi
 			}
 			
-			// update speed
-			if (command.forward && command.backward) {
-				logger.debug("Move: stop");
-				state.setSpeed(0);
-			} 
-			else if (command.forward) {
-				logger.debug("Move: forward");
-				state.setSpeed(speed);
-			}
-			else if (command.backward) {
-				logger.debug("Move: backward");
-				state.setSpeed(speed * -1);
-			}
-			
 			// reset collision sensor
 			state.setCollisionX(false);
 			state.setCollisionY(false);
 
-			// if we have velocity, process move
-			if (state.getSpeed() != 0) {
-				roomMovePlayer(player, time);
-			} else {
-				state.setVelocity(new double [] { 0, 0 });
-			}
-			
-			if (command.get) {
-				get(command, player);
-			}
-			
-			if (command.drop) {
-				double [] dropFloatLocation = Arrays.copyOf(players.getFloatLocation(player), players.getFloatLocation(player).length);
-				dropFloatLocation[0] += cell_size * Math.cos(state.getHeading());
-				dropFloatLocation[1] += cell_size * Math.sin(state.getHeading());
-				int [] dropLocation = new int [] { (int)dropFloatLocation[0] / cell_size, (int)dropFloatLocation[1] / cell_size };
-				
-				if (dropLocation.equals(players.getLocation(player))) {
-					dropFloatLocation[0] += (cell_size * 0.42) * Math.cos(state.getHeading());
-					dropFloatLocation[1] += (cell_size * 0.42) * Math.sin(state.getHeading());
-					dropLocation = new int [] { (int)dropFloatLocation[0] / cell_size, (int)dropFloatLocation[1] / cell_size };
-					assert !dropLocation.equals(players.getLocation(player));
-				}
-
-				logger.debug("Move: drop " + dropLocation[0] + "," + dropLocation[1]);
-				
-				if (checkBlocked(dropLocation)) {
-					logger.warn("drop command failed, blocked");
-					command.drop = false;
-					player.updateDropStatus(false);
-				} else {
-					// FIXME: store drop info for processing later
-					roomMap.getCell(dropLocation).addObject(player.drop());
-					player.updateDropStatus(true);
-				}
-			}
-			
-			handleCommunication(command, player);
+			// TODO: if we have velocity, process move
+			roomMovePlayer(player, time);
 		}
 	}
 
@@ -319,38 +273,6 @@ public class RoomWorld implements World {
 		return false;
 	}
 	
-	private void handleCommunication(CommandInfo command, RoomPlayer player) {
-		// handle communication
-		for (CommandInfo.Communication comm : command.messages) {
-			RoomPlayer toPlayer = players.get(comm.to);
-			if (toPlayer == null) {
-				logger.warn("Move: communicate: unknown player: " + comm.to);
-				continue;
-			}
-			
-			toPlayer.receiveMessage(player, comm.message);
-		}
-	}
-
-	private void get(CommandInfo command, RoomPlayer player) {
-		logger.debug("Move: get, location " + command.getLocation[0] + "," + command.getLocation[1]);
-		CellObject block = roomMap.getCell(command.getLocation).getObject(Names.kRoomObjectName);
-		if (block == null || player.getState().isCarrying()) {
-			if (block == null) {
-				logger.warn("get command failed, no object");
-			} else {
-				logger.warn("get command failed, full");
-			}
-			command.get = false;
-			player.updateGetStatus(false);
-		} else {
-			// FIXME: store get info for processing later
-			player.carry(roomMap.getCell(command.getLocation).getAllWithProperty(Names.kRoomObjectName).get(0));
-			roomMap.getCell(command.getLocation).removeObject(Names.kRoomObjectName);
-			player.updateGetStatus(true);
-		}
-	}
-
 	private void roomMovePlayer(RoomPlayer player, double time) {
 		int [] oldLocation = players.getLocation(player);
 		int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
@@ -360,8 +282,9 @@ public class RoomWorld implements World {
 
 		RoomPlayerState state = player.getState();
 
-		newFloatLocation[0] += state.getSpeed() * Math.cos(state.getHeading()) * time;
-		newFloatLocation[1] += state.getSpeed() * Math.sin(state.getHeading()) * time;
+		// TODO: fix
+		//newFloatLocation[0] += state.getSpeed() * Math.cos(state.getHeading()) * time;
+		//newFloatLocation[1] += state.getSpeed() * Math.sin(state.getHeading()) * time;
 		
 		newLocation[0] = (int)newFloatLocation[0] / cell_size;
 		newLocation[1] = (int)newFloatLocation[1] / cell_size;
@@ -438,7 +361,8 @@ public class RoomWorld implements World {
 			}
 		}
 		
-		state.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
+		// TODO: fix
+		//state.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
 		roomMap.getCell(oldLocation).setPlayer(null);
 		players.setLocation(player, newLocation);
 		players.setFloatLocation(player, newFloatLocation);
@@ -458,7 +382,6 @@ public class RoomWorld implements World {
 			player.getState().setDestinationHeading(targetHeading);
 		} 
 		else {
-			player.rotateComplete();
 			player.getState().setAngularVelocity(0);
 			player.getState().resetDestinationHeading();
 		}

@@ -1,8 +1,11 @@
 package edu.umich.soar.gridmap2d.players;
 
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import edu.umich.soar.gridmap2d.Gridmap2D;
-import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 
 public class RoomPlayer extends Player {
@@ -61,20 +64,17 @@ public class RoomPlayer extends Player {
 		}
 	}
 
-	public void rotateComplete() {
-		commander.rotateComplete();
-	}
-
-	public void updateDropStatus(boolean b) {
-		commander.updateDropStatus(b);
-	}
-
 	public void receiveMessage(Player player, String message) {
-		commander.receiveMessage(player, message);
-	}
-
-	public void updateGetStatus(boolean b) {
-		commander.updateGetStatus(b);
+		List<String> tokens = Arrays.asList(message.split(" "));
+		
+		Iterator<String> iter = tokens.iterator();
+		while (iter.hasNext()) {
+			String token = iter.next();
+			if (token.length() == 0) {
+				iter.remove();
+			}
+		}
+		commander.receiveMessage(player, tokens);
 	}
 
 	public void shutdownCommander() throws Exception {
@@ -82,16 +82,4 @@ public class RoomPlayer extends Player {
 			commander.shutdown();
 		}
 	}
-
-	public void carry(CellObject object) {
-		state.carry(object);
-		commander.carry(object);
-	}
-	
-	public CellObject drop() {
-		CellObject temp = state.drop();
-		commander.drop();
-		return temp;
-	}
-
 }

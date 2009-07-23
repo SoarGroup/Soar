@@ -20,7 +20,7 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 	private static final String LINVEL = "linear-velocity";
 	static final String NAME = "set-heading-linear";
 
-	public static Command newInstance() {
+	static Command newInstance() {
 		return new SetHeadingLinearCommand();
 	}
 	
