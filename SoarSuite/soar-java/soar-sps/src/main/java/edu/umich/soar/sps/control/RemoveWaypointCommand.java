@@ -20,7 +20,7 @@ final class RemoveWaypointCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "remove-waypoint";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 
 		String id = command.GetParameterValue("id");

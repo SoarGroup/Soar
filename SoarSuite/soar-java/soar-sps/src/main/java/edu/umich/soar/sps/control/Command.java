@@ -12,16 +12,16 @@ interface Command {
 	 * @param inputLink Input link for waypoint stuff.
 	 * @param agent Soar agent.
 	 * @param command The command wme to store.
-	 * @param splinter Current state.
+	 * @param opose Current state.
 	 * @param outputLinkManager The calling instance.
 	 * @return true on success
 	 */
-	boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, OffsetPose splinter, OutputLinkManager outputLinkManager);
+	boolean execute(InputLinkInterface inputLink, Agent agent, Identifier command, OffsetPose opose, OutputLinkManager outputLinkManager);
 	/**
-	 * @param splinter Current state.
+	 * @param opose Current state.
 	 * @return true if command is done executing.
 	 */
-	boolean update(OffsetPose splinter);
+	boolean update(OffsetPose opose);
 	/**
 	 * Command is interrupted.
 	 */

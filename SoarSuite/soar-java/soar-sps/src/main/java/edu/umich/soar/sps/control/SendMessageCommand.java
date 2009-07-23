@@ -21,10 +21,10 @@ final class SendMessageCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "send-message";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 
-		if (splinter == null) {
+		if (opose == null) {
 			throw new AssertionError();
 		}
 		

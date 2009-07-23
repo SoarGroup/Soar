@@ -27,7 +27,7 @@ abstract class DDCCommand implements Command {
 		command = null;
 	}
 
-	public boolean update(OffsetPose splinter) {
+	public boolean update(OffsetPose opose) {
 		return false; // still executing
 	}
 }
