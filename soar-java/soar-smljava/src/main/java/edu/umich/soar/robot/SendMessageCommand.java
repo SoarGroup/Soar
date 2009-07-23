@@ -26,16 +26,10 @@ final public class SendMessageCommand extends NoDDCAdapter implements Command {
 		this.messages = messages;
 	}
 
-	private MessagesInterface messages;
+	private final MessagesInterface messages;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
-
-		if (opose == null) {
-			throw new AssertionError();
-		}
-		
+	public boolean execute(Agent agent, Identifier command) {
 		String destination = command.GetParameterValue("destination");
 		if (destination == null) {
 			logger.warn(NAME + ": No destination on command");

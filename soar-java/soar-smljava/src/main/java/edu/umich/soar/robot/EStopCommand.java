@@ -27,8 +27,7 @@ final public class EStopCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		logger.debug(NAME + ":");
 		CommandStatus.accepted.addStatus(agent, command);
 		CommandStatus.complete.addStatus(agent, command);

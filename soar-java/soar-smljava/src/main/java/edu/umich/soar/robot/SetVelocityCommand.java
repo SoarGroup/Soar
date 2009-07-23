@@ -34,8 +34,7 @@ final public class SetVelocityCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		if (this.agent != null || this.command != null) {
 			throw new IllegalStateException();
 		}

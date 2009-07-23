@@ -25,11 +25,10 @@ final public class RemoveMessageCommand extends NoDDCAdapter implements Command 
 		this.messages = messages;
 	}
 
-	private MessagesInterface messages;
+	private final MessagesInterface messages;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 
 		int id = -1;
 		try {
