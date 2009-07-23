@@ -19,9 +19,9 @@ final class DisableWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(DisableWaypointCommand.class);
 	static final String NAME = "disable-waypoint";
 	
-	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose opose,
-			OutputLinkManager outputLinkManager) {
+	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
+			Agent agent, Identifier command,
+			OffsetPose opose, OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn(NAME + ": No id on command");
@@ -31,7 +31,7 @@ final class DisableWaypointCommand extends NoDDCAdapter implements Command {
 
 		logger.debug(String.format(NAME + ": %16s", id));
 
-		if (inputLink.disableWaypoint(id) == false) {
+		if (waypoints.disableWaypoint(id) == false) {
 			logger.warn(NAME + ": Unable to disable waypoint " + id + ", no such waypoint");
 			CommandStatus.error.addStatus(agent, command);
 			return false;

@@ -20,7 +20,7 @@ final class OutputLinkManager {
 
 	private final OffsetPose opose;
 	private final Agent agent;
-	private final InputLinkInterface inputLink;
+	private final WaypointInterface waypoints;
 	private final HashMap<String, Command> commands = new HashMap<String, Command>();
 	private final Set<Integer> completedTimeTags = new HashSet<Integer>();
 	
@@ -28,10 +28,10 @@ final class OutputLinkManager {
 	
 	private Command runningCommand;
 
-	OutputLinkManager(Agent agent, InputLinkInterface inputLink, OffsetPose opose) {
+	OutputLinkManager(Agent agent, WaypointInterface waypoints, OffsetPose opose) {
 		this.opose = opose;
 		this.agent = agent;
-		this.inputLink = inputLink;
+		this.waypoints = waypoints;
 
 		commands.put(MotorCommand.NAME, new MotorCommand());
 		commands.put(SetVelocityCommand.NAME, new SetVelocityCommand());
@@ -96,7 +96,7 @@ final class OutputLinkManager {
 				}
 			}
 			
-			if (!commandObject.execute(inputLink, agent, commandWme, opose, this)) {
+			if (!commandObject.execute(waypoints, null, agent, commandWme, opose, this)) {
 				if (commandObject.createsDDC()) {
 					logger.warn("Error with new drive command, commanding estop.");
 					ddc = DifferentialDriveCommand.newEStopCommand();

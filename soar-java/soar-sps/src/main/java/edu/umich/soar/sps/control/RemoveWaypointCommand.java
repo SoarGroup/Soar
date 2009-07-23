@@ -19,9 +19,9 @@ final class RemoveWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(RemoveWaypointCommand.class);
 	static final String NAME = "remove-waypoint";
 
-	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose opose,
-			OutputLinkManager outputLinkManager) {
+	public boolean execute(WaypointInterface waypoints, MessagesInterface messages,
+			Agent agent, Identifier command,
+			OffsetPose opose, OutputLinkManager outputLinkManager) {
 
 		String id = command.GetParameterValue("id");
 		if (id == null) {
@@ -32,7 +32,7 @@ final class RemoveWaypointCommand extends NoDDCAdapter implements Command {
 
 		logger.debug(String.format("%s: %16s", NAME, id));
 
-		if (inputLink.removeWaypoint(id) == false) {
+		if (waypoints.removeWaypoint(id) == false) {
 			logger.warn(NAME + ": Unable to remove waypoint " + id + ", no such waypoint");
 			CommandStatus.error.addStatus(agent, command);
 			return false;
