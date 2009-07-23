@@ -2,29 +2,32 @@ package edu.umich.soar.robot;
 
 import java.util.HashMap;
 
-import sml.Agent;
 import sml.Identifier;
 
-public final class WaypointsIL {
-	private final Agent agent;
+public final class WaypointsIL implements WaypointInterface {
 	private final Identifier waypoints;
 	private final HashMap<String, WaypointIL> waypointList = new HashMap<String, WaypointIL>();
-
-	public WaypointsIL(Agent agent, Identifier waypoints) {
-		this.agent = agent;
+	private final OffsetPose opose;
+	private final ConfigureInterface configure;
+	
+	public WaypointsIL(Identifier waypoints, OffsetPose opose, ConfigureInterface configure) {
 		this.waypoints = waypoints;
+		this.opose = opose;
+		this.configure = configure;
 	}
 
-	public void add(double[] waypointxyz, String name, boolean useFloatWmes) {
+	@Override
+	public void addWaypoint(double[] waypointxyz, String name) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint != null) {
 			waypoint.disable();
 		}
 
-		waypointList.put(name, new WaypointIL(agent, waypointxyz, name, waypoints, useFloatWmes));
+		waypointList.put(name, new WaypointIL(waypointxyz, name, waypoints, configure.isFloatYawWmes(), opose));
 	}
 
-	public boolean remove(String name) {
+	@Override
+	public boolean removeWaypoint(String name) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint == null) {
 			return false;
@@ -33,17 +36,19 @@ public final class WaypointsIL {
 		return true;
 	}
 
-	public boolean enable(String name, OffsetPose splinter) {
+	@Override
+	public boolean enableWaypoint(String name) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
 		}
 
-		waypoint.update(splinter);
+		waypoint.update();
 		return true;
 	}
 
-	public boolean disable(String name) {
+	@Override
+	public boolean disableWaypoint(String name) {
 		WaypointIL waypoint = waypointList.get(name);
 		if (name == null) {
 			return false;
@@ -53,9 +58,9 @@ public final class WaypointsIL {
 		return true;
 	}
 
-	public void update(OffsetPose splinter) {
+	public void update() {
 		for (WaypointIL waypoint : waypointList.values()) {
-			waypoint.update(splinter);
+			waypoint.update();
 		}
 	}
 }

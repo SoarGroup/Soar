@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.robot.ConfigureInterface;
 import edu.umich.soar.sps.SharedNames;
 
 import lcm.lcm.LCM;
@@ -19,8 +20,10 @@ final class RangerIL implements LCMSubscriber {
 	private long utimeLast = 0;
 	private final RangeIL[] slices;
 	private laser_t laser;
-	
-	RangerIL(Agent agent, Identifier ranges, int count) {
+	private final ConfigureInterface configure;
+
+	RangerIL(Agent agent, Identifier ranges, int count, ConfigureInterface configure) {
+		this.configure = configure;
 		this.slices = new RangeIL[count];
 		for (int index = 0; index < count; ++index) {
 			slices[index] = new RangeIL(agent, ranges, index - (count / 2));
@@ -29,7 +32,7 @@ final class RangerIL implements LCMSubscriber {
 		LCM.getSingleton().subscribe(SharedNames.LASER_CHANNEL, this);
 	}
 
-	void update(boolean useFloatYawWmes) {
+	void update() {
 		if (laser == null) {
 			return;
 		}
@@ -39,7 +42,7 @@ final class RangerIL implements LCMSubscriber {
 		}
 		utimeLast = laser.utime;
 
-		updateSlices(laser, useFloatYawWmes);
+		updateSlices(laser, configure.isFloatYawWmes());
 	}
 
 	void updateSlices(laser_t laser, boolean useFloatYawWmes) {

@@ -1,15 +1,15 @@
 package edu.umich.soar.sps.control;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 
 import org.apache.log4j.Logger;
 import edu.umich.soar.config.Config;
-import edu.umich.soar.robot.ConfigureInterface;
 import edu.umich.soar.robot.DifferentialDriveCommand;
 import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.robot.OutputLinkManager;
+import edu.umich.soar.robot.ReceiveMessagesInterface;
+import edu.umich.soar.robot.SendMessagesInterface;
 import edu.umich.soar.sps.HzChecker;
 
 import sml.Agent;
@@ -17,7 +17,7 @@ import sml.Kernel;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
 
-final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, ConfigureInterface {
+final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, SendMessagesInterface {
 	private static final Logger logger = Logger.getLogger(SoarInterface.class);
 
 	private final static int DEFAULT_RANGES_COUNT = 5;
@@ -35,10 +35,8 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 
 	private boolean stopSoar = false;
 	private boolean running = false;
-	private List<String> tokens;
 	private DifferentialDriveCommand ddc;
 	private DifferentialDriveCommand soarddc;
-	private boolean floatYawWmes = true;
 	
 	private SoarInterface(Config config, OffsetPose splinter) {
 		kernel = Kernel.CreateKernelInNewThread();
@@ -54,7 +52,9 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());
 			System.exit(1);
 		}
-
+		
+		agent.SetBlinkIfNoChange(false);
+		
 		// load productions
 		String productions = config.getString("productions");
 		if (productions != null && !agent.LoadProductions(productions)) {
@@ -66,11 +66,14 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		
 		int rangesCount = config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
 		input = new InputLinkManager(agent, kernel, rangesCount, splinter);
-		output = new OutputLinkManager(agent, input.getWaypointInterface(), input.getMessagesInterface(), this, splinter);
+		output = new OutputLinkManager(agent);
+		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), input.getConfigurationInterface(), splinter);
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
+
+		agent.Commit();
 		
 		if (logger.isDebugEnabled()) {
 			timer.schedule(hzChecker, 0, 5000); 
@@ -114,10 +117,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 				ddc = newddc;
 			}
 			
-			synchronized (this) {
-				input.update(tokens, this.isFloatYawWmes());
-				tokens = null;
-			}
+			input.update();
 			
 			agent.Commit();
 		} catch (Exception e) {
@@ -152,20 +152,6 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		}
 	}
 
-	void setStringInput(List<String> tokens) {
-		List<String> warn = null;
-		synchronized (this) {
-			warn = (this.tokens != null ? this.tokens : null);
-			this.tokens = tokens;
-		}
-		if (warn != null) {
-			logger.warn("Overwriting message " 
-					+ Arrays.toString(warn.toArray(new String[warn.size()]))
-					+ " with "
-					+ Arrays.toString(tokens.toArray(new String[tokens.size()])));
-		}
-	}
-
 	boolean hasDDCommand() {
 		return ddc != null;
 	}
@@ -176,13 +162,24 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		return temp;
 	}
 
-	@Override
-	public boolean isFloatYawWmes() {
-		return floatYawWmes;
+	public void newMessage(String from, List<String> tokens) {
+		ReceiveMessagesInterface m = input.getReceiveMessagesInterface();
+		synchronized(m) {
+			m.newMessage(from, agent.GetAgentName(), tokens);
+		}
 	}
 
 	@Override
-	public void setFloatYawWmes(boolean setting) {
-		floatYawWmes = setting;
+	public void sendMessage(String from, String to, List<String> tokens) {
+		if (to.equals("say")) {
+			StringBuilder message = new StringBuilder();
+			for (String token : tokens) {
+				message.append(token);
+				message.append(" ");
+			}
+			Say.newMessage(message.toString());
+		} else {
+			logger.warn("Ignoring message, destination is not \"say\"");
+		}
 	}
 }

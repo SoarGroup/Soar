@@ -21,9 +21,9 @@ import sml.Identifier;
 final public class StopCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(StopCommand.class);
 	private static final double TOLERANCE = 0.01; // meters per second
-	public static final String NAME = "stop";
+	static final String NAME = "stop";
 
-	public static Command newInstance(OffsetPose opose) {
+	static Command newInstance(OffsetPose opose) {
 		return new StopCommand(opose);
 	}
 	

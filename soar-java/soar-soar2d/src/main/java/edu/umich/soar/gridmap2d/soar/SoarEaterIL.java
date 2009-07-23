@@ -390,7 +390,6 @@ class SoarEaterIL {
 	
 	private class EaterIL {
 		Identifier eaterWME;
-		StringElement nameWME;
 		IntElement scoreWME;
 		IntElement[] posWMEs;
 		
@@ -401,7 +400,7 @@ class SoarEaterIL {
 					agent.CreateIntWME(eaterWME, Names.kXID, 0), 
 					agent.CreateIntWME(eaterWME, Names.kYID, 0)
 			};
-			nameWME = agent.CreateStringWME(eaterWME, Names.kNameID, name);
+			agent.CreateStringWME(eaterWME, Names.kNameID, name);
 		}
 		
 		void update(boolean moved, int[] pos, int points) {
@@ -419,7 +418,6 @@ class SoarEaterIL {
 			eaterWME = null;
 			scoreWME = null;
 			posWMEs = null;
-			nameWME = null;
 		}
 	}
 	

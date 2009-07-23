@@ -19,9 +19,9 @@ final public class SetVelocityCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(SetVelocityCommand.class);
 	private static final String LINVEL = "linear-velocity";
 	private static final String ANGVEL = "angular-velocity";
-	public static final String NAME = "set-velocity";
+	static final String NAME = "set-velocity";
 
-	public static Command newInstance() {
+	static Command newInstance() {
 		return new SetVelocityCommand();
 	}
 	

@@ -15,9 +15,9 @@ import sml.Identifier;
  */
 final public class EStopCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(EStopCommand.class);
-	public static final String NAME = "estop";
+	static final String NAME = "estop";
 
-	public static Command newInstance() {
+	static Command newInstance() {
 		return new EStopCommand();
 	}
 	

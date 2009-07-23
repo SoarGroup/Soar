@@ -17,23 +17,19 @@ import sml.Identifier;
  */
 final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(AddWaypointCommand.class);
-	public static final String NAME = "add-waypoint";
+	static final String NAME = "add-waypoint";
 	
-	public static Command newInstance(OffsetPose opose, WaypointInterface waypoints, 
-			ConfigureInterface configure) {
-		return new AddWaypointCommand(opose, waypoints, configure);
+	static Command newInstance(OffsetPose opose, WaypointInterface waypoints) {
+		return new AddWaypointCommand(opose, waypoints);
 	}
 	
-	public AddWaypointCommand(OffsetPose opose, WaypointInterface waypoints,
-			ConfigureInterface configure) {
+	public AddWaypointCommand(OffsetPose opose, WaypointInterface waypoints) {
 		this.opose = opose;
 		this.waypoints = waypoints;
-		this.configure = configure;
 	}
 
 	private final OffsetPose opose;
 	private final WaypointInterface waypoints;
-	private final ConfigureInterface configure;
 
 	@Override
 	public boolean execute(Agent agent, Identifier command) {
@@ -70,7 +66,7 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 		}
 
 		logger.debug(String.format(NAME + ": %16s %10.3f %10.3f", id, pos[0], pos[1]));
-		waypoints.addWaypoint(pos, id, configure.isFloatYawWmes());
+		waypoints.addWaypoint(pos, id);
 
 		CommandStatus.accepted.addStatus(agent, command);
 		CommandStatus.complete.addStatus(agent, command);

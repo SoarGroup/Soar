@@ -421,7 +421,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 			String[] shutdownCommands, File metadataFile, boolean debug)
 			throws Exception {
 		Agent agent = createSoarAgent(player.getName(), productions, debug);
-		return new SoarRoomPlayer(player, agent, world, shutdownCommands, commonMetadataFile, metadataFile);
+		return new SoarRobot(player, agent, kernel, world, shutdownCommands, commonMetadataFile, metadataFile);
 	}
 
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
