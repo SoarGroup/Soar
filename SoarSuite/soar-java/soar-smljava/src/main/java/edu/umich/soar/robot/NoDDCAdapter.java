@@ -24,7 +24,7 @@ abstract class NoDDCAdapter implements Command {
 	}
 
 	@Override
-	public boolean update(OffsetPose opose) {
+	public boolean update() {
 		throw new AssertionError();
 	}
 }

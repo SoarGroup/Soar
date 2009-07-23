@@ -30,7 +30,7 @@ abstract class DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean update(OffsetPose opose) {
+	public boolean update() {
 		return false; // still executing
 	}
 }

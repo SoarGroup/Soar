@@ -17,19 +17,20 @@ final public class EnableWaypointCommand extends NoDDCAdapter implements Command
 	private static final Logger logger = Logger.getLogger(EnableWaypointCommand.class);
 	public static final String NAME = "enable-waypoint";
 
-	public static Command newInstance(WaypointInterface waypoints) {
-		return new EnableWaypointCommand(waypoints);
+	public static Command newInstance(OffsetPose opose, WaypointInterface waypoints) {
+		return new EnableWaypointCommand(opose, waypoints);
 	}
 	
-	public EnableWaypointCommand(WaypointInterface waypoints) {
+	public EnableWaypointCommand(OffsetPose opose, WaypointInterface waypoints) {
+		this.opose = opose;
 		this.waypoints = waypoints;
 	}
 
-	private WaypointInterface waypoints;
+	private final OffsetPose opose;
+	private final WaypointInterface waypoints;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn(NAME + ": No id on command");

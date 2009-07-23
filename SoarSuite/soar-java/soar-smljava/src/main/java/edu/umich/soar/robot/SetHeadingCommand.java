@@ -21,10 +21,15 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 	private static final double TOLERANCE = Math.toRadians(3);
 	public static final String NAME = "set-heading";
 
-	public static Command newInstance() {
-		return new SetHeadingCommand();
+	public static Command newInstance(OffsetPose opose) {
+		return new SetHeadingCommand(opose);
 	}
 	
+	public SetHeadingCommand(OffsetPose opose) {
+		this.opose = opose;
+	}
+
+	private final OffsetPose opose;
 	private CommandStatus status;
 	private double yaw;
 	
@@ -34,8 +39,7 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		if (this.agent != null || this.command != null || this.status == null) {
 			//throw new IllegalStateException();
 		}
@@ -75,7 +79,7 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean update(OffsetPose opose) {
+	public boolean update() {
 		if (agent == null || command == null || status == null) {
 			throw new IllegalStateException();
 		}
