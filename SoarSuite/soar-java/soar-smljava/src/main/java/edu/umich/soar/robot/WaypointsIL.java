@@ -1,4 +1,4 @@
-package edu.umich.soar.waypoints;
+package edu.umich.soar.robot;
 
 import java.util.HashMap;
 
