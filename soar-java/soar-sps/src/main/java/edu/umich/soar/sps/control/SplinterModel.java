@@ -8,9 +8,9 @@ import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.sps.control.DifferentialDriveCommand.CommandType;
 import edu.umich.soar.sps.control.PIDController.Gains;
-import edu.umich.soar.waypoints.OffsetPose;
 
 final class SplinterModel implements OffsetPose {
 	private static final Logger logger = Logger.getLogger(SplinterModel.class);

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import edu.umich.soar.waypoints.OffsetPose;
+import edu.umich.soar.robot.OffsetPose;
 
 import sml.Agent;
 import sml.Identifier;
