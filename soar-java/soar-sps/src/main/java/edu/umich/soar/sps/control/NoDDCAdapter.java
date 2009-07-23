@@ -20,7 +20,7 @@ abstract class NoDDCAdapter implements Command {
 		throw new AssertionError();
 	}
 
-	public boolean update(OffsetPose splinter) {
+	public boolean update(OffsetPose opose) {
 		throw new AssertionError();
 	}
 }

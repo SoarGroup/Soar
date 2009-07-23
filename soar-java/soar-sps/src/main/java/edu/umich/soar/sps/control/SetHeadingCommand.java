@@ -31,7 +31,7 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 	}
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 		if (this.agent != null || this.command != null || this.status == null) {
 			//throw new IllegalStateException();
@@ -70,12 +70,12 @@ final class SetHeadingCommand extends DDCCommand implements Command {
 		status = null;
 	}
 
-	public boolean update(OffsetPose splinter) {
+	public boolean update(OffsetPose opose) {
 		if (agent == null || command == null || status == null) {
 			throw new IllegalStateException();
 		}
 		
-		double splinterYaw = LinAlg.quatToRollPitchYaw(splinter.getPose().orientation)[2];
+		double splinterYaw = LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2];
 		splinterYaw = Math.abs(splinterYaw);
 		
 		if (Double.compare(splinterYaw, TOLERANCE) < 0) {

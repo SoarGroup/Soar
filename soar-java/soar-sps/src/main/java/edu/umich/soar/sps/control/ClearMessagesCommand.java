@@ -20,7 +20,7 @@ final class ClearMessagesCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "clear-messages";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 		inputLink.clearMessages();
 		logger.info(NAME + ":");

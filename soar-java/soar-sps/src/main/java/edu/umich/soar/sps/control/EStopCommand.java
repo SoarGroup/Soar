@@ -24,7 +24,7 @@ final class EStopCommand extends DDCCommand implements Command {
 	}
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 		logger.debug(NAME + ":");
 		CommandStatus.accepted.addStatus(agent, command);

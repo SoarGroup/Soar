@@ -20,7 +20,7 @@ final class EnableWaypointCommand extends NoDDCAdapter implements Command {
 	static final String NAME = "enable-waypoint";
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
@@ -31,7 +31,7 @@ final class EnableWaypointCommand extends NoDDCAdapter implements Command {
 
 		logger.debug(String.format(NAME + ": %16s", id));
 
-		if (inputLink.enableWaypoint(id, splinter) == false) {
+		if (inputLink.enableWaypoint(id, opose) == false) {
 			logger.warn(NAME + ": Unable to enable waypoint " + id + ", no such waypoint");
 			CommandStatus.error.addStatus(agent, command);
 			return false;

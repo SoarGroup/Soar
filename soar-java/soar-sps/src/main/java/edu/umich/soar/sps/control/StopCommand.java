@@ -32,7 +32,7 @@ final class StopCommand extends DDCCommand implements Command {
 	}
 
 	public boolean execute(InputLinkInterface inputLink, Agent agent,
-			Identifier command, OffsetPose splinter,
+			Identifier command, OffsetPose opose,
 			OutputLinkManager outputLinkManager) {
 		if (this.agent != null || this.command != null || this.status != null) {
 			throw new IllegalStateException();
@@ -58,12 +58,12 @@ final class StopCommand extends DDCCommand implements Command {
 		status = null;
 	}
 
-	public boolean update(OffsetPose splinter) {
+	public boolean update(OffsetPose opose) {
 		if (agent != null || command != null || status != null) {
 			throw new IllegalStateException();
 		}
 		
-		pose_t pose = splinter.getPose();
+		pose_t pose = opose.getPose();
 		
 		if (Double.compare(LinAlg.magnitude(pose.vel), TOLERANCE) < 0) {
 			CommandStatus.complete.addStatus(agent, command);
