@@ -10,16 +10,14 @@ public interface Command {
 	/**
 	 * @param agent Soar agent.
 	 * @param command The command wme to store.
-	 * @param opose Current state.
 	 * @param outputLinkManager The calling instance.
 	 * @return true on success
 	 */
-	boolean execute(Agent agent, Identifier command, OffsetPose opose);
+	boolean execute(Agent agent, Identifier command);
 	/**
-	 * @param opose Current state.
 	 * @return true if command is done executing.
 	 */
-	boolean update(OffsetPose opose);
+	boolean update();
 	/**
 	 * Command is interrupted.
 	 */

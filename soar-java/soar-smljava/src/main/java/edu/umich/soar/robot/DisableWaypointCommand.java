@@ -25,11 +25,10 @@ final public class DisableWaypointCommand extends NoDDCAdapter implements Comman
 		this.waypoints = waypoints;
 	}
 
-	private WaypointInterface waypoints;
+	private final WaypointInterface waypoints;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			logger.warn(NAME + ": No id on command");

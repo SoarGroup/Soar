@@ -17,19 +17,20 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(ConfigureCommand.class);
 	public static final String NAME = "configure";
 
-	public static Command newInstance(ConfigureInterface configure) {
-		return new ConfigureCommand(configure);
+	public static Command newInstance(OffsetPose opose, ConfigureInterface configure) {
+		return new ConfigureCommand(opose, configure);
 	}
 	
-	public ConfigureCommand(ConfigureInterface configure) {
+	public ConfigureCommand(OffsetPose opose, ConfigureInterface configure) {
+		this.opose = opose;
 		this.configure = configure;
 	}
 
-	private ConfigureInterface configure;
+	private final OffsetPose opose;
+	private final ConfigureInterface configure;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		if (opose == null) {
 			throw new AssertionError();
 		}

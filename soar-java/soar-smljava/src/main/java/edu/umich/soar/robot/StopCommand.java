@@ -23,10 +23,15 @@ final public class StopCommand extends DDCCommand implements Command {
 	private static final double TOLERANCE = 0.01; // meters per second
 	public static final String NAME = "stop";
 
-	public static Command newInstance() {
-		return new StopCommand();
+	public static Command newInstance(OffsetPose opose) {
+		return new StopCommand(opose);
 	}
 	
+	public StopCommand(OffsetPose opose) {
+		this.opose = opose;
+	}
+
+	private final OffsetPose opose;
 	private CommandStatus status;
 	
 	@Override
@@ -35,8 +40,7 @@ final public class StopCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean execute(Agent agent, Identifier command,
-			OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		if (this.agent != null || this.command != null || this.status != null) {
 			throw new IllegalStateException();
 		}
@@ -63,7 +67,7 @@ final public class StopCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean update(OffsetPose opose) {
+	public boolean update() {
 		if (agent != null || command != null || status != null) {
 			throw new IllegalStateException();
 		}

@@ -25,10 +25,10 @@ final public class ClearMessagesCommand extends NoDDCAdapter implements Command 
 		this.messages = messages;
 	}
 
-	private MessagesInterface messages;
+	private final MessagesInterface messages;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command, OffsetPose opose) {
+	public boolean execute(Agent agent, Identifier command) {
 		messages.clearMessages();
 		logger.info(NAME + ":");
 
