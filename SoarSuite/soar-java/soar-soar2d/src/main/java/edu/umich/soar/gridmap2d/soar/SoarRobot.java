@@ -4,8 +4,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import jmat.LinAlg;
-
 import org.apache.log4j.Logger;
 
 import edu.umich.soar.gridmap2d.Gridmap2D;
@@ -15,7 +13,6 @@ import edu.umich.soar.gridmap2d.players.CommandInfo;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RoomCommander;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
-import edu.umich.soar.gridmap2d.players.RoomPlayerState;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
 import edu.umich.soar.robot.OutputLinkManager;
 import edu.umich.soar.robot.ConfigureInterface;
@@ -44,7 +41,6 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 	
 	DifferentialDriveCommand ddc;
 	double[] offset = {0, 0};
-	pose_t pose = new pose_t();
 	boolean floatYawWmes = true;
 	
 	public SoarRobot(RoomPlayer player, Agent agent, Kernel kernel,
@@ -96,22 +92,14 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 	@Override
 	public void update(RoomMap roomMap) throws Exception {
 
-		updatePose(player.getState());
 		ddc = output.update();
 		input.update(player, world, roomMap, this.isFloatYawWmes());	
 		agent.Commit();
 	}
 
-	private void updatePose(RoomPlayerState state) {
-		pose_t newpose = new pose_t();
-		newpose.pos = Arrays.copyOf(state.getFloatLocation(), state.getFloatLocation().length);
-		newpose.orientation = LinAlg.rollPitchYawToQuat(new double[] {0, 0, state.getHeading()});
-		this.pose = newpose;
-	}
-	
 	@Override
 	public CommandInfo nextCommand() throws Exception {
-		return CommandInfo.valueOf(ddc);
+		return new CommandInfo(ddc);
 	}
 
 	private void error(String message) {
@@ -158,7 +146,7 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 
 	@Override
 	public pose_t getPose() {
-		return pose.copy();
+		return player.getState().getPose();
 	}
 
 	@Override

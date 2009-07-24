@@ -2,6 +2,10 @@ package edu.umich.soar.gridmap2d.visuals;
 
 import java.text.NumberFormat;
 
+import jmat.LinAlg;
+
+import lcmtypes.pose_t;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -47,7 +51,6 @@ public class RoomAgentDisplay extends AgentDisplay {
 	Label velocity;
 	Label rotation;
 	Label speed;
-	Label carry;
 	
 	public RoomAgentDisplay(final Composite parent, World world, final CognitiveArchitecture cogArch) {
 		super(parent);
@@ -274,14 +277,6 @@ public class RoomAgentDisplay extends AgentDisplay {
 			carryLabel.setLayoutData(gd);
 		}
 		
-		carry = new Label(locGroup, SWT.NONE);
-		carry.setText("-");
-		{
-			GridData gd = new GridData();
-			gd.widthHint = 80;
-			carry.setLayoutData(gd);
-		}
-		
 		updatePlayerList();
 		updateButtons();		
 	}
@@ -318,24 +313,22 @@ public class RoomAgentDisplay extends AgentDisplay {
 		assert selectedPlayer != null;
 		RoomPlayer selectedRoomPlayer = (RoomPlayer)selectedPlayer;
 		int [] gl = selectedRoomPlayer.getLocation();
-		double [] fl = selectedRoomPlayer.getState().getFloatLocation();
+		pose_t pose = selectedRoomPlayer.getState().getPose();
 		NumberFormat nf = NumberFormat.getInstance();
 		nf.setMaximumFractionDigits(2);
 		gridLocation.setText("(" + nf.format(gl[0]) + "," + nf.format(gl[1]) + ")");
-		floatLocation.setText("(" + nf.format(fl[0]) + "," + nf.format(fl[1]) + ")");
+		floatLocation.setText("(" + nf.format(pose.pos[0]) + "," + nf.format(pose.pos[1]) + ")");
 
-		heading.setText(nf.format(selectedRoomPlayer.getState().getHeading()));
+		heading.setText(nf.format(selectedRoomPlayer.getState().getYaw()));
 
 		area.setText(Integer.toString(selectedRoomPlayer.getState().getLocationId()));
 		String col = selectedRoomPlayer.getState().isCollisionX() ? "true" : "false";
 		col += selectedRoomPlayer.getState().isCollisionY() ? ",true" : ",false";
 		collision.setText(col);
-		String vel = nf.format(selectedRoomPlayer.getState().getVelocity()[0]) + "," + nf.format(selectedRoomPlayer.getState().getVelocity()[1]);
+		String vel = nf.format(pose.vel[0]) + "," + nf.format(pose.vel[1]);
 		velocity.setText(vel);
-		rotation.setText(nf.format(selectedRoomPlayer.getState().getAngularVelocity()));
-		speed.setText(nf.format(Math.sqrt((selectedRoomPlayer.getState().getVelocity()[0] * selectedRoomPlayer.getState().getVelocity()[0]) + (selectedRoomPlayer.getState().getVelocity()[1] * selectedRoomPlayer.getState().getVelocity()[1]))));
-		
-		carry.setText(selectedRoomPlayer.getState().getCarryType());
+		rotation.setText(nf.format(pose.rotation_rate[2]));
+		speed.setText(nf.format(LinAlg.magnitude(pose.vel)));
 	}
 	
 	void disableSensors() {
@@ -347,7 +340,6 @@ public class RoomAgentDisplay extends AgentDisplay {
 		velocity.setText("-");
 		rotation.setText("-");
 		speed.setText("-");
-		carry.setText("-");
 	}
 	
 	void updatePlayerList() {

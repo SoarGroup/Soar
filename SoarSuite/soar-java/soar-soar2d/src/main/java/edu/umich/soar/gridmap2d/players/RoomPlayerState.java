@@ -3,79 +3,31 @@ package edu.umich.soar.gridmap2d.players;
 
 import java.util.Arrays;
 
-import edu.umich.soar.gridmap2d.Simulation;
+import jmat.LinAlg;
+import jmat.MathUtil;
+
+import lcmtypes.pose_t;
 
 public class RoomPlayerState {
 
-	private double angVel;
-	private Double destinationHeading;
-	private double heading;
+	private pose_t pose;
 	
 	private boolean collisionX;
 	private boolean collisionY;
 	private int locationId;
-	private double[] floatLocation;
-	boolean rotated;
+	private boolean hasDestYaw;
+	private double destYaw;
+	private double destYawSpeed;
 
 	public void reset() {
-		setAngularVelocity(0);
-		setDestinationHeading(null);
-		setHeading(0);
+		pose = new pose_t();
+		
 		setCollisionX(false);
 		setCollisionY(false);
 		setLocationId(-1);
-		floatLocation = new double[] { -1, -1 };
-		rotated = true;
+		resetDestYaw();
 	}
 	
-	public boolean rotated() {
-		return rotated;
-	}
-	
-	public void resetRotated() {
-		rotated = false;
-	}
-
-	public void setAngularVelocity(double angVel) {
-		if (Double.compare(angVel, 0) != 0) {
-			rotated = true;
-		}
-		this.angVel = angVel;
-	}
-
-	public double getAngularVelocity() {
-		return angVel;
-	}
-
-	public boolean hasDestinationHeading() {
-		return destinationHeading != null;
-	}
-	
-	public void setDestinationHeading(Double destinationHeading) {
-		this.destinationHeading = destinationHeading;
-	}
-
-	public Double getDestinationHeading() {
-		assert destinationHeading != null;
-		return destinationHeading;
-	}
-	
-	public void resetDestinationHeading() {
-		this.destinationHeading = null;
-	}
-
-	public void setHeading(double heading) {
-		heading = Simulation.mod2pi(heading);
-		if (Double.compare(heading, this.heading) != 0) {
-			rotated = true;
-		}
-		this.heading = heading;
-	}
-
-	public double getHeading() {
-		return heading;
-	}
-
 	public void setCollisionX(boolean collisionX) {
 		this.collisionX = collisionX;
 	}
@@ -92,11 +44,6 @@ public class RoomPlayerState {
 		return collisionY;
 	}
 
-	public void setLinearVelocity(double linVel) {
-		// TODO: convert to x,y
-		assert false;
-	}
-
 	public void setLocationId(int locationId) {
 		this.locationId = locationId;
 	}
@@ -105,18 +52,8 @@ public class RoomPlayerState {
 		return locationId;
 	}
 	
-	public double[] getFloatLocation() {
-		return Arrays.copyOf(floatLocation, floatLocation.length);
-	}
-	
-	void setFloatLocation(double[] newFloatLocation) {
-		assert newFloatLocation.length == floatLocation.length;
-		floatLocation = Arrays.copyOf(newFloatLocation, newFloatLocation.length);
-	}
-	
-	
 	public double angleOff(double [] target) {
-		double [] playerVector = getFloatLocation();
+		double [] playerVector = new double [] { pose.pos[0], pose.pos[1] };
 		
 		double [] targetVector = new double [] { target[0], target[1] };
 		
@@ -135,8 +72,9 @@ public class RoomPlayerState {
 		}
 		
 		// make player facing vector
-		playerVector[0] = Math.cos(getHeading());
-		playerVector[1] = Math.sin(getHeading());
+		double yaw = MathUtil.mod2pi(getYaw());
+		playerVector[0] = Math.cos(yaw);
+		playerVector[1] = Math.sin(yaw);
 		
 		double dotProduct = (targetVector[0] * playerVector[0]) + (targetVector[1] * playerVector[1]);
 		double crossProduct = (targetVector[0] * playerVector[1]) - (targetVector[1] * playerVector[0]);
@@ -145,12 +83,75 @@ public class RoomPlayerState {
 		if (crossProduct < 0) {
 			return Math.acos(dotProduct);
 		}
-		return Math.acos(dotProduct) * -1;
+		return MathUtil.mod2pi(Math.acos(dotProduct) * -1);
 	}
 
 	public void stop() {
-		// TODO Auto-generated method stub
-		assert false;
-		
+		Arrays.fill(pose.vel, 0);
+		Arrays.fill(pose.rotation_rate, 0);
+	}
+	
+	public double getYaw() {
+		return MathUtil.mod2pi(LinAlg.quatToRollPitchYaw(pose.orientation)[2]);
+	}
+	
+	public void update(double elapsed) {
+		// rotate
+		double[] rpy = LinAlg.quatToRollPitchYaw(pose.orientation);
+		rpy[2] = MathUtil.mod2pi(rpy[2]);
+		double togo = 0;
+		if (hasDestYaw) {
+			togo = destYaw - rpy[2];
+			if (togo < 0) {
+				pose.rotation_rate[2] = destYawSpeed * -1;
+			} else {
+				pose.rotation_rate[2] = destYawSpeed;
+			}
+		}
+		double change = pose.rotation_rate[2] * elapsed;
+		if (hasDestYaw) {
+			if (Math.abs(change) > Math.abs(togo)) {
+				change = togo;
+			}
+		}
+		rpy[2] += change;
+		rpy[2] = MathUtil.mod2pi(rpy[2]);
+		double [] newVel = Arrays.copyOf(pose.vel, pose.vel.length);
+		newVel[0] = Math.cos(change) * pose.vel[0] - Math.sin(change) * pose.vel[1];
+		newVel[1] = Math.sin(change) * pose.vel[0] + Math.cos(change) * pose.vel[1];
+		pose.vel = newVel;
+		pose.orientation = LinAlg.rollPitchYawToQuat(rpy);
+
+		// translate
+		LinAlg.add(pose.pos, LinAlg.scale(pose.vel, elapsed), pose.pos);
+	}
+	
+	public void setAngularVelocity(double angvel) {
+		pose.rotation_rate[2] = angvel;
+	}
+
+	public void setLinearVelocity(double linvel) {
+		double yaw = getYaw();
+		pose.vel[0] = Math.cos(yaw) * linvel;
+		pose.vel[1] = Math.sin(yaw) * linvel;
+	}
+	
+	public pose_t getPose() {
+		return pose.copy();
+	}
+
+	public void setPos(double [] pos) {
+		pose.pos[0] = pos[0];
+		pose.pos[1] = pos[1];
+	}
+	
+	public void resetDestYaw() {
+		hasDestYaw = false;
+	}
+	
+	public void setDestYaw(double yaw, double speed) {
+		hasDestYaw = true;
+		destYaw = MathUtil.mod2pi(yaw);
+		destYawSpeed = speed;
 	}
 }

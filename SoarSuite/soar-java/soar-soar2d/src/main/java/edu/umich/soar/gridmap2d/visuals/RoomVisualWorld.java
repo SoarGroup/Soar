@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
+import lcmtypes.pose_t;
+
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Path;
@@ -122,11 +124,12 @@ public class RoomVisualWorld extends VisualWorld {
 			assert player != null;
 
 			RoomPlayer roomPlayer = (RoomPlayer)player;
-			double [] center = new double [] { roomPlayer.getState().getFloatLocation()[0], roomPlayer.getState().getFloatLocation()[1] };
+			pose_t pose = roomPlayer.getState().getPose();
+			double [] center = new double [] { pose.pos[0], pose.pos[1] };
 			double [] offset = new double [] { 0, 0 };
 			
 			Path path = new Path(gc.getDevice());
-			double heading = roomPlayer.getState().getHeading();
+			double heading = roomPlayer.getState().getYaw();
 
 			// first, move to the point representing the tip of the chevron
 			offset[1] = (float)kDotSize * (float)Math.sin(heading);

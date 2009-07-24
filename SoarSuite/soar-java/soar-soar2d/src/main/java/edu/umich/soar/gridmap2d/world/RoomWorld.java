@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lcmtypes.pose_t;
+
 import org.apache.log4j.Logger;
 
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
@@ -26,10 +28,9 @@ public class RoomWorld implements World {
 	private PlayersManager<RoomPlayer> players = new PlayersManager<RoomPlayer>();
 	private boolean forceHuman = false;
 	private List<String> stopMessages = new ArrayList<String>();
-	// TODO fix
-	//private double speed = 16;
-	public static final int cell_size = 16;
-	private double rotate_speed = Math.PI / 4.0;
+	private final double LIN_SPEED = 16;
+	public static final int CELL_SIZE = 16;
+	private double ANG_SPEED = Math.PI / 4.0;
 	private CognitiveArchitecture cogArch;
 
 	public RoomWorld(CognitiveArchitecture cogArch) {
@@ -58,7 +59,7 @@ public class RoomWorld implements World {
 		
 		player.getState().setLocationId(roomMap.getLocationId(location));
 		double [] floatLocation = defaultFloatLocation(location);
-		players.setFloatLocation(player, floatLocation);
+		player.getState().setPos(floatLocation);
 
 		logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + "), (" + floatLocation[0] + "," + floatLocation[1] + ")");
 		
@@ -140,7 +141,7 @@ public class RoomWorld implements World {
 			player.getState().setLocationId(roomMap.getLocationId(startingLocation));
 
 			double [] floatLocation = defaultFloatLocation(startingLocation);
-			players.setFloatLocation(player, floatLocation);
+			player.getState().setPos(floatLocation);
 
 			logger.info(player.getName() + ": Spawning at (" + startingLocation[0] + "," + startingLocation[1] + "), (" + floatLocation[0] + "," + floatLocation[1] + ")");
 		}
@@ -150,7 +151,7 @@ public class RoomWorld implements World {
 	
 	private double [] defaultFloatLocation(int [] location) {
 		double [] floatLocation = new double [2];
-		final int cellSize = cell_size;
+		final int cellSize = CELL_SIZE;
 		
 		// default to center of square
 		floatLocation[0] = (location[0] * cellSize) + (cellSize / 2); 
@@ -187,82 +188,52 @@ public class RoomWorld implements World {
 			RoomPlayerState state = player.getState();
 			
 			DifferentialDriveCommand ddc = command.ddc;
-			switch(ddc.getType()) {
-			case ANGVEL:
-				state.setAngularVelocity(ddc.getAngularVelocity());
-				state.resetDestinationHeading();
-				break;
-			case ESTOP:
-				state.stop();
-				break;
-			case HEADING:
-				calculateAndSetAngularVelocity(ddc.getHeading(), player, time);
-				break;
-			case HEADING_LINVEL:
-				calculateAndSetAngularVelocity(ddc.getHeading(), player, time);
-				state.setLinearVelocity(ddc.getLinearVelocity());
-				break;
-			case LINVEL:
-				state.setLinearVelocity(ddc.getLinearVelocity());
-				break;
-			case MOTOR:
-				// TODO: other than stop
-				state.stop();
-				break;
-			case MOVE_TO:
-				// TODO: implement
-				assert false;
-				break;
-			case VEL:
-				state.setAngularVelocity(ddc.getAngularVelocity());
-				state.setLinearVelocity(ddc.getLinearVelocity());
-				break;
-			}
-			
-			// update heading if we rotate
-			if (state.getAngularVelocity() != 0) {
-				double heading = state.getHeading();
-				heading += state.getAngularVelocity();
-				if (state.hasDestinationHeading()) {
-					if (state.getAngularVelocity() > 0) {
-						if (Double.compare(heading, state.getDestinationHeading()) >= 0) {
-							heading = state.getDestinationHeading();
-							logger.debug("Destination heading reached: " + heading);
-							player.getState().setAngularVelocity(0);
-							state.resetDestinationHeading();
-						} 
-						else {
-							logger.debug("Destination heading pending");
-						}
-					} 
-					else {
-						if (Double.compare(heading, state.getDestinationHeading()) <= 0) {
-							heading = state.getDestinationHeading();
-							logger.debug("Destination heading reached: " + heading);
-							player.getState().setAngularVelocity(0);
-							state.resetDestinationHeading();
-						} 
-						else {
-							logger.debug("Destination heading pending");
-						}
-					}
+			if (ddc != null) {
+				switch(ddc.getType()) {
+				case ANGVEL:
+					state.setAngularVelocity(ddc.getAngularVelocity());
+					state.resetDestYaw();
+					break;
+				case ESTOP:
+					state.stop();
+					break;
+				case HEADING:
+					player.getState().setDestYaw(ddc.getHeading(), ANG_SPEED);
+					break;
+				case HEADING_LINVEL:
+					player.getState().setDestYaw(ddc.getHeading(), ANG_SPEED);
+					state.setLinearVelocity(ddc.getLinearVelocity() * LIN_SPEED);
+					break;
+				case LINVEL:
+					state.setLinearVelocity(ddc.getLinearVelocity() * LIN_SPEED);
+					break;
+				case MOTOR:
+					// TODO: other than stop
+					state.stop();
+					break;
+				case MOVE_TO:
+					// TODO: implement
+					assert false;
+					break;
+				case VEL:
+					state.setAngularVelocity(ddc.getAngularVelocity());
+					state.setLinearVelocity(ddc.getLinearVelocity() * LIN_SPEED);
+					state.resetDestYaw();
+					break;
 				}
-				logger.debug("rotated to " + heading);
-				state.setHeading(heading); // does mod2pi
 			}
-			
+						
 			// reset collision sensor
 			state.setCollisionX(false);
 			state.setCollisionY(false);
 
-			// TODO: if we have velocity, process move
 			roomMovePlayer(player, time);
 		}
 	}
 
 	private void updatePlayers() throws Exception {
 		for (RoomPlayer player : players.getAll()) {
-			player.update(players.getLocation(player), players.getFloatLocation(player), roomMap);
+			player.update(players.getLocation(player), roomMap);
 		}
 	}
 
@@ -277,18 +248,13 @@ public class RoomWorld implements World {
 		int [] oldLocation = players.getLocation(player);
 		int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 
-		double [] oldFloatLocation = players.getFloatLocation(player);
-		double [] newFloatLocation = Arrays.copyOf(oldFloatLocation, oldFloatLocation.length);
-
 		RoomPlayerState state = player.getState();
+		state.update(time);
+		pose_t pose = state.getPose();
+		
+		newLocation[0] = (int)pose.pos[0] / CELL_SIZE;
+		newLocation[1] = (int)pose.pos[1] / CELL_SIZE;
 
-		// TODO: fix
-		//newFloatLocation[0] += state.getSpeed() * Math.cos(state.getHeading()) * time;
-		//newFloatLocation[1] += state.getSpeed() * Math.sin(state.getHeading()) * time;
-		
-		newLocation[0] = (int)newFloatLocation[0] / cell_size;
-		newLocation[1] = (int)newFloatLocation[1] / cell_size;
-		
 		while (checkBlocked(newLocation)) {
 			// 1) determine what edge we're intersecting
 			if ((newLocation[0] != oldLocation[0]) && (newLocation[1] != oldLocation[1])) {
@@ -301,13 +267,13 @@ public class RoomWorld implements World {
 					// calculate y first
 					if (newLocation[1] > oldLocation[1]) {
 						// south
-						newFloatLocation[1] = oldLocation[1] * cell_size;
-						newFloatLocation[1] += cell_size - 0.1;
+						pose.pos[1] = oldLocation[1] * CELL_SIZE;
+						pose.pos[1] += CELL_SIZE - 0.1;
 						newLocation[1] = oldLocation[1];
 					} 
 					else if (newLocation[1] < oldLocation[1]) {
 						// north
-						newFloatLocation[1] = oldLocation[1] * cell_size;
+						pose.pos[1] = oldLocation[1] * CELL_SIZE;
 						newLocation[1] = oldLocation[1];
 					} else {
 						assert false;
@@ -318,13 +284,13 @@ public class RoomWorld implements World {
 					// calculate x first
 					if (newLocation[0] > oldLocation[0]) {
 						// east
-						newFloatLocation[0] = oldLocation[0] * cell_size;
-						newFloatLocation[0] += cell_size - 0.1;
+						pose.pos[0] = oldLocation[0] * CELL_SIZE;
+						pose.pos[0] += CELL_SIZE - 0.1;
 						newLocation[0] = oldLocation[0];
 					} 
 					else if (newLocation[0] < oldLocation[0]) {
 						// west
-						newFloatLocation[0] = oldLocation[0] * cell_size;
+						pose.pos[0] = oldLocation[0] * CELL_SIZE;
 						newLocation[0] = oldLocation[0];
 					} else {
 						assert false;
@@ -336,54 +302,37 @@ public class RoomWorld implements World {
 			if (newLocation[0] > oldLocation[0]) {
 				state.setCollisionX(true);
 				// east
-				newFloatLocation[0] = oldLocation[0] * cell_size;
-				newFloatLocation[0] += cell_size - 0.1;
+				pose.pos[0] = oldLocation[0] * CELL_SIZE;
+				pose.pos[0] += CELL_SIZE - 0.1;
 				newLocation[0] = oldLocation[0];
 			} 
 			else if (newLocation[0] < oldLocation[0]) {
 				state.setCollisionX(true);
 				// west
-				newFloatLocation[0] = oldLocation[0] * cell_size;
+				pose.pos[0] = oldLocation[0] * CELL_SIZE;
 				newLocation[0] = oldLocation[0];
 			} 
 			else if (newLocation[1] > oldLocation[1]) {
 				state.setCollisionY(true);
 				// south
-				newFloatLocation[1] = oldLocation[1] * cell_size;
-				newFloatLocation[1] += cell_size - 0.1;
+				pose.pos[1] = oldLocation[1] * CELL_SIZE;
+				pose.pos[1] += CELL_SIZE - 0.1;
 				newLocation[1] = oldLocation[1];
 			} 
 			else if (newLocation[1] < oldLocation[1]) {
 				state.setCollisionY(true);
 				// north
-				newFloatLocation[1] = oldLocation[1] * cell_size;
+				pose.pos[1] = oldLocation[1] * CELL_SIZE;
 				newLocation[1] = oldLocation[1];
 			}
 		}
 		
-		// TODO: fix
+		state.setPos(pose.pos);
+		
 		//state.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
 		roomMap.getCell(oldLocation).setPlayer(null);
 		players.setLocation(player, newLocation);
-		players.setFloatLocation(player, newFloatLocation);
 		state.setLocationId(roomMap.getLocationId(newLocation));
 		roomMap.getCell(newLocation).setPlayer(player);
 	}
-	
-	void calculateAndSetAngularVelocity(double targetHeading, RoomPlayer player, double time) {
-		double toGo = targetHeading - player.getState().getHeading();
-		logger.debug("rotation togo: " + toGo);
-		if (toGo < 0) {
-			player.getState().setAngularVelocity(rotate_speed * -1 * time);
-			player.getState().setDestinationHeading(targetHeading);
-		} 
-		else if (toGo > 0) {
-			player.getState().setAngularVelocity(rotate_speed * time);
-			player.getState().setDestinationHeading(targetHeading);
-		} 
-		else {
-			player.getState().setAngularVelocity(0);
-			player.getState().resetDestinationHeading();
-		}
 	}
-}

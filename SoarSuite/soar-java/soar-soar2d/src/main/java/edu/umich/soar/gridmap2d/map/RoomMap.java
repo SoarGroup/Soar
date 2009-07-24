@@ -112,11 +112,11 @@ public class RoomMap implements GridMap, CellObjectObserver {
 		RoomObjectInfo info = new RoomObjectInfo();
 		info.location = Arrays.copyOf(location, location.length);
 		info.floatLocation = new double [] { 
-				info.location[0] * RoomWorld.cell_size, 
-				info.location[1] * RoomWorld.cell_size 
+				info.location[0] * RoomWorld.CELL_SIZE, 
+				info.location[1] * RoomWorld.CELL_SIZE 
 				};
-		info.floatLocation[0] += RoomWorld.cell_size / 2.0;
-		info.floatLocation[1] += RoomWorld.cell_size / 2.0;
+		info.floatLocation[0] += RoomWorld.CELL_SIZE / 2.0;
+		info.floatLocation[1] += RoomWorld.CELL_SIZE / 2.0;
 		info.object = added;
 		if (!added.hasProperty("object-id")) {
 			added.setProperty("object-id", Integer.toString(newObjectId()));
