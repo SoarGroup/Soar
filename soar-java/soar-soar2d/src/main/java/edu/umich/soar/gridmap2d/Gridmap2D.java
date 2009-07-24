@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.prefs.Preferences;
 
 
 import org.apache.log4j.Logger;
@@ -36,6 +37,8 @@ import edu.umich.soar.gridmap2d.world.World;
 
 public class Gridmap2D {
 	private static Logger logger = Logger.getLogger(Gridmap2D.class);
+	
+	public static Preferences preferences = Preferences.userNodeForPackage(Gridmap2D.class);
 	
 	public static SimConfig config = null;
 	public static final WindowManager wm = new WindowManager();
@@ -96,9 +99,6 @@ public class Gridmap2D {
 		} catch (Exception e) {
 			fatalError(e.getMessage());
 		}
-		
-		logger.trace(Names.Trace.savingPreferences);
-		config.savePreferences();
 	}
 	
 	private void fatalError(String message) {
