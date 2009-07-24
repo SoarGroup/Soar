@@ -20,6 +20,7 @@ public class SoarRobotSelfIL {
 	private final IntElement area;
 	private final FloatElement x;
 	private final FloatElement y;
+	private final FloatElement z;
 	private final StringElement cx;
 	private final StringElement cy;
 	private FloatElement fYaw;
@@ -46,6 +47,7 @@ public class SoarRobotSelfIL {
 		pose = self.CreateIdWME("pose");
 		x = pose.CreateFloatWME("x", opose.getPose().pos[0]);
 		y = pose.CreateFloatWME("y", opose.getPose().pos[1]);
+		z = pose.CreateFloatWME("z", opose.getPose().pos[2]);
 		
 		Identifier collision = self.CreateIdWME("collision");
 		cx = collision.CreateStringWME("x", "false");
@@ -54,21 +56,22 @@ public class SoarRobotSelfIL {
 		setYaw(LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2]);
 	}
 	
-	private void setYaw(double value) {
+	private void setYaw(double radians) {
+		double degrees = Math.toDegrees(radians);
 		if (configure.isFloatYawWmes()) {
 			if (fYaw == null) {
-				fYaw = pose.CreateFloatWME("yaw", value);
+				fYaw = pose.CreateFloatWME("yaw", degrees);
 			}
-			fYaw.Update(value);
+			fYaw.Update(degrees);
 			if (iYaw != null) {
 				iYaw.DestroyWME();
 				iYaw = null;
 			}
 		} else {
 			if (iYaw == null) {
-				iYaw = pose.CreateIntWME("yaw", (int)value);
+				iYaw = pose.CreateIntWME("yaw", (int)degrees);
 			}
-			iYaw.Update((int)value);
+			iYaw.Update((int)degrees);
 			if (fYaw != null) {
 				fYaw.DestroyWME();
 				fYaw = null;
@@ -83,6 +86,7 @@ public class SoarRobotSelfIL {
 	public void update(RoomPlayer player) {
 		x.Update(opose.getPose().pos[0]);
 		y.Update(opose.getPose().pos[1]);
+		z.Update(opose.getPose().pos[2]);
 		setYaw(LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2]);
 		area.Update(player.getState().getLocationId());
 		cx.Update(player.getState().isCollisionX() ? "true" : "false");

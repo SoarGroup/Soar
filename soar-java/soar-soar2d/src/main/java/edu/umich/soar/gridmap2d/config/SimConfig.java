@@ -1,17 +1,14 @@
 package edu.umich.soar.gridmap2d.config;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
 import edu.umich.soar.config.Config;
-import edu.umich.soar.config.ConfigFile;
 import edu.umich.soar.config.ConfigUtil;
-import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.Game;
+import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 
 
@@ -26,7 +23,8 @@ public class SimConfig implements GameConfig {
 	
 	private static class Keys {
 		private static final String last_productions = "last_productions";
-		private static final String window_position = "window_position";
+		private static final String window_position_x = "window_position.x";
+		private static final String window_position_y = "window_position.y";
 		private static final String general = "general";
 		private static final String soar = "soar";
 		private static final String terminals = "terminals";
@@ -38,8 +36,6 @@ public class SimConfig implements GameConfig {
 	}
 	
 	private Game game;
-	private Config preferences;
-	private File preferencesFile;
 
 	private Config config;
 	
@@ -99,23 +95,6 @@ public class SimConfig implements GameConfig {
 			break;
 		}
 
-		try {
-			preferencesFile = new File(generalConfig.preferences_file);
-			if (preferencesFile.exists()) {
-				preferences = new Config(new ConfigFile(preferencesFile.getAbsolutePath()));
-			} else {
-				preferences = new Config(new ConfigFile());
-			}
-		} catch (ParseError e) {
-			System.err.println(e.getMessage());
-		} catch (IOException e) {
-			System.err.println(e.getMessage());
-		} finally {
-			if (preferences == null) {
-				preferences = new Config(new ConfigFile());
-			}
-		}
-		
 		if (config.hasKey(Keys.active_players)) {
 			for (String playerID : config.getStrings(Keys.active_players)) {
 				PlayerConfig playerConfig = new PlayerConfig();
@@ -227,37 +206,26 @@ public class SimConfig implements GameConfig {
 	
 	public void saveLastProductions(String productionsPath) {
 		String game_specific_key = game.id() + "." + Keys.last_productions;
-		preferences.setString(game_specific_key, productionsPath);
+		Gridmap2D.preferences.put(game_specific_key, productionsPath);
 	}
 	
 	public String getLastProductions() {
 		String game_specific_key = game.id() + "." + Keys.last_productions;
-		if (preferences.hasKey(game_specific_key)) {
-			return preferences.getString(game_specific_key);
-		}
-		return null;
+		return Gridmap2D.preferences.get(game_specific_key, null);
 	}
 	
 	public void saveWindowPosition(int [] xy) {
-		preferences.setInts(Keys.window_position, xy);
+		Gridmap2D.preferences.putInt(Keys.window_position_x, xy[0]);
+		Gridmap2D.preferences.putInt(Keys.window_position_y, xy[1]);
 	}
 	
 	public int [] getWindowPosition() {
-		if (preferences.hasKey(Keys.window_position)) {
-			return preferences.getInts(Keys.window_position);
-		}
-		return null;
+		int [] xy = new int[] { 0, 0 };
+		xy[0] = Gridmap2D.preferences.getInt(Keys.window_position_x, xy[0]);
+		xy[1] = Gridmap2D.preferences.getInt(Keys.window_position_y, xy[1]);
+		return xy;
 	}
 	
-	public void savePreferences() {
-		// meta preferences that need to be preserved across runs
-		try {
-			preferences.save(preferencesFile.getAbsolutePath());
-		} catch (FileNotFoundException e) {
-			System.err.println("Couldn't save preferences: " + e.getMessage());
-		}
-	}
-		
 	public String title() {
 		return gameConfig.title();
 	}
