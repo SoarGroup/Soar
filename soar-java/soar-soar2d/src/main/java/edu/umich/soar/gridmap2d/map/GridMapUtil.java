@@ -378,31 +378,31 @@ public class GridMapUtil {
 					// horizontal
 					m = left[0];
 					n = right[0];
-					centerpoint[1] = left[1] * RoomWorld.cell_size;
+					centerpoint[1] = left[1] * RoomWorld.CELL_SIZE;
 					break;
 				case EAST:
 				case WEST:
 					// vertical
 					m = left[1];
 					n = right[1];
-					centerpoint[0] = left[0] * RoomWorld.cell_size;
+					centerpoint[0] = left[0] * RoomWorld.CELL_SIZE;
 					break;
 				}
 			} else {
 				// single block
-				centerpoint[0] = left[0] * RoomWorld.cell_size;
-				centerpoint[1] = left[1] * RoomWorld.cell_size;
+				centerpoint[0] = left[0] * RoomWorld.CELL_SIZE;
+				centerpoint[1] = left[1] * RoomWorld.CELL_SIZE;
 
 				switch (direction) {
 				case NORTH:
-					centerpoint[1] += RoomWorld.cell_size;
+					centerpoint[1] += RoomWorld.CELL_SIZE;
 				case SOUTH:
-					centerpoint[0] += RoomWorld.cell_size / 2;
+					centerpoint[0] += RoomWorld.CELL_SIZE / 2;
 					break;
 				case WEST:
-					centerpoint[0] += RoomWorld.cell_size;
+					centerpoint[0] += RoomWorld.CELL_SIZE;
 				case EAST:
-					centerpoint[1] += RoomWorld.cell_size / 2;
+					centerpoint[1] += RoomWorld.CELL_SIZE / 2;
 					break;
 				}
 				return centerpoint;
@@ -421,23 +421,23 @@ public class GridMapUtil {
 			if (left[0] == right[0]) {
 				// vertical
 				// add half to y
-				centerpoint[1] = upperLeft[1] * RoomWorld.cell_size;
-				centerpoint[1] += (numberOfBlocks / 2.0) * RoomWorld.cell_size;
+				centerpoint[1] = upperLeft[1] * RoomWorld.CELL_SIZE;
+				centerpoint[1] += (numberOfBlocks / 2.0) * RoomWorld.CELL_SIZE;
 				
 				// if west, we gotta add a cell size to x
 				if (direction == Direction.WEST) {
-					centerpoint[0] += RoomWorld.cell_size;
+					centerpoint[0] += RoomWorld.CELL_SIZE;
 				}
 				
 			} else {
 				// horizontal
 				// add half to x
-				centerpoint[0] = upperLeft[0] * RoomWorld.cell_size;
-				centerpoint[0] += (numberOfBlocks / 2.0) * RoomWorld.cell_size;
+				centerpoint[0] = upperLeft[0] * RoomWorld.CELL_SIZE;
+				centerpoint[0] += (numberOfBlocks / 2.0) * RoomWorld.CELL_SIZE;
 
 				// if north, we gotta add a cell size to y
 				if (direction == Direction.NORTH) {
-					centerpoint[1] += RoomWorld.cell_size;
+					centerpoint[1] += RoomWorld.CELL_SIZE;
 				}
 			}
 			return centerpoint;
