@@ -1,4 +1,4 @@
-# See http://winter.eecs.umich.edu/soarwiki/Environments/Soar2D/Configuration_File_Format
+# See http://code.google.com/p/soar/wiki/soar2dcnf
 general.game = "room";
 general.map = "config/maps/room/default.txt";
 #players.active_players = [ "robot" ];
