@@ -21,7 +21,6 @@ public class PlayersManager<P extends Player> {
 	private Map<String, P> playersMap = new HashMap<String, P>(7);
 	private Map<P, int []> initialLocations = new HashMap<P, int []>(7);
 	private Map<P, int []> locations = new HashMap<P, int []>(7);
-	private Map<P, double []> floatLocations = new HashMap<P, double []>(7);
 	private Map<P, CommandInfo> lastCommands = new HashMap<P, CommandInfo>(7);
 	
 	public int numberOfPlayers() {
@@ -50,14 +49,6 @@ public class PlayersManager<P extends Player> {
 	
 	void setLocation(P player, int [] location) {
 		locations.put(player, location);
-	}
-	
-	public double [] getFloatLocation(P player) {
-		return floatLocations.get(player);
-	}
-	
-	void setFloatLocation(P player, double [] location) {
-		floatLocations.put(player, location);
 	}
 	
 	public CommandInfo getCommand(P player) {
@@ -91,7 +82,6 @@ public class PlayersManager<P extends Player> {
 		playersMap.remove(player.getName());
 		initialLocations.remove(player);
 		locations.remove(player);
-		floatLocations.remove(player);
 		lastCommands.remove(player);
 	}
 	

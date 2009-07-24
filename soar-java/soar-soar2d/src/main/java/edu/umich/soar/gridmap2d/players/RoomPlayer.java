@@ -38,14 +38,9 @@ public class RoomPlayer extends Player {
 		return command;
 	}
 	
-	public void update(int[] newLocation, double[] newFloatLocation, RoomMap roomMap) throws Exception {
+	public void update(int[] newLocation, RoomMap roomMap) throws Exception {
 		super.update(newLocation);
-		moved = moved || Double.compare(newFloatLocation[0], state.getFloatLocation()[0]) != 0 || Double.compare(newFloatLocation[1], state.getFloatLocation()[1]) != 0;
-		moved = moved || getState().rotated();
-		getState().resetRotated();
-		if (moved) {
-			state.setFloatLocation(newFloatLocation);
-		}
+		moved = true;
 		if (commander != null) {
 			commander.update(roomMap);
 		}

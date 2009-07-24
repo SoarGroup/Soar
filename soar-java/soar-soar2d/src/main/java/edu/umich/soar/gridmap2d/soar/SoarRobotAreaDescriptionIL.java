@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lcmtypes.pose_t;
+
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
@@ -76,9 +78,11 @@ public class SoarRobotAreaDescriptionIL {
 	private void addOrUpdatePlayer(RoomPlayer self, RoomPlayer target, RoomWorld world, double angleOffDouble) {
 		PlayerIL pIL = players.get(target);
 
-		double dx = target.getState().getFloatLocation()[0] - self.getState().getFloatLocation()[0];
+		pose_t targetPose = target.getState().getPose();
+		pose_t selfPose = self.getState().getPose();
+		double dx = targetPose.pos[0] - selfPose.pos[0];
 		dx *= dx;
-		double dy = target.getState().getFloatLocation()[1] - self.getState().getFloatLocation()[1];
+		double dy = targetPose.pos[1] - selfPose.pos[1];
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
 		
@@ -93,8 +97,8 @@ public class SoarRobotAreaDescriptionIL {
 			pIL.area.Update(target.getState().getLocationId());
 			pIL.row.Update(target.getLocation()[1]);
 			pIL.col.Update(target.getLocation()[0]);
-			pIL.x.Update(target.getState().getFloatLocation()[0]);
-			pIL.y.Update(target.getState().getFloatLocation()[1]);
+			pIL.x.Update(targetPose.pos[0]);
+			pIL.y.Update(targetPose.pos[1]);
 			pIL.range.Update(range);
 			pIL.yaw.Update(angleOffDouble);
 			pIL.touch(Gridmap2D.simulation.getWorldCount());
@@ -104,9 +108,10 @@ public class SoarRobotAreaDescriptionIL {
 	private void addOrUpdateObject(RoomPlayer self, RoomMap.RoomObjectInfo objectInfo, RoomWorld world, double angleOffDouble) {
 		ObjectIL oIL = objects.get(objectInfo.object.getIntProperty("object-id", -1));
 
-		double dx = objectInfo.floatLocation[0] - self.getState().getFloatLocation()[0];
+		pose_t selfPose = self.getState().getPose();
+		double dx = objectInfo.floatLocation[0] - selfPose.pos[0];
 		dx *= dx;
-		double dy = objectInfo.floatLocation[1] - self.getState().getFloatLocation()[1];
+		double dy = objectInfo.floatLocation[1] - selfPose.pos[1];
 		dy *= dy;
 		double range = Math.sqrt(dx + dy);
 		
@@ -164,9 +169,10 @@ public class SoarRobotAreaDescriptionIL {
 		for(GatewayIL gateway : gateways) {
 			
 			gateway.yaw.Update(player.getState().angleOff(gateway.centerpoint));
-			double dx = gateway.centerpoint[0] - player.getState().getFloatLocation()[0];
+			pose_t selfPose = player.getState().getPose();
+			double dx = gateway.centerpoint[0] - selfPose.pos[0];
 			dx *= dx;
-			double dy = gateway.centerpoint[1] - player.getState().getFloatLocation()[1];
+			double dy = gateway.centerpoint[1] - selfPose.pos[1];
 			dy *= dy;
 			double r = Math.sqrt(dx + dy);
 			
@@ -194,7 +200,8 @@ public class SoarRobotAreaDescriptionIL {
 				if (rTarget.equals(player)) {
 					continue;
 				}
-				addOrUpdatePlayer(player, rTarget, world, player.getState().angleOff(rTarget.getState().getFloatLocation()));
+				pose_t rTargetPose = rTarget.getState().getPose();
+				addOrUpdatePlayer(player, rTarget, world, player.getState().angleOff(rTargetPose.pos));
 			}
 		}
 
@@ -225,10 +232,11 @@ public class SoarRobotAreaDescriptionIL {
 			this.yaw = angleOff.CreateFloatWME("yaw", angleOffDouble);
 			this.position = parent.CreateIdWME("position");
 			{
+				pose_t targetPose = target.getState().getPose();
 				this.col = position.CreateIntWME("col", target.getLocation()[0]);
 				this.row = position.CreateIntWME("row", target.getLocation()[1]);
-				this.x = position.CreateFloatWME("x", target.getState().getFloatLocation()[0]);
-				this.y = position.CreateFloatWME("y", target.getState().getFloatLocation()[1]);
+				this.x = position.CreateFloatWME("x", targetPose.pos[0]);
+				this.y = position.CreateFloatWME("y", targetPose.pos[1]);
 			}
 			this.range = parent.CreateFloatWME("range", range);
 			
@@ -295,9 +303,10 @@ public class SoarRobotAreaDescriptionIL {
 		protected void initialize(Barrier barrier, RoomWorld world) {
 			super.initialize(barrier, world);
 
-			double dx = centerpoint[0] - player.getState().getFloatLocation()[0];
+			pose_t playerPose = player.getState().getPose();
+			double dx = centerpoint[0] - playerPose.pos[0];
 			dx *= dx;
-			double dy = centerpoint[1] - player.getState().getFloatLocation()[1];
+			double dy = centerpoint[1] - playerPose.pos[1];
 			dy *= dy;
 			double r = Math.sqrt(dx + dy);
 

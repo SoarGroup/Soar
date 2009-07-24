@@ -41,6 +41,7 @@ import edu.umich.soar.gridmap2d.players.CommandInfo;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
 import edu.umich.soar.gridmap2d.world.World;
+import edu.umich.soar.robot.DifferentialDriveCommand;
 
 
 public class WindowManager {
@@ -632,7 +633,7 @@ public class WindowManager {
 	public void setupRoom() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new RoomVisualWorld(worldGroup, SWT.NONE, RoomWorld.cell_size);
+		visualWorld = new RoomVisualWorld(worldGroup, SWT.NONE, RoomWorld.CELL_SIZE);
 		visualWorld.setMap(world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -651,32 +652,30 @@ public class WindowManager {
 				}
 				boolean go = false;
 				switch (e.keyCode) {
-				case SWT.KEYPAD_9:
-					GetIdDialog getDialog = new GetIdDialog(e.display.getShells()[0]);
-					getDialog.open();
-					break;
+//				case SWT.KEYPAD_9:
+//					GetIdDialog getDialog = new GetIdDialog(e.display.getShells()[0]);
+//					getDialog.open();
+//					break;
 				case SWT.KEYPAD_8:
-					humanMove.forward = true;
-					break;
-				case SWT.KEYPAD_4:
-					humanMove.rotate = true;
-					humanMove.rotateDirection = Names.kRotateLeft;
+					humanMove.ddc = DifferentialDriveCommand.newLinearVelocityCommand(1);
 					break;
 				case SWT.KEYPAD_5:
-					humanMove.rotate = true;
-					humanMove.rotateDirection = Names.kRotateStop;
-					break;
-				case SWT.KEYPAD_6:
-					humanMove.rotate = true;
-					humanMove.rotateDirection = Names.kRotateRight;
-					break;
-				case SWT.KEYPAD_3:
-					humanMove.drop = true;
-					// FIXME
-					//humanMove.dropId = human.getCarryId();
+					humanMove.ddc = DifferentialDriveCommand.newEStopCommand();
 					break;
 				case SWT.KEYPAD_2:
-					humanMove.backward = true;
+					humanMove.ddc = DifferentialDriveCommand.newLinearVelocityCommand(-1);
+					break;
+				case SWT.KEYPAD_4:
+					humanMove.ddc = DifferentialDriveCommand.newAngularVelocityCommand(-1);
+					break;
+				case SWT.KEYPAD_6:
+					humanMove.ddc = DifferentialDriveCommand.newAngularVelocityCommand(1);
+					break;
+				case SWT.KEYPAD_1:
+					humanMove.ddc = DifferentialDriveCommand.newHeadingCommand(0);
+					break;
+				case SWT.KEYPAD_3:
+					humanMove.ddc = DifferentialDriveCommand.newHeadingCommand(Math.PI);
 					break;
 				case SWT.KEYPAD_MULTIPLY:
 					humanMove.stopSim = true;
@@ -1107,7 +1106,13 @@ public class WindowManager {
 	}
 
 	boolean isDisposed() {
-		return (display.isDisposed() || shell.isDisposed());
+		if (display == null) {
+			return true;
+		}
+		if (display.isDisposed() || shell == null) {
+			return true;
+		}
+		return shell.isDisposed();
 	}
 
 	public void update() {

@@ -5,6 +5,7 @@ import sml.Agent;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
+import sml.StringElement;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.robot.ConfigureInterface;
@@ -19,6 +20,8 @@ public class SoarRobotSelfIL {
 	private final IntElement area;
 	private final FloatElement x;
 	private final FloatElement y;
+	private final StringElement cx;
+	private final StringElement cy;
 	private FloatElement fYaw;
 	private IntElement iYaw;
 	private final ConfigureInterface configure;
@@ -43,6 +46,10 @@ public class SoarRobotSelfIL {
 		pose = self.CreateIdWME("pose");
 		x = pose.CreateFloatWME("x", opose.getPose().pos[0]);
 		y = pose.CreateFloatWME("y", opose.getPose().pos[1]);
+		
+		Identifier collision = self.CreateIdWME("collision");
+		cx = collision.CreateStringWME("x", "false");
+		cy = collision.CreateStringWME("y", "false");
 		
 		setYaw(LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2]);
 	}
@@ -78,6 +85,8 @@ public class SoarRobotSelfIL {
 		y.Update(opose.getPose().pos[1]);
 		setYaw(LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2]);
 		area.Update(player.getState().getLocationId());
+		cx.Update(player.getState().isCollisionX() ? "true" : "false");
+		cy.Update(player.getState().isCollisionY() ? "true" : "false");
 		waypointsIL.update();
 		messagesIL.update();
 	}
