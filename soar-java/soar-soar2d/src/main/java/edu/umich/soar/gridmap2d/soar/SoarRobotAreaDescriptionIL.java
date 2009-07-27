@@ -100,7 +100,7 @@ public class SoarRobotAreaDescriptionIL {
 			pIL.x.Update(targetPose.pos[0]);
 			pIL.y.Update(targetPose.pos[1]);
 			pIL.range.Update(range);
-			pIL.yaw.Update(angleOffDouble);
+			pIL.angleOff.Update(angleOffDouble);
 			pIL.touch(Gridmap2D.simulation.getWorldCount());
 		}
 	}
@@ -127,7 +127,7 @@ public class SoarRobotAreaDescriptionIL {
 			oIL.x.Update(objectInfo.location[0]);
 			oIL.y.Update(objectInfo.location[1]);
 			oIL.range.Update(range);
-			oIL.yaw.Update(angleOffDouble);
+			oIL.angleOff.Update(angleOffDouble);
 			oIL.touch(Gridmap2D.simulation.getWorldCount());
 		}
 	}
@@ -161,12 +161,12 @@ public class SoarRobotAreaDescriptionIL {
 		
 		// barrier angle offs and range
 		for(BarrierIL barrier : walls) {
-			barrier.yaw.Update(player.getState().angleOff(barrier.centerpoint));
+			barrier.angleOff.Update(player.getState().angleOff(barrier.centerpoint));
 		}
 		
 		for(GatewayIL gateway : gateways) {
 			
-			gateway.yaw.Update(player.getState().angleOff(gateway.centerpoint));
+			gateway.angleOff.Update(player.getState().angleOff(gateway.centerpoint));
 			pose_t selfPose = player.getState().getPose();
 			double dx = gateway.centerpoint[0] - selfPose.pos[0];
 			dx *= dx;
@@ -211,8 +211,7 @@ public class SoarRobotAreaDescriptionIL {
 		
 		private IntElement area;
 		private Identifier position;
-		private Identifier angleOff;
-		private FloatElement yaw;
+		private FloatElement angleOff;
 		private FloatElement x, y;
 		private IntElement row, col;
 		private FloatElement range;
@@ -226,8 +225,7 @@ public class SoarRobotAreaDescriptionIL {
 		private void initialize(RoomPlayer target, RoomWorld world, double range, double angleOffDouble) {
 			parent.CreateStringWME("name", target.getName());
 			this.area = parent.CreateIntWME("area", target.getState().getLocationId());
-			this.angleOff = parent.CreateIdWME("angle-off");
-			this.yaw = angleOff.CreateFloatWME("yaw", angleOffDouble);
+			this.angleOff = parent.CreateFloatWME("angle-off", angleOffDouble);
 			this.position = parent.CreateIdWME("position");
 			{
 				pose_t targetPose = target.getState().getPose();
@@ -253,9 +251,7 @@ public class SoarRobotAreaDescriptionIL {
 	private static class BarrierIL {
 		protected RoomPlayer player;
 		protected Identifier parent;
-		protected Identifier center;
-		private Identifier angleOff;
-		FloatElement yaw;
+		FloatElement angleOff;
 		
 		protected double [] centerpoint;
 		
@@ -266,14 +262,10 @@ public class SoarRobotAreaDescriptionIL {
 		
 		protected void initialize(Barrier barrier, RoomWorld world) {
 			parent.CreateIntWME("id", barrier.id);
-			center = parent.CreateIdWME("center");
-			{
-				centerpoint = barrier.centerpoint();
-				center.CreateFloatWME("x", centerpoint[0]);
-				center.CreateFloatWME("y", centerpoint[1]);
-				angleOff = center.CreateIdWME("angle-off");
-				yaw = angleOff.CreateFloatWME("yaw", player.getState().angleOff(centerpoint));
-			}
+			centerpoint = barrier.centerpoint();
+			parent.CreateFloatWME("x", centerpoint[0]);
+			parent.CreateFloatWME("y", centerpoint[1]);
+			angleOff = parent.CreateFloatWME("angle-off", player.getState().angleOff(centerpoint));
 			parent.CreateStringWME("direction", barrier.direction.id());
 		}
 	}
@@ -297,7 +289,7 @@ public class SoarRobotAreaDescriptionIL {
 			dy *= dy;
 			double r = Math.sqrt(dx + dy);
 
-			range = center.CreateFloatWME("range", r);
+			range = parent.CreateFloatWME("range", r);
 		}
 		
 		private void addDest(int id) {
@@ -311,8 +303,7 @@ public class SoarRobotAreaDescriptionIL {
 		
 		private IntElement area;
 		private Identifier position;
-		private Identifier angleOff;
-		private FloatElement yaw;
+		private FloatElement angleOff;
 		private FloatElement x, y;
 		private StringElement visible;
 		private FloatElement range;
@@ -327,8 +318,7 @@ public class SoarRobotAreaDescriptionIL {
 			parent.CreateIntWME("id", info.object.getIntProperty("object-id", -1));
 			parent.CreateStringWME("type", info.object.getProperty("id"));
 			this.area = parent.CreateIntWME("area", info.area);
-			this.angleOff = parent.CreateIdWME("angle-off");
-			this.yaw = angleOff.CreateFloatWME("yaw", angleOffDouble);
+			this.angleOff = parent.CreateFloatWME("angle-off", angleOffDouble);
 			this.position = parent.CreateIdWME("position");
 			{
 				this.x = position.CreateFloatWME("x", info.floatLocation[0]);
