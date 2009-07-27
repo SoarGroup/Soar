@@ -124,8 +124,6 @@ public class SoarRobotAreaDescriptionIL {
 		
 		} else {
 			oIL.area.Update(objectInfo.area);
-			oIL.row.Update(objectInfo.location[1]);
-			oIL.col.Update(objectInfo.location[0]);
 			oIL.x.Update(objectInfo.location[0]);
 			oIL.y.Update(objectInfo.location[1]);
 			oIL.range.Update(range);
@@ -255,7 +253,6 @@ public class SoarRobotAreaDescriptionIL {
 	private static class BarrierIL {
 		protected RoomPlayer player;
 		protected Identifier parent;
-		private Identifier left, right;
 		protected Identifier center;
 		private Identifier angleOff;
 		FloatElement yaw;
@@ -269,16 +266,6 @@ public class SoarRobotAreaDescriptionIL {
 		
 		protected void initialize(Barrier barrier, RoomWorld world) {
 			parent.CreateIntWME("id", barrier.id);
-			left = parent.CreateIdWME("left");
-			{
-				left.CreateIntWME("row", barrier.left[1]);
-				left.CreateIntWME("col", barrier.left[0]);
-			}
-			right = parent.CreateIdWME("right");
-			{
-				right.CreateIntWME("row", barrier.right[1]);
-				right.CreateIntWME("col", barrier.right[0]);
-			}
 			center = parent.CreateIdWME("center");
 			{
 				centerpoint = barrier.centerpoint();
@@ -327,7 +314,6 @@ public class SoarRobotAreaDescriptionIL {
 		private Identifier angleOff;
 		private FloatElement yaw;
 		private FloatElement x, y;
-		private IntElement row, col;
 		private StringElement visible;
 		private FloatElement range;
 		
@@ -345,8 +331,6 @@ public class SoarRobotAreaDescriptionIL {
 			this.yaw = angleOff.CreateFloatWME("yaw", angleOffDouble);
 			this.position = parent.CreateIdWME("position");
 			{
-				this.col = position.CreateIntWME("col", info.location[0]);
-				this.row = position.CreateIntWME("row", info.location[1]);
 				this.x = position.CreateFloatWME("x", info.floatLocation[0]);
 				this.y = position.CreateFloatWME("y", info.floatLocation[1]);
 			}

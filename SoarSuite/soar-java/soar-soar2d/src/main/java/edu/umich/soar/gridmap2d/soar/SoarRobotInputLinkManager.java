@@ -33,14 +33,14 @@ public class SoarRobotInputLinkManager {
 	public void create() {
 		Identifier inputLink = agent.GetInputLink();
 		
-		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, timeIL, null);
-		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, timeIL, null);
-
 		Identifier configuration = agent.CreateIdWME(inputLink, "configuration");
 		configurationIL = new ConfigurationIL(configuration, opose);
 
 		Identifier time = agent.CreateIdWME(inputLink, "time");
 		timeIL = new TimeIL(time);
+
+		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, timeIL, null);
+		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, timeIL, null);
 
 		Identifier self = agent.CreateIdWME(inputLink, "self");
 		selfIL = new SoarRobotSelfIL(agent, self, opose, configurationIL);
