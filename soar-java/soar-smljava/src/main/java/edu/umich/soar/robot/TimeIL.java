@@ -6,7 +6,7 @@ import sml.Kernel;
 import sml.smlSystemEventId;
 
 final public class TimeIL implements Kernel.SystemEventInterface {
-	private final static long nanosecondsPerSecond = 1000000000L;
+	private final static long NANO_PER_SEC = 1000000000L;
 
 	private final Identifier time;
 	private final IntElement secondswme;
@@ -31,8 +31,8 @@ final public class TimeIL implements Kernel.SystemEventInterface {
 	}
 	
 	private void updateInternal(long nanoTime) {
-		int seconds = (int) (nanoTime / nanosecondsPerSecond);
-		int microseconds = (int) (nanoTime % nanosecondsPerSecond);
+		int seconds = (int) (nanoTime / NANO_PER_SEC);
+		int microseconds = (int) (nanoTime % NANO_PER_SEC);
 		microseconds /= 1000;
 
 		secondswme.Update(seconds);

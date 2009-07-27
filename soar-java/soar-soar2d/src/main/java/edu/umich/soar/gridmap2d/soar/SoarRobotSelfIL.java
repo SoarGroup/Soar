@@ -21,6 +21,10 @@ public class SoarRobotSelfIL {
 	private final FloatElement x;
 	private final FloatElement y;
 	private final FloatElement z;
+	private final FloatElement xvel;
+	private final FloatElement yvel;
+	private final FloatElement zvel;
+	private final FloatElement yawvel;
 	private final StringElement cx;
 	private final StringElement cy;
 	private FloatElement fYaw;
@@ -48,6 +52,10 @@ public class SoarRobotSelfIL {
 		x = pose.CreateFloatWME("x", opose.getPose().pos[0]);
 		y = pose.CreateFloatWME("y", opose.getPose().pos[1]);
 		z = pose.CreateFloatWME("z", opose.getPose().pos[2]);
+		xvel = pose.CreateFloatWME("x-velocity", opose.getPose().vel[0]);
+		yvel = pose.CreateFloatWME("y-velocity", opose.getPose().vel[1]);
+		zvel = pose.CreateFloatWME("z-velocity", opose.getPose().vel[2]);
+		yawvel = pose.CreateFloatWME("yaw-velocity", opose.getPose().rotation_rate[2]);
 		
 		Identifier collision = self.CreateIdWME("collision");
 		cx = collision.CreateStringWME("x", "false");
@@ -87,6 +95,10 @@ public class SoarRobotSelfIL {
 		x.Update(opose.getPose().pos[0]);
 		y.Update(opose.getPose().pos[1]);
 		z.Update(opose.getPose().pos[2]);
+		xvel.Update(opose.getPose().vel[0]);
+		yvel.Update(opose.getPose().vel[1]);
+		zvel.Update(opose.getPose().vel[2]);
+		yawvel.Update(opose.getPose().rotation_rate[2]);
 		setYaw(LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2]);
 		area.Update(player.getState().getLocationId());
 		cx.Update(player.getState().isCollisionX() ? "true" : "false");
