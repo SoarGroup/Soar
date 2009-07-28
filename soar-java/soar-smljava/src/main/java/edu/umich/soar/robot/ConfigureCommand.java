@@ -3,6 +3,8 @@
  */
 package edu.umich.soar.robot;
 
+import lcmtypes.pose_t;
+
 import org.apache.log4j.Logger;
 
 import sml.Agent;
@@ -52,7 +54,7 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 		String offsetX = command.GetParameterValue("offset-x");
 		String offsetY = command.GetParameterValue("offset-y");
 		if (offsetX != null || offsetY != null) {
-			double[] offset = null;
+			pose_t offset = null;
 			if (offsetX == null) {
 				offsetX = "0";
 			}
@@ -60,17 +62,16 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 				offsetY = "0";
 			}
 			try {
-				offset = new double[] {
-						Double.parseDouble(offsetX),
-						Double.parseDouble(offsetY),
-				};
+				offset = new pose_t();
+				offset.pos[0] = Double.parseDouble(offsetX);
+				offset.pos[1] = Double.parseDouble(offsetY);
 			} catch (NumberFormatException e) {
 				logger.warn(NAME + ": Error parsing coordinates: " + offsetX + ", " + offsetY);
 				CommandStatus.error.addStatus(agent, command);
 				return false;
 			}
 			opose.setOffset(offset);
-			logger.debug(String.format("%s: offset set to x%10.3f y%10.3f", NAME, offset[0], offset[1]));
+			logger.debug(String.format("%s: offset set to x%10.3f y%10.3f", NAME, offset.pos[0], offset.pos[1]));
 		}
 		
 		CommandStatus.accepted.addStatus(agent, command);

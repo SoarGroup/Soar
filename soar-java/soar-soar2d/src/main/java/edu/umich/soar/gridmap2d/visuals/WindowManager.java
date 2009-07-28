@@ -633,7 +633,7 @@ public class WindowManager {
 	public void setupRoom() {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
-		visualWorld = new RoomVisualWorld(worldGroup, SWT.NONE, RoomWorld.CELL_SIZE);
+		visualWorld = new RoomVisualWorld(worldGroup, SWT.NONE, RoomWorld.CELL_SIZE, world);
 		visualWorld.setMap(world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
@@ -666,10 +666,10 @@ public class WindowManager {
 					humanMove.ddc = DifferentialDriveCommand.newLinearVelocityCommand(-1);
 					break;
 				case SWT.KEYPAD_4:
-					humanMove.ddc = DifferentialDriveCommand.newAngularVelocityCommand(-1);
+					humanMove.ddc = DifferentialDriveCommand.newAngularVelocityCommand(1);
 					break;
 				case SWT.KEYPAD_6:
-					humanMove.ddc = DifferentialDriveCommand.newAngularVelocityCommand(1);
+					humanMove.ddc = DifferentialDriveCommand.newAngularVelocityCommand(-1);
 					break;
 				case SWT.KEYPAD_1:
 					humanMove.ddc = DifferentialDriveCommand.newHeadingCommand(0);

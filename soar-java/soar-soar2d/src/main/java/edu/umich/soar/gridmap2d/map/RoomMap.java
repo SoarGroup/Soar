@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import lcmtypes.pose_t;
+
 
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.GridMapUtil.Barrier;
@@ -22,7 +24,7 @@ public class RoomMap implements GridMap, CellObjectObserver {
 	public static class RoomObjectInfo {
 		public CellObject object;
 		public int[] location;
-		public double[] floatLocation;
+		public pose_t pose;
 		public int area = -1;
 	}
 	
@@ -111,12 +113,11 @@ public class RoomMap implements GridMap, CellObjectObserver {
 		roomData.roomObjects.add(added);
 		RoomObjectInfo info = new RoomObjectInfo();
 		info.location = Arrays.copyOf(location, location.length);
-		info.floatLocation = new double [] { 
-				info.location[0] * RoomWorld.CELL_SIZE, 
-				info.location[1] * RoomWorld.CELL_SIZE 
-				};
-		info.floatLocation[0] += RoomWorld.CELL_SIZE / 2.0;
-		info.floatLocation[1] += RoomWorld.CELL_SIZE / 2.0;
+		info.pose = new pose_t();
+		info.pose.pos[0] = info.location[0] * RoomWorld.CELL_SIZE;
+		info.pose.pos[1] = info.location[1] * RoomWorld.CELL_SIZE; 
+		info.pose.pos[0] += RoomWorld.CELL_SIZE / 2.0;
+		info.pose.pos[1] += RoomWorld.CELL_SIZE / 2.0;
 		info.object = added;
 		if (!added.hasProperty("object-id")) {
 			added.setProperty("object-id", Integer.toString(newObjectId()));

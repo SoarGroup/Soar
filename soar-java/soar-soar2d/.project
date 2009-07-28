@@ -3,6 +3,7 @@
 	<name>soar-soar2d</name>
 	<comment></comment>
 	<projects>
+		<project>soar-smljava</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

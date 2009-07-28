@@ -18,8 +18,8 @@ public final class ConfigurationIL implements ConfigureInterface {
 		this.opose = opose;
 
 		yawFormatwme = configuration.CreateStringWME("yaw-format", "float");
-		offsetxwme = configuration.CreateFloatWME("offset-x", opose.getOffset()[0]);
-		offsetywme = configuration.CreateFloatWME("offset-y", opose.getOffset()[1]);
+		offsetxwme = configuration.CreateFloatWME("offset-x", opose.getOffset().pos[0]);
+		offsetywme = configuration.CreateFloatWME("offset-y", opose.getOffset().pos[1]);
 	}
 
 	public void destroy() {
@@ -28,8 +28,8 @@ public final class ConfigurationIL implements ConfigureInterface {
 
 	public void update() {
 		yawFormatwme.Update(floatYawWmes ? "float" : "int");
-		offsetxwme.Update(opose.getOffset()[0]);
-		offsetywme.Update(opose.getOffset()[1]);
+		offsetxwme.Update(opose.getOffset().pos[0]);
+		offsetywme.Update(opose.getOffset().pos[1]);
 	}
 
 	@Override

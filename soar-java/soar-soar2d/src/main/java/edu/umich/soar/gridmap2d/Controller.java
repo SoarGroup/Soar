@@ -37,7 +37,6 @@ public class Controller implements Runnable {
 	 */
 	private boolean shuttingDown = false;
 	
-	private double totalTime = 0;
 	private double timeSlice = 0;
 	private CognitiveArchitecture cogArch;
 
@@ -201,7 +200,6 @@ public class Controller implements Runnable {
 		logger.trace("Tick event.");
 		// this is 50 except for room, where it is configurable
 		timeSlice = Gridmap2D.config.generalConfig().cycle_time_slice / 1000.0f;
-		totalTime += timeSlice;
 
 		Gridmap2D.simulation.update();
 		if (Gridmap2D.wm.using()) {
@@ -209,16 +207,11 @@ public class Controller implements Runnable {
 		}
 	}
 	
-	public double getTotalTime() {
-		return totalTime;
-	}
-	
 	public double getTimeSlice() {
 		return timeSlice;
 	}
 	
 	public void resetTime() {
-		totalTime = 0;
 		timeSlice = 0;
 	}
 	
