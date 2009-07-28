@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 
 import jmat.LinAlg;
-import jmat.MathUtil;
 
 import org.apache.log4j.Logger;
 
@@ -147,54 +146,29 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 	@Override
 	public pose_t getOffset() {
 		pose_t copy = offset.copy();
-		LinAlg.scale(copy.pos, PIXELS_2_METERS);
-		LinAlg.scale(copy.vel, PIXELS_2_METERS);
+		LinAlg.scaleEquals(copy.pos, PIXELS_2_METERS);
+		LinAlg.scaleEquals(copy.vel, PIXELS_2_METERS);
 		return copy;
 	}
 
 	@Override
 	public pose_t getPose() {
 		pose_t copy = player.getState().getPose().copy();
-		LinAlg.scale(copy.pos, PIXELS_2_METERS);
-		LinAlg.scale(copy.vel, PIXELS_2_METERS);
+		LinAlg.scaleEquals(copy.pos, PIXELS_2_METERS);
+		LinAlg.scaleEquals(copy.vel, PIXELS_2_METERS);
 		return copy;
 	}
 
 	@Override
 	public void setOffset(pose_t offset) {
 		pose_t copy = offset.copy();
-		LinAlg.scale(copy.pos, METERS_2_PIXELS);
-		LinAlg.scale(copy.vel, METERS_2_PIXELS);
-		this.offset = offset.copy();
+		LinAlg.scaleEquals(copy.pos, METERS_2_PIXELS);
+		LinAlg.scaleEquals(copy.vel, METERS_2_PIXELS);
+		this.offset = copy;
 	}
 
 	@Override
 	public void sendMessage(String from, String to, List<String> tokens) {
 		logger.warn("sendMessage: Not implemented yet.");
-	}
-	
-	public static double angleOff(pose_t player, pose_t target) {
-		// translate target so i'm the origin
-		LinAlg.subtract(target.pos, player.pos);
-		
-		// make target unit vector
-		LinAlg.normalize(target.pos);
-
-		// make player facing vector
-		// TODO: there's a better way to do the rest of this in 3D
-		assert player.pos[2] == 0;
-		assert target.pos[2] == 0;
-		double yaw = MathUtil.mod2pi(LinAlg.quatToRollPitchYaw(player.orientation)[2]);
-		player.pos[0] = Math.cos(yaw);
-		player.pos[1] = Math.sin(yaw);
-		
-		double dotProduct = LinAlg.dotProduct(target.pos, player.pos);
-		double crossProduct = (target.pos[0] * player.pos[1]) - (target.pos[1] * player.pos[0]);
-		
-		// calculate inverse cosine of that for angle
-		if (crossProduct < 0) {
-			return Math.acos(dotProduct);
-		}
-		return MathUtil.mod2pi(Math.acos(dotProduct) * -1);
 	}
 }

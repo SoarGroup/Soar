@@ -3,20 +3,18 @@ package edu.umich.soar.gridmap2d.soar;
 import lcmtypes.pose_t;
 import sml.FloatElement;
 import sml.Identifier;
-import sml.IntElement;
 import sml.StringElement;
 import edu.umich.soar.gridmap2d.Gridmap2D;
-import edu.umich.soar.gridmap2d.players.RoomPlayer;
+import edu.umich.soar.robot.PointRelationship;
 
 class SoarRobotObjectIL {
 	private Identifier parent;
-	
-	private IntElement area;
-	private Identifier position;
-	private FloatElement angleOff;
-	private FloatElement x, y;
+	private FloatElement distance;
+	private FloatElement yaw;
+	private FloatElement relativeBearing;
+	private FloatElement absRelativeBearing;
+	private FloatElement x, y, z;
 	private StringElement visible;
-	private FloatElement range;
 	
 	private int cycleTouched;
 	
@@ -24,43 +22,47 @@ class SoarRobotObjectIL {
 		this.parent = parent;
 	}
 	
-	void initialize(RoomPlayer target, double range, double angleOffDouble) {
-		parent.CreateStringWME("id", target.getName());
-		parent.CreateStringWME("type", "player");
-		this.area = parent.CreateIntWME("area", target.getState().getLocationId());
-		this.angleOff = parent.CreateFloatWME("angle-off", angleOffDouble);
-		this.position = parent.CreateIdWME("position");
-		{
-			this.x = position.CreateFloatWME("x", target.getState().getPose().pos[0]);
-			this.y = position.CreateFloatWME("y", target.getState().getPose().pos[1]);
-		}
-		this.range = parent.CreateFloatWME("range", range);
-		this.visible = parent.CreateStringWME("visible", "yes");
+	void initialize(String name, pose_t pose, PointRelationship r) {
+		this.parent.CreateStringWME("type", "player");
+		// no id
+		this.parent.CreateStringWME("name", name);
+		this.visible = this.parent.CreateStringWME("visible", "yes");
+
+		initInternal(pose, r);
+	}
+	
+	void initialize(int objectId, String type, pose_t pose, PointRelationship r) {
+		this.parent.CreateStringWME("type", type);
+		// no name
+		this.parent.CreateIntWME("id", objectId);
+		this.visible = this.parent.CreateStringWME("visible", "yes");
+
+		initInternal(pose, r);
+	}
+		
+	private void initInternal(pose_t pose, PointRelationship r) {
+		this.x = this.parent.CreateFloatWME("x", pose.pos[0]);
+		this.y = this.parent.CreateFloatWME("y", pose.pos[1]);
+		this.z = this.parent.CreateFloatWME("z", pose.pos[2]);
+
+		this.distance = this.parent.CreateFloatWME("distance", r.getDistance());
+		this.yaw = this.parent.CreateFloatWME("yaw", Math.toDegrees(r.getYaw()));
+		this.relativeBearing = this.parent.CreateFloatWME("relative-bearing", Math.toDegrees(r.getRelativeBearing()));
+		this.absRelativeBearing = this.parent.CreateFloatWME("abs-relative-bearing", Math.abs(Math.toDegrees(r.getRelativeBearing())));
 		
 		touch(Gridmap2D.simulation.getWorldCount());
 	}
 	
-	void initialize(int objectId, String type, pose_t targetPose, double range, double angleOffDouble) {
-		parent.CreateIntWME("id", objectId);
-		parent.CreateStringWME("type", type);
-		this.angleOff = parent.CreateFloatWME("angle-off", angleOffDouble);
-		this.position = parent.CreateIdWME("position");
-		{
-			this.x = position.CreateFloatWME("x", targetPose.pos[0]);
-			this.y = position.CreateFloatWME("y", targetPose.pos[1]);
-		}
-		this.range = parent.CreateFloatWME("range", range);
-		this.visible = parent.CreateStringWME("visible", "yes");
+	void update(pose_t pose, PointRelationship r) {
+		this.x.Update(pose.pos[0]);
+		this.y.Update(pose.pos[1]);
+		this.z.Update(pose.pos[2]);
 		
-		touch(Gridmap2D.simulation.getWorldCount());
-	}
+		this.distance.Update(r.getDistance());
+		this.yaw.Update(Math.toDegrees(r.getYaw()));
+		this.relativeBearing.Update(Math.toDegrees(r.getRelativeBearing()));
+		this.absRelativeBearing.Update(Math.abs(Math.toDegrees(r.getRelativeBearing())));
 		
-	void update(int locationId, pose_t pose, double rangeValue, double angleOffValue) {
-		area.Update(locationId);
-		x.Update(pose.pos[0]);
-		y.Update(pose.pos[1]);
-		range.Update(rangeValue);
-		angleOff.Update(angleOffValue);
 		touch(Gridmap2D.simulation.getWorldCount());
 	}
 	

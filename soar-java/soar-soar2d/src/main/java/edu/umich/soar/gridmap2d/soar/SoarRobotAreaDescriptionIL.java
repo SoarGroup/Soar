@@ -14,13 +14,13 @@ import sml.IntElement;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.map.GridMapUtil.Barrier;
 import edu.umich.soar.robot.OffsetPose;
+import edu.umich.soar.robot.PointRelationship;
 
 public class SoarRobotAreaDescriptionIL {
 	
 	private final Identifier areaDescription;
 	private final OffsetPose opose;
-	private final List<BarrierIL> walls = new ArrayList<BarrierIL>();
-	private final List<GatewayIL> gateways = new ArrayList<GatewayIL>();
+	private final List<BarrierIL> barriers = new ArrayList<BarrierIL>();
 	
 	SoarRobotAreaDescriptionIL(Identifier areaDescription, int locationId, OffsetPose opose, RoomMap roomMap) {
 		this.areaDescription = areaDescription;
@@ -33,11 +33,13 @@ public class SoarRobotAreaDescriptionIL {
 		assert barrierList != null;
 		assert barrierList.size() > 0;
 		
+		pose_t player = opose.getPose();
+		
 		for (Barrier barrier : barrierList) {
 			if (barrier.gateway) {
 				// gateway
 				GatewayIL gateway = new GatewayIL(areaDescription.CreateIdWME("gateway"));
-				gateway.initialize(barrier);
+				gateway.initialize(player, barrier);
 				
 				// add destinations
 				List<Integer> gatewayDestList = roomMap.getGatewayDestinationList(barrier.id);
@@ -46,13 +48,13 @@ public class SoarRobotAreaDescriptionIL {
 					gateway.addDest(destIter.next().intValue());
 				}
 				
-				addGateway(gateway);
+				barriers.add(gateway);
 				
 			} else {
 				// wall
 				BarrierIL wall = new BarrierIL(areaDescription.CreateIdWME("wall"));
-				wall.initialize(barrier);
-				addWall(wall);
+				wall.initialize(player, barrier);
+				barriers.add(wall);
 			}
 		}
 	}
@@ -61,31 +63,20 @@ public class SoarRobotAreaDescriptionIL {
 		areaDescription.DestroyWME();
 	}
 	
-	private void addWall(BarrierIL wall) {
-		walls.add(wall);
-	}
-	
-	private void addGateway(GatewayIL gateway) {
-		gateways.add(gateway);
-	}
-	
 	void update() {
 		pose_t player = opose.getPose();
 		
-		// barrier angle offs and range
-		for(BarrierIL barrier : walls) {
-			barrier.angleOff.Update(SoarRobot.angleOff(player, barrier.centerpoint));
-		}
-
-		for(GatewayIL gateway : gateways) {
-			gateway.angleOff.Update(SoarRobot.angleOff(player, gateway.centerpoint));
-			gateway.range.Update(LinAlg.distance(opose.getPose().pos, gateway.centerpoint.pos));
+		for(BarrierIL barrier : barriers) {
+			barrier.update(player);
 		}
 	}
 
 	private class BarrierIL {
 		protected Identifier parent;
-		FloatElement angleOff;
+		private FloatElement distance;
+		private FloatElement yaw;
+		private FloatElement relativeBearing;
+		private FloatElement absRelativeBearing;
 		
 		protected pose_t centerpoint;
 		
@@ -93,29 +84,41 @@ public class SoarRobotAreaDescriptionIL {
 			this.parent = parent;
 		}
 		
-		protected void initialize(Barrier barrier) {
+		protected void initialize(pose_t player, Barrier barrier) {
 			parent.CreateIntWME("id", barrier.id);
+
+			parent.CreateStringWME("direction", barrier.direction.id());
+
 			centerpoint = barrier.centerpoint();
-			LinAlg.scale(centerpoint.pos, SoarRobot.PIXELS_2_METERS);
+			LinAlg.scaleEquals(centerpoint.pos, SoarRobot.PIXELS_2_METERS);
+
 			parent.CreateFloatWME("x", centerpoint.pos[0]);
 			parent.CreateFloatWME("y", centerpoint.pos[1]);
-			angleOff = parent.CreateFloatWME("angle-off", SoarRobot.angleOff(opose.getPose(), centerpoint));
-			parent.CreateStringWME("direction", barrier.direction.id());
+			parent.CreateFloatWME("z", centerpoint.pos[2]);
+			
+			PointRelationship r = PointRelationship.calculate(player, centerpoint.pos);
+			
+			distance = parent.CreateFloatWME("distance", r.getDistance());
+			yaw = parent.CreateFloatWME("yaw", Math.toDegrees(r.getYaw()));
+			relativeBearing = parent.CreateFloatWME("relative-bearing", Math.toDegrees(r.getRelativeBearing()));
+			absRelativeBearing = parent.CreateFloatWME("abs-relative-bearing", Math.abs(Math.toDegrees(r.getRelativeBearing())));
+		}
+		
+		protected void update(pose_t player) {
+			PointRelationship r = PointRelationship.calculate(player, centerpoint.pos);
+			
+			this.distance.Update(r.getDistance());
+			this.yaw.Update(Math.toDegrees(r.getYaw()));
+			this.relativeBearing.Update(Math.toDegrees(r.getRelativeBearing()));
+			this.absRelativeBearing.Update(Math.abs(Math.toDegrees(r.getRelativeBearing())));
 		}
 	}
 
 	private class GatewayIL extends BarrierIL {
 		private ArrayList<IntElement> toList = new ArrayList<IntElement>();
-		private FloatElement range;
 		
 		private GatewayIL(Identifier parent) {
 			super(parent);
-		}
-		
-		@Override
-		protected void initialize(Barrier barrier) {
-			super.initialize(barrier);
-			range = parent.CreateFloatWME("range", LinAlg.distance(opose.getPose().pos, centerpoint.pos));
 		}
 		
 		private void addDest(int id) {
@@ -123,7 +126,4 @@ public class SoarRobotAreaDescriptionIL {
 			toList.add(dest);
 		}
 	}
-
-
-
 }

@@ -55,7 +55,7 @@ public class SoarRobotSelfIL {
 		xvel = pose.CreateFloatWME("x-velocity", opose.getPose().vel[0]);
 		yvel = pose.CreateFloatWME("y-velocity", opose.getPose().vel[1]);
 		zvel = pose.CreateFloatWME("z-velocity", opose.getPose().vel[2]);
-		yawvel = pose.CreateFloatWME("yaw-velocity", opose.getPose().rotation_rate[2]);
+		yawvel = pose.CreateFloatWME("yaw-velocity", Math.toDegrees(opose.getPose().rotation_rate[2]));
 		
 		Identifier collision = self.CreateIdWME("collision");
 		cx = collision.CreateStringWME("x", "false");
@@ -98,7 +98,7 @@ public class SoarRobotSelfIL {
 		xvel.Update(opose.getPose().vel[0]);
 		yvel.Update(opose.getPose().vel[1]);
 		zvel.Update(opose.getPose().vel[2]);
-		yawvel.Update(opose.getPose().rotation_rate[2]);
+		yawvel.Update(Math.toDegrees(opose.getPose().rotation_rate[2]));
 		setYaw(LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2]);
 		area.Update(player.getState().getLocationId());
 		cx.Update(player.getState().isCollisionX() ? "true" : "false");

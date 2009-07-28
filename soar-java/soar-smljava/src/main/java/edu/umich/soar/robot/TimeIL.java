@@ -11,15 +11,15 @@ final public class TimeIL implements Kernel.SystemEventInterface {
 	private final Identifier time;
 	private final IntElement secondswme;
 	private final IntElement microsecondswme;
-	private long offset = 0;
-	private long stopTime = 0;
+	private long offset;
+	private long stopTime;
 	
 	public TimeIL(Identifier time) {
 		this.time = time;
 		secondswme = time.CreateIntWME("seconds", 0);
 		microsecondswme = time.CreateIntWME("microseconds", 0);
 
-		updateInternal(0);
+		updateExact(0);
 	}
 	
 	public void destroy() {
@@ -27,10 +27,10 @@ final public class TimeIL implements Kernel.SystemEventInterface {
 	}
 
 	public void update() {
-		updateInternal(System.nanoTime() - offset);
+		updateExact(System.nanoTime() - offset);
 	}
 	
-	private void updateInternal(long nanoTime) {
+	public void updateExact(long nanoTime) {
 		int seconds = (int) (nanoTime / NANO_PER_SEC);
 		int microseconds = (int) (nanoTime % NANO_PER_SEC);
 		microseconds /= 1000;
