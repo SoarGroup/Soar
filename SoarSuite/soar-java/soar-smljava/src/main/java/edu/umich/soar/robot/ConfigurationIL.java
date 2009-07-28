@@ -10,6 +10,7 @@ public final class ConfigurationIL implements ConfigureInterface {
 	private final StringElement yawFormatwme;
 	private final FloatElement offsetxwme;
 	private final FloatElement offsetywme;
+	private final FloatElement offsetzwme;
 	private final OffsetPose opose;
 	boolean floatYawWmes = true;
 
@@ -20,6 +21,7 @@ public final class ConfigurationIL implements ConfigureInterface {
 		yawFormatwme = configuration.CreateStringWME("yaw-format", "float");
 		offsetxwme = configuration.CreateFloatWME("offset-x", opose.getOffset().pos[0]);
 		offsetywme = configuration.CreateFloatWME("offset-y", opose.getOffset().pos[1]);
+		offsetzwme = configuration.CreateFloatWME("offset-z", opose.getOffset().pos[2]);
 	}
 
 	public void destroy() {
@@ -30,6 +32,7 @@ public final class ConfigurationIL implements ConfigureInterface {
 		yawFormatwme.Update(floatYawWmes ? "float" : "int");
 		offsetxwme.Update(opose.getOffset().pos[0]);
 		offsetywme.Update(opose.getOffset().pos[1]);
+		offsetzwme.Update(opose.getOffset().pos[2]);
 	}
 
 	@Override

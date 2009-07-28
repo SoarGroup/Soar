@@ -1,7 +1,6 @@
 package edu.umich.soar.robot;
 
-import jmat.LinAlg;
-import jmat.MathUtil;
+import lcmtypes.pose_t;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
@@ -15,8 +14,6 @@ final class WaypointIL {
 	private Identifier waypoint;
 	private FloatElement distance;
 	private YawWmes yawWmes;
-	private double yawValueRad = 0;
-	private double relativeBearingValueRad = 0;
 	
 	WaypointIL(double[] waypointxyz, String name, Identifier waypoints, 
 			boolean useFloatWmes, OffsetPose opose) {
@@ -74,11 +71,8 @@ final class WaypointIL {
 	}
 
 	void update() {
-		double distanceValue = LinAlg.distance(opose.getPose().pos, xyz, 2);
-		double[] delta = LinAlg.subtract(xyz, opose.getPose().pos);
-		yawValueRad = Math.atan2(delta[1], delta[0]);
-		relativeBearingValueRad = yawValueRad - LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2];
-		relativeBearingValueRad = MathUtil.mod2pi(relativeBearingValueRad);
+		pose_t selfPose = opose.getPose();
+		PointRelationship r = PointRelationship.calculate(selfPose, xyz);
 
 		if (waypoint == null) {
 			waypoint = waypoints.CreateIdWME("waypoint");
@@ -93,10 +87,10 @@ final class WaypointIL {
 			yawWmes.create();
 		}
 		
-		distance.Update(distanceValue);
+		distance.Update(r.getDistance());
 		
-		double yawValueDeg = Math.toDegrees(yawValueRad);
-		double relativeBearingValueDeg = Math.toDegrees(relativeBearingValueRad);
+		double yawValueDeg = Math.toDegrees(r.getYaw());
+		double relativeBearingValueDeg = Math.toDegrees(r.getRelativeBearing());
 		double absRelativeBearingValueDeg = Math.abs(relativeBearingValueDeg);
 
 		yawWmes.update(yawValueDeg, relativeBearingValueDeg, absRelativeBearingValueDeg);

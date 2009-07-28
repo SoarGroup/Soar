@@ -19,6 +19,7 @@ import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
+import edu.umich.soar.robot.PointRelationship;
 import edu.umich.soar.robot.ReceiveMessagesInterface;
 import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.robot.WaypointInterface;
@@ -37,7 +38,8 @@ public class SoarRobotInputLinkManager {
 	private int oldLocationId = -1;
 	private final Map<RoomPlayer, SoarRobotObjectIL> players = new HashMap<RoomPlayer, SoarRobotObjectIL>();
 	private final Map<Integer, SoarRobotObjectIL> objects = new HashMap<Integer, SoarRobotObjectIL>();
-
+	private long runtime;
+	
 	public SoarRobotInputLinkManager(Agent agent, Kernel kernel, OffsetPose opose) {
 		this.agent = agent;
 		this.kernel = kernel;
@@ -45,6 +47,8 @@ public class SoarRobotInputLinkManager {
 	}
 
 	public void create() {
+		runtime = 0;
+		
 		Identifier inputLink = agent.GetInputLink();
 		
 		Identifier configuration = agent.CreateIdWME(inputLink, "configuration");
@@ -96,7 +100,10 @@ public class SoarRobotInputLinkManager {
 			boolean floatYawWmes) {
 		
 		configurationIL.update();
-		timeIL.update();
+		// FIXME: should be configurable
+		//timeIL.update();
+		runtime += (long)(Gridmap2D.control.getTimeSlice() * 1000000000L);
+		timeIL.updateExact(runtime);
 		selfIL.update(player);
 		
 		
@@ -120,11 +127,12 @@ public class SoarRobotInputLinkManager {
 			if (info.area == player.getState().getLocationId()) {
 				double maxAngleOff = 180 / 2;
 				pose_t temp = info.pose.copy();
-				LinAlg.scale(temp.pos, SoarRobot.PIXELS_2_METERS);
-				double angleOff = SoarRobot.angleOff(opose.getPose(), temp);
-				if (Math.abs(angleOff) <= maxAngleOff) {
-					addOrUpdateObject(info.object.getIntProperty("object-id", -1), 
-							info.object.getProperty("id"), temp, world, angleOff);
+				LinAlg.scaleEquals(temp.pos, SoarRobot.PIXELS_2_METERS);
+				PointRelationship r = PointRelationship.calculate(opose.getPose(), temp.pos);
+				if (Math.abs(r.getRelativeBearing()) <= maxAngleOff) {
+					int id = info.object.getIntProperty("object-id", -1);
+					String type = info.object.getProperty("id");
+					addOrUpdateObject(id, type, temp, world, r);
 				}
 			}
 		}
@@ -137,7 +145,8 @@ public class SoarRobotInputLinkManager {
 					continue;
 				}
 				pose_t rTargetPose = rTarget.getState().getPose();
-				addOrUpdatePlayer(player, rTarget, world, SoarRobot.angleOff(opose.getPose(), rTargetPose));
+				PointRelationship r = PointRelationship.calculate(opose.getPose(), rTargetPose.pos);
+				addOrUpdatePlayer(player, rTarget, world, r);
 			}
 		}
 
@@ -146,10 +155,8 @@ public class SoarRobotInputLinkManager {
 		areaIL.update();
 	}
 
-	private void addOrUpdatePlayer(RoomPlayer self, RoomPlayer target, RoomWorld world, double angleOffValue) {
+	private void addOrUpdatePlayer(RoomPlayer self, RoomPlayer target, RoomWorld world, PointRelationship r) {
 		pose_t targetPose = target.getState().getPose();
-		pose_t selfPose = self.getState().getPose();
-		double rangeValue = LinAlg.distance(selfPose.pos, targetPose.pos);
 		
 		SoarRobotObjectIL pIL = players.get(target);
 		if (pIL == null) {
@@ -157,30 +164,25 @@ public class SoarRobotInputLinkManager {
 			Identifier inputLink = agent.GetInputLink();
 			Identifier parent = inputLink.CreateIdWME("object");
 			pIL = new SoarRobotObjectIL(parent);
-			pIL.initialize(target, rangeValue, angleOffValue);
+			pIL.initialize(target.getName(), targetPose, r);
 			players.put(target, pIL);
 		
 		} else {
-			pIL.update(target.getState().getLocationId(), targetPose, rangeValue, angleOffValue);
+			pIL.update(targetPose, r);
 		}
 	}
 	
-	private void addOrUpdateObject(int objectId, String type, pose_t objectPose, RoomWorld world, double angleOffValue) {
-		pose_t selfPose = opose.getPose();
-		double rangeValue = LinAlg.distance(selfPose.pos, objectPose.pos);
-
+	private void addOrUpdateObject(int objectId, String type, pose_t objectPose, RoomWorld world, PointRelationship r) {
 		SoarRobotObjectIL oIL = objects.get(objectId);
 		if (oIL == null) {
 			// create new object
 			Identifier inputLink = agent.GetInputLink();
 			Identifier parent = inputLink.CreateIdWME("object");
 			oIL = new SoarRobotObjectIL(parent);
-			
-			oIL.initialize(objectId, type, objectPose, rangeValue, angleOffValue);
+			oIL.initialize(objectId, type, objectPose, r);
 			objects.put(objectId, oIL);
-		
 		} else {
-			oIL.update(objectId, objectPose, rangeValue, angleOffValue);
+			oIL.update(objectPose, r);
 		}
 	}
 	
