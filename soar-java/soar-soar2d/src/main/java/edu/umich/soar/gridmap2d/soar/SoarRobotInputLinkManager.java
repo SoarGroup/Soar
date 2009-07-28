@@ -119,9 +119,12 @@ public class SoarRobotInputLinkManager {
 			RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(obj);
 			if (info.area == player.getState().getLocationId()) {
 				double maxAngleOff = 180 / 2;
-				double angleOff = SoarRobot.angleOff(opose.getPose(), info.pose);
+				pose_t temp = info.pose.copy();
+				LinAlg.scale(temp.pos, SoarRobot.PIXELS_2_METERS);
+				double angleOff = SoarRobot.angleOff(opose.getPose(), temp);
 				if (Math.abs(angleOff) <= maxAngleOff) {
-					addOrUpdateObject(player, info, world, angleOff);
+					addOrUpdateObject(info.object.getIntProperty("object-id", -1), 
+							info.object.getProperty("id"), temp, world, angleOff);
 				}
 			}
 		}
@@ -162,22 +165,22 @@ public class SoarRobotInputLinkManager {
 		}
 	}
 	
-	private void addOrUpdateObject(RoomPlayer self, RoomMap.RoomObjectInfo objectInfo, RoomWorld world, double angleOffValue) {
-		pose_t targetPose = objectInfo.pose;
-		pose_t selfPose = self.getState().getPose();
-		double rangeValue = LinAlg.distance(selfPose.pos, targetPose.pos);
+	private void addOrUpdateObject(int objectId, String type, pose_t objectPose, RoomWorld world, double angleOffValue) {
+		pose_t selfPose = opose.getPose();
+		double rangeValue = LinAlg.distance(selfPose.pos, objectPose.pos);
 
-		SoarRobotObjectIL oIL = objects.get(objectInfo.object.getIntProperty("object-id", -1));
+		SoarRobotObjectIL oIL = objects.get(objectId);
 		if (oIL == null) {
 			// create new object
 			Identifier inputLink = agent.GetInputLink();
 			Identifier parent = inputLink.CreateIdWME("object");
 			oIL = new SoarRobotObjectIL(parent);
-			oIL.initialize(objectInfo, rangeValue, angleOffValue);
-			objects.put(objectInfo.object.getIntProperty("object-id", -1), oIL);
+			
+			oIL.initialize(objectId, type, objectPose, rangeValue, angleOffValue);
+			objects.put(objectId, oIL);
 		
 		} else {
-			oIL.update(objectInfo.area, objectInfo.pose, rangeValue, angleOffValue);
+			oIL.update(objectId, objectPose, rangeValue, angleOffValue);
 		}
 	}
 	

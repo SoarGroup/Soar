@@ -6,7 +6,6 @@ import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
 import edu.umich.soar.gridmap2d.Gridmap2D;
-import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 
 class SoarRobotObjectIL {
@@ -41,15 +40,14 @@ class SoarRobotObjectIL {
 		touch(Gridmap2D.simulation.getWorldCount());
 	}
 	
-	void initialize(RoomMap.RoomObjectInfo info, double range, double angleOffDouble) {
-		parent.CreateIntWME("id", info.object.getIntProperty("object-id", -1));
-		parent.CreateStringWME("type", info.object.getProperty("id"));
-		this.area = parent.CreateIntWME("area", info.area);
+	void initialize(int objectId, String type, pose_t targetPose, double range, double angleOffDouble) {
+		parent.CreateIntWME("id", objectId);
+		parent.CreateStringWME("type", type);
 		this.angleOff = parent.CreateFloatWME("angle-off", angleOffDouble);
 		this.position = parent.CreateIdWME("position");
 		{
-			this.x = position.CreateFloatWME("x", info.pose.pos[0]);
-			this.y = position.CreateFloatWME("y", info.pose.pos[1]);
+			this.x = position.CreateFloatWME("x", targetPose.pos[0]);
+			this.y = position.CreateFloatWME("y", targetPose.pos[1]);
 		}
 		this.range = parent.CreateFloatWME("range", range);
 		this.visible = parent.CreateStringWME("visible", "yes");
