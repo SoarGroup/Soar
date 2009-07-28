@@ -335,4 +335,4 @@ public class RoomWorld implements World {
 		state.setLocationId(roomMap.getLocationId(newLocation));
 		roomMap.getCell(newLocation).setPlayer(player);
 	}
-	}
+}

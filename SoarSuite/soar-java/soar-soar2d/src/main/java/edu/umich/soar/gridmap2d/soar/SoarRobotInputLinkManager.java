@@ -1,10 +1,22 @@
 package edu.umich.soar.gridmap2d.soar;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import jmat.LinAlg;
+
+import lcmtypes.pose_t;
+
 import sml.Agent;
 import sml.Identifier;
 import sml.Kernel;
 import sml.smlSystemEventId;
+import edu.umich.soar.gridmap2d.Gridmap2D;
+import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.RoomMap;
+import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
 import edu.umich.soar.robot.ReceiveMessagesInterface;
@@ -23,6 +35,8 @@ public class SoarRobotInputLinkManager {
 	private ConfigurationIL configurationIL;
 	private SoarRobotAreaDescriptionIL areaIL;
 	private int oldLocationId = -1;
+	private final Map<RoomPlayer, SoarRobotObjectIL> players = new HashMap<RoomPlayer, SoarRobotObjectIL>();
+	private final Map<Integer, SoarRobotObjectIL> objects = new HashMap<Integer, SoarRobotObjectIL>();
 
 	public SoarRobotInputLinkManager(Agent agent, Kernel kernel, OffsetPose opose) {
 		this.agent = agent;
@@ -55,6 +69,14 @@ public class SoarRobotInputLinkManager {
 		
 		selfIL.destroy();
 		selfIL = null;
+		
+		for (SoarRobotObjectIL object : objects.values()) {
+			object.destroy();
+		}
+
+		for (SoarRobotObjectIL object : players.values()) {
+			object.destroy();
+		}
 
 		if (areaIL != null) {
 			areaIL.destroy();
@@ -87,10 +109,106 @@ public class SoarRobotInputLinkManager {
 				}
 				
 				Identifier areaDescription = agent.GetInputLink().CreateIdWME("area-description");
-				areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player, world);
+				areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player.getState().getLocationId(), opose, roomMap);
 			}
 		}
 		
-		areaIL.update(player, world);
+		// objects
+		Set<CellObject> roomObjects = roomMap.getRoomObjects();
+		for (CellObject obj : roomObjects) {
+			RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(obj);
+			if (info.area == player.getState().getLocationId()) {
+				double maxAngleOff = 180 / 2;
+				double angleOff = SoarRobot.angleOff(opose.getPose(), info.pose);
+				if (Math.abs(angleOff) <= maxAngleOff) {
+					addOrUpdateObject(player, info, world, angleOff);
+				}
+			}
+		}
+		
+		// players
+		if (world.getPlayers().length > 1) {
+			for (Player temp : world.getPlayers()) {
+				RoomPlayer rTarget = (RoomPlayer)temp;
+				if (rTarget.equals(player)) {
+					continue;
+				}
+				pose_t rTargetPose = rTarget.getState().getPose();
+				addOrUpdatePlayer(player, rTarget, world, SoarRobot.angleOff(opose.getPose(), rTargetPose));
+			}
+		}
+
+		purge(Gridmap2D.simulation.getWorldCount());
+
+		areaIL.update();
+	}
+
+	private void addOrUpdatePlayer(RoomPlayer self, RoomPlayer target, RoomWorld world, double angleOffValue) {
+		pose_t targetPose = target.getState().getPose();
+		pose_t selfPose = self.getState().getPose();
+		double rangeValue = LinAlg.distance(selfPose.pos, targetPose.pos);
+		
+		SoarRobotObjectIL pIL = players.get(target);
+		if (pIL == null) {
+			// create new player
+			Identifier inputLink = agent.GetInputLink();
+			Identifier parent = inputLink.CreateIdWME("object");
+			pIL = new SoarRobotObjectIL(parent);
+			pIL.initialize(target, rangeValue, angleOffValue);
+			players.put(target, pIL);
+		
+		} else {
+			pIL.update(target.getState().getLocationId(), targetPose, rangeValue, angleOffValue);
+		}
+	}
+	
+	private void addOrUpdateObject(RoomPlayer self, RoomMap.RoomObjectInfo objectInfo, RoomWorld world, double angleOffValue) {
+		pose_t targetPose = objectInfo.pose;
+		pose_t selfPose = self.getState().getPose();
+		double rangeValue = LinAlg.distance(selfPose.pos, targetPose.pos);
+
+		SoarRobotObjectIL oIL = objects.get(objectInfo.object.getIntProperty("object-id", -1));
+		if (oIL == null) {
+			// create new object
+			Identifier inputLink = agent.GetInputLink();
+			Identifier parent = inputLink.CreateIdWME("object");
+			oIL = new SoarRobotObjectIL(parent);
+			oIL.initialize(objectInfo, rangeValue, angleOffValue);
+			objects.put(objectInfo.object.getIntProperty("object-id", -1), oIL);
+		
+		} else {
+			oIL.update(objectInfo.area, objectInfo.pose, rangeValue, angleOffValue);
+		}
+	}
+	
+	private void purge(int cycle) {
+		{
+			Iterator<SoarRobotObjectIL> oiter = objects.values().iterator();
+			while (oiter.hasNext()) {
+				SoarRobotObjectIL oIL = oiter.next();
+				if (oIL.getCycleTouched() < cycle) {
+					if (oIL.getCycleTouched() > cycle - 3) {
+						oIL.makeInvisible();
+					} else {
+						oIL.destroy();
+						oiter.remove();
+					}
+				}
+			}
+		}
+		{
+			Iterator<SoarRobotObjectIL> oiter = players.values().iterator();
+			while (oiter.hasNext()) {
+				SoarRobotObjectIL oIL = oiter.next();
+				if (oIL.getCycleTouched() < cycle) {
+					if (oIL.getCycleTouched() > cycle - 3) {
+						oIL.makeInvisible();
+					} else {
+						oIL.destroy();
+						oiter.remove();
+					}
+				}
+			}
+		}
 	}
 }

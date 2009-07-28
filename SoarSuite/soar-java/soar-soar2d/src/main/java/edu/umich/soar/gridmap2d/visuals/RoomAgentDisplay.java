@@ -319,7 +319,7 @@ public class RoomAgentDisplay extends AgentDisplay {
 		gridLocation.setText("(" + nf.format(gl[0]) + "," + nf.format(gl[1]) + ")");
 		floatLocation.setText("(" + nf.format(pose.pos[0]) + "," + nf.format(pose.pos[1]) + ")");
 
-		heading.setText(nf.format(selectedRoomPlayer.getState().getYaw()));
+		heading.setText(nf.format(Math.toDegrees(selectedRoomPlayer.getState().getYaw())));
 
 		area.setText(Integer.toString(selectedRoomPlayer.getState().getLocationId()));
 		String col = selectedRoomPlayer.getState().isCollisionX() ? "true" : "false";

@@ -1,7 +1,5 @@
 package edu.umich.soar.sps.control;
 
-import java.util.Arrays;
-
 import jmat.LinAlg;
 import jmat.MathUtil;
 import lcmtypes.pose_t;
@@ -27,7 +25,7 @@ final class SplinterModel implements OffsetPose {
 	private DifferentialDriveCommand.CommandType previousType;
 	private PIDController headingController = new PIDController();	// experimentally derived in lab
 	private double previousHeading;
-	private final double[] offset = new double[] {0, 0, 0};
+	private final pose_t offset = new pose_t();
 	
 	private SplinterModel() {
 		this.lcmProxy = LCMProxy.getInstance();
@@ -203,23 +201,23 @@ final class SplinterModel implements OffsetPose {
 
 	private void updatePose(pose_t newPose) {
 		pose.utime = newPose.utime;
-		pose.pos = LinAlg.add(newPose.pos, offset);
+		pose.pos = LinAlg.add(newPose.pos, offset.pos);
 		pose.orientation[0] = newPose.orientation[0];
 		pose.orientation[3] = newPose.orientation[3];
 	}
 	
+	@Override
 	public pose_t getPose() {
 		return pose.copy();
 	}
 
-	public void setOffset(double[] offset) {
-		if (offset == null) {
-			throw new AssertionError();
-		}
-		System.arraycopy(offset, 0, this.offset, 0, offset.length);
+	@Override
+	public void setOffset(pose_t offset) {
+		System.arraycopy(offset.pos, 0, this.offset.pos, 0, offset.pos.length);
 	}
 
-	public double[] getOffset() {
-		return Arrays.copyOf(this.offset, offset.length);
+	@Override
+	public pose_t getOffset() {
+		return offset.copy();
 	}
 }

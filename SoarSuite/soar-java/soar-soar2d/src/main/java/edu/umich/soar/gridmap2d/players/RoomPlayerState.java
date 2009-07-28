@@ -52,40 +52,6 @@ public class RoomPlayerState {
 		return locationId;
 	}
 	
-	public double angleOff(double [] target) {
-		double [] playerVector = new double [] { pose.pos[0], pose.pos[1] };
-		
-		double [] targetVector = new double [] { target[0], target[1] };
-		
-		// translate target so i'm the origin
-		targetVector[0] -= playerVector[0];
-		targetVector[1] -= playerVector[1];
-		
-		// make target unit vector
-		double targetVectorLength = Math.sqrt(Math.pow(targetVector[0], 2) + Math.pow(targetVector[1], 2));
-		if (targetVectorLength > 0) {
-			targetVector[0] /= targetVectorLength;
-			targetVector[1] /= targetVectorLength;
-		} else {
-			targetVector[0] = 0;
-			targetVector[1] = 0;
-		}
-		
-		// make player facing vector
-		double yaw = MathUtil.mod2pi(getYaw());
-		playerVector[0] = Math.cos(yaw);
-		playerVector[1] = Math.sin(yaw);
-		
-		double dotProduct = (targetVector[0] * playerVector[0]) + (targetVector[1] * playerVector[1]);
-		double crossProduct = (targetVector[0] * playerVector[1]) - (targetVector[1] * playerVector[0]);
-		
-		// calculate inverse cosine of that for angle
-		if (crossProduct < 0) {
-			return Math.acos(dotProduct);
-		}
-		return MathUtil.mod2pi(Math.acos(dotProduct) * -1);
-	}
-
 	public void stop() {
 		Arrays.fill(pose.vel, 0);
 		Arrays.fill(pose.rotation_rate, 0);
