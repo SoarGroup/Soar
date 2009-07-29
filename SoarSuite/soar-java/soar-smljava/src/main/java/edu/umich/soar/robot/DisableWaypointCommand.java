@@ -20,7 +20,7 @@ final public class DisableWaypointCommand extends NoDDCAdapter implements Comman
 		return new DisableWaypointCommand(waypoints);
 	}
 	
-	public DisableWaypointCommand(WaypointInterface waypoints) {
+	private DisableWaypointCommand(WaypointInterface waypoints) {
 		this.waypoints = waypoints;
 	}
 

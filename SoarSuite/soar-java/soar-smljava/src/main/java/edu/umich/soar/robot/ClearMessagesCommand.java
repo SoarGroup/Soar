@@ -20,7 +20,7 @@ final public class ClearMessagesCommand extends NoDDCAdapter implements Command 
 		return new ClearMessagesCommand(messages);
 	}
 	
-	public ClearMessagesCommand(ReceiveMessagesInterface messages) {
+	private ClearMessagesCommand(ReceiveMessagesInterface messages) {
 		this.messages = messages;
 	}
 

@@ -23,6 +23,9 @@ final public class MotorCommand extends DDCCommand implements Command {
 	private double left;
 	private double right;
 	
+	private MotorCommand() {
+	}
+	
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newMotorCommand(left, right);

@@ -20,7 +20,7 @@ final public class EnableWaypointCommand extends NoDDCAdapter implements Command
 		return new EnableWaypointCommand(waypoints);
 	}
 	
-	public EnableWaypointCommand(WaypointInterface waypoints) {
+	private EnableWaypointCommand(WaypointInterface waypoints) {
 		this.waypoints = waypoints;
 	}
 
