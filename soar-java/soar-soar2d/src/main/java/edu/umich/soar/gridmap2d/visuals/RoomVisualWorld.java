@@ -105,7 +105,7 @@ public class RoomVisualWorld extends VisualWorld {
 					if (numbers!= null) {
 						if (!roomIds.contains(numbers.get(0).getIntProperty("number", -1))) {
 							gc.setForeground(WindowManager.black);
-							gc.drawString(numbers.get(0).getProperty("number"), drawLocation[0], drawLocation[1]);
+							gc.drawString(numbers.get(0).getProperty("number") + " ", drawLocation[0]+1, drawLocation[1]);
 							roomIds.add(numbers.get(0).getIntProperty("number", -1));
 						}
 					}
