@@ -105,6 +105,7 @@ final public class OutputLinkManager {
 		commands.put(MotorCommand.NAME, MotorCommand.newInstance());
 		commands.put(SetVelocityCommand.NAME, SetVelocityCommand.newInstance());
 		commands.put(SetHeadingCommand.NAME, SetHeadingCommand.newInstance(opose));
+		commands.put(SetHeadingLinearCommand.NAME, SetHeadingLinearCommand.newInstance(opose));
 		commands.put(StopCommand.NAME, StopCommand.newInstance(opose));
 		commands.put(EStopCommand.NAME, EStopCommand.newInstance());
 		commands.put(AddWaypointCommand.NAME, AddWaypointCommand.newInstance(opose, waypoints));
