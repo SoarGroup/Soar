@@ -102,6 +102,8 @@ final public class OutputLinkManager {
 
 		commands.put(MotorCommand.NAME, MotorCommand.newInstance());
 		commands.put(SetVelocityCommand.NAME, SetVelocityCommand.newInstance());
+		commands.put(SetLinearVelocityCommand.NAME, SetLinearVelocityCommand.newInstance());
+		commands.put(SetAngularVelocityCommand.NAME, SetAngularVelocityCommand.newInstance());
 		commands.put(SetHeadingCommand.NAME, SetHeadingCommand.newInstance(opose));
 		commands.put(SetHeadingLinearCommand.NAME, SetHeadingLinearCommand.newInstance(opose));
 		commands.put(StopCommand.NAME, StopCommand.newInstance(opose));
