@@ -20,7 +20,7 @@ final public class RemoveMessageCommand extends NoDDCAdapter implements Command 
 		return new RemoveMessageCommand(messages);
 	}
 	
-	public RemoveMessageCommand(ReceiveMessagesInterface messages) {
+	private RemoveMessageCommand(ReceiveMessagesInterface messages) {
 		this.messages = messages;
 	}
 

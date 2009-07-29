@@ -20,7 +20,7 @@ final public class RemoveWaypointCommand extends NoDDCAdapter implements Command
 		return new RemoveWaypointCommand(waypoints);
 	}
 	
-	public RemoveWaypointCommand(WaypointInterface waypoints) {
+	private RemoveWaypointCommand(WaypointInterface waypoints) {
 		this.waypoints = waypoints;
 	}
 

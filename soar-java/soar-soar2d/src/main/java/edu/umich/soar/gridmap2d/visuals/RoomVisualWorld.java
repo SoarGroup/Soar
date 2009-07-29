@@ -72,11 +72,11 @@ public class RoomVisualWorld extends VisualWorld {
 			for(location[1] = 0; location[1] < map.size(); ++location[1]){
 				int [] drawLocation = new int [] { cellSize*location[0], cellSize*(map.size() - location[1] - 1) };
 				
-				boolean gateway = false;
 				if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
 					continue;
 				}
 				
+				boolean gateway = false;
 				if (this.map.getCell(location).hasAnyWithProperty(Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(drawLocation[0], drawLocation[1], cellSize, cellSize);

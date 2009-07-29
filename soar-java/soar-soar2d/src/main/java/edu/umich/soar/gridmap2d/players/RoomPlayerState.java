@@ -3,12 +3,14 @@ package edu.umich.soar.gridmap2d.players;
 
 import java.util.Arrays;
 
+import edu.umich.soar.robot.ObjectManipulationInterface;
+
 import jmat.LinAlg;
 import jmat.MathUtil;
 
 import lcmtypes.pose_t;
 
-public class RoomPlayerState {
+public class RoomPlayerState implements ObjectManipulationInterface {
 
 	private pose_t pose;
 	
@@ -119,5 +121,23 @@ public class RoomPlayerState {
 		hasDestYaw = true;
 		destYaw = MathUtil.mod2pi(yaw);
 		destYawSpeed = speed;
+	}
+
+	@Override
+	public boolean drop(int id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean get(int id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean reason() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }

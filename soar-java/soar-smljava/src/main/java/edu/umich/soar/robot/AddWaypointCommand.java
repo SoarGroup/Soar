@@ -22,7 +22,7 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 		return new AddWaypointCommand(opose, waypoints);
 	}
 	
-	public AddWaypointCommand(OffsetPose opose, WaypointInterface waypoints) {
+	private AddWaypointCommand(OffsetPose opose, WaypointInterface waypoints) {
 		this.opose = opose;
 		this.waypoints = waypoints;
 	}

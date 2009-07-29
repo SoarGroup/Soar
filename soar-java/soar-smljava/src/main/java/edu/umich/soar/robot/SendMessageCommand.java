@@ -25,7 +25,7 @@ final public class SendMessageCommand extends NoDDCAdapter implements Command {
 		return new SendMessageCommand(messages, agentName);
 	}
 	
-	public SendMessageCommand(SendMessagesInterface messages, String agentName) {
+	private SendMessageCommand(SendMessagesInterface messages, String agentName) {
 		this.messages = messages;
 		this.agentName = agentName;
 	}
