@@ -42,30 +42,26 @@ final public class SetVelocityCommand extends DDCCommand implements Command {
 		try {
 			linearVelocity = Double.parseDouble(command.GetParameterValue(LINVEL));
 		} catch (NullPointerException ex) {
-			logger.warn(NAME + ": No " + LINVEL + " on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No " + LINVEL + " on command");
 			return false;
 		} catch (NumberFormatException e) {
-			logger.warn(NAME + ": Unable to parse " + LINVEL + ": " + command.GetParameterValue(LINVEL));
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to parse " + LINVEL + ": " + command.GetParameterValue(LINVEL));
 			return false;
 		}
 
 		try {
 			angularVelocity = Math.toRadians(Double.parseDouble(command.GetParameterValue(ANGVEL)));
 		} catch (NullPointerException ex) {
-			logger.warn(NAME + ": No " + ANGVEL + " on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No " + ANGVEL + " on command");
 			return false;
 		} catch (NumberFormatException e) {
-			logger.warn(NAME + ": Unable to parse " + ANGVEL + ": " + command.GetParameterValue(ANGVEL));
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to parse " + ANGVEL + ": " + command.GetParameterValue(ANGVEL));
 			return false;
 		}
 
 		logger.debug(String.format(NAME + ": l%1.3f a%3.1f", linearVelocity, angularVelocity));
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.executing.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.executing.addStatus(command);
 		
 		this.agent = agent;
 		this.command = command;

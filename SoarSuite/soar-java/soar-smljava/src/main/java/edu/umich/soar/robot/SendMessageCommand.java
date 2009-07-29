@@ -39,8 +39,7 @@ final public class SendMessageCommand extends NoDDCAdapter implements Command {
 		
 		String destination = command.GetParameterValue("destination");
 		if (destination == null) {
-			logger.warn(NAME + ": No destination on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No destination on command");
 			return false;
 		}
 		
@@ -75,14 +74,12 @@ final public class SendMessageCommand extends NoDDCAdapter implements Command {
 			}
 			
 		} catch (NullPointerException e) {
-			logger.warn(NAME + ": malformed message on send-message command.");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": malformed message on send-message command.");
 			return false;
 		}
 
 		if (tokens.isEmpty()) {
-			logger.warn(NAME + ": no message to send");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": no message to send");
 			return false;
 		} 
 		
@@ -95,8 +92,8 @@ final public class SendMessageCommand extends NoDDCAdapter implements Command {
 		}
 		
 		messages.sendMessage(agentName, destination, tokens);
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		return true;
 	}
 }

@@ -32,21 +32,19 @@ final public class RemoveWaypointCommand extends NoDDCAdapter implements Command
 
 		String id = command.GetParameterValue("id");
 		if (id == null) {
-			logger.warn(NAME + ": No id on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No id on command");
 			return false;
 		}
 
 		logger.debug(String.format("%s: %16s", NAME, id));
 
 		if (waypoints.removeWaypoint(id) == false) {
-			logger.warn(NAME + ": Unable to remove waypoint " + id + ", no such waypoint");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to remove waypoint " + id + ", no such waypoint");
 			return false;
 		}
 
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		return true;
 	}
 }

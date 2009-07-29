@@ -34,25 +34,22 @@ final public class RemoveMessageCommand extends NoDDCAdapter implements Command 
 		try {
 			id = Integer.parseInt(command.GetParameterValue("id"));
 		} catch (NullPointerException ignored) {
-			logger.warn(NAME + ": No id on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No id on command");
 			return false;
 		} catch (NumberFormatException e) {
-			logger.warn(NAME + ": Unable to parse id: " + command.GetParameterValue("id"));
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to parse id: " + command.GetParameterValue("id"));
 			return false;
 		}
 
 		logger.debug(String.format(NAME + ": %d", id));
 		
 		if (messages.removeMessage(id) == false) {
-			logger.warn(NAME + ": Unable to remove message " + id + ", no such message");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to remove message " + id + ", no such message");
 			return false;
 		}
 
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		return true;
 	}
 }

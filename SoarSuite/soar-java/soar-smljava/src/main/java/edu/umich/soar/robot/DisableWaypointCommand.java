@@ -31,21 +31,19 @@ final public class DisableWaypointCommand extends NoDDCAdapter implements Comman
 	public boolean execute(Agent agent, Identifier command) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
-			logger.warn(NAME + ": No id on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No id on command");
 			return false;
 		}
 
 		logger.debug(String.format(NAME + ": %16s", id));
 
 		if (waypoints.disableWaypoint(id) == false) {
-			logger.warn(NAME + ": Unable to disable waypoint " + id + ", no such waypoint");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to disable waypoint " + id + ", no such waypoint");
 			return false;
 		}
 
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		return true;
 	}
 

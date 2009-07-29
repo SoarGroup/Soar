@@ -53,15 +53,13 @@ final public class OutputLinkManager {
 
 			Command commandObject = commands.get(commandName);
 			if (commandObject == null) {
-				logger.warn("Unknown command: " + commandName);
-				CommandStatus.error.addStatus(agent, commandWme);
+				CommandStatus.error.addStatus(commandWme, "Unknown command: " + commandName);
 				continue;
 			}
 			
 			if (commandObject.createsDDC()) {
 				if (ddc != null) {
-					logger.warn("Ignoring command " + commandName + " because already have " + ddc);
-					CommandStatus.error.addStatus(agent, commandWme);
+					CommandStatus.error.addStatus(commandWme, "Ignoring command " + commandName + " because already have " + ddc);
 					continue;
 				}
 				if (runningCommand != null) {

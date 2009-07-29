@@ -46,7 +46,7 @@ final public class StopCommand extends DDCCommand implements Command {
 		}
 
 		logger.debug(NAME + ":");
-		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
 		status = CommandStatus.accepted;
 
 		this.agent = agent;
@@ -60,7 +60,7 @@ final public class StopCommand extends DDCCommand implements Command {
 			throw new IllegalStateException();
 		}
 		
-		CommandStatus.interrupted.addStatus(agent, command);
+		CommandStatus.interrupted.addStatus(command);
 		agent = null;
 		command = null;
 		status = null;
@@ -75,13 +75,13 @@ final public class StopCommand extends DDCCommand implements Command {
 		pose_t pose = opose.getPose();
 		
 		if (Double.compare(LinAlg.magnitude(pose.vel), TOLERANCE) < 0) {
-			CommandStatus.complete.addStatus(agent, command);
+			CommandStatus.complete.addStatus(command);
 			agent = null;
 			command = null;
 			status = null;
 			return true; // complete
 		} else if (status == CommandStatus.accepted) {
-			CommandStatus.executing.addStatus(agent, command);
+			CommandStatus.executing.addStatus(command);
 			status = CommandStatus.executing;
 		}
 		return false; // executing
