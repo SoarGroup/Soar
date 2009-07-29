@@ -5,7 +5,6 @@ package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 
 /**
@@ -28,7 +27,7 @@ final public class DisableWaypointCommand extends NoDDCAdapter implements Comman
 	private final WaypointInterface waypoints;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
+	public boolean execute(Identifier command) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			CommandStatus.error.addStatus(command, NAME + ": No id on command");

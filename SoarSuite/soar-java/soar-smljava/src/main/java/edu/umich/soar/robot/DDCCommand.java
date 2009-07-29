@@ -1,11 +1,9 @@
 package edu.umich.soar.robot;
 
-import sml.Agent;
 import sml.Identifier;
 
 abstract class DDCCommand implements Command {
 
-	protected Agent agent;
 	protected Identifier command;
 	
 	@Override
@@ -20,12 +18,11 @@ abstract class DDCCommand implements Command {
 
 	@Override
 	public void interrupt() {
-		if (agent == null || command == null) {
+		if (command == null) {
 			throw new IllegalStateException();
 		}
 		
 		CommandStatus.complete.addStatus(command);
-		agent = null;
 		command = null;
 	}
 

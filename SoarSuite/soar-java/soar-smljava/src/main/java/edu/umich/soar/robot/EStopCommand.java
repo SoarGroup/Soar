@@ -5,7 +5,6 @@ package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 
 /**
@@ -27,12 +26,11 @@ final public class EStopCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
+	public boolean execute(Identifier command) {
 		logger.debug(NAME + ":");
 		CommandStatus.accepted.addStatus(command);
 		CommandStatus.complete.addStatus(command);
 		
-		this.agent = agent;
 		this.command = command;
 		return true;
 	}
