@@ -59,6 +59,11 @@ final public class OutputLinkManager {
 			
 			if (commandObject.createsDDC()) {
 				if (ddc != null) {
+					if (commandObject instanceof EStopCommand) {
+						CommandStatus.error.addStatus(commandWme, "Encountered estop command, overriding existing command " + ddc);
+						ddc = DifferentialDriveCommand.newEStopCommand();
+						continue;
+					}
 					CommandStatus.error.addStatus(commandWme, "Ignoring command " + commandName + " because already have " + ddc);
 					continue;
 				}
