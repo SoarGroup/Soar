@@ -22,7 +22,7 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 		return new ConfigureCommand(opose, configure);
 	}
 	
-	public ConfigureCommand(OffsetPose opose, ConfigureInterface configure) {
+	private ConfigureCommand(OffsetPose opose, ConfigureInterface configure) {
 		this.opose = opose;
 		this.configure = configure;
 	}
@@ -32,10 +32,6 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 
 	@Override
 	public boolean execute(Identifier command) {
-		if (opose == null) {
-			throw new AssertionError();
-		}
-		
 		String yawFormat = command.GetParameterValue("yaw-format");
 		if (yawFormat != null) {
 			if (yawFormat.equals("float")) {

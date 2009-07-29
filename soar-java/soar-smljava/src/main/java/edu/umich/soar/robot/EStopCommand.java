@@ -20,6 +20,9 @@ final public class EStopCommand extends DDCCommand implements Command {
 		return new EStopCommand();
 	}
 	
+	private EStopCommand() {
+	}
+
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newEStopCommand();

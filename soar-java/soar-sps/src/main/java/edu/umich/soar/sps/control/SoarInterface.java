@@ -67,7 +67,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		int rangesCount = config.getInt("ranges_count", DEFAULT_RANGES_COUNT);
 		input = new InputLinkManager(agent, kernel, rangesCount, splinter);
 		output = new OutputLinkManager(agent);
-		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), input.getConfigurationInterface(), splinter);
+		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), input.getConfigurationInterface(), splinter, null);
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, this, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, this, null);

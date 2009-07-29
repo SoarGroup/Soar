@@ -17,14 +17,17 @@ import sml.Identifier;
 final public class SetAngularVelocityCommand extends DDCCommand implements Command {
 	private static final Logger logger = Logger.getLogger(SetAngularVelocityCommand.class);
 	private static final String ANGVEL = "angular-velocity";
-	static final String NAME = "set-velocity";
+	static final String NAME = "set-angular-velocity";
 
 	static Command newInstance() {
 		return new SetAngularVelocityCommand();
 	}
 	
 	private double angularVelocity;
-	
+
+	private SetAngularVelocityCommand() {
+	}
+
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newAngularVelocityCommand(angularVelocity);

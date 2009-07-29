@@ -31,7 +31,7 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 	private double yaw;
 	private double linearVelocity;
 	
-	public SetHeadingLinearCommand(OffsetPose opose) {
+	private SetHeadingLinearCommand(OffsetPose opose) {
 		this.opose = opose;
 	}
 

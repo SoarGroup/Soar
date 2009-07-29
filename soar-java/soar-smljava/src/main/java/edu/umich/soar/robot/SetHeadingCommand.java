@@ -28,7 +28,7 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 	private CommandStatus status;
 	private double yaw;
 	
-	public SetHeadingCommand(OffsetPose opose) {
+	private SetHeadingCommand(OffsetPose opose) {
 		this.opose = opose;
 	}
 

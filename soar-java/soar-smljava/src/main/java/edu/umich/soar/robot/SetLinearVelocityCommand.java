@@ -24,7 +24,10 @@ final public class SetLinearVelocityCommand extends DDCCommand implements Comman
 	}
 	
 	private double linearVelocity;
-	
+
+	private SetLinearVelocityCommand() {
+	}
+
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newLinearVelocityCommand(linearVelocity);

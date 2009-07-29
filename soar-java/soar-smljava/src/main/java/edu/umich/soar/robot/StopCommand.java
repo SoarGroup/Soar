@@ -26,7 +26,7 @@ final public class StopCommand extends DDCCommand implements Command {
 		return new StopCommand(opose);
 	}
 	
-	public StopCommand(OffsetPose opose) {
+	private StopCommand(OffsetPose opose) {
 		this.opose = opose;
 	}
 

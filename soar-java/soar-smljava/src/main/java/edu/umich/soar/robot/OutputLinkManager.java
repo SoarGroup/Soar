@@ -102,24 +102,51 @@ final public class OutputLinkManager {
 	}
 
 	public void create(WaypointInterface waypoints, SendMessagesInterface msgSend,
-			ReceiveMessagesInterface msgRcv, ConfigureInterface configure,
-			OffsetPose opose) {
+			ReceiveMessagesInterface msgRecv, ConfigureInterface configure,
+			OffsetPose opose, ObjectManipulationInterface manip) {
 
 		commands.put(MotorCommand.NAME, MotorCommand.newInstance());
 		commands.put(SetVelocityCommand.NAME, SetVelocityCommand.newInstance());
 		commands.put(SetLinearVelocityCommand.NAME, SetLinearVelocityCommand.newInstance());
 		commands.put(SetAngularVelocityCommand.NAME, SetAngularVelocityCommand.newInstance());
-		commands.put(SetHeadingCommand.NAME, SetHeadingCommand.newInstance(opose));
-		commands.put(SetHeadingLinearCommand.NAME, SetHeadingLinearCommand.newInstance(opose));
-		commands.put(StopCommand.NAME, StopCommand.newInstance(opose));
 		commands.put(EStopCommand.NAME, EStopCommand.newInstance());
-		commands.put(AddWaypointCommand.NAME, AddWaypointCommand.newInstance(opose, waypoints));
-		commands.put(RemoveWaypointCommand.NAME, RemoveWaypointCommand.newInstance(waypoints));
-		commands.put(EnableWaypointCommand.NAME, EnableWaypointCommand.newInstance(waypoints));
-		commands.put(DisableWaypointCommand.NAME, DisableWaypointCommand.newInstance(waypoints));
-		commands.put(SendMessageCommand.NAME, SendMessageCommand.newInstance(msgSend, agent.GetAgentName()));
-		commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.newInstance(msgRcv));
-		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.newInstance(msgRcv));
-		commands.put(ConfigureCommand.NAME, ConfigureCommand.newInstance(opose, configure));
+
+		if (opose != null) {
+			commands.put(SetHeadingCommand.NAME, SetHeadingCommand.newInstance(opose));
+			commands.put(SetHeadingLinearCommand.NAME, SetHeadingLinearCommand.newInstance(opose));
+			commands.put(StopCommand.NAME, StopCommand.newInstance(opose));
+
+			if (waypoints != null) {
+				commands.put(RemoveWaypointCommand.NAME, RemoveWaypointCommand.newInstance(waypoints));
+				commands.put(EnableWaypointCommand.NAME, EnableWaypointCommand.newInstance(waypoints));
+				commands.put(DisableWaypointCommand.NAME, DisableWaypointCommand.newInstance(waypoints));
+				commands.put(AddWaypointCommand.NAME, AddWaypointCommand.newInstance(opose, waypoints));
+			} else {
+				logger.debug("omitting waypoint commands");
+			}
+			
+			if (configure != null) {
+				commands.put(ConfigureCommand.NAME, ConfigureCommand.newInstance(opose, configure));
+			} else {
+				logger.debug("omitting configure commands");
+			}
+		} else {
+			logger.debug("omitting pose commands");
+		}
+		
+		if (msgSend != null && msgRecv != null) {
+			commands.put(SendMessageCommand.NAME, SendMessageCommand.newInstance(msgSend, agent.GetAgentName()));
+			commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.newInstance(msgRecv));
+			commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.newInstance(msgRecv));
+		} else {
+			logger.debug("omitting message commands");
+		}
+		
+		if (manip != null) {
+			commands.put(GetObjectCommand.NAME, GetObjectCommand.newInstance(manip));
+			commands.put(DropObjectCommand.NAME, DropObjectCommand.newInstance(manip));
+		} else {
+			logger.debug("omitting manipulation commands");
+		}
 	}
 }

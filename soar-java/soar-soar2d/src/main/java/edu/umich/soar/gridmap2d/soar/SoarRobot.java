@@ -63,7 +63,7 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 		input = new SoarRobotInputLinkManager(agent, kernel, this);
 		input.create();
 		output = new OutputLinkManager(agent);
-		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this);
+		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this, player.getState());
 		
 		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
 		
@@ -88,7 +88,7 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 		agent.InitSoar();
 
 		input.create();
-		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this);
+		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this, player.getState());
 
 		agent.Commit();
 	}
