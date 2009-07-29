@@ -44,8 +44,7 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 			} else if (yawFormat.equals("int")) {
 				configure.setFloatYawWmes(false);
 			} else {
-				logger.warn(NAME + ": Unknown format: " + yawFormat);
-				CommandStatus.error.addStatus(agent, command);
+				CommandStatus.error.addStatus(command, NAME + ": Unknown format: " + yawFormat);
 				return false;
 			}
 			logger.info(NAME + ": yaw-format set to " + yawFormat);
@@ -66,16 +65,15 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 				offset.pos[0] = Double.parseDouble(offsetX);
 				offset.pos[1] = Double.parseDouble(offsetY);
 			} catch (NumberFormatException e) {
-				logger.warn(NAME + ": Error parsing coordinates: " + offsetX + ", " + offsetY);
-				CommandStatus.error.addStatus(agent, command);
+				CommandStatus.error.addStatus(command, NAME + ": Error parsing coordinates: " + offsetX + ", " + offsetY);
 				return false;
 			}
 			opose.setOffset(offset);
 			logger.debug(String.format("%s: offset set to x%10.3f y%10.3f", NAME, offset.pos[0], offset.pos[1]));
 		}
 		
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		return true;
 	}
 }

@@ -32,8 +32,8 @@ final public class ClearMessagesCommand extends NoDDCAdapter implements Command 
 		messages.clearMessages();
 		logger.info(NAME + ":");
 
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		return true;
 	}
 }

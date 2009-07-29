@@ -24,7 +24,7 @@ abstract class DDCCommand implements Command {
 			throw new IllegalStateException();
 		}
 		
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.complete.addStatus(command);
 		agent = null;
 		command = null;
 	}
