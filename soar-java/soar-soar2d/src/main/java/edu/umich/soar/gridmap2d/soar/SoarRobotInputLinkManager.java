@@ -106,18 +106,15 @@ public class SoarRobotInputLinkManager {
 		timeIL.updateExact(runtime);
 		selfIL.update(player);
 		
+		if (oldLocationId != player.getState().getLocationId()) {
+			oldLocationId = player.getState().getLocationId();
 		
-		if (player.getMoved()) {
-			if (oldLocationId != player.getState().getLocationId()) {
-				oldLocationId = player.getState().getLocationId();
-			
-				if (areaIL != null) {
-					areaIL.destroy();
-				}
-				
-				Identifier areaDescription = agent.GetInputLink().CreateIdWME("area-description");
-				areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player.getState().getLocationId(), opose, roomMap);
+			if (areaIL != null) {
+				areaIL.destroy();
 			}
+			
+			Identifier areaDescription = agent.GetInputLink().CreateIdWME("area-description");
+			areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player.getState().getLocationId(), opose, roomMap);
 		}
 		
 		// objects
