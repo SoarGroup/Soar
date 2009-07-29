@@ -1,5 +1,6 @@
 package edu.umich.soar.gridmap2d.visuals;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -27,6 +28,15 @@ public class RoomVisualWorld extends VisualWorld {
 		super(parent, style, cellSize);
 		this.world = (RoomWorld)world;
 	}
+	
+	private static class IdLabel {
+		int [] loc;
+		boolean object;
+		boolean gateway;
+		String label;
+	}
+	
+	List<IdLabel> ids = new ArrayList<IdLabel>();
 
 	public void paintControl(PaintEvent e) {
 		GC gc = e.gc;		
@@ -55,12 +65,14 @@ public class RoomVisualWorld extends VisualWorld {
 			painted = false;
 
 		// Draw world
+		ids.clear();
 		int [] location = new int [2];
 		HashSet<Integer> roomIds = new HashSet<Integer>();
 		for(location[0] = 0; location[0] < map.size(); ++location[0]){
 			for(location[1] = 0; location[1] < map.size(); ++location[1]){
 				int [] drawLocation = new int [] { cellSize*location[0], cellSize*(map.size() - location[1] - 1) };
 				
+				boolean gateway = false;
 				if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
 					continue;
 				}
@@ -71,7 +83,8 @@ public class RoomVisualWorld extends VisualWorld {
 					
 				} else {
 					
-					if (!map.getCell(location).hasAnyWithProperty(Names.kPropertyGatewayRender)) {
+					gateway = map.getCell(location).hasAnyWithProperty(Names.kPropertyGatewayRender); 
+					if (!gateway) {
 
 						if (!colored_rooms) {
 							// normal:
@@ -98,18 +111,42 @@ public class RoomVisualWorld extends VisualWorld {
 
 				List<CellObject> objectIds = map.getCell(location).getAllWithProperty("object-id");
 				if (objectIds != null) {
-					gc.setForeground(WindowManager.white);
-					gc.drawString(objectIds.get(0).getProperty("object-id"), drawLocation[0], drawLocation[1]);
+					IdLabel label = new IdLabel();
+					label.object = true;
+					label.label = objectIds.get(0).getProperty("object-id");
+					label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
+					ids.add(label);
 				} else  {
 					List<CellObject> numbers = map.getCell(location).getAllWithProperty("number");
 					if (numbers!= null) {
 						if (!roomIds.contains(numbers.get(0).getIntProperty("number", -1))) {
-							gc.setForeground(WindowManager.black);
-							gc.drawString(numbers.get(0).getProperty("number") + " ", drawLocation[0]+1, drawLocation[1]);
 							roomIds.add(numbers.get(0).getIntProperty("number", -1));
+							IdLabel label = new IdLabel();
+							label.object = false;
+							label.gateway = gateway;
+							label.label = numbers.get(0).getProperty("number");
+							label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
+							ids.add(label);
 						}
 					}
 				}
+			}
+		}
+		
+		// draw id labels on top of map
+		for (IdLabel label : ids) {
+			if (label.object) {
+				gc.setBackground(WindowManager.black);
+				gc.setForeground(WindowManager.white);
+				gc.drawString(label.label, label.loc[0], label.loc[1]);
+			} else {
+				if (label.gateway) {
+					gc.setBackground(WindowManager.white);
+				} else {
+					gc.setBackground(WindowManager.widget_background);
+				}
+				gc.setForeground(WindowManager.black);
+				gc.drawString(label.label, label.loc[0], label.loc[1]);
 			}
 		}
 		
