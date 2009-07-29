@@ -25,14 +25,14 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 		return new SetHeadingCommand(opose);
 	}
 	
-	public SetHeadingCommand(OffsetPose opose) {
-		this.opose = opose;
-	}
-
 	private final OffsetPose opose;
 	private CommandStatus status;
 	private double yaw;
 	
+	public SetHeadingCommand(OffsetPose opose) {
+		this.opose = opose;
+	}
+
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newHeadingCommand(yaw);

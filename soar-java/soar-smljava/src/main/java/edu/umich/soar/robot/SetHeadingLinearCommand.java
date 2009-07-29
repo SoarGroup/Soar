@@ -3,6 +3,8 @@
  */
 package edu.umich.soar.robot;
 
+import jmat.LinAlg;
+
 import org.apache.log4j.Logger;
 
 import sml.Agent;
@@ -18,15 +20,22 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 	private static final Logger logger = Logger.getLogger(SetHeadingLinearCommand.class);
 	private static final String YAW = "yaw";
 	private static final String LINVEL = "linear-velocity";
+	private static final double TOLERANCE = Math.toRadians(3);
 	static final String NAME = "set-heading-linear";
 
-	static Command newInstance() {
-		return new SetHeadingLinearCommand();
+	static Command newInstance(OffsetPose opose) {
+		return new SetHeadingLinearCommand(opose);
 	}
 	
+	private final OffsetPose opose;
+	private CommandStatus status;
 	private double yaw;
 	private double linearVelocity;
 	
+	public SetHeadingLinearCommand(OffsetPose opose) {
+		this.opose = opose;
+	}
+
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return DifferentialDriveCommand.newHeadingLinearVelocityCommand(yaw, linearVelocity);
@@ -70,5 +79,39 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 		this.agent = agent;
 		this.command = command;
 		return true;
+	}
+
+	@Override
+	public void interrupt() {
+		if (agent == null || command == null || status == null) {
+			throw new IllegalStateException();
+		}
+		
+		CommandStatus.interrupted.addStatus(agent, command);
+		agent = null;
+		command = null;
+		status = null;
+	}
+
+	@Override
+	public boolean update() {
+		if (agent == null || command == null || status == null) {
+			throw new IllegalStateException();
+		}
+		
+		double splinterYaw = LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2];
+		splinterYaw = Math.abs(splinterYaw);
+		
+		if (Double.compare(splinterYaw, TOLERANCE) < 0) {
+			CommandStatus.complete.addStatus(agent, command);
+			agent = null;
+			command = null;
+			status = null;
+			return true; // complete
+		} else if (status == CommandStatus.accepted) {
+			CommandStatus.executing.addStatus(agent, command);
+			status = CommandStatus.executing;
+		}
+		return false; // executing
 	}
 }
