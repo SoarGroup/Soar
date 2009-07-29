@@ -7,7 +7,6 @@ import jmat.LinAlg;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 
 /**
@@ -42,8 +41,8 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 	}
 
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
-		if (this.agent != null || this.command != null) {
+	public boolean execute(Identifier command) {
+		if (this.command != null) {
 			throw new IllegalStateException();
 		}
 		
@@ -72,26 +71,24 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 		CommandStatus.accepted.addStatus(command);
 		CommandStatus.executing.addStatus(command);
 		
-		this.agent = agent;
 		this.command = command;
 		return true;
 	}
 
 	@Override
 	public void interrupt() {
-		if (agent == null || command == null || status == null) {
+		if (command == null || status == null) {
 			throw new IllegalStateException();
 		}
 		
 		CommandStatus.interrupted.addStatus(command);
-		agent = null;
 		command = null;
 		status = null;
 	}
 
 	@Override
 	public boolean update() {
-		if (agent == null || command == null || status == null) {
+		if (command == null || status == null) {
 			throw new IllegalStateException();
 		}
 		
@@ -100,7 +97,6 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 		
 		if (Double.compare(splinterYaw, TOLERANCE) < 0) {
 			CommandStatus.complete.addStatus(command);
-			agent = null;
 			command = null;
 			status = null;
 			return true; // complete

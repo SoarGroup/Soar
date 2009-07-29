@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 
 /**
@@ -32,7 +31,7 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 	private final WaypointInterface waypoints;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
+	public boolean execute(Identifier command) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
 			CommandStatus.error.addStatus(command, NAME + ": No id on command");

@@ -68,7 +68,7 @@ final public class OutputLinkManager {
 				}
 			}
 			
-			if (!commandObject.execute(agent, commandWme)) {
+			if (!commandObject.execute(commandWme)) {
 				if (commandObject.createsDDC()) {
 					logger.warn("Error with new drive command, commanding estop.");
 					ddc = DifferentialDriveCommand.newEStopCommand();
@@ -110,7 +110,7 @@ final public class OutputLinkManager {
 		commands.put(RemoveWaypointCommand.NAME, RemoveWaypointCommand.newInstance(waypoints));
 		commands.put(EnableWaypointCommand.NAME, EnableWaypointCommand.newInstance(waypoints));
 		commands.put(DisableWaypointCommand.NAME, DisableWaypointCommand.newInstance(waypoints));
-		commands.put(SendMessageCommand.NAME, SendMessageCommand.newInstance(msgSend));
+		commands.put(SendMessageCommand.NAME, SendMessageCommand.newInstance(msgSend, agent.GetAgentName()));
 		commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.newInstance(msgRcv));
 		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.newInstance(msgRcv));
 		commands.put(ConfigureCommand.NAME, ConfigureCommand.newInstance(opose, configure));

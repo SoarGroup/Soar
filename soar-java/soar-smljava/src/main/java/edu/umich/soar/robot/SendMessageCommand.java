@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 import sml.WMElement;
 
@@ -22,21 +21,20 @@ final public class SendMessageCommand extends NoDDCAdapter implements Command {
 	private static final Logger logger = Logger.getLogger(SendMessageCommand.class);
 	static final String NAME = "send-message";
 
-	static Command newInstance(SendMessagesInterface messages) {
-		return new SendMessageCommand(messages);
+	static Command newInstance(SendMessagesInterface messages, String agentName) {
+		return new SendMessageCommand(messages, agentName);
 	}
 	
-	public SendMessageCommand(SendMessagesInterface messages) {
+	public SendMessageCommand(SendMessagesInterface messages, String agentName) {
 		this.messages = messages;
+		this.agentName = agentName;
 	}
 
 	private final SendMessagesInterface messages;
-	private String agentName;
+	private final String agentName;
 	
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
-		agentName = agent.GetAgentName();
-		
+	public boolean execute(Identifier command) {
 		String destination = command.GetParameterValue("destination");
 		if (destination == null) {
 			CommandStatus.error.addStatus(command, NAME + ": No destination on command");
