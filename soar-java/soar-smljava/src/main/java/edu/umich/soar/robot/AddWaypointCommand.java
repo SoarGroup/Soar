@@ -35,8 +35,7 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 	public boolean execute(Agent agent, Identifier command) {
 		String id = command.GetParameterValue("id");
 		if (id == null) {
-			logger.warn(NAME + ": No id on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No id on command");
 			return false;
 		}
 
@@ -50,8 +49,7 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 		} catch (NullPointerException ignored) {
 			// no x param is ok, use current
 		} catch (NumberFormatException e) {
-			logger.warn(NAME + ": Unable to parse x: " + command.GetParameterValue("x"));
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to parse x: " + command.GetParameterValue("x"));
 			return false;
 		}
 
@@ -60,16 +58,15 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 		} catch (NullPointerException ignored) {
 			// no y param is ok, use current
 		} catch (NumberFormatException e) {
-			logger.warn(NAME + ": Unable to parse y: " + command.GetParameterValue("y"));
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to parse y: " + command.GetParameterValue("y"));
 			return false;
 		}
 
 		logger.debug(String.format(NAME + ": %16s %10.3f %10.3f", id, pos[0], pos[1]));
 		waypoints.addWaypoint(pos, id);
 
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		return true;
 	}
 }

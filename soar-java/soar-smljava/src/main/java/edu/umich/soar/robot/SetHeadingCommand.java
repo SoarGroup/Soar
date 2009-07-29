@@ -47,18 +47,16 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 		try {
 			yaw = Double.parseDouble(command.GetParameterValue(YAW));
 		} catch (NullPointerException ex) {
-			logger.warn(NAME + ": No " + YAW + " on command");
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": No " + YAW + " on command");
 			return false;
 		} catch (NumberFormatException e) {
-			logger.warn(NAME + ": Unable to parse " + YAW + ": " + command.GetParameterValue(YAW));
-			CommandStatus.error.addStatus(agent, command);
+			CommandStatus.error.addStatus(command, NAME + ": Unable to parse " + YAW + ": " + command.GetParameterValue(YAW));
 			return false;
 		}
 		yaw = Math.toRadians(yaw);
 
 		logger.debug(String.format(NAME + ": %10.3f", yaw));
-		CommandStatus.accepted.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
 		status = CommandStatus.accepted;
 		
 		this.agent = agent;
@@ -72,7 +70,7 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 			throw new IllegalStateException();
 		}
 		
-		CommandStatus.interrupted.addStatus(agent, command);
+		CommandStatus.interrupted.addStatus(command);
 		agent = null;
 		command = null;
 		status = null;
@@ -88,13 +86,13 @@ final public class SetHeadingCommand extends DDCCommand implements Command {
 		splinterYaw = Math.abs(splinterYaw);
 		
 		if (Double.compare(splinterYaw, TOLERANCE) < 0) {
-			CommandStatus.complete.addStatus(agent, command);
+			CommandStatus.complete.addStatus(command);
 			agent = null;
 			command = null;
 			status = null;
 			return true; // complete
 		} else if (status == CommandStatus.accepted) {
-			CommandStatus.executing.addStatus(agent, command);
+			CommandStatus.executing.addStatus(command);
 			status = CommandStatus.executing;
 		}
 		return false; // executing

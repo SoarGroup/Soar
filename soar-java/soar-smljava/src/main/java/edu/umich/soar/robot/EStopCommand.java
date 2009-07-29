@@ -29,8 +29,8 @@ final public class EStopCommand extends DDCCommand implements Command {
 	@Override
 	public boolean execute(Agent agent, Identifier command) {
 		logger.debug(NAME + ":");
-		CommandStatus.accepted.addStatus(agent, command);
-		CommandStatus.complete.addStatus(agent, command);
+		CommandStatus.accepted.addStatus(command);
+		CommandStatus.complete.addStatus(command);
 		
 		this.agent = agent;
 		this.command = command;
