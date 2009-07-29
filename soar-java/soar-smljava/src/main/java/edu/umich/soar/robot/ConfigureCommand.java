@@ -7,7 +7,6 @@ import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 
 /**
@@ -32,7 +31,7 @@ final public class ConfigureCommand extends NoDDCAdapter implements Command {
 	private final ConfigureInterface configure;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
+	public boolean execute(Identifier command) {
 		if (opose == null) {
 			throw new AssertionError();
 		}

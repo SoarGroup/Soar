@@ -5,7 +5,6 @@ package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 
 /**
@@ -28,7 +27,7 @@ final public class RemoveMessageCommand extends NoDDCAdapter implements Command 
 	private final ReceiveMessagesInterface messages;
 
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
+	public boolean execute(Identifier command) {
 
 		int id = -1;
 		try {

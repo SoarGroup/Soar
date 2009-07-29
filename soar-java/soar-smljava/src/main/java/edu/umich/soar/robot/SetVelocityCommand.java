@@ -5,7 +5,6 @@ package edu.umich.soar.robot;
 
 import org.apache.log4j.Logger;
 
-import sml.Agent;
 import sml.Identifier;
 
 /**
@@ -34,8 +33,8 @@ final public class SetVelocityCommand extends DDCCommand implements Command {
 	}
 
 	@Override
-	public boolean execute(Agent agent, Identifier command) {
-		if (this.agent != null || this.command != null) {
+	public boolean execute(Identifier command) {
+		if (this.command != null) {
 			throw new IllegalStateException();
 		}
 		
@@ -63,7 +62,6 @@ final public class SetVelocityCommand extends DDCCommand implements Command {
 		CommandStatus.accepted.addStatus(command);
 		CommandStatus.executing.addStatus(command);
 		
-		this.agent = agent;
 		this.command = command;
 		return true;
 	}
