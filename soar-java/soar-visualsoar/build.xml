@@ -6,6 +6,7 @@
 	<import file="../soar-smljava/build-common.xml" />
 
 	<target name="build" depends="jar,doc" />
+	<target name="build-nodoc" depends="jar" />
 
 </project>
 

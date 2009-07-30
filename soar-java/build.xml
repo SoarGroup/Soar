@@ -13,6 +13,17 @@
 		<!--ant dir="soar-sps" /-->
 	</target>
 
+	<target name="build-nodoc">
+		<ant dir="soar-smljava" target="build-nodoc" />
+		<ant dir="soar-debugger" target="build-nodoc" />
+		<ant dir="soar-loggerjava" target="build-nodoc" />
+		<ant dir="soar-missionaries" target="build-nodoc" />
+		<ant dir="soar-soar2d" target="build-nodoc" />
+		<ant dir="soar-toh" target="build-nodoc" />
+		<ant dir="soar-visualsoar" target="build-nodoc" />
+		<!--ant dir="soar-sps" target="build-nodoc" /-->
+	</target>
+
 	<target name="clean">
 		<ant dir="soar-smljava" target="clean" />
 		<ant dir="soar-debugger" target="clean" />

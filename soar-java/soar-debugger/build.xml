@@ -15,6 +15,7 @@
 	</target>
 
 	<target name="build" depends="alias-jar,doc" />
+	<target name="build-nodoc" depends="alias-jar" />
 
 </project>
 
