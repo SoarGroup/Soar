@@ -42,7 +42,7 @@ final public class DropObjectCommand extends NoDDCAdapter implements Command {
 			return false;
 		}
 
-		if (!manip.get(id)) {
+		if (!manip.drop(id)) {
 			CommandStatus.error.addStatus(command, NAME + ": unable to drop object id: " + idString + ", reason: " + manip.reason());
 			return false;
 		}

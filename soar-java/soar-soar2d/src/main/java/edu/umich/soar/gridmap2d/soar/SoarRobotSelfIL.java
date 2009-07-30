@@ -6,6 +6,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
+import edu.umich.soar.gridmap2d.players.CarryInterface;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.robot.ConfigureInterface;
@@ -32,12 +33,16 @@ public class SoarRobotSelfIL {
 	private final ConfigureInterface configure;
 	private final Identifier pose;
 	private final OffsetPose opose;
+	private Identifier carry;
+	private IntElement carryid;
+	private final CarryInterface ci;
 	
 	public SoarRobotSelfIL(Agent agent, Identifier self, 
-			OffsetPose opose, ConfigureInterface configure) {
+			OffsetPose opose, ConfigureInterface configure, CarryInterface ci) {
 		this.self = self;
 		this.configure = configure;
 		this.opose = opose;
+		this.ci = ci;
 		
 		Identifier waypoints = self.CreateIdWME("waypoints");
 		waypointsIL = new WaypointsIL(waypoints, opose, configure);
@@ -62,6 +67,12 @@ public class SoarRobotSelfIL {
 		cy = collision.CreateStringWME("y", "false");
 		
 		setYaw(LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2]);
+
+		if (ci.hasObject()) {
+			carry = self.CreateIdWME("carry");
+			carryid = carry.CreateIntWME("id", ci.getObject().getIntProperty("object-id", -1));
+			carry.CreateStringWME("type", ci.getObject().getProperty("id"));
+		}
 	}
 	
 	private void setYaw(double radians) {
@@ -105,6 +116,27 @@ public class SoarRobotSelfIL {
 		cy.Update(player.getState().isCollisionY() ? "true" : "false");
 		waypointsIL.update();
 		messagesIL.update();
+
+		if (ci.hasObject()) {
+			int objectId = ci.getObject().getIntProperty("object-id", -1);
+			if (carry != null) {
+				if (carryid.GetValue() != objectId) {
+					carry.DestroyWME();
+					carry = null;
+				}
+			}
+			
+			if (carry == null) {
+				carry = self.CreateIdWME("carry");
+				carryid = carry.CreateIntWME("id", objectId);
+				carry.CreateStringWME("type", ci.getObject().getProperty("id"));
+			}
+		} else {
+			if (carry != null) {
+				carry.DestroyWME();
+				carry = null;
+			}
+		}
 	}
 
 	public WaypointsIL getWaypointsIL() {
@@ -114,6 +146,4 @@ public class SoarRobotSelfIL {
 	public MessagesIL getMessagesIL() {
 		return messagesIL;
 	}
-
-
 }

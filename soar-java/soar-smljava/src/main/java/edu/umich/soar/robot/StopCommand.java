@@ -65,7 +65,7 @@ final public class StopCommand extends DDCCommand implements Command {
 
 	@Override
 	public boolean update() {
-		if (command != null || status != null) {
+		if (command == null || status == null) {
 			throw new IllegalStateException();
 		}
 		

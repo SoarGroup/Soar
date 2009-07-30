@@ -77,4 +77,8 @@ public class RoomPlayer extends Player {
 			commander.shutdown();
 		}
 	}
+
+	public List<double[]> getWaypointList() {
+		return commander.getWaypointList();
+	}
 }

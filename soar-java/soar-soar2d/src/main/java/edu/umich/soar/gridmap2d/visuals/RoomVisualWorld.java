@@ -33,6 +33,7 @@ public class RoomVisualWorld extends VisualWorld {
 		int [] loc;
 		boolean object;
 		boolean gateway;
+		boolean block;
 		String label;
 	}
 	
@@ -77,6 +78,7 @@ public class RoomVisualWorld extends VisualWorld {
 				}
 				
 				boolean gateway = false;
+				boolean block = false;
 				if (this.map.getCell(location).hasAnyWithProperty(Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(drawLocation[0], drawLocation[1], cellSize, cellSize);
@@ -101,6 +103,7 @@ public class RoomVisualWorld extends VisualWorld {
 							}
 						}
 						if (map.getCell(location).hasAnyWithProperty(Names.kRoomObjectName)) {
+							block = true;
 							gc.setBackground(WindowManager.darkGray);
 						}
 					} else {
@@ -113,6 +116,7 @@ public class RoomVisualWorld extends VisualWorld {
 				if (objectIds != null) {
 					IdLabel label = new IdLabel();
 					label.object = true;
+					label.block = block;
 					label.label = objectIds.get(0).getProperty("object-id");
 					label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
 					ids.add(label);
@@ -136,7 +140,11 @@ public class RoomVisualWorld extends VisualWorld {
 		// draw id labels on top of map
 		for (IdLabel label : ids) {
 			if (label.object) {
-				gc.setBackground(WindowManager.black);
+				if (label.block) {
+					gc.setBackground(WindowManager.darkGray);
+				} else {
+					gc.setBackground(WindowManager.black);
+				}
 				gc.setForeground(WindowManager.white);
 				gc.drawString(label.label, label.loc[0], label.loc[1]);
 			} else {
@@ -185,7 +193,16 @@ public class RoomVisualWorld extends VisualWorld {
 			
 			gc.setForeground(WindowManager.getColor(player.getColor()));
 			gc.drawPath(path);
+
+			// draw waypoints
+			List<double[]> waypoints = world.getWaypointList(player);
+			for (double[] wp : waypoints) {
+				gc.setForeground(WindowManager.getColor(player.getColor()));
+				gc.drawOval((int)wp[0]-2, (int)wp[1]-2, 4, 4);
+			}
+			
 		}
+		
 	}
 
 	@Override
