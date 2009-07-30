@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.apache.log4j.Logger;
 
 import sml.Identifier;
+import sml.WMElement;
 
 /**
  * @author voigtjr
@@ -32,12 +33,14 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 
 	@Override
 	public boolean execute(Identifier command) {
-		String id = command.GetParameterValue("id");
-		if (id == null) {
+		WMElement wme = command.FindByAttribute("id", 0);
+		if (wme == null) {
 			CommandStatus.error.addStatus(command, NAME + ": No id on command");
 			return false;
 		}
-
+		String type = wme.GetValueType();
+		String id = wme.GetValueAsString();
+		
 		if (opose == null) {
 			throw new AssertionError();
 		}
@@ -62,7 +65,7 @@ final public class AddWaypointCommand extends NoDDCAdapter implements Command {
 		}
 
 		logger.debug(String.format(NAME + ": %16s %10.3f %10.3f", id, pos[0], pos[1]));
-		waypoints.addWaypoint(pos, id);
+		waypoints.addWaypoint(pos, id, type);
 
 		CommandStatus.accepted.addStatus(command);
 		CommandStatus.complete.addStatus(command);
