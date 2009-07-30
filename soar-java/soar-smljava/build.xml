@@ -18,6 +18,7 @@
 	<import file="build-common.xml" />
 
 	<target name="build" depends="jar,doc" />
+	<target name="build-nodoc" depends="jar" />
 
 </project>
 
