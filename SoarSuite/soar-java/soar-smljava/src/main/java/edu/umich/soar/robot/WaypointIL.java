@@ -10,6 +10,7 @@ import sml.IntElement;
 final class WaypointIL {
 	private final double[] pos = new double[3];
 	private final String name;
+	private final String type;
 	private final Identifier waypoints;
 	private final OffsetPose opose;
 	
@@ -17,10 +18,11 @@ final class WaypointIL {
 	private FloatElement distance;
 	private YawWmes yawWmes;
 	
-	WaypointIL(double[] waypointxyz, String name, Identifier waypoints, 
-			boolean useFloatWmes, OffsetPose opose) {
+	WaypointIL(double[] waypointxyz, String name, String type, 
+			Identifier waypoints, boolean useFloatWmes, OffsetPose opose) {
 		System.arraycopy(waypointxyz, 0, this.pos, 0, waypointxyz.length);
-		this.name = new String(name);
+		this.name = name;
+		this.type = type;
 		this.waypoints = waypoints;
 		this.opose = opose;
 		
@@ -79,7 +81,13 @@ final class WaypointIL {
 		if (waypoint == null) {
 			waypoint = waypoints.CreateIdWME("waypoint");
 			
-			waypoint.CreateStringWME("id", name);
+			if (type.equals("int")) {
+				waypoint.CreateIntWME("id", Integer.parseInt(name));
+			} else if (type.equals("float")) {
+				waypoint.CreateFloatWME("id", Double.parseDouble(name));
+			} else {
+				waypoint.CreateStringWME("id", name);
+			}
 			waypoint.CreateFloatWME("x", pos[0]);
 			waypoint.CreateFloatWME("y", pos[1]);
 			waypoint.CreateFloatWME("z", pos[2]);

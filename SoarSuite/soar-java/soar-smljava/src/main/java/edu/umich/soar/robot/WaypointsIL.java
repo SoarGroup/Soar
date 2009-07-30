@@ -19,13 +19,13 @@ public final class WaypointsIL implements WaypointInterface {
 	}
 
 	@Override
-	public void addWaypoint(double[] waypointxyz, String name) {
+	public void addWaypoint(double[] waypointxyz, String name, String type) {
 		WaypointIL waypoint = waypointList.remove(name);
 		if (waypoint != null) {
 			waypoint.disable();
 		}
 
-		waypointList.put(name, new WaypointIL(waypointxyz, name, waypoints, configure.isFloatYawWmes(), opose));
+		waypointList.put(name, new WaypointIL(waypointxyz, name, type, waypoints, configure.isFloatYawWmes(), opose));
 	}
 
 	@Override
