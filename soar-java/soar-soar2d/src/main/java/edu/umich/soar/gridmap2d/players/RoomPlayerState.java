@@ -3,14 +3,14 @@ package edu.umich.soar.gridmap2d.players;
 
 import java.util.Arrays;
 
-import edu.umich.soar.robot.ObjectManipulationInterface;
+import edu.umich.soar.gridmap2d.map.CellObject;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
 
 import lcmtypes.pose_t;
 
-public class RoomPlayerState implements ObjectManipulationInterface {
+public class RoomPlayerState implements CarryInterface {
 
 	private pose_t pose;
 	
@@ -20,9 +20,11 @@ public class RoomPlayerState implements ObjectManipulationInterface {
 	private boolean hasDestYaw;
 	private double destYaw;
 	private double destYawSpeed;
+	private CellObject carry;
 
 	public void reset() {
 		pose = new pose_t();
+		carry = null;
 		
 		setCollisionX(false);
 		setCollisionY(false);
@@ -124,20 +126,22 @@ public class RoomPlayerState implements ObjectManipulationInterface {
 	}
 
 	@Override
-	public boolean drop(int id) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean hasObject() {
+		return carry != null;
 	}
 
 	@Override
-	public boolean get(int id) {
-		// TODO Auto-generated method stub
-		return false;
+	public CellObject getObject() {
+		return carry;
 	}
 
-	@Override
-	public boolean reason() {
-		// TODO Auto-generated method stub
-		return false;
+	public void pickUp(CellObject object) {
+		assert carry == null;
+		carry = object;
+	}
+
+	public void drop() {
+		assert carry != null;
+		carry = null;
 	}
 }

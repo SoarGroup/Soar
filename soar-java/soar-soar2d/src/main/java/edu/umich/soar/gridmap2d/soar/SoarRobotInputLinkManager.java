@@ -16,6 +16,7 @@ import sml.smlSystemEventId;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.RoomMap;
+import edu.umich.soar.gridmap2d.players.CarryInterface;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
@@ -39,11 +40,13 @@ public class SoarRobotInputLinkManager {
 	private final Map<RoomPlayer, SoarRobotObjectIL> players = new HashMap<RoomPlayer, SoarRobotObjectIL>();
 	private final Map<Integer, SoarRobotObjectIL> objects = new HashMap<Integer, SoarRobotObjectIL>();
 	private long runtime;
+	private final CarryInterface ci;
 	
-	public SoarRobotInputLinkManager(Agent agent, Kernel kernel, OffsetPose opose) {
+	public SoarRobotInputLinkManager(Agent agent, Kernel kernel, OffsetPose opose, CarryInterface ci) {
 		this.agent = agent;
 		this.kernel = kernel;
 		this.opose = opose;
+		this.ci = ci;
 	}
 
 	public void create() {
@@ -61,7 +64,7 @@ public class SoarRobotInputLinkManager {
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, timeIL, null);
 
 		Identifier self = agent.CreateIdWME(inputLink, "self");
-		selfIL = new SoarRobotSelfIL(agent, self, opose, configurationIL);
+		selfIL = new SoarRobotSelfIL(agent, self, opose, configurationIL, ci);
 	}
 	
 	public void destroy() {
@@ -77,10 +80,12 @@ public class SoarRobotInputLinkManager {
 		for (SoarRobotObjectIL object : objects.values()) {
 			object.destroy();
 		}
+		objects.clear();
 
 		for (SoarRobotObjectIL object : players.values()) {
 			object.destroy();
 		}
+		players.clear();
 
 		if (areaIL != null) {
 			areaIL.destroy();
@@ -106,7 +111,7 @@ public class SoarRobotInputLinkManager {
 		timeIL.updateExact(runtime);
 		selfIL.update(player);
 		
-		if (oldLocationId != player.getState().getLocationId()) {
+		if (areaIL == null || oldLocationId != player.getState().getLocationId()) {
 			oldLocationId = player.getState().getLocationId();
 		
 			if (areaIL != null) {
@@ -121,8 +126,11 @@ public class SoarRobotInputLinkManager {
 		Set<CellObject> roomObjects = roomMap.getRoomObjects();
 		for (CellObject obj : roomObjects) {
 			RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(obj);
+			if (info.pose == null) {
+				continue;
+			}
 			if (info.area == player.getState().getLocationId()) {
-				double maxAngleOff = 180 / 2;
+				double maxAngleOff = Math.PI / 2;
 				pose_t temp = info.pose.copy();
 				LinAlg.scaleEquals(temp.pos, SoarRobot.PIXELS_2_METERS);
 				PointRelationship r = PointRelationship.calculate(opose.getPose(), temp.pos);

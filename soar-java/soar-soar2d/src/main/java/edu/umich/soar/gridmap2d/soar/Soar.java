@@ -438,6 +438,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 			Gridmap2D.control.tickEvent();
 		} catch (Exception e) {
 			logger.error(e.getMessage());
+			e.printStackTrace();
 			Gridmap2D.control.errorPopUp(e.getMessage());
 		}
   		
