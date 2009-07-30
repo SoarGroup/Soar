@@ -1,12 +1,14 @@
 package edu.umich.soar.robot;
 
+import java.util.Arrays;
+
 import lcmtypes.pose_t;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
 final class WaypointIL {
-	private final double[] xyz = new double[3];
+	private final double[] pos = new double[3];
 	private final String name;
 	private final Identifier waypoints;
 	private final OffsetPose opose;
@@ -17,7 +19,7 @@ final class WaypointIL {
 	
 	WaypointIL(double[] waypointxyz, String name, Identifier waypoints, 
 			boolean useFloatWmes, OffsetPose opose) {
-		System.arraycopy(waypointxyz, 0, this.xyz, 0, waypointxyz.length);
+		System.arraycopy(waypointxyz, 0, this.pos, 0, waypointxyz.length);
 		this.name = new String(name);
 		this.waypoints = waypoints;
 		this.opose = opose;
@@ -72,15 +74,15 @@ final class WaypointIL {
 
 	void update() {
 		pose_t selfPose = opose.getPose();
-		PointRelationship r = PointRelationship.calculate(selfPose, xyz);
+		PointRelationship r = PointRelationship.calculate(selfPose, pos);
 
 		if (waypoint == null) {
 			waypoint = waypoints.CreateIdWME("waypoint");
 			
 			waypoint.CreateStringWME("id", name);
-			waypoint.CreateFloatWME("x", xyz[0]);
-			waypoint.CreateFloatWME("y", xyz[1]);
-			waypoint.CreateFloatWME("z", xyz[2]);
+			waypoint.CreateFloatWME("x", pos[0]);
+			waypoint.CreateFloatWME("y", pos[1]);
+			waypoint.CreateFloatWME("z", pos[2]);
 
 			distance = waypoint.CreateFloatWME("distance", 0);
 
@@ -103,6 +105,10 @@ final class WaypointIL {
 	
 	boolean isDisabled() {
 		return waypoint == null;
+	}
+	
+	double[] getPos() {
+		return Arrays.copyOf(pos, pos.length);
 	}
 }
 

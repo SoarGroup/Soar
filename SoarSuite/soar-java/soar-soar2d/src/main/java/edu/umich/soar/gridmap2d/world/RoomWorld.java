@@ -3,6 +3,9 @@ package edu.umich.soar.gridmap2d.world;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+
+import jmat.LinAlg;
 
 import lcmtypes.pose_t;
 
@@ -12,6 +15,8 @@ import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.config.PlayerConfig;
+import edu.umich.soar.gridmap2d.map.Cell;
+import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.GridMap;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
@@ -32,7 +37,8 @@ public class RoomWorld implements World {
 	public static final int CELL_SIZE = 16;
 	private double ANG_SPEED = Math.PI / 4.0;
 	private CognitiveArchitecture cogArch;
-
+	private String blockManipulationReason;
+	
 	public RoomWorld(CognitiveArchitecture cogArch) {
 		this.cogArch = cogArch;
 	}
@@ -49,6 +55,7 @@ public class RoomWorld implements World {
 			player.setCommander(eaterCommander);
 		} else if (playerConfig.script != null) {
 			// TODO: implement
+			assert false;
 		}
 
 		int [] location = WorldUtil.getStartingLocation(player, roomMap, players.getInitialLocation(player));
@@ -103,6 +110,7 @@ public class RoomWorld implements World {
 
 	@Override
 	public void reset() throws Exception {
+		blockManipulationReason = null;
 		roomMap.reset();
 		resetState();
 	}
@@ -334,5 +342,83 @@ public class RoomWorld implements World {
 		players.setLocation(player, newLocation);
 		state.setLocationId(roomMap.getLocationId(newLocation));
 		roomMap.getCell(newLocation).setPlayer(player);
+	}
+
+	public boolean dropObject(RoomPlayer player, int id) {
+		blockManipulationReason = null;
+		RoomPlayerState state = player.getState();
+
+		if (!state.hasObject()) {
+			blockManipulationReason = "Not carrying an object";
+			return false;
+		}
+		
+		CellObject object = state.getObject();
+		
+//		RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(object);
+//		info.pose = state.getPose().copy();
+//		
+//		// move just a bit in front of player
+//		double yaw = LinAlg.quatToRollPitchYaw(info.pose.orientation)[2];
+//		info.pose.pos[0] += Math.cos(yaw);
+//		info.pose.pos[1] += Math.sin(yaw);
+//		info.location = new int [] { (int)info.pose.pos[0] / CELL_SIZE, (int)info.pose.pos[1] / CELL_SIZE };
+//
+//		Cell destCell = roomMap.getCell(info.location);
+		
+		Cell destCell = roomMap.getCell(player.getLocation());
+		CellObject temp = destCell.getObject(object.getName());
+		if (temp != null) {
+			blockManipulationReason = "Destination cell for drop is occupied";
+//			info.pose = null;
+//			info.location = null;
+			return false;
+		}
+		
+		state.drop();
+		destCell.addObject(object);
+		return true;
+	}
+
+	public boolean getObject(RoomPlayer player, int id) {
+		blockManipulationReason = null;
+		
+		if (player.getState().hasObject()) {
+			blockManipulationReason = "Already carrying an object";
+			return false;
+		}
+		
+		// TODO: This is a stupid way to do this.
+		Set<CellObject> objects = roomMap.getRoomObjects();
+		for (CellObject object : objects) {
+			if (object.getIntProperty("object-id", -1) == id) {
+				RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(object);
+				if (info.pose == null) {
+					continue;
+				}
+				double distance = LinAlg.distance(player.getState().getPose().pos, info.pose.pos);
+				if (Double.compare(distance, CELL_SIZE) <= 0) {
+					if (roomMap.getCell(info.location).removeObject(object.getName()) == null) {
+						throw new IllegalStateException("Remove object failed for object that should be there.");
+					}
+					info.location = null;
+					info.pose = null;
+					player.getState().pickUp(object);
+					return true;
+				}
+				blockManipulationReason = "Object is too far";
+				return false;
+			}
+		}
+		blockManipulationReason = "No such object ID";
+		return false;
+	}
+
+	public String reason() {
+		return blockManipulationReason;
+	}
+
+	public List<double[]> getWaypointList(RoomPlayer player) {
+		return player.getWaypointList();
 	}
 }

@@ -1,6 +1,8 @@
 package edu.umich.soar.robot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import sml.Identifier;
 
@@ -62,5 +64,14 @@ public final class WaypointsIL implements WaypointInterface {
 		for (WaypointIL waypoint : waypointList.values()) {
 			waypoint.update();
 		}
+	}
+
+	@Override
+	public List<double[]> getWaypointList() {
+		List<double[]> list = new ArrayList<double[]>(waypointList.size());
+		for (WaypointIL wp : this.waypointList.values()) {
+			list.add(wp.getPos());
+		}
+		return list;
 	}
 }

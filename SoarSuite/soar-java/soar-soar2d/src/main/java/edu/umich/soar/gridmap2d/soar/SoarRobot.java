@@ -15,6 +15,7 @@ import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RoomCommander;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
+import edu.umich.soar.robot.ObjectManipulationInterface;
 import edu.umich.soar.robot.OutputLinkManager;
 import edu.umich.soar.robot.ConfigureInterface;
 import edu.umich.soar.robot.OffsetPose;
@@ -25,7 +26,7 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Kernel;
 
-public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose, SendMessagesInterface  {
+public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose, SendMessagesInterface, ObjectManipulationInterface  {
 	private static Logger logger = Logger.getLogger(SoarRobot.class);
 
 	private RoomPlayer player;
@@ -60,10 +61,10 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 		
 		agent.SetBlinkIfNoChange(false);
 		
-		input = new SoarRobotInputLinkManager(agent, kernel, this);
+		input = new SoarRobotInputLinkManager(agent, kernel, this, player.getState());
 		input.create();
 		output = new OutputLinkManager(agent);
-		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this, player.getState());
+		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this, this);
 		
 		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
 		
@@ -80,7 +81,6 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 		
 		metadata.destroy();
 		metadata = null;
-		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
 
 		input.destroy();
 		output.destroy();
@@ -88,7 +88,8 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 		agent.InitSoar();
 
 		input.create();
-		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this, player.getState());
+		output.create(input.getWaypointInterface(), this, input.getReceiveMessagesInterface(), this, this, this);
+		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
 
 		agent.Commit();
 	}
@@ -170,5 +171,29 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 	@Override
 	public void sendMessage(String from, String to, List<String> tokens) {
 		logger.warn("sendMessage: Not implemented yet.");
+	}
+
+	@Override
+	public boolean drop(int id) {
+		return world.dropObject(player, id);
+	}
+
+	@Override
+	public boolean get(int id) {
+		return world.getObject(player, id);
+	}
+
+	@Override
+	public String reason() {
+		return world.reason();
+	}
+
+	@Override
+	public List<double[]> getWaypointList() {
+		List<double[]> waypoints = input.getWaypointInterface().getWaypointList();
+		for (double[] wp : waypoints) {
+			LinAlg.scaleEquals(wp, METERS_2_PIXELS);
+		}
+		return waypoints;
 	}
 }
