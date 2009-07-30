@@ -1,1 +1,0 @@
-TestPythonSML.py is located in SoarLibrary/bin.
