@@ -1,0 +1,11 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source drop-block.soar
+source get-block.soar
+source initialize-test-robot.soar
+source setup-waypoints.soar
