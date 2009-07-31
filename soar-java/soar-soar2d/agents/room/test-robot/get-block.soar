@@ -1,0 +1,23 @@
+sp {test-robot*propose*get-block
+   (state <s> ^name test-robot
+              ^io.input-link <il>
+             -^had-carried <target-id>)
+   (<il>  ^object <object>
+         -^self.carry)
+   (<object> ^id <target-id> 
+        ^distance { <dist> < 1. })
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get-block
+         ^id <target-id>)
+}
+
+sp {apply*get-block
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name get-block
+         ^id <id>)
+-->
+   (<ol> ^get-object.id <id>
+         ^stop <stop>)
+}
