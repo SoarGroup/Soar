@@ -1,0 +1,13 @@
+VERSION 4
+\test-robot\test-robot.dm
+0	ROOT test-robot test-robot 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	OPERATOR drop-block drop-block.soar 7
+7	0	OPERATOR get-block get-block.soar 8
+8	0	OPERATOR initialize-test-robot initialize-test-robot.soar 9
+9	0	OPERATOR setup-waypoints setup-waypoints.soar 10
+END

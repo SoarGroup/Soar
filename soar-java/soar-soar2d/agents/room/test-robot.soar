@@ -1,0 +1,3 @@
+pushd test-robot
+source test-robot_source.soar
+popd
