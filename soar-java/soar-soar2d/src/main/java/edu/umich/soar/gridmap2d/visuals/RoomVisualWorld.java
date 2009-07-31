@@ -198,7 +198,7 @@ public class RoomVisualWorld extends VisualWorld {
 			List<double[]> waypoints = world.getWaypointList(player);
 			for (double[] wp : waypoints) {
 				gc.setForeground(WindowManager.getColor(player.getColor()));
-				gc.drawOval((int)wp[0]-2, (int)wp[1]-2, 4, 4);
+				gc.drawOval((int)wp[0] - 2, cellSize*map.size() - (int)wp[1] - 2, 4, 4);
 			}
 			
 		}

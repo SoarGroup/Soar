@@ -37,7 +37,7 @@ public class SoarRobotInputLinkManager {
 	private ConfigurationIL configurationIL;
 	private SoarRobotAreaDescriptionIL areaIL;
 	private int oldLocationId = -1;
-	private final Map<RoomPlayer, SoarRobotObjectIL> players = new HashMap<RoomPlayer, SoarRobotObjectIL>();
+	private final Map<String, SoarRobotObjectIL> players = new HashMap<String, SoarRobotObjectIL>();
 	private final Map<Integer, SoarRobotObjectIL> objects = new HashMap<Integer, SoarRobotObjectIL>();
 	private long runtime;
 	private final CarryInterface ci;
@@ -150,8 +150,10 @@ public class SoarRobotInputLinkManager {
 					continue;
 				}
 				pose_t rTargetPose = rTarget.getState().getPose();
+				LinAlg.scaleEquals(rTargetPose.pos, SoarRobot.PIXELS_2_METERS);
+				LinAlg.scaleEquals(rTargetPose.vel, SoarRobot.PIXELS_2_METERS);
 				PointRelationship r = PointRelationship.calculate(opose.getPose(), rTargetPose.pos);
-				addOrUpdatePlayer(player, rTarget, world, r);
+				addOrUpdatePlayer(player, rTarget.getName(), rTargetPose, world, r);
 			}
 		}
 
@@ -160,17 +162,15 @@ public class SoarRobotInputLinkManager {
 		areaIL.update();
 	}
 
-	private void addOrUpdatePlayer(RoomPlayer self, RoomPlayer target, RoomWorld world, PointRelationship r) {
-		pose_t targetPose = target.getState().getPose();
-		
-		SoarRobotObjectIL pIL = players.get(target);
+	private void addOrUpdatePlayer(RoomPlayer self, String targetName, pose_t targetPose, RoomWorld world, PointRelationship r) {
+		SoarRobotObjectIL pIL = players.get(targetName);
 		if (pIL == null) {
 			// create new player
 			Identifier inputLink = agent.GetInputLink();
 			Identifier parent = inputLink.CreateIdWME("object");
 			pIL = new SoarRobotObjectIL(parent);
-			pIL.initialize(target.getName(), targetPose, r);
-			players.put(target, pIL);
+			pIL.initialize(targetName, targetPose, r);
+			players.put(targetName, pIL);
 		
 		} else {
 			pIL.update(targetPose, r);

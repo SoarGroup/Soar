@@ -17,12 +17,10 @@ public final class MessagesIL implements ReceiveMessagesInterface {
 	
 	private static class Message {
 		String from;
-		String to;
 		List<String> tokens;
 		
-		Message(String from, String to, List<String> tokens) {
+		Message(String from, List<String> tokens) {
 			this.from = from;
-			this.to = to;
 			this.tokens = new ArrayList<String>();
 			this.tokens.addAll(tokens);
 		}
@@ -41,7 +39,6 @@ public final class MessagesIL implements ReceiveMessagesInterface {
 			Identifier messageWme = receivedwme.CreateIdWME("message");
 			Integer id = count++;
 			messageWme.CreateStringWME("from", message.from);
-			messageWme.CreateStringWME("to", message.to);
 			messageWme.CreateIntWME("id", id);
 			Identifier next = null;
 			for (String word : message.tokens) {
@@ -53,6 +50,7 @@ public final class MessagesIL implements ReceiveMessagesInterface {
 			
 			messages.put(id, messageWme);
 		}
+		queuedMessages.clear();
 	}
 	
 	@Override
@@ -64,17 +62,24 @@ public final class MessagesIL implements ReceiveMessagesInterface {
 	}
 
 	@Override
-	public void newMessage(String from, String to, List<String> tokens) {
+	public void newMessage(String from, List<String> tokens) {
 		if (tokens == null || tokens.size() == 0) {
 			return;
 		}
 		
-		queuedMessages.add(new Message(from, to, tokens));
+		queuedMessages.add(new Message(from, tokens));
 	}
 
 	@Override
 	public boolean removeMessage(int id) {
-		return messages.remove(Integer.valueOf(id)) != null;
+		Identifier message = messages.get(Integer.valueOf(id));
+		if (message == null) {
+			return false;
+		}
+		
+		message.DestroyWME();
+		messages.remove(Integer.valueOf(id));
+		return true;
 	}
 	
 }
