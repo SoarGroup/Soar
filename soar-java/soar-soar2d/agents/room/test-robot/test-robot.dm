@@ -1,4 +1,4 @@
-17
+23
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -16,7 +16,13 @@ SOAR_ID 13
 ENUMERATION 14 1 drop-block
 SOAR_ID 15
 ENUMERATION 16 1 setup-waypoints
-17
+SOAR_ID 17
+ENUMERATION 18 1 announce-self
+SOAR_ID 19
+ENUMERATION 20 1 chat
+SOAR_ID 21
+ENUMERATION 22 1 remove-message
+23
 0 io 1
 0 name 7
 0 operator 4
@@ -24,6 +30,9 @@ ENUMERATION 16 1 setup-waypoints
 0 operator 11
 0 operator 13
 0 operator 15
+0 operator 17
+0 operator 19
+0 operator 21
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -34,3 +43,6 @@ ENUMERATION 16 1 setup-waypoints
 11 name 12
 13 name 14
 15 name 16
+17 name 18
+19 name 20
+21 name 22

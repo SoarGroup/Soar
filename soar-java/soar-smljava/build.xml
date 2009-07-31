@@ -15,10 +15,17 @@
 		</fileset>
 	</path>
 
+	<target name="swt">
+		<exec dir="lib" executable="cmd">
+			<arg value="/c" />
+			<arg value="fetchswt.bat" />
+		</exec>
+	</target>
+
 	<import file="build-common.xml" />
 
-	<target name="build" depends="jar,doc" />
-	<target name="build-nodoc" depends="jar" />
+	<target name="build" depends="swt,jar,doc" />
+	<target name="build-nodoc" depends="swt,jar" />
 
 </project>
 

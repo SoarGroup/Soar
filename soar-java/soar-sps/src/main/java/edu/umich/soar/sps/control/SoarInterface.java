@@ -165,7 +165,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	public void newMessage(String from, List<String> tokens) {
 		ReceiveMessagesInterface m = input.getReceiveMessagesInterface();
 		synchronized(m) {
-			m.newMessage(from, agent.GetAgentName(), tokens);
+			m.newMessage(from, tokens);
 		}
 	}
 
