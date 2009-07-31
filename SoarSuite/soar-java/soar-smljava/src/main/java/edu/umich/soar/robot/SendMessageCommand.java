@@ -36,11 +36,7 @@ final public class SendMessageCommand extends NoDDCAdapter implements Command {
 	@Override
 	public boolean execute(Identifier command) {
 		String destination = command.GetParameterValue("destination");
-		if (destination == null) {
-			CommandStatus.error.addStatus(command, NAME + ": No destination on command");
-			return false;
-		}
-		
+
 		List<String> tokens = new ArrayList<String>();
 		try {
 			Identifier next = command.FindByAttribute("first", 0).ConvertToIdentifier();

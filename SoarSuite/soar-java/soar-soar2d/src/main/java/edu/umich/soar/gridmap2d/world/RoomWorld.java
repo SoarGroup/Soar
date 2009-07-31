@@ -2,7 +2,9 @@ package edu.umich.soar.gridmap2d.world;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 import jmat.LinAlg;
@@ -25,8 +27,9 @@ import edu.umich.soar.gridmap2d.players.RoomCommander;
 import edu.umich.soar.gridmap2d.players.RoomPlayer;
 import edu.umich.soar.gridmap2d.players.RoomPlayerState;
 import edu.umich.soar.robot.DifferentialDriveCommand;
+import edu.umich.soar.robot.SendMessagesInterface;
 
-public class RoomWorld implements World {
+public class RoomWorld implements World, SendMessagesInterface {
 	private static Logger logger = Logger.getLogger(RoomWorld.class);
 
 	private RoomMap roomMap;
@@ -38,6 +41,7 @@ public class RoomWorld implements World {
 	private double ANG_SPEED = Math.PI / 4.0;
 	private CognitiveArchitecture cogArch;
 	private String blockManipulationReason;
+	private Queue<Message> messages = new LinkedList<Message>();
 	
 	public RoomWorld(CognitiveArchitecture cogArch) {
 		this.cogArch = cogArch;
@@ -111,6 +115,7 @@ public class RoomWorld implements World {
 	@Override
 	public void reset() throws Exception {
 		blockManipulationReason = null;
+		messages.clear();
 		roomMap.reset();
 		resetState();
 	}
@@ -186,6 +191,11 @@ public class RoomWorld implements World {
 		}
 		
 		moveRoomPlayers(Gridmap2D.control.getTimeSlice());
+		
+		for (Message message : messages) {
+			message.recipient.getReceiveMessagesInterface().newMessage(message.from, message.tokens);
+		}
+		messages.clear();
 		
 		updatePlayers();
 	}
@@ -420,5 +430,58 @@ public class RoomWorld implements World {
 
 	public List<double[]> getWaypointList(RoomPlayer player) {
 		return player.getWaypointList();
+	}
+
+	private static class Message {
+		String from;
+		RoomPlayer recipient;
+		List<String> tokens;
+	}
+	
+	@Override
+	public void sendMessage(String from, String to, List<String> tokens) {
+		if (to != null) {
+			RoomPlayer recipient = players.get(to);
+			if (recipient == null) {
+				RoomPlayer sender = players.get(from);
+				if (sender == null) {
+					StringBuilder sb = new StringBuilder();
+					sb.append("Unknown sender ").append(from).append(" for message: ");
+					for (String token : tokens) {
+						sb.append(token);
+						sb.append(" ");
+					}
+					logger.error(sb);
+					return;
+				}
+				StringBuilder sb = new StringBuilder();
+				sb.append("Unknown recipient ").append(to).append(" for message: ");
+				for (String token : tokens) {
+					sb.append(token);
+					sb.append(" ");
+				}
+				logger.error(sb);
+				return;
+			}
+			
+			Message message = new Message();
+			message.from = from;
+			message.recipient = recipient;
+			message.tokens = new ArrayList<String>(tokens.size());
+			for (String token : tokens) {
+				message.tokens.add(token);
+			}
+			messages.add(message);
+		} else {
+			for (Player p : getPlayers()) {
+				RoomPlayer recipient = (RoomPlayer)p;
+				Message message = new Message();
+				message.from = from;
+				message.recipient = recipient;
+				message.tokens = new ArrayList<String>();
+				message.tokens.addAll(tokens);
+				messages.add(message);
+			}
+		}
 	}
 }

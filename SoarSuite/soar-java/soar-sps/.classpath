@@ -7,12 +7,12 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry kind="lib" path="C:/Users/voigtjr/soar/dev/jars/april.jar"/>
 	<classpathentry kind="lib" path="C:/Users/voigtjr/soar/dev/jars/jcam.jar"/>
-	<classpathentry kind="lib" path="C:/Users/voigtjr/soar/dev/jars/lcm.jar"/>
 	<classpathentry kind="lib" path="C:/Users/voigtjr/soar/dev/jars/orc.jar"/>
 	<classpathentry kind="lib" path="C:/Users/voigtjr/soar/dev/jars/vis.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/lcmtypes.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/jmat.jar"/>
+	<classpathentry kind="lib" path="/soar-smljava/lib/lcm.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
