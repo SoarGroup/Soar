@@ -72,6 +72,7 @@ public class RoomPlayerState implements CarryInterface {
 		double togo = 0;
 		if (hasDestYaw) {
 			togo = destYaw - rpy[2];
+			togo = MathUtil.mod2pi(togo);
 			if (togo < 0) {
 				pose.rotation_rate[2] = destYawSpeed * -1;
 			} else {
