@@ -22,11 +22,12 @@ public class SoarRobotAreaDescriptionIL {
 	private final OffsetPose opose;
 	private final List<BarrierIL> barriers = new ArrayList<BarrierIL>();
 	
-	SoarRobotAreaDescriptionIL(Identifier areaDescription, int locationId, OffsetPose opose, RoomMap roomMap) {
+	SoarRobotAreaDescriptionIL(Identifier areaDescription, int locationId, OffsetPose opose, RoomMap roomMap, boolean door) {
 		this.areaDescription = areaDescription;
 		this.opose = opose;
 		
 		areaDescription.CreateIntWME("id", locationId);
+		areaDescription.CreateStringWME("type", door ? "door" : "room");
 		
 		// create new area information
 		List<Barrier> barrierList = roomMap.getRoomBarrierList(locationId);
