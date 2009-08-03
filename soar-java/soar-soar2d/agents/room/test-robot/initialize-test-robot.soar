@@ -12,13 +12,14 @@ sp {apply*initialize-test-robot
 -->
    (<s> ^name test-robot)
 }
-
-sp {apply*command
-   (state <s> ^operator <op>
-              ^io.output-link <ol>)
-   (<op> ^name initialize-test-robot)
--->
-   (<ol> ^set-velocity <c>)
-   (<c> ^linear-velocity 1.0
-        ^angular-velocity 0.0)
-}
+#
+#sp {apply*command
+#   (state <s> ^operator <op>
+#              ^io.output-link <ol>)
+#   (<op> ^name initialize-test-robot)
+#-->
+#   (<ol> ^set-velocity <c>)
+#   (<c> ^linear-velocity 1.0
+#        ^angular-velocity 0.0)
+#}
+#
