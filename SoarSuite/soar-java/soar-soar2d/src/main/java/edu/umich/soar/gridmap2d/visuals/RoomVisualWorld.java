@@ -1,6 +1,7 @@
 package edu.umich.soar.gridmap2d.visuals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -71,11 +72,11 @@ public class RoomVisualWorld extends VisualWorld {
 		HashSet<Integer> roomIds = new HashSet<Integer>();
 		for(location[0] = 0; location[0] < map.size(); ++location[0]){
 			for(location[1] = 0; location[1] < map.size(); ++location[1]){
-				int [] drawLocation = new int [] { cellSize*location[0], cellSize*(map.size() - location[1] - 1) };
-				
 				if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
 					continue;
 				}
+
+				int [] drawLocation = new int [] { cellSize*location[0], cellSize*(map.size() - location[1] - 1) };
 				
 				boolean gateway = false;
 				boolean block = false;
@@ -112,25 +113,29 @@ public class RoomVisualWorld extends VisualWorld {
 					gc.fillRectangle(drawLocation[0], drawLocation[1], cellSize, cellSize);
 				}
 
-				List<CellObject> objectIds = map.getCell(location).getAllWithProperty("object-id");
-				if (objectIds != null) {
-					IdLabel label = new IdLabel();
-					label.object = true;
-					label.block = block;
-					label.label = objectIds.get(0).getProperty("object-id");
-					label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
-					ids.add(label);
-				} else  {
-					List<CellObject> numbers = map.getCell(location).getAllWithProperty("number");
-					if (numbers!= null) {
-						if (!roomIds.contains(numbers.get(0).getIntProperty("number", -1))) {
-							roomIds.add(numbers.get(0).getIntProperty("number", -1));
-							IdLabel label = new IdLabel();
-							label.object = false;
-							label.gateway = gateway;
-							label.label = numbers.get(0).getProperty("number");
-							label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
-							ids.add(label);
+				if (!painted) {
+					List<CellObject> objectIds = map.getCell(location).getAllWithProperty("object-id");
+					if (objectIds != null) {
+						IdLabel label = new IdLabel();
+						label.object = true;
+						label.block = block;
+						label.label = objectIds.get(0).getProperty("object-id");
+						label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
+						System.err.println(objectIds.get(0).getName() + ": " + label.label + Arrays.toString(label.loc));
+						ids.add(label);
+					} else  {
+						List<CellObject> numbers = map.getCell(location).getAllWithProperty("number");
+						if (numbers!= null) {
+							if (!roomIds.contains(numbers.get(0).getIntProperty("number", -1))) {
+								roomIds.add(numbers.get(0).getIntProperty("number", -1));
+								IdLabel label = new IdLabel();
+								label.object = false;
+								label.gateway = gateway;
+								label.label = numbers.get(0).getProperty("number");
+								label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
+								System.err.println(numbers.get(0).getName() + ": " + label.label + Arrays.toString(label.loc));
+								ids.add(label);
+							}
 						}
 					}
 				}
@@ -203,6 +208,7 @@ public class RoomVisualWorld extends VisualWorld {
 			
 		}
 		
+		painted = true;
 	}
 
 	@Override
