@@ -11,7 +11,7 @@ sp {apply*move
 	(<o> ^name move ^space <sp>)
 	(<sp> ^row <row> ^col <col>)
 -->
-	(<ol> ^move <m> ^alternative <m>)
+	(<ol> ^move <m> ^alternative <m> ^A <m>)
 	(<m> ^row <row> ^col <col>)}
 
 sp {apply*user*exec
