@@ -1,0 +1,17 @@
+sp {turn-test*propose*to-neg-170
+   (state <s> ^name turn-test
+              ^turned-to-90)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name to-neg-170)
+}
+
+sp {apply*to-neg-170
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name to-neg-170)
+-->
+   (<ol> ^set-heading.yaw -170)
+}
+
+

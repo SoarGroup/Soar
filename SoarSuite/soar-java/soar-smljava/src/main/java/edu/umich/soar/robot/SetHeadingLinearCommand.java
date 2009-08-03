@@ -92,10 +92,11 @@ final public class SetHeadingLinearCommand extends DDCCommand implements Command
 			throw new IllegalStateException();
 		}
 		
-		double splinterYaw = LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2];
-		splinterYaw = Math.abs(splinterYaw);
+		double currentYaw = LinAlg.quatToRollPitchYaw(opose.getPose().orientation)[2];
+		double difference = yaw - currentYaw;
+		difference = Math.abs(difference);
 		
-		if (Double.compare(splinterYaw, TOLERANCE) < 0) {
+		if (Double.compare(difference, TOLERANCE) < 0) {
 			CommandStatus.complete.addStatus(command);
 			command = null;
 			status = null;
