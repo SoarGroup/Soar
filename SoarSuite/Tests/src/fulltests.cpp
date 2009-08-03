@@ -908,12 +908,21 @@ TEST_DEFINITION( testAgent )
 	// Should also be able to get the command through the "GetCommands" route which tests
 	// whether we've flagged the right wmes as "just added" or not.
 	int numberCommands = m_pAgent->GetNumberCommands() ;
-	CPPUNIT_ASSERT( numberCommands == 2);
+	CPPUNIT_ASSERT( numberCommands == 3);
 
-	// Get the first two commands (move and alternate)
+	// Get the first two commands (move and alternative and A)
 	sml::Identifier* pCommand1 = m_pAgent->GetCommand(0) ;
 	sml::Identifier* pCommand2 = m_pAgent->GetCommand(1) ;
-	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "move" || std::string( pCommand2->GetCommandName() ) == "move" );
+	sml::Identifier* pCommand3 = m_pAgent->GetCommand(2) ;
+	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "move" 
+		|| std::string( pCommand2->GetCommandName() ) == "move"  
+		|| std::string( pCommand3->GetCommandName() ) == "move" );
+	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "alternative" 
+		|| std::string( pCommand2->GetCommandName() ) == "alternative"  
+		|| std::string( pCommand3->GetCommandName() ) == "alternative" );
+	CPPUNIT_ASSERT( std::string( pCommand1->GetCommandName() ) == "A" 
+		|| std::string( pCommand2->GetCommandName() ) == "A"  
+		|| std::string( pCommand3->GetCommandName() ) == "A" );
 
 	m_pAgent->ClearOutputLinkChanges() ;
 
