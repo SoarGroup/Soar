@@ -14,6 +14,7 @@ import sml.Identifier;
 import sml.Kernel;
 import sml.smlSystemEventId;
 import edu.umich.soar.gridmap2d.Gridmap2D;
+import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.CarryInterface;
@@ -119,7 +120,8 @@ public class SoarRobotInputLinkManager {
 			}
 			
 			Identifier areaDescription = agent.GetInputLink().CreateIdWME("area-description");
-			areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player.getState().getLocationId(), opose, roomMap);
+			boolean door = roomMap.getCell(player.getLocation()).hasAnyWithProperty(Names.kPropertyGatewayRender);
+			areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player.getState().getLocationId(), opose, roomMap, door);
 		}
 		
 		// objects
