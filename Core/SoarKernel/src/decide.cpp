@@ -58,6 +58,8 @@
 
 #include "assert.h"
 
+#include <stack>
+
 using namespace soar_TraceNames;
 
 /* REW: 2003-01-06 A temporary helper function */
@@ -540,63 +542,97 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
    The marked ids are added to ids_with_unknown_level.
 ---------------------------------------------- */
 
-void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *id);
-
-/*#define mark_unknown_level_if_needed(sym) \
-  { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
-      mark_id_and_tc_as_unknown_level(sym); }*/
-inline void mark_unknown_level_if_needed(agent* thisAgent, Symbol * sym)
+inline bool mark_level_unknown_needed(agent* /*thisAgent*/, Symbol* sym)
 {
-  if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-      mark_id_and_tc_as_unknown_level(thisAgent, sym);
+  return ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE );
 }
 
-void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *id) {
+void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
   slot *s;
   preference *pref;
   wme *w;
   dl_cons *dc;
 
-  /* --- if id is already marked, do nothing --- */
-  if (id->id.tc_num==thisAgent->mark_tc_number) return;
+  Symbol *id;
+  std::stack<Symbol *> ids_to_walk;
+  ids_to_walk.push( root );
+
+  while ( !ids_to_walk.empty() )
+  {
+	id = ids_to_walk.top();
+	ids_to_walk.pop();
   
-  /* --- don't mark anything higher up as disconnected--in order to be higher
-     up, it must have a link to it up there --- */
-  if (id->id.level < thisAgent->level_at_which_marking_started) return; 
+    /* --- if id is already marked, do nothing --- */
+    if (id->id.tc_num==thisAgent->mark_tc_number) continue;
+  
+    /* --- don't mark anything higher up as disconnected--in order to be higher
+       up, it must have a link to it up there --- */
+    if (id->id.level < thisAgent->level_at_which_marking_started) continue; 
 
-  /* --- mark id, so we won't do it again later --- */
-  id->id.tc_num = thisAgent->mark_tc_number;
+    /* --- mark id, so we won't do it again later --- */
+    id->id.tc_num = thisAgent->mark_tc_number;
 
-  /* --- update range of goal stack levels we'll need to walk --- */
-  if (id->id.level < thisAgent->highest_level_anything_could_fall_from)
-    thisAgent->highest_level_anything_could_fall_from = id->id.level;
-  if (id->id.level > thisAgent->lowest_level_anything_could_fall_to)
-    thisAgent->lowest_level_anything_could_fall_to = id->id.level;
-  if (id->id.could_be_a_link_from_below)
-    thisAgent->lowest_level_anything_could_fall_to = LOWEST_POSSIBLE_GOAL_LEVEL;
+    /* --- update range of goal stack levels we'll need to walk --- */
+    if (id->id.level < thisAgent->highest_level_anything_could_fall_from)
+      thisAgent->highest_level_anything_could_fall_from = id->id.level;
+    if (id->id.level > thisAgent->lowest_level_anything_could_fall_to)
+      thisAgent->lowest_level_anything_could_fall_to = id->id.level;
+    if (id->id.could_be_a_link_from_below)
+      thisAgent->lowest_level_anything_could_fall_to = LOWEST_POSSIBLE_GOAL_LEVEL;
 
-  /* --- add id to the set of ids with unknown level --- */
-  if (! id->id.unknown_level) {
-    allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);
-    dc->item = id;
-    id->id.unknown_level = dc;
-    insert_at_head_of_dll (thisAgent->ids_with_unknown_level, dc, next, prev);
-    symbol_add_ref (id);
-  }
-
-  /* -- scan through all preferences and wmes for all slots for this id -- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
-    mark_unknown_level_if_needed (thisAgent, w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
-    for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next) {
-      mark_unknown_level_if_needed (thisAgent, pref->value);
-      if (preference_is_binary(pref->type))
-        mark_unknown_level_if_needed (thisAgent, pref->referent);
+    /* --- add id to the set of ids with unknown level --- */
+    if (! id->id.unknown_level) {
+      allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);
+      dc->item = id;
+      id->id.unknown_level = dc;
+      insert_at_head_of_dll (thisAgent->ids_with_unknown_level, dc, next, prev);
+      symbol_add_ref (id);
     }
-    if(s->impasse_id) mark_unknown_level_if_needed(thisAgent, s->impasse_id);
-    for (w=s->wmes; w!=NIL; w=w->next)
-      mark_unknown_level_if_needed (thisAgent, w->value);
-  } /* end of for slots loop */
+
+    /* -- scan through all preferences and wmes for all slots for this id -- */
+    for (w=id->id.input_wmes; w!=NIL; w=w->next)
+	{
+      if ( mark_level_unknown_needed( thisAgent, w->value ) )
+	  {
+		ids_to_walk.push( w->value );
+	  }
+	}
+      
+    for (s=id->id.slots; s!=NIL; s=s->next) 
+	{
+      for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next) 
+	  {        
+		if ( mark_level_unknown_needed( thisAgent, pref->value ) )
+		{
+		  ids_to_walk.push( pref->value );
+		}
+
+        if (preference_is_binary(pref->type))
+		{
+          if ( mark_level_unknown_needed( thisAgent, pref->referent ) )
+		  {
+			ids_to_walk.push( pref->referent );
+		  }
+		}
+      }
+      
+	  if(s->impasse_id) 
+	  {
+		if ( mark_level_unknown_needed( thisAgent, s->impasse_id ) )
+		{
+		  ids_to_walk.push( s->impasse_id );
+		}		
+	  }
+      
+	  for (w=s->wmes; w!=NIL; w=w->next)
+	  {
+        if ( mark_level_unknown_needed( thisAgent, w->value ) )
+		{
+		  ids_to_walk.push( w->value );
+		}
+	  }
+    } /* end of for slots loop */
+  }
 }
 
 /* ----------------------------------------------
@@ -608,54 +644,87 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *id) {
    remove it from ids_with_unknown_level.
 ---------------------------------------------- */
 
-void walk_and_update_levels (agent* thisAgent, Symbol *id);
-/*#define update_levels_if_needed(sym) \
-  { if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE) \
-      if ((sym)->id.tc_num!=thisAgent->walk_tc_number) \
-        walk_and_update_levels(sym); }*/
-inline void update_levels_if_needed(agent* thisAgent, Symbol * sym)
+inline bool level_update_needed(agent* thisAgent, Symbol *sym)
 {
-  if ((sym)->common.symbol_type==IDENTIFIER_SYMBOL_TYPE)
-    if ((sym)->id.tc_num!=thisAgent->walk_tc_number)
-      walk_and_update_levels(thisAgent, sym);
+  return ( ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( sym->id.tc_num != thisAgent->walk_tc_number ) );
 }
 
-void walk_and_update_levels (agent* thisAgent, Symbol *id) {
+void walk_and_update_levels (agent* thisAgent, Symbol *root) {
   slot *s;
   preference *pref;
   wme *w;
   dl_cons *dc;
+  Symbol *id;
 
-  /* --- mark id so we don't walk it twice --- */
-  id->id.tc_num = thisAgent->walk_tc_number;
+  std::stack<Symbol *> ids_to_walk;
+  ids_to_walk.push( root );
 
-  /* --- if we already know its level, and it's higher up, then exit --- */
-  if ((! id->id.unknown_level) && (id->id.level < thisAgent->walk_level)) return;
+  while ( !ids_to_walk.empty() )
+  {
+	id = ids_to_walk.top();
+	ids_to_walk.pop();
+	  
+	/* --- mark id so we don't walk it twice --- */
+    id->id.tc_num = thisAgent->walk_tc_number;
 
-  /* --- if we didn't know its level before, we do now --- */
-  if (id->id.unknown_level) {
-    dc = id->id.unknown_level;
-    remove_from_dll (thisAgent->ids_with_unknown_level, dc, next, prev);
-    free_with_pool (&thisAgent->dl_cons_pool, dc);
-    symbol_remove_ref (thisAgent, id);
-    id->id.unknown_level = NIL;
-    id->id.level = thisAgent->walk_level;
-    id->id.promotion_level = thisAgent->walk_level;
-  }
-  
-  /* -- scan through all preferences and wmes for all slots for this id -- */
-  for (w=id->id.input_wmes; w!=NIL; w=w->next)
-    update_levels_if_needed (thisAgent, w->value);
-  for (s=id->id.slots; s!=NIL; s=s->next) {
-    for (pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next) {
-      update_levels_if_needed (thisAgent, pref->value);
-      if (preference_is_binary(pref->type))
-        update_levels_if_needed (thisAgent, pref->referent);
+    /* --- if we already know its level, and it's higher up, then exit --- */
+    if ((! id->id.unknown_level) && (id->id.level < thisAgent->walk_level)) continue;
+
+    /* --- if we didn't know its level before, we do now --- */
+    if (id->id.unknown_level) {
+      dc = id->id.unknown_level;
+      remove_from_dll (thisAgent->ids_with_unknown_level, dc, next, prev);
+      free_with_pool (&thisAgent->dl_cons_pool, dc);
+      symbol_remove_ref (thisAgent, id);
+      id->id.unknown_level = NIL;
+      id->id.level = thisAgent->walk_level;
+      id->id.promotion_level = thisAgent->walk_level;
     }
-    if(s->impasse_id) update_levels_if_needed(thisAgent, s->impasse_id);
-    for (w=s->wmes; w!=NIL; w=w->next)
-      update_levels_if_needed (thisAgent, w->value);
-  } /* end of for slots loop */
+  
+    /* -- scan through all preferences and wmes for all slots for this id -- */
+    for (w=id->id.input_wmes; w!=NIL; w=w->next)
+	{
+	  if ( level_update_needed( thisAgent, w->value ) )
+	  {
+        ids_to_walk.push( w->value );
+	  }
+	}
+
+	for ( s=id->id.slots; s!=NIL; s=s->next )
+	{
+	  for ( pref=s->all_preferences; pref!=NIL; pref=pref->all_of_slot_next )
+	  {
+	    if ( level_update_needed( thisAgent, pref->value ) )
+		{
+		  ids_to_walk.push( pref->value );
+
+		  if ( preference_is_binary( pref->type ) )
+		  {
+		    if ( level_update_needed( thisAgent, pref->referent ) )
+	        {
+			  ids_to_walk.push( pref->referent );
+			}
+		  }
+		}
+	  }
+
+	  if ( s->impasse_id )
+	  {
+	    if ( level_update_needed( thisAgent, s->impasse_id ) )
+		{
+		  ids_to_walk.push( s->impasse_id );
+		}
+	  }
+
+	  for ( w=s->wmes; w!=NIL; w=w->next )
+	  {
+	    if ( level_update_needed( thisAgent, w->value ) )
+		{
+			ids_to_walk.push( w->value );
+		}
+	  }
+	}    
+  }
 }
 
 /* ----------------------------------------------
