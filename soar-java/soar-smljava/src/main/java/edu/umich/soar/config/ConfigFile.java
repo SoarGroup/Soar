@@ -18,7 +18,7 @@ public class ConfigFile extends ConfigSource {
 	String path;
 	Map<String, String[]> keys = new HashMap<String, String[]>();
 
-	public ConfigFile(String path) throws IOException, ParseError {
+	public ConfigFile(String path) throws ParseError, IOException {
 		this.path = path;
 
 		Tokenizer t = new Tokenizer(path);
@@ -255,7 +255,7 @@ public class ConfigFile extends ConfigSource {
 		int lineNumber = 0;
 		Queue<String> tokens = new LinkedList<String>();
 
-		public Tokenizer(String path) throws IOException {
+		public Tokenizer(String path) throws FileNotFoundException {
 			ins = new BufferedReader(new FileReader(path));
 		}
 		

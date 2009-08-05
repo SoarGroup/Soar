@@ -1235,7 +1235,7 @@ public class WindowManager {
 			synchronized(humanMove) {
 				try {
 					humanMove.wait();
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException ignored) {}
 			}
 		}
 		CommandInfo theMove = humanMove;

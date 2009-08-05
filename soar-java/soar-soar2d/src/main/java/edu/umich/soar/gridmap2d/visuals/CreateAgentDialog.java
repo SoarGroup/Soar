@@ -224,11 +224,11 @@ public class CreateAgentDialog extends Dialog {
 				playerConfig.color = m_Color.getText();
 				
 				Gridmap2D.config.playerConfigs().put(playerId, playerConfig);
-				try {
+//				try {
 					Gridmap2D.simulation.createPlayer(playerId, playerConfig, m_SpawnDebuggerButton.getSelection());
-				} catch (Exception ex) {
-					Gridmap2D.wm.errorMessage("Creation failed", ex.getMessage());
-				}
+//				} catch (Exception ex) {
+//					Gridmap2D.wm.errorMessage("Creation failed", ex.getMessage());
+//				}
 				dialog.dispose();
 			}
 		});

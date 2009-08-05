@@ -1,10 +1,9 @@
 package edu.umich.soar.gridmap2d.soar;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 
 import edu.umich.soar.gridmap2d.Direction;
+import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.EatersMap;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
@@ -17,56 +16,42 @@ import sml.Identifier;
 public final class SoarEater implements EaterCommander {
 	private static Logger logger = Logger.getLogger(SoarEater.class);
 
-	private Eater eater;
+	private Eater player;
 	
 	private SoarEaterIL input;
 	private Agent agent;
 	private String[] shutdownCommands;
 	boolean fragged = false;
-	private InputLinkMetadata metadata;
-	private File commonMetadataFile;
-	private File mapMetadataFile;
 	
-	public SoarEater(Eater eater, Agent agent, int vision, String[] shutdownCommands, File commonMetadataFile, File mapMetadataFile) throws Exception {
-		this.eater = eater;
+	public SoarEater(Eater player, Agent agent, int vision, String[] shutdownCommands) {
+		this.player = player;
 		this.agent = agent;
-		this.commonMetadataFile = commonMetadataFile;
-		this.mapMetadataFile = mapMetadataFile;
 		agent.SetBlinkIfNoChange(false);
 		
 		this.shutdownCommands = shutdownCommands;
 		
 		input = new SoarEaterIL(agent, vision);
-		try {
-			input.create(eater.getName(), eater.getPoints());
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
-		}
-		
-		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
+		input.create(player.getName(), player.getPoints());
 		
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
 		}
 	}
 	
-	public void update(EatersMap eatersMap) throws Exception {
-		try {
-			input.update(eater.getMoved(), eater.getLocation(), eatersMap, eater.getPoints());
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
-		}
+	public void update(EatersMap eatersMap) {
+		input.update(player.getMoved(), player.getLocation(), eatersMap, player.getPoints());
 		
 		// commit everything
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.stopSimulation();
 		}
 	}
 	
-	public CommandInfo nextCommand() throws Exception {
+	public CommandInfo nextCommand() {
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
-			logger.debug(eater.getName() + " issued no command.");
+			logger.debug(player.getName() + " issued no command.");
 			return new CommandInfo();
 		}
 
@@ -80,7 +65,7 @@ public final class SoarEater implements EaterCommander {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warn(eater.getName() + ": multiple move/jump commands detected (move)");
+					logger.warn(player.getName() + ": multiple move/jump commands detected (move)");
 					continue;
 				}
 				move.move = true;
@@ -103,7 +88,7 @@ public final class SoarEater implements EaterCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {
 				if (move.move) {
-					logger.warn(eater.getName() + ": multiple move/jump commands detected, ignoring (jump)");
+					logger.warn(player.getName() + ": multiple move/jump commands detected, ignoring (jump)");
 					continue;
 				}
 				move.move = true;
@@ -117,7 +102,7 @@ public final class SoarEater implements EaterCommander {
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warn(eater.getName() + ": multiple stop commands detected, ignoring");
+					logger.warn(player.getName() + ": multiple stop commands detected, ignoring");
 					continue;
 				}
 				move.stopSim = true;
@@ -126,7 +111,7 @@ public final class SoarEater implements EaterCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kOpenID)) {
 				if (move.open) {
-					logger.warn(eater.getName() + ": multiple open commands detected, ignoring");
+					logger.warn(player.getName() + ": multiple open commands detected, ignoring");
 					continue;
 				}
 				move.open = true;
@@ -135,7 +120,7 @@ public final class SoarEater implements EaterCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDontEatID)) {
 				if (move.dontEat) {
-					logger.warn(eater.getName() + ": multiple dont eat commands detected, ignoring");
+					logger.warn(player.getName() + ": multiple dont eat commands detected, ignoring");
 					continue;
 				}
 				move.dontEat = true;
@@ -149,52 +134,48 @@ public final class SoarEater implements EaterCommander {
 			
 			logger.warn("Improperly formatted command: " + commandName);
 		}
+
 		agent.ClearOutputLinkChanges();
+
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.stopSimulation();
 		}
+
 		return move;
 	}
 	
-	public void reset() throws Exception {
+	public void reset() {
 		if (agent == null) {
 			return;
 		}
 		
-		try {
-			input.destroy();
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
-		}
-
-		metadata.destroy();
-		metadata = null;
-		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
+		input.destroy();
 
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
 		}
 
 		agent.InitSoar();
 			
-		try {
-			input.create(eater.getName(), eater.getPoints());
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + eater.getName());
+		input.create(player.getName(), player.getPoints());
+
+		if (!agent.Commit()) {
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
 		}
 	}
 
-	public void shutdown() throws Exception {
+	public void shutdown() {
 		assert agent != null;
 		if (shutdownCommands != null) { 
 			// execute the pre-shutdown commands
 			for (String command : shutdownCommands) {
-				String result = eater.getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-				logger.info(eater.getName() + ": shutdown command: " + command);
+				String result = player.getName() + ": result: " + agent.ExecuteCommandLine(command, true);
+				logger.info(player.getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {
-					throw new Exception(result);
+					Gridmap2D.control.errorPopUp(result);
 				} else {
-					logger.info(eater.getName() + ": result: " + result);
+					logger.info(player.getName() + ": result: " + result);
 				}
 			}
 		}

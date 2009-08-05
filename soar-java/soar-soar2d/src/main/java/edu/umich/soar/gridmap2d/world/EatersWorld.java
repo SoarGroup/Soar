@@ -1,5 +1,6 @@
 package edu.umich.soar.gridmap2d.world;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,58 +29,56 @@ import edu.umich.soar.gridmap2d.players.scripted.ScriptedEater;
 public class EatersWorld implements World {
 	private static Logger logger = Logger.getLogger(EatersWorld.class);
 
-	private EatersMap eatersMap;
-	private PlayersManager<Eater> players = new PlayersManager<Eater>();
-	private List<String> stopMessages = new ArrayList<String>();
-	private CognitiveArchitecture cogArch;
+	private EatersMap map;
+	private final PlayersManager<Eater> players = new PlayersManager<Eater>();
+	private final List<String> stopMessages = new ArrayList<String>();
+	private final CognitiveArchitecture cogArch;
 	private boolean forceHuman = false;
 	
-	public EatersWorld(CognitiveArchitecture cogArch) throws Exception {
+	public EatersWorld(CognitiveArchitecture cogArch) {
 		this.cogArch = cogArch;
 	}
 	
-	public void setMap(String mapPath) throws Exception {
-		EatersMap oldMap = eatersMap;
-		try {
-			eatersMap = new EatersMap(mapPath, Gridmap2D.config.terminalsConfig().unopened_boxes, Gridmap2D.config.eatersConfig().low_probability, Gridmap2D.config.eatersConfig().high_probability);
-		} catch (Exception e) {
-			if (oldMap == null) {
-				throw e;
-			}
-			eatersMap = oldMap;
-			logger.error("Map load failed, restored old map.");
+	public void setAndResetMap(String mapPath) {
+		EatersMap newMap = EatersMap.generateInstance(mapPath, Gridmap2D.config.terminalsConfig().unopened_boxes, Gridmap2D.config.eatersConfig().low_probability, Gridmap2D.config.eatersConfig().high_probability); 
+		if (newMap == null) {
 			return;
 		}
-		
-		// This can throw a more fatal error.
+		map = newMap;
 		resetState();
 	}
 	
-	public void reset() throws Exception {
-		eatersMap.reset();
+	public void reset() {
+		map.reset();
 		resetState();
 	}
 	
-	private void resetState() throws Exception {
+	private void resetState() {
 		stopMessages.clear();
 		resetPlayers();
 	}
 	
-	private void resetPlayers() throws Exception {
+	/**
+	 * @throws IllegalStateException If there are now empty locations available to respawn players
+	 */
+	private void resetPlayers() {
 		if (players.numberOfPlayers() == 0) {
 			return;
 		}
 		
 		for (Eater eater : players.getAll()) {
 			// find a suitable starting location
-			int [] startingLocation = WorldUtil.getStartingLocation(eater, eatersMap, players.getInitialLocation(eater));
-			players.setLocation(eater, startingLocation);
+			int [] location = WorldUtil.getStartingLocation(map, players.getInitialLocation(eater));
+			if (location == null) {
+				throw new IllegalStateException("no empty locations available for spawn");
+			}
+			players.setLocation(eater, location);
 
 			// remove food from it
-			eatersMap.getCell(startingLocation).removeAllByProperty(Names.kPropertyEdible);
+			map.getCell(location).removeAllByProperty(Names.kPropertyEdible);
 			
 			// put the player in it
-			eatersMap.getCell(startingLocation).setPlayer(eater);
+			map.getCell(location).setPlayer(eater);
 
 			eater.reset();
 		}
@@ -89,7 +88,7 @@ public class EatersWorld implements World {
 
 	private void checkPointsRemaining() {
 		if (Gridmap2D.config.terminalsConfig().points_remaining) {
-			if (eatersMap.getScoreCount() <= 0) {
+			if (map.getScoreCount() <= 0) {
 				stopMessages.add("There are no points remaining.");
 			}
 		}
@@ -97,7 +96,7 @@ public class EatersWorld implements World {
 	
 	private void checkFoodRemaining() {
 		if (Gridmap2D.config.terminalsConfig().food_remaining) {
-			if (eatersMap.getFoodCount() <= 0) {
+			if (map.getFoodCount() <= 0) {
 				stopMessages.add("All the food is gone.");
 			}
 		}
@@ -105,13 +104,13 @@ public class EatersWorld implements World {
 	
 	private void checkUnopenedBoxes() {
 		if (Gridmap2D.config.terminalsConfig().unopened_boxes) {
-			if (eatersMap.getUnopenedBoxCount() <= 0) {
+			if (map.getUnopenedBoxCount() <= 0) {
 				stopMessages.add("All of the boxes are open.");
 			}
 		}
 	}
 
-	public void update(int worldCount) throws Exception {
+	public void update(int worldCount) {
 		WorldUtil.checkNumPlayers(players.numberOfPlayers());
 
 		// Collect input
@@ -136,7 +135,7 @@ public class EatersWorld implements World {
 		
 		handleEatersCollisions(findCollisions(players));	
 		updatePlayers();
-		eatersMap.updateObjects();
+		map.updateObjects();
 
 		checkPointsRemaining();
 		checkFoodRemaining();
@@ -151,9 +150,9 @@ public class EatersWorld implements World {
 		}
 	}
 	
-	private void updatePlayers() throws Exception {
+	private void updatePlayers() {
 		for (Eater eater : players.getAll()) {
-			eater.update(players.getLocation(eater), eatersMap);
+			eater.update(players.getLocation(eater), map);
 		}
 	}
 
@@ -174,9 +173,9 @@ public class EatersWorld implements World {
 			}
 			
 			// Verify legal move and commit move
-			if (eatersMap.isInBounds(newLocation) && !eatersMap.getCell(newLocation).hasAnyWithProperty(Names.kPropertyBlock)) {
+			if (map.isInBounds(newLocation) && !map.getCell(newLocation).hasAnyWithProperty(Names.kPropertyBlock)) {
 				// remove from cell
-				eatersMap.getCell(oldLocation).setPlayer(null);
+				map.getCell(oldLocation).setPlayer(null);
 				
 				if (command.jump) {
 					eater.adjustPoints(Gridmap2D.config.eatersConfig().jump_penalty, "jump penalty");
@@ -195,13 +194,13 @@ public class EatersWorld implements World {
 			int [] location = players.getLocation(eater);
 			
 			if (lastCommand.move || lastCommand.jump) {
-				eatersMap.getCell(location).setPlayer(eater);
+				map.getCell(location).setPlayer(eater);
 
-				List<CellObject> moveApply = eatersMap.getCell(location).getAllWithProperty(Names.kPropertyMoveApply);
+				List<CellObject> moveApply = map.getCell(location).getAllWithProperty(Names.kPropertyMoveApply);
 				if (moveApply != null) {
 					for (CellObject object : moveApply) {
 						if (apply(object, eater)) {
-							eatersMap.getCell(location).removeObject(object.getName());
+							map.getCell(location).removeObject(object.getName());
 						}
 					}
 				}
@@ -242,7 +241,7 @@ public class EatersWorld implements World {
 	}
 	
 	private void open(Eater eater, int [] location) {
-		List<CellObject> boxes = eatersMap.getCell(location).getAllWithProperty(Names.kPropertyBox);
+		List<CellObject> boxes = map.getCell(location).getAllWithProperty(Names.kPropertyBox);
 		if (boxes == null) {
 			logger.warn(eater.getName() + " tried to open but there is no box.");
 		}
@@ -257,7 +256,7 @@ public class EatersWorld implements World {
 			}
 		}
 		if (apply(box, eater)) {
-			eatersMap.getCell(location).removeObject(box.getName());
+			map.getCell(location).removeObject(box.getName());
 		}
 		checkResetApply(box);
 	}
@@ -269,12 +268,12 @@ public class EatersWorld implements World {
 	}
 	
 	private void eat(Eater eater, int [] location) {
-		List<CellObject> list = eatersMap.getCell(location).getAllWithProperty(Names.kPropertyEdible);
+		List<CellObject> list = map.getCell(location).getAllWithProperty(Names.kPropertyEdible);
 		if (list != null) {
 			for (CellObject food : list) {
 				if (apply(food, eater)) {
 					// if this returns true, it is consumed
-					eatersMap.getCell(location).removeObject(food.getName());
+					map.getCell(location).removeObject(food.getName());
 				}
 			}
 		}			
@@ -340,7 +339,11 @@ public class EatersWorld implements World {
 		return collisions;
 	}
 		
-	private void handleEatersCollisions(List<List<Eater>> collisions) throws Exception {
+	/**
+	 * @param collisions
+	 * @throws IllegalStateException If there are no available locations to spawn the eaters.
+	 */
+	private void handleEatersCollisions(List<List<Eater>> collisions) {
 		
 		// if there are no total collisions, we're done
 		if (collisions.size() < 1) {
@@ -380,17 +383,22 @@ public class EatersWorld implements World {
 			setExplosion(collisionLocation);
 
 			// Remove from former location (only one of these for all players)
-			eatersMap.getCell(collisionLocation).setPlayer(null);
+			map.getCell(collisionLocation).setPlayer(null);
 			
 			// Move to new cell, consume food
 			collideeIter = collision.listIterator();
 			while (collideeIter.hasNext()) {
 				Eater eater = collideeIter.next();
-				int [] location = WorldUtil.getStartingLocation(eater, eatersMap, null);
+				
+				int [] location = WorldUtil.getStartingLocation(map, null);
+				if (location == null) {
+					throw new IllegalStateException("no empty locations available for spawn");
+				}
+				
 				players.setLocation(eater, location);
 
 				// put the player in it
-				eatersMap.getCell(location).setPlayer(eater);
+				map.getCell(location).setPlayer(eater);
 				
 				eater.setFragged(true);
 				if (!players.getCommand(eater).dontEat) {
@@ -401,9 +409,9 @@ public class EatersWorld implements World {
 	}
 
 	private void setExplosion(int[] xy) {
-		CellObject explosion = eatersMap.createObjectByName(Names.kExplosion);
+		CellObject explosion = map.createObjectByName(Names.kExplosion);
 		explosion.setIntProperty("update.linger", 2);
-		eatersMap.getCell(xy).addObject(explosion);
+		map.getCell(xy).addObject(explosion);
 	}
 	
 
@@ -411,15 +419,15 @@ public class EatersWorld implements World {
 		return stopMessages.size() > 0;
 	}
 
-	public void removePlayer(String name) throws Exception {
+	public void removePlayer(String name) {
 		Eater eater = players.get(name);
-		eatersMap.getCell(players.getLocation(eater)).setPlayer(null);
+		map.getCell(players.getLocation(eater)).setPlayer(null);
 		players.remove(eater);
 		eater.shutdownCommander();
 		updatePlayers();
 	}
 	
-	public void interrupted(String agentName) throws Exception {
+	public void interrupted(String agentName) {
 		players.interrupted(agentName);
 		stopMessages.add("interrupted");
 	}
@@ -428,35 +436,60 @@ public class EatersWorld implements World {
 		return players.numberOfPlayers();
 	}
 
-	public void addPlayer(String playerId, PlayerConfig playerConfig, boolean debug) throws Exception {
+	@Override
+	public boolean hasPlayer(String name) {
+		return players.get(name) != null;
+	}
+	
+	@Override
+	public boolean addPlayer(String id, PlayerConfig cfg, boolean debug) {
+		int [] location = WorldUtil.getStartingLocation(map, cfg.pos);
+		if (location == null) {
+			Gridmap2D.control.errorPopUp("There are no suitable starting locations.");
+			return false;
+		}
 		
-		Eater eater = new Eater(playerId);
-
-		players.add(eater, eatersMap, playerConfig.pos);
+		List<CommandInfo> script = null;
+		if (cfg.script != null) {
+			try {
+				script = CommandInfo.loadScript(cfg.script);
+			} catch (IOException e) {
+				Gridmap2D.control.errorPopUp("IOException loading script " + cfg.script);
+				return false;
+			}
+		}
 		
-		if (playerConfig.productions != null) {
-			EaterCommander eaterCommander = cogArch.createEaterCommander(eater, playerConfig.productions, Gridmap2D.config.eatersConfig().vision, playerConfig.shutdown_commands, eatersMap.getMetadataFile(), debug);
-			eater.setCommander(eaterCommander);
-		} else if (playerConfig.script != null) {
-			eater.setCommander(new ScriptedEater(CommandInfo.loadScript(playerConfig.script)));
+		Eater player = new Eater(id);  
+		players.add(player, cfg.pos);
+		
+		if (cfg.productions != null) {
+			EaterCommander cmdr = cogArch.createEaterCommander(player, cfg.productions, Gridmap2D.config.eatersConfig().vision, cfg.shutdown_commands, map.getMetadataFile(), debug);
+			if (cmdr == null) {
+				players.remove(player);
+				return false;
+			}
+			player.setCommander(cmdr);
+		} else if (cfg.script != null) {
+			assert script != null;
+			player.setCommander(new ScriptedEater(script));
 		}
 
-		int [] location = WorldUtil.getStartingLocation(eater, eatersMap, players.getInitialLocation(eater));
-		players.setLocation(eater, location);
+		players.setLocation(player, location);
 		
 		// remove food from it
-		eatersMap.getCell(location).removeAllByProperty(Names.kPropertyEdible);
+		map.getCell(location).removeAllByProperty(Names.kPropertyEdible);
 
 		// put the player in it
-		eatersMap.getCell(location).setPlayer(eater);
+		map.getCell(location).setPlayer(player);
 		
-		logger.info(eater.getName() + ": Spawning at (" + location[0] + "," + location[1] + ")");
+		logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + ")");
 		
 		updatePlayers();
+		return true;
 	}
 
 	public GridMap getMap() {
-		return eatersMap;
+		return map;
 	}
 
 	public Player[] getPlayers() {

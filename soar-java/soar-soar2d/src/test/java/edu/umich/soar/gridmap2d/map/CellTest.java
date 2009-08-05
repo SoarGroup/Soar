@@ -25,7 +25,7 @@ public class CellTest {
 	int[] xyInitial = new int[] {0, 0};
 	
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		cell = Cell.createCell(xyInitial);
 		
 		Config config;
@@ -47,12 +47,12 @@ public class CellTest {
 	}
 
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		
 	}
 	
 	@Test
-	public void testDraw() throws Exception {
+	public void testDraw() {
 		
 		// starts with redraw
 		assertTrue(cell.checkRedraw());
@@ -101,7 +101,7 @@ public class CellTest {
 		assertTrue(cell.checkAndResetRedraw()); 	// gets all
 	}
 	
-	void testDrawCheckedAdd() throws Exception {
+	void testDrawCheckedAdd() {
 		cell.addObject(objects[0]);
 		assertTrue(cell.checkAndResetRedraw());
 	}
@@ -124,7 +124,7 @@ public class CellTest {
 	}
 
 	@Test
-	public void testObject() throws Exception {
+	public void testObject() {
 
 		assertFalse(cell.hasObject("test"));
 		assertNull(cell.getObject("test"));
@@ -176,27 +176,27 @@ public class CellTest {
 	}
 	
 	@Test(expected = NullPointerException.class)
-	public void testAddNull() throws Exception {
+	public void testAddNull() {
 		cell.addObject(null);
 	}
 	
 	@Test(expected = NullPointerException.class)
-	public void testGetNull() throws Exception {
+	public void testGetNull() {
 		cell.getObject(null);
 	}
 	
 	@Test(expected = NullPointerException.class)
-	public void testRemoveNull() throws Exception {
+	public void testRemoveNull() {
 		cell.removeObject(null);
 	}
 	
 	@Test(expected = NullPointerException.class)
-	public void testCreateNull() throws Exception {
+	public void testCreateNull() {
 		cell = Cell.createCell(null);
 	}
 	
 	@Test
-	public void testNullParams() throws Exception {
+	public void testNullParams() {
 		assertNull(cell.getAllWithProperty(null));
 		assertFalse(cell.hasAnyWithProperty(null));
 		assertFalse(cell.hasObject(null));
@@ -205,7 +205,7 @@ public class CellTest {
 	}
 
 	@Test
-	public void testPropertyOperations() throws Exception {
+	public void testPropertyOperations() {
 		assertFalse(cell.hasAnyWithProperty("test"));
 		assertNull(cell.getAllWithProperty("test"));
 		assertNull(cell.removeAllByProperty("test"));
@@ -247,7 +247,7 @@ public class CellTest {
 	}
 	
 	@Test
-	public void testLocation() throws Exception {
+	public void testLocation() {
 		cell.getLocation()[0] += 1;
 		cell.getLocation()[1] += 1;
 		assertTrue(Arrays.equals(cell.getLocation(), xyInitial));
@@ -287,7 +287,7 @@ public class CellTest {
 	ObserverTester observer = new ObserverTester();
 
 	@Test
-	public void testObserver() throws Exception {
+	public void testObserver() {
 		cell.addObserver(observer);
 
 		observer.reset();

@@ -7,7 +7,7 @@ import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
 import edu.umich.soar.gridmap2d.players.CarryInterface;
-import edu.umich.soar.gridmap2d.players.RoomPlayer;
+import edu.umich.soar.gridmap2d.players.Robot;
 import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.robot.ConfigureInterface;
 import edu.umich.soar.robot.WaypointsIL;
@@ -102,7 +102,7 @@ public class SoarRobotSelfIL {
 		self.DestroyWME();
 	}
 
-	public void update(RoomPlayer player) {
+	public void update(Robot player) {
 		x.Update(opose.getPose().pos[0]);
 		y.Update(opose.getPose().pos[1]);
 		z.Update(opose.getPose().pos[2]);

@@ -23,6 +23,9 @@ import edu.umich.soar.gridmap2d.world.TankSoarWorld;
 
 public class TankSoarMap implements GridMap, CellObjectObserver {
 	private static Logger logger = Logger.getLogger(TankSoarMap.class);
+	public static TankSoarMap generateInstance(String mapPath, int maxSoundDistance) {
+		return new TankSoarMap(mapPath, maxSoundDistance);
+	}
 
 	String mapPath;
 	GridMapData data;
@@ -30,8 +33,9 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 	int missilePacks;
 	boolean health;
 	int maxSoundDistance;
+	boolean usingMissilePacks;
 	
-	public TankSoarMap(String mapPath, int maxSoundDistance) throws Exception {
+	private TankSoarMap(String mapPath, int maxSoundDistance) {
 		this.mapPath = new String(mapPath);
 		this.maxSoundDistance = maxSoundDistance;
 		
@@ -42,12 +46,13 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		return GridMapUtil.getMapName(this.mapPath);
 	}
 
-	public void reset() throws Exception {
+	public void reset() {
 		energy = false;
 		missilePacks = 0;
 		health = false;
 		data = new GridMapData();
 		GridMapUtil.loadFromConfigFile(data, mapPath, this);
+		usingMissilePacks = data.cellObjectManager.hasTemplate("missiles");
 		
 		// Add ground to cells that don't have a background.
 		int size = data.cells.size();
@@ -127,6 +132,10 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		if (removed.getName().equals("missiles")) {
 			missilePacks -= 1;
 		}
+	}
+	
+	public boolean usingMissilePacks() {
+		return usingMissilePacks;
 	}
 	
 	public int numberMissilePacks() {

@@ -24,17 +24,17 @@ import edu.umich.soar.gridmap2d.map.GridMap;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
 import edu.umich.soar.gridmap2d.players.Player;
-import edu.umich.soar.gridmap2d.players.RoomCommander;
-import edu.umich.soar.gridmap2d.players.RoomPlayer;
-import edu.umich.soar.gridmap2d.players.RoomPlayerState;
+import edu.umich.soar.gridmap2d.players.RobotCommander;
+import edu.umich.soar.gridmap2d.players.Robot;
+import edu.umich.soar.gridmap2d.players.RobotState;
 import edu.umich.soar.robot.DifferentialDriveCommand;
 import edu.umich.soar.robot.SendMessagesInterface;
 
 public class RoomWorld implements World, SendMessagesInterface {
 	private static Logger logger = Logger.getLogger(RoomWorld.class);
 
-	private RoomMap roomMap;
-	private PlayersManager<RoomPlayer> players = new PlayersManager<RoomPlayer>();
+	private RoomMap map;
+	private PlayersManager<Robot> players = new PlayersManager<Robot>();
 	private boolean forceHuman = false;
 	private List<String> stopMessages = new ArrayList<String>();
 	private final double LIN_SPEED = 16;
@@ -49,38 +49,50 @@ public class RoomWorld implements World, SendMessagesInterface {
 	}
 
 	@Override
-	public void addPlayer(String playerId, PlayerConfig playerConfig, boolean debug) throws Exception {
-		
-		RoomPlayer player = new RoomPlayer(playerId);
-
-		players.add(player, roomMap, playerConfig.pos);
-		
-		if (playerConfig.productions != null) {
-			RoomCommander eaterCommander = cogArch.createRoomCommander(player, this, playerConfig.productions, playerConfig.shutdown_commands, roomMap.getMetadataFile(), debug);
-			player.setCommander(eaterCommander);
-		} else if (playerConfig.script != null) {
-			// TODO: implement
-			assert false;
+	public boolean hasPlayer(String name) {
+		return players.get(name) != null;
+	}
+	
+	@Override
+	public boolean addPlayer(String id, PlayerConfig cfg, boolean debug) {
+		int [] location = WorldUtil.getStartingLocation(map, cfg.pos);
+		if (location == null) {
+			Gridmap2D.control.errorPopUp("There are no suitable starting locations.");
+			return false;
 		}
 
-		int [] location = WorldUtil.getStartingLocation(player, roomMap, players.getInitialLocation(player));
+		Robot player = new Robot(id);
+		players.add(player, cfg.pos);
+		
+		if (cfg.productions != null) {
+			RobotCommander cmdr = cogArch.createRoomCommander(player, this, cfg.productions, cfg.shutdown_commands, map.getMetadataFile(), debug);
+			if (cmdr == null) {
+				players.remove(player);
+				return false;
+			}
+			player.setCommander(cmdr);
+		} else if (cfg.script != null) {
+			Gridmap2D.control.infoPopUp("Scripted robots not implemented.");
+		}
+
 		players.setLocation(player, location);
 		
 		// put the player in it
-		roomMap.getCell(location).setPlayer(player);
+		map.getCell(location).setPlayer(player);
 		
-		player.getState().setLocationId(roomMap.getLocationId(location));
+		player.getState().setLocationId(map.getLocationId(location));
 		double [] floatLocation = defaultFloatLocation(location);
 		player.getState().setPos(floatLocation);
 
 		logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + "), (" + floatLocation[0] + "," + floatLocation[1] + ")");
 		
 		updatePlayers();
+		return true;
 	}
 
 	@Override
 	public GridMap getMap() {
-		return roomMap;
+		return map;
 	}
 
 	@Override
@@ -89,7 +101,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 	}
 
 	@Override
-	public void interrupted(String agentName) throws Exception {
+	public void interrupted(String agentName) {
 		players.interrupted(agentName);
 		stopMessages.add("interrupted");
 	}
@@ -105,19 +117,19 @@ public class RoomWorld implements World, SendMessagesInterface {
 	}
 
 	@Override
-	public void removePlayer(String name) throws Exception {
-		RoomPlayer player = players.get(name);
-		roomMap.getCell(players.getLocation(player)).setPlayer(null);
+	public void removePlayer(String name) {
+		Robot player = players.get(name);
+		map.getCell(players.getLocation(player)).setPlayer(null);
 		players.remove(player);
 		player.shutdownCommander();
 		updatePlayers();
 	}
 
 	@Override
-	public void reset() throws Exception {
+	public void reset() {
 		blockManipulationReason = null;
 		messages.clear();
-		roomMap.reset();
+		map.reset();
 		resetState();
 	}
 
@@ -127,37 +139,43 @@ public class RoomWorld implements World, SendMessagesInterface {
 	}
 
 	@Override
-	public void setMap(String mapPath) throws Exception {
-		roomMap = new RoomMap(mapPath);
+	public void setAndResetMap(String mapPath) {
+		map = new RoomMap(mapPath);
 		resetState();
 	}
 
-	private void resetState() throws Exception {
+	private void resetState() {
 		stopMessages.clear();
 		resetPlayers();
 	}
 
-	private void resetPlayers() throws Exception {
+	/**
+	 * @throws IllegalStateException If there are no available locations to spawn the players
+	 */
+	private void resetPlayers() {
 		if (players.numberOfPlayers() == 0) {
 			return;
 		}
 		
-		for (RoomPlayer player : players.getAll()) {
+		for (Robot player : players.getAll()) {
 			player.reset();
 			
 			// find a suitable starting location
-			int [] startingLocation = WorldUtil.getStartingLocation(player, roomMap, players.getInitialLocation(player));
-			players.setLocation(player, startingLocation);
+			int [] location = WorldUtil.getStartingLocation(map, players.getInitialLocation(player));
+			if (location == null) {
+				throw new IllegalStateException("no empty locations available for spawn");
+			}
+			players.setLocation(player, location);
 
 			// put the player in it
-			roomMap.getCell(startingLocation).setPlayer(player);
+			map.getCell(location).setPlayer(player);
 
-			player.getState().setLocationId(roomMap.getLocationId(startingLocation));
+			player.getState().setLocationId(map.getLocationId(location));
 
-			double [] floatLocation = defaultFloatLocation(startingLocation);
+			double [] floatLocation = defaultFloatLocation(location);
 			player.getState().setPos(floatLocation);
 
-			logger.info(player.getName() + ": Spawning at (" + startingLocation[0] + "," + startingLocation[1] + "), (" + floatLocation[0] + "," + floatLocation[1] + ")");
+			logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + "), (" + floatLocation[0] + "," + floatLocation[1] + ")");
 		}
 		
 		updatePlayers();
@@ -175,11 +193,11 @@ public class RoomWorld implements World, SendMessagesInterface {
 	}
 	
 	@Override
-	public void update(int worldCount) throws Exception {
+	public void update(int worldCount) {
 		WorldUtil.checkNumPlayers(players.numberOfPlayers());
 
 		// Collect input
-		for (RoomPlayer player : players.getAll()) {
+		for (Robot player : players.getAll()) {
 			player.resetPointsChanged();
 
 			CommandInfo command = forceHuman ? Gridmap2D.control.getHumanCommand(player) : player.getCommand();
@@ -201,10 +219,10 @@ public class RoomWorld implements World, SendMessagesInterface {
 		updatePlayers();
 	}
 
-	private void moveRoomPlayers(double time) throws Exception {
-		for (RoomPlayer player : players.getAll()) {
+	private void moveRoomPlayers(double time) {
+		for (Robot player : players.getAll()) {
 			CommandInfo command = players.getCommand(player);	
-			RoomPlayerState state = player.getState();
+			RobotState state = player.getState();
 			
 			DifferentialDriveCommand ddc = command.ddc;
 			if (ddc != null) {
@@ -250,24 +268,24 @@ public class RoomWorld implements World, SendMessagesInterface {
 		}
 	}
 
-	private void updatePlayers() throws Exception {
-		for (RoomPlayer player : players.getAll()) {
-			player.update(players.getLocation(player), roomMap);
+	private void updatePlayers() {
+		for (Robot player : players.getAll()) {
+			player.update(players.getLocation(player), map);
 		}
 	}
 
 	private boolean checkBlocked(int [] location) {
-		if (roomMap.getCell(location).hasAnyWithProperty(Names.kPropertyBlock)) {
+		if (map.getCell(location).hasAnyWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		return false;
 	}
 	
-	private void roomMovePlayer(RoomPlayer player, double time) {
+	private void roomMovePlayer(Robot player, double time) {
 		int [] oldLocation = players.getLocation(player);
 		int [] newLocation = Arrays.copyOf(oldLocation, oldLocation.length);
 
-		RoomPlayerState state = player.getState();
+		RobotState state = player.getState();
 		state.update(time);
 		pose_t pose = state.getPose();
 		
@@ -349,34 +367,34 @@ public class RoomWorld implements World, SendMessagesInterface {
 		state.setPos(pose.pos);
 		
 		//state.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
-		roomMap.getCell(oldLocation).setPlayer(null);
+		map.getCell(oldLocation).setPlayer(null);
 		players.setLocation(player, newLocation);
-		state.setLocationId(roomMap.getLocationId(newLocation));
-		roomMap.getCell(newLocation).setPlayer(player);
+		state.setLocationId(map.getLocationId(newLocation));
+		map.getCell(newLocation).setPlayer(player);
 		
 		// redraw the 8 cells around it
 		int[] redrawLoc = Arrays.copyOf(newLocation, newLocation.length); 
 		Direction.translate(redrawLoc, Direction.EAST);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 		Direction.translate(redrawLoc, Direction.SOUTH);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 		Direction.translate(redrawLoc, Direction.WEST);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 		Direction.translate(redrawLoc, Direction.WEST);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 		Direction.translate(redrawLoc, Direction.NORTH);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 		Direction.translate(redrawLoc, Direction.NORTH);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 		Direction.translate(redrawLoc, Direction.EAST);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 		Direction.translate(redrawLoc, Direction.EAST);
-		roomMap.getCell(redrawLoc).forceRedraw();
+		map.getCell(redrawLoc).forceRedraw();
 	}
 
-	public boolean dropObject(RoomPlayer player, int id) {
+	public boolean dropObject(Robot player, int id) {
 		blockManipulationReason = null;
-		RoomPlayerState state = player.getState();
+		RobotState state = player.getState();
 
 		if (!state.hasObject()) {
 			blockManipulationReason = "Not carrying an object";
@@ -396,7 +414,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 //
 //		Cell destCell = roomMap.getCell(info.location);
 		
-		Cell destCell = roomMap.getCell(player.getLocation());
+		Cell destCell = map.getCell(player.getLocation());
 		CellObject temp = destCell.getObject(object.getName());
 		if (temp != null) {
 			blockManipulationReason = "Destination cell for drop is occupied";
@@ -410,7 +428,13 @@ public class RoomWorld implements World, SendMessagesInterface {
 		return true;
 	}
 
-	public boolean getObject(RoomPlayer player, int id) {
+	/**
+	 * @param player
+	 * @param id
+	 * @return
+	 * @throws IllegalStateException If tried to remove the object from the cell it was supposed to be in but it wasn't there 
+	 */
+	public boolean getObject(Robot player, int id) {
 		blockManipulationReason = null;
 		
 		if (player.getState().hasObject()) {
@@ -419,16 +443,16 @@ public class RoomWorld implements World, SendMessagesInterface {
 		}
 		
 		// TODO: This is a stupid way to do this.
-		Set<CellObject> objects = roomMap.getRoomObjects();
+		Set<CellObject> objects = map.getRoomObjects();
 		for (CellObject object : objects) {
 			if (object.getIntProperty("object-id", -1) == id) {
-				RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(object);
+				RoomMap.RoomObjectInfo info = map.getRoomObjectInfo(object);
 				if (info.pose == null) {
 					continue;
 				}
 				double distance = LinAlg.distance(player.getState().getPose().pos, info.pose.pos);
 				if (Double.compare(distance, CELL_SIZE) <= 0) {
-					if (roomMap.getCell(info.location).removeObject(object.getName()) == null) {
+					if (map.getCell(info.location).removeObject(object.getName()) == null) {
 						throw new IllegalStateException("Remove object failed for object that should be there.");
 					}
 					info.location = null;
@@ -448,22 +472,22 @@ public class RoomWorld implements World, SendMessagesInterface {
 		return blockManipulationReason;
 	}
 
-	public List<double[]> getWaypointList(RoomPlayer player) {
+	public List<double[]> getWaypointList(Robot player) {
 		return player.getWaypointList();
 	}
 
 	private static class Message {
 		String from;
-		RoomPlayer recipient;
+		Robot recipient;
 		List<String> tokens;
 	}
 	
 	@Override
 	public void sendMessage(String from, String to, List<String> tokens) {
 		if (to != null) {
-			RoomPlayer recipient = players.get(to);
+			Robot recipient = players.get(to);
 			if (recipient == null) {
-				RoomPlayer sender = players.get(from);
+				Robot sender = players.get(from);
 				if (sender == null) {
 					StringBuilder sb = new StringBuilder();
 					sb.append("Unknown sender ").append(from).append(" for message: ");
@@ -494,7 +518,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 			messages.add(message);
 		} else {
 			for (Player p : getPlayers()) {
-				RoomPlayer recipient = (RoomPlayer)p;
+				Robot recipient = (Robot)p;
 				Message message = new Message();
 				message.from = from;
 				message.recipient = recipient;

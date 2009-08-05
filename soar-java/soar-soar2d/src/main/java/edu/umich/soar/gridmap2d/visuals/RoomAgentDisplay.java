@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.TableItem;
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.players.Player;
-import edu.umich.soar.gridmap2d.players.RoomPlayer;
+import edu.umich.soar.gridmap2d.players.Robot;
 import edu.umich.soar.gridmap2d.world.World;
 
 public class RoomAgentDisplay extends AgentDisplay {
@@ -101,10 +101,10 @@ public class RoomAgentDisplay extends AgentDisplay {
 				if (selectedPlayer == null) {
 					return;
 				}
-				try {
+//				try {
 					Gridmap2D.simulation.destroyPlayer(selectedPlayer);
-				} catch (Exception ignored) {
-				}
+//				} catch (Exception ignored) {
+//				}
 			}
 		});
 				
@@ -311,7 +311,7 @@ public class RoomAgentDisplay extends AgentDisplay {
 	
 	void updateSensors() {
 		assert selectedPlayer != null;
-		RoomPlayer selectedRoomPlayer = (RoomPlayer)selectedPlayer;
+		Robot selectedRoomPlayer = (Robot)selectedPlayer;
 		int [] gl = selectedRoomPlayer.getLocation();
 		pose_t pose = selectedRoomPlayer.getState().getPose();
 		NumberFormat nf = NumberFormat.getInstance();

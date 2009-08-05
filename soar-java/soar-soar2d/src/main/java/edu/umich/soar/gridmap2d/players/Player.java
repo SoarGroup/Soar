@@ -25,7 +25,7 @@ public class Player {
 	protected boolean moved;
 	private boolean fragged;
 
-	public Player(String playerID) throws Exception {
+	public Player(String playerID) {
 		this.playerID = playerID;
 		this.playerConfig = Gridmap2D.config.playerConfigs().get(playerID);
 		
@@ -38,7 +38,7 @@ public class Player {
 		this.reset();
 	}
 	
-	public void reset() throws Exception {
+	public void reset() {
 		location = new int[] { -1, -1 };
 		
 		if (playerConfig.facing != null) {
@@ -136,6 +136,7 @@ public class Player {
 		try {
 			player = (Player)other;
 		} catch (ClassCastException c) {
+			c.printStackTrace();
 			return false;
 		}
 		return name.equals(player.name);

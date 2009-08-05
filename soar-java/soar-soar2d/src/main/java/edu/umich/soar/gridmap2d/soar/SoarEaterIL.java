@@ -431,33 +431,21 @@ class SoarEaterIL {
 		myLocation = new MyLocationIL(vision);
 	}
 	
-	void create(String name, int initialScore) throws CommitException {
+	void create(String name, int initialScore) {
 		eater.create(name, initialScore);
 		myLocation.create();
 		random.create();
-		
-		if (!agent.Commit()) {
-			throw new CommitException();
-		}
 	}
 	
-	void update(boolean moved, int[] pos, EatersMap map, int points) throws CommitException {
+	void update(boolean moved, int[] pos, EatersMap map, int points) {
 		eater.update(moved, pos, points);
 		myLocation.update(moved, pos, map);
 		random.update();
-		
-		if (!agent.Commit()) {
-			throw new CommitException();
-		}
 	}
 	
-	void destroy() throws CommitException {
+	void destroy() {
 		eater.destroy();
 		myLocation.destroy();
 		random.destroy();
-		
-		if (!agent.Commit()) {
-			throw new CommitException();
-		}
 	}
 }

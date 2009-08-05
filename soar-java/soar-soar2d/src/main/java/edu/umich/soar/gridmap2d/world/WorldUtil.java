@@ -75,28 +75,30 @@ public class WorldUtil {
 		}
 	}
 	
-	static void checkNumPlayers(int numPlayers) throws Exception {
+	static void checkNumPlayers(int numPlayers) {
 		if (numPlayers == 0) {
 			Gridmap2D.control.stopSimulation();
-			throw new Exception("Update called with no players.");
+			Gridmap2D.control.errorPopUp("Update called with no players.");
 		}
 	}
 	
-	public static int [] getStartingLocation(Player player, GridMap map, int[] initialLocation) throws Exception {
+	/**
+	 * @param map The map to search.
+	 * @param initialLocation The desired starting location.
+	 * @return The starting location or null if there are none available.
+	 */
+	public static int [] getStartingLocation(GridMap map, int[] initialLocation) {
 		int[] location = null;
 		if (initialLocation != null) {
 			location = Arrays.copyOf(initialLocation, initialLocation.length);
 			if (!map.isAvailable(location)) {
-				logger.warn(player.getName() + ": Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
+				logger.warn("Initial location (" + location[0] + "," + location[1] + ") is blocked, going random.");
 				location = null;
 			}
 		}
 		
 		if (location == null) {
 			location = map.getAvailableLocationAmortized();
-			if (location == null) {
-				throw new Exception("There are no suitable starting locations for " + player.getName() + ".");
-			}
 		}
 		return location;
 	}

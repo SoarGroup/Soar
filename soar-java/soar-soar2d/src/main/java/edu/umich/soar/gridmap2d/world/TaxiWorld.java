@@ -20,7 +20,7 @@ import edu.umich.soar.gridmap2d.players.TaxiCommander;
 public class TaxiWorld implements World {
 	private static Logger logger = Logger.getLogger(TaxiWorld.class);
 
-	private TaxiMap taxiMap;
+	private TaxiMap map;
 	private PlayersManager<Taxi> players = new PlayersManager<Taxi>();
 	private List<String> stopMessages = new ArrayList<String>();
 	private CognitiveArchitecture cogArch;
@@ -30,7 +30,7 @@ public class TaxiWorld implements World {
 	private boolean disableFuel;
 	private boolean forceHuman = false;
 
-	public TaxiWorld(CognitiveArchitecture cogArch, int fuelStartMin, int fuelStartMax, int refuel, boolean disableFuel) throws Exception {
+	public TaxiWorld(CognitiveArchitecture cogArch, int fuelStartMin, int fuelStartMax, int refuel, boolean disableFuel) {
 		this.cogArch = cogArch;
 		this.fuelStartMin = fuelStartMin;
 		this.fuelStartMax = fuelStartMax;
@@ -38,40 +38,39 @@ public class TaxiWorld implements World {
 		this.disableFuel = disableFuel;
 	}
 	
-	public void setMap(String mapPath) throws Exception {
-		TaxiMap oldMap = taxiMap;
-		try {
-			taxiMap = new TaxiMap(mapPath);
-		} catch (Exception e) {
-			if (oldMap == null) {
-				throw e;
-			}
-			taxiMap = oldMap;
-			logger.error("Map load failed, restored old map.");
+	@Override
+	public void setAndResetMap(String mapPath) {
+		TaxiMap newMap = TaxiMap.generateInstance(mapPath);
+		if (newMap == null) {
 			return;
 		}
-		
-		// This can throw a more fatal error.
+		map = newMap;
 		resetState();
 	}
 	
-	private void resetState() throws Exception {
+	private void resetState() {
 		stopMessages.clear();
 		resetPlayers();
 	}
 	
-	private void resetPlayers() throws Exception {
+	/**
+	 * @throws IllegalStateException If there are no available locations for the player to spawn
+	 */
+	private void resetPlayers() {
 		if (players.numberOfPlayers() == 0) {
 			return;
 		}
 		
 		for (Taxi taxi : players.getAll()) {
 			// find a suitable starting location
-			int [] startingLocation = WorldUtil.getStartingLocation(taxi, taxiMap, players.getInitialLocation(taxi));
-			players.setLocation(taxi, startingLocation);
+			int [] location = WorldUtil.getStartingLocation(map, players.getInitialLocation(taxi));
+			if (location == null) {
+				throw new IllegalStateException("no empty locations available for spawn");
+			}
+			players.setLocation(taxi, location);
 
 			// put the player in it
-			taxiMap.getCell(startingLocation).setPlayer(taxi);
+			map.getCell(location).setPlayer(taxi);
 
 			taxi.reset();
 		}
@@ -79,9 +78,9 @@ public class TaxiWorld implements World {
 		updatePlayers();
 	}
 
-	private void updatePlayers() throws Exception {
+	private void updatePlayers() {
 		for (Taxi taxi : players.getAll()) {
-			taxi.update(players.getLocation(taxi), taxiMap);
+			taxi.update(players.getLocation(taxi), map);
 		}
 	}
 
@@ -96,18 +95,18 @@ public class TaxiWorld implements World {
 				Direction.translate(newLocation, command.moveDirection);
 				
 				// Verify legal move and commit move
-				if (taxiMap.isInBounds(newLocation) && taxiMap.exitable(location, command.moveDirection)) {
+				if (map.isInBounds(newLocation) && map.exitable(location, command.moveDirection)) {
 					taxi.consumeFuel();
 					if (taxi.getFuel() < 0) {
 						taxi.adjustPoints(-20, "fuel fell below zero");
 					} else {
 						// remove from cell
-						taxiMap.getCell(location).setPlayer(null);
+						map.getCell(location).setPlayer(null);
 						players.setLocation(taxi, newLocation);
 						
 						// TODO: collisions not handled
 						
-						taxiMap.getCell(newLocation).setPlayer(taxi);
+						map.getCell(newLocation).setPlayer(taxi);
 						taxi.adjustPoints(-1, "legal move");
 					}
 				} else {
@@ -115,17 +114,17 @@ public class TaxiWorld implements World {
 				}
 				
 			} else if (command.pickup) {
-				if (taxiMap.pickUp(location)) {
+				if (map.pickUp(location)) {
 					taxi.adjustPoints(-1, "legal pickup");
 				} else {
 					taxi.adjustPoints(-10, "illegal pickup");
 				}
 				
 			} else if (command.putdown) {
-				if (taxiMap.putDown(location))  
+				if (map.putDown(location))  
 				{
-					if (taxiMap.isCorrectPassengerDestination(location)) {
-						taxiMap.deliverPassenger();
+					if (map.isCorrectPassengerDestination(location)) {
+						map.deliverPassenger();
 						taxi.adjustPoints(20, "successful delivery");
 					} else {
 						taxi.adjustPoints(-10, "incorrect destination");
@@ -135,7 +134,7 @@ public class TaxiWorld implements World {
 				}
 				
 			} else if (command.fillup) {
-				if (taxiMap.isFuel(location)) {
+				if (map.isFuel(location)) {
 					taxi.fillUp();
 					taxi.adjustPoints(-1, "legal fillup");
 				} else {
@@ -145,7 +144,7 @@ public class TaxiWorld implements World {
 		}
 	}
 	
-	public void update(int worldCount) throws Exception {
+	public void update(int worldCount) {
 		WorldUtil.checkNumPlayers(players.numberOfPlayers());
 
 		// Collect input
@@ -191,7 +190,7 @@ public class TaxiWorld implements World {
 	
 	private void checkPassengerDelivered() {
 		if (Gridmap2D.config.terminalsConfig().passenger_delivered) {
-			if (taxiMap.isPassengerDelivered()) {
+			if (map.isPassengerDelivered()) {
 				stopMessages.add("Passenger delivered.");
 			}
 		}
@@ -199,48 +198,62 @@ public class TaxiWorld implements World {
 	
 	private void checkPassengerPickedUp() {
 		if (Gridmap2D.config.terminalsConfig().passenger_pick_up) {
-			if (taxiMap.isPassengerCarried()) {
+			if (map.isPassengerCarried()) {
 				stopMessages.add("There are no points remaining.");
 			}
 		}
 	}
 	
-	public void reset() throws Exception {
-		taxiMap.reset();
+	public void reset() {
+		map.reset();
 		resetState();
 	}
 
-	public void addPlayer(String playerId, PlayerConfig playerConfig, boolean debug) throws Exception {
-		
-		Taxi taxi = new Taxi(playerId, fuelStartMin, fuelStartMax, refuel, disableFuel);
-
-		players.add(taxi, taxiMap, playerConfig.pos);
-		
-		if (playerConfig.productions != null) {
-			TaxiCommander taxiCommander = cogArch.createTaxiCommander(taxi, playerConfig.productions, playerConfig.shutdown_commands, taxiMap.getMetadataFile(), debug);
-			taxi.setCommander(taxiCommander);
+	@Override
+	public boolean hasPlayer(String name) {
+		return players.get(name) != null;
+	}
+	
+	@Override
+	public boolean addPlayer(String id, PlayerConfig cfg, boolean debug) {
+		int [] location = WorldUtil.getStartingLocation(map, cfg.pos);
+		if (location == null) {
+			Gridmap2D.control.errorPopUp("There are no suitable starting locations.");
+			return false;
 		}
 
-		int [] location = WorldUtil.getStartingLocation(taxi, taxiMap, players.getInitialLocation(taxi));
-		players.setLocation(taxi, location);
+		Taxi player = new Taxi(id, fuelStartMin, fuelStartMax, refuel, disableFuel);
+		players.add(player, cfg.pos);
+		
+		if (cfg.productions != null) {
+			TaxiCommander cmdr = cogArch.createTaxiCommander(player, cfg.productions, cfg.shutdown_commands, map.getMetadataFile(), debug);
+			if (cmdr == null) {
+				players.remove(player);
+				return false;
+			}
+			player.setCommander(cmdr);
+		}
+
+		players.setLocation(player, location);
 		
 		// put the player in it
-		taxiMap.getCell(location).setPlayer(taxi);
+		map.getCell(location).setPlayer(player);
 		
-		logger.info(taxi.getName() + ": Spawning at (" + location[0] + "," + location[1] + ")");
+		logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + ")");
 		
 		updatePlayers();
+		return true;
 	}
 
 	public GridMap getMap() {
-		return taxiMap;
+		return map;
 	}
 
 	public Player[] getPlayers() {
 		return players.getAllAsPlayers();
 	}
 
-	public void interrupted(String agentName) throws Exception {
+	public void interrupted(String agentName) {
 		players.interrupted(agentName);
 		stopMessages.add("interrupted");
 	}
@@ -253,9 +266,9 @@ public class TaxiWorld implements World {
 		return players.numberOfPlayers();
 	}
 
-	public void removePlayer(String name) throws Exception {
+	public void removePlayer(String name) {
 		Taxi taxi = players.get(name);
-		taxiMap.getCell(players.getLocation(taxi)).setPlayer(null);
+		map.getCell(players.getLocation(taxi)).setPlayer(null);
 		players.remove(taxi);
 		taxi.shutdownCommander();
 		updatePlayers();
@@ -264,4 +277,5 @@ public class TaxiWorld implements World {
 	public void setForceHumanInput(boolean setting) {
 		forceHuman = setting;
 	}
+
 }

@@ -38,11 +38,11 @@ public class MapButtons extends Composite {
 		String map = fd.open();
 		VisualWorld.internalRepaint = false;
 		if (map != null) {
-			try {
+//			try {
 				Gridmap2D.simulation.changeMap(map);
-			} catch (Exception e) {
-				Gridmap2D.control.errorPopUp(e.getMessage());
-			}
+//			} catch (Exception e) {
+//				Gridmap2D.control.errorPopUp(e.getMessage());
+//			}
 		}
 	}
 	

@@ -7,26 +7,26 @@ import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.robot.ReceiveMessagesInterface;
 
-public class RoomPlayer extends Player {
-	private RoomCommander commander;
-	private RoomPlayerState state;
+public class Robot extends Player {
+	private RobotCommander commander;
+	private RobotState state;
 	
-	public RoomPlayer(String playerID) throws Exception {
+	public Robot(String playerID) {
 		super(playerID);
 		
-		state = new RoomPlayerState();
+		state = new RobotState();
 		state.reset();
 	}
 	
-	public RoomPlayerState getState() {
+	public RobotState getState() {
 		return state;
 	}
 
-	public void setCommander(RoomCommander commander) {
+	public void setCommander(RobotCommander commander) {
 		this.commander = commander;
 	}
 	
-	public CommandInfo getCommand() throws Exception {
+	public CommandInfo getCommand() {
 		CommandInfo command;
 		if (commander != null) {
 			command = commander.nextCommand();
@@ -37,7 +37,7 @@ public class RoomPlayer extends Player {
 		return command;
 	}
 	
-	public void update(int[] newLocation, RoomMap roomMap) throws Exception {
+	public void update(int[] newLocation, RoomMap roomMap) {
 		super.update(newLocation);
 		moved = true;
 		if (commander != null) {
@@ -46,7 +46,7 @@ public class RoomPlayer extends Player {
 	}
 	
 	@Override
-	public void reset() throws Exception {
+	public void reset() {
 		super.reset();
 		
 		if (state != null) {
@@ -58,7 +58,7 @@ public class RoomPlayer extends Player {
 		}
 	}
 
-	public void shutdownCommander() throws Exception {
+	public void shutdownCommander() {
 		if (commander != null) {
 			commander.shutdown();
 		}

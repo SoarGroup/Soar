@@ -7,7 +7,7 @@ import edu.umich.soar.gridmap2d.map.EatersMap;
 public class Eater extends Player {	
 	private EaterCommander commander;
 
-	public Eater(String playerId) throws Exception {
+	public Eater(String playerId) {
 		super(playerId);
 	}
 	
@@ -15,7 +15,7 @@ public class Eater extends Player {
 		this.commander = commander;
 	}
 	
-	public CommandInfo getCommand() throws Exception {
+	public CommandInfo getCommand() {
 		CommandInfo command;
 		if (commander != null) {
 			command = commander.nextCommand();
@@ -31,7 +31,7 @@ public class Eater extends Player {
 		return command;
 	}
 	
-	public void update(int[] newLocation, EatersMap eatersMap) throws Exception {
+	public void update(int[] newLocation, EatersMap eatersMap) {
 		super.update(newLocation);
 		if (commander != null) {
 			commander.update(eatersMap);
@@ -39,14 +39,14 @@ public class Eater extends Player {
 	}
 
 	@Override
-	public void reset() throws Exception {
+	public void reset() {
 		super.reset();
 		if (commander != null) {
 			commander.reset();
 		}
 	}
 
-	public void shutdownCommander() throws Exception {
+	public void shutdownCommander() {
 		if (commander != null) {
 			commander.shutdown();
 		}
