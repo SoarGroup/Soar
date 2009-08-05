@@ -15,7 +15,11 @@
 		</fileset>
 	</path>
 
-	<target name="swt">
+	<condition property="is_windows">
+		<os family="windows" />
+	</condition>
+
+	<target name="swt" if="is_windows">
 		<exec dir="lib" executable="cmd">
 			<arg value="/c" />
 			<arg value="fetchswt.bat" />
