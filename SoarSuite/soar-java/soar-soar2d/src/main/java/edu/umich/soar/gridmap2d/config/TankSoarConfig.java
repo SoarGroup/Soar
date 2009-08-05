@@ -11,8 +11,8 @@ public class TankSoarConfig implements GameConfig {
 	public int shield_energy_usage = -20;
 	public int missile_hit_award = 2;
 	public int missile_hit_penalty = -1;
-	public int kill_award = 3;
-	public int kill_penalty = -2;
+	public int frag_award = 3;
+	public int frag_penalty = -2;
 	public int max_sound_distance = 7;
 	public int missile_reset_threshold = 100;
 	
