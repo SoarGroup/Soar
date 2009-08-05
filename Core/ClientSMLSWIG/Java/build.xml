@@ -31,7 +31,7 @@
 		<include name="sml/*" />
       </fileset>
     </jar>
-    <copy file="sml.jar" todir="../../../SoarLibrary/lib" />
+    <copy file="sml.jar" todir="../../../soar-java/soar-smljava/lib" />
   </target>
 
   <target name="build-java">
