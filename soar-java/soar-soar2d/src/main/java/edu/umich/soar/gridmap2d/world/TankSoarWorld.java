@@ -542,13 +542,13 @@ public class TankSoarWorld implements World {
 		// Respawn killed Tanks in safe squares
 		for (Tank tank : killedTanks.keySet()) {
 			// apply points
-			tank.adjustPoints(Gridmap2D.config.tanksoarConfig().kill_penalty, "fragged");
+			tank.adjustPoints(Gridmap2D.config.tanksoarConfig().frag_penalty, "fragged");
 			assert killedTanks.containsKey(tank);
 			for (Tank assailant : killedTanks.get(tank)) {
 				if (assailant.equals(tank)) {
 					continue;
 				}
-				assailant.adjustPoints(Gridmap2D.config.tanksoarConfig().kill_award, "fragged " + tank);
+				assailant.adjustPoints(Gridmap2D.config.tanksoarConfig().frag_award, "fragged " + tank);
 			}
 			
 			frag(tank);
