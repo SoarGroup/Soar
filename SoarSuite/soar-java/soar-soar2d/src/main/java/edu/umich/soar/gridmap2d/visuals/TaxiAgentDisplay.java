@@ -84,10 +84,10 @@ public class TaxiAgentDisplay extends AgentDisplay {
 				if (selectedPlayer == null) {
 					return;
 				}
-				try {
+//				try {
 					Gridmap2D.simulation.destroyPlayer(selectedPlayer);
-				} catch (Exception ignored) {
-				}
+//				} catch (Exception ignored) {
+//				}
 			}
 		});
 				

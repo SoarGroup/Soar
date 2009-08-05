@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import edu.umich.soar.gridmap2d.map.GridMap;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
 import edu.umich.soar.gridmap2d.players.Player;
 
@@ -85,13 +84,18 @@ public class PlayersManager<P extends Player> {
 		lastCommands.remove(player);
 	}
 	
-	void add(P player, GridMap map, int [] initialLocation) throws Exception {
-		logger.info("Adding player " + player);
-
+	/**
+	 * @param player The player to add, the player's name must be unique.
+	 * @param initialLocation The player's starting location.
+	 * 
+	 * @throws IllegalStateException If the player name is already in use.
+	 */
+	void add(P player, int [] initialLocation) {
 		if(playersMap.containsKey(player.getName())) {
-			throw new Exception("Player already exists.");
+			throw new IllegalStateException(player.getName() + " already exists");
 		}
 
+		logger.info("Adding player " + player);
 		players.add(player);
 		playersMap.put(player.getName(), player);
 		
@@ -126,7 +130,7 @@ public class PlayersManager<P extends Player> {
 		return scores;
 	}
 	
-	void interrupted(String interruptedName) throws Exception {
+	void interrupted(String interruptedName) {
 		P interruptedPlayer = get(interruptedName);
 		if (numberOfPlayers() <= 1) {
 			return;

@@ -17,7 +17,7 @@ public class Taxi extends Player {
 	private int refuel;
 	private boolean disableFuel;
 
-	public Taxi(String playerId, int fuelStartMin, int fuelStartMax, int refuel, boolean disableFuel) throws Exception {
+	public Taxi(String playerId, int fuelStartMin, int fuelStartMax, int refuel, boolean disableFuel) {
 		super(playerId);
 		
 		this.fuelStartMin = fuelStartMin;
@@ -32,7 +32,7 @@ public class Taxi extends Player {
 		this.commander = commander;
 	}
 	
-	public CommandInfo getCommand() throws Exception {
+	public CommandInfo getCommand() {
 		CommandInfo command;
 		if (commander != null) {
 			command = commander.nextCommand();
@@ -43,7 +43,7 @@ public class Taxi extends Player {
 		return command;
 	}
 	
-	public void update(int[] newLocation, TaxiMap taxiMap) throws Exception {
+	public void update(int[] newLocation, TaxiMap taxiMap) {
 		super.update(newLocation);
 		if (commander != null) {
 			commander.update(taxiMap);
@@ -51,7 +51,7 @@ public class Taxi extends Player {
 	}
 	
 	@Override
-	public void reset() throws Exception {
+	public void reset() {
 		super.reset();
 
 		fuel = Simulation.random.nextInt(1 + fuelStartMax - fuelStartMin);
@@ -62,7 +62,7 @@ public class Taxi extends Player {
 		}
 	}
 
-	public void shutdownCommander() throws Exception {
+	public void shutdownCommander() {
 		if (commander != null) {
 			commander.shutdown();
 		}

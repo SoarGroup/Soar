@@ -9,6 +9,9 @@ import edu.umich.soar.gridmap2d.Gridmap2D;
 public class TankState {
 	private static Logger logger = Logger.getLogger(TankState.class);
 
+	public static final int RADAR_WIDTH = 3;
+	public static final int RADAR_HEIGHT = 15;
+
 	private String name;
 	private int missiles;
 	private int energy;
@@ -27,38 +30,24 @@ public class TankState {
 	private Direction sound;
 	private boolean onHealthCharger;
 	private boolean onEnergyCharger;
-	private int radarWidth;
-	private int radarHeight;
 	private int initialMissiles;
 	private int initialEnergy;
 	private int initialHealth;
-	private int defaultMissiles;
-	private int defaultEnergy;
-	private int defaultHealth;
 	
-	TankState(String name, int radarWidth, int radarHeight, 
-		int initialMissiles, int initialEnergy, int initialHealth, 
-		int defaultMissiles, int defaultEnergy, int defaultHealth) {
+	TankState(String name, Tank.Builder builder) {
 		
 		this.name = name;
-		this.radarWidth = radarWidth;
-		this.radarHeight = radarHeight;
-		this.initialMissiles = initialMissiles;
-		this.initialEnergy = initialEnergy;
-		this.initialHealth = initialHealth;
-		this.defaultMissiles = defaultMissiles;
-		this.defaultEnergy = defaultEnergy;
-		this.defaultHealth = defaultHealth;
+		
+		this.missiles = builder.missiles;
+		this.initialMissiles = builder.missiles;
+		
+		this.energy = builder.energy;
+		this.initialEnergy = builder.energy;
+		
+		this.health = builder.health;
+		this.initialHealth = builder.health;
 	}
 	
-	public int getRadarWidth() {
-		return radarWidth;
-	}
-
-	public int getRadarHeight() {
-		return radarHeight;
-	}
-
 	public void resetSensors() {
 		// TODO: doing this after a getCommand seems like the wrong thing to do.
 		rwaves = 0;
@@ -100,8 +89,8 @@ public class TankState {
 		if (energy < 0) {
 			energy = 0;
 		}
-		if (energy > defaultEnergy) {
-			energy = defaultEnergy;
+		if (energy > Gridmap2D.config.tanksoarConfig().max_energy) {
+			energy = Gridmap2D.config.tanksoarConfig().max_energy;
 		}
 		if (energy == previous) {
 			return;
@@ -182,8 +171,8 @@ public class TankState {
 		if (health < 0) {
 			health = 0;
 		}
-		if (health > defaultHealth) {
-			health = defaultHealth;
+		if (health > Gridmap2D.config.tanksoarConfig().max_health) {
+			health = Gridmap2D.config.tanksoarConfig().max_health;
 		}
 		if (health == previous) {
 			return;
@@ -227,8 +216,8 @@ public class TankState {
 		if (radarPower < 0) {
 			radarPower = 0;
 		}
-		if (radarPower >= radarHeight) {
-			radarPower = radarHeight - 1;
+		if (radarPower >= RADAR_HEIGHT) {
+			radarPower = RADAR_HEIGHT - 1;
 		}
 		if (this.radarPower == radarPower) {
 			return;
@@ -251,7 +240,7 @@ public class TankState {
 		this.radar = radar;
 	}
 	public void clearRadar() {
-		this.radar = new RadarCell[radarWidth][radarHeight];
+		this.radar = new RadarCell[RADAR_WIDTH][RADAR_HEIGHT];
 	}
 	public int getRwaves() {
 		return rwaves;
@@ -312,17 +301,17 @@ public class TankState {
 		if (this.initialMissiles > 0) {
 			this.missiles = this.initialMissiles;
 		} else {
-			this.missiles = this.defaultMissiles;
+			this.missiles = Gridmap2D.config.tanksoarConfig().max_missiles;
 		}
 		if (this.initialEnergy > 0) {
 			this.health = this.initialEnergy;
 		} else {
-			this.health = this.defaultHealth;
+			this.health = Gridmap2D.config.tanksoarConfig().max_health;
 		}
 		if (this.initialHealth > 0) {
 			this.energy = this.initialHealth;
 		} else {
-			this.energy = this.defaultEnergy;
+			this.energy = Gridmap2D.config.tanksoarConfig().max_energy;
 		}
 		
 		this.shieldsUp = false;
@@ -334,9 +323,9 @@ public class TankState {
 	}
 
 	public void fragged() {
-		this.energy = this.defaultEnergy;
-		this.health = this.defaultHealth;
-		this.missiles = this.defaultMissiles;
+		this.energy = Gridmap2D.config.tanksoarConfig().max_energy;
+		this.health = Gridmap2D.config.tanksoarConfig().max_health;
+		this.missiles = Gridmap2D.config.tanksoarConfig().max_missiles;
 		this.resurrectFrame = Gridmap2D.simulation.getWorldCount(); 
 		this.clearRadar();
 		this.resetSensors();

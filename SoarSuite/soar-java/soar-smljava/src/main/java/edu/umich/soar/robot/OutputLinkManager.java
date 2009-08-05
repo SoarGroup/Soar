@@ -92,6 +92,8 @@ final public class OutputLinkManager {
 			runningCommand = null;
 		}
 		
+		agent.ClearOutputLinkChanges();
+
 		return ddc;
 	}
 

@@ -1,25 +1,40 @@
 objects {
+
+	m {					# symbol for map file, must be unique in this file
+		name = block;	# internal soar2d name and input-link type
+		movable = true;	# movable object
+		color = grey;	# input-link color
+		weight = 0.25;	# input-link weight (kg?)
+	}
+	
+	b {					# symbol for map file, must be unique in this file
+		name = ball;	# internal soar2d name and input-link type
+		movable = true;	# movable object
+		color = green;	# input-link color
+		weight = 0.05;	# input-link weight (kg?)
+	}
+	
+	k {					# symbol for map file, must be unique in this file
+		name = brick;	# internal soar2d name and input-link type
+		movable = true;	# movable object
+		color = red;	# input-link color
+		weight = 0.20;	# input-link weight (kg?)
+	}
+	
+# Don't modify below here
+#########################
 	w {
 		name = wall;
-		id = wall;
 		wall = true;
 		block = true;
 	}
-	m {
-		name = mblock;
-		id = block;
-		mblock = true;
-		height = 1;
-	}
 	g {
 		name = gateway;
-		id = gateway;
 		gateway = true;
 		gateway-render = true;
 	}
 	r {
 		name = room;
-		id = room;
 		room = true;
 	}
 }

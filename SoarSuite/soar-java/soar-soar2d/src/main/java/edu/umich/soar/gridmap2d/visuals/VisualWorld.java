@@ -61,10 +61,10 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 
 		switch(Gridmap2D.config.game()) {
 		case TANKSOAR:
-			tanks[Direction.SOUTH.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/tank_down.gif"));
-			tanks[Direction.NORTH.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/tank_up.gif"));
-			tanks[Direction.EAST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/tank_right.gif"));
-			tanks[Direction.WEST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/tank_left.gif"));
+			tanks[Direction.SOUTH.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_down.gif"));
+			tanks[Direction.NORTH.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_up.gif"));
+			tanks[Direction.EAST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_right.gif"));
+			tanks[Direction.WEST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_left.gif"));
 			break;
 			
 		case ROOM:
@@ -85,7 +85,7 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		painted = false;
 		
 		for (CellObject template : map.getTemplatesWithProperty(Names.kPropertyMiniImage)) {
-			Image image = new Image(WindowManager.display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/" + template.getProperty(Names.kPropertyMiniImage)));
+			Image image = new Image(WindowManager.display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/" + template.getProperty(Names.kPropertyMiniImage)));
 			assert image != null;
 			if (template.getName().equals(Names.kEnergy)) {
 				RadarCell.energyImage = image;
@@ -148,7 +148,7 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 	}
 	
 	Image bootstrapImage(String imageName) {
-		Image image = new Image(WindowManager.display, Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/" + imageName));
+		Image image = new Image(WindowManager.display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/" + imageName));
 		assert image != null;
 		images.put(imageName, image);
 		return image;

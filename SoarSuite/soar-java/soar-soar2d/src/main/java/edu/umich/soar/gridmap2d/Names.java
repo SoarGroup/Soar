@@ -19,12 +19,9 @@ public class Names {
 		public static final String initDisplayfail = "Failed to initialize display.";
 		public static final String simulationInitFail = "Failed to initialize simulation: ";
 		public static final String noConfig = "No configuration file specified. Please specify a configuration file on the command line.";
-		public static final String loadingConfig = "Error loading configuration file, it might not exist.";
 		public static final String installingConfig = "IOException installing default configuration file: ";
 		public static final String kernelCreation = "Error creating kernel: ";
 		public static final String taxi1Player = "Taxi game type only supports 1 player.";
-		public static final String usedColor = "Color used or not available: ";
-		public static final String noMoreSlots = "There are no more player slots available.";
 		public static final String clientSpawn = "Client spawn failed: ";
 		public static final String mapRequired = "Map is required.";
 		public static final String findingMap = "Error finding map: ";
@@ -219,6 +216,6 @@ public class Names {
 	public static final String kDog = "dog";
 	public static final String kMouse = "mouse";
 	
-	public static final String kRoomObjectName = "mblock";
+	public static final String kRoomObjectMovable = "movable";
 	
 }

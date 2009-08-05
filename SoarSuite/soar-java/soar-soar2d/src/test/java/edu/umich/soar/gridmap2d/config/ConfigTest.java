@@ -4,6 +4,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +29,7 @@ public class ConfigTest {
 	List<ConfigTestPair> largeTestData = new ArrayList<ConfigTestPair>();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		largeTestData.add(new ConfigTestPair("hello", "[world]"));
 		largeTestData.add(new ConfigTestPair("block.inside", "[true]"));
 		largeTestData.add(new ConfigTestPair("block.outside", "[false]"));
@@ -70,7 +71,7 @@ public class ConfigTest {
 	}
 
 	@Test
-	public void testConfig() throws Exception {
+	public void testConfig() throws IOException {
 		Config cf = new Config(new ConfigFile(largeTest));
 
 		for (ConfigTestPair pair : largeTestData) {
@@ -84,7 +85,7 @@ public class ConfigTest {
 	}
 	
 	@Test
-	public void testDoubleChild() throws Exception {
+	public void testDoubleChild() throws IOException {
 		Config cf = new Config(new ConfigFile(largeTest));
 
 		Config grandparent = cf.getChild("grandparent");
@@ -93,7 +94,7 @@ public class ConfigTest {
 	}
 	
 	@Test
-	public void testPropertyRemoval() throws Exception {
+	public void testPropertyRemoval() throws IOException {
 		Config cf = new Config(new ConfigFile(largeTest));
 
 		assertTrue(cf.hasKey("hello"));
@@ -102,7 +103,7 @@ public class ConfigTest {
 	}
 
 	@Test
-	public void testGetKeys() throws Exception {
+	public void testGetKeys() throws IOException {
 		Config cf = new Config(new ConfigFile(largeTest));
 
 		String[] keys = cf.getKeys();

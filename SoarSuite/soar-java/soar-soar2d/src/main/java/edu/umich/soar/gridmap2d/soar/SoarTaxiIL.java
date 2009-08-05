@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.soar;
 
-
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.Simulation;
@@ -23,37 +22,25 @@ class SoarTaxiIL {
 		this.agent = agent;
 	}
 
-	void create() throws CommitException {
+	void create() {
 		self.create();
 		view.create();
 		cell.create();
 		cheat.create();
-		
-		if (!agent.Commit()) {
-			throw new CommitException();
-		}
 	}
 	
-	void update(boolean moved, int[] pos, TaxiMap map, int reward, int fuel) throws CommitException {
+	void update(boolean moved, int[] pos, TaxiMap map, int reward, int fuel) {
 		self.update(moved, pos, map, reward, fuel);
 		view.update(pos, map);
 		cell.update(pos, map);
 		cheat.update(map);
-		
-		if (!agent.Commit()) {
-			throw new CommitException();
-		}
 	}
 	
-	void destroy() throws CommitException {
+	void destroy() {
 		self.destroy();
 		view.destroy();
 		cell.destroy();
 		cheat.destroy();
-		
-		if (!agent.Commit()) {
-			throw new CommitException();
-		}
 	}
 	
 	private class SelfIL {

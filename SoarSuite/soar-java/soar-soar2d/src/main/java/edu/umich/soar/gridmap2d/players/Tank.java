@@ -7,18 +7,46 @@ import edu.umich.soar.gridmap2d.Simulation;
 import edu.umich.soar.gridmap2d.map.TankSoarMap;
 
 public class Tank extends Player {
-	private TankCommander commander;
+	public static class Builder {
+		// Required parameters
+		final String id;
+		
+		// Optional parameters
+		int missiles = Gridmap2D.config.tanksoarConfig().max_missiles;
+		int energy = Gridmap2D.config.tanksoarConfig().max_energy;
+		int health = Gridmap2D.config.tanksoarConfig().max_health;
+		
+		public Builder(String id) {
+			this.id = id;
+		}
+		
+		public Builder missiles(int missiles) {
+			this.missiles = missiles;
+			return this;
+		}
+		
+		public Builder energy(int energy) {
+			this.energy = energy;
+			return this;
+		}
+		
+		public Builder health(int health) {
+			this.health = health;
+			return this;
+		}
+		
+		public Tank build() {
+			return new Tank(this);
+		}
+	}
 	
+	private TankCommander commander;
 	private TankState state;
 
-	public Tank(String playerId, int radarWidth, int radarHeight, 
-			int initialMissiles, int initialEnergy, int initialHealth, 
-			int defaultMissiles, int defaultEnergy, int defaultHealth) throws Exception {
-		super(playerId);
+	private Tank(Builder builder) {
+		super(builder.id);
 
-		this.state = new TankState(getName(), radarWidth, radarHeight, 
-				initialMissiles, initialEnergy, initialHealth, 
-				defaultMissiles, defaultEnergy, defaultHealth);
+		this.state = new TankState(getName(), builder);
 
 		state.clearRadar(); // creates the radar structure
 		reset();
@@ -28,7 +56,7 @@ public class Tank extends Player {
 		this.commander = commander;
 	}
 	
-	public CommandInfo getCommand() throws Exception {
+	public CommandInfo getCommand() {
 		CommandInfo command;
 		if (commander != null) {
 			command = commander.nextCommand();
@@ -40,7 +68,7 @@ public class Tank extends Player {
 	}
 	
 	@Override
-	public void reset() throws Exception {
+	public void reset() {
 		super.reset();
 
 		if (state != null) {
@@ -56,7 +84,7 @@ public class Tank extends Player {
 		return state;
 	}
 
-	public void update(int [] newLocation, TankSoarMap tankSoarMap) throws Exception {
+	public void update(int [] newLocation, TankSoarMap tankSoarMap) {
 		super.update(newLocation);
 		
 		if (state.getRadarSwitch()) {
@@ -81,19 +109,19 @@ public class Tank extends Player {
 		}
 	}
 	
-	public void playersChanged(Player[] players) throws Exception {
+	public void playersChanged(Player[] players) {
 		if (commander != null) {
 			commander.playersChanged(players);
 		}
 	}
 
-	public void commit(int[] location) throws Exception {
+	public void commit(int[] location) {
 		if (commander != null) {
 			commander.commit();
 		}
 	}
 
-	public void shutdownCommander() throws Exception {
+	public void shutdownCommander() {
 		if (commander != null) {
 			commander.shutdown();
 		}

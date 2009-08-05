@@ -10,6 +10,10 @@ import edu.umich.soar.gridmap2d.Names;
 
 
 public class EatersMap implements GridMap, CellObjectObserver {
+	public static EatersMap generateInstance(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
+		return new EatersMap(mapPath, unopenedBoxesTerminal, lowProbability, highProbability);
+	}
+	
 
 	private String mapPath;
 	private GridMapData data;
@@ -20,7 +24,7 @@ public class EatersMap implements GridMap, CellObjectObserver {
 	private double lowProbability;
 	private double highProbability;
 
-	public EatersMap(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) throws Exception {
+	private EatersMap(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
 		this.mapPath = new String(mapPath);
 		this.lowProbability = lowProbability;
 		this.highProbability = highProbability;
@@ -32,7 +36,7 @@ public class EatersMap implements GridMap, CellObjectObserver {
 		return GridMapUtil.getMapName(this.mapPath);
 	}
 
-	public void reset() throws Exception {
+	public void reset(){
 		foodCount = 0;
 		scoreCount = 0;
 		unopenedBoxes = new HashSet<CellObject>();

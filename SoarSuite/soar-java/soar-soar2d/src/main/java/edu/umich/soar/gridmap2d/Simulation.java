@@ -39,7 +39,7 @@ public class Simulation {
 	private CognitiveArchitecture cogArch;
 	private int worldCount;
 
-	World initialize(SimConfig config) throws Exception {
+	World initialize(SimConfig config) {
 		this.game = config.game();
 		
 		// keep track of colors
@@ -107,9 +107,9 @@ public class Simulation {
 		return unusedColors;
 	}
 	
-	public void changeMap(String mapPath) throws Exception {
+	public void changeMap(String mapPath) {
 		logger.debug(Names.Debug.changingMap + mapPath);
-		world.setMap(mapPath);
+		world.setAndResetMap(mapPath);
 		worldCount = 0;
 		Gridmap2D.wm.reset();
 	}
@@ -170,47 +170,34 @@ public class Simulation {
 
 	/**
 	 * @param playerConfig configuration data for the future player
+	 * @throws IllegalStateException If there are no colors available. This indicates that there are too many players already on the map.
 	 * 
 	 * create a player and add it to the simulation and world
 	 */
-	public void createPlayer(String playerId, PlayerConfig playerConfig, boolean debug) throws Exception {
-//		if (Game.TAXI == game && (world.numberOfPlayers() > 1)) {
-//			// if this is removed, revisit white color below!
-//			throw new Exception(Names.Errors.taxi1Player);
-//		}
-		
-		// if a color was specified
-		if (playerConfig.color != null) {
-			//make sure it is unused
-			if (!unusedColors.contains(playerConfig.color)) {
-				throw new Exception(Names.Errors.usedColor + playerConfig.color);
-			}
-			// it is unused, so use it
-			useAColor(playerConfig.color);
-		} else {
-			
-			// no color specified, pick on at random
-			String color = useAColor(null);
-			
-			// make sure we got one
-			if (color == null) {
-				
-				// if we didn't then they are all gone
-				throw new Exception(Names.Errors.noMoreSlots);
-			}
-			playerConfig.color = color;
+	public void createPlayer(String playerId, PlayerConfig playerConfig, boolean debug) {
+		if (unusedColors.size() < 1) {
+			throw new IllegalStateException("no colors available, too many players already on map or colors not released" +
+					"");
 		}
-		
+
+		playerConfig.color = useAColor(playerConfig.color);
+		assert playerConfig.color != null;
+
 		// if we don't have a name, use our color
 		if (playerConfig.name == null) {
 			playerConfig.name = playerConfig.color;
 		}
-		
-		try {
-			world.addPlayer(playerId, playerConfig, debug);
-		} catch (Exception e) {
+
+		// verify name is available
+		if (world.hasPlayer(playerConfig.name)) {
 			freeAColor(playerConfig.color);
-			throw e;
+			return;
+		}
+			
+			
+		if (!world.addPlayer(playerId, playerConfig, debug)) {
+			freeAColor(playerConfig.color);
+			return;
 		}
 		
 		// the agent list has changed, notify things that care
@@ -223,7 +210,7 @@ public class Simulation {
 	 * removes the player from the world and blows away any associated data, 
 	 * frees up its color, etc.
 	 */
-	public void destroyPlayer(Player player) throws Exception {
+	public void destroyPlayer(Player player) {
 		world.removePlayer(player.getName());
 		
 		// free its color
@@ -248,7 +235,7 @@ public class Simulation {
 	/**
 	 * update the sim, or, in this case, the world
 	 */
-	public void update() throws Exception {
+	public void update() {
 		worldCount += 1;
 		world.update(worldCount);
 	}
@@ -257,14 +244,14 @@ public class Simulation {
 		return worldCount;
 	}
 
-	public void reset() throws Exception {
+	public void reset() {
 		logger.info(Names.Info.reset);
 		world.reset();
 		worldCount = 0;
 		Gridmap2D.control.resetTime();
 	}
 
-	public void shutdown() throws Exception {
+	public void shutdown() {
 		for(Player player : world.getPlayers()) {
 			destroyPlayer(player);
 		}
@@ -284,36 +271,11 @@ public class Simulation {
 		return Gridmap2D.simulation.getBasePath() + "config" + System.getProperty("file.separator") +  "maps" + System.getProperty("file.separator") + game.id();
 	}
 	
-	public void interrupted(String agentName) throws Exception {
+	public void interrupted(String agentName) {
 		world.interrupted(agentName);
 	}
 
 	public String getCurrentMapName() {
 		return world.getMap().getCurrentMapName();
 	}
-	
-    static double twopi_inv = 0.5/Math.PI;
-    static double twopi = 2.0*Math.PI;
-
-    // only good for positive numbers.
-    static private double mod2pi_pos(double vin)
-    {
-        double q = vin * twopi_inv + 0.5;
-        int qi = (int) q;
-
-        return vin - qi*twopi;
-    }
-
-    /** Ensure that v is [-PI, PI] **/
-    static public double mod2pi(double vin)
-    {
-        double v;
-
-        if (vin < 0)
-            v = -mod2pi_pos(-vin);
-        else
-            v = mod2pi_pos(vin);
-
-        return v;
-    }
 }

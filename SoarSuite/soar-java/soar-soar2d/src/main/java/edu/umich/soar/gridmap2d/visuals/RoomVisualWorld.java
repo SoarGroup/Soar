@@ -16,7 +16,7 @@ import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.players.Player;
-import edu.umich.soar.gridmap2d.players.RoomPlayer;
+import edu.umich.soar.gridmap2d.players.Robot;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
 import edu.umich.soar.gridmap2d.world.World;
 
@@ -103,7 +103,8 @@ public class RoomVisualWorld extends VisualWorld {
 								gc.setBackground(WindowManager.getColor(Gridmap2D.simulation.kColors[roomID]));
 							}
 						}
-						if (map.getCell(location).hasAnyWithProperty(Names.kRoomObjectName)) {
+						if (map.getCell(location).hasAnyWithProperty(Names.kRoomObjectMovable)) {
+							// TODO: multiple types of objects
 							block = true;
 							gc.setBackground(WindowManager.darkGray);
 						}
@@ -165,7 +166,7 @@ public class RoomVisualWorld extends VisualWorld {
 		
 		// draw entities now so they appear on top
 		for (Player p : world.getPlayers()) {
-			RoomPlayer player = (RoomPlayer)p;
+			Robot player = (Robot)p;
 			
 			pose_t pose = player.getState().getPose();
 			float [] center = new float [] { (float)pose.pos[0], (float)pose.pos[1] };

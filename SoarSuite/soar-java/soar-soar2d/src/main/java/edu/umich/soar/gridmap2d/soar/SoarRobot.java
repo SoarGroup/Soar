@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.soar;
 
-import java.io.File;
 import java.util.List;
 
 import jmat.LinAlg;
@@ -11,8 +10,8 @@ import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
-import edu.umich.soar.gridmap2d.players.RoomCommander;
-import edu.umich.soar.gridmap2d.players.RoomPlayer;
+import edu.umich.soar.gridmap2d.players.RobotCommander;
+import edu.umich.soar.gridmap2d.players.Robot;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
 import edu.umich.soar.robot.ObjectManipulationInterface;
 import edu.umich.soar.robot.OutputLinkManager;
@@ -25,18 +24,14 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Kernel;
 
-public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose, ObjectManipulationInterface  {
+public class SoarRobot implements RobotCommander, ConfigureInterface, OffsetPose, ObjectManipulationInterface  {
 	private static Logger logger = Logger.getLogger(SoarRobot.class);
 
-	private RoomPlayer player;
+	private Robot player;
 	private Agent agent;
 	private String [] shutdownCommands;
 	RoomWorld world;
 	
-	private InputLinkMetadata metadata;
-	private File commonMetadataFile;
-	private File mapMetadataFile;
-
 	final SoarRobotInputLinkManager input;
 	final OutputLinkManager output;
 	
@@ -47,16 +42,12 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 	public static final double PIXELS_2_METERS = 1.0 / 16.0;
 	public static final double METERS_2_PIXELS = 16.0;
 	
-	public SoarRobot(RoomPlayer player, Agent agent, Kernel kernel,
-			RoomWorld world, String[] shutdownCommands, File commonMetadataFile,
-			File mapMetadataFile) throws Exception {
+	public SoarRobot(Robot player, Agent agent, Kernel kernel,
+			RoomWorld world, String[] shutdownCommands) {
 		this.player = player;
 		this.agent = agent;
 		this.world = world;
 		this.shutdownCommands = shutdownCommands;
-		
-		this.commonMetadataFile = commonMetadataFile;
-		this.mapMetadataFile = mapMetadataFile;
 		
 		agent.SetBlinkIfNoChange(false);
 		
@@ -65,44 +56,48 @@ public class SoarRobot implements RoomCommander, ConfigureInterface, OffsetPose,
 		output = new OutputLinkManager(agent);
 		output.create(input.getWaypointInterface(), world, input.getReceiveMessagesInterface(), this, this, this);
 		
-		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
-		
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
 		}
 	}
 
 	@Override
-	public void reset() throws Exception {
+	public void reset() {
 		if (agent == null) {
 			return;
 		}
 		
-		metadata.destroy();
-		metadata = null;
-
 		input.destroy();
 		output.destroy();
+
+		if (!agent.Commit()) {
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+		}
 
 		agent.InitSoar();
 
 		input.create();
 		output.create(input.getWaypointInterface(), world, input.getReceiveMessagesInterface(), this, this, this);
-		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
 
-		agent.Commit();
+		if (!agent.Commit()) {
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+		}
 	}
 
 	@Override
-	public void update(RoomMap roomMap) throws Exception {
+	public void update(RoomMap roomMap) {
 
 		ddc = output.update();
 		input.update(player, world, roomMap, this.isFloatYawWmes());	
-		agent.Commit();
+		
+		if (!agent.Commit()) {
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.stopSimulation();
+		}
 	}
 
 	@Override
-	public CommandInfo nextCommand() throws Exception {
+	public CommandInfo nextCommand() {
 		return new CommandInfo(ddc);
 	}
 
