@@ -149,10 +149,10 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 				if (selectedPlayer == null) {
 					return;
 				}
-				try {
+//				try {
 					Gridmap2D.simulation.destroyPlayer(selectedPlayer);
-				} catch (Exception ignored) {
-				}
+//				} catch (Exception ignored) {
+//				}
 			}
 		});
 		{
@@ -199,7 +199,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 
 		m_Radar = new ProgressBar(row5, SWT.NONE | SWT.VERTICAL);
 		m_Radar.setMinimum(0);
-		m_Radar.setMaximum(Gridmap2D.config.tanksoarConfig().radar_height);
+		m_Radar.setMaximum(TankState.RADAR_HEIGHT);
 		{
 			GridData gd = new GridData();
 			gd.heightHint = m_AgentWorld.getHeight();

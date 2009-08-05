@@ -80,12 +80,17 @@ public class Cell {
 		this.player = player;
 	}
 	
-	/** Objects keyed by name, not null name will replace existing if any */
+	/**
+	 * Objects keyed by name, not null name will replace existing if any.
+	 * 
+	 * @param cellObject
+	 * @throws NullPointerException If cellObject is null 
+	 */
 	public void addObject(CellObject cellObject) {
-		draw = true;
 		if (cellObject == null) {
 			throw new NullPointerException();
 		}
+		draw = true;
 		Iterator<CellObject> iter = cellObjects.iterator();
 		while(iter.hasNext()) {
 			CellObject object = iter.next();
@@ -131,6 +136,7 @@ public class Cell {
 	/**
 	 * @param name the object name
 	 * @return the object or null if none
+	 * @throws NullPointerException If name is null
 	 * 
 	 * Returns the object by name.
 	 */
@@ -164,6 +170,7 @@ public class Cell {
 	/**
 	 * @param name the object name
 	 * @return the removed object or null if it didn't exist
+	 * @throws NullPointerException if name is null
 	 * 
 	 * If the specified object exists in the cell, it is removed and returned.
 	 * Null is returned if the object isn't in the cell.

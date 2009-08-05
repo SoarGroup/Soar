@@ -13,6 +13,10 @@ import edu.umich.soar.gridmap2d.Simulation;
 
 public class TaxiMap implements GridMap, CellObjectObserver {
 	private static Logger logger = Logger.getLogger(TaxiMap.class);
+	
+	public static TaxiMap generateInstance(String mapPath) {
+		return new TaxiMap(mapPath);
+	}
 
 	private String mapPath;
 	private GridMapData data;
@@ -26,13 +30,13 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 
 	private List<int[]> destinations = new ArrayList<int[]>();
 
-	public TaxiMap(String mapPath) throws Exception {
+	private TaxiMap(String mapPath) {
 		this.mapPath = new String(mapPath);
 		
 		reset();
 	}
 	
-	public void reset() throws Exception {
+	public void reset() {
 		destinations.clear();
 		passengerDestination = null;
 		passengerSourceColor = null;

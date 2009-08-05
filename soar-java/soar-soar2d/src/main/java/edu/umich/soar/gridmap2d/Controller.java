@@ -48,12 +48,16 @@ public class Controller implements Runnable {
 	public void errorPopUp(String message) {
 		if (Gridmap2D.wm.using()) {
 			Gridmap2D.wm.errorMessage(Gridmap2D.config.title(), message);
+		} else {
+			logger.error(message);
 		}
 	}
 	
 	public void infoPopUp(String message) {
 		if (Gridmap2D.wm.using()) {
 			Gridmap2D.wm.infoMessage(Gridmap2D.config.title(), message);
+		} else {
+			logger.info(message);
 		}
 	}
 	
@@ -106,12 +110,12 @@ public class Controller implements Runnable {
 	 * Called to reset the simulation.
 	 */
 	public void resetSimulation() {
-		try {
+//		try {
 			Gridmap2D.simulation.reset();
-		} catch (Exception e) {
-			e.printStackTrace();
-			error(e.getMessage());
-		}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			error(e.getMessage());
+//		}
 		
 		if (Gridmap2D.wm.using()) {
 			Gridmap2D.wm.reset();
@@ -140,7 +144,7 @@ public class Controller implements Runnable {
 				startEvent();
 				
 				// run as necessary
-				try {
+//				try {
 					if (!step) {
 						while (!stop) {
 							tickEvent();
@@ -148,25 +152,25 @@ public class Controller implements Runnable {
 					} else {
 						tickEvent();
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
-					error(e.getMessage());
-				}
-				
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					error(e.getMessage());
+//				}
+			
 				// call the stop event
 				stopEvent();
 			}
 			if (this.runsTerminal > 0) {
-				try {
+//				try {
 					Gridmap2D.simulation.reset();
-				} catch (Exception e) {
-					logger.error("Exception thrown resetting simulation");
-					this.runsTerminal = 0;
-					if (Gridmap2D.wm.using()) {
-						// we're stopped, this updates buttons
-						Gridmap2D.wm.stop();
-					}
-				}
+//				} catch (Exception e) {
+//					logger.error("Exception thrown resetting simulation");
+//					this.runsTerminal = 0;
+//					if (Gridmap2D.wm.using()) {
+//						// we're stopped, this updates buttons
+//						Gridmap2D.wm.stop();
+//					}
+//				}
 			}
 		} while (this.runsTerminal > 0);
 
@@ -196,7 +200,7 @@ public class Controller implements Runnable {
 	 * output callback. If soar is not running things, this is called by run() in 
 	 * a loop if necessary.
 	 */
-	public void tickEvent() throws Exception {
+	public void tickEvent() {
 		logger.trace("Tick event.");
 		// this is 50 except for room, where it is configurable
 		timeSlice = Gridmap2D.config.generalConfig().cycle_time_slice / 1000.0f;
@@ -253,7 +257,7 @@ public class Controller implements Runnable {
 	/**
 	 * Call to shutdown the simulation.
 	 */
-	public void shutdown() throws Exception {
+	public void shutdown() {
 		// we're shutting down
 		shuttingDown = true;
 		
@@ -273,12 +277,6 @@ public class Controller implements Runnable {
 		return running;
 	}
 	
-	private void error(String message) {
-		logger.error(message);
-		errorPopUp(message);
-
-	}
-
 	public CommandInfo getHumanCommand(Player player) {
 		return Gridmap2D.wm.getHumanCommand(player);
 	}

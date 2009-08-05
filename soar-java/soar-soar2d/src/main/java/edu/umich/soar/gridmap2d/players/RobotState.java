@@ -10,7 +10,7 @@ import jmat.MathUtil;
 
 import lcmtypes.pose_t;
 
-public class RoomPlayerState implements CarryInterface {
+public class RobotState implements CarryInterface {
 
 	private pose_t pose;
 	

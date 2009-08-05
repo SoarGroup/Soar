@@ -9,6 +9,7 @@ import java.util.prefs.Preferences;
 
 import org.apache.log4j.Logger;
 
+import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.config.SimConfig;
 import edu.umich.soar.gridmap2d.visuals.WindowManager;
 import edu.umich.soar.gridmap2d.world.World;
@@ -71,12 +72,12 @@ public class Gridmap2D {
 		// Initialize simulation
 		logger.trace(Names.Trace.initSimulation);
 		World world = null;
-		try {
+//		try {
 			world = simulation.initialize(config);
-		} catch (Exception e) {
-			fatalError(Names.Errors.simulationInitFail + e.getMessage());
-			e.printStackTrace();
-		}
+//		} catch (Exception e) {
+//			fatalError(Names.Errors.simulationInitFail + e.getMessage());
+//			e.printStackTrace();
+//		}
 		
 		if (usingGUI) {
 			// Run GUI
@@ -85,20 +86,20 @@ public class Gridmap2D {
 		} else {
 			// Run simulation
 			logger.trace(Names.Trace.startSimulation);
-			try {
+//			try {
 				control.startSimulation(false, false);
-			} catch (Exception e) {
-				fatalError("Simulation exception: " + e.getMessage());
-			}
+//			} catch (Exception e) {
+//				fatalError("Simulation exception: " + e.getMessage());
+//			}
 		}
 		
 		// calls wm.shutdown()
 		logger.trace(Names.Trace.shutdown);
-		try {
+//		try {
 			control.shutdown();
-		} catch (Exception e) {
-			fatalError(e.getMessage());
-		}
+//		} catch (Exception e) {
+//			fatalError(e.getMessage());
+//		}
 	}
 	
 	private void fatalError(String message) {
@@ -131,13 +132,18 @@ public class Gridmap2D {
 
 		// Read config file
 		try {
-			config = SimConfig.load(configPath);
+			config = SimConfig.newInstance(configPath);
 		} catch (IOException e) {
-			if(config == null) {
-				wm.initialize();
-				fatalError(Names.Errors.loadingConfig);
-			}
+			wm.initialize();
+			fatalError(e.toString());
+		} catch (ParseError e) {
+			wm.initialize();
+			fatalError(e.toString());
+		} catch (IllegalArgumentException e) {
+			wm.initialize();
+			fatalError(e.toString());
 		}
+		assert config != null;
 	}
 	
 	private void install(String file) {	

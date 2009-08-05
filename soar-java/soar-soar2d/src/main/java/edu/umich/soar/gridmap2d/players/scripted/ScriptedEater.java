@@ -14,25 +14,25 @@ public class ScriptedEater implements EaterCommander {
 	List<CommandInfo> commands = new ArrayList<CommandInfo>();
 	int index;
 	
-	public ScriptedEater(List<CommandInfo> commands) throws Exception {
+	public ScriptedEater(List<CommandInfo> commands) {
 		reset();
 		this.commands = new ArrayList<CommandInfo>(commands);
 	}
 
-	public CommandInfo nextCommand() throws Exception {
+	public CommandInfo nextCommand() {
 		if (index >= commands.size()) {
 			return new CommandInfo();
 		}
 		return commands.get(index++);
 	}
 
-	public void reset() throws Exception {
+	public void reset() {
 		index = 0;
 	}
 
-	public void shutdown() throws Exception {
+	public void shutdown() {
 	}
 
-	public void update(EatersMap eatersMap) throws Exception {
+	public void update(EatersMap eatersMap) {
 	}
 }

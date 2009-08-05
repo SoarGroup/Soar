@@ -34,7 +34,7 @@ public class BlockedDiagram extends Canvas implements PaintListener {
 	
 	public BlockedDiagram(Composite parent, int style) {
 		super(parent, style);
-		kDiagram = new Image(parent.getDisplay(), Gridmap2D.class.getResourceAsStream("/org/msoar/gridmap2d/images/tanksoar/blocked-diagram.gif"));
+		kDiagram = new Image(parent.getDisplay(), Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/blocked-diagram.gif"));
 		disable();
 		addPaintListener(this);		
 	}

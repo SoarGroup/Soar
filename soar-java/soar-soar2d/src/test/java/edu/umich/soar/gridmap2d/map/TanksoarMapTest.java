@@ -6,25 +6,28 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertNotNull;
+
 import edu.umich.soar.gridmap2d.map.TankSoarMap;
 
 public class TanksoarMapTest {
 	@Before
-	public void setUp() throws Exception {
+	public void setUp()  {
 	}
 	
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		
 	}
 	
 	@Test
-	public void testLoadAll() throws Exception {
+	public void testLoadAll() {
 		File mapDir = new File("config/maps/tanksoar");
 		
 		for (File file : mapDir.listFiles()) {
 			if (file.isFile()) {
-				new TankSoarMap(file.getAbsolutePath(), 7);
+				TankSoarMap map = TankSoarMap.generateInstance(file.getAbsolutePath(), 7);
+				assertNotNull(map);
 			}
 		}
 	}

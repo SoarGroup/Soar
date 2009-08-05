@@ -1,6 +1,7 @@
 package edu.umich.soar.gridmap2d.map;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import org.apache.log4j.Logger;
 
 import edu.umich.soar.config.Config;
 import edu.umich.soar.config.ConfigFile;
+import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Simulation;
@@ -28,40 +30,76 @@ import edu.umich.soar.gridmap2d.world.RoomWorld;
 public class GridMapUtil {
 	private static Logger logger = Logger.getLogger(GridMapUtil.class);
 
-	static void loadFromConfigFile(GridMapData data, String mapPath, CellObjectObserver observer) throws Exception {
-		loadFromConfigFile(data, mapPath, observer, 0, 0);
+	static boolean loadFromConfigFile(GridMapData data, String mapPath, CellObjectObserver observer) {
+		return loadFromConfigFile(data, mapPath, observer, 0, 0);
 	}
 		
-	static void loadFromConfigFile(GridMapData data, String mapPath, CellObjectObserver observer, double lowProbability, double highProbability) throws Exception {
+	static boolean loadFromConfigFile(GridMapData data, String mapPath, CellObjectObserver observer, double lowProbability, double highProbability) {
 		File mapFile = new File(mapPath);
 		if (!mapFile.exists()) {
-			throw new Exception("Map file doesn't exist: " + mapFile.getAbsolutePath());
+			Gridmap2D.control.errorPopUp("Map file doesn't exist: " + mapFile.getAbsolutePath());
+			return false;
 		}
 
 		data.cellObjectManager = new CellObjectManager();
 		
 		String mapFilePath = mapFile.getAbsolutePath();
-		Config mapConfig = new Config(new ConfigFile(mapFilePath));
-		
-		String objectsFileString = mapConfig.getString("objects_file");
-		String mapFileDirectory = mapFilePath.substring(0, mapFilePath.lastIndexOf(File.separatorChar) + 1);
-		
-		Config objectsConfig = new Config(new ConfigFile(mapFileDirectory + objectsFileString));
-		for (String id : mapConfig.getStrings("objects")) {
-			CellObject template = new CellObject(objectsConfig.getChild("objects." + id));
-			data.cellObjectManager.registerTemplate(template);
+		try {
+			Config mapConfig = new Config(new ConfigFile(mapFilePath));
+			String objectsFileString = mapConfig.getString("objects_file");
+			String mapFileDirectory = mapFilePath.substring(0, mapFilePath.lastIndexOf(File.separatorChar) + 1);
+			
+			Config objectsConfig = new Config(new ConfigFile(mapFileDirectory + objectsFileString));
+			
+			for (String id : mapConfig.getStrings("objects")) {
+				CellObject template = new CellObject(objectsConfig.getChild("objects." + id));
+				data.cellObjectManager.registerTemplate(template);
+			}
+			
+			cellsConfig(data, mapConfig.getChild("cells"), objectsConfig, observer, lowProbability, highProbability);
+			
+			if (mapConfig.hasKey("metadata")) {
+				data.metadataFile = new File(mapConfig.getString("metadata"));
+			}
+			
+			buildReferenceMap(data);
+			return true;
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+			Gridmap2D.control.errorPopUp(e.toString());
+			return false;
+		} 
+		catch (ParseError e) {
+			e.printStackTrace();
+			Gridmap2D.control.errorPopUp(e.toString());
+			return false;
 		}
-		
-		cellsConfig(data, mapConfig.getChild("cells"), objectsConfig, observer, lowProbability, highProbability);
-		
-		if (mapConfig.hasKey("metadata")) {
-			data.metadataFile = new File(mapConfig.getString("metadata"));
+		catch (IllegalStateException e) {
+			e.printStackTrace();
+			Gridmap2D.control.errorPopUp(e.toString());
+			return false;
+
+		} 
+		catch (IndexOutOfBoundsException e) {
+			e.printStackTrace();
+			Gridmap2D.control.errorPopUp(e.toString());
+			return false;
 		}
-		
-		buildReferenceMap(data);
 	}
 
-	private static void cellsConfig(GridMapData data, Config cellsConfig, Config objectsConfig, CellObjectObserver observer, double lowProbability, double highProbability) throws Exception {
+	/**
+	 * @param data
+	 * @param cellsConfig
+	 * @param objectsConfig
+	 * @param observer
+	 * @param lowProbability
+	 * @param highProbability
+	 * 
+	 * @throws IndexOutOfBoundsException If rows do not contain enough cell data
+	 * @throws IllegalArgumentException If encountered object that isn't registered
+	 */
+	private static void cellsConfig(GridMapData data, Config cellsConfig, Config objectsConfig, CellObjectObserver observer, double lowProbability, double highProbability) {
 		data.cells = new GridMapCells(cellsConfig.requireInt("size"), new CellObjectObserver[] { data, observer });
 		
 		data.randomWalls = cellsConfig.getBoolean("random_walls", false);
@@ -75,7 +113,7 @@ public class GridMapUtil {
 
 				String[] cellStrings = rows.getStrings(Integer.toString(xy[1]));
 				if (cellStrings.length != data.cells.size()) {
-					throw new Exception("Not enough cells, row " + xy[1]);
+					throw new IndexOutOfBoundsException("Not enough cells, row " + xy[1]);
 				}
 				
 				for (xy[0] = 0; xy[0] < data.cells.size(); ++xy[0]) {
@@ -85,7 +123,7 @@ public class GridMapUtil {
 						logger.trace(Arrays.toString(xy) + ": " + objectName);
 						
 						if (!data.cellObjectManager.hasTemplate(objectName)) {
-							throw new Exception("object \"" + objectName + "\" does not map to a cell object");
+							throw new IllegalArgumentException("object \"" + objectName + "\" does not map to a cell object");
 						}
 						
 						CellObject cellObject = data.cellObjectManager.createObject(objectName);
@@ -155,9 +193,17 @@ public class GridMapUtil {
 		}
 	}
 
-	private static void generateRandomWalls(GridMapData data, CellObjectObserver observer, double lowProbability, double highProbability) throws Exception {
+	/**
+	 * @param data
+	 * @param observer
+	 * @param lowProbability
+	 * @param highProbability
+	 * 
+	 * @throws IllegalStateException If no blocking types are available.
+	 */
+	private static void generateRandomWalls(GridMapData data, CellObjectObserver observer, double lowProbability, double highProbability) {
 		if (!data.cellObjectManager.hasTemplatesWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			throw new Exception("tried to generate random walls with no blocking types");
+			throw new IllegalStateException("tried to generate random walls with no blocking types");
 		}
 		
 		assert data.cells != null;
@@ -252,9 +298,15 @@ public class GridMapUtil {
 		return false;
 	}
 	
-	private static void generateRandomFood(GridMapData data, CellObjectObserver observer) throws Exception {
+	/**
+	 * @param data
+	 * @param observer
+	 * 
+	 * @throws IllegalStateException If no food types available
+	 */
+	private static void generateRandomFood(GridMapData data, CellObjectObserver observer) {
 		if (!data.cellObjectManager.hasTemplatesWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible)) {
-			throw new Exception("tried to generate random walls with no food types");
+			throw new IllegalStateException("tried to generate random walls with no food types");
 		}
 
 		logger.trace("Generating random food.");
@@ -779,7 +831,10 @@ public class GridMapUtil {
 		
 		// Assign areas for all objects
 		for (RoomObjectInfo info : roomData.roomObjectInfoMap.values()) {
-			info.area = data.cells.getCell(info.location).getAllWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber).get(0).getIntProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, -1);
+			Cell cell = data.cells.getCell(info.location);
+			List<CellObject> numbers = cell.getAllWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber);
+			CellObject obj = numbers.get(0);
+			info.area = obj.getIntProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, -1);
 		}
 		
 		// print gateway information

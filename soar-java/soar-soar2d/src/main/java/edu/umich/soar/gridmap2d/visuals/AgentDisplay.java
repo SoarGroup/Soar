@@ -51,10 +51,6 @@ public class AgentDisplay extends Composite {
 		}
 		
 		Gridmap2D.config.playerConfigs().put(clonePlayerId, clonePlayerConfig);
-		try {
-			Gridmap2D.simulation.createPlayer(clonePlayerId, clonePlayerConfig, false);
-		} catch (Exception e) {
-			Gridmap2D.wm.errorMessage("Creation failed", e.getMessage());
-		}
+		Gridmap2D.simulation.createPlayer(clonePlayerId, clonePlayerConfig, false);
 	}
 }

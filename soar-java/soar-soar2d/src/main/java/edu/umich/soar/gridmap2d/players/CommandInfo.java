@@ -69,6 +69,12 @@ public class CommandInfo {
 		logger.error("Near line " + t.lineNumber + ": " + t.line);
 	}
 
+	/**
+	 * @param path
+	 * @return
+	 * 
+	 * @throws IOException If there is a problem finding or reading the script specified by path
+	 */
 	public static List<CommandInfo> loadScript(String path) throws IOException {
 		CommandInfo.Tokenizer t = new CommandInfo.Tokenizer(path);
 		List<CommandInfo> commands = new ArrayList<CommandInfo>();
@@ -113,6 +119,11 @@ public class CommandInfo {
 		int lineNumber = 0;
 		Queue<String> tokens = new LinkedList<String>();
 
+		/**
+		 * @param path
+		 * 
+		 * @throws IOException If there is a problem finding or reading the files specified by path
+		 */
 		public Tokenizer(String path) throws IOException {
 			ins = new BufferedReader(new FileReader(path));
 		}
@@ -187,6 +198,11 @@ public class CommandInfo {
 
 		}
 
+		/**
+		 * @return
+		 * 
+		 * @throws IOException If there is a problem reading the script file
+		 */
 		public boolean hasNext() throws IOException {
 			while (true) {
 				if (tokens.size() > 0)
@@ -202,6 +218,11 @@ public class CommandInfo {
 		}
 
 		// If the next token is s, consume it.
+		/**
+		 * @param s
+		 * @return
+		 * @throws IOException If there is a problem reading the script file
+		 */
 		public boolean consume(String s) throws IOException {
 			if (peek().equals(s)) {
 				next();
@@ -210,6 +231,10 @@ public class CommandInfo {
 			return false;
 		}
 
+		/**
+		 * @return
+		 * @throws IOException If there is a problem reading the script file
+		 */
 		public String peek() throws IOException {
 			if (!hasNext())
 				return null;
@@ -217,6 +242,10 @@ public class CommandInfo {
 			return tokens.peek();
 		}
 
+		/**
+		 * @return
+		 * @throws IOException If there is a problem reading the script file
+		 */
 		public String next() throws IOException {
 			if (!hasNext())
 				return null;

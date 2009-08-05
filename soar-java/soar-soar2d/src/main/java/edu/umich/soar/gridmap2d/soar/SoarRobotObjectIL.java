@@ -22,22 +22,22 @@ class SoarRobotObjectIL {
 		this.parent = parent;
 	}
 	
-	void initialize(String name, pose_t pose, PointRelationship r) {
-		this.parent.CreateStringWME("type", "player");
-		// no id
-		this.parent.CreateStringWME("name", name);
+	void initialize(pose_t pose, PointRelationship r) {
 		this.visible = this.parent.CreateStringWME("visible", "yes");
 
 		initInternal(pose, r);
 	}
 	
-	void initialize(int objectId, String type, pose_t pose, PointRelationship r) {
-		this.parent.CreateStringWME("type", type);
-		// no name
-		this.parent.CreateIntWME("id", objectId);
-		this.visible = this.parent.CreateStringWME("visible", "yes");
-
-		initInternal(pose, r);
+	void addProperty(String key, String value) {
+		this.parent.CreateStringWME(key, value);
+	}
+		
+	void addProperty(String key, int value) {
+		this.parent.CreateIntWME(key, value);
+	}
+		
+	void addProperty(String key, double value) {
+		this.parent.CreateFloatWME(key, value);
 	}
 		
 	private void initInternal(pose_t pose, PointRelationship r) {

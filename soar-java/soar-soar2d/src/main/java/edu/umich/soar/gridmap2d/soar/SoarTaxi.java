@@ -1,10 +1,9 @@
 package edu.umich.soar.gridmap2d.soar;
 
-import java.io.File;
-
 import org.apache.log4j.Logger;
 
 import edu.umich.soar.gridmap2d.Direction;
+import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.TaxiMap;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
@@ -17,49 +16,40 @@ import sml.Identifier;
 public class SoarTaxi implements TaxiCommander {
 	private static Logger logger = Logger.getLogger(SoarTaxi.class);
 
-	private Taxi taxi;
+	private Taxi player;
 	private Agent agent;
 	private String [] shutdownCommands;
-	private InputLinkMetadata metadata;
-	private File commonMetadataFile;
-	private File mapMetadataFile;
 	private SoarTaxiIL input;
 
-	public SoarTaxi(Taxi taxi, Agent agent, String[] shutdown_commands, File commonMetadataFile, File mapMetadataFile) throws Exception {
-		this.taxi = taxi;
+	public SoarTaxi(Taxi taxi, Agent agent, String[] shutdown_commands) {
+		this.player = taxi;
 		this.agent = agent;
-		this.commonMetadataFile = commonMetadataFile;
-		this.mapMetadataFile = mapMetadataFile;
 		this.shutdownCommands = shutdown_commands;
 		
 		agent.SetBlinkIfNoChange(false);
 		
 		input = new SoarTaxiIL(agent);
-		try {
-			input.create();
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + taxi.getName());
+		input.create();
+
+		if (!agent.Commit()) {
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + taxi.getName());
 		}
-		this.metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
+	}
+
+	public void update(TaxiMap taxiMap) {
+		input.update(player.getMoved(), player.getLocation(), taxiMap, player.getPointsDelta(), player.getFuel());
 		
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + taxi.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.stopSimulation();
 		}
 	}
 
-	public void update(TaxiMap taxiMap) throws Exception {
-		try {
-			input.update(taxi.getMoved(), taxi.getLocation(), taxiMap, taxi.getPointsDelta(), taxi.getFuel());
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + taxi.getName());
-		}
-	}
-
-	public CommandInfo nextCommand() throws Exception {
+	public CommandInfo nextCommand() {
 		// if there was no command issued, that is kind of strange
 		if (agent.GetNumberCommands() == 0) {
 			if (logger.isDebugEnabled()) {
-				logger.debug(taxi.getName() + " issued no command.");
+				logger.debug(player.getName() + " issued no command.");
 			}
 			return new CommandInfo();
 		}
@@ -69,7 +59,7 @@ public class SoarTaxi implements TaxiCommander {
 		CommandInfo move = new CommandInfo();
 		boolean moveWait = false;
 		if (agent.GetNumberCommands() > 1) {
-			logger.warn(taxi.getName() + ": " + agent.GetNumberCommands() 
+			logger.warn(player.getName() + ": " + agent.GetNumberCommands() 
 					+ " commands detected, all but the first will be ignored");
 		}
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
@@ -78,7 +68,7 @@ public class SoarTaxi implements TaxiCommander {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warn(taxi.getName() + ": multiple move commands detected");
+					logger.warn(player.getName() + ": multiple move commands detected");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -101,7 +91,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warn(taxi.getName() + ": multiple stop commands detected, ignoring");
+					logger.warn(player.getName() + ": multiple stop commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -111,7 +101,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kPickUpID)) {
 				if (move.pickup) {
-					logger.warn(taxi.getName() + ": multiple " + Names.kPickUpID + " commands detected, ignoring");
+					logger.warn(player.getName() + ": multiple " + Names.kPickUpID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -121,7 +111,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kPutDownID)) {
 				if (move.putdown) {
-					logger.warn(taxi.getName() + ": multiple " + Names.kPutDownID + " commands detected, ignoring");
+					logger.warn(player.getName() + ": multiple " + Names.kPutDownID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -131,7 +121,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kFillUpID)) {
 				if (move.fillup) {
-					logger.warn(taxi.getName() + ": multiple " + Names.kFillUpID + " commands detected, ignoring");
+					logger.warn(player.getName() + ": multiple " + Names.kFillUpID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -149,51 +139,49 @@ public class SoarTaxi implements TaxiCommander {
 			commandId.AddStatusError();
 		}
 		agent.ClearOutputLinkChanges();
+		
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + taxi.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.stopSimulation();
 		}
+		
 		return move;
 	}
 
-	public void reset() throws Exception {
+	public void reset() {
 		if (agent == null) {
 			return;
 		}
 		
-		try {
-			input.destroy();
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + taxi.getName());
-		}
-
-		metadata.destroy();
-		metadata = null;
-		metadata = InputLinkMetadata.load(agent, commonMetadataFile, mapMetadataFile);
+		input.destroy();
 
 		if (!agent.Commit()) {
-			throw new Exception(Names.Errors.commitFail + taxi.getName());
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.stopSimulation();
 		}
 
 		agent.InitSoar();
 			
-		try {
-			input.create();
-		} catch (CommitException e) {
-			throw new Exception(Names.Errors.commitFail + taxi.getName());
+		input.create();
+			 
+		if (!agent.Commit()) {
+			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
+			Gridmap2D.control.stopSimulation();
 		}
+
 	}
 
-	public void shutdown() throws Exception {
+	public void shutdown() {
 		assert agent != null;
 		if (shutdownCommands != null) { 
 			// execute the pre-shutdown commands
 			for (String command : shutdownCommands) {
-				String result = taxi.getName() + ": result: " + agent.ExecuteCommandLine(command, true);
-				logger.info(taxi.getName() + ": shutdown command: " + command);
+				String result = player.getName() + ": result: " + agent.ExecuteCommandLine(command, true);
+				logger.info(player.getName() + ": shutdown command: " + command);
 				if (agent.HadError()) {
-					throw new Exception(result);
+					Gridmap2D.control.errorPopUp(result);
 				} else {
-					logger.info(taxi.getName() + ": result: " + result);
+					logger.info(player.getName() + ": result: " + result);
 				}
 			}
 		}

@@ -13,17 +13,17 @@ import edu.umich.soar.gridmap2d.Direction;
 public class DirectionTest {
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		
 	}
 
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		
 	}
 	
 	@Test
-	public void testRelatives() throws Exception {
+	public void testRelatives() {
 		assertTrue(Direction.NORTH == Direction.SOUTH.backward());
 		assertTrue(Direction.EAST == Direction.WEST.backward());
 		assertTrue(Direction.SOUTH == Direction.NORTH.backward());
@@ -42,7 +42,7 @@ public class DirectionTest {
 	}
 	
 	@Test
-	public void testTranslation() throws Exception {
+	public void testTranslation() {
 		int[] point = new int[] { 5, 5 };
 
 		point = Direction.translate(point, Direction.NONE);
@@ -84,7 +84,7 @@ public class DirectionTest {
 	}
 
 	@Test
-	public void testNoneIs0() throws Exception {
+	public void testNoneIs0() {
 		assertTrue(Direction.values()[0] == Direction.NONE);
 		assertTrue(Direction.values()[1] != Direction.NONE);
 		assertTrue(Direction.values()[2] != Direction.NONE);
@@ -93,7 +93,7 @@ public class DirectionTest {
 	}
 	
 	@Test
-	public void testIdParse() throws Exception {
+	public void testIdParse() {
 		for(Direction dir : Direction.values()) {
 			assertTrue(dir == Direction.parse(dir.id()));
 		}

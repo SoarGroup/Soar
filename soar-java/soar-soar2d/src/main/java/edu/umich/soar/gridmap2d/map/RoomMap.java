@@ -28,7 +28,7 @@ public class RoomMap implements GridMap, CellObjectObserver {
 		public int area = -1;
 	}
 	
-	public RoomMap(String mapPath) throws Exception {
+	public RoomMap(String mapPath) {
 		this.mapPath = new String(mapPath);
 		
 		reset();
@@ -69,8 +69,8 @@ public class RoomMap implements GridMap, CellObjectObserver {
 		Cell cell = data.cells.getCell(location);
 		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = cell.getPlayer() == null;
-		boolean mblock = cell.hasAnyWithProperty(Names.kRoomObjectName);
-		return enterable && noPlayer && !mblock;
+		boolean movable = cell.hasAnyWithProperty(Names.kRoomObjectMovable);
+		return enterable && noPlayer && !movable;
 	}
 
 	@Override
@@ -79,13 +79,11 @@ public class RoomMap implements GridMap, CellObjectObserver {
 	}
 
 	@Override
-	public void reset() throws Exception {
+	public void reset() {
 		this.roomData = new RoomMapBuildData();
 		this.data = new GridMapData();
 		GridMapUtil.loadFromConfigFile(data, mapPath, this);
-		if (GridMapUtil.generateRoomStructure(data, roomData) == false) {
-			throw new Exception("generateRoomStructure failed");
-		}
+		GridMapUtil.generateRoomStructure(data, roomData);
 	}
 
 	public Set<CellObject> getRoomObjects() {
@@ -103,7 +101,7 @@ public class RoomMap implements GridMap, CellObjectObserver {
 
 	@Override
 	public void addStateUpdate(int[] location, CellObject added) {
-		if (!added.getName().equals(Names.kRoomObjectName)) {
+		if (!added.hasProperty(Names.kRoomObjectMovable)) {
 			return;
 		}
 		if (roomData.roomObjects == null) {

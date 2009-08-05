@@ -5,8 +5,8 @@ import java.io.File;
 
 import edu.umich.soar.gridmap2d.players.Eater;
 import edu.umich.soar.gridmap2d.players.EaterCommander;
-import edu.umich.soar.gridmap2d.players.RoomCommander;
-import edu.umich.soar.gridmap2d.players.RoomPlayer;
+import edu.umich.soar.gridmap2d.players.RobotCommander;
+import edu.umich.soar.gridmap2d.players.Robot;
 import edu.umich.soar.gridmap2d.players.Tank;
 import edu.umich.soar.gridmap2d.players.TankCommander;
 import edu.umich.soar.gridmap2d.players.Taxi;
@@ -18,14 +18,14 @@ public interface CognitiveArchitecture {
 
 	void seed(int seed);
 
-	EaterCommander createEaterCommander(Eater eater, String productions, int vision, String[] shutdownCommands, File metadataFile, boolean debug) throws Exception;
-	TankCommander createTankCommander(Tank tank, String productions, String[] shutdown_commands, File metadataFile, boolean debug) throws Exception;
-	TaxiCommander createTaxiCommander(Taxi taxi, String productions, String[] shutdown_commands, File metadataFile, boolean debug) throws Exception;
-	RoomCommander createRoomCommander(RoomPlayer player, RoomWorld world, String productions, String[] shutdown_commands, File metadataFile, boolean debug) throws Exception;
+	EaterCommander createEaterCommander(Eater eater, String productions, int vision, String[] shutdownCommands, File metadataFile, boolean debug);
+	TankCommander createTankCommander(Tank tank, String productions, String[] shutdown_commands, File metadataFile, boolean debug);
+	TaxiCommander createTaxiCommander(Taxi taxi, String productions, String[] shutdown_commands, File metadataFile, boolean debug);
+	RobotCommander createRoomCommander(Robot player, RoomWorld world, String productions, String[] shutdown_commands, File metadataFile, boolean debug);
 
-	void doBeforeClients() throws Exception;
+	void doBeforeClients();
 
-	void doAfterClients() throws Exception;
+	void doAfterClients();
 
 	boolean debug();
 	

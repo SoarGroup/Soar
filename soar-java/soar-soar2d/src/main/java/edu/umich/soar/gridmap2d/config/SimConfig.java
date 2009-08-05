@@ -6,19 +6,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.umich.soar.config.Config;
-import edu.umich.soar.config.ConfigUtil;
+import edu.umich.soar.config.ConfigFile;
+import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.Game;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 
 
 public class SimConfig implements GameConfig {	
-	public static SimConfig load(String configPath) throws IOException, IllegalArgumentException {
-		Config config = ConfigUtil.tryLoadConfig(configPath);
-		if (config == null)
-			throw new IOException();
-		
-		return new SimConfig(config);
+	/**
+	 * @param path
+	 * @return
+	 * 
+	 * @throws ParseError If there is an error parsing the config file specified by path
+	 * @throws IOException If there is an error finding or reading the config file specified by path
+	 * @throws IllegalArgumentException If an unknown game type is passed.
+	 */
+	public static SimConfig newInstance(String path) throws ParseError, IOException {
+		return new SimConfig(new Config(new ConfigFile(path)));
 	}
 	
 	private static class Keys {
@@ -48,7 +53,12 @@ public class SimConfig implements GameConfig {
 	private Map<String, PlayerConfig> playerConfigs = new HashMap<String, PlayerConfig>();
 	private Map<String, ClientConfig> clientConfigs = new HashMap<String, ClientConfig>();;
 	
-	private SimConfig(Config config) throws IOException {
+	/**
+	 * @param config
+	 * 
+	 * @throws IllegalArgumentException If an unknown game type is passed.
+	 */
+	private SimConfig(Config config) {
 		this.config = config;
 		
 		// verify we have a map
@@ -66,13 +76,17 @@ public class SimConfig implements GameConfig {
 		try {
 			game = Game.valueOf(generalConfig.game.toUpperCase());
 		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
 			StringBuilder sb = new StringBuilder();
-			sb.append("Unknown game type: " + generalConfig.game + "\nKnown game types:");
+			sb.append("Unknown game type: ");
+			sb.append(generalConfig.game);
+			sb.append("\nKnown game types:");
 			for (Game gameType : Game.values()) {
 				sb.append(" ");
 				sb.append(gameType.id());
 			}
-			throw new IllegalArgumentException(sb.toString());
+			Gridmap2D.control.errorPopUp(sb.toString());
+			throw new IllegalArgumentException(sb.toString(), e);
 		}
 		
 		Config childConfig = config.getChild(game.id());
@@ -154,8 +168,8 @@ public class SimConfig implements GameConfig {
 				}
 			}
 		} catch (IllegalAccessException e) {
+			e.printStackTrace();
 			// This shouldn't happen as long as all fields are public.
-			System.err.println("Reflection error loading " + game.id() + " config.");
 			assert false;
 		}
 	}
