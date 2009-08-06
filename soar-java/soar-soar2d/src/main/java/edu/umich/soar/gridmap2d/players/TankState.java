@@ -49,7 +49,6 @@ public class TankState {
 	}
 	
 	public void resetSensors() {
-		// TODO: doing this after a getCommand seems like the wrong thing to do.
 		rwaves = 0;
 		incoming = 0;
 		blocked = 0;

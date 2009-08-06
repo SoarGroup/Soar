@@ -76,6 +76,12 @@ public class Cell {
 	}
 	
 	public void setPlayer(Player player) {
+		if (player != null) {
+			if (this.player == null) {
+				assert false;
+				logger.warn("Overwriting existing player in cell with new player. Should set existing player to null first.");
+			}
+		}
 		draw = true;
 		this.player = player;
 	}

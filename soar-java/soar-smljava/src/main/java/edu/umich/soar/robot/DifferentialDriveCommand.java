@@ -66,7 +66,6 @@ final public class DifferentialDriveCommand {
 			return this;
 		}
 		private SplinterDriveCommandBuilder linearVelocity(double lv) {
-			// TODO this should refer to some grid and bit flags and such
 			if (type != CommandType.ANGVEL && type != CommandType.LINVEL && type != CommandType.VEL && type != CommandType.HEADING_LINVEL) {
 				throw new IllegalArgumentException();
 			}

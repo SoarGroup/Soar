@@ -105,7 +105,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 			logger.trace(player.getName() + ": blocked (backward): " + blockedBackward);
 			logger.trace(player.getName() + ": blocked (left): " + blockedLeft);
 			logger.trace(player.getName() + ": blocked (right): " + blockedRight);
-			logger.trace(player.getName() + ": " + Names.kCurrentScoreID + ": TODO: dump");
+			logger.trace(player.getName() + ": " + Names.kCurrentScoreID + ": " + player.getPoints());
 			logger.trace(player.getName() + ": incoming (forward): " + incomingForward);
 			logger.trace(player.getName() + ": incoming (backward): " + incomingBackward);
 			logger.trace(player.getName() + ": incoming (left): " + incomingLeft);
@@ -554,8 +554,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 	}
 
 	public void update(TankSoarMap tankSoarMap) {
-		// TODO Auto-generated method stub
-		
+		// update happens in "commit", after all tanks' states have been updated.
 	}
 
 	public void playersChanged(Player[] players) {

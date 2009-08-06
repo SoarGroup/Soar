@@ -206,10 +206,6 @@ public class TankSoarVisualWorld extends VisualWorld {
 							start = 90;
 							xMod = cellSize / 4;
 							break;
-						default:
-							// TODO: warn
-							assert false;
-						break;
 						}
 						gc.drawArc((location[0] * cellSize) + xMod, (location[1] * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
 					}

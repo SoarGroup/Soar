@@ -18,6 +18,7 @@ import org.eclipse.swt.widgets.TableItem;
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
+import edu.umich.soar.gridmap2d.map.TankSoarMap;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.Tank;
 import edu.umich.soar.gridmap2d.players.TankState;
@@ -37,7 +38,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	Group m_Group;
 	Table m_AgentTable;
 	TankSoarAgentWorld m_AgentWorld;
-	Player selectedPlayer;
+	Tank selectedPlayer;
 	TableItem[] m_Items = new TableItem[0];
 	Player[] players;
 	Composite m_AgentButtons;
@@ -220,9 +221,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		}
 		m_Smell = new ProgressBar(smellGroup, SWT.VERTICAL);
 		m_Smell.setMinimum(0);
-		// TODO: 
-		//m_Smell.setMaximum(m_Simulation.getTankSoarWorld().getMaxManhattanDistance());
-		m_Smell.setMaximum(25);
+		m_Smell.setMaximum((world.getMap().size() - 1 * 2));
 		{
 			GridData gd = new GridData();
 			gd.heightHint = m_AgentWorld.getHeight();
@@ -408,7 +407,8 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	}
 	
 	void selectPlayer(Player player) {
-		selectedPlayer = player;
+		selectedPlayer = (Tank)player;
+		assert selectedPlayer != null;
 		int index;
 		for(index = 0; index < players.length; ++index) {
 			if (players[index].equals(selectedPlayer)) {
@@ -422,7 +422,7 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	}
 	
 	private void updateSensors() {
-		Tank tank = (Tank)selectedPlayer; // TODO: shouldn't have to cast in a perfect world
+		Tank tank = selectedPlayer;
 		TankState state = tank.getState();
 		
 		m_AgentWorld.update(tank);
