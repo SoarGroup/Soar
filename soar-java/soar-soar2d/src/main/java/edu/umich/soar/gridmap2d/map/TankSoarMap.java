@@ -264,7 +264,6 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		}
 		
 		// Set all cells unexplored.
-		// TODO: never set wall cells unexplored
 		int[] xy = new int[2];
 		for (xy[0] = 0; xy[0] < data.cells.size(); ++xy[0]) {
 			for (xy[1] = 0; xy[1] < data.cells.size(); ++xy[1]) {
@@ -329,7 +328,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 					logger.trace("Sound: distance " + neighbor.distance);
 				}
 				
-				Tank targetPlayer = (Tank)neighbor.getPlayer(); // TODO: cast
+				Tank targetPlayer = (Tank)neighbor.getPlayer();
 				if ((targetPlayer != null) && recentlyMovedOrRotated(targetPlayer, players)) {
 					if (logger.isTraceEnabled()) {
 						logger.trace("Sound: found recently moved player " + targetPlayer.getName());
@@ -401,7 +400,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 	}
 
 	public void handleIncoming() {
-		// TODO: a couple of optimizations possible here
+		// note: a couple of optimizations possible here
 		// like marking cells that have been checked, depends on direction though
 		// probably more work than it is worth as this should only be slow when there are
 		// a ton of missiles flying
@@ -462,7 +461,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		Direction.translate(location, facing.left());
 		radar[0][distance] = getRadarCell(location);
 		if (radar[0][distance].player != null) {
-			Tank tank = (Tank)radar[0][distance].player; // TODO: eliminate cast
+			Tank tank = radar[0][distance].player;
 			
 			if (distance != 0) {
 				tank.getState().radarTouch(facing.backward());
@@ -475,7 +474,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		Direction.translate(location, facing.right());
 		radar[2][distance] = getRadarCell(location);
 		if (radar[2][distance].player != null) {
-			Tank tank = (Tank)radar[2][distance].player; // TODO: eliminate cast
+			Tank tank = (Tank)radar[2][distance].player;
 			
 			if (distance != 0) {
 				tank.getState().radarTouch(facing.backward());
@@ -490,7 +489,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		Direction.translate(location, facing);
 		radar[1][distance] = getRadarCell(location);
 		if (radar[1][distance].player != null) {
-			Tank tank = (Tank)radar[1][distance].player; // TODO: eliminate cast
+			Tank tank = radar[1][distance].player;
 			tank.getState().radarTouch(facing.backward());
 		}
 
@@ -516,14 +515,14 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 	}
 
 	private RadarCell getRadarCell(int [] location) {
-		// TODO: cache these each frame!!
+		// note: cache these each frame!!
 		
 		Cell cell;
 		RadarCell radarCell;
 
 		cell = getCell(location);
 		radarCell = new RadarCell();
-		radarCell.player = cell.getPlayer();
+		radarCell.player = (Tank)cell.getPlayer();
 		if (!cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			for (CellObject object : cell.getAllWithProperty(Names.kPropertyMiniImage)) {
 				if (object.getName().equals(Names.kEnergy)) {

@@ -7,9 +7,6 @@ import org.apache.log4j.Logger;
 import edu.umich.soar.config.Config;
 import edu.umich.soar.config.ConfigFile;
 
-
-// TODO: use string constants
-
 public class CellObject {
 	private static Logger logger = Logger.getLogger(CellObject.class);
 	private static long idCount = 0;
@@ -73,7 +70,6 @@ public class CellObject {
 		Config applyProperties = this.config.getChild("apply.properties");
 		for (String property : applyProperties.getKeys()) {
 			this.config.setStrings(property, applyProperties.requireStrings(property));
-			// TODO: make sure this works!
 			this.config.removeKey(property);
 		}
 		updateCachedState();

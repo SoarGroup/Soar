@@ -104,7 +104,6 @@ public class RoomVisualWorld extends VisualWorld {
 							}
 						}
 						if (map.getCell(location).hasAnyWithProperty(Names.kRoomObjectMovable)) {
-							// TODO: multiple types of objects
 							block = true;
 							gc.setBackground(WindowManager.darkGray);
 						}
