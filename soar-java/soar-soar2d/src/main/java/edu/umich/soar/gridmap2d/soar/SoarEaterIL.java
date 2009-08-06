@@ -186,7 +186,7 @@ class SoarEaterIL {
 		}
 		
 		private void updatePlayerContent(int[] view, EatersMap map, Cell cell) {
-			Player playerContent = map.getCell(view).getPlayer();
+			Player playerContent = map.getCell(view).getFirstPlayer();
 			if (playerContent != null) {
 				if (cell.eater == null) {
 					cell.eater = cell.me.CreateStringWME(Names.kContentID, Names.kEaterID);

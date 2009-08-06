@@ -296,7 +296,7 @@ public class TankSoarWorld implements World {
 			
 			// The cell is enterable, check for player
 			
-			Tank other = (Tank)map.getCell(newLocation).getPlayer();
+			Tank other = (Tank)map.getCell(newLocation).getFirstPlayer();
 			if (other == null) {
 				// No tank, cross collision impossible
 				newLocations.put(tank, newLocation);
@@ -443,7 +443,7 @@ public class TankSoarWorld implements World {
 		// Commit tank moves in two steps, remove from old, place in new
 		for (Tank tank : movedTanks) {
 			// remove from past cell
-			map.getCell(players.getLocation(tank)).setPlayer(null);
+			map.getCell(players.getLocation(tank)).removeAllPlayers();
 		}
 		
 		// commit the new move, grabbing the missile pack if applicable
@@ -519,7 +519,7 @@ public class TankSoarWorld implements World {
 			missile.setProperty(Names.kPropertyColor, tank.getColor());
 			
 			// If there is a tank there, it is hit
-			Tank other = (Tank)map.getCell(missileLoc).getPlayer();
+			Tank other = (Tank)map.getCell(missileLoc).getFirstPlayer();
 			if (other != null) {
 				missileHit(other, missile);
 				
@@ -585,7 +585,7 @@ public class TankSoarWorld implements World {
 		// remove from past cell
 		int [] oldLocation = players.getLocation(tank);
 		setExplosion(oldLocation);
-		map.getCell(oldLocation).setPlayer(null);
+		map.getCell(oldLocation).removeAllPlayers();
 
 		// put the player somewhere
 		int [] location = WorldUtil.getStartingLocation(map, null);
@@ -835,7 +835,7 @@ public class TankSoarWorld implements World {
 		players.setLocation(player, location);
 	
 		// remove food from it
-		map.getCell(location).removeAllByProperty(Names.kPropertyEdible);
+		map.getCell(location).removeAllObjectsByProperty(Names.kPropertyEdible);
 	
 		// put the player in it
 		map.getCell(location).setPlayer(player);
@@ -869,7 +869,7 @@ public class TankSoarWorld implements World {
 
 	public void removePlayer(String name) {
 		Tank tank = players.get(name);
-		map.getCell(players.getLocation(tank)).setPlayer(null);
+		map.getCell(players.getLocation(tank)).removeAllPlayers();
 		players.remove(tank);
 		tank.shutdownCommander();
 		updatePlayers(true);

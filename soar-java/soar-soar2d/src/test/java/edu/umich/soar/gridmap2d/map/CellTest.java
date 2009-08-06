@@ -63,14 +63,11 @@ public class CellTest {
 		assertTrue(cell.checkRedraw());
 		assertTrue(cell.checkAndResetRedraw());
 		
-		cell.setPlayer(null);
-		assertTrue(cell.checkAndResetRedraw());
-		
 		// no objects
 		testDrawWontTrigger("nothing", "noproperty");
-		cell.removeAllByProperty("nothing");
+		cell.removeAllObjectsByProperty("nothing");
 		assertFalse(cell.checkAndResetRedraw());
-		cell.removeAll();
+		cell.removeAllObjects();
 		assertFalse(cell.checkAndResetRedraw()); 
 		cell.removeObject("nothing");
 		assertFalse(cell.checkAndResetRedraw());	// nothing was removed
@@ -78,18 +75,18 @@ public class CellTest {
 		// wrong object
 		testDrawCheckedAdd();
 		testDrawWontTrigger("wrong", "wrong-property");
-		cell.removeAllByProperty("nothing");
+		cell.removeAllObjectsByProperty("nothing");
 		assertFalse(cell.checkAndResetRedraw());
 		cell.removeObject("nothing");
 		assertFalse(cell.checkAndResetRedraw());
-		cell.removeAll();
+		cell.removeAllObjects();
 		assertTrue(cell.checkAndResetRedraw()); 	// gets all
 
 		// correct object
 		testDrawCheckedAdd();
 		testDrawWontTrigger("test0", "property0");
 		
-		cell.removeAllByProperty("property0");
+		cell.removeAllObjectsByProperty("property0");
 		assertTrue(cell.checkAndResetRedraw());
 		
 		testDrawCheckedAdd();
@@ -97,7 +94,7 @@ public class CellTest {
 		assertTrue(cell.checkAndResetRedraw());
 		
 		testDrawCheckedAdd();
-		cell.removeAll();
+		cell.removeAllObjects();
 		assertTrue(cell.checkAndResetRedraw()); 	// gets all
 	}
 	
@@ -140,7 +137,7 @@ public class CellTest {
 		cell.addObject(objects[1]);
 		cell.addObject(objects[2]);
 		
-		List<CellObject> removed = cell.removeAll();
+		List<CellObject> removed = cell.removeAllObjects();
 		assertNotNull(removed);
 		assertEquals(removed.size(), 3);
 		
@@ -159,10 +156,10 @@ public class CellTest {
 		assertNotNull(gotten);
 		assertEquals(gotten.size(), 3);
 		
-		removed = cell.removeAll();
+		removed = cell.removeAllObjects();
 		assertNotNull(removed);
 		assertEquals(removed.size(), 3);
-		assertNull(cell.removeAll());
+		assertNull(cell.removeAllObjects());
 		assertNull(cell.getAll());
 		
 		cell.addObject(objects[0]);
@@ -200,15 +197,14 @@ public class CellTest {
 		assertNull(cell.getAllWithProperty(null));
 		assertFalse(cell.hasAnyWithProperty(null));
 		assertFalse(cell.hasObject(null));
-		assertNull(cell.removeAllByProperty(null));
-		cell.setPlayer(null);
+		assertNull(cell.removeAllObjectsByProperty(null));
 	}
 
 	@Test
 	public void testPropertyOperations() {
 		assertFalse(cell.hasAnyWithProperty("test"));
 		assertNull(cell.getAllWithProperty("test"));
-		assertNull(cell.removeAllByProperty("test"));
+		assertNull(cell.removeAllObjectsByProperty("test"));
 		
 		cell.addObject(objects[0]);
 		cell.addObject(objects[1]);
@@ -225,15 +221,15 @@ public class CellTest {
 		assertNotNull(cell.getAllWithProperty("property2"));
 		assertEquals(cell.getAllWithProperty("property2").size(), 1);
 		
-		List<CellObject> removals0 = cell.removeAllByProperty("property0");
+		List<CellObject> removals0 = cell.removeAllObjectsByProperty("property0");
 		assertNotNull(removals0);
 		assertEquals(removals0.size(), 1);
 
-		List<CellObject> removals1 = cell.removeAllByProperty("property1");
+		List<CellObject> removals1 = cell.removeAllObjectsByProperty("property1");
 		assertNotNull(removals1);
 		assertEquals(removals1.size(), 1);
 
-		List<CellObject> removals2 = cell.removeAllByProperty("property2");
+		List<CellObject> removals2 = cell.removeAllObjectsByProperty("property2");
 		assertNotNull(removals2);
 		assertEquals(removals2.size(), 1);
 
@@ -241,7 +237,7 @@ public class CellTest {
 		cell.addObject(objects[1]);
 		cell.addObject(objects[2]);
 		
-		List<CellObject> removals = cell.removeAllByProperty("property");
+		List<CellObject> removals = cell.removeAllObjectsByProperty("property");
 		assertNotNull(removals);
 		assertEquals(removals.size(), 3);
 	}
@@ -330,7 +326,7 @@ public class CellTest {
 		assertEquals(observerRemoveCalled, 0);
 		
 		observer.reset();
-		cell.removeAll();
+		cell.removeAllObjects();
 		assertEquals(observerAddCalled, 0);
 		assertEquals(observerRemoveCalled, 3);
 		
@@ -339,7 +335,7 @@ public class CellTest {
 		cell.addObject(objects[2]);
 
 		observer.reset();
-		cell.removeAllByProperty("property");
+		cell.removeAllObjectsByProperty("property");
 		assertEquals(observerAddCalled, 0);
 		assertEquals(observerRemoveCalled, 3);
 	}
