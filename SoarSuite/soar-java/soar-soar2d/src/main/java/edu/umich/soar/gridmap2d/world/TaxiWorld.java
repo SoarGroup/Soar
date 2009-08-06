@@ -101,7 +101,7 @@ public class TaxiWorld implements World {
 						taxi.adjustPoints(-20, "fuel fell below zero");
 					} else {
 						// remove from cell
-						map.getCell(location).setPlayer(null);
+						map.getCell(location).removeAllPlayers();
 						players.setLocation(taxi, newLocation);
 						
 						map.getCell(newLocation).setPlayer(taxi);
@@ -266,7 +266,7 @@ public class TaxiWorld implements World {
 
 	public void removePlayer(String name) {
 		Taxi taxi = players.get(name);
-		map.getCell(players.getLocation(taxi)).setPlayer(null);
+		map.getCell(players.getLocation(taxi)).removeAllPlayers();
 		players.remove(taxi);
 		taxi.shutdownCommander();
 		updatePlayers();

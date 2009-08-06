@@ -88,7 +88,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 		Cell cell = data.cells.getCell(location);
 		boolean destination = cell.hasAnyWithProperty("destination");
 		boolean fuel = cell.hasObject("fuel");
-		boolean noPlayer = cell.getPlayer() == null;
+		boolean noPlayer = !cell.hasPlayers();
 		return !destination && !fuel && noPlayer;
 	}
 

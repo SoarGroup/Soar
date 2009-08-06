@@ -75,7 +75,7 @@ public class EatersWorld implements World {
 			players.setLocation(eater, location);
 
 			// remove food from it
-			map.getCell(location).removeAllByProperty(Names.kPropertyEdible);
+			map.getCell(location).removeAllObjectsByProperty(Names.kPropertyEdible);
 			
 			// put the player in it
 			map.getCell(location).setPlayer(eater);
@@ -175,7 +175,7 @@ public class EatersWorld implements World {
 			// Verify legal move and commit move
 			if (map.isInBounds(newLocation) && !map.getCell(newLocation).hasAnyWithProperty(Names.kPropertyBlock)) {
 				// remove from cell
-				map.getCell(oldLocation).setPlayer(null);
+				map.getCell(oldLocation).removeAllPlayers();
 				
 				if (command.jump) {
 					eater.adjustPoints(Gridmap2D.config.eatersConfig().jump_penalty, "jump penalty");
@@ -382,7 +382,7 @@ public class EatersWorld implements World {
 			setExplosion(collisionLocation);
 
 			// Remove from former location (only one of these for all players)
-			map.getCell(collisionLocation).setPlayer(null);
+			map.getCell(collisionLocation).removeAllPlayers();
 			
 			// Move to new cell, consume food
 			collideeIter = collision.listIterator();
@@ -420,7 +420,7 @@ public class EatersWorld implements World {
 
 	public void removePlayer(String name) {
 		Eater eater = players.get(name);
-		map.getCell(players.getLocation(eater)).setPlayer(null);
+		map.getCell(players.getLocation(eater)).removeAllPlayers();
 		players.remove(eater);
 		eater.shutdownCommander();
 		updatePlayers();
@@ -476,7 +476,7 @@ public class EatersWorld implements World {
 		players.setLocation(player, location);
 		
 		// remove food from it
-		map.getCell(location).removeAllByProperty(Names.kPropertyEdible);
+		map.getCell(location).removeAllObjectsByProperty(Names.kPropertyEdible);
 
 		// put the player in it
 		map.getCell(location).setPlayer(player);

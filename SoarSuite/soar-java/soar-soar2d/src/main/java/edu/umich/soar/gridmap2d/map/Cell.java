@@ -2,8 +2,10 @@ package edu.umich.soar.gridmap2d.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -59,8 +61,7 @@ public class Cell {
 		draw = true;
 	}
 	
-	/** The player in the cell. Currently we're limited to one player per cell. */
-	private Player player;
+	private final Set<Player> players = new HashSet<Player>();
 	
 	// TODO: Compare performance between one HashMap<name, object> vs. this
 	// Iteration performance is paramount
@@ -71,19 +72,38 @@ public class Cell {
 	int distance = -1;
 	Cell parent;
 	
-	public Player getPlayer() {
-		return this.player;
+	public Player getFirstPlayer() {
+		return players.size() > 0 ? getPlayers()[0] : null;
 	}
 	
 	public void setPlayer(Player player) {
-		if (player != null) {
-			if (this.player == null) {
-				assert false;
-				logger.warn("Overwriting existing player in cell with new player. Should set existing player to null first.");
-			}
+		if (player == null) {
+			removeAllPlayers();
+		} else {
+			assert players.isEmpty();
+			draw = players.add(player) || draw;
 		}
-		draw = true;
-		this.player = player;
+	}
+	
+	public Player[] getPlayers() {
+		return players.toArray(new Player[0]);
+	}
+	
+	public void addPlayer(Player player) {
+		draw = players.add(player) || draw;
+	}
+	
+	public void removePlayer(Player player) {
+		draw = players.remove(player) || draw;
+	}
+	
+	public void removeAllPlayers() {
+		draw = !players.isEmpty() || draw;
+		players.clear();
+	}
+	
+	public boolean hasPlayers() {
+		return !players.isEmpty();
 	}
 	
 	/**
@@ -124,7 +144,7 @@ public class Cell {
 		return new ArrayList<CellObject>(cellObjects);
 	}
 	
-	public List<CellObject> removeAll() {
+	public List<CellObject> removeAllObjects() {
 		if (cellObjects.size() == 0) {
 			return null;
 		}
@@ -231,7 +251,7 @@ public class Cell {
 		return false;
 	}
 	
-	public List<CellObject> removeAllByProperty(String name) {
+	public List<CellObject> removeAllObjectsByProperty(String name) {
 		List<CellObject> ret = null;
 		Iterator<CellObject> iter = cellObjects.iterator();
 		while(iter.hasNext()) {

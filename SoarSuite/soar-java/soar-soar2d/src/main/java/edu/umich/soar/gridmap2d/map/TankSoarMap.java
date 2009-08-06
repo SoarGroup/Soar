@@ -91,7 +91,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 	public boolean isAvailable(int[] location) {
 		Cell cell = getCell(location);
 		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
-		boolean noPlayer = cell.getPlayer() == null;
+		boolean noPlayer = !cell.hasPlayers();
 		boolean noMissilePack = !cell.hasObject("missiles");
 		boolean noCharger = !cell.hasAnyWithProperty(Names.kPropertyCharger);
 		return enterable && noPlayer && noMissilePack && noCharger;
@@ -207,7 +207,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 						break;
 					}
 					
-					Tank tank = (Tank)cell.getPlayer();
+					Tank tank = (Tank)cell.getFirstPlayer();
 					
 					if (tank != null) {
 						// missile is destroyed
@@ -328,7 +328,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 					logger.trace("Sound: distance " + neighbor.distance);
 				}
 				
-				Tank targetPlayer = (Tank)neighbor.getPlayer();
+				Tank targetPlayer = (Tank)neighbor.getFirstPlayer();
 				if ((targetPlayer != null) && recentlyMovedOrRotated(targetPlayer, players)) {
 					if (logger.isTraceEnabled()) {
 						logger.trace("Sound: found recently moved player " + targetPlayer.getName());
@@ -420,7 +420,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 					break;
 				}
 				
-				Tank tank = (Tank)threatenedCell.getPlayer();
+				Tank tank = (Tank)threatenedCell.getFirstPlayer();
 				if (tank != null) {
 					TankState state = tank.getState();
 					state.setIncoming(direction.backward());
@@ -522,7 +522,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 
 		cell = getCell(location);
 		radarCell = new RadarCell();
-		radarCell.player = (Tank)cell.getPlayer();
+		radarCell.player = (Tank)cell.getFirstPlayer();
 		if (!cell.hasAnyWithProperty(Names.kPropertyBlock)) {
 			for (CellObject object : cell.getAllWithProperty(Names.kPropertyMiniImage)) {
 				if (object.getName().equals(Names.kEnergy)) {
@@ -544,19 +544,19 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		int blocked = 0;
 		
 		cell = getCell(new int [] { location[0]+1, location[1] });
-		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasPlayers()) {
 			blocked |= Direction.EAST.indicator();
 		}
 		cell = getCell(new int [] { location[0]-1, location[1] });
-		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasPlayers()) {
 			blocked |= Direction.WEST.indicator();
 		}
 		cell = getCell(new int [] { location[0], location[1]+1 });
-		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasPlayers()) {
 			blocked |= Direction.SOUTH.indicator();
 		}
 		cell = getCell(new int [] { location[0], location[1]-1 });
-		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.getPlayer() != null) {
+		if (cell.hasAnyWithProperty(Names.kPropertyBlock) || cell.hasPlayers()) {
 			blocked |= Direction.NORTH.indicator();
 		}
 		return blocked;

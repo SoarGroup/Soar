@@ -78,7 +78,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 		players.setLocation(player, location);
 		
 		// put the player in it
-		map.getCell(location).setPlayer(player);
+		map.getCell(location).addPlayer(player);
 		
 		player.getState().setLocationId(map.getLocationId(location));
 		double [] floatLocation = defaultFloatLocation(location);
@@ -119,7 +119,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 	@Override
 	public void removePlayer(String name) {
 		Robot player = players.get(name);
-		map.getCell(players.getLocation(player)).setPlayer(null);
+		map.getCell(players.getLocation(player)).removePlayer(player);
 		players.remove(player);
 		player.shutdownCommander();
 		updatePlayers();
@@ -168,7 +168,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 			players.setLocation(player, location);
 
 			// put the player in it
-			map.getCell(location).setPlayer(player);
+			map.getCell(location).addPlayer(player);
 
 			player.getState().setLocationId(map.getLocationId(location));
 
@@ -367,10 +367,10 @@ public class RoomWorld implements World, SendMessagesInterface {
 		state.setPos(pose.pos);
 		
 		//state.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
-		map.getCell(oldLocation).setPlayer(null);
+		map.getCell(oldLocation).removePlayer(player);
 		players.setLocation(player, newLocation);
 		state.setLocationId(map.getLocationId(newLocation));
-		map.getCell(newLocation).setPlayer(player);
+		map.getCell(newLocation).addPlayer(player);
 		
 		// redraw the 8 cells around it
 		int[] redrawLoc = Arrays.copyOf(newLocation, newLocation.length); 

@@ -84,7 +84,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 					}
 				}
 				
-				Tank tank = (Tank)this.map.getCell(location).getPlayer();
+				Tank tank = (Tank)this.map.getCell(location).getFirstPlayer();
 				TankState state = tank == null ? null : tank.getState();
 				
 				// draw the wall or ground or energy charger or health charger

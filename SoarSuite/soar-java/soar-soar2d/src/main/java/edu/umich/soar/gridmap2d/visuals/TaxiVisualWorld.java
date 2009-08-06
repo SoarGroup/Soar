@@ -91,7 +91,7 @@ public class TaxiVisualWorld extends VisualWorld {
 
 				}
 				
-				Taxi taxi = (Taxi)this.map.getCell(location).getPlayer();
+				Taxi taxi = (Taxi)this.map.getCell(location).getFirstPlayer();
 				
 				if (taxi != null) {
 					gc.setBackground(WindowManager.getColor("white"));

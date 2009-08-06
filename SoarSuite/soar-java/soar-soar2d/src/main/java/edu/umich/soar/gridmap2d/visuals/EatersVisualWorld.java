@@ -110,7 +110,7 @@ public class EatersVisualWorld extends VisualWorld {
 				} else {
 					boolean empty = true;
 					
-					Player eater = this.map.getCell(location).getPlayer();
+					Player eater = this.map.getCell(location).getFirstPlayer();
 					
 					if (eater != null) {
 						empty = false;

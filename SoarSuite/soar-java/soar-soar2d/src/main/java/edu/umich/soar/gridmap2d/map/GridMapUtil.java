@@ -248,7 +248,7 @@ public class GridMapUtil {
 			cell.addObserver(observer);
 		}
 		if (cell.hasAnyWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible)) {
-			cell.removeAllByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
+			cell.removeAllObjectsByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
 		}
 		CellObject wall = data.cellObjectManager.createRandomObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock);
 		cell.addObject(wall);
@@ -323,7 +323,7 @@ public class GridMapUtil {
 				
 				if (!cell.hasAnyWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
 					logger.trace(Arrays.toString(xy) + "Adding random food.");
-					cell.removeAllByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
+					cell.removeAllObjectsByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
 					CellObject wall = data.cellObjectManager.createRandomObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
 					cell.addObject(wall);
 				}
