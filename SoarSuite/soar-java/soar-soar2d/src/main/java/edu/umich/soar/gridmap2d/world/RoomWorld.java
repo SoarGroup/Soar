@@ -442,7 +442,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 			return false;
 		}
 		
-		// TODO: This is a stupid way to do this.
+		// note: This is a stupid way to do this.
 		Set<CellObject> objects = map.getRoomObjects();
 		for (CellObject object : objects) {
 			if (object.getIntProperty("object-id", -1) == id) {

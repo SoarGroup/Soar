@@ -99,7 +99,6 @@ public class CreateAgentDialog extends Dialog {
 					fd.setFileName(lastProductions.getAbsolutePath());
 				}
 				fd.setFilterExtensions(new String[] {"*.soar", "*.*"});
-				// TODO: these next commented out lines are going to cause a bug to reappear
 				VisualWorld.internalRepaint = true;
 				String productions = fd.open();
 				VisualWorld.internalRepaint = false;

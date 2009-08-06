@@ -27,8 +27,6 @@ final public class OutputLinkManager {
 	}
 
 	public DifferentialDriveCommand update() {
-		// TODO: update status of running command
-		
 		// process output
 		DifferentialDriveCommand ddc = null;
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {

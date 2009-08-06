@@ -149,7 +149,7 @@ public class EatersVisualWorld extends VisualWorld {
 						    
 						    Color color = WindowManager.getColor(object.getProperty(Names.kPropertyColor));
 						    if (color == null) {
-						    	//TODO: draw outline!
+						    	color = WindowManager.black;
 						    }
 							gc.setBackground(color);
 							

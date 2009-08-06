@@ -94,7 +94,6 @@ public class TaxiVisualWorld extends VisualWorld {
 				Taxi taxi = (Taxi)this.map.getCell(location).getPlayer();
 				
 				if (taxi != null) {
-					// TODO: if multiple players are supported, this needs to be changed
 					gc.setBackground(WindowManager.getColor("white"));
 
 					int size = 12;

@@ -18,5 +18,5 @@ public class RadarCell {
 	
 	public static Image openImage;
 	
-	public Player player;
+	public Tank player;
 }

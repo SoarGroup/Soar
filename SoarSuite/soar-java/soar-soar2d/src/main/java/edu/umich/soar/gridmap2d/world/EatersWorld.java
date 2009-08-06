@@ -246,7 +246,6 @@ public class EatersWorld implements World {
 			logger.warn(eater.getName() + " tried to open but there is no box.");
 		}
 
-		// TODO: multiple boxes
 		assert boxes.size() <= 1;
 		
 		CellObject box = boxes.get(0);

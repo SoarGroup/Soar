@@ -47,6 +47,7 @@ class SoarEaterIL {
 			
 			/** another eater in the cell */
 			StringElement eater;
+			StringElement eaterName;
 			
 			/** property: edible */
 			Map<String, StringElement> comestibles = new HashMap<String, StringElement>();
@@ -78,7 +79,9 @@ class SoarEaterIL {
 			void clearContents() {
 				if (eater != null) {
 					agent.DestroyWME(eater);
+					agent.DestroyWME(eaterName);
 					eater = null;
+					eaterName = null;
 				}
 				
 				for (StringElement element : comestibles.values()) {
@@ -183,17 +186,27 @@ class SoarEaterIL {
 		}
 		
 		private void updatePlayerContent(int[] view, EatersMap map, Cell cell) {
-			// TODO: Keep track of player name so we can blink if it is a different eater.
 			Player playerContent = map.getCell(view).getPlayer();
 			if (playerContent != null) {
 				if (cell.eater == null) {
-					cell.eater = agent.CreateStringWME(cell.me, Names.kContentID, Names.kEaterID);
+					cell.eater = cell.me.CreateStringWME(Names.kContentID, Names.kEaterID);
+					cell.eaterName = cell.me.CreateStringWME(Names.kContentNameID, playerContent.getName());
+
+				} else if (!cell.eaterName.GetValue().equals(playerContent.getName())) {
+					// blink eater
+					cell.eater.DestroyWME();
+					cell.eater = cell.me.CreateStringWME(Names.kContentID, Names.kEaterID);
+					
+					// update name
+					cell.eaterName.Update(playerContent.getName());
 				}
 			} else {
 				// Remove any if there
 				if (cell.eater != null) {
 					agent.DestroyWME(cell.eater);
+					agent.DestroyWME(cell.eaterName);
 					cell.eater = null;
+					cell.eaterName = null;
 				}
 			}
 		}

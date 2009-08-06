@@ -116,6 +116,7 @@ public class Names {
 	public static final String kClockID = "clock";
 	public static final String kColorID = "color";
 	public static final String kContentID = "content";
+	public static final String kContentNameID = "content-name";
 	public static final String kCurrentScoreID = "current-score";
 	public static final String kDirectionID = "direction";
 	public static final String kDistanceID = "distance";

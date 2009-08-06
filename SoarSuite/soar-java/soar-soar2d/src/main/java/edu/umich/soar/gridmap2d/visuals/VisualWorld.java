@@ -23,8 +23,6 @@ import edu.umich.soar.gridmap2d.map.GridMap;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RadarCell;
 
-
-// TODO: apply-image
 public abstract class VisualWorld extends Canvas implements PaintListener {
 	
 	public static Map<Player, Color> playerColors = new HashMap<Player, Color>();

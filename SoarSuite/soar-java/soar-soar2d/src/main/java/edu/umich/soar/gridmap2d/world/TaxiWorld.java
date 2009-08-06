@@ -104,8 +104,6 @@ public class TaxiWorld implements World {
 						map.getCell(location).setPlayer(null);
 						players.setLocation(taxi, newLocation);
 						
-						// TODO: collisions not handled
-						
 						map.getCell(newLocation).setPlayer(taxi);
 						taxi.adjustPoints(-1, "legal move");
 					}
