@@ -218,7 +218,7 @@ public class RoomVisualWorld extends VisualWorld {
 		if (xy == null) {
 			return null;
 		}
-		return this.map.getCell(xy).getPlayer();
+		return this.map.getCell(xy).getFirstPlayer();
 	}
 	
 }

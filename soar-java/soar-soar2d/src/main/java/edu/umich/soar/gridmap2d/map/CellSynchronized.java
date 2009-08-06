@@ -11,13 +11,13 @@ class CellSynchronized extends Cell {
 	}
 	
 	@Override
-	void addObserver(CellObjectObserver observer) {
-		super.addObserver(observer);
+	public synchronized Player getFirstPlayer() {
+		return super.getFirstPlayer();
 	}
 	
 	@Override
-	public synchronized Player getPlayer() {
-		return super.getPlayer();
+	public synchronized Player[] getPlayers() {
+		return super.getPlayers();
 	}
 	
 	@Override
@@ -25,6 +25,26 @@ class CellSynchronized extends Cell {
 		super.setPlayer(player);
 	}
 	
+	@Override
+	public synchronized void addPlayer(Player player) {
+		super.addPlayer(player);
+	}
+	
+	@Override
+	public synchronized void removePlayer(Player player) {
+		super.removePlayer(player);
+	}
+	
+	@Override
+	public synchronized void removeAllPlayers() {
+		super.removeAllPlayers();
+	}
+	
+	@Override
+	public synchronized boolean hasPlayers() {
+		return super.hasPlayers();
+	}
+
 	@Override
 	public synchronized void addObject(CellObject cellObject) {
 		super.addObject(cellObject);
@@ -46,13 +66,13 @@ class CellSynchronized extends Cell {
 	}
 	
 	@Override
-	public synchronized List<CellObject> removeAllByProperty(String name) {
-		return super.removeAllByProperty(name);
+	public synchronized List<CellObject> removeAllObjectsByProperty(String name) {
+		return super.removeAllObjectsByProperty(name);
 	}
 	
 	@Override
-	public synchronized List<CellObject> removeAll() {
-		return super.removeAll();
+	public synchronized List<CellObject> removeAllObjects() {
+		return super.removeAllObjects();
 	}
 
 	@Override

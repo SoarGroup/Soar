@@ -68,7 +68,7 @@ public class RoomMap implements GridMap, CellObjectObserver {
 	public boolean isAvailable(int[] location) {
 		Cell cell = data.cells.getCell(location);
 		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
-		boolean noPlayer = cell.getPlayer() == null;
+		boolean noPlayer = !cell.hasPlayers();
 		boolean movable = cell.hasAnyWithProperty(Names.kRoomObjectMovable);
 		return enterable && noPlayer && !movable;
 	}

@@ -55,7 +55,7 @@ public class EatersMap implements GridMap, CellObjectObserver {
 	public boolean isAvailable(int[] location) {
 		Cell cell = data.cells.getCell(location);
 		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
-		boolean noPlayer = cell.getPlayer() == null;
+		boolean noPlayer = !cell.hasPlayers();
 		return enterable && noPlayer;
 	}
 
