@@ -833,6 +833,7 @@ public class GridMapUtil {
 		for (RoomObjectInfo info : roomData.roomObjectInfoMap.values()) {
 			Cell cell = data.cells.getCell(info.location);
 			List<CellObject> numbers = cell.getAllWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber);
+			assert !numbers.isEmpty();
 			CellObject obj = numbers.get(0);
 			info.area = obj.getIntProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, -1);
 		}

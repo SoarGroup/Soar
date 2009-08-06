@@ -70,7 +70,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 	
 	private String getDestinationName(int[] location) {
 		List<CellObject> objects = data.cells.getCell(location).getAllWithProperty("destination");
-		if (objects == null || objects.size() == 0) {
+		if (objects.isEmpty()) {
 			return null;
 		}
 		return objects.get(0).getName();
@@ -110,7 +110,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 			passengerLocation = Arrays.copyOf(location, location.length);
 			if (passengerSourceColor == null) {
 				List<CellObject> dests = data.cells.getCell(passengerLocation).getAllWithProperty("destination");
-				if (dests.size() != 0) {
+				if (!dests.isEmpty()) {
 					passengerSourceColor = dests.get(0).getProperty("color");
 				}
 			}
@@ -184,7 +184,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 	
 	public boolean exitable(int[] location, Direction direction) {
 		List<CellObject> walls = data.cells.getCell(location).getAllWithProperty("block");
-		if (walls == null) {
+		if (walls.isEmpty()) {
 			return true;
 		}
 		for (CellObject wall : walls) {
@@ -225,12 +225,8 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 		}
 		
 		List<CellObject> dests = this.getCell(location).getAllWithProperty("destination");
-		if (dests != null) {
-			assert dests.size() < 2;
-			if (dests.size() > 0) {
-				return dests.get(0).getProperty("color");
-			}
-			
+		if (!dests.isEmpty()) {
+			return dests.get(0).getProperty("color");
 		}
 		
 		if (this.getCell(location).getObject("fuel") != null) {
@@ -242,7 +238,7 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 	
 	public boolean wall(int[] from, Direction to) {
 		List<CellObject> walls = this.getCell(from).getAllWithProperty("block");
-		if (walls != null) {
+		if (!walls.isEmpty()) {
 			for (CellObject wall : walls) {
 				if (wall.getProperty("direction").equals(to.id())) {
 					return true;

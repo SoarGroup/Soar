@@ -197,11 +197,9 @@ public class EatersWorld implements World {
 				map.getCell(location).setPlayer(eater);
 
 				List<CellObject> moveApply = map.getCell(location).getAllWithProperty(Names.kPropertyMoveApply);
-				if (moveApply != null) {
-					for (CellObject object : moveApply) {
-						if (apply(object, eater)) {
-							map.getCell(location).removeObject(object.getName());
-						}
+				for (CellObject object : moveApply) {
+					if (apply(object, eater)) {
+						map.getCell(location).removeObject(object.getName());
 					}
 				}
 			}
@@ -242,8 +240,9 @@ public class EatersWorld implements World {
 	
 	private void open(Eater eater, int [] location) {
 		List<CellObject> boxes = map.getCell(location).getAllWithProperty(Names.kPropertyBox);
-		if (boxes == null) {
+		if (boxes.isEmpty()) {
 			logger.warn(eater.getName() + " tried to open but there is no box.");
+			return;
 		}
 
 		assert boxes.size() <= 1;
@@ -267,13 +266,10 @@ public class EatersWorld implements World {
 	}
 	
 	private void eat(Eater eater, int [] location) {
-		List<CellObject> list = map.getCell(location).getAllWithProperty(Names.kPropertyEdible);
-		if (list != null) {
-			for (CellObject food : list) {
-				if (apply(food, eater)) {
-					// if this returns true, it is consumed
-					map.getCell(location).removeObject(food.getName());
-				}
+		for (CellObject food : map.getCell(location).getAllWithProperty(Names.kPropertyEdible)) {
+			if (apply(food, eater)) {
+				// if this returns true, it is consumed
+				map.getCell(location).removeObject(food.getName());
 			}
 		}			
 	}

@@ -66,21 +66,17 @@ public class TankSoarVisualWorld extends VisualWorld {
 					continue;
 				}
 				
-				List<CellObject> drawList;
-				drawList = this.map.getCell(location).getAllWithProperty(Names.kPropertyImage);
 				CellObject explosion = null;
 				CellObject object = null;
 				List<CellObject> missiles = new ArrayList<CellObject>();
 				
-				if (drawList != null) {
-					for (CellObject cellObject : drawList) {
-						if (cellObject.getName().equals(Names.kExplosion)) {
-							explosion = cellObject;
-						} else if (cellObject.getName().equals("missiles")) {
-							object = cellObject;
-						} else if (cellObject.hasProperty(Names.kPropertyMissile)) {
-							missiles.add(cellObject);
-						}
+				for (CellObject cellObject : this.map.getCell(location).getAllWithProperty(Names.kPropertyImage)) {
+					if (cellObject.getName().equals(Names.kExplosion)) {
+						explosion = cellObject;
+					} else if (cellObject.getName().equals("missiles")) {
+						object = cellObject;
+					} else if (cellObject.hasProperty(Names.kPropertyMissile)) {
+						missiles.add(cellObject);
 					}
 				}
 				
@@ -180,35 +176,32 @@ public class TankSoarVisualWorld extends VisualWorld {
 				}
 				
 				// Finally, draw the radar waves
-				List<CellObject> radarWaves = this.map.getCell(location).getAllWithProperty(Names.kPropertyRadarWaves);
 				gc.setForeground(WindowManager.getColor("white"));
 				
-				if (radarWaves != null) {
-					for (CellObject cellObject : radarWaves) {
-						Direction direction = Direction.parse(cellObject.getProperty(Names.kPropertyDirection));
-						int start = 0;
-						int xMod = 0;
-						int yMod = 0;
-						switch (direction) {
-						case NORTH:
-							start = 0;
-							yMod = cellSize / 4;
-							break;
-						case SOUTH:
-							start = -180;
-							yMod = cellSize / -4;
-							break;
-						case EAST:
-							start = -90;
-							xMod = cellSize / -4;
-							break;
-						case WEST:
-							start = 90;
-							xMod = cellSize / 4;
-							break;
-						}
-						gc.drawArc((location[0] * cellSize) + xMod, (location[1] * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
+				for (CellObject cellObject : this.map.getCell(location).getAllWithProperty(Names.kPropertyRadarWaves)) {
+					Direction direction = Direction.parse(cellObject.getProperty(Names.kPropertyDirection));
+					int start = 0;
+					int xMod = 0;
+					int yMod = 0;
+					switch (direction) {
+					case NORTH:
+						start = 0;
+						yMod = cellSize / 4;
+						break;
+					case SOUTH:
+						start = -180;
+						yMod = cellSize / -4;
+						break;
+					case EAST:
+						start = -90;
+						xMod = cellSize / -4;
+						break;
+					case WEST:
+						start = 90;
+						xMod = cellSize / 4;
+						break;
 					}
+					gc.drawArc((location[0] * cellSize) + xMod, (location[1] * cellSize) + yMod, cellSize - 1, cellSize - 1, start, 180);
 				}
 			}
 		}
@@ -239,19 +232,15 @@ public class TankSoarVisualWorld extends VisualWorld {
 	}
 	
 	public void updateBackground(int [] location) {
-		List<CellObject> drawList = this.map.getCell(location).getAllWithProperty(Names.kPropertyImage);
-		
 		CellObject backgroundObject = null;
-		if (drawList != null) {
-			for (CellObject cellObject : drawList) {
-				if (cellObject.hasProperty(Names.kPropertyBlock)) {
-					backgroundObject = cellObject;
-				} else if (cellObject.getName().equals(Names.kGround)) {
-					backgroundObject = cellObject;
-				} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
-					backgroundObject = cellObject;
-					break;
-				}
+		for (CellObject cellObject : this.map.getCell(location).getAllWithProperty(Names.kPropertyImage)) {
+			if (cellObject.hasProperty(Names.kPropertyBlock)) {
+				backgroundObject = cellObject;
+			} else if (cellObject.getName().equals(Names.kGround)) {
+				backgroundObject = cellObject;
+			} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
+				backgroundObject = cellObject;
+				break;
 			}
 		}
 

@@ -462,7 +462,7 @@ public class TankSoarWorld implements World {
 			
 			// is there a missile in the cell?
 			List<CellObject> missiles = map.getCell(location).getAllWithProperty(Names.kPropertyMissile);
-			if (missiles == null) {
+			if (missiles.isEmpty()) {
 				// No, can't collide
 				continue;
 			}
@@ -658,19 +658,17 @@ public class TankSoarWorld implements World {
 		// Charge up
 		List<CellObject> chargers = map.getCell(location).getAllWithProperty(Names.kPropertyCharger);
 		
-		if (chargers != null) {
-			for (CellObject charger : chargers) {
-				if (charger.hasProperty(Names.kPropertyHealth)) {
-					state.setOnHealthCharger(true);
-					if (state.getHealth() < Gridmap2D.config.tanksoarConfig().max_health) {
-						state.adjustHealth(charger.getIntProperty(Names.kPropertyHealth, 0), "charger");
-					}
+		for (CellObject charger : chargers) {
+			if (charger.hasProperty(Names.kPropertyHealth)) {
+				state.setOnHealthCharger(true);
+				if (state.getHealth() < Gridmap2D.config.tanksoarConfig().max_health) {
+					state.adjustHealth(charger.getIntProperty(Names.kPropertyHealth, 0), "charger");
 				}
-				if (charger.hasProperty(Names.kPropertyEnergy)) {
-					state.setOnEnergyCharger(true);
-					if (state.getEnergy() < Gridmap2D.config.tanksoarConfig().max_energy) {
-						state.adjustEnergy(charger.getIntProperty(Names.kPropertyEnergy, 0), "charger");
-					}
+			}
+			if (charger.hasProperty(Names.kPropertyEnergy)) {
+				state.setOnEnergyCharger(true);
+				if (state.getEnergy() < Gridmap2D.config.tanksoarConfig().max_energy) {
+					state.adjustEnergy(charger.getIntProperty(Names.kPropertyEnergy, 0), "charger");
 				}
 			}
 		}

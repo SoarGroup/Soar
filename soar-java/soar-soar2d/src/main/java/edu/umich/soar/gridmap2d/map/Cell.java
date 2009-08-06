@@ -2,10 +2,8 @@ package edu.umich.soar.gridmap2d.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -14,7 +12,6 @@ import edu.umich.soar.gridmap2d.players.Player;
 
 public class Cell {
 	private static Logger logger = Logger.getLogger(Cell.class);
-
 	private static boolean useSynchronized = false;
 	
 	public static void setUseSynchronized(boolean useSynchronized) {
@@ -28,15 +25,26 @@ public class Cell {
 		return new Cell(xy);
 	}
 	
+	final int [] location;
+	private final List<CellObjectObserver> observers = new ArrayList<CellObjectObserver>();
+	final Cell[] neighbors = new Cell[5]; // uses Direction, which is 1-4 not 0-5
+	private boolean draw = true;
+	private final List<Player> players = new ArrayList<Player>();
+	private final List<CellObject> cellObjects = new ArrayList<CellObject>();
+	
+	// for sound algorithm
+	boolean explored = false;
+	int distance = -1;
+	Cell parent;
+	
 	protected Cell(int[] xy) {
 		this.location = Arrays.copyOf(xy, xy.length);
 	}
-	int [] location;
+	
 	public int[] getLocation() {
 		return Arrays.copyOf(location, location.length);
 	}
 	
-	private List<CellObjectObserver> observers = new ArrayList<CellObjectObserver>();
 	void addObserver(CellObjectObserver observer) {
 		observers.add(observer);
 	}
@@ -46,34 +54,22 @@ public class Cell {
 		return "cell" + Arrays.toString(location);
 	}
 	
-	Cell[] neighbors = new Cell[5]; // uses Direction, which is 1-4 not 0-5
-	
-	private boolean draw = true;
 	public boolean checkAndResetRedraw() {
 		boolean temp = draw;
 		draw = false;
 		return temp;
 	}
+	
 	public boolean checkRedraw() {
 		return draw;
 	}
+	
 	public void forceRedraw() {
 		draw = true;
 	}
 	
-	private final Set<Player> players = new HashSet<Player>();
-	
-	// TODO: Compare performance between one HashMap<name, object> vs. this
-	// Iteration performance is paramount
-	private List<CellObject> cellObjects = new ArrayList<CellObject>();
-	
-	// for sound algorithm
-	boolean explored = false;
-	int distance = -1;
-	Cell parent;
-	
 	public Player getFirstPlayer() {
-		return players.size() > 0 ? getPlayers()[0] : null;
+		return players.size() > 0 ? players.get(0) : null;
 	}
 	
 	public void setPlayer(Player player) {
@@ -83,10 +79,6 @@ public class Cell {
 			assert players.isEmpty();
 			draw = players.add(player) || draw;
 		}
-	}
-	
-	public Player[] getPlayers() {
-		return players.toArray(new Player[0]);
 	}
 	
 	public void addPlayer(Player player) {
@@ -114,7 +106,7 @@ public class Cell {
 	 */
 	public void addObject(CellObject cellObject) {
 		if (cellObject == null) {
-			throw new NullPointerException();
+			throw new NullPointerException("cellObject null");
 		}
 		draw = true;
 		Iterator<CellObject> iter = cellObjects.iterator();
@@ -124,7 +116,7 @@ public class Cell {
 				logger.trace("Replacing existing " + object.getName() + " with new one.");
 				iter.remove();
 				for (CellObjectObserver observer : observers) {
-					observer.removalStateUpdate(location, object);
+					observer.removalStateUpdate(getLocation(), object);
 				}
 				// no more iteration, removal state could change cellObjects!
 				break;
@@ -133,46 +125,38 @@ public class Cell {
 		
 		cellObjects.add(cellObject);
 		for (CellObjectObserver observer : observers) {
-			observer.addStateUpdate(location, cellObject);
+			observer.addStateUpdate(getLocation(), cellObject);
 		}
 	}
 	
 	public List<CellObject> getAll() {	
-		if (cellObjects.size() == 0) {
-			return null;
-		}
 		return new ArrayList<CellObject>(cellObjects);
 	}
 	
 	public List<CellObject> removeAllObjects() {
-		if (cellObjects.size() == 0) {
-			return null;
-		}
-		draw = true;
-		List<CellObject> ret = cellObjects;
-		cellObjects = new ArrayList<CellObject>();
-		for (CellObject cellObject : ret) {
+		draw = !cellObjects.isEmpty();
+		List<CellObject> removed = getAll();
+		cellObjects.clear();
+
+		for (CellObject obj : removed) {
 			for (CellObjectObserver observer : observers) {
-				observer.removalStateUpdate(location, cellObject);
+				observer.removalStateUpdate(getLocation(), obj);
 			}
 		}
-		return ret;
+		
+		return removed;
 	}
 
 	/**
 	 * @param name the object name
 	 * @return the object or null if none
-	 * @throws NullPointerException If name is null
 	 * 
 	 * Returns the object by name.
 	 */
 	public CellObject getObject(String name) {
-		if (name == null) {
-			throw new NullPointerException();
-		}
-		for (CellObject object : cellObjects) {
-			if (object.getName().equals(name)) {
-				return object;
+		for (CellObject obj : cellObjects) {
+			if (obj.getName().equals(name)) {
+				return obj;
 			}
 		}
 		return null;
@@ -196,22 +180,18 @@ public class Cell {
 	/**
 	 * @param name the object name
 	 * @return the removed object or null if it didn't exist
-	 * @throws NullPointerException if name is null
 	 * 
 	 * If the specified object exists in the cell, it is removed and returned.
 	 * Null is returned if the object isn't in the cell.
 	 */
 	public CellObject removeObject(String name) {
-		if (name == null) {
-			throw new NullPointerException();
-		}
 		Iterator<CellObject> iter = cellObjects.iterator();
 		while(iter.hasNext()) {
 			CellObject object = iter.next();
 			if (object.getName().equals(name)) {
 				iter.remove();
 				for (CellObjectObserver observer : observers) {
-					observer.removalStateUpdate(location, object);
+					observer.removalStateUpdate(getLocation(), object);
 				}
 				// no more iteration, removal state could change cellObjects!
 				draw = true;
@@ -223,57 +203,60 @@ public class Cell {
 	}
 
 	/**
-	 * @param name the property to look for
+	 * @param property the property to look for
 	 * @return a list of cell objects that have the specified property
+	 * @throws NullPointerException If property is null
 	 * 
 	 * Returns all objects in the cell with the specified property.
 	 * The returned list is never null but could be length zero.
 	 */
-	public List<CellObject> getAllWithProperty(String name) {	
-		List<CellObject> ret = null;
+	public List<CellObject> getAllWithProperty(String property) {	
+		if (property == null) {
+			throw new NullPointerException("property is null");
+		}
+		List<CellObject> ret = new ArrayList<CellObject>();
 		for (CellObject object : cellObjects) {
-			if (object.hasProperty(name)) {
-				if (ret == null) {
-					ret = new ArrayList<CellObject>(1);
-				}
+			if (object.hasProperty(property)) {
 				ret.add(object);
 			}
 		}
 		return ret;
 	}
 	
-	public boolean hasAnyWithProperty(String name) {	
+	public boolean hasAnyWithProperty(String property) {	
 		for (CellObject object : cellObjects) {
-			if (object.hasProperty(name)) {
+			if (object.hasProperty(property)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public List<CellObject> removeAllObjectsByProperty(String name) {
-		List<CellObject> ret = null;
+	/**
+	 * @param property
+	 * @return
+	 * @throws NullPointerException If property is null
+	 */
+	public List<CellObject> removeAllObjectsByProperty(String property) {
+		if (property == null) {
+			throw new NullPointerException("property is null");
+		}
+		List<CellObject> ret = new ArrayList<CellObject>();
 		Iterator<CellObject> iter = cellObjects.iterator();
 		while(iter.hasNext()) {
 			CellObject object = iter.next();
-			if (object.hasProperty(name)) {
-				if (ret == null) {
-					ret = new ArrayList<CellObject>(1);
-				}
+			if (object.hasProperty(property)) {
+				draw = true;
 				ret.add(object);
 				iter.remove();
 			}
 		}
-		if (ret == null) {
-			return null;
-		}
 		for (CellObject cellObject : ret) {
 			// needs to be outside above loop because cellObjects could change.
 			for (CellObjectObserver observer : observers) {
-				observer.removalStateUpdate(location, cellObject);
+				observer.removalStateUpdate(getLocation(), cellObject);
 			}
 		}
-		draw = true;
 		return ret;
 	}	
 }

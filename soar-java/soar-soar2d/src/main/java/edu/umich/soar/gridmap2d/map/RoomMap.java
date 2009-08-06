@@ -121,7 +121,7 @@ public class RoomMap implements GridMap, CellObjectObserver {
 			added.setProperty("object-id", Integer.toString(newObjectId()));
 		}
 		List<CellObject> numbered = data.cells.getCell(info.location).getAllWithProperty(Names.kPropertyNumber);
-		if (numbered != null) {
+		if (!numbered.isEmpty()) {
 			info.area = numbered.get(0).getIntProperty(Names.kPropertyNumber, -1);
 		}
 		roomData.roomObjectInfoMap.put(added, info);
@@ -141,7 +141,6 @@ public class RoomMap implements GridMap, CellObjectObserver {
 		assert location != null;
 
 		List<CellObject> locationObjects = data.cells.getCell(location).getAllWithProperty(Names.kPropertyNumber);
-		assert locationObjects != null;
 		assert locationObjects.size() == 1;
 		return locationObjects.get(0).getIntProperty(Names.kPropertyNumber, -1);
 	}
