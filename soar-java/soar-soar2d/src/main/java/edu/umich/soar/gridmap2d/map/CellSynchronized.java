@@ -16,11 +16,6 @@ class CellSynchronized extends Cell {
 	}
 	
 	@Override
-	public synchronized Player[] getPlayers() {
-		return super.getPlayers();
-	}
-	
-	@Override
 	public synchronized void setPlayer(Player player) {
 		super.setPlayer(player);
 	}
