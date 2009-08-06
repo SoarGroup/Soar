@@ -58,9 +58,8 @@ public class TaxiVisualWorld extends VisualWorld {
 				gc.fillRectangle(cellSize*location[0]+1, cellSize*location[1]+1, cellSize-2, cellSize-2);
 				
 				// destination
-				List<CellObject> destinationList;
-				destinationList = this.map.getCell(location).getAllWithProperty("destination");
-				if (destinationList != null) {
+				List<CellObject> destinationList= this.map.getCell(location).getAllWithProperty("destination");
+				if (!destinationList.isEmpty()) {
 					CellObject destination = destinationList.get(0);
 					String colorString = destination.getProperty(Names.kPropertyColor);
 					Color color = WindowManager.getColor(colorString);
@@ -119,30 +118,25 @@ public class TaxiVisualWorld extends VisualWorld {
 				}
 
 				// walls
-				List<CellObject> wallList;
-				wallList = this.map.getCell(location).getAllWithProperty("block");
-				if (wallList != null) {
-					for (CellObject wall : wallList ) {
-						switch(Direction.parse(wall.getProperty("direction"))) {
-						case NORTH:
-							gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1]);
-							break; 
-						case SOUTH:
-							gc.drawLine(cellSize*location[0], cellSize*location[1] + cellSize-1, cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
-							break;
-						case EAST:
-							gc.drawLine(cellSize*location[0] + cellSize-1, cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
-							break;
-						case WEST:
-							gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0], cellSize*location[1] + cellSize-1);
-							break;
-						default:
-							assert false;
-							break;	
-						}
+				for (CellObject wall : this.map.getCell(location).getAllWithProperty("block") ) {
+					switch(Direction.parse(wall.getProperty("direction"))) {
+					case NORTH:
+						gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1]);
+						break; 
+					case SOUTH:
+						gc.drawLine(cellSize*location[0], cellSize*location[1] + cellSize-1, cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
+						break;
+					case EAST:
+						gc.drawLine(cellSize*location[0] + cellSize-1, cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1] + cellSize-1);
+						break;
+					case WEST:
+						gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0], cellSize*location[1] + cellSize-1);
+						break;
+					default:
+						assert false;
+						break;	
 					}
 				}
-				
 			}
 		}
 	}

@@ -215,21 +215,18 @@ class SoarEaterIL {
 			// Food
 			Map<String, StringElement> remaining = new HashMap<String, StringElement>(cell.comestibles);
 			// For each food type in the cell on the map
-			List<CellObject> comestibles = map.getCell(view).getAllWithProperty(Names.kPropertyEdible);
-			if (comestibles != null) {
-				for (CellObject comestible : comestibles) {
+			for (CellObject comestible : map.getCell(view).getAllWithProperty(Names.kPropertyEdible)) {
+				
+				String id = comestible.getProperty(Names.kPropertyID);
+				
+				// Do we have one?
+				if (cell.comestibles.containsKey(id)) {
+					// Keep it and remove it from the remaining
+					remaining.remove(id);
+				} else {
 					
-					String id = comestible.getProperty(Names.kPropertyID);
-					
-					// Do we have one?
-					if (cell.comestibles.containsKey(id)) {
-						// Keep it and remove it from the remaining
-						remaining.remove(id);
-					} else {
-						
-						// Create it and move on
-						createContent(cell.comestibles, cell, id);
-					}
+					// Create it and move on
+					createContent(cell.comestibles, cell, id);
 				}
 			}
 			
@@ -362,7 +359,7 @@ class SoarEaterIL {
 						List<CellObject> blockers = map.getCell(view).getAllWithProperty(Names.kPropertyBlock);
 
 						// Blocking cells are simple, put anything with IDs on the input link
-						if (blockers != null) {
+						if (!blockers.isEmpty()) {
 							for (CellObject object : blockers) {
 								// use the id property as its id on the input link
 								createContent(cell.staticContent, cell, object.getProperty(Names.kPropertyID));
@@ -385,7 +382,7 @@ class SoarEaterIL {
 					
 					// TODO: there can only be one (as of right now)
 					List<CellObject> boxes = map.getCell(view).getAllWithProperty(Names.kPropertyBox);
-					if (boxes != null) {
+					if (!boxes.isEmpty()) {
 						updateBox(boxes.get(0), cell);
 					}
 					

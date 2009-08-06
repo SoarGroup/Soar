@@ -159,8 +159,8 @@ public class CellTest {
 		removed = cell.removeAllObjects();
 		assertNotNull(removed);
 		assertEquals(removed.size(), 3);
-		assertNull(cell.removeAllObjects());
-		assertNull(cell.getAll());
+		assertTrue(cell.removeAllObjects().isEmpty());
+		assertTrue(cell.getAll().isEmpty());
 		
 		cell.addObject(objects[0]);
 		cell.addObject(objects[1]);
@@ -178,33 +178,21 @@ public class CellTest {
 	}
 	
 	@Test(expected = NullPointerException.class)
-	public void testGetNull() {
-		cell.getObject(null);
-	}
-	
-	@Test(expected = NullPointerException.class)
-	public void testRemoveNull() {
-		cell.removeObject(null);
-	}
-	
-	@Test(expected = NullPointerException.class)
 	public void testCreateNull() {
 		cell = Cell.createCell(null);
 	}
 	
 	@Test
 	public void testNullParams() {
-		assertNull(cell.getAllWithProperty(null));
 		assertFalse(cell.hasAnyWithProperty(null));
 		assertFalse(cell.hasObject(null));
-		assertNull(cell.removeAllObjectsByProperty(null));
 	}
 
 	@Test
 	public void testPropertyOperations() {
 		assertFalse(cell.hasAnyWithProperty("test"));
-		assertNull(cell.getAllWithProperty("test"));
-		assertNull(cell.removeAllObjectsByProperty("test"));
+		assertTrue(cell.getAllWithProperty("test").isEmpty());
+		assertNotNull(cell.removeAllObjectsByProperty("test"));
 		
 		cell.addObject(objects[0]);
 		cell.addObject(objects[1]);

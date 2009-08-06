@@ -115,7 +115,7 @@ public class RoomVisualWorld extends VisualWorld {
 
 				if (!painted) {
 					List<CellObject> objectIds = map.getCell(location).getAllWithProperty("object-id");
-					if (objectIds != null) {
+					if (!objectIds.isEmpty()) {
 						IdLabel label = new IdLabel();
 						label.object = true;
 						label.block = block;
@@ -125,7 +125,7 @@ public class RoomVisualWorld extends VisualWorld {
 						ids.add(label);
 					} else  {
 						List<CellObject> numbers = map.getCell(location).getAllWithProperty("number");
-						if (numbers!= null) {
+						if (!numbers.isEmpty()) {
 							if (!roomIds.contains(numbers.get(0).getIntProperty("number", -1))) {
 								roomIds.add(numbers.get(0).getIntProperty("number", -1));
 								IdLabel label = new IdLabel();
