@@ -92,7 +92,7 @@ public class TankSoarWorld implements World {
 			players.setLocation(tank, location);
 			
 			// put the player in it
-			map.getCell(location).setPlayer(tank);
+			map.setPlayer(location, tank);
 
 			tank.reset();
 		}
@@ -164,7 +164,7 @@ public class TankSoarWorld implements World {
 
 	public void setExplosion(int [] xy) {
 		CellObject explosion = map.createObjectByName(Names.kExplosion);
-		map.getCell(xy).addObject(explosion);
+		map.addObject(xy, explosion);
 	}
 
 	private Map<Tank, Set<Tank> > killedTanks = new HashMap<Tank, Set<Tank> >(7);
@@ -226,7 +226,7 @@ public class TankSoarWorld implements World {
 			
 			// Check for rotate
 			if (playerMove.rotate) {
-				map.getCell(oldLocation).forceRedraw();
+				map.forceRedraw(oldLocation);
 				Direction facing = tank.getFacing();
 				if (playerMove.rotateDirection.equals(Names.kRotateLeft)) {
 					facing = facing.left();
@@ -272,7 +272,7 @@ public class TankSoarWorld implements World {
 			//Cell dest = map.getCell(newLocation);
 			
 			// Check for wall collision
-			if (map.getCell(newLocation).hasAnyWithProperty(Names.kPropertyBlock)) {
+			if (map.hasAnyObjectWithProperty(newLocation, Names.kPropertyBlock)) {
 				// Moving in to wall, there will be no player in that cell
 
 				// Cancel the move
@@ -280,7 +280,7 @@ public class TankSoarWorld implements World {
 				newLocations.put(tank, players.getLocation(tank));
 				
 				// take damage
-				String name = map.getCell(newLocation).getAllWithProperty(Names.kPropertyBlock).get(0).getName();
+				String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
 				state.adjustHealth(Gridmap2D.config.tanksoarConfig().collision_penalty, name);
 				
 				if (state.getHealth() <= 0) {
@@ -296,7 +296,7 @@ public class TankSoarWorld implements World {
 			
 			// The cell is enterable, check for player
 			
-			Tank other = (Tank)map.getCell(newLocation).getFirstPlayer();
+			Tank other = (Tank)map.getFirstPlayer(newLocation);
 			if (other == null) {
 				// No tank, cross collision impossible
 				newLocations.put(tank, newLocation);
@@ -329,14 +329,14 @@ public class TankSoarWorld implements World {
 			
 			state.adjustHealth(Gridmap2D.config.tanksoarConfig().collision_penalty, "cross collision " + other);
 			// Getting rammed on a charger is deadly
-			if (map.getCell(players.getLocation(tank)).hasAnyWithProperty(Names.kPropertyCharger)) {
+			if (map.hasAnyObjectWithProperty(players.getLocation(tank), Names.kPropertyCharger)) {
 				state.adjustHealth(state.getHealth() * -1, "hit on charger");
 			}
 			
 			TankState otherState = other.getState();
 			otherState.adjustHealth(Gridmap2D.config.tanksoarConfig().collision_penalty, "cross collision " + tank);
 			// Getting rammed on a charger is deadly
-			if (map.getCell(players.getLocation(other)).hasAnyWithProperty(Names.kPropertyCharger)) {
+			if (map.hasAnyObjectWithProperty(players.getLocation(other), Names.kPropertyCharger)) {
 				otherState.adjustHealth(otherState.getHealth() * -1, "hit on charger");
 			}
 			
@@ -417,7 +417,7 @@ public class TankSoarWorld implements World {
 					state.adjustHealth(damage, "collision");
 					
 					// Getting rammed on a charger is deadly
-					if (map.getCell(players.getLocation(tank)).hasAnyWithProperty(Names.kPropertyCharger)) {
+					if (map.hasAnyObjectWithProperty(players.getLocation(tank), Names.kPropertyCharger)) {
 						state.adjustHealth(state.getHealth() * -1, "hit on charger");
 					}
 					
@@ -443,7 +443,7 @@ public class TankSoarWorld implements World {
 		// Commit tank moves in two steps, remove from old, place in new
 		for (Tank tank : movedTanks) {
 			// remove from past cell
-			map.getCell(players.getLocation(tank)).removeAllPlayers();
+			map.removeAllPlayers(players.getLocation(tank));
 		}
 		
 		// commit the new move, grabbing the missile pack if applicable
@@ -451,17 +451,17 @@ public class TankSoarWorld implements World {
 			// put in new cell
 			int [] location = newLocations.get(tank);
 			players.setLocation(tank, location);
-			map.getCell(location).setPlayer(tank);
+			map.setPlayer(location, tank);
 			
 			// get missile pack
-			CellObject missilePack = map.getCell(location).getObject("missiles");
+			CellObject missilePack = map.getObject(location, "missiles");
 			if (missilePack != null) {
 				apply(missilePack, tank);
-				map.getCell(location).removeObject("missiles");
+				map.removeObject(location, "missiles");
 			}
 			
 			// is there a missile in the cell?
-			List<CellObject> missiles = map.getCell(location).getAllWithProperty(Names.kPropertyMissile);
+			List<CellObject> missiles = map.getAllWithProperty(location, Names.kPropertyMissile);
 			if (missiles.isEmpty()) {
 				// No, can't collide
 				continue;
@@ -472,7 +472,7 @@ public class TankSoarWorld implements World {
 			for (CellObject missile : missiles) {
 				if (move.moveDirection == Direction.parse(missile.getProperty(Names.kPropertyDirection)).backward()) {
 					missileHit(tank, missile);
-					map.getCell(location).removeObject(missile.getName());
+					map.removeObject(location, missile.getName());
 
 					// explosion
 					setExplosion(location);
@@ -505,7 +505,7 @@ public class TankSoarWorld implements World {
 			if (!map.isInBounds(missileLoc)) {
 				continue;
 			}
-			if (map.getCell(missileLoc).hasAnyWithProperty(Names.kPropertyBlock)) {
+			if (map.hasAnyObjectWithProperty(missileLoc, Names.kPropertyBlock)) {
 				// explosion
 				setExplosion(missileLoc);
 				continue;
@@ -519,7 +519,7 @@ public class TankSoarWorld implements World {
 			missile.setProperty(Names.kPropertyColor, tank.getColor());
 			
 			// If there is a tank there, it is hit
-			Tank other = (Tank)map.getCell(missileLoc).getFirstPlayer();
+			Tank other = (Tank)map.getFirstPlayer(missileLoc);
 			if (other != null) {
 				missileHit(other, missile);
 				
@@ -527,7 +527,7 @@ public class TankSoarWorld implements World {
 				setExplosion(missileLoc);
 				
 			} else {
-				map.getCell(missileLoc).addObject(missile);
+				map.addObject(missileLoc, missile);
 			}
 		}
 		
@@ -585,7 +585,7 @@ public class TankSoarWorld implements World {
 		// remove from past cell
 		int [] oldLocation = players.getLocation(tank);
 		setExplosion(oldLocation);
-		map.getCell(oldLocation).removeAllPlayers();
+		map.removeAllPlayers(oldLocation);
 
 		// put the player somewhere
 		int [] location = WorldUtil.getStartingLocation(map, null);
@@ -594,7 +594,7 @@ public class TankSoarWorld implements World {
 		}
 		players.setLocation(tank, location);
 		
-		map.getCell(location).setPlayer(tank);
+		map.setPlayer(location, tank);
 		
 		// save the location
 		players.setLocation(tank, location);
@@ -656,7 +656,7 @@ public class TankSoarWorld implements World {
 	private void chargeUp(Tank tank, int [] location) {
 		TankState state = tank.getState();
 		// Charge up
-		List<CellObject> chargers = map.getCell(location).getAllWithProperty(Names.kPropertyCharger);
+		List<CellObject> chargers = map.getAllWithProperty(location, Names.kPropertyCharger);
 		
 		for (CellObject charger : chargers) {
 			if (charger.hasProperty(Names.kPropertyHealth)) {
@@ -688,7 +688,7 @@ public class TankSoarWorld implements World {
 				logger.info("no available health chargers");
 				return;
 			}
-			map.getCell(location).addObject(charger);
+			map.addObject(location, charger);
 		} else {			
 			logger.info("spawning energy charger at (" + location[0] + "," + location[1] + ")");
 			CellObject charger = map.createRandomObjectWithProperties(Names.kPropertyEnergy, Names.kPropertyCharger);
@@ -696,7 +696,7 @@ public class TankSoarWorld implements World {
 				logger.info("no available energy chargers");
 				return;
 			}
-			map.getCell(location).addObject(charger);
+			map.addObject(location, charger);
 		}
 	}
 	
@@ -713,7 +713,7 @@ public class TankSoarWorld implements World {
 			logger.info("spawning missile pack at (" + spot[0] + "," + spot[1] + ")");
 			CellObject missiles = theMap.createObjectByName("missiles");
 			assert missiles != null;
-			map.getCell(spot).addObject(missiles);
+			map.addObject(spot, missiles);
 		}
 	}
 	
@@ -732,7 +732,7 @@ public class TankSoarWorld implements World {
 		}
 		
 		// charger insta-kill
-		if (map.getCell(players.getLocation(tank)).hasAnyWithProperty(Names.kPropertyCharger)) {
+		if (map.hasAnyObjectWithProperty(players.getLocation(tank), Names.kPropertyCharger)) {
 			state.adjustHealth(state.getHealth() * -1, "hit on charger");
 		}
 		
@@ -833,10 +833,10 @@ public class TankSoarWorld implements World {
 		players.setLocation(player, location);
 	
 		// remove food from it
-		map.getCell(location).removeAllObjectsByProperty(Names.kPropertyEdible);
+		map.removeAllObjectsByProperty(location, Names.kPropertyEdible);
 	
 		// put the player in it
-		map.getCell(location).setPlayer(player);
+		map.setPlayer(location, player);
 		
 		logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + ")");
 		
@@ -867,7 +867,7 @@ public class TankSoarWorld implements World {
 
 	public void removePlayer(String name) {
 		Tank tank = players.get(name);
-		map.getCell(players.getLocation(tank)).removeAllPlayers();
+		map.removeAllPlayers(players.getLocation(tank));
 		players.remove(tank);
 		tank.shutdownCommander();
 		updatePlayers(true);

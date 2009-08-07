@@ -11,8 +11,8 @@ import lcmtypes.pose_t;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
+import edu.umich.soar.gridmap2d.map.RoomBarrier;
 import edu.umich.soar.gridmap2d.map.RoomMap;
-import edu.umich.soar.gridmap2d.map.GridMapUtil.Barrier;
 import edu.umich.soar.robot.OffsetPose;
 import edu.umich.soar.robot.PointRelationship;
 
@@ -30,13 +30,13 @@ public class SoarRobotAreaDescriptionIL {
 		areaDescription.CreateStringWME("type", door ? "door" : "room");
 		
 		// create new area information
-		List<Barrier> barrierList = roomMap.getRoomBarrierList(locationId);
+		List<RoomBarrier> barrierList = roomMap.getRoomBarrierList(locationId);
 		assert barrierList != null;
 		assert barrierList.size() > 0;
 		
 		pose_t player = opose.getPose();
 		
-		for (Barrier barrier : barrierList) {
+		for (RoomBarrier barrier : barrierList) {
 			if (barrier.gateway) {
 				// gateway
 				GatewayIL gateway = new GatewayIL(areaDescription.CreateIdWME("gateway"));
@@ -85,7 +85,7 @@ public class SoarRobotAreaDescriptionIL {
 			this.parent = parent;
 		}
 		
-		protected void initialize(pose_t player, Barrier barrier) {
+		protected void initialize(pose_t player, RoomBarrier barrier) {
 			parent.CreateIntWME("id", barrier.id);
 
 			parent.CreateStringWME("direction", barrier.direction.id());

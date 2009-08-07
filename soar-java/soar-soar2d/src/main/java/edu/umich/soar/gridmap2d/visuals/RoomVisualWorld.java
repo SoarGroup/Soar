@@ -72,7 +72,7 @@ public class RoomVisualWorld extends VisualWorld {
 		HashSet<Integer> roomIds = new HashSet<Integer>();
 		for(location[0] = 0; location[0] < map.size(); ++location[0]){
 			for(location[1] = 0; location[1] < map.size(); ++location[1]){
-				if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
+				if (!this.map.checkAndResetRedraw(location) && painted) {
 					continue;
 				}
 
@@ -80,13 +80,13 @@ public class RoomVisualWorld extends VisualWorld {
 				
 				boolean gateway = false;
 				boolean block = false;
-				if (this.map.getCell(location).hasAnyWithProperty(Names.kPropertyBlock)) {
+				if (this.map.hasAnyObjectWithProperty(location, Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(drawLocation[0], drawLocation[1], cellSize, cellSize);
 					
 				} else {
 					
-					gateway = map.getCell(location).hasAnyWithProperty(Names.kPropertyGatewayRender); 
+					gateway = map.hasAnyObjectWithProperty(location, Names.kPropertyGatewayRender); 
 					if (!gateway) {
 
 						if (!colored_rooms) {
@@ -94,7 +94,7 @@ public class RoomVisualWorld extends VisualWorld {
 							gc.setBackground(WindowManager.widget_background);
 						} else {
 							// colored rooms:
-							CellObject roomObject = map.getCell(location).getObject(Names.kRoomID);
+							CellObject roomObject = map.getObject(location, Names.kRoomID);
 							if (roomObject == null)  {
 								gc.setBackground(WindowManager.widget_background);
 							} else {
@@ -103,7 +103,7 @@ public class RoomVisualWorld extends VisualWorld {
 								gc.setBackground(WindowManager.getColor(Gridmap2D.simulation.kColors[roomID]));
 							}
 						}
-						if (map.getCell(location).hasAnyWithProperty(Names.kRoomObjectMovable)) {
+						if (map.hasAnyObjectWithProperty(location, Names.kRoomObjectMovable)) {
 							block = true;
 							gc.setBackground(WindowManager.darkGray);
 						}
@@ -114,7 +114,7 @@ public class RoomVisualWorld extends VisualWorld {
 				}
 
 				if (!painted) {
-					List<CellObject> objectIds = map.getCell(location).getAllWithProperty("object-id");
+					List<CellObject> objectIds = map.getAllWithProperty(location, "object-id");
 					if (!objectIds.isEmpty()) {
 						IdLabel label = new IdLabel();
 						label.object = true;
@@ -124,7 +124,7 @@ public class RoomVisualWorld extends VisualWorld {
 						System.err.println(objectIds.get(0).getName() + ": " + label.label + Arrays.toString(label.loc));
 						ids.add(label);
 					} else  {
-						List<CellObject> numbers = map.getCell(location).getAllWithProperty("number");
+						List<CellObject> numbers = map.getAllWithProperty(location, "number");
 						if (!numbers.isEmpty()) {
 							if (!roomIds.contains(numbers.get(0).getIntProperty("number", -1))) {
 								roomIds.add(numbers.get(0).getIntProperty("number", -1));
@@ -218,7 +218,7 @@ public class RoomVisualWorld extends VisualWorld {
 		if (xy == null) {
 			return null;
 		}
-		return this.map.getCell(xy).getFirstPlayer();
+		return this.map.getFirstPlayer(xy);
 	}
 	
 }

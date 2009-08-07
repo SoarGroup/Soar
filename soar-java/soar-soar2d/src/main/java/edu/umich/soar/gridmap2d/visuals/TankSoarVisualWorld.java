@@ -62,7 +62,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 		int [] location = new int [2];
 		for(location[0] = 0; location[0] < map.size(); ++location[0]){
 			for(location[1] = 0; location[1] < map.size(); ++location[1]){
-				if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
+				if (!this.map.checkAndResetRedraw(location) && painted) {
 					continue;
 				}
 				
@@ -70,7 +70,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 				CellObject object = null;
 				List<CellObject> missiles = new ArrayList<CellObject>();
 				
-				for (CellObject cellObject : this.map.getCell(location).getAllWithProperty(Names.kPropertyImage)) {
+				for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyImage)) {
 					if (cellObject.getName().equals(Names.kExplosion)) {
 						explosion = cellObject;
 					} else if (cellObject.getName().equals("missiles")) {
@@ -80,7 +80,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 					}
 				}
 				
-				Tank tank = (Tank)this.map.getCell(location).getFirstPlayer();
+				Tank tank = (Tank)this.map.getFirstPlayer(location);
 				TankState state = tank == null ? null : tank.getState();
 				
 				// draw the wall or ground or energy charger or health charger
@@ -178,7 +178,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 				// Finally, draw the radar waves
 				gc.setForeground(WindowManager.getColor("white"));
 				
-				for (CellObject cellObject : this.map.getCell(location).getAllWithProperty(Names.kPropertyRadarWaves)) {
+				for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyRadarWaves)) {
 					Direction direction = Direction.parse(cellObject.getProperty(Names.kPropertyDirection));
 					int start = 0;
 					int xMod = 0;
@@ -233,7 +233,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 	
 	public void updateBackground(int [] location) {
 		CellObject backgroundObject = null;
-		for (CellObject cellObject : this.map.getCell(location).getAllWithProperty(Names.kPropertyImage)) {
+		for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyImage)) {
 			if (cellObject.hasProperty(Names.kPropertyBlock)) {
 				backgroundObject = cellObject;
 			} else if (cellObject.getName().equals(Names.kGround)) {

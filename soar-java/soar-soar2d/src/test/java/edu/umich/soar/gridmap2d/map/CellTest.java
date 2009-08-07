@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -20,11 +19,10 @@ import edu.umich.soar.gridmap2d.map.CellObjectObserver;
 public class CellTest {
 	Cell cell;
 	CellObject[] objects = new CellObject[3];
-	int[] xyInitial = new int[] {0, 0};
 	
 	@Before
 	public void setUp() {
-		cell = Cells.createCell(xyInitial);
+		cell = Cells.createCell();
 		
 		Config config;
 
@@ -102,13 +100,13 @@ public class CellTest {
 	}
 	
 	void testDrawWontTrigger(String objectName, String propertyName) {
-		cell.getAll();
+		cell.getAllObjects();
 		assertFalse(cell.checkAndResetRedraw());
 		
 		cell.getAllWithProperty(propertyName);
 		assertFalse(cell.checkAndResetRedraw());
 		
-		cell.hasAnyWithProperty(propertyName);
+		cell.hasAnyObjectWithProperty(propertyName);
 		assertFalse(cell.checkAndResetRedraw());
 		
 		cell.getObject(objectName);
@@ -146,11 +144,11 @@ public class CellTest {
 		cell.addObject(objects[1]);
 		cell.addObject(objects[2]);
 
-		List<CellObject> gotten = cell.getAll();
+		List<CellObject> gotten = cell.getAllObjects();
 		assertNotNull(gotten);
 		assertEquals(gotten.size(), 3);
 
-		gotten = cell.getAll();
+		gotten = cell.getAllObjects();
 		assertNotNull(gotten);
 		assertEquals(gotten.size(), 3);
 		
@@ -158,7 +156,7 @@ public class CellTest {
 		assertNotNull(removed);
 		assertEquals(removed.size(), 3);
 		assertTrue(cell.removeAllObjects().isEmpty());
-		assertTrue(cell.getAll().isEmpty());
+		assertTrue(cell.getAllObjects().isEmpty());
 		
 		cell.addObject(objects[0]);
 		cell.addObject(objects[1]);
@@ -175,20 +173,15 @@ public class CellTest {
 		cell.addObject(null);
 	}
 	
-	@Test(expected = NullPointerException.class)
-	public void testCreateNull() {
-		cell = Cells.createCell(null);
-	}
-	
 	@Test
 	public void testNullParams() {
-		assertFalse(cell.hasAnyWithProperty(null));
+		assertFalse(cell.hasAnyObjectWithProperty(null));
 		assertFalse(cell.hasObject(null));
 	}
 
 	@Test
 	public void testPropertyOperations() {
-		assertFalse(cell.hasAnyWithProperty("test"));
+		assertFalse(cell.hasAnyObjectWithProperty("test"));
 		assertTrue(cell.getAllWithProperty("test").isEmpty());
 		assertNotNull(cell.removeAllObjectsByProperty("test"));
 		
@@ -198,8 +191,8 @@ public class CellTest {
 		
 		assertNotNull(cell.getAllWithProperty("property"));
 		assertEquals(cell.getAllWithProperty("property").size(), 3);
-		assertNotNull(cell.getAll());
-		assertEquals(cell.getAll().size(), 3);
+		assertNotNull(cell.getAllObjects());
+		assertEquals(cell.getAllObjects().size(), 3);
 		assertNotNull(cell.getAllWithProperty("property0"));
 		assertEquals(cell.getAllWithProperty("property0").size(), 1);
 		assertNotNull(cell.getAllWithProperty("property1"));
@@ -228,13 +221,6 @@ public class CellTest {
 		assertEquals(removals.size(), 3);
 	}
 	
-	@Test
-	public void testLocation() {
-		cell.getLocation()[0] += 1;
-		cell.getLocation()[1] += 1;
-		assertTrue(Arrays.equals(cell.getLocation(), xyInitial));
-	}
-
 	int observerAddCalled;
 	int observerRemoveCalled;
 	CellObject observerExpectedObject;
@@ -245,20 +231,20 @@ public class CellTest {
 			observerRemoveCalled = 0;
 			observerExpectedObject = null;
 		}
-		public void addStateUpdate(int[] xy, CellObject object) {
-			checkParams(xy, object);
+		
+		@Override
+		public void addStateUpdate(CellObject object) {
+			checkParams(object);
 			observerAddCalled += 1;
 		}
 
-		public void removalStateUpdate(int[] xy, CellObject object) {
-			checkParams(xy, object);
+		@Override
+		public void removalStateUpdate(CellObject object) {
+			checkParams(object);
 			observerRemoveCalled += 1;
 		}
 		
-		void checkParams(int[] xy, CellObject object) {
-			assertNotNull(xy);
-			assertTrue(Arrays.equals(xy, xyInitial));
-
+		void checkParams(CellObject object) {
 			assertNotNull(object);
 			if (observerExpectedObject != null) {
 				assertEquals(object, observerExpectedObject);

@@ -11,7 +11,7 @@ class GridMapCells {
 		for(xy[0] = 0; xy[0] < size; ++xy[0]) {
 			cells[xy[0]] = new Cell[size];
 			for(xy[1] = 0; xy[1] < size; ++xy[1]) {
-				Cell newCell = Cells.createCell(xy);
+				Cell newCell = Cells.createCell();
 				for (CellObjectObserver observer : observers) {
 					newCell.addObserver(observer);
 				}

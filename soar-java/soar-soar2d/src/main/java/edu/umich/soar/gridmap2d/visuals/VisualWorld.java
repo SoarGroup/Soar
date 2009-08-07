@@ -114,7 +114,7 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		if (xy == null) {
 			return null;
 		}
-		return this.map.getCell(xy).getFirstPlayer();
+		return this.map.getFirstPlayer(xy);
 	}
 	
 	class DrawMissile {

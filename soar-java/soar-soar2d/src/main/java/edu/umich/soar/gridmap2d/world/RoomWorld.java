@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
 
 import jmat.LinAlg;
 
@@ -18,10 +17,10 @@ import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.config.PlayerConfig;
-import edu.umich.soar.gridmap2d.map.Cell;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.GridMap;
 import edu.umich.soar.gridmap2d.map.RoomMap;
+import edu.umich.soar.gridmap2d.map.RoomObject;
 import edu.umich.soar.gridmap2d.players.CommandInfo;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.RobotCommander;
@@ -78,7 +77,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 		players.setLocation(player, location);
 		
 		// put the player in it
-		map.getCell(location).addPlayer(player);
+		map.addPlayer(location, player);
 		
 		player.getState().setLocationId(map.getLocationId(location));
 		double [] floatLocation = defaultFloatLocation(location);
@@ -119,7 +118,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 	@Override
 	public void removePlayer(String name) {
 		Robot player = players.get(name);
-		map.getCell(players.getLocation(player)).removePlayer(player);
+		map.removePlayer(players.getLocation(player), player);
 		players.remove(player);
 		player.shutdownCommander();
 		updatePlayers();
@@ -168,7 +167,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 			players.setLocation(player, location);
 
 			// put the player in it
-			map.getCell(location).addPlayer(player);
+			map.addPlayer(location, player);
 
 			player.getState().setLocationId(map.getLocationId(location));
 
@@ -275,7 +274,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 	}
 
 	private boolean checkBlocked(int [] location) {
-		if (map.getCell(location).hasAnyWithProperty(Names.kPropertyBlock)) {
+		if (map.hasAnyObjectWithProperty(location, Names.kPropertyBlock)) {
 			return true;
 		}
 		return false;
@@ -367,29 +366,29 @@ public class RoomWorld implements World, SendMessagesInterface {
 		state.setPos(pose.pos);
 		
 		//state.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
-		map.getCell(oldLocation).removePlayer(player);
+		map.removePlayer(oldLocation, player);
 		players.setLocation(player, newLocation);
 		state.setLocationId(map.getLocationId(newLocation));
-		map.getCell(newLocation).addPlayer(player);
+		map.addPlayer(newLocation, player);
 		
 		// redraw the 8 cells around it
 		int[] redrawLoc = Arrays.copyOf(newLocation, newLocation.length); 
 		Direction.translate(redrawLoc, Direction.EAST);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 		Direction.translate(redrawLoc, Direction.SOUTH);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 		Direction.translate(redrawLoc, Direction.WEST);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 		Direction.translate(redrawLoc, Direction.WEST);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 		Direction.translate(redrawLoc, Direction.NORTH);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 		Direction.translate(redrawLoc, Direction.NORTH);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 		Direction.translate(redrawLoc, Direction.EAST);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 		Direction.translate(redrawLoc, Direction.EAST);
-		map.getCell(redrawLoc).forceRedraw();
+		map.forceRedraw(redrawLoc);
 	}
 
 	public boolean dropObject(Robot player, int id) {
@@ -414,8 +413,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 //
 //		Cell destCell = roomMap.getCell(info.location);
 		
-		Cell destCell = map.getCell(player.getLocation());
-		CellObject temp = destCell.getObject(object.getName());
+		CellObject temp = map.getObject(player.getLocation(), object.getName());
 		if (temp != null) {
 			blockManipulationReason = "Destination cell for drop is occupied";
 //			info.pose = null;
@@ -424,7 +422,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 		}
 		
 		state.drop();
-		destCell.addObject(object);
+		map.addObject(player.getLocation(), object);
 		return true;
 	}
 
@@ -443,21 +441,22 @@ public class RoomWorld implements World, SendMessagesInterface {
 		}
 		
 		// note: This is a stupid way to do this.
-		Set<CellObject> objects = map.getRoomObjects();
-		for (CellObject object : objects) {
-			if (object.getIntProperty("object-id", -1) == id) {
-				RoomMap.RoomObjectInfo info = map.getRoomObjectInfo(object);
-				if (info.pose == null) {
-					continue;
-				}
-				double distance = LinAlg.distance(player.getState().getPose().pos, info.pose.pos);
+		for (RoomObject rObj : map.getRoomObjects()) {
+			if (rObj.getPose() == null) {
+				// already carried by someone
+				continue;
+			}
+			CellObject cObj = rObj.getObject();
+			
+			if (cObj.getIntProperty("object-id", -1) == id) {
+				double distance = LinAlg.distance(player.getState().getPose().pos, rObj.getPose().pos);
 				if (Double.compare(distance, CELL_SIZE) <= 0) {
-					if (map.getCell(info.location).removeObject(object.getName()) == null) {
+					if (map.removeObject(cObj.getLocation(), cObj.getName()) == null) {
 						throw new IllegalStateException("Remove object failed for object that should be there.");
 					}
-					info.location = null;
-					info.pose = null;
-					player.getState().pickUp(object);
+					cObj.setLocation(null);
+					rObj.setPose(null);
+					player.getState().pickUp(cObj);
 					return true;
 				}
 				blockManipulationReason = "Object is too far";

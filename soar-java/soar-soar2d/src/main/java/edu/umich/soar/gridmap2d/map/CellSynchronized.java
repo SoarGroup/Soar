@@ -46,23 +46,23 @@ class CellSynchronized<E extends Cell> implements Cell {
 	}
 	
 	@Override
-	public synchronized List<CellObject> getAllWithProperty(String name) {	
-		return c.getAllWithProperty(name);
+	public synchronized List<CellObject> getAllWithProperty(String property) {	
+		return c.getAllWithProperty(property);
 	}
 	
 	@Override
-	public synchronized List<CellObject> getAll() {	
-		return c.getAll();
+	public synchronized List<CellObject> getAllObjects() {	
+		return c.getAllObjects();
 	}
 	
 	@Override
-	public synchronized boolean hasAnyWithProperty(String name) {	
-		return c.hasAnyWithProperty(name);
+	public synchronized boolean hasAnyObjectWithProperty(String property) {	
+		return c.hasAnyObjectWithProperty(property);
 	}
 	
 	@Override
-	public synchronized List<CellObject> removeAllObjectsByProperty(String name) {
-		return c.removeAllObjectsByProperty(name);
+	public synchronized List<CellObject> removeAllObjectsByProperty(String property) {
+		return c.removeAllObjectsByProperty(property);
 	}
 	
 	@Override
@@ -103,10 +103,5 @@ class CellSynchronized<E extends Cell> implements Cell {
 	@Override
 	public void forceRedraw() {
 		c.forceRedraw();
-	}
-
-	@Override
-	public int[] getLocation() {
-		return c.getLocation();
 	}
 }

@@ -50,7 +50,7 @@ public class TaxiVisualWorld extends VisualWorld {
 		int [] location = new int [2];
 		for(location[0] = 0; location[0] < map.size(); ++location[0]){			
 			for(location[1] = 0; location[1] < map.size(); ++location[1]){				
-				if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
+				if (!this.map.checkAndResetRedraw(location) && painted) {
 					//continue;
 				}
 
@@ -58,7 +58,7 @@ public class TaxiVisualWorld extends VisualWorld {
 				gc.fillRectangle(cellSize*location[0]+1, cellSize*location[1]+1, cellSize-2, cellSize-2);
 				
 				// destination
-				List<CellObject> destinationList= this.map.getCell(location).getAllWithProperty("destination");
+				List<CellObject> destinationList= this.map.getAllWithProperty(location, "destination");
 				if (!destinationList.isEmpty()) {
 					CellObject destination = destinationList.get(0);
 					String colorString = destination.getProperty(Names.kPropertyColor);
@@ -75,7 +75,7 @@ public class TaxiVisualWorld extends VisualWorld {
 			    	gc.setForeground(WindowManager.black);
 				}
 				
-				if (this.map.getCell(location).hasObject("fuel")) {
+				if (this.map.hasObject(location, "fuel")) {
 					int size = 14;
 					fill = cellSize/2 - size/2;
 
@@ -90,7 +90,7 @@ public class TaxiVisualWorld extends VisualWorld {
 
 				}
 				
-				Taxi taxi = (Taxi)this.map.getCell(location).getFirstPlayer();
+				Taxi taxi = (Taxi)this.map.getFirstPlayer(location);
 				
 				if (taxi != null) {
 					gc.setBackground(WindowManager.getColor("white"));
@@ -108,7 +108,7 @@ public class TaxiVisualWorld extends VisualWorld {
 					}
 				}
 				
-				if (this.map.getCell(location).hasObject("passenger")) {
+				if (this.map.hasObject(location, "passenger")) {
 
 					int size = 8;
 					fill = cellSize/2 - size/2;
@@ -118,7 +118,7 @@ public class TaxiVisualWorld extends VisualWorld {
 				}
 
 				// walls
-				for (CellObject wall : this.map.getCell(location).getAllWithProperty("block") ) {
+				for (CellObject wall : this.map.getAllWithProperty(location, "block") ) {
 					switch(Direction.parse(wall.getProperty("direction"))) {
 					case NORTH:
 						gc.drawLine(cellSize*location[0], cellSize*location[1], cellSize*location[0] + cellSize-1, cellSize*location[1]);
