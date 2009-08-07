@@ -189,7 +189,7 @@ class SoarTaxiIL {
 			agent.Update(type, map.getStringType(tempLocation));
 			
 			if (map.isInBounds(tempLocation)) {
-				if (map.getCell(tempLocation).getObject("passenger") != null) {
+				if (map.getObject(tempLocation, "passenger") != null) {
 					agent.Update(passenger, "true");
 				} else {
 					agent.Update(passenger, "false");
@@ -229,7 +229,7 @@ class SoarTaxiIL {
 			
 			agent.Update(cellType, map.getStringType(pos));
 			
-			if (map.getCell(pos).getObject("passenger") != null) {
+			if (map.getObject(pos, "passenger") != null) {
 				agent.Update(cellPassenger, "true");
 			} else {
 				agent.Update(cellPassenger, "false");

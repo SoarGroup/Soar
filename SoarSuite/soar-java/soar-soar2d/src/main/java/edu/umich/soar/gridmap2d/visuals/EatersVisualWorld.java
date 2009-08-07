@@ -91,25 +91,25 @@ public class EatersVisualWorld extends VisualWorld {
 				}
 				
 				if (agentLocation == null) {
-					if (!this.map.getCell(location).checkAndResetRedraw() && painted) {
+					if (!this.map.checkAndResetRedraw(location) && painted) {
 						continue;
 					}
 				} else {
-					if (!this.map.getCell(location).checkRedraw() && painted) {
+					if (!this.map.checkRedraw(location) && painted) {
 						continue;
 					}
 				}
 				
-				List<CellObject> drawList = this.map.getCell(location).getAllWithProperty(Names.kPropertyShape);
+				List<CellObject> drawList = this.map.getAllWithProperty(location, Names.kPropertyShape);
 				
-				if (this.map.getCell(location).hasAnyWithProperty(Names.kPropertyBlock)) {
+				if (this.map.hasAnyObjectWithProperty(location, Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(cellSize*xDraw + 1, cellSize*yDraw + 1, cellSize - 2, cellSize - 2);
 					
 				} else {
 					boolean empty = true;
 					
-					Player eater = this.map.getCell(location).getFirstPlayer();
+					Player eater = this.map.getFirstPlayer(location);
 					
 					if (eater != null) {
 						empty = false;
@@ -173,7 +173,7 @@ public class EatersVisualWorld extends VisualWorld {
 					}
 				}
 				
-				if (this.map.getCell(location).hasObject(Names.kExplosion)) {
+				if (this.map.hasObject(location, Names.kExplosion)) {
 					drawExplosion(gc, xDraw, yDraw);
 				}
 			}

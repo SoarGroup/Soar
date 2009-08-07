@@ -38,10 +38,5 @@ public class EatersMapTest {
 		EatersMap eatersMap = EatersMap.generateInstance("config/maps/eaters/tiny.txt", false, .35, .85);
 		assertNotNull(eatersMap);
 		assertEquals(eatersMap.size(), 4);
-
-		int[] xy = new int[2];
-		for (xy[0] = 0; xy[0] < eatersMap.size(); xy[0]++)
-			for (xy[1] = 0; xy[1] < eatersMap.size(); xy[1]++)
-					assertNotNull(eatersMap.getCell(xy));
 	}
 }

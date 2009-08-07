@@ -9,15 +9,13 @@ import edu.umich.soar.config.ConfigFile;
 
 public class CellObject {
 	private static Logger logger = Logger.getLogger(CellObject.class);
-	private static long idCount = 0;
 
 	private Config config;
-	private Long id;
 	private boolean applyable;
 	private boolean updatable;
+	private int[] location;
 	
 	CellObject(CellObject cellObject) {
-		this.id = new Long(idCount++);
 		this.config = cellObject.config.copy();
 		this.applyable = cellObject.applyable;
 		this.updatable = cellObject.updatable;
@@ -26,8 +24,6 @@ public class CellObject {
 	CellObject(Config config) {
 		logger.trace("Creating object: " + config.requireString("name"));
 		
-		this.id = new Long(idCount++);
-
 		// create a new config in memory
 		this.config = new Config(new ConfigFile());
 		
@@ -39,10 +35,20 @@ public class CellObject {
 		updateCachedState();
 	}
 	
-	public boolean equals(CellObject other) {
-		return id == other.id;
+	public int[] getLocation() {
+		if (location == null) {
+			return null;
+		}
+		return Arrays.copyOf(location, location.length);
 	}
 	
+	public void setLocation(int[] location) {
+		if (location == null) {
+			this.location = null;
+		}
+		this.location = Arrays.copyOf(location, location.length);
+	}
+
 	public String getName() {
 		return config.requireString("name");
 	}

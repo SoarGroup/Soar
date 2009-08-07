@@ -186,7 +186,7 @@ class SoarEaterIL {
 		}
 		
 		private void updatePlayerContent(int[] view, EatersMap map, Cell cell) {
-			Player playerContent = map.getCell(view).getFirstPlayer();
+			Player playerContent = map.getFirstPlayer(view);
 			if (playerContent != null) {
 				if (cell.eater == null) {
 					cell.eater = cell.me.CreateStringWME(Names.kContentID, Names.kEaterID);
@@ -215,7 +215,7 @@ class SoarEaterIL {
 			// Food
 			Map<String, StringElement> remaining = new HashMap<String, StringElement>(cell.comestibles);
 			// For each food type in the cell on the map
-			for (CellObject comestible : map.getCell(view).getAllWithProperty(Names.kPropertyEdible)) {
+			for (CellObject comestible : map.getAllWithProperty(view, Names.kPropertyEdible)) {
 				
 				String id = comestible.getProperty(Names.kPropertyID);
 				
@@ -356,7 +356,7 @@ class SoarEaterIL {
 						}
 						
 						// get all things that block
-						List<CellObject> blockers = map.getCell(view).getAllWithProperty(Names.kPropertyBlock);
+						List<CellObject> blockers = map.getAllWithProperty(view, Names.kPropertyBlock);
 
 						// Blocking cells are simple, put anything with IDs on the input link
 						if (!blockers.isEmpty()) {
@@ -369,7 +369,7 @@ class SoarEaterIL {
 					} else {
 						
 						// Filter out locations that will not change:
-						if (!map.isInBounds(view) || map.getCell(view).hasAnyWithProperty(Names.kPropertyBlock)) {
+						if (!map.isInBounds(view) || map.hasAnyObjectWithProperty(view, Names.kPropertyBlock)) {
 							continue;
 						}
 					}
@@ -381,7 +381,7 @@ class SoarEaterIL {
 					updateFoodContent(view, map, cell);
 					
 					// TODO: there can only be one (as of right now)
-					List<CellObject> boxes = map.getCell(view).getAllWithProperty(Names.kPropertyBox);
+					List<CellObject> boxes = map.getAllWithProperty(view, Names.kPropertyBox);
 					if (!boxes.isEmpty()) {
 						updateBox(boxes.get(0), cell);
 					}
