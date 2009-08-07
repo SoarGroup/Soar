@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.map;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +12,6 @@ class GridMapData implements CellObjectObserver {
 	private static Logger logger = Logger.getLogger(GridMapData.class);
 
 	CellObjectManager cellObjectManager;
-	File metadataFile;
 	GridMapCells cells;
 
 	Set<CellObject> updatables = new HashSet<CellObject>();

@@ -822,7 +822,7 @@ public class TankSoarWorld implements World {
 		players.add(player, cfg.pos);
 		
 		if (cfg.productions != null) {
-			TankCommander cmdr = cogArch.createTankCommander(player, cfg.productions, cfg.shutdown_commands, map.getMetadataFile(), debug);
+			TankCommander cmdr = cogArch.createTankCommander(player, cfg.productions, cfg.shutdown_commands, debug);
 			if (cmdr == null) {
 				players.remove(player);
 				return false;
