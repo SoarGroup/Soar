@@ -2,10 +2,12 @@ package edu.umich.soar.gridmap2d.map;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -20,7 +22,16 @@ import edu.umich.soar.gridmap2d.world.RoomWorld;
 public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver {
 	private static Logger logger = Logger.getLogger(RoomMap.class);
 
-	private RoomMapData roomData;
+	private int roomCount;
+	private int gatewayCount;
+	private int wallCount;
+	private int objectCount;
+	
+	// Mapping of gateway id to the list of the ids of rooms it connects
+	private final Map<Integer, List<Integer> > gatewayDestinationMap = new HashMap<Integer, List<Integer> >();
+	// Mapping of room id to the list of the barriers surrounding that room
+	private final Map<Integer, List<RoomBarrier> > roomBarrierMap = new HashMap<Integer, List<RoomBarrier> >();
+	private final Set<RoomObject> roomObjects = new HashSet<RoomObject>();
 
 	public RoomMap(String mapPath) {
 		super(mapPath);
@@ -39,13 +50,20 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 
 	@Override
 	public void reset() {
-		this.roomData = new RoomMapData();
+		roomCount = 0;
+		gatewayCount = 0;
+		wallCount = 0;
+		objectCount = 0;
+		gatewayDestinationMap.clear();
+		roomBarrierMap.clear();
+		roomObjects.clear();
+		
 		super.reload();
 		generateRoomStructure();
 	}
 
 	public Set<RoomObject> getRoomObjects() {
-		return roomData.roomObjects;
+		return roomObjects;
 	}
 	
 	@Override
@@ -53,7 +71,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		if (!added.hasProperty(Names.kRoomObjectMovable)) {
 			return;
 		}
-		if (roomData.roomObjects == null) {
+		if (roomObjects == null) {
 			// building map
 			return;
 		}
@@ -70,12 +88,12 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
         if (!numbered.isEmpty()) {
         	roomObj.setArea(numbered.get(0).getIntProperty(Names.kPropertyNumber, -1));
         }
-		roomData.roomObjects.add(roomObj);
+		roomObjects.add(roomObj);
 	}
 
 	int newObjectId() {
-		int objectNumber = roomData.roomCount + roomData.gatewayCount + roomData.wallCount + roomData.objectCount;
-		roomData.objectCount += 1;
+		int objectNumber = roomCount + gatewayCount + wallCount + objectCount;
+		objectCount += 1;
 		return objectNumber; 
 	}
 	
@@ -92,11 +110,11 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 	}
 
 	public List<RoomBarrier> getRoomBarrierList(int oldLocationId) {
-		return roomData.roomBarrierMap.get(oldLocationId);
+		return roomBarrierMap.get(oldLocationId);
 	}
 
 	public List<Integer> getGatewayDestinationList(int id) {
-		return roomData.gatewayDestinationMap.get(id);
+		return gatewayDestinationMap.get(id);
 	}
 
 	boolean generateRoomStructure() {
@@ -131,8 +149,8 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 				assert cell.getObject(edu.umich.soar.gridmap2d.Names.kRoomID) == null;
 
 				// cell is enterable, we have a room
-				int roomNumber = roomData.roomCount + roomData.gatewayCount + roomData.wallCount + roomData.objectCount;
-				roomData.roomCount += 1;
+				int roomNumber = roomCount + gatewayCount + wallCount + objectCount;
+				roomCount += 1;
 				
 				CellObject roomObject = getData().cellObjectManager.createObject(edu.umich.soar.gridmap2d.Names.kRoomID);
 				roomObject.setProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, Integer.toString(roomNumber));
@@ -237,18 +255,18 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 							currentBarrier.direction = direction.left();
 							
 							// create a new gateway id
-							currentBarrier.id = roomData.roomCount + roomData.gatewayCount + roomData.wallCount + roomData.objectCount;
-							roomData.gatewayCount += 1;
+							currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
+							gatewayCount += 1;
 
 							logger.trace("new gateway");
 							
 							// add the current room to the gateway destination list
-							List<Integer> gatewayDestinations = roomData.gatewayDestinationMap.get(new Integer(currentBarrier.id));
+							List<Integer> gatewayDestinations = gatewayDestinationMap.get(new Integer(currentBarrier.id));
 							if (gatewayDestinations == null) {
 								gatewayDestinations = new ArrayList<Integer>();
 							}
 							gatewayDestinations.add(new Integer(roomNumber));
-							roomData.gatewayDestinationMap.put(new Integer(currentBarrier.id), gatewayDestinations);
+							gatewayDestinationMap.put(new Integer(currentBarrier.id), gatewayDestinations);
 						}
 
 						// id are noted by the direction of the wall
@@ -277,8 +295,8 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 							currentBarrier.direction = direction.left();
 							
 							// create a new id
-							currentBarrier.id = roomData.roomCount + roomData.gatewayCount + roomData.wallCount + roomData.objectCount;
-							roomData.wallCount += 1;
+							currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
+							wallCount += 1;
 							
 							logger.trace("new wall: " + currentBarrier.id);
 						}
@@ -389,7 +407,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 				
 				// Generate centerpoints and store room information
 				generateCenterpoints(roomNumber, barrierList);
-				roomData.roomBarrierMap.put(roomNumber, barrierList);
+				roomBarrierMap.put(roomNumber, barrierList);
 			}
 		}
 		
@@ -397,7 +415,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		gatewaysToAreasStep(gatewayBarriers);
 		
 		// Assign areas for all objects
-		for (RoomObject roomObj : roomData.roomObjects) {
+		for (RoomObject roomObj : roomObjects) {
 			Cell cell = getData().cells.getCell(roomObj.getObject().getLocation());
 			List<CellObject> numbers = cell.getAllWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber);
 			assert !numbers.isEmpty();
@@ -406,11 +424,11 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		}
 		
 		// print gateway information
-		Iterator<Integer> gatewayKeyIter = roomData.gatewayDestinationMap.keySet().iterator();
+		Iterator<Integer> gatewayKeyIter = gatewayDestinationMap.keySet().iterator();
 		while (gatewayKeyIter.hasNext()) {
 			Integer gatewayId = gatewayKeyIter.next();
 			String toList = "";
-			Iterator<Integer> gatewayDestIter = roomData.gatewayDestinationMap.get(gatewayId).iterator();
+			Iterator<Integer> gatewayDestIter = gatewayDestinationMap.get(gatewayId).iterator();
 			while (gatewayDestIter.hasNext()) {
 				toList += gatewayDestIter.next() + " ";
 			}
@@ -436,17 +454,17 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 				if (cell.hasObject(edu.umich.soar.gridmap2d.Names.kRoomID)) {
 					// we have already processed this room, just need to add the room id
 					// to the gateway's destination list
-					RoomMapData.addDestinationToGateway(roomData, cell.getObject(edu.umich.soar.gridmap2d.Names.kRoomID).getIntProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, -1), gatewayBarrier.id);
+					addDestinationToGateway(cell.getObject(edu.umich.soar.gridmap2d.Names.kRoomID).getIntProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, -1), gatewayBarrier.id);
 					continue;
 				}
 			}
 			
 			// get a new room id
-			int roomNumber = roomData.roomCount + roomData.gatewayCount + roomData.wallCount + roomData.objectCount;
-			roomData.roomCount += 1;
+			int roomNumber = roomCount + gatewayCount + wallCount + objectCount;
+			roomCount += 1;
 			
 			// add new id to current gateway destination list
-			RoomMapData.addDestinationToGateway(roomData, roomNumber, gatewayBarrier.id);
+			addDestinationToGateway(roomNumber, gatewayBarrier.id);
 			
 			CellObject theNewRoomObject = getData().cellObjectManager.createObject(edu.umich.soar.gridmap2d.Names.kRoomID);
 			theNewRoomObject.setProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, Integer.toString(roomNumber));
@@ -525,7 +543,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 
 			// Generate centerpoints and store room information
 			generateCenterpoints(roomNumber, barrierList);
-			roomData.roomBarrierMap.put(roomNumber, barrierList);
+			roomBarrierMap.put(roomNumber, barrierList);
 		}
 	}
 	
@@ -544,8 +562,8 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		currentBarrier.right = Arrays.copyOf(currentBarrier.left, currentBarrier.left.length);
 		
 		// get a new wall id
-		currentBarrier.id = roomData.roomCount + roomData.gatewayCount + roomData.wallCount + roomData.objectCount;
-		roomData.wallCount += 1;
+		currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
+		wallCount += 1;
 		// the direction is the direction we just traveled to get to the wall
 		currentBarrier.direction = direction;
 		
@@ -577,8 +595,8 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		currentBarrier.left = Direction.translate(startPoint, direction, new int[2]);
 
 		// get a new gateway id
-		currentBarrier.id = roomData.roomCount + roomData.gatewayCount + roomData.wallCount + roomData.objectCount;
-		roomData.gatewayCount += 1;
+		currentBarrier.id = roomCount + gatewayCount + wallCount + objectCount;
+		gatewayCount += 1;
 		// the direction is the direction we just traveled to get to the gateway
 		currentBarrier.direction = direction;
 
@@ -605,7 +623,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 			List<Integer> gatewayDestinations = new ArrayList<Integer>();
 			gatewayDestinations.add(new Integer(roomNumber));
 			gatewayDestinations.add(new Integer(cell.getObject(edu.umich.soar.gridmap2d.Names.kRoomID).getIntProperty(edu.umich.soar.gridmap2d.Names.kPropertyNumber, -1)));
-			roomData.gatewayDestinationMap.put(new Integer(currentBarrier.id), gatewayDestinations);
+			gatewayDestinationMap.put(new Integer(currentBarrier.id), gatewayDestinations);
 			
 			if (Arrays.equals(currentBarrier.right, endOfGateway)) {
 				break;
@@ -632,4 +650,11 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		}
 	}
 	
+	void addDestinationToGateway(int roomNumber, int gatewayId) {
+		List<Integer> gatewayDestinations = gatewayDestinationMap.get(new Integer(gatewayId));
+		assert gatewayDestinations != null;
+		gatewayDestinations.add(new Integer(roomNumber));
+		gatewayDestinationMap.put(new Integer(gatewayId), gatewayDestinations);
+	}
+
 }
