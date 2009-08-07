@@ -57,12 +57,6 @@ public class GridMapUtil {
 			}
 			
 			cellsConfig(data, mapConfig.getChild("cells"), objectsConfig, observer, lowProbability, highProbability);
-			
-			if (mapConfig.hasKey("metadata")) {
-				data.metadataFile = new File(mapConfig.getString("metadata"));
-			}
-			
-			buildReferenceMap(data);
 			return true;
 		} 
 		catch (IOException e) {
@@ -172,27 +166,6 @@ public class GridMapUtil {
 		}
 	}
 	
-	private static void buildReferenceMap(GridMapData data) {
-		// Build cell reference map
-		assert data.cells != null;
-		int [] xy = new int[2];
-		for (xy[0] = 0; xy[0] < data.cells.size(); ++xy[0]) {
-			for (xy[1] = 0; xy[1] < data.cells.size(); ++xy[1]) {
-				Cell cell = data.cells.getCell(xy);
-				for (Direction dir : Direction.values()) {
-					if (dir == Direction.NONE) {
-						continue;
-					}
-					int[] neighborLoc = Direction.translate(cell.location, dir, new int[2]);
-					if (data.cells.isInBounds(neighborLoc)) {
-						Cell neighbor = data.cells.getCell(neighborLoc);
-						cell.neighbors[dir.index()] = neighbor;
-					}
-				}
-			}
-		}
-	}
-
 	/**
 	 * @param data
 	 * @param observer
@@ -243,7 +216,7 @@ public class GridMapUtil {
 		logger.trace(Arrays.toString(xy) + ": Changing to wall.");
 		Cell cell = data.cells.getCell(xy);
 		if (cell == null) {
-			cell = Cell.createCell(xy);
+			cell = Cells.createCell(xy);
 			cell.addObserver(data);
 			cell.addObserver(observer);
 		}
@@ -316,7 +289,7 @@ public class GridMapUtil {
 			for (xy[1] = 1; xy[1] < data.cells.size() - 1; ++xy[1]) {
 				Cell cell = data.cells.getCell(xy);
 				if (cell == null) {
-					cell = Cell.createCell(xy);
+					cell = Cells.createCell(xy);
 					cell.addObserver(data);
 					cell.addObserver(observer);
 				}

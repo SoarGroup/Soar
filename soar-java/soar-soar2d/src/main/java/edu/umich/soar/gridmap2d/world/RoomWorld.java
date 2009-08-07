@@ -65,7 +65,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 		players.add(player, cfg.pos);
 		
 		if (cfg.productions != null) {
-			RobotCommander cmdr = cogArch.createRoomCommander(player, this, cfg.productions, cfg.shutdown_commands, map.getMetadataFile(), debug);
+			RobotCommander cmdr = cogArch.createRoomCommander(player, this, cfg.productions, cfg.shutdown_commands, debug);
 			if (cmdr == null) {
 				players.remove(player);
 				return false;

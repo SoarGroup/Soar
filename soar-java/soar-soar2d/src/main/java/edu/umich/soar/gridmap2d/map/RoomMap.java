@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.map;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -52,11 +51,6 @@ public class RoomMap implements GridMap, CellObjectObserver {
 	@Override
 	public String getCurrentMapName() {
 		return GridMapUtil.getMapName(this.mapPath);
-	}
-
-	@Override
-	public File getMetadataFile() {
-		return data.metadataFile;
 	}
 
 	@Override

@@ -14,10 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.umich.soar.config.Config;
-import edu.umich.soar.gridmap2d.map.Cell;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.CellObjectObserver;
-
 
 public class CellTest {
 	Cell cell;
@@ -26,7 +24,7 @@ public class CellTest {
 	
 	@Before
 	public void setUp() {
-		cell = Cell.createCell(xyInitial);
+		cell = Cells.createCell(xyInitial);
 		
 		Config config;
 
@@ -179,7 +177,7 @@ public class CellTest {
 	
 	@Test(expected = NullPointerException.class)
 	public void testCreateNull() {
-		cell = Cell.createCell(null);
+		cell = Cells.createCell(null);
 	}
 	
 	@Test
