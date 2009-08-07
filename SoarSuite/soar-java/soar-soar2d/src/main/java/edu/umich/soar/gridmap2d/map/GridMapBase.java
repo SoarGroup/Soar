@@ -191,10 +191,6 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	}
 
 	protected boolean reload() {
-		return reload(0,0);
-	}
-	
-	protected boolean reload(double lowProbability, double highProbability) {
 		data = new GridMapData();
 		
 		File mapFile = new File(mapPath);
@@ -218,7 +214,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 				data.cellObjectManager.registerTemplate(template);
 			}
 			
-			cellsConfig(mapConfig.getChild("cells"), objectsConfig, lowProbability, highProbability);
+			cellsConfig(mapConfig.getChild("cells"), objectsConfig);
 			return true;
 		} 
 		catch (IOException e) {
@@ -247,13 +243,11 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	/**
 	 * @param cellsConfig
 	 * @param objectsConfig
-	 * @param lowProbability
-	 * @param highProbability
 	 * 
 	 * @throws IndexOutOfBoundsException If rows do not contain enough cell data
 	 * @throws IllegalArgumentException If encountered object that isn't registered
 	 */
-	private void cellsConfig(Config cellsConfig, Config objectsConfig, double lowProbability, double highProbability) {
+	private void cellsConfig(Config cellsConfig, Config objectsConfig) {
 		data.cells = new GridMapCells(cellsConfig.requireInt("size"), new CellObjectObserver[] { data, this });
 		
 		data.randomWalls = cellsConfig.getBoolean("random_walls", false);
@@ -290,164 +284,6 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 			}
 		}
 		
-		// override walls if necessary
-		if (data.randomWalls) {
-			generateRandomWalls(lowProbability, highProbability);
-		}
-		
-		// override food if necessary
-		if (data.randomFood) {
-			generateRandomFood();
-		}
-		
-		// pick positive box
-		if (data.rewardInfoObject != null) {
-			assert data.positiveRewardID == 0;
-			data.positiveRewardID = Simulation.random.nextInt(data.cellObjectManager.rewardObjects.size());
-			data.positiveRewardID += 1;
-			logger.trace("reward-info.positive-id: " + data.positiveRewardID);
-			data.rewardInfoObject.setIntProperty("apply.reward-info.positive-id", data.positiveRewardID);
-			
-			// assigning colors like this helps us see the task happen
-			// colors[0] = info box (already assigned)
-			// colors[1] = positive reward box
-			// colors[2..n] = negative reward boxes
-			int negativeColor = 2;
-			for (CellObject aBox : data.cellObjectManager.rewardObjects) {
-				if (aBox.getIntProperty("box-id", 0) == data.positiveRewardID) {
-					aBox.setProperty("apply.reward.correct", "ignored");
-					aBox.setProperty(edu.umich.soar.gridmap2d.Names.kPropertyColor, Gridmap2D.simulation.kColors[1]);
-				} else {
-					aBox.setProperty(edu.umich.soar.gridmap2d.Names.kPropertyColor, Gridmap2D.simulation.kColors[negativeColor]);
-					negativeColor += 1;
-					assert negativeColor < Gridmap2D.simulation.kColors.length;
-				}
-			}
-		}
-	}
-	
-	/**
-	 * @param lowProbability
-	 * @param highProbability
-	 * 
-	 * @throws IllegalStateException If no blocking types are available.
-	 */
-	private void generateRandomWalls(double lowProbability, double highProbability) {
-		if (!data.cellObjectManager.hasTemplatesWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			throw new IllegalStateException("tried to generate random walls with no blocking types");
-		}
-		
-		assert data.cells != null;
-		int size = data.cells.size();
-		
-		logger.trace("Confirming perimeter wall.");
-		int[] xy = new int[2];
-		for (xy[0] = 0; xy[0] < size; ++xy[0]) {
-			for (xy[1] = 0; xy[1] < size; ++xy[1]) {
-				if (xy[0] == 0 || xy[0] == size - 1 || xy[1] == 0 || xy[1] == size - 1) {
-					if (!data.cells.getCell(xy).hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-						removeFoodAndAddWall(xy);
-					}
-					continue;
-				}
-			}
-		}
-
-		logger.trace("Generating random walls.");
-		for (xy[0] = 2; xy[0] < size - 3; ++xy[0]) {
-			for (xy[1] = 2; xy[1] < size - 3; ++xy[1]) {
-
-				if (noWallsOnCorners(xy)) {
-					double probability = lowProbability;
-					if (wallOnAnySide(xy)) {
-						probability = highProbability;					
-					}
-					if (Simulation.random.nextDouble() < probability) {
-						removeFoodAndAddWall(xy);
-					}
-				}
-			}
-		}
-	}
-	
-	private void removeFoodAndAddWall(int[] xy) {
-		logger.trace(Arrays.toString(xy) + ": Changing to wall.");
-		Cell cell = data.cells.getCell(xy);
-		assert cell != null;
-		if (cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible)) {
-			cell.removeAllObjectsByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
-		}
-		CellObject wall = data.cellObjectManager.createRandomObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock);
-		addObject(xy, wall);
-	}
-	
-	private boolean noWallsOnCorners(int[] xy) {
-		Cell cell;
-		
-		cell = data.cells.getCell(new int[] {xy[0] + 1, xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return false;
-		}
-		cell = data.cells.getCell(new int[] {xy[0] - 1, xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return false;
-		}
-		cell = data.cells.getCell(new int[] {xy[0] - 1, xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return false;
-		}
-		cell = data.cells.getCell(new int[] {xy[0] + 1, xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return false;
-		}
-		return true;
-	}
-	
-	private boolean wallOnAnySide(int[] xy) {
-		Cell cell;
-		
-		cell = data.cells.getCell(new int[] {xy[0] + 1, xy[1]});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return true;
-		}
-		cell = data.cells.getCell(new int[] {xy[0], xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return true;
-		}
-		cell = data.cells.getCell(new int[] {xy[0] - 1, xy[1]});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return true;
-		}
-		cell = data.cells.getCell(new int[] {xy[0], xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * @throws IllegalStateException If no food types available
-	 */
-	private void generateRandomFood() {
-		if (!data.cellObjectManager.hasTemplatesWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible)) {
-			throw new IllegalStateException("tried to generate random walls with no food types");
-		}
-
-		logger.trace("Generating random food.");
-		
-		int[] xy = new int[2];
-		for (xy[0] = 1; xy[0] < data.cells.size() - 1; ++xy[0]) {
-			for (xy[1] = 1; xy[1] < data.cells.size() - 1; ++xy[1]) {
-				Cell cell = data.cells.getCell(xy);
-				assert cell != null;
-				if (!cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
-					logger.trace(Arrays.toString(xy) + "Adding random food.");
-					cell.removeAllObjectsByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
-					CellObject wall = data.cellObjectManager.createRandomObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
-					addObject(xy, wall);
-				}
-			}
-		}		
 	}
 	
 	protected void lingerUpdate(CellObject cellObject, Cell cell) {
