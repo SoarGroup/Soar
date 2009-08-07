@@ -59,10 +59,10 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 
 		switch(Gridmap2D.config.game()) {
 		case TANKSOAR:
-			tanks[Direction.SOUTH.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_down.gif"));
-			tanks[Direction.NORTH.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_up.gif"));
-			tanks[Direction.EAST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_right.gif"));
-			tanks[Direction.WEST.index()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_left.gif"));
+			tanks[Direction.SOUTH.ordinal()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_down.gif"));
+			tanks[Direction.NORTH.ordinal()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_up.gif"));
+			tanks[Direction.EAST.ordinal()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_right.gif"));
+			tanks[Direction.WEST.ordinal()] = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/tank_left.gif"));
 			break;
 			
 		case ROOM:

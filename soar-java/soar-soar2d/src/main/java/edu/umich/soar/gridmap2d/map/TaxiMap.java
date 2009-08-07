@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.map;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -143,10 +142,6 @@ public class TaxiMap implements GridMap, CellObjectObserver {
 
 	public CellObject createObjectByName(String name) {
 		return data.cellObjectManager.createObject(name);
-	}
-
-	public File getMetadataFile() {
-		return data.metadataFile;
 	}
 
 	public List<CellObject> getTemplatesWithProperty(String name) {

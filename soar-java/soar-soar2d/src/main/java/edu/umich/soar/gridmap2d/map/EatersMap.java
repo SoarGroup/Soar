@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.map;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -13,7 +12,6 @@ public class EatersMap implements GridMap, CellObjectObserver {
 	public static EatersMap generateInstance(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
 		return new EatersMap(mapPath, unopenedBoxesTerminal, lowProbability, highProbability);
 	}
-	
 
 	private String mapPath;
 	private GridMapData data;
@@ -150,10 +148,6 @@ public class EatersMap implements GridMap, CellObjectObserver {
 	
 	public CellObject createObjectByName(String name) {
 		return data.cellObjectManager.createObject(name);
-	}
-
-	public File getMetadataFile() {
-		return data.metadataFile;
 	}
 
 	public List<CellObject> getTemplatesWithProperty(String name) {

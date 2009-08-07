@@ -1,22 +1,21 @@
 package edu.umich.soar.gridmap2d;
 
 public enum Direction {
-	NONE (0, 0, Names.kNone, 0, new int[] {0, 0}) {
+	NONE (0, Names.kNone, 0, new int[] {0, 0}) {
 	},
 	
-	NORTH (1, 1, Names.kNorth, 3 * Math.PI / 2, new int[] {0, -1}) {
+	NORTH (1, Names.kNorth, 3 * Math.PI / 2, new int[] {0, -1}) {
 	}, 
 	
-	EAST (2, 2, Names.kEast, 0, new int[] {1, 0}) {
+	EAST (2, Names.kEast, 0, new int[] {1, 0}) {
 	},
 	
-	SOUTH (3, 4, Names.kSouth, Math.PI / 2, new int[] {0, 1}) {
+	SOUTH (4, Names.kSouth, Math.PI / 2, new int[] {0, 1}) {
 	}, 
 	
-	WEST (4, 8, Names.kWest, Math.PI, new int[] {-1, 0}) {
+	WEST (8, Names.kWest, Math.PI, new int[] {-1, 0}) {
 	};
 	
-	private final int index;
 	private final int indicator;
 	private final String id;
 	private final double radians;
@@ -42,17 +41,13 @@ public enum Direction {
 		Direction.WEST.right = Direction.NORTH;
 	}
 
-	Direction(int index, int indicator, String id, double radians, int[] delta) {
-		this.index = index;
+	Direction(int indicator, String id, double radians, int[] delta) {
 		this.indicator = indicator;
 		this.id = id;
 		this.radians = radians;
 		this.delta = delta;
 	}
 	
-	public int index() { 
-		return index; 
-	}
 	public int indicator() { 
 		return indicator; 
 	}

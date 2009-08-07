@@ -458,7 +458,7 @@ public class EatersWorld implements World {
 		players.add(player, cfg.pos);
 		
 		if (cfg.productions != null) {
-			EaterCommander cmdr = cogArch.createEaterCommander(player, cfg.productions, Gridmap2D.config.eatersConfig().vision, cfg.shutdown_commands, map.getMetadataFile(), debug);
+			EaterCommander cmdr = cogArch.createEaterCommander(player, cfg.productions, Gridmap2D.config.eatersConfig().vision, cfg.shutdown_commands, debug);
 			if (cmdr == null) {
 				players.remove(player);
 				return false;

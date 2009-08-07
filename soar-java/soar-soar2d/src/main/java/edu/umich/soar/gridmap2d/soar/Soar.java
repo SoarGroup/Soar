@@ -111,14 +111,17 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		
 	}
 	
+	@Override
 	public boolean debug() {
 		return debug;
 	}
 	
+	@Override
 	public void seed(int seed) {
 		kernel.ExecuteCommandLine("srand " + seed, null) ;
 	}
 	
+	@Override
 	public void doBeforeClients() {
 		// Start or wait for clients (false: before agent creation)
 		logger.trace(Names.Trace.beforeClients);
@@ -126,6 +129,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		
 	}
 	
+	@Override
 	public void doAfterClients() {
 		// Start or wait for clients (true: after agent creation)
 		logger.trace(Names.Trace.afterClients);
@@ -160,6 +164,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 			this.br = br;
 		}
 		
+		@Override
 		public void run() {
 			String line;
 			try {
@@ -236,6 +241,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return ready;
 	}
 	
+	@Override
 	public void runForever() {
 		if (runTilOutput) {
 			kernel.RunAllAgentsForever(smlRunStepSize.sml_UNTIL_OUTPUT);
@@ -245,6 +251,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		
 	}
 
+	@Override
 	public void runStep() {
 		if (runTilOutput) {
 			kernel.RunAllTilOutput(smlRunStepSize.sml_UNTIL_OUTPUT);
@@ -253,6 +260,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		}
 	}
 
+	@Override
 	public void destroyPlayer(String name) {
 		// get the agent (human agents return null here)
 		AgentData agentData = agents.remove(name);
@@ -264,6 +272,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		agentData.agent.delete();
 	}
 	
+	@Override
 	public void shutdown() {
 		if (kernel != null) {
 			logger.trace(Names.Trace.kernelShutdown);
@@ -273,6 +282,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 
 	}
 
+	@Override
 	public String getAgentPath() {
 		return basePath + "agents" + System.getProperty("file.separator");
 	}
@@ -301,6 +311,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		/**
 		 * @brief - callback from SoarKernel for print events
 		 */
+		@Override
 		public void printEventHandler (int eventID, Object data, Agent agent, String message) 
 		{
 			if (eventID == smlPrintEventId.smlEVENT_PRINT.swigValue()) {
@@ -358,6 +369,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	 * 
 	 * check to see if the client specified by the client config is connected or not
 	 */
+	@Override
 	public boolean isClientConnected(String clientId) {
 		boolean connected = false;
 		kernel.GetAllConnectionInfo();
@@ -392,6 +404,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return commandLine;
 	}
 
+	@Override
 	public void reload(String player) {
 		AgentData agentData = agents.get(player);
 		if (agentData == null) {
@@ -402,12 +415,14 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		agentData.agent.LoadProductions(agentData.productions.getAbsolutePath());
 	}
 
+	@Override
 	public boolean haveAgents() {
 		return agents.size() > 0;
 	}
 
+	@Override
 	public EaterCommander createEaterCommander(Eater eater, String productions,
-			int vision, String[] shutdownCommands, File mapMetadataFile, boolean debug) {
+			int vision, String[] shutdownCommands, boolean debug) {
 		Agent agent = createSoarAgent(eater.getName(), productions, debug);
 		if (agent == null) {
 			return null;
@@ -415,8 +430,9 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return new SoarEater(eater, agent, vision, shutdownCommands);
 	}
 
+	@Override
 	public TankCommander createTankCommander(Tank tank, String productions,
-			String[] shutdownCommands, File mapMetadataFile, boolean debug) {
+			String[] shutdownCommands, boolean debug) {
 		Agent agent = createSoarAgent(tank.getName(), productions, debug);
 		if (agent == null) {
 			return null;
@@ -424,8 +440,9 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return new SoarTank(tank, agent, shutdownCommands);
 	}
 
+	@Override
 	public TaxiCommander createTaxiCommander(Taxi taxi, String productions,
-			String[] shutdownCommands, File mapMetadataFile, boolean debug) {
+			String[] shutdownCommands, boolean debug) {
 		Agent agent = createSoarAgent(taxi.getName(), productions, debug);
 		if (agent == null) {
 			return null;
@@ -435,7 +452,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	   
 	@Override
 	public RobotCommander createRoomCommander(Robot player, RoomWorld world, String productions,
-			String[] shutdownCommands, File metadataFile, boolean debug) {
+			String[] shutdownCommands, boolean debug) {
 		Agent agent = createSoarAgent(player.getName(), productions, debug);
 		if (agent == null) {
 			return null;
@@ -443,6 +460,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return new SoarRobot(player, agent, kernel, world, shutdownCommands);
 	}
 
+	@Override
   	public void updateEventHandler(int eventID, Object data, Kernel kernel, int runFlags) {
 
   		// check for override
@@ -465,6 +483,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
   		}
   	}
   	
+	@Override
    public void systemEventHandler(int eventID, Object data, Kernel kernel) {
   		if (eventID == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
   			// soar says go

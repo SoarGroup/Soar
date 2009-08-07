@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.map;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -20,7 +19,6 @@ import edu.umich.soar.gridmap2d.players.TankState;
 import edu.umich.soar.gridmap2d.world.PlayersManager;
 import edu.umich.soar.gridmap2d.world.TankSoarWorld;
 
-
 public class TankSoarMap implements GridMap, CellObjectObserver {
 	private static Logger logger = Logger.getLogger(TankSoarMap.class);
 	public static TankSoarMap generateInstance(String mapPath, int maxSoundDistance) {
@@ -29,6 +27,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 
 	String mapPath;
 	GridMapData data;
+	SearchData[][] searchData;
 	boolean energy;
 	int missilePacks;
 	boolean health;
@@ -67,6 +66,8 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 				}
 			}
 		}
+		
+		searchData = SearchData.newMap(data.cells);
 	}
 	
 	private boolean cellHasBackground(Cell cell) {
@@ -187,9 +188,9 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 					// we're in phase 3 when detected in phase 2
 
 					if (phase == 0) {
-						Cell overlapCell = getCell(location);
-						overlapCell = overlapCell.neighbors[missileDir.backward().index()];
-						overlapCell.forceRedraw();
+						SearchData overlapCell = SearchData.getCell(searchData, location);
+						overlapCell = overlapCell.getNeighbor(missileDir.backward());
+						overlapCell.getCell().forceRedraw();
 					}
 					
 					// move it
@@ -250,10 +251,6 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		return data.cellObjectManager.createObject(name);
 	}
 
-	public File getMetadataFile() {
-		return data.metadataFile;
-	}
-
 	public List<CellObject> getTemplatesWithProperty(String name) {
 		return data.cellObjectManager.getTemplatesWithProperty(name);
 	}
@@ -267,32 +264,32 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 		int[] xy = new int[2];
 		for (xy[0] = 0; xy[0] < data.cells.size(); ++xy[0]) {
 			for (xy[1] = 0; xy[1] < data.cells.size(); ++xy[1]) {
-				data.cells.getCell(xy).explored = false;
+				SearchData.getCell(searchData, xy).setExplored(false);
 			}
 		}
 		
-		Queue<Cell> searchList = new LinkedList<Cell>();
+		Queue<SearchData> searchList = new LinkedList<SearchData>();
 		{
-			Cell start = getCell(players.getLocation(tank));
-			start.explored = true;
-			start.distance = 0;
-			start.parent = null;
+			SearchData start = SearchData.getCell(searchData, players.getLocation(tank));
+			start.setExplored(true);
+			start.setDistance(0);
+			start.setParent(null);
 			searchList.add(start);
 		}
 		
 		Direction finalDirection = Direction.NONE;
 		
 		while (searchList.size() > 0) {
-			Cell parentCell = searchList.poll();
+			SearchData parentCell = searchList.poll();
 
 			if (logger.isTraceEnabled()) {
 				logger.trace("Sound: new parent " + parentCell);
 			}
 			
 			// subtract 1 because we add one later (exploring neighbors)
-			if (parentCell.distance >= maxSoundDistance) {
+			if (parentCell.getDistance() >= maxSoundDistance) {
 				if (logger.isTraceEnabled()) {
-					logger.trace("Sound: parent distance " + parentCell.distance + " is too far");
+					logger.trace("Sound: parent distance " + parentCell.getDistance() + " is too far");
 				}
 				continue;
 			}
@@ -303,32 +300,32 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 					continue;
 				}
 				
-				Cell neighbor = parentCell.neighbors[exploreDir.index()];
+				SearchData neighbor = parentCell.getNeighbor(exploreDir);
 				if (neighbor == null) {
 					continue;
 				}
 
-				if (neighbor.explored) {
+				if (neighbor.isExplored()) {
 					continue;
 				}
 
 				if (logger.isTraceEnabled()) {
 					logger.trace("Sound: exploring " + neighbor);
 				}
-				neighbor.explored = true;
+				neighbor.setExplored(true);
 				
-				if (neighbor.hasAnyWithProperty(Names.kPropertyBlock)) {
+				if (neighbor.getCell().hasAnyWithProperty(Names.kPropertyBlock)) {
 					logger.trace("Sound: blocked");
 					continue;
 				}
 							
-				neighbor.distance = parentCell.distance + 1;
+				neighbor.setDistance(parentCell.getDistance() + 1);
 				
 				if (logger.isTraceEnabled()) {
-					logger.trace("Sound: distance " + neighbor.distance);
+					logger.trace("Sound: distance " + neighbor.getDistance());
 				}
 				
-				Tank targetPlayer = (Tank)neighbor.getFirstPlayer();
+				Tank targetPlayer = (Tank)neighbor.getCell().getFirstPlayer();
 				if ((targetPlayer != null) && recentlyMovedOrRotated(targetPlayer, players)) {
 					if (logger.isTraceEnabled()) {
 						logger.trace("Sound: found recently moved player " + targetPlayer.getName());
@@ -336,12 +333,12 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 					
 					// found a sound! walk home
 					// I'm its parent, so see if I'm the top here
-					while(parentCell.parent != null) {
+					while(parentCell.getParent() != null) {
 						// the new cell becomes me
 						neighbor = parentCell;
 						
 						// I become my parent
-						parentCell = parentCell.parent;
+						parentCell = parentCell.getParent();
 					}
 
 					// Find direction to new sound
@@ -350,7 +347,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 						if (dir == Direction.NONE) {
 							continue;
 						}
-						if (neighbor == parentCell.neighbors[dir.index()]) {
+						if (neighbor == parentCell.getNeighbor(dir)) {
 							finalDirection = dir;
 							found = true;
 							break;
@@ -376,7 +373,7 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 					break;
 				}
 
-				neighbor.parent = parentCell;
+				neighbor.setParent(parentCell);
 				
 				// add the new cell to the search list
 				searchList.add(neighbor);
@@ -410,17 +407,17 @@ public class TankSoarMap implements GridMap, CellObjectObserver {
 				continue;
 			}
 	
-			Cell threatenedCell = getCell(data.updatablesLocations.get(missile));
+			SearchData threatenedCell = SearchData.getCell(searchData, data.updatablesLocations.get(missile));
 			Direction direction = Direction.parse(missile.getProperty(Names.kPropertyDirection));
 			while (true) {
-				threatenedCell = threatenedCell.neighbors[direction.index()];
+				threatenedCell = threatenedCell.getNeighbor(direction);
 				
 				// stops at wall
-				if (threatenedCell.hasAnyWithProperty(Names.kPropertyBlock)) {
+				if (threatenedCell.getCell().hasAnyWithProperty(Names.kPropertyBlock)) {
 					break;
 				}
 				
-				Tank tank = (Tank)threatenedCell.getFirstPlayer();
+				Tank tank = (Tank)threatenedCell.getCell().getFirstPlayer();
 				if (tank != null) {
 					TankState state = tank.getState();
 					state.setIncoming(direction.backward());

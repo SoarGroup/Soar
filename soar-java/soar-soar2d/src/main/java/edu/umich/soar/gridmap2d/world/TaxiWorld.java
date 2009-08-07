@@ -224,7 +224,7 @@ public class TaxiWorld implements World {
 		players.add(player, cfg.pos);
 		
 		if (cfg.productions != null) {
-			TaxiCommander cmdr = cogArch.createTaxiCommander(player, cfg.productions, cfg.shutdown_commands, map.getMetadataFile(), debug);
+			TaxiCommander cmdr = cogArch.createTaxiCommander(player, cfg.productions, cfg.shutdown_commands, debug);
 			if (cmdr == null) {
 				players.remove(player);
 				return false;

@@ -105,7 +105,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 					}
 					gc.drawImage(image, location[0]*cellSize, location[1]*cellSize);
 				} else if (tank != null) {
-					Image image = tanks[tank.getFacing().index()];
+					Image image = tanks[tank.getFacing().ordinal()];
 					assert image != null;
 
 					gc.drawImage(image, location[0]*cellSize, location[1]*cellSize);
