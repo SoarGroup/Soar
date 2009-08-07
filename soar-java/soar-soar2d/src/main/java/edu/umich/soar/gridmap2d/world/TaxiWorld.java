@@ -70,7 +70,7 @@ public class TaxiWorld implements World {
 			players.setLocation(taxi, location);
 
 			// put the player in it
-			map.getCell(location).setPlayer(taxi);
+			map.setPlayer(location, taxi);
 
 			taxi.reset();
 		}
@@ -101,10 +101,10 @@ public class TaxiWorld implements World {
 						taxi.adjustPoints(-20, "fuel fell below zero");
 					} else {
 						// remove from cell
-						map.getCell(location).removeAllPlayers();
+						map.removeAllPlayers(location);
 						players.setLocation(taxi, newLocation);
 						
-						map.getCell(newLocation).setPlayer(taxi);
+						map.setPlayer(newLocation, taxi);
 						taxi.adjustPoints(-1, "legal move");
 					}
 				} else {
@@ -235,7 +235,7 @@ public class TaxiWorld implements World {
 		players.setLocation(player, location);
 		
 		// put the player in it
-		map.getCell(location).setPlayer(player);
+		map.setPlayer(location, player);
 		
 		logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + ")");
 		
@@ -266,7 +266,7 @@ public class TaxiWorld implements World {
 
 	public void removePlayer(String name) {
 		Taxi taxi = players.get(name);
-		map.getCell(players.getLocation(taxi)).removeAllPlayers();
+		map.removeAllPlayers(players.getLocation(taxi));
 		players.remove(taxi);
 		taxi.shutdownCommander();
 		updatePlayers();

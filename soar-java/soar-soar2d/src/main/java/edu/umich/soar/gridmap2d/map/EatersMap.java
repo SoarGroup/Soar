@@ -2,19 +2,15 @@ package edu.umich.soar.gridmap2d.map;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import edu.umich.soar.gridmap2d.Names;
 
-
-public class EatersMap implements GridMap, CellObjectObserver {
+public class EatersMap extends GridMapBase implements GridMap, CellObjectObserver {
 	public static EatersMap generateInstance(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
 		return new EatersMap(mapPath, unopenedBoxesTerminal, lowProbability, highProbability);
 	}
 
-	private String mapPath;
-	private GridMapData data;
 	private int foodCount;
 	private int scoreCount;
 	private Set<CellObject> unopenedBoxes;
@@ -23,49 +19,31 @@ public class EatersMap implements GridMap, CellObjectObserver {
 	private double highProbability;
 
 	private EatersMap(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
-		this.mapPath = new String(mapPath);
+		super(mapPath);
 		this.lowProbability = lowProbability;
 		this.highProbability = highProbability;
 		
 		reset();
 	}
 	
-	public String getCurrentMapName() {
-		return GridMapUtil.getMapName(this.mapPath);
-	}
-
+	@Override
 	public void reset(){
 		foodCount = 0;
 		scoreCount = 0;
 		unopenedBoxes = new HashSet<CellObject>();
-		data = new GridMapData();
-		GridMapUtil.loadFromConfigFile(data, mapPath, this, lowProbability, highProbability);
+		super.reload(lowProbability, highProbability);
 	}
 	
-	public int size() {
-		return data.cells.size();
-	}
-	
-	public Cell getCell(int[] xy) {
-		return data.cells.getCell(xy);
-	}
-
+	@Override
 	public boolean isAvailable(int[] location) {
-		Cell cell = data.cells.getCell(location);
-		boolean enterable = !cell.hasAnyWithProperty(Names.kPropertyBlock);
+		Cell cell = getData().cells.getCell(location);
+		boolean enterable = !cell.hasAnyObjectWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = !cell.hasPlayers();
 		return enterable && noPlayer;
 	}
 
-	public boolean isInBounds(int[] xy) {
-		return data.cells.isInBounds(xy);
-	}
-	
-	public int[] getAvailableLocationAmortized() {
-		return GridMapUtil.getAvailableLocationAmortized(this);
-	}
-
-	public void addStateUpdate(int [] location, CellObject added) {
+	@Override
+	public void addStateUpdate(CellObject added) {
 		// Update state we keep track of specific to game type
 		if (added.hasProperty(Names.kPropertyEdible)) {
 			foodCount += 1;
@@ -75,7 +53,8 @@ public class EatersMap implements GridMap, CellObjectObserver {
 		}
 	}
 
-	public void removalStateUpdate(int [] location, CellObject removed) {
+	@Override
+	public void removalStateUpdate(CellObject removed) {
 		if (unopenedBoxesTerminal) {
 			if (isUnopenedBox(removed)) {
 				unopenedBoxes.remove(removed);
@@ -91,12 +70,11 @@ public class EatersMap implements GridMap, CellObjectObserver {
 	}
 
 	public void updateObjects() {
-		Set<CellObject> copy = new HashSet<CellObject>(data.updatables);
+		Set<CellObject> copy = new HashSet<CellObject>(getData().updatables);
 		for (CellObject cellObject : copy) {
-			int [] location = data.updatablesLocations.get(cellObject);
-			Cell cell = getCell(location);
+			Cell cell = getData().cells.getCell(cellObject.getLocation());
 			
-			GridMapUtil.lingerUpdate(cellObject, cell);
+			lingerUpdate(cellObject, cell);
 
 			// decay
 			if (cellObject.hasProperty("update.decay")) {
@@ -144,13 +122,5 @@ public class EatersMap implements GridMap, CellObjectObserver {
 	
 	public int getUnopenedBoxCount() {
 		return unopenedBoxes.size();
-	}
-	
-	public CellObject createObjectByName(String name) {
-		return data.cellObjectManager.createObject(name);
-	}
-
-	public List<CellObject> getTemplatesWithProperty(String name) {
-		return data.cellObjectManager.getTemplatesWithProperty(name);
 	}
 }

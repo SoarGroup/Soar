@@ -12,17 +12,17 @@ public class Cells {
 		Cells.useHashCells = useHashCells;
 	}
 	
-	static Cell createCell(int[] xy) {
+	static Cell createCell() {
 		if (useHashCells) {
 			if (useSynchronized) {
-				return new CellSynchronized<HashCell>(new HashCell(xy));
+				return new CellSynchronized<HashCell>(new HashCell());
 			}
-			return new HashCell(xy);
+			return new HashCell();
 		} else {
 			if (useSynchronized) {
-				return new CellSynchronized<ListCell>(new ListCell(xy));
+				return new CellSynchronized<ListCell>(new ListCell());
 			}
-			return new ListCell(xy);
+			return new ListCell();
 		}
 	}
 }

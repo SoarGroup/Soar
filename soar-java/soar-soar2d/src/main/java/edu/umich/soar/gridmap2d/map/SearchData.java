@@ -23,13 +23,12 @@ public class SearchData {
 		int [] xy = new int[2];
 		for (xy[0] = 0; xy[0] < cells.size(); ++xy[0]) {
 			for (xy[1] = 0; xy[1] < cells.size(); ++xy[1]) {
-				Cell cell = cells.getCell(xy);
 				SearchData cellSearch = SearchData.getCell(map, xy);
 				for (Direction dir : Direction.values()) {
 					if (dir == Direction.NONE) {
 						continue;
 					}
-					int[] neighborLoc = Direction.translate(cell.getLocation(), dir, new int[2]);
+					int[] neighborLoc = Direction.translate(xy, dir, new int[2]);
 					if (cells.isInBounds(neighborLoc)) {
 						SearchData neighbor = SearchData.getCell(map, neighborLoc);
 						cellSearch.setNeighbor(dir, neighbor);

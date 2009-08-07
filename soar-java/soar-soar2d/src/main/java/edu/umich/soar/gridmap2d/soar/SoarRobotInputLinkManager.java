@@ -17,6 +17,7 @@ import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.RoomMap;
+import edu.umich.soar.gridmap2d.map.RoomObject;
 import edu.umich.soar.gridmap2d.players.CarryInterface;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.Robot;
@@ -120,24 +121,21 @@ public class SoarRobotInputLinkManager {
 			}
 			
 			Identifier areaDescription = agent.GetInputLink().CreateIdWME("area-description");
-			boolean door = roomMap.getCell(player.getLocation()).hasAnyWithProperty(Names.kPropertyGatewayRender);
+			boolean door = roomMap.hasAnyObjectWithProperty(player.getLocation(), Names.kPropertyGatewayRender);
 			areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player.getState().getLocationId(), opose, roomMap, door);
 		}
 		
 		// objects
-		Set<CellObject> roomObjects = roomMap.getRoomObjects();
-		for (CellObject obj : roomObjects) {
-			RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(obj);
-			if (info.pose == null) {
-				continue;
-			}
-			if (info.area == player.getState().getLocationId()) {
+		Set<RoomObject> roomObjects = roomMap.getRoomObjects();
+		for (RoomObject rObj : roomObjects) {
+			if (rObj.getArea() == player.getState().getLocationId()) {
 				final double MAX_ANGLE_OFF = Math.PI / 2;
-				pose_t pose = info.pose.copy();
+				pose_t pose = rObj.getPose();
 				LinAlg.scaleEquals(pose.pos, SoarRobot.PIXELS_2_METERS);
 				PointRelationship r = PointRelationship.calculate(opose.getPose(), pose.pos);
 				if (Math.abs(r.getRelativeBearing()) <= MAX_ANGLE_OFF) {
-					int id = info.object.getIntProperty("object-id", -1);
+					CellObject cObj = rObj.getObject();
+					int id = cObj.getIntProperty("object-id", -1);
 					SoarRobotObjectIL oIL = objects.get(id);
 					if (oIL == null) {
 						// create new object
@@ -145,10 +143,10 @@ public class SoarRobotInputLinkManager {
 						Identifier parent = inputLink.CreateIdWME("object");
 						oIL = new SoarRobotObjectIL(parent);
 						oIL.initialize(pose, r);
-						oIL.addProperty("type", info.object.getProperty("name"));
+						oIL.addProperty("type", cObj.getProperty("name"));
 						oIL.addProperty("id", id);
-						oIL.addProperty("color", info.object.getProperty("color"));
-						oIL.addProperty("weight", info.object.getProperty("weight"));
+						oIL.addProperty("color", cObj.getProperty("color"));
+						oIL.addProperty("weight", cObj.getProperty("weight"));
 						objects.put(id, oIL);
 					} else {
 						oIL.update(pose, r);
