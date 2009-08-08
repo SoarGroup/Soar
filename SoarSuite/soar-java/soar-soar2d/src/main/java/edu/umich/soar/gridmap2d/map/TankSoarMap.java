@@ -66,7 +66,7 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 	
 	private boolean cellHasBackground(Cell cell) {
 		for (CellObject cellObject : cell.getAllObjects()) {
-			if ((cellObject.getName() == Names.kGround)
+			if (cellObject.hasProperty(Names.kGround)
 					|| cellObject.hasProperty(Names.kPropertyBlock)
 					|| cellObject.hasProperty(Names.kPropertyCharger)) {
 				return true;
@@ -80,7 +80,7 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 		Cell cell = getData().cells.getCell(xy);
 		boolean enterable = !cell.hasAnyObjectWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = !cell.hasPlayers();
-		boolean noMissilePack = !cell.hasObject("missiles");
+		boolean noMissilePack = !cell.hasAnyObjectWithProperty("missiles");
 		boolean noCharger = !cell.hasAnyObjectWithProperty(Names.kPropertyCharger);
 		return enterable && noPlayer && noMissilePack && noCharger;
 	}
@@ -96,7 +96,7 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 				energy = true;
 			}
 		}
-		if (added.getName().equals("missiles")) {
+		if (added.hasProperty("missiles")) {
 			missilePacks += 1;
 		}
 	}
@@ -111,7 +111,7 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 				energy = false;
 			}
 		}
-		if (removed.getName().equals("missiles")) {
+		if (removed.hasProperty("missiles")) {
 			missilePacks -= 1;
 		}
 	}
@@ -151,7 +151,7 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 
 			if (cellObject.hasProperty("update.fly-missile")) {
 				// Remove it from the cell
-				cell.removeObject(cellObject.getName());
+				cell.removeObject(cellObject);
 
 				// what direction is it going
 				Direction missileDir = Direction.parse(cellObject.getProperty(Names.kPropertyDirection));
@@ -479,7 +479,7 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 		if (enterable && noPlayer) {
 			CellObject radarWaves = getData().cellObjectManager.createObject("radar-" + facing.id());
 			radarWaves.setProperty(Names.kPropertyDirection, facing.id());
-			logger.trace("Adding " + radarWaves.getName() + " to " + Arrays.toString(location));
+			logger.trace("Adding " + radarWaves.getProperty("name") + " to " + Arrays.toString(location));
 			addObject(location, radarWaves);
 		}
 
@@ -505,11 +505,11 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 		radarCell.player = (Tank)cell.getFirstPlayer();
 		if (!cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			for (CellObject object : cell.getAllWithProperty(Names.kPropertyMiniImage)) {
-				if (object.getName().equals(Names.kEnergy)) {
+				if (object.hasProperty("energy")) {
 					radarCell.energy = true;
-				} else if (object.getName().equals(Names.kHealth)) {
+				} else if (object.hasProperty("health")) {
 					radarCell.health = true;
-				} else if (object.getName().equals(Names.kMissiles)) {
+				} else if (object.hasProperty("missiles")) {
 					radarCell.missiles = true;
 				} 
 			}

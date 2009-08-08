@@ -280,7 +280,7 @@ public class TankSoarWorld implements World {
 				newLocations.put(tank, players.getLocation(tank));
 				
 				// take damage
-				String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getName();
+				String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getProperty("name");
 				state.adjustHealth(Gridmap2D.config.tanksoarConfig().collision_penalty, name);
 				
 				if (state.getHealth() <= 0) {
@@ -454,10 +454,9 @@ public class TankSoarWorld implements World {
 			map.setPlayer(location, tank);
 			
 			// get missile pack
-			CellObject missilePack = map.getObject(location, "missiles");
-			if (missilePack != null) {
-				apply(missilePack, tank);
-				map.removeObject(location, "missiles");
+			List<CellObject> missilePacks = map.removeAllObjectsByProperty(location, "missiles");
+			if (!missilePacks.isEmpty()) {
+				apply(missilePacks.get(0), tank);
 			}
 			
 			// is there a missile in the cell?
@@ -472,7 +471,7 @@ public class TankSoarWorld implements World {
 			for (CellObject missile : missiles) {
 				if (move.moveDirection == Direction.parse(missile.getProperty(Names.kPropertyDirection)).backward()) {
 					missileHit(tank, missile);
-					map.removeObject(location, missile.getName());
+					map.removeObject(location, missile);
 
 					// explosion
 					setExplosion(location);
@@ -617,20 +616,20 @@ public class TankSoarWorld implements World {
 
 		if (object.hasProperty("apply.missiles")) {
 			int missiles = object.getIntProperty("apply.missiles", 0);
-			state.adjustMissiles(missiles, object.getName());
+			state.adjustMissiles(missiles, object.getProperty("name"));
 		}
 		
 		if (object.hasProperty("apply.health")) {
 			if (!object.getBooleanProperty("apply.health.shields-down", false) || !state.getShieldsUp()) {
 				int health = object.getIntProperty("apply.health", 0);
-				state.adjustHealth(health, object.getName());
+				state.adjustHealth(health, object.getProperty("name"));
 			}
 		}
 		
 		if (object.hasProperty("apply.energy")) {
 			if (!object.getBooleanProperty("apply.energy.shields", false) || state.getShieldsUp()) {
 				int energy = object.getIntProperty("apply.energy", 0);
-				state.adjustEnergy(energy, object.getName());
+				state.adjustEnergy(energy, object.getProperty("name"));
 			}
 		}
 

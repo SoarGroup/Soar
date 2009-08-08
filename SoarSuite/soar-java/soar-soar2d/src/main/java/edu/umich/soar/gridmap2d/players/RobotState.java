@@ -1,9 +1,8 @@
 package edu.umich.soar.gridmap2d.players;
 
-
 import java.util.Arrays;
 
-import edu.umich.soar.gridmap2d.map.CellObject;
+import edu.umich.soar.gridmap2d.map.RoomObject;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
@@ -20,7 +19,7 @@ public class RobotState implements CarryInterface {
 	private boolean hasDestYaw;
 	private double destYaw;
 	private double destYawSpeed;
-	private CellObject carry;
+	private RoomObject carry;
 
 	public void reset() {
 		pose = new pose_t();
@@ -132,11 +131,11 @@ public class RobotState implements CarryInterface {
 	}
 
 	@Override
-	public CellObject getObject() {
+	public RoomObject getRoomObject() {
 		return carry;
 	}
 
-	public void pickUp(CellObject object) {
+	public void pickUp(RoomObject object) {
 		assert carry == null;
 		carry = object;
 	}

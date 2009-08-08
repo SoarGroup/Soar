@@ -67,6 +67,8 @@ public class Simulation {
 		
 		// Load the world
 		Cells.setUseSynchronized(!config.generalConfig().headless);
+		
+		// This probably has performance implications, not sure what yet.
 		Cells.setUseHashCells(true);
 		
 		logger.trace(Names.Trace.loadingWorld);

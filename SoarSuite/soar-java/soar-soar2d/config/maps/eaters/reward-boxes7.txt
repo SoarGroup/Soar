@@ -1,5 +1,5 @@
 objects_file = "objects/objects.txt";
-objects = [w, r, i];
+objects = [w, r, i,x];
 cells {
 	size = 7;
 	rows {

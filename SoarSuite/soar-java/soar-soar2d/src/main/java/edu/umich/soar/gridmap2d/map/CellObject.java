@@ -2,28 +2,23 @@ package edu.umich.soar.gridmap2d.map;
 
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
-
 import edu.umich.soar.config.Config;
 import edu.umich.soar.config.ConfigFile;
 
 public class CellObject {
-	private static Logger logger = Logger.getLogger(CellObject.class);
+	private final Config config;
 
-	private Config config;
 	private boolean applyable;
 	private boolean updatable;
 	private int[] location;
 	
-	CellObject(CellObject cellObject) {
-		this.config = cellObject.config.copy();
-		this.applyable = cellObject.applyable;
-		this.updatable = cellObject.updatable;
+	CellObject(CellObject other) {
+		this.config = other.config.copy();
+		this.applyable = other.applyable;
+		this.updatable = other.updatable;
 	}
 	
 	CellObject(Config config) {
-		logger.trace("Creating object: " + config.requireString("name"));
-		
 		// create a new config in memory
 		this.config = new Config(new ConfigFile());
 		
@@ -49,10 +44,6 @@ public class CellObject {
 		this.location = Arrays.copyOf(location, location.length);
 	}
 
-	public String getName() {
-		return config.requireString("name");
-	}
-	
 	private void updateCachedState() {
 		this.applyable = false;
 		this.updatable = false;
@@ -85,79 +76,76 @@ public class CellObject {
 		return config.getKeys();
 	}
 	
-	public boolean hasProperty(String name) {
-		return config.hasKey(name);
+	public boolean hasProperty(String key) {
+		return config.hasKey(key);
 	}
 	
-	public void removeProperty(String property) {
-		config.removeKey(property);
+	public void removeProperty(String key) {
+		config.removeKey(key);
 		updateCachedState();
 	}
 	
 	// string
-	public String getProperty(String name) {
-		return config.getString(name);
+	public String getProperty(String key) {
+		return config.getString(key);
 	}
 
-	public void setProperty(String name, String value) {
-		config.setString(name, value);
+	public void setProperty(String key, String value) {
+		config.setString(key, value);
 		updateCachedState();
 	}
 
 	// string[]
-	public String[] getPropertyArray(String name) {
-		return config.getStrings(name);
+	public String[] getPropertyArray(String key) {
+		return config.getStrings(key);
 	}
 
-	public void setPropertyArray(String name, String[] values) {
-		config.setStrings(name, values);
+	public void setPropertyArray(String key, String[] values) {
+		config.setStrings(key, values);
 		updateCachedState();
 	}
 	
 	// boolean
-	public boolean getBooleanProperty(String name, boolean def) {
-		return config.getBoolean(name, def);
+	public boolean getBooleanProperty(String key, boolean def) {
+		return config.getBoolean(key, def);
 	}
 
-	public void setBooleanProperty(String name, boolean value) {
-		config.setBoolean(name, value);
+	public void setBooleanProperty(String key, boolean value) {
+		config.setBoolean(key, value);
 		updateCachedState();
 	}
 	
 	// int
-	public int getIntProperty(String name, int def) {
-		return config.getInt(name, def);
+	public int getIntProperty(String key, int def) {
+		return config.getInt(key, def);
 	}
 
-	public void setIntProperty(String name, int value) {
-		config.setInt(name, value);
+	public void setIntProperty(String key, int value) {
+		config.setInt(key, value);
 		updateCachedState();
 	}
 	
 	// double
-	public double getDoubleProperty(String name, double def) {
-		return config.getDouble(name, def);
+	public double getDoubleProperty(String key, double def) {
+		return config.getDouble(key, def);
 	}
 
-	public void setDoubleProperty(String name, double value) {
-		config.setDouble(name, value);
+	public void setDoubleProperty(String key, double value) {
+		config.setDouble(key, value);
 		updateCachedState();
 	}
 	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(config.getString("name"));
-		builder.append(": ");
+		builder.append("(");
 		for (String key : config.getKeys()) {
-			if (key.equals("name")) {
-				continue;
-			}
 			builder.append(key);
 			builder.append(" => ");
 			builder.append(Arrays.toString(config.getStrings(key)));
 			builder.append(", ");
 		}
+		builder.append(")");
 		return builder.toString();
 	}
 }

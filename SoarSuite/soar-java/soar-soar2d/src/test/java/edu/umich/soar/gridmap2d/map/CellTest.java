@@ -2,7 +2,6 @@ package edu.umich.soar.gridmap2d.map;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
@@ -65,15 +64,11 @@ public class CellTest {
 		assertFalse(cell.checkAndResetRedraw());
 		cell.removeAllObjects();
 		assertFalse(cell.checkAndResetRedraw()); 
-		cell.removeObject("nothing");
-		assertFalse(cell.checkAndResetRedraw());	// nothing was removed
 
 		// wrong object
 		testDrawCheckedAdd();
 		testDrawWontTrigger("wrong", "wrong-property");
 		cell.removeAllObjectsByProperty("nothing");
-		assertFalse(cell.checkAndResetRedraw());
-		cell.removeObject("nothing");
 		assertFalse(cell.checkAndResetRedraw());
 		cell.removeAllObjects();
 		assertTrue(cell.checkAndResetRedraw()); 	// gets all
@@ -83,10 +78,6 @@ public class CellTest {
 		testDrawWontTrigger("test0", "property0");
 		
 		cell.removeAllObjectsByProperty("property0");
-		assertTrue(cell.checkAndResetRedraw());
-		
-		testDrawCheckedAdd();
-		cell.removeObject("test0");
 		assertTrue(cell.checkAndResetRedraw());
 		
 		testDrawCheckedAdd();
@@ -108,26 +99,15 @@ public class CellTest {
 		
 		cell.hasAnyObjectWithProperty(propertyName);
 		assertFalse(cell.checkAndResetRedraw());
-		
-		cell.getObject(objectName);
-		assertFalse(cell.checkAndResetRedraw());
-		
-		cell.hasObject(objectName);
-		assertFalse(cell.checkAndResetRedraw());
 	}
 
 	@Test
 	public void testObject() {
 
-		assertFalse(cell.hasObject("test"));
-		assertNull(cell.getObject("test"));
-		assertNull(cell.removeObject("test"));
-		
 		cell.addObject(objects[0]);
-		assertTrue(cell.hasObject(objects[0].getName()));
-		assertEquals(cell.getObject(objects[0].getName()), objects[0]);
-		assertEquals(cell.removeObject(objects[0].getName()), objects[0]);
-		assertNull(cell.removeObject(objects[0].getName()));
+		assertTrue(cell.hasObject(objects[0]));
+		assertTrue(cell.removeObject(objects[0]));
+		assertFalse(cell.removeObject(objects[0]));
 		
 		cell.addObject(objects[0]);
 		cell.addObject(objects[1]);
@@ -162,10 +142,9 @@ public class CellTest {
 		cell.addObject(objects[1]);
 		cell.addObject(objects[2]);
 		
-		assertTrue(cell.hasObject(objects[1].getName()));
-		assertEquals(cell.getObject(objects[1].getName()), objects[1]);
-		assertEquals(cell.removeObject(objects[1].getName()), objects[1]);
-		assertNull(cell.removeObject(objects[1].getName()));
+		assertTrue(cell.hasObject(objects[1]));
+		assertTrue(cell.removeObject(objects[1]));
+		assertFalse(cell.removeObject(objects[1]));
 	}
 	
 	@Test(expected = NullPointerException.class)
@@ -259,34 +238,24 @@ public class CellTest {
 		cell.addObserver(observer);
 
 		observer.reset();
-		cell.removeObject("test");
-		assertEquals(observerAddCalled, 0);
-		assertEquals(observerRemoveCalled, 0);
-		
-		observer.reset();
 		observerExpectedObject = objects[0];
 		cell.addObject(objects[0]);
 		assertEquals(observerAddCalled, 1);
 		assertEquals(observerRemoveCalled, 0);
 		
 		observer.reset();
-		cell.hasObject(objects[0].getName());
+		cell.hasObject(objects[0]);
 		assertEquals(observerAddCalled, 0);
 		assertEquals(observerRemoveCalled, 0);
 
 		observer.reset();
-		cell.getObject(objects[0].getName());
-		assertEquals(observerAddCalled, 0);
-		assertEquals(observerRemoveCalled, 0);
-		
-		observer.reset();
 		observerExpectedObject = objects[0];
-		cell.removeObject(objects[0].getName());
+		cell.removeObject(objects[0]);
 		assertEquals(observerAddCalled, 0);
 		assertEquals(observerRemoveCalled, 1);
 		
 		observer.reset();
-		cell.removeObject(objects[0].getName());
+		cell.removeObject(objects[0]);
 		assertEquals(observerAddCalled, 0);
 		assertEquals(observerRemoveCalled, 0);
 		

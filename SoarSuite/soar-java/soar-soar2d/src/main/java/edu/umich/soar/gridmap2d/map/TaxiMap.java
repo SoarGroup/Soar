@@ -68,14 +68,14 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		if (objects.isEmpty()) {
 			return null;
 		}
-		return objects.get(0).getName();
+		return objects.get(0).getProperty("name");
 	}
 	
 	@Override
 	public boolean isAvailable(int[] location) {
 		Cell cell = getData().cells.getCell(location);
 		boolean destination = cell.hasAnyObjectWithProperty("destination");
-		boolean fuel = cell.hasObject("fuel");
+		boolean fuel = cell.hasAnyObjectWithProperty("fuel");
 		boolean noPlayer = !cell.hasPlayers();
 		return !destination && !fuel && noPlayer;
 	}
@@ -128,9 +128,7 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 			return false;
 		}
 		if (Arrays.equals(passengerLocation, location)) {
-			CellObject obj = getData().cells.getCell(location).removeObject("passenger");
-			assert passenger == obj;
-			return true;
+			return getData().cells.getCell(location).removeObject(passenger);
 		}
 		return false;
 	}
@@ -145,7 +143,7 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 	}
 	
 	public boolean isFuel(int[] location) {
-		return getData().cells.getCell(location).hasObject("fuel");
+		return getData().cells.getCell(location).hasAnyObjectWithProperty("fuel");
 	}
 	
 	public boolean exitable(int[] location, Direction direction) {
@@ -195,7 +193,7 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 			return dests.get(0).getProperty("color");
 		}
 		
-		if (getData().cells.getCell(location).getObject("fuel") != null) {
+		if (getData().cells.getCell(location).hasAnyObjectWithProperty("fuel")) {
 			return "fuel";
 		}
 

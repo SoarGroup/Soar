@@ -209,6 +209,7 @@ public class WindowManager {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new EatersVisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
+		visualWorld.setMap(world.getMap());
 
 		visualWorld.addMouseListener(new MouseAdapter() {
 			public void mouseDown(MouseEvent e) {
@@ -708,7 +709,8 @@ public class WindowManager {
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new TankSoarVisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
-		
+		visualWorld.setMap(world.getMap());
+
 		visualWorld.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
 				if (humanMove == null) {
