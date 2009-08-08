@@ -141,18 +141,8 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	}
 
 	@Override
-	public CellObject getObject(int[] xy, String name) {
-		return data.cells.getCell(xy).getObject(name);
-	}
-
-	@Override
 	public boolean hasAnyObjectWithProperty(int[] xy, String property) {
 		return data.cells.getCell(xy).hasAnyObjectWithProperty(property);
-	}
-
-	@Override
-	public boolean hasObject(int[] xy, String name) {
-		return data.cells.getCell(xy).hasObject(name);
 	}
 
 	@Override
@@ -176,8 +166,8 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	}
 
 	@Override
-	public CellObject removeObject(int[] xy, String name) {
-		return data.cells.getCell(xy).removeObject(name);
+	public boolean removeObject(int[] xy, CellObject object) {
+		return data.cells.getCell(xy).removeObject(object);
 	}
 
 	@Override
@@ -291,7 +281,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 			int linger = cellObject.getIntProperty("update.linger", 0);
 			linger -= 1;
 			if (linger <= 0) {
-				cell.removeObject(cellObject.getName());
+				cell.removeObject(cellObject);
 			} else {
 				cellObject.setIntProperty("update.linger", linger);
 			}

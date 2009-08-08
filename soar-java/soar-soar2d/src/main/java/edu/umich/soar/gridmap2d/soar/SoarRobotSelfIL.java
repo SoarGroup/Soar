@@ -70,8 +70,8 @@ public class SoarRobotSelfIL {
 
 		if (ci.hasObject()) {
 			carry = self.CreateIdWME("carry");
-			carryid = carry.CreateIntWME("id", ci.getObject().getIntProperty("object-id", -1));
-			carry.CreateStringWME("type", ci.getObject().getProperty("id"));
+			carryid = carry.CreateIntWME("id", ci.getRoomObject().getCellObject().getIntProperty("object-id", -1));
+			carry.CreateStringWME("type", ci.getRoomObject().getCellObject().getProperty("id"));
 		}
 	}
 	
@@ -118,7 +118,7 @@ public class SoarRobotSelfIL {
 		messagesIL.update();
 
 		if (ci.hasObject()) {
-			int objectId = ci.getObject().getIntProperty("object-id", -1);
+			int objectId = ci.getRoomObject().getCellObject().getIntProperty("object-id", -1);
 			if (carry != null) {
 				if (carryid.GetValue() != objectId) {
 					carry.DestroyWME();
@@ -129,7 +129,7 @@ public class SoarRobotSelfIL {
 			if (carry == null) {
 				carry = self.CreateIdWME("carry");
 				carryid = carry.CreateIntWME("id", objectId);
-				carry.CreateStringWME("type", ci.getObject().getProperty("id"));
+				carry.CreateStringWME("type", ci.getRoomObject().getCellObject().getProperty("id"));
 			}
 		} else {
 			if (carry != null) {

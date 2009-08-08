@@ -199,7 +199,7 @@ public class EatersWorld implements World {
 				List<CellObject> moveApply = map.getAllWithProperty(location, Names.kPropertyMoveApply);
 				for (CellObject object : moveApply) {
 					if (apply(object, eater)) {
-						map.removeObject(location, object.getName());
+						map.removeObject(location, object);
 					}
 				}
 			}
@@ -219,7 +219,7 @@ public class EatersWorld implements World {
 		
 		if (object.hasProperty("apply.points")) {
 			int points = object.getIntProperty("apply.points", 0);
-			eater.adjustPoints(points, object.getName());
+			eater.adjustPoints(points, object.getProperty("name"));
 		}
 		if (object.getBooleanProperty("apply.reward", false)) {
 			// am I the positive box
@@ -254,14 +254,14 @@ public class EatersWorld implements World {
 			}
 		}
 		if (apply(box, eater)) {
-			map.removeObject(location, box.getName());
+			map.removeObject(location, box);
 		}
 		checkResetApply(box);
 	}
 
 	private void checkResetApply(CellObject box) {
 		if (box.getBooleanProperty("apply.reset", false)) {
-			stopMessages.add(box.getName() + " called for reset.");
+			stopMessages.add(box.getProperty("name") + " called for reset.");
 		}
 	}
 	
@@ -269,7 +269,7 @@ public class EatersWorld implements World {
 		for (CellObject food : map.getAllWithProperty(location, Names.kPropertyEdible)) {
 			if (apply(food, eater)) {
 				// if this returns true, it is consumed
-				map.removeObject(location, food.getName());
+				map.removeObject(location, food);
 			}
 		}			
 	}
@@ -308,7 +308,7 @@ public class EatersWorld implements World {
 				}
 				
 				// If the locations match, we have a collision
-				if (players.getLocation(left).equals(players.getLocation(right))) {
+				if (Arrays.equals(players.getLocation(left), players.getLocation(right))) {
 					
 					// Add to this set to avoid checking same player again
 					colliding.add(left);
@@ -473,6 +473,7 @@ public class EatersWorld implements World {
 		
 		// remove food from it
 		map.removeAllObjectsByProperty(location, Names.kPropertyEdible);
+		assert map.hasAnyObjectWithProperty(location, Names.kPropertyEdible) == false;
 
 		// put the player in it
 		map.setPlayer(location, player);

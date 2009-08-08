@@ -75,7 +75,7 @@ public class TaxiVisualWorld extends VisualWorld {
 			    	gc.setForeground(WindowManager.black);
 				}
 				
-				if (this.map.hasObject(location, "fuel")) {
+				if (this.map.hasAnyObjectWithProperty(location, "fuel")) {
 					int size = 14;
 					fill = cellSize/2 - size/2;
 
@@ -108,7 +108,7 @@ public class TaxiVisualWorld extends VisualWorld {
 					}
 				}
 				
-				if (this.map.hasObject(location, "passenger")) {
+				if (this.map.hasAnyObjectWithProperty(location, "passenger")) {
 
 					int size = 8;
 					fill = cellSize/2 - size/2;

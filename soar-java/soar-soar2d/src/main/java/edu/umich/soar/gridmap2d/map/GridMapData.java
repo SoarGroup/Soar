@@ -16,7 +16,7 @@ class GridMapData implements CellObjectObserver {
 	@Override
 	public void addStateUpdate(CellObject added) {
 		if (added.updatable()) {
-			logger.trace("Adding updatable " + added.getName());
+			logger.trace("Adding updatable " + added.getProperty("name"));
 			updatables.add(added);
 		}
 	}
@@ -24,7 +24,7 @@ class GridMapData implements CellObjectObserver {
 	@Override
 	public void removalStateUpdate(CellObject removed) {
 		if (removed.updatable()) {
-			logger.trace("Removing updatable " + removed.getName());
+			logger.trace("Removing updatable " + removed.getProperty("name"));
 			updatables.remove(removed);
 		}
 	}

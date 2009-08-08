@@ -1,5 +1,5 @@
 objects_file = "objects/objects.txt";
-objects = [db,dn,w];
+objects = [db,dn,w,x];
 cells {
 	size = 10;
 	random_food = true;

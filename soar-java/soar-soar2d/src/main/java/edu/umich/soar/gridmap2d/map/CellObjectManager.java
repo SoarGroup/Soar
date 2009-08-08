@@ -59,13 +59,13 @@ class CellObjectManager {
 	 * Register a new prototype
 	 */
 	boolean registerTemplate(CellObject cellObject) {
-		if (templates.containsKey(cellObject.getName())) {
+		if (templates.containsKey(cellObject.getProperty("name"))) {
 			return false;
 		}
 		if (cellObject == null) {
 			return false;
 		}
-		templates.put(cellObject.getName(), cellObject);
+		templates.put(cellObject.getProperty("name"), cellObject);
 		return true;
 	}
 	

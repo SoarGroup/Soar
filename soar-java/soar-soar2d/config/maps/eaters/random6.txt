@@ -1,5 +1,5 @@
 objects_file = "objects/objects.txt";
-objects = [b,n,w];
+objects = [b,n,w,x];
 cells {
 	size = 6;
 	random_walls = true;

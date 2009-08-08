@@ -173,7 +173,7 @@ public class EatersVisualWorld extends VisualWorld {
 					}
 				}
 				
-				if (this.map.hasObject(location, Names.kExplosion)) {
+				if (this.map.hasAnyObjectWithProperty(location, Names.kExplosion)) {
 					drawExplosion(gc, xDraw, yDraw);
 				}
 			}

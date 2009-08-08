@@ -103,4 +103,9 @@ objects {
 		apply.reward.negative = 1;
 		apply.reset = true;
 	}		
+	x {
+		name = explosion;
+		explosion = true;
+		update.linger = 1;
+	}
 }

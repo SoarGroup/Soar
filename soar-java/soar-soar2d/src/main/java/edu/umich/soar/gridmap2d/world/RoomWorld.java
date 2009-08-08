@@ -400,29 +400,9 @@ public class RoomWorld implements World, SendMessagesInterface {
 			return false;
 		}
 		
-		CellObject object = state.getObject();
-		
-//		RoomMap.RoomObjectInfo info = roomMap.getRoomObjectInfo(object);
-//		info.pose = state.getPose().copy();
-//		
-//		// move just a bit in front of player
-//		double yaw = LinAlg.quatToRollPitchYaw(info.pose.orientation)[2];
-//		info.pose.pos[0] += Math.cos(yaw);
-//		info.pose.pos[1] += Math.sin(yaw);
-//		info.location = new int [] { (int)info.pose.pos[0] / CELL_SIZE, (int)info.pose.pos[1] / CELL_SIZE };
-//
-//		Cell destCell = roomMap.getCell(info.location);
-		
-		CellObject temp = map.getObject(player.getLocation(), object.getName());
-		if (temp != null) {
-			blockManipulationReason = "Destination cell for drop is occupied";
-//			info.pose = null;
-//			info.location = null;
-			return false;
-		}
-		
+		RoomObject object = state.getRoomObject();
 		state.drop();
-		map.addObject(player.getLocation(), object);
+		map.addObject(player.getLocation(), object.getCellObject());
 		return true;
 	}
 
@@ -446,17 +426,17 @@ public class RoomWorld implements World, SendMessagesInterface {
 				// already carried by someone
 				continue;
 			}
-			CellObject cObj = rObj.getObject();
+			CellObject cObj = rObj.getCellObject();
 			
-			if (cObj.getIntProperty("object-id", -1) == id) {
+			if (rObj.getId() == id) {
 				double distance = LinAlg.distance(player.getState().getPose().pos, rObj.getPose().pos);
 				if (Double.compare(distance, CELL_SIZE) <= 0) {
-					if (map.removeObject(cObj.getLocation(), cObj.getName()) == null) {
+					if (!map.removeObject(cObj.getLocation(), cObj)) {
 						throw new IllegalStateException("Remove object failed for object that should be there.");
 					}
 					cObj.setLocation(null);
 					rObj.setPose(null);
-					player.getState().pickUp(cObj);
+					player.getState().pickUp(rObj);
 					return true;
 				}
 				blockManipulationReason = "Object is too far";

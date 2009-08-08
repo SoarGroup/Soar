@@ -4,14 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import edu.umich.soar.gridmap2d.players.Player;
 
-
 class ListCell implements Cell {
-	private static Logger logger = Logger.getLogger(ListCell.class);
-	
 	private final List<CellObjectObserver> observers = new ArrayList<CellObjectObserver>();
 	private final List<Player> players = new ArrayList<Player>();
 	private final List<CellObject> cellObjects = new ArrayList<CellObject>();
@@ -79,8 +74,6 @@ class ListCell implements Cell {
 	}
 	
 	/**
-	 * Objects keyed by name, not null name will replace existing if any.
-	 * 
 	 * @param cellObject
 	 * @throws NullPointerException If cellObject is null 
 	 */
@@ -89,21 +82,15 @@ class ListCell implements Cell {
 		if (cellObject == null) {
 			throw new NullPointerException("cellObject null");
 		}
-		draw = true;
 		Iterator<CellObject> iter = cellObjects.iterator();
 		while(iter.hasNext()) {
 			CellObject object = iter.next();
-			if (object.getName().equals(cellObject.getName())) {
-				logger.trace("Replacing existing " + object.getName() + " with new one.");
-				iter.remove();
-				for (CellObjectObserver observer : observers) {
-					observer.removalStateUpdate(object);
-				}
-				// no more iteration, removal state could change cellObjects!
-				break;
+			if (object == cellObject) {
+				return;
 			}
 		}
 		
+		draw = true;
 		cellObjects.add(cellObject);
 		for (CellObjectObserver observer : observers) {
 			observer.addStateUpdate(cellObject);
@@ -131,70 +118,9 @@ class ListCell implements Cell {
 	}
 
 	/**
-	 * @param name the object name
-	 * @return the object or null if none
-	 * 
-	 * Returns the object by name.
-	 */
-	@Override
-	public CellObject getObject(String name) {
-		for (CellObject obj : cellObjects) {
-			if (obj.getName().equals(name)) {
-				return obj;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * @param name the object name
-	 * @return true if the object exists in the cell
-	 * 
-	 * Check to see if the object with the specified name is in the cell.
-	 */
-	@Override
-	public boolean hasObject(String name) {
-		for (CellObject object : cellObjects) {
-			if (object.getName().equals(name)) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * @param name the object name
-	 * @return the removed object or null if it didn't exist
-	 * 
-	 * If the specified object exists in the cell, it is removed and returned.
-	 * Null is returned if the object isn't in the cell.
-	 */
-	@Override
-	public CellObject removeObject(String name) {
-		Iterator<CellObject> iter = cellObjects.iterator();
-		while(iter.hasNext()) {
-			CellObject object = iter.next();
-			if (object.getName().equals(name)) {
-				iter.remove();
-				for (CellObjectObserver observer : observers) {
-					observer.removalStateUpdate(object);
-				}
-				// no more iteration, removal state could change cellObjects!
-				draw = true;
-				return object;
-			}
-		}
-		logger.trace("removeObject didn't find object to remove: " + name);
-		return null;
-	}
-
-	/**
 	 * @param property the property to look for
 	 * @return a list of cell objects that have the specified property
 	 * @throws NullPointerException If property is null
-	 * 
-	 * Returns all objects in the cell with the specified property.
-	 * The returned list is never null but could be length zero.
 	 */
 	@Override
 	public List<CellObject> getAllWithProperty(String property) {	
@@ -247,5 +173,22 @@ class ListCell implements Cell {
 			}
 		}
 		return ret;
-	}	
+	}
+
+	@Override
+	public boolean removeObject(CellObject cellObject) {
+		if (cellObjects.remove(cellObject)) {
+			draw = true;
+			for (CellObjectObserver observer : observers) {
+				observer.removalStateUpdate(cellObject);
+			}
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean hasObject(CellObject cellObject) {
+		return cellObjects.contains(cellObject);
+	}
 }

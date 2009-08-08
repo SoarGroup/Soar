@@ -7,6 +7,7 @@
 objects {
 	f {
 		name = fuel;
+		fuel = true;
 	}
 	r {
 		name = red;

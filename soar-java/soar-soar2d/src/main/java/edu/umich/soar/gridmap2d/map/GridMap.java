@@ -24,9 +24,7 @@ public interface GridMap {
 	public boolean checkRedraw(int[] xy);
 	public void forceRedraw(int[] xy);
 	public List<CellObject> removeAllObjects(int[] xy);
-	public CellObject getObject(int[] xy, String name);
-	public boolean hasObject(int[] xy, String name);
-	public CellObject removeObject(int[] xy, String name);
+	public boolean removeObject(int[] xy, CellObject object);
 	public List<CellObject> removeAllObjectsByProperty(int[] xy, String property);
 	public boolean hasAnyObjectWithProperty(int[] xy, String property);
 	public List<CellObject> getAllObjects(int[] xy);
