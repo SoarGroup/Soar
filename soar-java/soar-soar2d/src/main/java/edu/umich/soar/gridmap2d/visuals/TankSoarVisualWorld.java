@@ -71,9 +71,9 @@ public class TankSoarVisualWorld extends VisualWorld {
 				List<CellObject> missiles = new ArrayList<CellObject>();
 				
 				for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyImage)) {
-					if (cellObject.getName().equals(Names.kExplosion)) {
+					if (cellObject.hasProperty(Names.kExplosion)) {
 						explosion = cellObject;
-					} else if (cellObject.getName().equals("missiles")) {
+					} else if (cellObject.hasProperty("missiles")) {
 						object = cellObject;
 					} else if (cellObject.hasProperty(Names.kPropertyMissile)) {
 						missiles.add(cellObject);
@@ -236,7 +236,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 		for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyImage)) {
 			if (cellObject.hasProperty(Names.kPropertyBlock)) {
 				backgroundObject = cellObject;
-			} else if (cellObject.getName().equals(Names.kGround)) {
+			} else if (cellObject.hasProperty(Names.kGround)) {
 				backgroundObject = cellObject;
 			} else if (cellObject.hasProperty(Names.kPropertyCharger)) {
 				backgroundObject = cellObject;

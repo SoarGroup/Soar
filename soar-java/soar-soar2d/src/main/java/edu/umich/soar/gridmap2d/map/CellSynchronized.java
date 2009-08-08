@@ -71,37 +71,32 @@ class CellSynchronized<E extends Cell> implements Cell {
 	}
 
 	@Override
-	public synchronized CellObject getObject(String name) {
-		return c.getObject(name);
-	}
-	
-	@Override
-	public synchronized boolean hasObject(String name) {
-		return c.hasObject(name);
-	}
-	
-	@Override
-	public synchronized CellObject removeObject(String name) {
-		return c.removeObject(name);
-	}
-
-	@Override
-	public void addObserver(CellObjectObserver observer) {
+	public synchronized void addObserver(CellObjectObserver observer) {
 		c.addObserver(observer);
 	}
 
 	@Override
-	public boolean checkAndResetRedraw() {
+	public synchronized boolean checkAndResetRedraw() {
 		return c.checkAndResetRedraw();
 	}
 
 	@Override
-	public boolean checkRedraw() {
+	public synchronized boolean checkRedraw() {
 		return c.checkRedraw();
 	}
 
 	@Override
-	public void forceRedraw() {
+	public synchronized void forceRedraw() {
 		c.forceRedraw();
+	}
+
+	@Override
+	public synchronized boolean removeObject(CellObject cellObject) {
+		return c.removeObject(cellObject);
+	}
+
+	@Override
+	public synchronized boolean hasObject(CellObject cellObject) {
+		return c.hasObject(cellObject);
 	}
 }

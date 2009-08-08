@@ -66,9 +66,9 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 			for (CellObject aBox : getData().cellObjectManager.rewardObjects) {
 				if (aBox.getIntProperty("box-id", 0) == getData().positiveRewardID) {
 					aBox.setProperty("apply.reward.correct", "ignored");
-					aBox.setProperty(edu.umich.soar.gridmap2d.Names.kPropertyColor, Gridmap2D.simulation.kColors[1]);
+					aBox.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[1]);
 				} else {
-					aBox.setProperty(edu.umich.soar.gridmap2d.Names.kPropertyColor, Gridmap2D.simulation.kColors[negativeColor]);
+					aBox.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[negativeColor]);
 					negativeColor += 1;
 					assert negativeColor < Gridmap2D.simulation.kColors.length;
 				}
@@ -84,7 +84,7 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 	 * @throws IllegalStateException If no blocking types are available.
 	 */
 	private void generateRandomWalls(double lowProbability, double highProbability) {
-		if (!getData().cellObjectManager.hasTemplatesWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (!getData().cellObjectManager.hasTemplatesWithProperty(Names.kPropertyBlock)) {
 			throw new IllegalStateException("tried to generate random walls with no blocking types");
 		}
 		
@@ -96,7 +96,7 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		for (xy[0] = 0; xy[0] < size; ++xy[0]) {
 			for (xy[1] = 0; xy[1] < size; ++xy[1]) {
 				if (xy[0] == 0 || xy[0] == size - 1 || xy[1] == 0 || xy[1] == size - 1) {
-					if (!getData().cells.getCell(xy).hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+					if (!getData().cells.getCell(xy).hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 						removeFoodAndAddWall(xy);
 					}
 					continue;
@@ -125,10 +125,10 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		logger.trace(Arrays.toString(xy) + ": Changing to wall.");
 		Cell cell = getData().cells.getCell(xy);
 		assert cell != null;
-		if (cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible)) {
-			cell.removeAllObjectsByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
+		if (cell.hasAnyObjectWithProperty(Names.kPropertyEdible)) {
+			cell.removeAllObjectsByProperty(Names.kPropertyEdible);
 		}
-		CellObject wall = getData().cellObjectManager.createRandomObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock);
+		CellObject wall = getData().cellObjectManager.createRandomObjectWithProperty(Names.kPropertyBlock);
 		addObject(xy, wall);
 	}
 	
@@ -136,19 +136,19 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		Cell cell;
 		
 		cell = getData().cells.getCell(new int[] {xy[0] + 1, xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		cell = getData().cells.getCell(new int[] {xy[0] - 1, xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		cell = getData().cells.getCell(new int[] {xy[0] - 1, xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		cell = getData().cells.getCell(new int[] {xy[0] + 1, xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		return true;
@@ -158,19 +158,19 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		Cell cell;
 		
 		cell = getData().cells.getCell(new int[] {xy[0] + 1, xy[1]});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		cell = getData().cells.getCell(new int[] {xy[0], xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		cell = getData().cells.getCell(new int[] {xy[0] - 1, xy[1]});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		cell = getData().cells.getCell(new int[] {xy[0], xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		return false;
@@ -180,7 +180,7 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 	 * @throws IllegalStateException If no food types available
 	 */
 	private void generateRandomFood() {
-		if (!getData().cellObjectManager.hasTemplatesWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible)) {
+		if (!getData().cellObjectManager.hasTemplatesWithProperty(Names.kPropertyEdible)) {
 			throw new IllegalStateException("tried to generate random walls with no food types");
 		}
 
@@ -191,10 +191,10 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 			for (xy[1] = 1; xy[1] < getData().cells.size() - 1; ++xy[1]) {
 				Cell cell = getData().cells.getCell(xy);
 				assert cell != null;
-				if (!cell.hasAnyObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyBlock)) {
+				if (!cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
 					logger.trace(Arrays.toString(xy) + "Adding random food.");
-					cell.removeAllObjectsByProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
-					CellObject wall = getData().cellObjectManager.createRandomObjectWithProperty(edu.umich.soar.gridmap2d.Names.kPropertyEdible);
+					cell.removeAllObjectsByProperty(Names.kPropertyEdible);
+					CellObject wall = getData().cellObjectManager.createRandomObjectWithProperty(Names.kPropertyEdible);
 					addObject(xy, wall);
 				}
 			}
@@ -249,7 +249,7 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 				int decay = cellObject.getIntProperty("update.decay", 1);
 				if (decay >= points) {
 					scoreCount -= points;
-					cell.removeObject(cellObject.getName());
+					cell.removeObject(cellObject);
 				} else {
 					scoreCount -= decay;
 					points -= decay;

@@ -1,9 +1,9 @@
 package edu.umich.soar.gridmap2d.soar;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import jmat.LinAlg;
 
@@ -126,7 +126,7 @@ public class SoarRobotInputLinkManager {
 		}
 		
 		// objects
-		Set<RoomObject> roomObjects = roomMap.getRoomObjects();
+		Collection<RoomObject> roomObjects = roomMap.getRoomObjects();
 		for (RoomObject rObj : roomObjects) {
 			if (rObj.getArea() == player.getState().getLocationId()) {
 				final double MAX_ANGLE_OFF = Math.PI / 2;
@@ -134,7 +134,7 @@ public class SoarRobotInputLinkManager {
 				LinAlg.scaleEquals(pose.pos, SoarRobot.PIXELS_2_METERS);
 				PointRelationship r = PointRelationship.calculate(opose.getPose(), pose.pos);
 				if (Math.abs(r.getRelativeBearing()) <= MAX_ANGLE_OFF) {
-					CellObject cObj = rObj.getObject();
+					CellObject cObj = rObj.getCellObject();
 					int id = cObj.getIntProperty("object-id", -1);
 					SoarRobotObjectIL oIL = objects.get(id);
 					if (oIL == null) {

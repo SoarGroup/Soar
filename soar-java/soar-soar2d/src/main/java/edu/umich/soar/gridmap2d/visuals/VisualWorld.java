@@ -85,15 +85,15 @@ public abstract class VisualWorld extends Canvas implements PaintListener {
 		for (CellObject template : map.getTemplatesWithProperty(Names.kPropertyMiniImage)) {
 			Image image = new Image(WindowManager.display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar/" + template.getProperty(Names.kPropertyMiniImage)));
 			assert image != null;
-			if (template.getName().equals(Names.kEnergy)) {
+			if (template.hasProperty(Names.kEnergy)) {
 				RadarCell.energyImage = image;
-			} else if (template.getName().equals(Names.kHealth)) {
+			} else if (template.hasProperty(Names.kHealth)) {
 				RadarCell.healthImage = image;
-			} else if (template.getName().equals(Names.kMissiles)) {
+			} else if (template.hasProperty(Names.kMissiles)) {
 				RadarCell.missilesImage = image;
 			} else if (template.hasProperty(Names.kPropertyBlock)) {
 				RadarCell.obstacleImage = image;
-			} else if (template.getName().equals(Names.kGround)) {
+			} else if (template.hasProperty(Names.kGround)) {
 				RadarCell.openImage = image;
 			}
 		}

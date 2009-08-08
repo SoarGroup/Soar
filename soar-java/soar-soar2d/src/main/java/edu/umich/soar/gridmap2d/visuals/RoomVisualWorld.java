@@ -1,7 +1,6 @@
 package edu.umich.soar.gridmap2d.visuals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -15,6 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.CellObject;
+import edu.umich.soar.gridmap2d.map.RoomMap;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.Robot;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
@@ -32,9 +32,7 @@ public class RoomVisualWorld extends VisualWorld {
 	
 	private static class IdLabel {
 		int [] loc;
-		boolean object;
 		boolean gateway;
-		boolean block;
 		String label;
 	}
 	
@@ -70,23 +68,23 @@ public class RoomVisualWorld extends VisualWorld {
 		ids.clear();
 		int [] location = new int [2];
 		HashSet<Integer> roomIds = new HashSet<Integer>();
-		for(location[0] = 0; location[0] < map.size(); ++location[0]){
-			for(location[1] = 0; location[1] < map.size(); ++location[1]){
-				if (!this.map.checkAndResetRedraw(location) && painted) {
+		RoomMap rmap = (RoomMap)map;
+		for(location[0] = 0; location[0] < rmap.size(); ++location[0]){
+			for(location[1] = 0; location[1] < rmap.size(); ++location[1]){
+				if (!rmap.checkAndResetRedraw(location) && painted) {
 					continue;
 				}
 
 				int [] drawLocation = new int [] { cellSize*location[0], cellSize*(map.size() - location[1] - 1) };
 				
 				boolean gateway = false;
-				boolean block = false;
-				if (this.map.hasAnyObjectWithProperty(location, Names.kPropertyBlock)) {
+				if (rmap.hasAnyObjectWithProperty(location, Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(drawLocation[0], drawLocation[1], cellSize, cellSize);
 					
 				} else {
 					
-					gateway = map.hasAnyObjectWithProperty(location, Names.kPropertyGatewayRender); 
+					gateway = rmap.hasAnyObjectWithProperty(location, Names.kPropertyGatewayRender); 
 					if (!gateway) {
 
 						if (!colored_rooms) {
@@ -94,18 +92,14 @@ public class RoomVisualWorld extends VisualWorld {
 							gc.setBackground(WindowManager.widget_background);
 						} else {
 							// colored rooms:
-							CellObject roomObject = map.getObject(location, Names.kRoomID);
-							if (roomObject == null)  {
+							List<CellObject> roomObjects = rmap.getAllWithProperty(location, Names.kRoomID);
+							if (roomObjects.isEmpty())  {
 								gc.setBackground(WindowManager.widget_background);
 							} else {
-								int roomID = roomObject.getIntProperty(Names.kPropertyNumber, -1);
+								int roomID = roomObjects.get(0).getIntProperty(Names.kPropertyNumber, -1);
 								roomID %= Gridmap2D.simulation.kColors.length - 1; // the one off eliminates black
 								gc.setBackground(WindowManager.getColor(Gridmap2D.simulation.kColors[roomID]));
 							}
-						}
-						if (map.hasAnyObjectWithProperty(location, Names.kRoomObjectMovable)) {
-							block = true;
-							gc.setBackground(WindowManager.darkGray);
 						}
 					} else {
 						gc.setBackground(WindowManager.white);
@@ -114,28 +108,15 @@ public class RoomVisualWorld extends VisualWorld {
 				}
 
 				if (!painted) {
-					List<CellObject> objectIds = map.getAllWithProperty(location, "object-id");
-					if (!objectIds.isEmpty()) {
-						IdLabel label = new IdLabel();
-						label.object = true;
-						label.block = block;
-						label.label = objectIds.get(0).getProperty("object-id");
-						label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
-						System.err.println(objectIds.get(0).getName() + ": " + label.label + Arrays.toString(label.loc));
-						ids.add(label);
-					} else  {
-						List<CellObject> numbers = map.getAllWithProperty(location, "number");
-						if (!numbers.isEmpty()) {
-							if (!roomIds.contains(numbers.get(0).getIntProperty("number", -1))) {
-								roomIds.add(numbers.get(0).getIntProperty("number", -1));
-								IdLabel label = new IdLabel();
-								label.object = false;
-								label.gateway = gateway;
-								label.label = numbers.get(0).getProperty("number");
-								label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
-								System.err.println(numbers.get(0).getName() + ": " + label.label + Arrays.toString(label.loc));
-								ids.add(label);
-							}
+					List<CellObject> numbers = map.getAllWithProperty(location, Names.kPropertyNumber);
+					if (!numbers.isEmpty()) {
+						if (!roomIds.contains(numbers.get(0).getIntProperty(Names.kPropertyNumber, -1))) {
+							roomIds.add(numbers.get(0).getIntProperty(Names.kPropertyNumber, -1));
+							IdLabel label = new IdLabel();
+							label.gateway = gateway;
+							label.label = numbers.get(0).getProperty(Names.kPropertyNumber);
+							label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
+							ids.add(label);
 						}
 					}
 				}
@@ -144,23 +125,13 @@ public class RoomVisualWorld extends VisualWorld {
 		
 		// draw id labels on top of map
 		for (IdLabel label : ids) {
-			if (label.object) {
-				if (label.block) {
-					gc.setBackground(WindowManager.darkGray);
-				} else {
-					gc.setBackground(WindowManager.black);
-				}
-				gc.setForeground(WindowManager.white);
-				gc.drawString(label.label, label.loc[0], label.loc[1]);
+			if (label.gateway) {
+				gc.setBackground(WindowManager.white);
 			} else {
-				if (label.gateway) {
-					gc.setBackground(WindowManager.white);
-				} else {
-					gc.setBackground(WindowManager.widget_background);
-				}
-				gc.setForeground(WindowManager.black);
-				gc.drawString(label.label, label.loc[0], label.loc[1]);
+				gc.setBackground(WindowManager.widget_background);
 			}
+			gc.setForeground(WindowManager.black);
+			gc.drawString(label.label, label.loc[0], label.loc[1]);
 		}
 		
 		// draw entities now so they appear on top

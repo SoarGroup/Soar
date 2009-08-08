@@ -58,6 +58,7 @@ objects {
 	}
 	g {
 		name = ground;
+		ground = true;
 		image-max = 3;
 		image = ground.gif;
 		mini-image = ground-mini.gif;
@@ -74,6 +75,7 @@ objects {
 	}
 	m {
 		name = missiles;
+		missiles = true;
 		image = missiles.gif;
 		mini-image = missiles-mini.gif;
 		max-exist = 3;
