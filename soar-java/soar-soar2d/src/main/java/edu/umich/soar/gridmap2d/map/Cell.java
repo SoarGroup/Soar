@@ -7,6 +7,7 @@ import edu.umich.soar.gridmap2d.players.Player;
 interface Cell {
 	
 	Player getFirstPlayer();
+	List<Player> getPlayers();
 	void setPlayer(Player player);
 	void addPlayer(Player player);
 	void removePlayer(Player player);

@@ -16,6 +16,11 @@ class CellSynchronized<E extends Cell> implements Cell {
 	}
 	
 	@Override
+	public synchronized List<Player> getPlayers() {
+		return c.getPlayers();
+	}
+	
+	@Override
 	public synchronized void setPlayer(Player player) {
 		c.setPlayer(player);
 	}

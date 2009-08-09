@@ -48,6 +48,11 @@ class ListCell implements Cell {
 	}
 	
 	@Override
+	public List<Player> getPlayers() {
+		return new ArrayList<Player>(players);
+	}
+	
+	@Override
 	public void setPlayer(Player player) {
 		if (player == null) {
 			removeAllPlayers();

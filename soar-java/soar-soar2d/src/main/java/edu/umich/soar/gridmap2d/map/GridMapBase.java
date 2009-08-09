@@ -101,7 +101,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	@Override
 	public void addObject(int[] xy, CellObject cellObject) {
 		cellObject.setLocation(xy);
-		long id = Stopwatch.start("Object", "addObject");
+		long id = Stopwatch.start("GridMapBase", "addObject");
 		data.cells.getCell(xy).addObject(cellObject);
 		Stopwatch.stop(id);
 	}
@@ -113,7 +113,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public void addPlayer(int[] xy, Player player) {
-		long id = Stopwatch.start("Player", "addPlayer");
+		long id = Stopwatch.start("GridMapBase", "addPlayer");
 		data.cells.getCell(xy).addPlayer(player);
 		Stopwatch.stop(id);
 	}
@@ -135,7 +135,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public List<CellObject> getAllObjects(int[] xy) {
-		long id = Stopwatch.start("Object", "getAllObjects");
+		long id = Stopwatch.start("GridMapBase", "getAllObjects");
 		List<CellObject> ret = data.cells.getCell(xy).getAllObjects();
 		Stopwatch.stop(id);
 		return ret;
@@ -143,7 +143,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public List<CellObject> getAllWithProperty(int[] xy, String property) {
-		long id = Stopwatch.start("Property", "getAllWithProperty");
+		long id = Stopwatch.start("GridMapBase", "getAllWithProperty");
 		List<CellObject> ret = data.cells.getCell(xy).getAllObjectsWithProperty(property);
 		Stopwatch.stop(id);
 		return ret;
@@ -151,7 +151,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public CellObject getFirstObjectWithProperty(int[] xy, String property) {
-		long id = Stopwatch.start("Property", "getFirstObjectWithProperty");
+		long id = Stopwatch.start("GridMapBase", "getFirstObjectWithProperty");
 		CellObject ret = data.cells.getCell(xy).getFirstObjectWithProperty(property);
 		Stopwatch.stop(id);
 		return ret;
@@ -159,15 +159,23 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	
 	@Override
 	public Player getFirstPlayer(int[] xy) {
-		long id = Stopwatch.start("Player", "getFirstPlayer");
+		long id = Stopwatch.start("GridMapBase", "getFirstPlayer");
 		Player ret = data.cells.getCell(xy).getFirstPlayer();
 		Stopwatch.stop(id);
 		return ret;
 	}
 
 	@Override
+	public List<Player> getPlayers(int[] xy) {
+		long id = Stopwatch.start("GridMapBase", "getPlayers");
+		List<Player> ret = data.cells.getCell(xy).getPlayers();
+		Stopwatch.stop(id);
+		return ret;
+	}
+
+	@Override
 	public boolean hasAnyObjectWithProperty(int[] xy, String property) {
-		long id = Stopwatch.start("Property", "hasAnyObjectWithProperty");
+		long id = Stopwatch.start("GridMapBase", "hasAnyObjectWithProperty");
 		boolean ret = data.cells.getCell(xy).hasAnyObjectWithProperty(property);
 		Stopwatch.stop(id);
 		return ret;
@@ -175,7 +183,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public boolean hasPlayers(int[] xy) {
-		long id = Stopwatch.start("Player", "hasPlayers");
+		long id = Stopwatch.start("GridMapBase", "hasPlayers");
 		boolean ret = data.cells.getCell(xy).hasPlayers();
 		Stopwatch.stop(id);
 		return ret;
@@ -183,7 +191,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public List<CellObject> removeAllObjects(int[] xy) {
-		long id = Stopwatch.start("Object", "removeAllObjects");
+		long id = Stopwatch.start("GridMapBase", "removeAllObjects");
 		List<CellObject> ret = data.cells.getCell(xy).removeAllObjects();
 		Stopwatch.stop(id);
 		return ret;
@@ -191,7 +199,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public List<CellObject> removeAllObjectsByProperty(int[] xy, String property) {
-		long id = Stopwatch.start("Property", "removeAllObjectsByProperty");
+		long id = Stopwatch.start("GridMapBase", "removeAllObjectsByProperty");
 		List<CellObject> ret = data.cells.getCell(xy).removeAllObjectsByProperty(property);
 		Stopwatch.stop(id);
 		return ret;
@@ -199,14 +207,14 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public void removeAllPlayers(int[] xy) {
-		long id = Stopwatch.start("Player", "removeAllPlayers");
+		long id = Stopwatch.start("GridMapBase", "removeAllPlayers");
 		data.cells.getCell(xy).removeAllPlayers();
 		Stopwatch.stop(id);
 	}
 
 	@Override
 	public boolean removeObject(int[] xy, CellObject object) {
-		long id = Stopwatch.start("Object", "removeObject");
+		long id = Stopwatch.start("GridMapBase", "removeObject");
 		boolean ret = data.cells.getCell(xy).removeObject(object);
 		Stopwatch.stop(id);
 		return ret;
@@ -214,14 +222,14 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public void removePlayer(int[] xy, Player player) {
-		long id = Stopwatch.start("Player", "removePlayer");
+		long id = Stopwatch.start("GridMapBase", "removePlayer");
 		data.cells.getCell(xy).removePlayer(player);
 		Stopwatch.stop(id);
 	}
 
 	@Override
 	public void setPlayer(int[] xy, Player player) {
-		long id = Stopwatch.start("Player", "setPlayer");
+		long id = Stopwatch.start("GridMapBase", "setPlayer");
 		data.cells.getCell(xy).setPlayer(player);
 		Stopwatch.stop(id);
 	}

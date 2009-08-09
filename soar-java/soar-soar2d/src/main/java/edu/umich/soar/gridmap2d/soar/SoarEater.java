@@ -65,7 +65,7 @@ public final class SoarEater implements EaterCommander {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warn(player.getName() + ": multiple move/jump commands detected (move)");
+					logger.debug(player.getName() + ": multiple move/jump commands detected (move)");
 					continue;
 				}
 				move.move = true;
@@ -88,7 +88,7 @@ public final class SoarEater implements EaterCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kJumpID)) {
 				if (move.move) {
-					logger.warn(player.getName() + ": multiple move/jump commands detected, ignoring (jump)");
+					logger.debug(player.getName() + ": multiple move/jump commands detected, ignoring (jump)");
 					continue;
 				}
 				move.move = true;
@@ -102,7 +102,7 @@ public final class SoarEater implements EaterCommander {
 
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warn(player.getName() + ": multiple stop commands detected, ignoring");
+					logger.debug(player.getName() + ": multiple stop commands detected, ignoring");
 					continue;
 				}
 				move.stopSim = true;
@@ -111,7 +111,7 @@ public final class SoarEater implements EaterCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kOpenID)) {
 				if (move.open) {
-					logger.warn(player.getName() + ": multiple open commands detected, ignoring");
+					logger.debug(player.getName() + ": multiple open commands detected, ignoring");
 					continue;
 				}
 				move.open = true;
@@ -120,7 +120,7 @@ public final class SoarEater implements EaterCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kDontEatID)) {
 				if (move.dontEat) {
-					logger.warn(player.getName() + ": multiple dont eat commands detected, ignoring");
+					logger.debug(player.getName() + ": multiple dont eat commands detected, ignoring");
 					continue;
 				}
 				move.dontEat = true;
