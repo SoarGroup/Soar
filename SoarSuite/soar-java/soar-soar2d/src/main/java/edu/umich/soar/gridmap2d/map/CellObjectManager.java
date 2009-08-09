@@ -7,10 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
-import edu.umich.soar.gridmap2d.Gridmap2D;
-import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.Simulation;
 
 
@@ -21,8 +17,6 @@ import edu.umich.soar.gridmap2d.Simulation;
  * These objects are copied to create new objects.
  */
 class CellObjectManager {
-	private static Logger logger = Logger.getLogger(CellObjectManager.class);
-
 	/**
 	 * The templates, mapped by name.
 	 */
@@ -101,7 +95,6 @@ class CellObjectManager {
 		return true;
 	}
 	
-	List<CellObject> rewardObjects = new ArrayList<CellObject>();
 	/**
 	 * @param name object name to create
 	 * @return the new object
@@ -110,24 +103,7 @@ class CellObjectManager {
 	 */
 	CellObject createObject(String name) {
 		if (templates.containsKey(name)) {
-			CellObject newObject = new CellObject(templates.get(name));
-			if (newObject.getBooleanProperty("apply.reward", false)) {
-				// assign identification number
-				newObject.setProperty("box-id", Integer.toString(rewardObjects.size() + 1));
-
-				// keep track of reward objects
-				rewardObjects.add(newObject);
-				
-				logger.trace("Reward box: " + newObject.getIntProperty("box-id", -1));
-
-			} else if (newObject.getBooleanProperty("apply.reward-info", false)) {
-				// assign identification properties
-				newObject.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[0]);
-				newObject.setProperty("box-id", "0");
-
-				logger.trace("Info box: " + newObject.getIntProperty("box-id", -1));
-			}
-			return newObject;
+			return new CellObject(templates.get(name));
 		}
 		return null;
 	}

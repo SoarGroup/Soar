@@ -25,7 +25,7 @@ public class RoomObject {
         pose.pos[0] += RoomWorld.CELL_SIZE / 2.0;
         pose.pos[1] += RoomWorld.CELL_SIZE / 2.0;
         setPose(pose);
-        setArea(container.getAllWithProperty(Names.kRoomID).get(0).getIntProperty(Names.kPropertyNumber, -1));
+        setArea(container.getFirstObjectWithProperty(Names.kRoomID).getIntProperty(Names.kPropertyNumber, -1));
 	}
 
 	public int getArea() {

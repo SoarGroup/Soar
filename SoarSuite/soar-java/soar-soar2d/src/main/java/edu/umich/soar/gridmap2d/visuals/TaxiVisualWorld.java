@@ -1,7 +1,5 @@
 package edu.umich.soar.gridmap2d.visuals;
 
-import java.util.List;
-
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -58,9 +56,8 @@ public class TaxiVisualWorld extends VisualWorld {
 				gc.fillRectangle(cellSize*location[0]+1, cellSize*location[1]+1, cellSize-2, cellSize-2);
 				
 				// destination
-				List<CellObject> destinationList= this.map.getAllWithProperty(location, "destination");
-				if (!destinationList.isEmpty()) {
-					CellObject destination = destinationList.get(0);
+				CellObject destination = this.map.getFirstObjectWithProperty(location, "destination");
+				if (destination != null) {
 					String colorString = destination.getProperty(Names.kPropertyColor);
 					Color color = WindowManager.getColor(colorString);
 					gc.setBackground(color);

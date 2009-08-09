@@ -21,6 +21,11 @@ class ListCell implements Cell {
 	}
 	
 	@Override
+	public void removeObserver(CellObjectObserver observer) {
+		observers.remove(observer);
+	}
+
+	@Override
 	public boolean checkAndResetRedraw() {
 		boolean temp = draw;
 		draw = false;
@@ -123,7 +128,7 @@ class ListCell implements Cell {
 	 * @throws NullPointerException If property is null
 	 */
 	@Override
-	public List<CellObject> getAllWithProperty(String property) {	
+	public List<CellObject> getAllObjectsWithProperty(String property) {	
 		if (property == null) {
 			throw new NullPointerException("property is null");
 		}
@@ -136,6 +141,20 @@ class ListCell implements Cell {
 		return ret;
 	}
 	
+	@Override
+	public CellObject getFirstObjectWithProperty(String property) {
+		if (property == null) {
+			throw new NullPointerException("property is null");
+		}
+		
+		for (CellObject object : cellObjects) {
+			if (object.hasProperty(property)) {
+				return object;
+			}
+		}
+		return null;
+	}
+
 	@Override
 	public boolean hasAnyObjectWithProperty(String property) {	
 		for (CellObject object : cellObjects) {
@@ -191,4 +210,5 @@ class ListCell implements Cell {
 	public boolean hasObject(CellObject cellObject) {
 		return cellObjects.contains(cellObject);
 	}
+
 }

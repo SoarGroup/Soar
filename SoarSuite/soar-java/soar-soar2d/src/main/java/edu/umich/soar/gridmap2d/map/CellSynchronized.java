@@ -46,8 +46,8 @@ class CellSynchronized<E extends Cell> implements Cell {
 	}
 	
 	@Override
-	public synchronized List<CellObject> getAllWithProperty(String property) {	
-		return c.getAllWithProperty(property);
+	public synchronized List<CellObject> getAllObjectsWithProperty(String property) {	
+		return c.getAllObjectsWithProperty(property);
 	}
 	
 	@Override
@@ -98,5 +98,15 @@ class CellSynchronized<E extends Cell> implements Cell {
 	@Override
 	public synchronized boolean hasObject(CellObject cellObject) {
 		return c.hasObject(cellObject);
+	}
+
+	@Override
+	public synchronized void removeObserver(CellObjectObserver observer) {
+		c.removeObserver(observer);
+	}
+
+	@Override
+	public synchronized CellObject getFirstObjectWithProperty(String property) {
+		return c.getFirstObjectWithProperty(property);
 	}
 }
