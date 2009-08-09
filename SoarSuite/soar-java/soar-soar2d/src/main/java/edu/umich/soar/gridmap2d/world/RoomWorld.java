@@ -291,104 +291,115 @@ public class RoomWorld implements World, SendMessagesInterface {
 		newLocation[0] = (int)pose.pos[0] / CELL_SIZE;
 		newLocation[1] = (int)pose.pos[1] / CELL_SIZE;
 
-		while (checkBlocked(newLocation)) {
-			// 1) determine what edge we're intersecting
-			if ((newLocation[0] != oldLocation[0]) && (newLocation[1] != oldLocation[1])) {
-				// corner case
-				int [] oldx = new int [] { oldLocation[0], newLocation[1] };
-				
-				// if oldx is blocked
-				if (checkBlocked(oldx)) {
-					state.setCollisionY(true);
-					// calculate y first
-					if (newLocation[1] > oldLocation[1]) {
-						// south
-						pose.pos[1] = oldLocation[1] * CELL_SIZE;
-						pose.pos[1] += CELL_SIZE - 0.1;
-						newLocation[1] = oldLocation[1];
+		boolean translated = false;
+		if (!Arrays.equals(oldLocation, newLocation)) {
+			translated = true;
+			
+			while (checkBlocked(newLocation)) {
+				// 1) determine what edge we're intersecting
+				if ((newLocation[0] != oldLocation[0]) && (newLocation[1] != oldLocation[1])) {
+					// corner case
+					int [] oldx = new int [] { oldLocation[0], newLocation[1] };
+					
+					// if oldx is blocked
+					if (checkBlocked(oldx)) {
+						state.setCollisionY(true);
+						// calculate y first
+						if (newLocation[1] > oldLocation[1]) {
+							// south
+							pose.pos[1] = oldLocation[1] * CELL_SIZE;
+							pose.pos[1] += CELL_SIZE - 0.1;
+							newLocation[1] = oldLocation[1];
+						} 
+						else if (newLocation[1] < oldLocation[1]) {
+							// north
+							pose.pos[1] = oldLocation[1] * CELL_SIZE;
+							newLocation[1] = oldLocation[1];
+						} else {
+							assert false;
+						}
 					} 
-					else if (newLocation[1] < oldLocation[1]) {
-						// north
-						pose.pos[1] = oldLocation[1] * CELL_SIZE;
-						newLocation[1] = oldLocation[1];
-					} else {
-						assert false;
+					else {
+						state.setCollisionX(true);
+						// calculate x first
+						if (newLocation[0] > oldLocation[0]) {
+							// east
+							pose.pos[0] = oldLocation[0] * CELL_SIZE;
+							pose.pos[0] += CELL_SIZE - 0.1;
+							newLocation[0] = oldLocation[0];
+						} 
+						else if (newLocation[0] < oldLocation[0]) {
+							// west
+							pose.pos[0] = oldLocation[0] * CELL_SIZE;
+							newLocation[0] = oldLocation[0];
+						} else {
+							assert false;
+						} 
 					}
-				} 
-				else {
-					state.setCollisionX(true);
-					// calculate x first
-					if (newLocation[0] > oldLocation[0]) {
-						// east
-						pose.pos[0] = oldLocation[0] * CELL_SIZE;
-						pose.pos[0] += CELL_SIZE - 0.1;
-						newLocation[0] = oldLocation[0];
-					} 
-					else if (newLocation[0] < oldLocation[0]) {
-						// west
-						pose.pos[0] = oldLocation[0] * CELL_SIZE;
-						newLocation[0] = oldLocation[0];
-					} else {
-						assert false;
-					} 
+					continue;
 				}
-				continue;
+				
+				if (newLocation[0] > oldLocation[0]) {
+					state.setCollisionX(true);
+					// east
+					pose.pos[0] = oldLocation[0] * CELL_SIZE;
+					pose.pos[0] += CELL_SIZE - 0.1;
+					newLocation[0] = oldLocation[0];
+				} 
+				else if (newLocation[0] < oldLocation[0]) {
+					state.setCollisionX(true);
+					// west
+					pose.pos[0] = oldLocation[0] * CELL_SIZE;
+					newLocation[0] = oldLocation[0];
+				} 
+				else if (newLocation[1] > oldLocation[1]) {
+					state.setCollisionY(true);
+					// south
+					pose.pos[1] = oldLocation[1] * CELL_SIZE;
+					pose.pos[1] += CELL_SIZE - 0.1;
+					newLocation[1] = oldLocation[1];
+				} 
+				else if (newLocation[1] < oldLocation[1]) {
+					state.setCollisionY(true);
+					// north
+					pose.pos[1] = oldLocation[1] * CELL_SIZE;
+					newLocation[1] = oldLocation[1];
+				}
 			}
 			
-			if (newLocation[0] > oldLocation[0]) {
-				state.setCollisionX(true);
-				// east
-				pose.pos[0] = oldLocation[0] * CELL_SIZE;
-				pose.pos[0] += CELL_SIZE - 0.1;
-				newLocation[0] = oldLocation[0];
-			} 
-			else if (newLocation[0] < oldLocation[0]) {
-				state.setCollisionX(true);
-				// west
-				pose.pos[0] = oldLocation[0] * CELL_SIZE;
-				newLocation[0] = oldLocation[0];
-			} 
-			else if (newLocation[1] > oldLocation[1]) {
-				state.setCollisionY(true);
-				// south
-				pose.pos[1] = oldLocation[1] * CELL_SIZE;
-				pose.pos[1] += CELL_SIZE - 0.1;
-				newLocation[1] = oldLocation[1];
-			} 
-			else if (newLocation[1] < oldLocation[1]) {
-				state.setCollisionY(true);
-				// north
-				pose.pos[1] = oldLocation[1] * CELL_SIZE;
-				newLocation[1] = oldLocation[1];
-			}
+			state.setPos(pose.pos);
+			
+			map.removePlayer(oldLocation, player);
+			players.setLocation(player, newLocation);
+			state.setLocationId(map.getLocationId(newLocation));
+			map.addPlayer(newLocation, player);
 		}
 		
-		state.setPos(pose.pos);
-		
-		//state.setVelocity(new double [] { (newFloatLocation[0] - oldFloatLocation[0])/time, (newFloatLocation[1] - oldFloatLocation[1])/time });
-		map.removePlayer(oldLocation, player);
-		players.setLocation(player, newLocation);
-		state.setLocationId(map.getLocationId(newLocation));
-		map.addPlayer(newLocation, player);
-		
-		// redraw the 8 cells around it
-		int[] redrawLoc = Arrays.copyOf(newLocation, newLocation.length); 
-		Direction.translate(redrawLoc, Direction.EAST);
-		map.forceRedraw(redrawLoc);
-		Direction.translate(redrawLoc, Direction.SOUTH);
-		map.forceRedraw(redrawLoc);
-		Direction.translate(redrawLoc, Direction.WEST);
-		map.forceRedraw(redrawLoc);
-		Direction.translate(redrawLoc, Direction.WEST);
-		map.forceRedraw(redrawLoc);
-		Direction.translate(redrawLoc, Direction.NORTH);
-		map.forceRedraw(redrawLoc);
-		Direction.translate(redrawLoc, Direction.NORTH);
-		map.forceRedraw(redrawLoc);
-		Direction.translate(redrawLoc, Direction.EAST);
-		map.forceRedraw(redrawLoc);
-		Direction.translate(redrawLoc, Direction.EAST);
-		map.forceRedraw(redrawLoc);
+		if (translated || Double.compare(pose.rotation_rate[2], 0) != 0) {
+			
+			map.forceRedraw(newLocation);
+			
+			// TODO: optimization candidate
+			
+			// redraw the 8 cells around it
+			int[] redrawLoc = Arrays.copyOf(newLocation, newLocation.length); 
+			Direction.translate(redrawLoc, Direction.EAST);
+			map.forceRedraw(redrawLoc);
+			Direction.translate(redrawLoc, Direction.SOUTH);
+			map.forceRedraw(redrawLoc);
+			Direction.translate(redrawLoc, Direction.WEST);
+			map.forceRedraw(redrawLoc);
+			Direction.translate(redrawLoc, Direction.WEST);
+			map.forceRedraw(redrawLoc);
+			Direction.translate(redrawLoc, Direction.NORTH);
+			map.forceRedraw(redrawLoc);
+			Direction.translate(redrawLoc, Direction.NORTH);
+			map.forceRedraw(redrawLoc);
+			Direction.translate(redrawLoc, Direction.EAST);
+			map.forceRedraw(redrawLoc);
+			Direction.translate(redrawLoc, Direction.EAST);
+			map.forceRedraw(redrawLoc);
+		}
 	}
 
 	public boolean dropObject(Robot player, int id) {

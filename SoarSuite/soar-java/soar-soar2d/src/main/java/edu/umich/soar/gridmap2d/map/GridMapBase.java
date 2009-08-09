@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.config.Config;
 import edu.umich.soar.config.ConfigFile;
 import edu.umich.soar.config.ParseError;
@@ -23,6 +25,8 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	protected GridMapBase(String mapPath) {
 		this.mapPath = mapPath;
+		
+		Stopwatch.setActive(false);
 	}
 	
 	protected GridMapData getData() {
@@ -97,7 +101,9 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	@Override
 	public void addObject(int[] xy, CellObject cellObject) {
 		cellObject.setLocation(xy);
+		long id = Stopwatch.start("Object", "addObject");
 		data.cells.getCell(xy).addObject(cellObject);
+		Stopwatch.stop(id);
 	}
 
 	@Override
@@ -107,7 +113,9 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public void addPlayer(int[] xy, Player player) {
+		long id = Stopwatch.start("Player", "addPlayer");
 		data.cells.getCell(xy).addPlayer(player);
+		Stopwatch.stop(id);
 	}
 
 	@Override
@@ -127,62 +135,95 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public List<CellObject> getAllObjects(int[] xy) {
-		return data.cells.getCell(xy).getAllObjects();
+		long id = Stopwatch.start("Object", "getAllObjects");
+		List<CellObject> ret = data.cells.getCell(xy).getAllObjects();
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public List<CellObject> getAllWithProperty(int[] xy, String property) {
-		return data.cells.getCell(xy).getAllObjectsWithProperty(property);
+		long id = Stopwatch.start("Property", "getAllWithProperty");
+		List<CellObject> ret = data.cells.getCell(xy).getAllObjectsWithProperty(property);
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public CellObject getFirstObjectWithProperty(int[] xy, String property) {
-		return data.cells.getCell(xy).getFirstObjectWithProperty(property);
+		long id = Stopwatch.start("Property", "getFirstObjectWithProperty");
+		CellObject ret = data.cells.getCell(xy).getFirstObjectWithProperty(property);
+		Stopwatch.stop(id);
+		return ret;
 	}
 	
 	@Override
 	public Player getFirstPlayer(int[] xy) {
-		return data.cells.getCell(xy).getFirstPlayer();
+		long id = Stopwatch.start("Player", "getFirstPlayer");
+		Player ret = data.cells.getCell(xy).getFirstPlayer();
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public boolean hasAnyObjectWithProperty(int[] xy, String property) {
-		return data.cells.getCell(xy).hasAnyObjectWithProperty(property);
+		long id = Stopwatch.start("Property", "hasAnyObjectWithProperty");
+		boolean ret = data.cells.getCell(xy).hasAnyObjectWithProperty(property);
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public boolean hasPlayers(int[] xy) {
-		return data.cells.getCell(xy).hasPlayers();
+		long id = Stopwatch.start("Player", "hasPlayers");
+		boolean ret = data.cells.getCell(xy).hasPlayers();
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public List<CellObject> removeAllObjects(int[] xy) {
-		return data.cells.getCell(xy).removeAllObjects();
+		long id = Stopwatch.start("Object", "removeAllObjects");
+		List<CellObject> ret = data.cells.getCell(xy).removeAllObjects();
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public List<CellObject> removeAllObjectsByProperty(int[] xy, String property) {
-		return data.cells.getCell(xy).removeAllObjectsByProperty(property);
+		long id = Stopwatch.start("Property", "removeAllObjectsByProperty");
+		List<CellObject> ret = data.cells.getCell(xy).removeAllObjectsByProperty(property);
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public void removeAllPlayers(int[] xy) {
+		long id = Stopwatch.start("Player", "removeAllPlayers");
 		data.cells.getCell(xy).removeAllPlayers();
+		Stopwatch.stop(id);
 	}
 
 	@Override
 	public boolean removeObject(int[] xy, CellObject object) {
-		return data.cells.getCell(xy).removeObject(object);
+		long id = Stopwatch.start("Object", "removeObject");
+		boolean ret = data.cells.getCell(xy).removeObject(object);
+		Stopwatch.stop(id);
+		return ret;
 	}
 
 	@Override
 	public void removePlayer(int[] xy, Player player) {
+		long id = Stopwatch.start("Player", "removePlayer");
 		data.cells.getCell(xy).removePlayer(player);
+		Stopwatch.stop(id);
 	}
 
 	@Override
 	public void setPlayer(int[] xy, Player player) {
+		long id = Stopwatch.start("Player", "setPlayer");
 		data.cells.getCell(xy).setPlayer(player);
+		Stopwatch.stop(id);
 	}
 
 	protected boolean reload() {

@@ -9,6 +9,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Report;
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.Simulation;
@@ -86,6 +89,9 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		}
 
 		generatePhase = false;
+		for (Report report : Stopwatch.getAllReports()) {
+			System.out.println(report);
+		}
 	}
 	
 	/**

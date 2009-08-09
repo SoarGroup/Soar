@@ -2,6 +2,9 @@ package edu.umich.soar.gridmap2d;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Report;
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.gridmap2d.players.CommandInfo;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.visuals.WindowManager;
@@ -102,6 +105,11 @@ public class Controller implements Runnable {
 	public void stopSimulation() {
 		// requests a stop
 		stop = true;
+
+		for (Report report : Stopwatch.getAllReports()) {
+			System.out.println(report);
+		}
+
 	}
 	
 	/**

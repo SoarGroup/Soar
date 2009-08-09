@@ -14,6 +14,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Report;
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Names;
 
@@ -91,6 +94,11 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		super.reload();
 		generateRoomStructure();
 		generatePhase = false;
+		
+		for (Report report : Stopwatch.getAllReports()) {
+			System.out.println(report);
+		}
+
 	}
 
 	public Collection<RoomObject> getRoomObjects() {
