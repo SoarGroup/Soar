@@ -11,6 +11,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Report;
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
@@ -144,6 +147,11 @@ public class EatersWorld implements World {
 		WorldUtil.checkWinningScore(stopMessages, players.getSortedScores());
 		
 		if (stopMessages.size() > 0) {
+
+			for (Report report : Stopwatch.getAllReports()) {
+				System.out.println(report);
+			}
+
 			Gridmap2D.control.stopSimulation();
 			boolean stopping = Gridmap2D.control.getRunsTerminal() <= 0;
 			WorldUtil.dumpStats(players.getSortedScores(), players.getAllAsPlayers(), stopping, stopMessages);

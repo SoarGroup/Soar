@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="/soar-smljava/lib/lcm.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/sml.jar"/>
+	<classpathentry kind="lib" path="/soar-smljava/lib/stopwatch-0.4-with-deps.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
