@@ -291,9 +291,9 @@ public class RoomWorld implements World, SendMessagesInterface {
 		newLocation[0] = (int)pose.pos[0] / CELL_SIZE;
 		newLocation[1] = (int)pose.pos[1] / CELL_SIZE;
 
-		boolean translated = false;
+		boolean translated = Double.compare(LinAlg.magnitude(pose.vel), 0) != 0;
+
 		if (!Arrays.equals(oldLocation, newLocation)) {
-			translated = true;
 			
 			while (checkBlocked(newLocation)) {
 				// 1) determine what edge we're intersecting

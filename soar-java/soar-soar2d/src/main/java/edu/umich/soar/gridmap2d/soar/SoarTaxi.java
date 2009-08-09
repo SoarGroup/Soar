@@ -59,7 +59,7 @@ public class SoarTaxi implements TaxiCommander {
 		CommandInfo move = new CommandInfo();
 		boolean moveWait = false;
 		if (agent.GetNumberCommands() > 1) {
-			logger.warn(player.getName() + ": " + agent.GetNumberCommands() 
+			logger.debug(player.getName() + ": " + agent.GetNumberCommands() 
 					+ " commands detected, all but the first will be ignored");
 		}
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
@@ -68,7 +68,7 @@ public class SoarTaxi implements TaxiCommander {
 			
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warn(player.getName() + ": multiple move commands detected");
+					logger.debug(player.getName() + ": multiple move commands detected");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -91,7 +91,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kStopSimID)) {
 				if (move.stopSim) {
-					logger.warn(player.getName() + ": multiple stop commands detected, ignoring");
+					logger.debug(player.getName() + ": multiple stop commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -101,7 +101,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kPickUpID)) {
 				if (move.pickup) {
-					logger.warn(player.getName() + ": multiple " + Names.kPickUpID + " commands detected, ignoring");
+					logger.debug(player.getName() + ": multiple " + Names.kPickUpID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -111,7 +111,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kPutDownID)) {
 				if (move.putdown) {
-					logger.warn(player.getName() + ": multiple " + Names.kPutDownID + " commands detected, ignoring");
+					logger.debug(player.getName() + ": multiple " + Names.kPutDownID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -121,7 +121,7 @@ public class SoarTaxi implements TaxiCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kFillUpID)) {
 				if (move.fillup) {
-					logger.warn(player.getName() + ": multiple " + Names.kFillUpID + " commands detected, ignoring");
+					logger.debug(player.getName() + ": multiple " + Names.kFillUpID + " commands detected, ignoring");
 					commandId.AddStatusError();
 					continue;
 				}
