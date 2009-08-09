@@ -408,7 +408,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 
 			if (commandName.equalsIgnoreCase(Names.kMoveID)) {
 				if (move.move || moveWait) {
-					logger.warn(player.getName() + ": extra move commands");
+					logger.debug(player.getName() + ": extra move commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -444,7 +444,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kFireID)) {
 				if (move.fire == true) {
-					logger.warn(player.getName() + ": extra fire commands");
+					logger.debug(player.getName() + ": extra fire commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -454,7 +454,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRadarID)) {
 				if (move.radar == true) {
-					logger.warn(player.getName() + ": extra radar commands");
+					logger.debug(player.getName() + ": extra radar commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -470,7 +470,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRadarPowerID)) {
 				if (move.radarPower == true) {
-					logger.warn(player.getName() + ": extra radar power commands");
+					logger.debug(player.getName() + ": extra radar power commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -494,7 +494,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kShieldsID)) {
 				if (move.shields == true) {
-					logger.warn(player.getName() + ": extra shield commands");
+					logger.debug(player.getName() + ": extra shield commands");
 					commandId.AddStatusError();
 					continue;
 				}
@@ -510,7 +510,7 @@ public class SoarTank implements Agent.RunEventInterface, TankCommander {
 				
 			} else if (commandName.equalsIgnoreCase(Names.kRotateID)) {
 				if (move.rotate == true) {
-					logger.warn(player.getName() + ": extra rotate commands");
+					logger.debug(player.getName() + ": extra rotate commands");
 					commandId.AddStatusError();
 					continue;
 				}
