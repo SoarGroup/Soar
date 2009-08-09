@@ -132,9 +132,14 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	@Override
 	public List<CellObject> getAllWithProperty(int[] xy, String property) {
-		return data.cells.getCell(xy).getAllWithProperty(property);
+		return data.cells.getCell(xy).getAllObjectsWithProperty(property);
 	}
 
+	@Override
+	public CellObject getFirstObjectWithProperty(int[] xy, String property) {
+		return data.cells.getCell(xy).getFirstObjectWithProperty(property);
+	}
+	
 	@Override
 	public Player getFirstPlayer(int[] xy) {
 		return data.cells.getCell(xy).getFirstPlayer();
@@ -265,9 +270,6 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 						}
 						
 						CellObject cellObject = data.cellObjectManager.createObject(objectName);
-						if (cellObject.getBooleanProperty("apply.reward-info", false)) {
-							data.rewardInfoObject = cellObject;
-						}
 						addObject(xy, cellObject);
 					}
 				}

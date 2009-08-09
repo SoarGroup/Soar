@@ -92,11 +92,11 @@ public class RoomVisualWorld extends VisualWorld {
 							gc.setBackground(WindowManager.widget_background);
 						} else {
 							// colored rooms:
-							List<CellObject> roomObjects = rmap.getAllWithProperty(location, Names.kRoomID);
-							if (roomObjects.isEmpty())  {
+							CellObject roomObject = rmap.getFirstObjectWithProperty(location, Names.kRoomID);
+							if (roomObject == null)  {
 								gc.setBackground(WindowManager.widget_background);
 							} else {
-								int roomID = roomObjects.get(0).getIntProperty(Names.kPropertyNumber, -1);
+								int roomID = roomObject.getIntProperty(Names.kPropertyNumber, -1);
 								roomID %= Gridmap2D.simulation.kColors.length - 1; // the one off eliminates black
 								gc.setBackground(WindowManager.getColor(Gridmap2D.simulation.kColors[roomID]));
 							}
@@ -108,13 +108,13 @@ public class RoomVisualWorld extends VisualWorld {
 				}
 
 				if (!painted) {
-					List<CellObject> numbers = map.getAllWithProperty(location, Names.kPropertyNumber);
-					if (!numbers.isEmpty()) {
-						if (!roomIds.contains(numbers.get(0).getIntProperty(Names.kPropertyNumber, -1))) {
-							roomIds.add(numbers.get(0).getIntProperty(Names.kPropertyNumber, -1));
+					CellObject number = map.getFirstObjectWithProperty(location, Names.kPropertyNumber);
+					if (number != null) {
+						if (!roomIds.contains(number.getIntProperty(Names.kPropertyNumber, -1))) {
+							roomIds.add(number.getIntProperty(Names.kPropertyNumber, -1));
 							IdLabel label = new IdLabel();
 							label.gateway = gateway;
-							label.label = numbers.get(0).getProperty(Names.kPropertyNumber);
+							label.label = number.getProperty(Names.kPropertyNumber);
 							label.loc = new int [] { drawLocation[0] + 1, drawLocation[1] };
 							ids.add(label);
 						}

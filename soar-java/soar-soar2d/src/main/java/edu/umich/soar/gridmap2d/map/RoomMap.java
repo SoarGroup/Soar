@@ -122,9 +122,9 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 	public int getLocationId(int[] location) {
 		assert location != null;
 
-		List<CellObject> locationObjects = getData().cells.getCell(location).getAllWithProperty(Names.kPropertyNumber);
-		assert locationObjects.size() == 1;
-		return locationObjects.get(0).getIntProperty(Names.kPropertyNumber, -1);
+		CellObject locationObject = getData().cells.getCell(location).getFirstObjectWithProperty(Names.kPropertyNumber);
+		assert locationObject != null;
+		return locationObject.getIntProperty(Names.kPropertyNumber, -1);
 	}
 
 	public List<RoomBarrier> getRoomBarrierList(int oldLocationId) {
@@ -242,13 +242,13 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 					int [] rightOfNext = null;
 					
 					// Get the wall and gateway objects. The can't both exist.
-					List<CellObject> gatewayObjects = cell.getAllWithProperty(Names.kGatewayID);
-					List<CellObject> wallObjects = cell.getAllWithProperty(Names.kWallID);
+					CellObject gatewayObject = cell.getFirstObjectWithProperty(Names.kGatewayID);
+					CellObject wallObject = cell.getFirstObjectWithProperty(Names.kWallID);
 					
 					// One must exist, but not both
-					assert (gatewayObjects.isEmpty() && !wallObjects.isEmpty()) || (!gatewayObjects.isEmpty() && wallObjects.isEmpty());
+					assert (gatewayObject == null && wallObject != null) || (gatewayObject != null && wallObject == null);
 
-					if (!gatewayObjects.isEmpty()) {
+					if (gatewayObject != null) {
 						logger.trace(cell + " is gateway");
 
 						if (currentBarrier != null) {
@@ -286,8 +286,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 						}
 
 						// id are noted by the direction of the wall
-						CellObject gw = gatewayObjects.get(0);
-						gw.setProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
+						gatewayObject.setProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
 						
 					} else /*if (!wallObjects.isEmpty()) */ {
 						logger.trace(cell + " is wall");
@@ -318,8 +317,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 						}
 						
 						// id are noted by the direction of the wall
-						CellObject wo = wallObjects.get(0);
-						wo.setProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
+						wallObject.setProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
 					}
 					
 					// since current barrier is the gateway we're walking, update it's endpoint before we translate it
@@ -466,7 +464,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 				if (cell.hasAnyObjectWithProperty(Names.kRoomID)) {
 					// we have already processed this room, just need to add the room id
 					// to the gateway's destination list
-					addDestinationToGateway(cell.getAllWithProperty(Names.kRoomID).get(0).getIntProperty(Names.kPropertyNumber, -1), gatewayBarrier.id);
+					addDestinationToGateway(cell.getFirstObjectWithProperty(Names.kRoomID).getIntProperty(Names.kPropertyNumber, -1), gatewayBarrier.id);
 					continue;
 				}
 			}
@@ -580,7 +578,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 		
 		// get the wall object
 		Cell cell = getData().cells.getCell(currentBarrier.left);
-		CellObject wallObject = cell.getAllWithProperty(Names.kWallID).get(0);
+		CellObject wallObject = cell.getFirstObjectWithProperty(Names.kWallID);
 		
 		// walls don't share ids, they are noted by the direction of the wall
 		wallObject.setProperty(currentBarrier.direction.id(), Integer.toString(currentBarrier.id));
@@ -633,7 +631,7 @@ public class RoomMap extends GridMapBase implements GridMap, CellObjectObserver 
 			// add the current room to the gateway destination list
 			List<Integer> gatewayDestinations = new ArrayList<Integer>();
 			gatewayDestinations.add(new Integer(roomNumber));
-			gatewayDestinations.add(new Integer(cell.getAllWithProperty(Names.kRoomID).get(0).getIntProperty(Names.kPropertyNumber, -1)));
+			gatewayDestinations.add(new Integer(cell.getFirstObjectWithProperty(Names.kRoomID).getIntProperty(Names.kPropertyNumber, -1)));
 			gatewayDestinationMap.put(new Integer(currentBarrier.id), gatewayDestinations);
 			
 			if (Arrays.equals(currentBarrier.right, endOfGateway)) {

@@ -64,11 +64,11 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 	}
 	
 	private String getDestinationName(int[] location) {
-		List<CellObject> objects = getData().cells.getCell(location).getAllWithProperty("destination");
-		if (objects.isEmpty()) {
+		CellObject object = getData().cells.getCell(location).getFirstObjectWithProperty("destination");
+		if (object == null) {
 			return null;
 		}
-		return objects.get(0).getProperty("name");
+		return object.getProperty("name");
 	}
 	
 	@Override
@@ -90,9 +90,9 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		if (added.hasProperty("passenger")) {
 			passengerLocation = added.getLocation();
 			if (passengerSourceColor == null) {
-				List<CellObject> dests = getData().cells.getCell(passengerLocation).getAllWithProperty("destination");
-				if (!dests.isEmpty()) {
-					passengerSourceColor = dests.get(0).getProperty("color");
+				CellObject dest = getData().cells.getCell(passengerLocation).getFirstObjectWithProperty("destination");
+				if (dest != null) {
+					passengerSourceColor = dest.getProperty("color");
 				}
 			}
 		}
@@ -147,7 +147,7 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 	}
 	
 	public boolean exitable(int[] location, Direction direction) {
-		List<CellObject> walls = getData().cells.getCell(location).getAllWithProperty("block");
+		List<CellObject> walls = getData().cells.getCell(location).getAllObjectsWithProperty("block");
 		if (walls.isEmpty()) {
 			return true;
 		}
@@ -188,9 +188,9 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 			return "none";
 		}
 		
-		List<CellObject> dests = getData().cells.getCell(location).getAllWithProperty("destination");
-		if (!dests.isEmpty()) {
-			return dests.get(0).getProperty("color");
+		CellObject dest = getData().cells.getCell(location).getFirstObjectWithProperty("destination");
+		if (dest != null) {
+			return dest.getProperty("color");
 		}
 		
 		if (getData().cells.getCell(location).hasAnyObjectWithProperty("fuel")) {
@@ -201,7 +201,7 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 	}
 	
 	public boolean wall(int[] from, Direction to) {
-		List<CellObject> walls = getData().cells.getCell(from).getAllWithProperty("block");
+		List<CellObject> walls = getData().cells.getCell(from).getAllObjectsWithProperty("block");
 		if (!walls.isEmpty()) {
 			for (CellObject wall : walls) {
 				if (wall.getProperty("direction").equals(to.id())) {
