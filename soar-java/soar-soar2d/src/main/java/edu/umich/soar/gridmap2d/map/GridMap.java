@@ -29,5 +29,6 @@ public interface GridMap {
 	public boolean hasAnyObjectWithProperty(int[] xy, String property);
 	public List<CellObject> getAllObjects(int[] xy);
 	public List<CellObject> getAllWithProperty(int[] xy, String property);
+	public CellObject getFirstObjectWithProperty(int[] xy, String property);
 	public void addObject(int[] xy, CellObject cellObject);
 }

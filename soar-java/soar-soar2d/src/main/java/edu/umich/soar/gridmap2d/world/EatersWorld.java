@@ -239,15 +239,12 @@ public class EatersWorld implements World {
 	}
 	
 	private void open(Eater eater, int [] location) {
-		List<CellObject> boxes = map.getAllWithProperty(location, Names.kPropertyBox);
-		if (boxes.isEmpty()) {
+		CellObject box = map.getFirstObjectWithProperty(location, Names.kPropertyBox);
+		if (box == null) {
 			logger.warn(eater.getName() + " tried to open but there is no box.");
 			return;
 		}
 
-		assert boxes.size() <= 1;
-		
-		CellObject box = boxes.get(0);
 		if (box.hasProperty(Names.kPropertyStatus)) {
 			if (box.getProperty(Names.kPropertyStatus).equalsIgnoreCase(Names.kOpen)) {
 				logger.warn(eater.getName() + " tried to open an open box.");

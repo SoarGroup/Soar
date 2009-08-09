@@ -1,8 +1,10 @@
 package edu.umich.soar.gridmap2d.map;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -24,7 +26,11 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 	private boolean unopenedBoxesTerminal;
 	private double lowProbability;
 	private double highProbability;
-
+	private CellObject rewardInfoObject;
+	private int positiveRewardID;
+	List<CellObject> rewardObjects = new ArrayList<CellObject>();
+	private boolean generatePhase = false;
+ 
 	private EatersMap(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
 		super(mapPath);
 		this.lowProbability = lowProbability;
@@ -38,6 +44,10 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		foodCount = 0;
 		scoreCount = 0;
 		unopenedBoxes = new HashSet<CellObject>();
+		rewardInfoObject = null;
+		positiveRewardID = 0;
+		rewardObjects.clear();
+		generatePhase = true;
 		super.reload();
 		
 		// override walls if necessary
@@ -51,20 +61,20 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		}
 		
 		// pick positive box
-		if (getData().rewardInfoObject != null) {
-			assert getData().positiveRewardID == 0;
-			getData().positiveRewardID = Simulation.random.nextInt(getData().cellObjectManager.rewardObjects.size());
-			getData().positiveRewardID += 1;
-			logger.trace("reward-info.positive-id: " + getData().positiveRewardID);
-			getData().rewardInfoObject.setIntProperty("apply.reward-info.positive-id", getData().positiveRewardID);
+		if (rewardInfoObject != null) {
+			assert positiveRewardID == 0;
+			positiveRewardID = Simulation.random.nextInt(rewardObjects.size());
+			positiveRewardID += 1;
+			logger.trace("reward-info.positive-id: " + positiveRewardID);
+			rewardInfoObject.setIntProperty("apply.reward-info.positive-id", positiveRewardID);
 			
 			// assigning colors like this helps us see the task happen
 			// colors[0] = info box (already assigned)
 			// colors[1] = positive reward box
 			// colors[2..n] = negative reward boxes
 			int negativeColor = 2;
-			for (CellObject aBox : getData().cellObjectManager.rewardObjects) {
-				if (aBox.getIntProperty("box-id", 0) == getData().positiveRewardID) {
+			for (CellObject aBox : rewardObjects) {
+				if (aBox.getIntProperty("box-id", 0) == positiveRewardID) {
 					aBox.setProperty("apply.reward.correct", "ignored");
 					aBox.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[1]);
 				} else {
@@ -75,6 +85,7 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 			}
 		}
 
+		generatePhase = false;
 	}
 	
 	/**
@@ -211,10 +222,33 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 
 	@Override
 	public void addStateUpdate(CellObject added) {
-		// Update state we keep track of specific to game type
+		if (generatePhase) {
+			if (added.getBooleanProperty("apply.reward-info", false)) {
+				rewardInfoObject = added;
+			}
+			
+			if (added.getBooleanProperty("apply.reward", false)) {
+				// assign identification number
+				added.setProperty("box-id", Integer.toString(rewardObjects.size() + 1));
+
+				// keep track of reward objects
+				rewardObjects.add(added);
+				
+				logger.trace("Reward box: " + added.getIntProperty("box-id", -1));
+
+			} else if (added.getBooleanProperty("apply.reward-info", false)) {
+				// assign identification properties
+				added.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[0]);
+				added.setProperty("box-id", "0");
+
+				logger.trace("Info box: " + added.getIntProperty("box-id", -1));
+			}
+		}
+		
 		if (added.hasProperty(Names.kPropertyEdible)) {
 			foodCount += 1;
 		}
+
 		if (added.hasProperty("apply.points")) {
 			scoreCount += added.getIntProperty("apply.points", 0);
 		}

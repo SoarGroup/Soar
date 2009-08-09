@@ -280,7 +280,7 @@ public class TankSoarWorld implements World {
 				newLocations.put(tank, players.getLocation(tank));
 				
 				// take damage
-				String name = map.getAllWithProperty(newLocation, Names.kPropertyBlock).get(0).getProperty("name");
+				String name = map.getFirstObjectWithProperty(newLocation, Names.kPropertyBlock).getProperty("name");
 				state.adjustHealth(Gridmap2D.config.tanksoarConfig().collision_penalty, name);
 				
 				if (state.getHealth() <= 0) {

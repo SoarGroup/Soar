@@ -94,7 +94,7 @@ public class CellTest {
 		cell.getAllObjects();
 		assertFalse(cell.checkAndResetRedraw());
 		
-		cell.getAllWithProperty(propertyName);
+		cell.getAllObjectsWithProperty(propertyName);
 		assertFalse(cell.checkAndResetRedraw());
 		
 		cell.hasAnyObjectWithProperty(propertyName);
@@ -161,23 +161,23 @@ public class CellTest {
 	@Test
 	public void testPropertyOperations() {
 		assertFalse(cell.hasAnyObjectWithProperty("test"));
-		assertTrue(cell.getAllWithProperty("test").isEmpty());
+		assertTrue(cell.getAllObjectsWithProperty("test").isEmpty());
 		assertNotNull(cell.removeAllObjectsByProperty("test"));
 		
 		cell.addObject(objects[0]);
 		cell.addObject(objects[1]);
 		cell.addObject(objects[2]);
 		
-		assertNotNull(cell.getAllWithProperty("property"));
-		assertEquals(cell.getAllWithProperty("property").size(), 3);
+		assertNotNull(cell.getAllObjectsWithProperty("property"));
+		assertEquals(cell.getAllObjectsWithProperty("property").size(), 3);
 		assertNotNull(cell.getAllObjects());
 		assertEquals(cell.getAllObjects().size(), 3);
-		assertNotNull(cell.getAllWithProperty("property0"));
-		assertEquals(cell.getAllWithProperty("property0").size(), 1);
-		assertNotNull(cell.getAllWithProperty("property1"));
-		assertEquals(cell.getAllWithProperty("property1").size(), 1);
-		assertNotNull(cell.getAllWithProperty("property2"));
-		assertEquals(cell.getAllWithProperty("property2").size(), 1);
+		assertNotNull(cell.getAllObjectsWithProperty("property0"));
+		assertEquals(cell.getAllObjectsWithProperty("property0").size(), 1);
+		assertNotNull(cell.getAllObjectsWithProperty("property1"));
+		assertEquals(cell.getAllObjectsWithProperty("property1").size(), 1);
+		assertNotNull(cell.getAllObjectsWithProperty("property2"));
+		assertEquals(cell.getAllObjectsWithProperty("property2").size(), 1);
 		
 		List<CellObject> removals0 = cell.removeAllObjectsByProperty("property0");
 		assertNotNull(removals0);

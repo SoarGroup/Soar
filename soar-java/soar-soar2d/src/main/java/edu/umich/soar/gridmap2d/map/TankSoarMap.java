@@ -504,7 +504,7 @@ public class TankSoarMap extends GridMapBase implements GridMap, CellObjectObser
 		radarCell = new RadarCell();
 		radarCell.player = (Tank)cell.getFirstPlayer();
 		if (!cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
-			for (CellObject object : cell.getAllWithProperty(Names.kPropertyMiniImage)) {
+			for (CellObject object : cell.getAllObjectsWithProperty(Names.kPropertyMiniImage)) {
 				if (object.hasProperty("energy")) {
 					radarCell.energy = true;
 				} else if (object.hasProperty("health")) {

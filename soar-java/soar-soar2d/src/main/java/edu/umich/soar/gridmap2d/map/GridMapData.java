@@ -29,11 +29,9 @@ class GridMapData implements CellObjectObserver {
 		}
 	}
 	
-	boolean randomWalls; // TODO: move out of here?
+	// TODO: This eater-specific code doesn't belong here
+	boolean randomWalls;
 	boolean randomFood;
-	
-	CellObject rewardInfoObject; // TODO: move to CellObjectObserver code
-	int positiveRewardID = 0;
 	
 	@Override
 	public String toString() {

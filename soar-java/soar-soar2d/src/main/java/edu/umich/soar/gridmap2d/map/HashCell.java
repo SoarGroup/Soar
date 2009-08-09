@@ -26,6 +26,11 @@ class HashCell implements Cell {
 	}
 	
 	@Override
+	public void removeObserver(CellObjectObserver observer) {
+		observers.remove(observer);
+	}
+
+	@Override
 	public boolean checkAndResetRedraw() {
 		boolean temp = draw;
 		draw = false;
@@ -129,7 +134,7 @@ class HashCell implements Cell {
 	 * @throws NullPointerException If property is null
 	 */
 	@Override
-	public List<CellObject> getAllWithProperty(String property) {	
+	public List<CellObject> getAllObjectsWithProperty(String property) {	
 		if (property == null) {
 			throw new NullPointerException("property is null");
 		}
@@ -141,6 +146,21 @@ class HashCell implements Cell {
 		return new ArrayList<CellObject>(ret);
 	}
 	
+	@Override
+	public CellObject getFirstObjectWithProperty(String property) {
+		if (property == null) {
+			throw new NullPointerException("property is null");
+		}
+		
+		List<CellObject> ret = byProperty.get(property);
+		if (ret == null) {
+			return null;
+		}
+		
+		assert ret.size() > 0;
+		return ret.get(0);
+	}
+
 	@Override
 	public boolean hasAnyObjectWithProperty(String property) {	
 		return byProperty.containsKey(property);
@@ -217,4 +237,5 @@ class HashCell implements Cell {
 			observer.removalStateUpdate(object);
 		}
 	}
+
 }

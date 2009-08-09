@@ -381,9 +381,9 @@ class SoarEaterIL {
 					updateFoodContent(view, map, cell);
 					
 					// TODO: there can only be one (as of right now)
-					List<CellObject> boxes = map.getAllWithProperty(view, Names.kPropertyBox);
-					if (!boxes.isEmpty()) {
-						updateBox(boxes.get(0), cell);
+					CellObject box = map.getFirstObjectWithProperty(view, Names.kPropertyBox);
+					if (box != null) {
+						updateBox(box, cell);
 					}
 					
 					checkEmpty(cell);
