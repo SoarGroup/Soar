@@ -3,7 +3,7 @@ objects {
 	m {					# symbol for map file, must be unique in this file
 		name = block;	# internal soar2d name and input-link type
 		movable = true;	# movable object
-		color = grey;	# input-link color
+		color = gray;	# input-link color
 		weight = 0.25;	# input-link weight (kg?)
 	}
 	
