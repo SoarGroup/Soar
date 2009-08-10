@@ -1,5 +1,6 @@
 package edu.umich.soar.gridmap2d.visuals;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -196,6 +197,12 @@ public class RoomVisualWorld extends VisualWorld {
 			
 			float [] center = new float [] { (float)pose.pos[0], (float)pose.pos[1] };
 			float [] offset = new float [] { 0, 0 };
+			float [] pathTemp = new float [2];
+			
+			int left = (int)pose.pos[0];
+			int right = (int)pose.pos[0];
+			int top = (int)pose.pos[1];
+			int bottom = (int)pose.pos[1];
 			
 			Path path = new Path(gc.getDevice());
 			float heading = (float)player.getState().getYaw();
@@ -203,51 +210,72 @@ public class RoomVisualWorld extends VisualWorld {
 			// first, move to the point representing the tip of the chevron
 			offset[1] = kDotSize * (float)Math.sin(heading);
 			offset[0] = kDotSize * (float)Math.cos(heading);
-			float [] original = new float [] { offset[0], offset[1] };
-			path.moveTo((center[0] + offset[0]), map.size() * cellSize - (center[1] + offset[1]));
-			//System.out.println("First: " + offset);
+			pathTemp[0] = center[0] + offset[0];
+			pathTemp[1] = map.size() * cellSize - (center[1] + offset[1]);
+			float [] original = Arrays.copyOf(pathTemp, pathTemp.length);
+			path.moveTo(pathTemp[0], pathTemp[1]);
+			left = Math.min((int)pathTemp[0], left);
+			right = Math.max((int)pathTemp[0], right);
+			top = Math.max((int)pathTemp[1], top);
+			bottom = Math.min((int)pathTemp[1], bottom);
 
 			// next draw a line to the corner
 			offset[1] = kDotSize/2.0f * (float)Math.sin(heading + (3*Math.PI)/4);
 			offset[0] = kDotSize/2.0f * (float)Math.cos(heading + (3*Math.PI)/4);
-			path.lineTo((center[0] + offset[0]), map.size() * cellSize - (center[1] + offset[1]));
-			//System.out.println("Second: " + offset);
+			pathTemp[0] = center[0] + offset[0];
+			pathTemp[1] = map.size() * cellSize - (center[1] + offset[1]);
+			path.lineTo(pathTemp[0], pathTemp[1]);
+			left = Math.min((int)pathTemp[0], left);
+			right = Math.max((int)pathTemp[0], right);
+			top = Math.max((int)pathTemp[1], top);
+			bottom = Math.min((int)pathTemp[1], bottom);
 
 			// next draw a line to the other corner
 			offset[1] = kDotSize/2.0f * (float)Math.sin(heading - (3*Math.PI)/4);
 			offset[0] = kDotSize/2.0f * (float)Math.cos(heading - (3*Math.PI)/4);
-			path.lineTo((center[0] + offset[0]), map.size() * cellSize - (center[1] + offset[1]));				
+			pathTemp[0] = center[0] + offset[0];
+			pathTemp[1] = map.size() * cellSize - (center[1] + offset[1]);
+			path.lineTo(pathTemp[0], pathTemp[1]);
 			//System.out.println("Third: " + offset);
+			left = Math.min((int)pathTemp[0], left);
+			right = Math.max((int)pathTemp[0], right);
+			top = Math.max((int)pathTemp[1], top);
+			bottom = Math.min((int)pathTemp[1], bottom);
 
 			// finally a line back to the original
-			path.lineTo((center[0] + original[0]), map.size() * cellSize - (center[1] + original[1]));
+			path.lineTo(original[0], original[1]);
 			
 			gc.setForeground(WindowManager.getColor(player.getColor()));
 			gc.drawPath(path);
 			
+			map.forceRedraw(getCellAtPixel(new int[] {left, top}));
+			map.forceRedraw(getCellAtPixel(new int[] {left, bottom}));
+			map.forceRedraw(getCellAtPixel(new int[] {right, top}));
+			map.forceRedraw(getCellAtPixel(new int[] {right, bottom}));
+
 			// draw waypoints
 			List<double[]> waypoints = world.getWaypointList(player);
 			for (double[] wp : waypoints) {
-				int left = (int)wp[0] - 2;
-				int top = cellSize*map.size() - (int)wp[1] - 2;
-				int right = left + 4;
-				int bottom = top + 4;
+				left = (int)wp[0] - 2;
+				top = cellSize*map.size() - (int)wp[1] - 2;
+				right = left + 4;
+				bottom = top + 4;
 				
 				gc.setForeground(WindowManager.getColor(player.getColor()));
 				gc.drawOval(left, top, 4, 4);
 				
 				// set redraw on all four points for next cycle
-				map.forceRedraw(new int[] {left / cellSize, top / cellSize});
-				map.forceRedraw(new int[] {left / cellSize, bottom / cellSize});
-				map.forceRedraw(new int[] {right / cellSize, top / cellSize});
-				map.forceRedraw(new int[] {right / cellSize, bottom / cellSize});
+				map.forceRedraw(getCellAtPixel(new int[] {left, top}));
+				map.forceRedraw(getCellAtPixel(new int[] {left, bottom}));
+				map.forceRedraw(getCellAtPixel(new int[] {right, top}));
+				map.forceRedraw(getCellAtPixel(new int[] {right, bottom}));
 			}
 		}
 		Stopwatch.stop(id);	
 		
 		painted = true;
 	}
-
+	
 	@Override
 	Player getPlayerAtPixel(int [] loc) {
 		loc[1] = map.size() * cellSize - loc[1];
