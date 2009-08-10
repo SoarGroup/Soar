@@ -413,6 +413,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 		
 		RoomObject object = state.getRoomObject();
 		state.drop();
+		object.setPose(state.getPose());
 		map.addObject(player.getLocation(), object.getCellObject());
 		return true;
 	}

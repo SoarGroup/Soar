@@ -128,15 +128,17 @@ public class SoarRobotInputLinkManager {
 		// objects
 		Collection<RoomObject> roomObjects = roomMap.getRoomObjects();
 		for (RoomObject rObj : roomObjects) {
+			pose_t pose = rObj.getPose();
+			if (pose == null) {
+				continue; // not on map
+			}
 			if (rObj.getArea() == player.getState().getLocationId()) {
 				final double MAX_ANGLE_OFF = Math.PI / 2;
-				pose_t pose = rObj.getPose();
 				LinAlg.scaleEquals(pose.pos, SoarRobot.PIXELS_2_METERS);
 				PointRelationship r = PointRelationship.calculate(opose.getPose(), pose.pos);
 				if (Math.abs(r.getRelativeBearing()) <= MAX_ANGLE_OFF) {
 					CellObject cObj = rObj.getCellObject();
-					int id = cObj.getIntProperty("object-id", -1);
-					SoarRobotObjectIL oIL = objects.get(id);
+					SoarRobotObjectIL oIL = objects.get(rObj.getId());
 					if (oIL == null) {
 						// create new object
 						Identifier inputLink = agent.GetInputLink();
@@ -144,10 +146,10 @@ public class SoarRobotInputLinkManager {
 						oIL = new SoarRobotObjectIL(parent);
 						oIL.initialize(pose, r);
 						oIL.addProperty("type", cObj.getProperty("name"));
-						oIL.addProperty("id", id);
+						oIL.addProperty("id", rObj.getId());
 						oIL.addProperty("color", cObj.getProperty("color"));
 						oIL.addProperty("weight", cObj.getProperty("weight"));
-						objects.put(id, oIL);
+						objects.put(rObj.getId(), oIL);
 					} else {
 						oIL.update(pose, r);
 					}

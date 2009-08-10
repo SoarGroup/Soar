@@ -40,6 +40,7 @@ public class CellObject {
 	public void setLocation(int[] location) {
 		if (location == null) {
 			this.location = null;
+			return;
 		}
 		this.location = Arrays.copyOf(location, location.length);
 	}
