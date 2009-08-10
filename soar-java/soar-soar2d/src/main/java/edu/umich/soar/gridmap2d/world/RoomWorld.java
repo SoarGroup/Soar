@@ -13,7 +13,6 @@ import lcmtypes.pose_t;
 import org.apache.log4j.Logger;
 
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
-import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.config.PlayerConfig;
@@ -291,8 +290,6 @@ public class RoomWorld implements World, SendMessagesInterface {
 		newLocation[0] = (int)pose.pos[0] / CELL_SIZE;
 		newLocation[1] = (int)pose.pos[1] / CELL_SIZE;
 
-		boolean translated = Double.compare(LinAlg.magnitude(pose.vel), 0) != 0;
-
 		if (!Arrays.equals(oldLocation, newLocation)) {
 			
 			while (checkBlocked(newLocation)) {
@@ -373,32 +370,6 @@ public class RoomWorld implements World, SendMessagesInterface {
 			players.setLocation(player, newLocation);
 			state.setLocationId(map.getLocationId(newLocation));
 			map.addPlayer(newLocation, player);
-		}
-		
-		if (translated || Double.compare(pose.rotation_rate[2], 0) != 0) {
-			
-			map.forceRedraw(newLocation);
-			
-			// TODO: optimization candidate
-			
-			// redraw the 8 cells around it
-			int[] redrawLoc = Arrays.copyOf(newLocation, newLocation.length); 
-			Direction.translate(redrawLoc, Direction.EAST);
-			map.forceRedraw(redrawLoc);
-			Direction.translate(redrawLoc, Direction.SOUTH);
-			map.forceRedraw(redrawLoc);
-			Direction.translate(redrawLoc, Direction.WEST);
-			map.forceRedraw(redrawLoc);
-			Direction.translate(redrawLoc, Direction.WEST);
-			map.forceRedraw(redrawLoc);
-			Direction.translate(redrawLoc, Direction.NORTH);
-			map.forceRedraw(redrawLoc);
-			Direction.translate(redrawLoc, Direction.NORTH);
-			map.forceRedraw(redrawLoc);
-			Direction.translate(redrawLoc, Direction.EAST);
-			map.forceRedraw(redrawLoc);
-			Direction.translate(redrawLoc, Direction.EAST);
-			map.forceRedraw(redrawLoc);
 		}
 	}
 
