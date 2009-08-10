@@ -17,6 +17,7 @@ import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.CellObject;
 import edu.umich.soar.gridmap2d.map.GridMap;
 import edu.umich.soar.gridmap2d.map.RoomMap;
+import edu.umich.soar.gridmap2d.map.RoomObject;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.players.Robot;
 import edu.umich.soar.gridmap2d.world.RoomWorld;
@@ -140,15 +141,6 @@ public class RoomVisualWorld extends VisualWorld {
 				lastY = e.y;
 				painted = false;
 			}
-
-			if (disabled || !painted) {
-				gc.setBackground(WindowManager.widget_background);
-				gc.fillRectangle(0,0, this.getWidth(), this.getHeight());
-				if (disabled) {
-					painted = true;
-					return;
-				}
-			}
 		}
 		
 		if (System.getProperty("os.name").contains("Mac OS X"))
@@ -174,6 +166,16 @@ public class RoomVisualWorld extends VisualWorld {
 			}
 			
 			gc.fillRectangle(loc.getDraw()[0], loc.getDraw()[1], cellSize, cellSize);
+		}
+		
+		// draw objects
+		for (RoomObject ro : rmap.getRoomObjects()) {
+			pose_t pose = ro.getPose();
+			if (pose == null) {
+				continue;
+			}
+			gc.setBackground(ro.getColor());
+			gc.fillOval((int)pose.pos[0] - 2, cellSize*map.size() - (int)pose.pos[1] - 2, 4, 4);
 		}
 		
 		// draw id labels on top of map
