@@ -38,7 +38,7 @@ public class RoomVisualWorld extends VisualWorld {
 		String label;
 	}
 	
-	private HashMap<Integer, IdLabel> rmids = new HashMap<Integer, IdLabel>();
+	private final HashMap<Integer, IdLabel> rmids = new HashMap<Integer, IdLabel>();
 	
 	private static class Location {
 		private final int CELL_SIZE;
@@ -228,8 +228,19 @@ public class RoomVisualWorld extends VisualWorld {
 			// draw waypoints
 			List<double[]> waypoints = world.getWaypointList(player);
 			for (double[] wp : waypoints) {
+				int left = (int)wp[0] - 2;
+				int top = cellSize*map.size() - (int)wp[1] - 2;
+				int right = left + 4;
+				int bottom = top + 4;
+				
 				gc.setForeground(WindowManager.getColor(player.getColor()));
-				gc.drawOval((int)wp[0] - 2, cellSize*map.size() - (int)wp[1] - 2, 4, 4);
+				gc.drawOval(left, top, 4, 4);
+				
+				// set redraw on all four points for next cycle
+				map.forceRedraw(new int[] {left / cellSize, top / cellSize});
+				map.forceRedraw(new int[] {left / cellSize, bottom / cellSize});
+				map.forceRedraw(new int[] {right / cellSize, top / cellSize});
+				map.forceRedraw(new int[] {right / cellSize, bottom / cellSize});
 			}
 		}
 		Stopwatch.stop(id);	
