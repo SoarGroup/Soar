@@ -8,7 +8,7 @@ import edu.umich.soar.gridmap2d.world.RoomWorld;
 import lcmtypes.pose_t;
 
 public class RoomObject {
-	private pose_t pose = new pose_t();
+	private pose_t pose;
 	private int area;
 	private final int id;
 	private final CellObject object;
@@ -59,11 +59,15 @@ public class RoomObject {
 	public void setPose(pose_t pose) {
 		if (pose == null) {
 			this.pose = null;
+			return;
 		}
 		this.pose = pose.copy();
 	}
 
 	public pose_t getPose() {
+		if (pose == null) {
+			return null;
+		}
 		return pose.copy();
 	}
 

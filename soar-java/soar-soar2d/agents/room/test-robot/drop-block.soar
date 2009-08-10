@@ -14,8 +14,8 @@ sp {apply*drop-block
          ^id <id>)
 -->
    (<s> ^had-carried <id>)
-   (<ol> ^drop-object.id <id>)
-#         ^set-velocity <sv>)
-#   (<sv> ^linear-velocity 1.
-#         ^angular-velocity 0.)
+   (<ol> ^drop-object.id <id>
+         ^set-velocity <sv>)
+   (<sv> ^linear-velocity 1.
+         ^angular-velocity 0.)
 }
