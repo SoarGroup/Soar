@@ -148,7 +148,7 @@ public class SoarRobotInputLinkManager {
 						oIL.addProperty("type", cObj.getProperty("name"));
 						oIL.addProperty("id", rObj.getId());
 						oIL.addProperty("color", cObj.getProperty("color"));
-						oIL.addProperty("weight", cObj.getProperty("weight"));
+						oIL.addProperty("weight", cObj.getDoubleProperty("weight", 0));
 						objects.put(rObj.getId(), oIL);
 					} else {
 						oIL.update(pose, r);
