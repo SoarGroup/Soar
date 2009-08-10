@@ -105,8 +105,12 @@ public class Gridmap2D {
 	private void fatalError(String message) {
 		logger.fatal(message);
 		System.err.println(message);
-		if (wm != null && wm.using()) {
-			wm.errorMessage(config.title(), message);
+		if (wm.initialize()) {
+			String title = "Soar2D";
+			if (config != null && config.title() != null) {
+				title = config.title();
+			}
+			wm.errorMessage(title, message);
 			wm.shutdown();
 		}
 		logger.fatal(Names.Trace.exitErrorLevel + 1);
@@ -134,14 +138,11 @@ public class Gridmap2D {
 		try {
 			config = SimConfig.newInstance(configPath);
 		} catch (IOException e) {
-			wm.initialize();
-			fatalError(e.toString());
+			fatalError("Error loading configuration file: " + e.getMessage());
 		} catch (ParseError e) {
-			wm.initialize();
-			fatalError(e.toString());
+			fatalError("Error loading configuration file: " + e.getMessage());
 		} catch (IllegalArgumentException e) {
-			wm.initialize();
-			fatalError(e.toString());
+			fatalError("Error loading configuration file: " + e.getMessage());
 		}
 		assert config != null;
 	}
@@ -185,7 +186,6 @@ public class Gridmap2D {
 			is.close() ;
 			os.close() ;
 		} catch (IOException e) {
-			wm.initialize();
 			fatalError(Names.Errors.installingConfig + file + ": " + e.getMessage());
 		}
 		
