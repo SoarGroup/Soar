@@ -1,7 +1,5 @@
 <project name="soar-java" default="build" basedir=".">
 
-	<property name="version" value="9.0.2"/>
-
 	<target name="build">
 		<ant dir="soar-smljava" />
 		<ant dir="soar-debugger" />

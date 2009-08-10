@@ -2,6 +2,7 @@
 
 	<property name="manifest.vendor" value="University of Michigan"/>
 	<property name="copyright" value="(c) The Regents of the University of Michigan, 2009"/>
+	<property name="version" value="9.0.2"/>
 
 	<property name="src" location="src/main/java" />
 	<property name="lib" location="lib" />
