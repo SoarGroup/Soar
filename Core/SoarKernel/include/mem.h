@@ -325,6 +325,11 @@ inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_p
    //  new memory every time.  If you want to use it, be sure to make the corresponding
    //  change to free_with_pool below
    *dest_item_pointer = static_cast< T * > (malloc(sizeof(T)));
+
+   // simply prevents compiler warnings when memory pools disabled
+   thisAgent;
+   p;
+
 #endif // !MEM_POOLS_ENABLED
 }
 
@@ -342,6 +347,9 @@ inline void free_with_pool(memory_pool* p, T * item)
    //  the memory every time.  If you want to use it, be sure to make the corresponding
    //  change to allocate_with_pool above
    free(item);
+   
+   // simply prevents compiler warnings when memory pools disabled
+   p;
 #endif // !MEM_POOLS_ENABLED
 }
 
