@@ -298,7 +298,7 @@ inline void decrement_used_count(P p)
 #ifdef __cplusplus
 //}
 
-#define MEM_POOLS_ENABLED 0
+#define MEM_POOLS_ENABLED 1
 
 template <typename T>
 inline void allocate_with_pool(agent* thisAgent, memory_pool* p, T** dest_item_pointer)
