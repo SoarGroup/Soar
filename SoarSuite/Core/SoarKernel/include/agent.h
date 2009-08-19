@@ -284,7 +284,7 @@ typedef struct agent_struct {
   /* ----------------------- Symbol table stuff -------------------------- */
 
   uint32_t       current_symbol_hash_id;
-  unsigned long       id_counter[26]; 
+  uint64_t       id_counter[26]; 
   
   struct hash_table_struct * float_constant_hash_table;
   struct hash_table_struct * identifier_hash_table;

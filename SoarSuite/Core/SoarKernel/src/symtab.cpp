@@ -92,9 +92,9 @@ uint32_t hash_variable_raw_info (const char *name, short num_bits) {
 }
 
 uint32_t hash_identifier_raw_info (char name_letter,
-                                        uint32_t name_number,
+                                        uint64_t name_number,
                                         short num_bits) {
-  return compress (name_number | (name_letter << 24), num_bits);
+  return compress (static_cast<uint32_t>(name_number) | (name_letter << 24), num_bits); // FIXME: casting from 64 to 32 bits
 }
 
 uint32_t hash_sym_constant_raw_info (const char *name, short num_bits) {
@@ -122,7 +122,7 @@ uint32_t hash_variable (void *item, short num_bits) {
 uint32_t hash_identifier (void *item, short num_bits) {
   identifier *id;
   id = static_cast<identifier_struct *>(item);
-  return compress (id->name_number ^ (id->name_letter << 24), num_bits);
+  return compress (static_cast<uint32_t>(id->name_number) ^ (static_cast<uint32_t>(id->name_letter) << 24), num_bits); // FIXME: cast from 64 to 32 bits
 }
 
 uint32_t hash_sym_constant (void *item, short num_bits) {
@@ -204,7 +204,7 @@ Symbol *find_variable (agent* thisAgent, const char *name) {
   return NIL;
 }
 
-Symbol *find_identifier (agent* thisAgent, char name_letter, unsigned long name_number) {
+Symbol *find_identifier (agent* thisAgent, char name_letter, uint64_t name_number) {
   uint32_t hash_value;
   Symbol *sym;
 
