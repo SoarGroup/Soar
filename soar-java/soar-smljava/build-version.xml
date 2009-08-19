@@ -1,0 +1,4 @@
+<project name="soar-build-version" basedir=".">
+	<property name="version" value="9.0.2"/>
+</project>
+
