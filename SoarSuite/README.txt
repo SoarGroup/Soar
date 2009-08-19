@@ -1,3 +1,12 @@
+Windows: 
+
+Install Visual Studio 2008
+
+Build SML.sln and run ant, or just click build.bat
+
+Full instructions on wiki at http://soar.googlecode.com
+
+-----
 Build notes for non-Windows platforms:
 
 Build using SCons (http://www.scons.org/):
