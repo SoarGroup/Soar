@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.prefs.Preferences;
 
 
@@ -39,6 +40,8 @@ import edu.umich.soar.gridmap2d.world.World;
 public class Gridmap2D {
 	private static Logger logger = Logger.getLogger(Gridmap2D.class);
 	
+	public static File home;
+	
 	public static Preferences preferences = Preferences.userNodeForPackage(Gridmap2D.class);
 	
 	public static SimConfig config = null;
@@ -49,6 +52,9 @@ public class Gridmap2D {
 	private boolean installedAConfig = false;
 	
 	public Gridmap2D(String[] args) {
+		figureOutHome();
+		logger.info("Home: " + home);
+
 		// Try to install default config files
 		install(Names.configs.tanksoarCnf);
 		install(Names.configs.tanksoarConsoleCnf);
@@ -102,6 +108,51 @@ public class Gridmap2D {
 //		}
 	}
 	
+	private void figureOutHome() {
+		String homeProperty = System.getProperty("soar2d.home");
+		if (homeProperty != null) {
+			home = new File(homeProperty);
+			return;
+		}
+		
+		try {
+			home = new File(Gridmap2D.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fatalError("Internal error: getCodeSource returned bad URL");
+		}
+		
+		// should point to parent of jar file
+		if (!home.isDirectory()) {
+			home = home.getParentFile();
+		}
+		
+		// usually, we'll be in SoarLibrary/lib or SoarLibrary/bin
+		String soarlib = "SoarLibrary";
+		String soarjava = "soar-java";
+		String soar2d = "soar-soar2d";
+		String hstr = home.toString();
+		int pos = hstr.lastIndexOf(soarlib);
+		if (pos >= 0) {
+			home = new File(home.toString().substring(0, pos) + soarjava + File.separator + soar2d);
+		} else {
+			// sometimes in soar-java somewhere
+			pos = hstr.lastIndexOf(soarjava);
+			if (pos >= 0) {
+				home = new File(home.toString().substring(0, pos + soarjava.length()) + File.separator + soar2d);
+			} else {
+				// maybe in SoarSuite root?
+				home = new File(home.toString() + File.separator + soarjava + File.separator + soar2d);
+			}
+		}
+		
+		// verify exists
+		if (!home.exists()) {
+			System.out.println(home);
+			fatalError("Can't figure out where the " + soar2d + " folder is.");
+		}
+	}
+
 	private void fatalError(String message) {
 		logger.fatal(message);
 		System.err.println(message);
@@ -133,6 +184,19 @@ public class Gridmap2D {
 		if (configPath == null) {
 			fatalError(Names.Errors.noConfig);
 		}
+		
+		// See if it exists:
+		File configFile = new File(configPath);
+		if (!configFile.exists()) {
+			configFile = new File (home + configPath);
+			if (!configFile.exists()) {
+				fatalError("Couldn't find " + configPath);
+			}
+		}
+		
+		if (!configFile.isFile()) {
+			fatalError("Not a file: " + configPath);
+		}
 
 		// Read config file
 		try {
@@ -152,7 +216,7 @@ public class Gridmap2D {
 			// We just work relative to the current directory because that's how
 			// load library will work.
 			File cnf = new File(file) ;
-			File cnfDest = new File("config" + System.getProperty("file.separator") + file) ;
+			File cnfDest = new File(home + File.separator + "config" + File.separator + file) ;
 	
 			if (cnfDest.exists()) {
 				return;
