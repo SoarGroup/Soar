@@ -194,7 +194,7 @@ typedef struct variable_struct {
 /* Note: I arranged the fields below to try to minimize space */
 typedef struct identifier_struct {
   symbol_common_data common_symbol_info;
-  unsigned long name_number;
+  uint64_t name_number;
   char name_letter;
 
   Bool isa_goal;        /* TRUE iff this is a goal identifier */
@@ -320,7 +320,7 @@ typedef union symbol_union {
 extern void init_symbol_tables (agent* thisAgent);
 
 extern Symbol *find_variable (agent* thisAgent, const char *name);
-extern Symbol *find_identifier (agent* thisAgent, char name_letter, unsigned long name_number);
+extern Symbol *find_identifier (agent* thisAgent, char name_letter, uint64_t name_number);
 extern Symbol *find_sym_constant (agent* thisAgent, const char *name);  /* AGR 600 */
 extern Symbol *find_int_constant (agent* thisAgent, long value);
 extern Symbol *find_float_constant (agent* thisAgent, double value);
