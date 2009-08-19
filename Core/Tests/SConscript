@@ -8,12 +8,12 @@ env = env.Clone()
 env.Prepend(CPPPATH = [	
 			'include',
 			'src',
-			'../Core/ClientSML/include',
-			'../Core/KernelSML/include',
-			'../Core/CommandLineInterface/include',
-			'../Core/SoarKernel/include',
-			'../Core/ElementXML/include',
-			'../Core/ConnectionSML/include'])
+			'../ClientSML/include',
+			'../KernelSML/include',
+			'../CommandLineInterface/include',
+			'../SoarKernel/include',
+			'../ElementXML/include',
+			'../ConnectionSML/include'])
 
 if sys.platform == "darwin":
 	if platform.machine() != 'Power Macintosh':
@@ -49,9 +49,9 @@ else:
 		   'cppunit-linux',
 		   ]
 
-libpath = [ '../Core/ClientSML',
-	    '../Core/ConnectionSML',
-	    '../Core/ElementXML', 
+libpath = [ '../ClientSML',
+	    '../ConnectionSML',
+	    '../ElementXML', 
 	    '.',
 	    ]
 
