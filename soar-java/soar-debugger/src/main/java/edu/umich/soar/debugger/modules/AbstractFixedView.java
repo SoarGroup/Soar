@@ -176,7 +176,7 @@ public abstract class AbstractFixedView extends AbstractView
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends AbstractFixedView> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 
 		// Store this object's properties.

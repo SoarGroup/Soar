@@ -27,8 +27,6 @@ import sml.sml_Names;
 ********************************************************************************************/
 public class FileMenu
 {
-	private BaseMenu	m_Menu ;
-	
 	private MainFrame m_Frame = null ;
 	private Document  m_Document = null ;
 	
@@ -51,7 +49,7 @@ public class FileMenu
 		menu.m_Document = doc ;
 		menu.m_Frame    = frame ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
+		menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}
@@ -184,32 +182,32 @@ public class FileMenu
 		*/
 	}
 
-	/** Append log to an existing file */
-	private void logAppendFile(ActionEvent e)
-	{
-		// We treat this as a load because we'll append to it (i.e. you must choose an existing file)
-		String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(), new String[] { "*.txt" }, new String[] { "Log file (*.txt)" } , m_Frame.getAppProperties(), "LogSave", "LogLoad") ;
-		
-		if (filename != null)
-		{
-			String sourceLine = m_Document.getSoarCommands().getLogAppendCommand(filename) ;
-			m_Frame.executeCommandPrimeView(sourceLine, true) ;
-		}
-	}
-
-	/** Close log file */
-	private void logClose(ActionEvent e)
-	{
-		String sourceLine = m_Document.getSoarCommands().getLogCloseCommand() ;
-		m_Frame.executeCommandPrimeView(sourceLine, true) ;
-	}
-
-	/** Report log status */
-	private void logStatus(ActionEvent e)
-	{
-		String sourceLine = m_Document.getSoarCommands().getLogStatusCommand() ;
-		m_Frame.executeCommandPrimeView(sourceLine, true) ;
-	}
+//	/** Append log to an existing file */
+//	private void logAppendFile(ActionEvent e)
+//	{
+//		// We treat this as a load because we'll append to it (i.e. you must choose an existing file)
+//		String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(), new String[] { "*.txt" }, new String[] { "Log file (*.txt)" } , m_Frame.getAppProperties(), "LogSave", "LogLoad") ;
+//		
+//		if (filename != null)
+//		{
+//			String sourceLine = m_Document.getSoarCommands().getLogAppendCommand(filename) ;
+//			m_Frame.executeCommandPrimeView(sourceLine, true) ;
+//		}
+//	}
+//
+//	/** Close log file */
+//	private void logClose(ActionEvent e)
+//	{
+//		String sourceLine = m_Document.getSoarCommands().getLogCloseCommand() ;
+//		m_Frame.executeCommandPrimeView(sourceLine, true) ;
+//	}
+//
+//	/** Report log status */
+//	private void logStatus(ActionEvent e)
+//	{
+//		String sourceLine = m_Document.getSoarCommands().getLogStatusCommand() ;
+//		m_Frame.executeCommandPrimeView(sourceLine, true) ;
+//	}
 
 	/** Load a new window layout */
 	public void loadPerformed(ActionEvent e)

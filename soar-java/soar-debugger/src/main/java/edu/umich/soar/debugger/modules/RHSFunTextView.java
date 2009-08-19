@@ -9,14 +9,11 @@ import org.eclipse.swt.graphics.* ;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 
-import sml.Agent;
 import sml.Kernel;
-import sml.smlAgentEventId;
 
 import java.util.*;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.dialogs.PropertiesDialog;
-import edu.umich.soar.debugger.dialogs.ReorderButtonsDialog;
 import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
@@ -309,7 +306,7 @@ public class RHSFunTextView extends AbstractRHSFunView implements Kernel.RhsFunc
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends RHSFunTextView> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 
 		if (m_Name == null)

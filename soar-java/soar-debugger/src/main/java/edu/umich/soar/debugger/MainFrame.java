@@ -34,7 +34,6 @@ import edu.umich.soar.debugger.menu.AgentMenu;
 import edu.umich.soar.debugger.menu.CommandsMenu;
 import edu.umich.soar.debugger.menu.DebugLevelMenu;
 import edu.umich.soar.debugger.menu.DemoMenu;
-import edu.umich.soar.debugger.menu.EditMenu;
 import edu.umich.soar.debugger.menu.FileMenu;
 import edu.umich.soar.debugger.menu.HelpMenu;
 import edu.umich.soar.debugger.menu.KernelMenu;
@@ -86,15 +85,15 @@ public class MainFrame
 
 	/** The menus in the menu bar */
 	private FileMenu 		m_FileMenu = null;
-	private EditMenu 		m_EditMenu = null;
+	//private EditMenu 		m_EditMenu = null;
 	private KernelMenu 		m_KernelMenu = null;
 	private AgentMenu 		m_AgentMenu = null;
 	private DemoMenu 		m_DemoMenu = null;
-	private CommandsMenu 	m_CommandsMenu = null;
-	private DebugLevelMenu 	m_DebugLevelMenu = null;
-	private PrintMenu 		m_PrintMenu = null;
-	private LayoutMenu 		m_LayoutMenu = null;
-	private HelpMenu 		m_HelpMenu = null ;
+	//private CommandsMenu 	m_CommandsMenu = null;
+	//private DebugLevelMenu 	m_DebugLevelMenu = null;
+	//private PrintMenu 		m_PrintMenu = null;
+	//private LayoutMenu 		m_LayoutMenu = null;
+	//private HelpMenu 		m_HelpMenu = null ;
 
 	/**
 	 * The main document object -- represents the Soar process. There is only
@@ -168,7 +167,7 @@ public class MainFrame
 	public Color m_White;
 
 	// List of all color objects we own and should dispose of when frame closes
-	private ArrayList m_Colors = new ArrayList();
+	private ArrayList<Color> m_Colors = new ArrayList<Color>();
 
 	public MainFrame(Composite parent, Document doc)
 	{
@@ -690,15 +689,15 @@ public class MainFrame
 	{
 		// Add the menus
 		m_FileMenu = FileMenu.createMenu(this, getDocument(), "&File");
-		m_EditMenu = edu.umich.soar.debugger.menu.EditMenu.createMenu(this, getDocument(), "&Edit");
-		m_PrintMenu = PrintMenu.createMenu(this, getDocument(), "&Print");
-		m_CommandsMenu = CommandsMenu.createMenu(this, getDocument(), "&Commands");
-		m_DebugLevelMenu = DebugLevelMenu.createMenu(this, getDocument(), "&Debug Level");
+		/*m_EditMenu = */edu.umich.soar.debugger.menu.EditMenu.createMenu(this, getDocument(), "&Edit");
+		/*m_PrintMenu = */PrintMenu.createMenu(this, getDocument(), "&Print");
+		/*m_CommandsMenu = */CommandsMenu.createMenu(this, getDocument(), "&Commands");
+		/*m_DebugLevelMenu = */DebugLevelMenu.createMenu(this, getDocument(), "&Debug Level");
 		m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "De&mos");
-		m_LayoutMenu = LayoutMenu.createMenu(this, getDocument(), "&Layout");
+		/*m_LayoutMenu = */LayoutMenu.createMenu(this, getDocument(), "&Layout");
 		m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "&Agents");
 		m_KernelMenu = KernelMenu.createMenu(this, getDocument(), "&Kernel");
-		m_HelpMenu   = HelpMenu.createMenu(this, getDocument(), "&Help") ;
+		/*m_HelpMenu   = */HelpMenu.createMenu(this, getDocument(), "&Help") ;
 		
 		getShell().setMenuBar(m_MenuBar);
 		

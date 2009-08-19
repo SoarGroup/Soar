@@ -20,6 +20,8 @@ import sml.* ;
  ************************************************************************/
 public class SoarAgentEvent extends java.util.EventObject
 {
+	private static final long serialVersionUID = -1073490020065002122L;
+
 	public static int kAgentAdded = 1 ;
 	public static int kAgentRemoved = 2 ;
 	public static int kListChanged = 3 ;	// More generic -- just says the list isn't the same now (use the more specific event if you can)

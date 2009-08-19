@@ -20,6 +20,8 @@ import sml.* ;
  ************************************************************************/
 public class AgentFocusEvent extends java.util.EventObject
 {
+	private static final long serialVersionUID = 2864185010890828622L;
+	
 	public static final int kGettingFocus = 1 ;
 	public static final int kLosingFocus  = 2 ;
 	public static final int kGone   	  = 3 ;	// Agent has been deleted (usually because kernel is gone)

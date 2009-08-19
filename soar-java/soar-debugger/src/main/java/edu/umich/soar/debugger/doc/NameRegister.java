@@ -23,7 +23,7 @@ import edu.umich.soar.debugger.modules.AbstractView;
  ************************************************************************/
 public class NameRegister
 {
-	private HashMap m_NameMap = new HashMap() ;
+	private HashMap<String, AbstractView> m_NameMap = new HashMap<String, AbstractView>() ;
 	
 	public boolean isNameInUse(String name)
 	{
@@ -37,7 +37,7 @@ public class NameRegister
 	
 	public AbstractView getView(String name)
 	{
-		return (AbstractView)m_NameMap.get(name) ;
+		return m_NameMap.get(name) ;
 	}
 	
 	/** Records that a particular window is using a given name */

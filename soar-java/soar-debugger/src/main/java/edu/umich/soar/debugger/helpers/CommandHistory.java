@@ -21,7 +21,7 @@ import edu.umich.soar.debugger.general.JavaElementXML;
 public class CommandHistory
 {	
 	/** Max number of items to store in the history */
-	public static final int kMaxHistorySize = 20 ;
+	public static int kMaxHistorySize = 20 ;
 	
 	/** The current history */
 	private String[] 	  m_History = new String[kMaxHistorySize] ;
@@ -127,7 +127,7 @@ public class CommandHistory
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends CommandHistory> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 		
 		// Record the size of the array

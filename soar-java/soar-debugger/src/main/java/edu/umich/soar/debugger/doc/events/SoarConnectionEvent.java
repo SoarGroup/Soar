@@ -20,6 +20,8 @@ import java.util.*;
  ************************************************************************/
 public class SoarConnectionEvent extends EventObject
 {
+	private static final long serialVersionUID = -3797441927796559669L;
+
 	/** True if connecting, false if disconnecting */
 	private boolean m_Connect ;
 	

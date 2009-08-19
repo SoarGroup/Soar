@@ -19,7 +19,6 @@ import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 
 import edu.umich.soar.debugger.MainFrame;
-import edu.umich.soar.debugger.dialogs.RemoteDialog.RemoteInfo;
 import edu.umich.soar.debugger.general.SaveLoad;
 import edu.umich.soar.debugger.helpers.Logger;
 import edu.umich.soar.debugger.modules.AbstractView;

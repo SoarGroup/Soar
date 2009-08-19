@@ -16,34 +16,23 @@ import java.util.ArrayList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.KeyAdapter;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 
 import sml.Agent;
 import sml.Kernel;
 import sml.smlAgentEventId;
-import sml.smlPrintEventId;
 import sml.smlRunEventId;
 import sml.smlSystemEventId;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.dialogs.PropertiesDialog;
 import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.general.JavaElementXML;
-import edu.umich.soar.debugger.helpers.CommandHistory;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.manager.Pane;
 import edu.umich.soar.debugger.menu.ParseSelectedText;
@@ -256,7 +245,7 @@ public abstract class AbstractUpdateView extends AbstractView  implements Agent.
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends AbstractUpdateView> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 
 		if (m_Name == null)

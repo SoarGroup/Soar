@@ -11,8 +11,6 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
 
-import java.io.PrintWriter;
-
 import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.menu.ParseSelectedText;
 
