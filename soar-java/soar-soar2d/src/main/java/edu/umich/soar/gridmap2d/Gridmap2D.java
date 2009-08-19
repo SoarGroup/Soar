@@ -188,7 +188,7 @@ public class Gridmap2D {
 		// See if it exists:
 		File configFile = new File(configPath);
 		if (!configFile.exists()) {
-			configFile = new File (home + configPath);
+			configFile = new File (home + File.separator + configPath);
 			if (!configFile.exists()) {
 				configFile = new File (home + File.separator + "config" + File.separator + configPath);
 				if (!configFile.exists()) {
