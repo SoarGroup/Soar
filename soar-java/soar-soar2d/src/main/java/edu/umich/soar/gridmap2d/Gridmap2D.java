@@ -190,7 +190,10 @@ public class Gridmap2D {
 		if (!configFile.exists()) {
 			configFile = new File (home + configPath);
 			if (!configFile.exists()) {
-				fatalError("Couldn't find " + configPath);
+				configFile = new File (home + File.separator + "config" + File.separator + configPath);
+				if (!configFile.exists()) {
+					fatalError("Couldn't find " + configPath);
+				}
 			}
 		}
 		
