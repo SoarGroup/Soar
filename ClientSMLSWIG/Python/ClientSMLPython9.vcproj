@@ -74,15 +74,16 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="python25_d.lib"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\_Python_sml_ClientInterface_d.pyd"
+				OutputFile="_Python_sml_ClientInterface_d.pyd"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\_Python_sml_ClientInterface_d.lib"
+				ImportLibrary="_Python_sml_ClientInterface_d.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -105,8 +106,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Move python wrapper to SoarLibrary/bin"
-				CommandLine="echo on&#x0D;&#x0A;move /Y build\Python_sml_ClientInterface.py ..\..\..\SoarLibrary\bin&#x0D;&#x0A;"
+				Description="Copy python wrapper and DLL to bin"
+				CommandLine="echo on&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;xcopy /Y build\*.py &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -165,13 +166,14 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="python25_d.lib"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\_Python_sml_ClientInterface_d.pyd"
+				OutputFile="_Python_sml_ClientInterface_d.pyd"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\_Python_sml_ClientInterface_d.lib"
+				ImportLibrary="_Python_sml_ClientInterface_d.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -194,8 +196,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Move python wrapper to SoarLibrary/bin"
-				CommandLine="echo on&#x0D;&#x0A;move /Y build\Python_sml_ClientInterface.py ..\..\..\SoarLibrary\bin&#x0D;&#x0A;"
+				Description="Copy python wrapper and DLL to bin"
+				CommandLine="echo on&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;xcopy /Y build\*.py &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -257,17 +259,17 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="python25.lib"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\_Python_sml_ClientInterface.pyd"
+				OutputFile="_Python_sml_ClientInterface.pyd"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\_Python_sml_ClientInterface.lib"
+				ImportLibrary="_Python_sml_ClientInterface.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -290,8 +292,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Move python wrapper to SoarLibrary/bin"
-				CommandLine="echo on&#x0D;&#x0A;move /Y build\Python_sml_ClientInterface.py ..\..\..\SoarLibrary\bin&#x0D;&#x0A;"
+				Description="Copy python wrapper and DLL to bin"
+				CommandLine="echo on&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;xcopy /Y build\*.py &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -354,15 +356,15 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="python25.lib"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\_Python_sml_ClientInterface.pyd"
+				OutputFile="_Python_sml_ClientInterface.pyd"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\_Python_sml_ClientInterface.lib"
+				ImportLibrary="_Python_sml_ClientInterface.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -385,8 +387,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Move python wrapper to SoarLibrary/bin"
-				CommandLine="echo on&#x0D;&#x0A;move /Y build\Python_sml_ClientInterface.py ..\..\..\SoarLibrary\bin&#x0D;&#x0A;"
+				Description="Copy python wrapper and DLL to bin"
+				CommandLine="echo on&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;xcopy /Y build\*.py &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

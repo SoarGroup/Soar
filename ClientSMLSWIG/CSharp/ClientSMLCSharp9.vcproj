@@ -70,14 +70,15 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="false"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
+				OutputFile="CSharp_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				RandomizedBaseAddress="1"
 				FixedBaseAddress="0"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
+				ImportLibrary="CSharp_sml_ClientInterface.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -99,7 +100,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
+				Description="Finish DLLs, copy to bin"
+				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -154,12 +156,13 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="false"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
+				OutputFile="CSharp_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				FixedBaseAddress="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
+				ImportLibrary="CSharp_sml_ClientInterface.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -182,7 +185,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
+				Description="Finish DLLs, copy to bin"
+				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -242,14 +246,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
+				OutputFile="CSharp_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
+				ImportLibrary="CSharp_sml_ClientInterface.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -271,7 +276,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
+				Description="Finish DLLs, copy to bin"
+				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -332,12 +338,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\CSharp_sml_ClientInterface.dll"
+				OutputFile="CSharp_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\CSharp_sml_ClientInterface.lib"
+				ImportLibrary="CSharp_sml_ClientInterface.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -360,7 +367,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
+				Description="Finish DLLs, copy to bin"
+				CommandLine="csc /target:library /keyfile:PublicPrivateKeyFile.snk /out:build\smlCSharp.dll build\*.cs&#x0D;&#x0A;xcopy build\*.dll &quot;$(SolutionDir)\SoarLibrary\bin&quot; /Y /I /Q&#x0D;&#x0A;xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;del build\*.dll&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

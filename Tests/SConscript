@@ -1,0 +1,61 @@
+#!/usr/bin/python
+import glob
+import sys
+import platform
+
+Import('env')
+env = env.Clone()
+env.Prepend(CPPPATH = [	
+			'include',
+			'src',
+			'../Core/ClientSML/include',
+			'../Core/KernelSML/include',
+			'../Core/CommandLineInterface/include',
+			'../Core/SoarKernel/include',
+			'../Core/ElementXML/include',
+			'../Core/ConnectionSML/include'])
+
+if sys.platform == "darwin":
+	if platform.machine() != 'Power Macintosh':
+		if env['m64']:
+			libadd = [ 'ClientSML', 
+				   'ConnectionSML',
+				   'ElementXML', 
+				   'cppunit-osx-64',
+				   ]
+		else:
+			libadd = [ 'ClientSML', 
+				   'ConnectionSML',
+				   'ElementXML', 
+				   'cppunit-osx',
+				   ]
+	else:
+		libadd = [ 'ClientSML', 
+			   'ConnectionSML',
+			   'ElementXML', 
+			   'cppunit-osxppc',
+			   ]
+else:
+	if env['m64']:
+		libadd = [ 'ClientSML', 
+		   'ConnectionSML',
+		   'ElementXML', 
+		   'cppunit-linux-64',
+		   ]
+	else:
+		libadd = [ 'ClientSML', 
+		   'ConnectionSML',
+		   'ElementXML', 
+		   'cppunit-linux',
+		   ]
+
+libpath = [ '../Core/ClientSML',
+	    '../Core/ConnectionSML',
+	    '../Core/ElementXML', 
+	    '.',
+	    ]
+
+env.Append(LIBS = libadd, LIBPATH = libpath)
+Tests = env.Program('Tests', glob.glob('src/*.cpp'))
+env.Install('#SoarLibrary/bin', Tests)
+

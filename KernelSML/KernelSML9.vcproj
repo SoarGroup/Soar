@@ -71,15 +71,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -102,6 +102,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -157,13 +159,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -186,6 +188,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -245,18 +249,18 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -279,6 +283,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -339,16 +345,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -371,6 +377,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -425,15 +433,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -456,6 +464,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -511,13 +521,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -540,6 +550,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -599,18 +611,18 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -633,6 +645,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -693,16 +707,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Soar$(ProjectName).dll"
+				OutputFile="Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Soar$(ProjectName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -725,6 +739,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy DLL to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 	</Configurations>

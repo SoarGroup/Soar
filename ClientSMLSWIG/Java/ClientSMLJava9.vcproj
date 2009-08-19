@@ -73,15 +73,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="Java_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Java_sml_ClientInterface.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -104,7 +105,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				Description="Copy DLL to bin, run ant"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -162,13 +164,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="Java_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Java_sml_ClientInterface.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -191,7 +194,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				Description="Copy DLL to bin, run ant"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -253,17 +257,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Java_sml_ClientInterface.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -286,7 +290,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				Description="Copy DLL to bin, run ant"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -349,15 +354,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\bin\Java_sml_ClientInterface.dll"
+				OutputFile="Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)/$(ProjectName).pdb"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				ImportLibrary="Java_sml_ClientInterface.lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -380,7 +385,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				Description="Copy DLL to bin, run ant"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
