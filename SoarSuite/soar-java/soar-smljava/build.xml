@@ -1,5 +1,7 @@
 <project name="soar-smljava" default="build" basedir=".">
 
+	<import file="../soar-smljava/build-version.xml" />
+
 	<property name="manifest.classpath" value="sml.jar" />
 	<property name="jar.main.class" value="edu.umich.soar.TestJavaSML" />
 
