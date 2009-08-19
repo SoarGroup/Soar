@@ -207,6 +207,7 @@ SConscript('#Core/ElementXML/SConscript')
 SConscript('#Core/CLI/SConscript')
 SConscript('#Core/ClientSML/SConscript')
 SConscript('#Core/KernelSML/SConscript')
+SConscript('#Core/Tests/SConscript')
 
 if env['java']:
 	if env.GetOption('clean'):
@@ -227,5 +228,4 @@ SConscript('#Tools/TOHSML/SConscript')
 SConscript('#Tools/TestSMLEvents/SConscript')
 SConscript('#Tools/TestSMLPerformance/SConscript')
 SConscript('#Tools/TestSoarPerformance/SConscript')
-SConscript('#Tests/SConscript')
 
