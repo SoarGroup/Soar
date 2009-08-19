@@ -14,11 +14,8 @@ package edu.umich.soar.debugger.helpers;
 
 import java.io.*;
 
-import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.dialogs.LoggingDialog;
-import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.general.JavaElementXML;
-import edu.umich.soar.debugger.manager.Pane;
 import edu.umich.soar.debugger.modules.AbstractView;
 
 

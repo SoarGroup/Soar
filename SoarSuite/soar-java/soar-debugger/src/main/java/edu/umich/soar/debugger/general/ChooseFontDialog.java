@@ -26,6 +26,8 @@ import java.awt.event.*;
 ********************************************************************************************/
 public class ChooseFontDialog extends JPanel
 {
+	private static final long serialVersionUID = 329563400518344780L;
+
 	/** The parent dialog (if there is one) */
 	private JDialog m_ParentDialog = null ;
 

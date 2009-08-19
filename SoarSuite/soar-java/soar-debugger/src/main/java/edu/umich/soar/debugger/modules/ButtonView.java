@@ -44,7 +44,7 @@ public class ButtonView extends AbstractFixedView
 	}
 	
 	/** A list of ButtonInfo objects */
-	protected ArrayList m_ButtonList = new ArrayList() ;
+	protected ArrayList<ButtonInfo> m_ButtonList = new ArrayList<ButtonInfo>() ;
 	protected String 	m_LinkedViewName ;
 	
 	public ButtonView()
@@ -138,7 +138,7 @@ public class ButtonView extends AbstractFixedView
 	{
 		for (int i = 0 ; i < this.m_ButtonList.size() ; i++)
 		{
-			ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
+			ButtonInfo info = m_ButtonList.get(i) ;
 			if (info.m_Button == button)
 				return info ;
 		}
@@ -220,7 +220,7 @@ public class ButtonView extends AbstractFixedView
 	
 	protected void reorderButtons()
 	{
-		ArrayList buttonList = ReorderButtonsDialog.showDialog(m_Frame.getWindow(), "Reorder the list of buttons", m_ButtonList) ;
+		ArrayList<ButtonInfo> buttonList = ReorderButtonsDialog.showDialog(m_Frame.getWindow(), "Reorder the list of buttons", m_ButtonList) ;
 		
 		if (buttonList == null)
 			return ;
@@ -445,7 +445,7 @@ public class ButtonView extends AbstractFixedView
 		// Create and add buttons for each button info structure
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)
 		{
-			final ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
+			final ButtonInfo info = m_ButtonList.get(i) ;
 			
 			final int pos = i ;
 			Button button = new Button(m_Container, SWT.PUSH) ;
@@ -469,7 +469,7 @@ public class ButtonView extends AbstractFixedView
 		// Create a context menu for each button -- allowing us to modify it etc.
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)
 		{
-			ButtonInfo info = (ButtonInfo)m_ButtonList.get(i) ;
+			ButtonInfo info = m_ButtonList.get(i) ;
 			Button button = info.m_Button ;
 			
 			createContextMenu(button) ;
@@ -492,7 +492,7 @@ public class ButtonView extends AbstractFixedView
 	
 	protected void buttonPressed(SelectionEvent e, int pos)
 	{
-		ButtonInfo button = (ButtonInfo)m_ButtonList.get(pos) ;
+		ButtonInfo button = m_ButtonList.get(pos) ;
 		String command = button.m_Command ;
 
 		// Execute the command in the prime view for the debugger
@@ -534,7 +534,7 @@ public class ButtonView extends AbstractFixedView
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends ButtonView> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 
 		// Store this object's properties.
@@ -547,7 +547,7 @@ public class ButtonView extends AbstractFixedView
 		// Save information for each button in the panel
 		for (int i = 0 ; i < m_ButtonList.size() ; i++)
 		{
-			ButtonInfo button = (ButtonInfo)m_ButtonList.get(i) ;
+			ButtonInfo button = m_ButtonList.get(i) ;
 			
 			JavaElementXML child = new JavaElementXML("Button") ;
 			child.addAttribute("Name", button.m_Name) ;

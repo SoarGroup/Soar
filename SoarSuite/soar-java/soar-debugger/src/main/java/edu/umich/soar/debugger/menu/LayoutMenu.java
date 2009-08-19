@@ -23,11 +23,8 @@ import edu.umich.soar.debugger.doc.Document;
  ************************************************************************/
 public class LayoutMenu
 {
-	private BaseMenu  m_Menu ;
-
 	private MainFrame m_Frame = null ;
-	private Document  m_Document = null ;
-	
+
 	private AbstractAction m_UseDefaultLayout = new AbstractAction("Use &default window layout")  { public void actionPerformed(ActionEvent e) { useDefaultPerformed(e) ; } } ;
 	private AbstractAction m_UseTreeLayout = new AbstractAction("Use &tree view layout")  { public void actionPerformed(ActionEvent e) { useDefaultPerformed(e) ; } } ;
 	private AbstractAction m_UseTextLayout = new AbstractAction("Use te&xt view layout")  { public void actionPerformed(ActionEvent e) { useTextLayout(e) ; } } ;
@@ -39,9 +36,8 @@ public class LayoutMenu
 	{
 		LayoutMenu menu = new LayoutMenu() ;
 		menu.m_Frame    = frame ;
-		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
+		menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}

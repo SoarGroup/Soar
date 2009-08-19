@@ -15,7 +15,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Menu;
 
 import sml.Agent;
-import sml.Kernel;
 
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.dialogs.KernelLocationDialog;
@@ -30,8 +29,6 @@ import edu.umich.soar.debugger.doc.Document;
  ************************************************************************/
 public class KernelMenu
 {
-	private BaseMenu	m_Menu ;
-	
 	private Document m_Document = null ;
 	private MainFrame m_Frame	= null ;
 
@@ -48,7 +45,7 @@ public class KernelMenu
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
+		menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}

@@ -461,7 +461,7 @@ public class PhaseView extends AbstractFixedView implements Kernel.AgentEventInt
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends PhaseView> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 
 		// Store this object's properties.

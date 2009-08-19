@@ -12,6 +12,8 @@ import java.io.* ;
 
 public class AppProperties extends java.util.Properties
 {
+	private static final long serialVersionUID = -4778892190777380661L;
+
 	protected String m_Filename;
 	protected String m_Header ;
 	protected final String kVersion = "Version" ;

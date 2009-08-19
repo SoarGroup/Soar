@@ -9,6 +9,7 @@
 package edu.umich.soar.debugger.general;
 
 import java.util.* ;
+import java.util.Map.Entry;
 import java.io.* ;
 
 /************************************************************************
@@ -101,9 +102,9 @@ public class JavaElementXML
 			}
 
 			public int  getType() 		  { return this.m_Type ; }
-			public void setType(int type) { this.m_Type = type ; }
+			//public void setType(int type) { this.m_Type = type ; }
 			public String getValue()	  { return this.m_Value ; }
-			public void setValue(String s){ this.m_Value = s ; }
+			//public void setValue(String s){ this.m_Value = s ; }
 		}
 		
 		protected BufferedReader m_Input       = null ;
@@ -344,16 +345,16 @@ public class JavaElementXML
 			SetCurrentToken(identifier.toString(), kIdentifier) ;
 		}
 		
-		public Token getCurrentToken()
-		{
-			return this.m_CurrentToken ;
-		}
-		
-		public int getCurrentTokenType()
-		{
-			return this.m_CurrentToken.getType() ;
-		}
-		
+//		public Token getCurrentToken()
+//		{
+//			return this.m_CurrentToken ;
+//		}
+//		
+//		public int getCurrentTokenType()
+//		{
+//			return this.m_CurrentToken.getType() ;
+//		}
+//		
 		public String getCurrentTokenValue()
 		{
 			return this.m_CurrentToken.getValue() ;
@@ -393,20 +394,20 @@ public class JavaElementXML
 			return false ;
 		}
 		
-		/************************************************************************
-		* 
-		* Returns true AND consumes the current token if the value and type match.
-		* 
-		* @param value			The value to test
-		* @param type			The type to test
-		* 
-		*************************************************************************/
-		public boolean Have(String value, int type) throws Exception
-		{
-			if (m_CurrentToken.getType() == type)
-				return Have(value) ;
-			return false ;
-		}
+//		/************************************************************************
+//		* 
+//		* Returns true AND consumes the current token if the value and type match.
+//		* 
+//		* @param value			The value to test
+//		* @param type			The type to test
+//		* 
+//		*************************************************************************/
+//		public boolean Have(String value, int type) throws Exception
+//		{
+//			if (m_CurrentToken.getType() == type)
+//				return Have(value) ;
+//			return false ;
+//		}
 		
 		/************************************************************************
 		* 
@@ -454,20 +455,20 @@ public class JavaElementXML
 			return result ;
 		}
 		
-		/************************************************************************
-		* 
-		* Checks that both the type and value match.
-		* If not, throws an exception.
-		* 
-		*************************************************************************/
-		public void MustBe(String value, int type) throws Exception
-		{
-			if (m_CurrentToken.getType() != type)
-			{
-				throw new Exception("Found incorrect type when parsing token " + m_CurrentToken.getValue()) ;
-			}
-			MustBe(value) ;
-		}
+//		/************************************************************************
+//		* 
+//		* Checks that both the type and value match.
+//		* If not, throws an exception.
+//		* 
+//		*************************************************************************/
+//		public void MustBe(String value, int type) throws Exception
+//		{
+//			if (m_CurrentToken.getType() != type)
+//			{
+//				throw new Exception("Found incorrect type when parsing token " + m_CurrentToken.getValue()) ;
+//			}
+//			MustBe(value) ;
+//		}
 	}
 
 	// Some useful attribute names
@@ -491,10 +492,10 @@ public class JavaElementXML
 	protected static final String   kSystemLineSeparator = System.getProperty("line.separator") ;
 
 	/** List of attribute names and string values */
-	protected HashMap m_AttributeList = new HashMap() ;
+	protected HashMap<String, String> m_AttributeList = new HashMap<String, String>() ;
 	
 	/** List of elements contained in this element */
-	protected ArrayList m_ChildElementList = new ArrayList() ;
+	protected ArrayList<JavaElementXML> m_ChildElementList = new ArrayList<JavaElementXML>() ;
 	
 	/** The tag for this item */
 	protected String	m_TagName = null ;
@@ -682,7 +683,7 @@ public class JavaElementXML
 	* (String to String).
 	* 
 	*************************************************************************/
-	public HashMap getAttributeMap()
+	public HashMap<String, String> getAttributeMap()
 	{
 		return this.m_AttributeList ;
 	}
@@ -694,7 +695,7 @@ public class JavaElementXML
 	*************************************************************************/
 	public String getAttribute(String name)
 	{
-		return (String)this.m_AttributeList.get(name) ;
+		return this.m_AttributeList.get(name) ;
 	}
 	
 	/************************************************************************
@@ -705,7 +706,7 @@ public class JavaElementXML
 	*************************************************************************/
 	public String getAttributeThrows(String name) throws Exception
 	{
-		String value = (String)this.m_AttributeList.get(name) ;
+		String value = this.m_AttributeList.get(name) ;
 		
 		if (value == null)
 			throw new Exception("Could not find attribute " + name + " while parsing XML document") ;
@@ -880,7 +881,7 @@ public class JavaElementXML
 	*************************************************************************/
 	public JavaElementXML getChild(int index)
 	{
-		return (JavaElementXML)this.m_ChildElementList.get(index) ;
+		return this.m_ChildElementList.get(index) ;
 	}
 	
 	/************************************************************************
@@ -889,7 +890,7 @@ public class JavaElementXML
 	* The list is of ElementXML objects.
 	* 
 	*************************************************************************/
-	protected ArrayList getChildElementList()
+	protected ArrayList<JavaElementXML> getChildElementList()
 	{
 		return this.m_ChildElementList ;
 	}
@@ -1009,9 +1010,9 @@ public class JavaElementXML
 	*************************************************************************/	
 	public JavaElementXML findChildByAtt(String attName, String value)
 	{
-		for (java.util.Iterator iter = m_ChildElementList.iterator() ; iter.hasNext() ; )
+		for (java.util.Iterator<JavaElementXML> iter = m_ChildElementList.iterator() ; iter.hasNext() ; )
 		{
-			JavaElementXML element = (JavaElementXML)iter.next() ;
+			JavaElementXML element = iter.next() ;
 			
 			String att = element.getAttribute(attName) ;
 			if (att != null && att.equalsIgnoreCase(value))
@@ -1030,9 +1031,9 @@ public class JavaElementXML
 	*************************************************************************/	
 	public JavaElementXML findChildByName(String tagName)
 	{
-		for (java.util.Iterator iter = m_ChildElementList.iterator() ; iter.hasNext() ; )
+		for (java.util.Iterator<JavaElementXML> iter = m_ChildElementList.iterator() ; iter.hasNext() ; )
 		{
-			JavaElementXML element = (JavaElementXML)iter.next() ;
+			JavaElementXML element = iter.next() ;
 			
 			if (element.getTagName().equalsIgnoreCase(tagName))
 				return element ;
@@ -1380,17 +1381,17 @@ public class JavaElementXML
 		buffer.append(m_TagName) ;
 
 		// Get the list of attributes
-		java.util.Set entrySet = this.m_AttributeList.entrySet() ;
+		java.util.Set<Entry<String, String>> entrySet = this.m_AttributeList.entrySet() ;
 		
 		// Go through each attribute
-		for (java.util.Iterator iter = entrySet.iterator() ; iter.hasNext() ;)
+		for (java.util.Iterator<Entry<String, String>> iter = entrySet.iterator() ; iter.hasNext() ;)
 		{
 			// Get the next item in the hashtable
-			java.util.Map.Entry entry = (java.util.Map.Entry)iter.next() ;
+			Entry<String, String> entry = iter.next() ;
 			
 			// Retrieve the key and value
-			String name  = (String)entry.getKey() ;
-			String value = (String)entry.getValue() ;
+			String name  = entry.getKey() ;
+			String value = entry.getValue() ;
 
 			// Write out the attribute name and value (e.g. name="value")
 			buffer.append(" ") ;
@@ -1431,9 +1432,9 @@ public class JavaElementXML
 		}
 
 		// Go through all of the child nodes
-		for (java.util.Iterator iter = m_ChildElementList.iterator() ; iter.hasNext() ;)
+		for (java.util.Iterator<JavaElementXML> iter = m_ChildElementList.iterator() ; iter.hasNext() ;)
 		{
-			JavaElementXML element = (JavaElementXML)iter.next() ;
+			JavaElementXML element = iter.next() ;
 			
 			// Write out each child
 			element.WriteToStream(output, indent+1) ;
@@ -1491,7 +1492,7 @@ public class JavaElementXML
 		try
 		{
 			// Try to find the class (this throws if not successful)
-			Class childClass = Class.forName(className) ;
+			Class<?> childClass = Class.forName(className) ;
 		
 			// Create an instance of the class
 			Object obj = childClass.newInstance() ;
@@ -1536,7 +1537,7 @@ public class JavaElementXML
 		try
 		{
 			// Try to find the class (this throws if not successful)
-			Class childClass = Class.forName(className) ;
+			Class<?> childClass = Class.forName(className) ;
 		
 			// Get the creation method
 			java.lang.reflect.Method method = childClass.getMethod("createInstance", (Class[])null) ;
@@ -1590,7 +1591,7 @@ public class JavaElementXML
 		try
 		{
 			// Try to find the class (this throws if not successful)
-			Class childClass = Class.forName(className) ;
+			Class<?> childClass = Class.forName(className) ;
 		
 			// Create an instance of the class
 			Object obj = childClass.newInstance() ;

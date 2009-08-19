@@ -23,10 +23,10 @@ import java.util.*;
 ********************************************************************************************/
 public class ModuleList
 {
-	private List	m_List = new ArrayList() ;
+	private List<Module>	m_List = new ArrayList<Module>() ;
 	
 	public int	size()				{ return m_List.size() ; }
 	public void	add(Module m)		{ m_List.add(m) ; }
-	public Module get(int index)	{ return (Module)m_List.get(index) ; }
+	public Module get(int index)	{ return m_List.get(index) ; }
 	public Object[] toArray()		{ return m_List.toArray() ; }
 }

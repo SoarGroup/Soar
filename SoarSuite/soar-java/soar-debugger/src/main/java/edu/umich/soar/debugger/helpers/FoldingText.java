@@ -505,7 +505,7 @@ public class FoldingText
 		protected int		m_Start ;				// The first line where this block appears in the text widget
 		protected int		m_RecordIndex ;			// Index of first line in master list of all records stored (used to connect the view to the full list).  -1 => filtering not enabled
 
-		protected ArrayList m_Lines = new ArrayList() ;
+		protected ArrayList<String> m_Lines = new ArrayList<String>() ;
 		protected StringBuffer m_All = new StringBuffer() ;
 		
 		public Block(boolean canExpand, int recordIndex) { m_CanExpand = canExpand ; m_IsExpanded = false ; m_RecordIndex = recordIndex ; }

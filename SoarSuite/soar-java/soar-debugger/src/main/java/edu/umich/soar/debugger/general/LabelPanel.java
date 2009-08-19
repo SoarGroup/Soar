@@ -22,6 +22,8 @@ import java.awt.*;
 ********************************************************************************************/
 public class LabelPanel extends JPanel
 {
+	private static final long serialVersionUID = -7011298723481804888L;
+
 	public LabelPanel(String label, Component mainPanel)
 	{
 		this(label, mainPanel, BorderLayout.NORTH) ;

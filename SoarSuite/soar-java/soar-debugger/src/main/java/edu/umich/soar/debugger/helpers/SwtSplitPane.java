@@ -35,10 +35,10 @@ public class SwtSplitPane
 	private Sash	 	m_Sash ;
 	private double 	 	m_Position ;	// 0.0 is left/top ; 1.0 is bottom/right
 
-	private static int checkStyle (int style) {
-		int mask = SWT.BORDER | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT;
-		return style & mask;
-	}
+//	private static int checkStyle (int style) {
+//		int mask = SWT.BORDER | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT;
+//		return style & mask;
+//	}
 
 	public SwtSplitPane(Composite parent, int style)
 	{

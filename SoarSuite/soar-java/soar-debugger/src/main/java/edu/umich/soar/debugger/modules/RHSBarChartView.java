@@ -2,7 +2,6 @@ package edu.umich.soar.debugger.modules;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -16,17 +15,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Text;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.CategoryLabelPositions;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.renderer.category.BarRenderer;
-import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.experimental.chart.swt.ChartComposite;
 
@@ -37,9 +28,7 @@ import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.manager.Pane;
 
-import sml.Agent;
 import sml.Kernel;
-import sml.smlAgentEventId;
 
 public class RHSBarChartView extends AbstractRHSFunView implements Kernel.RhsFunctionInterface
 {
@@ -349,7 +338,7 @@ public class RHSBarChartView extends AbstractRHSFunView implements Kernel.RhsFun
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends RHSBarChartView> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 
 		if (m_Name == null)

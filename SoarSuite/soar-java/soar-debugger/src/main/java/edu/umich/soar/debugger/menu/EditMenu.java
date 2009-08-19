@@ -26,10 +26,7 @@ import org.eclipse.swt.graphics.FontData ;
 ********************************************************************************************/
 public class EditMenu
 {
-	private BaseMenu  m_Menu ;
-
 	private MainFrame m_Frame = null ;
-	private Document  m_Document = null ;
 	private SearchDialog m_SearchDialog = null ;
 	
 	private AbstractAction m_Copy  = new AbstractAction("&Copy\tCtrl+C")  		  { public void actionPerformed(ActionEvent e) { copy() ; } } ;
@@ -43,9 +40,8 @@ public class EditMenu
 	{
 		EditMenu menu = new EditMenu() ;
 		menu.m_Frame    = frame ;
-		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
+		menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}

@@ -84,10 +84,10 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 	/** We use this structure if we're caching sub nodes in the tree for expansion only when the user clicks */
 	protected static class TreeData
 	{
-		protected ArrayList m_Lines = new ArrayList() ;
+		protected ArrayList<String> m_Lines = new ArrayList<String>() ;
 		
 		public void addLine(String text) 	{ m_Lines.add(text) ; }
-		public Iterator getLinesIterator() 	{ return m_Lines.iterator() ; }
+		public Iterator<String> getLinesIterator() 	{ return m_Lines.iterator() ; }
 	}
 	
 	public FoldingTextView()

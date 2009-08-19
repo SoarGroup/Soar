@@ -21,7 +21,7 @@ import sml.* ;
  ************************************************************************/
 public class AgentFocusGenerator
 {
-	protected java.util.ArrayList m_Listeners = new java.util.ArrayList();
+	protected java.util.ArrayList<AgentFocusListener> m_Listeners = new java.util.ArrayList<AgentFocusListener>();
 
 	public synchronized void addAgentFocusListener(AgentFocusListener listener)
 	{
@@ -40,9 +40,9 @@ public class AgentFocusGenerator
 	{
 		AgentFocusEvent event = new AgentFocusEvent(source, AgentFocusEvent.kGettingFocus, agent) ;
 		
-		for (Iterator iter = m_Listeners.iterator() ; iter.hasNext() ;)
+		for (Iterator<AgentFocusListener> iter = m_Listeners.iterator() ; iter.hasNext() ;)
 		{
-			AgentFocusListener listener = (AgentFocusListener) iter.next();
+			AgentFocusListener listener = iter.next();
 			listener.agentGettingFocus(event) ;
 		}
 	}
@@ -51,9 +51,9 @@ public class AgentFocusGenerator
 	{
 		AgentFocusEvent event = new AgentFocusEvent(source, AgentFocusEvent.kLosingFocus, agent) ;
 		
-		for (Iterator iter = m_Listeners.iterator() ; iter.hasNext() ;)
+		for (Iterator<AgentFocusListener> iter = m_Listeners.iterator() ; iter.hasNext() ;)
 		{
-			AgentFocusListener listener = (AgentFocusListener) iter.next();
+			AgentFocusListener listener = iter.next();
 			listener.agentLosingFocus(event) ;
 		}
 	}
@@ -62,9 +62,9 @@ public class AgentFocusGenerator
 	{
 		AgentFocusEvent event = new AgentFocusEvent(source, AgentFocusEvent.kGone, null) ;
 		
-		for (Iterator iter = m_Listeners.iterator() ; iter.hasNext() ;)
+		for (Iterator<AgentFocusListener> iter = m_Listeners.iterator() ; iter.hasNext() ;)
 		{
-			AgentFocusListener listener = (AgentFocusListener) iter.next();
+			AgentFocusListener listener = iter.next();
 			listener.agentGone(event) ;
 		}
 	}
