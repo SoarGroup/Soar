@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -208,7 +208,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -282,7 +282,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -349,7 +349,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -417,7 +417,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -490,7 +490,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -564,7 +564,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(SolutionDir)\SoarLibrary\lib\$(ProjectName).lib"
+				OutputFile="$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
