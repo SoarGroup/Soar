@@ -2,9 +2,10 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="pcre"
-	ProjectGUID="{6B0AE9F9-575C-4230-875A-3996BF2AC1E6}"
-	RootNamespace="pcre"
+	Name="QuickLink"
+	ProjectGUID="{6E6D187C-D4F0-4152-B75E-4A9E6D76B659}"
+	RootNamespace="QuickLink"
+	Keyword="ManagedCProj"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -20,10 +21,12 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
+			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -43,16 +46,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="false"
-				MinimalRebuild="true"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -64,11 +64,20 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -80,15 +89,22 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
 			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -109,15 +125,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="false"
-				MinimalRebuild="true"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
-				WarningLevel="2"
-				Detect64BitPortabilityProblems="false"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -130,11 +143,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -146,16 +167,22 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
+			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -181,13 +208,13 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -200,11 +227,22 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -216,16 +254,22 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
 			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -252,13 +296,13 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				WarningLevel="2"
-				Detect64BitPortabilityProblems="false"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -271,11 +315,21 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -287,15 +341,22 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
+			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -315,16 +376,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="false"
-				MinimalRebuild="true"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -336,11 +394,20 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -352,15 +419,22 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|x64"
 			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -381,15 +455,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="false"
-				MinimalRebuild="true"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
-				WarningLevel="2"
-				Detect64BitPortabilityProblems="false"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -402,11 +473,19 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				AssemblyDebug="1"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -418,16 +497,22 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
+			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -453,13 +538,13 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -472,11 +557,22 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -488,16 +584,22 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release SCU|x64"
 			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
+			ConfigurationType="1"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			ManagedExtensions="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -524,13 +626,13 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories=".;..\shared"
-				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\..\Core\shared;..\..\Tools\QuickLink\include;../../Core/ClientSML/include;../../Core/ConnectionSML/include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				WarningLevel="2"
-				Detect64BitPortabilityProblems="false"
+				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -543,11 +645,21 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				Name="VCLinkerTool"
+				OutputFile="$(ProjectName).exe"
+				LinkIncremental="1"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				LinkTimeCodeGeneration="1"
+				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -559,20 +671,37 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy target to bin"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
+			RelativePathToProject=".\Core\ClientSML\ClientSML9.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
+			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML9.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
+			RelativePathToProject=".\Core\ElementXML\ElementXML9.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cc;def;odl;idl;hpj;bat;asm;asmx"
+			Filter="cpp;c;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\pcre_chartables.c"
+				RelativePath="..\..\Tools\QuickLink\src\Input_Console.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -608,7 +737,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_compile.c"
+				RelativePath="..\..\Tools\QuickLink\src\Input_Controller.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -644,7 +773,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_config.c"
+				RelativePath="..\..\Tools\QuickLink\src\Input_File.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -680,7 +809,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_dfa_exec.c"
+				RelativePath="..\..\Tools\QuickLink\src\QL_Controller.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -716,7 +845,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_exec.c"
+				RelativePath="..\..\Tools\QuickLink\src\QL_Interface.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -752,7 +881,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_fullinfo.c"
+				RelativePath="..\..\Tools\QuickLink\src\Utilities.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -788,7 +917,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_get.c"
+				RelativePath="..\..\Tools\QuickLink\src\View_Console.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -824,7 +953,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_globals.c"
+				RelativePath="..\..\Tools\QuickLink\src\WME_Float.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -860,7 +989,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_info.c"
+				RelativePath="..\..\Tools\QuickLink\src\WME_Id.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -896,7 +1025,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_maketables.c"
+				RelativePath="..\..\Tools\QuickLink\src\WME_Int.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -932,7 +1061,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_newline.c"
+				RelativePath="..\..\Tools\QuickLink\src\WME_Shared.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -968,7 +1097,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_ord2utf8.c"
+				RelativePath="..\..\Tools\QuickLink\src\WME_String.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -1004,295 +1133,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\pcre_refcount.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcre_study.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcre_tables.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcre_try_flipped.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcre_ucp_searchfuncs.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcre_valid_utf8.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcre_version.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcre_xclass.c"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\pcreposix.c"
+				RelativePath="..\..\Tools\QuickLink\src\WME_Type.cpp"
 				>
 				<FileConfiguration
 					Name="Debug SCU|Win32"
@@ -1334,45 +1175,69 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\config.h"
+				RelativePath="..\..\Tools\QuickLink\include\Input_Console.h"
 				>
 			</File>
 			<File
-				RelativePath=".\pcre.h"
+				RelativePath="..\..\Tools\QuickLink\include\Input_Controller.h"
 				>
 			</File>
 			<File
-				RelativePath=".\pcre_internal.h"
+				RelativePath="..\..\Tools\QuickLink\include\Input_File.h"
 				>
 			</File>
 			<File
-				RelativePath=".\pcre_scanner.h"
+				RelativePath="..\..\Tools\QuickLink\include\Input_Type.h"
 				>
 			</File>
 			<File
-				RelativePath=".\pcrecpp.h"
+				RelativePath="..\..\Tools\QuickLink\include\QL_Interface.h"
 				>
 			</File>
 			<File
-				RelativePath=".\pcreposix.h"
+				RelativePath="..\..\Tools\QuickLink\include\Smart_Pointer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ucp.h"
+				RelativePath="..\..\Tools\QuickLink\include\Utilities.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ucpinternal.h"
+				RelativePath="..\..\Tools\QuickLink\include\View_Console.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ucptable.h"
+				RelativePath="..\..\Tools\QuickLink\include\View_Type.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\QuickLink\include\WME_Float.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\QuickLink\include\WME_Id.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\QuickLink\include\WME_Int.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\QuickLink\include\WME_Shared.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\QuickLink\include\WME_String.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\Tools\QuickLink\include\WME_Type.h"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
@@ -1380,7 +1245,7 @@
 			Name="SCU Files"
 			>
 			<File
-				RelativePath=".\pcre.cxx"
+				RelativePath="..\..\Tools\QuickLink\QuickLink.cxx"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
