@@ -7,24 +7,30 @@ echo ANT_HOME: %ANT_HOME%
 echo JAVA_HOME: %JAVA_HOME%
 echo PYTHON_HOME: %PYTHON_HOME%
 echo SWIG_HOME: %SWIG_HOME%
-echo TCL_HOME: %TCL_HOME%
 
 if not defined ANT_HOME goto fail
 if not defined JAVA_HOME goto fail
 if not defined PYTHON_HOME goto fail
 if not defined SWIG_HOME goto fail
-if not defined TCL_HOME goto fail
-
-rem Cleaning Java projects here, they are built as a post-build
-rem step inside of the ClientSMLJava project.
-call %ANT_HOME%\bin\ant clean
 
 call "%VS90COMNTOOLS%\vsvars32.bat"
-devenv /rebuild "Distribution SCU|Win32" SML9.sln
+
+if "%PROCESSOR_ARCHITECTURE%"=="AMD64" goto x64
+
+devenv /rebuild "Distribution SCU|Win32" SML.sln
 if not errorlevel 0 goto fail
 
-devenv /build Release Tools\TestCSharpSML\TestCSharpSML9.sln
+goto built
+
+:x64
+devenv /rebuild "Distribution SCU|x64" SML.sln
 if not errorlevel 0 goto fail
+
+:built
+
+devenv /build Release soar-csharp\TestCSharpSML.sln
+if not errorlevel 0 goto fail
+
 endlocal
 exit /b 0
 
