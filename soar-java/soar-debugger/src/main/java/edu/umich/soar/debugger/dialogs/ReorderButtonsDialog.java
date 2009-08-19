@@ -32,7 +32,7 @@ import edu.umich.soar.debugger.modules.ButtonView;
 ************************************************************************/
 public class ReorderButtonsDialog extends BaseDialog
 {
-	private ArrayList       m_Result ;
+	private ArrayList<ButtonView.ButtonInfo>       m_Result ;
 	private List            m_ButtonListControl ;
 	private ButtonView.ButtonInfo[] m_Buttons ;
 	private String[] 		m_ButtonNames ;
@@ -48,7 +48,7 @@ public class ReorderButtonsDialog extends BaseDialog
 	* @param buttonInfoList	The list of buttons (described as ButtonInfo objects) to re-order
 	* @return A new sequence of buttonInfo objects or null if they cancelled the dialog 
 	********************************************************************************************/
-	public static ArrayList showDialog(Composite parent, String title, ArrayList buttonInfoList)
+	public static ArrayList<ButtonView.ButtonInfo> showDialog(Composite parent, String title, ArrayList<ButtonView.ButtonInfo> buttonInfoList)
 	{
 		// Create the dialog window
 		ReorderButtonsDialog dialog = new ReorderButtonsDialog(parent, title, buttonInfoList) ;
@@ -67,7 +67,7 @@ public class ReorderButtonsDialog extends BaseDialog
 	* Create the dialog -- the constructor is private because we use a static method to build this.
 	* 
 	********************************************************************************************/
-	private ReorderButtonsDialog(Composite parent, String title, ArrayList buttonInfoList)
+	private ReorderButtonsDialog(Composite parent, String title, ArrayList<ButtonView.ButtonInfo> buttonInfoList)
 	{
 		// Create a basic dialog with OK and Cancel buttons
 		super(parent, title, true) ;
@@ -185,7 +185,7 @@ public class ReorderButtonsDialog extends BaseDialog
 		}
 		else
 		{
-			m_Result = new ArrayList() ;
+			m_Result = new ArrayList<ButtonView.ButtonInfo>() ;
 			
 			for (int i = 0 ; i < m_Buttons.length ; i++)
 				m_Result.add(m_Buttons[i]) ;

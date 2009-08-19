@@ -5,15 +5,11 @@ import java.util.ArrayList;
 
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
 
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.dialogs.PropertiesDialog;
 import edu.umich.soar.debugger.doc.Document;
-import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.manager.Pane;
 
 import sml.Agent;

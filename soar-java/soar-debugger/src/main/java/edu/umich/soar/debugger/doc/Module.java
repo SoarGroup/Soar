@@ -31,9 +31,9 @@ public class Module
 	private String		m_Description ;
 	
 	/** The class itself */
-	private Class		m_Class ;
+	private Class<? extends AbstractView>		m_Class ;
 	
-	public Module(String name, String description, Class c)
+	public Module(String name, String description, Class<? extends AbstractView> c)
 	{
 		m_Name  = name ;
 		m_Description = description ;

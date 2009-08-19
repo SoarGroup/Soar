@@ -17,7 +17,6 @@ import java.net.URL;
 
 import org.eclipse.swt.widgets.Menu;
 
-import sml.Kernel;
 import sml.sml_Names;
 
 import edu.umich.soar.debugger.MainFrame;
@@ -26,8 +25,6 @@ import edu.umich.soar.debugger.general.OSName;
 import edu.umich.soar.debugger.general.StartBrowser;
 
 public class HelpMenu {
-	private BaseMenu	m_Menu ;
-	
 	private Document  m_Document = null ;
 	private MainFrame m_Frame	= null ;
 
@@ -53,7 +50,7 @@ public class HelpMenu {
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
+		menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}

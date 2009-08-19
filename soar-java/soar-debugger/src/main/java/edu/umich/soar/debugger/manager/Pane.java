@@ -11,6 +11,9 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger.manager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.layout.*;
@@ -19,7 +22,6 @@ import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
 import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.modules.AbstractView;
-import edu.umich.soar.debugger.modules.AbstractViewList;
 
 /************************************************************************
  * 
@@ -36,7 +38,7 @@ public class Pane
 {
 	// List of views attached to this pane
 	// Each view represents a distinct module and only one is visible at a time (> 1 => we use some form of tab)
-	private AbstractViewList	m_Views = new AbstractViewList() ;
+	private List<AbstractView>	m_Views = new ArrayList<AbstractView>() ;
 	private Composite			m_Pane ;	/** This window becomes the parent of the modules beneath it */
 	
 	public static final String	kPaneKey = "Pane" ;

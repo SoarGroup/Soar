@@ -26,8 +26,6 @@ import edu.umich.soar.debugger.doc.Document;
  ************************************************************************/
 public class DebugLevelMenu implements MenuUpdater
 {
-	private BaseMenu  m_Menu ;
-
 	private MainFrame m_Frame = null ;
 	private Document  m_Document = null ;
 	
@@ -65,7 +63,7 @@ public class DebugLevelMenu implements MenuUpdater
 		menu.m_Frame    = frame ;
 		menu.m_Document = doc ;
 		
-		menu.m_Menu = menu.makeMenu(frame.getMenuBar(), title) ;
+		menu.makeMenu(frame.getMenuBar(), title) ;
 		
 		return menu ;
 	}

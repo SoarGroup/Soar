@@ -23,7 +23,7 @@ import java.util.List;
 ********************************************************************************************/
 public class FrameList
 {
-	private List	m_List = new ArrayList() ;
+	private List<MainFrame>	m_List = new ArrayList<MainFrame>() ;
 	
 	public int	size()				{ return m_List.size() ; }
 	public void	add(MainFrame f)	{ m_List.add(f) ; }
@@ -37,7 +37,7 @@ public class FrameList
 	
 	public MainFrame find(String frameName)
 	{
-		for (Iterator iter = m_List.iterator() ; iter.hasNext() ;)
+		for (Iterator<MainFrame> iter = m_List.iterator() ; iter.hasNext() ;)
 		{
 			MainFrame frame = (MainFrame)iter.next() ;
 			if (frame.getName().equals(frameName))

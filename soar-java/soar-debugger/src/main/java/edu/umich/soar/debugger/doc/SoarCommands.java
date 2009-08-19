@@ -25,9 +25,9 @@ import sml.smlPhase;
 ********************************************************************************************/
 public class SoarCommands
 {
-	private int	m_MajorVersion ;		// Soar 8.6.0 -- this is the 8
-	private int m_MinorVersion ;		// Soar 8.6.0 -- this is the 6
-	private int m_BuildVersion ;		// Soar 8.6.0 -- this is the 0
+	//private int	m_MajorVersion ;		// Soar 8.6.0 -- this is the 8
+	//private int m_MinorVersion ;		// Soar 8.6.0 -- this is the 6
+	//private int m_BuildVersion ;		// Soar 8.6.0 -- this is the 0
 	private Document m_Document ;
 	
 	/** At this point we just return the command.  But in later versions of the debugger we might use the version
@@ -104,9 +104,9 @@ public class SoarCommands
 	
 	public void setVersion(int major, int minor, int build)
 	{
-		m_MajorVersion = major ;
-		m_MinorVersion = minor ;
-		m_BuildVersion = build ;
+		//m_MajorVersion = major ;
+		//m_MinorVersion = minor ;
+		//m_BuildVersion = build ;
 	}
 	
 	public String getPhaseName(smlPhase phase)

@@ -13,10 +13,6 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger.modules;
 
-import java.io.PrintWriter;
-
-
-
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.graphics.* ;

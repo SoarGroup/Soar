@@ -17,14 +17,14 @@ import java.lang.reflect.Method;
 public class StartBrowser 
 {
 
-private static final String errMsg = "Error attempting to launch web browser";
+//private static final String errMsg = "Error attempting to launch web browser";
 
 public static void openURL(String url) throws Exception
 {
   String osName = System.getProperty("os.name");
   
 	if (osName.startsWith("Mac OS")) {
-		Class fileMgr = Class.forName("com.apple.eio.FileManager");
+		Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
 		Method openURL = fileMgr.getDeclaredMethod("openURL",
 		new Class[] { String.class });
 		openURL.invoke(null, new Object[] { url });

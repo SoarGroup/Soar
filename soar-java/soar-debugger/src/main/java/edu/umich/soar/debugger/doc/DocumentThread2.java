@@ -116,7 +116,7 @@ public class DocumentThread2 extends Thread
 	}
 	
 	/** The commands waiting to be executed */
-	private ArrayList m_ToExecuteQueue = new ArrayList() ;
+	private ArrayList<Command> m_ToExecuteQueue = new ArrayList<Command>() ;
 	
 	/** A flag used when we wish to stop this thread (during system shutdown) */
 	private boolean   m_AskedToStop = false ;

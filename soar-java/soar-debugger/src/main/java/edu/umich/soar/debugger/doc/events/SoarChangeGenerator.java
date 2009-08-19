@@ -23,7 +23,7 @@ import sml.Agent;
 ********************************************************************************************/
 public class SoarChangeGenerator
 {
-	protected java.util.ArrayList m_Listeners = new java.util.ArrayList();
+	protected java.util.ArrayList<SoarChangeListener> m_Listeners = new java.util.ArrayList<SoarChangeListener>();
 
 	public synchronized void addSoarChangeListener(SoarChangeListener listener)
 	{
@@ -38,10 +38,10 @@ public class SoarChangeGenerator
 	public synchronized void fireSoarConnectionChanged(Object source, boolean connected, boolean remote)
 	{
 		SoarConnectionEvent event = new SoarConnectionEvent(source, connected, remote) ;
-		java.util.Iterator listeners = m_Listeners.iterator();
+		java.util.Iterator<SoarChangeListener> listeners = m_Listeners.iterator();
 		while( listeners.hasNext() )
 		{
-			SoarChangeListener listener = ( (SoarChangeListener) listeners.next() ) ;			
+			SoarChangeListener listener = ( listeners.next() ) ;			
 			listener.soarConnectionChanged( event );
 		}
 	}
@@ -50,9 +50,9 @@ public class SoarChangeGenerator
 	{
 		SoarAgentEvent event = new SoarAgentEvent(source, type, agent) ;
 		
-		for (Iterator listener = m_Listeners.iterator() ; listener.hasNext() ;)
+		for (Iterator<SoarChangeListener> listener = m_Listeners.iterator() ; listener.hasNext() ;)
 		{
-			SoarChangeListener current = (SoarChangeListener)listener.next() ;
+			SoarChangeListener current = listener.next() ;
 			current.soarAgentListChanged(event) ;
 		}
 	}

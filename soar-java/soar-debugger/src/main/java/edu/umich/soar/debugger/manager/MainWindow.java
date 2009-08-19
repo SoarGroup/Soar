@@ -66,7 +66,7 @@ public class MainWindow
 	public final static String kTypeSash		  = "TypeSash" ;	// Contains two variable sized windows joined with a sash control
 	
 	// The order of this list determines tab order
-	private ArrayList	m_PaneList = new ArrayList() ;
+	private ArrayList<Pane>	m_PaneList = new ArrayList<Pane>() ;
 	
 	public MainWindow(MainFrame frame, Document doc, Composite parent)
 	{
@@ -103,7 +103,7 @@ public class MainWindow
   	{
   		for (int i = 0 ; i < m_PaneList.size() ; i++)
   		{
-  			Pane pane = (Pane)m_PaneList.get(i) ;
+  			Pane pane = m_PaneList.get(i) ;
   			
   			for (int j = 0 ; j < pane.getNumberViews() ; j++)
   			{
@@ -118,7 +118,7 @@ public class MainWindow
   	{
   		for (int i = 0 ; i < m_PaneList.size() ; i++)
   		{
-  			Pane pane = (Pane)m_PaneList.get(i) ;
+  			Pane pane = m_PaneList.get(i) ;
   			
   			for (int j = 0 ; j < pane.getNumberViews() ; j++)
   			{
@@ -137,7 +137,7 @@ public class MainWindow
   		int count = 0 ;
   		for (int i = 0 ; i < m_PaneList.size() ; i++)
   		{
-  			Pane pane = (Pane)m_PaneList.get(i) ;
+  			Pane pane = m_PaneList.get(i) ;
   			
   			for (int j = 0 ; j < pane.getNumberViews() ; j++)
   			{
@@ -157,7 +157,7 @@ public class MainWindow
   		
   		for (int i = 0 ; i < m_PaneList.size() ; i++)
   		{
-  			Pane pane = (Pane)m_PaneList.get(i) ;
+  			Pane pane = m_PaneList.get(i) ;
   			
   			for (int j = 0 ; j < pane.getNumberViews() ; j++)
   			{
@@ -175,7 +175,7 @@ public class MainWindow
   	{
   		for (int i = 0 ; i < m_PaneList.size() ; i++)
   		{
-  			Pane pane = (Pane)m_PaneList.get(i) ;
+  			Pane pane = m_PaneList.get(i) ;
   			
   			for (int j = 0 ; j < pane.getNumberViews() ; j++)
   			{

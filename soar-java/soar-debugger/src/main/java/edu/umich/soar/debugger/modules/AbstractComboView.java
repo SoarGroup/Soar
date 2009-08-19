@@ -19,7 +19,6 @@ import org.eclipse.swt.graphics.* ;
 import org.eclipse.swt.events.*;
 
 import sml.Agent;
-import sml.Kernel;
 import sml.smlAgentEventId;
 import sml.smlPrintEventId;
 import sml.smlRunEventId;
@@ -31,7 +30,6 @@ import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.helpers.CommandHistory;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.manager.Pane;
-import edu.umich.soar.debugger.menu.ParseSelectedText;
 
 /********************************************************************************************
 * 
@@ -405,7 +403,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 		
 		// It's useful to record the class name to uniquely identify the type
 		// of object being stored at this point in the XML tree.
-		Class cl = this.getClass() ;
+		Class<? extends AbstractComboView> cl = this.getClass() ;
 		element.addAttribute(JavaElementXML.kClassAttribute, cl.getName()) ;
 
 		if (m_Name == null)

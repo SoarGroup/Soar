@@ -20,6 +20,8 @@ import java.util.EventObject;
 ********************************************************************************************/
 public class SoarChangeEvent extends EventObject
 {
+	private static final long serialVersionUID = 3457564566780812134L;
+
 	public final static int kOutputEvent = 1 ;
 	public final static int kSoarStopped = 2 ;
 	
