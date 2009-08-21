@@ -478,7 +478,7 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
    if ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
       if ( sym->common.reference_count > 0 ) {
          SNPRINTF( msg, 256, 
-                  "\t%c%lu --> %lu\n", 
+                  "\t%c%llu --> %lu\n", 
                   sym->id.name_letter, 
                   sym->id.name_number, 
                   sym->common.reference_count);
