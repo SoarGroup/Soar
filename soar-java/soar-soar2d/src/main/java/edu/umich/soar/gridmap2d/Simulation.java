@@ -11,7 +11,6 @@ import org.apache.log4j.Logger;
 import edu.umich.soar.gridmap2d.config.PlayerConfig;
 import edu.umich.soar.gridmap2d.config.SimConfig;
 import edu.umich.soar.gridmap2d.config.TaxiConfig;
-import edu.umich.soar.gridmap2d.map.Cells;
 import edu.umich.soar.gridmap2d.players.Player;
 import edu.umich.soar.gridmap2d.soar.Soar;
 import edu.umich.soar.gridmap2d.world.EatersWorld;
@@ -64,12 +63,6 @@ public class Simulation {
 		} else {
 			logger.debug(Names.Debug.noSeed);
 		}
-		
-		// Load the world
-		Cells.setUseSynchronized(!config.generalConfig().headless);
-		
-		// This probably has performance implications, not sure what yet.
-		Cells.setUseHashCells(true);
 		
 		logger.trace(Names.Trace.loadingWorld);
 		switch (game) {

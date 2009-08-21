@@ -9,48 +9,50 @@ import java.util.Map;
 
 import edu.umich.soar.gridmap2d.Simulation;
 
-
 /**
  * @author voigtjr
- *
- * This object keeps track of the "object templates" or prototypes.
- * These objects are copied to create new objects.
+ * 
+ *         This object keeps track of the "object templates" or prototypes.
+ *         These objects are copied to create new objects.
  */
 class CellObjectManager {
 	/**
 	 * The templates, mapped by name.
 	 */
 	private Map<String, CellObject> templates = new HashMap<String, CellObject>();
-	
+
 	/**
-	 * @param name template object name
+	 * @param name
+	 *            template object name
 	 * @return true if it exists
 	 */
 	boolean hasTemplate(String name) {
 		return templates.containsKey(name);
 	}
-	
+
 	/**
 	 * expunges all templates
 	 */
 	void removeAllTemplates() {
 		templates.clear();
 	}
-	
+
 	/**
-	 * @param name the template to remove
+	 * @param name
+	 *            the template to remove
 	 * @return true if removed (false if it didn't exist)
 	 */
 	boolean removeTemplate(String name) {
 		CellObject object = templates.remove(name);
 		return object != null;
 	}
-	
+
 	/**
-	 * @param cellObject the new template
+	 * @param cellObject
+	 *            the new template
 	 * @return true if added to list
 	 * 
-	 * Register a new prototype
+	 *         Register a new prototype
 	 */
 	boolean registerTemplate(CellObject cellObject) {
 		if (templates.containsKey(cellObject.getProperty("name"))) {
@@ -62,13 +64,14 @@ class CellObjectManager {
 		templates.put(cellObject.getProperty("name"), cellObject);
 		return true;
 	}
-	
+
 	Collection<CellObject> getTemplates() {
 		return templates.values();
 	}
-	
+
 	/**
-	 * @param name the property name
+	 * @param name
+	 *            the property name
 	 * @return list of cell object templates that have that property
 	 */
 	List<CellObject> getTemplatesWithProperty(String name) {
@@ -82,9 +85,10 @@ class CellObjectManager {
 		}
 		return ret;
 	}
-	
+
 	/**
-	 * @param name the property name
+	 * @param name
+	 *            the property name
 	 * @return true if any templates have that property
 	 */
 	boolean hasTemplatesWithProperty(String name) {
@@ -94,12 +98,13 @@ class CellObjectManager {
 		}
 		return true;
 	}
-	
+
 	/**
-	 * @param name object name to create
+	 * @param name
+	 *            object name to create
 	 * @return the new object
 	 * 
-	 * Clones an object and returns the new copy
+	 *         Clones an object and returns the new copy
 	 */
 	CellObject createObject(String name) {
 		if (templates.containsKey(name)) {
@@ -107,13 +112,15 @@ class CellObjectManager {
 		}
 		return null;
 	}
-	
+
 	/**
-	 * @param name the property
+	 * @param name
+	 *            the property
 	 * @return an object with that property
 	 * 
-	 * creates an object that has the specified property. Many different templates
-	 * could possibly have the same property, this randomly picks one to clone.
+	 *         creates an object that has the specified property. Many different
+	 *         templates could possibly have the same property, this randomly
+	 *         picks one to clone.
 	 */
 	CellObject createRandomObjectWithProperty(String name) {
 		List<CellObject> all = getTemplatesWithProperty(name);
@@ -122,12 +129,15 @@ class CellObjectManager {
 		}
 		return new CellObject(all.get(Simulation.random.nextInt(all.size())));
 	}
+
 	/**
-	 * @param name1 a property
-	 * @param name1 another property
+	 * @param name1
+	 *            a property
+	 * @param name1
+	 *            another property
 	 * @return an object with those properties
 	 * 
-	 * same as createRandomObjectWithProperty but with two properties
+	 *         same as createRandomObjectWithProperty but with two properties
 	 */
 	CellObject createRandomObjectWithProperties(String name1, String name2) {
 		List<CellObject> all = getTemplatesWithProperty(name1);

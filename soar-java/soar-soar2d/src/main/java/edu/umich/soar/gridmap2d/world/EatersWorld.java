@@ -78,10 +78,11 @@ public class EatersWorld implements World {
 			players.setLocation(eater, location);
 
 			// remove food from it
-			map.removeAllObjectsByProperty(location, Names.kPropertyEdible);
+			map.getCell(location).removeAllObjectsByProperty(Names.kPropertyEdible);
 			
 			// put the player in it
-			map.setPlayer(location, eater);
+			assert map.getCell(location).hasPlayers() == false;
+			map.getCell(location).addPlayer(eater);
 
 			eater.reset();
 		}
@@ -181,9 +182,9 @@ public class EatersWorld implements World {
 			}
 			
 			// Verify legal move and commit move
-			if (map.isInBounds(newLocation) && !map.hasAnyObjectWithProperty(newLocation, Names.kPropertyBlock)) {
+			if (map.isInBounds(newLocation) && !map.getCell(newLocation).hasObjectWithProperty(Names.kPropertyBlock)) {
 				// remove from cell
-				map.removeAllPlayers(oldLocation);
+				map.getCell(oldLocation).clearPlayers();
 				
 				if (command.jump) {
 					eater.adjustPoints(Gridmap2D.config.eatersConfig().jump_penalty, "jump penalty");
@@ -202,12 +203,13 @@ public class EatersWorld implements World {
 			int [] location = players.getLocation(eater);
 			
 			if (lastCommand.move || lastCommand.jump) {
-				map.setPlayer(location, eater);
+				assert map.getCell(location).hasPlayers() == false;
+				map.getCell(location).addPlayer(eater);
 
-				List<CellObject> moveApply = map.getAllWithProperty(location, Names.kPropertyMoveApply);
+				Set<CellObject> moveApply = map.getCell(location).getAllObjectsWithProperty(Names.kPropertyMoveApply);
 				for (CellObject object : moveApply) {
 					if (apply(object, eater)) {
-						map.removeObject(location, object);
+						map.getCell(location).removeObject(object);
 					}
 				}
 			}
@@ -223,31 +225,31 @@ public class EatersWorld implements World {
 	}
 	
 	private boolean apply(CellObject object, Eater eater) {
-		object.applyProperties();
+		object.doApplyProperties();
 		
 		if (object.hasProperty("apply.points")) {
-			int points = object.getIntProperty("apply.points", 0);
+			int points = object.getProperty("apply.points", 0, Integer.class);
 			eater.adjustPoints(points, object.getProperty("name"));
 		}
-		if (object.getBooleanProperty("apply.reward", false)) {
+		if (object.getProperty("apply.reward", false, Boolean.class)) {
 			// am I the positive box
-			if (object.getBooleanProperty("apply.reward.correct", false)) {
+			if (object.getProperty("apply.reward.correct", false, Boolean.class)) {
 				// reward positively
-				eater.adjustPoints(object.getIntProperty("apply.reward.positive", 0), "positive reward");
+				eater.adjustPoints(object.getProperty("apply.reward.positive", 0, Integer.class), "positive reward");
 			} else {
 				// I'm  not the positive box, set resetApply false
 				object.removeProperty("apply.reset");
 				
 				// reward negatively
-				eater.adjustPoints(-1 * object.getIntProperty("apply.reward.positive", 0), "negative reward (wrong box)");
+				eater.adjustPoints(-1 * object.getProperty("apply.reward.positive", 0, Integer.class), "negative reward (wrong box)");
 			}
 		}
 		
-		return object.getBooleanProperty("apply.remove", false);
+		return object.getProperty("apply.remove", false, Boolean.class);
 	}
 	
 	private void open(Eater eater, int [] location) {
-		CellObject box = map.getFirstObjectWithProperty(location, Names.kPropertyBox);
+		CellObject box = map.getCell(location).getFirstObjectWithProperty(Names.kPropertyBox);
 		if (box == null) {
 			logger.warn(eater.getName() + " tried to open but there is no box.");
 			return;
@@ -259,22 +261,22 @@ public class EatersWorld implements World {
 			}
 		}
 		if (apply(box, eater)) {
-			map.removeObject(location, box);
+			map.getCell(location).removeObject(box);
 		}
 		checkResetApply(box);
 	}
 
 	private void checkResetApply(CellObject box) {
-		if (box.getBooleanProperty("apply.reset", false)) {
+		if (box.getProperty("apply.reset", false, Boolean.class)) {
 			stopMessages.add(box.getProperty("name") + " called for reset.");
 		}
 	}
 	
 	private void eat(Eater eater, int [] location) {
-		for (CellObject food : map.getAllWithProperty(location, Names.kPropertyEdible)) {
+		for (CellObject food : map.getCell(location).getAllObjectsWithProperty(Names.kPropertyEdible)) {
 			if (apply(food, eater)) {
 				// if this returns true, it is consumed
-				map.removeObject(location, food);
+				map.getCell(location).removeObject(food);
 			}
 		}			
 	}
@@ -383,7 +385,7 @@ public class EatersWorld implements World {
 			setExplosion(collisionLocation);
 
 			// Remove from former location (only one of these for all players)
-			map.removeAllPlayers(collisionLocation);
+			map.getCell(collisionLocation).clearPlayers();
 			
 			// Move to new cell, consume food
 			collideeIter = collision.listIterator();
@@ -398,7 +400,8 @@ public class EatersWorld implements World {
 				players.setLocation(eater, location);
 
 				// put the player in it
-				map.setPlayer(location, eater);
+				assert map.getCell(location).hasPlayers() == false;
+				map.getCell(location).addPlayer(eater);
 				
 				eater.setFragged(true);
 				if (!players.getCommand(eater).dontEat) {
@@ -410,8 +413,8 @@ public class EatersWorld implements World {
 
 	private void setExplosion(int[] xy) {
 		CellObject explosion = map.createObjectByName(Names.kExplosion);
-		explosion.setIntProperty("update.linger", 2);
-		map.addObject(xy, explosion);
+		explosion.setProperty("update.linger", 2);
+		map.getCell(xy).addObject(explosion);
 	}
 	
 
@@ -421,7 +424,7 @@ public class EatersWorld implements World {
 
 	public void removePlayer(String name) {
 		Eater eater = players.get(name);
-		map.removeAllPlayers(players.getLocation(eater));
+		map.getCell(players.getLocation(eater)).clearPlayers();
 		players.remove(eater);
 		eater.shutdownCommander();
 		updatePlayers();
@@ -477,11 +480,12 @@ public class EatersWorld implements World {
 		players.setLocation(player, location);
 		
 		// remove food from it
-		map.removeAllObjectsByProperty(location, Names.kPropertyEdible);
-		assert map.hasAnyObjectWithProperty(location, Names.kPropertyEdible) == false;
+		map.getCell(location).removeAllObjectsByProperty(Names.kPropertyEdible);
+		assert map.getCell(location).hasObjectWithProperty(Names.kPropertyEdible) == false;
 
 		// put the player in it
-		map.setPlayer(location, player);
+		assert map.getCell(location).hasPlayers() == false;
+		map.getCell(location).addPlayer(player);
 		
 		logger.info(player.getName() + ": Spawning at (" + location[0] + "," + location[1] + ")");
 		

@@ -121,7 +121,7 @@ public class SoarRobotInputLinkManager {
 			}
 			
 			Identifier areaDescription = agent.GetInputLink().CreateIdWME("area-description");
-			boolean door = roomMap.hasAnyObjectWithProperty(player.getLocation(), Names.kPropertyGatewayRender);
+			boolean door = roomMap.getCell(player.getLocation()).hasObjectWithProperty(Names.kPropertyGatewayRender);
 			areaIL = new SoarRobotAreaDescriptionIL(areaDescription, player.getState().getLocationId(), opose, roomMap, door);
 		}
 		
@@ -148,7 +148,7 @@ public class SoarRobotInputLinkManager {
 						oIL.addProperty("type", cObj.getProperty("name"));
 						oIL.addProperty("id", rObj.getId());
 						oIL.addProperty("color", cObj.getProperty("color"));
-						oIL.addProperty("weight", cObj.getDoubleProperty("weight", 0));
+						oIL.addProperty("weight", cObj.getProperty("weight", 0d, Double.class));
 						objects.put(rObj.getId(), oIL);
 					} else {
 						oIL.update(pose, r);

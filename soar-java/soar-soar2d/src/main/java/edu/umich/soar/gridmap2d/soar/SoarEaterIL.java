@@ -1,8 +1,8 @@
 package edu.umich.soar.gridmap2d.soar;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -186,7 +186,7 @@ class SoarEaterIL {
 		}
 		
 		private void updatePlayerContent(int[] view, EatersMap map, Cell cell) {
-			Player playerContent = map.getFirstPlayer(view);
+			Player playerContent = map.getCell(view).getFirstPlayer();
 			if (playerContent != null) {
 				if (cell.eater == null) {
 					cell.eater = cell.me.CreateStringWME(Names.kContentID, Names.kEaterID);
@@ -215,7 +215,7 @@ class SoarEaterIL {
 			// Food
 			Map<String, StringElement> remaining = new HashMap<String, StringElement>(cell.comestibles);
 			// For each food type in the cell on the map
-			for (CellObject comestible : map.getAllWithProperty(view, Names.kPropertyEdible)) {
+			for (CellObject comestible : map.getCell(view).getAllObjectsWithProperty(Names.kPropertyEdible)) {
 				
 				String id = comestible.getProperty(Names.kPropertyID);
 				
@@ -244,7 +244,7 @@ class SoarEaterIL {
 		private void updateBoxProperties(CellObject box, Cell cell) {
 			Map<String, StringElement> remaining = new HashMap<String, StringElement>(cell.boxProperties);
 			// For each box property
-			for (String property : box.getPropertyList()) {
+			for (String property : box.getProperties()) {
 				// don't list special ones
 				if (property.startsWith("apply") || property.startsWith("update") || property.startsWith("name")) {
 					continue;
@@ -282,7 +282,7 @@ class SoarEaterIL {
 					assert cell.box != null;
 					
 					// go through the properties and add them
-					for (String property : box.getPropertyList()) {
+					for (String property : box.getProperties()) {
 						// don't add special ones
 						if (property.startsWith("apply") || property.startsWith("update") || property.startsWith("name")) {
 							continue;
@@ -356,7 +356,7 @@ class SoarEaterIL {
 						}
 						
 						// get all things that block
-						List<CellObject> blockers = map.getAllWithProperty(view, Names.kPropertyBlock);
+						Set<CellObject> blockers = map.getCell(view).getAllObjectsWithProperty(Names.kPropertyBlock);
 
 						// Blocking cells are simple, put anything with IDs on the input link
 						if (!blockers.isEmpty()) {
@@ -369,7 +369,7 @@ class SoarEaterIL {
 					} else {
 						
 						// Filter out locations that will not change:
-						if (!map.isInBounds(view) || map.hasAnyObjectWithProperty(view, Names.kPropertyBlock)) {
+						if (!map.isInBounds(view) || map.getCell(view).hasObjectWithProperty(Names.kPropertyBlock)) {
 							continue;
 						}
 					}
@@ -381,7 +381,7 @@ class SoarEaterIL {
 					updateFoodContent(view, map, cell);
 					
 					// TODO: there can only be one (as of right now)
-					CellObject box = map.getFirstObjectWithProperty(view, Names.kPropertyBox);
+					CellObject box = map.getCell(view).getFirstObjectWithProperty(Names.kPropertyBox);
 					if (box != null) {
 						updateBox(box, cell);
 					}

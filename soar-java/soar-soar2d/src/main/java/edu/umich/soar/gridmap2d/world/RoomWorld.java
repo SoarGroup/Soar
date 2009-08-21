@@ -76,7 +76,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 		players.setLocation(player, location);
 		
 		// put the player in it
-		map.addPlayer(location, player);
+		map.getCell(location).addPlayer(player);
 		
 		player.getState().setLocationId(map.getLocationId(location));
 		double [] floatLocation = defaultFloatLocation(location);
@@ -117,7 +117,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 	@Override
 	public void removePlayer(String name) {
 		Robot player = players.get(name);
-		map.removePlayer(players.getLocation(player), player);
+		map.getCell(players.getLocation(player)).removePlayer(player);
 		players.remove(player);
 		player.shutdownCommander();
 		updatePlayers();
@@ -166,7 +166,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 			players.setLocation(player, location);
 
 			// put the player in it
-			map.addPlayer(location, player);
+			map.getCell(location).addPlayer(player);
 
 			player.getState().setLocationId(map.getLocationId(location));
 
@@ -273,7 +273,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 	}
 
 	private boolean checkBlocked(int [] location) {
-		if (map.hasAnyObjectWithProperty(location, Names.kPropertyBlock)) {
+		if (map.getCell(location).hasObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		return false;
@@ -366,10 +366,10 @@ public class RoomWorld implements World, SendMessagesInterface {
 			
 			state.setPos(pose.pos);
 			
-			map.removePlayer(oldLocation, player);
+			map.getCell(oldLocation).removePlayer(player);
 			players.setLocation(player, newLocation);
 			state.setLocationId(map.getLocationId(newLocation));
-			map.addPlayer(newLocation, player);
+			map.getCell(newLocation).addPlayer(player);
 		}
 	}
 
@@ -385,7 +385,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 		RoomObject object = state.getRoomObject();
 		state.drop();
 		object.setPose(state.getPose());
-		map.addObject(player.getLocation(), object.getCellObject());
+		map.getCell(player.getLocation()).addObject(object.getCellObject());
 		return true;
 	}
 
@@ -414,10 +414,9 @@ public class RoomWorld implements World, SendMessagesInterface {
 			if (rObj.getId() == id) {
 				double distance = LinAlg.distance(player.getState().getPose().pos, rObj.getPose().pos);
 				if (Double.compare(distance, CELL_SIZE) <= 0) {
-					if (!map.removeObject(cObj.getLocation(), cObj)) {
+					if (!cObj.getCell().removeObject(cObj)) {
 						throw new IllegalStateException("Remove object failed for object that should be there.");
 					}
-					cObj.setLocation(null);
 					rObj.setPose(null);
 					player.getState().pickUp(rObj);
 					return true;
