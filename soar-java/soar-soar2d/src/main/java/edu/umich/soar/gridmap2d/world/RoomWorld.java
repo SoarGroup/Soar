@@ -12,6 +12,8 @@ import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
@@ -194,6 +196,7 @@ public class RoomWorld implements World, SendMessagesInterface {
 	public void update(int worldCount) {
 		WorldUtil.checkNumPlayers(players.numberOfPlayers());
 
+		long id1 = Stopwatch.start("update", "input");
 		// Collect input
 		for (Robot player : players.getAll()) {
 			player.resetPointsChanged();
@@ -206,15 +209,20 @@ public class RoomWorld implements World, SendMessagesInterface {
 			players.setCommand(player, command);
 			WorldUtil.checkStopSim(stopMessages, command, player);
 		}
+		Stopwatch.stop(id1);
 		
+		long id2 = Stopwatch.start("update", "move");
 		moveRoomPlayers(Gridmap2D.control.getTimeSlice());
 		
 		for (Message message : messages) {
 			message.recipient.getReceiveMessagesInterface().newMessage(message.from, message.tokens);
 		}
 		messages.clear();
+		Stopwatch.stop(id2);
 		
+		long id3 = Stopwatch.start("update", "update");
 		updatePlayers();
+		Stopwatch.stop(id3);
 	}
 
 	private void moveRoomPlayers(double time) {

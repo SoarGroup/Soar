@@ -10,10 +10,10 @@ import java.util.Map;
 import edu.umich.soar.gridmap2d.Simulation;
 
 /**
- * @author voigtjr
+ * This object keeps track of the "object templates" or prototypes. These
+ * objects are copied to create new objects.
  * 
- *         This object keeps track of the "object templates" or prototypes.
- *         These objects are copied to create new objects.
+ * @author voigtjr
  */
 class CellObjectManager {
 	/**
@@ -100,11 +100,11 @@ class CellObjectManager {
 	}
 
 	/**
+	 * Clones an object and returns the new copy
+	 * 
 	 * @param name
 	 *            object name to create
 	 * @return the new object
-	 * 
-	 *         Clones an object and returns the new copy
 	 */
 	CellObject createObject(String name) {
 		if (templates.containsKey(name)) {
@@ -114,13 +114,13 @@ class CellObjectManager {
 	}
 
 	/**
+	 * creates an object that has the specified property. Many different
+	 * templates could possibly have the same property, this randomly picks one
+	 * to clone.
+	 * 
 	 * @param name
 	 *            the property
 	 * @return an object with that property
-	 * 
-	 *         creates an object that has the specified property. Many different
-	 *         templates could possibly have the same property, this randomly
-	 *         picks one to clone.
 	 */
 	CellObject createRandomObjectWithProperty(String name) {
 		List<CellObject> all = getTemplatesWithProperty(name);
@@ -131,13 +131,13 @@ class CellObjectManager {
 	}
 
 	/**
+	 * same as createRandomObjectWithProperty but with two properties
+	 * 
 	 * @param name1
 	 *            a property
 	 * @param name1
 	 *            another property
 	 * @return an object with those properties
-	 * 
-	 *         same as createRandomObjectWithProperty but with two properties
 	 */
 	CellObject createRandomObjectWithProperties(String name1, String name2) {
 		List<CellObject> all = getTemplatesWithProperty(name1);

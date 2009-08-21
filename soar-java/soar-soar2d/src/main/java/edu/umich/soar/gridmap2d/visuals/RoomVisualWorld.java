@@ -11,8 +11,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.widgets.Composite;
 
-import com.commsen.stopwatch.Stopwatch;
-
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.CellObject;
@@ -148,7 +146,7 @@ public class RoomVisualWorld extends VisualWorld {
 			painted = false;
 
 		// Draw world
-		long id = Stopwatch.start("paintControl", "draw world");
+		//long id = Stopwatch.start("paintControl", "draw world");
 		RoomMap rmap = (RoomMap)map;
 		loc.reset();
 		while (loc.next()) {
@@ -272,7 +270,7 @@ public class RoomVisualWorld extends VisualWorld {
 				map.getCell(getCellAtPixel(new int[] {right, bottom})).setModified(true);
 			}
 		}
-		Stopwatch.stop(id);	
+		//Stopwatch.stop(id);	
 		
 		painted = true;
 	}
