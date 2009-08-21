@@ -254,7 +254,13 @@ public class RoomVisualWorld extends VisualWorld {
 			gc.drawPath(path);
 			
 			//System.out.println(": lrtb: " + left + "-" + right + "-" + top + "-" + bottom);
-		
+
+			// clean up more drawing errors
+			right += 1;
+			left -= 1;
+			top += 1;
+			bottom -= 1;
+			
 			map.getCell(getCellAtPixel(new int[] {left, top})).setModified(true);
 			map.getCell(getCellAtPixel(new int[] {left, bottom})).setModified(true);
 			map.getCell(getCellAtPixel(new int[] {right, top})).setModified(true);
