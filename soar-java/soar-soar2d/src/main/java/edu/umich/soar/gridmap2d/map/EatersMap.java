@@ -16,11 +16,15 @@ import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.Simulation;
 
-public class EatersMap extends GridMapBase implements GridMap, CellObjectObserver {
+public class EatersMap extends GridMapBase implements GridMap,
+		CellObjectObserver {
 	private static Logger logger = Logger.getLogger(EatersMap.class);
 
-	public static EatersMap generateInstance(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
-		return new EatersMap(mapPath, unopenedBoxesTerminal, lowProbability, highProbability);
+	public static EatersMap generateInstance(String mapPath,
+			boolean unopenedBoxesTerminal, double lowProbability,
+			double highProbability) {
+		return new EatersMap(mapPath, unopenedBoxesTerminal, lowProbability,
+				highProbability);
 	}
 
 	private int foodCount;
@@ -33,17 +37,18 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 	private int positiveRewardID;
 	List<CellObject> rewardObjects = new ArrayList<CellObject>();
 	private boolean generatePhase = false;
- 
-	private EatersMap(String mapPath, boolean unopenedBoxesTerminal, double lowProbability, double highProbability) {
+
+	private EatersMap(String mapPath, boolean unopenedBoxesTerminal,
+			double lowProbability, double highProbability) {
 		super(mapPath);
 		this.lowProbability = lowProbability;
 		this.highProbability = highProbability;
-		
+
 		reset();
 	}
-	
+
 	@Override
-	public void reset(){
+	public void reset() {
 		foodCount = 0;
 		scoreCount = 0;
 		unopenedBoxes = new HashSet<CellObject>();
@@ -52,36 +57,39 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		rewardObjects.clear();
 		generatePhase = true;
 		super.reload();
-		
+
 		// override walls if necessary
 		if (getData().randomWalls) {
 			generateRandomWalls(lowProbability, highProbability);
 		}
-		
+
 		// override food if necessary
 		if (getData().randomFood) {
 			generateRandomFood();
 		}
-		
+
 		// pick positive box
 		if (rewardInfoObject != null) {
 			assert positiveRewardID == 0;
 			positiveRewardID = Simulation.random.nextInt(rewardObjects.size());
 			positiveRewardID += 1;
 			logger.trace("reward-info.positive-id: " + positiveRewardID);
-			rewardInfoObject.setIntProperty("apply.reward-info.positive-id", positiveRewardID);
-			
+			rewardInfoObject.setProperty("apply.reward-info.positive-id",
+					positiveRewardID);
+
 			// assigning colors like this helps us see the task happen
 			// colors[0] = info box (already assigned)
 			// colors[1] = positive reward box
 			// colors[2..n] = negative reward boxes
 			int negativeColor = 2;
 			for (CellObject aBox : rewardObjects) {
-				if (aBox.getIntProperty("box-id", 0) == positiveRewardID) {
+				if (aBox.getProperty("box-id", 0, Integer.class) == positiveRewardID) {
 					aBox.setProperty("apply.reward.correct", "ignored");
-					aBox.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[1]);
+					aBox.setProperty(Names.kPropertyColor,
+							Gridmap2D.simulation.kColors[1]);
 				} else {
-					aBox.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[negativeColor]);
+					aBox.setProperty(Names.kPropertyColor,
+							Gridmap2D.simulation.kColors[negativeColor]);
 					negativeColor += 1;
 					assert negativeColor < Gridmap2D.simulation.kColors.length;
 				}
@@ -93,27 +101,33 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 			System.out.println(report);
 		}
 	}
-	
+
 	/**
 	 * @param lowProbability
 	 * @param highProbability
 	 * 
-	 * @throws IllegalStateException If no blocking types are available.
+	 * @throws IllegalStateException
+	 *             If no blocking types are available.
 	 */
-	private void generateRandomWalls(double lowProbability, double highProbability) {
-		if (!getData().cellObjectManager.hasTemplatesWithProperty(Names.kPropertyBlock)) {
-			throw new IllegalStateException("tried to generate random walls with no blocking types");
+	private void generateRandomWalls(double lowProbability,
+			double highProbability) {
+		if (!getData().cellObjectManager
+				.hasTemplatesWithProperty(Names.kPropertyBlock)) {
+			throw new IllegalStateException(
+					"tried to generate random walls with no blocking types");
 		}
-		
+
 		assert getData().cells != null;
 		int size = getData().cells.size();
-		
+
 		logger.trace("Confirming perimeter wall.");
 		int[] xy = new int[2];
 		for (xy[0] = 0; xy[0] < size; ++xy[0]) {
 			for (xy[1] = 0; xy[1] < size; ++xy[1]) {
-				if (xy[0] == 0 || xy[0] == size - 1 || xy[1] == 0 || xy[1] == size - 1) {
-					if (!getData().cells.getCell(xy).hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+				if (xy[0] == 0 || xy[0] == size - 1 || xy[1] == 0
+						|| xy[1] == size - 1) {
+					if (getData().cells.getCell(xy).hasObjectWithProperty(
+							Names.kPropertyBlock)) {
 						removeFoodAndAddWall(xy);
 					}
 					continue;
@@ -128,7 +142,7 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 				if (noWallsOnCorners(xy)) {
 					double probability = lowProbability;
 					if (wallOnAnySide(xy)) {
-						probability = highProbability;					
+						probability = highProbability;
 					}
 					if (Simulation.random.nextDouble() < probability) {
 						removeFoodAndAddWall(xy);
@@ -137,91 +151,94 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 			}
 		}
 	}
-	
+
 	private void removeFoodAndAddWall(int[] xy) {
 		logger.trace(Arrays.toString(xy) + ": Changing to wall.");
 		Cell cell = getData().cells.getCell(xy);
 		assert cell != null;
-		if (cell.hasAnyObjectWithProperty(Names.kPropertyEdible)) {
-			cell.removeAllObjectsByProperty(Names.kPropertyEdible);
-		}
-		CellObject wall = getData().cellObjectManager.createRandomObjectWithProperty(Names.kPropertyBlock);
-		addObject(xy, wall);
+		cell.removeAllObjectsByProperty(Names.kPropertyEdible);
+		CellObject wall = getData().cellObjectManager
+				.createRandomObjectWithProperty(Names.kPropertyBlock);
+		cell.addObject(wall);
 	}
-	
+
 	private boolean noWallsOnCorners(int[] xy) {
 		Cell cell;
-		
-		cell = getData().cells.getCell(new int[] {xy[0] + 1, xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+
+		cell = getData().cells.getCell(new int[] { xy[0] + 1, xy[1] + 1 });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
-		cell = getData().cells.getCell(new int[] {xy[0] - 1, xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+		cell = getData().cells.getCell(new int[] { xy[0] - 1, xy[1] + 1 });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
-		cell = getData().cells.getCell(new int[] {xy[0] - 1, xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+		cell = getData().cells.getCell(new int[] { xy[0] - 1, xy[1] - 1 });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
-		cell = getData().cells.getCell(new int[] {xy[0] + 1, xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+		cell = getData().cells.getCell(new int[] { xy[0] + 1, xy[1] - 1 });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return false;
 		}
 		return true;
 	}
-	
+
 	private boolean wallOnAnySide(int[] xy) {
 		Cell cell;
-		
-		cell = getData().cells.getCell(new int[] {xy[0] + 1, xy[1]});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+
+		cell = getData().cells.getCell(new int[] { xy[0] + 1, xy[1] });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
-		cell = getData().cells.getCell(new int[] {xy[0], xy[1] + 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+		cell = getData().cells.getCell(new int[] { xy[0], xy[1] + 1 });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
-		cell = getData().cells.getCell(new int[] {xy[0] - 1, xy[1]});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+		cell = getData().cells.getCell(new int[] { xy[0] - 1, xy[1] });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
-		cell = getData().cells.getCell(new int[] {xy[0], xy[1] - 1});
-		if (cell != null && cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+		cell = getData().cells.getCell(new int[] { xy[0], xy[1] - 1 });
+		if (cell != null && cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 			return true;
 		}
 		return false;
 	}
-	
+
 	/**
-	 * @throws IllegalStateException If no food types available
+	 * @throws IllegalStateException
+	 *             If no food types available
 	 */
 	private void generateRandomFood() {
-		if (!getData().cellObjectManager.hasTemplatesWithProperty(Names.kPropertyEdible)) {
-			throw new IllegalStateException("tried to generate random walls with no food types");
+		if (!getData().cellObjectManager
+				.hasTemplatesWithProperty(Names.kPropertyEdible)) {
+			throw new IllegalStateException(
+					"tried to generate random walls with no food types");
 		}
 
 		logger.trace("Generating random food.");
-		
+
 		int[] xy = new int[2];
 		for (xy[0] = 1; xy[0] < getData().cells.size() - 1; ++xy[0]) {
 			for (xy[1] = 1; xy[1] < getData().cells.size() - 1; ++xy[1]) {
 				Cell cell = getData().cells.getCell(xy);
 				assert cell != null;
-				if (!cell.hasAnyObjectWithProperty(Names.kPropertyBlock)) {
+				if (!cell.hasObjectWithProperty(Names.kPropertyBlock)) {
 					logger.trace(Arrays.toString(xy) + "Adding random food.");
 					cell.removeAllObjectsByProperty(Names.kPropertyEdible);
-					CellObject wall = getData().cellObjectManager.createRandomObjectWithProperty(Names.kPropertyEdible);
-					addObject(xy, wall);
+					CellObject wall = getData().cellObjectManager
+							.createRandomObjectWithProperty(Names.kPropertyEdible);
+					cell.addObject(wall);
 				}
 			}
-		}		
+		}
 	}
-	
+
 	@Override
 	public boolean isAvailable(int[] location) {
 		Cell cell = getData().cells.getCell(location);
-		boolean enterable = !cell.hasAnyObjectWithProperty(Names.kPropertyBlock);
+		boolean enterable = !cell.hasObjectWithProperty(Names.kPropertyBlock);
 		boolean noPlayer = !cell.hasPlayers();
 		return enterable && noPlayer;
 	}
@@ -229,34 +246,39 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 	@Override
 	public void addStateUpdate(CellObject added) {
 		if (generatePhase) {
-			if (added.getBooleanProperty("apply.reward-info", false)) {
+			if (added.getProperty("apply.reward-info", false, Boolean.class)) {
 				rewardInfoObject = added;
 			}
-			
-			if (added.getBooleanProperty("apply.reward", false)) {
+
+			if (added.getProperty("apply.reward", false, Boolean.class)) {
 				// assign identification number
-				added.setProperty("box-id", Integer.toString(rewardObjects.size() + 1));
+				added.setProperty("box-id", Integer.toString(rewardObjects
+						.size() + 1));
 
 				// keep track of reward objects
 				rewardObjects.add(added);
-				
-				logger.trace("Reward box: " + added.getIntProperty("box-id", -1));
 
-			} else if (added.getBooleanProperty("apply.reward-info", false)) {
+				logger.trace("Reward box: "
+						+ added.getProperty("box-id", -1, Integer.class));
+
+			} else if (added.getProperty("apply.reward-info", false,
+					Boolean.class)) {
 				// assign identification properties
-				added.setProperty(Names.kPropertyColor, Gridmap2D.simulation.kColors[0]);
+				added.setProperty(Names.kPropertyColor,
+						Gridmap2D.simulation.kColors[0]);
 				added.setProperty("box-id", "0");
 
-				logger.trace("Info box: " + added.getIntProperty("box-id", -1));
+				logger.trace("Info box: "
+						+ added.getProperty("box-id", -1, Integer.class));
 			}
 		}
-		
+
 		if (added.hasProperty(Names.kPropertyEdible)) {
 			foodCount += 1;
 		}
 
 		if (added.hasProperty("apply.points")) {
-			scoreCount += added.getIntProperty("apply.points", 0);
+			scoreCount += added.getProperty("apply.points", 0, Integer.class);
 		}
 	}
 
@@ -267,33 +289,35 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 				unopenedBoxes.remove(removed);
 			}
 		}
-		
+
 		if (removed.hasProperty(Names.kPropertyEdible)) {
 			foodCount -= 1;
 		}
 		if (removed.hasProperty(Names.kPropertyPoints)) {
-			scoreCount -= removed.getIntProperty("apply.points", 0);
+			scoreCount -= removed.getProperty("apply.points", 0, Integer.class);
 		}
 	}
 
 	public void updateObjects() {
 		Set<CellObject> copy = new HashSet<CellObject>(getData().updatables);
 		for (CellObject cellObject : copy) {
-			Cell cell = getData().cells.getCell(cellObject.getLocation());
-			
+			Cell cell = cellObject.getCell();
+
 			lingerUpdate(cellObject, cell);
 
 			// decay
 			if (cellObject.hasProperty("update.decay")) {
-				int points = cellObject.getIntProperty("apply.points", 0);
-				int decay = cellObject.getIntProperty("update.decay", 1);
+				int points = cellObject.getProperty("apply.points", 0,
+						Integer.class);
+				int decay = cellObject.getProperty("update.decay", 1,
+						Integer.class);
 				if (decay >= points) {
 					scoreCount -= points;
 					cell.removeObject(cellObject);
 				} else {
 					scoreCount -= decay;
 					points -= decay;
-					cellObject.setIntProperty("apply.points", points);
+					cellObject.setProperty("apply.points", points);
 				}
 			}
 		}
@@ -308,7 +332,7 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 			}
 		}
 	}
-	
+
 	private boolean isUnopenedBox(CellObject object) {
 		if (object.hasProperty(Names.kPropertyBox)) {
 			String status = object.getProperty(Names.kPropertyStatus);
@@ -318,15 +342,15 @@ public class EatersMap extends GridMapBase implements GridMap, CellObjectObserve
 		}
 		return false;
 	}
-	
+
 	public int getScoreCount() {
 		return scoreCount;
 	}
-	
+
 	public int getFoodCount() {
 		return foodCount;
 	}
-	
+
 	public int getUnopenedBoxCount() {
 		return unopenedBoxes.size();
 	}

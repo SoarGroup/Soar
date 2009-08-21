@@ -6,21 +6,21 @@ public class SearchData {
 	public static SearchData[][] newMap(GridMapCells cells) {
 		SearchData[][] map = new SearchData[cells.size()][];
 		int xy[] = new int[2];
-		for(xy[0] = 0; xy[0] < cells.size(); ++xy[0]) {
+		for (xy[0] = 0; xy[0] < cells.size(); ++xy[0]) {
 			map[xy[0]] = new SearchData[cells.size()];
-			for(xy[1] = 0; xy[1] < cells.size(); ++xy[1]) {
+			for (xy[1] = 0; xy[1] < cells.size(); ++xy[1]) {
 				map[xy[0]][xy[1]] = new SearchData(cells.getCell(xy));
 			}
 		}
 		buildReferenceMap(cells, map);
-		
+
 		return map;
 	}
-	
+
 	private static void buildReferenceMap(GridMapCells cells, SearchData[][] map) {
 		// Build cell reference map
 		assert cells != null;
-		int [] xy = new int[2];
+		int[] xy = new int[2];
 		for (xy[0] = 0; xy[0] < cells.size(); ++xy[0]) {
 			for (xy[1] = 0; xy[1] < cells.size(); ++xy[1]) {
 				SearchData cellSearch = SearchData.getCell(map, xy);
@@ -28,9 +28,11 @@ public class SearchData {
 					if (dir == Direction.NONE) {
 						continue;
 					}
-					int[] neighborLoc = Direction.translate(xy, dir, new int[2]);
+					int[] neighborLoc = Direction
+							.translate(xy, dir, new int[2]);
 					if (cells.isInBounds(neighborLoc)) {
-						SearchData neighbor = SearchData.getCell(map, neighborLoc);
+						SearchData neighbor = SearchData.getCell(map,
+								neighborLoc);
 						cellSearch.setNeighbor(dir, neighbor);
 					}
 				}
@@ -41,17 +43,17 @@ public class SearchData {
 	public static SearchData getCell(SearchData[][] map, int[] xy) {
 		return map[xy[0]][xy[1]];
 	}
-	
+
 	private final Cell cell;
 	private boolean explored = false;
 	private int distance = -1;
 	private SearchData parent;
 	private final SearchData[] neighbors = new SearchData[5];
-	
+
 	private SearchData(Cell cell) {
 		this.cell = cell;
 	}
-	
+
 	public Cell getCell() {
 		return cell;
 	}
@@ -79,7 +81,7 @@ public class SearchData {
 	public void setParent(SearchData parent) {
 		this.parent = parent;
 	}
-	
+
 	public SearchData getNeighbor(Direction d) {
 		return neighbors[d.ordinal()];
 	}

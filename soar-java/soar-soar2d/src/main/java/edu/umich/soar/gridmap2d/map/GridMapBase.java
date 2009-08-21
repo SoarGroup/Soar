@@ -15,7 +15,6 @@ import edu.umich.soar.config.ConfigFile;
 import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Simulation;
-import edu.umich.soar.gridmap2d.players.Player;
 
 abstract class GridMapBase implements GridMap, CellObjectObserver {
 	private static Logger logger = Logger.getLogger(GridMapBase.class);
@@ -96,142 +95,6 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	@Override
 	public List<CellObject> getTemplatesWithProperty(String name) {
 		return data.cellObjectManager.getTemplatesWithProperty(name);
-	}
-
-	@Override
-	public void addObject(int[] xy, CellObject cellObject) {
-		cellObject.setLocation(xy);
-		long id = Stopwatch.start("GridMapBase", "addObject");
-		data.cells.getCell(xy).addObject(cellObject);
-		Stopwatch.stop(id);
-	}
-
-	@Override
-	public void addObserver(int[] xy, CellObjectObserver observer) {
-		data.cells.getCell(xy).addObserver(observer);
-	}
-
-	@Override
-	public void addPlayer(int[] xy, Player player) {
-		long id = Stopwatch.start("GridMapBase", "addPlayer");
-		data.cells.getCell(xy).addPlayer(player);
-		Stopwatch.stop(id);
-	}
-
-	@Override
-	public boolean checkAndResetRedraw(int[] xy) {
-		return data.cells.getCell(xy).checkAndResetRedraw();
-	}
-
-	@Override
-	public boolean checkRedraw(int[] xy) {
-		return data.cells.getCell(xy).checkRedraw();
-	}
-
-	@Override
-	public void forceRedraw(int[] xy) {
-		data.cells.getCell(xy).forceRedraw();
-	}
-
-	@Override
-	public List<CellObject> getAllObjects(int[] xy) {
-		long id = Stopwatch.start("GridMapBase", "getAllObjects");
-		List<CellObject> ret = data.cells.getCell(xy).getAllObjects();
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public List<CellObject> getAllWithProperty(int[] xy, String property) {
-		long id = Stopwatch.start("GridMapBase", "getAllWithProperty");
-		List<CellObject> ret = data.cells.getCell(xy).getAllObjectsWithProperty(property);
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public CellObject getFirstObjectWithProperty(int[] xy, String property) {
-		long id = Stopwatch.start("GridMapBase", "getFirstObjectWithProperty");
-		CellObject ret = data.cells.getCell(xy).getFirstObjectWithProperty(property);
-		Stopwatch.stop(id);
-		return ret;
-	}
-	
-	@Override
-	public Player getFirstPlayer(int[] xy) {
-		long id = Stopwatch.start("GridMapBase", "getFirstPlayer");
-		Player ret = data.cells.getCell(xy).getFirstPlayer();
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public List<Player> getPlayers(int[] xy) {
-		long id = Stopwatch.start("GridMapBase", "getPlayers");
-		List<Player> ret = data.cells.getCell(xy).getPlayers();
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public boolean hasAnyObjectWithProperty(int[] xy, String property) {
-		long id = Stopwatch.start("GridMapBase", "hasAnyObjectWithProperty");
-		boolean ret = data.cells.getCell(xy).hasAnyObjectWithProperty(property);
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public boolean hasPlayers(int[] xy) {
-		long id = Stopwatch.start("GridMapBase", "hasPlayers");
-		boolean ret = data.cells.getCell(xy).hasPlayers();
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public List<CellObject> removeAllObjects(int[] xy) {
-		long id = Stopwatch.start("GridMapBase", "removeAllObjects");
-		List<CellObject> ret = data.cells.getCell(xy).removeAllObjects();
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public List<CellObject> removeAllObjectsByProperty(int[] xy, String property) {
-		long id = Stopwatch.start("GridMapBase", "removeAllObjectsByProperty");
-		List<CellObject> ret = data.cells.getCell(xy).removeAllObjectsByProperty(property);
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public void removeAllPlayers(int[] xy) {
-		long id = Stopwatch.start("GridMapBase", "removeAllPlayers");
-		data.cells.getCell(xy).removeAllPlayers();
-		Stopwatch.stop(id);
-	}
-
-	@Override
-	public boolean removeObject(int[] xy, CellObject object) {
-		long id = Stopwatch.start("GridMapBase", "removeObject");
-		boolean ret = data.cells.getCell(xy).removeObject(object);
-		Stopwatch.stop(id);
-		return ret;
-	}
-
-	@Override
-	public void removePlayer(int[] xy, Player player) {
-		long id = Stopwatch.start("GridMapBase", "removePlayer");
-		data.cells.getCell(xy).removePlayer(player);
-		Stopwatch.stop(id);
-	}
-
-	@Override
-	public void setPlayer(int[] xy, Player player) {
-		long id = Stopwatch.start("GridMapBase", "setPlayer");
-		data.cells.getCell(xy).setPlayer(player);
-		Stopwatch.stop(id);
 	}
 
 	protected boolean reload() {
@@ -319,7 +182,7 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 						}
 						
 						CellObject cellObject = data.cellObjectManager.createObject(objectName);
-						addObject(xy, cellObject);
+						data.cells.getCell(xy).addObject(cellObject);
 					}
 				}
 			}
@@ -329,14 +192,18 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 	
 	protected void lingerUpdate(CellObject cellObject, Cell cell) {
 		if (cellObject.hasProperty("update.linger")) {
-			int linger = cellObject.getIntProperty("update.linger", 0);
+			int linger = cellObject.getProperty("update.linger", 0, Integer.class);
 			linger -= 1;
 			if (linger <= 0) {
 				cell.removeObject(cellObject);
 			} else {
-				cellObject.setIntProperty("update.linger", linger);
+				cellObject.setProperty("update.linger", linger);
 			}
 		}
 	}
-
+	
+	@Override
+	public Cell getCell(int[] xy) {
+		return data.cells.getCell(xy);
+	}
 }

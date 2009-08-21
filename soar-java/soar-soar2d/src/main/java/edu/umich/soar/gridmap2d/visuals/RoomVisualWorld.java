@@ -113,19 +113,19 @@ public class RoomVisualWorld extends VisualWorld {
 		
 		RoomMap rmap = (RoomMap)map;
 		while (loc.next()) {
-			CellObject number = map.getFirstObjectWithProperty(loc.getLoc(), Names.kPropertyNumber);
+			CellObject number = map.getCell(loc.getLoc()).getFirstObjectWithProperty(Names.kPropertyNumber);
 			if (number != null) {
-				if (!rmids.containsKey(number.getIntProperty(Names.kPropertyNumber, -1))) {
+				if (!rmids.containsKey(number.getProperty(Names.kPropertyNumber, -1, Integer.class))) {
 					IdLabel label = new IdLabel();
-					label.gateway = rmap.hasAnyObjectWithProperty(loc.getLoc(), Names.kPropertyGatewayRender);
+					label.gateway = rmap.getCell(loc.getLoc()).hasObjectWithProperty(Names.kPropertyGatewayRender);
 					label.label = number.getProperty(Names.kPropertyNumber);
 					label.loc = new int [] { loc.getDraw()[0] + 1, loc.getDraw()[1] };
-					rmids.put(number.getIntProperty(Names.kPropertyNumber, -1), label);
+					rmids.put(number.getProperty(Names.kPropertyNumber, -1, Integer.class), label);
 				}
 			}
 			
-			walls[loc.getLoc()[0]][loc.getLoc()[1]] = rmap.hasAnyObjectWithProperty(loc.getLoc(), Names.kPropertyBlock);
-			gateways[loc.getLoc()[0]][loc.getLoc()[1]] = rmap.hasAnyObjectWithProperty(loc.getLoc(), Names.kPropertyGatewayRender);
+			walls[loc.getLoc()[0]][loc.getLoc()[1]] = rmap.getCell(loc.getLoc()).hasObjectWithProperty(Names.kPropertyBlock);
+			gateways[loc.getLoc()[0]][loc.getLoc()[1]] = rmap.getCell(loc.getLoc()).hasObjectWithProperty(Names.kPropertyGatewayRender);
 		}
 	}
 	
@@ -152,9 +152,10 @@ public class RoomVisualWorld extends VisualWorld {
 		RoomMap rmap = (RoomMap)map;
 		loc.reset();
 		while (loc.next()) {
-			if (!rmap.checkAndResetRedraw(loc.getLoc()) && painted) {
+			if (!rmap.getCell(loc.getLoc()).isModified() && painted) {
 				continue;
 			}
+			rmap.getCell(loc.getLoc()).setModified(false);
 			
 			if (walls[loc.getLoc()[0]][loc.getLoc()[1]]) {
 			    gc.setBackground(WindowManager.black);
@@ -248,10 +249,10 @@ public class RoomVisualWorld extends VisualWorld {
 			gc.setForeground(WindowManager.getColor(player.getColor()));
 			gc.drawPath(path);
 			
-			map.forceRedraw(getCellAtPixel(new int[] {left, top}));
-			map.forceRedraw(getCellAtPixel(new int[] {left, bottom}));
-			map.forceRedraw(getCellAtPixel(new int[] {right, top}));
-			map.forceRedraw(getCellAtPixel(new int[] {right, bottom}));
+			map.getCell(getCellAtPixel(new int[] {left, top})).setModified(true);
+			map.getCell(getCellAtPixel(new int[] {left, bottom})).setModified(true);
+			map.getCell(getCellAtPixel(new int[] {right, top})).setModified(true);
+			map.getCell(getCellAtPixel(new int[] {right, bottom})).setModified(true);
 
 			// draw waypoints
 			List<double[]> waypoints = world.getWaypointList(player);
@@ -265,10 +266,10 @@ public class RoomVisualWorld extends VisualWorld {
 				gc.drawOval(left, top, 4, 4);
 				
 				// set redraw on all four points for next cycle
-				map.forceRedraw(getCellAtPixel(new int[] {left, top}));
-				map.forceRedraw(getCellAtPixel(new int[] {left, bottom}));
-				map.forceRedraw(getCellAtPixel(new int[] {right, top}));
-				map.forceRedraw(getCellAtPixel(new int[] {right, bottom}));
+				map.getCell(getCellAtPixel(new int[] {left, top})).setModified(true);
+				map.getCell(getCellAtPixel(new int[] {left, bottom})).setModified(true);
+				map.getCell(getCellAtPixel(new int[] {right, top})).setModified(true);
+				map.getCell(getCellAtPixel(new int[] {right, bottom})).setModified(true);
 			}
 		}
 		Stopwatch.stop(id);	
@@ -283,7 +284,7 @@ public class RoomVisualWorld extends VisualWorld {
 		if (xy == null) {
 			return null;
 		}
-		return this.map.getFirstPlayer(xy);
+		return this.map.getCell(xy).getFirstPlayer();
 	}
 	
 }
