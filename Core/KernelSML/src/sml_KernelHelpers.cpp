@@ -181,7 +181,7 @@ char *symbolToString (Symbol *sym,
 		return dest;
 
 	case IDENTIFIER_SYMBOL_TYPE:
-		sprintf (dest, "%c%lu", sym->id.name_letter, sym->id.name_number);
+		sprintf (dest, "%c%llu", sym->id.name_letter, sym->id.name_number);
 		return dest;
 
 	case INT_CONSTANT_SYMBOL_TYPE:
