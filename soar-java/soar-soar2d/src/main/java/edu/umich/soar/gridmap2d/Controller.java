@@ -106,10 +106,6 @@ public class Controller implements Runnable {
 		// requests a stop
 		stop = true;
 
-		for (Report report : Stopwatch.getAllReports()) {
-			System.out.println(report);
-		}
-
 	}
 	
 	/**
@@ -247,6 +243,10 @@ public class Controller implements Runnable {
 				// we're stopped, this updates buttons
 				Gridmap2D.wm.stop();
 			}
+		}
+		
+		for (Report report : Stopwatch.getAllReports()) {
+			System.out.println(report);
 		}
 	}
 	
