@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.gridmap2d.config.PlayerConfig;
 import edu.umich.soar.gridmap2d.config.SimConfig;
 import edu.umich.soar.gridmap2d.config.TaxiConfig;
@@ -39,6 +41,9 @@ public class Simulation {
 	private int worldCount;
 
 	World initialize(SimConfig config) {
+		
+		Stopwatch.setActive(false);
+
 		this.game = config.game();
 		
 		// keep track of colors
