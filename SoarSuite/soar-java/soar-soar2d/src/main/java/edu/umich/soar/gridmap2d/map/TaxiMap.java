@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -12,7 +13,7 @@ import edu.umich.soar.gridmap2d.Simulation;
 
 public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver {
 	private static Logger logger = Logger.getLogger(TaxiMap.class);
-	
+
 	public static TaxiMap generateInstance(String mapPath) {
 		return new TaxiMap(mapPath);
 	}
@@ -28,27 +29,29 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 
 	private TaxiMap(String mapPath) {
 		super(mapPath);
-		
+
 		reset();
 	}
-	
+
 	@Override
 	public void reset() {
 		destinations.clear();
 		passengerDestination = null;
 		passengerSourceColor = null;
 		super.reload();
-		
+
 		passengerDelivered = false;
 		passengerLocation = null;
 		passenger = getData().cellObjectManager.createObject("passenger");
 
 		// this can be null
-		passengerDefaultDestination = passenger.getProperty("passenger-destination");
+		passengerDefaultDestination = passenger
+				.getProperty("passenger-destination");
 
-		int[] dest = destinations.get(Simulation.random.nextInt(destinations.size()));
-		addObject(dest, passenger);
-		
+		int[] dest = destinations.get(Simulation.random.nextInt(destinations
+				.size()));
+		getCell(dest).addObject(passenger);
+
 		setPassengerDestination();
 	}
 
@@ -56,26 +59,28 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		if (passengerDefaultDestination != null) {
 			passengerDestination = passengerDefaultDestination;
 		} else {
-			int[] dest = destinations.get(Simulation.random.nextInt(destinations.size()));
+			int[] dest = destinations.get(Simulation.random
+					.nextInt(destinations.size()));
 			passengerDestination = getDestinationName(dest);
 		}
-		
+
 		logger.info("passenger destination: " + passengerDestination);
 	}
-	
+
 	private String getDestinationName(int[] location) {
-		CellObject object = getData().cells.getCell(location).getFirstObjectWithProperty("destination");
+		CellObject object = getData().cells.getCell(location)
+				.getFirstObjectWithProperty("destination");
 		if (object == null) {
 			return null;
 		}
 		return object.getProperty("name");
 	}
-	
+
 	@Override
 	public boolean isAvailable(int[] location) {
 		Cell cell = getData().cells.getCell(location);
-		boolean destination = cell.hasAnyObjectWithProperty("destination");
-		boolean fuel = cell.hasAnyObjectWithProperty("fuel");
+		boolean destination = cell.hasObjectWithProperty("destination");
+		boolean fuel = cell.hasObjectWithProperty("fuel");
 		boolean noPlayer = !cell.hasPlayers();
 		return !destination && !fuel && noPlayer;
 	}
@@ -84,20 +89,21 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 	public void addStateUpdate(CellObject added) {
 		// Update state we keep track of specific to game type
 		if (added.hasProperty("destination")) {
-			destinations.add(added.getLocation());
+			destinations.add(added.getCell().getLocation());
 		}
-		
+
 		if (added.hasProperty("passenger")) {
-			passengerLocation = added.getLocation();
+			passengerLocation = added.getCell().getLocation();
 			if (passengerSourceColor == null) {
-				CellObject dest = getData().cells.getCell(passengerLocation).getFirstObjectWithProperty("destination");
+				CellObject dest = getData().cells.getCell(passengerLocation)
+						.getFirstObjectWithProperty("destination");
 				if (dest != null) {
 					passengerSourceColor = dest.getProperty("color");
 				}
 			}
 		}
 	}
-	
+
 	public String getPassengerSourceColor() {
 		if (passengerSourceColor == null) {
 			return "none";
@@ -111,19 +117,19 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 			Iterator<int[]> iter = destinations.iterator();
 			while (iter.hasNext()) {
 				int[] dest = iter.next();
-				if (Arrays.equals(dest, removed.getLocation())) {
+				if (Arrays.equals(dest, removed.getCell().getLocation())) {
 					iter.remove();
 					break;
 				}
 			}
 		}
-		
+
 		if (removed.hasProperty("passenger")) {
 			this.passengerLocation = null;
 		}
 	}
 
-	public boolean pickUp(int [] location) {
+	public boolean pickUp(int[] location) {
 		if (passengerLocation == null) {
 			return false;
 		}
@@ -132,37 +138,40 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		}
 		return false;
 	}
-	
+
 	public boolean putDown(int[] location) {
 		if (passengerLocation != null) {
 			return false;
 		}
-		
-		addObject(location, passenger);
+
+		getCell(location).addObject(passenger);
 		return true;
 	}
-	
+
 	public boolean isFuel(int[] location) {
-		return getData().cells.getCell(location).hasAnyObjectWithProperty("fuel");
+		return getData().cells.getCell(location).hasObjectWithProperty(
+				"fuel");
 	}
-	
+
 	public boolean exitable(int[] location, Direction direction) {
-		List<CellObject> walls = getData().cells.getCell(location).getAllObjectsWithProperty("block");
+		Set<CellObject> walls = getData().cells.getCell(location)
+				.getAllObjectsWithProperty("block");
 		if (walls.isEmpty()) {
 			return true;
 		}
 		for (CellObject wall : walls) {
-			if (direction.equals(Direction.parse(wall.getProperty("direction")))) {
+			if (direction
+					.equals(Direction.valueOf(wall.getProperty("direction")))) {
 				return false;
 			}
 		}
 		return true;
 	}
-	
+
 	public boolean isPassengerCarried() {
 		return passengerLocation == null;
 	}
-	
+
 	public boolean isCorrectPassengerDestination(int[] location) {
 		if (passengerDestination.equals(getDestinationName(location))) {
 			return true;
@@ -173,38 +182,40 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 	public boolean isPassengerDelivered() {
 		return passengerDelivered;
 	}
-	
+
 	public void deliverPassenger() {
 		passengerDelivered = true;
 	}
-	
+
 	public String getPassengerDestination() {
 		assert passengerDestination != null;
 		return passengerDestination;
 	}
-	
+
 	public String getStringType(int[] location) {
 		if (!this.isInBounds(location)) {
 			return "none";
 		}
-		
-		CellObject dest = getData().cells.getCell(location).getFirstObjectWithProperty("destination");
+
+		CellObject dest = getData().cells.getCell(location)
+				.getFirstObjectWithProperty("destination");
 		if (dest != null) {
 			return dest.getProperty("color");
 		}
-		
-		if (getData().cells.getCell(location).hasAnyObjectWithProperty("fuel")) {
+
+		if (getData().cells.getCell(location).hasObjectWithProperty("fuel")) {
 			return "fuel";
 		}
 
 		return "normal";
 	}
-	
+
 	public boolean wall(int[] from, Direction to) {
-		List<CellObject> walls = getData().cells.getCell(from).getAllObjectsWithProperty("block");
+		Set<CellObject> walls = getData().cells.getCell(from)
+				.getAllObjectsWithProperty("block");
 		if (!walls.isEmpty()) {
 			for (CellObject wall : walls) {
-				if (wall.getProperty("direction").equals(to.id())) {
+				if (Direction.valueOf(wall.getProperty("direction")).equals(to)) {
 					return true;
 				}
 			}

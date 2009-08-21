@@ -1,7 +1,7 @@
 package edu.umich.soar.gridmap2d.visuals;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Set;
 
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Color;
@@ -91,25 +91,26 @@ public class EatersVisualWorld extends VisualWorld {
 				}
 				
 				if (agentLocation == null) {
-					if (!this.map.checkAndResetRedraw(location) && painted) {
+					if (!this.map.getCell(location).isModified() && painted) {
 						continue;
 					}
+					this.map.getCell(location).setModified(false);
 				} else {
-					if (!this.map.checkRedraw(location) && painted) {
+					if (!this.map.getCell(location).isModified() && painted) {
 						continue;
 					}
 				}
 				
-				List<CellObject> drawList = this.map.getAllWithProperty(location, Names.kPropertyShape);
+				Set<CellObject> drawList = this.map.getCell(location).getAllObjectsWithProperty(Names.kPropertyShape);
 				
-				if (this.map.hasAnyObjectWithProperty(location, Names.kPropertyBlock)) {
+				if (this.map.getCell(location).hasObjectWithProperty(Names.kPropertyBlock)) {
 				    gc.setBackground(WindowManager.black);
 				    gc.fillRectangle(cellSize*xDraw + 1, cellSize*yDraw + 1, cellSize - 2, cellSize - 2);
 					
 				} else {
 					boolean empty = true;
 					
-					Player eater = this.map.getFirstPlayer(location);
+					Player eater = this.map.getCell(location).getFirstPlayer();
 					
 					if (eater != null) {
 						empty = false;
@@ -173,7 +174,7 @@ public class EatersVisualWorld extends VisualWorld {
 					}
 				}
 				
-				if (this.map.hasAnyObjectWithProperty(location, Names.kExplosion)) {
+				if (this.map.getCell(location).hasObjectWithProperty(Names.kExplosion)) {
 					drawExplosion(gc, xDraw, yDraw);
 				}
 			}

@@ -62,15 +62,16 @@ public class TankSoarVisualWorld extends VisualWorld {
 		int [] location = new int [2];
 		for(location[0] = 0; location[0] < map.size(); ++location[0]){
 			for(location[1] = 0; location[1] < map.size(); ++location[1]){
-				if (!this.map.checkAndResetRedraw(location) && painted) {
+				if (!this.map.getCell(location).isModified() && painted) {
 					continue;
 				}
+				this.map.getCell(location).setModified(false);
 				
 				CellObject explosion = null;
 				CellObject object = null;
 				List<CellObject> missiles = new ArrayList<CellObject>();
 				
-				for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyImage)) {
+				for (CellObject cellObject : this.map.getCell(location).getAllObjectsWithProperty(Names.kPropertyImage)) {
 					if (cellObject.hasProperty(Names.kExplosion)) {
 						explosion = cellObject;
 					} else if (cellObject.hasProperty("missiles")) {
@@ -80,7 +81,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 					}
 				}
 				
-				Tank tank = (Tank)this.map.getFirstPlayer(location);
+				Tank tank = (Tank)this.map.getCell(location).getFirstPlayer();
 				TankState state = tank == null ? null : tank.getState();
 				
 				// draw the wall or ground or energy charger or health charger
@@ -139,8 +140,8 @@ public class TankSoarVisualWorld extends VisualWorld {
 					
 					Color missileColor = WindowManager.getColor(colorName);
 					
-					int flightPhase = missile.getIntProperty("update.fly-missile", 0);
-					Direction direction = Direction.parse(missile.getProperty(Names.kPropertyDirection));
+					int flightPhase = missile.getProperty("update.fly-missile", 0, Integer.class);
+					Direction direction = Direction.valueOf(missile.getProperty(Names.kPropertyDirection));
 
 					if (flightPhase == 0) {
 						direction = direction.backward();
@@ -178,8 +179,8 @@ public class TankSoarVisualWorld extends VisualWorld {
 				// Finally, draw the radar waves
 				gc.setForeground(WindowManager.getColor("white"));
 				
-				for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyRadarWaves)) {
-					Direction direction = Direction.parse(cellObject.getProperty(Names.kPropertyDirection));
+				for (CellObject cellObject : this.map.getCell(location).getAllObjectsWithProperty(Names.kPropertyRadarWaves)) {
+					Direction direction = Direction.valueOf(cellObject.getProperty(Names.kPropertyDirection));
 					int start = 0;
 					int xMod = 0;
 					int yMod = 0;
@@ -233,7 +234,7 @@ public class TankSoarVisualWorld extends VisualWorld {
 	
 	public void updateBackground(int [] location) {
 		CellObject backgroundObject = null;
-		for (CellObject cellObject : this.map.getAllWithProperty(location, Names.kPropertyImage)) {
+		for (CellObject cellObject : this.map.getCell(location).getAllObjectsWithProperty(Names.kPropertyImage)) {
 			if (cellObject.hasProperty(Names.kPropertyBlock)) {
 				backgroundObject = cellObject;
 			} else if (cellObject.hasProperty(Names.kGround)) {
@@ -249,8 +250,8 @@ public class TankSoarVisualWorld extends VisualWorld {
 		
 		String imageName = backgroundObject.getProperty(Names.kPropertyImage);
 		if (backgroundObject.hasProperty(Names.kPropertyImageMin)) {
-			int min = backgroundObject.getIntProperty(Names.kPropertyImageMin, 0);
-			int max = backgroundObject.getIntProperty(Names.kPropertyImageMax, 0);
+			int min = backgroundObject.getProperty(Names.kPropertyImageMin, 0, Integer.class);
+			int max = backgroundObject.getProperty(Names.kPropertyImageMax, 0, Integer.class);
 			// Do not use the simulation's random number generator because it will change
 			// headless run behavior
 			Random myRandom = new Random();
