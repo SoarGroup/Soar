@@ -298,8 +298,9 @@ public class RoomWorld implements World, SendMessagesInterface {
 		newLocation[0] = (int)pose.pos[0] / CELL_SIZE;
 		newLocation[1] = (int)pose.pos[1] / CELL_SIZE;
 
-		if (!Arrays.equals(oldLocation, newLocation)) {
-			
+		if (Arrays.equals(oldLocation, newLocation)) {
+			map.getCell(oldLocation).setModified(true);
+		} else {
 			while (checkBlocked(newLocation)) {
 				// 1) determine what edge we're intersecting
 				if ((newLocation[0] != oldLocation[0]) && (newLocation[1] != oldLocation[1])) {
