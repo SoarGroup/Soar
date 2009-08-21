@@ -6,6 +6,8 @@ import jmat.LinAlg;
 
 import org.apache.log4j.Logger;
 
+import com.commsen.stopwatch.Stopwatch;
+
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Names;
 import edu.umich.soar.gridmap2d.map.RoomMap;
@@ -87,13 +89,20 @@ public class SoarRobot implements RobotCommander, ConfigureInterface, OffsetPose
 	@Override
 	public void update(RoomMap roomMap) {
 
+		long id1 = Stopwatch.start("soar update", "output");
 		ddc = output.update();
+		Stopwatch.stop(id1);
+
+		long id2 = Stopwatch.start("soar update", "input");
 		input.update(player, world, roomMap, this.isFloatYawWmes());	
+		Stopwatch.stop(id2);
 		
+		long id3 = Stopwatch.start("soar update", "commit");
 		if (!agent.Commit()) {
 			Gridmap2D.control.errorPopUp(Names.Errors.commitFail + player.getName());
 			Gridmap2D.control.stopSimulation();
 		}
+		Stopwatch.stop(id3);
 	}
 
 	@Override

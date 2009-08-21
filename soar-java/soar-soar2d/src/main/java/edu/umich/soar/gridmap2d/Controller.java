@@ -213,9 +213,15 @@ public class Controller implements Runnable {
 		// this is 50 except for room, where it is configurable
 		timeSlice = Gridmap2D.config.generalConfig().cycle_time_slice / 1000.0f;
 
-		Gridmap2D.simulation.update();
+		{
+			long id = Stopwatch.start("tickEvent", "simulation update");
+			Gridmap2D.simulation.update();
+			Stopwatch.stop(id);
+		}
 		if (Gridmap2D.wm.using()) {
+			long id = Stopwatch.start("tickEvent", "wm update");
 			Gridmap2D.wm.update();
+			Stopwatch.stop(id);
 		}
 	}
 	

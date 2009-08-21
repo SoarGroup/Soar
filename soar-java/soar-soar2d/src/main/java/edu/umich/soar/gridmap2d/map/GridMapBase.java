@@ -24,8 +24,6 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 
 	protected GridMapBase(String mapPath) {
 		this.mapPath = mapPath;
-		
-		Stopwatch.setActive(false);
 	}
 	
 	protected GridMapData getData() {
