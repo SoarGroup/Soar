@@ -925,7 +925,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	{
 		if ( select_get_operator( thisAgent ) != NULL )
 		{
-			preference *force_result = select_force( thisAgent, s->all_preferences, !predict );
+			preference *force_result = select_force( thisAgent, s->preferences[ACCEPTABLE_PREFERENCE_TYPE], !predict );
+			force_result->next_candidate = NIL;
 
 			if ( force_result )
 			{
