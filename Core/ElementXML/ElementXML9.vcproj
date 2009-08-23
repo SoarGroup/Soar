@@ -101,7 +101,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -185,7 +185,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -280,7 +280,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -374,7 +374,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -468,7 +468,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -561,7 +561,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -646,7 +646,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -730,7 +730,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -824,7 +824,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -917,7 +917,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -1012,7 +1012,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -1106,7 +1106,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 	</Configurations>
