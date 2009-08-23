@@ -103,7 +103,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -189,7 +189,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -284,7 +284,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -378,7 +378,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -465,7 +465,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -551,7 +551,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -646,7 +646,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -740,30 +740,30 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
-			RelativePathToProject=".\Core\CLI\CommandLineInterface9.vcproj"
+			RelativePathToProject="..\..\SoarSuite\Core\CLI\CommandLineInterface9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML9.vcproj"
+			RelativePathToProject="..\..\SoarSuite\Core\ConnectionSML\ConnectionSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			RelativePathToProject=".\Core\ElementXML\ElementXML9.vcproj"
+			RelativePathToProject="..\..\SoarSuite\Core\ElementXML\ElementXML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
-			RelativePathToProject=".\Core\SoarKernel\SoarKernel9.vcproj"
+			RelativePathToProject="..\..\SoarSuite\Core\SoarKernel\SoarKernel9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B0AE9F9-575C-4230-875A-3996BF2AC1E6}"
-			RelativePathToProject=".\Core\pcre\pcre9.vcproj"
+			RelativePathToProject="..\..\SoarSuite\Core\pcre\pcre9.vcproj"
 		/>
 	</References>
 	<Files>
