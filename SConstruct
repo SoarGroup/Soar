@@ -187,8 +187,8 @@ if env['m64']:
 	conf.env.Append(CPPFLAGS = ' -m64 -fPIC')
 	conf.env.Append(LINKFLAGS = ' -m64')
 else:
-	conf.env.Append(CPPFLAGS = ' -m32')
-	conf.env.Append(LINKFLAGS = ' -m32')
+	conf.env.Append(CPPFLAGS = ' -m32 -march=native')
+	conf.env.Append(LINKFLAGS = ' -m32 -march=native')
 
 if env['gprof']:
 	conf.env.Append(CPPFLAGS = ' -pg')
