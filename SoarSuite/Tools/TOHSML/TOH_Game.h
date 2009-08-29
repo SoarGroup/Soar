@@ -17,7 +17,7 @@
 class TOH_Tower;
 class Stats_Tracker;
 
-#define TOH_AGENT_PRODUCTIONS "../../Environments/JavaTOH/towers-of-hanoi-SML.soar"
+#define TOH_AGENT_PRODUCTIONS "../../Tools/TOHSML/towers-of-hanoi-SML.soar"
 
 /* The TOH_Game object is a complete instance of Towers of Hanoi.
  * It is responsible for creating the Kernel, Agent, Towers, Disks, ...
