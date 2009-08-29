@@ -228,7 +228,7 @@ typedef struct agent_struct {
   /* ----------------------- Lexer stuff -------------------------- */
   
   lexer_source_file * current_file; /* file we're currently reading */
-  char                current_char; /* holds current input character */
+  int                 current_char; /* holds current input character */
   struct lexeme_info  lexeme;       /* holds current lexeme */
   Bool                print_prompt_flag;
   
