@@ -34,7 +34,6 @@ extern void variablize_symbol (agent* thisAgent, Symbol **sym);
 extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
-
 /////////////////////////////////////////////////////
 // Parameters
 /////////////////////////////////////////////////////
@@ -78,18 +77,18 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 
 //
 
-rl_learning_param::rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+rl_learning_param::rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ) : soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 void rl_learning_param::set_value( soar_module::boolean new_value )
 {
-	if ( ( new_value == soar_module::on ) && ( my_agent->rl_first_switch ) )
+	if ( new_value == soar_module::on && my_agent->rl_first_switch )
 	{
 		my_agent->rl_first_switch = false;
 		exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
 
-		const char *msg = "Exploration Mode changed to epsilon-greedy";
+		const char * const msg = "Exploration Mode changed to epsilon-greedy";
 		print( my_agent, const_cast<char *>( msg ) );
-   		xml_generate_message( my_agent, const_cast<char *>( msg ) );
+		xml_generate_message( my_agent, const_cast<char *>( msg ) );
 	}
 
 	value = new_value;
@@ -124,16 +123,15 @@ rl_stat_container::rl_stat_container( agent *new_agent ): stat_container( new_ag
 // quick shortcut to determine if rl is enabled
 inline bool rl_enabled( agent *my_agent )
 {
-	return ( my_agent->rl_params->learning->get_value() == soar_module::on );
+	return my_agent->rl_params->learning->get_value() == soar_module::on;
 }
 
 // resets rl data structures
 void rl_reset_data( agent *my_agent )
 {
-	Symbol *goal = my_agent->top_goal;
-	while( goal )
+	for ( Symbol* goal = my_agent->top_goal; goal; goal = goal->id.lower_goal )
 	{
-		rl_data *data = goal->id.rl_info;
+		rl_data * const &data = goal->id.rl_info;
 
 		data->eligibility_traces->clear();
 		data->prev_op_rl_rules->clear();
@@ -143,8 +141,6 @@ void rl_reset_data( agent *my_agent )
 
 		data->gap_age = 0;
 		data->hrl_age = 0;
-		
-		goal = goal->id.lower_goal;
 	}
 }
 
@@ -154,14 +150,11 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 	for ( Symbol* state = my_agent->top_state; state; state = state->id.lower_goal )
 	{
 		state->id.rl_info->eligibility_traces->erase( prod );
-		
-		rl_rule_list::iterator p;
-		for ( p=state->id.rl_info->prev_op_rl_rules->begin(); p!=state->id.rl_info->prev_op_rl_rules->end(); p++ )
+
+		for ( rl_rule_list::iterator p = state->id.rl_info->prev_op_rl_rules->begin(); p != state->id.rl_info->prev_op_rl_rules->end(); ++p )
 		{
 			if ( (*p) == prod )
-			{
 				(*p) = NIL;
-			}
 		}
 	}
 }
@@ -173,47 +166,22 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 // returns true if a template is valid
 bool rl_valid_template( production *prod )
 {
-	bool numeric_pref = false;
-	bool var_pref = false;
-	int num_actions = 0;
-
-	for ( action *a = prod->action_list; a; a = a->next ) 
-	{
-		num_actions++;
-		if ( ( a->type == MAKE_ACTION ) )
-		{
-			if ( a->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE )
-			{
-				numeric_pref = true;
-			}
-			else if ( a->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE )
-			{	
-				if ( rhs_value_is_symbol( a->referent ) && ( rhs_value_to_symbol( a->referent )->id.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE ) )
-					var_pref = true;
-			}
-		}
-	}
-
-	return ( ( num_actions == 1 ) && ( numeric_pref || var_pref ) );
+	return	prod->action_list &&
+		!prod->action_list->next &&
+		prod->action_list->type == MAKE_ACTION &&
+		( prod->action_list->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE ||
+		 ( prod->action_list->preference_type == BINARY_INDIFFERENT_PREFERENCE_TYPE &&
+		   rhs_value_is_symbol( prod->action_list->referent ) &&
+		   rhs_value_to_symbol( prod->action_list->referent )->id.common_symbol_info.symbol_type == VARIABLE_SYMBOL_TYPE ) );
 }
 
 // returns true if an rl rule is valid
 bool rl_valid_rule( production *prod )
 {
-	bool numeric_pref = false;
-	int num_actions = 0;
-
-	for ( action *a = prod->action_list; a; a = a->next ) 
-	{
-		num_actions++;
-		if ( ( a->type == MAKE_ACTION ) )
-		{
-			if ( a->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE )
-				numeric_pref = true;
-		}
-	}
-
-	return ( numeric_pref && ( num_actions == 1 ) );
+	return	prod->action_list &&
+		!prod->action_list->next &&
+		prod->action_list->type == MAKE_ACTION &&
+		prod->action_list->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 }
 
 
@@ -223,30 +191,36 @@ bool rl_valid_rule( production *prod )
 // gets the auto-assigned id of a template instantiation
 int rl_get_template_id( const char *prod_name )
 {
-	std::string temp = prod_name;
-	
+	const size_t len = strlen(prod_name);
+
 	// has to be at least "rl*a*#" (where a is a single letter/number/etc)
-	if ( temp.length() < 6 )
+	if ( len < 6 )
 		return -1;
-	
+
 	// check first three letters are "rl*"
-	if ( temp.compare( 0, 3, "rl*" ) )
+	if ( prod_name[0] != 'r' || prod_name[1] != 'l' || prod_name[2] != '*' )
 		return -1;
-	
+
 	// find last * to isolate id
-	std::string::size_type last_star = temp.find_last_of( '*' );
-	if ( last_star == std::string::npos )
-		return -1;
-	
+	const char * const end = prod_name + len;
+	const char * last_star = end;
+	do {
+		--last_star;
+
+		if ( last_star == prod_name + 2 )
+			return -1;
+	} while ( *last_star != '*' );
+
 	// make sure there's something left after last_star
-	if ( last_star == ( temp.length() - 1 ) )
+	const char * const id_str = last_star + 1;
+	if ( id_str == end )
 		return -1;
-	
+
 	// make sure id is a valid natural number
-	std::string id_str = temp.substr( last_star + 1 );
-	if ( !is_natural_number( &id_str ) )
-		return -1;
-	
+	for ( const char * c = id_str; c != end; ++c )
+		if ( *c < '0' || '9' < *c )
+			return -1;
+
 	// convert id
 	int id;
 	from_string( id, id_str );
@@ -262,94 +236,97 @@ void rl_initialize_template_tracking( agent *my_agent )
 // updates rl template counter for a rule
 void rl_update_template_tracking( agent *my_agent, const char *rule_name )
 {
-	int new_id = rl_get_template_id( rule_name );
+	const int new_id = rl_get_template_id( rule_name );
 
-	if ( ( new_id != -1 ) && ( new_id > my_agent->rl_template_count ) )
-		my_agent->rl_template_count = ( new_id + 1 );
+	if ( new_id != -1 && new_id > my_agent->rl_template_count )
+		my_agent->rl_template_count = new_id + 1;
 }
 
 // gets the next template-assigned id
 int rl_next_template_id( agent *my_agent )
 {
-	return (my_agent->rl_template_count++);
+	return my_agent->rl_template_count++;
 }
 
 // gives back a template-assigned id (on auto-retract)
 void rl_revert_template_id( agent *my_agent )
 {
-	my_agent->rl_template_count--;
+	--my_agent->rl_template_count;
 }
 
 // builds a template instantiation
  Symbol *rl_build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
 {
-	Symbol *id, *attr, *value, *referent;
-	production *my_template = my_template_instance->prod;
-	action *my_action = my_template->action_list;
-	char first_letter;
-	double init_value = 0;
-	condition *cond_top, *cond_bottom;
-
 	Bool chunk_var = my_agent->variablize_this_chunk;
 	my_agent->variablize_this_chunk = TRUE;
 
-	// make unique production name
+	const production * const & my_template = my_template_instance->prod;
 	Symbol *new_name_symbol;
-	std::string new_name = "";
-	std::string empty_string = "";
-	std::string temp_id;
-	int new_id;
-	do
+
+	{	// make unique production name
+		const std::string new_name_start = std::string("rl*") + my_template->name->sc.name + "*";
+
+		for(;;)
+		{
+			const int new_id = rl_next_template_id( my_agent );
+			std::string temp_id;
+			to_string( new_id, temp_id );
+
+			const std::string new_name = new_name_start + temp_id;
+
+			if ( !find_sym_constant( my_agent, new_name.c_str() ) ) {
+				new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
+				break;
+			}
+		}
+	}
+
+ 	condition *cond_top, *cond_bottom;
+
+	{	// prep conditions
+		copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
+		rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
+		reset_variable_generator( my_agent, cond_top, NIL );
+		my_agent->variablization_tc = get_new_tc_number( my_agent );
+		variablize_condition_list( my_agent, cond_top );
+		variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+	}
+
+	Symbol *referent;
+	action *new_action;
+
 	{
-		new_id = rl_next_template_id( my_agent );
-		to_string( new_id, temp_id );
-		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + temp_id );
-	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
-	new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
-	
-	// prep conditions
-	copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
-	rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
-	reset_variable_generator( my_agent, cond_top, NIL );
-	my_agent->variablization_tc = get_new_tc_number( my_agent );
-	variablize_condition_list( my_agent, cond_top );
-	variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+		const action * const &my_action = my_template->action_list;
 
-	// get the preference value
-	id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
-	attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
-	first_letter = first_letter_from_symbol( attr );
-	value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
-	referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
+		// get the preference value
+		Symbol * const id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
+		Symbol * const attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
+		const char first_letter = first_letter_from_symbol( attr );
+		Symbol * const value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
+		referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
 
-	// clean up after yourself :)
-	symbol_remove_ref( my_agent, id );
-	symbol_remove_ref( my_agent, attr );
-	symbol_remove_ref( my_agent, value );
-	symbol_remove_ref( my_agent, referent );
+		// clean up after yourself :)
+		symbol_remove_ref( my_agent, id );
+		symbol_remove_ref( my_agent, attr );
+		symbol_remove_ref( my_agent, value );
+		symbol_remove_ref( my_agent, referent );
 
-	// make new action list
-	action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
-	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+		// make new action list
+		new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
+		new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+	}
 
 	// make new production
-	production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
+	production * const new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
 	my_agent->variablize_this_chunk = chunk_var; // restored to original value
 
 	// set initial expected reward values
-	{
-		if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		{
-			init_value = static_cast< double >( referent->ic.value );
-		}
-		else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
-		{
-			init_value = referent->fc.value;
-		}
-
-		new_production->rl_ecr = 0.0;
-		new_production->rl_efr = init_value;
-	}
+	if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+		new_production->rl_efr = static_cast< double >( referent->ic.value );
+	else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+		new_production->rl_efr = referent->fc.value;
+	else
+		new_production->rl_efr = 0.0;
 
 	// attempt to add to rete, remove if duplicate
 	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
@@ -359,6 +336,7 @@ void rl_revert_template_id( agent *my_agent )
 
 		new_name_symbol = NULL;
 	}
+
 	deallocate_condition_list( my_agent, cond_top );
 
 	return new_name_symbol;
@@ -367,63 +345,63 @@ void rl_revert_template_id( agent *my_agent )
 // creates an action for a template instantiation
 action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym )
 {
-    action *rhs;
-    Symbol *temp;
+	action *rhs;
 
-    allocate_with_pool( my_agent, &my_agent->action_pool, &rhs );
-    rhs->next = NIL;
-    rhs->type = MAKE_ACTION;
+	allocate_with_pool( my_agent, &my_agent->action_pool, &rhs );
+	rhs->next = NIL;
+	rhs->type = MAKE_ACTION;
 
-    // id
-	temp = id_sym;
-	symbol_add_ref( temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->id = symbol_to_rhs_value( temp );
+	{	// id
+		Symbol * temp = id_sym;
+		symbol_add_ref( temp );
+		variablize_symbol( my_agent, &temp );
+		rhs->id = symbol_to_rhs_value( temp );
+	}
 
-    // attribute
-    temp = attr_sym;
-	symbol_add_ref( temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->attr = symbol_to_rhs_value( temp );
+	{	// attribute
+		Symbol * temp = attr_sym;
+		symbol_add_ref( temp );
+		variablize_symbol( my_agent, &temp );
+		rhs->attr = symbol_to_rhs_value( temp );
+	}
 
-	// value
-	temp = val_sym;
-	symbol_add_ref( temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->value = symbol_to_rhs_value( temp );
+	{	// value
+		Symbol * temp = val_sym;
+		symbol_add_ref( temp );
+		variablize_symbol( my_agent, &temp );
+		rhs->value = symbol_to_rhs_value( temp );
+	}
 
-	// referent
-	temp = ref_sym;
-	symbol_add_ref( temp );
-	variablize_symbol( my_agent, &temp );
-	rhs->referent = symbol_to_rhs_value( temp );
+	{	// referent
+		Symbol * temp = ref_sym;
+		symbol_add_ref( temp );
+		variablize_symbol( my_agent, &temp );
+		rhs->referent = symbol_to_rhs_value( temp );
+	}
 
-    return rhs;
+	return rhs;
 }
 
 void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_conds )
 {
 	// mark each id as we add a test for it, so we don't add a test for the same id in two different places
-	Symbol *id;
-	test t;
-	complex_test *ct;
-	tc_number tc = get_new_tc_number( my_agent );
+	const tc_number tc = get_new_tc_number( my_agent );
 
-	for ( condition *cond = all_conds; cond != NIL; cond = cond->next )
+	for ( condition *cond = all_conds; cond; cond = cond->next )
 	{
 		if ( cond->type != POSITIVE_CONDITION )
 			continue;
 
-		id = referent_of_equality_test( cond->data.tests.id_test );
+		Symbol * const id = referent_of_equality_test( cond->data.tests.id_test );
+		if ( ( !id->id.isa_goal && !id->id.isa_impasse ) || id->id.tc_num == tc )
+			continue;
 
-		if ( ( id->id.isa_goal || id->id.isa_impasse ) && ( id->id.tc_num != tc ) ) 
-		{
-			allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
-			ct->type = static_cast<byte>( ( id->id.isa_goal )?( GOAL_ID_TEST ):( IMPASSE_ID_TEST ) );
-			t = make_test_from_complex_test( ct );
-			add_new_test_to_test( my_agent, &( cond->data.tests.id_test ), t );
-			id->id.tc_num = tc;
-		}
+		complex_test * ct;
+		allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
+		ct->type = static_cast<byte>( id->id.isa_goal ? GOAL_ID_TEST : IMPASSE_ID_TEST );
+		const test t = make_test_from_complex_test( ct );
+		add_new_test_to_test( my_agent, &cond->data.tests.id_test, t );
+		id->id.tc_num = tc;
 	}
 }
 
@@ -434,300 +412,260 @@ void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_cond
 // gathers discounted reward for a state
 void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 {
-	rl_data *data = goal->id.rl_info;	
-	
+	rl_data * const &data = goal->id.rl_info;
+
 	if ( !data->prev_op_rl_rules->empty() )
 	{
-		slot *s = make_slot( my_agent, goal->id.reward_header, my_agent->rl_sym_reward );
-		slot *t;
-		wme *w, *x;
+		const slot * const s = make_slot( my_agent, goal->id.reward_header, my_agent->rl_sym_reward );
 		
 		double reward = 0.0;
-		double discount_rate = my_agent->rl_params->discount_rate->get_value();
+		const double discount_rate = my_agent->rl_params->discount_rate->get_value();
 
 		if ( s )
-		{			
-			for ( w=s->wmes; w; w=w->next )
-			{
-				if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-				{
-					t = make_slot( my_agent, w->value, my_agent->rl_sym_value );
-					if ( t )
-					{
-						for ( x=t->wmes; x; x=x->next )
-						{
-							if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
-							{
-								reward += get_number_from_symbol( x->value );
-							}
-						}
-					}
-				}
+		{
+			for ( const wme * w = s->wmes; w; w = w->next ) {
+				if ( w->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
+					continue;
+
+				const slot * const t = make_slot( my_agent, w->value, my_agent->rl_sym_value );
+				if ( !t )
+					continue;
+
+				for ( const wme * x = t->wmes; x; x = x->next )
+					if ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE || x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+						reward += get_number_from_symbol( x->value );
 			}
-			
-			data->reward += ( reward * pow( discount_rate, static_cast< double >( data->gap_age + data->hrl_age ) ) );
+
+			data->reward += reward * pow( discount_rate, static_cast< double >( data->gap_age + data->hrl_age ) );
 		}
 
 		// update stats
-		double global_reward = my_agent->rl_stats->global_reward->get_value();
+		const double global_reward = my_agent->rl_stats->global_reward->get_value();
 		my_agent->rl_stats->total_reward->set_value( reward );
 		my_agent->rl_stats->global_reward->set_value( global_reward + reward );
 
-		if ( ( goal != my_agent->bottom_goal ) && ( my_agent->rl_params->hrl_discount->get_value() == soar_module::on ) )
-		{
-			data->hrl_age++;
-		}
+		if ( goal != my_agent->bottom_goal && my_agent->rl_params->hrl_discount->get_value() == soar_module::on )
+			++data->hrl_age;
 	}
 }
 
 // gathers reward for all states
 void rl_tabulate_reward_values( agent *my_agent )
 {
-	Symbol *goal = my_agent->top_goal;
-
-	while( goal )
-	{
+	for( Symbol *goal = my_agent->top_goal; goal; goal = goal->id.lower_goal )
 		rl_tabulate_reward_value_for_goal( my_agent, goal );
-	    goal = goal->id.lower_goal;
-	}
 }
 
 // stores rl info for a state w.r.t. a selected operator
 void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 {
-	rl_data *data = goal->id.rl_info;
-	Symbol *op = cand->value;    
+	rl_data * const &data = goal->id.rl_info;
+	const Symbol * const &op = cand->value;
 
-	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
-	
+	const bool using_gaps = my_agent->rl_params->temporal_extension->get_value() == soar_module::on;
+
 	// Make list of just-fired prods
-	unsigned int just_fired = 0;
-	for ( preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
+	bool just_fired = false;
+	for ( const preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
 	{
-		if ( ( op == pref->value ) && pref->inst->prod->rl_rule )
-		{			
-			if ( ( just_fired == 0 ) && !data->prev_op_rl_rules->empty() )
-			{
-				data->prev_op_rl_rules->clear();					
+		if ( op == pref->value && pref->inst->prod->rl_rule )
+		{
+			if ( !just_fired ) {
+				data->prev_op_rl_rules->clear();
+				just_fired = true;
 			}
-			
-			data->prev_op_rl_rules->push_back( pref->inst->prod );				
-			just_fired++;			
+
+			data->prev_op_rl_rules->push_back( pref->inst->prod );
 		}
 	}
 
 	if ( just_fired )
-	{		
+	{
 		data->previous_q = cand->numeric_value;
 	}
-	else
+	else if ( !using_gaps )
 	{
-		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && using_gaps &&
-			( data->gap_age == 0 ) && !data->prev_op_rl_rules->empty() )
-		{			
+		data->prev_op_rl_rules->clear();
+		data->previous_q = cand->numeric_value;
+	}
+	else if ( !data->prev_op_rl_rules->empty() )
+	{
+		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && data->gap_age == 0 )
+		{
 			char buf[256];
 			SNPRINTF( buf, 254, "gap started (%c%llu)", goal->id.name_letter, goal->id.name_number );
-			
+
 			print( my_agent, buf );
 			xml_generate_warning( my_agent, buf );
 		}
-		
-		if ( !using_gaps )
-		{
-			if ( !data->prev_op_rl_rules->empty() )
-			{
-				data->prev_op_rl_rules->clear();
-			}			
-			
-			data->previous_q = cand->numeric_value;
-		}
-		else
-		{		
-			if ( !data->prev_op_rl_rules->empty() )
-			{
-				data->gap_age++;
-			}
-		}
+
+		++data->gap_age;
 	}
 }
 
 // performs the rl update at a state
 void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr )
 {
-	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
+	const bool using_gaps = my_agent->rl_params->temporal_extension->get_value() == soar_module::on;
 
-	if ( !using_gaps || op_rl )
-	{		
-		rl_data *data = goal->id.rl_info;
-		
-		if ( !data->prev_op_rl_rules->empty() )
-		{			
-			rl_et_map::iterator iter;			
-			double alpha = my_agent->rl_params->learning_rate->get_value();
-			double lambda = my_agent->rl_params->et_decay_rate->get_value();
-			double gamma = my_agent->rl_params->discount_rate->get_value();
-			double tolerance = my_agent->rl_params->et_tolerance->get_value();			
-			double discount = pow( gamma, static_cast< double >( data->gap_age + data->hrl_age + 1 ) );
+	if ( using_gaps && !op_rl )
+		return;
 
-			// notify of gap closure
-			if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+	rl_data * const &data = goal->id.rl_info;
+	
+	if ( !data->prev_op_rl_rules->empty() )
+	{
+		rl_et_map::iterator iter;
+		double alpha = my_agent->rl_params->learning_rate->get_value();
+		double lambda = my_agent->rl_params->et_decay_rate->get_value();
+		double gamma = my_agent->rl_params->discount_rate->get_value();
+		double tolerance = my_agent->rl_params->et_tolerance->get_value();
+		double discount = pow( gamma, static_cast< double >( data->gap_age + data->hrl_age + 1 ) );
+
+		// notify of gap closure
+		if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+		{
+			char buf[256];
+			SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id.name_letter, goal->id.name_number );
+
+			print( my_agent, buf );
+			xml_generate_warning( my_agent, buf );
+		}
+
+		// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
+		if ( lambda == 0 )
+		{
+			data->eligibility_traces->clear();
+		}
+		else
+		{
+			for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
 			{
-				char buf[256];
-				SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id.name_letter, goal->id.name_number );
+				iter->second *= lambda;
+				iter->second *= discount;
 
-				print( my_agent, buf );
-				xml_generate_warning( my_agent, buf );
-			}			
-
-			// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
-			if ( lambda == 0 )
-			{
-				if ( !data->eligibility_traces->empty() )
-				{
-					data->eligibility_traces->clear();
-				}
-			}
-			else
-			{
-				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
-				{
-					iter->second *= lambda;
-					iter->second *= discount;
-					if ( iter->second < tolerance ) 
-					{
-						data->eligibility_traces->erase( iter++ );
-					}
-					else 
-					{
-						++iter;
-					}
-				}
-			}
-			
-			// Update trace for just fired prods
-			if ( !data->prev_op_rl_rules->empty() )
-			{
-				double trace_increment = ( 1.0 / static_cast<double>( data->prev_op_rl_rules->size() ) );
-				rl_rule_list::iterator p;
-				
-				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
-				{					
-					if ( (*p) != NIL )
-					{
-						iter = data->eligibility_traces->find( (*p) );
-						
-						if ( iter != data->eligibility_traces->end() ) 
-						{
-							iter->second += trace_increment;
-						}
-						else 
-						{
-							(*data->eligibility_traces)[ (*p) ] = trace_increment;
-						}
-					}
-				}
-			}
-			
-			// For each prod with a trace, perform update
-			{
-				double old_combined, old_ecr, old_efr;
-				double delta_ecr, delta_efr;
-				double new_combined, new_ecr, new_efr;
-				std::string temp_str, msg;
-				
-				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
-				{	
-					production *prod = iter->first;
-
-					// get old vals
-					old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
-					old_ecr = prod->rl_ecr;
-					old_efr = prod->rl_efr;
-					
-					// calculate updates
-					delta_ecr = ( alpha * iter->second * ( data->reward - old_ecr ) );
-					
-					if ( update_efr )
-					{
-						delta_efr = ( alpha * iter->second * ( ( discount * op_value ) - old_efr ) );
-					}
-					else
-					{
-						delta_efr = 0.0;
-					}					
-
-					// calculate new vals
-					new_ecr = ( old_ecr + delta_ecr );
-					new_efr = ( old_efr + delta_efr );
-					new_combined = ( new_ecr + new_efr );
-					
-					// print as necessary
-					if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) 
-					{					
-						msg = ( "updating RL rule " + std::string( prod->name->sc.name ) + " from (" );
-						
-						// old ecr
-						to_string( old_ecr, temp_str );
-						msg.append( temp_str );
-
-						// old efr
-						to_string( old_efr, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-
-						// old combined
-						to_string( old_combined, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-						
-						msg.append( ") to (" );
-
-						// new ecr
-						to_string( new_ecr, temp_str );
-						msg.append( temp_str );
-
-						// new efr
-						to_string( new_efr, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-
-						// new combined
-						to_string( new_combined, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-						msg.append( ")" );
-						
-						print( my_agent, const_cast<char *>( msg.c_str() ) );
-						xml_generate_message( my_agent, const_cast<char *>( msg.c_str() ) );
-					}
-
-					// Change value of rule
-					symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
-					prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
-					prod->rl_update_count += 1;
-					prod->rl_ecr = new_ecr;
-					prod->rl_efr = new_efr;
-
-					// Change value of preferences generated by current instantiations of this rule
-					if ( prod->instantiations )
-					{
-						for ( instantiation *inst = prod->instantiations; inst; inst = inst->next )
-						{
-							for ( preference *pref = inst->preferences_generated; pref; pref = pref->inst_next )
-							{
-								symbol_remove_ref( my_agent, pref->referent );
-								pref->referent = make_float_constant( my_agent, new_combined );
-							}
-						}
-					}	
-				}
+				if ( iter->second < tolerance ) 
+					data->eligibility_traces->erase( iter++ );
+				else
+					++iter;
 			}
 		}
 
-		data->gap_age = 0;
-		data->hrl_age = 0;
-		data->reward = 0.0;
+		// Update trace for just fired prods
+		if ( !data->prev_op_rl_rules->empty() )
+		{
+			const double trace_increment = 1.0 / static_cast<double>( data->prev_op_rl_rules->size() );
+
+			for ( rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); ++p )
+			{
+				if ( !*p )
+					continue;
+
+				iter = data->eligibility_traces->find( *p );
+
+				if ( iter != data->eligibility_traces->end() )
+					iter->second += trace_increment;
+				else
+					(*data->eligibility_traces)[ *p ] = trace_increment;
+			}
+		}
+
+		// For each prod with a trace, perform update
+		{
+			double old_combined, old_ecr, old_efr;
+			double delta_ecr, delta_efr;
+			double new_combined, new_ecr, new_efr;
+			std::string temp_str, msg;
+
+			for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); ++iter )
+			{
+				production * const &prod = iter->first;
+
+				// get old vals
+				old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
+				old_ecr = prod->rl_ecr;
+				old_efr = prod->rl_efr;
+
+				// calculate updates
+				delta_ecr = alpha * iter->second * ( data->reward - old_ecr );
+
+				if ( update_efr )
+					delta_efr = alpha * iter->second * ( discount * op_value - old_efr );
+				else
+					delta_efr = 0.0;
+
+				// calculate new vals
+				new_ecr = old_ecr + delta_ecr;
+				new_efr = old_efr + delta_efr;
+				new_combined = new_ecr + new_efr;
+
+				// print as necessary
+				if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+				{
+					msg = std::string("updating RL rule ") +  prod->name->sc.name + " from (";
+
+					// old ecr
+					to_string( old_ecr, temp_str );
+					msg.append( temp_str );
+
+					// old efr
+					to_string( old_efr, temp_str );
+					msg.append( ", " );
+					msg.append( temp_str );
+
+					// old combined
+					to_string( old_combined, temp_str );
+					msg.append( ", " );
+					msg.append( temp_str );
+
+					msg.append( ") to (" );
+
+					// new ecr
+					to_string( new_ecr, temp_str );
+					msg.append( temp_str );
+
+					// new efr
+					to_string( new_efr, temp_str );
+					msg.append( ", " );
+					msg.append( temp_str );
+
+					// new combined
+					to_string( new_combined, temp_str );
+					msg.append( ", " );
+					msg.append( temp_str );
+					msg.append( ")" );
+
+					print( my_agent, const_cast<char *>( msg.c_str() ) );
+					xml_generate_message( my_agent, const_cast<char *>( msg.c_str() ) );
+				}
+
+				// Change value of rule
+				symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
+				prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
+				prod->rl_update_count += 1;
+				prod->rl_ecr = new_ecr;
+				prod->rl_efr = new_efr;
+
+				// Change value of preferences generated by current instantiations of this rule
+				if ( !prod->instantiations )
+					continue;
+
+				for ( const instantiation *inst = prod->instantiations; inst; inst = inst->next )
+				{
+					for ( preference *pref = inst->preferences_generated; pref; pref = pref->inst_next )
+					{
+						symbol_remove_ref( my_agent, pref->referent );
+						pref->referent = make_float_constant( my_agent, new_combined );
+					}
+				}
+
+			}
+		}
 	}
+
+	data->gap_age = 0;
+	data->hrl_age = 0;
+	data->reward = 0.0;
 }
 
 // clears eligibility traces 
