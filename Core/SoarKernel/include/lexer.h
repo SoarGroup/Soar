@@ -150,7 +150,7 @@ typedef struct lexer_source_file_struct {
   unsigned long line_of_start_of_last_lexeme;
   char buffer[BUFSIZE];              /* holds text of current input line */
   struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
-  char saved_current_char;           /* save/restore this too */
+  int saved_current_char;           /* save/restore this too */
 } lexer_source_file;
 
 #ifdef __cplusplus
