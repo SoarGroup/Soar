@@ -241,8 +241,6 @@ typedef struct agent_struct agent;
 
 #define NIL (0)
 
-#define EOF_AS_CHAR ((char)EOF)
-
 /* functions defined in Soar\kernel that are not prototyped in any other header */
 
 /*
