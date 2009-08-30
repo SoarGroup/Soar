@@ -138,147 +138,79 @@ bool CommandLineInterface::ParseRL( std::vector<std::string>& argv )
 	return false;
 }
 
+inline std::string CLI_DoRL_generate_output( const std::string &name, char * const &param )
+{
+	const std::string output = name + param;
+	delete param;
+	return output;
+}
+
+inline void CLI_DoRL_print( CommandLineInterface &cli, const bool &RawOutput, std::ostringstream &Result,
+				void (CommandLineInterface::* const AppendArgTagFast)(const char*, const char*, const std::string&),
+				const std::string &text, const bool &newline = true )
+{
+	if ( RawOutput ) {
+		if ( newline )
+			Result << text << '\n';
+		else
+			Result << text;
+	}
+	else
+		(cli.*AppendArgTagFast)( sml_Names::kParamValue, sml_Names::kTypeString, text );
+}
+
 bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const std::string* pVal ) 
 {
 	if ( !pOp )
 	{
-		std::string temp;
-		char *temp2;
-		
-		temp = "Soar-RL learning: ";
-		temp2 = m_pAgentSoar->rl_params->learning->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		
-		temp = "temporal-extension: ";
-		temp2 = m_pAgentSoar->rl_params->temporal_extension->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-		}
-						
-		temp = "Discount";
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		temp = "--------";
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-						
-		temp = "discount-rate: ";
-		temp2 = m_pAgentSoar->rl_params->discount_rate->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-		}
-		
-				
-		temp = "Learning";
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		temp = "--------";
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		
-		temp = "learning-policy: ";
-		temp2 = m_pAgentSoar->rl_params->learning_policy->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		
-		temp = "learning-rate: ";
-		temp2 = m_pAgentSoar->rl_params->learning_rate->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );			
-		}
-		
-		temp = "hrl-discount: ";
-		temp2 = m_pAgentSoar->rl_params->hrl_discount->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-		}
-		
-		temp = "Eligibility Traces";
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		temp = "------------------";
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		
-		temp = "eligibility-trace-decay-rate: ";
-		temp2 = m_pAgentSoar->rl_params->et_decay_rate->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n";
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-		
-		temp = "eligibility-trace-tolerance: ";
-		temp2 = m_pAgentSoar->rl_params->et_tolerance->get_string();
-		temp += temp2;
-		delete temp2;
-		if ( m_RawOutput )
-			m_Result << temp << "\n\n";
-		else
-		{
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
-		}
-		
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "Soar-RL learning: ", m_pAgentSoar->rl_params->learning->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "granular-control: ", m_pAgentSoar->rl_params->granular_control->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "temporal-extension: ", m_pAgentSoar->rl_params->temporal_extension->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "" );
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "Discount" );
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "--------" );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "discount-rate: ", m_pAgentSoar->rl_params->discount_rate->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "" );
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "Learning" );
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "--------" );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "learning-policy: ", m_pAgentSoar->rl_params->learning_policy->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "learning-rate: ", m_pAgentSoar->rl_params->learning_rate->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "hrl-discount: ", m_pAgentSoar->rl_params->hrl_discount->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "" );
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "Eligibility Traces" );
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "------------------" );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "eligibility-trace-decay-rate: ", m_pAgentSoar->rl_params->et_decay_rate->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "eligibility-trace-tolerance: ", m_pAgentSoar->rl_params->et_tolerance->get_string() ) );
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "" );
+
 		return true;
 	}
 	else if ( pOp == 'g' )
-	{	
-		soar_module::param *my_param = m_pAgentSoar->rl_params->get( pAttr->c_str() );
-		char *temp2 = my_param->get_string();
-		std::string output( temp2 );
-		delete temp2;
-					
-		if ( m_RawOutput )
-			m_Result << output;
-		else
-			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
-		
+	{
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+			CLI_DoRL_generate_output( "", m_pAgentSoar->rl_params->get( pAttr->c_str() )->get_string() ), false );
+
 		return true;
 	}
 	else if ( pOp == 's' )
@@ -290,51 +222,23 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 	{
 		if ( !pAttr )
 		{
-			std::string output;
-			const char *temp;
-			
-			output = "Error from last update: ";
-			temp = m_pAgentSoar->rl_stats->update_error->get_string();			
-			output += temp;
-			delete temp;
-			if ( m_RawOutput )
-				m_Result << output << "\n";
-			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
-			
-			output = "Total reward in last cycle: ";
-			temp = m_pAgentSoar->rl_stats->total_reward->get_string();			
-			output += temp;
-			delete temp;
-			if ( m_RawOutput )
-				m_Result << output << "\n";
-			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
-			
-			output = "Global reward since init: ";
-			temp = m_pAgentSoar->rl_stats->global_reward->get_string();			
-			output += temp;
-			delete temp;
-			if ( m_RawOutput )
-				m_Result << output << "\n";
-			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output );
+			CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+				CLI_DoRL_generate_output( "Error from last update: ", m_pAgentSoar->rl_stats->update_error->get_string() ) );
+
+			CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+				CLI_DoRL_generate_output( "Total reward in last cycle: ", m_pAgentSoar->rl_stats->total_reward->get_string() ) );
+
+			CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+				CLI_DoRL_generate_output( "Global reward since init: ", m_pAgentSoar->rl_stats->global_reward->get_string() ) );
 		}
 		else
 		{
-			soar_module::stat *my_stat = m_pAgentSoar->rl_stats->get( pAttr->c_str() );
-			char *temp = my_stat->get_string();
-			std::string output( temp );
-			delete temp;			
-			
-			if ( m_RawOutput )
-				m_Result << output;
-			else
-				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeDouble, output );
+			CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
+				CLI_DoRL_generate_output( "", m_pAgentSoar->rl_stats->get( pAttr->c_str() )->get_string() ), false );
 		}
-		
+
 		return true;
 	}
-	
+
 	return SetError( CLIError::kCommandNotImplemented );
 }
