@@ -40,19 +40,19 @@ extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
 rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
-	// learning
 	learning = new rl_learning_param( "learning", soar_module::off, new soar_module::f_predicate<soar_module::boolean>(), new_agent );
 	add( learning );
 
-	// discount-rate
+	// per-state controls
+	granular_control = new soar_module::boolean_param( "granular-control", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+	add( granular_control );
+
 	discount_rate = new soar_module::decimal_param( "discount-rate", 0.9, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( discount_rate );
 
-	// learning-rate
 	learning_rate = new soar_module::decimal_param( "learning-rate", 0.3, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( learning_rate );
 
-	// learning-policy
 	learning_policy = new soar_module::constant_param<learning_choices>( "learning-policy", sarsa, new soar_module::f_predicate<learning_choices>() );
 	learning_policy->add_mapping( sarsa, "sarsa" );
 	learning_policy->add_mapping( q, "q-learning" );
@@ -66,11 +66,9 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	et_tolerance = new soar_module::decimal_param( "eligibility-trace-tolerance", 0.001, new soar_module::gt_predicate<double>( 0, false ), new soar_module::f_predicate<double>() );
 	add( et_tolerance );
 
-	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( temporal_extension );
 
-	// hrl-discount
 	hrl_discount = new soar_module::boolean_param( "hrl-discount", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( hrl_discount );
 };
@@ -342,6 +340,13 @@ void rl_revert_template_id( agent *my_agent )
 	return new_name_symbol;
 }
 
+inline void rl_MSA_make_value( agent * const &my_agent, char * &rhs_value, Symbol * symbol /* must be a copy? */)
+{
+	symbol_add_ref( symbol );
+	variablize_symbol( my_agent, &symbol );
+	rhs_value = symbol_to_rhs_value( symbol );
+}
+
 // creates an action for a template instantiation
 action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym, Symbol *val_sym, Symbol *ref_sym )
 {
@@ -351,33 +356,10 @@ action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym
 	rhs->next = NIL;
 	rhs->type = MAKE_ACTION;
 
-	{	// id
-		Symbol * temp = id_sym;
-		symbol_add_ref( temp );
-		variablize_symbol( my_agent, &temp );
-		rhs->id = symbol_to_rhs_value( temp );
-	}
-
-	{	// attribute
-		Symbol * temp = attr_sym;
-		symbol_add_ref( temp );
-		variablize_symbol( my_agent, &temp );
-		rhs->attr = symbol_to_rhs_value( temp );
-	}
-
-	{	// value
-		Symbol * temp = val_sym;
-		symbol_add_ref( temp );
-		variablize_symbol( my_agent, &temp );
-		rhs->value = symbol_to_rhs_value( temp );
-	}
-
-	{	// referent
-		Symbol * temp = ref_sym;
-		symbol_add_ref( temp );
-		variablize_symbol( my_agent, &temp );
-		rhs->referent = symbol_to_rhs_value( temp );
-	}
+	rl_MSA_make_value( my_agent, rhs->id, id_sym ); //< id
+	rl_MSA_make_value( my_agent, rhs->attr, attr_sym ); //< attribute
+	rl_MSA_make_value( my_agent, rhs->value, val_sym ); //< value
+	rl_MSA_make_value( my_agent, rhs->referent, ref_sym ); //< referent
 
 	return rhs;
 }
@@ -515,12 +497,11 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 	
 	if ( !data->prev_op_rl_rules->empty() )
 	{
-		rl_et_map::iterator iter;
-		double alpha = my_agent->rl_params->learning_rate->get_value();
-		double lambda = my_agent->rl_params->et_decay_rate->get_value();
-		double gamma = my_agent->rl_params->discount_rate->get_value();
-		double tolerance = my_agent->rl_params->et_tolerance->get_value();
-		double discount = pow( gamma, static_cast< double >( data->gap_age + data->hrl_age + 1 ) );
+		const double alpha = my_agent->rl_params->learning_rate->get_value();
+		const double lambda = my_agent->rl_params->et_decay_rate->get_value();
+		const double gamma = my_agent->rl_params->discount_rate->get_value();
+		const double tolerance = my_agent->rl_params->et_tolerance->get_value();
+		const double discount = pow( gamma, static_cast< double >( data->gap_age + data->hrl_age + 1 ) );
 
 		// notify of gap closure
 		if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
@@ -539,12 +520,12 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 		}
 		else
 		{
-			for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
+			for ( rl_et_map::iterator iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
 			{
 				iter->second *= lambda;
 				iter->second *= discount;
 
-				if ( iter->second < tolerance ) 
+				if ( iter->second < tolerance )
 					data->eligibility_traces->erase( iter++ );
 				else
 					++iter;
@@ -561,7 +542,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				if ( !*p )
 					continue;
 
-				iter = data->eligibility_traces->find( *p );
+				rl_et_map::iterator iter = data->eligibility_traces->find( *p );
 
 				if ( iter != data->eligibility_traces->end() )
 					iter->second += trace_increment;
@@ -572,22 +553,18 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 
 		// For each prod with a trace, perform update
 		{
-			double old_combined, old_ecr, old_efr;
-			double delta_ecr, delta_efr;
-			double new_combined, new_ecr, new_efr;
-			std::string temp_str, msg;
-
-			for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); ++iter )
+			for ( rl_et_map::iterator iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); ++iter )
 			{
 				production * const &prod = iter->first;
 
 				// get old vals
-				old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
-				old_ecr = prod->rl_ecr;
-				old_efr = prod->rl_efr;
+				const double old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
+				const double old_ecr = prod->rl_ecr;
+				const double old_efr = prod->rl_efr;
 
 				// calculate updates
-				delta_ecr = alpha * iter->second * ( data->reward - old_ecr );
+				double delta_ecr = alpha * iter->second * ( data->reward - old_ecr );
+				double delta_efr;
 
 				if ( update_efr )
 					delta_efr = alpha * iter->second * ( discount * op_value - old_efr );
@@ -595,14 +572,15 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					delta_efr = 0.0;
 
 				// calculate new vals
-				new_ecr = old_ecr + delta_ecr;
-				new_efr = old_efr + delta_efr;
-				new_combined = new_ecr + new_efr;
+				const double new_ecr = old_ecr + delta_ecr;
+				const double new_efr = old_efr + delta_efr;
+				const double new_combined = new_ecr + new_efr;
 
 				// print as necessary
 				if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 				{
-					msg = std::string("updating RL rule ") +  prod->name->sc.name + " from (";
+					std::string msg = std::string("updating RL rule ") +  prod->name->sc.name + " from (";
+					std::string temp_str;
 
 					// old ecr
 					to_string( old_ecr, temp_str );

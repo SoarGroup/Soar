@@ -295,7 +295,7 @@ typedef struct slot_struct {
   preference *all_preferences;      /* dll of all pref's in the slot */
   preference *preferences[NUM_PREFERENCE_TYPES]; /* dlls for each type */
   Symbol *impasse_id;               /* NIL if slot is not impassed */
-  Bool isa_context_slot;            
+  Bool isa_context_slot;
   byte impasse_type;
   Bool marked_for_possible_removal;
   dl_cons *changed;   /* for non-context slots: points to the corresponding
