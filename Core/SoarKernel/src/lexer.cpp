@@ -693,7 +693,7 @@ void lex_vbar (agent* thisAgent) {
     }
     if (thisAgent->current_char=='\\') {
       get_next_char(thisAgent);
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
+      thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
       get_next_char(thisAgent);
     } else if (thisAgent->current_char=='|') {
       get_next_char(thisAgent);
@@ -721,13 +721,13 @@ void lex_quote (agent* thisAgent) {
     }
     if (thisAgent->current_char=='\\') {
       get_next_char(thisAgent);
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
+      thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
       get_next_char(thisAgent);
     } else if (thisAgent->current_char=='"') {
       get_next_char(thisAgent);
       break;
     } else {
-      thisAgent->lexeme.string[thisAgent->lexeme.length++] = thisAgent->current_char;
+      thisAgent->lexeme.string[thisAgent->lexeme.length++] = char(thisAgent->current_char);
       get_next_char(thisAgent);
     }
   } while(TRUE);
