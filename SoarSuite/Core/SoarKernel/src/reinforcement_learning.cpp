@@ -35,6 +35,78 @@ extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_st
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
 /////////////////////////////////////////////////////
+// Visitors
+/////////////////////////////////////////////////////
+
+struct Visitor {
+	enum Instruction {Repeat, Next, Done};
+
+	const condition * next(const condition * const &cond) { return cond->next; }
+	condition * next(condition * const &cond) { return cond->next; }
+
+	const Symbol * next(const Symbol * const &goal) { return goal->id.lower_goal; }
+	Symbol * next(Symbol * const &goal) { return goal->id.lower_goal; }
+
+	const preference * next(const preference * const &pref) { return pref->next; }
+	preference * next(preference * const &pref) { return pref->next; }
+
+	rl_et_map::const_iterator next(rl_et_map::const_iterator iter) { return ++iter; }
+	rl_et_map::iterator next(rl_et_map::iterator iter) { return ++iter; }
+
+	rl_rule_list::const_iterator next(rl_rule_list::const_iterator rule) { return ++rule; }
+	rl_rule_list::iterator next(rl_rule_list::iterator rule) { return ++rule; }
+
+	const wme * next(const wme * const &w) { return w->next; }
+	wme * next(wme * const &w) { return w->next; }
+};
+
+struct Visitor_Instantiation : public Visitor {
+	const instantiation * next(const instantiation * const &inst) { return inst->next; }
+	instantiation * next(instantiation * const &inst) { return inst->next; }
+
+	const preference * next(const preference * const &pref) { return pref->inst_next; }
+	preference * next(preference * const &pref) { return pref->inst_next; }
+};
+
+template <typename VISITOR, typename NODE>
+inline VISITOR visit(VISITOR visitor, NODE begin, NODE const &end = NODE()) {
+	while(begin != end) {
+		switch(visitor(begin)) {
+		case Visitor::Next:
+			begin = visitor.next(begin);
+			break;
+
+		case Visitor::Repeat:
+			break;
+
+		case Visitor::Done:
+		default:
+			return visitor;
+		}
+	}
+
+	return visitor;
+}
+
+template <typename VISITOR, typename MEMBER_FUNCTION, typename NODE>
+inline void visit(VISITOR &visitor, MEMBER_FUNCTION function, NODE begin, NODE const &end = NODE()) {
+	while(begin != end) {
+		switch((visitor.*function)(begin)) {
+		case Visitor::Next:
+			begin = visitor.next(begin);
+			break;
+
+		case Visitor::Repeat:
+			break;
+
+		case Visitor::Done:
+		default:
+			return;
+		}
+	}
+}
+
+/////////////////////////////////////////////////////
 // Parameters
 /////////////////////////////////////////////////////
 
@@ -124,11 +196,8 @@ inline bool rl_enabled( agent *my_agent )
 	return my_agent->rl_params->learning->get_value() == soar_module::on;
 }
 
-// resets rl data structures
-void rl_reset_data( agent *my_agent )
-{
-	for ( Symbol* goal = my_agent->top_goal; goal; goal = goal->id.lower_goal )
-	{
+struct RL_Reset_Datum : public Visitor {
+	Instruction operator()(Symbol * const &goal) {
 		rl_data * const &data = goal->id.rl_info;
 
 		data->eligibility_traces->clear();
@@ -139,22 +208,44 @@ void rl_reset_data( agent *my_agent )
 
 		data->gap_age = 0;
 		data->hrl_age = 0;
+
+		return Next;
 	}
+};
+
+// resets rl data structures
+void rl_reset_data( agent *my_agent )
+{
+	visit(RL_Reset_Datum(), my_agent->top_goal);
 }
+
+class RL_Remove_Ref_For_Prod : public Visitor {
+public:
+	RL_Remove_Ref_For_Prod(production * const &prod_) : prod(prod_) {}
+
+	Instruction operator()(Symbol * const &state) {
+		state->id.rl_info->eligibility_traces->erase(prod);
+
+		visit(*this, &RL_Remove_Ref_For_Prod::remove_ref, state->id.rl_info->prev_op_rl_rules->begin(), state->id.rl_info->prev_op_rl_rules->end());
+
+		return Next;
+	}
+
+private:
+	Instruction remove_ref(const rl_rule_list::iterator &p) {
+		if(*p == prod)
+			*p = NIL;
+
+		return Next;
+	}
+
+	production * const prod;
+};
 
 // removes rl references to a production (used for excise)
 void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 {
-	for ( Symbol* state = my_agent->top_state; state; state = state->id.lower_goal )
-	{
-		state->id.rl_info->eligibility_traces->erase( prod );
-
-		for ( rl_rule_list::iterator p = state->id.rl_info->prev_op_rl_rules->begin(); p != state->id.rl_info->prev_op_rl_rules->end(); ++p )
-		{
-			if ( (*p) == prod )
-				(*p) = NIL;
-		}
-	}
+	visit(RL_Remove_Ref_For_Prod(prod), my_agent->top_state);
 }
 
 
@@ -215,9 +306,8 @@ int rl_get_template_id( const char *prod_name )
 		return -1;
 
 	// make sure id is a valid natural number
-	for ( const char * c = id_str; c != end; ++c )
-		if ( *c < '0' || '9' < *c )
-			return -1;
+	if ( !is_natural_number( id_str ) )
+		return -1;
 
 	// convert id
 	int id;
@@ -319,12 +409,7 @@ void rl_revert_template_id( agent *my_agent )
 	my_agent->variablize_this_chunk = chunk_var; // restored to original value
 
 	// set initial expected reward values
-	if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		new_production->rl_efr = static_cast< double >( referent->ic.value );
-	else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
-		new_production->rl_efr = referent->fc.value;
-	else
-		new_production->rl_efr = 0.0;
+	new_production->rl_efr = get_number_from_symbol( referent );
 
 	// attempt to add to rete, remove if duplicate
 	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
@@ -364,32 +449,74 @@ action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym
 	return rhs;
 }
 
-void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_conds )
-{
-	// mark each id as we add a test for it, so we don't add a test for the same id in two different places
-	const tc_number tc = get_new_tc_number( my_agent );
+class RL_Add_Goal_or_Impasse_Test_To_Cond : public Visitor {
+public:
+	RL_Add_Goal_or_Impasse_Test_To_Cond(agent * const my_agent_) : my_agent(my_agent_), tc(get_new_tc_number(my_agent)) {}
 
-	for ( condition *cond = all_conds; cond; cond = cond->next )
-	{
+	Instruction operator()(condition * const &cond) {
 		if ( cond->type != POSITIVE_CONDITION )
-			continue;
+			return Next;
 
 		Symbol * const id = referent_of_equality_test( cond->data.tests.id_test );
 		if ( ( !id->id.isa_goal && !id->id.isa_impasse ) || id->id.tc_num == tc )
-			continue;
+			return Next;
 
 		complex_test * ct;
 		allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
 		ct->type = static_cast<byte>( id->id.isa_goal ? GOAL_ID_TEST : IMPASSE_ID_TEST );
 		const test t = make_test_from_complex_test( ct );
 		add_new_test_to_test( my_agent, &cond->data.tests.id_test, t );
+
+		// mark each id as we add a test for it, so we don't add a test for the same id in two different places
 		id->id.tc_num = tc;
+
+		return Next;
 	}
+
+private:
+	agent * my_agent;
+	tc_number tc;
+};
+
+void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_conds )
+{
+	visit(RL_Add_Goal_or_Impasse_Test_To_Cond(my_agent), all_conds);
 }
 
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
+
+class RL_Tabulate_Reward_Value_For_WME : public Visitor {
+public:
+	RL_Tabulate_Reward_Value_For_WME(agent * const &my_agent_) : my_agent(my_agent_), reward(0.0) {}
+
+	Instruction operator()(wme * const &w) {
+		if(w->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
+			return Next;
+
+		const slot * const t = make_slot(my_agent, w->value, my_agent->rl_sym_value);
+		if(!t)
+			return Next;
+
+		visit(*this, &RL_Tabulate_Reward_Value_For_WME::add_value, t->wmes);
+
+		return Next;
+	}
+
+	const double & get_reward() const { return reward; }
+
+private:
+	Instruction add_value(wme * const &w) {
+		if(w->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE || w->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
+			reward += get_number_from_symbol(w->value);
+
+		return Next;
+	}
+
+	agent * my_agent;
+	double reward;
+};
 
 // gathers discounted reward for a state
 void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
@@ -399,69 +526,84 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	if ( !data->prev_op_rl_rules->empty() )
 	{
 		const slot * const s = make_slot( my_agent, goal->id.reward_header, my_agent->rl_sym_reward );
-		
-		double reward = 0.0;
+
+		RL_Tabulate_Reward_Value_For_WME tabulator(my_agent);
 		const double discount_rate = my_agent->rl_params->discount_rate->get_value();
 
 		if ( s )
 		{
-			for ( const wme * w = s->wmes; w; w = w->next ) {
-				if ( w->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
-					continue;
+			tabulator = visit(tabulator, s->wmes);
 
-				const slot * const t = make_slot( my_agent, w->value, my_agent->rl_sym_value );
-				if ( !t )
-					continue;
-
-				for ( const wme * x = t->wmes; x; x = x->next )
-					if ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE || x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-						reward += get_number_from_symbol( x->value );
-			}
-
-			data->reward += reward * pow( discount_rate, static_cast< double >( data->gap_age + data->hrl_age ) );
+			data->reward += tabulator.get_reward() * pow( discount_rate, static_cast< double >( data->gap_age + data->hrl_age ) );
 		}
 
 		// update stats
 		const double global_reward = my_agent->rl_stats->global_reward->get_value();
-		my_agent->rl_stats->total_reward->set_value( reward );
-		my_agent->rl_stats->global_reward->set_value( global_reward + reward );
+		my_agent->rl_stats->total_reward->set_value( tabulator.get_reward() );
+		my_agent->rl_stats->global_reward->set_value( global_reward + tabulator.get_reward() );
 
 		if ( goal != my_agent->bottom_goal && my_agent->rl_params->hrl_discount->get_value() == soar_module::on )
 			++data->hrl_age;
 	}
 }
 
+class Tabulate_Reward_Value : public Visitor {
+public:
+	Tabulate_Reward_Value(agent * const &my_agent_) : my_agent(my_agent_) {}
+
+	Instruction operator()(Symbol * const goal) {
+		rl_tabulate_reward_value_for_goal( my_agent, goal );
+
+		return Next;
+	}
+
+private:
+	agent * my_agent;
+};
+
 // gathers reward for all states
 void rl_tabulate_reward_values( agent *my_agent )
 {
-	for( Symbol *goal = my_agent->top_goal; goal; goal = goal->id.lower_goal )
-		rl_tabulate_reward_value_for_goal( my_agent, goal );
+	visit(Tabulate_Reward_Value(my_agent), my_agent->top_goal);
 }
+
+class RL_List_Just_First_Prods : public Visitor {
+public:
+	RL_List_Just_First_Prods(rl_data * const &data_, preference * const &cand) : data(data_), op(cand->value), just_fired(false) {}
+
+	Instruction operator()(const preference * const &pref) {
+		if(op != pref->value || !pref->inst->prod->rl_rule)
+			return Next;
+
+		if(!just_fired) {
+			data->prev_op_rl_rules->clear();
+			just_fired = true;
+		}
+
+		data->prev_op_rl_rules->push_back(pref->inst->prod);
+
+		return Next;
+	}
+
+	const bool & prods_just_fired() const { return just_fired; }
+
+private:
+	rl_data * data;
+	const Symbol * op;
+	bool just_fired;
+};
 
 // stores rl info for a state w.r.t. a selected operator
 void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 {
 	rl_data * const &data = goal->id.rl_info;
-	const Symbol * const &op = cand->value;
-
 	const bool using_gaps = my_agent->rl_params->temporal_extension->get_value() == soar_module::on;
 
 	// Make list of just-fired prods
-	bool just_fired = false;
-	for ( const preference *pref = goal->id.operator_slot->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
-	{
-		if ( op == pref->value && pref->inst->prod->rl_rule )
-		{
-			if ( !just_fired ) {
-				data->prev_op_rl_rules->clear();
-				just_fired = true;
-			}
+	RL_List_Just_First_Prods lister(data, cand);
+	lister = visit(lister, goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]);
 
-			data->prev_op_rl_rules->push_back( pref->inst->prod );
-		}
-	}
-
-	if ( just_fired )
+	if ( lister.prods_just_fired() )
 	{
 		data->previous_q = cand->numeric_value;
 	}
@@ -485,6 +627,158 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 	}
 }
 
+class RL_ET_Updater : public Visitor {
+public:
+	RL_ET_Updater(agent * my_agent_, rl_data * const &data_, const double &op_value_, const bool &update_efr_)
+		: my_agent(my_agent_),
+		data(data_),
+		op_value(op_value_),
+		update_efr(update_efr_),
+		alpha(my_agent->rl_params->learning_rate->get_value()),
+		lambda(my_agent->rl_params->et_decay_rate->get_value()),
+		gamma(my_agent->rl_params->discount_rate->get_value()),
+		tolerance(my_agent->rl_params->et_tolerance->get_value()),
+		discount(pow(gamma, data->gap_age + data->hrl_age + 1.0)),
+		trace_increment(data->prev_op_rl_rules->empty() ? 0.0 : 1.0 / data->prev_op_rl_rules->size())
+	{
+	}
+
+	class Preference_Updater : public Visitor_Instantiation {
+	public:
+		Preference_Updater(agent * const &my_agent_, const double &new_combined_) : my_agent(my_agent_), new_combined(new_combined_) {}
+
+		Instruction operator()(const instantiation * const &inst) {
+			visit(*this, &Preference_Updater::preference, inst->preferences_generated);
+
+			return Next;
+		}
+
+	private:
+		Instruction preference(preference * const &pref) {
+			symbol_remove_ref(my_agent, pref->referent);
+			pref->referent = make_float_constant(my_agent, new_combined);
+
+			return Next;
+		}
+
+		agent * my_agent;
+		double new_combined;
+	};
+
+	Instruction operator()(rl_et_map::iterator &iter) {
+		production * const &prod = iter->first;
+
+		// get old vals
+		const double old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
+		const double old_ecr = prod->rl_ecr;
+		const double old_efr = prod->rl_efr;
+
+		// calculate updates
+		const double delta_ecr = alpha * iter->second * ( data->reward - old_ecr );
+		const double delta_efr = update_efr ? alpha * iter->second * ( discount * op_value - old_efr ) : 0.0;
+
+		// calculate new vals
+		const double new_ecr = old_ecr + delta_ecr;
+		const double new_efr = old_efr + delta_efr;
+		const double new_combined = new_ecr + new_efr;
+
+		// print as necessary
+		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+		{
+			std::string msg = std::string("updating RL rule ") +  prod->name->sc.name + " from (";
+			std::string temp_str;
+
+			// old ecr
+			to_string( old_ecr, temp_str );
+			msg.append( temp_str );
+
+			// old efr
+			to_string( old_efr, temp_str );
+			msg.append( ", " );
+			msg.append( temp_str );
+
+			// old combined
+			to_string( old_combined, temp_str );
+			msg.append( ", " );
+			msg.append( temp_str );
+
+			msg.append( ") to (" );
+
+			// new ecr
+			to_string( new_ecr, temp_str );
+			msg.append( temp_str );
+
+			// new efr
+			to_string( new_efr, temp_str );
+			msg.append( ", " );
+			msg.append( temp_str );
+
+			// new combined
+			to_string( new_combined, temp_str );
+			msg.append( ", " );
+			msg.append( temp_str );
+			msg.append( ")" );
+
+			print( my_agent, const_cast<char *>( msg.c_str() ) );
+			xml_generate_message( my_agent, const_cast<char *>( msg.c_str() ) );
+		}
+
+		// Change value of rule
+		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
+		prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
+		prod->rl_update_count += 1;
+		prod->rl_ecr = new_ecr;
+		prod->rl_efr = new_efr;
+
+		// Change value of preferences generated by current instantiations of this rule
+		if ( prod->instantiations )
+			visit(Preference_Updater(my_agent, new_combined), prod->instantiations);
+
+		return Next;
+	}
+
+	Instruction just_fired_only(rl_rule_list::iterator &p) {
+		if(!*p)
+			return Next;
+
+		rl_et_map::iterator iter = data->eligibility_traces->find(*p);
+
+		if (iter != data->eligibility_traces->end())
+			iter->second += trace_increment;
+		else
+			(*data->eligibility_traces)[*p] = trace_increment;
+
+		return Next;
+	}
+
+	Instruction decay(rl_et_map::iterator &iter) {
+		iter->second *= lambda;
+		iter->second *= discount;
+
+		if(iter->second >= tolerance)
+			return Next;
+
+		data->eligibility_traces->erase(iter++);
+		return Repeat;
+	}
+
+	const double & get_lambda() const { return lambda; }
+
+private:
+	agent * my_agent;
+	rl_data * data;
+	double op_value;
+	bool update_efr;
+
+	double alpha;
+	double lambda;
+	double gamma;
+	double tolerance;
+	double discount;
+
+	double trace_increment;
+};
+
 // performs the rl update at a state
 void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr )
 {
@@ -497,11 +791,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 	
 	if ( !data->prev_op_rl_rules->empty() )
 	{
-		const double alpha = my_agent->rl_params->learning_rate->get_value();
-		const double lambda = my_agent->rl_params->et_decay_rate->get_value();
-		const double gamma = my_agent->rl_params->discount_rate->get_value();
-		const double tolerance = my_agent->rl_params->et_tolerance->get_value();
-		const double discount = pow( gamma, static_cast< double >( data->gap_age + data->hrl_age + 1 ) );
+		RL_ET_Updater updater(my_agent, data, op_value, update_efr);
 
 		// notify of gap closure
 		if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
@@ -514,131 +804,17 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 		}
 
 		// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
-		if ( lambda == 0 )
-		{
+		if(updater.get_lambda() == 0.0)
 			data->eligibility_traces->clear();
-		}
 		else
-		{
-			for ( rl_et_map::iterator iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
-			{
-				iter->second *= lambda;
-				iter->second *= discount;
-
-				if ( iter->second < tolerance )
-					data->eligibility_traces->erase( iter++ );
-				else
-					++iter;
-			}
-		}
+			visit(updater, &RL_ET_Updater::decay, data->eligibility_traces->begin(), data->eligibility_traces->end());
 
 		// Update trace for just fired prods
-		if ( !data->prev_op_rl_rules->empty() )
-		{
-			const double trace_increment = 1.0 / static_cast<double>( data->prev_op_rl_rules->size() );
-
-			for ( rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); ++p )
-			{
-				if ( !*p )
-					continue;
-
-				rl_et_map::iterator iter = data->eligibility_traces->find( *p );
-
-				if ( iter != data->eligibility_traces->end() )
-					iter->second += trace_increment;
-				else
-					(*data->eligibility_traces)[ *p ] = trace_increment;
-			}
-		}
+		if(!data->prev_op_rl_rules->empty())
+			visit(updater, &RL_ET_Updater::just_fired_only, data->prev_op_rl_rules->begin(), data->prev_op_rl_rules->end());
 
 		// For each prod with a trace, perform update
-		{
-			for ( rl_et_map::iterator iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); ++iter )
-			{
-				production * const &prod = iter->first;
-
-				// get old vals
-				const double old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
-				const double old_ecr = prod->rl_ecr;
-				const double old_efr = prod->rl_efr;
-
-				// calculate updates
-				double delta_ecr = alpha * iter->second * ( data->reward - old_ecr );
-				double delta_efr;
-
-				if ( update_efr )
-					delta_efr = alpha * iter->second * ( discount * op_value - old_efr );
-				else
-					delta_efr = 0.0;
-
-				// calculate new vals
-				const double new_ecr = old_ecr + delta_ecr;
-				const double new_efr = old_efr + delta_efr;
-				const double new_combined = new_ecr + new_efr;
-
-				// print as necessary
-				if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
-				{
-					std::string msg = std::string("updating RL rule ") +  prod->name->sc.name + " from (";
-					std::string temp_str;
-
-					// old ecr
-					to_string( old_ecr, temp_str );
-					msg.append( temp_str );
-
-					// old efr
-					to_string( old_efr, temp_str );
-					msg.append( ", " );
-					msg.append( temp_str );
-
-					// old combined
-					to_string( old_combined, temp_str );
-					msg.append( ", " );
-					msg.append( temp_str );
-
-					msg.append( ") to (" );
-
-					// new ecr
-					to_string( new_ecr, temp_str );
-					msg.append( temp_str );
-
-					// new efr
-					to_string( new_efr, temp_str );
-					msg.append( ", " );
-					msg.append( temp_str );
-
-					// new combined
-					to_string( new_combined, temp_str );
-					msg.append( ", " );
-					msg.append( temp_str );
-					msg.append( ")" );
-
-					print( my_agent, const_cast<char *>( msg.c_str() ) );
-					xml_generate_message( my_agent, const_cast<char *>( msg.c_str() ) );
-				}
-
-				// Change value of rule
-				symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
-				prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
-				prod->rl_update_count += 1;
-				prod->rl_ecr = new_ecr;
-				prod->rl_efr = new_efr;
-
-				// Change value of preferences generated by current instantiations of this rule
-				if ( !prod->instantiations )
-					continue;
-
-				for ( const instantiation *inst = prod->instantiations; inst; inst = inst->next )
-				{
-					for ( preference *pref = inst->preferences_generated; pref; pref = pref->inst_next )
-					{
-						symbol_remove_ref( my_agent, pref->referent );
-						pref->referent = make_float_constant( my_agent, new_combined );
-					}
-				}
-
-			}
-		}
+		visit(updater, data->eligibility_traces->begin(), data->eligibility_traces->end());
 	}
 
 	data->gap_age = 0;
