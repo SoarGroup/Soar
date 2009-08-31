@@ -239,7 +239,7 @@ private:
 		return Next;
 	}
 
-	production * const prod;
+	production * prod;
 };
 
 // removes rl references to a production (used for excise)
