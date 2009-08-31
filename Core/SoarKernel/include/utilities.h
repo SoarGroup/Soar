@@ -97,6 +97,7 @@ extern void start_attention_lapse (long duration);
 
 // Determine if a string represents a natural number (i.e. all numbers)
 extern bool is_natural_number( std::string *str );
+extern bool is_natural_number( const char *str );
 
 //////////////////////////////////////////////////////////
 // Map functions
