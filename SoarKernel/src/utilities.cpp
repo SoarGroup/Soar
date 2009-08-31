@@ -467,7 +467,18 @@ bool is_natural_number( std::string *str )
 {
 	const std::string nums = "0123456789";
 	
-	return ( str->find_first_not_of( nums ) == std::string::npos );
+	return str->find_first_not_of( nums ) == std::string::npos;
+}
+
+bool is_natural_number( const char *str )
+{
+	while ( *str )
+		if ( isdigit( *str ) )
+			++str;
+		else
+			return false;
+
+	return true;
 }
 
 /***************************************************************************
