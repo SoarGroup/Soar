@@ -72,11 +72,11 @@ public:
     int diff;
   };
 
-  typedef typename std::bidirectional_iterator_tag iterator_category;
-  typedef Type *                                   value_type;
-  typedef typename Difference                      difference_type;
-  typedef Type *                                   pointer;
-  typedef Type * &                                 reference;
+  typedef typename std::bidirectional_iterator_tag    iterator_category;
+  typedef Type *                                      value_type;
+  typedef typename Pointer_Iterator<Type>::Difference difference_type;
+  typedef Type *                                      pointer;
+  typedef Type * &                                    reference;
 
 	/// Simple initialization to a pointer
 	Pointer_Iterator(Type &ref) : ptr(&ref) {}
