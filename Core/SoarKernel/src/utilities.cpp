@@ -463,20 +463,22 @@ long init_lapse_duration(struct timeval *tv) {
 /***************************************************************************
  * Function     : is_natural_number
  **************************************************************************/
-bool is_natural_number( std::string *str )
+bool is_whole_number(const std::string &str)
 {
-	const std::string nums = "0123456789";
-	
-	return str->find_first_not_of( nums ) == std::string::npos;
+	return is_whole_number(str.c_str());
 }
 
-bool is_natural_number( const char *str )
+bool is_whole_number(const char * str)
 {
-	while ( *str )
-		if ( isdigit( *str ) )
+	if(!str || !*str)
+		return false;
+
+	do {
+		if(isdigit(*str))
 			++str;
 		else
 			return false;
+	} while(*str);
 
 	return true;
 }

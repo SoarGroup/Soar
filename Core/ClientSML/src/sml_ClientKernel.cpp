@@ -2481,7 +2481,7 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 		return std::string(dlerror());
 #endif
 	} else {
-		InitLibraryFunction pInitLibraryFunction = reinterpret_cast<InitLibraryFunction>(GetProcAddress(hLibrary, "sml_InitLibrary")) ;
+		InitLibraryFunction pInitLibraryFunction = Dangerous_Pointer_Cast<InitLibraryFunction>::from(GetProcAddress(hLibrary, "sml_InitLibrary"));
 
 		// Create main-style argc/argv (argv is null-terminated);
 		int argc = static_cast<int>(vectorArgv.size());

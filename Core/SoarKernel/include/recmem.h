@@ -70,6 +70,7 @@ inline void possibly_deallocate_instantiation(agent* thisAgent, instantiation * 
 }
 #endif /* USE_MACROS */
 
+extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
 
 #ifdef __cplusplus
 //}

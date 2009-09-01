@@ -93,7 +93,7 @@ typedef std::list<production *> rl_rule_list;
 
 // rl data associated with each state
 typedef struct rl_data_struct {
- 	rl_et_map *eligibility_traces;			// traces associated with productions	
+	rl_et_map *eligibility_traces;			// traces associated with productions
 	rl_rule_list *prev_op_rl_rules;			// rl rules associated with the previous operator
 	
 	double previous_q;						// q-value of the previous state

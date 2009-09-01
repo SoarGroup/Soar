@@ -13,6 +13,7 @@ import sys
 import SoarSCons
 import platform
 import socket
+import subprocess
 
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
@@ -60,6 +61,7 @@ opts.AddOptions(
 	BoolOption('m64', 'Compile to 64-bit (experimental)', m64_default),
 	BoolOption('gprof', 'Add gprof symbols for profiling', 'no'),
 )
+opts.Add('cc', 'Replace \'g++\' as the C++ compiler', 'g++')
 
 # Create the environment using the options
 env = Environment(options = opts, ENV = os.environ)
@@ -80,12 +82,24 @@ conf.env.Append(CPPFLAGS = ' -DSCONS')
 # We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 if sys.platform == "darwin":
 	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN')
-	if conf.env['gcc42']:
-		env['CXX'] = '/usr/bin/g++-4.2'
 	#if conf.env['ppc']:
 		#conf.env.Append(CPPFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
-		#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')		
+		#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
 
+if sys.platform == "darwin" and conf.env['gcc42']:
+	env['CXX'] = '/usr/bin/g++-4.2'
+elif conf.env['cc']:
+	env['CXX'] = conf.env['cc']
+
+### Get g++ Version
+
+def gcc_version():
+  proc = subprocess.Popen(env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
+  proc.wait()
+  version = proc.stdout.readline().rsplit('\n', 1)[0].split(' ')[2].rsplit('.')
+  return [int(version[0]), int(version[1]), int(version[2])]
+
+gcc = gcc_version()
 
 # All C/C++ modules rely or should rely on this include path (houses portability.h)
 conf.env.Append(CPPPATH = ['#Core/shared'])
@@ -129,7 +143,7 @@ if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl
 		Exit(1)
 	
 # check if the compiler supports -fvisibility=hidden (GCC >= 4)
-if conf.CheckVisibilityFlag():
+if conf.CheckVisibilityFlag() and gcc[0] > 3:
 	conf.env.Append(CPPFLAGS = ' -fvisibility=hidden')
 
 # configure misc command line options
@@ -186,9 +200,12 @@ if env['m64']:
 	print "*"
 	conf.env.Append(CPPFLAGS = ' -m64 -fPIC')
 	conf.env.Append(LINKFLAGS = ' -m64')
-else:
+elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1:
 	conf.env.Append(CPPFLAGS = ' -m32 -march=native')
 	conf.env.Append(LINKFLAGS = ' -m32 -march=native')
+else:
+	conf.env.Append(CPPFLAGS = ' -m32')
+	conf.env.Append(LINKFLAGS = ' -m32')
 
 if env['gprof']:
 	conf.env.Append(CPPFLAGS = ' -pg')
