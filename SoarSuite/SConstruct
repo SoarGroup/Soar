@@ -94,10 +94,18 @@ elif conf.env['cc']:
 ### Get g++ Version
 
 def gcc_version():
-  proc = subprocess.Popen(env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
-  proc.wait()
-  version = proc.stdout.readline().rsplit('\n', 1)[0].split(' ')[2].rsplit('.')
-  return [int(version[0]), int(version[1]), int(version[2])]
+	proc = subprocess.Popen(env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
+	proc.wait()
+	version_line = proc.stdout.readline().rsplit('\n', 1)[0]
+	for possible_vs in version_line.split(' '):
+		possible_svs = possible_vs.split('.')
+		try:
+			if len(possible_svs) is 3 and str(int(possible_svs[0])) and str(int(possible_svs[1])) and str(int(possible_svs[2])):
+				split_version_string = possible_svs
+				break
+		except ValueError:
+			continue
+	return [int(split_version_string[0]), int(split_version_string[1]), int(split_version_string[2])]
 
 gcc = gcc_version()
 

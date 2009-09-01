@@ -279,11 +279,10 @@ public:
 //			prod, static_cast<production *>(0));
 
 		// Gather all instances of the production pointer at the end of the list
-		rl_rule_list::iterator bad = remove(data.prev_op_rl_rules->begin(), data.prev_op_rl_rules->end(), prod);
+		const rl_rule_list::iterator first_bad = remove(data.prev_op_rl_rules->begin(), data.prev_op_rl_rules->end(), prod);
 
 		// Erase all the production pointers from the end of the list
-		while(bad != data.prev_op_rl_rules->end())
-			bad = data.prev_op_rl_rules->erase(bad);
+		data.prev_op_rl_rules->erase(first_bad, data.prev_op_rl_rules->end());
 	}
 
 	production * prod;
@@ -339,20 +338,16 @@ int rl_get_template_id( const char *prod_name )
 	// find last * to isolate id
 	const char * const end = prod_name + len;
 	const char * last_star = end;
-	do {
-		--last_star;
+	for(last_star = end - 1; *last_star != '*'; --last_star);
 
-		if ( last_star == prod_name + 2 )
-			return -1;
-	} while ( *last_star != '*' );
-
-	// make sure there's something left after last_star
-	const char * const id_str = last_star + 1;
-	if ( id_str == end )
+	if ( last_star == prod_name + 2 )
 		return -1;
 
-	// make sure id is a valid natural number
-	if ( !is_whole_number( id_str ) ) ///< Rename to something sane, and ensure that it is non-empty
+	// the string starts after the last star
+	const char * const id_str = last_star + 1;
+
+	// make sure id is a valid number
+	if ( !is_whole_number( id_str ) )
 		return -1;
 
 	// convert id
