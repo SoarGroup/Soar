@@ -161,4 +161,28 @@ inline bool from_c_string( long double& v, const char* const str )
 	return sscanf( str, "%Lf", &v ) == 1; 
 }
 
+/** Casting between pointer-to-function and pointer-to-object is hard to do... legally
+ *
+ *  reinterpret_cast<...>(...) isn't actually capable of performing such casts in many
+ *  compilers, complaining that it isn't ISO C++.
+ *
+ *  This function doesn't really do anything to guarantee that the provided types are
+ *  pointers, so use it appropriately.
+ */
+
+template <typename Goal_Type>
+struct Dangerous_Pointer_Cast {
+	template <typename Given_Type>
+	static Goal_Type from(Given_Type given) {
+		union {
+			Given_Type given;
+			Goal_Type goal;
+		} caster;
+
+		caster.given = given;
+
+		return caster.goal;
+	}
+};
+
 #endif /*MISC_H_*/

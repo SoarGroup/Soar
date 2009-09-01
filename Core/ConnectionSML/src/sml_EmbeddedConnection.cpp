@@ -262,20 +262,20 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	}
 
 	// Get the functions that a DLL must export to support an embedded connection.
-	m_pProcessMessageFunction = reinterpret_cast<ProcessMessageFunction>(GetProcAddress(m_pLH->hLibrary, "sml_ProcessMessage")) ;
-	m_pCreateEmbeddedFunction = reinterpret_cast<CreateEmbeddedConnectionFunction>(GetProcAddress(m_pLH->hLibrary, "sml_CreateEmbeddedConnection")) ;
+	m_pProcessMessageFunction = Dangerous_Pointer_Cast<ProcessMessageFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_ProcessMessage")) ;
+	m_pCreateEmbeddedFunction = Dangerous_Pointer_Cast<CreateEmbeddedConnectionFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_CreateEmbeddedConnection")) ;
 
 #ifdef KERNEL_SML_DIRECT
-	m_pDirectAddWMEStringFunction =		reinterpret_cast<DirectAddWMEStringFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_String")) ;
-	m_pDirectAddWMEIntFunction =		reinterpret_cast<DirectAddWMEIntFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Int")) ;
-	m_pDirectAddWMEDoubleFunction =		reinterpret_cast<DirectAddWMEDoubleFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Double")) ;
-	m_pDirectRemoveWMEFunction =		reinterpret_cast<DirectRemoveWMEFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectRemoveWME")) ;
+	m_pDirectAddWMEStringFunction =		Dangerous_Pointer_Cast<DirectAddWMEStringFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_String")) ;
+	m_pDirectAddWMEIntFunction =		Dangerous_Pointer_Cast<DirectAddWMEIntFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Int")) ;
+	m_pDirectAddWMEDoubleFunction =		Dangerous_Pointer_Cast<DirectAddWMEDoubleFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Double")) ;
+	m_pDirectRemoveWMEFunction =		Dangerous_Pointer_Cast<DirectRemoveWMEFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectRemoveWME")) ;
 
-	m_pDirectAddIDFunction =			reinterpret_cast<DirectAddIDFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddID")) ;
+	m_pDirectAddIDFunction =			Dangerous_Pointer_Cast<DirectAddIDFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddID")) ;
 
-	m_pDirectGetAgentSMLHandleFunction = reinterpret_cast<DirectGetAgentSMLHandleFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectGetAgentSMLHandle")) ;
+	m_pDirectGetAgentSMLHandleFunction = Dangerous_Pointer_Cast<DirectGetAgentSMLHandleFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectGetAgentSMLHandle")) ;
 
-	m_pDirectRunFunction =			    reinterpret_cast<DirectRunFunction>(GetProcAddress(m_pLH->hLibrary, "sml_DirectRun")) ;
+	m_pDirectRunFunction =			    Dangerous_Pointer_Cast<DirectRunFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectRun")) ;
 	
 	// Check that we got the list of functions and if so enable the direct connection
 	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
@@ -307,7 +307,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
 	int connectionType = this->IsAsynchronous() ? SML_ASYNCH_CONNECTION : SML_SYNCH_CONNECTION ;
-	m_hConnection = m_pCreateEmbeddedFunction( reinterpret_cast<Connection_Sender_Handle>(this), LocalProcessMessage, connectionType, portToListenOn) ;
+	m_hConnection = m_pCreateEmbeddedFunction( Dangerous_Pointer_Cast<Connection_Sender_Handle>::from(this), LocalProcessMessage, connectionType, portToListenOn) ;
 
 	if (!m_hConnection)
 	{

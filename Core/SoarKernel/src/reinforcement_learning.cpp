@@ -29,82 +29,131 @@
 #include "xml.h"
 #include "utilities.h"
 
-extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
-extern void variablize_symbol (agent* thisAgent, Symbol **sym);
-extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
-extern void variablize_condition_list (agent* thisAgent, condition *cond);
+#include <algorithm>
+#include <functional>
 
+using std::for_each;
+using std::remove;
+using std::mem_fun;
+using std::bind1st;
+
+// Iterators
 /////////////////////////////////////////////////////
-// Visitors
-/////////////////////////////////////////////////////
 
-struct Visitor {
-	enum Instruction {Repeat, Next, Done};
+template <typename Type>
+class Pointer_Iterator {
+public:
+	/// Simple initialization to a pointer
+	Pointer_Iterator(Type &ref) : ptr(&ref) {}
+	Pointer_Iterator(Type * const &ptr_ = 0) : ptr(ptr_) {}
 
-	const condition * next(const condition * const &cond) { return cond->next; }
-	condition * next(condition * const &cond) { return cond->next; }
+	/// Allow the iterators to be reset to different pointers
+	Pointer_Iterator<Type> & operator=(Type &ref) {ptr = &ref; return *this;}			///< Set the iterator to point somewhere new
+	Pointer_Iterator<Type> & operator=(Type * const &ptr_) {ptr = ptr_; return *this;}	///< Set the iterator to point somewhere new
 
-	const Symbol * next(const Symbol * const &goal) { return goal->id.lower_goal; }
-	Symbol * next(Symbol * const &goal) { return goal->id.lower_goal; }
+	const Type * const & operator*() const {return ptr;}	///< Dereference to get the raw pointer
+	Type * const & operator*() {return ptr;}				///< Dereference to get the raw pointer
+	const Type & operator->() const {return *ptr;}			///< Enable calling of member functions through iterators
+	Type & operator->() {return *ptr;}						///< Enable calling of member functions through iterators
 
-	const preference * next(const preference * const &pref) { return pref->next; }
-	preference * next(preference * const &pref) { return pref->next; }
+	bool operator==(const Pointer_Iterator<Type> &rhs) const {return ptr == rhs.ptr;}	///< A shallow (pointer) comparison
+	bool operator!=(const Pointer_Iterator<Type> &rhs) const {return ptr != rhs.ptr;}	///< A shallow (pointer) comparison
 
-	rl_et_map::const_iterator next(rl_et_map::const_iterator iter) { return ++iter; }
-	rl_et_map::iterator next(rl_et_map::iterator iter) { return ++iter; }
+	operator bool() const {return ptr != 0;}	///< Check to see if the iterator is pointing to something (other than 0/NULL/NIL)
 
-	rl_rule_list::const_iterator next(rl_rule_list::const_iterator rule) { return ++rule; }
-	rl_rule_list::iterator next(rl_rule_list::iterator rule) { return ++rule; }
-
-	const wme * next(const wme * const &w) { return w->next; }
-	wme * next(wme * const &w) { return w->next; }
+protected:
+	Type * ptr;
 };
 
-struct Visitor_Instantiation : public Visitor {
-	const instantiation * next(const instantiation * const &inst) { return inst->next; }
-	instantiation * next(instantiation * const &inst) { return inst->next; }
+class Condition_Iterator : public Pointer_Iterator<condition> {
+public:
+	Condition_Iterator(condition &ref) : Pointer_Iterator<condition>(ref) {}
+	Condition_Iterator(condition * const &ptr = 0) : Pointer_Iterator<condition>(ptr) {}
 
-	const preference * next(const preference * const &pref) { return pref->inst_next; }
-	preference * next(preference * const &pref) { return pref->inst_next; }
+	Condition_Iterator & operator++() {ptr = ptr->next; return *this;}
+	Condition_Iterator operator++(int) {Condition_Iterator temp = *this; ptr = ptr->next; return temp;}
+	Condition_Iterator & operator--() {ptr = ptr->prev; return *this;}
+	Condition_Iterator operator--(int) {Condition_Iterator temp = *this; ptr = ptr->prev; return temp;}
+
+	static const Condition_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
 };
 
-template <typename VISITOR, typename NODE>
-inline VISITOR visit(VISITOR visitor, NODE begin, NODE const &end = NODE()) {
-	while(begin != end) {
-		switch(visitor(begin)) {
-		case Visitor::Next:
-			begin = visitor.next(begin);
-			break;
+const Condition_Iterator Condition_Iterator::bad;
 
-		case Visitor::Repeat:
-			break;
+class State_Iterator : public Pointer_Iterator<Symbol> {
+public:
+	State_Iterator(Symbol &ref) : Pointer_Iterator<Symbol>(ref) {}
+	State_Iterator(Symbol * const &ptr = 0) : Pointer_Iterator<Symbol>(ptr) {}
 
-		case Visitor::Done:
-		default:
-			return visitor;
-		}
-	}
+	State_Iterator & operator++() {ptr = ptr->id.lower_goal; return *this;}
+	State_Iterator operator++(int) {State_Iterator temp = *this; ptr = ptr->id.lower_goal; return temp;}
+	State_Iterator & operator--() {ptr = ptr->id.higher_goal; return *this;}
+	State_Iterator operator--(int) {State_Iterator temp = *this; ptr = ptr->id.higher_goal; return temp;}
 
-	return visitor;
-}
+	static const State_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
+};
 
-template <typename VISITOR, typename MEMBER_FUNCTION, typename NODE>
-inline void visit(VISITOR &visitor, MEMBER_FUNCTION function, NODE begin, NODE const &end = NODE()) {
-	while(begin != end) {
-		switch((visitor.*function)(begin)) {
-		case Visitor::Next:
-			begin = visitor.next(begin);
-			break;
+const State_Iterator State_Iterator::bad;
 
-		case Visitor::Repeat:
-			break;
+class Preference_Iterator : public Pointer_Iterator<preference> {
+public:
+	Preference_Iterator(preference &ref) : Pointer_Iterator<preference>(ref) {}
+	Preference_Iterator(preference * const &ptr = 0) : Pointer_Iterator<preference>(ptr) {}
 
-		case Visitor::Done:
-		default:
-			return;
-		}
-	}
-}
+	Preference_Iterator & operator++() {ptr = ptr->next; return *this;}
+	Preference_Iterator operator++(int) {Preference_Iterator temp = *this; ptr = ptr->next; return temp;}
+	Preference_Iterator & operator--() {ptr = ptr->prev; return *this;}
+	Preference_Iterator operator--(int) {Preference_Iterator temp = *this; ptr = ptr->prev; return temp;}
+
+	static const Preference_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
+};
+
+const Preference_Iterator Preference_Iterator::bad;
+
+class WME_Iterator : public Pointer_Iterator<wme> {
+public:
+	WME_Iterator(wme &ref) : Pointer_Iterator<wme>(ref) {}
+	WME_Iterator(wme * const &ptr = 0) : Pointer_Iterator<wme>(ptr) {}
+
+	WME_Iterator & operator++() {ptr = ptr->next; return *this;}
+	WME_Iterator operator++(int) {WME_Iterator temp = *this; ptr = ptr->next; return temp;}
+	WME_Iterator & operator--() {ptr = ptr->prev; return *this;}
+	WME_Iterator operator--(int) {WME_Iterator temp = *this; ptr = ptr->prev; return temp;}
+
+	static const WME_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
+};
+
+const WME_Iterator WME_Iterator::bad;
+
+class Instantiation_Iterator : public Pointer_Iterator<instantiation> {
+public:
+	Instantiation_Iterator(instantiation &ref) : Pointer_Iterator<instantiation>(ref) {}
+	Instantiation_Iterator(instantiation * const &ptr = 0) : Pointer_Iterator<instantiation>(ptr) {}
+
+	Instantiation_Iterator & operator++() {ptr = ptr->next; return *this;}
+	Instantiation_Iterator operator++(int) {Instantiation_Iterator temp = *this; ptr = ptr->next; return temp;}
+	Instantiation_Iterator & operator--() {ptr = ptr->prev; return *this;}
+	Instantiation_Iterator operator--(int) {Instantiation_Iterator temp = *this; ptr = ptr->prev; return temp;}
+
+	static const Instantiation_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
+};
+
+const Instantiation_Iterator Instantiation_Iterator::bad;
+
+class Instantiation_Pref_Iterator : public Pointer_Iterator<preference> {
+public:
+	Instantiation_Pref_Iterator(preference &ref) : Pointer_Iterator<preference>(ref) {}
+	Instantiation_Pref_Iterator(preference * const &ptr = 0) : Pointer_Iterator<preference>(ptr) {}
+
+	Instantiation_Pref_Iterator & operator++() {ptr = ptr->inst_next; return *this;}
+	Instantiation_Pref_Iterator operator++(int) {Instantiation_Pref_Iterator temp = *this; ptr = ptr->inst_next; return temp;}
+	Instantiation_Pref_Iterator & operator--() {ptr = ptr->inst_prev; return *this;}
+	Instantiation_Pref_Iterator operator--(int) {Instantiation_Pref_Iterator temp = *this; ptr = ptr->inst_prev; return temp;}
+
+	static const Instantiation_Pref_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
+};
+
+const Instantiation_Pref_Iterator Instantiation_Pref_Iterator::bad;
 
 /////////////////////////////////////////////////////
 // Parameters
@@ -113,7 +162,7 @@ inline void visit(VISITOR &visitor, MEMBER_FUNCTION function, NODE begin, NODE c
 rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
 	learning = new rl_learning_param( "learning", soar_module::off, new soar_module::f_predicate<soar_module::boolean>(), new_agent );
-	add( learning );
+	add( learning ); ///< for the CLI
 
 	// per-state controls
 	granular_control = new soar_module::boolean_param( "granular-control", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
@@ -145,14 +194,15 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	add( hrl_discount );
 };
 
-//
-
 rl_learning_param::rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ) : soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 void rl_learning_param::set_value( soar_module::boolean new_value )
 {
 	if ( new_value == soar_module::on && my_agent->rl_first_switch )
 	{
+		// This must be done here because other selection policies are used when reinforcement learning is disabled.
+		// This, however, is a better default when reinforcement learning is used.
+
 		my_agent->rl_first_switch = false;
 		exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
 
@@ -196,47 +246,44 @@ inline bool rl_enabled( agent *my_agent )
 	return my_agent->rl_params->learning->get_value() == soar_module::on;
 }
 
-struct RL_Reset_Datum : public Visitor {
-	Instruction operator()(Symbol * const &goal) {
-		rl_data * const &data = goal->id.rl_info;
+static void rl_reset_state(Symbol * const &state) {
+	rl_data &data = *state->id.rl_info;
 
-		data->eligibility_traces->clear();
-		data->prev_op_rl_rules->clear();
+	data.eligibility_traces->clear();
+	data.prev_op_rl_rules->clear();
 
-		data->previous_q = 0;
-		data->reward = 0;
+	data.previous_q = 0;
+	data.reward = 0;
 
-		data->gap_age = 0;
-		data->hrl_age = 0;
-
-		return Next;
-	}
-};
+	data.gap_age = 0;
+	data.hrl_age = 0;
+}
 
 // resets rl data structures
 void rl_reset_data( agent *my_agent )
 {
-	visit(RL_Reset_Datum(), my_agent->top_goal);
+	for_each(State_Iterator(my_agent->top_goal), State_Iterator::bad, &rl_reset_state);
 }
 
-class RL_Remove_Ref_For_Prod : public Visitor {
+class RL_Remove_Ref_For_Prod {
 public:
 	RL_Remove_Ref_For_Prod(production * const &prod_) : prod(prod_) {}
 
-	Instruction operator()(Symbol * const &state) {
-		state->id.rl_info->eligibility_traces->erase(prod);
+	void operator()(Symbol * const &state) {
+		rl_data &data = *state->id.rl_info;
 
-		visit(*this, &RL_Remove_Ref_For_Prod::remove_ref, state->id.rl_info->prev_op_rl_rules->begin(), state->id.rl_info->prev_op_rl_rules->end());
+		data.eligibility_traces->erase(prod);
 
-		return Next;
-	}
+//		/// WARNING: Entries were zeroed like this instead of being removed up until 20090901
+//		replace(state->id.rl_info->prev_op_rl_rules->begin(), state->id.rl_info->prev_op_rl_rules->end(),
+//			prod, static_cast<production *>(0));
 
-private:
-	Instruction remove_ref(const rl_rule_list::iterator &p) {
-		if(*p == prod)
-			*p = NIL;
+		// Gather all instances of the production pointer at the end of the list
+		rl_rule_list::iterator bad = remove(data.prev_op_rl_rules->begin(), data.prev_op_rl_rules->end(), prod);
 
-		return Next;
+		// Erase all the production pointers from the end of the list
+		while(bad != data.prev_op_rl_rules->end())
+			bad = data.prev_op_rl_rules->erase(bad);
 	}
 
 	production * prod;
@@ -245,7 +292,7 @@ private:
 // removes rl references to a production (used for excise)
 void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 {
-	visit(RL_Remove_Ref_For_Prod(prod), my_agent->top_state);
+	for_each(State_Iterator(my_agent->top_state), State_Iterator::bad, RL_Remove_Ref_For_Prod(prod));
 }
 
 
@@ -255,7 +302,7 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 // returns true if a template is valid
 bool rl_valid_template( production *prod )
 {
-	return	prod->action_list &&
+	return prod->action_list &&
 		!prod->action_list->next &&
 		prod->action_list->type == MAKE_ACTION &&
 		( prod->action_list->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE ||
@@ -267,12 +314,11 @@ bool rl_valid_template( production *prod )
 // returns true if an rl rule is valid
 bool rl_valid_rule( production *prod )
 {
-	return	prod->action_list &&
+	return prod->action_list &&
 		!prod->action_list->next &&
 		prod->action_list->type == MAKE_ACTION &&
 		prod->action_list->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
 }
-
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -306,7 +352,7 @@ int rl_get_template_id( const char *prod_name )
 		return -1;
 
 	// make sure id is a valid natural number
-	if ( !is_natural_number( id_str ) )
+	if ( !is_whole_number( id_str ) ) ///< Rename to something sane, and ensure that it is non-empty
 		return -1;
 
 	// convert id
@@ -318,7 +364,7 @@ int rl_get_template_id( const char *prod_name )
 // initializes the max rl template counter
 void rl_initialize_template_tracking( agent *my_agent )
 {
-	my_agent->rl_template_count = 1;
+	my_agent->rl_template_count = 0;
 }
 
 // updates rl template counter for a rule
@@ -327,13 +373,13 @@ void rl_update_template_tracking( agent *my_agent, const char *rule_name )
 	const int new_id = rl_get_template_id( rule_name );
 
 	if ( new_id != -1 && new_id > my_agent->rl_template_count )
-		my_agent->rl_template_count = new_id + 1;
+		my_agent->rl_template_count = new_id;
 }
 
 // gets the next template-assigned id
 int rl_next_template_id( agent *my_agent )
 {
-	return my_agent->rl_template_count++;
+	return ++my_agent->rl_template_count;
 }
 
 // gives back a template-assigned id (on auto-retract)
@@ -343,7 +389,7 @@ void rl_revert_template_id( agent *my_agent )
 }
 
 // builds a template instantiation
- Symbol *rl_build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
+Symbol * rl_build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
 {
 	Bool chunk_var = my_agent->variablize_this_chunk;
 	my_agent->variablize_this_chunk = TRUE;
@@ -352,6 +398,9 @@ void rl_revert_template_id( agent *my_agent )
 	Symbol *new_name_symbol;
 
 	{	// make unique production name
+		// "Guarantee" that productions produced as template instantiation do not conflict with other productions
+		//   including productions users may have added previously
+
 		const std::string new_name_start = std::string("rl*") + my_template->name->sc.name + "*";
 
 		for(;;)
@@ -361,23 +410,24 @@ void rl_revert_template_id( agent *my_agent )
 			to_string( new_id, temp_id );
 
 			const std::string new_name = new_name_start + temp_id;
+			Symbol * const existing = find_sym_constant( my_agent, new_name.c_str() );
 
-			if ( !find_sym_constant( my_agent, new_name.c_str() ) ) {
+			if ( !existing || !existing->sc.production ) {
 				new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
 				break;
 			}
 		}
 	}
 
- 	condition *cond_top, *cond_bottom;
+	condition *cond_top, *cond_bottom;
 
 	{	// prep conditions
-		copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
-		rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
-		reset_variable_generator( my_agent, cond_top, NIL );
-		my_agent->variablization_tc = get_new_tc_number( my_agent );
-		variablize_condition_list( my_agent, cond_top );
-		variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+		copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );	//< Just copy the conditions which caused the template instantiation
+		rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );	//< Ground the rule to a state (e.g. state <s>)
+		reset_variable_generator( my_agent, cond_top, NIL );	///< TODO: ??? - Look at chunk.cpp
+		my_agent->variablization_tc = get_new_tc_number( my_agent );	//< For transitive closure system - avoid infinite cyclic recursion
+		variablize_condition_list( my_agent, cond_top );	//< Make the rule specific to the conditions
+		variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );	///< TODO: ??? - Something to do with negated conditions
 	}
 
 	Symbol *referent;
@@ -387,6 +437,7 @@ void rl_revert_template_id( agent *my_agent )
 		const action * const &my_action = my_template->action_list;
 
 		// get the preference value
+		/// NOTE: Token is an explanation of how a rule matches in the rete
 		Symbol * const id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
 		Symbol * const attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
 		const char first_letter = first_letter_from_symbol( attr );
@@ -449,17 +500,17 @@ action *rl_make_simple_action( agent *my_agent, Symbol *id_sym, Symbol *attr_sym
 	return rhs;
 }
 
-class RL_Add_Goal_or_Impasse_Test_To_Cond : public Visitor {
+class RL_Add_Goal_or_Impasse_Test_To_Cond {
 public:
 	RL_Add_Goal_or_Impasse_Test_To_Cond(agent * const my_agent_) : my_agent(my_agent_), tc(get_new_tc_number(my_agent)) {}
 
-	Instruction operator()(condition * const &cond) {
+	void operator()(condition * const &cond) {
 		if ( cond->type != POSITIVE_CONDITION )
-			return Next;
+			return;
 
 		Symbol * const id = referent_of_equality_test( cond->data.tests.id_test );
 		if ( ( !id->id.isa_goal && !id->id.isa_impasse ) || id->id.tc_num == tc )
-			return Next;
+			return;
 
 		complex_test * ct;
 		allocate_with_pool( my_agent, &my_agent->complex_test_pool, &ct );
@@ -469,8 +520,6 @@ public:
 
 		// mark each id as we add a test for it, so we don't add a test for the same id in two different places
 		id->id.tc_num = tc;
-
-		return Next;
 	}
 
 private:
@@ -480,38 +529,35 @@ private:
 
 void rl_add_goal_or_impasse_tests_to_conds( agent *my_agent, condition *all_conds )
 {
-	visit(RL_Add_Goal_or_Impasse_Test_To_Cond(my_agent), all_conds);
+	for_each(Condition_Iterator(all_conds), Condition_Iterator::bad, RL_Add_Goal_or_Impasse_Test_To_Cond(my_agent));
 }
 
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
-class RL_Tabulate_Reward_Value_For_WME : public Visitor {
+class RL_Tabulate_Reward_Value_For_WME {
 public:
 	RL_Tabulate_Reward_Value_For_WME(agent * const &my_agent_) : my_agent(my_agent_), reward(0.0) {}
 
-	Instruction operator()(wme * const &w) {
+	void operator()(wme * const &w) {
 		if(w->value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)
-			return Next;
+			return;
 
+		/// NOTE: to walk reward-link structures, arg1 should be the reward-link Symbol, and arg2 should be the Symbol rl_gc_sym_* from Agent
 		const slot * const t = make_slot(my_agent, w->value, my_agent->rl_sym_value);
 		if(!t)
-			return Next;
+			return;
 
-		visit(*this, &RL_Tabulate_Reward_Value_For_WME::add_value, t->wmes);
-
-		return Next;
+		for_each(WME_Iterator(t->wmes), WME_Iterator::bad,
+			bind1st(mem_fun(&RL_Tabulate_Reward_Value_For_WME::add_value), this));
 	}
 
 	const double & get_reward() const { return reward; }
 
-private:
-	Instruction add_value(wme * const &w) {
+	void add_value(wme * w) {
 		if(w->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE || w->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)
 			reward += get_number_from_symbol(w->value);
-
-		return Next;
 	}
 
 	agent * my_agent;
@@ -532,7 +578,7 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 
 		if ( s )
 		{
-			tabulator = visit(tabulator, s->wmes);
+			tabulator = for_each(WME_Iterator(s->wmes), WME_Iterator::bad, tabulator);
 
 			data->reward += tabulator.get_reward() * pow( discount_rate, static_cast< double >( data->gap_age + data->hrl_age ) );
 		}
@@ -547,14 +593,12 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	}
 }
 
-class Tabulate_Reward_Value : public Visitor {
+class Tabulate_Reward_Value {
 public:
 	Tabulate_Reward_Value(agent * const &my_agent_) : my_agent(my_agent_) {}
 
-	Instruction operator()(Symbol * const goal) {
+	void operator()(Symbol * const &goal) {
 		rl_tabulate_reward_value_for_goal( my_agent, goal );
-
-		return Next;
 	}
 
 private:
@@ -564,16 +608,16 @@ private:
 // gathers reward for all states
 void rl_tabulate_reward_values( agent *my_agent )
 {
-	visit(Tabulate_Reward_Value(my_agent), my_agent->top_goal);
+	for_each(State_Iterator(my_agent->top_goal), State_Iterator::bad, Tabulate_Reward_Value(my_agent));
 }
 
-class RL_List_Just_First_Prods : public Visitor {
+class RL_List_Just_First_Prods {
 public:
 	RL_List_Just_First_Prods(rl_data * const &data_, preference * const &cand) : data(data_), op(cand->value), just_fired(false) {}
 
-	Instruction operator()(const preference * const &pref) {
+	void operator()(preference * const &pref) {
 		if(op != pref->value || !pref->inst->prod->rl_rule)
-			return Next;
+			return;
 
 		if(!just_fired) {
 			data->prev_op_rl_rules->clear();
@@ -581,8 +625,6 @@ public:
 		}
 
 		data->prev_op_rl_rules->push_back(pref->inst->prod);
-
-		return Next;
 	}
 
 	const bool & prods_just_fired() const { return just_fired; }
@@ -601,7 +643,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 
 	// Make list of just-fired prods
 	RL_List_Just_First_Prods lister(data, cand);
-	lister = visit(lister, goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]);
+	lister = for_each(Preference_Iterator(goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]), Preference_Iterator::bad, lister);
 
 	if ( lister.prods_just_fired() )
 	{
@@ -627,7 +669,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 	}
 }
 
-class RL_ET_Updater : public Visitor {
+class RL_ET_Updater {
 public:
 	RL_ET_Updater(agent * my_agent_, rl_data * const &data_, const double &op_value_, const bool &update_efr_)
 		: my_agent(my_agent_),
@@ -643,39 +685,36 @@ public:
 	{
 	}
 
-	class Preference_Updater : public Visitor_Instantiation {
+	class Preference_Updater {
 	public:
 		Preference_Updater(agent * const &my_agent_, const double &new_combined_) : my_agent(my_agent_), new_combined(new_combined_) {}
 
-		Instruction operator()(const instantiation * const &inst) {
-			visit(*this, &Preference_Updater::preference, inst->preferences_generated);
-
-			return Next;
+		void operator()(const instantiation * const &inst) {
+			for_each(Instantiation_Pref_Iterator(inst->preferences_generated), Instantiation_Pref_Iterator::bad,
+				bind1st(mem_fun(&Preference_Updater::update_preference), this));
 		}
 
 	private:
-		Instruction preference(preference * const &pref) {
+		void update_preference(preference * pref) {
 			symbol_remove_ref(my_agent, pref->referent);
 			pref->referent = make_float_constant(my_agent, new_combined);
-
-			return Next;
 		}
 
 		agent * my_agent;
 		double new_combined;
 	};
 
-	Instruction operator()(rl_et_map::iterator &iter) {
-		production * const &prod = iter->first;
+	void operator()(rl_et_map::value_type &entry) {
+		production &prod = *entry.first;
 
 		// get old vals
-		const double old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
-		const double old_ecr = prod->rl_ecr;
-		const double old_efr = prod->rl_efr;
+		const double old_combined = get_number_from_symbol( rhs_value_to_symbol( prod.action_list->referent ) );
+		const double old_ecr = prod.rl_ecr;
+		const double old_efr = prod.rl_efr;
 
 		// calculate updates
-		const double delta_ecr = alpha * iter->second * ( data->reward - old_ecr );
-		const double delta_efr = update_efr ? alpha * iter->second * ( discount * op_value - old_efr ) : 0.0;
+		const double delta_ecr = alpha * entry.second * ( data->reward - old_ecr );
+		const double delta_efr = update_efr ? alpha * entry.second * ( discount * op_value - old_efr ) : 0.0;
 
 		// calculate new vals
 		const double new_ecr = old_ecr + delta_ecr;
@@ -685,7 +724,7 @@ public:
 		// print as necessary
 		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 		{
-			std::string msg = std::string("updating RL rule ") +  prod->name->sc.name + " from (";
+			std::string msg = std::string("updating RL rule ") +  prod.name->sc.name + " from (";
 			std::string temp_str;
 
 			// old ecr
@@ -724,22 +763,20 @@ public:
 		}
 
 		// Change value of rule
-		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
-		prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
-		prod->rl_update_count += 1;
-		prod->rl_ecr = new_ecr;
-		prod->rl_efr = new_efr;
+		symbol_remove_ref( my_agent, rhs_value_to_symbol( prod.action_list->referent ) );
+		prod.action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
+		prod.rl_update_count += 1;
+		prod.rl_ecr = new_ecr;
+		prod.rl_efr = new_efr;
 
 		// Change value of preferences generated by current instantiations of this rule
-		if ( prod->instantiations )
-			visit(Preference_Updater(my_agent, new_combined), prod->instantiations);
-
-		return Next;
+		if ( prod.instantiations )
+			for_each(Instantiation_Iterator(prod.instantiations), Instantiation_Iterator::bad, Preference_Updater(my_agent, new_combined));
 	}
 
-	Instruction just_fired_only(rl_rule_list::iterator &p) {
+	void just_fired_only(rl_rule_list::iterator &p) {
 		if(!*p)
-			return Next;
+			return;
 
 		rl_et_map::iterator iter = data->eligibility_traces->find(*p);
 
@@ -747,19 +784,14 @@ public:
 			iter->second += trace_increment;
 		else
 			(*data->eligibility_traces)[*p] = trace_increment;
-
-		return Next;
 	}
 
-	Instruction decay(rl_et_map::iterator &iter) {
-		iter->second *= lambda;
-		iter->second *= discount;
+	/// Return true if still above tolerance; false indicates that the value should be discarded
+	bool decay(double &et_value) {
+		et_value *= lambda;
+		et_value *= discount;
 
-		if(iter->second >= tolerance)
-			return Next;
-
-		data->eligibility_traces->erase(iter++);
-		return Repeat;
+		return et_value >= tolerance;
 	}
 
 	const double & get_lambda() const { return lambda; }
@@ -807,14 +839,25 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 		if(updater.get_lambda() == 0.0)
 			data->eligibility_traces->clear();
 		else
-			visit(updater, &RL_ET_Updater::decay, data->eligibility_traces->begin(), data->eligibility_traces->end());
+		{
+			for(rl_et_map::iterator iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); )
+			{
+				if(updater.decay(iter->second))
+					++iter;
+				else
+					data->eligibility_traces->erase(iter++);
+			}
+		}
 
 		// Update trace for just fired prods
 		if(!data->prev_op_rl_rules->empty())
-			visit(updater, &RL_ET_Updater::just_fired_only, data->prev_op_rl_rules->begin(), data->prev_op_rl_rules->end());
+		{
+			for(rl_rule_list::iterator p = data->prev_op_rl_rules->begin(); p != data->prev_op_rl_rules->end(); ++p)
+				updater.just_fired_only(p);
+		}
 
 		// For each prod with a trace, perform update
-		visit(updater, data->eligibility_traces->begin(), data->eligibility_traces->end());
+		for_each(data->eligibility_traces->begin(), data->eligibility_traces->end(), updater);
 	}
 
 	data->gap_age = 0;
