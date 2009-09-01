@@ -43,6 +43,41 @@ using std::bind1st;
 template <typename Type>
 class Pointer_Iterator {
 public:
+  class Difference {
+  public:
+    Difference(const int &diff_ = 0) : diff(diff_) {}
+
+    template <typename Subtype>
+    Subtype operator+(Subtype rhs) const {
+      int increment = diff;
+
+      while(increment > 0) {
+        ++rhs;
+        --increment;
+      }
+      while(increment < 0) {
+        --rhs;
+        ++increment;
+      }
+
+      return rhs;
+    }
+
+    template <typename Subtype>
+    Subtype operator-(const Subtype &rhs) const {
+      return Difference(-diff) + rhs;
+    }
+
+  private:
+    int diff;
+  };
+
+  typedef typename std::bidirectional_iterator_tag iterator_category;
+  typedef Type *                                   value_type;
+  typedef typename Difference                      difference_type;
+  typedef Type *                                   pointer;
+  typedef Type * &                                 reference;
+
 	/// Simple initialization to a pointer
 	Pointer_Iterator(Type &ref) : ptr(&ref) {}
 	Pointer_Iterator(Type * const &ptr_ = 0) : ptr(ptr_) {}
@@ -50,6 +85,19 @@ public:
 	/// Allow the iterators to be reset to different pointers
 	Pointer_Iterator<Type> & operator=(Type &ref) {ptr = &ref; return *this;}			///< Set the iterator to point somewhere new
 	Pointer_Iterator<Type> & operator=(Type * const &ptr_) {ptr = ptr_; return *this;}	///< Set the iterator to point somewhere new
+
+  /// Allow the iterators to be differenced
+  Difference operator-(const Pointer_Iterator<Type> &rhs) const {
+    int diff = 0;
+
+    Pointer_Iterator<Type> temp = *this;
+    while(temp != rhs) {
+      ++temp;
+      ++diff;
+    }
+
+    return Difference(diff);
+  }
 
 	const Type * const & operator*() const {return ptr;}	///< Dereference to get the raw pointer
 	Type * const & operator*() {return ptr;}				///< Dereference to get the raw pointer
@@ -75,6 +123,12 @@ public:
 	Condition_Iterator & operator--() {ptr = ptr->prev; return *this;}
 	Condition_Iterator operator--(int) {Condition_Iterator temp = *this; ptr = ptr->prev; return temp;}
 
+  /// Allow the iterators to have differences added to them
+  Condition_Iterator operator+(const Difference &diff) const { return diff + *this; }
+  Condition_Iterator & operator+=(const Difference &diff) { return *this = diff + *this; }
+  Condition_Iterator operator-(const Difference &diff) const { return diff - *this; }
+  Condition_Iterator & operator-=(const Difference &diff) { return *this = diff - *this; }
+
 	static const Condition_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
 };
 
@@ -89,6 +143,12 @@ public:
 	State_Iterator operator++(int) {State_Iterator temp = *this; ptr = ptr->id.lower_goal; return temp;}
 	State_Iterator & operator--() {ptr = ptr->id.higher_goal; return *this;}
 	State_Iterator operator--(int) {State_Iterator temp = *this; ptr = ptr->id.higher_goal; return temp;}
+
+  /// Allow the iterators to have differences added to them
+  State_Iterator operator+(const Difference &diff) const { return diff + *this; }
+  State_Iterator & operator+=(const Difference &diff) { return *this = diff + *this; }
+  State_Iterator operator-(const Difference &diff) const { return diff - *this; }
+  State_Iterator & operator-=(const Difference &diff) { return *this = diff - *this; }
 
 	static const State_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
 };
@@ -105,6 +165,12 @@ public:
 	Preference_Iterator & operator--() {ptr = ptr->prev; return *this;}
 	Preference_Iterator operator--(int) {Preference_Iterator temp = *this; ptr = ptr->prev; return temp;}
 
+  /// Allow the iterators to have differences added to them
+  Preference_Iterator operator+(const Difference &diff) const { return diff + *this; }
+  Preference_Iterator & operator+=(const Difference &diff) { return *this = diff + *this; }
+  Preference_Iterator operator-(const Difference &diff) const { return diff - *this; }
+  Preference_Iterator & operator-=(const Difference &diff) { return *this = diff - *this; }
+
 	static const Preference_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
 };
 
@@ -119,6 +185,12 @@ public:
 	WME_Iterator operator++(int) {WME_Iterator temp = *this; ptr = ptr->next; return temp;}
 	WME_Iterator & operator--() {ptr = ptr->prev; return *this;}
 	WME_Iterator operator--(int) {WME_Iterator temp = *this; ptr = ptr->prev; return temp;}
+
+  /// Allow the iterators to have differences added to them
+  WME_Iterator operator+(const Difference &diff) const { return diff + *this; }
+  WME_Iterator & operator+=(const Difference &diff) { return *this = diff + *this; }
+  WME_Iterator operator-(const Difference &diff) const { return diff - *this; }
+  WME_Iterator & operator-=(const Difference &diff) { return *this = diff - *this; }
 
 	static const WME_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
 };
@@ -135,6 +207,12 @@ public:
 	Instantiation_Iterator & operator--() {ptr = ptr->prev; return *this;}
 	Instantiation_Iterator operator--(int) {Instantiation_Iterator temp = *this; ptr = ptr->prev; return temp;}
 
+  /// Allow the iterators to have differences added to them
+  Instantiation_Iterator operator+(const Difference &diff) const { return diff + *this; }
+  Instantiation_Iterator & operator+=(const Difference &diff) { return *this = diff + *this; }
+  Instantiation_Iterator operator-(const Difference &diff) const { return diff - *this; }
+  Instantiation_Iterator & operator-=(const Difference &diff) { return *this = diff - *this; }
+
 	static const Instantiation_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
 };
 
@@ -149,6 +227,12 @@ public:
 	Instantiation_Pref_Iterator operator++(int) {Instantiation_Pref_Iterator temp = *this; ptr = ptr->inst_next; return temp;}
 	Instantiation_Pref_Iterator & operator--() {ptr = ptr->inst_prev; return *this;}
 	Instantiation_Pref_Iterator operator--(int) {Instantiation_Pref_Iterator temp = *this; ptr = ptr->inst_prev; return temp;}
+
+  /// Allow the iterators to have differences added to them
+  Instantiation_Pref_Iterator operator+(const Difference &diff) const { return diff + *this; }
+  Instantiation_Pref_Iterator & operator+=(const Difference &diff) { return *this = diff + *this; }
+  Instantiation_Pref_Iterator operator-(const Difference &diff) const { return diff - *this; }
+  Instantiation_Pref_Iterator & operator-=(const Difference &diff) { return *this = diff - *this; }
 
 	static const Instantiation_Pref_Iterator bad;	///< A static iterator pointing to 0/NULL/NIL
 };
