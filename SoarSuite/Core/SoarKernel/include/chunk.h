@@ -19,6 +19,7 @@ typedef char Bool;
 typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef union symbol_union Symbol;
+struct not_struct;
 
 /* RBD Need more comments here */
 #define CHUNK_COND_HASH_TABLE_SIZE 1024
@@ -57,6 +58,10 @@ extern chunk_cond *make_chunk_cond_for_condition (agent* thisAgent, condition *c
 extern Bool add_to_chunk_cond_set (agent* thisAgent, chunk_cond_set *set, chunk_cond *new_cc);
 
 extern void add_results_for_id (agent* thisAgent, Symbol *id);
+
+extern void variablize_symbol (agent* thisAgent, Symbol **sym);
+extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
+extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
 #ifdef __cplusplus
 //}

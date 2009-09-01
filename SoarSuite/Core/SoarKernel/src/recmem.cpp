@@ -195,8 +195,8 @@ void find_match_goal (instantiation *inst) {
 ----------------------------------------------------------------------- */
 
 
-Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, 
-			       goal_stack_level new_id_level,
+Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
+                               goal_stack_level new_id_level,
                                char new_id_letter,
                                struct token_struct *tok, wme *w) {
   list *fl;
@@ -205,7 +205,7 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   rhs_function *rf;
   Symbol *result;
   Bool nil_arg_found;
-  
+
   if (rhs_value_is_symbol(rv)) {
     result = rhs_value_to_symbol(rv);
     symbol_add_ref (result);
