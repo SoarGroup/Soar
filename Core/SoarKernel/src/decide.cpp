@@ -2787,7 +2787,9 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
 	   print(agentPtr, "Adding to GDS for S%lu: ", wme_to_add->gds->goal->id.name_number);    
 	   print(agentPtr, " WME: "); 
 	   char buf[256];
-	   SNPRINTF(buf, 254, "Adding to GDS for S%llu: ", wme_to_add->gds->goal->id.name_number);
+
+	   // BADBAD: static casting for llu portability
+	   SNPRINTF(buf, 254, "Adding to GDS for S%llu: ", static_cast<unsigned long long>(wme_to_add->gds->goal->id.name_number));
 
 	   xml_begin_tag(agentPtr, kTagVerbose);
 	   xml_att_val(agentPtr, kTypeString, buf);

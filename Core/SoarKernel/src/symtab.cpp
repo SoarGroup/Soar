@@ -477,10 +477,11 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
    
    if ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
       if ( sym->common.reference_count > 0 ) {
+         // BADBAD: static casting for llu portability
          SNPRINTF( msg, 256, 
                   "\t%c%llu --> %lu\n", 
                   sym->id.name_letter, 
-                  sym->id.name_number, 
+                  static_cast<unsigned long long>(sym->id.name_number), 
                   sym->common.reference_count);
 		 msg[255] = 0; /* ensure null termination */
          print (thisAgent, msg);
