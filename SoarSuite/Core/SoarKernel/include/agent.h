@@ -363,6 +363,12 @@ typedef struct agent_struct {
   unsigned long       max_wm_size;    /* maximum size of WM so far */
   unsigned long       wme_addition_count; /* # of wmes added to WM */
   unsigned long       wme_removal_count;  /* # of wmes removed from WM */
+
+  unsigned long       start_dc_wme_addition_count; /* for calculating max_dc_wm_changes */
+  unsigned long       start_dc_wme_removal_count;  /* for calculating max_dc_wm_changes */
+  unsigned long       max_dc_wm_changes_value;  /* # of wmes added + removed in a single dc */
+  unsigned long       max_dc_wm_changes_cycle;  /* # cycle of max_dc_wm_changes */
+
   unsigned long       d_cycle_count;          /* # of DC's run so far */
   unsigned long       e_cycle_count;          /* # of EC's run so far */
   /*  in Soar 8, e_cycles_this_d_cycle is reset to zero for every
@@ -370,6 +376,9 @@ typedef struct agent_struct {
   unsigned long       e_cycles_this_d_cycle;  /* # of EC's run this DC */
   unsigned long       num_existing_wmes;      /* current WM size */
   unsigned long       production_firing_count;  /* # of prod. firings */
+  unsigned long       start_dc_production_firing_count;  /* # of prod. firings this decision cycle */
+  unsigned long       max_dc_production_firing_count_value;  /* max # of prod. firings per dc */
+  unsigned long       max_dc_production_firing_count_cycle;  /* cycle of max_dc_production_firing_count_value */
   unsigned long       d_cycle_last_output;    /* last time agent produced output */  //KJC 11.17.05
   unsigned long       decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
   //?? unsigned long       out_cycle_count;       /* # of output phases have gen'd output */
@@ -492,7 +501,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   struct timeval      monitors_cpu_time[NUM_PHASE_TYPES]; 
   struct timeval      input_function_cpu_time; 
   struct timeval      output_function_cpu_time; 
- 
+
+  struct timeval      decision_cycle_timer; // Used to calculate the maximum amount of decision cycle time
+  double              max_dc_time_value;    // Holds timer_value of maximum amount of decision cycle time
+  unsigned long       max_dc_time_cycle;    // Holds cycle_count that maximum amount of decision cycle time happened
+
   /* accumulated cpu time spent in various parts of the system */
   /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
   struct timeval      ownership_cpu_time[NUM_PHASE_TYPES];

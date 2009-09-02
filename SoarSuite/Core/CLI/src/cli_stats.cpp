@@ -32,8 +32,10 @@ using namespace sml;
 bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 	Options optionsData[] = {
 		{'m', "memory",	OPTARG_NONE},
+		{'M', "max",	OPTARG_NONE},
 		{'r', "rete",	OPTARG_NONE},
 		{'s', "system",	OPTARG_NONE},
+		{'R', "reset",	OPTARG_NONE},
 		{0, 0, OPTARG_NONE}
 	};
 
@@ -45,15 +47,18 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 
 		switch (m_Option) {
 			case 'm':
-				options.reset();
 				options.set(STATS_MEMORY);
 				break;
+			case 'M':
+				options.set(STATS_MAX);
+				break;
 			case 'r':
-				options.reset();
 				options.set(STATS_RETE);
 				break;
+			case 'R':
+				options.set(STATS_RESET);
+				break;
 			case 's':
-				options.reset();
 				options.set(STATS_SYSTEM);
 				break;
 			default:
@@ -78,11 +83,16 @@ bool CommandLineInterface::DoStats(const StatsBitset& options) {
 	{
 		GetMemoryStats();
 	}
+	if ( options.test(STATS_MAX) )
+	{
+		GetMaxStats();
+	}
 	if ( options.test(STATS_RETE) )
 	{
 		GetReteStats();
 	}
-	if ( (!options.test(STATS_MEMORY) && !options.test(STATS_RETE)) || options.test(STATS_SYSTEM) )
+	if ( (!options.test(STATS_MEMORY) && !options.test(STATS_RETE) && !options.test(STATS_MAX) && !options.test(STATS_RESET)) 
+		|| options.test(STATS_SYSTEM) )
 	{
 		GetSystemStats();
 	}
@@ -147,8 +157,30 @@ bool CommandLineInterface::DoStats(const StatsBitset& options) {
 	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageString,					sml_Names::kTypeInt,	to_string(m_pAgentSoar->memory_for_usage[STRING_MEM_USAGE], temp));
 	AppendArgTagFast(sml_Names::kParamStatsMemoryUsagePool,						sml_Names::kTypeInt,	to_string(m_pAgentSoar->memory_for_usage[POOL_MEM_USAGE], temp));
 	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->memory_for_usage[STATS_OVERHEAD_MEM_USAGE], temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeCycle,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_cycle, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValue,			sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_time_value, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle,		sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_wm_changes_cycle, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleWMChangesValue,		sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_wm_changes_value, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleFireCountCycle,		sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_production_firing_count_cycle, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleFireCountValue,		sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_production_firing_count_value, temp));
+
+
+	if ( options.test(STATS_RESET) )
+	{
+		ResetMaxStats();
+	}
 
 	return true;
+}
+
+void CommandLineInterface::ResetMaxStats()
+{
+	m_pAgentSoar->max_dc_production_firing_count_cycle = 0;
+	m_pAgentSoar->max_dc_production_firing_count_value = 0;
+	m_pAgentSoar->max_dc_wm_changes_value = 0;
+	m_pAgentSoar->max_dc_wm_changes_cycle = 0;
+	m_pAgentSoar->max_dc_time_cycle = 0;
+	m_pAgentSoar->max_dc_time_value = 0;
 }
 
 void CommandLineInterface::GetSystemStats()
@@ -323,7 +355,28 @@ void CommandLineInterface::GetSystemStats()
 		<< m_pAgentSoar->num_wmes_in_rete << " current, "
 		<< (m_pAgentSoar->num_wm_sizes_accumulated ? (m_pAgentSoar->cumulative_wm_size / m_pAgentSoar->num_wm_sizes_accumulated) : 0.0) 
 		<< " mean, "
-		<< m_pAgentSoar->max_wm_size << " maximum\n";
+		<< m_pAgentSoar->max_wm_size << " maximum\n\n";
+}
+
+void CommandLineInterface::GetMaxStats() 
+{
+	m_Result << "Single decision cycle maximums:\n";
+
+	m_Result << "Stat          Value       Cycle\n";
+	m_Result << "------------- ----------- -----------\n";
+
+	m_Result << "Time (sec)    "
+		<< std::setw(11) << m_pAgentSoar->max_dc_time_value << " "
+		<< std::setw(11) << m_pAgentSoar->max_dc_time_cycle << "\n";
+
+	m_Result << "WM changes    "
+		<< std::setw(11) << m_pAgentSoar->max_dc_wm_changes_value << " "
+		<< std::setw(11) << m_pAgentSoar->max_dc_wm_changes_cycle << "\n";
+
+	m_Result << "Firing count  "
+		<< std::setw(11) << m_pAgentSoar->max_dc_production_firing_count_value << " "
+		<< std::setw(11) << m_pAgentSoar->max_dc_production_firing_count_cycle << "\n";
+
 }
 
 void CommandLineInterface::GetMemoryStats()

@@ -2074,8 +2074,9 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   ms_change *head, *tail;  /* REW:   08.20.97 */
 
   /* --- remove descendents of this goal --- */
+  // BUGBUG this recursion causes a stack overflow if the goal depth is large
   if (goal->id.lower_goal)
-    remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal);
+    remove_existing_context_and_descendents (thisAgent, goal->id.lower_goal); 
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
