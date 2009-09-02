@@ -738,7 +738,8 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] && data->gap_age == 0 )
 		{
 			char buf[256];
-			SNPRINTF( buf, 254, "gap started (%c%llu)", goal->id.name_letter, goal->id.name_number );
+			// BADBAD: static casting for llu portability
+			SNPRINTF( buf, 254, "gap started (%c%llu)", goal->id.name_letter, static_cast<unsigned long long>(goal->id.name_number) );
 
 			print( my_agent, buf );
 			xml_generate_warning( my_agent, buf );
@@ -908,7 +909,8 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 		if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
 		{
 			char buf[256];
-			SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id.name_letter, goal->id.name_number );
+			// BADBAD: static casting for llu portability
+			SNPRINTF( buf, 254, "gap ended (%c%llu)", goal->id.name_letter, static_cast<unsigned long long>(goal->id.name_number) );
 
 			print( my_agent, buf );
 			xml_generate_warning( my_agent, buf );
