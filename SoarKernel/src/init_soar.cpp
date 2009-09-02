@@ -301,9 +301,18 @@ void reset_statistics (agent* thisAgent) {
   thisAgent->e_cycles_this_d_cycle = 0;
   thisAgent->chunks_this_d_cycle = 0;
   thisAgent->production_firing_count = 0;
+  thisAgent->start_dc_production_firing_count = 0;
+  thisAgent->max_dc_production_firing_count_value = 0;
+  thisAgent->max_dc_production_firing_count_cycle = 0;
   thisAgent->wme_addition_count = 0;
   thisAgent->wme_removal_count = 0;
   thisAgent->max_wm_size = 0;
+
+  thisAgent->start_dc_wme_addition_count = 0;
+  thisAgent->start_dc_wme_removal_count = 0;
+  thisAgent->max_dc_wm_changes_value = 0;
+  thisAgent->max_dc_wm_changes_cycle = 0;
+
   thisAgent->cumulative_wm_size = 0.0;
   thisAgent->num_wm_sizes_accumulated = 0;
 /* REW: begin 09.15.96 */
@@ -346,6 +355,9 @@ void reset_statistics (agent* thisAgent) {
      reset_timer (&thisAgent->match_cpu_time[ii]);
      reset_timer (&thisAgent->gds_cpu_time[ii]);
   }
+  reset_timer (&thisAgent->decision_cycle_timer);
+  thisAgent->max_dc_time_cycle = 0;
+  thisAgent->max_dc_time_value = 0;
 }
 
 bool reinitialize_soar (agent* thisAgent) {
@@ -555,6 +567,7 @@ void do_one_top_level_phase (agent* thisAgent)
      #ifndef NO_TIMING_STUFF  /* REW:  28.07.96 */
         stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[INPUT_PHASE]);
+        stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
      #endif
 
 	thisAgent->current_phase = PROPOSE_PHASE;
@@ -655,6 +668,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  #ifndef NO_TIMING_STUFF
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[PROPOSE_PHASE]);  
+	  stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);  
       #endif
 
 	  break;  /* END of Soar8 PROPOSE PHASE */
@@ -688,6 +702,7 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF       /* REW:  28.07.96 */
       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[PREFERENCE_PHASE]);
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       #endif
 
 	  /* tell gSKI PREF_PHASE ending... 
@@ -722,6 +737,7 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF      /* REW:  28.07.96 */
       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[WM_PHASE]);
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       #endif
 
 	  // FIXME return the correct enum top_level_phase constant in soar_call_data? /*(soar_call_data)((thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE)*/
@@ -824,6 +840,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  #ifndef NO_TIMING_STUFF
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                  &thisAgent->decision_cycle_phase_timers[APPLY_PHASE]);  
+	  stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);  
       #endif
 
       break;  /* END of Soar8 APPLY PHASE */
@@ -870,7 +887,35 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF    /* timers stopped KJC 10-04-98 */
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
 		  &thisAgent->decision_cycle_phase_timers[OUTPUT_PHASE]);
+	  stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       #endif
+
+      // Update per-cycle statistics
+	  {
+		  double dc_time = timer_value(&thisAgent->decision_cycle_timer);
+		  if (thisAgent->max_dc_time_value < dc_time) {
+			  thisAgent->max_dc_time_value = dc_time;
+			  thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
+		  }
+		  reset_timer(&thisAgent->decision_cycle_timer);
+
+		  unsigned long dc_wm_changes = thisAgent->wme_addition_count - thisAgent->start_dc_wme_addition_count;
+		  dc_wm_changes += thisAgent->wme_removal_count - thisAgent->start_dc_wme_removal_count;
+		  if (thisAgent->max_dc_wm_changes_value < dc_wm_changes) {
+			  thisAgent->max_dc_wm_changes_value = dc_wm_changes;
+			  thisAgent->max_dc_wm_changes_cycle = thisAgent->d_cycle_count;
+		  }
+		  thisAgent->start_dc_wme_addition_count = thisAgent->wme_addition_count;
+		  thisAgent->start_dc_wme_removal_count = thisAgent->wme_removal_count;
+
+		  unsigned long dc_firing_counts = thisAgent->production_firing_count - thisAgent->start_dc_production_firing_count;
+		  if (thisAgent->max_dc_production_firing_count_value < dc_firing_counts) {
+			  thisAgent->max_dc_production_firing_count_value = dc_firing_counts;
+			  thisAgent->max_dc_production_firing_count_cycle = thisAgent->d_cycle_count;
+		  }
+		  thisAgent->start_dc_production_firing_count = thisAgent->production_firing_count;
+		  
+	  }
 
 	  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
 		  print_phase (thisAgent, "\n--- END Output Phase ---\n",1);
@@ -960,6 +1005,7 @@ void do_one_top_level_phase (agent* thisAgent)
 #ifndef NO_TIMING_STUFF
 		  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
 			  &thisAgent->decision_cycle_phase_timers[DECISION_PHASE]);
+		  stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
 #endif
 		  /* REW: end 28.07.96 */
 
@@ -981,6 +1027,7 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF
 	  stop_timer (thisAgent, &thisAgent->start_phase_tv, 
 		  &thisAgent->decision_cycle_phase_timers[DECISION_PHASE]);
+	  stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       #endif
 	  /* REW: end 28.07.96 */
 
@@ -999,7 +1046,7 @@ void do_one_top_level_phase (agent* thisAgent)
       thisAgent->max_wm_size = thisAgent->num_wmes_in_rete;
   thisAgent->cumulative_wm_size += thisAgent->num_wmes_in_rete;
   thisAgent->num_wm_sizes_accumulated++;
-  
+
   if (thisAgent->system_halted) {
 	  thisAgent->stop_soar = TRUE;
 	  thisAgent->reason_for_stopping = "System halted.";
@@ -1373,6 +1420,7 @@ void init_agent_memory(agent* thisAgent)
      reset_timer (&thisAgent->match_cpu_time[ii]);
      reset_timer (&thisAgent->gds_cpu_time[ii]);
   }
+  reset_timer (&thisAgent->decision_cycle_timer);
 
   // This is an important part of the state of the agent for io purposes
   // (see io.cpp for details)

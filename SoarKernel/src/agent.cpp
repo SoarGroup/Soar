@@ -262,6 +262,7 @@ agent * create_soar_agent (char * agent_name) {                                 
      reset_timer(&(newAgent->match_cpu_time[ii]));
      reset_timer(&(newAgent->gds_cpu_time[ii]));
   }
+  reset_timer(&(newAgent->decision_cycle_timer));
 
   newAgent->real_time_tracker = 0;
   newAgent->attention_lapse_tracker = 0;
