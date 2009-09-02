@@ -181,7 +181,8 @@ char *symbolToString (Symbol *sym,
 		return dest;
 
 	case IDENTIFIER_SYMBOL_TYPE:
-		sprintf (dest, "%c%llu", sym->id.name_letter, sym->id.name_number);
+		// BADBAD: static casting for llu portability
+		sprintf (dest, "%c%llu", sym->id.name_letter, static_cast<unsigned long long>(sym->id.name_number));
 		return dest;
 
 	case INT_CONSTANT_SYMBOL_TYPE:
