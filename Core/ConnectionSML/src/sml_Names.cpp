@@ -368,6 +368,13 @@ char const* const sml_Names::kParamStatsMemoryUsageHash						= "statsmemoryusage
 char const* const sml_Names::kParamStatsMemoryUsageString					= "statsmemoryusagestring" ;
 char const* const sml_Names::kParamStatsMemoryUsagePool						= "statsmemoryusagepool" ;
 char const* const sml_Names::kParamStatsMemoryUsageStatsOverhead			= "statsmemoryusagestatsoverhead" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleTimeValue           = "statsmaxdecisioncycletimevalue" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleTimeCycle           = "statsmaxdecisioncycletimecycle" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle		= "statsmaxdecisioncyclewmchangescycle" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleWMChangesValue		= "statsmaxdecisioncyclewmchangesvalue" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleFireCountCycle		= "statsmaxdecisioncyclefirecountcycle" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleFireCountValue		= "statsmaxdecisioncyclefirecountvalue" ;
+
 // Parameter names for watch command
 char const* const sml_Names::kParamWatchDecisions					= "watchdecisions";
 char const* const sml_Names::kParamWatchPhases						= "watchphases";

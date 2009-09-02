@@ -277,6 +277,7 @@ void soar_invoke_callbacks (agent* thisAgent,
     /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
 	    stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+	    stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
 	    stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
         start_timer (thisAgent, &thisAgent->start_phase_tv);
         break;
@@ -285,6 +286,7 @@ void soar_invoke_callbacks (agent* thisAgent,
 	    *   the output function is done in do_output_phase */
        stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+       stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
        stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
        start_timer (thisAgent, &thisAgent->start_kernel_tv);
        break;
@@ -390,6 +392,7 @@ void soar_invoke_first_callback (agent* thisAgent,
     /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
 	   stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                     &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+	   stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
 	   stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
        start_timer (thisAgent, &thisAgent->start_phase_tv);
        break;
@@ -398,6 +401,7 @@ void soar_invoke_first_callback (agent* thisAgent,
 	    *   the output function is done in do_output_phase */
        stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+       stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
        stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
        start_timer (thisAgent, &thisAgent->start_kernel_tv);
        break;

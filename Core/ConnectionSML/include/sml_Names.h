@@ -357,6 +357,13 @@ public:
 	static char const* const kParamStatsMemoryUsageString;
 	static char const* const kParamStatsMemoryUsagePool;
 	static char const* const kParamStatsMemoryUsageStatsOverhead;
+	static char const* const kParamStatsMaxDecisionCycleTimeValue;
+	static char const* const kParamStatsMaxDecisionCycleTimeCycle;
+	static char const* const kParamStatsMaxDecisionCycleWMChangesCycle;
+	static char const* const kParamStatsMaxDecisionCycleWMChangesValue;
+	static char const* const kParamStatsMaxDecisionCycleFireCountCycle;
+	static char const* const kParamStatsMaxDecisionCycleFireCountValue;
+
 	// Parameter names for watch command
 	static char const* const kParamWatchDecisions;
 	static char const* const kParamWatchPhases;
