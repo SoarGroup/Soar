@@ -693,6 +693,7 @@ void do_output_cycle (agent* thisAgent) {
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
@@ -714,6 +715,7 @@ void do_output_cycle (agent* thisAgent) {
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
@@ -737,6 +739,7 @@ void do_output_cycle (agent* thisAgent) {
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif
@@ -759,6 +762,7 @@ void do_output_cycle (agent* thisAgent) {
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
       stop_timer (thisAgent, &thisAgent->start_phase_tv, 
                    &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
+      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
       stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
       start_timer (thisAgent, &thisAgent->start_kernel_tv);
       #endif

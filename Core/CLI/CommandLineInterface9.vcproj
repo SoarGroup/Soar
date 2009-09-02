@@ -1740,6 +1740,26 @@
 					</FileConfiguration>
 				</File>
 				<File
+					RelativePath=".\src\cli_maxgoaldepth.cpp"
+					>
+					<FileConfiguration
+						Name="Debug SCU|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release SCU|x64"
+						ExcludedFromBuild="true"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
 					RelativePath=".\src\cli_maxmemoryusage.cpp"
 					>
 					<FileConfiguration

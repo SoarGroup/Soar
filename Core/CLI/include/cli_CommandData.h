@@ -183,6 +183,8 @@ namespace cli {
 		STATS_MEMORY,
 		STATS_RETE,
 		STATS_SYSTEM,
+		STATS_MAX,
+		STATS_RESET,
 		STATS_NUM_OPTIONS, // must be last
 	};
 
