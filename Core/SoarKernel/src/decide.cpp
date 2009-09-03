@@ -1419,46 +1419,6 @@ void add_impasse_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,
    and all the extra stuff for goal identifiers.
 ------------------------------------------------------------------ */
 
-inline void create_new_impasse_rl_wme( agent * const &thisAgent, Symbol * const &id, Symbol * &attr, const char * const &str ) {
-	Symbol * const value = make_sym_constant( thisAgent, str );
-	soar_module::add_module_wme( thisAgent, id->id.reward_header, attr, value );
-	symbol_remove_ref( thisAgent, value );
-}
-
-inline void create_new_impasse_rl_wme( agent * const &thisAgent, Symbol * const &id, Symbol * &attr, const double &num ) {
-	Symbol * const value = make_float_constant( thisAgent, num );
-	soar_module::add_module_wme( thisAgent, id->id.reward_header, attr, value );
-	symbol_remove_ref( thisAgent, value );
-}
-
-inline void create_new_impasse_rl_gc( agent * const &thisAgent, Symbol * const &id ) {
-	/*if ( level > 1 ) {
-		// if superstate found, use its values if it has them
-	}
-	else*/
-
-	if ( thisAgent->rl_params->granular_control->get_value() != soar_module::on )
-		return;
-
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_learning, thisAgent->rl_params->learning->get_string() );
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_temporal_extension, thisAgent->rl_params->temporal_extension->get_string() );
-
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_discount_rate, thisAgent->rl_params->discount_rate->get_value() );
-
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_learning_rate, thisAgent->rl_params->learning_rate->get_value() );
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_learning_policy, thisAgent->rl_params->learning_policy->get_string() );
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_hrl_discount, thisAgent->rl_params->hrl_discount->get_string() );
-
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_et_decay_rate, thisAgent->rl_params->et_decay_rate->get_value() );
-	create_new_impasse_rl_wme( thisAgent, id, thisAgent->rl_gc_sym_et_tolerance, thisAgent->rl_params->et_tolerance->get_value() );
-}
-
-inline void create_new_impasse_rl( agent * const &thisAgent, Symbol * const &id, const goal_stack_level &level ) {
-	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );
-	soar_module::add_module_wme( thisAgent, id, thisAgent->rl_sym_reward_link, id->id.reward_header );
-	create_new_impasse_rl_gc ( thisAgent, id );
-}
-
 Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Symbol *attr,
                             byte impasse_type, goal_stack_level level) {
   Symbol *id;
@@ -1472,7 +1432,8 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
   if (isa_goal)
   {
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
-    create_new_impasse_rl (thisAgent, id, level);
+	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );
+	soar_module::add_module_wme( thisAgent, id, thisAgent->rl_sym_reward_link, id->id.reward_header );
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
