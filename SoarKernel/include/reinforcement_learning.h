@@ -50,7 +50,6 @@ class rl_param_container: public soar_module::param_container
 		soar_module::decimal_param *et_tolerance;
 		soar_module::boolean_param *temporal_extension;
 		soar_module::boolean_param *hrl_discount;
-		soar_module::boolean_param *granular_control;
 
 		rl_param_container( agent *new_agent );
 };

@@ -167,9 +167,6 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 			CLI_DoRL_generate_output( "Soar-RL learning: ", m_pAgentSoar->rl_params->learning->get_string() ) );
 
 		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
-			CLI_DoRL_generate_output( "granular-control: ", m_pAgentSoar->rl_params->granular_control->get_string() ) );
-
-		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast,
 			CLI_DoRL_generate_output( "temporal-extension: ", m_pAgentSoar->rl_params->temporal_extension->get_string() ) );
 
 		CLI_DoRL_print( *this, m_RawOutput, m_Result, &CommandLineInterface::AppendArgTagFast, "" );
