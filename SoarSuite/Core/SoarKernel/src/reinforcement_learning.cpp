@@ -248,10 +248,6 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	learning = new rl_learning_param( "learning", soar_module::off, new soar_module::f_predicate<soar_module::boolean>(), new_agent );
 	add( learning ); ///< for the CLI
 
-	// per-state controls
-	granular_control = new soar_module::boolean_param( "granular-control", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
-	add( granular_control );
-
 	discount_rate = new soar_module::decimal_param( "discount-rate", 0.9, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( discount_rate );
 
