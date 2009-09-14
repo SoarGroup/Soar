@@ -126,8 +126,8 @@ bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
 
 	switch (m_NonOptionArguments) {
 		case 0:  // no argument
-			// the i and d options require an argument
-			if (options.test(PRINT_INTERNAL) || options.test(PRINT_TREE) || options.test(PRINT_DEPTH)) return SetError(CLIError::kTooFewArgs);
+			// d and t options require an argument
+			if (options.test(PRINT_TREE) || options.test(PRINT_DEPTH)) return SetError(CLIError::kTooFewArgs);
 			return DoPrint(options, depth);
 
 		case 1: 
