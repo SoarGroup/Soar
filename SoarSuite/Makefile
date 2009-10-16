@@ -1,6 +1,9 @@
 all:
 	scons
 
+noscu:
+	scons scu=no
+
 prof:
 	scons gprof=yes
 
