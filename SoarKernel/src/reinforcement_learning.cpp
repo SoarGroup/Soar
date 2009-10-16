@@ -28,6 +28,7 @@
 #include "print.h"
 #include "xml.h"
 #include "utilities.h"
+#include "recmem.h"
 
 #include <algorithm>
 #include <functional>
