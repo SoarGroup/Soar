@@ -2,7 +2,7 @@
 from twisted.application import service
 from buildbot.slave.bot import BuildSlave
 
-basedir = r'/home/voigtjr/soar/buildbot'
+basedir = r'/home/voigtjr/soar/buildbot/winterbot'
 host = 'localhost'
 port = 9989
 slavename = 'winterbot'
