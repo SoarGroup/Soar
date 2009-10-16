@@ -27,6 +27,7 @@
 
 #include "sml_EmbeddedConnection.h"	// For access to direct methods
 #include "sml_ClientDirect.h"
+#include "misc.h"
 
 #include <iostream>     
 #include <sstream>     
