@@ -30,6 +30,8 @@
 #include "utilities.h"
 #include "instantiations.h"
 
+#include <list>
+
 using namespace soar_TraceNames;
 
 /***************************************************************************
@@ -623,101 +625,76 @@ preference *exploration_probabilistically_select( preference *candidates )
 	return NIL;
 }
 
-/***************************************************************************
- * Function     : exploration_boltzmann_select
- **************************************************************************/
+/*
+ * Select a candidate whose Q-value is Q_i with probability
+ *
+ * e^(Q_i / t) / sum(j=1 to n, e^(Q_j / t)).
+ * 
+ * Since Q values can get very large or very small (negative values),
+ * overflow and underflow problems can occur when calculating the
+ * exponentials. This is avoided by subtracting a constant k from
+ * all exponent values involved. This doesn't affect the actual
+ * probabilities with which candidates are chosen, because subtracting
+ * a constant from an exponent is equivalent to dividing by the base
+ * raised to that constant, and the divisors cancel out during the
+ * calculation.
+ *
+ * k is chosen to be Q_max / t. This means that the values of all
+ * numerator exponentials are at most 1, and the value of the sum in the
+ * denominator is between 1 and n. This gets rid of the overflow problem
+ * completely, and in the cases where underflow will occur, the actual
+ * probability of the action being considered will be so small (< 10^-300)
+ * that it's negligible.
+ */
 preference *exploration_boltzmann_select( agent *my_agent, preference *candidates )
 {
-	const double temperature = exploration_get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_TEMPERATURE );
+	double t = exploration_get_parameter_value( my_agent, (const long) EXPLORATION_PARAM_TEMPERATURE );
+	double maxq;
+	preference* c;
+	
+	maxq = candidates->numeric_value;
+	for (c = candidates->next_candidate; c; c = c->next_candidate) {
+		if (maxq < c->numeric_value)
+			maxq = c->numeric_value;
+	}
+	
+	double k = maxq / t;
+	double exptotal = 0.0;
+	std::list<double> expvals;
+	std::list<double>::iterator i;
 
+	for (c = candidates; c; c = c->next_candidate) {
+		double v = exp(c->numeric_value / t - k);
+		expvals.push_back(v);
+		exptotal += v;
+	}
+	
 	// output trace information
 	if ( my_agent->sysparams[ TRACE_INDIFFERENT_SYSPARAM ] )
 	{
-		for ( const preference *cand = candidates; cand; cand = cand->next_candidate )
+		for (c = candidates, i = expvals.begin(); c; c = c->next_candidate, i++)
 		{
-			print_with_symbols( my_agent, "\n Candidate %y:  ", cand->value );
-			print( my_agent, "Value (Sum) = %f, (Exp) = %f", cand->numeric_value, exp( cand->numeric_value / temperature ) );
+			double prob = *i / exptotal;
+			print_with_symbols( my_agent, "\n Candidate %y:  ", c->value );
+			print( my_agent, "Value (Sum) = %f, (Prob) = %f", c->numeric_value, prob );
 			xml_begin_tag( my_agent, kTagCandidate );
-			xml_att_val( my_agent, kCandidateName, cand->value );
+			xml_att_val( my_agent, kCandidateName, c->value );
 			xml_att_val( my_agent, kCandidateType, kCandidateTypeSum );
-			xml_att_val( my_agent, kCandidateValue, cand->numeric_value );
-			xml_att_val( my_agent, kCandidateExpValue, exp( cand->numeric_value / temperature ) );
+			xml_att_val( my_agent, kCandidateValue, c->numeric_value );
+			xml_att_val( my_agent, kCandidateExpValue, prob );
 			xml_end_tag( my_agent, kTagCandidate );
 		}
 	}
 
-	/**
-	 * Since we can't guarantee any combination of temperature/q-values, could be useful
-	 * to notify the user if double limit has been breached.
-	 */
-	double exp_max = log( DBL_MAX );
-	double q_max = exp_max * temperature;
+	double r = SoarRand(exptotal);
+	double sum = 0.0;
 
-	/*
-	 * method to increase usable range of boltzmann with double
-	 * - find the highest/lowest q-values
-	 * - take half the difference
-	 * - subtract this value from all q-values when making calculations
-	 * 
-	 * this maintains relative probabilities of selection, while reducing greatly the exponential extremes of calculations
-	 */
-	double q_diff = 0.0;
-	if ( candidates->next_candidate )
-	{
-		double q_high = candidates->numeric_value;
-		double q_low = candidates->numeric_value;
-		
-		for ( const preference *cand = candidates->next_candidate; cand; cand = cand->next_candidate )
-		{
-			if ( cand->numeric_value > q_high )
-				q_high = cand->numeric_value;
-			if ( cand->numeric_value < q_low )
-				q_low = cand->numeric_value;
-		}
-
-		q_diff = ( q_high - q_low ) / 2;
+	for (c = candidates, i = expvals.begin(); c; c = c->next_candidate, i++) {
+		sum += *i;
+		if (sum > r)
+			return c;
 	}
-	else
-	{
-		q_diff = candidates->numeric_value;
-	}
-
-	double total_probability = 0.0;
-
-	for ( const preference *cand = candidates; cand; cand = cand->next_candidate)
-	{
-
-		/*  Total Probability represents the range of values, we expect
-		 *  the use of negative valued preferences, so its possible the
-		 *  sum is negative, here that means a fractional probability
-		 */
-		double q_val = cand->numeric_value - q_diff;
-		total_probability += exp( q_val / temperature );
-		
-		/**
- 		 * Let user know if adjusted q-value will overflow
-		 */
-		if ( q_val > q_max )
-		{
-			print( my_agent, "WARNING: Boltzmann update overflow! %g > %g", q_val, q_max );
-			
-			char buf[256];
-			SNPRINTF( buf, 254, "WARNING: Boltzmann update overflow! %g > %g", q_val, q_max );
-			xml_generate_warning( my_agent, buf );
-		}
-	}
-
-	const double selected_probability = total_probability * SoarRand();
-	double current_sum = 0.0;
-
-	for ( preference *cand = candidates; cand; cand = cand->next_candidate) 
-	{
-		current_sum += exp( ( cand->numeric_value - q_diff ) / temperature );
-
-		if ( selected_probability <= current_sum )
-			return cand;
-	}
-
+	
 	return NIL;
 }
 
