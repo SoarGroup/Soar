@@ -2,18 +2,24 @@
 #ifndef SYMBOLFACTORY_H
 #define SYMBOLFACTORY_H
 
-#include "Symbol.h"
+#include "IntegerSymbol.h"
+#include "FloatSymbol.h"
+#include "StringSymbol.h"
+#include "IdentifierSymbol.h"
 
 class SymbolFactory
 {
 	public:
-		virtual Symbol* GetIntegerSymbol( long val ) = 0;
-		virtual Symbol* GetFloatSymbol( double val ) = 0;
-		virtual Symbol* GetStringSymbol( const char* val ) = 0;
-		virtual Symbol* GetIdentifierSymbol( char letter, long number ) = 0;
+		virtual IntegerSymbol* GetIntegerSymbol( long val ) = 0;
+		virtual FloatSymbol* GetFloatSymbol( double val ) = 0;
+		virtual StringSymbol* GetStringSymbol( const char* val ) = 0;
+		virtual IdentifierSymbol* GetIdentifierSymbol( char letter, long number ) = 0;
 
 	protected:
-		Symbol* NewSymbol( long newUID, const char* newStr, bool newCnst );
+		IntegerSymbol* NewIntegerSymbol( long newUID, long newValue );
+		FloatSymbol* NewFloatSymbol( long newUID, double newValue );
+		StringSymbol* NewStringSymbol( long newUID, const char* newValue );
+		IdentifierSymbol* NewIdentifierSymbol( long newUID, char newLetter, long newNumber );
 
 };
 

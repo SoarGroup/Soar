@@ -8,10 +8,10 @@
 class SQLiteSymbolFactory: public SymbolFactory
 {
 	public:
-		Symbol* GetIntegerSymbol( long val );
-		Symbol* GetFloatSymbol( double val );
-		Symbol* GetStringSymbol( const char* val );
-		Symbol* GetIdentifierSymbol( char letter, long number );
+		IntegerSymbol* GetIntegerSymbol( long val );
+		FloatSymbol* GetFloatSymbol( double val );
+		StringSymbol* GetStringSymbol( const char* val );
+		IdentifierSymbol* GetIdentifierSymbol( char letter, long number );
 		
 		SQLiteSymbolFactory( sqlite3* newDB );
 		

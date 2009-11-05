@@ -1,6 +1,8 @@
 
 #include "Symbol.h"
 
+using namespace std;
+
 long Symbol::GetUID()
 {
 	return UID;
@@ -18,8 +20,11 @@ bool Symbol::IsConst()
 
 //
 
-Symbol::Symbol( long newUID, const char *newStr, bool newCnst ): UID( newUID ), cnst( newCnst )
+void Symbol::InitSymbol( long newUID, string& newStr, bool newCnst )
 {
+	UID = newUID;
+	cnst = newCnst;
+
 	stdstr.assign( newStr );
 	str = stdstr.c_str();
 }

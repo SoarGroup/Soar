@@ -9,18 +9,15 @@
 
 using namespace std;
 
-Symbol* SQLiteSymbolFactory::GetIntegerSymbol( long val )
+IntegerSymbol* SQLiteSymbolFactory::GetIntegerSymbol( long val )
 {
-	Symbol* returnVal = NULL;
-	
-	string asString;	
-	toString( val, asString );
+	IntegerSymbol* returnVal = NULL;
 	
 	sqlite3_bind_int64( findInt, 2, val );
 	
 	if ( sqlite3_step( findInt ) == SQLITE_ROW )
 	{
-		returnVal = NewSymbol( sqlite3_column_int64( findInt, 0 ), asString.c_str(), true );
+		returnVal = NewIntegerSymbol( sqlite3_column_int64( findInt, 0 ), val );
 	}
 	else
 	{
@@ -30,7 +27,7 @@ Symbol* SQLiteSymbolFactory::GetIntegerSymbol( long val )
 		sqlite3_bind_null( addSymbol, 4 );
 		sqlite3_step( addSymbol );
 		
-		returnVal = NewSymbol( sqlite3_last_insert_rowid( db ), asString.c_str(), true );
+		returnVal = NewIntegerSymbol( sqlite3_last_insert_rowid( db ), val );
 		
 		sqlite3_reset( addSymbol );
 	}
@@ -40,18 +37,15 @@ Symbol* SQLiteSymbolFactory::GetIntegerSymbol( long val )
 	return returnVal;
 }
 
-Symbol* SQLiteSymbolFactory::GetFloatSymbol( double val )
+FloatSymbol* SQLiteSymbolFactory::GetFloatSymbol( double val )
 {
-	Symbol* returnVal = NULL;
-	
-	string asString;	
-	toString( val, asString );
+	FloatSymbol* returnVal = NULL;
 	
 	sqlite3_bind_double( findFloat, 2, val );
 	
 	if ( sqlite3_step( findFloat ) == SQLITE_ROW )
 	{
-		returnVal = NewSymbol( sqlite3_column_int64( findFloat, 0 ), asString.c_str(), true );
+		returnVal = NewFloatSymbol( sqlite3_column_int64( findFloat, 0 ), val );
 	}
 	else
 	{
@@ -61,7 +55,7 @@ Symbol* SQLiteSymbolFactory::GetFloatSymbol( double val )
 		sqlite3_bind_null( addSymbol, 4 );
 		sqlite3_step( addSymbol );
 		
-		returnVal = NewSymbol( sqlite3_last_insert_rowid( db ), asString.c_str(), true );
+		returnVal = NewFloatSymbol( sqlite3_last_insert_rowid( db ), val );
 		
 		sqlite3_reset( addSymbol );
 	}
@@ -71,15 +65,15 @@ Symbol* SQLiteSymbolFactory::GetFloatSymbol( double val )
 	return returnVal;
 }
 
-Symbol* SQLiteSymbolFactory::GetStringSymbol( const char* val )
+StringSymbol* SQLiteSymbolFactory::GetStringSymbol( const char* val )
 {
-	Symbol* returnVal = NULL;
+	StringSymbol* returnVal = NULL;
 	
 	sqlite3_bind_text( findString, 2, val, -1, SQLITE_STATIC );
 	
 	if ( sqlite3_step( findString ) == SQLITE_ROW )
 	{
-		returnVal = NewSymbol( sqlite3_column_int64( findString, 0 ), val, true );
+		returnVal = NewStringSymbol( sqlite3_column_int64( findString, 0 ), val );
 	}
 	else
 	{
@@ -89,7 +83,7 @@ Symbol* SQLiteSymbolFactory::GetStringSymbol( const char* val )
 		sqlite3_bind_text( addSymbol, 4, val, -1, SQLITE_STATIC );
 		sqlite3_step( addSymbol );
 		
-		returnVal = NewSymbol( sqlite3_last_insert_rowid( db ), val, true );
+		returnVal = NewStringSymbol( sqlite3_last_insert_rowid( db ), val );
 		
 		sqlite3_reset( addSymbol );
 	}
@@ -99,25 +93,20 @@ Symbol* SQLiteSymbolFactory::GetStringSymbol( const char* val )
 	return returnVal;
 }
 
-Symbol* SQLiteSymbolFactory::GetIdentifierSymbol( char letter, long number )
+IdentifierSymbol* SQLiteSymbolFactory::GetIdentifierSymbol( char letter, long number )
 {
-	Symbol* returnVal = NULL;
+	IdentifierSymbol* returnVal = NULL;
 	
 	char letterS[2];
 	letterS[0] = letter;
 	letterS[1] = '\0';
-	
-	string asString, asString2( letterS );
-	toString( number, asString );
-	
-	asString2.append( asString );
 	
 	sqlite3_bind_text( findId, 2, letterS, -1, SQLITE_STATIC );
 	sqlite3_bind_int64( findId, 3, number );
 	
 	if ( sqlite3_step( findId ) == SQLITE_ROW )
 	{
-		returnVal = NewSymbol( sqlite3_column_int64( findId, 0 ), asString2.c_str(), true );
+		returnVal = NewIdentifierSymbol( sqlite3_column_int64( findId, 0 ), letter, number );
 	}
 	else
 	{
@@ -127,7 +116,7 @@ Symbol* SQLiteSymbolFactory::GetIdentifierSymbol( char letter, long number )
 		sqlite3_bind_text( addSymbol, 4, letterS, -1, SQLITE_STATIC );
 		sqlite3_step( addSymbol );
 		
-		returnVal = NewSymbol( sqlite3_last_insert_rowid( db ), asString2.c_str(), true );
+		returnVal = NewIdentifierSymbol( sqlite3_last_insert_rowid( db ), letter, number );
 		
 		sqlite3_reset( addSymbol );
 	}

@@ -4,11 +4,17 @@
 
 #include <string>
 
-class SymbolFactory;
+class IntegerSymbol;
+class FloatSymbol;
+class StringSymbol;
+class IdentifierSymbol;
 
 class Symbol
 {
-	friend class SymbolFactory;
+	friend class IntegerSymbol;
+	friend class FloatSymbol;
+	friend class StringSymbol;
+	friend class IdentifierSymbol;
 
 	public:
 		long GetUID();
@@ -16,7 +22,7 @@ class Symbol
 		bool IsConst();
 
 	private:
-		Symbol( long newUID, const char* newStr, bool newCnst );
+		void InitSymbol( long newUID, std::string& newStr, bool newCnst );
 
 		long UID;
 		const char* str;
