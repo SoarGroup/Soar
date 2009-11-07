@@ -13,7 +13,7 @@ IntegerSymbol::IntegerSymbol( long newUID, long newValue )
 	toString( newValue, temp );
 
 	// initialize underlying symbol
-	InitSymbol( newUID, temp, true );
+	InitSymbol( newUID, IntSym, temp.c_str(), true );
 
 	// set my data structures
 	value = newValue;

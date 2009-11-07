@@ -4,10 +4,14 @@
 
 #include <string>
 
+using std::string;
+
 class IntegerSymbol;
 class FloatSymbol;
 class StringSymbol;
 class IdentifierSymbol;
+
+enum SymbolType { IdSym, StrSym, FloatSym, IntSym };
 
 class Symbol
 {
@@ -18,16 +22,17 @@ class Symbol
 
 	public:
 		long GetUID();
-		const char* GetString();
 		bool IsConst();
+		const char *GetString();
+		SymbolType GetType();
 
 	private:
-		void InitSymbol( long newUID, std::string& newStr, bool newCnst );
+		void InitSymbol( long newUID, SymbolType newType, const char *newStr, bool newCnst );
 
 		long UID;
-		const char* str;
-		std::string stdstr;
+		char *str;
 		bool cnst;
+		SymbolType type;
 };
 
 #endif

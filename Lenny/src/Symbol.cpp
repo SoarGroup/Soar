@@ -1,4 +1,4 @@
-
+#include <string.h>
 #include "Symbol.h"
 
 using namespace std;
@@ -8,7 +8,7 @@ long Symbol::GetUID()
 	return UID;
 }
 
-const char* Symbol::GetString()
+const char *Symbol::GetString()
 {
 	return str;
 }
@@ -20,11 +20,15 @@ bool Symbol::IsConst()
 
 //
 
-void Symbol::InitSymbol( long newUID, string& newStr, bool newCnst )
+void Symbol::InitSymbol( long newUID, SymbolType newType, const char *newStr, bool newCnst )
 {
 	UID = newUID;
 	cnst = newCnst;
+	str = strdup(newStr);
+	type = newType;
+}
 
-	stdstr.assign( newStr );
-	str = stdstr.c_str();
+SymbolType Symbol::GetType()
+{
+	return type;
 }

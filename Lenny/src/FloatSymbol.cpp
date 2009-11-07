@@ -13,7 +13,7 @@ FloatSymbol::FloatSymbol( long newUID, double newValue )
 	toString( newValue, temp );
 
 	// initialize underlying symbol
-	InitSymbol( newUID, temp, true );
+	InitSymbol( newUID, FloatSym, temp.c_str(), true );
 
 	// set my data structures
 	value = newValue;

@@ -9,13 +9,11 @@ using namespace std;
 IdentifierSymbol::IdentifierSymbol( long newUID, char newLetter, long newNumber )
 {
 	// get string representation
-	string temp, temp2;
-	toString( newLetter, temp );
-	toString( newNumber, temp2 );
-	temp.append( temp2 );
+	string temp;
+	toString( newNumber, temp );
 
 	// initialize underlying symbol
-	InitSymbol( newUID, temp, false );
+	InitSymbol( newUID, IdSym, (newLetter + temp).c_str(), false );
 
 	// set my data structures
 	letter = newLetter;
