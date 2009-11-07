@@ -2,16 +2,10 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
-#include <string>
-
-using std::string;
-
 class IntegerSymbol;
 class FloatSymbol;
 class StringSymbol;
 class IdentifierSymbol;
-
-enum SymbolType { IdSym, StrSym, FloatSym, IntSym };
 
 class Symbol
 {
@@ -22,17 +16,18 @@ class Symbol
 
 	public:
 		long GetUID();
-		bool IsConst();
-		const char *GetString();
-		SymbolType GetType();
+		const char* GetString();
+
+		enum SymbolType { IdSym, StrSym, FloatSym, IntSym };
+
+		virtual SymbolType GetType() = 0;
+		virtual bool IsConst() = 0;
 
 	private:
-		void InitSymbol( long newUID, SymbolType newType, const char *newStr, bool newCnst );
+		void InitSymbol( long newUID, const char* newStr );
 
 		long UID;
-		char *str;
-		bool cnst;
-		SymbolType type;
+		char* str;
 };
 
 #endif

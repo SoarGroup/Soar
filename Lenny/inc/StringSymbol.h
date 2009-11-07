@@ -12,6 +12,10 @@ class StringSymbol: public Symbol
 {
 	friend class SymbolFactory;
 
+	public:
+		Symbol::SymbolType GetType();
+		bool IsConst();
+
 	private:
 		StringSymbol( long newUID, const char* newValue );
 };

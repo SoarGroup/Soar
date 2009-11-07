@@ -14,6 +14,9 @@ class IdentifierSymbol: public Symbol
 		long GetNumber();
 		char GetLetter();
 
+		Symbol::SymbolType GetType();
+		bool IsConst();
+
 	private:
 		long number;
 		char letter;

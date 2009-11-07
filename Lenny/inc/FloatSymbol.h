@@ -12,6 +12,8 @@ class FloatSymbol: public Symbol
 
 	public:
 		double GetValue();
+		Symbol::SymbolType GetType();
+		bool IsConst();
 
 	private:
 		double value;

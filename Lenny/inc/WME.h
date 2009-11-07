@@ -1,28 +1,32 @@
-#ifndef _WME_H_
-#define _WME_H_
+
+#ifndef WME_H_
+#define WME_H_
+
+#include <string>
 
 #include "Symbol.h"
 #include "IdentifierSymbol.h"
 
-class WME {
-public:
-	WME(IdentifierSymbol *id, Symbol *attr, Symbol *val, long uid)
-	: id(id), attr(attr), val(val), uid(uid)
-	{}
+class WME
+{
+	public:
 
-	IdentifierSymbol *GetId()   { return id; }
-	Symbol *GetAttr()           { return attr; }
-	Symbol *GetVal()            { return val; }
-	
-	long GetUID() { return uid; }
+		WME( IdentifierSymbol* newId, Symbol* newAttr, Symbol* newVal, long newUid );
 
-	string GetString();
+		IdentifierSymbol* GetId();
+		Symbol* GetAttr();
+		Symbol* GetVal();
+		long GetUID();
 	
-private:
-	IdentifierSymbol *id;
-	Symbol *attr;
-	Symbol *val;
-	long uid;
+		std::string GetString();
+	
+	private:
+		IdentifierSymbol* id;
+		Symbol* attr;
+		Symbol* val;
+		long uid;
+
+		std::string str;
 };
 
 #endif

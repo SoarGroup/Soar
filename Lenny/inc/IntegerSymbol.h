@@ -12,6 +12,8 @@ class IntegerSymbol: public Symbol
 
 	public:
 		long GetValue();
+		Symbol::SymbolType GetType();
+		bool IsConst();
 
 	private:
 		long value;

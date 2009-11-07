@@ -1,9 +1,11 @@
-#include <stdlib.h>
+
+#include <iostream>
 #include <list>
 #include <map>
-#include <iostream>
+#include <cassert>
 
 #include "SQLiteSymbolFactory.h"
+#include "Symbol.h"
 #include "sqlite3.h"
 #include "misc.h"
 
@@ -21,11 +23,12 @@ IntegerSymbol* SQLiteSymbolFactory::GetIntegerSymbol( long val )
 	}
 	else
 	{
-		sqlite3_bind_int64( addSymbol, 1, integer_t );
+		sqlite3_bind_int64( addSymbol, 1, Symbol::IntSym );
 		sqlite3_bind_int64( addSymbol, 2, val );
 		sqlite3_bind_null( addSymbol, 3 );
 		sqlite3_bind_null( addSymbol, 4 );
-		sqlite3_step( addSymbol );
+		int rc = sqlite3_step( addSymbol );
+		assert( rc == SQLITE_DONE );
 		
 		returnVal = NewIntegerSymbol( sqlite3_last_insert_rowid( db ), val );
 		
@@ -49,11 +52,12 @@ FloatSymbol* SQLiteSymbolFactory::GetFloatSymbol( double val )
 	}
 	else
 	{
-		sqlite3_bind_int64( addSymbol, 1, float_t );
+		sqlite3_bind_int64( addSymbol, 1, Symbol::FloatSym );
 		sqlite3_bind_null( addSymbol, 2 );
 		sqlite3_bind_double( addSymbol, 3, val );		
 		sqlite3_bind_null( addSymbol, 4 );
-		sqlite3_step( addSymbol );
+		int rc = sqlite3_step( addSymbol );
+		assert( rc == SQLITE_DONE );
 		
 		returnVal = NewFloatSymbol( sqlite3_last_insert_rowid( db ), val );
 		
@@ -77,11 +81,12 @@ StringSymbol* SQLiteSymbolFactory::GetStringSymbol( const char* val )
 	}
 	else
 	{
-		sqlite3_bind_int64( addSymbol, 1, string_t );
+		sqlite3_bind_int64( addSymbol, 1, Symbol::StrSym );
 		sqlite3_bind_null( addSymbol, 2 );
 		sqlite3_bind_null( addSymbol, 3 );
 		sqlite3_bind_text( addSymbol, 4, val, -1, SQLITE_STATIC );
-		sqlite3_step( addSymbol );
+		int rc = sqlite3_step( addSymbol );
+		assert( rc == SQLITE_DONE );
 		
 		returnVal = NewStringSymbol( sqlite3_last_insert_rowid( db ), val );
 		
@@ -110,11 +115,12 @@ IdentifierSymbol* SQLiteSymbolFactory::GetIdentifierSymbol( char letter, long nu
 	}
 	else
 	{
-		sqlite3_bind_int64( addSymbol, 1, id_t );
+		sqlite3_bind_int64( addSymbol, 1, Symbol::IdSym );
 		sqlite3_bind_int64( addSymbol, 2, number );
 		sqlite3_bind_null( addSymbol, 3 );
 		sqlite3_bind_text( addSymbol, 4, letterS, -1, SQLITE_STATIC );
-		sqlite3_step( addSymbol );
+		int rc = sqlite3_step( addSymbol );
+		assert( rc == SQLITE_DONE );
 		
 		returnVal = NewIdentifierSymbol( sqlite3_last_insert_rowid( db ), letter, number );
 		
@@ -125,11 +131,43 @@ IdentifierSymbol* SQLiteSymbolFactory::GetIdentifierSymbol( char letter, long nu
 	
 	return returnVal;
 }
+
+Symbol* SQLiteSymbolFactory::GetSymbolByUID( long UID )
+{
+	Symbol* returnVal = NULL;
+
+	sqlite3_bind_int64( findSymbol, 1, UID );
+	if ( sqlite3_step( findSymbol ) == SQLITE_ROW )
+	{
+		Symbol::SymbolType symType = static_cast<Symbol::SymbolType>( sqlite3_column_int64( findSymbol, 0 ) );
+
+		//SELECT sym_type, sym_int, sym_float, sym_string FROM symbols WHERE uid=?
+		if ( symType == Symbol::IntSym )
+		{
+			returnVal = NewIntegerSymbol( UID, sqlite3_column_int64( findSymbol, 1 ) );
+		}
+		else if ( symType == Symbol::FloatSym )
+		{
+			returnVal = NewFloatSymbol( UID, sqlite3_column_double( findSymbol, 2 ) );
+		}
+		else if ( symType == Symbol::StrSym )
+		{
+			returnVal = NewStringSymbol( UID, reinterpret_cast<const char *>( sqlite3_column_text( findSymbol, 3 ) ) );
+		}
+		else if ( symType == Symbol::IdSym )
+		{
+			returnVal = NewIdentifierSymbol( UID, reinterpret_cast<const char *>( sqlite3_column_text( findSymbol, 3 ) )[0], sqlite3_column_int64( findSymbol, 1 ) );
+		}
+	}
+
+	sqlite3_reset( findSymbol );
+
+	return returnVal;
+}
 		
 SQLiteSymbolFactory::SQLiteSymbolFactory( sqlite3* newDB )
+: db( newDB )
 {
-	db = newDB;	
-	
 	// create tables
 	{
 		sqlite3_stmt *stmt;
@@ -138,9 +176,9 @@ SQLiteSymbolFactory::SQLiteSymbolFactory( sqlite3* newDB )
 		
 		list< const char* > structures;		
 		structures.push_back( "CREATE TABLE IF NOT EXISTS symbols ( uid INTEGER PRIMARY KEY AUTOINCREMENT, sym_type INTEGER, sym_int INTEGER, sym_float REAL, sym_string TEXT )" );
-		structures.push_back( "CREATE UNIQUE INDEX IF NOT EXISTS symbols_type_int ON symbols (sym_type,sym_int)" );
-		structures.push_back( "CREATE UNIQUE INDEX IF NOT EXISTS symbols_type_float ON symbols (sym_type,sym_float)" );
-		structures.push_back( "CREATE UNIQUE INDEX IF NOT EXISTS symbols_type_string_int ON symbols (sym_type,sym_string,sym_int)" );
+		structures.push_back( "CREATE INDEX IF NOT EXISTS symbols_type_int ON symbols (sym_type,sym_int)" );
+		structures.push_back( "CREATE INDEX IF NOT EXISTS symbols_type_float ON symbols (sym_type,sym_float)" );
+		structures.push_back( "CREATE INDEX IF NOT EXISTS symbols_type_string_int ON symbols (sym_type,sym_string,sym_int)" );
 		
 		for ( list< const char* >::iterator p=structures.begin(); p!=structures.end(); p++ )
 		{
@@ -172,6 +210,7 @@ SQLiteSymbolFactory::SQLiteSymbolFactory( sqlite3* newDB )
 		queries[ &findString ] = "SELECT uid FROM symbols WHERE sym_type=? AND sym_string=? AND sym_int IS NULL";
 		queries[ &findId ] = "SELECT uid FROM symbols WHERE sym_type=? AND sym_string=? AND sym_int=?";
 		queries[ &addSymbol ] = "INSERT INTO symbols (sym_type, sym_int, sym_float, sym_string) VALUES (?, ?, ?, ?)";
+		queries[ &findSymbol ] = "SELECT sym_type, sym_int, sym_float, sym_string FROM symbols WHERE uid=?";
 		
 		for ( map< sqlite3_stmt**, const char* >::iterator p=queries.begin(); p!=queries.end(); p++ )
 		{
@@ -183,9 +222,9 @@ SQLiteSymbolFactory::SQLiteSymbolFactory( sqlite3* newDB )
 			}
 		}
 		
-		sqlite3_bind_int64( findInt, 1, integer_t );
-		sqlite3_bind_int64( findFloat, 1, float_t );
-		sqlite3_bind_int64( findString, 1, string_t );
-		sqlite3_bind_int64( findId, 1, id_t );
+		sqlite3_bind_int64( findInt, 1, Symbol::IntSym );
+		sqlite3_bind_int64( findFloat, 1, Symbol::FloatSym );
+		sqlite3_bind_int64( findString, 1, Symbol::StrSym );
+		sqlite3_bind_int64( findId, 1, Symbol::IdSym );
 	}
 }

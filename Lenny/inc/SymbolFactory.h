@@ -15,6 +15,13 @@ class SymbolFactory
 		virtual StringSymbol* GetStringSymbol( const char* val ) = 0;
 		virtual IdentifierSymbol* GetIdentifierSymbol( char letter, long number ) = 0;
 
+		virtual Symbol* GetSymbolByUID( long UID ) = 0;
+
+		Symbol* GetSymbol( long val );
+		Symbol* GetSymbol( double val );
+		Symbol* GetSymbol( const char* val );
+		Symbol* GetSymbol( char letter, long number );
+
 	protected:
 		IntegerSymbol* NewIntegerSymbol( long newUID, long newValue );
 		FloatSymbol* NewFloatSymbol( long newUID, double newValue );

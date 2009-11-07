@@ -8,27 +8,13 @@ long Symbol::GetUID()
 	return UID;
 }
 
-const char *Symbol::GetString()
+const char* Symbol::GetString()
 {
 	return str;
 }
 
-bool Symbol::IsConst()
-{
-	return cnst;
-}
-
-//
-
-void Symbol::InitSymbol( long newUID, SymbolType newType, const char *newStr, bool newCnst )
+void Symbol::InitSymbol( long newUID, const char* newStr )
 {
 	UID = newUID;
-	cnst = newCnst;
-	str = strdup(newStr);
-	type = newType;
-}
-
-SymbolType Symbol::GetType()
-{
-	return type;
+	str = strdup( newStr );
 }

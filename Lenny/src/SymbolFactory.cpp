@@ -6,6 +6,28 @@
 
 #include "SymbolFactory.h"
 
+Symbol* SymbolFactory::GetSymbol( long val )
+{
+	return GetIntegerSymbol( val );
+}
+
+Symbol* SymbolFactory::GetSymbol( double val )
+{
+	return GetFloatSymbol( val );
+}
+
+Symbol* SymbolFactory::GetSymbol( const char* val )
+{
+	return GetStringSymbol( val );
+}
+
+Symbol* SymbolFactory::GetSymbol( char letter, long number )
+{
+	return GetIdentifierSymbol( letter, number );
+}
+
+//
+
 IntegerSymbol* SymbolFactory::NewIntegerSymbol( long newUID, long newValue )
 {
 	return new IntegerSymbol( newUID, newValue );

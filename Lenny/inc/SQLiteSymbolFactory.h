@@ -13,6 +13,8 @@ class SQLiteSymbolFactory: public SymbolFactory
 		StringSymbol* GetStringSymbol( const char* val );
 		IdentifierSymbol* GetIdentifierSymbol( char letter, long number );
 		
+		Symbol* GetSymbolByUID( long UID );
+
 		SQLiteSymbolFactory( sqlite3* newDB );
 		
 	private:
@@ -23,8 +25,7 @@ class SQLiteSymbolFactory: public SymbolFactory
 		sqlite3_stmt* findString;
 		sqlite3_stmt* findId;
 		sqlite3_stmt* addSymbol;
-		
-		enum SymbolType { integer_t, float_t, string_t, id_t };
+		sqlite3_stmt* findSymbol;
 };
 
 #endif
