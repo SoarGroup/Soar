@@ -88,6 +88,7 @@ int SimpleEpmem::Retrieve(int episode, list<WME*> &result) {
 	if (episode < 0 || episode >= eps.size()) return -1;
 	list<WME*> *e = eps[episode];
 	result.insert(result.end(), e->begin(), e->end());
+	return e->size();
 }
 
 /* Not implemented */
