@@ -1246,15 +1246,15 @@ void WorkingMemory::Refresh()
 		//assert(outputs == 0) ;
 		m_OutputLink->GetSymbol()->DeleteAllChildren() ;
 
-    // clean up the IdSymbolMap table. See Bug #1094
-    IdSymbolMapIter i = m_IdSymbolMap.find(m_OutputLink->GetValueAsString());
-    if (i != m_IdSymbolMap.end()) {
-      IdentifierSymbol* out_sym = i->second;
-      m_IdSymbolMap.clear();
-      m_IdSymbolMap[m_OutputLink->GetValueAsString()] = out_sym;
-    }
-    else {
-      m_IdSymbolMap.clear();
-    }
+		// clean up the IdSymbolMap table. See Bug #1094
+		IdSymbolMapIter i = m_IdSymbolMap.find(m_OutputLink->GetValueAsString());
+		if (i != m_IdSymbolMap.end()) {
+		  IdentifierSymbol* out_sym = i->second;
+		  m_IdSymbolMap.clear();
+		  m_IdSymbolMap[m_OutputLink->GetValueAsString()] = out_sym;
+		}
+		else {
+		  m_IdSymbolMap.clear();
+		}
 	}
 }
