@@ -4,9 +4,10 @@
 #include "IdentifierSymbol.h"
 #include "misc.h"
 
-using namespace std;
+using namespace EpmemNS;
+using std::string;
 
-IdentifierSymbol::IdentifierSymbol( long newUID, char newLetter, long newNumber )
+IdentifierSymbol::IdentifierSymbol( SymbolUID newUID, char newLetter, long newNumber )
 {
 	// get string representation
 	string temp;

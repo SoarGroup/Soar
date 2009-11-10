@@ -7,16 +7,20 @@
 #include "Symbol.h"
 #include "IdentifierSymbol.h"
 
+namespace EpmemNS {
+
+typedef long WMEUID;
+
 class WME
 {
 	public:
 
-		WME( IdentifierSymbol* newId, Symbol* newAttr, Symbol* newVal, long newUid );
+		WME( IdentifierSymbol* newId, Symbol* newAttr, Symbol* newVal, WMEUID newUid );
 
 		IdentifierSymbol* GetId();
 		Symbol* GetAttr();
 		Symbol* GetVal();
-		long GetUID();
+		WMEUID GetUID();
 	
 		std::string GetString();
 	
@@ -24,9 +28,10 @@ class WME
 		IdentifierSymbol* id;
 		Symbol* attr;
 		Symbol* val;
-		long uid;
+		WMEUID uid;
 
 		std::string str;
 };
+}
 
 #endif

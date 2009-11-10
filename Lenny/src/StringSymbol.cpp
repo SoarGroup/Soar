@@ -3,9 +3,9 @@
 
 #include "StringSymbol.h"
 
-using namespace std;
+using namespace EpmemNS;
 
-StringSymbol::StringSymbol( long newUID, const char* newValue )
+StringSymbol::StringSymbol( SymbolUID newUID, const char* newValue )
 {
 	InitSymbol( newUID, newValue );
 }

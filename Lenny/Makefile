@@ -1,4 +1,4 @@
-SOAR_HOME=/home/jzxu/soar/nlderbin-epmem-smem2
+SOAR_HOME=../soar/nlderbin-epmem-smem2
 SOAR_INCLUDE_PATH=-I$(SOAR_HOME)/Core/ClientSML/include -I$(SOAR_HOME)/Core/ConnectionSML/include -I$(SOAR_HOME)/Core/ElementXML/include
 SOAR_LIB_PATH=-L$(SOAR_HOME)/SoarLibrary/lib
 SOAR_LIBS=-lClientSML -lConnectionSML -lElementXML
@@ -12,7 +12,7 @@ CPPFLAGS=-g $(INCLUDE_PATH)
 
 HEADERS=inc/*
 
-SRCS=FloatSymbol.cpp IdentifierSymbol.cpp IntegerSymbol.cpp SimpleEpmem.cpp SoarEpmem.cpp StringSymbol.cpp Symbol.cpp SymbolFactory.cpp WME.cpp
+SRCS=FloatSymbol.cpp IdentifierSymbol.cpp IntegerSymbol.cpp SimpleEpmem.cpp SoarQuery.cpp StringSymbol.cpp Symbol.cpp SymbolFactory.cpp WME.cpp SoarEpmem.cpp
 
 OBJS=$(SRCS:.cpp=.o)
 

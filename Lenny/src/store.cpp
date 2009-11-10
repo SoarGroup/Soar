@@ -4,7 +4,7 @@
 #include <sstream>
 #include <fstream>
 
-#include "SimpleEpmem.h"
+#include "SoarEpmem.h"
 
 using namespace std;
 
@@ -12,7 +12,7 @@ const int BUFSIZE = 1024;
 
 enum State { ADD, DEL };
 
-static SimpleEpmem *epmem;
+static SoarEpmem *epmem;
 
 /*
  * Set begin to the index of the beginning of the first token after
@@ -92,7 +92,7 @@ Symbol* getSymbol(string t) {
 	return NULL;
 }
 
-WME* makeWME(string ids, string attrs, string vals, long uid) {
+WME* makeWME(string ids, string attrs, string vals, WMEUID uid) {
 	Symbol *id;
 	Symbol *attr;
 	Symbol *val;
@@ -101,7 +101,7 @@ WME* makeWME(string ids, string attrs, string vals, long uid) {
 	attr = getSymbol(attrs);
 	val = getSymbol(vals);
 	if (!id || !attr || !val) return NULL;
-	if (id->GetType() != IdSym) return NULL;
+	if (id->GetType() != Symbol::IdSym) return NULL;
 	
 	return new WME(static_cast<IdentifierSymbol*>(id), attr, val, uid);
 }
@@ -111,8 +111,8 @@ int readInput(istream& input) {
 	string line;
 	int linecount = 0;
 
-	list<WME*> addlist;
-	list<long> dellist;
+	WMEList addlist;
+	DelList dellist;
 	State s = ADD;
 	
 	stringstream ss;
@@ -162,7 +162,7 @@ int readInput(istream& input) {
 int main(int argc, char* argv[]) {
 	int errorline;
 	
-	epmem = new SimpleEpmem();
+	epmem = new SoarEpmem();
 
 	if (argc > 1) {
 		ifstream fin(argv[1], fstream::in);
@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 	
-	cout << epmem->GetString() << endl;
-
+	WMEList cue;
+	epmem->Query(cue);
 	return 0;
 }

@@ -11,25 +11,28 @@
 #include "Epmem.h"
 #include "SimpleSymbolFactory.h"
 
-using namespace std;
+namespace EpmemNS {
 
-typedef list<WME*> Episode;
+using std::string;
+using std::vector;
 
 class SimpleEpmem : public Epmem {
 public:
 	SimpleEpmem();
 	~SimpleEpmem();
 	
-	int AddEpisode(const list<WME*> &addlist, const list<long> &dellist);
-	int Retrieve(int episode, list<WME*> &result);
-	QueryResult Query(const list<WME*> &cue);
+	EpisodeId AddEpisode(const WMEList &addlist, const DelList &dellist);
+	EpisodeId Retrieve(EpisodeId episode, WMEList &result);
+	QueryResult Query(const WMEList &cue);
 	
 	SymbolFactory *GetSymbolFactory() { return symfactory; }
 
 	string GetString();
 
 private:
-	vector<list<WME*>*> eps;
+	vector<WMEList*> eps;
 	SimpleSymbolFactory *symfactory;
 };
+}
+
 #endif

@@ -1,31 +1,33 @@
-#ifndef _SOAREPMEM_H_
-#define _SOAREPMEM_H_
+#ifndef _SOARQUERY_H_
+#define _SOARQUERY_H_
 
 #include <map>
 #include <list>
 #include "sml_Client.h"
 #include "Epmem.h"
 
-using namespace sml;
+using namespace EpmemNS;
 using std::map;
 using std::list;
 
-class SoarEpmem {
+class SoarQuery {
 public:
-	SoarEpmem();
-	QueryResult Query(list<WME*> cue);
+	SoarQuery();
+	QueryResult Query(const WMEList &cue);
+
+	void UpdateNextEpisode(WMEList &addlist, DelList &dellist);
+	char const *PrintState();
 
 private:
-	void UpdateNextEpisode(list<WME*> &addlist, list<WME*> &dellist);
-	void AddWME(Identifier* parent, WME *wme);
-	void DeleteWME(WME *wme);
+	void AddWME(sml::Identifier* parent, WME *wme);
+	void DeleteWME(WMEUID uid);
 
-	Kernel *kernel;
-	Agent *agent;
-	Identifier *istate;
-	map<WME*, WMElement*> wmemap;
-	map<WMElement*, WME*> smlwmemap;
-	map<long, list<Identifier*>*> idmap; // maps identifier uids to sml id wmes
+	sml::Kernel *kernel;
+	sml::Agent *agent;
+	sml::Identifier *istate;
+	map<WME*, sml::WMElement*> wmemap;
+	map<SymbolUID, list<sml::Identifier*>*> idmap; // maps identifier uids to sml id wmes
+	map<WMEUID, WME*> uidwmemap;
 };
 
 #endif

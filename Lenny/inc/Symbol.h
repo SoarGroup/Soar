@@ -2,10 +2,14 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
+namespace EpmemNS {
+
 class IntegerSymbol;
 class FloatSymbol;
 class StringSymbol;
 class IdentifierSymbol;
+
+typedef long SymbolUID;
 
 class Symbol
 {
@@ -15,7 +19,7 @@ class Symbol
 	friend class IdentifierSymbol;
 
 	public:
-		long GetUID();
+		SymbolUID GetUID();
 		const char* GetString();
 
 		enum SymbolType { IdSym, StrSym, FloatSym, IntSym };
@@ -24,10 +28,11 @@ class Symbol
 		virtual bool IsConst() = 0;
 
 	private:
-		void InitSymbol( long newUID, const char* newStr );
+		void InitSymbol( SymbolUID newUID, const char* newStr );
 
-		long UID;
+		SymbolUID UID;
 		char* str;
 };
+}
 
 #endif

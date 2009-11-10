@@ -6,12 +6,16 @@
 #include <assert.h>
 #include <sstream>
 
+using namespace EpmemNS;
+using std::stringstream;
+using std::endl;
+
 SimpleEpmem::SimpleEpmem() : eps() {
 	symfactory = new SimpleSymbolFactory();
 }
 	
 SimpleEpmem::~SimpleEpmem() {
-	vector<list<WME*>*>::iterator i;
+	vector<WMEList*>::iterator i;
 	for (i = eps.begin(); i != eps.end(); ++i) {
 		delete *i;
 	}
@@ -19,9 +23,9 @@ SimpleEpmem::~SimpleEpmem() {
 }
 
 /* delete wmes that aren't connected to root state */
-void deleteDisconnected(list<WME*> &ep) {
-	list<WME*>::iterator i;
-	list<WME*>::iterator j;
+void deleteDisconnected(WMEList &ep) {
+	WMEList::iterator i;
+	WMEList::iterator j;
 	
 	i = ep.begin();
 	bool change = true;
@@ -54,19 +58,19 @@ void deleteDisconnected(list<WME*> &ep) {
  * Add a new episode by copying the last episode and making the
  * specified changes.
  */
-int SimpleEpmem::AddEpisode(const list<WME*> &addlist, const list<long> &dellist) {
-	list<WME*> *newep;
+EpisodeId SimpleEpmem::AddEpisode(const WMEList &addlist, const DelList &dellist) {
+	WMEList *newep;
 	if (eps.size() == 0) {
-		newep = new list<WME*>();
+		newep = new WMEList();
 	} else {
-		newep = new list<WME*>(*eps.back());
+		newep = new WMEList(*eps.back());
 	}
 	
 	newep->insert(newep->end(), addlist.begin(), addlist.end());
 	
-	list<long>::iterator i;
-	list<WME*>::iterator j;
-	list<long> dellistcopy(dellist);
+	DelList::iterator i;
+	WMEList::iterator j;
+	DelList dellistcopy(dellist);
 
 	for (i = dellistcopy.begin(); i != dellistcopy.end(); ++i) {
 		bool found = false;
@@ -80,19 +84,20 @@ int SimpleEpmem::AddEpisode(const list<WME*> &addlist, const list<long> &dellist
 		assert(found);
 	}
 
-	deleteDisconnected(*newep);
 	eps.push_back(newep);
+	
+	return eps.size() - 1;
 }
 
-int SimpleEpmem::Retrieve(int episode, list<WME*> &result) {
+EpisodeId SimpleEpmem::Retrieve(EpisodeId episode, WMEList &result) {
 	if (episode < 0 || episode >= eps.size()) return -1;
-	list<WME*> *e = eps[episode];
+	WMEList *e = eps[episode];
 	result.insert(result.end(), e->begin(), e->end());
-	return e->size();
+	return episode;
 }
 
 /* Not implemented */
-QueryResult SimpleEpmem::Query(const list<WME*> &cue) {
+QueryResult SimpleEpmem::Query(const WMEList &cue) {
 	QueryResult r;
 	r.episode = -1;
 	r.matchScore = -1;
@@ -103,8 +108,8 @@ QueryResult SimpleEpmem::Query(const list<WME*> &cue) {
 string SimpleEpmem::GetString() {
 	stringstream ss;
 	int c;
-	vector<list<WME*>*>::iterator i;
-	list<WME*>::iterator j;
+	vector<WMEList*>::iterator i;
+	WMEList::iterator j;
 	for (i = eps.begin(), c = 0; i != eps.end(); ++i, ++c) {
 		ss << "Episode " << c << endl;
 		for (j = (*i)->begin(); j != (*i)->end(); ++j) {

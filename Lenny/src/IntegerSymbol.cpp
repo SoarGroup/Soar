@@ -4,9 +4,10 @@
 #include "IntegerSymbol.h"
 #include "misc.h"
 
-using namespace std;
+using namespace EpmemNS;
+using std::string;
 
-IntegerSymbol::IntegerSymbol( long newUID, long newValue )
+IntegerSymbol::IntegerSymbol( SymbolUID newUID, long newValue )
 {
 	// get string representation
 	string temp;

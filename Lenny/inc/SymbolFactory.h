@@ -7,6 +7,7 @@
 #include "StringSymbol.h"
 #include "IdentifierSymbol.h"
 
+namespace EpmemNS {
 class SymbolFactory
 {
 	public:
@@ -15,7 +16,7 @@ class SymbolFactory
 		virtual StringSymbol* GetStringSymbol( const char* val ) = 0;
 		virtual IdentifierSymbol* GetIdentifierSymbol( char letter, long number ) = 0;
 
-		virtual Symbol* GetSymbolByUID( long UID ) = 0;
+		virtual Symbol* GetSymbolByUID( SymbolUID uid ) = 0;
 
 		Symbol* GetSymbol( long val );
 		Symbol* GetSymbol( double val );
@@ -23,11 +24,12 @@ class SymbolFactory
 		Symbol* GetSymbol( char letter, long number );
 
 	protected:
-		IntegerSymbol* NewIntegerSymbol( long newUID, long newValue );
-		FloatSymbol* NewFloatSymbol( long newUID, double newValue );
-		StringSymbol* NewStringSymbol( long newUID, const char* newValue );
-		IdentifierSymbol* NewIdentifierSymbol( long newUID, char newLetter, long newNumber );
+		IntegerSymbol* NewIntegerSymbol( SymbolUID newUID, long newValue );
+		FloatSymbol* NewFloatSymbol( SymbolUID newUID, double newValue );
+		StringSymbol* NewStringSymbol( SymbolUID newUID, const char* newValue );
+		IdentifierSymbol* NewIdentifierSymbol( SymbolUID newUID, char newLetter, long newNumber );
 
 };
+}
 
 #endif

@@ -6,6 +6,8 @@
 
 #include "Symbol.h"
 
+namespace EpmemNS {
+
 class SymbolFactory;
 
 class StringSymbol: public Symbol
@@ -17,7 +19,8 @@ class StringSymbol: public Symbol
 		bool IsConst();
 
 	private:
-		StringSymbol( long newUID, const char* newValue );
+		StringSymbol( SymbolUID newUID, const char* newValue );
 };
+}
 
 #endif

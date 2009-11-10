@@ -4,6 +4,8 @@
 
 #include "Symbol.h"
 
+namespace EpmemNS {
+
 class SymbolFactory;
 
 class IntegerSymbol: public Symbol
@@ -18,7 +20,8 @@ class IntegerSymbol: public Symbol
 	private:
 		long value;
 
-		IntegerSymbol( long newUID, long newValue );
+		IntegerSymbol( SymbolUID newUID, long newValue );
 };
+}
 
 #endif

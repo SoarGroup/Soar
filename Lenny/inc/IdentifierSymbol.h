@@ -4,6 +4,8 @@
 
 #include "Symbol.h"
 
+namespace EpmemNS {
+
 class SymbolFactory;
 
 class IdentifierSymbol: public Symbol
@@ -21,7 +23,8 @@ class IdentifierSymbol: public Symbol
 		long number;
 		char letter;
 
-		IdentifierSymbol( long newUID, char newLetter, long newNumber );
+		IdentifierSymbol( SymbolUID newUID, char newLetter, long newNumber );
 };
+}
 
 #endif

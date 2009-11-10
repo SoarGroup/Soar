@@ -4,6 +4,8 @@
 
 #include "Symbol.h"
 
+namespace EpmemNS {
+
 class SymbolFactory;
 
 class FloatSymbol: public Symbol
@@ -18,7 +20,8 @@ class FloatSymbol: public Symbol
 	private:
 		double value;
 
-		FloatSymbol( long newUID, double newValue );
+		FloatSymbol( SymbolUID newUID, double newValue );
 };
+}
 
 #endif

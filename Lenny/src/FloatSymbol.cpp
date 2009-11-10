@@ -4,9 +4,10 @@
 #include "FloatSymbol.h"
 #include "misc.h"
 
-using namespace std;
+using namespace EpmemNS;
+using std::string;
 
-FloatSymbol::FloatSymbol( long newUID, double newValue )
+FloatSymbol::FloatSymbol( SymbolUID newUID, double newValue )
 {
 	// get string representation
 	string temp;

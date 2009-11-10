@@ -4,9 +4,10 @@
 #include "WME.h"
 #include "misc.h"
 
-using namespace std;
+using namespace EpmemNS;
+using std::string;
 
-WME::WME( IdentifierSymbol *newId, Symbol *newAttr, Symbol *newVal, long newUid )
+WME::WME( IdentifierSymbol *newId, Symbol *newAttr, Symbol *newVal, WMEUID newUid )
 : id( newId ), attr( newAttr ), val( newVal ), uid( newUid )
 {
 	string uidStr;
@@ -30,7 +31,7 @@ Symbol* WME::GetVal()
 	return val;
 }
 
-long WME::GetUID()
+WMEUID WME::GetUID()
 {
 	return uid;
 }

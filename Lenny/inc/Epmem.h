@@ -5,21 +5,29 @@
 #include "WME.h"
 #include "SymbolFactory.h"
 
-using namespace std;
+namespace EpmemNS {
+
+using std::list;
+
+typedef list< WME* > WMEList;
+typedef list< long > DelList;
+typedef long EpisodeId;
 
 typedef struct query_result_struct {
-	int episode;
+	EpisodeId episode;
 	float matchScore;
 	bool graphMatch;
 } QueryResult;
 
 class Epmem {
 public:
-	virtual int AddEpisode(const list<WME*> &addlist, const list<long> &dellist) = 0;
-	virtual int Retrieve(int episode, list<WME*> &result) = 0;
-	virtual QueryResult Query(const list<WME*> &cue) = 0;
+	virtual EpisodeId AddEpisode(const WMEList &addlist, const DelList &dellist) = 0;
+	virtual EpisodeId Retrieve(EpisodeId episode, WMEList &result) = 0;
+	virtual QueryResult Query(const WMEList &cue) = 0;
 
 	virtual SymbolFactory *GetSymbolFactory() = 0;
 };
+
+}
 
 #endif
