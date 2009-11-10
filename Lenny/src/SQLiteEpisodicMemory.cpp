@@ -13,6 +13,7 @@
 #include "sqlite3.h"
 
 using namespace std;
+using namespace EpmemNS;
 
 EpisodeId SQLiteEpisodicMemory::AddEpisode( WMEList& addList, DelList& removeList )
 {

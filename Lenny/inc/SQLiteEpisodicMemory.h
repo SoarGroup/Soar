@@ -8,25 +8,28 @@
 
 #include "sqlite3.h"
 
-class SQLiteEpisodicMemory: public EpisodicMemory
+namespace EpmemNS
 {
-	public:
-		EpisodeId AddEpisode( WMEList& addList, DelList& removeList );
-		ResultType RetrieveEpisode( EpisodeId episode, WMEList &result );
+	class SQLiteEpisodicMemory: public EpisodicMemory
+	{
+		public:
+			EpisodeId AddEpisode( WMEList& addList, DelList& removeList );
+			ResultType RetrieveEpisode( EpisodeId episode, WMEList &result );
 
-		SymbolFactory* GetSymbolFactory();
+			SymbolFactory* GetSymbolFactory();
 
-		SQLiteEpisodicMemory( sqlite3* newDB );
+			SQLiteEpisodicMemory( sqlite3* newDB );
 
-	private:
-		sqlite3* db;
-		sqlite3_stmt* addAdd;
-		sqlite3_stmt* addDel;
-		sqlite3_stmt* getEpAdds;
-		sqlite3_stmt* getEpDels;
+		private:
+			sqlite3* db;
+			sqlite3_stmt* addAdd;
+			sqlite3_stmt* addDel;
+			sqlite3_stmt* getEpAdds;
+			sqlite3_stmt* getEpDels;
 
-		SymbolFactory* myFactory;
-		EpisodeId currentEpisode;
-};
+			SymbolFactory* myFactory;
+			EpisodeId currentEpisode;
+	};
+}
 
 #endif

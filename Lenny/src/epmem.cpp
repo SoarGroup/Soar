@@ -22,6 +22,7 @@
 #include "misc.h"
 
 using namespace std;
+using namespace EpmemNS;
 
 void SymFactoryTest( sqlite3* db )
 {

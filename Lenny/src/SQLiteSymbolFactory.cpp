@@ -10,6 +10,7 @@
 #include "misc.h"
 
 using namespace std;
+using namespace EpmemNS;
 
 IntegerSymbol* SQLiteSymbolFactory::GetIntegerSymbol( long val )
 {
