@@ -2,6 +2,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "handlers.h"
+
 namespace sml
 {
 	class Kernel;
@@ -21,6 +23,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( test_echo );
 
 	CPPUNIT_TEST( testWrongAgentWmeFunctions );
+	CPPUNIT_TEST( testRHSRand );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -33,7 +36,9 @@ protected:
 	void test_clog();
 	void test_gp();
 	void test_echo();
+
 	void testWrongAgentWmeFunctions();
+	void testRHSRand();
 
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
@@ -193,4 +198,17 @@ void MiscTest::testWrongAgentWmeFunctions()
 	CPPUNIT_ASSERT(pAgent2->CreateIdWME(foo1, "fail") == 0);
 	CPPUNIT_ASSERT(pAgent2->CreateSharedIdWME(foo1, "fail", il2) == 0);
 	CPPUNIT_ASSERT(pAgent2->DestroyWME(foo1) == 0);
+}
+
+void MiscTest::testRHSRand()
+{
+	pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
+
+	std::stringstream productionsPath;
+	productionsPath << pKernel->GetLibraryLocation() << "/Tests/testRHSRand.soar";
+
+	pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult() );
+
+	pAgent->RunSelf(5000);
 }
