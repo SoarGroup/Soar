@@ -986,6 +986,76 @@ Symbol *compute_range_rhs_function_code(agent* thisAgent, list *args, void* /*us
                                              * (current_y - waypoint_y))));
 }
 
+/* --------------------------------------------------------------------
+								rand-float
+
+ Takes an optional integer argument.
+ Returns [0,1.0] of no argument, or if argument is not positive.
+ Returns [0,n] if argument is positive.
+-------------------------------------------------------------------- */
+Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+	double n = 0;
+	if (args) 
+	{
+	    cons* c = args;
+	    Symbol* arg = static_cast<Symbol*>(c->first);
+		if (arg) {
+			if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
+				n = static_cast<double>(arg->ic.value);
+			} else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
+				n = arg->fc.value;
+			} else {
+	            print_with_symbols(thisAgent, "Error: non-number (%y) passed to - rand-float\n", arg);
+				return NIL;
+			}
+		} else {
+			// assume default behavior (no arg)
+			// possibly warn? when can this happen?
+		}
+	}
+
+	if (n > 0) {
+		return make_float_constant(thisAgent, SoarRand(n));
+	} 
+	return make_float_constant(thisAgent, SoarRand());
+}
+
+/* --------------------------------------------------------------------
+								rand-int
+
+ Takes an optional integer argument.
+ Returns [0,2^32-1] of no argument, or if argument is not positive.
+ Returns [0,n] if argument is positive.
+-------------------------------------------------------------------- */
+Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+	long n = 0;
+	if (args) 
+	{
+	    cons* c = args;
+	    Symbol* arg = static_cast<Symbol*>(c->first);
+		if (arg) {
+			if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
+				n = arg->ic.value;
+			} else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
+				n = static_cast<long>(arg->fc.value);
+			} else {
+	            print_with_symbols(thisAgent, "Error: non-number (%y) passed to - rand-int\n", arg);
+				return NIL;
+			}
+		} else {
+			// assume default behavior (no arg)
+			// possibly warn? when can this happen?
+		}
+	}
+
+	if (n > 0) {
+		return make_int_constant(thisAgent, SoarRandInt(n));
+	} 
+	return make_int_constant(thisAgent, SoarRandInt());
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Math Functions
@@ -1058,6 +1128,13 @@ void init_built_in_rhs_math_functions (agent* thisAgent)
 	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "compute-range"), 
 		compute_range_rhs_function_code, 4, TRUE, FALSE, 0);
 
+	// Bug 800: implement rhs rand functions
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "rand-int"), 
+		rand_int_rhs_function_code, -1, TRUE, FALSE, 0);
+
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "rand-float"), 
+		rand_float_rhs_function_code, -1, TRUE, FALSE, 0);
+
 }
 
 void remove_built_in_rhs_math_functions (agent* thisAgent)
@@ -1083,4 +1160,8 @@ void remove_built_in_rhs_math_functions (agent* thisAgent)
 	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "round-off"));
 	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "compute-heading"));
 	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "compute-range"));
+
+	// Bug 800: implement rand
+	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "rand-int"));
+	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "rand-float"));
 }

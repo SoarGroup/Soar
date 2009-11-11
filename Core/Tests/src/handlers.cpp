@@ -13,6 +13,7 @@
 #include "thread_Event.h"
 
 #include "handlers.h"
+#include "misc.h"
 
 void Handlers::MyBoolShutdownHandler(sml::smlSystemEventId, void* pUserData, sml::Kernel*)
 {
@@ -407,7 +408,7 @@ void Handlers::MyOrderingRunHandler( sml::smlRunEventId /*id*/, void* pUserData,
 	++(*pInt);
 }
 
-std::string Handlers::MyRhsFunctionFailureHandler(sml::smlRhsEventId, void* pUserData, sml::Agent*, char const*, char const* pArgument)
+std::string Handlers::MyRhsFunctionFailureHandler(sml::smlRhsEventId, void*, sml::Agent*, char const*, char const* pArgument)
 {
 	std::ostringstream message;
 	message << "test-failure handler called for: " << pArgument;
