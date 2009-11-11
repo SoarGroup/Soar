@@ -1025,7 +1025,7 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
 								rand-int
 
  Takes an optional integer argument.
- Returns [0,2^32-1] of no argument, or if argument is not positive.
+ Returns [-2^31,2^31-1] of no argument, or if argument is not positive.
  Returns [0,n] if argument is positive.
 -------------------------------------------------------------------- */
 Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
