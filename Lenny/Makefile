@@ -12,7 +12,7 @@ CPPFLAGS=-g $(INCLUDE_PATH)
 
 HEADERS=inc/*
 
-SRCS=FloatSymbol.cpp IdentifierSymbol.cpp IntegerSymbol.cpp SimpleEpmem.cpp SoarQuery.cpp StringSymbol.cpp Symbol.cpp SymbolFactory.cpp WME.cpp SoarEpmem.cpp
+SRCS=FloatSymbol.cpp IdentifierSymbol.cpp IntegerSymbol.cpp SimpleEpmem.cpp SoarQuery.cpp StringSymbol.cpp Symbol.cpp SymbolFactory.cpp WME.cpp SoarEpmem.cpp SimpleSymbolFactory.cpp
 
 OBJS=$(SRCS:.cpp=.o)
 

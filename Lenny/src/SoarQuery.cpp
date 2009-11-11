@@ -1,6 +1,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string.h>
 #include <sstream>
 #include "sml_Client.h"
 
@@ -12,21 +13,51 @@
 #include "StringSymbol.h"
 
 using namespace sml;
-using std::map;
-using std::set;
-using std::string;
-using std::stringstream;
-using std::endl;
+using namespace std;
+using namespace EpmemNS;
 
-SoarQuery::SoarQuery() 
-: wmemap(), idmap(), uidwmemap()
+void SoarUpdateHandler(smlUpdateEventId id, void *usrdata, Kernel *kernel, smlRunFlags runFlags) {
+	Identifier::ChildrenIter i;
+	SoarQuery *q = static_cast<SoarQuery*>(usrdata);
+	Identifier *out = q->agent->GetOutputLink();
+	
+	q->matchedids.clear();
+	q->graphmatch = false;
+	for (i = out->GetChildrenBegin(); i != out->GetChildrenEnd(); ++i) {
+		if (strcmp((*i)->GetAttribute(), "graphmatch") == 0) {
+			q->graphmatch = true;
+		} else {
+			q->matchedids.push_back((*i)->ConvertToIntElement()->GetValue());
+		}
+	}
+}
+
+SoarQuery::SoarQuery(const WMEList &cue) 
+: wmemap(), idmap(), uidwmemap(), matchedids(), graphmatch(false)
 {
 	kernel = Kernel::CreateKernelInCurrentThread(Kernel::kDefaultLibraryName, true, 0);
 	agent = kernel->CreateAgent("soar1");
+	kernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateHandler, this);
+	agent->ExecuteCommandLine("set-stop-phase --after --output");
+	agent->ExecuteCommandLine("wait -e");
+	
 	istate = agent->CreateIdWME(agent->GetInputLink(), "state");
 	list<Identifier*> *idlist = new list<Identifier*>();
 	idlist->push_back(istate);
 	idmap[0] = idlist; // top state always has UID 0
+	
+	maxscore = SetCue(cue);
+}
+
+SoarQuery::~SoarQuery() {
+	map<SymbolUID, list<Identifier*>*>::iterator i;
+	
+	for (i = idmap.begin(); i != idmap.end(); ++i) {
+		delete i->second;
+	}
+	
+	kernel->Shutdown();
+	delete kernel;
 }
 
 void SoarQuery::AddWME(Identifier* parent, WME *wme) {
@@ -124,9 +155,50 @@ char const *SoarQuery::PrintState() {
 	return agent->ExecuteCommandLine("print -d 100 -t i2");
 }
 
+string WMEtoCond(WME *w) {
+	stringstream ss;
+	Symbol *id = w->GetId();
+	Symbol *attr = w->GetAttr();
+	Symbol *val = w->GetVal();
+	
+	ss << "(<" << id->GetString() << ">";
+	if (attr->GetType() == Symbol::IdSym) {
+		ss << " ^<" << attr->GetString() << ">";
+	}
+	else {
+		ss << " ^" << attr->GetString();
+	}
+	
+	if (val->GetType() == Symbol::IdSym) {
+		ss << " <" << val->GetString() << ">";
+	}
+	else {
+		ss << " " << val->GetString();
+	}
+	
+	ss << ")";
+	
+	return ss.str();
+}
+
+string CreateGraphMatchProd(const WMEList &cue) {
+	stringstream ss;
+	WMEList::const_iterator i;
+	
+	ss << "sp {graphmatch (state <s> ^io <io>)";
+	ss << "(<io> ^input-link.state <is> ^output-link <out>)";
+	
+	for(i = cue.begin(); i != cue.end(); ++i) {
+		ss << WMEtoCond(*i);
+	}
+	ss << "--> (<out> ^graphmatch t)}";
+	
+	return ss.str();
+}
+
 /*
- * Make the body of the production by creating a condition to match every
- * ancestor wme of a leaf identifier.
+ * Make the condition body of the production by creating a condition to
+ * match every ancestor wme of a leaf identifier.
  */
 string CreateProd(SymbolUID leaf, map<SymbolUID, WMEList*> &idparmap) {
 	list<SymbolUID> ids;
@@ -141,11 +213,11 @@ string CreateProd(SymbolUID leaf, map<SymbolUID, WMEList*> &idparmap) {
 		parents = idparmap[*i];
 		for (j = parents->begin(); j != parents->end(); ++j) {
 			EpmemNS::IdentifierSymbol *id = (*j)->GetId();
-			EpmemNS::Symbol *attr = (*j)->GetAttr();
-			EpmemNS::Symbol *val = (*j)->GetVal();
+			Symbol *attr = (*j)->GetAttr();
+			Symbol *val = (*j)->GetVal();
 			
 			if (id->GetUID() != 0) {  // it's not state id
-				ss << "(<" << id->GetString() << "> ^" << attr->GetString() << " <" << val->GetString() << ">)" << endl;
+				ss << WMEtoCond(*j) << endl;
 				ids.push_back(id->GetUID());
 			} else {
 				ss << "(<is> ^" << attr->GetString() << " <" << val->GetString() << ">)" << endl;
@@ -159,10 +231,13 @@ string CreateProd(SymbolUID leaf, map<SymbolUID, WMEList*> &idparmap) {
 /*
  * Create productions that implement surface matching. Each leaf
  * identifier or constant value will be represented by a single
- * production.
+ * production. The production will test for the existence of all
+ * ancestors of the leaf wme on the input link and add a wme to the
+ * output link to indicate the match.
  */
 void CreateSurfaceMatchProds(const WMEList &cue, list<string> &result) {
 	map<SymbolUID, WMEList*> idparmap;  // map from identifier UIDs to the wmes that have them as values
+	map<SymbolUID, WMEList*>::iterator k;
 	WMEList constwmes; // wmes that have constants for values
 	WMEList::const_iterator i;
 	set<SymbolUID> leafids;
@@ -188,40 +263,66 @@ void CreateSurfaceMatchProds(const WMEList &cue, list<string> &result) {
 	}
 	
 	stringstream ss;
-	int prodcounter = 0;
+	int c = 0;
 	
 	for(i = constwmes.begin(); i != constwmes.end(); ++i) {
 		EpmemNS::IdentifierSymbol *id = (*i)->GetId();
-		EpmemNS::Symbol *attr = (*i)->GetAttr();
-		EpmemNS::Symbol *val = (*i)->GetVal();
+		Symbol *attr = (*i)->GetAttr();
+		Symbol *val = (*i)->GetVal();
 		
 		ss.str("");
-		ss << "sp {const" << prodcounter++ << endl << "(state <s> ^io.input-link.state <is>)" << endl;
+		ss << "sp {const" << id->GetUID();
+		ss << " (state <s> ^io <io>)(<io> ^input-link.state <is> ^output-link <out>)";
 		ss << CreateProd(id->GetUID(), idparmap);
-		ss << "(<" << id->GetString() << "> ^" << attr->GetString() << " " << val->GetString() << ")" << endl;
-		ss << "}";
+		ss << WMEtoCond(*i);
+		ss << "--> (<out> ^const " << id->GetUID() << ")}";
 		
 		result.push_back(ss.str());
 	}
 	
 	for(j = leafids.begin(); j != leafids.end(); ++j) {
 		ss.str("");
-		ss << "sp {id" << prodcounter++ << endl << "(state <s> ^io.input-link.state <is>)" << endl;
+
+		ss << "sp {ident" << *j;
+		ss << " (state <s> ^io <io>)(<io> ^input-link.state <is> ^output-link <out>)";
 		ss << CreateProd(*j, idparmap);
-		ss << "}";
+		ss << "--> (<out> ^ident " << *j << ")}";
 		
 		result.push_back(ss.str());
 	}
+	
+	// clean up memory
+	for(k = idparmap.begin(); k != idparmap.end(); ++k) {
+		delete k->second;
+	}
 }
 
-QueryResult SoarQuery::Query(const WMEList &cue) {
+int SoarQuery::SetCue(const WMEList &cue) {
 	list<string> prods;
+	list<string>::iterator i;
 	CreateSurfaceMatchProds(cue, prods);
 	
-	for(list<string>::iterator i = prods.begin(); i != prods.end(); ++i) {
-		std::cout << *i << endl;
+	for(i = prods.begin(); i != prods.end(); ++i) {
+		agent->ExecuteCommandLine(i->c_str());
 	}
 	
-	QueryResult r;
-	return r;
+	agent->ExecuteCommandLine(CreateGraphMatchProd(cue).c_str());
+	
+	return prods.size();
+}
+
+void SoarQuery::GetMatchedLeafIds(list<SymbolUID> &result) {
+	result.insert(result.end(), matchedids.begin(), matchedids.end());
+}
+
+int SoarQuery::GetMaxMatchScore() {
+	return maxscore;
+}
+
+bool SoarQuery::GetGraphMatch() {
+	return graphmatch;
+}
+
+char const *SoarQuery::PrintCueProductions() {
+	return agent->ExecuteCommandLine("print --full");
 }

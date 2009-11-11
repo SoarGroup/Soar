@@ -6,28 +6,37 @@
 #include "sml_Client.h"
 #include "Epmem.h"
 
-using namespace EpmemNS;
-using std::map;
-using std::list;
-
 class SoarQuery {
 public:
-	SoarQuery();
-	QueryResult Query(const WMEList &cue);
+	SoarQuery(const EpmemNS::WMEList &cue);
+	~SoarQuery();
 
-	void UpdateNextEpisode(WMEList &addlist, DelList &dellist);
+	void UpdateNextEpisode(EpmemNS::WMEList &addlist, EpmemNS::DelList &dellist);
 	char const *PrintState();
+	char const *PrintCueProductions();
 
+	void GetMatchedLeafIds(std::list<EpmemNS::SymbolUID> &result);
+	int GetMaxMatchScore();
+	bool GetGraphMatch();
+	
 private:
-	void AddWME(sml::Identifier* parent, WME *wme);
-	void DeleteWME(WMEUID uid);
+	int SetCue(const EpmemNS::WMEList &cue);
+	void AddWME(sml::Identifier* parent, EpmemNS::WME *wme);
+	void DeleteWME(EpmemNS::WMEUID uid);
 
 	sml::Kernel *kernel;
 	sml::Agent *agent;
 	sml::Identifier *istate;
-	map<WME*, sml::WMElement*> wmemap;
-	map<SymbolUID, list<sml::Identifier*>*> idmap; // maps identifier uids to sml id wmes
-	map<WMEUID, WME*> uidwmemap;
+	std::map<EpmemNS::WME*, sml::WMElement*> wmemap;
+	std::map<EpmemNS::SymbolUID, std::list<sml::Identifier*>*> idmap;
+	std::map<EpmemNS::WMEUID, EpmemNS::WME*> uidwmemap;
+	
+	std::list<EpmemNS::SymbolUID> matchedids;
+	bool graphmatch;
+	
+	int maxscore;
+	
+	friend void SoarUpdateHandler(sml::smlUpdateEventId, void*, sml::Kernel*, sml::smlRunFlags);
 };
 
 #endif

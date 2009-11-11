@@ -7,6 +7,7 @@
 #include "SoarEpmem.h"
 
 using namespace std;
+using namespace EpmemNS;
 
 const int BUFSIZE = 1024;
 
@@ -103,7 +104,7 @@ WME* makeWME(string ids, string attrs, string vals, WMEUID uid) {
 	if (!id || !attr || !val) return NULL;
 	if (id->GetType() != Symbol::IdSym) return NULL;
 	
-	return new WME(static_cast<IdentifierSymbol*>(id), attr, val, uid);
+	return new WME(static_cast<EpmemNS::IdentifierSymbol*>(id), attr, val, uid);
 }
 
 int readInput(istream& input) {
@@ -177,6 +178,65 @@ int main(int argc, char* argv[]) {
 	}
 	
 	WMEList cue;
+	SymbolFactory *sf = epmem->GetSymbolFactory();
+	
+	IdentifierSymbol* sS1 = sf->GetIdentifierSymbol( 'S', 1 );
+	StringSymbol* sBlock = sf->GetStringSymbol( "block" );
+	StringSymbol* sId = sf->GetStringSymbol( "id" );
+	StringSymbol* sOnTop = sf->GetStringSymbol( "on-top" );
+	StringSymbol* sOnTable = sf->GetStringSymbol( "on-table" );
+	StringSymbol* sTop = sf->GetStringSymbol( "top" );
+	StringSymbol* sBottom = sf->GetStringSymbol( "bottom" );
+	StringSymbol* sA = sf->GetStringSymbol( "A" );
+	StringSymbol* sB = sf->GetStringSymbol( "B" );
+	StringSymbol* sC = sf->GetStringSymbol( "C" );
+
+	IdentifierSymbol* sB1 = sf->GetIdentifierSymbol( 'B', 1 );
+	IdentifierSymbol* sB2 = sf->GetIdentifierSymbol( 'B', 2 );
+	IdentifierSymbol* sB3 = sf->GetIdentifierSymbol( 'B', 3 );
+
+	IdentifierSymbol* sO1 = sf->GetIdentifierSymbol( 'O', 1 );
+	IdentifierSymbol* sO2 = sf->GetIdentifierSymbol( 'O', 2 );
+	IdentifierSymbol* sO3 = sf->GetIdentifierSymbol( 'O', 3 );
+
+	WME *wBlock1 = new WME( sS1, sBlock, sB1, 1 );
+	WME *wBlock2 = new WME( sS1, sBlock, sB2, 2 );
+	WME *wBlock3 = new WME( sS1, sBlock, sB3, 3 );
+
+	WME *wOnTop1 = new WME( sS1, sOnTop, sO1, 4 );
+	WME *wOnTop2 = new WME( sS1, sOnTop, sO2, 5 );
+	WME *wOnTableB1 = new WME( sS1, sOnTable, sB1, 6 );
+
+	WME *wBlock1Id = new WME( sB1, sId, sA, 7 );
+	WME *wBlock2Id = new WME( sB2, sId, sB, 8 );
+	WME *wBlock3Id = new WME( sB3, sId, sC, 9 );
+
+	WME *wOnTop1Top = new WME( sO1, sTop, sB3, 10 );
+	WME *wOnTop1Bottom = new WME( sO1, sBottom, sB2, 11 );
+
+	WME *wOnTop2Top = new WME( sO2, sTop, sB2, 12 );
+	WME *wOnTop2Bottom = new WME( sO2, sBottom, sB1, 13 );
+
+	//
+
+	WME *wOnTableB3 = new WME( sS1, sOnTable, sB3, 14 );
+
+	//
+
+	WME *wOnTop3 = new WME( sS1, sOnTop, sO3, 15 );
+	WME *wOnTop3Top = new WME( sO3, sTop, sB2, 16 );
+	WME *wOnTop3Bottom = new WME( sO3, sBottom, sB3, 17 );
+
+	cue.push_back(wBlock1);
+	cue.push_back(wBlock2);
+	cue.push_back(wBlock3);
+	cue.push_back(wBlock1Id);
+	cue.push_back(wBlock2Id);
+	cue.push_back(wBlock3Id);
+	cue.push_back(wOnTop3);
+	cue.push_back(wOnTop3Top);
+	cue.push_back(wOnTop3Bottom);
+
 	epmem->Query(cue);
 	return 0;
 }

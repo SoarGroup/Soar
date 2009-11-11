@@ -7,8 +7,7 @@
 #include <sstream>
 
 using namespace EpmemNS;
-using std::stringstream;
-using std::endl;
+using namespace std;
 
 SimpleEpmem::SimpleEpmem() : eps() {
 	symfactory = new SimpleSymbolFactory();

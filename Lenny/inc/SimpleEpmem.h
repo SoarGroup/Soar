@@ -13,9 +13,6 @@
 
 namespace EpmemNS {
 
-using std::string;
-using std::vector;
-
 class SimpleEpmem : public Epmem {
 public:
 	SimpleEpmem();
@@ -27,10 +24,10 @@ public:
 	
 	SymbolFactory *GetSymbolFactory() { return symfactory; }
 
-	string GetString();
+	std::string GetString();
 
 private:
-	vector<WMEList*> eps;
+	std::vector<WMEList*> eps;
 	SimpleSymbolFactory *symfactory;
 };
 }

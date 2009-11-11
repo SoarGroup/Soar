@@ -7,10 +7,8 @@
 
 namespace EpmemNS {
 
-using std::list;
-
-typedef list< WME* > WMEList;
-typedef list< long > DelList;
+typedef std::list< WME* > WMEList;
+typedef std::list< long > DelList;
 typedef long EpisodeId;
 
 typedef struct query_result_struct {
