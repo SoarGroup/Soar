@@ -1,0 +1,12 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source README.soar
+source clean.soar
+source initialize-blocks-world.soar
+source move-block.soar
+source success.soar

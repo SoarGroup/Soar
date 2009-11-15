@@ -1,0 +1,71 @@
+sp {blocks-world*propose*move-block
+   (state <s> ^name blocks-world
+              ^io.input-link.agents.agent <agent>)
+   (<agent> ^commands.move-block <mb>)
+   (<mb> -^status)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-block
+         ^agent <agent>
+         ^move-block <mb>)
+}
+
+sp {apply*move-block*status
+   (state <s> ^operator <op>
+              ^io.output-link.agents.agent <agent>)
+   (<op> ^name move-block
+         ^move-block <mb>
+         ^agent.id <id>)
+   (<agent> ^id <id>
+            ^feedback <f>)
+         
+-->
+   (<f> ^add-wme <wme>)
+   (<wme> ^id <mb>
+          ^attr status
+          ^value processed)
+}
+
+sp {apply*move-block*regular
+   (state <s> ^operator <op>
+              ^io.output-link.agents.agent <agent>)
+   (<op> ^name move-block
+         ^move-block <mb>
+         ^agent.id <id>)
+   (<mb> ^id {<> table <block>}
+         ^to {<> table <> <block> <dest>})
+   (<agent> ^id <id>
+            ^input <input>)
+   (<input> ^block <block>
+            ^block {<> <block> <dest>}
+            ^on-top <ot>)
+   (<ot> ^block1 <block>
+         ^block2 <free>)
+  -{(<input> ^on-top <otb1>)
+    (<otb1> ^block2 <block>)}
+  -{(<input> ^on-top <otb2>)
+    (<otb2> ^block2 <dest>)}
+-->
+   (<ot> ^block2 <free> - <dest>)
+}
+
+sp {apply*move-block*table
+   (state <s> ^operator <op>
+              ^io.output-link.agents.agent <agent>)
+   (<op> ^name move-block
+         ^move-block <mb>
+         ^agent.id <id>)
+   (<agent> ^id <id>
+            ^input <input>)
+   (<mb> ^id {<> table <block>}
+         ^to table)
+   (<input> ^block <block>
+            ^on-top <ot>)
+   (<ot> ^block1 <block>
+         ^block2 {<> table <block2>})
+  -{(<input> ^on-top <otb1>)
+    (<otb1> ^block2 <block>)}
+-->
+   (<ot> ^block2 <block2> - table)
+}
+
