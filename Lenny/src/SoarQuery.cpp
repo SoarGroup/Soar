@@ -23,11 +23,14 @@ void SoarUpdateHandler(smlUpdateEventId id, void *usrdata, Kernel *kernel, smlRu
 	
 	q->matchedids.clear();
 	q->graphmatch = false;
-	for (i = out->GetChildrenBegin(); i != out->GetChildrenEnd(); ++i) {
-		if (strcmp((*i)->GetAttribute(), "graphmatch") == 0) {
-			q->graphmatch = true;
-		} else {
-			q->matchedids.push_back((*i)->ConvertToIntElement()->GetValue());
+	
+	if (out) {
+		for (i = out->GetChildrenBegin(); i != out->GetChildrenEnd(); ++i) {
+			if (strcmp((*i)->GetAttribute(), "graphmatch") == 0) {
+				q->graphmatch = true;
+			} else {
+				q->matchedids.push_back((*i)->ConvertToIntElement()->GetValue());
+			}
 		}
 	}
 }
@@ -36,8 +39,7 @@ SoarQuery::SoarQuery(const WMEList &cue)
 : wmemap(), idmap(), uidwmemap(), matchedids(), graphmatch(false)
 {
 	kernel = Kernel::CreateKernelInCurrentThread(Kernel::kDefaultLibraryName, true, 0);
-	agent = kernel->CreateAgent("soar1");
-	kernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateHandler, this);
+	agent = kernel->CreateAgent("epmem");
 	agent->ExecuteCommandLine("set-stop-phase --after --output");
 	agent->ExecuteCommandLine("wait -e");
 	
@@ -47,6 +49,8 @@ SoarQuery::SoarQuery(const WMEList &cue)
 	idmap[0] = idlist; // top state always has UID 0
 	
 	maxscore = SetCue(cue);
+	
+	kernel->RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, SoarUpdateHandler, this);
 }
 
 SoarQuery::~SoarQuery() {
@@ -99,7 +103,76 @@ void SoarQuery::AddWME(Identifier* parent, WME *wme) {
 	wmemap[wme] = smlwme;
 }
 
+/*
+ * Remove all references to disconnected wmes in local data structures.
+ * We have to do this because SML doesn't report back the recursive
+ * deletions that result from deleting a single wme.
+ */
+void SoarQuery::CleanUpDisconnected() {
+	WMEList::iterator i;
+	WMEList::iterator j;
+	map<EpmemNS::SymbolUID, std::list<sml::Identifier*>*>::iterator k;
+	map<EpmemNS::WME*, sml::WMElement*>::iterator l;
+	
+	WMEList wmes;
+	list<sml::Identifier*>* idlist;
+	
+	WME *w;
+	WMElement *smlwme;
+	WMEUID uid;
+	
+	for (l = wmemap.begin(); l != wmemap.end(); ++l) {
+		wmes.push_back(l->first);
+	}
+	
+	i = wmes.begin();
+	bool change = true;
+	while (change) {
+		change = false;
+		while (i != wmes.end()) {
+			w = (*i);
+			smlwme = wmemap[w];
+			
+			uid = w->GetId()->GetUID();
+			if (uid == 0) {
+				++i;
+				continue;
+			}
+			bool hasparent = false;
+			for (j = wmes.begin(); j != wmes.end(); ++j) {
+				if ((*j)->GetVal()->GetUID() == uid) {
+					hasparent = true;
+					break;
+				}
+			}
+			if (!hasparent) {
+				if (w->GetVal()->GetType() == Symbol::IdSym) {
+					k = idmap.find(w->GetVal()->GetUID());
+					idlist = k->second;
+					idlist->remove(static_cast<Identifier*>(smlwme));
+					if (idlist->size() == 0) {
+						delete k->second;
+						idmap.erase(k);
+					}
+				}
+				uidwmemap.erase(w->GetUID());
+				wmemap.erase(wmemap.find(w));
+				
+				i = wmes.erase(i);
+				change = true;
+			} else {
+				++i;
+			}
+		}
+	}
+}
+
 void SoarQuery::DeleteWME(WMEUID uid) {
+	// wme already deleted recursively
+	if (uidwmemap.find(uid) == uidwmemap.end()) {
+		return;
+	}
+	
 	WME *wme = uidwmemap[uid];
 	WMElement *smlwme = wmemap[wme];
 	Symbol *val = wme->GetVal();
@@ -108,7 +181,7 @@ void SoarQuery::DeleteWME(WMEUID uid) {
 	
 	if (val->GetType() == Symbol::IdSym) {
 		idlist = idmap[val->GetUID()];
-		idlist->remove(dynamic_cast<Identifier*>(smlwme));
+		idlist->remove(static_cast<Identifier*>(smlwme));  // dynamic_cast will fail if pointer already freed
 		if (idlist->size() == 0) {
 			idmap.erase(idmap.find(val->GetUID()));
 			delete idlist;
@@ -118,6 +191,7 @@ void SoarQuery::DeleteWME(WMEUID uid) {
 	agent->DestroyWME(smlwme);
 	uidwmemap.erase(uidwmemap.find(uid));
 	wmemap.erase(wmemap.find(wme));
+	CleanUpDisconnected();
 }
 
 void SoarQuery::UpdateNextEpisode(WMEList &addlist, DelList &dellist) {
@@ -273,7 +347,9 @@ void CreateSurfaceMatchProds(const WMEList &cue, list<string> &result) {
 		ss.str("");
 		ss << "sp {const" << id->GetUID();
 		ss << " (state <s> ^io <io>)(<io> ^input-link.state <is> ^output-link <out>)";
-		ss << CreateProd(id->GetUID(), idparmap);
+		if (id->GetUID() != 0) {  // UID = 0 means S1, which doesn't have parents
+			ss << CreateProd(id->GetUID(), idparmap);
+		}
 		ss << WMEtoCond(*i);
 		ss << "--> (<out> ^const " << id->GetUID() << ")}";
 		

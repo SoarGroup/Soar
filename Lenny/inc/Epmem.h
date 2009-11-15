@@ -24,6 +24,8 @@ public:
 	virtual QueryResult Query(const WMEList &cue) = 0;
 
 	virtual SymbolFactory *GetSymbolFactory() = 0;
+	
+	virtual int GetNumEpisodes() = 0;
 };
 
 }

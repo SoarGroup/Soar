@@ -12,12 +12,12 @@ CPPFLAGS=-g $(INCLUDE_PATH)
 
 HEADERS=inc/*
 
-SRCS=FloatSymbol.cpp IdentifierSymbol.cpp IntegerSymbol.cpp SimpleEpmem.cpp SoarQuery.cpp StringSymbol.cpp Symbol.cpp SymbolFactory.cpp WME.cpp SoarEpmem.cpp SimpleSymbolFactory.cpp
+SRCS=FloatSymbol.cpp IdentifierSymbol.cpp IntegerSymbol.cpp SimpleEpmem.cpp SoarQuery.cpp StringSymbol.cpp Symbol.cpp SymbolFactory.cpp WME.cpp SoarEpmem.cpp SimpleSymbolFactory.cpp TextInput.cpp
 
 OBJS=$(SRCS:.cpp=.o)
 
-store: $(OBJS) src/store.cpp
-	$(CPPC) $(CPPFLAGS) $(LIB_PATH) -o store $(OBJS) src/store.cpp $(LIBS)
+test: $(OBJS) src/test.cpp
+	$(CPPC) $(CPPFLAGS) $(LIB_PATH) -o test $(OBJS) src/test.cpp $(LIBS)
 
 sqlite3.o: src/sqlite3.c inc/sqlite3.h
 	$(CC) $(CPPFLAGS) -c $?

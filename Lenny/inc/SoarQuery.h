@@ -23,6 +23,7 @@ private:
 	int SetCue(const EpmemNS::WMEList &cue);
 	void AddWME(sml::Identifier* parent, EpmemNS::WME *wme);
 	void DeleteWME(EpmemNS::WMEUID uid);
+	void CleanUpDisconnected();
 
 	sml::Kernel *kernel;
 	sml::Agent *agent;

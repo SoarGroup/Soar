@@ -38,11 +38,12 @@ QueryResult SoarEpmem::Query(const WMEList &cue) {
 		query.GetMatchedLeafIds(matched);
 		
 		cout << query.PrintState() << endl;
-		
+		/*
 		for (j = matched.begin(); j != matched.end(); ++j) {
 			cout << *j << " ";
 		}
 		cout << endl;
+		*/
 		
 		if (query.GetGraphMatch()) {
 			cout << "GRAPH MATCH!!!" << endl;
@@ -55,4 +56,8 @@ QueryResult SoarEpmem::Query(const WMEList &cue) {
 
 SymbolFactory *SoarEpmem::GetSymbolFactory() {
 	return symfac;
+}
+
+int SoarEpmem::GetNumEpisodes() {
+	return eps.size();
 }

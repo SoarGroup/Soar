@@ -23,6 +23,8 @@ public:
 
 	EpmemNS::SymbolFactory *GetSymbolFactory();
 	
+	int GetNumEpisodes();
+	
 private:
 	std::vector<Episode*> eps;
 	SimpleSymbolFactory *symfac;

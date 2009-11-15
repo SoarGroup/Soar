@@ -21,6 +21,7 @@ public:
 	EpisodeId AddEpisode(const WMEList &addlist, const DelList &dellist);
 	EpisodeId Retrieve(EpisodeId episode, WMEList &result);
 	QueryResult Query(const WMEList &cue);
+	int GetNumEpisodes() { return eps.size(); }
 	
 	SymbolFactory *GetSymbolFactory() { return symfactory; }
 
