@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python25_d.lib"
+				AdditionalDependencies="python26_d.lib"
 				OutputFile="_Python_sml_ClientInterface_d.pyd"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
@@ -165,7 +165,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python25_d.lib"
+				AdditionalDependencies="python26_d.lib"
 				OutputFile="_Python_sml_ClientInterface_d.pyd"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
@@ -258,7 +258,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python25.lib"
+				AdditionalDependencies="python26.lib"
 				OutputFile="_Python_sml_ClientInterface.pyd"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
@@ -355,7 +355,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python25.lib"
+				AdditionalDependencies="python26.lib"
 				OutputFile="_Python_sml_ClientInterface.pyd"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
