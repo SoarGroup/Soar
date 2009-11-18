@@ -1,7 +1,0 @@
-sp {graph-search*halt
-   (state <s> ^superstate nil
-              ^mission.current nil)
--->
-   (write (crlf) |Halt!|)
-   (halt)
-}

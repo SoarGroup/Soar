@@ -1,3 +1,0 @@
-pushd jon-agent
-source jon-agent_source.soar
-popd
