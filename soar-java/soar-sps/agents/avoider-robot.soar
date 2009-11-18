@@ -1,3 +1,0 @@
-pushd avoider-robot
-source avoider-robot_source.soar
-popd

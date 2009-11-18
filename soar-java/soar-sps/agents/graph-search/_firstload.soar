@@ -1,7 +1,0 @@
-multi-attributes waypoint
-multi-attributes operator
-multi-attributes evaluation
-pushd ../../default
-source selection.soar
-source selection-astar.soar
-popd
