@@ -1,0 +1,20 @@
+<project name="aprilsoar" default="build" basedir=".">
+
+	<property name="aprilsoar" value="true" />
+	
+	<target name="build">
+		<ant dir="soar-sps" />
+		<ant dir="soar-room" />
+	</target>
+
+	<target name="doc">
+		<ant dir="soar-sps" target="doc" />
+		<ant dir="soar-room" target="doc" />
+	</target>
+
+	<target name="clean">
+		<ant dir="soar-sps" target="clean" />
+		<ant dir="soar-room" target="clean" />
+	</target>
+
+</project>
