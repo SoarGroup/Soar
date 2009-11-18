@@ -66,7 +66,7 @@ const long exploration_convert_policy( const char *policy_name )
 	if ( !strcmp( policy_name, "softmax" ) )
 		return USER_SELECT_SOFTMAX;
 
-	return NULL;
+	return long(NULL);
 }
 
 const char *exploration_convert_policy( const long policy )
