@@ -1,0 +1,46 @@
+sp {test-robot*propose*chat
+   (state <s> ^name test-robot
+              ^io.input-link <il>
+             -^chatted-with <target>)
+   (<il>  ^object.name <target>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name chat
+         ^with <target>)
+}
+
+sp {apply*chat
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name chat
+         ^with <target>)
+-->
+   (<s> ^chatted-with <target>)
+   (<ol> ^send-message <sm>)
+   (<sm> ^destination <target>
+         ^first <w1>)
+   (<w1> ^word hello
+         ^next <w2>)
+   (<w2> ^word <target>
+         ^next nil)
+}
+
+sp {test-robot*compare*chat*get
+   (state <s> ^name test-robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name chat)
+   (<op2> ^name get-block)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {test-robot*compare*chat*drop
+   (state <s> ^name test-robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name chat)
+   (<op2> ^name drop-block)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

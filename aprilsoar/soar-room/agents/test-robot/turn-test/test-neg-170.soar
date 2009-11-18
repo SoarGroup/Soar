@@ -1,0 +1,19 @@
+sp {turn-test*propose*test-neg-170
+   (state <s> ^name turn-test
+              ^turned-to-90
+             -^top-state.tested-turn
+              ^io.output-link.set-heading <sh>)
+   (<sh> ^yaw -170
+         ^status complete)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name test-neg-170)
+}
+
+sp {apply*test-neg-170
+   (state <s> ^operator <op>
+              ^top-state <ts>)
+   (<op> ^name test-neg-170)
+-->
+   (<ts> ^tested-turn yes)
+}

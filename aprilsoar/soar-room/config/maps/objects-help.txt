@@ -1,0 +1,31 @@
+# <ignored> means that the value is ignored, key presence is used for "true"
+#objects {
+#	+<id> {
+#		name = <name>;
+#		*<p1> = <value>;								# user property
+#		*<p1> = [<value1>, <value2>];					# user property
+#		?apply.points = <int>;							# number of points to apply
+#		?apply.energy = <int>;							# amount of energy to apply
+#		?apply.energy.shields = <boolean>;				# condition for energy apply
+#		?apply.health = <int>;							# amount of health to apply
+#		?apply.health.shields-down = <boolean>;			# condition for health apply
+#		?apply.missiles = <int>;						# number of missiles to apply
+#		?apply.remove = <boolean>;						# remove on apply
+#		?box-id = <int>;								# this box's id number (set after load)
+#		?apply.reward-info = <boolean>;					# contains reward information
+#		?apply.reward-info.positive-id = <int>;			# correct box id (set after load)
+#		?apply.reward = <boolean>;						# is reward box
+#		?apply.reward.correct = <boolean>;				# is the correct box (set randomly after load)
+#		?apply.reward.positive = <int>;					# reward if correct
+#		?apply.reward.negative = <int>;					# "reward" if incorrect, different from wrong box
+#		?apply.reset = <boolean>;						# reset sim on apply
+#		?apply.properties {								# these get moved to top level on applyProperties call
+#			?<p1> = <value>;							# user apply property
+#			?<p1> = [<value1>, <value2>];				# user apply property
+#		}
+#		?update.decay = <int>;							# decay apply.points by this amount on update
+#		?update.fly-missile = <int>;					# increment update.fly-missile phase on update
+#		?update.linger = <int>;							# decrement update.linger on update, remove at 0
+#	}
+#}
+
