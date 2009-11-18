@@ -1,0 +1,47 @@
+#### Monitor impasses I don't expect to get
+
+#sp {all*monitor*impasse*state-no-change
+#   (state <s> ^attribute state
+#              ^choices none)
+#-->
+#   (write (crlf) | State no-change impasse detected.|)
+#   (interrupt)
+#}
+#
+#sp {all*monitor*operator*tie*impasse
+#   (state <s> ^attribute operator
+#              ^impasse tie
+#              ^item <i1> ^item {<i2> <> <i1> })
+#   (<i1> ^name <name1>)
+#   (<i2> ^name <name2>)
+#-->
+#   (write (crlf) | Operator tie between | <name1> | & | <name2>)
+#   (interrupt)
+#}
+
+sp {monitor*waypoints*at-waypoint
+   (state <s> ^superstate nil
+              ^current-waypoint <a>)
+   (<a> ^x <x> ^y <y>)
+-->
+   (write (crlf) |Current-waypoint: (| <x> |,| <y> |)|)
+}
+
+sp {monitor*waypoints*at-waypoint*top
+   (state <s> ^superstate nil
+              ^current-waypoint <a>)
+   (<a> ^x <x> ^y <y>)
+-->
+   (exec player-print |Current-waypoint: (| <x> |,| <y> |)|)
+}
+
+sp {monitor*multiple-ats
+   (state <s> ^superstate nil
+              ^current-waypoint <a1> {<a2> <> <a1>})
+   (<a1> ^next)
+   (<a2> ^next)
+-->
+   (write (crlf) |Multiple ats in waypoints: | <a1> | | <a2>)
+   (exec print |Multiple ats in waypoints: | <a1> | | <a2>)
+ #  (interrupt)
+}

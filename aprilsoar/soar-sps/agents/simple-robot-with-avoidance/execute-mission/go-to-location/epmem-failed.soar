@@ -1,0 +1,21 @@
+sp {go-to-location*propose*epmem-failed
+   (state <s> ^name go-to-location
+              ^epmem.result.status failure
+              ^superstate.operator <so>)
+   (<so> ^name go-to-location
+        -^id)
+-->
+   (<s> ^operator <o> +, =, >)
+   (<o> ^name epmem-failed)}
+
+sp {go-to-location*apply*epmem-retrieved
+   (state <s> ^operator.name epmem-failed
+              ^superstate.operator <so>
+              ^epmem <epmem>)
+   (<epmem> ^command <com>)
+   (<com> ^query <q>)
+-->
+   (write (crlf) |Epmem retrieval failed - probably want to start to search.|)
+   (halt)
+   (<com> ^query <q> -)
+}

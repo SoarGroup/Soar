@@ -1,0 +1,41 @@
+sp {give-up-on-move-to*propose*update-map
+   (state <s> ^name give-up-on-move-to
+              ^superoperator.move-to <mt>)
+   (<mt> ^source <source>
+         ^destination <dest>)
+   (<source> ^next <dest>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name update-map
+         ^source <source>
+         ^destination <dest>)
+}
+
+# message: update-map remove-link <id1> <id2>
+# (assumings links are two-way)
+sp {apply*update-map
+   (state <s> ^operator <op>
+              ^superoperator.move-to <mt>
+              ^io.output-link <ol>)
+   (<op> ^name update-map
+         ^source <source>
+         ^destination <dest>)
+   (<source> ^next <dest>
+             ^id <id1>)
+   (<dest> ^next <source>
+           ^id <id2>)
+-->
+   (<source> ^next <dest> -)
+   (<dest> ^next <source> -)
+   (<mt> ^map-updated true)
+   (<ol> ^broadcast-message <w1>)
+   (<w1> ^word update-map
+         ^next <w2>)
+   (<w2> ^word remove-link
+         ^next <w3>)
+   (<w3> ^word <id1>
+         ^next <w4>)
+   (<w4> ^word <id2>
+         ^next nil)
+   #(interrupt)
+}

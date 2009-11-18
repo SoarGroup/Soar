@@ -1,0 +1,16 @@
+VERSION 4
+\graph-search\graph-search.dm
+0	ROOT graph-search graph-search 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR halt halt.soar 13
+6	3	FOPERATOR monitor-waypoint monitor-waypoint.soar 6
+7	3	FOPERATOR problem-space problem-space.soar 7
+8	3	FOPERATOR top-state top-state.soar 8
+9	0	HLOPERATOR go-to-location go-to-location.soar go-to-location 22 9
+10	9	FOPERATOR elaborations elaborations.soar 10
+11	9	OPERATOR go-to-waypoint go-to-waypoint.soar 11
+12	0	OPERATOR initialize-graph-search initialize-graph-search.soar 12
+END

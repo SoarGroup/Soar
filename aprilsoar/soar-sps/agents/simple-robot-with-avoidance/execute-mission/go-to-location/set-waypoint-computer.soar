@@ -1,0 +1,32 @@
+sp {go-to-location*propose*set-waypoint-computer
+   (state <s> ^name go-to-location
+              ^top-state.destination-waypoint.waypoint <dw>
+              ^io.input-link.self.waypoints.waypoint <wp>)
+   (<wp> ^id  { <oldid> <> <id> })
+   (<dw> ^id <id>)
+-->
+   (<s> ^operator <op> +, =, >)
+   (<op> ^name set-waypoint-computer
+         ^waypoint <dw>
+         ^old-waypoint <oldid>)
+}
+
+# Switch waypoint on waypoint-computer
+# remove the waypoint that we're "at" - current-waypoint
+sp {apply*set-waypoint-computer
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name set-waypoint-computer
+         ^waypoint <dw>
+         ^old-waypoint <oldid>)
+   (<dw> ^id <id>
+         ^x <x>
+         ^y <y>)
+-->
+  # (interrupt) 
+   (<ol> ^add-waypoint <aw>
+         ^remove-waypoint.id <oldid>)
+   (<aw> ^id <id>
+         ^x <x>
+         ^y <y>)
+}

@@ -1,0 +1,47 @@
+## Must record time when record - that should be a negation to kick this out
+sp {go-to-waypoint*propose*record-progress
+   (state <s> ^name go-to-waypoint
+              ^top-state <ts>)
+   (<ts> -^io.input-link.time.seconds < <nut>
+          ^destination-waypoint <dw>)
+   (<dw> ^next-update-time <nut>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name record-progress)
+}
+
+sp {apply*record-progress*time
+   (state <s> ^operator.name record-progress
+              ^top-state <ts>)
+   (<ts> ^io.input-link.time.seconds <sec>
+         ^destination-waypoint <dw>
+         ^parameters.progress-update-time <put>)
+   (<dw> ^next-update-time <nut>)
+-->
+   (<dw> ^next-update-time (+ <sec> <put>)
+                              <nut> -)
+}
+
+sp {apply*record-progress*min-distance
+   (state <s> ^operator.name record-progress
+              ^top-state <ts>
+              ^waypoint.distance <dis>)
+   (<ts> ^destination-waypoint <dw>)
+   (<dw> ^min-distance { > <dis> <ld> })
+-->
+   (<dw> ^min-distance <ld> -
+                        <dis>)
+}
+
+## Might have problem if <prog> = (- <ld> <dis>)
+sp {apply*record-progress*progress
+   (state <s> ^operator.name record-progress
+              ^top-state <ts>
+              ^waypoint.distance <dis>)
+   (<ts> ^destination-waypoint <dw>)
+   (<dw> ^min-distance <ld>
+         ^progress <prog>)
+-->
+   (<dw> ^progress <prog> -
+                   (- <ld> <dis>))
+}
