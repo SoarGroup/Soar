@@ -1,10 +1,6 @@
 package edu.umich.soar.room.soar;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -23,8 +19,6 @@ import com.commsen.stopwatch.Report;
 import com.commsen.stopwatch.Stopwatch;
 
 import edu.umich.soar.room.Application;
-import edu.umich.soar.room.config.ClientConfig;
-import edu.umich.soar.room.config.SimConfig;
 import edu.umich.soar.room.config.SoarConfig;
 import edu.umich.soar.room.core.CognitiveArchitecture;
 import edu.umich.soar.room.core.Names;
@@ -64,7 +58,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	}
 
 	private final Map<String, AgentData> agents = new HashMap<String, AgentData>();
-	private final Map<String, ClientConfig> clients;
 	private final int maxMemoryUsage;
 	private final int port;
 	private boolean debug;
@@ -85,7 +78,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		this.sim = sim;
 		SoarConfig config = sim.getConfig().soarConfig();
 
-		this.clients = sim.getConfig().clientConfigs();
 		this.maxMemoryUsage = config.max_memory_usage;
 		this.port = config.port;
 		this.debug = config.spawn_debuggers;
@@ -135,57 +127,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		kernel.ExecuteCommandLine("srand " + seed, null);
 	}
 
-	private class Redirector extends Thread {
-		BufferedReader br;
-
-		public Redirector(BufferedReader br) {
-			this.br = br;
-		}
-
-		@Override
-		public void run() {
-			String line;
-			try {
-				while ((line = br.readLine()) != null) {
-					System.out.println(line);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public void spawnClient(String clientID, ClientConfig clientConfig) {
-		Runtime r = java.lang.Runtime.getRuntime();
-		logger.trace(Names.Trace.spawningClient + clientID);
-
-		try {
-			Process p = r.exec(clientConfig.command);
-
-			InputStream is = p.getInputStream();
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
-			Redirector rd = new Redirector(br);
-			rd.start();
-
-			is = p.getErrorStream();
-			isr = new InputStreamReader(is);
-			br = new BufferedReader(isr);
-			rd = new Redirector(br);
-			rd.start();
-
-			if (!waitForClient(clientID, clientConfig)) {
-				sim.error("Soar", Names.Errors.clientSpawn + clientID);
-				return;
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-			sim.error("Soar", "IOException spawning client: " + clientID);
-			return;
-		}
-	}
-
 	/**
 	 * @param client
 	 *            the client to wait for
@@ -193,12 +134,11 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	 * 
 	 *         waits for a client to report ready
 	 */
-	public boolean waitForClient(String clientID, ClientConfig clientConfig) {
+	public boolean waitForClient(String clientID, int timeout) {
 		boolean ready = false;
 		// do this loop if timeout seconds is 0 (code for wait indefinitely) or
 		// if we have tries left
-		for (int tries = 0; (clientConfig.timeout == 0)
-				|| (tries < clientConfig.timeout); ++tries) {
+		for (int tries = 0; (timeout == 0) || (tries < timeout); ++tries) {
 			kernel.GetAllConnectionInfo();
 			if (kernel.HasConnectionInfoChanged()) {
 				for (int i = 0; i < kernel.GetNumberConnections(); ++i) {
@@ -290,10 +230,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 
 		// spawn the debugger if we're supposed to
 		if (spawnDebuggers && !isClientConnected(Names.kDebuggerClient)) {
-			ClientConfig debuggerConfig = clients.get(Names.kDebuggerClient);
-			debuggerConfig.command = getDebuggerCommand(name);
-
-			spawnClient(Names.kDebuggerClient, debuggerConfig);
+			spawnDebugger(name);
 		}
 
 		return agent;
@@ -321,31 +258,27 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return connected;
 	}
 
+	private static final ExecutorService debugExec = Executors.newSingleThreadExecutor();
+
 	/**
 	 * @param agentName
-	 *            tailor the command to this agent name
-	 * @return a string command line to execute to spawn the debugger
 	 */
-	public String getDebuggerCommand(String agentName) {
-		// Figure out whether to use java or javaw
-		String os = System.getProperty("os.name");
-		String commandLine;
-		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			commandLine = "javaw -jar \""
-					+ SimConfig.getHome()
-					+ File.separator
-					+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent "
-					+ agentName + " -port " + port;
-		} else {
-			commandLine = System.getProperty("java.home")
-					+ "/bin/java -jar "
-					+ SimConfig.getHome()
-					+ File.separator
-					+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent "
-					+ agentName + " -port " + port;
+	public void spawnDebugger(final String agentName) {
+		final String[] args = new String[] { "-cascade", "-remote", "-agent", agentName, "-port", Integer.toString(port) };
+		
+		debugExec.submit(new Runnable() {
+			@Override
+			public void run() {
+				new edu.umich.soar.debugger.Application(args, false);
+				
+			}
+		});
+		
+		if (!waitForClient(Names.kDebuggerClient, 15)) {
+			sim.error("Soar", Names.Errors.clientSpawn + Names.kDebuggerClient);
+			return;
 		}
 
-		return commandLine;
 	}
 
 	@Override

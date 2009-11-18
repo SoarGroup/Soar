@@ -5,11 +5,11 @@ import java.util.Timer;
 
 import org.apache.log4j.Logger;
 import edu.umich.soar.config.Config;
-import edu.umich.soar.robot.DifferentialDriveCommand;
-import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.robot.OutputLinkManager;
-import edu.umich.soar.robot.ReceiveMessagesInterface;
-import edu.umich.soar.robot.SendMessagesInterface;
+import edu.umich.soar.sps.control.robot.DifferentialDriveCommand;
+import edu.umich.soar.sps.control.robot.OffsetPose;
+import edu.umich.soar.sps.control.robot.OutputLinkManager;
+import edu.umich.soar.sps.control.robot.ReceiveMessagesInterface;
+import edu.umich.soar.sps.control.robot.SendMessagesInterface;
 import edu.umich.soar.sps.HzChecker;
 
 import sml.Agent;

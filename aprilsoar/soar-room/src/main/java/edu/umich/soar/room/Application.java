@@ -28,7 +28,7 @@ import org.flexdock.docking.DockingManager;
 import org.flexdock.docking.activation.ActiveDockableTracker;
 import org.flexdock.view.Viewport;
 
-import edu.umich.soar.robot.SendMessagesInterface;
+import edu.umich.soar.sps.control.robot.SendMessagesInterface;
 import edu.umich.soar.room.config.SimConfig;
 import edu.umich.soar.room.core.Simulation;
 import edu.umich.soar.room.core.events.AfterTickEvent;

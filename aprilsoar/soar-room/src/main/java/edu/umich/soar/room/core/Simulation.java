@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.umich.soar.robot.SendMessagesInterface;
+import edu.umich.soar.sps.control.robot.SendMessagesInterface;
 import edu.umich.soar.room.config.PlayerConfig;
 import edu.umich.soar.room.config.SimConfig;
 import edu.umich.soar.room.core.events.AfterTickEvent;

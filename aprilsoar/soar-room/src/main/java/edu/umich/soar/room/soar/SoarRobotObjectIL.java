@@ -6,7 +6,7 @@ import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
 import sml.WMElement;
-import edu.umich.soar.robot.PointRelationship;
+import edu.umich.soar.sps.control.robot.PointRelationship;
 import edu.umich.soar.room.core.Simulation;
 
 class SoarRobotObjectIL {

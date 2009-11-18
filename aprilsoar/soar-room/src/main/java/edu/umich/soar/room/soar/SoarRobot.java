@@ -7,12 +7,12 @@ import jmat.LinAlg;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.umich.soar.robot.ObjectManipulationInterface;
-import edu.umich.soar.robot.OutputLinkManager;
-import edu.umich.soar.robot.ConfigureInterface;
-import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.robot.DifferentialDriveCommand;
-import edu.umich.soar.robot.ReceiveMessagesInterface;
+import edu.umich.soar.sps.control.robot.ObjectManipulationInterface;
+import edu.umich.soar.sps.control.robot.OutputLinkManager;
+import edu.umich.soar.sps.control.robot.ConfigureInterface;
+import edu.umich.soar.sps.control.robot.OffsetPose;
+import edu.umich.soar.sps.control.robot.DifferentialDriveCommand;
+import edu.umich.soar.sps.control.robot.ReceiveMessagesInterface;
 import edu.umich.soar.room.core.Simulation;
 import edu.umich.soar.room.map.Robot;
 import edu.umich.soar.room.map.RobotCommand;

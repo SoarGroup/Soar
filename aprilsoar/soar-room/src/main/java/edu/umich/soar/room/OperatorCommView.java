@@ -24,8 +24,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.flexdock.docking.DockingConstants;
 
-import edu.umich.soar.robot.SendMessages;
-import edu.umich.soar.robot.SendMessagesInterface;
+import edu.umich.soar.sps.control.robot.SendMessages;
+import edu.umich.soar.sps.control.robot.SendMessagesInterface;
 import edu.umich.soar.room.core.Simulation;
 import edu.umich.soar.room.core.events.PlayerAddedEvent;
 import edu.umich.soar.room.core.events.PlayerRemovedEvent;

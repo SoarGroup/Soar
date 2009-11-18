@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
-import edu.umich.soar.robot.ConfigureInterface;
+import edu.umich.soar.sps.control.robot.ConfigureInterface;
 import edu.umich.soar.sps.SharedNames;
 
 import lcm.lcm.LCM;

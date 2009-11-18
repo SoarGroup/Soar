@@ -2,12 +2,12 @@ package edu.umich.soar.sps.control;
 
 import org.apache.log4j.Logger;
 
-import edu.umich.soar.robot.ConfigurationIL;
-import edu.umich.soar.robot.ReceiveMessagesInterface;
-import edu.umich.soar.robot.ConfigureInterface;
-import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.robot.TimeIL;
-import edu.umich.soar.robot.WaypointInterface;
+import edu.umich.soar.sps.control.robot.ConfigurationIL;
+import edu.umich.soar.sps.control.robot.ReceiveMessagesInterface;
+import edu.umich.soar.sps.control.robot.ConfigureInterface;
+import edu.umich.soar.sps.control.robot.OffsetPose;
+import edu.umich.soar.sps.control.robot.TimeIL;
+import edu.umich.soar.sps.control.robot.WaypointInterface;
 
 import sml.Agent;
 import sml.Identifier;

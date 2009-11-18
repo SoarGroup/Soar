@@ -13,8 +13,8 @@ import lcmtypes.pose_t;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.umich.soar.robot.DifferentialDriveCommand;
-import edu.umich.soar.robot.SendMessagesInterface;
+import edu.umich.soar.sps.control.robot.DifferentialDriveCommand;
+import edu.umich.soar.sps.control.robot.SendMessagesInterface;
 import edu.umich.soar.room.config.PlayerConfig;
 import edu.umich.soar.room.core.Names;
 import edu.umich.soar.room.core.Simulation;

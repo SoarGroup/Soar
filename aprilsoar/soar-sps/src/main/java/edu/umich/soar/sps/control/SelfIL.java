@@ -1,9 +1,9 @@
 package edu.umich.soar.sps.control;
 
-import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.robot.MessagesIL;
-import edu.umich.soar.robot.WaypointsIL;
-import edu.umich.soar.robot.ConfigureInterface;
+import edu.umich.soar.sps.control.robot.OffsetPose;
+import edu.umich.soar.sps.control.robot.MessagesIL;
+import edu.umich.soar.sps.control.robot.WaypointsIL;
+import edu.umich.soar.sps.control.robot.ConfigureInterface;
 
 import jmat.LinAlg;
 import jmat.MathUtil;

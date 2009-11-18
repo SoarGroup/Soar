@@ -6,10 +6,10 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
-import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.robot.ConfigureInterface;
-import edu.umich.soar.robot.WaypointsIL;
-import edu.umich.soar.robot.MessagesIL;
+import edu.umich.soar.sps.control.robot.OffsetPose;
+import edu.umich.soar.sps.control.robot.ConfigureInterface;
+import edu.umich.soar.sps.control.robot.WaypointsIL;
+import edu.umich.soar.sps.control.robot.MessagesIL;
 import edu.umich.soar.room.map.CarryInterface;
 import edu.umich.soar.room.map.Robot;
 

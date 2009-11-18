@@ -6,9 +6,9 @@ import lcmtypes.pose_t;
 
 import org.apache.log4j.Logger;
 
-import edu.umich.soar.robot.DifferentialDriveCommand;
-import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.robot.DifferentialDriveCommand.CommandType;
+import edu.umich.soar.sps.control.robot.DifferentialDriveCommand;
+import edu.umich.soar.sps.control.robot.OffsetPose;
+import edu.umich.soar.sps.control.robot.DifferentialDriveCommand.CommandType;
 import edu.umich.soar.sps.control.PIDController.Gains;
 
 final class SplinterModel implements OffsetPose {

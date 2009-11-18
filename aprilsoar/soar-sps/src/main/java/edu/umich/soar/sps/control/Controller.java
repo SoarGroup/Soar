@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import edu.umich.soar.config.Config;
 import edu.umich.soar.config.ConfigFile;
 import edu.umich.soar.config.ParseError;
-import edu.umich.soar.robot.DifferentialDriveCommand;
+import edu.umich.soar.sps.control.robot.DifferentialDriveCommand;
 import edu.umich.soar.sps.HzChecker;
 
 final class Controller extends TimerTask {

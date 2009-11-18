@@ -2,7 +2,7 @@ package edu.umich.soar.room.map;
 
 import java.util.List;
 
-import edu.umich.soar.robot.ReceiveMessagesInterface;
+import edu.umich.soar.sps.control.robot.ReceiveMessagesInterface;
 
 public interface RobotCommander {
 	public List<double[]> getWaypointList();

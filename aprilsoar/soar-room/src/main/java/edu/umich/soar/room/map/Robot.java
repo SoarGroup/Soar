@@ -3,7 +3,7 @@ package edu.umich.soar.room.map;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.umich.soar.robot.ReceiveMessagesInterface;
+import edu.umich.soar.sps.control.robot.ReceiveMessagesInterface;
 import edu.umich.soar.room.core.PlayerColor;
 
 public class Robot {

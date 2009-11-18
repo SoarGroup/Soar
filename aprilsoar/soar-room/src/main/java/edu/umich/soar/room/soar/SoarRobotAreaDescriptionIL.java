@@ -11,8 +11,8 @@ import lcmtypes.pose_t;
 import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
-import edu.umich.soar.robot.OffsetPose;
-import edu.umich.soar.robot.PointRelationship;
+import edu.umich.soar.sps.control.robot.OffsetPose;
+import edu.umich.soar.sps.control.robot.PointRelationship;
 import edu.umich.soar.room.map.RoomBarrier;
 import edu.umich.soar.room.map.RoomMap;
 

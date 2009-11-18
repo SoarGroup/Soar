@@ -1,6 +1,6 @@
 package edu.umich.soar.room.map;
 
-import edu.umich.soar.robot.DifferentialDriveCommand;
+import edu.umich.soar.sps.control.robot.DifferentialDriveCommand;
 import edu.umich.soar.room.core.Names;
 
 public class RobotCommand {

@@ -17,7 +17,6 @@ import edu.umich.soar.config.Config;
 import edu.umich.soar.config.ConfigFile;
 import edu.umich.soar.config.ParseError;
 import edu.umich.soar.room.Application;
-import edu.umich.soar.room.core.Names;
 import edu.umich.soar.room.core.PlayerColor;
 
 
@@ -53,46 +52,37 @@ public class SimConfig {
 		}
 
 		try {
-			home = new File(SimConfig.class.getProtectionDomain()
-					.getCodeSource().getLocation().toURI());
+			home = new File(SimConfig.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			if (!home.isDirectory()) {
+				home = home.getParentFile();
+			}
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			throw new IllegalStateException("Internal error: getCodeSource returned bad URL");
 		}
 
-		// should point to parent of jar file
-		if (!home.isDirectory()) {
-			home = home.getParentFile();
-		}
+		// if we're running in eclipse, this will be the soar-room/bin folder
+		// if we were launched by double-clicking the jar, we'll be in SoarLibrary/lib or soar-room/lib
 
-		// usually, we'll be in SoarLibrary/lib or SoarLibrary/bin
-		String soarlib = "SoarLibrary";
-		String soarjava = "soar-java";
-		String room = "soar-room";
-		String hstr = home.toString();
-		int pos = hstr.lastIndexOf(soarlib);
-		if (pos >= 0) {
-			home = new File(home.toString().substring(0, pos) + soarjava
-					+ File.separator + room);
-		} else {
-			// sometimes in soar-java somewhere
-			pos = hstr.lastIndexOf(soarjava);
-			if (pos >= 0) {
-				home = new File(home.toString().substring(0,
-						pos + soarjava.length())
-						+ File.separator + room);
-			} else {
-				// maybe in SoarSuite root?
-				home = new File(home.toString() + File.separator + soarjava
-						+ File.separator + room);
+		// look up one folder
+		home = home.getParentFile();
+		
+		// this should be soar-room
+		final String SOARROOM = "soar-room";
+		final String SOARLIBRARY = "soar-room";
+		final String SOARJAVA = "soar-java";
+		if (home.getName().equals(SOARROOM)) {
+			return home;
+		} else if (home.getName().equals(SOARLIBRARY)) {
+			// in SoarLibrary
+			// up another and over to soar-java/soar-room
+			home = new File(home.getParentFile(), SOARJAVA + File.separator + SOARROOM);
+			if (home.exists()) {
+				return home;
 			}
 		}
-
-		// verify exists
-		if (!home.exists()) {
-			throw new IllegalStateException("Can't figure out where the " + room + " folder is.");
-		}
-		return home;
+		
+		throw new IllegalStateException("Can't figure out where the " + SOARROOM + " folder is.");
 	}
 	
 	public static File getHome() {
@@ -195,8 +185,6 @@ public class SimConfig {
 		private static final String active_players = players + ".active_players";
 		private static final String images = "images";
 		private static final String active_images = images + ".active_images";
-		private static final String clients = "clients";
-		private static final String active_clients = clients + ".active_clients";
 		private static final String points = "points"; // keep in synch with PlayerConfig
 	}
 	
@@ -207,7 +195,6 @@ public class SimConfig {
 	private TerminalsConfig terminalsConfig;
 	
 	private Map<String, PlayerConfig> playerConfigs = new HashMap<String, PlayerConfig>();
-	private Map<String, ClientConfig> clientConfigs = new HashMap<String, ClientConfig>();;
 	private Map<String, File> images = new HashMap<String, File>();
 	
 	/**
@@ -250,20 +237,6 @@ public class SimConfig {
 				mapImage(imageId, fileString);
 			}
 		}
-
-		if (config.hasKey(Keys.active_clients)) {
-			for(String clientName : config.getStrings(Keys.active_clients)) {
-				ClientConfig clientConfig = new ClientConfig();
-				loadSubConfig(config.getChild(Keys.clients + "." + clientName), ClientConfig.class.getFields(), clientConfig);
-				clientConfigs.put(clientName, clientConfig);
-				
-			}
-		}
-		
-		// Add default debugger client to configuration, overwriting any existing java-debugger config:
-		ClientConfig clientConfig = new ClientConfig();
-		clientConfig.timeout = 15;
-		clientConfigs.put(Names.kDebuggerClient, clientConfig);
 	}
 	
 	public void mapImage(String imageId, String fileString) {
@@ -346,10 +319,6 @@ public class SimConfig {
 	
 	public Map<String, PlayerConfig> playerConfigs() {
 		return playerConfigs;
-	}
-	
-	public Map<String, ClientConfig> clientConfigs() {
-		return clientConfigs;
 	}
 	
 	public void saveLastProductions(String productionsPath) {
