@@ -19,7 +19,6 @@
 		<ant dir="soar-soar2d" target="build-nodoc" />
 		<ant dir="soar-toh" target="build-nodoc" />
 		<ant dir="soar-visualsoar" target="build-nodoc" />
-		<!--ant dir="soar-sps" target="build-nodoc" /-->
 	</target>
 
 	<target name="clean">
@@ -30,7 +29,6 @@
 		<ant dir="soar-soar2d" target="clean" />
 		<ant dir="soar-toh" target="clean" />
 		<ant dir="soar-visualsoar" target="clean" />
-		<!--ant dir="soar-sps" target="clean" /-->
 	</target>
 
 </project>
