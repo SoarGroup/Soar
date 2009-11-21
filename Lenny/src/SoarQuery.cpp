@@ -225,17 +225,26 @@ void SoarQuery::UpdateNextEpisode(WMEList &addlist, DelList &dellist) {
 	agent->RunSelf(1);
 }
 
-char const *SoarQuery::PrintState() {
+char const *SoarQuery::GetState() {
 	return agent->ExecuteCommandLine("print -d 100 -t i2");
 }
 
-string WMEtoCond(WME *w) {
+/*
+ * otherids contains a list of identifier names that we explicitly
+ * declare not equals relationships with
+ */
+string WMEtoCond(WME *w, set<const char*> *otherids = NULL) {
+	set<const char*>::iterator i;
 	stringstream ss;
 	Symbol *id = w->GetId();
 	Symbol *attr = w->GetAttr();
 	Symbol *val = w->GetVal();
 	
-	ss << "(<" << id->GetString() << ">";
+	if (id->GetUID() == 0) {
+		ss << "(<is>";
+	} else {
+		ss << "(<" << id->GetString() << ">";
+	}
 	if (attr->GetType() == Symbol::IdSym) {
 		ss << " ^<" << attr->GetString() << ">";
 	}
@@ -244,9 +253,18 @@ string WMEtoCond(WME *w) {
 	}
 	
 	if (val->GetType() == Symbol::IdSym) {
-		ss << " <" << val->GetString() << ">";
-	}
-	else {
+		if (otherids) {
+			ss << " { <" << val->GetString() << ">";
+			for (i = otherids->begin(); i != otherids->end(); ++i) {
+				if (strcmp(*i, val->GetString()) != 0) {
+					ss << " <> <" << *i << ">";
+				}
+			}
+			ss << " }";
+		} else {
+			ss << " <" << val->GetString() << ">";
+		}
+	} else {
 		ss << " " << val->GetString();
 	}
 	
@@ -276,9 +294,13 @@ string CreateGraphMatchProd(const WMEList &cue) {
  */
 string CreateProd(SymbolUID leaf, map<SymbolUID, WMEList*> &idparmap) {
 	list<SymbolUID> ids;
+	set<const char*> idnames;
 	list<SymbolUID>::iterator i;
 	WMEList *parents;
 	WMEList::iterator j;
+	EpmemNS::IdentifierSymbol *id;
+	Symbol *attr, *val;
+	WMEList includes;
 	stringstream ss;
 	
 	ids.push_back(leaf);
@@ -286,17 +308,25 @@ string CreateProd(SymbolUID leaf, map<SymbolUID, WMEList*> &idparmap) {
 	for (i = ids.begin(); i != ids.end(); ++i) {
 		parents = idparmap[*i];
 		for (j = parents->begin(); j != parents->end(); ++j) {
-			EpmemNS::IdentifierSymbol *id = (*j)->GetId();
-			Symbol *attr = (*j)->GetAttr();
-			Symbol *val = (*j)->GetVal();
-			
+			includes.push_back(*j);
+			id = (*j)->GetId();
+			attr = (*j)->GetAttr();
+			val = (*j)->GetVal();
 			if (id->GetUID() != 0) {  // it's not state id
-				ss << WMEtoCond(*j) << endl;
 				ids.push_back(id->GetUID());
-			} else {
-				ss << "(<is> ^" << attr->GetString() << " <" << val->GetString() << ">)" << endl;
+				idnames.insert(id->GetString());
+			}
+			if (attr->GetType() == Symbol::IdSym) {
+				idnames.insert(attr->GetString());
+			}
+			if (val->GetType() == Symbol::IdSym) {
+				idnames.insert(val->GetString());
 			}
 		}
+	}
+	
+	for (j = includes.begin(); j != includes.end(); ++j) {
+		ss << WMEtoCond(*j, &idnames) << endl;
 	}
 	
 	return ss.str();
@@ -339,30 +369,30 @@ void CreateSurfaceMatchProds(const WMEList &cue, list<string> &result) {
 	stringstream ss;
 	int c = 0;
 	
-	for(i = constwmes.begin(); i != constwmes.end(); ++i) {
+	for(i = constwmes.begin(); i != constwmes.end(); ++i, ++c) {
 		EpmemNS::IdentifierSymbol *id = (*i)->GetId();
 		Symbol *attr = (*i)->GetAttr();
 		Symbol *val = (*i)->GetVal();
 		
 		ss.str("");
-		ss << "sp {const" << id->GetUID();
+		ss << "sp {const" << c;
 		ss << " (state <s> ^io <io>)(<io> ^input-link.state <is> ^output-link <out>)";
 		if (id->GetUID() != 0) {  // UID = 0 means S1, which doesn't have parents
 			ss << CreateProd(id->GetUID(), idparmap);
 		}
 		ss << WMEtoCond(*i);
-		ss << "--> (<out> ^const " << id->GetUID() << ")}";
+		ss << "--> (<out> ^const " << c << ")}";
 		
 		result.push_back(ss.str());
 	}
 	
-	for(j = leafids.begin(); j != leafids.end(); ++j) {
+	for(j = leafids.begin(); j != leafids.end(); ++j, ++c) {
 		ss.str("");
 
 		ss << "sp {ident" << *j;
 		ss << " (state <s> ^io <io>)(<io> ^input-link.state <is> ^output-link <out>)";
 		ss << CreateProd(*j, idparmap);
-		ss << "--> (<out> ^ident " << *j << ")}";
+		ss << "--> (<out> ^ident " << c << ")}";
 		
 		result.push_back(ss.str());
 	}
@@ -379,7 +409,8 @@ int SoarQuery::SetCue(const WMEList &cue) {
 	CreateSurfaceMatchProds(cue, prods);
 	
 	for(i = prods.begin(); i != prods.end(); ++i) {
-		agent->ExecuteCommandLine(i->c_str());
+		cout << *i << endl;
+		cout << agent->ExecuteCommandLine(i->c_str()) << endl;
 	}
 	
 	agent->ExecuteCommandLine(CreateGraphMatchProd(cue).c_str());
@@ -399,6 +430,6 @@ bool SoarQuery::GetGraphMatch() {
 	return graphmatch;
 }
 
-char const *SoarQuery::PrintCueProductions() {
+char const *SoarQuery::GetCueProductions() {
 	return agent->ExecuteCommandLine("print --full");
 }

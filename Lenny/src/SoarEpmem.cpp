@@ -30,24 +30,27 @@ QueryResult SoarEpmem::Query(const WMEList &cue) {
 	
 	SoarQuery query(cue);
 	
-	cout << query.PrintCueProductions() << endl;
+	cout << query.GetCueProductions() << endl;
 	
 	for (i = eps.begin(); i != eps.end(); ++i) {
 		query.UpdateNextEpisode(*((*i)->addlist), *((*i)->dellist));
 		matched.clear();
 		query.GetMatchedLeafIds(matched);
 		
-		cout << query.PrintState() << endl;
-		/*
+		cout << query.GetState() << endl;
+		cout << query.GetAgent()->ExecuteCommandLine("matches graphmatch") << endl;
+		
 		for (j = matched.begin(); j != matched.end(); ++j) {
 			cout << *j << " ";
 		}
+
 		cout << endl;
-		*/
 		
 		if (query.GetGraphMatch()) {
 			cout << "GRAPH MATCH!!!" << endl;
 		}
+		
+		cout << "###################" << endl;
 	}
 		
 	r.episode = -1;

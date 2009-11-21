@@ -12,12 +12,14 @@ public:
 	~SoarQuery();
 
 	void UpdateNextEpisode(EpmemNS::WMEList &addlist, EpmemNS::DelList &dellist);
-	char const *PrintState();
-	char const *PrintCueProductions();
+	char const *GetState();
+	char const *GetCueProductions();
 
 	void GetMatchedLeafIds(std::list<EpmemNS::SymbolUID> &result);
 	int GetMaxMatchScore();
 	bool GetGraphMatch();
+	
+	sml::Agent *GetAgent() { return agent; }
 	
 private:
 	int SetCue(const EpmemNS::WMEList &cue);
