@@ -16,6 +16,7 @@
 #include "sock_OSspecific.h"
 
 #include <sstream>
+#include <stdio.h>
 
 using namespace sock ;
 
