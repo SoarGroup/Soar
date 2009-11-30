@@ -26,6 +26,7 @@
 #include "print.h"
 #include "lexer.h"
 #include "rhsfun.h"
+#include "soar_rand.h"
 
 #include <math.h>
 
