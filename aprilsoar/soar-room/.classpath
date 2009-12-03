@@ -12,11 +12,9 @@
 	<classpathentry kind="lib" path="/soar-smljava/lib/stopwatch-0.4-with-deps.jar"/>
 	<classpathentry kind="lib" path="lib/flexdock-0.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/swingx-0.9.5.jar"/>
-	<classpathentry kind="lib" path="/soar-sps/lib/jmat.jar"/>
-	<classpathentry kind="lib" path="/soar-sps/lib/lcm.jar"/>
-	<classpathentry kind="lib" path="/soar-sps/lib/lcmtypes.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-sps"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-debugger"/>
+	<classpathentry kind="var" path="APRIL_MEGA"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
