@@ -49,9 +49,11 @@ final class Components implements DoneListener {
 	
 	private void startAll() {
 		String[] components = config.getStrings("all");
-		for (String component : components) {
-			assert component != null;
-			start(component);
+		if (components != null) {
+			for (String component : components) {
+				assert component != null;
+				start(component);
+			}
 		}
 	}
 	

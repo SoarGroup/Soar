@@ -9,5 +9,7 @@
 	<classpathentry kind="lib" path="lib/orc.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/sml.jar"/>
 	<classpathentry kind="var" path="APRIL_MEGA"/>
+	<classpathentry kind="var" path="GLUEGEN_RT"/>
+	<classpathentry kind="var" path="JOGL"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
