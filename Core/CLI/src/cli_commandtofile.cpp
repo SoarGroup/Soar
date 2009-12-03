@@ -100,7 +100,7 @@ bool CommandLineInterface::ParseCommandToFile(std::vector<std::string>& argv) {
 		ctfOutput = GenerateErrorString();
 	}
 
-	if (!DoCLog(LOG_NEW, &filename, 0, true))
+	if (!DoCLog(mode, &filename, 0, true))
 	{
 		return false;
 	}
