@@ -281,88 +281,212 @@ void rl_revert_template_id( agent *my_agent )
 	my_agent->rl_template_count--;
 }
 
+inline void rl_get_symbol_constant( Symbol* p_sym, Symbol* i_sym, rl_symbol_map* constants )
+{
+	if ( ( p_sym->common.symbol_type == VARIABLE_SYMBOL_TYPE ) && ( i_sym->common.symbol_type != IDENTIFIER_SYMBOL_TYPE ) )
+	{
+		constants->insert( std::make_pair< Symbol*, Symbol* >( p_sym, i_sym ) );
+	}
+}
+
+void rl_get_test_constant( test* p_test, test* i_test, rl_symbol_map* constants )
+{
+	if ( test_is_blank_test( *p_test ) )
+	{
+		return;
+	}
+	
+	if ( test_is_blank_or_equality_test( *p_test ) )
+	{		
+		rl_get_symbol_constant( *(reinterpret_cast<Symbol**>( p_test )), *(reinterpret_cast<Symbol**>( i_test )), constants );
+
+		return;
+	}
+	
+	
+	// complex test stuff
+	// NLD: If the code below is uncommented, it accesses bad memory on the first
+	//      id test and segfaults.  I'm honestly unsure why (perhaps something
+	//      about state test?).  Most of this code was copied/adapted from
+	//      the variablize_test code in production.cpp.
+	/*
+	{
+		complex_test* p_ct = complex_test_from_test( *p_test );
+		complex_test* i_ct = complex_test_from_test( *i_test );	
+
+		if ( ( p_ct->type == GOAL_ID_TEST ) || ( p_ct->type == IMPASSE_ID_TEST ) || ( p_ct->type == DISJUNCTION_TEST ) )
+		{
+			return;
+		}
+		else if ( p_ct->type == CONJUNCTIVE_TEST )
+		{
+			cons* p_c=p_ct->data.conjunct_list;
+			cons* i_c=i_ct->data.conjunct_list;
+
+			while ( p_c )
+			{
+				rl_get_test_constant( reinterpret_cast<test*>( &( p_c->first ) ), reinterpret_cast<test*>( &( i_c->first ) ), constants );
+				
+				p_c = p_c->rest;
+				i_c = i_c->rest;
+			}
+
+			return;
+		}
+		else
+		{
+			rl_get_symbol_constant( p_ct->data.referent, i_ct->data.referent, constants );
+
+			return;
+		}
+	}
+	*/
+}
+
+void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbol_map* constants )
+{
+	condition* p_cond = p_conds;
+	condition* i_cond = i_conds;
+
+	while ( p_cond )
+	{
+		if ( ( p_cond->type == POSITIVE_CONDITION ) || ( p_cond->type == NEGATIVE_CONDITION ) )
+		{
+			rl_get_test_constant( &( p_cond->data.tests.id_test ), &( i_cond->data.tests.id_test ), constants );
+			rl_get_test_constant( &( p_cond->data.tests.attr_test ), &( i_cond->data.tests.attr_test ), constants );
+			rl_get_test_constant( &( p_cond->data.tests.value_test ), &( i_cond->data.tests.value_test ), constants );
+		}
+		else if ( p_cond->type == CONJUNCTIVE_NEGATION_CONDITION )
+		{
+			rl_get_template_constants( p_cond->data.ncc.top, i_cond->data.ncc.top, constants );
+		}
+		
+		p_cond = p_cond->next;
+		i_cond = i_cond->next;
+	}
+}
+
 // builds a template instantiation
  Symbol *rl_build_template_instantiation( agent *my_agent, instantiation *my_template_instance, struct token_struct *tok, wme *w )
-{
-	Symbol *id, *attr, *value, *referent;
-	production *my_template = my_template_instance->prod;
-	action *my_action = my_template->action_list;
-	char first_letter;
-	double init_value = 0;
-	condition *cond_top, *cond_bottom;
-
-	Bool chunk_var = my_agent->variablize_this_chunk;
-	my_agent->variablize_this_chunk = TRUE;
-
-	// make unique production name
-	Symbol *new_name_symbol;
-	std::string new_name = "";
-	std::string empty_string = "";
-	std::string temp_id;
-	int new_id;
-	do
+{	
+	// initialize production conditions
+	if ( my_template_instance->prod->rl_template_conds == NIL )
 	{
-		new_id = rl_next_template_id( my_agent );
-		to_string( new_id, temp_id );
-		new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + temp_id );
-	} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
-	new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
-	
-	// prep conditions
-	copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
-	rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
-	reset_variable_generator( my_agent, cond_top, NIL );
-	my_agent->variablization_tc = get_new_tc_number( my_agent );
-	variablize_condition_list( my_agent, cond_top );
-	variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+		not_struct* nots;
+		condition* c_top;
+		condition* c_bottom;
 
-	// get the preference value
-	id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
-	attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
-	first_letter = first_letter_from_symbol( attr );
-	value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
-	referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
+		p_node_to_conditions_and_nots( my_agent, my_template_instance->prod->p_node, NIL, NIL, &( c_top ), &( c_bottom ), &( nots ), NIL );
 
-	// clean up after yourself :)
-	symbol_remove_ref( my_agent, id );
-	symbol_remove_ref( my_agent, attr );
-	symbol_remove_ref( my_agent, value );
-	symbol_remove_ref( my_agent, referent );
-
-	// make new action list
-	action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
-	new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
-
-	// make new production
-	production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
-	my_agent->variablize_this_chunk = chunk_var; // restored to original value
-
-	// set initial expected reward values
-	{
-		if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
-		{
-			init_value = static_cast< double >( referent->ic.value );
-		}
-		else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
-		{
-			init_value = referent->fc.value;
-		}
-
-		new_production->rl_ecr = 0.0;
-		new_production->rl_efr = init_value;
+		my_template_instance->prod->rl_template_conds = c_top;
 	}
 
-	// attempt to add to rete, remove if duplicate
-	if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
+	// initialize production instantiation set
+	if ( my_template_instance->prod->rl_template_instantiations == NIL )
 	{
-		excise_production( my_agent, new_production, false );
-		rl_revert_template_id( my_agent );
-
-		new_name_symbol = NULL;
+		my_template_instance->prod->rl_template_instantiations = new rl_symbol_list_set;
 	}
-	deallocate_condition_list( my_agent, cond_top );
 
-	return new_name_symbol;
+	// get list of constants
+	rl_symbol_list constant_list;
+	{
+		rl_symbol_map constant_map;
+		
+		rl_get_template_constants( my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &( constant_map ) );
+		for ( rl_symbol_map::iterator s_p=constant_map.begin(); s_p!=constant_map.end(); s_p++ )
+		{
+			constant_list.push_back( s_p->second );
+		}
+	}
+
+	// try to insert into instantiation set
+	std::pair< rl_symbol_list_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert( constant_list );
+	if ( ins_result.second )
+	{
+		Symbol *id, *attr, *value, *referent;
+		production *my_template = my_template_instance->prod;
+		action *my_action = my_template->action_list;
+		char first_letter;
+		double init_value = 0;
+		condition *cond_top, *cond_bottom;
+
+		Bool chunk_var = my_agent->variablize_this_chunk;
+		my_agent->variablize_this_chunk = TRUE;
+
+		// make unique production name
+		Symbol *new_name_symbol;
+		std::string new_name = "";
+		std::string empty_string = "";
+		std::string temp_id;
+		int new_id;
+		do
+		{
+			new_id = rl_next_template_id( my_agent );
+			to_string( new_id, temp_id );
+			new_name = ( "rl*" + empty_string + my_template->name->sc.name + "*" + temp_id );
+		} while ( find_sym_constant( my_agent, new_name.c_str() ) != NIL );
+		new_name_symbol = make_sym_constant( my_agent, new_name.c_str() );
+		
+		// prep conditions
+		copy_condition_list( my_agent, my_template_instance->top_of_instantiated_conditions, &cond_top, &cond_bottom );
+		rl_add_goal_or_impasse_tests_to_conds( my_agent, cond_top );
+		reset_variable_generator( my_agent, cond_top, NIL );
+		my_agent->variablization_tc = get_new_tc_number( my_agent );
+		variablize_condition_list( my_agent, cond_top );
+		variablize_nots_and_insert_into_conditions( my_agent, my_template_instance->nots, cond_top );
+
+		// get the preference value
+		id = instantiate_rhs_value( my_agent, my_action->id, -1, 's', tok, w );
+		attr = instantiate_rhs_value( my_agent, my_action->attr, id->id.level, 'a', tok, w );
+		first_letter = first_letter_from_symbol( attr );
+		value = instantiate_rhs_value( my_agent, my_action->value, id->id.level, first_letter, tok, w );
+		referent = instantiate_rhs_value( my_agent, my_action->referent, id->id.level, first_letter, tok, w );
+
+		// clean up after yourself :)
+		symbol_remove_ref( my_agent, id );
+		symbol_remove_ref( my_agent, attr );
+		symbol_remove_ref( my_agent, value );
+		symbol_remove_ref( my_agent, referent );
+
+		// make new action list
+		action *new_action = rl_make_simple_action( my_agent, id, attr, value, referent );
+		new_action->preference_type = NUMERIC_INDIFFERENT_PREFERENCE_TYPE;
+
+		// make new production
+		production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
+		my_agent->variablize_this_chunk = chunk_var; // restored to original value
+
+		// set initial expected reward values
+		{
+			if ( referent->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+			{
+				init_value = static_cast< double >( referent->ic.value );
+			}
+			else if ( referent->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+			{
+				init_value = referent->fc.value;
+			}
+
+			new_production->rl_ecr = 0.0;
+			new_production->rl_efr = init_value;
+		}
+
+		// attempt to add to rete, remove if duplicate
+		if ( add_production_to_rete( my_agent, new_production, cond_top, NULL, FALSE, TRUE ) == DUPLICATE_PRODUCTION )
+		{
+			excise_production( my_agent, new_production, false );
+			rl_revert_template_id( my_agent );
+
+			new_name_symbol = NULL;
+		}
+		deallocate_condition_list( my_agent, cond_top );
+
+		return new_name_symbol;
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 // creates an action for a template instantiation
