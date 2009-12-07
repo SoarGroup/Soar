@@ -102,6 +102,9 @@ typedef struct rl_data_struct {
 	unsigned int hrl_age;					// the number of steps in a subgoal
 } rl_data;
 
+typedef std::map< Symbol*, Symbol* > rl_symbol_map;
+typedef std::list< Symbol* > rl_symbol_list;
+typedef std::set< rl_symbol_list > rl_symbol_list_set;
 
 //////////////////////////////////////////////////////////
 // Parameter Maintenance
