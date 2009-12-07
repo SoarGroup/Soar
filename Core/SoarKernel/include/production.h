@@ -89,6 +89,9 @@ typedef struct agent_struct agent;
 typedef cons list;
 typedef union symbol_union Symbol;
 
+typedef std::list< Symbol* > rl_symbol_list;
+typedef std::set< rl_symbol_list > rl_symbol_list_set;
+
 typedef struct production_struct {
   Symbol *name;
   char *documentation;        /* pointer to memory block, or NIL */
@@ -112,6 +115,9 @@ typedef struct production_struct {
 
   double rl_ecr;				// expected current reward (discounted reward)
   double rl_efr;				// expected future reward (discounted next state)
+  
+  condition* rl_template_conds;
+  rl_symbol_list_set* rl_template_instantiations;
 } production;
 
 /* ========================================================================
