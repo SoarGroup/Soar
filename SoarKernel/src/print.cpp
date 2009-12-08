@@ -599,25 +599,28 @@ void print_condition_list (agent* thisAgent, condition *conds,
          { /* --- build and print attr/value test for condition c --- */
             char temp[PRINT_CONDITION_LIST_TEMP_SIZE], *ch;
 
-			memset(temp,0,PRINT_CONDITION_LIST_TEMP_SIZE);
+            memset(temp,0,PRINT_CONDITION_LIST_TEMP_SIZE);
             ch = temp;
             strncpy (ch, " ", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
             if (c->type==NEGATIVE_CONDITION) 
             {
                strncat (ch, "-", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp));
             }
+            while (*ch) ch++;
 
-            strncat (ch, "^", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); while (*ch) ch++;
+            strncpy (ch, "^", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+            while (*ch) ch++;
             test_to_string (thisAgent, c->data.tests.attr_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-			while (*ch) ch++;
+            while (*ch) ch++;
             if (! test_is_blank_test(c->data.tests.value_test)) 
             {
                *(ch++) = ' ';
                test_to_string (thisAgent, c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-			   while (*ch) ch++;
+               while (*ch) ch++;
                if (c->test_for_acceptable_preference) 
                {
-                  strncpy (ch, " +", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); while (*ch) ch++;
+                  strncpy (ch, " +", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+                  while (*ch) ch++;
                }
             }
             *ch = 0;
