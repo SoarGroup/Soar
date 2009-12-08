@@ -7210,6 +7210,8 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 	    prod->rl_efr = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
 	  }
 	}
+	prod->rl_template_conds = NIL;
+	prod->rl_template_instantiations = NIL;
 
     New = make_new_production_node (thisAgent, parent, prod);
     adjust_sharing_factors_from_here_to_top (New, 1);
