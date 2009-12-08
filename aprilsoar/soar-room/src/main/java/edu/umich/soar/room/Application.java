@@ -267,6 +267,7 @@ public class Application extends JPanel implements Adaptable {
 	
 	private void initViews() {
 		final WorldView worldView = addView(new WorldView(this));
+		//final World3DView worldView = addView(new World3DView(this));
 		viewport.dock(worldView);
 		
 		final AbstractAdaptableView agentView = addView(new RoomAgentView(this));

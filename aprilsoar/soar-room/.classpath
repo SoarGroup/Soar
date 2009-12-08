@@ -15,6 +15,7 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-sps"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-debugger"/>
+	<classpathentry kind="var" path="ECLIPSE_HOME"/>
 	<classpathentry kind="var" path="APRIL_MEGA"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

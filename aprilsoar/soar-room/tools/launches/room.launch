@@ -9,6 +9,9 @@
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
 <mapEntry key="PATH" value="../../smem/SoarLibrary/bin;../../april"/>
 </mapAttribute>
+<listAttribute key="org.eclipse.debug.ui.favoriteGroups">
+<listEntry value="org.eclipse.debug.ui.launchGroup.run"/>
+</listAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.umich.soar.room.Application"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="config/room.cnf"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="soar-room"/>
