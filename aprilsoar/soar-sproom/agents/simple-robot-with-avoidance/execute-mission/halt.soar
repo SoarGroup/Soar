@@ -1,0 +1,20 @@
+sp {execute-mission*propose*halt
+   (state <s> ^name execute-mission
+              ^mission.current nil)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name halt)
+}
+sp {apply*halt
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name halt)
+-->
+   (<out> ^stop <x>)
+   (<out> ^send-message <sm>)
+   (<sm> ^destination say
+         ^first <first>)
+   (<first> ^word finished
+             ^next nil)
+   (halt)
+}

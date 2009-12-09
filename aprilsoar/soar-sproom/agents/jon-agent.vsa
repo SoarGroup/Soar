@@ -1,0 +1,29 @@
+VERSION 4
+/jon-agent/jon-agent.dm
+0	ROOT jon-agent jon-agent 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	FOPERATOR output output.soar 31
+4	0	FOLDER elaborations elaborations 5
+5	4	FOPERATOR _all _all.soar 6
+6	4	FOPERATOR configuration configuration.soar 16
+7	4	FOPERATOR map map.soar 40
+8	4	FOPERATOR say-error say-error.soar 30
+9	4	FOPERATOR top-state top-state.soar 7
+10	4	FOPERATOR waypoints waypoints.soar 41
+11	0	OPERATOR done done.soar 12
+12	0	HLOPERATOR initialize initialize.soar initialize 98 21
+13	12	FOPERATOR elaborations elaborations.soar 22
+14	12	OPERATOR add-waypoint add-waypoint.soar 24
+15	12	HLOPERATOR configure configure.soar configure 105 23
+16	15	FOPERATOR elaborations elaborations.soar 25
+17	0	OPERATOR initialize-jon-agent initialize-jon-agent.soar 13
+18	0	HLOPERATOR wander wander.soar wander 111 32
+19	18	FOPERATOR elaborations elaborations.soar 33
+20	18	OPERATOR choose-waypoint choose-waypoint.soar 34
+21	18	OPERATOR at-waypoint at-waypoint.soar 39
+22	18	HLOPERATOR goto-waypoint goto-waypoint.soar goto-waypoint 118 35
+23	22	FOPERATOR elaborations elaborations.soar 36
+24	22	OPERATOR drive drive.soar 38
+25	22	OPERATOR turn-to turn-to.soar 37
+END

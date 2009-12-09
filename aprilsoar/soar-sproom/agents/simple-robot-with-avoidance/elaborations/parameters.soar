@@ -1,0 +1,29 @@
+
+sp {elaborate*simple-robot*parameters
+   (state <s> ^name simple-robot)
+-->
+   (<s> ^parameters <p>)
+   (<p> ^waypoint-tolerance 0.3 # how close (in meters) the agent needs to be to a waypoint to be considered "at" it
+        ^min-progress-distance 0.1 # how much progress the agent has to make when trying to get to a location for it to be considered progress (i.e., to reset cutoff time)
+        ^message-update-time 3 # after how many seconds (as reported on the input-link) the agent should send another positition update of an unfriendly entity
+        ^rotation-tolerance 6 # how many degrees the agent's yaw can be off when it has a desired yaw
+        ^range-tolerance .4 # distance at which a range arc is considered blocked
+        ^linear-velocity 1. # linear-velocity at which to move
+        ^rotation-velocity 50.
+        ^slow-rotation-velocity 50.
+        ^progress-update-time 25 # how often progress is updated
+                  )
+}
+
+sp {elaborate*simple-robot*parameters*angular-distances
+   (state <s> ^name simple-robot
+              ^parameters <p>
+              ^io.input-link.ranges <r>)
+   (<r> ^range.angular-distance <max>
+       -^range.angular-distance > <max>
+        ^range.angular-distance <min>
+       -^range.angular-distance < <min>)
+-->
+   (<p> ^max-angular-distance <max>
+        ^min-angular-distance <min>)
+}

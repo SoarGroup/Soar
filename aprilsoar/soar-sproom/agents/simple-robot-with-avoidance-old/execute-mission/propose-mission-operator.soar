@@ -1,0 +1,21 @@
+# generic proposals for each mission step
+
+# propose an operator for the current step
+sp {execute-mission*propose*mission-operator
+   (state <s> ^name execute-mission
+              ^mission.current)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^type mission-operator)
+}
+
+# copy mission step info to operator
+sp {execute-mission*elaborate*mission-operator
+   (state <s> ^name execute-mission
+              ^operator <op> +
+              ^mission.current.<att> <val>)
+   (<op> ^type mission-operator)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^<att> <val>)
+}
