@@ -54,7 +54,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		agent.SetBlinkIfNoChange(false);
 		
 		// load productions
-		String productions = config.getString("productions");
+		String productions = config.getString("controller.productions");
 		if (productions != null && !agent.LoadProductions(productions)) {
 			logger.error("Failed to load productions: " + productions);
 			logger.error("Agent error: " + agent.GetLastErrorDescription());

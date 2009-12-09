@@ -28,6 +28,8 @@ import edu.umich.soar.sproom.control.PIDController.Gains;
 final class HttpController {
 	private static final Log logger = LogFactory.getLog(HttpController.class);
 	private static final int HTTP_PORT = 8000;
+	private static final String INDEX_HTML = "/edu/umich/soar/sproom/control/index.html";
+	private static final String ERROR_HTML = "/edu/umich/soar/sproom/control/error.html";
 	
 	static HttpController newInstance() {
 		return new HttpController();
@@ -70,7 +72,7 @@ final class HttpController {
 		
 		public void handle(HttpExchange xchg) throws IOException {
 			if (xchg.getRequestMethod().equals("GET")) {
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, INDEX_HTML);
 			} else {
 				handlePost(xchg);
 			}
@@ -128,7 +130,7 @@ final class HttpController {
 				String[] pair = each.split("=");
 				if (pair.length > 2) {
 					logger.error("Too many tokens: " + each);
-					sendFile(xchg, "/org/msoar/sps/control/error.html");
+					sendFile(xchg, ERROR_HTML);
 					return;
 				} else if (pair.length == 2) {
 					properties.put(pair[0], URLDecoder.decode(pair[1], "UTF-8"));
@@ -136,7 +138,7 @@ final class HttpController {
 					properties.put(pair[0], null);
 				} else {
 					logger.error("No tokens");
-					sendFile(xchg, "/org/msoar/sps/control/error.html");
+					sendFile(xchg, ERROR_HTML);
 					return;
 				}
 			}
@@ -144,7 +146,7 @@ final class HttpController {
 			if (properties.size() == 0 || !properties.containsKey(ACTION) 
 					|| properties.get(ACTION) == null) {
 				logger.error("No action specified");
-				sendFile(xchg, "/org/msoar/sps/control/error.html");
+				sendFile(xchg, ERROR_HTML);
 				return;
 			}
 			
@@ -168,7 +170,7 @@ final class HttpController {
 				hgains(xchg, properties);
 			} else {
 				logger.error("Unknown action: " + properties.get(ACTION));
-				sendFile(xchg, "/org/msoar/sps/control/error.html");
+				sendFile(xchg, ERROR_HTML);
 				return;
 			}
 		}
@@ -177,7 +179,7 @@ final class HttpController {
 			logger.trace("postMessage");
 			String message = properties.get(Keys.message.name());
 			if (message == null) {
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, ERROR_HTML);
 				return;
 			}
 			
@@ -213,7 +215,7 @@ final class HttpController {
 			logger.trace("heading");
 			String headingString = properties.get(Keys.heading.name());
 			if (headingString == null) {
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, INDEX_HTML);
 				return;
 			}
 			
@@ -222,7 +224,7 @@ final class HttpController {
 				yaw = MathUtil.mod2pi(yaw);
 				ddc = DifferentialDriveCommand.newHeadingCommand(yaw);
 				logger.debug(ddc);
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
 				sendResponse(xchg, "Invalid number");
 				return;
@@ -233,7 +235,7 @@ final class HttpController {
 			logger.trace("angvel");
 			String angvelString = properties.get(Keys.angvel.name());
 			if (angvelString == null) {
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, INDEX_HTML);
 				return;
 			}
 			
@@ -241,7 +243,7 @@ final class HttpController {
 				double angvel = Math.toRadians(Double.parseDouble(angvelString));
 				ddc = DifferentialDriveCommand.newAngularVelocityCommand(angvel);
 				logger.debug(ddc);
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
 				sendResponse(xchg, "Invalid number");
 				return;
@@ -252,7 +254,7 @@ final class HttpController {
 			logger.trace("linvel");
 			String linvelString = properties.get(Keys.linvel.name());
 			if (linvelString == null) {
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, INDEX_HTML);
 				return;
 			}
 			
@@ -260,7 +262,7 @@ final class HttpController {
 				double linvel = Double.parseDouble(linvelString);
 				ddc = DifferentialDriveCommand.newLinearVelocityCommand(linvel);
 				logger.debug(ddc);
-				sendFile(xchg, "/org/msoar/sps/control/index.html");
+				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
 				sendResponse(xchg, "Invalid number");
 				return;
@@ -270,13 +272,13 @@ final class HttpController {
 		private void estop(HttpExchange xchg) throws IOException {
 			logger.trace("estop");
 			ddc = DifferentialDriveCommand.newEStopCommand();
-			sendFile(xchg, "/org/msoar/sps/control/index.html");
+			sendFile(xchg, INDEX_HTML);
 		}
 
 		private void stop(HttpExchange xchg) throws IOException {
 			logger.trace("stop");
 			ddc = DifferentialDriveCommand.newVelocityCommand(0, 0);
-			sendFile(xchg, "/org/msoar/sps/control/index.html");
+			sendFile(xchg, INDEX_HTML);
 		}
 
 		private double parseDefault(String value) {
@@ -305,7 +307,7 @@ final class HttpController {
 			}
 			
 			splinter.setAGains(new Gains(p, i, d));
-			sendFile(xchg, "/org/msoar/sps/control/index.html");
+			sendFile(xchg, INDEX_HTML);
 		}
 		
 		private void lgains(HttpExchange xchg, Map<String, String> properties) throws IOException {
@@ -324,7 +326,7 @@ final class HttpController {
 			}
 			
 			splinter.setLGains(new Gains(p, i, d));
-			sendFile(xchg, "/org/msoar/sps/control/index.html");
+			sendFile(xchg, INDEX_HTML);
 		}
 		
 		private void hgains(HttpExchange xchg, Map<String, String> properties) throws IOException {
@@ -343,7 +345,7 @@ final class HttpController {
 			}
 			
 			splinter.setHGains(new Gains(p, i, d));
-			sendFile(xchg, "/org/msoar/sps/control/index.html");
+			sendFile(xchg, INDEX_HTML);
 		}
 		
 	}
