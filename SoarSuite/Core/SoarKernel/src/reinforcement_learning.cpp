@@ -730,6 +730,8 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			}
 			
 			// Update trace for just fired prods
+			double sum_old_ecr = 0.0;
+			double sum_old_efr = 0.0;
 			if ( !data->prev_op_rl_rules->empty() )
 			{
 				double trace_increment = ( 1.0 / static_cast<double>( data->prev_op_rl_rules->size() ) );
@@ -739,6 +741,9 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				{					
 					if ( (*p) != NIL )
 					{
+						sum_old_ecr += (*p)->rl_ecr;
+						sum_old_efr += (*p)->rl_efr;
+						
 						iter = data->eligibility_traces->find( (*p) );
 						
 						if ( iter != data->eligibility_traces->end() ) 
@@ -770,11 +775,11 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					old_efr = prod->rl_efr;
 					
 					// calculate updates
-					delta_ecr = ( alpha * iter->second * ( data->reward - old_ecr ) );
+					delta_ecr = ( alpha * iter->second * ( data->reward - sum_old_ecr ) );
 					
 					if ( update_efr )
 					{
-						delta_efr = ( alpha * iter->second * ( ( discount * op_value ) - old_efr ) );
+						delta_efr = ( alpha * iter->second * ( ( discount * op_value ) - sum_old_efr ) );
 					}
 					else
 					{
