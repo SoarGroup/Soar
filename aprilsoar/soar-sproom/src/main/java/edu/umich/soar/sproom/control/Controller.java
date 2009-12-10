@@ -1,8 +1,8 @@
 package edu.umich.soar.sproom.control;
 
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import jmat.LinAlg;
 
@@ -10,11 +10,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.HzChecker;
+import edu.umich.soar.sproom.control.HttpControllerEvent.DDCChanged;
+import edu.umich.soar.sproom.control.HttpControllerEvent.MessageChanged;
+import edu.umich.soar.sproom.control.HttpControllerEvent.SoarChanged;
 
 import april.config.Config;
 import april.config.ConfigUtil;
 
-public class Controller extends TimerTask {
+public class Controller implements Runnable {
 	private static final Log logger = LogFactory.getLog(Controller.class);
 	private static final double LIN_MAX = 0.5; //0.602;				// experimentally derived
 	private static final double ANG_MAX = Math.toRadians(189);	// experimentally derived
@@ -29,21 +32,38 @@ public class Controller extends TimerTask {
 	private final Config config;
 	private final Gamepad gp;
 	private final SoarInterface soar;
-	private final Timer timer = new Timer();
 	private final HttpController httpController = HttpController.newInstance();
 	private final SplinterModel splinter = SplinterModel.newInstance();
 	private DifferentialDriveCommand ddc = DifferentialDriveCommand.newEStopCommand();
 	private boolean override = false;
 	private GamepadInputScheme gpInputScheme = GamepadInputScheme.JOY_MOTOR;
-	private final HzChecker hzChecker = new HzChecker(logger);
+	private final HzChecker hzChecker = HzChecker.newInstance(Controller.class.toString());
+	private final ScheduledExecutorService schexec = Executors.newSingleThreadScheduledExecutor();
 
 	public Controller(Config config) {
 		if (config == null) {
 			throw new NullPointerException();
 		}
 		this.config = config;
-		
-		httpController.setSplinter(splinter);
+
+		httpController.setGains(splinter.getHGains(), splinter.getAGains(), splinter.getLGains());
+		httpController.addEventHandler(new HttpControllerEventHandler() {
+			@Override
+			public void handleEvent(HttpControllerEvent event) {
+				if (event instanceof SoarChanged) {
+					soarChanged();
+				} else if (event instanceof DDCChanged) {
+					synchronized(this) {
+						DDCChanged ddcevent = (DDCChanged)event;
+						logger.trace("http: " + ddcevent.getDdc());
+						ddc = ddcevent.getDdc();
+					}
+				} else if (event instanceof MessageChanged) {
+					MessageChanged mc = (MessageChanged)event;
+					soar.newMessage("http", mc.getTokens());
+				}
+			}
+		});
 		
 		Gamepad gamepad = null;
 		try {
@@ -59,11 +79,12 @@ public class Controller extends TimerTask {
 		Runtime.getRuntime().addShutdownHook(new ShutdownHook());
 
 		// TODO: make configurable
-		timer.schedule(this, 0, 1000 / 30); // 30 Hz	
-		
-		if (logger.isDebugEnabled()) {
-			timer.schedule(hzChecker, 0, 5000); 
-		}
+		schexec.scheduleAtFixedRate(this, 0, 33, TimeUnit.MILLISECONDS); // 30 Hz
+	}
+	
+	private void soarChanged() {
+		soar.changeRunningState();
+		ddc = DifferentialDriveCommand.newMotorCommand(0, 0);
 	}
 	
 	private class ShutdownHook extends Thread {
@@ -88,14 +109,8 @@ public class Controller extends TimerTask {
 				button.update();
 			}
 	
-			List<String> messageTokens = httpController.getMessageTokens();
-			if (messageTokens != null) {
-				soar.newMessage("http", messageTokens);
-			}
-	
 			if (Buttons.SOAR.checkAndDisable()) {
-				soar.changeRunningState();
-				ddc = DifferentialDriveCommand.newMotorCommand(0, 0);
+				soarChanged();
 			}
 			
 			if (Buttons.OVERRIDE.checkAndDisable()) {
@@ -111,19 +126,18 @@ public class Controller extends TimerTask {
 			}
 	
 			if (override) {
-				ddc = getGPDDCommand();
-				logger.trace("gmpd: " + ddc);
+				synchronized(this) {
+					ddc = getGPDDCommand();
+					logger.trace("gmpd: " + ddc);
+				}
 			} else {
-				if (httpController.hasDDCommand()) {
-					ddc = httpController.getDDCommand();
-					logger.trace("http: " + ddc);
-				} else {
-					if (soar.hasDDCommand()) {
+				if (soar.hasDDCommand()) {
+					synchronized(this) {
 						ddc = soar.getDDCommand();
 						logger.trace("soar: " + ddc);
-					} else {
-						logger.trace("cont: " + ddc);
 					}
+				} else {
+					logger.trace("cont: " + ddc);
 				}
 			}
 	

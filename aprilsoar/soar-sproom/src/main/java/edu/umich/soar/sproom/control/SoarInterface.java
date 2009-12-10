@@ -1,7 +1,6 @@
 package edu.umich.soar.sproom.control;
 
 import java.util.List;
-import java.util.Timer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,8 +23,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		return new SoarInterface(config, splinter);
 	}
 
-	private final Timer timer = new Timer();
-	private final HzChecker hzChecker = new HzChecker(logger);
+	private final HzChecker hzChecker = HzChecker.newInstance(SoarInterface.class.toString());
 	private final Kernel kernel;
 	private final Agent agent;
 	private final InputLinkManager input;
@@ -35,7 +33,7 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 	private boolean running = false;
 	private DifferentialDriveCommand ddc;
 	private DifferentialDriveCommand soarddc;
-	
+
 	private SoarInterface(Config config, OffsetPose splinter) {
 		kernel = Kernel.CreateKernelInNewThread();
 		if (kernel.HadError()) {
@@ -72,10 +70,6 @@ final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemE
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, this, null);
 
 		agent.Commit();
-		
-		if (logger.isDebugEnabled()) {
-			timer.schedule(hzChecker, 0, 5000); 
-		}
 	}
 	
 	private class SoarRunner implements Runnable {

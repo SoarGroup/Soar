@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import jmat.MathUtil;
 
@@ -25,7 +26,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import edu.umich.soar.sproom.control.PIDController.Gains;
 
-final class HttpController {
+class HttpController {
 	private static final Log logger = LogFactory.getLog(HttpController.class);
 	private static final int HTTP_PORT = 8000;
 	private static final String INDEX_HTML = "/edu/umich/soar/sproom/control/index.html";
@@ -36,22 +37,20 @@ final class HttpController {
 	}
 	
 	private final String ACTION = "action";
-	private enum Actions {
-		postmessage, heading, angvel, linvel, estop, stop, agains, lgains, hgains
+	enum Action {
+		postmessage, heading, angvel, linvel, estop, stop, agains, lgains, hgains, soar
 	}
 	
-	private enum Keys {
+	private enum Key {
 		message, heading, angvel, linvel, pgain, igain, dgain
 	}
 	
 	private final IndexHandler indexHandler = new IndexHandler();
-	private DifferentialDriveCommand ddc;
-	private SplinterModel splinter;
-	
+
 	private HttpController() {
 		try {
 		    HttpServer server = HttpServer.create(new InetSocketAddress(HTTP_PORT), 0);
-		    server.createContext("/", new IndexHandler());
+		    server.createContext("/", indexHandler);
 		    server.createContext("/debug", new DebugHandler());
 		    server.start();
 		} catch (IOException e) {
@@ -63,13 +62,22 @@ final class HttpController {
 		logger.info("http server running on port " + HTTP_PORT);
 	}
 	
-	void setSplinter(SplinterModel splinter) {
-		this.splinter = splinter;
+	private final List<HttpControllerEventHandler> handlers = new CopyOnWriteArrayList<HttpControllerEventHandler>();
+	public void addEventHandler(HttpControllerEventHandler handler) {
+		handlers.add(handler);
+	}
+	
+	private void fireEvent(HttpControllerEvent event) {
+		for (HttpControllerEventHandler handler : handlers) {
+			handler.handleEvent(event);
+		}
+	}
+	
+	public void setGains(Gains hgains, Gains agains, Gains lgains) {
+		indexHandler.setGains(hgains, agains, lgains);
 	}
 	
 	private class IndexHandler implements HttpHandler {
-		private List<String> tokens;
-		
 		public void handle(HttpExchange xchg) throws IOException {
 			if (xchg.getRequestMethod().equals("GET")) {
 				sendFile(xchg, INDEX_HTML);
@@ -97,18 +105,25 @@ final class HttpController {
 			sendResponse(xchg, response.toString());
 		}
 		
+		Gains hgains;
+		Gains agains;
+		Gains lgains;
+		
+		private void setGains(Gains hgains, Gains agains, Gains lgains) {
+			this.hgains = hgains;
+			this.agains = agains;
+			this.lgains = lgains;
+		}
+		
 		private String performSubstitutions(String line) {
-			Gains hgains = splinter.getHGains();
 			line = line.replaceAll("%hpgain%", Double.toString(hgains.p));
 			line = line.replaceAll("%higain%", Double.toString(hgains.i));
 			line = line.replaceAll("%hdgain%", Double.toString(hgains.d));
 
-			Gains agains = splinter.getAGains();
 			line = line.replaceAll("%apgain%", Double.toString(agains.p));
 			line = line.replaceAll("%aigain%", Double.toString(agains.i));
 			line = line.replaceAll("%adgain%", Double.toString(agains.d));
 
-			Gains lgains = splinter.getLGains();
 			line = line.replaceAll("%lpgain%", Double.toString(lgains.p));
 			line = line.replaceAll("%ligain%", Double.toString(lgains.i));
 			line = line.replaceAll("%ldgain%", Double.toString(lgains.d));
@@ -150,24 +165,27 @@ final class HttpController {
 				return;
 			}
 			
-			if (properties.get(ACTION).equals(Actions.postmessage.name())) {
-				postMessage(xchg, properties);
-			} else if (properties.get(ACTION).equals(Actions.heading.name())) {
-				heading(xchg, properties);
-			} else if (properties.get(ACTION).equals(Actions.angvel.name())) {
-				angvel(xchg, properties);
-			} else if (properties.get(ACTION).equals(Actions.linvel.name())) {
-				linvel(xchg, properties);
-			} else if (properties.get(ACTION).equals(Actions.estop.name())) {
-				estop(xchg);
-			} else if (properties.get(ACTION).equals(Actions.stop.name())) {
-				stop(xchg);
-			} else if (properties.get(ACTION).equals(Actions.agains.name())) {
-				agains(xchg, properties);
-			} else if (properties.get(ACTION).equals(Actions.lgains.name())) {
-				lgains(xchg, properties);
-			} else if (properties.get(ACTION).equals(Actions.hgains.name())) {
-				hgains(xchg, properties);
+			logger.trace(properties.get(ACTION));
+			if (properties.get(ACTION).equals(Action.postmessage.name())) {
+				actionPostMessage(xchg, properties);
+			} else if (properties.get(ACTION).equals(Action.heading.name())) {
+				actionHeading(xchg, properties);
+			} else if (properties.get(ACTION).equals(Action.angvel.name())) {
+				actionAngvel(xchg, properties);
+			} else if (properties.get(ACTION).equals(Action.linvel.name())) {
+				actionLinvel(xchg, properties);
+			} else if (properties.get(ACTION).equals(Action.estop.name())) {
+				actionEstop(xchg);
+			} else if (properties.get(ACTION).equals(Action.stop.name())) {
+				actionStop(xchg);
+			} else if (properties.get(ACTION).equals(Action.agains.name())) {
+				actionAGains(xchg, properties);
+			} else if (properties.get(ACTION).equals(Action.lgains.name())) {
+				actionLGains(xchg, properties);
+			} else if (properties.get(ACTION).equals(Action.hgains.name())) {
+				actionHGains(xchg, properties);
+			} else if (properties.get(ACTION).equals(Action.soar.name())) {
+				actionSoar(xchg);
 			} else {
 				logger.error("Unknown action: " + properties.get(ACTION));
 				sendFile(xchg, ERROR_HTML);
@@ -175,28 +193,24 @@ final class HttpController {
 			}
 		}
 		
-		private void postMessage(HttpExchange xchg, Map<String, String> properties) throws IOException {
-			logger.trace("postMessage");
-			String message = properties.get(Keys.message.name());
+		private void actionPostMessage(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			String message = properties.get(Key.message.name());
 			if (message == null) {
 				sendFile(xchg, ERROR_HTML);
 				return;
 			}
 			
-			// test
-			//Say.newMessage(message);
+			List<String> tokens = Arrays.asList(message.split(" "));
 			
-			List<String> newTokens = Arrays.asList(message.split(" "));
-			
-			Iterator<String> iter = newTokens.iterator();
+			Iterator<String> iter = tokens.iterator();
 			while (iter.hasNext()) {
 				String token = iter.next();
 				if (token.length() == 0) {
 					iter.remove();
 				}
 			}
-			
-			this.tokens = newTokens;
+
+			fireEvent(new HttpControllerEvent.MessageChanged(tokens));
 			
 		    StringBuffer response = new StringBuffer();
 		    if (tokens.size() > 0) {
@@ -206,14 +220,13 @@ final class HttpController {
 		    } else {
 		    	response.append("Cleared all messages.\n");
 		    }
-		    
 			logger.debug(response);
+			
 		    sendResponse(xchg, response.toString());
 		}
 		
-		private void heading(HttpExchange xchg, Map<String, String> properties) throws IOException {
-			logger.trace("heading");
-			String headingString = properties.get(Keys.heading.name());
+		private void actionHeading(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			String headingString = properties.get(Key.heading.name());
 			if (headingString == null) {
 				sendFile(xchg, INDEX_HTML);
 				return;
@@ -222,7 +235,8 @@ final class HttpController {
 			try {
 				double yaw = Math.toRadians(Double.parseDouble(headingString));
 				yaw = MathUtil.mod2pi(yaw);
-				ddc = DifferentialDriveCommand.newHeadingCommand(yaw);
+				DifferentialDriveCommand ddc = DifferentialDriveCommand.newHeadingCommand(yaw);
+				fireEvent(new HttpControllerEvent.DDCChanged(ddc));
 				logger.debug(ddc);
 				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
@@ -231,9 +245,8 @@ final class HttpController {
 			}
 		}
 		
-		private void angvel(HttpExchange xchg, Map<String, String> properties) throws IOException {
-			logger.trace("angvel");
-			String angvelString = properties.get(Keys.angvel.name());
+		private void actionAngvel(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			String angvelString = properties.get(Key.angvel.name());
 			if (angvelString == null) {
 				sendFile(xchg, INDEX_HTML);
 				return;
@@ -241,7 +254,8 @@ final class HttpController {
 			
 			try {
 				double angvel = Math.toRadians(Double.parseDouble(angvelString));
-				ddc = DifferentialDriveCommand.newAngularVelocityCommand(angvel);
+				DifferentialDriveCommand ddc = DifferentialDriveCommand.newAngularVelocityCommand(angvel);
+				fireEvent(new HttpControllerEvent.DDCChanged(ddc));
 				logger.debug(ddc);
 				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
@@ -250,9 +264,8 @@ final class HttpController {
 			}
 		}
 		
-		private void linvel(HttpExchange xchg, Map<String, String> properties) throws IOException {
-			logger.trace("linvel");
-			String linvelString = properties.get(Keys.linvel.name());
+		private void actionLinvel(HttpExchange xchg, Map<String, String> properties) throws IOException {
+			String linvelString = properties.get(Key.linvel.name());
 			if (linvelString == null) {
 				sendFile(xchg, INDEX_HTML);
 				return;
@@ -260,7 +273,8 @@ final class HttpController {
 			
 			try {
 				double linvel = Double.parseDouble(linvelString);
-				ddc = DifferentialDriveCommand.newLinearVelocityCommand(linvel);
+				DifferentialDriveCommand ddc = DifferentialDriveCommand.newLinearVelocityCommand(linvel);
+				fireEvent(new HttpControllerEvent.DDCChanged(ddc));
 				logger.debug(ddc);
 				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
@@ -269,15 +283,20 @@ final class HttpController {
 			}
 		}
 		
-		private void estop(HttpExchange xchg) throws IOException {
-			logger.trace("estop");
-			ddc = DifferentialDriveCommand.newEStopCommand();
+		private void actionEstop(HttpExchange xchg) throws IOException {
+			DifferentialDriveCommand ddc = DifferentialDriveCommand.newEStopCommand();
+			fireEvent(new HttpControllerEvent.DDCChanged(ddc));
 			sendFile(xchg, INDEX_HTML);
 		}
 
-		private void stop(HttpExchange xchg) throws IOException {
-			logger.trace("stop");
-			ddc = DifferentialDriveCommand.newVelocityCommand(0, 0);
+		private void actionStop(HttpExchange xchg) throws IOException {
+			DifferentialDriveCommand ddc = DifferentialDriveCommand.newVelocityCommand(0, 0);
+			fireEvent(new HttpControllerEvent.DDCChanged(ddc));
+			sendFile(xchg, INDEX_HTML);
+		}
+
+		private void actionSoar(HttpExchange xchg) throws IOException {
+			fireEvent(new HttpControllerEvent.SoarChanged());
 			sendFile(xchg, INDEX_HTML);
 		}
 
@@ -291,60 +310,61 @@ final class HttpController {
 			return out;
 		}
 		
-		private void agains(HttpExchange xchg, Map<String, String> properties) throws IOException {
-			logger.trace("agains");
+		private void actionAGains(HttpExchange xchg, Map<String, String> properties) throws IOException {
 			double p = 0;
 			double i = 0;
 			double d = 0;
+			
 
 			try {
-				p = parseDefault(properties.get(Keys.pgain.name()));
-				i = parseDefault(properties.get(Keys.igain.name()));
-				d = parseDefault(properties.get(Keys.dgain.name()));
+				p = parseDefault(properties.get(Key.pgain.name()));
+				i = parseDefault(properties.get(Key.igain.name()));
+				d = parseDefault(properties.get(Key.dgain.name()));
 			} catch (NumberFormatException e) {
 				sendResponse(xchg, "Invalid number");
 				return;
 			}
-			
-			splinter.setAGains(new Gains(p, i, d));
+
+			agains = new Gains(p, i, d);
+			fireEvent(new HttpControllerEvent.GainsChanged(hgains, agains, lgains));
 			sendFile(xchg, INDEX_HTML);
 		}
 		
-		private void lgains(HttpExchange xchg, Map<String, String> properties) throws IOException {
-			logger.trace("lgains");
+		private void actionLGains(HttpExchange xchg, Map<String, String> properties) throws IOException {
 			double p = 0;
 			double i = 0;
 			double d = 0;
 
 			try {
-				p = parseDefault(properties.get(Keys.pgain.name()));
-				i = parseDefault(properties.get(Keys.igain.name()));
-				d = parseDefault(properties.get(Keys.dgain.name()));
+				p = parseDefault(properties.get(Key.pgain.name()));
+				i = parseDefault(properties.get(Key.igain.name()));
+				d = parseDefault(properties.get(Key.dgain.name()));
 			} catch (NumberFormatException e) {
 				sendResponse(xchg, "Invalid number");
 				return;
 			}
 			
-			splinter.setLGains(new Gains(p, i, d));
+			lgains = new Gains(p, i, d);
+			fireEvent(new HttpControllerEvent.GainsChanged(hgains, agains, lgains));
 			sendFile(xchg, INDEX_HTML);
 		}
 		
-		private void hgains(HttpExchange xchg, Map<String, String> properties) throws IOException {
-			logger.trace("hgains");
+		private void actionHGains(HttpExchange xchg, Map<String, String> properties) throws IOException {
 			double p = 0;
 			double i = 0;
 			double d = 0;
 
 			try {
-				p = parseDefault(properties.get(Keys.pgain.name()));
-				i = parseDefault(properties.get(Keys.igain.name()));
-				d = parseDefault(properties.get(Keys.dgain.name()));
+				p = parseDefault(properties.get(Key.pgain.name()));
+				i = parseDefault(properties.get(Key.igain.name()));
+				d = parseDefault(properties.get(Key.dgain.name()));
 			} catch (NumberFormatException e) {
 				sendResponse(xchg, "Invalid number");
 				return;
 			}
 			
-			splinter.setHGains(new Gains(p, i, d));
+			hgains = new Gains(p, i, d);
+			fireEvent(new HttpControllerEvent.GainsChanged(hgains, agains, lgains));
 			sendFile(xchg, INDEX_HTML);
 		}
 		
@@ -378,21 +398,4 @@ final class HttpController {
 	    os.write(response.toString().getBytes());
 	    os.close();
 	}
-	
-	List<String> getMessageTokens() {
-		List<String> temp = indexHandler.tokens;
-		indexHandler.tokens = null;
-		return temp;
-	}
-
-	boolean hasDDCommand() {
-		return ddc != null;
-	}
-
-	DifferentialDriveCommand getDDCommand() {
-		DifferentialDriveCommand temp = ddc;
-		ddc = null;
-		return temp;
-	}
-	
 }

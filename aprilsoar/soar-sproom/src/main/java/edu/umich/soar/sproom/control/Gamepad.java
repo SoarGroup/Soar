@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-final class Gamepad {
+class Gamepad {
 	private final String devicePath;
 	private final int axes[] = new int[16];
 	private final int buttons[] = new int[16];

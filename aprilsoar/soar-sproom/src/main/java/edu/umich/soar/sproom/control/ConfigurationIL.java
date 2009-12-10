@@ -4,7 +4,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.StringElement;
 
-public final class ConfigurationIL implements ConfigureInterface {
+public class ConfigurationIL implements ConfigureInterface {
 
 	private final Identifier configuration;
 	private final StringElement yawFormatwme;

@@ -1,8 +1,9 @@
 package edu.umich.soar.sproom.splinter;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +26,7 @@ import orc.Motor;
 import orc.Orc;
 import orc.OrcStatus;
 
-public final class Splinter extends TimerTask implements LCMSubscriber {
+public final class Splinter implements LCMSubscriber, Runnable {
 	private static final Log logger = LogFactory.getLog(Splinter.class);
 	private static final int LEFT = 0;
 	private static final int RIGHT = 1;
@@ -41,8 +42,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	// TODO: should use two tickmeters, left/right
 	public static final double DEFAULT_TICKMETERS = 0.0000428528;
 	
-	private final Timer timer = new Timer();
-	private final HzChecker hzChecker = new HzChecker(logger);
+	private final HzChecker hzChecker = HzChecker.newInstance(Splinter.class.toString());
 	private final Orc orc;
 	private final Motor[] motor = new Motor[2];
 	private final int[] ports;
@@ -67,7 +67,8 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	private final Odometry odometry;
 	private OdometryPoint oldOdom;
 	private final pose_t pose = new pose_t();
-	
+	private final ScheduledExecutorService schexec = Executors.newSingleThreadScheduledExecutor();
+
 	private Splinter(Config config) {
 		tickMeters = config.getDouble("tickMeters", DEFAULT_TICKMETERS);
 		baselineMeters = config.getDouble("baselineMeters", DEFAULT_BASELINE);
@@ -104,11 +105,7 @@ public final class Splinter extends TimerTask implements LCMSubscriber {
 	
 		double updatePeriodMS = 1000 / updateHz;
 		logger.debug("Splinter thread running, period set to " + updatePeriodMS);
-		timer.schedule(this, 0, (long)updatePeriodMS); 
-		
-		if (logger.isDebugEnabled()) {
-			timer.schedule(hzChecker, 0, 5000); 
-		}
+		schexec.scheduleAtFixedRate(this, 0, (long)updatePeriodMS, TimeUnit.MILLISECONDS); 
 	}
 	
 	private OdometryPoint getOdometry(OrcStatus currentStatus) {

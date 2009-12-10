@@ -1,7 +1,8 @@
 package edu.umich.soar.sproom.control;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import jmat.LinAlg;
 import jmat.MathUtil;
@@ -15,7 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.control.PIDController.Gains;
 
-final class SplinterHardware extends TimerTask {
+final class SplinterHardware implements Runnable {
 	private static final Log logger = LogFactory.getLog(SplinterHardware.class);
 	
 	static SplinterHardware newInstance(LCMProxy lcmProxy) {
@@ -27,13 +28,13 @@ final class SplinterHardware extends TimerTask {
 	private final PIDSetting pid = new PIDSetting();
 	private double av;
 	private double lv;
-	private final Timer timer = new Timer(true);
 	private pose_t pose;
 	private long lastMillis;
 	private final PIDController aController = new PIDController();
 	private final PIDController lController = new PIDController();
-	private final HzChecker hzChecker = new HzChecker(logger);
-
+	private final HzChecker hzChecker = HzChecker.newInstance(SplinterHardware.class.toString());
+	private final ScheduledExecutorService schexec = Executors.newSingleThreadScheduledExecutor();
+	
 	private SplinterHardware(LCMProxy lcmProxy) {
 		this.lcmProxy = lcmProxy;
 		
@@ -45,11 +46,7 @@ final class SplinterHardware extends TimerTask {
 		// TODO: make configurable
 		setAGains(new Gains(0.0238, 0, 0.0025));
 		setLGains(new Gains(0.12,  0, 0.025));
-		timer.schedule(this, 0, 1000 / 30); // 30 Hz	
-		
-		if (logger.isDebugEnabled()) {
-			timer.schedule(hzChecker, 0, 5000); 
-		}
+		schexec.scheduleAtFixedRate(this, 0, 33, TimeUnit.MILLISECONDS); // ~30 Hz
 	}
 	
 	void setAGains(Gains g) {

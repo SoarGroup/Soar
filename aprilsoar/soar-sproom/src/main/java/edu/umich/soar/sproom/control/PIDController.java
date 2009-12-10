@@ -4,12 +4,6 @@ import jmat.MathUtil;
 
 class PIDController {
 	static class Gains {
-		Gains() {
-			this.p = 0;
-			this.i = 0;
-			this.d = 0;
-		}
-		
 		Gains(double p, double i, double d) {
 			this.p = p;
 			this.i = i;
@@ -21,7 +15,7 @@ class PIDController {
 		final double d;
 	}
 	
-	private Gains gains = new Gains();
+	private Gains gains = new Gains(0, 0, 0);
 	private double previousError;
 	private double integral;
 	private double previousTarget;
