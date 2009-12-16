@@ -103,8 +103,7 @@ typedef struct rl_data_struct {
 } rl_data;
 
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
-typedef std::list< Symbol* > rl_symbol_list;
-typedef std::set< rl_symbol_list > rl_symbol_list_set;
+typedef std::set< rl_symbol_map > rl_symbol_map_set;
 
 //////////////////////////////////////////////////////////
 // Parameter Maintenance
