@@ -12,6 +12,7 @@ prof:
 
 clean:
 	scons tcl=yes python=yes java=yes -c
+	scons tcl=yes python=yes java=yes scu=no -c
 
 distclean: clean
 	rm -f config.log
