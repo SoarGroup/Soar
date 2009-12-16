@@ -384,23 +384,17 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 	// initialize production instantiation set
 	if ( my_template_instance->prod->rl_template_instantiations == NIL )
 	{
-		my_template_instance->prod->rl_template_instantiations = new rl_symbol_list_set;
+		my_template_instance->prod->rl_template_instantiations = new rl_symbol_map_set;
 	}
 
-	// get list of constants
-	rl_symbol_list constant_list;
-	{
-		rl_symbol_map constant_map;
-		
-		rl_get_template_constants( my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &( constant_map ) );
-		for ( rl_symbol_map::iterator s_p=constant_map.begin(); s_p!=constant_map.end(); s_p++ )
-		{
-			constant_list.push_back( s_p->second );
-		}
+	// get constants
+	rl_symbol_map constant_map;
+	{	
+		rl_get_template_constants( my_template_instance->prod->rl_template_conds, my_template_instance->top_of_instantiated_conditions, &( constant_map ) );		
 	}
 
 	// try to insert into instantiation set
-	std::pair< rl_symbol_list_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert( constant_list );
+	std::pair< rl_symbol_map_set::iterator, bool > ins_result = my_template_instance->prod->rl_template_instantiations->insert( constant_map );
 	if ( ins_result.second )
 	{
 		Symbol *id, *attr, *value, *referent;
