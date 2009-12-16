@@ -89,6 +89,9 @@ typedef struct agent_struct agent;
 typedef cons list;
 typedef union symbol_union Symbol;
 
+#include <map>
+#include <set>
+
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
 typedef std::set< rl_symbol_map > rl_symbol_map_set;
 

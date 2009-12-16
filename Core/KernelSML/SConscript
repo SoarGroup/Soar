@@ -14,8 +14,8 @@ env.Prepend(CPPPATH = ['src',
 
 libadd = [
 	   'ElementXML',
-	   'ConnectionSML',
 	   'CommandLineInterface',
+	   'ConnectionSML',
 	   'SoarKernel',
 	   ]
 
