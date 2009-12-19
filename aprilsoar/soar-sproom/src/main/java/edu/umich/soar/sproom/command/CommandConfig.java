@@ -1,9 +1,13 @@
 package edu.umich.soar.sproom.command;
 
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 enum CommandConfig {
 	CONFIG;
+	
+	private String productions;
 	
 	private double limitLinVelMax;
 	private double limitLinVelMin;
@@ -25,7 +29,21 @@ enum CommandConfig {
 	private AngleUnit angleResolution;
 
 	private final double[] poseTranslation = new double[] { 0, 0, 0 };
+	private final ConcurrentMap<String, double[]> pidGains = new ConcurrentHashMap<String, double[]>(); 
 
+	CommandConfig() {
+		setGains(Drive3.HEADING_PID_NAME, new double[] { 1, 0, 0.125 });
+		setGains(Drive2.ANGULAR_PID_NAME, new double[] { 0.0238, 0, 0.0025 });
+		setGains(Drive2.LINEAR_PID_NAME, new double[] { 0.12,  0, 0.025 });
+	}
+	public String getProductions() {
+		return productions;
+	}
+	
+	public void setProductions(String productions) {
+		this.productions = productions;
+	}
+	
 	public double getLimitLinVelMax() {
 		return limitLinVelMax;
 	}
@@ -124,5 +142,17 @@ enum CommandConfig {
 		synchronized(poseTranslation) {
 			return Arrays.copyOf(poseTranslation, poseTranslation.length);
 		}
+	}
+	
+	public void setGains(String name, double[] pid) {
+		if (pid == null) {
+			pidGains.remove(name);
+			return;
+		}
+		pidGains.put(name, pid);
+	}
+	
+	public double[] getGains(String name) {
+		return pidGains.get(name);
 	}
 }

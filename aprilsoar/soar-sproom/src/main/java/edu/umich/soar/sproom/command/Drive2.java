@@ -12,40 +12,34 @@ import org.apache.commons.logging.LogFactory;
 
 class Drive2 {
 	private static final Log logger = LogFactory.getLog(Drive2.class);
+	static final String ANGULAR_PID_NAME = "angular velocity";
+	static final String LINEAR_PID_NAME = "linear velocity";
 	
 	private final AtomicBoolean pidEnabled = new AtomicBoolean(false);
 	private double av;
 	private double lv;
-	private final PIDController aController = new PIDController("angular velocity");
-	private final PIDController lController = new PIDController("linear velocity");
+	private final PIDController aController = new PIDController(ANGULAR_PID_NAME);
+	private final PIDController lController = new PIDController(LINEAR_PID_NAME);
 	private final Drive1 drive1;
 
 	Drive2(Drive1 drive1) {
 		this.drive1 = drive1;
-		
 		setMotors(0, 0);
-
-		// TODO: make configurable
-		setAGains(new double[] { 0.0238, 0, 0.0025 });
-		setLGains(new double[] { 0.12,  0, 0.025 });
+		updateGains();
 	}
 	
-	void setAGains(double[] g) {
-		aController.setGains(g);
-	}
-
-	void setLGains(double[] g) {
-		lController.setGains(g);
+	void updateGains() {
+		{
+			double[] apid = CommandConfig.CONFIG.getGains(aController.getName());
+			aController.setGains(apid);
+		}
+		
+		{
+			double[] lpid = CommandConfig.CONFIG.getGains(lController.getName());
+			lController.setGains(lpid);
+		}
 	}
 	
-	double[] getAGains() {
-		return aController.getGains();
-	}
-
-	double[] getLGains() {
-		return lController.getGains();
-	}
-
 	void estop() {
 		drive1.estop();
 	}
@@ -79,7 +73,6 @@ class Drive2 {
 	void update(pose_t pose, long utimeElapsed) {
 		try {
 			if (pose != null) {
-				
 				// compute
 				if (pidEnabled.get()) {
 					double dt = utimeElapsed / 1000000.0;

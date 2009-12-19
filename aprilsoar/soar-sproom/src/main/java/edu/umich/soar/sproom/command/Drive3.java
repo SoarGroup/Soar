@@ -11,27 +11,24 @@ import edu.umich.soar.sproom.command.DifferentialDriveCommand.CommandType;
 
 class Drive3 {
 	private static final Log logger = LogFactory.getLog(Drive3.class);
+	static final String HEADING_PID_NAME = "heading";
 
 	private final Drive2 drive2;
-	private final PIDController hController = new PIDController("heading");
+	private final PIDController hController = new PIDController(HEADING_PID_NAME);
 	private long utimePrev;
 	private DifferentialDriveCommand.CommandType previousType;
 	private double previousHeading;
 
 	Drive3(Drive2 drive2) {
 		this.drive2 = drive2;
-		
-		setHGains(new double[] { 1, 0, 0.125 });
+		updateGains();
 	}
 
-	void setHGains(double[] g) {
-		hController.setGains(g);
+	void updateGains() {
+		double[] pid = CommandConfig.CONFIG.getGains(hController.getName());
+		hController.setGains(pid);
 	}
 	
-	double[] getHGains() {
-		return hController.getGains();
-	}
-
 	void update(DifferentialDriveCommand ddc, pose_t pose) {
 		long utimeElapsed = 0;
 		if (pose != null) {
@@ -41,55 +38,53 @@ class Drive3 {
 			if (ddc == null) {
 				logger.warn("ddc null, sending estop");
 				drive2.estop();
-				return;
-			}
-			
-			switch (ddc.getType()) {
-			case ESTOP:
-				drive2.estop();
-				return;
+			} else {
 				
-			case MOTOR:
-				drive2.setMotors(ddc.getLeft(), ddc.getRight());
-				return;
-				
-			case VEL:
-				drive2.setAngularVelocity(ddc.getAngularVelocity());
-				drive2.setLinearVelocity(ddc.getLinearVelocity());
-				return;
-				
-			case LINVEL:
-				doLinearVelocity(ddc);
-				return;
-				
-			case ANGVEL:
-				if (previousType == CommandType.HEADING) {
-					drive2.setLinearVelocity(0);
+				switch (ddc.getType()) {
+				case ESTOP:
+					drive2.estop();
+					break;
+					
+				case MOTOR:
+					drive2.setMotors(ddc.getLeft(), ddc.getRight());
+					break;
+					
+				case VEL:
+					drive2.setAngularVelocity(ddc.getAngularVelocity());
+					drive2.setLinearVelocity(ddc.getLinearVelocity());
+					break;
+					
+				case LINVEL:
+					doLinearVelocity(ddc);
+					break;
+					
+				case ANGVEL:
+					if (previousType == CommandType.HEADING) {
+						drive2.setLinearVelocity(0);
+					}
+					drive2.setAngularVelocity(ddc.getAngularVelocity());
+					break;
+					
+				case HEADING_LINVEL:
+					doLinearVelocity(ddc);
+					// falls through
+					
+				case HEADING:
+					if (previousType != CommandType.HEADING || Double.compare(previousHeading, ddc.getHeading()) != 0) {
+						hController.clearIntegral();
+						previousHeading = ddc.getHeading();
+						// TODO: do we want to do this?
+						//hardware.setLinearVelocity(0);
+					}
+					
+					double target = MathUtil.mod2pi(ddc.getHeading());
+					double actual = MathUtil.mod2pi(LinAlg.quatToRollPitchYaw(pose.orientation)[2]);
+					double dt = utimeElapsed / 1000000.0;
+					double out = hController.computeMod2Pi(dt, target, actual);
+					drive2.setAngularVelocity(out);
+					break;
 				}
-				drive2.setAngularVelocity(ddc.getAngularVelocity());
-				return;
-				
-			case HEADING_LINVEL:
-				doLinearVelocity(ddc);
-				// falls through
-				
-			case HEADING:
-				if (previousType != CommandType.HEADING || Double.compare(previousHeading, ddc.getHeading()) != 0) {
-					hController.clearIntegral();
-					previousHeading = ddc.getHeading();
-					// TODO: do we want to do this?
-					//hardware.setLinearVelocity(0);
-				}
-				
-				double target = MathUtil.mod2pi(ddc.getHeading());
-				double actual = MathUtil.mod2pi(LinAlg.quatToRollPitchYaw(pose.orientation)[2]);
-				double dt = utimeElapsed / 1000000.0;
-				double out = hController.computeMod2Pi(dt, target, actual);
-				drive2.setAngularVelocity(out);
-				return;
-			}
 			
-			if (ddc != null) {
 				this.previousType = ddc.getType();
 			}
 		}

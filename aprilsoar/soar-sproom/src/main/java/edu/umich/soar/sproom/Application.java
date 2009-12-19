@@ -7,19 +7,20 @@ import lcm.spy.Spy;
 import april.config.ConfigUtil;
 import april.sim.Simulator;
 import april.viewer.Viewer;
+import edu.umich.soar.sproom.command.Command;
 import edu.umich.soar.sproom.control.Controller;
 
 public class Application {
 
 	private Simulator sim;
 	private Viewer viewer;
-	private Controller controller;
+	private Command command;
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 	
 	public Application(String[] args) {
 		sim = new Simulator(ConfigUtil.getDefaultConfig(args));
 		viewer = new Viewer(ConfigUtil.getDefaultConfig(args));
-		controller = new Controller(ConfigUtil.getDefaultConfig(args));
+		command = new Command();
 		exec.submit(new Runnable() {
 			@Override
 			public void run() {

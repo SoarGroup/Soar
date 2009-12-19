@@ -22,9 +22,9 @@ class WaypointIL {
 		this.type = type;
 		this.waypoints = waypoints;
 		this.opose = opose;
-		this.pointData = new PointDataIL(waypointxyz, )
+		//this.pointData = new PointDataIL(waypointxyz, )
 		
-		yawWmes = useFloatWmes ? new YawFloatWmes() : new YawIntWmes();
+		//yawWmes = useFloatWmes ? new YawFloatWmes() : new YawIntWmes();
 	}
 
 	boolean equals(String other) {
@@ -32,35 +32,35 @@ class WaypointIL {
 	}
 
 	void update() {
-		pose_t selfPose = opose.getPose();
-		PointRelationship r = PointRelationship.calculate(selfPose, pos);
-
-		if (waypoint == null) {
-			waypoint = waypoints.CreateIdWME("waypoint");
-			
-			if (type.equals("int")) {
-				waypoint.CreateIntWME("id", Integer.parseInt(name));
-			} else if (type.equals("float")) {
-				waypoint.CreateFloatWME("id", Double.parseDouble(name));
-			} else {
-				waypoint.CreateStringWME("id", name);
-			}
-			waypoint.CreateFloatWME("x", pos[0]);
-			waypoint.CreateFloatWME("y", pos[1]);
-			waypoint.CreateFloatWME("z", pos[2]);
-
-			distance = waypoint.CreateFloatWME("distance", 0);
-
-			yawWmes.create();
-		}
-		
-		distance.Update(r.getDistance());
-		
-		double yawValueDeg = Math.toDegrees(r.getYaw());
-		double relativeBearingValueDeg = Math.toDegrees(r.getRelativeBearing());
-		double absRelativeBearingValueDeg = Math.abs(relativeBearingValueDeg);
-
-		yawWmes.update(yawValueDeg, relativeBearingValueDeg, absRelativeBearingValueDeg);
+//		pose_t selfPose = opose.getPose();
+//		PointRelationship r = PointRelationship.calculate(selfPose, pos);
+//
+//		if (waypoint == null) {
+//			waypoint = waypoints.CreateIdWME("waypoint");
+//			
+//			if (type.equals("int")) {
+//				waypoint.CreateIntWME("id", Integer.parseInt(name));
+//			} else if (type.equals("float")) {
+//				waypoint.CreateFloatWME("id", Double.parseDouble(name));
+//			} else {
+//				waypoint.CreateStringWME("id", name);
+//			}
+//			waypoint.CreateFloatWME("x", pos[0]);
+//			waypoint.CreateFloatWME("y", pos[1]);
+//			waypoint.CreateFloatWME("z", pos[2]);
+//
+//			distance = waypoint.CreateFloatWME("distance", 0);
+//
+//			yawWmes.create();
+//		}
+//		
+//		distance.Update(r.getDistance());
+//		
+//		double yawValueDeg = Math.toDegrees(r.getYaw());
+//		double relativeBearingValueDeg = Math.toDegrees(r.getRelativeBearing());
+//		double absRelativeBearingValueDeg = Math.abs(relativeBearingValueDeg);
+//
+//		yawWmes.update(yawValueDeg, relativeBearingValueDeg, absRelativeBearingValueDeg);
 	}
 
 	void disable() {
@@ -73,7 +73,8 @@ class WaypointIL {
 	}
 	
 	double[] getPos() {
-		return Arrays.copyOf(pos, pos.length);
+//		return Arrays.copyOf(pos, pos.length);
+		return null;
 	}
 }
 

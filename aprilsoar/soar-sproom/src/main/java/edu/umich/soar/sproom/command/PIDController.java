@@ -19,14 +19,14 @@ class PIDController {
 	PIDController(String name) {
 		this.name = name;
 	}
+
+	String getName() {
+		return name;
+	}
 	
 	void setGains(double[] pid) {
 		System.arraycopy(pid, 0, this.pid, 0, pid.length);
 		logger.info("New gains for " + name + ": " + Arrays.toString(this.pid));
-	}
-	
-	double[] getGains() {
-		return Arrays.copyOf(pid, pid.length);
 	}
 	
 	void clearIntegral() {
