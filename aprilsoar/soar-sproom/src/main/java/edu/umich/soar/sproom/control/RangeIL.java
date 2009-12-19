@@ -5,7 +5,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-final class RangeIL {
+class RangeIL {
 	//private static final Log logger = LogFactory.getLog(RangeIL.class);
 	
 	private final Identifier rangewme;

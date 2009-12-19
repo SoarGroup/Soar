@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import edu.umich.soar.sproom.control.DifferentialDriveCommand.CommandType;
 import edu.umich.soar.sproom.control.PIDController.Gains;
 
-final class SplinterModel implements OffsetPose {
+class SplinterModel implements OffsetPose {
 	private static final Log logger = LogFactory.getLog(SplinterModel.class);
 
 	static SplinterModel newInstance() {

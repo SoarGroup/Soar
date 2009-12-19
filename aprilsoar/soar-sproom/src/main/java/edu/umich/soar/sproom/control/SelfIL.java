@@ -7,7 +7,7 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-final class SelfIL {
+class SelfIL {
 	private final Agent agent;
 	private final WaypointsIL waypointsIL;
 	private final FloatElement xwme;

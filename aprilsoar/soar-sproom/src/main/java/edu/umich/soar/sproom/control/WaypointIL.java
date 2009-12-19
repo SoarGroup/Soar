@@ -7,69 +7,26 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 
-final class WaypointIL {
-	private final double[] pos = new double[3];
+class WaypointIL {
 	private final String name;
 	private final String type;
 	private final Identifier waypoints;
 	private final OffsetPose opose;
 	
 	private Identifier waypoint;
-	private FloatElement distance;
-	private YawWmes yawWmes;
+	private PointDataIL pointData;
 	
 	WaypointIL(double[] waypointxyz, String name, String type, 
 			Identifier waypoints, boolean useFloatWmes, OffsetPose opose) {
-		System.arraycopy(waypointxyz, 0, this.pos, 0, waypointxyz.length);
 		this.name = name;
 		this.type = type;
 		this.waypoints = waypoints;
 		this.opose = opose;
+		this.pointData = new PointDataIL(waypointxyz, )
 		
 		yawWmes = useFloatWmes ? new YawFloatWmes() : new YawIntWmes();
 	}
 
-	private interface YawWmes {
-		public void create();
-		public void update(double yawValueDeg, double relativeBearingValueDeg, double absRelativeBearingValueDeg);
-	}
-	
-	private class YawIntWmes implements YawWmes {
-		private IntElement yawWmeI;
-		private IntElement relativeBearingWmeI;
-		private IntElement absRelativeBearingWmeI;
-
-		public void create() {
-			yawWmeI = waypoint.CreateIntWME("yaw", 0);
-			relativeBearingWmeI = waypoint.CreateIntWME("relative-bearing", 0);
-			absRelativeBearingWmeI = waypoint.CreateIntWME("abs-relative-bearing", 0);
-		}
-		
-		public void update(double yawValueDeg, double relativeBearingValueDeg, double absRelativeBearingValueDeg) {
-			yawWmeI.Update((int)Math.round(yawValueDeg));
-			relativeBearingWmeI.Update((int)Math.round(relativeBearingValueDeg));
-			absRelativeBearingWmeI.Update((int)Math.round(absRelativeBearingValueDeg));
-		}
-	}
-
-	private class YawFloatWmes implements YawWmes {
-		private FloatElement yawWmeF;
-		private FloatElement relativeBearingWmeF;
-		private FloatElement absRelativeBearingWmeF;
-
-		public void create() {
-			yawWmeF = waypoint.CreateFloatWME("yaw", 0);
-			relativeBearingWmeF = waypoint.CreateFloatWME("relative-bearing", 0);
-			absRelativeBearingWmeF = waypoint.CreateFloatWME("abs-relative-bearing", 0);
-		}
-		
-		public void update(double yawValueDeg, double relativeBearingValueDeg, double absRelativeBearingValueDeg) {
-			yawWmeF.Update(yawValueDeg);
-			relativeBearingWmeF.Update(relativeBearingValueDeg);
-			absRelativeBearingWmeF.Update(absRelativeBearingValueDeg);
-		}
-	}
-	
 	boolean equals(String other) {
 		return other.equals(name);
 	}

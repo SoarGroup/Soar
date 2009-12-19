@@ -16,7 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.control.PIDController.Gains;
 
-final class SplinterHardware implements Runnable {
+class SplinterHardware implements Runnable {
 	private static final Log logger = LogFactory.getLog(SplinterHardware.class);
 	
 	static SplinterHardware newInstance(LCMProxy lcmProxy) {
@@ -99,7 +99,7 @@ final class SplinterHardware implements Runnable {
 		setMotors(0, 0);
 	}
 	
-	private final class PIDSetting {
+	private class PIDSetting {
 		private boolean pidEnabled = false;
 		
 		private void enablePID() {

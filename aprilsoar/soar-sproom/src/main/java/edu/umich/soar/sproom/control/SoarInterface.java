@@ -14,7 +14,7 @@ import sml.Kernel;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
 
-final class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, SendMessagesInterface {
+class SoarInterface implements Kernel.UpdateEventInterface, Kernel.SystemEventInterface, SendMessagesInterface {
 	private static final Log logger = LogFactory.getLog(SoarInterface.class);
 
 	private final static int DEFAULT_RANGES_COUNT = 5;

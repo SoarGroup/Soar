@@ -14,7 +14,7 @@ import lcmtypes.laser_t;
 import sml.Agent;
 import sml.Identifier;
 
-final class RangerIL implements LCMSubscriber {
+class RangerIL implements LCMSubscriber {
 	private static final Log logger = LogFactory.getLog(RangerIL.class);
 
 	private long utimeLast = 0;

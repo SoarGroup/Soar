@@ -26,7 +26,7 @@ import vis.VisWorld;
  * @author voigtjr
  * Tool used to plot odometry data for calibration.
  */
-final class OdometryPlotter {
+class OdometryPlotter {
 	private final JFrame jf;
 	private final VisWorld vw = new VisWorld();
 	private final VisCanvas vc = new VisCanvas(vw);

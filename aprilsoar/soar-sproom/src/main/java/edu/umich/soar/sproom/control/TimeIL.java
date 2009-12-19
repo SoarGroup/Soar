@@ -13,6 +13,7 @@ final public class TimeIL implements Kernel.SystemEventInterface {
 	private final IntElement microsecondswme;
 	private long offset;
 	private long stopTime;
+	private boolean invalid = false;
 	
 	public TimeIL(Identifier time) {
 		this.time = time;
@@ -24,13 +25,18 @@ final public class TimeIL implements Kernel.SystemEventInterface {
 	
 	public void destroy() {
 		time.DestroyWME();
+		invalid = true;
 	}
 
 	public void update() {
+		if (invalid)
+			throw new IllegalStateException("already destroyed");
 		updateExact(System.nanoTime() - offset);
 	}
 	
 	public void updateExact(long nanoTime) {
+		if (invalid)
+			throw new IllegalStateException("already destroyed");
 		int seconds = (int) (nanoTime / NANO_PER_SEC);
 		int microseconds = (int) (nanoTime % NANO_PER_SEC);
 		microseconds /= 1000;

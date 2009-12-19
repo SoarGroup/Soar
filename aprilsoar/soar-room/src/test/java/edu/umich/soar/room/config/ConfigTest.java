@@ -1,7 +1,6 @@
 package edu.umich.soar.room.config;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -93,15 +92,6 @@ public class ConfigTest {
 		assertEquals("indeed", parent.getString("child"));
 	}
 	
-	@Test
-	public void testPropertyRemoval() throws IOException {
-		Config cf = new Config(new ConfigFile(largeTest));
-
-		assertTrue(cf.hasKey("hello"));
-		cf.removeKey("hello");
-		assertFalse(cf.hasKey("hello"));
-	}
-
 	@Test
 	public void testGetKeys() throws IOException {
 		Config cf = new Config(new ConfigFile(largeTest));

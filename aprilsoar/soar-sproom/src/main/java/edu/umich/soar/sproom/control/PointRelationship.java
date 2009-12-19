@@ -9,6 +9,9 @@ public class PointRelationship {
 	private double yaw;
 	private double relativeBearing;
 	
+	private PointRelationship() {
+	}
+	
 	public double getDistance() {
 		return distance;
 	}

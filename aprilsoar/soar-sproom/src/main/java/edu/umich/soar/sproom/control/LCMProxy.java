@@ -13,7 +13,7 @@ import lcm.lcm.LCMSubscriber;
 import lcmtypes.differential_drive_command_t;
 import lcmtypes.pose_t;
 
-final class LCMProxy implements LCMSubscriber {
+class LCMProxy implements LCMSubscriber {
 	private static final Log logger = LogFactory.getLog(LCMProxy.class);
 
 	static final LCMProxy getInstance() {

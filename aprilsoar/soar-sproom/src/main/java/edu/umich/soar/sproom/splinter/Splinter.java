@@ -26,7 +26,7 @@ import orc.Motor;
 import orc.Orc;
 import orc.OrcStatus;
 
-public final class Splinter implements LCMSubscriber, Runnable {
+public class Splinter implements LCMSubscriber, Runnable {
 	private static final Log logger = LogFactory.getLog(Splinter.class);
 	private static final int LEFT = 0;
 	private static final int RIGHT = 1;

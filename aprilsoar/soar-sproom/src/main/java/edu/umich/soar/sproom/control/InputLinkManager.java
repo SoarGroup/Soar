@@ -12,7 +12,7 @@ import sml.smlSystemEventId;
  * @author voigtjr
  * Soar input link management. Also handles some updating of waypoint state.
  */
-final class InputLinkManager {
+class InputLinkManager {
 	private static final Log logger = LogFactory.getLog(InputLinkManager.class);
 
 	private final ConfigurationIL configurationIL;

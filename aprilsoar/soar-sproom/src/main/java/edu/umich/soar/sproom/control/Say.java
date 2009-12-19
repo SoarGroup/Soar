@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-final class Say {
+class Say {
 	private static final Log logger = LogFactory.getLog(Say.class);
 
 	static void newMessage(String message) {

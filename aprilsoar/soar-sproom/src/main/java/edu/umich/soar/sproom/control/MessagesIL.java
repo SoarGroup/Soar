@@ -9,7 +9,7 @@ import java.util.Queue;
 
 import sml.Identifier;
 
-public final class MessagesIL implements ReceiveMessagesInterface {
+public class MessagesIL implements ReceiveMessagesInterface {
 	private final Identifier receivedwme;
 	private final Map<Integer, Identifier> messages = new HashMap<Integer, Identifier>();
 	private final Queue<Message> queuedMessages = new LinkedList<Message>();

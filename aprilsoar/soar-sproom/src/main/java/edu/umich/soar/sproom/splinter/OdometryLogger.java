@@ -9,7 +9,7 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.OdometryPoint;
 
-final class OdometryLogger {
+class OdometryLogger {
 	private static final Log logger = LogFactory.getLog(OdometryLogger.class);
 	
 	private final FileWriter datawriter;
