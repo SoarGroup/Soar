@@ -10,6 +10,7 @@ import lcmtypes.pose_t;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 
@@ -22,13 +23,15 @@ class OutputLink {
 	private final Agent agent;
 	private final Map<Integer, OutputLinkCommand> seenCommands = new HashMap<Integer, OutputLinkCommand>();
 	private DriveCommand driveCommand;
+	private final Adaptable app;
 	
-	static OutputLink newInstance(Agent agent) {
-		return new OutputLink(agent);
+	static OutputLink newInstance(Adaptable app) {
+		return new OutputLink(app);
 	}
 	
-	private OutputLink(Agent agent) {
-		this.agent = agent;
+	private OutputLink(Adaptable app) {
+		this.app = app;
+		this.agent = (Agent)app.getAdapter(Agent.class);
 	}
 	
 	class OutputLinkActions {
@@ -77,7 +80,7 @@ class OutputLink {
 		// update current commands
 		OutputLinkActions actions = new OutputLinkActions();
 		for (OutputLinkCommand command : seenCommands.values()) {
-			command.update(pose);
+			command.update(pose, app);
 			
 			if (command instanceof DriveCommand) {
 				// If there was no drive command or if it is a different drive command

@@ -1,5 +1,6 @@
 package edu.umich.soar.sproom.command;
 
+import edu.umich.soar.sproom.Adaptable;
 import lcmtypes.pose_t;
 import sml.Identifier;
 
@@ -18,8 +19,7 @@ class InvalidCommand extends OutputLinkCommand {
 	}
 	
 	@Override
-	public boolean update(pose_t pose) {
-		return true;
+	public void update(pose_t pose, Adaptable app) {
 	}
 
 	@Override

@@ -6,6 +6,7 @@ package edu.umich.soar.sproom.command;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 
@@ -28,7 +29,7 @@ public class StopCommand extends OutputLinkCommand implements DriveCommand {
 
 	private final Identifier wme;
 	private final DifferentialDriveCommand ddc = DifferentialDriveCommand.newVelocityCommand(0, 0);
-	private CommandStatus status;
+	private CommandStatus status = CommandStatus.accepted;
 	
 	StopCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
@@ -53,27 +54,26 @@ public class StopCommand extends OutputLinkCommand implements DriveCommand {
 	}
 
 	@Override
-	public boolean update(pose_t pose) {
+	public void update(pose_t pose, Adaptable app) {
 		if (status != CommandStatus.complete) {
 			if (Double.compare(LinAlg.magnitude(pose.vel), TOLERANCE) < 0) {
 				status = CommandStatus.complete;
 				status.addStatus(wme);
-				return true; // complete
+				return;
 			}
 			
 			if (status != CommandStatus.executing) {
 				status = CommandStatus.executing;
 				status.addStatus(wme);
 			}
-			return false; // executing
 		}
-		return true; // complete
 	}
 	
 	@Override
 	public void interrupt() {
-		if (status != CommandStatus.complete) {
-			CommandStatus.interrupted.addStatus(wme);
+		if (!status.isTerminated()) {
+			status = CommandStatus.interrupted;
+			status.addStatus(wme);
 		}
 	}
 

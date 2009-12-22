@@ -8,6 +8,7 @@ import lcmtypes.pose_t;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 
@@ -28,7 +29,7 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
-	private CommandStatus status;
+	private CommandStatus status = CommandStatus.accepted;
 
 	SetVelocityCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
@@ -89,20 +90,18 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 	}
 	
 	@Override
-	public boolean update(pose_t pose) {
-		if (status != CommandStatus.complete) {
+	public void update(pose_t pose, Adaptable app) {
+		if (!status.isTerminated()) {
 			if (status != CommandStatus.executing) {
 				status = CommandStatus.executing;
 				status.addStatus(wme);
 			}			
-			return false; // not done
 		}
-		return true;
 	}
 	
 	@Override
 	public void interrupt() {
-		if (status != CommandStatus.complete) {
+		if (!status.isTerminated()) {
 			status = CommandStatus.complete;
 			status.addStatus(wme);
 		}

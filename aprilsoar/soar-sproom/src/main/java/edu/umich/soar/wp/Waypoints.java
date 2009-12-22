@@ -1,33 +1,37 @@
 package edu.umich.soar.wp;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
-import lcmtypes.node_t;
+import lcmtypes.pose_t;
 
-public class Waypoints {
-	private Map<String, node_t> all = new HashMap<String, node_t>();
-	private Map<String, node_t> enabled = new HashMap<String, node_t>();
+public class Waypoints implements Iterable<Waypoint> {
+	private Map<String, Waypoint> all = new HashMap<String, Waypoint>();
+	private Set<Waypoint> enabled = new CopyOnWriteArraySet<Waypoint>();
 
-	public synchronized void createWaypoint(String id, node_t node) {
-		if (id == null || node == null) {
+	public synchronized void createWaypoint(String id, String type, pose_t pose) {
+		if (id == null || pose == null) {
 			throw new NullPointerException();
 		}
-		all.put(id, node);
-		enabled.put(id, node);
+		Waypoint waypoint = new Waypoint(id, type, pose);
+		
+		all.put(waypoint.getId(), waypoint);
+		enabled.add(waypoint);
 	}
 	
 	public synchronized boolean enableWaypoint(String id) {
-		node_t waypoint = all.get(id);
+		Waypoint waypoint = all.get(id);
 		if (waypoint != null) {
-			enabled.put(id, all.get(id));
-			return true;
+			return enabled.add(waypoint);
 		}
 		return false;
 	}
 	
 	public synchronized boolean disableWaypoint(String id) {
-		return enabled.remove(id) != null;
+		return enabled.remove(id);
 	}
 	
 	public synchronized boolean removeWaypoint(String id) {
@@ -38,5 +42,10 @@ public class Waypoints {
 	public synchronized void clearWaypoints() {
 		all.clear();
 		enabled.clear();
+	}
+	
+	@Override
+	public Iterator<Waypoint> iterator() {
+		return enabled.iterator();
 	}
 }

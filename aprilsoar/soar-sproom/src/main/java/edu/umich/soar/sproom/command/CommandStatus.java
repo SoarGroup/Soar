@@ -25,4 +25,8 @@ public enum CommandStatus {
 		command.CreateStringWME("message", message);
 		return command.CreateStringWME(STATUS, this.toString());
 	}
+	
+	public boolean isTerminated() {
+		return this.equals(complete) || this.equals(interrupted) || this.equals(error);
+	}
 }

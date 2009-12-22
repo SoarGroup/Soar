@@ -9,6 +9,7 @@ import sml.Identifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 
@@ -47,12 +48,11 @@ public class EStopCommand extends OutputLinkCommand implements DriveCommand {
 	}
 	
 	@Override
-	public boolean update(pose_t pose) {
+	public void update(pose_t pose, Adaptable app) {
 		if (!complete) {
 			CommandStatus.complete.addStatus(wme);
 			complete = true;
 		}
-		return true; // Done
 	}
 
 	@Override

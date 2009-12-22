@@ -12,17 +12,19 @@ import lcmtypes.pose_t;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.command.OutputLink.OutputLinkActions;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveListener;
+import edu.umich.soar.wp.Waypoints;
 
 import sml.Agent;
 import sml.Kernel;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
 
-class SoarInterface implements SoarControlListener {
+class SoarInterface implements SoarControlListener, Adaptable {
 	private static final Log logger = LogFactory.getLog(SoarInterface.class);
 
 	private final HzChecker hzChecker = HzChecker.newInstance(SoarInterface.class.toString());
@@ -34,9 +36,13 @@ class SoarInterface implements SoarControlListener {
 	private DifferentialDriveCommand ddcPrev;
 	private OutputLink ol;
 	private final Pose pose;
+	private final Waypoints waypoints;
+	private final Comm comm;
 	
-	SoarInterface(Pose pose) {
+	SoarInterface(Pose pose, Waypoints waypoints, Comm comm) {
 		this.pose = pose;
+		this.waypoints = waypoints;
+		this.comm = comm;
 		
 		kernel = Kernel.CreateKernelInNewThread();
 		if (kernel.HadError()) {
@@ -54,7 +60,7 @@ class SoarInterface implements SoarControlListener {
 		
 		agent.SetBlinkIfNoChange(false);
 		
-		ol = OutputLink.newInstance(agent);
+		ol = OutputLink.newInstance(this);
 		
 		// load productions
 		String productions = CommandConfig.CONFIG.getProductions();
@@ -155,5 +161,17 @@ class SoarInterface implements SoarControlListener {
 				}
 			}
 		}
+	}
+
+	@Override
+	public Object getAdapter(Class<?> klass) {
+		if (klass == Agent.class) {
+			return agent;
+		} else if (klass == Waypoints.class) {
+			return waypoints;
+		} else if (klass == Comm.class) {
+			return comm;
+		}
+		return null;
 	}
 }

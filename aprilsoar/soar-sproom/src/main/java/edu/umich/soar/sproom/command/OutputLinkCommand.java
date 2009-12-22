@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.umich.soar.sproom.Adaptable;
+
 import lcmtypes.pose_t;
 
 import sml.Identifier;
@@ -21,6 +23,17 @@ abstract class OutputLinkCommand {
 		commands.put(SetVelocityCommand.NAME, SetVelocityCommand.class);
 		commands.put(SetHeadingCommand.NAME, SetHeadingCommand.class);
 		commands.put(SetHeadingLinearCommand.NAME, SetHeadingLinearCommand.class);
+		
+		commands.put(ConfigureCommand.NAME, ConfigureCommand.class);
+
+		commands.put(AddWaypointCommand.NAME, AddWaypointCommand.class);
+		commands.put(EnableWaypointCommand.NAME, EnableWaypointCommand.class);
+		commands.put(DisableWaypointCommand.NAME, DisableWaypointCommand.class);
+		commands.put(RemoveWaypointCommand.NAME, RemoveWaypointCommand.class);
+
+		commands.put(SendMessageCommand.NAME, SendMessageCommand.class);
+		commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.class);
+		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.class);
 	}
 	
 	static OutputLinkCommand valueOf(Identifier wme) {
@@ -69,7 +82,7 @@ abstract class OutputLinkCommand {
 	
 	public abstract String getName();
 	public abstract OutputLinkCommand accept();
-	public abstract boolean update(pose_t pose);
+	public abstract void update(pose_t pose, Adaptable app);
 	
 	public Integer getTimeTag() {
 		return tt;

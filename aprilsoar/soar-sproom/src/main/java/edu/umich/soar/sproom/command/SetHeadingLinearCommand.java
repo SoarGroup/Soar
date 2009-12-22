@@ -6,6 +6,7 @@ package edu.umich.soar.sproom.command;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 
@@ -29,7 +30,7 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
-	private CommandStatus status;
+	private CommandStatus status = CommandStatus.accepted;
 	private double targetYaw;
 	
 	SetHeadingLinearCommand(Identifier wme) {
@@ -76,8 +77,8 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 	}
 
 	@Override
-	public boolean update(pose_t pose) {
-		if (status != CommandStatus.complete) {
+	public void update(pose_t pose, Adaptable app) {
+		if (!status.isTerminated()) {
 			double currentYaw = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
 			double difference = targetYaw - currentYaw;
 			difference = Math.abs(difference);
@@ -85,22 +86,21 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 			if (Double.compare(difference, TOLERANCE) < 0) {
 				status = CommandStatus.complete;
 				status.addStatus(wme);
-				return true; // complete
+				return;
 			}
 			
 			if (status != CommandStatus.executing) {
 				status = CommandStatus.executing;
 				status.addStatus(wme);
 			}
-			return false; // executing
 		}
-		return true; // complete
 	}
 
 	@Override
 	public void interrupt() {
-		if (status != CommandStatus.complete) {
-			CommandStatus.interrupted.addStatus(wme);
+		if (!status.isTerminated()) {
+			status = CommandStatus.interrupted;
+			status.addStatus(wme);
 		}
 	}
 }
