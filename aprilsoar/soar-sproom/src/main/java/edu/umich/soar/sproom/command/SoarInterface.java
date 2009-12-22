@@ -14,6 +14,8 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.command.OutputLink.OutputLinkActions;
+import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
+import edu.umich.soar.sproom.drive.DriveListener;
 
 import sml.Agent;
 import sml.Kernel;

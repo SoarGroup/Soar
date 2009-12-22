@@ -16,7 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import edu.umich.soar.sproom.SharedNames;
 
 
-class Pose implements LCMSubscriber {
+public class Pose implements LCMSubscriber {
 	private static final Log logger = LogFactory.getLog(Pose.class);
 
 	private final LCM lcm = LCM.getSingleton();
@@ -27,7 +27,7 @@ class Pose implements LCMSubscriber {
 		lcm.subscribe(SharedNames.POSE_CHANNEL, this);
 	}
 	
-	pose_t getPose() {
+	public pose_t getPose() {
 		pose_t temp = pose; // grab a reference once
 		if (temp != null && temp.utime > elaboratedPose.utime) {
 			// elaborate

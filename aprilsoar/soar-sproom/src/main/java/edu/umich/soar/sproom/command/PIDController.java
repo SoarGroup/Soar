@@ -7,7 +7,7 @@ import org.apache.commons.logging.LogFactory;
 
 import jmat.MathUtil;
 
-class PIDController {
+public class PIDController {
 	private static final Log logger = LogFactory.getLog(PIDController.class);
 	
 	private final double[] pid = new double[] { 0, 0, 0 };
@@ -16,28 +16,28 @@ class PIDController {
 	private double previousTarget;
 	private final String name;
 	
-	PIDController(String name) {
+	public PIDController(String name) {
 		this.name = name;
 	}
 
-	String getName() {
+	public String getName() {
 		return name;
 	}
 	
-	void setGains(double[] pid) {
+	public void setGains(double[] pid) {
 		System.arraycopy(pid, 0, this.pid, 0, pid.length);
 		logger.info("New gains for " + name + ": " + Arrays.toString(this.pid));
 	}
 	
-	void clearIntegral() {
+	public void clearIntegral() {
 		integral = 0;
 	}
 	
-	double computeMod2Pi(double dt, double target, double actual) {
+	public double computeMod2Pi(double dt, double target, double actual) {
 		return computeInternal(dt, target, actual, true);
 	}
 	
-	double compute(double dt, double target, double actual) {
+	public double compute(double dt, double target, double actual) {
 		return computeInternal(dt, target, actual, false);
 	}
 	

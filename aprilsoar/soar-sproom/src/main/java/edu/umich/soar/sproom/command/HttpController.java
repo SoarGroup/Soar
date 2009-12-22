@@ -24,6 +24,11 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
+import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
+import edu.umich.soar.sproom.drive.Drive2;
+import edu.umich.soar.sproom.drive.Drive3;
+import edu.umich.soar.sproom.drive.DriveListener;
+
 class HttpController {
 	private static final Log logger = LogFactory.getLog(HttpController.class);
 	private static final int HTTP_PORT = 8000;

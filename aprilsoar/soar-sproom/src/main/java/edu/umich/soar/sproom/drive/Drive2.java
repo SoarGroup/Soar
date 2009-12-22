@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.drive;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -10,10 +10,14 @@ import lcmtypes.pose_t;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-class Drive2 {
+import edu.umich.soar.sproom.command.CommandConfig;
+import edu.umich.soar.sproom.command.CommandConfigListener;
+import edu.umich.soar.sproom.command.PIDController;
+
+public class Drive2 {
 	private static final Log logger = LogFactory.getLog(Drive2.class);
-	static final String ANGULAR_PID_NAME = "angular velocity";
-	static final String LINEAR_PID_NAME = "linear velocity";
+	public static final String ANGULAR_PID_NAME = "angular velocity";
+	public static final String LINEAR_PID_NAME = "linear velocity";
 	
 	static Drive2 newInstance() {
 		return new Drive2();

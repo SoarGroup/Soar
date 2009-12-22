@@ -6,7 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-enum CommandConfig {
+import edu.umich.soar.sproom.drive.Drive2;
+import edu.umich.soar.sproom.drive.Drive3;
+
+public enum CommandConfig {
 	CONFIG;
 	
 	private String productions;

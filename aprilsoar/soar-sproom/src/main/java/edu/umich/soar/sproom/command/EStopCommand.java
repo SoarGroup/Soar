@@ -9,6 +9,9 @@ import sml.Identifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
+import edu.umich.soar.sproom.drive.DriveCommand;
+
 /**
  * @author voigtjr
  *

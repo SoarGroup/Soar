@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.drive;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -12,13 +12,17 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.HzChecker;
-import edu.umich.soar.sproom.command.DifferentialDriveCommand.CommandType;
+import edu.umich.soar.sproom.command.CommandConfig;
+import edu.umich.soar.sproom.command.CommandConfigListener;
+import edu.umich.soar.sproom.command.PIDController;
+import edu.umich.soar.sproom.command.Pose;
+import edu.umich.soar.sproom.drive.DifferentialDriveCommand.CommandType;
 
-class Drive3 implements DriveListener {
+public class Drive3 implements DriveListener {
 	private static final Log logger = LogFactory.getLog(Drive3.class);
-	static final String HEADING_PID_NAME = "heading";
+	public static final String HEADING_PID_NAME = "heading";
 	
-	static Drive3 newInstance(Pose poseProvider) {
+	public static Drive3 newInstance(Pose poseProvider) {
 		return new Drive3(poseProvider);
 	}
 

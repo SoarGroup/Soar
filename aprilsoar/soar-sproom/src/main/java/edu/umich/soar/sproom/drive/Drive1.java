@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.drive;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import lcm.lcm.LCM;
 import lcmtypes.differential_drive_command_t;
 import edu.umich.soar.sproom.SharedNames;
+import edu.umich.soar.sproom.command.Command;
 
 class Drive1 {
 	private static final Log logger = LogFactory.getLog(Drive1.class);
