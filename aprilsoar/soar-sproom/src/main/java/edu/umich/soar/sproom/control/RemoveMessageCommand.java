@@ -13,7 +13,7 @@ import sml.Identifier;
  *
  * Removes a message from the received message list.
  */
-final public class RemoveMessageCommand extends NoDDCAdapter implements Command {
+public class RemoveMessageCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(RemoveMessageCommand.class);
 	static final String NAME = "remove-message";
 

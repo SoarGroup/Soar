@@ -13,7 +13,7 @@ import sml.Identifier;
  *
  * Removes all messages from message list.
  */
-final public class ClearMessagesCommand extends NoDDCAdapter implements Command {
+public class ClearMessagesCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(ClearMessagesCommand.class);
 	static final String NAME = "clear-messages";
 

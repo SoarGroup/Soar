@@ -56,14 +56,33 @@ class HttpController {
 		logger.info("http server running on port " + HTTP_PORT);
 	}
 	
-	private final List<HttpControllerEventHandler> handlers = new CopyOnWriteArrayList<HttpControllerEventHandler>();
-	public void addEventHandler(HttpControllerEventHandler handler) {
-		handlers.add(handler);
+	private final List<DriveListener> driveListeners = new CopyOnWriteArrayList<DriveListener>();
+	void addDriveListener(DriveListener driveListener) {
+		driveListeners.add(driveListener);
 	}
 	
-	private void fireEvent(HttpControllerEvent event) {
-		for (HttpControllerEventHandler handler : handlers) {
-			handler.handleEvent(event);
+	boolean removeDriveListener(DriveListener driveListener) {
+		return driveListeners.remove(driveListener);
+	}
+	
+	private void fireDriveEvent(DifferentialDriveCommand ddc) {
+		for (DriveListener listener : driveListeners) {
+			listener.handleDriveEvent(ddc);
+		}
+	}
+	
+	private final List<SoarControlListener> soarListeners = new CopyOnWriteArrayList<SoarControlListener>();
+	void addSoarControlListener(SoarControlListener listener) {
+		soarListeners.add(listener);
+	}
+	
+	boolean removeSoarControlListener(DriveListener driveListener) {
+		return soarListeners.remove(driveListener);
+	}
+	
+	private void fireToggleRunStateEvent() {
+		for (SoarControlListener listener : soarListeners) {
+			listener.toggleRunState();
 		}
 	}
 	
@@ -196,8 +215,8 @@ class HttpController {
 					iter.remove();
 				}
 			}
-
-			fireEvent(new HttpControllerEvent.MessageChanged(tokens));
+// TODO
+//			fireEvent(new HttpControllerEvent.MessageChanged(tokens));
 			
 		    StringBuffer response = new StringBuffer();
 		    if (tokens.size() > 0) {
@@ -223,7 +242,7 @@ class HttpController {
 				double yaw = Math.toRadians(Double.parseDouble(headingString));
 				yaw = MathUtil.mod2pi(yaw);
 				DifferentialDriveCommand ddc = DifferentialDriveCommand.newHeadingCommand(yaw);
-				fireEvent(new HttpControllerEvent.DDCChanged(ddc));
+				fireDriveEvent(ddc);
 				logger.debug(ddc);
 				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
@@ -242,7 +261,7 @@ class HttpController {
 			try {
 				double angvel = Math.toRadians(Double.parseDouble(angvelString));
 				DifferentialDriveCommand ddc = DifferentialDriveCommand.newAngularVelocityCommand(angvel);
-				fireEvent(new HttpControllerEvent.DDCChanged(ddc));
+				fireDriveEvent(ddc);
 				logger.debug(ddc);
 				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
@@ -261,7 +280,7 @@ class HttpController {
 			try {
 				double linvel = Double.parseDouble(linvelString);
 				DifferentialDriveCommand ddc = DifferentialDriveCommand.newLinearVelocityCommand(linvel);
-				fireEvent(new HttpControllerEvent.DDCChanged(ddc));
+				fireDriveEvent(ddc);
 				logger.debug(ddc);
 				sendFile(xchg, INDEX_HTML);
 			} catch (NumberFormatException e) {
@@ -272,18 +291,20 @@ class HttpController {
 		
 		private void actionEstop(HttpExchange xchg) throws IOException {
 			DifferentialDriveCommand ddc = DifferentialDriveCommand.newEStopCommand();
-			fireEvent(new HttpControllerEvent.DDCChanged(ddc));
+			fireDriveEvent(ddc);
+			logger.debug(ddc);
 			sendFile(xchg, INDEX_HTML);
 		}
 
 		private void actionStop(HttpExchange xchg) throws IOException {
 			DifferentialDriveCommand ddc = DifferentialDriveCommand.newVelocityCommand(0, 0);
-			fireEvent(new HttpControllerEvent.DDCChanged(ddc));
+			fireDriveEvent(ddc);
+			logger.debug(ddc);
 			sendFile(xchg, INDEX_HTML);
 		}
 
 		private void actionSoar(HttpExchange xchg) throws IOException {
-			fireEvent(new HttpControllerEvent.SoarChanged());
+			fireToggleRunStateEvent();
 			sendFile(xchg, INDEX_HTML);
 		}
 
@@ -313,19 +334,16 @@ class HttpController {
 		
 		private void actionAGains(HttpExchange xchg, Map<String, String> properties) throws IOException {
 			CommandConfig.CONFIG.setGains(Drive2.ANGULAR_PID_NAME, getPIDValues(xchg, properties));
-			fireEvent(new HttpControllerEvent.GainsChanged());
 			sendFile(xchg, INDEX_HTML);
 		}
 		
 		private void actionLGains(HttpExchange xchg, Map<String, String> properties) throws IOException {
 			CommandConfig.CONFIG.setGains(Drive2.LINEAR_PID_NAME, getPIDValues(xchg, properties));
-			fireEvent(new HttpControllerEvent.GainsChanged());
 			sendFile(xchg, INDEX_HTML);
 		}
 		
 		private void actionHGains(HttpExchange xchg, Map<String, String> properties) throws IOException {
 			CommandConfig.CONFIG.setGains(Drive3.HEADING_PID_NAME, getPIDValues(xchg, properties));
-			fireEvent(new HttpControllerEvent.GainsChanged());
 			sendFile(xchg, INDEX_HTML);
 		}
 	}

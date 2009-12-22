@@ -13,7 +13,7 @@ import sml.Identifier;
  *
  * Remove waypoint from waypoint system.
  */
-final public class RemoveWaypointCommand extends NoDDCAdapter implements Command {
+public class RemoveWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(RemoveWaypointCommand.class);
 	static final String NAME = "remove-waypoint";
 

@@ -50,7 +50,7 @@ class Pose implements LCMSubscriber {
 			}
 			elaboratedPose = temp;
 		}
-		return elaboratedPose;
+		return elaboratedPose.copy();
 	}
 
 	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {

@@ -18,7 +18,7 @@ import sml.WMElement;
  *
  * Broadcasts a message to all listeners.
  */
-final public class SendMessageCommand extends NoDDCAdapter implements Command {
+public class SendMessageCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(SendMessageCommand.class);
 	static final String NAME = "send-message";
 

@@ -15,7 +15,7 @@ import sml.Identifier;
  *
  * Configure robot.
  */
-final public class ConfigureCommand extends NoDDCAdapter implements Command {
+public class ConfigureCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(ConfigureCommand.class);
 	static final String NAME = "configure";
 

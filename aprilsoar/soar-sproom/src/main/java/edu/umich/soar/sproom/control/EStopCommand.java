@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * Emergency stop.
  */
-final public class EStopCommand extends DDCCommand implements Command {
+public class EStopCommand extends DDCCommand implements Command {
 	private static final Log logger = LogFactory.getLog(EStopCommand.class);
 	static final String NAME = "estop";
 

@@ -13,7 +13,7 @@ import sml.Identifier;
  *
  * Command motors directly with throttles. 
  */
-final public class MotorCommand extends DDCCommand implements Command {
+public class MotorCommand extends DDCCommand implements Command {
 	private static final Log logger = LogFactory.getLog(MotorCommand.class);
 	static final String NAME = "motor";
 

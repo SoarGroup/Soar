@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * Removes all messages from message list.
  */
-final public class GetObjectCommand extends NoDDCAdapter implements Command {
+public class GetObjectCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(GetObjectCommand.class);
 	static final String NAME = "get-object";
 

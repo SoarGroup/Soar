@@ -15,7 +15,7 @@ import sml.Identifier;
  * 
  * Returns executing. Not interruptible. Creates DDC.
  */
-final public class SetAngularVelocityCommand extends DDCCommand implements Command {
+public class SetAngularVelocityCommand extends DDCCommand implements Command {
 	private static final Log logger = LogFactory.getLog(SetAngularVelocityCommand.class);
 	private static final String ANGVEL = "angular-velocity";
 	static final String NAME = "set-angular-velocity";

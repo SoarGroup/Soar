@@ -15,7 +15,7 @@ import sml.Identifier;
  * 
  * Returns executing. Not interruptible. Creates DDC.
  */
-final public class SetLinearVelocityCommand extends DDCCommand implements Command {
+public class SetLinearVelocityCommand extends DDCCommand implements Command {
 	private static final Log logger = LogFactory.getLog(SetLinearVelocityCommand.class);
 	private static final String LINVEL = "linear-velocity";
 	static final String NAME = "set-linear-velocity";

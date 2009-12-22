@@ -16,7 +16,7 @@ import sml.WMElement;
  *
  * Add a waypoint to the waypoint system.
  */
-final public class AddWaypointCommand extends NoDDCAdapter implements Command {
+public class AddWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(AddWaypointCommand.class);
 	static final String NAME = "add-waypoint";
 	

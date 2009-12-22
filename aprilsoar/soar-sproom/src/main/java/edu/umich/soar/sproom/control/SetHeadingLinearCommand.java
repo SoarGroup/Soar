@@ -16,7 +16,7 @@ import sml.Identifier;
  * Set target heading and speed. Note, does not "complete" like set-heading (without
  * linear velocity) does.
  */
-final public class SetHeadingLinearCommand extends DDCCommand implements Command {
+public class SetHeadingLinearCommand extends DDCCommand implements Command {
 	private static final Log logger = LogFactory.getLog(SetHeadingLinearCommand.class);
 	private static final String YAW = "yaw";
 	private static final String LINVEL = "linear-velocity";

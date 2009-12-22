@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * Enable waypoint.
  */
-final public class EnableWaypointCommand extends NoDDCAdapter implements Command {
+public class EnableWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(EnableWaypointCommand.class);
 	static final String NAME = "enable-waypoint";
 

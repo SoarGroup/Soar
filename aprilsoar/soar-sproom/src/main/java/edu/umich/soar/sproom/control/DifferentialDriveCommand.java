@@ -1,6 +1,6 @@
 package edu.umich.soar.sproom.control;
 
-final public class DifferentialDriveCommand {
+public class DifferentialDriveCommand {
 	private static final DifferentialDriveCommand ESTOP = new DifferentialDriveCommand();
 
 	public static DifferentialDriveCommand newEStopCommand() {

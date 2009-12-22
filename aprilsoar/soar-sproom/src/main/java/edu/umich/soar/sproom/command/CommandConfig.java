@@ -1,14 +1,17 @@
 package edu.umich.soar.sproom.command;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 enum CommandConfig {
 	CONFIG;
 	
 	private String productions;
 	
+	// TODO defaults
 	private double limitLinVelMax;
 	private double limitLinVelMin;
 	private double limitAngVelMax;
@@ -19,29 +22,105 @@ enum CommandConfig {
 	private double geomHeight;
 	private double geomWheelbase;
 	
-	enum LengthUnit { METERS, FEET, MILES };
-	private LengthUnit lengthUnits;
+	enum LengthUnit { 
+		METERS(1), FEET(0.3048), MILES(1609.344), YARDS(0.9144), INCH(0.0254);
+		
+		private final double meters;
+		
+		LengthUnit(double meters) {
+			this.meters = meters;
+		}
+		
+		double fromView(double view) {
+			return view * meters;
+		}
+		
+		double toView(double system) {
+			return system / meters;
+		}
+	};
+	private LengthUnit lengthUnits = LengthUnit.METERS;
+	
+	enum SpeedUnit { 
+		METERS_PER_SEC(1), FEET_PER_SEC(0.3048), MILES_PER_HOUR(0.44704);
+		
+		private final double metersPerSec;
+		
+		SpeedUnit(double metersPerSec) {
+			this.metersPerSec = metersPerSec;
+		}
+		
+		double fromView(double view) {
+			return view * metersPerSec;
+		}
+		
+		double toView(double system) {
+			return system / metersPerSec;
+		}
+	};
+	private SpeedUnit speedUnits = SpeedUnit.METERS_PER_SEC;
 	
 	enum AngleUnit { RADIANS, DEGREES };
-	private AngleUnit angleUnits;
+	private AngleUnit angleUnits = AngleUnit.DEGREES;
 
 	enum AngleResolution { INT, FLOAT };
-	private AngleUnit angleResolution;
+	private AngleResolution angleResolution = AngleResolution.INT;
 
 	private final double[] poseTranslation = new double[] { 0, 0, 0 };
 	private final ConcurrentMap<String, double[]> pidGains = new ConcurrentHashMap<String, double[]>(); 
+	private final List<CommandConfigListener> listeners = new CopyOnWriteArrayList<CommandConfigListener>();
 
 	CommandConfig() {
 		setGains(Drive3.HEADING_PID_NAME, new double[] { 1, 0, 0.125 });
 		setGains(Drive2.ANGULAR_PID_NAME, new double[] { 0.0238, 0, 0.0025 });
 		setGains(Drive2.LINEAR_PID_NAME, new double[] { 0.12,  0, 0.025 });
 	}
+	
+	public double lengthFromView(double view) {
+		return lengthUnits.fromView(view);
+	}
+	
+	public double lengthToView(double system) {
+		return lengthUnits.toView(system);
+	}
+	
+	public double angleFromView(double view) {
+		return angleUnits == AngleUnit.RADIANS ? view : Math.toRadians(view);
+	}
+	
+	public double angleToView(double system) {
+		return angleUnits == AngleUnit.RADIANS ? system : Math.toDegrees(system);
+	}
+	
+	public double speedFromView(double view) {
+		return speedUnits == SpeedUnit.METERS_PER_SEC ? view : Math.toRadians(view);
+	}
+	
+	public double speedToView(double system) {
+		return speedUnits == SpeedUnit.METERS_PER_SEC ? system : Math.toDegrees(system);
+	}
+	
+	public void addListener(CommandConfigListener listener) {
+		listeners.add(listener);
+	}
+	
+	public boolean removeListener(CommandConfigListener listener) {
+		return listeners.remove(listener);
+	}
+	
+	private void fireConfigChanged() {
+		for (CommandConfigListener listener : listeners) {
+			listener.configChanged();
+		}
+	}
+	
 	public String getProductions() {
 		return productions;
 	}
 	
 	public void setProductions(String productions) {
 		this.productions = productions;
+		fireConfigChanged();
 	}
 	
 	public double getLimitLinVelMax() {
@@ -50,6 +129,7 @@ enum CommandConfig {
 
 	public void setLimitLinVelMax(double limitLinVelMax) {
 		this.limitLinVelMax = limitLinVelMax;
+		fireConfigChanged();
 	}
 
 	public double getLimitLinVelMin() {
@@ -58,6 +138,7 @@ enum CommandConfig {
 
 	public void setLimitLinVelMin(double limitLinVelMin) {
 		this.limitLinVelMin = limitLinVelMin;
+		fireConfigChanged();
 	}
 
 	public double getLimitAngVelMax() {
@@ -66,6 +147,7 @@ enum CommandConfig {
 
 	public void setLimitAngVelMax(double limitAngVelMax) {
 		this.limitAngVelMax = limitAngVelMax;
+		fireConfigChanged();
 	}
 
 	public double getLimitAngVelMin() {
@@ -74,6 +156,7 @@ enum CommandConfig {
 
 	public void setLimitAngVelMin(double limitAngVelMin) {
 		this.limitAngVelMin = limitAngVelMin;
+		fireConfigChanged();
 	}
 
 	public double getGeomLength() {
@@ -82,6 +165,7 @@ enum CommandConfig {
 
 	public void setGeomLength(double geomLength) {
 		this.geomLength = geomLength;
+		fireConfigChanged();
 	}
 
 	public double getGeomWidth() {
@@ -90,6 +174,7 @@ enum CommandConfig {
 
 	public void setGeomWidth(double geomWidth) {
 		this.geomWidth = geomWidth;
+		fireConfigChanged();
 	}
 
 	public double getGeomHeight() {
@@ -98,6 +183,7 @@ enum CommandConfig {
 
 	public void setGeomHeight(double geomHeight) {
 		this.geomHeight = geomHeight;
+		fireConfigChanged();
 	}
 
 	public double getGeomWheelbase() {
@@ -106,6 +192,7 @@ enum CommandConfig {
 
 	public void setGeomWheelbase(double geomWheelbase) {
 		this.geomWheelbase = geomWheelbase;
+		fireConfigChanged();
 	}
 
 	public LengthUnit getLengthUnits() {
@@ -114,6 +201,7 @@ enum CommandConfig {
 
 	public void setLengthUnits(LengthUnit lengthUnits) {
 		this.lengthUnits = lengthUnits;
+		fireConfigChanged();
 	}
 
 	public AngleUnit getAngleUnits() {
@@ -122,20 +210,32 @@ enum CommandConfig {
 
 	public void setAngleUnits(AngleUnit angleUnits) {
 		this.angleUnits = angleUnits;
+		fireConfigChanged();
 	}
 
-	public AngleUnit getAngleResolution() {
+	public SpeedUnit getSpeedUnits() {
+		return speedUnits;
+	}
+
+	public void setSpeedUnits(SpeedUnit speedUnits) {
+		this.speedUnits = speedUnits;
+		fireConfigChanged();
+	}
+
+	public AngleResolution getAngleResolution() {
 		return angleResolution;
 	}
 
-	public void setAngleResolution(AngleUnit angleResolution) {
+	public void setAngleResolution(AngleResolution angleResolution) {
 		this.angleResolution = angleResolution;
+		fireConfigChanged();
 	}
 
 	public void setPoseTranslation(double[] poseTranslation) {
 		synchronized(this.poseTranslation) {
 			System.arraycopy(poseTranslation, 0, this.poseTranslation, 0, this.poseTranslation.length);
 		}
+		fireConfigChanged();
 	}
 
 	public double[] getPoseTranslation() {
@@ -147,9 +247,11 @@ enum CommandConfig {
 	public void setGains(String name, double[] pid) {
 		if (pid == null) {
 			pidGains.remove(name);
+			fireConfigChanged();
 			return;
 		}
 		pidGains.put(name, pid);
+		fireConfigChanged();
 	}
 	
 	public double[] getGains(String name) {

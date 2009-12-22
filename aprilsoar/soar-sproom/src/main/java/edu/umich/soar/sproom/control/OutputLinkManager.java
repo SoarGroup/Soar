@@ -14,7 +14,7 @@ import sml.Identifier;
  * @author voigtjr Soar output-link management. Creates input for splinter and
  *         other parts of the system.
  */
-final public class OutputLinkManager {
+public class OutputLinkManager {
 	private static final Log logger = LogFactory.getLog(OutputLinkManager.class);
 
 	private final Agent agent;

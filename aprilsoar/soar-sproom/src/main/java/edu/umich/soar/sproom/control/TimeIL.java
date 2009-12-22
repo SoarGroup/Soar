@@ -5,7 +5,7 @@ import sml.IntElement;
 import sml.Kernel;
 import sml.smlSystemEventId;
 
-final public class TimeIL implements Kernel.SystemEventInterface {
+public class TimeIL implements Kernel.SystemEventInterface {
 	private final static long NANO_PER_SEC = 1000000000L;
 
 	private final Identifier time;

@@ -18,7 +18,7 @@ import sml.Identifier;
  * 
  * Returns accepted. Not interruptible. Creates DDC.
  */
-final public class StopCommand extends DDCCommand implements Command {
+public class StopCommand extends DDCCommand implements Command {
 	private static final Log logger = LogFactory.getLog(StopCommand.class);
 	private static final double TOLERANCE = 0.01; // meters per second
 	static final String NAME = "stop";

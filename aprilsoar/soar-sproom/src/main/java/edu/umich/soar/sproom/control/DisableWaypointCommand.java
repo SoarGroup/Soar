@@ -13,7 +13,7 @@ import org.apache.commons.logging.LogFactory;
  *
  * Disables a waypoint.
  */
-final public class DisableWaypointCommand extends NoDDCAdapter implements Command {
+public class DisableWaypointCommand extends NoDDCAdapter implements Command {
 	private static final Log logger = LogFactory.getLog(DisableWaypointCommand.class);
 	static final String NAME = "disable-waypoint";
 	

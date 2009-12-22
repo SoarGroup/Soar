@@ -15,7 +15,7 @@ import sml.Identifier;
  *
  * Set target heading to rotate to.
  */
-final public class SetHeadingCommand extends DDCCommand implements Command {
+public class SetHeadingCommand extends DDCCommand implements Command {
 	private static final Log logger = LogFactory.getLog(SetHeadingCommand.class);
 	private static final String YAW = "yaw";
 	private static final double TOLERANCE = Math.toRadians(3);

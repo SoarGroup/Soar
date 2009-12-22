@@ -15,20 +15,30 @@ class Drive2 {
 	static final String ANGULAR_PID_NAME = "angular velocity";
 	static final String LINEAR_PID_NAME = "linear velocity";
 	
+	static Drive2 newInstance() {
+		return new Drive2();
+	}
+	
 	private final AtomicBoolean pidEnabled = new AtomicBoolean(false);
 	private double av;
 	private double lv;
 	private final PIDController aController = new PIDController(ANGULAR_PID_NAME);
 	private final PIDController lController = new PIDController(LINEAR_PID_NAME);
-	private final Drive1 drive1;
+	private final Drive1 drive1 = new Drive1();
 
-	Drive2(Drive1 drive1) {
-		this.drive1 = drive1;
+	private Drive2() {
 		setMotors(0, 0);
+		
 		updateGains();
+		CommandConfig.CONFIG.addListener(new CommandConfigListener() {
+			@Override
+			public void configChanged() {
+				updateGains();
+			}
+		});
 	}
 	
-	void updateGains() {
+	private void updateGains() {
 		{
 			double[] apid = CommandConfig.CONFIG.getGains(aController.getName());
 			aController.setGains(apid);
