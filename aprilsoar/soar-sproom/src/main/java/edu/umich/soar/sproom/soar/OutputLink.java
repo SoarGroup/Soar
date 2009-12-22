@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import java.util.ArrayList;
 import java.util.HashMap;

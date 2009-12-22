@@ -1,11 +1,12 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import lcmtypes.pose_t;
 
 import edu.umich.soar.sproom.Adaptable;
+import edu.umich.soar.sproom.command.Comm;
 
 import sml.Identifier;
 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
+import edu.umich.soar.sproom.command.Comm;
 
 import sml.Identifier;
 import sml.WMElement;

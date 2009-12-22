@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import lcmtypes.pose_t;
 import sml.Identifier;

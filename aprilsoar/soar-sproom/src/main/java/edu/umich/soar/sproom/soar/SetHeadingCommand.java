@@ -1,12 +1,13 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
+import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 

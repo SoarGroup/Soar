@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

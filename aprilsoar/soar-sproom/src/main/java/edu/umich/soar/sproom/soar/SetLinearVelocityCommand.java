@@ -1,39 +1,37 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
+
+import lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
+import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
-
-import jmat.LinAlg;
-import lcmtypes.pose_t;
 
 import sml.Identifier;
 
 /**
  * @author voigtjr
  *
- * Set target heading and speed. Note, does not "complete" like set-heading (without
- * linear velocity) does.
+ * Set linear and angular velocities.
+ * 
+ * Returns executing. Not interruptible. Creates DDC.
  */
-public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveCommand {
-	private static final Log logger = LogFactory.getLog(SetHeadingLinearCommand.class);
-	private static final String YAW = "yaw";
+public class SetLinearVelocityCommand extends OutputLinkCommand implements DriveCommand {
+	private static final Log logger = LogFactory.getLog(SetLinearVelocityCommand.class);
 	private static final String LINVEL = "linear-velocity";
-	private static final double TOLERANCE = Math.toRadians(3);
-	static final String NAME = "set-heading-linear";
+	static final String NAME = "set-linear-velocity";
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
 	private CommandStatus status = CommandStatus.accepted;
-	private double targetYaw;
 	
-	SetHeadingLinearCommand(Identifier wme) {
+	SetLinearVelocityCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}
@@ -50,16 +48,6 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 
 	@Override
 	public OutputLinkCommand accept() {
-		try {
-			targetYaw = Double.parseDouble(wme.GetParameterValue(YAW));
-			targetYaw = CommandConfig.CONFIG.angleFromView(targetYaw);
-		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + YAW + " on command");
-		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + YAW + ": " + wme.GetParameterValue(YAW));
-		}
-		targetYaw = Math.toRadians(targetYaw);
-
 		double linearVelocity;
 		try {
 			linearVelocity = Double.parseDouble(wme.GetParameterValue(LINVEL));
@@ -70,36 +58,26 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 			return new InvalidCommand(wme, "Unable to parse " + LINVEL + ": " + wme.GetParameterValue(LINVEL));
 		}
 
-		ddc = DifferentialDriveCommand.newHeadingLinearVelocityCommand(targetYaw, linearVelocity);
+		ddc = DifferentialDriveCommand.newLinearVelocityCommand(linearVelocity);
 		logger.debug(ddc);
 		CommandStatus.accepted.addStatus(wme);
 		return this;
 	}
-
+	
 	@Override
 	public void update(pose_t pose, Adaptable app) {
 		if (!status.isTerminated()) {
-			double currentYaw = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
-			double difference = targetYaw - currentYaw;
-			difference = Math.abs(difference);
-			
-			if (Double.compare(difference, TOLERANCE) < 0) {
-				status = CommandStatus.complete;
-				status.addStatus(wme);
-				return;
-			}
-			
 			if (status != CommandStatus.executing) {
 				status = CommandStatus.executing;
 				status.addStatus(wme);
-			}
+			}			
 		}
 	}
-
+	
 	@Override
 	public void interrupt() {
 		if (!status.isTerminated()) {
-			status = CommandStatus.interrupted;
+			status = CommandStatus.complete;
 			status.addStatus(wme);
 		}
 	}

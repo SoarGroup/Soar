@@ -1,4 +1,4 @@
-package edu.umich.soar.wp;
+package edu.umich.soar.sproom.wp;
 
 import lcmtypes.pose_t;
 

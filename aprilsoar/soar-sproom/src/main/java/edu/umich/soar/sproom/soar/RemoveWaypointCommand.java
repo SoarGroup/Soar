@@ -1,25 +1,26 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import lcmtypes.pose_t;
-import sml.Identifier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
-import edu.umich.soar.wp.Waypoints;
+import edu.umich.soar.sproom.wp.Waypoints;
+
+import sml.Identifier;
 
 /**
  * @author voigtjr
  *
- * Enable waypoint.
+ * Remove waypoint from waypoint system.
  */
-public class EnableWaypointCommand extends OutputLinkCommand {
-	private static final Log logger = LogFactory.getLog(EnableWaypointCommand.class);
-	static final String NAME = "enable-waypoint";
+public class RemoveWaypointCommand extends OutputLinkCommand {
+	private static final Log logger = LogFactory.getLog(RemoveWaypointCommand.class);
+	static final String NAME = "remove-waypoint";
 
 	private static final String ID = "id";
 
@@ -27,7 +28,7 @@ public class EnableWaypointCommand extends OutputLinkCommand {
 	private String id;
 	private boolean complete;
 
-	EnableWaypointCommand(Identifier wme) {
+	RemoveWaypointCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}
@@ -48,7 +49,7 @@ public class EnableWaypointCommand extends OutputLinkCommand {
 	public void update(pose_t pose, Adaptable app) {
 		if (!complete) {
 			Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
-			waypoints.enableWaypoint(id);
+			waypoints.removeWaypoint(id);
 			CommandStatus.complete.addStatus(wme);
 			complete = true;
 		}

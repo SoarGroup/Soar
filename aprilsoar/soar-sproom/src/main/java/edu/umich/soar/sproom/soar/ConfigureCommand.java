@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import java.util.Arrays;
 
@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
+import edu.umich.soar.sproom.command.CommandConfig;
 
 import lcmtypes.pose_t;
 

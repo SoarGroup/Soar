@@ -28,6 +28,7 @@ import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.Drive2;
 import edu.umich.soar.sproom.drive.Drive3;
 import edu.umich.soar.sproom.drive.DriveListener;
+import edu.umich.soar.sproom.soar.SoarControlListener;
 
 class HttpController {
 	private static final Log logger = LogFactory.getLog(HttpController.class);

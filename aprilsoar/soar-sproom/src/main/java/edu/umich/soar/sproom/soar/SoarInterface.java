@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -14,17 +14,20 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.HzChecker;
-import edu.umich.soar.sproom.command.OutputLink.OutputLinkActions;
+import edu.umich.soar.sproom.command.Comm;
+import edu.umich.soar.sproom.command.CommandConfig;
+import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveListener;
-import edu.umich.soar.wp.Waypoints;
+import edu.umich.soar.sproom.soar.OutputLink.OutputLinkActions;
+import edu.umich.soar.sproom.wp.Waypoints;
 
 import sml.Agent;
 import sml.Kernel;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
 
-class SoarInterface implements SoarControlListener, Adaptable {
+public class SoarInterface implements SoarControlListener, Adaptable {
 	private static final Log logger = LogFactory.getLog(SoarInterface.class);
 
 	private final HzChecker hzChecker = HzChecker.newInstance(SoarInterface.class.toString());
@@ -39,7 +42,7 @@ class SoarInterface implements SoarControlListener, Adaptable {
 	private final Waypoints waypoints;
 	private final Comm comm;
 	
-	SoarInterface(Pose pose, Waypoints waypoints, Comm comm) {
+	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm) {
 		this.pose = pose;
 		this.waypoints = waypoints;
 		this.comm = comm;
@@ -118,7 +121,7 @@ class SoarInterface implements SoarControlListener, Adaptable {
 	};
 	
 	private final List<DriveListener> driveListeners = new CopyOnWriteArrayList<DriveListener>();
-	void addDriveListener(DriveListener driveListener) {
+	public void addDriveListener(DriveListener driveListener) {
 		driveListeners.add(driveListener);
 	}
 	

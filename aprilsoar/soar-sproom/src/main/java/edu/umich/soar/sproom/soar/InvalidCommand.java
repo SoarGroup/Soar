@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.soar;
 
 import edu.umich.soar.sproom.Adaptable;
 import lcmtypes.pose_t;

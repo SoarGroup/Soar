@@ -25,7 +25,7 @@ public enum CommandConfig {
 	private double geomHeight;
 	private double geomWheelbase;
 	
-	enum LengthUnit { 
+	public enum LengthUnit { 
 		METERS(1), FEET(0.3048), MILES(1609.344), YARDS(0.9144), INCH(0.0254);
 		
 		private final double meters;
@@ -63,10 +63,10 @@ public enum CommandConfig {
 	};
 	private SpeedUnit speedUnits = SpeedUnit.METERS_PER_SEC;
 	
-	enum AngleUnit { RADIANS, DEGREES };
+	public enum AngleUnit { RADIANS, DEGREES };
 	private AngleUnit angleUnits = AngleUnit.DEGREES;
 
-	enum AngleResolution { INT, FLOAT };
+	public enum AngleResolution { INT, FLOAT };
 	private AngleResolution angleResolution = AngleResolution.INT;
 
 	private final double[] poseTranslation = new double[] { 0, 0, 0 };
