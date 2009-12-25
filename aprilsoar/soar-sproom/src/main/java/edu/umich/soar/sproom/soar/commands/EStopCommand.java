@@ -1,9 +1,8 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
+package edu.umich.soar.sproom.soar.commands;
 
-import lcmtypes.pose_t;
 import sml.Identifier;
 
 import org.apache.commons.logging.Log;
@@ -48,7 +47,7 @@ public class EStopCommand extends OutputLinkCommand implements DriveCommand {
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!complete) {
 			CommandStatus.complete.addStatus(wme);
 			complete = true;

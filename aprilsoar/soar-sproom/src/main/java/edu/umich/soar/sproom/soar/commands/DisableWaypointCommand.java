@@ -1,9 +1,8 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
+package edu.umich.soar.sproom.soar.commands;
 
-import lcmtypes.pose_t;
 import sml.Identifier;
 
 import org.apache.commons.logging.Log;
@@ -15,11 +14,11 @@ import edu.umich.soar.sproom.wp.Waypoints;
 /**
  * @author voigtjr
  *
- * Enable waypoint.
+ * Disables a waypoint.
  */
-public class EnableWaypointCommand extends OutputLinkCommand {
-	private static final Log logger = LogFactory.getLog(EnableWaypointCommand.class);
-	static final String NAME = "enable-waypoint";
+public class DisableWaypointCommand extends OutputLinkCommand {
+	private static final Log logger = LogFactory.getLog(DisableWaypointCommand.class);
+	static final String NAME = "disable-waypoint";
 
 	private static final String ID = "id";
 
@@ -27,7 +26,7 @@ public class EnableWaypointCommand extends OutputLinkCommand {
 	private String id;
 	private boolean complete;
 
-	EnableWaypointCommand(Identifier wme) {
+	DisableWaypointCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}
@@ -45,10 +44,10 @@ public class EnableWaypointCommand extends OutputLinkCommand {
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!complete) {
 			Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
-			waypoints.enableWaypoint(id);
+			waypoints.disableWaypoint(id);
 			CommandStatus.complete.addStatus(wme);
 			complete = true;
 		}

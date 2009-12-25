@@ -1,9 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
-
-import lcmtypes.pose_t;
+package edu.umich.soar.sproom.soar.commands;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,7 +44,7 @@ public class RemoveWaypointCommand extends OutputLinkCommand {
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!complete) {
 			Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
 			waypoints.removeWaypoint(id);

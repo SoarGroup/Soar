@@ -1,9 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
-
-import lcmtypes.pose_t;
+package edu.umich.soar.sproom.soar.commands;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,16 +20,16 @@ import sml.Identifier;
  * 
  * Returns executing. Not interruptible. Creates DDC.
  */
-public class SetAngularVelocityCommand extends OutputLinkCommand implements DriveCommand {
-	private static final Log logger = LogFactory.getLog(SetAngularVelocityCommand.class);
-	private static final String ANGVEL = "angular-velocity";
-	static final String NAME = "set-angular-velocity";
+public class SetLinearVelocityCommand extends OutputLinkCommand implements DriveCommand {
+	private static final Log logger = LogFactory.getLog(SetLinearVelocityCommand.class);
+	private static final String LINVEL = "linear-velocity";
+	static final String NAME = "set-linear-velocity";
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
 	private CommandStatus status = CommandStatus.accepted;
-
-	SetAngularVelocityCommand(Identifier wme) {
+	
+	SetLinearVelocityCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}
@@ -48,24 +46,24 @@ public class SetAngularVelocityCommand extends OutputLinkCommand implements Driv
 
 	@Override
 	public OutputLinkCommand accept() {
-		double angularVelocity;
+		double linearVelocity;
 		try {
-			angularVelocity = Double.parseDouble(wme.GetParameterValue(ANGVEL));
-			angularVelocity = CommandConfig.CONFIG.angleFromView(angularVelocity);
+			linearVelocity = Double.parseDouble(wme.GetParameterValue(LINVEL));
+			linearVelocity = CommandConfig.CONFIG.speedFromView(linearVelocity);
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + ANGVEL + " on command");
+			return new InvalidCommand(wme, "No " + LINVEL + " on command");
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + ANGVEL + ": " + wme.GetParameterValue(ANGVEL));
+			return new InvalidCommand(wme, "Unable to parse " + LINVEL + ": " + wme.GetParameterValue(LINVEL));
 		}
 
-		ddc = DifferentialDriveCommand.newAngularVelocityCommand(angularVelocity);
+		ddc = DifferentialDriveCommand.newLinearVelocityCommand(linearVelocity);
 		logger.debug(ddc);
 		CommandStatus.accepted.addStatus(wme);
 		return this;
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!status.isTerminated()) {
 			if (status != CommandStatus.executing) {
 				status = CommandStatus.executing;

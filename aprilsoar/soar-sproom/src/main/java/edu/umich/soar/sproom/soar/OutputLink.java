@@ -5,14 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lcmtypes.pose_t;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
+import edu.umich.soar.sproom.soar.commands.OutputLinkCommand;
 
 import sml.Agent;
 import sml.Identifier;
@@ -42,7 +41,7 @@ class OutputLink {
 		}
 	}
 	
-	OutputLinkActions update(pose_t pose) {
+	OutputLinkActions update() {
 		// TODO: synchronization
 
 		List<Integer> currentTimeTags = new ArrayList<Integer>(agent.GetNumberCommands());
@@ -80,7 +79,7 @@ class OutputLink {
 		// update current commands
 		OutputLinkActions actions = new OutputLinkActions();
 		for (OutputLinkCommand command : seenCommands.values()) {
-			command.update(pose, app);
+			command.update(app);
 			
 			if (command instanceof DriveCommand) {
 				// If there was no drive command or if it is a different drive command

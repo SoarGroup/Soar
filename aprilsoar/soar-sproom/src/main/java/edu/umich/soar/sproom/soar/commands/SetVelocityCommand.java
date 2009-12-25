@@ -1,9 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
-
-import lcmtypes.pose_t;
+package edu.umich.soar.sproom.soar.commands;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -91,7 +89,7 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!status.isTerminated()) {
 			if (status != CommandStatus.executing) {
 				status = CommandStatus.executing;

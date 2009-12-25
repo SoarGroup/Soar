@@ -7,8 +7,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import lcmtypes.pose_t;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -37,15 +35,18 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 	private Future<?> soarTask;
 	private DifferentialDriveCommand ddcPrev;
+	private InputLink il;
 	private OutputLink ol;
 	private final Pose pose;
 	private final Waypoints waypoints;
 	private final Comm comm;
+	private final Adaptable app; // self-reference for handler code
 	
 	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm) {
 		this.pose = pose;
 		this.waypoints = waypoints;
 		this.comm = comm;
+		this.app = this;
 		
 		kernel = Kernel.CreateKernelInNewThread();
 		if (kernel.HadError()) {
@@ -63,6 +64,7 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		
 		agent.SetBlinkIfNoChange(false);
 		
+		il = InputLink.newInstance(this);
 		ol = OutputLink.newInstance(this);
 		
 		// load productions
@@ -108,14 +110,13 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 				kernel.StopAllAgents();
 			}
 
-			pose_t p = pose.getPose();
-			OutputLinkActions actions = ol.update(p);
+			OutputLinkActions actions = ol.update();
 			if (actions.getDDC() != null) {
 				ddcPrev = actions.getDDC();
 				fireDriveEvent(actions.getDDC());
 			}
 			
-			//input.update();
+			il.update(app);
 			agent.Commit();
 		}
 	};
@@ -170,6 +171,10 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	public Object getAdapter(Class<?> klass) {
 		if (klass == Agent.class) {
 			return agent;
+		} else if (klass == Kernel.class) {
+			return kernel;
+		} else if (klass == Pose.class) {
+			return pose;
 		} else if (klass == Waypoints.class) {
 			return waypoints;
 		} else if (klass == Comm.class) {

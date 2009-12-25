@@ -52,6 +52,10 @@ public class Pose implements LCMSubscriber {
 		}
 		return elaboratedPose.copy();
 	}
+	
+	public double getYaw() {
+		return LinAlg.quatToRollPitchYaw(getPose().orientation)[2];
+	}
 
 	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
 		if (channel.equals(SharedNames.POSE_CHANNEL)) {

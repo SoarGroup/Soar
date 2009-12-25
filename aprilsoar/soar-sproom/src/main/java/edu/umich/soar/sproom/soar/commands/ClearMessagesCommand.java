@@ -1,9 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
-
-import lcmtypes.pose_t;
+package edu.umich.soar.sproom.soar.commands;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.command.Comm;
@@ -38,7 +36,7 @@ public class ClearMessagesCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!complete) {
 			Comm comm = (Comm)app.getAdapter(Comm.class);
 			comm.clearMessages();

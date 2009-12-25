@@ -31,12 +31,20 @@ public class Waypoints implements Iterable<Waypoint> {
 	}
 	
 	public synchronized boolean disableWaypoint(String id) {
-		return enabled.remove(id);
+		Waypoint waypoint = all.get(id);
+		if (waypoint != null) {
+			return enabled.remove(waypoint);
+		}
+		return false;
 	}
 	
 	public synchronized boolean removeWaypoint(String id) {
-		enabled.remove(id);
-		return all.remove(id) != null;
+		Waypoint waypoint = all.remove(id);
+		if (waypoint != null) {
+			enabled.remove(waypoint);
+			return true;
+		}
+		return false;
 	}
 	
 	public synchronized void clearWaypoints() {

@@ -1,7 +1,6 @@
-package edu.umich.soar.sproom.soar;
+package edu.umich.soar.sproom.soar.commands;
 
 import edu.umich.soar.sproom.Adaptable;
-import lcmtypes.pose_t;
 import sml.Identifier;
 
 class InvalidCommand extends OutputLinkCommand {
@@ -19,7 +18,7 @@ class InvalidCommand extends OutputLinkCommand {
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 	}
 
 	@Override

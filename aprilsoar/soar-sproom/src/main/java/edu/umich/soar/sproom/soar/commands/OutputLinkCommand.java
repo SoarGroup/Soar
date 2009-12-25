@@ -1,16 +1,18 @@
-package edu.umich.soar.sproom.soar;
+package edu.umich.soar.sproom.soar.commands;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import edu.umich.soar.sproom.Adaptable;
 
-import lcmtypes.pose_t;
-
 import sml.Identifier;
+import sml.StringElement;
 
-abstract class OutputLinkCommand {
+public abstract class OutputLinkCommand {
 	private final static Map<String, Class<? extends OutputLinkCommand>> commands = new HashMap<String, Class<? extends OutputLinkCommand>>();
 	
 	static {
@@ -36,7 +38,7 @@ abstract class OutputLinkCommand {
 		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.class);
 	}
 	
-	static OutputLinkCommand valueOf(Identifier wme) {
+	public static OutputLinkCommand valueOf(Identifier wme) {
 		String name = wme.GetAttribute();
 		
 		// TODO: profile: a prototype pattern might be a better option
@@ -64,6 +66,31 @@ abstract class OutputLinkCommand {
 		return new InvalidCommand(wme, "No such command.");
 	}
 
+	protected enum CommandStatus {
+		accepted,  // TODO capitalize
+		executing,
+		complete,
+		error,
+		interrupted;
+		
+		private static final Log logger = LogFactory.getLog(CommandStatus.class);
+		private static final String STATUS = "status";
+		
+		public StringElement addStatus(Identifier command) {
+			return command.CreateStringWME(STATUS, this.toString());
+		}
+		
+		public StringElement addStatus(Identifier command, String message) {
+			logger.info("Command message: " + message);
+			command.CreateStringWME("message", message);
+			return command.CreateStringWME(STATUS, this.toString());
+		}
+		
+		public boolean isTerminated() {
+			return this.equals(complete) || this.equals(interrupted) || this.equals(error);
+		}
+	}
+
 	private final Integer tt;
 
 	protected OutputLinkCommand(Integer tt) {
@@ -82,7 +109,7 @@ abstract class OutputLinkCommand {
 	
 	public abstract String getName();
 	public abstract OutputLinkCommand accept();
-	public abstract void update(pose_t pose, Adaptable app);
+	public abstract void update(Adaptable app);
 	
 	public Integer getTimeTag() {
 		return tt;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
+package edu.umich.soar.sproom.soar.commands;
 
 import jmat.LinAlg;
 
@@ -11,7 +11,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
+import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
+import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.wp.Waypoints;
 
 import sml.Identifier;
@@ -26,12 +28,6 @@ public class AddWaypointCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(AddWaypointCommand.class);
 	static final String NAME = "add-waypoint";
 
-	private static final String ID = "id";
-	private static final String X = "x";
-	private static final String Y = "y";
-	private static final String Z = "z";
-	private static final String YAW = "yaw";
-	
 	private final Identifier wme;
 	private String type;
 	private String id;
@@ -48,48 +44,48 @@ public class AddWaypointCommand extends OutputLinkCommand {
 
 	@Override
 	public OutputLinkCommand accept() {
-		WMElement idwme = wme.FindByAttribute(ID, 0);
+		WMElement idwme = wme.FindByAttribute(SharedNames.ID, 0);
 		if (idwme == null) {
-			return new InvalidCommand(wme, "No " + ID);
+			return new InvalidCommand(wme, "No " + SharedNames.ID);
 		}
 		
 		type = idwme.GetValueType();
 		id = idwme.GetValueAsString();
 		
 		try {
-			x = Double.valueOf(wme.GetParameterValue(X));
+			x = Double.valueOf(wme.GetParameterValue(SharedNames.X));
 			x = CommandConfig.CONFIG.lengthFromView(x);
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + X + ": " + wme.GetParameterValue(X));
+			return new InvalidCommand(wme, "Unable to parse " + SharedNames.X + ": " + wme.GetParameterValue(SharedNames.X));
 		}
 
 		try {
-			y = Double.valueOf(wme.GetParameterValue(Y));
+			y = Double.valueOf(wme.GetParameterValue(SharedNames.Y));
 			y = CommandConfig.CONFIG.lengthFromView(y);
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + Y + ": " + wme.GetParameterValue(Y));
+			return new InvalidCommand(wme, "Unable to parse " + SharedNames.Y + ": " + wme.GetParameterValue(SharedNames.Y));
 		}
 
 		try {
-			z = Double.valueOf(wme.GetParameterValue(Z));
+			z = Double.valueOf(wme.GetParameterValue(SharedNames.Z));
 			z = CommandConfig.CONFIG.lengthFromView(z);
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + Z + ": " + wme.GetParameterValue(Z));
+			return new InvalidCommand(wme, "Unable to parse " + SharedNames.Z + ": " + wme.GetParameterValue(SharedNames.Z));
 		}
 
 		try {
-			yaw = Double.valueOf(wme.GetParameterValue(YAW));
+			yaw = Double.valueOf(wme.GetParameterValue(SharedNames.YAW));
 			yaw = CommandConfig.CONFIG.angleFromView(yaw);
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + YAW + ": " + wme.GetParameterValue(YAW));
+			return new InvalidCommand(wme, "Unable to parse " + SharedNames.YAW + ": " + wme.GetParameterValue(SharedNames.YAW));
 		}
 
 		logger.debug(String.format("%16s %10.3f %10.3f %10.3f", id, x, y, z, yaw));
@@ -98,10 +94,11 @@ public class AddWaypointCommand extends OutputLinkCommand {
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!complete) {
 			Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
-			pose_t waypointPose = pose.copy();
+			Pose pose = (Pose)app.getAdapter(Pose.class);
+			pose_t waypointPose = pose.getPose();
 			if (x != null) {
 				waypointPose.pos[0] = x;
 			}
@@ -114,8 +111,8 @@ public class AddWaypointCommand extends OutputLinkCommand {
 			if (yaw != null) {
 				waypointPose.orientation = LinAlg.rollPitchYawToQuat(new double[] { 0, 0, yaw });
 			}
-			
-			waypoints.createWaypoint(id, type, pose);
+
+			waypoints.createWaypoint(id, type, waypointPose);
 			CommandStatus.complete.addStatus(wme);
 			complete = true;
 		}

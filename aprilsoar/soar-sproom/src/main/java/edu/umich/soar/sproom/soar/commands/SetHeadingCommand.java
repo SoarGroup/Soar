@@ -1,18 +1,16 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
+package edu.umich.soar.sproom.soar.commands;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.command.CommandConfig;
+import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
-
-import jmat.LinAlg;
-import lcmtypes.pose_t;
 
 import sml.Identifier;
 
@@ -65,9 +63,10 @@ public class SetHeadingCommand extends OutputLinkCommand implements DriveCommand
 	}
 
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!status.isTerminated()) {
-			double currentYaw = LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+			Pose pose = (Pose)app.getAdapter(Pose.class);
+			double currentYaw = pose.getYaw();
 			double difference = targetYaw - currentYaw;
 			difference = Math.abs(difference);
 			

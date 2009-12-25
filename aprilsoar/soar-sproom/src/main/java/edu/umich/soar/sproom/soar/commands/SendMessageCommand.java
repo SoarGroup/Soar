@@ -1,13 +1,11 @@
 /**
  * 
  */
-package edu.umich.soar.sproom.soar;
+package edu.umich.soar.sproom.soar.commands;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -100,7 +98,7 @@ public class SendMessageCommand extends OutputLinkCommand {
 	}
 	
 	@Override
-	public void update(pose_t pose, Adaptable app) {
+	public void update(Adaptable app) {
 		if (!complete) {
 			Comm comm = (Comm)app.getAdapter(Comm.class);
 			Agent agent = (Agent)app.getAdapter(Agent.class);
