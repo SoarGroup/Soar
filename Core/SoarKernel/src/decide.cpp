@@ -868,7 +868,7 @@ void do_buffered_link_changes (agent* thisAgent) {
    require preference for the slot.
 ************************************************************************** */
 
-byte require_preference_semantics (agent *thisAgent, slot *s, preference **result_candidates) {
+byte require_preference_semantics (agent *thisAgent, slot *s, preference **result_candidates, bool consistency) {
   preference *p;
   preference *candidates;
   Symbol *value;
@@ -896,7 +896,7 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
     if (p->value == value) return CONSTRAINT_FAILURE_IMPASSE_TYPE;
   
   /* --- the lone require is the winner --- */
-  if ( candidates && rl_enabled( thisAgent ) )
+  if ( !consistency && candidates && rl_enabled( thisAgent ) )
   {
 	  rl_tabulate_reward_values( thisAgent );
 	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
@@ -951,7 +951,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 
 	/* === Requires === */
 	if (s->preferences[REQUIRE_PREFERENCE_TYPE]) {
-		return require_preference_semantics (thisAgent, s, result_candidates);
+		return require_preference_semantics (thisAgent, s, result_candidates, consistency);
 	}
 
 	/* === Acceptables, Prohibits, Rejects === */
