@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.wp;
+package edu.umich.soar.sproom.command;
 
 import java.util.HashMap;
 import java.util.Iterator;

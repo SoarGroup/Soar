@@ -3,38 +3,42 @@
  */
 package edu.umich.soar.sproom.soar.commands;
 
+import sml.Identifier;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
-import edu.umich.soar.sproom.command.Comm;
-
-import sml.Identifier;
 
 /**
  * @author voigtjr
  *
- * Removes a message from the received message list.
+ * Removes all messages from message list.
  */
-public class RemoveMessageCommand extends OutputLinkCommand {
-	private static final Log logger = LogFactory.getLog(RemoveMessageCommand.class);
-	static final String NAME = "remove-messages";
+public class GetObjectCommand extends OutputLinkCommand {
+	private static final Log logger = LogFactory.getLog(GetObjectCommand.class);
+	static final String NAME = "get-object";
 
 	private final Identifier wme;
+	private int id;
 	private boolean complete = false;
-	private long id;
-
-	RemoveMessageCommand(Identifier wme) {
+	
+	GetObjectCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
+	}
+
+	@Override
+	public String getName() {
+		return NAME;
 	}
 
 	@Override
 	public OutputLinkCommand accept() {
 		String idString = wme.GetParameterValue(SharedNames.ID);
 		try {
-			id = Long.parseLong(idString);
+			id = Integer.parseInt(idString);
 		} catch (NullPointerException e) {
 			return new InvalidCommand(wme, "No " + SharedNames.ID);
 		} catch (NumberFormatException e) {
@@ -45,19 +49,14 @@ public class RemoveMessageCommand extends OutputLinkCommand {
 		CommandStatus.accepted.addStatus(wme);
 		return this;
 	}
-	
-	@Override
-	public String getName() {
-		return NAME;
-	}
 
 	@Override
 	public void update(Adaptable app) {
 		if (!complete) {
-			Comm comm = (Comm)app.getAdapter(Comm.class);
-			comm.removeMessage(id);
-			CommandStatus.complete.addStatus(wme);
+			// TODO: get object manipulation interface, perform get
+			CommandStatus.error.addStatus(wme, "Not implemented.");
 			complete = true;
 		}
 	}
+
 }

@@ -1,5 +1,6 @@
 package edu.umich.soar.sproom.command;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,5 +20,9 @@ public class Comm {
 
 	public void removeMessage(long id) {
 		messages.remove(Long.valueOf(id));
+	}
+	
+	public Map<Long, CommMessage> getMessages() {
+		return Collections.unmodifiableMap(messages);
 	}
 }

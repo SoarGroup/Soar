@@ -14,7 +14,7 @@ import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.wp.Waypoints;
+import edu.umich.soar.sproom.command.Waypoints;
 
 import sml.Identifier;
 import sml.WMElement;

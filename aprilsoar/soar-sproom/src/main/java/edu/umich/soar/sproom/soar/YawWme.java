@@ -10,6 +10,12 @@ public class YawWme {
     	return new YawWme(parent, attr);
     }
     
+    public static YawWme newInstance(Identifier parent, String attr, double radians) {
+    	YawWme temp = new YawWme(parent, attr);
+    	temp.update(radians);
+    	return temp;
+    }
+    
     private final FloatWme fwme;
     private final IntWme iwme;
     

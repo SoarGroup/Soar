@@ -71,6 +71,9 @@ public enum CommandConfig {
 
 	private final double[] poseTranslation = new double[] { 0, 0, 0 };
 	private final ConcurrentMap<String, double[]> pidGains = new ConcurrentHashMap<String, double[]>(); 
+	
+	private int rangeCount = 5; // LIDAR
+
 	private final List<CommandConfigListener> listeners = new CopyOnWriteArrayList<CommandConfigListener>();
 
 	CommandConfig() {
@@ -259,5 +262,9 @@ public enum CommandConfig {
 	
 	public double[] getGains(String name) {
 		return pidGains.get(name);
+	}
+
+	public int getRangeCount() {
+		return rangeCount;
 	}
 }

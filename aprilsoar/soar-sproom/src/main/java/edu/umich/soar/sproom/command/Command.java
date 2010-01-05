@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.drive.Drive3;
 import edu.umich.soar.sproom.soar.SoarInterface;
-import edu.umich.soar.sproom.wp.Waypoints;
 
 public class Command {
 	private static final Log logger = LogFactory.getLog(Command.class);
@@ -20,7 +19,8 @@ public class Command {
 	private final Drive3 drive3 = Drive3.newInstance(pose);
 	private final Waypoints waypoints = new Waypoints();
 	private final Comm comm = new Comm();
-	private final SoarInterface soar = new SoarInterface(pose, waypoints, comm);
+	private final Lidar lidar = new Lidar();
+	private final SoarInterface soar = new SoarInterface(pose, waypoints, comm, lidar);
 	private final HttpController httpController = new HttpController();
 	
 	public Command() {

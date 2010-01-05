@@ -72,7 +72,7 @@ class OutputLink {
 		seenCommands.keySet().retainAll(currentTimeTags);
 		
 		// remove drive command if that disappeared
-		if (!seenCommands.containsKey(driveCommand.getTimeTag())) {
+		if (driveCommand != null && !seenCommands.containsKey(driveCommand.getTimeTag())) {
 			driveCommand = null;
 		}
 

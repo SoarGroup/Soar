@@ -26,7 +26,7 @@ import orc.Motor;
 import orc.Orc;
 import orc.OrcStatus;
 
-public class Splinter implements LCMSubscriber, Runnable {
+public class Splinter {
 	private static final Log logger = LogFactory.getLog(Splinter.class);
 	private static final int LEFT = 0;
 	private static final int RIGHT = 1;
@@ -101,11 +101,22 @@ public class Splinter implements LCMSubscriber, Runnable {
 		
 		// drive commands
 		lcm = LCM.getSingleton();
-		lcm.subscribe(SharedNames.DRIVE_CHANNEL, this);
+		lcm.subscribe(SharedNames.DRIVE_CHANNEL, new LCMSubscriber() {
+			@Override
+			public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
+				if (channel.equals(SharedNames.DRIVE_CHANNEL)) {
+					try {
+						dc = new differential_drive_command_t(ins);
+					} catch (IOException e) {
+						logger.error("Error decoding differential_drive_command_t message: " + e.getMessage());
+					}
+				}
+			}
+		});
 	
 		double updatePeriodMS = 1000 / updateHz;
 		logger.debug("Splinter thread running, period set to " + updatePeriodMS);
-		schexec.scheduleAtFixedRate(this, 0, (long)updatePeriodMS, TimeUnit.MILLISECONDS); 
+		schexec.scheduleAtFixedRate(update, 0, (long)updatePeriodMS, TimeUnit.MILLISECONDS); 
 	}
 	
 	private OdometryPoint getOdometry(OrcStatus currentStatus) {
@@ -170,51 +181,54 @@ public class Splinter implements LCMSubscriber, Runnable {
 		}
 	}
 	
-	@Override
-	public void run() {
-		try {
-			if (logger.isDebugEnabled()) {
-				hzChecker.tick();
-			}
-			
-			// Get OrcStatus
-			OrcStatus currentStatus = orc.getStatus();
-	
-			if (calibrated != CalibrateState.YES) {
-				calibrate(currentStatus);
-				return;
-			}
-			
-			boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
-			
-			OdometryPoint newOdom = getOdometry(currentStatus);
-			
-			// don't update odom unless moving
-			if (moving) {
-				odometry.propagate(newOdom, oldOdom, pose);
-	
-				if (capture != null) {
-					try {
-						capture.record(newOdom);
-					} catch (IOException e) {
-						logger.error("IOException while writing odometry: " + e.getMessage());
+	private Runnable update = new Runnable() {
+		
+		@Override
+		public void run() {
+			try {
+				if (logger.isDebugEnabled()) {
+					hzChecker.tick();
+				}
+				
+				// Get OrcStatus
+				OrcStatus currentStatus = orc.getStatus();
+		
+				if (calibrated != CalibrateState.YES) {
+					calibrate(currentStatus);
+					return;
+				}
+				
+				boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
+				
+				OdometryPoint newOdom = getOdometry(currentStatus);
+				
+				// don't update odom unless moving
+				if (moving) {
+					odometry.propagate(newOdom, oldOdom, pose);
+		
+					if (capture != null) {
+						try {
+							capture.record(newOdom);
+						} catch (IOException e) {
+							logger.error("IOException while writing odometry: " + e.getMessage());
+						}
 					}
 				}
+		
+				// save old state
+				oldOdom = newOdom;
+				
+				pose.utime = currentStatus.utime;
+				lcm.publish(SharedNames.POSE_CHANNEL, pose);
+				
+				commandMotors();
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.error("Uncaught exception: " + e);
+				commandFailSafe();
 			}
-	
-			// save old state
-			oldOdom = newOdom;
-			
-			pose.utime = currentStatus.utime;
-			lcm.publish(SharedNames.POSE_CHANNEL, pose);
-			
-			commandMotors();
-		} catch (Exception e) {
-			e.printStackTrace();
-			logger.error("Uncaught exception: " + e);
-			commandFailSafe();
 		}
-	}
+	};
 	
 	private double mapThrottle(double input, int motor) {
 		double output = ((1 - minimumMotion[motor]) * Math.abs(input)) + minimumMotion[motor];
@@ -322,13 +336,4 @@ public class Splinter implements LCMSubscriber, Runnable {
 		new Splinter(config);
 	}
 
-	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
-		if (channel.equals(SharedNames.DRIVE_CHANNEL)) {
-			try {
-				dc = new differential_drive_command_t(ins);
-			} catch (IOException e) {
-				logger.error("Error decoding differential_drive_command_t message: " + e.getMessage());
-			}
-		}
-	}
 }

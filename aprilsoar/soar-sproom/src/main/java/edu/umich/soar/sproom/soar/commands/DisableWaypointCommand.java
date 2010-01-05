@@ -9,7 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
-import edu.umich.soar.sproom.wp.Waypoints;
+import edu.umich.soar.sproom.command.Waypoints;
 
 /**
  * @author voigtjr

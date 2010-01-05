@@ -9,9 +9,8 @@ import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
-import edu.umich.soar.sproom.command.CommandConfig;
-import edu.umich.soar.sproom.wp.Waypoint;
-import edu.umich.soar.sproom.wp.Waypoints;
+import edu.umich.soar.sproom.command.Waypoint;
+import edu.umich.soar.sproom.command.Waypoints;
 
 public class WaypointsIL implements InputLinkElement {
 
@@ -29,7 +28,7 @@ public class WaypointsIL implements InputLinkElement {
 		Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
 		
 		for(Waypoint waypoint : waypoints) {
-			PointDataIL pointData = waypointMap.get(waypoint);
+			PointDataIL pointData = waypointMap.remove(waypoint);
 			if (pointData == null) {
 				Identifier wme = root.CreateIdWME(SharedNames.WAYPOINT);
 				pointData = new PointDataIL(wme, app, waypoint.getPose());
@@ -44,8 +43,11 @@ public class WaypointsIL implements InputLinkElement {
 			}
 			newWaypointMap.put(waypoint, pointData);
 		}
+
+		for(PointDataIL pointData : waypointMap.values()) {
+			pointData.destroy();
+		}
 		
-		// BUGBUG: acually gotta remove the old ones
 		waypointMap = newWaypointMap;
 	}
 

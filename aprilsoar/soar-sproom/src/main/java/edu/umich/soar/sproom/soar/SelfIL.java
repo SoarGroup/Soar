@@ -4,6 +4,7 @@ import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Identifier;
 import edu.umich.soar.FloatWme;
+import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
@@ -13,7 +14,7 @@ public class SelfIL implements InputLinkElement {
 	private static final String NAME = "name";
 	private static final String AREA = "area";
 
-	private StringWme area;
+	private IntWme area;
 	private FloatWme[] xyz = new FloatWme[3];
 	private FloatWme[] xyzVelocity = new FloatWme[3];
 	private YawWme yaw;
@@ -23,7 +24,7 @@ public class SelfIL implements InputLinkElement {
 		Agent agent = (Agent)app.getAdapter(Agent.class);
 		
 		StringWme.newInstance(root, NAME, agent.GetAgentName());
-		area = StringWme.newInstance(root, AREA);
+		area = IntWme.newInstance(root, AREA);
 		
 		Identifier pose = agent.CreateIdWME(root, SharedNames.POSE);
 		xyz[0] = FloatWme.newInstance(pose, SharedNames.X);
@@ -40,7 +41,7 @@ public class SelfIL implements InputLinkElement {
 
 	@Override
 	public void update(Adaptable app) {
-		// TODO: area
+		area.update(0); // FIXME: temp
 
 		Pose poseClass = (Pose)app.getAdapter(Pose.class);
 		pose_t pose = poseClass.getPose();

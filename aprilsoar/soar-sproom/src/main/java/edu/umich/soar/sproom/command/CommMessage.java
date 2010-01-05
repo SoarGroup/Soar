@@ -64,4 +64,11 @@ public class CommMessage {
 		return sb.toString();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof CommMessage) {
+			
+		}
+		return super.equals(obj);
+	}
 }

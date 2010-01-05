@@ -14,11 +14,12 @@ import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.command.Comm;
 import edu.umich.soar.sproom.command.CommandConfig;
+import edu.umich.soar.sproom.command.Lidar;
 import edu.umich.soar.sproom.command.Pose;
+import edu.umich.soar.sproom.command.Waypoints;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveListener;
 import edu.umich.soar.sproom.soar.OutputLink.OutputLinkActions;
-import edu.umich.soar.sproom.wp.Waypoints;
 
 import sml.Agent;
 import sml.Kernel;
@@ -32,6 +33,7 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	private final Kernel kernel;
 	private final Agent agent;
 	private final AtomicBoolean stopSoar = new AtomicBoolean(true);
+	private final ExecutorService debuggerExec = Executors.newSingleThreadExecutor();
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 	private Future<?> soarTask;
 	private DifferentialDriveCommand ddcPrev;
@@ -40,12 +42,14 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	private final Pose pose;
 	private final Waypoints waypoints;
 	private final Comm comm;
+	private final Lidar lidar;
 	private final Adaptable app; // self-reference for handler code
 	
-	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm) {
+	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm, Lidar lidar) {
 		this.pose = pose;
 		this.waypoints = waypoints;
 		this.comm = comm;
+		this.lidar = lidar;
 		this.app = this;
 		
 		kernel = Kernel.CreateKernelInNewThread();
@@ -81,6 +85,13 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, systemHandler, null);
 
 		agent.Commit();
+		
+		debuggerExec.submit(new Runnable() {
+			@Override
+			public void run() {
+				new edu.umich.soar.debugger.Application(new String[] { "-remote" }, false);
+			}
+		});
 	}
 	
 	Kernel.SystemEventInterface systemHandler = new Kernel.SystemEventInterface() {
@@ -90,6 +101,7 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 				if (ddcPrev != null) {
 					fireDriveEvent(ddcPrev);
 				}
+				stopSoar.set(false);
 				logger.info("Soar started.");
 			} 
 			else if (eventId == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
@@ -152,7 +164,6 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		synchronized(exec) {
 			if (soarTask == null || soarTask.isDone()) {
 				logger.debug("Start Soar requested");
-				stopSoar.set(false);
 				soarTask = exec.submit(new Runnable() {
 					@Override
 					public void run() {
@@ -179,6 +190,8 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 			return waypoints;
 		} else if (klass == Comm.class) {
 			return comm;
+		} else if (klass == Lidar.class) {
+			return lidar;
 		}
 		return null;
 	}

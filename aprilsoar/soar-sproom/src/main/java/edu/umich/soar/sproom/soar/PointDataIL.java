@@ -11,13 +11,16 @@ import sml.Identifier;
 
 public class PointDataIL implements InputLinkElement {
 
+	private final Identifier root;
 	private final pose_t point;
 	private final FloatWme distance;
 	private final YawWme yaw;
 	private final YawWme relYaw;
 	private final YawWme absRelYaw;
+	private boolean destroyed = false;
 
 	PointDataIL(Identifier root, Adaptable app, pose_t point) {
+		this.root = root;
 		this.point = point.copy();
 
 		FloatWme.newInstance(root, SharedNames.X, this.point.pos[0]);
@@ -32,6 +35,10 @@ public class PointDataIL implements InputLinkElement {
 
 	@Override
 	public void update(Adaptable app) {
+		if (destroyed) {
+			throw new IllegalStateException();
+		}
+		
 		Pose poseClass = (Pose)app.getAdapter(Pose.class);
 		pose_t pose = poseClass.getPose();
 		
@@ -46,5 +53,10 @@ public class PointDataIL implements InputLinkElement {
 		relYaw.update(relYawVal);
 		
 		absRelYaw.update(Math.abs(relYawVal));
+	}
+	
+	void destroy() {
+		root.DestroyWME();
+		destroyed = true;
 	}
 }

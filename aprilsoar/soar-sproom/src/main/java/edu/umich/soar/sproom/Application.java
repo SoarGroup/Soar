@@ -8,7 +8,6 @@ import april.config.ConfigUtil;
 import april.sim.Simulator;
 import april.viewer.Viewer;
 import edu.umich.soar.sproom.command.Command;
-import edu.umich.soar.sproom.control.Controller;
 
 public class Application {
 
