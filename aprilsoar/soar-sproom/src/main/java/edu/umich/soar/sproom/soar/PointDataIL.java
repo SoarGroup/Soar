@@ -12,20 +12,21 @@ import sml.Identifier;
 public class PointDataIL implements InputLinkElement {
 
 	private final Identifier root;
-	private final pose_t point;
+	private final double[] pos;
 	private final FloatWme distance;
 	private final YawWme yaw;
 	private final YawWme relYaw;
 	private final YawWme absRelYaw;
 	private boolean destroyed = false;
 
-	PointDataIL(Identifier root, Adaptable app, pose_t point) {
+	PointDataIL(Identifier root, double[] pos) {
 		this.root = root;
-		this.point = point.copy();
+		this.pos = new double[pos.length];
+		System.arraycopy(pos, 0, this.pos, 0, pos.length);
 
-		FloatWme.newInstance(root, SharedNames.X, this.point.pos[0]);
-		FloatWme.newInstance(root, SharedNames.Y, this.point.pos[0]);
-		FloatWme.newInstance(root, SharedNames.Z, this.point.pos[2]);
+		FloatWme.newInstance(root, SharedNames.X, this.pos[0]);
+		FloatWme.newInstance(root, SharedNames.Y, this.pos[0]);
+		FloatWme.newInstance(root, SharedNames.Z, this.pos[2]);
 		
 		distance = FloatWme.newInstance(root, SharedNames.DISTANCE);
 		yaw = YawWme.newInstance(root, SharedNames.YAW);
@@ -42,9 +43,9 @@ public class PointDataIL implements InputLinkElement {
 		Pose poseClass = (Pose)app.getAdapter(Pose.class);
 		pose_t pose = poseClass.getPose();
 		
-		distance.update(LinAlg.distance(pose.pos, point.pos));
+		distance.update(LinAlg.distance(pose.pos, pos));
 
-		double [] delta = LinAlg.subtract(point.pos, pose.pos);
+		double [] delta = LinAlg.subtract(pos, pose.pos);
 		double yawVal = Math.atan2(delta[1], delta[0]);
 		yaw.update(yawVal);
 		

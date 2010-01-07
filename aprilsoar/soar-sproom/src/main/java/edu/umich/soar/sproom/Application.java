@@ -19,11 +19,11 @@ public class Application {
 	public Application(String[] args) {
 		sim = new Simulator(ConfigUtil.getDefaultConfig(args));
 		viewer = new Viewer(ConfigUtil.getDefaultConfig(args));
-		command = new Command();
+		command = new Command(ConfigUtil.getDefaultConfig(args));
 		exec.submit(new Runnable() {
 			@Override
 			public void run() {
-				Spy.main(new String[]{});
+				//Spy.main(new String[]{});
 			}
 		});
 	}

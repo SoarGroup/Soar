@@ -3,6 +3,8 @@ package edu.umich.soar.sproom.command;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import april.config.Config;
+
 import edu.umich.soar.sproom.drive.Drive3;
 import edu.umich.soar.sproom.soar.SoarInterface;
 
@@ -20,12 +22,15 @@ public class Command {
 	private final Waypoints waypoints = new Waypoints();
 	private final Comm comm = new Comm();
 	private final Lidar lidar = new Lidar();
-	private final SoarInterface soar = new SoarInterface(pose, waypoints, comm, lidar);
+	private final MapMetadata metadata;
+	private final SoarInterface soar;
 	private final HttpController httpController = new HttpController();
 	
-	public Command() {
+	public Command(Config config) {
 		logger.debug("Command started");
 
+		metadata = new MapMetadata(config);
+		soar = new SoarInterface(pose, waypoints, comm, lidar, metadata);
 		httpController.addDriveListener(drive3);
 		soar.addDriveListener(drive3);
 		httpController.addSoarControlListener(soar);

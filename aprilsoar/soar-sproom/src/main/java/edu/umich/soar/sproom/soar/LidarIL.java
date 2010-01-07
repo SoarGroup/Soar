@@ -4,7 +4,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import lcmtypes.laser_t;
-import sml.Agent;
 import sml.Identifier;
 import edu.umich.soar.FloatWme;
 import edu.umich.soar.IntWme;
@@ -23,8 +22,8 @@ public class LidarIL implements InputLinkElement {
 		private final FloatWme distancewme;
 		private boolean valid = true;
 		
-		private Range(Agent agent, int id, double relativeBearing) {
-			rangewme = agent.CreateIdWME(root, SharedNames.RANGE);
+		private Range(int id, double relativeBearing) {
+			rangewme = root.CreateIdWME(SharedNames.RANGE);
 			IntWme.newInstance(rangewme, SharedNames.ID, id);
 			YawWme.newInstance(rangewme, SharedNames.RELATIVE_BEARING, relativeBearing);
 			distancewme = FloatWme.newInstance(rangewme, SharedNames.DISTANCE);
@@ -54,8 +53,6 @@ public class LidarIL implements InputLinkElement {
 	}
 	
 	private void createRanges(Adaptable app, laser_t laser) {
-		Agent agent = (Agent)app.getAdapter(Agent.class);
-	
 		for (Range range : ranges) {
 			range.destroy();
 		}
@@ -63,7 +60,7 @@ public class LidarIL implements InputLinkElement {
 		ranges = new Range[c.getRangeCount()];
 		double relativeBearing = laser.rad0;
 		for (int index = 0; index < ranges.length; ++index, relativeBearing += laser.radstep) {
-			ranges[index] = new Range(agent, index - (ranges.length / 2), relativeBearing);
+			ranges[index] = new Range(index - (ranges.length / 2), relativeBearing);
 		}
 	}
 

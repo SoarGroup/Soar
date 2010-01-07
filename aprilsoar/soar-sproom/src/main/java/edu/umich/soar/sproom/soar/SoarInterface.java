@@ -15,6 +15,7 @@ import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.command.Comm;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Lidar;
+import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.command.Waypoints;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
@@ -43,13 +44,15 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	private final Waypoints waypoints;
 	private final Comm comm;
 	private final Lidar lidar;
+	private final MapMetadata metadata;
 	private final Adaptable app; // self-reference for handler code
 	
-	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm, Lidar lidar) {
+	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm, Lidar lidar, MapMetadata metadata) {
 		this.pose = pose;
 		this.waypoints = waypoints;
 		this.comm = comm;
 		this.lidar = lidar;
+		this.metadata = metadata;
 		this.app = this;
 		
 		kernel = Kernel.CreateKernelInNewThread();
@@ -192,6 +195,8 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 			return comm;
 		} else if (klass == Lidar.class) {
 			return lidar;
+		} else if (klass == MapMetadata.class) {
+			return metadata;
 		}
 		return null;
 	}

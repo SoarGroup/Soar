@@ -19,10 +19,13 @@ public enum SharedNames {
 	public static final String AREA_DESCRIPTION = "area-description";
 	public static final String COLOR = "color";
 	public static final String CONFIGURATION = "configuration";
+	public static final String DIRECTION = "direction";
 	public static final String DISTANCE = "distance";
+	public static final String DOOR = "door";
 	public static final String FIRST = "first";
 	public static final String FLOAT = "float";
 	public static final String FROM = "from";
+	public static final String GATEWAY = "gateway";
 	public static final String ID = "id";
 	public static final String INT = "int";
 	public static final String LIDAR = "lidar";
@@ -36,8 +39,12 @@ public enum SharedNames {
 	public static final String RANGE = "range";
 	public static final String RECEIVED_MESSAGES = "received-messages";
 	public static final String RELATIVE_BEARING = "relative-bearing";
+	public static final String ROOM = "room";
 	public static final String SELF = "self";
 	public static final String TIME = "time";
+	public static final String TO = "to";
+	public static final String TYPE = "type";
+	public static final String WALL = "wall";
 	public static final String WAYPOINT = "waypoint";
 	public static final String WAYPOINTS = "waypoints";
 	public static final String WORD = "waypoint";

@@ -26,7 +26,7 @@ public class SelfIL implements InputLinkElement {
 		StringWme.newInstance(root, NAME, agent.GetAgentName());
 		area = IntWme.newInstance(root, AREA);
 		
-		Identifier pose = agent.CreateIdWME(root, SharedNames.POSE);
+		Identifier pose = root.CreateIdWME(SharedNames.POSE);
 		xyz[0] = FloatWme.newInstance(pose, SharedNames.X);
 		xyz[1] = FloatWme.newInstance(pose, SharedNames.Y);
 		xyz[2] = FloatWme.newInstance(pose, SharedNames.Z);

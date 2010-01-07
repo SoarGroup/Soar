@@ -31,7 +31,7 @@ public class WaypointsIL implements InputLinkElement {
 			PointDataIL pointData = waypointMap.remove(waypoint);
 			if (pointData == null) {
 				Identifier wme = root.CreateIdWME(SharedNames.WAYPOINT);
-				pointData = new PointDataIL(wme, app, waypoint.getPose());
+				pointData = new PointDataIL(wme, waypoint.getPose().pos);
 				
 				if (waypoint.getType().equals(SharedNames.INT)) {
 					IntWme.newInstance(wme, SharedNames.ID, Integer.parseInt(waypoint.getId()));
