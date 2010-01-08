@@ -2,7 +2,6 @@ package edu.umich.soar.sproom.soar;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import edu.umich.soar.FloatWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
@@ -28,15 +27,16 @@ public class ConfigurationIL implements InputLinkElement {
 	private final StringWme lengthUnits;
 	private final StringWme angleUnits;
 	private final StringWme angleResolution;
-	private final FloatWme[] xyz = new FloatWme[3];
-	private final FloatWme limitLinVelMax;
-	private final FloatWme limitLinVelMin;
-	private final FloatWme limitAngVelMax;
-	private final FloatWme limitAngVelMin;
-	private final FloatWme geomLength;
-	private final FloatWme geomWidth;
-	private final FloatWme geomHeight;
-	private final FloatWme geomWheelbase;
+	private final StringWme speedUnits;
+	private final DistanceWme[] xyz = new DistanceWme[3];
+	private final SpeedWme limitLinVelMax;
+	private final SpeedWme limitLinVelMin;
+	private final SpeedWme limitAngVelMax;
+	private final SpeedWme limitAngVelMin;
+	private final DistanceWme geomLength;
+	private final DistanceWme geomWidth;
+	private final DistanceWme geomHeight;
+	private final DistanceWme geomWheelbase;
 	
 	private final AtomicBoolean configChanged = new AtomicBoolean(true);
 	
@@ -44,28 +44,29 @@ public class ConfigurationIL implements InputLinkElement {
 		lengthUnits = StringWme.newInstance(root, SharedNames.LENGTH_UNITS);
 		angleUnits = StringWme.newInstance(root, SharedNames.ANGLE_UNITS);
 		angleResolution = StringWme.newInstance(root, SharedNames.ANGLE_RESOLUTION);
+		speedUnits = StringWme.newInstance(root, SharedNames.SPEED_UNITS);
 		
 		Identifier poseTranslation = root.CreateIdWME(SharedNames.POSE_TRANSLATION);
-		xyz[0] = FloatWme.newInstance(poseTranslation, SharedNames.X);
-		xyz[1] = FloatWme.newInstance(poseTranslation, SharedNames.Y);
-		xyz[2] = FloatWme.newInstance(poseTranslation, SharedNames.Z);
+		xyz[0] = DistanceWme.newInstance(poseTranslation, SharedNames.X);
+		xyz[1] = DistanceWme.newInstance(poseTranslation, SharedNames.Y);
+		xyz[2] = DistanceWme.newInstance(poseTranslation, SharedNames.Z);
 		
 		{
 			Identifier limits = root.CreateIdWME(LIMITS);
 			Identifier velocity = limits.CreateIdWME(VELOCITY);
 			Identifier linear = velocity.CreateIdWME(LINEAR);
-			limitLinVelMax = FloatWme.newInstance(linear, MAXIMUM);
-			limitLinVelMin = FloatWme.newInstance(linear, MINIMUM);
+			limitLinVelMax = SpeedWme.newInstance(linear, MAXIMUM);
+			limitLinVelMin = SpeedWme.newInstance(linear, MINIMUM);
 			Identifier angular = velocity.CreateIdWME(ANGULAR);
-			limitAngVelMax = FloatWme.newInstance(angular, MAXIMUM);
-			limitAngVelMin = FloatWme.newInstance(angular, MINIMUM);
+			limitAngVelMax = SpeedWme.newInstance(angular, MAXIMUM);
+			limitAngVelMin = SpeedWme.newInstance(angular, MINIMUM);
 		}
 		{
 			Identifier geometry = root.CreateIdWME(GEOMETRY);
-			geomLength = FloatWme.newInstance(geometry, LENGTH);
-			geomWidth = FloatWme.newInstance(geometry, WIDTH);
-			geomHeight = FloatWme.newInstance(geometry, HEIGHT);
-			geomWheelbase = FloatWme.newInstance(geometry, WHEELBASE);
+			geomLength = DistanceWme.newInstance(geometry, LENGTH);
+			geomWidth = DistanceWme.newInstance(geometry, WIDTH);
+			geomHeight = DistanceWme.newInstance(geometry, HEIGHT);
+			geomWheelbase = DistanceWme.newInstance(geometry, WHEELBASE);
 		}
 		
 		update(app);
@@ -84,6 +85,7 @@ public class ConfigurationIL implements InputLinkElement {
 			lengthUnits.update(c.getLengthUnits().toString().toLowerCase());
 			angleUnits.update(c.getAngleUnits().toString().toLowerCase());
 			angleResolution.update(c.getAngleResolution().toString().toLowerCase());
+			speedUnits.update(c.getSpeedUnits().toString().toLowerCase());
 
 			for (int i = 0; i < xyz.length; ++i) {
 				xyz[i].update(c.getPoseTranslation()[i]);

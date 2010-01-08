@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 
 import lcmtypes.laser_t;
 import sml.Identifier;
-import edu.umich.soar.FloatWme;
 import edu.umich.soar.IntWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
@@ -19,14 +18,14 @@ public class LidarIL implements InputLinkElement {
 
 	private class Range {
 		private final Identifier rangewme;
-		private final FloatWme distancewme;
+		private final DistanceWme distancewme;
 		private boolean valid = true;
 		
 		private Range(int id, double relativeBearing) {
 			rangewme = root.CreateIdWME(SharedNames.RANGE);
 			IntWme.newInstance(rangewme, SharedNames.ID, id);
 			YawWme.newInstance(rangewme, SharedNames.RELATIVE_BEARING, relativeBearing);
-			distancewme = FloatWme.newInstance(rangewme, SharedNames.DISTANCE);
+			distancewme = DistanceWme.newInstance(rangewme, SharedNames.DISTANCE);
 			
 			logger.debug(String.format("Created range %d relative-bearing %1.3f", id, relativeBearing));
 		}

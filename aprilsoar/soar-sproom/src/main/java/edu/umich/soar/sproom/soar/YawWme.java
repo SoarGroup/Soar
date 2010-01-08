@@ -16,6 +16,7 @@ public class YawWme {
     	return temp;
     }
     
+	private final CommandConfig c = CommandConfig.CONFIG;
     private final FloatWme fwme;
     private final IntWme iwme;
     
@@ -25,10 +26,9 @@ public class YawWme {
     }
     
     public void update(double radians) {
-    	CommandConfig c = CommandConfig.CONFIG;
     	double view = c.angleToView(radians);
     	
-    	switch (CommandConfig.CONFIG.getAngleResolution()) {
+    	switch (c.getAngleResolution()) {
     	case FLOAT:
     		iwme.destroy();
    			fwme.update(view);

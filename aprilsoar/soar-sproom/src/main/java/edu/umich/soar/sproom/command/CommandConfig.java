@@ -44,7 +44,7 @@ public enum CommandConfig {
 	};
 	private LengthUnit lengthUnits = LengthUnit.METERS;
 	
-	enum SpeedUnit { 
+	public enum SpeedUnit { 
 		METERS_PER_SEC(1), FEET_PER_SEC(0.3048), MILES_PER_HOUR(0.44704);
 		
 		private final double metersPerSec;

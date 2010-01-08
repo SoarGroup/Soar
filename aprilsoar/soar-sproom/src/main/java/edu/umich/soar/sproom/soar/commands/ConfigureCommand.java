@@ -55,6 +55,19 @@ public class ConfigureCommand extends OutputLinkCommand {
 		}
 		
 		{
+			String temp = wme.GetParameterValue(SharedNames.SPEED_UNITS);
+			if (temp != null) {
+				try {
+					CommandConfig.SpeedUnit su = CommandConfig.SpeedUnit.valueOf(temp.toUpperCase());
+					config.setSpeedUnits(su);
+					logger.debug(SharedNames.SPEED_UNITS + ": " + su);
+				} catch (IllegalArgumentException e) {
+					return new InvalidCommand(wme, "Unknown " + SharedNames.SPEED_UNITS + " type " + temp);
+				}
+			}
+		}
+		
+		{
 			String temp = wme.GetParameterValue(SharedNames.ANGLE_UNITS);
 			if (temp != null) {
 				try {

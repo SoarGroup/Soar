@@ -3,7 +3,6 @@ package edu.umich.soar.sproom.soar;
 import lcmtypes.pose_t;
 import sml.Agent;
 import sml.Identifier;
-import edu.umich.soar.FloatWme;
 import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
@@ -15,10 +14,10 @@ public class SelfIL implements InputLinkElement {
 	private static final String AREA = "area";
 
 	private IntWme area;
-	private FloatWme[] xyz = new FloatWme[3];
-	private FloatWme[] xyzVelocity = new FloatWme[3];
+	private DistanceWme[] xyz = new DistanceWme[3];
+	private SpeedWme[] xyzVelocity = new SpeedWme[3];
 	private YawWme yaw;
-	private FloatWme yawVelocity;
+	private YawVelocityWme yawVelocity;
 	
 	public SelfIL(Identifier root, Adaptable app) {
 		Agent agent = (Agent)app.getAdapter(Agent.class);
@@ -27,14 +26,14 @@ public class SelfIL implements InputLinkElement {
 		area = IntWme.newInstance(root, AREA);
 		
 		Identifier pose = root.CreateIdWME(SharedNames.POSE);
-		xyz[0] = FloatWme.newInstance(pose, SharedNames.X);
-		xyz[1] = FloatWme.newInstance(pose, SharedNames.Y);
-		xyz[2] = FloatWme.newInstance(pose, SharedNames.Z);
+		xyz[0] = DistanceWme.newInstance(pose, SharedNames.X);
+		xyz[1] = DistanceWme.newInstance(pose, SharedNames.Y);
+		xyz[2] = DistanceWme.newInstance(pose, SharedNames.Z);
 		yaw = YawWme.newInstance(pose, SharedNames.YAW);
-		xyzVelocity[0] = FloatWme.newInstance(pose, SharedNames.X_VELOCITY);
-		xyzVelocity[1] = FloatWme.newInstance(pose, SharedNames.Y_VELOCITY);
-		xyzVelocity[2] = FloatWme.newInstance(pose, SharedNames.Z_VELOCITY);
-		yawVelocity = FloatWme.newInstance(pose, SharedNames.YAW_VELOCITY);
+		xyzVelocity[0] = SpeedWme.newInstance(pose, SharedNames.X_VELOCITY);
+		xyzVelocity[1] = SpeedWme.newInstance(pose, SharedNames.Y_VELOCITY);
+		xyzVelocity[2] = SpeedWme.newInstance(pose, SharedNames.Z_VELOCITY);
+		yawVelocity = YawVelocityWme.newInstance(pose, SharedNames.YAW_VELOCITY);
 		
 		update(app);
 	}

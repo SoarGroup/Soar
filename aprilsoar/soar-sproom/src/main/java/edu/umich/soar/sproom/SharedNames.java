@@ -41,6 +41,7 @@ public enum SharedNames {
 	public static final String RELATIVE_BEARING = "relative-bearing";
 	public static final String ROOM = "room";
 	public static final String SELF = "self";
+	public static final String SPEED_UNITS = "speed-units";
 	public static final String TIME = "time";
 	public static final String TO = "to";
 	public static final String TYPE = "type";

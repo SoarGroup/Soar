@@ -3,7 +3,6 @@ package edu.umich.soar.sproom.soar;
 import jmat.LinAlg;
 import jmat.MathUtil;
 import lcmtypes.pose_t;
-import edu.umich.soar.FloatWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Pose;
@@ -13,7 +12,7 @@ public class PointDataIL implements InputLinkElement {
 
 	private final Identifier root;
 	private final double[] pos;
-	private final FloatWme distance;
+	private final DistanceWme distance;
 	private final YawWme yaw;
 	private final YawWme relYaw;
 	private final YawWme absRelYaw;
@@ -24,11 +23,11 @@ public class PointDataIL implements InputLinkElement {
 		this.pos = new double[pos.length];
 		System.arraycopy(pos, 0, this.pos, 0, pos.length);
 
-		FloatWme.newInstance(root, SharedNames.X, this.pos[0]);
-		FloatWme.newInstance(root, SharedNames.Y, this.pos[0]);
-		FloatWme.newInstance(root, SharedNames.Z, this.pos[2]);
+		DistanceWme.newInstance(root, SharedNames.X, this.pos[0]);
+		DistanceWme.newInstance(root, SharedNames.Y, this.pos[0]);
+		DistanceWme.newInstance(root, SharedNames.Z, this.pos[2]);
 		
-		distance = FloatWme.newInstance(root, SharedNames.DISTANCE);
+		distance = DistanceWme.newInstance(root, SharedNames.DISTANCE);
 		yaw = YawWme.newInstance(root, SharedNames.YAW);
 		relYaw = YawWme.newInstance(root, SharedNames.RELATIVE_BEARING);
 		absRelYaw = YawWme.newInstance(root, SharedNames.ABS_RELATIVE_BEARING);
