@@ -1,11 +1,9 @@
 package edu.umich.soar.sproom.soar;
 
-import jmat.LinAlg;
-import jmat.MathUtil;
-import lcmtypes.pose_t;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Pose;
+import edu.umich.soar.sproom.command.Pose.RelativePointData;
 import sml.Identifier;
 
 public class PointDataIL implements InputLinkElement {
@@ -17,6 +15,7 @@ public class PointDataIL implements InputLinkElement {
 	private final YawWme relYaw;
 	private final YawWme absRelYaw;
 	private boolean destroyed = false;
+	private RelativePointData rpd;
 
 	PointDataIL(Identifier root, double[] pos) {
 		this.root = root;
@@ -24,7 +23,7 @@ public class PointDataIL implements InputLinkElement {
 		System.arraycopy(pos, 0, this.pos, 0, pos.length);
 
 		DistanceWme.newInstance(root, SharedNames.X, this.pos[0]);
-		DistanceWme.newInstance(root, SharedNames.Y, this.pos[0]);
+		DistanceWme.newInstance(root, SharedNames.Y, this.pos[1]);
 		DistanceWme.newInstance(root, SharedNames.Z, this.pos[2]);
 		
 		distance = DistanceWme.newInstance(root, SharedNames.DISTANCE);
@@ -39,20 +38,17 @@ public class PointDataIL implements InputLinkElement {
 			throw new IllegalStateException();
 		}
 		
-		Pose poseClass = (Pose)app.getAdapter(Pose.class);
-		pose_t pose = poseClass.getPose();
-		
-		distance.update(LinAlg.distance(pose.pos, pos));
+		Pose pose = (Pose)app.getAdapter(Pose.class);
+		rpd = pose.getRelativePointData(pos);
 
-		double [] delta = LinAlg.subtract(pos, pose.pos);
-		double yawVal = Math.atan2(delta[1], delta[0]);
-		yaw.update(yawVal);
-		
-		double relYawVal = yawVal - LinAlg.quatToRollPitchYaw(pose.orientation)[2];
-		relYawVal = MathUtil.mod2pi(relYawVal);
-		relYaw.update(relYawVal);
-		
-		absRelYaw.update(Math.abs(relYawVal));
+		distance.update(rpd.distance);
+		yaw.update(rpd.yaw);
+		relYaw.update(rpd.relativeYaw);
+		absRelYaw.update(Math.abs(rpd.relativeYaw));
+	}
+	
+	RelativePointData getRelativePointData() {
+		return rpd;
 	}
 	
 	void destroy() {

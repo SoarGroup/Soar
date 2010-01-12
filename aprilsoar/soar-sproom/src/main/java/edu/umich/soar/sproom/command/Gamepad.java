@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.control;
+package edu.umich.soar.sproom.command;
 
 import java.io.File;
 import java.io.FileInputStream;

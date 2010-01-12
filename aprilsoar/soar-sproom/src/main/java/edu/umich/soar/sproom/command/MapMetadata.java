@@ -135,11 +135,10 @@ public class MapMetadata {
 	private final LCM lcm = LCM.getSingleton();
 
 	public MapMetadata(Config config) {
-		
-		int numAreas = config.getStrings("metadata.areas").length;
+		int numAreas = config.getStrings("metadata.areas", new String[0]).length;
 		Map<String, Area> areaMap = new HashMap<String, Area>(numAreas);
 		areaList = new ArrayList<Area>(numAreas);
-		for(String areaNickname : config.getStrings("metadata.areas")) {
+		for(String areaNickname : config.getStrings("metadata.areas", new String[0])) {
 			boolean door = config.getBoolean("metadata." + areaNickname + ".door", false);
 			
 			double[] pos = config.getDoubles("metadata." + areaNickname + ".pos");
@@ -161,9 +160,9 @@ public class MapMetadata {
 			areaList.add(area);
 		}
 		
-		int numGateways = config.getStrings("metadata.gateways").length;
+		int numGateways = config.getStrings("metadata.gateways", new String[0]).length;
 		gatewayList = new ArrayList<Gateway>(numGateways);
-		for(String gatewayNickname : config.getStrings("metadata.gateways")) {
+		for(String gatewayNickname : config.getStrings("metadata.gateways", new String[0])) {
 			
 			double[] pos = config.getDoubles("metadata." + gatewayNickname + ".pos");
 			if (pos == null) {

@@ -8,6 +8,10 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
+import edu.umich.soar.sproom.command.Pose;
+import edu.umich.soar.sproom.command.VirtualObject;
+import edu.umich.soar.sproom.command.VirtualObjects;
+import edu.umich.soar.sproom.soar.Cargo;
 
 import sml.Identifier;
 
@@ -53,9 +57,23 @@ public class DropObjectCommand extends OutputLinkCommand {
 	@Override
 	public void update(Adaptable app) {
 		if (!complete) {
-			// TODO: get object manipulation interface, perform drop
-			CommandStatus.error.addStatus(wme, "Not implemented.");
 			complete = true;
+			
+			Cargo cargo = (Cargo)app.getAdapter(Cargo.class);
+			if (!cargo.isCarrying()) {
+				CommandStatus.error.addStatus(wme, "Not carrying an object.");
+				return;
+			}
+
+			VirtualObject object = cargo.getCarriedObject();
+			Pose pose = (Pose)app.getAdapter(Pose.class);
+			VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
+
+			object.setPos(pose.getPose().pos);
+			vobjs.addObject(object);
+			cargo.setCarriedObject(null);
+			CommandStatus.complete.addStatus(wme);
+			return;
 		}
 	}
 

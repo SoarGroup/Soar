@@ -22,6 +22,7 @@ public enum SharedNames {
 	public static final String DIRECTION = "direction";
 	public static final String DISTANCE = "distance";
 	public static final String DOOR = "door";
+	public static final String FALSE = "false";
 	public static final String FIRST = "first";
 	public static final String FLOAT = "float";
 	public static final String FROM = "from";
@@ -33,6 +34,7 @@ public enum SharedNames {
 	public static final String MESSAGE = "message";
 	public static final String NEXT = "next";
 	public static final String NIL = "nil";
+	public static final String OBJECT = "object";
 	public static final String OBJECTS = "objects";
 	public static final String POSE = "pose";
 	public static final String POSE_TRANSLATION = "pose_translation";
@@ -44,7 +46,9 @@ public enum SharedNames {
 	public static final String SPEED_UNITS = "speed-units";
 	public static final String TIME = "time";
 	public static final String TO = "to";
+	public static final String TRUE = "true";
 	public static final String TYPE = "type";
+	public static final String VISIBLE = "visible";
 	public static final String WALL = "wall";
 	public static final String WAYPOINT = "waypoint";
 	public static final String WAYPOINTS = "waypoints";

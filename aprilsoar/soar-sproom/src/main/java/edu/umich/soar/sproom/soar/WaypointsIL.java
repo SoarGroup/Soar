@@ -41,6 +41,9 @@ public class WaypointsIL implements InputLinkElement {
 					StringWme.newInstance(wme, SharedNames.ID, waypoint.getId());
 				}
 			}
+			
+			pointData.update(app);
+			
 			newWaypointMap.put(waypoint, pointData);
 		}
 

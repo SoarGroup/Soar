@@ -15,9 +15,9 @@ public enum CommandConfig {
 	private String productions;
 	
 	// TODO defaults
-	private double limitLinVelMax;
+	private double limitLinVelMax = 0.5;
 	private double limitLinVelMin;
-	private double limitAngVelMax;
+	private double limitAngVelMax = Math.PI;
 	private double limitAngVelMin;
 	
 	private double geomLength;
@@ -73,6 +73,11 @@ public enum CommandConfig {
 	private final ConcurrentMap<String, double[]> pidGains = new ConcurrentHashMap<String, double[]>(); 
 	
 	private int rangeCount = 5; // LIDAR
+	
+	private double fieldOfView = Math.PI / 2.0;
+	private long visibleNanoTime = 2 * 1000000000;
+	private double getDistance = 0.5;
+	private double gamepadZeroThreshold = 0.4;
 
 	private final List<CommandConfigListener> listeners = new CopyOnWriteArrayList<CommandConfigListener>();
 
@@ -266,5 +271,21 @@ public enum CommandConfig {
 
 	public int getRangeCount() {
 		return rangeCount;
+	}
+	
+	public double getFieldOfView() {
+		return fieldOfView;
+	}
+
+	public long getVisibleNanoTime() {
+		return visibleNanoTime;
+	}
+
+	public double getGetDistance() {
+		return getDistance;
+	}
+
+	public double getGamepadZeroThreshold() {
+		return gamepadZeroThreshold;
 	}
 }

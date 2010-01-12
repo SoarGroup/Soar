@@ -53,6 +53,30 @@ public class Pose implements LCMSubscriber {
 		return elaboratedPose.copy();
 	}
 	
+	public static class RelativePointData {
+		public final double distance;
+		public final double yaw;
+		public final double relativeYaw;
+		
+		public RelativePointData(double distance, double yaw, double relativeYaw) {
+			this.distance = distance;
+			this.yaw = yaw;
+			this.relativeYaw = relativeYaw;
+		}
+	}
+	
+	public RelativePointData getRelativePointData(double[] pos) {
+		double distance = LinAlg.distance(pose.pos, pos);
+
+		double [] delta = LinAlg.subtract(pos, pose.pos);
+		double yaw = Math.atan2(delta[1], delta[0]);
+		
+		double relativeYaw = yaw - LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+		relativeYaw = MathUtil.mod2pi(relativeYaw);
+
+		return new RelativePointData(distance, yaw, relativeYaw);
+	}
+	
 	public double getYaw() {
 		return LinAlg.quatToRollPitchYaw(getPose().orientation)[2];
 	}

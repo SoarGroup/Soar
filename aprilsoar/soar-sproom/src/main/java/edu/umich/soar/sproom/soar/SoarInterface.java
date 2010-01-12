@@ -17,6 +17,7 @@ import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Lidar;
 import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
+import edu.umich.soar.sproom.command.VirtualObjects;
 import edu.umich.soar.sproom.command.Waypoints;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveListener;
@@ -45,14 +46,17 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	private final Comm comm;
 	private final Lidar lidar;
 	private final MapMetadata metadata;
+	private final VirtualObjects vobjs;
+	private final Cargo cargo = new Cargo();
 	private final Adaptable app; // self-reference for handler code
 	
-	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm, Lidar lidar, MapMetadata metadata) {
+	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm, Lidar lidar, MapMetadata metadata, VirtualObjects vobjs) {
 		this.pose = pose;
 		this.waypoints = waypoints;
 		this.comm = comm;
 		this.lidar = lidar;
 		this.metadata = metadata;
+		this.vobjs = vobjs;
 		this.app = this;
 		
 		kernel = Kernel.CreateKernelInNewThread();
@@ -80,7 +84,13 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 			logger.error("Failed to load productions: " + productions);
 			logger.error("Agent error: " + agent.GetLastErrorDescription());
 			logger.error("Not shutting down, use debugger to fix.");
+			productions = null;
+		}
+		
+		if (productions == null) {
+			logger.info("No productions, executing waitsnc and watch 0");
 			agent.ExecuteCommandLine("waitsnc -e");
+			agent.ExecuteCommandLine("w 0");
 		}
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, null);
@@ -141,7 +151,7 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		driveListeners.add(driveListener);
 	}
 	
-	boolean removeDriveListener(DriveListener driveListener) {
+	public boolean removeDriveListener(DriveListener driveListener) {
 		return driveListeners.remove(driveListener);
 	}
 	
@@ -197,6 +207,10 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 			return lidar;
 		} else if (klass == MapMetadata.class) {
 			return metadata;
+		} else if (klass == VirtualObjects.class) {
+			return vobjs;
+		} else if (klass == Cargo.class) {
+			return cargo;
 		}
 		return null;
 	}
