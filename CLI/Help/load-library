@@ -1,0 +1,76 @@
+                         Documentation/CLI/load-library
+
+                                      Name
+
+   load-library - Load a shared library into the local client (for the
+   purpose of, e.g., providing custom event handling).
+
+                                    Synopsis
+
+ load-library [library_name] [arguments]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |            |The root name of the library (without the .dll or .so      |
+   |library_name|extension; this is added for you depending on your         |
+   |            |platform).                                                 |
+   |------------+-----------------------------------------------------------|
+   |arguments   |Whatever arguments the library's initialization function is|
+   |            |expecting, if any.                                         |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   Sometimes, a user will want to extend an existing environment. For
+   example, the person may want to provide custom RHS functions, or register
+   for print events for the purpose of logging trace information. If
+   modifying the existing environment is cumbersome or impossible, then the
+   user has two options: create a remote client that provides the
+   functionality, or use load-library. Load-library creates extensions in the
+   local client, making it orders of magnitude faster than a remote client.
+
+   To create a loadable library, the library must contain the following
+   function:
+
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+
+ EXPORT char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv) {
+   // Your code here
+ }
+
+ #ifdef __cplusplus
+ } // extern "C"
+ #endif
+
+   This function is called when load-library loads your library. It is
+   responsible for any initialization that you want to take place (e.g.
+   registering custom RHS functions, registering for events, etc).
+
+   The argc and argv arguments are intended to mirror the arguments that a
+   standard SML client would get. Thus, the first argument is the name of the
+   library, and the rest are whatever other arguments are provided. This is
+   to make it easy to use the same codebase to create a loadable library or a
+   standard remote SML client (e.g. when run as a standard client, just pass
+   the arguments main gets into sml_InitLibrary).
+
+   The return value of sml_InitLibrary is for any error messages you want to
+   return to the load-library call. If no error occurs, return a zero-length
+   string.
+
+   An example library is provided in the Tools/TestExternalLibraryLib
+   project. This example can also be compiled as a standard remote SML
+   client. The Tools/TestExternalLibraryExe project tests loading the
+   TestExternalLibraryLib library.
+
+                                    Examples
+
+   To load TestExternalLibraryLib:
+
+ load-library TestExternalLibraryLib
+
+   To load a library that takes arguments (say, a logger):
+
+ load-library my-logger -filename mylog.log

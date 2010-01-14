@@ -1,0 +1,28 @@
+sp {kb*propose*test-init
+   (state <s> ^name kb
+              ^phase test
+              ^sub-phase init
+              ^max-tests <max>
+              ^current-test {<c> <= <max>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name test-init
+         ^test <c>)
+}
+
+sp {apply*test-init
+   (state <s> ^operator <op>
+              ^tests <ts>)
+   (<ts> ^test <t>)
+   (<op> ^name test-init
+         ^test <c>)
+   (<t> ^id <c>
+        ^name <t-name>
+        ^note <t-note>)
+-->
+   (<s> ^sub-phase init -
+        ^sub-phase cue
+        ^step 1)
+   (write (crlf) |Test (| <c> |) "| <t-name> |" - begin|)
+   (write (crlf) <t-note> (crlf) | |)
+}

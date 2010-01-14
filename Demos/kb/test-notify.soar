@@ -1,0 +1,152 @@
+sp {kb*propose*test-notify
+   (state <s> ^name kb
+              ^phase test
+              ^sub-phase notify
+              ^result <result>
+              ^step <step>
+              ^max-tests <max>
+              ^current-test {<c> <= <max>}
+              ^tests <ts>)
+   (<ts> ^test <t>)
+   (<t> ^id <c>
+        ^steps {>= <step>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name test-notify
+         ^test <c>
+         ^step <step>
+         ^result <result>)
+}
+
+sp {apply*test-notify*success
+   (state <s> ^operator <op>
+              ^tests <ts>)
+   (<ts> ^test <t>)
+   (<op> ^name test-notify
+         ^test <c>
+         ^step <step>
+         ^result success)
+   (<t> ^id <c>
+        ^step <st>)
+   (<st> ^id <step>)
+   
+-->
+   (<s> ^step <step> -
+        ^step (+ <step> 1)
+        ^result success -
+        ^sub-phase notify -
+        ^sub-phase cue)
+   (write | | <step> |: complete.| (crlf) | |)
+}
+
+##
+
+sp {apply*test-notify*clean*query
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^query <q>)
+-->
+   (<cmd> ^query <q> -)
+}
+
+sp {apply*test-notify*clean*neg-query
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^neg-query <q>)
+-->
+   (<cmd> ^neg-query <q> -)
+}
+
+sp {apply*test-notify*clean*retrieve
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^retrieve <q>)
+-->
+   (<cmd> ^retrieve <q> -)
+}
+
+
+sp {apply*test-notify*clean*next
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^next <q>)
+-->
+   (<cmd> ^next <q> -)
+}
+
+
+sp {apply*test-notify*clean*previous
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^previous <q>)
+-->
+   (<cmd> ^previous <q> -)
+}
+
+
+sp {apply*test-notify*clean*before
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^before <q>)
+-->
+   (<cmd> ^before <q> -)
+}
+
+sp {apply*test-notify*clean*after
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^after <q>)
+-->
+   (<cmd> ^after <q> -)
+}
+
+sp {apply*test-notify*clean*prohibit
+   (state <s> ^operator <op>
+              ^epmem <epmem>)
+   (<op> ^name test-notify
+         ^result success)
+   (<epmem> ^command <cmd>)
+   (<cmd> ^prohibit <q>)
+-->
+   (<cmd> ^prohibit <q> -)
+}
+
+##
+
+sp {apply*test-notify*failure
+   (state <s> ^operator <op>
+              ^tests <ts>)
+   (<op> ^name test-notify
+         ^test <c>
+         ^step <step>
+         ^result failure)
+   (<ts> ^test <t>)
+   (<t> ^id <c>
+        ^step <st>)
+   (<st> ^id <step>)
+   
+-->
+   (write | | <step> |: failed.| (crlf) | |)
+   (halt)
+}

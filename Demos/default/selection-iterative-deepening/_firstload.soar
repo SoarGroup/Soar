@@ -1,0 +1,22 @@
+## 
+##
+############################# -*- Mode: Soar -*- #############################
+## 
+## File            : default/selection-iterative deepening.soar
+## Author          : John Laird
+## Created on      : January 25, 2007  
+## Last Modified On: May 9, 2007, swinterm (removed local negations)
+## 
+## Contents:     Default productions for selection problem space for Soar 8.6 with iterative deepening
+##                  !!!! Only works for look-ahead over operators that execute in single cycle - no operator-no-change
+######################################################################
+### Changes for Iterative Deepening
+###    0. Add count of number of tied operators - necessary to ensure all operators - up to 6
+###       and tested before incrementing current-evaluation-depth
+###    1. Maintain current depth on evaluation (current-evaluation-depth)
+###       A. add operator to initiatilize if none on task state
+###       B. add operator to increment if no more evaluations at current level
+###    2. Move (current-evaluation-depth - 1) to substate (current-evaluation-depth)
+###    5. Terminate search when current-evaluation-depth = 0
+###    6. Modify evaluation structure on state so associates depth with evaluation
+###

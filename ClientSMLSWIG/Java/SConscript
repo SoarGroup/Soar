@@ -1,0 +1,68 @@
+#!/usr/bin/python
+import glob
+import os
+import SCons.Script
+import sys
+import SoarSCons
+
+Import('env')
+
+# This directory must exist for swig not to fail
+if not env.GetOption('clean'):
+	if not os.path.exists('src/sml'):
+		if not os.path.exists('src'):
+			os.mkdir('src')
+		os.mkdir('src/sml')
+
+####
+# Produce wrapper cpp
+wrapper_env = env.Clone()
+# Scanner for dependencies in .i files
+SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
+wrapper_env.Append(SCANNERS=[SWIGScanner])
+java_sml_interface_wrap_target = '#Core/ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp'
+java_sml_interface_wrap_source = '#Core/ClientSMLSWIG/Java/Java_sml_ClientInterface.i'
+wrapper_env.Command('#Core/ClientSMLSWIG/Java/src', java_sml_interface_wrap_source, 'mkdir Core/ClientSMLSWIG/Java/src')
+wrapper_env.Command('#Core/ClientSMLSWIG/Java/src/sml', java_sml_interface_wrap_source, 'mkdir Core/ClientSMLSWIG/Java/src/sml')
+# Side effect: this produces src/*.java files (the SML Java interface)
+wrapper_env.Command(java_sml_interface_wrap_target, java_sml_interface_wrap_source, 'swig -o Core/ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp -c++ -java -Wall -package sml -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include -outdir Core/ClientSMLSWIG/Java/src/sml Core/ClientSMLSWIG/Java/Java_sml_ClientInterface.i')
+wrapper_env.SideEffect('src/sml/*.java', java_sml_interface_wrap_target)
+# Removes SML Java interface files
+wrapper_env.Clean(java_sml_interface_wrap_target, 'src')
+#### (end wrapper)
+
+####
+# Produce shared library
+def determine_flags(env):
+	# Remove some optimizations
+	if env['CPPFLAGS'].find('fvisibility') >= 0:
+		return ' -Wno-unused -fno-strict-aliasing -fvisibility=default'
+	return ' -Wno-unused -fno-strict-aliasing'
+def determine_shlib_target(env):
+	# Things a bit different on Mac
+	if sys.platform == 'darwin':
+		env.Append(SHLINKFLAGS = ' -framework JavaVM')
+		#env['SHLIBSUFFIX'] = '.jnilib'
+		return 'libJava_sml_ClientInterface.jnilib'
+	return 'Java_sml_ClientInterface'
+shlib_env = env.Clone()
+shlib_env.Prepend(CPPPATH = ['#Core/ClientSML/include', '#Core/ElementXML/include', '#Core/ConnectionSML/include', ])
+shlib_env.Append(CPPFLAGS = determine_flags(shlib_env))
+shlib_env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', ])
+shlib_env.Append(LIBPATH = ['#Core/ClientSML', '#Core/ConnectionSML', '#Core/ElementXML', ])
+java_sml_interface_shlib_target = determine_shlib_target(shlib_env)
+java_sml_interface_shlib_source = 'Java_sml_ClientInterface_wrap.cpp'
+# Explicitly depend on the wrapper target
+Depends(java_sml_interface_shlib_target, java_sml_interface_wrap_target)
+java_sml_interface_shlib = shlib_env.SharedLibrary(java_sml_interface_shlib_target, java_sml_interface_shlib_source)
+shlib_env.Install('#SoarLibrary/lib', java_sml_interface_shlib)
+#### (end shlib)
+
+####
+# Produce jar
+jar_env = env.Clone()
+sml_jar_target = '#Core/ClientSMLSWIG/Java/sml.jar'
+Depends(sml_jar_target, 'build.xml')
+jar_env.Command(sml_jar_target, 'src/sml/*.java', 'ant -q')
+#### (end jar)
+

@@ -1,0 +1,29 @@
+
+###
+### STATE SUCCESS/GOAL DETECTION
+###
+
+sp {mac*detect*state*success
+   (state <s> ^desired <d>
+              ^<side> <ls>)
+   (<ls> ^missionaries <m>
+         ^cannibals <c>)
+   (<d> ^{ << right-bank left-bank >> <side> } <dls>)
+   (<dls> ^missionaries <m>
+          ^cannibals <c>)
+-->
+   (write (crlf) |The problem has been solved.|)
+   (halt)}
+
+###
+### STATE FAILURE DETECTION
+###
+
+sp {mac*evaluate*state*failure*more*cannibals
+   (state <s> ^desired <d>
+              ^<< right-bank left-bank >> <bank>)
+   (<bank> ^missionaries { <n> > 0 }
+           ^cannibals > <n>)
+-->
+   (write (crlf) |Failure State.|)
+   (<s> ^failure <d>)}

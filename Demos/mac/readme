@@ -1,0 +1,46 @@
+# mac/README
+# John Laird
+# October 20, 1999
+#
+# ABSTRACT. This file provides a Soar system to solve the missionaries
+# and cannibals problem. Three missionaries and three cannibals come to
+# a river. There is a a boat on their side of the river that can be used
+# by either one or two persons at a time.  This boat must be used to
+# cross the river in such a way that cannibals never outnumber
+# missionaries on either side of the river.
+#
+# 
+# Missionaries and Cannibals
+#
+#    Three versions, using different state representations showing
+#    tradeoffs in state representations for operator application
+#    vs. state copying, and generality of chunking.
+#
+# mac1.soar: 
+# Simple state representation where the state has two objects: one for
+# each side of the river. Each of these has augmentations for
+# missionaries, cannibals, and the boat; with their values being the
+# number of the entity type on that side of the river. This is the
+# version covered in Soar 8 Tutorial.
+#
+# mac1-planning.soar: 
+# Same state representation but with additional rules to support
+# planning and chunking. 
+#
+# mac1-planning-numeric.soar: 
+# Same as mac1-planning but with a numeric evaluation during lookahead.
+# Numeric evaluation leads to shallower look-ahead and less planning, 
+# but not as good learning - evaluation function is only a heuristic
+# and chunking captures that.
+# 
+# mac2.soar: 
+# Simple state representation where the state has three objects:
+# missionaries, cannibals, and boat. Each of these has subobjects for
+# the number of that entity type on each side of the river.
+# Does not support planning. Let to an exercise to the reader to
+# incorporate planning.  
+#
+# mac3-planning.soar:
+# State representation and operator application is more complex in
+# support of more generality in learning using the current version of
+# chunking. Supports planning and chunking

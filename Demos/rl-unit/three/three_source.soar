@@ -1,0 +1,6 @@
+source elaborations.soar
+source three-one.soar
+pushd three-one
+source three-one_source.soar
+popd
+source three-two.soar

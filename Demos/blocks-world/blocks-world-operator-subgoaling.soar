@@ -1,0 +1,3 @@
+pushd blocks-world-operator-subgoaling
+source blocks-world-operator-subgoaling_source.soar
+popd

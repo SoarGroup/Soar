@@ -1,0 +1,3 @@
+pushd blocks-world-look-ahead
+source blocks-world-look-ahead_source.soar
+popd

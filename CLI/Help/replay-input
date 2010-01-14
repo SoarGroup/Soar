@@ -1,0 +1,34 @@
+                         Documentation/CLI/replay-input
+
+                                      Name
+
+   replay-input - Load input wmes for each decision cycle from a file.
+
+                                    Synopsis
+
+ replay-input --open filename
+ replay-input [--query]
+ replay-input aEUR"-close
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |filename   |Open filename and load input and random seed.               |
+   |-----------+------------------------------------------------------------|
+   |-o, --open |Reads captured input from file in to memory and seeds the   |
+   |           |random number generator.                                    |
+   |-----------+------------------------------------------------------------|
+   |-q, --query|Returns open if input replay is active or closed if not     |
+   |           |active.                                                     |
+   |-----------+------------------------------------------------------------|
+   |-c, --close|Stop replaying input.                                       |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   Replays input stored using the capture-input command. The replay file also
+   includes a random number generator seed and seeds the generator with that.
+
+                                    See Also
+
+   capture-input

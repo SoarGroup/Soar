@@ -1,0 +1,31 @@
+                           Documentation/CLI/predict
+
+                                      Name
+
+   predict - Predict the next selected operator
+
+                                    Synopsis
+
+ predict
+
+                                    Options
+
+   No options
+
+                                  Description
+
+   The predict command determines, based upon current operator proposals,
+   which operator will be chosen during the next decision phase. If predict
+   determines an operator tie will be encountered, "tie" is returned. If
+   predict determines no operator will be selected (state no-change), "none"
+   is returned. If predict determines a conflict will arise during the
+   decision phase, "conflict" is returned. If predict determines a constraint
+   failure will occur, "constraint" is returned. Otherwise, predict will
+   return the id of the operator to be chosen. If operator selection will
+   require probabilistic selection, and no alterations to the probabilities
+   are made between the call to predict and decision phase, predict will
+   manipulate the random number generator to enforce its prediction.
+
+                                    See Also
+
+   select

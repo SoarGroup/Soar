@@ -1,0 +1,107 @@
+                    Documentation/CLI/indifferent-selection
+
+                                      Name
+
+   indifferent-selection - Controls indifferent preference arbitration.
+
+                                    Synopsis
+
+ indifferent-selection
+ indifferent-selection [-s]
+ indifferent-selection [-bgfxl]
+ indifferent-selection [-et] [value]
+ indifferent-selection [-p] <parameter> [reduction policy]
+ indifferent-selection [-r] <parameter> <reduction policy> [reduction rate]
+ indifferent-selection [-a] [setting]
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-s, --stats                   |Summary of settings                      |
+   |------------------------------+-----------------------------------------|
+   |<policy>                      |Set exploration policy                   |
+   |------------------------------+-----------------------------------------|
+   |                              |Get/Set exploration policy parameters (if|
+   |<parameter> [value]           |value not given, returns the current     |
+   |                              |value)                                   |
+   |------------------------------+-----------------------------------------|
+   |                              |Get/Set exploration policy parameter     |
+   |<parameter> [reduction policy]|reduction policy (if policy not given,   |
+   |                              |returns the current)                     |
+   |------------------------------+-----------------------------------------|
+   |<parameter> <reduction policy>|Get/Set exploration policy parameter     |
+   |[reduction rate]              |reduction rate for a policy (if rate not |
+   |                              |give, returns the current)               |
+   |------------------------------+-----------------------------------------|
+   |                              |Get/Set auto-reduction setting (if       |
+   |-a, --auto-reduce [on,off]    |setting not provided, returns the        |
+   |                              |current)                                 |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   The indifferent-selection command allows the user to set options relating
+   to selection between operator proposals that are mutually indifferent in
+   preference memory.
+
+   The primary option is the exploration policy (each is covered below). When
+   Soar starts, softmax is the default policy. The first time Soar-RL is
+   enabled, the architecture automatically changes the policy to
+   epsilon-greedy and issues a message to the trace.
+
+   Some policies have parameters to temper behavior. The
+   indifferent-selection command provides basic facilities to automatically
+   reduce these parameters exponentially and linearly each decision cycle by
+   a fixed rate. In addition to setting these policies/rates, the auto-reduce
+   option enables the automatic reduction system (disabled by default), for
+   which the Soar decision cycle incurs a small performance cost.
+
+                              Exploration Policies
+
+   +------------------------------------------------------------------------+
+   |-b, --boltzmann     |Tempered softmax (uses temperature)                |
+   |--------------------+---------------------------------------------------|
+   |-g, --epsilon-greedy|Tempered greedy (uses epsilon)                     |
+   |--------------------+---------------------------------------------------|
+   |                    |Random, biased by numeric indifferent values (if a |
+   |-x, --softmax       |non-positive value is encountered, resorts to a    |
+   |                    |uniform random selection)                          |
+   |--------------------+---------------------------------------------------|
+   |-f, --first         |Deterministic, first indifferent preference is     |
+   |                    |selected                                           |
+   |--------------------+---------------------------------------------------|
+   |-l, --last          |Deterministic, last indifferent preference is      |
+   |                    |selected                                           |
+   +------------------------------------------------------------------------+
+
+                         Exploration Policy Parameters
+
+   +-------------------------------------------------+
+   |Parameter Name   |Acceptable Values|Default Value|
+   |-----------------+-----------------+-------------|
+   |-e, --epsilon    |[0, 1]           |0.1          |
+   |-----------------+-----------------+-------------|
+   |-t, --temperature|(0, inf)         |25           |
+   +-------------------------------------------------+
+
+              Exploration Policy Parameter Auto-Reduction Policies
+
+   +--------------------------------------------+
+   |Policy Name        |Valid Rates|Default Rate|
+   |-------------------+-----------+------------|
+   |exponential default|[0, 1]     |1           |
+   |-------------------+-----------+------------|
+   |linear             |[0, inf]   |0           |
+   +--------------------------------------------+
+
+                                Default Aliases
+
+   +---------------------------+
+   |Alias|Maps to              |
+   |-----+---------------------|
+   |inds |indifferent-selection|
+   +---------------------------+
+
+                                    See Also
+
+   numeric-indifferent-mode rl

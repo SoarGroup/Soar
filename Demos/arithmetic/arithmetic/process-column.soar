@@ -1,0 +1,11 @@
+sp {arithmetic*propose*process-column
+   (state <s> ^name arithmetic
+              ^arithmetic-problem.current-column <cc>)
+  -(<cc> ^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name process-column)
+}
+
+
+

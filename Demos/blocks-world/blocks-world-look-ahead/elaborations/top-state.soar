@@ -1,0 +1,9 @@
+sp {blocks-world*elaborate*problem-space
+   (state <s> ^name blocks-world)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name move-blocks
+        ^default-state-copy yes
+        ^two-level-attributes ontop
+        ^one-level-attributes object)}
+

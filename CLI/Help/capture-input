@@ -1,0 +1,45 @@
+                        Documentation/CLI/capture-input
+
+                                      Name
+
+   capture-input - Store the input wmes in a file for reloading later.
+
+                                    Synopsis
+
+ capture-input --open filename [--flush]
+ capture-input [--query]
+ capture-input aEUR"-close
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |filename   |Open filename and begin recording input.                    |
+   |-----------+------------------------------------------------------------|
+   |-o, --open |Writes captured input to file overwriting any existing data.|
+   |-----------+------------------------------------------------------------|
+   |-f, --flush|Writes input to file as soon as it is encountered instead of|
+   |           |storing it in RAM and writing when capturing is turned off. |
+   |-----------+------------------------------------------------------------|
+   |-q, --query|Returns open if input capturing is active or closed if      |
+   |           |capturing is not active.                                    |
+   |-----------+------------------------------------------------------------|
+   |-c, --close|Stop capturing input and close the file, writing captured   |
+   |           |input unless the flush option is given.                     |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   Save agent commands issued from the input cycle function in a file for
+   reloading later.
+
+   This command may be used to start and stop the recording of input function
+   commands as created by an external simulation. Commands are recorded
+   decision cycle by decision cycle. Use the command replay-input to replay
+   the sequence.
+
+   Note that this command seeds the random number generator and writes the
+   seed to the capture file.
+
+                                    See Also
+
+   replay-input

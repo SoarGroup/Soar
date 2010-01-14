@@ -1,0 +1,19 @@
+sp {water-jug*propose*initialize-water-jug-look-ahead
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-water-jug-look-ahead)}
+
+sp {water-jug*apply*initialize-water-jug-look-ahead
+   (state <s> ^operator.name initialize-water-jug-look-ahead)
+-->
+   (<s> ^name water-jug
+        ^jug <i> <j>
+        ^desired.jug <k>)
+   (<i> ^volume 3
+        ^contents 0)
+   (<j> ^volume 5
+        ^contents 0)
+   (<k> ^volume 3
+        ^contents 1)}
