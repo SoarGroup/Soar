@@ -17,3 +17,5 @@ else:
 
 env.Install('$PREFIX/lib', CommandLineInterface)
 
+env.Install('$PREFIX/share/soar', '#CLI/Help')
+env.Clean('$PREFIX/share/soar', '$PREFIX/share/soar/Help');

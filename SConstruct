@@ -272,6 +272,7 @@ if conf.env['GPROF']:
 # Default targets
 conf.env.Default(conf.env['PREFIX'])
 conf.env.Default('.')
+# TODO: rmdir PREFIX/share/soar on clean
 
 env = conf.Finish()
 Export('env')
@@ -349,8 +350,8 @@ subdirs= [ 'SoarKernel',
            'CLI',
            'ClientSML',
            'KernelSML',
-#           'Tests',
-#           'TestCLI',
+           'Tests',
+           'TestCLI',
 #           'TestSMLEvents',
 #           'TestSMLPerformance',
 #           'TestSoarPerformance',
