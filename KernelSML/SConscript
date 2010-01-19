@@ -3,20 +3,9 @@
 Import('env')
 env = env.Clone()
 
-env.Prepend(CPPPATH = ['src', 
-		       'include', 
-		       '#SoarKernel/include',
-		       '#CLI/include',
-		       '#ElementXML/include',
-		       '#ConnectionSML/include'])
+env.Prepend(CPPPATH = ['src', 'include', '#SoarKernel/include', '#CLI/include', '#ElementXML/include', '#ConnectionSML/include'])
 
-libadd = [
-	   'ElementXML',
-	   'CommandLineInterface',
-	   'ConnectionSML',
-	   'SoarKernel',
-	   'sqlite3',
-	   ]
+libadd = ['ElementXML', 'CommandLineInterface', 'ConnectionSML', 'SoarKernel', 'sqlite3']
 
 if env['SCU']:
 	SoarKernelSML = env.SharedLibrary('SoarKernelSML', 'KernelSML.cxx', LIBS = libadd, LIBPATH = '$PREFIX/lib')
@@ -24,4 +13,8 @@ else:
 	SoarKernelSML = env.SharedLibrary('SoarKernelSML', Glob('src/*.cpp'), LIBS = libadd, LIBPATH = '$PREFIX/lib')
 
 env.Install('$PREFIX/lib', SoarKernelSML)
+
+# Install resources
+env.Install('$PREFIX/share/soar', '#Demos')
+env.Clean('$PREFIX/share/soar', '$PREFIX/share/soar/Demos')
 
