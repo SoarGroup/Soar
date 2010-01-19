@@ -1,0 +1,19 @@
+sp {worst-over-conflict*new-scheme*success
+   (state <s> ^superstate <ss>)
+   (<ss> ^name worst-over-conflict
+         ^operator.name c
+         ^top-state <ts>)
+-->
+   (<ts> ^worst-over-conflict success)
+}
+
+#sp {worst-over-conflict*soar-9_0_0*success
+#   (state <s> ^superstate <ss>
+#              ^impasse conflict
+#              ^attribute operator
+#              ^item-count 2)   
+#   (<ss> ^name worst-over-conflict
+#         ^top-state <ts>)
+#-->
+#   (<ts> ^worst-over-conflict success)
+#}

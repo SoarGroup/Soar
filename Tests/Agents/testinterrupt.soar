@@ -1,0 +1,5 @@
+sp {interrupt
+	(state <s> ^superstate nil)
+-->
+	(interrupt)
+}
