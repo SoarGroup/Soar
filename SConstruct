@@ -1,19 +1,10 @@
 #!/usr/bin/python
-#################
-# Soar SCons build configuration file
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-# Date: April 2007
-#
-# For information on SCons, see http://www.scons.org/
-# For Soar-specific SCons information, see the Soar Wiki:
-#   http://winter.eecs.umich.edu/soarwiki/Soar_SCons_build_information
-
 import os
 import sys
-import SoarSCons
 import platform
 import socket
 import subprocess
+import re
 
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
@@ -28,51 +19,160 @@ if os.name not in ['posix', ]:
 if sys.platform not in ['linux2', 'darwin']:
 	print "Unsupported sys.platform:", sys.platform
 	Exit(1)
-if platform.machine() not in ['x86_64', 'i686', 'i386', 'Power Macintosh', ]:
+if platform.machine() not in ['x86_64', 'i686', 'i386', ]:
 	print "Unsupported platform.machine:", platform.machine()
 
 #################
 # Option defaults based on architecture
-m64_default = 'no'
+def Mac_m64_Capable():
+        proc = subprocess.Popen('sysctl -n hw.optional.x86_64', shell=True, stdout=subprocess.PIPE,)
+        stdout_value = proc.communicate()[0]
+        if proc.returncode != 0:
+                return False
+        if stdout_value.strip() == '1':
+                return True
+        return False
+
+m64_default = '32'
 if sys.platform == 'linux2':
 	if platform.machine() == 'x86_64':
-		m64_default = 'yes'
+		m64_default = '64'
 elif sys.platform == 'darwin':
 	if platform.machine() == 'i386':
-		if SoarSCons.Mac_m64_Capable():
-			m64_default = 'yes'
+		if Mac_m64_Capable():
+			m64_default = '64'
 
-#################
+################
 # Command line options
-opts = Options()
-opts.AddOptions(
-	BoolOption('scu', 'Build using single compilation units (faster)', 'yes'), 
-	BoolOption('java', 'Build the Soar Java interface (required for debugger)', 'yes'), 
-	BoolOption('python', 'Build the Soar Python interface', 'yes'), 
-	BoolOption('csharp', 'Build the Soar CSharp interface', 'no'), 
-	BoolOption('tcl', 'Build the Soar Tcl interface', 'no'), 
-	BoolOption('debug', 'Build with debugging symbols', 'yes'),
-	BoolOption('warnings', 'Build with warnings', 'yes'),
-	BoolOption('werrors', 'Build with warnings as errors', 'yes'),
-	EnumOption('optimization', 'Build with optimization (May cause run-time errors!)', 'full', ['no','partial','full'], {}, 1),
-	BoolOption('preprocessor', 'Only run preprocessor', 'no'),
-	BoolOption('verbose', 'Verbose compiler output', 'no'),
-	BoolOption('gcc42', 'Use GCC-4.2 (experimental, Darwin only)', 'no'),
-	BoolOption('m64', 'Compile to 64-bit (experimental)', m64_default),
-	BoolOption('gprof', 'Add gprof symbols for profiling', 'no'),
-)
-opts.Add('cc', 'Replace \'g++\' as the C++ compiler', 'g++')
+AddOption('--cxx',
+	action='store',
+	type='string',
+	dest='cxx',
+	default='g++',
+	nargs=1,
+	metavar='COMPILER',
+	help='Replace \'g++\' as the C++ compiler.')
+
+AddOption('--build-warnings',
+	action='store',
+	type='choice',
+	choices=['none','all','error'],
+	dest='build-warnings',
+	default='error',
+	nargs=1,
+	metavar='WARN_LEVEL',
+	help='Set warning level when building. Must be one of none, all, error (default).')
+
+AddOption('--optimization',
+	action='store',
+	type='choice',
+	choices=['none','partial','full'],
+	dest='optimization',
+	default='full',
+	nargs=1,
+	metavar='LEVEL',
+	help='Set optimization level. Must be one of none, partial, full (default).')
+
+AddOption('--platform',
+	action='store',
+	type='choice',
+	choices=['32','64'],
+	dest='platform',
+	default=m64_default,
+	nargs=1,
+	metavar='PLATFORM',
+	help='Target platform. Must be one of 32, 64. Default is detected system architecture.')
+
+AddOption('--build-verbose', 
+	action='store_true',
+	dest='build-verbose',
+	default=False,
+	help='Build with verbose compiler output.')
+
+AddOption('--preprocessor', 
+	action='store_true',
+	dest='preprocessor',
+	default=False,
+	help='Only run preprocessor.')
+
+AddOption('--gprof', 
+	action='store_true',
+	dest='gprof',
+	default=False,
+	help='Add gprof symbols for profiling.')
+
+AddOption('--no-scu', 
+	action='store_false',
+	dest='scu',
+	default=True,
+	help='Don\'t build using single compilation units.')
+
+# TODO: does this do the same thing as install-sandbox?
+AddOption('--prefix',
+	action='store',
+	type='string',
+	dest='prefix',
+	default=os.path.realpath(os.path.join('..','out')),
+	nargs=1,
+	metavar='DIR',
+	help='Directory to install binaries.')
+
+AddOption('--build-dir',
+	action='store',
+	type='string',
+	dest='build-dir',
+	default=os.path.realpath(os.path.join('..','build')),
+	nargs=1,
+	metavar='DIR',
+	help='Directory to store intermediate (object) files.')
+
+AddOption('--no-debug-symbols',
+	action='store_false',
+	dest='debug-symbols',
+	default=True,
+	help='Don\'t add debugging symbols to binaries.')
 
 # Create the environment using the options
-env = Environment(options = opts, ENV = os.environ)
-Help(opts.GenerateHelpText(env))
+env = Environment(
+	ENV = os.environ, 
+	CXX = GetOption('cxx'),
+	BUILD_WARNINGS = GetOption('build-warnings'),
+	OPTIMIZATION = GetOption('optimization'),
+	PLATFORM = GetOption('platform'),
+	BUILD_VERBOSE = GetOption('build-verbose'),
+	PREPROCESSOR = GetOption('preprocessor'),
+	GPROF = GetOption('gprof'),
+	SCU = GetOption('scu'), 
+	BUILD_DIR = GetOption('build-dir'),
+	PREFIX = GetOption('prefix'),
+	DEBUG_SYMBOLS = GetOption('debug-symbols'),
+	)
 
-#################
+##################
 # Create configure context to configure the environment
+def CheckVisibilityFlag(context):
+        """Checks to see if the compiler will build using the visibility flag"""
+        context.Message('Checking support for -fvisibility=hidden... ')
+
+        # save old flags
+        lastCPPFLAGS = context.env['CPPFLAGS']
+        
+        # add new flag
+        context.env.Append(CPPFLAGS = ' -fvisibility=hidden')
+
+        # try compiling simple file with new flag
+        result = context.TryCompile("char foo;", '.c')
+
+        # restore old flags
+        context.env.Replace(CPPFLAGS = lastCPPFLAGS)
+
+        # print status message and return
+        context.Result(result)
+        return result
 
 custom_tests = {
 	# A check to see if the -fvisibility flag works on this system.
-	'CheckVisibilityFlag' : SoarSCons.CheckVisibilityFlag,
+	'CheckVisibilityFlag' : CheckVisibilityFlag,
 }
 conf = Configure(env, custom_tests = custom_tests)
 
@@ -86,13 +186,7 @@ if sys.platform == "darwin":
 		#conf.env.Append(CPPFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
 		#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
 
-if sys.platform == "darwin" and conf.env['gcc42']:
-	env['CXX'] = '/usr/bin/g++-4.2'
-elif conf.env['cc']:
-	env['CXX'] = conf.env['cc']
-
-### Get g++ Version
-
+# Get g++ Version
 def gcc_version():
 	proc = subprocess.Popen(env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
 	proc.wait()
@@ -110,64 +204,30 @@ def gcc_version():
 gcc = gcc_version()
 
 # All C/C++ modules rely or should rely on this include path (houses portability.h)
-conf.env.Append(CPPPATH = ['#Core/shared'])
+conf.env.Append(CPPPATH = ['#shared'])
 
-# This allows us to use Java and SWIG if they are in the path.
-conf.env.Append(ENV = {'PATH' : os.environ['PATH']})
-
-# configure java if requested
-if conf.env['java']:
-	# This sets up the jni include files
-	if not SoarSCons.ConfigureJNI(conf.env):
-		print "Could not configure Java. If you know where java is on your system,"
-		print "set environment variable JAVA_HOME to point to the directory containing"
-		print "the Java include, bin, and lib directories."
-		print "You may disable java, see help (scons -h)"
-		print "Java Native Interface is required... Exiting"
-		Exit(1)
-	# This checks for the swt.jar and attempts to download it if it doesn't exist
-	if not SoarSCons.CheckForSWTJar(conf.env):
-		print "Could not find swt.jar. You can obtain the jar here:"
-		print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
-		print "Place swt.jar in SoarLibrary/bin"
-		print "swt.jar required... Exiting"
-		Exit(1)
-
-# check SWIG version if necessary
-# SWIG is necessary if one of the swig projects is going to be built
-if conf.env['java'] or conf.env['python'] or conf.env['csharp'] or conf.env['tcl']:
-	if not SoarSCons.CheckSWIG(conf.env):
-		explainSWIG = ""
-		if conf.env['java']:
-			explainSWIG += "java=1, "
-		if conf.env['python']:
-			explainSWIG += "python=1, "
-		if conf.env['csharp']:
-			explainSWIG += "csharp=1, "
-		if conf.env['tcl']:
-			explainSWIG += "tcl=1, "
-
-		print "SWIG is required because", explainSWIG[:-2]
-		Exit(1)
-	
 # check if the compiler supports -fvisibility=hidden (GCC >= 4)
 if conf.CheckVisibilityFlag() and gcc[0] > 3:
 	conf.env.Append(CPPFLAGS = ' -fvisibility=hidden')
 
 # configure misc command line options
-if conf.env['debug']:
+if conf.env['DEBUG_SYMBOLS']: 
 	conf.env.Append(CPPFLAGS = ' -g3')
-if conf.env['warnings']:
+
+if conf.env['BUILD_WARNINGS'] == 'all':
 	conf.env.Append(CPPFLAGS = ' -Wall')
-if conf.env['werrors']:
+elif conf.env['BUILD_WARNINGS'] == 'error':
 	conf.env.Append(CPPFLAGS = ' -Werror')
-if conf.env['optimization'] == 'partial':
+
+if conf.env['OPTIMIZATION'] == 'partial':
 	conf.env.Append(CPPFLAGS = ' -O2')
-if conf.env['optimization'] == 'full':
+elif conf.env['OPTIMIZATION'] == 'full':
 	conf.env.Append(CPPFLAGS = ' -O3')
-if conf.env['preprocessor']:
+
+if conf.env['PREPROCESSOR']:
 	conf.env.Append(CPPFLAGS = ' -E')
-if conf.env['verbose']:
+
+if conf.env['BUILD_VERBOSE']:
 	conf.env.Append(CPPFLAGS = ' -v')
 	conf.env.Append(LINKFLAGS = ' -v')
 
@@ -181,28 +241,17 @@ if not conf.CheckLib('m'):
 if not conf.CheckLib('pthread'):
 	Exit(1)
 		
-# if this flag is not included, the linker will complain about not being able
-# to find the symbol __sync_sub_and_fetch_4 when using g++ 4.3
-# only do not include it if we're on powerpc
-if platform.machine() == 'Power Macintosh':
-	if env['m64']:
-		print "Cannot target 64 bit on", platform.machine()
-		Exit(1)
-
 # As of 4/2009, python binaries available on mac are not x86_64 and
 # therefore cannot load x86_64 targeted libraries. Verbosely warn.
 if sys.platform == 'darwin':
-	if env['m64']:
+	if env['PLATFORM'] == '64':
 		if env['python']:
 			print "*"
 			print "* Warning: 64-bit python binaries may not be available on your system."
 			print "* You may need to rebuild with m64=no to use Python Soar bindings."
 			print "*"
 
-# 64 bit is still experimental, even though it is enabled by default
-# (how else are we going to test it?)
-# Warn verbosely.
-if env['m64']:
+if conf.env['PLATFORM'] == '64':
 	print "*"
 	print "* Note: Targeting x86_64 (64-bit native)"
 	print "*"
@@ -215,42 +264,103 @@ else:
 	conf.env.Append(CPPFLAGS = ' -m32')
 	conf.env.Append(LINKFLAGS = ' -m32')
 
-if env['gprof']:
+if conf.env['GPROF']:
 	conf.env.Append(CPPFLAGS = ' -pg')
 	conf.env.Append(LINKFLAGS = ' -pg')
+
+#################
+# Default targets
+conf.env.Default(conf.env['PREFIX'])
+conf.env.Default('.')
 
 env = conf.Finish()
 Export('env')
 
 #################
+# Auto detect components
+components = []
+swig = False
+print "Detected components: ",
+# Java: build if Java directory at top level
+if os.path.exists(os.path.join('..', 'Java')):
+	print "Java ",
+	components.append('Java')
+
+# Python: build if Python directory at top level
+if os.path.exists(os.path.join('..', 'Python')):
+	print "Python ",
+	components.append('Python')
+
+# CSharp: build if CSharp directory at top level
+if os.path.exists(os.path.join('..', 'CSharp')):
+	print "CSharp ",
+	components.append('CSharp')
+
+# Tcl: build if Tcl directory at top level
+if os.path.exists(os.path.join('..', 'Tcl')):
+	print "Tcl ",
+	components.append('Tcl')
+
+# SWIG: build if any of (Java/Python/CSharp/Tcl) are enabled
+if ('Java' or 'Python' or 'CSharp' or 'Tcl') in components:
+	swig = True;
+print
+#################
+
+#################
+# New configuration context for swig projects
+if swig:
+	conf = Configure(env)
+	
+	# This allows us to use Java and SWIG if they are in the path.
+	conf.env.Append(ENV = {'PATH' : os.environ['PATH']})
+	
+	def CheckSWIG(context):
+	        """Checks to make sure we're using a compatible version of SWIG"""
+	        for line in os.popen("swig -version").readlines():
+	                m = re.search(r"([0-9])\.([0-9])\.([0-9]?[0-9])", line)
+	                if m:
+	                        major = int(m.group(1))
+	                        minor = int(m.group(2))
+	                        micro = int(m.group(3))
+	
+	                        ret = 1
+	                        status = 'ok'
+	                        if major < 1 or minor < 3 or micro < 31:
+	                                ret = 0
+	                                status = 'incompatible'
+	                        print "Found SWIG version %d.%d.%d... %s" % (major, minor, micro, status)
+	                        return ret
+	        print "Didn't find SWIG, make sure SWIG is in the path and rebuild."
+	        return 0
+	
+	if not CheckSWIG(conf.env):
+		Exit(1)
+	
+	swigenv = conf.Finish()
+	Export('swigenv')
+#################
+
+#################
 # Build modules
+subdirs= [ 'SoarKernel',
+           'ConnectionSML',
+           'ElementXML',
+           'CLI',
+           'ClientSML',
+           'KernelSML',
+#           'Tests',
+#           'TestCLI',
+#           'TestSMLEvents',
+#           'TestSMLPerformance',
+#           'TestSoarPerformance',
+         ]
 
-# Core
-SConscript('#Core/SoarKernel/SConscript')
-SConscript('#Core/ConnectionSML/SConscript')
-SConscript('#Core/ElementXML/SConscript')
-SConscript('#Core/CLI/SConscript')
-SConscript('#Core/ClientSML/SConscript')
-SConscript('#Core/KernelSML/SConscript')
-SConscript('#Core/Tests/SConscript')
+# Build/Output Directory
+print "Building intermediates to directory ", env['BUILD_DIR']
+print "Installing targets to prefix directory ", env['PREFIX']
 
-if env['java']:
-	if env.GetOption('clean'):
-		Execute('ant -q clean')
-	SConscript('#Core/ClientSMLSWIG/Java/SConscript')
-
-if env['python']:
-	SConscript('#Core/ClientSMLSWIG/Python/SConscript')
-
-if env['tcl']:
-	SConscript('#Core/ClientSMLSWIG/Tcl/SConscript')
-
-SConscript('#Tools/TestCLI/SConscript')
-SConscript('#Tools/FilterC/SConscript')
-SConscript('#Tools/QuickLink/SConscript')
-SConscript('#Tools/SoarTextIO/SConscript')
-SConscript('#Tools/TOHSML/SConscript')
-SConscript('#Tools/TestSMLEvents/SConscript')
-SConscript('#Tools/TestSMLPerformance/SConscript')
-SConscript('#Tools/TestSoarPerformance/SConscript')
+# TODO: move this somewhere more clear (the env var)
+for d in subdirs:
+	SConscript('#%s/SConscript' % d, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
