@@ -670,31 +670,38 @@ EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 
 	// This takes the parent directory to get ...SoarLibrary
 	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
+	return;
 
 #else // WIN32
 	struct stat statbuf;
 	const char* selfexe = "/proc/self/exe";
+	const int size = 2048;
+	char buf[size];
 	if (stat(selfexe, &statbuf) == -1) {
 		// we don't have proc
-		// TODO: solve for darwin
+#ifdef SCONS_DARWIN
+		// TODO: totally untested
+		_NSGetExecutablePath(buf, size);
+#else // SCONS_DARWIN
 		GetCurrentWorkingDirectory(m_LibraryDirectory);
+		return;
+#endif
 	} else {
-		const int size = 2048;
-		char buf[size];
 		int ret = readlink(selfexe, buf, size);
 		if (ret == -1 || ret >= size) {
 			// failed for whatever reason (possibly path too long)
 			GetCurrentWorkingDirectory(m_LibraryDirectory);
-		} else {
-			buf[size-1] = 0;
-			
-			// Get parent directory
-			m_LibraryDirectory = buf;
-			m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
-			m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
-			std::cout << m_LibraryDirectory << std::endl;
+			return;
 		}
 	}
+
+	// Get parent directory
+	buf[size-1] = 0;
+	m_LibraryDirectory = buf;
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+	//std::cout << m_LibraryDirectory << std::endl;
+	return;
 
 #endif // WIN32
 }

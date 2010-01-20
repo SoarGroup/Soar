@@ -23,7 +23,7 @@ if platform.machine() not in ['x86_64', 'i686', 'i386', ]:
 	print "Unsupported platform.machine:", platform.machine()
 
 #################
-# Option defaults based on architecture
+# Option defaults 
 def Mac_m64_Capable():
         proc = subprocess.Popen('sysctl -n hw.optional.x86_64', shell=True, stdout=subprocess.PIPE,)
         stdout_value = proc.communicate()[0]
@@ -41,6 +41,14 @@ elif sys.platform == 'darwin':
 	if platform.machine() == 'i386':
 		if Mac_m64_Capable():
 			m64_default = '64'
+
+default_prefix = os.path.realpath(os.path.join('..','out'))
+if os.environ.has_key('SOAR_LIBRARY'):
+	default_prefix = os.environ['SOAR_LIBRARY']
+
+default_build = os.path.realpath(os.path.join('..','build'))
+if os.environ.has_key('SOAR_BUILD'):
+	default_build = os.environ['SOAR_BUILD']
 
 ################
 # Command line options
@@ -112,7 +120,7 @@ AddOption('--prefix',
 	action='store',
 	type='string',
 	dest='prefix',
-	default=os.path.realpath(os.path.join('..','out')),
+	default=default_prefix,
 	nargs=1,
 	metavar='DIR',
 	help='Directory to install binaries.')
@@ -121,7 +129,7 @@ AddOption('--build-dir',
 	action='store',
 	type='string',
 	dest='build-dir',
-	default=os.path.realpath(os.path.join('..','build')),
+	default=default_build,
 	nargs=1,
 	metavar='DIR',
 	help='Directory to store intermediate (object) files.')
@@ -361,7 +369,6 @@ subdirs= [ 'SoarKernel',
 print "Building intermediates to directory ", env['BUILD_DIR']
 print "Installing targets to prefix directory ", env['PREFIX']
 
-# TODO: move this somewhere more clear (the env var)
 for d in subdirs:
 	SConscript('#%s/SConscript' % d, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
