@@ -352,18 +352,20 @@ if swig:
 
 #################
 # Build modules
-subdirs= [ 'SoarKernel',
-           'ConnectionSML',
-           'ElementXML',
-           'CLI',
-           'ClientSML',
-           'KernelSML',
-           'Tests',
-           'TestCLI',
-#           'TestSMLEvents',
-#           'TestSMLPerformance',
-#           'TestSoarPerformance',
-         ]
+subdirs= [ 
+	'SoarKernel',
+	'ConnectionSML',
+	'ElementXML',
+	'CLI',
+	'ClientSML',
+	'KernelSML',
+	'Tests',
+	'TestCLI',
+	'ClientSMLSWIG/Python',
+#	'TestSMLEvents',
+#	'TestSMLPerformance',
+#	'TestSoarPerformance',
+	]
 
 # Build/Output Directory
 print "Building intermediates to directory ", env['BUILD_DIR']
