@@ -61,7 +61,11 @@ void ExternalLibTest::testExternalLib()
 
 	pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, PrintCallbackHandler, 0 );
 
-	CPPUNIT_ASSERT_MESSAGE( "Failed to load productions from ../Tests/TestExternalLibrary.soar.  Is working directory set to SoarLibrary/bin?", pAgent->LoadProductions( "../Tests/TestExternalLibrary.soar" ) );
+        std::stringstream productionsPath;
+        productionsPath << pKernel->GetLibraryLocation() << "/share/soar/Tests/TestExternalLibrary.soar";
+
+        pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+        CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
 
 	pKernel->RunAllAgents(1);
 	CPPUNIT_ASSERT_MESSAGE( "RHS function did not fire.", bSuccess );

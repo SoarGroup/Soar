@@ -27,6 +27,8 @@ BOOL WINAPI handle_ctrlc( DWORD dwCtrlType )
 }
 #endif // _WIN32
 
+bool g_NoRemote = false;
+
 int main( int argc, char** argv )
 {
 #ifdef _WIN32
@@ -35,20 +37,25 @@ int main( int argc, char** argv )
 	SetConsoleCtrlHandler( handle_ctrlc, TRUE );
 #endif // _WIN32
 
-	bool pause = true;
-	if ( argc >= 2 )
-	{
-		if ( std::string( argv[1] ) == "--listener" ) 
-		{
-			int port = 12121;
-			if ( argc >= 3 )
-			{
-				from_string(port, argv[2]);
-			}
-			SimpleListener simpleListener( 600, port );
-			return simpleListener.run();
+	for (int index = 1; index < argc; ++index) {
+		std::string argument(argv[index]);
+		if (argument == "--listener") {
+                        int port = 12121;
+                        if ( ++index < argc )
+                        {
+                                from_string(port, argv[index]);
+                        }
+
+			//std::cout << "Creating simple listener on port: " << port << std::endl;
+                        SimpleListener simpleListener( 600, port );
+                        return simpleListener.run();
+
+		} else if (argument == "--noremote") {
+			std::cout << "Running tests without remote." << std::endl;
+			g_NoRemote = true;
+		} else {
+			std::cerr << "Unknown argument " << argument << " ignored." << std::endl;
 		}
-		if ( std::string( argv[1] ) == "--nopause" ) pause = false;
 	}
 
 	srand( static_cast<unsigned>( time( NULL ) ) );
@@ -71,13 +78,6 @@ int main( int argc, char** argv )
 
 	CPPUNIT_NS::CompilerOutputter outputter( &result, std::cerr );
 	outputter.write();                      
-
-	if ( pause )
-	{
-		std::cout << std::endl << "Strange errors? Make sure working directory is 'SoarLibrary/bin'."
-			<< std::endl << "Press enter to exit." << std::endl;
-		std::cin.get();
-	}
 
 	return result.wasSuccessful() ? 0 : 1;
 }
