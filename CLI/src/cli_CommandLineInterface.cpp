@@ -680,8 +680,8 @@ EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 	if (stat(selfexe, &statbuf) == -1) {
 		// we don't have proc
 #ifdef SCONS_DARWIN
-		// TODO: totally untested
-		_NSGetExecutablePath(buf, size);
+		uint32_t usize = static_cast<uint32_t>(size);
+		_NSGetExecutablePath(buf, &usize);
 #else // SCONS_DARWIN
 		GetCurrentWorkingDirectory(m_LibraryDirectory);
 		return;

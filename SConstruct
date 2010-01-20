@@ -249,16 +249,6 @@ if not conf.CheckLib('m'):
 if not conf.CheckLib('pthread'):
 	Exit(1)
 		
-# As of 4/2009, python binaries available on mac are not x86_64 and
-# therefore cannot load x86_64 targeted libraries. Verbosely warn.
-if sys.platform == 'darwin':
-	if env['PLATFORM'] == '64':
-		if env['python']:
-			print "*"
-			print "* Warning: 64-bit python binaries may not be available on your system."
-			print "* You may need to rebuild with m64=no to use Python Soar bindings."
-			print "*"
-
 if conf.env['PLATFORM'] == '64':
 	print "*"
 	print "* Note: Targeting x86_64 (64-bit native)"
@@ -317,6 +307,17 @@ if os.path.exists(os.path.join('..', 'Python')):
 if ('Java' or 'Python' or 'CSharp' or 'Tcl') in components:
 	swig = True;
 print
+
+# As of 4/2009, python binaries available on mac are not x86_64 and
+# therefore cannot load x86_64 targeted libraries. Verbosely warn.
+if sys.platform == 'darwin':
+	if env['PLATFORM'] == '64':
+		if 'Python' in components:
+			print "*"
+			print "* Warning: 64-bit python binaries may not be available on your system."
+			print "* You may need to rebuild with m64=no to use Python Soar bindings."
+			print "*"
+
 #################
 
 #################
