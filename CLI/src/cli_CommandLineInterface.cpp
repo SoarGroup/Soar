@@ -685,18 +685,16 @@ EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 		if (ret == -1 || ret >= size) {
 			// failed for whatever reason (possibly path too long)
 			GetCurrentWorkingDirectory(m_LibraryDirectory);
+		} else {
+			buf[size-1] = 0;
+			
+			// Get parent directory
+			m_LibraryDirectory = buf;
+			m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+			m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+			std::cout << m_LibraryDirectory << std::endl;
 		}
-		buf[size-1] = 0;
-		
-		// Get parent directory
-		m_LibraryDirectory = buf;
-		m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
-		m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
-		std::cout << m_LibraryDirectory << std::endl;
 	}
-
-	// This takes the parent directory to get ...SoarLibrary
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
 
 #endif // WIN32
 }
