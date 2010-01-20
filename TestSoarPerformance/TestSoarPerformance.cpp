@@ -77,6 +77,7 @@ public:
 	}
 };
 
+const string SOARLIB = "SOAR_LIBRARY";
 
 void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage) {
 	cout << pMessage << endl;
@@ -99,7 +100,13 @@ void Test1(int numTrials, StatsTracker* pSt, vector<string>* commands) {
 		agent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, NULL);
 
 		for(vector<string>::iterator itr = commands->begin(); itr != commands->end(); itr++) {
-			agent->ExecuteCommandLine((*itr).c_str());
+			string command = *itr;
+			size_t pos = command.find(SOARLIB);
+			if (pos != std::string::npos) {
+				command.replace(pos, SOARLIB.length(), kernel->GetLibraryLocation());
+			}
+
+			agent->ExecuteCommandLine(command.c_str());
 		}
 
 		ClientAnalyzedXML response;
@@ -136,7 +143,7 @@ int main() {
 
 		StatsTracker stTest1_learnoff, stTest1_learnon;
 		vector<string> commands;
-		commands.push_back("source ../Tests/TestSoarPerformance.soar");
+		commands.push_back("source " + SOARLIB + "/share/soar/Tests/TestSoarPerformance.soar");
 		commands.push_back("watch 0");
 		
 		int numTrials = 3;

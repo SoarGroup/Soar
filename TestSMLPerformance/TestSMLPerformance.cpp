@@ -49,8 +49,11 @@ public:
 		if(!strcmp(name,"0")) {
 			agent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 		}
+		
+		std::stringstream productionsPath;
+		productionsPath << kernel->GetLibraryLocation() << "/share/soar/Tests/TestSMLPerformance.soar";
+        	agent->LoadProductions( productionsPath.str().c_str() );
 
-		agent->LoadProductions("../Tests/TestSMLPerformance.soar");
 		agent->ExecuteCommandLine("watch 0");
 
 		// Create wmes

@@ -1,23 +1,12 @@
 #!/usr/bin/python
-import glob
-import sys
 
 Import('env')
 env = env.Clone()
-env.Prepend(CPPPATH = [	'../../Core/ClientSML/include',
-			'../../Core/ElementXML/include',
-			'../../Core/ConnectionSML/include'])
+env.Prepend(CPPPATH = ['#ClientSML/src', '#ElementXML/src', '#ConnectionSML/src'])
 
-libadd = [ 'ClientSML', 
-	   'ConnectionSML',
-	   'ElementXML', 
-	   ]
+libadd = ['ClientSML', 'ConnectionSML', 'ElementXML']
 
-libpath = [ '../../Core/ClientSML',
-	    '../../Core/ConnectionSML',
-	    '../../Core/ElementXML', 
-	    ]
+env.Append(LIBS = libadd, LIBPATH = '$PREFIX/lib')
+TestSMLPerformance = env.Program('TestSMLPerformance', Glob('*.cpp'))
+env.Install('$PREFIX/bin', TestSMLPerformance)
 
-env.Append(LIBS = libadd, LIBPATH = libpath)
-TestSMLPerformance = env.Program('TestSMLPerformance', glob.glob('*.cpp'))
-env.Install('#SoarLibrary/bin', TestSMLPerformance)

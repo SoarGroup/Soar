@@ -207,7 +207,7 @@ int main() {
 
 		// Load up TOH as a base set of rules.
 		// Comment this out if we don't want any initial set of rules.
-		cout << kernel->ExecuteCommandLine("source ..\\..\\SoarLibrary\\Demos\\towers-of-hanoi\\towers-of-hanoi.soar", agent->GetAgentName()) << endl ;
+		//cout << kernel->ExecuteCommandLine("source ..\\..\\SoarLibrary\\Demos\\towers-of-hanoi\\towers-of-hanoi.soar", agent->GetAgentName()) << endl ;
 
 		//
 		// let the user do whatever they want
@@ -238,9 +238,9 @@ int main() {
 		//
 		PrintEventData(dataList);
 
-		string dummy;
-		cout << endl << endl << "Press any key and enter to continue";
-		cin >> dummy;
+		//string dummy;
+		//cout << endl << endl << "Press any key and enter to continue";
+		//cin >> dummy;
 
 		//
 		// clean up

@@ -361,9 +361,9 @@ subdirs= [
 	'KernelSML',
 	'Tests',
 	'TestCLI',
-#	'TestSMLEvents',
-#	'TestSMLPerformance',
-#	'TestSoarPerformance',
+	'TestSMLEvents',
+	'TestSMLPerformance',
+	'TestSoarPerformance',
 	]
 
 if 'Python' in components:
