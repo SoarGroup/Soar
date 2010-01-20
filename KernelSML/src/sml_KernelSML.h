@@ -175,13 +175,6 @@ public:
 	static cli::CommandLineInterface* GetCommandLineInterface() ;
 
 	/*************************************************************
-	* @brief	The module handle (only set on Windows) can be
-	*			used to determine the path to this DLL.
-	*************************************************************/
-	static void SetModuleHandle(void* hModule)	{ s_hModule = hModule ; }
-	static void* GetModuleHandle()				{ return s_hModule ; }
-
-	/*************************************************************
 	* @brief	Handy utility function for dumping output to the
 	*			debugger.
 	*************************************************************/

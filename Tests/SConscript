@@ -5,14 +5,13 @@ Import('env')
 env = env.Clone()
 
 env.Prepend(CPPPATH = [ 
-	'include', 
 	'src', 
-	'#ClientSML/include', 
-	'#KernelSML/include',
-	'#CommandLineInterface/include',
-	'#SoarKernel/include',
-	'#ElementXML/include',
-	'#ConnectionSML/include',
+	'#ClientSML/src', 
+	'#KernelSML/src',
+	'#CommandLineInterface/src',
+	'#SoarKernel/src',
+	'#ElementXML/src',
+	'#ConnectionSML/src',
 	])
 
 libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML' ]

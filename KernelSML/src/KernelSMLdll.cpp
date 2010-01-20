@@ -42,13 +42,6 @@ bool __stdcall DllMain( void * hModule,
 #define DLL_PROCESS_ATTACH   1    
 #endif // DLL_PROCESS_ATTACH
 
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
-		// Record the module handle so that later we can find where
-		// this DLL was loaded from.
-		sml::KernelSML::SetModuleHandle(hModule) ;
-	}
-
 	// Dump out any memory leaks to the output window in the Visual C++ debugger and to stdout.
 	// Only do this when we are unloaded.
 	if (ul_reason_for_call == DLL_PROCESS_DETACH)

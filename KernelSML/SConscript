@@ -3,7 +3,7 @@
 Import('env')
 env = env.Clone()
 
-env.Prepend(CPPPATH = ['src', 'include', '#SoarKernel/include', '#CLI/include', '#ElementXML/include', '#ConnectionSML/include'])
+env.Prepend(CPPPATH = ['src', '#SoarKernel/src', '#CLI/src', '#ElementXML/src', '#ConnectionSML/src'])
 
 libadd = ['ElementXML', 'CommandLineInterface', 'ConnectionSML', 'SoarKernel', 'sqlite3']
 

@@ -626,7 +626,7 @@ bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 
 	// Show help if requested
 	if (helpFlag) {
-		std::string helpFile = m_LibraryDirectory + "/CLIHelp/" + argv[0];
+		std::string helpFile = m_LibraryDirectory + "/share/soar/Help/" + argv[0];
 		return GetHelpString(helpFile);
 	}
 
@@ -660,7 +660,7 @@ EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 	// SoarLibrary
 #ifdef WIN32
 	char dllpath[256];
-	GetModuleFileName(static_cast<HMODULE>(m_pKernelSML->GetModuleHandle()), dllpath, 256);
+	GetModuleFileName(0, dllpath, 256); // passing null gets directory of exe
 
 	// This sets it to the path + the dll
 	m_LibraryDirectory = dllpath;
@@ -672,8 +672,28 @@ EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
 
 #else // WIN32
-	// Hopefully ...SoarLibrary/bin
-	GetCurrentWorkingDirectory(m_LibraryDirectory);
+	struct stat statbuf;
+	const char* selfexe = "/proc/self/exe";
+	if (stat(selfexe, &statbuf) == -1) {
+		// we don't have proc
+		// TODO: solve for darwin
+		GetCurrentWorkingDirectory(m_LibraryDirectory);
+	} else {
+		const int size = 2048;
+		char buf[size];
+		int ret = readlink(selfexe, buf, size);
+		if (ret == -1 || ret >= size) {
+			// failed for whatever reason (possibly path too long)
+			GetCurrentWorkingDirectory(m_LibraryDirectory);
+		}
+		buf[size-1] = 0;
+		
+		// Get parent directory
+		m_LibraryDirectory = buf;
+		m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+		m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+		std::cout << m_LibraryDirectory << std::endl;
+	}
 
 	// This takes the parent directory to get ...SoarLibrary
 	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));

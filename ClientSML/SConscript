@@ -3,7 +3,7 @@
 Import('env')
 env = env.Clone()
 
-env.Prepend(CPPPATH = ['src', 'include', '#ElementXML/include', '#ConnectionSML/include', ])
+env.Prepend(CPPPATH = ['src', '#ElementXML/src', '#ConnectionSML/src', ])
 
 if env['SCU']:
 	ClientSML = env.Library('ClientSML', 'ClientSML.cxx')

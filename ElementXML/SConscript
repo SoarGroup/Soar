@@ -3,7 +3,7 @@
 Import('env')
 env = env.Clone()
 
-env.Prepend(CPPPATH = ['src', 'include',])
+env.Prepend(CPPPATH = ['src',])
 
 if env['SCU']:
 	ElementXML = env.SharedLibrary('ElementXML', 'ElementXML.cxx')
