@@ -287,6 +287,7 @@ Export('env')
 
 #################
 # Auto detect components
+# TODO: could just list parent folder and grab all directories
 components = []
 swig = False
 print "Detected components: ",
@@ -301,14 +302,16 @@ if os.path.exists(os.path.join('..', 'Python')):
 	components.append('Python')
 
 # CSharp: build if CSharp directory at top level
-if os.path.exists(os.path.join('..', 'CSharp')):
-	print "CSharp ",
-	components.append('CSharp')
+# TODO: enable
+#if os.path.exists(os.path.join('..', 'CSharp')):
+#	print "CSharp ",
+#	components.append('CSharp')
 
 # Tcl: build if Tcl directory at top level
-if os.path.exists(os.path.join('..', 'Tcl')):
-	print "Tcl ",
-	components.append('Tcl')
+# TODO: enable
+#if os.path.exists(os.path.join('..', 'Tcl')):
+#	print "Tcl ",
+#	components.append('Tcl')
 
 # SWIG: build if any of (Java/Python/CSharp/Tcl) are enabled
 if ('Java' or 'Python' or 'CSharp' or 'Tcl') in components:
@@ -378,4 +381,9 @@ print "Installing targets to prefix directory ", env['PREFIX']
 
 for d in subdirs:
 	SConscript('#%s/SConscript' % d, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
+
+for d in components:
+	script = '../%s/SConscript' % d
+	if os.path.exists(script):
+		SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
