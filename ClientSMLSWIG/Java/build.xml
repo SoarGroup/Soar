@@ -7,7 +7,7 @@
   <target name="clean" depends="clean-java"/>
 
   <target name="distclean" depends="clean">
-    <delete dir="build" quiet="true"/>
+    <delete dir="${soarbuild}" quiet="true"/>
     <delete dir="docs" quiet="true"/>
   </target>
 
@@ -24,24 +24,24 @@
 
   <target name="build-jar">
     <jar destfile="sml.jar">
-      <fileset dir="build">
+      <fileset dir="${soarbuild}">
 		<include name="**/*.class" />
       </fileset>
       <fileset dir="src">
 		<include name="sml/*" />
       </fileset>
     </jar>
-    <copy file="sml.jar" todir="../../../soar-java/soar-smljava/lib" />
+    <copy file="sml.jar" todir="${soarprefix}/share/java" />
   </target>
 
   <target name="build-java">
-    <mkdir dir="build" />
+    <mkdir dir="${soarbuild}" />
     <javac
        srcdir="src"
        includes="**/*.java"
        debug="on"
        optimize="off"
-       destdir="build"
+       destdir="${soarbuild}"
        compiler="extJavac"
        deprecation="yes"
        source="1.5"
@@ -55,11 +55,12 @@
 
   <target name="clean-java" >
     <delete quiet="true">
-      <fileset dir="build" includes="**/*.class"/>
+      <fileset dir="${soarbuild}" includes="**/*.class"/>
       <fileset dir="." includes="sml.jar"/>
-      <fileset dir="../../../SoarLibrary/lib" includes="sml.jar"/>
+      <fileset dir="${soarprefix}/share/java" includes="sml.jar"/>
     </delete>
-    <delete dir="build" />
+    <delete dir="${soarbuild}" />
+    <delete dir="src" />
   </target>
 
 </project>

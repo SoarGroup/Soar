@@ -361,11 +361,16 @@ subdirs= [
 	'KernelSML',
 	'Tests',
 	'TestCLI',
-	'ClientSMLSWIG/Python',
 #	'TestSMLEvents',
 #	'TestSMLPerformance',
 #	'TestSoarPerformance',
 	]
+
+if 'Python' in components:
+	subdirs.append('ClientSMLSWIG/Python')
+
+if 'Java' in components:
+	subdirs.append('ClientSMLSWIG/Java')
 
 # Build/Output Directory
 print "Building intermediates to directory ", env['BUILD_DIR']
