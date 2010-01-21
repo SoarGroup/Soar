@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
+				AdditionalIncludeDirectories="..\SoarKernel\src;..\ElementXML\src;..\ConnectionSML\src;..\KernelSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -72,7 +72,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -144,7 +144,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -164,8 +164,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -196,7 +196,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
+				AdditionalIncludeDirectories="..\SoarKernel\src;..\ElementXML\src;..\ConnectionSML\src;..\KernelSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -220,7 +220,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -240,8 +240,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -297,7 +297,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -317,8 +317,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -342,7 +342,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
+				AdditionalIncludeDirectories="..\SoarKernel\src;..\ElementXML\src;..\ConnectionSML\src;..\KernelSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -368,7 +368,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -388,8 +388,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -414,7 +414,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
+				AdditionalIncludeDirectories="..\SoarKernel\src;..\ElementXML\src;..\ConnectionSML\src;..\KernelSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -440,7 +440,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -460,8 +460,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -492,7 +492,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\SoarKernel\include;..\ElementXML\include;..\ConnectionSML\include;..\KernelSML\include;..\shared"
+				AdditionalIncludeDirectories="..\SoarKernel\src;..\ElementXML\src;..\ConnectionSML\src;..\KernelSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -516,7 +516,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -536,8 +536,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -593,7 +593,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -657,6 +657,18 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\cli_Aliases.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cli_CLIError.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cli_CommandData.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\cli_CommandLineInterface.cpp"
 				>
 				<FileConfiguration
@@ -693,6 +705,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\cli_CommandLineInterface.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\cli_Commands.cpp"
 				>
 				<FileConfiguration
@@ -727,6 +743,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\cli_Commands.h"
+				>
 			</File>
 			<Filter
 				Name="Commands"
@@ -3324,42 +3344,6 @@
 					</FileConfiguration>
 				</File>
 			</Filter>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
-			<File
-				RelativePath=".\include\cli_Aliases.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\cli_CLIError.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\cli_CommandData.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\cli_CommandLineInterface.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\cli_Commands.h"
-				>
-			</File>
-			<File
-				RelativePath="..\shared\include\Export.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="SCU Files"

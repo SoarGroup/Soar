@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -70,14 +70,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -101,13 +101,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -131,7 +131,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -156,12 +156,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -185,13 +185,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -221,7 +221,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -244,19 +244,19 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -280,13 +280,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -317,7 +317,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -340,17 +340,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -374,13 +374,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Distribution|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -409,7 +409,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -432,19 +432,19 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -468,13 +468,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Distribution|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -504,7 +504,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -527,17 +527,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -561,13 +561,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -590,7 +590,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -615,14 +615,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -646,13 +646,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -676,7 +676,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -701,12 +701,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -730,13 +730,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Distribution SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -765,7 +765,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -788,19 +788,19 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -824,13 +824,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Distribution SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -860,7 +860,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -883,17 +883,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -917,13 +917,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -953,7 +953,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -976,19 +976,19 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -1012,13 +1012,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -1049,7 +1049,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\shared"
+				AdditionalIncludeDirectories="..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;ELEMENTXML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -1072,17 +1072,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(ProjectName).dll"
+				OutputFile="$(OutDir)\$(ProjectName).dll"
 				LinkIncremental="1"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="ws2_32.lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				LinkTimeCodeGeneration="1"
-				ImportLibrary="$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -1106,7 +1106,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -1118,6 +1118,10 @@
 			Filter="cpp;c;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\src\ElementXML.h"
+				>
+			</File>
 			<File
 				RelativePath=".\src\ElementXMLdll.cpp"
 				>
@@ -1169,6 +1173,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\ElementXMLHandle.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\ElementXMLImpl.cpp"
@@ -1223,6 +1231,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\ElementXMLImpl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\ElementXMLInterface.cpp"
 				>
 				<FileConfiguration
@@ -1273,6 +1285,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\ElementXMLInterface.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\ParseXML.cpp"
@@ -1327,6 +1343,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\ParseXML.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\ParseXMLFile.cpp"
 				>
 				<FileConfiguration
@@ -1377,6 +1397,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\ParseXMLFile.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\ParseXMLString.cpp"
@@ -1430,50 +1454,14 @@
 					/>
 				</FileConfiguration>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
-				RelativePath=".\include\ElementXML.h"
+				RelativePath=".\src\ParseXMLString.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\ElementXMLHandle.h"
+				RelativePath=".\src\XMLTrace.h"
 				>
 			</File>
-			<File
-				RelativePath=".\include\ElementXMLImpl.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\ElementXMLInterface.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\ParseXML.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\ParseXMLFile.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\ParseXMLString.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\XMLTrace.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="SCU Files"
@@ -1531,10 +1519,6 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

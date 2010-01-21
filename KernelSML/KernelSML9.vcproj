@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				AdditionalIncludeDirectories="..\CLI\src;..\ElementXML\src;..\ConnectionSML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -71,15 +71,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -103,13 +103,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -159,13 +159,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -189,13 +189,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -225,7 +225,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				AdditionalIncludeDirectories="..\CLI\src;..\ElementXML\src;..\ConnectionSML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -249,18 +249,18 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -284,13 +284,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -345,16 +345,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -378,13 +378,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -407,7 +407,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				AdditionalIncludeDirectories="..\CLI\src;..\ElementXML\src;..\ConnectionSML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -433,15 +433,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -465,13 +465,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -495,7 +495,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				AdditionalIncludeDirectories="..\CLI\src;..\ElementXML\src;..\ConnectionSML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -521,13 +521,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -551,13 +551,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -587,7 +587,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\CLI\include;include;..\ElementXML\include;..\ConnectionSML\include;..\SoarKernel\include;..\shared"
+				AdditionalIncludeDirectories="..\CLI\src;..\ElementXML\src;..\ConnectionSML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;KERNELSML_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -611,18 +611,18 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -646,13 +646,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -707,16 +707,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Soar$(ProjectName).dll"
+				OutputFile="$(OutDir)\Soar$(ProjectName).dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="Soar$(ProjectName).lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -740,30 +740,30 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin\&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B2CBC5A-4A7A-46BB-9274-6C91262E9374}"
-			RelativePathToProject="..\..\SoarSuite\Core\CLI\CommandLineInterface9.vcproj"
+			RelativePathToProject=".\CLI\CommandLineInterface9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			RelativePathToProject="..\..\SoarSuite\Core\ConnectionSML\ConnectionSML9.vcproj"
+			RelativePathToProject=".\ConnectionSML\ConnectionSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			RelativePathToProject="..\..\SoarSuite\Core\ElementXML\ElementXML9.vcproj"
+			RelativePathToProject=".\ElementXML\ElementXML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
-			RelativePathToProject="..\..\SoarSuite\Core\SoarKernel\SoarKernel9.vcproj"
+			RelativePathToProject=".\SoarKernel\SoarKernel9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{6B0AE9F9-575C-4230-875A-3996BF2AC1E6}"
-			RelativePathToProject="..\..\SoarSuite\Core\pcre\pcre9.vcproj"
+			RelativePathToProject=".\pcre\pcre9.vcproj"
 		/>
 	</References>
 	<Files>
@@ -772,6 +772,10 @@
 			Filter="cpp;c;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\src\KernelHeaders.h"
+				>
+			</File>
 			<File
 				RelativePath=".\src\KernelSMLdll.cpp"
 				>
@@ -807,6 +811,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\KernelSMLdll.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\KernelSMLInterface.cpp"
@@ -881,6 +889,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_AgentListener.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_AgentOutputFlusher.cpp"
 				>
 				<FileConfiguration
@@ -915,6 +927,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_AgentOutputFlusher.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_AgentSML.cpp"
@@ -953,6 +969,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_AgentSML.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_ConnectionManager.cpp"
 				>
 				<FileConfiguration
@@ -987,6 +1007,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ConnectionManager.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_EventManager.cpp"
@@ -1025,6 +1049,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_EventManager.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_InputListener.cpp"
 				>
 				<FileConfiguration
@@ -1059,6 +1087,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_InputListener.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_KernelCallback.cpp"
@@ -1097,6 +1129,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_KernelCallback.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_KernelHelpers.cpp"
 				>
 				<FileConfiguration
@@ -1133,6 +1169,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_KernelHelpers.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_KernelSML.cpp"
 				>
 				<FileConfiguration
@@ -1167,6 +1207,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_KernelSML.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_KernelSMLHandlers.cpp"
@@ -1241,6 +1285,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ListenerThread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sml_OldRunScheduler.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_OutputListener.cpp"
 				>
 				<FileConfiguration
@@ -1275,6 +1327,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_OutputListener.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_PrintListener.cpp"
@@ -1313,6 +1369,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_PrintListener.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_ProductionListener.cpp"
 				>
 				<FileConfiguration
@@ -1347,6 +1407,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ProductionListener.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ReceiverThread.cpp"
@@ -1385,6 +1449,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ReceiverThread.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_RhsFunction.cpp"
 				>
 				<FileConfiguration
@@ -1419,6 +1487,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_RhsFunction.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_RhsListener.cpp"
@@ -1457,6 +1529,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_RhsListener.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_RunListener.cpp"
 				>
 				<FileConfiguration
@@ -1491,6 +1567,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_RunListener.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_RunScheduler.cpp"
@@ -1529,6 +1609,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_RunScheduler.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_StringListener.cpp"
 				>
 				<FileConfiguration
@@ -1563,6 +1647,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_StringListener.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_SystemListener.cpp"
@@ -1601,6 +1689,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_SystemListener.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_UpdateListener.cpp"
 				>
 				<FileConfiguration
@@ -1635,6 +1727,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_UpdateListener.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_XMLListener.cpp"
@@ -1672,134 +1768,10 @@
 					/>
 				</FileConfiguration>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
-				RelativePath=".\include\KernelHeaders.h"
+				RelativePath=".\src\sml_XMLListener.h"
 				>
 			</File>
-			<File
-				RelativePath="..\ConnectionSML\include\KernelSMLDirect.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\KernelSMLdll.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_AgentListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_AgentOutputFlusher.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_AgentSML.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ConnectionSML\include\sml_Connection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ConnectionManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ConnectionSML\include\sml_ElementXML.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ConnectionSML\include\sml_EmbeddedConnection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_EventManager.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_InputListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_KernelCallback.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_KernelHelpers.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_KernelSML.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ListenerThread.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ConnectionSML\include\sml_Names.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_OutputListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_PrintListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ProductionListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ReceiverThread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_RhsFunction.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_RhsListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_RunListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_RunScheduler.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_StringListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_SystemListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_UpdateListener.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_XMLListener.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="SCU Files"
@@ -1841,10 +1813,6 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

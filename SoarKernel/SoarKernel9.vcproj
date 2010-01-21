@@ -20,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include"
+				AdditionalIncludeDirectories="../shared;../ElementXML/src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -87,8 +87,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -155,8 +155,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -185,7 +185,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include"
+				AdditionalIncludeDirectories="../shared;../ElementXML/src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -208,7 +208,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -228,8 +228,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -282,7 +282,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -302,8 +302,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -325,7 +325,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include"
+				AdditionalIncludeDirectories="../shared;../ElementXML/src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -349,7 +349,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -369,8 +369,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			>
@@ -393,7 +393,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include"
+				AdditionalIncludeDirectories="../shared;../ElementXML/src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -417,7 +417,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -437,8 +437,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -467,7 +467,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;../shared;../ElementXML/include"
+				AdditionalIncludeDirectories="../shared;../ElementXML/src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -490,7 +490,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -510,8 +510,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -564,7 +564,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -628,6 +628,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\agent.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\backtrace.cpp"
 				>
 				<FileConfiguration
@@ -660,6 +678,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\backtrace.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -700,6 +736,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\callback.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\chunk.cpp"
 				>
 				<FileConfiguration
@@ -732,6 +786,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\chunk.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -772,6 +844,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\consistency.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\decide.cpp"
 				>
 				<FileConfiguration
@@ -804,6 +894,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\decide.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -844,6 +952,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\decision_manipulation.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\episodic_memory.cpp"
 				>
 				<FileConfiguration
@@ -876,6 +1002,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\episodic_memory.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -916,6 +1060,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\explain.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\exploration.cpp"
 				>
 				<FileConfiguration
@@ -948,6 +1110,60 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\exploration.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\gdatastructs.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\gsysparam.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -988,6 +1204,42 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\init_soar.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\instantiations.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\io.cpp"
 				>
 				<FileConfiguration
@@ -1020,6 +1272,42 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\io_soar.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\kernel.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1060,6 +1348,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\lexer.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\mem.cpp"
 				>
 				<FileConfiguration
@@ -1092,6 +1398,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\mem.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1132,6 +1456,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\osupport.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\parser.cpp"
 				>
 				<FileConfiguration
@@ -1164,6 +1506,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\parser.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1204,6 +1564,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\prefmem.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\print.cpp"
 				>
 				<FileConfiguration
@@ -1236,6 +1614,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\print.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1276,6 +1672,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\production.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\recmem.cpp"
 				>
 				<FileConfiguration
@@ -1308,6 +1722,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\recmem.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1348,6 +1780,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\reinforcement_learning.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\reorder.cpp"
 				>
 				<FileConfiguration
@@ -1380,6 +1830,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\reorder.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1420,6 +1888,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\rete.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\rhsfun.cpp"
 				>
 				<FileConfiguration
@@ -1452,6 +1938,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\rhsfun.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1492,6 +1996,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\rhsfun_math.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\semantic_memory.cpp"
 				>
 				<FileConfiguration
@@ -1524,6 +2046,42 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\semantic_memory.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\soar_db.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1564,6 +2122,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\soar_module.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\soar_rand.cpp"
 				>
 				<FileConfiguration
@@ -1596,6 +2172,78 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\soar_rand.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\soarkernel.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sqlite3.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\stl_support.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1636,6 +2284,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\symtab.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\tempmem.cpp"
 				>
 				<FileConfiguration
@@ -1668,6 +2334,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\tempmem.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1708,6 +2392,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\trace.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\utilities.cpp"
 				>
 				<FileConfiguration
@@ -1740,6 +2442,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\utilities.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1780,6 +2500,24 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\wma.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\src\wmem.cpp"
 				>
 				<FileConfiguration
@@ -1812,6 +2550,24 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\wmem.h"
+				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1851,194 +2607,24 @@
 					/>
 				</FileConfiguration>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
-				RelativePath=".\include\agent.h"
+				RelativePath=".\src\xml.h"
 				>
+				<FileConfiguration
+					Name="Debug SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release SCU|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
 			</File>
-			<File
-				RelativePath=".\src\backtrace.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\callback.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\chunk.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\consistency.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\decide.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\decision_manipulation.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\episodic_memory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\explain.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\exploration.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\gdatastructs.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\gsysparam.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\init_soar.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\instantiations.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\io_soar.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\kernel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\lexer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\mem.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\osupport.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\parser.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\prefmem.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\print.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\production.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\recmem.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\reinforcement_learning.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\reorder.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\rete.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\rhsfun.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\rhsfun_math.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\semantic_memory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\soar_db.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\soar_module.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\soar_rand.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\soarkernel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sqlite3.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\stl_support.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\string_tofrom.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\symtab.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\tempmem.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\trace.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\utilities.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\wma.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\wmem.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\xml.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="SCU Files"

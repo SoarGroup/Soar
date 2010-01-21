@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ConnectionSML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\ConnectionSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -71,7 +71,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -91,8 +91,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -142,7 +142,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -162,8 +162,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -193,7 +193,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ConnectionSML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\ConnectionSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				ExceptionHandling="1"
@@ -218,7 +218,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -238,8 +238,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -295,7 +295,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -315,8 +315,8 @@
 		</Configuration>
 		<Configuration
 			Name="Distribution|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -345,7 +345,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ConnectionSML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\ConnectionSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				ExceptionHandling="1"
@@ -370,7 +370,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -390,8 +390,8 @@
 		</Configuration>
 		<Configuration
 			Name="Distribution|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -446,7 +446,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -466,8 +466,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -490,7 +490,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ConnectionSML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\ConnectionSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -516,7 +516,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -536,8 +536,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -561,7 +561,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ConnectionSML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\ConnectionSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -587,7 +587,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -607,8 +607,8 @@
 		</Configuration>
 		<Configuration
 			Name="Distribution SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -637,7 +637,7 @@
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ConnectionSML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\ConnectionSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				ExceptionHandling="1"
@@ -662,7 +662,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -682,8 +682,8 @@
 		</Configuration>
 		<Configuration
 			Name="Distribution SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -738,7 +738,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -758,8 +758,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -789,7 +789,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\ConnectionSML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\ConnectionSML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				ExceptionHandling="1"
@@ -814,7 +814,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -834,8 +834,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -891,7 +891,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -918,6 +918,10 @@
 			Filter="cpp;c;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\src\sml_Client.h"
+				>
+			</File>
 			<File
 				RelativePath=".\src\sml_ClientAgent.cpp"
 				>
@@ -969,6 +973,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientAgent.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ClientAnalyzedXML.cpp"
@@ -1023,6 +1031,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientAnalyzedXML.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientDirect.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_ClientErrors.cpp"
 				>
 				<FileConfiguration
@@ -1073,6 +1089,14 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientErrors.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientEvents.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ClientFloatElement.cpp"
@@ -1127,6 +1151,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientFloatElement.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_ClientIdentifier.cpp"
 				>
 				<FileConfiguration
@@ -1177,6 +1205,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientIdentifier.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ClientIntElement.cpp"
@@ -1231,6 +1263,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientIntElement.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_ClientKernel.cpp"
 				>
 				<FileConfiguration
@@ -1281,6 +1317,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientKernel.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ClientStringElement.cpp"
@@ -1335,6 +1375,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientStringElement.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_ClientTraceXML.cpp"
 				>
 				<FileConfiguration
@@ -1385,6 +1429,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientTraceXML.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ClientWMElement.cpp"
@@ -1439,6 +1487,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientWMElement.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_ClientWorkingMemory.cpp"
 				>
 				<FileConfiguration
@@ -1489,6 +1541,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ClientWorkingMemory.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ClientXML.cpp"
@@ -1543,6 +1599,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ClientXML.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_DeltaList.cpp"
 				>
 				<FileConfiguration
@@ -1593,6 +1653,14 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_DeltaList.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sml_ListMap.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ObjectMap.cpp"
@@ -1647,6 +1715,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\src\sml_ObjectMap.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\sml_OutputDeltaList.cpp"
 				>
 				<FileConfiguration
@@ -1698,98 +1770,10 @@
 					/>
 				</FileConfiguration>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
-				RelativePath=".\include\sml_Client.h"
+				RelativePath=".\src\sml_OutputDeltaList.h"
 				>
 			</File>
-			<File
-				RelativePath=".\include\sml_ClientAgent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientAnalyzedXML.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientDirect.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientErrors.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientEvents.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientFloatElement.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientIdentifier.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientIntElement.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientKernel.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientStringElement.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientTraceXML.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientWMElement.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientWorkingMemory.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ClientXML.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_DeltaList.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ListMap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ObjectMap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_OutputDeltaList.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
-		</Filter>
-		<Filter
-			Name="Abstract Interfaces"
-			>
 		</Filter>
 		<Filter
 			Name="SCU Files"
@@ -1848,10 +1832,6 @@
 				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global
