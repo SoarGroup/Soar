@@ -277,29 +277,24 @@ Export('env')
 
 #################
 # Auto detect components
-# TODO: could just list parent folder and grab all directories
 components = []
-swig = False
 print "Detected components: ",
-# Java: build if Java directory at top level
-if os.path.exists(os.path.join('..', 'Java')):
-	print "Java ",
-	components.append('Java')
-
-# Python: build if Python directory at top level
-if os.path.exists(os.path.join('..', 'Python')):
-	print "Python ",
-	components.append('Python')
-
-# Tcl: build if Tcl directory at top level
-if os.path.exists(os.path.join('..', 'Tcl')):
-	print "Tcl ",
-	components.append('Tcl')
-
-# SWIG: build if any of (Java/Python/CSharp/Tcl) are enabled
-if ('Java' or 'Python' or 'CSharp' or 'Tcl') in components:
-	swig = True;
+for root, dirs, files in os.walk('..'):
+	if root != '..':
+		del dirs[:]
+	if root.startswith('../Core') or root.startswith(env['PREFIX']) or root.startswith(env['BUILD_DIR']):
+		continue;
+	if 'SConscript' in files:
+		component = root[3:]
+		components.append(component)
+		print component + ' ',
 print
+
+# SWIG: build if any of (Java/Python/Tcl) are enabled
+swig = False
+if ('Java' or 'Python' or 'Tcl') in components:
+	swig = True;
+	print "Enabling SWIG."
 
 # As of 4/2009, python binaries available on mac are not x86_64 and
 # therefore cannot load x86_64 targeted libraries. Verbosely warn.
@@ -382,5 +377,6 @@ for d in subdirs:
 for d in components:
 	script = '../%s/SConscript' % d
 	if os.path.exists(script):
+		print "Processing", script + "..."
 		SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
