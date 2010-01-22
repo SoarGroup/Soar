@@ -291,17 +291,10 @@ if os.path.exists(os.path.join('..', 'Python')):
 	print "Python ",
 	components.append('Python')
 
-# CSharp: build if CSharp directory at top level
-# TODO: enable
-#if os.path.exists(os.path.join('..', 'CSharp')):
-#	print "CSharp ",
-#	components.append('CSharp')
-
 # Tcl: build if Tcl directory at top level
-# TODO: enable
-#if os.path.exists(os.path.join('..', 'Tcl')):
-#	print "Tcl ",
-#	components.append('Tcl')
+if os.path.exists(os.path.join('..', 'Tcl')):
+	print "Tcl ",
+	components.append('Tcl')
 
 # SWIG: build if any of (Java/Python/CSharp/Tcl) are enabled
 if ('Java' or 'Python' or 'CSharp' or 'Tcl') in components:
@@ -375,6 +368,9 @@ if 'Python' in components:
 
 if 'Java' in components:
 	subdirs.append('ClientSMLSWIG/Java')
+
+if 'Tcl' in components:
+	subdirs.append('ClientSMLSWIG/Tcl')
 
 # Build/Output Directory
 print "Building intermediates to directory ", env['BUILD_DIR']

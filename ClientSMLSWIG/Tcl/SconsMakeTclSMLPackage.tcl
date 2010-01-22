@@ -1,3 +1,3 @@
-cd SoarLibrary/bin/Tcl_sml_ClientInterface
+cd $argv
 pkg_mkIndex -verbose . *Tcl_sml_ClientInterface[info sharedlibextension]
 
