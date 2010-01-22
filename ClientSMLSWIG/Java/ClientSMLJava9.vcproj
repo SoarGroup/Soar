@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -49,7 +49,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
+				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\src;..\..\ElementXML\src;..\..\ConnectionSML\src;..\..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -73,16 +73,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Java_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="Java_sml_ClientInterface.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -106,13 +106,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin, run ant"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				CommandLine="echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; -Dsoarbuild=../../../build/ClientSMLSWIG/Java/build -Dsoarprefix=../../../out -q&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
+				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\src;..\..\ElementXML\src;..\..\ConnectionSML\src;..\..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -164,14 +164,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Java_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="Java_sml_ClientInterface.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -195,13 +195,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin, run ant"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				CommandLine="echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; -Dsoarbuild=../../../build/ClientSMLSWIG/Java/build -Dsoarprefix=../../../out -q&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -234,7 +234,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
+				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\src;..\..\ElementXML\src;..\..\ConnectionSML\src;..\..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -257,17 +257,17 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Java_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="Java_sml_ClientInterface.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -291,13 +291,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin, run ant"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				CommandLine="echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; -Dsoarbuild=../../../build/ClientSMLSWIG/Java/build -Dsoarprefix=../../../out -q&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -331,7 +331,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\include;..\..\ElementXML\include;..\..\ConnectionSML\include;..\..\shared"
+				AdditionalIncludeDirectories="&quot;$(JAVA_HOME)\include&quot;;&quot;$(JAVA_HOME)\include\win32&quot;;..\..\ClientSML\src;..\..\ElementXML\src;..\..\ConnectionSML\src;..\..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -354,15 +354,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="Java_sml_ClientInterface.dll"
+				OutputFile="$(OutDir)\Java_sml_ClientInterface.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="Java_sml_ClientInterface.lib"
+				ImportLibrary="$(OutDir)\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -386,22 +386,22 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin, run ant"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;&#x0D;&#x0A;cd $(SolutionDir)&#x0D;&#x0A;echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; build-sml&#x0D;&#x0A;"
+				CommandLine="echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; -Dsoarbuild=../../../build/ClientSMLSWIG/Java/build -Dsoarprefix=../../../out -q&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
-			RelativePathToProject=".\Core\ClientSML\ClientSML9.vcproj"
+			RelativePathToProject=".\ClientSML\ClientSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML9.vcproj"
+			RelativePathToProject=".\ConnectionSML\ConnectionSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			RelativePathToProject=".\Core\ElementXML\ElementXML9.vcproj"
+			RelativePathToProject=".\ElementXML\ElementXML9.vcproj"
 		/>
 	</References>
 	<Files>
@@ -431,6 +431,10 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
+				RelativePath=".\build.xml"
+				>
+			</File>
+			<File
 				RelativePath="..\sml_ClientInterface.i"
 				>
 				<FileConfiguration
@@ -458,7 +462,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;cd &quot;$(SolutionDir)\SoarLibrary\lib&quot;&#x0D;&#x0A;if not exist swt.jar goto fetch&#x0D;&#x0A;md5sum.exe --check --status swt32.md5sum&#x0D;&#x0A;if %errorlevel% == 0 goto fetched&#x0D;&#x0A;del swt.jar&#x0D;&#x0A;:fetch&#x0D;&#x0A;echo Fetching swt.jar&#x0D;&#x0A;wget.exe -q http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar&#x0D;&#x0A;:fetched&#x0D;&#x0A;cd &quot;$(ProjectDir)&quot;&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -469,7 +473,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Checking for swt.jar&#x0D;&#x0A;cd &quot;$(SolutionDir)\SoarLibrary\lib&quot;&#x0D;&#x0A;if not exist swt.jar goto fetch&#x0D;&#x0A;md5sum.exe --check --status swt64.md5sum&#x0D;&#x0A;if %errorlevel% == 0 goto fetched&#x0D;&#x0A;del swt.jar&#x0D;&#x0A;:fetch&#x0D;&#x0A;echo Fetching swt.jar&#x0D;&#x0A;wget.exe -q http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar&#x0D;&#x0A;:fetched&#x0D;&#x0A;cd &quot;$(ProjectDir)&quot;&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -480,7 +484,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;cd &quot;$(SolutionDir)\SoarLibrary\lib&quot;&#x0D;&#x0A;if not exist swt.jar goto fetch&#x0D;&#x0A;md5sum.exe --check --status swt32.md5sum&#x0D;&#x0A;if %errorlevel% == 0 goto fetched&#x0D;&#x0A;del swt.jar&#x0D;&#x0A;:fetch&#x0D;&#x0A;echo Fetching swt.jar&#x0D;&#x0A;wget.exe -q http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar&#x0D;&#x0A;:fetched&#x0D;&#x0A;cd &quot;$(ProjectDir)&quot;&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -491,7 +495,7 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Performing Custom Build Step on Java_sml_ClientInterface.i"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Checking for swt.jar&#x0D;&#x0A;cd &quot;$(SolutionDir)\SoarLibrary\lib&quot;&#x0D;&#x0A;if not exist swt.jar goto fetch&#x0D;&#x0A;md5sum.exe --check --status swt64.md5sum&#x0D;&#x0A;if %errorlevel% == 0 goto fetched&#x0D;&#x0A;del swt.jar&#x0D;&#x0A;:fetch&#x0D;&#x0A;echo Fetching swt.jar&#x0D;&#x0A;wget.exe -q http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar&#x0D;&#x0A;:fetched&#x0D;&#x0A;cd &quot;$(ProjectDir)&quot;&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/include -I../../ElementXML/include -I../../ConnectionSML/include -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo JAVA_HOME: %JAVA_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo ANT_HOME: %ANT_HOME%&#x0D;&#x0A;echo Clean up old java files&#x0D;&#x0A;echo on&#x0D;&#x0A;mkdir src&#x0D;&#x0A;cd src&#x0D;&#x0A;mkdir sml&#x0D;&#x0A;cd sml&#x0D;&#x0A;del *.java&#x0D;&#x0A;cd ..&#x0D;&#x0A;cd ..&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -c++ -java -Wall -package sml -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir src/sml &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>

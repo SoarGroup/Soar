@@ -25,7 +25,7 @@
 // Check for memory leaks
 #include <stdlib.h>
 
-bool __stdcall DllMain( void * hModule, 
+bool __stdcall DllMain( void * /*hModule*/, 
                        unsigned long  ul_reason_for_call, 
                        void * /*lpReserved*/
 					 )
