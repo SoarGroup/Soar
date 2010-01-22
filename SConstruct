@@ -45,8 +45,8 @@ elif sys.platform == 'darwin':
 			m64_default = '64'
 
 default_prefix = os.path.realpath(os.path.join('..','out'))
-if os.environ.has_key('SOAR_LIBRARY'):
-	default_prefix = os.environ['SOAR_LIBRARY']
+if os.environ.has_key('SOAR_HOME'):
+	default_prefix = os.environ['SOAR_HOME']
 
 default_build = os.path.realpath(os.path.join('..','build'))
 if os.environ.has_key('SOAR_BUILD'):
@@ -296,9 +296,12 @@ print
 
 # SWIG: build if any of (Java/Python/Tcl) are enabled
 swig = False
-if ('Java' or 'Python' or 'Tcl') in components:
-	swig = True;
-	print "Enabling SWIG."
+print components
+for x in ['Java', 'Python', 'Tcl']:
+	if x in components:
+		swig = True;
+		print "Enabling SWIG."
+		break
 
 # As of 4/2009, python binaries available on mac are not x86_64 and
 # therefore cannot load x86_64 targeted libraries. Verbosely warn.
