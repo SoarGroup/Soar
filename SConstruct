@@ -6,6 +6,8 @@ import socket
 import subprocess
 import re
 
+SOAR_VERSION = "9.2.1"
+
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
 # sys.platform:          linux2,           linux2,           darwin,        darwin,
@@ -183,6 +185,8 @@ custom_tests = {
 	'CheckVisibilityFlag' : CheckVisibilityFlag,
 }
 conf = Configure(env, custom_tests = custom_tests)
+
+conf.env.Append(SOAR_VERSION = SOAR_VERSION)
 
 # We define SCONS to indicate to the source that SCONS is controlling the build.
 conf.env.Append(CPPFLAGS = ' -DSCONS')
