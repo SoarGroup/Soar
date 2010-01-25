@@ -296,7 +296,6 @@ print
 
 # SWIG: build if any of (Java/Python/Tcl) are enabled
 swig = False
-print components
 for x in ['Java', 'Python', 'Tcl']:
 	if x in components:
 		swig = True;
