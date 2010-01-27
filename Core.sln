@@ -22,6 +22,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLJava", "ClientSMLS
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLPython", "ClientSMLSWIG\Python\ClientSMLPython9.vcproj", "{E03209E8-6CF9-4460-B570-A28F3BFBB402}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TOHSML", "..\TOHSML\TOHSML.vcproj", "{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug SCU|Win32 = Debug SCU|Win32
@@ -206,6 +208,22 @@ Global
 		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.ActiveCfg = Release|Win32
 		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|Win32.Build.0 = Release|Win32
 		{E03209E8-6CF9-4460-B570-A28F3BFBB402}.Release|x64.ActiveCfg = Release|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug SCU|Win32.ActiveCfg = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug SCU|Win32.Build.0 = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug SCU|x64.ActiveCfg = Debug|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug SCU|x64.Build.0 = Debug|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug|Win32.Build.0 = Debug|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug|x64.ActiveCfg = Debug|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Debug|x64.Build.0 = Debug|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release SCU|Win32.ActiveCfg = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release SCU|Win32.Build.0 = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release SCU|x64.ActiveCfg = Release|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release SCU|x64.Build.0 = Release|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release|Win32.ActiveCfg = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release|Win32.Build.0 = Release|Win32
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release|x64.ActiveCfg = Release|x64
+		{3B7AC15A-ECCD-49CF-86D9-D813D2ABE979}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
