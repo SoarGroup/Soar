@@ -15,6 +15,8 @@ else:
 env.Install('$PREFIX/lib', SoarKernelSML)
 
 # Install resources
+env.Install('$PREFIX/share/soar', '#Documentation')
+env.Clean('$PREFIX/share/soar', '$PREFIX/share/soar/Documentation')
 env.Install('$PREFIX/share/soar', '#Demos')
 env.Clean('$PREFIX/share/soar', '$PREFIX/share/soar/Demos')
 
