@@ -127,7 +127,7 @@ protected:
 	void destroySoar();
 	void runAllTestTypes();
 	void runTest();
-	void spawnListener();
+	void spawnListener(const std::string& lib);
 	void cleanUpListener();
 
 	void loadProductions( const char* productions );
@@ -239,7 +239,13 @@ void FullTests::createSoar()
 
 	if ( m_Options.test( REMOTE ) )
 	{
-		spawnListener();
+		m_pKernel = sml::Kernel::CreateKernelInCurrentThread();
+		CPPUNIT_ASSERT( m_pKernel != NULL );
+		std::string lib( m_pKernel->GetLibraryLocation() );
+		m_pKernel->Shutdown();
+		delete m_pKernel;
+		m_pKernel = NULL;
+		spawnListener(lib);
 		m_pKernel = sml::Kernel::CreateRemoteConnection( true, 0, m_Port );
 	}
 	else
@@ -346,7 +352,7 @@ void FullTests::destroySoar()
 	}
 }
 
-void FullTests::spawnListener()
+void FullTests::spawnListener(const std::string& lib)
 {
 	// Spawning a new process is radically different on windows vs linux.
 	// Instead of writing an abstraction layer, I'm just going to put platform-
@@ -381,9 +387,11 @@ void FullTests::spawnListener()
 	if ( pid == 0 )
 	{
 		// child
-      std::stringstream portString;
-      portString << m_Port;
-		execlp("Tests", "Tests", "--listener", portString.str().c_str(), static_cast< char* >( 0 ));
+		std::stringstream portString;
+		portString << m_Port;
+		std::stringstream cmdString;
+		cmdString << lib << "/bin/Tests";
+		execlp(cmdString.str().c_str(), "Tests", "--listener", portString.str().c_str(), static_cast< char* >( 0 ));
 		// does not return on success
 		CPPUNIT_ASSERT_MESSAGE( "execlp failed", false );
 		g_NoRemote = true;
