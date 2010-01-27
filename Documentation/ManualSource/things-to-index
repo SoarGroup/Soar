@@ -1,0 +1,115 @@
+state
+  representation
+goal
+  representation
+  subgoal
+  stack
+  termination
+  result (see result)
+operator
+  representation
+  proposal
+  comparison
+  selection
+  application
+  termination
+  instantiation
+  decision
+  impasse (see impasse!operator)
+problem space
+  representation
+problem solving 
+  functions
+impasse
+  attribute
+  operator
+subgoal (see goal)
+stack (see goal)
+production
+  condition
+  action
+  match
+  firing
+  retraction
+  instantiation
+  roles
+  conditions reordered
+  default
+match (see production match)
+decision procedure
+decision cycle
+  pseudo code
+elaboration cycle
+  see also decision cycle
+  preference phase
+elaboration phase
+  see also decision cycle
+decision phase
+  see also decision cycle
+working memory
+production memory
+preference memory
+working memory element
+wme (see working memory element)
+augmentation (see working memory element)
+link
+  preference
+instantiation
+  see production instantiation or operator instantiation
+preference
+  evaluation
+  semantics
+I/O
+  input
+  output
+  input functions
+  output functions
+  io attribute
+  input links
+  output links
+  in the decision cycle
+persistance
+identifier
+chunk
+learning
+chunking (see learning)
+i-support
+  of result
+o-support
+  of result
+action (see production action)
+condition (see production condition)
+attribute
+value
+fire (see production firing)
+retract (see production retraction)
+default productions (see production default)
+
+terms that do not appear in chapter two:
+result
+timetag
+tcl
+backtracing
+justification
+
+missed indexing in chapter two:
+working memory!object
+
+
+
+MAYBE
+preferences (plural or singular?)
+blocks-world
+slot
+
+NOT
+problem spaces (not plural)
+
+
+
+DON'T FORGET
+user interface
+interface (see user interface)
+functions, interface  (see user interface)
+commands (see user interface)
+command-line (see user interface)
