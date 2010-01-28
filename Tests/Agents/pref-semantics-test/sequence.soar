@@ -1,0 +1,41 @@
+sp {sequence*propose*done
+   (state <s> ^name pref-semantics-test)
+-->
+   (<s> ^operator <op> + <)
+   (<op> ^name done)
+}
+
+sp {sequence*apply*done
+   (state <s> ^name pref-semantics-test
+              ^operator.name done)
+-->
+   (halt)
+}
+
+sp {sequence*monitor*success
+   (state <s> ^name pref-semantics-test
+              ^operator.name done
+             -^<test> failure)
+-->
+   (write | All tests succeeded |)
+}
+
+sp {sequence*monitor*failure
+   (state <s> ^name pref-semantics-test
+              ^operator.name done
+              ^<test> failure)
+-->
+   (write | Failed test: | <test>)
+   (write (crlf))
+}
+
+sp {sequence*test*fail
+   (state <s> ^superstate <ss>)
+   (<ss> ^superstate <sss>)
+   (<sss> ^name {<name> <> pref-semantics-test}
+          ^top-state <ts>)
+-->
+   (<ts> ^<name> failure)
+   (exec test-failure <name>)
+}
+

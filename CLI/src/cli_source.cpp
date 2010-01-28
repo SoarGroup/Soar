@@ -168,7 +168,9 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 		// Register for production removed events so we can report the number of excised productions
 		if ( m_pAgentSML ) // only do this if we have an agent
 		{
-			this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+			if (!this->IsRegisteredWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED)) {
+				this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED) ;
+			}
 		}
 	}
 	++m_SourceDepth;

@@ -1,0 +1,10 @@
+sp {elaborations*elaborate*top-state
+   (state <s> ^superstate nil)
+-->
+   (<s> ^top-state <s>)}
+
+sp {elaborations*elaborate*super*top-state
+   (state <ss> ^superstate.top-state <s>)
+-->
+   (<ss> ^top-state <s>)
+}

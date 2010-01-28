@@ -71,6 +71,7 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 				// Value
 				AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeInt, buffer.str() );
 				buffer.clear();
+
 				// Symbol
 				AppendArgTagFast( sml_Names::kParamName, sml_Names::kTypeString, attributeName );
 			}

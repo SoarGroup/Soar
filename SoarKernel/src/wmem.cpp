@@ -38,6 +38,9 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "wma.h"
+#include "episodic_memory.h"
+
 using namespace soar_TraceNames;
 
 /* ======================================================================
@@ -114,6 +117,12 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
   w->gds_next = NIL;
 /* REW: end 09.15.96 */
 
+  w->wma_decay_el = NIL;
+  w->wma_tc_value = 0;
+
+  w->epmem_id = EPMEM_NODEID_BAD;
+  w->epmem_valid = NIL;
+
   return w;
 }
 
@@ -121,15 +130,19 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
 
 void add_wme_to_wm (agent* thisAgent, wme *w) 
 {
-   push (thisAgent, w, thisAgent->wmes_to_add);
-   if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) 
-   {
-      post_link_addition (thisAgent, w->id, w->value);
-      if (w->attr == thisAgent->operator_symbol) 
-      {
-         w->value->id.isa_operator++;
-      }
-   }
+	assert( ( ( w->id->id.common_symbol_info.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->id->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->attr->id.common_symbol_info.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->attr->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) &&
+		( ( w->value->id.common_symbol_info.symbol_type != IDENTIFIER_SYMBOL_TYPE ) || ( w->value->id.level > SMEM_LTI_UNKNOWN_LEVEL ) ) );
+
+	push (thisAgent, w, thisAgent->wmes_to_add);
+	if (w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) 
+	{
+		post_link_addition (thisAgent, w->id, w->value);
+		if (w->attr == thisAgent->operator_symbol) 
+		{
+			w->value->id.isa_operator++;
+		}
+	}
 }
 
 void remove_wme_from_wm (agent* thisAgent, wme *w) 
@@ -193,7 +206,8 @@ void do_buffered_wm_changes (agent* thisAgent)
   
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  struct timeval start_tv;
+  soar_process_timer local_timer;
+  local_timer.set_enabled( &( thisAgent->sysparams[ TIMERS_ENABLED ] ) );
 #endif
 #endif
 
@@ -211,7 +225,7 @@ void do_buffered_wm_changes (agent* thisAgent)
   /* --- stuff wme changes through the rete net --- */
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  start_timer (thisAgent,  &start_tv);
+  local_timer.start();
 #endif
 #endif
   for (c=thisAgent->wmes_to_add; c!=NIL; c=c->rest) 
@@ -224,7 +238,8 @@ void do_buffered_wm_changes (agent* thisAgent)
   }
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  stop_timer (thisAgent, &start_tv, &thisAgent->match_cpu_time[thisAgent->current_phase]);
+  local_timer.stop();
+  thisAgent->timers_match_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
   /* --- warn if watching wmes and same wme was added and removed -- */
@@ -257,6 +272,7 @@ void do_buffered_wm_changes (agent* thisAgent)
        */
       filtered_print_wme_add(thisAgent, w); /* kjh(CUSP-B2) begin */
     }
+
     wme_add_ref (w);
     free_cons (thisAgent, c);
     thisAgent->wme_addition_count++;
@@ -284,6 +300,12 @@ void deallocate_wme (agent* thisAgent, wme *w) {
   print_with_symbols (thisAgent, "\nDeallocate wme: ");
   print_wme (thisAgent, w);
 #endif
+
+  if ( wma_enabled( thisAgent ) )
+  {
+    wma_remove_decay_element( thisAgent, w );
+  }
+
   symbol_remove_ref (thisAgent, w->id);
   symbol_remove_ref (thisAgent, w->attr);
   symbol_remove_ref (thisAgent, w->value);

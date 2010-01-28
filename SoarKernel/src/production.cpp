@@ -1579,6 +1579,12 @@ production *make_production (agent* thisAgent,
     add_bound_variables_in_condition_list (thisAgent, *lhs_top, tc, NIL);
     if (! reorder_action_list (thisAgent, rhs_top, tc)) return NIL;
     if (! reorder_lhs (thisAgent, lhs_top, lhs_bottom, reorder_nccs)) return NIL;
+
+	if ( !smem_valid_production( *lhs_top, *rhs_top ) ) 
+	{
+		print( thisAgent, "ungrounded LTI in production\n" );
+		return NIL;
+	}
     
 #ifdef DO_COMPILE_TIME_O_SUPPORT_CALCS
     calculate_compile_time_o_support (*lhs_top, *rhs_top);

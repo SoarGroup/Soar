@@ -36,41 +36,20 @@ bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
 
 bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 
-	// Look at clock
-#ifdef WIN32
-	DWORD realStart = GetTickCount();
-#else // WIN32
-	struct timeval realStart;
-	if (gettimeofday(&realStart, 0) != 0) {
-		return SetError(CLIError::kgettimeofdayFail);
-	}
-#endif // WIN32
+	soar_wallclock_timer real;
+	soar_process_timer proc;
 
-	// Look at clock for process time
-	clock_t procStart;
-	procStart = clock();
+	proc.start();
+	real.start();
 
 	// Execute command
 	bool ret = DoCommandInternal(argv);
 
-	// Look at clock for process time
-	clock_t procFinish;
-	procFinish = clock();
+	real.stop();
+	proc.stop();
 
-	// Look at clock again, evaluate elapsed time in seconds
-#ifdef WIN32
-	DWORD elapsedx = GetTickCount() - realStart;
-	float realElapsed = elapsedx / 1000.0f;
-#else // WIN32
-	struct timeval realFinish;
-	if (gettimeofday(&realFinish, 0) != 0) {
-		return SetError(CLIError::kgettimeofdayFail);
-	}
-	double realElapsed = (realFinish.tv_sec + (realFinish.tv_usec / 1000000.0)) 
-		- (realStart.tv_sec + (realStart.tv_usec / 1000000.0));
-#endif
-
-	double procElapsed = (procFinish - procStart) / static_cast<double>(CLOCKS_PER_SEC);
+	double realElapsed = real.get_usec() / 1000000.0;
+	double procElapsed = proc.get_usec() / 1000000.0;
 
 	// Print elapsed time and return
 	if (m_RawOutput) {

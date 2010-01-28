@@ -91,7 +91,7 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 	std::string helpFile;
 	if (!pCommand || !pCommand->size()) {
 		std::list< std::string > topics;
-		if ( !ListHelpTopics( m_LibraryDirectory + "/CLIHelp", topics ) ) {
+		if ( !ListHelpTopics( m_LibraryDirectory + "/share/soar/Help", topics ) ) {
 			return SetError( CLIError::kDirectoryOpenFailure );
 		}
 
@@ -118,7 +118,7 @@ bool CommandLineInterface::DoHelp(const std::string* pCommand) {
 			return true;
 		}
 
-		helpFile = m_LibraryDirectory + "/CLIHelp/" + *pCommand;
+		helpFile = m_LibraryDirectory + "/share/soar/Help/" + *pCommand;
 	}
 
 	if (!GetHelpString(helpFile)) return false;

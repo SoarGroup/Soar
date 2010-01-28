@@ -39,7 +39,8 @@ void IdentifierSymbol::SetIdentifierSymbol(char const* pID)
 { 
 	// this really should be in the ctor
 	assert(pID);
-	assert(m_Symbol.empty()); 
+	// this is valid on input-link
+	//assert(m_Symbol.empty()); 
 	m_Symbol = pID ; 
 	//std::cout << "new symbol " << pID << std::endl;
 }

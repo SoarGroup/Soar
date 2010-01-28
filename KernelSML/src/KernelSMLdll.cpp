@@ -25,7 +25,7 @@
 // Check for memory leaks
 #include <stdlib.h>
 
-bool __stdcall DllMain( void * hModule, 
+bool __stdcall DllMain( void * /*hModule*/, 
                        unsigned long  ul_reason_for_call, 
                        void * /*lpReserved*/
 					 )
@@ -41,13 +41,6 @@ bool __stdcall DllMain( void * hModule,
 #ifndef DLL_PROCESS_ATTACH
 #define DLL_PROCESS_ATTACH   1    
 #endif // DLL_PROCESS_ATTACH
-
-	if (ul_reason_for_call == DLL_PROCESS_ATTACH)
-	{
-		// Record the module handle so that later we can find where
-		// this DLL was loaded from.
-		sml::KernelSML::SetModuleHandle(hModule) ;
-	}
 
 	// Dump out any memory leaks to the output window in the Visual C++ debugger and to stdout.
 	// Only do this when we are unloaded.

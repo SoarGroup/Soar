@@ -1,0 +1,32 @@
+# this rule will cause a warning during loading in Soar; that warning can be ignored
+#set warnings off
+warnings --off
+sp {mac*evaluate*state*failure*duplicate
+   (state <s1> ^desired <d>
+               ^right-bank <rb>
+               ^left-bank <lb>)
+   (<rb> ^missionaries <rbm> ^cannibals <rbc> ^boat <rbb>)
+   (<lb> ^missionaries <lbm> ^cannibals <lbc> ^boat <lbb>)
+   ( { <> <s1> <s2> } 
+          ^right-bank <rb2>
+          ^left-bank <lb2>
+          ^tried-tied-operator)
+   (<rb2> ^missionaries <rbm> ^cannibals <rbc> ^boat <rbb>)
+   (<lb2> ^missionaries <lbm> ^cannibals <lbc> ^boat <lbb>)
+  -(state <s3> ^superstate <s2>)
+   -->
+   (write (crlf) |Duplicate State Detected.|)
+   (<s2> ^failure <d>)}
+#set warnings on
+warnings --on
+
+sp {mac*evaluate*state*failure*state-no-change
+    (state <s> ^desired <d>
+               ^problem-space.name missionaries-and-cannibals)
+    (state <ss> ^superstate <s>
+                ^attribute state
+                ^quiescence t
+                ^impasse no-change)
+-->
+  (write (crlf) |######## STATE NO-CHANGE Failure! #########|)
+    (<s> ^failure <d>)}

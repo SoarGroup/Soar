@@ -156,8 +156,6 @@ inline uint32_t get_next_symbol_hash_id(agent* thisAgent)
 }
 
 void init_symbol_tables (agent* thisAgent) {
-  int i;
-
   thisAgent->variable_hash_table = make_hash_table (thisAgent, 0, hash_variable);
   thisAgent->identifier_hash_table = make_hash_table (thisAgent, 0, hash_identifier);
   thisAgent->sym_constant_hash_table = make_hash_table (thisAgent, 0, hash_sym_constant);
@@ -171,7 +169,7 @@ void init_symbol_tables (agent* thisAgent) {
   init_memory_pool (thisAgent, &thisAgent->float_constant_pool, sizeof(float_constant),
                     "float constant");
 
-  for (i=0; i<26; i++) thisAgent->id_counter[i]=1;
+  reset_id_counters( thisAgent );
 }
 
 /* -------------------------------------------------------------------
@@ -282,7 +280,7 @@ Symbol *make_variable (agent* thisAgent, const char *name) {
   return sym;
 }
 
-Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_level level) {
+Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number) {
   Symbol *sym;
 
   if (isalpha(name_letter)) {
@@ -295,7 +293,22 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->common.reference_count = 1;
   sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
   sym->id.name_letter = name_letter;
-  sym->id.name_number = thisAgent->id_counter[name_letter-'A']++;
+  
+  // NLD: modified for long-term identifiers
+  if ( name_number == NIL )
+  {
+	name_number = thisAgent->id_counter[name_letter-'A']++;
+  }
+  else
+  {
+    uint64_t *current_number = &( thisAgent->id_counter[ name_letter - 'A' ] );
+	if ( name_number >= (*current_number) )
+	{
+	  (*current_number) = ( name_number + 1 );
+	}
+  }
+  sym->id.name_number = name_number;
+
   sym->id.level = level;
   sym->id.promotion_level = level;
   sym->id.slots = NIL;
@@ -326,6 +339,21 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.rl_info = NIL;
   sym->id.reward_header = NIL;
 
+  sym->id.epmem_header = NIL;
+  sym->id.epmem_cmd_header = NIL;
+  sym->id.epmem_result_header = NIL;
+  sym->id.epmem_id = EPMEM_NODEID_BAD;
+  sym->id.epmem_valid = NIL;
+
+
+  sym->id.smem_header = NIL;
+  sym->id.smem_cmd_header = NIL;
+  sym->id.smem_result_header = NIL;
+  sym->id.smem_lti = NIL;
+  sym->id.smem_time_id = EPMEM_MEMID_NONE;
+  sym->id.smem_valid = NIL;
+
+
   add_to_hash_table (thisAgent, thisAgent->identifier_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
   char buf[64];
@@ -346,6 +374,10 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
     sym->common.symbol_type = SYM_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NIL;
+	sym->common.epmem_valid = NIL;
+	sym->common.smem_hash = NULL;
+	sym->common.smem_valid = NULL;
     sym->sc.name = make_memory_block_for_string (thisAgent, name);
     sym->sc.production = NIL;
     add_to_hash_table (thisAgent, thisAgent->sym_constant_hash_table, sym);
@@ -369,6 +401,10 @@ Symbol *make_int_constant (agent* thisAgent, long value) {
     sym->common.symbol_type = INT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NIL;
+	sym->common.epmem_valid = NIL;
+	sym->common.smem_hash = NULL;
+	sym->common.smem_valid = NULL;
     sym->ic.value = value;
     add_to_hash_table (thisAgent, thisAgent->int_constant_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
@@ -391,6 +427,10 @@ Symbol *make_float_constant (agent* thisAgent, double value) {
     sym->common.symbol_type = FLOAT_CONSTANT_SYMBOL_TYPE;
     sym->common.reference_count = 1;
     sym->common.hash_id = get_next_symbol_hash_id(thisAgent);
+	sym->common.epmem_hash = NIL;
+	sym->common.epmem_valid = NIL;
+	sym->common.smem_hash = NULL;
+	sym->common.smem_valid = NULL;
     sym->fc.value = value;
     add_to_hash_table (thisAgent, thisAgent->float_constant_hash_table, sym);
 #ifdef DEBUG_SYMBOL_REFCOUNTS
@@ -470,62 +510,89 @@ void deallocate_symbol (agent* thisAgent, Symbol *sym) {
    new gensym names).
 ------------------------------------------------------------------- */
 
-Bool print_identifier_ref_info(agent* thisAgent, void* item, FILE* f) {
-   Symbol* sym;
-   char msg[256];
-   sym = static_cast<symbol_union *>(item);
-   
-   if ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
-      if ( sym->common.reference_count > 0 ) {
-         // BADBAD: static casting for llu portability
-         SNPRINTF( msg, 256, 
-                  "\t%c%llu --> %lu\n", 
-                  sym->id.name_letter, 
-                  static_cast<unsigned long long>(sym->id.name_number), 
-                  sym->common.reference_count);
-		 msg[255] = 0; /* ensure null termination */
-         print (thisAgent, msg);
-		 xml_generate_warning(thisAgent, msg);
+Bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata) {
+	Symbol* sym;
+	char msg[256];
+	sym = static_cast<symbol_union *>(item);
+	FILE* f = reinterpret_cast<FILE*>(userdata);
 
-		 if (f) {
-			 fprintf(f, "%s", msg) ;
+	if ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) {
+		if ( sym->common.reference_count > 0 ) {
+
+			if ( sym->id.smem_lti != NIL )
+			{
+				SNPRINTF( msg, 256, 
+					"\t@%c%llu --> %lu\n", 
+					sym->id.name_letter, 
+					static_cast<unsigned long long>(sym->id.name_number), 
+					sym->common.reference_count);
+			}
+			else
+			{
+				SNPRINTF( msg, 256, 
+					"\t%c%llu --> %lu\n", 
+					sym->id.name_letter, 
+					static_cast<unsigned long long>(sym->id.name_number), 
+					sym->common.reference_count);
+			}
+
+			msg[255] = 0; /* ensure null termination */
+			print (thisAgent, msg);
+			xml_generate_warning(thisAgent, msg);
+
+			if (f) {
+				fprintf(f, "%s", msg) ;
 		 }
-      }
-   } else {
-      print (thisAgent, "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
-      return TRUE;
-   }
-   return FALSE;
+		}
+	} else {
+		print (thisAgent, "\tERROR: HASHTABLE ITEM IS NOT AN IDENTIFIER!\n");
+		return TRUE;
+	}
+	return FALSE;
 }
 
 bool reset_id_counters (agent* thisAgent) {
-  int i;
+	int i;
 
-  if (thisAgent->identifier_hash_table->count != 0) {
-    print (thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\n");
-    print (thisAgent, "there are still some identifiers allocated.  (Probably a memory leak.)\n");
-    print (thisAgent, "(Leaving identifier numbers alone.)\n");
-	xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Leaving identifier numbers alone.)");
+	if (thisAgent->identifier_hash_table->count != 0) {
+		// As long as all of the existing identifiers are long term identifiers (lti), there's no problem
+		unsigned long ltis = 0;
+		do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, smem_count_ltis, &ltis );
+		if (thisAgent->identifier_hash_table->count != ltis) {
+			print (thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\n");
+			print (thisAgent, "there are still some identifiers allocated.  (Probably a memory leak.)\n");
+			print (thisAgent, "(Leaving identifier numbers alone.)\n");
+			xml_generate_warning(thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\nthere are still some identifiers allocated.  (Probably a memory leak.)\n(Leaving identifier numbers alone.)");
 
-    /* RDF 01272003: Added this to improve the output from this error message */
-	//TODO: append this to previous XML string or generate separate output?
-    do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
+			/* RDF 01272003: Added this to improve the output from this error message */
+			//TODO: append this to previous XML string or generate separate output?
+			do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, 0);
 
-	// Also dump the ids to a txt file
-	FILE *ids = fopen("leaked-ids.txt", "w") ;
-	if (ids)
+			// Also dump the ids to a txt file
+			FILE *ids = fopen("leaked-ids.txt", "w") ;
+			if (ids)
+			{
+				do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, reinterpret_cast<void*>(ids));
+				fclose(ids) ;
+			}
+
+			return false;
+		}
+
+		// Getting here means that there are still identifiers but that 
+		// they are all long-term and (hopefully) exist only in production memory.
+	}
+	for (i=0; i<26; i++) thisAgent->id_counter[i]=1;
+
+	if ( thisAgent->smem_db->get_status() == soar_module::connected )
 	{
-		do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, print_identifier_ref_info, ids);
-		fclose(ids) ;
+		smem_reset_id_counters( thisAgent );
 	}
 
-    return false;
-  }
-  for (i=0; i<26; i++) thisAgent->id_counter[i]=1;  
-  return true ;
+	return true ;
 }
 
-Bool reset_tc_num (agent* /*thisAgent*/, void *item, FILE* /*f*/) {
+Bool reset_tc_num (agent* /*thisAgent*/, void *item, void*) {
   Symbol *sym;
 
   sym = static_cast<symbol_union *>(item);
@@ -539,7 +606,7 @@ void reset_id_and_variable_tc_numbers (agent* thisAgent) {
   do_for_all_items_in_hash_table (thisAgent, thisAgent->variable_hash_table, reset_tc_num,0);
 }
 
-Bool reset_gensym_number (agent* /*thisAgent*/, void *item, FILE* /*f*/) {
+Bool reset_gensym_number (agent* /*thisAgent*/, void *item, void*) {
   Symbol *sym;
 
   sym = static_cast<symbol_union *>(item);
@@ -551,7 +618,7 @@ void reset_variable_gensym_numbers (agent* thisAgent) {
   do_for_all_items_in_hash_table (thisAgent, thisAgent->variable_hash_table, reset_gensym_number,0);
 }
 
-Bool print_sym (agent* thisAgent, void *item, FILE* /*f*/) {
+Bool print_sym (agent* thisAgent, void *item, void*) {
   print_string (thisAgent, symbol_to_string (thisAgent, static_cast<symbol_union *>(item), TRUE, NIL, 0));
   print_string (thisAgent, "\n");
   return FALSE;
@@ -639,6 +706,52 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->rl_sym_reward_link = make_sym_constant( thisAgent, "reward-link" );
   thisAgent->rl_sym_reward = make_sym_constant( thisAgent, "reward" );
   thisAgent->rl_sym_value = make_sym_constant( thisAgent, "value" );
+
+  thisAgent->epmem_sym = make_sym_constant( thisAgent, "epmem" );
+  thisAgent->epmem_sym_cmd = make_sym_constant( thisAgent, "command" );
+  thisAgent->epmem_sym_result = make_sym_constant( thisAgent, "result" );
+
+  thisAgent->epmem_sym_retrieved = make_sym_constant( thisAgent, "retrieved" );
+  thisAgent->epmem_sym_status = make_sym_constant( thisAgent, "status" );
+  thisAgent->epmem_sym_match_score = make_sym_constant( thisAgent, "match-score" );
+  thisAgent->epmem_sym_cue_size = make_sym_constant( thisAgent, "cue-size" );
+  thisAgent->epmem_sym_normalized_match_score = make_sym_constant( thisAgent, "normalized-match-score" );
+  thisAgent->epmem_sym_match_cardinality = make_sym_constant( thisAgent, "match-cardinality" );
+  thisAgent->epmem_sym_memory_id = make_sym_constant( thisAgent, "memory-id" );
+  thisAgent->epmem_sym_present_id = make_sym_constant( thisAgent, "present-id" );
+  thisAgent->epmem_sym_no_memory = make_sym_constant( thisAgent, "no-memory" );
+  thisAgent->epmem_sym_graph_match = make_sym_constant( thisAgent, "graph-match" );
+  thisAgent->epmem_sym_graph_match_mapping = make_sym_constant( thisAgent, "mapping" );
+  thisAgent->epmem_sym_graph_match_mapping_node = make_sym_constant( thisAgent, "node" );
+  thisAgent->epmem_sym_graph_match_mapping_cue = make_sym_constant( thisAgent, "cue" );
+  thisAgent->epmem_sym_success = make_sym_constant( thisAgent, "success" );
+  thisAgent->epmem_sym_failure = make_sym_constant( thisAgent, "failure" );
+  thisAgent->epmem_sym_bad_cmd = make_sym_constant( thisAgent, "bad-cmd" );
+
+  thisAgent->epmem_sym_retrieve = make_sym_constant( thisAgent, "retrieve" );
+  thisAgent->epmem_sym_next = make_sym_constant( thisAgent, "next" );
+  thisAgent->epmem_sym_prev = make_sym_constant( thisAgent, "previous" );
+  thisAgent->epmem_sym_query = make_sym_constant( thisAgent, "query" );
+  thisAgent->epmem_sym_negquery = make_sym_constant( thisAgent, "neg-query" );
+  thisAgent->epmem_sym_before = make_sym_constant( thisAgent, "before" );
+  thisAgent->epmem_sym_after = make_sym_constant( thisAgent, "after" );
+  thisAgent->epmem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
+
+
+  thisAgent->smem_sym = make_sym_constant( thisAgent, "smem" );
+  thisAgent->smem_sym_cmd = make_sym_constant( thisAgent, "command" );
+  thisAgent->smem_sym_result = make_sym_constant( thisAgent, "result" );
+
+  thisAgent->smem_sym_retrieved = make_sym_constant( thisAgent, "retrieved" );
+  thisAgent->smem_sym_status = make_sym_constant( thisAgent, "status" );
+  thisAgent->smem_sym_success = make_sym_constant( thisAgent, "success" );
+  thisAgent->smem_sym_failure = make_sym_constant( thisAgent, "failure" );
+  thisAgent->smem_sym_bad_cmd = make_sym_constant( thisAgent, "bad-cmd" );
+
+  thisAgent->smem_sym_retrieve = make_sym_constant( thisAgent, "retrieve" );
+  thisAgent->smem_sym_query = make_sym_constant( thisAgent, "query" );
+  thisAgent->smem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
+  thisAgent->smem_sym_store = make_sym_constant( thisAgent, "store" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -694,4 +807,49 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->rl_sym_reward_link ) );
   release_helper( thisAgent, &( thisAgent->rl_sym_reward ) );
   release_helper( thisAgent, &( thisAgent->rl_sym_value ) );
+
+  release_helper( thisAgent, &( thisAgent->epmem_sym ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_cmd ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_result ) );
+
+  release_helper( thisAgent, &( thisAgent->epmem_sym_retrieved ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_status ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_match_score ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_cue_size ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_normalized_match_score ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_match_cardinality ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_memory_id ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_present_id ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_no_memory ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match_mapping ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match_mapping_node ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_graph_match_mapping_cue ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_success ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_failure ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_bad_cmd ) ); 
+
+  release_helper( thisAgent, &( thisAgent->epmem_sym_retrieve ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_next ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_prev ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_query ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_negquery ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_before ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_after ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_prohibit ) );
+
+  release_helper( thisAgent, &( thisAgent->smem_sym ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_cmd ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_result ) );
+
+  release_helper( thisAgent, &( thisAgent->smem_sym_retrieved ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_status ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_success ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_failure ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_bad_cmd ) );
+
+  release_helper( thisAgent, &( thisAgent->smem_sym_retrieve ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_query ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_prohibit ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_store ) );
 }

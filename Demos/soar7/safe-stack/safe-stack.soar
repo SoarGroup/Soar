@@ -1,0 +1,496 @@
+###
+### FILE          : safe-to-stack.s
+###
+
+### MODIFIED(1)   : Sayan Bhattacharyya  [ 7.0.3 TCL TK]
+### 
+### AUTHOR(2)     : Aladin.Akyurek    [ Soar 6.1.0 ]
+### AUTHOR(1)     : Paul.S.Rosenbloom [ Soar 4.2.x ]
+###
+
+### MODIFIED(1)    : August 22, 96 
+###   
+### CREATED(2)    : Jun 18, 93
+### CREATED(1)    : Mar 23, 86
+### 
+
+###
+### ABSTRACT. This file provides a Soar system to solve the SAFE-TO-STACK 
+### example for Explanation-Based Generalization (EBG), a unified approach 
+### to Explanation-Based Learning (EBL) that is forwarded in Mitchell, 
+### Keller, and Kedar-Cabelli (1986). The Soar 4.2.x system for this 
+### example underlies the paper by Rosenbloom and Laird (1986).
+###
+
+###
+### REFERENCES. [1] Minton, S., Carbonell, J. G., Knoblock, C. A., 
+### Kuokka, D. R., Etzioni, O., & Gil, Y. (1989). Explanation-based
+### learning: A problem-solving perspective. Artificial Intelligence, 
+### 40, 63-118.
+###             [2] Mitchell, T., Keller, R., & Kedar-Cabelli, S. (1986). 
+### Explanation-based generalization: A unifying view. Machine Learning, 
+### 1, 47-80.
+###             [3] Rosenbloom, P. S., & Laird, J. E. (1986). Mapping 
+### explanation-based generalization onto Soar. In Proceedings of the 
+### Fifth National Conference on Artificial Intelligence (pp. 561-567).
+### San Mateo, CA: Morgan Kaufmann. 
+###
+
+#
+# The SAFE-TO-STACK example for EBG (see Minton, et al., 1989, p. 69)
+# -------------------------------------------------------------------
+# Target concept definition:
+#     SAFE-TO-STACK(x,y) iff NOT(FRAGILE(y)) or LIGHTER(x,y)
+# 
+# Training example:
+#     ON(OBJ1,OBJ2)
+#     ISA(OBJ1,BOX)
+#     ISA(OBJ2,ENDTABLE)
+#     COLOR(OBJ1,RED)
+#     COLOR(OBJ2,BLUE)
+#     VOLUME(OBJ1,1)
+#     DENSITY((OBJ1,0.1)
+# 
+# Domain theory:
+#     VOLUME(p[1],v[1]) and DENSITY(p[1],d[1]) 
+#           --> WEIGHT(p[1],v[1]*d[1])
+#     WEIGHT(p[1],w[1]) and WEIGHT(p[2],w[2]) and LESS(w[1],w[2]) 
+#           --> LIGHTER(p[1],p[2])
+#     ISA(p[1],ENDTABLE) --> WEIGHT(p[1],5) [default]
+#     LESS(0.1,5)
+# 
+# Operationality criterion:
+#     The learned concept description must be expressed in terms 
+#     of the predicates used to describe examples (e.g., VOLUME, 
+#     COLOR, DENSITY) or other selected, easily evaluated 
+#     predicates from the domain theory (e.g., LESS).
+# -------------------------------------------------------------------
+
+#package require Soar
+#source $default
+source ../default/default.soar
+
+###
+### TOP-PS:
+### CURRENT STATE
+###
+
+sp {top-ps*current-state
+    (state <g> ^problem-space <p> ^superstate nil)
+    (<p> ^name top-ps)
+    -->
+    (<g> ^real-state <S>)
+    (<S> ^object <b> + &, <e> + &
+         ^box <b> 
+         ^endtable <e>
+         ^weight <w> + & 
+         ^volume <v> + &
+         ^density <d> + &
+         ^color <c1> + &, <c2> + &
+         ^holds <h> + & )
+    (<b> ^color <c1> ^volume <v> ^density <d>)
+    (<e> ^color <c2> ^weight <w>)
+    (<w> ^value 5 ^is default)
+    (<v> ^value 1)
+    (<d> ^value 0.1)
+    (<c1> ^value red)
+    (<c2> ^value blue)
+    (<h> ^box <b> ^on <e>)}
+
+###
+### TOP-PS OPERATOR:
+### EVALUATE-QUERY
+###
+
+sp {top-ps*propose*operator*evaluate-query
+    (state <g> ^superstate nil ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<p> ^name top-ps)
+    (<s> ^box <b> ^endtable <e>)
+    -->
+    (<g> ^operator <o> + = )
+    (<o> ^name evaluate-query ^query <q>)
+    (<q> ^object <b> ^safe-to-stack <e>)}
+
+###
+### TOP-PS:
+### OPERATOR IMPLEMENTATION
+###
+
+#None.
+
+###
+### TOP-PS:
+### OPERATOR TERMINATION
+###
+
+sp {terminate*evaluate-query
+    (state <g> ^operator <o> ^real-state <s> ^problem-space <p> )
+    (<o> ^name evaluate-query ^query <q>)
+    (<q> ^object <x> ^safe-to-stack <y>)
+    (<s> ^object <x> <y>)
+    (<x> ^safe-to-stack <y>)
+    -->
+    (<g> ^operator <o> @ - )}
+
+###
+### TOP-PS PROBLEM-SPACE SUBGOAL:
+### GOAL.NAME     = QUERY-GOAL
+### PROBLEM SPACE = QUERY-SPACE
+### INITIAL STATE = SUPERSTATE
+###
+
+sp {top-ps*operator-no-change*propose*space*query-space
+    (state <g> ^superoperator <o>
+              ^impasse no-change
+              ^attribute operator)
+    (<o> ^name evaluate-query ^query <q>)           
+    -->
+    (<g> ^name query-goal)
+    (<g> ^problem-space <p>)
+    (<p> ^name query-space)}
+
+### sp {query-space*propose*state*superstate
+###     (state <g*> ^name query-goal 
+###                ^problem-space <p*>
+###                ^object <g1>)
+###     (<p*> ^name query-space)
+###     
+###     -->
+###     (<g*> ^state <s1>)}
+
+
+sp {query-space*copy*real-state*from-superstate
+    (state <g*> ^name query-goal 
+	   ^problem-space <p*>
+	    ^superstate.real-state <s>)
+    (<p*> ^name query-space)
+    -->
+    (<g*> ^real-state <s>)}
+  
+
+###
+### QUERY-SPACE:
+### ELABORATE GOAL
+### 
+
+sp {query-space*elaborate*goal*top-space-query
+    (state <g> ^name query-goal
+              ^superoperator <o> 
+              ^problem-space <p>
+              )
+    (<o> ^name evaluate-query ^query <q>)
+    -->
+    (<g> ^query <q> + & )}
+
+###
+### QUERY-SPACE:
+### SUBQUERIES
+###
+
+sp {query*safe-to-stack*subquery*lighter
+    (state <g> ^query <r> -^succeeded <r>)
+    (state <g> ^problem-space <p> )
+    (<r> ^object <x> ^safe-to-stack <y>)
+    (<p> ^name query-space)
+    -->
+    (<g> ^query <q> + & )
+    (<q> ^object <x> ^lighter <y>)}
+
+sp {query*lighter*subquery*weight*source-object
+    (state <g> ^query <r> -^succeeded <r>)
+    (state <g> ^problem-space <p> )
+    (<r> ^object <x> ^lighter <y>)
+    (<p> ^name query-space)
+    -->
+    (<g> ^query <q> + & )
+    (<q> ^weightof <x>)}
+
+sp {query*lighter*subquery*weight*target-object
+    (state <g> ^query <r> -^succeeded <r>)
+    (state <g> ^problem-space <p> )
+    (<r> ^object <x> ^lighter <y>)
+    (<p> ^name query-space)
+    -->
+    (<g> ^query <q> + & )
+    (<q> ^weightof <y>)}
+
+sp {query*lighter*subquery*less
+    (state <g> ^query <r> -^succeeded <r>)
+    (state <g> ^problem-space <p> )
+    (<r> ^object <x> ^lighter <y>)
+    (<x> ^weight <x-weight>)
+    (<y> ^weight <y-weight>)
+    (<p> ^name query-space)
+    -->
+    (<g> ^query <q> + & )
+    (<q> ^weight <x-weight> ^less <y-weight>)}
+
+###
+### QUERY-SPACE OPERATORS/DOMAIN THEORY:
+### SAFE-TO-STACK, LIGHTER, WEIGHT, AND LESS
+###
+
+sp {query-space*propose*operator*safe-to-stack*fragile
+    (state <g> ^query <q> -^succeeded <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^object <x> ^safe-to-stack <y>)
+    (<s> ^object <x> <y>)
+    (<y> ^fragile no)
+    -->
+    (<g> ^operator <o> + = )
+    (<o> ^name safe-to-stack
+         ^object <x> 
+         ^reference-object <y>)} 
+
+sp {query-space*propose*operator*safe-to-stack*lighter
+    (state <g> ^query <q> -^succeeded <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^object <x> ^safe-to-stack <y>)
+    (<s> ^object <x> <y>)
+    (<x> ^lighter <y>)
+    (<y> -^fragile no)
+    -->
+    (<g> ^operator <o> + = )
+    (<o> ^name safe-to-stack
+         ^object <x> 
+         ^reference-object <y>)} 
+
+sp {query-space*propose*operator*lighter
+    (state <g> ^query <q> -^succeeded <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^object <x> ^lighter <y>)
+    (<s> ^object <x> <y>)
+    (<x> ^weight <x-weight>)
+    (<y> ^weight <y-weight>)
+    (<x-weight> ^less <y-weight>)
+    -->
+    (<g> ^operator <o> + = )
+    (<o> ^name lighter
+         ^object <x> 
+         ^reference-object <y>)} 
+
+sp {query-space*propose*operator*less
+    (state <g> ^query <q> -^succeeded <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^weight <x-weight> ^less <y-weight>)
+    (<s> ^object <x> <y>)
+    (<x> ^weight <x-weight>)
+    (<y> ^weight <y-weight>)
+    -->
+    (<g> ^operator <o> + = )
+    (<o> ^name less
+         ^number <x-weight> 
+         ^reference-number <y-weight>)} 
+
+sp {query-space*propose*operator*weight
+    (state <g> ^query <q> -^succeeded <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^weightof <x>)
+    (<s> ^object <x>)
+    (<x> ^volume <v> ^density <d>)     
+    -->
+    (<g> ^operator <o> + = )
+    (<o> ^name weight
+         ^object <x>)} 
+
+###
+### QUERY-SPACE:
+### OPERATOR IMPLEMENTATION
+###
+
+sp {implement*safe-to-stack*relation*fragile*value*no
+    (state <g> ^operator <o> ^real-state <s> ^problem-space <p> )
+    (<o> ^name safe-to-stack
+         ^object <x> 
+         ^reference-object <y>)
+    (<s> ^object <x> <y>)
+    (<y> ^fragile no)
+    -->
+    (<x> ^safe-to-stack <y>)}
+    
+sp {implement*safe-to-stack*relation*lighter
+    (state <g> ^operator <o> ^real-state <s> ^problem-space <p> )
+    (<o> ^name safe-to-stack
+         ^object <x> 
+         ^reference-object <y>)
+    (<s> ^object <x> <y>)
+    (<x> ^lighter <y>)
+    -->
+    (<x> ^safe-to-stack <y>)}
+
+sp {implement*lighter
+    (state <g> ^operator <o> ^real-state <s> ^problem-space <p> )
+    (<o> ^name lighter
+         ^object <x> 
+         ^reference-object <y>)
+    (<s> ^object <x> <y>)
+    (<x> ^weight <x-weight>)
+    (<y> ^weight <y-weight>)
+    (<x-weight> ^less <y-weight>)
+    -->
+    (<x> ^lighter <y>)}
+
+sp {implement*less
+    (state <g> ^operator <o> ^real-state <s> ^problem-space <p> )
+    (<o> ^name less
+         ^number <x-weight> 
+         ^reference-number <y-weight>)
+    (<s> ^object <x> <y>)
+    (<x> ^weight <x-weight>)
+    (<y> ^weight <y-weight>)
+    (<y-weight> ^value <j>)
+    (<x-weight> ^value < <j>)
+    -->
+    (<x-weight> ^less <y-weight>)}
+
+sp {implement*weight*volume-times-density
+    (state <g> ^operator <o> ^real-state <s> ^problem-space <p> )
+    (<o> ^name weight
+         ^object <x>)
+    (<s> ^object <x>)
+    (<x> ^volume <v> ^density <d>)
+    (<v> ^value <volume-value>)
+    (<d> ^value <density-value>)
+    (<x> -^weight)
+    -->
+    (<s> ^weight <w> + & )
+    (<x> ^weight <w>)
+    (<w> ^value (* <volume-value> <density-value>))}
+
+###
+### QUERY-SPACE:
+### OPERATOR TERMINATION
+###
+
+sp {terminate*safe-to-stack
+    (state <g> ^operator <o> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<o> ^name safe-to-stack ^object <x> ^reference-object <y>)
+    (<s> ^object <x> <y>)
+    (<x> ^safe-to-stack <y>)
+    -->
+    (<g> ^operator <o> @ )}
+
+sp {terminate*lighter
+    (state <g> ^operator <o> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<o> ^name lighter ^object <x> ^reference-object <y>)
+    (<s> ^object <x> <y>)
+    (<x> ^lighter <y>)
+    -->
+    (<g> ^operator <o> @ )}
+
+sp {terminate*less
+    (state <g> ^operator <o> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<o> ^name less ^number <i> ^reference-number <j>)
+    (<s> ^object <x> <y>)
+    (<x> ^weight <i>)
+    (<y> ^weight <j>)
+    (<i> ^less <j>)
+    -->
+    (<g> ^operator <o> @ )}
+
+sp {terminate*weight
+    (state <g> ^operator <o> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<o> ^name weight ^object <x>)
+    (<s> ^object <x>)
+    (<x> ^weight <w>)
+    -->
+    (<g> ^operator <o> @ )}
+
+###
+### QUERY SATISFACTION
+###
+
+sp {query*safe-to-stack*succeeded
+    (state <g> ^query <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^object <x> ^safe-to-stack <y>)
+    (<p> ^name query-space)
+    (<s> ^object <x> <y>)
+    (<x> ^safe-to-stack <y>)
+    -->
+    (<g> ^succeeded <q> + & )}
+
+sp {query*lighter*succeeded
+    (state <g> ^query <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^object <x> ^lighter <y>)
+    (<p> ^name query-space)
+    (<s> ^object <x> <y>)
+    (<x> ^lighter <y>)
+    -->
+    (<g> ^succeeded <q> + & )}
+
+sp {query*weight*succeeded
+    (state <g> ^query <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^weightof <x>)
+    (<p> ^name query-space)
+    (<s> ^object <x> ^weight <w>)
+    (<x> ^weight <w>)
+    -->
+    (<g> ^succeeded <q> + & )}
+
+sp {query*less*succeeded
+    (state <g> ^query <q> ^real-state <s>)
+    (state <g> ^problem-space <p> )
+    (<q> ^weight <x-weight> ^less <y-weight>)
+    (<p> ^name query-space)
+    (<s> ^object <x> <y>)
+    (<x> ^weight <x-weight>)
+    (<y> ^weight <y-weight>)
+    (<x-weight> ^less <y-weight>)
+    -->
+    (<g> ^succeeded <q> + & )}
+
+###
+### TERMINATE TASK
+###
+
+sp {top-ps*object*operator*wait*halt
+    (state <g> ^operator <o>)
+    (<o> ^name wait)
+    -->
+    (write (crlf) 
+           |  Type "print --full --chunks" for the result.|)
+    (halt)}
+
+sp {query-space*failure*halt
+    (state <g*> ^impasse no-change 
+               ^attribute state
+               ^superstate <g1>)
+    (state <g1> ^quiescence t 
+               ^impasse no-change 
+               ^attribute operator
+               ^name query-goal
+               ^superoperator <op>
+               ^superstate <g2>)
+    -->
+    (write (crlf) 
+           |  Query goal failed.|)
+    (halt)}
+
+###
+### DEFAULT PRODUCTION 
+###
+
+#New Default Production For The Operator-No-Change Impasse
+
+sp {default*operator-no-change*elaborate*goal*superoperator
+    :default
+    (state <g*> ^impasse no-change
+               ^attribute operator
+               ^superstate <g1>)
+    (state <g1> ^operator <o1>)
+    (state <g1> ^problem-space <p1> )
+    -->
+    (<g*> ^superoperator <o1>)}
+
+### eof of safe-to-stack.s
+
+
+

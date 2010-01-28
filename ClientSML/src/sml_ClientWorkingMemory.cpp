@@ -58,7 +58,9 @@ WorkingMemory::~WorkingMemory()
 {
 	m_Deleting = true;
 	delete m_OutputLink ;
+	m_OutputLink = NULL ;
 	delete m_InputLink ;
+	m_InputLink  = NULL ;
 }
 
 Connection* WorkingMemory::GetConnection() const
@@ -1222,10 +1224,12 @@ void WorkingMemory::Refresh()
 		// Start by getting the input link identifier
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
 		{
-			// Technically we should reset the value of the input link identifier itself, but it should never
+			// Old comment: Technically we should reset the value of the input link identifier itself, but it should never
 			// change value (since it's architecturally created) and also adding a method to set the identifier value
 			// is a bad idea if we only need it here.
-			std::string result = response.GetResultString() ;
+
+			// New comment: smem's lti support means the parent symbol can change.
+			m_InputLink->GetSymbol()->SetIdentifierSymbol(response.GetResultString());
 		}
 
 		m_InputLink->Refresh() ;
@@ -1233,28 +1237,25 @@ void WorkingMemory::Refresh()
 		// Send the new input link over to the kernel
 		Commit() ;
 	}
+}
 
-	// At one time we deleted the output link at the end of an init-soar but the current
-	// implementation of init-soar recreates the output link (in the kernel) at the end of reinitializing the agent
-	// so the output link should not be deleted but it's children need to be.
+void WorkingMemory::InvalidateOutputLink() {
 	if (m_OutputLink)
 	{
-		//int outputs = m_OutputLink->GetNumberChildren() ;
-
-		// The children should all have been deleted during the init-soar cleanup
-		// If not, we may be looking at a memory leak.
-		//assert(outputs == 0) ;
 		m_OutputLink->GetSymbol()->DeleteAllChildren() ;
-
+		
 		// clean up the IdSymbolMap table. See Bug #1094
 		IdSymbolMapIter i = m_IdSymbolMap.find(m_OutputLink->GetValueAsString());
 		if (i != m_IdSymbolMap.end()) {
-		  IdentifierSymbol* out_sym = i->second;
-		  m_IdSymbolMap.clear();
-		  m_IdSymbolMap[m_OutputLink->GetValueAsString()] = out_sym;
+			IdentifierSymbol* out_sym = i->second;
+			m_IdSymbolMap.clear();
+			 m_IdSymbolMap[m_OutputLink->GetValueAsString()] = out_sym;
 		}
 		else {
-		  m_IdSymbolMap.clear();
+			m_IdSymbolMap.clear();
 		}
+ 
+		delete m_OutputLink;
+		m_OutputLink = NULL;
 	}
 }

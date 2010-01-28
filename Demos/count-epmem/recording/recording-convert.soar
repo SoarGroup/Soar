@@ -1,0 +1,21 @@
+sp {recording*propose*recording-convert
+   (state <s> ^name recording
+              ^superstate <ss>)
+   (<ss> ^episode <ep>
+         ^size.number <size>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name recording-convert
+         ^type convert
+         ^number <ep>
+         ^places <size>)
+}
+
+sp {apply*recording-convert
+   (state <s> ^operator <op>
+              ^convert-result <r>
+              ^superstate <ss>)
+   (<op> ^name recording-convert)
+-->
+   (<ss> ^convert-result <r>)
+}

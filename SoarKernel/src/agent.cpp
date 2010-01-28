@@ -2,7 +2,7 @@
 
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
- * FOR LICENSE AND COPYRIGHT INFORMATION. 
+ * FOR LICENSE AND COPYRIGHT INFORMATION.
  *************************************************************************/
 
 /*************************************************************************
@@ -21,7 +21,6 @@
 
 #include <stdlib.h>
 #include <map>
-#include <vector>
 
 #include "agent.h"
 #include "kernel.h"
@@ -49,13 +48,17 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+#include "wma.h"
+#include "episodic_memory.h"
+#include "semantic_memory.h"
+
 
 /* ================================================================== */
 
 //char * soar_version_string;
 
 /* ===================================================================
-   
+
                            Initialization Function
 
 =================================================================== */
@@ -81,6 +84,12 @@ void init_soar_agent(agent* thisAgent) {
   select_init(thisAgent);
   predict_init(thisAgent);
 
+  init_memory_pool( thisAgent, &( thisAgent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
+  wma_init(thisAgent);
+
+  thisAgent->epmem_params->exclusions->set_value( "epmem" );
+  thisAgent->epmem_params->exclusions->set_value( "smem" );
+
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
   init_real_time(thisAgent);
@@ -105,7 +114,7 @@ void init_soar_agent(agent* thisAgent) {
                     "%right[6,%dc]: %rsd[   ]   O: %co");
 
   reset_statistics (thisAgent);
-   
+
   /* RDF: For gSKI */
   init_agent_memory(thisAgent);
   /* END */
@@ -121,7 +130,8 @@ void init_soar_agent(agent* thisAgent) {
 agent * create_soar_agent (char * agent_name) {                                          /* loop index */
   char cur_path[MAXPATHLEN];   /* AGR 536 */
 
-  agent* newAgent = static_cast<agent *>(malloc(sizeof(agent)));
+  //agent* newAgent = static_cast<agent *>(malloc(sizeof(agent)));
+  agent* newAgent = new agent();
 
   newAgent->current_tc_number = 0;
 
@@ -183,11 +193,11 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->print_prompt_flag                  = TRUE;
   newAgent->printer_output_column              = 1;
   newAgent->production_being_fired             = NIL;
-  newAgent->productions_being_traced           = NIL; 
+  newAgent->productions_being_traced           = NIL;
   newAgent->promoted_ids                       = NIL;
   newAgent->reason_for_stopping                = "Startup";
   newAgent->slots_for_possible_removal         = NIL;
-  newAgent->stop_soar                          = TRUE;           
+  newAgent->stop_soar                          = TRUE;
   newAgent->system_halted                      = FALSE;
   newAgent->token_additions                    = 0;
   newAgent->top_dir_stack                      = NIL;   /* AGR 568 */
@@ -243,26 +253,33 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->lexeme.id_number = 0;
 
   /* Initializing all the timer structures */
-  reset_timer(&(newAgent->start_total_tv));
-  reset_timer(&(newAgent->total_cpu_time));
-  reset_timer(&(newAgent->start_kernel_tv));
-  reset_timer(&(newAgent->start_phase_tv));
-  reset_timer(&(newAgent->total_kernel_time));
+#ifndef NO_TIMING_STUFF
 
-  reset_timer(&(newAgent->input_function_cpu_time));
-  reset_timer(&(newAgent->output_function_cpu_time));
-  reset_timer(&(newAgent->start_gds_tv));
-  reset_timer(&(newAgent->total_gds_time));
+  newAgent->timers_cpu.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
+  newAgent->timers_kernel.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
+  newAgent->timers_phase.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
+  newAgent->timers_gds.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
+
+  newAgent->timers_cpu.reset();
+  newAgent->timers_kernel.reset();
+  newAgent->timers_phase.reset();
+  newAgent->timers_total_cpu_time.reset();
+  newAgent->timers_total_kernel_time.reset();
+
+  newAgent->timers_input_function_cpu_time.reset();
+  newAgent->timers_output_function_cpu_time.reset();
+  newAgent->timers_gds.reset();
 
   for (int ii=0;ii < NUM_PHASE_TYPES; ii++) {
-     reset_timer(&(newAgent->decision_cycle_phase_timers[ii]));
-     reset_timer(&(newAgent->monitors_cpu_time[ii]));
-     reset_timer(&(newAgent->ownership_cpu_time[ii]));
-     reset_timer(&(newAgent->chunking_cpu_time[ii]));
-     reset_timer(&(newAgent->match_cpu_time[ii]));
-     reset_timer(&(newAgent->gds_cpu_time[ii]));
+     newAgent->timers_decision_cycle_phase[ii].reset();
+     newAgent->timers_monitors_cpu_time[ii].reset();
+     newAgent->timers_ownership_cpu_time[ii].reset();
+     newAgent->timers_chunking_cpu_time[ii].reset();
+     newAgent->timers_match_cpu_time[ii].reset();
+     newAgent->timers_gds_cpu_time[ii].reset();
   }
-  reset_timer(&(newAgent->decision_cycle_timer));
+  newAgent->timers_decision_cycle.reset();
+#endif // NO_TIMING_STUFF
 
   newAgent->real_time_tracker = 0;
   newAgent->attention_lapse_tracker = 0;
@@ -274,9 +291,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->top_dir_stack->next = NIL;   /* AGR 568 */
   strcpy(newAgent->top_dir_stack->directory, cur_path);   /* AGR 568 */
 
-  /* changed all references of 'i', a var belonging to a previous for loop, to 'productionTypeCounter' to be unique 
+  /* changed all references of 'i', a var belonging to a previous for loop, to 'productionTypeCounter' to be unique
     stokesd Sept 10 2004*/
-  for (int productionTypeCounter=0; productionTypeCounter<NUM_PRODUCTION_TYPES; productionTypeCounter++) {  
+  for (int productionTypeCounter=0; productionTypeCounter<NUM_PRODUCTION_TYPES; productionTypeCounter++) {
     newAgent->all_productions_of_type[productionTypeCounter] = NIL;
     newAgent->num_productions_of_type[productionTypeCounter] = 0;
   }
@@ -303,26 +320,77 @@ agent * create_soar_agent (char * agent_name) {                                 
   // be set before the agent was initialized.
   init_sysparams (newAgent);
 
-  
+
   // exploration initialization
   newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter( 0.1, &exploration_validate_epsilon, "epsilon" );
   newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = exploration_add_parameter( 25, &exploration_validate_temperature, "temperature" );
-  
+
   // rl initialization
   newAgent->rl_params = new rl_param_container( newAgent );
-  newAgent->rl_stats = new rl_stat_container( newAgent );  
+  newAgent->rl_stats = new rl_stat_container( newAgent ); 
 
   rl_initialize_template_tracking( newAgent );
-  
+
   newAgent->rl_first_switch = true;
-  
+
+
   // select initialization
   newAgent->select = new select_info;
   select_init( newAgent );
 
+
   // predict initialization
   newAgent->prediction = new std::string();
   predict_init( newAgent );
+
+
+  // wma initialization
+  newAgent->wma_params = new wma_param_container( newAgent );
+  newAgent->wma_stats = new wma_stat_container( newAgent );
+
+  newAgent->wma_forget_pq = new wma_forget_p_queue;
+  newAgent->wma_touched_elements = new wma_wme_set;  
+  newAgent->wma_initialized = false;
+  newAgent->wma_tc_counter = 2;
+
+
+  // epmem initialization
+  newAgent->epmem_params = new epmem_param_container( newAgent );
+  newAgent->epmem_stats = new epmem_stat_container( newAgent );  
+  newAgent->epmem_timers = new epmem_timer_container( newAgent );
+
+  newAgent->epmem_db = new soar_module::sqlite_database();
+  newAgent->epmem_stmts_common = NULL;  
+  newAgent->epmem_stmts_graph = NULL;
+  
+  newAgent->epmem_node_removals = new std::map<epmem_node_id, bool>();
+  newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
+  newAgent->epmem_node_maxes = new std::vector<bool>();
+
+  newAgent->epmem_edge_removals = new std::map<epmem_node_id, bool>();
+  newAgent->epmem_edge_mins = new std::vector<epmem_time_id>();
+  newAgent->epmem_edge_maxes = new std::vector<bool>();
+
+  newAgent->epmem_id_repository = new epmem_parent_id_pool();
+  newAgent->epmem_id_replacement = new epmem_return_id_pool();
+  newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
+
+  newAgent->epmem_validation = 0;
+  newAgent->epmem_first_switch = true;
+
+  // smem initialization
+  newAgent->smem_params = new smem_param_container( newAgent );
+  newAgent->smem_stats = new smem_stat_container( newAgent );  
+  newAgent->smem_timers = new smem_timer_container( newAgent );
+
+  newAgent->smem_db = new soar_module::sqlite_database();
+
+  newAgent->smem_validation = 0;
+  newAgent->smem_first_switch = true;
+
+  // statistics initialization
+  newAgent->dc_stat_tracking = false;
+  newAgent->stats_db = new soar_module::sqlite_database();
 
   return newAgent;
 }
@@ -343,7 +411,7 @@ void destroy_soar_agent (agent * delete_agent)
 //#endif /* USE_X_DISPLAY */
 
   /////////////////////////////////////////////////////////
-  // Soar Modules
+  // Soar Modules - could potentially rely on hash tables
   /////////////////////////////////////////////////////////
 
   // cleanup exploration
@@ -361,6 +429,45 @@ void destroy_soar_agent (agent * delete_agent)
   // cleanup predict
   delete delete_agent->prediction;
 
+  // cleanup wma
+  wma_deinit( delete_agent );
+  delete delete_agent->wma_forget_pq;
+  delete delete_agent->wma_touched_elements;  
+  delete delete_agent->wma_params;
+  delete delete_agent->wma_stats;
+
+  // cleanup epmem
+  epmem_close( delete_agent );
+  delete delete_agent->epmem_params;
+  delete delete_agent->epmem_stats;
+  delete delete_agent->epmem_timers;
+
+  delete delete_agent->epmem_node_removals;
+  delete delete_agent->epmem_node_mins;
+  delete delete_agent->epmem_node_maxes;
+  delete delete_agent->epmem_edge_removals;
+  delete delete_agent->epmem_edge_mins;
+  delete delete_agent->epmem_edge_maxes;
+  delete delete_agent->epmem_id_repository;
+  delete delete_agent->epmem_id_replacement;
+  delete delete_agent->epmem_id_ref_counts;
+
+  delete delete_agent->epmem_db;
+
+
+  // cleanup smem
+  smem_close( delete_agent );
+  delete delete_agent->smem_params;
+  delete delete_agent->smem_stats;
+  delete delete_agent->smem_timers;
+
+  delete delete_agent->smem_db;
+
+  // cleanup statistics db
+  stats_close( delete_agent );
+  delete delete_agent->stats_db;
+  delete_agent->stats_db = 0;
+
   /////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////
 
@@ -376,9 +483,9 @@ void destroy_soar_agent (agent * delete_agent)
   for ( multi_attribute* curmattr = delete_agent->multi_attributes;
         curmattr != 0;
         curmattr = curmattr->next ) {
-     
+
      symbol_remove_ref(delete_agent, curmattr->symbol);
-     
+
      free_memory(delete_agent, lastmattr, MISCELLANEOUS_MEM_USAGE);
      lastmattr = curmattr;
   }
@@ -394,7 +501,7 @@ void destroy_soar_agent (agent * delete_agent)
   free_with_pool(&delete_agent->rete_node_pool, delete_agent->dummy_top_node);
   free_with_pool(&delete_agent->token_pool, delete_agent->dummy_top_token);
 
-  /* Cleaning up the various callbacks 
+  /* Cleaning up the various callbacks
      TODO: Not clear why callbacks need to take the agent pointer essentially twice.
   */
   soar_remove_all_monitorable_callbacks(delete_agent);
@@ -450,5 +557,5 @@ void destroy_soar_agent (agent * delete_agent)
   xml_destroy( delete_agent );
 
   /* Free soar agent structure */
-  free(delete_agent);
+  delete delete_agent;
 }

@@ -16,8 +16,8 @@
 
 #include "soar_module.h"
 
+#include "agent.h"
 #include "gdatastructs.h"
-
 #include "instantiations.h"
 #include "tempmem.h"
 #include "prefmem.h"
@@ -28,12 +28,19 @@
 #include "wmem.h"
 #include "agent.h"
 #include "soar_TraceNames.h"
+#include "wma.h"
 
 wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool acceptable);
 typedef struct agent_struct agent;
 
 namespace soar_module
 {
+	timer::timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred ): named_object( new_name ), my_agent( new_agent ), level( new_level ), pred( new_pred )
+	{
+		stopwatch.set_enabled( &( new_agent->sysparams[ TIMERS_ENABLED ] ) );
+		reset();
+	}
+	
 	/////////////////////////////////////////////////////////////
 	// Utility functions
 	/////////////////////////////////////////////////////////////
@@ -84,11 +91,11 @@ namespace soar_module
 		}
 	}
 
-	preference *make_fake_preference( agent *my_agent, Symbol *state, wme *w, wme_set *conditions )
+	preference *make_fake_preference( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, wme_set *conditions )
 	{
 		// make fake preference
-		preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, w->id, w->attr, w->value, NIL );
-		pref->o_supported = TRUE;
+		preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, id, attr, value, NIL );
+		pref->o_supported = true;
 		symbol_add_ref( pref->id );
 		symbol_add_ref( pref->attr );
 		symbol_add_ref( pref->value );
@@ -108,6 +115,7 @@ namespace soar_module
 		inst->okay_to_variablize = TRUE;
 		inst->backtrace_number = 0;
 		inst->in_ms = FALSE;
+		inst->GDS_evaluated_already = FALSE;
 		
 		condition *cond = NULL;
 		condition *prev_cond = NULL;	
@@ -134,13 +142,29 @@ namespace soar_module
 				cond->data.tests.id_test = make_equality_test( (*p)->id );
 				cond->data.tests.attr_test = make_equality_test( (*p)->attr );
 				cond->data.tests.value_test = make_equality_test( (*p)->value );
-				cond->test_for_acceptable_preference = TRUE;
+				cond->test_for_acceptable_preference = (*p)->acceptable;
 				cond->bt.wme_ = (*p);
-				wme_add_ref( (*p) );
+
+				#ifndef DO_TOP_LEVEL_REF_CTS
+				if ( inst->match_goal_level > TOP_GOAL_LEVEL )
+				#endif
+				{
+					wme_add_ref( (*p) );
+				}			
+				
 				cond->bt.level = (*p)->id->id.level;
 				cond->bt.trace = (*p)->preference;
+				
 				if ( cond->bt.trace )
-					preference_add_ref( cond->bt.trace );
+				{
+					#ifndef DO_TOP_LEVEL_REF_CTS
+					if ( inst->match_goal_level > TOP_GOAL_LEVEL )
+					#endif
+					{
+						preference_add_ref( cond->bt.trace );
+					}
+				}				
+
 				cond->bt.prohibits = NULL;
 
 				prev_cond = cond;

@@ -1,0 +1,29 @@
+                             Documentation/CLI/rand
+
+                                      Name
+
+   rand - Generate a random number.
+
+                                    Synopsis
+
+ rand             : returns a real number in [0,1] (calls SoarRand())
+ rand n           : returns a real number in [0,n] (calls SoarRand(max))
+ rand --integer   : returns an integer in [0,2^32-1] (calls SoarRandInt)
+ rand --integer n : returns an integer in [0,n], n<2^32 (calls SoarRandInt(max))
+
+                                    Options
+
+   +------------------------------------------------------------------------+
+   |-i, --integer|Return an integer, optional argument is upper-bound       |
+   |             |(inclusive)                                               |
+   +------------------------------------------------------------------------+
+
+                                  Description
+
+   Generates a random non-negative number, returning the result in a string.
+
+                                    Examples
+
+ rand --integer 10 # returns 0..10, for example: "4"
+
+                                    See Also

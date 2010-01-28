@@ -110,6 +110,9 @@ slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr)
    s->impasse_id = NIL;
    s->acceptable_preference_wmes = NIL;
    s->marked_for_possible_removal = FALSE;
+
+   s->wma_num_references = 0;
+
    return s;  
 }
 
@@ -130,8 +133,13 @@ void mark_slot_as_changed (agent* thisAgent, slot *s) {
       allocate_with_pool (thisAgent, &thisAgent->dl_cons_pool, &dc);
       dc->item = s;
       s->changed = dc;
+
+	  s->wma_num_references = 1;
+
       insert_at_head_of_dll (thisAgent->changed_slots, dc, next, prev);
-    }
+	} else {
+	  s->wma_num_references++;
+	}
   }
 }
 

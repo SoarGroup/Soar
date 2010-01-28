@@ -185,6 +185,7 @@ void AgentSML::ReleaseAllWmes(bool flushPendingRemoves)
 	}
 
 	m_PendingInput.clear() ;
+	m_DirectInputDeltaList.clear() ;
 	m_ToClientIdentifierMap.clear() ;
 	m_IdentifierMap.clear() ;
 	m_IdentifierRefMap.clear() ;
@@ -239,7 +240,14 @@ bool AgentSML::Reinitialize()
 	m_pKernelSML->FireAgentEvent(this, smlEVENT_BEFORE_AGENT_REINITIALIZED) ;
 
     bool ok = reinitialize_soar( m_agent );
-    init_agent_memory( m_agent );
+
+	// This must happen now because old output link identifiers get shipped over during do_output_phase above
+	// and then the new identifiers get shipped out during do_output_phase inside init_agent_memory below.
+	// With smem, those identifier details can change (output-link not being I3) and this causes problems.
+	// Can't use smlEVENT_AFTER_AGENT_REINITIALIZED because that happens too late.
+	this->m_OutputListener.SendOutputInitEvent();
+
+	init_agent_memory( m_agent );
 
 	InitializeRuntimeState() ;
 

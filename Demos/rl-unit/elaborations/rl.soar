@@ -1,0 +1,8 @@
+sp {value*function
+   :template
+   (state <s> ^operator <op> +)
+   (<op> ^name <op-name>
+         ^rl <num>)
+-->
+   (<s> ^operator <op> = 0)
+}

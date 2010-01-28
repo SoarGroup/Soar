@@ -391,6 +391,8 @@ char const* const sml_Names::kParamWatchBacktracing					= "watchbacktracing";
 char const* const sml_Names::kParamWatchIndifferentSelection		= "watchindifferentselection";
 char const* const sml_Names::kParamWatchRL							= "watchrl";
 char const* const sml_Names::kParamWatchWaterfall					= "watchwaterfall";
+char const* const sml_Names::kParamWatchEpMem						= "watchepmem";
+char const* const sml_Names::kParamWatchSMem						= "watchsmem";
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue	= "true" ;
@@ -426,6 +428,8 @@ char const* const sml_Names::kCommand_SendClientMessage		= "send_client_message"
 char const* const sml_Names::kCommand_WasAgentOnRunList		= "on_run_list" ;
 char const* const sml_Names::kCommand_GetResultOfLastRun	= "last_run_result" ;
 char const* const sml_Names::kCommand_GetInitialTimeTag		= "initial_time_tag" ;
+char const* const sml_Names::kCommand_OutputInit			= "output_init" ;
+char const* const sml_Names::kCommand_ConvertIdentifier		= "convert_identifier";
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

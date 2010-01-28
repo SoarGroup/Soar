@@ -1,0 +1,97 @@
+### INITIAL STATE AND DESIRED STATE
+###
+
+ ## Define the initial state and the desired state:
+ ## each state is a set of bindings#
+ ## each binding points to a cell and a tile#
+ ## each cell points to its neighboring cells.
+
+sp {fifteen-puzzle*propose*initialize
+   (state <s> ^name fifteen-puzzle
+             -^blank-cell)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize)}
+
+## To modify the initial state, you must move the tiles
+##  that are part of the bindings. The same tile
+## must not be in two cells and every cell must have different
+## tiles.
+## The blank-cell attribute on the state must have
+## the cell that has the block (tile <t0>) in it.
+
+sp {eight*create*state*initial-and-desired-states
+   (state <s> ^operator.name initialize
+              ^desired <d>)
+-->
+   (<s> ^blank-cell <c44> ^tile-cell nil
+        ^binding <bb0> <bb1> <bb2> <bb3> <bb4>
+                 <bb5> <bb6> <bb7> <bb8> <bb9> <bb10> <bb11> <bb12> <bb13> <bb14> <bb15>)
+   (<bb0>  ^cell  <c11> ^tile  <t2>)
+   (<bb1>  ^cell  <c12> ^tile  <t1>)
+   (<bb2>  ^cell  <c13> ^tile  <t7>)
+   (<bb3>  ^cell  <c14> ^tile  <t8>)
+   (<bb4>  ^cell  <c21> ^tile  <t6>)
+   (<bb5>  ^cell  <c22> ^tile  <t15>)
+   (<bb6>  ^cell  <c23> ^tile  <t3>)
+   (<bb7>  ^cell  <c24> ^tile  <t4>)
+   (<bb8>  ^cell  <c31> ^tile  <t5>)
+   (<bb9>  ^cell  <c32> ^tile  <t9>)
+   (<bb10> ^cell  <c33> ^tile <t10>)
+   (<bb11> ^cell  <c34> ^tile <t11>)
+   (<bb12> ^cell  <c41> ^tile <t12>)
+   (<bb13> ^cell  <c42> ^tile <t13>)
+   (<bb14> ^cell  <c43> ^tile <t14>)
+   (<bb15> ^cell  <c44> ^tile <t0>)
+   (<c11> ^name c11 ^cell <c12> ^cell <c21>)
+   (<c12> ^name c12 ^cell <c11> ^cell <c13> ^cell <c22>)
+   (<c13> ^name c13 ^cell <c12> ^cell <c23> ^cell <c14>)
+   (<c14> ^name c14 ^cell <c13> ^cell <c24>)
+   (<c21> ^name c21 ^cell <c11> ^cell <c31> ^cell <c22>)
+   (<c22> ^name c22 ^cell <c21> ^cell <c12> ^cell <c23> ^cell <c32>)
+   (<c23> ^name c23 ^cell <c22> ^cell <c33> ^cell <c13> ^cell <c24>)
+   (<c24> ^name c24 ^cell <c14> ^cell <c23> ^cell <c34>)
+   (<c31> ^name c31 ^cell <c32> ^cell <c21> ^cell <c41>)
+   (<c32> ^name c32 ^cell <c31> ^cell <c22> ^cell <c33> ^cell <c42>)
+   (<c33> ^name c33 ^cell <c32> ^cell <c23> ^cell <c43>)
+   (<c34> ^name c34 ^cell <c33> ^cell <c24> ^cell <c44>)
+   (<c41> ^name c41 ^cell <c31> ^cell <c42>)
+   (<c42> ^name c42 ^cell <c41> ^cell <c32> ^cell <c43>)
+   (<c43> ^name c43 ^cell <c42> ^cell <c33> ^cell <c44>)
+   (<c44> ^name c44 ^cell <c43> ^cell <c34>)
+   (<t0> ^name |0 |)
+   (<t1> ^name |1 |)
+   (<t2> ^name |2 |)
+   (<t3> ^name |3 |)
+   (<t4> ^name |4 |)
+   (<t5> ^name |5 |)
+   (<t6> ^name |6 |)
+   (<t7> ^name |7 |)
+   (<t8> ^name |8 |)
+   (<t9> ^name |9 |)
+   (<t10> ^name |10|)
+   (<t11> ^name |11|)
+   (<t12> ^name |12|)
+   (<t13> ^name |13|)
+   (<t14> ^name |14|)
+   (<t15> ^name |15|)
+   (<d> ^better higher
+        ^binding <d16> <d1> <d2> <d3> <d4> <d5>
+                 <d6> <d7> <d8> <d9> <d10> <d11>
+                 <d12> <d13> <d14> <d15>)
+   (<d1> ^cell <c11> ^tile <t1>)
+   (<d2> ^cell <c12> ^tile <t2>)
+   (<d3> ^cell <c13> ^tile <t3>)
+   (<d4> ^cell <c14> ^tile <t4>)
+   (<d5> ^cell <c21> ^tile <t5>)
+   (<d6> ^cell <c22> ^tile <t6>)
+   (<d7> ^cell <c23> ^tile <t7>)
+   (<d8> ^cell <c24> ^tile <t8>)
+   (<d9> ^cell <c31> ^tile <t9>)
+   (<d10> ^cell <c32> ^tile <t10>)
+   (<d11> ^cell <c33> ^tile <t11>)
+   (<d12> ^cell <c34> ^tile <t12>)
+   (<d13> ^cell <c41> ^tile <t13>)
+   (<d14> ^cell <c42> ^tile <t14>)
+   (<d15> ^cell <c43> ^tile <t15>)
+   (<d16> ^cell <c44> ^tile <t0>)}

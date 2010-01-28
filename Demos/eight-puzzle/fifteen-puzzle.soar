@@ -1,0 +1,3 @@
+pushd fifteen-puzzle
+source fifteen-puzzle_source.soar
+popd

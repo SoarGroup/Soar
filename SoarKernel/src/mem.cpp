@@ -595,7 +595,7 @@ void add_to_hash_table (agent* thisAgent, struct hash_table_struct *ht,
 void do_for_all_items_in_hash_table (agent* thisAgent, 
                                      struct hash_table_struct *ht,
                                      hash_table_callback_fn2 f,
-                                     FILE* fn) 
+                                     void* userdata) 
 {
   uint32_t hash_value;
   item_in_hash_table *item;
@@ -603,7 +603,7 @@ void do_for_all_items_in_hash_table (agent* thisAgent,
   for (hash_value=0; hash_value < ht->size; hash_value++) {
     item = (item_in_hash_table *) (*(ht->buckets + hash_value));
     for ( ; item!=NIL; item = item->next)
-      if ((*f)(thisAgent, item, fn)) return;
+      if ((*f)(thisAgent, item, userdata)) return;
   }
 }
 
