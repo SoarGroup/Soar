@@ -28,47 +28,6 @@ void soar_thread::BeginThread(ThreadFuncPtr inThreadFuncPtr,void* inParam)
      _beginthread(inThreadFuncPtr,0,inParam) ;
 }
 
-class WindowsTimer : public OSSpecificTimer
-{
-protected:
-	BOOL			m_Available ;
-	LARGE_INTEGER	frequency ;		// This many timer increments occur in one second
-	LARGE_INTEGER	start ;			// The timer at last Start() call
-	LARGE_INTEGER	accumulator ;	// The timer at last Start() call
-
-public:
-	WindowsTimer() {
-		m_Available = QueryPerformanceFrequency(&frequency) ;
-
-		Start() ;
-	}
-
-	virtual void Start() {
-		QueryPerformanceCounter(&start) ;
-	}
-
-	virtual double Elapsed() {
-		if (!m_Available)
-			return 0 ;
-
-		LARGE_INTEGER now ;
-		QueryPerformanceCounter(&now) ;
-
-		// QuadPart is all 64 bits
-		now.QuadPart = (now.QuadPart - start.QuadPart) ;
-
-		// LowPart is just the low order 32 bits
-		double elapsed = now.LowPart ;
-		double ms = (elapsed * 1000.0) / frequency.LowPart ;
-		return ms ;
-	}
-} ;
-
-OSSpecificTimer* soar_thread::MakeTimer()
-{
-	return new WindowsTimer() ;
-}
-
 /* voigtjr:
    I rewrote the WindowsMutex class to use "critical sections" rather than 
    actual mutexes, the critical sections are faster for thread synchronization.
@@ -271,38 +230,6 @@ public:
 OSSpecificEvent* soar_thread::MakeEvent()
 {
 	return new LinuxEvent() ;
-}
-
-class LinuxTimer : public OSSpecificTimer
-{
-protected:
-	struct timeval start;
-	struct timezone zone;
-
-public:
-	LinuxTimer() {
-		Start();
-	}
-
-	virtual void Start() {
-		gettimeofday( &start, &zone );
-	}
-
-	virtual double Elapsed() {
-		struct timeval end;
-
-		gettimeofday( &end, &zone );
-
-		double t1 =  static_cast<double>(start.tv_sec) + static_cast<double>(start.tv_usec)/(1000*1000);
-		double t2 =  static_cast<double>(end.tv_sec) + static_cast<double>(end.tv_usec)/(1000*1000);
-
-		return t2 - t1 ;
-	}
-};
-
-OSSpecificTimer* soar_thread::MakeTimer()
-{
-	return new LinuxTimer() ;
 }
 
 #endif // _WIN32

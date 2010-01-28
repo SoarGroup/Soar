@@ -77,7 +77,7 @@ void MiscTest::tearDown()
 void MiscTest::testInstiationDeallocationStackOverflow()
 {
 	std::stringstream productionsPath;
-	productionsPath << pKernel->GetLibraryLocation() << "/Tests/count-and-die.soar";
+	productionsPath << pKernel->GetLibraryLocation() << "/share/soar/Tests/count-and-die.soar";
 
 	pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
 	CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
@@ -90,7 +90,7 @@ void MiscTest::testInstiationDeallocationStackOverflow()
 void MiscTest::test_gp()
 {
 	std::stringstream productionsPath;
-	productionsPath << pKernel->GetLibraryLocation() << "/Tests/testgp.soar";
+	productionsPath << pKernel->GetLibraryLocation() << "/share/soar/Tests/testgp.soar";
 
 	pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
 	CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
@@ -205,7 +205,7 @@ void MiscTest::testRHSRand()
 	pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
 
 	std::stringstream productionsPath;
-	productionsPath << pKernel->GetLibraryLocation() << "/Tests/testRHSRand.soar";
+	productionsPath << pKernel->GetLibraryLocation() << "/share/soar/Tests/testRHSRand.soar";
 
 	pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
 	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult() );

@@ -1,3 +1,0 @@
-pushd discrete-agent
-source discrete-agent_source.soar
-popd

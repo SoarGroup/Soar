@@ -1,0 +1,114 @@
+hello = world;
+
+block
+{
+	inside = true;
+}
+
+block.outside = false;
+
+block = "also with values";
+
+parent
+{
+	child1
+	{
+		one = 1;
+		two = 2;
+	}
+	child2
+	{
+		one = 11;
+		two = 22;
+	}
+}
+
+quotes = "quotes";
+noquotes = noquotes;
+quotesspace = "quotes space";
+noquotesspace = no quotes space;
+
+single = "data";
+single_element_array = [ "data" ];
+trailing_comma_ok = [ "data", ];
+two_element_array = [ "data", "banks" ];
+two_element_array_with_trailer = [ "data", "banks", ];
+array_no_quotes = [ data, banks, ];
+array_spaces_no_quotes = [ data banks, star trek ];
+array_spaces_no_quotes_with_trailer = [ data banks, star trek, ];
+
+double_noquotes = 1.23;
+double_quotes = "1.23";
+
+split_across_lines
+= #comment
+testing; #comment
+
+array_line_split
+=#comment
+[ #comment
+	"hey",#comment
+	"you",#comment
+	"guys",#comment
+];#comment
+#comment
+array_line_split_noquotes#comment
+=
+[ 
+	hey,#comment
+	you,#comment
+	guys,#comment
+];#comment
+
+crazy. sp acing
+ = d a t a banks;
+
+key1 = value1;
+key2 = 
+       value2;
+key3 = [ value3.1, value3.2, value3.3 ];
+key4
+=
+[ value4.1, value4.2 ];
+key5 = [
+     value5.1,
+     value5.2,
+];
+key6 { subkey6.1 = value6.1; subkey6.2 = value6.2; }
+
+dashes-ok = yes;
+
+#doesn't work
+#null-array-values = [,,,,];
+#nested_not_square = [1,[2,3],4];
+#null-array = [];
+#null-value;
+
+grandparent {
+	parent {
+		child = indeed;
+	}
+	sibling {
+		fnord = seen;
+	}
+}
+
+path_test = "sim/objects.txt";
+
+nested_root
+{
+	# should not have anonymous
+	nested_parent 
+	{
+		# should have anonymous
+		{
+			anonymous = something;
+	
+			nested_child 
+			{
+				# should have anonymous
+			}
+		}
+	}
+}	
+		

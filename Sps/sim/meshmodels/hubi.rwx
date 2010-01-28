@@ -1,0 +1,4242 @@
+# RenderWare(TM) Script File
+
+ModelBegin
+ProtoBegin HEAD
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .000137 0 -.000041
+Vertex -.006747 .000857 -.000039
+Vertex .000141 .000857 .005779
+Vertex .007019 .000857 -.000042
+Vertex .000133 .000857 -.005861
+Vertex -.015243 .004894 -.000037
+Vertex -.008744 .003066 .007474
+Vertex .000149 .004894 .012944
+Vertex .009025 .003066 .007466
+Vertex .0155 .004894 -.000044
+Vertex .009015 .003066 -.007553
+Vertex .000126 .004894 -.013025
+Vertex -.008755 .003066 -.00755
+Vertex -.020421 .011425 -.000035
+Vertex -.017603 .009888 .007474
+Vertex -.008733 .009888 .014931
+Vertex .000169 .011425 .017245
+Vertex .009037 .009888 .014898
+Vertex .017858 .009888 .007457
+Vertex .020621 .011425 -.000044
+Vertex .017847 .009888 -.007548
+Vertex .009003 .009888 -.014999
+Vertex .000106 .011425 -.017318
+Vertex -.008766 .009888 -.014997
+Vertex -.017614 .009888 -.007543
+Vertex -.021208 .01671 -.000033
+Vertex -.020417 .01671 .005781
+Vertex -.015232 .01671 .012938
+Vertex -.006716 .01671 .017227
+Vertex .000236 .01671 .017756
+Vertex .007051 .01671 .017018
+Vertex .015511 .01671 .012897
+Vertex .020625 .01671 .005764
+Vertex .021209 .01671 -.000043
+Vertex .020617 .01671 -.005853
+Vertex .015488 .01671 -.012998
+Vertex .006988 .01671 -.017263
+Vertex .000039 .01671 -.017757
+Vertex -.006779 .01671 -.017261
+Vertex -.015255 .01671 -.012995
+Vertex -.020425 .01671 -.005846
+Vertex -.020421 .021994 -.000032
+Vertex -.017603 .023532 .007466
+Vertex -.008733 .023532 .01487
+Vertex .000169 .021994 .016832
+Vertex .009037 .023532 .014836
+Vertex .017858 .023532 .007449
+Vertex .020621 .021994 -.000041
+Vertex .017847 .023532 -.00753
+Vertex .009003 .023532 -.014902
+Vertex .000106 .021994 -.016698
+Vertex -.008766 .023532 -.0149
+Vertex -.017614 .023532 -.007525
+Vertex -.015243 .028526 -.00003
+Vertex -.008745 .030354 .007455
+Vertex .000149 .028526 .012875
+Vertex .009025 .030354 .007448
+Vertex .0155 .028526 -.000037
+Vertex .009015 .030354 -.007513
+Vertex .000126 .028526 -.012914
+Vertex -.008755 .030354 -.007511
+Vertex -.006747 .032562 -.00003
+Vertex .000141 .032562 .005766
+Vertex .007019 .032562 -.000033
+Vertex .000133 .032562 -.005826
+Vertex .000137 .03342 -.000031
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 27 26 14
+Triangle 27 14 15
+Triangle 28 27 15
+Triangle 28 15 16
+Triangle 29 28 16
+Triangle 29 16 17
+Triangle 30 29 17
+Triangle 31 30 17
+Triangle 31 17 18
+Triangle 32 31 18
+Triangle 32 18 19
+Triangle 33 32 19
+Triangle 33 19 20
+Triangle 34 33 20
+Triangle 35 34 20
+Triangle 35 20 21
+Triangle 36 35 21
+Triangle 36 21 22
+Triangle 37 36 22
+Triangle 37 22 23
+Triangle 38 37 23
+Triangle 39 38 23
+Triangle 39 23 24
+Triangle 40 39 24
+Triangle 40 24 25
+Triangle 41 40 25
+Triangle 41 25 14
+Triangle 26 41 14
+Triangle 27 42 26
+Triangle 43 42 27
+Triangle 28 43 27
+Triangle 44 43 28
+Triangle 29 44 28
+Triangle 45 44 29
+Triangle 30 45 29
+Triangle 31 45 30
+Triangle 46 45 31
+Triangle 32 46 31
+Triangle 47 46 32
+Triangle 33 47 32
+Triangle 48 47 33
+Triangle 34 48 33
+Triangle 35 48 34
+Triangle 49 48 35
+Triangle 36 49 35
+Triangle 50 49 36
+Triangle 37 50 36
+Triangle 51 50 37
+Triangle 38 51 37
+Triangle 39 51 38
+Triangle 52 51 39
+Triangle 40 52 39
+Triangle 53 52 40
+Triangle 41 53 40
+Triangle 42 53 41
+Triangle 26 42 41
+Triangle 43 54 42
+Triangle 55 54 43
+Triangle 44 55 43
+Triangle 56 55 44
+Triangle 45 56 44
+Triangle 46 56 45
+Triangle 57 56 46
+Triangle 47 57 46
+Triangle 58 57 47
+Triangle 48 58 47
+Triangle 49 58 48
+Triangle 59 58 49
+Triangle 50 59 49
+Triangle 60 59 50
+Triangle 51 60 50
+Triangle 52 60 51
+Triangle 61 60 52
+Triangle 53 61 52
+Triangle 54 61 53
+Triangle 42 54 53
+Triangle 55 62 54
+Triangle 63 62 55
+Triangle 56 63 55
+Triangle 57 63 56
+Triangle 64 63 57
+Triangle 58 64 57
+Triangle 59 64 58
+Triangle 65 64 59
+Triangle 60 65 59
+Triangle 61 65 60
+Triangle 62 65 61
+Triangle 54 62 61
+Triangle 63 66 62
+Triangle 64 66 63
+Triangle 65 66 64
+Triangle 62 66 65
+ClumpEnd
+ProtoEnd
+ProtoBegin HEAD_1
+ClumpBegin
+Surface .3 .6 .2
+LightSampling Vertex
+Vertex .00008 .000516 -.000476
+Vertex -.002748 .001202 .000248
+Vertex .000127 .000227 -.001076
+Vertex .002663 -.000817 -.000328
+Vertex .000043 .000612 .000341
+Vertex -.003283 .001121 .000626
+Vertex -.002649 .000783 -.000232
+Vertex .000153 -.000091 -.001101
+Vertex .002927 -.001258 -.00087
+Vertex .003283 -.001336 -.000063
+Vertex .002748 -.000808 .000524
+Vertex -.00014 .000628 .000796
+Vertex -.002936 .001336 .001101
+Vertex -.003101 .000925 .000754
+Vertex -.000155 -.000012 -.000652
+Vertex .002861 -.001298 .000119
+Vertex -.000381 .000446 .000758
+Vertex -.000298 .000137 .00016
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 7 14 6
+Triangle 15 14 7
+Triangle 8 15 7
+Triangle 9 15 8
+Triangle 16 15 9
+Triangle 10 16 9
+Triangle 11 16 10
+Triangle 17 16 11
+Triangle 12 17 11
+Triangle 13 17 12
+Triangle 14 17 13
+Triangle 6 14 13
+Triangle 15 18 14
+Triangle 16 18 15
+Triangle 17 18 16
+Triangle 14 18 17
+ClumpEnd
+ProtoEnd
+ProtoBegin HEAD_2
+ClumpBegin
+Color .96875 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex 0 .000068 .000866
+Vertex -.001529 .000048 .00051
+Vertex 0 .000676 .000903
+Vertex .001529 .000048 .00051
+Vertex 0 -.000581 .000118
+Vertex -.002163 0 -.000348
+Vertex -.001529 .000628 .000045
+Vertex .002163 0 -.000348
+Vertex 0 0 -.000348
+Vertex -.001529 -.000628 -.00074
+Vertex 0 -.000889 -.000903
+Vertex .001529 -.000628 -.00074
+Vertex .001529 .000628 .000045
+Vertex 0 .000889 .000208
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 14 7 3
+Triangle 13 14 3
+Triangle 13 3 4
+Triangle 8 13 4
+Triangle 12 8 4
+Triangle 12 4 5
+Triangle 11 12 5
+Triangle 10 11 5
+Triangle 10 5 2
+Triangle 6 10 2
+Triangle 10 6 9
+Triangle 11 10 9
+Triangle 12 11 9
+Triangle 8 12 9
+Triangle 13 8 9
+Triangle 14 13 9
+Triangle 7 14 9
+Triangle 6 7 9
+ClumpEnd
+ProtoEnd
+ProtoBegin PELVIS
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex 0 -.025209 -.000008
+Vertex -.005906 -.02417 -.000007
+Vertex 0 -.02417 .005674
+Vertex .005906 -.02417 -.000007
+Vertex 0 -.02417 -.005689
+Vertex -.013206 -.019264 -.000006
+Vertex -.007624 -.021488 .007328
+Vertex 0 -.019264 .012699
+Vertex .007624 -.021488 .007328
+Vertex .013206 -.019264 -.000006
+Vertex .007624 -.021488 -.007342
+Vertex 0 -.019264 -.012711
+Vertex -.007624 -.021488 -.007342
+Vertex -.017717 -.011258 -.000004
+Vertex -.015249 -.013153 .007331
+Vertex -.007624 -.013153 .014666
+Vertex 0 -.011258 .017042
+Vertex .007624 -.013153 .014666
+Vertex .015249 -.013153 .007331
+Vertex .017717 -.011258 -.000004
+Vertex .015249 -.013153 -.007339
+Vertex .007624 -.013153 -.014675
+Vertex 0 -.011258 -.017049
+Vertex -.007624 -.013153 -.014675
+Vertex -.015249 -.013153 -.007339
+Vertex -.018676 -.00467 0
+Vertex -.017717 -.00467 .005682
+Vertex -.013206 -.00467 .012705
+Vertex -.005906 -.00467 .017045
+Vertex 0 -.00467 .017967
+Vertex .005906 -.00467 .017045
+Vertex .013206 -.00467 .012705
+Vertex .017717 -.00467 .005682
+Vertex .018676 -.00467 0
+Vertex .017717 -.00467 -.005682
+Vertex .013206 -.00467 -.012705
+Vertex .005906 -.00467 -.017045
+Vertex 0 -.00467 -.017967
+Vertex -.005906 -.00467 -.017045
+Vertex -.013206 -.00467 -.012705
+Vertex -.017717 -.00467 -.005682
+Vertex -.017717 .002142 .000006
+Vertex -.015249 .004208 .007344
+Vertex -.007624 .004208 .014679
+Vertex 0 .002142 .017052
+Vertex .007624 .004208 .014679
+Vertex .015249 .004208 .007344
+Vertex .017717 .002142 .000006
+Vertex .015249 .004208 -.007326
+Vertex .007624 .004208 -.014661
+Vertex 0 .002142 -.017039
+Vertex -.007624 .004208 -.014661
+Vertex -.015249 .004208 -.007326
+Vertex -.013206 .011616 .000027
+Vertex -.007624 .015014 .007377
+Vertex 0 .011616 .012732
+Vertex .007624 .015014 .007377
+Vertex .013206 .011616 .000027
+Vertex .007624 .015014 -.007293
+Vertex 0 .011616 -.012678
+Vertex -.007624 .015014 -.007293
+Vertex -.005906 .021049 .000083
+Vertex 0 .021049 .005765
+Vertex .005906 .021049 .000083
+Vertex 0 .021049 -.005599
+Vertex 0 .025209 .000121
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 27 26 14
+Triangle 27 14 15
+Triangle 28 27 15
+Triangle 28 15 16
+Triangle 29 28 16
+Triangle 29 16 17
+Triangle 30 29 17
+Triangle 31 30 17
+Triangle 31 17 18
+Triangle 32 31 18
+Triangle 32 18 19
+Triangle 33 32 19
+Triangle 33 19 20
+Triangle 34 33 20
+Triangle 35 34 20
+Triangle 35 20 21
+Triangle 36 35 21
+Triangle 36 21 22
+Triangle 37 36 22
+Triangle 37 22 23
+Triangle 38 37 23
+Triangle 39 38 23
+Triangle 39 23 24
+Triangle 40 39 24
+Triangle 40 24 25
+Triangle 41 40 25
+Triangle 41 25 14
+Triangle 26 41 14
+Triangle 27 42 26
+Triangle 43 42 27
+Triangle 28 43 27
+Triangle 44 43 28
+Triangle 29 44 28
+Triangle 45 44 29
+Triangle 30 45 29
+Triangle 31 45 30
+Triangle 46 45 31
+Triangle 32 46 31
+Triangle 47 46 32
+Triangle 33 47 32
+Triangle 48 47 33
+Triangle 34 48 33
+Triangle 35 48 34
+Triangle 49 48 35
+Triangle 36 49 35
+Triangle 50 49 36
+Triangle 37 50 36
+Triangle 51 50 37
+Triangle 38 51 37
+Triangle 39 51 38
+Triangle 52 51 39
+Triangle 40 52 39
+Triangle 53 52 40
+Triangle 41 53 40
+Triangle 42 53 41
+Triangle 26 42 41
+Triangle 43 54 42
+Triangle 55 54 43
+Triangle 44 55 43
+Triangle 56 55 44
+Triangle 45 56 44
+Triangle 46 56 45
+Triangle 57 56 46
+Triangle 47 57 46
+Triangle 58 57 47
+Triangle 48 58 47
+Triangle 49 58 48
+Triangle 59 58 49
+Triangle 50 59 49
+Triangle 60 59 50
+Triangle 51 60 50
+Triangle 52 60 51
+Triangle 61 60 52
+Triangle 53 61 52
+Triangle 54 61 53
+Triangle 42 54 53
+Triangle 55 62 54
+Triangle 63 62 55
+Triangle 56 63 55
+Triangle 57 63 56
+Triangle 64 63 57
+Triangle 58 64 57
+Triangle 59 64 58
+Triangle 65 64 59
+Triangle 60 65 59
+Triangle 61 65 60
+Triangle 62 65 61
+Triangle 54 62 61
+Triangle 63 66 62
+Triangle 64 66 63
+Triangle 65 66 64
+Triangle 62 66 65
+ClumpEnd
+ProtoEnd
+ProtoBegin RU_LEG
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.008433 -.013005 .000137
+Vertex -.008892 -.010022 .000137
+Vertex -.007499 -.012231 -.002524
+Vertex -.006105 -.014439 .000137
+Vertex -.007499 -.012231 .002799
+Vertex -.008772 -.006557 .000038
+Vertex -.008934 -.009077 -.003398
+Vertex -.005984 -.010975 -.005284
+Vertex -.005335 -.01478 -.003398
+Vertex -.003197 -.015392 .000038
+Vertex -.005335 -.01478 .003474
+Vertex -.005984 -.010975 .00536
+Vertex -.008934 -.009077 .003474
+Vertex -.004899 -.003088 .000038
+Vertex -.004214 -.004429 -.003099
+Vertex -.003778 -.004711 -.003984
+Vertex -.00206 -.00772 -.005645
+Vertex -.000198 -.010755 -.003827
+Vertex .000281 -.01147 -.002849
+Vertex .000942 -.012207 .000038
+Vertex .000268 -.011416 .003015
+Vertex -.000064 -.010462 .004099
+Vertex -.001975 -.007649 .005644
+Vertex -.003979 -.004634 .003705
+Vertex -.004312 -.003812 .002906
+Vertex -.000867 0 .000038
+Vertex .001272 -.000612 -.003398
+Vertex .001921 -.004418 -.005284
+Vertex .004871 -.006315 -.003398
+Vertex .004708 -.008835 .000038
+Vertex .004871 -.006315 .003474
+Vertex .001921 -.004418 .00536
+Vertex .001272 -.000612 .003474
+Vertex .002147 -.000865 .00013
+Vertex .003541 -.003074 -.002531
+Vertex .004934 -.005283 .00013
+Vertex .003541 -.003074 .002792
+Vertex .004474 -.0023 .00013
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 12 22 23
+Triangle 12 23 24
+Triangle 13 12 24
+Triangle 13 24 25
+Triangle 6 13 25
+Triangle 6 25 14
+Triangle 14 26 15
+Triangle 15 26 27
+Triangle 15 27 16
+Triangle 16 27 28
+Triangle 16 28 17
+Triangle 17 28 18
+Triangle 18 28 29
+Triangle 18 29 19
+Triangle 19 29 30
+Triangle 19 30 20
+Triangle 20 30 21
+Triangle 21 30 31
+Triangle 21 31 22
+Triangle 22 31 32
+Triangle 22 32 23
+Triangle 23 32 24
+Triangle 24 32 33
+Triangle 24 33 25
+Triangle 25 33 26
+Triangle 25 26 14
+Triangle 26 34 27
+Triangle 27 34 35
+Triangle 27 35 28
+Triangle 28 35 29
+Triangle 29 35 36
+Triangle 29 36 30
+Triangle 30 36 31
+Triangle 31 36 37
+Triangle 31 37 32
+Triangle 32 37 33
+Triangle 33 37 34
+Triangle 33 34 26
+Triangle 34 38 35
+Triangle 35 38 36
+Triangle 36 38 37
+Triangle 37 38 34
+ClumpEnd
+ProtoEnd
+ProtoBegin RL_LEG
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .000147 -.017391 .000133
+Vertex -.001932 -.015879 .000137
+Vertex .000228 -.016596 -.002525
+Vertex .002389 -.017313 .000137
+Vertex .000228 -.016596 .002798
+Vertex -.003886 -.013139 .000038
+Vertex -.002518 -.015243 -.003398
+Vertex .000435 -.014575 -.005285
+Vertex .003062 -.017095 -.003398
+Vertex .004757 -.016007 .000038
+Vertex .003062 -.017091 .003473
+Vertex .000436 -.014571 .00536
+Vertex -.002517 -.01524 .003473
+Vertex -.003483 -.007547 .000038
+Vertex -.002271 -.008097 -.003099
+Vertex -.001834 -.008002 -.003984
+Vertex .000995 -.009115 -.005645
+Vertex .003932 -.010136 -.003827
+Vertex .004648 -.010347 -.002849
+Vertex .005492 -.010443 .000038
+Vertex .004609 -.010313 .003015
+Vertex .003845 -.009805 .004099
+Vertex .001008 -.008993 .005644
+Vertex -.002005 -.008085 .003705
+Vertex -.002692 -.007684 .002906
+Vertex -.002757 -.002135 .000038
+Vertex -.001061 -.001039 -.003398
+Vertex .001564 -.003569 -.005284
+Vertex .004518 -.00289 -.003398
+Vertex .005886 -.005003 .000038
+Vertex .004518 -.00289 .003474
+Vertex .001564 -.003568 .00536
+Vertex -.001061 -.001038 .003474
+Vertex -.000364 -.000586 .00013
+Vertex .001797 -.001303 -.002531
+Vertex .003957 -.00202 .00013
+Vertex .001797 -.001303 .002792
+Vertex .00193 0 .00013
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 12 22 23
+Triangle 12 23 24
+Triangle 13 12 24
+Triangle 13 24 25
+Triangle 6 13 25
+Triangle 6 25 14
+Triangle 14 26 15
+Triangle 15 26 27
+Triangle 15 27 16
+Triangle 16 27 28
+Triangle 16 28 17
+Triangle 17 28 18
+Triangle 18 28 29
+Triangle 18 29 19
+Triangle 19 29 30
+Triangle 19 30 20
+Triangle 20 30 21
+Triangle 21 30 31
+Triangle 21 31 22
+Triangle 22 31 32
+Triangle 22 32 23
+Triangle 23 32 24
+Triangle 24 32 33
+Triangle 24 33 25
+Triangle 25 33 26
+Triangle 25 26 14
+Triangle 26 34 27
+Triangle 27 34 35
+Triangle 27 35 28
+Triangle 28 35 29
+Triangle 29 35 36
+Triangle 29 36 30
+Triangle 30 36 31
+Triangle 31 36 37
+Triangle 31 37 32
+Triangle 32 37 33
+Triangle 33 37 34
+Triangle 33 34 26
+Triangle 34 38 35
+Triangle 35 38 36
+Triangle 36 38 37
+Triangle 37 38 34
+ClumpEnd
+ProtoEnd
+ProtoBegin R_FOOT
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .000504 0 .004107
+Vertex -.001929 -.000084 .004118
+Vertex .000441 -.000406 .006836
+Vertex .002826 -.000673 .004118
+Vertex .000464 -.000309 .001321
+Vertex -.004524 -.001367 .004163
+Vertex -.002784 -.001151 .007651
+Vertex .000205 -.001992 .00955
+Vertex .003332 -.001908 .007649
+Vertex .004959 -.00254 .004161
+Vertex .003422 -.001811 .000552
+Vertex .000318 -.001371 -.002195
+Vertex -.002812 -.001039 .000543
+Vertex -.005227 -.002823 .004208
+Vertex -.004749 -.00291 .007079
+Vertex -.002386 -.003216 .009574
+Vertex -.000019 -.003508 .010196
+Vertex .002349 -.0038 .009572
+Vertex .004716 -.004078 .007062
+Vertex .005226 -.004112 .004194
+Vertex .004798 -.004015 .001435
+Vertex .003025 -.003693 -.001576
+Vertex -.002837 -.002968 -.001666
+Vertex -.004779 -.002834 .001429
+Vertex -.000219 -.004867 .009573
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 13 12 23
+Triangle 13 23 24
+Triangle 6 13 24
+Triangle 6 24 14
+Triangle 16 25 17
+Triangle 17 25 18
+ClumpEnd
+ProtoEnd
+ProtoBegin R_FOOT_1
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex .000318 .002114 -.005885
+Vertex -.005226 .000662 .000519
+Vertex -.004748 .000575 .003389
+Vertex -.002386 .00027 .005885
+Vertex .002349 -.000315 .005882
+Vertex .004717 -.000593 .003373
+Vertex .005226 -.000627 .000504
+Vertex .004799 -.00053 -.002255
+Vertex .003026 -.000208 -.005265
+Vertex .000058 .000227 -.005841
+Vertex -.002836 .000517 -.005355
+Vertex -.004779 .000651 -.002261
+Vertex -.004945 -.000766 .000516
+Vertex -.003328 -.001367 .004
+Vertex -.000218 -.001382 .005883
+Vertex .002789 -.002114 .003998
+Vertex .004533 -.001925 .000513
+Vertex .002894 -.001947 -.003027
+Vertex -.000147 -.001101 -.005078
+Vertex -.003348 -.001183 -.003035
+Vertex -.002609 -.001227 .000532
+Vertex -.000216 -.001393 .003221
+Vertex .002162 -.001732 .00053
+Vertex -.000012 -.000139 -.002155
+Vertex -.000176 -.001166 .000543
+Triangle 1 9 10
+Triangle 1 10 11
+Triangle 2 13 3
+Triangle 3 13 14
+Triangle 3 14 4
+Triangle 4 14 15
+Triangle 5 15 16
+Triangle 5 16 6
+Triangle 6 16 17
+Triangle 6 17 7
+Triangle 7 17 8
+Triangle 8 17 18
+Triangle 8 18 9
+Triangle 9 18 19
+Triangle 9 19 10
+Triangle 10 19 11
+Triangle 11 19 20
+Triangle 11 20 12
+Triangle 12 20 13
+Triangle 12 13 2
+Triangle 13 21 14
+Triangle 14 21 22
+Triangle 14 22 15
+Triangle 15 22 16
+Triangle 16 22 23
+Triangle 16 23 17
+Triangle 17 23 18
+Triangle 18 23 24
+Triangle 18 24 19
+Triangle 19 24 20
+Triangle 20 24 21
+Triangle 20 21 13
+Triangle 21 25 22
+Triangle 22 25 23
+Triangle 23 25 24
+Triangle 24 25 21
+ClumpEnd
+ProtoEnd
+ProtoBegin R_TOES
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex -.003993 .002252 .003596
+Vertex -.004995 .001891 .002797
+Vertex -.005896 .001465 .005907
+Vertex -.003028 .001647 .004259
+Vertex -.002126 .002072 .001148
+Vertex -.005446 .000784 .002331
+Vertex -.006924 .00043 .005014
+Vertex -.006721 .000182 .00673
+Vertex -.004957 .000186 .006475
+Vertex -.002665 .000438 .004398
+Vertex -.001188 .000792 .001716
+Vertex -.00139 .00104 0
+Vertex -.003154 .001037 .000255
+Vertex -.005089 -.000377 .002488
+Vertex -.005991 -.000803 .005598
+Vertex -.003123 -.000622 .003949
+Vertex -.002221 -.000196 .000839
+Vertex -.004204 -.000336 .003376
+Vertex -.00158 .001846 .00578
+Vertex -.002824 .001515 .005553
+Vertex -.00215 .000894 .008729
+Vertex -.000452 .001221 .005831
+Vertex -.001126 .001842 .002656
+Vertex -.003453 .000431 .005288
+Vertex -.003474 -.000104 .008382
+Vertex -.002501 -.000448 .009778
+Vertex -.001103 -.000399 .00866
+Vertex -.0001 .000014 .005681
+Vertex -.000079 .000549 .002587
+Vertex -.001052 .000892 .001191
+Vertex -.00245 .000843 .002309
+Vertex -.003097 -.000731 .005159
+Vertex -.002423 -.001352 .008334
+Vertex -.000726 -.001025 .005436
+Vertex -.001399 -.000404 .002261
+Vertex -.001918 -.000726 .005498
+Vertex .004656 .000752 .004489
+Vertex .003294 .000494 .004812
+Vertex .00591 -.000304 .006505
+Vertex .005811 .000182 .004046
+Vertex .003196 .00098 .002352
+Vertex .002527 -.000434 .004828
+Vertex .004406 -.00114 .006746
+Vertex .006227 -.001562 .007223
+Vertex .006923 -.001453 .00598
+Vertex .006087 -.000876 .003745
+Vertex .004209 -.00017 .001827
+Vertex .002388 .000252 .001349
+Vertex .001692 .000143 .002593
+Vertex .002819 -.001453 .004542
+Vertex .005435 -.002251 .006235
+Vertex .005336 -.001766 .003776
+Vertex .00272 -.000968 .002082
+Vertex .004191 -.001491 .004296
+Vertex .00159 .001452 .006001
+Vertex .000355 .00112 .006119
+Vertex .001718 .000414 .009023
+Vertex .002669 .000833 .005704
+Vertex .001306 .00154 .002799
+Vertex -.000312 .00004 .005991
+Vertex .000373 -.000582 .009018
+Vertex .001615 -.000959 .010099
+Vertex .002687 -.00087 .008603
+Vertex .002961 -.000366 .005404
+Vertex .002276 .000256 .002378
+Vertex .001033 .000633 .001297
+Vertex -.000039 .000544 .002793
+Vertex -.000012 -.001114 .005714
+Vertex .001351 -.001821 .008619
+Vertex .002302 -.001402 .005299
+Vertex .00094 -.000695 .002394
+Vertex .001186 -.001112 .005712
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+Triangle 19 20 21
+Triangle 19 21 22
+Triangle 19 22 23
+Triangle 19 23 20
+Triangle 20 24 25
+Triangle 21 20 25
+Triangle 21 25 26
+Triangle 21 26 27
+Triangle 22 21 27
+Triangle 22 27 28
+Triangle 22 28 29
+Triangle 23 22 29
+Triangle 23 29 30
+Triangle 23 30 31
+Triangle 20 23 31
+Triangle 20 31 24
+Triangle 24 32 25
+Triangle 25 32 33
+Triangle 25 33 26
+Triangle 26 33 27
+Triangle 27 33 34
+Triangle 27 34 28
+Triangle 28 34 29
+Triangle 29 34 35
+Triangle 29 35 30
+Triangle 30 35 31
+Triangle 31 35 32
+Triangle 31 32 24
+Triangle 32 36 33
+Triangle 33 36 34
+Triangle 34 36 35
+Triangle 35 36 32
+Triangle 37 38 39
+Triangle 37 39 40
+Triangle 37 40 41
+Triangle 37 41 38
+Triangle 38 42 43
+Triangle 39 38 43
+Triangle 39 43 44
+Triangle 39 44 45
+Triangle 40 39 45
+Triangle 40 45 46
+Triangle 40 46 47
+Triangle 41 40 47
+Triangle 41 47 48
+Triangle 41 48 49
+Triangle 38 41 49
+Triangle 38 49 42
+Triangle 42 50 43
+Triangle 43 50 51
+Triangle 43 51 44
+Triangle 44 51 45
+Triangle 45 51 52
+Triangle 45 52 46
+Triangle 46 52 47
+Triangle 47 52 53
+Triangle 47 53 48
+Triangle 48 53 49
+Triangle 49 53 50
+Triangle 49 50 42
+Triangle 50 54 51
+Triangle 51 54 52
+Triangle 52 54 53
+Triangle 53 54 50
+Triangle 55 56 57
+Triangle 55 57 58
+Triangle 55 58 59
+Triangle 55 59 56
+Triangle 56 60 61
+Triangle 57 56 61
+Triangle 57 61 62
+Triangle 57 62 63
+Triangle 58 57 63
+Triangle 58 63 64
+Triangle 58 64 65
+Triangle 59 58 65
+Triangle 59 65 66
+Triangle 59 66 67
+Triangle 56 59 67
+Triangle 56 67 60
+Triangle 60 68 61
+Triangle 61 68 69
+Triangle 61 69 62
+Triangle 62 69 63
+Triangle 63 69 70
+Triangle 63 70 64
+Triangle 64 70 65
+Triangle 65 70 71
+Triangle 65 71 66
+Triangle 66 71 67
+Triangle 67 71 68
+Triangle 67 68 60
+Triangle 68 72 69
+Triangle 69 72 70
+Triangle 70 72 71
+Triangle 71 72 68
+ClumpEnd
+ProtoEnd
+ProtoBegin HEAD_3
+ClumpBegin
+Surface .3 .6 .2
+LightSampling Vertex
+Vertex -.000149 -.004366 .000087
+Vertex -.00323 -.004156 .000087
+Vertex -.000037 -.00433 .002162
+Vertex .003145 -.004113 .000087
+Vertex -.000035 -.00433 -.00199
+Vertex -.006316 -.002227 .000087
+Vertex -.004093 -.002852 .002764
+Vertex -.00003 -.002233 .004214
+Vertex .00404 -.002849 .002764
+Vertex .006274 -.002224 .000087
+Vertex .004043 -.002849 -.002595
+Vertex -.000022 -.002233 -.00407
+Vertex -.00409 -.002852 -.002595
+Vertex -.007009 -.000085 .000087
+Vertex -.006313 -.000085 .002162
+Vertex -.003176 -.000084 .004214
+Vertex -.000052 -.000084 .004561
+Vertex .003121 -.000083 .004214
+Vertex .006269 -.000083 .002162
+Vertex .007009 -.000083 .000087
+Vertex .006271 -.000083 -.00199
+Vertex .003128 -.000084 -.00407
+Vertex -.00002 -.000084 -.004561
+Vertex -.003169 -.000084 -.00407
+Vertex -.006312 -.000085 -.00199
+Vertex -.006314 .002057 .000087
+Vertex -.00409 .002684 .002764
+Vertex -.000028 .002067 .004214
+Vertex .004037 .002685 .002764
+Vertex .006193 .002059 .000087
+Vertex .00404 .002685 -.002595
+Vertex -.000021 .002067 -.00407
+Vertex -.004087 .002684 -.002595
+Vertex -.003218 .003951 .000087
+Vertex -.000027 .004177 .002162
+Vertex .003162 .003962 .000087
+Vertex -.000025 .004177 -.00199
+Vertex -.000055 .004366 .000087
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 15 26 14
+Triangle 27 26 15
+Triangle 16 27 15
+Triangle 28 27 16
+Triangle 17 28 16
+Triangle 18 28 17
+Triangle 29 28 18
+Triangle 19 29 18
+Triangle 30 29 19
+Triangle 20 30 19
+Triangle 21 30 20
+Triangle 31 30 21
+Triangle 22 31 21
+Triangle 32 31 22
+Triangle 23 32 22
+Triangle 24 32 23
+Triangle 33 32 24
+Triangle 25 33 24
+Triangle 26 33 25
+Triangle 14 26 25
+Triangle 27 34 26
+Triangle 35 34 27
+Triangle 28 35 27
+Triangle 29 35 28
+Triangle 36 35 29
+Triangle 30 36 29
+Triangle 31 36 30
+Triangle 37 36 31
+Triangle 32 37 31
+Triangle 33 37 32
+Triangle 34 37 33
+Triangle 26 34 33
+Triangle 35 38 34
+Triangle 36 38 35
+Triangle 37 38 36
+Triangle 34 38 37
+ClumpEnd
+ProtoEnd
+ProtoBegin L_TOES
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex .003719 .002251 .003597
+Vertex .004652 .001891 .002797
+Vertex .005492 .001465 .005908
+Vertex .00282 .001646 .004259
+Vertex .00198 .002072 .001149
+Vertex .005073 .000784 .002332
+Vertex .006449 .00043 .005014
+Vertex .00626 .000182 .00673
+Vertex .004617 .000186 .006476
+Vertex .002482 .000438 .004399
+Vertex .001106 .000792 .001717
+Vertex .001294 .00104 0
+Vertex .002937 .001036 .000255
+Vertex .00474 -.000377 .002488
+Vertex .00558 -.000803 .005598
+Vertex .002908 -.000622 .00395
+Vertex .002068 -.000196 .00084
+Vertex .003915 -.000337 .003376
+Vertex .001471 .001846 .00578
+Vertex .002629 .001515 .005554
+Vertex .002002 .000894 .008729
+Vertex .000421 .001221 .005832
+Vertex .001048 .001842 .002657
+Vertex .003216 .00043 .005288
+Vertex .003235 -.000104 .008382
+Vertex .002329 -.000448 .009779
+Vertex .001027 -.000399 .00866
+Vertex .000092 .000014 .005681
+Vertex .000073 .000549 .002588
+Vertex .000979 .000892 .001191
+Vertex .002281 .000843 .00231
+Vertex .002884 -.000731 .005159
+Vertex .002257 -.001352 .008334
+Vertex .000675 -.001025 .005437
+Vertex .001303 -.000404 .002262
+Vertex .001786 -.000726 .005499
+Vertex -.001482 .001452 .006001
+Vertex -.000331 .00112 .006119
+Vertex -.001601 .000413 .009024
+Vertex -.002487 .000833 .005704
+Vertex -.001217 .00154 .002799
+Vertex .00029 .00004 .005992
+Vertex -.000348 -.000583 .009018
+Vertex -.001506 -.00096 .0101
+Vertex -.002504 -.00087 .008603
+Vertex -.002759 -.000367 .005405
+Vertex -.002121 .000256 .002379
+Vertex -.000963 .000633 .001297
+Vertex .000035 .000544 .002794
+Vertex .00001 -.001114 .005714
+Vertex -.001259 -.001821 .008619
+Vertex -.002146 -.001402 .005299
+Vertex -.000876 -.000695 .002395
+Vertex -.001105 -.001112 .005713
+Vertex -.004338 .000752 .004489
+Vertex -.003069 .000494 .004812
+Vertex -.005506 -.000304 .006506
+Vertex -.005414 .000181 .004046
+Vertex -.002978 .000979 .002352
+Vertex -.002355 -.000434 .004829
+Vertex -.004105 -.00114 .006747
+Vertex -.005801 -.001563 .007224
+Vertex -.00645 -.001453 .005981
+Vertex -.005671 -.000876 .003745
+Vertex -.003921 -.00017 .001827
+Vertex -.002225 .000252 .00135
+Vertex -.001576 .000143 .002593
+Vertex -.002626 -.001453 .004542
+Vertex -.005063 -.002251 .006236
+Vertex -.004971 -.001766 .003776
+Vertex -.002535 -.000968 .002082
+Vertex -.003904 -.001491 .004296
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 7 14 6
+Triangle 15 14 7
+Triangle 8 15 7
+Triangle 9 15 8
+Triangle 16 15 9
+Triangle 10 16 9
+Triangle 11 16 10
+Triangle 17 16 11
+Triangle 12 17 11
+Triangle 13 17 12
+Triangle 14 17 13
+Triangle 6 14 13
+Triangle 15 18 14
+Triangle 16 18 15
+Triangle 17 18 16
+Triangle 14 18 17
+Triangle 21 20 19
+Triangle 22 21 19
+Triangle 23 22 19
+Triangle 20 23 19
+Triangle 25 24 20
+Triangle 25 20 21
+Triangle 26 25 21
+Triangle 27 26 21
+Triangle 27 21 22
+Triangle 28 27 22
+Triangle 29 28 22
+Triangle 29 22 23
+Triangle 30 29 23
+Triangle 31 30 23
+Triangle 31 23 20
+Triangle 24 31 20
+Triangle 25 32 24
+Triangle 33 32 25
+Triangle 26 33 25
+Triangle 27 33 26
+Triangle 34 33 27
+Triangle 28 34 27
+Triangle 29 34 28
+Triangle 35 34 29
+Triangle 30 35 29
+Triangle 31 35 30
+Triangle 32 35 31
+Triangle 24 32 31
+Triangle 33 36 32
+Triangle 34 36 33
+Triangle 35 36 34
+Triangle 32 36 35
+Triangle 39 38 37
+Triangle 40 39 37
+Triangle 41 40 37
+Triangle 38 41 37
+Triangle 43 42 38
+Triangle 43 38 39
+Triangle 44 43 39
+Triangle 45 44 39
+Triangle 45 39 40
+Triangle 46 45 40
+Triangle 47 46 40
+Triangle 47 40 41
+Triangle 48 47 41
+Triangle 49 48 41
+Triangle 49 41 38
+Triangle 42 49 38
+Triangle 43 50 42
+Triangle 51 50 43
+Triangle 44 51 43
+Triangle 45 51 44
+Triangle 52 51 45
+Triangle 46 52 45
+Triangle 47 52 46
+Triangle 53 52 47
+Triangle 48 53 47
+Triangle 49 53 48
+Triangle 50 53 49
+Triangle 42 50 49
+Triangle 51 54 50
+Triangle 52 54 51
+Triangle 53 54 52
+Triangle 50 54 53
+Triangle 57 56 55
+Triangle 58 57 55
+Triangle 59 58 55
+Triangle 56 59 55
+Triangle 61 60 56
+Triangle 61 56 57
+Triangle 62 61 57
+Triangle 63 62 57
+Triangle 63 57 58
+Triangle 64 63 58
+Triangle 65 64 58
+Triangle 65 58 59
+Triangle 66 65 59
+Triangle 67 66 59
+Triangle 67 59 56
+Triangle 60 67 56
+Triangle 61 68 60
+Triangle 69 68 61
+Triangle 62 69 61
+Triangle 63 69 62
+Triangle 70 69 63
+Triangle 64 70 63
+Triangle 65 70 64
+Triangle 71 70 65
+Triangle 66 71 65
+Triangle 67 71 66
+Triangle 68 71 67
+Triangle 60 68 67
+Triangle 69 72 68
+Triangle 70 72 69
+Triangle 71 72 70
+Triangle 68 72 71
+ClumpEnd
+ProtoEnd
+ProtoBegin L_FOOT
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.00047 0 .004107
+Vertex .001796 -.000084 .004117
+Vertex -.000411 -.000406 .006835
+Vertex -.002632 -.000673 .004118
+Vertex -.000432 -.00031 .00132
+Vertex .004214 -.001367 .004162
+Vertex .002593 -.001151 .00765
+Vertex -.000191 -.001993 .009549
+Vertex -.003104 -.001908 .007648
+Vertex -.00462 -.00254 .00416
+Vertex -.003188 -.001811 .000551
+Vertex -.000296 -.001371 -.002196
+Vertex .002619 -.001039 .000543
+Vertex .004868 -.002824 .004208
+Vertex .004423 -.00291 .007078
+Vertex .002223 -.003216 .009574
+Vertex .000018 -.003508 .010195
+Vertex -.002188 -.0038 .009571
+Vertex -.004394 -.004078 .007062
+Vertex -.004868 -.004113 .004193
+Vertex -.00447 -.004016 .001434
+Vertex -.002818 -.003693 -.001576
+Vertex .002642 -.002968 -.001666
+Vertex .004451 -.002834 .001428
+Vertex .000204 -.004867 .009572
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 12 13
+Triangle 24 23 13
+Triangle 24 13 6
+Triangle 14 24 6
+Triangle 17 25 16
+Triangle 18 25 17
+ClumpEnd
+ProtoEnd
+ProtoBegin L_FOOT_1
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex -.000296 .002114 -.005885
+Vertex .004868 .000662 .000519
+Vertex .004423 .000575 .003389
+Vertex .002223 .00027 .005885
+Vertex -.002188 -.000315 .005882
+Vertex -.004394 -.000593 .003373
+Vertex -.004868 -.000627 .000504
+Vertex -.00447 -.00053 -.002255
+Vertex -.002818 -.000208 -.005265
+Vertex -.000054 .000227 -.005841
+Vertex .002642 .000517 -.005355
+Vertex .004451 .000651 -.002261
+Vertex .004606 -.000766 .000516
+Vertex .0031 -.001367 .004
+Vertex .000203 -.001382 .005883
+Vertex -.002597 -.002114 .003998
+Vertex -.004223 -.001925 .000513
+Vertex -.002696 -.001947 -.003027
+Vertex .000137 -.001101 -.005078
+Vertex .003119 -.001183 -.003035
+Vertex .00243 -.001227 .000532
+Vertex .000201 -.001393 .003221
+Vertex -.002013 -.001732 .00053
+Vertex .000011 -.000139 -.002155
+Vertex .000164 -.001166 .000543
+Triangle 10 9 1
+Triangle 11 10 1
+Triangle 3 13 2
+Triangle 14 13 3
+Triangle 4 14 3
+Triangle 15 14 4
+Triangle 16 15 5
+Triangle 6 16 5
+Triangle 17 16 6
+Triangle 7 17 6
+Triangle 8 17 7
+Triangle 18 17 8
+Triangle 9 18 8
+Triangle 19 18 9
+Triangle 10 19 9
+Triangle 11 19 10
+Triangle 20 19 11
+Triangle 12 20 11
+Triangle 13 20 12
+Triangle 2 13 12
+Triangle 14 21 13
+Triangle 22 21 14
+Triangle 15 22 14
+Triangle 16 22 15
+Triangle 23 22 16
+Triangle 17 23 16
+Triangle 18 23 17
+Triangle 24 23 18
+Triangle 19 24 18
+Triangle 20 24 19
+Triangle 21 24 20
+Triangle 13 21 20
+Triangle 22 25 21
+Triangle 23 25 22
+Triangle 24 25 23
+Triangle 21 25 24
+ClumpEnd
+ProtoEnd
+ProtoBegin LL_LEG
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000205 -.017391 .000134
+Vertex .001732 -.015879 .000137
+Vertex -.000281 -.016596 -.002524
+Vertex -.002294 -.017313 .000137
+Vertex -.000281 -.016596 .002798
+Vertex .003551 -.013139 .000038
+Vertex .002277 -.015243 -.003397
+Vertex -.000474 -.014575 -.005284
+Vertex -.00292 -.017095 -.003397
+Vertex -.004499 -.016008 .000038
+Vertex -.00292 -.017092 .003474
+Vertex -.000474 -.014572 .005361
+Vertex .002277 -.01524 .003474
+Vertex .003176 -.007547 .000038
+Vertex .002047 -.008097 -.003099
+Vertex .001641 -.008002 -.003983
+Vertex -.000996 -.009115 -.005644
+Vertex -.003731 -.010136 -.003826
+Vertex -.004398 -.010347 -.002849
+Vertex -.005184 -.010443 .000038
+Vertex -.004362 -.010313 .003016
+Vertex -.00365 -.009805 .004099
+Vertex -.001007 -.008994 .005644
+Vertex .001799 -.008085 .003705
+Vertex .00244 -.007685 .002907
+Vertex .0025 -.002135 .000039
+Vertex .00092 -.001039 -.003397
+Vertex -.001525 -.003569 -.005284
+Vertex -.004277 -.002891 -.003397
+Vertex -.005551 -.005003 .000039
+Vertex -.004277 -.00289 .003474
+Vertex -.001525 -.003568 .005361
+Vertex .00092 -.001039 .003474
+Vertex .000271 -.000586 .000131
+Vertex -.001742 -.001303 -.00253
+Vertex -.003755 -.00202 .000131
+Vertex -.001742 -.001303 .002792
+Vertex -.001866 0 .000131
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 15 26 14
+Triangle 27 26 15
+Triangle 16 27 15
+Triangle 28 27 16
+Triangle 17 28 16
+Triangle 18 28 17
+Triangle 29 28 18
+Triangle 19 29 18
+Triangle 30 29 19
+Triangle 20 30 19
+Triangle 21 30 20
+Triangle 31 30 21
+Triangle 22 31 21
+Triangle 32 31 22
+Triangle 23 32 22
+Triangle 24 32 23
+Triangle 33 32 24
+Triangle 25 33 24
+Triangle 26 33 25
+Triangle 14 26 25
+Triangle 27 34 26
+Triangle 35 34 27
+Triangle 28 35 27
+Triangle 29 35 28
+Triangle 36 35 29
+Triangle 30 36 29
+Triangle 31 36 30
+Triangle 37 36 31
+Triangle 32 37 31
+Triangle 33 37 32
+Triangle 34 37 33
+Triangle 26 34 33
+Triangle 35 38 34
+Triangle 36 38 35
+Triangle 37 38 36
+Triangle 34 38 37
+ClumpEnd
+ProtoEnd
+ProtoBegin LU_LEG
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .008142 -.014023 .000138
+Vertex .008434 -.010774 .000138
+Vertex .007253 -.013195 -.002523
+Vertex .006073 -.015615 .000138
+Vertex .007253 -.013195 .002799
+Vertex .008173 -.00701 .000039
+Vertex .008431 -.009747 -.003397
+Vertex .005812 -.011852 -.005284
+Vertex .005383 -.015997 -.003397
+Vertex .003451 -.016693 .000039
+Vertex .005383 -.015997 .003474
+Vertex .005812 -.011852 .005361
+Vertex .008431 -.009747 .003474
+Vertex .004476 -.003296 .000039
+Vertex .003906 -.004764 -.003098
+Vertex .00352 -.005077 -.003983
+Vertex .002077 -.008372 -.005644
+Vertex .000504 -.011697 -.003826
+Vertex .000096 -.012481 -.002849
+Vertex -.000478 -.013291 .000039
+Vertex .000105 -.012422 .003016
+Vertex .000368 -.011381 .004099
+Vertex .001996 -.008296 .005644
+Vertex .0037 -.00499 .003706
+Vertex .00397 -.004093 .002907
+Vertex .000649 0 .000039
+Vertex -.001283 -.000696 -.003397
+Vertex -.001712 -.004841 -.005284
+Vertex -.004331 -.006946 -.003397
+Vertex -.004073 -.009682 .000039
+Vertex -.004331 -.006946 .003474
+Vertex -.001712 -.004841 .005361
+Vertex -.001283 -.000696 .003474
+Vertex -.002073 -.000984 .000131
+Vertex -.003254 -.003404 -.00253
+Vertex -.004434 -.005825 .000131
+Vertex -.003254 -.003404 .002792
+Vertex -.004143 -.002576 .000131
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 15 26 14
+Triangle 27 26 15
+Triangle 16 27 15
+Triangle 28 27 16
+Triangle 17 28 16
+Triangle 18 28 17
+Triangle 29 28 18
+Triangle 19 29 18
+Triangle 30 29 19
+Triangle 20 30 19
+Triangle 21 30 20
+Triangle 31 30 21
+Triangle 22 31 21
+Triangle 32 31 22
+Triangle 23 32 22
+Triangle 24 32 23
+Triangle 33 32 24
+Triangle 25 33 24
+Triangle 26 33 25
+Triangle 14 26 25
+Triangle 27 34 26
+Triangle 35 34 27
+Triangle 28 35 27
+Triangle 29 35 28
+Triangle 36 35 29
+Triangle 30 36 29
+Triangle 31 36 30
+Triangle 37 36 31
+Triangle 32 37 31
+Triangle 33 37 32
+Triangle 34 37 33
+Triangle 26 34 33
+Triangle 35 38 34
+Triangle 36 38 35
+Triangle 37 38 36
+Triangle 34 38 37
+ClumpEnd
+ProtoEnd
+ProtoBegin R_FINGERS
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex .003453 -.001987 .002078
+Vertex .004172 -.001864 .001428
+Vertex .004152 -.004564 .002456
+Vertex .002596 -.002799 .001874
+Vertex .002616 -.000099 .000846
+Vertex .004333 -.002496 .000313
+Vertex .004774 -.004922 .00121
+Vertex .004304 -.006315 .001767
+Vertex .003198 -.005858 .001657
+Vertex .002104 -.003819 .000945
+Vertex .001663 -.001392 .000047
+Vertex .002133 0 -.00051
+Vertex .003239 -.000457 -.0004
+Vertex .003851 -.00349 -.000571
+Vertex .003831 -.006191 .000457
+Vertex .002275 -.004426 -.000125
+Vertex .002295 -.001725 -.001153
+Vertex .003131 -.003954 -.000144
+Vertex .001434 -.003499 .002712
+Vertex .002219 -.003797 .00234
+Vertex .001124 -.006458 .003236
+Vertex .00057 -.003866 .002221
+Vertex .001665 -.001205 .001325
+Vertex .002466 -.004581 .001332
+Vertex .001854 -.007222 .002263
+Vertex .000917 -.008345 .0026
+Vertex .000205 -.007292 .002144
+Vertex .000134 -.00468 .001164
+Vertex .000746 -.002038 .000233
+Vertex .001683 -.000916 -.000103
+Vertex .002395 -.001969 .000352
+Vertex .002033 -.005372 .000322
+Vertex .000938 -.008034 .001218
+Vertex .000384 -.005442 .000203
+Vertex .001479 -.00278 -.000693
+Vertex .001208 -.005428 .000476
+Vertex -.000745 -.003484 .002486
+Vertex -.000024 -.004027 .002266
+Vertex -.001539 -.006458 .002972
+Vertex -.001517 -.003606 .001846
+Vertex -.000002 -.001175 .00114
+Vertex .000225 -.004913 .001323
+Vertex -.000853 -.007467 .002152
+Vertex -.001917 -.008351 .002322
+Vertex -.002345 -.007046 .001733
+Vertex -.001886 -.004317 .00073
+Vertex -.000809 -.001762 -.0001
+Vertex .000256 -.000878 -.000269
+Vertex .000684 -.002183 .00032
+Vertex -.000145 -.005601 .000253
+Vertex -.00166 -.008032 .000959
+Vertex -.001638 -.005179 -.000167
+Vertex -.000123 -.002748 -.000873
+Vertex -.000925 -.005413 .000254
+Vertex -.002621 -.002498 .001242
+Vertex -.001838 -.003147 .001173
+Vertex -.003982 -.004595 .001269
+Vertex -.003409 -.002464 .000577
+Vertex -.001265 -.001016 .000482
+Vertex -.001519 -.004027 .000419
+Vertex -.003203 -.005675 .000688
+Vertex -.004551 -.006075 .000553
+Vertex -.004774 -.004992 .000093
+Vertex -.003741 -.003062 -.000424
+Vertex -.002057 -.001414 -.000694
+Vertex -.000709 -.001014 -.000558
+Vertex -.000486 -.002097 -.000098
+Vertex -.001856 -.004601 -.000545
+Vertex -.004 -.006049 -.000449
+Vertex -.003427 -.003919 -.001141
+Vertex -.001283 -.002471 -.001236
+Vertex -.002716 -.004244 -.000684
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 7 14 6
+Triangle 15 14 7
+Triangle 8 15 7
+Triangle 9 15 8
+Triangle 16 15 9
+Triangle 10 16 9
+Triangle 11 16 10
+Triangle 17 16 11
+Triangle 12 17 11
+Triangle 13 17 12
+Triangle 14 17 13
+Triangle 6 14 13
+Triangle 15 18 14
+Triangle 16 18 15
+Triangle 17 18 16
+Triangle 14 18 17
+Triangle 21 20 19
+Triangle 22 21 19
+Triangle 23 22 19
+Triangle 20 23 19
+Triangle 25 24 20
+Triangle 25 20 21
+Triangle 26 25 21
+Triangle 27 26 21
+Triangle 27 21 22
+Triangle 28 27 22
+Triangle 29 28 22
+Triangle 29 22 23
+Triangle 30 29 23
+Triangle 31 30 23
+Triangle 31 23 20
+Triangle 24 31 20
+Triangle 25 32 24
+Triangle 33 32 25
+Triangle 26 33 25
+Triangle 27 33 26
+Triangle 34 33 27
+Triangle 28 34 27
+Triangle 29 34 28
+Triangle 35 34 29
+Triangle 30 35 29
+Triangle 31 35 30
+Triangle 32 35 31
+Triangle 24 32 31
+Triangle 33 36 32
+Triangle 34 36 33
+Triangle 35 36 34
+Triangle 32 36 35
+Triangle 39 38 37
+Triangle 40 39 37
+Triangle 41 40 37
+Triangle 38 41 37
+Triangle 43 42 38
+Triangle 43 38 39
+Triangle 44 43 39
+Triangle 45 44 39
+Triangle 45 39 40
+Triangle 46 45 40
+Triangle 47 46 40
+Triangle 47 40 41
+Triangle 48 47 41
+Triangle 49 48 41
+Triangle 49 41 38
+Triangle 42 49 38
+Triangle 43 50 42
+Triangle 51 50 43
+Triangle 44 51 43
+Triangle 45 51 44
+Triangle 52 51 45
+Triangle 46 52 45
+Triangle 47 52 46
+Triangle 53 52 47
+Triangle 48 53 47
+Triangle 49 53 48
+Triangle 50 53 49
+Triangle 42 50 49
+Triangle 51 54 50
+Triangle 52 54 51
+Triangle 53 54 52
+Triangle 50 54 53
+Triangle 57 56 55
+Triangle 58 57 55
+Triangle 59 58 55
+Triangle 56 59 55
+Triangle 61 60 56
+Triangle 61 56 57
+Triangle 62 61 57
+Triangle 63 62 57
+Triangle 63 57 58
+Triangle 64 63 58
+Triangle 65 64 58
+Triangle 65 58 59
+Triangle 66 65 59
+Triangle 67 66 59
+Triangle 67 59 56
+Triangle 60 67 56
+Triangle 61 68 60
+Triangle 69 68 61
+Triangle 62 69 61
+Triangle 63 69 62
+Triangle 70 69 63
+Triangle 64 70 63
+Triangle 65 70 64
+Triangle 71 70 65
+Triangle 66 71 65
+Triangle 67 71 66
+Triangle 68 71 67
+Triangle 60 68 67
+Triangle 69 72 68
+Triangle 70 72 69
+Triangle 71 72 70
+Triangle 68 72 71
+ClumpEnd
+ProtoEnd
+ProtoBegin OBJ2
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.008629 .013087 -.001933
+Vertex -.009114 .01192 -.001724
+Vertex -.008426 .013122 .00071
+Vertex -.007352 .013141 -.001912
+Vertex -.008311 .012288 -.004581
+Vertex -.007318 .008884 -.001227
+Vertex -.007614 .010364 .001108
+Vertex -.006113 .010007 .002409
+Vertex -.005858 .011105 .001075
+Vertex -.004744 .010022 -.00135
+Vertex -.005815 .010404 -.004048
+Vertex -.006007 .00891 -.005033
+Vertex -.007572 .009656 -.003922
+Vertex -.005201 .005558 -.00075
+Vertex -.005204 .005946 .001161
+Vertex -.004621 .006504 .002392
+Vertex -.003909 .006845 .002997
+Vertex -.00318 .007083 .003032
+Vertex -.00258 .007073 .00114
+Vertex -.002493 .006853 -.00083
+Vertex -.002492 .00657 -.002772
+Vertex -.003111 .006027 -.004571
+Vertex -.003698 .005579 -.00432
+Vertex -.004442 .005398 -.004231
+Vertex -.005201 .005406 -.002647
+Vertex -.003194 .002228 -.000421
+Vertex -.002051 .001985 .002324
+Vertex -.00168 .003481 .002884
+Vertex -.000194 .002793 .002352
+Vertex -.000447 .003581 -.000354
+Vertex -.000183 .002134 -.002697
+Vertex -.001576 .002516 -.003557
+Vertex -.002083 .001296 -.002703
+Vertex -.000776 -.00114 -.000225
+Vertex .000642 -.000205 .002746
+Vertex .001114 .000045 .000008
+Vertex .00012 -.00041 -.002413
+Vertex -.000256 -.001087 -.000344
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 12 22 23
+Triangle 12 23 24
+Triangle 13 12 24
+Triangle 13 24 25
+Triangle 6 13 25
+Triangle 6 25 14
+Triangle 14 26 15
+Triangle 15 26 27
+Triangle 15 27 16
+Triangle 16 27 28
+Triangle 16 28 17
+Triangle 17 28 18
+Triangle 18 28 29
+Triangle 18 29 19
+Triangle 19 29 30
+Triangle 19 30 20
+Triangle 20 30 21
+Triangle 21 30 31
+Triangle 21 31 22
+Triangle 22 31 32
+Triangle 22 32 23
+Triangle 23 32 24
+Triangle 24 32 33
+Triangle 24 33 25
+Triangle 25 33 26
+Triangle 25 26 14
+Triangle 26 34 27
+Triangle 27 34 35
+Triangle 27 35 28
+Triangle 28 35 29
+Triangle 29 35 36
+Triangle 29 36 30
+Triangle 30 36 31
+Triangle 31 36 37
+Triangle 31 37 32
+Triangle 32 37 33
+Triangle 33 37 34
+Triangle 33 34 26
+Triangle 34 38 35
+Triangle 35 38 36
+Triangle 36 38 37
+Triangle 37 38 34
+ClumpEnd
+ProtoEnd
+ProtoBegin R_HAND
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .000251 -.00293 .002813
+Vertex .00182 -.003372 .002764
+Vertex -.000179 -.004927 .003493
+Vertex -.001376 -.003053 .002389
+Vertex .000637 -.001419 .001659
+Vertex .00329 -.004707 .001962
+Vertex .001676 -.006459 .003298
+Vertex -.000692 -.007774 .003415
+Vertex -.002436 -.006047 .002815
+Vertex -.003086 -.004068 .001214
+Vertex -.001429 -.001542 .000438
+Vertex .001074 0 -.000226
+Vertex .002764 -.001956 .000927
+Vertex .003497 -.005873 .00105
+Vertex .002747 -.007648 .001981
+Vertex .000787 -.009053 .002644
+Vertex -.000896 -.009281 .002671
+Vertex -.002396 -.008733 .002271
+Vertex -.003614 -.006999 .001231
+Vertex -.003528 -.005158 .000224
+Vertex -.002825 -.003436 -.000663
+Vertex -.001171 -.001607 -.001492
+Vertex .002784 -.001946 -.001061
+Vertex .003615 -.004079 .000088
+Vertex -.000901 -.009883 .001591
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 12 13
+Triangle 24 23 13
+Triangle 24 13 6
+Triangle 14 24 6
+Triangle 17 25 16
+Triangle 18 25 17
+ClumpEnd
+ProtoEnd
+ProtoBegin R_HAND_1
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex .001074 .004941 -.000549
+Vertex .003497 -.000931 .000726
+Vertex .002747 -.002707 .001657
+Vertex .000787 -.004111 .00232
+Vertex -.002396 -.003791 .001947
+Vertex -.003614 -.002057 .000908
+Vertex -.003528 -.000216 -.0001
+Vertex -.002825 .001506 -.000987
+Vertex -.001171 .003335 -.001816
+Vertex .000921 .003541 -.001737
+Vertex .002783 .002996 -.001385
+Vertex .003614 .000863 -.000236
+Vertex .003075 -.001893 -.000184
+Vertex .001405 -.004238 .000631
+Vertex -.000902 -.004941 .001268
+Vertex -.002705 -.003819 .000153
+Vertex -.003295 -.001244 -.000923
+Vertex -.001708 .000691 -.002154
+Vertex .000719 .002097 -.00232
+Vertex .002489 .000271 -.00167
+Vertex .001473 -.001868 -.000473
+Vertex -.000511 -.00329 .000346
+Vertex -.00172 -.001486 -.000794
+Vertex .00036 .000976 -.000703
+Vertex -.000104 -.001456 -.00043
+Triangle 10 9 1
+Triangle 11 10 1
+Triangle 3 13 2
+Triangle 14 13 3
+Triangle 4 14 3
+Triangle 15 14 4
+Triangle 16 15 5
+Triangle 6 16 5
+Triangle 17 16 6
+Triangle 7 17 6
+Triangle 8 17 7
+Triangle 18 17 8
+Triangle 9 18 8
+Triangle 19 18 9
+Triangle 10 19 9
+Triangle 11 19 10
+Triangle 20 19 11
+Triangle 12 20 11
+Triangle 13 20 12
+Triangle 2 13 12
+Triangle 14 21 13
+Triangle 22 21 14
+Triangle 15 22 14
+Triangle 16 22 15
+Triangle 23 22 16
+Triangle 17 23 16
+Triangle 18 23 17
+Triangle 24 23 18
+Triangle 19 24 18
+Triangle 20 24 19
+Triangle 21 24 20
+Triangle 13 21 20
+Triangle 22 25 21
+Triangle 23 25 22
+Triangle 24 25 23
+Triangle 21 25 24
+ClumpEnd
+ProtoEnd
+ProtoBegin RL_ARM
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.003445 -.01691 .000077
+Vertex -.001727 -.015698 .000079
+Vertex -.003307 -.016091 -.001469
+Vertex -.004888 -.016484 .000079
+Vertex -.003307 -.016091 .001627
+Vertex .000205 -.013222 .000022
+Vertex -.001193 -.015144 -.001977
+Vertex -.002956 -.01401 -.003074
+Vertex -.005274 -.016158 -.001977
+Vertex -.006117 -.014794 .000022
+Vertex -.005273 -.016155 .00202
+Vertex -.002955 -.014006 .003118
+Vertex -.001192 -.01514 .00202
+Vertex .001288 -.00749 .000022
+Vertex .000366 -.00786 -.001803
+Vertex .000104 -.007696 -.002317
+Vertex -.002008 -.008387 -.003284
+Vertex -.004167 -.008968 -.002226
+Vertex -.004684 -.009072 -.001658
+Vertex -.005257 -.009038 .000022
+Vertex -.004651 -.009043 .001754
+Vertex -.00403 -.008646 .002384
+Vertex -.001986 -.008262 .003283
+Vertex .000195 -.007807 .002155
+Vertex .00074 -.007507 .00169
+Vertex .002117 -.00189 .000022
+Vertex .001275 -.000517 -.001977
+Vertex -.001044 -.002676 -.003074
+Vertex -.002806 -.001531 -.001976
+Vertex -.004205 -.003462 .000022
+Vertex -.002806 -.001531 .00202
+Vertex -.001044 -.002675 .003118
+Vertex .001275 -.000516 .00202
+Vertex .00093 .000051 .000076
+Vertex -.00065 -.000342 -.001472
+Vertex -.002231 -.000735 .000076
+Vertex -.00065 -.000342 .001624
+Vertex -.000424 .001 .000076
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 15 26 14
+Triangle 27 26 15
+Triangle 16 27 15
+Triangle 28 27 16
+Triangle 17 28 16
+Triangle 18 28 17
+Triangle 29 28 18
+Triangle 19 29 18
+Triangle 30 29 19
+Triangle 20 30 19
+Triangle 21 30 20
+Triangle 31 30 21
+Triangle 22 31 21
+Triangle 32 31 22
+Triangle 23 32 22
+Triangle 24 32 23
+Triangle 33 32 24
+Triangle 25 33 24
+Triangle 26 33 25
+Triangle 14 26 25
+Triangle 27 34 26
+Triangle 35 34 27
+Triangle 28 35 27
+Triangle 29 35 28
+Triangle 36 35 29
+Triangle 30 36 29
+Triangle 31 36 30
+Triangle 37 36 31
+Triangle 32 37 31
+Triangle 33 37 32
+Triangle 34 37 33
+Triangle 26 34 33
+Triangle 35 38 34
+Triangle 36 38 35
+Triangle 37 38 36
+Triangle 34 38 37
+ClumpEnd
+ProtoEnd
+ProtoBegin RU_ARM
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.016348 -.015069 .000078
+Vertex -.01375 -.01467 .00008
+Vertex -.015633 -.014335 -.001468
+Vertex -.017515 -.013999 .00008
+Vertex -.015633 -.014335 .001628
+Vertex -.010049 -.013137 .000022
+Vertex -.012819 -.014373 -.001976
+Vertex -.013816 -.012467 -.003074
+Vertex -.017679 -.013507 -.001976
+Vertex -.017579 -.011794 .000022
+Vertex -.017676 -.013504 .00202
+Vertex -.013812 -.012464 .003118
+Vertex -.012816 -.01437 .00202
+Vertex -.004926 -.008046 .000022
+Vertex -.006124 -.007988 -.001803
+Vertex -.006274 -.007709 -.002317
+Vertex -.008906 -.007423 -.003283
+Vertex -.011509 -.007007 -.002226
+Vertex -.012108 -.006873 -.001657
+Vertex -.012667 -.00658 .000022
+Vertex -.012053 -.00686 .001754
+Vertex -.011144 -.006755 .002384
+Vertex -.008797 -.00731 .003283
+Vertex -.00626 -.007858 .002155
+Vertex -.005496 -.007814 .001691
+Vertex -.000155 -.002969 .000022
+Vertex -.000047 -.001249 -.001976
+Vertex -.00392 -.002298 -.003074
+Vertex -.004908 -.000383 -.001976
+Vertex -.007684 -.001627 .000022
+Vertex -.004907 -.000382 .002021
+Vertex -.003919 -.002297 .003118
+Vertex -.000047 -.001249 .002021
+Vertex 0 -.00054 .000076
+Vertex -.001882 -.000204 -.001472
+Vertex -.003765 .000131 .000076
+Vertex -.001882 -.000204 .001624
+Vertex -.00071 .001 .000076
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 15 26 14
+Triangle 27 26 15
+Triangle 16 27 15
+Triangle 28 27 16
+Triangle 17 28 16
+Triangle 18 28 17
+Triangle 29 28 18
+Triangle 19 29 18
+Triangle 30 29 19
+Triangle 20 30 19
+Triangle 21 30 20
+Triangle 31 30 21
+Triangle 22 31 21
+Triangle 32 31 22
+Triangle 23 32 22
+Triangle 24 32 23
+Triangle 33 32 24
+Triangle 25 33 24
+Triangle 26 33 25
+Triangle 14 26 25
+Triangle 27 34 26
+Triangle 35 34 27
+Triangle 28 35 27
+Triangle 29 35 28
+Triangle 36 35 29
+Triangle 30 36 29
+Triangle 31 36 30
+Triangle 37 36 31
+Triangle 32 37 31
+Triangle 33 37 32
+Triangle 34 37 33
+Triangle 26 34 33
+Triangle 35 38 34
+Triangle 36 38 35
+Triangle 37 38 36
+Triangle 34 38 37
+ClumpEnd
+ProtoEnd
+ProtoBegin L_FINGERS
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex -.003198 -.001987 .002078
+Vertex -.003863 -.001864 .001427
+Vertex -.003845 -.004564 .002456
+Vertex -.002404 -.002799 .001874
+Vertex -.002423 -.000098 .000846
+Vertex -.004012 -.002496 .000313
+Vertex -.004421 -.004922 .00121
+Vertex -.003986 -.006315 .001767
+Vertex -.002962 -.005858 .001657
+Vertex -.001949 -.003819 .000944
+Vertex -.00154 -.001392 .000047
+Vertex -.001975 0 -.00051
+Vertex -.002999 -.000457 -.0004
+Vertex -.003566 -.00349 -.000572
+Vertex -.003548 -.006191 .000457
+Vertex -.002107 -.004426 -.000125
+Vertex -.002126 -.001725 -.001153
+Vertex -.0029 -.003954 -.000145
+Vertex -.001327 -.003499 .002712
+Vertex -.002054 -.003796 .00234
+Vertex -.00104 -.006458 .003236
+Vertex -.000527 -.003866 .002221
+Vertex -.001542 -.001205 .001325
+Vertex -.002283 -.004581 .001332
+Vertex -.001716 -.007222 .002263
+Vertex -.000849 -.008345 .002599
+Vertex -.000189 -.007292 .002144
+Vertex -.000124 -.004679 .001164
+Vertex -.000691 -.002038 .000233
+Vertex -.001558 -.000916 -.000104
+Vertex -.002218 -.001969 .000352
+Vertex -.001882 -.005372 .000321
+Vertex -.000868 -.008033 .001218
+Vertex -.000355 -.005442 .000203
+Vertex -.00137 -.00278 -.000694
+Vertex -.001119 -.005428 .000475
+Vertex .000691 -.003484 .002486
+Vertex .000023 -.004027 .002266
+Vertex .001426 -.006458 .002972
+Vertex .001405 -.003606 .001846
+Vertex .000002 -.001174 .00114
+Vertex -.000208 -.004912 .001323
+Vertex .00079 -.007467 .002152
+Vertex .001776 -.008351 .002322
+Vertex .002173 -.007046 .001732
+Vertex .001748 -.004316 .000729
+Vertex .000749 -.001762 -.0001
+Vertex -.000237 -.000878 -.000269
+Vertex -.000633 -.002183 .00032
+Vertex .000135 -.005601 .000253
+Vertex .001538 -.008032 .000959
+Vertex .001517 -.005179 -.000167
+Vertex .000114 -.002748 -.000873
+Vertex .000857 -.005412 .000254
+Vertex .002428 -.002498 .001242
+Vertex .001703 -.003147 .001173
+Vertex .003689 -.004595 .001268
+Vertex .003158 -.002464 .000577
+Vertex .001172 -.001016 .000482
+Vertex .001407 -.004027 .000419
+Vertex .002967 -.005675 .000688
+Vertex .004216 -.006075 .000553
+Vertex .004422 -.004992 .000092
+Vertex .003465 -.003062 -.000424
+Vertex .001905 -.001414 -.000694
+Vertex .000657 -.001014 -.000559
+Vertex .00045 -.002096 -.000098
+Vertex .001719 -.004601 -.000545
+Vertex .003705 -.006049 -.00045
+Vertex .003174 -.003919 -.001141
+Vertex .001189 -.002471 -.001236
+Vertex .002516 -.004244 -.000685
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+Triangle 19 20 21
+Triangle 19 21 22
+Triangle 19 22 23
+Triangle 19 23 20
+Triangle 20 24 25
+Triangle 21 20 25
+Triangle 21 25 26
+Triangle 21 26 27
+Triangle 22 21 27
+Triangle 22 27 28
+Triangle 22 28 29
+Triangle 23 22 29
+Triangle 23 29 30
+Triangle 23 30 31
+Triangle 20 23 31
+Triangle 20 31 24
+Triangle 24 32 25
+Triangle 25 32 33
+Triangle 25 33 26
+Triangle 26 33 27
+Triangle 27 33 34
+Triangle 27 34 28
+Triangle 28 34 29
+Triangle 29 34 35
+Triangle 29 35 30
+Triangle 30 35 31
+Triangle 31 35 32
+Triangle 31 32 24
+Triangle 32 36 33
+Triangle 33 36 34
+Triangle 34 36 35
+Triangle 35 36 32
+Triangle 37 38 39
+Triangle 37 39 40
+Triangle 37 40 41
+Triangle 37 41 38
+Triangle 38 42 43
+Triangle 39 38 43
+Triangle 39 43 44
+Triangle 39 44 45
+Triangle 40 39 45
+Triangle 40 45 46
+Triangle 40 46 47
+Triangle 41 40 47
+Triangle 41 47 48
+Triangle 41 48 49
+Triangle 38 41 49
+Triangle 38 49 42
+Triangle 42 50 43
+Triangle 43 50 51
+Triangle 43 51 44
+Triangle 44 51 45
+Triangle 45 51 52
+Triangle 45 52 46
+Triangle 46 52 47
+Triangle 47 52 53
+Triangle 47 53 48
+Triangle 48 53 49
+Triangle 49 53 50
+Triangle 49 50 42
+Triangle 50 54 51
+Triangle 51 54 52
+Triangle 52 54 53
+Triangle 53 54 50
+Triangle 55 56 57
+Triangle 55 57 58
+Triangle 55 58 59
+Triangle 55 59 56
+Triangle 56 60 61
+Triangle 57 56 61
+Triangle 57 61 62
+Triangle 57 62 63
+Triangle 58 57 63
+Triangle 58 63 64
+Triangle 58 64 65
+Triangle 59 58 65
+Triangle 59 65 66
+Triangle 59 66 67
+Triangle 56 59 67
+Triangle 56 67 60
+Triangle 60 68 61
+Triangle 61 68 69
+Triangle 61 69 62
+Triangle 62 69 63
+Triangle 63 69 70
+Triangle 63 70 64
+Triangle 64 70 65
+Triangle 65 70 71
+Triangle 65 71 66
+Triangle 66 71 67
+Triangle 67 71 68
+Triangle 67 68 60
+Triangle 68 72 69
+Triangle 69 72 70
+Triangle 70 72 71
+Triangle 71 72 68
+ClumpEnd
+ProtoEnd
+ProtoBegin L_HAND
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000232 -.00293 .002813
+Vertex -.001686 -.003372 .002764
+Vertex .000167 -.004926 .003492
+Vertex .001275 -.003053 .002389
+Vertex -.000589 -.001419 .001658
+Vertex -.003047 -.004707 .001962
+Vertex -.001552 -.006459 .003298
+Vertex .000642 -.007774 .003414
+Vertex .002256 -.006046 .002815
+Vertex .002859 -.004068 .001214
+Vertex .001324 -.001542 .000438
+Vertex -.000994 0 -.000226
+Vertex -.00256 -.001956 .000926
+Vertex -.003239 -.005873 .001049
+Vertex -.002544 -.007648 .001981
+Vertex -.000729 -.009053 .002644
+Vertex .00083 -.009281 .002671
+Vertex .00222 -.008733 .002271
+Vertex .003348 -.006999 .001231
+Vertex .003268 -.005157 .000223
+Vertex .002617 -.003436 -.000663
+Vertex .001085 -.001607 -.001492
+Vertex -.002578 -.001946 -.001062
+Vertex -.003347 -.004079 .000088
+Vertex .000835 -.009883 .001591
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 13 12 23
+Triangle 13 23 24
+Triangle 6 13 24
+Triangle 6 24 14
+Triangle 16 25 17
+Triangle 17 25 18
+ClumpEnd
+ProtoEnd
+ProtoBegin L_HAND_1
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex -.000995 .004941 -.000549
+Vertex -.003239 -.000931 .000726
+Vertex -.002544 -.002707 .001657
+Vertex -.000729 -.004111 .00232
+Vertex .002219 -.003791 .001947
+Vertex .003348 -.002057 .000908
+Vertex .003268 -.000216 -.0001
+Vertex .002617 .001506 -.000987
+Vertex .001085 .003335 -.001816
+Vertex -.000853 .003541 -.001737
+Vertex -.002578 .002996 -.001385
+Vertex -.003348 .000863 -.000236
+Vertex -.002848 -.001893 -.000184
+Vertex -.001302 -.004238 .000631
+Vertex .000835 -.004941 .001268
+Vertex .002505 -.003819 .000153
+Vertex .003052 -.001244 -.000923
+Vertex .001581 .000691 -.002154
+Vertex -.000666 .002097 -.00232
+Vertex -.002306 .000271 -.00167
+Vertex -.001364 -.001868 -.000473
+Vertex .000474 -.00329 .000346
+Vertex .001593 -.001486 -.000794
+Vertex -.000334 .000976 -.000703
+Vertex .000096 -.001456 -.00043
+Triangle 1 9 10
+Triangle 1 10 11
+Triangle 2 13 3
+Triangle 3 13 14
+Triangle 3 14 4
+Triangle 4 14 15
+Triangle 5 15 16
+Triangle 5 16 6
+Triangle 6 16 17
+Triangle 6 17 7
+Triangle 7 17 8
+Triangle 8 17 18
+Triangle 8 18 9
+Triangle 9 18 19
+Triangle 9 19 10
+Triangle 10 19 11
+Triangle 11 19 20
+Triangle 11 20 12
+Triangle 12 20 13
+Triangle 12 13 2
+Triangle 13 21 14
+Triangle 14 21 22
+Triangle 14 22 15
+Triangle 15 22 16
+Triangle 16 22 23
+Triangle 16 23 17
+Triangle 17 23 18
+Triangle 18 23 24
+Triangle 18 24 19
+Triangle 19 24 20
+Triangle 20 24 21
+Triangle 20 21 13
+Triangle 21 25 22
+Triangle 22 25 23
+Triangle 23 25 24
+Triangle 24 25 21
+ClumpEnd
+ProtoEnd
+ProtoBegin LL_ARM
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .003339 -.016909 .000078
+Vertex .001747 -.015698 .00008
+Vertex .003211 -.016091 -.001468
+Vertex .004675 -.016484 .00008
+Vertex .003211 -.016091 .001628
+Vertex -.000042 -.013222 .000022
+Vertex .001253 -.015144 -.001976
+Vertex .002886 -.01401 -.003073
+Vertex .005032 -.016158 -.001976
+Vertex .005813 -.014794 .000022
+Vertex .005032 -.016155 .002021
+Vertex .002885 -.014006 .003118
+Vertex .001252 -.01514 .002021
+Vertex -.001045 -.007489 .000023
+Vertex -.000191 -.00786 -.001802
+Vertex .000051 -.007695 -.002317
+Vertex .002008 -.008387 -.003283
+Vertex .004007 -.008968 -.002225
+Vertex .004487 -.009071 -.001657
+Vertex .005017 -.009038 .000023
+Vertex .004456 -.009043 .001754
+Vertex .003881 -.008645 .002385
+Vertex .001988 -.008262 .003283
+Vertex -.000033 -.007806 .002156
+Vertex -.000537 -.007507 .001691
+Vertex -.001813 -.00189 .000023
+Vertex -.001033 -.000516 -.001976
+Vertex .001115 -.002676 -.003073
+Vertex .002747 -.001531 -.001976
+Vertex .004043 -.003461 .000023
+Vertex .002747 -.00153 .002021
+Vertex .001115 -.002675 .003119
+Vertex -.001033 -.000516 .002021
+Vertex -.000713 .000051 .000076
+Vertex .00075 -.000342 -.001472
+Vertex .002214 -.000735 .000076
+Vertex .00075 -.000342 .001624
+Vertex .000541 .001 .000076
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 12 22 23
+Triangle 12 23 24
+Triangle 13 12 24
+Triangle 13 24 25
+Triangle 6 13 25
+Triangle 6 25 14
+Triangle 14 26 15
+Triangle 15 26 27
+Triangle 15 27 16
+Triangle 16 27 28
+Triangle 16 28 17
+Triangle 17 28 18
+Triangle 18 28 29
+Triangle 18 29 19
+Triangle 19 29 30
+Triangle 19 30 20
+Triangle 20 30 21
+Triangle 21 30 31
+Triangle 21 31 22
+Triangle 22 31 32
+Triangle 22 32 23
+Triangle 23 32 24
+Triangle 24 32 33
+Triangle 24 33 25
+Triangle 25 33 26
+Triangle 25 26 14
+Triangle 26 34 27
+Triangle 27 34 35
+Triangle 27 35 28
+Triangle 28 35 29
+Triangle 29 35 36
+Triangle 29 36 30
+Triangle 30 36 31
+Triangle 31 36 37
+Triangle 31 37 32
+Triangle 32 37 33
+Triangle 33 37 34
+Triangle 33 34 26
+Triangle 34 38 35
+Triangle 35 38 36
+Triangle 36 38 37
+Triangle 37 38 34
+ClumpEnd
+ProtoEnd
+ProtoBegin R_STERNUM
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.00306 .017 -.002642
+Vertex -.003918 .016373 -.002526
+Vertex -.002983 .016921 -.000177
+Vertex -.00197 .016496 -.002523
+Vertex -.002938 .016079 -.005062
+Vertex -.003842 .012294 -.001834
+Vertex -.003547 .013863 .000304
+Vertex -.002148 .012852 .001229
+Vertex -.001203 .013906 .000382
+Vertex -.000369 .012413 -.001788
+Vertex -.00118 .013224 -.004382
+Vertex -.002086 .011757 -.004958
+Vertex -.003536 .01317 -.004378
+Vertex -.003295 .00813 -.001194
+Vertex -.003215 .008508 .000604
+Vertex -.002336 .008837 .001811
+Vertex -.001391 .008896 .002417
+Vertex -.000444 .008849 .00248
+Vertex .000352 .008621 .000738
+Vertex .000465 .008381 -.001106
+Vertex .00045 .008109 -.002928
+Vertex -.000412 .007811 -.004654
+Vertex -.001331 .007584 -.004471
+Vertex -.002276 .007688 -.004432
+Vertex -.003245 .007984 -.002982
+Vertex -.002882 .00403 -.000711
+Vertex -.00187 .003331 .001995
+Vertex -.000671 .004752 .003062
+Vertex .00068 .003429 .002142
+Vertex .001 .004323 -.000476
+Vertex .000686 .002778 -.002673
+Vertex -.000647 .003727 -.004041
+Vertex -.001938 .002648 -.002778
+Vertex -.002407 -.000075 -.00036
+Vertex -.000076 .000263 .002917
+Vertex .000801 .00021 .000014
+Vertex -.000283 -.000269 -.002174
+Vertex -.001419 -.000711 -.000345
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 12 22 23
+Triangle 12 23 24
+Triangle 13 12 24
+Triangle 13 24 25
+Triangle 6 13 25
+Triangle 6 25 14
+Triangle 14 26 15
+Triangle 15 26 27
+Triangle 15 27 16
+Triangle 16 27 28
+Triangle 16 28 17
+Triangle 17 28 18
+Triangle 18 28 29
+Triangle 18 29 19
+Triangle 19 29 30
+Triangle 19 30 20
+Triangle 20 30 21
+Triangle 21 30 31
+Triangle 21 31 22
+Triangle 22 31 32
+Triangle 22 32 23
+Triangle 23 32 24
+Triangle 24 32 33
+Triangle 24 33 25
+Triangle 25 33 26
+Triangle 25 26 14
+Triangle 26 34 27
+Triangle 27 34 35
+Triangle 27 35 28
+Triangle 28 35 29
+Triangle 29 35 36
+Triangle 29 36 30
+Triangle 30 36 31
+Triangle 31 36 37
+Triangle 31 37 32
+Triangle 32 37 33
+Triangle 33 37 34
+Triangle 33 34 26
+Triangle 34 38 35
+Triangle 35 38 36
+Triangle 36 38 37
+Triangle 37 38 34
+ClumpEnd
+ProtoEnd
+ProtoBegin LU_ARM
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .01494 -.015679 .000077
+Vertex .012567 -.015179 .000079
+Vertex .014287 -.014917 -.001469
+Vertex .016007 -.014655 .000079
+Vertex .014287 -.014917 .001627
+Vertex .009184 -.013501 .000022
+Vertex .011715 -.014846 -.001977
+Vertex .012626 -.012979 -.003074
+Vertex .016157 -.014169 -.001977
+Vertex .016065 -.012452 .000022
+Vertex .016154 -.014166 .00202
+Vertex .012623 -.012975 .003118
+Vertex .011712 -.014843 .00202
+Vertex .004502 -.008211 .000022
+Vertex .005597 -.008199 -.001803
+Vertex .005734 -.007926 -.002317
+Vertex .00814 -.007742 -.003284
+Vertex .010518 -.007428 -.002226
+Vertex .011066 -.007317 -.001658
+Vertex .011576 -.007046 .000022
+Vertex .011016 -.007302 .001754
+Vertex .010185 -.007162 .002384
+Vertex .00804 -.007625 .003283
+Vertex .005721 -.008075 .002155
+Vertex .005023 -.008 .00169
+Vertex .000141 -.002947 .000022
+Vertex .000043 -.001223 -.001977
+Vertex .003583 -.002423 -.003074
+Vertex .004485 -.000546 -.001976
+Vertex .007023 -.001899 .000022
+Vertex .004485 -.000546 .00202
+Vertex .003582 -.002422 .003118
+Vertex .000043 -.001223 .00202
+Vertex 0 -.000512 .000076
+Vertex .00172 -.00025 -.001472
+Vertex .003441 .000012 .000076
+Vertex .00172 -.00025 .001624
+Vertex .000649 .001 .000076
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 15
+Triangle 7 6 15
+Triangle 7 15 16
+Triangle 8 7 16
+Triangle 8 16 17
+Triangle 8 17 18
+Triangle 9 8 18
+Triangle 9 18 19
+Triangle 10 9 19
+Triangle 10 19 20
+Triangle 10 20 21
+Triangle 11 10 21
+Triangle 11 21 22
+Triangle 12 11 22
+Triangle 12 22 23
+Triangle 12 23 24
+Triangle 13 12 24
+Triangle 13 24 25
+Triangle 6 13 25
+Triangle 6 25 14
+Triangle 14 26 15
+Triangle 15 26 27
+Triangle 15 27 16
+Triangle 16 27 28
+Triangle 16 28 17
+Triangle 17 28 18
+Triangle 18 28 29
+Triangle 18 29 19
+Triangle 19 29 30
+Triangle 19 30 20
+Triangle 20 30 21
+Triangle 21 30 31
+Triangle 21 31 22
+Triangle 22 31 32
+Triangle 22 32 23
+Triangle 23 32 24
+Triangle 24 32 33
+Triangle 24 33 25
+Triangle 25 33 26
+Triangle 25 26 14
+Triangle 26 34 27
+Triangle 27 34 35
+Triangle 27 35 28
+Triangle 28 35 29
+Triangle 29 35 36
+Triangle 29 36 30
+Triangle 30 36 31
+Triangle 31 36 37
+Triangle 31 37 32
+Triangle 32 37 33
+Triangle 33 37 34
+Triangle 33 34 26
+Triangle 34 38 35
+Triangle 35 38 36
+Triangle 36 38 37
+Triangle 37 38 34
+ClumpEnd
+ProtoEnd
+ProtoBegin TAIL
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000047 -.001592 -.006084
+Vertex .001085 -.001386 -.006063
+Vertex -.000038 -.001385 -.000594
+Vertex -.001316 -.001203 -.006109
+Vertex -.000038 -.001376 -.011598
+Vertex .001499 -.000252 -.005986
+Vertex .001257 -.00023 -.000587
+Vertex -.000025 -.000068 .000644
+Vertex -.001304 .000123 -.000605
+Vertex -.0015 .000149 -.006123
+Vertex -.001304 .000132 -.011607
+Vertex -.000025 .000001 -.012644
+Vertex .001257 -.000221 -.011591
+Vertex .00127 .001109 -.006109
+Vertex -.000012 .001285 -.000609
+Vertex -.001141 .001305 -.006111
+Vertex -.000012 .001293 -.011615
+Vertex -.000002 .001592 -.006211
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+ClumpEnd
+ProtoEnd
+ProtoBegin TAIL2
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000047 -.001592 -.006084
+Vertex .001086 -.001385 -.006064
+Vertex -.000037 -.001384 -.000594
+Vertex -.001316 -.001202 -.006109
+Vertex -.000037 -.001375 -.011598
+Vertex .001499 -.000251 -.005986
+Vertex .001258 -.000229 -.000587
+Vertex -.000024 -.000067 .000643
+Vertex -.001303 .000124 -.000605
+Vertex -.0015 .000149 -.006123
+Vertex -.001303 .000132 -.011608
+Vertex -.000024 .000002 -.012644
+Vertex .001258 -.00022 -.011591
+Vertex .001271 .00111 -.006109
+Vertex -.000012 .001285 -.000609
+Vertex -.001141 .001305 -.006111
+Vertex -.000012 .001294 -.011615
+Vertex -.000002 .001592 -.006211
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+ClumpEnd
+ProtoEnd
+ProtoBegin TAIL4
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000047 -.001592 -.006084
+Vertex .001086 -.001385 -.006064
+Vertex -.000037 -.001384 -.000594
+Vertex -.001316 -.001202 -.006109
+Vertex -.000037 -.001376 -.011598
+Vertex .001499 -.000251 -.005986
+Vertex .001258 -.000229 -.000587
+Vertex -.000024 -.000067 .000643
+Vertex -.001303 .000124 -.000605
+Vertex -.0015 .000149 -.006123
+Vertex -.001303 .000132 -.011608
+Vertex -.000024 .000001 -.012644
+Vertex .001258 -.000221 -.011591
+Vertex .001271 .00111 -.006109
+Vertex -.000012 .001285 -.000609
+Vertex -.001141 .001305 -.006111
+Vertex -.000012 .001294 -.011615
+Vertex -.000002 .001592 -.006211
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+ClumpEnd
+ProtoEnd
+ProtoBegin TAIL3
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000047 -.001592 -.006084
+Vertex .001086 -.001385 -.006063
+Vertex -.000037 -.001384 -.000594
+Vertex -.001316 -.001202 -.006109
+Vertex -.000037 -.001375 -.011598
+Vertex .001499 -.000251 -.005986
+Vertex .001258 -.000229 -.000587
+Vertex -.000024 -.000067 .000644
+Vertex -.001303 .000124 -.000605
+Vertex -.0015 .000149 -.006123
+Vertex -.001303 .000132 -.011607
+Vertex -.000024 .000002 -.012644
+Vertex .001258 -.00022 -.011591
+Vertex .001271 .00111 -.006109
+Vertex -.000012 .001285 -.000609
+Vertex -.001141 .001305 -.006111
+Vertex -.000012 .001294 -.011615
+Vertex -.000002 .001592 -.006211
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+ClumpEnd
+ProtoEnd
+ProtoBegin NECK2
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000047 -.002 -.005083
+Vertex .001086 -.001793 -.005063
+Vertex -.000037 -.001792 .000406
+Vertex -.001316 -.00161 -.005109
+Vertex -.000037 -.001784 -.010597
+Vertex .001499 -.000659 -.004986
+Vertex .001258 -.000637 .000413
+Vertex -.000024 -.000475 .001644
+Vertex -.001303 -.000284 .000396
+Vertex -.0015 -.000259 -.005123
+Vertex -.001303 -.000276 -.010607
+Vertex -.000024 -.000407 -.011643
+Vertex .001258 -.000629 -.010591
+Vertex .001271 .000702 -.005108
+Vertex -.000012 .000877 .000391
+Vertex -.001141 .000897 -.00511
+Vertex -.000012 .000886 -.010614
+Vertex -.000002 .001184 -.00521
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+ClumpEnd
+ProtoEnd
+ProtoBegin NECK
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex -.000047 -.001 -.006083
+Vertex .001086 -.000793 -.006063
+Vertex -.000037 -.000792 -.000593
+Vertex -.001316 -.00061 -.006109
+Vertex -.000037 -.000783 -.011597
+Vertex .001499 .000341 -.005985
+Vertex .001258 .000363 -.000587
+Vertex -.000024 .000525 .000644
+Vertex -.001303 .000716 -.000604
+Vertex -.0015 .000741 -.006123
+Vertex -.001303 .000724 -.011607
+Vertex -.000024 .000594 -.012643
+Vertex .001258 .000372 -.01159
+Vertex .001271 .001702 -.006108
+Vertex -.000012 .001877 -.000608
+Vertex -.001141 .001897 -.00611
+Vertex -.000012 .001886 -.011614
+Vertex -.000002 .002184 -.00621
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+ClumpEnd
+ProtoEnd
+ProtoBegin PELVIS_1
+ClumpBegin
+Color .75 .5 .5
+Ambient .45
+Diffuse .75
+LightSampling Vertex
+Vertex 0 -.001582 0
+Vertex -.001463 -.001119 0
+Vertex 0 -.001119 .001034
+Vertex .001463 -.001119 0
+Vertex 0 -.001119 -.001034
+Vertex -.002069 0 0
+Vertex -.001463 0 .001034
+Vertex 0 0 .001462
+Vertex .001463 0 .001034
+Vertex .002069 0 0
+Vertex .001463 0 -.001034
+Vertex 0 0 -.001462
+Vertex -.001463 0 -.001034
+Vertex -.001463 .001119 0
+Vertex 0 .001119 .001034
+Vertex .001463 .001119 0
+Vertex 0 .001119 -.001034
+Vertex 0 .001582 0
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 7 14 6
+Triangle 15 14 7
+Triangle 8 15 7
+Triangle 9 15 8
+Triangle 16 15 9
+Triangle 10 16 9
+Triangle 11 16 10
+Triangle 17 16 11
+Triangle 12 17 11
+Triangle 13 17 12
+Triangle 14 17 13
+Triangle 6 14 13
+Triangle 15 18 14
+Triangle 16 18 15
+Triangle 17 18 16
+Triangle 14 18 17
+ClumpEnd
+ProtoEnd
+ProtoBegin L_STERNUM
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .002566 .017 -.002642
+Vertex .003531 .016374 -.002526
+Vertex .002479 .016922 -.000177
+Vertex .00134 .016496 -.002523
+Vertex .002428 .01608 -.005062
+Vertex .003445 .012295 -.001834
+Vertex .003113 .013864 .000304
+Vertex .00154 .012852 .001229
+Vertex .000477 .013907 .000382
+Vertex -.000461 .012414 -.001788
+Vertex .000451 .013225 -.004382
+Vertex .001471 .011758 -.004958
+Vertex .003101 .013171 -.004378
+Vertex .00283 .008131 -.001194
+Vertex .00274 .008509 .000604
+Vertex .001751 .008837 .001811
+Vertex .000689 .008897 .002417
+Vertex -.000376 .008849 .00248
+Vertex -.001272 .008622 .000738
+Vertex -.001398 .008382 -.001106
+Vertex -.001382 .00811 -.002928
+Vertex -.000412 .007811 -.004654
+Vertex .000621 .007584 -.004471
+Vertex .001684 .007688 -.004432
+Vertex .002773 .007985 -.002982
+Vertex .002366 .00403 -.000711
+Vertex .001227 .003332 .001995
+Vertex -.000121 .004752 .003062
+Vertex -.00164 .003429 .002142
+Vertex -.002 .004323 -.000476
+Vertex -.001647 .002779 -.002673
+Vertex -.000148 .003728 -.004041
+Vertex .001304 .002649 -.002778
+Vertex .001831 -.000075 -.00036
+Vertex -.00079 .000264 .002917
+Vertex -.001777 .000211 .000014
+Vertex -.000557 -.000268 -.002174
+Vertex .00072 -.000711 -.000345
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 15 26 14
+Triangle 27 26 15
+Triangle 16 27 15
+Triangle 28 27 16
+Triangle 17 28 16
+Triangle 18 28 17
+Triangle 29 28 18
+Triangle 19 29 18
+Triangle 30 29 19
+Triangle 20 30 19
+Triangle 21 30 20
+Triangle 31 30 21
+Triangle 22 31 21
+Triangle 32 31 22
+Triangle 23 32 22
+Triangle 24 32 23
+Triangle 33 32 24
+Triangle 25 33 24
+Triangle 26 33 25
+Triangle 14 26 25
+Triangle 27 34 26
+Triangle 35 34 27
+Triangle 28 35 27
+Triangle 29 35 28
+Triangle 36 35 29
+Triangle 30 36 29
+Triangle 31 36 30
+Triangle 37 36 31
+Triangle 32 37 31
+Triangle 33 37 32
+Triangle 34 37 33
+Triangle 26 34 33
+Triangle 35 38 34
+Triangle 36 38 35
+Triangle 37 38 36
+Triangle 34 38 37
+ClumpEnd
+ProtoEnd
+ProtoBegin OBJ
+ClumpBegin
+Color .96875 .984375 .5
+Surface .3 .5 .2
+LightSampling Vertex
+Vertex .012868 .009418 -.001982
+Vertex .013034 .008427 -.001822
+Vertex .012718 .009587 .000648
+Vertex .011552 .009833 -.00194
+Vertex .012395 .00887 -.004649
+Vertex .010422 .005906 -.001276
+Vertex .011133 .007236 .001052
+Vertex .009416 .007324 .002381
+Vertex .009429 .00845 .001051
+Vertex .007939 .007735 -.001354
+Vertex .0092 .00779 -.004071
+Vertex .009016 .006303 -.005058
+Vertex .010902 .006568 -.003976
+Vertex .007261 .003319 -.000756
+Vertex .007367 .003691 .001153
+Vertex .00688 .004398 .002395
+Vertex .006199 .004933 .003011
+Vertex .005473 .005377 .003059
+Vertex .00482 .005543 .001177
+Vertex .004667 .005356 -.000791
+Vertex .004593 .005085 -.002733
+Vertex .005121 .004381 -.004542
+Vertex .005637 .003777 -.004301
+Vertex .006398 .003385 -.004224
+Vertex .007222 .003172 -.002653
+Vertex .004213 .0007 -.000387
+Vertex .002908 .000802 .002378
+Vertex .002899 .002352 .002942
+Vertex .001107 .002128 .002437
+Vertex .001588 .002811 -.000275
+Vertex .000921 .001496 -.002611
+Vertex .002532 .001453 -.003496
+Vertex .002763 .000129 -.002648
+Vertex .000705 -.001833 -.000144
+Vertex -.000587 -.000514 .00285
+Vertex -.001034 -.000134 .00012
+Vertex -.000075 -.000866 -.002318
+Vertex .000155 -.001628 -.000254
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 15 14 6
+Triangle 15 6 7
+Triangle 16 15 7
+Triangle 16 7 8
+Triangle 17 16 8
+Triangle 18 17 8
+Triangle 18 8 9
+Triangle 19 18 9
+Triangle 19 9 10
+Triangle 20 19 10
+Triangle 21 20 10
+Triangle 21 10 11
+Triangle 22 21 11
+Triangle 22 11 12
+Triangle 23 22 12
+Triangle 24 23 12
+Triangle 24 12 13
+Triangle 25 24 13
+Triangle 25 13 6
+Triangle 14 25 6
+Triangle 15 26 14
+Triangle 27 26 15
+Triangle 16 27 15
+Triangle 28 27 16
+Triangle 17 28 16
+Triangle 18 28 17
+Triangle 29 28 18
+Triangle 19 29 18
+Triangle 30 29 19
+Triangle 20 30 19
+Triangle 21 30 20
+Triangle 31 30 21
+Triangle 22 31 21
+Triangle 32 31 22
+Triangle 23 32 22
+Triangle 24 32 23
+Triangle 33 32 24
+Triangle 25 33 24
+Triangle 26 33 25
+Triangle 14 26 25
+Triangle 27 34 26
+Triangle 35 34 27
+Triangle 28 35 27
+Triangle 29 35 28
+Triangle 36 35 29
+Triangle 30 36 29
+Triangle 31 36 30
+Triangle 37 36 31
+Triangle 32 37 31
+Triangle 33 37 32
+Triangle 34 37 33
+Triangle 26 34 33
+Triangle 35 38 34
+Triangle 36 38 35
+Triangle 37 38 36
+Triangle 34 38 37
+ClumpEnd
+ProtoEnd
+ProtoBegin HEAD_4
+ClumpBegin
+Color .1875 .1875 .1875
+Surface .3 1 .2
+LightSampling Vertex
+Vertex 0 -.000918 0
+Vertex -.000927 -.000649 0
+Vertex 0 -.000649 .000427
+Vertex .000927 -.000649 0
+Vertex 0 -.000649 -.000427
+Vertex -.00131 0 0
+Vertex -.000927 0 .000427
+Vertex 0 0 .000604
+Vertex .000927 0 .000427
+Vertex .00131 0 0
+Vertex .000927 0 -.000427
+Vertex 0 0 -.000604
+Vertex -.000927 0 -.000427
+Vertex -.000927 .000649 0
+Vertex 0 .000649 .000427
+Vertex .000927 .000649 0
+Vertex 0 .000649 -.000427
+Vertex 0 .000918 0
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 7 14 6
+Triangle 15 14 7
+Triangle 8 15 7
+Triangle 9 15 8
+Triangle 16 15 9
+Triangle 10 16 9
+Triangle 11 16 10
+Triangle 17 16 11
+Triangle 12 17 11
+Triangle 13 17 12
+Triangle 14 17 13
+Triangle 6 14 13
+Triangle 15 18 14
+Triangle 16 18 15
+Triangle 17 18 16
+Triangle 14 18 17
+ClumpEnd
+ProtoEnd
+ProtoBegin HEAD_5
+ClumpBegin
+Color .1875 .1875 .1875
+Surface .3 1 .2
+LightSampling Vertex
+Vertex 0 -.000883 0
+Vertex -.000891 -.000624 0
+Vertex 0 -.000624 .000411
+Vertex .000891 -.000624 0
+Vertex 0 -.000624 -.000411
+Vertex -.00126 0 0
+Vertex -.000891 0 .000411
+Vertex 0 0 .000581
+Vertex .000891 0 .000411
+Vertex .00126 0 0
+Vertex .000891 0 -.000411
+Vertex 0 0 -.000581
+Vertex -.000891 0 -.000411
+Vertex -.000891 .000624 0
+Vertex 0 .000624 .000411
+Vertex .000891 .000624 0
+Vertex 0 .000624 -.000411
+Vertex 0 .000883 0
+Triangle 3 2 1
+Triangle 4 3 1
+Triangle 5 4 1
+Triangle 2 5 1
+Triangle 7 6 2
+Triangle 7 2 3
+Triangle 8 7 3
+Triangle 9 8 3
+Triangle 9 3 4
+Triangle 10 9 4
+Triangle 11 10 4
+Triangle 11 4 5
+Triangle 12 11 5
+Triangle 13 12 5
+Triangle 13 5 2
+Triangle 6 13 2
+Triangle 7 14 6
+Triangle 15 14 7
+Triangle 8 15 7
+Triangle 9 15 8
+Triangle 16 15 9
+Triangle 10 16 9
+Triangle 11 16 10
+Triangle 17 16 11
+Triangle 12 17 11
+Triangle 13 17 12
+Triangle 14 17 13
+Triangle 6 14 13
+Triangle 15 18 14
+Triangle 16 18 15
+Triangle 17 18 16
+Triangle 14 18 17
+ClumpEnd
+ProtoEnd
+ProtoBegin HEAD_6
+ClumpBegin
+Surface .3 .6 .2
+LightSampling Vertex
+Vertex -.00006 .000516 -.000483
+Vertex .002858 .001202 .000254
+Vertex -.000092 .000227 -.001083
+Vertex -.002751 -.000817 -.000345
+Vertex -.000046 .000612 .000335
+Vertex .003404 .001121 .000634
+Vertex .002769 .000783 -.000226
+Vertex -.000118 -.000091 -.001108
+Vertex -.00301 -.001258 -.000888
+Vertex -.003404 -.001336 -.000083
+Vertex -.002865 -.000808 .000506
+Vertex .00013 .000628 .000791
+Vertex .003029 .001336 .001108
+Vertex .003211 .000925 .000761
+Vertex .000189 -.000012 -.000657
+Vertex -.002971 -.001298 .0001
+Vertex .000382 .000446 .000753
+Vertex .000313 .000137 .000155
+Triangle 1 2 3
+Triangle 1 3 4
+Triangle 1 4 5
+Triangle 1 5 2
+Triangle 2 6 7
+Triangle 3 2 7
+Triangle 3 7 8
+Triangle 3 8 9
+Triangle 4 3 9
+Triangle 4 9 10
+Triangle 4 10 11
+Triangle 5 4 11
+Triangle 5 11 12
+Triangle 5 12 13
+Triangle 2 5 13
+Triangle 2 13 6
+Triangle 6 14 7
+Triangle 7 14 15
+Triangle 7 15 8
+Triangle 8 15 9
+Triangle 9 15 16
+Triangle 9 16 10
+Triangle 10 16 11
+Triangle 11 16 17
+Triangle 11 17 12
+Triangle 12 17 13
+Triangle 13 17 14
+Triangle 13 14 6
+Triangle 14 18 15
+Triangle 15 18 16
+Triangle 16 18 17
+Triangle 17 18 14
+ClumpEnd
+ProtoEnd
+ClumpBegin
+TransformBegin
+Translate .000225 -.047207 -.010605
+ClumpBegin
+Tag 1
+ProtoInstance PELVIS
+TransformBegin
+Translate .000277 -.014921 .014162
+ClumpBegin
+ProtoInstance PELVIS_1
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.010178 -.015284 .000673
+ClumpBegin
+Tag 15
+ProtoInstance RU_LEG
+TransformBegin
+Translate -.006598 -.008054 -.000051
+ClumpBegin
+Tag 16
+ProtoInstance RL_LEG
+TransformBegin
+Translate .000291 -.014005 -.002085
+ClumpBegin
+Tag 17
+ProtoInstance R_FOOT
+TransformBegin
+Translate 0 -.003485 .00369
+ClumpBegin
+ProtoInstance R_FOOT_1
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .000476 -.003904 .005035
+ClumpBegin
+Tag 18
+ProtoInstance R_TOES
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .010294 -.014303 .000066
+ClumpBegin
+Tag 19
+ProtoInstance LU_LEG
+TransformBegin
+Translate .006597 -.008053 -.000063
+ClumpBegin
+Tag 20
+ProtoInstance LL_LEG
+TransformBegin
+Translate -.000339 -.014005 -.002084
+ClumpBegin
+Tag 21
+ProtoInstance L_FOOT
+TransformBegin
+Translate 0 -.003485 .003689
+ClumpBegin
+ProtoInstance L_FOOT_1
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.000443 -.003904 .005034
+ClumpBegin
+Tag 22
+ProtoInstance L_TOES
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.00042 -.018088 -.009635
+ClumpBegin
+Tag 24
+ProtoInstance TAIL
+TransformBegin
+Translate -.00009 .00002 -.011117
+ClumpBegin
+Tag 25
+ProtoInstance TAIL2
+TransformBegin
+Translate 0 0 -.010812
+ClumpBegin
+Tag 26
+ProtoInstance TAIL3
+TransformBegin
+Translate -.00009 .000021 -.011117
+ClumpBegin
+Tag 27
+ProtoInstance TAIL4
+TransformBegin
+Translate .00009 -.000613 -.010898
+ClumpBegin
+Tag 3
+ProtoInstance NECK
+TransformBegin
+Translate -.00009 .001021 -.012117
+ClumpBegin
+Tag 23
+ProtoInstance NECK2
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.000225 .020497 .000605
+ClumpBegin
+Tag 4
+ProtoInstance HEAD
+TransformBegin
+Translate .000562 .005218 .012874
+ClumpBegin
+ProtoInstance HEAD_2
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .00774 .029045 .009038
+ClumpBegin
+ProtoInstance HEAD_1
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.006843 .029171 .009311
+ClumpBegin
+ProtoInstance HEAD_6
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .001814 .018202 .017365
+ClumpBegin
+ProtoInstance HEAD_5
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.000928 .018173 .01734
+ClumpBegin
+ProtoInstance HEAD_4
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .000556 .012736 .018917
+ClumpBegin
+ProtoInstance HEAD_3
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.009845 .02954 -.003284
+ClumpBegin
+Tag 5
+ProtoInstance R_STERNUM
+TransformBegin
+Translate -.002898 .015805 -.002775
+ClumpBegin
+Tag 29
+ProtoInstance OBJ2
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .011534 .029539 -.003287
+ClumpBegin
+Tag 10
+ProtoInstance L_STERNUM
+TransformBegin
+Translate .002149 .016414 -.002859
+ClumpBegin
+Tag 28
+ProtoInstance OBJ
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.008461 .015228 .002269
+ClumpBegin
+Tag 6
+ProtoInstance RU_ARM
+TransformBegin
+Translate -.01494 -.011826 -.000134
+ClumpBegin
+Tag 7
+ProtoInstance RL_ARM
+TransformBegin
+Translate -.003832 -.012672 .000048
+ClumpBegin
+Tag 8
+ProtoInstance R_HAND
+TransformBegin
+Translate 0 -.004942 .000324
+ClumpBegin
+ProtoInstance R_HAND_1
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate -.001515 -.005497 .001862
+ClumpBegin
+Tag 9
+ProtoInstance R_FINGERS
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .008359 .016457 .002037
+ClumpBegin
+Tag 11
+ProtoInstance LU_ARM
+TransformBegin
+Translate .013764 -.012763 -.000135
+ClumpBegin
+Tag 12
+ProtoInstance LL_ARM
+TransformBegin
+Translate .003697 -.012672 .000049
+ClumpBegin
+Tag 13
+ProtoInstance L_HAND
+TransformBegin
+Translate 0 -.004942 .000323
+ClumpBegin
+ProtoInstance L_HAND_1
+ClumpEnd
+TransformEnd
+TransformBegin
+Translate .001403 -.005497 .001862
+ClumpBegin
+Tag 14
+ProtoInstance L_FINGERS
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+TransformEnd
+ClumpEnd
+ModelEnd

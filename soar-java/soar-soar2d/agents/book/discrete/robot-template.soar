@@ -1,3 +1,0 @@
-pushd robot-template
-source robot-template_source.soar
-popd

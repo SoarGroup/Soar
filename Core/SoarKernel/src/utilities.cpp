@@ -7,11 +7,14 @@
 
 /* utilities.cpp */
 
+#include "misc.h"
+
 #include "stl_support.h"
 #include "utilities.h"
 #include "gdatastructs.h"
 #include "wmem.h"
 #include "print.h"
+#include "xml.h"
 
 #include <time.h>
 
@@ -230,139 +233,8 @@ Symbol *read_identifier_or_context_variable (agent* agnt)
 	return NIL;
 }		
 
-/* ===================================================================
-
-                       Timer Utility Routines
-
-   These are utility routines for using timers.  We use (struct timeval)'s
-   (defined in a system include file) for keeping track of the cumulative
-   time spent in one part of the system or another.  Reset_timer()
-   clears a timer to 0.  Start_timer() and stop_timer() are used for
-   timing an interval of code--the usage is:
-   
-     start_timer (&timeval_to_record_the_start_time_in); 
-     ... other code here ...
-     stop_timer (&timeval_to_record_the_start_time_in,
-                 &timeval_holding_accumulated_time_for_this_code);
-
-   Finally, timer_value() returns the accumulated value of a timer
-   (in seconds).
-=================================================================== */
-#define ONE_MILLION (1000000)
-
-double timer_value (struct timeval *tv) {
-  return tv->tv_sec + tv->tv_usec/static_cast<double>(ONE_MILLION);
-}
-
-void reset_timer (struct timeval *tv_to_reset) {
-  tv_to_reset->tv_sec = 0;
-  tv_to_reset->tv_usec = 0;
-}
-
-#ifndef NO_TIMING_STUFF
-
-#ifdef WIN32
-
-/* A fake implementation of rusage for WIN32. Taken from cygwin. */
-#define RUSAGE_SELF 0
-struct rusage {
-   struct timeval ru_utime;
-   struct timeval ru_stime;
-};
-#define NSPERSEC 10000000LL
-#define FACTOR (0x19db1ded53e8000LL)
-
-static uint64_t
-__to_clock_t (FILETIME * src, int flag)
-{
-  uint64_t total = (static_cast<uint64_t>(src->dwHighDateTime) << 32) + static_cast<uint32_t>(src->dwLowDateTime);
-
-  /* Convert into clock ticks - the total is in 10ths of a usec.  */
-  if (flag)
-    total -= FACTOR;
-  
-  total /= NSPERSEC / CLOCKS_PER_SEC;
-  return total;
-}
-static void totimeval (struct timeval *dst, FILETIME *src, int sub, int flag)
-{
-  uint64_t x = __to_clock_t (src, flag);
-
-  x *= ONE_MILLION / CLOCKS_PER_SEC; /* Turn x into usecs */
-  x -= sub * ONE_MILLION;
-  
-  dst->tv_usec = static_cast<long>(x % ONE_MILLION); /* And split */
-  dst->tv_sec = static_cast<long>(x / ONE_MILLION);
-}
-
-int getrusage(int /*who*/, struct rusage* r)
-{
-   FILETIME creation_time = {0,0};
-   FILETIME exit_time = {0,0};
-   FILETIME kernel_time = {0,0};
-   FILETIME user_time = {0,0};
-
-   memset (r, 0, sizeof (*r));
-   GetProcessTimes (GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time);
-   totimeval (&r->ru_stime, &kernel_time, 0, 0);
-   totimeval (&r->ru_utime, &user_time, 0, 0);
-   return 0;
-}
-#endif // WIN32
-
-void get_cputime_from_rusage (struct rusage *r, struct timeval *dest_tv) {
-  dest_tv->tv_sec = r->ru_utime.tv_sec + r->ru_stime.tv_sec;
-  dest_tv->tv_usec = r->ru_utime.tv_usec + r->ru_stime.tv_usec;
-  if (dest_tv->tv_usec >= ONE_MILLION) {
-    dest_tv->tv_usec -= ONE_MILLION;
-    dest_tv->tv_sec++;
-  }
-}
-
-void start_timer (agent* thisAgent, struct timeval *tv_for_recording_start_time) {
-
-    if(thisAgent && !thisAgent->sysparams[TIMERS_ENABLED]) {
-        return;
-    }
-    struct rusage temp_rusage;
- 
-    getrusage (RUSAGE_SELF, &temp_rusage);
-    get_cputime_from_rusage (&temp_rusage, tv_for_recording_start_time);
-}
-
-void stop_timer (agent* thisAgent,
-struct timeval *tv_with_recorded_start_time,
-struct timeval *tv_with_accumulated_time) {
-
-    if(thisAgent && !thisAgent->sysparams[TIMERS_ENABLED]) {
-        return;
-    }
-
-    struct rusage end_rusage;
-    struct timeval end_tv;
-    long delta_sec, delta_usec;
- 
-    getrusage (RUSAGE_SELF, &end_rusage);
-    get_cputime_from_rusage (&end_rusage, &end_tv);
-
-    delta_sec = end_tv.tv_sec - tv_with_recorded_start_time->tv_sec;
-    delta_usec = end_tv.tv_usec - tv_with_recorded_start_time->tv_usec;
-    if (delta_usec < 0) {
-        delta_usec += ONE_MILLION;
-        delta_sec--;
-    }
-
-    tv_with_accumulated_time->tv_sec += delta_sec;
-    tv_with_accumulated_time->tv_usec += delta_usec;
-    if (tv_with_accumulated_time->tv_usec >= ONE_MILLION) {
-        tv_with_accumulated_time->tv_usec -= ONE_MILLION;
-        tv_with_accumulated_time->tv_sec++;
-    }
-}
-#endif // NO_TIMING_STUFF
-
 #ifdef REAL_TIME_BEHAVIOR
-/* RMJ */
+* RMJ */
 void init_real_time (agent* thisAgent) {
    thisAgent->real_time_tracker =
          (struct timeval *) malloc(sizeof(struct timeval));
@@ -402,7 +274,7 @@ void test_for_input_delay (agent* thisAgent) {
 #endif // REAL_TIME_BEHAVIOR
 
 #ifdef ATTENTION_LAPSE
-/* RMJ */
+* RMJ */
 
 void init_attention_lapse (void) {
    thisAgent->attention_lapse_tracker =
@@ -448,7 +320,7 @@ void determine_lapsing (agent* thisAgent) {
       }
    }
 }
-/* RMJ;
+* RMJ;
    When doing attentional lapsing, we need a function that determines
    when (and for how long) attentional lapses should occur.  This
    will normally be provided as a user-defined TCL procedure.  But
@@ -495,3 +367,116 @@ double get_number_from_symbol( Symbol *sym )
 	
 	return 0.0;
 }
+
+
+
+
+
+
+void stats_init_db( agent *my_agent )
+{
+	if ( my_agent->stats_db->get_status() != soar_module::disconnected )
+		return;
+
+	const char *db_path = ":memory:";
+	//const char *db_path = "C:\\Users\\voigtjr\\Desktop\\stats_debug.db";
+
+	// attempt connection
+	my_agent->stats_db->connect( db_path );
+
+	if ( my_agent->stats_db->get_status() == soar_module::problem )
+	{
+		char buf[256];
+		SNPRINTF( buf, 254, "DB ERROR: %s", my_agent->stats_db->get_errmsg() );
+
+		print( my_agent, buf );
+		xml_generate_warning( my_agent, buf );
+	}
+	else
+	{
+		// setup common structures/queries
+		my_agent->stats_stmts = new stats_statement_container( my_agent );
+		my_agent->stats_stmts->structure();
+		my_agent->stats_stmts->prepare();
+	}
+}
+
+
+void stats_db_store(agent* my_agent, const unsigned long& dc_time, const unsigned long& dc_wm_changes, const unsigned long& dc_firing_counts) 
+{
+	if ( my_agent->stats_db->get_status() == soar_module::disconnected )
+	{
+		stats_init_db( my_agent );
+	}
+
+	my_agent->stats_stmts->insert->bind_int(1, my_agent->d_cycle_count);
+	my_agent->stats_stmts->insert->bind_int(2, dc_time);
+	my_agent->stats_stmts->insert->bind_int(3, dc_wm_changes);
+	my_agent->stats_stmts->insert->bind_int(4, dc_firing_counts);
+
+	my_agent->stats_stmts->insert->execute( soar_module::op_reinit ); // makes it ready for next execution
+}
+
+stats_statement_container::stats_statement_container( agent *new_agent ): soar_module::sqlite_statement_container( new_agent->stats_db )
+{
+	soar_module::sqlite_database *new_db = new_agent->stats_db;
+
+	//
+
+	add_structure( "CREATE TABLE IF NOT EXISTS stats (dc INTEGER PRIMARY KEY, time INTEGER, wm_changes INTEGER, firing_count INTEGER)" );
+	add_structure( "CREATE INDEX IF NOT EXISTS stats_time ON stats (time)" );
+	add_structure( "CREATE INDEX IF NOT EXISTS stats_wm_changes ON stats (wm_changes)" );
+	add_structure( "CREATE INDEX IF NOT EXISTS stats_firing_count ON stats (firing_count)" );
+
+	//
+
+	insert = new soar_module::sqlite_statement( new_db, "INSERT INTO stats (dc, time, wm_changes, firing_count) VALUES (?,?,?,?)" );
+	add( insert );
+
+	cache5 = new soar_module::sqlite_statement( new_db, "PRAGMA cache_size = 5000" );
+	add( cache5 );
+
+	cache20 = new soar_module::sqlite_statement( new_db, "PRAGMA cache_size = 20000" );
+	add( cache20 );
+
+	cache100 = new soar_module::sqlite_statement( new_db, "PRAGMA cache_size = 100000" );
+	add( cache100 );
+
+	sel_dc_inc = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY dc" );
+	add( sel_dc_inc );
+
+	sel_dc_dec = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY dc DESC" );
+	add( sel_dc_dec );
+
+	sel_time_inc = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY time" );
+	add( sel_time_inc );
+
+	sel_time_dec = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY time DESC" );
+	add( sel_time_dec );
+
+	sel_wm_changes_inc = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY wm_changes" );
+	add( sel_wm_changes_inc );
+
+	sel_wm_changes_dec = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY wm_changes DESC" );
+	add( sel_wm_changes_dec );
+
+	sel_firing_count_inc = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY firing_count" );
+	add( sel_firing_count_inc );
+
+	sel_firing_count_dec = new soar_module::sqlite_statement( new_db, "SELECT * FROM stats ORDER BY firing_count DESC" );
+	add( sel_firing_count_dec );
+}
+
+void stats_close( agent *my_agent )
+{
+	if ( my_agent->stats_db->get_status() == soar_module::connected )
+	{
+		// de-allocate common statements
+		delete my_agent->stats_stmts;
+		my_agent->stats_stmts = 0;
+
+		// close the database
+		my_agent->stats_db->disconnect();
+	}
+}
+

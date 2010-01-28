@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ClientSML\include;..\ConnectionSML\include;..\KernelSML\include;..\ElementXML\include;..\SoarKernel\include;include;..\shared"
+				AdditionalIncludeDirectories="src;..\ClientSML\src;..\ConnectionSML\src;..\KernelSML\src;..\ElementXML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -66,10 +66,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="lib\cppunitd_dllvs9.lib"
-				OutputFile="$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -96,13 +96,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy target to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunitd_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -125,7 +125,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\ClientSML\include;..\ConnectionSML\include;..\KernelSML\include;..\ElementXML\include;..\SoarKernel\include;include;..\shared"
+				AdditionalIncludeDirectories="src;..\ClientSML\src;..\ConnectionSML\src;..\KernelSML\src;..\ElementXML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -147,10 +147,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="lib\cppunitd64_dllvs9.lib"
-				OutputFile="$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				TargetMachine="17"
 			/>
@@ -175,13 +175,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy target to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunitd64_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -210,7 +210,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\ClientSML\include;..\ConnectionSML\include;..\KernelSML\include;..\ElementXML\include;..\SoarKernel\include;include;..\shared"
+				AdditionalIncludeDirectories="src;..\ClientSML\src;..\ConnectionSML\src;..\KernelSML\src;..\ElementXML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -232,10 +232,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="lib\cppunit_dllvs9.lib"
-				OutputFile="$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -264,13 +264,13 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy target to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunit_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\bin"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -300,7 +300,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\ClientSML\include;..\ConnectionSML\include;..\KernelSML\include;..\ElementXML\include;..\SoarKernel\include;include;..\shared"
+				AdditionalIncludeDirectories="src;..\ClientSML\src;..\ConnectionSML\src;..\KernelSML\src;..\ElementXML\src;..\SoarKernel\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -322,10 +322,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="lib\cppunit64_dllvs9.lib"
-				OutputFile="$(ProjectName).exe"
+				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
+				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -352,7 +352,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy target to bin"
-				CommandLine="xcopy /Y $(TargetFileName) &quot;$(SolutionDir)\SoarLibrary\bin&quot;"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunit64_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
@@ -360,27 +360,27 @@
 		<ProjectReference
 			ReferencedProjectIdentifier="{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
 			CopyLocal="false"
-			RelativePathToProject=".\Core\SoarKernel\SoarKernel9.vcproj"
+			RelativePathToProject=".\SoarKernel\SoarKernel9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{4C6CC3DE-C022-4043-8E73-72FE1E1224C4}"
 			CopyLocal="false"
-			RelativePathToProject=".\Core\KernelSML\KernelSML9.vcproj"
+			RelativePathToProject=".\KernelSML\KernelSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
 			CopyLocal="false"
-			RelativePathToProject=".\Core\ClientSML\ClientSML9.vcproj"
+			RelativePathToProject=".\ClientSML\ClientSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
 			CopyLocal="false"
-			RelativePathToProject=".\Core\ConnectionSML\ConnectionSML9.vcproj"
+			RelativePathToProject=".\ConnectionSML\ConnectionSML9.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
 			CopyLocal="false"
-			RelativePathToProject=".\Core\ElementXML\ElementXML9.vcproj"
+			RelativePathToProject=".\ElementXML\ElementXML9.vcproj"
 		/>
 	</References>
 	<Files>
@@ -403,6 +403,10 @@
 			</File>
 			<File
 				RelativePath=".\src\handlers.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\handlers.h"
 				>
 			</File>
 			<File
@@ -429,26 +433,10 @@
 				RelativePath=".\src\simplelistener.cpp"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
-				RelativePath=".\include\handlers.h"
+				RelativePath=".\src\simplelistener.h"
 				>
 			</File>
-			<File
-				RelativePath=".\include\simplelistener.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 	</Files>
 	<Globals>

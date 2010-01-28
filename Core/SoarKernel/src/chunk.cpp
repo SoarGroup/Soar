@@ -46,6 +46,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "wma.h"
+
 #include <ctype.h>
 
 using namespace soar_TraceNames;
@@ -179,29 +181,35 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
 ===================================================================== */
 
 void variablize_symbol (agent* thisAgent, Symbol **sym) {
-  char prefix[2];
-  Symbol *var;
-  
-  if ((*sym)->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;
-  if (! thisAgent->variablize_this_chunk) return;
-  
-  if ((*sym)->id.tc_num == thisAgent->variablization_tc) {
-    /* --- it's already been variablized, so use the existing variable --- */
-    var = (*sym)->id.variablization;
-    symbol_remove_ref (thisAgent, *sym);
-    *sym = var;
-    symbol_add_ref (var);
-    return;
-  }
+	char prefix[2];
+	Symbol *var;
 
-  /* --- need to create a new variable --- */
-  (*sym)->id.tc_num = thisAgent->variablization_tc;
-  prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
-  prefix[1] = 0;
-  var = generate_new_variable (thisAgent, prefix);
-  (*sym)->id.variablization = var;
-  symbol_remove_ref (thisAgent, *sym);
-  *sym = var;
+	if ((*sym)->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;	// only variablize identifiers
+	if (! thisAgent->variablize_this_chunk) return;					// don't variablize (justifications)
+	if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
+	{
+		(*sym)->id.tc_num = thisAgent->variablization_tc;
+		(*sym)->id.variablization = (*sym);
+		return;
+	}
+
+	if ((*sym)->id.tc_num == thisAgent->variablization_tc) {
+		/* --- it's already been variablized, so use the existing variable --- */
+		var = (*sym)->id.variablization;
+		symbol_remove_ref (thisAgent, *sym);
+		*sym = var;
+		symbol_add_ref (var);
+		return;
+	}
+
+	/* --- need to create a new variable --- */
+	(*sym)->id.tc_num = thisAgent->variablization_tc;
+	prefix[0] = static_cast<char>(tolower((*sym)->id.name_letter));
+	prefix[1] = 0;
+	var = generate_new_variable (thisAgent, prefix);
+	(*sym)->id.variablization = var;
+	symbol_remove_ref (thisAgent, *sym);
+	*sym = var;
 }
 
 void variablize_test (agent* thisAgent, test *t) {
@@ -906,7 +914,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
 ==================================================================== */
 
 
-void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_variablization) 
+void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_variablization, instantiation **custom_inst_list) 
 {
 	Bool making_topmost_chunk = FALSE;   /* RCHONG:  10.11 */
 	goal_stack_level grounds_level;
@@ -930,7 +938,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	struct timeval saved_start_tv;
+	soar_process_timer local_timer;
+	local_timer.set_enabled( &( thisAgent->sysparams[ TIMERS_ENABLED ] ) );
 #endif
 #endif
 
@@ -949,7 +958,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	start_timer (thisAgent, &saved_start_tv);
+	local_timer.start();
 #endif
 #endif
 
@@ -1153,6 +1162,31 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 		tc_for_grounds = get_new_tc_number(thisAgent);
 		build_chunk_conds_for_grounds_and_add_negateds (thisAgent, &top_cc, &bottom_cc, tc_for_grounds);
 		nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots, tc_for_grounds);
+	}
+
+	/* --- check for LTI validity --- */	
+	if ( thisAgent->variablize_this_chunk )
+	{
+		if ( top_cc )
+		{
+			// need a temporary copy of the actions
+			thisAgent->variablization_tc = get_new_tc_number(thisAgent);
+			rhs = copy_and_variablize_result_list (thisAgent, results);
+
+			if ( !smem_valid_production( top_cc->variablized_cond, rhs ) )
+			{
+				thisAgent->variablize_this_chunk = false;
+
+				if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) 
+				{
+					print( thisAgent, "\nWarning: LTI validation failed, creating justification instead." );
+					xml_generate_warning( thisAgent, "LTI validation failed, creating justification instead." );
+				}
+			}
+
+			// remove temporary copy
+			deallocate_action_list (thisAgent, rhs);
+		}
 	}
 
 	/* --- get symbol for name of new chunk or justification --- */
@@ -1395,25 +1429,27 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 	}
 
 	/* --- assert the preferences --- */
-	chunk_inst->next = thisAgent->newly_created_instantiations;
-	thisAgent->newly_created_instantiations = chunk_inst;
+	chunk_inst->next = (*custom_inst_list);
+	(*custom_inst_list) = chunk_inst;
 
 	/* MVP 6-8-94 */
 	if (!thisAgent->max_chunks_reached)
-		chunk_instantiation (thisAgent, chunk_inst, thisAgent->variablize_this_chunk);
+		chunk_instantiation (thisAgent, chunk_inst, thisAgent->variablize_this_chunk, custom_inst_list);
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	stop_timer(thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
+	local_timer.stop();
+	thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
-
-	return;
-
+	  
+	  return;
+	  
 chunking_done: {}
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	stop_timer (thisAgent, &saved_start_tv, &thisAgent->chunking_cpu_time[thisAgent->current_phase]);
+	local_timer.stop();
+	thisAgent->timers_chunking_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
 }

@@ -231,8 +231,14 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    // BADBAD: static casting for llu portability
-    SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, static_cast<unsigned long long>(sym->id.name_number));
+	if (sym->id.smem_lti == NIL) {
+		// NOT an lti (long term identifier), print like we always have 
+	    SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, static_cast<unsigned long long>(sym->id.name_number));
+	} 
+	else {
+		// IS an lti (long term identifier), prepend an @ symbol
+	    SNPRINTF (dest, dest_size, "@%c%llu", sym->id.name_letter, static_cast<unsigned long long>(sym->id.name_number));
+	}
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
 
@@ -988,6 +994,12 @@ void filtered_print_wme_remove(agent* thisAgent, wme *w)
 void print_wme (agent* thisAgent, wme *w) {
   print (thisAgent, "(%lu: ", w->timetag);
   print_with_symbols (thisAgent, "%y ^%y %y", w->id, w->attr, w->value);
+  
+  if (wma_enabled(thisAgent))
+  {
+    print (thisAgent, " [%0.2g]", wma_get_wme_activation(thisAgent, w));
+  }
+  
   if (w->acceptable) print_string (thisAgent, " +");
   print_string (thisAgent, ")");
   print (thisAgent, "\n");

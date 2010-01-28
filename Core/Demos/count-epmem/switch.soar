@@ -1,0 +1,48 @@
+sp {count-epmem*propose*switch
+   (state <s> ^name count-epmem
+              ^mode recording
+              ^episode <max>
+              ^max <max>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name switch)
+}
+
+sp {apply*switch*ep*increment
+   (state <s> ^operator <op>
+              ^mode recording
+              ^episode <max>
+              ^test-mode increment)
+   (<op> ^name switch)
+-->
+   (<s> ^episode <max> - 1)
+}
+
+sp {apply*switch*ep*single
+   (state <s> ^operator <op>
+              ^mode recording
+              ^episode <max>
+              ^test-mode single
+              ^test-ep <test-ep>)
+   (<op> ^name switch)
+-->
+   (<s> ^episode <max> - <test-ep>)
+}
+
+sp {apply*switch*ready
+   (state <s> ^operator <op>
+              ^symbolic <sym>
+              ^io.output-link <out>
+              ^mode recording
+              ^episode <max>)
+   (<op> ^name switch)
+   (<out> ^record <old>)
+   (<sym> ^episode <old>)
+-->
+   (<s> ^symbolic <sym> -
+        ^mode recording - testing
+        ^counter 1)
+   (<out> ^record <old> -)
+   (write |STORAGE DONE (| <max> | episodes) - READY TO BEGIN QUERY|)
+   (interrupt)
+}

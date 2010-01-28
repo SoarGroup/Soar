@@ -404,6 +404,15 @@ ElementXML* Kernel::ProcessIncomingSML(Connection* pConnection, ElementXML* pInc
 			pAgent->ReceivedOutput(&msg, pResponse) ;
 		}
 
+		// If this is a command for a known agent and it's an "output_init" command
+		// then we're interested in it. Note that this is a special case and
+		// is not the spot for general init-soar event handling.
+		if (pAgent && strcmp(sml_Names::kCommand_OutputInit, pCommandName) == 0)
+		{
+			// Remove the output link
+			pAgent->GetWM()->InvalidateOutputLink();
+		}
+
 		if (pAgent && strcmp(sml_Names::kCommand_Event, pCommandName) == 0)
 		{
 			// This is an event specific to an agent, so handle it there.

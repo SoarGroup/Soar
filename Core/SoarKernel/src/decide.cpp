@@ -54,7 +54,11 @@
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
+#include "wma.h"
 #include "misc.h"
+
+#include "episodic_memory.h"
+#include "semantic_memory.h"
 
 #include "assert.h"
 
@@ -753,6 +757,7 @@ void do_demotion (agent* thisAgent) {
     thisAgent->disconnected_ids = thisAgent->disconnected_ids->next;
     id = static_cast<symbol_union *>(dc->item);
     free_with_pool (&thisAgent->dl_cons_pool, dc);
+	id->id.unknown_level = NIL;
     garbage_collect_id (thisAgent, id);
     symbol_remove_ref (thisAgent, id);
   }
@@ -813,7 +818,8 @@ void do_buffered_link_changes (agent* thisAgent) {
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  struct timeval saved_start_tv;
+  soar_process_timer local_timer;
+  local_timer.set_enabled( &( thisAgent->sysparams[ TIMERS_ENABLED ] ) );
 #endif
 #endif
 
@@ -824,14 +830,15 @@ void do_buffered_link_changes (agent* thisAgent) {
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS  
-  start_timer (thisAgent, &saved_start_tv);
+  local_timer.start();
 #endif
 #endif
   do_promotion (thisAgent);  
   do_demotion (thisAgent);
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-  stop_timer (thisAgent, &saved_start_tv, &thisAgent->ownership_cpu_time[thisAgent->current_phase]);
+  local_timer.stop();
+  thisAgent->timers_ownership_cpu_time[thisAgent->current_phase].update(local_timer);
 #endif
 #endif
 }
@@ -921,15 +928,15 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	}
 
 	// if this is the true decision slot and selection has been made, attempt force selection
-	if ( s->isa_context_slot && !consistency) 
+	if ( s->isa_context_slot ) 
 	{
 		if ( select_get_operator( thisAgent ) != NULL )
 		{
 			preference *force_result = select_force( thisAgent, s->preferences[ACCEPTABLE_PREFERENCE_TYPE], !predict );
+			force_result->next_candidate = NIL;
 
 			if ( force_result )
 			{
-				force_result->next_candidate = NIL;
 				*result_candidates = force_result;
 
 				if ( !predict && rl_enabled( thisAgent ) )
@@ -1434,6 +1441,21 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
     add_impasse_wme (thisAgent, id, thisAgent->superstate_symbol, object, NIL);
 	id->id.reward_header = make_new_identifier( thisAgent, 'R', level );
 	soar_module::add_module_wme( thisAgent, id, thisAgent->rl_sym_reward_link, id->id.reward_header );
+
+	id->id.epmem_header = make_new_identifier( thisAgent, 'E', level );		
+	soar_module::add_module_wme( thisAgent, id, thisAgent->epmem_sym, id->id.epmem_header );
+	id->id.epmem_cmd_header = make_new_identifier( thisAgent, 'C', level );
+	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_cmd, id->id.epmem_cmd_header );	
+	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
+	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_result, id->id.epmem_result_header );
+
+	id->id.smem_header = make_new_identifier( thisAgent, 'S', level );		
+	soar_module::add_module_wme( thisAgent, id, thisAgent->smem_sym, id->id.smem_header );
+	id->id.smem_cmd_header = make_new_identifier( thisAgent, 'C', level );
+	soar_module::add_module_wme( thisAgent, id->id.smem_header, thisAgent->smem_sym_cmd, id->id.smem_cmd_header );	
+	id->id.smem_result_header = make_new_identifier( thisAgent, 'R', level );
+	soar_module::add_module_wme( thisAgent, id->id.smem_header, thisAgent->smem_sym_result, id->id.smem_result_header );
+
   }
   else
     add_impasse_wme (thisAgent, id, thisAgent->object_symbol, object, NIL);
@@ -1767,6 +1789,11 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 				insert_at_head_of_dll (s->wmes, w, next, prev);
 				w->preference = cand;
 
+				if ( wma_enabled( thisAgent ) )
+				{
+					wma_activate_wme( thisAgent, w, s->wma_num_references );
+				}
+
 				/* REW: begin 09.15.96 */
 				/* Whenever we add a WME to WM, we also want to check and see if
 				this new WME is o-supported.  If so, then we want to add the
@@ -1778,7 +1805,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 				/* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-				start_timer(thisAgent, &thisAgent->start_gds_tv);
+				thisAgent->timers_gds.start();
 #endif 
 #endif
 				/* REW: end   11.25.96 */ 
@@ -1906,8 +1933,8 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 				/* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-				stop_timer(thisAgent, &thisAgent->start_gds_tv, 
-					&thisAgent->gds_cpu_time[thisAgent->current_phase]);
+				thisAgent->timers_gds.stop();
+				thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timers_gds);
 #endif
 #endif
 				/* REW: end   11.25.96 */ 
@@ -2091,6 +2118,9 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   /* --- remove wmes for this goal, and garbage collect --- */
   remove_wmes_for_context_slot (thisAgent, goal->id.operator_slot);
   update_impasse_items (thisAgent, goal, NIL); /* causes items & fake pref's to go away */
+
+  epmem_reset( thisAgent, goal );
+  smem_reset( thisAgent, goal );
   
   remove_wme_list_from_wm (thisAgent, goal->id.impasse_wmes);
   goal->id.impasse_wmes = NIL;
@@ -2137,6 +2167,22 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 
   remove_existing_context_and_descendents_rl(thisAgent, goal);
 
+  delete goal->id.epmem_info->cue_wmes;
+  delete goal->id.epmem_info->epmem_wmes;
+  symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );  
+  symbol_remove_ref( thisAgent, goal->id.epmem_result_header );  
+  symbol_remove_ref( thisAgent, goal->id.epmem_header );
+  free_memory( thisAgent, goal->id.epmem_info, MISCELLANEOUS_MEM_USAGE );
+
+
+  delete goal->id.smem_info->cue_wmes;
+  delete goal->id.smem_info->smem_wmes;
+  symbol_remove_ref( thisAgent, goal->id.smem_cmd_header );  
+  symbol_remove_ref( thisAgent, goal->id.smem_result_header );  
+  symbol_remove_ref( thisAgent, goal->id.smem_header );
+  free_memory( thisAgent, goal->id.smem_info, MISCELLANEOUS_MEM_USAGE );
+
+
   /* REW: BUG
    * Tentative assertions can exist for removed goals.  However, it looks
    * like the removal forces a tentative retraction, which then leads to
@@ -2178,7 +2224,7 @@ inline void create_new_context_rl( agent * const &thisAgent, Symbol * const &id 
 void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse_type)
 {
   Symbol *id;
-  
+    
   if (thisAgent->bottom_goal) 
   {
      /* Creating a sub-goal (or substate) */
@@ -2224,6 +2270,25 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.allow_bottom_up_chunks = TRUE;
 
   create_new_context_rl(thisAgent, id);
+
+  id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
+  id->id.epmem_info->last_ol_time = 0;  
+  id->id.epmem_info->last_cmd_time = 0;
+  id->id.epmem_info->last_cmd_count = 0;
+  id->id.epmem_info->cue_wmes = new std::set<wme *>();
+  
+  id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;  
+  id->id.epmem_info->epmem_wmes = new std::stack<preference *>();
+
+
+  id->id.smem_info = static_cast<smem_data *>( allocate_memory( thisAgent, sizeof( smem_data ), MISCELLANEOUS_MEM_USAGE ) );  
+  id->id.smem_info->last_cmd_time[0] = 0;
+  id->id.smem_info->last_cmd_time[1] = 0;
+  id->id.smem_info->last_cmd_count[0] = 0;
+  id->id.smem_info->last_cmd_count[1] = 0;
+  id->id.smem_info->cue_wmes = new std::set<wme *>();
+  id->id.smem_info->smem_wmes = new std::stack<preference *>();
+
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 
@@ -2744,7 +2809,7 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
    insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
                 
    if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
-   {                    
+   {
 	   print(agentPtr, "Adding to GDS for S%lu: ", wme_to_add->gds->goal->id.name_number);    
 	   print(agentPtr, " WME: "); 
 	   char buf[256];
@@ -2754,6 +2819,7 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
 
 	   xml_begin_tag(agentPtr, kTagVerbose);
 	   xml_att_val(agentPtr, kTypeString, buf);
+
 	   print_wme(agentPtr, wme_to_add);
 	   xml_end_tag(agentPtr, kTagVerbose);               
    }
@@ -3222,7 +3288,7 @@ void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
 	/* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	start_timer(thisAgent, &thisAgent->start_gds_tv);
+	thisAgent->timers_gds.start();
 #endif
 #endif
 	/* REW: end   11.25.96 */ 
@@ -3287,7 +3353,8 @@ void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
 	/* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
-	stop_timer(thisAgent, &thisAgent->start_gds_tv, &thisAgent->gds_cpu_time[thisAgent->current_phase]);
+	thisAgent->timers_gds.stop();
+	thisAgent->timers_gds_cpu_time[thisAgent->current_phase].update(thisAgent->timers_gds);
 #endif
 #endif
 	/* REW: end   11.25.96 */ 

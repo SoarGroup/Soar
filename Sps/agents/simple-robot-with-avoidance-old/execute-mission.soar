@@ -1,0 +1,38 @@
+sp {simple-robot*propose*execute-mission
+   (state <s> ^name simple-robot
+              ^mission <m>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name execute-mission
+         ^mission <m>)
+}
+
+sp {apply*execute-mission*init-current
+   (state <s> ^operator <op>)
+   (<op> ^name execute-mission
+         ^mission <m>)
+   (<m> ^first <f>)
+-->
+   (<m> ^current <f>)
+}
+
+sp {apply*execute-mission*next
+   (state <s> ^operator <op>
+              ^mission <m>)
+   (<op> ^name execute-mission)
+   (<m> ^current <c>)
+   (<c> ^status complete
+        ^next <n>)
+-->
+   (<m> ^current <c> - <n>)
+}
+
+sp {simple-robot*compare*execute-mission-worse-than-maintain-and-message
+   (state <s> ^name simple-robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name << process-message maintain-entity-new  maintain-entity-make-persistent-copy maintain-entity-remove-persistent-copy >>)
+   (<op2> ^name << execute-mission >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

@@ -1,0 +1,4 @@
+source elaborations.soar
+source convert-digit.soar
+source convert-done.soar
+source convert-init.soar

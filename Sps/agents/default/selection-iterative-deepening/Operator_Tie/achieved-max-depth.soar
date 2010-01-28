@@ -1,0 +1,19 @@
+sp {selection*propose*achieved-max-depth
+   (state <s> ^name selection
+              ^max-evaluation-depth <med>
+              ^current-evaluation-depth <med>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name achieved-max-depth)
+}
+
+## Make all operators indifferent
+
+sp {apply*achieved-max-depth
+   (state <s> ^operator <op>
+              ^item <o>
+              ^superstate <ss>)
+   (<op> ^name achieved-max-depth)
+-->
+   (<ss> ^operator <o> =)
+}

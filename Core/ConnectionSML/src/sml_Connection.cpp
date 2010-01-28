@@ -65,9 +65,9 @@ Connection::Connection()
 	m_bTraceCommunications = false ;
 	m_bIsKernelSide = false ;
 
-	m_pTimer = soar_thread::MakeTimer() ;
-	m_IncomingTime = 0.0 ;
-	m_OutgoingTime = 0.0 ;
+	m_Timer.reset();
+	m_IncomingTime.reset();
+	m_OutgoingTime.reset();
 }
 
 /*************************************************************
@@ -107,8 +107,6 @@ Connection::~Connection()
 
 		m_IncomingMessageQueue.pop() ;
 	}
-
-	delete m_pTimer ;
 }
 
 

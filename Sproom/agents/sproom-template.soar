@@ -1,0 +1,3 @@
+pushd sproom-template
+source sproom-template_source.soar
+popd

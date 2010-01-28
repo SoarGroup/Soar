@@ -1,0 +1,17 @@
+# watch 0
+# timers --off
+multi-attributes range 5
+multi-attributes waypoint 10
+
+
+srand 0
+#epmem --set learning off
+
+pushd ../default
+source selection.soar
+excise top-goal*halt*success
+#source selection-iterative-deepening.soar
+popd
+pushd ..
+source selection-astar.soar
+popd

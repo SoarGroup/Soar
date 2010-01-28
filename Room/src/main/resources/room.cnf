@@ -1,0 +1,5 @@
+players.active_players = [ "robot" ];
+players.robot.productions = "agents/empty.soar";
+players.robot.pos = [1,9];
+#general.seed = 1;
+#soar.spawn_debuggers = true;

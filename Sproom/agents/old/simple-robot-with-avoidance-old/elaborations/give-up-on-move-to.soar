@@ -1,0 +1,40 @@
+# these elaboration rules fire in the top-state, but are used by the give-up-on-move-to operator in the go-to-location substate
+
+sp {simple-robot*elaborate*min-progress-distance
+   (state <s> ^name simple-robot
+              ^move-to <mt>
+              ^parameters.min-progress-distance <mpd>)
+   (<mt> ^closest <c>)
+-->
+   (<mt> ^update-dist (- <c> <mpd>))
+}
+
+sp {simple-robot*elaborate*move-to-cutoff-time
+   (state <s> ^name simple-robot
+              ^move-to <mt>
+              ^parameters.replan-time <rpt>)
+   (<mt> ^time <t>)
+-->
+   (<mt> ^cutoff (+ <t> <rpt>))
+}
+
+sp {simple-robot*elaborate*move-to-give-up*out-of-time
+   (state <s> ^name simple-robot
+              ^move-to <mt>
+              ^io.input-link.time.seconds > <ct>)
+   (<mt> ^cutoff <ct>)
+-->
+   (<mt> ^give-up true)
+}
+
+# this could happen if the agent gets a message enroute that says the destination can't be reached directly from the source
+sp {simple-robot*elaborate*move-to-give-up*destination-unreachable
+   (state <s> ^name simple-robot
+              ^move-to <mt>)
+   (<mt> ^source <src>
+         ^destination <dest>)
+  -(<src> ^next <dest>)
+-->
+   (<mt> ^give-up true
+         ^give-up immediate)
+}

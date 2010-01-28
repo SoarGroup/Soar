@@ -1,0 +1,47 @@
+source simple-robot-with-avoidance.soar
+
+
+sp {apply*waypoints
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^waypoints <w>)
+   (<w> ^waypoint <w1> <w2> <w3> <w4> <w5>)
+   (<w1> ^x 0. ^y 0. ^id one ^next <w2>)
+   (<w2> ^x 0.03 ^y 5.48 ^id two ^next <w3> ^next <w4> ^next <w1>)
+   (<w3> ^x -4.19 ^y 5.40 ^id three ^next <w2> ^next <w5>)
+   (<w4> ^x -0.35 ^y 7.58 ^id four ^next <w5> ^next <w2>)
+   (<w5> ^x -2.72 ^y 8.11 ^id five ^next <w4> ^next <w3>)
+}
+
+sp {apply*initialize-simple-robot*create-mission
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-simple-robot)
+-->
+   (<s> ^mission <m>)
+   (<m> ^first <s1>)
+   (<s1> ^name localize
+         ^id one
+         ^next <s3>)
+   (<s3> ^name go-to-location
+         ^id five
+         ^next <s5>)
+   (<s5> ^name go-to-location
+         ^object-color green
+         #^id four
+         ^next <s6>)
+   (<s6> ^name go-to-location
+        # ^object-color red
+         ^id two
+         ^next <s7>)
+   (<s7> ^name go-to-location
+         ^id one
+         ^next nil)
+}
+
+sp {mission-complete*stop
+   (state <s> ^mission.current nil
+              ^io.output-link <ol>)
+-->
+   (<ol> ^stop <stop>)
+}

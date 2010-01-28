@@ -25,6 +25,10 @@
 #include <dirent.h>
 #include <regex.h>
 
+#ifdef SCONS_DARWIN
+#include <mach-o/dyld.h>
+#endif // SCONS_DARWIN
+
 /* this needs to be defined */
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 1024   /* AGR 536  - from sys/param.h */

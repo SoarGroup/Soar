@@ -1,0 +1,7 @@
+source _all.soar
+source give-up-on-move-to.soar
+source monitor.soar
+source output.soar
+source ranges.soar
+source top-state.soar
+source waypoints.soar

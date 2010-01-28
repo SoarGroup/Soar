@@ -1,0 +1,63 @@
+# propose the action associated with each unblocked arc
+sp {simple-robot*propose*action
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r>)
+   (<r> ^blocked false
+        ^action <a>
+        ^ang-distance <d>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name action
+         ^action <a>
+         ^distance <d>)
+}
+
+# prefer actions associated with closer arcs
+sp {simple-robot*compare*action
+   (state <s> ^name simple-robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name action
+          ^distance <d>)
+   (<op2> ^name action
+          ^distance > <d>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+# if all arcs are blocked, propose turning left
+sp {simple-robot*propose*turn-left
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges <rs>
+              ^parameters.angular-velocity <av>)
+  -(<rs> ^range.blocked false)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name action
+         ^action <a>)
+   (<a> ^set-velocity <m>)
+   (<m> ^linear-velocity 0.0
+        ^angular-velocity <av>)
+}
+
+sp {apply*action
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name action
+         ^action.set-velocity <m>)
+   (<m> ^linear-velocity <lv>
+        ^angular-velocity <av>)
+-->
+   (<ol> ^set-velocity <mcopy>)
+   (<mcopy> ^linear-velocity <lv>
+            ^angular-velocity <av>)
+}
+
+sp {monitor*action
+   (state <s> ^operator.action <a>)
+   (<a> ^set-velocity <p>)
+   (<p> ^linear-velocity <lv>
+        ^angular-velocity <av>)
+-->
+   (write (crlf) lv: | | <lv> | av: | <av>)
+}

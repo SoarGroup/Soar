@@ -104,7 +104,10 @@
 #include "lexer.h"
 #include "xml.h"
 #include "soar_TraceNames.h"
+
 #include "reinforcement_learning.h"
+#include "episodic_memory.h"
+#include "semantic_memory.h"
 #include "utilities.h"
 
 #include "assert.h"
@@ -589,31 +592,6 @@ inline unsigned mp_bnode_is_left_unlinked(rete_node * node)
                  Structures and Declarations:  Tokens
 
 ---------------------------------------------------------------------- */
-
-typedef struct token_struct {
-  /* --- Note: "parent" is NIL on negative node negrm (local join result) 
-     tokens, non-NIL on all other tokens including CN and CN_P stuff.
-     I put "parent" at offset 0 in the structure, so that upward scans
-     are fast (saves doing an extra integer addition in the inner loop) --- */
-  struct token_struct *parent;
-  union token_a_union {
-    struct token_in_hash_table_data_struct {
-      struct token_struct *next_in_bucket, *prev_in_bucket; /*hash bucket dll*/
-      Symbol *referent; /* referent of the hash test (thing we hashed on) */
-    } ht;
-    struct token_from_right_memory_of_negative_or_cn_node_struct {
-      struct token_struct *next_negrm, *prev_negrm;/*other local join results*/
-      struct token_struct *left_token; /* token this is local join result for*/
-    } neg;
-  } a;
-  rete_node *node;
-  wme *w;
-  struct token_struct *first_child;  /* first of dll of children */
-  struct token_struct *next_sibling, *prev_sibling; /* for dll of children */
-  struct token_struct *next_of_node, *prev_of_node; /* dll of tokens at node */
-  struct token_struct *next_from_wme, *prev_from_wme; /* tree-based remove */
-  struct token_struct *negrm_tokens; /* join results: for Neg, CN nodes only */
-} token;
 
 /*#define new_left_token(New,current_node,parent_tok,parent_wme) { \
   (New)->node = (current_node); \
@@ -1596,6 +1574,21 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[6],  xor_op( 0,ha,hv), w);
     add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi,ha,hv), w);
   }
+
+  w->epmem_id = EPMEM_NODEID_BAD;  
+  w->epmem_valid = NIL; 
+  {
+	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
+	{
+      if ( ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+	       ( w->value->id.epmem_id != EPMEM_NODEID_BAD ) &&
+		   ( w->value->id.epmem_valid == thisAgent->epmem_validation ) &&
+		   ( !w->value->id.smem_lti ) )
+      {
+	    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]++;
+      }
+	}
+  }
 }
 
 /* --- Removes a WME from the Rete. --- */
@@ -1604,6 +1597,39 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   alpha_mem *am;
   rete_node *node, *next, *child;
   token *tok, *left;
+  
+  {
+	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
+	{
+	  if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	  {
+		bool lti = ( w->value->id.smem_lti != NIL );
+		  
+		if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
+	    {
+		  (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
+
+		  // return to the id pool
+		  if ( !lti )
+		  {
+		    epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find( w->epmem_id );
+		    (*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
+		    thisAgent->epmem_id_replacement->erase( p );
+		  }
+		}
+
+		// reduce the ref count on the identifier
+		if ( !lti )
+		{
+		  (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
+		}
+	  }
+	  else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
+	  {
+	    (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
+	  }
+	}
+  }
   
   /* --- remove w from all_wmes_in_rete --- */
   remove_from_dll (thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
@@ -6387,8 +6413,9 @@ void reteload_string (FILE* f) {
    Reteload_free_symbol_table() frees up the symbol table when we're done.
 ---------------------------------------------------------------------- */
 
-Bool retesave_symbol_and_assign_index (agent* thisAgent, void *item, FILE* f) {
+Bool retesave_symbol_and_assign_index (agent* thisAgent, void *item, void* userdata) {
   Symbol *sym;
+  FILE* f = reinterpret_cast<FILE*>(userdata);
 
   sym = static_cast<symbol_union *>(item);
   thisAgent->current_retesave_symindex++;
@@ -6503,8 +6530,9 @@ void reteload_free_symbol_table (agent* thisAgent) {
    Reteload_free_am_table() frees up the table when we're done.
 ---------------------------------------------------------------------- */
 
-Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, FILE* f) {
+Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, void* userdata) {
   alpha_mem *am;
+  FILE* f = reinterpret_cast<FILE*>(userdata);
 
   am = static_cast<alpha_mem_struct *>(item);
   thisAgent->current_retesave_amindex++;

@@ -1,0 +1,52 @@
+sp {go-to-waypoint*propose*move-forward-with-correction
+   (state <s> ^name go-to-waypoint
+              ^destination-in-front true
+              ^yaw-aligned false
+              ^io.input-link.ranges.range <r>)
+   (<r> ^blocked false
+        ^id 0
+        ^angular-distance 0
+        ^action.move)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name move-forward-with-correction)
+}
+
+sp {go-to-waypoint*apply*move-forward-with-correction*right
+   (state <s> ^operator.name move-forward-with-correction
+              ^io.output-link <out>
+                             - ^waypoint.relative-bearing >= 0
+              ^parameters <p>)
+   (<p> ^linear-velocity <lv>
+        ^slow-rotation-velocity <rv>)
+-->
+   (write (crlf) |Angular Velocity: | <rv> )
+   (<out> ^set-velocity <sv>)
+   (<sv> ^angular-velocity (- 0 <rv>)
+         ^linear-velocity <lv>)}
+
+sp {go-to-waypoint*apply*move-forward-with-correction*left
+   (state <s> ^operator.name move-forward-with-correction
+              ^io.output-link <out>
+                             - ^waypoint.relative-bearing < 0
+              ^parameters <p>)
+   (<p> ^linear-velocity <lv>
+        ^slow-rotation-velocity <rv>)
+-->
+   (write (crlf) |Angular Velocity: | <rv> )
+   (<out> ^set-velocity <sv>)
+   (<sv> ^angular-velocity  <rv>
+         ^linear-velocity <lv>)}
+
+sp {go-to-waypoint*monitor*move-forward-with-correction*right
+   (state <s> ^operator.name move-forward-with-correction
+              ^waypoint.relative-bearing { < 0 <yaw> })
+-->
+   (write (crlf) |Move-forward-right, yaw: | <yaw>)
+}
+
+sp {go-to-waypoint*monitor*move-forward-with-correction*left
+   (state <s> ^operator.name move-forward-with-correction
+              ^waypoint.relative-bearing { >= 0 <yaw> })
+-->
+   (write (crlf) |Move-forward-left, yaw: | <yaw>)}

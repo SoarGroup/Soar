@@ -1,0 +1,4 @@
+source elaborations.soar
+source power-done.soar
+source power-init.soar
+source power-next.soar

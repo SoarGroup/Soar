@@ -1,0 +1,6 @@
+source elaborations.soar
+source add-waypoint.soar
+source configure.soar
+pushd configure
+source configure_source.soar
+popd

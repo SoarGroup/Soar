@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/.svn/" kind="src" path="src/main/java"/>
+	<classpathentry excluding="**/.svn/" kind="src" path="src/main/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
+	<classpathentry kind="lib" path="/soar-smljava/lib/swt.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.10.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.6-swt.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.6.jar"/>
+	<classpathentry kind="lib" path="lib/swtgraphics2d.jar"/>
+	<classpathentry kind="var" path="SML"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

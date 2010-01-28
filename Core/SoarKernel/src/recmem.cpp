@@ -44,6 +44,7 @@
 #include "recmem.h"
 #include "tempmem.h"
 #include "reinforcement_learning.h"
+#include "wma.h"
 #include "xml.h"
 #include "utilities.h"
 #include "soar_TraceNames.h"
@@ -207,7 +208,43 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   Bool nil_arg_found;
 
   if (rhs_value_is_symbol(rv)) {
-    result = rhs_value_to_symbol(rv);
+
+	  result = rhs_value_to_symbol(rv);
+
+	/*
+	  Long-Winded Case-by-Case [Hopeful] Explanation
+
+	  This has to do with long-term identifiers (LTIs) that exist within productions (including chunks/justifications).
+	  The real issue is that identifiers, upon creation, require a goal level (used for promotion/demotion/garbage collection).
+	  At the time of parsing a rule, we don't have this information, so we give it an invalid "unknown" value.
+	  This is OK on the condition side of a rule, since the rete (we think) will just consider it another symbol used for matching.
+	  However, it becomes hairy when LTIs are on the action side of a rule, with respect to the state of the LTI in working memory and the rule LHS.
+	  Consider the following cases:
+
+	  1. Identifier is LTI, does NOT exist as a LHS symbol
+	  - we do NOT support this!!!  bad things will likely happen due to potential for adding an identifier to working memory 
+	    with an unknown goal level.
+
+	  2. Attribute/Value is LTI, does NOT exist as a LHS symbol (!!!!!IMPORTANT CASE!!!!!)
+	  - the caller of this function will supply new_id_level (probably based upon the level of the id).
+	  - if this is valid (i.e. greater than 0), we use it.  else, ignore.
+	  - we have a huge assert on add_wme_to_wm that will kill soar if we try to add an identifier to working memory with an invalid level.
+
+	  3. Identifier/Attribute/Value is LTI, DOES exist as LHS symbol
+	  - in this situation, we are *guaranteed* that the resulting LTI (since it is in WM) has a valid goal level.
+	  - it should be noted that if a value, the level of the LTI may change during promotion/demotion/garbage collection,
+	    but this is natural Soar behavior and outside our perview.
+
+	*/
+	if ( ( result->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+		 ( result->id.smem_lti != NIL ) &&
+		 ( result->id.level == SMEM_LTI_UNKNOWN_LEVEL ) &&
+		 ( new_id_level > 0 ) )
+	{
+		result->id.level = new_id_level;
+		result->id.promotion_level = new_id_level;
+	}
+    
     symbol_add_ref (result);
     return result;
   }
@@ -268,17 +305,17 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
     // stop the kernel timer while doing RHS funcalls  KJC 11/04
     // the total_cpu timer needs to be updated in case RHS fun is statsCmd
     #ifndef NO_TIMING_STUFF
-    stop_timer (thisAgent, &thisAgent->start_kernel_tv,
-		&thisAgent->total_kernel_time);
-    stop_timer (thisAgent, &thisAgent->start_total_tv,
-		    &thisAgent->total_cpu_time);
-    start_timer (thisAgent, &thisAgent->start_total_tv);
+	thisAgent->timers_kernel.stop();
+	thisAgent->timers_cpu.stop();
+	thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
+	thisAgent->timers_total_cpu_time.update(thisAgent->timers_cpu);
+	thisAgent->timers_cpu.start();
     #endif
 
     result = (*(rf->f))(thisAgent, arglist, rf->user_data);
 
     #ifndef NO_TIMING_STUFF  // restart the kernel timer
-    start_timer (thisAgent, &thisAgent->start_kernel_tv);
+	thisAgent->timers_kernel.start();
     #endif
 
   } else
@@ -723,7 +760,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 	thisAgent->production_being_fired = NIL;
 
 	/* --- build chunks/justifications if necessary --- */
-	chunk_instantiation (thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0);
+	chunk_instantiation (thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0, &(thisAgent->newly_created_instantiations));
 
 	/* MVP 6-8-94 */
 	if (!thisAgent->system_halted) {
@@ -956,6 +993,11 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 			symbol_remove_ref( thisAgent, temp->bt.trace->referent );
 		}
 
+		if ( temp->bt.trace->wma_o_set )
+		{
+			wma_remove_pref_o_set( thisAgent, temp->bt.trace );
+		}
+
 		/* --- free the memory --- */
 		free_with_pool( &thisAgent->preference_pool, temp->bt.trace );
 	}
@@ -1147,7 +1189,7 @@ void assert_new_preferences (agent* thisAgent)
 				/* --- o-reject: just put it in the buffer for later --- */
 				pref->next = o_rejects;
 				o_rejects = pref;
-#endif            
+#endif
 
 				/* REW: begin 09.15.96 */
 				/* No knowledge retrieval necessary in Operand2 */
@@ -1185,9 +1227,13 @@ void assert_new_preferences (agent* thisAgent)
 				preference_add_ref (pref);
 				preference_remove_ref (thisAgent, pref);
 			}
+
+			if ( wma_enabled( thisAgent ) )
+			{
+				wma_activate_wmes_in_pref( thisAgent, pref );
+			}
 		}
 	}
-
 #ifndef O_REJECTS_FIRST
 	if (o_rejects) 
 		process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
@@ -1230,6 +1276,11 @@ void do_preference_phase (agent* thisAgent) {
 		xml_att_val( thisAgent, kPhase_LevelNum, levelString.c_str()); // SBW 8/4/2008: active_level for XML output mode
 		xml_end_tag( thisAgent, kTagSubphase );
 	  }
+  }
+
+  if ( wma_enabled( thisAgent ) )
+  {
+	  wma_activate_wmes_tested_in_prods( thisAgent );
   }
 
   /* New waterfall model: */

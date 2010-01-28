@@ -268,6 +268,52 @@ bool OutputListener::RemoveListener(smlWorkingMemoryEventId eventID, Connection*
 	return last ;
 }
 
+void OutputListener::SendOutputInitEvent() {
+	if (m_pCallbackAgentSML)
+	{
+		// Tell output link listeners about the reinitialize so they can clear out their output
+		// link identifier, as it may change due to existing smem lti (long term identifiers)
+		smlWorkingMemoryEventId outputEventId = smlEVENT_OUTPUT_PHASE_CALLBACK ;
+
+		// Get the first listener for this event (or return if there are none)
+		ConnectionListIter connectionIter ;
+		if (!EventManager<smlWorkingMemoryEventId>::GetBegin(outputEventId, &connectionIter))
+			return ;
+
+		// We need the first connection for when we're building the message.  Perhaps this is a sign that
+		// we shouldn't have rolled these methods into Connection.
+		Connection* pConnection = *connectionIter ;
+
+		// Build the SML message we're doing to send.
+		soarxml::ElementXML* pMsg = pConnection->CreateSMLCommand(sml_Names::kCommand_OutputInit) ;
+
+		// Add the agent parameter and as a side-effect, get a pointer to the <command> tag.  This is an optimization.
+		ElementXML_Handle hCommand = pConnection->AddParameterToSMLCommand(pMsg, sml_Names::kParamAgent, m_pCallbackAgentSML->GetName()) ;
+		soarxml::ElementXML command(hCommand) ;
+
+		// This is important.  We are working with a subpart of pMsg.
+		// If we retain ownership of the handle and delete the object
+		// it will release the handle...deleting part of our message.
+		command.Detach() ;
+
+#ifdef _DEBUG
+		// Convert the XML to a string so we can look at it in the debugger
+		char *pStr = pMsg->GenerateXMLString(true) ;
+#endif
+
+		// Send the message out
+		AnalyzeXML response ;
+		SendEvent(m_pCallbackAgentSML, pConnection, pMsg, &response, connectionIter, GetEnd(outputEventId)) ;
+
+#ifdef _DEBUG
+		pMsg->DeleteString(pStr) ;
+#endif
+
+		// Clean up
+		delete pMsg ;
+	}
+}
+
 // Agent event listener (called when soar has been or is about to be re-initialized)
 // BADBAD: This shouldn't really be handled in a class called OutputListener.
 void OutputListener::ReinitializeEvent(smlAgentEventId eventId) 
@@ -287,7 +333,7 @@ void OutputListener::ReinitializeEvent(smlAgentEventId eventId)
 		}
 
 #ifdef DEBUG_UPDATE
-	sml::PrintDebugFormat("OutputListener before agent reinitialized received - end.") ;
+		sml::PrintDebugFormat("OutputListener before agent reinitialized received - end.") ;
 #endif
 	}
 
