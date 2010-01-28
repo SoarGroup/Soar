@@ -31,7 +31,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="echo on&#x0D;&#x0A;del build\*.cs&#x0D;&#x0A;"
+				CommandLine="echo on&#x0D;&#x0A;if exist build del build\*.cs&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -116,7 +116,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="echo on&#x0D;&#x0A;del build\*.cs&#x0D;&#x0A;"
+				CommandLine="echo on&#x0D;&#x0A;if exist build del build\*.cs&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -201,7 +201,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="echo on&#x0D;&#x0A;del build\*.cs&#x0D;&#x0A;"
+				CommandLine="echo on&#x0D;&#x0A;if exist build del build\*.cs&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -292,7 +292,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine="echo on&#x0D;&#x0A;del build\*.cs&#x0D;&#x0A;"
+				CommandLine="echo on&#x0D;&#x0A;if exist build del build\*.cs&#x0D;&#x0A;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -396,12 +396,6 @@
 				RelativePath=".\CSharp_sml_ClientInterface_wrap.cxx"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
 				RelativePath=".\CSharpCallbackByHand.h"
 				>
