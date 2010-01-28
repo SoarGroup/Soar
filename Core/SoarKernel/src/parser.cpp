@@ -35,6 +35,7 @@
 #include "rete.h"
 #include "xml.h"
 #include "reinforcement_learning.h"
+#include "semantic_memory.h"
 
 #include <ctype.h>
 
@@ -213,8 +214,9 @@ void substitute_for_placeholders_in_action_list (agent* thisAgent, action *a) {
    <disjunction_test> ::= << <constant>* >>
    <relational_test> ::= [<relation>] <single_test>
    <relation> ::= <> | < | > | <= | >= | = | <=>
-   <single_test> ::= variable | <constant>
+   <single_test> ::= <variable> | <constant>
    <constant> ::= sym_constant | int_constant | float_constant
+   <variable> ::= variable | lti
 
 ================================================================= */
 
@@ -236,8 +238,9 @@ const char *help_on_lhs_grammar[] = {
 "   <disjunction_test> ::= << <constant>* >>",
 "   <relational_test> ::= [<relation>] <single_test>",
 "   <relation> ::= <> | < | > | <= | >= | = | <=>",
-"   <single_test> ::= variable | <constant>",
+"   <single_test> ::= <variable> | <constant>",
 "   <constant> ::= sym_constant | int_constant | float_constant",
+"   <variable> ::= variable | lti",
 "",
 "See also:  rhs-grammar, sp",
 0 };
@@ -250,7 +253,7 @@ const char *help_on_lhs_grammar[] = {
 
 ================================================================= */
 
-Symbol *make_symbol_for_current_lexeme (agent* thisAgent) {
+Symbol *make_symbol_for_current_lexeme (agent* thisAgent, bool allow_lti) {
   switch (thisAgent->lexeme.type) {
   case SYM_CONSTANT_LEXEME:  return make_sym_constant (thisAgent, thisAgent->lexeme.string);
   case VARIABLE_LEXEME:  return make_variable (thisAgent, thisAgent->lexeme.string);
@@ -258,11 +261,26 @@ Symbol *make_symbol_for_current_lexeme (agent* thisAgent) {
   case FLOAT_CONSTANT_LEXEME:  return make_float_constant (thisAgent, thisAgent->lexeme.float_val);
 
   case IDENTIFIER_LEXEME:
-    { char msg[BUFFER_MSG_SIZE];
-    strncpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_current_lexeme\n", BUFFER_MSG_SIZE);
-    msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-    abort_with_fatal_error(thisAgent, msg);
-    }
+	  if (!allow_lti)   { 
+		  char msg[BUFFER_MSG_SIZE];
+		  strncpy(msg, "parser.c: Internal error:  ID found in make_symbol_for_current_lexeme\n", BUFFER_MSG_SIZE);
+		  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+		  abort_with_fatal_error(thisAgent, msg);
+	  }
+	  else {
+		  smem_lti_id lti_id = smem_lti_get_id( thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number );
+
+		  if ( lti_id == NIL ) {
+			  char msg[BUFFER_MSG_SIZE];
+			  strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_current_lexeme\n", BUFFER_MSG_SIZE);
+			  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+			  abort_with_fatal_error(thisAgent, msg);
+		  }
+		  else {
+			  return smem_lti_soar_make( thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL );
+		  }
+	  }
+	  break;
   default:
     { char msg[BUFFER_MSG_SIZE];
     SNPRINTF(msg, BUFFER_MSG_SIZE, "parser.c: Internal error:  bad lexeme type in make_symbol_for_current_lexeme\n, thisAgent->lexeme.string=%s\n", thisAgent->lexeme.string);
@@ -288,8 +306,9 @@ Symbol *make_symbol_for_current_lexeme (agent* thisAgent) {
                       
    <relational_test> ::= [<relation>] <single_test>
    <relation> ::= <> | < | > | <= | >= | = | <=>
-   <single_test> ::= variable | <constant>
+   <single_test> ::= <variable> | <constant>
    <constant> ::= sym_constant | int_constant | float_constant
+   <variable> ::= variable | lti
 ----------------------------------------------------------------- */
 
 test parse_relational_test (agent* thisAgent) {
@@ -344,13 +363,17 @@ test parse_relational_test (agent* thisAgent) {
     break;
   }
 
+  // Check for long term identifier notation
+  bool id_lti = parse_lti(thisAgent);
+
   /* --- read variable or constant --- */
   switch (thisAgent->lexeme.type) {
   case SYM_CONSTANT_LEXEME:
   case INT_CONSTANT_LEXEME:
   case FLOAT_CONSTANT_LEXEME:
   case VARIABLE_LEXEME:
-    referent = make_symbol_for_current_lexeme(thisAgent);
+  case IDENTIFIER_LEXEME: // IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
+    referent = make_symbol_for_current_lexeme(thisAgent, id_lti);
     get_lexeme(thisAgent);
     if (use_equality_test) {
       t = make_equality_test_without_adding_reference (referent);
@@ -397,7 +420,7 @@ test parse_disjunction_test (agent* thisAgent) {
     case SYM_CONSTANT_LEXEME:
     case INT_CONSTANT_LEXEME:
     case FLOAT_CONSTANT_LEXEME:
-      push (thisAgent, make_symbol_for_current_lexeme(thisAgent), ct->data.disjunction_list);
+      push (thisAgent, make_symbol_for_current_lexeme(thisAgent, false), ct->data.disjunction_list);
       get_lexeme(thisAgent);
       break;
     default:
@@ -771,79 +794,82 @@ condition *parse_attr_value_tests (agent* thisAgent) {
 ----------------------------------------------------------------- */
 
 test parse_head_of_conds_for_one_id (agent* thisAgent, char first_letter_if_no_id_given) {
-  test id_test, id_goal_impasse_test, check_for_symconstant;
-  complex_test *ct;
-  Symbol *sym;
+	test id_test, id_goal_impasse_test, check_for_symconstant;
+	complex_test *ct;
+	Symbol *sym;
 
-  if (thisAgent->lexeme.type!=L_PAREN_LEXEME) {
-    print (thisAgent, "Expected ( to begin condition element\n");
-    print_location_of_most_recent_lexeme(thisAgent);
-    return NIL;
-  }
-  get_lexeme(thisAgent);
+	if (thisAgent->lexeme.type!=L_PAREN_LEXEME) {
+		print (thisAgent, "Expected ( to begin condition element\n");
+		print_location_of_most_recent_lexeme(thisAgent);
+		return NIL;
+	}
+	get_lexeme(thisAgent);
 
-  /* --- look for goal/impasse indicator --- */
-  if (thisAgent->lexeme.type==SYM_CONSTANT_LEXEME) {
-    if (!strcmp(thisAgent->lexeme.string,"state")) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
-      ct->type = GOAL_ID_TEST;
-      id_goal_impasse_test = make_test_from_complex_test(ct);
-      get_lexeme(thisAgent);
-      first_letter_if_no_id_given = 's';
-    } else if (!strcmp(thisAgent->lexeme.string,"impasse")) {
-      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
-      ct->type = IMPASSE_ID_TEST;
-      id_goal_impasse_test = make_test_from_complex_test(ct);
-      get_lexeme(thisAgent);
-      first_letter_if_no_id_given = 'i';
-    } else {
-      id_goal_impasse_test = make_blank_test();
-    }
-  } else {
-    id_goal_impasse_test = make_blank_test();
-  }
+	/* --- look for goal/impasse indicator --- */
+	if (thisAgent->lexeme.type==SYM_CONSTANT_LEXEME) {
+		if (!strcmp(thisAgent->lexeme.string,"state")) {
+			allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
+			ct->type = GOAL_ID_TEST;
+			id_goal_impasse_test = make_test_from_complex_test(ct);
+			get_lexeme(thisAgent);
+			first_letter_if_no_id_given = 's';
+		} else if (!strcmp(thisAgent->lexeme.string,"impasse")) {
+			allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
+			ct->type = IMPASSE_ID_TEST;
+			id_goal_impasse_test = make_test_from_complex_test(ct);
+			get_lexeme(thisAgent);
+			first_letter_if_no_id_given = 'i';
+		} else {
+			id_goal_impasse_test = make_blank_test();
+		}
+	} else {
+		id_goal_impasse_test = make_blank_test();
+	}
 
-  /* --- read optional id test; create dummy one if none given --- */
-  if ((thisAgent->lexeme.type!=MINUS_LEXEME) &&
-      (thisAgent->lexeme.type!=UP_ARROW_LEXEME) &&
-      (thisAgent->lexeme.type!=R_PAREN_LEXEME)) {
-    id_test = parse_test(thisAgent);
-    if (!id_test) {
-      deallocate_test (thisAgent, id_goal_impasse_test);
-      return NIL;
-    }
-    if (! test_includes_equality_test_for_symbol (id_test, NIL)) {
-      add_new_test_to_test
-        (thisAgent, &id_test, make_placeholder_test (thisAgent, first_letter_if_no_id_given));
-    } else {
-      check_for_symconstant = copy_of_equality_test_found_in_test(thisAgent, id_test);
-      sym = referent_of_equality_test(check_for_symconstant);
-      deallocate_test (thisAgent, check_for_symconstant); /* RBD added 3/28/95 */
-      if(sym->common.symbol_type != VARIABLE_SYMBOL_TYPE) {
-        print_with_symbols(thisAgent, "Warning: Constant %y in id field test.\n", sym);
-        print(thisAgent, "         This will never match.\n");
+	/* --- read optional id test; create dummy one if none given --- */
+	if ((thisAgent->lexeme.type!=MINUS_LEXEME) &&
+		(thisAgent->lexeme.type!=UP_ARROW_LEXEME) &&
+		(thisAgent->lexeme.type!=R_PAREN_LEXEME)) {
+			id_test = parse_test(thisAgent);
+			if (!id_test) {
+				deallocate_test (thisAgent, id_goal_impasse_test);
+				return NIL;
+			}
+			if (! test_includes_equality_test_for_symbol (id_test, NIL)) {
+				add_new_test_to_test
+					(thisAgent, &id_test, make_placeholder_test (thisAgent, first_letter_if_no_id_given));
+			} else {
+				check_for_symconstant = copy_of_equality_test_found_in_test(thisAgent, id_test);
+				sym = referent_of_equality_test(check_for_symconstant);
+				deallocate_test (thisAgent, check_for_symconstant); /* RBD added 3/28/95 */
 
-		growable_string gs = make_blank_growable_string(thisAgent);
-		add_to_growable_string(thisAgent, &gs, "Warning: Constant ");
-		add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, sym, true, 0, 0));
-		add_to_growable_string(thisAgent, &gs, " in id field test.\n         This will never match.");
-		xml_generate_warning(thisAgent, text_of_growable_string(gs));
-		free_growable_string(thisAgent, gs);
-		//TODO: should we append this to the previous XML message or create a new message for it?
-        print_location_of_most_recent_lexeme(thisAgent);
-	deallocate_test (thisAgent, id_test);   /* AGR 527c */
-	return NIL;                  /* AGR 527c */
-      } 
-    }
-  } else {
-    id_test = make_placeholder_test (thisAgent, first_letter_if_no_id_given);
-  }
-  
-  /* --- add the goal/impasse test to the id test --- */
-  add_new_test_to_test (thisAgent, &id_test, id_goal_impasse_test);
+				// Symbol type can only be IDENTIFIER_SYMBOL_TYPE if it is a long term identifier (lti),
+				// Otherwise, it isn't possible to have an IDENTIFIER_SYMBOL_TYPE here.
+				if((sym->common.symbol_type != VARIABLE_SYMBOL_TYPE) && (sym->common.symbol_type != IDENTIFIER_SYMBOL_TYPE)) {
+					print_with_symbols(thisAgent, "Warning: Constant %y in id field test.\n", sym);
+					print(thisAgent, "         This will never match.\n");
 
-  /* --- return the resulting id test --- */
-  return id_test;
+					growable_string gs = make_blank_growable_string(thisAgent);
+					add_to_growable_string(thisAgent, &gs, "Warning: Constant ");
+					add_to_growable_string(thisAgent, &gs, symbol_to_string(thisAgent, sym, true, 0, 0));
+					add_to_growable_string(thisAgent, &gs, " in id field test.\n         This will never match.");
+					xml_generate_warning(thisAgent, text_of_growable_string(gs));
+					free_growable_string(thisAgent, gs);
+					//TODO: should we append this to the previous XML message or create a new message for it?
+					print_location_of_most_recent_lexeme(thisAgent);
+					deallocate_test (thisAgent, id_test);   /* AGR 527c */
+					return NIL;                  /* AGR 527c */
+				} 
+			}
+	} else {
+		id_test = make_placeholder_test (thisAgent, first_letter_if_no_id_given);
+	}
+
+	/* --- add the goal/impasse test to the id test --- */
+	add_new_test_to_test (thisAgent, &id_test, id_goal_impasse_test);
+
+	/* --- return the resulting id test --- */
+	return id_test;
 }
 
 /* -----------------------------------------------------------------
@@ -1046,14 +1072,15 @@ condition *parse_lhs (agent* thisAgent) {
    Grammar for right hand sides of productions
 
    <rhs> ::= <rhs_action>*
-   <rhs_action> ::= ( variable <attr_value_make>+ ) | <function_call>
+   <rhs_action> ::= ( <variable> <attr_value_make>+ ) | <function_call>
    <function_call> ::= ( <function_name> <rhs_value>* )
    <function_name> ::= sym_constant | + | -
      (WARNING: might need others besides +, - here if the lexer changes)
-   <rhs_value> ::= <constant> | <function_call> | variable
+   <rhs_value> ::= <constant> | <function_call> | <variable>
    <constant> ::= sym_constant | int_constant | float_constant
    <attr_value_make> ::= ^ <rhs_value> <value_make>+
    <value_make> ::= <rhs_value> <preferences>
+   <variable> ::= variable | lti
 
    <preferences> ::= [,] | <preference_specifier>+   
    <preference-specifier> ::= <naturally-unary-preference> [,]
@@ -1072,13 +1099,14 @@ const char *help_on_rhs_grammar[] = {
 "Grammar for right hand sides of productions:",
 "",
 "   <rhs> ::= <rhs_action>*",
-"   <rhs_action> ::= ( variable <attr_value_make>+ ) | <function_call>",
+"   <rhs_action> ::= ( <variable> <attr_value_make>+ ) | <function_call>",
 "   <function_call> ::= ( <function_name> <rhs_value>* )",
 "   <function_name> ::= sym_constant | + | -",
-"   <rhs_value> ::= <constant> | <function_call> | variable",
+"   <rhs_value> ::= <constant> | <function_call> | <variable>",
 "   <constant> ::= sym_constant | int_constant | float_constant",
 "   <attr_value_make> ::= ^ <rhs_value> <value_make>+",
 "   <value_make> ::= <rhs_value> <preferences>",
+"   <variable> ::= variable | lti",
 "",
 "   <preferences> ::= [,] | <preference_specifier>+",
 "   <preference-specifier> ::= <naturally-unary-preference> [,]",
@@ -1188,28 +1216,35 @@ rhs_value parse_function_call_after_lparen (agent* thisAgent,
    Parses an <rhs_value>.  Returns an rhs_value, or NIL if any error
    occurred.
 
-   <rhs_value> ::= <constant> | <function_call> | variable
+   <rhs_value> ::= <constant> | <function_call> | <variable>
    <constant> ::= sym_constant | int_constant | float_constant
+   <variable> ::= variable | lti
 ----------------------------------------------------------------- */
 
 rhs_value parse_rhs_value (agent* thisAgent) {
-  rhs_value rv;
-  
-  if (thisAgent->lexeme.type==L_PAREN_LEXEME) {
-    get_lexeme(thisAgent);
-    return parse_function_call_after_lparen (thisAgent, FALSE);
-  }
-  if ((thisAgent->lexeme.type==SYM_CONSTANT_LEXEME) ||
-      (thisAgent->lexeme.type==INT_CONSTANT_LEXEME) ||
-      (thisAgent->lexeme.type==FLOAT_CONSTANT_LEXEME) ||
-      (thisAgent->lexeme.type==VARIABLE_LEXEME)) {
-    rv = symbol_to_rhs_value (make_symbol_for_current_lexeme (thisAgent));
-    get_lexeme(thisAgent);
-    return rv;
-  }
-  print (thisAgent, "Illegal value for RHS value\n");
-  print_location_of_most_recent_lexeme(thisAgent);
-  return FALSE;
+	rhs_value rv;
+
+	if (thisAgent->lexeme.type==L_PAREN_LEXEME) {
+		get_lexeme(thisAgent);
+		return parse_function_call_after_lparen (thisAgent, FALSE);
+	}
+
+	// Check for long term identifier notation
+	bool id_lti = parse_lti(thisAgent);
+
+	if ((thisAgent->lexeme.type==SYM_CONSTANT_LEXEME) ||
+		(thisAgent->lexeme.type==INT_CONSTANT_LEXEME) ||
+		(thisAgent->lexeme.type==FLOAT_CONSTANT_LEXEME) ||
+		(thisAgent->lexeme.type==VARIABLE_LEXEME) ||
+		(thisAgent->lexeme.type==IDENTIFIER_LEXEME)) {
+			// IDENTIFIER_LEXEME only possible if id_lti true due to set_lexer_allow_ids above
+			rv = symbol_to_rhs_value (make_symbol_for_current_lexeme (thisAgent, id_lti));
+			get_lexeme(thisAgent);
+			return rv;
+	}
+	print (thisAgent, "Illegal value for RHS value\n");
+	print_location_of_most_recent_lexeme(thisAgent);
+	return FALSE;
 }
 
 
@@ -1232,8 +1267,6 @@ Bool is_preference_lexeme( enum lexer_token_type test_lexeme )
   case EXCLAMATION_POINT_LEXEME:
     return TRUE;
   case TILDE_LEXEME:
-    return TRUE;
-  case AT_LEXEME:
     return TRUE;
   case GREATER_LEXEME:
     return TRUE;
@@ -1293,11 +1326,6 @@ byte parse_preference_specifier_without_referent (agent* thisAgent) {
     get_lexeme(thisAgent);
     if (thisAgent->lexeme.type==COMMA_LEXEME) get_lexeme(thisAgent);
     return PROHIBIT_PREFERENCE_TYPE;
-    
-  case AT_LEXEME:
-    get_lexeme(thisAgent);
-    if (thisAgent->lexeme.type==COMMA_LEXEME) get_lexeme(thisAgent);
-    return RECONSIDER_PREFERENCE_TYPE;
     
 /****************************************************************************
  * [Soar-Bugs #55] <forced-unary-preference> ::= <binary-preference> 
@@ -1704,49 +1732,86 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
    Parses an <rhs_action> and returns an action list.  If any error
    occurrs, NIL is returned.
 
-   <rhs_action> ::= ( variable <attr_value_make>+ ) | <function_call>
+   <rhs_action> ::= ( <variable> <attr_value_make>+ ) | <function_call>
 ----------------------------------------------------------------- */
 
 action *parse_rhs_action (agent* thisAgent) {
-  action *all_actions, *new_actions, *last;
-  Symbol *var;
-  rhs_value funcall_value;
-  
-  if (thisAgent->lexeme.type!=L_PAREN_LEXEME) {
-    print (thisAgent, "Expected ( to begin RHS action\n");
-    print_location_of_most_recent_lexeme(thisAgent);
-    return NIL;
-  }
-  get_lexeme(thisAgent);
-  if (thisAgent->lexeme.type!=VARIABLE_LEXEME) {
-    /* --- the action is a function call --- */
-    funcall_value = parse_function_call_after_lparen (thisAgent, TRUE);
-    if (!funcall_value) return NIL;
-    allocate_with_pool (thisAgent, &thisAgent->action_pool,  &all_actions);
-    all_actions->type = FUNCALL_ACTION;
-    all_actions->next = NIL;
-    all_actions->value = funcall_value;
-    return all_actions;
-  }
-  /* --- the action is a regular make action --- */
-  var = make_variable (thisAgent, thisAgent->lexeme.string);
-  get_lexeme(thisAgent);
-  all_actions = NIL;
-  while (thisAgent->lexeme.type!=R_PAREN_LEXEME) {
-    new_actions = parse_attr_value_make (thisAgent, var);
-    if (new_actions) {
-      for (last=new_actions; last->next!=NIL; last=last->next);
-      last->next = all_actions;
-      all_actions = new_actions;
-    } else {
-      symbol_remove_ref (thisAgent, var);
-      deallocate_action_list (thisAgent, all_actions);
-      return NIL;
-    }
-  }
-  get_lexeme(thisAgent);  /* consume the right parenthesis */
-  symbol_remove_ref (thisAgent, var);
-  return all_actions;
+	action *all_actions, *new_actions, *last;
+	Symbol *var = NULL;
+	rhs_value funcall_value;
+
+	if (thisAgent->lexeme.type!=L_PAREN_LEXEME) {
+		print (thisAgent, "Expected ( to begin RHS action\n");
+		print_location_of_most_recent_lexeme(thisAgent);
+		return NIL;
+	}
+	get_lexeme(thisAgent);
+
+	// Check for long term identifier notation
+	bool id_lti = parse_lti(thisAgent);
+
+	if ((thisAgent->lexeme.type!=VARIABLE_LEXEME) && (thisAgent->lexeme.type!=IDENTIFIER_LEXEME)) {
+		/* --- the action is a function call --- */
+		funcall_value = parse_function_call_after_lparen (thisAgent, TRUE);
+		if (!funcall_value) return NIL;
+		allocate_with_pool (thisAgent, &thisAgent->action_pool,  &all_actions);
+		all_actions->type = FUNCALL_ACTION;
+		all_actions->next = NIL;
+		all_actions->value = funcall_value;
+		return all_actions;
+	}
+	/* --- the action is a regular make action --- */
+	if (id_lti) {
+		smem_lti_id lti_id = smem_lti_get_id( thisAgent, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number );
+
+	  if ( lti_id == NIL ) {
+		  char msg[BUFFER_MSG_SIZE];
+		  strncpy(msg, "parser.c: Internal error:  invalid long-term identifier found in make_symbol_for_current_lexeme\n", BUFFER_MSG_SIZE);
+		  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
+		  abort_with_fatal_error(thisAgent, msg);
+	  }
+	  else {
+		  var = smem_lti_soar_make( thisAgent, lti_id, thisAgent->lexeme.id_letter, thisAgent->lexeme.id_number, SMEM_LTI_UNKNOWN_LEVEL );
+	  }
+	}
+	else {
+		var = make_variable (thisAgent, thisAgent->lexeme.string);
+	}
+
+	get_lexeme(thisAgent);
+	all_actions = NIL;
+	while (thisAgent->lexeme.type!=R_PAREN_LEXEME) {
+		new_actions = parse_attr_value_make (thisAgent, var);
+		if (new_actions) {
+			for (last=new_actions; last->next!=NIL; last=last->next);
+			last->next = all_actions;
+			all_actions = new_actions;
+		} else {
+			symbol_remove_ref (thisAgent, var);
+			deallocate_action_list (thisAgent, all_actions);
+			return NIL;
+		}
+	}
+	get_lexeme(thisAgent);  /* consume the right parenthesis */
+	symbol_remove_ref (thisAgent, var);
+	return all_actions;
+}
+
+bool parse_lti(agent* thisAgent) {
+	switch(thisAgent->lexeme.type) {
+	case AT_LEXEME:
+		{
+			Bool saved = get_lexer_allow_ids(thisAgent);
+			set_lexer_allow_ids(thisAgent, true);
+			get_lexeme(thisAgent);
+			set_lexer_allow_ids(thisAgent, saved);
+		}
+		return true;
+
+	default:
+		break;
+	}
+	return false;
 }
 
 /* -----------------------------------------------------------------

@@ -1785,3 +1785,27 @@ bool Agent::KillDebugger()
 	delete m_pDPI;
 	return successful;
 }
+
+char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
+{
+	// need to keep the result around after the function returns
+	// bad
+	static std::string kernelIdentifier;
+
+	AnalyzeXML response;
+
+	// Send the command line to the kernel
+	bool ret = m_Kernel->GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_ConvertIdentifier, GetAgentName(), sml_Names::kParamName, pClientIdentifier);
+
+	if (ret)
+	{
+		// Get the result as a string
+		char const *pResult = response.GetResultString();
+		if (pResult && strlen(pResult)) 
+		{
+			kernelIdentifier.assign(pResult);
+			return kernelIdentifier.c_str();
+		} 
+	}
+	return 0;
+}

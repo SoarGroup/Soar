@@ -1,0 +1,22 @@
+<project name="soar-smljava" default="build" basedir=".">
+
+	<property name="manifest.classpath" value="sml.jar" />
+	<property name="jar.main.class" value="edu.umich.soar.TestJavaSML" />
+
+	<import file="build-common.xml" />
+
+	<condition property="is_windows">
+		<os family="windows" />
+	</condition>
+
+	<target name="swt" if="is_windows">
+		<exec dir="lib" executable="cmd">
+			<arg value="/c" />
+			<arg value="fetchswt.bat" />
+		</exec>
+	</target>
+
+	<target name="build" depends="swt,jar" />
+
+</project>
+

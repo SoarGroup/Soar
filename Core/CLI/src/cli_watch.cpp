@@ -30,6 +30,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		{'c',"chunks",					OPTARG_OPTIONAL},
 		{'d',"decisions",				OPTARG_OPTIONAL},
 		{'D',"default-productions",		OPTARG_OPTIONAL},
+		{'e',"epmem",					OPTARG_OPTIONAL},
 		{'f',"fullwmes",				OPTARG_NONE},
 		{'i',"indifferent-selection",	OPTARG_OPTIONAL},
 		{'j',"justifications",			OPTARG_OPTIONAL},
@@ -41,6 +42,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		{'P',"productions",				OPTARG_OPTIONAL},
 		{'r',"preferences",				OPTARG_OPTIONAL},
 		{'R',"rl",						OPTARG_OPTIONAL},
+		{'s',"smem",					OPTARG_OPTIONAL},
 		{'t',"timetags",				OPTARG_NONE},
 		{'T',"template",				OPTARG_OPTIONAL},
 		{'u',"user-productions",		OPTARG_OPTIONAL},
@@ -96,6 +98,16 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 					settings.reset(WATCH_DEFAULT);
 				} else {
 					settings.set(WATCH_DEFAULT);
+				}
+				break;
+				
+			case 'e'://epmem
+				options.set(WATCH_EPMEM);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_EPMEM);
+				} else {
+					settings.set(WATCH_EPMEM);
 				}
 				break;
 
@@ -197,6 +209,16 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 					settings.reset(WATCH_RL);
 				} else {
 					settings.set(WATCH_RL);
+				}
+				break;
+
+			case 's'://smem
+				options.set(WATCH_SMEM);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_SMEM);
+				} else {
+					settings.set(WATCH_SMEM);
 				}
 				break;
 
@@ -412,7 +434,8 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			m_Result << "\n  Indifferent selection:  " << (pSysparams[TRACE_INDIFFERENT_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Soar-RL:  " << (pSysparams[TRACE_RL_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  Waterfall:  " << (pSysparams[TRACE_WATERFALL_SYSPARAM] ? "on" : "off");
-
+			m_Result << "\n  EpMem:  " << (pSysparams[TRACE_EPMEM_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  SMem:  " << (pSysparams[TRACE_SMEM_SYSPARAM] ? "on" : "off");
 		} else {
 			std::string temp;
 			AppendArgTag(sml_Names::kParamWatchDecisions, sml_Names::kTypeBoolean, 
@@ -460,6 +483,12 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 			AppendArgTag(sml_Names::kParamWatchWaterfall, sml_Names::kTypeBoolean, 
 				pSysparams[TRACE_WATERFALL_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			
+			AppendArgTag(sml_Names::kParamWatchEpMem, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_EPMEM_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
+			AppendArgTag(sml_Names::kParamWatchSMem, sml_Names::kTypeBoolean, 
+				pSysparams[TRACE_SMEM_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		return true;
@@ -489,6 +518,10 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 	if (options.test(WATCH_RL)) {
 		pKernelHack->SetSysparam(m_pAgentSML, TRACE_RL_SYSPARAM, settings.test(WATCH_RL));
 	}
+	
+	if (options.test(WATCH_EPMEM)) {
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_EPMEM_SYSPARAM, settings.test(WATCH_EPMEM));
+	}
 
 	if (options.test(WATCH_JUSTIFICATIONS)) {
 		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_OF_JUSTIFICATIONS_SYSPARAM, settings.test(WATCH_JUSTIFICATIONS));
@@ -504,6 +537,10 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 	if (options.test(WATCH_PREFERENCES)) {
 		pKernelHack->SetSysparam(m_pAgentSML, TRACE_FIRINGS_PREFERENCES_SYSPARAM, settings.test(WATCH_PREFERENCES));
+	}
+
+	if (options.test(WATCH_SMEM)) {
+		pKernelHack->SetSysparam(m_pAgentSML, TRACE_SMEM_SYSPARAM, settings.test(WATCH_SMEM));
 	}
 
 	if (options.test(WATCH_USER)) {

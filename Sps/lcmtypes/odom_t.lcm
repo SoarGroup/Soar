@@ -1,0 +1,9 @@
+package edu.umich.soar.sps.lcmtypes;
+
+struct odom_t
+{
+	int64_t utime;
+
+	int32_t left;	// ticks
+	int32_t right;	// ticks
+}

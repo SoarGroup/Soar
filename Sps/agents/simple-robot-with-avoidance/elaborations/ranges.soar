@@ -1,0 +1,81 @@
+sp {go-to-waypoint*elaborate*range*blocked
+   (state <s> ^name simple-robot
+              ^parameters.range-tolerance <rt>
+              ^io.input-link.ranges.range <r>)
+  - (<r> ^distance > <rt>)
+-->
+   (<r> ^blocked true)
+}
+
+sp {go-to-waypoint*elaborate*range*not-blocked
+   (state <s> ^name simple-robot
+              ^parameters.range-tolerance <rt>
+              ^io.input-link.ranges.range <r>)
+  - (<r> ^distance <= <rt>)
+-->
+   (<r> ^blocked false)
+}
+
+sp {go-to-waypoint*elaborate*range*move-forward
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r>)
+   (<r> ^id 0)
+-->
+   (<r> ^action.move.direction forward)
+}
+
+sp {go-to-waypoint*elaborate*range*turn-left
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r>)
+  - (<r> ^id <= 0)
+-->
+   (<r> ^action.rotate.direction left)
+}
+
+sp {go-to-waypoint*elaborate*range*rotate-right
+   (state <s> ^name simple-robot
+              ^io.input-link.ranges.range <r>)
+  - (<r> ^id >= 0)
+-->
+   (<r> ^action.rotate.direction right)
+}
+
+sp {go-to-waypoint*elaborate*range*dist-from-goal*0
+   (state <s> ^name simple-robot
+              ^io.input-link <il>
+              ^destination-waypoint.waypoint.id <id>)
+   (<il> ^self.waypoints.waypoint <w>
+         ^ranges.range <r>)
+   (<w> ^id <id>
+        ^relative-bearing <rb>)
+   (<r> -^start > <rb>
+        -^end < <rb>)
+-->
+   (<r> ^angular-distance 0)
+}
+
+sp {go-to-waypoint*elaborate*range*dist-from-goal*left
+   (state <s> ^name simple-robot
+              ^io.input-link <il>
+              ^destination-waypoint.waypoint.id <id>)
+   (<il> ^self.waypoints.waypoint <w>
+         ^ranges.range <r>)
+   (<w> ^id <id>
+        ^relative-bearing <rb>)
+   (<r> ^start {<start> > <rb>})
+-->
+   (<r> ^angular-distance (int (- <start> <rb>) ))
+}
+
+sp {go-to-waypoint*elaborate*range*dist-from-goal*right
+   (state <s> ^name simple-robot
+              ^io.input-link <il>
+              ^destination-waypoint.waypoint.id <id>)
+   (<il> ^self.waypoints.waypoint <w>
+         ^ranges.range <r>)
+   (<w> ^id <id>
+        ^relative-bearing <rb>)
+   (<r> ^end {<end> < <rb>})
+-->
+   (<r> ^angular-distance (int (- <rb> <end>) ))
+}

@@ -1,0 +1,25 @@
+sp {count-epmem*propose*storing
+   (state <s> ^name count-epmem
+              ^mode storing)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name storing)
+}
+
+sp {count-epmem*elaborate*storing
+   (state <s> ^name count-epmem
+              ^mode storing
+              ^digit <d>
+              ^smem.command <cmd>)
+-->
+   (<cmd> ^store <d>)
+}
+
+sp {apply*storing*done
+   (state <s> ^operator <op>
+              ^mode storing)
+   (<op> ^name storing)
+-->
+   (<s> ^mode storing - recording
+        ^lti t)
+}

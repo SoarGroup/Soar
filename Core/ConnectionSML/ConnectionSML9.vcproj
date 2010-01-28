@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -45,7 +45,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -70,7 +70,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -90,8 +90,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -115,7 +115,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -140,7 +140,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -160,8 +160,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -191,7 +191,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -215,7 +215,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				IgnoreAllDefaultLibraries="true"
 				IgnoreDefaultLibraryNames=""
 			/>
@@ -237,8 +237,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -269,7 +269,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -293,160 +293,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
-				IgnoreAllDefaultLibraries="true"
-				IgnoreDefaultLibraryNames=""
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Distribution|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="0"
-				OmitFramePointers="true"
-				EnableFiberSafeOptimizations="true"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
-				IgnoreAllDefaultLibraries="true"
-				IgnoreDefaultLibraryNames=""
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Distribution|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="0"
-				OmitFramePointers="true"
-				EnableFiberSafeOptimizations="true"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				IgnoreAllDefaultLibraries="true"
 				IgnoreDefaultLibraryNames=""
 			/>
@@ -468,8 +315,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -492,7 +339,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -517,7 +364,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -537,8 +384,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -562,7 +409,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -587,160 +434,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(ProjectName).lib"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Distribution SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="0"
-				OmitFramePointers="true"
-				EnableFiberSafeOptimizations="true"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
-				IgnoreAllDefaultLibraries="true"
-				IgnoreDefaultLibraryNames=""
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Distribution SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
-			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				TargetEnvironment="3"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				Optimization="3"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="0"
-				OmitFramePointers="true"
-				EnableFiberSafeOptimizations="true"
-				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
-				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="false"
-				DebugInformationFormat="0"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
-				IgnoreAllDefaultLibraries="true"
-				IgnoreDefaultLibraryNames=""
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -760,8 +454,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|Win32"
-			OutputDirectory="build\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -791,7 +485,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -815,7 +509,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				IgnoreAllDefaultLibraries="true"
 				IgnoreDefaultLibraryNames=""
 			/>
@@ -837,8 +531,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release SCU|x64"
-			OutputDirectory="build\$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)"
+			OutputDirectory="..\..\out\lib"
+			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			CharacterSet="2"
@@ -869,7 +563,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="include;..\ElementXML\include;..\shared"
+				AdditionalIncludeDirectories="..\ElementXML\src;..\shared"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -893,7 +587,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalOptions="/LTCG"
-				OutputFile="$(ProjectName).lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				IgnoreAllDefaultLibraries="true"
 				IgnoreDefaultLibraryNames=""
 			/>
@@ -942,22 +636,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -973,6 +651,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\config_Config.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\config_File.cpp"
@@ -994,22 +676,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1025,6 +691,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\config_File.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\config_Source.cpp"
@@ -1046,22 +716,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1077,6 +731,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\config_Source.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\config_Util.cpp"
@@ -1098,22 +756,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1129,6 +771,18 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\config_Util.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\EmbeddedSMLInterface.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\KernelSMLDirect.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_AnalyzeXML.cpp"
@@ -1150,22 +804,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1181,6 +819,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_AnalyzeXML.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_ArgMap.cpp"
@@ -1202,22 +844,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1233,6 +859,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_ArgMap.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_Connection.cpp"
@@ -1254,22 +884,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1285,6 +899,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_Connection.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_EmbeddedConnection.cpp"
@@ -1306,22 +924,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1337,6 +939,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_EmbeddedConnection.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_EmbeddedConnectionAsynch.cpp"
@@ -1358,22 +964,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1389,6 +979,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_EmbeddedConnectionAsynch.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_EmbeddedConnectionSynch.cpp"
@@ -1410,22 +1004,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1441,6 +1019,14 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_EmbeddedConnectionSynch.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sml_Errors.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_Events.cpp"
@@ -1462,22 +1048,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1493,6 +1063,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_Events.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_EventThread.cpp"
@@ -1514,22 +1088,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1545,6 +1103,14 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_EventThread.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sml_Handles.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_MessageSML.cpp"
@@ -1566,22 +1132,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1597,6 +1147,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_MessageSML.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_Names.cpp"
@@ -1618,22 +1172,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1649,6 +1187,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_Names.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_RemoteConnection.cpp"
@@ -1670,22 +1212,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1701,6 +1227,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_RemoteConnection.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_StringOps.cpp"
@@ -1722,22 +1252,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1753,6 +1267,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_StringOps.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_TagArg.cpp"
@@ -1774,22 +1292,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1805,6 +1307,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_TagArg.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_TagCommand.cpp"
@@ -1826,22 +1332,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1857,6 +1347,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_TagCommand.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_TagError.cpp"
@@ -1878,22 +1372,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1909,6 +1387,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_TagError.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_TagFilter.cpp"
@@ -1930,22 +1412,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -1961,6 +1427,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_TagFilter.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_TagName.cpp"
@@ -1982,22 +1452,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2013,6 +1467,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_TagName.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_TagResult.cpp"
@@ -2034,22 +1492,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2065,6 +1507,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_TagResult.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_TagWme.cpp"
@@ -2086,22 +1532,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2117,6 +1547,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_TagWme.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sml_Utils.cpp"
@@ -2138,22 +1572,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2169,6 +1587,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sml_Utils.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_ClientNamedPipe.cpp"
@@ -2190,22 +1612,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2221,6 +1627,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_ClientNamedPipe.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_ClientSocket.cpp"
@@ -2242,22 +1652,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2273,6 +1667,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_ClientSocket.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_DataSender.cpp"
@@ -2294,22 +1692,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2325,6 +1707,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_DataSender.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_ListenerNamedPipe.cpp"
@@ -2346,22 +1732,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2377,6 +1747,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_ListenerNamedPipe.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_ListenerSocket.cpp"
@@ -2398,22 +1772,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2429,6 +1787,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_ListenerSocket.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_NamedPipe.cpp"
@@ -2450,22 +1812,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2481,6 +1827,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_NamedPipe.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_OSspecific.cpp"
@@ -2502,22 +1852,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2533,6 +1867,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_OSspecific.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_Socket.cpp"
@@ -2554,22 +1892,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2585,6 +1907,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_Socket.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\sock_SocketLib.cpp"
@@ -2606,22 +1932,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2637,6 +1947,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\sock_SocketLib.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\thread_Event.cpp"
@@ -2658,22 +1972,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2689,6 +1987,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\thread_Event.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\thread_Lock.cpp"
@@ -2710,22 +2012,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2741,6 +2027,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\thread_Lock.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\thread_OSspecific.cpp"
@@ -2762,22 +2052,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2793,6 +2067,10 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\src\thread_OSspecific.h"
+				>
 			</File>
 			<File
 				RelativePath=".\src\thread_Thread.cpp"
@@ -2814,22 +2092,6 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Distribution SCU|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution SCU|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Release SCU|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -2846,178 +2108,10 @@
 					/>
 				</FileConfiguration>
 			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
 			<File
-				RelativePath=".\include\config_Config.h"
+				RelativePath=".\src\thread_Thread.h"
 				>
 			</File>
-			<File
-				RelativePath=".\include\config_File.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\config_Source.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\config_Util.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\EmbeddedSMLInterface.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_AnalyzeXML.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_ArgMap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_Connection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_EmbeddedConnection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_EmbeddedConnectionAsynch.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_EmbeddedConnectionSynch.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_Errors.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_Events.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_EventThread.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_Handles.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_MessageSML.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_Names.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_RemoteConnection.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_StringOps.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_TagArg.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_TagCommand.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_TagError.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_TagFilter.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_TagName.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_TagResult.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_TagWme.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sml_Utils.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_ClientNamedPipe.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_ClientSocket.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_DataSender.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_ListenerNamedPipe.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_ListenerSocket.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_NamedPipe.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\sock_OSspecific.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_Socket.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\sock_SocketLib.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\thread_Event.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\thread_Lock.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\thread_OSspecific.h"
-				>
-			</File>
-			<File
-				RelativePath=".\include\thread_Thread.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="SCU Files"
@@ -3057,28 +2151,8 @@
 						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Distribution|x64"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 		<Global

@@ -1,0 +1,22 @@
+#!/usr/bin/python
+import os
+
+Import('env')
+sharejava = env['PREFIX'] + '/share/java'
+smljar = sharejava + '/sml.jar'
+jars = [ 
+        sharejava + '/soar-soar2d-' + env['SOAR_VERSION'] + '.jar',
+        sharejava + '/soar-soar2d-' + env['SOAR_VERSION'] + '.src.jar',
+        ]   
+
+thisdir = env.Dir('#../Soar2D')
+env.Command(jars, smljar, 'ant -q -Dsoarprefix=$PREFIX -Dversion=' + env['SOAR_VERSION'], chdir=thisdir)
+
+#TODO: clean doesn't work quite right with the target jars
+# Clean java stuff
+if env.GetOption('clean'):
+        for x in BUILD_TARGETS:
+                targetpath = os.path.realpath(str(x))
+                if sharejava.startswith(targetpath):
+                        env.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + env['SOAR_VERSION'], chdir=thisdir)
+

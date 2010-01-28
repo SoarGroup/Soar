@@ -23,8 +23,7 @@
 #include <sys/wait.h>
 #endif // !_WIN32
 
-enum eTestOptions
-{
+enum eTestOptions{
 	NONE,
 	USE_CLIENT_THREAD,
 	FULLY_OPTIMIZED,
@@ -38,6 +37,8 @@ typedef std::bitset< NUM_TEST_OPTIONS > TestBitset;
 
 #define TEST_DECLARATION( functionName ) void functionName(); void functionName##Body()
 #define TEST_DEFINITION( functionName ) void FullTests::functionName() { m_pTestBody = &FullTests::functionName##Body; runAllTestTypes(); } void FullTests::functionName##Body()
+
+extern bool g_NoRemote;
 
 class FullTests : public CPPUNIT_NS::TestCase
 {
@@ -76,6 +77,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testNegatedConjunctiveTestReorder );
 	CPPUNIT_TEST( testNegatedConjunctiveTestUnbound ); // bug 517
 	CPPUNIT_TEST( testCommandToFile ); 
+	CPPUNIT_TEST( testConvertIdentifier ); 
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -112,6 +114,7 @@ public:
 	TEST_DECLARATION( testNegatedConjunctiveTestReorder );
 	TEST_DECLARATION( testNegatedConjunctiveTestUnbound );
 	TEST_DECLARATION( testCommandToFile );
+	TEST_DECLARATION( testConvertIdentifier );
 
 	void testShutdownHandlerShutdown();
 
@@ -124,7 +127,7 @@ protected:
 	void destroySoar();
 	void runAllTestTypes();
 	void runTest();
-	void spawnListener();
+	void spawnListener(const std::string& lib);
 	void cleanUpListener();
 
 	void loadProductions( const char* productions );
@@ -204,16 +207,18 @@ void FullTests::runAllTestTypes()
 	std::cout << "3";
 	std::cout.flush();
 
-	// test 4
-	// generate port
-	m_Port = rand() % kPortRange;
-	m_Port += kPortBase;
+	if (!g_NoRemote) {
+		// test 4
+		// generate port
+		m_Port = rand() % kPortRange;
+		m_Port += kPortBase;
 
-	m_Options.reset();
-	m_Options.set( REMOTE );
-	runTest();
-	std::cout << "4";
-	std::cout.flush();
+		m_Options.reset();
+		m_Options.set( REMOTE );
+		runTest();
+		std::cout << "4";
+		std::cout.flush();
+	}
 }
 
 void FullTests::runTest()
@@ -234,7 +239,13 @@ void FullTests::createSoar()
 
 	if ( m_Options.test( REMOTE ) )
 	{
-		spawnListener();
+		m_pKernel = sml::Kernel::CreateKernelInCurrentThread();
+		CPPUNIT_ASSERT( m_pKernel != NULL );
+		std::string lib( m_pKernel->GetLibraryLocation() );
+		m_pKernel->Shutdown();
+		delete m_pKernel;
+		m_pKernel = NULL;
+		spawnListener(lib);
 		m_pKernel = sml::Kernel::CreateRemoteConnection( true, 0, m_Port );
 	}
 	else
@@ -341,7 +352,7 @@ void FullTests::destroySoar()
 	}
 }
 
-void FullTests::spawnListener()
+void FullTests::spawnListener(const std::string& lib)
 {
 	// Spawning a new process is radically different on windows vs linux.
 	// Instead of writing an abstraction layer, I'm just going to put platform-
@@ -376,11 +387,15 @@ void FullTests::spawnListener()
 	if ( pid == 0 )
 	{
 		// child
-      std::stringstream portString;
-      portString << m_Port;
-		execl("Tests", "Tests", "--listener", portString.str().c_str(), static_cast< char* >( 0 ));
+		std::stringstream portString;
+		portString << m_Port;
+		std::stringstream cmdString;
+		cmdString << lib << "/bin/Tests";
+		execlp(cmdString.str().c_str(), "Tests", "--listener", portString.str().c_str(), static_cast< char* >( 0 ));
 		// does not return on success
-		CPPUNIT_ASSERT_MESSAGE( "execl failed", false );
+		CPPUNIT_ASSERT_MESSAGE( "execlp failed", false );
+		g_NoRemote = true;
+		std::cerr << "Disabled remote tests." << std::endl;
 	}
 #endif // _WIN32
 
@@ -439,7 +454,7 @@ TEST_DEFINITION( testInit )
 TEST_DEFINITION( testProductions )
 {
 	// Load and test productions
-	loadProductions( "/Tests/testsml.soar" );
+	loadProductions( "/share/soar/Tests/testsml.soar" );
 
 	CPPUNIT_ASSERT( m_pAgent->IsProductionLoaded( "apply*move" ) );
 	CPPUNIT_ASSERT( !m_pAgent->IsProductionLoaded( "made*up*name" ) );
@@ -452,7 +467,7 @@ TEST_DEFINITION( testProductions )
 	CPPUNIT_ASSERT( excisedCount > 0 );
 
 	excisedCount = 0;
-	loadProductions( "/Tests/testsml.soar" );
+	loadProductions( "/share/soar/Tests/testsml.soar" );
 	CPPUNIT_ASSERT( excisedCount == 0 );
 
 	CPPUNIT_ASSERT( m_pAgent->UnregisterForProductionEvent( prodCall ) );
@@ -460,7 +475,7 @@ TEST_DEFINITION( testProductions )
 
 TEST_DEFINITION( testRHSHandler )
 {
-	loadProductions( "/Tests/testsml.soar" );
+	loadProductions( "/share/soar/Tests/testsml.soar" );
 
 	bool rhsFunctionHandlerReceived( false );
 
@@ -693,7 +708,7 @@ TEST_DEFINITION( testAgent )
 {
 	//m_pKernel->SetTraceCommunications( true );
 
-	loadProductions( "/Tests/testsml.soar" );
+	loadProductions( "/share/soar/Tests/testsml.soar" );
 
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
@@ -989,7 +1004,7 @@ TEST_DEFINITION( testAgent )
 
 TEST_DEFINITION( testSimpleCopy )
 {
-	loadProductions( "/Tests/testcopy.soar" );
+	loadProductions( "/share/soar/Tests/testcopy.soar" );
 
 /* Input structure for the test
 (S1 ^io I1)
@@ -1128,7 +1143,7 @@ TEST_DEFINITION( testSimpleCopy )
 
 TEST_DEFINITION( testSimpleReteNetLoader )
 {
-	std::string path = std::string(m_pKernel->GetLibraryLocation()) + "/Tests/test.soarx" ;
+	std::string path = std::string(m_pKernel->GetLibraryLocation()) + "/share/soar/Tests/test.soarx" ;
 	std::string command = std::string("rete-net -l \"") + path + "\"";  // RPM: wrap path in quotes in case it contains a space
 	std::string result = m_pAgent->ExecuteCommandLine(command.c_str()) ;
 	CPPUNIT_ASSERT( m_pAgent->GetLastCommandLineResult() );
@@ -1142,7 +1157,7 @@ TEST_DEFINITION( testSimpleReteNetLoader )
 
 TEST_DEFINITION( testOSupportCopyDestroy )
 {
-	loadProductions( "/Tests/testOSupportCopyDestroy.soar" );
+	loadProductions( "/share/soar/Tests/testOSupportCopyDestroy.soar" );
 
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
@@ -1172,7 +1187,7 @@ TEST_DEFINITION( testOSupportCopyDestroy )
 
 TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 {
-	loadProductions( "/Tests/testOSupportCopyDestroy.soar" );
+	loadProductions( "/share/soar/Tests/testOSupportCopyDestroy.soar" );
 
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
@@ -1200,7 +1215,7 @@ TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 
 TEST_DEFINITION( testOSupportCopyDestroyCircular )
 {
-	loadProductions( "/Tests/testOSupportCopyDestroy.soar" );
+	loadProductions( "/share/soar/Tests/testOSupportCopyDestroy.soar" );
 
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
@@ -1334,7 +1349,7 @@ TEST_DEFINITION( testEventOrdering )
 TEST_DEFINITION( testStatusCompleteDuplication )
 {
 	// Load and test productions
-	loadProductions( "/Tests/teststatuscomplete.soar" );
+	loadProductions( "/share/soar/Tests/teststatuscomplete.soar" );
 
 	// step
 	m_pAgent->RunSelf(1);
@@ -1378,7 +1393,7 @@ TEST_DEFINITION( testStatusCompleteDuplication )
 
 TEST_DEFINITION( testStopSoarVsInterrupt )
 {
-	loadProductions( "/Tests/teststopsoar.soar" );
+	loadProductions( "/share/soar/Tests/teststopsoar.soar" );
 
 	m_pAgent->ExecuteCommandLine("run -o 3");
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
@@ -1404,7 +1419,7 @@ TEST_DEFINITION( testStopSoarVsInterrupt )
 	m_pAgent->ExecuteCommandLine("ex -a"); // side effect: init-soar
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
 
-	loadProductions( "/Tests/testinterrupt.soar" );
+	loadProductions( "/share/soar/Tests/testinterrupt.soar" );
 
 	m_pAgent->ExecuteCommandLine("run -o 3");
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
@@ -1468,7 +1483,7 @@ TEST_DEFINITION( testFindAttrPipes )
 
 TEST_DEFINITION( testTemplateVariableNameBug )
 {
-	loadProductions( "/Tests/test1121.soar" );
+	loadProductions( "/share/soar/Tests/test1121.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 	sml::ClientAnalyzedXML response;
 	m_pAgent->ExecuteCommandLineXML("stats", &response);
@@ -1479,7 +1494,7 @@ TEST_DEFINITION( testTemplateVariableNameBug )
 
 TEST_DEFINITION( testNegatedConjunctiveChunkLoopBug510 )
 {
-	loadProductions( "/Tests/testNegatedConjunctiveChunkLoopBug510.soar" );
+	loadProductions( "/share/soar/Tests/testNegatedConjunctiveChunkLoopBug510.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 	sml::ClientAnalyzedXML response;
 	m_pAgent->ExecuteCommandLineXML("stats", &response);
@@ -1489,13 +1504,13 @@ TEST_DEFINITION( testNegatedConjunctiveChunkLoopBug510 )
 
 TEST_DEFINITION( testGDSBug1144 )
 {
-	loadProductions( "/Tests/testGDSBug1144.soar" );
+	loadProductions( "/share/soar/Tests/testGDSBug1144.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
 
 TEST_DEFINITION( testGDSBug1011 )
 {
-	loadProductions( "/Tests/testGDSBug1011.soar" );
+	loadProductions( "/share/soar/Tests/testGDSBug1011.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 	sml::ClientAnalyzedXML response;
 	m_pAgent->ExecuteCommandLineXML("stats", &response);
@@ -1506,7 +1521,7 @@ TEST_DEFINITION( testGDSBug1011 )
 
 TEST_DEFINITION( testLearn )
 {
-	loadProductions( "/Tests/testLearn.soar" );
+	loadProductions( "/share/soar/Tests/testLearn.soar" );
 	m_pAgent->ExecuteCommandLine("learn --except");
 	m_pKernel->RunAllAgentsForever();
 	{
@@ -1616,14 +1631,14 @@ TEST_DEFINITION( testLearn )
 TEST_DEFINITION( testPreferenceSemantics )
 {
 	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
-	loadProductions( "/Tests/pref-semantics-test.soar" );
+	loadProductions( "/share/soar/Tests/pref-semantics-test.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
 
 TEST_DEFINITION( testMatchTimeInterrupt )
 {
 	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
-	loadProductions( "/Tests/testMatchTimeInterrupt.soar" );
+	loadProductions( "/share/soar/Tests/testMatchTimeInterrupt.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
 TEST_DEFINITION( testNegatedConjunctiveTestReorder )
@@ -1664,7 +1679,7 @@ TEST_DEFINITION( testNegatedConjunctiveTestUnbound )
 
 TEST_DEFINITION( testCommandToFile )
 {
-	loadProductions( "/Demos/water-jug/water-jug-rl.soar" );
+	loadProductions( "/share/soar/Demos/water-jug/water-jug-rl.soar" );
 	m_pKernel->RunAllAgentsForever();
 	m_pAgent->ExecuteCommandLine("command-to-file testCommandToFile-output.soar print --rl --full");
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
@@ -1673,4 +1688,28 @@ TEST_DEFINITION( testCommandToFile )
 	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\nSource finished.\n");
 	CPPUNIT_ASSERT(result == resultString);
 	remove("testCommandToFile-output.soar");
+}
+
+TEST_DEFINITION( testConvertIdentifier )
+{
+	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^io.output-link <out>) --> (<out> ^a b)}");
+	m_pAgent->ExecuteCommandLine("sp {fnord (state <s> ^io.output-link <out>) (<out> ^foo <f>) --> (<out> ^bar <f>)}");
+	m_pKernel->RunAllAgents(2);
+
+	sml::Identifier* pOutputLink = m_pAgent->GetOutputLink();
+	sml::Identifier* pFoo = pOutputLink->CreateIdWME("foo");
+
+	char const* pConvertedId = m_pAgent->ConvertIdentifier(pFoo->GetValueAsString());
+	CPPUNIT_ASSERT(pConvertedId == 0);
+
+	m_pAgent->Commit();
+	m_pKernel->RunAllAgents(2);
+
+	sml::WMElement* pBarWme = pOutputLink->FindByAttribute("bar", 0);
+	
+	pConvertedId = m_pAgent->ConvertIdentifier(pFoo->GetValueAsString());
+	CPPUNIT_ASSERT(pConvertedId);
+	std::string convertedId(pConvertedId);
+	CPPUNIT_ASSERT(convertedId == pBarWme->GetValueAsString());
+
 }

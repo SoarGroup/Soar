@@ -1,0 +1,7 @@
+sp {jon-agent*propose*wander
+   (state <s> ^name jon-agent
+             -^initialized false)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name wander)
+}

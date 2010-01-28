@@ -1,0 +1,15 @@
+sp {propose*initialize-jon-agent
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-jon-agent)
+}
+
+sp {apply*initialize-jon-agent
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-jon-agent)
+-->
+   (<s> ^name jon-agent)
+}
+

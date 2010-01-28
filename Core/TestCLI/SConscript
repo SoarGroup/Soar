@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+Import('env')
+env = env.Clone()
+
+env.Prepend(CPPPATH = [	'#ClientSML/src',
+			'#ElementXML/src',
+			'#ConnectionSML/src'])
+
+libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', ]
+
+env.Append(LIBS = libadd, LIBPATH = '$PREFIX/lib')
+
+TestCLI = env.Program('TestCLI', Glob('*.cpp'))
+
+env.Install('$PREFIX/bin', TestCLI)
+

@@ -801,7 +801,7 @@ void print_tracing_rule_tcl (agent* thisAgent, int type_restriction, Symbol *nam
 //#endif /* USE_TCL */
 
 
-Bool print_trace_callback_fn (agent* thisAgent, void *item, FILE* /*f*/) {
+Bool print_trace_callback_fn (agent* thisAgent, void *item, void*) {
   tracing_rule *tr;
 
   tr = static_cast<tracing_rule_struct *>(item);
@@ -810,7 +810,7 @@ Bool print_trace_callback_fn (agent* thisAgent, void *item, FILE* /*f*/) {
 }
 
 //#ifdef USE_TCL
-Bool print_trace_callback_fn_tcl (agent* thisAgent, void *item, FILE* /*f*/) {
+Bool print_trace_callback_fn_tcl (agent* thisAgent, void *item, void*) {
   tracing_rule *tr;
 
   tr = static_cast<tracing_rule_struct *>(item);
@@ -828,13 +828,13 @@ void print_all_trace_formats (agent* thisAgent, Bool stack_trace, FILE* f) {
     for (i=0; i<3; i++) {
       if (thisAgent->stack_tf_for_anything[i])
         print_tracing_rule (thisAgent, i, NIL, thisAgent->stack_tf_for_anything[i]);
-      do_for_all_items_in_hash_table (thisAgent, thisAgent->stack_tr_ht[i],print_trace_callback_fn,f);
+      do_for_all_items_in_hash_table (thisAgent, thisAgent->stack_tr_ht[i],print_trace_callback_fn,reinterpret_cast<void*>(f));
     }
   } else {
     for (i=0; i<3; i++) {
       if (thisAgent->object_tf_for_anything[i])
         print_tracing_rule (thisAgent, i, NIL, thisAgent->object_tf_for_anything[i]);
-      do_for_all_items_in_hash_table (thisAgent, thisAgent->object_tr_ht[i],print_trace_callback_fn,f);
+      do_for_all_items_in_hash_table (thisAgent, thisAgent->object_tr_ht[i],print_trace_callback_fn,reinterpret_cast<void*>(f));
     }
   }
 }
@@ -848,13 +848,13 @@ void print_all_trace_formats_tcl (agent* thisAgent, Bool stack_trace, FILE* f) {
     for (i=0; i<3; i++) {
       if (thisAgent->stack_tf_for_anything[i])
         print_tracing_rule_tcl (thisAgent, i, NIL, thisAgent->stack_tf_for_anything[i]);
-      do_for_all_items_in_hash_table (thisAgent, thisAgent->stack_tr_ht[i],print_trace_callback_fn_tcl,f);
+      do_for_all_items_in_hash_table (thisAgent, thisAgent->stack_tr_ht[i],print_trace_callback_fn_tcl,reinterpret_cast<void*>(f));
     }
   } else {
     for (i=0; i<3; i++) {
       if (thisAgent->object_tf_for_anything[i])
         print_tracing_rule_tcl (thisAgent, i, NIL, thisAgent->object_tf_for_anything[i]);
-      do_for_all_items_in_hash_table (thisAgent, thisAgent->object_tr_ht[i],print_trace_callback_fn_tcl,f);
+      do_for_all_items_in_hash_table (thisAgent, thisAgent->object_tr_ht[i],print_trace_callback_fn_tcl,reinterpret_cast<void*>(f));
     }
   }
 }

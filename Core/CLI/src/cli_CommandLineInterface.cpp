@@ -53,6 +53,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIEcho]						= &cli::CommandLineInterface::ParseEcho;
 	m_CommandMap[Commands::kCLIEchoCommands]				= &cli::CommandLineInterface::ParseEchoCommands;
 	m_CommandMap[Commands::kCLIEditProduction]				= &cli::CommandLineInterface::ParseEditProduction;
+	m_CommandMap[Commands::kCLIEpMem]						= &cli::CommandLineInterface::ParseEpMem;
 	m_CommandMap[Commands::kCLIExcise]						= &cli::CommandLineInterface::ParseExcise;
 	m_CommandMap[Commands::kCLIExplainBacktraces]			= &cli::CommandLineInterface::ParseExplainBacktraces;
 	m_CommandMap[Commands::kCLIFiringCounts]				= &cli::CommandLineInterface::ParseFiringCounts;
@@ -94,6 +95,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLISaveBacktraces]				= &cli::CommandLineInterface::ParseSaveBacktraces;
 	m_CommandMap[Commands::kCLISelect]						= &cli::CommandLineInterface::ParseSelect;
 	m_CommandMap[Commands::kCLISetLibraryLocation]			= &cli::CommandLineInterface::ParseSetLibraryLocation;
+	m_CommandMap[Commands::kCLISMem]						= &cli::CommandLineInterface::ParseSMem;
 	m_CommandMap[Commands::kCLISoarNews]					= &cli::CommandLineInterface::ParseSoarNews;
 	m_CommandMap[Commands::kCLISource]						= &cli::CommandLineInterface::ParseSource;
 	m_CommandMap[Commands::kCLISP]							= &cli::CommandLineInterface::ParseSP;
@@ -110,6 +112,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIWarnings]					= &cli::CommandLineInterface::ParseWarnings;
 	m_CommandMap[Commands::kCLIWatch]						= &cli::CommandLineInterface::ParseWatch;
 	m_CommandMap[Commands::kCLIWatchWMEs]					= &cli::CommandLineInterface::ParseWatchWMEs;
+	m_CommandMap[Commands::kCLIWMA]							= &cli::CommandLineInterface::ParseWMA;
 
 	// Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
 	// FIXME: missing stuff like GDSPRINT?
@@ -123,6 +126,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIDefaultWMEDepth]			= true ;
 	m_EchoMap[Commands::kCLIEcho]						= true ;
 	m_EchoMap[Commands::kCLIEchoCommands]				= true ;
+	m_EchoMap[Commands::kCLIEpMem]						= true ;
 	m_EchoMap[Commands::kCLIExcise]						= true ;
 	m_EchoMap[Commands::kCLIGP]							= true ;
 	m_EchoMap[Commands::kCLIGPMax]						= true ;
@@ -148,6 +152,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIRun]						= true ;
 	m_EchoMap[Commands::kCLISelect]						= true ;
 	m_EchoMap[Commands::kCLISetLibraryLocation]			= true ;
+	m_EchoMap[Commands::kCLISMem]						= true ;
 	m_EchoMap[Commands::kCLISource]						= true ;
 	m_EchoMap[Commands::kCLISP]							= true ;
 	m_EchoMap[Commands::kCLISRand]						= true ;
@@ -621,7 +626,7 @@ bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 
 	// Show help if requested
 	if (helpFlag) {
-		std::string helpFile = m_LibraryDirectory + "/CLIHelp/" + argv[0];
+		std::string helpFile = m_LibraryDirectory + "/share/soar/Help/" + argv[0];
 		return GetHelpString(helpFile);
 	}
 
@@ -655,7 +660,7 @@ EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 	// SoarLibrary
 #ifdef WIN32
 	char dllpath[256];
-	GetModuleFileName(static_cast<HMODULE>(m_pKernelSML->GetModuleHandle()), dllpath, 256);
+	GetModuleFileName(0, dllpath, 256); // passing null gets directory of exe
 
 	// This sets it to the path + the dll
 	m_LibraryDirectory = dllpath;
@@ -665,13 +670,38 @@ EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 
 	// This takes the parent directory to get ...SoarLibrary
 	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
+	return;
 
 #else // WIN32
-	// Hopefully ...SoarLibrary/bin
-	GetCurrentWorkingDirectory(m_LibraryDirectory);
+	struct stat statbuf;
+	const char* selfexe = "/proc/self/exe";
+	const int size = 2048;
+	char buf[size];
+	if (stat(selfexe, &statbuf) == -1) {
+		// we don't have proc
+#ifdef SCONS_DARWIN
+		uint32_t usize = static_cast<uint32_t>(size);
+		_NSGetExecutablePath(buf, &usize);
+#else // SCONS_DARWIN
+		GetCurrentWorkingDirectory(m_LibraryDirectory);
+		return;
+#endif
+	} else {
+		int ret = readlink(selfexe, buf, size);
+		if (ret == -1 || ret >= size) {
+			// failed for whatever reason (possibly path too long)
+			GetCurrentWorkingDirectory(m_LibraryDirectory);
+			return;
+		}
+	}
 
-	// This takes the parent directory to get ...SoarLibrary
+	// Get parent directory
+	buf[size-1] = 0;
+	m_LibraryDirectory = buf;
 	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
+	//std::cout << m_LibraryDirectory << std::endl;
+	return;
 
 #endif // WIN32
 }

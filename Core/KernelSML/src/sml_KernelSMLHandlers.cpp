@@ -66,6 +66,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_WasAgentOnRunList] = &sml::KernelSML::HandleWasAgentOnRunList ;
 	m_CommandMap[sml_Names::kCommand_GetResultOfLastRun]= &sml::KernelSML::HandleGetResultOfLastRun ;
 	m_CommandMap[sml_Names::kCommand_GetInitialTimeTag] = &sml::KernelSML::HandleGetInitialTimeTag ;
+	m_CommandMap[sml_Names::kCommand_ConvertIdentifier] = &sml::KernelSML::HandleConvertIdentifier;
 }
 
 /*************************************************************
@@ -466,6 +467,27 @@ bool KernelSML::HandleGetInitialTimeTag(AgentSML* /*pAgentSML*/, char const* /*p
 	// Record the value we picked and return it. 	 
 	pConnection->SetInitialTimeTagCounter(timeTagStart) ; 	 
 	return this->ReturnIntResult(pConnection, pResponse, timeTagStart) ; 	 
+}
+
+bool KernelSML::HandleConvertIdentifier(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) 	 
+{
+	// Get the identifier to convert
+	char const* pClientId = pIncoming->GetArgString(sml_Names::kParamName) ;
+
+	if (!pClientId)
+	{
+		return InvalidArg(pConnection, pResponse, pCommandName, "Need to specify the client-side identifier to convert.") ;
+	}
+
+	std::string convertedId;
+	if (pAgentSML->ConvertID(pClientId, &convertedId)) 
+	{
+		return ReturnResult(pConnection, pResponse, convertedId.c_str()) ;
+	} 
+	else 
+	{
+		return ReturnResult(pConnection, pResponse, "") ;
+	}
 }
 
  // Returns true if the production name is currently loaded
@@ -885,11 +907,6 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 				// We may have no output defined and that's not an error so cover that case
 				if (pFilteredOutput == NULL)
 					pFilteredOutput = "" ;
-
-				if(filteredError)
-				{
-					pConnection->AddErrorToSMLResponse(pResponse, pFilteredOutput, -1) ;
-				}
 
 				bool res = this->ReturnResult(pConnection, pResponse, pFilteredOutput) ;
 

@@ -1,0 +1,35 @@
+## Rotate toward waypoint if ever turned so far away that none of the range sensors 
+##  are pointing toward it (computed in elaborations)
+##  Will naturally turn toward it based on .actions operator and ranges calculations. 
+
+sp {go-to-waypoint*propose*rotate-to
+   (state <s> ^name go-to-waypoint
+              ^yaw-aligned false)
+-->
+   (<s> ^operator <op> +, =)
+   (<op> ^name rotate-to)
+}
+
+
+sp {goto-waypoint*select-rotate-to*worse-than*action
+   (state <s> ^name go-to-waypoint
+              ^operator <o1> +
+              ^operator { <> <o1> <o2>} +)
+   (<o1> ^name rotate-to)
+   (<o2> ^name action)
+-->
+   (<s> ^operator <o1> < <o2>)}
+
+
+# TODO: should test for rotation velocity == 0 to prevent creating a new command every cycle as yaw changes
+sp {apply*rotate-to
+   (state <s> ^operator.name rotate-to
+              ^waypoint.yaw <yaw>
+              ^io.output-link <ol>
+              ^io.input-link.self.pose.yaw-velocity 0.)
+-->
+   (<ol> ^set-heading <sh>)
+   (<sh> ^yaw <yaw>)
+   (write (crlf) |Rotating to | <yaw>)
+   (exec player-print |Rotating to | <yaw>)
+}

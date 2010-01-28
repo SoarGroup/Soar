@@ -34,6 +34,7 @@
 #include "decide.h"
 #include "prefmem.h"
 #include "print.h"
+#include "wma.h"
 
 const char * preference_name[] =
 { "acceptable",
@@ -82,6 +83,7 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
   p->total_preferences_for_candidate = 0;
   p->numeric_value = 0;
   p->rl_contribution = false;
+  p->wma_o_set = NIL;
 
 #ifdef DEBUG_PREFS
   print (thisAgent, "\nAllocating preference at 0x%8x: ", (unsigned long)p);
@@ -127,6 +129,11 @@ void deallocate_preference (agent* thisAgent, preference *pref) {
   symbol_remove_ref (thisAgent, pref->value);
   if (preference_is_binary(pref->type))
     symbol_remove_ref (thisAgent, pref->referent);
+
+  if ( pref->wma_o_set )
+  {
+	wma_remove_pref_o_set( thisAgent, pref );
+  }
   
   /* --- free the memory --- */
   free_with_pool (&thisAgent->preference_pool, pref);

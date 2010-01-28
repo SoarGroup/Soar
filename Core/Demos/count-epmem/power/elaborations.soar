@@ -1,0 +1,10 @@
+sp {power*elaborate*substate
+   (state <s> ^superstate.operator <so>)
+   (<so> ^type power
+         ^x <x>
+         ^y <y>)
+-->
+   (<s> ^name power
+        ^x <x>
+        ^y <y>)
+}

@@ -1,7 +1,0 @@
-sp {wander*propose*move-block
-   (state <s> ^name book
-              ^block-id)
--->
-   (<s> ^operator <o> +)
-   (<o> ^name move-block)
-}

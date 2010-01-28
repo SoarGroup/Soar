@@ -57,6 +57,8 @@
 #include "soar_TraceNames.h"
 #include "utilities.h"
 
+#include "wma.h"
+
 #include <ctype.h>
 
 #include <assert.h>
@@ -206,6 +208,12 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
   /* --- go ahead and add the wme --- */
   w = make_wme (thisAgent, id, attr, value, FALSE);
   insert_at_head_of_dll (id->id.input_wmes, w, next, prev);
+
+  if ( wma_enabled( thisAgent ) )
+  {
+    wma_activate_wme( thisAgent, w );
+  }
+
   add_wme_to_wm (thisAgent, w);
 
   //PrintDebugFormat("Added wme with timetag %d to id %c%d ",w->timetag,id->id.name_letter,id->id.name_number) ;
@@ -691,17 +699,19 @@ void do_output_cycle (agent* thisAgent) {
       output_call_data.mode = ADDED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
-                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+	  thisAgent->timers_phase.stop();
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
+	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
+	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
-      start_timer (thisAgent, &thisAgent->start_phase_tv);
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_output_function_cpu_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_kernel.start();
+	  thisAgent->timers_phase.start();
       #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       ol->status = UNCHANGED_OL_STATUS;
@@ -713,17 +723,19 @@ void do_output_cycle (agent* thisAgent) {
       output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
-                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+	  thisAgent->timers_phase.stop();
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
+	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
+	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
-      start_timer (thisAgent, &thisAgent->start_phase_tv);
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_output_function_cpu_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_kernel.start();
+	  thisAgent->timers_phase.start();
       #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       ol->status = UNCHANGED_OL_STATUS;
@@ -737,17 +749,19 @@ void do_output_cycle (agent* thisAgent) {
       output_call_data.mode = MODIFIED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
-                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+	  thisAgent->timers_phase.stop();
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
+	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
+	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
-      start_timer (thisAgent, &thisAgent->start_phase_tv);
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_output_function_cpu_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_kernel.start();
+	  thisAgent->timers_phase.start();
       #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       ol->status = UNCHANGED_OL_STATUS;
@@ -760,17 +774,19 @@ void do_output_cycle (agent* thisAgent) {
       output_call_data.mode = REMOVED_OUTPUT_COMMAND;
       output_call_data.outputs = iw_list;
 	  #ifndef NO_TIMING_STUFF 	  /* moved here from do_one_top_level_phase June 05.  KJC */
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, 
-                   &thisAgent->decision_cycle_phase_timers[thisAgent->current_phase]);
-      stop_timer (thisAgent, &thisAgent->start_phase_tv, &thisAgent->decision_cycle_timer);
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->total_kernel_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
+	  thisAgent->timers_phase.stop();
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
+	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
+	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
       #ifndef NO_TIMING_STUFF      
-      stop_timer (thisAgent, &thisAgent->start_kernel_tv, &thisAgent->output_function_cpu_time);
-      start_timer (thisAgent, &thisAgent->start_kernel_tv);
-      start_timer (thisAgent, &thisAgent->start_phase_tv);
+	  thisAgent->timers_kernel.stop();
+	  thisAgent->timers_output_function_cpu_time.update(thisAgent->timers_kernel);
+	  thisAgent->timers_kernel.start();
+	  thisAgent->timers_phase.start();
       #endif
       deallocate_io_wme_list (thisAgent, iw_list);
       wme_remove_ref (thisAgent, ol->link_wme);

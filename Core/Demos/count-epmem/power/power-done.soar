@@ -1,0 +1,17 @@
+sp {power*propose*power-done
+   (state <s> ^name power
+              ^current <y>
+              ^y <y>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name power-done)
+}
+
+sp {apply*power-done
+   (state <s> ^operator <op>
+              ^superstate.operator <ss-op>
+              ^result <r>)
+   (<op> ^name power-done)
+-->
+   (<ss-op> ^result <r>)
+}

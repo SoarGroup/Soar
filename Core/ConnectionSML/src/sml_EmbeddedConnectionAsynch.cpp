@@ -255,7 +255,7 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		}
 
 #ifdef PROFILE_CONNECTIONS
-		m_pTimer->Start() ;
+		m_Timer.start() ;
 #endif
 
 		// Wait for a response for up to a second
@@ -268,7 +268,8 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 		sml::Sleep(sleepTimeSecs, sleepTimeMillisecs) ;
 
 #ifdef PROFILE_CONNECTIONS
-		m_IncomingTime += m_pTimer->Elapsed() ;
+		m_Timer.stop();
+		m_IncomingTime.update(m_Timer);
 #endif
 
 		// Check if the connection has been closed

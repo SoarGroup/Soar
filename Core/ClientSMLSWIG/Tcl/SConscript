@@ -1,41 +1,46 @@
 #!/usr/bin/python
-import glob
 import distutils.sysconfig
 import sys
 import os
 import SCons.Script
 
-Import('env')
+Import('swigenv')
+env = swigenv.Clone()
 
-####
-# Produce wrapper cpp
-wrapper_env = env.Clone()
+# Targets, sources, other constants
+tclsml_wrap = '#ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp'
+tclsml_i = '#ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i'
+swig_cmdline = 'swig -o ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp -c++ -tcl -pkgversion 9.0.1 -Wall -IClientSML/src -IElementXML/src -IConnectionSML/src ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i'
+tclsml_shlib = 'Tcl_sml_ClientInterface'
+makepkg_script = env.File('#ClientSMLSWIG/Tcl/SconsMakeTclSMLPackage.tcl')
+tclsml_pkgfolder = '$PREFIX/lib/Tcl_sml_ClientInterface'
+tclsml_mkpkg = 'tclsh ' + str(makepkg_script) + ' ' + tclsml_pkgfolder
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
-wrapper_env.Append(SCANNERS=[SWIGScanner])
+env.Append(SCANNERS=[SWIGScanner])
 
-tcl_sml_interface_wrap_target = '#Core/ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp'
-tcl_sml_interface_wrap_source = '#Core/ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i'
-wrapper_env.Command(tcl_sml_interface_wrap_target, tcl_sml_interface_wrap_source, 'swig -o Core/ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp -c++ -tcl -pkgversion 9.0.1 -Wall -ICore/ClientSML/include -ICore/ElementXML/include -ICore/ConnectionSML/include Core/ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i')
+# Create the wrapp cpp
+env.Command(tclsml_wrap, tclsml_i, swig_cmdline)
 
-####
-# Produce shared library
-shlib_env = env.Clone()
-shlib_env.Prepend(CPPPATH = ['#Core/ClientSML/include','#Core/ElementXML/include','#Core/ConnectionSML/include', '/usr/include/tcl', ])
+# Prepare environment to build shared library
+env.Prepend(CPPPATH = ['#ClientSML/src','#ElementXML/src','#ConnectionSML/src', '/usr/include/tcl', ])
+
 if os.name == 'posix':
-	shlib_env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
-shlib_env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', 'tcl8.4', ])
-shlib_env.Append(LIBPATH = ['#Core/ClientSML', '#Core/ConnectionSML', '#Core/ElementXML', ])
+	env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
+
+env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', 'tcl8.4', ])
+env.Append(LIBPATH = ['$PREFIX/lib', ])
+
 if sys.platform == 'darwin':
-	shlib_env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
-#	shlib_env['SHLIBSUFFIX'] = '.so'
-shlib_env.Append(CPPFLAGS = ' -w')
-tcl_sml_interface_shlib_target = 'Tcl_sml_ClientInterface'
-Depends(tcl_sml_interface_shlib_target, tcl_sml_interface_wrap_target)
-tcl_sml_interface_shlib = shlib_env.SharedLibrary(tcl_sml_interface_shlib_target, tcl_sml_interface_wrap_target) 
-tcl_sml_interface_install = shlib_env.Install('#SoarLibrary/bin/Tcl_sml_ClientInterface', tcl_sml_interface_shlib)
-shlib_env.Command('#SoarLibrary/bin/Tcl_sml_ClientInterface/pkgIndex.tcl', tcl_sml_interface_install, 'tclsh Core/ClientSMLSWIG/Tcl/SconsMakeTclSMLPackage.tcl')
-shlib_env.Clean(tcl_sml_interface_shlib, '#SoarLibrary/bin/Tcl_sml_ClientInterface')
-#### (end shlib)
+	env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
+#	env['SHLIBSUFFIX'] = '.so'
+
+env.Append(CPPFLAGS = ' -w')
+
+shlib = env.SharedLibrary(tclsml_shlib, tclsml_wrap) 
+
+shlib_installed = env.Install(tclsml_pkgfolder, shlib)
+env.Command(tclsml_pkgfolder + '/pkgIndex.tcl', shlib_installed, tclsml_mkpkg)
+env.Clean(shlib, tclsml_pkgfolder)
 
