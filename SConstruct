@@ -253,6 +253,8 @@ if not conf.CheckLib('m'):
 if not conf.CheckLib('pthread'):
 	Exit(1)
 		
+conf.env['HAS_TCL_LIB'] = conf.CheckLib('tcl8.4')
+		
 if conf.env['PLATFORM'] == '64':
 	print "*"
 	print "* Note: Targeting x86_64 (64-bit native)"
@@ -294,6 +296,13 @@ for root, dirs, files in os.walk('..'):
 		print component + ' ',
 print
 
+if 'Tcl' in components:
+	if not env['HAS_TCL_LIB']:
+		print "*"
+		print "* Removing Tcl from components (can't find tcl8.4 lib)"
+		print "*"
+		components.remove('Tcl')
+
 # SWIG: build if any of (Java/Python/Tcl) are enabled
 swig = False
 for x in ['Java', 'Python', 'Tcl']:
@@ -311,7 +320,6 @@ if sys.platform == 'darwin':
 			print "* Warning: 64-bit python binaries may not be available on your system."
 			print "* You may need to rebuild with m64=no to use Python Soar bindings."
 			print "*"
-
 #################
 
 #################
