@@ -1,0 +1,153 @@
+
+/* General */
+
+body
+{
+}
+
+img
+{
+	border: 0px solid black;
+}
+
+a
+{
+    text-decoration: none;
+    color: #cc0000;
+}
+
+a:hover
+{
+    text-decoration: underline;
+}
+
+/* Content */
+
+#content
+{
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    
+    width: 100%;    
+}
+
+#content #header
+{
+	padding-bottom: 30px;
+}
+
+#content #header .nav
+{
+	font-size: 10px;
+}
+
+#content #title
+{
+	font-size: 24px;
+	font-weight: bold;
+}
+
+/* Section */
+
+#content .section
+{
+	margin: 0px 0px 30px 0px;
+}
+
+#content .section .title
+{
+	font-size: 20px;
+	font-weight: bold;
+}
+
+#content .section .body
+{
+}
+
+#content .section .body p
+{
+	text-align: justify;
+}
+
+#content .section .footer
+{
+	font-size: 10px;
+}
+
+/* Sub-Section */
+
+#content .section .body .section
+{
+	margin: 20px 0px 0px 10px;
+}
+
+#content .section .body .section .title
+{
+	font-size: 17px;
+	font-weight: bold;
+	font-style: italic;
+}
+
+#content .section .body .section .body
+{
+}
+
+/* Sub-Sub-Section */
+
+#content .section .body .section .body .section
+{
+	margin: 20px 0px 0px 10px;
+}
+
+#content .section .body .section .body .section .title
+{
+	font-size: 14px;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: underline;
+}
+
+#content .section .body .section .body .section .title .body
+{
+}
+
+/* Tables */
+
+#content table.perty
+{
+	margin-top: 10px;
+	margin-bottom: 10px;
+	
+	border: 1px dashed LightGray;
+	border-collapse: collapse;
+}
+
+#content table.perty tr
+{
+	vertical-align: top;
+}
+
+#content table.perty td
+{
+	font-size: 13px;
+}
+
+#content table.perty thead tr
+{
+	border-bottom: 1px solid Black;
+}
+
+#content table.perty thead td
+{
+	font-weight: bold;
+}
+
+#content table.perty tbody tr
+{
+	border-bottom: 1px dotted LightGray;
+}
+
+#content table.perty tbody td
+{
+	padding: 5px;
+}
