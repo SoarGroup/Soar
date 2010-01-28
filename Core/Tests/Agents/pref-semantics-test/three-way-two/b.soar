@@ -1,0 +1,16 @@
+sp {three-way-two*propose*b
+   (state <s> ^name three-way-two)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name b)
+}
+
+sp {three-way-two*compare*b
+   (state <s> ^name three-way-two
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name b)
+   (<op2> ^name c)
+-->
+   (<s> ^operator <op1> < <op2>)
+}

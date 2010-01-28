@@ -1,0 +1,55 @@
+VERSION 4
+\pref-semantics-test\pref-semantics-test.dm
+0	ROOT pref-semantics-test pref-semantics-test 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	FOPERATOR sequence sequence.soar 7
+7	0	HLOPERATOR best-over-conflict best-over-conflict.soar best-over-conflict 33 8
+8	7	FOPERATOR elaborations elaborations.soar 9
+9	7	OPERATOR a a.soar 10
+10	7	OPERATOR b b.soar 11
+11	7	OPERATOR c c.soar 12
+12	0	HLOPERATOR four-acceptable-best four-acceptable-best.soar four-acceptable-best 88 13
+13	12	FOPERATOR elaborations elaborations.soar 14
+14	12	OPERATOR a a.soar 15
+15	12	OPERATOR b b.soar 16
+16	12	OPERATOR c c.soar 17
+17	12	OPERATOR d d.soar 18
+18	0	HLOPERATOR four-acceptable-worst four-acceptable-worst.soar four-acceptable-worst 75 19
+19	18	FOPERATOR elaborations elaborations.soar 20
+20	18	OPERATOR a a.soar 21
+21	18	OPERATOR b b.soar 22
+22	18	OPERATOR c c.soar 23
+23	18	OPERATOR d d.soar 24
+24	0	OPERATOR initialize-pref-semantics-test initialize-pref-semantics-test.soar 25
+25	0	HLOPERATOR last-better last-better.soar last-better 101 49
+26	25	FOPERATOR elaborations elaborations.soar 50
+27	25	OPERATOR a a.soar 51
+28	25	OPERATOR b b.soar 52
+29	0	HLOPERATOR simple-conflict simple-conflict.soar simple-conflict 11 26
+30	29	FOPERATOR elaborations elaborations.soar 27
+31	29	OPERATOR a a.soar 28
+32	29	OPERATOR b b.soar 29
+33	0	HLOPERATOR simple-conflict-worse simple-conflict-worse.soar simple-conflict-worse 53 30
+34	33	FOPERATOR elaborations elaborations.soar 31
+35	33	OPERATOR a a.soar 32
+36	33	OPERATOR b b.soar 33
+37	0	HLOPERATOR three-way-conflict three-way-conflict.soar three-way-conflict 20 34
+38	37	FOPERATOR elaborations elaborations.soar 35
+39	37	OPERATOR a a.soar 36
+40	37	OPERATOR b b.soar 37
+41	37	OPERATOR c c.soar 38
+42	0	HLOPERATOR three-way-two three-way-two.soar three-way-two 64 39
+43	42	FOPERATOR elaborations elaborations.soar 40
+44	42	OPERATOR a a.soar 41
+45	42	OPERATOR b b.soar 42
+46	42	OPERATOR c c.soar 43
+47	0	HLOPERATOR worst-over-conflict worst-over-conflict.soar worst-over-conflict 42 44
+48	47	FOPERATOR elaborations elaborations.soar 45
+49	47	OPERATOR a a.soar 46
+50	47	OPERATOR b b.soar 47
+51	47	OPERATOR c c.soar 48
+END

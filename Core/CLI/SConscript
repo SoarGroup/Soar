@@ -1,0 +1,20 @@
+#!/usr/bin/python
+
+Import('env')
+env = env.Clone()
+
+env.Prepend(CPPPATH = ['src', 
+		       '#SoarKernel/src', 
+		       '#ElementXML/src', 
+		       '#ConnectionSML/src', 
+		       '#KernelSML/src', ])
+
+if env['SCU']:
+	CommandLineInterface = env.Library('CommandLineInterface', 'CommandLineInterface.cxx')
+else:
+	CommandLineInterface = env.Library('CommandLineInterface', Glob('src/*.cpp'))
+
+env.Install('$PREFIX/lib', CommandLineInterface)
+
+env.Install('$PREFIX/share/soar', '#CLI/Help')
+env.Clean('$PREFIX/share/soar', '$PREFIX/share/soar/Help');

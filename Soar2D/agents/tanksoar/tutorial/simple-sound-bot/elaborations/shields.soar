@@ -1,0 +1,16 @@
+sp {elaborate*shields-on
+   (state <s> ^operator.actions <a>
+              ^io.input-link <il>)
+   (<il> ^incoming.<dir> yes
+         ^shield-status off)
+   -->
+   (<a> ^shields.switch on)}
+
+sp {elaborate*shields-off
+   (state <s> ^operator.actions <a>
+              ^io.input-link <il>)
+   (<il> -^incoming.<dir> yes
+          ^shield-status on)
+   --> 
+   (<a> ^shields.switch off)}
+

@@ -1,8 +1,0 @@
-sp {propose*attack-tank
-   (state <s> ^name rl-tank
-              ^my-tank-health <> dead
-              ^enemy-tank-health <> dead
-              ^my-tank-taking-damage <d>)
--->
-   (<s> ^operator <o> +)
-   (<o> ^name attack-tank)}

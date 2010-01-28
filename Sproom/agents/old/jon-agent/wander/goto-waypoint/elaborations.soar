@@ -1,0 +1,9 @@
+sp {goto-waypoint*elaborate*target-yaw
+   (state <s> ^name goto-waypoint
+              ^top-state.io.input-link.self.waypoints.waypoint <wp>)
+   (<wp> ^target true
+         ^abs-relative-bearing > 5
+         ^yaw <yaw>)
+-->
+   (<s> ^target-yaw <yaw>)
+}

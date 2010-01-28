@@ -1,3 +1,0 @@
--nbad -bap -bbo -nbc -br -brs -c33 -cd33 -ncdb -ce -ci4 -cli0
--cp33 -d0 -di1 -nfc1 -nfca -hnl -i4 -ip0 -l120 -lp -npcs
--nprs -npsl -saf -sai -saw -nsc -sob -nss -nut

@@ -1,0 +1,3 @@
+pushd TestAgent
+source TestAgent_source.soar
+popd

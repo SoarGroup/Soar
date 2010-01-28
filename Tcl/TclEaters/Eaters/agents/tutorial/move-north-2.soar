@@ -1,0 +1,36 @@
+############################ Move-north operator ############################
+# From Chapter 5 of Soar 8 Tutorial
+# Corrected from move-north.soar so that operator applies more than once.
+#
+# Propose*move-north:
+# If I am at some location, then propose the move-north operator.
+
+sp {propose*move-north
+   (state <s> ^io.input-link.eater <e>)
+   (<e> ^x <x> ^y <y>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move-north)
+}
+
+# Apply*move-north:
+# If the move-north operator is selected, then generate an output command to 
+# move north.
+
+sp {apply*move-north
+   (state <s> ^operator.name move-north
+              ^io.output-link <ol>)
+-->
+   (<ol> ^move.direction north)}
+
+# Apply*move-north*remove-move
+# If the move-north successfully performs a move command, then remove
+# the command from the output-link
+
+sp {apply*move-north*remove-move
+   (state <s> ^operator.name move-north
+              ^io.output-link <ol>)
+   (<ol> ^move <move>)
+   (<move> ^status complete)
+-->
+   (<ol> ^move <move> -)}

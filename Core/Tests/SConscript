@@ -1,0 +1,39 @@
+#!/usr/bin/python
+import sys
+
+Import('env')
+env = env.Clone()
+
+env.Prepend(CPPPATH = [ 
+	'src', 
+	'#ClientSML/src', 
+	'#KernelSML/src',
+	'#CommandLineInterface/src',
+	'#SoarKernel/src',
+	'#ElementXML/src',
+	'#ConnectionSML/src',
+	])
+
+libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML' ]
+if sys.platform == "darwin":
+	if env['PLATFORM'] == '64':
+		libadd.append('cppunit-osx-64')
+	else:
+		libadd.append('cppunit-osx')
+else:
+	if env['PLATFORM'] == '64':
+		libadd.append('cppunit-linux-64')
+	else:
+		libadd.append('cppunit-linux')
+
+libpath = [ '$PREFIX/lib', 'lib' ]
+
+env.Append(LIBS = libadd, LIBPATH = libpath)
+Tests = env.Program('Tests', Glob('src/*.cpp'))
+
+env.Install('$PREFIX/bin', Tests)
+
+# Install resources
+env.InstallAs(target='$PREFIX/share/soar/Tests', source='#Tests/Agents')
+env.Clean('$PREFIX/share/soar', '$PREFIX/share/soar/Tests')
+

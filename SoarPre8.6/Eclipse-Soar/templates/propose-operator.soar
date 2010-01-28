@@ -1,6 +1,0 @@
-sp {${parentDir}*propose*${name}
-   (state <s> ^name ${parentDir})
--->
-   (<s> ^operator <o> + =)
-   (<o> ^name ${name})
-}

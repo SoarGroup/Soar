@@ -1,0 +1,6 @@
+sp {apply*$operator$
+   (state <s> ^operator <op>)
+   (<op> ^name $operator$)
+-->
+   (<s>)
+}

@@ -1,0 +1,45 @@
+sp {kb*propose*test-cue
+   (state <s> ^name kb
+              ^phase test
+              ^sub-phase cue
+              ^step <step>
+              ^max-tests <max>
+              ^current-test {<c> <= <max>}
+              ^tests <ts>)
+   (<ts> ^test <t>)
+   (<t> ^id <c>
+        ^steps {>= <step>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name test-cue
+         ^test <c>
+         ^step <step>)
+}
+
+sp {apply*test-cue*prepare
+   (state <s> ^operator <op>
+              ^tests <ts>
+              ^epmem <epmem>)
+   (<ts> ^test <t>)
+   (<epmem> ^command <e-cmd>)
+   (<op> ^name test-cue
+         ^test <c>
+         ^step <step>)
+   (<t> ^id <c>
+        ^step <st>)
+   (<st> ^id <step>
+         ^command <st-cmd>)
+   (<st-cmd> ^<t-cmd-name> <t-cmd-val>)
+-->
+   (<e-cmd> ^<t-cmd-name> <t-cmd-val>)
+   (write (crlf) | | <step>|: cue | <t-cmd-name> )
+}
+
+
+sp {apply*test-cue*next
+   (state <s> ^operator <op>)
+   (<op> ^name test-cue)
+-->
+   (<s> ^sub-phase cue -
+        ^sub-phase result)
+}

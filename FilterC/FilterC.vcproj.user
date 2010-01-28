@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioUserFile
+	>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			>
+			<DebugSettings
+				WorkingDirectory="..\out\bin"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			>
+			<DebugSettings
+				WorkingDirectory="..\out\bin"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			>
+			<DebugSettings
+				WorkingDirectory="..\out\bin"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			>
+			<DebugSettings
+				WorkingDirectory="..\out\bin"
+			/>
+		</Configuration>
+	</Configurations>
+</VisualStudioUserFile>

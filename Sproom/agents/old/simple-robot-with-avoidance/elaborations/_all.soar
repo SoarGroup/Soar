@@ -1,0 +1,35 @@
+sp {elaborate*state*name
+   (state <s> ^superstate.operator.name <name>)
+-->
+   (<s> ^name <name>)
+}
+
+sp {elaborate*state*top-state
+   (state <s> ^superstate.top-state <ts>
+             -^impasse tie)
+-->
+   (<s> ^top-state <ts>)
+}
+
+sp {elaborate*state*io
+   (state <s> ^superstate.io <io>
+             -^name selection)
+-->
+   (<s> ^io <io>)}
+
+sp {elaborate*state*super-operator
+   (state <s> ^superstate.operator <o>)
+-->
+   (<s> ^superoperator <o>)
+}
+
+sp {elaborate*state*waypoints
+   (state <s> ^superstate.waypoints <ws>
+             -^name selection)
+-->
+   (<s> ^waypoints <ws>)}
+
+sp {elaborate*state*parmeters
+   (state <s> ^superstate.parameters <p>)
+-->
+   (<s> ^parameters <p>)}

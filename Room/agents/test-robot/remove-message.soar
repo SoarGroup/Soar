@@ -1,0 +1,30 @@
+sp {test-robot*propose*clear-messages
+   (state <s> ^name test-robot
+              ^io.input-link.self.name <me>
+              ^io.input-link.self.received-messages.message <m>)
+   (<m> ^from <me>
+        ^id <id>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name remove-message
+         ^id <id>)
+}
+
+#sp {apply*clear-messages
+#   (state <s> ^operator <op>
+#              ^io.output-link <ol>)
+#   (<op> ^name remove-message
+#         ^id <id>)
+#-->
+#   (<ol> ^remove-message <rm>)
+#   (<rm> ^id <id>)
+#}
+#
+
+sp {apply*remove-message
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name remove-message)
+-->
+   (<ol> ^clear-messages <cm>)
+}

@@ -1,0 +1,12 @@
+################################
+### Propose Move-forward operator if sound is forward
+################################
+
+sp {chase*propose*move
+   (state <s> ^name chase
+              ^sound-direction forward
+              ^io.input-link.blocked.forward no)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name move
+        ^actions.move.direction forward)}

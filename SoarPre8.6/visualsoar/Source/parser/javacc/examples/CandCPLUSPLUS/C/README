@@ -1,7 +1,0 @@
-This directory contains the C grammar.  To produce a C parser, type:
-
-javacc C.jj
-javac *.java
-java CParser <C++file>
-
-This grammar was contributed by Doug South (dsouth@squirrel.com.au).

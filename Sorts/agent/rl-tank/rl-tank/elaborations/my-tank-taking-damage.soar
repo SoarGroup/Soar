@@ -1,9 +1,0 @@
-sp {elaborate*my-tank-taking-damage
-   (state <s> ^name rl-tank
-              ^my-pid <pid>
-              ^io.input-link.groups.group <g>)
-   (<g> ^owner <pid>
-        ^type tank
-        ^taking-damage <d>)
--->
-   (<s> ^my-tank-taking-damage <d>)}

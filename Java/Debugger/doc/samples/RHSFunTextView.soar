@@ -1,0 +1,45 @@
+echo RHS Function: intend
+
+sp {propose*init
+(state <s> ^superstate nil
+-^name)
+-->
+(<s> ^operator <o> +)
+(<o> ^name init)
+}
+
+sp {apply*init
+(state <s> ^operator.name init)
+-->
+(<s> ^name test)
+}
+
+sp {propose*update
+(state <s> ^name test
+-^toggle on)
+-->
+(<s> ^operator <o> +)
+(<o> ^name update)
+}
+
+sp {apply*update
+(state <s> ^operator.name update)
+-->
+(<s> ^toggle on)
+  (write (crlf) (exec intend spin))
+}
+
+sp {propose*update2
+(state <s> ^name test
+^toggle on)
+-->
+(<s> ^operator <o> +)
+(<o> ^name update2)
+}
+
+sp {apply*update2
+(state <s> ^operator.name update2)
+-->
+(<s> ^toggle on -)
+  (write (crlf) (exec intend |foo a b cde fg|))
+}

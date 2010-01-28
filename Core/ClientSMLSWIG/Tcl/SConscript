@@ -1,0 +1,46 @@
+#!/usr/bin/python
+import distutils.sysconfig
+import sys
+import os
+import SCons.Script
+
+Import('swigenv')
+env = swigenv.Clone()
+
+# Targets, sources, other constants
+tclsml_wrap = '#ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp'
+tclsml_i = '#ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i'
+swig_cmdline = 'swig -o ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp -c++ -tcl -pkgversion 9.0.1 -Wall -IClientSML/src -IElementXML/src -IConnectionSML/src ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i'
+tclsml_shlib = 'Tcl_sml_ClientInterface'
+makepkg_script = env.File('#ClientSMLSWIG/Tcl/SconsMakeTclSMLPackage.tcl')
+tclsml_pkgfolder = '$PREFIX/lib/Tcl_sml_ClientInterface'
+tclsml_mkpkg = 'tclsh ' + str(makepkg_script) + ' ' + tclsml_pkgfolder
+
+# Scanner for dependencies in .i files
+SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
+env.Append(SCANNERS=[SWIGScanner])
+
+# Create the wrapp cpp
+env.Command(tclsml_wrap, tclsml_i, swig_cmdline)
+
+# Prepare environment to build shared library
+env.Prepend(CPPPATH = ['#ClientSML/src','#ElementXML/src','#ConnectionSML/src', '/usr/include/tcl', ])
+
+if os.name == 'posix':
+	env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
+
+env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', 'tcl8.4', ])
+env.Append(LIBPATH = ['$PREFIX/lib', ])
+
+if sys.platform == 'darwin':
+	env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
+#	env['SHLIBSUFFIX'] = '.so'
+
+env.Append(CPPFLAGS = ' -w')
+
+shlib = env.SharedLibrary(tclsml_shlib, tclsml_wrap) 
+
+shlib_installed = env.Install(tclsml_pkgfolder, shlib)
+env.Command(tclsml_pkgfolder + '/pkgIndex.tcl', shlib_installed, tclsml_mkpkg)
+env.Clean(shlib, tclsml_pkgfolder)
+

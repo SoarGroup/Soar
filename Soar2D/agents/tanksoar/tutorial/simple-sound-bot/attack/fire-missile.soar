@@ -1,0 +1,14 @@
+###Propose Fire Operator
+##  If the state is attack and there is a tank on radar in the center,
+##  then propose the fire missile operator. 
+
+sp {attack*propose*fire-missile
+   (state <s> ^name attack
+              ^io.input-link <il>)
+   (<il> ^radar.tank.position center
+         ^missiles > 0)
+   -->
+   (<s> ^operator <o> + =)
+   (<o> ^name fire-missile
+        ^actions.fire.weapon missile)}
+

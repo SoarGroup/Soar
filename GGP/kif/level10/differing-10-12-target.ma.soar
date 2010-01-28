@@ -1,7 +1,0 @@
-multi-attributes x1_index 1000 # wargame
-multi-attributes x1_cell 1000 # wargame
-multi-attributes x1_nsteps 256 # wargame
-multi-attributes x1_nstepssoldier 256 # wargame
-multi-attributes x1_nextcell 256 # wargame
-multi-attributes x1_horizontalstep 256 # wargame
-multi-attributes x1_verticalstep 256 # wargame

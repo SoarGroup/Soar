@@ -1,9 +1,0 @@
-sp {${parentDir}*compare*${name}
-   (state <s> ^name ${parentDir}
-              ^operator <o1> +
-                        <o2> +)
-   (<o1> ^name ${name})
-   (<o2> ^name)
--->
-   (<s> ^operator <o1> > <o2>)
-}

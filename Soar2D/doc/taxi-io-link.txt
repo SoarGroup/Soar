@@ -1,0 +1,48 @@
+^input-link
+    ^self
+        ^position
+            ^x <int> current grid column
+            ^y <int> current grid row, flipped
+        ^reward <int> result of last action
+        ^random <float> a random number, just like eaters and tanksoar, [0..1)
+        ^passenger [true false] true if a passenger is carried
+        ?^destination [red blue green yellow]
+        ^fuel <int> fuel remaining
+        ^former-destination [red blue green yellow none] what destination the passenger was recently on
+    ^view
+        ^north
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
+            ^passenger [true false]
+        ^south
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
+            ^passenger [true false]
+        ^east
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
+            ^passenger [true false]
+        ^west
+            ^type [none normal red blue green yellow fuel]
+            ^wall [true false]
+            ^passenger [true false]
+    ^cell current cell agent is at
+        ^type [normal red blue green yellow fuel]
+        ^passenger [true false] passenger is hailing cab	
+        	
+# Error status only happens when there's an architectural error.
+# Do not use "status" to determine if your command was successful or not.         	
+^output-link
+	^move
+		^direction [north south east west]
+		^status [complete error]
+	^pickup
+		^status [complete error]
+	^putdown
+		^status [complete error]
+	^fillup
+		^status [complete error]
+	^stop-sim
+		^status [complete error]
+	
+		

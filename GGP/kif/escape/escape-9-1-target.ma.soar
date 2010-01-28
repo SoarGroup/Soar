@@ -1,4 +1,0 @@
-multi-attributes int 1000 # escape
-multi-attributes 2d 64 # escape
-multi-attributes plus 200 # escape
-multi-attributes minus 200 # escape

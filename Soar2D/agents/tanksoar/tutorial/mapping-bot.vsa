@@ -1,0 +1,35 @@
+VERSION 4
+\mapping-bot\mapping-bot.dm
+0	ROOT mapping-bot mapping-bot 1
+1	0	OPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	2	OPERATOR remove-sound remove-sound.soar 4
+4	2	OPERATOR wait wait.soar 5
+5	0	FOLDER elaborations elaborations 6
+6	5	FOPERATOR _all _all.soar 7
+7	5	FOPERATOR map map.soar 8
+8	5	FOPERATOR monitor monitor.soar 9
+9	5	FOPERATOR output output.soar 10
+10	5	FOPERATOR shields shields.soar 11
+11	5	FOPERATOR top-state top-state.soar 12
+12	0	HLOPERATOR attack attack.soar attack 61 13
+13	12	OPERATOR fire-missile fire-missile.soar 14
+14	12	OPERATOR move move.soar 15
+15	12	OPERATOR slide slide.soar 16
+16	12	OPERATOR turn turn.soar 17
+17	0	HLOPERATOR chase chase.soar chase 62 18
+18	17	FOPERATOR elaborations elaborations.soar 19
+19	17	OPERATOR move move.soar 20
+20	17	OPERATOR radar radar.soar 32
+21	17	OPERATOR turn turn.soar 21
+22	0	OPERATOR init-map init-map.soar 22
+23	0	HLOPERATOR retreat retreat.soar retreat 63 23
+24	23	FOPERATOR elaborations elaborations.soar 24
+25	23	OPERATOR move move.soar 25
+26	23	OPERATOR wait wait.soar 26
+27	0	HLOPERATOR wander wander.soar wander 6 27
+28	27	FOPERATOR elaborations elaborations.soar 28
+29	27	OPERATOR move move.soar 29
+30	27	OPERATOR record-sound record-sound.soar 30
+31	27	OPERATOR turn turn.soar 31
+END

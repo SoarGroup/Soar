@@ -1,3 +1,0 @@
-pushd move-compare
-source move-compare_source.soar
-popd

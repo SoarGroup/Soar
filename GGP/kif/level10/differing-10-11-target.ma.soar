@@ -1,9 +1,0 @@
-multi-attributes x0_adjacent 250 # rogue and build
-multi-attributes x0_min 200 # rogue
-multi-attributes x0_traversible 300 # rogue 
-multi-attributes x0_nextcell 256 # rogue
-multi-attributes x0_between 300 # rogue
-multi-attributes x0_cellnearmonster 100 # rogue
-multi-attributes x0_nstepstowardshero 200 # rogue
-multi-attributes x0_x-blocked 300
-multi-attributes x0_y-blocked 300

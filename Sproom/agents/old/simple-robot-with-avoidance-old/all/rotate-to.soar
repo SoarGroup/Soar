@@ -1,0 +1,66 @@
+# computing if we have to rotate or not
+# if desired yaw > current yaw, then prediff = (desired yaw - current yaw)
+# if current yaw >= desired yaw, then prediff = (current yaw - desired yaw)
+# if prediff > 180, then diff = abs(prediff-360)
+# if prediff <= 180, then diff = prediff
+# if diff > tolerance, then rotate
+
+sp {elaborate*state*prediff*desired-greater
+   (state <s> ^desired-yaw {<dyaw> > <cyaw>}
+              ^io.input-link.self.pose.yaw <cyaw>)
+-->
+   (<s> ^yaw-prediff (- <dyaw> <cyaw>))
+}
+
+sp {elaborate*state*prediff*current-greater
+   (state <s> ^desired-yaw {<dyaw> <= <cyaw>}
+              ^io.input-link.self.pose.yaw <cyaw>)
+-->
+   (<s> ^yaw-prediff (- <cyaw> <dyaw>))
+}
+
+sp {elaborate*state*diff*correction-needed
+   (state <s> ^yaw-prediff {<ypd> > 180})
+-->
+   (<s> ^yaw-diff (abs (- <ypd> 360)))
+}
+
+sp {elaborate*state*diff*no-correction-needed
+   (state <s> ^yaw-prediff {<ypd> <= 180})
+-->
+   (<s> ^yaw-diff <ypd>)
+}
+
+# this rule will prevent the proposal from matching and retracting repeatedly
+sp {elaborate*state*diff-outside-tolerance
+   (state <s> ^parameters.rotation-tolerance <rt>
+              ^yaw-diff > <rt>)
+-->
+   (<s> ^rotate true)
+}
+
+sp {propose*rotate*above-upper-bound
+   (state <s> ^rotate true
+              ^desired-yaw <dyaw>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name rotate-to
+         ^yaw <dyaw>)
+}
+
+sp {apply*rotate
+   (state <s> ^operator <op>
+              ^io.output-link <ol>
+              ^parameters <p>)
+   (<p> ^rotation-tolerance <rt>
+        ^throttle <thr>)
+   (<op> ^name rotate-to
+         ^yaw <yaw>)
+-->
+   (<ol> ^rotate-to <r>)
+   (<r> ^yaw <yaw>
+        ^throttle <thr>
+        ^tolerance <rt>)
+   (write (crlf) |Rotating to | <yaw>)
+   (exec player-print |Rotating to | <yaw>)
+}

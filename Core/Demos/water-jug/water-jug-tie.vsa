@@ -1,0 +1,20 @@
+VERSION 4
+\water-jug-tie\water-jug-tie.dm
+0	ROOT water-jug-tie water-jug-tie 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR empty empty.soar 5
+5	3	FOPERATOR goal-test goal-test.soar 6
+6	3	FOPERATOR monitor monitor.soar 7
+7	0	FOPERATOR _readme _readme.soar 8
+8	0	OPERATOR empty empty.soar 9
+9	0	OPERATOR fill fill.soar 10
+10	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 17 11
+11	10	FOPERATOR elaborations elaborations.soar 12
+12	10	OPERATOR create-preferences create-preferences.soar 13
+13	10	OPERATOR evaluate-operator evaluate-operator.soar 14
+14	0	OPERATOR initialize-water-jug initialize-water-jug.soar 15
+15	0	OPERATOR pour pour.soar 16
+16	0	OPERATOR record record.soar 17
+END

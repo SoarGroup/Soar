@@ -1,7 +1,0 @@
-multi-attributes x_nextcell 256 # rogue
-multi-attributes int 1000 # escape
-multi-attributes x_min 200 # rogue
-multi-attributes x_cellnearmonster 100 # rogue
-multi-attributes x_adjacent 250 # rogue and build
-multi-attributes x_between 300 # rogue
-multi-attributes x_traversible 300 # rogue 

@@ -1,0 +1,55 @@
+<html><head><title>Control</title></head>
+<body>
+<form action="/" method="post">
+<input type="submit" value="Emergency Stop" />
+<input type="hidden" name="action" value="estop" />
+</form>
+<form action="/" method="post">
+<input type="submit" value="Stop" />
+<input type="hidden" name="action" value="stop" />
+</form>
+<hr>
+<form action="/" method="post">
+<input type="submit" value="Post a message" />
+<input type="text" name="message" />
+<input type="hidden" name="action" value="postmessage" />
+</form>
+<hr>
+<form action="/" method="post">
+<input type="submit" value="Set Angular Velocity" />
+<input type="text" name="angvel" />deg/s
+<input type="hidden" name="action" value="angvel" />
+</form>
+<form action="/" method="post">
+<input type="submit" value="Set Angular PID Gains" />
+<input type="text" name="pgain" size="5" value="%apgain%" />
+<input type="text" name="igain" size="5" value="%aigain%" />
+<input type="text" name="dgain" size="5" value="%adgain%" />
+<input type="hidden" name="action" value="agains" />
+</form>
+<hr>
+<form action="/" method="post">
+<input type="submit" value="Set Linear Velocity" />
+<input type="text" name="linvel" />m/s
+<input type="hidden" name="action" value="linvel" />
+</form>
+<form action="/" method="post">
+<input type="submit" value="Set Linear PID Gains" />
+<input type="text" name="pgain" size="5" value="%lpgain%" />
+<input type="text" name="igain" size="5" value="%ligain%" />
+<input type="text" name="dgain" size="5" value="%ldgain%" />
+<input type="hidden" name="action" value="lgains" />
+</form>
+<hr>
+<form action="/" method="post">
+<input type="submit" value="Set Heading" /> <input type="text" name="heading" />deg
+<input type="hidden" name="action" value="heading" />
+</form>
+<form action="/" method="post">
+<input type="submit" value="Set Heading PID Gains" />
+<input type="text" name="pgain" size="5" value="%hpgain%" />
+<input type="text" name="igain" size="5" value="%higain%" />
+<input type="text" name="dgain" size="5" value="%hdgain%" />
+<input type="hidden" name="action" value="hgains" />
+</form>
+</body></html>

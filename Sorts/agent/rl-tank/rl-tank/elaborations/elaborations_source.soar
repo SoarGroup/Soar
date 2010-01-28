@@ -1,4 +1,0 @@
-source _all.soar
-source my-tank-taking-damage.soar
-source rl-reward.soar
-source top-state.soar

@@ -1,6 +1,0 @@
-multi-attributes x7_2d 64 # escape
-multi-attributes x7_plus 200 # escape
-multi-attributes x7_minus 200 # escape
-multi-attributes x7_lessthan 200 # escape
-multi-attributes x7_greaterthan 200 # escape
-multi-attributes x7_int 1000 # escape

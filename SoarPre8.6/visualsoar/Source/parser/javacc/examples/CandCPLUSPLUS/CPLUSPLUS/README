@@ -1,6 +1,0 @@
-This directory contains the C++ grammar with associated helper files that
-implement the semantic lookahead.  To produce a C++ parser, type:
-
-javacc CPLUSPLUS.jj
-javac *.java
-java CPPParser <C++file>

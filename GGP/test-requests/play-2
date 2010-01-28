@@ -1,9 +1,0 @@
-POST / HTTP/1.0
-Accept: text/delim
-Sender: GAMEMASTER
-Receiver: VOIGT
-Content-type: text/acl
-Content-length: 24
-
-(PLAY MATCH.1 ((S b c)))
-

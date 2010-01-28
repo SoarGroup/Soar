@@ -1,0 +1,48 @@
+#!/usr/bin/python
+import distutils.sysconfig
+import sys
+import os
+import SCons.Script
+
+Import('swigenv')
+env = swigenv.Clone();
+
+# Targets, sources, other constants
+pythonsml_wrap = '#ClientSMLSWIG/Python/Python_sml_ClientInterface_wrap.cpp'
+pythonsml_i = '#ClientSMLSWIG/Python/Python_sml_ClientInterface.i'
+pythonsml_py = '#ClientSMLSWIG/Python/Python_sml_ClientInterface.py'
+swig_cmdline = 'swig -o ClientSMLSWIG/Python/Python_sml_ClientInterface_wrap.cpp -c++ -python -Wall -IClientSML/src -IElementXML/src -IConnectionSML/src ClientSMLSWIG/Python/Python_sml_ClientInterface.i'
+pythonsml_shlib = 'Python_sml_ClientInterface'
+
+# Scanner for dependencies in .i files
+SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
+env.Append(SCANNERS=[SWIGScanner])
+
+# Create the wrap cpp and python file
+env.Command(pythonsml_wrap, pythonsml_i, swig_cmdline)
+env.SideEffect(pythonsml_py, pythonsml_wrap)
+
+# Install python file to lib
+env.Install('$PREFIX/lib', pythonsml_py)
+
+# Prepare environment to build shared library
+env.Prepend(CPPPATH = ['#ClientSML/src','#ElementXML/src','#ConnectionSML/src', distutils.sysconfig.get_python_inc(), ])
+
+if os.name == 'posix':
+	env.Append(CXXFLAGS = ' -Wno-unused -fno-strict-aliasing')
+
+env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', ])
+env.Append(LIBPATH = '$PREFIX/lib')
+
+if sys.platform == 'darwin':
+	env['SHLINKFLAGS'] = '$LINKFLAGS -bundle -flat_namespace -undefined suppress'
+	env['SHLIBSUFFIX'] = '.so'
+
+env.Append(CPPFLAGS = ' -w')
+
+shlib = env.SharedLibrary(pythonsml_shlib, pythonsml_wrap) 
+
+# libPython_sml_ClientInterface.so is not the correct naming convention for python dynamic code
+# it must be named, in this case, _Python_sml_ClientInterface.so
+env.InstallAs('$PREFIX/lib/_Python_sml_ClientInterface.so', shlib)
+

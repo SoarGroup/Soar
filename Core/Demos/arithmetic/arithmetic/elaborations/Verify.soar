@@ -1,0 +1,229 @@
+sp {arithmetic*elaborate*state*top-number*one-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Top Number: | <d1>)
+   (<ap> ^top-number <d1>)
+}
+
+sp {arithmetic*elaborate*state*bottom-number*one-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Bottom Number: | <d1>)
+   (<ap> ^bottom-number <d1>)
+}
+
+sp {arithmetic*elaborate*state*result-number*one-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column nil)
+-->
+  # (write (crlf) |Result Number: | <d1>)
+   (<ap> ^result-number <d1>)
+}
+
+sp {arithmetic*elaborate*state*top-number*two-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <d2>
+         ^next-column nil)
+-->
+#   (write (crlf) |Top Number: |  (+ (* 10 <d2>) <d1>))
+   (<ap> ^top-number (+ (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*bottom-number*two-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit2 <d2>
+         ^next-column nil)
+-->
+  # (write (crlf) |Bottom Number: |  (+ (* 10 <d2>) <d1>))
+   (<ap> ^bottom-number (+ (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*result-number*two-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column <tc>)
+   (<tc> ^result <d2>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Result Number: |  (+ (* 10 <d2>) <d1>))
+   (<ap> ^result-number (+ (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*top-number*three-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit1 <d3>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Top Number: |  (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^top-number (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*bottom-number*three-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit2 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit2 <d3>
+         ^next-column nil)
+-->
+  # (write (crlf) |Bottom Number: |  (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^bottom-number (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*result-number*three-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column <tc>)
+   (<tc> ^result <d2>
+         ^next-column <hc>)
+   (<hc> ^result <d3>
+         ^next-column nil)
+-->
+ #  (write (crlf) |Result Number: |  (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^result-number (+ (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+sp {arithmetic*elaborate*state*top-number*four-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit1 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit1 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit1 <d3>
+         ^next-column <thc>)
+   (<thc> ^digit1 <d4>
+          ^next-column nil)
+-->
+  # (write (crlf) |Top Number: |  (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^top-number (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*bottom-number*four-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^digit2 <d1>
+         ^next-column <tc>)
+   (<tc> ^digit2 <d2>
+         ^next-column <hc>)
+   (<hc> ^digit2 <d3>
+         ^next-column <thc>)
+   (<thc> ^digit2 <d4>
+          ^next-column nil)
+-->
+#   (write (crlf) |Bottom Number: |  (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^bottom-number (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+sp {arithmetic*elaborate*state*result-number*four-column
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^one-column <oc>)
+   (<oc> ^result <d1>
+         ^next-column <tc>)
+   (<tc> ^result <d2>
+         ^next-column <hc>)
+   (<hc> ^result <d3>
+         ^next-column <thc>)
+   (<thc> ^result <d4>
+          ^next-column nil)
+-->
+  # (write (crlf) |Result Number: |  (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+   (<ap> ^result-number (+ (* 1000 <d4>) (* 100 <d3>) (* 10 <d2>) <d1>))
+}
+
+
+sp {arithmetic*elaborate*state*compute-answer*add
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^top-number <tn>
+         ^bottom-number <bn>
+         ^operation addition)
+-->
+   (<ap> ^computed-result (+ <tn> <bn>))
+ #  (write (crlf) |Computed Addition Result : | (+ <tn> <bn>))
+}
+
+sp {arithmetic*elaborate*state*compute-answer*sub
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^top-number <tn>
+         ^bottom-number <bn>
+         ^operation subtraction)
+-->
+   (<ap> ^computed-result (- <tn> <bn>))
+ #  (write (crlf) |Computed Subtraction Result : | (- <tn> <bn>))
+}
+
+#sp {arithmetic*elaborate*state*compare-results*equal
+#   (state <s> ^name arithmetic
+#              ^superstate nil
+#              ^arithmetic-problem <ap>)
+#   (<ap> ^computed-result <cr>
+#         ^result-number <cr>)
+#-->
+#   (write (crlf) |Results Correct.|)
+#}
+
+sp {arithmetic*elaborate*state*compare-results*not-equal
+   (state <s> ^name arithmetic
+              ^superstate nil
+              ^arithmetic-problem <ap>)
+   (<ap> ^computed-result <cr>
+         ^top-number <tn>
+         ^bottom-number <bn>
+         ^operation-symbol <os> 
+         ^result-number { <> <cr> <rn>})
+-->
+   (write (crlf) |***************************Results Incorrect: | <tn> | | <os> | | <bn> | = | <cr> | <> | <rn> | Diff | (- <cr> <rn>))
+   (halt)
+}
+
+

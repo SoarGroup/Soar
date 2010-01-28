@@ -1,5 +1,0 @@
-sp {${parentDir}*elaborate*state
-   (state <s> ^name ${parentDir})
--->
-   (<s>)
-}

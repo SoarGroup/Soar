@@ -1,3 +1,0 @@
-pushd rl-tank
-source rl-tank_source.soar
-popd

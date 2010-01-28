@@ -1,0 +1,20 @@
+#!/usr/bin/python
+
+Import('env')
+env = env.Clone()
+
+env.Append(CPPFLAGS = ' -fno-strict-aliasing')
+env.Prepend(CPPPATH = ['src', '#ElementXML/src'])
+
+sql_env = env.Clone()
+sql_env.Append(CPPFLAGS = ' -w')
+SQLite = sql_env.StaticLibrary('sqlite3', 'sqlite/sqlite3.c')
+
+if env['SCU']:
+	SoarKernel = env.StaticLibrary('SoarKernel', 'SoarKernel.cxx')
+else:
+	SoarKernel = env.StaticLibrary('SoarKernel', Glob('src/*.cpp'))
+
+env.Install('$PREFIX/lib', SoarKernel)
+env.Install('$PREFIX/lib', SQLite)
+

@@ -1,0 +1,403 @@
+### 
+### FILE               : eight-puzzle.s
+###
+
+###
+### AUTHOR(1)          : John.E.Laird [ Soar 5.x ]
+###
+
+###
+### CREATED(1)         : Oct 11, 89
+###
+
+###
+### MODIFIED(8)	       : Aug 25, 96   [ Soar 7.0.3 ] Sayan Bhattacharyya
+### MODIFIED(7)	       : Nov 18, 94   [ Soar 6.2.3 ] John.E.Laird
+### MODIFIED(6)	       : May 10, 93   [ Soar 6.0.9 ] JT.Traub
+### MODIFIED(5)        : Apr 29, 93   [ Soar 6.0.7 ] John.E.Laird
+### MODIFIED(4)        : ?            [ Soar 6.x.x ] ?
+### MODIFIED(3)        : Apr 17, 91   [ Soar 5.2.x ] Brian.G.Milnes
+### MODIFIED(2)        : May 17, 90   [ Soar 5.1.0 ] Thomas.F.McGinnis
+### MODIFIED(1)        : Oct 11, 89   [ Soar 5.1.0 ] John.E.Laird
+###
+
+###
+### Aug 25, 96         : default rules now loaded automatically
+### Nov 18, 94	       : Clean up NNPSCM and improve generality of chunks by changing calculation of tile-cell on state
+### May 10, 93	       : Added in Multiattribute statements
+### Apr 29, 93         : Removed testing cell names from state evaluation
+###			 productions, and applied test from the production for
+###			 operator termination.  
+### Apr 17, 91         : Changed for new notify.
+### May 17, 90         : Added ^default-operator-copy no, in prep for Soar
+###			 5.1.2.
+### Oct 11, 89         : Changed evaluation productions to Soar 5.1.
+###
+    
+###
+### Originally //hawk/users/soar/dsm/tasks/eight2.dsm (University of Michigan).
+### Eight puzzle for DSM.  Modifies the bindings, but does not create new
+### bindings.
+### State Structure: 
+ ## Each state contains nine bindings.
+ ## The bindings connect together a cell, one of the nine positions on 
+ ## the board and a tile, one of the movable pieces. 
+ ## The cells have pointers, ^cell, to each of their adjacent cells. 
+ ## The state also has a pointer to the blank-cell and the cell
+ ## that the last moved tile is in -- this improves efficiency and
+ ## simplify computations that depend on the previous operator.
+### Operator Staructure: 
+ ## Each operator contains a pointer to the cell with the blank
+ ## and the cell with the tile to be moved.
+### 
+
+##package require Soar
+source ../default/default.soar
+multi-attributes binding 10
+
+ ## Name the first subgoal eight-puzzle and create the 
+ ## problem space and operators
+
+###
+### TOP GOAL:
+### SOLVE-EIGHT-PUZZLE
+###
+
+###
+### TOP GOAL PROBLEM SPACE:
+### EIGHT-PUZZLE
+###
+
+sp {eight*create*space*eight-puzzle
+    (state <s> ^superstate nil)
+	-->                                       
+    (<s> ^name solve-eight-puzzle ^desired <d> ^problem-space <p> + )
+    (<p> ^name eight-puzzle ^default-state-copy yes
+	 ^default-operator-copy no
+         ^one-level-attributes blank-cell blank-cell &
+         ^one-level-attributes tile-cell tile-cell &
+         ^two-level-attributes binding binding & )}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE:
+### INITIAL STATE AND DESIRED STATE
+###
+
+ ## Define the initial state and the impasse state:
+ ## each state is a set of bindings# 
+ ## each binding points to a cell and a tile#
+ ## each cell points to its neighboring cells.
+
+sp {eight*create*state*initial-and-desired-states
+    (state <s> ^name solve-eight-puzzle ^problem-space <p> 
+              ^desired <d>)
+    (<p> ^name eight-puzzle)
+     -->
+    (<t0> ^name 0) (<t1> ^name 1) (<t2> ^name 2)
+    (<t3> ^name 3) (<t4> ^name 4) (<t5> ^name 5)
+    (<t6> ^name 6) (<t7> ^name 7) (<t8> ^name 8)
+    (<c11> ^name c11 ^cell <c12> + &, ^cell <c21> + & )
+    (<c12> ^name c12 ^cell <c11> + &, ^cell <c13> + &, ^cell <c22> + & ) 
+    (<c13> ^name c13 ^cell <c12> + &, ^cell <c23> + &,)
+    (<c21> ^name c21 ^cell <c11> + &, ^cell <c31> + &, ^cell <c22> + & )
+    (<c22> ^name c22 ^cell <c21> + &, ^cell <c12> + &,
+                     ^cell <c23> + &, ^cell <c32> + & )
+    (<c23> ^name c23 ^cell <c22> + &, ^cell <c33> + &, ^cell <c13> + & )
+    (<c31> ^name c31 ^cell <c32> + &, ^cell <c21> + & )
+    (<c32> ^name c32 ^cell <c31> + &, ^cell <c22> + &, ^cell <c33> + & )
+    (<c33> ^name c33 ^cell <c32> + &, ^cell <c23> + & )
+    (<s> ^blank-cell <c23> ^tile-cell nil
+         ^binding <bb0> + &, <bb1> + &, <bb2> + &, <bb3> + &, <bb4> + &,
+                  <bb5> + &, <bb6> + &, <bb7> + &, <bb8> + & )
+    (<bb0> ^cell <c11> ^tile <t2>) 
+    (<bb1> ^cell <c12> ^tile <t1>)
+    (<bb2> ^cell <c13> ^tile <t7>)
+    (<bb3> ^cell <c21> ^tile <t8>)
+    (<bb4> ^cell <c22> ^tile <t6>)
+    (<bb5> ^cell <c23> ^tile <t0>)
+    (<bb6> ^cell <c31> ^tile <t3>)
+    (<bb7> ^cell <c32> ^tile <t4>)
+    (<bb8> ^cell <c33> ^tile <t5>)                      
+    (<d> ^better higher
+         ^binding <d0> + &, <d1> + &, <d2> + &, <d3> + &, <d4> + &, <d5> + &,
+                  <d6> + &, <d7> + &, <d8> + & )
+    (<d1> ^cell <c11> ^tile <t1>)
+    (<d2> ^cell <c12> ^tile <t8>)
+    (<d3> ^cell <c13> ^tile <t7>)
+    (<d8> ^cell <c21> ^tile <t2>)
+    (<d0> ^cell <c22> ^tile <t0>)
+    (<d4> ^cell <c23> ^tile <t6>)
+    (<d7> ^cell <c31> ^tile <t3>)
+    (<d6> ^cell <c32> ^tile <t4>)
+    (<d5> ^cell <c33> ^tile <t5>)}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE OPERATOR:
+### MOVE-TILE
+###
+
+sp {eight*create*operator*move-tile 
+  (state <s> ^problem-space <p>
+	     ^blank-cell <c1>)
+  (<p> ^name eight-puzzle)
+  (<c1> ^cell <c2>)
+  -->
+  (<o> ^name move-tile ^tile-cell <c2> ^blank-cell <c1>)
+  (<s> ^operator <o> + )}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE: 
+### OPERATOR IMPLEMENTATION
+###
+
+sp {eight*apply*operator*move-tile
+  (state <s> ^problem-space <p>  
+	     ^operator <o>
+	     ^binding <b1> { <> <b1> <b2>}
+	     ^blank-cell <c1>)
+  (<p> ^name eight-puzzle)
+  (<o> ^tile-cell <c2> ^blank-cell <c1> ^name move-tile)
+  (<b1> ^tile <t1> ^cell <c1>)
+  (<b2> ^tile <t2> ^cell <c2>)
+  -->
+  (<s> ^blank-cell <c1> - <c2>)
+  (<b1> ^tile <t1> - <t2>)
+  (<b2> ^tile <t2> - <t1>)}
+
+sp {eight*apply*operator*remove-tile-cell
+  (state <s> ^problem-space <p>  
+	     ^operator <o>
+	     ^tile-cell <last-move>)
+  (<p> ^name eight-puzzle)
+  (<o> ^blank-cell <> <last-move> ^name move-tile)
+  -->
+  (<s> ^tile-cell <last-move> -)}
+
+sp {eight*apply*operator*add-tile-cell
+  (state <s> ^problem-space <p>  
+	     ^operator <o>
+	     ^blank-cell <c1>)
+  (<p> ^name eight-puzzle)
+  (<o> ^blank-cell <c1> ^name move-tile)
+  -->
+  (<s> ^tile-cell <c1>)}
+
+sp {eight*save*operator*applied*a
+  (state <s> ^problem-space <p>  
+	     ^operator <o>
+	     ^tile-cell <bc>
+	     ^blank-cell <tc> 
+	    -^applied)
+  (<p> ^name eight-puzzle)
+  (<o> ^tile-cell <tc> ^blank-cell <bc>)
+  -->
+  (<s> ^applied <o> + )}
+
+sp {eight*save*operator*applied*b
+  (state <s> ^problem-space <p>  
+	     ^operator <o>
+	     ^tile-cell <bc>
+	     ^blank-cell <tc> 
+	     ^applied { <> <o> <old-o> })
+  (<p> ^name eight-puzzle)
+  (<o> ^tile-cell <tc> ^blank-cell <bc>)
+  -->
+  (<s>  ^applied <old-o> - <o> + )}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE: 
+### OPERATOR TERMINATION
+###
+
+sp {eight*reconsider*operator*move-tile
+  (state <s> ^problem-space <p>  
+	     ^operator <o>
+	     ^tile-cell <bc>
+	     ^blank-cell <tc>)
+  (<p> ^name eight-puzzle)
+  (<o> ^tile-cell <tc> ^blank-cell <bc>)
+  -->
+  (<s> ^operator <o> @ )}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE:
+### STATE EVALUATION
+###
+
+ ## A numeric evaluation function,
+ ## based on changes by operators, is used
+ ## to evaluate state.
+
+###
+### EVALUATION: STATE POSITIVE 
+###
+
+ ## 1 point for moving tile into its impasse cell
+  #
+sp {eight*elaborate*state*evaluation*positive*one
+  (state <s> ^problem-space <p>  
+	     ^superstate <ss>
+	     ^tile-cell <c1>
+	     ^binding <b1> 
+	     ^applied <o>)
+  (<p> ^name eight-puzzle)
+  (<d> ^binding <b2>)
+  (<b1> ^cell <c1> ^tile <v1>)
+  (<b2> ^cell <c1> ^tile <v1>)
+  (<ss> ^operator <so>
+	^evaluation <e>)
+  (<so> ^name evaluate-object ^evaluation <e> 
+	^object <o> 
+	^desired <d>)
+  -->
+  (<e> ^numeric-value 1)}
+
+###
+### EVALUATION: STATE NEUTRAL 
+###
+
+ ## 0 points for not moving tile in or out of its impasse cell
+  #
+sp {eight*elaborate*state*evaluation*neutral*zero
+  (state <s> ^problem-space <p>  
+	     ^superstate <ss>
+	     ^tile-cell <c1>
+	     ^blank-cell <c0>
+	     ^binding <b1> { <> <b1> <b2> } { <> <b1> <> <b2> <b3> }
+	     ^applied <o>)
+  (<p> ^name eight-puzzle)
+  (<d> ^binding <b4> { <> <b4> <b5> })
+  (<b1> ^cell <c1> ^tile <v1>)
+  (<b2> ^tile <v2>)
+  (<b3> ^tile <v3>)
+  (<b4> ^cell <c1> ^tile { <> <v1> <v2> })
+  (<b5> ^cell <c0> ^tile { <> <v1> <v3> })
+  (<ss> ^operator <so>
+	^evaluation <e>)
+  (<so> ^name evaluate-object ^evaluation <e> 
+	^object <o> 
+	^desired <d>)
+  -->
+  (<e> ^numeric-value 0)}
+
+###
+### EVALUATION: STATE NEGATIVE
+###
+
+ ## -1 points for moving tile out of its impasse cell
+  #
+sp {eight*elaborate*state*evaluation*negative*one
+  (state <s> ^problem-space <p>  
+	     ^superstate <ss>
+	     ^tile-cell <c1>
+	     ^binding <b1>
+	     ^blank-cell <c0> 
+	     ^applied <o>)
+  (<p> ^name eight-puzzle)
+  (<d> ^binding <b2>)
+  (<b1> ^cell <c1> ^tile <v1>)
+  (<b2> ^cell <c0> ^tile <v1>)
+  (<ss> ^operator <so>
+	^evaluation <e>)
+  (<so> ^name evaluate-object ^evaluation <e> 
+	^object <o> 
+	^desired <d>)
+  -->
+  (<e> ^numeric-value -1)}
+
+###
+### EVALUATION: STATE SUCCESS/GOAL TEST
+###
+
+sp {eight*detect*state*success
+  (state <s> ^problem-space <p>  
+	     ^desired <d>
+	     ^binding <x11> <x12> <x13>
+	     <x21> <x22> <x23>
+	     <x31> <x32> <x33>)
+  (<p> ^name eight-puzzle)
+  (<x11> ^cell.name c11 ^tile <o11>)
+  (<x12> ^cell.name c12 ^tile <o12>)
+  (<x13> ^cell.name c13 ^tile <o13>)
+  (<x21> ^cell.name c21 ^tile <o21>)
+  (<x22> ^cell.name c22 ^tile <o22>)
+  (<x23> ^cell.name c23 ^tile <o23>)
+  (<x31> ^cell.name c31 ^tile <o31>)
+  (<x32> ^cell.name c32 ^tile <o32>)
+  (<x33> ^cell.name c33 ^tile <o33>)
+  (<d> ^binding <d11> <d12> <d13> 
+		<d21> <d22> <d23>
+		<d31> <d32> <d33>)
+  (<d11> ^cell.name c11 ^tile <o11>)
+  (<d12> ^cell.name c12 ^tile <o12>)
+  (<d13> ^cell.name c13 ^tile <o13>)
+  (<d21> ^cell.name c21 ^tile <o21>)
+  (<d22> ^cell.name c22 ^tile <o22>)
+  (<d23> ^cell.name c23 ^tile <o23>)
+  (<d31> ^cell.name c31 ^tile <o31>)
+  (<d32> ^cell.name c32 ^tile <o32>)
+  (<d33> ^cell.name c33 ^tile <o33>)
+  -->
+  (<s> ^success <d>)}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE: 
+### SEARCH CONTROL
+###
+
+sp {eight*operator*move-tile*inverse*reject
+  "Reject the operator that was applied to create this state."
+  (state <s> ^problem-space <p>  
+	     ^operator <o> + 
+	     ^tile-cell <tc>)
+  (<p> ^name eight-puzzle)
+  (<o> ^tile-cell <tc>)
+  -->
+  (<s> ^operator <o> - )}
+
+###
+### EIGHT-PUZZLE PROBLEM SPACE: 
+### MONITOR STATE
+###
+
+ ## Want this to fire whenever an op is installed or 
+ ## whenever op is applied (bindings change) but NOT both.
+ ## Try requiring that operator be finished.
+  #
+
+sp {eight*monitor*state                   
+  (state <s> ^problem-space <p> 
+	     ^binding <x11> <x12> <x13>
+	     <x21> <x22> <x23>
+	     <x31> <x32> <x33>)
+  (<p> ^name eight-puzzle)
+  (<x11> ^cell.name c11 ^tile <o11>)
+  (<o11> ^name <v11>)
+  (<x12> ^cell.name c12 ^tile <o12>)
+  (<o12> ^name <v12>)
+  (<x13> ^cell.name c13 ^tile <o13>)
+  (<o13> ^name <v13>)
+  (<x21> ^cell.name c21 ^tile <o21>)
+  (<o21> ^name <v21>)
+  (<x22> ^cell.name c22 ^tile <o22>)
+  (<o22> ^name <v22>)
+  (<x23> ^cell.name c23 ^tile <o23>)
+  (<o23> ^name <v23>)
+  (<x31> ^cell.name c31 ^tile <o31>)
+  (<o31> ^name <v31>)
+  (<x32> ^cell.name c32 ^tile <o32>)
+  (<o32> ^name <v32>)
+  (<x33> ^cell.name c33 ^tile <o33>)
+  (<o33> ^name <v33>)
+  -->
+  (write (crlf)  |      -------------|  | | (crlf) | | )
+  (write |     \||  | | <v11>  | | |\||  | | <v21>  | | |\||  | | <v31>  | | |\||  | | (crlf) | | )
+  (write |     \|---\|---\|---\||  | | (crlf) | | )
+  (write |     \||  | | <v12>  | | |\||  | | <v22>  | | |\||  | | <v32>  | | |\||  | | (crlf) | | )
+  (write |     \|---\|---\|---\||  | | (crlf) | | )
+  (write |     \||  | | <v13>  | | |\||  | | <v23>  | | |\||  | | <v33>  | | |\||  | | (crlf) | | )
+  (write |     -------------|  | | (crlf) | | )}
+
+### eof of eight-puzzle.s
+
+

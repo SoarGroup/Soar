@@ -1,4 +1,0 @@
-source _all.soar
-source init-grouping-level.soar
-source memorize-group-cue.soar
-source top-state.soar

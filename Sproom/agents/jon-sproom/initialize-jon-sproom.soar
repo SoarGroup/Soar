@@ -1,0 +1,15 @@
+sp {propose*initialize-jon-sproom
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-jon-sproom)
+}
+
+sp {apply*initialize-sproom-template
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-jon-sproom)
+-->
+   (<s> ^name jon-sproom)
+}
+

@@ -1,0 +1,28 @@
+                       Documentation/CLI/max-memory-usage
+
+                                      Name
+
+   max-memory-usage - Set the number of bytes that when exceeded by an agent,
+   will trigger the memory usage exceeded event.
+
+                                    Synopsis
+
+ max-memory-usage [n]
+
+                                    Options
+
+   +-------------------------+
+   |n|Size of limit in bytes.|
+   +-------------------------+
+
+                                  Description
+
+   The max-memory-usage command is used to trigger the memory usage exceeded
+   event. The initial value of this is 100MB (100,000,000); allowable
+   settings are any integer greater than 0. The code supporting this event is
+   commented out by default in the release build. The test can be
+   computationally expensive and is needed only for specific embedded
+   applications. Users may enable the test and event generation by
+   uncommenting code in SoarKernel/src/mem.cpp.
+
+   Using the command with no arguments displays the current limit.

@@ -1,0 +1,167 @@
+# todo list:
+# move update-progress, give-up-on-move-to to go-to-waypoint subgoal
+# merge move-to structure with go-to-location structure
+#   give-up-on-move-to may need changes to support a structure that's always there since some rules treat
+#   the move-to structure like a flag. Probably should just add a flag to the merged structure.
+#   rename structure to make it part of state instead of functional?
+# rename move-now (in go-to-waypoint, etc.) to orientation-complete? It is intended to simply mark that
+#   the initial orientation to the waypoint has been completed, after which additional rotations or moves 
+#   may occur.
+# update code as noted in "how the code works" below.
+
+
+# how the code works
+#
+# 1) The primary operator is execute-mission. The mission structure is a linked list on the top state.
+#    Each item in the list has an operator proposed for it and is implemented as a suboperator of
+#    execute mission.  As of this writing, the possible suboperators are:
+#       start: delays the agent for a specified number of seconds
+#       localize: figures out where the agent is (currently assumes the agent is at the origin)
+#       go-to-location: specifies a location to go to (must be an id in the waypoint map)
+#       scout: reacts to entities
+#       reset-mission: resets the mission structure so it can be repeated
+#    The original, fullscale missions were of the form:
+#       start -> go-to-location -> scout -> go-to-location
+#    so the agents delay for 0-n seconds, go someplace, watch out for entities, and then return "home".
+#    Testing missions, such as the going around the square, are of this form:
+#       localize -> go-to-location -> go-to-location -> reset-mission
+#    so the agent figures out where it is, goes to a location part way around the square, returns to the
+#    starting location, and then resets and repeats it all over again.
+#
+#    Given the new structure of the code, the fullscale missions would presumably need a localize step before
+#    or after the start step.
+#
+#    As of this writing, there are separate files for each agent and mission type that load this shared code, 
+#    and then overwrite the mission structure rule so each agent has a different mission. Thus, to execute the
+#    square-following agent, you would source simple-robot-with-avoidance-square.soar (note these files may (should?)
+#    also set the parameters and create a waypoint map with initialize apply rules that override the defaults).
+#
+# 2) go-to-location is an abstract operator that does search and movement as described below.  The agent must 
+#    be within the waypoint-tolerance (set by initialize) of a waypoint specified in the waypoint map.  The 
+#    destination must correspond to a waypoint's location.  The agent will search for the next waypoint to
+#    go to using choose-waypoint (which uses the selection space with iterative deepening). It will then go
+#    to the chosen waypoint with go-to-waypoint. If will track its progress with update-progress, and if it
+#    fails to make sufficient progress, it will give up with give-up-on-move-to. 
+#
+# 3) choose-waypoint will propose going to each waypoint that is adjacent to the current waypoint.  If there 
+#    is more than one, the selection space with iterative deepening will take over and determine which one to 
+#    follow. When one is selected, it will remove the waypoint it is at from the input-link and add the one
+#    it wants to go to (thus, there is only one waypoint on the input-link at a time). It will also create
+#    a go-to-location structure on the top-state the keeps track of the waypoint the agent has choosen (this
+#    is used by elaborations/ranges). NOTE: this structure should be merged with the move-to structure.
+#
+# 4) go-to-waypoint does the following:
+#       1) creates a top-state move-to structure that keeps track of where the source of the movement, 
+#          the destination, the last time progress was being made, and how close the agent was at that time
+#          (among other things). This is so the operator can be interrupted (e.g., by an incoming message 
+#          or GDS issue) and still pick up from where it left off. That is, this structure contains enough
+#          information to recreate the state stack for this operator.
+#       2) drops into a subgoal that does two things. First it will first execute the rotate-to 
+#          operator to get pointed in the right direction. Then it will execute an action operator which takes
+#          different actions depending on the status of the 5 input arcs. Basically, each arc is marked as blocked
+#          or not based on the range-tolerance parameter. It then identifies the closest unblocked arc (0 is the
+#          middle, -1 is immediately to the left, -2 is the far left, similarly for 1 and 2 to the right). If the arc
+#          is in front, it goes forward, and rotates left or right if the arc is to the left or right. Basically, this
+#          causes the agent to get the closest unblocked arc in the center and then moves towards it. 
+#          Once the agent gets within waypoint-tolerance of the destination, go-to-waypoint has succeeded.
+#          This results in the move-to structure getting removed. If this is not the final destination 
+#          specified by go-to-location, then the agent will return to choose-waypoint.
+#
+# The rest of what follows has not been updated since moving to real robots and the input-link waypoint system.
+# Thus, these things probably require some work to get going again (both in this Soar code and in environment
+# input-link code). To avoid giving up, the replan-time parameter was set very high (so the agent never gives up). 
+# Messages haven't even been implemented in the real robots (indeed, tracking multiple agents hasn't been implemented). 
+# The message stuff could still be implemented and tested with a single agent, though, since an agent will get its own 
+# messages. It might be nice to have support for humans sending messages as well. (Getting multiagent tracking 
+# working is probably a lot harder). Entities also haven't been implemented for real robots (it was a hack
+# in simulation).
+#
+# 5) As the agent is moving towards its next waypoint, the update-progress operator will fire whenever 
+#    it gets closer than min-progress-distance to the destination.  This operator will update the closest
+#    distance and time on the move-to top-state structure. This operator may still work as-is.
+#
+# 6) If the agent doesn't make enough progress within the allotted time (specified by replan-time) then 
+#    the agent will execute the give-up-on-move-to operator. This updates the waypoint map by removing 
+#    the links between the nodes, sends a message to the other agents to do the same, and then returns 
+#    the source of the go-to-waypoint (this is not timed).  When the agent reaches the source, the top-state 
+#    move-to structure is removed (which completes the give-up-on-move-to operator).  The agent will
+#    then replan from the source location using the updated map.
+#
+# 7) Messages are broadcast as linked lists.  All agents will get the message, including the one that 
+#    sent it. The process-message operator fires for all messages in the top-state, which will blow 
+#    away the state stack. Thus, when an agent gives up, it will update its map, send the message, process 
+#    the message (it will ignore its own messages) re-create the stack stack and finish the giving up 
+#    by executing the move-to command to get back to the source.
+#
+# 8) The scout operator orients the agent to the yaw specified by the waypoint (north is 0 degrees, 
+#    east is 90) and waits for an entity to appear or for the scout time to expire.
+#
+# 9) Entity tracking (that is, a memory of entities directly seen or reported by others) is primarily 
+#    handled on the top-state by the maintain-entity-X family of operators (so most entity processing 
+#    will blow away the stack).  A permanent record is created for each entity when it is first seen.  
+#    The record contains information like which area the entity is in (the space is partitioned into 
+#    areas), the last time a message was sent, and the last time the entity was seen (if no longer visible).  
+#    It also contains a data pointer which either points to the input-link (if the entity is currently 
+#    visible) or to a persistent structure containing the most recent information about the entity.  
+#    This is designed so the same structure can be used whether the entity is visible or not (e.g., for hiding).
+#
+# 10) When the agent sees an entity, it will create these structures on the top-state, and then it will
+#    send a message to the other agents if it is unfriendly.  As long as it can still see the entity, 
+#    it will continue sending entity update messages in the interval specified by message-update-time.
+#
+# 11) When the agent gets a message about an entity, it creates/updates the top-state structure as necessary.
+#     The process-message operator handles this by triggering the same operators the agent would use
+#     if it actually saw the entity (the maintain-entity-X family of operators).
+#
+# 12) When the agent loses sight of the entity, it sends a final update message and creates a persistent
+#     copy of the last known information about the entity.
+#
+# 13) Some waypoints have "hide" waypoints associated with certain areas.  If the agent's current information 
+#     about an unfriendly entity puts it in an area specified by one of the hiding waypoints attached
+#     to the waypoint it is currently at (and it is scouting), then the agent will go to the hiding 
+#     location via the hide operator.  This involves rotating to face it, moving to it, and then rotating
+#     to the yaw associated with that waypoint.  When the agent is hiding, it will put a flag on the
+#     top state to prevent the desired-yaw of the scout operator from interfering with the rotation to
+#     face the hiding spot.
+#     NOTE: this currently uses the all/rotate-to operator and the move-to command (which doesn't exist
+#     anymore). It should be changed to use local rotate-to and action operators like go-to-waypoint.
+#     The all/rotate-to operator was from an earlier time when we had to calculate whether we 
+#     were within tolerance ourselves (that is now part of the command). In other words, the all/rotate-to
+#     operator should be removed once this (and whoever else might be using it, but I think this is it) 
+#     have been updated.
+#
+# 14) If the agent gets information that the entity is in an area associated with a different hiding 
+#     spot it will move to the new hiding spot.
+#
+# 15) If the agent gets infromation that the entity is in an area not associated with its hiding spots,
+#     then it will return to the original location via the unhide operator (which also removes the hide
+#     flag from the top state).
+
+
+# things I don't like about the code
+
+# Life would be easier if messages could be sent as structures instead of linked-lists.  Linked-lists
+#  make sense for communication with humans, but not with other agents.
+
+# I have to put structures on the top-state for the GDS, which is fine, but then code associated with 
+#  those structures has to go in a file associated with the top-state (or else Visual Soar's datamap 
+#  complains).  This forces code that belongs together to be split across different locations, which 
+#  can make it hard to follow.
+# Note: this is really an issue with Visual Soar, not Soar
+# Example: elaborations/give-up-on-move-to has rules that are only relevant to
+#  execute-mission/go-to-location/give-up-on-move-to
+# Example: elaborations/process-unfriendly-entity has rules that are only relevant to
+#  execute-mission/scout/process-unfriendly-entity
+# Unworkable solution: It might seem that a good approach is to create a link to the top-state structure 
+#  in the subgoal, and then elaborate it there. The problem with this approach is that it generates 
+#  results which will almost certainly be o-supported instead of i-supported (which is what we want). 
+#  The only way to avoid this is to elaborate the structure onto every substate (thus avoiding testing 
+#  anything to do with operators, like the state name), but then this creates clutter for unrelated 
+#  states.  It's also delicate in the sense that it can easily be broken if someone modifies it without 
+#  understanding what's going on.
+
+# Similar to the above, messages are processed on the top-state, even if they are relevant to what's 
+#  going on in a substate.
+# Example: agent is "scouting" (execute-mission/scout) and gets a message about an entity. The scout
+#  subgoal already has rules for processing an entity that could be generalized to handle entities in 
+#  messages as opposed to those in input, but separate rules are needed for processing the message instead

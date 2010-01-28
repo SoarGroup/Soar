@@ -1,0 +1,9 @@
+# A > B, B > A, C > A, D >
+
+sp {pref-semantics-test*propose*four-acceptable-best
+   (state <s> ^name pref-semantics-test
+             -^four-acceptable-best)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name four-acceptable-best)
+}

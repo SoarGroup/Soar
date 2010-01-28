@@ -1,0 +1,36 @@
+The best way to learn about the three tools:
+
+. The parser generator "javacc"
+
+. The tree building pre-processor "jjtree"
+
+. The document generator "jjdoc"
+
+is to read the documentation from the web pages.
+
+However, you can read the files in the directory for immediate
+information as follows:
+
+doc/README
+	This file.
+doc/INSTALLATIONNOTES
+	Contains installation tips.
+doc/javacc.RELEASENOTES
+	If you know how to use Version 0.5 of JavaCC, this file will
+	quickly get you uptodate with the new features and tips on
+	how to use them.
+doc/javacc.DETAILEDNOTES
+	Complete details of everything that has changed since Version
+	0.5.  This is useful for an in-depth understanding of how the
+	new version has changed.
+doc/jjtree.RELEASENOTES
+	Rough initial documentation for the tree building pre-processor
+	called JJTree.
+doc/jjdoc.RELEASENOTES
+	Documentation for JJDoc, the tool that generates documents
+	(such as HTML) from JavaCC grammar files.
+
+Another place to learn more about these tools is the "examples"
+directory.  By looking at the examples here along with reading all
+the "README" files, you should get a good handle on the tools and
+should be able to get started.

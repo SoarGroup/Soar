@@ -1,7 +1,0 @@
-sp {propose*explore
-   (state <s> ^name sorts
-              ^running-task.name explore)
--->
-   (<s> ^operator <o>)
-   (<o> ^name explore)
-}

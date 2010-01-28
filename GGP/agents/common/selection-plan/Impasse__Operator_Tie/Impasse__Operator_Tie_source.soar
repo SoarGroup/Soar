@@ -1,4 +1,0 @@
-source elaborations.soar
-source check-plan.soar
-source evaluate-operator.soar
-source select.soar

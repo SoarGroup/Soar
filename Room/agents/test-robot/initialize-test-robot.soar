@@ -1,0 +1,25 @@
+sp {propose*initialize-test-robot
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-test-robot)
+}
+
+sp {apply*initialize-test-robot
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-test-robot)
+-->
+   (<s> ^name test-robot)
+}
+
+sp {apply*command
+   (state <s> ^operator <op>
+              ^io.output-link <ol>)
+   (<op> ^name initialize-test-robot)
+-->
+   (<ol> ^set-velocity <c>)
+   (<c> ^linear-velocity 1.0
+        ^angular-velocity 0.0)
+}
+

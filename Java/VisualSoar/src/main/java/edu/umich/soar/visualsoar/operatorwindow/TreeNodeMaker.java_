@@ -1,0 +1,20 @@
+package edu.umich.visualsoar.operatorwindow;
+
+/**
+ * This is an interface that you must implement to use the @see TreeFileReader TreeFileReader
+ * class to read in trees
+ * @author Brad Jones
+ * @version 0.5a 5 Aug 1999
+ */
+public interface TreeNodeMaker {
+///////////////////////////////////////////////////////////////////
+// Methods
+///////////////////////////////////////////////////////////////////
+	/**
+	 * Given a Reader you must construct a TreeNode out of it
+	 * @param r the reader 
+	 * @throws IOException if there is an error reading from the reader
+	 * @throws NumberFormatException if a number is incorrectly formatted in the reader
+	 */
+	TreeNode makeNode(java.io.Reader r) throws java.io.IOException, NumberFormatException;	
+}

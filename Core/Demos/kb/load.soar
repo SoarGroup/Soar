@@ -1,0 +1,54 @@
+sp {kb*elaborate*observing
+   (state <s> ^name kb
+              ^observing <c>
+              ^entries <es>)
+   (<es> ^entry <e>)
+   (<e> ^id <c>)
+-->
+   (<s> ^observing-entry <e>)
+}
+           
+
+sp {kb*propose*load
+   (state <s> ^name kb
+              ^phase load
+              ^max-entries <max>
+              ^current-entry {<c> <= <max>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name load
+         ^entry <c>)
+}
+
+sp {apply*load*observe
+   (state <s> ^operator <op>
+              ^entries <es>)
+   (<es> ^entry <e>)
+   (<e> ^id <c>
+        ^name <name>
+        ^scientific-name <s-name>)
+   (<op> ^name load
+         ^entry <c>)
+-->
+   (<s> ^observing <c>)
+   (write |Observing (| <c> |): | <name> | (| <s-name> |)| (crlf))
+   (cmd epmem --set trigger dc)   
+}
+
+sp {apply*load*remove
+   (state <s> ^operator <op>
+              ^observing {<o> <> <c>})
+   (<op> ^name load
+         ^entry <c>)
+-->
+   (<s> ^observing <o> -)
+}
+
+sp {apply*load*increment
+   (state <s> ^operator <op>)
+   (<op> ^name load
+         ^entry <c>)
+-->
+   (<s> ^current-entry <c> -
+        ^current-entry (+ <c> 1))
+}

@@ -1,9 +1,0 @@
-POST / HTTP/1.0
-Accept: text/delim
-Sender: GAMEMASTER
-Receiver: VOIGT
-Content-type: text/acl
-Content-length: 32
-
-(STOP MATCH.1 ((MARK 2 2) NOOP))
-

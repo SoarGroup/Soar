@@ -1,0 +1,10 @@
+#sp {test-robot*propose*turn-test
+#   (state <s> ^name test-robot
+#              -^tested-turn
+#              ^waypoints
+#              ^announced)
+#-->
+#   (<s> ^operator <op> + >)
+#   (<op> ^name turn-test)
+#}
+#

@@ -1,0 +1,10 @@
+sp {three-way-two*new-scheme*success
+   (state <s> ^superstate <ss>
+              ^impasse conflict
+              ^attribute operator
+              ^item-count 3)
+   (<ss> ^name three-way-two
+         ^top-state <ts>)
+-->
+   (<ts> ^three-way-two success)
+}

@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+Import('env')
+env = env.Clone()
+
+env.Prepend(CPPPATH = ['src', '#ElementXML/src',])
+
+if env['SCU']:
+	ConnectionSML = env.Library('ConnectionSML', 'ConnectionSML.cxx')
+else:
+	ConnectionSML = env.Library('ConnectionSML', Glob('src/*.cpp'))
+
+env.Install('$PREFIX/lib', ConnectionSML)
+

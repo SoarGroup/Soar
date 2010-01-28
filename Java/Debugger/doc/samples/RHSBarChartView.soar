@@ -1,0 +1,55 @@
+echo RHS Function: graph
+
+sp {propose*init
+(state <s> ^superstate nil
+-^name)
+-->
+(<s> ^operator <o> +)
+(<o> ^name init)
+}
+
+sp {apply*init
+(state <s> ^operator.name init)
+-->
+(<s> ^name test)
+}
+
+sp {propose*update
+(state <s> ^name test
+-^toggle on)
+-->
+(<s> ^operator <o> +)
+(<o> ^name update)
+}
+
+sp {apply*update
+(state <s> ^operator.name update)
+-->
+(<s> ^toggle on)
+(write (crlf) (exec graph |addvalue category1 1 series1 1 0.5|))
+(write (crlf) (exec graph |addvalue category2 2 series1 1 0.7|))
+(write (crlf) (exec graph |addvalue category3 3 series1 1 0.1|))
+(write (crlf) (exec graph |addvalue category1 1 series2 2 0.2|))
+(write (crlf) (exec graph |addvalue category2 2 series2 2 0.4|))
+(write (crlf) (exec graph |addvalue category3 3 series2 2 0.8|))
+}
+
+sp {propose*update2
+(state <s> ^name test
+^toggle on)
+-->
+(<s> ^operator <o> +)
+(<o> ^name update2)
+}
+
+sp {apply*update2
+(state <s> ^operator.name update2)
+-->
+(<s> ^toggle on -)
+(write (crlf) (exec graph |addvalue category1 1 series1 1 0.1|))
+(write (crlf) (exec graph |addvalue category2 2 series1 1 0.2|))
+(write (crlf) (exec graph |addvalue category3 3 series1 1 0.3|))
+(write (crlf) (exec graph |addvalue category1 1 series2 2 0.6|))
+(write (crlf) (exec graph |addvalue category2 2 series2 2 0.2|))
+(write (crlf) (exec graph |addvalue category3 3 series2 2 0.5|))
+}

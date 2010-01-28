@@ -1,0 +1,31 @@
+sp {Adder*propose*add
+   (state <s> ^name Adder
+              ^io.input-link.text <text>
+             -^last-input-number <num>)
+   (<text> ^text-input-number <num>
+           ^next <word1>)
+   (<word1> ^value <num1>
+            ^next <word2>)
+   (<word2> ^value <num2>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name add
+         ^num1 <num1>
+         ^num2 <num2>
+         ^input-number <num>)
+}
+
+sp {apply*add
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name add
+         ^num1 <num1>
+         ^num2 <num2>
+         ^input-number <input-num>)
+-->
+   (<s> ^last-input-number <input-num>)
+   (<out> ^text <t>)
+   (<t> ^next <n>)
+   (<n> ^value (+ <num1> <num2>))
+}
+

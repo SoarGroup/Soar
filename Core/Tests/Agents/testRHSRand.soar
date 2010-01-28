@@ -1,0 +1,91 @@
+sp {propose*rand-int
+	(state <s> ^superstate nil -^rand-int)
+--> 
+	(<s> ^operator <o> + =)
+	(<o> ^name int ^value (rand-int))
+}
+
+sp {apply*rand-int
+	(state <s> ^operator <o>)
+	(<o> ^name int ^value <v> <=> 1)
+-->
+	#(write <v> (crlf))
+	(<s> ^rand-int <v>)
+}
+
+sp {propose*rand-int-arg
+	(state <s> ^superstate nil -^rand-int-arg)
+--> 
+	(<s> ^operator <o> + =)
+	(<o> ^name int-arg ^arg 1 ^value (rand-int 1))
+}
+
+sp {apply*rand-int-arg
+	(state <s> ^operator <o>)
+	(<o> ^name int-arg ^arg <arg> ^value { <v> <=> 1 >= 0 <= <arg> })
+-->
+	#(write <v> (crlf))
+	(<s> ^rand-int-arg <v>)
+}
+
+sp {propose*rand-float
+	(state <s> ^superstate nil -^rand-float)
+--> 
+	(<s> ^operator <o> + =)
+	(<o> ^name float ^value (rand-float))
+}
+
+sp {apply*rand-float
+	(state <s> ^operator <o>)
+	(<o> ^name float ^value { <v> <=> 1.0 >= 0.0 <= 1.0 })
+-->
+	#(write <v> (crlf))
+	(<s> ^rand-float <v>)
+}
+
+sp {propose*rand-float-arg
+	(state <s> ^superstate nil -^rand-float-arg)
+--> 
+	(<s> ^operator <o> + =)
+	(<o> ^name float-arg ^arg 0.5 ^value (rand-float 0.5))
+}
+
+sp {apply*rand-float-arg
+	(state <s> ^operator <o>)
+	(<o> ^name float-arg ^arg <arg> ^value { <v> <=> 1.0 >= 0.0 <= <arg> })
+-->
+	#(write <v> (crlf))
+	(<s> ^rand-float-arg <v>)
+}
+
+sp {propose*reset
+	(state <s> ^rand-int <ri> ^rand-int-arg <ria> ^rand-float <rf> ^rand-float-arg <rfa>)
+--> 
+	(<s> ^operator <o> +)
+	(<o> ^name reset ^rand-int <ri> ^rand-int-arg <ria> ^rand-float <rf> ^rand-float-arg <rfa>)
+}
+
+sp {apply*reset
+	(state <s> ^operator <o>)
+	(<o> ^name reset ^rand-int <ri> ^rand-int-arg <ria> ^rand-float <rf> ^rand-float-arg <rfa>)
+-->
+	(<s> ^rand-int <ri> - ^rand-int-arg <ria> - ^rand-float <rf> - ^rand-float-arg <rfa> -)
+}
+
+sp {detect*opnc
+	(state <s> ^superstate <ss> ^attribute operator ^impasse no-change)
+	(<ss> ^operator <o>)
+	(<o> ^name <n> ^value <v> -^arg)
+-->
+	(exec test-failure <n> | failed with value | <v>)
+	(halt)
+}
+
+sp {detect*opnc*arg
+	(state <s> ^superstate <ss> ^attribute operator ^impasse no-change)
+	(<ss> ^operator <o>)
+	(<o> ^name <n> ^value <v> ^arg <a>)
+-->
+	(exec test-failure <n> | arg | <a> | failed with value | <v>)
+	(halt)
+}

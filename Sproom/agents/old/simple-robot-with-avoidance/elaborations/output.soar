@@ -1,0 +1,15 @@
+sp {apply*operator*remove-command
+   (state <s> ^operator
+              ^io.output-link <ol>)
+   (<ol> ^<att> <value>)
+   (<value> ^status << interrupted complete  >>)
+-->
+   (<ol> ^<att> <value> -)}
+#
+#sp {apply*operator*error
+#   (state <s> ^operator
+#              ^io.output-link <ol>)
+#   (<ol> ^<att> <value>)
+#   (<value> ^status { <> complete <status> })
+#-->
+#   (write (crlf) |Status | <status>)}

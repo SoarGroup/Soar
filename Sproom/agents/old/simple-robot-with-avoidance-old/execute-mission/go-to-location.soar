@@ -1,0 +1,22 @@
+# proposed by generic operator proposal in propose-mission-operator
+
+sp {elaborate*operator*go-to-location*desired
+   (state <s> ^operator <op>
+              ^waypoints.waypoint <w>)
+   (<w> ^id <id>)
+   (<op> ^name go-to-location
+         ^id <id>)
+-->
+   (<op> ^desired <w>)
+}
+
+   
+sp {apply*go-to-location*complete
+   (state <s> ^operator <op>
+              ^waypoints.at <w>
+              ^mission.current <c>)
+   (<op> ^name go-to-location
+         ^desired <w>)
+-->
+   (<c> ^status complete)
+}

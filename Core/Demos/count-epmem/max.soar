@@ -1,0 +1,19 @@
+sp {count-epmem*propose*max
+   (state <s> ^name count-epmem
+              ^size.number <size>
+             -^max)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name max
+         ^type power
+         ^x 10
+         ^y <size>)
+}
+
+sp {apply*max
+   (state <s> ^operator <op>)
+   (<op> ^name max
+         ^result <r>)
+-->
+   (<s> ^max <r>)
+}

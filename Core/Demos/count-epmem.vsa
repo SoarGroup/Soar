@@ -1,0 +1,32 @@
+VERSION 4
+/count-epmem/count-epmem.dm
+0	ROOT count-epmem count-epmem 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR cue cue.soar 6
+6	3	FOPERATOR top-state top-state.soar 7
+7	0	FOPERATOR README README.soar 8
+8	0	HLOPERATOR convert convert.soar convert 47 9
+9	8	FOPERATOR elaborations elaborations.soar 10
+10	8	OPERATOR convert-digit convert-digit.soar 11
+11	8	OPERATOR convert-done convert-done.soar 12
+12	8	OPERATOR convert-init convert-init.soar 13
+13	0	OPERATOR done done.soar 14
+14	0	OPERATOR initialize-count-epmem initialize-count-epmem.soar 15
+15	0	OPERATOR max max.soar 16
+16	0	HLOPERATOR power power.soar power 19 17
+17	16	FOPERATOR elaborations elaborations.soar 18
+18	16	OPERATOR power-done power-done.soar 19
+19	16	OPERATOR power-init power-init.soar 20
+20	16	OPERATOR power-next power-next.soar 21
+21	0	HLOPERATOR recording recording.soar recording 65 22
+22	21	FOPERATOR elaborations elaborations.soar 23
+23	21	OPERATOR recording-convert recording-convert.soar 24
+24	0	OPERATOR storing storing.soar 29
+25	0	OPERATOR switch switch.soar 25
+26	0	HLOPERATOR testing testing.soar testing 81 26
+27	26	FOPERATOR elaborations elaborations.soar 27
+28	26	OPERATOR testing-convert testing-convert.soar 28
+END

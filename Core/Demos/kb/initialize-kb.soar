@@ -1,0 +1,857 @@
+sp {propose*initialize-kb
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-kb)
+}
+
+##
+# http://www.site.uottawa.ca:4321/animals/index.html
+##
+sp {apply*initialize-kb*params
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-kb)
+-->
+   (<s> ^phase load
+        ^sub-phase init
+        ^current-entry 1
+        ^current-test 1
+        ^max-entries 5        
+        ^max-tests 14
+        ^entries <e>
+        ^tests <t>)
+}
+
+sp {apply*intialize-kb*fill
+   (state <s> ^operator <op>
+              ^max-entries <max-entries>
+              ^max-tests <max-tests>
+              ^entries <e>
+              ^tests <t>)
+   (<op> ^name initialize-kb)
+-->
+   (<s> ^name kb)
+   (<e> ^entry <e1>
+        ^entry <e2>
+        ^entry <e3>
+        ^entry <e4>
+        ^entry <e5>)
+   (<t> ^test <t1>
+        ^test <t2>
+        ^test <t3>
+        ^test <t4>
+        ^test <t5>
+        ^test <t6>
+        ^test <t7>
+        ^test <t8>
+        ^test <t9>
+        ^test <t10>
+        ^test <t11>
+        ^test <t13>
+        ^test <t14>
+        ^test <t15>)
+   (<e1> ^id 1
+         ^name |Sei whale|
+         ^scientific-name |Balaenoptera borealis|
+         ^attributes <a1>)
+   (<a1> ^kind-of rorqual
+         ^order Cetacea
+         ^is warm-blooded
+         ^may-catch rabbies)
+   (<e2> ^id 2
+         ^name |humpback whale|
+         ^scientific-name |Megaptera novaeangliae|
+         ^attributes <a1>)
+   (<e3> ^id 3
+         ^name |killer whale|
+         ^scientific-name |Orcinus orca|
+         ^attributes <a3>)
+   (<a3> ^kind-of |dolphin or porpoise|
+         ^order Cetacea
+         ^is warm-blooded
+         ^may-catch rabbies)
+   (<e4> ^id 4
+         ^name |blue dolphin|
+         ^scientific-name |Stenella caeruleoalba|
+         ^attributes <a3>)
+   (<e5> ^id 5
+         ^name |True's beaked whale|
+         ^scientific-name |Mesoplodon mirus|
+         ^attributes <a5>)
+   (<a5> ^kind-of |beaked whale|
+         ^order Cetacea
+         ^is warm-blooded
+         ^may-catch rabbies)
+   ###
+   (<t1> ^id 1
+         ^name |bad retrieval|
+         ^note |attempting to retrieve known bad memory ids|         
+         ^steps 2
+         ^step <st1-1>
+         ^step <st1-2>)
+   (<st1-1> ^id 1            
+            ^type retrieve
+            ^status none
+            ^command <c1-1>)
+   (<c1-1> ^retrieve 100)
+   (<st1-2> ^id 2            
+            ^type retrieve
+            ^status none
+            ^command <c1-2>)
+   (<c1-2> ^retrieve 99999)
+   ###
+   (<t2> ^id 2
+         ^name |good retrieval|
+         ^note |attempting to retrieve a known good memory id|
+         ^steps 1
+         ^step <st2-1>)
+   (<st2-1> ^id 1            
+            ^type retrieve
+            ^status good
+            ^command <c2-1>
+            ^expected 1)
+   (<c2-1> ^retrieve 1)
+   ###
+   (<t3> ^id 3         
+         ^name |bad query|
+         ^note |attempting to query for a known bad state name|
+         ^steps 1
+         ^step <st3-1>)
+   (<st3-1> ^id 1
+            ^type query
+            ^status failure
+            ^command <c3-1>)
+   (<c3-1> ^query <q3-1>)
+   (<q3-1> ^name bad-state-name)
+   ###
+   (<t4> ^id 4
+         ^name |soar query|
+         ^note |state name; superstate; good state, bad state; state, superstate; io|
+         ^steps 5
+         ^step <st4-1>
+         ^step <st4-2>
+         ^step <st4-3>
+         ^step <st4-4>
+         ^step <st4-5>)
+   (<st4-1> ^id 1
+            ^type query
+            ^status success
+            ^command <c4-1>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c4-1> ^query <q4-1>)
+   (<q4-1> ^name kb)
+   (<st4-2> ^id 2
+            ^type query
+            ^status success
+            ^command <c4-2>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c4-2> ^query <q4-2>)
+   (<q4-2> ^superstate nil)   
+   (<st4-3> ^id 3
+            ^type query
+            ^status success
+            ^command <c4-3>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c4-3> ^query <q4-3>)
+   (<q4-3> ^name kb
+           ^name bad-state-name)
+   (<st4-4> ^id 4
+            ^type query
+            ^status success
+            ^command <c4-4>
+            ^expected <max-entries>
+            ^score 2.)
+   (<c4-4> ^query <q4-4>)
+   (<q4-4> ^name kb
+           ^superstate nil)
+   (<st4-5> ^id 5
+            ^type query
+            ^status success
+            ^command <c4-5>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c4-5> ^query <q4-5>)
+   (<q4-5> ^io <io4-5>)
+   ###
+   (<t5> ^id 5
+         ^name |observing query|
+         ^note |query by "observing": 0, 1, last, last+1|
+         ^steps 4
+         ^step <st5-1>
+         ^step <st5-2>
+         ^step <st5-3>
+         ^step <st5-4>)
+   (<st5-1> ^id 1
+            ^type query
+            ^status failure
+            ^command <c5-1>)
+   (<c5-1> ^query <q5-1>)
+   (<q5-1> ^observing 0)
+   (<st5-2> ^id 2
+            ^type query
+            ^status success
+            ^command <c5-2>
+            ^expected 1
+            ^score 1.)
+   (<c5-2> ^query <q5-2>)
+   (<q5-2> ^observing 1)
+   (<st5-3> ^id 3
+            ^type query
+            ^status success
+            ^command <c5-3>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c5-3> ^query <q5-3>)
+   (<q5-3> ^observing <max-entries>)
+   (<st5-4> ^id 4
+            ^type query
+            ^status failure
+            ^command <c5-4>)
+   (<c5-4> ^query <q5-4>)
+   (<q5-4> ^observing (+ <max-entries> 1))
+   ###
+   (<t6> ^id 6
+         ^name |prohibit test|
+         ^note |query 1, prohibit the result, failure; query state name, prohibit last, last-1|
+         ^steps 4
+         ^step <st6-1>
+         ^step <st6-2>
+         ^step <st6-3>
+         ^step <st6-4>)
+   (<st6-1> ^id 1
+            ^type query
+            ^status success
+            ^command <c6-1>
+            ^expected 1
+            ^score 1.)
+   (<c6-1> ^query <q6-1>)
+   (<q6-1> ^observing 1)
+   (<st6-2> ^id 2
+            ^type query
+            ^status failure
+            ^command <c6-2>)
+   (<c6-2> ^query <q6-2>
+           ^prohibit 1)
+   (<q6-2> ^observing 1)
+   (<st6-3> ^id 3
+            ^type query
+            ^status success
+            ^command <c6-3>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c6-3> ^query <q6-3>)
+   (<q6-3> ^name kb)
+   (<st6-4> ^id 4
+            ^type query
+            ^status success
+            ^command <c6-4>
+            ^expected (- <max-entries> 1)
+            ^score 1.)
+   (<c6-4> ^query <q6-4>
+           ^prohibit <max-entries>)
+   (<q6-4> ^name kb)
+   ###
+   (<t7> ^id 7
+         ^name |next test|
+         ^note |query 1, next, 2, next 3; query last, next, failure|
+         ^steps 5
+         ^step <st7-1>
+         ^step <st7-2>
+         ^step <st7-3>
+         ^step <st7-4>
+         ^step <st7-5>)
+   (<st7-1> ^id 1
+            ^type query
+            ^status success
+            ^command <c7-1>
+            ^expected 1
+            ^score 1.)
+   (<c7-1> ^query <q7-1>)
+   (<q7-1> ^observing 1)
+   (<st7-2> ^id 2
+            ^type retrieve
+            ^status good
+            ^command <c7-2>
+            ^expected 2)
+   (<c7-2> ^next <n7-2>)
+   (<st7-3> ^id 3
+            ^type retrieve
+            ^status good
+            ^command <c7-3>
+            ^expected 3)
+   (<c7-3> ^next <n7-3>)
+   (<st7-4> ^id 4
+            ^type query
+            ^status success
+            ^command <c7-4>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c7-4> ^query <q7-4>)
+   (<q7-4> ^observing <max-entries>)
+   (<st7-5> ^id 5
+            ^type retrieve
+            ^status none
+            ^command <c7-5>)
+   (<c7-5> ^next <n7-5>)
+   ###
+   (<t8> ^id 8
+         ^name |previous test|
+         ^note |query 1, previous, failure; query last, previous, last-1, previous, last-2|
+         ^steps 5
+         ^step <st8-1>
+         ^step <st8-2>
+         ^step <st8-3>
+         ^step <st8-4>
+         ^step <st8-5>)
+   (<st8-1> ^id 1
+            ^type query
+            ^status success
+            ^command <c8-1>
+            ^expected 1
+            ^score 1.)
+   (<c8-1> ^query <q8-1>)
+   (<q8-1> ^observing 1)
+   (<st8-2> ^id 2
+            ^type retrieve
+            ^status none
+            ^command <c8-2>
+            ^expected 2)
+   (<c8-2> ^previous <p8-2>)
+   (<st8-3> ^id 3
+            ^type query
+            ^status success
+            ^command <c8-3>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c8-3> ^query <q8-3>)
+   (<q8-3> ^observing <max-entries>)
+   (<st8-4> ^id 4
+            ^type retrieve
+            ^status good
+            ^command <c8-4>
+            ^expected (- <max-entries> 1))
+   (<c8-4> ^previous <p8-4>)
+   (<st8-5> ^id 5
+            ^type retrieve
+            ^status good
+            ^command <c8-5>
+            ^expected (- <max-entries> 2))
+   (<c8-5> ^previous <p8-5>)
+   ###
+   (<t9> ^id 9
+         ^name |before test|
+         ^note |query 1, before 1, failure; query 2, before 2, failure, before 3, 2; query state name, before last, last-1|
+         ^steps 7
+         ^step <st9-1>
+         ^step <st9-2>
+         ^step <st9-3>
+         ^step <st9-4>
+         ^step <st9-5>
+         ^step <st9-6>
+         ^step <st9-7>)
+   (<st9-1> ^id 1
+            ^type query
+            ^status success
+            ^command <c9-1>
+            ^expected 1
+            ^score 1.)
+   (<c9-1> ^query <q9-1>)
+   (<q9-1> ^observing 1)
+   (<st9-2> ^id 2
+            ^type query
+            ^status failure
+            ^command <c9-2>)
+   (<c9-2> ^query <q9-2>
+           ^before 1)
+   (<q9-2> ^observing 1)
+   (<st9-3> ^id 3
+            ^type query
+            ^status success
+            ^command <c9-3>
+            ^expected 2
+            ^score 1.)
+   (<c9-3> ^query <q9-3>)
+   (<q9-3> ^observing 2)
+   (<st9-4> ^id 4
+            ^type query
+            ^status failure
+            ^command <c9-4>)
+   (<c9-4> ^query <q9-4>
+           ^before 2)
+   (<q9-4> ^observing 2)
+   (<st9-5> ^id 5
+            ^type query
+            ^status success
+            ^command <c9-5>
+            ^expected 2
+            ^score 1.)
+   (<c9-5> ^query <q9-5>
+           ^before 3)
+   (<q9-5> ^observing 2)
+   (<st9-6> ^id 6
+            ^type query
+            ^status success
+            ^command <c9-6>
+            ^expected <max-entries>
+            ^score 1.)
+   (<c9-6> ^query <q9-6>)
+   (<q9-6> ^name kb)
+   (<st9-7> ^id 7
+            ^type query
+            ^status success
+            ^command <c9-7>
+            ^expected (- <max-entries> 1)
+            ^score 1.)
+   (<c9-7> ^query <q9-7>
+           ^before <max-entries>)
+   (<q9-7> ^name kb)
+   ###
+   (<t10> ^id 10
+          ^name |after test|
+          ^note |query last, after last, failure; query last-1, after last-1, failure, after last-2, last-1|
+          ^steps 5
+          ^step <st10-1>
+          ^step <st10-2>
+          ^step <st10-3>
+          ^step <st10-4>
+          ^step <st10-5>)
+   (<st10-1> ^id 1
+             ^type query
+             ^status success
+             ^command <c10-1>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c10-1> ^query <q10-1>)
+   (<q10-1> ^observing <max-entries>)
+   (<st10-2> ^id 2
+             ^type query
+             ^status failure
+             ^command <c10-2>)
+   (<c10-2> ^query <q10-2>
+            ^after <max-entries>)
+   (<q10-2> ^observing <max-entries>)
+   (<st10-3> ^id 3
+             ^type query
+             ^status success
+             ^command <c10-3>
+             ^expected (- <max-entries> 1)
+             ^score 1.)
+   (<c10-3> ^query <q10-3>)
+   (<q10-3> ^observing (- <max-entries> 1))
+   (<st10-4> ^id 4
+             ^type query
+             ^status failure
+             ^command <c10-4>)
+   (<c10-4> ^query <q10-4>
+            ^after (- <max-entries> 1))
+   (<q10-4> ^observing (- <max-entries> 1))
+   (<st10-5> ^id 5
+             ^type query
+             ^status success
+             ^command <c10-5>
+             ^expected (- <max-entries> 1)
+             ^score 1.)
+   (<c10-5> ^query <q10-5>
+            ^after (- <max-entries> 2))
+   (<q10-5> ^observing (- <max-entries> 1))
+   ###
+   (<t11> ^id 11
+          ^name |before/after test|
+          ^note |query 3, before last, after 1, before last + after 1, before 4 + after 2, before 3 + after 2 (fail), before 4 + after 3 (fail)|
+          ^steps 7
+          ^step <st11-1>
+          ^step <st11-2>
+          ^step <st11-3>
+          ^step <st11-4>
+          ^step <st11-5>
+          ^step <st11-6>
+          ^step <st11-7>)
+   (<st11-1> ^id 1
+             ^type query
+             ^status success
+             ^command <c11-1>
+             ^expected 3
+             ^score 1.)
+   (<c11-1> ^query <q11-1>)
+   (<q11-1> ^observing 3)
+   (<st11-2> ^id 2
+             ^type query
+             ^status success
+             ^command <c11-2>
+             ^expected 3
+             ^score 1.)
+   (<c11-2> ^query <q11-2>
+            ^before <max-entries>)
+   (<q11-2> ^observing 3)
+   (<st11-3> ^id 3
+             ^type query
+             ^status success
+             ^command <c11-3>
+             ^expected 3
+             ^score 1.)
+   (<c11-3> ^query <q11-3>
+            ^after 1)
+   (<q11-3> ^observing 3)
+   (<st11-4> ^id 4
+             ^type query
+             ^status success
+             ^command <c11-4>
+             ^expected 3
+             ^score 1.)
+   (<c11-4> ^query <q11-4>
+            ^before <max-entries>
+            ^after 1)
+   (<q11-4> ^observing 3)
+   (<st11-5> ^id 5
+             ^type query
+             ^status success
+             ^command <c11-5>
+             ^expected 3
+             ^score 1.)
+   (<c11-5> ^query <q11-5>
+            ^before 4
+            ^after 2)
+   (<q11-5> ^observing 3)
+   (<st11-6> ^id 6
+             ^type query
+             ^status failure
+             ^command <c11-6>)
+   (<c11-6> ^query <q11-6>
+            ^before 3
+            ^after 2)
+   (<q11-6> ^observing 3)
+   (<st11-7> ^id 7
+             ^type query
+             ^status failure
+             ^command <c11-7>)
+   (<c11-7> ^query <q11-7>
+            ^before 4
+            ^after 3)
+   (<q11-7> ^observing 3)
+   ###
+   
+   ###
+   (<t13> ^id 12
+          ^name |pos+neg tests|
+          ^note |+good state -bad state, last; +bad stat -good state, last; +good state -last, last-1; +last -good state, last; +last -last, last; +1 last -last, 1|
+          ^steps 6
+          ^step <st13-1>
+          ^step <st13-2>
+          ^step <st13-3>
+          ^step <st13-4>
+          ^step <st13-5>
+          ^step <st13-6>)
+   (<st13-1> ^id 1
+             ^type query
+             ^status success
+             ^command <c13-1>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c13-1> ^query <q13-1>
+            ^neg-query <nq13-1>)
+   (<q13-1> ^name kb)
+   (<nq13-1> ^name bad-state-name)
+   (<st13-2> ^id 2
+             ^type query
+             ^status success
+             ^command <c13-2>
+             ^expected <max-entries>
+             ^score -1.)
+   (<c13-2> ^query <q13-2>
+            ^neg-query <nq13-2>)
+   (<q13-2> ^name bad-state-name)
+   (<nq13-2> ^name kb)
+   (<st13-3> ^id 3
+             ^type query
+             ^status success
+             ^command <c13-3>
+             ^expected (- <max-entries> 1)
+             ^score 1.)
+   (<c13-3> ^query <q13-3>
+            ^neg-query <nq13-3>)
+   (<q13-3> ^name kb)
+   (<nq13-3> ^observing <max-entries>)
+   (<st13-4> ^id 4
+             ^type query
+             ^status success
+             ^command <c13-4>
+             ^expected <max-entries>
+             ^score 0.)
+   (<c13-4> ^query <q13-4>
+            ^neg-query <nq13-4>)
+   (<q13-4> ^observing <max-entries>)
+   (<nq13-4> ^name kb)
+   (<st13-5> ^id 5
+             ^type query
+             ^status success
+             ^command <c13-5>
+             ^expected <max-entries>
+             ^score 0.)
+   (<c13-5> ^query <q13-5>
+            ^neg-query <nq13-5>)
+   (<q13-5> ^observing <max-entries>)
+   (<nq13-5> ^observing <max-entries>)
+   (<st13-6> ^id 6
+             ^type query
+             ^status success
+             ^command <c13-6>
+             ^expected 1
+             ^score 1.)
+   (<c13-6> ^query <q13-6>
+            ^neg-query <nq13-6>)
+   (<q13-6> ^observing <max-entries>
+            ^observing 1)
+   (<nq13-6> ^observing <max-entries>)
+   ###
+   (<t14> ^id 13
+          ^name |all together now!|
+          ^note |+state, last; +state -last, last-1; +state -last before last after 1, last-1; +state -last before last-1 after 1, last-2; +state -last before last-1 prohibit last-2, last-3; +state +1, 1; +state +1 +2 +3 +4, 4; +state +1 +2 +3 +4 -4, 3; +state +1 +2 +3 +4 -4 before 3, 2; +state +1 +2 +3 +4 -4 before 3 prohibit 2, 1; +state +1 +2 +3 +4 -4 after 3 prohibit 2, last; +state +1 +2 +3 +4 -4 after 3 before last prohibit 2, last-1; next, last; previous, last-1|            
+          ^steps 14
+          ^step <st14-1>
+          ^step <st14-2>
+          ^step <st14-3>
+          ^step <st14-4>
+          ^step <st14-5>
+          ^step <st14-6>
+          ^step <st14-7>
+          ^step <st14-8>
+          ^step <st14-9>
+          ^step <st14-10>
+          ^step <st14-11>
+          ^step <st14-12>
+          ^step <st14-13>
+          ^step <st14-14>)
+   (<st14-1> ^id 1
+             ^type query
+             ^status success
+             ^command <c14-1>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c14-1> ^query <q14-1>
+            ^neg-query <n14-1>)
+   (<q14-1> ^name kb)
+   (<st14-2> ^id 2
+             ^type query
+             ^status success
+             ^command <c14-2>
+             ^expected (- <max-entries> 1)
+             ^score 1.)
+   (<c14-2> ^query <q14-2>
+            ^neg-query <n14-2>)
+   (<q14-2> ^name kb)
+   (<n14-2> ^observing <max-entries>)
+   (<st14-3> ^id 3
+             ^type query
+             ^status success
+             ^command <c14-3>
+             ^expected (- <max-entries> 1)
+             ^score 1.)
+   (<c14-3> ^query <q14-3>
+            ^neg-query <n14-3>
+            ^before <max-entries>
+            ^after 1)
+   (<q14-3> ^name kb)
+   (<n14-3> ^observing <max-entries>)
+   (<st14-4> ^id 4
+             ^type query
+             ^status success
+             ^command <c14-4>
+             ^expected (- <max-entries> 2)
+             ^score 1.)
+   (<c14-4> ^query <q14-4>
+            ^neg-query <n14-4>
+            ^before (- <max-entries> 1)
+            ^after 1)
+   (<q14-4> ^name kb)
+   (<n14-4> ^observing <max-entries>)
+   (<st14-5> ^id 5
+             ^type query
+             ^status success
+             ^command <c14-5>
+             ^expected (- <max-entries> 3)
+             ^score 1.)
+   (<c14-5> ^query <q14-5>
+            ^neg-query <n14-5>
+            ^before (- <max-entries> 1)
+            ^after 1
+            ^prohibit (- <max-entries> 2))
+   (<q14-5> ^name kb)
+   (<n14-5> ^observing <max-entries>)
+   (<st14-6> ^id 6
+             ^type query
+             ^status success
+             ^command <c14-6>
+             ^expected 1
+             ^score 2.)
+   (<c14-6> ^query <q14-6>
+            ^neg-query <n14-6>)
+   (<q14-6> ^name kb
+            ^observing 1)
+   (<st14-7> ^id 7
+             ^type query
+             ^status success
+             ^command <c14-7>
+             ^expected 4
+             ^score 2.)
+   (<c14-7> ^query <q14-7>
+            ^neg-query <n14-7>)
+   (<q14-7> ^name kb
+            ^observing 1
+            ^observing 2
+            ^observing 3
+            ^observing 4)
+   (<st14-8> ^id 8
+             ^type query
+             ^status success
+             ^command <c14-8>
+             ^expected 3
+             ^score 2.)
+   (<c14-8> ^query <q14-8>
+            ^neg-query <n14-8>)
+   (<q14-8> ^name kb
+            ^observing 1
+            ^observing 2
+            ^observing 3
+            ^observing 4)
+   (<n14-8> ^observing 4)
+   (<st14-9> ^id 9
+             ^type query
+             ^status success
+             ^command <c14-9>
+             ^expected 2
+             ^score 2.)
+   (<c14-9> ^query <q14-9>
+            ^neg-query <n14-9>
+            ^before 3)
+   (<q14-9> ^name kb
+            ^observing 1
+            ^observing 2
+            ^observing 3
+            ^observing 4)
+   (<n14-9> ^observing 4)
+   (<st14-10> ^id 10
+              ^type query
+              ^status success
+              ^command <c14-10>
+              ^expected 1
+              ^score 2.)
+   (<c14-10> ^query <q14-10>
+             ^neg-query <n14-10>
+             ^before 3
+             ^prohibit 2)
+   (<q14-10> ^name kb
+             ^observing 1
+             ^observing 2
+             ^observing 3
+             ^observing 4)
+   (<n14-10> ^observing 4)
+   (<st14-11> ^id 11
+              ^type query
+              ^status success
+              ^command <c14-11>
+              ^expected <max-entries>
+              ^score 1.)
+   (<c14-11> ^query <q14-11>
+             ^neg-query <n14-11>
+             ^after 3
+             ^prohibit 2)
+   (<q14-11> ^name kb
+             ^observing 1
+             ^observing 2
+             ^observing 3
+             ^observing 4)
+   (<n14-11> ^observing 4)
+   (<st14-12> ^id 12
+              ^type query
+              ^status success
+              ^command <c14-12>
+              ^expected (- <max-entries> 1)
+              ^score 1.)
+   (<c14-12> ^query <q14-12>
+             ^neg-query <n14-12>
+             ^after 3
+             ^before <max-entries>
+             ^prohibit 2)
+   (<q14-12> ^name kb
+             ^observing 1
+             ^observing 2
+             ^observing 3
+             ^observing 4)
+   (<n14-12> ^observing 4)
+   (<st14-13> ^id 13
+              ^type retrieve
+              ^status good
+              ^command <c14-13>
+              ^expected <max-entries>)
+   (<c14-13> ^next <n14-13>)
+   (<st14-14> ^id 14
+              ^type retrieve
+              ^status good
+              ^command <c14-14>
+              ^expected (- <max-entries> 1))
+   (<c14-14> ^previous <p14-14>)
+   ###
+  (<t15> ^id 14
+          ^name |mode 3 checks|
+          ^note |warm-blooded, score 1; warm-blooded and Cetacea, score 2; warm-blooded, rabies, not Cetacea, score 1; warm-blooded, rabies, not beaked whale, score 2|
+          ^steps 4
+          ^step <st15-1>
+          ^step <st15-2>
+          ^step <st15-3>
+          ^step <st15-4>)
+   (<st15-1> ^id 1
+             ^type query
+             ^status success
+             ^command <c15-1>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c15-1> ^query <q15-1>)
+   (<q15-1> ^observing-entry <oe15-1>)
+   (<oe15-1> ^attributes <a15-1>)
+   (<a15-1> ^is warm-blooded)
+   (<st15-2> ^id 2
+             ^type query
+             ^status success
+             ^command <c15-2>
+             ^expected <max-entries>
+             ^score 2.)
+   (<c15-2> ^query <q15-2>)
+   (<q15-2> ^observing-entry <oe15-2>)
+   (<oe15-2> ^attributes <a15-2>)
+   (<a15-2> ^is warm-blooded 
+            ^order Cetacea)
+   (<st15-3> ^id 3
+             ^type query
+             ^status success
+             ^command <c15-3>
+             ^expected <max-entries>
+             ^score 1.)
+   (<c15-3> ^query <q15-3>
+            ^neg-query <n15-3>)
+   (<q15-3> ^observing-entry <oe15-3>)
+   (<oe15-3> ^attributes <a15-3>)
+   (<a15-3> ^is warm-blooded 
+            ^may-catch rabbies)
+   (<n15-3> ^observing-entry <noe15-3>)
+   (<noe15-3> ^attributes <na15-3>)
+   (<na15-3> ^order Cetacea)
+   (<st15-4> ^id 4
+             ^type query
+             ^status success
+             ^command <c15-4>
+             ^expected (- <max-entries> 1)
+             ^score 2.)
+   (<c15-4> ^query <q15-4>
+            ^neg-query <n15-4>)
+   (<q15-4> ^observing-entry <oe15-4>)
+   (<oe15-4> ^attributes <a15-4>)
+   (<a15-4> ^is warm-blooded 
+              ^may-catch rabbies)
+   (<n15-4> ^observing-entry <noe15-4>)
+   (<noe15-4> ^attributes <na15-4>)
+   (<na15-4> ^kind-of |beaked whale|)
+}

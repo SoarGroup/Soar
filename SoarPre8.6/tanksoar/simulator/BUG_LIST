@@ -1,4 +1,0 @@
-Bug list:
-
-- Placing multiple commands in a single cycle will not work correctly with feedback stuff.  The system will choose randomly, but the second command will never get a completed flag.  May be a problem if agent is waiting on it.
-

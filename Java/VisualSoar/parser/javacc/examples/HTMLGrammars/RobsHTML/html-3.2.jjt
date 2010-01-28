@@ -1,0 +1,774 @@
+PARSER_BEGIN(html32)
+
+class html32 {
+  public static void main(String args[]) {
+    System.out.println("Reading from standard input...");
+    html32 t = new html32(new java.io.DataInputStream(System.in));
+    try {
+      SimpleNode n = t.html();
+      n.dump("");
+      System.out.println("Thank you.");
+    } catch (Exception e) {
+      System.out.println("Oops.");
+      System.out.println(e.getMessage());
+      e.printStackTrace();
+    }
+  }
+
+}
+
+PARSER_END(html32)
+
+// ================================================================
+
+SKIP :
+{
+	<		( " " | "\t" | "\n" | "\r" )+	>
+|	<		"<!" ( ~[">"] )* ">"		>
+}
+
+TOKEN :
+{
+	<STAGO:		"<"				>	: TAG
+|	<ETAGO:		"</"				>	: TAG
+|	<PCDATA:	( ~["<"] )+			>
+}
+
+<TAG> TOKEN [IGNORE_CASE] :
+{
+	<A:		"a"				>	: ATTLIST
+|	<ADDRESS:	"address"			>	: ATTLIST
+|	<APPLET:	"applet"			>	: ATTLIST
+|	<AREA:		"area"				>	: ATTLIST
+|	<B:		"b"				>	: ATTLIST
+|	<BASE:		"base"				>	: ATTLIST
+|	<BASEFONT:	"basefont"			>	: ATTLIST
+|	<BIG:		"big"				>	: ATTLIST
+|	<BLOCKQUOTE:	"blockquote"			>	: ATTLIST
+|	<BODY:		"body"				>	: ATTLIST
+|	<BR:		"br"				>	: ATTLIST
+|	<CAPTION:	"caption"			>	: ATTLIST
+|	<CENTER:	"center"			>	: ATTLIST
+|	<CITE:		"cite"				>	: ATTLIST
+|	<CODE:		"code"				>	: ATTLIST
+|	<DD:		"dd"				>	: ATTLIST
+|	<DFN:		"dfn"				>	: ATTLIST
+|	<DIR:		"dir"				>	: ATTLIST
+|	<DIV:		"div"				>	: ATTLIST
+|	<DL:		"dl"				>	: ATTLIST
+|	<DT:		"dt"				>	: ATTLIST
+|	<EM:		"em"				>	: ATTLIST
+|	<FONT:		"font"				>	: ATTLIST
+|	<FORM:		"form"				>	: ATTLIST
+|	<H1:		"h1"				>	: ATTLIST
+|	<H2:		"h2"				>	: ATTLIST
+|	<H3:		"h3"				>	: ATTLIST
+|	<H4:		"h4"				>	: ATTLIST
+|	<H5:		"h5"				>	: ATTLIST
+|	<H6:		"h6"				>	: ATTLIST
+|	<HEAD:		"head"				>	: ATTLIST
+|	<HR:		"hr"				>	: ATTLIST
+|	<HTML:		"html"				>	: ATTLIST
+|	<I:		"i"				>	: ATTLIST
+|	<IMG:		"img"				>	: ATTLIST
+|	<INPUT:		"input"				>	: ATTLIST
+|	<ISINDEX:	"isindex"			>	: ATTLIST
+|	<KBD:		"kbd"				>	: ATTLIST
+|	<LI:		"li"				>	: ATTLIST
+|	<LINK:		"link"				>	: ATTLIST
+|	<MAP:		"map"				>	: ATTLIST
+|	<MENU:		"menu"				>	: ATTLIST
+|	<META:		"meta"				>	: ATTLIST
+|	<OL:		"ol"				>	: ATTLIST
+|	<OPTION:	"option"			>	: ATTLIST
+|	<P:		"p"				>	: ATTLIST
+|	<PARAM:		"param"				>	: ATTLIST
+|	<PRE:		"pre"				>	: ATTLIST
+|	<PROMPT:	"prompt"			>	: ATTLIST
+|	<SAMP:		"samp"				>	: ATTLIST
+|	<SCRIPT:	"script"			>	: ATTLIST
+|	<SELECT:	"select"			>	: ATTLIST
+|	<SMALL:		"small"				>	: ATTLIST
+|	<STRIKE:	"strike"			>	: ATTLIST
+|	<STRONG:	"strong"			>	: ATTLIST
+|	<STYLE:		"style"				>	: ATTLIST
+|	<SUB:		"sub"				>	: ATTLIST
+|	<SUP:		"sup"				>	: ATTLIST
+|	<TABLE:		"table"				>	: ATTLIST
+|	<TD:		"td"				>	: ATTLIST
+|	<TEXTAREA:	"textarea"			>	: ATTLIST
+|	<TH:		"th"				>	: ATTLIST
+|	<TITLE:		"title"				>	: ATTLIST
+|	<TR:		"tr"				>	: ATTLIST
+|	<TT:		"tt"				>	: ATTLIST
+|	<U:		"u"				>	: ATTLIST
+|	<UL:		"ul"				>	: ATTLIST
+|	<VAR:		"var"				>	: ATTLIST
+}
+
+<ATTLIST> SKIP :
+{
+	<		" " | "\t" | "\n" | "\r" 	>
+|	<		"--" 				>	: ATTCOMM
+}
+
+<ATTLIST> TOKEN :
+{
+	<TAGC:		">"				>	: DEFAULT
+|	<A_EQ:		"="				>	: ATTRVAL
+
+|	<#ALPHA:	["a"-"z","A"-"Z","_","-","."]	>
+|	<#NUM:		["0"-"9"]			>
+|	<#ALPHANUM:	<ALPHA> | <NUM>			>
+|	<A_NAME:	<ALPHA> ( <ALPHANUM> )*		>
+
+}
+
+<ATTRVAL> TOKEN :
+{
+	<CDATA:		"'" ( ~["'"] )* "'"
+		|	"\"" ( ~["\""] )* "\""
+		| ( ~[">", "\"", "'", " ", "\t", "\n", "\r"] )+
+							>	: ATTLIST
+}
+
+<ATTCOMM> SKIP :
+{
+	<		( ~["-"] )+			>
+|	<		"-" ( ~["-"] )+			>
+|	<		"--"				>	: ATTLIST
+}
+
+
+// ================================================================
+
+void pcdata() #void :
+{
+	Token t;
+}
+{
+	t=<PCDATA>
+	{
+		jjtree.pushNode(new NodePCDATA(t.image));
+	}
+}
+
+void attribute() #void :
+{
+	Token n, v = null;
+}
+{
+	n=<A_NAME> [ <A_EQ> v=<CDATA> ]
+	{
+		String attval;
+		if (v == null) {
+			attval = "#DEFAULT";
+		} else {
+			attval = v.image;
+		}
+		jjtree.pushNode(new NodeAttribute(n.image, attval));
+	}
+}
+
+void attlist() : {}
+{
+	( attribute() )+
+}
+
+void Eheading() #void : {}
+{
+	LOOKAHEAD(2) h1()
+|	LOOKAHEAD(2) h2()
+|	LOOKAHEAD(2) h3()
+|	LOOKAHEAD(2) h4()
+|	LOOKAHEAD(2) h5()
+|	             h6()
+}
+
+void Epreformatted() #void : {}
+{
+	pre()
+}
+
+void Elist() #void : {}
+{
+	LOOKAHEAD(2) ul()
+|	LOOKAHEAD(2) ol()
+|	LOOKAHEAD(2) dir()
+|	             menu()
+}
+
+void Efont() #void : {}
+{
+	LOOKAHEAD(2) tt()
+|	LOOKAHEAD(2) i()
+|	LOOKAHEAD(2) b()
+|	LOOKAHEAD(2) u()
+|	LOOKAHEAD(2) strike()
+|	LOOKAHEAD(2) big()
+|	LOOKAHEAD(2) small()
+|	LOOKAHEAD(2) sub()
+|	             sup()
+}
+
+void Ephrase() #void : {}
+{
+	LOOKAHEAD(2) em()
+|	LOOKAHEAD(2) strong()
+|	LOOKAHEAD(2) dfn()
+|	LOOKAHEAD(2) code()
+|	LOOKAHEAD(2) samp()
+|	LOOKAHEAD(2) kbd()
+|	LOOKAHEAD(2) _var()
+|	             cite()
+}
+
+void Especial() #void : {}
+{
+	LOOKAHEAD(2) a()
+|	LOOKAHEAD(2) img()
+|	LOOKAHEAD(2) applet()
+|	LOOKAHEAD(2) font()
+|	LOOKAHEAD(2) basefont()
+|	LOOKAHEAD(2) br()
+|	LOOKAHEAD(2) script()
+|	             map()
+}
+
+void Eform() #void : {}
+{
+	LOOKAHEAD(2) input()
+|	LOOKAHEAD(2) select()
+|	             textarea()
+}
+
+void Etext() #void : {}
+{
+	             pcdata()
+|	LOOKAHEAD(2) Efont()
+|	LOOKAHEAD(2) Ephrase()
+|	LOOKAHEAD(2) Especial()
+|	             Eform()
+}
+
+
+void tt() : {}
+{
+	<STAGO> <TT> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <TT> <TAGC>
+}
+
+void i() : {}
+{
+	<STAGO> <I> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <I> <TAGC>
+}
+
+void b() : {}
+{
+	<STAGO> <B> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <B> <TAGC>
+}
+
+void u() : {}
+{
+	<STAGO> <U> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <U> <TAGC>
+}
+
+void strike() : {}
+{
+	<STAGO> <STRIKE> [ attlist() ] <TAGC>
+	( Etext() )*
+	<ETAGO> <STRIKE> <TAGC>
+}
+
+void big() : {}
+{
+	<STAGO> <BIG> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <BIG> <TAGC>
+}
+
+void small() : {}
+{
+	<STAGO> <SMALL> [ attlist() ] <TAGC>
+	( Etext() )*
+	<ETAGO> <SMALL> <TAGC>
+}
+
+void sub() : {}
+{
+	<STAGO> <SUB> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <SUB> <TAGC>
+}
+
+void sup() : {}
+{
+	<STAGO> <SUP> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <SUP> <TAGC>
+}
+
+
+void em() : {}
+{
+	<STAGO> <EM> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <EM> <TAGC>
+}
+
+void strong() : {}
+{
+	<STAGO> <STRONG> [ attlist() ] <TAGC>
+	( Etext() )*
+	<ETAGO> <STRONG> <TAGC>
+}
+
+void dfn() : {}
+{
+	<STAGO> <DFN> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <DFN> <TAGC>
+}
+
+void code() : {}
+{
+	<STAGO> <CODE> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <CODE> <TAGC>
+}
+
+void samp() : {}
+{
+	<STAGO> <SAMP> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <SAMP> <TAGC>
+}
+
+void kbd() : {}
+{
+	<STAGO> <KBD> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <KBD> <TAGC>
+}
+
+void _var() : {}
+{
+	<STAGO> <VAR> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <VAR> <TAGC>
+}
+
+void cite() : {}
+{
+	<STAGO> <CITE> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <CITE> <TAGC>
+}
+
+
+void font() : {}
+{
+	<STAGO> <FONT> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <FONT> <TAGC>
+}
+
+
+void basefont() : {}
+{
+	<STAGO> <BASEFONT> [ attlist() ] <TAGC>
+}
+
+
+void br() : {}
+{
+	<STAGO> <BR> [ attlist() ] <TAGC>
+}
+
+
+void Eblock() #void : {}
+{
+	LOOKAHEAD(2) p()
+|	LOOKAHEAD(2) Elist()
+|	LOOKAHEAD(2) Epreformatted()
+|	LOOKAHEAD(2) dl()
+|	LOOKAHEAD(2) div()
+|	LOOKAHEAD(2) center()
+|	LOOKAHEAD(2) blockquote()
+|	LOOKAHEAD(2) form()
+|	LOOKAHEAD(2) isindex()
+|	LOOKAHEAD(2) hr()
+|	LOOKAHEAD(2) table()
+}
+
+void Eflow() #void : {}
+{
+	(LOOKAHEAD(2)
+		(	LOOKAHEAD(2) Etext()
+		|	             Eblock()
+		)
+	)*
+}
+
+
+void Ebody_content() #void : {}
+{
+	(LOOKAHEAD(2)
+		(	LOOKAHEAD(2) Eheading()
+		|	LOOKAHEAD(2) Etext()
+		|	LOOKAHEAD(2) Eblock()
+		|	             address()
+		)
+	)*
+}
+
+
+void body() : {}
+{
+	[ LOOKAHEAD(2) <STAGO> <BODY> [ attlist() ] <TAGC> ]
+	Ebody_content()
+	[ LOOKAHEAD(2) <ETAGO> <BODY> <TAGC> ]
+}
+
+
+void address() : {}
+{
+	<STAGO> <ADDRESS> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() | p() )*
+	<ETAGO> <ADDRESS> <TAGC>
+}
+
+
+void div() : {}
+{
+	<STAGO> <DIV> [ attlist() ] <TAGC>
+	Ebody_content()
+	<ETAGO> <DIV> <TAGC>
+}
+
+
+void center() : {}
+{
+	<STAGO> <CENTER> [ attlist() ] <TAGC>
+	Ebody_content()
+	<ETAGO> <CENTER> <TAGC>
+}
+
+
+// exclusion exception: a()
+void a() : {}
+{
+	<STAGO> <A> [ attlist() ] <TAGC> ( Etext() )* <ETAGO> <A> <TAGC>
+}
+
+
+void map() : {}
+{
+	<STAGO> <MAP> [ attlist() ] <TAGC> ( area() )* <ETAGO> <MAP> <TAGC>
+}
+
+
+void area() : {}
+{
+	<STAGO> <AREA> [ attlist() ] <TAGC>
+}
+
+
+void link() : {}
+{
+	<STAGO> <LINK> [ attlist() ] <TAGC>
+}
+
+
+void img() : {}
+{
+	<STAGO> <IMG> [ attlist() ] <TAGC>
+}
+
+
+// inclusion exception: param()
+void applet() : {}
+{
+	<STAGO> <APPLET> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) param() | Etext() )*
+	<ETAGO> <APPLET> <TAGC>
+}
+
+
+void param() : {}
+{
+	<STAGO> <PARAM> [ attlist() ] <TAGC>
+}
+
+
+void hr() : {}
+{
+	<STAGO> <HR> [ attlist() ] <TAGC>
+}
+
+
+void p() : {}
+{
+	<STAGO> <P> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	[ LOOKAHEAD(2) <ETAGO> <P> <TAGC> ]
+}
+
+
+void h1() : {}
+{
+	<STAGO> <H1> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	<ETAGO> <H1> <TAGC>
+}
+
+void h2() : {}
+{
+	<STAGO> <H2> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	<ETAGO> <H2> <TAGC>
+}
+
+void h3() : {}
+{
+	<STAGO> <H3> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	<ETAGO> <H3> <TAGC>
+}
+
+void h4() : {}
+{
+	<STAGO> <H4> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	<ETAGO> <H4> <TAGC>
+}
+
+void h5() : {}
+{
+	<STAGO> <H5> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	<ETAGO> <H5> <TAGC>
+}
+
+void h6() : {}
+{
+	<STAGO> <H6> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	<ETAGO> <H6> <TAGC>
+}
+
+
+// exclusion exception: img(), big(), small(), sub(), sup(), font()
+void pre() : {}
+{
+	<STAGO> <PRE> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	<ETAGO> <PRE> <TAGC>
+}
+
+
+void blockquote() : {}
+{
+	<STAGO> <BLOCKQUOTE> [ attlist() ] <TAGC>
+	Ebody_content()
+	<ETAGO> <BLOCKQUOTE> <TAGC>
+}
+
+
+void dl() : {}
+{
+	<STAGO> <DL> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) dt() | dd() )*
+	<ETAGO> <DL> <TAGC>
+}
+
+
+void dt() : {}
+{
+	<STAGO> <DT> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) Etext() )*
+	[ LOOKAHEAD(2) <ETAGO> <DT> <TAGC> ]
+}
+
+
+void dd() : {}
+{
+	<STAGO> <DD> [ attlist() ] <TAGC>
+	Eflow()
+	[ LOOKAHEAD(2) <ETAGO> <DD> <TAGC> ]
+}
+
+
+void ol() : {}
+{
+	<STAGO> <OL> [ attlist() ] <TAGC> ( li() )* <ETAGO> <OL> <TAGC>
+}
+
+
+void ul() : {}
+{
+	<STAGO> <UL> [ attlist() ] <TAGC> ( li() )* <ETAGO> <UL> <TAGC>
+}
+
+
+// exclusion exception: Eblock()
+void dir() : {}
+{
+	<STAGO> <DIR> [ attlist() ] <TAGC> ( li() )* <ETAGO> <DIR> <TAGC>
+}
+
+
+// exclusion exception: Eblock()
+void menu() : {}
+{
+	<STAGO> <MENU> [ attlist() ] <TAGC> ( li() )* <ETAGO> <MENU> <TAGC>
+}
+
+
+void li() : {}
+{
+	<STAGO> <LI> [ attlist() ] <TAGC>
+	Eflow()
+	[ LOOKAHEAD(2) <ETAGO> <LI> <TAGC> ]
+}
+
+
+// exclusion exception: form()
+void form() : {}
+{
+	<STAGO> <FORM> [ attlist() ] <TAGC>
+	Ebody_content()
+	<ETAGO> <FORM> <TAGC>
+}
+
+
+void input() : {}
+{
+	<STAGO> <INPUT> [ attlist() ] <TAGC>
+}
+
+
+void select() : {}
+{
+	<STAGO> <SELECT> [ attlist() ] <TAGC>
+	( option() )+
+	<ETAGO> <SELECT> <TAGC>
+}
+
+
+void option() : {}
+{
+	<STAGO> <OPTION> [ attlist() ] <TAGC>
+	( pcdata() )*
+	[ LOOKAHEAD(2) <ETAGO> <OPTION> <TAGC> ]
+}
+
+
+void textarea() : {}
+{
+	<STAGO> <TEXTAREA> [ attlist() ] <TAGC>
+	( pcdata() )*
+	<ETAGO> <TEXTAREA> <TAGC>
+}
+
+
+void table() : {}
+{
+	<STAGO> <TABLE> [ attlist() ] <TAGC>
+	[ LOOKAHEAD(2) caption() ] ( tr() )+
+	<ETAGO> <TABLE> <TAGC>
+}
+
+
+void tr() : {}
+{
+	<STAGO> <TR> [ attlist() ] <TAGC>
+	( LOOKAHEAD(2) ( LOOKAHEAD(2) th() | td()) )*
+	[ LOOKAHEAD(2) <ETAGO> <TR> <TAGC> ]
+}
+
+
+void th() : {}
+{
+	<STAGO> <TH> [ attlist() ] <TAGC>
+	Ebody_content()
+	[ LOOKAHEAD(2) <ETAGO> <TH> <TAGC> ]
+}
+
+void td() : {}
+{
+	<STAGO> <TD> [ attlist() ] <TAGC>
+	Ebody_content()
+	[ LOOKAHEAD(2) <ETAGO> <TD> <TAGC> ]
+}
+
+
+void caption() : {}
+{
+	<STAGO> <CAPTION> [ attlist() ] <TAGC>
+	( Etext() )*
+	<ETAGO> <CAPTION> <TAGC>
+}
+
+
+// This is a hack to fake the inclusion exceptions within HEAD
+// elements.
+void Ehead_misc() #void : {}
+{
+	(LOOKAHEAD(2)
+		(	LOOKAHEAD(2) script()
+		|	LOOKAHEAD(2) style()
+		|	LOOKAHEAD(2) meta()
+		|	             link()
+		)
+	)*
+}
+
+
+// inclusion exception: Ehead_misc
+// should use & connector: title() & (isindex())? & base()?
+void head() : {}
+{
+	[ LOOKAHEAD(2) <STAGO> <HEAD> [ attlist() ] <TAGC> ]
+	Ehead_misc()
+	title()
+	Ehead_misc()
+	[ LOOKAHEAD(2) isindex() ]
+	Ehead_misc()
+	[ LOOKAHEAD(2) base() ]
+	Ehead_misc()
+	[ LOOKAHEAD(2) <ETAGO> <HEAD> <TAGC> ]
+}
+
+// exclusion exception: Ehead_misc()
+void title() : {}
+{
+	<STAGO> <TITLE> [ attlist() ] <TAGC>
+	( pcdata() )*
+	<ETAGO> <TITLE> <TAGC>
+}
+
+void isindex() : {}
+{
+	<STAGO> <ISINDEX> [ attlist() ] <TAGC>
+}
+
+
+void base() : {}
+{
+	<STAGO> <BASE> [ attlist() ] <TAGC>
+}
+
+
+void meta() : {}
+{
+	<STAGO> <META> [ attlist() ] <TAGC>
+}
+
+
+// exclusion exception: Ehead_misc()
+void style() : {}
+{
+	<STAGO> <STYLE> [ attlist() ] <TAGC>
+	( pcdata() )*
+	<ETAGO> <STYLE> <TAGC>
+}
+
+
+// exclusion exception: Ehead_misc()
+void script() : {}
+{
+	<STAGO> <SCRIPT> [ attlist() ] <TAGC>
+	( pcdata() )*
+	<ETAGO> <SCRIPT> <TAGC>
+}
+
+
+SimpleNode html() : {}
+{
+	[ LOOKAHEAD(2) <STAGO> <HTML> [ attlist() ] <TAGC> ]
+	head() body()
+	[ LOOKAHEAD(2) <ETAGO> <HTML> <TAGC> ]
+	{
+		return jjtThis;
+	}
+}
+
+/* end */

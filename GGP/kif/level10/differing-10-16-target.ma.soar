@@ -1,6 +1,0 @@
-multi-attributes x5_2d 64 # escape
-multi-attributes x5_plus 200 # escape
-multi-attributes x5_minus 200 # escape
-multi-attributes x5_lessthan 200 # escape
-multi-attributes x5_greaterthan 200 # escape
-multi-attributes x5_int 1000 # escape

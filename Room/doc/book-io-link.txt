@@ -1,0 +1,171 @@
+full implementation:
+--------------------
+^input-link
+	^continuous true
+	^self
+		^angle 
+			^yaw <float> direction I am facing
+#			^pitch <int> zero for no height change, 1 indicates climbing, -1 is descending
+		^area <int> unique id number for the area I am in
+		^collision
+			^x [true false] currently colliding on the x component of the velocity vector
+			^y [true false] currently colliding on the y component of the velocity vector
+		^cycle <int> world update count
+		^score <int> my score
+		^position
+			^x <float> my exact position in pixels
+			^y <float> my exact position in pixels
+#			^z <float> exact height, 0 indicating on floor, 1 is one block up, 2 is 2 blocks up, etc.
+			^row <int> what row I'm in
+			^col <int> what column I'm in
+#			^height <int> how many blocks I'm up
+		^random <float> [0..1) random number
+		^time <float> seconds since simulation started
+		^velocity
+			^speed <float> magnitude
+			^x <float> component
+			^y <float> component
+#			^z <float> component
+		^carry
+			^type <string> [block ramp]
+			^id <int>
+	^area-description details for the area I am in
+		+^wall one for each wall segment
+			^id <int> unique identification number of segment
+			^left location of one end
+				^row <int> 
+				^col <int>
+			^right location of other end
+				^row <int>
+				^col <int>
+			^center
+				^x <float> center of wall in x dimention
+				^y <float> center of wall in y dimention
+				^angle-off 
+					^yaw <float> angle to center of wall
+			^direction [north south east west] direction to turn to face the wall
+		*^gateway one for each gateway segment
+			^id <int> unique identification number of segment
+			^left location of one end
+				^row <int>
+				^col <int>
+			^right location of other end
+				^row <int>
+				^col <int>
+			^center
+				^x <float> center of gateway in x dimention
+				^y <float> center of gateway in y dimention
+				^angle-off 
+					^yaw <float> angle to center of gateway
+				^range <float> distance to center of gateway
+			^direction [north south east west] direction to turn to face the gateway
+			+^to <int> id of room this gateway leads to
+	+^object
+		^angle-off 
+			^yaw <float> relative to direction I'm facing
+		^area <int> unique id number
+		^id <int> object id number (separate from area/wall ids)
+		^type <string> [block ramp cat dog gateway]
+#		?^up-direction <float> direction to pass through the ramp to go up
+		^position
+			^x <float> exact position in pixels
+			^y <float> exact position in pixels
+#			^z <float> current exact height
+			^row <int> current row
+			^col <int> current row
+#			^height <int> how many blocks up
+		^range <float>
+		^visible <string> [yes no] objects stay on input link for 2 cycles after they disappear
+	+^player
+		^angle-off 
+			^yaw <float> relative to direction I'm facing
+		^area <int> unique id number
+		^name <string> name of the robot (used in messaging)
+#		?^up-direction <float> direction to pass through the ramp to go up
+		^position
+			^x <float> exact position in pixels
+			^y <float> exact position in pixels
+#			^z <float> current exact height
+			^row <int> current row
+			^col <int> current row
+#			^height <int> how many blocks up
+		^range <float>
+	+^message
+		^from <string> who sent it
+		^message <string> the message
+		^cycle <int> when it was received (survives for 3 cycles)
+^output-link
+	^move
+		^direction [forward stop backward]
+		^status [executing complete error]
+	^rotate
+		^direction [left stop right] direction to turn
+		^status [executing complete error]
+	^rotate-absolute
+		^yaw <float> desired yaw in radians
+		^status [executing complete error]
+	^rotate-relative
+		^yaw <float> desired change in radians, negative for left turn
+		^status [executing complete error]
+	^get
+		^id <int>
+		^status [executing complete error]
+	^drop
+		^id <int>
+		^status [executing complete error]
+	^communicate
+		^to <string> name of player to send message to
+		^message <string> the message
+		^status [complete error]
+		
+Output command "states"
+-----------------------
+
+Edge descriptions:
+	1. takes more than one cycle
+	2. command completes
+	3. any other turn command
+	4. any other move command
+	5. syntax error or conflicting simultaneous commands
+
+State descriptions:
+	Is: initial state
+	Ex: executing
+	Co: complete
+	Er: error
+
+rotate-absolute
+rotate-relative
+	Is -1-> Ex
+	Ex -2,3-> Co
+	Is -2-> Co
+	Is -5-> Er
+
+rotate.direction left
+rotate.direction right
+	Is -1-> Ex
+	Ex -3-> Co
+	Is -5-> Er
+
+rotate.direction stop
+move.direction stop
+	Is -2-> Co
+	Is -5-> Er
+
+move.direction forward
+move.direction backward
+	Is -1-> Ex
+	Ex -4-> Co
+	Is -5-> Er
+
+
+
+
+
+
+
+
+
+
+
+

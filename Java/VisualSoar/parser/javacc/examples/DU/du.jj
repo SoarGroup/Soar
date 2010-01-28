@@ -1,0 +1,204 @@
+/** This file contains a JavaCC grammar that parses the output from du
+ * into nested parenthesized lists.  This simple example shows how to
+ * return values from non-terminals.
+ *
+ * To create the DU application, type:
+ *
+ * $ javacc du.jj
+ * $ javac *.java
+ *
+ * To run the application on directory DIR, type:
+ * $ DUPATH=`pwd`
+ * $ cd $DIR
+ * $ du * | CLASSPATH=$DUPATH java DU
+ * 
+ * Author: John D. Ramsdell (Email: ramsdell@mitre.org)
+ * Date: 1997 January 20
+ **/
+
+PARSER_BEGIN(DU)
+
+public class DU {
+  public static void main(String[] args) throws ParseException {
+    DU parser = new DU(System.in);
+    Node n = parser.input();
+    if (n != null)
+      n.show();
+  }
+}
+
+/** The class Node implements a weighted forest of nodes.  A forest is
+ * a set of trees.  Each node has a label and each node contains a
+ * siblings link and a children link.  Sibling nodes must have unique
+ * labels.  This is enforced by limiting node creation to the adjoin
+ * node static method.
+ **/
+
+class Node {
+
+  /* Add a node with label s to the siblings of n 
+     and return the new forest. */
+  static Node adjoin(Node n, String s) {
+    if (n == null)
+      return new Node(s);
+
+    Node p = n;
+    while (true) {
+      if (p.s.equals(s))	// It's already there!
+	return n;	
+      Node q = p.siblings;
+      if (q == null) {		// Splice in new node
+	p.siblings = new Node(s);
+	return n;
+      }
+      p = q;
+    }
+  }
+
+  /* Find node with label s in the list of siblings of node n. */
+  static Node find_node(Node n, String s) {
+    while (true) {
+      if (n == null)
+	return n;
+      if (n.s.equals(s))
+	return n;
+      n = n.siblings;
+    }
+  }
+
+  private String s;
+  private int w = 0;
+  private Node siblings;
+  private Node children;
+
+  private Node(String s) {
+    this.s = s;
+  }
+      
+  void set_weight(int weight) {
+    w = weight;
+  }
+
+  Node get_children() {
+    return children;
+  }
+
+  void set_children(Node children) {
+    this.children = children;
+  }
+
+  /* Show the forest as a parenthesized list */
+  void show() {
+    show(0);
+    System.out.println();
+  }
+
+  private void show(int indent) {
+    Node n = this;
+    while (true) {
+      spaces(indent);
+      System.out.print("(" + n.s + " " + n.w);
+      if (n.children != null) {
+	System.out.println();
+	n.children.show(indent + 2);
+      }
+      System.out.print(")");
+      n = n.siblings;
+      if (n == null)
+	return;
+      else
+	System.out.println();
+    }
+  }
+
+  private void spaces(int indent) {
+    for (; indent > 0; indent--)
+      System.out.print(" ");
+  }
+}
+
+PARSER_END(DU)
+
+/*
+ * Tokens to ignore in the BNF follow.  Note the absence of "\n".
+ */
+
+SKIP :
+{
+  " "
+| "\t"
+| "\r"
+}
+
+/*
+ * Tokens to consider in the BNF that follows.
+ */
+
+TOKEN :
+{
+  <SEP: "/" >
+| <EOL: "\n" >
+| <DIGITS: ( ["0"-"9"] )+ >
+| <#FILENAME_START: ["0"-"9"] | ["a"-"z"] | ["A"-"Z"] | "_" | "." >
+| <FILENAME: <FILENAME_START> ( <FILENAME_START> | "-" )* >
+}
+
+/*
+ * A portable filename can be all digits or a <FILENAME>.
+ */
+
+Token filename() :
+{
+  Token t;
+}
+{
+  ( t=<FILENAME> | t=<DIGITS> )
+  {
+    return t;
+  }
+}
+
+/*
+ * A line of input from du is a directory size followed by a pathname.
+ */
+
+Node line(Node n) :
+{
+  int weight;
+  Node r;			// r is the root node
+  Token t;
+}
+{
+  t=<DIGITS> {
+    try {
+      weight = Integer.parseInt(t.image);
+    }
+    catch (NumberFormatException e) {
+      throw new ParseException();
+    }
+  }
+  t=filename() {
+    r = Node.adjoin(n, t.image); // insert top-level pathname component
+    n = Node.find_node(r, t.image); // get root of this pathname
+  }
+  ( <SEP> t=filename() {	// process other parts of the pathname
+    n.set_children(Node.adjoin(n.get_children(), t.image));
+    n = Node.find_node(n.get_children(), t.image);
+  } )*
+  <EOL>
+  {
+    n.set_weight(weight);
+    return r;
+  }
+}
+
+Node input() :
+{ 
+  Node r = null;
+}
+{
+  ( r=line(r) )* <EOF>
+  {
+    return r;
+  }
+}

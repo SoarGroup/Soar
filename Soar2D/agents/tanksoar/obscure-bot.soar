@@ -1,0 +1,2 @@
+rete-net --load "obscure-bot.soarx"
+init-soar

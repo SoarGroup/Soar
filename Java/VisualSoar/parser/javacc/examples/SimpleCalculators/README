@@ -1,0 +1,23 @@
+This directory contains a set of calculator grammars that gradually increase
+in complexity.  The grammars are:
+
+Calc1.jj      - A very simple expression parser
+Calc1i.jj     - A version of Calc1 that implements the calculator
+Calc2.jj      - First variation on Calc1, adds a right associative production and
+                a complicated token (floating point numeric constant).
+Calc2i.jj     - The implementation of Calc2 that actually computes values.
+Calc3.jj      - Second variation, added to Calc2, adds functions and logical infix
+                operators.
+Calc3i.jj     - Embedded Java code exercising the new capabilities.
+
+These grammars were contributed by Chuck McManis (cmcmanis@freegate.net).
+He developed these examples as part of an article he wrote on the parser
+generator for the on-line magazine JavaWorld (December issue).  The article
+was written when the name of this tool was "Jack", so please watch out for
+the name confusion.  Also, the grammars have been modified since the article
+to reflect preferred syntax in the new version of JavaCC (for example,
+IGNORE_IN_BNF has been replaced by SKIP).
+
+You can see this article (which describes these examples in more detail) at:
+
+	http://www.javaworld.com/javaworld/jw-12-1996/jw-12-jack.html

@@ -1,0 +1,18 @@
+VERSION 4
+\kb\kb.dm
+0	ROOT kb kb 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	OPERATOR done done.soar 7
+7	0	OPERATOR initialize-kb initialize-kb.soar 8
+8	0	OPERATOR load load.soar 9
+9	0	OPERATOR test-cue test-cue.soar 10
+10	0	OPERATOR test-init test-init.soar 11
+11	0	OPERATOR test-next test-next.soar 12
+12	0	OPERATOR test-notify test-notify.soar 13
+13	0	OPERATOR test-result test-result.soar 14
+14	0	OPERATOR transition transition.soar 15
+END

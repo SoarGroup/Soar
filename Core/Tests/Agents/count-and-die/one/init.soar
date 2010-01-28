@@ -1,0 +1,17 @@
+sp {one*propose*init
+   (state <s> ^name one
+             -^count)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name init)
+}
+
+# May need to adjust the count here (max) 
+# depending on the maximum stack size of your system.
+sp {apply*init
+   (state <s> ^operator <op>)
+   (<op> ^name init)
+-->
+   (<s> ^max 75000 
+        ^count 1)
+}

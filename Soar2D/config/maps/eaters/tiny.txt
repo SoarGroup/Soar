@@ -1,0 +1,11 @@
+objects_file = "objects/objects.txt";
+objects = [b,n,w,x];
+cells {
+	size = 4;
+	rows {
+		 0 = [w,w,w,w];
+		 1 = [w,n,b,w];
+		 2 = [w,n,b,w];
+		 3 = [w,w,w,w];
+	}
+}
