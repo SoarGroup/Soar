@@ -1,5 +1,0 @@
-sp {stop-soar
-	(state <s> ^superstate nil)
--->
-	(cmd stop-soar)
-}

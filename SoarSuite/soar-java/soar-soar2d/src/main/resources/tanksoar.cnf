@@ -1,7 +1,0 @@
-# See http://code.google.com/p/soar/wiki/soar2dcnf
-general.game = "tanksoar";
-general.map = "config/maps/tanksoar/default.txt";
-#players.active_players = [ "tank1", "tank2" ];
-#players.tank1.productions = "agents/tanksoar/obscure-bot.soar";
-#players.tank2.productions = "agents/tanksoar/obscure-bot.soar";
-terminals.winning_score = 50;
