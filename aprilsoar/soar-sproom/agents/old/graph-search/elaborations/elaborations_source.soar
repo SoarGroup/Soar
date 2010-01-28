@@ -1,5 +1,0 @@
-source _all.soar
-source halt.soar
-source monitor-waypoint.soar
-source problem-space.soar
-source top-state.soar

@@ -1,6 +1,0 @@
-source _all.soar
-source configuration.soar
-source map.soar
-source say-error.soar
-source top-state.soar
-source waypoints.soar
