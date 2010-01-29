@@ -4067,6 +4067,27 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							}
 						}
 					}
+
+					if ( i == EPMEM_NODE_POS )
+					{
+						if ( graph_match != soar_module::off )
+						{
+							epmem_shared_literal_pair_list::iterator pairs_p;
+							epmem_shared_literal_pair_list** new_pair_list;
+
+							for ( pairs_p=pairs.begin(); pairs_p!=pairs.end(); pairs_p++ )
+							{
+								new_pair_list =& (*gm_pairs)[ (*pairs_p)->wme ];
+
+								if ( !(*new_pair_list) )
+								{
+									(*new_pair_list) = new epmem_shared_literal_pair_list;
+								}
+
+								(*new_pair_list)->push_back( (*pairs_p) );
+							}
+						}
+					}
 				}
 
 				// clean up wme cache
@@ -4084,24 +4105,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 						delete cache_p->second;
 					}
-				}
-			}
-
-			if ( graph_match != soar_module::off )
-			{
-				epmem_shared_literal_pair_list::iterator pairs_p;
-				epmem_shared_literal_pair_list** new_pair_list;
-
-				for ( pairs_p=pairs.begin(); pairs_p!=pairs.end(); pairs_p++ )
-				{
-					new_pair_list =& (*gm_pairs)[ (*pairs_p)->wme ];
-
-					if ( !(*new_pair_list) )
-					{
-						(*new_pair_list) = new epmem_shared_literal_pair_list;
-					}
-
-					(*new_pair_list)->push_back( (*pairs_p) );
 				}
 			}
 
