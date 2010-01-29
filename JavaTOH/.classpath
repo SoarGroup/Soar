@@ -5,6 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/swt.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
-	<classpathentry kind="lib" path="/soar-smljava/lib/sml.jar"/>
+	<classpathentry kind="var" path="SML"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -8,14 +8,13 @@
 	<classpathentry kind="lib" path="/soar-smljava/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/soar-smljava/lib/sml.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/stopwatch-0.4-with-deps.jar"/>
 	<classpathentry kind="lib" path="lib/flexdock-0.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/swingx-0.9.5.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-sps"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-debugger"/>
-	<classpathentry kind="var" path="ECLIPSE_HOME"/>
 	<classpathentry kind="var" path="APRIL_MEGA"/>
+	<classpathentry kind="var" path="SML"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
