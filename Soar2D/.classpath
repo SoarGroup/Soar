@@ -10,7 +10,7 @@
 	<classpathentry kind="lib" path="/soar-smljava/lib/swt.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
-	<classpathentry kind="lib" path="/soar-smljava/lib/sml.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/stopwatch-0.4-with-deps.jar"/>
+	<classpathentry kind="var" path="SML"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
