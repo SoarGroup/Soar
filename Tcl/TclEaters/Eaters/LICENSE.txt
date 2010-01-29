@@ -1,4 +1,4 @@
-$Id$
+$Id: LICENSE.txt 11042 2009-08-21 19:28:39Z nate.derbinsky $
 
 Copyright 1995-2004 Carnegie Mellon University, University of Michigan, 
 University of Southern California/Information Sciences Institute. All rights 

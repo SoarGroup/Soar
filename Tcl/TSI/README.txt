@@ -1,4 +1,4 @@
-$Id$
+$Id: README.txt 11042 2009-08-21 19:28:39Z nate.derbinsky $
 
 	     The Tcl/Tk Soar Interface (TSI) Version 4.0.1
 	     ---------------------------------------------
