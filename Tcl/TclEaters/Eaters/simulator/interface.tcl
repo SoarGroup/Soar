@@ -1,6 +1,6 @@
 #
 #
-# $Id$
+# $Id: interface.tcl 11042 2009-08-21 19:28:39Z nate.derbinsky $
 # $Log$
 # Revision 1.1  2005/06/01 19:14:13  rmarinie
 # initial commit of sml eaters
