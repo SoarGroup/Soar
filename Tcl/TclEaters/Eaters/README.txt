@@ -1,4 +1,4 @@
-$Id$
+$Id: README.txt 11042 2009-08-21 19:28:39Z nate.derbinsky $
 
 Eaters 3.0.8 is an example environment for the Soar architecture and is used for 
 research and to help teach the basics of Soar in the Soar tutorial.  Eaters 

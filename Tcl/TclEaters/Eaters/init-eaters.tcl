@@ -11,7 +11,7 @@
 # of this file should change to:
 #!/usr/local/ActiveTcl/bin/wish
 
-# $Id$
+# $Id: init-eaters.tcl 11042 2009-08-21 19:28:39Z nate.derbinsky $
 
 #set tcl_pkgPath {} 
 
