@@ -928,15 +928,15 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 	}
 
 	// if this is the true decision slot and selection has been made, attempt force selection
-	if ( s->isa_context_slot ) 
+	if ( s->isa_context_slot && !consistency) 
 	{
 		if ( select_get_operator( thisAgent ) != NULL )
 		{
 			preference *force_result = select_force( thisAgent, s->preferences[ACCEPTABLE_PREFERENCE_TYPE], !predict );
-			force_result->next_candidate = NIL;
 
 			if ( force_result )
 			{
+				force_result->next_candidate = NIL;
 				*result_candidates = force_result;
 
 				if ( !predict && rl_enabled( thisAgent ) )
