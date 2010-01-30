@@ -1,6 +1,9 @@
 all:
 	cd Core && scons
 
+noscu:
+	cd Core && scons --no-scu
+
 checkout:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Core
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Java
