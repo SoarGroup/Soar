@@ -1,0 +1,47 @@
+sp {blocks-world*propose*move-block*not-table
+   (state <s> ^name blocks-world
+              ^io <io>)
+   (<io> ^input-link <input>
+        -^output-link.move-block)
+   (<input> ^block {<> table <b1>}
+            ^block {<> <b1> <> table <b2>})
+  -{(<input> ^on-top <bot1>)
+    (<bot1> ^block2 <b1>)}
+  -{(<input> ^on-top <bot2>)
+    (<bot2> ^block2 <b2>)}
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-block
+         ^block1 <b1>
+         ^block2 <b2>)
+}
+
+sp {blocks-world*propose*move-block*to-table
+   (state <s> ^name blocks-world
+              ^io <io>)
+   (<io> ^input-link <input>
+        -^output-link.move-block)
+   (<input> ^block {<> table <b1>})
+  -{(<input> ^on-top <bot1>)
+    (<bot1> ^block2 <b1>)}
+  -{(<input> ^on-top <bot2>)
+    (<bot2> ^block1 <b1>
+            ^block2 table)}
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-block
+         ^block1 <b1>
+         ^block2 table)
+}
+
+sp {apply*move-block
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name move-block
+         ^block1 <b1>
+         ^block2 <b2>)
+-->
+   (<out> ^move-block <mb>)
+   (<mb> ^id <b1>
+         ^to <b2>)
+}
