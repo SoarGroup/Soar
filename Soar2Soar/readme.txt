@@ -64,12 +64,7 @@ Soar.  Basic platform-specific instructions
 are below.
 
 *nix-
-Included with Soar2Soar is a BASH build script,
-which is essentially a call to g++.  The first
-line of content sets a local variable to the
-path to the SoarSuite folder (which can
-conveniently be relative to the dynamic linking
-library path environmental variable).
+Included with Soar2Soar is an SCons script.
 
 Windows-
 The easiest way to build for Windows is to replace
@@ -136,8 +131,11 @@ Now you can access any other agents.
 Example Soar2Soar Session
 -------------------------
 The following is an example session with a set of included 
-blocks-world agents.  Here, two client agents will work on 
-independent (though identical) blocks-world problem instances:
+blocks-world agents.  On *nix these are copied to the SoarSuite
+Demos directory.
+
+Here, two client agents will work on independent (though identical) 
+blocks-world problem instances:
 
 ./soar2soar 2
 root> env
