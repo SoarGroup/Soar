@@ -1,0 +1,31 @@
+sp {blocks-world*propose*success
+   (state <s> ^name blocks-world
+              ^io.output-link.agents.agent <agent>)
+   (<agent> ^input <input>)
+  -(<input> ^goal achieved)
+  -{(<input> ^desired <dot>)
+    (<dot> ^block1 <block1>
+           ^block2 <block2>)
+   -{(<input> ^on-top <ot>)
+     (<ot> ^block1 <block1>
+           ^block2 <block2>)}}
+    
+-->
+   (<s> ^operator <op> + !)
+   (<op> ^name success
+         ^agent <agent>)
+}
+
+sp {apply*success
+   (state <s> ^operator <op>
+              ^io <io>)
+   (<io> ^output-link.agents.agent <agent>
+         ^input-link.console.time <time>)
+   (<op> ^name success
+         ^agent.id <id>)
+   (<agent> ^id <id>
+            ^input <input>)
+-->
+   (<input> ^goal achieved
+            ^completion-time <time>)
+}

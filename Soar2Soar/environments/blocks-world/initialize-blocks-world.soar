@@ -1,0 +1,35 @@
+sp {propose*initialize-blocks-world
+   (state <s> ^superstate nil
+              ^soar2soar ready
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-blocks-world)
+}
+
+sp {apply*initialize-blocks-world*initial-state
+   (state <s> ^operator <op>
+              ^io.output-link.agents.agent.input <in>)
+   (<op> ^name initialize-blocks-world)
+-->
+   (<in> ^block a b c d table
+         ^on-top <ot1> <ot2> <ot3> <ot4>
+         ^desired <dot1> <dot2> <dot3> <dot4>)
+   (<ot1> ^block1 a ^block2 table)
+   (<ot2> ^block1 b ^block2 a)
+   (<ot3> ^block1 c ^block2 table)
+   (<ot4> ^block1 d ^block2 c)
+   (<dot1> ^block1 a ^block2 d)
+   (<dot2> ^block1 b ^block2 a)
+   (<dot3> ^block1 c ^block2 table)
+   (<dot4> ^block1 d ^block2 table)
+}
+
+
+sp {apply*initialize-blocks-world
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-blocks-world)
+-->
+   (<s> ^name blocks-world)
+}
+
