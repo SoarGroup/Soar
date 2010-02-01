@@ -6,7 +6,9 @@ env = env.Clone()
 
 env.Prepend(CPPPATH = [	'#ClientSML/src',
 			'#ElementXML/src',
-			'#ConnectionSML/src'])
+			'#ConnectionSML/src',
+			'shared',
+			])
 
 libadd = [ 'ClientSML', 
 	   'ConnectionSML',
