@@ -386,7 +386,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy DLL to bin, run ant"
-				CommandLine="echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; -Dsoarbuild=../../../build/ClientSMLSWIG/Java/build -Dsoarprefix=../../../out -q&#x0D;&#x0A;"
+				CommandLine="echo &quot;Running ant...&quot;&#x0D;&#x0A;&quot;$(ANT_HOME)\bin\ant&quot; -Dsoarbuild=../../../build/ClientSMLSWIG/Java/build -Dsoarprefix=$(TargetDir).. -q&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>
