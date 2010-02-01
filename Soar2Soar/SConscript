@@ -1,0 +1,24 @@
+#!/usr/bin/python
+import sys
+
+Import('env')
+env = env.Clone()
+
+env.Prepend(CPPPATH = [	'#ClientSML/src',
+			'#ElementXML/src',
+			'#ConnectionSML/src'])
+
+libadd = [ 'ClientSML', 
+	   'ConnectionSML',
+	   'ElementXML', 
+	   ]
+
+libpath = [ '$PREFIX/lib' ]
+
+env.Append(LIBS = libadd, LIBPATH = libpath)
+soar2soar = env.Program('soar2soar', Glob('*.cpp'))
+env.Install('$PREFIX/bin', soar2soar)
+env.InstallAs('$PREFIX/share/soar/Demos/soar2soar/agents', '#../Soar2Soar/agents')
+env.InstallAs('$PREFIX/share/soar/Demos/soar2soar/environments', '#../Soar2Soar/environments')
+env.Clean('$PREFIX/share/soar', '$PREFIX/share/soar/Demos/soar2soar')
+
