@@ -1,0 +1,19 @@
+sp {blocks-world*propose*clean
+   (state <s> ^name blocks-world
+              ^io.output-link.move-block <mb>)
+   (<mb> ^status)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name clean)
+         
+}
+
+sp {apply*clean
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name clean)
+   (<out> ^move-block <mb>)
+   (<mb> ^status)
+-->
+   (<out> ^move-block <mb> -)
+}
