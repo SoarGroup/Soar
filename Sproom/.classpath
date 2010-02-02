@@ -14,5 +14,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry kind="lib" path="lib/orc.jar"/>
 	<classpathentry kind="var" path="SML"/>
+	<classpathentry kind="lib" path="/Users/voigtjr/sandbox/share/java/jinput.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
