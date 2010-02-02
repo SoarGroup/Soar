@@ -37,6 +37,13 @@
 	</target>
 
 	<target name="init-copylib" depends="init-haslib" if="haslib">
+		<copy todir="${soarprefix.lib}">
+			<fileset dir="${lib}">
+				<include name="*.so" />
+				<include name="*.dylib" />
+				<include name="*.jnilib" />
+			</fileset>
+		</copy>
 		<copy todir="${soarprefix.java}">
 			<fileset dir="${lib}">
 				<include name="*.jar" />
