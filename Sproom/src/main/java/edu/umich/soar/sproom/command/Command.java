@@ -3,8 +3,11 @@ package edu.umich.soar.sproom.command;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jmat.LinAlg;
+
+import net.java.games.input.Component;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,6 +17,8 @@ import april.config.Config;
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.Drive3;
+import edu.umich.soar.sproom.gp.GPComponentListener;
+import edu.umich.soar.sproom.gp.GamepadJInput;
 import edu.umich.soar.sproom.soar.SoarInterface;
 
 public class Command {
@@ -35,10 +40,7 @@ public class Command {
 	private final VirtualObjects vobjs;
 	private final SoarInterface soar;
 	private final HttpController httpController = new HttpController();
-	private Gamepad gp;
-	private final ScheduledExecutorService shexec = Executors
-			.newSingleThreadScheduledExecutor();
-	private boolean override = false;
+	private final ScheduledExecutorService shexec = Executors.newSingleThreadScheduledExecutor();
 
     private enum GamepadInputScheme {
         JOY_MOTOR,              // left: off, right x: turn component, right y: forward component
@@ -46,9 +48,17 @@ public class Command {
         JOY_VELOCITIES, 		// left: off, right x: linvel, right y: angvel
         GAS_AND_WHEEL,  		// left y: linvel, right: heading, right center: angvel -> 0
     }
-    private GamepadInputScheme gpInputScheme = GamepadInputScheme.JOY_MOTOR;
+    private GamepadInputScheme gpInputScheme = GamepadInputScheme.TANK;
 
-	public Command(Config config) {
+    private GamepadJInput gpji = new GamepadJInput();
+    private final AtomicBoolean override = new AtomicBoolean(false);
+    
+    private float lx = 0;
+    private float ly = 0;
+    private float rx = 0;
+    private float ry = 0;
+
+    public Command(Config config) {
 		logger.debug("Command started");
 
 		metadata = new MapMetadata(config);
@@ -57,56 +67,88 @@ public class Command {
 		httpController.addDriveListener(drive3);
 		soar.addDriveListener(drive3);
 		httpController.addSoarControlListener(soar);
+		
+		gpji.addComponentListener(GamepadJInput.Id.OVERRIDE, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				if (Float.compare(value, 0) != 0) {
+					if (override.compareAndSet(true, false)) {
+						soar.addDriveListener(drive3);
+						logger.info("Override disabled.");
+						
+					} else if (override.compareAndSet(false, true)) {
+						soar.removeDriveListener(drive3);
+						logger.info("Override enabled.");
+					}
+				}
+			}
+		});
+		
+		gpji.addComponentListener(GamepadJInput.Id.SOAR, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				if (Float.compare(value, 0) != 0) {
+					soar.toggleRunState();
+				}
+			}
+		});
+		
+		gpji.addComponentListener(GamepadJInput.Id.GPMODE, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				if (Float.compare(value, 0) != 0) {
+					int index = gpInputScheme.ordinal() + 1;
+					index %= GamepadInputScheme.values().length;
+					gpInputScheme = GamepadInputScheme.values()[index];
+					logger.info("Input changed to " + gpInputScheme);
+				}
+			}
+		});
+		
+		gpji.addComponentListener(GamepadJInput.Id.LX, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				System.out.println(id + ": " + value);
+				lx = value;
+			}
+		});
+		gpji.addComponentListener(GamepadJInput.Id.LY, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				System.out.println(id + ": " + value);
+				ly = value;
+			}
+		});
+		gpji.addComponentListener(GamepadJInput.Id.RX, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				System.out.println(id + ": " + value);
+				rx = value;
+			}
+		});
+		gpji.addComponentListener(GamepadJInput.Id.RY, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				System.out.println(id + ": " + value);
+				ry = value;
+			}
+		});
 
-		try {
-			gp = new Gamepad();
-			Buttons.setGamepad(gp);
-		} catch (IllegalStateException e) {
-			logger.warn("No joystick.");
-		}
 		shexec.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
 				if (logger.isDebugEnabled()) {
 					hzChecker.tick();
 				}
-
-				Buttons.OVERRIDE.update();
-				if (override) {
-					if (Buttons.OVERRIDE.checkAndDisable()) {
-						soar.addDriveListener(drive3);
-						override = false;
-						logger.info("Override disabled.");
-					} else {
-						drive3.handleDriveEvent(getGamepadDDC());
-					}
-				} else {
-					if (Buttons.OVERRIDE.checkAndDisable()) {
-						soar.removeDriveListener(drive3);
-						override = true;
-						drive3.handleDriveEvent(getGamepadDDC());
-						logger.info("Override enabled.");
-					}
-				}
 				
-				Buttons.SOAR.update();
-				if (Buttons.SOAR.checkAndDisable()) {
-					soar.toggleRunState();
+				if (override.get()) {
+					drive3.handleDriveEvent(getGamepadDDC());
 				}
 			}
 		}, 0, 30, TimeUnit.MILLISECONDS);
 	}
 	
 	private DifferentialDriveCommand getGamepadDDC() {
-		if (gp == null) {
-			return null;
-		}
-		
-        //double left_x;
-        double right_x = gp.getAxis(2);
-        double left_y = gp.getAxis(1) * -1;
-        double right_y = gp.getAxis(3) * -1;
-        
         double left = 0;
         double right = 0;
         
@@ -116,8 +158,8 @@ public class Command {
         switch (gpInputScheme) {
         case JOY_MOTOR:
                 // this should not be linear, it is difficult to precisely control
-                double fwd = right_y; // +1 = forward, -1 = back
-                double lr = -1 * right_x; // +1 = left, -1 = right
+                double fwd = -1 * ry; // +1 = forward, -1 = back
+                double lr = -1 * rx; // +1 = left, -1 = right
 
                 left = fwd - lr;
                 right = fwd + lr;
@@ -128,39 +170,39 @@ public class Command {
                         right /= max;
                 }
 
-                if (Buttons.SLOW.isEnabled()) {
-                        left *= 0.5;
-                        right *= 0.5;
-                }
+//                if (Buttons.SLOW.isEnabled()) {
+//                        left *= 0.5;
+//                        right *= 0.5;
+//                }
                 ddc = DifferentialDriveCommand.newMotorCommand(left, right);
                 break;
                 
         case TANK:
-                left = left_y;
-                right = right_y;
+                left = ly * -1;
+                right = ry * -1;
 
-                if (Buttons.SLOW.isEnabled()) {
-                        left *= 0.5;
-                        right *= 0.5;
-                }
+//                if (Buttons.SLOW.isEnabled()) {
+//                        left *= 0.5;
+//                        right *= 0.5;
+//                }
                 ddc = DifferentialDriveCommand.newMotorCommand(left, right);
                 break;
                 
         case JOY_VELOCITIES:
-                double angvel = c.getLimitAngVelMax() * right_x * -1;
-                double linvel = c.getLimitLinVelMax() * right_y;
+                double angvel = c.getLimitAngVelMax() * rx * -1;
+                double linvel = c.getLimitLinVelMax() * ry * -1;
                 ddc = DifferentialDriveCommand.newVelocityCommand(angvel, linvel);
                 break;
                 
         case GAS_AND_WHEEL:
-                linvel = c.getLimitLinVelMax() * left_y;
+                linvel = c.getLimitLinVelMax() * ly * -1;
                 
-                double magnitude = LinAlg.magnitude(new double[] { right_x, right_y } );
+                double magnitude = LinAlg.magnitude(new double[] { rx, ry * -1 } );
                 if (magnitude < c.getGamepadZeroThreshold()) {
                         // angvel to 0
                         ddc = DifferentialDriveCommand.newVelocityCommand(0, linvel);
                 } else {
-                        double heading = Math.atan2(right_y, right_x);
+                        double heading = Math.atan2(ry * -1, rx);
                         ddc = DifferentialDriveCommand.newHeadingLinearVelocityCommand(heading, linvel);
                 }
                 break;
