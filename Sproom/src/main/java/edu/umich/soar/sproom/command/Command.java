@@ -7,8 +7,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import jmat.LinAlg;
 
-import net.java.games.input.Component;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,8 +50,8 @@ public class Command {
 
     private GamepadJInput gpji = new GamepadJInput();
     private final AtomicBoolean override = new AtomicBoolean(false);
+    private final AtomicBoolean slow = new AtomicBoolean(false);
     
-    private float lx = 0;
     private float ly = 0;
     private float rx = 0;
     private float ry = 0;
@@ -71,6 +69,9 @@ public class Command {
 		gpji.addComponentListener(GamepadJInput.Id.OVERRIDE, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
+				if (logger.isTraceEnabled()) {
+					logger.trace(id + ": " + value);
+				}
 				if (Float.compare(value, 0) != 0) {
 					if (override.compareAndSet(true, false)) {
 						soar.addDriveListener(drive3);
@@ -87,8 +88,27 @@ public class Command {
 		gpji.addComponentListener(GamepadJInput.Id.SOAR, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
+				if (logger.isTraceEnabled()) {
+					logger.trace(id + ": " + value);
+				}
 				if (Float.compare(value, 0) != 0) {
 					soar.toggleRunState();
+				}
+			}
+		});
+		
+		gpji.addComponentListener(GamepadJInput.Id.SLOW, new GPComponentListener() {
+			@Override
+			public void stateChanged(GamepadJInput.Id id, float value) {
+				if (logger.isTraceEnabled()) {
+					logger.trace(id + ": " + value);
+				}
+				if (Float.compare(value, 0) != 0) {
+					if (slow.get()) {
+						slow.set(false);
+					} else {
+						slow.set(true);
+					}
 				}
 			}
 		});
@@ -96,6 +116,9 @@ public class Command {
 		gpji.addComponentListener(GamepadJInput.Id.GPMODE, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
+				if (logger.isTraceEnabled()) {
+					logger.trace(id + ": " + value);
+				}
 				if (Float.compare(value, 0) != 0) {
 					int index = gpInputScheme.ordinal() + 1;
 					index %= GamepadInputScheme.values().length;
@@ -105,31 +128,30 @@ public class Command {
 			}
 		});
 		
-		gpji.addComponentListener(GamepadJInput.Id.LX, new GPComponentListener() {
-			@Override
-			public void stateChanged(GamepadJInput.Id id, float value) {
-				System.out.println(id + ": " + value);
-				lx = value;
-			}
-		});
 		gpji.addComponentListener(GamepadJInput.Id.LY, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
-				System.out.println(id + ": " + value);
+				if (logger.isTraceEnabled()) {
+					logger.trace(id + ": " + value);
+				}
 				ly = value;
 			}
 		});
 		gpji.addComponentListener(GamepadJInput.Id.RX, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
-				System.out.println(id + ": " + value);
+				if (logger.isTraceEnabled()) {
+					logger.trace(id + ": " + value);
+				}
 				rx = value;
 			}
 		});
 		gpji.addComponentListener(GamepadJInput.Id.RY, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
-				System.out.println(id + ": " + value);
+				if (logger.isTraceEnabled()) {
+					logger.trace(id + ": " + value);
+				}
 				ry = value;
 			}
 		});
@@ -170,10 +192,10 @@ public class Command {
                         right /= max;
                 }
 
-//                if (Buttons.SLOW.isEnabled()) {
-//                        left *= 0.5;
-//                        right *= 0.5;
-//                }
+                if (slow.get()) {
+                        left *= 0.5;
+                        right *= 0.5;
+                }
                 ddc = DifferentialDriveCommand.newMotorCommand(left, right);
                 break;
                 
@@ -181,10 +203,10 @@ public class Command {
                 left = ly * -1;
                 right = ry * -1;
 
-//                if (Buttons.SLOW.isEnabled()) {
-//                        left *= 0.5;
-//                        right *= 0.5;
-//                }
+                if (slow.get()) {
+                        left *= 0.5;
+                        right *= 0.5;
+                }
                 ddc = DifferentialDriveCommand.newMotorCommand(left, right);
                 break;
                 
