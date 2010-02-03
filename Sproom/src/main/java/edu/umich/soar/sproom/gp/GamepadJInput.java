@@ -49,7 +49,9 @@ public class GamepadJInput {
 			minValue = Math.min(minValue, v);
 			maxValue = Math.max(maxValue, v);
 			
-			//System.out.println(String.format("v%2.2f min%2.2f max%2.2f", v, minValue, maxValue));
+			if (logger.isTraceEnabled()) {
+				logger.trace(String.format("v%2.2f min%2.2f max%2.2f", v, minValue, maxValue));
+			}
 			
 			// normalize to -1..1
 			// there is positively a faster way to do this.
@@ -58,7 +60,11 @@ public class GamepadJInput {
 				return 0;
 			}
 			float pct = (v - minValue) / range;
-			//System.out.println(String.format("r%2.2f p%2.2f", range, pct));
+			
+			if (logger.isTraceEnabled()) {
+				logger.trace(String.format("r%2.2f p%2.2f", range, pct));
+			}
+			
 			return pct * 2.0f - 1.0f;
 		}
 		
@@ -119,7 +125,7 @@ public class GamepadJInput {
 				synchronized (components) {
 					if (e.getController().equals(controller)) {
 						controller = null;
-						// TODO: reset components
+						components.clear();
 					}
 				}
 			}
@@ -146,7 +152,7 @@ public class GamepadJInput {
 	
 					for (HandlerData data : components) {
 						if (logger.isTraceEnabled()) {
-							System.out.println(data);
+							logger.trace(data);
 						}
 						float pollValue = data.component.getPollData();
 						if (Float.compare(pollValue, data.getOld()) != 0) {
