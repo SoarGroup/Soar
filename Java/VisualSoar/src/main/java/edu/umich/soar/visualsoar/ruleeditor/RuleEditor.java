@@ -1429,15 +1429,15 @@ public class RuleEditor extends CustomInternalFrame
             parentMenu.add(currentTemplateItem);
         }
 
-        // Add sub template directories
-        i = parentTemplate.getChildDirectories();
-        while(i.hasNext()) 
-        {
-            t = (Template) i.next();
-            JMenu mnu = new JMenu(t.getName());
-            initTemplatesMenu(t, mnu);
-            parentMenu.add(mnu);
-        }
+//        // Add sub template directories
+//        i = parentTemplate.getChildDirectories();
+//        while(i.hasNext()) 
+//        {
+//            t = (Template) i.next();
+//            JMenu mnu = new JMenu(t.getName());
+//            initTemplatesMenu(t, mnu);
+//            parentMenu.add(mnu);
+//        }
     }
     // 3P
     // Initializes the "Runtime" menu item and adds it to the given menubar
