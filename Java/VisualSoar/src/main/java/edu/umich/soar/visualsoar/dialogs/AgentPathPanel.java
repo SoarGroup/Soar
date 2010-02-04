@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.border.*;
 
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 
 /**
  * Panel that contains the input field for the path of the agent
@@ -17,7 +17,7 @@ import edu.umich.soar.visualsoar.misc.Preferences;
  */
 class AgentPathPanel extends JPanel {
 
-	String 						workingDir = Preferences.getInstance().getOpenFolder().getPath();
+	String 						workingDir = Prefs.openFolder.get();
 	JTextField 					pathField = new JTextField(workingDir, 20);
 	JButton 					browse = new JButton("Browse...");
 

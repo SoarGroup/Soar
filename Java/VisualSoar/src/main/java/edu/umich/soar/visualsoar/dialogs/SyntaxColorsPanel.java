@@ -7,7 +7,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.border.*;
 
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 import edu.umich.soar.visualsoar.misc.SyntaxColor;
 import edu.umich.soar.visualsoar.ruleeditor.SoarDocument;
 
@@ -40,7 +40,7 @@ class SyntaxColorsPanel extends JPanel {
 	/**
 	 * The syntax colors
 	 */
-	SyntaxColor[]	colorTable = Preferences.getInstance().getSyntaxColors();
+	SyntaxColor[]	colorTable = Prefs.getSyntaxColors();
 
 	/**
 	 * Creates a titled border around the input field
@@ -56,7 +56,7 @@ class SyntaxColorsPanel extends JPanel {
 		swatches = new JButton[oldColors.length];
 		
 		enablePanel.setLayout(new GridLayout());
-		enable.setSelected(Preferences.getInstance().isHighlightingEnabled());
+		enable.setSelected(Prefs.highlightingEnabled.getBoolean());
 		enablePanel.add(enable);
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
