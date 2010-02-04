@@ -7,7 +7,7 @@
 <listEntry value="1"/>
 </listAttribute>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-<mapEntry key="DYLD_LIBRARY_PATH" value="/Users/home/voigtjr/sandbox/lib"/>
+<mapEntry key="DYLD_LIBRARY_PATH" value="/Users/voigtjr/sandbox/lib"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.umich.soar.visualsoar.VisualSoar"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="soar-visualsoar"/>

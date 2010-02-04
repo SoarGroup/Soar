@@ -306,16 +306,6 @@ public class Preferences
         autoSoarCompleteEnabled = isEnabled;
     }
     
-    public File getTemplateFolder()
-    {
-        return templateFolder;
-    }
-    
-    public void setTemplateFolder(File inTemplateFolder)
-    {
-        templateFolder = inTemplateFolder;
-    }
-    
     public File getOpenFolder()
     {
         return openFolder;

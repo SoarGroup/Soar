@@ -166,9 +166,8 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
     {
 		// Set the Title of the window
 		super(s);
-		File	templateFolder = Preferences.getInstance().getTemplateFolder();
 
-        // Use Java toolkit to access user's screen size and set VisualSoar window to 90% of that size
+		// Use Java toolkit to access user's screen size and set VisualSoar window to 90% of that size
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension d = tk.getScreenSize();
 		setSize( ((int) (d.getWidth() * .9)), ((int) (d.getHeight() * .9)) );
@@ -202,8 +201,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
                 }
             });//addWindowListener()
         
-		if(templateFolder != null)
-        d_templateManager.load(templateFolder);
+        d_templateManager.load();
 	}
 
 ////////////////////////////////////////

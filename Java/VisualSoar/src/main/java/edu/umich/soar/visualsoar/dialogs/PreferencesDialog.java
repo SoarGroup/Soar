@@ -25,11 +25,6 @@ public class PreferencesDialog extends JDialog {
 	 */
 	SyntaxColorsPanel 	colorPanel;
 	
-	/**
-	 * Panel which contains the auto-tiling pref buttons
-	 */
-	TemplatePanel		templatePanel = new TemplatePanel();
-
 	/**          
 	 * Panel which contains the auto-tiling pref buttons
 	 */
@@ -95,7 +90,6 @@ public class PreferencesDialog extends JDialog {
 		ruleEditorPanel.add(checkBoxPanel, BorderLayout.SOUTH);
 
 		generalPanel.setLayout(new BorderLayout());
-		generalPanel.add(templatePanel, BorderLayout.NORTH);
 		generalPanel.add(tilePanel, BorderLayout.SOUTH);
 
 
@@ -124,23 +118,8 @@ public class PreferencesDialog extends JDialog {
 
 		buttonPanel.okButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File newTemplateFolder = templatePanel.getTemplateFolder();
 				approved = true;
 
-				if (! newTemplateFolder.exists()) {
-
-					int response = JOptionPane.showConfirmDialog(PreferencesDialog.this,
-						"\"" + newTemplateFolder + "\""
-							+ " is not a valid folder\nno templates will be available",
-						"Invalid Path", JOptionPane.OK_CANCEL_OPTION);
-
-					if (response == JOptionPane.CANCEL_OPTION) {
-						templatePanel.requestFocus();
-						return;
-					}
-				}
-				prefs.setTemplateFolder(newTemplateFolder);
-				MainFrame.getMainFrame().getTemplateManager().load(newTemplateFolder);
 				prefs.setHighlightingEnabled(colorPanel.getEnableHighlighting());
 				prefs.setAutoTilingEnabled(tilePanel.getAutoTile());
 				prefs.setHorizontalTilingEnabled(tilePanel.getHorizontalTile());
