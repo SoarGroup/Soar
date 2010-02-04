@@ -1449,8 +1449,11 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
         {
 			JOptionPane.showMessageDialog(
                 MainFrame.this,
-                "View VisualSoar key bindings help on the web:\n" +
-                "http://code.google.com/p/soar/wiki/VSKeyBindings",
+                "<html>View VisualSoar key bindings help " +
+                "<a href=\"http://code.google.com/p/soar/wiki/VSKeyBindings\">" +
+                "on the wiki</a>.<br />" +
+                "http://code.google.com/p/soar/wiki/VSKeyBindings</html>" +
+                "",
                 "Key Bindings Help",
                 JOptionPane.INFORMATION_MESSAGE);
 		}
