@@ -19,7 +19,6 @@ public class CustomDesktopPane extends JDesktopPane {
     CascadeAction 	cascadeAction = new CascadeAction();
     TileAction 		tileAction    = new TileAction();
     ReTileAction 	reTileAction  = new ReTileAction();
-    Preferences 	prefs         = Preferences.getInstance();
     private int 	xoffset       = 20;
     private int         yoffset       = 20;
     private int	        w             = 250;
@@ -400,7 +399,7 @@ public class CustomDesktopPane extends JDesktopPane {
 	    }		
 	
 	    public void perform() {
-			if (prefs.isHorizontalTilingEnabled()) {
+			if (Prefs.horizTile.getBoolean()) {
 			    horizontalTile();
 			}
 			else {
@@ -419,7 +418,7 @@ public class CustomDesktopPane extends JDesktopPane {
 	    }		
 	
 	    public void perform() {	
-			if (prefs.isHorizontalTilingEnabled()) {
+			if (Prefs.horizTile.getBoolean()) {
 			    verticalTile();
 			}
 			else {

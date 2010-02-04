@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.border.*;
 
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 import edu.umich.soar.visualsoar.ruleeditor.SoarDocument;
                    
 /**
@@ -21,11 +21,6 @@ class AutoTilePanel extends JPanel {
 	JRadioButton	horizontal = new JRadioButton("Horizontal");
 	JRadioButton	vertical = new JRadioButton("Vertical");
 	ButtonGroup		horizVert = new ButtonGroup();
-
-	/**
-	 * the preferences
-	 */
-	Preferences		prefs = Preferences.getInstance();
 
 	/**
 	 * Creates a titled border around the input field
@@ -45,8 +40,8 @@ class AutoTilePanel extends JPanel {
 		horizVertPanel.add(horizontal);	
 		horizVertPanel.add(vertical);
 			
-		enable.setSelected(prefs.isAutoTilingEnabled());
-		if (prefs.isHorizontalTilingEnabled()) {
+		enable.setSelected(Prefs.autoTileEnabled.getBoolean());
+		if (Prefs.horizTile.getBoolean()) {
 			horizontal.setSelected(true);
 		}
 		else {
