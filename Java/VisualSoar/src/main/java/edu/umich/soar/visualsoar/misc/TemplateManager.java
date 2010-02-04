@@ -33,9 +33,9 @@ public class TemplateManager {
 	////////////////////////////////////////////////////////////
 	
 	/**
-	 * Loads in files from the specified directory
+	 * Loads in files from the jar file resources
 	 */
-	public void load(File directory) {
-      rootTemplate = Template.loadDirectory(directory);
+	public void load() {
+      rootTemplate = Template.loadFromJar();
 	}
 }
