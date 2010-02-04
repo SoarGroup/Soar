@@ -7,7 +7,7 @@ import javax.swing.text.*;
 import java.util.Enumeration;
 
 import edu.umich.soar.visualsoar.MainFrame;
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 import edu.umich.soar.visualsoar.misc.SyntaxColor;
 import edu.umich.soar.visualsoar.parser.ASCII_CharStream;
 import edu.umich.soar.visualsoar.parser.SoarParserConstants;
@@ -21,12 +21,11 @@ public class SoarDocument extends DefaultStyledDocument
 
     AbstractElement root = (AbstractElement)getDefaultRootElement();
     SyntaxColor[]   colorTable;
-    Preferences     prefs = Preferences.getInstance();
     boolean         inRHS = false; // Are we in the RHS of a production?
     
     public SoarDocument()
     {
-        colorTable = (SyntaxColor[])Preferences.getInstance().getSyntaxColors().clone();
+        colorTable = (SyntaxColor[])Prefs.getSyntaxColors().clone();
     }
     
                     
@@ -36,7 +35,7 @@ public class SoarDocument extends DefaultStyledDocument
     {
         super.insertString(offset, str, a);
         
-        if (! prefs.isHighlightingEnabled())
+        if (! Prefs.highlightingEnabled.getBoolean())
         {
             return;
         }
@@ -1001,7 +1000,7 @@ public class SoarDocument extends DefaultStyledDocument
 
     public int autoJustify(int caretPos)
     {
-        if(!edu.umich.soar.visualsoar.misc.Preferences.getInstance().isAutoIndentingEnabled())
+        if(!edu.umich.soar.visualsoar.misc.Prefs.autoIndentingEnabled.getBoolean())
         return -1;
         Content             data = getContent();
 

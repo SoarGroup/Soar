@@ -10,7 +10,7 @@ import javax.swing.event.*;
 import javax.swing.text.*;
 import java.io.*;
 
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 
 /**
  * This is the EditorPane visual soar uses, it adds some functionality to make some actions nicer,
@@ -98,7 +98,7 @@ public class EditorPane extends javax.swing.JEditorPane
     public EditorPane()
     {
 
-        if (Preferences.getInstance().isHighlightingEnabled())
+        if (Prefs.highlightingEnabled.getBoolean())
         {
             setEditorKit(new StyledEditorKit());
         }

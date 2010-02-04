@@ -8,7 +8,7 @@ import edu.umich.soar.visualsoar.graph.EnumerationVertex;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.misc.CustomInternalFrame;
 import edu.umich.soar.visualsoar.misc.FeedbackListObject;
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 import edu.umich.soar.visualsoar.misc.Template;
 import edu.umich.soar.visualsoar.misc.TemplateInstantiationException;
 import edu.umich.soar.visualsoar.operatorwindow.OperatorNode;
@@ -176,7 +176,7 @@ public class RuleEditor extends CustomInternalFrame
                         dispose();
 
                         MainFrame mf = MainFrame.getMainFrame();
-                        if(Preferences.getInstance().isAutoTilingEnabled())
+                        if(Prefs.autoTileEnabled.getBoolean())
                         {
                             mf.getDesktopPane().performTileAction();
                         }
@@ -189,7 +189,7 @@ public class RuleEditor extends CustomInternalFrame
         backupThread = new BackupThread();
         backupThread.start();
 
-        if(edu.umich.soar.visualsoar.misc.Preferences.getInstance().isAutoSoarCompleteEnabled()) 
+        if(edu.umich.soar.visualsoar.misc.Prefs.autoSoarCompleteEnabled.getBoolean()) 
         {
             Keymap keymap = editorPane.getKeymap();
 
@@ -1625,7 +1625,7 @@ public class RuleEditor extends CustomInternalFrame
                 // This is not an error
             }
             MainFrame mf = MainFrame.getMainFrame();
-            if(Preferences.getInstance().isAutoTilingEnabled())
+            if(Prefs.autoTileEnabled.getBoolean())
             {
                 mf.getDesktopPane().performTileAction();
             }

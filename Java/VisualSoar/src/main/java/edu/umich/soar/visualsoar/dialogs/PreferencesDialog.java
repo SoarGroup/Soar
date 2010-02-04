@@ -8,7 +8,7 @@ import javax.swing.border.*;
 import java.util.*;
 
 import edu.umich.soar.visualsoar.MainFrame;
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 import edu.umich.soar.visualsoar.misc.SyntaxColor;
 import edu.umich.soar.visualsoar.ruleeditor.SoarDocument;
           
@@ -35,22 +35,15 @@ public class PreferencesDialog extends JDialog {
 	 */
 	DefaultButtonPanel 	buttonPanel = new DefaultButtonPanel();
 
-
-
-	/**
-	 * The Preferences singleton
-	 */
-	Preferences			prefs = Preferences.getInstance();
-
 	/**
 	 * The syntax colors
 	 */
-	SyntaxColor[]		colorTable = prefs.getSyntaxColors();
+	SyntaxColor[]		colorTable = Prefs.getSyntaxColors();
 	
 	boolean				approved = false;
 
-	JCheckBox     autoIndentingCheckBox = new JCheckBox("Auto-Indenting",prefs.isAutoIndentingEnabled());
-  JCheckBox     autoSoarCompleteCheckBox = new JCheckBox("Auto-Soar Complete", prefs.isAutoSoarCompleteEnabled());
+	JCheckBox     autoIndentingCheckBox = new JCheckBox("Auto-Indenting", Prefs.autoIndentingEnabled.getBoolean());
+  JCheckBox     autoSoarCompleteCheckBox = new JCheckBox("Auto-Soar Complete", Prefs.autoSoarCompleteEnabled.getBoolean());
 
 
 
@@ -68,7 +61,7 @@ public class PreferencesDialog extends JDialog {
 		JPanel				generalPanel = new JPanel();
     JPanel        checkBoxPanel = new JPanel();
 
-		colorPanel = new SyntaxColorsPanel(Preferences.getInstance().getSyntaxColors());
+		colorPanel = new SyntaxColorsPanel(Prefs.getSyntaxColors());
 
 		setResizable(false);
 
@@ -120,15 +113,14 @@ public class PreferencesDialog extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				approved = true;
 
-				prefs.setHighlightingEnabled(colorPanel.getEnableHighlighting());
-				prefs.setAutoTilingEnabled(tilePanel.getAutoTile());
-				prefs.setHorizontalTilingEnabled(tilePanel.getHorizontalTile());
-				prefs.setAutoIndentingEnabled(autoIndentingCheckBox.isSelected());
-        prefs.setAutoSoarCompleteEnabled(autoSoarCompleteCheckBox.isSelected());
-
+				Prefs.highlightingEnabled.setBoolean(colorPanel.getEnableHighlighting());
+				Prefs.autoTileEnabled.setBoolean(tilePanel.getAutoTile());
+				Prefs.horizTile.setBoolean(tilePanel.getHorizontalTile());
+				Prefs.autoIndentingEnabled.setBoolean(autoIndentingCheckBox.isSelected());
+				Prefs.autoIndentingEnabled.setBoolean(autoSoarCompleteCheckBox.isSelected());
         
 				commitChanges();
-				prefs.setSyntaxColors(colorTable);
+				Prefs.setSyntaxColors(colorTable);
 				dispose();
 			}
 		});

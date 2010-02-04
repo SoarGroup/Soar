@@ -13,7 +13,7 @@ import edu.umich.soar.visualsoar.misc.CustomDesktopPane;
 import edu.umich.soar.visualsoar.misc.CustomInternalFrame;
 import edu.umich.soar.visualsoar.misc.FeedbackList;
 import edu.umich.soar.visualsoar.misc.PerformableAction;
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 import edu.umich.soar.visualsoar.misc.SoarFileFilter;
 import edu.umich.soar.visualsoar.misc.TemplateManager;
 import edu.umich.soar.visualsoar.misc.TextFileFilter;
@@ -71,7 +71,6 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 	private JSplitPane operatorDesktopSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
     private JSplitPane feedbackDesktopSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 	public FeedbackList feedbackList = new FeedbackList();
-	Preferences prefs = Preferences.getInstance();
     String lastWindowViewOperation = "none"; // can also be "tile" or "cascade"
 
     private JMenu soarRuntimeMenu = null;
@@ -557,13 +556,13 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
     {
         try
         {
-            boolean oldPref = Preferences.getInstance().isHighlightingEnabled();
-            Preferences.getInstance().setHighlightingEnabled(false);  // Turn off highlighting
+            boolean oldPref = Prefs.highlightingEnabled.getBoolean();
+            Prefs.highlightingEnabled.setBoolean(false);  // Turn off highlighting
             RuleEditor ruleEditor = new RuleEditor(file);
             ruleEditor.setVisible(true);
             addRuleEditor(ruleEditor);
             ruleEditor.setSelected(true);
-            Preferences.getInstance().setHighlightingEnabled(oldPref);  // Turn it back to what it was
+            Prefs.highlightingEnabled.setBoolean(oldPref);  // Turn it back to what it was
         }
         catch(IOException IOE) 
         {
@@ -778,7 +777,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
                 //Unable to maximize window.  Oh well.
             }				
         }
-		else if ( (Preferences.getInstance().isAutoTilingEnabled())
+		else if ( (Prefs.autoTileEnabled.getBoolean())
                   || (lastWindowViewOperation.equals("tile")) )
         {
 			DesktopPane.performTileAction();
@@ -1037,7 +1036,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 		public void actionPerformed(ActionEvent event) 
         {
 			JInternalFrame[] frames = DesktopPane.getAllFrames();
-			prefs.write();
+			Prefs.flush();
 			try 
             {
 				for(int i = 0; i < frames.length; ++i) 
@@ -1153,7 +1152,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
                     //Open the new project
 					operatorWindow = new OperatorWindow(file);
 					if(file.getParent() != null)
-                    Preferences.getInstance().setOpenFolder(file.getParentFile());
+                    Prefs.openFolder.set(file.getParentFile().getAbsolutePath());
 					operatorDesktopSplit.setLeftComponent(new JScrollPane(operatorWindow));
 					
 					projectActionsEnable(true);
@@ -1211,7 +1210,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
             {
                 JFileChooser fileChooser = new JFileChooser();
                 fileChooser.setFileFilter(new TextFileFilter());
-                fileChooser.setCurrentDirectory(Preferences.getInstance().getOpenFolder());
+                fileChooser.setCurrentDirectory(new File(Prefs.openFolder.get()));
                 int state = fileChooser.showOpenDialog(MainFrame.this);
                 File file = fileChooser.getSelectedFile();
                 if(file != null && state == JFileChooser.APPROVE_OPTION) 
@@ -1291,7 +1290,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
                 
 				operatorWindow = new OperatorWindow(agentName,agentFileName,true);
 				
-				Preferences.getInstance().setOpenFolder(new File(path));
+				Prefs.openFolder.set(path);
 				operatorDesktopSplit.setLeftComponent(new JScrollPane(operatorWindow));
 				
 				projectActionsEnable(true);
@@ -1448,22 +1447,12 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 		
 		public void actionPerformed(ActionEvent e) 
         {
-            //File f = new File("./docs/KeyBindings.txt");
-			File f = new File(Preferences.getVisualSoarFolder() + File.separator + "docs" + File.separator + "KeyBindings.txt") ;
-            if (f.exists())
-            {
-                OpenFile(f);
-            }
-            else
-            {
-				JOptionPane.showMessageDialog(
-                    MainFrame.this,
-                    "The keybindings documentation file appears to be missing.\n"
-                    + "I am expecting to find a file called \"KeyBindings.txt\" in \n"
-                    + "the \"docs\" subdirectory of the VisualSoar directory.",
-                    "Could Not Find VisualSoar Keybindings",
-                    JOptionPane.ERROR_MESSAGE);
-            }
+			JOptionPane.showMessageDialog(
+                MainFrame.this,
+                "View VisualSoar key bindings help on the web:\n" +
+                "http://code.google.com/p/soar/wiki/VSKeyBindings",
+                "Key Bindings Help",
+                JOptionPane.INFORMATION_MESSAGE);
 		}
   	}//class ViewKeyBindingsAction
 

@@ -4,7 +4,7 @@ import edu.umich.soar.visualsoar.MainFrame;
 import edu.umich.soar.visualsoar.graph.NamedEdge;
 import edu.umich.soar.visualsoar.graph.SoarIdentifierVertex;
 import edu.umich.soar.visualsoar.misc.CustomInternalFrame;
-import edu.umich.soar.visualsoar.misc.Preferences;
+import edu.umich.soar.visualsoar.misc.Prefs;
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;
@@ -59,7 +59,7 @@ public class DataMap extends CustomInternalFrame
                         mf.getDesktopPane().dmRemove(id);
                         dispose();
 
-                        if(Preferences.getInstance().isAutoTilingEnabled())
+                        if(Prefs.autoTileEnabled.getBoolean())
                         {
                             mf.getDesktopPane().performTileAction();
                         }
