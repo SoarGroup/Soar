@@ -26,7 +26,7 @@ public class EnableWaypointCommand extends OutputLinkCommand {
 	private String id;
 	private boolean complete;
 
-	EnableWaypointCommand(Identifier wme) {
+	public EnableWaypointCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

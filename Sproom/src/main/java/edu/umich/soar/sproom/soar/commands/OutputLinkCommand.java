@@ -1,5 +1,6 @@
 package edu.umich.soar.sproom.soar.commands;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,8 @@ public abstract class OutputLinkCommand {
 		Class<? extends OutputLinkCommand> klass = commands.get(name);
 		if (klass != null) {
 			try {
-				OutputLinkCommand command = klass.getConstructor(Identifier.class).newInstance(wme);
+				Constructor<? extends OutputLinkCommand> ctor = klass.getConstructor(new Class<?>[] { Identifier.class });
+				OutputLinkCommand command = ctor.newInstance(wme);
 				return command.accept();
 				
 			} catch (InvocationTargetException e) {

@@ -61,4 +61,9 @@ public class ReceivedMessagesIL implements InputLinkElement {
 		
 		all = newAll;
 	}
+
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
+	}
 }

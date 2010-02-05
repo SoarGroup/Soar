@@ -32,7 +32,7 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 	private CommandStatus status = CommandStatus.accepted;
 	private double targetYaw;
 	
-	SetHeadingLinearCommand(Identifier wme) {
+	public SetHeadingLinearCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

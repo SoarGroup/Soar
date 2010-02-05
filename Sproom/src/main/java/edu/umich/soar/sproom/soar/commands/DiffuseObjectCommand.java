@@ -16,7 +16,7 @@ public class DiffuseObjectCommand extends OutputLinkCommand {
 	private int id;
 	private boolean complete = false;
 	
-	DiffuseObjectCommand(Identifier wme) {
+	public DiffuseObjectCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

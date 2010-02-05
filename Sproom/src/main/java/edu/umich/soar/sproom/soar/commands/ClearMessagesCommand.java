@@ -19,7 +19,7 @@ public class ClearMessagesCommand extends OutputLinkCommand {
 	private final Identifier wme;
 	private boolean complete = false;
 
-	ClearMessagesCommand(Identifier wme) {
+	public ClearMessagesCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

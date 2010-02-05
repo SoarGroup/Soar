@@ -89,4 +89,9 @@ public class AreaDescriptionIL implements InputLinkElement {
 		}
 	}
 
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
+	}
+
 }

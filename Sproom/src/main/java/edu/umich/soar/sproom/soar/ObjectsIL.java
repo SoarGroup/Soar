@@ -133,4 +133,9 @@ public class ObjectsIL implements InputLinkElement {
 		objMap = newObjMap;
 	}
 
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
+	}
+
 }

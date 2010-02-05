@@ -35,4 +35,10 @@ class InputLink {
 			element.update(app);
 		}
 	}
+
+	public void destroy() {
+		for (InputLinkElement element : elements) {
+			element.destroy();
+		}
+	}
 }
