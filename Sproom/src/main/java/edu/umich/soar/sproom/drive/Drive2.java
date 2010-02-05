@@ -55,6 +55,7 @@ public class Drive2 {
 	}
 	
 	void estop() {
+		pidEnabled.set(false);
 		drive1.estop();
 	}
 	
