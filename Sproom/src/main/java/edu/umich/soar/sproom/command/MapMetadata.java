@@ -15,6 +15,8 @@ import lcmtypes.pose_t;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.sproom.command.MapMetadata.Walls.WallDir;
+
 import april.config.Config;
 import april.config.ConfigUtil;
 
@@ -46,6 +48,7 @@ public class MapMetadata {
 		private final double[] pos;
 		private final double[] xySize;
 		private final List<Gateway> gateways = new ArrayList<Gateway>();
+		private final List<WallDir> dirs = new ArrayList<WallDir>();
 		private final Walls walls;
 		
 		private Area(int id, boolean door, double[] pos, double[] xySize) {
@@ -67,6 +70,10 @@ public class MapMetadata {
 		
 		public List<Gateway> getGateways() {
 			return Collections.unmodifiableList(gateways);
+		}
+		
+		public List<WallDir> getDirs() {
+			return Collections.unmodifiableList(dirs);
 		}
 		
 		public Walls getWalls() {
@@ -170,9 +177,12 @@ public class MapMetadata {
 				throw new IllegalStateException();
 			}
 			
-			Gateway gateway = new Gateway(gatewayList.size(), pos);
+			Gateway gateway = new Gateway(areaMap.size() + gatewayList.size(), pos);
 
-			for (String to : config.getStrings("metadata." + gatewayNickname + ".to")) {
+			for (int i = 0; i < 2; ++i) {
+				String to = config.getStrings("metadata." + gatewayNickname + ".to")[i];
+				WallDir d = WallDir.valueOf(config.getStrings("metadata." + gatewayNickname + ".dir")[i].toUpperCase());
+
 				Area area = areaMap.get(to);
 				if (area == null) {
 					logger.error("no area for " + to + " on " + gatewayNickname);
@@ -180,6 +190,7 @@ public class MapMetadata {
 				}
 				gateway.to.add(area);
 				area.gateways.add(gateway);
+				area.dirs.add(d);
 			}
 			
 			logger.debug("adding " + gateway);

@@ -61,9 +61,13 @@ public class AreaDescriptionIL implements InputLinkElement {
 			typewme.update(area.isDoor() ? SharedNames.DOOR : SharedNames.ROOM);
 			
 			// gateways
-			for (Gateway gateway : area.getGateways()) {
-				Identifier gatewaywme = root.CreateIdWME(SharedNames.GATEWAY);
+			for (int i = 0; i < 2; ++i) {
+				Gateway gateway = area.getGateways().get(i);
+				String dir = area.getDirs().get(i).toString().toLowerCase();
 				
+				Identifier gatewaywme = root.CreateIdWME(SharedNames.GATEWAY);
+				StringWme.newInstance(gatewaywme, SharedNames.DIRECTION, dir.toString().toLowerCase());
+
 				IntWme.newInstance(gatewaywme, SharedNames.ID, gateway.getId());
 				for (Area to : gateway.getTo()) {
 					IntWme.newInstance(gatewaywme, SharedNames.TO, to.getId());
