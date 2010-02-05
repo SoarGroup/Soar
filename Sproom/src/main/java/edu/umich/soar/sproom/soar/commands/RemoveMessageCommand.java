@@ -25,7 +25,7 @@ public class RemoveMessageCommand extends OutputLinkCommand {
 	private boolean complete = false;
 	private long id;
 
-	RemoveMessageCommand(Identifier wme) {
+	public RemoveMessageCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

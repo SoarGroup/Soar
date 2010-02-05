@@ -29,7 +29,7 @@ public class SetAngularVelocityCommand extends OutputLinkCommand implements Driv
 	private DifferentialDriveCommand ddc;
 	private CommandStatus status = CommandStatus.accepted;
 
-	SetAngularVelocityCommand(Identifier wme) {
+	public SetAngularVelocityCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

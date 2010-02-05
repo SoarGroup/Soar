@@ -28,7 +28,7 @@ public class DropObjectCommand extends OutputLinkCommand {
 	private int id;
 	private boolean complete = false;
 	
-	DropObjectCommand(Identifier wme) {
+	public DropObjectCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

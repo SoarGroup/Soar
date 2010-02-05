@@ -58,6 +58,11 @@ public class Command {
 
     public Command(Config config) {
 		logger.debug("Command started");
+		
+		String productions = config.getString("controller.productions", null);
+		if (productions != null) {
+			CommandConfig.CONFIG.setProductions(productions);
+		}
 
 		metadata = new MapMetadata(config);
 		vobjs = new VirtualObjects(config);

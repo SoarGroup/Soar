@@ -25,8 +25,12 @@ import edu.umich.soar.sproom.soar.OutputLink.OutputLinkActions;
 
 import sml.Agent;
 import sml.Kernel;
+import sml.smlAgentEventId;
 import sml.smlSystemEventId;
 import sml.smlUpdateEventId;
+import sml.Kernel.AgentEventInterface;
+import sml.Kernel.SystemEventInterface;
+import sml.Kernel.UpdateEventInterface;
 
 public class SoarInterface implements SoarControlListener, Adaptable {
 	private static final Log logger = LogFactory.getLog(SoarInterface.class);
@@ -92,17 +96,64 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 			agent.ExecuteCommandLine("w 0");
 		}
 		
-		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, null);
+		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, new UpdateEventInterface() {
+			public void updateEventHandler(int eventID, Object data, Kernel kernel, int arg3) {
+				logger.trace("smlEVENT_AFTER_ALL_OUTPUT_PHASES");
+				if (logger.isDebugEnabled()) {
+					hzChecker.tick();
+				}
+				
+				if (stopSoar.get()) {
+					logger.debug("Stopping Soar");
+					kernel.StopAllAgents();
+				}
+
+				OutputLinkActions actions = ol.update();
+				if (actions.getDDC() != null) {
+					ddcPrev = actions.getDDC();
+					fireDriveEvent(actions.getDDC());
+				}
+				
+				il.update(app);
+				agent.Commit();
+				logger.trace("smlEVENT_AFTER_ALL_OUTPUT_PHASES done");
+			}
+		}, null);
+		
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, systemHandler, null);
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_STOP, systemHandler, null);
+		
+		kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, agentHandler, null);
+		kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED, agentHandler, null);
 
 		agent.Commit();
 	}
 	
-	Kernel.SystemEventInterface systemHandler = new Kernel.SystemEventInterface() {
+	AgentEventInterface agentHandler = new AgentEventInterface() {
+		@Override
+		public void agentEventHandler(int eventID, Object data, String agentName) {
+			if (eventID == smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED.swigValue()) {
+				logger.trace("smlEVENT_BEFORE_AGENT_REINITIALIZED");
+				il.destroy();
+
+				agent.Commit();
+				logger.trace("smlEVENT_BEFORE_AGENT_REINITIALIZED done");
+			} else if (eventID == smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED.swigValue()) {			
+				logger.trace("smlEVENT_AFTER_AGENT_REINITIALIZED");
+				il = InputLink.newInstance(SoarInterface.this);
+				ol = OutputLink.newInstance(SoarInterface.this);
+				
+				agent.Commit();
+				logger.trace("smlEVENT_AFTER_AGENT_REINITIALIZED done");
+			}			
+		}
+	};
+	
+	SystemEventInterface systemHandler = new Kernel.SystemEventInterface() {
 		@Override
 		public void systemEventHandler(int eventId, Object arg1, Kernel arg2) {
 			if (eventId == smlSystemEventId.smlEVENT_SYSTEM_START.swigValue()) {
+				logger.trace("smlEVENT_SYSTEM_START");
 				if (ddcPrev != null) {
 					fireDriveEvent(ddcPrev);
 				}
@@ -110,31 +161,10 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 				logger.info("Soar started.");
 			} 
 			else if (eventId == smlSystemEventId.smlEVENT_SYSTEM_STOP.swigValue()) {
+				logger.trace("smlEVENT_SYSTEM_STOP");
 				fireDriveEvent(DifferentialDriveCommand.newEStopCommand());
 				logger.info("Soar stopped.");
 			}
-		}
-	};
-	
-	Kernel.UpdateEventInterface updateHandler = new Kernel.UpdateEventInterface() {
-		public void updateEventHandler(int eventID, Object data, Kernel kernel, int arg3) {
-			if (logger.isDebugEnabled()) {
-				hzChecker.tick();
-			}
-			
-			if (stopSoar.get()) {
-				logger.debug("Stopping Soar");
-				kernel.StopAllAgents();
-			}
-
-			OutputLinkActions actions = ol.update();
-			if (actions.getDDC() != null) {
-				ddcPrev = actions.getDDC();
-				fireDriveEvent(actions.getDDC());
-			}
-			
-			il.update(app);
-			agent.Commit();
 		}
 	};
 	

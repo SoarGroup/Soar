@@ -26,7 +26,7 @@ public class RemoveWaypointCommand extends OutputLinkCommand {
 	private String id;
 	private boolean complete;
 
-	RemoveWaypointCommand(Identifier wme) {
+	public RemoveWaypointCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

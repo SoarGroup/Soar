@@ -11,12 +11,14 @@ public class TimeIL implements InputLinkElement{
 	private static final String SECONDS = "seconds";
 	private static final String MICROSECONDS = "microseconds";
 
+	private final Identifier root;
 	private final IntWme secondswme;
 	private final IntWme microsecondswme;
 	private long offset;
 	private long stopTime;
 	
 	public TimeIL(Identifier root, Adaptable app) {
+		this.root = root;
 		secondswme = IntWme.newInstance(root, SECONDS);
 		microsecondswme = IntWme.newInstance(root, MICROSECONDS);
 
@@ -51,5 +53,9 @@ public class TimeIL implements InputLinkElement{
 		microsecondswme.update(microseconds);
 	}
 	
+	@Override
+	public void destroy() {
+		root.DestroyWME();
+	}
 }
 

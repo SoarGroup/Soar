@@ -83,4 +83,9 @@ public class LidarIL implements InputLinkElement {
 		}
 	}
 
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
+	}
+
 }

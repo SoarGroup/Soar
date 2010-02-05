@@ -31,7 +31,7 @@ public class StopCommand extends OutputLinkCommand implements DriveCommand {
 	private final DifferentialDriveCommand ddc = DifferentialDriveCommand.newVelocityCommand(0, 0);
 	private CommandStatus status = CommandStatus.accepted;
 	
-	StopCommand(Identifier wme) {
+	public StopCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

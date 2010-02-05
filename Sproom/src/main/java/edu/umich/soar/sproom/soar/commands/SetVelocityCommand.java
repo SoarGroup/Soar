@@ -30,7 +30,7 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 	private DifferentialDriveCommand ddc;
 	private CommandStatus status = CommandStatus.accepted;
 
-	SetVelocityCommand(Identifier wme) {
+	public SetVelocityCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}
