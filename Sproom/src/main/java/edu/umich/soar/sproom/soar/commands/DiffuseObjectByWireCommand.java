@@ -17,7 +17,7 @@ public class DiffuseObjectByWireCommand extends OutputLinkCommand {
 	private String color;
 	private boolean complete = false;
 	
-	DiffuseObjectByWireCommand(Identifier wme) {
+	public DiffuseObjectByWireCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

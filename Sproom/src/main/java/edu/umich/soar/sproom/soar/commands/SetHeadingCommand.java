@@ -30,7 +30,7 @@ public class SetHeadingCommand extends OutputLinkCommand implements DriveCommand
 	private CommandStatus status = CommandStatus.accepted;
 	private double targetYaw;
 	
-	SetHeadingCommand(Identifier wme) {
+	public SetHeadingCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

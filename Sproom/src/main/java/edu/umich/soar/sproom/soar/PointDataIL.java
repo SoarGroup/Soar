@@ -51,8 +51,9 @@ public class PointDataIL implements InputLinkElement {
 		return rpd;
 	}
 	
-	void destroy() {
-		root.DestroyWME();
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
 		destroyed = true;
 	}
 }

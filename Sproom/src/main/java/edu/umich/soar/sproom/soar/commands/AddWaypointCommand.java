@@ -37,7 +37,7 @@ public class AddWaypointCommand extends OutputLinkCommand {
 	private Double yaw;
 	private boolean complete = false;
 
-	AddWaypointCommand(Identifier wme) {
+	public AddWaypointCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

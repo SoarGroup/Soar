@@ -30,7 +30,7 @@ public class GetObjectCommand extends OutputLinkCommand {
 	private int id;
 	private boolean complete = false;
 	
-	GetObjectCommand(Identifier wme) {
+	public GetObjectCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

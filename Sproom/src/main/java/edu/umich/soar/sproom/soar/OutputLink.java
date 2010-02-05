@@ -43,22 +43,28 @@ class OutputLink {
 	
 	OutputLinkActions update() {
 		// TODO: synchronization
+		logger.trace("OutputLink update");
 
 		List<Integer> currentTimeTags = new ArrayList<Integer>(agent.GetNumberCommands());
 		List<DriveCommand> newDriveCommands = new ArrayList<DriveCommand>(agent.GetNumberCommands());
 		
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandWme = agent.GetCommand(i);
+			if (logger.isTraceEnabled()) {
+				logger.trace(commandWme.GetAttribute());
+			}
 			
 			Integer tt = Integer.valueOf(commandWme.GetTimeTag());
 			currentTimeTags.add(tt);
 			
-			if (!seenCommands.containsKey(tt)) {
+			if (seenCommands.containsKey(tt)) {
+				logger.trace("seen");
 				continue;
 			}
 			
 			// haven't seen it, make it and store it
 			OutputLinkCommand command = OutputLinkCommand.valueOf(commandWme);
+			
 			// valid commands are status-accepted at this point
 			logger.debug("Processed: " + command);
 			seenCommands.put(tt, command);
@@ -101,4 +107,5 @@ class OutputLink {
 		
 		return actions;
 	}
+	
 }

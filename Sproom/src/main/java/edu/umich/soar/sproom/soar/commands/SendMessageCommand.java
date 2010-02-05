@@ -37,7 +37,7 @@ public class SendMessageCommand extends OutputLinkCommand {
 	private final List<String> tokens = new ArrayList<String>();
 	private String destination;
 	
-	SendMessageCommand(Identifier wme) {
+	public SendMessageCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

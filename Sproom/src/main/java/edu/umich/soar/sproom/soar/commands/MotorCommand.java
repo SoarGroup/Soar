@@ -28,7 +28,7 @@ public class MotorCommand extends OutputLinkCommand implements DriveCommand {
 	private DifferentialDriveCommand ddc;
 	private CommandStatus status = CommandStatus.accepted;
 
-	MotorCommand(Identifier wme) {
+	public MotorCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

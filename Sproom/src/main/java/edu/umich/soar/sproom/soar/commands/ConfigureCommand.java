@@ -27,7 +27,7 @@ public class ConfigureCommand extends OutputLinkCommand {
 	private final Identifier wme;
 	private boolean complete = false;
 	
-	ConfigureCommand(Identifier wme) {
+	public ConfigureCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

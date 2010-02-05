@@ -24,7 +24,7 @@ public class EStopCommand extends OutputLinkCommand implements DriveCommand {
 	private final Identifier wme;
 	private boolean complete = false;
 
-	EStopCommand(Identifier wme) {
+	public EStopCommand(Identifier wme) {
 		super(Integer.valueOf(wme.GetTimeTag()));
 		this.wme = wme;
 	}

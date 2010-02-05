@@ -13,6 +13,7 @@ public class SelfIL implements InputLinkElement {
 	private static final String NAME = "name";
 	private static final String AREA = "area";
 
+	private Identifier root;
 	private IntWme area;
 	private DistanceWme[] xyz = new DistanceWme[3];
 	private SpeedWme[] xyzVelocity = new SpeedWme[3];
@@ -20,6 +21,7 @@ public class SelfIL implements InputLinkElement {
 	private YawVelocityWme yawVelocity;
 	
 	public SelfIL(Identifier root, Adaptable app) {
+		this.root = root;
 		Agent agent = (Agent)app.getAdapter(Agent.class);
 		
 		StringWme.newInstance(root, NAME, agent.GetAgentName());
@@ -51,5 +53,10 @@ public class SelfIL implements InputLinkElement {
 		}
 		yaw.update(poseClass.getYaw());
 		yawVelocity.update(pose.rotation_rate[2]);
+	}
+
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
 	}
 }

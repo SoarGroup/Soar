@@ -54,4 +54,9 @@ public class WaypointsIL implements InputLinkElement {
 		waypointMap = newWaypointMap;
 	}
 
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
+	}
+
 }

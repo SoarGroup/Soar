@@ -24,6 +24,7 @@ public class ConfigurationIL implements InputLinkElement {
 	
 	private final CommandConfig c = CommandConfig.CONFIG;
 
+	private final Identifier root;
 	private final StringWme lengthUnits;
 	private final StringWme angleUnits;
 	private final StringWme angleResolution;
@@ -41,6 +42,7 @@ public class ConfigurationIL implements InputLinkElement {
 	private final AtomicBoolean configChanged = new AtomicBoolean(true);
 	
 	public ConfigurationIL(Identifier root, Adaptable app) {
+		this.root = root;
 		lengthUnits = StringWme.newInstance(root, SharedNames.LENGTH_UNITS);
 		angleUnits = StringWme.newInstance(root, SharedNames.ANGLE_UNITS);
 		angleResolution = StringWme.newInstance(root, SharedNames.ANGLE_RESOLUTION);
@@ -103,5 +105,10 @@ public class ConfigurationIL implements InputLinkElement {
 			
 			configChanged.set(false);
 		}
+	}
+
+	@Override
+	public void destroy() {
+		this.root.DestroyWME();
 	}
 }
