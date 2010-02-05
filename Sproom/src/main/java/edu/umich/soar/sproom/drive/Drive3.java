@@ -132,7 +132,7 @@ public class Drive3 implements DriveListener {
 			DifferentialDriveCommand.newEStopCommand();
 		}
 		currentCommand = ddc;
-
+		logger.debug("current: " + currentCommand);
 	}
 
 	private void doLinearVelocity(DifferentialDriveCommand ddc) {

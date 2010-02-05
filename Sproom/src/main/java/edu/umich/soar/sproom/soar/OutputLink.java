@@ -43,19 +43,18 @@ class OutputLink {
 	
 	OutputLinkActions update() {
 		// TODO: synchronization
-		logger.trace("OutputLink update");
 
 		List<Integer> currentTimeTags = new ArrayList<Integer>(agent.GetNumberCommands());
-		List<DriveCommand> newDriveCommands = new ArrayList<DriveCommand>(agent.GetNumberCommands());
 		
 		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
 			Identifier commandWme = agent.GetCommand(i);
-			if (logger.isTraceEnabled()) {
-				logger.trace(commandWme.GetAttribute());
-			}
 			
 			Integer tt = Integer.valueOf(commandWme.GetTimeTag());
 			currentTimeTags.add(tt);
+			
+			if (logger.isTraceEnabled()) {
+				logger.trace(commandWme.GetAttribute() + ": " + tt);
+			}
 			
 			if (seenCommands.containsKey(tt)) {
 				logger.trace("seen");
@@ -68,23 +67,15 @@ class OutputLink {
 			// valid commands are status-accepted at this point
 			logger.debug("Processed: " + command);
 			seenCommands.put(tt, command);
-			
-			if (command instanceof DriveCommand) {
-				newDriveCommands.add((DriveCommand)command);
-			}
 		}
 		
 		// forget commands no longer on the input link
 		seenCommands.keySet().retainAll(currentTimeTags);
 		
-		// remove drive command if that disappeared
-		if (driveCommand != null && !seenCommands.containsKey(driveCommand.getTimeTag())) {
-			driveCommand = null;
-		}
-
 		// update current commands
 		OutputLinkActions actions = new OutputLinkActions();
 		for (OutputLinkCommand command : seenCommands.values()) {
+			logger.trace("Updating " + command.getName());
 			command.update(app);
 			
 			if (command instanceof DriveCommand) {
@@ -93,6 +84,7 @@ class OutputLink {
 
 					// interrupt the current drive command
 					if (driveCommand != null) {
+						logger.trace("Interrupting " + driveCommand.getTimeTag());
 						driveCommand.interrupt();
 					}
 					
