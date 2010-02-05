@@ -7,6 +7,7 @@ import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
+import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
 
 public class SelfIL implements InputLinkElement {
@@ -42,10 +43,11 @@ public class SelfIL implements InputLinkElement {
 
 	@Override
 	public void update(Adaptable app) {
-		area.update(0); // FIXME: temp
-
 		Pose poseClass = (Pose)app.getAdapter(Pose.class);
 		pose_t pose = poseClass.getPose();
+		
+		MapMetadata metadata = (MapMetadata)app.getAdapter(MapMetadata.class);
+		area.update(metadata.getArea(pose.pos).getId());
 		
 		for (int i = 0; i < xyz.length; ++i) {
 			xyz[i].update(pose.pos[i]);
