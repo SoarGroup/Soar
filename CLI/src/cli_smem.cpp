@@ -379,6 +379,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
 		}
 
+		temp = "thresh: ";
+		temp2 = m_pAgentSoar->smem_params->thresh->get_string();
+		temp += temp2;
+		delete temp2;
+		if ( m_RawOutput )
+		{
+			m_Result << temp << "\n";
+		}
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+		}
+
 		temp = "cache: ";
 		temp2 = m_pAgentSoar->smem_params->cache->get_string();
 		temp += temp2;
