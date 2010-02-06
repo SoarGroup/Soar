@@ -112,6 +112,10 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	opt->add_mapping( opt_safety, "safety" );
 	opt->add_mapping( opt_speed, "performance" );	
 	add( opt );
+
+	// thresh
+	thresh = new soar_module::integer_param( "thresh", 100, new soar_module::predicate<long>(), new smem_db_predicate<long>( my_agent ) );
+	add( thresh );
 }
 
 //
@@ -272,7 +276,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	add_structure( "CREATE TABLE IF NOT EXISTS temporal_symbol_hash (id INTEGER PRIMARY KEY, sym_const NONE, sym_type INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS temporal_symbol_hash_const_type ON temporal_symbol_hash (sym_type,sym_const)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER)" );
+	add_structure( "CREATE TABLE IF NOT EXISTS lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_cycle INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS lti_letter_num ON lti (letter, num)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS web (parent_id INTEGER, attr INTEGER, val_const INTEGER, val_lti INTEGER, act_cycle INTEGER)" );
@@ -349,7 +353,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO lti (letter,num) VALUES (?,?)" );
+	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO lti (letter,num,child_ct,act_cycle) VALUES (?,?,?,?)" );
 	add( lti_add );
 
 	lti_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM lti WHERE letter=? AND num=?" );
@@ -385,13 +389,13 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web w WHERE attr=? ORDER BY act_cycle DESC" );
+	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM web w WHERE attr=? ORDER BY act_cycle DESC" );
 	add( web_attr_all );
 
-	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web w WHERE attr=? AND val_const=? AND val_lti IS NULL ORDER BY act_cycle DESC" );
+	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM web w WHERE attr=? AND val_const=? AND val_lti IS NULL ORDER BY act_cycle DESC" );
 	add( web_const_all );
 
-	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web w WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY act_cycle DESC" );
+	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM web w WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY act_cycle DESC" );
 	add( web_lti_all );
 
 	//
@@ -442,6 +446,18 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	act_set = new soar_module::sqlite_statement( new_db, "UPDATE web SET act_cycle=? WHERE parent_id=?" );
 	add( act_set );
+
+	act_lti_child_ct_get = new soar_module::sqlite_statement( new_db, "SELECT child_ct FROM lti WHERE id=?" );
+	add( act_lti_child_ct_get );
+
+	act_lti_child_ct_set = new soar_module::sqlite_statement( new_db, "UPDATE lti SET child_ct=? WHERE id=?" );
+	add( act_lti_child_ct_set );
+
+	act_lti_set = new soar_module::sqlite_statement( new_db, "UPDATE lti SET act_cycle=? WHERE id=?" );
+	add( act_lti_set );
+
+	act_lti_get = new soar_module::sqlite_statement( new_db, "SELECT act_cycle FROM lti WHERE id=?" );
+	add( act_lti_get );
 
 	//
 
@@ -943,11 +959,26 @@ inline void smem_lti_activate( agent *my_agent, smem_lti_id lti )
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->act->start();
 	////////////////////////////////////////////////////////////////////////////
-	
-	// cycle=? WHERE lti=?
-	my_agent->smem_stmts->act_set->bind_int( 1, ( my_agent->smem_max_cycle++ ) );
-	my_agent->smem_stmts->act_set->bind_int( 2, lti );
-	my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+
+	my_agent->smem_stmts->act_lti_child_ct_get->bind_int( 1, lti );
+	my_agent->smem_stmts->act_lti_child_ct_get->execute();
+
+	if ( my_agent->smem_stmts->act_lti_child_ct_get->column_int( 0 ) >= my_agent->smem_params->thresh->get_value() )
+	{
+		// cycle=? WHERE lti=?
+		my_agent->smem_stmts->act_lti_set->bind_int( 1, ( my_agent->smem_max_cycle++ ) );
+		my_agent->smem_stmts->act_lti_set->bind_int( 2, lti );
+		my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
+	}
+	else
+	{
+		// cycle=? WHERE lti=?
+		my_agent->smem_stmts->act_set->bind_int( 1, ( my_agent->smem_max_cycle++ ) );
+		my_agent->smem_stmts->act_set->bind_int( 2, lti );
+		my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+	}
+
+	my_agent->smem_stmts->act_lti_child_ct_get->reinitialize();
 
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->act->stop();
@@ -984,6 +1015,8 @@ inline smem_lti_id smem_lti_add_id( agent *my_agent, char name_letter, uint64_t 
 	// create lti: letter, number
 	my_agent->smem_stmts->lti_add->bind_int( 1, static_cast<uintptr_t>( name_letter ) );
 	my_agent->smem_stmts->lti_add->bind_int( 2, static_cast<uintptr_t>( name_number ) );
+	my_agent->smem_stmts->lti_add->bind_int( 3, static_cast<uintptr_t>( 0 ) );
+	my_agent->smem_stmts->lti_add->bind_int( 4, static_cast<uintptr_t>( 0 ) );
 	my_agent->smem_stmts->lti_add->execute( soar_module::op_reinit );
 
 	return_val = static_cast<smem_lti_id>( my_agent->smem_db->last_insert_rowid() );
@@ -1166,11 +1199,56 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 	intptr_t stat_adjust = 0;
 
 	intptr_t next_act_cycle = ( my_agent->smem_max_cycle++ );
-
+	
 	// clear web, adjust counts
+	unsigned long child_ct = 0;
 	if ( remove_old_children )
 	{
 		smem_disconnect_chunk( my_agent, parent_id );
+	}
+	else
+	{
+		my_agent->smem_stmts->act_lti_child_ct_get->bind_int( 1, parent_id );
+		my_agent->smem_stmts->act_lti_child_ct_get->execute();
+
+		child_ct = static_cast<unsigned long>( my_agent->smem_stmts->act_lti_child_ct_get->column_int(0) );
+
+		my_agent->smem_stmts->act_lti_child_ct_get->reinitialize();
+	}
+
+	// already above threshold?
+	unsigned long thresh = static_cast<unsigned long>( my_agent->smem_params->thresh->get_value() );
+	bool before_above = ( child_ct >= thresh );
+
+	// get final count
+	{
+		for ( s=children->begin(); s!=children->end(); s++ )
+		{
+			for ( v=s->second->begin(); v!=s->second->end(); v++ )
+			{
+				child_ct++;
+			}
+		}
+	}
+
+	// above threshold now?
+	bool after_above = ( child_ct >= thresh );
+	intptr_t web_act_cycle = ( ( after_above )?( SMEM_ACT_MAX ):( next_act_cycle ) );
+
+	// if didn't clear and wasn't already above, need to update kids
+	if ( ( !remove_old_children ) && ( !before_above ) )
+	{
+		my_agent->smem_stmts->act_set->bind_int( 1, web_act_cycle );
+		my_agent->smem_stmts->act_set->bind_int( 2, parent_id );
+		my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+	}
+
+	// if above threshold, update parent activation
+	if ( after_above )
+	{
+		my_agent->smem_stmts->act_lti_set->bind_int( 1, next_act_cycle );
+		my_agent->smem_stmts->act_lti_set->bind_int( 2, parent_id );
+		my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
 	}
 
 	// for all slots
@@ -1183,7 +1261,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 
 		// for all values in the slot
 		for ( v=s->second->begin(); v!=s->second->end(); v++ )
-		{
+		{			
 			// most handling is specific to constant vs. identifier
 			if ( (*v)->val_const.val_type == value_const_t )
 			{
@@ -1194,7 +1272,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 				my_agent->smem_stmts->web_add->bind_int( 2, attr_hash );
 				my_agent->smem_stmts->web_add->bind_int( 3, value_hash );
 				my_agent->smem_stmts->web_add->bind_null( 4 );
-				my_agent->smem_stmts->web_add->bind_int( 5, next_act_cycle );
+				my_agent->smem_stmts->web_add->bind_int( 5, web_act_cycle );
 				my_agent->smem_stmts->web_add->execute( soar_module::op_reinit );
 
 				const_ct_adjust[ attr_hash ][ value_hash ]++;
@@ -1221,7 +1299,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 				my_agent->smem_stmts->web_add->bind_int( 2, attr_hash );
 				my_agent->smem_stmts->web_add->bind_null( 3 );
 				my_agent->smem_stmts->web_add->bind_int( 4, value_lti );
-				my_agent->smem_stmts->web_add->bind_int( 5, next_act_cycle );
+				my_agent->smem_stmts->web_add->bind_int( 5, web_act_cycle );
 				my_agent->smem_stmts->web_add->execute( soar_module::op_reinit );
 
 				// add to counts
@@ -1296,6 +1374,13 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 				my_agent->smem_stmts->ct_lti_update->execute( soar_module::op_reinit );
 			}
 		}
+	}
+
+	// update child count
+	{
+		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 1, child_ct );
+		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 2, parent_id );
+		my_agent->smem_stmts->act_lti_child_ct_set->execute( soar_module::op_reinit );
 	}
 }
 
@@ -1667,47 +1752,90 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 			q->bind_int( 1, (*first_element)->attr_hash );
 		}
 
-		// outer loop is the first element, ONE AT A TIME
-		while ( ( king_id == NIL ) && ( q->execute() == soar_module::row ) )
+		if ( q->execute() == soar_module::row )
 		{
-			cand = q->column_int( 0 );
+			smem_prioritized_activated_lti_queue plentiful_parents;
+			bool more_rows = true;
+			bool use_db = false;
 
-			// if not prohibited, submit to the remaining cue elements
-			prohibit_p = prohibit->find( cand );
-			if ( prohibit_p == prohibit->end() )
+			while ( more_rows && ( q->column_int( 1 ) == SMEM_ACT_MAX ) )
 			{
-				good_cand = true;
+				my_agent->smem_stmts->act_lti_get->bind_int( 1, q->column_int( 0 ) );
+				my_agent->smem_stmts->act_lti_get->execute();				
+				plentiful_parents.push( std::make_pair< intptr_t, smem_lti_id >( my_agent->smem_stmts->act_lti_get->column_int( 0 ), q->column_int( 0 ) ) );
+				my_agent->smem_stmts->act_lti_get->reinitialize();
 
-				for ( next_element=second_element; ( ( good_cand ) && ( next_element!=weighted_cue.end() ) ); next_element++ )
-				{
-					if ( (*next_element)->element_type == attr_t )
+				more_rows = ( q->execute() == soar_module::row );
+			}
+
+			while ( ( king_id == NIL ) && ( ( more_rows ) || ( !plentiful_parents.empty() ) ) )
+			{
+				// choose next candidate (db vs. priority queue)
+				{				
+					use_db = false;
+					
+					if ( !more_rows )
 					{
-						// parent=? AND attr=?
-						q2 = my_agent->smem_stmts->web_attr_child;
+						use_db = false;
 					}
-					else if ( (*next_element)->element_type == value_const_t )
+					else if ( plentiful_parents.empty() )
 					{
-						// parent=? AND attr=? AND val_const=?
-						q2 = my_agent->smem_stmts->web_const_child;
-						q2->bind_int( 3, (*next_element)->value_hash );
+						use_db = true;
 					}
-					else if ( (*next_element)->element_type == value_lti_t )
+					else
 					{
-						// parent=? AND attr=? AND val_lti=?
-						q2 = my_agent->smem_stmts->web_lti_child;
-						q2->bind_int( 3, (*next_element)->value_lti );
+						use_db = ( q->column_int( 1 ) >  plentiful_parents.top().first );						
 					}
 
-					// all require own id, attribute
-					q2->bind_int( 1, cand );
-					q2->bind_int( 2, (*next_element)->attr_hash );
-
-					good_cand = ( q2->execute( soar_module::op_reinit ) == soar_module::row );
+					if ( use_db )
+					{
+						cand = q->column_int( 0 );
+						more_rows = ( q->execute() == soar_module::row );
+					}
+					else
+					{
+						cand = plentiful_parents.top().second;
+						plentiful_parents.pop();
+					}
 				}
 
-				if ( good_cand )
+				// if not prohibited, submit to the remaining cue elements
+				prohibit_p = prohibit->find( cand );
+				if ( prohibit_p == prohibit->end() )
 				{
-					king_id = cand;
+					good_cand = true;
+
+					for ( next_element=second_element; ( ( good_cand ) && ( next_element!=weighted_cue.end() ) ); next_element++ )
+					{
+						if ( (*next_element)->element_type == attr_t )
+						{
+							// parent=? AND attr=?
+							q2 = my_agent->smem_stmts->web_attr_child;
+						}
+						else if ( (*next_element)->element_type == value_const_t )
+						{
+							// parent=? AND attr=? AND val_const=?
+							q2 = my_agent->smem_stmts->web_const_child;
+							q2->bind_int( 3, (*next_element)->value_hash );
+						}
+						else if ( (*next_element)->element_type == value_lti_t )
+						{
+							// parent=? AND attr=? AND val_lti=?
+							q2 = my_agent->smem_stmts->web_lti_child;
+							q2->bind_int( 3, (*next_element)->value_lti );
+						}
+
+						// all require own id, attribute
+						q2->bind_int( 1, cand );
+						q2->bind_int( 2, (*next_element)->attr_hash );
+
+						good_cand = ( q2->execute( soar_module::op_reinit ) == soar_module::row );
+					}
+
+					if ( good_cand )
+					{
+						king_id = cand;
+					}
 				}
 			}
 		}
@@ -1934,6 +2062,16 @@ void smem_init_db( agent *my_agent, bool readonly = false )
 
 			{
 				intptr_t temp;
+
+				// threshold
+				if ( smem_variable_get( my_agent, var_act_thresh, &( temp ) ) )
+				{
+					my_agent->smem_params->thresh->set_value( static_cast<long>( temp ) );
+				}
+				else
+				{
+					smem_variable_set( my_agent, var_act_thresh, static_cast<intptr_t>( my_agent->smem_params->thresh->get_value() ) );
+				}
 
 				// nodes
 				if ( smem_variable_get( my_agent, var_num_nodes, &( temp ) ) )

@@ -58,6 +58,8 @@ class smem_param_container: public soar_module::param_container
 		soar_module::constant_param<cache_choices> *cache;
 		soar_module::constant_param<opt_choices> *opt;
 
+		soar_module::integer_param *thresh;
+
 		smem_param_container( agent *new_agent );
 };
 
@@ -210,6 +212,10 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *ct_lti_get;
 
 		soar_module::sqlite_statement *act_set;
+		soar_module::sqlite_statement *act_lti_child_ct_set;
+		soar_module::sqlite_statement *act_lti_child_ct_get;
+		soar_module::sqlite_statement *act_lti_set;
+		soar_module::sqlite_statement *act_lti_get;
 
 		soar_module::sqlite_statement *vis_lti;
 		soar_module::sqlite_statement *vis_value_const;
@@ -225,8 +231,10 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 
 enum smem_variable_key
 {
-	var_max_cycle, var_num_nodes, var_num_edges
+	var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh
 };
+
+#define SMEM_ACT_MAX static_cast<uintptr_t>( static_cast<uintptr_t>( 0 - 1 ) / static_cast<uintptr_t>(2) )
 
 #define SMEM_LTI_UNKNOWN_LEVEL 0
 
@@ -291,6 +299,18 @@ struct smem_compare_weighted_cue_elements
 
 typedef std::priority_queue<smem_weighted_cue_element *, std::vector<smem_weighted_cue_element *>, smem_compare_weighted_cue_elements> smem_prioritized_weighted_cue;
 typedef std::list<smem_weighted_cue_element *> smem_weighted_cue_list;
+
+typedef std::pair< intptr_t, smem_lti_id > smem_activated_lti;
+
+struct smem_compare_activated_lti
+{
+	bool operator() ( const smem_activated_lti a, const smem_activated_lti b ) const
+	{
+		return ( b.first > a.first );
+	}
+};
+
+typedef std::priority_queue< smem_activated_lti, std::vector<smem_activated_lti>, smem_compare_activated_lti> smem_prioritized_activated_lti_queue;
 
 //
 
