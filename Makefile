@@ -4,6 +4,9 @@ all:
 noscu:
 	cd Core && scons --no-scu
 
+static:
+	cd Core && scons --static
+
 up: update
 update:
 	find . -not -name ".*" -type d -depth 1 -exec echo {} \; -exec svn update {} \;
@@ -13,12 +16,17 @@ status:
 
 clean:
 	cd Core && scons -c
+	cd Core && scons --static -c
 
 co: checkout
 checkout:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Core
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Java
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Python
+
+co-core: checkout-core
+checkout-core:
+	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Core
 
 co-filterc: checkout-filterc
 checkout-filterc:
