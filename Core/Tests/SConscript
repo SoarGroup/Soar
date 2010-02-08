@@ -15,6 +15,9 @@ env.Prepend(CPPPATH = [
 	])
 
 libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML' ]
+if env['STATIC_LINKED']:
+	libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3' ]
+
 if sys.platform == "darwin":
 	if env['PLATFORM'] == '64':
 		libadd.append('cppunit-osx-64')

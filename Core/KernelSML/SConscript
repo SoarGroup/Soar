@@ -5,12 +5,20 @@ env = env.Clone()
 
 env.Prepend(CPPPATH = ['src', '#SoarKernel/src', '#CLI/src', '#ElementXML/src', '#ConnectionSML/src'])
 
-libadd = ['ElementXML', 'CommandLineInterface', 'ConnectionSML', 'SoarKernel', 'sqlite3']
+libadd = None
+if not env['STATIC_LINKED']:
+	libadd = ['CommandLineInterface', 'ConnectionSML', 'SoarKernel', 'sqlite3']
 
 if env['SCU']:
-	SoarKernelSML = env.SharedLibrary('SoarKernelSML', 'KernelSML.cxx', LIBS = libadd, LIBPATH = '$PREFIX/lib')
+	if env['STATIC_LINKED']:
+		SoarKernelSML = env.Library('SoarKernelSML', 'KernelSML.cxx')
+	else:
+		SoarKernelSML = env.SharedLibrary('SoarKernelSML', 'KernelSML.cxx', LIBS = libadd, LIBPATH = '$PREFIX/lib')
 else:
-	SoarKernelSML = env.SharedLibrary('SoarKernelSML', Glob('src/*.cpp'), LIBS = libadd, LIBPATH = '$PREFIX/lib')
+	if env['STATIC_LINKED']:
+		SoarKernelSML = env.Library('SoarKernelSML', Glob('src/*.cpp'))
+	else:
+		SoarKernelSML = env.SharedLibrary('SoarKernelSML', Glob('src/*.cpp'), LIBS = libadd, LIBPATH = '$PREFIX/lib')
 
 env.Install('$PREFIX/lib', SoarKernelSML)
 

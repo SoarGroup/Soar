@@ -8,6 +8,8 @@ env.Prepend(CPPPATH = [	'#ClientSML/src',
 			'#ConnectionSML/src'])
 
 libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', ]
+if env['STATIC_LINKED']:
+	libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3' ]
 
 env.Append(LIBS = libadd, LIBPATH = '$PREFIX/lib')
 
