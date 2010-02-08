@@ -18,65 +18,97 @@ clean:
 	cd Core && scons -c
 	cd Core && scons --static -c
 
-co: checkout
+public-checkout:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Core
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Java
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Python
+
 checkout:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Core
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Java
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Python
 
-co-core: checkout-core
+public-checkout-core:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Core
+
 checkout-core:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Core
 
-co-filterc: checkout-filterc
+public-checkout-filterc:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/FilterC
+
 checkout-filterc:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/FilterC
 
-co-javamissionaries: checkout-javamissionaries
+public-checkout-javamissionaries:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/JavaMissionaries
+
 checkout-javamissionaries:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/JavaMissionaries
 
-co-javatoh: checkout-javatoh
+public-checkout-javatoh:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/JavaTOH
+
 checkout-javatoh:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/JavaTOH
 
-co-loggerjava: checkout-loggerjava
+public-checkout-loggerjava:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/LoggerJava
+
 checkout-loggerjava:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/LoggerJava
 
-co-quicklink: checkout-quicklink
+public-checkout-quicklink:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/QuickLink
+
 checkout-quicklink:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/QuickLink
 
-co-room: checkout-room
+public-checkout-room:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Room
+
 checkout-room:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Room
 
-co-soar2d: checkout-soar2d
+public-checkout-soar2d:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Soar2D
+
 checkout-soar2d:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Soar2D
 
-co-soar2soar: checkout-soar2soar
+public-checkout-soar2soar:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Soar2Soar
+
 checkout-soar2soar:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Soar2Soar
 
-co-soartextio: checkout-soartextio
+public-checkout-soartextio:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/SoarTextIO
+
 checkout-soartextio:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/SoarTextIO
 
-co-sproom: checkout-sproom
+public-checkout-sproom:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Sproom
+
 checkout-sproom:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Sproom
 
-co-sps: checkout-sps
+public-checkout-sps:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Sps
+
 checkout-sps:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Sps
 
-co-tcl: checkout-tcl
+public-checkout-tcl:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Tcl
+
 checkout-tcl:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Tcl
 
-co-tohsml: checkout-tohsml
+public-checkout-tohsml:
+	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/TOHSML
+
 checkout-tohsml:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/TOHSML
 
