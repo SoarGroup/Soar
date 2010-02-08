@@ -5,6 +5,8 @@ env = env.Clone()
 env.Prepend(CPPPATH = ['#ClientSML/src', '#ElementXML/src', '#ConnectionSML/src'])
 
 libadd = ['ClientSML', 'ConnectionSML', 'ElementXML']
+if env['STATIC_LINKED']:
+	libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3' ]
 
 env.Append(LIBS = libadd, LIBPATH = '$PREFIX/lib')
 TestSoarPerformance = env.Program('TestSoarPerformance', Glob('*.cpp'))

@@ -142,6 +142,12 @@ AddOption('--no-debug-symbols',
 	default=True,
 	help='Don\'t add debugging symbols to binaries.')
 
+AddOption('--static',
+	action='store_true',
+	dest='static',
+	default=False,
+	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl interfaces)')
+
 # Create the environment using the options
 env = Environment(
 	ENV = os.environ, 
@@ -156,6 +162,7 @@ env = Environment(
 	BUILD_DIR = GetOption('build-dir'),
 	PREFIX = GetOption('prefix'),
 	DEBUG_SYMBOLS = GetOption('debug-symbols'),
+	STATIC_LINKED = GetOption('static'),
 	)
 
 ##################
@@ -198,9 +205,14 @@ if sys.platform == "darwin":
 		#conf.env.Append(CPPFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
 		#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
 
+if conf.env['STATIC_LINKED']:
+	print "*** STATIC BUILD: Cannot be used with SWIG interfaces!"
+	print "*** Remove SWIG-based modules (such as Java) to prevent build errors!"
+	conf.env.Append(CPPFLAGS = ' -DSTATIC_LINKED');
+
 # Get g++ Version
 def gcc_version():
-	proc = subprocess.Popen(env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
+	proc = subprocess.Popen(conf.env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
 	proc.wait()
 	version_line = proc.stdout.readline().rsplit('\n', 1)[0]
 	for possible_vs in version_line.split(' '):
