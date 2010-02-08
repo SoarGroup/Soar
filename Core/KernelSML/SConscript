@@ -7,7 +7,7 @@ env.Prepend(CPPPATH = ['src', '#SoarKernel/src', '#CLI/src', '#ElementXML/src', 
 
 libadd = None
 if not env['STATIC_LINKED']:
-	libadd = ['CommandLineInterface', 'ConnectionSML', 'SoarKernel', 'sqlite3']
+	libadd = ['ElementXML', 'CommandLineInterface', 'ConnectionSML', 'SoarKernel', 'sqlite3']
 
 if env['SCU']:
 	if env['STATIC_LINKED']:
