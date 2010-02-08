@@ -6,9 +6,15 @@ env = env.Clone()
 env.Prepend(CPPPATH = ['src',])
 
 if env['SCU']:
-	ElementXML = env.SharedLibrary('ElementXML', 'ElementXML.cxx')
+	if env['STATIC_LINKED']:
+		ElementXML = env.Library('ElementXML', 'ElementXML.cxx')
+	else:
+		ElementXML = env.SharedLibrary('ElementXML', 'ElementXML.cxx')
 else:
-	ElementXML = env.SharedLibrary('ElementXML', Glob('src/*.cpp'))
+	if env['STATIC_LINKED']:
+		ElementXML = env.Library('ElementXML', Glob('src/*.cpp'))
+	else:
+		ElementXML = env.SharedLibrary('ElementXML', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', ElementXML)
 
