@@ -9,10 +9,10 @@ static:
 
 up: update
 update:
-	find . -not -name ".*" -type d -depth 1 -exec echo {} \; -exec svn update {} \;
+	find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn update {} \;
 
 status:
-	find . -not -name ".*" -type d -depth 1 -exec echo {} \; -exec svn status {} \;
+	find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn status {} \;
 
 clean:
 	cd Core && scons -c
