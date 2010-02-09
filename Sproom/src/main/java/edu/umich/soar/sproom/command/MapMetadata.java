@@ -92,9 +92,12 @@ public class MapMetadata {
 			sb.append(" ");
 			sb.append(Arrays.toString(xySize));
 			sb.append(" gateway ids:");
-			for (Gateway gateway : gateways) {
+			for (int i = 0; i < gateways.size(); ++i) {
 				sb.append(" ");
-				sb.append(gateway.id);
+				sb.append(gateways.get(i).id);
+				sb.append("(");
+				sb.append(dirs.get(i).toString().toLowerCase());
+				sb.append(")");
 			}
 			return sb.toString();
 		}
@@ -163,7 +166,7 @@ public class MapMetadata {
 			Area area = new Area(areaMap.size(), door, pos, xySize);
 			areaMap.put(areaNickname, area);
 			
-			logger.debug("adding " + area);
+			logger.trace("initial area add " + area);
 			areaList.add(area);
 		}
 		
@@ -196,6 +199,12 @@ public class MapMetadata {
 			logger.debug("adding " + gateway);
 			gatewayList.add(gateway);
 		}
+		
+		if (logger.isDebugEnabled()) {
+			for (Area area : areaList) {
+				logger.debug("final area: " + area);
+			}
+		}
 	}
 	
 	public Area getArea(double[] pos) {
@@ -216,14 +225,17 @@ public class MapMetadata {
 				continue;
 			}
 
-			pose_t pose = new pose_t();
-			pose.utime = System.nanoTime();
-			pose.pos = new double[] { area.pos[0], area.pos[1], 0 };
-			pose.vel = new double[] { area.xySize[0], area.xySize[1], 0 };
-			lcm.publish("AREA_DESCRIPTIONS", pose);
 			return area;
 		}
 		return null;
+	}
+	
+	public void publish(Area area) {
+		pose_t pose = new pose_t();
+		pose.utime = System.nanoTime();
+		pose.pos = new double[] { area.pos[0], area.pos[1], 0 };
+		pose.vel = new double[] { area.xySize[0], area.xySize[1], 0 };
+		lcm.publish("AREA_DESCRIPTIONS", pose);
 	}
 
 	public static final void main(String[] args) {

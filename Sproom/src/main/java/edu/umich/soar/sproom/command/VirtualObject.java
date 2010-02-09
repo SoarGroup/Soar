@@ -1,6 +1,13 @@
 package edu.umich.soar.sproom.command;
 
+import java.util.Arrays;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public class VirtualObject {
+	private static final Log logger = LogFactory.getLog(VirtualObject.class);
+	
 	public enum Type {
 		BLOCK, BRICK, BALL, PLAYER
 	}
@@ -20,6 +27,17 @@ public class VirtualObject {
 		this.size = new double[3];
 		System.arraycopy(size, 0, this.size, 0, size.length);
 		this.theta = theta;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("VO");
+		sb.append(id);
+		sb.append("/");
+		sb.append(type);
+		sb.append("/");
+		sb.append(Arrays.toString(pos));
+		return sb.toString();
 	}
 	
 	public double[] getPos() {
@@ -48,5 +66,8 @@ public class VirtualObject {
 
 	public void setPos(double[] pos) {
 		System.arraycopy(pos, 0, this.pos, 0, pos.length);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Updated position: " + toString());
+		}
 	}
 }
