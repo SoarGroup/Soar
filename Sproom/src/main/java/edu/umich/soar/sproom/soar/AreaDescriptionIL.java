@@ -46,53 +46,58 @@ public class AreaDescriptionIL implements InputLinkElement {
 		}
 		
 		Area area = metadata.getArea(pose.pos);
-		if (area != null && !area.equals(lastArea)) {
-			logger.debug("new area data: " + area);
-			lastArea = area;
+		
+		if (area != null) {
+			metadata.publish(area);
 			
-			// new area data
-			for (Identifier old : oldGatewaysWalls) {
-				old.DestroyWME();
-			}
-			oldGatewaysWalls.clear();
-			pointDataList.clear();
-			
-			idwme.update(area.getId());
-			typewme.update(area.isDoor() ? SharedNames.DOOR : SharedNames.ROOM);
-			
-			// gateways
-			for (int i = 0; i < 2; ++i) {
-				Gateway gateway = area.getGateways().get(i);
-				String dir = area.getDirs().get(i).toString().toLowerCase();
+			if (!area.equals(lastArea)) {
+				logger.debug("new area data: " + area);
+				lastArea = area;
 				
-				Identifier gatewaywme = root.CreateIdWME(SharedNames.GATEWAY);
-				StringWme.newInstance(gatewaywme, SharedNames.DIRECTION, dir.toString().toLowerCase());
-
-				IntWme.newInstance(gatewaywme, SharedNames.ID, gateway.getId());
-				for (Area to : gateway.getTo()) {
-					IntWme.newInstance(gatewaywme, SharedNames.TO, to.getId());
+				// new area data
+				for (Identifier old : oldGatewaysWalls) {
+					old.DestroyWME();
 				}
-				PointDataIL pointData = new PointDataIL(gatewaywme, gateway.getPos());
-				pointDataList.add(pointData);
-				oldGatewaysWalls.add(gatewaywme);
-			}
-			
-			// walls
-			for (WallDir dir : WallDir.values()) {
-				Identifier wallwme = root.CreateIdWME(SharedNames.WALL);
-				StringWme.newInstance(wallwme, SharedNames.DIRECTION, dir.toString().toLowerCase());
+				oldGatewaysWalls.clear();
+				pointDataList.clear();
 				
-				PointDataIL pointData = new PointDataIL(wallwme, area.getWalls().getPos(dir));
-				pointDataList.add(pointData);
-				oldGatewaysWalls.add(wallwme);
+				idwme.update(area.getId());
+				typewme.update(area.isDoor() ? SharedNames.DOOR : SharedNames.ROOM);
+				
+				// gateways
+				for (int i = 0; i < area.getGateways().size(); ++i) {
+					Gateway gateway = area.getGateways().get(i);
+					String dir = area.getDirs().get(i).toString().toLowerCase();
+					
+					Identifier gatewaywme = root.CreateIdWME(SharedNames.GATEWAY);
+					StringWme.newInstance(gatewaywme, SharedNames.DIRECTION, dir.toString().toLowerCase());
+
+					IntWme.newInstance(gatewaywme, SharedNames.ID, gateway.getId());
+					for (Area to : gateway.getTo()) {
+						IntWme.newInstance(gatewaywme, SharedNames.TO, to.getId());
+					}
+					PointDataIL pointData = new PointDataIL(gatewaywme, gateway.getPos());
+					pointDataList.add(pointData);
+					oldGatewaysWalls.add(gatewaywme);
+				}
+				
+				// walls
+				for (WallDir dir : WallDir.values()) {
+					Identifier wallwme = root.CreateIdWME(SharedNames.WALL);
+					StringWme.newInstance(wallwme, SharedNames.DIRECTION, dir.toString().toLowerCase());
+					
+					PointDataIL pointData = new PointDataIL(wallwme, area.getWalls().getPos(dir));
+					pointDataList.add(pointData);
+					oldGatewaysWalls.add(wallwme);
+				}
 			}
 		}
-
+		
 		for (PointDataIL pointData : pointDataList) {
 			pointData.update(app);
 		}
 	}
-
+	
 	@Override
 	public void destroy() {
 		this.root.DestroyWME();

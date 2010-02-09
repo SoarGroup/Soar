@@ -10,6 +10,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import lcm.lcm.LCM;
 import lcmtypes.sim_obstacles_t;
 
@@ -18,6 +21,7 @@ import edu.umich.soar.sproom.command.VirtualObject.Type;
 import april.config.Config;
 
 public class VirtualObjects implements Iterable<VirtualObject> {
+	private static final Log logger = LogFactory.getLog(VirtualObjects.class);
 
 	private final Map<Integer, VirtualObject> objs = new ConcurrentHashMap<Integer, VirtualObject>();
 	private ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
@@ -60,12 +64,14 @@ public class VirtualObjects implements Iterable<VirtualObject> {
 	
 	public VirtualObject createObject(Type type, double[] pos, double[] size, double theta) {
 		VirtualObject object = new VirtualObject(type, pos, size, theta);
+		logger.trace("Created object " + object);
 		addObject(object);
 		return object;
 	}
 	
 	public void addObject(VirtualObject object) {
 		objs.put(object.getId(), object);
+		logger.trace(String.format("Added object %d, count %d", object.getId(), objs.size()));
 	}
 	
 	public VirtualObject getObject(int id) {
@@ -73,6 +79,13 @@ public class VirtualObjects implements Iterable<VirtualObject> {
 	}
 	
 	public VirtualObject removeObject(int id) {
+		if (logger.isTraceEnabled()) {
+			if (objs.containsKey(id)) {
+				logger.trace(String.format("Removed object %d, count %d", id, objs.size() - 1));
+			} else {
+				logger.trace(String.format("No such object " + id));
+			}
+		}
 		return objs.remove(id);
 	}
 	
