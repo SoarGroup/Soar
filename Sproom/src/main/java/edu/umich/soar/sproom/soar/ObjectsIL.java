@@ -12,6 +12,7 @@ import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
+import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.command.VirtualObject;
 import edu.umich.soar.sproom.command.VirtualObjects;
@@ -27,18 +28,18 @@ public class ObjectsIL implements InputLinkElement {
 		Identifier objectwme;
 		long invisibleTimestamp = 0;
 		StringWme visible;
-		final int id;
+		final VirtualObject vo;
 		
 		ObjectIL(Identifier objectwme, VirtualObject vo) {
 			this.objectwme = objectwme;
 			pointData = new PointDataIL(objectwme, vo.getPos());
 			
 			StringWme.newInstance(objectwme, SharedNames.TYPE, vo.getType().toString().toLowerCase());
-			id = vo.getId();
-			IntWme.newInstance(objectwme, SharedNames.ID, id);
+			this.vo = vo;
+			IntWme.newInstance(objectwme, SharedNames.ID, vo.getId());
 			visible = StringWme.newInstance(objectwme, SharedNames.VISIBLE, SharedNames.TRUE);
 			if (logger.isTraceEnabled()) {
-				logger.trace("Object " + id + " created.");
+				logger.trace("Object " + vo + " created.");
 			}
 		}
 		
@@ -56,7 +57,7 @@ public class ObjectsIL implements InputLinkElement {
 					visible.update(SharedNames.FALSE);
 					
 					if (logger.isTraceEnabled()) {
-						logger.trace("Object " + id + " went invisible.");
+						logger.trace("Object " + vo + " went invisible.");
 					}
 				}
 			} else {
@@ -64,7 +65,7 @@ public class ObjectsIL implements InputLinkElement {
 					invisibleTimestamp = 0;
 					visible.update(SharedNames.TRUE);
 					if (logger.isTraceEnabled()) {
-						logger.trace("Object " + id + " went visible.");
+						logger.trace("Object " + vo + " went visible.");
 					}
 				}
 			}
@@ -76,7 +77,7 @@ public class ObjectsIL implements InputLinkElement {
 					objectwme = null;
 					if (logger.isTraceEnabled()) {
 						double secondsOld = (System.nanoTime() - invisibleTimestamp) / 1000000000.0;
-						logger.trace("Object " + id + " went invalid (" + secondsOld + " sec).");
+						logger.trace("Object " + vo + " went invalid (" + secondsOld + " sec).");
 					}
 				}
 			}
@@ -105,6 +106,7 @@ public class ObjectsIL implements InputLinkElement {
 	public void update(Adaptable app) {
 		VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
 		Map<VirtualObject, ObjectIL> newObjMap = new HashMap<VirtualObject, ObjectIL>();
+		MapMetadata meta = (MapMetadata)app.getAdapter(MapMetadata.class);
 		
 		Pose pose = (Pose)app.getAdapter(Pose.class);
 
@@ -114,6 +116,12 @@ public class ObjectsIL implements InputLinkElement {
 			// retrieve or create input link representation of object
 			ObjectIL oil = objMap.remove(vo);
 			if (oil == null) {
+				MapMetadata.Area myArea = meta.getArea(pose.getPose().pos);
+				MapMetadata.Area voArea = meta.getArea(vo.getPos());
+				if (myArea != null && voArea != null && !myArea.equals(voArea)) {
+					continue;
+				}
+				
 				RelativePointData rpd = pose.getRelativePointData(vo.getPos());
 				if (!isVisible(rpd.relativeYaw)) {
 					continue;

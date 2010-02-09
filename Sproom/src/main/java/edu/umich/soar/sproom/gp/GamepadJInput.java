@@ -18,6 +18,7 @@ import net.java.games.input.ControllerListener;
 
 public class GamepadJInput {
 	private static final Log logger = LogFactory.getLog(GamepadJInput.class);
+	private static final float DEAD_ZONE = 0.15f;
 
 	private static class HandlerData {
 		HandlerData(Id id, Component component) {
@@ -65,7 +66,8 @@ public class GamepadJInput {
 				logger.trace(String.format("r%2.2f p%2.2f", range, pct));
 			}
 			
-			return pct * 2.0f - 1.0f;
+			float value = pct * 2.0f - 1.0f;
+			return Math.abs(value) <= DEAD_ZONE ? 0 : value;
 		}
 		
 		@Override
