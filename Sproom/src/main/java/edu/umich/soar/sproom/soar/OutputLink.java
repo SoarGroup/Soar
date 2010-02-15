@@ -1,8 +1,7 @@
 package edu.umich.soar.sproom.soar;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -14,13 +13,14 @@ import edu.umich.soar.sproom.drive.DriveCommand;
 import edu.umich.soar.sproom.soar.commands.OutputLinkCommand;
 
 import sml.Agent;
-import sml.Identifier;
+import sml.WMElement;
+import sml.Agent.OutputNotificationInterface;
 
 class OutputLink {
 	private static final Log logger = LogFactory.getLog(OutputLink.class);
 	
 	private final Agent agent;
-	private final Map<Integer, OutputLinkCommand> seenCommands = new HashMap<Integer, OutputLinkCommand>();
+	private final Map<Integer, OutputLinkCommand> commands = new HashMap<Integer, OutputLinkCommand>();
 	private DriveCommand driveCommand;
 	private final Adaptable app;
 	
@@ -31,6 +31,49 @@ class OutputLink {
 	private OutputLink(Adaptable app) {
 		this.app = app;
 		this.agent = (Agent)app.getAdapter(Agent.class);
+		
+		agent.RegisterForOutputNotification(new OutputNotificationInterface() {
+			@Override
+			public void outputNotificationHandler(Object data, Agent agent) {
+
+				// invalidate any removals
+				for (int i = 0; i < agent.GetNumberOutputLinkChanges(); ++i) {
+					if (agent.IsOutputLinkChangeAdd(i) == false) {
+						WMElement wme = agent.GetOutputLinkChange(i);
+						OutputLinkCommand command = commands.get(wme.GetTimeTag());
+						if (command != null) {
+							logger.debug("Invalidating " + command);
+							command.invalidateWme();
+						}
+					}
+				}
+				
+				// add new commands
+				for (int i = 0; i < agent.GetNumberCommands(); ++i) {
+					OutputLinkCommand command = OutputLinkCommand.valueOf(agent.GetCommand(i));
+					if (command == null) {
+						continue;
+					}
+
+					commands.put(command.getTimeTag(), command);
+					
+					if (logger.isDebugEnabled())
+						logger.debug("Accepted: " + command);
+				}
+				
+				// remove terminated commands
+				Iterator<Map.Entry<Integer, OutputLinkCommand>> iter = commands.entrySet().iterator();
+				while (iter.hasNext()) {
+					Map.Entry<Integer, OutputLinkCommand> entry = iter.next();
+					if (entry.getValue().isTerminated()) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Removing " + entry.getValue());
+						}
+						iter.remove();
+					}
+				}
+			}
+		}, null);
 	}
 	
 	class OutputLinkActions {
@@ -42,60 +85,41 @@ class OutputLink {
 	}
 	
 	OutputLinkActions update() {
-		// TODO: synchronization
-
-		List<Integer> currentTimeTags = new ArrayList<Integer>(agent.GetNumberCommands());
-		
-		for (int i = 0; i < agent.GetNumberCommands(); ++i) {
-			Identifier commandWme = agent.GetCommand(i);
-			
-			Integer tt = Integer.valueOf(commandWme.GetTimeTag());
-			currentTimeTags.add(tt);
-			
-			if (logger.isTraceEnabled()) {
-				logger.trace(commandWme.GetAttribute() + ": " + tt);
-			}
-			
-			if (seenCommands.containsKey(tt)) {
-				logger.trace("seen");
-				continue;
-			}
-			
-			// haven't seen it, make it and store it
-			OutputLinkCommand command = OutputLinkCommand.valueOf(commandWme);
-			
-			// valid commands are status-accepted at this point
-			logger.debug("Processed: " + command);
-			seenCommands.put(tt, command);
-		}
-		
-		// forget commands no longer on the input link
-		seenCommands.keySet().retainAll(currentTimeTags);
+		logger.trace("Update");
 		
 		// update current commands
 		OutputLinkActions actions = new OutputLinkActions();
-		for (OutputLinkCommand command : seenCommands.values()) {
-			logger.trace("Updating " + command.getName());
+		for (OutputLinkCommand command : commands.values()) {
+			
+			if (command.isTerminated()) {
+				continue;
+			}
+			
+			if (logger.isTraceEnabled())
+				logger.trace("Updating " + command);
 			command.update(app);
 			
 			if (command instanceof DriveCommand) {
-				// If there was no drive command or if it is a different drive command
-				if (driveCommand == null || !driveCommand.equals(command)) {
 
-					// interrupt the current drive command
+				if (!command.equals(driveCommand)) {
 					if (driveCommand != null) {
-						logger.trace("Interrupting " + driveCommand.getTimeTag());
+						if (logger.isDebugEnabled())
+							logger.debug("Interrupting " + driveCommand);
 						driveCommand.interrupt();
 					}
 					
-					// Set the new ddc
 					driveCommand = (DriveCommand)command;
-					actions.ddc = driveCommand.getDDC();
+					if (logger.isDebugEnabled())
+						logger.debug("New drive command: " + driveCommand);
 				}
+
+				// Set the new ddc
+				actions.ddc = driveCommand.getDDC();
 			}
 		}
 		
 		agent.ClearOutputLinkChanges();
+		logger.trace("Update done");
 		
 		return actions;
 	}

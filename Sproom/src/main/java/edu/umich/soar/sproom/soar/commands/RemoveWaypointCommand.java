@@ -24,37 +24,29 @@ public class RemoveWaypointCommand extends OutputLinkCommand {
 
 	private final Identifier wme;
 	private String id;
-	private boolean complete;
 
 	public RemoveWaypointCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		String id = wme.GetParameterValue(ID);
 		if (id == null) {
 			return new InvalidCommand(wme, "No " + ID);
 		}
 		
 		logger.debug(id);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 	
 	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
-			waypoints.removeWaypoint(id);
-			CommandStatus.complete.addStatus(wme);
-			complete = true;
-		}
+		Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
+		waypoints.removeWaypoint(id);
+		addStatus(CommandStatus.COMPLETE);
 	}
 
-	@Override
-	public String getName() {
-		return NAME;
-	}
 }

@@ -14,10 +14,10 @@ import sml.Identifier;
 import sml.StringElement;
 
 public abstract class OutputLinkCommand {
+	private static final Log logger = LogFactory.getLog(OutputLinkCommand.class);
 	private final static Map<String, Class<? extends OutputLinkCommand>> commands = new HashMap<String, Class<? extends OutputLinkCommand>>();
 	
 	static {
-		// TODO: use reflection to load commands
 		commands.put(EStopCommand.NAME, EStopCommand.class);
 		commands.put(StopCommand.NAME, StopCommand.class);
 		commands.put(MotorCommand.NAME, MotorCommand.class);
@@ -37,12 +37,14 @@ public abstract class OutputLinkCommand {
 		commands.put(SendMessageCommand.NAME, SendMessageCommand.class);
 		commands.put(RemoveMessageCommand.NAME, RemoveMessageCommand.class);
 		commands.put(ClearMessagesCommand.NAME, ClearMessagesCommand.class);
+		
+		commands.put(GetObjectCommand.NAME, GetObjectCommand.class);
+		commands.put(DropObjectCommand.NAME, DropObjectCommand.class);
 	}
 	
 	public static OutputLinkCommand valueOf(Identifier wme) {
 		String name = wme.GetAttribute();
 		
-		// TODO: profile: a prototype pattern might be a better option
 		Class<? extends OutputLinkCommand> klass = commands.get(name);
 		if (klass != null) {
 			try {
@@ -51,67 +53,79 @@ public abstract class OutputLinkCommand {
 				return command.accept();
 				
 			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-				return new InvalidCommand(wme, e.getClass().toString());
+				logger.error(e.getMessage());
+				return null;
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-				return new InvalidCommand(wme, e.getClass().toString());
+				logger.error(e.getMessage());
+				return null;
 			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-				return new InvalidCommand(wme, e.getClass().toString());
+				logger.error(e.getMessage());
+				return null;
 			} catch (InstantiationException e) {
-				e.printStackTrace();
-				return new InvalidCommand(wme, e.getClass().toString());
+				logger.error(e.getMessage());
+				return null;
 			}
 		}
 		
-		return new InvalidCommand(wme, "No such command.");
+		logger.warn("No such command: " + name);
+		return null;
 	}
 
 	protected enum CommandStatus {
-		accepted,  // TODO capitalize
-		executing,
-		complete,
-		error,
-		interrupted;
+		ACCEPTED,
+		EXECUTING,
+		COMPLETE,
+		ERROR,
+		INTERRUPTED;
 		
 		private static final Log logger = LogFactory.getLog(CommandStatus.class);
 		private static final String STATUS = "status";
 		
-		public StringElement addStatus(Identifier command) {
-			return command.CreateStringWME(STATUS, this.toString());
+		private StringElement addStatus(Identifier command) {
+			return command.CreateStringWME(STATUS, this.toString().toLowerCase());
 		}
 		
-		public StringElement addStatus(Identifier command, String message) {
-			logger.info("Command message: " + message);
+		private StringElement addStatus(Identifier command, String message) {
+			if (this.equals(ERROR)) {
+				logger.warn(command.GetAttribute() + " message: " + message);
+			} else {
+				logger.info(command.GetAttribute() + " message: " + message);
+			}
 			command.CreateStringWME("message", message);
-			return command.CreateStringWME(STATUS, this.toString());
+			return command.CreateStringWME(STATUS, this.toString().toLowerCase());
 		}
 		
-		public boolean isTerminated() {
-			return this.equals(complete) || this.equals(interrupted) || this.equals(error);
+		private boolean isTerminated() {
+			return this.equals(COMPLETE) || this.equals(INTERRUPTED) || this.equals(ERROR);
 		}
 	}
 
-	private final Integer tt;
+	private Identifier wme;
+	private final String name;
+	private final int tt;
+	private CommandStatus status;
 
-	protected OutputLinkCommand(Integer tt) {
-		this.tt = tt;
+	protected OutputLinkCommand(Identifier commandwme) {
+		this.wme = commandwme;
+		
+		// cache these so they are accessable after the wme is invalid
+		this.name = commandwme.GetAttribute();
+		this.tt = commandwme.GetTimeTag();
+	}
+	
+	public void invalidateWme() {
+		wme = null;
 	}
 	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("(");
-		sb.append(getName());
+		sb.append(name);
 		sb.append(": ");
 		sb.append(tt);
 		sb.append(")");
 		return sb.toString();
 	}
-	
-	public abstract String getName();
-	public abstract OutputLinkCommand accept();
-	public abstract void update(Adaptable app);
 	
 	public Integer getTimeTag() {
 		return tt;
@@ -121,13 +135,62 @@ public abstract class OutputLinkCommand {
 	public boolean equals(Object obj) {
 		if (obj instanceof OutputLinkCommand) {
 			OutputLinkCommand olc = (OutputLinkCommand)obj;
-			return tt.equals(olc.tt);
+			return tt == olc.tt;
 		}
 		return super.equals(obj);
 	}
 
 	@Override
 	public int hashCode() {
-		return tt.hashCode();
+		return Integer.valueOf(tt).hashCode();
 	}
+
+	protected void addStatus(CommandStatus status) {
+		addStatus(status, null);
+	}
+	
+	protected void addStatus(CommandStatus status, String message) {
+		if (this.status != status) {
+			this.status = status;
+			
+			if (wme != null) {
+				if (message == null) {
+					status.addStatus(wme);
+				} else {
+					status.addStatus(wme, message);
+				}
+
+				if (isTerminated()) {
+					wme = null;
+				}
+			}
+			
+			if (logger.isDebugEnabled() || status == CommandStatus.ERROR) {
+				String msg;
+				if (message == null) {
+					msg = String.format("%s (%d): %s", name, tt, status.toString());
+				} else {
+					msg = String.format("%s (%d): %s: %s", name, tt, status.toString(), message);
+				}
+
+				if (status != CommandStatus.ERROR) {
+					logger.debug(msg);
+				} else {
+					logger.warn(msg);
+				}
+			}
+		}
+	}
+	
+	protected boolean isComplete() {
+		return status == CommandStatus.COMPLETE;
+	}
+	
+	public boolean isTerminated() {
+		return status == null || status.isTerminated();
+	}
+
+	protected abstract OutputLinkCommand accept();
+	public abstract void update(Adaptable app);
+	
 }
