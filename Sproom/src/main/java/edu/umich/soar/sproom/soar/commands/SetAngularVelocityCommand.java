@@ -27,25 +27,19 @@ public class SetAngularVelocityCommand extends OutputLinkCommand implements Driv
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
-	private CommandStatus status = CommandStatus.accepted;
 
 	public SetAngularVelocityCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
-	@Override
-	public String getName() {
-		return NAME;
-	}
-	
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return ddc;
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		double angularVelocity;
 		try {
 			angularVelocity = Double.parseDouble(wme.GetParameterValue(ANGVEL));
@@ -58,25 +52,17 @@ public class SetAngularVelocityCommand extends OutputLinkCommand implements Driv
 
 		ddc = DifferentialDriveCommand.newAngularVelocityCommand(angularVelocity);
 		logger.debug(ddc);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 	
 	@Override
 	public void update(Adaptable app) {
-		if (!status.isTerminated()) {
-			if (status != CommandStatus.executing) {
-				status = CommandStatus.executing;
-				status.addStatus(wme);
-			}			
-		}
+		addStatus(CommandStatus.EXECUTING);
 	}
 	
 	@Override
 	public void interrupt() {
-		if (!status.isTerminated()) {
-			status = CommandStatus.complete;
-			status.addStatus(wme);
-		}
+		addStatus(CommandStatus.COMPLETE);
 	}
 }

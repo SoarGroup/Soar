@@ -16,32 +16,20 @@ import sml.Identifier;
 public class ClearMessagesCommand extends OutputLinkCommand {
 	static final String NAME = "clear-messages";
 
-	private final Identifier wme;
-	private boolean complete = false;
-
 	public ClearMessagesCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
-		this.wme = wme;
+		super(wme);
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
-		CommandStatus.accepted.addStatus(wme);
+	protected OutputLinkCommand accept() {
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 	
 	@Override
-	public String getName() {
-		return NAME;
-	}
-
-	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			Comm comm = (Comm)app.getAdapter(Comm.class);
-			comm.clearMessages();
-			CommandStatus.complete.addStatus(wme);
-			complete = true;
-		}
+		Comm comm = (Comm)app.getAdapter(Comm.class);
+		comm.clearMessages();
+		addStatus(CommandStatus.COMPLETE);
 	}
 }

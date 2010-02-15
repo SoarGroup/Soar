@@ -26,16 +26,10 @@ public class MotorCommand extends OutputLinkCommand implements DriveCommand {
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
-	private CommandStatus status = CommandStatus.accepted;
 
 	public MotorCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
-	}
-	
-	@Override
-	public String getName() {
-		return NAME;
 	}
 	
 	@Override
@@ -44,7 +38,7 @@ public class MotorCommand extends OutputLinkCommand implements DriveCommand {
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		double left;
 		try {
 			left = Double.parseDouble(wme.GetParameterValue(LEFT));
@@ -67,25 +61,17 @@ public class MotorCommand extends OutputLinkCommand implements DriveCommand {
 		left = Command.clamp(right, -1.0, 1.0);
 		ddc = DifferentialDriveCommand.newMotorCommand(left, right);
 		logger.debug(ddc);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 
 	@Override
 	public void update(Adaptable app) {
-		if (!status.isTerminated()) {
-			if (status != CommandStatus.executing) {
-				status = CommandStatus.executing;
-				status.addStatus(wme);
-			}			
-		}
+		addStatus(CommandStatus.EXECUTING);
 	}
 	
 	@Override
 	public void interrupt() {
-		if (!status.isTerminated()) {
-			status = CommandStatus.complete;
-			status.addStatus(wme);
-		}
+		addStatus(CommandStatus.COMPLETE);
 	}
 }

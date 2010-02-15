@@ -22,16 +22,15 @@ public class RemoveMessageCommand extends OutputLinkCommand {
 	static final String NAME = "remove-messages";
 
 	private final Identifier wme;
-	private boolean complete = false;
 	private long id;
 
 	public RemoveMessageCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		String idString = wme.GetParameterValue(SharedNames.ID);
 		try {
 			id = Long.parseLong(idString);
@@ -42,22 +41,14 @@ public class RemoveMessageCommand extends OutputLinkCommand {
 		}
 		
 		logger.debug(id);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
-	}
-	
-	@Override
-	public String getName() {
-		return NAME;
 	}
 
 	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			Comm comm = (Comm)app.getAdapter(Comm.class);
-			comm.removeMessage(id);
-			CommandStatus.complete.addStatus(wme);
-			complete = true;
-		}
+		Comm comm = (Comm)app.getAdapter(Comm.class);
+		comm.removeMessage(id);
+		addStatus(CommandStatus.COMPLETE);
 	}
 }

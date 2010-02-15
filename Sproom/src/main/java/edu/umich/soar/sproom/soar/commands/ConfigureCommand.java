@@ -25,20 +25,14 @@ public class ConfigureCommand extends OutputLinkCommand {
 	static final String NAME = "configure";
 		
 	private final Identifier wme;
-	private boolean complete = false;
 	
 	public ConfigureCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
 	@Override
-	public String getName() {
-		return NAME;
-	}
-	
-	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		CommandConfig config = CommandConfig.CONFIG;
 		
 		{
@@ -137,15 +131,12 @@ public class ConfigureCommand extends OutputLinkCommand {
 			}
 		}
 		
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 
 	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			CommandStatus.complete.addStatus(wme);
-			complete = true;
-		}
+		addStatus(CommandStatus.COMPLETE);
 	}
 }

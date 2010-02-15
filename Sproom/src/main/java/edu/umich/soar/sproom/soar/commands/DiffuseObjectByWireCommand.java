@@ -15,20 +15,14 @@ public class DiffuseObjectByWireCommand extends OutputLinkCommand {
 	private final Identifier wme;
 	private int id;
 	private String color;
-	private boolean complete = false;
 	
 	public DiffuseObjectByWireCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
 	@Override
-	public String getName() {
-		return NAME;
-	}
-
-	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		String idString = wme.GetParameterValue(SharedNames.ID);
 		try {
 			id = Integer.parseInt(idString);
@@ -44,17 +38,14 @@ public class DiffuseObjectByWireCommand extends OutputLinkCommand {
 		}
 		
 		logger.debug(id + " " + color);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 
 	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			// TODO: get object manipulation interface, perform diffusal
-			CommandStatus.error.addStatus(wme, "Not implemented.");
-			complete = true;
-		}
+		// TODO: get object manipulation interface, perform diffusal
+		addStatus(CommandStatus.ERROR, "Not implemented.");
 	}
 	
 }

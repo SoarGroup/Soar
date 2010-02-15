@@ -35,15 +35,14 @@ public class AddWaypointCommand extends OutputLinkCommand {
 	private Double y;
 	private Double z;
 	private Double yaw;
-	private boolean complete = false;
 
 	public AddWaypointCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		WMElement idwme = wme.FindByAttribute(SharedNames.ID, 0);
 		if (idwme == null) {
 			return new InvalidCommand(wme, "No " + SharedNames.ID);
@@ -89,37 +88,30 @@ public class AddWaypointCommand extends OutputLinkCommand {
 		}
 
 		logger.debug(String.format("%16s %10.3f %10.3f %10.3f", id, x, y, z, yaw));
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 	
 	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
-			Pose pose = (Pose)app.getAdapter(Pose.class);
-			pose_t waypointPose = pose.getPose();
-			if (x != null) {
-				waypointPose.pos[0] = x;
-			}
-			if (y != null) {
-				waypointPose.pos[1] = y;
-			}
-			if (z != null) {
-				waypointPose.pos[2] = z;
-			}
-			if (yaw != null) {
-				waypointPose.orientation = LinAlg.rollPitchYawToQuat(new double[] { 0, 0, yaw });
-			}
-
-			waypoints.createWaypoint(id, type, waypointPose);
-			CommandStatus.complete.addStatus(wme);
-			complete = true;
+		Waypoints waypoints = (Waypoints)app.getAdapter(Waypoints.class);
+		Pose pose = (Pose)app.getAdapter(Pose.class);
+		pose_t waypointPose = pose.getPose();
+		if (x != null) {
+			waypointPose.pos[0] = x;
 		}
+		if (y != null) {
+			waypointPose.pos[1] = y;
+		}
+		if (z != null) {
+			waypointPose.pos[2] = z;
+		}
+		if (yaw != null) {
+			waypointPose.orientation = LinAlg.rollPitchYawToQuat(new double[] { 0, 0, yaw });
+		}
+
+		waypoints.createWaypoint(id, type, waypointPose);
+		addStatus(CommandStatus.COMPLETE);
 	}
 
-	@Override
-	public String getName() {
-		return NAME;
-	}
 }
