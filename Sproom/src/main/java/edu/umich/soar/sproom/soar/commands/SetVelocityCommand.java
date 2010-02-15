@@ -28,25 +28,19 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
-	private CommandStatus status = CommandStatus.accepted;
 
 	public SetVelocityCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
-	@Override
-	public String getName() {
-		return NAME;
-	}
-	
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return ddc;
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		Double linearVelocity = null;
 		Double angularVelocity = null;
 		{
@@ -84,25 +78,17 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 			ddc = DifferentialDriveCommand.newVelocityCommand(angularVelocity, linearVelocity);
 		}
 		logger.debug(ddc);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 	
 	@Override
 	public void update(Adaptable app) {
-		if (!status.isTerminated()) {
-			if (status != CommandStatus.executing) {
-				status = CommandStatus.executing;
-				status.addStatus(wme);
-			}			
-		}
+		addStatus(CommandStatus.EXECUTING);
 	}
 	
 	@Override
 	public void interrupt() {
-		if (!status.isTerminated()) {
-			status = CommandStatus.complete;
-			status.addStatus(wme);
-		}
+		addStatus(CommandStatus.COMPLETE);
 	}
 }

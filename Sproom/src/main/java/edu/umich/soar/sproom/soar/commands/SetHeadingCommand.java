@@ -27,26 +27,20 @@ public class SetHeadingCommand extends OutputLinkCommand implements DriveCommand
 
 	private final Identifier wme;
 	private DifferentialDriveCommand ddc;
-	private CommandStatus status = CommandStatus.accepted;
 	private double targetYaw;
 	
 	public SetHeadingCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
-	@Override
-	public String getName() {
-		return NAME;
-	}
-	
 	@Override
 	public DifferentialDriveCommand getDDC() {
 		return ddc;
 	}
 
 	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		try {
 			targetYaw = Double.parseDouble(wme.GetParameterValue(YAW));
 			targetYaw = CommandConfig.CONFIG.angleFromView(targetYaw);
@@ -58,36 +52,27 @@ public class SetHeadingCommand extends OutputLinkCommand implements DriveCommand
 
 		ddc = DifferentialDriveCommand.newHeadingCommand(targetYaw);
 		logger.debug(ddc);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 
 	@Override
 	public void update(Adaptable app) {
-		if (!status.isTerminated()) {
-			Pose pose = (Pose)app.getAdapter(Pose.class);
-			double currentYaw = pose.getYaw();
-			double difference = targetYaw - currentYaw;
-			difference = Math.abs(difference);
-			
-			if (Double.compare(difference, TOLERANCE) < 0) {
-				status = CommandStatus.complete;
-				status.addStatus(wme);
-				return;
-			}
-			
-			if (status != CommandStatus.executing) {
-				status = CommandStatus.executing;
-				status.addStatus(wme);
-			}
+		Pose pose = (Pose)app.getAdapter(Pose.class);
+		double currentYaw = pose.getYaw();
+		double difference = targetYaw - currentYaw;
+		difference = Math.abs(difference);
+		
+		if (Double.compare(difference, TOLERANCE) < 0) {
+			addStatus(CommandStatus.COMPLETE);
+			return;
 		}
+		
+		addStatus(CommandStatus.EXECUTING);
 	}
 
 	@Override
 	public void interrupt() {
-		if (!status.isTerminated()) {
-			status = CommandStatus.interrupted;
-			status.addStatus(wme);
-		}
+		addStatus(CommandStatus.INTERRUPTED);
 	}
 }

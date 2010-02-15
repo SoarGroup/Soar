@@ -16,6 +16,7 @@ public class SelfIL implements InputLinkElement {
 
 	private Identifier root;
 	private IntWme areaId;
+	private IntWme carryId;
 	private DistanceWme[] xyz = new DistanceWme[3];
 	private SpeedWme[] xyzVelocity = new SpeedWme[3];
 	private YawWme yaw;
@@ -45,6 +46,19 @@ public class SelfIL implements InputLinkElement {
 	public void update(Adaptable app) {
 		Pose poseClass = (Pose)app.getAdapter(Pose.class);
 		pose_t pose = poseClass.getPose();
+		
+		Cargo cargo = (Cargo)app.getAdapter(Cargo.class);
+		if (cargo.getCarriedObject() == null) {
+			if (carryId != null) {
+				carryId.destroy();
+				carryId = null;
+			}
+		} else {
+			if (carryId == null) {
+				carryId = IntWme.newInstance(root, "carry");
+			}
+			carryId.update(cargo.getCarriedObject().getId());
+		}
 		
 		MapMetadata metadata = (MapMetadata)app.getAdapter(MapMetadata.class);
 		MapMetadata.Area area = metadata.getArea(pose.pos);

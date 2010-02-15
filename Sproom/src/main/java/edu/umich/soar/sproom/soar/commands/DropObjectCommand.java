@@ -26,20 +26,14 @@ public class DropObjectCommand extends OutputLinkCommand {
 
 	private final Identifier wme;
 	private int id;
-	private boolean complete = false;
 	
 	public DropObjectCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
 	@Override
-	public String getName() {
-		return NAME;
-	}
-
-	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		String idString = wme.GetParameterValue(SharedNames.ID);
 		try {
 			id = Integer.parseInt(idString);
@@ -50,31 +44,27 @@ public class DropObjectCommand extends OutputLinkCommand {
 		}
 		
 		logger.debug(id);
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 
 	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			complete = true;
-			
-			Cargo cargo = (Cargo)app.getAdapter(Cargo.class);
-			if (!cargo.isCarrying()) {
-				CommandStatus.error.addStatus(wme, "Not carrying an object.");
-				return;
-			}
-
-			VirtualObject object = cargo.getCarriedObject();
-			Pose pose = (Pose)app.getAdapter(Pose.class);
-			VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
-
-			object.setPos(pose.getPose().pos);
-			vobjs.addObject(object);
-			cargo.setCarriedObject(null);
-			CommandStatus.complete.addStatus(wme);
+		Cargo cargo = (Cargo)app.getAdapter(Cargo.class);
+		if (!cargo.isCarrying()) {
+			addStatus(CommandStatus.ERROR, "Not carrying an object.");
 			return;
 		}
+
+		VirtualObject object = cargo.getCarriedObject();
+		Pose pose = (Pose)app.getAdapter(Pose.class);
+		VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
+
+		object.setPos(pose.getPose().pos);
+		vobjs.addObject(object);
+		cargo.setCarriedObject(null);
+		addStatus(CommandStatus.COMPLETE);
+		return;
 	}
 
 }

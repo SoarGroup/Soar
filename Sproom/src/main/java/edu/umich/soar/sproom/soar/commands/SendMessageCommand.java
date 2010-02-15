@@ -33,22 +33,16 @@ public class SendMessageCommand extends OutputLinkCommand {
 	private static final String NIL = "nil";
 
 	private final Identifier wme;
-	private boolean complete = false;
 	private final List<String> tokens = new ArrayList<String>();
 	private String destination;
 	
 	public SendMessageCommand(Identifier wme) {
-		super(Integer.valueOf(wme.GetTimeTag()));
+		super(wme);
 		this.wme = wme;
 	}
 
 	@Override
-	public String getName() {
-		return NAME;
-	}
-	
-	@Override
-	public OutputLinkCommand accept() {
+	protected OutputLinkCommand accept() {
 		destination = wme.GetParameterValue(DESTINATION);
 
 		try {
@@ -93,18 +87,15 @@ public class SendMessageCommand extends OutputLinkCommand {
 			}
 		}
 		
-		CommandStatus.accepted.addStatus(wme);
+		addStatus(CommandStatus.ACCEPTED);
 		return this;
 	}
 	
 	@Override
 	public void update(Adaptable app) {
-		if (!complete) {
-			Comm comm = (Comm)app.getAdapter(Comm.class);
-			Agent agent = (Agent)app.getAdapter(Agent.class);
-			comm.sendMessage(agent.GetAgentName(), destination, tokens);
-			CommandStatus.complete.addStatus(wme);
-			complete = true;
-		}
+		Comm comm = (Comm)app.getAdapter(Comm.class);
+		Agent agent = (Agent)app.getAdapter(Agent.class);
+		comm.sendMessage(agent.GetAgentName(), destination, tokens);
+		addStatus(CommandStatus.COMPLETE);
 	}
 }

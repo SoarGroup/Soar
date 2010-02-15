@@ -73,8 +73,7 @@ public class ObjectsIL implements InputLinkElement {
 			if (invisibleTimestamp > 0) {
 				// destroy if invalid
 				if (System.nanoTime() - invisibleTimestamp > c.getVisibleNanoTime()) {
-					objectwme.DestroyWME();
-					objectwme = null;
+					invalidate();
 					if (logger.isTraceEnabled()) {
 						double secondsOld = (System.nanoTime() - invisibleTimestamp) / 1000000000.0;
 						logger.trace("Object " + vo + " went invalid (" + secondsOld + " sec).");
@@ -85,6 +84,13 @@ public class ObjectsIL implements InputLinkElement {
 		
 		boolean isValid() {
 			return objectwme != null;
+		}
+		
+		void invalidate() {
+			if (objectwme != null) {
+				objectwme.DestroyWME();
+				objectwme = null;
+			}
 		}
 		
 	}
@@ -135,6 +141,12 @@ public class ObjectsIL implements InputLinkElement {
 			
 			if (oil.isValid()) {
 				newObjMap.put(vo, oil);
+			}
+		}
+		
+		for (Map.Entry<VirtualObject, ObjectIL> entry : objMap.entrySet()) {
+			if (!newObjMap.containsKey(entry.getKey())) {
+				entry.getValue().invalidate();
 			}
 		}
 		
