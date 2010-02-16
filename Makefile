@@ -64,12 +64,6 @@ public-checkout-quicklink:
 checkout-quicklink:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/QuickLink
 
-public-checkout-room:
-	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Room
-
-checkout-room:
-	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Room
-
 public-checkout-soar2d:
 	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Soar2D
 
@@ -93,12 +87,6 @@ public-checkout-sproom:
 
 checkout-sproom:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Sproom
-
-public-checkout-sps:
-	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Sps
-
-checkout-sps:
-	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Sps
 
 public-checkout-tcl:
 	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Tcl
