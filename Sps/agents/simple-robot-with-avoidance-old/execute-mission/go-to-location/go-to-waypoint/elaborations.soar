@@ -1,6 +1,0 @@
-sp {go-to-waypoint*elaborate*state*destination-waypoint
-   (state <s> ^name go-to-waypoint
-              ^superoperator.waypoint <w>)
--->
-   (<s> ^waypoint <w>)
-}
