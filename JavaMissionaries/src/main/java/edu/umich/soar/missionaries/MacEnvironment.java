@@ -63,7 +63,7 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
         
         agent = kernel.CreateAgent("MAC");
         try {
-			ProductionUtils.sourceSingleFileAgentFromJar(agent, "/mac.soar");
+			ProductionUtils.sourceAgentFromJar(agent, "/mac.soar");
 		} catch (IOException e) {
             System.out.println("Error sourcing productions: "
                     + e.getMessage());
