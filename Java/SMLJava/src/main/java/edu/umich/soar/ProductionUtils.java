@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import sml.Agent;
 
 public class ProductionUtils {
-	public static String sourceSingleFileAgentFromJar(Agent agent, String path) throws IOException {
+	public static String sourceAgentFromJar(Agent agent, String path) throws IOException {
 		InputStream i = ProductionUtils.class.getResourceAsStream(path);
 		if (i == null) {
 			throw new IllegalStateException("Couldn't find resource");

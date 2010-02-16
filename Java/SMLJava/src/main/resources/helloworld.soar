@@ -1,0 +1,22 @@
+sp {propose*stop
+    (state <s> ^io.input-link.hello world)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name stop)
+}
+
+sp {apply*stop
+    (state <s> ^operator.name stop 
+               ^io.output-link <ol>)
+-->
+    (<ol> ^stop <stop>)
+}
+
+sp {remove*complete*commands
+    (state <s> ^operator <o> 
+               ^io.output-link <ol>)
+    (<ol> ^<attr>.<val>.status complete)
+-->	
+    (<ol> ^<attr> <val> -)
+}
+
