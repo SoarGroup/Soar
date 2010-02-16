@@ -14,6 +14,8 @@ import sml.Kernel.UpdateEventInterface;
  *         Very simple environment that adds a WME to the agent's input link
  *         with attribute "hello" and value "world" and then stops when any
  *         command from the agent is received.
+ *         
+ *         http://code.google.com/p/soar/wiki/HelloWorld
  */
 public class HelloWorld {
     private Kernel kernel;
@@ -50,10 +52,8 @@ public class HelloWorld {
 
 			    String name = command.GetCommandName();
 			    System.out.println("Received command: " + name);
-			    if (name.equals("stop")) {
-				kernel.StopAllAgents();
-				command.AddStatusComplete();
-			    }
+			    kernel.StopAllAgents();
+			    command.AddStatusComplete();
 			}
 			System.out.println("Update event complete.");
 		    }
