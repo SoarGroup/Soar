@@ -1,3 +1,0 @@
-pushd selection-iterative-deepening
-source selection-iterative-deepening_source.soar
-popd
