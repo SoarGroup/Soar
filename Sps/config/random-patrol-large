@@ -1,7 +1,0 @@
-include = common-large;
-
-all = [viewer, sim, control, debugger];
-
-control_config {
-  productions = "agents/simple-robot-large-room.soar";
-}

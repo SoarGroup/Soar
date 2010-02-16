@@ -1,6 +1,0 @@
-sp {elaborate*configuration*yaw-format
-   (state <s> ^name jon-agent
-              ^io.input-link.configuration.yaw-format float)
--->
-   (<s> ^configure.yaw-format int)
-}
