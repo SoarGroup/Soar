@@ -72,7 +72,7 @@ public class Game implements Runnable, Kernel.UpdateEventInterface {
         
         agent = kernel.CreateAgent(AGENT_NAME);
         try {
-        	ProductionUtils.sourceSingleFileAgentFromJar(agent, "/towers-of-hanoi-SML.soar");
+        	ProductionUtils.sourceAgentFromJar(agent, "/towers-of-hanoi-SML.soar");
         } catch (IOException e) {
         	throw new IllegalStateException(e.getMessage());
         }
