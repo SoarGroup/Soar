@@ -164,7 +164,7 @@ public class TestJavaSML {
 			throw new IllegalStateException("Error creating agent: " + m_Kernel.GetLastErrorDescription()) ;
 
 		try {
-			ProductionUtils.sourceSingleFileAgentFromJar(agent, "/testjavasml.soar");
+			ProductionUtils.sourceAgentFromJar(agent, "/testjavasml.soar");
 		} catch (IOException e) {
 			throw new IllegalStateException(e.getMessage());
 		}
