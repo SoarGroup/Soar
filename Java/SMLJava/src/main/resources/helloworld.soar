@@ -1,10 +1,15 @@
+# Look for the hello world WME on the input-link
+# If it is there, propose the stop operator
 sp {propose*stop
     (state <s> ^io.input-link.hello world)
 -->
-    (<s> ^operator <o> + =)
+    (<s> ^operator <o> +)
     (<o> ^name stop)
 }
 
+# Apply the stop operator by creating an empty 
+# identifier on the output link. This is essentially
+# a command with no parameters.
 sp {apply*stop
     (state <s> ^operator.name stop 
                ^io.output-link <ol>)
@@ -12,6 +17,10 @@ sp {apply*stop
     (<ol> ^stop <stop>)
 }
 
+# Remove any commands with status complete off of
+# the output link. Doesn't actually fire in our
+# example because the agent is interrupted before
+# it has a chance to match. Here for illustration.
 sp {remove*complete*commands
     (state <s> ^operator <o> 
                ^io.output-link <ol>)
