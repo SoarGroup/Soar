@@ -141,8 +141,13 @@ public class SimpleAsyncEnv {
 	public Soar() {
 	    kernel = Kernel.CreateKernelInNewThread();
 	    /*
-	     * Kernel creation methods are guaranteed to return non-null so that
-	     * some diagnostic information is available.
+	     * As long as the execution environment is set up correctly and Java
+	     * can find the Java_smlClientInterface library this will return a
+	     * kernel object even if there is an error. In the event of an
+	     * error, the kernel object will have diagnostic information in it
+	     * for retrieval. If the execution environment isn't set up
+	     * correctly, however, a runtime exception will be thrown here when
+	     * it cannot load the shared library.
 	     */
 	    if (kernel.HadError()) {
 		System.err.println("Error creating kernel: " + kernel.GetLastErrorDescription());
