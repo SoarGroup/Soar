@@ -23,10 +23,6 @@ public class ProductionUtils {
 			sb.append('\n');
 		}
 		
-		String result = agent.ExecuteCommandLine(sb.toString());
-		if (agent.GetLastCommandLineResult() == false) {
-			throw new IllegalStateException(result);
-		}
-		return result;
+		return agent.ExecuteCommandLine(sb.toString());
 	}
 }

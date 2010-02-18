@@ -1,0 +1,110 @@
+# Generate a wait state rather than a state-no-change impasse.
+# Alternatively, this can be performed using rules and that might
+# be a better option depending on your situation.
+# See http://code.google.com/p/soar/wiki/CommandLineInterface#waitsnc
+waitsnc --enable
+
+# We're going to print interesting stuff as it happens, so lets
+# turn the watch off so this is easy to see in the debugger.
+watch 0
+
+# Initialize agent with some request keywords and responses to them
+sp {propose*initialize
+    (state <s> ^superstate nil
+              -^initialized)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize)
+}
+sp {apply*initialize
+    (state <s> ^operator.name initialize)
+-->
+    (<s> ^data <d> ^initialized true)
+    (<d> ^entry <e1> 
+         ^entry <e2>)
+    (<e1> ^in hello ^out |Greetings Professor Falken.|)
+    (<e2> ^in jump ^out |How high?|)
+    (write (crlf) |Initialized|)
+}
+
+# If we know how to respond to the input, do so.
+sp {propose*respond
+    (state <s> ^io.input-link.messages.message <m>
+               ^data.entry <e>
+              -^responded <id>)
+    (<m> ^id <id>
+         ^content <in>)
+    (<e> ^in <in>
+         ^out <out>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name respond
+         ^id <id>
+         ^content <out>)
+}
+
+# Apply respond operator by printing content, remember we responded.
+sp {apply*respond
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name respond
+         ^content <c>
+         ^id <id>)
+-->
+    (<ol> ^print.content <c>)
+    (<s> ^responded <id>)
+    (write (crlf) |Issuing print, content: | <c>)
+}
+
+# If we don't have data for a command, issue it as a command with no params.
+sp {propose*other
+    (state <s> ^io.input-link.messages.message <m>
+              -^data.entry.in <c>
+              -^responded <id>)
+    (<m> ^id <id>
+         ^content <c>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name other
+         ^id <id>
+         ^content <c>)
+}
+
+# Apply other commands.
+sp {apply*other
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name other
+         ^content <c>
+         ^id <id>)
+-->
+    (<ol> ^<c> <value>)
+    (<s> ^responded <id>)
+    (write (crlf) |Issuing other command: | <c>)
+}
+
+# Propose cleaning up processed commands.
+sp {propose*remove-command
+    (state <s> ^io.output-link <ol>)
+    (<ol> ^<attr> <val>)
+    (<val> ^status <status>)
+-->	
+    (<s> ^operator <o> +)
+    (<o> ^name remove-command
+         ^attr <attr>
+         ^val <val>
+         ^status <status>)
+}
+
+# Remove commands and echo status.
+sp {apply*remove-command
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name remove-command
+         ^attr <attr>
+         ^val <val>
+         ^status <status>)
+-->	
+    (<ol> ^<attr> <val> -)
+    (write (crlf) <attr> |: | <status>)
+}

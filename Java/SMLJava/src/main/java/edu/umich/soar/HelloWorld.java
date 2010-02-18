@@ -95,6 +95,13 @@ public class HelloWorld {
 		    public void updateEventHandler(int eventID, Object data,
 			    Kernel kernel, int runFlags) {
 			System.out.println("Update event...");
+			
+			/*
+			 * An output-link command is simply an identifier child
+			 * on the output-link. Here, we iterate through all
+			 * commands.
+			 */
+			
 			for (int index = 0; index < agent.GetNumberCommands(); ++index) {
 			    Identifier command = agent.GetCommand(index);
 
@@ -103,6 +110,15 @@ public class HelloWorld {
 			    kernel.StopAllAgents();
 			    command.AddStatusComplete();
 			}
+			
+			/*
+			 * After iterating, the changes must be cleared so that
+			 * the commands we already saw do not show up on future
+			 * decision cycles.
+			 */
+			
+			agent.ClearOutputLinkChanges();
+
 			System.out.println("Update event complete.");
 		    }
 		}, null);
