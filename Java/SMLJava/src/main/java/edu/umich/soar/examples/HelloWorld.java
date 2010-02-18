@@ -1,6 +1,8 @@
-package edu.umich.soar;
+package edu.umich.soar.examples;
 
 import java.io.IOException;
+
+import edu.umich.soar.ProductionUtils;
 
 import sml.Agent;
 import sml.Identifier;

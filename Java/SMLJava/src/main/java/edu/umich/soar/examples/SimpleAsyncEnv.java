@@ -1,4 +1,4 @@
-package edu.umich.soar;
+package edu.umich.soar.examples;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import edu.umich.soar.ProductionUtils;
 
 import sml.Agent;
 import sml.Identifier;
