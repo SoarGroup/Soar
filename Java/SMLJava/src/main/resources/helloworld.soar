@@ -16,16 +16,3 @@ sp {apply*stop
 -->
     (<ol> ^stop <stop>)
 }
-
-# Remove any commands with status complete off of
-# the output link. Doesn't actually fire in our
-# example because the agent is interrupted before
-# it has a chance to match. Here for illustration.
-sp {remove*complete*commands
-    (state <s> ^operator <o> 
-               ^io.output-link <ol>)
-    (<ol> ^<attr>.<val>.status complete)
--->	
-    (<ol> ^<attr> <val> -)
-}
-
