@@ -32,7 +32,7 @@ public class ConfigureCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		CommandConfig config = CommandConfig.CONFIG;
 		
 		{
@@ -43,7 +43,8 @@ public class ConfigureCommand extends OutputLinkCommand {
 					config.setLengthUnits(lu);
 					logger.debug(SharedNames.LENGTH_UNITS + ": " + lu);
 				} catch (IllegalArgumentException e) {
-					return new InvalidCommand(wme, "Unknown " + SharedNames.LENGTH_UNITS + " type " + temp);
+					addStatusError("Unknown " + SharedNames.LENGTH_UNITS + " type " + temp);
+					return false;
 				}
 			}
 		}
@@ -56,7 +57,8 @@ public class ConfigureCommand extends OutputLinkCommand {
 					config.setSpeedUnits(su);
 					logger.debug(SharedNames.SPEED_UNITS + ": " + su);
 				} catch (IllegalArgumentException e) {
-					return new InvalidCommand(wme, "Unknown " + SharedNames.SPEED_UNITS + " type " + temp);
+					addStatusError("Unknown " + SharedNames.SPEED_UNITS + " type " + temp);
+					return false;
 				}
 			}
 		}
@@ -69,7 +71,8 @@ public class ConfigureCommand extends OutputLinkCommand {
 					config.setAngleUnits(au);
 					logger.debug(SharedNames.ANGLE_UNITS + ": " + au);
 				} catch (IllegalArgumentException e) {
-					return new InvalidCommand(wme, "Unknown " + SharedNames.ANGLE_UNITS + " type " + temp);
+					addStatusError("Unknown " + SharedNames.ANGLE_UNITS + " type " + temp);
+					return false;
 				}
 			}
 		}
@@ -82,7 +85,8 @@ public class ConfigureCommand extends OutputLinkCommand {
 					config.setAngleResolution(ar);
 					logger.debug(SharedNames.ANGLE_RESOLUTION + ": " + ar);
 				} catch (IllegalArgumentException e) {
-					return new InvalidCommand(wme, "Unknown " + SharedNames.ANGLE_RESOLUTION + " type " + temp);
+					addStatusError("Unknown " + SharedNames.ANGLE_RESOLUTION + " type " + temp);
+					return false;
 				}
 			}
 		}
@@ -91,7 +95,8 @@ public class ConfigureCommand extends OutputLinkCommand {
 			WMElement ptwme = wme.FindByAttribute(SharedNames.POSE_TRANSLATION, 0);
 			if (ptwme != null) {
 				if (!ptwme.IsIdentifier()) {
-					return new InvalidCommand(wme, "Bad formatted command " + SharedNames.POSE_TRANSLATION);
+					addStatusError("Bad formatted command " + SharedNames.POSE_TRANSLATION);
+					return false;
 				}
 				Identifier ptid = ptwme.ConvertToIdentifier();
 				double[] xyz = new double[] { 0, 0, 0 };
@@ -102,8 +107,9 @@ public class ConfigureCommand extends OutputLinkCommand {
 						xyz[0] = Double.parseDouble(temp);
 						xyz[0] = config.lengthFromView(xyz[0]);
 					} catch (NumberFormatException e) {
-						return new InvalidCommand(wme, "Unable to parse " + 
+						addStatusError("Unable to parse " + 
 								SharedNames.POSE_TRANSLATION + ": " + SharedNames.X + ": " + temp);
+						return false;
 					}
 				}
 				temp = ptid.GetParameterValue(SharedNames.Y);
@@ -112,8 +118,9 @@ public class ConfigureCommand extends OutputLinkCommand {
 						xyz[1] = Double.parseDouble(temp);
 						xyz[1] = config.lengthFromView(xyz[1]);
 					} catch (NumberFormatException e) {
-						return new InvalidCommand(wme, "Unable to parse " + SharedNames.POSE_TRANSLATION + 
+						addStatusError("Unable to parse " + SharedNames.POSE_TRANSLATION + 
 								": " + SharedNames.Y + ": " + temp);
+						return false;
 					}
 				}
 				temp = ptid.GetParameterValue(SharedNames.Z);
@@ -122,8 +129,9 @@ public class ConfigureCommand extends OutputLinkCommand {
 						xyz[2] = Double.parseDouble(temp);
 						xyz[2] = config.lengthFromView(xyz[2]);
 					} catch (NumberFormatException e) {
-						return new InvalidCommand(wme, "Unable to parse " + SharedNames.POSE_TRANSLATION + 
+						addStatusError("Unable to parse " + SharedNames.POSE_TRANSLATION + 
 								": " + SharedNames.Z + ": " + temp);
+						return false;
 					}
 				}
 				config.setPoseTranslation(xyz);
@@ -132,7 +140,7 @@ public class ConfigureCommand extends OutputLinkCommand {
 		}
 		
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 
 	@Override

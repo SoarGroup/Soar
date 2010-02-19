@@ -31,15 +31,16 @@ public class EnableWaypointCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		String id = wme.GetParameterValue(ID);
 		if (id == null) {
-			return new InvalidCommand(wme, "No " + ID);
+			addStatusError("No " + ID);
+			return false;
 		}
 		
 		logger.debug(id);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override

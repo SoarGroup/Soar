@@ -39,21 +39,23 @@ public class SetAngularVelocityCommand extends OutputLinkCommand implements Driv
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		double angularVelocity;
 		try {
 			angularVelocity = Double.parseDouble(wme.GetParameterValue(ANGVEL));
 			angularVelocity = CommandConfig.CONFIG.angleFromView(angularVelocity);
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + ANGVEL + " on command");
+			addStatusError("No " + ANGVEL + " on command");
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + ANGVEL + ": " + wme.GetParameterValue(ANGVEL));
+			addStatusError("Unable to parse " + ANGVEL + ": " + wme.GetParameterValue(ANGVEL));
+			return false;
 		}
 
 		ddc = DifferentialDriveCommand.newAngularVelocityCommand(angularVelocity);
 		logger.debug(ddc);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override

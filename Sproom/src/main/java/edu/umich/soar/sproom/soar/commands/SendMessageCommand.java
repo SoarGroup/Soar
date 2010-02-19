@@ -42,7 +42,7 @@ public class SendMessageCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		destination = wme.GetParameterValue(DESTINATION);
 
 		try {
@@ -51,14 +51,16 @@ public class SendMessageCommand extends OutputLinkCommand {
 			while (next != null) {
 				WMElement word = next.FindByAttribute(WORD, 0);
 				if (word == null) {
-					return new InvalidCommand(wme, WORD + " is null");
+					addStatusError(WORD + " is null");
+					return false;
 				}
 				logger.trace(WORD + ": " + word.GetValueAsString());
 				tokens.add(word.GetValueAsString());
 				
 				WMElement nextwme = next.FindByAttribute(NEXT, 0);
 				if (nextwme == null) {
-					return new InvalidCommand(wme, NEXT + " is null");
+					addStatusError(NEXT + " is null");
+					return false;
 				}
 				logger.trace(NEXT + ": " + nextwme.GetValueAsString());
 				if (nextwme.GetValueAsString().equals(NIL)) {
@@ -67,16 +69,19 @@ public class SendMessageCommand extends OutputLinkCommand {
 				
 				next = nextwme.ConvertToIdentifier();
 				if (next == null) {
-					return new InvalidCommand(wme, NEXT + " is not identifier");
+					addStatusError(NEXT + " is not identifier");
+					return false;
 				}
 			}
 			
 		} catch (NullPointerException e) {
-			return new InvalidCommand(wme, "malformed message");
+			addStatusError("malformed message");
+			return false;
 		}
 
 		if (tokens.isEmpty()) {
-			return new InvalidCommand(wme, "no message");
+			addStatusError("no message");
+			return false;
 		} 
 		
 		Iterator<String> iter = tokens.iterator();
@@ -88,7 +93,7 @@ public class SendMessageCommand extends OutputLinkCommand {
 		}
 		
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override
