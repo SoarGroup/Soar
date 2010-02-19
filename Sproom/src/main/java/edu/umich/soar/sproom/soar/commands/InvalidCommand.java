@@ -15,6 +15,6 @@ class InvalidCommand extends OutputLinkCommand {
 
 	@Override
 	public OutputLinkCommand accept() {
-		throw new IllegalStateException();
+		return null;
 	}
 }
