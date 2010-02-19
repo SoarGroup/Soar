@@ -71,7 +71,9 @@ public class GetObjectCommand extends OutputLinkCommand {
 		Pose pose = (Pose)app.getAdapter(Pose.class);
 		double distance = LinAlg.distance(object.getPos(), pose.getPose().pos);
 		CommandConfig c = CommandConfig.CONFIG;
-		if (distance > c.getGetDistance()) {
+		double manipDist = c.getManipulationDistance();
+		manipDist += object.getSize()[0] / 2.0;
+		if (distance > c.getManipulationDistance()) {
 			addStatusError("Object too far.");
 			return;
 		}
