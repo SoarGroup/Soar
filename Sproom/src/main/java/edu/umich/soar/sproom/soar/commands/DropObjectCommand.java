@@ -3,11 +3,15 @@
  */
 package edu.umich.soar.sproom.soar.commands;
 
+import jmat.LinAlg;
+import lcmtypes.pose_t;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
+import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.command.VirtualObject;
 import edu.umich.soar.sproom.command.VirtualObjects;
@@ -62,7 +66,15 @@ public class DropObjectCommand extends OutputLinkCommand {
 		Pose pose = (Pose)app.getAdapter(Pose.class);
 		VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
 
-		object.setPos(pose.getPose().pos);
+		pose_t botPose = pose.getPose();
+		double dropDistance = CommandConfig.CONFIG.getManipulationDistance();
+		dropDistance += object.getSize()[0] / 2.0;
+
+		// Move the block dropDistance in front of us
+		double[] dpos = LinAlg.quatRotate(botPose.orientation, new double[] { dropDistance, 0, 0 });
+		double[] objPose = LinAlg.add(botPose.pos, dpos);
+		
+		object.setPos(objPose);
 		vobjs.addObject(object);
 		cargo.setCarriedObject(null);
 		addStatus(CommandStatus.COMPLETE);

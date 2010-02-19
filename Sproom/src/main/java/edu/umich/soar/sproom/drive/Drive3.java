@@ -14,7 +14,6 @@ import org.apache.commons.logging.LogFactory;
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.CommandConfigListener;
-import edu.umich.soar.sproom.command.PIDController;
 import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand.CommandType;
 

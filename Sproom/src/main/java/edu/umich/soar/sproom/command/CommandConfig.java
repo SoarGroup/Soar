@@ -76,7 +76,7 @@ public enum CommandConfig {
 	
 	private double fieldOfView = Math.PI / 2.0;
 	private long visibleNanoTime = 2 * 1000000000;
-	private double getDistance = 1.0;
+	private double manipulationDistance = 1.0;
 	private double gamepadZeroThreshold = 0.4;
 
 	private final List<CommandConfigListener> listeners = new CopyOnWriteArrayList<CommandConfigListener>();
@@ -281,11 +281,12 @@ public enum CommandConfig {
 		return visibleNanoTime;
 	}
 
-	public double getGetDistance() {
-		return getDistance;
+	public double getManipulationDistance() {
+		return manipulationDistance;
 	}
 
 	public double getGamepadZeroThreshold() {
 		return gamepadZeroThreshold;
 	}
+
 }
