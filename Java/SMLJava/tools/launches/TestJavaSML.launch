@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/soar-debugger/src/main/java/edu/umich/soar/debugger/Application.java"/>
+<listEntry value="/soar-smljava/src/main/java/edu/umich/soar/TestJavaSML.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -11,7 +11,6 @@
 <mapEntry key="LD_LIBRARY_PATH" value="${env_var:SOAR_HOME}/lib"/>
 <mapEntry key="DYLD_LIBRARY_PATH" value="${env_var:SOAR_HOME}/lib"/>
 </mapAttribute>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.umich.soar.debugger.Application"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-remote"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="soar-debugger"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.umich.soar.TestJavaSML"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="soar-smljava"/>
 </launchConfiguration>
