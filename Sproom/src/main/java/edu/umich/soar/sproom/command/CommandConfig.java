@@ -12,19 +12,6 @@ import edu.umich.soar.sproom.drive.Drive3;
 public enum CommandConfig {
 	CONFIG;
 	
-	private String productions;
-	
-	// TODO defaults
-	private double limitLinVelMax = 0.5;
-	private double limitLinVelMin;
-	private double limitAngVelMax = Math.PI;
-	private double limitAngVelMin;
-	
-	private double geomLength;
-	private double geomWidth;
-	private double geomHeight;
-	private double geomWheelbase;
-	
 	public enum LengthUnit { 
 		METERS(1), FEET(0.3048), MILES(1609.344), YARDS(0.9144), INCH(0.0254);
 		
@@ -42,8 +29,7 @@ public enum CommandConfig {
 			return system / meters;
 		}
 	};
-	private LengthUnit lengthUnits = LengthUnit.METERS;
-	
+
 	public enum SpeedUnit { 
 		METERS_PER_SEC(1), FEET_PER_SEC(0.3048), MILES_PER_HOUR(0.44704);
 		
@@ -61,15 +47,30 @@ public enum CommandConfig {
 			return system / metersPerSec;
 		}
 	};
-	private SpeedUnit speedUnits = SpeedUnit.METERS_PER_SEC;
-	
+
 	public enum AngleUnit { RADIANS, DEGREES };
-	private AngleUnit angleUnits = AngleUnit.DEGREES;
 
 	public enum AngleResolution { INT, FLOAT };
+
+	private String productions;
+	
+	private double limitLinVelMax = 0.5;
+	private double limitLinVelMin = -0.5;
+	private double limitAngVelMax = Math.PI;
+	private double limitAngVelMin = -Math.PI;
+	
+	private double geomLength = 0;		// TODO
+	private double geomWidth = 0;		// TODO
+	private double geomHeight = 0;		// TODO
+	private double geomWheelbase = 0;	// TODO
+	
+	private LengthUnit lengthUnits = LengthUnit.METERS;
+	private SpeedUnit speedUnits = SpeedUnit.METERS_PER_SEC;
+	private AngleUnit angleUnits = AngleUnit.DEGREES;
 	private AngleResolution angleResolution = AngleResolution.INT;
 
 	private final double[] poseTranslation = new double[] { 0, 0, 0 };
+	
 	private final ConcurrentMap<String, double[]> pidGains = new ConcurrentHashMap<String, double[]>(); 
 	
 	private int rangeCount = 5; // LIDAR
@@ -85,6 +86,20 @@ public enum CommandConfig {
 		setGains(Drive3.HEADING_PID_NAME, new double[] { 1, 0, 0.125 });
 		setGains(Drive2.ANGULAR_PID_NAME, new double[] { 0.0238, 0, 0.0025 });
 		setGains(Drive2.LINEAR_PID_NAME, new double[] { 0.12,  0, 0.025 });
+	}
+	
+	public void addListener(CommandConfigListener listener) {
+		listeners.add(listener);
+	}
+	
+	public boolean removeListener(CommandConfigListener listener) {
+		return listeners.remove(listener);
+	}
+	
+	private void fireConfigChanged() {
+		for (CommandConfigListener listener : listeners) {
+			listener.configChanged();
+		}
 	}
 	
 	public double lengthFromView(double view) {
@@ -109,20 +124,6 @@ public enum CommandConfig {
 	
 	public double speedToView(double system) {
 		return speedUnits == SpeedUnit.METERS_PER_SEC ? system : Math.toDegrees(system);
-	}
-	
-	public void addListener(CommandConfigListener listener) {
-		listeners.add(listener);
-	}
-	
-	public boolean removeListener(CommandConfigListener listener) {
-		return listeners.remove(listener);
-	}
-	
-	private void fireConfigChanged() {
-		for (CommandConfigListener listener : listeners) {
-			listener.configChanged();
-		}
 	}
 	
 	public String getProductions() {

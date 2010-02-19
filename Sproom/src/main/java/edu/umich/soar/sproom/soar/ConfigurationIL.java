@@ -2,11 +2,15 @@ package edu.umich.soar.sproom.soar;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import edu.umich.soar.FloatWme;
+import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.CommandConfigListener;
+import edu.umich.soar.sproom.drive.Drive2;
+import edu.umich.soar.sproom.drive.Drive3;
 import sml.Identifier;
 
 public class ConfigurationIL implements InputLinkElement {
@@ -38,6 +42,13 @@ public class ConfigurationIL implements InputLinkElement {
 	private final DistanceWme geomWidth;
 	private final DistanceWme geomHeight;
 	private final DistanceWme geomWheelbase;
+	private final IntWme rangeCount;
+	private final FloatWme[] headingPid = new FloatWme[3];
+	private final FloatWme[] angularPid = new FloatWme[3];
+	private final FloatWme[] linearPid = new FloatWme[3];
+	private final YawWme fieldOfView;
+	private final FloatWme visibleTime;
+	private final DistanceWme manipulationDistance;
 	
 	private final AtomicBoolean configChanged = new AtomicBoolean(true);
 	
@@ -52,6 +63,21 @@ public class ConfigurationIL implements InputLinkElement {
 		xyz[0] = DistanceWme.newInstance(poseTranslation, SharedNames.X);
 		xyz[1] = DistanceWme.newInstance(poseTranslation, SharedNames.Y);
 		xyz[2] = DistanceWme.newInstance(poseTranslation, SharedNames.Z);
+		
+		Identifier headingPidRoot = root.CreateIdWME(SharedNames.HEADING);
+		headingPid[0] = FloatWme.newInstance(headingPidRoot, SharedNames.P);
+		headingPid[1] = FloatWme.newInstance(headingPidRoot, SharedNames.I);
+		headingPid[2] = FloatWme.newInstance(headingPidRoot, SharedNames.D);
+		
+		Identifier angularPidRoot = root.CreateIdWME(SharedNames.ANGULAR);
+		angularPid[0] = FloatWme.newInstance(angularPidRoot, SharedNames.P);
+		angularPid[1] = FloatWme.newInstance(angularPidRoot, SharedNames.I);
+		angularPid[2] = FloatWme.newInstance(angularPidRoot, SharedNames.D);
+		
+		Identifier linearPidRoot = root.CreateIdWME(SharedNames.LINEAR);
+		linearPid[0] = FloatWme.newInstance(linearPidRoot, SharedNames.P);
+		linearPid[1] = FloatWme.newInstance(linearPidRoot, SharedNames.I);
+		linearPid[2] = FloatWme.newInstance(linearPidRoot, SharedNames.D);
 		
 		{
 			Identifier limits = root.CreateIdWME(LIMITS);
@@ -70,6 +96,11 @@ public class ConfigurationIL implements InputLinkElement {
 			geomHeight = DistanceWme.newInstance(geometry, HEIGHT);
 			geomWheelbase = DistanceWme.newInstance(geometry, WHEELBASE);
 		}
+		
+		rangeCount = IntWme.newInstance(root, SharedNames.RANGE_COUNT);
+		fieldOfView = YawWme.newInstance(root, SharedNames.FIELD_OF_VIEW);
+		visibleTime = FloatWme.newInstance(root, SharedNames.VISIBLE_TIME);
+		manipulationDistance = DistanceWme.newInstance(root, SharedNames.MANIPULATION_DISTANCE);
 		
 		update(app);
 		
@@ -91,6 +122,9 @@ public class ConfigurationIL implements InputLinkElement {
 
 			for (int i = 0; i < xyz.length; ++i) {
 				xyz[i].update(c.getPoseTranslation()[i]);
+				headingPid[i].update(c.getGains(Drive3.HEADING_PID_NAME)[i]);
+				angularPid[i].update(c.getGains(Drive2.ANGULAR_PID_NAME)[i]);
+				linearPid[i].update(c.getGains(Drive2.LINEAR_PID_NAME)[i]);
 			}
 			
 			limitLinVelMax.update(c.getLimitLinVelMax());
@@ -102,7 +136,12 @@ public class ConfigurationIL implements InputLinkElement {
 			geomWidth.update(c.getGeomWidth());
 			geomHeight.update(c.getGeomHeight());
 			geomWheelbase.update(c.getGeomWheelbase());
-			
+
+			rangeCount.update(c.getRangeCount());
+			fieldOfView.update(c.getFieldOfView());
+			visibleTime.update(c.getVisibleNanoTime() / 1000000000.0);
+			manipulationDistance.update(c.getManipulationDistance());
+
 			configChanged.set(false);
 		}
 	}
