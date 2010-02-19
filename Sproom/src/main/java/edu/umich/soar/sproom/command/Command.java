@@ -63,6 +63,8 @@ public class Command {
 		if (productions != null) {
 			CommandConfig.CONFIG.setProductions(productions);
 		}
+		
+		
 
 		metadata = new MapMetadata(config);
 		vobjs = new VirtualObjects(config);
