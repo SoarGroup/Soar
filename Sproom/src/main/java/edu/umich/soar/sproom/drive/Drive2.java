@@ -12,7 +12,6 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.CommandConfigListener;
-import edu.umich.soar.sproom.command.PIDController;
 
 public class Drive2 {
 	private static final Log logger = LogFactory.getLog(Drive2.class);
