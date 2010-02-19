@@ -40,20 +40,22 @@ public class SetHeadingCommand extends OutputLinkCommand implements DriveCommand
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		try {
 			targetYaw = Double.parseDouble(wme.GetParameterValue(YAW));
 			targetYaw = CommandConfig.CONFIG.angleFromView(targetYaw);
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + YAW + " on command");
+			addStatusError("No " + YAW + " on command");
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + YAW + ": " + wme.GetParameterValue(YAW));
+			addStatusError("Unable to parse " + YAW + ": " + wme.GetParameterValue(YAW));
+			return false;
 		}
 
 		ddc = DifferentialDriveCommand.newHeadingCommand(targetYaw);
 		logger.debug(ddc);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 
 	@Override

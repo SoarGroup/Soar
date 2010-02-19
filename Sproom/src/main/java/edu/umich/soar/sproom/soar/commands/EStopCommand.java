@@ -27,9 +27,9 @@ public class EStopCommand extends OutputLinkCommand implements DriveCommand {
 	}
 	
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override

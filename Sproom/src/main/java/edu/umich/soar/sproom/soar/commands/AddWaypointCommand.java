@@ -42,10 +42,11 @@ public class AddWaypointCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		WMElement idwme = wme.FindByAttribute(SharedNames.ID, 0);
 		if (idwme == null) {
-			return new InvalidCommand(wme, "No " + SharedNames.ID);
+			addStatusError("No " + SharedNames.ID);
+			return false;
 		}
 		
 		type = idwme.GetValueType();
@@ -57,7 +58,8 @@ public class AddWaypointCommand extends OutputLinkCommand {
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + SharedNames.X + ": " + wme.GetParameterValue(SharedNames.X));
+			addStatusError("Unable to parse " + SharedNames.X + ": " + wme.GetParameterValue(SharedNames.X));
+			return false;
 		}
 
 		try {
@@ -66,7 +68,8 @@ public class AddWaypointCommand extends OutputLinkCommand {
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + SharedNames.Y + ": " + wme.GetParameterValue(SharedNames.Y));
+			addStatusError("Unable to parse " + SharedNames.Y + ": " + wme.GetParameterValue(SharedNames.Y));
+			return false;
 		}
 
 		try {
@@ -75,7 +78,8 @@ public class AddWaypointCommand extends OutputLinkCommand {
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + SharedNames.Z + ": " + wme.GetParameterValue(SharedNames.Z));
+			addStatusError("Unable to parse " + SharedNames.Z + ": " + wme.GetParameterValue(SharedNames.Z));
+			return false;
 		}
 
 		try {
@@ -84,12 +88,13 @@ public class AddWaypointCommand extends OutputLinkCommand {
 		} catch (NullPointerException ignored) {
 			// use current
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + SharedNames.YAW + ": " + wme.GetParameterValue(SharedNames.YAW));
+			addStatusError("Unable to parse " + SharedNames.YAW + ": " + wme.GetParameterValue(SharedNames.YAW));
+			return false;
 		}
 
 		logger.debug(String.format("%16s %10.3f %10.3f %10.3f", id, x, y, z, yaw));
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override

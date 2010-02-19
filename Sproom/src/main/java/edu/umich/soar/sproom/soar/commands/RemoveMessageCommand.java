@@ -30,19 +30,21 @@ public class RemoveMessageCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		String idString = wme.GetParameterValue(SharedNames.ID);
 		try {
 			id = Long.parseLong(idString);
 		} catch (NullPointerException e) {
-			return new InvalidCommand(wme, "No " + SharedNames.ID);
+			addStatusError("No " + SharedNames.ID);
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Error parsing " + SharedNames.ID + ": " + idString);
+			addStatusError("Error parsing " + SharedNames.ID + ": " + idString);
+			return false;
 		}
 		
 		logger.debug(id);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 
 	@Override

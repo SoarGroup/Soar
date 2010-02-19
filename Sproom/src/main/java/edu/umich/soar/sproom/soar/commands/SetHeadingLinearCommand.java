@@ -42,14 +42,16 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		try {
 			targetYaw = Double.parseDouble(wme.GetParameterValue(YAW));
 			targetYaw = CommandConfig.CONFIG.angleFromView(targetYaw);
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + YAW + " on command");
+			addStatusError("No " + YAW + " on command");
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + YAW + ": " + wme.GetParameterValue(YAW));
+			addStatusError("Unable to parse " + YAW + ": " + wme.GetParameterValue(YAW));
+			return false;
 		}
 		targetYaw = Math.toRadians(targetYaw);
 
@@ -58,15 +60,17 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 			linearVelocity = Double.parseDouble(wme.GetParameterValue(LINVEL));
 			linearVelocity = CommandConfig.CONFIG.speedFromView(linearVelocity);
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + LINVEL + " on command");
+			addStatusError("No " + LINVEL + " on command");
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + LINVEL + ": " + wme.GetParameterValue(LINVEL));
+			addStatusError("Unable to parse " + LINVEL + ": " + wme.GetParameterValue(LINVEL));
+			return false;
 		}
 
 		ddc = DifferentialDriveCommand.newHeadingLinearVelocityCommand(targetYaw, linearVelocity);
 		logger.debug(ddc);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 
 	@Override

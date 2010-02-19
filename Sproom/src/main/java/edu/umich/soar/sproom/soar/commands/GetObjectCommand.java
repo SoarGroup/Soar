@@ -35,26 +35,28 @@ public class GetObjectCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		String idString = wme.GetParameterValue(SharedNames.ID);
 		try {
 			id = Integer.parseInt(idString);
 		} catch (NullPointerException e) {
-			return new InvalidCommand(wme, "No " + SharedNames.ID);
+			addStatusError("No " + SharedNames.ID);
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Error parsing " + SharedNames.ID + ": " + idString);
+			addStatusError("Error parsing " + SharedNames.ID + ": " + idString);
+			return false;
 		}
 		
 		logger.debug(id);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 
 	@Override
 	public void update(Adaptable app) {
 		Cargo cargo = (Cargo)app.getAdapter(Cargo.class);
 		if (cargo.isCarrying()) {
-			addStatus(CommandStatus.ERROR, "Already carrying an object.");
+			addStatusError("Already carrying an object.");
 			return;
 		}
 		
@@ -62,7 +64,7 @@ public class GetObjectCommand extends OutputLinkCommand {
 		
 		VirtualObject object = vobjs.getObject(id);
 		if (object == null) {
-			addStatus(CommandStatus.ERROR, "No such object.");
+			addStatusError("No such object.");
 			return;
 		}
 		
@@ -70,7 +72,7 @@ public class GetObjectCommand extends OutputLinkCommand {
 		double distance = LinAlg.distance(object.getPos(), pose.getPose().pos);
 		CommandConfig c = CommandConfig.CONFIG;
 		if (distance > c.getGetDistance()) {
-			addStatus(CommandStatus.ERROR, "Object too far.");
+			addStatusError("Object too far.");
 			return;
 		}
 		

@@ -33,26 +33,28 @@ public class DropObjectCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		String idString = wme.GetParameterValue(SharedNames.ID);
 		try {
 			id = Integer.parseInt(idString);
 		} catch (NullPointerException e) {
-			return new InvalidCommand(wme, "No " + SharedNames.ID);
+			addStatusError("No " + SharedNames.ID);
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Error parsing " + SharedNames.ID + ": " + idString);
+			addStatusError("Error parsing " + SharedNames.ID + ": " + idString);
+			return false;
 		}
 		
 		logger.debug(id);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 
 	@Override
 	public void update(Adaptable app) {
 		Cargo cargo = (Cargo)app.getAdapter(Cargo.class);
 		if (!cargo.isCarrying()) {
-			addStatus(CommandStatus.ERROR, "Not carrying an object.");
+			addStatusError("Not carrying an object.");
 			return;
 		}
 

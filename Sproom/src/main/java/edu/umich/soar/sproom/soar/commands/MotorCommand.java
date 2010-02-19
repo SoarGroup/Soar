@@ -38,23 +38,27 @@ public class MotorCommand extends OutputLinkCommand implements DriveCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		double left;
 		try {
 			left = Double.parseDouble(wme.GetParameterValue(LEFT));
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + LEFT + " on command");
+			addStatusError("No " + LEFT + " on command");
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + LEFT + ": " + wme.GetParameterValue(LEFT));
+			addStatusError("Unable to parse " + LEFT + ": " + wme.GetParameterValue(LEFT));
+			return false;
 		}
 
 		double right;
 		try {
 			right = Double.parseDouble(wme.GetParameterValue(RIGHT));
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + RIGHT + " on command");
+			addStatusError("No " + RIGHT + " on command");
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + LEFT + ": " + wme.GetParameterValue(LEFT));
+			addStatusError("Unable to parse " + LEFT + ": " + wme.GetParameterValue(LEFT));
+			return false;
 		}
 
 		left = Command.clamp(left, -1.0, 1.0);
@@ -62,7 +66,7 @@ public class MotorCommand extends OutputLinkCommand implements DriveCommand {
 		ddc = DifferentialDriveCommand.newMotorCommand(left, right);
 		logger.debug(ddc);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 
 	@Override
