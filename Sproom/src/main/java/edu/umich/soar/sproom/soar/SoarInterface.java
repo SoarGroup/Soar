@@ -21,7 +21,6 @@ import edu.umich.soar.sproom.command.VirtualObjects;
 import edu.umich.soar.sproom.command.Waypoints;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveListener;
-import edu.umich.soar.sproom.soar.OutputLink.OutputLinkActions;
 
 import sml.Agent;
 import sml.Kernel;
@@ -108,10 +107,9 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 					kernel.StopAllAgents();
 				}
 
-				OutputLinkActions actions = ol.update();
-				if (actions.getDDC() != null) {
-					ddcPrev = actions.getDDC();
-					fireDriveEvent(actions.getDDC());
+				if (ol.getDDC() != null) {
+					ddcPrev = ol.getDDC();
+					fireDriveEvent(ddcPrev);
 				}
 				
 				il.update(app);

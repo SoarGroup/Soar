@@ -39,21 +39,23 @@ public class SetLinearVelocityCommand extends OutputLinkCommand implements Drive
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		double linearVelocity;
 		try {
 			linearVelocity = Double.parseDouble(wme.GetParameterValue(LINVEL));
 			linearVelocity = CommandConfig.CONFIG.speedFromView(linearVelocity);
 		} catch (NullPointerException ex) {
-			return new InvalidCommand(wme, "No " + LINVEL + " on command");
+			addStatusError("No " + LINVEL + " on command");
+			return false;
 		} catch (NumberFormatException e) {
-			return new InvalidCommand(wme, "Unable to parse " + LINVEL + ": " + wme.GetParameterValue(LINVEL));
+			addStatusError("Unable to parse " + LINVEL + ": " + wme.GetParameterValue(LINVEL));
+			return false;
 		}
 
 		ddc = DifferentialDriveCommand.newLinearVelocityCommand(linearVelocity);
 		logger.debug(ddc);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override

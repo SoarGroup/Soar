@@ -50,7 +50,7 @@ public abstract class OutputLinkCommand {
 			try {
 				Constructor<? extends OutputLinkCommand> ctor = klass.getConstructor(new Class<?>[] { Identifier.class });
 				OutputLinkCommand command = ctor.newInstance(wme);
-				return command.accept();
+				return command.accept() ? command : null;
 				
 			} catch (InvocationTargetException e) {
 				logger.error(e.getMessage());
@@ -108,7 +108,7 @@ public abstract class OutputLinkCommand {
 	protected OutputLinkCommand(Identifier commandwme) {
 		this.wme = commandwme;
 		
-		// cache these so they are accessable after the wme is invalid
+		// cache these so they are accessible after the wme is invalid
 		this.name = commandwme.GetAttribute();
 		this.tt = commandwme.GetTimeTag();
 	}
@@ -145,11 +145,15 @@ public abstract class OutputLinkCommand {
 		return Integer.valueOf(tt).hashCode();
 	}
 
+	protected void addStatusError(String message) {
+		addStatus(CommandStatus.ERROR, message);
+	}
+	
 	protected void addStatus(CommandStatus status) {
 		addStatus(status, null);
 	}
 	
-	protected void addStatus(CommandStatus status, String message) {
+	private void addStatus(CommandStatus status, String message) {
 		if (this.status != status) {
 			this.status = status;
 			
@@ -190,7 +194,14 @@ public abstract class OutputLinkCommand {
 		return status == null || status.isTerminated();
 	}
 
-	protected abstract OutputLinkCommand accept();
+	/**
+	 * Parse the command and mark it status accepted or status error (some kind
+	 * of parsing or syntax error). Do not mark any other statuses at this
+	 * point.
+	 * 
+	 * @return True if status accepted, false if status error.
+	 */
+	protected abstract boolean accept();
 	public abstract void update(Adaptable app);
 	
 }

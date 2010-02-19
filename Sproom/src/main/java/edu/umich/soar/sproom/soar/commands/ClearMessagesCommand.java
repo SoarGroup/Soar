@@ -21,9 +21,9 @@ public class ClearMessagesCommand extends OutputLinkCommand {
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override

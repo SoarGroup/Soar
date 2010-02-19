@@ -40,7 +40,7 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 	}
 
 	@Override
-	protected OutputLinkCommand accept() {
+	protected boolean accept() {
 		Double linearVelocity = null;
 		Double angularVelocity = null;
 		{
@@ -48,7 +48,8 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 			String angvelString = wme.GetParameterValue(ANGVEL);
 			
 			if (linvelString == null && angvelString == null) {
-				return new InvalidCommand(wme, "Must have at least one of " + LINVEL + " or " + ANGVEL + " on the command.");
+				addStatusError("Must have at least one of " + LINVEL + " or " + ANGVEL + " on the command.");
+				return false;
 			}
 	
 			if (linvelString != null) {
@@ -56,7 +57,8 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 					linearVelocity = Double.parseDouble(linvelString);
 					linearVelocity = CommandConfig.CONFIG.speedFromView(linearVelocity);
 				} catch (NumberFormatException e) {
-					return new InvalidCommand(wme, "Unable to parse " + LINVEL + ": " + linvelString);
+					addStatusError("Unable to parse " + LINVEL + ": " + linvelString);
+					return false;
 				}
 			}
 	
@@ -65,7 +67,8 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 					angularVelocity = Double.parseDouble(angvelString);
 					angularVelocity = CommandConfig.CONFIG.angleFromView(angularVelocity);
 				} catch (NumberFormatException e) {
-					return new InvalidCommand(wme, "Unable to parse " + ANGVEL + ": " + angvelString);
+					addStatusError("Unable to parse " + ANGVEL + ": " + angvelString);
+					return false;
 				}
 			}
 		}
@@ -79,7 +82,7 @@ public class SetVelocityCommand extends OutputLinkCommand implements DriveComman
 		}
 		logger.debug(ddc);
 		addStatus(CommandStatus.ACCEPTED);
-		return this;
+		return true;
 	}
 	
 	@Override

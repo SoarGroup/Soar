@@ -60,12 +60,46 @@ class OutputLink {
 					if (logger.isDebugEnabled())
 						logger.debug("Accepted: " + command);
 				}
+
+				// done with current change list
+				agent.ClearOutputLinkChanges();
+				
+				// update current commands
+				for (OutputLinkCommand command : commands.values()) {
+					// check if is terminated, can be terminated out of sequence
+					// by interrupt() below.
+					if (command.isTerminated()) {
+						continue;
+					}
+					
+					if (logger.isTraceEnabled()) {
+						logger.trace("Updating " + command);
+					}
+					
+					command.update(OutputLink.this.app);
+					
+					if (command instanceof DriveCommand) {
+
+						if (!command.equals(driveCommand)) {
+							if (driveCommand != null) {
+								if (logger.isDebugEnabled())
+									logger.debug(String.format("Interrupting %s with %s", driveCommand, command));
+								driveCommand.interrupt();
+							}
+							
+							driveCommand = (DriveCommand)command;
+						}
+					}
+				}
 				
 				// remove terminated commands
 				Iterator<Map.Entry<Integer, OutputLinkCommand>> iter = commands.entrySet().iterator();
 				while (iter.hasNext()) {
 					Map.Entry<Integer, OutputLinkCommand> entry = iter.next();
 					if (entry.getValue().isTerminated()) {
+						if (driveCommand.equals(entry.getValue())) {
+							driveCommand = null;
+						}
 						if (logger.isDebugEnabled()) {
 							logger.debug("Removing " + entry.getValue());
 						}
@@ -76,52 +110,8 @@ class OutputLink {
 		}, null);
 	}
 	
-	class OutputLinkActions {
-		private DifferentialDriveCommand ddc;
-		
-		DifferentialDriveCommand getDDC() {
-			return ddc;
-		}
-	}
-	
-	OutputLinkActions update() {
-		logger.trace("Update");
-		
-		// update current commands
-		OutputLinkActions actions = new OutputLinkActions();
-		for (OutputLinkCommand command : commands.values()) {
-			
-			if (command.isTerminated()) {
-				continue;
-			}
-			
-			if (logger.isTraceEnabled())
-				logger.trace("Updating " + command);
-			command.update(app);
-			
-			if (command instanceof DriveCommand) {
-
-				if (!command.equals(driveCommand)) {
-					if (driveCommand != null) {
-						if (logger.isDebugEnabled())
-							logger.debug("Interrupting " + driveCommand);
-						driveCommand.interrupt();
-					}
-					
-					driveCommand = (DriveCommand)command;
-					if (logger.isDebugEnabled())
-						logger.debug("New drive command: " + driveCommand);
-				}
-
-				// Set the new ddc
-				actions.ddc = driveCommand.getDDC();
-			}
-		}
-		
-		agent.ClearOutputLinkChanges();
-		logger.trace("Update done");
-		
-		return actions;
+	DifferentialDriveCommand getDDC() {
+		return driveCommand != null ? driveCommand.getDDC() : null;
 	}
 	
 }
