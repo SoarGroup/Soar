@@ -1,3 +1,14 @@
+# Examples:
+#
+# make checkout			# Checkout core modules
+# make public-checkout		# Checkout core modules from public svn (login not required)
+# make checkout-soar2d		# Checkout Soar2D (not required, here for example)
+# make public-checkout-soar2d	# Checkout Soar2D from public svn (not required, here for example)
+# make update			# svn update everywhere
+# make status			# svn status everywhere (there is no "make commit")
+# make				# build all checked-out modules (there is no "make install")
+# make clean			# clean all checked-out modules
+
 all:
 	cd Core && scons
 
