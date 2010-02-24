@@ -1050,7 +1050,7 @@ inline smem_lti_id smem_lti_soar_add( agent *my_agent, Symbol *id )
 }
 
 // returns a reference to an lti
-inline Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level )
+Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_letter, uint64_t name_number, goal_stack_level level )
 {
 	Symbol *return_val;
 
