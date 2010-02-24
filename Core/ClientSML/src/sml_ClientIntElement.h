@@ -20,6 +20,15 @@ namespace sml {
 class WorkingMemory ;
 class Identifier ;
 
+//
+// Special note about output-link WMEs: The agent is
+// free to remove WMEs from the output-link at any time.
+// If you retain a WME for multiple decision cycles,
+// you must check output link changes (using 
+// GetNumOutputLinkChanges, GetOutputLinkChange, and
+// IsOutputLinkAdd) to check if the WMEs you have were
+// removed during the last decision cycle. Dereferencing
+// a removed WME causes a segmentation fault.
 class IntElement : public WMElement
 {
 	// Allow working memory to create these objects directly (user must use agent class to do this)
