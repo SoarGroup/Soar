@@ -86,6 +86,12 @@ public:
 	
 	// Class conversions for SWIG language bridges. (The even poorer man's RTTI).
 	// Each subclass overrides the appropriate method.
+	// Note: In SWIG-wrapped languages such as Java, Python, Tcl, CSHarp:
+	//       The reference returned by this command will not pass a reference
+	//       equality test with other references to other WMEs pointing to 
+	//       the same working memory element, even though in C++ these 
+	//       pointers are the same. Workaround: use GetTimeTag to test
+	//       if the returned WMElements are indeed the same WME.
 	virtual Identifier* ConvertToIdentifier() { return NULL; }
 	virtual IntElement* ConvertToIntElement() { return NULL; }
 	virtual FloatElement* ConvertToFloatElement() { return NULL; }
