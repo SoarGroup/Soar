@@ -1079,7 +1079,7 @@ Symbol *smem_lti_soar_make( agent *my_agent, smem_lti_id lti, char name_letter, 
 	return return_val;
 }
 
-inline void smem_reset_id_counters( agent *my_agent )
+void smem_reset_id_counters( agent *my_agent )
 {
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
 	{
