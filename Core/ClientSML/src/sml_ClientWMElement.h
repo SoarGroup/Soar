@@ -105,6 +105,15 @@ public:
 	*		 If "auto commit" is turned off in ClientKernel,
 	*		 the WME is not removed from the input link until
 	*		 the client calls "Commit"
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	bool DestroyWME();
 
