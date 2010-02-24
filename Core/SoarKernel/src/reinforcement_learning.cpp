@@ -123,7 +123,7 @@ rl_stat_container::rl_stat_container( agent *new_agent ): stat_container( new_ag
 /////////////////////////////////////////////////////
 
 // quick shortcut to determine if rl is enabled
-inline bool rl_enabled( agent *my_agent )
+bool rl_enabled( agent *my_agent )
 {
 	return ( my_agent->rl_params->learning->get_value() == soar_module::on );
 }
