@@ -284,14 +284,15 @@ public:
 
 	/*************************************************************
 	* @brief An alternative that matches the older SGIO interface.
+	*		 The agent retains ownership of this object.
 	*************************************************************/
 	Identifier* GetILink() { return GetInputLink() ; }
 
 	/*************************************************************
 	* @brief Returns the id object for the output link.
 	*		 The agent retains ownership of this object.
-   *      Note this will be null until the first time an agent
-   *      puts something on the output link.
+    *        Note this will be null until the first time an agent
+    *        puts something on the output link.
 	*************************************************************/
 	Identifier* GetOutputLink() ;
 
@@ -300,23 +301,52 @@ public:
 	*		 it for addition to Soar's input link.
 	*
 	*		 The agent retains ownership of this object.
+	*
 	*		 The returned object is valid until the caller
 	*		 deletes the parent identifier.
+	*
 	*		 If "auto commit" is turned off in ClientKernel,
 	*		 the WME is not added to Soar's input link until the
-	*		 client calls "Commit" 
+	*		 client calls "Commit".
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	StringElement* CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
 
 	/*************************************************************
 	* @brief Same as CreateStringWME but for a new WME that has
 	*		 an int as its value.
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	IntElement* CreateIntWME(Identifier* parent, char const* pAttribute, int value) ;
 
 	/*************************************************************
 	* @brief Same as CreateStringWME but for a new WME that has
 	*		 a floating point value.
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	FloatElement* CreateFloatWME(Identifier* parent, char const* pAttribute, double value) ;
 
@@ -326,6 +356,15 @@ public:
 	*		 The identifier value is generated here and will be
 	*		 different from the value Soar assigns in the kernel.
 	*		 The kernel will keep a map for translating back and forth.
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	Identifier*		CreateIdWME(Identifier* parent, char const* pAttribute) ;
 
@@ -333,6 +372,15 @@ public:
 	* @brief Creates a new WME that has an identifier as its value.
 	*		 The value in this case is the same as an existing identifier.
 	*		 This allows us to create a graph rather than a tree.
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	Identifier*		CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue) ;
 
@@ -348,6 +396,15 @@ public:
 	*		 value causes the wme to be deleted and a new identical one to be added
 	*		 which will trigger rules to rematch.
 	*		 You can turn this flag on and off around a set of calls to update if you wish.
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	void	Update(StringElement* pWME, char const* pValue) ;
 	void	Update(IntElement* pWME, int value) ;
@@ -374,6 +431,15 @@ public:
 	*		 If "auto commit" is turned off in ClientKernel,
 	*		 the WME is not removed from the input link until
 	*		 the client calls "Commit"
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	bool	DestroyWME(WMElement* pWME) ;
 
@@ -601,6 +667,15 @@ public:
 	*		 the output-link since the last call to "ClearOutputLinkChanges".
 	*
 	*		 Returns NULL if index is out of range.
+	*
+	*	     Special note about output-link WMEs: The agent is
+	*		 free to remove WMEs from the output-link at any time.
+	*		 If you retain a WME for multiple decision cycles,
+	*		 you must check output link changes (using 
+	*        GetNumOutputLinkChanges, GetOutputLinkChange, and
+	*        IsOutputLinkAdd) to check if the WMEs you have were
+	*        removed during the last decision cycle. Dereferencing
+	*	     a removed WME causes a segmentation fault.
 	*
 	* @param index	The 0-based index for which command to get.
 	*************************************************************/
