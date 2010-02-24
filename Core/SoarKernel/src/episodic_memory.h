@@ -603,7 +603,7 @@ typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query
 //////////////////////////////////////////////////////////
 
 // shortcut for determining if EpMem is enabled
-inline extern bool epmem_enabled( agent *my_agent );
+extern bool epmem_enabled( agent *my_agent );
 
 
 //////////////////////////////////////////////////////////
