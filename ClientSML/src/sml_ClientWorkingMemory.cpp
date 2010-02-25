@@ -102,7 +102,7 @@ void WorkingMemory::SetOutputLinkChangeTracking(bool setting)
 	else
 	{
 		// turning on
-		m_changeListHandlerId = GetAgent()->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, ClearHandlerStatic, this);
+		m_changeListHandlerId = GetAgent()->RegisterForRunEvent(smlEVENT_AFTER_APPLY_PHASE, ClearHandlerStatic, this);
 	}
 }
 
