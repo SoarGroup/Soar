@@ -190,12 +190,7 @@ void KernelCallback::UnregisterWithKernel(int eventID)
 
 	agent* pAgent = m_pCallbackAgentSML->GetSoarAgent() ;
 
-	if (eventID == smlEVENT_OUTPUT_PHASE_CALLBACK)
-	{
-		// NLD: proposed fix to bug 1049 
-		// remove_output_function(pAgent, "output-link") ;
-	}
-	else if (eventID != smlEVENT_BEFORE_PHASE_EXECUTED && eventID != smlEVENT_AFTER_PHASE_EXECUTED)
+	if (eventID != smlEVENT_BEFORE_PHASE_EXECUTED && eventID != smlEVENT_AFTER_PHASE_EXECUTED)
 	{
 		SOAR_CALLBACK_TYPE callbackType = SOAR_CALLBACK_TYPE(GetCallbackFromEventID(eventID));
 		soar_remove_callback(pAgent, callbackType, callbackID.c_str()) ;
