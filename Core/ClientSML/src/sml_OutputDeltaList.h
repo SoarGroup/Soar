@@ -61,6 +61,9 @@ public:
 
 	void Clear(bool deleteContents, bool clearJustAdded = false, bool clearChildrenModified = false)
 	{
+		if (m_DeltaList.empty())
+			return;
+
 		if ( clearJustAdded || clearChildrenModified )
 		{
 			for ( std::vector<WMDelta*>::iterator iter = m_DeltaList.begin(); iter != m_DeltaList.end(); ++iter )

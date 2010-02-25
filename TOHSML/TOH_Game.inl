@@ -146,8 +146,6 @@ void TOH_Game::update(sml::Kernel &/*kernel*/) {
 
   if(!m_agent->Commit())
     abort();
-
-  m_agent->ClearOutputLinkChanges();
 }
 
 void TOH_Game::move_disk(const char &source_peg_index, const char &destination_peg_index) {
