@@ -52,6 +52,8 @@ WorkingMemory::WorkingMemory()
 #endif // SML_DIRECT
 
 	m_Deleting = false;
+
+	m_changeListHandlerId = -1;
 }
 
 WorkingMemory::~WorkingMemory()
@@ -83,6 +85,31 @@ IdentifierSymbol* WorkingMemory::FindIdentifierSymbol(char const* pID)
 	}
 
 	return match->second;
+}
+
+void WorkingMemory::SetOutputLinkChangeTracking(bool setting)
+{
+	if (IsTrackingOutputLinkChanges() == setting)
+		return;
+
+	if (IsTrackingOutputLinkChanges())
+	{
+		// turning off
+		GetAgent()->UnregisterForRunEvent(m_changeListHandlerId);
+		m_changeListHandlerId = -1;
+		ClearOutputLinkChanges();
+	}
+	else
+	{
+		// turning on
+		m_changeListHandlerId = GetAgent()->RegisterForRunEvent(smlEVENT_BEFORE_INPUT_PHASE, ClearHandlerStatic, this);
+	}
+}
+
+void WorkingMemory::ClearHandlerStatic(sml::smlRunEventId /*id*/, void* pUserData, sml::Agent* /*pAgent*/, sml::smlPhase /*phase*/) 
+{
+	WorkingMemory* pWM = (WorkingMemory*)pUserData;
+	pWM->ClearOutputLinkChanges();
 }
 
 void WorkingMemory::RecordSymbolInMap( IdentifierSymbol* pSymbol )
@@ -161,7 +188,8 @@ WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const*
 void WorkingMemory::RecordAddition(WMElement* pWME)
 {
 	// For additions, the delta list does not take ownership of the wme.
-	m_OutputDeltaList.AddWME(pWME) ;
+	if (IsTrackingOutputLinkChanges())
+		m_OutputDeltaList.AddWME(pWME) ;
 
 	// Mark this wme as having just been added (in case the client would prefer
 	// to walk the tree).
@@ -173,18 +201,23 @@ void WorkingMemory::RecordAddition(WMElement* pWME)
 
 void WorkingMemory::RecordDeletion(WMElement* pWME)
 {
-	// This list takes ownership of the deleted wme.
-	// When the item is removed from the delta list it will be deleted.
-	m_OutputDeltaList.RemoveWME(pWME) ;
-
 	// remove timetag -> WME mapping
 	m_TimeTagWMEMap.erase( pWME->GetTimeTag() );
+
+	// This list takes ownership of the deleted wme.
+	// When the item is removed from the delta list it will be deleted.
+	// If we're not tracking changes, we need to delete it.
+	if (IsTrackingOutputLinkChanges())
+		m_OutputDeltaList.RemoveWME(pWME) ;
+	else
+		delete pWME;
 }
 
 // Clear the delta list and also reset all state flags.
 void WorkingMemory::ClearOutputLinkChanges()
 {
 	// Clear the list, deleting any WMEs that it owns
+	// Call this even if m_TrackingOutputLinkChanges false in case there was something on it before false
 	m_OutputDeltaList.Clear(true, true, true) ;
 
 	//// We only maintain this information for values on the output link
@@ -470,11 +503,6 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* /*pRespons
 				GetAgent()->ReceivedOutputEvent(pWme) ;
 			}
 		}
-
-		// This is potentially wrong, but I think we should now clear the list of changes.
-		// If someone is working with the callback handler model it would be very hard for them to call this
-		// themselves and without this call somewhere we'll get mutiple calls to the same handlers.
-		ClearOutputLinkChanges() ;
 	}
 
 #ifdef _DEBUG

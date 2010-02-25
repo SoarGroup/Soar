@@ -45,6 +45,8 @@ class FloatElement ;
 class Identifier ;
 class IdentifierSymbol ;
 class AnalyzeXML ;
+enum smlRunEventId;
+enum smlPhase;
 
 class WorkingMemory
 {
@@ -65,6 +67,8 @@ protected:
 
 	// List of changes to output-link since last time client checked
 	OutputDeltaList m_OutputDeltaList ;
+	int m_changeListHandlerId;
+	static void ClearHandlerStatic(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
 
 	typedef std::list<WMElement*> WmeList ;
 	typedef WmeList::iterator WmeListIter ;
@@ -107,6 +111,8 @@ public:
 	char const*		GetAgentName() const ;
 	Connection*		GetConnection()	const ;
 
+	void			SetOutputLinkChangeTracking(bool setting);
+	bool			IsTrackingOutputLinkChanges() { return m_changeListHandlerId != -1; }
 	void			ClearOutputLinkChanges() ;
 
 	OutputDeltaList* GetOutputLinkChanges() { return &m_OutputDeltaList ; }

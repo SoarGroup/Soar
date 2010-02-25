@@ -136,8 +136,6 @@ void MultiAgentTest::MyUpdateEventHandler( sml::smlUpdateEventId, void*, sml::Ke
 			// Place a new addition request on the input link
 			UpdateInput( pAgent, intTotal );
 		}
-
-		pAgent->ClearOutputLinkChanges() ;
 	}
 }
 
