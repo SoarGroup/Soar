@@ -25,6 +25,7 @@
 #include "sml_DeltaList.h"
 #include "sml_OutputDeltaList.h"
 #include "sml_ClientDirect.h" // SML_DIRECT defined here
+#include "sml_Events.h"
 
 #include <list>
 #include <map>
@@ -45,8 +46,6 @@ class FloatElement ;
 class Identifier ;
 class IdentifierSymbol ;
 class AnalyzeXML ;
-enum smlRunEventId;
-enum smlPhase;
 
 class WorkingMemory
 {
