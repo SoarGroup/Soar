@@ -939,11 +939,6 @@ TEST_DEFINITION( testAgent )
 		|| std::string( pCommand2->GetCommandName() ) == "A"  
 		|| std::string( pCommand3->GetCommandName() ) == "A" );
 
-	m_pAgent->ClearOutputLinkChanges() ;
-
-	int clearedNumberCommands = m_pAgent->GetNumberCommands() ;
-	CPPUNIT_ASSERT( clearedNumberCommands == 0);
-
 	if ( m_Options.test( VERBOSE ) ) std::cout << "Marking command as completed." << std::endl ;
 	pMove->AddStatusComplete();
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
@@ -1062,7 +1057,7 @@ TEST_DEFINITION( testSimpleCopy )
 	// Set to true for more detail on this
 	m_pKernel->SetTraceCommunications(false) ;
 
-	std::string result = m_pAgent->RunSelf(3) ;
+	std::string result = m_pAgent->RunSelf(1) ;
 
 	//cout << result << endl ;
 	//cout << trace << endl ;
@@ -1359,10 +1354,8 @@ TEST_DEFINITION( testStatusCompleteDuplication )
 	CPPUNIT_ASSERT( numberCommands == 1);
 
 	// Get the first two commands (move and alternate)
-	{
-		sml::Identifier* pCommandBefore = m_pAgent->GetCommand(0) ;
-		pCommandBefore->AddStatusComplete();
-	}
+	sml::Identifier* pCommand = m_pAgent->GetCommand(0) ;
+	pCommand->AddStatusComplete();
 
 	// commit status complete
 	CPPUNIT_ASSERT( m_pAgent->Commit() );
@@ -1371,24 +1364,21 @@ TEST_DEFINITION( testStatusCompleteDuplication )
 	m_pAgent->RunSelf(1);
 
 	// count status complete instances
+	sml::Identifier::ChildrenIter child = pCommand->GetChildrenBegin();
+	sml::Identifier::ChildrenIter end = pCommand->GetChildrenEnd();
+
+	int count = 0;
+	while ( child != end )
 	{
-		sml::Identifier* pCommandAfter = m_pAgent->GetCommand(0);
-		sml::Identifier::ChildrenIter child = pCommandAfter->GetChildrenBegin();
-		sml::Identifier::ChildrenIter end = pCommandAfter->GetChildrenEnd();
-
-		int count = 0;
-		while ( child != end )
+		if ( (*child)->GetAttribute() == std::string("status") )
 		{
-			if ( (*child)->GetAttribute() == std::string("status") )
-			{
-				++count;
-			}
-			++child;
+			++count;
 		}
-
-		// there should only be one
-		CPPUNIT_ASSERT( count == 1 );
+		++child;
 	}
+
+	// there should only be one
+	CPPUNIT_ASSERT( count == 1 );
 }
 
 TEST_DEFINITION( testStopSoarVsInterrupt )

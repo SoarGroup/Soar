@@ -582,25 +582,31 @@ public:
 	=== There are a number of different ways to read information from
 	=== the output link.  Choose whichever method seems easiest to you.
 	===
-	=== Method 1: a) Call "Run(n)".
+	=== Method 1: 
+	===         a) Call "Run(n)".
 	===			b) Call "Commands", "GetCommand" and "GetParamValue"
 	===			   to get top level WMEs that have been added since the last cycle.
 	===
-	=== Method 2: a) Call "Run(n)".
+	=== Method 2: 
+	===         a) Call "Run(n)".
 	===			b) Call "GetOutputLink" and "GetNumberChildren", "GetChild"
 	===			   to walk the tree and examine its current state.
 	===			c) You can use "IsJustAdded" and "AreChildrenModified"
 	===			   to see what WMEs just changed.
+	===         d) This method does not require change tracking, you can disable
+	===            it by calling SetOutputLinkChangeTracking(false).
 	===
-	=== Method 3: a) Call "Run(n)".
+	=== Method 3: 
+	===         a) Call "Run(n)".
 	===			b) Call "GetNumberOutputLinkChanges" and "GetOutputLinkChange"
 	===			   and "IsOutputLinkChangeAdd" to get the list of
-	===			   all WMEs added and removed since the last cycle.
+	===			   all WMEs added and removed since the last decision cycle.
 	===
-	=== Method 4: a) Call "AddOutputHandler" to register functions that are called
-	===				 when a specific attributes are added to the output link.
-	===			  b) Call "Run(n)".  If the target attribute is added the output function
-	===				 is called.
+	=== Method 4: 
+	===         a) Call "AddOutputHandler" to register functions that are called
+	===			   when a specific attributes are added to the output link.
+	===			b) Call "Run(n)".  If the target attribute is added the output function
+	===			   is called.
 	===
 	=== Method 1 is the closest to the original SGIO and should be sufficient
 	=== in almost all cases.  However, Methods 2 & 3 provide complete
@@ -614,57 +620,63 @@ public:
 	==============================================================================*/
 
 	/*************************************************************
-	* @brief Get number of changes to output link.
-	*        (This is since last call to "ClearOuputLinkChanges").
+	* @brief Enable or disable output-link change tracking. Do 
+	*        NOT use if using Commands, GetCommand, 
+	*        GetOutputLinkChange, AddOutputHandler.
+	*************************************************************/
+	void SetOutputLinkChangeTracking(bool setting) { GetWM()->SetOutputLinkChangeTracking(setting); }
+
+	/*************************************************************
+	* @brief Get number of changes to output link since last cycle.
 	*************************************************************/
 	int		GetNumberOutputLinkChanges() ;
 
 	/*************************************************************
-	* @brief Get the n-th wme added or deleted to output link
-	*        (This is since last call to "ClearOuputLinkChanges").
+	* @brief Get the n-th wme added or deleted to output link since 
+	*		 last cycle.
 	*************************************************************/
 	WMElement*	GetOutputLinkChange(int index) ;
 
 	/*************************************************************
 	* @brief Returns true if the n-th wme change to the output-link
-	*		 was a wme being added.  (false => it was a wme being deleted).
-	*        (This is since last call to "ClearOuputLinkChanges").
+	*		 since the last cycle was a wme being added.  
+	*        (false => it was a wme being deleted)
 	*************************************************************/
 	bool		IsOutputLinkChangeAdd(int index) ;
 
 	/*************************************************************
-	* @brief Clear the current list of changes to the output-link.
-	*		 You should call this after processing the list of changes.
+	* @brief Deprecated: Clears the current list of changes 
+	*        to the output-link.
+	# @deprecated This is now called automatically after each
+	*        decision cycle.
 	*************************************************************/
 	void	ClearOutputLinkChanges() ;
 
 	/*************************************************************
 	* @brief Get the number of "commands".  A command in this context
 	*		 is an identifier wme that have been added to the top level of
-	*		 the output-link since the last call to "ClearOutputLinkChanges".
+	*		 the output-link since the last decision cycle.
 	*
 	*		 NOTE: This function may involve searching a list so it's
 	*		 best to not call it repeatedly.
-	*		 
 	*************************************************************/
 	int		GetNumberCommands() ;
 
 	/*************************************************************
 	* @brief Returns true if there are "commands" available.
-	*		 A command in this context
-	*		 is an identifier wme that have been added to the top level of
-	*		 the output-link since the last call to "ClearOutputLinkChanges".
+	*		 A command in this context is an identifier wme that 
+	*        has been added to the top level of the output-link 
+	*        since the last decision cycle.
 	*
 	*		 NOTE: This function may involve searching a list so it's
 	*		 best to not call it repeatedly.
-	*		 
 	*************************************************************/
 	bool	Commands() { return GetNumberCommands() > 0 ; }
 
 	/*************************************************************
 	* @brief Get the n-th "command".  A command in this context
 	*		 is an identifier wme that have been added to the top level of
-	*		 the output-link since the last call to "ClearOutputLinkChanges".
+	*		 the output-link since the last decision cycle.
 	*
 	*		 Returns NULL if index is out of range.
 	*
@@ -704,13 +716,6 @@ public:
 	/*************************************************************
 	* @brief   Run Soar until either output is generated or
 	*		   the maximum number of decisions is reached.
-	*
-	* This function also calls "ClearOutputLinkChanges" so methods
-	* like "IsJustAdded" will refer to the changes that occur as a result of
-	* this run.
-	*
-	* This function also calls "Commit" to make sure any pending input
-	* link changes have been sent to Soar.
 	*
 	* We don't generally want Soar to just run until it generates
 	* output without any limit as an error in the AI logic might cause

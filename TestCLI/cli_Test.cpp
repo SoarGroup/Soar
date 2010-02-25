@@ -87,14 +87,6 @@ void RunCallbackHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAge
 	}
 }
 
-void UpdateCallbackHandler( sml::smlUpdateEventId eventId, void* userData, sml::Kernel* pKernel, sml::smlRunFlags )
-{
-	// prevents update changes from growing memory monotonically
-	// in case the agent touches the output link
-	sml::Agent* pAgent = (sml::Agent*) userData;	
-	pAgent->ClearOutputLinkChanges();
-}
-
 char getKey(bool block) {
 
 	char ret = 0;	// default to 0 (no input)
@@ -448,9 +440,6 @@ int main(int argc, char** argv)
 		// Register for necessary callbacks
 		int callbackID1 = pAgent->RegisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, RunCallbackHandler, 0);
 		g_TraceCallbackID = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
-
-		// agent as user data required for ClearOutputLinkChanges
-		pKernel->RegisterForUpdateEvent( sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, UpdateCallbackHandler, pAgent ); // NOTE: doesn't support multiple agents
 
 		// Do script if any
 		bool good = true;

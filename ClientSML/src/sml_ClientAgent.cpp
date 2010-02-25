@@ -63,6 +63,7 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_BlinkIfNoChange = true ;
 
 	m_WorkingMemory.SetAgent(this) ;
+	m_WorkingMemory.SetOutputLinkChangeTracking(true);
 
 	m_pDPI = 0;
 
@@ -79,13 +80,6 @@ Connection* Agent::GetConnection() const
 	return m_Kernel->GetConnection() ;
 }
 
-/*************************************************************
-* @brief This function is called when output is received
-*		 from the Soar kernel.
-*
-* @param pIncoming	The output command (list of wmes added/removed from output link)
-* @param pResponse	The reply (no real need to fill anything in here currently)
-*************************************************************/
 void Agent::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* pResponse)
 {
 	GetWM()->ReceivedOutput(pIncoming, pResponse) ;
@@ -119,13 +113,6 @@ void Agent::ReceivedEvent(AnalyzeXML* pIncoming, ElementXML* pResponse)
 	}
 }
 
-/*************************************************************
-* @brief This function is called when an event is received
-*		 from the Soar kernel.
-*
-* @param pIncoming	The event command
-* @param pResponse	The reply (no real need to fill anything in here currently)
-*************************************************************/
 void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
 	smlPhase phase = smlPhase(pIncoming->GetArgInt(sml_Names::kParamPhase, -1)) ;
@@ -150,10 +137,6 @@ void Agent::ReceivedRunEvent(smlRunEventId id, AnalyzeXML* pIncoming, ElementXML
 	}
 }
 
-/*************************************************************
-* @brief This function is called after output has been received
-*		 and processed from the kernel.
-*************************************************************/
 void Agent::FireOutputNotification()
 {
 	smlWorkingMemoryEventId id = smlEVENT_OUTPUT_PHASE_CALLBACK ;
@@ -178,13 +161,6 @@ void Agent::FireOutputNotification()
 	}
 }
 
-/*************************************************************
-* @brief This function is called when an event is received
-*		 from the Soar kernel.
-*
-* @param pIncoming	The event command
-* @param pResponse	The reply (no real need to fill anything in here currently)
-*************************************************************/
 void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
 	char const* pMessage = pIncoming->GetArgString(sml_Names::kParamMessage) ;
@@ -216,13 +192,6 @@ void Agent::ReceivedPrintEvent(smlPrintEventId id, AnalyzeXML* pIncoming, Elemen
 	}
 }
 
-/*************************************************************
-* @brief This function is called when an event is received
-*		 from the Soar kernel.
-*
-* @param pIncoming	The event command
-* @param pResponse	The reply (no real need to fill anything in here currently)
-*************************************************************/
 void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncoming, ElementXML* /*pResponse*/)
 {
 	char const* pProductionName = pIncoming->GetArgString(sml_Names::kParamName) ;
@@ -247,16 +216,6 @@ void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncomi
 	}
 }
 
-/*************************************************************
-* @brief Load a set of productions from a file.
-*
-* The file must currently be on a filesystem that the kernel can
-* access (i.e. can't send to a remote PC unless that PC can load
-* this file).
-*
-* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
-* @returns True if finds file to load successfully.
-*************************************************************/
 bool Agent::LoadProductions(char const* pFilename, bool echoResults)
 {
 	// gSKI's LoadProductions command doesn't support all of the command line commands we need,
@@ -480,32 +439,6 @@ public:
 	}
 } ;
 
-/*************************************************************
-* @brief Register for a "RunEvent".
-*		 Multiple handlers can be registered for the same event.
-* @param smlEventId		The event we're interested in (see the list below for valid values)
-* @param handler		A function that will be called when the event happens
-* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
-* 
-* Current set is:
-* smlEVENT_BEFORE_SMALLEST_STEP,
-* smlEVENT_AFTER_SMALLEST_STEP,
-* smlEVENT_BEFORE_ELABORATION_CYCLE,
-* smlEVENT_AFTER_ELABORATION_CYCLE,
-* smlEVENT_BEFORE_PHASE_EXECUTED,
-* smlEVENT_AFTER_PHASE_EXECUTED,
-* smlEVENT_BEFORE_DECISION_CYCLE,
-* smlEVENT_AFTER_DECISION_CYCLE,
-* smlEVENT_AFTER_INTERRUPT,
-* smlEVENT_AFTER_HALTED,
-* smlEVENT_BEFORE_RUN_STARTS,
-* smlEVENT_AFTER_RUN_ENDS,
-* smlEVENT_BEFORE_RUNNING,
-* smlEVENT_AFTER_RUNNING
-*
-* @returns A unique ID for this callback (used to unregister the callback later) 
-*************************************************************/
 int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* pUserData, bool addToBack)
 {
 	// Start by checking if this id, handler, pUSerData combination has already been registered
@@ -537,9 +470,6 @@ int Agent::RegisterForRunEvent(smlRunEventId id, RunEventHandler handler, void* 
 	return m_CallbackIDCounter ;
 }
 
-/*************************************************************
-* @brief Unregister for a particular event
-*************************************************************/
 bool Agent::UnregisterForRunEvent(int callbackID)
 {
 	// Build a test object for the callbackID we're interested in
@@ -563,12 +493,6 @@ bool Agent::UnregisterForRunEvent(int callbackID)
 	return true ;
 }
 
-/*************************************************************
-* @brief Register to be notified when output has been received from the agent.
-*		 This event is a bit special, because we ensure that the client side data structures
-*		 have been updated before this event is triggered.  So you can examine the current contents
-*		 of the output link (GetOutputLink() etc.) and it will be up to date.
-*************************************************************/
 int Agent::RegisterForOutputNotification(OutputNotificationHandler handler, void* pUserData, bool addToBack)
 {
 	smlWorkingMemoryEventId id = smlEVENT_OUTPUT_PHASE_CALLBACK ;
@@ -627,18 +551,6 @@ bool Agent::UnregisterForOutputNotification(int callbackID)
 	return true ;
 }
 
-/*************************************************************
-* @brief Register an "Output event handler".
-*		 This is one way to be notified when output occurs on the output link.
-*		 You register for a specific attribute name (e.g. "move") and when that attribute is added to the
-*		 output link the handler you have registered for that name is called.
-* @param pAttributeName	The attribute which will trigger this callback ("move" in the example).
-* @param handler		A function that will be called when the event happens
-* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
-* 
-* @returns A unique ID for this callback (used to unregister the callback later) 
-*************************************************************/
 int	Agent::AddOutputHandler(char const* pAttributeName, OutputEventHandler handler, void* pUserData, bool addToBack)
 {
 	// Start by checking if this attributeName, handler, pUSerData combination has already been registered
@@ -660,9 +572,6 @@ int	Agent::AddOutputHandler(char const* pAttributeName, OutputEventHandler handl
 	return m_CallbackIDCounter ;
 }
 
-/*************************************************************
-* @brief Unregister for a particular output event
-*************************************************************/
 bool Agent::RemoveOutputHandler(int callbackID)
 {
 	// Build a test object for the callbackID we're interested in
@@ -680,19 +589,11 @@ bool Agent::RemoveOutputHandler(int callbackID)
 	return true ;
 }
 
-/*************************************************************
-* @brief Returns true if there's at least one listener for output events.
-*************************************************************/
 bool Agent::IsRegisteredForOutputEvent()
 {
 	return m_OutputEventMap.getSize() > 0 ;
 }
 
-/*************************************************************
-* @brief Call any registered handlers to notify them when
-*		 a new working memory element is added to the top
-*		 level of the output link.
-*************************************************************/
 void Agent::ReceivedOutputEvent(WMElement* pWmeAdded)
 {
 	char const* pAttributeName = pWmeAdded->GetAttribute() ;
@@ -717,23 +618,6 @@ void Agent::ReceivedOutputEvent(WMElement* pWmeAdded)
 	}
 }
 
-/*************************************************************
-* @brief Register for a "ProductionEvent".
-*		 Multiple handlers can be registered for the same event.
-* @param smlEventId		The event we're interested in (see the list below for valid values)
-* @param handler		A function that will be called when the event happens
-* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
-*
-* Current set is:
-* Production Manager
-* smlEVENT_AFTER_PRODUCTION_ADDED,
-* smlEVENT_BEFORE_PRODUCTION_REMOVED,
-* smlEVENT_AFTER_PRODUCTION_FIRED,
-* smlEVENT_BEFORE_PRODUCTION_RETRACTED,
-*
-* @returns A unique ID for this callback (used to unregister the callback later) 
-*************************************************************/
 int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHandler handler, void* pUserData, bool addToBack)
 {
 	// Start by checking if this id, handler, pUSerData combination has already been registered
@@ -762,9 +646,6 @@ int Agent::RegisterForProductionEvent(smlProductionEventId id, ProductionEventHa
 	return m_CallbackIDCounter ;
 }
 
-/*************************************************************
-* @brief Unregister for a particular event
-*************************************************************/
 bool Agent::UnregisterForProductionEvent(int callbackID)
 {
 	// Build a test object for the callbackID we're interested in
@@ -788,21 +669,6 @@ bool Agent::UnregisterForProductionEvent(int callbackID)
 	return true ;
 }
 
-/*************************************************************
-* @brief Register for an "PrintEvent".
-*		 Multiple handlers can be registered for the same event.
-* @param smlEventId		The event we're interested in (see the list below for valid values)
-* @param handler		A function that will be called when the event happens
-* @param pUserData		Arbitrary data that will be passed back to the handler function when the event happens.
-* @param ignoreOwnEchos If true and registering for echo event, commands issued through this connection won't echo.  If false, echos all commands.  Ignored for non-echo events.
-* @param addToBack		If true add this handler is called after existing handlers.  If false, called before existing handlers.
-*
-* Current set is:
-* // Agent manager
-* smlEVENT_PRINT
-*
-* @returns A unique ID for this callback (used to unregister the callback later) 
-*************************************************************/
 int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, void* pUserData, bool ignoreOwnEchos, bool addToBack)
 {
 	// Start by checking if this id, handler, pUSerData combination has already been registered
@@ -832,9 +698,6 @@ int Agent::RegisterForPrintEvent(smlPrintEventId id, PrintEventHandler handler, 
 	return m_CallbackIDCounter ;
 }
 
-/*************************************************************
-* @brief Unregister for a particular event
-*************************************************************/
 bool Agent::UnregisterForPrintEvent(int callbackID)
 {
 	// Build a test object for the callbackID we're interested in
@@ -989,40 +852,22 @@ bool Agent::UnregisterForXMLEvent(int callbackID)
 	return true ;
 }
 
-/*************************************************************
-* @brief Returns the id object for the input link.
-*		 The agent retains ownership of this object.
-*************************************************************/
 Identifier* Agent::GetInputLink()
 {
 	return GetWM()->GetInputLink() ;
 }
 
-/*************************************************************
-* @brief Returns the id object for the output link.
-*		 The agent retains ownership of this object.
-*      Note this will be null until the first time an agent
-*      puts something on the output link.
-*************************************************************/
 Identifier* Agent::GetOutputLink()
 {
 	return GetWM()->GetOutputLink() ;
 }
 
-/*************************************************************
-* @brief Get number of changes to output link.
-*        (This is since last call to "ClearOuputLinkChanges").
-*************************************************************/
 int	Agent::GetNumberOutputLinkChanges()
 {
 	OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
 	return pDeltas->GetSize() ;
 }
 
-/*************************************************************
-* @brief Get the n-th wme added or deleted to output link
-*        (This is since last call to "ClearOuputLinkChanges").
-*************************************************************/
 WMElement* Agent::GetOutputLinkChange(int index)
 {
 	OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
@@ -1036,11 +881,6 @@ WMElement* Agent::GetOutputLinkChange(int index)
 	return pWME ;
 }
 
-/*************************************************************
-* @brief Returns true if the n-th wme change to the output-link
-*		 was a wme being added.  (false => it was a wme being deleted).
-*        (This is since last call to "ClearOuputLinkChanges").
-*************************************************************/
 bool Agent::IsOutputLinkChangeAdd(int index)
 {
 	OutputDeltaList* pDeltas = GetWM()->GetOutputLinkChanges() ;
@@ -1054,24 +894,11 @@ bool Agent::IsOutputLinkChangeAdd(int index)
 	return isAddition ;
 }
 
-/*************************************************************
-* @brief Clear the current list of changes to the output-link.
-*		 You should call this after processing the list of changes.
-*************************************************************/
 void Agent::ClearOutputLinkChanges()
 {
 	GetWM()->ClearOutputLinkChanges() ;
 }
 
-/*************************************************************
-* @brief Get the number of "commands".  A command in this context
-*		 is an identifier wme that have been added to the top level of
-*		 the output-link since the last call to "ClearOutputLinkChanges".
-*
-*		 NOTE: This function may involve searching a list so it's
-*		 best to not call it repeatedly.
-*		 
-*************************************************************/
 int	Agent::GetNumberCommands()
 {
 	// Method is to search all top level output link wmes and see which have
@@ -1094,15 +921,6 @@ int	Agent::GetNumberCommands()
 	return count ;
 }
 
-/*************************************************************
-* @brief Get the n-th "command".  A command in this context
-*		 is an identifier wme that have been added to the top level of
-*		 the output-link since the last call to "ClearOutputLinkChanges".
-*
-*		 Returns NULL if index is out of range.
-*
-* @param index	The 0-based index for which command to get.
-*************************************************************/
 Identifier* Agent::GetCommand(int index)
 {
 	// Method is to search all top level output link wmes and see which have
@@ -1127,16 +945,6 @@ Identifier* Agent::GetCommand(int index)
 	return NULL ;
 }
 
-/*************************************************************
-* @brief Builds a new WME that has a string value and schedules
-*		 it for addition to Soar's input link.
-*
-*		 The agent retains ownership of this object.
-*		 The returned object is valid until the caller
-*		 deletes the parent identifier.
-*		 The WME is not added to Soar's input link until the
-*		 client calls "Commit".
-*************************************************************/
 StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue)
 {
 	if (!parent || parent->GetAgent() != this)
@@ -1145,14 +953,6 @@ StringElement* Agent::CreateStringWME(Identifier* parent, char const* pAttribute
 	return GetWM()->CreateStringWME(parent, pAttribute, pValue) ;
 }
 
-/*************************************************************
-* @brief Same as CreateStringWME but for a new WME that has
-*		 an identifier as its value.
-*
-*		 The identifier value is generated here and will be
-*		 different from the value Soar assigns in the kernel.
-*		 The kernel will keep a map for translating back and forth.
-*************************************************************/
 Identifier* Agent::CreateIdWME(Identifier* parent, char const* pAttribute)
 {
 	if (!parent || parent->GetAgent() != this)
@@ -1161,11 +961,6 @@ Identifier* Agent::CreateIdWME(Identifier* parent, char const* pAttribute)
 	return GetWM()->CreateIdWME(parent, pAttribute) ;
 }
 
-/*************************************************************
-* @brief Creates a new WME that has an identifier as its value.
-*		 The value in this case is the same as an existing identifier.
-*		 This allows us to create a graph rather than a tree.
-*************************************************************/
 Identifier*	Agent::CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue)
 {
 	if (!parent || parent->GetAgent() != this || !pSharedValue)
@@ -1174,10 +969,6 @@ Identifier*	Agent::CreateSharedIdWME(Identifier* parent, char const* pAttribute,
 	return GetWM()->CreateSharedIdWME(parent, pAttribute, pSharedValue) ;
 }
 
-/*************************************************************
-* @brief Same as CreateStringWME but for a new WME that has
-*		 an int as its value.
-*************************************************************/
 IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
 {
 	if (!parent || parent->GetAgent() != this)
@@ -1186,10 +977,6 @@ IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, int 
 	return GetWM()->CreateIntWME(parent, pAttribute, value) ;
 }
 
-/*************************************************************
-* @brief Same as CreateStringWME but for a new WME that has
-*		 a floating point value.
-*************************************************************/
 FloatElement* Agent::CreateFloatWME(Identifier* parent, char const* pAttribute, double value)
 {
 	if (!parent || parent->GetAgent() != this)
@@ -1198,11 +985,6 @@ FloatElement* Agent::CreateFloatWME(Identifier* parent, char const* pAttribute, 
 	return GetWM()->CreateFloatWME(parent, pAttribute, value) ;
 }
 
-/*************************************************************
-* @brief Update the value of an existing WME.
-*		 The value is not actually sent to the kernel
-*		 until "Commit" is called.
-*************************************************************/
 void Agent::Update(StringElement* pWME, char const* pValue) 
 { 
 	GetWM()->UpdateString(pWME, pValue) ; 
@@ -1216,18 +998,6 @@ void Agent::Update(FloatElement* pWME, double value)
 	GetWM()->UpdateFloat(pWME, value) ; 
 }
 
-/*************************************************************
-* @brief Schedules a WME from deletion from the input link and removes
-*		 it from the client's model of working memory.
-*
-*		 If this is an identifier then all of its children will be
-*		 deleted too (assuming it's the only parent -- i.e. part of a tree not a full graph).
-*
-*		 The caller should not access this WME after calling
-*		 DestroyWME() or any of its children if this is an identifier.
-*		 The WME is not removed from the input link until
-*		 the client calls "Commit"
-*************************************************************/
 bool Agent::DestroyWME(WMElement* pWME)
 {
 	if (!pWME || pWME->GetAgent() != this)
@@ -1236,39 +1006,21 @@ bool Agent::DestroyWME(WMElement* pWME)
 	return GetWM()->DestroyWME(pWME) ;
 }
 
-/*************************************************************
-* @brief Send the most recent list of changes to working memory
-*		 over to the kernel.
-*************************************************************/
 bool Agent::Commit()
 {
 	return GetWM()->Commit() ;
 }
 
-/*************************************************************
-* @brief Returns true if this agent has uncommitted changes.
-*************************************************************/
 bool Agent::IsCommitRequired()
 {
 	return GetWM()->IsCommitRequired() ;
 }
 
-/*************************************************************
-* @brief Returns true if changes to i/o links should be
-*		 committed (sent to kernelSML) immediately when they
-*		 occur, so the client doesn't need to remember to call commit.
-*************************************************************/
 bool Agent::IsAutoCommitEnabled()
 {
 	return m_Kernel->IsAutoCommitEnabled() ;
 }
 
-/*************************************************************
-* @brief Reinitialize this Soar agent.
-*		 This will also cause the output link structures stored
-*		 here to be erased and the current input link to be sent over
-*		 to the Soar agent for the start of its next run.
-*************************************************************/
 char const* Agent::InitSoar()
 {
 	// Must commit everything before doing an init-soar.
@@ -1285,20 +1037,6 @@ char const* Agent::InitSoar()
 	return pResult ;
 }
 
-/*************************************************************
-* @brief Interrupt the currently running Soar agent.
-*
-* Call this after calling "Run" in order to stop a Soar agent.
-* The usual way to do this is to register for an event (e.g. AFTER_DECISION_CYCLE)
-* and in that event handler decide if the user wishes to stop soar.
-* If so, call to this method inside that handler.
-* If so, call to this method inside that handler (this ensures you're calling on the same
-* thread that Soar is running on so you don't get blocked).
-*
-* The request to Stop may not be honored immediately.
-* Soar will stop at the next point it is considered safe to do so.
-*
-*************************************************************/
 char const*	Agent::StopSelf()
 {
 	std::string cmd = "stop-soar --self" ;
@@ -1308,9 +1046,6 @@ char const*	Agent::StopSelf()
 	return pResult ;
 }
 
-/*************************************************************
-* @brief Run Soar for the specified number of decisions
-*************************************************************/
 char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
 {
 	if (IsCommitRequired())
@@ -1377,10 +1112,6 @@ char const* Agent::RunSelfForever()
 	return pResult ;
 }
 
-/*************************************************************
-* @brief Returns true if this agent was part of the last set
-*		 of agents that was run.
-*************************************************************/
 bool Agent::WasAgentOnRunList()
 {
 	AnalyzeXML response ;
@@ -1394,10 +1125,6 @@ bool Agent::WasAgentOnRunList()
 	return wasRun ;
 }
 
-/*************************************************************
-* @brief Returns whether the last run for this agent was
-*		 interrupted (by a stop call) or completed normally.
-*************************************************************/
 smlRunResult Agent::GetResultOfLastRun()
 {
 	AnalyzeXML response ;
@@ -1412,14 +1139,6 @@ smlRunResult Agent::GetResultOfLastRun()
 	return result ;
 }
 
-/*************************************************************
-* @brief   Controls whether this agent will break when it next generates
-*		   output while running.
-*
-*		   Now deprecated.  Use RunSelfTilOutput instead.
-*
-* @param state	If true, causes Soar to break on output.  If false, Soar will not break.
-*************************************************************/
 /*
 bool Agent::SetStopSelfOnOutput(bool state)
 {
@@ -1430,24 +1149,6 @@ bool Agent::SetStopSelfOnOutput(bool state)
 }
 */
 
-/*************************************************************
-* @brief   Run Soar until either output is generated or
-*		   the maximum number of decisions is reached.
-*
-* This function also calls "ClearOutputLinkChanges" so methods
-* like "IsJustAdded" will refer to the changes that occur as a result of
-* this run.
-*
-* This function also calls "Commit" to make sure any pending input
-* link changes have been sent to Soar.
-*
-* We don't generally want Soar to just run until it generates
-* output without any limit as an error in the AI logic might cause
-* it to never return control to the environment, so there is a maximum
-* decision count (currently 15) and if the agent fails to produce output
-* before then this command returns.  (This value can be changed with the
-* max-nil-output-cycles command).
-*************************************************************/
 char const* Agent::RunSelfTilOutput()
 {
 	if (IsCommitRequired())
@@ -1473,12 +1174,6 @@ char const* Agent::RunSelfTilOutput()
 	return ExecuteCommandLine(cmd.c_str()) ;
 }
 
-/*************************************************************
-* @brief Resend the complete input link to the kernel
-*		 and remove our output link structures.
-*		 We do this when the user issues an "init-soar" event.
-*		 There should be no reason for the client to call this method directly.
-*************************************************************/
 void Agent::Refresh()
 {
 	// If this asserts fails, we had some changes to working memory that were
@@ -1490,10 +1185,6 @@ void Agent::Refresh()
 	GetWM()->Refresh() ;
 }
 
-/*************************************************************
-* @brief Returns the phase that the agent will execute when next
-*		 asked to run.
-*************************************************************/
 smlPhase Agent::GetCurrentPhase()
 {
 	AnalyzeXML response ;
@@ -1508,9 +1199,6 @@ smlPhase Agent::GetCurrentPhase()
 	return phase ;
 }
 
-/*************************************************************
-* @brief Returns the current decision cycle counter.
-*************************************************************/
 int Agent::GetDecisionCycleCounter()
 {
 	AnalyzeXML response ;
@@ -1523,10 +1211,6 @@ int Agent::GetDecisionCycleCounter()
 	return response.GetResultInt(0) ;
 }
 
-/*************************************************************
-* @brief Returns the current run state of the agent.
-*		 Mostly of use to determine if agent halted in last run.
-*************************************************************/
 smlRunState Agent::GetRunState()
 {
 	AnalyzeXML response ;
@@ -1539,51 +1223,21 @@ smlRunState Agent::GetRunState()
 	return smlRunState(response.GetResultInt(0)) ;
 }
 
-/*************************************************************
-* @brief Process a command line command
-*
-* @param pCommandLine Command line string to process.
-* @param echoResults  If true the results are also echoed through the smlEVENT_ECHO event, so they can appear in a debugger (or other listener)
-* @param noFilter	  If true this command line by-passes any external filters that have been registered (this is not common) and is executed immediately.
-* @returns The string form of output from the command.
-*************************************************************/
 char const* Agent::ExecuteCommandLine(char const* pCommandLine, bool echoResults, bool noFilter)
 {
 	return GetKernel()->ExecuteCommandLine(pCommandLine, GetAgentName(), echoResults, noFilter) ;
 }
 
-/*************************************************************
-* @brief Execute a command line command and return the result
-*		 as an XML object.
-*
-* @param pCommandLine Command line string to process.
-* @param pAgentName   Agent name to apply the command line to.
-* @param pResponse    The XML response will be returned within this object.
-*                     The caller should allocate this and pass it in.
-* @returns True if the command succeeds.
-*************************************************************/
 bool Agent::ExecuteCommandLineXML(char const* pCommandLine, ClientAnalyzedXML* pResponse)
 {
 	return GetKernel()->ExecuteCommandLineXML(pCommandLine, GetAgentName(), pResponse) ;
 }
 
-/*************************************************************
-* @brief Get last command line result
-*
-* (This is the last result for any command sent to the kernel,
-*  not just for this agent).
-*
-* @returns True if the last command line call succeeded.
-*************************************************************/
 bool Agent::GetLastCommandLineResult()
 {
 	return GetKernel()->GetLastCommandLineResult() ;
 }
 
-/*************************************************************
-* @brief Returns true if this string is the name of a production
-*		 that is currently loaded in the agent.
-*************************************************************/
 bool Agent::IsProductionLoaded(char const* pProductionName)
 {
 	if (!pProductionName)
@@ -1599,36 +1253,11 @@ bool Agent::IsProductionLoaded(char const* pProductionName)
 	return response.GetResultBool(false) ;
 }
 
-/*************************************************************
-* @brief This method is used to update this client's representation
-*		 of the input link to match what is currently on the agent's
-*		 input link.
-*		 Calling this method recreates the entire input link tree on the
-*		 client side, invalidating any existing pointers.
-*
-*		 NOTE: This is the reverse of how a client normally uses the input link
-*		 but can be useful for tools that wish to debug or monitor changes in the input link.
-*
-*		 NOTE: If two clients try to modify the input link at once we don't
-*		 make any guarantees about what will or won't work.
-*************************************************************/
 bool Agent::SynchronizeInputLink()
 {
 	return GetWM()->SynchronizeInputLink() ;
 }
 
-/*************************************************************
-* @brief This method is used to update this client's representation
-*		 of the output link to match what is currently on the agent's
-*		 output link.
-*		 Calling this method recreates the entire output link tree on the
-*		 client side, invalidating any existing pointers.
-*
-*		 NOTE: Calling this method shouldn't generally be necessary as the output link
-*		 structures in the client are usually automatically kept in synch with the agent.
-*		 It's here in case a client connects to an existing kernel and agent
-*		 and wants to get up to date on the current state of the output link.
-*************************************************************/
 bool Agent::SynchronizeOutputLink()
 {
 	return GetWM()->SynchronizeOutputLink() ;
