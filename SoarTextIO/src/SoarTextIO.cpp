@@ -490,7 +490,6 @@ SoarTextIO::RespondCycle()
 	}
 	storeO.resize(0);
 
-	pAgent->ClearOutputLinkChanges();
 	if(getnextline)
 	{
 		GetNextLine();

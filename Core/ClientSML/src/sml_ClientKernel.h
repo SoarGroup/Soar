@@ -502,10 +502,6 @@ public:
 	*		   on an agent by agent basis, so the entire system stops only
 	*		   after each agent has generated output (or has reached the decision limit).
 	*
-	* This function also calls "ClearOutputLinkChanges" so methods
-	* like "IsJustAdded" will refer to the changes that occur as a result of
-	* this run.
-	*
 	* We don't generally want Soar to just run until it generates
 	* output without any limit as an error in the AI logic might cause
 	* it to never return control to the environment, so there is a maximum
