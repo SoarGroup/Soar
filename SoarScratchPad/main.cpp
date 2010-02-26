@@ -5,7 +5,7 @@
 int main(int argc, char** argv)
 {
 	sml::Kernel* k = sml::Kernel::CreateKernelInNewThread();
-	sml::Agent* a = k1->CreateAgent("soar");
+	sml::Agent* a = k->CreateAgent("soar");
 
 	k->Shutdown();
 
