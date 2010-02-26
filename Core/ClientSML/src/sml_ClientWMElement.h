@@ -104,7 +104,10 @@ public:
 	*		 it from the client's model of working memory.
 	*
 	*		 If this is an identifier then all of its children will be
-	*		 deleted too (assuming it's the only parent -- i.e. part of a tree not a full graph).
+	*		 deleted too (assuming it's the only parent -- i.e. part of a 
+	*        tree not a full graph). Disconnecting WMEs that are still
+	*        linked to each other will cause a memory leak until 
+	*        the agent is destroyed.
 	*
 	*		 The caller should not access this WME after calling
 	*		 DestroyWME() or any of its children if this is an identifier.
