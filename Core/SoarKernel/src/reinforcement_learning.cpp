@@ -75,6 +75,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	// hrl-discount
 	hrl_discount = new soar_module::boolean_param( "hrl-discount", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( hrl_discount );
+
+	// temporal-discount
+	temporal_discount = new soar_module::boolean_param( "temporal-discount", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
+	add( temporal_discount );
 };
 
 //
@@ -587,7 +591,13 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 				}
 			}
 			
-			data->reward += ( reward * pow( discount_rate, static_cast< double >( data->gap_age + data->hrl_age ) ) );
+			// if temporal_discount is off, don't discount for gaps
+			unsigned int effective_age = data->hrl_age;
+			if (my_agent->rl_params->temporal_discount->get_value() == soar_module::on) {
+				effective_age += data->gap_age;
+			}
+
+			data->reward += ( reward * pow( discount_rate, static_cast< double >( effective_age ) ) );
 		}
 
 		// update stats
@@ -688,8 +698,15 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			double alpha = my_agent->rl_params->learning_rate->get_value();
 			double lambda = my_agent->rl_params->et_decay_rate->get_value();
 			double gamma = my_agent->rl_params->discount_rate->get_value();
-			double tolerance = my_agent->rl_params->et_tolerance->get_value();			
-			double discount = pow( gamma, static_cast< double >( data->gap_age + data->hrl_age + 1 ) );
+			double tolerance = my_agent->rl_params->et_tolerance->get_value();
+
+			// if temporal_discount is off, don't discount for gaps
+			unsigned int effective_age = data->hrl_age + 1;
+			if (my_agent->rl_params->temporal_discount->get_value() == soar_module::on) {
+				effective_age += data->gap_age;
+			}
+ 
+			double discount = pow( gamma, static_cast< double >( effective_age ) );
 
 			// notify of gap closure
 			if ( data->gap_age && using_gaps && my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
