@@ -1268,6 +1268,19 @@ bool AgentSML::StopCaptureInput()
 	return good;
 }
 
+std::string::size_type AgentSML::findDelimReplaceEscape(std::string& line, std::string::size_type lpos)
+{
+	std::string::size_type epos;
+	std::string::size_type rpos;
+	while((epos = line.find(CAPTURE_ESCAPE, lpos)) < (rpos = line.find(CAPTURE_SEPARATOR, lpos))) 
+	{
+		line.erase(epos, CAPTURE_ESCAPE.length());
+		if (rpos >= line.length()) return std::string::npos;
+		lpos = rpos;
+	}
+	return rpos;
+}
+
 bool AgentSML::StartReplayInput(const std::string& pathname)
 {
 	if (ReplayQuery()) return false;
@@ -1280,27 +1293,69 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
 	} 
 
 	unsigned long seed = 0;
-	replayFile >> seed;
-	if (replayFile.bad())
+	std::string line;
+	if (!getline(replayFile, line)) 
 	{
 		return false;
 	}
+	if (!from_string(seed, line)) return false;
 	SoarSeedRNG(seed);
 
 	// load replay file
-	while (replayFile.good())
+	while (getline(replayFile, line)) 
 	{
+		std::string::size_type lpos = 0;
+		std::string::size_type rpos = 0;
+
 		CapturedAction ca;
-		std::string actionType;
+
+		// decision cycle
+		rpos = line.find(CAPTURE_SEPARATOR, lpos);
+		if (rpos == std::string::npos) return false;
+		if (!from_string(ca.dc, line.substr(lpos, rpos - lpos))) return false;
 		
-		replayFile >> ca.dc >> ca.timetag >> actionType;
-		if (replayFile.bad()) return false;
+		// timetag
+		lpos = rpos + 1;
+		rpos = line.find(CAPTURE_SEPARATOR, lpos);
+		if (rpos == std::string::npos) return false;
+		if (!from_string(ca.timetag, line.substr(lpos, rpos - lpos))) return false;
+		
+		// action type
+		lpos = rpos + 1;
+		rpos = line.find(CAPTURE_SEPARATOR, lpos);
+		if (rpos == std::string::npos) return false;
+		std::string actionType = line.substr(lpos, rpos - lpos);
 		
 		if (actionType == "add-wme")
 		{
 			ca.CreateAdd();
-			std::string type;
-			replayFile >> ca.Add()->id >> ca.Add()->attr >> ca.Add()->value >> type;
+
+			// id
+			lpos = rpos + 1;
+			rpos = line.find(CAPTURE_SEPARATOR, lpos);
+			if (rpos == std::string::npos) return false;
+			ca.Add()->id = line.substr(lpos, rpos - lpos);
+			std::cout << ca.Add()->id << std::endl;
+
+			// attr
+			lpos = rpos + 1;
+			rpos = findDelimReplaceEscape(line, lpos);
+			if (rpos == std::string::npos) return false;
+			ca.Add()->attr = line.substr(lpos, rpos - lpos);
+			std::cout << ca.Add()->attr << std::endl;
+
+			// value
+			lpos = rpos + 1;
+			rpos = findDelimReplaceEscape(line, lpos);
+			if (rpos == std::string::npos) return false;
+			ca.Add()->value = line.substr(lpos, rpos - lpos);
+			std::cout << ca.Add()->value << std::endl;
+
+			// type
+			lpos = rpos + 1;
+			rpos = line.find(CAPTURE_SEPARATOR, lpos);
+			if (rpos == std::string::npos) return false;
+			std::string type = line.substr(lpos, rpos - lpos);
 	
 			if (type == sml_Names::kTypeID)
 			{
@@ -1321,10 +1376,6 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
 			else
 			{
 				assert(false);
-				return false;
-			}
-
-			if (replayFile.bad()) {
 				return false;
 			}
 		}
@@ -1348,7 +1399,19 @@ bool AgentSML::StopReplayInput()
 	return true;
 }
 
-const std::string AgentSML::CAPTURE_SEPERATOR = " ";
+const std::string AgentSML::CAPTURE_SEPARATOR = " ";
+const std::string AgentSML::CAPTURE_ESCAPE = "\\";
+
+std::string AgentSML::escapeDelims(std::string target)
+{
+	std::string::size_type lpos = 0;
+	while((lpos = target.find(CAPTURE_SEPARATOR, lpos)) != std::string::npos)
+	{
+		target.insert(lpos, CAPTURE_ESCAPE);
+		lpos += CAPTURE_SEPARATOR.length() + CAPTURE_ESCAPE.length();
+	}
+	return target;
+}
 
 bool AgentSML::CaptureInputWME(const CapturedAction& ca) 
 {
@@ -1361,11 +1424,11 @@ bool AgentSML::CaptureInputWME(const CapturedAction& ca)
 	if (!m_pCaptureFile) return false;
 	if (m_pCaptureFile->bad()) return false;
 
-	*m_pCaptureFile << ca.dc << CAPTURE_SEPERATOR << ca.timetag << CAPTURE_SEPERATOR;
+	*m_pCaptureFile << ca.dc << CAPTURE_SEPARATOR << ca.timetag << CAPTURE_SEPARATOR;
 	if (ca.Add())
 	{
-		*m_pCaptureFile << "add-wme" << CAPTURE_SEPERATOR << ca.Add()->id << CAPTURE_SEPERATOR 
-			<< ca.Add()->attr << CAPTURE_SEPERATOR << ca.Add()->value << CAPTURE_SEPERATOR << ca.Add()->type << std::endl;
+		*m_pCaptureFile << "add-wme" << CAPTURE_SEPARATOR << ca.Add()->id << CAPTURE_SEPARATOR 
+			<< escapeDelims(ca.Add()->attr) << CAPTURE_SEPARATOR << escapeDelims(ca.Add()->value) << CAPTURE_SEPARATOR << ca.Add()->type << std::endl;
 	}
 	else
 	{
