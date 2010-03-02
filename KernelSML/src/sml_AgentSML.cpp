@@ -881,10 +881,12 @@ std::string AgentSML::ExecuteCommandLine(std::string const& commandLine)
 
 void AgentSML::InputPhaseCallback( agent* /*agent*/,
 								   soar_callback_event_id /*eventid*/,
-								   soar_callback_data /*callbackdata*/,
+								   soar_callback_data callbackdata,
 								   soar_call_data /*calldata*/ )
 {
-	KernelSML::GetKernelSML()->ReceiveAllMessages();	
+	KernelSML* pKernelSML = reinterpret_cast<KernelSML*>(callbackdata);
+	assert(pKernelSML);
+	pKernelSML->ReceiveAllMessages();	
 }
 
 bool AgentSML::AddInputWME(char const* pID, char const* pAttribute, Symbol* pValueSymbol, long clientTimeTag)

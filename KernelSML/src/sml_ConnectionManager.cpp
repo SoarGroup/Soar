@@ -24,14 +24,14 @@
 using namespace sml ;
 using namespace sock ;
 
-ConnectionManager::ConnectionManager(unsigned short port)
+ConnectionManager::ConnectionManager(unsigned short port, KernelSML* pKernel)
 {
 	// Start the thread that wraps the listener socket running.
 	// (Unless passed port 0 -- which suppresses this)
 	m_ListenerThread = NULL ;
 	if (port != 0)
 	{
-		m_ListenerThread = new ListenerThread(this, port) ;
+		m_ListenerThread = new ListenerThread(this, port, pKernel) ;
 		m_ListenerThread->Start() ;
 	}
 
