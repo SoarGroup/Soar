@@ -28,6 +28,7 @@ namespace sml {
 
 // Forward declarations
 class ConnectionManager ;
+class KernelSML ;
 
 // A listener socket wrapped in a thread
 class ListenerThread : public soar_thread::Thread
