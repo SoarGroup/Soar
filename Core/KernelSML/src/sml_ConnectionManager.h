@@ -54,7 +54,7 @@ protected:
 	bool	m_bTraceCommunications ;
 
 public:
-	ConnectionManager(unsigned short port) ;
+	ConnectionManager(unsigned short port, KernelSML* pKernel) ;
 	~ConnectionManager() ;
 
 	// Add a new incoming connection to our list

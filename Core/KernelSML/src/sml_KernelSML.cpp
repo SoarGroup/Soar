@@ -37,9 +37,6 @@
 
 using namespace sml ;
 
-// Singleton instance of the kernel object
-KernelSML* KernelSML::s_pKernel = NULL ;
-
 // On Windows this is set to the DLL's hModule handle.
 void* KernelSML::s_hModule = NULL ;
 
@@ -54,34 +51,7 @@ static soarxml::ElementXML* AddErrorMsg(Connection* pConnection, soarxml::Elemen
 *************************************************************/
 KernelSML* KernelSML::CreateKernelSML(unsigned short portToListenOn)
 {
-	// Failed to create KernelSML because it already exists!
-	// This is really a sign of a bug.
-	if (s_pKernel != NULL)
-		return s_pKernel ;
-
-	s_pKernel = new KernelSML(portToListenOn) ;
-
-	return s_pKernel ;
-}
-
-/*************************************************************
-* @brief	Returns the singleton kernel object.
-*************************************************************/
-KernelSML* KernelSML::GetKernelSML()
-{
-	return s_pKernel ;
-}
-
-/*************************************************************
-* @brief	Return pointer to the class that handles the command
-*			line parsing and execution of commands.
-*************************************************************/
-cli::CommandLineInterface* KernelSML::GetCommandLineInterface()
-{
-	if (!s_pKernel)
-		return NULL ;
-
-	return &s_pKernel->m_CommandLineInterface ;
+	return new KernelSML(portToListenOn);
 }
 
 KernelSML::KernelSML(unsigned short portToListenOn)
@@ -96,7 +66,7 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	BuildCommandMap() ; 
 
 	// Start listening for incoming connections
-	m_pConnectionManager = new ConnectionManager(portToListenOn) ;
+	m_pConnectionManager = new ConnectionManager(portToListenOn, this) ;
 
 	// Start the kernel listener listening for events from gSKI
 	m_AgentListener.Init(this);
@@ -803,9 +773,21 @@ EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSMLIn, char const* pId,
 	pAgentSML->BufferedAddIdInputWME( pId, pAttribute, pValueId, clientTimetag );
 }
 
-EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(char const* pAgentName) 
+KernelSML* adaptToKernelSML(Connection_Receiver_Handle hConnection) 
+{	
+	EmbeddedConnection* pConnection = reinterpret_cast<EmbeddedConnection*>(hConnection) ;
+	assert(pConnection);
+	if (!pConnection) return 0;
+	
+	KernelSML* pKernelSML = reinterpret_cast<KernelSML*>(pConnection->GetUserData());
+	assert(pKernelSML);
+	return pKernelSML;
+}
+
+EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(Connection_Receiver_Handle hConnection, char const* pAgentName) 
 {
-	KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
+	KernelSML* pKernelSML = adaptToKernelSML(hConnection);
+	if (!pKernelSML) return 0;
 
 	AgentSML* pAgentSML = pKernelSML->GetAgentSML( pAgentName );
 
@@ -816,10 +798,12 @@ EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(char const* pAgentName
 // due to the extra events and control logic surrounding the SML RunScheduler.
 // So we compromise with a call directly to that scheduler, boosting performance over the standard "run" path
 // which goes through the command line processor.
-EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count)
+EXPORT void sml_DirectRun(Connection_Receiver_Handle hConnection, char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count)
 {
+	KernelSML* pKernelSML = adaptToKernelSML(hConnection);
+	if (!pKernelSML) return;
+
 	smlRunStepSize interleaveSize = static_cast<smlRunStepSize>(interleaveSizeIn);
-	KernelSML* pKernelSML = KernelSML::GetKernelSML() ;
 
 	RunScheduler* pScheduler = pKernelSML->GetRunScheduler() ;
 	smlRunFlags runFlags = sml_NONE ;

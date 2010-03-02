@@ -80,9 +80,6 @@ class KernelSML
 
 protected:
 
-	// The singleton kernel object
-	static KernelSML*	s_pKernel ;
-
 	// On Windows this is set to the DLL's hModule handle.
 	static void*		s_hModule ;
 
@@ -146,33 +143,11 @@ public:
 	int GetInterruptCheckRate() { return m_InterruptCheckRate; }
 
 	/*************************************************************
-	* @brief	Returns the singleton kernel object.
-	*************************************************************/
-	static KernelSML* GetKernelSML() ;
-
-	/*************************************************************
 	* @brief	Creates the singleton kernel object
 	*			and starts listening for incoming commands on the
 	*			given port.
 	*************************************************************/
 	static KernelSML* CreateKernelSML(unsigned short portToListenOn) ;
-
-	/*************************************************************
-	* @brief	Delete the singleton kernel object
-	*************************************************************/
-	static void DeleteSingleton()
-	{
-		if (s_pKernel)
-			delete s_pKernel ;
-
-		s_pKernel = 0 ;
-	}
-
-	/*************************************************************
-	* @brief	Return pointer to the class that handles the command
-	*			line parsing and execution of commands.
-	*************************************************************/
-	static cli::CommandLineInterface* GetCommandLineInterface() ;
 
 	/*************************************************************
 	* @brief	Handy utility function for dumping output to the

@@ -46,12 +46,6 @@ bool __stdcall DllMain( void * /*hModule*/,
 	// Only do this when we are unloaded.
 	if (ul_reason_for_call == DLL_PROCESS_DETACH)
 	{
-		// We have a singleton kernel object.
-		// Explicitly clean it up here so we can test for memory leaks (otherwise it will
-		// always show up as a leak--when in fact it's designed to be kept around until now when
-		// the DLL is unloaded).
-		sml::KernelSML::DeleteSingleton() ;
-
 #ifdef _DEBUG
 		_CrtSetReportMode( _CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG );
 		_CrtSetReportFile( _CRT_WARN, _CRTDBG_FILE_STDOUT );
