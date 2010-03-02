@@ -120,8 +120,6 @@ struct CallData {
 	bool rawOutput;
 };
 
-CommandLineInterface* GetCLI() ;
-
 class CommandLineInterface : public sml::KernelCallback {
 public:
 

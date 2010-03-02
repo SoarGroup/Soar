@@ -40,9 +40,9 @@ typedef void (*DirectRemoveWMEFunction)(Direct_AgentSML_Handle, long) ; // agent
 
 typedef void (*DirectAddIDFunction)(Direct_AgentSML_Handle, char const*, char const*, char const*, long) ; // agent, id, attr, value_id, timetag
 
-typedef Direct_AgentSML_Handle (*DirectGetAgentSMLHandleFunction)(char const*) ; // agent name
+typedef Direct_AgentSML_Handle (*DirectGetAgentSMLHandleFunction)(Connection_Receiver_Handle, char const*) ; // agent name
 
-typedef void (*DirectRunFunction)(char const*, bool, int, int, int) ;
+typedef void (*DirectRunFunction)(Connection_Receiver_Handle hConnection, char const*, bool, int, int, int) ;
 
 /*************************************************************
 * @brief	Add a wme.
@@ -71,9 +71,9 @@ EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, long clientTim
 *************************************************************/
 EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, long clientTimetag) ;
 
-EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(char const* pAgentName) ;
+EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(Connection_Receiver_Handle hConnection, char const* pAgentName) ;
 
-EXPORT void sml_DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, int count) ;
+EXPORT void sml_DirectRun(Connection_Receiver_Handle hConnection, char const* pAgentName, bool forever, int stepSize, int interleaveSize, int count) ;
 
 #ifdef __cplusplus
 } // extern C

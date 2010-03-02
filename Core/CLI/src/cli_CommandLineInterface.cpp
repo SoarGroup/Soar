@@ -972,11 +972,6 @@ bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, 
 	return true;
 }
 
-CommandLineInterface* cli::GetCLI()
-{
-	return sml::KernelSML::GetKernelSML()->GetCommandLineInterface() ;
-}
-
 /*************************************************************
 * @brief Methods to create an XML element by starting a tag, adding attributes and
 *		 closing the tag.

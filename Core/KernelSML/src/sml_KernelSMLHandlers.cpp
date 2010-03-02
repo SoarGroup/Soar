@@ -120,7 +120,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
 		INPUT_PHASE_CALLBACK,
 		&sml::AgentSML::InputPhaseCallback,
 		0,
-		0,
+		this,
 		0,
 		"static_input_callback");
 

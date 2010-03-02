@@ -144,7 +144,7 @@ void ListenerThread::CreateConnection(DataSender* pSender)
 	// Record our kernel object with this connection.  I think we only want one kernel
 	// object even if there are many connections (because there's only one kernel) so for now
 	// that's how things are set up.
-	pConnection->SetUserData(KernelSML::GetKernelSML()) ;
+	pConnection->SetUserData(m_pKernel) ;
 
 	// For debugging record that this is on the kernel side
 	pConnection->SetIsKernelSide(true) ;
@@ -153,8 +153,8 @@ void ListenerThread::CreateConnection(DataSender* pSender)
 	pConnection->RegisterCallback(ReceivedCall, NULL, sml_Names::kDocType_Call, true) ;
 
 	// Set up our tracing state to match the user's preference
-	pConnection->SetTraceCommunications(KernelSML::GetKernelSML()->IsTracingCommunications()) ;
+	pConnection->SetTraceCommunications(m_pKernel->IsTracingCommunications()) ;
 
 	// Record the new connection in our list of connections
-	KernelSML::GetKernelSML()->AddConnection(pConnection) ;
+	m_pKernel->AddConnection(pConnection) ;
 }
