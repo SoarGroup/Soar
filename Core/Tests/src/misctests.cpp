@@ -24,6 +24,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
 
 	CPPUNIT_TEST( testWrongAgentWmeFunctions );
 	CPPUNIT_TEST( testRHSRand );
+	CPPUNIT_TEST( testMultipleKernels );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -39,6 +40,7 @@ protected:
 
 	void testWrongAgentWmeFunctions();
 	void testRHSRand();
+	void testMultipleKernels();
 
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
@@ -211,4 +213,19 @@ void MiscTest::testRHSRand()
 	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult() );
 
 	pAgent->RunSelf(5000);
+}
+
+void MiscTest::testMultipleKernels()
+{
+	sml::Kernel* pKernel2 = sml::Kernel::CreateKernelInNewThread();
+	CPPUNIT_ASSERT( pKernel2 != NULL );
+	CPPUNIT_ASSERT_MESSAGE( pKernel2->GetLastErrorDescription(), !pKernel2->HadError() );
+
+	sml::Agent* pAgent2 = pKernel2->CreateAgent( "soar2" );
+	CPPUNIT_ASSERT( pAgent2 != NULL );
+
+	pKernel2->Shutdown();
+
+	pAgent->ExecuteCommandLine("p s1");
+	CPPUNIT_ASSERT( pAgent->GetLastCommandLineResult() );
 }
