@@ -217,6 +217,8 @@ private:
 	bool				m_CaptureAutoflush;
 	bool				m_ReplayInput;
     CCTimeMap			m_ReplayTimetagMap;
+	static const std::string CAPTURE_SEPARATOR;
+	static const std::string CAPTURE_ESCAPE;
 	struct CapturedActionAdd
 	{
 		std::string id;
@@ -259,9 +261,10 @@ private:
 		CapturedActionAdd* add;
 	};
 	std::queue< CapturedAction > m_CapturedActions;
-	static const std::string CAPTURE_SEPERATOR;
 	bool				CaptureInputWME(const CapturedAction& ca);
 	void				ResetCaptureReplay();
+	std::string::size_type findDelimReplaceEscape(std::string& line, std::string::size_type lpos);
+	std::string			escapeDelims(std::string target);
 
 public: 
 	bool				StartCaptureInput(const std::string& pathname, bool autoflush, unsigned long seed);
