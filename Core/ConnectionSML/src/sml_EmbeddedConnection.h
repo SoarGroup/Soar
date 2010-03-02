@@ -120,12 +120,12 @@ public:
 
 	Direct_AgentSML_Handle DirectGetAgentSMLHandle(char const* pAgentName)
 	{
-		return m_pDirectGetAgentSMLHandleFunction(pAgentName) ;
+		return m_pDirectGetAgentSMLHandleFunction(m_hConnection, pAgentName) ;
 	}
 
 	void DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, int count)
 	{
-		m_pDirectRunFunction(pAgentName, forever, stepSize, interleaveSize, count) ;
+		m_pDirectRunFunction(m_hConnection, pAgentName, forever, stepSize, interleaveSize, count) ;
 	}
 
 #endif

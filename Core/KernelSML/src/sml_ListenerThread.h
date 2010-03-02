@@ -41,12 +41,14 @@ protected:
 	sock::ListenerNamedPipe		m_ListenerNamedPipe ;
 #endif
 
+	sml::KernelSML*				m_pKernel;
+
 	void Run() ;
 
 	void CreateConnection(sock::DataSender* pSender);
 
 public:
-	ListenerThread(ConnectionManager* parent, unsigned short port) { m_Parent = parent ; m_Port = port ; }
+	ListenerThread(ConnectionManager* parent, unsigned short port, KernelSML* pKernel) { m_Parent = parent ; m_Port = port ; m_pKernel = pKernel; }
 } ;
 
 
