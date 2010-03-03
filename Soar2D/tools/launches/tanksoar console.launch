@@ -7,7 +7,9 @@
 <listEntry value="1"/>
 </listAttribute>
 <mapAttribute key="org.eclipse.debug.core.environmentVariables">
-<mapEntry key="PATH" value="../../SoarLibrary/bin"/>
+<mapEntry key="PATH" value="${env_var:SOAR_HOME}/bin"/>
+<mapEntry key="LD_LIBRARY_PATH" value="${env_var:SOAR_HOME}/lib"/>
+<mapEntry key="DYLD_LIBRARY_PATH" value="${env_var:SOAR_HOME}/lib"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.umich.soar.gridmap2d.Gridmap2D"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="config/tanksoar-console.cnf"/>
