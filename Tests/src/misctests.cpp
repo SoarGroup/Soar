@@ -217,7 +217,7 @@ void MiscTest::testRHSRand()
 
 void MiscTest::testMultipleKernels()
 {
-	sml::Kernel* pKernel2 = sml::Kernel::CreateKernelInNewThread();
+	sml::Kernel* pKernel2 = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultLibraryName, sml::Kernel::kDefaultSMLPort - 1);
 	CPPUNIT_ASSERT( pKernel2 != NULL );
 	CPPUNIT_ASSERT_MESSAGE( pKernel2->GetLastErrorDescription(), !pKernel2->HadError() );
 
