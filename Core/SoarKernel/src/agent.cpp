@@ -198,6 +198,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->reason_for_stopping                = "Startup";
   newAgent->slots_for_possible_removal         = NIL;
   newAgent->stop_soar                          = TRUE;
+  newAgent->stop_on_substate_removal           = FALSE;
   newAgent->system_halted                      = FALSE;
   newAgent->token_additions                    = 0;
   newAgent->top_dir_stack                      = NIL;   /* AGR 568 */

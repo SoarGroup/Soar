@@ -377,7 +377,9 @@ typedef struct agent_struct {
      and reason_for_stopping to some appropriate string --- */
   Bool                stop_soar;
   const char          * reason_for_stopping;
-  
+  // JRV: Added flag for stopping during run on substate removal
+  Bool                stop_on_substate_removal;
+
   /* --- the RHS action (halt) sets this TRUE --- */
   Bool                system_halted;
 

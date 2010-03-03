@@ -171,6 +171,7 @@ namespace cli {
 		RUN_SELF,
 		RUN_UPDATE,
 		RUN_NO_UPDATE,
+		RUN_GOAL,
 		RUN_NUM_OPTIONS, // must be last
 	};
 
