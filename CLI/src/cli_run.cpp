@@ -19,6 +19,7 @@
 #include "cli_CLIError.h"
 
 #include "misc.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
