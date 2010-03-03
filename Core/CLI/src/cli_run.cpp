@@ -28,6 +28,7 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 		{'d', "decision",		OPTARG_NONE},
 		{'e', "elaboration",	OPTARG_NONE},
 		{'f', "forever",		OPTARG_NONE},
+		{'g', "goal",			OPTARG_NONE},
 		{'i', "interleave",		OPTARG_REQUIRED},
 		{'n', "noupdate",		OPTARG_NONE},
 		{'o', "output",			OPTARG_NONE},
@@ -53,6 +54,9 @@ bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
 				break;
 			case 'f':
 				options.set(RUN_FOREVER);
+				break;
+			case 'g':
+				options.set(RUN_GOAL);
 				break;
 			case 'i':
 				options.set(RUN_INTERLEAVE);
@@ -207,8 +211,16 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 
 	SetTrapPrintCallbacks( false );
 
+	if (options.test(RUN_GOAL))
+	{
+		this->m_pAgentSoar->stop_on_substate_removal = TRUE;
+	}
+
 	// Do the run
 	runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, interleave, synchronizeAtStart) ;
+
+	// Reset goal retraction stop flag after any run
+	this->m_pAgentSoar->stop_on_substate_removal = FALSE;
 
 	SetTrapPrintCallbacks( true );
 
