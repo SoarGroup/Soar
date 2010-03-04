@@ -34,17 +34,16 @@ std::string SimpleListener::MyClientMessageHandler( sml::smlRhsEventId, void* pU
 
 // Create a process that listens for remote commands and lives
 // for "life" 10'ths of a second (e.g. 10 = live for 1 second)
-SimpleListener::SimpleListener( int life, int port )
-: life( life ), port( port ), useCurrentThread( false )
+SimpleListener::SimpleListener( int life )
+: life( life ), useCurrentThread( false )
 {
-   //std::cout << "Starting listener on " << port << std::endl;
 }
 
 int SimpleListener::run()
 {
 	// Create the kernel instance
-	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::GetDefaultLibraryName(), false, port) :
-											  sml::Kernel::CreateKernelInNewThread(sml::Kernel::GetDefaultLibraryName(), port) ;
+	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::GetDefaultLibraryName(), false, sml::Kernel::kUseAnyPort) :
+											  sml::Kernel::CreateKernelInNewThread(sml::Kernel::GetDefaultLibraryName(), sml::Kernel::kUseAnyPort) ;
 
 	if ( pKernel->HadError() )
 	{
