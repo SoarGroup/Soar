@@ -85,7 +85,7 @@ const char* kLocalHost = "127.0.0.1" ; // Special IP address meaning "this machi
 // Description	  : Connect to a server
 //
 /////////////////////////////////////////////////////////////////////
-bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
+bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
 {
 	CTDEBUG_ENTER_METHOD("ClientSocket::ConnectToServer");
 
@@ -120,7 +120,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 	if(!pNetAddress) {
 		memset(&local_address, 0, sizeof(local_address));
 		local_address.sun_family = AF_UNIX;
-		sprintf(local_address.sun_path, "%s%u", sock::GetLocalSocketDir().c_str(), port);
+		sprintf(local_address.sun_path, "%s%d", sock::GetLocalSocketDir().c_str(), port);
 
 		// set the name of the datasender
 		this->name = "file ";
@@ -157,7 +157,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, unsigned short port)
 		memset(&address, 0, sizeof(address)) ;
 
 		address.sin_family = AF_INET ;
-		address.sin_port   = htons(port) ;
+		address.sin_port   = htons(static_cast<unsigned short>(port)) ;
 		address.sin_addr.s_addr = pAddress->s_addr ;
 
 		// Create the socket

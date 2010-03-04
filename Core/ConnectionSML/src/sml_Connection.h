@@ -228,7 +228,7 @@ public:
 	*
 	* @returns A RemoteConnection instance.
 	*************************************************************/
-	static Connection* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, unsigned short port = kDefaultSMLPort, ErrorCode* pError = NULL) ;
+	static Connection* CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port = kDefaultSMLPort, ErrorCode* pError = NULL) ;
 
 	/*************************************************************
 	* @brief Create a new connection object wrapping a socket.

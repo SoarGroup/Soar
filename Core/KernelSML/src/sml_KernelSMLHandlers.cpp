@@ -67,6 +67,7 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetResultOfLastRun]= &sml::KernelSML::HandleGetResultOfLastRun ;
 	m_CommandMap[sml_Names::kCommand_GetInitialTimeTag] = &sml::KernelSML::HandleGetInitialTimeTag ;
 	m_CommandMap[sml_Names::kCommand_ConvertIdentifier] = &sml::KernelSML::HandleConvertIdentifier;
+	m_CommandMap[sml_Names::kCommand_GetListenerPort]	= &sml::KernelSML::HandleGetListenerPort;
 }
 
 /*************************************************************
@@ -948,3 +949,9 @@ bool KernelSML::HandleExpandCommandLine(AgentSML* /*pAgentSML*/, char const* pCo
 	// Make the call.
 	return m_CommandLineInterface.ExpandCommand(pConnection, pLine, pResponse) ;
 }
+
+bool KernelSML::HandleGetListenerPort(AgentSML* /*pAgentSML*/, char const* /*pCommandName*/, Connection* pConnection, AnalyzeXML* /*pIncoming*/, soarxml::ElementXML* pResponse)
+{
+	return this->ReturnIntResult(pConnection, pResponse, this->GetListenerPort());
+}
+

@@ -55,16 +55,7 @@ void ListenerThread::Run()
 
 #ifdef ENABLE_NAMED_PIPES
 
-	unsigned long usernamesize = UNLEN+1;
-	char username[UNLEN+1];
-	GetUserName(username,&usernamesize);
-	std::stringstream pipeName;
-	pipeName << "\\\\.\\pipe\\" << username << "-" << m_Port;
-
-	// Create the listener
-	//sml::PrintDebugFormat("Listening on pipe %s", pipeName.str().c_str()) ;
-
-	ok = m_ListenerNamedPipe.CreateListener(pipeName.str().c_str()) ;
+	ok = m_ListenerNamedPipe.CreateListener(m_Port) ;
 
 	if (!ok)
 	{
@@ -72,6 +63,12 @@ void ListenerThread::Run()
 		return ;
 	}
 #endif
+
+	// Save port number
+	if (m_Port == -1) 
+	{
+		m_Port = m_ListenerSocket.GetPort();
+	}
 
 	while (!m_QuitNow)
 	{
@@ -95,7 +92,7 @@ void ListenerThread::Run()
 #ifdef ENABLE_NAMED_PIPES
 		if (pNamedPipe) {
 			CreateConnection(pNamedPipe);
-			ok = m_ListenerNamedPipe.CreateListener(pipeName.str().c_str()) ;
+			ok = m_ListenerNamedPipe.CreateListener(m_Port) ;
 
 			if (!ok)
 			{

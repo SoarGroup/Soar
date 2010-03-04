@@ -1423,7 +1423,7 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
 
 	AnalyzeXML response;
 
-	// Send the command line to the kernel
+	// Send the command to the kernel
 	bool ret = m_Kernel->GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_ConvertIdentifier, GetAgentName(), sml_Names::kParamName, pClientIdentifier);
 
 	if (ret)

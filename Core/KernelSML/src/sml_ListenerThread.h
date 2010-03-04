@@ -34,7 +34,7 @@ class KernelSML ;
 class ListenerThread : public soar_thread::Thread
 {
 protected:
-	unsigned short				m_Port ;
+	int							m_Port ;
 	ConnectionManager*			m_Parent ;
 	sock::ListenerSocket		m_ListenerSocket ;
 	sock::ListenerSocket		m_LocalListenerSocket;
@@ -49,7 +49,9 @@ protected:
 	void CreateConnection(sock::DataSender* pSender);
 
 public:
-	ListenerThread(ConnectionManager* parent, unsigned short port, KernelSML* pKernel) { m_Parent = parent ; m_Port = port ; m_pKernel = pKernel; }
+	ListenerThread(ConnectionManager* parent, int port, KernelSML* pKernel) { m_Parent = parent ; m_Port = port ; m_pKernel = pKernel; }
+
+	int GetPort() { return m_Port; }
 } ;
 
 

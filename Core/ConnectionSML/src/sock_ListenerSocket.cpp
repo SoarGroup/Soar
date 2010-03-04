@@ -26,7 +26,6 @@ using namespace sock ;
 
 ListenerSocket::ListenerSocket()
 {
-
 }
 
 ListenerSocket::~ListenerSocket()
@@ -45,7 +44,7 @@ ListenerSocket::~ListenerSocket()
 //					on a specific port.
 //
 /////////////////////////////////////////////////////////////////////
-bool ListenerSocket::CreateListener(unsigned short port, bool local)
+bool ListenerSocket::CreateListener(int port, bool local)
 {
 	CTDEBUG_ENTER_METHOD("ListenerSocket::CreateListener");
 
@@ -101,7 +100,11 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 		memset(&local_address, 0, sizeof(local_address));
 
 		local_address.sun_family = AF_UNIX;
-		sprintf(local_address.sun_path, "%s%u", sock::GetLocalSocketDir().c_str(), port); // buffer is 108 chars long, so this is safe
+		if (port == -1) {
+			// use PID
+			port = getpid();
+		}
+		sprintf(local_address.sun_path, "%s%d", sock::GetLocalSocketDir().c_str(), port); // buffer is 108 chars long, so this is safe
 
 		// set the name of the datasender
 		this->name = "file ";
@@ -126,15 +129,15 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 	} else 
 #endif
 	{
-		// set the name of the datasender
-		std::stringstream sname;
-		sname << "port " << port;
-		this->name = sname.str();
-
 		memset(&address, 0, sizeof(address)) ;
 
 		address.sin_family = AF_INET ;	// Indicates the type of data in this structure
-		address.sin_port   = htons(port) ;
+
+		if (port == -1)
+			address.sin_port = 0; // bind to any port
+		else
+			address.sin_port = htons(static_cast<unsigned short>(port)) ;
+
 		address.sin_addr.s_addr = htonl(INADDR_ANY) ;
 
 		// Bind the socket to the local port we're listening on
@@ -145,6 +148,15 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 			sml::PrintDebug("Error: Error binding the listener socket to its port number") ;
 			return false ;
 		}
+
+		if (port == -1)
+		{
+		}
+		
+		// set the name of the datasender
+		std::stringstream sname;
+		sname << "port " << port;
+		this->name = sname.str();
 	}
 
 #ifdef NON_BLOCKING
@@ -168,6 +180,14 @@ bool ListenerSocket::CreateListener(unsigned short port, bool local)
 	}
 
 	return true ;
+}
+
+int ListenerSocket::GetPort() 
+{
+	sockaddr_in addr;
+	int len = sizeof(addr);
+	getsockname(m_hSocket, (sockaddr*)&addr, &len);
+	return ntohs(addr.sin_port);
 }
 
 /////////////////////////////////////////////////////////////////////
