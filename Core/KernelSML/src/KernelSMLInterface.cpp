@@ -56,10 +56,8 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	// The client will also have a Connection object which will not have this flag set.
 	pConnection->SetIsKernelSide(true) ;
 
-	// Record our kernel object with this connection.  I think we only want one kernel
-	// object even if there are many connections (because there's only one kernel) so for now
-	// that's how things are set up.
-	KernelSML* pKernelSML = KernelSML::CreateKernelSML(static_cast<unsigned short>(portToListenOn)) ;
+	// Record our kernel object with this connection.
+	KernelSML* pKernelSML = KernelSML::CreateKernelSML(portToListenOn) ;
 	pConnection->SetUserData(pKernelSML) ;
 
 	// If this is a synchronous connection then commands will execute on the embedded client's thread

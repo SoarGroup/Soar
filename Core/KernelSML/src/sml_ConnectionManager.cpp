@@ -24,7 +24,7 @@
 using namespace sml ;
 using namespace sock ;
 
-ConnectionManager::ConnectionManager(unsigned short port, KernelSML* pKernel)
+ConnectionManager::ConnectionManager(int port, KernelSML* pKernel)
 {
 	// Start the thread that wraps the listener socket running.
 	// (Unless passed port 0 -- which suppresses this)
@@ -257,4 +257,9 @@ bool ConnectionManager::ReceiveAllMessages()
 	// So far we don't have some sort of shutdown message the remote connections
 	// can send, but if we decide to implement it this allows us to return it.
 	return receivedOneMessage ;
+}
+
+int ConnectionManager::GetListenerPort() 
+{
+	return m_ListenerThread->GetPort();
 }

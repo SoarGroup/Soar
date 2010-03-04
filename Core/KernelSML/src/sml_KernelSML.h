@@ -147,7 +147,9 @@ public:
 	*			and starts listening for incoming commands on the
 	*			given port.
 	*************************************************************/
-	static KernelSML* CreateKernelSML(unsigned short portToListenOn) ;
+	static KernelSML* CreateKernelSML(int portToListenOn) ;
+
+	int GetListenerPort();
 
 	/*************************************************************
 	* @brief	Handy utility function for dumping output to the
@@ -383,7 +385,7 @@ public:
 	static void			PrintDebugSymbol(Symbol* pSymbol, bool refCounts = false);
 
 protected:
-	KernelSML(unsigned short portToListenOn);
+	KernelSML(int portToListenOn);
 
 protected:
 	/*************************************************************
@@ -452,6 +454,7 @@ protected:
 	bool HandleGetResultOfLastRun(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 	bool HandleGetInitialTimeTag(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 	bool HandleConvertIdentifier(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
+	bool HandleGetListenerPort(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	// Note: Register and unregister are both sent to this one handler
 	bool HandleRegisterForEvent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;

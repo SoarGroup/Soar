@@ -655,28 +655,6 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 	GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
 }
 
-/*************************************************************
-* @brief Creates a connection to the Soar kernel that is embedded
-*        within the same process as the caller.
-*
-*		 Creating in "current thread" will produce maximum performance but requires a little more work for the developer
-*		 (you need to call CheckForIncomingCommands() periodically and you should not register for events and then go to sleep).
-*
-*		 Creating in "new thread" is simpler for the developer but will be slower (around a factor 2).
-*		 (It's simpler because there's no need to call CheckForIncomingCommands() periodically as this happens in a separate
-*		  thread running inside the kernel and incoming events are handled by another thread in the client).
-*
-* @param pLibraryName	The name of the library to load, without an extension (e.g. "SoarKernelSML").  Case-sensitive (to support Linux).
-*						This library will be dynamically loaded and connected to.
-* @param Optimized		If this is a current thread connection, we can short-circuit parts of the messaging system for sending input and
-*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
-*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
-* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
-*						Passing 0 means no listening port will be created (so it will be impossible to make remote connections to the kernel).
-*
-* @returns A new kernel object which is used to communicate with the kernel.
-*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
-*************************************************************/
 Kernel* Kernel::CreateKernelInCurrentThread(char const* pLibraryName, bool optimized, int portToListenOn)
 {
 	return CreateEmbeddedConnection(pLibraryName, true, optimized, portToListenOn) ;
@@ -731,21 +709,18 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientTh
 	return pKernel ;
 }
 
-/*************************************************************
-* @brief Creates a connection to a receiver that is in a different
-*        process.  The process can be on the same machine or a different machine.
-*
-* @param sharedFileSystem	If true the local and remote machines can access the same set of files.
-*					For example, this means when loading a file of productions, sending the filename is
-*					sufficient, without actually sending the contents of the file.
-*					(NOTE: It may be a while before we really support passing in 'false' here)
-* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
-*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
-* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
-* @param ignoreOutput Setting this to true means output link changes won't be sent to this client (improving performance if you aren't interested in output)
-*
-* @returns A new kernel object which is used to communicate with the kernel (or NULL if an error occurs)
-*************************************************************/
+int Kernel::GetListenerPort()
+{
+	if (!GetConnection()) 
+		return -1;
+
+	AnalyzeXML response ;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetListenerPort))
+	{
+		return response.GetResultInt(0) ;
+	}
+}
+
 Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port, bool ignoreOutput)
 {
 	ErrorCode errorCode = 0 ;
