@@ -127,7 +127,7 @@ protected:
 	void destroySoar();
 	void runAllTestTypes();
 	void runTest();
-	void spawnListener(const std::string& lib);
+	int spawnListener(const std::string& lib);
 	void cleanUpListener();
 
 	void loadProductions( const char* productions );
@@ -138,10 +138,6 @@ protected:
 	void (FullTests::*m_pTestBody)();
 
 	static const std::string kAgentName;
-
-   int m_Port;
-   static const int kPortBase;
-   static const int kPortRange;
 
 #ifdef _WIN32
     STARTUPINFO si;
@@ -154,8 +150,6 @@ protected:
 CPPUNIT_TEST_SUITE_REGISTRATION( FullTests ); // Registers the test so it will be used
 
 const std::string FullTests::kAgentName( "full-tests-agent" );
-const int FullTests::kPortBase = 12122;
-const int FullTests::kPortRange = 1000;
 
 void FullTests::setUp()
 {
@@ -175,10 +169,6 @@ void FullTests::setUp()
 void FullTests::runAllTestTypes()
 {
 	// test 1
-	// generate port
-	m_Port = rand() % kPortRange;
-	m_Port += kPortBase;
-
 	m_Options.reset();
 	m_Options.set( USE_CLIENT_THREAD );
 	m_Options.set( FULLY_OPTIMIZED );
@@ -187,10 +177,6 @@ void FullTests::runAllTestTypes()
 	std::cout.flush();
 
 	// test 2
-	// generate port
-	m_Port = rand() % kPortRange;
-	m_Port += kPortBase;
-
 	m_Options.reset();
 	m_Options.set( USE_CLIENT_THREAD );
 	runTest();
@@ -198,10 +184,6 @@ void FullTests::runAllTestTypes()
 	std::cout.flush();
 
 	// test 3
-	// generate port
-	m_Port = rand() % kPortRange;
-	m_Port += kPortBase;
-
 	m_Options.reset();
 	runTest();
 	std::cout << "3";
@@ -209,10 +191,6 @@ void FullTests::runAllTestTypes()
 
 	if (!g_NoRemote) {
 		// test 4
-		// generate port
-		m_Port = rand() % kPortRange;
-		m_Port += kPortBase;
-
 		m_Options.reset();
 		m_Options.set( REMOTE );
 		runTest();
@@ -245,19 +223,19 @@ void FullTests::createSoar()
 		m_pKernel->Shutdown();
 		delete m_pKernel;
 		m_pKernel = NULL;
-		spawnListener(lib);
-		m_pKernel = sml::Kernel::CreateRemoteConnection( true, 0, m_Port );
+		int targetPid = spawnListener(lib);
+		m_pKernel = sml::Kernel::CreateRemoteConnection( true, 0, targetPid );
 	}
 	else
 	{
 		if ( m_Options.test( USE_CLIENT_THREAD ) )
 		{
 			bool optimized = m_Options.test( FULLY_OPTIMIZED );
-			m_pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), optimized, m_Port );
+			m_pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), optimized, 0 );
 		}
 		else
 		{
-			m_pKernel = sml::Kernel::CreateKernelInNewThread( sml::Kernel::GetDefaultLibraryName(), m_Port );
+			m_pKernel = sml::Kernel::CreateKernelInNewThread( sml::Kernel::GetDefaultLibraryName(), 0 );
 		}
 	}
 
@@ -352,11 +330,13 @@ void FullTests::destroySoar()
 	}
 }
 
-void FullTests::spawnListener(const std::string& lib)
+int FullTests::spawnListener(const std::string& lib)
 {
 	// Spawning a new process is radically different on windows vs linux.
 	// Instead of writing an abstraction layer, I'm just going to put platform-
 	// specific code here.
+
+	int targetPid = -1;
 
 #ifdef _WIN32
    ZeroMemory( &si, sizeof(si) );
@@ -364,11 +344,9 @@ void FullTests::spawnListener(const std::string& lib)
    ZeroMemory( &pi, sizeof(pi) );
 
    // Start the child process. 
-   std::wstringstream commandLine;
-   commandLine << L"Tests.exe --listener " << m_Port;
    BOOL success = CreateProcess( 
       L"Tests.exe",
-      const_cast< LPWSTR >( commandLine.str().c_str() ),        // Command line
+      L"Tests.exe --listener", // Command line
       NULL,           // Process handle not inheritable
       NULL,           // Thread handle not inheritable
       FALSE,          // Set handle inheritance to FALSE
@@ -381,25 +359,30 @@ void FullTests::spawnListener(const std::string& lib)
 	std::stringstream errorMessage;
 	errorMessage << "CreateProcess error code: " << GetLastError();
 	CPPUNIT_ASSERT_MESSAGE( errorMessage.str().c_str(), success );
+	
+	targetPid = pi.dwProcessId;
+
 #else // _WIN32
 	pid = fork();
 	CPPUNIT_ASSERT_MESSAGE( "fork error", pid >= 0 );
 	if ( pid == 0 )
 	{
 		// child
-		std::stringstream portString;
-		portString << m_Port;
 		std::stringstream cmdString;
 		cmdString << lib << "/bin/Tests";
-		execlp(cmdString.str().c_str(), "Tests", "--listener", portString.str().c_str(), static_cast< char* >( 0 ));
+		execlp(cmdString.str().c_str(), "Tests", "--listener", static_cast< char* >( 0 ));
 		// does not return on success
 		CPPUNIT_ASSERT_MESSAGE( "execlp failed", false );
 		g_NoRemote = true;
 		std::cerr << "Disabled remote tests." << std::endl;
+	} else {
+		targetPid = pid;
 	}
+
 #endif // _WIN32
 
 	sml::Sleep( 1, 0 );
+	return targetPid;
 }
 
 void FullTests::cleanUpListener()
