@@ -51,6 +51,7 @@ char const* Commands::kCLIMultiAttributes			= "multi-attributes";
 char const* Commands::kCLINumericIndifferentMode	= "numeric-indifferent-mode";
 char const* Commands::kCLIOSupportMode				= "o-support-mode";
 char const* Commands::kCLIPopD						= "popd";
+char const* Commands::kCLIPort						= "port";
 char const* Commands::kCLIPredict					= "predict";
 char const* Commands::kCLIPreferences				= "preferences";
 char const* Commands::kCLIPrint						= "print";

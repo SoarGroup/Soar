@@ -225,6 +225,7 @@ public:
 	bool ParseNumericIndifferentMode(std::vector<std::string>& argv);
 	bool ParseOSupportMode(std::vector<std::string>& argv);
 	bool ParsePopD(std::vector<std::string>& argv);
+	bool ParsePort(std::vector<std::string>& argv);
 	bool ParsePredict(std::vector<std::string>& argv);
 	bool ParsePreferences(std::vector<std::string>& argv);
 	bool ParsePrint(std::vector<std::string>& argv);
@@ -510,6 +511,11 @@ public:
 	* @brief popd command
 	*************************************************************/
 	bool DoPopD();
+
+	/*************************************************************
+	* @brief port command
+	*************************************************************/
+	bool DoPort();
 
 	/*************************************************************
 	* @brief predict command
