@@ -44,7 +44,7 @@ elif sys.platform == 'darwin':
 		if Mac_m64_Capable():
 			m64_default = '64'
 
-default_prefix = os.path.realpath(os.path.join('..','out'))
+default_prefix = os.path.join('..','out')
 if os.environ.has_key('SOAR_HOME'):
 	default_prefix = os.environ['SOAR_HOME']
 
@@ -160,7 +160,7 @@ env = Environment(
 	GPROF = GetOption('gprof'),
 	SCU = GetOption('scu'), 
 	BUILD_DIR = GetOption('build-dir'),
-	PREFIX = GetOption('prefix'),
+	PREFIX = os.path.realpath(GetOption('prefix')),
 	DEBUG_SYMBOLS = GetOption('debug-symbols'),
 	STATIC_LINKED = GetOption('static'),
 	)
