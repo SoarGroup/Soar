@@ -185,7 +185,7 @@ bool ListenerSocket::CreateListener(int port, bool local)
 int ListenerSocket::GetPort() 
 {
 	sockaddr_in addr;
-	int len = sizeof(addr);
+	socklen_t len = sizeof(addr);
 	getsockname(m_hSocket, (sockaddr*)&addr, &len);
 	return ntohs(addr.sin_port);
 }
