@@ -8,7 +8,7 @@
 class SimpleListener 
 {
 public:
-	SimpleListener( int life, int port );
+	SimpleListener( int life );
 
 	int run(); // returns zero on success, nonzero failure
 
@@ -16,8 +16,7 @@ public:
 
 private:
 	int life;
-	int port;
-
+	
 	// Choose how to connect (usually use NewThread) but for
 	// testing currentThread can be helpful.
 	bool useCurrentThread;

@@ -40,15 +40,8 @@ int main( int argc, char** argv )
 	for (int index = 1; index < argc; ++index) {
 		std::string argument(argv[index]);
 		if (argument == "--listener") {
-                        int port = 12121;
-                        if ( ++index < argc )
-                        {
-                                from_string(port, argv[index]);
-                        }
-
-			//std::cout << "Creating simple listener on port: " << port << std::endl;
-                        SimpleListener simpleListener( 600, port );
-                        return simpleListener.run();
+            SimpleListener simpleListener( 600 );
+            return simpleListener.run();
 
 		} else if (argument == "--noremote") {
 			std::cout << "Running tests without remote." << std::endl;
