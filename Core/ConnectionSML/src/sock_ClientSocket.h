@@ -32,7 +32,7 @@ public:
 	// Description	  : Connect to a server
 	//
 	/////////////////////////////////////////////////////////////////////
-	bool	ConnectToServer(char const* netAddress, unsigned short port) ;
+	bool	ConnectToServer(char const* netAddress, int port) ;
 };
 
 } // Namespace

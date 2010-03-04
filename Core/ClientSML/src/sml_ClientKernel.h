@@ -149,7 +149,12 @@ class Kernel : public ClientErrors
 	friend class WorkingMemory ;	// Access to generate next ID methods
 
 public:
-	enum { kDefaultSMLPort = 12121 } ;
+	enum 
+	{ 
+		kDefaultSMLPort = 12121,
+		kSuppressListener = 0,
+		kUseAnyPort = -1,
+	} ;
 	static char const* const kDefaultLibraryName ;
 
 protected:
@@ -299,14 +304,19 @@ public:
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
 	*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
 	*						Also if you're looking for maximum performance be sure to read about the "auto commit" options below.
-	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (picked at random).
-	*						Passing 0 means no listening port will be created (so it will be impossible to make remote connections to the kernel).
+	* @param port			The port number the kernel should use to receive remote connections.  The default port for SML is 12121 (kDefaultSMLPort)
+	*						(picked at random). Passing 0 (kSuppressListener) means no listening port will be created (so it will be impossible to make
+	*						remote connections to the kernel). Passing -1 (kUseAnyPort) means bind to any availble port (retrieve after success using 
+	*						GetListenerPort()), and, for local connections, create a named pipe using the PID. To connect to this high-performance
+	*						local connection, simply pass the PID as the port in CreateRemoteConnection().
 	*
 	* @returns A new kernel object which is used to communicate with the kernel.
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
 	static Kernel* CreateKernelInCurrentThread(char const* pLibraryName = kDefaultLibraryName, bool optimized = false, int portToListenOn = kDefaultSMLPort) ;
 	static Kernel* CreateKernelInNewThread(char const* pLibraryName = kDefaultLibraryName, int portToListenOn = kDefaultSMLPort) ;
+
+	int GetListenerPort();
 
 	/*************************************************************
 	* @brief Creates a connection to a receiver that is in a different
@@ -319,6 +329,8 @@ public:
 	* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
 	*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
 	* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
+	*					If connecting to a local machine with a kernel created using kUseAnyPort, you can pass the PID here to connect to a high-performance
+	*					local connection.
 	* @param ignoreOutput Setting this to true means output link changes won't be sent to this client (improving performance if you aren't interested in output)
 	*
 	* @returns A new kernel object which is used to communicate with the kernel

@@ -146,24 +146,9 @@ Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool 
 	return pConnection ;
 }
 
-/*************************************************************
-* @brief Creates a connection to a receiver that is in a different
-*        process.  The process can be on the same machine or a different machine.
-*
-* @param sharedFileSystem	If true the local and remote machines can access the same set of files.
-*					For example, this means when loading a file of productions, sending the filename is
-*					sufficient, without actually sending the contents of the file.
-*					(NOTE: It may be a while before we really support passing in 'false' here)
-* @param pIPaddress The IP address of the remote machine (e.g. "202.55.12.54").
-*                   Pass "127.0.0.1" or NULL to create a connection between two processes on the same machine.
-* @param port		The port number to connect to.  The default port for SML is 12121 (picked at random).
-* @param pError		Pass in a pointer to an int and receive back an error code if there is a problem.  (Can pass NULL).
-*
-* @returns A RemoteConnection instance.
-*************************************************************/
-Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, unsigned short port, ErrorCode* pError)
+Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port, ErrorCode* pError)
 {
-	RemoteConnection* pConnection;
+	RemoteConnection* pConnection = 0;
 
 #ifdef ENABLE_NAMED_PIPES
 	if(pIPaddress == 0) {
@@ -177,13 +162,14 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 
 		if(!ok) {
 			if(pError) *pError = Error::kConnectionFailed ;
-			return NULL;
+			// Try using internet socket
+		} else {
+			// Wrap the pipe inside a remote connection object
+			pConnection = new RemoteConnection(sharedFileSystem, pNamedPipe) ;
 		}
+	}
 
-		// Wrap the pipe inside a remote connection object
-		pConnection = new RemoteConnection(sharedFileSystem, pNamedPipe) ;
-
-	} else
+	if (!pConnection)
 #endif
 	{
 		sock::ClientSocket* pSocket = new sock::ClientSocket() ;

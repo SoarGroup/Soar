@@ -50,12 +50,12 @@ static soarxml::ElementXML* AddErrorMsg(Connection* pConnection, soarxml::Elemen
 /*************************************************************
 * @brief	Creates the singleton kernel object.
 *************************************************************/
-KernelSML* KernelSML::CreateKernelSML(unsigned short portToListenOn)
+KernelSML* KernelSML::CreateKernelSML(int portToListenOn)
 {
 	return new KernelSML(portToListenOn);
 }
 
-KernelSML::KernelSML(unsigned short portToListenOn)
+KernelSML::KernelSML(int portToListenOn)
 {
 	// Initalize the event map
 	m_pEventMap = new Events() ;
@@ -91,6 +91,11 @@ KernelSML::KernelSML(unsigned short portToListenOn)
 	m_EchoCommands = false ;
 
 	m_InterruptCheckRate = 10;
+}
+
+int KernelSML::GetListenerPort()
+{
+	return m_pConnectionManager->GetListenerPort();
 }
 
 /** Deletes all agents and optionally waits until this has actually happened (if the agent is running there may be a delay) */

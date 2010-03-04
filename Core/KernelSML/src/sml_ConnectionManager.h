@@ -54,8 +54,11 @@ protected:
 	bool	m_bTraceCommunications ;
 
 public:
-	ConnectionManager(unsigned short port, KernelSML* pKernel) ;
+	ConnectionManager(int port, KernelSML* pKernel) ;
 	~ConnectionManager() ;
+
+	// This can be unknown
+	int GetListenerPort();
 
 	// Add a new incoming connection to our list
 	void AddConnection(Connection* pConnection) ;

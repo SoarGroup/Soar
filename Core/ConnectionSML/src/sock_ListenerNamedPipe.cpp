@@ -46,13 +46,23 @@ ListenerNamedPipe::~ListenerNamedPipe()
 //					on a specific port.
 //
 /////////////////////////////////////////////////////////////////////
-bool ListenerNamedPipe::CreateListener(const char* name)
+bool ListenerNamedPipe::CreateListener(int port)
 {
 	CTDEBUG_ENTER_METHOD("ListenerNamedPipe::CreateListener");
+
+	if (port == -1) 
+		port = GetCurrentProcessId();	// Name the pipe after the PID
+
+	unsigned long usernamesize = UNLEN+1;
+	char username[UNLEN+1];
+	GetUserName(username,&usernamesize);
+	std::stringstream pipeName;
+	pipeName << "\\\\.\\pipe\\" << username << "-" << port;
 
 	// set the name of this datasender
 	this->name = "pipe ";
 	this->name.append(name);
+	//sml::PrintDebugFormat("Listening on %s", name.c_str()) ;
 
 	/*// Should only call this once
 	if (m_hPipe != INVALID_HANDLE_VALUE)
@@ -64,7 +74,7 @@ bool ListenerNamedPipe::CreateListener(const char* name)
 
 	// Create the listener socket
 	HANDLE hListener = CreateNamedPipe( 
-          name,						// pipe name 
+		name.c_str(),						// pipe name 
           PIPE_ACCESS_DUPLEX,		// read/write access 
           PIPE_TYPE_MESSAGE |		// message type pipe 
           PIPE_READMODE_MESSAGE |	// message-read mode 
