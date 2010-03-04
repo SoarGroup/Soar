@@ -61,7 +61,7 @@ bool ListenerNamedPipe::CreateListener(int port)
 
 	// set the name of this datasender
 	this->name = "pipe ";
-	this->name.append(name);
+	this->name.append(pipeName.str().c_str());
 	//sml::PrintDebugFormat("Listening on %s", name.c_str()) ;
 
 	/*// Should only call this once
@@ -74,7 +74,7 @@ bool ListenerNamedPipe::CreateListener(int port)
 
 	// Create the listener socket
 	HANDLE hListener = CreateNamedPipe( 
-		name.c_str(),						// pipe name 
+		  pipeName.str().c_str(),			// pipe name 
           PIPE_ACCESS_DUPLEX,		// read/write access 
           PIPE_TYPE_MESSAGE |		// message type pipe 
           PIPE_READMODE_MESSAGE |	// message-read mode 
