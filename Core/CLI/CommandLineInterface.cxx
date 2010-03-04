@@ -37,6 +37,7 @@
 #include "src/cli_numericindifferentmode.cpp"
 #include "src/cli_osupportmode.cpp"
 #include "src/cli_popd.cpp"
+#include "src/cli_port.cpp"
 #include "src/cli_predict.cpp"
 #include "src/cli_preferences.cpp"
 #include "src/cli_print.cpp"

@@ -297,6 +297,7 @@ char const* const sml_Names::kParamFunction			= "function" ;
 char const* const sml_Names::kParamChunkNamePrefix	= "chunknameprefix" ;
 char const* const sml_Names::kParamChunkCount		= "chunkcount" ;
 char const* const sml_Names::kParamChunkLongFormat	= "chunklongformat" ;
+char const* const sml_Names::kParamPort				= "port" ;
 
 // Source command parameters
 char const* const sml_Names::kParamSourcedProductionCount	= "sourced-production-count";

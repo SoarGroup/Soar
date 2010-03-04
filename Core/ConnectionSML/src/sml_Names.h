@@ -293,6 +293,7 @@ public:
 	static char const* const kParamChunkNamePrefix;
 	static char const* const kParamChunkCount;
 	static char const* const kParamChunkLongFormat;
+	static char const* const kParamPort;
 
 	// Parameter names for source command
 	static char const* const kParamSourcedProductionCount;
