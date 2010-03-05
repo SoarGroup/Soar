@@ -711,14 +711,15 @@ Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientTh
 
 int Kernel::GetListenerPort()
 {
-	if (!GetConnection()) 
-		return -1;
-
-	AnalyzeXML response ;
-	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetListenerPort))
+	if (GetConnection()) 
 	{
-		return response.GetResultInt(0) ;
+		AnalyzeXML response ;
+		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetListenerPort))
+		{
+			return response.GetResultInt(0) ;
+		}
 	}
+	return -1;
 }
 
 Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPaddress, int port, bool ignoreOutput)
