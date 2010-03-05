@@ -14,7 +14,6 @@ package edu.umich.soar.debugger.menu;
 import java.io.File;
 
 import org.eclipse.swt.widgets.*;
-import sml.sml_Names;
 
 import edu.umich.soar.SoarProperties;
 import edu.umich.soar.debugger.MainFrame;
@@ -147,7 +146,8 @@ public class DemoMenu
 	
 	public String getLibraryLocation()
 	{
-		return SoarProperties.getProperties().getProperty("soar.home");
+		SoarProperties sp = new SoarProperties();
+		return sp.getPrefix();
 	}
 	
 	/*
