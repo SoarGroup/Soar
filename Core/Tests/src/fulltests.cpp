@@ -338,6 +338,9 @@ int FullTests::spawnListener(const std::string& lib)
 
 	int targetPid = -1;
 
+	// Hoping this will clear up some port errors during automated tests.
+	sml::Sleep( 1, 0 );
+
 #ifdef _WIN32
    ZeroMemory( &si, sizeof(si) );
    si.cb = sizeof(si);
