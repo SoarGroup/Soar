@@ -691,12 +691,7 @@ bool WorkingMemory::SynchronizeOutputLink()
 #endif
 
 	// Erase the existing output link and create a new representation from scratch
-	if (m_OutputLink)
-	{
-		//int children = m_OutputLink->GetNumberChildren() ;
-		delete m_OutputLink ;
-		m_OutputLink = NULL ;
-	}
+	InvalidateOutputLink();
 
 	// Process the new list of output -- as if it had just occurred in the agent (when in fact we're just synching with it)
 	ok = ReceivedOutput(&incoming, &response) ;
@@ -1270,6 +1265,9 @@ void WorkingMemory::Refresh()
 void WorkingMemory::InvalidateOutputLink() {
 	if (m_OutputLink)
 	{
+		// clear delta list
+		m_OutputDeltaList.Clear(true, true, true);
+
 		m_OutputLink->GetSymbol()->DeleteAllChildren() ;
 		
 		// clean up the IdSymbolMap table. See Bug #1094
