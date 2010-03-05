@@ -68,6 +68,8 @@
 
 #define NET_SD_BOTH			SD_BOTH
 
+#define socklen_t int
+
 #if defined(_MSC_VER)
 
 // The kernel uses while(TRUE) a lot
