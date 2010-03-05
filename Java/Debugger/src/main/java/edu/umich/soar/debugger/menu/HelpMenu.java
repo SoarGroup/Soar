@@ -30,9 +30,9 @@ public class HelpMenu {
 
 	private AbstractAction m_About   	= new AbstractAction("About Soar's Debugger") 	{ public void actionPerformed(ActionEvent e) { about() ; } } ;
 	private AbstractAction m_Homepage	= new AbstractAction("Online - Soar Home page") 		{ public void actionPerformed(ActionEvent e) { open("http://sitemaker.umich.edu/soar") ; } } ;
-	private AbstractAction m_Wiki 	 	= new AbstractAction("Online - Soar Wiki") 				{ public void actionPerformed(ActionEvent e) { open("http://winter.eecs.umich.edu/soarwiki/Main_Page") ; } } ;
-	private AbstractAction m_CLI 	 	= new AbstractAction("Online - Soar Command Line Help") { public void actionPerformed(ActionEvent e) { open("http://winter.eecs.umich.edu/soarwiki/Soar_Command_Line_Interface") ; } } ;
-	private AbstractAction m_FAQ 	 	= new AbstractAction("Online - Soar FAQ") 				{ public void actionPerformed(ActionEvent e) { open("http://acs.ist.psu.edu/projects/soar-faq/soar-faq.html") ; } } ;
+	private AbstractAction m_Wiki 	 	= new AbstractAction("Online - Soar Wiki") 				{ public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/Home?tm=6") ; } } ;
+	private AbstractAction m_CLI 	 	= new AbstractAction("Online - Soar Command Line Help") { public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/CommandLineInterface") ; } } ;
+	private AbstractAction m_FAQ 	 	= new AbstractAction("Online - Soar FAQ") 				{ public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/FAQ") ; } } ;
 	private AbstractAction m_Manual 	= new AbstractAction("Soar Manual") 			{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar8Manual.pdf") ; } } ;
 	private AbstractAction m_Tutorial1 	= new AbstractAction("Soar Tutorial - Part 1") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 1.pdf") ; } } ;
 	private AbstractAction m_Tutorial2 	= new AbstractAction("Soar Tutorial - Part 2") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 2.pdf") ; } } ;
