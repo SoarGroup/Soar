@@ -129,14 +129,14 @@ void KernelSML::InitializeLibraryLocation()
 		uint32_t usize = static_cast<uint32_t>(size);
 		_NSGetExecutablePath(buf, &usize);
 #else // SCONS_DARWIN
-		GetCurrentWorkingDirectory(m_LibraryDirectory);
+		m_CommandLineInterface.GetCurrentWorkingDirectory(m_LibraryDirectory);
 		return;
 #endif
 	} else {
 		int ret = readlink(selfexe, buf, size);
 		if (ret == -1 || ret >= size) {
 			// failed for whatever reason (possibly path too long)
-			GetCurrentWorkingDirectory(m_LibraryDirectory);
+			m_CommandLineInterface.GetCurrentWorkingDirectory(m_LibraryDirectory);
 			return;
 		}
 	}
