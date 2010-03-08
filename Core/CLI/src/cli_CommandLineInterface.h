@@ -754,6 +754,7 @@ public:
 	// utility for kernel SML
 	bool IsLogOpen();
 
+	bool GetCurrentWorkingDirectory(std::string& directory);
 
 protected:
 
@@ -786,11 +787,6 @@ protected:
 	*        Return true if successful, set error and return false if not.
 	*************************************************************/
 	bool GetHelpString(const std::string& helpFile);
-
-	/*************************************************************
-	* @brief 
-	*************************************************************/
-	bool GetCurrentWorkingDirectory(std::string& directory);
 
 	/*************************************************************
 	* @brief 
