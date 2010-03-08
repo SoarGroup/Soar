@@ -16,8 +16,3 @@ else:
 
 env.Install('$PREFIX/lib', CommandLineInterface)
 
-resourceTargetDir = '$PREFIX/share/soar/Help'
-env.Install(target = resourceTargetDir, 
-            source = '#CLI/Help')
-env.Clean('$PREFIX/share/soar', resourceTargetDir)
-
