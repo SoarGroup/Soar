@@ -30,7 +30,9 @@ bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 
 	// if directory 0, return SoarLibrary/bin
 	if (!pDirectory) {
-		std::string binDir = m_LibraryDirectory + "/bin";
+		std::string binDir(this->m_pKernelSML->GetLibraryLocation());
+		binDir.append("bin");
+
 		if (chdir(binDir.c_str())) {
 			SetErrorDetail("Error changing to " + binDir);
 			return SetError(CLIError::kchdirFail);

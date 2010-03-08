@@ -57,6 +57,9 @@ KernelSML* KernelSML::CreateKernelSML(int portToListenOn)
 
 KernelSML::KernelSML(int portToListenOn)
 {
+	// Attempt to figure out where we're at on the system.
+	InitializeLibraryLocation();
+
 	// Initalize the event map
 	m_pEventMap = new Events() ;
 
@@ -91,6 +94,82 @@ KernelSML::KernelSML(int portToListenOn)
 	m_EchoCommands = false ;
 
 	m_InterruptCheckRate = 10;
+}
+
+void KernelSML::InitializeLibraryLocation()
+{
+	// Attempt to set the default library location using path to the DLL or executable.
+	// Note: this fails if running Java.
+
+	// TODO: Possibly check for existence of share/soar
+
+#ifdef WIN32
+	const int DLLPATHLEN = 256;
+	char dllpath[DLLPATHLEN];
+	GetModuleFileName(0, dllpath, DLLPATHLEN); // passing null gets directory of exe
+
+	m_LibraryDirectory.assign(dllpath);
+
+	// This chops off the dll part to get just the path (/path/to/out/bin)
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(GetDirectorySeparator()));
+
+	// This takes the parent directory to get (/path/to/out)
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(GetDirectorySeparator()));
+	m_LibraryDirectory.append(GetDirectorySeparator());
+	return;
+
+#else // WIN32
+	struct stat statbuf;
+	const char* selfexe = "/proc/self/exe";
+	const int size = 2048;
+	char buf[size];
+	if (stat(selfexe, &statbuf) == -1) {
+		// we don't have proc
+#ifdef SCONS_DARWIN
+		uint32_t usize = static_cast<uint32_t>(size);
+		_NSGetExecutablePath(buf, &usize);
+#else // SCONS_DARWIN
+		GetCurrentWorkingDirectory(m_LibraryDirectory);
+		return;
+#endif
+	} else {
+		int ret = readlink(selfexe, buf, size);
+		if (ret == -1 || ret >= size) {
+			// failed for whatever reason (possibly path too long)
+			GetCurrentWorkingDirectory(m_LibraryDirectory);
+			return;
+		}
+	}
+
+	// Get parent directory
+	buf[size-1] = 0;
+	m_LibraryDirectory = buf;
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(GetDirectorySeparator()));
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(GetDirectorySeparator()));
+	//std::cout << m_LibraryDirectory << std::endl;
+	m_LibraryDirectory.append(GetDirectorySeparator());
+	return;
+
+#endif // WIN32
+}
+
+const char* KernelSML::GetLibraryLocation()
+{
+	return m_LibraryDirectory.c_str();
+}
+
+void KernelSML::SetLibraryLocation(const std::string& location)
+{
+	m_LibraryDirectory.assign(location);
+}
+
+const char* KernelSML::GetDirectorySeparator()
+{
+#ifdef WIN32
+	return "\\";
+#else //!WIN32
+	return "/";
+#endif
 }
 
 int KernelSML::GetListenerPort()

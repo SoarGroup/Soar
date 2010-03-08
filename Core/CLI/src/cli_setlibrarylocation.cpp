@@ -27,17 +27,17 @@ bool CommandLineInterface::ParseSetLibraryLocation(std::vector<std::string>& arg
 	return DoSetLibraryLocation();
 }
 
-bool CommandLineInterface::DoSetLibraryLocation(const std::string* pLocation) {
+bool CommandLineInterface::DoSetLibraryLocation(std::string* pLocation) {
 
 	if (!pLocation || !pLocation->size()) {
 		if (m_RawOutput) {
-			m_Result << "Current library location: " << m_LibraryDirectory;
+			m_Result << "Current library location: " << m_pKernelSML->GetLibraryLocation();
 		} else {
-			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_LibraryDirectory);
+			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_pKernelSML->GetLibraryLocation());
 		}
 	} else {
-		m_LibraryDirectory = *pLocation;
-		StripQuotes(m_LibraryDirectory);
+		StripQuotes(*pLocation);
+		m_pKernelSML->SetLibraryLocation(*pLocation);
 	}
 	return true;
 }

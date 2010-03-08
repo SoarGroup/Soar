@@ -432,6 +432,7 @@ char const* const sml_Names::kCommand_GetInitialTimeTag		= "initial_time_tag" ;
 char const* const sml_Names::kCommand_OutputInit			= "output_init" ;
 char const* const sml_Names::kCommand_ConvertIdentifier		= "convert_identifier";
 char const* const sml_Names::kCommand_GetListenerPort		= "get_listener_port";
+char const* const sml_Names::kCommand_GetLibraryLocation	= "get_library_location";
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;

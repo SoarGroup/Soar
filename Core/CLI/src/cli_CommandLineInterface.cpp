@@ -628,8 +628,7 @@ bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 
 	// Show help if requested
 	if (helpFlag) {
-		std::string helpFile = m_LibraryDirectory + "/share/soar/Help/" + argv[0];
-		return GetHelpString(helpFile);
+		return DoHelp();
 	}
 
 	// Process command
@@ -657,55 +656,6 @@ bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
 
 EXPORT void CommandLineInterface::SetKernel(sml::KernelSML* pKernelSML) {
 	m_pKernelSML = pKernelSML;
-
-	// Now that we have the kernel, set the home directory to the location of SoarKernelSML's parent directory,
-	// SoarLibrary
-#ifdef WIN32
-	char dllpath[256];
-	GetModuleFileName(0, dllpath, 256); // passing null gets directory of exe
-
-	// This sets it to the path + the dll
-	m_LibraryDirectory = dllpath;
-
-	// This chops off the dll part to get just the path (...SoarLibrary/bin)
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
-
-	// This takes the parent directory to get ...SoarLibrary
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("\\"));
-	return;
-
-#else // WIN32
-	struct stat statbuf;
-	const char* selfexe = "/proc/self/exe";
-	const int size = 2048;
-	char buf[size];
-	if (stat(selfexe, &statbuf) == -1) {
-		// we don't have proc
-#ifdef SCONS_DARWIN
-		uint32_t usize = static_cast<uint32_t>(size);
-		_NSGetExecutablePath(buf, &usize);
-#else // SCONS_DARWIN
-		GetCurrentWorkingDirectory(m_LibraryDirectory);
-		return;
-#endif
-	} else {
-		int ret = readlink(selfexe, buf, size);
-		if (ret == -1 || ret >= size) {
-			// failed for whatever reason (possibly path too long)
-			GetCurrentWorkingDirectory(m_LibraryDirectory);
-			return;
-		}
-	}
-
-	// Get parent directory
-	buf[size-1] = 0;
-	m_LibraryDirectory = buf;
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of("/"));
-	//std::cout << m_LibraryDirectory << std::endl;
-	return;
-
-#endif // WIN32
 }
 
 bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory) {
