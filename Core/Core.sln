@@ -3,9 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcre", "pcre\pcre9.vcproj", "{6B0AE9F9-575C-4230-875A-3996BF2AC1E6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoarKernel", "SoarKernel\SoarKernel9.vcproj", "{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{6B0AE9F9-575C-4230-875A-3996BF2AC1E6} = {6B0AE9F9-575C-4230-875A-3996BF2AC1E6}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ElementXML", "ElementXML\ElementXML9.vcproj", "{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
 EndProject
