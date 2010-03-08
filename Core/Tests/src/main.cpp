@@ -27,7 +27,7 @@ BOOL WINAPI handle_ctrlc( DWORD dwCtrlType )
 }
 #endif // _WIN32
 
-bool g_NoRemote = false;
+bool g_NoRemote = true;
 
 int main( int argc, char** argv )
 {
@@ -43,9 +43,9 @@ int main( int argc, char** argv )
             SimpleListener simpleListener( 600 );
             return simpleListener.run();
 
-		} else if (argument == "--noremote") {
-			std::cout << "Running tests without remote." << std::endl;
-			g_NoRemote = true;
+		} else if (argument == "--remote") {
+			std::cout << "Running tests with remote." << std::endl;
+			g_NoRemote = false;
 		} else {
 			std::cerr << "Unknown argument " << argument << " ignored." << std::endl;
 		}
