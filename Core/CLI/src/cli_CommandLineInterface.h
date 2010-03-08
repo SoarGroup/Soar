@@ -397,9 +397,8 @@ public:
 
 	/*************************************************************
 	* @brief help command
-	* @param pCommand The command to get help on, pass 0 (null) for a list of commands
 	*************************************************************/
-	bool DoHelp(const std::string* pCommand = 0);
+	bool DoHelp();
 
 	/*************************************************************
 	* @brief indifferent-selection command
@@ -628,7 +627,7 @@ public:
 	* @brief set-library-location command
 	* @param pLocation String of new location, pass null for query.
 	*************************************************************/
-	bool DoSetLibraryLocation(const std::string* pLocation = 0);
+	bool DoSetLibraryLocation(std::string* pLocation = 0);
 
 	/*************************************************************
 	* @brief set-stop-phase command
@@ -905,7 +904,6 @@ protected:
 	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
 	std::stack< CallData > m_pCallDataStack;	// Call data we're currently working with
 	agent*				m_pAgentSoar;			// Agent we're currently working with (soar kernel)
-	std::string			m_LibraryDirectory;		// The library directory, server side, see help command
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream
