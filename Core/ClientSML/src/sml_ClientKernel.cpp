@@ -1603,17 +1603,15 @@ bool Kernel::GetLastCommandLineResult()
 *************************************************************/
 std::string Kernel::GetLibraryLocation()
 {
-	ClientAnalyzedXML response ;
-
-	std::string cmd = "set-library-location" ;	// Without params this does a get
-
-	bool ok = ExecuteCommandLineXML(cmd.c_str(), NULL, &response) ;
-
-	if (!ok)
+	AnalyzeXML response;
+	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetLibraryLocation))
+	{
+		return response.GetResultString();
+	}
+	else
+	{
 		return "" ;
-
-	std::string path = response.GetArgString(sml_Names::kParamDirectory) ;
-	return path ;
+	}
 }
 
 /*************************************************************

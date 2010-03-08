@@ -421,6 +421,7 @@ public:
 	static char const* const kCommand_OutputInit ;
 	static char const* const kCommand_ConvertIdentifier ;
 	static char const* const kCommand_GetListenerPort ;
+	static char const* const kCommand_GetLibraryLocation ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;
