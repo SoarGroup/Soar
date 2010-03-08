@@ -102,7 +102,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -188,7 +188,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -283,7 +283,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -377,7 +377,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -464,7 +464,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -550,7 +550,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -645,7 +645,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -739,7 +739,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy DLL to bin"
+				Description="Copy resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos &quot;..\..\out\share\soar\Demos&quot;&#x0D;&#x0A;xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation &quot;..\..\out\share\soar\Documentation&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
