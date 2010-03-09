@@ -11,8 +11,17 @@ package edu.umich.soar.debugger;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
+import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.browser.ProgressListener;
+import org.eclipse.swt.browser.TitleEvent;
+import org.eclipse.swt.browser.TitleListener;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 
 import java.io.*;
@@ -319,6 +328,38 @@ public class MainFrame
 	public int ShowMessageBox(String title, String text, int style)
 	{
 		return ShowMessageBox(getShell(), title, text, style);
+	}
+	
+	private Shell helpShell;
+	
+	public synchronized void showHelp()
+	{
+		if (helpShell == null || helpShell.isDisposed()) {
+			
+			helpShell = new Shell(getShell().getDisplay());
+			helpShell.setText("Command Line Help");
+			helpShell.setLayout(new GridLayout());
+			Composite comp = new Composite(helpShell, SWT.NONE);
+			GridData data = new GridData(GridData.FILL_BOTH);
+			comp.setLayoutData(data);
+			comp.setLayout(new FillLayout());
+			Browser browser = null;
+			try {
+				browser = new Browser(comp, SWT.HORIZONTAL);
+			} catch (SWTError e) {
+				this.ShowMessageBox("Error opening help", 
+						"Please view help online: http://code.google.com/p/soar/wiki/CommandLineInterface", 
+						SWT.ICON_ERROR);
+				return;
+			}
+			browser.setUrl(MainFrame.class.getResource("/CommandLineInterface.html").toString());
+			
+			helpShell.open();
+		}
+		else if (helpShell != null) 
+		{
+			helpShell.forceFocus();
+		}
 	}
 
 	public void setTextFont(FontData fontData)
