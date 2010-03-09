@@ -12,3 +12,7 @@ else:
 
 env.Install('$PREFIX/lib', ConnectionSML)
 
+# Install includes
+env.Install('$PREFIX/include', Glob('src/*.h'))
+env.Clean(ConnectionSML, env.FindInstalledFiles())
+
