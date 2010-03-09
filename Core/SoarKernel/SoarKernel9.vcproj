@@ -83,6 +83,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -151,6 +153,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -224,6 +228,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -298,6 +304,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -365,6 +373,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -433,6 +443,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -506,6 +518,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -580,6 +594,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy shared includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\shared\*.* &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 	</Configurations>

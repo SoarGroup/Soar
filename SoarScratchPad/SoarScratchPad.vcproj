@@ -46,7 +46,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Core\ClientSML\src;..\Core\ConnectionSML\src;..\Core\KernelSML\src;..\Core\ElementXML\src;..\Core\SoarKernel\src;..\Core\shared"
+				AdditionalIncludeDirectories="..\out\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -70,9 +70,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="false"
+				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="..\out\lib"
 				GenerateDebugInformation="true"
 				AssemblyDebug="0"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -134,7 +135,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\Core\ClientSML\src;..\Core\ConnectionSML\src;..\Core\KernelSML\src;..\Core\ElementXML\src;..\Core\SoarKernel\src;..\Core\shared"
+				AdditionalIncludeDirectories="..\out\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -158,9 +159,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				IgnoreImportLibrary="false"
+				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="..\out\lib"
 				GenerateDebugInformation="true"
 				AssemblyDebug="0"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
@@ -226,7 +228,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\Core\ClientSML\src;..\Core\ConnectionSML\src;..\Core\KernelSML\src;..\Core\ElementXML\src;..\Core\SoarKernel\src;..\Core\shared"
+				AdditionalIncludeDirectories="..\out\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -249,9 +251,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="..\out\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				OptimizeReferences="2"
@@ -318,7 +321,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..\Core\ClientSML\src;..\Core\ConnectionSML\src;..\Core\KernelSML\src;..\Core\ElementXML\src;..\Core\SoarKernel\src;..\Core\shared"
+				AdditionalIncludeDirectories="..\out\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -341,9 +344,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories=""
+				AdditionalLibraryDirectories="..\out\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				OptimizeReferences="2"
@@ -376,18 +380,6 @@
 		</Configuration>
 	</Configurations>
 	<References>
-		<ProjectReference
-			ReferencedProjectIdentifier="{3EDBED11-A1B3-4E00-8B6E-652523D482F0}"
-			RelativePathToProject=".\ClientSML\ClientSML9.vcproj"
-		/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{161DC1AD-FB4B-4370-9FD5-B02E2A0D8A36}"
-			RelativePathToProject=".\ConnectionSML\ConnectionSML9.vcproj"
-		/>
-		<ProjectReference
-			ReferencedProjectIdentifier="{E9AB0B6E-F1CA-4A63-817B-AB47F7E5417E}"
-			RelativePathToProject=".\ElementXML\ElementXML9.vcproj"
-		/>
 	</References>
 	<Files>
 		<Filter
