@@ -6,7 +6,7 @@ import socket
 import subprocess
 import re
 
-SOAR_VERSION = "9.2.1"
+SOAR_VERSION = "9.3.0"
 
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
