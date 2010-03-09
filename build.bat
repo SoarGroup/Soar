@@ -12,36 +12,38 @@ call "%VS90COMNTOOLS%\vsvars32.bat"
 
 if "%PROCESSOR_ARCHITECTURE%"=="AMD64" goto x64
 
+set CONFSUB="Release|Win32"
 if "%2" == "noscu" (
 	set CONFIGURATION="Release|Win32"
 ) else (
 	set CONFIGURATION="Release SCU|Win32"
 )
 
-devenv /%TARGET% %CONFIGURATION% Core\Core.sln
-if not errorlevel 0 goto fail
-
-goto built
+goto buildit
 
 :x64
 
+set CONFSUB="Release|x64"
 if "%2" == "noscu" (
 	set CONFIGURATION="Release|x64"
 ) else (
 	set CONFIGURATION="Release SCU|x64"
 )
 
-devenv /%TARGET% %CONFIGURATION% Core\Core.sln
-if not errorlevel 0 goto fail
+:buildit
 
-:built
+devenv /%TARGET% %CONFIGURATION% Core\Core.sln
+
+for /f "tokens=* delims= " %%a in ('dir/b/ad') do @(
+	for /f "tokens=* delims= " %%b in ('dir/b %%a\*.sln 2^>nul') do (
+		if not %%b == Core.sln (
+			devenv /%TARGET% %CONFSUB% %%a\%%b
+		)
+	)
+)
 
 call build-java.bat %1
 
 endlocal
 exit /b 0
-
-:fail
-endlocal
-exit /b 1
 
