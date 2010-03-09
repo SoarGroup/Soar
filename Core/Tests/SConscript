@@ -37,9 +37,6 @@ Tests = env.Program('Tests', Glob('src/*.cpp'))
 env.Install('$PREFIX/bin', Tests)
 
 # Install resources
-resourceTargetDir = '$PREFIX/share/soar/Tests'
-env.InstallAs(target = resourceTargetDir, 
-              source = '#Tests/Agents')
-
-env.Clean('$PREFIX/share/soar', resourceTargetDir)
+env.InstallAs('$PREFIX/share/soar/Tests', '#Tests/Agents')
+env.Clean(Tests, env.FindInstalledFiles())
 
