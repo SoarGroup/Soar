@@ -80,7 +80,7 @@ AddOption('--no-scu', action='store_false', dest='scu', default=True,
 
 # TODO: does this do the same thing as install-sandbox?
 AddOption('--prefix', action='store', type='string', dest='prefix', default=default_prefix, nargs=1, metavar='DIR',
-	help='Directory to install binaries.')
+	help='Directory to install binaries. Defaults to "../out" (relative to SConstruct file).')
 
 AddOption('--build-dir', action='store', type='string', dest='build-dir', default=default_build, nargs=1, metavar='DIR',
 	help='Directory to store intermediate (object) files.')
