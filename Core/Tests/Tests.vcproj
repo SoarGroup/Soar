@@ -95,7 +95,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description="Copy cppunit dlls and resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunitd_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -174,7 +174,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description="Copy cppunit dlls and resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunitd64_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -263,7 +263,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description="Copy cppunit dlls and resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunit_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
@@ -351,7 +351,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description="Copy cppunit dlls and resources to bin"
 				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I Agents &quot;..\..\out\share\soar\Tests&quot;&#x0D;&#x0A;xcopy /Y lib\cppunit64_dllvs9.dll &quot;..\..\out\bin&quot;&#x0D;&#x0A;"
 			/>
 		</Configuration>
