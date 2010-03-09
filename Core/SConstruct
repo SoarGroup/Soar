@@ -54,98 +54,41 @@ if os.environ.has_key('SOAR_BUILD'):
 
 ################
 # Command line options
-AddOption('--cxx',
-	action='store',
-	type='string',
-	dest='cxx',
-	default='g++',
-	nargs=1,
-	metavar='COMPILER',
+AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nargs=1, metavar='COMPILER',
 	help='Replace \'g++\' as the C++ compiler.')
 
-AddOption('--build-warnings',
-	action='store',
-	type='choice',
-	choices=['none','all','error'],
-	dest='build-warnings',
-	default='error',
-	nargs=1,
-	metavar='WARN_LEVEL',
+AddOption('--build-warnings', action='store', type='choice', choices=['none','all','error'], dest='build-warnings', default='error', nargs=1, metavar='WARN_LEVEL',
 	help='Set warning level when building. Must be one of none, all, error (default).')
 
-AddOption('--optimization',
-	action='store',
-	type='choice',
-	choices=['none','partial','full'],
-	dest='optimization',
-	default='full',
-	nargs=1,
-	metavar='LEVEL',
+AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='full', nargs=1, metavar='LEVEL',
 	help='Set optimization level. Must be one of none, partial, full (default).')
 
-AddOption('--platform',
-	action='store',
-	type='choice',
-	choices=['32','64'],
-	dest='platform',
-	default=m64_default,
-	nargs=1,
-	metavar='PLATFORM',
+AddOption('--platform', action='store', type='choice', choices=['32','64'], dest='platform', default=m64_default, nargs=1, metavar='PLATFORM',
 	help='Target platform. Must be one of 32, 64. Default is detected system architecture.')
 
-AddOption('--build-verbose', 
-	action='store_true',
-	dest='build-verbose',
-	default=False,
+AddOption('--build-verbose', action='store_true', dest='build-verbose', default=False,
 	help='Build with verbose compiler output.')
 
-AddOption('--preprocessor', 
-	action='store_true',
-	dest='preprocessor',
-	default=False,
+AddOption('--preprocessor', action='store_true', dest='preprocessor', default=False,
 	help='Only run preprocessor.')
 
-AddOption('--gprof', 
-	action='store_true',
-	dest='gprof',
-	default=False,
+AddOption('--gprof', action='store_true', dest='gprof', default=False,
 	help='Add gprof symbols for profiling.')
 
-AddOption('--no-scu', 
-	action='store_false',
-	dest='scu',
-	default=True,
+AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
 
 # TODO: does this do the same thing as install-sandbox?
-AddOption('--prefix',
-	action='store',
-	type='string',
-	dest='prefix',
-	default=default_prefix,
-	nargs=1,
-	metavar='DIR',
+AddOption('--prefix', action='store', type='string', dest='prefix', default=default_prefix, nargs=1, metavar='DIR',
 	help='Directory to install binaries.')
 
-AddOption('--build-dir',
-	action='store',
-	type='string',
-	dest='build-dir',
-	default=default_build,
-	nargs=1,
-	metavar='DIR',
+AddOption('--build-dir', action='store', type='string', dest='build-dir', default=default_build, nargs=1, metavar='DIR',
 	help='Directory to store intermediate (object) files.')
 
-AddOption('--no-debug-symbols',
-	action='store_false',
-	dest='debug-symbols',
-	default=True,
+AddOption('--no-debug-symbols', action='store_false', dest='debug-symbols', default=True,
 	help='Don\'t add debugging symbols to binaries.')
 
-AddOption('--static',
-	action='store_true',
-	dest='static',
-	default=False,
+AddOption('--static', action='store_true', dest='static', default=False,
 	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl interfaces)')
 
 # Create the environment using the options
@@ -206,8 +149,6 @@ if sys.platform == "darwin":
 		#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
 
 if conf.env['STATIC_LINKED']:
-	print "*** STATIC BUILD: Cannot be used with SWIG interfaces!"
-	print "*** Remove SWIG-based modules (such as Java) to prevent build errors!"
 	conf.env.Append(CPPFLAGS = ' -DSTATIC_LINKED');
 
 # Get g++ Version
@@ -301,6 +242,10 @@ conf.env['sharejava'] = conf.env['PREFIX'] + '/share/java'
 # theTargets: target jar name (or list of names) with -version.extension removed, makes .jar and .src.jar
 # theSources: source folder (or list of folders) relative to component folder (such as 'src')
 def javaRunAnt(theEnv, theComponent, theTargets, theSources):
+	if env['STATIC_LINKED']:
+		print "Skipping Java component", theComponent
+		return
+
 	theDirString = '#../%s/' % theComponent
 	theDir = theEnv.Dir(theDirString)
 
@@ -361,9 +306,13 @@ if 'Tcl' in components:
 swig = False
 for x in ['Java', 'Python', 'Tcl']:
 	if x in components:
-		swig = True;
-		print "Enabling SWIG."
-		break
+		if env['STATIC_LINKED']:
+			components.remove(x)
+			print "Removing component", x, " (static linking)"
+		else:
+			swig = True;
+			print "Enabling SWIG."
+			break
 
 # As of 4/2009, python binaries available on mac are not x86_64 and
 # therefore cannot load x86_64 targeted libraries. Verbosely warn.
@@ -440,7 +389,9 @@ print "Building intermediates to directory ", env['BUILD_DIR']
 print "Installing targets to prefix directory ", env['PREFIX']
 
 for d in subdirs:
-	SConscript('#%s/SConscript' % d, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
+	script = '#%s/SConscript' % d
+	print "Processing", script + "..."
+	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
 for d in components:
 	script = '../%s/SConscript' % d
