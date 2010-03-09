@@ -102,7 +102,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -188,7 +188,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -279,7 +279,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -370,7 +370,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy target to bin"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>

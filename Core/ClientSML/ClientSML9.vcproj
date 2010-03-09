@@ -87,6 +87,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -158,6 +160,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -234,6 +238,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -311,6 +317,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -381,6 +389,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -452,6 +462,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -528,6 +540,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -605,6 +619,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Copy includes"
+				CommandLine="xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I src\*.h &quot;..\..\out\include&quot;"
 			/>
 		</Configuration>
 	</Configurations>
