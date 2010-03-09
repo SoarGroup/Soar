@@ -31,8 +31,9 @@ public class DebuggerCommands
 	public final static String kQuit  = "quit" ;
 	public final static String kExit  = "exit" ;
 	public final static String kEditProduction = "edit-production" ;
+	public final static String kHelp = "help" ;
 	
-	protected String[] kCommands = new String[] { kClear, kQuit, kExit, kEditProduction } ;
+	protected String[] kCommands = new String[] { kClear, kQuit, kExit, kEditProduction, kHelp } ;
 	
 	public DebuggerCommands(MainFrame frame, Document doc)
 	{
@@ -75,6 +76,11 @@ public class DebuggerCommands
 				m_Frame.displayTextInPrimeView("Error: Visual Soar is not connected.");
 			}
 			return null; // this means DO send the command to Soar, that we are adding behavior
+		}
+		else if (commandLine.toLowerCase().startsWith(kHelp))
+		{
+			m_Frame.showHelp();
+			// send "" to soar, we are replacing behavior
 		}
 		return ""; // this means do not send the command to Soar
 	}
