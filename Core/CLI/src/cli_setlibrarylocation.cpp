@@ -14,6 +14,7 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
+#include "sml_KernelSML.h"
 
 using namespace cli;
 using namespace sml;
