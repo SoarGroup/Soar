@@ -19,6 +19,9 @@
 #include "sock_ListenerNamedPipe.h"
 #include "sml_Utils.h"
 
+#include <iostream>
+#include <sstream>
+
 using namespace sock ;
 
 //////////////////////////////////////////////////////////////////////
