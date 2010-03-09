@@ -23,14 +23,7 @@ else:
 env.Install('$PREFIX/lib', SoarKernelSML)
 
 # Install resources
-demoSources = Glob('#Demos/*')
-demoTargetDir = '$PREFIX/share/soar/Demos'
-env.Install(target = demoTargetDir,
-            source = demoSources)
-
-docTargetDir = '$PREFIX/share/soar/Documentation'
-env.Install(target = docTargetDir,
-            source = '#Documentation')
-
-env.Clean('$PREFIX/share/soar', [demoTargetDir, docTargetDir])
+env.Install('$PREFIX/share/soar/Demos', Glob('#Demos/*'))
+env.InstallAs('$PREFIX/share/soar/Documentation', '#Documentation')
+env.Clean(SoarKernelSML, env.FindInstalledFiles())
 

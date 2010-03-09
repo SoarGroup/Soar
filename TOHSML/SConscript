@@ -3,8 +3,7 @@ import sys
 
 Import('env')
 env = env.Clone()
-
-env.Prepend(CPPPATH = [	'#ClientSML/src', '#ElementXML/src', '#ConnectionSML/src'])
+env.Prepend(CPPPATH = ['$PREFIX/include'])
 
 libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', ]
 if env['STATIC_LINKED']:
@@ -15,5 +14,8 @@ libpath = [ '$PREFIX/lib' ]
 env.Append(LIBS = libadd, LIBPATH = libpath)
 TOHSML = env.Program('TOHSML', Glob('*.cpp'))
 env.Install('$PREFIX/bin', TOHSML)
+
+# Install resources
 env.Install('$PREFIX/share/soar/Demos', 'towers-of-hanoi-SML.soar')
+env.Clean(TOHSML, env.FindInstalledFiles())
 
