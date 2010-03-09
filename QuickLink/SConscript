@@ -12,9 +12,6 @@ if env['STATIC_LINKED']:
 libpath = [ '$PREFIX/lib' ]
 
 env.Append(LIBS = libadd, LIBPATH = libpath)
-if env['SCU']:
-	QuickLink = env.Program('QuickLink', 'QuickLink.cxx')
-else:
-	QuickLink = env.Program('QuickLink', Glob('src/*.cpp'))
+QuickLink = env.Program('QuickLink', Glob('src/*.cpp'))
 env.Install('$PREFIX/bin', QuickLink)
 
