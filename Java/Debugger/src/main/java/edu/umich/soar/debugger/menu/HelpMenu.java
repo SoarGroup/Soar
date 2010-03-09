@@ -29,19 +29,10 @@ public class HelpMenu {
 	private MainFrame m_Frame	= null ;
 
 	private AbstractAction m_About   	= new AbstractAction("About Soar's Debugger") 	{ public void actionPerformed(ActionEvent e) { about() ; } } ;
-	private AbstractAction m_Homepage	= new AbstractAction("Online - Soar Home page") 		{ public void actionPerformed(ActionEvent e) { open("http://sitemaker.umich.edu/soar") ; } } ;
-	private AbstractAction m_Wiki 	 	= new AbstractAction("Online - Soar Wiki") 				{ public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/Home?tm=6") ; } } ;
-	private AbstractAction m_CLI 	 	= new AbstractAction("Online - Soar Command Line Help") { public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/CommandLineInterface") ; } } ;
-	private AbstractAction m_FAQ 	 	= new AbstractAction("Online - Soar FAQ") 				{ public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/FAQ") ; } } ;
+	private AbstractAction m_Homepage	= new AbstractAction("Soar Home page") 		    { public void actionPerformed(ActionEvent e) { open("http://sitemaker.umich.edu/soar") ; } } ;
+	private AbstractAction m_Wiki 	 	= new AbstractAction("Soar Wiki (many topics)") { public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/Home?tm=6") ; } } ;
+	private AbstractAction m_CLI 	 	= new AbstractAction("Soar Command Line Help")  { public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/CommandLineInterface") ; } } ;
 	private AbstractAction m_Manual 	= new AbstractAction("Soar Manual") 			{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar8Manual.pdf") ; } } ;
-	private AbstractAction m_Tutorial1 	= new AbstractAction("Soar Tutorial - Part 1") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 1.pdf") ; } } ;
-	private AbstractAction m_Tutorial2 	= new AbstractAction("Soar Tutorial - Part 2") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 2.pdf") ; } } ;
-	private AbstractAction m_Tutorial3 	= new AbstractAction("Soar Tutorial - Part 3") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 3.pdf") ; } } ;
-	private AbstractAction m_Tutorial4 	= new AbstractAction("Soar Tutorial - Part 4") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 4.pdf") ; } } ;
-	private AbstractAction m_Tutorial5 	= new AbstractAction("Soar Tutorial - Part 5") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 5.pdf") ; } } ;
-	private AbstractAction m_Tutorial6 	= new AbstractAction("Soar Tutorial - Part 6") 	{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar Tutorial Part 6.pdf") ; } } ;
-	private AbstractAction m_DebuggerHelp = new AbstractAction("Intro to the Debugger") { public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Intro to the Soar Debugger in Java.pdf") ; } } ;
-	private AbstractAction m_SMLHelp      = new AbstractAction("General Intro to Soar Markup Language (SML)") { public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/SML Quick Start Guide.pdf") ; } } ;	
 	
 	/** Create this menu */
 	public static HelpMenu createMenu(MainFrame frame, Document doc, String title)
@@ -62,24 +53,11 @@ public class HelpMenu {
 		menu.add(m_Homepage) ;
 		menu.add(m_Wiki) ;
 		menu.add(m_CLI) ;
-		menu.add(m_FAQ) ;
 		menu.addSeparator() ;
 		
 		menu.add(m_Manual) ;
 		menu.addSeparator() ;
 
-		menu.add(m_DebuggerHelp) ;
-		menu.add(m_SMLHelp) ;
-		menu.addSeparator() ;
-
-		menu.add(m_Tutorial1) ;
-		menu.add(m_Tutorial2) ;
-		menu.add(m_Tutorial3) ;
-		menu.add(m_Tutorial4) ;
-		menu.add(m_Tutorial5) ;
-		menu.add(m_Tutorial6) ;
-		menu.addSeparator() ;
-		
 		menu.add(m_About) ;
 		
 		return menu ;
