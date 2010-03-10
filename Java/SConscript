@@ -86,7 +86,8 @@ if not CheckForSWTJar(env):
 	Exit(1)
 
 # Use helper function, see SConstruct: def javaRunAnt
-env['javaRunAnt'](env, 'Java', 
+Import('javaRunAnt')
+javaRunAnt(env, 'Java', 
 	['soar-smljava','soar-debugger','soar-visualsoar'], 
 	['SMLJava/src','Debugger/src','VisualSoar/src'])
 

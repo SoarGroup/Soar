@@ -233,9 +233,7 @@ conf.env.Default('.')
 
 #################
 # Fun Java Stuff
-# TODO: There is probably a better way to pass these functions out
 # TODO: Clean doesn't work quite right with jars
-conf.env['sharejava'] = conf.env['PREFIX'] + '/share/java'
 
 # theEnv: the configuration envrionment to use
 # theComponent: the top level folder name, just as JavaTOH
@@ -249,7 +247,8 @@ def javaRunAnt(theEnv, theComponent, theTargets, theSources):
 	theDirString = '#../%s/' % theComponent
 	theDir = theEnv.Dir(theDirString)
 
-	javaSources = [theEnv['sharejava'] + '/sml.jar']
+	sharejava = conf.env['PREFIX'] + '/share/java'
+	javaSources = [sharejava + '/sml.jar']
 	if type(theSources) == str:
 		theSources = [theSources]
 	for s in theSources:
@@ -260,7 +259,7 @@ def javaRunAnt(theEnv, theComponent, theTargets, theSources):
 	if type(theTargets) == str:
 		theTargets = [theTargets]
 	for i in theTargets:
-		targetRoot = theEnv['sharejava'] + '/' + i + '-' + ver
+		targetRoot = sharejava + '/' + i + '-' + ver
 		jarTargets.append(targetRoot + '.jar')
 		jarTargets.append(targetRoot + '.src.jar')
 
@@ -270,10 +269,10 @@ def javaRunAnt(theEnv, theComponent, theTargets, theSources):
 	if theEnv.GetOption('clean'):
 		for x in BUILD_TARGETS:
 			targetpath = os.path.realpath(str(x))
-			if theEnv['sharejava'].startswith(targetpath):
+			if targetpath.startswith(sharejava):
 				theEnv.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + theEnv['SOAR_VERSION'], 
 					chdir = theDir)
-conf.env['javaRunAnt'] = javaRunAnt
+Export('javaRunAnt')
 
 #################
 # Finish and export
