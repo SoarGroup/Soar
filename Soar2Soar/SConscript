@@ -8,6 +8,8 @@ soar2soar = env.Program('soar2soar', Glob('*.cpp'))
 env.Install('$PREFIX/bin', soar2soar)
 
 # Resources
-env.Install('$PREFIX/share/soar/Demos/soar2soar', ['#../Soar2Soar/agents', '#../Soar2Soar/environments'])
+Import('InstallDir')
+InstallDir(env, '$PREFIX/share/soar/Demos/soar2soar/agents', '#../Soar2Soar/agents')
+InstallDir(env, '$PREFIX/share/soar/Demos/soar2soar/environments', '#../Soar2Soar/environments')
 env.Clean(soar2soar, env.FindInstalledFiles())
 
