@@ -4,7 +4,6 @@
 #include "sml_Client.h"
 #include "sml_Names.h"
 #include "Export.h"
-//#include "interface.h"
 
 #include <string>
 #include <sstream>
@@ -13,12 +12,8 @@
 using namespace sml;
 using namespace std;
 
-//
-// Core library stuff (to load via load-library)
-//
-
 string myRHSTest(smlRhsEventId id, void* pUserData, Agent* pAgent, char const* pFunctionName, char const* pArgument) {
-	return "Success!";
+	return "myRHSTest";
 }
 
 #ifdef __cplusplus
@@ -26,10 +21,7 @@ extern "C" {
 #endif
 
 EXPORT char* sml_InitLibrary(Kernel* pKernel, int argc, char** argv) {
-	char* result;
 	int callbackId = pKernel->AddRhsFunction("test", myRHSTest, 0);
-	if (argc > 1) 
-		return argv[1];
 	return "";
 }
 
