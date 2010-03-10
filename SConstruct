@@ -281,6 +281,16 @@ env = conf.Finish()
 Export('env')
 
 #################
+# Environment for components
+compEnv = env.Clone()
+compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
+libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
+if compEnv['STATIC_LINKED']:
+        libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
+compEnv.Append(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
+Export('compEnv')
+
+#################
 # Auto detect components
 components = []
 print "Detected components: ",
