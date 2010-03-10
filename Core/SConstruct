@@ -287,7 +287,7 @@ print "Detected components: ",
 for root, dirs, files in os.walk('..'):
 	if root != '..':
 		del dirs[:]
-	if root.startswith('../Core') or root.startswith(env['PREFIX']) or root.startswith(env['BUILD_DIR']):
+	if root.startswith('../Core/') or root.startswith(env['PREFIX']) or root.startswith(env['BUILD_DIR']):
 		continue;
 	if 'SConscript' in files:
 		component = root[3:]
@@ -370,9 +370,6 @@ subdirs= [
 	'KernelSML',
 	'Tests',
 	'TestCLI',
-	'TestSMLEvents',
-	'TestSMLPerformance',
-	'TestSoarPerformance',
 	]
 
 if 'Python' in components:
