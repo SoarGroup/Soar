@@ -911,6 +911,7 @@ public:
 
 	/*************************************************************
 	* @brief Get the current value of the "set-library-location" path variable.
+	*        Returned path includes trailing separator character.
 	*
 	* This points to the location where the kernelSML library was loaded
 	* (unless it has been changed since the load).
