@@ -1,15 +1,11 @@
 #!/usr/bin/python
 
-Import('env')
-env = env.Clone()
+Import('compEnv')
+env = compEnv.Clone()
+
 if env['STATIC_LINKED']:
 	print "Skipping TestExternalLibraryLib due to static linkage"
 else:
-	env.Prepend(CPPPATH = ['$PREFIX/include'])
-
-	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML']
-
-	env.Append(LIBS = libadd, LIBPATH = '$PREFIX/lib')
 	TestExternalLibraryLib = env.SharedLibrary('TestExternalLibraryLib', Glob('*.cpp'))
 	env.Install('$PREFIX/lib', TestExternalLibraryLib)
 
