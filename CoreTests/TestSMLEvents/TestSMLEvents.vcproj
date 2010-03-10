@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="TestCLI"
-	ProjectGUID="{DCF419E9-7A52-422D-B9CF-8B70FFC6158D}"
-	RootNamespace="TestCommandLineInterface"
+	Name="TestSMLEvents"
+	ProjectGUID="{8EF61FF7-214E-4955-9DBF-CCD164815E9C}"
+	RootNamespace="TestSMLEvents"
 	Keyword="ManagedCProj"
 	TargetFrameworkVersion="131072"
 	>
@@ -46,16 +46,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;..\..\out\include"
+				AdditionalIncludeDirectories="..\..\out\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
+				MinimalRebuild="false"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="false"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -69,19 +65,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="false"
 				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\out\lib"
 				GenerateDebugInformation="true"
-				AssemblyDebug="0"
+				AssemblyDebug="1"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
-				SubSystem="1"
 				RandomizedBaseAddress="1"
-				FixedBaseAddress="0"
 				DataExecutionPrevention="0"
-				TargetMachine="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -103,6 +95,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -134,16 +127,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src;..\..\out\include"
+				AdditionalIncludeDirectories="..\..\out\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
+				MinimalRebuild="false"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="false"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -157,16 +146,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="false"
 				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\out\lib"
 				GenerateDebugInformation="true"
-				AssemblyDebug="0"
+				AssemblyDebug="1"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
-				SubSystem="1"
-				FixedBaseAddress="0"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -189,6 +175,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -226,16 +213,13 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="src;..\..\out\include"
+				AdditionalIncludeDirectories="..\..\out\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -280,6 +264,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -318,16 +303,13 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="src;..\..\out\include"
+				AdditionalIncludeDirectories="..\..\out\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				AssemblerListingLocation="$(IntDir)/"
-				ProgramDataBaseFileName="$(IntDir)/"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -371,6 +353,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -384,19 +367,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\cli_Test.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\cli_Test.h"
+				RelativePath=".\TestSMLEvents.cpp"
 				>
 			</File>
 		</Filter>
 	</Files>
 	<Globals>
-		<Global
-			Name="DevPartner_IsInstrumented"
-			Value="1"
-		/>
 	</Globals>
 </VisualStudioProject>
