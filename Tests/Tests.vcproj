@@ -384,10 +384,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\externallibtest.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\fulltests.cpp"
 				>
 			</File>
