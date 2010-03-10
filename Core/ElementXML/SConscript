@@ -19,6 +19,7 @@ else:
 env.Install('$PREFIX/lib', ElementXML)
 
 # Install includes
-env.Install('$PREFIX/include', Glob('src/*.h'))
+Import('InstallDir')
+InstallDir(env, '$PREFIX/include', 'src', '*.h')
 env.Clean(ElementXML, env.FindInstalledFiles())
 

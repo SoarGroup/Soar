@@ -21,20 +21,8 @@ env.Install('$PREFIX/lib', SoarKernel)
 env.Install('$PREFIX/lib', SQLite)
 
 # Install resources
-# Gotta install these all specifically because of the way the SCons works.
-# Doing the following doesn't work once include exists already:
-# includeTargetDir = '$PREFIX/include'
-# env.InstallAs(target = includeTargetDir, source = '#shared')
-
-# find shared -type d | grep -v ".svn"
-
-sharedIncludes = env.Glob('#shared/*.h')
-sharedIncludes.append(env.Glob('#shared/*.hpp'))
-env.Install('$PREFIX/include', sharedIncludes)
-
-# Broken, not easy to fix. Installs .svn folders.
-sharedIncludeSubfolders = ['#shared/stlsoft', '#shared/winstl', '#shared/msvc', '#shared/unixstl', ]
-env.Install('$PREFIX/include', sharedIncludeSubfolders)
+Import('InstallDir')
+InstallDir(env, '$PREFIX/include', '#shared')
 
 env.Clean(SoarKernel, env.FindInstalledFiles())
 

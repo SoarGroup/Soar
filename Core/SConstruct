@@ -232,6 +232,11 @@ conf.env.Default('.')
 # TODO: rmdir PREFIX/share/soar on clean
 
 #################
+# Finish and export
+env = conf.Finish()
+Export('env')
+
+#################
 # Fun Java Stuff
 # TODO: Clean doesn't work quite right with jars
 
@@ -275,9 +280,31 @@ def javaRunAnt(theEnv, theComponent, theTargets, theSources):
 Export('javaRunAnt')
 
 #################
-# Finish and export
-env = conf.Finish()
-Export('env')
+# InstallDir
+# For recursion in to resource directories without grabbing .svn folders
+# because Glob/InstallAs fails at life.
+#
+# Returns list of nodes for passage to Install
+def InstallDir(env, target, source, globstring="*"):
+	targetdir = Dir(target)
+	sourcedir = Dir(source)
+	for root, dirs, files in os.walk(str(sourcedir)):
+		if ".svn" in dirs:
+			dirs.remove(".svn")
+	
+		# targetsub is the target directory plus the relative sub directory
+		relative = root[len(str(sourcedir))+1:]
+		targetsub = os.path.join(str(targetdir), relative)
+
+		# sourceglob is all files in sub directory
+		sourceglob = os.path.join(root, globstring)
+
+#		print "relative:'%s'" % relative
+#		print "targetdir:'%s'" % targetdir
+#		print "targetsub:'%s'" % targetsub
+#		print "sourceglob:'%s'" % sourceglob
+		env.Install(targetsub, Glob(sourceglob))
+Export('InstallDir')
 
 #################
 # Environment for components
