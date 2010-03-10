@@ -23,7 +23,9 @@ else:
 env.Install('$PREFIX/lib', SoarKernelSML)
 
 # Install resources
-env.Install('$PREFIX/share/soar/Demos', Glob('#Demos/*'))
-env.InstallAs('$PREFIX/share/soar/Documentation', '#Documentation')
+Import('InstallDir')
+InstallDir(env, '$PREFIX/share/soar/Demos', '#Demos')
+InstallDir(env, '$PREFIX/share/soar/Documentation', '#Documentation')
+
 env.Clean(SoarKernelSML, env.FindInstalledFiles())
 
