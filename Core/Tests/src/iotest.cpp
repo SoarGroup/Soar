@@ -389,7 +389,7 @@ void IOTest::testOutputLeak1()
 	CPPUNIT_ASSERT( pAgent != 0 );
 
 	std::stringstream productionsPath;
-	productionsPath << pKernel->GetLibraryLocation() << "/Tests/testoutputleak.soar";
+	productionsPath << pKernel->GetLibraryLocation() << "Tests/testoutputleak.soar";
 
 	pAgent->LoadProductions( productionsPath.str().c_str() ) ;
 	CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
