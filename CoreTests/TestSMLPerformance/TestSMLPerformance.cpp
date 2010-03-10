@@ -51,7 +51,7 @@ public:
 		}
 		
 		std::stringstream productionsPath;
-		productionsPath << kernel->GetLibraryLocation() << "/share/soar/Tests/TestSMLPerformance.soar";
+		productionsPath << kernel->GetLibraryLocation() << "share/soar/Tests/TestSMLPerformance.soar";
         	agent->LoadProductions( productionsPath.str().c_str() );
 
 		agent->ExecuteCommandLine("watch 0");
