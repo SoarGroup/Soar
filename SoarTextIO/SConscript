@@ -1,17 +1,9 @@
 #!/usr/bin/python
 import sys
 
-Import('env')
-env = env.Clone()
-env.Prepend(CPPPATH = ['$PREFIX/include'])
+Import('compEnv')
+env = compEnv.Clone()
 
-libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', ]
-if env['STATIC_LINKED']:
-        libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3' ]
-
-libpath = [ '$PREFIX/lib' ]
-
-env.Append(LIBS = libadd, LIBPATH = libpath)
 SoarTextIO = env.Program('SoarTextIO', Glob('src/*.cpp'))
 env.Install('$PREFIX/bin', SoarTextIO)
 

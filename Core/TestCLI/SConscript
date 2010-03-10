@@ -1,17 +1,8 @@
 #!/usr/bin/python
 
-Import('env')
-env = env.Clone()
-
-env.Prepend(CPPPATH = ['$PREFIX/include'])
-
-libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', ]
-if env['STATIC_LINKED']:
-	libadd = [ 'ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3' ]
-
-env.Append(LIBS = libadd, LIBPATH = '$PREFIX/lib')
+Import('compEnv')
+env = compEnv.Clone()
 
 TestCLI = env.Program('TestCLI', Glob('*.cpp'))
-
 env.Install('$PREFIX/bin', TestCLI)
 
