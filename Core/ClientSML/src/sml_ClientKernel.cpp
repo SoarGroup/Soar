@@ -2449,6 +2449,9 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 #endif
 	} else {
 		InitLibraryFunction pInitLibraryFunction = Dangerous_Pointer_Cast<InitLibraryFunction>::from(GetProcAddress(hLibrary, "sml_InitLibrary"));
+		
+		if (!pInitLibraryFunction) 
+			return "Couldn't find sml_InitLibrary in library";
 
 		// Create main-style argc/argv (argv is null-terminated);
 		int argc = static_cast<int>(vectorArgv.size());

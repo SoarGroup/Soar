@@ -1,0 +1,14 @@
+#!/usr/bin/python
+
+import os
+
+Import('env')
+env = env.Clone()
+
+subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance',]
+
+for d in subdirs:
+	script = '../CoreTests/%s/SConscript' % d
+	print "Processing", script + "..."
+	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), dupicate=0)
+
