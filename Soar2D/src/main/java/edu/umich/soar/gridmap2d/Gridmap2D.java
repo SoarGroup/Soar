@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.util.prefs.Preferences;
 
 
@@ -49,18 +48,46 @@ public class Gridmap2D {
 	public static final Simulation simulation = new Simulation();
 	public static final Controller control = new Controller();
 
-	private boolean installedAConfig = false;
-	
-	public Gridmap2D(String[] args) {
-		figureOutHome();
-		logger.info("Home: " + home);
+	// find config -type f | grep  -v ".svn"
+	private static final String[] resources = {
+		"config/eaters-console.cnf",
+		"config/eaters.cnf",
+		"config/maps/eaters/boxes5.txt",
+		"config/maps/eaters/circle17.txt",
+		"config/maps/eaters/decay10.txt",
+		"config/maps/eaters/jump-bug6.txt",
+		"config/maps/eaters/jump17.txt",
+		"config/maps/eaters/negative-food10.txt",
+		"config/maps/eaters/objects/objects.txt",
+		"config/maps/eaters/open17.txt",
+		"config/maps/eaters/random-food17.txt",
+		"config/maps/eaters/random-walls.txt",
+		"config/maps/eaters/random10.txt",
+		"config/maps/eaters/random17.txt",
+		"config/maps/eaters/random6.txt",
+		"config/maps/eaters/reward-boxes7.txt",
+		"config/maps/eaters/short-corridor5.txt",
+		"config/maps/eaters/tiny.txt",
+		"config/maps/tanksoar/chunky.txt",
+		"config/maps/tanksoar/clumps.txt",
+		"config/maps/tanksoar/corridor.txt",
+		"config/maps/tanksoar/default.txt",
+		"config/maps/tanksoar/empty.txt",
+		"config/maps/tanksoar/objects/objects.txt",
+		"config/maps/tanksoar/rooms.txt",
+		"config/maps/tanksoar/sparse.txt",
+		"config/maps/tanksoar/x.txt",
+		"config/maps/taxi/default.txt",
+		"config/maps/taxi/objects/objects.txt",
+		"config/tanksoar-console.cnf",
+		"config/tanksoar.cnf",
+		"config/taxi.cnf",
+	};
 
-		// Try to install default config files
-		install(Names.configs.tanksoarCnf);
-		install(Names.configs.tanksoarConsoleCnf);
-		install(Names.configs.eatersCnf);
-		install(Names.configs.eatersConsoleCnf);
-		install(Names.configs.taxiCnf);
+	public Gridmap2D(String[] args) {
+		for (String s : resources) {
+			install(s);
+		}
 
 		loadConfig(args);
 
@@ -76,13 +103,7 @@ public class Gridmap2D {
 
 		// Initialize simulation
 		logger.trace(Names.Trace.initSimulation);
-		World world = null;
-//		try {
-			world = simulation.initialize(config);
-//		} catch (Exception e) {
-//			fatalError(Names.Errors.simulationInitFail + e.getMessage());
-//			e.printStackTrace();
-//		}
+		World world = simulation.initialize(config);
 		
 		if (usingGUI) {
 			// Run GUI
@@ -91,67 +112,14 @@ public class Gridmap2D {
 		} else {
 			// Run simulation
 			logger.trace(Names.Trace.startSimulation);
-//			try {
-				control.startSimulation(false, false);
-//			} catch (Exception e) {
-//				fatalError("Simulation exception: " + e.getMessage());
-//			}
+			control.startSimulation(false, false);
 		}
 		
 		// calls wm.shutdown()
 		logger.trace(Names.Trace.shutdown);
-//		try {
-			control.shutdown();
-//		} catch (Exception e) {
-//			fatalError(e.getMessage());
-//		}
+		control.shutdown();
 	}
 	
-	private void figureOutHome() {
-		String homeProperty = System.getProperty("soar2d.home");
-		if (homeProperty != null) {
-			home = new File(homeProperty);
-			return;
-		}
-		
-		try {
-			home = new File(Gridmap2D.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			fatalError("Internal error: getCodeSource returned bad URL");
-		}
-		
-		// should point to parent of jar file
-		if (!home.isDirectory()) {
-			home = home.getParentFile();
-		}
-		
-		// usually, we'll be in SoarLibrary/lib or SoarLibrary/bin
-		String soarlib = "SoarLibrary";
-		String soarjava = "soar-java";
-		String soar2d = "soar-soar2d";
-		String hstr = home.toString();
-		int pos = hstr.lastIndexOf(soarlib);
-		if (pos >= 0) {
-			home = new File(home.toString().substring(0, pos) + soarjava + File.separator + soar2d);
-		} else {
-			// sometimes in soar-java somewhere
-			pos = hstr.lastIndexOf(soarjava);
-			if (pos >= 0) {
-				home = new File(home.toString().substring(0, pos + soarjava.length()) + File.separator + soar2d);
-			} else {
-				// maybe in SoarSuite root?
-				home = new File(home.toString() + File.separator + soarjava + File.separator + soar2d);
-			}
-		}
-		
-		// verify exists
-		if (!home.exists()) {
-			System.out.println(home);
-			fatalError("Can't figure out where the " + soar2d + " folder is.");
-		}
-	}
-
 	private void fatalError(String message) {
 		logger.fatal(message);
 		System.err.println(message);
@@ -215,27 +183,18 @@ public class Gridmap2D {
 	
 	private void install(String file) {	
 		try {
-			// We just work relative to the current directory because that's how
-			// load library will work.
 			File cnf = new File(file) ;
-			File cnfDest = new File(home + File.separator + "config" + File.separator + file) ;
-	
-			if (cnfDest.exists()) {
-				return;
-			}
+			if (cnf.exists()) return;
 			
-			// Get the DLL from inside the JAR file
-			// It should be placed at the root of the JAR (not in a subfolder)
 			String jarpath = "/" + cnf.getPath() ;
 			InputStream is = this.getClass().getResourceAsStream(jarpath) ;
-			
 			if (is == null) {
 				System.err.println("Failed to find " + jarpath + " in the JAR file") ;
 				return;
 			}
 			
 			// Create the new file on disk
-			FileOutputStream os = new FileOutputStream(cnfDest) ;
+			FileOutputStream os = new FileOutputStream(cnf) ;
 			
 			// Copy the file onto disk
 			byte bytes[] = new byte[2048];
@@ -253,11 +212,6 @@ public class Gridmap2D {
 			os.close() ;
 		} catch (IOException e) {
 			fatalError(Names.Errors.installingConfig + file + ": " + e.getMessage());
-		}
-		
-		if (!installedAConfig) {
-			installedAConfig = true;
-			System.err.println("Installed at least one config file.\nYou may need to refresh the project if you are working inside of Eclipse.");
 		}
 	}
 

@@ -6,14 +6,6 @@ package edu.umich.soar.gridmap2d;
  * Useful constants
  */
 public class Names {
-	public class configs {
-		public static final String eatersCnf = "eaters.cnf";
-		public static final String eatersConsoleCnf = "eaters-console.cnf";
-		public static final String tanksoarCnf = "tanksoar.cnf";
-		public static final String tanksoarConsoleCnf = "tanksoar-console.cnf";
-		public static final String taxiCnf = "taxi.cnf";
-	}
-	
 	public class Errors {
 		public static final String initDisplayfail = "Failed to initialize display.";
 		public static final String simulationInitFail = "Failed to initialize simulation: ";
