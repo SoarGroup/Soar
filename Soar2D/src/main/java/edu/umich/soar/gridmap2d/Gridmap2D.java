@@ -50,7 +50,6 @@ public class Gridmap2D {
 
 	// find config -type f | grep  -v ".svn"
 	private static final String[] resources = {
-		"config/eaters-console.cnf",
 		"config/eaters.cnf",
 		"config/maps/eaters/boxes5.txt",
 		"config/maps/eaters/circle17.txt",
@@ -79,7 +78,6 @@ public class Gridmap2D {
 		"config/maps/tanksoar/x.txt",
 		"config/maps/taxi/default.txt",
 		"config/maps/taxi/objects/objects.txt",
-		"config/tanksoar-console.cnf",
 		"config/tanksoar.cnf",
 		"config/taxi.cnf",
 	};
