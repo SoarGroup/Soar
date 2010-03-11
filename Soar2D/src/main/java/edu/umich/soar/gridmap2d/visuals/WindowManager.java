@@ -16,6 +16,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -204,6 +205,10 @@ public class WindowManager {
 	}
 	
 	public void setupEaters() {
+		Image small = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/eaters16.png"));
+		Image large = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/eaters.png"));
+		shell.setImages(new Image[] { small, large });
+		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new EatersVisualWorld(worldGroup, SWT.NONE, kEatersMainMapCellSize);
@@ -566,6 +571,10 @@ public class WindowManager {
 	}
 		
 	public void setupTankSoar() {
+		Image small = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/eaters16.png"));
+		Image large = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/eaters.png"));
+		shell.setImages(new Image[] { small, large });
+		
 		worldGroup = new Group(shell, SWT.NONE);
 		worldGroup.setLayout(new FillLayout());
 		visualWorld = new TankSoarVisualWorld(worldGroup, SWT.NONE, kTanksoarMainMapCellSize);
@@ -1104,8 +1113,7 @@ public class WindowManager {
 	public String promptForConfig() {
 		FileDialog fd = new FileDialog(shell, SWT.OPEN);
 		fd.setText("Select configuration file");
-		fd.setFilterPath("config"); // FIXME: broken on linux with swt.jar version 3.3
-		fd.setFileName(Names.configs.tanksoarCnf);
+		fd.setFilterPath("config");
 		fd.setFilterExtensions(new String[] {"*.cnf", "*.*"});
 		return fd.open();
 	}

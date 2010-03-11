@@ -1,6 +1,0 @@
-#shared ids not supported yet
-<metadata>
-	*<identifier attribute="string" shared-id="int"> #shared-id optional
-	*<string-element attribute="string" value="string">
-	*<int-element attribute="string" value="int">
-	*<float-element attribute="string" value="float">
