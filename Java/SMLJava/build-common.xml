@@ -101,8 +101,8 @@
 
 	<target name="clean">
 		<delete dir="${target}" />
-		<delete dir="${soarprefix.java}/${jar.name}" />
-		<delete dir="${soarprefix.java}/${jar.source.name}" />
+		<delete file="${soarprefix.java}/${jar.name}" />
+		<delete file="${soarprefix.java}/${jar.source.name}" />
 	</target>
 
 	<target name="doc" depends="init" description="Generate API documentation">
