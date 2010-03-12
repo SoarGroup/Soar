@@ -2,11 +2,7 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import sys
-
 Import('compEnv')
-env = compEnv.Clone()
-
-QuickLink = env.Program('QuickLink', Glob('src/*.cpp'))
-env.Install('$PREFIX/bin', QuickLink)
+QuickLink = compEnv.Program('QuickLink', Glob('src/*.cpp'))
+compEnv.Install('$PREFIX/bin', QuickLink)
 

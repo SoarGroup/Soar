@@ -2,17 +2,13 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import sys
-
 Import('compEnv')
-env = compEnv.Clone()
 
-soar2soar = env.Program('soar2soar', Glob('*.cpp'))
-env.Install('$PREFIX/bin', soar2soar)
+soar2soar = compEnv.Program('soar2soar', Glob('*.cpp'))
+compEnv.Install('$PREFIX/bin', soar2soar)
 
 # Resources
 Import('InstallDir')
-InstallDir(env, '$PREFIX/share/soar/Demos/soar2soar/agents', '#../Soar2Soar/agents')
-InstallDir(env, '$PREFIX/share/soar/Demos/soar2soar/environments', '#../Soar2Soar/environments')
-env.Clean(soar2soar, env.FindInstalledFiles())
+InstallDir(soar2soar, '$PREFIX/share/soar/Demos/soar2soar/agents', '#../Soar2Soar/agents')
+InstallDir(soar2soar, '$PREFIX/share/soar/Demos/soar2soar/environments', '#../Soar2Soar/environments')
 

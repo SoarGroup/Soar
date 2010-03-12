@@ -2,11 +2,8 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
 import os
-
 Import('env')
-env = env.Clone()
 
 subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibraryLib', 'TestExternalLibrary']
 

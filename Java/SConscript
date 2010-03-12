@@ -11,16 +11,13 @@ import urllib
 import hashlib
 import subprocess
 
-Import('env')
-env = env.Clone()
-
 # swt.jar 3.4 digests
 OSX_DIGEST = '7dab557faeb4e182281be824baebd856'
 OSX64_DIGEST = '4de6f7460e2695ce5b66ece700c8d6f8'
 GTK_DIGEST = '28b79f2cb0bc09c1efd4b711c0cd52a7'
 GTK64_DIGEST = '69358481ec9d44b068bfe1dc1da57737'
 
-def CheckJarmd5(env, jarpath):
+def CheckJarmd5(jarpath):
         # open the swt.jar file
         try:
                 f = file(jarpath)
@@ -36,20 +33,20 @@ def CheckJarmd5(env, jarpath):
             m.update(d)
 
         if sys.platform == 'darwin':
-                if env['PLATFORM'] == '64':
+                if GetOption('platform') == '64':
                         return OSX64_DIGEST == m.hexdigest()
                 else:
                         return OSX_DIGEST == m.hexdigest()
         else:
-                if env['PLATFORM'] == '64':
+                if GetOption('platform') == '64':
                         return GTK64_DIGEST == m.hexdigest()
                 else:
                         return GTK_DIGEST == m.hexdigest()
 
-def CheckForSWTJar(env):
+def CheckForSWTJar():
         jarpath = os.path.join('SMLJava', 'lib', 'swt.jar')
         if os.path.exists(jarpath):
-                if CheckJarmd5(env, jarpath):
+                if CheckJarmd5(jarpath):
                         return True
                 else:
                         print "md5 of swt.jar failed, removing old jar."
@@ -57,12 +54,12 @@ def CheckForSWTJar(env):
 
         try:
                 if sys.platform == 'darwin':
-                        if env['PLATFORM'] == '64':
+                        if GetOption('platform') == '64':
                                 urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', jarpath)
                         else:
                                 urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', jarpath)
                 else:
-                        if env['PLATFORM'] == '64':
+                        if GetOption('platform') == '64':
                                 urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', jarpath)
                         else:
                                 urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', jarpath)
@@ -73,7 +70,7 @@ def CheckForSWTJar(env):
                 print "Error downloading %s: IOError" % jarpath
                 return False
 
-        if not CheckJarmd5(env, jarpath):
+        if not CheckJarmd5(jarpath):
                 print "Error downloading %s, md5 failed again." % jarpath
                 return False
 
@@ -81,7 +78,7 @@ def CheckForSWTJar(env):
         return True
 
 # This checks for the swt.jar and attempts to download it if it doesn't exist
-if not CheckForSWTJar(env):
+if not CheckForSWTJar():
 	print "Could not find swt.jar. You can obtain the jar here:"
 	print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
 	print "Place swt.jar in SoarLibrary/bin"
@@ -90,7 +87,7 @@ if not CheckForSWTJar(env):
 
 # Use helper function, see SConstruct: def javaRunAnt
 Import('javaRunAnt')
-javaRunAnt(env, 'Java', 
+javaRunAnt('Java', 
 	['soar-smljava','soar-debugger','soar-visualsoar'], 
 	['SMLJava/src','Debugger/src','VisualSoar/src'])
 

@@ -7,5 +7,5 @@ Import('compEnv')
 env = compEnv.Clone()
 
 TestSMLPerformance = env.Program('TestSMLPerformance', Glob('*.cpp'))
-env.Install('$PREFIX/bin', TestSMLPerformance)
+Install('$PREFIX/bin', TestSMLPerformance)
 

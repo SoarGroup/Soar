@@ -7,5 +7,5 @@ Import('compEnv')
 env = compEnv.Clone()
 
 TestSMLEvents = env.Program('TestSMLEvents', Glob('*.cpp'))
-env.Install('$PREFIX/bin', TestSMLEvents)
+Install('$PREFIX/bin', TestSMLEvents)
 
