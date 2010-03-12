@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Names;
@@ -21,7 +22,7 @@ import edu.umich.soar.gridmap2d.world.TankSoarWorld;
 
 public class TankSoarMap extends GridMapBase implements GridMap,
 		CellObjectObserver {
-	private static Logger logger = Logger.getLogger(TankSoarMap.class);
+	private static final Log logger = LogFactory.getLog(TankSoarMap.class);
 
 	public static TankSoarMap generateInstance(String mapPath,
 			int maxSoundDistance) {

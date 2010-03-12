@@ -1,6 +1,7 @@
 package edu.umich.soar.gridmap2d.soar;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
@@ -14,7 +15,7 @@ import sml.Agent;
 import sml.Identifier;
 
 public class SoarTaxi implements TaxiCommander {
-	private static Logger logger = Logger.getLogger(SoarTaxi.class);
+	private static final Log logger = LogFactory.getLog(SoarTaxi.class);
 
 	private Taxi player;
 	private Agent agent;

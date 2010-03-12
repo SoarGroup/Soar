@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.commsen.stopwatch.Report;
 import com.commsen.stopwatch.Stopwatch;
@@ -30,7 +31,7 @@ import edu.umich.soar.gridmap2d.players.scripted.ScriptedEater;
 
 
 public class EatersWorld implements World {
-	private static Logger logger = Logger.getLogger(EatersWorld.class);
+	private static final Log logger = LogFactory.getLog(EatersWorld.class);
 
 	private EatersMap map;
 	private final PlayersManager<Eater> players = new PlayersManager<Eater>();

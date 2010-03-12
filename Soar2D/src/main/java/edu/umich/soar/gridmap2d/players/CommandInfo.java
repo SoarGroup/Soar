@@ -8,7 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
@@ -21,7 +22,7 @@ import edu.umich.soar.gridmap2d.Names;
  * output required for interaction with the world
  */
 public class CommandInfo {
-	private static Logger logger = Logger.getLogger(CommandInfo.class);
+	private static final Log logger = LogFactory.getLog(CommandInfo.class);
 
 	// all
 	public boolean stopSim = false;	// stop the simulation by command

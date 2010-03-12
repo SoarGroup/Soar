@@ -11,6 +11,8 @@ package edu.umich.soar.debugger;
 
 import java.io.*;
 
+import org.eclipse.swt.widgets.Display;
+
 import edu.umich.soar.debugger.doc.Document;
 
 public class Application {
@@ -90,7 +92,7 @@ public class Application {
 	* set the look and feel.
 	* 
 	*************************************************************************/
-	public Application(String[] args, boolean alwaysInstallLibs) {
+	public Application(String[] args, boolean alwaysInstallLibs, Display display) {
 		try {
 			// Step 1: Install the SWT (UI) libraries
 			// SWT uses platform specific libraries so we need to decide which platform we're on before
@@ -108,9 +110,11 @@ public class Application {
 			// Start the SWT version of the application (we used to have a Swing version too)
 			SWTApplication swtApp = new SWTApplication() ;
 			
-			swtApp.startApp(args) ;
+			swtApp.startApp(args, display) ;
 			
-			System.exit(0) ;
+			if (display == null) {
+				System.exit(0) ;
+			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -125,7 +129,7 @@ public class Application {
 	* 
 	*************************************************************************/
 	static public void main(String[] args) {
-		new Application(args, false);
+		new Application(args, false, null);
 	}
 	
 }

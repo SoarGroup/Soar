@@ -2,7 +2,8 @@ package edu.umich.soar.gridmap2d.players;
 
 import java.util.Arrays;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
@@ -11,7 +12,7 @@ import edu.umich.soar.gridmap2d.config.PlayerConfig;
 
 
 public class Player {
-	private static Logger logger = Logger.getLogger(Player.class);
+	private static final Log logger = LogFactory.getLog(Player.class);
 	
 	private String playerID;
 	private PlayerConfig playerConfig;

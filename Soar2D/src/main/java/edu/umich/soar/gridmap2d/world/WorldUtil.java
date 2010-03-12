@@ -3,7 +3,8 @@ package edu.umich.soar.gridmap2d.world;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.map.GridMap;
@@ -12,7 +13,7 @@ import edu.umich.soar.gridmap2d.players.Player;
 
 
 public class WorldUtil {
-	private static Logger logger = Logger.getLogger(WorldUtil.class);
+	private static final Log logger = LogFactory.getLog(WorldUtil.class);
 
 	static void dumpStats(int[] sortedScores, Player[] players, boolean stopping, List<String> messages) {
 		StringBuilder bigMessage = new StringBuilder(); 

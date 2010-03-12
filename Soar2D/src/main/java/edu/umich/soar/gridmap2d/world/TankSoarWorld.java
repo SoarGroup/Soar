@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Direction;
@@ -27,7 +28,7 @@ import edu.umich.soar.gridmap2d.players.TankState;
 
 
 public class TankSoarWorld implements World {
-	private static Logger logger = Logger.getLogger(TankSoarWorld.class);
+	private static final Log logger = LogFactory.getLog(TankSoarWorld.class);
 
 	private TankSoarMap map;
 	private PlayersManager<Tank> players = new PlayersManager<Tank>();

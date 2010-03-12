@@ -9,8 +9,5 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="var" path="SML"/>
-	<classpathentry kind="var" path="APRIL_MEGA"/>
-	<classpathentry kind="var" path="GLUEGEN_RT"/>
-	<classpathentry kind="var" path="JOGL"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

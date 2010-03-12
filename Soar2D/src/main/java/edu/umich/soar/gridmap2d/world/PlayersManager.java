@@ -7,14 +7,15 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.players.CommandInfo;
 import edu.umich.soar.gridmap2d.players.Player;
 
 
 public class PlayersManager<P extends Player> {
-	private static Logger logger = Logger.getLogger(PlayersManager.class);
+	private static final Log logger = LogFactory.getLog(PlayersManager.class);
 
 	private List<P> players = new ArrayList<P>(7);
 	private Map<String, P> playersMap = new HashMap<String, P>(7);

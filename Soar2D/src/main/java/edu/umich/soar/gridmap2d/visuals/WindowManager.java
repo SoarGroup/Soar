@@ -1,6 +1,5 @@
 package edu.umich.soar.gridmap2d.visuals;
 
-import org.apache.log4j.Logger;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -32,6 +31,9 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Game;
@@ -44,7 +46,7 @@ import edu.umich.soar.gridmap2d.world.World;
 
 
 public class WindowManager {
-	private static Logger logger = Logger.getLogger(WindowManager.class);
+	private static final Log logger = LogFactory.getLog(WindowManager.class);
 
 	public static Color white = null;
 	public static Color widget_background = null;
@@ -59,7 +61,7 @@ public class WindowManager {
 	public static Color lightGray = null;
 	public static Color darkGray = null;
 
-	static Display display;
+	public static Display display;
 	protected Shell shell;
 	Label scoreCount;
 	Label foodCount;
@@ -1110,10 +1112,10 @@ public class WindowManager {
 		return theMove;
 	}
 
-	public String promptForConfig() {
+	public String promptForConfig(String parent) {
 		FileDialog fd = new FileDialog(shell, SWT.OPEN);
 		fd.setText("Select configuration file");
-		fd.setFilterPath("config");
+		fd.setFilterPath(parent);
 		fd.setFilterExtensions(new String[] {"*.cnf", "*.*"});
 		return fd.open();
 	}

@@ -7,7 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.config.Config;
 
@@ -26,7 +27,7 @@ import edu.umich.soar.config.Config;
  * 
  */
 public class CellObject implements Comparable<CellObject> {
-	private static Logger logger = Logger.getLogger(CellObject.class);
+	private static final Log logger = LogFactory.getLog(CellObject.class);
 	private static final AtomicLong nextSerial = new AtomicLong();
 
 	/**
