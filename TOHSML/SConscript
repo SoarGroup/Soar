@@ -2,15 +2,14 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import sys
+import os
 
 Import('compEnv')
-env = compEnv.Clone()
 
-TOHSML = env.Program('TOHSML', Glob('*.cpp'))
-env.Install('$PREFIX/bin', TOHSML)
+TOHSML = compEnv.Program('TOHSML', Glob('*.cpp'))
+compEnv.Install('$PREFIX/bin', TOHSML)
 
 # Install resources
-env.Install('$PREFIX/share/soar/Demos', 'towers-of-hanoi-SML.soar')
-env.Clean(TOHSML, env.FindInstalledFiles())
+compEnv.Install('$PREFIX/share/soar/Demos', 'towers-of-hanoi-SML.soar')
+compEnv.Clean(TOHSML, os.path.join('$PREFIX/share/soar/Demos', 'towers-of-hanoi-SML.soar'))
 

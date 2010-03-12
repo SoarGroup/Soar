@@ -2,11 +2,8 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import sys
-
 Import('compEnv')
-env = compEnv.Clone()
 
-SoarTextIO = env.Program('SoarTextIO', Glob('src/*.cpp'))
-env.Install('$PREFIX/bin', SoarTextIO)
+SoarTextIO = compEnv.Program('SoarTextIO', Glob('src/*.cpp'))
+compEnv.Install('$PREFIX/bin', SoarTextIO)
 

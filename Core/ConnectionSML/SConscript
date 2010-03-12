@@ -2,21 +2,19 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
 Import('env')
-env = env.Clone()
+clone = env.Clone()
 
-env.Prepend(CPPPATH = ['src', '#ElementXML/src',])
+clone.Prepend(CPPPATH = Split('src #ElementXML/src'))
 
 if env['SCU']:
-	ConnectionSML = env.Library('ConnectionSML', 'ConnectionSML.cxx')
+	ConnectionSML = clone.Library('ConnectionSML', 'ConnectionSML.cxx')
 else:
-	ConnectionSML = env.Library('ConnectionSML', Glob('src/*.cpp'))
+	ConnectionSML = clone.Library('ConnectionSML', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', ConnectionSML)
 
 # Install includes
 Import('InstallDir')
-InstallDir(env, '$PREFIX/include', 'src', '*.h')
-env.Clean(ConnectionSML, env.FindInstalledFiles())
+InstallDir(ConnectionSML, '$PREFIX/include', 'src', '*.h')
 

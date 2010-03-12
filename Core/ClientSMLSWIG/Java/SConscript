@@ -6,9 +6,10 @@ import os
 import SCons.Script
 import sys
 
-Import('swigenv')
+Import('env')
 
-conf = Configure(swigenv)
+# clone is for making the shared library
+clone = env.Clone()
 	
 # ConfigureJNI and tolen from http://www.scons.org/wiki/JavaNativeInterface
 # Modified from its original format
@@ -24,13 +25,9 @@ def walkDirs(path):
     os.path.walk(path, addDirs, pathlist)
     return pathlist
 
-def ConfigureJNI(env):
+def ConfigureJNI():
     """Configure the given environment for compiling Java Native Interface
        c or c++ language files."""
-
-    #if not env.get('JAVAC'):
-    #    print "The Java compiler must be installed and in the current path."
-    #    return 0
 
     # first look for a shell variable called JAVA_HOME
     java_base = os.environ.get('JAVA_HOME')
@@ -71,8 +68,8 @@ def ConfigureJNI(env):
             java_headers = walkDirs(java_headers[0])
 
     # add Java's include and lib directory to the environment
-    env.Append(CPPPATH = java_headers)
-    env.Append(LIBPATH = java_libs)
+    clone.Append(CPPPATH = java_headers)
+    clone.Append(LIBPATH = java_libs)
     return 1
 
 def JavaSources(dir):
@@ -85,7 +82,7 @@ def JavaSources(dir):
         return sources
 
 # This sets up the jni include files
-if not ConfigureJNI(conf.env):
+if not ConfigureJNI():
 	print "Could not configure Java. If you know where java is on your system,"
 	print "set environment variable JAVA_HOME to point to the directory containing"
 	print "the Java include, bin, and lib directories."
@@ -93,27 +90,14 @@ if not ConfigureJNI(conf.env):
 	print "Java Native Interface is required... Exiting"
 	Exit(1)
 
-def determine_flags(env):
-	# Remove some optimizations
-	if env['CPPFLAGS'].find('fvisibility') >= 0:
-		return ' -Wno-unused -fno-strict-aliasing -fvisibility=default'
-	return ' -Wno-unused -fno-strict-aliasing'
-
-def determine_shlib_target(env):
-	# Things a bit different on Mac
-	if sys.platform == 'darwin':
-		env.Append(SHLINKFLAGS = ' -framework JavaVM')
-		#env['SHLIBSUFFIX'] = '.jnilib'
-		return 'libJava_sml_ClientInterface.jnilib'
-	return 'Java_sml_ClientInterface'
-
 # Modify environment for compilation
-conf.env.Prepend(CPPPATH = ['#ClientSML/src', '#ElementXML/src', '#ConnectionSML/src', ])
-conf.env.Append(CPPFLAGS = determine_flags(conf.env))
-conf.env.Append(LIBS = ['ClientSML', 'ConnectionSML', 'ElementXML', ])
-conf.env.Append(LIBPATH = '$PREFIX/lib')
-
-swigenv = conf.Finish()
+clone.Prepend(CPPPATH = Split('#ClientSML/src #ElementXML/src #ConnectionSML/src'))
+if env['VISHIDDEN']:
+	clone['CPPFLAGS'].remove('-fvisibility=hidden')
+	clone.Append(CPPFLAGS = ['-fvisibility=default'])
+clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
+clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML'))
+clone.Append(LIBPATH = ['$PREFIX/lib'])
 #################
 
 # Some of the dependencies:
@@ -128,43 +112,52 @@ swigenv = conf.Finish()
 #       Java_sml_ClientInterface.i
 
 # Define targets and sources
-javasml_i = '#ClientSMLSWIG/Java/Java_sml_ClientInterface.i'
-javasml_wrap = '#ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp'
-javasource = '#ClientSMLSWIG/Java/src/sml/*.java'
-javasml_shlib = determine_shlib_target(swigenv)
-javajar = swigenv['PREFIX'] + '/share/java/sml.jar'
-javabuild = '#ClientSMLSWIG/Java/build.xml'
+javasml_i = env.File('#ClientSMLSWIG/Java/Java_sml_ClientInterface.i')
+javasml_wrap = env.File('#ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp')
+javasource = env.File('#ClientSMLSWIG/Java/src/sml/sml.java')
+
+def determine_shlib_target():
+	# Things a bit different on Mac
+	if sys.platform == 'darwin':
+		clone.Append(SHLINKFLAGS = ' -framework JavaVM')
+		return 'libJava_sml_ClientInterface.jnilib'
+	return 'Java_sml_ClientInterface'
+javasml_shlib = determine_shlib_target()
+
+javajar = env.File('$PREFIX/share/java/sml.jar')
+javabuild = env.File('#ClientSMLSWIG/Java/build.xml')
 
 # Custom scanner for internal dependencies:
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
-swigenv.Append(SCANNERS=[SWIGScanner])
+clone.Append(SCANNERS = [ SWIGScanner ])
 
 # Make src/sml dir and wrap
-swigenv.Command(javasml_wrap, javasml_i, [ 
+env.Command(javasml_wrap, javasml_i, [ 
+	Delete('ClientSMLSWIG/Java/src', must_exist = False),
 	Mkdir('ClientSMLSWIG/Java/src'),
 	Mkdir('ClientSMLSWIG/Java/src/sml'),
 	'swig -o ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp -c++ -java -Wall -package sml -IClientSML/src -IElementXML/src -IConnectionSML/src -outdir ClientSMLSWIG/Java/src/sml ClientSMLSWIG/Java/Java_sml_ClientInterface.i'])
 
 # Side effect: previous command produces src/*.java files (the SML Java interface)
-swigenv.SideEffect(javasource, javasml_wrap)
+env.SideEffect(javasource, javasml_wrap)
 
 # Create shared library
-shlib = swigenv.SharedLibrary(javasml_shlib, javasml_wrap)
-swigenv.Install('$PREFIX/lib', shlib)
+shlib = clone.SharedLibrary(javasml_shlib, javasml_wrap)
+env.Install('$PREFIX/lib', shlib)
 
 # Note build.xml dependency
-Depends(javajar, javabuild)
+env.Depends(javajar, javabuild)
 
 # Create jar
-swigenv.Command(javajar, javasource,
+env.Command(javajar, javasource,
 	'ant -Dsoarbuild=$BUILD_DIR/ClientSMLSWIG/Java/build -Dsoarprefix=$PREFIX -q', 
 	chdir='ClientSMLSWIG/Java')
 
 # Clean java stuff
-if swigenv.GetOption('clean'):
+if GetOption('clean'):
 	for x in BUILD_TARGETS:
 		targetpath = os.path.realpath(str(x))
-		if javajar.startswith(targetpath):
-			homedir = swigenv.Dir('#ClientSMLSWIG/Java')
-			swigenv.Execute('ant -Dsoarbuild=$BUILD_DIR/ClientSMLSWIG/Java/build -Dsoarprefix=$PREFIX -q clean', chdir=homedir)
+		if str(javajar).startswith(targetpath):
+			homedir = env.Dir('#ClientSMLSWIG/Java')
+			env.Execute('ant -Dsoarbuild=$BUILD_DIR/ClientSMLSWIG/Java/build -Dsoarprefix=$PREFIX -q clean', chdir=homedir)
 

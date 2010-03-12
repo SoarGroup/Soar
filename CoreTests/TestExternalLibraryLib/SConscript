@@ -10,5 +10,5 @@ if env['STATIC_LINKED']:
 	print "Skipping TestExternalLibraryLib due to static linkage"
 else:
 	TestExternalLibraryLib = env.SharedLibrary('TestExternalLibraryLib', Glob('*.cpp'))
-	env.Install('$PREFIX/lib', TestExternalLibraryLib)
+	Install('$PREFIX/lib', TestExternalLibraryLib)
 

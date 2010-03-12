@@ -7,5 +7,5 @@ Import('compEnv')
 env = compEnv.Clone()
 
 TestSoarPerformance = env.Program('TestSoarPerformance', Glob('*.cpp'))
-env.Install('$PREFIX/bin', TestSoarPerformance)
+Install('$PREFIX/bin', TestSoarPerformance)
 
