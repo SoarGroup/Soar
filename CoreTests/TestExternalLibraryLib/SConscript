@@ -8,5 +8,5 @@ if compEnv['STATIC_LINKED']:
 	print "Skipping TestExternalLibraryLib due to static linkage"
 else:
 	TestExternalLibraryLib = compEnv.Program('TestExternalLibraryLib', Glob('*.cpp'))
-	compEnv.Install('$PREFIX/bin', TestExternalLibraryLib)
+	compEnv.Install('$PREFIX/lib', TestExternalLibraryLib)
 
