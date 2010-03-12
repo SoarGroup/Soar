@@ -16,5 +16,5 @@ env.Install('$PREFIX/lib', ConnectionSML)
 
 # Install includes
 Import('InstallDir')
-InstallDir(ConnectionSML, '$PREFIX/include', 'src', '*.h')
+InstallDir(ConnectionSML, '$PREFIX/include', '#ConnectionSML/src', '*.h')
 
