@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.prefs.Preferences;
 
-
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.config.SimConfig;
@@ -37,7 +37,7 @@ import edu.umich.soar.gridmap2d.world.World;
  */
 
 public class Gridmap2D {
-	private static Logger logger = Logger.getLogger(Gridmap2D.class);
+	private static final Log logger = LogFactory.getLog(Gridmap2D.class);
 	
 	public static File home;
 	
@@ -81,12 +81,18 @@ public class Gridmap2D {
 		"config/tanksoar.cnf",
 		"config/taxi.cnf",
 	};
+	private static final String parent = System.getProperty("user.dir") + File.separator + "config";
 
 	public Gridmap2D(String[] args) {
+		boolean installed = false;
 		for (String s : resources) {
 			install(s);
+			installed = true;
 		}
-
+		if (installed) {
+			logger.info("Installed resources from jar to working directory " + System.getProperty("user.dir"));
+		}
+		
 		loadConfig(args);
 
 		// if using gui
@@ -139,7 +145,7 @@ public class Gridmap2D {
 			configPath = args[0];
 		} else {
 			if (wm.initialize()) {
-				configPath = wm.promptForConfig();
+				configPath = wm.promptForConfig(parent);
 			} else {
 				fatalError(Names.Errors.noConfig);
 			}
@@ -181,18 +187,24 @@ public class Gridmap2D {
 	
 	private void install(String file) {	
 		try {
-			File cnf = new File(file) ;
-			if (cnf.exists()) return;
+			File r = new File(file) ;
+			if (r.exists()) return;
 			
-			String jarpath = "/" + cnf.getPath() ;
+			String jarpath = "/" + r.getPath() ;
 			InputStream is = this.getClass().getResourceAsStream(jarpath) ;
 			if (is == null) {
-				System.err.println("Failed to find " + jarpath + " in the JAR file") ;
+				logger.error("Resource not found: " + jarpath) ;
 				return;
 			}
 			
 			// Create the new file on disk
-			FileOutputStream os = new FileOutputStream(cnf) ;
+			File parent = r.getParentFile();
+			if (parent != null)
+			{
+				if (!parent.exists())
+					parent.mkdirs();
+			}
+			FileOutputStream os = new FileOutputStream(r) ;
 			
 			// Copy the file onto disk
 			byte bytes[] = new byte[2048];
@@ -209,7 +221,7 @@ public class Gridmap2D {
 			is.close() ;
 			os.close() ;
 		} catch (IOException e) {
-			fatalError(Names.Errors.installingConfig + file + ": " + e.getMessage());
+			fatalError(Names.Errors.installingResource + file + ": " + e.getMessage());
 		}
 	}
 

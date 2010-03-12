@@ -6,7 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
@@ -29,7 +30,7 @@ import sml.WMElement;
 import sml.smlRunEventId;
 
 public class SoarTank implements Agent.RunEventInterface, TankCommander {
-	private static Logger logger = Logger.getLogger(SoarTank.class);
+	private static final Log logger = LogFactory.getLog(SoarTank.class);
 
 	private Tank player;
 	private Agent agent;

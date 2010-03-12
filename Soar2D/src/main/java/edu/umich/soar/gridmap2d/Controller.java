@@ -1,6 +1,7 @@
 package edu.umich.soar.gridmap2d;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.commsen.stopwatch.Report;
 import com.commsen.stopwatch.Stopwatch;
@@ -17,7 +18,7 @@ import edu.umich.soar.gridmap2d.world.World;
  * process, etc.
  */
 public class Controller implements Runnable {
-	private static Logger logger = Logger.getLogger(Controller.class);
+	private static final Log logger = LogFactory.getLog(Controller.class);
 
 	/**
 	 * Set to true when a stop is requested

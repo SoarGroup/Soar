@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.commsen.stopwatch.Stopwatch;
 
@@ -28,7 +29,7 @@ import edu.umich.soar.gridmap2d.world.World;
  * is the major member of this class. Creates the soar kernel and registers events.
  */
 public class Simulation {
-	private static Logger logger = Logger.getLogger(Simulation.class);
+	private static final Log logger = LogFactory.getLog(Simulation.class);
 
 	public static Random random = new Random();
 	public final String kColors[] = { "red", "blue", "yellow", "purple", "orange", "green", "black",  };
