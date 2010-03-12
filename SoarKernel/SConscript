@@ -2,30 +2,25 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
-import os
-
 Import('env')
-env = env.Clone()
+clone = env.Clone()
 
-env.Append(CPPFLAGS = ' -fno-strict-aliasing')
-env.Prepend(CPPPATH = ['src', '#ElementXML/src'])
+clone.Append(CPPFLAGS = ['-fno-strict-aliasing'])
+clone.Prepend(CPPPATH = Split('src #ElementXML/src'))
 
-sql_env = env.Clone()
-sql_env.Append(CPPFLAGS = ' -w')
-SQLite = sql_env.StaticLibrary('sqlite3', 'sqlite/sqlite3.c')
+sqlclone = clone.Clone()
+sqlclone.Append(CPPFLAGS = ['-w'])
+SQLite = sqlclone.StaticLibrary('sqlite3', 'sqlite/sqlite3.c')
 
 if env['SCU']:
-	SoarKernel = env.StaticLibrary('SoarKernel', 'SoarKernel.cxx')
+	SoarKernel = clone.StaticLibrary('SoarKernel', 'SoarKernel.cxx')
 else:
-	SoarKernel = env.StaticLibrary('SoarKernel', Glob('src/*.cpp'))
+	SoarKernel = clone.StaticLibrary('SoarKernel', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', SoarKernel)
 env.Install('$PREFIX/lib', SQLite)
 
 # Install resources
 Import('InstallDir')
-InstallDir(env, '$PREFIX/include', '#shared')
-
-env.Clean(SoarKernel, env.FindInstalledFiles())
+InstallDir(SoarKernel, '$PREFIX/include', '#shared')
 

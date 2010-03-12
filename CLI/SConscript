@@ -2,20 +2,15 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
 Import('env')
-env = env.Clone()
+clone = env.Clone()
 
-env.Prepend(CPPPATH = ['src', 
-		       '#SoarKernel/src', 
-		       '#ElementXML/src', 
-		       '#ConnectionSML/src', 
-		       '#KernelSML/src', ])
+clone.Prepend(CPPPATH = Split('src #SoarKernel/src #ElementXML/src #ConnectionSML/src #KernelSML/src'))
 
 if env['SCU']:
-	CommandLineInterface = env.Library('CommandLineInterface', 'CommandLineInterface.cxx')
+	CommandLineInterface = clone.Library('CommandLineInterface', 'CommandLineInterface.cxx')
 else:
-	CommandLineInterface = env.Library('CommandLineInterface', Glob('src/*.cpp'))
+	CommandLineInterface = clone.Library('CommandLineInterface', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', CommandLineInterface)
 
