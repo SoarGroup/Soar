@@ -16,8 +16,8 @@ tclsml_i = env.File('#ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i')
 swig_cmdline = 'swig -o ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface_wrap.cpp -c++ -tcl -pkgversion 9.0.1 -Wall -IClientSML/src -IElementXML/src -IConnectionSML/src ClientSMLSWIG/Tcl/Tcl_sml_ClientInterface.i'
 tclsml_shlib = 'Tcl_sml_ClientInterface'
 makepkg_script = env.File('#ClientSMLSWIG/Tcl/SconsMakeTclSMLPackage.tcl')
-tclsml_pkgfolder = env.File('$PREFIX/lib/Tcl_sml_ClientInterface')
-tclsml_mkpkg = 'tclsh ' + str(makepkg_script) + ' ' + tclsml_pkgfolder
+tclsml_pkgfolder = env.Dir('$PREFIX/lib/Tcl_sml_ClientInterface')
+tclsml_mkpkg = 'tclsh ' + str(makepkg_script) + ' ' + str(tclsml_pkgfolder)
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
@@ -43,6 +43,6 @@ clone.Append(CPPFLAGS = ['-w'])
 shlib = clone.SharedLibrary(tclsml_shlib, tclsml_wrap) 
 
 shlib_installed = env.Install(tclsml_pkgfolder, shlib)
-env.Command(tclsml_pkgfolder + '/pkgIndex.tcl', shlib_installed, tclsml_mkpkg)
+env.Command(str(tclsml_pkgfolder) + '/pkgIndex.tcl', shlib_installed, tclsml_mkpkg)
 env.Clean(shlib, tclsml_pkgfolder)
 
