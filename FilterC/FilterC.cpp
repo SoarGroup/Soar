@@ -16,12 +16,12 @@
 
 #include <portability.h>
 
+#include "sml_Client.h"
 #include "sml_Utils.h"
 #include <assert.h>
 #include <iostream>
 
 #include "sml_Connection.h"		// To get sml_Names
-#include "sml_Client.h"
 
 #include "thread_Thread.h"
 #include "thread_Lock.h"

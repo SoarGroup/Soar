@@ -94,69 +94,27 @@ AddOption('--no-debug-symbols', action='store_false', dest='debug-symbols', defa
 AddOption('--static', action='store_true', dest='static', default=False,
 	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl interfaces)')
 
+#################
 # Create the environment using the options
 env = Environment(
-	ENV = os.environ, 
+	ENV = {'PATH' : os.environ['PATH']},
 	CXX = GetOption('cxx'),
-	BUILD_WARNINGS = GetOption('build-warnings'),
-	OPTIMIZATION = GetOption('optimization'),
-	PLATFORM = GetOption('platform'),
-	BUILD_VERBOSE = GetOption('build-verbose'),
-	PREPROCESSOR = GetOption('preprocessor'),
-	GPROF = GetOption('gprof'),
 	SCU = GetOption('scu'), 
 	BUILD_DIR = GetOption('build-dir'),
 	PREFIX = os.path.realpath(GetOption('prefix')),
-	DEBUG_SYMBOLS = GetOption('debug-symbols'),
 	STATIC_LINKED = GetOption('static'),
+	SOAR_VERSION = SOAR_VERSION,
+	CPPFLAGS = ['-DSCONS'],
+	CPPPATH = ['#shared'],
+	LINKFLAGS = [],
 	)
+#################
 
-##################
-# Create configure context to configure the environment
-def CheckVisibilityFlag(context):
-        """Checks to see if the compiler will build using the visibility flag"""
-        context.Message('Checking support for -fvisibility=hidden... ')
 
-        # save old flags
-        lastCPPFLAGS = context.env['CPPFLAGS']
-        
-        # add new flag
-        context.env.Append(CPPFLAGS = ' -fvisibility=hidden')
-
-        # try compiling simple file with new flag
-        result = context.TryCompile("char foo;", '.c')
-
-        # restore old flags
-        context.env.Replace(CPPFLAGS = lastCPPFLAGS)
-
-        # print status message and return
-        context.Result(result)
-        return result
-
-custom_tests = {
-	# A check to see if the -fvisibility flag works on this system.
-	'CheckVisibilityFlag' : CheckVisibilityFlag,
-}
-conf = Configure(env, custom_tests = custom_tests)
-
-conf.env.Append(SOAR_VERSION = SOAR_VERSION)
-
-# We define SCONS to indicate to the source that SCONS is controlling the build.
-conf.env.Append(CPPFLAGS = ' -DSCONS')
-
-# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
-if sys.platform == "darwin":
-	conf.env.Append(CPPFLAGS = ' -DSCONS_DARWIN')
-	#if conf.env['ppc']:
-		#conf.env.Append(CPPFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
-		#conf.env.Append(LINKFLAGS = ' -isysroot /Developer/SDKs/MacOSX10.5.sdk -arch ppc ')
-
-if conf.env['STATIC_LINKED']:
-	conf.env.Append(CPPFLAGS = ' -DSTATIC_LINKED');
-
+#################
 # Get g++ Version
 def gcc_version():
-	proc = subprocess.Popen(conf.env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
+	proc = subprocess.Popen(env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
 	proc.wait()
 	version_line = proc.stdout.readline().rsplit('\n', 1)[0]
 	for possible_vs in version_line.split(' '):
@@ -168,36 +126,25 @@ def gcc_version():
 		except ValueError:
 			continue
 	return [int(split_version_string[0]), int(split_version_string[1]), int(split_version_string[2])]
-
 gcc = gcc_version()
+#################
 
-# All C/C++ modules rely or should rely on this include path (houses portability.h)
-conf.env.Append(CPPPATH = ['#shared'])
 
+#################
+# Special configuration section
+conf = Configure(env)
 # check if the compiler supports -fvisibility=hidden (GCC >= 4)
-if conf.CheckVisibilityFlag() and gcc[0] > 3:
-	conf.env.Append(CPPFLAGS = ' -fvisibility=hidden')
-
-# configure misc command line options
-if conf.env['DEBUG_SYMBOLS']: 
-	conf.env.Append(CPPFLAGS = ' -g3')
-
-if conf.env['BUILD_WARNINGS'] == 'all':
-	conf.env.Append(CPPFLAGS = ' -Wall')
-elif conf.env['BUILD_WARNINGS'] == 'error':
-	conf.env.Append(CPPFLAGS = ' -Werror')
-
-if conf.env['OPTIMIZATION'] == 'partial':
-	conf.env.Append(CPPFLAGS = ' -O2')
-elif conf.env['OPTIMIZATION'] == 'full':
-	conf.env.Append(CPPFLAGS = ' -O3')
-
-if conf.env['PREPROCESSOR']:
-	conf.env.Append(CPPFLAGS = ' -E')
-
-if conf.env['BUILD_VERBOSE']:
-	conf.env.Append(CPPFLAGS = ' -v')
-	conf.env.Append(LINKFLAGS = ' -v')
+if gcc[0] > 3:
+	print "Checking for visiblity=hidden...",
+	lastCPPFLAGS = env['CPPFLAGS']
+	env.Append(CPPFLAGS = ['-fvisibility=hidden'])
+	if conf.TryCompile("char foo;", '.c'):
+		print "yes"
+		env['VISHIDDEN'] = True # needed by swig
+	else:
+		print "no"
+		env['VISHIDDEN'] = False
+		env.Replace(CPPFLAGS = lastCPPFLAGS)
 
 # check for required libraries
 if not conf.CheckLib('dl'):
@@ -209,60 +156,92 @@ if not conf.CheckLib('m'):
 if not conf.CheckLib('pthread'):
 	Exit(1)
 		
-conf.env['HAS_TCL_LIB'] = conf.CheckLib('tcl8.4')
-		
-if conf.env['PLATFORM'] == '64':
+# Check for optional libraries
+env['HAS_TCL_LIB'] = conf.CheckLib('tcl8.4')
+#################
+
+
+#################
+# CPPFLAGS, LINKFLAGS
+# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
+if sys.platform == "darwin":
+	env.Append(CPPFLAGS = ['-DSCONS_DARWIN'])
+
+if env['STATIC_LINKED']:
+	env.Append(CPPFLAGS = ['-DSTATIC_LINKED']);
+
+# configure misc command line options
+if GetOption('debug-symbols'):
+	env.Append(CPPFLAGS = ['-g3'])
+
+if GetOption('build-warnings') == 'all':
+	env.Append(CPPFLAGS = ['-Wall'])
+elif GetOption('build-warnings') == 'error':
+	env.Append(CPPFLAGS = ['-Werror'])
+
+if GetOption('optimization') == 'partial':
+	env.Append(CPPFLAGS = ['-O2'])
+elif GetOption('optimization') == 'full':
+	env.Append(CPPFLAGS = ['-O3'])
+
+if GetOption('preprocessor'):
+	env.Append(CPPFLAGS = ['-E'])
+
+if GetOption('build-verbose'):
+	env.Append(CPPFLAGS = ['-v'])
+	env.Append(LINKFLAGS = ['-v'])
+
+if GetOption('platform') == '64':
 	print "*"
 	print "* Note: Targeting x86_64 (64-bit native)"
 	print "*"
-	conf.env.Append(CPPFLAGS = ' -m64 -fPIC')
-	conf.env.Append(LINKFLAGS = ' -m64')
+	env.Append(CPPFLAGS = Split('-m64 -fPIC'))
+	env.Append(LINKFLAGS = ['-m64'])
 elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1:
-	conf.env.Append(CPPFLAGS = ' -m32 -march=native')
-	conf.env.Append(LINKFLAGS = ' -m32 -march=native')
+	env.Append(CPPFLAGS = Split('-m32 -march=native'))
+	env.Append(LINKFLAGS = Split('-m32 -march=native'))
 else:
-	conf.env.Append(CPPFLAGS = ' -m32')
-	conf.env.Append(LINKFLAGS = ' -m32')
+	env.Append(CPPFLAGS = ['-m32'])
+	env.Append(LINKFLAGS = ['-m32'])
 
-if conf.env['GPROF']:
-	conf.env.Append(CPPFLAGS = ' -pg')
-	conf.env.Append(LINKFLAGS = ' -pg')
+if GetOption('gprof'):
+	env.Append(CPPFLAGS = ['-pg'])
+	env.Append(LINKFLAGS = ['-pg'])
+#################
+
 
 #################
-# Default targets
-conf.env.Default(conf.env['PREFIX'])
-conf.env.Default('.')
-# TODO: rmdir PREFIX/share/soar on clean
+# Misc and export
+env.Default(env['PREFIX'])
+env.Default('.')
 
-#################
-# Finish and export
-env = conf.Finish()
 Export('env')
+# TODO: rmdir PREFIX/share/soar on clean
+#################
+
 
 #################
 # Fun Java Stuff
 # TODO: Clean doesn't work quite right with jars
-
-# theEnv: the configuration envrionment to use
 # theComponent: the top level folder name, just as JavaTOH
 # theTargets: target jar name (or list of names) with -version.extension removed, makes .jar and .src.jar
 # theSources: source folder (or list of folders) relative to component folder (such as 'src')
-def javaRunAnt(theEnv, theComponent, theTargets, theSources):
+def javaRunAnt(theComponent, theTargets, theSources):
 	if env['STATIC_LINKED']:
 		print "Skipping Java component", theComponent
 		return
 
 	theDirString = '#../%s/' % theComponent
-	theDir = theEnv.Dir(theDirString)
+	theDir = env.Dir(theDirString)
 
-	sharejava = conf.env['PREFIX'] + '/share/java'
+	sharejava = env['PREFIX'] + '/share/java'
 	javaSources = [sharejava + '/sml.jar']
 	if type(theSources) == str:
 		theSources = [theSources]
 	for s in theSources:
-		javaSources.append(theEnv.Dir(theDirString + s))
+		javaSources.append(env.Dir(theDirString + s))
 
-	ver = theEnv['SOAR_VERSION']
+	ver = env['SOAR_VERSION']
 	jarTargets = []
 	if type(theTargets) == str:
 		theTargets = [theTargets]
@@ -272,15 +251,17 @@ def javaRunAnt(theEnv, theComponent, theTargets, theSources):
 		jarTargets.append(targetRoot + '.src.jar')
 
 	#print "-->", theComponent, jarTargets, javaSources
-	theEnv.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$PREFIX -Dversion=%s' % ver, chdir = theDir)
+	env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$PREFIX -Dversion=%s' % ver, chdir = theDir)
 
-	if theEnv.GetOption('clean'):
+	if GetOption('clean'):
 		for x in BUILD_TARGETS:
 			targetpath = os.path.realpath(str(x))
 			if targetpath.startswith(sharejava):
-				theEnv.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + theEnv['SOAR_VERSION'], 
+				env.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + env['SOAR_VERSION'], 
 					chdir = theDir)
 Export('javaRunAnt')
+#################
+
 
 #################
 # InstallDir
@@ -288,9 +269,10 @@ Export('javaRunAnt')
 # because Glob/InstallAs fails at life.
 #
 # Returns list of nodes for passage to Install
-def InstallDir(env, target, source, globstring="*"):
-	targetdir = Dir(target)
-	sourcedir = Dir(source)
+def InstallDir(comp, target, source, globstring="*"):
+	targetdir = env.Dir(target)
+	env.Clean(comp, targetdir)
+	sourcedir = env.Dir(source)
 	for root, dirs, files in os.walk(str(sourcedir)):
 		if ".svn" in dirs:
 			dirs.remove(".svn")
@@ -307,17 +289,12 @@ def InstallDir(env, target, source, globstring="*"):
 #		print "targetsub:'%s'" % targetsub
 #		print "sourceglob:'%s'" % sourceglob
 		env.Install(targetsub, Glob(sourceglob))
+		for f in env.Glob(sourceglob, strings = True):
+			(head, tail) = os.path.split(f)
+			env.Clean(comp, os.path.join(targetsub, tail))
 Export('InstallDir')
-
 #################
-# Environment for components
-compEnv = env.Clone()
-compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
-libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
-if compEnv['STATIC_LINKED']:
-        libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
-compEnv.Append(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
-Export('compEnv')
+
 
 #################
 # Auto detect components
@@ -331,14 +308,12 @@ for root, dirs, files in os.walk('..'):
 	if 'SConscript' in files:
 		component = root[3:]
 		components.append(component)
-		print component + ' ',
+		print component, 
 print
 
 if 'Tcl' in components:
 	if not env['HAS_TCL_LIB']:
-		print "*"
 		print "* Removing Tcl from components (can't find tcl8.4 lib)"
-		print "*"
 		components.remove('Tcl')
 
 # SWIG: build if any of (Java/Python/Tcl) are enabled
@@ -356,50 +331,40 @@ for x in ['Java', 'Python', 'Tcl']:
 # As of 4/2009, python binaries available on mac are not x86_64 and
 # therefore cannot load x86_64 targeted libraries. Verbosely warn.
 if sys.platform == 'darwin':
-	if env['PLATFORM'] == '64':
+	if GetOption('platform') == '64':
 		if 'Python' in components:
-			print "*"
 			print "* Warning: 64-bit python binaries may not be available on your system."
 			print "* You may need to rebuild with m64=no to use Python Soar bindings."
-			print "*"
 #################
 
-#################
-# New configuration context for swig projects
-if swig:
-	conf = Configure(env)
-	
-	# This allows us to use Java and SWIG if they are in the path.
-	conf.env.Append(ENV = {'PATH' : os.environ['PATH']})
-	
-	def CheckSWIG(context):
-	        """Checks to make sure we're using a compatible version of SWIG"""
-	        for line in os.popen("swig -version").readlines():
-	                m = re.search(r"([0-9])\.([0-9])\.([0-9]?[0-9])", line)
-	                if m:
-	                        major = int(m.group(1))
-	                        minor = int(m.group(2))
-	                        micro = int(m.group(3))
-	
-	                        ret = 1
-	                        status = 'ok'
-	                        if major < 1 or minor < 3 or micro < 31:
-	                                ret = 0
-	                                status = 'incompatible'
-	                        print "Found SWIG version %d.%d.%d... %s" % (major, minor, micro, status)
-	                        return ret
-	        print "Didn't find SWIG, make sure SWIG is in the path and rebuild."
-	        return 0
-	
-	if not CheckSWIG(conf.env):
-		Exit(1)
-	
-	swigenv = conf.Finish()
-	Export('swigenv')
-#################
 
 #################
-# Build modules
+# Verify swig if enabled
+def CheckSWIG(context):
+	"""Checks to make sure we're using a compatible version of SWIG"""
+	for line in os.popen("swig -version").readlines():
+		m = re.search(r"([0-9])\.([0-9])\.([0-9]?[0-9])", line)
+		if m:
+			major = int(m.group(1))
+			minor = int(m.group(2))
+			micro = int(m.group(3))
+
+			ret = 1
+			status = 'ok'
+			if major < 1 or minor < 3 or micro < 31:
+				ret = 0
+				status = 'incompatible'
+			print "Found SWIG version %d.%d.%d... %s" % (major, minor, micro, status)
+			return ret
+	print "Didn't find SWIG, make sure SWIG is in the path and rebuild."
+	return 0
+if swig and not CheckSWIG(conf.env):
+	Exit(1)
+#################
+
+
+#################
+# Build core modules
 subdirs= [ 
 	'SoarKernel',
 	'ConnectionSML',
@@ -408,7 +373,6 @@ subdirs= [
 	'ClientSML',
 	'KernelSML',
 	'Tests',
-	'TestCLI',
 	]
 
 if 'Python' in components:
@@ -429,9 +393,24 @@ for d in subdirs:
 	print "Processing", script + "..."
 	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
+#################
+# Components
+# Special environment
+compEnv = env.Clone()
+compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
+libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
+if compEnv['STATIC_LINKED']:
+        libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
+compEnv.Append(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
+Export('compEnv')
+
+# Add TestCLI to components (it uses compEnv which wasn't exported earlier):
+components.insert(0, 'Core/TestCLI')
+
 for d in components:
 	script = '../%s/SConscript' % d
 	if os.path.exists(script):
 		print "Processing", script + "..."
 		SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
+#################
 

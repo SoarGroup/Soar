@@ -2,10 +2,8 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
 Import('compEnv')
-env = compEnv.Clone()
 
-SoarScratchPad = env.Program('soarscratchpad', Glob('*.cpp'))
-env.Install('$PREFIX/bin', SoarScratchPad)
+SoarScratchPad = compEnv.Program('soarscratchpad', Glob('*.cpp'))
+compEnv.Install('$PREFIX/bin', SoarScratchPad)
 

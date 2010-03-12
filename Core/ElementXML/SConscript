@@ -2,27 +2,25 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
 Import('env')
-env = env.Clone()
+clone = env.Clone()
 
-env.Prepend(CPPPATH = ['src',])
+clone.Prepend(CPPPATH = ['src'])
 
 if env['SCU']:
 	if env['STATIC_LINKED']:
-		ElementXML = env.Library('ElementXML', 'ElementXML.cxx')
+		ElementXML = clone.Library('ElementXML', 'ElementXML.cxx')
 	else:
-		ElementXML = env.SharedLibrary('ElementXML', 'ElementXML.cxx')
+		ElementXML = clone.SharedLibrary('ElementXML', 'ElementXML.cxx')
 else:
 	if env['STATIC_LINKED']:
-		ElementXML = env.Library('ElementXML', Glob('src/*.cpp'))
+		ElementXML = clone.Library('ElementXML', Glob('src/*.cpp'))
 	else:
-		ElementXML = env.SharedLibrary('ElementXML', Glob('src/*.cpp'))
+		ElementXML = clone.SharedLibrary('ElementXML', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', ElementXML)
 
 # Install includes
 Import('InstallDir')
-InstallDir(env, '$PREFIX/include', 'src', '*.h')
-env.Clean(ElementXML, env.FindInstalledFiles())
+InstallDir(ElementXML, '$PREFIX/include', 'src', '*.h')
 

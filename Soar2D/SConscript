@@ -2,11 +2,6 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import os
-
-Import('env')
 Import('javaRunAnt')
-
-# Use helper function, see SConstruct: def javaRunAnt
-javaRunAnt(env, 'Soar2D', 'soar-soar2d', 'src')
+javaRunAnt('Soar2D', 'soar-soar2d', 'src')
 
