@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Game;
@@ -23,6 +24,7 @@ import edu.umich.soar.gridmap2d.players.Tank;
 import edu.umich.soar.gridmap2d.players.TankCommander;
 import edu.umich.soar.gridmap2d.players.Taxi;
 import edu.umich.soar.gridmap2d.players.TaxiCommander;
+import edu.umich.soar.gridmap2d.visuals.WindowManager;
 
 import sml.Agent;
 import sml.ConnectionInfo;
@@ -36,7 +38,7 @@ import sml.smlRunFlags;
 
 public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface, Kernel.SystemEventInterface {
 
-	private static Logger logger = Logger.getLogger(Soar.class);
+	private static final Log logger = LogFactory.getLog(Soar.class);
 
 	private boolean runTilOutput = false;
 	private Kernel kernel = null;
@@ -56,7 +58,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	private Map<String, ClientConfig> clients;
 	private int maxMemoryUsage;
 	private boolean soarPrint;
-	private int port;
 	private boolean debug;
 	
 	/**
@@ -74,7 +75,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		this.clients = clients;
 		this.maxMemoryUsage = config.max_memory_usage;
 		this.soarPrint = config.soar_print;
-		this.port = config.port;
 		this.debug = config.spawn_debuggers;
 		
 		if (config.remote != null) {
@@ -174,7 +174,20 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		}
 	}
 	
-	public void spawnClient(String clientID, ClientConfig clientConfig) {
+	public void spawnClient(String clientID, final ClientConfig clientConfig) {
+		if (clientID == Names.kDebuggerClient) {
+			WindowManager.display.asyncExec(new Runnable() {
+				@Override
+				public void run()
+				{
+					String[] args = new String[] { "-cascade", "-remote", "-agent", clientConfig.command };
+					new edu.umich.soar.debugger.Application(args, false, WindowManager.display);
+				}
+			});
+			
+			return;
+		}
+		
 		Runtime r = java.lang.Runtime.getRuntime();
 		logger.trace(Names.Trace.spawningClient + clientID);
 
@@ -352,7 +365,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		// spawn the debugger if we're supposed to
 		if (debug && !isClientConnected(Names.kDebuggerClient)) {
 			ClientConfig debuggerConfig = clients.get(Names.kDebuggerClient);
-			debuggerConfig.command = getDebuggerCommand(name);
+			debuggerConfig.command = name;
 
 			spawnClient(Names.kDebuggerClient, debuggerConfig);
 		}
@@ -380,27 +393,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		return connected;
 	}
 	
-	/**
-	 * @param agentName tailor the command to this agent name
-	 * @return a string command line to execute to spawn the debugger
-	 */
-	public String getDebuggerCommand(String agentName) {
-		// Figure out whether to use java or javaw
-		String os = System.getProperty("os.name");
-		String commandLine;
-		if (os.matches(".+indows.*") || os.matches("INDOWS")) {
-			commandLine = "javaw -jar \"" + basePath 
-			+ "..\\..\\SoarLibrary\\bin\\SoarJavaDebugger.jar\" -cascade -remote -agent " 
-			+ agentName + " -port " + port;
-		} else {
-			commandLine = System.getProperty("java.home") + "/bin/java -jar " + basePath
-			+ "../../SoarLibrary/bin/SoarJavaDebugger.jar -XstartOnFirstThread -cascade -remote -agent " 
-			+ agentName + " -port " + port;
-		}
-		
-		return commandLine;
-	}
-
 	@Override
 	public void reload(String player) {
 		AgentData agentData = agents.get(player);

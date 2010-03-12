@@ -231,15 +231,22 @@ def javaRunAnt(theComponent, theTargets, theSources):
 		print "Skipping Java component", theComponent
 		return
 
-	theDirString = '#../%s/' % theComponent
-	theDir = env.Dir(theDirString)
+	theDir = env.Dir('#../%s/' % theComponent)
 
 	sharejava = env['PREFIX'] + '/share/java'
 	javaSources = [sharejava + '/sml.jar']
 	if type(theSources) == str:
 		theSources = [theSources]
 	for s in theSources:
-		javaSources.append(env.Dir(theDirString + s))
+		#print "walking:", os.path.join(str(theDir), s)
+		for root, dirs, files in os.walk(os.path.join(str(theDir), s)):
+			if ".svn" in dirs:
+				dirs.remove(".svn")
+			for f in files:
+				#print "java dep:", os.path.join(root, f)
+				javaSources.append(env.File(os.path.join(root, f)))
+
+	javaSources.append(env.File(os.path.join(str(theDir), "build.xml")))
 
 	ver = env['SOAR_VERSION']
 	jarTargets = []

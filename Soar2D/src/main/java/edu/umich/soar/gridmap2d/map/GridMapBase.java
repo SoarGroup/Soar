@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.config.Config;
 import edu.umich.soar.config.ConfigFile;
@@ -15,7 +16,7 @@ import edu.umich.soar.gridmap2d.Gridmap2D;
 import edu.umich.soar.gridmap2d.Simulation;
 
 abstract class GridMapBase implements GridMap, CellObjectObserver {
-	private static Logger logger = Logger.getLogger(GridMapBase.class);
+	private static final Log logger = LogFactory.getLog(GridMapBase.class);
 	
 	private GridMapData data;
 	private final String mapPath;

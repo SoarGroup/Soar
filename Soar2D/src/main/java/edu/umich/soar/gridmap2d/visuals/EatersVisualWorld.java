@@ -15,7 +15,7 @@ import edu.umich.soar.gridmap2d.players.Player;
 
 
 public class EatersVisualWorld extends VisualWorld {
-	//private static Logger logger = Logger.getLogger(EatersVisualWorld.class);
+	//private static final Log logger = LogFactory.getLog(EatersVisualWorld.class);
 
 	public EatersVisualWorld(Composite parent, int style, int cellSize) {
 		super(parent, style, cellSize);

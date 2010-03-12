@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Direction;
@@ -18,7 +19,7 @@ import edu.umich.soar.gridmap2d.players.Taxi;
 import edu.umich.soar.gridmap2d.players.TaxiCommander;
 
 public class TaxiWorld implements World {
-	private static Logger logger = Logger.getLogger(TaxiWorld.class);
+	private static final Log logger = LogFactory.getLog(TaxiWorld.class);
 
 	private TaxiMap map;
 	private PlayersManager<Taxi> players = new PlayersManager<Taxi>();

@@ -7,7 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.commsen.stopwatch.Report;
 import com.commsen.stopwatch.Stopwatch;
@@ -18,7 +19,7 @@ import edu.umich.soar.gridmap2d.Simulation;
 
 public class EatersMap extends GridMapBase implements GridMap,
 		CellObjectObserver {
-	private static Logger logger = Logger.getLogger(EatersMap.class);
+	private static final Log logger = LogFactory.getLog(EatersMap.class);
 
 	public static EatersMap generateInstance(String mapPath,
 			boolean unopenedBoxesTerminal, double lowProbability,

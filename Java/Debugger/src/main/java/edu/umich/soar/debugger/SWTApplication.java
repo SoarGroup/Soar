@@ -126,6 +126,10 @@ public class SWTApplication
 	// (Providing width/height/x/y => not a maximized window)
 	public void startApp(String[] args) throws Exception
 	{
+		startApp(args, null);
+	}
+	public void startApp(String[] args, Display display) throws Exception
+	{
 		// The document manages the Soar process
 		m_Document = new Document() ;
 		
@@ -210,7 +214,12 @@ public class SWTApplication
 			}
 		}
 		
-		Display display = new Display() ;
+		boolean owned = true;
+		if (display == null) 
+		{
+			owned = false;
+			display = new Display() ;
+		}
 		Shell shell = new Shell(display) ;
 		
 		// We default to showing the contents of the clipboard in the search dialog
@@ -249,9 +258,11 @@ public class SWTApplication
 		if (errorMsg != null)
 			MainFrame.ShowMessageBox(shell, "Error connecting to remote kernel", errorMsg, SWT.OK) ;
 
-		m_Document.pumpMessagesTillClosed(display) ;
+		if (!owned) {
+			m_Document.pumpMessagesTillClosed(display) ;
 
-		display.dispose() ;
+			display.dispose() ;
+		}
 	}
 
 }

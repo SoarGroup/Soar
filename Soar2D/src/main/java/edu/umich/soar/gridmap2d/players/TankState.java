@@ -1,13 +1,14 @@
 package edu.umich.soar.gridmap2d.players;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.gridmap2d.Direction;
 import edu.umich.soar.gridmap2d.Gridmap2D;
 
 
 public class TankState {
-	private static Logger logger = Logger.getLogger(TankState.class);
+	private static final Log logger = LogFactory.getLog(TankState.class);
 
 	public static final int RADAR_WIDTH = 3;
 	public static final int RADAR_HEIGHT = 15;
