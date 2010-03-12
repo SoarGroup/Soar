@@ -22,5 +22,5 @@ env.Install('$PREFIX/lib', ElementXML)
 
 # Install includes
 Import('InstallDir')
-InstallDir(ElementXML, '$PREFIX/include', 'src', '*.h')
+InstallDir(ElementXML, '$PREFIX/include', '#ElementXML/src', '*.h')
 

@@ -16,5 +16,5 @@ env.Install('$PREFIX/lib', ClientSML)
 
 # Install includes
 Import('InstallDir')
-InstallDir(ClientSML, '$PREFIX/include', 'src', '*.h')
+InstallDir(ClientSML, '$PREFIX/include', '#ClientSML/src', '*.h')
 
