@@ -2,10 +2,7 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
 Import('compEnv')
-env = compEnv.Clone()
-
-TestSoarPerformance = env.Program('TestSoarPerformance', Glob('*.cpp'))
-Install('$PREFIX/bin', TestSoarPerformance)
+TestSoarPerformance = compEnv.Program('TestSoarPerformance', Glob('*.cpp'))
+compEnv.Install('$PREFIX/bin', TestSoarPerformance)
 

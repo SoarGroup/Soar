@@ -2,13 +2,10 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-
 Import('compEnv')
-env = compEnv.Clone()
-
-if env['STATIC_LINKED']:
+if compEnv['STATIC_LINKED']:
 	print "Skipping TestExternalLibrary due to static linkage"
 else:
-	TestExternalLibrary = env.Program('TestExternalLibrary', Glob('*.cpp'))
-	Install('$PREFIX/bin', TestExternalLibrary)
+	TestExternalLibrary = compEnv.Program('TestExternalLibrary', Glob('*.cpp'))
+	compEnv.Install('$PREFIX/bin', TestExternalLibrary)
 
