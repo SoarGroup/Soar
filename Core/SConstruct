@@ -284,11 +284,8 @@ def InstallDir(comp, target, source, globstring="*"):
 		# sourceglob is all files in sub directory
 		sourceglob = os.path.join(root, globstring)
 
-#		print "relative:'%s'" % relative
-#		print "targetdir:'%s'" % targetdir
-#		print "targetsub:'%s'" % targetsub
-#		print "sourceglob:'%s'" % sourceglob
-		env.Install(targetsub, Glob(sourceglob))
+		#print "install '%s' to '%s'" % (sourceglob, targetsub)
+		env.Install(targetsub, env.Glob(sourceglob))
 		for f in env.Glob(sourceglob, strings = True):
 			(head, tail) = os.path.split(f)
 			env.Clean(comp, os.path.join(targetsub, tail))
