@@ -1331,10 +1331,10 @@ bool Agent::SpawnDebugger()
 
 #ifdef SCONS_DARWIN
 		execl("java", "java", "-XstartOnFirstThread", "-jar", jarstring.str().c_str(), "-remote", 
-			"-port", portstring.str().c_str(), "-agent", this->GetAgentName(), NULL );
+			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #else
 		execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", 
-			"-port", portstring.str().c_str(), "-agent", this->GetAgentName(), NULL );
+			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #endif
 		// does not return on success
 		exit(1);
