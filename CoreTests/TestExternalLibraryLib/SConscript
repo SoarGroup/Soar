@@ -7,6 +7,6 @@ Import('compEnv')
 if compEnv['STATIC_LINKED']:
 	print "Skipping TestExternalLibraryLib due to static linkage"
 else:
-	TestExternalLibraryLib = compEnv.Program('TestExternalLibraryLib', Glob('*.cpp'))
+	TestExternalLibraryLib = compEnv.SharedLibrary('TestExternalLibraryLib', Glob('*.cpp'))
 	compEnv.Install('$PREFIX/lib', TestExternalLibraryLib)
 
