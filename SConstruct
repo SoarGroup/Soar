@@ -258,7 +258,7 @@ def javaRunAnt(theComponent, theTargets, theSources):
 		jarTargets.append(targetRoot + '.src.jar')
 
 	#print "-->", theComponent, jarTargets, javaSources
-	env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$PREFIX -Dversion=%s' % ver, chdir = theDir)
+	ret = env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$PREFIX -Dversion=%s' % ver, chdir = theDir)
 
 	if GetOption('clean'):
 		for x in BUILD_TARGETS:
@@ -266,6 +266,7 @@ def javaRunAnt(theComponent, theTargets, theSources):
 			if targetpath.startswith(sharejava):
 				env.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + env['SOAR_VERSION'], 
 					chdir = theDir)
+	return ret
 Export('javaRunAnt')
 #################
 
