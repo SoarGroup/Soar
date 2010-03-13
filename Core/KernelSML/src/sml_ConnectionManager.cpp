@@ -261,5 +261,7 @@ bool ConnectionManager::ReceiveAllMessages()
 
 int ConnectionManager::GetListenerPort() 
 {
+	if (m_ListenerThread == 0) 
+		return 0;
 	return m_ListenerThread->GetPort();
 }
