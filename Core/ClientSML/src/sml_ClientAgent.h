@@ -846,13 +846,10 @@ public:
 	bool SynchronizeOutputLink() ;
 
 	/*************************************************************
-	* @brief This method spawns the debugger and waits for it to
-	*        report in (as client java-debugger). java.exe must be
-	*        in the current process path.
-	* @param port Port that kernel is on
-	* @param hostname What machine the kernel is on, or null for localhost
+	* @brief This method spawns a debugger to connect to this agent.
+	*        Java must be in the path.
 	*************************************************************/
-	bool SpawnDebugger( int port = 12121, const char* hostname = 0 );	// FIXME: pull 12121 constant from somewhere else
+	bool SpawnDebugger();
 
 	/*************************************************************
 	* @brief Kills the previously spawned debugger.
@@ -866,8 +863,6 @@ public:
 
 protected:
 	// for {Spawn, Kill}Debugger()
-	bool WaitForDebugger();
-
 	DebuggerProcessInformation* m_pDPI;
 
 };
