@@ -1263,35 +1263,32 @@ bool Agent::SynchronizeOutputLink()
 	return GetWM()->SynchronizeOutputLink() ;
 }
 
-bool Agent::SpawnDebugger(int port, const char* hostname) 
+bool Agent::SpawnDebugger()
 {
-	std::string libraryLocation = this->m_Kernel->GetLibraryLocation();
-	if ( libraryLocation.length() == 0 ) 
-	{
+	int port = m_Kernel->GetListenerPort();
+	if (port == 0)
 		return false;
-	}
+
+	std::string libraryLocation = this->m_Kernel->GetLibraryLocation();
 
 	if (m_pDPI) 
-	{
 		return false;
-	}
-
 	m_pDPI = new DebuggerProcessInformation();
 
-#ifdef _WIN32
+#ifdef ENABLE_LOCAL_SOCKETS
+	port = getpid();
+#endif
 
+#ifdef _WIN32
 	ZeroMemory( &m_pDPI->debuggerStartupInfo, sizeof( m_pDPI->debuggerStartupInfo ) );
 	m_pDPI->debuggerStartupInfo.cb = sizeof( m_pDPI->debuggerStartupInfo );
 	ZeroMemory( &m_pDPI->debuggerProcessInformation, sizeof( m_pDPI->debuggerProcessInformation ) );
 
 	// Start the child process. 
 	std::stringstream commandLine;
-	commandLine << "java.exe -jar \"" << libraryLocation << "\\bin\\SoarJavaDebugger.jar\" -remote -port " << port;
-	if ( hostname != 0 ) 
-	{
-		commandLine << " -ip " << hostname;
-	}
-	//std::cout << commandLine.str() << std::endl;
+	commandLine << "javaw.exe -jar \"" << libraryLocation 
+		<< "bin\\SoarJavaDebugger.jar\" -remote -port "
+		<< port << " -agent \"" << this->GetAgentName() << "\"";
 
 	BOOL ret = CreateProcess(
 		0,
@@ -1308,12 +1305,8 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 	if ( ret == 0 ) 
 	{
 		std::cout << "Error code: " << GetLastError() << std::endl;
-		return false;
-	}
-	
-	if ( !WaitForDebugger() ) 
-	{
-		KillDebugger();
+		delete m_pDPI;
+		m_pDPI = 0;
 		return false;
 	}
 	return true;
@@ -1322,6 +1315,8 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 	m_pDPI->debuggerPid = fork();
 	if ( m_pDPI->debuggerPid < 0 ) 
 	{ 
+		delete m_pDPI;
+		m_pDPI = 0;
 		return false;
 	}
 
@@ -1329,80 +1324,40 @@ bool Agent::SpawnDebugger(int port, const char* hostname)
 	{
 		// child
 		std::stringstream jarstring;
-		jarstring << libraryLocation << "/bin/SoarJavaDebugger.jar";
+		jarstring << libraryLocation << "bin/SoarJavaDebugger.jar";
 
-		std::stringstream portstring;
-		portstring << port;
+		std::string portstring;
+		to_string(port, portstring);
 
-		if ( hostname != 0 ) 
-		{
-			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), "-ip", NULL );
-		}
-		else {
-			execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", "-port", portstring.str().c_str(), NULL );
-		}
-
+#ifdef SCONS_DARWIN
+		execl("java", "java", "-XstartOnFirstThread", "-jar", jarstring.str().c_str(), "-remote", 
+			"-port", portstring.str().c_str(), "-agent", this->GetAgentName(), NULL );
+#else
+		execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", 
+			"-port", portstring.str().c_str(), "-agent", this->GetAgentName(), NULL );
+#endif
 		// does not return on success
 		exit(1);
 	}
 
 	// parent
-
-	if ( !WaitForDebugger() ) 
-	{
-		KillDebugger();
-		return false;
-	}
 	return true;
 #endif // _WIN32
-}
-
-bool Agent::WaitForDebugger()
-{
-	bool connected = false;
-	for ( int tries = 0; tries < 40; ++tries )
-	{
-		m_Kernel->GetAllConnectionInfo();
-
-		for ( int i = 0; i < m_Kernel->GetNumberConnections(); ++i ) 
-		{
-			ConnectionInfo const* info =  m_Kernel->GetConnectionInfo(i);
-			//std::cout << "Connection: " << info->GetName() << std::endl;
-			if ( std::string( "java-debugger" ) == info->GetName() ) 
-			{
-				connected = true;
-				break;
-			}
-		}
-		if ( connected ) 
-		{ 
-			break;
-		}
-		
-		sml::Sleep( 0, 250 );
-	}
-	return connected;
 }
 
 bool Agent::KillDebugger()
 {
 	if (!m_pDPI)
-	{
 		return false;
-	}
-
 	bool successful = false;
 
 #ifdef _WIN32
-
 	// Wait until child process exits.
 	BOOL ret = TerminateProcess(m_pDPI->debuggerProcessInformation.hProcess, 0);
 	CloseHandle( m_pDPI->debuggerProcessInformation.hProcess );
 	CloseHandle( m_pDPI->debuggerProcessInformation.hThread );
 	if (ret) 
-	{
 		successful = true;
-	}
 
 #else // _WIN32
 	if ( !kill( m_pDPI->debuggerPid, SIGTERM ) )
@@ -1412,6 +1367,7 @@ bool Agent::KillDebugger()
 #endif // _WIN32
 
 	delete m_pDPI;
+	m_pDPI = 0;
 	return successful;
 }
 
