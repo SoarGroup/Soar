@@ -81,7 +81,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 			kernel = Kernel.CreateRemoteConnection(true, config.remote, config.port);
 		} else {
 			// Create kernel
-			kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kUseAnyPort);
+			kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kDefaultSMLPort);
 		}
 
 		if (kernel.HadError()) {
@@ -351,7 +351,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		// spawn the debugger if we're supposed to
 		if (debug && !isClientConnected(Names.kDebuggerClient)) {
 			SoarProperties p = new SoarProperties();
-			agent.SpawnDebugger(-1, p.getPrefix());
+			agent.SpawnDebugger(Kernel.kDefaultSMLPort, p.getPrefix());
 		}
 		
 		return agent;
