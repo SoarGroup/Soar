@@ -34,6 +34,7 @@
 #define getcwd _getcwd
 #endif // getcwd
 #define chdir _chdir
+#define getpid _getpid
 #define strcasecmp _stricmp
 #define VSNPRINTF _vsnprintf
 #define SNPRINTF _snprintf

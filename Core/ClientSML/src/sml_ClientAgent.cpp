@@ -1263,21 +1263,13 @@ bool Agent::SynchronizeOutputLink()
 	return GetWM()->SynchronizeOutputLink() ;
 }
 
-bool Agent::SpawnDebugger()
+bool Agent::SpawnDebugger(int port)
 {
-	int port = m_Kernel->GetListenerPort();
-	if (port == 0)
-		return false;
-
 	std::string libraryLocation = this->m_Kernel->GetLibraryLocation();
 
 	if (m_pDPI) 
 		return false;
 	m_pDPI = new DebuggerProcessInformation();
-
-#ifdef ENABLE_LOCAL_SOCKETS
-	port = getpid();
-#endif
 
 #ifdef _WIN32
 	ZeroMemory( &m_pDPI->debuggerStartupInfo, sizeof( m_pDPI->debuggerStartupInfo ) );

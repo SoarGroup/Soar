@@ -849,7 +849,7 @@ public:
 	* @brief This method spawns a debugger to connect to this agent.
 	*        Java must be in the path.
 	*************************************************************/
-	bool SpawnDebugger();
+	bool SpawnDebugger(int port);
 
 	/*************************************************************
 	* @brief Kills the previously spawned debugger.
