@@ -28,47 +28,46 @@ extern soarxml::ElementXML* ReceivedCall(Connection* pConnection, soarxml::Eleme
 
 void ListenerThread::Run()
 {
-	
-	// Create the listener
-	//sml::PrintDebugFormat("Listening on port %d", m_Port) ;
 	bool ok = m_ListenerSocket.CreateListener(m_Port) ;
-	
-	if (!ok)
+	if (ok)
 	{
-		sml::PrintDebug("Failed to create the listener socket.  Shutting down thread.") ;
+		//sml::PrintDebugFormat("Internet listener socket: %s", m_ListenerSocket.GetName().c_str()) ;
+	}
+	else 
+	{
+		sml::PrintDebug("Failed to create the internet listener socket.  Shutting down listener thread.") ;
 		return ;
 	}
 
 #ifdef ENABLE_LOCAL_SOCKETS
-
-	// Create the listener
-	//sml::PrintDebugFormat("Listening on file %s%d", sock::GetLocalSocketDir().c_str(), m_Port) ;
-
 	ok = m_LocalListenerSocket.CreateListener(m_Port, true);
-
-	if (!ok)
+	if (ok)
+	{
+		//sml::PrintDebugFormat("Local listener socket: %s", m_LocalListenerSocket.GetName().c_str()) ;
+	}
+	else
 	{
 		sml::PrintDebug("Failed to create the local listener socket.  Shutting down thread.") ;
+		m_ListenerSocket.Close();
 		return ;
 	}
 #endif
 
 #ifdef ENABLE_NAMED_PIPES
-
 	ok = m_ListenerNamedPipe.CreateListener(m_Port) ;
-
-	if (!ok)
+	if (ok)
+	{
+		//sml::PrintDebugFormat("Local listener pipe: %s", m_ListenerNamedPipe.GetName().c_str()) ;
+	}
+	else
 	{
 		sml::PrintDebug("Failed to create the listener pipe.  Shutting down thread.") ;
+		m_ListenerSocket.Close();
 		return ;
 	}
 #endif
 
-	// Save port number
-	if (m_Port == -1) 
-	{
-		m_Port = m_ListenerSocket.GetPort();
-	}
+	m_Port = m_ListenerSocket.GetPort();
 
 	while (!m_QuitNow)
 	{
