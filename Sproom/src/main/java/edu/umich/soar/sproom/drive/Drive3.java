@@ -17,6 +17,11 @@ import edu.umich.soar.sproom.command.CommandConfigListener;
 import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand.CommandType;
 
+/**
+ * Higher level drive command abstraction adding heading input.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Drive3 implements DriveListener {
 	private static final Log logger = LogFactory.getLog(Drive3.class);
 	public static final String HEADING_PID_NAME = "heading";

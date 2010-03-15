@@ -13,6 +13,12 @@ import org.apache.commons.logging.LogFactory;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.CommandConfigListener;
 
+/**
+ * Higher level drive command abstraction, takes angular and linear velocities and uses
+ * PID controllers to command Drive1 throttles.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Drive2 {
 	private static final Log logger = LogFactory.getLog(Drive2.class);
 	public static final String ANGULAR_PID_NAME = "angular velocity";

@@ -18,6 +18,11 @@ import edu.umich.soar.sproom.command.MapMetadata.Area;
 import edu.umich.soar.sproom.command.MapMetadata.Gateway;
 import edu.umich.soar.sproom.command.MapMetadata.Walls.WallDir;
 
+/**
+ * Input link management for area description data.
+ * 
+ * @author voigtjr
+ */
 public class AreaDescriptionIL implements InputLinkElement {
 	private static final Log logger = LogFactory.getLog(AreaDescriptionIL.class);
 

@@ -14,11 +14,9 @@ import edu.umich.soar.sproom.drive.DriveCommand;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
- * Set linear and angular velocities.
+ * Set linear velocity drive command.
  * 
- * Returns executing. Not interruptible. Creates DDC.
+ * @author voigtjr@gmail.com
  */
 public class SetLinearVelocityCommand extends OutputLinkCommand implements DriveCommand {
 	private static final Log logger = LogFactory.getLog(SetLinearVelocityCommand.class);

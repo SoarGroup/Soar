@@ -11,6 +11,12 @@ import lcm.lcm.LCMSubscriber;
 import lcmtypes.laser_t;
 import edu.umich.soar.sproom.SharedNames;
 
+/**
+ * Translates laser messages from SICK or simulated device into a smaller set of
+ * readings more easily processed by Soar agents.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Lidar {
 	private static final Log logger = LogFactory.getLog(Lidar.class);
 

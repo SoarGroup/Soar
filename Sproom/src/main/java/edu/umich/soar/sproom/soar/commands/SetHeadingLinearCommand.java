@@ -15,10 +15,9 @@ import edu.umich.soar.sproom.drive.DriveCommand;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
- * Set target heading and speed. Note, does not "complete" like set-heading (without
- * linear velocity) does.
+ * Set target heading and linear velocity. 
+ * 
+ * @author voigtjr@gmail.com
  */
 public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveCommand {
 	private static final Log logger = LogFactory.getLog(SetHeadingLinearCommand.class);

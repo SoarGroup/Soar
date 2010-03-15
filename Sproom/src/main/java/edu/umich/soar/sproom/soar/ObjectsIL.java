@@ -18,6 +18,11 @@ import edu.umich.soar.sproom.command.VirtualObject;
 import edu.umich.soar.sproom.command.VirtualObjects;
 import edu.umich.soar.sproom.command.Pose.RelativePointData;
 
+/**
+ * Input link management of data representing objects in the world.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class ObjectsIL implements InputLinkElement {
 	private static final Log logger = LogFactory.getLog(ObjectsIL.class);
 	

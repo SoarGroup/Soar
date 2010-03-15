@@ -20,9 +20,9 @@ import edu.umich.soar.sproom.soar.Cargo;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
  * Removes all messages from message list.
+ *
+ * @author voigtjr@gmail.com
  */
 public class DropObjectCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(DropObjectCommand.class);

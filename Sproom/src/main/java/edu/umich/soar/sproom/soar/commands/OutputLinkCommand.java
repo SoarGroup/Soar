@@ -13,6 +13,12 @@ import edu.umich.soar.sproom.Adaptable;
 import sml.Identifier;
 import sml.StringElement;
 
+/**
+ * Parent abstract class for output link commands, contains many utility functions like converting
+ * an identifier to its command handler.
+ *
+ * @author voigtjr@gmail.com
+ */
 public abstract class OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(OutputLinkCommand.class);
 	private final static Map<String, Class<? extends OutputLinkCommand>> commands = new HashMap<String, Class<? extends OutputLinkCommand>>();

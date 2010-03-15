@@ -4,6 +4,12 @@ import sml.Identifier;
 import edu.umich.soar.FloatWme;
 import edu.umich.soar.sproom.command.CommandConfig;
 
+/**
+ * Input link working memory element wrapper for distance wmes, automatically 
+ * converting units.
+ * 
+ * @author voigtjr@gmail.com
+ */
 public class DistanceWme {
     public static DistanceWme newInstance(Identifier parent, String attr) {
     	return new DistanceWme(parent, attr);

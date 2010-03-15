@@ -23,8 +23,9 @@ import vis.VisDataPointStyle;
 import vis.VisWorld;
 
 /**
- * @author voigtjr
  * Tool used to plot odometry data for calibration.
+ * 
+ * @author voigtjr
  */
 class OdometryPlotter {
 	private final JFrame jf;

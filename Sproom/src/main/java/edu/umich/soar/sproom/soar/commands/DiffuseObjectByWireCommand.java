@@ -8,6 +8,11 @@ import edu.umich.soar.sproom.SharedNames;
 
 import sml.Identifier;
 
+/**
+ * Domain specific command to diffuse an object using a wire.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class DiffuseObjectByWireCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(DiffuseObjectByWireCommand.class);
 	static final String NAME = "diffuse-object-by-wire";

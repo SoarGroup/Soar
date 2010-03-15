@@ -8,6 +8,11 @@ import lcmtypes.differential_drive_command_t;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Command;
 
+/**
+ * Lowest level drive command abstraction, takes throttles and transmits them on a drive channel.
+ *
+ * @author voigtjr@gmail.com
+ */
 class Drive1 {
 	private static final Log logger = LogFactory.getLog(Drive1.class);
 	

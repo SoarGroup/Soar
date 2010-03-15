@@ -8,6 +8,12 @@ import sml.Identifier;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 
+/**
+ * Top level input link manager, takes a list of input link elements which are, in
+ * this context, a sort of module of input link data.
+ * 
+ * @author voigtjr@gmail.com
+ */
 class InputLink {
 	private final Agent agent;
 	private final List<InputLinkElement> elements = new ArrayList<InputLinkElement>();

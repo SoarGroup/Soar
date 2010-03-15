@@ -15,9 +15,9 @@ import edu.umich.soar.sproom.drive.DriveCommand;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
- * Set target heading to rotate to.
+ * Set a target heading to rotate to.
+ * 
+ * @author voigtjr@gmail.com
  */
 public class SetHeadingCommand extends OutputLinkCommand implements DriveCommand {
 	private static final Log logger = LogFactory.getLog(SetHeadingCommand.class);

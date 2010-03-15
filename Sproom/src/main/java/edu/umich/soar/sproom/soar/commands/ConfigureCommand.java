@@ -16,9 +16,9 @@ import sml.Identifier;
 import sml.WMElement;
 
 /**
- * @author voigtjr
- *
  * Configure robot.
+ *
+ * @author voigtjr@gmail.com
  */
 public class ConfigureCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(ConfigureCommand.class);

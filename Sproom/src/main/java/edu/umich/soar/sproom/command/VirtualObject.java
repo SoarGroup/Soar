@@ -5,6 +5,11 @@ import java.util.Arrays;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * A virtual object managed by MapMetadata.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class VirtualObject {
 	private static final Log logger = LogFactory.getLog(VirtualObject.class);
 	

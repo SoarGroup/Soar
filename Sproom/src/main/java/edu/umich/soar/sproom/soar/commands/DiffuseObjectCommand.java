@@ -8,6 +8,11 @@ import edu.umich.soar.sproom.SharedNames;
 
 import sml.Identifier;
 
+/**
+ * Domain specific command to diffuse an object.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class DiffuseObjectCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(DiffuseObjectCommand.class);
 	static final String NAME = "diffuse-object";

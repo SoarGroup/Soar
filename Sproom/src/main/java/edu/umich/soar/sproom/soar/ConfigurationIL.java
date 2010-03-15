@@ -13,6 +13,11 @@ import edu.umich.soar.sproom.drive.Drive2;
 import edu.umich.soar.sproom.drive.Drive3;
 import sml.Identifier;
 
+/**
+ * Input link management for reporting current simulation configuration.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class ConfigurationIL implements InputLinkElement {
 	private static final String LIMITS = "limits";
 	private static final String VELOCITY = "velocity";

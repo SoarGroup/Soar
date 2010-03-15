@@ -2,6 +2,11 @@ package edu.umich.soar.sproom.soar;
 
 import edu.umich.soar.sproom.command.VirtualObject;
 
+/**
+ * Manages a held object.
+ * 
+ * @author voigtjr
+ */
 public class Cargo {
 	
 	private VirtualObject carriedObject;

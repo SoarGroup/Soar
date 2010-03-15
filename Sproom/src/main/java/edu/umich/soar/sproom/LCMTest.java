@@ -7,6 +7,11 @@ import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
 import lcmtypes.pose_t;
 
+/**
+ * Simple tests for LCM functionality.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class LCMTest {
 
 	private final static String TEST_CHANNEL = "TEST_CHANNEL";

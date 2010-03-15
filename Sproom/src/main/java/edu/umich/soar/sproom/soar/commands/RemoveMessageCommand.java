@@ -13,9 +13,9 @@ import edu.umich.soar.sproom.command.Comm;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
  * Removes a message from the received message list.
+ *
+ * @author voigtjr@gmail.com
  */
 public class RemoveMessageCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(RemoveMessageCommand.class);

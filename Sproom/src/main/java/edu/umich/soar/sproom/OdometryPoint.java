@@ -4,6 +4,11 @@ import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+/**
+ * Utility for reading odometry data out of a file.
+ * 
+ * @author voigtjr
+ */
 public class OdometryPoint {
 	private final int left;
 	private final int right;

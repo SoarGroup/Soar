@@ -30,6 +30,11 @@ import edu.umich.soar.sproom.drive.Drive3;
 import edu.umich.soar.sproom.drive.DriveListener;
 import edu.umich.soar.sproom.soar.SoarControlListener;
 
+/**
+ * Simple web service exposing simulation controls usable through a browser.
+ *
+ * @author voigtjr@gmail.com
+ */
 class HttpController {
 	private static final Log logger = LogFactory.getLog(HttpController.class);
 	private static final int HTTP_PORT = 8000;
