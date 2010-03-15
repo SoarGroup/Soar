@@ -101,8 +101,11 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 		m_AgentTable.setHeaderVisible(true);
 		m_AgentTable.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
-				selectPlayer(players[m_AgentTable.getSelectionIndex()]);
-				updateButtons();
+				if (m_AgentTable.getSelectionIndex() < 0) {
+					selectPlayer(null);
+				} else {
+					selectPlayer(players[m_AgentTable.getSelectionIndex()]);
+				}
 			}
 		});
 		
@@ -406,17 +409,22 @@ public class TankSoarAgentDisplay extends AgentDisplay {
 	}
 	
 	void selectPlayer(Player player) {
-		selectedPlayer = (Tank)player;
-		assert selectedPlayer != null;
-		int index;
-		for(index = 0; index < players.length; ++index) {
-			if (players[index].equals(selectedPlayer)) {
-				break;
+		if (player == null) {
+			selectedPlayer = null;
+			m_AgentTable.deselectAll();
+			m_AgentWorld.disable();
+		} else {
+			selectedPlayer = (Tank)player;
+			int index;
+			for(index = 0; index < players.length; ++index) {
+				if (players[index].equals(selectedPlayer)) {
+					break;
+				}
 			}
+			m_AgentTable.setSelection(index);
+			m_AgentWorld.enable();
+			updateSensors(); 
 		}
-		m_AgentTable.setSelection(index);
-		m_AgentWorld.enable();
-		updateSensors(); 
 		updateButtons();
 	}
 	
