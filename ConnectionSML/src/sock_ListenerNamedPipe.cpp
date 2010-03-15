@@ -54,7 +54,7 @@ bool ListenerNamedPipe::CreateListener(int port)
 	CTDEBUG_ENTER_METHOD("ListenerNamedPipe::CreateListener");
 
 	if (port == -1) 
-		port = GetCurrentProcessId();	// Name the pipe after the PID
+		port = getpid();
 
 	unsigned long usernamesize = UNLEN+1;
 	char username[UNLEN+1];

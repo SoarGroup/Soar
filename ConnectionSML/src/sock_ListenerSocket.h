@@ -19,17 +19,21 @@ namespace sock {
 class ListenerSocket : public Socket  
 {
 public:
-	ListenerSocket();
+	ListenerSocket() : m_Port(0) {}
 	virtual ~ListenerSocket();
 
 	// Creates a listener socket -- used by the server to create connections
-	bool	CreateListener(int port, bool local=false) ;
+	// Pass -1 to listen on any port, -1 and local = true to listen on pid-named local socket
+	bool CreateListener(int port, bool local = false);
 
 	// Check for an incoming client connection
 	// This call does not block.  If there is no pending connection it returns NULL immediately.
 	Socket* CheckForClientConnection() ;
+	
+	int GetPort() { return m_Port; }
 
-	int GetPort();
+private:
+	int m_Port;
 };
 
 } // Namespace
