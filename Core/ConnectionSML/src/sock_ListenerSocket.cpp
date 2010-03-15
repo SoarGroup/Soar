@@ -24,10 +24,6 @@ using namespace sock ;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-ListenerSocket::ListenerSocket()
-{
-}
-
 ListenerSocket::~ListenerSocket()
 {
 
@@ -57,18 +53,14 @@ bool ListenerSocket::CreateListener(int port, bool local)
 		m_hSocket = NO_CONNECTION ;
 	}
 
-	// Create the listener socket
-
-	SOCKET hListener;
-
+	SOCKET hListener = INVALID_SOCKET;
+	if(local) 
+	{
 #ifdef ENABLE_LOCAL_SOCKETS
-	if(local) {
 		hListener = socket(AF_UNIX, SOCK_STREAM, 0);
+#endif
 	}
 	else 
-#else
-	unused(local);
-#endif
 	{
 		hListener = socket(AF_INET, SOCK_STREAM, 0) ;
 	}
@@ -76,7 +68,7 @@ bool ListenerSocket::CreateListener(int port, bool local)
 	if (hListener == INVALID_SOCKET)
 	{
 		sml::PrintDebug("Error: Error creating the listener socket") ;
-		return false ;
+		return false;
 	}
 
 	// Record the listener socket so we'll clean
@@ -87,20 +79,16 @@ bool ListenerSocket::CreateListener(int port, bool local)
 	int reuse_addr = 1 ;
 	setsockopt(hListener, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse_addr, sizeof(reuse_addr)) ;
 
-	// Specify the port we are listening on
-	sockaddr_in address ;
-
 	int res;
 
 #ifdef ENABLE_LOCAL_SOCKETS
-
-	sockaddr_un local_address;
-
-	if(local) {
+	if (local) 
+	{
+		sockaddr_un local_address;
 		memset(&local_address, 0, sizeof(local_address));
-
 		local_address.sun_family = AF_UNIX;
-		if (port == -1) {
+		if (port == -1) 
+		{
 			// use PID
 			port = getpid();
 		}
@@ -123,21 +111,19 @@ bool ListenerSocket::CreateListener(int port, bool local)
 		if (res != 0)
 		{
 			sml::PrintDebug("Error: Error binding the local listener socket to its file") ;
-			return false ;
+			return false;
 		}
-
-	} else 
+	} 
+	else 
 #endif
 	{
+		sockaddr_in address ;
 		memset(&address, 0, sizeof(address)) ;
-
 		address.sin_family = AF_INET ;	// Indicates the type of data in this structure
-
 		if (port == -1)
 			address.sin_port = 0; // bind to any port
 		else
 			address.sin_port = htons(static_cast<unsigned short>(port)) ;
-
 		address.sin_addr.s_addr = htonl(INADDR_ANY) ;
 
 		// Bind the socket to the local port we're listening on
@@ -146,17 +132,21 @@ bool ListenerSocket::CreateListener(int port, bool local)
 		if (res != 0)
 		{
 			sml::PrintDebug("Error: Error binding the listener socket to its port number") ;
-			return false ;
+			return false;
 		}
 
-		if (port == -1)
+		if (port == -1) 
 		{
+			memset(&address, 0, sizeof(address)) ;
+			socklen_t len = sizeof(address);
+			getsockname(m_hSocket, (sockaddr*)&address, &len);
+			port = ntohs(address.sin_port);
 		}
-		
+
 		// set the name of the datasender
-		std::stringstream sname;
-		sname << "port " << port;
-		this->name = sname.str();
+		this->name = "port ";
+		std::string temp;
+		this->name.append(to_string(port, temp));
 	}
 
 #ifdef NON_BLOCKING
@@ -164,7 +154,7 @@ bool ListenerSocket::CreateListener(int port, bool local)
 	if (!ok)
 	{
 		sml::PrintDebug("Error: Error setting the listener socket to be non-blocking") ;
-		return false ;
+		return false;
 	}
 #endif
 
@@ -176,18 +166,11 @@ bool ListenerSocket::CreateListener(int port, bool local)
 	if (res != 0)
 	{
 		sml::PrintDebug("Error: Error listening on the listener socket") ;
-		return false ;
+		return false;
 	}
 
-	return true ;
-}
-
-int ListenerSocket::GetPort() 
-{
-	sockaddr_in addr;
-	socklen_t len = sizeof(addr);
-	getsockname(m_hSocket, (sockaddr*)&addr, &len);
-	return ntohs(addr.sin_port);
+	m_Port = port;
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////

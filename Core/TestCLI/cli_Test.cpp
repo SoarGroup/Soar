@@ -286,7 +286,7 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 	} 
 	if (commandLine == "spawn-debugger") {
 		sml::Agent* pAgent = pKernel->GetAgent( AGENT_NAME );
-		if (!pAgent->SpawnDebugger()) {
+		if (!pAgent->SpawnDebugger(getpid())) {
 			std::cout << "Debugger spawn failed." << std::endl;
 		}
 		DisplayPrompt(true);
@@ -404,7 +404,7 @@ int main(int argc, char** argv)
 		// Create an embedded connection to the kernel
 		// Passing false here so we don't execute Soar in our thread
 		// which means we can handle incoming remote connections automatically.
-		sml::Kernel* pKernel = remote ? sml::Kernel::CreateRemoteConnection() : sml::Kernel::CreateKernelInNewThread();
+		sml::Kernel* pKernel = remote ? sml::Kernel::CreateRemoteConnection() : sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultLibraryName, sml::Kernel::kUseAnyPort);
 		
 		// Check for kernel creation errors
 		// Note that even if there are errors in the kernel's creation
