@@ -47,7 +47,7 @@ public class SoarProperties
 				}
 				codeLoc = codeLoc.substring(0, index);
 			}
-			return codeLoc;
+			return codeLoc + File.separator;
 		}
 		
 		return null;
@@ -72,7 +72,7 @@ public class SoarProperties
 		    return null;
 		}
 		
-		return properties.getProperty("soar.home");
+		return properties.getProperty("soar.home") + File.separator;
 	}
 	
 	public static void main(String[] args)

@@ -1263,9 +1263,12 @@ bool Agent::SynchronizeOutputLink()
 	return GetWM()->SynchronizeOutputLink() ;
 }
 
-bool Agent::SpawnDebugger(int port)
+bool Agent::SpawnDebugger(int port, const char* pLibraryLocation)
 {
-	std::string libraryLocation = this->m_Kernel->GetLibraryLocation();
+	std::string libraryLocation = pLibraryLocation == 0 ? this->m_Kernel->GetLibraryLocation() : pLibraryLocation;
+
+	if (port == -1) 
+		port = getpid();
 
 	if (m_pDPI) 
 		return false;

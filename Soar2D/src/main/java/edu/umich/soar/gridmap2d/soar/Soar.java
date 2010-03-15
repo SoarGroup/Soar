@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.SoarProperties;
 import edu.umich.soar.gridmap2d.CognitiveArchitecture;
 import edu.umich.soar.gridmap2d.Game;
 import edu.umich.soar.gridmap2d.Gridmap2D;
@@ -24,7 +25,6 @@ import edu.umich.soar.gridmap2d.players.Tank;
 import edu.umich.soar.gridmap2d.players.TankCommander;
 import edu.umich.soar.gridmap2d.players.Taxi;
 import edu.umich.soar.gridmap2d.players.TaxiCommander;
-import edu.umich.soar.gridmap2d.visuals.WindowManager;
 
 import sml.Agent;
 import sml.ConnectionInfo;
@@ -81,8 +81,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 			kernel = Kernel.CreateRemoteConnection(true, config.remote, config.port);
 		} else {
 			// Create kernel
-			kernel = Kernel.CreateKernelInNewThread("SoarKernelSML", config.port);
-			//kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", true);
+			kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kUseAnyPort);
 		}
 
 		if (kernel.HadError()) {
@@ -175,19 +174,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	}
 	
 	public void spawnClient(String clientID, final ClientConfig clientConfig) {
-		if (clientID == Names.kDebuggerClient) {
-			WindowManager.display.asyncExec(new Runnable() {
-				@Override
-				public void run()
-				{
-					String[] args = new String[] { "-cascade", "-remote", "-agent", clientConfig.command };
-					new edu.umich.soar.debugger.Application(args, false, WindowManager.display);
-				}
-			});
-			
-			return;
-		}
-		
 		Runtime r = java.lang.Runtime.getRuntime();
 		logger.trace(Names.Trace.spawningClient + clientID);
 
@@ -364,10 +350,8 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 		
 		// spawn the debugger if we're supposed to
 		if (debug && !isClientConnected(Names.kDebuggerClient)) {
-			ClientConfig debuggerConfig = clients.get(Names.kDebuggerClient);
-			debuggerConfig.command = name;
-
-			spawnClient(Names.kDebuggerClient, debuggerConfig);
+			SoarProperties p = new SoarProperties();
+			agent.SpawnDebugger(-1, p.getPrefix());
 		}
 		
 		return agent;
