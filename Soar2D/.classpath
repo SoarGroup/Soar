@@ -12,6 +12,5 @@
 	<classpathentry kind="lib" path="/soar-smljava/lib/stopwatch-0.4-with-deps.jar"/>
 	<classpathentry kind="var" path="SML"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/swt.jar"/>
-	<classpathentry kind="src" path="/soar-debugger"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
