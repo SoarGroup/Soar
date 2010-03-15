@@ -4,6 +4,11 @@ import sml.Identifier;
 import edu.umich.soar.FloatWme;
 import edu.umich.soar.sproom.command.CommandConfig;
 
+/**
+ * Automatic conversion of units for speed working memory elements.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class SpeedWme {
     public static SpeedWme newInstance(Identifier parent, String attr) {
     	return new SpeedWme(parent, attr);

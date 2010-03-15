@@ -19,6 +19,12 @@ import edu.umich.soar.sproom.gp.GPComponentListener;
 import edu.umich.soar.sproom.gp.GamepadJInput;
 import edu.umich.soar.sproom.soar.SoarInterface;
 
+/**
+ * Top level container for components that ultimately produce drive commands
+ * for splinter.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Command {
 	private static final Log logger = LogFactory.getLog(Command.class);
 

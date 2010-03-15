@@ -6,6 +6,11 @@ import sml.Identifier;
 import sml.Kernel;
 import sml.smlSystemEventId;
 
+/**
+ * Management of WMEs related to time.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class TimeIL implements InputLinkElement{
 	private static final long NANO_PER_SEC = 1000000000L;
 	private static final String SECONDS = "seconds";

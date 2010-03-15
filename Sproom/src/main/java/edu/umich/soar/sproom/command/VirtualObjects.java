@@ -20,6 +20,11 @@ import edu.umich.soar.sproom.command.VirtualObject.Type;
 
 import april.config.Config;
 
+/**
+ * Collection of virtual objects managed by MapMetadata.
+ *
+ * @auther voigtjr@gmail.com
+ */
 public class VirtualObjects implements Iterable<VirtualObject> {
 	private static final Log logger = LogFactory.getLog(VirtualObjects.class);
 

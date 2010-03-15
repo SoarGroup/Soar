@@ -10,6 +10,11 @@ import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
 
+/**
+ * Input link management of self state.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class SelfIL implements InputLinkElement {
 	private static final String NAME = "name";
 	private static final String AREA = "area";

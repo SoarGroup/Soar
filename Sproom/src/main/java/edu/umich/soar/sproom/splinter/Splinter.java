@@ -26,6 +26,11 @@ import orc.Motor;
 import orc.Orc;
 import orc.OrcStatus;
 
+/**
+ * Interface to the orc board on a splinter bot.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Splinter {
 	private static final Log logger = LogFactory.getLog(Splinter.class);
 	private static final int LEFT = 0;

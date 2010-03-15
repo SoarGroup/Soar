@@ -5,6 +5,11 @@ import java.util.Collections;
 import java.util.List;
 
 // Immutable
+/**
+ * Stores content and destination information for messages passed between agents.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class CommMessage {
 	private static long counter = 0L;
 	

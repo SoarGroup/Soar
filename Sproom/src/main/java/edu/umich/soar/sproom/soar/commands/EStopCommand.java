@@ -10,9 +10,9 @@ import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 
 /**
- * @author voigtjr
- *
  * Emergency stop.
+ *
+ * @author voigtjr@gmail.com
  */
 public class EStopCommand extends OutputLinkCommand implements DriveCommand {
 	static final String NAME = "estop";

@@ -14,9 +14,9 @@ import edu.umich.soar.sproom.drive.DriveCommand;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
  * Command motors directly with throttles. 
+ *
+ * @author voigtjr@gmail.com
  */
 public class MotorCommand extends OutputLinkCommand implements DriveCommand {
 	private static final Log logger = LogFactory.getLog(MotorCommand.class);

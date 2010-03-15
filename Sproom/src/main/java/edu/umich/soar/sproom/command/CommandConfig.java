@@ -9,6 +9,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import edu.umich.soar.sproom.drive.Drive2;
 import edu.umich.soar.sproom.drive.Drive3;
 
+/**
+ * Stores configuration parameters for the Command class.
+ *
+ * @author voigtjr@gmail.com
+ */
 public enum CommandConfig {
 	CONFIG;
 	

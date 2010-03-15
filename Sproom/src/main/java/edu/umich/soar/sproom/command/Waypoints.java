@@ -8,6 +8,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import lcmtypes.pose_t;
 
+/**
+ * A collection of points saved by the agent.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Waypoints implements Iterable<Waypoint> {
 	private Map<String, Waypoint> all = new HashMap<String, Waypoint>();
 	private Set<Waypoint> enabled = new CopyOnWriteArraySet<Waypoint>();

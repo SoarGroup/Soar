@@ -12,9 +12,9 @@ import edu.umich.soar.sproom.command.Waypoints;
 import sml.Identifier;
 
 /**
- * @author voigtjr
+ * Removes a waypoint from the waypoint system.
  *
- * Remove waypoint from waypoint system.
+ * @author voigtjr@gmail.com
  */
 public class RemoveWaypointCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(RemoveWaypointCommand.class);

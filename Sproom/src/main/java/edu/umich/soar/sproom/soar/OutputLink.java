@@ -16,6 +16,11 @@ import sml.Agent;
 import sml.WMElement;
 import sml.Agent.OutputNotificationInterface;
 
+/**
+ * Output link management, responsible for reading agent commands and producing drive and other commands.
+ *
+ * @author voigtjr@gmail.com
+ */
 class OutputLink {
 	private static final Log logger = LogFactory.getLog(OutputLink.class);
 	

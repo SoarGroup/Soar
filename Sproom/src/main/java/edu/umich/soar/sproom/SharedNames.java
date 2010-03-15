@@ -1,5 +1,10 @@
 package edu.umich.soar.sproom;
 
+/**
+ * Shared string constants.
+ * 
+ * @author voigtjr
+ */
 public enum SharedNames {
 	;
 	

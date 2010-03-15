@@ -11,6 +11,11 @@ import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Comm;
 import edu.umich.soar.sproom.command.CommMessage;
 
+/**
+ * Input link management of received messages.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class ReceivedMessagesIL implements InputLinkElement {
 
 	private class MessageIL {

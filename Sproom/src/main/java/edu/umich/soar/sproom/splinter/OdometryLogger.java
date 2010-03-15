@@ -9,6 +9,11 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.OdometryPoint;
 
+/**
+ * Utility class to log odometry information to a file.
+ *
+ * @author voigtjr@gmail.com
+ */
 class OdometryLogger {
 	private static final Log logger = LogFactory.getLog(OdometryLogger.class);
 	

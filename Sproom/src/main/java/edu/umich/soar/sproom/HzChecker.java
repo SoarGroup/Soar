@@ -11,6 +11,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Debug class for monitoring the rate something is happening.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class HzChecker {
 	private static final Log logger = LogFactory.getLog(HzChecker.class);
 	private static final List<HzChecker> checkers = new CopyOnWriteArrayList<HzChecker>();

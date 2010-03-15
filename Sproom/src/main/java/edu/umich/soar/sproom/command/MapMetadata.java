@@ -20,6 +20,12 @@ import edu.umich.soar.sproom.command.MapMetadata.Walls.WallDir;
 import april.config.Config;
 import april.config.ConfigUtil;
 
+/**
+ * Holds on to simulated data about the map (such as room IDs, wall locations, gateways)
+ * keyed by the agent's current location.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class MapMetadata {
 	private static final Log logger = LogFactory.getLog(MapMetadata.class);
 

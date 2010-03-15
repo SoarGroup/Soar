@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Stores messages sent between agents in Sproom simulation.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Comm {
 	private final Map<Long, CommMessage> messages = new ConcurrentHashMap<Long, CommMessage>();
 	

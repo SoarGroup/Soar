@@ -11,6 +11,11 @@ import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Lidar;
 
+/**
+ * Input link management of laser data.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class LidarIL implements InputLinkElement {
 	private static final Log logger = LogFactory.getLog(LidarIL.class);
 

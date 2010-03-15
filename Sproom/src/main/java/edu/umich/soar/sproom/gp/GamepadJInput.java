@@ -16,6 +16,11 @@ import net.java.games.input.ControllerEnvironment;
 import net.java.games.input.ControllerEvent;
 import net.java.games.input.ControllerListener;
 
+/**
+ * Gamepad abstraction using jinput.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class GamepadJInput {
 	private static final Log logger = LogFactory.getLog(GamepadJInput.class);
 	private static final float DEAD_ZONE = 0.15f;

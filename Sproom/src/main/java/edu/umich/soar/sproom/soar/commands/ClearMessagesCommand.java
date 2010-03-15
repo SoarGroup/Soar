@@ -9,9 +9,9 @@ import edu.umich.soar.sproom.command.Comm;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
  * Removes all messages from message list.
+ *
+ * @author voigtjr
  */
 public class ClearMessagesCommand extends OutputLinkCommand {
 	static final String NAME = "clear-messages";

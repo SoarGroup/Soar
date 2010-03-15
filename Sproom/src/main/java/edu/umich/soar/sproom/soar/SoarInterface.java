@@ -31,6 +31,11 @@ import sml.Kernel.AgentEventInterface;
 import sml.Kernel.SystemEventInterface;
 import sml.Kernel.UpdateEventInterface;
 
+/**
+ * Top level container for Soar interface.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class SoarInterface implements SoarControlListener, Adaptable {
 	private static final Log logger = LogFactory.getLog(SoarInterface.class);
 

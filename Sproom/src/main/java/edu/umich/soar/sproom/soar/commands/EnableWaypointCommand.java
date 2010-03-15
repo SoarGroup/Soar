@@ -12,9 +12,9 @@ import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.command.Waypoints;
 
 /**
- * @author voigtjr
- *
  * Enable waypoint.
+ *
+ * @author voigtjr@gmail.com
  */
 public class EnableWaypointCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(EnableWaypointCommand.class);

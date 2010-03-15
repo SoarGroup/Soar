@@ -12,6 +12,11 @@ import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Waypoint;
 import edu.umich.soar.sproom.command.Waypoints;
 
+/**
+ * Input link management of waypoints
+ *
+ * @author voigtjr@gmail.com
+ */
 public class WaypointsIL implements InputLinkElement {
 
 	private final Identifier root;
