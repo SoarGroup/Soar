@@ -573,8 +573,8 @@ public class WindowManager {
 	}
 		
 	public void setupTankSoar() {
-		Image small = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/eaters16.png"));
-		Image large = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/eaters.png"));
+		Image small = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar16.png"));
+		Image large = new Image(display, Gridmap2D.class.getResourceAsStream("/edu/umich/soar/gridmap2d/images/tanksoar.png"));
 		shell.setImages(new Image[] { small, large });
 		
 		worldGroup = new Group(shell, SWT.NONE);
