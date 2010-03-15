@@ -7,6 +7,11 @@ import jmat.LinAlg;
 import jmat.MathUtil;
 import lcmtypes.pose_t;
 
+/**
+ * Class that translates odometry information to point data.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Odometry {
 	private static final Log logger = LogFactory.getLog(Odometry.class);
 

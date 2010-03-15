@@ -20,9 +20,9 @@ import sml.Identifier;
 import sml.WMElement;
 
 /**
- * @author voigtjr
- *
  * Add a waypoint to the waypoint system.
+ *
+ * @author voigtjr@gmail.com
  */
 public class AddWaypointCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(AddWaypointCommand.class);

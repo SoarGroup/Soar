@@ -1,5 +1,10 @@
 package edu.umich.soar.sproom.drive;
 
+/**
+ * Differential drive commands, immutable.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class DifferentialDriveCommand {
 	private static final DifferentialDriveCommand ESTOP = new DifferentialDriveCommand();
 

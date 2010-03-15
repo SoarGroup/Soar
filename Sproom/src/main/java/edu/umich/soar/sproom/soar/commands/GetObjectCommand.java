@@ -18,9 +18,9 @@ import edu.umich.soar.sproom.command.VirtualObjects;
 import edu.umich.soar.sproom.soar.Cargo;
 
 /**
- * @author voigtjr
+ * Pick up an object by id number.
  *
- * Removes all messages from message list.
+ * @author voigtjr@gmail.com
  */
 public class GetObjectCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(GetObjectCommand.class);

@@ -13,11 +13,9 @@ import jmat.LinAlg;
 import sml.Identifier;
 
 /**
- * @author voigtjr
- *
  * Gracefully stop movement.
- * 
- * Returns accepted. Not interruptible. Creates DDC.
+ *
+ * @author voigtjr@gmail.com
  */
 public class StopCommand extends OutputLinkCommand implements DriveCommand {
 	private static final double TOLERANCE = 0.01; // meters per second

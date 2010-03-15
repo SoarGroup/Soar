@@ -18,9 +18,9 @@ import sml.WMElement;
 import sml.Agent;
 
 /**
- * @author voigtjr
+ * Send a communication message.
  *
- * Broadcasts a message to all listeners.
+ * @author voigtjr@gmail.com
  */
 public class SendMessageCommand extends OutputLinkCommand {
 	private static final Log logger = LogFactory.getLog(SendMessageCommand.class);

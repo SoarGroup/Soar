@@ -5,6 +5,11 @@ import edu.umich.soar.FloatWme;
 import edu.umich.soar.IntWme;
 import edu.umich.soar.sproom.command.CommandConfig;
 
+/**
+ * Automatic conversion of units and resolution for yaw WMEs.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class YawWme {
     public static YawWme newInstance(Identifier parent, String attr) {
     	return new YawWme(parent, attr);

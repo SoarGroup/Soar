@@ -9,6 +9,11 @@ import april.sim.Simulator;
 import april.viewer.Viewer;
 import edu.umich.soar.sproom.command.Command;
 
+/**
+ * Top level main class for Sproom project.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Application {
 
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();

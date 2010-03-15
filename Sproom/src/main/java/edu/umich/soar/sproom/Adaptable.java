@@ -2,7 +2,9 @@ package edu.umich.soar.sproom;
 
 /**
  * Interface for something that can be adapted to another type of
- * object. See Eclipse's adapter framework
+ * object. See Eclipse's adapter framework.
+ *
+ * Taken from jsoar, simplified by voigtjr.
  * 
  * @author ray
  */

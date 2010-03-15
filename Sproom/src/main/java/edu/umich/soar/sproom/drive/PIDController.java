@@ -7,6 +7,11 @@ import org.apache.commons.logging.LogFactory;
 
 import jmat.MathUtil;
 
+/**
+ * Simple PID controller.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class PIDController {
 	private static final Log logger = LogFactory.getLog(PIDController.class);
 	

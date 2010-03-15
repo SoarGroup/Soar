@@ -2,6 +2,11 @@ package edu.umich.soar.sproom.command;
 
 import lcmtypes.pose_t;
 
+/**
+ * A point on the map set by the agent.
+ *
+ * @auther voigtjr@gmail.com
+ */
 public class Waypoint {
 
 	private final String id;

@@ -16,6 +16,11 @@ import org.apache.commons.logging.LogFactory;
 import edu.umich.soar.sproom.SharedNames;
 
 
+/**
+ * Listens to pose data from LCM and elaborates it for use by the Command component.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class Pose implements LCMSubscriber {
 	private static final Log logger = LogFactory.getLog(Pose.class);
 

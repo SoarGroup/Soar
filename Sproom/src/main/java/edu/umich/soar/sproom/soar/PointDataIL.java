@@ -6,6 +6,12 @@ import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.command.Pose.RelativePointData;
 import sml.Identifier;
 
+/**
+ * Input link management of point data, a collection of distances and angles relative
+ * to the current agent's position.
+ *
+ * @author voigtjr@gmail.com
+ */
 public class PointDataIL implements InputLinkElement {
 
 	private final Identifier root;
