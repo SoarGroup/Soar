@@ -1020,7 +1020,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		return result ;
 	}
 	
-	HashMap<String, Integer> m_RHSFunctions = new HashMap<String, Integer>();
+	HashMap<String, Long> m_RHSFunctions = new HashMap<String, Long>();
 	
 	public boolean isRHSFunctionRegistered(String functionName) {
 		return this.m_RHSFunctions.containsKey(functionName);
@@ -1037,7 +1037,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		if (this.m_RHSFunctions.containsKey(functionName))
 			return false;
 		
-		Integer callbackID = this.m_Kernel.AddRhsFunction(functionName, handlerObject, callbackData);
+		Long callbackID = this.m_Kernel.AddRhsFunction(functionName, handlerObject, callbackData);
 
 		if (callbackID.equals(-1))
 			return false;
@@ -1058,7 +1058,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		if (!this.m_RHSFunctions.containsKey(functionName))
 			return false;
 		
-		Integer callbackID = this.m_RHSFunctions.get(functionName);
+		Long callbackID = this.m_RHSFunctions.get(functionName);
 		
 		this.m_RHSFunctions.remove(functionName);
 		return this.m_Kernel.RemoveRhsFunction(callbackID);

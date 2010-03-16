@@ -53,7 +53,7 @@ public abstract class AbstractRHSFunView extends AbstractUpdateView implements K
 		}
 	}
 	
-	private int rhsFunInitSoarHandler = -1;
+	private long rhsFunInitSoarHandler = -1;
 
 	@Override
 	protected void registerForViewAgentEvents(Agent agent) {

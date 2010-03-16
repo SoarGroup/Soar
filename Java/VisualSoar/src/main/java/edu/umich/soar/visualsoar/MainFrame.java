@@ -118,7 +118,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
 	// 3P
     Kernel m_Kernel = null ;
     String m_ActiveAgent = null ;
-    int    m_EditProductionCallback = -1 ;
+    long    m_EditProductionCallback = -1 ;
 	// Menu handlers for STI init, term, and "Send Raw Command"
 	Action soarRuntimeInitAction = new SoarRuntimeInitAction();
 	Action soarRuntimeTermAction = new SoarRuntimeTermAction();

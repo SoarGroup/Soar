@@ -49,10 +49,10 @@ public class PhaseView extends AbstractFixedView implements Kernel.AgentEventInt
 	protected Image		m_StopCursorShadow ;
 	protected Image		m_PhaseCursor ;
 	
-	protected int		m_StopCallback = -1 ;
-	protected int		m_StartCallback = -1 ;
-	protected int		m_InitCallback = -1 ;
-	protected int		m_PropertyCallback = -1 ;
+	protected long		m_StopCallback = -1 ;
+	protected long		m_StartCallback = -1 ;
+	protected long		m_InitCallback = -1 ;
+	protected long		m_PropertyCallback = -1 ;
 	protected int		m_DecisionCycle = 0 ;
 	
 	protected boolean	m_DrawPhase = true ;
