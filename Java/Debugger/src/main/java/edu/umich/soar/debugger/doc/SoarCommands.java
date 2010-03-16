@@ -17,17 +17,9 @@ import sml.smlPhase;
 * 
 * Information about strings used for Soar Commands is stored here.
 * 
-* This class potentially needs to support different commands for different
-* versions of Soar.  The idea is we allow the user to select the version of Soar
-* they're working with and then we construct the appropriate instance of this
-* class and get back the right command strings to use for that version.
-* 
 ********************************************************************************************/
 public class SoarCommands
 {
-	//private int	m_MajorVersion ;		// Soar 8.6.0 -- this is the 8
-	//private int m_MinorVersion ;		// Soar 8.6.0 -- this is the 6
-	//private int m_BuildVersion ;		// Soar 8.6.0 -- this is the 0
 	private Document m_Document ;
 	
 	/** At this point we just return the command.  But in later versions of the debugger we might use the version
@@ -96,17 +88,9 @@ public class SoarCommands
 	public String getWatchLearnNoneCommand()					{ return "watch --learning noprint" ; }
 	public String getWatchLoadingCommand(boolean state)			{ return "watch --loading " + (state ? "" : " remove") ; }
 	
-	public SoarCommands(Document doc, int major, int minor, int build)
+	public SoarCommands(Document doc)
 	{
 		m_Document = doc ;
-		setVersion(major, minor, build) ;
-	}
-	
-	public void setVersion(int major, int minor, int build)
-	{
-		//m_MajorVersion = major ;
-		//m_MinorVersion = minor ;
-		//m_BuildVersion = build ;
 	}
 	
 	public String getPhaseName(smlPhase phase)

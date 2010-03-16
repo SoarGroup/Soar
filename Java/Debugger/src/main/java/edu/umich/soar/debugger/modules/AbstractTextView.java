@@ -41,10 +41,6 @@ public abstract class AbstractTextView extends AbstractComboView
 	// from the loading code and the new window dialog
 	public AbstractTextView()
 	{
-		m_StopCallback = -1 ;
-		m_PrintCallback = -1 ;
-		m_DecisionCallback = -1 ;
-		//m_Logging = false;
 	}
 
 	/** The control we're using to display the output in this case **/

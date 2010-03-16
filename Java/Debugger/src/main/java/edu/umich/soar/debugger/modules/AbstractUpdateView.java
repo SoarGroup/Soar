@@ -56,18 +56,14 @@ public abstract class AbstractUpdateView extends AbstractView  implements Agent.
 	
 	protected boolean   m_Updating = false ;
 	
-	protected int m_StopCallback ;
-	protected int m_InitCallback ;
-	protected int m_DecisionCallback ;
+	protected int m_StopCallback = -1;
+	protected int m_InitCallback = -1;
+	protected int m_DecisionCallback = -1;
 
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog
 	public AbstractUpdateView()
 	{
-		m_InitCallback = -1 ;
-		m_StopCallback = -1 ;
-		m_DecisionCallback = -1 ;
-		m_Updating = false ;
 	}
 	
 	/** The control we're using to display the output in this case **/
@@ -400,7 +396,9 @@ public abstract class AbstractUpdateView extends AbstractView  implements Agent.
 		boolean ok = true ;
 
 		if (m_StopCallback != -1)
+		{
 			ok = agent.GetKernel().UnregisterForSystemEvent(m_StopCallback) && ok ;
+		}
 
 		if (m_InitCallback != -1)
 			ok = agent.GetKernel().UnregisterForAgentEvent(m_InitCallback) && ok ;

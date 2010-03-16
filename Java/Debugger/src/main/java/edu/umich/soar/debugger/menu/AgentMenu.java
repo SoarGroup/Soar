@@ -136,7 +136,7 @@ public class AgentMenu
 		Shell shell = new Shell(m_Frame.getDisplay()) ;
 		
 		MainFrame frame = new MainFrame(shell, m_Document) ;
-		frame.initComponents( m_Frame.getWindowLayoutFile() ) ;
+		frame.initComponents(null) ;
 
 		shell.open() ;
 	}
