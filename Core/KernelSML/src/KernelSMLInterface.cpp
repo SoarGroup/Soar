@@ -103,6 +103,8 @@ EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiver
 			// The shutdown call above will also delete our connection object as part of its cleanup
 			// so set it to NULL here to make sure we don't try to use it again.
 			pConnection = NULL ;
+
+			delete pKernelSML;
 		}
 
 		return NULL ;

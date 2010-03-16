@@ -485,30 +485,14 @@ int main(int argc, char** argv)
 
 //int main(int argc, char** argv)
 //{
-//#ifdef _DEBUG
-//	//_crtBreakAlloc = 1441;
-//	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
-//#endif // _DEBUG
+//	//_crtBreakAlloc = 162;
 //
-//	{ // create local scope to prevent scriptFile from being reported as a memory leak (occurs when script passed in as arg)
-//		sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML") ;
-//		assert(pKernel);
-//		if(pKernel->HadError()) {
-//			cout << "Error: " << pKernel->GetLastErrorDescription() << endl;
-//			exit(1);
-//		}
+//	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread() ;
+//	assert(pKernel);
+//	sml::Agent* pAgent = pKernel->CreateAgent(AGENT_NAME) ;
 //
-//		sml::Agent* pAgent;
-//		pAgent = pKernel->CreateAgent(AGENT_NAME) ;
-//		assert(pAgent);
+//	delete pKernel ;
 //
-//		g_TraceCallbackID = pAgent->RegisterForPrintEvent( sml::smlEVENT_PRINT, PrintCallbackHandler, 0 );
-//		pAgent->UnregisterForPrintEvent(g_TraceCallbackID);
-//		g_TraceCallbackID = pAgent->RegisterForXMLEvent( sml::smlEVENT_XML_TRACE_OUTPUT, XMLCallbackHandler, 0 );
-//
-//		// Don't delete agent, owned by kernel
-//		delete pKernel ;
-//
-//	} // end local scope
+//	_CrtDumpMemoryLeaks();
 //	return 0;
 //}
