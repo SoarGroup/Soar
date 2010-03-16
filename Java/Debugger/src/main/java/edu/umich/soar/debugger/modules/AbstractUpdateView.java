@@ -56,9 +56,9 @@ public abstract class AbstractUpdateView extends AbstractView  implements Agent.
 	
 	protected boolean   m_Updating = false ;
 	
-	protected int m_StopCallback = -1;
-	protected int m_InitCallback = -1;
-	protected int m_DecisionCallback = -1;
+	protected long m_StopCallback = -1;
+	protected long m_InitCallback = -1;
+	protected long m_DecisionCallback = -1;
 
 	// The constructor must take no arguments so it can be called
 	// from the loading code and the new window dialog

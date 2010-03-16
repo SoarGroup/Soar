@@ -223,15 +223,15 @@ public class TestJavaSML
 		 * The integer we get back is only required when we unregister the handler.
 		 ********************************************************/
 		EventListener listener = new EventListener();
-		int jRunCallback = pAgent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, this);
-		int jProdCallback = pAgent.RegisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, this);
-		int jPrintCallback = pAgent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, listener, this);
-		int jSystemCallback2 = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, this);
-		int jAgentCallback = pKernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, this);
-		int jRhsCallback = pKernel.AddRhsFunction("test-rhs", listener, this);
-		int jTraceCallback = pAgent.RegisterForXMLEvent(smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, listener, this);
-		int jOutputCallback = pAgent.AddOutputHandler("move", listener, this);
-		int jOutputNotification = pAgent.RegisterForOutputNotification(listener, this);
+		long jRunCallback = pAgent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_DECISION_CYCLE, listener, this);
+		long jProdCallback = pAgent.RegisterForProductionEvent(smlProductionEventId.smlEVENT_AFTER_PRODUCTION_FIRED, listener, this);
+		long jPrintCallback = pAgent.RegisterForPrintEvent(smlPrintEventId.smlEVENT_PRINT, listener, this);
+		long jSystemCallback2 = pKernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_SYSTEM_START, listener, this);
+		long jAgentCallback = pKernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, listener, this);
+		long jRhsCallback = pKernel.AddRhsFunction("test-rhs", listener, this);
+		long jTraceCallback = pAgent.RegisterForXMLEvent(smlXMLEventId.smlEVENT_XML_TRACE_OUTPUT, listener, this);
+		long jOutputCallback = pAgent.AddOutputHandler("move", listener, this);
+		long jOutputNotification = pAgent.RegisterForOutputNotification(listener, this);
 
 		// Trigger an agent event by doing init-soar
 		pAgent.InitSoar();

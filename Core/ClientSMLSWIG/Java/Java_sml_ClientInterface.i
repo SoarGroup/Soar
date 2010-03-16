@@ -49,31 +49,31 @@
     }
   }
   
-  public final static native int Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Agent_RegisterForPrintEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6, boolean jarg7);
-  public final static native int Agent_RegisterForXMLEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Agent_AddOutputHandler(long jarg1, String jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Agent_RegisterForOutputNotification(long jarg1, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Kernel_RegisterForSystemEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Kernel_RegisterForUpdateEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Kernel_RegisterForStringEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Kernel_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Kernel_AddRhsFunction(long jarg1, String jarg2, Object jarg3, Object jarg4, Object jarg6);
-  public final static native int Kernel_RegisterForClientMessageEvent(long jarg1, String jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Agent_RegisterForRunEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Agent_RegisterForProductionEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Agent_RegisterForPrintEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6, boolean jarg7);
+  public final static native long Agent_RegisterForXMLEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Agent_AddOutputHandler(long jarg1, String jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Agent_RegisterForOutputNotification(long jarg1, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Kernel_RegisterForSystemEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Kernel_RegisterForUpdateEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Kernel_RegisterForStringEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Kernel_RegisterForAgentEvent(long jarg1, int jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Kernel_AddRhsFunction(long jarg1, String jarg2, Object jarg3, Object jarg4, Object jarg6);
+  public final static native long Kernel_RegisterForClientMessageEvent(long jarg1, String jarg2, Object jarg3, Object jarg4, Object jarg6);
 
-  public final static native boolean Agent_UnregisterForRunEvent(long jarg1, int jarg2);
-  public final static native boolean Agent_UnregisterForProductionEvent(long jarg1, int jarg2);
-  public final static native boolean Agent_UnregisterForPrintEvent(long jarg1, int jarg2);
-  public final static native boolean Agent_UnregisterForXMLEvent(long jarg1, int jarg2);
-  public final static native boolean Agent_UnregisterForOutputNotification(long jarg1, int jarg2);
-  public final static native boolean Agent_RemoveOutputHandler(long jarg1, int jarg2);
-  public final static native boolean Kernel_UnregisterForSystemEvent(long jarg1, int jarg2);
-  public final static native boolean Kernel_UnregisterForUpdateEvent(long jarg1, int jarg2);
-  public final static native boolean Kernel_UnregisterForStringEvent(long jarg1, int jarg2);
-  public final static native boolean Kernel_UnregisterForAgentEvent(long jarg1, int jarg2);
-  public final static native boolean Kernel_RemoveRhsFunction(long jarg1, int jarg2);
-  public final static native boolean Kernel_UnregisterForClientMessageEvent(long jarg1, int jarg2);
+  public final static native boolean Agent_UnregisterForRunEvent(long jarg1, long jarg2);
+  public final static native boolean Agent_UnregisterForProductionEvent(long jarg1, long jarg2);
+  public final static native boolean Agent_UnregisterForPrintEvent(long jarg1, long jarg2);
+  public final static native boolean Agent_UnregisterForXMLEvent(long jarg1, long jarg2);
+  public final static native boolean Agent_UnregisterForOutputNotification(long jarg1, long jarg2);
+  public final static native boolean Agent_RemoveOutputHandler(long jarg1, long jarg2);
+  public final static native boolean Kernel_UnregisterForSystemEvent(long jarg1, long jarg2);
+  public final static native boolean Kernel_UnregisterForUpdateEvent(long jarg1, long jarg2);
+  public final static native boolean Kernel_UnregisterForStringEvent(long jarg1, long jarg2);
+  public final static native boolean Kernel_UnregisterForAgentEvent(long jarg1, long jarg2);
+  public final static native boolean Kernel_RemoveRhsFunction(long jarg1, long jarg2);
+  public final static native boolean Kernel_UnregisterForClientMessageEvent(long jarg1, long jarg2);
 %}
 
 %typemap(javacode) sml::Agent %{
@@ -101,43 +101,43 @@
   		public void outputNotificationHandler(Object data, Agent agent) ;
   }
 
-  public int RegisterForRunEvent(smlRunEventId id, RunEventInterface handlerObject, Object callbackData)
+  public long RegisterForRunEvent(smlRunEventId id, RunEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForRunEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ;}
   
-  public int RegisterForProductionEvent(smlProductionEventId id, ProductionEventInterface handlerObject, Object callbackData)
+  public long RegisterForProductionEvent(smlProductionEventId id, ProductionEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForProductionEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ; }
 
-  public int RegisterForPrintEvent(smlPrintEventId id, PrintEventInterface handlerObject, Object callbackData)
+  public long RegisterForPrintEvent(smlPrintEventId id, PrintEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForPrintEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData, true) ; }
 
-  public int RegisterForPrintEvent(smlPrintEventId id, PrintEventInterface handlerObject, Object callbackData, boolean ignoreOwnEchos)
+  public long RegisterForPrintEvent(smlPrintEventId id, PrintEventInterface handlerObject, Object callbackData, boolean ignoreOwnEchos)
   { return smlJNI.Agent_RegisterForPrintEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData, ignoreOwnEchos) ; }
 
-  public int RegisterForXMLEvent(smlXMLEventId id, xmlEventInterface handlerObject, Object callbackData)
+  public long RegisterForXMLEvent(smlXMLEventId id, xmlEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForXMLEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ; }
   
-  public int RegisterForOutputNotification(OutputNotificationInterface handlerObject, Object callbackData)
+  public long RegisterForOutputNotification(OutputNotificationInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_RegisterForOutputNotification(swigCPtr, this, handlerObject, callbackData) ;}
 
-  public boolean UnregisterForOutputNotification(int callbackReturnValue)
+  public boolean UnregisterForOutputNotification(long callbackReturnValue)
   { return smlJNI.Agent_UnregisterForOutputNotification(swigCPtr, callbackReturnValue) ;}
 
-  public boolean UnregisterForRunEvent(int callbackReturnValue)
+  public boolean UnregisterForRunEvent(long callbackReturnValue)
   { return smlJNI.Agent_UnregisterForRunEvent(swigCPtr, callbackReturnValue) ;}
 
-  public boolean UnregisterForProductionEvent(int callbackReturnValue)
+  public boolean UnregisterForProductionEvent(long callbackReturnValue)
   { return smlJNI.Agent_UnregisterForProductionEvent(swigCPtr, callbackReturnValue) ;}
 
-  public boolean UnregisterForPrintEvent(int callbackReturnValue)
+  public boolean UnregisterForPrintEvent(long callbackReturnValue)
   { return smlJNI.Agent_UnregisterForPrintEvent(swigCPtr, callbackReturnValue) ;}
 
-  public boolean UnregisterForXMLEvent(int callbackReturnValue)
+  public boolean UnregisterForXMLEvent(long callbackReturnValue)
   { return smlJNI.Agent_UnregisterForXMLEvent(swigCPtr, callbackReturnValue) ;}
 
-  public int AddOutputHandler(String attributeName, OutputEventInterface handlerObject, Object callbackData)
+  public long AddOutputHandler(String attributeName, OutputEventInterface handlerObject, Object callbackData)
   { return smlJNI.Agent_AddOutputHandler(swigCPtr, attributeName, this, handlerObject, callbackData) ; }
 
-  public boolean RemoveOutputHandler(int callbackReturnValue)
+  public boolean RemoveOutputHandler(long callbackReturnValue)
   { return smlJNI.Agent_RemoveOutputHandler(swigCPtr, callbackReturnValue) ;}
 %}
 
@@ -166,40 +166,40 @@
   		public String clientMessageHandler(int eventID, Object data, String agentName, String functionName, String argument) ;
   }
   
-  public int RegisterForSystemEvent(smlSystemEventId id, SystemEventInterface handlerObject, Object callbackData)
+  public long RegisterForSystemEvent(smlSystemEventId id, SystemEventInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForSystemEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ;}
  
-  public boolean UnregisterForSystemEvent(int callbackReturnValue)
+  public boolean UnregisterForSystemEvent(long callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForSystemEvent(swigCPtr, callbackReturnValue) ;}
 
-  public int RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventInterface handlerObject, Object callbackData)
+  public long RegisterForUpdateEvent(smlUpdateEventId id, UpdateEventInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForUpdateEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ;}
 
-  public boolean UnregisterForUpdateEvent(int callbackReturnValue)
+  public boolean UnregisterForUpdateEvent(long callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForUpdateEvent(swigCPtr, callbackReturnValue) ;}
 
-  public int RegisterForStringEvent(smlStringEventId id, StringEventInterface handlerObject, Object callbackData)
+  public long RegisterForStringEvent(smlStringEventId id, StringEventInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForStringEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ;}
  
-  public boolean UnregisterForStringEvent(int callbackReturnValue)
+  public boolean UnregisterForStringEvent(long callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForStringEvent(swigCPtr, callbackReturnValue) ;}
   
-  public int RegisterForAgentEvent(smlAgentEventId id, AgentEventInterface handlerObject, Object callbackData)
+  public long RegisterForAgentEvent(smlAgentEventId id, AgentEventInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForAgentEvent(swigCPtr, id.swigValue(), this, handlerObject, callbackData) ; }
 
-  public boolean UnregisterForAgentEvent(int callbackReturnValue)
+  public boolean UnregisterForAgentEvent(long callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForAgentEvent(swigCPtr, callbackReturnValue) ;}
 
-  public int AddRhsFunction(String functionName, RhsFunctionInterface handlerObject, Object callbackData)
+  public long AddRhsFunction(String functionName, RhsFunctionInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_AddRhsFunction(swigCPtr, functionName, this, handlerObject, callbackData) ; }
 
-  public boolean RemoveRhsFunction(int callbackReturnValue)
+  public boolean RemoveRhsFunction(long callbackReturnValue)
   { return smlJNI.Kernel_RemoveRhsFunction(swigCPtr, callbackReturnValue) ;}
 
-  public int RegisterForClientMessageEvent(String functionName, ClientMessageInterface handlerObject, Object callbackData)
+  public long RegisterForClientMessageEvent(String functionName, ClientMessageInterface handlerObject, Object callbackData)
   { return smlJNI.Kernel_RegisterForClientMessageEvent(swigCPtr, functionName, this, handlerObject, callbackData) ; }
 
-  public boolean UnregisterForClientMessageEvent(int callbackReturnValue)
+  public boolean UnregisterForClientMessageEvent(long callbackReturnValue)
   { return smlJNI.Kernel_UnregisterForClientMessageEvent(swigCPtr, callbackReturnValue) ;}
 
   // In Java we want to explicitly delete the C++ kernel object after calling shutdown so that the user
