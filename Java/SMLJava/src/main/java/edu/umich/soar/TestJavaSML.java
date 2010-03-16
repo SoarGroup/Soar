@@ -281,15 +281,24 @@ public class TestJavaSML
 
 		// Unregister our callbacks
 		// (This isn't required, I'm just testing that it works)
-		pAgent.UnregisterForXMLEvent(jTraceCallback);
-		pAgent.UnregisterForRunEvent(jRunCallback);
-		pAgent.UnregisterForProductionEvent(jProdCallback);
-		pAgent.UnregisterForPrintEvent(jPrintCallback);
-		pAgent.UnregisterForOutputNotification(jOutputNotification);
-		pAgent.RemoveOutputHandler(jOutputCallback);
-		pKernel.UnregisterForSystemEvent(jSystemCallback2);
-		pKernel.UnregisterForAgentEvent(jAgentCallback);
-		pKernel.RemoveRhsFunction(jRhsCallback);
+		if (!pAgent.UnregisterForXMLEvent(jTraceCallback))
+			throw new IllegalStateException("Unregister failed: jTraceCallback");
+		if (!pAgent.UnregisterForRunEvent(jRunCallback))
+			throw new IllegalStateException("Unregister failed: jRunCallback");
+		if (!pAgent.UnregisterForProductionEvent(jProdCallback))
+			throw new IllegalStateException("Unregister failed: jProdCallback");
+		if (!pAgent.UnregisterForPrintEvent(jPrintCallback))
+			throw new IllegalStateException("Unregister failed: jPrintCallback");
+		if (!pAgent.UnregisterForOutputNotification(jOutputNotification))
+			throw new IllegalStateException("Unregister failed: jOutputNotification");
+		if (!pAgent.RemoveOutputHandler(jOutputCallback))
+			throw new IllegalStateException("Unregister failed: jOutputCallback");
+		if (!pKernel.UnregisterForSystemEvent(jSystemCallback2))
+			throw new IllegalStateException("Unregister failed: jSystemCallback2");
+		if (!pKernel.UnregisterForAgentEvent(jAgentCallback))
+			throw new IllegalStateException("Unregister failed: jAgentCallback");
+		if (!pKernel.RemoveRhsFunction(jRhsCallback))
+			throw new IllegalStateException("Unregister failed: jRhsCallback");
 
 		// String trace2 = pAgent.RunSelfTilOutput(20) ;
 		// System.out.println(trace2) ;
@@ -437,6 +446,7 @@ public class TestJavaSML
 		} catch (Throwable t)
 		{
 			success = false;
+			System.err.println(t.toString());
 			// msg = t.toString() ;
 		} finally
 		{
