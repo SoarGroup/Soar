@@ -618,7 +618,12 @@ public class MainFrame
 
 	public void useDefaultLayout()
 	{
-		getMainWindow().useDefaultLayout();
+		getMainWindow().useDefaultLayout("default-layout-" + Document.kVersion + ".dlf");
+	}
+
+	public void useDefaultTextLayout()
+	{
+		getMainWindow().useDefaultLayout("default-text-" + Document.kVersion + ".dlf");
 	}
 
 	/***************************************************************************
@@ -742,6 +747,11 @@ public class MainFrame
 
 		// If that failed, load the last known layout
 		loaded = loaded || loadUserLayoutFile();
+		
+		// Install default layout files
+		install(new String[] {
+				"default-layout-" + Document.kVersion + ".dlf", 
+				"default-text-" + Document.kVersion + ".dlf" });
 
 		// If that failed, load the default layout
 		if (!loaded)
@@ -808,6 +818,55 @@ public class MainFrame
 		updateTitle();
 	}
 
+	private void install(String[] resources)
+	{	
+		for (String resource : resources)
+		{
+			File resourceFile = AppProperties.GetSettingsFilePath(resource);
+
+			if (resourceFile.exists())
+				continue ;
+			
+			String jarpath = "/" + resource;
+			InputStream is = this.getClass().getResourceAsStream(jarpath) ;
+			
+			if (is == null)
+			{
+				System.err.println("Failed to find " + jarpath + " in the JAR file") ;
+				continue ;
+			}
+			
+			// Create the new file on disk
+			try 
+			{
+				FileOutputStream os = new FileOutputStream(resourceFile) ;
+				
+				// Copy the file onto disk
+				byte bytes[] = new byte[2048];
+				int read;
+				while (true)
+				{
+					read = is.read( bytes) ;
+					
+					// EOF
+					if ( read == -1 ) break;
+					
+					os.write( bytes, 0, read);
+				}
+	
+				is.close() ;
+				os.close() ;
+				
+				System.out.println("Installed " + resourceFile + " onto the local disk from JAR file") ;
+			}
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+				System.err.println("Failed to install " + resourceFile);
+			}
+		}
+	}
+	
 	public Font getTextFont()
 	{
 		return m_TextFont;
