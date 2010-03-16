@@ -51,7 +51,7 @@ public class FoldingTextView extends AbstractComboView implements Agent.xmlEvent
 {
 	protected FoldingText m_FoldingText ;
 	
-	protected int m_xmlCallback = -1 ;
+	protected long m_xmlCallback = -1 ;
 	
 	/** How many spaces we indent for a subgoal */
 	protected int m_IndentSize = 3 ;

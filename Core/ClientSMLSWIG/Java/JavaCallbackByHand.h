@@ -290,7 +290,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForRunEvent(JNIEnv *jenv,
 }
 
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForRunEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -360,7 +360,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForOutputNotification(JNI
 }
 
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForOutputNotification(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForOutputNotification(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -445,7 +445,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForProductionEvent(JNIEnv
 }
 
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForProductionEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -527,7 +527,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForPrintEvent(JNIEnv *jen
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForPrintEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -643,7 +643,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1RegisterForXMLEvent(JNIEnv *jenv,
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForXMLEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1UnregisterForXMLEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -783,7 +783,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Agent_1AddOutputHandler(JNIEnv *jenv, jc
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1RemoveOutputHandler(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Agent_1RemoveOutputHandler(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Agent *arg1 = *(sml::Agent **)&jarg1 ;
@@ -859,7 +859,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForSystemEvent(JNIEnv *j
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForSystemEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Kernel object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
@@ -935,7 +935,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForUpdateEvent(JNIEnv *j
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForUpdateEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForUpdateEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Kernel object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
@@ -1052,7 +1052,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForStringEvent(JNIEnv *j
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForStringEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Kernel object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
@@ -1244,7 +1244,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1AddRhsFunction(JNIEnv *jenv, jcl
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1RemoveRhsFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1RemoveRhsFunction(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
@@ -1287,7 +1287,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForClientMessageEvent(JN
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForClientMessageEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForClientMessageEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;
@@ -1371,7 +1371,7 @@ JNIEXPORT jlong JNICALL Java_sml_smlJNI_Kernel_1RegisterForAgentEvent(JNIEnv *je
 	return reinterpret_cast<jlong>(pJavaData) ;
 }
 
-JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jint jarg2)
+JNIEXPORT bool JNICALL Java_sml_smlJNI_Kernel_1UnregisterForAgentEvent(JNIEnv *jenv, jclass jcls, jlong jarg1, jlong jarg2)
 {
     // jarg1 is the C++ Agent object
 	sml::Kernel *arg1 = *(sml::Kernel **)&jarg1 ;

@@ -66,8 +66,8 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 	/** The history of commands for this window */
 	protected CommandHistory m_CommandHistory = new CommandHistory() ;
 	
-	protected int m_PrintCallback = -1;
-	protected int m_EchoCallback = -1;
+	protected long m_PrintCallback = -1;
+	protected long m_EchoCallback = -1;
 	
 	/** the position in the history list the up/down scrolling is at (SBW, 7/1/08) **/
 	protected int m_PositionInHistory = -1 ;
