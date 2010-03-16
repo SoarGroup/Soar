@@ -11,17 +11,9 @@ package edu.umich.soar.debugger;
 
 import org.eclipse.swt.*;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.browser.LocationListener;
-import org.eclipse.swt.browser.ProgressEvent;
-import org.eclipse.swt.browser.ProgressListener;
-import org.eclipse.swt.browser.TitleEvent;
-import org.eclipse.swt.browser.TitleListener;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 
 import java.io.*;
@@ -82,7 +74,7 @@ public class MainFrame
 	public static final FontData kDefaultFontData = new FontData("Courier New", 8, SWT.NORMAL);
 
 	private static final String kNoAgent = "<no agent>";
-	private static String m_WindowLayoutFile ;
+	private static final String kWindowLayoutFile = "SoarDebuggerWindows" + Document.kVersion + ".dlf";
 
 	private Composite m_Parent = null;
 
@@ -259,7 +251,7 @@ public class MainFrame
 		Shell shell = new Shell(display);
 
 		MainFrame frame = new MainFrame(shell, doc);
-		frame.initComponents( m_WindowLayoutFile );
+		frame.initComponents( null );
 
 		shell.open();
 
@@ -582,7 +574,7 @@ public class MainFrame
 	public boolean saveCurrentLayoutFile()
 	{
 		// Look up the name of the default window layout
-		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile);
+		File layoutFile = AppProperties.GetSettingsFilePath(kWindowLayoutFile);
 
 		// Save the current window positions and other information to the layout
 		// file
@@ -604,6 +596,21 @@ public class MainFrame
 		return getMainWindow().loadLayoutFromFile(filename, showErrors);
 	}
 
+	public boolean loadLayoutFileSpecial(String filename)
+	{
+		// Try loading it if it exists.
+		File file = new File(filename);
+		if (file.exists()) {
+			return loadLayoutFile(filename, true);
+		}
+		
+		// It doesn't exist, if relative we can look in the settings directory
+		if (file.isAbsolute()) return false;
+		
+		file = AppProperties.GetSettingsFilePath(filename);
+		return file.exists() ? loadLayoutFile(file.toString(), true) : false;
+	}	
+	
 	public boolean saveLayoutFile(String filename)
 	{
 		return getMainWindow().saveLayoutToFile(filename);
@@ -693,15 +700,7 @@ public class MainFrame
 	
 	public boolean loadUserLayoutFile()
 	{
-		// The command line may set m_WindowLayoutFile
-		if ( m_WindowLayoutFile == null )
-		{
-			// Look up the name of the default window layout
-			m_WindowLayoutFile = getUserLayoutFilename(Document.kVersion) ;
-		}
-		File layoutFile = AppProperties.GetSettingsFilePath(m_WindowLayoutFile);
-
-		boolean loaded = false;
+		File layoutFile = AppProperties.GetSettingsFilePath(kWindowLayoutFile);
 
 		// If this version doesn't exist, go back to an earlier version (if the user happens to have that one)
 		// and read it instead.
@@ -711,11 +710,7 @@ public class MainFrame
 		}
 		
 		// If we have an existing window layout stored, try to load it.
-		if (layoutFile.exists())
-		{
-			loaded = loadLayoutFile(layoutFile.toString(), true);
-		}
-		
+		boolean loaded = layoutFile.exists() ? loadLayoutFile(layoutFile.toString(), true) : false;
 		return loaded ;
 	}
 	
@@ -726,7 +721,7 @@ public class MainFrame
 	 * Called by Application after the frame is constructed.
 	 *  
 	 **************************************************************************/
-	public void initComponents( String layoutFileFromCommandLine )
+	public void initComponents( String alternateLayout )
 	{
 		// Add the menus
 		m_FileMenu = FileMenu.createMenu(this, getDocument(), "&File");
@@ -742,14 +737,13 @@ public class MainFrame
 		
 		getShell().setMenuBar(m_MenuBar);
 		
-		if ( layoutFileFromCommandLine != null )
-		{
-			m_WindowLayoutFile = new String( layoutFileFromCommandLine );
-		}
+		// Load the alternate layout file first,.
+		boolean loaded = (alternateLayout != null) ? loadLayoutFileSpecial(alternateLayout) : false;
 
-		boolean loaded = loadUserLayoutFile() ;
+		// If that failed, load the last known layout
+		loaded = loaded || loadUserLayoutFile();
 
-		// If we didn't load a layout, use a default layout
+		// If that failed, load the default layout
 		if (!loaded)
 		{
 			System.out.println("Failed to load the stored layout, so using default instead");
@@ -1115,8 +1109,4 @@ public class MainFrame
 	 * java.awt.print.PageFormat.LANDSCAPE) ;
 	 * this.setAppProperty("Printing.Landscape", landscape) ; }
 	 */
-	
-	public String getWindowLayoutFile() {
-		return m_WindowLayoutFile;
-	}
 }

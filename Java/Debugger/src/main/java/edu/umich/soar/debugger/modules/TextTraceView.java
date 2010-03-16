@@ -38,10 +38,6 @@ public class TextTraceView extends AbstractComboView
 
 	public TextTraceView()
 	{
-		m_StopCallback = -1 ;
-		m_PrintCallback = -1 ;
-		m_DecisionCallback = -1 ;
-		
 		m_ClearEachCommand = false ;
 		m_UpdateOnStop = false ;
 		m_ClearComboEachCommand = true ;

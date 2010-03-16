@@ -66,8 +66,8 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 	/** The history of commands for this window */
 	protected CommandHistory m_CommandHistory = new CommandHistory() ;
 	
-	protected int m_PrintCallback ;
-	protected int m_EchoCallback ;
+	protected int m_PrintCallback = -1;
+	protected int m_EchoCallback = -1;
 	
 	/** the position in the history list the up/down scrolling is at (SBW, 7/1/08) **/
 	protected int m_PositionInHistory = -1 ;
@@ -82,8 +82,6 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 	// from the loading code and the new window dialog
 	public AbstractComboView()
 	{
-		m_PrintCallback = -1 ;
-		m_EchoCallback = -1 ;
 	}
 	
 	/************************************************************************
@@ -688,8 +686,10 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 		boolean ok = true ;
 
 		if (m_StopCallback != -1)
+		{
 			ok = agent.GetKernel().UnregisterForSystemEvent(m_StopCallback) && ok ;
-
+		}
+		
 		if (m_InitCallback != -1)
 			ok = agent.GetKernel().UnregisterForAgentEvent(m_InitCallback) && ok ;
 				
