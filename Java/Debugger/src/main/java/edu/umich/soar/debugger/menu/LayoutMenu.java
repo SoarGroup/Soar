@@ -74,6 +74,6 @@ public class LayoutMenu
 	
 	private void useTextLayout(ActionEvent e)
 	{
-		m_Frame.loadLayoutFile("default-text-" + Document.kVersion + ".dlf", true) ;
+		m_Frame.useDefaultTextLayout() ;
 	}
 }

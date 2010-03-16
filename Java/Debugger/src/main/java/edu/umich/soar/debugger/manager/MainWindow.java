@@ -20,10 +20,12 @@ import org.eclipse.swt.custom.SashForm;
 import sml.Agent;
 
 
+import java.io.File;
 import java.util.*;
 
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.Document;
+import edu.umich.soar.debugger.general.AppProperties;
 import edu.umich.soar.debugger.general.JavaElementXML;
 import edu.umich.soar.debugger.helpers.FormDataHelper;
 import edu.umich.soar.debugger.modules.AbstractView;
@@ -396,10 +398,11 @@ public class MainWindow
   	 * Create the default children that we use in the standard window layout.
   	 * 
   	********************************************************************************************/
-  	public void useDefaultLayout()
+  	public void useDefaultLayout(String filename)
   	{
   		// We load the default layout as a file now.
-  		boolean ok = m_Frame.loadLayoutFile("default-layout-" + Document.kVersion + ".dlf", false) ;
+  		File defaultLayoutFile = AppProperties.GetSettingsFilePath(filename);
+  		boolean ok = m_Frame.loadLayoutFile(defaultLayoutFile.getAbsolutePath(), false) ;
 
   		// If for some reason this fails (really shouldn't happen)
   		// then we'll use an internal layout as a fall back.
