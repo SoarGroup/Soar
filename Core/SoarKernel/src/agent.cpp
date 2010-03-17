@@ -393,6 +393,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->dc_stat_tracking = false;
   newAgent->stats_db = new soar_module::sqlite_database();
 
+  newAgent->substate_break_level = 0;
+
   return newAgent;
 }
 

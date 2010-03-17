@@ -2201,10 +2201,9 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   post_link_removal (thisAgent, NIL, goal);  /* remove the special link */
   symbol_remove_ref (thisAgent, goal);
 
-  if (thisAgent->stop_on_substate_removal)
-  {
-	  thisAgent->stop_soar++;
-	  thisAgent->reason_for_stopping = "Stopped due to substate (goal) retraction.";
+  if (goal->id.level <= thisAgent->substate_break_level) {
+    thisAgent->stop_soar++;
+    thisAgent->substate_break_level = 0;
   }
 }
 

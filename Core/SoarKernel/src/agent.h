@@ -897,6 +897,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool dc_stat_tracking;
   soar_module::sqlite_database *stats_db;
   stats_statement_container *stats_stmts;
+  
+  // Soar execution will be interrupted when this substate level is removed
+  goal_stack_level substate_break_level;
 
 } agent;
 /*************** end of agent struct *****/
