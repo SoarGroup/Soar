@@ -214,7 +214,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 
 	if (options.test(RUN_GOAL))
 	{
-		this->m_pAgentSoar->stop_on_substate_removal = TRUE;
+		this->m_pAgentSoar->substate_break_level = this->m_pAgentSoar->bottom_goal->id.level;
 	}
 
 	// Do the run
