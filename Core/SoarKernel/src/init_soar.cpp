@@ -402,7 +402,6 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
 	/* kjh (CUSP-B4) end */
 
-	rl_reset_data( thisAgent );	
 	clear_goal_stack (thisAgent);
 	wma_deinit( thisAgent );
 	thisAgent->rl_stats->reset();
