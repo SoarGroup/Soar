@@ -221,7 +221,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 	runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, interleave, synchronizeAtStart) ;
 
 	// Reset goal retraction stop flag after any run
-	this->m_pAgentSoar->stop_on_substate_removal = FALSE;
+	this->m_pAgentSoar->substate_break_level = 0;
 
 	SetTrapPrintCallbacks( true );
 

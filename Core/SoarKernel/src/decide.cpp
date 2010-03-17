@@ -2204,6 +2204,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   if (goal->id.level <= thisAgent->substate_break_level) {
     thisAgent->stop_soar++;
     thisAgent->substate_break_level = 0;
+    thisAgent->reason_for_stopping = "Stopped due to substate (goal) retraction.";
   }
 }
 

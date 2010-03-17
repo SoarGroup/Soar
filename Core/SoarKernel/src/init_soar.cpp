@@ -430,7 +430,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	thisAgent->system_halted = FALSE;
 	thisAgent->stop_soar = FALSE;			// voigtjr:  this line doesn't exist in other kernel
 	thisAgent->reason_for_stopping = 0;
-	thisAgent->stop_on_substate_removal = FALSE;
+	thisAgent->substate_break_level = 0;
 
 	thisAgent->go_number = 1;
 	thisAgent->go_type = GO_DECISION;
