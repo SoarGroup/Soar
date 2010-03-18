@@ -132,14 +132,14 @@ SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ 
 clone.Append(SCANNERS = [ SWIGScanner ])
 
 # Make src/sml dir and wrap
-env.Command(javasml_wrap, javasml_i, [ 
+clone.Command(javasml_wrap, javasml_i, [ 
 	Delete('ClientSMLSWIG/Java/src', must_exist = False),
 	Mkdir('ClientSMLSWIG/Java/src'),
 	Mkdir('ClientSMLSWIG/Java/src/sml'),
 	'swig -o ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp -c++ -java -Wall -package sml -IClientSML/src -IElementXML/src -IConnectionSML/src -outdir ClientSMLSWIG/Java/src/sml ClientSMLSWIG/Java/Java_sml_ClientInterface.i'])
 
 # Side effect: previous command produces src/*.java files (the SML Java interface)
-env.SideEffect(javasource, javasml_wrap)
+clone.SideEffect(javasource, javasml_wrap)
 
 # Create shared library
 shlib = clone.SharedLibrary(javasml_shlib, javasml_wrap)
