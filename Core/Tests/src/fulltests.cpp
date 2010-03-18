@@ -1005,9 +1005,9 @@ TEST_DEFINITION( testSimpleCopy )
 	sml::Identifier* square5 = map->CreateIdWME("square");
 	CPPUNIT_ASSERT( std::string( square5->GetAttribute() ) == "square" );
 
-	square2->CreateSharedIdWME("north", square5) ;
+	sml::Identifier* north = square2->CreateSharedIdWME("north", square5) ;
 
-	square5->CreateSharedIdWME("south", square2) ;
+	sml::Identifier* south = square5->CreateSharedIdWME("south", square2) ;
 
 	sml::Identifier* pSentence = m_pAgent->GetInputLink()->CreateIdWME("sentence") ;
 	CPPUNIT_ASSERT( std::string( pSentence->GetAttribute() ) == "sentence" );
@@ -1120,6 +1120,10 @@ TEST_DEFINITION( testSimpleCopy )
 	//changesString << "Number of changes: " << changes << ", this failure is currently expected but needs to be addressed, see wiki gSKI removal page";
 	changesString << "Number of changes: " << changes;
 	CPPUNIT_ASSERT_MESSAGE( changesString.str().c_str(), changes == 13 );
+
+	// FIXME: leaks without this
+	north->DestroyWME();
+	south->DestroyWME();
 }
 
 TEST_DEFINITION( testSimpleReteNetLoader )
@@ -1187,11 +1191,15 @@ TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 
 	m_pAgent->RunSelf(1);
 
-	pFoo->DestroyWME(  );
+	pFoo->DestroyWME();
 
 	m_pAgent->RunSelf(1);
 
 	CPPUNIT_ASSERT( !badCopyExists );
+
+	// FIXME: leaks without this.
+	pBar->DestroyWME();
+
 }
 
 TEST_DEFINITION( testOSupportCopyDestroyCircular )
@@ -1365,6 +1373,7 @@ TEST_DEFINITION( testStatusCompleteDuplication )
 
 	// there should only be one
 	CPPUNIT_ASSERT( count == 1 );
+
 }
 
 TEST_DEFINITION( testStopSoarVsInterrupt )
@@ -1676,13 +1685,13 @@ TEST_DEFINITION( testConvertIdentifier )
 	sml::Identifier* pFoo = pOutputLink->CreateIdWME("foo");
 
 	char const* pConvertedId = m_pAgent->ConvertIdentifier(pFoo->GetValueAsString());
-	CPPUNIT_ASSERT(pConvertedId == 0);
+	CPPUNIT_ASSERT(pConvertedId == pFoo->GetValueAsString());
 
 	m_pAgent->Commit();
 	m_pKernel->RunAllAgents(2);
 
 	sml::WMElement* pBarWme = pOutputLink->FindByAttribute("bar", 0);
-	
+	 
 	pConvertedId = m_pAgent->ConvertIdentifier(pFoo->GetValueAsString());
 	CPPUNIT_ASSERT(pConvertedId);
 	std::string convertedId(pConvertedId);

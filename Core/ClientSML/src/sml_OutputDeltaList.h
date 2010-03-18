@@ -38,6 +38,11 @@ public:
 	{
 		m_ChangeType = change ;
 		m_pWME		 = pWME ;
+
+		//std::string wmeString;
+		//pWME->DebugString(wmeString);
+		//std::cout << "New delta: " << wmeString;
+		//std::cout << ((change == kAdded) ? " add" : " remove") << std::endl;
 	}
 
 	~WMDelta() ;
@@ -61,15 +66,21 @@ public:
 
 	void Clear(bool deleteContents, bool clearJustAdded = false, bool clearChildrenModified = false)
 	{
+		//std::cout << "Clearing delta list " << deleteContents << clearJustAdded << clearChildrenModified;
 		if (m_DeltaList.empty())
+		{
+			//std::cout << " (empty)" << std::endl;
 			return;
+		}
 
 		if ( clearJustAdded || clearChildrenModified )
 		{
 			for ( std::vector<WMDelta*>::iterator iter = m_DeltaList.begin(); iter != m_DeltaList.end(); ++iter )
 			{
 				WMElement* pWME = (*iter)->getWME();
-
+				//std::string wmeString;
+				//pWME->DebugString(wmeString);
+				//std::cout << std::endl << wmeString;
 				if ( clearJustAdded )
 				{
 					pWME->SetJustAdded( false );
@@ -93,6 +104,7 @@ public:
 		}
 
 		m_DeltaList.clear() ;
+		//std::cout << std::endl;
 	}
 
 	void RemoveWME(WMElement* pWME)

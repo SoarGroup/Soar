@@ -126,6 +126,8 @@ public:
 	*************************************************************/
 	bool DestroyWME();
 
+	void DebugString(std::string& result);
+
 protected:
 	// Keep these protected, so user can only create and destroy WMEs through
 	// the methods exposed in the agent class.  This makes it clear that the
@@ -170,6 +172,21 @@ struct WMEFinder
 	}
 
 	const WMElement* wme;
+};
+
+struct WMEFinderTimeTag
+{
+	WMEFinderTimeTag( long timeTag )
+	: timeTag( timeTag )
+	{
+	}
+
+	bool operator()( const WMElement* wme ) const
+	{
+		return timeTag == wme->GetTimeTag();
+	}
+
+	long timeTag;
 };
 
 }	// namespace
