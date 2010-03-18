@@ -9,6 +9,6 @@ compEnv.Install('$PREFIX/bin', soar2soar)
 
 # Resources
 Import('InstallDir')
-InstallDir(soar2soar, '$PREFIX/share/soar/Demos/soar2soar/agents', '#../Soar2Soar/agents')
-InstallDir(soar2soar, '$PREFIX/share/soar/Demos/soar2soar/environments', '#../Soar2Soar/environments')
+InstallDir(soar2soar, '$PREFIX/share/soar/Soar2Soar/agents', '#../Soar2Soar/agents')
+InstallDir(soar2soar, '$PREFIX/share/soar/Soar2Soar/environments', '#../Soar2Soar/environments')
 
