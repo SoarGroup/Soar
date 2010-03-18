@@ -86,3 +86,10 @@ bool WMElement::DestroyWME()
 {
 	return this->m_Agent->GetWM()->DestroyWME(this);
 }
+
+void WMElement::DebugString(std::string& result)
+{
+	std::stringstream ss;
+	ss << "(" << GetTimeTag() << ": " << GetIdentifierName() << " ^" << GetAttribute() << " " << GetValueAsString() << ")";
+	result.assign(ss.str());
+}

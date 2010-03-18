@@ -47,11 +47,15 @@ void IdentifierSymbol::SetIdentifierSymbol(char const* pID)
 
 void IdentifierSymbol::DeleteAllChildren()
 {
+	//std::cout << "IdentifierSymbol::DeleteAllChildren" << std::endl;
+
 	// We own all of these children, so delete them when we are deleted.
 	for (Identifier::ChildrenIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
 	{
 		WMElement* pWME = *iter ;
-		//std::cout << "deleting symbol child timetag " << pWME->GetTimeTag() << std::endl;
+		//std::string wmeString;
+		//pWME->DebugString(wmeString);
+		//std::cout << "deleting: " << wmeString << std::endl;
 		delete pWME ;
 	}
 	m_Children.clear() ;
@@ -62,7 +66,6 @@ void IdentifierSymbol::AddChild(WMElement* pWME)
 	// Record that we're changing the list of children in case the
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
-
 
 	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
 	if ( iter == m_Children.end() )
@@ -76,12 +79,21 @@ void IdentifierSymbol::AddChild(WMElement* pWME)
 	}
 }
 
+WMElement* IdentifierSymbol::GetChildByTimeTag(long timeTag)
+{
+	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinderTimeTag( timeTag ) );
+	if ( iter != m_Children.end() )
+	{
+		return *iter;
+	}
+	return 0;
+}
+
 void IdentifierSymbol::RemoveChild(WMElement* pWME)
 {
 	// Record that we're changing the list of children in case the
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
-
 
 	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
 	if ( iter != m_Children.end() )
@@ -103,6 +115,31 @@ void IdentifierSymbol::NoLongerUsedBy(Identifier* pIdentifier)
 void IdentifierSymbol::UsedBy(Identifier* pIdentifier)		  
 {
 	m_UsedBy.push_back(pIdentifier) ; 
+}
+
+void IdentifierSymbol::DebugString(std::string& result)
+{
+	std::stringstream ss;
+	ss << "[" << m_Symbol;
+	if (!m_Children.empty())
+	{
+		ss << ": children:";
+		for (Identifier::ChildrenIter iter = m_Children.begin(); iter != m_Children.end(); ++iter)
+		{
+			ss << " " << (*iter)->GetTimeTag();
+		}
+	}
+
+	if (!m_UsedBy.empty())
+	{
+		ss << " used by:";
+		for (std::list<Identifier*>::iterator iter = m_UsedBy.begin(); iter != m_UsedBy.end(); ++iter)
+		{
+			ss << " " << (*iter)->GetTimeTag();
+		}
+	}
+	ss << "]";
+	result.assign(ss.str());
 }
 
 // This version is only needed at the top of the tree (e.g. the input link)
@@ -167,7 +204,7 @@ Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char
 {
 	m_pSymbol = pLinkedIdentifier->m_pSymbol ;
 	m_pSymbol->UsedBy(this) ;
-	RecordSymbolInMap();
+	//RecordSymbolInMap();	// redundant, if it is on another symbol, it is already in the map
 	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
 	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
 }
@@ -177,7 +214,7 @@ Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char cons
 {
 	m_pSymbol = pLinkedIdentifierSymbol;
 	m_pSymbol->UsedBy(this) ;
-	RecordSymbolInMap();
+	RecordSymbolInMap(); // potentially redundant
 	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
 	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
 }
@@ -187,24 +224,51 @@ void Identifier::RecordSymbolInMap()
 	GetAgent()->GetWM()->RecordSymbolInMap( m_pSymbol );
 }
 
+void Identifier::UpdateSymbol(IdentifierSymbol* pSymbol)
+{
+	//std::string symString;
+	//m_pSymbol->DebugString(symString);
+	//std::cout << "UpdateSymbol for wme " << GetTimeTag() << " " << symString;
+
+	ReleaseSymbol();
+
+	m_pSymbol = pSymbol;
+	m_pSymbol->UsedBy(this) ;
+	RecordSymbolInMap(); // potentially redundant
+}
+
+void Identifier::ChangeSymbol(const char* pIdentifier)
+{
+	//std::string symString;
+	//m_pSymbol->DebugString(symString);
+	//std::cout << "ChangeSymbol for wme " << GetTimeTag() << " " << symString;
+
+	ReleaseSymbol();
+
+	m_pSymbol = new IdentifierSymbol(this) ;
+	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
+	RecordSymbolInMap();
+}
+
 Identifier::~Identifier(void)
 {
-	//std::cout << "deleting (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
-	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
+	//std::string symString;
+	//m_pSymbol->DebugString(symString);
+	//std::cout << "~Identifier " << GetTimeTag() << " " << symString;
 
+	ReleaseSymbol();
+}
+
+void Identifier::ReleaseSymbol()
+{
 	// Indicate this identifier is no longer using the identifier symbol
 	m_pSymbol->NoLongerUsedBy(this) ;
 
 	// Decide if we need to delete the identifier symbol (or is someone else still using it)
 	if (m_pSymbol->GetNumberUsing() == 0)
 	{
-		//std::cout << "  references of " << m_pSymbol->GetIdentifierSymbol() << " zero, deleting symbol" << std::endl;
-		this->GetAgent()->GetWM()->RemoveSymbolFromMap( m_pSymbol );
+		GetAgent()->GetWM()->RemoveSymbolFromMap( m_pSymbol );
 		delete m_pSymbol ;
-	}
-	else
-	{
-		//std::cout << "  references of " << m_pSymbol->GetIdentifierSymbol() << " not zero" << std::endl;
 	}
 
 	m_pSymbol = NULL ;

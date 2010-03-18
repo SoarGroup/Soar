@@ -332,4 +332,5 @@ void ElementXMLTest::testEquals()
 {
 	soarxml::ElementXML* element = soarxml::ElementXML::ParseXMLFromString("<sml><result>=</result></sml>");
 	CPPUNIT_ASSERT_MESSAGE(soarxml::ElementXML::GetLastParseErrorDescription(), element != 0);
+	delete element;
 }

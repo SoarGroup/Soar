@@ -83,9 +83,12 @@ public:
 	// Have this identifier take ownership of this WME.  So when the identifier is deleted
 	// it will delete the WME.
 	void AddChild(WMElement* pWME) ;
+	WMElement* GetChildByTimeTag(long timeTag);
 	void DeleteAllChildren() ;
 
 	void RemoveChild(WMElement* pWME) ;
+
+	void DebugString(std::string& result);
 } ;
 
 //
@@ -116,12 +119,17 @@ public:
 	ChildrenIter GetChildrenBegin() { return m_pSymbol->m_Children.begin() ; }
 	ChildrenIter GetChildrenEnd()   { return m_pSymbol->m_Children.end() ; }
 
+private:
+	void ReleaseSymbol();
+
 protected:
 	// Two identifiers (i.e. two wmes) can share the same identifier value
 	// So each identifier has a pointer to a symbol object, but two could share the same object.
 	IdentifierSymbol* m_pSymbol ;
 
 	IdentifierSymbol* GetSymbol() { return m_pSymbol ; }
+	void UpdateSymbol(IdentifierSymbol* pSymbol);
+	void ChangeSymbol(const char* pIdentifier);
 
 	void SetParent(Identifier* pParent) ;
 
