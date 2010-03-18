@@ -120,9 +120,11 @@ void KernelSML::InitializeLibraryLocation()
 
 #else // WIN32
 	struct stat statbuf;
+	bzero(&statbuf, sizeof(struct stat));
 	const char* selfexe = "/proc/self/exe";
 	const int size = 2048;
 	char buf[size];
+	bzero(buf, size);
 	if (stat(selfexe, &statbuf) == -1) {
 		// we don't have proc
 #ifdef SCONS_DARWIN
