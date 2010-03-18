@@ -58,6 +58,8 @@ WorkingMemory::WorkingMemory()
 
 WorkingMemory::~WorkingMemory()
 {
+	//std::cout << "~WorkingMemory" << std::endl;
+
 	m_Deleting = true;
 	delete m_OutputLink ;
 	m_OutputLink = NULL ;
@@ -114,11 +116,17 @@ void WorkingMemory::ClearHandlerStatic(sml::smlRunEventId /*id*/, void* pUserDat
 
 void WorkingMemory::RecordSymbolInMap( IdentifierSymbol* pSymbol )
 {
+	//std::string symString;
+	//pSymbol->DebugString(symString);
+	//std::cout << "RecordSymbolInMap: " << symString << std::endl;
 	m_IdSymbolMap[ pSymbol->GetIdentifierSymbol() ] = pSymbol;
 }
 
 void WorkingMemory::RemoveSymbolFromMap( IdentifierSymbol* pSymbol )
 {
+	//std::string symString;
+	//pSymbol->DebugString(symString);
+	//std::cout << "RemoveSymbolFromMap: " << symString << std::endl;
 	if ( m_Deleting )
 	{
 		return;
@@ -216,6 +224,7 @@ void WorkingMemory::RecordDeletion(WMElement* pWME)
 // Clear the delta list and also reset all state flags.
 void WorkingMemory::ClearOutputLinkChanges()
 {
+	//std::cout << "ClearOutputLinkChanges" << std::endl;
 	// Clear the list, deleting any WMEs that it owns
 	// Call this even if m_TrackingOutputLinkChanges false in case there was something on it before false
 	m_OutputDeltaList.Clear(true, true, true) ;
@@ -272,20 +281,38 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 
 	if (pParentSymbol)
 	{
-		// Create a client side wme object to match the output wme and add it to
-		// our tree of objects.
-		pAddWme = CreateWME(pParentSymbol, pID, pAttribute, pValue, pType, timeTag) ;
-		if (pAddWme)
-		{
-			pParentSymbol->AddChild(pAddWme) ;
+		pAddWme = pParentSymbol->GetChildByTimeTag(timeTag);
 
-			// Make a record that this wme was added so we can alert the client to this change.
-			RecordAddition(pAddWme) ;
+		if (!pAddWme)
+		{
+			// Create a client side wme object to match the output wme and add it to
+			// our tree of objects.
+			pAddWme = CreateWME(pParentSymbol, pID, pAttribute, pValue, pType, timeTag) ;
+			if (pAddWme)
+			{
+				pParentSymbol->AddChild(pAddWme) ;
+
+				// Make a record that this wme was added so we can alert the client to this change.
+				RecordAddition(pAddWme) ;
+			}
+			else
+			{
+				sml::PrintDebugFormat("Unable to create an output wme -- type was not recognized") ;
+				GetAgent()->SetDetailedError(Error::kOutputError, "Unable to create an output wme -- type was not recognized") ;
+			}
 		}
 		else
 		{
-			sml::PrintDebugFormat("Unable to create an output wme -- type was not recognized") ;
-			GetAgent()->SetDetailedError(Error::kOutputError, "Unable to create an output wme -- type was not recognized") ;
+			// We already created this WME. If identifier, update its symbol.
+			Identifier* pAddId = pAddWme->ConvertToIdentifier();
+			if (pAddId && (strcmp(pType, sml_Names::kTypeID) == 0))
+			{
+				IdentifierSymbol* pSymbol = this->FindIdentifierSymbol( pValue );
+				if (pSymbol)
+					pAddId->UpdateSymbol(pSymbol);
+				else
+					pAddId->ChangeSymbol(pValue);
+			}
 		}
 	}
 	else
@@ -1263,6 +1290,8 @@ void WorkingMemory::Refresh()
 }
 
 void WorkingMemory::InvalidateOutputLink() {
+	//std::cout << "InvalidateOutputLink " << m_OutputLink << std::endl;
+
 	if (m_OutputLink)
 	{
 		// clear delta list
@@ -1272,13 +1301,17 @@ void WorkingMemory::InvalidateOutputLink() {
 		
 		// clean up the IdSymbolMap table. See Bug #1094
 		IdSymbolMapIter i = m_IdSymbolMap.find(m_OutputLink->GetValueAsString());
-		if (i != m_IdSymbolMap.end()) {
+		if (i != m_IdSymbolMap.end()) 
+		{
 			IdentifierSymbol* out_sym = i->second;
 			m_IdSymbolMap.clear();
-			 m_IdSymbolMap[m_OutputLink->GetValueAsString()] = out_sym;
+			//std::cout << "m_IdSymbolMap cleared" << std::endl;
+			RecordSymbolInMap(out_sym);
 		}
-		else {
+		else 
+		{
 			m_IdSymbolMap.clear();
+			//std::cout << "m_IdSymbolMap cleared" << std::endl;
 		}
  
 		delete m_OutputLink;

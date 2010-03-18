@@ -225,6 +225,7 @@ void MiscTest::testMultipleKernels()
 	CPPUNIT_ASSERT( pAgent2 != NULL );
 
 	pKernel2->Shutdown();
+	delete pKernel2;
 
 	pAgent->ExecuteCommandLine("p s1");
 	CPPUNIT_ASSERT( pAgent->GetLastCommandLineResult() );
