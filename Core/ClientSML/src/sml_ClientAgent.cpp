@@ -876,9 +876,7 @@ WMElement* Agent::GetOutputLinkChange(int index)
 	if (!pDelta)
 		return NULL ;
 
-	WMElement* pWME = pDelta->getWME() ;
-	
-	return pWME ;
+	return pDelta->getWME() ;
 }
 
 bool Agent::IsOutputLinkChangeAdd(int index)
@@ -1387,5 +1385,5 @@ char const* Agent::ConvertIdentifier(char const* pClientIdentifier)
 			return kernelIdentifier.c_str();
 		} 
 	}
-	return 0;
+	return pClientIdentifier;
 }

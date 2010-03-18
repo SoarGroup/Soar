@@ -32,7 +32,7 @@ bool g_NoRemote = true;
 int main( int argc, char** argv )
 {
 #ifdef _WIN32
-	//_crtBreakAlloc = 2168;
+	//_crtBreakAlloc = 6077;
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF ); 
 	SetConsoleCtrlHandler( handle_ctrlc, TRUE );
 #endif // _WIN32
