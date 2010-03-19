@@ -42,13 +42,12 @@
 //{
 #endif
 
- /* First we define the possible callbacks in an enum.  Then we  */
- /* describe how each one will be called in user code.           */
+/* First we define the possible callbacks in an enum.  Then we  */
+/* describe how each one will be called in user code.           */
 
-enum SOAR_CALLBACK_TYPE
+enum SOAR_CALLBACK_TYPE				// if you change this, update soar_callback_names
 {
   NO_CALLBACK,                      /* Used for missing callback */
-  //SYSTEM_TERMINATION_CALLBACK,
   AFTER_INIT_AGENT_CALLBACK,
   BEFORE_INIT_SOAR_CALLBACK,
   AFTER_INIT_SOAR_CALLBACK,
@@ -94,8 +93,6 @@ enum SOAR_CALLBACK_TYPE
   PRINT_CALLBACK,
   LOG_CALLBACK,
   INPUT_WME_GARBAGE_COLLECTED_CALLBACK,
-/*  READ_CALLBACK,					kjh CUSP B10 */
-/*  RECORD_CALLBACK,					kjh CUSP B10 */
   NUMBER_OF_CALLBACKS               /* Not actually a callback   */
                                     /* type.  Used to indicate   */
                                     /* list size and MUST ALWAYS */
@@ -397,6 +394,8 @@ extern void soar_remove_callback (agent* thisAgent,
 				  SOAR_CALLBACK_TYPE, 
 				  soar_callback_id);
 extern void soar_test_all_monitorable_callbacks(agent*);
+
+extern void soar_print_detailed_callback_stats();
 #endif
 
 #ifdef __cplusplus

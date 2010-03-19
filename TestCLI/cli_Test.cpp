@@ -78,7 +78,9 @@ void XMLCallbackHandler(sml::smlXMLEventId id, void* pUserData, sml::Agent* pAge
 	pXML->DeleteString(message);
 }
 
-void RunCallbackHandler(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase) {
+void InterruptCallbackHandler(sml::smlSystemEventId /*id*/, void* /*pUserData*/, sml::Kernel* /*pKernel*/) {
+	//std::cout << "InterruptCallbackHandler" << std::endl;
+
 	char c = getKey(false);
 
 	while (c) {
@@ -438,8 +440,12 @@ int main(int argc, char** argv)
 		cout << "Use the meta-commands 'raw' and 'structured' to switch output style" << endl;
 
 		// Register for necessary callbacks
-		int callbackID1 = pAgent->RegisterForRunEvent(sml::smlEVENT_BEFORE_DECISION_CYCLE, RunCallbackHandler, 0);
+		int callbackID1 = pKernel->RegisterForSystemEvent(sml::smlEVENT_INTERRUPT_CHECK, InterruptCallbackHandler, 0);
+		pKernel->SetInterruptCheckRate(10);
 		g_TraceCallbackID = pAgent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
+
+		// No change tracking
+		pAgent->SetOutputLinkChangeTracking(false);
 
 		// Do script if any
 		bool good = true;
