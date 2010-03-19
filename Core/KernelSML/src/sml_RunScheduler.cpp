@@ -778,6 +778,9 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
 			if ((stepCount % interruptCheckRate) == 0)
 				m_pKernelSML->FireSystemEvent(smlEVENT_INTERRUPT_CHECK) ;
 
+			// Handy place to pump messages
+			m_pKernelSML->ReceiveAllMessages();
+
 			stepCount++ ;
 
 			// Notify listeners that Soar is going to run.  This event is a kernel level (agent manager) event
