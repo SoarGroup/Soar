@@ -37,10 +37,16 @@ void select_init( agent *my_agent )
 void select_next_operator( agent *my_agent, const char *operator_id )
 {
 	select_init( my_agent );
+	std::string& op = my_agent->select->select_operator;
 	
 	my_agent->select->select_enabled = true;
-	for ( unsigned int i=0; i < strlen( operator_id ); i++ )
-		my_agent->select->select_operator.push_back( static_cast< char >( toupper( operator_id[i] ) )  );
+	op.assign(operator_id);
+	
+	assert( !op.empty() );
+
+	// lazy users may use a lower-case letter
+	std::string::iterator iter = op.begin();
+	*iter = static_cast< char >( toupper( *iter ) );
 }
 
 /***************************************************************************
@@ -88,7 +94,7 @@ preference *select_force( agent *my_agent, preference *candidates, bool reinit )
 			cand = cand->next;
 		}
 
-		if ( reinit )
+		if ( return_val && reinit )
 			select_init( my_agent );
 	}
 
