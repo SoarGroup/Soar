@@ -948,11 +948,6 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 
 				return NONE_IMPASSE_TYPE;
 			}
-			else
-			{
-				print( thisAgent, "WARNING: Invalid forced selection operator id" );
-				xml_generate_warning( thisAgent, "WARNING: Invalid forced selection operator id" );
-			}
 		}
 	}
 
