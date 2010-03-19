@@ -39,27 +39,26 @@ void InputListener::Init(KernelSML* pKernelSML, AgentSML* pAgentSML)
 // Called when an event occurs in the kernel
 void InputListener::OnKernelEvent(int eventID, AgentSML* pAgentSML, void* pCallData)
 {
-	switch (eventID) {
-		case smlEVENT_INPUT_PHASE_CALLBACK:
-		{
-			int callbacktype = static_cast<int>(reinterpret_cast<intptr_t>(pCallData));
+	(void)eventID;
+	assert(eventID == smlEVENT_INPUT_PHASE_CALLBACK);
 
-			switch(callbacktype) {
-			case TOP_STATE_JUST_CREATED:
-			  ProcessPendingInput(pAgentSML, callbacktype) ;
-			  break;
-			case NORMAL_INPUT_CYCLE:
-			  ProcessPendingInput(pAgentSML, callbacktype) ;
-			  if (pAgentSML->ReplayQuery())
-			  {
-				  pAgentSML->ReplayInputWMEs();
-			  }
-			  break;
-			case TOP_STATE_JUST_REMOVED:
-			  break;
-			}
-		}
-	} ;
+	int callbacktype = static_cast<int>(reinterpret_cast<intptr_t>(pCallData));
+
+	switch(callbacktype) 
+	{
+	case TOP_STATE_JUST_CREATED:
+	  ProcessPendingInput(pAgentSML, callbacktype) ;
+	  break;
+	case NORMAL_INPUT_CYCLE:
+	  ProcessPendingInput(pAgentSML, callbacktype) ;
+	  if (pAgentSML->ReplayQuery())
+	  {
+		  pAgentSML->ReplayInputWMEs();
+	  }
+	  break;
+	case TOP_STATE_JUST_REMOVED:
+	  break;
+	}
 }
 
 void InputListener::ProcessPendingInput(AgentSML* pAgentSML, int )

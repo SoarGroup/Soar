@@ -190,6 +190,7 @@ public:
 	// do not call these directly, these should only be called in DoCommandInternal
 	bool ParseAddWME(std::vector<std::string>& argv);
 	bool ParseAlias(std::vector<std::string>& argv);
+	bool ParseAllocate(std::vector<std::string>& argv);
 	bool ParseCaptureInput(std::vector<std::string>& argv);
 	bool ParseCD(std::vector<std::string>& argv);
 	bool ParseChunkNameFormat(std::vector<std::string>& argv);
@@ -279,6 +280,8 @@ public:
 	*        command's (the parameter) alias
 	*************************************************************/
 	bool DoAlias(const std::string* pCommand = 0, const std::vector<std::string>* pSubstitution = 0);
+
+	bool DoAllocate(const std::string& pool, int blocks);
 
 	/*************************************************************
 	* @brief capture-input command
@@ -853,6 +856,9 @@ protected:
 
 	// For help system
 	bool ListHelpTopics(const std::string& directory, std::list< std::string >& topics);
+
+	// stats, allocate
+	void GetMemoryPoolStatistics();
 
 ////////////////////////////////////////////
 	// New options code

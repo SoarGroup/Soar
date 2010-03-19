@@ -37,91 +37,122 @@
 #include "print.h"
 #include "utilities.h"
 
-const char * soar_callback_names[] = {    /* Must match order of       */
-  "none",                           /* SOAR_CALLBACK_TYPE        */
-  "system-startup",
-  "system-termination",
-  "after-init-agent",
-  "before-init-soar",
-  "after-init-soar",
-  "after-halt-soar",
-  "before-elaboration",
-  "after-elaboration",
-  "before-schedule-cycle",
-  "after-schedule-cycle",
-  "before-decision-cycle",
-  "after-decision-cycle",
-  "before-input-phase",
-  "input-phase-cycle",
-  "after-input-phase",
-  "before-preference-phase-cycle",
-  "after-preference-phase-cycle",
-  "before-wm-phase-cycle",
-  "after-wm-phase-cycle",
-  "before-output-phase",
-  "output-phase",
-  "after-output-phase",
-  "before-decision-phase-cycle",
-  "after-decision-phase-cycle",
-  "before-propose-phase-cycle",
-  "after-propose-phase-cycle",
-  "before-apply-phase-cycle",
-  "after-apply-phase-cycle",
-  "wm-changes",
-  "create-new-context",
-  "pop-context-stack",
-  "create-new-attribute-impasse",
-  "remove-attribute-impasse",
-  "production-just-added",
-  "production-just-about-to-be-excised",
-  "after-interrupt",
-  "after-halted",
-  "before-run-starts",
-  "after-run-ends",
-  "before-running",
-  "after-running",
-  "firing",
-  "retraction",
-  "system-parameter-changed",
-  "total-memory-usage-exceeded",
-  "xml-generated",
-  "print",
-  "log",  
-//  "read",				/* kjh CUSP B10 */
-//  "record",				/* kjh CUSP B10 */
-  /* Nothing corresponds to NUMBER_OF_CALLBACKS */
+const char * soar_callback_names[] = 
+{
+  stringify(NO_CALLBACK),
+  stringify(AFTER_INIT_AGENT_CALLBACK),
+  stringify(BEFORE_INIT_SOAR_CALLBACK),
+  stringify(AFTER_INIT_SOAR_CALLBACK),
+  stringify(AFTER_HALT_SOAR_CALLBACK),
+  stringify(BEFORE_ELABORATION_CALLBACK),
+  stringify(AFTER_ELABORATION_CALLBACK),
+  stringify(BEFORE_DECISION_CYCLE_CALLBACK),
+  stringify(AFTER_DECISION_CYCLE_CALLBACK),
+  stringify(BEFORE_INPUT_PHASE_CALLBACK),
+  stringify(INPUT_PHASE_CALLBACK),
+  stringify(AFTER_INPUT_PHASE_CALLBACK),
+  stringify(BEFORE_PREFERENCE_PHASE_CALLBACK),
+  stringify(AFTER_PREFERENCE_PHASE_CALLBACK),
+  stringify(BEFORE_WM_PHASE_CALLBACK),
+  stringify(AFTER_WM_PHASE_CALLBACK),
+  stringify(BEFORE_OUTPUT_PHASE_CALLBACK),
+  stringify(OUTPUT_PHASE_CALLBACK),
+  stringify(AFTER_OUTPUT_PHASE_CALLBACK),
+  stringify(BEFORE_DECISION_PHASE_CALLBACK),
+  stringify(AFTER_DECISION_PHASE_CALLBACK),
+  stringify(BEFORE_PROPOSE_PHASE_CALLBACK),
+  stringify(AFTER_PROPOSE_PHASE_CALLBACK),
+  stringify(BEFORE_APPLY_PHASE_CALLBACK),
+  stringify(AFTER_APPLY_PHASE_CALLBACK),
+  stringify(WM_CHANGES_CALLBACK),
+  stringify(CREATE_NEW_CONTEXT_CALLBACK),
+  stringify(POP_CONTEXT_STACK_CALLBACK),
+  stringify(CREATE_NEW_ATTRIBUTE_IMPASSE_CALLBACK),
+  stringify(REMOVE_ATTRIBUTE_IMPASSE_CALLBACK),
+  stringify(PRODUCTION_JUST_ADDED_CALLBACK),
+  stringify(PRODUCTION_JUST_ABOUT_TO_BE_EXCISED_CALLBACK),
+  stringify(AFTER_INTERRUPT_CALLBACK),
+  stringify(AFTER_HALTED_CALLBACK),
+  stringify(BEFORE_RUN_STARTS_CALLBACK),
+  stringify(AFTER_RUN_ENDS_CALLBACK),
+  stringify(BEFORE_RUNNING_CALLBACK),
+  stringify(AFTER_RUNNING_CALLBACK),
+  stringify(FIRING_CALLBACK),
+  stringify(RETRACTION_CALLBACK),
+  stringify(SYSTEM_PARAMETER_CHANGED_CALLBACK),
+  stringify(MAX_MEMORY_USAGE_CALLBACK),
+  stringify(XML_GENERATION_CALLBACK),
+  stringify(PRINT_CALLBACK),
+  stringify(LOG_CALLBACK),
+  stringify(INPUT_WME_GARBAGE_COLLECTED_CALLBACK),
+  //NUMBER_OF_CALLBACKS
 };
 
+std::map<SOAR_CALLBACK_TYPE, soar_timer_accumulator> callback_timers;
 
 void soar_init_callbacks (agent* the_agent)
 {
-  int ct; // ct was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)
+	int ct; // ct was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)
 
-  for (ct = 1; ct < NUMBER_OF_CALLBACKS; ct++)
-    {
-      the_agent->soar_callbacks[ct] = NIL;
-    }
+	for (ct = 1; ct < NUMBER_OF_CALLBACKS; ct++)
+	{
+		the_agent->soar_callbacks[ct] = NIL;
+	}
 }
 
-void soar_add_callback (agent* thisAgent, 
-			SOAR_CALLBACK_TYPE callback_type, 
-			soar_callback_fn fn, 
-			soar_callback_event_id eventid,
-			soar_callback_data data,
-			soar_callback_free_fn free_fn,
-			soar_callback_id id)
+int callback_count(agent* the_agent, SOAR_CALLBACK_TYPE callback_type)
 {
-  soar_callback * cb;
+	int count = 0;
+	for (cons * c = the_agent->soar_callbacks[callback_type];
+		c != NIL;
+		c = c->rest)
+	{
+		++count;
+	}
 
-  cb = new soar_callback;
-  cb->function      = fn;
-  cb->data          = data;
-  cb->eventid		= eventid ;
-  cb->free_function = free_fn;
-  cb->id            = id;
-  
-  push(thisAgent, cb, thisAgent->soar_callbacks[callback_type]);
+	return count;
 }
+
+#include <iostream>
+void soar_add_callback (agent* thisAgent, 
+						SOAR_CALLBACK_TYPE callback_type, 
+						soar_callback_fn fn, 
+						soar_callback_event_id eventid,
+						soar_callback_data data,
+						soar_callback_free_fn free_fn,
+						soar_callback_id id)
+{
+
+	soar_callback * cb;
+
+	cb = new soar_callback;
+	cb->function      = fn;
+	cb->data          = data;
+	cb->eventid		= eventid ;
+	cb->free_function = free_fn;
+	cb->id            = id;
+
+	push(thisAgent, cb, thisAgent->soar_callbacks[callback_type]);
+
+	//std::cout << soar_callback_enum_to_name(callback_type, false)
+	//	<< " (" << callback_count(thisAgent, callback_type) << ")";
+	//if (callback_timers.find(callback_type) == callback_timers.end())
+	//{
+	//	callback_timers[callback_type] = soar_timer_accumulator();
+	//	std::cout << " created timer";
+	//}
+	//std::cout << std::endl;
+}
+
+//void soar_print_detailed_callback_stats()
+//{
+//	for (std::map<SOAR_CALLBACK_TYPE, soar_timer_accumulator>::iterator iter = callback_timers.begin(); 
+//		iter != callback_timers.end(); ++iter)
+//	{
+//		std::cout << soar_callback_enum_to_name(iter->first, false) << ": " 
+//			<< iter->second.get_sec() << std::endl;
+//	}
+//}
 
 void soar_callback_data_free_string (soar_callback_data data)
 {
@@ -335,6 +366,7 @@ void soar_invoke_callbacks (agent* thisAgent,
     /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
 	   thisAgent->timers_phase.stop();
 	   thisAgent->timers_monitors_cpu_time[thisAgent->current_phase].update(thisAgent->timers_phase);
+	   callback_timers[callback_type].update(thisAgent->timers_phase);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
@@ -342,6 +374,7 @@ void soar_invoke_callbacks (agent* thisAgent,
     /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
        thisAgent->timers_kernel.stop();
        thisAgent->timers_input_function_cpu_time.update(thisAgent->timers_kernel);
+	   callback_timers[callback_type].update(thisAgent->timers_kernel);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
@@ -443,6 +476,7 @@ void soar_invoke_first_callback (agent* thisAgent,
   case AFTER_DECISION_CYCLE_CALLBACK:
 	   thisAgent->timers_phase.stop();
 	   thisAgent->timers_monitors_cpu_time[thisAgent->current_phase].update(thisAgent->timers_phase);
+	   callback_timers[callback_type].update(thisAgent->timers_phase);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
@@ -450,6 +484,7 @@ void soar_invoke_first_callback (agent* thisAgent,
     /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
 	   thisAgent->timers_kernel.stop();
 	   thisAgent->timers_input_function_cpu_time.update(thisAgent->timers_kernel);
+	   callback_timers[callback_type].update(thisAgent->timers_kernel);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;

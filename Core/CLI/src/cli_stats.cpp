@@ -96,6 +96,8 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 
 bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 
+	//soar_print_detailed_callback_stats();
+
 	if ( options.test(STATS_CSV) )
 	{
 		if (m_pAgentSoar->stats_db->get_status() == soar_module::disconnected) {
@@ -494,13 +496,18 @@ void CommandLineInterface::GetMemoryStats()
 	m_Result << std::setw(8) << m_pAgentSoar->memory_for_usage[POOL_MEM_USAGE] << " bytes for various memory pools\n";
 	m_Result << std::setw(8) << m_pAgentSoar->memory_for_usage[MISCELLANEOUS_MEM_USAGE] << " bytes for miscellaneous other things\n";
 
+	GetMemoryPoolStatistics();
+}
+
+void CommandLineInterface::GetMemoryPoolStatistics()
+{
 	m_Result << "Memory pool statistics:\n\n";
 #ifdef MEMORY_POOL_STATS
-	m_Result << "Pool Name        Used Items  Free Items  Item Size  Total Bytes\n";
-	m_Result << "---------------  ----------  ----------  ---------  -----------\n";
+	m_Result << "Pool Name        Used Items  Free Items  Item Size  Itm/Blk  Blocks  Total Bytes\n";
+	m_Result << "---------------  ----------  ----------  ---------  -------  ------  -----------\n";
 #else
-	m_Result << "Pool Name        Item Size  Total Bytes\n";
-	m_Result << "---------------  ---------  -----------\n";
+	m_Result << "Pool Name        Item Size  Itm/Blk  Blocks  Total Bytes\n";
+	m_Result << "---------------  ---------  -------  ------  -----------\n";
 #endif
 
 	for (memory_pool* p = m_pAgentSoar->memory_pools_in_use; p != NIL; p = p->next) 
@@ -512,7 +519,10 @@ void CommandLineInterface::GetMemoryStats()
 		m_Result << "  " << std::setw(10) << total_items - p->used_count;
 #endif
 		m_Result << "  " << std::setw(9) << p->item_size;
-		m_Result << "  " << std::setw(11) << p->num_blocks * p->items_per_block * p->item_size << "\n";
+		m_Result << "  " << std::setw(7) << p->items_per_block;
+		m_Result << "  " << std::setw(6) << p->num_blocks;
+		m_Result << "  " << std::setw(11) << p->num_blocks * p->items_per_block * p->item_size;
+		m_Result << "\n";
 	}
 }
 

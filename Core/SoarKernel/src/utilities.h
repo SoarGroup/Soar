@@ -130,4 +130,7 @@ extern void stats_db_store(agent* thisAgent, const unsigned long& dc_time, const
 
 extern void stats_close( agent *my_agent );
 
+// Useful for converting enumerations to string
+#define stringify( name ) # name
+
 #endif //UTILITIES_H
