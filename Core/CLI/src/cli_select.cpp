@@ -57,5 +57,5 @@ bool CommandLineInterface::DoSelect( const std::string* pOp )
 	else
 		select_next_operator( m_pAgentSoar, pOp->c_str() );
 	
-	return false;
+	return true;
 }
