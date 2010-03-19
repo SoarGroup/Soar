@@ -104,9 +104,6 @@ class AgentSML
 	friend class KernelSML ;
 	friend class InputListener ;
 
-public:
-	static void InputPhaseCallback( agent* agent, soar_callback_event_id eventid, soar_callback_data callbackdata, soar_call_data calldata );
-
 protected:
    // This function actually creates a wme in Soar (and the associated mappings between client and kernel side timetags)
    // Currently, only the functions below call this, so it's protected

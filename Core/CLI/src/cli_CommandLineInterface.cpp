@@ -43,6 +43,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	// Map command names to processing function pointers
 	m_CommandMap[Commands::kCLIAddWME]						= &cli::CommandLineInterface::ParseAddWME;
 	m_CommandMap[Commands::kCLIAlias]						= &cli::CommandLineInterface::ParseAlias;
+	m_CommandMap[Commands::kCLIAllocate]					= &cli::CommandLineInterface::ParseAllocate;
 	m_CommandMap[Commands::kCLICaptureInput]				= &cli::CommandLineInterface::ParseCaptureInput;
 	m_CommandMap[Commands::kCLICD]							= &cli::CommandLineInterface::ParseCD;
 	m_CommandMap[Commands::kCLIChunkNameFormat]				= &cli::CommandLineInterface::ParseChunkNameFormat;
@@ -119,6 +120,7 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	// FIXME: missing stuff like GDSPRINT?
 	m_EchoMap[Commands::kCLIAddWME]						= true ;
 	m_EchoMap[Commands::kCLIAlias]						= true ;
+	m_EchoMap[Commands::kCLIAllocate]					= true ;
 	m_EchoMap[Commands::kCLICaptureInput]				= true ;
 	m_EchoMap[Commands::kCLICD]							= true ;
 	m_EchoMap[Commands::kCLIChunkNameFormat]			= true ;

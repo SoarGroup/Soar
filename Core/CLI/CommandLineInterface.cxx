@@ -2,6 +2,7 @@
 
 #include "src/cli_addwme.cpp"
 #include "src/cli_alias.cpp"
+#include "src/cli_allocate.cpp"
 #include "src/cli_captureinput.cpp"
 #include "src/cli_cd.cpp"
 #include "src/cli_chunknameformat.cpp"
