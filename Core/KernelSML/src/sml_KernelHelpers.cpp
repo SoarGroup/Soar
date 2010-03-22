@@ -842,7 +842,8 @@ bool read_attribute_from_string (agent* agnt, Symbol *id, char * the_lexeme, Sym
 */
 void print_preference_and_source (agent* agnt, preference *pref,
 								  bool print_source,
-								  wme_trace_type wtt) 
+								  wme_trace_type wtt,
+								  double* selection_probability = 0) 
 {
 	print_string (agnt, "  ");
 	if (pref->attr == agnt->operator_symbol) {
@@ -855,6 +856,7 @@ void print_preference_and_source (agent* agnt, preference *pref,
 	}
 	if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
 	if (pref->o_supported) print (agnt, " :O "); else print (agnt, " :I ");
+	if (selection_probability) print (agnt, "(%.1f%%)", (*selection_probability) * 100.0);
 	print (agnt, "\n");
 	if (print_source) {
 		print (agnt, "    From ");
@@ -1047,12 +1049,49 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 	//print prefs for specified slot
 	print_with_symbols(soarAgent, "\nPreferences for %y ^%y:\n", id, attr);
 
-	for (i = 0; i < NUM_PREFERENCE_TYPES; i++) {
-		if (s->preferences[i]) {
+	for (i = 0; i < NUM_PREFERENCE_TYPES; i++) 
+	{
+		if (s->preferences[i]) 
+		{
 			print(soarAgent, "\n%ss:\n", preference_name[i]);
-			for (p = s->preferences[i]; p; p = p->next) {
+			for (p = s->preferences[i]; p; p = p->next) 
 				print_preference_and_source(soarAgent, p, print_prod, wtt);
-			}
+		}
+	}
+
+	// voigtjr march 2010
+	// print selection probabilities re: issue 18
+	// run preference semantics "read only" via _consistency_check
+	// returns a list of candidates without deciding which one in the event of indifference
+	preference* cand = 0;
+	byte impasse_type = run_preference_semantics_for_consistency_check(soarAgent, s, &cand);
+
+	// if the impasse isn't NONE_IMPASSE_TYPE, there's an impasse and we don't want to print anything
+	// if we have no candidates, we don't want to print anything
+	if ((impasse_type == NONE_IMPASSE_TYPE) && cand)
+	{
+		print(soarAgent, "\nselection probabilities:\n");
+
+		// some of this following code is redundant with code in exploration.cpp
+		// see exploration_choose_according_to_policy
+		// see exploration_compute_value_of_candidate
+		// see exploration_probabilistically_select
+		int count = 0;
+		double total_probability = 0;
+		// add up positive numeric values, count candidates
+		for (p = cand; p; p = p->next_candidate) 
+		{
+			exploration_compute_value_of_candidate(soarAgent, p, s);
+			++count;
+			if ( p->numeric_value > 0 )
+				total_probability += p->numeric_value;
+		}
+		assert (count != 0);
+		for (p = cand; p; p = p->next_candidate) 
+		{
+			// if total probability is zero, fall back to random
+			double prob = total_probability > 0.0 ? p->numeric_value / total_probability : 1.0 / count;
+			print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
 		}
 	}
 
