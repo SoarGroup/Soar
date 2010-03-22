@@ -509,6 +509,7 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 	const rl_param_container::learning_choices my_learning_policy = my_rl_enabled ? my_agent->rl_params->learning_policy->get_value() : rl_param_container::q;
 
 	// get preference values for each candidate
+	// see soar_ecPrintPreferences
 	for ( preference *cand = candidates; cand; cand = cand->next_candidate )
 		exploration_compute_value_of_candidate( my_agent, cand, s );
 
@@ -597,6 +598,8 @@ preference *exploration_randomly_select( preference *candidates )
  **************************************************************************/
 preference *exploration_probabilistically_select( preference *candidates )
 {
+	// IF THIS FUNCTION CHANGES, SEE soar_ecPrintPreferences
+
 	// count up positive numbers
 	double total_probability = 0.0;
 	for ( const preference *cand = candidates; cand; cand = cand->next_candidate )
