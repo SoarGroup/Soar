@@ -324,7 +324,10 @@ public class MainFrame
 	
 	private Shell helpShell;
 	
-	public synchronized void showHelp()
+	/**
+	 * @param optionalCommand pass null for TOC, or valid command to scroll to
+	 */
+	public synchronized void showHelp(String optionalCommand)
 	{
 		if (helpShell == null || helpShell.isDisposed()) {
 			
@@ -344,7 +347,10 @@ public class MainFrame
 						SWT.ICON_ERROR);
 				return;
 			}
-			browser.setUrl(MainFrame.class.getResource("/CommandLineInterface.html").toString());
+			String url = MainFrame.class.getResource("/CommandLineInterface.html").toString();
+			if (optionalCommand != null)
+				url += "#" + optionalCommand;
+			browser.setUrl(url);
 			
 			helpShell.open();
 		}

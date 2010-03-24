@@ -61,15 +61,16 @@ public class DebuggerCommands
 	
 	public String executeCommand(AbstractView view, String commandLine, boolean echoCommand)
 	{
-		if (commandLine.toLowerCase().startsWith(kClear))
+		String line = commandLine.toLowerCase();
+		if (line.startsWith(kClear))
 		{
 			view.clearDisplay() ;
 		}
-		else if (commandLine.toLowerCase().startsWith(kQuit) || commandLine.toLowerCase().startsWith(kExit))
+		else if (line.startsWith(kQuit) || line.startsWith(kExit))
 		{
 			m_Frame.close() ;
 		}
-		else if (commandLine.toLowerCase().startsWith(kEditProduction)) 
+		else if (line.startsWith(kEditProduction)) 
 		{
 			if (!m_Document.isVisualSoarConnected())
 			{
@@ -77,10 +78,21 @@ public class DebuggerCommands
 			}
 			return null; // this means DO send the command to Soar, that we are adding behavior
 		}
-		else if (commandLine.toLowerCase().startsWith(kHelp))
+		else if (line.startsWith(kHelp))
 		{
-			m_Frame.showHelp();
+			// pass argument if there is one
 			// send "" to soar, we are replacing behavior
+			String[] args = line.split(" ");
+			for (String arg : args) {
+				if (arg.startsWith(kHelp))
+					continue;
+				if (arg.isEmpty())
+					continue;
+				m_Frame.showHelp(arg);
+				return "";
+			}
+			m_Frame.showHelp(null);
+			
 		}
 		return ""; // this means do not send the command to Soar
 	}
