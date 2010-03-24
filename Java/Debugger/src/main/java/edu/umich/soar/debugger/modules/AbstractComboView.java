@@ -527,6 +527,7 @@ public abstract class AbstractComboView extends AbstractUpdateView implements Ag
 		// Check to see if this is a local command (handled directly by the debugger not Soar)
 		// We now allow for command line expansion of this too, so we can support aliases
 		String expanded = m_Frame.getExpandedCommand(command) ;
+		expanded = expanded.trim();
 		if (m_Frame.isDebuggerCommand(expanded))
 		{
 			m_Updating = false ;
