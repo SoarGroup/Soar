@@ -14,6 +14,7 @@ package edu.umich.soar.debugger.doc;
 import sml.* ;
 import sml.Kernel.RhsFunctionInterface;
 import sml.Kernel.UpdateEventInterface;
+import edu.umich.soar.SoarProperties;
 import edu.umich.soar.debugger.FrameList;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.DocumentThread2.CommandExecCommandLine;
@@ -461,9 +462,21 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		// Set the library location if the user has defined this explicitly
 		String libraryPath = frame.getAppStringProperty("Kernel.Library.Location") ;
 		if (libraryPath != null && libraryPath.length() > 0)
+			System.out.println("Setting Soar library location from user variable: " + libraryPath) ;
+		else 
 		{
-			System.out.println("Setting Soar library from user specified location: " + libraryPath) ;
-			m_Kernel.ExecuteCommandLine(getSoarCommands().setLibraryLocationCommand(libraryPath), null, false) ;
+			SoarProperties sp = new SoarProperties();
+			libraryPath = sp.getPrefix();
+			if (libraryPath != null)
+				System.out.println("Setting Soar library location: " + libraryPath) ;
+		}
+
+		if (libraryPath != null)
+			m_Kernel.ExecuteCommandLine(getSoarCommands().setLibraryLocationCommand(libraryPath), null) ;
+		else
+		{
+			libraryPath = m_Kernel.ExecuteCommandLine(getSoarCommands().getLibraryLocationCommand(), null);
+			System.out.println("Using default library location: " + libraryPath);
 		}
 		
 		// Choose a name for the agent
