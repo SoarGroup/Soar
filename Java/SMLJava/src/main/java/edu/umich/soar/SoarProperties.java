@@ -1,29 +1,38 @@
 package edu.umich.soar;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import java.util.regex.Matcher;
 
 public class SoarProperties
 {
-	public SoarProperties()
-	{
-	}
+	private static final String SOAR_HOME = "SOAR_HOME";
 	
 	public String getPrefix()
 	{
-		String prefix = tryJarLocation();
+		String prefix = tryEnvironment();
 		if (prefix != null) 
-			return prefix;
+			return escapeBackslashes(prefix);
 		
-		prefix = trySoarHome();
+		prefix = tryJarLocation();
 		if (prefix != null) 
-			return prefix;
-
+			return escapeBackslashes(prefix);
+		
 		// TODO: try looking at relative paths?
 		
 		return null;
+	}
+	
+	private String escapeBackslashes(String prefix) {
+		return prefix.replaceAll(Matcher.quoteReplacement("\\"), Matcher.quoteReplacement("\\\\"));
+	}
+	
+	private String tryEnvironment()
+	{
+		String env = System.getenv(SOAR_HOME);
+		if (env != null) 
+			if (!env.endsWith(File.separator))
+				return env.concat(File.separator);
+		return env;
 	}
 	
 	private String tryJarLocation() 
@@ -43,7 +52,7 @@ public class SoarProperties
 				int index = codeLoc.lastIndexOf(File.separator);
 				if (index < 0)
 				{
-					codeLoc = null;
+					return null;
 				}
 				codeLoc = codeLoc.substring(0, index);
 			}
@@ -53,33 +62,12 @@ public class SoarProperties
 		return null;
 	}
 	
-	private String trySoarHome()
-	{
-		// If not being run from a jar, we should try soar.home
-		Properties properties = new Properties();
-		
-		InputStream is = ClassLoader.getSystemResourceAsStream("soar.properties");
-		if (is == null) 
-			return null;
-		
-		try 
-		{
-		    properties.load(is);
-		} catch (IOException e) 
-		{
-			// No properties. TODO: try some other paths relative to CWD?
-		    e.printStackTrace();
-		    return null;
-		}
-		
-		return properties.getProperty("soar.home") + File.separator;
-	}
-	
 	public static void main(String[] args)
 	{
 		SoarProperties p = new SoarProperties();
+		System.out.println("getPrefix: " + p.getPrefix());
+		System.out.println("tryEnvironment: " + p.tryEnvironment());
 		System.out.println("tryJarLocation: " + p.tryJarLocation());
-		System.out.println("trySoarHome: " + p.trySoarHome());
 	}
 
 }

@@ -27,9 +27,6 @@
       <fileset dir="${soarbuild}">
 		<include name="**/*.class" />
       </fileset>
-      <fileset dir="${soarbuild}">
-		<include name="**/*.properties" />
-      </fileset>
       <fileset dir="src">
 		<include name="sml/*" />
       </fileset>
@@ -39,9 +36,6 @@
 
   <target name="build-java">
     <mkdir dir="${soarbuild}" />
-    <propertyfile file="${soarbuild}/soar.properties" comment="Soar properties">
-      <entry key="soar.home" value="${soarprefix}" />
-    </propertyfile>
     <javac
        srcdir="src"
        includes="**/*.java"
