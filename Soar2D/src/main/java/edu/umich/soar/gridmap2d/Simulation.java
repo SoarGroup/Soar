@@ -52,7 +52,7 @@ public class Simulation {
 		}
 		
 		// Initialize Soar
-		cogArch = new Soar(config.soarConfig(), config.clientConfigs(), game, getBasePath());
+		cogArch = new Soar(config.soarConfig(), config.clientConfigs(), game);
 		Gridmap2D.control.setCogArch(cogArch);
 		if (Gridmap2D.wm.using()) {
 			Gridmap2D.wm.setCogArch(cogArch);
@@ -261,14 +261,6 @@ public class Simulation {
 		return world.isTerminal();
 	}
 
-	public String getBasePath() {
-		return System.getProperty("user.dir") + System.getProperty("file.separator");
-	}
-	
-	public String getMapPath() {
-		return Gridmap2D.simulation.getBasePath() + "config" + System.getProperty("file.separator") +  "maps" + System.getProperty("file.separator") + game.id();
-	}
-	
 	public void interrupted(String agentName) {
 		world.interrupted(agentName);
 	}

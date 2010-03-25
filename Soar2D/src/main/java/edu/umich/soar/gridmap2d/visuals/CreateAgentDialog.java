@@ -93,7 +93,8 @@ public class CreateAgentDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 				fd.setText("Open");
-				fd.setFilterPath(cogArch.getAgentPath() + Gridmap2D.config.game().id());
+				String path = Gridmap2D.parent + File.separator + "agents" + Gridmap2D.config.game().id();
+				fd.setFilterPath(path);
 				if (lastProductions == null) {
 				} else {
 					fd.setFileName(lastProductions.getAbsolutePath());
