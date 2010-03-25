@@ -1,6 +1,6 @@
 <project name="soar-loggerjava" default="build" basedir=".">
 
-	<property name="manifest.classpath" value="soar-smljava-${version}.jar swt.jar" />
+	<property name="manifest.classpath" value="soar-smljava-${version}.jar swt.jar sml.jar commons-logging-1.1.1.jar log4j-1.2.15.jar" />
 	<property name="jar.main.class" value="edu.umich.soar.logger.MainFrame" />
       
 	<import file="../Java/SMLJava/build-common.xml" />
