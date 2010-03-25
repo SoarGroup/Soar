@@ -39,8 +39,6 @@ import edu.umich.soar.gridmap2d.world.World;
 public class Gridmap2D {
 	private static final Log logger = LogFactory.getLog(Gridmap2D.class);
 	
-	public static File home;
-	
 	public static Preferences preferences = Preferences.userNodeForPackage(Gridmap2D.class);
 	
 	public static SimConfig config = null;
@@ -159,13 +157,7 @@ public class Gridmap2D {
 		// See if it exists:
 		File configFile = new File(configPath);
 		if (!configFile.exists()) {
-			configFile = new File (home + File.separator + configPath);
-			if (!configFile.exists()) {
-				configFile = new File (home + File.separator + "config" + File.separator + configPath);
-				if (!configFile.exists()) {
-					fatalError("Couldn't find " + configPath);
-				}
-			}
+			fatalError("Couldn't find " + configPath);
 		}
 		
 		if (!configFile.isFile()) {
@@ -190,7 +182,7 @@ public class Gridmap2D {
 			File r = new File(file) ;
 			if (r.exists()) return;
 			
-			String jarpath = "/" + r.getPath() ;
+			String jarpath = "/" + file;
 			InputStream is = this.getClass().getResourceAsStream(jarpath) ;
 			if (is == null) {
 				logger.error("Resource not found: " + jarpath) ;
