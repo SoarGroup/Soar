@@ -1,0 +1,31 @@
+############################################################################
+### This program proposes the move-to-food operator in any direction
+### that contains normal or bonus food.  If there is no food nearby, no
+### instances of the operator will be proposed and the halt operator
+### will be proposed.
+
+sp {propose*move-to-food
+   (state <s> ^io.input-link.my-location.<dir>.contant 
+                 << normalfood bonusfood >>)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move-to-food
+        ^direction <dir>)}
+
+sp {apply*move-to-food
+   (state <s> ^io.output-link <ol>
+              ^operator <o>)
+   (<o> ^name move-to-food
+        ^direction <dir>)
+-->
+   (<ol> ^moves.direction <dir>)}
+
+sp {apply*move-to-food*remove-move
+   (state <s> ^operator.name move-to-food
+              ^io.output-link <ol>)
+   (<ol> ^move <move>)
+   (<move> ^status complete)
+-->
+   (<ol> ^move <move> -)}
+
+
