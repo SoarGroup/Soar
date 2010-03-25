@@ -46,7 +46,7 @@ public class Gridmap2D {
 	public static final Simulation simulation = new Simulation();
 	public static final Controller control = new Controller();
 
-	private static final String parent = System.getProperty("user.dir") + File.separator + "config";
+	public static final String parent = System.getProperty("user.dir") + File.separator + "soar2d";
 
 	public Gridmap2D(String[] args) {
 		boolean installed = false;
@@ -110,7 +110,7 @@ public class Gridmap2D {
 			configPath = args[0];
 		} else {
 			if (wm.initialize()) {
-				configPath = wm.promptForConfig(parent);
+				configPath = wm.promptForConfig(parent + File.separator + "config");
 			} else {
 				fatalError(Names.Errors.noConfig);
 			}

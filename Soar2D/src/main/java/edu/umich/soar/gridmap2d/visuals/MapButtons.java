@@ -1,5 +1,7 @@
 package edu.umich.soar.gridmap2d.visuals;
 
+import java.io.File;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,7 +35,8 @@ public class MapButtons extends Composite {
 	void changeMap() {
 		FileDialog fd = new FileDialog(getShell(), SWT.OPEN);
 		fd.setText("Open");
-		fd.setFilterPath(Gridmap2D.simulation.getMapPath());
+		String path = Gridmap2D.parent + File.separator + "config" + File.separator + "maps" + File.separator + Gridmap2D.config.game().id();
+		fd.setFilterPath(path);
 		VisualWorld.internalRepaint = true;
 		String map = fd.open();
 		VisualWorld.internalRepaint = false;
