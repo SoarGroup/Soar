@@ -1,0 +1,4 @@
+(move: east)
+(move: south)
+(move: west)
+(move: north)
