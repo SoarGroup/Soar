@@ -74,7 +74,7 @@ public class MainFrame
 	public static final FontData kDefaultFontData = new FontData("Courier New", 8, SWT.NORMAL);
 
 	private static final String kNoAgent = "<no agent>";
-	private static final String kWindowLayoutFile = "SoarDebuggerWindows" + Document.kVersion + ".dlf";
+	private static final String kWindowLayoutFile = "SoarDebuggerWindows" + Document.m_SoarProperties.getVersion() + ".dlf";
 
 	private Composite m_Parent = null;
 
@@ -624,12 +624,12 @@ public class MainFrame
 
 	public void useDefaultLayout()
 	{
-		getMainWindow().useDefaultLayout("default-layout-" + Document.kVersion + ".dlf");
+		getMainWindow().useDefaultLayout("default-layout-" + Document.m_SoarProperties.getVersion() + ".dlf");
 	}
 
 	public void useDefaultTextLayout()
 	{
-		getMainWindow().useDefaultLayout("default-text-" + Document.kVersion + ".dlf");
+		getMainWindow().useDefaultLayout("default-text-" + Document.m_SoarProperties.getVersion() + ".dlf");
 	}
 
 	/***************************************************************************
@@ -756,8 +756,8 @@ public class MainFrame
 		
 		// Install default layout files
 		install(new String[] {
-				"default-layout-" + Document.kVersion + ".dlf", 
-				"default-text-" + Document.kVersion + ".dlf" });
+				"default-layout-" + Document.m_SoarProperties.getVersion() + ".dlf", 
+				"default-text-" + Document.m_SoarProperties.getVersion() + ".dlf" });
 
 		// If that failed, load the default layout
 		if (!loaded)

@@ -83,7 +83,7 @@
 				SubSystem="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)\$(TargetName).lib"
+				ImportLibrary="$(OutDir)\..\lib\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -173,7 +173,7 @@
 				AssemblyDebug="1"
 				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)\$(TargetName).lib"
+				ImportLibrary="$(OutDir)\..\lib\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -269,7 +269,7 @@
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary="$(OutDir)\$(TargetName).lib"
+				ImportLibrary="$(OutDir)\..\lib\$(TargetName).lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -364,7 +364,7 @@
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
-				ImportLibrary="$(OutDir)\$(TargetName).lib"
+				ImportLibrary="$(OutDir)\..\lib\$(TargetName).lib"
 				TargetMachine="17"
 			/>
 			<Tool

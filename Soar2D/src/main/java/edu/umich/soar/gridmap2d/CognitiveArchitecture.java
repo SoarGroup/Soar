@@ -28,8 +28,6 @@ public interface CognitiveArchitecture {
 
 	void shutdown();
 
-	String getAgentPath();
-
 	boolean isClientConnected(String debuggerClient);
 
 	boolean haveAgents();

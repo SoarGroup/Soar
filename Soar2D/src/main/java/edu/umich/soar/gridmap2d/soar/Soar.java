@@ -54,7 +54,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	}
 	
 	private Map<String, AgentData> agents = new HashMap<String, AgentData>();
-	private String basePath;
 	private Map<String, ClientConfig> clients;
 	private int maxMemoryUsage;
 	private boolean soarPrint;
@@ -68,8 +67,7 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 	 * 
 	 * @throws IllegalStateException If there is an unrecoverable error initializing Soar
 	 */
-	public Soar(SoarConfig config, Map<String, ClientConfig> clients, Game game, String basePath) {
-		this.basePath = basePath;
+	public Soar(SoarConfig config, Map<String, ClientConfig> clients, Game game) {
 		this.runTilOutput = config.runTilOutput(game);
 		
 		this.clients = clients;
@@ -278,11 +276,6 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 
 	}
 
-	@Override
-	public String getAgentPath() {
-		return basePath + "agents" + System.getProperty("file.separator");
-	}
-	
 	/**
 	 * Logger for Kernel print events
 	 * @author Scott Lathrop

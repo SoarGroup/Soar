@@ -14,6 +14,7 @@ package edu.umich.soar.debugger.doc;
 import sml.* ;
 import sml.Kernel.RhsFunctionInterface;
 import sml.Kernel.UpdateEventInterface;
+import edu.umich.soar.SoarProperties;
 import edu.umich.soar.debugger.FrameList;
 import edu.umich.soar.debugger.MainFrame;
 import edu.umich.soar.debugger.doc.DocumentThread2.CommandExecCommandLine;
@@ -43,8 +44,8 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	public static final String kCloseOnDestroyProperty  = "Agent.CloseOnDestroy" ;
 	private static final String kConnectionName = "java-debugger" ;
 	
-	/** This version is used to name the settings files uniquely, so there's no collisions if you use an older debugger.  Should be bumped with every release (and add the current to the end of kPrevVersion) */
-	public static final String kVersion = "9_3_0" ;
+	/** Used for version string, paths, other stuff */
+	public static final SoarProperties m_SoarProperties = new SoarProperties();
 	
 	/** This list of versions will be checked, in order from first to last, when looking for settings to copy.  This only comes into play on the first launch of a new version of the debugger */
 	/** There's no need to have this list get too long--3 versions should be plenty.  If we change the layout/properties in a way that's not backwards compatible, need to clear this list. **/
@@ -114,7 +115,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		String version = "1.0" ;
 		try
 		{
-			m_AppProperties = new AppProperties(getPropertyFileName(kVersion), "Soar Debugger Settings") ;
+			m_AppProperties = new AppProperties(getPropertyFileName(m_SoarProperties.getVersion()), "Soar Debugger Settings") ;
 			boolean found = this.m_AppProperties.Load(version) ;
 			
 			if (!found)
@@ -128,7 +129,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 
 				// Whether we succeeded with loading an earlier version or not we need to use the new version when we save
 				// so switch the filename now.
-				m_AppProperties.setFilename(getPropertyFileName(kVersion)) ;
+				m_AppProperties.setFilename(getPropertyFileName(m_SoarProperties.getVersion())) ;
 					
 			}
 		} catch (IOException e)
@@ -461,9 +462,20 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		// Set the library location if the user has defined this explicitly
 		String libraryPath = frame.getAppStringProperty("Kernel.Library.Location") ;
 		if (libraryPath != null && libraryPath.length() > 0)
+			System.out.println("Setting Soar library location from user variable: " + libraryPath) ;
+		else 
 		{
-			System.out.println("Setting Soar library from user specified location: " + libraryPath) ;
-			m_Kernel.ExecuteCommandLine(getSoarCommands().setLibraryLocationCommand(libraryPath), null, false) ;
+			libraryPath = m_SoarProperties.getPrefix();
+			if (libraryPath != null)
+				System.out.println("Setting Soar library location: " + libraryPath) ;
+		}
+
+		if (libraryPath != null)
+			m_Kernel.ExecuteCommandLine(getSoarCommands().setLibraryLocationCommand(libraryPath), null) ;
+		else
+		{
+			libraryPath = m_Kernel.ExecuteCommandLine(getSoarCommands().getLibraryLocationCommand(), null);
+			System.out.println("Using default library location: " + libraryPath);
 		}
 		
 		// Choose a name for the agent
