@@ -44,8 +44,8 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 	public static final String kCloseOnDestroyProperty  = "Agent.CloseOnDestroy" ;
 	private static final String kConnectionName = "java-debugger" ;
 	
-	/** This version is used to name the settings files uniquely, so there's no collisions if you use an older debugger.  Should be bumped with every release (and add the current to the end of kPrevVersion) */
-	public static final String kVersion = "9_3_0" ;
+	/** Used for version string, paths, other stuff */
+	public static final SoarProperties m_SoarProperties = new SoarProperties();
 	
 	/** This list of versions will be checked, in order from first to last, when looking for settings to copy.  This only comes into play on the first launch of a new version of the debugger */
 	/** There's no need to have this list get too long--3 versions should be plenty.  If we change the layout/properties in a way that's not backwards compatible, need to clear this list. **/
@@ -115,7 +115,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		String version = "1.0" ;
 		try
 		{
-			m_AppProperties = new AppProperties(getPropertyFileName(kVersion), "Soar Debugger Settings") ;
+			m_AppProperties = new AppProperties(getPropertyFileName(m_SoarProperties.getVersion()), "Soar Debugger Settings") ;
 			boolean found = this.m_AppProperties.Load(version) ;
 			
 			if (!found)
@@ -129,7 +129,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 
 				// Whether we succeeded with loading an earlier version or not we need to use the new version when we save
 				// so switch the filename now.
-				m_AppProperties.setFilename(getPropertyFileName(kVersion)) ;
+				m_AppProperties.setFilename(getPropertyFileName(m_SoarProperties.getVersion())) ;
 					
 			}
 		} catch (IOException e)
@@ -465,8 +465,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 			System.out.println("Setting Soar library location from user variable: " + libraryPath) ;
 		else 
 		{
-			SoarProperties sp = new SoarProperties();
-			libraryPath = sp.getPrefix();
+			libraryPath = m_SoarProperties.getPrefix();
 			if (libraryPath != null)
 				System.out.println("Setting Soar library location: " + libraryPath) ;
 		}

@@ -93,7 +93,7 @@ public class CreateAgentDialog extends Dialog {
 			public void widgetSelected(SelectionEvent e) {
 				FileDialog fd = new FileDialog(dialog, SWT.OPEN);
 				fd.setText("Open");
-				String path = Gridmap2D.parent + File.separator + "agents" + Gridmap2D.config.game().id();
+				String path = Gridmap2D.parent + File.separator + "agents" + File.separator + Gridmap2D.config.game().id();
 				fd.setFilterPath(path);
 				if (lastProductions == null) {
 				} else {

@@ -146,8 +146,7 @@ public class DemoMenu
 	
 	public String getLibraryLocation()
 	{
-		SoarProperties sp = new SoarProperties();
-		return sp.getPrefix();
+		return Document.m_SoarProperties.getPrefix();
 	}
 	
 	/*
