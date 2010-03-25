@@ -6,6 +6,12 @@ import java.util.regex.Matcher;
 public class SoarProperties
 {
 	private static final String SOAR_HOME = "SOAR_HOME";
+	private static final String VERSION = "9_3_0";
+	
+	public String getVersion()
+	{
+		return VERSION;
+	}
 	
 	public String getPrefix()
 	{
