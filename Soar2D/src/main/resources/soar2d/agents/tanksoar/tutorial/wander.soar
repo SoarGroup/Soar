@@ -1,0 +1,62 @@
+
+sp {propose*move
+   (state <s> ^io.input-link.blocked.forward no)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name move
+        ^actions.move.direction forward)}
+
+ sp {propose*turn
+   (state <s> ^io.input-link.blocked <b>)
+   (<b> ^forward yes
+        ^ { << left right >> <dir> } no)
+-->
+   (<s> ^operator <o> + =)
+   (<o> ^name turn 
+        ^actions <a>)
+   (<a> ^rotate.direction <dir>
+        ^radar.switch on
+        ^radar-power.setting 13)}
+
+sp {propose*turn*backward
+   (state <s> ^io.input-link.blocked <b>)
+   (<b> ^forward yes ^left yes ^right yes)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name turn 
+        ^actions.rotate.direction left)}
+
+sp {propose*radar-off
+   (state <s> ^io.input-link <il>)
+   (<il> ^radar-status on
+         ^radar-setting <> 0
+         ^radar <r>)
+  -(<r> ^ << energy health missiles tank >> <x>)
+-->
+   (<s> ^operator <o> + >)
+   (<o> ^name radar-off
+        ^actions.radar.switch off)}
+
+sp {select*radar-off*move
+   (state <s> ^operator <o1> +
+              ^operator <o2> +)
+   (<o1> ^name radar-off)
+   (<o2> ^name move)
+-->
+   (<s> ^operator <o1> > <o2>)}
+
+sp {apply*operator*create-action-command
+   (state <s> ^operator <o>
+              ^io.output-link <ol>)
+   (<o> ^actions <act>)
+   (<act> ^<att> <value>)
+-->
+   (<ol> ^<att> <value>)}
+
+sp {apply*operator*remove-command
+   (state <s> ^operator.actions
+              ^io.output-link <ol>)
+   (<ol> ^<att> <value>)
+   (<value> ^status complete)
+-->
+   (<ol> ^<att> <value> -)}
