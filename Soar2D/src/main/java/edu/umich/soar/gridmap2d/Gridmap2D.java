@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.SoarProperties;
 import edu.umich.soar.config.ParseError;
 import edu.umich.soar.gridmap2d.config.SimConfig;
 import edu.umich.soar.gridmap2d.visuals.WindowManager;
@@ -39,7 +41,8 @@ import edu.umich.soar.gridmap2d.world.World;
 public class Gridmap2D {
 	private static final Log logger = LogFactory.getLog(Gridmap2D.class);
 	
-	public static Preferences preferences = Preferences.userNodeForPackage(Gridmap2D.class);
+	public static final Preferences preferences;
+	public static final SoarProperties soarProperties = new SoarProperties();
 	
 	public static SimConfig config = null;
 	public static final WindowManager wm = new WindowManager();
@@ -48,6 +51,23 @@ public class Gridmap2D {
 
 	public static final String parent = System.getProperty("user.dir") + File.separator + "soar2d";
 
+	static {
+		final String VERSION = "version";
+		Preferences temp = Preferences.userNodeForPackage(Gridmap2D.class);
+		String version = temp.get(VERSION, null);
+		if (version == null || !version.equals(soarProperties.getVersion())) {
+			// different version
+			try {
+				temp.removeNode();
+			} catch (BackingStoreException e) {
+				e.printStackTrace();
+			}
+			temp = Preferences.userNodeForPackage(Gridmap2D.class);
+			temp.put(VERSION, soarProperties.getVersion());
+		}
+		preferences = temp;
+	}
+	
 	public Gridmap2D(String[] args) {
 		boolean installed = false;
 		for (String s : resources) {
