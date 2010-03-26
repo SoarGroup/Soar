@@ -12,8 +12,8 @@ Soar can be downloaded from the Soar home page at:
 
 Soar releases include source code, demo programs, and a number of
 applications that serve as examples of how to interface Soar to an external
-environment.  There is support for integrating Soar with C++, Java, Python,
-and C# applications. Many tools that aid in development of Soar programs
+environment.  There is support for integrating Soar with C++, Java, and
+Python applications.  Many tools that aid in development of Soar programs
 are also included.
 
 [Reinforcement Learning (RL)]
@@ -62,6 +62,14 @@ duplicates first):
 	http://code.google.com/p/soar/issues/list	
 
 [Important Changes]
+
+There have been performance, correctness, and stability improvements across
+the board, especially with the learning mechanisms, which are all disabled
+by default.
+
+Long-term identifiers are now integrated in all symbolic memory systems.
+More information on long-term identifiers can be found in section 4.2 of
+the Soar-SMem manual in the documentation folder.
 
 The allocate command has been added to Soar to allow agents to set aside
 memory before starting a run so that the cost of allocation is not incurred
@@ -144,6 +152,34 @@ including the wiki and issue tracker. Please check it out at
 	http://soar.googlecode.com
 
 Much more documentation and example code is on the Google Code wiki.
+
+A new "smem --init" command has been introduced for reinitialization of all
+symbolic memory systems.
+
+RL: Greatly improved template performance.
+
+RL: Added ability to disable hierarchical discounting.
+
+Working Memory Activation (WMA): Rewritten from scratch for performance (no
+more ring) and correctness (including no more need for top-level ref
+counts), many fewer parameters.
+
+WMA: Printing working memory with the "internal" flag shows activation
+value.
+
+EpMem: Added ability to output visualization of episodes in Graphviz.
+
+Epmem: Removal of lots of legacy code (including "tree" mode).
+
+Epmem: Status WME (success/failure) refers to the initiating command.
+
+SMem: Added ability to output visualization of semantic store in Graphviz.
+
+SMem: Storage occurs at the end of every phase.
+
+SMem: Greatly improved retrieval performance.
+
+SMem: Status WME (success/failure) refers to the initiating command.
 
 The build procedure has changed dramatically and is detailed on the Google
 Code wiki.
