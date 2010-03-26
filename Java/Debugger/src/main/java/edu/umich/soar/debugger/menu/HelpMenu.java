@@ -32,7 +32,7 @@ public class HelpMenu {
 	private AbstractAction m_Homepage	= new AbstractAction("Soar Home page") 		    { public void actionPerformed(ActionEvent e) { open("http://sitemaker.umich.edu/soar") ; } } ;
 	private AbstractAction m_Wiki 	 	= new AbstractAction("Soar Wiki (many topics)") { public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/Home?tm=6") ; } } ;
 	private AbstractAction m_CLI 	 	= new AbstractAction("Soar Command Line Help")  { public void actionPerformed(ActionEvent e) { open("http://code.google.com/p/soar/wiki/CommandLineInterface") ; } } ;
-	private AbstractAction m_Manual 	= new AbstractAction("Soar Manual") 			{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/Soar8Manual.pdf") ; } } ;
+	private AbstractAction m_Manual 	= new AbstractAction("Soar Manual") 			{ public void actionPerformed(ActionEvent e) { local("/share/soar/Documentation/SoarManual.pdf") ; } } ;
 	
 	/** Create this menu */
 	public static HelpMenu createMenu(MainFrame frame, Document doc, String title)
