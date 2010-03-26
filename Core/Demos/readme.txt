@@ -15,7 +15,7 @@
 #    Demonstrates look-ahead search and chunking.
 #    Has graphical interface
 #    Also include fifteen puzzle - which is not solved for the given initial and final states.
-# Hello-world: simpest example of Soar rules and operators
+# Hello-world: simplest example of Soar rules and operators
 # Left-right: 
 #    Trivial example for RL.
 # MAC: Missionaries and Cannibals
