@@ -197,9 +197,9 @@ if GetOption('platform') == '64':
 	print "*"
 	env.Append(CPPFLAGS = Split('-m64 -fPIC'))
 	env.Append(LINKFLAGS = ['-m64'])
-elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1:
-	env.Append(CPPFLAGS = Split('-m32 -march=native'))
-	env.Append(LINKFLAGS = Split('-m32 -march=native'))
+#elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1:
+#	env.Append(CPPFLAGS = Split('-m32 -march=native'))
+#	env.Append(LINKFLAGS = Split('-m32 -march=native'))
 else:
 	env.Append(CPPFLAGS = ['-m32'])
 	env.Append(LINKFLAGS = ['-m32'])
