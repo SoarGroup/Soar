@@ -11,11 +11,11 @@ import urllib
 import hashlib
 import subprocess
 
-# swt.jar 3.4 digests
-OSX_DIGEST = '7dab557faeb4e182281be824baebd856'
-OSX64_DIGEST = '4de6f7460e2695ce5b66ece700c8d6f8'
-GTK_DIGEST = '28b79f2cb0bc09c1efd4b711c0cd52a7'
-GTK64_DIGEST = '69358481ec9d44b068bfe1dc1da57737'
+# swt.jar 3.5 digests
+OSX_DIGEST = 'a3251234739ab7aa887dd8a3f5b9340b'
+OSX64_DIGEST = '5e49b61aae40258ed2883cee659bcba4'
+GTK_DIGEST = '12306068dbc3477f883bd7835a687cb5'
+GTK64_DIGEST = '1eb148aedd135754ed179782cfefd700'
 
 def CheckJarmd5(jarpath):
         # open the swt.jar file
@@ -43,8 +43,8 @@ def CheckJarmd5(jarpath):
                 else:
                         return GTK_DIGEST == m.hexdigest()
 
+jarpath = os.path.join('SMLJava', 'lib', 'swt.jar')
 def CheckForSWTJar():
-        jarpath = os.path.join('SMLJava', 'lib', 'swt.jar')
         if os.path.exists(jarpath):
                 if CheckJarmd5(jarpath):
                         return True
@@ -90,4 +90,8 @@ Import('javaRunAnt')
 javaRunAnt('Java', 
 	['soar-smljava','soar-debugger','soar-visualsoar'], 
 	['SMLJava/src','Debugger/src','VisualSoar/src'])
+
+
+Import('env')
+env.Install('$PREFIX/share/java', jarpath)
 
