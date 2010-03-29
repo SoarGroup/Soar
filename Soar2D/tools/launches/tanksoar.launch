@@ -12,6 +12,6 @@
 <mapEntry key="DYLD_LIBRARY_PATH" value="${env_var:SOAR_HOME}/lib"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.umich.soar.gridmap2d.Gridmap2D"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="config/tanksoar.cnf"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="soar2d/config/tanksoar.cnf"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="soar-soar2d"/>
 </launchConfiguration>
