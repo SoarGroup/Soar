@@ -156,7 +156,11 @@ implements PaintListener, GameListener, ControlListener {
         dpy = new Display();
         shell = new Shell(dpy, SWT.TITLE | SWT.CLOSE | SWT.MIN | SWT.RESIZE);
         
-        GridLayout layout = new GridLayout();
+		Image small = new Image(dpy, TowersOfHanoi.class.getResourceAsStream("/toh16.png"));
+		Image large = new Image(dpy, TowersOfHanoi.class.getResourceAsStream("/toh.png"));
+		shell.setImages(new Image[] { small, large });
+
+		GridLayout layout = new GridLayout();
         layout.numColumns = 5;
         shell.setLayout(layout);
         shell.setText("Towers of Hanoi");

@@ -1,6 +1,6 @@
 <project name="soar-soar2d" default="build" basedir=".">
 
-	<property name="manifest.classpath" value="stopwatch-0.4-with-deps.jar commons-logging-1.1.1.jar log4j-1.2.15.jar soar-smljava-${version}.jar soar-debugger-${version}.jar swt.jar" />
+	<property name="manifest.classpath" value="stopwatch-0.4-with-deps.jar commons-logging-1.1.1.jar log4j-1.2.15.jar soar-smljava-${version}.jar soar-debugger-${version}.jar swt.jarsml.jar" />
 	<property name="jar.main.class" value="edu.umich.soar.gridmap2d.Gridmap2D" />
       
 	<import file="../Java/SMLJava/build-common.xml" />
