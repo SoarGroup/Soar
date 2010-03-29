@@ -1323,10 +1323,10 @@ bool Agent::SpawnDebugger(int port, const char* pLibraryLocation)
 		to_string(port, portstring);
 
 #ifdef SCONS_DARWIN
-		execl("java", "java", "-XstartOnFirstThread", "-jar", jarstring.str().c_str(), "-remote", 
+		execlp("java", "java", "-XstartOnFirstThread", "-jar", jarstring.str().c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #else
-		execl("java", "java", "-jar", jarstring.str().c_str(), "-remote", 
+		execlp("java", "java", "-jar", jarstring.str().c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #endif
 		// does not return on success
