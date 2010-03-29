@@ -46,7 +46,9 @@ import java.io.*;
 import javax.swing.undo.*;
 import javax.swing.event.*;
 import javax.swing.border.TitledBorder;
+
 import java.util.*;
+import java.util.List;
 
 // The global application class
 
@@ -165,7 +167,7 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
     {
 		// Set the Title of the window
 		super(s);
-
+		
 		// Use Java toolkit to access user's screen size and set VisualSoar window to 90% of that size
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension d = tk.getScreenSize();
@@ -201,6 +203,11 @@ public class MainFrame extends JFrame implements Kernel.StringEventInterface
             });//addWindowListener()
         
         d_templateManager.load();
+        
+        List<Image> icons = new ArrayList<Image>();
+        icons.add(tk.getImage(MainFrame.class.getResource("/vs.png")));
+        icons.add(tk.getImage(MainFrame.class.getResource("/vs16.png")));
+		this.setIconImages(icons);
 	}
 
 ////////////////////////////////////////

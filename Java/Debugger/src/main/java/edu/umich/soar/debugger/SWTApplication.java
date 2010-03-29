@@ -11,6 +11,7 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger;
 
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.*;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.*;
@@ -221,6 +222,10 @@ public class SWTApplication
 			display = new Display() ;
 		}
 		Shell shell = new Shell(display) ;
+		
+		Image small = new Image(display, SWTApplication.class.getResourceAsStream("/images/debugger16.png"));
+		Image large = new Image(display, SWTApplication.class.getResourceAsStream("/images/debugger.png"));
+		shell.setImages(new Image[] { small, large });
 		
 		// We default to showing the contents of the clipboard in the search dialog
 		// so clear it when the app launches, so we don't get random junk in there.
