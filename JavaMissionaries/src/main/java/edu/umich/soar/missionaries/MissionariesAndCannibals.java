@@ -153,6 +153,11 @@ implements Runnable, PaintListener, MacEnvironmentListener {
         shell = new Shell(dpy, SWT.TITLE | SWT.CLOSE | SWT.MIN);
         shell.setText("Missionaries & Cannibals");
         
+		Image small = new Image(dpy, MissionariesAndCannibals.class.getResourceAsStream("/mac/mac16.png"));
+		Image large = new Image(dpy, MissionariesAndCannibals.class.getResourceAsStream("/mac/mac.png"));
+		shell.setImages(new Image[] { small, large });
+
+        
         GridLayout layout = new GridLayout();
         layout.numColumns = 5;
         shell.setLayout(layout);
