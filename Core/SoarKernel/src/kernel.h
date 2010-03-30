@@ -111,7 +111,7 @@ typedef union symbol_union Symbol;
 
 /* Uncomment the following line to eliminate all timing statistics.
    The "stats" command will have much shorter output as well. */
-//#define NO_TIMING_STUFF
+#define NO_TIMING_STUFF
 
 /* Comment out the following line to avoid the overhead of keeping statistics
    on how much time is spent in various parts of the system.  If you
