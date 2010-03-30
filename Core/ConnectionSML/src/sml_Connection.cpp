@@ -160,10 +160,7 @@ Connection* Connection::CreateRemoteConnection(bool sharedFileSystem, char const
 		
 		bool ok = pNamedPipe->ConnectToServer(name.str().c_str()) ;
 
-		if(!ok) {
-			if(pError) *pError = Error::kConnectionFailed ;
-			// Try using internet socket
-		} else {
+		if(ok) {
 			// Wrap the pipe inside a remote connection object
 			pConnection = new RemoteConnection(sharedFileSystem, pNamedPipe) ;
 		}
