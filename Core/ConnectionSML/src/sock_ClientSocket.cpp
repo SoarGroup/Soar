@@ -89,29 +89,9 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
 {
 	CTDEBUG_ENTER_METHOD("ClientSocket::ConnectToServer");
 
-#ifndef ENABLE_LOCAL_SOCKETS
-	if (pNetAddress == NULL)
-		pNetAddress = kLocalHost ;
-#endif
-
-	in_addr* pAddress = NULL;
-
-	if(pNetAddress) {
-		// Get the address
-		pAddress = ConvertAddress(pNetAddress) ;
-
-		if (pAddress == NULL)
-		{
-			sml::PrintDebug("Error: Unable to convert entered address to socket address") ;
-			return false ;
-		}
-	}
-
-	// Specify the host address and port to connect to.
-	sockaddr_in address ;
 	SOCKET sock;
 
-	int res = 0;
+	int res = 1; // if any of this fails, fall back on creating an internet socket
 
 #ifdef ENABLE_LOCAL_SOCKETS
 
@@ -131,24 +111,45 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
 		// Create the socket
 		sock = socket(AF_UNIX, SOCK_STREAM, 0) ;
 
+		res = 1; 
 		if (sock == INVALID_SOCKET)
 		{
 			sml::PrintDebug("Error: Error creating client local connection socket") ;
-			return false ;
-		}
-
-		if(chmod(local_address.sun_path, S_IRWXU) < 0)
+		} 
+		else
 		{
-			sml::PrintDebug("Error: Error setting permissions for client local connection socket") ;
+			if(chmod(local_address.sun_path, S_IRWXU) < 0)
+			{
+				sml::PrintDebug("Error: Error setting permissions for client local connection socket") ;
+			}
+			else
+			{
+				// Try to connect to the server
+				res = connect(sock, (sockaddr*)&local_address, len) ;
+			}
+		}
+
+	} 
+#endif
+	if (res != 0) 
+	{
+		in_addr* pAddress = NULL;
+
+		if (pNetAddress == NULL)
+			pNetAddress = kLocalHost ;
+
+		// Get the address
+		pAddress = ConvertAddress(pNetAddress) ;
+
+		if (pAddress == NULL)
+		{
+			sml::PrintDebug("Error: Unable to convert entered address to socket address") ;
 			return false ;
 		}
 
-		// Try to connect to the server
-		res = connect(sock, (sockaddr*)&local_address, len) ;
+		// Specify the host address and port to connect to.
+		sockaddr_in address ;
 
-	} else 
-#endif
-	{
 		// set the name of the datasender
 		std::stringstream name;
 		name << "port " << port;
