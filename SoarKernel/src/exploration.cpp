@@ -31,6 +31,7 @@
 #include "instantiations.h"
 
 #include <list>
+#include <limits>
 
 using namespace soar_TraceNames;
 
@@ -661,13 +662,13 @@ preference *exploration_boltzmann_select( agent *my_agent, preference *candidate
 			maxq = c->numeric_value;
 	}
 	
-	double k = maxq / t;
 	double exptotal = 0.0;
 	std::list<double> expvals;
 	std::list<double>::iterator i;
 
 	for (c = candidates; c; c = c->next_candidate) {
-		double v = exp(c->numeric_value / t - k);
+		// equivalent to exp((c->numeric_value / t) - (maxq / t)) but safer against overflow
+		double v = exp((c->numeric_value - maxq) / t);
 		expvals.push_back(v);
 		exptotal += v;
 	}
