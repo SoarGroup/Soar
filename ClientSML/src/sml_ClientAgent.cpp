@@ -1330,6 +1330,8 @@ bool Agent::SpawnDebugger(int port, const char* pLibraryLocation)
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #endif
 		// does not return on success
+
+		std::cerr << "Debugger spawn failed: " << strerror(errno) << std::endl;
 		exit(1);
 	}
 
