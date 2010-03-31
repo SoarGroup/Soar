@@ -1,7 +1,11 @@
 package edu.umich.soar;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.util.regex.Matcher;
+
+import sml.Agent;
+import sml.Kernel;
 
 public class SoarProperties
 {
@@ -74,6 +78,35 @@ public class SoarProperties
 		System.out.println("getPrefix: " + p.getPrefix());
 		System.out.println("tryEnvironment: " + p.tryEnvironment());
 		System.out.println("tryJarLocation: " + p.tryJarLocation());
+	}
+
+	public int getPid()
+	{
+		String[] nameSplit = ManagementFactory.getRuntimeMXBean().getName().split("@");
+		try {
+			if (nameSplit != null && nameSplit.length > 0) {
+				return Integer.valueOf(nameSplit[0]);
+			}
+		} catch (NumberFormatException e) {
+			// ignored
+		}
+		return -1;
+	}
+
+	public void spawnDebugger(Kernel kernel, Agent agent)
+	{
+		int pid = getPid();
+		String prefix = getPrefix();
+		
+		if (pid > 0) {
+			System.out.println("spawning debugger for pid " + pid + " library loc " + prefix);
+			agent.SpawnDebugger(pid, prefix);
+		} else {
+			int port = kernel.GetListenerPort();
+			System.out.println("spawning debugger for port " + port + " library loc " + prefix);
+			agent.SpawnDebugger(port, prefix);
+		}
+		
 	}
 
 }

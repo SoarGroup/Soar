@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.SoarProperties;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.command.Comm;
@@ -66,7 +67,7 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		this.vobjs = vobjs;
 		this.app = this;
 		
-		kernel = Kernel.CreateKernelInNewThread();
+		kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kUseAnyPort);
 		if (kernel.HadError()) {
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());
 			System.exit(1);
@@ -130,6 +131,9 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED, agentHandler, null);
 
 		agent.Commit();
+		
+		SoarProperties sp = new SoarProperties();
+		sp.spawnDebugger(kernel, agent);
 	}
 	
 	AgentEventInterface agentHandler = new AgentEventInterface() {
