@@ -36,10 +36,10 @@ public class Command {
 
 	private final HzChecker hzChecker = HzChecker.newInstance(Command.class.toString());
 	private final Pose pose = new Pose();
-	private final Drive3 drive3 = Drive3.newInstance(pose);
+	private final Drive3 drive3;
 	private final Waypoints waypoints = new Waypoints();
 	private final Comm comm = new Comm();
-	private final Lidar lidar = new Lidar();
+	private final Lidar lidar;
 	private final MapMetadata metadata;
 	private final VirtualObjects vobjs;
 	private final SoarInterface soar;
@@ -65,11 +65,10 @@ public class Command {
     public Command(Config config) {
 		logger.debug("Command started");
 		
-		String productions = config.getString("controller.productions", null);
-		if (productions != null) {
-			CommandConfig.CONFIG.setProductions(productions);
-		}
-
+		CommandConfig.CONFIG.initialize(config);
+		
+		drive3 = Drive3.newInstance(pose);
+		lidar = new Lidar(CommandConfig.CONFIG.getLidarCacheTime()); //
 		metadata = new MapMetadata(config);
 		vobjs = new VirtualObjects(config);
 		soar = new SoarInterface(pose, waypoints, comm, lidar, metadata, vobjs);
@@ -180,7 +179,7 @@ public class Command {
 			}
 		}, 0, 30, TimeUnit.MILLISECONDS);
 	}
-	
+    
 	private DifferentialDriveCommand getGamepadDDC() {
         double left = 0;
         double right = 0;
