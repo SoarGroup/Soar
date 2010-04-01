@@ -14,7 +14,8 @@ public enum SharedNames {
 
     public static final String DRIVE_CHANNEL = "DIFFERENTIAL_DRIVE_COMMAND";
     public static final String POSE_CHANNEL = "POSE";
-    public static final String LASER_CHANNEL = "LIDAR_FRONT";
+    public static final String SIM_LASER_CHANNEL = "SIM_LIDAR_FRONT";
+    public static final String SICK_LASER_CHANNEL = "SICK_LIDAR_FRONT";
     public static final String LASER_LOWRES_CHANNEL = "LIDAR_LOWRES";
 
 	// i/o links

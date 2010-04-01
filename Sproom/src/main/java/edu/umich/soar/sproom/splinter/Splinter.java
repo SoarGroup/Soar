@@ -74,7 +74,9 @@ public class Splinter {
 	private final pose_t pose = new pose_t();
 	private final ScheduledExecutorService schexec = Executors.newSingleThreadScheduledExecutor();
 
-	private Splinter(Config config) {
+	public Splinter(Config config) {
+		config = config.getChild("splinter");
+		
 		tickMeters = config.getDouble("tickMeters", DEFAULT_TICKMETERS);
 		baselineMeters = config.getDouble("baselineMeters", DEFAULT_BASELINE);
 		odometry = new Odometry(tickMeters, baselineMeters);

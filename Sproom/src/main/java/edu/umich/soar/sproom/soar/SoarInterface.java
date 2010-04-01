@@ -56,7 +56,6 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	private final MapMetadata metadata;
 	private final VirtualObjects vobjs;
 	private final Cargo cargo = new Cargo();
-	private final Adaptable app; // self-reference for handler code
 	
 	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm, Lidar lidar, MapMetadata metadata, VirtualObjects vobjs) {
 		this.pose = pose;
@@ -65,7 +64,6 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		this.lidar = lidar;
 		this.metadata = metadata;
 		this.vobjs = vobjs;
-		this.app = this;
 		
 		kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kUseAnyPort);
 		if (kernel.HadError()) {
@@ -118,7 +116,7 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 					fireDriveEvent(ddcPrev);
 				}
 				
-				il.update(app);
+				il.update(SoarInterface.this);
 				agent.Commit();
 				logger.trace("smlEVENT_AFTER_ALL_OUTPUT_PHASES done");
 			}
@@ -132,6 +130,12 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 
 		agent.Commit();
 		
+		if (CommandConfig.CONFIG.getSpawnDebugger()) {
+			spawnDebugger();
+		}
+	}
+	
+	void spawnDebugger() {
 		SoarProperties sp = new SoarProperties();
 		sp.spawnDebugger(kernel, agent);
 	}
