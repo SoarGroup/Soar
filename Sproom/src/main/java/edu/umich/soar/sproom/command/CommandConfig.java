@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import april.config.Config;
+
 import edu.umich.soar.sproom.drive.Drive2;
 import edu.umich.soar.sproom.drive.Drive3;
 
@@ -77,20 +79,69 @@ public enum CommandConfig {
 	private final double[] poseTranslation = new double[] { 0, 0, 0 };
 	
 	private final ConcurrentMap<String, double[]> pidGains = new ConcurrentHashMap<String, double[]>(); 
-	
+	private final double[] HEADING_GAINS_DEFAULT = new double[] { 1, 0, 0.125 };
+	private final double[] ANGULAR_GAINS_DEFAULT = new double[] { 0.0238, 0, 0.0025 };
+	private final double[] LINEAR_GAINS_DEFAULT = new double[] { 0.12,  0, 0.025 };
+
 	private int rangeCount = 5; // LIDAR
 	
 	private double fieldOfView = Math.PI / 2.0;
-	private long visibleNanoTime = 2 * 1000000000;
+	private final int VISIBLE_SECONDS_DEFAULT = 2;
+	private long visibleNanoTime = VISIBLE_SECONDS_DEFAULT * 1000000000L;
 	private double manipulationDistance = 1.0;
 	private double gamepadZeroThreshold = 0.4;
+	private final int LIDAR_CACHE_SECONDS_DEFAULT = 1;
+	private long lidarCacheTime = LIDAR_CACHE_SECONDS_DEFAULT * 1000000000L;
+	private boolean spawnDebugger = false;
 
 	private final List<CommandConfigListener> listeners = new CopyOnWriteArrayList<CommandConfigListener>();
 
-	CommandConfig() {
-		setGains(Drive3.HEADING_PID_NAME, new double[] { 1, 0, 0.125 });
-		setGains(Drive2.ANGULAR_PID_NAME, new double[] { 0.0238, 0, 0.0025 });
-		setGains(Drive2.LINEAR_PID_NAME, new double[] { 0.12,  0, 0.025 });
+	public void initialize(Config config)
+	{
+		config = config.getChild("command");
+		
+		productions = config.getString("productions", null);
+		limitLinVelMax = config.getDouble("limitLinVelMax", limitLinVelMax);
+		limitLinVelMin = config.getDouble("limitLinVelMin", limitLinVelMin);
+		limitAngVelMax = config.getDouble("limitAngVelMax", limitAngVelMax);
+		limitAngVelMin = config.getDouble("limitAngVelMin", limitAngVelMin);
+		
+		geomLength = config.getDouble("geomLength", geomLength);
+		geomWidth = config.getDouble("geomWidth", geomWidth);
+		geomHeight = config.getDouble("geomHeight", geomHeight);
+		geomWheelbase = config.getDouble("geomWheelbase", geomWheelbase);
+		
+		try {
+			lengthUnits = LengthUnit.valueOf(config.getString("lengthUnits", lengthUnits.toString()));
+		} catch (IllegalArgumentException e) {
+		}
+		try {
+			speedUnits = SpeedUnit.valueOf(config.getString("speedUnits", speedUnits.toString()));
+		} catch (IllegalArgumentException e) {
+		}
+		try {
+			angleUnits = AngleUnit.valueOf(config.getString("angleUnits", angleUnits.toString()));
+		} catch (IllegalArgumentException e) {
+		}
+		try {
+			angleResolution = AngleResolution.valueOf(config.getString("angleResolution", angleResolution.toString()));
+		} catch (IllegalArgumentException e) {
+		}
+
+		double[] pt = config.getDoubles("poseTranslation", poseTranslation);
+		System.arraycopy(pt, 0, poseTranslation, 0, pt.length);
+
+		setGains(Drive3.HEADING_PID_NAME, config.getDoubles(Drive3.HEADING_PID_NAME + "Gains", HEADING_GAINS_DEFAULT));
+		setGains(Drive2.ANGULAR_PID_NAME, config.getDoubles(Drive2.ANGULAR_PID_NAME + "Gains", ANGULAR_GAINS_DEFAULT));
+		setGains(Drive2.LINEAR_PID_NAME, config.getDoubles(Drive2.LINEAR_PID_NAME + "Gains", LINEAR_GAINS_DEFAULT));
+		
+		rangeCount = config.getInt("rangeCount", rangeCount);
+		fieldOfView = config.getDouble("fieldOfView", fieldOfView);
+		visibleNanoTime = config.getInt("visibleSeconds", VISIBLE_SECONDS_DEFAULT) * 1000000000L;
+		manipulationDistance = config.getDouble("manipulationDistance", manipulationDistance);
+		gamepadZeroThreshold = config.getDouble("gamepadZeroThreshold", gamepadZeroThreshold);
+		lidarCacheTime = config.getInt("lidarCacheTimeSeconds", LIDAR_CACHE_SECONDS_DEFAULT) * 1000000000L;
+		spawnDebugger = config.getBoolean("spawnDebugger", spawnDebugger);
 	}
 	
 	public void addListener(CommandConfigListener listener) {
@@ -293,6 +344,15 @@ public enum CommandConfig {
 
 	public double getGamepadZeroThreshold() {
 		return gamepadZeroThreshold;
+	}
+
+	public long getLidarCacheTime()
+	{
+		return lidarCacheTime;
+	}
+	
+	public boolean getSpawnDebugger() {
+		return spawnDebugger;
 	}
 
 }

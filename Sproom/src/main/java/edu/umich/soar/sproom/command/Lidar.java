@@ -12,21 +12,49 @@ import lcmtypes.laser_t;
 import edu.umich.soar.sproom.SharedNames;
 
 /**
- * Translates laser messages from SICK or simulated device into a smaller set of
- * readings more easily processed by Soar agents.
+ * Merges messages from a SICK and/or simulated laser sensor in to a single,
+ * "lower resolution" reading of usually 5 ranges. Merges by taking the minimum
+ * reading from the set of sensors.
+ * 
+ * Will use an old reading up to a configurable duration so that the sensor 
+ * doesn't "jitter" when old and new readings aren't available at the same time.
  *
  * @author voigtjr@gmail.com
  */
 public class Lidar {
 	private static final Log logger = LogFactory.getLog(Lidar.class);
+	
+	private final long cacheTime;
+	private laser_t simLaser;
+	private laser_t sickLaser;
 
-	private laser_t laser;
 	private final laser_t laserLowRes = new laser_t();
 	private final CommandConfig c = CommandConfig.CONFIG;
 	private int chunkRanges = 0;
 	private final LCM lcm = LCM.getSingleton();
+	private LCMSubscriber subscriber = new LCMSubscriber() {
+		@Override
+		public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
+			if (channel.equals(SharedNames.SIM_LASER_CHANNEL)) {
+				try {
+					simLaser = new laser_t(ins);
+				} catch (IOException e) {
+					logger.error("Error decoding SIM_LASER_CHANNEL message: " + e.getMessage());
+				}
+			} else if (channel.equals(SharedNames.SICK_LASER_CHANNEL)) {
+				try {
+					sickLaser = new laser_t(ins);
+				} catch (IOException e) {
+					logger.error("Error decoding SICK_LASER_CHANNEL message: " + e.getMessage());
+				}
+			} else {
+				logger.error("Unknown message channel: " + channel);
+			}
+		}
+	};
 	
-	public Lidar() {
+	public Lidar(long cacheTime) {
+		this.cacheTime = cacheTime;
 		laserLowRes.utime = 0;
 		laserLowRes.nranges = 0;
 		laserLowRes.ranges = new float[0];
@@ -35,38 +63,94 @@ public class Lidar {
 		laserLowRes.rad0 = 0;
 		laserLowRes.radstep = 0;
 		
-		lcm.subscribe(SharedNames.LASER_CHANNEL, new LCMSubscriber() {
-			@Override
-			public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
-				if (channel.equals(SharedNames.LASER_CHANNEL)) {
-					try {
-						laser = new laser_t(ins);
-					} catch (IOException e) {
-						logger.error("Error decoding laser_t message: " + e.getMessage());
-					}
-				}
+		lcm.subscribe(SharedNames.SIM_LASER_CHANNEL, subscriber);
+		lcm.subscribe(SharedNames.SICK_LASER_CHANNEL, subscriber);
+	}
+	
+	private static long simLast = -1;	// value of last reading's utime
+	private static long sickLast = -1;	
+	private static long simSeen = -1;	// System.nanotime() when we last saw a fresh reading
+	private static long sickSeen = -1;  
+	
+	private class MergedLaser {
+		laser_t sim = simLaser;
+		laser_t sick = sickLaser; 
+		laser_t auth;
+
+		MergedLaser() {
+			if (!isValid()) {
+				return;
 			}
-		});
+			
+			// if we only have one, it is authoritative
+			// also, zero out sources so they don't get stale
+			if (sim == null) {
+				auth = sick;
+			} else if (sick == null) {
+				auth = sim;
+			}
+		}
+		
+		boolean isValid() {
+			return sick != null || sim != null;
+		}
+		
+		int getNRanges() {
+			return auth == null ? sim.nranges : auth.nranges;
+		}
+		
+		float getRad0() {
+			return auth == null ? sim.rad0 : auth.rad0;
+		}
+
+		float getRadStep() {
+			return auth == null ? sim.radstep : auth.radstep;
+		}
+
+		float getRange(int index) {
+			if (auth != null) {
+				return auth.ranges[index];
+			}
+			// want min here, the closest range reported
+			return Math.min(sim.ranges[index], sick.ranges[index]);
+		}
+		
 	}
 	
 	public laser_t getLaserLowRes() {
-		laser_t laserReading = laser; // grab reference
+		long now = System.nanoTime();
 		
-		if (laserReading == null) {
-			return null;
+		// throw out readings if we haven't seen a new one in cacheTime seconds
+		if (simLaser != null) {
+			if (simLaser.utime > simLast) {
+				simLast = simLaser.utime;
+				simSeen = now;
+			} else if (now - simSeen > cacheTime) {
+				simLaser = null;
+				simLast = -1;
+			}
+		}
+		if (sickLaser != null) {
+			if (sickLaser.utime > sickLast) {
+				sickLast = sickLaser.utime;
+				sickSeen = now;
+			} else if (now - sickSeen > cacheTime) {
+				sickLaser = null;
+				sickLast = -1;
+			}
 		}
 		
-		if (laserReading.utime != laserLowRes.utime) {
-			laserLowRes.utime = laserReading.utime;
+		MergedLaser ml = new MergedLaser();
+		if (ml.isValid()) {
+			laserLowRes.utime = now;
 			if (laserLowRes.nranges != c.getRangeCount()) {
 				laserLowRes.nranges = c.getRangeCount();
 				laserLowRes.ranges = new float[c.getRangeCount()];
 				
-				// FIXME this will be a bit off if the integer division isn't a whole number
-				chunkRanges = laserReading.nranges / laserLowRes.nranges;
+				chunkRanges = ml.getNRanges() / laserLowRes.nranges;
 				
-				laserLowRes.rad0 = laserReading.rad0 + laserReading.radstep * (chunkRanges / 2.0f);
-				laserLowRes.radstep = laserReading.nranges * laserReading.radstep / laserLowRes.nranges;
+				laserLowRes.rad0 = ml.getRad0() + ml.getRadStep() * (chunkRanges / 2.0f);
+				laserLowRes.radstep = ml.getNRanges() * ml.getRadStep() / laserLowRes.nranges;
 				
 				logger.debug(String.format("%d nranges (%d per chunk), rad0 %1.3f, radstep %1.3f", laserLowRes.nranges, chunkRanges, laserLowRes.rad0, laserLowRes.radstep));
 			}
@@ -76,7 +160,7 @@ public class Lidar {
 				float distance = Float.MAX_VALUE;
 
 				for (; index < (chunkRanges * slice) + chunkRanges; ++index) {
-					distance = Math.min(laser.ranges[index], distance);
+					distance = Math.min(ml.getRange(index), distance);
 				}
 
 				if (logger.isTraceEnabled()) {
