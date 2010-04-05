@@ -88,10 +88,10 @@ public class GamepadJInput {
 	}
 	
 	public enum Id {
-		OVERRIDE(Component.Identifier.Button._0), 
-		SOAR(Component.Identifier.Button._1), 
-		GPMODE(Component.Identifier.Button._2), 
-		SLOW(Component.Identifier.Button._3), 
+		OVERRIDE(null), 
+		SOAR(null), 
+		GPMODE(null), 
+		SLOW(null), 
 		LX(Component.Identifier.Axis.X), 
 		LY(Component.Identifier.Axis.Y), 
 		RX(Component.Identifier.Axis.Z), 
@@ -100,6 +100,13 @@ public class GamepadJInput {
 		private Component.Identifier cid;
 		
 		private Id(Component.Identifier cid) {
+			this.cid = cid;
+		}
+		
+		private void setCId(Component.Identifier cid) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("%s setting id to %s", this, cid));
+			}
 			this.cid = cid;
 		}
 		
@@ -143,7 +150,19 @@ public class GamepadJInput {
 				if (c.getType() != Controller.Type.GAMEPAD) {
 					continue;
 				}
+				
 				controller = c;
+				break;
+			}
+			
+			for (Id id : Id.values()) {
+				if (id.getCId() != null) {
+					continue;
+				}
+				int ordinal = id.ordinal();
+				if (ordinal < controller.getComponents().length) {
+					id.setCId(controller.getComponents()[ordinal].getIdentifier());
+				}
 			}
 			
 			if (controller == null) {
