@@ -1219,11 +1219,7 @@ bool Kernel::IsCommitRequired()
 *************************************************************/
 char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRunStepSize interleaveStepSize)
 {
-	if (IsCommitRequired())
-	{
-		assert(false) ;
-		return "Need to commit changes before calling a run method" ;
-	}
+	CommitAll();
 
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
@@ -1277,11 +1273,7 @@ char const* Kernel::RunAllAgents(int numberSteps, smlRunStepSize stepSize, smlRu
 
 char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
 {
-	if (IsCommitRequired())
-	{
-		assert(false) ;
-		return "Need to commit changes before calling a run method" ;
-	}
+	CommitAll();
 
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
@@ -1319,11 +1311,7 @@ char const* Kernel::RunAllAgentsForever(smlRunStepSize interleaveStepSize)
 
 char const* Kernel::RunAllTilOutput(smlRunStepSize interleaveStepSize)
 {
-	if (IsCommitRequired())
-	{
-		assert(false) ;
-		return "Need to commit changes before calling a run method" ;
-	}
+	CommitAll();
 
 #ifdef SML_DIRECT
 		if (GetConnection()->IsDirectConnection())
