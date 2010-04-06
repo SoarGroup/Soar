@@ -49,11 +49,12 @@ class Drive1 {
 	}
 	
 	private void transmit(differential_drive_command_t dc) {
+		dc.utime = System.nanoTime();
 		dc.left = Command.clamp(dc.left, -1, 1);
 		dc.right = Command.clamp(dc.right, -1, 1);
 		
 		if (logger.isTraceEnabled()) {
-			logger.trace("transmit: " + dc.left + "," + dc.right);
+			logger.trace(String.format("transmit: %2.3f, %2.3f", dc.left, dc.right));
 		}
 		lcm.publish(SharedNames.DRIVE_CHANNEL, dc);
 	}

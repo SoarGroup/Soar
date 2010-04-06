@@ -96,7 +96,6 @@ public class Lidar {
 				auth = sick;
 			} else if (sick == null) {
 				auth = sim;
-			} else {
 			}
 		}
 		
@@ -117,13 +116,16 @@ public class Lidar {
 		}
 
 		float getRange(int index) {
+			if (index >= 180) {
+				return Integer.MAX_VALUE;
+			}
+			
 			if (auth != null) {
 				return auth.ranges[index];
 			}
 			// want min here, the closest range reported
 			return Math.min(sim.ranges[index], sick.ranges[index]);
 		}
-		
 	}
 	
 	public laser_t getLaserLowRes() {
