@@ -122,9 +122,13 @@ public class GamepadJInput {
 	private final List<HandlerData> components = new ArrayList<HandlerData>();
 	private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 	
+	public boolean isValid() {
+		return controller != null;
+	}
+	
 	public GamepadJInput() {
 		ControllerEnvironment ce = ControllerEnvironment.getDefaultEnvironment();
-		
+
 		ce.addControllerListener(new ControllerListener() {
 			@Override
 			public void controllerAdded(ControllerEvent e) {
@@ -148,28 +152,26 @@ public class GamepadJInput {
 			}
 		});
 
-		synchronized (components) {
-			for (Controller c : ce.getControllers()) {
-				if (c.getType() != Controller.Type.GAMEPAD) {
-					continue;
-				}
-				
-				controller = c;
-				break;
+		for (Controller c : ce.getControllers()) {
+			if (c.getType() != Controller.Type.GAMEPAD) {
+				continue;
 			}
 			
-			for (Id id : Id.values()) {
-				if (id.getCId() != null) {
-					continue;
-				}
-				int ordinal = id.ordinal();
-				if (ordinal < controller.getComponents().length) {
-					id.setCId(controller.getComponents()[ordinal].getIdentifier());
-				}
+			controller = c;
+			break;
+		}
+		
+		if (controller == null) {
+			return;
+		}
+		
+		for (Id id : Id.values()) {
+			if (id.getCId() != null) {
+				continue;
 			}
-			
-			if (controller == null) {
-				return;
+			int ordinal = id.ordinal();
+			if (ordinal < controller.getComponents().length) {
+				id.setCId(controller.getComponents()[ordinal].getIdentifier());
 			}
 		}
 		

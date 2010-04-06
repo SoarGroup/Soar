@@ -1,7 +1,6 @@
 package edu.umich.soar.sproom.command;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -93,17 +92,13 @@ public class MapMetadata {
 			if (door) {
 				sb.append(" (door)");
 			}
-			sb.append(" ");
-			sb.append(Arrays.toString(pos));
-			sb.append(" ");
-			sb.append(Arrays.toString(xySize));
+			sb.append(String.format(" [%2.2f, %2.2f]", pos[0], pos[1]));
+			sb.append(String.format(" [%2.2f, %2.2f]", xySize[0], xySize[1]));
 			sb.append(" gateway ids:");
 			for (int i = 0; i < gateways.size(); ++i) {
 				sb.append(" ");
 				sb.append(gateways.get(i).id);
-				sb.append("(");
-				sb.append(dirs.get(i).toString().toLowerCase());
-				sb.append(")");
+				sb.append(dirs.get(i).toString().charAt(0));
 			}
 			return sb.toString();
 		}
@@ -140,8 +135,7 @@ public class MapMetadata {
 				sb.append(" ");
 				sb.append(area.id);
 			}
-			sb.append(" ");
-			sb.append(Arrays.toString(pos));
+			sb.append(String.format(" [%2.2f, %2.2f]", pos[0], pos[1]));
 			return sb.toString();
 		}
 	}
@@ -149,23 +143,66 @@ public class MapMetadata {
 	private final List<Area> areaList;
 	private final List<Gateway> gatewayList;
 	private final LCM lcm = LCM.getSingleton();
+	
+	private class UnitConverter {
+		final double[] origin;
+		final double scale;
+		UnitConverter() {
+			origin = null; // in meters, no conversion necessary
+			scale = 1;
+		}
+		UnitConverter(int[] origin, double scale) {
+			this.origin = new double[] { origin[0] * scale, origin[1] * scale }; // pixels -> meters
+			this.scale = scale;
+		}
+		double[] getPos(Config config, String nick) {
+			return getPos(config, nick, new double[] {0, 0});
+		}
+		
+		double[] getPos(Config config, String nick, double[] size) {
+			if (origin == null) {
+				return config.getDoubles("metadata." + nick + ".pos");
+			}
+			int[] loc = config.getInts("metadata." + nick + ".pos");
+			double[] pos = new double[] { loc[0] * scale, loc[1] * scale };
+			return new double[] { pos[0] - origin[0], ((pos[1] + size[1]) - origin[1]) * -1 };
+		}
+		
+		double[] getSize(Config config, String nick) {
+			if (origin == null) {
+				return config.getDoubles("metadata." + nick + ".size");
+			}
+			int[] size = config.getInts("metadata." + nick + ".size");
+			
+			return new double[] { size[0] * scale, size[1] * scale };
+		}
+	}
 
 	public MapMetadata(Config config) {
+		UnitConverter u;
+		if (config.getString("metadata.units", "meters").equals("pixels")) {
+			int[] origin = config.getInts("metadata.origin");
+			double scale = config.requireDouble("metadata.scale");
+			u = new UnitConverter(origin, scale);
+		} else {
+			u = new UnitConverter();
+		}
+		
 		int numAreas = config.getStrings("metadata.areas", new String[0]).length;
 		Map<String, Area> areaMap = new HashMap<String, Area>(numAreas);
 		areaList = new ArrayList<Area>(numAreas);
 		for(String areaNickname : config.getStrings("metadata.areas", new String[0])) {
 			boolean door = config.getBoolean("metadata." + areaNickname + ".door", false);
 			
-			double[] pos = config.getDoubles("metadata." + areaNickname + ".pos");
-			if (pos == null) {
-				logger.error("no pos on " + areaNickname);
+			double[] xySize = u.getSize(config, areaNickname);
+			if (xySize == null) {
+				logger.error("no xySize on " + areaNickname);
 				throw new IllegalStateException();
 			}
 			
-			double[] xySize = config.getDoubles("metadata." + areaNickname + ".size");
-			if (xySize == null) {
-				logger.error("no xySize on " + areaNickname);
+			double[] pos = u.getPos(config, areaNickname, xySize);
+			if (pos == null) {
+				logger.error("no pos on " + areaNickname);
 				throw new IllegalStateException();
 			}
 			
@@ -180,7 +217,7 @@ public class MapMetadata {
 		gatewayList = new ArrayList<Gateway>(numGateways);
 		for(String gatewayNickname : config.getStrings("metadata.gateways", new String[0])) {
 			
-			double[] pos = config.getDoubles("metadata." + gatewayNickname + ".pos");
+			double[] pos = u.getPos(config, gatewayNickname);
 			if (pos == null) {
 				logger.error("no pos on " + gatewayNickname);
 				throw new IllegalStateException();
@@ -236,12 +273,20 @@ public class MapMetadata {
 		return null;
 	}
 	
+	private final long PUBLISH_DELAY_NANOS = 50000000L;
+	private long lastPublish = 0;
+	
 	public void publish(Area area) {
-		pose_t pose = new pose_t();
-		pose.utime = System.nanoTime();
-		pose.pos = new double[] { area.pos[0], area.pos[1], 0 };
-		pose.vel = new double[] { area.xySize[0], area.xySize[1], 0 };
-		lcm.publish("AREA_DESCRIPTIONS", pose);
+		long now = System.nanoTime();
+		long elapsed = now - lastPublish;
+		if (elapsed > PUBLISH_DELAY_NANOS) {
+			lastPublish = now;
+			pose_t pose = new pose_t();
+			pose.utime = now;
+			pose.pos = new double[] { area.pos[0], area.pos[1], 0 };
+			pose.vel = new double[] { area.xySize[0], area.xySize[1], 0 };
+			lcm.publish("AREA_DESCRIPTIONS", pose);
+		}
 	}
 
 	public static final void main(String[] args) {
