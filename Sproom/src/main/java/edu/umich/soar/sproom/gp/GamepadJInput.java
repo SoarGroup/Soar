@@ -23,7 +23,7 @@ import net.java.games.input.ControllerListener;
  */
 public class GamepadJInput {
 	private static final Log logger = LogFactory.getLog(GamepadJInput.class);
-	private static final float DEAD_ZONE = 0.15f;
+	private static final float DEAD_ZONE_PERCENT = 0.1f;
 
 	private static class HandlerData {
 		HandlerData(Id id, Component component) {
@@ -67,12 +67,15 @@ public class GamepadJInput {
 			}
 			float pct = (v - minValue) / range;
 			
-			if (logger.isTraceEnabled()) {
-				logger.trace(String.format("r%2.2f p%2.2f", range, pct));
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("%s r%2.3f p%2.3f", id.name(), range, pct));
+			}
+
+			if (Math.abs(pct - 0.5f) <= DEAD_ZONE_PERCENT) {
+				return 0;
 			}
 			
-			float value = pct * 2.0f - 1.0f;
-			return Math.abs(value) <= DEAD_ZONE ? 0 : value;
+			return pct * 2.0f - 1.0f;
 		}
 		
 		@Override
@@ -176,6 +179,12 @@ public class GamepadJInput {
 				synchronized (components) {
 					controller.poll();
 	
+					if (logger.isTraceEnabled()) {
+						for (Component c : controller.getComponents()) {
+							logger.trace(String.format("%s: %1.2f", c.getName(), c.getPollData()));
+						}
+					}
+					
 					for (HandlerData data : components) {
 						if (logger.isTraceEnabled()) {
 							logger.trace(data);
@@ -201,10 +210,10 @@ public class GamepadJInput {
 				return false;
 			}
 			
-			logger.debug("adding listener for " + id.getCId());
+			logger.debug("adding listener for " + id.getCId().getName());
 			Component component = controller.getComponent(id.getCId());
 			if (component == null) {
-				logger.debug("add failed: no such component");
+				logger.error("add failed: no such component");
 				return false;
 			}
 			

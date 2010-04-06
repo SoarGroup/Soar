@@ -1,6 +1,7 @@
 package edu.umich.soar.sproom.splinter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,14 +39,8 @@ public class Splinter {
 	private static final long DELAY_BEFORE_WARN_NO_FIRST_INPUT_MILLIS = 5000;
 	private static final long DELAY_BEFORE_WARN_NO_INPUT_MILLIS = 1000;
 	
-	//green
-	//public static final double DEFAULT_BASELINE = 0.383;
-	//public static final double DEFAULT_TICKMETERS = 0.000043225;
-	
-	// blue
-	public static final double DEFAULT_BASELINE = 0.37405;
-	// TODO: should use two tickmeters, left/right
-	public static final double DEFAULT_TICKMETERS = 0.0000428528;
+	public static final double DEFAULT_BASELINE = 0.383;
+	public static final double DEFAULT_TICKMETERS = 0.000043225;
 	
 	private final HzChecker hzChecker = HzChecker.newInstance(Splinter.class.toString());
 	private final Orc orc;
@@ -204,7 +199,7 @@ public class Splinter {
 					calibrate(currentStatus);
 					return;
 				}
-				
+	
 				boolean moving = (currentStatus.qeiVelocity[0] != 0) || (currentStatus.qeiVelocity[1] != 0);
 				
 				OdometryPoint newOdom = getOdometry(currentStatus);
