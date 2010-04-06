@@ -84,18 +84,20 @@ public class Lidar {
 			
 			// TODO make this not hard-wired, careful with bounds-checking getRange()
 			// hard-wired at least 180 ranges
-			if (sim.nranges < 180) {
-				sim = null;
-			}
-			if (sick.nranges < 180) {
-				sick = null;
-			}
 			
 			// if we only have one, it is authoritative
 			if (sim == null) {
-				auth = sick;
+				if (sick.nranges < 180) {
+					sick = null;
+				} else {
+					auth = sick;
+				}
 			} else if (sick == null) {
-				auth = sim;
+				if (sim.nranges < 180) {
+					sim = null;
+				} else {
+					auth = sim;
+				}
 			}
 		}
 		

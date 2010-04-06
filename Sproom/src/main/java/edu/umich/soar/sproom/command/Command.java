@@ -68,7 +68,7 @@ public class Command {
 		CommandConfig.CONFIG.initialize(config);
 		
 		drive3 = Drive3.newInstance(pose);
-		lidar = new Lidar(CommandConfig.CONFIG.getLidarCacheTime()); //
+		lidar = new Lidar(CommandConfig.CONFIG.getLidarCacheTime());
 		metadata = new MapMetadata(config);
 		vobjs = new VirtualObjects(config);
 		soar = new SoarInterface(pose, waypoints, comm, lidar, metadata, vobjs);
@@ -76,6 +76,25 @@ public class Command {
 		soar.addDriveListener(drive3);
 		httpController.addSoarControlListener(soar);
 		
+		if (gpji.isValid()) {
+			initializeGamepad();
+		}
+
+		shexec.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				if (logger.isDebugEnabled()) {
+					hzChecker.tick();
+				}
+				
+				if (override.get()) {
+					drive3.handleDriveEvent(getGamepadDDC());
+				}
+			}
+		}, 0, 30, TimeUnit.MILLISECONDS);
+	}
+
+    private void initializeGamepad() {
 		gpji.addComponentListener(GamepadJInput.Id.OVERRIDE, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
@@ -165,20 +184,7 @@ public class Command {
 				ry = value;
 			}
 		});
-
-		shexec.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				if (logger.isDebugEnabled()) {
-					hzChecker.tick();
-				}
-				
-				if (override.get()) {
-					drive3.handleDriveEvent(getGamepadDDC());
-				}
-			}
-		}, 0, 30, TimeUnit.MILLISECONDS);
-	}
+    }
     
 	private DifferentialDriveCommand getGamepadDDC() {
         double left = 0;
