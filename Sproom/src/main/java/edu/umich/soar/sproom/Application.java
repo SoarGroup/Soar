@@ -30,6 +30,8 @@ public class Application {
 
 		new Viewer(config);
 		if (config.getBoolean("mixed-mode", false)) {
+			config.setStrings("simulator.simobjects", new String[] { "SIM_LIDAR_FRONT" });
+			new Simulator(config);
 			new Splinter(config);
 		} else {
 			new Simulator(config);

@@ -10,7 +10,7 @@
 <mapEntry key="LD_LIBRARY_PATH" value="${env_var:SOAR_HOME}/lib"/>
 </mapAttribute>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="edu.umich.soar.sproom.Application"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="config/five-rooms.config"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="config/newlab-rooms.config"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="soar-sproom"/>
 <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea"/>
 </launchConfiguration>
