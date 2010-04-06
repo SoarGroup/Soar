@@ -87,33 +87,23 @@ public class Drive3 implements DriveListener {
 						break;
 						
 					case LINVEL:
-						doLinearVelocity(currentCommand);
+						drive2.setAngularVelocity(0);
+						drive2.setLinearVelocity(currentCommand.getLinearVelocity());
 						break;
 						
 					case ANGVEL:
-						if (previousType == CommandType.HEADING) {
-							drive2.setLinearVelocity(0);
-						}
 						drive2.setAngularVelocity(currentCommand.getAngularVelocity());
+						drive2.setLinearVelocity(0);
 						break;
 						
 					case HEADING_LINVEL:
-						doLinearVelocity(currentCommand);
-						// falls through
+						drive2.setLinearVelocity(currentCommand.getLinearVelocity());
+						doHeading(utimeElapsed, pose);
+						break;
 						
 					case HEADING:
-						if (previousType != CommandType.HEADING || Double.compare(previousHeading, currentCommand.getHeading()) != 0) {
-							hController.clearIntegral();
-							previousHeading = currentCommand.getHeading();
-							// TODO: do we want to do this?
-							//hardware.setLinearVelocity(0);
-						}
-						
-						double target = MathUtil.mod2pi(currentCommand.getHeading());
-						double actual = MathUtil.mod2pi(LinAlg.quatToRollPitchYaw(pose.orientation)[2]);
-						double dt = utimeElapsed / 1000000.0;
-						double out = hController.computeMod2Pi(dt, target, actual);
-						drive2.setAngularVelocity(out);
+						drive2.setLinearVelocity(0);
+						doHeading(utimeElapsed, pose);
 						break;
 					}
 				
@@ -124,6 +114,19 @@ public class Drive3 implements DriveListener {
 			drive2.update(pose, utimeElapsed);
 		}
 	};
+	
+	private void doHeading(long utimeElapsed, pose_t pose) {
+		if (previousType != CommandType.HEADING || Double.compare(previousHeading, currentCommand.getHeading()) != 0) {
+			hController.clearIntegral();
+			previousHeading = currentCommand.getHeading();
+		}
+		
+		double target = MathUtil.mod2pi(currentCommand.getHeading());
+		double actual = MathUtil.mod2pi(LinAlg.quatToRollPitchYaw(pose.orientation)[2]);
+		double dt = utimeElapsed / 1000000.0;
+		double out = hController.computeMod2Pi(dt, target, actual);
+		drive2.setAngularVelocity(out);
+	}
 	
 	private void updateGains() {
 		double[] pid = CommandConfig.CONFIG.getGains(hController.getName());
@@ -137,12 +140,5 @@ public class Drive3 implements DriveListener {
 		}
 		currentCommand = ddc;
 		logger.debug("current: " + currentCommand);
-	}
-
-	private void doLinearVelocity(DifferentialDriveCommand ddc) {
-		if (previousType == CommandType.HEADING) {
-			drive2.setAngularVelocity(0);
-		}
-		drive2.setLinearVelocity(ddc.getLinearVelocity());
 	}
 }

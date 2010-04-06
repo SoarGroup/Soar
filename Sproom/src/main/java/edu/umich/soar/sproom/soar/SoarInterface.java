@@ -70,6 +70,9 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());
 			System.exit(1);
 		}
+		
+		SoarProperties sp = new SoarProperties();
+		logger.warn(String.format("Kernel port: %d, pid: %d", kernel.GetListenerPort(), sp.getPid()));
 
 		kernel.SetAutoCommit(false);
 
