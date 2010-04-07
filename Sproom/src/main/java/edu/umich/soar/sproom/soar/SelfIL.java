@@ -7,8 +7,9 @@ import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
-import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
+import edu.umich.soar.sproom.metamap.Area;
+import edu.umich.soar.sproom.metamap.MapMetadata;
 
 /**
  * Input link management of self state.
@@ -66,7 +67,7 @@ public class SelfIL implements InputLinkElement {
 		}
 		
 		MapMetadata metadata = (MapMetadata)app.getAdapter(MapMetadata.class);
-		MapMetadata.Area area = metadata.getArea(pose.pos);
+		Area area = metadata.getArea(pose.pos);
 		areaId.update((area != null) ? area.getId() : -1);
 		
 		for (int i = 0; i < xyz.length; ++i) {
