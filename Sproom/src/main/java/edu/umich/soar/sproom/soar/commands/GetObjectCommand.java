@@ -13,8 +13,8 @@ import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.VirtualObject;
-import edu.umich.soar.sproom.command.VirtualObjects;
+import edu.umich.soar.sproom.metamap.VirtualObject;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 import edu.umich.soar.sproom.soar.Cargo;
 
 /**

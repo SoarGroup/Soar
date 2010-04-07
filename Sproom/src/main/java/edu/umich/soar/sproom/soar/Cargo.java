@@ -1,6 +1,6 @@
 package edu.umich.soar.sproom.soar;
 
-import edu.umich.soar.sproom.command.VirtualObject;
+import edu.umich.soar.sproom.metamap.VirtualObject;
 
 /**
  * Manages a held object.

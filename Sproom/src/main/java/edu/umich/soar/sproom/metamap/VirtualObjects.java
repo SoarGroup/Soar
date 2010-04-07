@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.metamap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import lcm.lcm.LCM;
 import lcmtypes.sim_obstacles_t;
 
-import edu.umich.soar.sproom.command.VirtualObject.Type;
+import edu.umich.soar.sproom.metamap.VirtualObject.Type;
 
 import april.config.Config;
 
@@ -33,13 +33,23 @@ public class VirtualObjects implements Iterable<VirtualObject> {
 	private final LCM lcm = LCM.getSingleton();
 	
 	public VirtualObjects(Config config) {
+		UnitConverter u = UnitConverter.getInstance(config);
+
 		for (String objectNickname : config.getStrings("metadata.objects", new String[0])) {
 			
 			String typeString = config.getString("metadata." + objectNickname + ".type");
 			Type type = VirtualObject.Type.valueOf(typeString.toUpperCase());
 
-			double[] pos = config.getDoubles("metadata." + objectNickname + ".pos");
-			double[] size = config.getDoubles("metadata." + objectNickname + ".size");
+			double[] size = u.getSize(config, objectNickname);
+			if (size == null) {
+				logger.error("no size on " + objectNickname);
+				throw new IllegalStateException();
+			}
+			double[] pos = u.getPos(config, objectNickname, size);
+			if (pos == null) {
+				logger.error("no pos on " + objectNickname);
+				throw new IllegalStateException();
+			}
 			double theta = config.getDouble("metadata." + objectNickname + ".theta", 0);
 			
 			createObject(type, pos, size, theta);

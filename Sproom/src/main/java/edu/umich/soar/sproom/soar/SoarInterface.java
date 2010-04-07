@@ -16,12 +16,12 @@ import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.command.Comm;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Lidar;
-import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.VirtualObjects;
 import edu.umich.soar.sproom.command.Waypoints;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveListener;
+import edu.umich.soar.sproom.metamap.MapMetadata;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 
 import sml.Agent;
 import sml.Kernel;
