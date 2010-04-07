@@ -17,6 +17,8 @@ import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.Drive3;
 import edu.umich.soar.sproom.gp.GPComponentListener;
 import edu.umich.soar.sproom.gp.GamepadJInput;
+import edu.umich.soar.sproom.metamap.MapMetadata;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 import edu.umich.soar.sproom.soar.SoarInterface;
 
 /**
