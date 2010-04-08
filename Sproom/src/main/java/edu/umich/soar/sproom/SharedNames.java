@@ -43,7 +43,8 @@ public enum SharedNames {
 	public static final String LIDAR = "lidar";
 	public static final String LINEAR = "linear";
 	public static final String LENGTH_UNITS = "length-units";
-	public static final String MANIPULATION_DISTANCE = "manipulation-distance";
+	public static final String MANIPULATION_DISTANCE_MAX = "manipulation-distance-max";
+	public static final String MANIPULATION_DISTANCE_MIN = "manipulation-distance-min";
 	public static final String MESSAGE = "message";
 	public static final String NEXT = "next";
 	public static final String NIL = "nil";

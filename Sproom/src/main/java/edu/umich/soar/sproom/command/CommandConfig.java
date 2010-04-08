@@ -88,7 +88,8 @@ public enum CommandConfig {
 	private double fieldOfView = Math.PI / 2.0;
 	private final int VISIBLE_SECONDS_DEFAULT = 2;
 	private long visibleNanoTime = VISIBLE_SECONDS_DEFAULT * 1000000000L;
-	private double manipulationDistance = 1.0;
+	private double manipulationDistanceMin = 0.2;
+	private double manipulationDistanceMax = 1.0;
 	private double gamepadZeroThreshold = 0.4;
 	private final int LIDAR_CACHE_SECONDS_DEFAULT = 1;
 	private long lidarCacheTime = LIDAR_CACHE_SECONDS_DEFAULT * 1000000000L;
@@ -138,7 +139,8 @@ public enum CommandConfig {
 		rangeCount = config.getInt("rangeCount", rangeCount);
 		fieldOfView = config.getDouble("fieldOfView", fieldOfView);
 		visibleNanoTime = config.getInt("visibleSeconds", VISIBLE_SECONDS_DEFAULT) * 1000000000L;
-		manipulationDistance = config.getDouble("manipulationDistance", manipulationDistance);
+		manipulationDistanceMin = config.getDouble("manipulationDistanceMin", manipulationDistanceMin);
+		manipulationDistanceMax = config.getDouble("manipulationDistanceMax", manipulationDistanceMax);
 		gamepadZeroThreshold = config.getDouble("gamepadZeroThreshold", gamepadZeroThreshold);
 		lidarCacheTime = config.getInt("lidarCacheTimeSeconds", LIDAR_CACHE_SECONDS_DEFAULT) * 1000000000L;
 		spawnDebugger = config.getBoolean("spawnDebugger", spawnDebugger);
@@ -338,8 +340,12 @@ public enum CommandConfig {
 		return visibleNanoTime;
 	}
 
-	public double getManipulationDistance() {
-		return manipulationDistance;
+	public double getManipulationDistanceMin() {
+		return manipulationDistanceMin;
+	}
+
+	public double getManipulationDistanceMax() {
+		return manipulationDistanceMax;
 	}
 
 	public double getGamepadZeroThreshold() {

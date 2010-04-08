@@ -67,7 +67,7 @@ public class DropObjectCommand extends OutputLinkCommand {
 		VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
 
 		pose_t botPose = pose.getPose();
-		double dropDistance = CommandConfig.CONFIG.getManipulationDistance();
+		double dropDistance = CommandConfig.CONFIG.getManipulationDistanceMin();
 		dropDistance += object.getSize()[0] / 2.0;
 
 		// Move the block dropDistance in front of us
