@@ -149,6 +149,8 @@ public class ConfigurationIL implements InputLinkElement {
 			visibleTime.update(c.getVisibleNanoTime() / 1000000000.0);
 			manipulationDistanceMin.update(c.getManipulationDistanceMin());
 			manipulationDistanceMax.update(c.getManipulationDistanceMin());
+			
+			// TODO: verify everything from config is here, currently missing random seed (at least)
 
 			configChanged.set(false);
 		}
