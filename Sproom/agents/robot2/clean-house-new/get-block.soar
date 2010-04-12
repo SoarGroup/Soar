@@ -1,0 +1,8 @@
+sp {clean-house*propose*get-block
+   (state <s> ^name robot
+             -^io.input-link.self.carry)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name get-block)
+}
+

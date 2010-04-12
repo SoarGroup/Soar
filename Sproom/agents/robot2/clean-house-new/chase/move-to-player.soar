@@ -1,0 +1,15 @@
+sp {chase*propose*move-to-player
+   (state <s> ^name chase
+              ^io.input-link.object <p>
+              ^top-state.parameters.medium-linear-velocity <medium>
+              ^superstate.operator.player <p>)
+   (<p> ^name <n>
+        ^type player
+        ^yaw <ao>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-to-player
+         ^actions.set-heading-linear <sv>)
+   (<sv> ^linear-velocity <medium>
+         ^yaw <ao>)
+}

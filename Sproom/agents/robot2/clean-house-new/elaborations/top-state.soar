@@ -1,0 +1,16 @@
+sp {elaborate*task*robot
+   (state <s> ^superstate nil)
+   -->
+   (<s> ^name robot)}
+
+sp {elaborate*top-state*top-state
+  (state <s> ^name robot)
+-->
+  (<s> ^top-state <s>)}
+
+#sp {go-to-waypoint*elaborate*set-waypoint*int
+#   (state <s> ^io.input-link.self.waypoints.waypoint <wp>)
+#   (<wp> ^id <id>)
+#-->
+#   (<wp> ^id (int <id>))
+#}

@@ -1,0 +1,20 @@
+
+sp {self*elaborate*stopped
+   (state <s> ^name robot
+              ^io.input-link <input>)
+   (<input> ^self <self>)
+   (<self> ^pose <pose>)
+   (<pose> ^x-velocity 0.0
+           ^y-velocity 0.0)
+-->
+   (<self> ^stopped yes)}
+
+sp {self*elaborate*stopped*no1
+   (state <s> ^name robot
+              ^io.input-link <input>)
+   (<input> ^self <self>)
+   (<self> ^pose <pose>)
+  -(<pose> ^x-velocity 0.0
+           ^y-velocity 0.0)
+-->
+   (<self> ^stopped no)}

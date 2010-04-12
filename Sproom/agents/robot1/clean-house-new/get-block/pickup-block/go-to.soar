@@ -1,0 +1,16 @@
+sp {pickup-block*propose*go-to
+   (state <s> ^name pickup-block
+              ^top-state.parameters.pickup-range <r>
+              ^object <o>)
+   (<o> ^visible true)
+  -(<s> ^object-in-range-lined-up yes
+        ^io.input-link.self.stopped yes)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name go-to
+         ^destination <o>
+         ^range <r>)
+}
+
+
+### Choose closest

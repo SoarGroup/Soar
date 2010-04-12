@@ -1,0 +1,14 @@
+source elaborations.soar
+source find-block-in-area.soar
+pushd find-block-in-area
+source find-block-in-area_source.soar
+popd
+source go-to-seen-block.soar
+source go-to-unseen-block-in-room.soar
+source goto-not-clean-area.soar
+source goto-unvisited-area.soar
+source pickup-block.soar
+pushd pickup-block
+source pickup-block_source.soar
+popd
+source retrieve-blocks.soar

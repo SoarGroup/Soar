@@ -1,0 +1,51 @@
+sp {Impasse__Operator_Tie*elaborate*state*stop
+   (state <s> ^impasse tie
+             -^top-state.io.input-link.self.stopped yes
+              ^top-state.io.output-link <out>)
+-->
+   (<out> ^stop <x>)
+}
+
+sp {Impasse__Operator_Tie*elaborate*learn*on
+   (state <s> ^impasse tie)
+-->
+   (force-learn <s>)
+}
+
+sp {selection*elaborate*evaluation*total-estimated-cost*gateways
+   :default
+   (state <s> ^name selection
+              ^evaluation <e> 
+              ^superstate.desired.location <dloc>)
+   (<e> ^current-location <cloc>
+        ^path-cost <pc>)
+   (<cloc> ^x <cx> ^y <cy> ^id <cid>)
+  -(<cloc> ^gateway.to <did>)
+  -(<dloc> ^x <dx> ^y <dy>)
+   (<dloc> ^gateway-x <dx> ^gateway-y <dy> ^id <did>) 
+-->
+  #(write (crlf) |!!!!!!!!!!!!!!!!!!!!!!!!!!!|)
+  #(write (crlf) |current x | <cx> | y | <cy>)
+  #(write (crlf) |desired x | <dx> | y | <dy>)
+  #(write (crlf) |range:    | (compute-range <cx> <cy> <dx> <dy>))
+  #(write (crlf) |Total Estmated Cost: | (+  (compute-range <cx> <cy> <dx> <dy>) <pc>))
+   (<e> #^total-estimated-cost (+  (compute-range <cx> <cy> <dx> <dy>) <pc>)
+        ^estimated-cost (compute-range <cx> <cy> <dx> <dy>)  )
+}
+
+sp {selection*elaborate*evaluation*total-estimated-cost*gateways*achieved
+   :default
+   (state <s> ^name selection
+              ^evaluation <e> 
+              ^superstate.desired.location <dloc>)
+   (<e> ^current-location.gateway.to <did>
+        ^path-cost <pc>)
+  -(<dloc> ^x <dx> ^y <dy>)
+   (<dloc> ^id <did>
+          ^gateway-x)
+-->
+  #(write (crlf) |!!!!!!!!!!!!XXXXXXXXXX|)
+  #(write (crlf) |Total Estmated Cost: |  <pc>)
+   (<e> ^total-estimated-cost <pc>
+        ^estimated-cost 0 )
+}

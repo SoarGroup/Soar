@@ -1,0 +1,8 @@
+source elaborations.soar
+source detect-no-storage-area.soar
+source find-block-in-area.soar
+source goto-storage-area.soar
+source move-to-wall.soar
+pushd move-to-wall
+source move-to-wall_source.soar
+popd

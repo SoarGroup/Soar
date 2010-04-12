@@ -1,0 +1,80 @@
+# only process new received messages
+sp {instruction*propose*msg
+   (state <s> ^name robot
+              ^io <io>)
+   (<io> ^input-link.self <self>
+         ^output-link <ol>)
+   (<self> ^received-messages.message <m>
+           ^name <name>)
+   (<m> ^id <id>
+       -^from <name>)
+  -{(<ol> ^remove-message <rm>)
+    (<rm> ^id <id>)}
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name msg
+         ^message <m>)
+}
+
+# messages are more important than non-messages
+sp {instruction*propose*msg*better
+   (state <s> ^name robot
+              ^operator <op1> +
+              ^operator <op2> +)
+   (<op1> ^name msg)
+   (<op2> ^name {<> msg})
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+# process messages in order of arrival
+sp {instruction*propose*msg*multiple
+   (state <s> ^name robot
+              ^operator <op1> +
+              ^operator {<> <op1> <op2>} +)
+   (<op1> ^name msg
+          ^message.id <id1>)
+   (<op2> ^name msg
+          ^message.id {> <id1>})
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+# setup for trace output
+sp {apply*msg*first
+   (state <s> ^operator <op>
+             -^reading)
+   (<op> ^name msg
+         ^message.first <f>)
+-->
+   (<s> ^reading <f>)
+   (write (crlf) |MESSAGE RECEIVED: |)
+}
+
+# output each word to trace
+sp {apply*msg*next
+   (state <s> ^operator <op>
+              ^reading {<> nil <c>})
+   (<op> ^name msg)
+   (<c> ^word <w>
+        ^next <n>)
+-->
+   (<s> ^reading <c> -
+        ^reading <n>)
+   (write <w> | |)
+}
+
+# when the message is processed, continue
+sp {apply*msg*last
+   (state <s> ^operator <op>
+              ^io.output-link <ol>
+              ^reading nil)
+   (<op> ^name msg
+         ^message.id <id>
+         ^processed true)
+-->
+   (write (crlf) (crlf))
+   (<ol> ^remove-message.id <id>)
+   (<s> ^reading nil -)
+}
+

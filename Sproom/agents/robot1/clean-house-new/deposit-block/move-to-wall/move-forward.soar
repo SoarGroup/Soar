@@ -1,0 +1,14 @@
+sp {move-to-wall*propose*move-forward
+   (state <s> ^name move-to-wall
+              ^quiescence t
+              ^collision false
+              ^top-state.tight-direction <dir>
+              ^top-state.parameters.medium-linear-velocity <medium>
+              ^superstate.operator.wall-direction <dir>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-forward
+         ^actions.set-velocity <v>)
+   (<v> ^linear-velocity <medium>
+        ^angular-velocity 0.0)
+}

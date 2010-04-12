@@ -1,0 +1,13 @@
+sp {circuit-patrol*propose*goto-next-area
+   (state <s> ^name patrol
+             -^achieved-area true
+              ^top-state <ts>)
+   (<ts> ^current-mission.next-area.id <id>
+         ^areas.area <area>)
+   (<area> ^id <id>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name goto-next-area
+         ^type go-to-area
+         ^area <area>)
+}

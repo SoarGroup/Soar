@@ -1,0 +1,21 @@
+sp {go-to-area*elaborate*destination-area
+   (state <s> ^superstate.operator <so>)
+   (<so> ^type go-to-area
+         ^area <area>)
+-->
+   (<s> ^destination-area <area>
+        ^desired.location <area>)
+   
+}
+
+sp {go-to-area*elaborate*problem-space
+   (state <s> ^type go-to-area
+             -^name evaluate-operator)
+-->
+   (<s> ^problem-space <p>)
+   (<p> ^name area-search
+        ^default-state-copy yes
+        ^one-level-attributes destination-area type
+        ^two-level-attributes top-state
+        #^dont-copy current-location
+                            )}
