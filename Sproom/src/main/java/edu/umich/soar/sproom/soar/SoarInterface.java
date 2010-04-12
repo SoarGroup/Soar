@@ -82,6 +82,11 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 			System.exit(1);
 		}
 		
+		if (CommandConfig.CONFIG.hasRandomSeed()) {
+			logger.warn(String.format("Setting random seed: %d", CommandConfig.CONFIG.getRandomSeed()));
+			agent.ExecuteCommandLine(String.format("srand %d", CommandConfig.CONFIG.getRandomSeed()));
+		}
+		
 		agent.SetBlinkIfNoChange(false);
 		
 		il = InputLink.newInstance(this);
