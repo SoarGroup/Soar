@@ -1,0 +1,22 @@
+sp {grasp-block*propose*grasp-get
+   (state <s> ^name grasp-block
+              ^block <b>
+              ^top-state.io.input-link.object <obj>)
+   (<b> ^id <id>
+        ^confirmation received)
+   (<obj> ^id <id>
+          ^type << block brick ball ied >>
+          ^diffused true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name grasp-get)
+}
+
+sp {apply*grasp-get
+   (state <s> ^operator <op>
+              ^block.id <id>
+              ^top-state.io.output-link <out>)
+   (<op> ^name grasp-get)
+-->
+   (<out> ^get-object.id <id>)
+}

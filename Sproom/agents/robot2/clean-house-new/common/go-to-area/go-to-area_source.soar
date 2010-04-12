@@ -1,0 +1,6 @@
+source elaborations.soar
+source go-to-gateway.soar
+source go-to-next-area.soar
+pushd go-to-next-area
+source go-to-next-area_source.soar
+popd

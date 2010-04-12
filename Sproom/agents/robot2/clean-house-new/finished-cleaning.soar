@@ -1,0 +1,46 @@
+sp {clean-house*propose*finished-cleaning
+   (state <s> ^name robot
+              ^blocks <bs>
+              ^parameters.areas-held-in wm
+              ^areas <areas>
+             -^io.input-link.self.carry)
+  -{(<areas> ^area <area>)
+    (<area> -^cleaned yes
+            -^storage-area yes)}
+   -{(<bs> ^block <b>)
+     (<b> ^ied true
+          ^in-storage-room no)}
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name finished-cleaning)
+}
+
+sp {apply*finished-cleaning
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name finished-cleaning)
+-->
+  (write (crlf) |All rooms are cleaned.|)
+  (<out> ^stop <stop>)
+  #(halt)
+}
+
+sp {clean-house*compare*finished-cleaning*get-block
+   (state <s> ^name robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name finished-cleaning)
+   (<op2> ^name get-block)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {clean-house*compare*finished-cleaning*record-label
+   (state <s> ^name robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name finished-cleaning)
+   (<op2> ^name record-label)
+-->
+   (<s> ^operator <op1> < <op2>)
+}

@@ -1,0 +1,84 @@
+sp {instr-goto*propose*goto-do
+   (state <s> ^name instr-goto)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name goto-do)
+}
+
+sp {apply*goto-do*calc
+   (state <s> ^operator <op>
+              ^superstate.operator <ss-op>)
+   (<op> ^name goto-do)
+   (<ss-op> ^area <area>
+            ^id <id>)
+-->
+   (<s> ^area-id (int <area>)
+        ^priority <id>)
+}
+
+sp {apply*goto-do*gotos
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^area-id <id>
+              ^priority <priority>)
+   (<op> ^name goto-do)
+   (<ts> ^gotos <gs>
+         ^areas.area.id <id>)
+-->
+   (<gs> ^<id> <priority>)
+}
+
+sp {apply*goto-do*unknown
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^area-id <id>
+              ^priority <priority>)
+   (<op> ^name goto-do)
+   (<ts> ^areas <areas>
+         ^pending <p>
+         ^io.output-link <out>)
+  -{(<areas> ^area <a>)
+    (<a> ^id <id>)}
+-->
+   (<p> ^goto <g>)
+   (<g> ^<id> <priority>)
+   (<out> ^send-message <m>)
+   (<m> ^first <one>)
+   (<one> ^word |unknown|
+          ^next <two>)
+   (<two> ^word |area,|
+          ^next <three>)
+   (<three> ^word |please|
+            ^next <four>)
+   (<four> ^word |locate|
+           ^next <five>)
+   (<five> ^word <id>
+           ^next nil)
+}
+
+sp {apply*goto-do*unclean
+   (state <s> ^operator <op>
+              ^area-id <id>
+              ^top-state.areas.area <a>)
+   (<op> ^name goto-do)
+   (<a> ^cleaned yes
+        ^search-start-direction <dir>
+        ^turning yes
+        ^id <id>
+       -^storage-area yes)
+-->
+   (<a> ^cleaned yes - no
+        ^search-start-direction <dir> -
+        ^turning yes -)
+}
+
+sp {apply*goto-do
+   (state <s> ^operator <op>
+              ^area-id
+              ^priority
+              ^superstate.operator <ss-op>)
+   (<op> ^name goto-do)
+-->
+   (<ss-op> ^done true)
+}
+

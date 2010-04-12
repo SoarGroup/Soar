@@ -1,0 +1,103 @@
+## If collision sensor is on, mark that there is a collision
+
+sp {move-to-wall*elaborate*collision
+   (state <s> ^name move-to-wall
+              ^io.input-link.self.collision.<x> true)
+-->
+   (<s> ^collision true)
+}
+
+## If collision distance (computed below) is < 30, mark that there is a collision
+## This is used for walls
+
+sp {move-to-wall*elaborate*collision-wall
+   (state <s> ^name move-to-wall
+              ^collision-distance < 30)
+-->
+   (<s> ^collision true)
+}
+
+## If there is an object that is within 30 and I'm headed for it, mark that there is a collision
+
+sp {move-to-wall*elaborate*collision-object
+   (state <s> ^name move-to-wall
+              ^io.input-link.object <obj>)
+   (<obj> ^distance < 30
+          ^yaw { < 0.2 > -0.2 })
+-->
+   (<s> ^collision true)
+}
+
+## If there none of the things above is true, mark that there is a not a collision
+##  Useful in other rules to compute both true and false for collision
+
+sp {move-to-wall*elaborate*collision-false
+   (state <s> ^name move-to-wall
+             -^io.input-link.object.distance < 30
+              ^collision-distance >= 30
+              ^io.input-link.self.collision <col>)
+   (<col> ^x false
+          ^y false)
+-->
+   (<s> ^collision false)
+}
+
+#### For each direction, compute the distance to the wall I'm headed toward
+
+sp {move-to-wall*elaborate*collision-wall*north
+   (state <s> ^name move-to-wall
+              ^superstate.operator.wall-direction north
+              ^io.input-link <input>)
+   (<input> ^self.pose.y <y1>
+            ^area-description.wall <w>)
+   (<w> ^direction north
+        ^y <y2>)
+-->
+   (<s> ^collision-distance (- <y1> <y2>))
+}
+
+sp {move-to-wall*elaborate*collision-wall*south
+   (state <s> ^name move-to-wall
+              ^superstate.operator.wall-direction south
+              ^io.input-link <input>)
+   (<input> ^self.pose.y <y1>
+            ^area-description.wall <w>)
+   (<w> ^direction south
+        ^y <y2>)
+-->
+   (<s> ^collision-distance (- <y2> <y1>))
+}
+
+sp {move-to-wall*elaborate*collision-wall*west
+   (state <s> ^name move-to-wall
+              ^superstate.operator.wall-direction west
+              ^io.input-link <input>)
+   (<input> ^self.pose.x <x1>
+            ^area-description.wall <w>)
+   (<w> ^direction west
+        ^x <x2>)
+-->
+   (<s> ^collision-distance (- <x1> <x2>))
+}
+
+sp {move-to-wall*elaborate*collision-wall*east
+   (state <s> ^name move-to-wall
+              ^superstate.operator.wall-direction east
+              ^io.input-link <input>)
+   (<input> ^self.pose.x <x1>
+            ^area-description.wall <w>)
+   (<w> ^direction east
+        ^x <x2>)
+-->
+   (<s> ^collision-distance (- <x2> <x1>))
+}
+
+## The range to an object is its collision distance
+##  looks like a general case of collision-object above
+
+sp {move-to-wall*elaborate*collision-object2
+   (state <s> ^name move-to-wall
+              ^io.input-link.object.distance <r>)
+-->
+   (<s> ^collision-distance <r>)
+}

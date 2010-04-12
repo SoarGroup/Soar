@@ -1,0 +1,14 @@
+sp {deposit-block*propose*move-to-wall
+   (state <s> ^name deposit-block
+              ^quiescence t
+              ^top-state <ts>
+              ^current-location <ca>)
+   (<ca> ^storage-area yes
+         ^wall <w>)
+   (<w> ^direction <d>)
+   (<ts> ^direction <d>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-to-wall
+         ^wall-direction <d>)
+}

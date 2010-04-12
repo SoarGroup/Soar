@@ -1,0 +1,32 @@
+sp {grasp-block*propose*grasp-confirm
+   (state <s> ^name grasp-block
+             -^block.confirmation received)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name grasp-confirm)
+}
+
+sp {apply*grasp-confirm
+   (state <s> ^operator <op>
+              ^top-state <ts>
+              ^block <b>)
+   (<op> ^name grasp-confirm)
+   (<ts> ^io.output-link <out>)
+   (<b> ^id <id>)
+-->
+   (<b> ^confirmation waiting)
+   (<out> ^send-message <m>)
+   (<m> ^first <one>)
+   (<one> ^word |possible|
+          ^next <two>)
+   (<two> ^word |ied|
+          ^next <three>)
+   (<three> ^word |detected,|
+            ^next <four>)
+   (<four> ^word |please|
+           ^next <five>)
+   (<five> ^word |confirm|
+           ^next <six>)
+   (<six> ^word <id>
+          ^next nil)
+}

@@ -1,0 +1,238 @@
+sp {go-to*elaborate*state*destination-waypoint
+   (state <s> ^name go-to
+              ^superstate.operator.destination <des>)
+-->
+   (<s> ^destination <des>)
+}
+
+sp {go-to*elaborate*state*cross-doorway
+   (state <s> ^name go-to
+              ^superstate.operator.cross-doorway yes)
+-->
+   (<s> ^cross-doorway yes)
+}
+sp {go-to*elaborate*set-waypoint*true
+   (state <s> ^name go-to
+              ^destination <d>
+              ^top-state.io.input-link.self.waypoints.waypoint <wp>)
+   (<d> ^id <id>
+        ^x <x>
+        ^y <y>)
+   (<wp> ^id <id>
+         ^x <x>
+         ^y <y>)
+-->
+   (<s> ^set-waypoint true
+        ^waypoint-data <wp>)
+}
+
+sp {go-to*elaborate*set-waypoint*false
+   (state <s> ^name go-to
+              ^destination <d>)
+   (<d> ^id <id>
+        ^x <x>
+        ^y <y>)
+  -{(<s> ^top-state.io.input-link.self.waypoints.waypoint <wp>)
+    (<wp> ^id <id>
+          ^x <x>
+          ^y <y>)}
+-->
+   (<s> ^set-waypoint false)
+}
+sp {go-to*elaborate*yaw-aligned*true
+   (state <s> ^name go-to
+              ^top-state.parameters <p>
+              ^waypoint-data <w>)
+   (<p> ^max-angular-distance <max>
+        ^min-angular-distance <min>)
+   (<w> -^abs-relative-bearing > <max>
+        -^abs-relative-bearing < <min>)
+-->
+   (<s> ^yaw-aligned true)
+  #(write (crlf) |Oriented towards dest|)
+}
+sp {go-to*elaborate*yaw-aligned*false*max
+   (state <s> ^name go-to
+              ^top-state.parameters.max-angular-distance <max>
+              ^waypoint-data <w>)
+  -(<w> ^abs-relative-bearing <= <max>)
+-->
+   (<s> ^yaw-aligned false)
+  #(write (crlf) |Not oriented towards dest|)
+}
+
+sp {go-to*elaborate*yaw-aligned*false*min
+   (state <s> ^name go-to
+              ^top-state.parameters.min-angular-distance <min>
+              ^waypoint-data <w>)
+  -(<w> ^abs-relative-bearing >= <min>)
+-->
+   (<s> ^yaw-aligned false)
+  #(write (crlf) |Not oriented towards dest|)
+}
+
+sp {go-to*elaborate*state*in-range
+   (state <s> ^name go-to
+              ^superstate.operator.range <r>
+              ^destination <d>)
+   (<d> -^distance >= <r>)
+-->
+   (<s> ^destination-in-range yes)
+}
+
+sp {go-to*elaborate*state*not*in-range
+   (state <s> ^name go-to
+              ^superstate.operator.range <r>
+              ^destination <d>)
+   (<d> -^distance < <r>)
+-->
+   (<s> ^destination-in-range no)
+}
+
+sp {go-to*elaborate*state*not*in-range*no-range
+   (state <s> ^name go-to
+             -^superstate.operator.range <r>)
+-->
+   (<s> ^destination-in-range no)
+}
+
+sp {go-to*elaborate*yaw-aligned*true*doorway
+   (state <s> ^name go-to
+              ^cross-doorway yes
+              ^top-state.io.input-link.self.pose.yaw <yaw>
+              ^top-state.gateway-directions.<gw-dir> <id>
+              ^superstate.operator.destination.direction { <> west <gw-dir> })
+   (<id> -^max < <yaw>
+         -^min > <yaw>)
+-->
+   (<s> ^yaw-aligned true)
+  #(write (crlf) |Oriented in doorway|)
+}
+
+sp {go-to*elaborate*yaw-aligned*true*doorway*west-neg
+   (state <s> ^name go-to
+              ^cross-doorway yes
+              ^top-state.io.input-link.self.pose.yaw { < 0 <yaw> }
+              ^top-state.gateway-directions.west <id>
+              ^superstate.operator.destination.direction west)
+   (<id> -^max-neg < <yaw>
+         -^min-neg > <yaw>)
+-->
+   (<s> ^yaw-aligned true)
+  #(write (crlf) |Oriented in doorway|)
+}
+
+sp {go-to*elaborate*yaw-aligned*true*doorway*west-pos
+   (state <s> ^name go-to
+              ^cross-doorway yes
+              ^top-state.io.input-link.self.pose.yaw { >= 0 <yaw> }
+              ^top-state.gateway-directions.west <id>
+              ^superstate.operator.destination.direction west)
+   (<id> -^max-pos < <yaw>
+         -^min-pos > <yaw>)
+-->
+   (<s> ^yaw-aligned true)
+  #(write (crlf) |Oriented in doorway|)
+}
+
+
+#
+########################################## Object in the way must move around
+#
+#sp {move-directly-to-gateway*elaborate*compute*object-vs-gateway-angle-off*obj-greater
+#   (state <s> ^name move-directly-to-gateway
+#              ^current-gateway.id  <gid>
+#              ^io.input-link <input>)
+#   (<input> ^area-description.gateway <gw>
+#            ^object <o>)
+#   (<o> ^visible yes
+#        ^range < 40
+#        ^id <oid>
+#        ^yaw { > <gwao> <oao> })
+#   (<gw> ^yaw <gwao>
+#         ^id <gid>)
+#-->
+#   (<s> ^object-gateway-diff <ogd>)
+#   (<ogd> ^difference (- <oao> <gwao>)
+#          ^id <oid>)}
+#
+#sp {move-directly-to-gateway*elaborate*compute*object-vs-gateway-angle-off*obj-less
+#   (state <s> ^name move-directly-to-gateway
+#              ^current-gateway.id  <gid>
+#              ^io.input-link <input>)
+#   (<input> ^area-description.gateway <gw>
+#            ^object <o>)
+#   (<o> ^visible yes
+#        ^range < 40
+#        ^id <oid>
+#        ^yaw { <= <gwao> <oao> })
+#   (<gw> ^yaw <gwao>
+#         ^id <gid>)
+#-->
+#   (<s> ^object-gateway-diff <ogd>)
+#   (<ogd> ^difference (- <gwao> <oao>)
+#          ^id <oid>)}
+#
+#sp {move-directly-to-gateway*elaborate*state*obstacle*no-neg
+#   (state <s> ^name move-directly-to-gateway
+#              ^object-gateway-diff <ogd>)
+#   (<ogd> ^difference < 1.0)
+#-->
+#   (<ogd> ^obstacle yes)
+#}
+#
+########################################## Object and wall
+#
+#sp {move-directly-to-gateway*elaborate*object-wall*greater-than
+#   (state <s> ^name move-directly-to-gateway
+#              ^top-state <ts>
+#              ^io.input-link <input>
+#              ^object-gateway-diff <ogd>)
+#   (<ts> ^direction <east>
+#         ^wall-obstacle.info <woi>
+#         ^numbers <nums>)
+#   (<nums> ^number <num>)
+#   (<num> ^value <row-value>
+#          ^one-more <row1-value>)
+#   (<woi> ^direction <east>
+#          ^one-greater-than <row>
+#          ^against-wall <south>)
+#   (<input> ^object <obj>
+#            ^area-description.wall <wall>)
+#   (<wall> ^direction <south>
+#           ^right.<row> <row1-value>)
+#   (<obj> ^id <oid>
+#  )#        ^pose <pos>)
+#   #(<pos> ^<row> <row-value>)
+#   (<ogd> ^obstacle yes
+#          ^id <oid>)
+#-->
+#   (<ogd> ^against-wall <south>)}
+#
+#sp {move-directly-to-gateway*elaborate*object-wall*less-than
+#   (state <s> ^name move-directly-to-gateway
+#              ^top-state <ts>
+#              ^io.input-link <input>
+#              ^object-gateway-diff <ogd>)
+#   (<ts> ^direction <east>
+#         ^wall-obstacle.info <woi>
+#         ^numbers <nums>)
+#   (<nums> ^number <num>)
+#   (<num> ^value <row-value>
+#          ^one-more <row1-value>)
+#   (<woi> ^direction <east>
+#          ^one-less-than <row>
+#          ^against-wall <south>)
+#   (<input> ^object <obj>
+#            ^area-description.wall <wall>)
+#   (<wall> ^direction <south>
+#           ^right.<row> <row1-value>)
+#   (<obj> ^id <oid>
+#        )#  ^pose <pos>)
+#  # (<pos> ^<row> <row-value>)
+#   (<ogd> ^obstacle yes
+#          ^id <oid>)
+#-->
+#   (<ogd> ^against-wall <south>)}
+#
+            

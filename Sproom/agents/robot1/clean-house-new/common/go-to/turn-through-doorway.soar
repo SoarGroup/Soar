@@ -1,0 +1,13 @@
+sp {go-to*propose*turn-through-doorway
+ #  :interrupt
+   (state <s> ^name go-to
+              ^top-state.gateway-directions.<gw-dir>.value <yaw>
+              ^cross-doorway yes
+              ^superstate.operator.destination.direction <gw-dir>
+             -^yaw-aligned true)
+-->
+   (<s> ^operator <op> +, >)
+   (<op> ^name turn-through-doorway
+         ^actions.set-heading.yaw <yaw>)
+   (write (crlf) |Turn-through-doorway to | <yaw> | direction: | <gw-dir>)
+}

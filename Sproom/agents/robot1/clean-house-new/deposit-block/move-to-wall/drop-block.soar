@@ -1,0 +1,38 @@
+sp {move-to-wall*propose*drop-block
+ #  :interrupt
+   (state <s> ^name move-to-wall
+              ^io.input-link.self.carry <id>
+              ^collision true)
+-->
+   (write |Drop-block stop.|)
+   (<s> ^operator <op> + =)
+   (<op> ^name drop-block
+         ^actions <a>)
+   (<a> ^stop <stop>
+        ^drop-object.id <id>)
+}
+
+sp {apply*drop-block
+   (state <s> ^operator <op>
+              ^top-state.parameters.objects-held-in wm
+              ^io.input-link.self <self>
+              ^top-state.blocks.block <block>)
+   (<self> ^carry <id>)
+   (<op> ^name drop-block)
+   (<block> ^id <id>)
+-->
+   (<block> ^in-storage-room no - yes)
+}
+
+sp {apply*drop-block*area
+   (state <s> ^operator <op>
+              ^top-state.parameters.objects-held-in wm
+              ^top-state.current-location <ca>
+              ^io.input-link.self.carry <id>
+              ^top-state.blocks.block <block>)
+   (<op> ^name drop-block)
+   (<block> ^id <id>
+            ^area { <area> <> <ca> })
+-->
+   (<block> ^area <area> - <ca>)
+}

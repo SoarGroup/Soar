@@ -1,0 +1,25 @@
+sp {instr-label*propose*label-do
+   (state <s> ^name instr-label
+             -^stage)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name label-do)
+}
+
+sp {apply*label-do
+   (state <s> ^operator <op>
+              ^superstate.operator <ss-op>
+              ^top-state.labels <ls>)
+   (<op> ^name label-do)
+   (<ss-op> ^attr <attr>
+            ^value <value>
+            ^label <label>)
+-->
+   (<ss-op> ^done true)
+   (<ls> ^label <l>)
+   (<l> ^attr <attr>
+        ^value <value>
+        ^label <label>)
+}
+
+
