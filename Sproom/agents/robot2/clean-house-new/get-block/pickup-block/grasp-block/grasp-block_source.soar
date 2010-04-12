@@ -1,0 +1,4 @@
+source elaborations.soar
+source grasp-confirm.soar
+source grasp-diffuse.soar
+source grasp-get.soar

@@ -1,0 +1,29 @@
+sp {io-error*remove-waypoint
+   :o-support
+   (state <s> ^superstate nil
+              ^io.output-link <out>)
+   (<out> ^remove-waypoint <rm>)
+   (<rm> ^status error
+         ^id <id>)
+-->
+   (<out> ^remove-waypoint <rm> -)
+  # (write (crlf) |Error on remove waypoint: | <id>)
+}
+
+sp {io-error*set-velocity
+   (state <s> ^superstate nil
+              ^io.output-link.set-velocity <rm>)
+   (<rm> ^status error
+         ^message <m>)
+-->
+   (write (crlf) |Error on set-velocity: | <m>)
+}
+
+sp {io-error*stop
+   (state <s> ^superstate nil
+              ^io.output-link.stop <rm>)
+   (<rm> ^status error
+         ^message <m>)
+-->
+   (write (crlf) |Error on stop: | <m>)
+}

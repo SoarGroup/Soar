@@ -1,0 +1,16 @@
+sp {circuit-patrol*elaborate*state
+   (state <s> ^name patrol
+              ^top-state <ts>)
+   (<ts> ^current-mission.next-area.id <id>
+         ^current-location.id <id>)
+-->
+   (<s> ^achieved-area true)
+}
+sp {circuit-patrol*elaborate*state*name
+   (state <s> ^name patrol
+              ^top-state <ts>)
+   (<ts> ^current-mission.next-area.id <id>
+         ^current-location.id <id>)
+-->
+   (<s> ^achieved-area true)
+}

@@ -1,0 +1,19 @@
+sp {circuit-patrol*propose*next-area
+   (state <s> ^name patrol
+              ^achieved-area true
+              ^top-state <ts>)
+   (<ts> ^current-mission.next-area.next <> nil)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next-area)
+}
+
+sp {apply*next-area
+   (state <s> ^operator.name next-area
+              ^top-state.current-mission <cm>)
+   (<cm> ^next-area <na>)
+   (<na> ^next <next>)
+-->
+   (<cm> ^next-area <na> -
+                    <next>)
+}

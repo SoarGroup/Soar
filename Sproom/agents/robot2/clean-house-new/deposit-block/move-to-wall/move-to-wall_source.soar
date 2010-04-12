@@ -1,0 +1,4 @@
+source elaborations.soar
+source drop-block.soar
+source move-forward.soar
+source turn-to-wall.soar

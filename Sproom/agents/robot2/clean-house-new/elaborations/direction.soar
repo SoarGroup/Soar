@@ -1,0 +1,160 @@
+sp {robot*elaborate*state*gateway-direction-structures
+   (state <s> ^name robot
+              ^superstate nil)
+-->
+   (<s> ^gateway-directions <d1>)
+   (<d1> ^south <south>  #values are opposite - which direction to head to go through gateway that is on that side
+         ^north <north>
+         ^east <east>
+         ^west <west>)
+   (<east> ^value 0
+           ^min -5
+           ^max 5)
+   (<west> ^value 180
+           ^min-pos 175
+           ^max-pos 180
+           ^max-neg -175
+           ^min-neg -180)
+   (<south> ^value 90
+            ^min 85
+            ^max 95)
+   (<north> ^value -90
+            ^min -95
+            ^max -85)}
+
+sp {robot*elaborate*state*directions
+   (state <s> ^name robot
+              ^superstate nil)
+-->
+   (<s> ^directions <dir>)
+   (<dir> ^nnw 22.5
+          ^nw 45
+          ^wnw 67.5
+          ^wsw 112.5
+          ^sw 135
+          ^ssw 157.5
+          ^sse -157.5
+          ^se -135
+          ^ese -112.5
+          ^ene -67.5
+          ^ne -45
+          ^nne -22.5)
+}
+
+sp {robot*elaborate*state*directions*eswn
+   (state <s> ^name robot
+              ^superstate nil)
+-->
+   (<s> ^directions <n> <ss> <e> <w>)
+   (<n>  ^value north ^opposite south)
+   (<ss> ^value south ^opposite north)
+   (<e>  ^value east  ^opposite west)
+   (<w>  ^value west  ^opposite east)
+}
+
+sp {robot*elaborate*direction*north1
+   (state <s> ^name robot
+              ^directions <dir>
+             -^io.input-link.self.pose.yaw > <nw>
+             -^io.input-link.self.pose.yaw <= <ne>)
+   (<dir> ^nw <nw>
+          ^ne <ne>)
+-->
+   (<s> ^direction north)
+}
+
+sp {robot*elaborate*direction*east
+   (state <s> ^name robot
+              ^directions <dir>
+             -^io.input-link.self.pose.yaw > <ne> 
+             -^io.input-link.self.pose.yaw <= <se>)
+   (<dir> ^ne <ne>
+          ^se <se>)
+-->
+   (<s> ^direction east)
+}
+
+sp {robot*elaborate*direction*south1
+   (state <s> ^name robot
+              ^directions <dir>
+             -^io.input-link.self.pose.yaw  > <se> )
+   (<dir> ^se <se>
+          ^sw <sw>)
+-->
+   (<s> ^direction south)
+}
+
+sp {robot*elaborate*direction*south2
+   (state <s> ^name robot
+              ^directions <dir>
+             -^io.input-link.self.pose.yaw  <= <sw> )
+   (<dir> ^se <se>
+          ^sw <sw>)
+-->
+   (<s> ^direction south)
+}
+
+sp {robot*elaborate*direction*west
+   (state <s> ^name robot
+              ^directions <dir>
+             -^io.input-link.self.pose.yaw <= <nw>
+             -^io.input-link.self.pose.yaw > <sw>)
+   (<dir> ^sw <sw>
+          ^nw <nw>)
+-->
+   (<s> ^direction west)
+}
+
+
+sp {robot*elaborate*tight-direction*north
+   (state <s> ^name robot
+              ^directions <dir>
+              ^io.input-link.self.pose.yaw { <= <nnw> > <nne> })
+   (<dir> ^nne <nne>
+          ^nnw <nnw>)
+-->
+   (<s> ^tight-direction  north)
+}
+
+sp {robot*elaborate*tight-direction*east
+   (state <s> ^name robot
+              ^directions <dir>
+              ^io.input-link.self.pose.yaw { <= <nne> > <ese>})
+   (<dir> ^nne <nne>
+          ^ese <ese>)
+-->
+   (<s> ^tight-direction  east)
+}
+
+sp {robot*elaborate*tight-direction*south1
+   (state <s> ^name robot
+              ^directions <dir>
+              ^io.input-link.self.pose.yaw <= <sse>)
+   (<dir> ^sse <sse>
+          ^ssw <ssw>)
+-->
+   (<s> ^tight-direction  south)
+}
+
+sp {robot*elaborate*tight-direction*south2
+   (state <s> ^name robot
+              ^directions <dir>
+              ^io.input-link.self.pose.yaw > <ssw>)
+   (<dir> ^sse <sse>
+          ^ssw <ssw>)
+-->
+   (<s> ^tight-direction  south)
+}
+sp {robot*elaborate*tight-direction*west
+   (state <s> ^name robot
+              ^directions <dir>
+              ^io.input-link.self.pose.yaw { <= <wsw> > <wnw> })
+   (<dir> ^wnw <wnw>
+          ^wsw <wsw>)
+-->
+   (<s> ^tight-direction  west)
+}
+
+
+
+

@@ -1,0 +1,10 @@
+sp {grasp-block*elaborate*substate
+   (state <s> ^name grasp-block
+              ^superstate.operator <so>
+              ^top-state.blocks.block <b>)
+   (<so> ^name grasp-block
+         ^id <id>)
+   (<b> ^id <id>)
+-->
+   (<s> ^block <b>)
+}

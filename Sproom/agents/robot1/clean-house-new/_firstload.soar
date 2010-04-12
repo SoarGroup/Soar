@@ -1,0 +1,29 @@
+multi-attributes area 10 
+multi-attributes object 10 
+multi-attributes gateway 3 
+multi-attributes wall 6
+multi-attributes evaluation 3
+pushd ../../default
+source selection.soar
+source selection-astar.soar
+popd
+
+learn --only
+learn --off
+## possible things to push into semantic memory
+##  objects encountered (their properties)
+##  areas (rooms), gateways, walls 
+
+#smem -s timers two
+smem -s learning on
+#epmem -s learning off
+#epmem --set trigger dc
+#epmem --set timers three
+w 0
+srand 22
+#stats --track
+indif --soft
+wma -s activation off
+wma -s decay-rate .001
+wma -s forgetting on
+#wma -s activation on

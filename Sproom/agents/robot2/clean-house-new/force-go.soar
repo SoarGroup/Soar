@@ -1,0 +1,63 @@
+sp {clean-house-new*propose*force-go
+   (state <s> ^name robot
+              ^gotos.<loc> <priority>
+              ^areas.area <area>)
+   (<area> ^id <loc>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name force-go
+         ^type go-to-area
+         ^area <area>
+         ^loc <loc>
+         ^priority <priority>)
+}
+
+sp {clean-house-new*propose*force-go*multiple*time*diff
+   (state <s> ^name robot
+              ^operator <op1> +
+              ^operator {<> <op1> <op2>} +)
+   (<op1> ^name force-go
+          ^priority <p1>)
+   (<op2> ^name force-go
+          ^priority {< <p1>})
+-->
+   (<s> ^operator <op1> < <op2>)
+}
+
+sp {clean-house-new*propose*force-go*multiple*time*same
+   (state <s> ^name robot
+              ^operator <op1> +
+              ^operator {<> <op1> <op2>} +)
+   (<op1> ^name force-go
+          ^priority <p1>)
+   (<op2> ^name force-go
+          ^priority <p1>)
+-->
+   (<s> ^operator <op1> = <op2>)
+}
+
+sp {clean-house-new*propose*force-go*compare
+   (state <s> ^name robot
+              ^operator <op1> +
+              ^operator {<> <op1> <op2>} +)
+   (<op1> ^name force-go)
+   (<op2> ^name {<> msg <> record-label <> force-go})
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {apply*force-go*done
+   (state <s> ^operator <op>
+              ^io.input-link.area-description.id <loc>
+              ^gotos <gotos>)
+   (<op> ^name force-go
+         ^loc <loc>
+         ^priority <priority>)
+-->
+   (<gotos> ^<loc> <priority> -)
+}
+
+
+
+
+   

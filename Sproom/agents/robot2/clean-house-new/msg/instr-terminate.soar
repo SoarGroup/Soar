@@ -1,0 +1,33 @@
+sp {msg*propose*instr-terminate
+   (state <s> ^name msg
+              ^message.first <first>)
+   (<first> ^word terminate
+            ^next.word patrol)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name instr-terminate
+         ^type patrol)
+}
+
+sp {apply*instr-terminate
+   (state <s> ^operator <o>
+              ^message <m>
+              ^top-state <ts>)
+   (<o> ^name instr-terminate
+        ^type patrol)
+   (<m> ^first.next.next.word <name>)
+   (<ts> ^current-mission <cm>)
+   (<cm> ^name <name>
+         ^status { <> terminated <status> })
+-->
+   (<cm> ^status <status> -
+                 terminated)
+}
+
+sp {apply*instr-terminate*done
+   (state <s> ^operator <op>
+              ^superstate.operator <ss-op>)
+   (<op> ^name instr-terminate)
+-->
+   (<ss-op> ^processed true)
+}

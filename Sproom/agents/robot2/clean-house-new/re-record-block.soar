@@ -1,0 +1,55 @@
+sp {clean-house*propose*re-record-block
+   (state <s> ^name robot
+              ^current-location <ca>
+              ^blocks.block <block>
+              ^parameters.objects-held-in smem
+              ^io.input-link.object <obj>)
+   (<block> ^id <id>
+        ^area <> <ca>)
+   (<obj> ^id <id>
+          ^visible yes)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name re-record-block
+         ^block <block>)
+}
+
+sp {apply*re-recorded-block*storage
+   (state <s> ^operator <op>
+              ^current-location.storage-area yes)
+   (<op> ^name re-record-block
+         ^block <block>)
+   (<block> ^in-storage-room no)
+-->
+   (<block> ^in-storage-room no - yes)
+}
+
+sp {apply*re-recorded-block*area
+   (state <s> ^operator <op>
+              ^current-location <ca>)
+   (<op> ^name re-record-block
+         ^block <block>)
+   (<block> ^area { <area> <> <ca> })
+-->
+   (<block> ^area <area> - <ca>)
+}
+
+sp {apply*re-record-block*store-new
+   (state <s> ^operator <op>
+              ^smem.command <cmd>)
+   (<op> ^name re-record-block
+         ^block <block>)
+-->
+  #(write (crlf) |Re-record block | <block> )
+   (<cmd> ^store <block>)
+}
+
+sp {clean-house*compare*re-record-block
+   (state <s> ^name robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name re-record-block)
+   (<op2> ^name get-block)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

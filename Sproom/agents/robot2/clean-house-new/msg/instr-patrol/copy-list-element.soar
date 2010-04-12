@@ -1,0 +1,36 @@
+sp {instr-patrol*propose*copy-list-element
+   (state <s> ^name instr-patrol
+              ^copy-source <> nil)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name copy-list-element)
+}
+sp {apply*copy-list-element
+   (state <s> ^operator.name copy-list-element
+              ^copy-destination <cd>
+              ^copy-source <cs>)
+   (<cs> ^word <word>
+         ^next { <> nil <next> })
+-->
+   (<s> ^copy-source <cs> -
+                     <next>
+        ^copy-destination <cd> -
+                          <ncd>)
+   (<cd> ^id (int <word>)
+         ^next <ncd>)
+}
+
+sp {apply*copy-list-element*nil
+   (state <s> ^operator.name copy-list-element
+              ^copy-destination <cd>
+              ^copy-source <cs>)
+   (<cs> ^word <word>
+         ^next nil)
+-->
+   (<s> ^copy-source <cs> -
+                     nil
+        ^copy-destination <cd> -
+                          nil)
+   (<cd> ^id (int <word>)
+         ^next nil)
+}

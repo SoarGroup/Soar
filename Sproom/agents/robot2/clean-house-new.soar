@@ -1,0 +1,3 @@
+pushd clean-house-new
+source clean-house-new_source.soar
+popd

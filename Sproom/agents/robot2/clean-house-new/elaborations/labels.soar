@@ -1,0 +1,5 @@
+sp {msg*elaborate*top-state*label
+   (state <s> ^superstate nil)
+-->
+   (<s> ^labels <l>)
+}

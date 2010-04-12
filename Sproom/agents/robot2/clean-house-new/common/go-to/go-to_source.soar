@@ -1,0 +1,9 @@
+source elaborations.soar
+source initialize-progress.soar
+source move-forward.soar
+source record-progress.soar
+source set-waypoint.soar
+source stop.soar
+source turn-around-object.soar
+source turn-through-doorway.soar
+source turn-to-waypoint.soar
