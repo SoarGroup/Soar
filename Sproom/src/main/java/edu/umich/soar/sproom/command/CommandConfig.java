@@ -94,6 +94,7 @@ public enum CommandConfig {
 	private final int LIDAR_CACHE_SECONDS_DEFAULT = 1;
 	private long lidarCacheTime = LIDAR_CACHE_SECONDS_DEFAULT * 1000000000L;
 	private boolean spawnDebugger = false;
+	private Integer randomSeed;
 
 	private final List<CommandConfigListener> listeners = new CopyOnWriteArrayList<CommandConfigListener>();
 
@@ -144,6 +145,11 @@ public enum CommandConfig {
 		gamepadZeroThreshold = config.getDouble("gamepadZeroThreshold", gamepadZeroThreshold);
 		lidarCacheTime = config.getInt("lidarCacheTimeSeconds", LIDAR_CACHE_SECONDS_DEFAULT) * 1000000000L;
 		spawnDebugger = config.getBoolean("spawnDebugger", spawnDebugger);
+		if (config.hasKey("randomSeed")) {
+			randomSeed = Integer.valueOf(config.requireInt("randomSeed"));
+		} else {
+			randomSeed = null;
+		}
 	}
 	
 	public void addListener(CommandConfigListener listener) {
@@ -361,4 +367,22 @@ public enum CommandConfig {
 		return spawnDebugger;
 	}
 
+	public boolean hasRandomSeed() {
+		return randomSeed != null;
+	}
+	
+	public int getRandomSeed() {
+		if (randomSeed == null) {
+			throw new IllegalStateException("Random seed null");
+		}
+		return randomSeed.intValue();
+	}
+	
+	public void setRandomSeed(int seed) {
+		randomSeed = Integer.valueOf(seed);
+	}
+	
+	public void clearRandomSeed() {
+		randomSeed = null;
+	}
 }
