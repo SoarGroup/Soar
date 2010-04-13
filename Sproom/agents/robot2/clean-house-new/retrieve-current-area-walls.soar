@@ -5,7 +5,7 @@ sp {clean-house*propose*retrieve-current-area-walls
               ^io.input-link.self.area <area-id>)
    (<loc> ^id <area-id>
           ^wall <wall>)
-   (<wall> -^id)
+#   (<wall> -^id)
 -->
    (<s> ^operator <op> + =, >)
    (<op> ^name retrieve-current-area-walls

@@ -19,13 +19,13 @@ sp {apply*record-area*room
          ^type room)
    (<op> ^name record-area
          ^area <area>)
-   (<w1> ^x <x> ^y <y> ^direction <dir> ^id <wid1> )# ^left <l1> ^right <r1>)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )#^id <wid1> )# ^left <l1> ^right <r1>)
 -->
    (<area> ^wall <nw1>
            ^visited yes
                     no -
            ^cleaned no)
-   (<nw1>  ^x <x> ^y <y> ^direction <dir> ^id <wid1>)# ^left <l1> ^right <r1>)
+   (<nw1>  ^x <x> ^y <y> ^direction <dir> )#^id <wid1>)# ^left <l1> ^right <r1>)
 }
 
 sp {apply*record-area*door
@@ -35,13 +35,13 @@ sp {apply*record-area*door
          ^type door)
    (<op> ^name record-area
          ^area <area>)
-   (<w1> ^x <x> ^y <y> ^direction <dir> ^id <wid1> )# ^left <l1> ^right <r1>)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )#^id <wid1> )# ^left <l1> ^right <r1>)
 -->
    (<area> ^wall <nw1>
            ^visited yes
                     no -
            ^cleaned yes)
-   (<nw1>  ^x <x> ^y <y> ^direction <dir> ^id <wid1>)# ^left <l1> ^right <r1>)
+   (<nw1>  ^x <x> ^y <y> ^direction <dir> )#^id <wid1>)# ^left <l1> ^right <r1>)
 }
 
 sp {apply*record-area-gateway
@@ -50,7 +50,7 @@ sp {apply*record-area-gateway
    (<op> ^name record-area
          ^area <area>)
    (<area> ^id <aid>)
-   (<gateway> ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to { <> <aid> <tid> })
+   (<gateway> ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to { <> <wid1> <> <aid> <tid> })
 -->
    (<area> ^gateway <ngateway>)
    (<ngateway> ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to <tid>)

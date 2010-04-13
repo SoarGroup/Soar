@@ -8,7 +8,8 @@ sp {clean-house*propose*init-robot
 
 sp {robot*apply*init-robot*directions
    (state <s> ^name robot
-              ^operator.name init-robot)
+              ^operator.name init-robot
+              ^areas)
 -->
    (<s> ^problem-space <ps>
         ^desired <d>

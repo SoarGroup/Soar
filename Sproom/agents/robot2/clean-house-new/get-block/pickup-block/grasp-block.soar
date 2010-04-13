@@ -3,7 +3,7 @@ sp {pickup-block*propose*grasp-block
               ^object.id <id>
               ^object-in-range-lined-up yes
               ^io.input-link.self <self>)
-   (<self> -^carry.id)
+   (<self> -^carry)
 -->
    (<s> ^operator <op> + =)
    (<op> ^name grasp-block

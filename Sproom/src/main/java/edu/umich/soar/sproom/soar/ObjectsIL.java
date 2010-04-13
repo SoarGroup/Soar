@@ -18,6 +18,7 @@ import edu.umich.soar.sproom.metamap.Area;
 import edu.umich.soar.sproom.metamap.MapMetadata;
 import edu.umich.soar.sproom.metamap.VirtualObject;
 import edu.umich.soar.sproom.metamap.VirtualObjects;
+import edu.umich.soar.sproom.metamap.VirtualObject.Color;
 
 /**
  * Input link management of data representing objects in the world.
@@ -41,6 +42,10 @@ public class ObjectsIL implements InputLinkElement {
 			pointData = new PointDataIL(objectwme, vo.getPos());
 			
 			StringWme.newInstance(objectwme, SharedNames.TYPE, vo.getType().toString().toLowerCase());
+			Color color = vo.getColor();
+			if (color != null) {
+				StringWme.newInstance(objectwme, SharedNames.COLOR, color.toString().toLowerCase());
+			}
 			this.vo = vo;
 			IntWme.newInstance(objectwme, SharedNames.ID, vo.getId());
 			visible = StringWme.newInstance(objectwme, SharedNames.VISIBLE, SharedNames.TRUE);

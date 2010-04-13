@@ -1,0 +1,22 @@
+### Example task operator that updates current-waypoint, prior-waypoint, path-cost, prior-path-cost
+
+sp {evaluate-apply*task-operator
+   (state <s> ^name evaluate-operator
+              ^operator <op>
+              ^top-state <ts>)
+   (<ts> ^path-cost <pc>
+         ^current-waypoint <cloc>)
+   (<op> ^next-waypoint <nloc>)
+   (<cloc> ^id <cid> ^x <cx> ^y <cy>)
+   (<nloc> ^id <nid> ^x <nx> ^y <ny>)
+-->
+  # (write (crlf) |*********************************|)
+  # (write (crlf) |current waypoint: | <cid> | | <cx> | | <cy>)
+  # (write (crlf) |next waypoint:    | <nid> | | <nx> | | <ny>)
+  # (write (crlf) |Range: | (compute-range <cx> <cy> <nx> <ny>))
+  # (write (crlf) |New path cost: | (+ <pc> (compute-range <cx> <cy> <nx> <ny>)))
+   (<ts> ^path-cost <pc> -
+                    (+ <pc> (compute-range <cx> <cy> <nx> <ny>)))
+}
+
+

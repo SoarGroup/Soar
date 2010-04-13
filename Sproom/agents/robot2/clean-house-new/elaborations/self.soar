@@ -1,11 +1,20 @@
-
-sp {self*elaborate*stopped
+sp {self*elaborate*stopped*magnitude
    (state <s> ^name robot
               ^io.input-link <input>)
    (<input> ^self <self>)
    (<self> ^pose <pose>)
-   (<pose> ^x-velocity 0.0
-           ^y-velocity 0.0)
+   (<pose> ^x-velocity <xv>
+           ^y-velocity <yv>)
+-->
+   (<pose> ^magnitude (+ (* <xv> <xv>) (* <yv> <yv>)))}
+
+sp {self*elaborate*stopped
+   (state <s> ^name robot
+              ^io.input-link <input>
+              ^parameters.stopped-dead-zone-squared <dz>)
+   (<input> ^self <self>)
+   (<self> ^pose <pose>)
+   (<pose> ^magnitude { < <dz> })
 -->
    (<self> ^stopped yes)}
 
@@ -13,8 +22,6 @@ sp {self*elaborate*stopped*no1
    (state <s> ^name robot
               ^io.input-link <input>)
    (<input> ^self <self>)
-   (<self> ^pose <pose>)
-  -(<pose> ^x-velocity 0.0
-           ^y-velocity 0.0)
+  -(<self> ^stopped yes)
 -->
    (<self> ^stopped no)}

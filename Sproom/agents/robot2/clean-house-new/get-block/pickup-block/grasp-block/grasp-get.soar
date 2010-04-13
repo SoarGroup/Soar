@@ -1,7 +1,7 @@
 sp {grasp-block*propose*grasp-get
    (state <s> ^name grasp-block
               ^block <b>
-              ^top-state.io.input-link.object <obj>)
+              ^top-state.io.input-link.objects.object <obj>)
    (<b> ^id <id>
         ^confirmation received)
    (<obj> ^id <id>

@@ -1,6 +1,7 @@
 sp {clean-house*propose*store-area
 #   :interrupt
    (state <s> ^name robot
+              ^parameters.areas-held-in smem
               ^current-location.store yes)
 -->
    (<s> ^operator <op> + =, >)

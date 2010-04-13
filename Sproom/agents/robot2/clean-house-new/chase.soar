@@ -1,7 +1,7 @@
 sp {clean-house*propose*chase
    (state <s> ^name robot
               ^current-location.id <n>
-              ^io.input-link.object <p>)
+              ^io.input-link.objects.object <p>)
    (<p> ^type player)
 -->
    (<s> ^operator <op> + =, >)

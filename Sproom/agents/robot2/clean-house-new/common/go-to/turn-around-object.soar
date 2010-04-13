@@ -1,7 +1,7 @@
 #sp {move-directly-to-gateway*propose*turn-around-object
 #   (state <s> ^name move-directly-to-gateway
 #              ^quiescence t
-#              ^io.input-link.object <obj>
+#              ^io.input-link.objects.object <obj>
 #              ^object-gateway-diff <ogd>)
 #   (<obj> ^id <id>
 #          ^yaw { <ao> > 0 })
@@ -18,7 +18,7 @@
 #sp {move-directly-to-gateway*propose*turn-around-object-neg
 #   (state <s> ^name move-directly-to-gateway
 #              ^top-state.parameters.medium-linear-velocity <low>
-#              ^io.input-link.object <obj>
+#              ^io.input-link.objects.object <obj>
 #              ^object-gateway-diff <ogd>)
 #   (<obj> ^id <id>
 #          ^yaw { <ao> <= 0 })
@@ -36,7 +36,7 @@
 #   (state <s> ^name move-directly-to-gateway
 #              ^quiescence t
 #              ^top-state.parameters.medium-linear-velocity <low>
-#              ^io.input-link.object <obj>
+#              ^io.input-link.objects.object <obj>
 #              ^top-state <ts>
 #              ^object-gateway-diff <ogd>)
 #   (<ts> ^direction { <> <new-dir> <dir> }

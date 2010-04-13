@@ -1,0 +1,17 @@
+VERSION 4
+\selection-astar\selection-astar.dm
+0	ROOT selection-astar selection-astar 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 6 7
+7	6	FOPERATOR elaborations elaborations.soar 8
+8	6	FOPERATOR selection selection.soar 9
+9	6	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 10 10
+10	9	FOPERATOR elaborations elaborations.soar 11
+11	9	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 13 12
+12	11	FOPERATOR elaborations elaborations.soar 13
+13	9	OPERATOR task-operator task-operator.soar 14
+END

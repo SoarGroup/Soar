@@ -25,7 +25,7 @@ sp {apply*go-to*remove-waypoint-output-link
    (state <s> ^operator.name set-waypoint
               ^top-state.io <io>
               ^destination.id <> <id>)
-   (<io> ^input-link.self.waypoints.waypoint.id <id>
+   (<io> ^input-link.waypoints.waypoint.id <id>
          ^output-link <output>)
 -->
  #  (write (crlf) |Remove waypoint: | <id>)

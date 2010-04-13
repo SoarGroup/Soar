@@ -1,0 +1,48 @@
+sp {Impasse__Operator_Tie*compare*selection*prefer*no*estimated-cost
+   (state <s> ^name selection
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name evaluate-operator
+          ^superoperator <sop>)
+  -{(<s> ^evaluation <e>)
+    (<e> ^estimated-cost
+         ^superoperator <sop>)}
+   (<op2> ^name evaluate-operator
+          ^superoperator <sop2>)
+   (<s> ^evaluation <e2>)
+   (<e2> ^superoperator <sop2>
+         ^estimated-cost)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {Impasse__Operator_Tie*compare*selection*prefer*lower*estimated-cost
+   (state <s> ^name selection
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name evaluate-operator
+          ^superoperator <sop1>)
+   (<s> ^evaluation <e1>)
+   (<e1> ^superoperator <sop1>
+          ^estimated-cost <ec>)
+   (<op2> ^name evaluate-operator
+          ^superoperator <sop2>)
+   (<s> ^evaluation <e2>)
+   (<e2> ^superoperator <sop2>
+         ^estimated-cost > <ec>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+##
+sp {Impasse__Operator_Tie*compare*selection*equal*estimated-cost
+   (state <s> ^name selection
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name evaluate-operator
+          ^evaluation.total-estimated-cost <ec>)
+   (<op2> ^name evaluate-operator
+          ^evaluation.total-estimated-cost <ec>)
+-->
+   (<s> ^operator <op1> = <op2>)
+}

@@ -1,0 +1,17 @@
+sp {selection*propose*increment-current-evaluation-depth
+   (state <s> ^name selection
+              ^top-selection true
+             -^not-all-operators-evaluated true
+              ^current-evaluation-depth <ced>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name increment-current-evaluation-depth)
+}
+sp {apply*increment-current-evaluation-depth
+   (state <s> ^operator <op>
+              ^current-evaluation-depth <ced>)
+   (<op> ^name increment-current-evaluation-depth)
+-->
+   (<s> ^current-evaluation-depth <ced> -
+                                  (+ 1 <ced>))
+}
