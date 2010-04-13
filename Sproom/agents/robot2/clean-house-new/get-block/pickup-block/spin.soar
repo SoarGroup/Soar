@@ -2,7 +2,7 @@ sp {pickup-block*propose*spin
    (state <s> ^name pickup-block
               ^quiescence t
               ^top-state.parameters.medium-angular-velocity <medium>
-              ^object.visible no
+              ^object.visible false
               ^io.input-link.self.pose.yaw-velocity 0.0)
 -->
    (<s> ^operator <op> + =)

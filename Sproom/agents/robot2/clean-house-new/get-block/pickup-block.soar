@@ -4,7 +4,7 @@ sp {get-block*propose*pickup-block
               ^io.input-link <input>
               ^top-state.blocks.block <b>)
    (<input> ^self <self>
-            ^object <obj1>)
+            ^objects.object <obj1>)
   -(<self> ^carry)
    (<obj1> ^type << block brick ball ied >>
            ^id <oid>)
@@ -18,7 +18,7 @@ sp {get-block*propose*pickup-block
 
 sp {get-block-hierarchical-pickup*compare*pickup-block
    (state <s> ^name get-block
-              ^io.input-link.object <obj1> { <> <obj1> <obj2> }
+              ^io.input-link.objects.object <obj1> { <> <obj1> <obj2> }
               ^operator <op1> +
                         <op2> +)
    (<op1> ^name pickup-block

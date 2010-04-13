@@ -11,14 +11,14 @@ sp {go-to*propose*stop*in-range
          ^actions.stop <stop>)
 }
 
-sp {go-to*propose*stop*collision
-   (state <s> ^name go-to
-              ^top-state.io.input-link.self <self>)
-   (<self> ^collision.<xy> true
-          -^stopped yes)
--->
-   (write (crlf) |Go-to stop collision|)
-   (<s> ^operator <op> + =)
-   (<op> ^name stop
-         ^actions.stop <stop>)
-}
+#sp {go-to*propose*stop*collision
+#   (state <s> ^name go-to
+#              ^top-state.io.input-link.self <self>)
+#   (<self> ^collision.<xy> true
+#          -^stopped yes)
+#-->
+#   (write (crlf) |Go-to stop collision|)
+#   (<s> ^operator <op> + =)
+#   (<op> ^name stop
+#         ^actions.stop <stop>)
+#}

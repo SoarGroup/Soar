@@ -2,7 +2,7 @@ sp {pickup-block*propose*go-to
    (state <s> ^name pickup-block
               ^top-state.parameters.pickup-range <r>
               ^object <o>)
-   (<o> ^visible yes)
+   (<o> ^visible true)
   -(<s> ^object-in-range-lined-up yes
         ^io.input-link.self.stopped yes)
 -->

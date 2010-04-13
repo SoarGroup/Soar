@@ -1,0 +1,19 @@
+
+sp {evaluate-operator*elaborate*evaluation*failure*no-operators
+   :default
+   (state <goal-nc> ^superstate <state-nc>
+                    ^attribute state
+                    ^impasse no-change
+                    ^quiescence t)
+   (<state-nc> ^superstate <eval-g>
+               ^attribute state
+               ^impasse no-change
+               ^quiescence t)
+   (<eval-g> ^superstate <select-g>
+             ^quiescence t)
+   (<select-g> ^operator <o2>
+               ^evaluation <e2>)
+   (<o2> ^name evaluate-operator
+         ^evaluation <e2>)
+-->
+   (<e2> ^symbolic-value exhaustion-failure)}

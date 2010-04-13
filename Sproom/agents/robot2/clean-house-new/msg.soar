@@ -2,10 +2,11 @@
 sp {instruction*propose*msg
    (state <s> ^name robot
               ^io <io>)
-   (<io> ^input-link.self <self>
+   (<io> ^input-link <il>
          ^output-link <ol>)
-   (<self> ^received-messages.message <m>
-           ^name <name>)
+   (<il> ^self <self>
+         ^received-messages.message <m>)
+   (<self> ^name <name>)
    (<m> ^id <id>
        -^from <name>)
   -{(<ol> ^remove-message <rm>)

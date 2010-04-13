@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import lcm.lcm.LCM;
 import lcmtypes.sim_obstacles_t;
 
+import edu.umich.soar.sproom.metamap.VirtualObject.Color;
 import edu.umich.soar.sproom.metamap.VirtualObject.Type;
 
 import april.config.Config;
@@ -40,6 +41,9 @@ public class VirtualObjects implements Iterable<VirtualObject> {
 			String typeString = config.getString("metadata." + objectNickname + ".type");
 			Type type = VirtualObject.Type.valueOf(typeString.toUpperCase());
 
+			String colorString = config.getString("metadata." + objectNickname + ".color");
+			Color color = colorString != null ? VirtualObject.Color.valueOf(colorString.toUpperCase()) : null;
+
 			double[] size = u.getSize(config, objectNickname);
 			if (size == null) {
 				logger.error("no size on " + objectNickname);
@@ -52,7 +56,7 @@ public class VirtualObjects implements Iterable<VirtualObject> {
 			}
 			double theta = config.getDouble("metadata." + objectNickname + ".theta", 0);
 			
-			createObject(type, pos, size, theta);
+			createObject(type, color, pos, size, theta);
 		}
 		
 		exec.scheduleAtFixedRate(new Runnable() {
@@ -73,12 +77,12 @@ public class VirtualObjects implements Iterable<VirtualObject> {
 		}, 0, 250, TimeUnit.MILLISECONDS);
 	}
 	
-	public VirtualObject createObject(Type type, double[] pos, double[] size) {
-		return createObject(type, pos, size, 0);
+	public VirtualObject createObject(Type type, Color color, double[] pos, double[] size) {
+		return createObject(type, color, pos, size, 0);
 	}
 	
-	public VirtualObject createObject(Type type, double[] pos, double[] size, double theta) {
-		VirtualObject object = new VirtualObject(type, pos, size, theta);
+	public VirtualObject createObject(Type type, Color color, double[] pos, double[] size, double theta) {
+		VirtualObject object = new VirtualObject(type, color, pos, size, theta);
 		logger.trace("Created object " + object);
 		addObject(object);
 		return object;

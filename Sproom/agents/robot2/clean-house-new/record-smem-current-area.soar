@@ -80,12 +80,12 @@ sp {apply*record-smem-current-area*store-walls*empty
         ^retrieved <res>)
    (<cmd> ^query <q>)
    (<op> ^name record-smem-current-area)
-   (<w1> ^x <x> ^y <y> ^direction <dir> ^id <wid1>) # ^left <l1> ^right <r1>)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )#^id <wid1>) # ^left <l1> ^right <r1>)
    (<res> -^wall)
 -->
    (<cmd> ^store <res> <nw1>)
    (<res> ^wall <nw1>)
-   (<nw1>  ^type wall ^x <x> ^y <y> ^direction <dir> ^id <wid1>) # ^left <l1> ^right <r1>)
+   (<nw1>  ^type wall ^x <x> ^y <y> ^direction <dir> )#^id <wid1>) # ^left <l1> ^right <r1>)
 }
       
 sp {apply*record-smem-current-area-gateway*empty
@@ -118,11 +118,11 @@ sp {apply*record-smem-current-area*store-walls
    (<cmd> ^query <q>)
    (<op> ^name record-smem-current-area
          ^area <area>)
-   (<w1> ^x <x> ^y <y> ^direction <dir> ^id <wid1>) # ^left <l1> ^right <r1>)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )# ^id <wid1>) # ^left <l1> ^right <r1>)
 -->
    (<cmd> ^store <area> <nw1>)
    (<area> ^wall <nw1>)
-   (<nw1>  ^type wall ^x <x> ^y <y> ^direction <dir> ^id <wid1>) # ^left <l1> ^right <r1>)
+   (<nw1>  ^type wall ^x <x> ^y <y> ^direction <dir> )# ^id <wid1>) # ^left <l1> ^right <r1>)
 }
       
 sp {apply*record-smem-current-area-gateway

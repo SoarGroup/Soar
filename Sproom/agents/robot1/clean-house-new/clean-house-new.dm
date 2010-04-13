@@ -245,154 +245,154 @@ INTEGER_RANGE 242 -2147483648 2147483647
 FLOAT_RANGE 243 -Infinity Infinity
 FLOAT_RANGE 244 -Infinity Infinity
 FLOAT_RANGE 245 -Infinity Infinity
-FLOAT_RANGE 246 -Infinity Infinity
-FLOAT_RANGE 247 -Infinity Infinity
-FLOAT_RANGE 248 -Infinity Infinity
-ENUMERATION 249 2 smem wm
-ENUMERATION 250 3 epmem smem wm
-SOAR_ID 251
-ENUMERATION 252 1 record-smem-current-area
-FLOAT_RANGE 253 -Infinity Infinity
-INTEGER_RANGE 254 -2147483648 2147483647
-INTEGER_RANGE 255 -2147483648 2147483647
-INTEGER_RANGE 256 -2147483648 2147483647
-SOAR_ID 257
-SOAR_ID 258
+ENUMERATION 246 2 smem wm
+ENUMERATION 247 3 epmem smem wm
+SOAR_ID 248
+ENUMERATION 249 1 record-smem-current-area
+FLOAT_RANGE 250 -Infinity Infinity
+INTEGER_RANGE 251 -2147483648 2147483647
+INTEGER_RANGE 252 -2147483648 2147483647
+INTEGER_RANGE 253 -2147483648 2147483647
+SOAR_ID 254
+SOAR_ID 255
+SOAR_ID 256
+ENUMERATION 257 1 yes
+ENUMERATION 258 1 yes
 SOAR_ID 259
 ENUMERATION 260 1 yes
-ENUMERATION 261 1 yes
-SOAR_ID 262
-ENUMERATION 263 1 yes
-INTEGER_RANGE 264 -2147483648 2147483647
-FLOAT_RANGE 265 -Infinity Infinity
-FLOAT_RANGE 266 -Infinity Infinity
-ENUMERATION 267 2 no yes
-ENUMERATION 268 1 go-to
-SOAR_ID 269
-FLOAT_RANGE 270 -Infinity Infinity
+INTEGER_RANGE 261 -2147483648 2147483647
+FLOAT_RANGE 262 -Infinity Infinity
+FLOAT_RANGE 263 -Infinity Infinity
+ENUMERATION 264 2 no yes
+ENUMERATION 265 1 go-to
+SOAR_ID 266
+FLOAT_RANGE 267 -Infinity Infinity
+ENUMERATION 268 2 no yes
+FLOAT_RANGE 269 -Infinity Infinity
+ENUMERATION 270 1 yes
 ENUMERATION 271 2 no yes
-FLOAT_RANGE 272 -Infinity Infinity
-ENUMERATION 273 1 yes
-ENUMERATION 274 2 no yes
-ENUMERATION 275 3 evaluate-operator go-to-area go-to-next-area
-SOAR_ID 276
-ENUMERATION 277 1 go-to-next-area
-SOAR_ID 278
-ENUMERATION 279 2 door room
-ENUMERATION 280 2 door room
-ENUMERATION 281 1 yes
-ENUMERATION 282 1 yes
+ENUMERATION 272 3 evaluate-operator go-to-area go-to-next-area
+SOAR_ID 273
+ENUMERATION 274 1 go-to-next-area
+SOAR_ID 275
+ENUMERATION 276 2 door room
+ENUMERATION 277 2 door room
+ENUMERATION 278 1 yes
+ENUMERATION 279 1 yes
+SOAR_ID 280
+ENUMERATION 281 1 turn-through-doorway
+SOAR_ID 282
 SOAR_ID 283
-ENUMERATION 284 1 turn-through-doorway
-SOAR_ID 285
-SOAR_ID 286
-INTEGER_RANGE 287 -2147483648 2147483647
-INTEGER_RANGE 288 -2147483648 2147483647
-INTEGER_RANGE 289 -2147483648 2147483647
-ENUMERATION 290 1 go-to-seen-block
+INTEGER_RANGE 284 -2147483648 2147483647
+INTEGER_RANGE 285 -2147483648 2147483647
+INTEGER_RANGE 286 -2147483648 2147483647
+ENUMERATION 287 1 go-to-seen-block
+SOAR_ID 288
+ENUMERATION 289 4 east north south west
+FLOAT_RANGE 290 -Infinity Infinity
 SOAR_ID 291
-ENUMERATION 292 4 east north south west
-FLOAT_RANGE 293 -Infinity Infinity
-SOAR_ID 294
+FLOAT_RANGE 292 -Infinity Infinity
+INTEGER_RANGE 293 -2147483648 2147483647
+INTEGER_RANGE 294 -2147483648 2147483647
 FLOAT_RANGE 295 -Infinity Infinity
-INTEGER_RANGE 296 -2147483648 2147483647
-INTEGER_RANGE 297 -2147483648 2147483647
-FLOAT_RANGE 298 -Infinity Infinity
-FLOAT_RANGE 299 -Infinity Infinity
+FLOAT_RANGE 296 -Infinity Infinity
+SOAR_ID 297
+ENUMERATION 298 1 record-smem-new-gateway-area
+ENUMERATION 299 2 no yes
 SOAR_ID 300
-ENUMERATION 301 1 record-smem-new-gateway-area
-ENUMERATION 302 2 no yes
-SOAR_ID 303
-ENUMERATION 304 1 retrieve-current-area-walls
-SOAR_ID 305
-ENUMERATION 306 1 retrieve-current-area-gateways
+ENUMERATION 301 1 retrieve-current-area-walls
+SOAR_ID 302
+ENUMERATION 303 1 retrieve-current-area-gateways
+ENUMERATION 304 1 yes
+ENUMERATION 305 1 retrieve-blocks
+SOAR_ID 306
 ENUMERATION 307 1 yes
-ENUMERATION 308 1 retrieve-blocks
-SOAR_ID 309
-ENUMERATION 310 1 yes
-ENUMERATION 311 1 block
-ENUMERATION 312 2 no yes
-ENUMERATION 313 1 block
-ENUMERATION 314 2 no yes
-SOAR_ID 315
-ENUMERATION 316 1 record-storage-area
-SOAR_ID 317
-ENUMERATION 318 1 re-record-block
-ENUMERATION 319 1 wall
-ENUMERATION 320 1 gateway
+ENUMERATION 308 1 block
+ENUMERATION 309 2 no yes
+ENUMERATION 310 1 block
+ENUMERATION 311 2 no yes
+SOAR_ID 312
+ENUMERATION 313 1 record-storage-area
+SOAR_ID 314
+ENUMERATION 315 1 re-record-block
+ENUMERATION 316 1 wall
+ENUMERATION 317 1 gateway
+SOAR_ID 318
+ENUMERATION 319 1 retrieve-neighbor-area
+SOAR_ID 320
 SOAR_ID 321
-ENUMERATION 322 1 retrieve-neighbor-area
+ENUMERATION 322 1 go-to-area
 SOAR_ID 323
-SOAR_ID 324
-ENUMERATION 325 1 go-to-area
-SOAR_ID 326
-ENUMERATION 327 1 go-to
-ENUMERATION 328 2 no yes
-INTEGER_RANGE 329 -2147483648 2147483647
-SOAR_ID 330
-ENUMERATION 331 1 store-area
+ENUMERATION 324 1 go-to
+ENUMERATION 325 2 no yes
+INTEGER_RANGE 326 -2147483648 2147483647
+SOAR_ID 327
+ENUMERATION 328 1 store-area
+SOAR_ID 329
+ENUMERATION 330 1 store-area
+ENUMERATION 331 1 goto-unvisited-area
 SOAR_ID 332
-ENUMERATION 333 1 store-area
-ENUMERATION 334 1 goto-unvisited-area
+ENUMERATION 333 1 yes
+ENUMERATION 334 1 true
 SOAR_ID 335
-ENUMERATION 336 1 yes
-ENUMERATION 337 1 true
-SOAR_ID 338
-SOAR_ID 339
-ENUMERATION 340 1 go-to
-INTEGER_RANGE 341 -2147483648 2147483647
-ENUMERATION 342 2 no yes
-ENUMERATION 343 2 no yes
-ENUMERATION 344 1 find-block-in-area
-SOAR_ID 345
-ENUMERATION 346 1 go-to
-SOAR_ID 347
-ENUMERATION 348 2 feet meters
-ENUMERATION 349 2 degrees radians
-ENUMERATION 350 2 float int
-ENUMERATION 351 3 feet_per_sec meters_per_sec miles_per_hour
-SOAR_ID 352
+SOAR_ID 336
+ENUMERATION 337 1 go-to
+INTEGER_RANGE 338 -2147483648 2147483647
+ENUMERATION 339 2 no yes
+ENUMERATION 340 2 no yes
+ENUMERATION 341 1 find-block-in-area
+SOAR_ID 342
+ENUMERATION 343 1 go-to
+SOAR_ID 344
+ENUMERATION 345 2 feet meters
+ENUMERATION 346 2 degrees radians
+ENUMERATION 347 2 float int
+ENUMERATION 348 3 feet_per_sec meters_per_sec miles_per_hour
+SOAR_ID 349
+FLOAT_RANGE 350 -Infinity Infinity
+FLOAT_RANGE 351 -Infinity Infinity
+FLOAT_RANGE 352 -Infinity Infinity
 FLOAT_RANGE 353 -Infinity Infinity
-FLOAT_RANGE 354 -Infinity Infinity
-FLOAT_RANGE 355 -Infinity Infinity
+INTEGER_RANGE 354 -2147483648 2147483647
+INTEGER_RANGE 355 -2147483648 2147483647
 FLOAT_RANGE 356 -Infinity Infinity
 INTEGER_RANGE 357 -2147483648 2147483647
 INTEGER_RANGE 358 -2147483648 2147483647
 FLOAT_RANGE 359 -Infinity Infinity
-INTEGER_RANGE 360 -2147483648 2147483647
-INTEGER_RANGE 361 -2147483648 2147483647
-FLOAT_RANGE 362 -Infinity Infinity
-INTEGER_RANGE 363 -180 180
-INTEGER_RANGE 364 -180 180
+INTEGER_RANGE 360 -180 180
+INTEGER_RANGE 361 -180 180
+SOAR_ID 362
+SOAR_ID 363
+SOAR_ID 364
 SOAR_ID 365
 SOAR_ID 366
-SOAR_ID 367
-SOAR_ID 368
-SOAR_ID 369
+FLOAT_RANGE 367 -Infinity Infinity
+FLOAT_RANGE 368 -Infinity Infinity
+FLOAT_RANGE 369 -Infinity Infinity
 FLOAT_RANGE 370 -Infinity Infinity
-FLOAT_RANGE 371 -Infinity Infinity
+SOAR_ID 371
 FLOAT_RANGE 372 -Infinity Infinity
 FLOAT_RANGE 373 -Infinity Infinity
-SOAR_ID 374
+FLOAT_RANGE 374 -Infinity Infinity
 FLOAT_RANGE 375 -Infinity Infinity
 FLOAT_RANGE 376 -Infinity Infinity
-FLOAT_RANGE 377 -Infinity Infinity
+STRING 377
 FLOAT_RANGE 378 -Infinity Infinity
 FLOAT_RANGE 379 -Infinity Infinity
-STRING 380
-FLOAT_RANGE 381 -Infinity Infinity
-FLOAT_RANGE 382 -Infinity Infinity
-SOAR_ID 383
+SOAR_ID 380
+SOAR_ID 381
+INTEGER_RANGE 382 -2147483648 2147483647
+STRING 383
 SOAR_ID 384
-INTEGER_RANGE 385 -2147483648 2147483647
-STRING 386
-SOAR_ID 387
-SOAR_ID 388
-INTEGER_RANGE 389 -2 2
-FLOAT_RANGE 390 0.0 Infinity
+SOAR_ID 385
+INTEGER_RANGE 386 -2 2
+FLOAT_RANGE 387 0.0 Infinity
+INTEGER_RANGE 388 -2147483648 2147483647
+INTEGER_RANGE 389 -2147483648 2147483647
+INTEGER_RANGE 390 -2147483648 2147483647
 INTEGER_RANGE 391 -2147483648 2147483647
 INTEGER_RANGE 392 -2147483648 2147483647
-INTEGER_RANGE 393 -2147483648 2147483647
+FLOAT_RANGE 393 -Infinity Infinity
 INTEGER_RANGE 394 -2147483648 2147483647
 INTEGER_RANGE 395 -2147483648 2147483647
 INTEGER_RANGE 396 -2147483648 2147483647
@@ -400,28 +400,28 @@ FLOAT_RANGE 397 -Infinity Infinity
 INTEGER_RANGE 398 -2147483648 2147483647
 INTEGER_RANGE 399 -2147483648 2147483647
 INTEGER_RANGE 400 -2147483648 2147483647
-FLOAT_RANGE 401 -Infinity Infinity
+INTEGER_RANGE 401 -2147483648 2147483647
 INTEGER_RANGE 402 -2147483648 2147483647
 INTEGER_RANGE 403 -2147483648 2147483647
 INTEGER_RANGE 404 -2147483648 2147483647
 INTEGER_RANGE 405 -2147483648 2147483647
-INTEGER_RANGE 406 -2147483648 2147483647
-INTEGER_RANGE 407 -2147483648 2147483647
-INTEGER_RANGE 408 -2147483648 2147483647
-INTEGER_RANGE 409 -2147483648 2147483647
-STRING 410
-STRING 411
-FLOAT_RANGE 412 -Infinity Infinity
-ENUMERATION 413 1 no
-ENUMERATION 414 1 top-state
-ENUMERATION 415 4 east north south west
-SOAR_ID 416
-ENUMERATION 417 1 go-to-next-area
-FLOAT_RANGE 418 0.0 0.10000000149011612
-SOAR_ID 419
-FLOAT_RANGE 420 0.0 Infinity
+STRING 406
+STRING 407
+FLOAT_RANGE 408 -Infinity Infinity
+ENUMERATION 409 1 no
+ENUMERATION 410 1 top-state
+ENUMERATION 411 4 east north south west
+SOAR_ID 412
+ENUMERATION 413 1 go-to-next-area
+FLOAT_RANGE 414 0.0 0.10000000149011612
+SOAR_ID 415
+FLOAT_RANGE 416 0.0 Infinity
+FLOAT_RANGE 417 -Infinity Infinity
+INTEGER_RANGE 418 -2147483648 2147483647
+INTEGER_RANGE 419 -2147483648 2147483647
+INTEGER_RANGE 420 -2147483648 2147483647
 551
-0 all-visited 337
+0 all-visited 334
 0 areas 80
 0 attribute 7
 0 blocks 137
@@ -431,8 +431,8 @@ FLOAT_RANGE 420 0.0 Infinity
 0 destination-waypoint 238
 0 direction 71
 0 directions 76
-0 epmem 257
-0 gateway-directions 283
+0 epmem 254
+0 gateway-directions 280
 0 impasse 9
 0 io 1
 0 name 10
@@ -449,21 +449,21 @@ FLOAT_RANGE 420 0.0 Infinity
 0 operator 151
 0 operator 158
 0 operator 208
-0 operator 251
-0 operator 276
+0 operator 248
+0 operator 273
+0 operator 297
 0 operator 300
-0 operator 303
-0 operator 305
-0 operator 315
-0 operator 317
-0 operator 321
-0 operator 330
-0 operator 332
+0 operator 302
+0 operator 312
+0 operator 314
+0 operator 318
+0 operator 327
+0 operator 329
 0 parameters 44
-0 path-cost 293
+0 path-cost 290
 0 problem-space 118
 0 quiescence 147
-0 smem 257
+0 smem 254
 0 storage-area 63
 0 superstate 5
 0 superstate 0
@@ -473,10 +473,10 @@ FLOAT_RANGE 420 0.0 Infinity
 1 input-link 2
 1 output-link 3
 2 area-description 14
-2 configuration 365
-2 lidar 387
-2 objects 419
-2 received-messages 383
+2 configuration 362
+2 lidar 384
+2 objects 415
+2 received-messages 380
 2 self 13
 2 time 162
 2 waypoints 168
@@ -492,49 +492,49 @@ FLOAT_RANGE 420 0.0 Infinity
 3 remove-waypoint 181
 3 send-message 183
 3 set-heading 25
-3 set-heading-linear 262
+3 set-heading-linear 259
 3 set-velocity 173
 3 stop 176
 11 actions 3
 11 name 12
 13 area 27
-13 carry 405
+13 carry 401
 13 name 165
 13 pose 166
-13 stopped 274
+13 stopped 271
 14 gateway 19
 14 id 172
-14 type 280
+14 type 277
 14 wall 15
-15 abs-relative-bearing 400
+15 abs-relative-bearing 396
 15 direction 18
-15 relative-bearing 399
-15 stored 261
-15 type 319
+15 relative-bearing 395
+15 stored 258
+15 type 316
 15 x 16
 15 y 17
-15 yaw 398
-15 z 397
-19 abs-relative-bearing 396
-19 connected 302
-19 direction 415
+15 yaw 394
+15 z 393
+19 abs-relative-bearing 392
+19 connected 299
+19 direction 411
 19 distance 83
 19 id 22
-19 relative-bearing 395
-19 stored 260
-19 to 264
-19 to 392
-19 type 320
+19 relative-bearing 391
+19 stored 257
+19 to 261
+19 to 389
+19 type 317
 19 x 20
 19 y 21
-19 yaw 394
-19 z 393
+19 yaw 390
+19 z 417
 25 status 26
-25 yaw 363
+25 yaw 360
 28 area 29
-28 class 311
+28 class 308
 28 id 30
-28 in-storage-room 312
+28 in-storage-room 309
 28 range 32
 28 type 31
 28 visible 33
@@ -547,39 +547,39 @@ FLOAT_RANGE 420 0.0 Infinity
 37 status 41
 42 actions 3
 42 name 43
-44 areas-held-in 249
+44 areas-held-in 246
 44 high-angular-velocity 194
 44 high-linear-velocity 194
-44 look-ahead-planning 342
+44 look-ahead-planning 339
 44 low-angular-velocity 192
 44 low-linear-velocity 192
 44 max-angular-distance 225
 44 medium-angular-velocity 193
 44 medium-linear-velocity 193
-44 message-update-time 254
+44 message-update-time 251
 44 min-angular-distance 226
 44 min-progress-distance 234
-44 objects-held-in 250
+44 objects-held-in 247
 44 pickup-range 45
 44 progress-update-time 235
-44 range-tolerance 255
-44 rotation-tolerance 256
-44 search-control-go-to-gateway 343
-44 stopped-dead-zone-squared 418
-44 waypoint-tolerance 253
+44 range-tolerance 252
+44 rotation-tolerance 253
+44 search-control-go-to-gateway 340
+44 stopped-dead-zone-squared 414
+44 waypoint-tolerance 250
 46 actions 3
 46 name 47
 48 block-id 50
 48 io 1
 48 name 54
 48 object 160
-48 object-in-range-lined-up 267
+48 object-in-range-lined-up 264
 48 object-lined-up 150
 48 operator 42
 48 operator 56
-48 operator 269
+48 operator 266
 48 quiescence 147
-48 stopped 273
+48 stopped 270
 48 superstate 87
 48 top-state 0
 48 type 49
@@ -590,25 +590,25 @@ FLOAT_RANGE 420 0.0 Infinity
 59 area 63
 59 name 60
 61 name 62
-63 class 313
+63 class 310
 63 cleaned 84
 63 gateway 19
-63 gateway-x 296
-63 gateway-y 297
+63 gateway-x 293
+63 gateway-y 294
 63 id 64
-63 in-storage-room 314
+63 in-storage-room 311
 63 neighbor-area 63
 63 next 63
 63 previous-area 63
 63 search-start-direction 70
-63 storage-area 307
-63 store 336
-63 turning 263
-63 type 279
+63 storage-area 304
+63 store 333
+63 turning 260
+63 type 276
 63 visited 79
 63 wall 15
-63 x 265
-63 y 266
+63 x 262
+63 y 263
 65 current-location 63
 65 io 1
 65 name 67
@@ -630,12 +630,12 @@ FLOAT_RANGE 420 0.0 Infinity
 76 nne 199
 76 nnw 201
 76 nw 196
-76 opposite 292
+76 opposite 289
 76 se 197
 76 sse 204
 76 ssw 206
 76 sw 198
-76 value 292
+76 value 289
 76 wnw 202
 76 wsw 205
 78 name 77
@@ -646,26 +646,26 @@ FLOAT_RANGE 420 0.0 Infinity
 85 name 86
 87 area 63
 87 current-location 63
-87 epmem 257
+87 epmem 254
 87 io 1
 87 name 89
 87 operator 91
 87 operator 51
 87 operator 57
-87 operator 291
-87 operator 309
-87 operator 335
-87 operator 347
+87 operator 288
+87 operator 306
+87 operator 332
+87 operator 344
 87 parameters 44
 87 quiescence 147
-87 retrieved-blocks 310
-87 smem 257
+87 retrieved-blocks 307
+87 smem 254
 87 superstate 0
 87 top-state 0
 87 type 88
 91 area 63
 91 name 90
-91 storage-area 413
+91 storage-area 409
 91 type 105
 92 name 93
 94 name 95
@@ -676,9 +676,9 @@ FLOAT_RANGE 420 0.0 Infinity
 97 operator 101
 97 operator 103
 97 operator 145
-97 operator 345
+97 operator 342
 97 quiescence 147
-97 smem 257
+97 smem 254
 97 superstate 0
 97 top-state 0
 97 type 98
@@ -706,10 +706,10 @@ FLOAT_RANGE 420 0.0 Infinity
 118 default-state-copy 122
 118 name 119
 118 one-level-attributes 121
-118 two-level-attributes 414
+118 two-level-attributes 410
 120 location 63
 120 storage-area-id 96
-123 evaluation 294
+123 evaluation 291
 123 impasse 148
 123 name 125
 123 operator 127
@@ -754,24 +754,24 @@ FLOAT_RANGE 420 0.0 Infinity
 157 actions 3
 157 name 156
 158 name 159
-160 abs-relative-bearing 403
+160 abs-relative-bearing 399
 160 distance 83
 160 id 22
 160 name 171
-160 relative-bearing 404
+160 relative-bearing 400
 160 type 170
 160 visible 161
 160 x 20
 160 y 21
-160 yaw 402
-160 z 401
+160 yaw 398
+160 z 397
 162 microseconds 164
 162 seconds 163
-166 magnitude 420
+166 magnitude 416
 166 x 23
 166 x-velocity 169
 166 y 24
-166 y-velocity 379
+166 y-velocity 376
 166 yaw 167
 166 yaw-velocity 169
 166 z 23
@@ -779,23 +779,23 @@ FLOAT_RANGE 420 0.0 Infinity
 168 waypoint 241
 173 angular-velocity 174
 173 linear-velocity 175
-173 message 410
+173 message 406
 173 status 6
-176 message 411
+176 message 407
 176 status 26
 177 id 178
-177 id 356
-177 id 357
+177 id 353
+177 id 354
 177 status 26
 177 x 179
 177 y 180
 181 id 178
-181 id 361
-181 id 362
+181 id 358
+181 id 359
 181 status 26
 182 id 178
-182 id 358
-182 id 359
+182 id 355
+182 id 356
 182 status 26
 183 destination 184
 183 first 186
@@ -803,22 +803,22 @@ FLOAT_RANGE 420 0.0 Infinity
 186 next 187
 186 next 188
 186 word 185
-189 id 360
+189 id 357
 189 status 26
 190 status 26
-191 angle-resolution 350
-191 angle-units 349
-191 length-units 348
-191 pose-translation 352
-191 speed-units 351
+191 angle-resolution 347
+191 angle-units 346
+191 length-units 345
+191 pose-translation 349
+191 speed-units 348
 191 status 26
-208 cross-doorway 282
+208 cross-doorway 279
 208 destination 19
 208 name 207
-208 range 272
-209 cross-doorway 281
+208 range 269
+209 cross-doorway 278
 209 destination 227
-209 destination-in-range 271
+209 destination-in-range 268
 209 name 211
 209 operator 213
 209 operator 215
@@ -827,7 +827,7 @@ FLOAT_RANGE 420 0.0 Infinity
 209 operator 221
 209 operator 223
 209 operator 46
-209 operator 285
+209 operator 282
 209 set-waypoint 240
 209 superstate 0
 209 top-state 0
@@ -852,123 +852,123 @@ FLOAT_RANGE 420 0.0 Infinity
 238 next-update-time 233
 238 progress 237
 238 waypoint 227
-241 abs-relative-bearing 248
-241 distance 246
+241 abs-relative-bearing 418
+241 distance 245
 241 id 242
-241 id 380
-241 id 381
-241 relative-bearing 247
+241 id 377
+241 id 378
+241 relative-bearing 419
 241 x 243
 241 y 244
-241 yaw 245
-241 z 382
-251 name 252
-257 command 258
-257 result 259
-258 neg-query 63
-258 neg-query 323
-258 query 63
-258 query 323
-258 retrieve 63
-258 store 63
-259 failure 63
-259 retrieved 63
-259 retrieved 323
-259 success 63
-262 linear-velocity 175
-262 status 26
-262 yaw 364
-269 destination 160
-269 name 268
-269 range 270
-276 current-location 63
-276 desired 338
-276 destination-area 63
-276 name 275
-276 operator 326
-276 operator 416
-276 problem-space 118
-276 superstate 87
-276 top-state 0
-276 type 325
-278 name 277
-278 next-waypoint 63
-278 operator 339
-278 superstate 0
-278 top-state 0
-283 east 286
-283 north 286
-283 south 286
-283 west 286
-285 name 284
-286 max 289
-286 max-neg 409
-286 max-pos 407
-286 min 288
-286 min-neg 408
-286 min-pos 406
-286 value 287
-291 name 290
-294 current-location 63
-294 estimated-cost 299
-294 path-cost 295
-294 total-estimated-cost 298
-300 gateway 19
+241 yaw 420
+241 z 379
+248 name 249
+254 command 255
+254 result 256
+255 neg-query 63
+255 neg-query 320
+255 query 63
+255 query 320
+255 retrieve 63
+255 store 63
+256 failure 63
+256 retrieved 63
+256 retrieved 320
+256 success 63
+259 linear-velocity 175
+259 status 26
+259 yaw 361
+266 destination 160
+266 name 265
+266 range 267
+273 current-location 63
+273 desired 335
+273 destination-area 63
+273 name 272
+273 operator 323
+273 operator 412
+273 problem-space 118
+273 superstate 87
+273 top-state 0
+273 type 322
+275 name 274
+275 next-waypoint 63
+275 operator 336
+275 superstate 0
+275 top-state 0
+280 east 283
+280 north 283
+280 south 283
+280 west 283
+282 name 281
+283 max 286
+283 max-neg 405
+283 max-pos 403
+283 min 285
+283 min-neg 404
+283 min-pos 402
+283 value 284
+288 name 287
+291 current-location 63
+291 estimated-cost 296
+291 path-cost 292
+291 total-estimated-cost 295
+297 gateway 19
+297 name 298
 300 name 301
-303 name 304
-303 wall 15
-305 gateway 19
-305 name 306
-309 name 308
-315 name 316
-317 name 318
-321 name 322
-323 blocks 324
-324 block 63
-326 cross-doorway 328
-326 destination 19
-326 gateway-area-id 329
-326 name 327
-330 name 331
-332 name 333
-335 name 334
-338 location 63
-339 destination 19
-339 gateway-area-id 341
-339 name 340
-345 name 344
-347 destination 28
-347 name 346
-347 range 412
-352 x 353
-352 y 354
-352 z 355
-365 angle-resolution 350
-365 angle-units 349
-365 geometry 374
-365 length-units 348
-365 limits 366
-365 pose-translation 352
-365 speed-units 351
-366 velocity 367
-367 angular 369
-367 linear 368
-368 maximum 373
-368 minimum 372
-369 maximum 371
-369 minimum 370
-374 height 377
-374 length 375
-374 wheelbase 378
-374 width 376
-383 message 384
-384 first 186
-384 from 386
-384 id 385
-387 range 388
-388 distance 390
-388 id 389
-388 relative-bearing 391
-416 name 417
-416 next-waypoint 63
-419 object 160
+300 wall 15
+302 gateway 19
+302 name 303
+306 name 305
+312 name 313
+314 name 315
+318 name 319
+320 blocks 321
+321 block 63
+323 cross-doorway 325
+323 destination 19
+323 gateway-area-id 326
+323 name 324
+327 name 328
+329 name 330
+332 name 331
+335 location 63
+336 destination 19
+336 gateway-area-id 338
+336 name 337
+342 name 341
+344 destination 28
+344 name 343
+344 range 408
+349 x 350
+349 y 351
+349 z 352
+362 angle-resolution 347
+362 angle-units 346
+362 geometry 371
+362 length-units 345
+362 limits 363
+362 pose-translation 349
+362 speed-units 348
+363 velocity 364
+364 angular 366
+364 linear 365
+365 maximum 370
+365 minimum 369
+366 maximum 368
+366 minimum 367
+371 height 374
+371 length 372
+371 wheelbase 375
+371 width 373
+380 message 381
+381 first 186
+381 from 383
+381 id 382
+384 range 385
+385 distance 387
+385 id 386
+385 relative-bearing 388
+412 name 413
+412 next-waypoint 63
+415 object 160

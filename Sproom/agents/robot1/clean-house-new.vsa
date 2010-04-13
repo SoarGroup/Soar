@@ -28,10 +28,10 @@ VERSION 4
 25	18	OPERATOR turn-around-object turn-around-object.soar 26
 26	18	OPERATOR turn-through-doorway turn-through-doorway.soar 27
 27	18	OPERATOR turn-to-waypoint turn-to-waypoint.soar 28
-28	17	HLOPERATOR go-to-area go-to-area.soar go-to-area 276 29
+28	17	HLOPERATOR go-to-area go-to-area.soar go-to-area 273 29
 29	28	FOPERATOR elaborations elaborations.soar 30
 30	28	OPERATOR go-to-gateway go-to-gateway.soar 31
-31	28	HLOPERATOR go-to-next-area go-to-next-area.soar go-to-next-area 278 32
+31	28	HLOPERATOR go-to-next-area go-to-next-area.soar go-to-next-area 275 32
 32	31	FOPERATOR elaborations elaborations.soar 33
 33	31	OPERATOR go-to go-to.soar 34
 34	0	HLOPERATOR chase chase.soar chase 153 35

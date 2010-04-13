@@ -1,11 +1,11 @@
 ## If collision sensor is on, mark that there is a collision
 
-sp {move-to-wall*elaborate*collision
-   (state <s> ^name move-to-wall
-              ^io.input-link.self.collision.<x> true)
--->
-   (<s> ^collision true)
-}
+#sp {move-to-wall*elaborate*collision
+#   (state <s> ^name move-to-wall
+#              ^io.input-link.self.collision.<x> true)
+#-->
+#   (<s> ^collision true)
+#}
 
 ## If collision distance (computed below) is < 30, mark that there is a collision
 ## This is used for walls
@@ -21,9 +21,9 @@ sp {move-to-wall*elaborate*collision-wall
 
 sp {move-to-wall*elaborate*collision-object
    (state <s> ^name move-to-wall
-              ^io.input-link.object <obj>)
+              ^io.input-link.objects.object <obj>)
    (<obj> ^distance < 30
-          ^yaw { < 0.2 > -0.2 })
+          ^yaw { < 10 > -10 })
 -->
    (<s> ^collision true)
 }
@@ -33,11 +33,11 @@ sp {move-to-wall*elaborate*collision-object
 
 sp {move-to-wall*elaborate*collision-false
    (state <s> ^name move-to-wall
-             -^io.input-link.object.distance < 30
-              ^collision-distance >= 30
-              ^io.input-link.self.collision <col>)
-   (<col> ^x false
-          ^y false)
+             -^io.input-link.objects.object.distance < 30
+              ^collision-distance >= 30)
+#              ^io.input-link.self.collision <col>)
+#   (<col> ^x false
+#          ^y false)
 -->
    (<s> ^collision false)
 }
@@ -97,7 +97,7 @@ sp {move-to-wall*elaborate*collision-wall*east
 
 sp {move-to-wall*elaborate*collision-object2
    (state <s> ^name move-to-wall
-              ^io.input-link.object.distance <r>)
+              ^io.input-link.objects.object.distance <r>)
 -->
    (<s> ^collision-distance <r>)
 }

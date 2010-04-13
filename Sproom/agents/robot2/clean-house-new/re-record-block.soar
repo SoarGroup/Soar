@@ -3,11 +3,11 @@ sp {clean-house*propose*re-record-block
               ^current-location <ca>
               ^blocks.block <block>
               ^parameters.objects-held-in smem
-              ^io.input-link.object <obj>)
+              ^io.input-link.objects.object <obj>)
    (<block> ^id <id>
         ^area <> <ca>)
    (<obj> ^id <id>
-          ^visible yes)
+          ^visible true)
 -->
    (<s> ^operator <op> + =, >)
    (<op> ^name re-record-block
