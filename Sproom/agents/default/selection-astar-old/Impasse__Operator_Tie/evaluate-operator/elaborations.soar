@@ -1,0 +1,51 @@
+sp {evaluate-operator*elaborate*return*current-waypoint
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+              ^top-state.current-waypoint <wp>)
+   (<wp> ^id <id>)
+   (<e> -^current-waypoint.id <id>)
+-->
+   (write (crlf) |Return waypoint: | <id>)
+   (<e> ^current-waypoint <wp>)
+}
+sp {evaluate-operator*elaborate*remove*old-current-waypoint
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+             ^top-state.current-waypoint <wp>)
+   (<wp> ^id <> <id>)
+   (<e> ^current-waypoint <ewp>)
+   (<ewp> ^id <id>)
+-->
+   (write (crlf) |Remove waypoint: | <id>)
+   (<e> ^current-waypoint <ewp> -)
+}
+############################################################
+
+sp {evaluate-operator*elaborate*path-cost
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+              ^top-state.path-cost <pc>)
+  -(<e> ^path-cost)
+-->
+   (write (crlf) |Path cost: | <pc>)
+   (<e> ^path-cost <pc>)
+}
+
+sp {evaluate-operator*elaborate*path-cost*update
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+              ^top-state.path-cost <pc>)
+   (<e> ^path-cost { <> <pc> <oldpc> })
+-->
+   (write (crlf) |Update path cost: | <pc> | replaces | <oldpc>)
+   (<e> ^path-cost <pc>
+                   <oldpc> -)
+}

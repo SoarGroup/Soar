@@ -15,10 +15,10 @@ sp {robot*elaborate*state*gateway-direction-structures
            ^max-pos 180
            ^max-neg -175
            ^min-neg -180)
-   (<south> ^value 90
+   (<north> ^value 90
             ^min 85
             ^max 95)
-   (<north> ^value -90
+   (<south> ^value -90
             ^min -95
             ^max -85)}
 

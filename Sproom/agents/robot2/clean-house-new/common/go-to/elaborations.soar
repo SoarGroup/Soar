@@ -14,7 +14,7 @@ sp {go-to*elaborate*state*cross-doorway
 sp {go-to*elaborate*set-waypoint*true
    (state <s> ^name go-to
               ^destination <d>
-              ^top-state.io.input-link.self.waypoints.waypoint <wp>)
+              ^top-state.io.input-link.waypoints.waypoint <wp>)
    (<d> ^id <id>
         ^x <x>
         ^y <y>)
@@ -32,7 +32,7 @@ sp {go-to*elaborate*set-waypoint*false
    (<d> ^id <id>
         ^x <x>
         ^y <y>)
-  -{(<s> ^top-state.io.input-link.self.waypoints.waypoint <wp>)
+  -{(<s> ^top-state.io.input-link.waypoints.waypoint <wp>)
     (<wp> ^id <id>
           ^x <x>
           ^y <y>)}
@@ -145,7 +145,7 @@ sp {go-to*elaborate*yaw-aligned*true*doorway*west-pos
 #              ^io.input-link <input>)
 #   (<input> ^area-description.gateway <gw>
 #            ^object <o>)
-#   (<o> ^visible yes
+#   (<o> ^visible true
 #        ^range < 40
 #        ^id <oid>
 #        ^yaw { > <gwao> <oao> })
@@ -162,7 +162,7 @@ sp {go-to*elaborate*yaw-aligned*true*doorway*west-pos
 #              ^io.input-link <input>)
 #   (<input> ^area-description.gateway <gw>
 #            ^object <o>)
-#   (<o> ^visible yes
+#   (<o> ^visible true
 #        ^range < 40
 #        ^id <oid>
 #        ^yaw { <= <gwao> <oao> })

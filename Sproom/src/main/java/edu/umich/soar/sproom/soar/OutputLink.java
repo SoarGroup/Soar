@@ -102,7 +102,7 @@ class OutputLink {
 				while (iter.hasNext()) {
 					Map.Entry<Integer, OutputLinkCommand> entry = iter.next();
 					if (entry.getValue().isTerminated()) {
-						if (driveCommand.equals(entry.getValue())) {
+						if (entry.getValue().equals(driveCommand)) {
 							driveCommand = null;
 						}
 						if (logger.isDebugEnabled()) {

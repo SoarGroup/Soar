@@ -1,0 +1,6 @@
+sp {evaluation*operator*count-depth
+   :default
+   (state <s> ^operator <o> ^depth <d>)
+-->
+   (<s> ^depth <d> -
+               (+ 1 <d>))}

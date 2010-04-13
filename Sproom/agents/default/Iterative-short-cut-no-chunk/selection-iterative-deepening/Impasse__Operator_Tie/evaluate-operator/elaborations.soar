@@ -1,0 +1,19 @@
+sp {evaluate-operator*elaborate*state
+   (state <s> ^superstate.operator <o>)
+   (<o> ^name evaluate-operator
+        ^evaluation.current-evaluation-depth <ced>)
+-->
+   (<s> ^current-evaluation-depth <ced>)
+}
+sp {evaluate-operator*elaborate*evaluate-operator*current-evaluation-depth*0
+   :default
+   (state <s> ^superstate.operator <o>
+              ^jug <j1> <j2>
+              ^current-evaluation-depth <= 0)
+   (<j1> ^contents <c1> ^empty <e1> ^volume 5)
+   (<j2> ^contents <c2> ^empty <e2> ^volume 3)
+   (<o> ^name evaluate-operator
+        ^evaluation <e>)
+-->
+   (write (crlf) |Max evaluation depth hit.|)
+   (<e> ^symbolic-value depth-exceeded)}

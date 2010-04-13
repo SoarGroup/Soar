@@ -1,6 +1,6 @@
 sp {chase*propose*move-to-player
    (state <s> ^name chase
-              ^io.input-link.object <p>
+              ^io.input-link.objects.object <p>
               ^top-state.parameters.medium-linear-velocity <medium>
               ^superstate.operator.player <p>)
    (<p> ^name <n>

@@ -3,7 +3,7 @@ sp {clean-house*elaborate*block
               ^parameters.objects-held-in epmem
               ^current-location <area>
              -^current-location.storage-area yes
-              ^io.input-link.object <obj>)
+              ^io.input-link.objects.object <obj>)
    (<s> ^blocks <b>)
    (<obj> ^x <x> ^y <y>
           ^id <id>
@@ -22,7 +22,7 @@ sp {clean-house*elaborate*block*storage
               ^current-location.storage-area yes
               ^current-location <area>
               ^parameters.objects-held-in epmem
-              ^io.input-link.object <obj>)
+              ^io.input-link.objects.object <obj>)
    (<s> ^blocks <b>)
    (<obj> ^x <x> ^y <y>
           ^id <id>

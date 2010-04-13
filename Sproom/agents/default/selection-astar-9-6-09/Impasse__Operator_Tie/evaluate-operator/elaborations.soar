@@ -1,0 +1,78 @@
+sp {evaluate-operator*elaborate*return*visited
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+              ^top-state.current-location <wp>)
+-->
+   (<e> ^visited <wp>)
+}
+
+sp {evaluate-operator*elaborate*return*current-location
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+              ^top-state.current-location <wp>)
+   (<e> -^current-location)
+-->
+   (<e> ^current-location <wp>)
+}
+sp {evaluate-operator*elaborate*remove*old-current-location
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator <op>
+              ^top-state.current-location <wp>)
+   (<wp> ^id { <nid>  <> <id> })
+   (<op> ^evaluation <e>)
+   (<e> ^current-location <ewp>)
+   (<ewp> ^id <id>)
+-->
+   (write (crlf) |Remove waypoint: | <id>)
+   (<e> ^current-location <ewp> -
+                          <wp>)
+}
+
+
+############################################################
+
+sp {evaluate-operator*elaborate*path-cost
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+              ^top-state.path-cost <pc>)
+  -(<e> ^path-cost)
+-->
+   (write (crlf) |Path cost: | <pc>)
+   (<e> ^path-cost <pc>)
+}
+
+sp {evaluate-operator*elaborate*path-cost*update
+   :default
+   (state <s> ^name evaluate-operator
+              ^tried-tied-operator  # Wait until operator applied
+              ^superstate.operator.evaluation <e>
+              ^top-state.path-cost <pc>)
+   (<e> ^path-cost { <> <pc> <oldpc> })
+-->
+   (write (crlf) |Update path cost: | <pc> | replaces | <oldpc>)
+   (<e> ^path-cost <pc>
+                   <oldpc> -)
+}
+
+##### Avoid redoing
+sp {evaluate-operator*select
+   (state <s> ^name evaluate-operator
+              ^quiescence t
+              ^superstate.operator.visited <v>
+              ^operator <op1> +)
+   (<op1> ^next-waypoint <v>)
+   (<v> ^id <vid>)
+-->
+   (write (crlf) |Reject moving to | <vid>)
+   (<s> ^operator <op1> -)
+}
+
+
+

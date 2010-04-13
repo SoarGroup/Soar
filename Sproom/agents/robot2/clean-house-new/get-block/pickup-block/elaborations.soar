@@ -1,7 +1,7 @@
 sp {pickup-block*elaborate*state*block-id
    (state <s> ^name pickup-block
               ^superstate.operator.id <id>
-              ^io.input-link.object <o>)
+              ^io.input-link.objects.object <o>)
    (<o> ^id <id>)
 -->
    (<s> ^block-id <id>
@@ -15,7 +15,7 @@ sp {pickup-block*elaborate*state*lined-up
             ^min-angular-distance <min>)
    (<o>  -^abs-relative-bearing > <max>
          -^abs-relative-bearing < <min>
-          ^visible yes)
+          ^visible true)
 -->
    (<s> ^object-lined-up yes)
 }
@@ -23,7 +23,7 @@ sp {pickup-block*elaborate*state*object-left
    (state <s> ^name pickup-block
               ^top-state.parameters.max-angular-distance <max>
               ^object <o>)
-   (<o> ^visible yes
+   (<o> ^visible true
        -^abs-relative-bearing > <max>)
 -->
    (<s> ^object-lined-up no)
@@ -32,7 +32,7 @@ sp {pickup-block*elaborate*state*object-right
    (state <s> ^name pickup-block
               ^top-state.parameters.min-angular-distance <min>
               ^object <o>)
-   (<o> ^visible yes
+   (<o> ^visible true
        -^abs-relative-bearing >= <min>)
 -->
    (<s> ^object-lined-up no)
@@ -42,7 +42,7 @@ sp {pickup-block*elaborate*state*in-range-lined-up
               ^object-lined-up yes
               ^top-state.parameters.pickup-range <pr>
               ^object <o>)
-   (<o> ^visible yes
+   (<o> ^visible true
        -^distance >= <pr>)
 -->
    (<s> ^object-in-range-lined-up yes)
