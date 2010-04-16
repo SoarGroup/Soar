@@ -7,7 +7,7 @@ import java.util.Map;
 
 
 import lcm.lcm.LCM;
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -3,8 +3,8 @@
  */
 package edu.umich.soar.sproom.soar.commands;
 
-import jmat.LinAlg;
-import lcmtypes.pose_t;
+import april.jmat.LinAlg;
+import april.lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

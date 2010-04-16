@@ -4,9 +4,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import jmat.LinAlg;
-import jmat.MathUtil;
-import lcmtypes.pose_t;
+import april.jmat.LinAlg;
+import april.jmat.MathUtil;
+import april.lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

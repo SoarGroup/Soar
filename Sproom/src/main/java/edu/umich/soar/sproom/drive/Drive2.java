@@ -2,10 +2,10 @@ package edu.umich.soar.sproom.drive;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jmat.LinAlg;
-import jmat.MathUtil;
+import april.jmat.LinAlg;
+import april.jmat.MathUtil;
 
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -1,6 +1,6 @@
 package edu.umich.soar.sproom.soar;
 
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 import sml.Agent;
 import sml.Identifier;
 import edu.umich.soar.IntWme;

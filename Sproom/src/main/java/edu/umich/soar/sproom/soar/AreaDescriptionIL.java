@@ -6,7 +6,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 import sml.Identifier;
 import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;

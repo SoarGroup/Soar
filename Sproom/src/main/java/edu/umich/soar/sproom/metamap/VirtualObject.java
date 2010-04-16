@@ -2,7 +2,7 @@ package edu.umich.soar.sproom.metamap;
 
 import java.util.Arrays;
 
-import jmat.LinAlg;
+import april.jmat.LinAlg;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
