@@ -8,7 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
-import lcmtypes.laser_t;
+import april.lcmtypes.laser_t;
 import edu.umich.soar.sproom.SharedNames;
 
 /**

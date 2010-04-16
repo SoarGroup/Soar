@@ -1,5 +1,6 @@
 package edu.umich.soar.sproom;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,7 +28,13 @@ public class Application {
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 	public Application(String[] args) {
 		Config config = ConfigUtil.getDefaultConfig(args);
-
+		if (logger.isDebugEnabled()) {
+			logger.debug("Config file:");
+			for (String key : config.getKeys()) {
+				logger.debug(String.format("%s = %s", key, Arrays.toString(config.getStrings(key))));
+			}
+		}
+		
 		new Viewer(config);
 		if (config.getBoolean("mixed-mode", false)) {
 			config.setStrings("simulator.simobjects", new String[] { "SIM_LIDAR_FRONT" });

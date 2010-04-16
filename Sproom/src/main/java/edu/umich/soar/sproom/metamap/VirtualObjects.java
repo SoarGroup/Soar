@@ -14,7 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import lcm.lcm.LCM;
-import lcmtypes.sim_obstacles_t;
+import april.lcmtypes.sim_obstacles_t;
 
 import edu.umich.soar.sproom.metamap.VirtualObject.Color;
 import edu.umich.soar.sproom.metamap.VirtualObject.Type;

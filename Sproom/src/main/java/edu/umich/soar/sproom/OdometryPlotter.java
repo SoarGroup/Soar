@@ -15,12 +15,12 @@ import javax.swing.JFrame;
 
 import edu.umich.soar.sproom.splinter.Splinter;
 
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 
-import vis.VisCanvas;
-import vis.VisData;
-import vis.VisDataPointStyle;
-import vis.VisWorld;
+import april.vis.VisCanvas;
+import april.vis.VisData;
+import april.vis.VisDataPointStyle;
+import april.vis.VisWorld;
 
 /**
  * Tool used to plot odometry data for calibration.

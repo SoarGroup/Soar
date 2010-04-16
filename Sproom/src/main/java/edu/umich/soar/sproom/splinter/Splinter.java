@@ -1,5 +1,6 @@
 package edu.umich.soar.sproom.splinter;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,8 +20,8 @@ import edu.umich.soar.sproom.SharedNames;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
-import lcmtypes.differential_drive_command_t;
-import lcmtypes.pose_t;
+import april.lcmtypes.differential_drive_command_t;
+import april.lcmtypes.pose_t;
 
 import orc.Motor;
 import orc.Orc;
@@ -326,13 +327,13 @@ public class Splinter {
 		Config config = null;
 		if (args.length > 0) {
 			try {
-				config = new Config(new ConfigFile(args[0]));
+				config = new ConfigFile(new File(args[0]));
 			} catch (IOException e) {
 				logger.error(e.getMessage());
 				System.exit(1);
 			}
 		} else {
-			config = new Config(new ConfigFile());
+			throw new IllegalStateException("Must pass configuration file as argument.");
 		}
 		new Splinter(config);
 	}

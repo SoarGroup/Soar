@@ -60,6 +60,7 @@ public enum CommandConfig {
 	public enum AngleResolution { INT, FLOAT };
 
 	private String productions;
+	private boolean gamepad = true;
 	
 	private double limitLinVelMax = 0.5;
 	private double limitLinVelMin = -0.5;
@@ -103,6 +104,7 @@ public enum CommandConfig {
 		config = config.getChild("command");
 		
 		productions = config.getString("productions", null);
+		gamepad = config.getBoolean("gamepad", gamepad);
 		limitLinVelMax = config.getDouble("limitLinVelMax", limitLinVelMax);
 		limitLinVelMin = config.getDouble("limitLinVelMin", limitLinVelMin);
 		limitAngVelMax = config.getDouble("limitAngVelMax", limitAngVelMax);
@@ -385,4 +387,9 @@ public enum CommandConfig {
 	public void clearRandomSeed() {
 		randomSeed = null;
 	}
+	
+	public boolean getGamepad() {
+		return gamepad;
+	}
+	
 }
