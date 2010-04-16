@@ -5,7 +5,7 @@ package edu.umich.soar.sproom.metamap;
 
 import java.util.HashMap;
 
-import jmat.LinAlg;
+import april.jmat.LinAlg;
 
 public class Walls {
 	private final HashMap<WallDir, double[]> walls = new HashMap<WallDir, double[]>(4);

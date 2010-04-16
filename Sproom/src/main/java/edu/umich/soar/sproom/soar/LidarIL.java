@@ -3,7 +3,7 @@ package edu.umich.soar.sproom.soar;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import lcmtypes.laser_t;
+import april.lcmtypes.laser_t;
 import sml.Identifier;
 import edu.umich.soar.IntWme;
 import edu.umich.soar.sproom.Adaptable;

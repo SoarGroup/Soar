@@ -4,9 +4,8 @@
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="src" path="src/main/resources"/>
 	<classpathentry kind="src" path="src/test/resources"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/april"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/vis"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/april"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="APRIL_MEGA"/>
 	<classpathentry kind="var" path="GLUEGEN_RT"/>

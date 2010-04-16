@@ -8,7 +8,7 @@ import edu.umich.soar.sproom.command.Pose;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveCommand;
 
-import jmat.LinAlg;
+import april.jmat.LinAlg;
 
 import sml.Identifier;
 

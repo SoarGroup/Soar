@@ -5,7 +5,7 @@ import java.io.IOException;
 import lcm.lcm.LCM;
 import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 
 /**
  * Simple tests for LCM functionality.

@@ -5,7 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jmat.LinAlg;
+import april.jmat.LinAlg;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,7 +56,7 @@ public class Command {
     }
     private GamepadInputScheme gpInputScheme = GamepadInputScheme.TANK;
 
-    private GamepadJInput gpji = new GamepadJInput();
+    private GamepadJInput gpji;
     private final AtomicBoolean override = new AtomicBoolean(false);
     private final AtomicBoolean slow = new AtomicBoolean(false);
     
@@ -78,8 +78,11 @@ public class Command {
 		soar.addDriveListener(drive3);
 		httpController.addSoarControlListener(soar);
 		
-		if (gpji.isValid()) {
-			initializeGamepad();
+		if (CommandConfig.CONFIG.getGamepad()) {
+			gpji = new GamepadJInput();
+			if (gpji.isValid()) {
+				initializeGamepad();
+			}
 		}
 
 		shexec.scheduleAtFixedRate(new Runnable() {

@@ -3,9 +3,9 @@ package edu.umich.soar.sproom;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import jmat.LinAlg;
-import jmat.MathUtil;
-import lcmtypes.pose_t;
+import april.jmat.LinAlg;
+import april.jmat.MathUtil;
+import april.lcmtypes.pose_t;
 
 /**
  * Class that translates odometry information to point data.

@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import lcm.lcm.LCM;
-import lcmtypes.differential_drive_command_t;
+import april.lcmtypes.differential_drive_command_t;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Command;
 

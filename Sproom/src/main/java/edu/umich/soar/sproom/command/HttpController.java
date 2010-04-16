@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import jmat.MathUtil;
+import april.jmat.MathUtil;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
