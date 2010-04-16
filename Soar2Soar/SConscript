@@ -6,6 +6,7 @@ Import('compEnv')
 
 soar2soar = compEnv.Program('soar2soar', Glob('*.cpp'))
 compEnv.Install('$PREFIX/bin', soar2soar)
+compEnv.Install('$PREFIX/share/soar/Soar2Soar', '#../Soar2Soar/readme.txt')
 
 # Resources
 Import('InstallDir')
