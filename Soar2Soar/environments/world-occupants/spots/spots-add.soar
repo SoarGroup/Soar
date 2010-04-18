@@ -1,0 +1,25 @@
+sp {spots*propose*spots-add
+   (state <s> ^name spots
+              ^task add
+              ^x <x>
+              ^y <y>
+              ^grid <grid>)
+  -{(<grid> ^spot <spot>)
+    (<spot> ^x <x>
+            ^y <y>)}
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name spots-add)
+}
+
+sp {apply*spots-add
+   (state <s> ^operator <op>
+              ^x <x>
+              ^y <y>
+              ^grid <grid>)
+   (<op> ^name spots-add)
+-->
+   (<grid> ^spot <spot>)
+   (<spot> ^x <x>
+           ^y <y>)
+}
