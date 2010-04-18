@@ -1,7 +1,7 @@
 Soar2Soar
 
 Author: Nate Derbinsky, nlderbin@umich.edu
-Date  : 2009
+Date  : 2010
 
 
 Abstract
@@ -75,11 +75,20 @@ paths/libraries for free).
 
 Running Soar2Soar
 -----------------
-From a terminal: soar2soar <n>
+From a terminal: soar2soar <n> [env source] [a1 source] [a2 source] ...
 
 The parameter <n> is a required integer and
 tells Soar2Soar how many client agents (in addition
 to the environment) to spawn.
+
+The source parameters are all optional. Their function is to initialize
+the agents by issuing "source X" (where X is the value of the appropriate
+parameter). If [env source] is provided, the environment agent will be
+initialized. The client source parameters can be used in two ways:
+(1) one-to-one unique or (2) one-for-all. In the former, Soar2Soar will
+expect a file for EACH client agent and it will initialize them
+accordingly. In the latter, Soar2Soar will expect a SINGLE file that will
+be used for ALL client agents.
 
 Once running, you can remotely connect to any of
 the agents using a remote SML connection, such as
