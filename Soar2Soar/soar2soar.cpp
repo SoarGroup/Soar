@@ -117,7 +117,7 @@ template<class T> string& toString( const T& x, string& dest )
 // usage statement
 void usage( const char* pName )
 {
-	cout << "usage: " << pName << " <# agents>" << endl;
+	cout << "usage: " << pName << " <# agents> [environment source] [a1 source] [a2 source] ..." << endl;
 }
 
 void syncWME( WMElement* delta, bool wasAdded, string deltaIdName, sym2symMap* ssMap, symWMEMap* swMap, timetagMap* ttMap, sym2symMap* ssMapC = NULL )
@@ -524,8 +524,12 @@ int main( int argc, const char* argv[] )
 {		
 	// validate inputs
 	int numAgents = 0;
+	string envSource( "" );
+	vector< string > agentSources;
 	{
-		if ( argc != 2 )
+		int i = 0;
+		
+		if ( argc < 2 )
 		{
 			usage( argv[0] );
 			return 0;
@@ -537,6 +541,49 @@ int main( int argc, const char* argv[] )
 			usage( argv[0] );
 			return 0;
 		}
+		
+		// initialize sources
+		for ( i=0; i<numAgents; i++ )
+		{
+			agentSources.push_back( "" );
+		}
+		
+		if ( argc >= 3 )
+		{
+			// means there must be an environmental agent
+			envSource.assign( "source " );
+			envSource.append( argv[2] );
+			
+			if ( argc > 3 )
+			{
+				// three cases:
+				// 1) numAgents == agentSources: one-to-one unique correspondance
+				// 2) agentSources == 1: everyone gets first
+				// 3) error
+				
+				if ( numAgents == ( argc - 3 ) )
+				{
+					for ( i=3; i<argc; i++ )
+					{
+						agentSources[ i - 3 ].assign( "source " );
+						agentSources[ i - 3 ].append( argv[ i ] );
+					}
+				}
+				else if ( argc == 4 )
+				{
+					for ( i=0; i<numAgents; i++ )
+					{
+						agentSources[ i ].assign( "source " );
+						agentSources[ i ].append( argv[3] );
+					}
+				}
+				else
+				{
+					usage( argv[0] );
+					return 0;
+				}
+			}
+		}		
 	}
 	
 	// create kernel
@@ -569,6 +616,11 @@ int main( int argc, const char* argv[] )
 		s2s.env.pEnv->ExecuteCommandLine( "sp { soar2soar*init*agent (state <s> -^soar2soar ready ^io.output-link.agents.agent.input <in>) --> (<in> ^soar2soar initialized) }" );
 		s2s.env.pEnv->ExecuteCommandLine( "sp { soar2soar*propose*ready (state <s> -^soar2soar ready ^io.input-link.agents <agents>) -{(<agents> ^agent <agent>) (<agent> ^commands <commands>) -(<commands> ^initialization ack)} --> (<s> ^operator <op> +) (<op> ^name soar2soar-init) }" );
 		s2s.env.pEnv->ExecuteCommandLine( "sp { soar2soar*apply*ready (state <s> ^operator.name soar2soar-init) --> (<s> ^soar2soar ready) }" );
+		
+		if ( !envSource.empty() )
+		{
+			s2s.env.pEnv->ExecuteCommandLine( envSource.c_str() );
+		}
 	}
 
 	// prep environment for agents	
@@ -602,6 +654,11 @@ int main( int argc, const char* argv[] )
 				newAgent->ExecuteCommandLine( "sp { soar2soar*init*apply*ack (state <s> ^operator.name soar2soar-ack ^io.output-link <out>) --> (<out> ^initialization ack) }" );
 				newAgent->ExecuteCommandLine( "sp { soar2soar*init*propose*ready (state <s> -^soar2soar ready ^io <io>) (<io> ^output-link.initialization ack -^input-link.soar2soar initialized) --> (<s> ^operator <op> +) (<op> ^name soar2soar-ready) }" );
 				newAgent->ExecuteCommandLine( "sp { soar2soar*init*apply*ready (state <s> ^operator.name soar2soar-ready ^io.output-link <out>) --> (<out> ^initialization ack -) (<s> ^soar2soar ready) }" );
+				
+				if ( !agentSources[ i - 1 ].empty() )
+				{
+					newAgent->ExecuteCommandLine( agentSources[ i - 1 ].c_str() );
+				}
 
 				newAgent->RegisterForRunEvent( sml::smlEVENT_AFTER_HALTED, onHalt, &( s2s.env ) );
 			}
