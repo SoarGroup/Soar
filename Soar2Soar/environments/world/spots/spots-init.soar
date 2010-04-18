@@ -1,0 +1,27 @@
+sp {spots*propose*spots-init
+   (state <s> ^name spots
+             -^grid)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name spots-init)
+}
+
+sp {apply*spots-init
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name spots-init)
+   (<ss> ^grid <grid>
+         ^params <params>)
+   (<params> ^start-x <start-x>
+             ^start-y <start-y>)
+-->
+   (<s> ^grid <grid>
+        ^params <params>
+        ^x <start-x>
+        ^y <start-y>
+        ^next-x (+ <start-x> 1)
+        ^next-y (+ <start-y> 1)
+        ^prev-x (- <start-x> 1)
+        ^prev-y (- <start-y> 1)
+        ^task add)
+}

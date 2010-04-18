@@ -1,0 +1,3 @@
+pushd world-mover
+source world-mover_source.soar
+popd
