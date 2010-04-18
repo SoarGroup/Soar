@@ -1,0 +1,21 @@
+sp {propose*initialize-world-mover
+   (state <s> ^superstate nil
+              ^soar2soar ready
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-world-mover)
+}
+
+sp {apply*initialize-world-mover
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-world-mover)
+-->
+   (<s> ^name world-mover
+        ^directions <ds>
+        ^rewards <rs>)
+   (<ds> ^direction left right up down)
+   (<rs> ^success 1
+         ^failure -1)
+}
+

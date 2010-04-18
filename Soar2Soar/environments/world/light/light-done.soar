@@ -1,0 +1,14 @@
+sp {light*propose*light-done
+   (state <s> ^name light)
+-->
+   (<s> ^operator <op> + <)
+   (<op> ^name light-done)
+}
+
+sp {apply*light-done
+   (state <s> ^operator <op>
+              ^superstate <ss>)
+   (<op> ^name light-done)
+-->
+   (<ss> ^agents ready)
+}

@@ -1,0 +1,7 @@
+sp {elaborations*reward*success
+   (state <s> ^reward-link <rl>
+              ^rewards.<status> <reward>
+              ^io.output-link.<cmd>.status <status>)
+-->
+   (<rl> ^reward.value <reward>)
+}
