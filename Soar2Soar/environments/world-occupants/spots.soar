@@ -1,0 +1,8 @@
+sp {world*propose*spots
+   (state <s> ^name world
+              ^grid <grid>
+             -^spots ready)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name spots)
+}
