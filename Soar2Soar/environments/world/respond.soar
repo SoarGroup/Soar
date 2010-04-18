@@ -1,0 +1,95 @@
+sp {world*propose*respond
+   (state <s> ^name world
+              ^io.input-link.console.time <t>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name respond
+         ^time <t>)
+}
+
+sp {apply*respond*add*success
+   (state <s> ^operator <op>
+              ^io.output-link.agents.agent.feedback <f>)
+   (<op> ^name respond)
+   (<f> ^add-wme <add>)
+   (<add> ^status complete
+          ^id <id>
+          ^attr <attr>
+          ^value <value>)
+-->
+   (<f> ^add-wme <add> -)
+   (<id> ^<attr> <value>)
+}
+
+sp {apply*respond*add*failure
+   (state <s> ^operator <op>
+              ^io.output-link.agents.agent.feedback <f>)
+   (<op> ^name respond)
+   (<f> ^add-wme <add>)
+   (<add> ^status failure)
+-->
+   (<f> ^add-wme <add> -)
+}
+
+
+sp {apply*respond*move*legal
+   (state <s> ^operator <op>
+              ^io <io>
+              ^grid.spot <spot>)
+   (<io> ^input-link.agents.agent <a-i>
+         ^output-link.agents.agent <a-o>)
+   (<op> ^name respond
+         ^time <t>)
+   (<a-i> ^commands.move <m>
+          ^id <id>)
+   (<m> ^direction { << down left right up >> <d> }
+       -^status)
+   (<a-o> ^feedback <f>
+          ^input.here <h>
+          ^id <id>)
+  -(<f> ^add-wme.id <m>)
+   (<h> ^x <x>
+        ^y <y>)
+   (<spot> ^x <x>
+           ^y <y>
+           ^<d> <n-spot>)
+   (<n-spot> ^x <n-x>
+             ^y <n-y>)
+-->
+   (<f> ^add-wme <add>)
+   (<add> ^id <m>
+          ^attr status
+          ^value success)
+   (<h> ^x <x> - <n-x>
+        ^y <y> - <n-y>)
+}
+
+
+sp {apply*respond*move*illegal
+   (state <s> ^operator <op>
+              ^io <io>
+              ^grid.spot <spot>)
+   (<io> ^input-link.agents.agent <a-i>
+         ^output-link.agents.agent <a-o>)
+   (<op> ^name respond
+         ^time <t>)
+   (<a-i> ^commands.move <m>
+          ^id <id>)
+   (<m> ^direction { << down left right up >> <d> }
+       -^status)
+   (<a-o> ^feedback <f>
+          ^input.here <h>
+          ^id <id>)
+  -(<f> ^add-wme.id <m>)
+   (<h> ^x <x>
+        ^y <y>)
+   (<spot> ^x <x>
+           ^y <y>
+           ^<d> nil)
+-->
+   (<f> ^add-wme <add>)
+   (<add> ^id <m>
+          ^attr status
+          ^value failure)
+}
+
