@@ -695,7 +695,7 @@ preference *exploration_boltzmann_select( agent *my_agent, preference *candidate
 
 	for (c = candidates, i = expvals.begin(); c; c = c->next_candidate, i++) {
 		sum += *i;
-		if (sum > r)
+		if (sum >= r)
 			return c;
 	}
 	
