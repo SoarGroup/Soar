@@ -1,5 +1,7 @@
 sp {world*propose*respond
    (state <s> ^name world
+              ^spots ready
+              ^agents ready
               ^io.input-link.console.time <t>)
 -->
    (<s> ^operator <op> + =)
