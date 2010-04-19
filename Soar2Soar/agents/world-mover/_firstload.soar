@@ -1,3 +1,5 @@
+timers --disable
+
 wait -e
 
 rl --set learning-rate 1
