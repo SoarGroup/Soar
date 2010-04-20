@@ -4,7 +4,7 @@
 package edu.umich.soar.sproom.soar.commands;
 
 import edu.umich.soar.sproom.Adaptable;
-import edu.umich.soar.sproom.command.Comm;
+import edu.umich.soar.sproom.comm.Comm;
 
 import sml.Identifier;
 

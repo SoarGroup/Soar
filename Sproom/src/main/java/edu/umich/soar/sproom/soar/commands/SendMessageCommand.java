@@ -11,11 +11,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
-import edu.umich.soar.sproom.command.Comm;
+import edu.umich.soar.sproom.comm.Comm;
 
 import sml.Identifier;
 import sml.WMElement;
-import sml.Agent;
 
 /**
  * Send a communication message.
@@ -99,8 +98,7 @@ public class SendMessageCommand extends OutputLinkCommand {
 	@Override
 	public void update(Adaptable app) {
 		Comm comm = (Comm)app.getAdapter(Comm.class);
-		Agent agent = (Agent)app.getAdapter(Agent.class);
-		comm.sendMessage(agent.GetAgentName(), destination, tokens);
+		comm.sendMessage(destination, tokens);
 		addStatus(CommandStatus.COMPLETE);
 	}
 }
