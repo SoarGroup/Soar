@@ -1,4 +1,4 @@
-package edu.umich.soar.sproom.command;
+package edu.umich.soar.sproom.comm;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,18 +10,21 @@ import java.util.List;
  *
  * @author voigtjr@gmail.com
  */
-public class CommMessage {
+public class Message 
+{
 	private static long counter = 0L;
 	
 	// TODO consider rolling in to sml-java
-	CommMessage(String from, String to, List<String> tokens) {
+	Message(String from, String to, List<String> tokens) 
+	{
 		this.id = counter++;
 		this.from = from;
 		this.destination = to;
 		this.tokens = new ArrayList<String>(tokens);
 	}
 	
-	CommMessage(String from, List<String> tokens) {
+	Message(String from, List<String> tokens) 
+	{
 		this.id = counter++;
 		this.from = from;
 		this.destination = null;
@@ -33,36 +36,48 @@ public class CommMessage {
 	private final List<String> tokens;
 	private final String destination;
 	
-	public long getId() {
+	public long getId()
+	{
 		return id;
 	}
 	
-	public boolean isBroadcast() {
+	public boolean isBroadcast() 
+	{
 		return destination == null;
 	}
 	
-	public String getDestination() {
+	public String getDestination() 
+	{
 		return destination;
 	}
 	
-	public String getFrom() {
+	public String getFrom() 
+	{
 		return from;
 	}
 	
-	public List<String> getTokens() {
+	public List<String> getTokens() 
+	{
 		return Collections.unmodifiableList(this.tokens);
 	}
 	
 	@Override
-	public String toString() {
+	public String toString() 
+	{
 		StringBuilder sb = new StringBuilder(String.format("(%3d) ", id));
 		sb.append(from);
-		if (destination != null) {
+		if (destination != null) 
+		{
 			sb.append(" -> ");
 			sb.append(destination);
+		} 
+		else 
+		{
+			sb.append(" (broadcast)");
 		}
 		sb.append(":");
-		for (String token : tokens) {
+		for (String token : tokens) 
+		{
 			sb.append(" ");
 			sb.append(token);
 		}
@@ -70,9 +85,12 @@ public class CommMessage {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof CommMessage) {
-			
+	public boolean equals(Object obj) 
+	{
+		if (obj instanceof Message) 
+		{
+			Message other = (Message)obj;
+			return id == other.id;
 		}
 		return super.equals(obj);
 	}
