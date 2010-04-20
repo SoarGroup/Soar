@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import april.config.Config;
 
 import edu.umich.soar.sproom.HzChecker;
+import edu.umich.soar.sproom.comm.Messages;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.Drive3;
 import edu.umich.soar.sproom.gp.GPComponentListener;
@@ -40,7 +41,6 @@ public class Command {
 	private final Pose pose = new Pose();
 	private final Drive3 drive3;
 	private final Waypoints waypoints = new Waypoints();
-	private final Comm comm = new Comm();
 	private final Lidar lidar;
 	private final MapMetadata metadata;
 	private final VirtualObjects vobjs;
@@ -64,7 +64,7 @@ public class Command {
     private float rx = 0;
     private float ry = 0;
 
-    public Command(Config config) {
+    public Command(Config config, Messages messages) {
 		logger.debug("Command started");
 		
 		CommandConfig.CONFIG.initialize(config);
@@ -73,7 +73,7 @@ public class Command {
 		lidar = new Lidar(CommandConfig.CONFIG.getLidarCacheTime());
 		metadata = new MapMetadata(config);
 		vobjs = new VirtualObjects(config);
-		soar = new SoarInterface(pose, waypoints, comm, lidar, metadata, vobjs);
+		soar = new SoarInterface(pose, waypoints, messages, lidar, metadata, vobjs);
 		httpController.addDriveListener(drive3);
 		soar.addDriveListener(drive3);
 		httpController.addSoarControlListener(soar);

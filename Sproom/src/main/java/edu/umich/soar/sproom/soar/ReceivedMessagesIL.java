@@ -8,8 +8,8 @@ import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
-import edu.umich.soar.sproom.command.Comm;
-import edu.umich.soar.sproom.command.CommMessage;
+import edu.umich.soar.sproom.comm.Comm;
+import edu.umich.soar.sproom.comm.Message;
 
 /**
  * Input link management of received messages.
@@ -21,7 +21,7 @@ public class ReceivedMessagesIL implements InputLinkElement {
 	private class MessageIL {
 		private final Identifier messageRoot;
 
-		private MessageIL(CommMessage message) {
+		private MessageIL(Message message) {
 			messageRoot = root.CreateIdWME(SharedNames.MESSAGE);
 			
 			StringWme.newInstance(messageRoot, SharedNames.FROM, message.getFrom());
@@ -41,7 +41,7 @@ public class ReceivedMessagesIL implements InputLinkElement {
 	}
 	
 	private final Identifier root;
-	private Map<CommMessage, MessageIL> all = new HashMap<CommMessage, MessageIL>();
+	private Map<Message, MessageIL> all = new HashMap<Message, MessageIL>();
 
 	public ReceivedMessagesIL(Identifier root, Adaptable app) {
 		this.root = root;
@@ -50,9 +50,9 @@ public class ReceivedMessagesIL implements InputLinkElement {
 	@Override
 	public void update(Adaptable app) {
 		Comm comm = (Comm)app.getAdapter(Comm.class);
-		Map<CommMessage, MessageIL> newAll = new HashMap<CommMessage, MessageIL>(all.size());
+		Map<Message, MessageIL> newAll = new HashMap<Message, MessageIL>(all.size());
 		
-		for(CommMessage message : comm.getMessages().values()) {
+		for(Message message : comm.getMessages()) {
 			MessageIL msg = all.remove(message);
 			if (msg == null) {
 				msg = new MessageIL(message);
