@@ -1212,7 +1212,7 @@ void determine_possible_symbol_types_for_string (char *s,
 	/* --- check for rereadability --- */
 	all_alphanum = TRUE;
 	for (ch=s; *ch!=0; ch++) {
-		if (!islower(*ch) && !isdigit(*ch)) {
+		if (!isalnum(*ch)) {
 			all_alphanum = FALSE;
 			break;
 		}
