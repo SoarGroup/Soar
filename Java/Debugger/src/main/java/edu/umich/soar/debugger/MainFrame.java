@@ -342,15 +342,32 @@ public class MainFrame
 			try {
 				browser = new Browser(comp, SWT.HORIZONTAL);
 			} catch (SWTError e) {
-				this.ShowMessageBox("Error opening help", 
-						"Please view help online: http://code.google.com/p/soar/wiki/CommandLineInterface", 
-						SWT.ICON_ERROR);
+				showHelpError();
 				return;
 			}
-			String url = MainFrame.class.getResource("/CommandLineInterface.html").toString();
-			if (optionalCommand != null)
-				url += "#" + optionalCommand;
-			browser.setUrl(url);
+			
+			InputStream page = MainFrame.class.getResourceAsStream("/CommandLineInterface.html");
+			if (page == null) {
+				showHelpError();
+				return;
+			}
+
+			try {
+				StringBuilder sb = new StringBuilder();
+				try {
+					BufferedReader reader = new BufferedReader(new InputStreamReader(page));
+					String line;
+					while ((line = reader.readLine()) != null) {
+						sb.append(line).append("\n");
+					}
+				} finally {
+					page.close();
+				}
+				browser.setText(sb.toString());
+			} catch (IOException e) {
+				showHelpError();
+				return;
+			}
 			
 			helpShell.open();
 		}
@@ -358,6 +375,13 @@ public class MainFrame
 		{
 			helpShell.forceFocus();
 		}
+	}
+	
+	private void showHelpError() 
+	{
+		this.ShowMessageBox("Error opening help", 
+				"Please view help online: http://code.google.com/p/soar/wiki/CommandLineInterface", 
+				SWT.ICON_ERROR);
 	}
 
 	public void setTextFont(FontData fontData)
