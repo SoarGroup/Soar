@@ -1,0 +1,22 @@
+VERSION 4
+/world/world.dm
+0	ROOT world world 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR grid grid.soar 6
+6	3	FOPERATOR top-state top-state.soar 7
+7	0	OPERATOR initialize-world initialize-world.soar 8
+8	0	HLOPERATOR light light.soar light 68 9
+9	8	FOPERATOR elaborations elaborations.soar 10
+10	8	OPERATOR light-done light-done.soar 11
+11	8	OPERATOR light-here light-here.soar 12
+12	0	OPERATOR respond respond.soar 13
+13	0	HLOPERATOR spots spots.soar spots 36 14
+14	13	FOPERATOR elaborations elaborations.soar 15
+15	13	OPERATOR spots-add spots-add.soar 16
+16	13	OPERATOR spots-inc spots-inc.soar 17
+17	13	OPERATOR spots-init spots-init.soar 18
+18	13	OPERATOR spots-relations spots-relations.soar 19
+END

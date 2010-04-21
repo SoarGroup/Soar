@@ -1,0 +1,153 @@
+sp {clean-house*propose*record-area
+   (state <s> ^name robot
+              ^parameters.areas-held-in wm
+              ^io.input-link.self.area <area-id>)
+   (<s> ^areas.area <area>)
+   (<area> -^visited yes
+            ^id <area-id>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name record-area
+     #    ^actions.stop <stop>
+         ^area <area>)
+}
+ 
+sp {apply*record-area*room
+   (state <s> ^operator <op>
+              ^io.input-link.area-description <ad>)
+   (<ad> ^wall <w1>
+         ^type room)
+   (<op> ^name record-area
+         ^area <area>)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )#^id <wid1> )# ^left <l1> ^right <r1>)
+-->
+   (<area> ^wall <nw1>
+           ^visited yes
+                    no -
+           ^cleaned no)
+   (<nw1>  ^x <x> ^y <y> ^direction <dir> )#^id <wid1>)# ^left <l1> ^right <r1>)
+}
+
+sp {apply*record-area*door
+   (state <s> ^operator <op>
+              ^io.input-link.area-description <ad>)
+   (<ad> ^wall <w1>
+         ^type door)
+   (<op> ^name record-area
+         ^area <area>)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )#^id <wid1> )# ^left <l1> ^right <r1>)
+-->
+   (<area> ^wall <nw1>
+           ^visited yes
+                    no -
+           ^cleaned yes)
+   (<nw1>  ^x <x> ^y <y> ^direction <dir> )#^id <wid1>)# ^left <l1> ^right <r1>)
+}
+
+sp {apply*record-area-gateway
+   (state <s> ^operator <op>
+              ^io.input-link.area-description.gateway <gateway>)
+   (<op> ^name record-area
+         ^area <area>)
+   (<area> ^id <aid>)
+   (<gateway> ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to { <> <wid1> <> <aid> <tid> })
+-->
+   (<area> ^gateway <ngateway>)
+   (<ngateway> ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to <tid>)
+}
+
+sp {apply*record-area-type
+   (state <s> ^operator <op>
+              ^io.input-link.area-description.type <type>)
+   (<op> ^name record-area
+         ^area <area>)
+   (<area> ^id <aid>)
+-->
+   (<area> ^type <type>)
+}
+
+# Trying out versions below to simplify associating x y with gateways
+# no need to record x y for rooms - will always go through doorway to room
+sp {apply*record-area-gateway*initialize*connected-area*door
+   (state <s> ^operator <op>
+              ^current-location <ca>
+              ^areas <areas>
+              ^io.input-link.area-description <ad>)
+   (<ad> ^gateway <gateway>
+         ^type door)
+   (<op> ^name record-area)
+   (<gateway> ^id <gid> ^to { <> <caid> <aid> })
+  -(<areas> ^area.id <aid>)
+   (<ca> ^id <caid>)
+-->
+   (<areas> ^area <area>)
+   (<area> ^id <aid>
+           ^visited no
+           ^neighbor-area <ca>)
+   (<ca> ^neighbor-area <area>)
+}
+
+## Record location as x, y of gateway to door
+sp {apply*record-area-gateway*initialize*connected-area
+   (state <s> ^operator <op>
+              ^current-location <ca>
+              ^areas <areas>
+              ^io.input-link.area-description <ad>)
+   (<ad> ^gateway <gateway>
+         ^type room)
+   (<op> ^name record-area)
+   (<gateway> ^id <gid>
+              ^to { <> <caid> <aid> }
+              ^x <x> ^y <y>)
+  -(<areas> ^area.id <aid>)
+   (<ca> ^id <caid>)
+-->
+   (<areas> ^area <area>)
+   (<area> ^id <aid>
+           ^cleaned no
+           ^gateway-x <x>
+           ^gateway-y <y>
+           ^neighbor-area <ca>)
+   (<ca> ^neighbor-area <area>)
+}
+
+sp {apply*record-area-gateway*initialize*connected-area*already-visited*know*about
+   (state <s> ^operator <op>
+              ^current-location <ca>
+              ^areas <areas>
+              ^io.input-link.area-description <ad>)
+   (<ad> ^gateway <gateway>
+         ^type room)
+   (<op> ^name record-area)
+   (<gateway> ^id <gid>
+              ^to { <> <caid> <aid> }
+              ^x <x> ^y <y>)
+   (<areas> ^area <area>)
+   (<area> ^id <aid>)
+   (<ca> ^id <caid>)
+  -(<ca> ^neighbor-area <area>)
+-->
+   (<area> ^neighbor-area <ca>)
+   (<ca> ^neighbor-area <area>)
+}
+
+
+sp {apply*record-area*in-gateway
+   (state <s> ^operator <o>
+              ^io.input-link.area-description <area>)
+   (<area> ^type door)
+   (<o> ^name record-area
+        ^area <narea>)
+-->
+   (<narea> ^cleaned yes
+                     no -)}
+   
+sp {clean-house*compare*record-area
+   (state <s> ^name robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name << record-block record-area >>)
+   (<op2> ^name << get-block deposit-block >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}

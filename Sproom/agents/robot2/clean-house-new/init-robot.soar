@@ -1,0 +1,36 @@
+sp {clean-house*propose*init-robot
+   (state <s> ^name robot
+             -^problem-space)
+-->
+   (<s> ^operator <op> !)
+   (<op> ^name init-robot)
+}
+
+sp {robot*apply*init-robot*directions
+   (state <s> ^name robot
+              ^operator.name init-robot
+              ^areas)
+-->
+   (<s> ^problem-space <ps>
+        ^desired <d>
+       # ^numbers.number.value 0
+        ^path-cost 0)
+   (<d> ^storage-area-id 1)
+   (<ps> ^name clean-house
+         ^default-state-copy yes
+         ^one-level-attributes areas current-location destination-area type
+         ^one-level-attributes visited-area)
+}
+
+sp {robot*apply*init-robot*areas
+   (state <s> ^name robot
+              ^io.input-link <input>
+              ^operator.name init-robot)
+   (<input> ^area-description <ad>)
+   (<ad> ^id <id>
+         ^type <type>)
+-->
+   (<s> ^areas.area <area>
+        ^blocks <b>)
+   (<area> ^id <id>
+           ^type <type>)}

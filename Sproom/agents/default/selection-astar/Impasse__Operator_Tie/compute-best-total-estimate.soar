@@ -1,0 +1,59 @@
+sp {selection*propose*compute-best-total-estimate
+   (state <s> ^name selection
+              ^superstate.superstate.operator.evaluation
+             -^not-all-operators-total-estimated-cost true)
+  -(<s> ^best-total-estimate <bte>)
+-->
+   (write (crlf) |Propose Compute Best Total Estimate|)
+   (<s> ^operator <op> + =, >)
+   (<op> ^name compute-best-total-estimate)
+}
+
+sp {selection*propose*compute-best-total-estimate2
+   (state <s> ^name selection
+             -^not-all-operators-total-estimated-cost true
+              ^best-total-estimate <bte>
+             -^evaluation.total-estimated-cost <bte>)
+-->
+   (write (crlf) |Propose Compute Best Total Estimate2|)
+   (<s> ^operator <op> + =, >)
+   (<op> ^name compute-best-total-estimate)
+}
+sp {apply*compute-best-total-estimate
+   (state <s> ^operator <op>
+              ^evaluation <e>)
+   (<op> ^name compute-best-total-estimate)
+   (<e> ^total-estimated-cost <tes>)
+  -{(<s> ^evaluation.total-estimated-cost < <tes>)}
+-->
+   (write (crlf) |  Best Total Estimate | <tes> | from | <e>)
+   (<s> ^best-total-estimate <tes>)
+}
+
+sp {apply*compute-best-total-estimate*remove-old
+   (state <s> ^operator <op>
+              ^best-total-estimate <bte>
+              ^evaluation <e>)
+   (<op> ^name compute-best-total-estimate)
+   (<e> ^total-estimated-cost { <> <bte> <tes> })
+  -{(<s> ^evaluation.total-estimated-cost < <tes>)}
+-->
+   (write (crlf) |  Remove Best Total Estimate | <bte>)
+   (<s> ^best-total-estimate <bte> -)
+}
+
+sp {apply*compute-best-total-estimate*pass-back-super
+   (state <s> ^operator <op>
+              ^superstate.superstate.operator.evaluation <se>
+              ^evaluation <e>)
+   (<op> ^name compute-best-total-estimate)
+   (<e> ^total-estimated-cost <tes>
+        ^superoperator <so>)
+  -(<s> ^evaluation.total-estimated-cost < <tes>)
+   (<se> ^estimated-cost {< <tes> <sec> })
+-->
+   (write (crlf) |!!!Updated superestimated cost. Replace | <sec> | with | <tes>)
+   (<se> ^estimated-cost <sec> -
+                         <tes>
+         ^updated-estimate true)
+}

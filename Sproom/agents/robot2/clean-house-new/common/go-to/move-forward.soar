@@ -1,0 +1,25 @@
+sp {go-to*propose*move-forward
+   (state <s> ^name go-to
+              ^top-state.parameters.medium-linear-velocity <medium>
+              ^destination-in-range no
+              ^yaw-aligned true)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name move-forward
+         ^actions <a>)
+   (<a> ^set-velocity <sv>)
+   (<sv> ^linear-velocity <medium>
+         ^angular-velocity 0)}
+
+sp {go-to*propose*move-forward*cross-doorway
+   (state <s> ^name go-to
+              ^top-state.parameters.medium-linear-velocity <medium>
+              ^yaw-aligned true
+              ^cross-doorway yes)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name move-forward
+         ^actions <a>)
+   (<a> ^set-velocity <sv>)
+   (<sv> ^linear-velocity <medium>
+         ^angular-velocity 0)}

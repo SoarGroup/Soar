@@ -5,7 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jmat.LinAlg;
+import april.jmat.LinAlg;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,10 +13,13 @@ import org.apache.commons.logging.LogFactory;
 import april.config.Config;
 
 import edu.umich.soar.sproom.HzChecker;
+import edu.umich.soar.sproom.comm.Messages;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.Drive3;
 import edu.umich.soar.sproom.gp.GPComponentListener;
 import edu.umich.soar.sproom.gp.GamepadJInput;
+import edu.umich.soar.sproom.metamap.MapMetadata;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 import edu.umich.soar.sproom.soar.SoarInterface;
 
 /**
@@ -36,10 +39,9 @@ public class Command {
 
 	private final HzChecker hzChecker = HzChecker.newInstance(Command.class.toString());
 	private final Pose pose = new Pose();
-	private final Drive3 drive3 = Drive3.newInstance(pose);
+	private final Drive3 drive3;
 	private final Waypoints waypoints = new Waypoints();
-	private final Comm comm = new Comm();
-	private final Lidar lidar = new Lidar();
+	private final Lidar lidar;
 	private final MapMetadata metadata;
 	private final VirtualObjects vobjs;
 	private final SoarInterface soar;
@@ -54,7 +56,7 @@ public class Command {
     }
     private GamepadInputScheme gpInputScheme = GamepadInputScheme.TANK;
 
-    private GamepadJInput gpji = new GamepadJInput();
+    private GamepadJInput gpji;
     private final AtomicBoolean override = new AtomicBoolean(false);
     private final AtomicBoolean slow = new AtomicBoolean(false);
     
@@ -62,23 +64,42 @@ public class Command {
     private float rx = 0;
     private float ry = 0;
 
-    public Command(Config config) {
+    public Command(Config config, Messages messages) {
 		logger.debug("Command started");
 		
-		String productions = config.getString("controller.productions", null);
-		if (productions != null) {
-			CommandConfig.CONFIG.setProductions(productions);
-		}
+		CommandConfig.CONFIG.initialize(config);
 		
-		
-
+		drive3 = Drive3.newInstance(pose);
+		lidar = new Lidar(CommandConfig.CONFIG.getLidarCacheTime());
 		metadata = new MapMetadata(config);
 		vobjs = new VirtualObjects(config);
-		soar = new SoarInterface(pose, waypoints, comm, lidar, metadata, vobjs);
+		soar = new SoarInterface(pose, waypoints, messages, lidar, metadata, vobjs);
 		httpController.addDriveListener(drive3);
 		soar.addDriveListener(drive3);
 		httpController.addSoarControlListener(soar);
 		
+		if (CommandConfig.CONFIG.getGamepad()) {
+			gpji = new GamepadJInput();
+			if (gpji.isValid()) {
+				initializeGamepad();
+			}
+		}
+
+		shexec.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				if (logger.isDebugEnabled()) {
+					hzChecker.tick();
+				}
+				
+				if (override.get()) {
+					drive3.handleDriveEvent(getGamepadDDC());
+				}
+			}
+		}, 0, 30, TimeUnit.MILLISECONDS);
+	}
+
+    private void initializeGamepad() {
 		gpji.addComponentListener(GamepadJInput.Id.OVERRIDE, new GPComponentListener() {
 			@Override
 			public void stateChanged(GamepadJInput.Id id, float value) {
@@ -168,21 +189,8 @@ public class Command {
 				ry = value;
 			}
 		});
-
-		shexec.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				if (logger.isDebugEnabled()) {
-					hzChecker.tick();
-				}
-				
-				if (override.get()) {
-					drive3.handleDriveEvent(getGamepadDDC());
-				}
-			}
-		}, 0, 30, TimeUnit.MILLISECONDS);
-	}
-	
+    }
+    
 	private DifferentialDriveCommand getGamepadDDC() {
         double left = 0;
         double right = 0;

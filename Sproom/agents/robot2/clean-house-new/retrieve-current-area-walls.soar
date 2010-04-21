@@ -1,0 +1,23 @@
+sp {clean-house*propose*retrieve-current-area-walls
+   (state <s> ^name robot
+              ^parameters.areas-held-in smem
+              ^current-location <loc>
+              ^io.input-link.self.area <area-id>)
+   (<loc> ^id <area-id>
+          ^wall <wall>)
+#   (<wall> -^id)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name retrieve-current-area-walls
+         ^wall <wall>)
+}
+
+
+sp {apply*retrieve-current-area-walls*query
+   (state <s> ^smem.command <cmd>
+              ^operator <o>)
+   (<o> ^name retrieve-current-area-walls
+        ^wall <wall>)
+-->
+   (<cmd> ^retrieve <wall>)
+}

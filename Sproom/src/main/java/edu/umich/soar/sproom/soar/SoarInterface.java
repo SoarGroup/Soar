@@ -10,17 +10,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import edu.umich.soar.SoarProperties;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.HzChecker;
-import edu.umich.soar.sproom.command.Comm;
+import edu.umich.soar.sproom.comm.Comm;
+import edu.umich.soar.sproom.comm.Messages;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Lidar;
-import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.VirtualObjects;
 import edu.umich.soar.sproom.command.Waypoints;
 import edu.umich.soar.sproom.drive.DifferentialDriveCommand;
 import edu.umich.soar.sproom.drive.DriveListener;
+import edu.umich.soar.sproom.metamap.MapMetadata;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 
 import sml.Agent;
 import sml.Kernel;
@@ -39,6 +41,7 @@ import sml.Kernel.UpdateEventInterface;
 public class SoarInterface implements SoarControlListener, Adaptable {
 	private static final Log logger = LogFactory.getLog(SoarInterface.class);
 
+	private final String AGENT_NAME = "soar";
 	private final HzChecker hzChecker = HzChecker.newInstance(SoarInterface.class.toString());
 	private final Kernel kernel;
 	private final Agent agent;
@@ -55,29 +58,35 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 	private final MapMetadata metadata;
 	private final VirtualObjects vobjs;
 	private final Cargo cargo = new Cargo();
-	private final Adaptable app; // self-reference for handler code
 	
-	public SoarInterface(Pose pose, Waypoints waypoints, Comm comm, Lidar lidar, MapMetadata metadata, VirtualObjects vobjs) {
+	public SoarInterface(Pose pose, Waypoints waypoints, Messages messages, Lidar lidar, MapMetadata metadata, VirtualObjects vobjs) {
 		this.pose = pose;
 		this.waypoints = waypoints;
-		this.comm = comm;
+		this.comm = new Comm(AGENT_NAME, messages);
 		this.lidar = lidar;
 		this.metadata = metadata;
 		this.vobjs = vobjs;
-		this.app = this;
 		
-		kernel = Kernel.CreateKernelInNewThread();
+		kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kUseAnyPort);
 		if (kernel.HadError()) {
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());
 			System.exit(1);
 		}
+		
+		SoarProperties sp = new SoarProperties();
+		logger.warn(String.format("Kernel port: %d, pid: %d", kernel.GetListenerPort(), sp.getPid()));
 
 		kernel.SetAutoCommit(false);
 
-		agent = kernel.CreateAgent("soar");
+		agent = kernel.CreateAgent(AGENT_NAME);
 		if (kernel.HadError()) {
 			logger.error("Soar error: " + kernel.GetLastErrorDescription());
 			System.exit(1);
+		}
+		
+		if (CommandConfig.CONFIG.hasRandomSeed()) {
+			logger.warn(String.format("Setting random seed: %d", CommandConfig.CONFIG.getRandomSeed()));
+			agent.ExecuteCommandLine(String.format("srand %d", CommandConfig.CONFIG.getRandomSeed()));
 		}
 		
 		agent.SetBlinkIfNoChange(false);
@@ -117,7 +126,7 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 					fireDriveEvent(ddcPrev);
 				}
 				
-				il.update(app);
+				il.update(SoarInterface.this);
 				agent.Commit();
 				logger.trace("smlEVENT_AFTER_ALL_OUTPUT_PHASES done");
 			}
@@ -130,6 +139,15 @@ public class SoarInterface implements SoarControlListener, Adaptable {
 		kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_AFTER_AGENT_REINITIALIZED, agentHandler, null);
 
 		agent.Commit();
+		
+		if (CommandConfig.CONFIG.getSpawnDebugger()) {
+			spawnDebugger();
+		}
+	}
+	
+	void spawnDebugger() {
+		SoarProperties sp = new SoarProperties();
+		sp.spawnDebugger(kernel, agent);
 	}
 	
 	AgentEventInterface agentHandler = new AgentEventInterface() {

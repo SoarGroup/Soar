@@ -1,6 +1,6 @@
 package edu.umich.soar.sproom.command;
 
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 
 /**
  * A point on the map set by the agent.

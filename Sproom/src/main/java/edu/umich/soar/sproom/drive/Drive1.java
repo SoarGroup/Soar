@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import lcm.lcm.LCM;
-import lcmtypes.differential_drive_command_t;
+import april.lcmtypes.differential_drive_command_t;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Command;
 
@@ -49,11 +49,12 @@ class Drive1 {
 	}
 	
 	private void transmit(differential_drive_command_t dc) {
+		dc.utime = System.nanoTime();
 		dc.left = Command.clamp(dc.left, -1, 1);
 		dc.right = Command.clamp(dc.right, -1, 1);
 		
 		if (logger.isTraceEnabled()) {
-			logger.trace("transmit: " + dc.left + "," + dc.right);
+			logger.trace(String.format("transmit: %2.3f, %2.3f", dc.left, dc.right));
 		}
 		lcm.publish(SharedNames.DRIVE_CHANNEL, dc);
 	}

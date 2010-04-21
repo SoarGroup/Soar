@@ -6,17 +6,17 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 import sml.Identifier;
 import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
-import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.MapMetadata.Area;
-import edu.umich.soar.sproom.command.MapMetadata.Gateway;
-import edu.umich.soar.sproom.command.MapMetadata.Walls.WallDir;
+import edu.umich.soar.sproom.metamap.Area;
+import edu.umich.soar.sproom.metamap.Gateway;
+import edu.umich.soar.sproom.metamap.MapMetadata;
+import edu.umich.soar.sproom.metamap.WallDir;
 
 /**
  * Input link management for area description data.

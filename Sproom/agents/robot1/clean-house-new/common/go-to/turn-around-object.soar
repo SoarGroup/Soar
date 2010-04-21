@@ -1,0 +1,55 @@
+#sp {move-directly-to-gateway*propose*turn-around-object
+#   (state <s> ^name move-directly-to-gateway
+#              ^quiescence t
+#              ^io.input-link.objects.object <obj>
+#              ^object-gateway-diff <ogd>)
+#   (<obj> ^id <id>
+#          ^yaw { <ao> > 0 })
+#   (<ogd> ^obstacle yes
+#         -^against-wall
+#          ^id <id>)
+#-->
+#   (<s> ^operator <op> + =, >)
+#   (<op> ^name turn-around-object
+#         ^actions.set-heading.yaw (- <ao> 1.0)
+#         ^actions.set-velocity.linear-velocity <medium>)
+#}
+#
+#sp {move-directly-to-gateway*propose*turn-around-object-neg
+#   (state <s> ^name move-directly-to-gateway
+#              ^top-state.parameters.medium-linear-velocity <low>
+#              ^io.input-link.objects.object <obj>
+#              ^object-gateway-diff <ogd>)
+#   (<obj> ^id <id>
+#          ^yaw { <ao> <= 0 })
+#   (<ogd> ^obstacle yes
+#         -^against-wall 
+#          ^id <id>)
+#-->
+#   (<s> ^operator <op> + =, >)
+#   (<op> ^name turn-around-object
+#         ^actions.set-heading.yaw (+ <ao> 1.0)
+#         ^actions.set-velocity.linear-velocity <low>)
+#}
+#
+#sp {move-directly-to-gateway*propose*turn-around-object*wall
+#   (state <s> ^name move-directly-to-gateway
+#              ^quiescence t
+#              ^top-state.parameters.medium-linear-velocity <low>
+#              ^io.input-link.objects.object <obj>
+#              ^top-state <ts>
+#              ^object-gateway-diff <ogd>)
+#   (<ts> ^direction { <> <new-dir> <dir> }
+#         ^directions <dirs>)
+#   (<dirs> ^opposite <wall-dir>
+#           ^value <new-dir>
+#           ^heading <heading>)
+#   (<ogd> ^obstacle yes
+#          ^against-wall <wall-dir>)
+#-->
+#   (<s> ^operator <op> + =, >)
+#   (<op> ^name turn-around-object
+#         ^actions.set-heading.yaw <heading>
+#         ^actions.set-velocity.linear-velocity <low>)
+#}
+#

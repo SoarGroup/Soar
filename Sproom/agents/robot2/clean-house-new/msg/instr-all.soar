@@ -1,0 +1,22 @@
+# syntax: all label
+sp {msg*propose*instr-all
+   (state <s> ^name msg
+              ^message.first <first>)
+   (<first> ^word all
+            ^next <second>)
+   (<second> ^word <label>
+             ^next nil)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name instr-all
+         ^label <label>)
+}
+
+sp {apply*instr-all
+   (state <s> ^operator <op>
+              ^superstate.operator <ss-op>)
+   (<op> ^name instr-all
+         ^done true)
+-->
+   (<ss-op> ^processed true)
+}

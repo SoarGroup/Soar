@@ -1,0 +1,24 @@
+sp {deposit-block*propose*detect-no-storage-area
+   (state <s> ^name deposit-block
+              ^top-state <ts>)
+   (<ts> -^areas.area.storage-area yes)
+  -{(<ts> ^areas.area <area>)
+    (<area> -^visited yes)}
+
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name detect-no-storage-area)
+}
+
+sp {apply*detect-no-storage-area
+   (state <s> ^operator <op>
+              ^top-state.desired <d>
+              ^current-location <ca>)
+   (<ca> ^id <nid>)
+   (<op> ^name detect-no-storage-area)
+   (<d> ^storage-area-id <id>)
+-->
+   (<d> ^storage-area-id <id> -
+                         <nid>)
+   (<ca> ^storage-area yes)
+}

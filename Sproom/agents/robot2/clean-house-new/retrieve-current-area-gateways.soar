@@ -1,0 +1,23 @@
+sp {clean-house*propose*retrieve-current-area-gateways
+   (state <s> ^name robot
+              ^parameters.areas-held-in smem
+              ^current-location <loc>
+              ^io.input-link.self.area <area-id>)
+   (<loc> ^id <area-id>
+          ^gateway <gateway>)
+   (<gateway> -^id)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name retrieve-current-area-gateways
+         ^gateway <gateway>)
+}
+
+
+sp {apply*retrieve-current-area-gateways*query
+   (state <s> ^smem.command <cmd>
+              ^operator <o>)
+   (<o> ^name retrieve-current-area-gateways
+        ^gateway <gateway>)
+-->
+   (<cmd> ^retrieve <gateway>)
+}

@@ -1,0 +1,32 @@
+## Clean up after Smem commands
+
+sp {apply*clean-up*retrieve
+   (state <s> ^operator.name
+              ^smem <smem>)
+   (<smem> ^result. << success failure >> <q>
+           ^command <cmd>)
+   (<cmd> ^retrieve <q>)
+-->
+   (<cmd> ^retrieve <q> -)
+}
+
+sp {apply*clean-up*query
+   (state <s> ^operator.name
+              ^smem <smem>)
+   (<smem> ^result. << success failure >> <q>
+           ^command <cmd>)
+   (<cmd> ^query <q>)
+-->
+   (<cmd> ^query <q> -)
+}
+
+sp {apply*clean-up*store
+   (state <s> ^operator.name
+              ^smem <smem>)
+   (<smem> ^command <cmd>
+         )#  ^result.success <store>)
+   (<cmd> ^store <store>)
+-->
+   (<cmd> ^store <store> -)
+}
+

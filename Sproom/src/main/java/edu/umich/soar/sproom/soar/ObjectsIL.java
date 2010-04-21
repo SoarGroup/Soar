@@ -12,11 +12,13 @@ import edu.umich.soar.StringWme;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
-import edu.umich.soar.sproom.command.MapMetadata;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.VirtualObject;
-import edu.umich.soar.sproom.command.VirtualObjects;
 import edu.umich.soar.sproom.command.Pose.RelativePointData;
+import edu.umich.soar.sproom.metamap.Area;
+import edu.umich.soar.sproom.metamap.MapMetadata;
+import edu.umich.soar.sproom.metamap.VirtualObject;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
+import edu.umich.soar.sproom.metamap.VirtualObject.Color;
 
 /**
  * Input link management of data representing objects in the world.
@@ -40,6 +42,10 @@ public class ObjectsIL implements InputLinkElement {
 			pointData = new PointDataIL(objectwme, vo.getPos());
 			
 			StringWme.newInstance(objectwme, SharedNames.TYPE, vo.getType().toString().toLowerCase());
+			Color color = vo.getColor();
+			if (color != null) {
+				StringWme.newInstance(objectwme, SharedNames.COLOR, color.toString().toLowerCase());
+			}
 			this.vo = vo;
 			IntWme.newInstance(objectwme, SharedNames.ID, vo.getId());
 			visible = StringWme.newInstance(objectwme, SharedNames.VISIBLE, SharedNames.TRUE);
@@ -127,8 +133,8 @@ public class ObjectsIL implements InputLinkElement {
 			// retrieve or create input link representation of object
 			ObjectIL oil = objMap.remove(vo);
 			if (oil == null) {
-				MapMetadata.Area myArea = meta.getArea(pose.getPose().pos);
-				MapMetadata.Area voArea = meta.getArea(vo.getPos());
+				Area myArea = meta.getArea(pose.getPose().pos);
+				Area voArea = meta.getArea(vo.getPos());
 				if (myArea != null && voArea != null && !myArea.equals(voArea)) {
 					continue;
 				}

@@ -53,7 +53,8 @@ public class ConfigurationIL implements InputLinkElement {
 	private final FloatWme[] linearPid = new FloatWme[3];
 	private final YawWme fieldOfView;
 	private final FloatWme visibleTime;
-	private final DistanceWme manipulationDistance;
+	private final DistanceWme manipulationDistanceMin;
+	private final DistanceWme manipulationDistanceMax;
 	
 	private final AtomicBoolean configChanged = new AtomicBoolean(true);
 	
@@ -105,7 +106,8 @@ public class ConfigurationIL implements InputLinkElement {
 		rangeCount = IntWme.newInstance(root, SharedNames.RANGE_COUNT);
 		fieldOfView = YawWme.newInstance(root, SharedNames.FIELD_OF_VIEW);
 		visibleTime = FloatWme.newInstance(root, SharedNames.VISIBLE_TIME);
-		manipulationDistance = DistanceWme.newInstance(root, SharedNames.MANIPULATION_DISTANCE);
+		manipulationDistanceMin = DistanceWme.newInstance(root, SharedNames.MANIPULATION_DISTANCE_MIN);
+		manipulationDistanceMax = DistanceWme.newInstance(root, SharedNames.MANIPULATION_DISTANCE_MAX);
 		
 		update(app);
 		
@@ -145,7 +147,10 @@ public class ConfigurationIL implements InputLinkElement {
 			rangeCount.update(c.getRangeCount());
 			fieldOfView.update(c.getFieldOfView());
 			visibleTime.update(c.getVisibleNanoTime() / 1000000000.0);
-			manipulationDistance.update(c.getManipulationDistance());
+			manipulationDistanceMin.update(c.getManipulationDistanceMin());
+			manipulationDistanceMax.update(c.getManipulationDistanceMin());
+			
+			// TODO: verify everything from config is here, currently missing random seed (at least)
 
 			configChanged.set(false);
 		}

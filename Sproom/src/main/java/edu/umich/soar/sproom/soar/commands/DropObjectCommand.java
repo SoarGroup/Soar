@@ -3,8 +3,8 @@
  */
 package edu.umich.soar.sproom.soar.commands;
 
-import jmat.LinAlg;
-import lcmtypes.pose_t;
+import april.jmat.LinAlg;
+import april.lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,8 +13,8 @@ import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.VirtualObject;
-import edu.umich.soar.sproom.command.VirtualObjects;
+import edu.umich.soar.sproom.metamap.VirtualObject;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 import edu.umich.soar.sproom.soar.Cargo;
 
 import sml.Identifier;
@@ -67,7 +67,7 @@ public class DropObjectCommand extends OutputLinkCommand {
 		VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
 
 		pose_t botPose = pose.getPose();
-		double dropDistance = CommandConfig.CONFIG.getManipulationDistance();
+		double dropDistance = CommandConfig.CONFIG.getManipulationDistanceMin();
 		dropDistance += object.getSize()[0] / 2.0;
 
 		// Move the block dropDistance in front of us

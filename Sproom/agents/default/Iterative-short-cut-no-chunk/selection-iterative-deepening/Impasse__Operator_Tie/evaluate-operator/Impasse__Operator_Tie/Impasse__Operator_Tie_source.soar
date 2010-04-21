@@ -1,0 +1,3 @@
+source elaborations.soar
+source evaluate-operator.soar
+source no-more-evaluations.soar

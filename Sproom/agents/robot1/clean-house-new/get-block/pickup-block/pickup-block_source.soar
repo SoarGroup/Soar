@@ -1,0 +1,4 @@
+source elaborations.soar
+source go-to.soar
+source grasp-block.soar
+source spin.soar

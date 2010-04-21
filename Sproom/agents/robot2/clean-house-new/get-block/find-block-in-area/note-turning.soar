@@ -1,0 +1,23 @@
+sp {find-block-in-area*propose*note-turning
+   (state <s> ^name find-block-in-area
+              ^quiescence t
+              ^current-location <ca>
+              ^top-state <ss>)
+   (<ca> -^turning yes
+         ^search-start-direction <dir>)
+   (<ss> ^direction <odir>
+         ^directions <ddd>)
+   (<ddd> ^value <dir>
+          ^opposite <odir>)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name note-turning)
+}
+
+sp {apply*note-turning
+   (state <s> ^operator <op>
+              ^current-location <area>)
+   (<op> ^name note-turning)
+-->
+   (<area> ^turning yes)
+}

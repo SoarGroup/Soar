@@ -3,7 +3,6 @@
  */
 package edu.umich.soar.sproom.soar.commands;
 
-import jmat.LinAlg;
 import sml.Identifier;
 
 import org.apache.commons.logging.Log;
@@ -11,10 +10,9 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
-import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.VirtualObject;
-import edu.umich.soar.sproom.command.VirtualObjects;
+import edu.umich.soar.sproom.metamap.VirtualObject;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 import edu.umich.soar.sproom.soar.Cargo;
 
 /**
@@ -69,11 +67,7 @@ public class GetObjectCommand extends OutputLinkCommand {
 		}
 		
 		Pose pose = (Pose)app.getAdapter(Pose.class);
-		double distance = LinAlg.distance(object.getPos(), pose.getPose().pos);
-		CommandConfig c = CommandConfig.CONFIG;
-		double manipDist = c.getManipulationDistance();
-		manipDist += object.getSize()[0] / 2.0;
-		if (distance > c.getManipulationDistance()) {
+		if (!object.isInRange(pose)) {
 			addStatusError("Object too far.");
 			return;
 		}

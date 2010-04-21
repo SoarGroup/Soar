@@ -2,13 +2,13 @@ package edu.umich.soar.sproom.command;
 
 import java.io.IOException;
 
-import jmat.LinAlg;
-import jmat.MathUtil;
+import april.jmat.LinAlg;
+import april.jmat.MathUtil;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,6 +30,16 @@ public class Pose implements LCMSubscriber {
 	
 	Pose() {
 		lcm.subscribe(SharedNames.POSE_CHANNEL, this);
+	}
+
+	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
+		if (channel.equals(SharedNames.POSE_CHANNEL)) {
+			try {
+				pose = new pose_t(ins);
+			} catch (IOException e) {
+				logger.error("Error decoding pose_t message: " + e.getMessage());
+			}
+		}
 	}
 	
 	public pose_t getPose() {
@@ -71,12 +81,14 @@ public class Pose implements LCMSubscriber {
 	}
 	
 	public RelativePointData getRelativePointData(double[] pos) {
-		double distance = LinAlg.distance(pose.pos, pos);
+		pose_t p = getPose();
+		
+		double distance = LinAlg.distance(p.pos, pos);
 
-		double [] delta = LinAlg.subtract(pos, pose.pos);
+		double [] delta = LinAlg.subtract(pos, p.pos);
 		double yaw = Math.atan2(delta[1], delta[0]);
 		
-		double relativeYaw = yaw - LinAlg.quatToRollPitchYaw(pose.orientation)[2];
+		double relativeYaw = yaw - LinAlg.quatToRollPitchYaw(p.orientation)[2];
 		relativeYaw = MathUtil.mod2pi(relativeYaw);
 
 		return new RelativePointData(distance, yaw, relativeYaw);
@@ -84,16 +96,6 @@ public class Pose implements LCMSubscriber {
 	
 	public double getYaw() {
 		return LinAlg.quatToRollPitchYaw(getPose().orientation)[2];
-	}
-
-	public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
-		if (channel.equals(SharedNames.POSE_CHANNEL)) {
-			try {
-				pose = new pose_t(ins);
-			} catch (IOException e) {
-				logger.error("Error decoding pose_t message: " + e.getMessage());
-			}
-		}
 	}
 
 }

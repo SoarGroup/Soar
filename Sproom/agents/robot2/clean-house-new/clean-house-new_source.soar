@@ -1,0 +1,52 @@
+source _firstload.soar
+pushd all
+source all_source.soar
+popd
+pushd elaborations
+source elaborations_source.soar
+popd
+source _readme.soar
+source common.soar
+pushd common
+source common_source.soar
+popd
+source Impasse__Operator_Tie.soar
+pushd Impasse__Operator_Tie
+source Impasse__Operator_Tie_source.soar
+popd
+source chase.soar
+pushd chase
+source chase_source.soar
+popd
+source deposit-block.soar
+pushd deposit-block
+source deposit-block_source.soar
+popd
+source execute-mission.soar
+pushd execute-mission
+source execute-mission_source.soar
+popd
+source finished-cleaning.soar
+source force-go.soar
+source get-block.soar
+pushd get-block
+source get-block_source.soar
+popd
+source init-robot.soar
+source msg.soar
+pushd msg
+source msg_source.soar
+popd
+source re-record-block.soar
+source record-area.soar
+source record-avoid.soar
+source record-block.soar
+source record-label.soar
+source record-smem-current-area.soar
+source record-smem-new-gateway-area.soar
+source record-storage-area.soar
+source record-unconnected-area.soar
+source retrieve-current-area-gateways.soar
+source retrieve-current-area-walls.soar
+source retrieve-neighbor-area.soar
+source store-area.soar

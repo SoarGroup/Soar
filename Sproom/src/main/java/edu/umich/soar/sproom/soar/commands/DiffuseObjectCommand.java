@@ -5,6 +5,9 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
+import edu.umich.soar.sproom.command.Pose;
+import edu.umich.soar.sproom.metamap.VirtualObject;
+import edu.umich.soar.sproom.metamap.VirtualObjects;
 
 import sml.Identifier;
 
@@ -45,8 +48,22 @@ public class DiffuseObjectCommand extends OutputLinkCommand {
 
 	@Override
 	public void update(Adaptable app) {
-		// TODO: get object manipulation interface, perform diffusal
-		addStatusError("Not implemented.");
+		VirtualObjects vobjs = (VirtualObjects)app.getAdapter(VirtualObjects.class);
+		
+		VirtualObject object = vobjs.getObject(id);
+		if (object == null) {
+			addStatusError("No such object.");
+			return;
+		}
+		
+		Pose pose = (Pose)app.getAdapter(Pose.class);
+		if (!object.isInRange(pose)) {
+			addStatusError("Object too far.");
+			return;
+		}
+
+		object.diffuse();
+		return;
 	}
 
 }

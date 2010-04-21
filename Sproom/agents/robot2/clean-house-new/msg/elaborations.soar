@@ -1,0 +1,7 @@
+sp {msg*elaborate*state
+   (state <s> ^name msg
+              ^superstate.operator.message <m>)
+-->
+   (<s> ^supported all label confirmed goto avoid allow connected circuit-patrol linear-patrol initiate terminate
+        ^message <m>)
+}

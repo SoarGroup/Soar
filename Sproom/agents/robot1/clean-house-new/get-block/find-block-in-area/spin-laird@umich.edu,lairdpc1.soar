@@ -1,0 +1,16 @@
+sp {find-block-in-area*propose*spin
+   (state <s> ^name find-block-in-area
+              ^current-location.search-start-direction
+              ^top-state.parameters.medium-angular-velocity <medium>
+             -^current-location.cleaned yes
+              ^io.input-link <io>)
+   (<io> -^self.pose.yaw-velocity > 0.1
+         -^object)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name spin
+         ^actions.set-velocity <sv>)
+   (<sv> ^linear-velocity 0
+         ^angular-velocity <medium>)
+}
+

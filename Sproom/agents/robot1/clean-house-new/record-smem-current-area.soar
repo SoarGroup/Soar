@@ -1,0 +1,157 @@
+sp {clean-house*propose*record-smem-current-area
+  # :interrupt
+   (state <s> ^name robot
+              ^parameters.areas-held-in smem
+             -^current-location.id <area-id>
+              ^io.input-link.self.area <area-id>)
+-->
+   (<s> ^operator <op> + =, >)
+   (<op> ^name record-smem-current-area
+         ^area <area>)
+}
+#(<area> -^visited yes
+
+sp {apply*record-smem-current-area*remove-old-area
+   (state <s> ^operator.name record-smem-current-area
+              ^io.input-link.area-description.id <area-id>
+              ^current-location <area>)
+  -(<area> ^id <area-id>)
+-->
+   (<s> ^current-location <area> -)
+}
+  
+
+sp {apply*record-smem-current-area*query
+   (state <s> ^smem.command <cmd>
+              ^io.input-link.area-description <area-d>
+              ^operator <o>)
+   (<o> ^name record-smem-current-area)
+   (<area-d> ^id <id>
+             ^type <type>)
+-->
+   (<cmd> ^query <q>)
+   (<q> ^type <type>
+        ^id <id>)
+}
+
+sp {apply*record-smem-current-area*retrieve
+   (state <s> ^operator.name record-smem-current-area
+              ^smem <smem>)
+   (<smem> ^command <cmd>
+           ^result <res>)
+   (<cmd> ^query <q>)
+   (<res> ^retrieved <cp>
+          ^success <q>)
+   (<q> ^id <area-id>)
+-->
+  #(write (crlf) |Retrieved area | <cp> | id | <area-id> )
+   (<s> ^current-location <cp>)
+   (<cp> ^visited no - yes)}
+
+sp {apply*record-smem-current-area*return
+   (state <s> ^operator <op>
+              ^io.input-link.area-description <area-d>
+              ^smem <smem>)
+   (<area-d> ^id <id>
+             ^type <type>)
+   (<smem> ^result.failure <q>
+           ^command <cmd>)
+   (<cmd> ^query <q>)
+   (<op> ^name record-smem-current-area
+         ^area <area>)
+-->
+   (<s> ^current-location <area>)
+   (<cmd> ^store <area>)
+   (<area> ^id <id>
+           ^type <type>
+           ^cleaned no
+           ^visited yes)
+}
+
+
+###### Success but not filled in
+sp {apply*record-smem-current-area*store-walls*empty
+   (state <s> ^operator <op>
+              ^smem <smem>
+              ^io.input-link.area-description.wall <w1>)
+   (<smem> ^result <r>
+           ^command <cmd>)
+   (<r> ^success <q>
+        ^retrieved <res>)
+   (<cmd> ^query <q>)
+   (<op> ^name record-smem-current-area)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )#^id <wid1>) # ^left <l1> ^right <r1>)
+   (<res> -^wall)
+-->
+   (<cmd> ^store <res> <nw1>)
+   (<res> ^wall <nw1>)
+   (<nw1>  ^type wall ^x <x> ^y <y> ^direction <dir> )#^id <wid1>) # ^left <l1> ^right <r1>)
+}
+      
+sp {apply*record-smem-current-area-gateway*empty
+   (state <s> ^operator <op>
+              ^smem <smem>
+              ^io.input-link.area-description <area-d>)
+   (<area-d> ^id <aid> ^gateway <gateway>)
+   (<smem> ^result <r>
+           ^command <cmd>)
+   (<r> ^success <q>
+        ^retrieved <res>)
+   (<cmd> ^query <q>)
+   (<op> ^name record-smem-current-area)
+   (<gateway> ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to { <> <wid1> <> <aid> <tid> })
+   (<res> -^wall)
+-->
+   (<cmd> ^store <res> <ngateway>)
+   (<res> ^gateway <ngateway>)
+   (<ngateway> ^type gateway ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to <tid>
+               ^connected no)
+}
+
+########## Failure
+sp {apply*record-smem-current-area*store-walls
+   (state <s> ^operator <op>
+              ^smem <smem>
+              ^io.input-link.area-description.wall <w1>)
+   (<smem> ^result.failure <q>
+           ^command <cmd>)
+   (<cmd> ^query <q>)
+   (<op> ^name record-smem-current-area
+         ^area <area>)
+   (<w1> ^x <x> ^y <y> ^direction <dir> )# ^id <wid1>) # ^left <l1> ^right <r1>)
+-->
+   (<cmd> ^store <area> <nw1>)
+   (<area> ^wall <nw1>)
+   (<nw1>  ^type wall ^x <x> ^y <y> ^direction <dir> )# ^id <wid1>) # ^left <l1> ^right <r1>)
+}
+      
+sp {apply*record-smem-current-area-gateway
+   (state <s> ^operator <op>
+              ^smem <smem>
+              ^io.input-link.area-description <area-d>)
+   (<area-d> ^id <aid> ^gateway <gateway>)
+   (<smem> ^result.failure <q>
+           ^command <cmd>)
+   (<cmd> ^query <q>)
+   (<op> ^name record-smem-current-area
+         ^area <area>)
+   (<gateway> ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to { <> <wid1> <> <aid> <tid> })
+-->
+   (<cmd> ^store <area> <ngateway>)
+   (<area> ^gateway <ngateway>)
+   (<ngateway> ^type gateway ^x <x> ^y <y> ^direction <dir> ^id <wid1> ^to <tid>
+               ^connected no)
+}
+############ Control
+
+sp {clean-house*compare*record-smem-current-area
+   (state <s> ^name robot
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name << record-storage-area retrieve-current-area-gateways retrieve-current-area-walls record-smem-new-gateway-area record-smem-current-area store-area >>)
+   (<op2> ^name << get-block deposit-block record-block >>)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+

@@ -1,0 +1,40 @@
+sp {msg*propose*instr-allow
+   (state <s> ^name msg
+              ^message.first <first>)
+   (<first> ^word allow
+            ^next.word <word>)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name instr-allow
+         ^room (int <word>))
+}
+
+sp {apply*instr-allow
+   (state <s> ^operator <o>
+              ^top-state.areas.area <area>)
+   (<o> ^name instr-allow
+        ^room <id>)
+   (<area> ^id <id>
+           ^avoid true)
+-->
+   (<area> ^avoid true -)
+}
+
+sp {apply*instr-allow*unknown
+   (state <s> ^operator <op>
+              ^top-state.avoids <avoids>)
+   (<op> ^name instr-allow
+         ^room <id>)
+   (<avoids> ^<id> true)
+-->
+   (<avoids> ^<id> true -)
+}
+
+
+sp {apply*instr-allow*done
+   (state <s> ^operator <op>
+              ^superstate.operator <ss-op>)
+   (<op> ^name instr-allow)
+-->
+   (<ss-op> ^processed true)
+}

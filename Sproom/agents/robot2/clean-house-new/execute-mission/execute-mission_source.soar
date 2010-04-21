@@ -1,0 +1,5 @@
+source elaborations.soar
+source patrol.soar
+pushd patrol
+source patrol_source.soar
+popd

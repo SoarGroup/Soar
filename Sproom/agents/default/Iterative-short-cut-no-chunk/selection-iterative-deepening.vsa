@@ -1,0 +1,19 @@
+VERSION 4
+\selection-iterative-deepening\selection-iterative-deepening.dm
+0	ROOT selection-iterative-deepening selection-iterative-deepening 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	0	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 7 5
+5	4	FOPERATOR elaborations elaborations.soar 6
+6	4	OPERATOR achieved-max-depth achieved-max-depth.soar 7
+7	4	HLOPERATOR evaluate-operator evaluate-operator.soar evaluate-operator 11 9
+8	7	FOPERATOR elaborations elaborations.soar 10
+9	7	HLIOPERATOR Impasse__Operator_Tie Impasse__Operator_Tie.soar Impasse__Operator_Tie 13 11
+10	9	FOPERATOR elaborations elaborations.soar 12
+11	9	OPERATOR evaluate-operator evaluate-operator.soar 13
+12	9	OPERATOR no-more-evaluations no-more-evaluations.soar 14
+13	7	OPERATOR task-operator task-operator.soar 15
+14	4	OPERATOR increment-current-evaluation-depth increment-current-evaluation-depth.soar 16
+15	4	OPERATOR init-current-evaluation-depth init-current-evaluation-depth.soar 17
+END

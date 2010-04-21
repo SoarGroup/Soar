@@ -1,0 +1,15 @@
+
+######################## When we bottom out and no evaluation - 
+#
+#sp {selection*elaborate*evaluate-operator*current-evaluation-depth*0
+#   :default
+#   (state <s> ^name selection
+#              ^superstate.superstate.operator <sso>
+#              ^current-evaluation-depth <= 0
+#              ^operator <o>)
+#   (<sso> ^name evaluate-operator
+#          ^evaluation <e>)
+#-->
+#   (write (crlf) |Max evaluation depth hit.|)
+#   (<e> ^symbolic-value depth-exceeded)}
+#

@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import lcmtypes.pose_t;
+import april.lcmtypes.pose_t;
 
 /**
  * A collection of points saved by the agent.

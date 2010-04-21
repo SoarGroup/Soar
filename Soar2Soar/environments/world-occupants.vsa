@@ -1,0 +1,28 @@
+VERSION 4
+/world-occupants/world-occupants.dm
+0	ROOT world-occupants world-occupants 1
+1	0	FOPERATOR _firstload _firstload.soar 2
+2	0	FOLDER all all 3
+3	0	FOLDER elaborations elaborations 4
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR occupants occupants.soar 28
+6	3	FOPERATOR top-state top-state.soar 7
+7	0	HLOPERATOR features features.soar features 88 20
+8	7	FOPERATOR elaborations elaborations.soar 21
+9	7	OPERATOR features-agent features-agent.soar 26
+10	7	OPERATOR features-done features-done.soar 24
+11	7	OPERATOR features-init features-init.soar 22
+12	7	OPERATOR features-random features-random.soar 27
+13	0	OPERATOR initialize-world initialize-world.soar 8
+14	0	HLOPERATOR light light.soar light 68 9
+15	14	FOPERATOR elaborations elaborations.soar 10
+16	14	OPERATOR light-done light-done.soar 11
+17	14	OPERATOR light-here light-here.soar 12
+18	0	OPERATOR respond respond.soar 13
+19	0	HLOPERATOR spots spots.soar spots 36 14
+20	19	FOPERATOR elaborations elaborations.soar 15
+21	19	OPERATOR spots-add spots-add.soar 16
+22	19	OPERATOR spots-inc spots-inc.soar 17
+23	19	OPERATOR spots-init spots-init.soar 18
+24	19	OPERATOR spots-relations spots-relations.soar 19
+END

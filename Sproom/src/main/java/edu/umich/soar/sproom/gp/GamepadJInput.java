@@ -23,7 +23,7 @@ import net.java.games.input.ControllerListener;
  */
 public class GamepadJInput {
 	private static final Log logger = LogFactory.getLog(GamepadJInput.class);
-	private static final float DEAD_ZONE = 0.15f;
+	private static final float DEAD_ZONE_PERCENT = 0.1f;
 
 	private static class HandlerData {
 		HandlerData(Id id, Component component) {
@@ -67,12 +67,15 @@ public class GamepadJInput {
 			}
 			float pct = (v - minValue) / range;
 			
-			if (logger.isTraceEnabled()) {
-				logger.trace(String.format("r%2.2f p%2.2f", range, pct));
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("%s r%2.3f p%2.3f", id.name(), range, pct));
+			}
+
+			if (Math.abs(pct - 0.5f) <= DEAD_ZONE_PERCENT) {
+				return 0;
 			}
 			
-			float value = pct * 2.0f - 1.0f;
-			return Math.abs(value) <= DEAD_ZONE ? 0 : value;
+			return pct * 2.0f - 1.0f;
 		}
 		
 		@Override
@@ -88,10 +91,10 @@ public class GamepadJInput {
 	}
 	
 	public enum Id {
-		OVERRIDE(Component.Identifier.Button._0), 
-		SOAR(Component.Identifier.Button._1), 
-		GPMODE(Component.Identifier.Button._2), 
-		SLOW(Component.Identifier.Button._3), 
+		OVERRIDE(null), 
+		SOAR(null), 
+		GPMODE(null), 
+		SLOW(null), 
 		LX(Component.Identifier.Axis.X), 
 		LY(Component.Identifier.Axis.Y), 
 		RX(Component.Identifier.Axis.Z), 
@@ -100,6 +103,13 @@ public class GamepadJInput {
 		private Component.Identifier cid;
 		
 		private Id(Component.Identifier cid) {
+			this.cid = cid;
+		}
+		
+		private void setCId(Component.Identifier cid) {
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format("%s setting id to %s", this, cid));
+			}
 			this.cid = cid;
 		}
 		
@@ -112,9 +122,13 @@ public class GamepadJInput {
 	private final List<HandlerData> components = new ArrayList<HandlerData>();
 	private final ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
 	
+	public boolean isValid() {
+		return controller != null;
+	}
+	
 	public GamepadJInput() {
 		ControllerEnvironment ce = ControllerEnvironment.getDefaultEnvironment();
-		
+
 		ce.addControllerListener(new ControllerListener() {
 			@Override
 			public void controllerAdded(ControllerEvent e) {
@@ -138,16 +152,26 @@ public class GamepadJInput {
 			}
 		});
 
-		synchronized (components) {
-			for (Controller c : ce.getControllers()) {
-				if (c.getType() != Controller.Type.GAMEPAD) {
-					continue;
-				}
-				controller = c;
+		for (Controller c : ce.getControllers()) {
+			if (c.getType() != Controller.Type.GAMEPAD) {
+				continue;
 			}
 			
-			if (controller == null) {
-				return;
+			controller = c;
+			break;
+		}
+		
+		if (controller == null) {
+			return;
+		}
+		
+		for (Id id : Id.values()) {
+			if (id.getCId() != null) {
+				continue;
+			}
+			int ordinal = id.ordinal();
+			if (ordinal < controller.getComponents().length) {
+				id.setCId(controller.getComponents()[ordinal].getIdentifier());
 			}
 		}
 		
@@ -157,6 +181,12 @@ public class GamepadJInput {
 				synchronized (components) {
 					controller.poll();
 	
+					if (logger.isTraceEnabled()) {
+						for (Component c : controller.getComponents()) {
+							logger.trace(String.format("%s: %1.2f", c.getName(), c.getPollData()));
+						}
+					}
+					
 					for (HandlerData data : components) {
 						if (logger.isTraceEnabled()) {
 							logger.trace(data);
@@ -182,10 +212,10 @@ public class GamepadJInput {
 				return false;
 			}
 			
-			logger.debug("adding listener for " + id.getCId());
+			logger.debug("adding listener for " + id.getCId().getName());
 			Component component = controller.getComponent(id.getCId());
 			if (component == null) {
-				logger.debug("add failed: no such component");
+				logger.error("add failed: no such component");
 				return false;
 			}
 			
