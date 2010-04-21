@@ -9,7 +9,7 @@ public class Messages
 	private final Map<String, CommReceiver> receivers = new HashMap<String, CommReceiver>();
 	
 	/**
-	 * See Map.put()
+	 * See Map.put(). Null key means receive all messages no matter what destination.
 	 * 
 	 * @param name key
 	 * @param comm value
@@ -34,7 +34,13 @@ public class Messages
 				c.receiveMessage(message);
 			}
 		} else {
-			CommReceiver c = receivers.get(destination);
+			// null receiver gets everything
+			CommReceiver c = receivers.get(null);
+			if (c != null) {
+				c.receiveMessage(message);
+			}
+			
+			c = receivers.get(destination);
 			if (c != null) {
 				c.receiveMessage(message);
 			} else {
