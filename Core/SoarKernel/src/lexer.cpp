@@ -1177,7 +1177,7 @@ void determine_possible_symbol_types_for_string (char *s,
 												 Bool *possible_fc, 
 												 Bool *rereadable) {
 	char *ch;
-	Bool rereadability_dead, rereadability_questionable;
+	Bool all_alphanum;
 
 	*possible_id = FALSE;
 	*possible_var = FALSE;
@@ -1210,18 +1210,18 @@ void determine_possible_symbol_types_for_string (char *s,
 		if (! constituent_char[static_cast<unsigned char>(*ch)]) return;
 
 	/* --- check for rereadability --- */
-	rereadability_questionable = FALSE;
-	rereadability_dead = FALSE;
+	all_alphanum = TRUE;
 	for (ch=s; *ch!=0; ch++) {
-		if (islower(*ch) || isdigit(*ch)) continue; /* these guys are fine */
-		if (isupper(*ch)) { rereadability_dead = TRUE; break; }
-		rereadability_questionable = TRUE;
+		if (!islower(*ch) && !isdigit(*ch)) {
+			all_alphanum = FALSE;
+			break;
+		}
 	}
-	if (! rereadability_dead) {
-		if ((! rereadability_questionable) ||
-			(length_of_s >= LENGTH_OF_LONGEST_SPECIAL_LEXEME) ||
-			((length_of_s==1)&&(*s=='*')))
-			*rereadable = TRUE;
+	if ( all_alphanum ||
+	     (length_of_s > LENGTH_OF_LONGEST_SPECIAL_LEXEME) ||
+	     ((length_of_s==1)&&(*s=='*')) )
+	{
+		*rereadable = TRUE;
 	}
 
 	/* --- any string of constituents could be a sym constant --- */
