@@ -14,6 +14,7 @@ import april.config.Config;
 import april.config.ConfigUtil;
 import april.sim.Simulator;
 import april.viewer.Viewer;
+import edu.umich.soar.sproom.comm.CommWindow;
 import edu.umich.soar.sproom.comm.Messages;
 import edu.umich.soar.sproom.command.Command;
 import edu.umich.soar.sproom.splinter.Splinter;
@@ -47,6 +48,7 @@ public class Application {
 			new Simulator(config);
 		}
 		new Command(config, messages);
+		new CommWindow(messages);
 		
 		if (config.getBoolean("lcm-spy.enabled", false)) {
 			final String[] lcmArgs = config.getStrings("lcm-spy.args", new String[]{});
