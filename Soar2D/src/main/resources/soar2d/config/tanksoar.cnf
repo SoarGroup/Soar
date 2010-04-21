@@ -1,4 +1,4 @@
-# See http://code.google.com/p/soar/wiki/soar2dcnf
+# See http://code.google.com/p/soar/wiki/Soar2D
 general.game = "tanksoar";
 general.map = "soar2d/config/maps/tanksoar/default.txt";
 #players.active_players = [ "tank1", "tank2" ];
