@@ -1653,6 +1653,10 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 						(*ip) = new epmem_id_pool;
 
 					(*(*ip))[ q1 ] = parent_id;
+
+					hp =& (*my_agent->epmem_id_repository)[ q1 ];
+					if ( !(*hp) )
+						(*hp) = new epmem_hashed_id_pool;
 				}
 				
 				delete temp_q;
