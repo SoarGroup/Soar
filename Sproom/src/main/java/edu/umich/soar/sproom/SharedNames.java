@@ -69,7 +69,7 @@ public enum SharedNames {
 	public static final String WALL = "wall";
 	public static final String WAYPOINT = "waypoint";
 	public static final String WAYPOINTS = "waypoints";
-	public static final String WORD = "waypoint";
+	public static final String WORD = "word";
 	public static final String X = "x";
 	public static final String X_VELOCITY = "x-velocity";
 	public static final String Y = "y";
