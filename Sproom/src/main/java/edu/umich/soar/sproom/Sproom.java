@@ -3,6 +3,7 @@ package edu.umich.soar.sproom;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.prefs.Preferences;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,13 +25,14 @@ import edu.umich.soar.sproom.splinter.Splinter;
  *
  * @author voigtjr@gmail.com
  */
-public class Application {
-	private static final Log logger = LogFactory.getLog(Application.class);
+public class Sproom {
+	private static final Log logger = LogFactory.getLog(Sproom.class);
+	public static final Preferences PREFERENCES = Preferences.userRoot().node("sproom");
 
 	private final ExecutorService exec = Executors.newSingleThreadExecutor();
 	private final Messages messages = new Messages();
 	
-	public Application(String[] args) {
+	public Sproom(String[] args) {
 		Config config = ConfigUtil.getDefaultConfig(args);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Config file:");
@@ -66,7 +68,7 @@ public class Application {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new Application(args);
+		new Sproom(args);
 	}
 
 }

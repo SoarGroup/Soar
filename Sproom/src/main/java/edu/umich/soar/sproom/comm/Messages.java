@@ -1,5 +1,6 @@
 package edu.umich.soar.sproom.comm;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,30 @@ public class Messages
 	 */
 	public CommReceiver registerReceiver(String name, CommReceiver comm) {
 		return receivers.put(name, comm);
+	}
+	
+	/**
+	 * @param from
+	 * @param destination null for broadcast
+	 * @param message will be split up on spaces
+	 * @return see other send message, also returns false if split yields no tokens
+	 */
+	public boolean sendMessage(String from, String destination, String message) {
+		List<String> tokens = new ArrayList<String>();
+
+		for (String token : message.trim().split("\\s")) {
+			token = token.trim();
+			if (token.isEmpty()) {
+				continue;
+			}
+			tokens.add(token);
+		}
+		
+		if (tokens.isEmpty()) {
+			return false;
+		}
+		
+		return sendMessage(from, destination, tokens);
 	}
 	
 	/**
