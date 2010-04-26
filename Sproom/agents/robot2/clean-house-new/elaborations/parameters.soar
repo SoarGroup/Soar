@@ -24,5 +24,10 @@ sp {robot*elaborate*state
         ^objects-held-in wm
                          
         ^look-ahead-planning yes
-        ^search-control-go-to-gateway yes)
+        ^search-control-go-to-gateway yes
+                                      
+        ^default-storage-area-id 9
+                                 
+        ^increased-angular-tolerance-range .5
+        ^increased-angular-tolerance-multiplier 6)
 }
