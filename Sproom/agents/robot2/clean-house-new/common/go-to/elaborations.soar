@@ -39,12 +39,46 @@ sp {go-to*elaborate*set-waypoint*false
 -->
    (<s> ^set-waypoint false)
 }
-sp {go-to*elaborate*yaw-aligned*true
+
+# normal rotation tolerance
+sp {go-to*elaborate*yaw-aligned*normal-tolerance
    (state <s> ^name go-to
               ^top-state.parameters <p>
               ^waypoint-data <w>)
+   (<w> ^distance >= <iatr>)
    (<p> ^max-angular-distance <max>
-        ^min-angular-distance <min>)
+        ^min-angular-distance <min>
+        ^increased-angular-tolerance-range <iatr>)
+-->
+   (<s> ^angular-tolerances <at>)
+   (<at> ^max <max> 
+         ^min <min>)
+   #(write (crlf) |Normal rotation tolerance.|)
+}
+
+# increase rotation tolerance when close to waypoint
+sp {go-to*elaborate*yaw-aligned*increased-tolerance
+   (state <s> ^name go-to
+              ^top-state.parameters <p>
+              ^waypoint-data <w>)
+   (<w> ^distance < <iatr>)
+   (<p> ^max-angular-distance <max>
+        ^min-angular-distance <min>
+        ^increased-angular-tolerance-range <iatr>
+        ^increased-angular-tolerance-multiplier <iatm>)
+-->
+   (<s> ^angular-tolerances <at>)
+   (<at> ^max (* <iatm> <max>) 
+         ^min (* <iatm> <min>))
+   #(write (crlf) |Increased rotation tolerance.|)
+}
+
+sp {go-to*elaborate*yaw-aligned*true
+   (state <s> ^name go-to
+              ^angular-tolerances <at>
+              ^waypoint-data <w>)
+   (<at> ^max <max>
+         ^min <min>)
    (<w> -^abs-relative-bearing > <max>
         -^abs-relative-bearing < <min>)
 -->
@@ -53,7 +87,7 @@ sp {go-to*elaborate*yaw-aligned*true
 }
 sp {go-to*elaborate*yaw-aligned*false*max
    (state <s> ^name go-to
-              ^top-state.parameters.max-angular-distance <max>
+              ^angular-tolerances.max <max>
               ^waypoint-data <w>)
   -(<w> ^abs-relative-bearing <= <max>)
 -->
@@ -63,7 +97,7 @@ sp {go-to*elaborate*yaw-aligned*false*max
 
 sp {go-to*elaborate*yaw-aligned*false*min
    (state <s> ^name go-to
-              ^top-state.parameters.min-angular-distance <min>
+              ^angular-tolerances.min <min>
               ^waypoint-data <w>)
   -(<w> ^abs-relative-bearing >= <min>)
 -->
