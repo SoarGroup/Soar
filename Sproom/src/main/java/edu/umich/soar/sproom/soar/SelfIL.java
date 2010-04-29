@@ -50,8 +50,8 @@ public class SelfIL implements InputLinkElement {
 
 	@Override
 	public void update(Adaptable app) {
-		Pose poseClass = (Pose)app.getAdapter(Pose.class);
-		pose_t pose = poseClass.getPose();
+		Pose pose = (Pose)app.getAdapter(Pose.class);
+		pose_t p = pose.getPose();
 		
 		Cargo cargo = (Cargo)app.getAdapter(Cargo.class);
 		if (cargo.getCarriedObject() == null) {
@@ -67,15 +67,15 @@ public class SelfIL implements InputLinkElement {
 		}
 		
 		MapMetadata metadata = (MapMetadata)app.getAdapter(MapMetadata.class);
-		Area area = metadata.getArea(pose.pos);
+		Area area = metadata.getArea(p.pos);
 		areaId.update((area != null) ? area.getId() : -1);
 		
 		for (int i = 0; i < xyz.length; ++i) {
-			xyz[i].update(pose.pos[i]);
-			xyzVelocity[i].update(pose.vel[i]);
+			xyz[i].update(p.pos[i]);
+			xyzVelocity[i].update(p.vel[i]);
 		}
-		yaw.update(poseClass.getYaw());
-		yawVelocity.update(pose.rotation_rate[2]);
+		yaw.update(Pose.getYaw(p));
+		yawVelocity.update(p.rotation_rate[2]);
 	}
 
 	@Override

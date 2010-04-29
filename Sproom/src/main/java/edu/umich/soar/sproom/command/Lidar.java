@@ -9,6 +9,7 @@ import lcm.lcm.LCM;
 import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
 import april.lcmtypes.laser_t;
+import edu.umich.soar.sproom.HzChecker;
 import edu.umich.soar.sproom.SharedNames;
 
 /**
@@ -32,18 +33,23 @@ public class Lidar {
 	private final CommandConfig c = CommandConfig.CONFIG;
 	private int chunkRanges = 0;
 	private final LCM lcm = LCM.getSingleton();
+	private final HzChecker simChecker = HzChecker.newInstance("Lidar/sim");
+	private final HzChecker sickChecker = HzChecker.newInstance("Lidar/sick");
+	
 	private LCMSubscriber subscriber = new LCMSubscriber() {
 		@Override
 		public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
 			if (channel.equals(SharedNames.SIM_LASER_CHANNEL)) {
 				try {
 					simLaser = new laser_t(ins);
+					simChecker.tick();
 				} catch (IOException e) {
 					logger.error("Error decoding SIM_LASER_CHANNEL message: " + e.getMessage());
 				}
 			} else if (channel.equals(SharedNames.SICK_LASER_CHANNEL)) {
 				try {
 					sickLaser = new laser_t(ins);
+					sickChecker.tick();
 				} catch (IOException e) {
 					logger.error("Error decoding SICK_LASER_CHANNEL message: " + e.getMessage());
 				}
@@ -132,22 +138,27 @@ public class Lidar {
 	
 	public laser_t getLaserLowRes() {
 		long now = System.nanoTime();
+		//StringBuilder trace = new StringBuilder(Long.toString(now));
 		
 		// throw out readings if we haven't seen a new one in cacheTime seconds
 		if (simLaser != null) {
 			if (simLaser.utime > simLast) {
+				//trace.append(" simgood");
 				simLast = simLaser.utime;
 				simSeen = now;
 			} else if (now - simSeen > cacheTime) {
+				//trace.append(" simold");
 				simLaser = null;
 				simLast = -1;
 			}
 		}
 		if (sickLaser != null) {
 			if (sickLaser.utime > sickLast) {
+				//trace.append(" sickgood");
 				sickLast = sickLaser.utime;
 				sickSeen = now;
 			} else if (now - sickSeen > cacheTime) {
+				//trace.append(" sickold");
 				sickLaser = null;
 				sickLast = -1;
 			}
@@ -155,6 +166,7 @@ public class Lidar {
 		
 		MergedLaser ml = new MergedLaser();
 		if (ml.isValid()) {
+			//trace.append(" mlvalid ");
 			laserLowRes.utime = now;
 			if (laserLowRes.nranges != c.getRangeCount()) {
 				laserLowRes.nranges = c.getRangeCount();
@@ -185,6 +197,7 @@ public class Lidar {
 		}
 		
 		lcm.publish(SharedNames.LASER_LOWRES_CHANNEL, laserLowRes);
+		//System.err.println(trace);
 		return laserLowRes.copy();
 	}
 }

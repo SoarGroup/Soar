@@ -75,7 +75,7 @@ public class SetHeadingLinearCommand extends OutputLinkCommand implements DriveC
 	@Override
 	public void update(Adaptable app) {
 		Pose pose = (Pose)app.getAdapter(Pose.class);
-		double currentYaw = pose.getYaw();
+		double currentYaw = Pose.getYaw(pose.getPose());
 		double difference = targetYaw - currentYaw;
 		difference = Math.abs(difference);
 		
