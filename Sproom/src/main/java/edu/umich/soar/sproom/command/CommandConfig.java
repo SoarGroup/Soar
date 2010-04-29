@@ -92,8 +92,8 @@ public enum CommandConfig {
 	private double manipulationDistanceMin = 0.2;
 	private double manipulationDistanceMax = 1.0;
 	private double gamepadZeroThreshold = 0.4;
-	private final int LIDAR_CACHE_SECONDS_DEFAULT = 1;
-	private long lidarCacheTime = LIDAR_CACHE_SECONDS_DEFAULT * 1000000000L;
+	private final double LIDAR_CACHE_SECONDS_DEFAULT = 1.0;
+	private long lidarCacheTime = (long)(LIDAR_CACHE_SECONDS_DEFAULT * 1000000000L);
 	private boolean spawnDebugger = false;
 	private Integer randomSeed;
 
@@ -145,7 +145,7 @@ public enum CommandConfig {
 		manipulationDistanceMin = config.getDouble("manipulationDistanceMin", manipulationDistanceMin);
 		manipulationDistanceMax = config.getDouble("manipulationDistanceMax", manipulationDistanceMax);
 		gamepadZeroThreshold = config.getDouble("gamepadZeroThreshold", gamepadZeroThreshold);
-		lidarCacheTime = config.getInt("lidarCacheTimeSeconds", LIDAR_CACHE_SECONDS_DEFAULT) * 1000000000L;
+		lidarCacheTime = (long)(config.getDouble("lidarCacheTimeSeconds", LIDAR_CACHE_SECONDS_DEFAULT) * 1000000000L);
 		spawnDebugger = config.getBoolean("spawnDebugger", spawnDebugger);
 		if (config.hasKey("randomSeed")) {
 			randomSeed = Integer.valueOf(config.requireInt("randomSeed"));

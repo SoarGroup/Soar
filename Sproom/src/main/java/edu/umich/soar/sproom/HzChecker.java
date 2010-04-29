@@ -30,7 +30,8 @@ public class HzChecker {
 				@Override
 				public void run() {
 					for (HzChecker hc : checkers) {
-					    logger.debug(String.format("%s running at %.3f hz", hc.component, hc.report()));
+						String message = String.format("%s running at %.3f hz", hc.component, hc.report());
+						logger.debug(message);
 					}
 				}
 			}, 5, 5, TimeUnit.SECONDS);
@@ -47,7 +48,8 @@ public class HzChecker {
 	}
 	
 	public void tick() {
-		ticks.incrementAndGet();
+		if (logger.isDebugEnabled())
+			ticks.incrementAndGet();
 	}
 	
 	private double report() {
@@ -61,3 +63,5 @@ public class HzChecker {
 	    return hz;
 	}
 }
+
+	
