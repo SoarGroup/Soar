@@ -6,6 +6,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import april.lcmtypes.pose_t;
+
 import sml.Identifier;
 import edu.umich.soar.IntWme;
 import edu.umich.soar.StringWme;
@@ -13,7 +15,7 @@ import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.CommandConfig;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.Pose.RelativePointData;
+import edu.umich.soar.sproom.command.RelativePointData;
 import edu.umich.soar.sproom.metamap.Area;
 import edu.umich.soar.sproom.metamap.MapMetadata;
 import edu.umich.soar.sproom.metamap.VirtualObject;
@@ -126,6 +128,7 @@ public class ObjectsIL implements InputLinkElement {
 		MapMetadata meta = (MapMetadata)app.getAdapter(MapMetadata.class);
 		
 		Pose pose = (Pose)app.getAdapter(Pose.class);
+		pose_t p = pose.getPose();
 
 		// for each object
 		for (VirtualObject vo : vobjs) {
@@ -133,13 +136,13 @@ public class ObjectsIL implements InputLinkElement {
 			// retrieve or create input link representation of object
 			ObjectIL oil = objMap.remove(vo);
 			if (oil == null) {
-				Area myArea = meta.getArea(pose.getPose().pos);
+				Area myArea = meta.getArea(p.pos);
 				Area voArea = meta.getArea(vo.getPos());
 				if (myArea != null && voArea != null && !myArea.equals(voArea)) {
 					continue;
 				}
 				
-				RelativePointData rpd = pose.getRelativePointData(vo.getPos());
+				RelativePointData rpd = Pose.getRelativePointData(p, vo.getPos());
 				if (!isVisible(rpd.relativeYaw)) {
 					continue;
 				}

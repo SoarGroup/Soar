@@ -3,7 +3,7 @@ package edu.umich.soar.sproom.soar;
 import edu.umich.soar.sproom.Adaptable;
 import edu.umich.soar.sproom.SharedNames;
 import edu.umich.soar.sproom.command.Pose;
-import edu.umich.soar.sproom.command.Pose.RelativePointData;
+import edu.umich.soar.sproom.command.RelativePointData;
 import sml.Identifier;
 
 /**
@@ -45,7 +45,7 @@ public class PointDataIL implements InputLinkElement {
 		}
 		
 		Pose pose = (Pose)app.getAdapter(Pose.class);
-		rpd = pose.getRelativePointData(pos);
+		rpd = Pose.getRelativePointData(pose.getPose(), pos);
 
 		distance.update(rpd.distance);
 		yaw.update(rpd.yaw);
