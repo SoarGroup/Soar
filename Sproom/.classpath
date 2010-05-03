@@ -13,7 +13,7 @@
 	<classpathentry kind="lib" path="/soar-smljava/lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/log4j-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/orc.jar"/>
-	<classpathentry kind="var" path="SML"/>
 	<classpathentry kind="var" path="JINPUT"/>
+	<classpathentry kind="var" path="SML"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
