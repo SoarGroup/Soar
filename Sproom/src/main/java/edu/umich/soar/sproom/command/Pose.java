@@ -1,19 +1,28 @@
 package edu.umich.soar.sproom.command;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.swing.JFrame;
+
 import april.jmat.LinAlg;
 import april.jmat.MathUtil;
+import april.jmat.Matrix;
 
 import lcm.lcm.LCM;
 import lcm.lcm.LCMDataInputStream;
 import lcm.lcm.LCMSubscriber;
 import april.lcmtypes.pose_t;
 import april.lcmtypes.tag_pose_t;
+import april.vis.VisCanvas;
+import april.vis.VisChain;
+import april.vis.VisRobot;
+import april.vis.VisWorld;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -116,7 +125,9 @@ public class Pose
 	private tag_pose_t getTagPose()
 	{
 		if (tagpose != null) {
-			return tagpose.copy();
+			tag_pose_t tp = tagpose;
+			tagpose = null;
+			return tp;
 		}
 		return null;
 	}
@@ -140,21 +151,40 @@ public class Pose
 	}
 	
 	public static void main(String[] args) {
-		Pose pose = new Pose();
-		try {
-			while (true) 
-			{
+		final Pose pose = new Pose();
+
+		JFrame jf = new JFrame(Pose.class.toString());
+		VisWorld vw = new VisWorld();
+	    VisCanvas vc = new VisCanvas(vw);
+    	jf.setLayout(new BorderLayout());
+    	jf.add(vc, BorderLayout.CENTER);
+    	jf.setSize(1350,800);
+    	jf.setVisible(true);
+    	
+    	final VisWorld.Buffer vbp = vw.getBuffer("pose");
+    	final VisWorld.Buffer vbtp = vw.getBuffer("tagpose");
+
+		ScheduledExecutorService schexec = Executors.newSingleThreadScheduledExecutor();
+		schexec.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
 				pose_t p = pose.getPose();
-				double pYaw = p != null ? Pose.getYaw(p) : 0;
+				double[][] m = LinAlg.quatPosToMatrix(p.orientation, p.pos);
+				vbp.addBuffered(new VisChain(m, new VisRobot(Color.blue, Color.black)));
+				vbp.switchBuffer();
+				
 				tag_pose_t tp = pose.getTagPose();
-				double tpYaw = tp != null && tp.ntags > 0 ? LinAlg.matrixToXyzrpy(tp.poses[0])[5] : 0;
-				String message = String.format("p: %3.2f, tp: %3.2f", Math.toDegrees(pYaw), Math.toDegrees(tpYaw));
-				System.out.println(message);
-				Thread.sleep(500);
+				if (tp != null && tp.ntags > 0) {
+					Matrix M = new Matrix(tp.poses[0]);
+					double[] rpy = LinAlg.matrixToRollPitchYaw(M);
+					System.out.format("%1.6f %1.6f %1.6f\n", rpy[0], rpy[1], rpy[2]);
+					System.out.print(M);
+					M.set(3,3,1.0);
+					vbtp.addBuffered(new VisChain(M, new VisRobot(Color.red, Color.black)));
+					vbtp.switchBuffer();
+				}
 			}
-		} catch (InterruptedException e) {
-			
-		}
+		}, 0, 100, TimeUnit.MILLISECONDS);
 	}
 
 }
