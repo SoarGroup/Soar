@@ -43,7 +43,7 @@ public class Sproom {
 		
 		new Viewer(config);
 		if (config.getBoolean("mixed-mode", false)) {
-			config.setStrings("simulator.simobjects", new String[] { "SIM_LIDAR_FRONT" });
+			config.setStrings("simulator.simobjects", new String[] { "SIM_LIDAR_FRONT" }); // object detector?
 			new Simulator(config);
 			new Splinter(config);
 		} else {
