@@ -1,7 +1,0 @@
-source elaborations.soar
-source choose-waypoint.soar
-source at-waypoint.soar
-source goto-waypoint.soar
-pushd goto-waypoint
-source goto-waypoint_source.soar
-popd

@@ -1,8 +1,0 @@
-
-sp {evalaute-operator*propose*init-current-evaluation-depth*middle-selection
-   (state <s> ^superstate.operator.name evaluate-operator
-              ^current-evaluation-depth <ced>
-              ^operator.name <name>)
--->
-   (<s> ^current-evaluation-depth (- <ced> 1)
-                                  <ced> -)}

@@ -1,8 +1,0 @@
-sp {monitor*go-to-waypoint
-   (state <s> ^operator <o>)
-   (<o> ^name go-to
-        ^destination <d>)
-   (<d> ^id <id> ^x <x> ^y <y>)
--->
-  #(write (crlf) |Going to | <id> | (| <x> |,| <y> |)|)
-}
