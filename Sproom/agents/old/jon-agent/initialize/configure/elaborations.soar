@@ -1,8 +1,0 @@
-sp {configure*elaborate*no-one-home
-   (state <s> ^name configure
-              ^top-state.io.output-link.configure <c>)
-   (<c> -^status)
--->
-   (write (crlf) |No one home.|)
-   (halt)
-}

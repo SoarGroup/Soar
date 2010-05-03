@@ -1,7 +1,0 @@
-source elaborations.soar
-source go-to.soar
-source grasp-block.soar
-pushd grasp-block
-source grasp-block_source.soar
-popd
-source spin.soar

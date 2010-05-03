@@ -1,3 +1,0 @@
-pushd selection-optimal
-source selection-optimal_source.soar
-popd

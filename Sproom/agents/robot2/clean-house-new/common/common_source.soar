@@ -1,8 +1,0 @@
-source go-to.soar
-pushd go-to
-source go-to_source.soar
-popd
-source go-to-area.soar
-pushd go-to-area
-source go-to-area_source.soar
-popd

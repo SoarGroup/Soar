@@ -1,4 +1,0 @@
-source elaborations.soar
-source goto-next-area.soar
-source next-area.soar
-source restart-patrol-first-area.soar

@@ -1,7 +1,0 @@
-#sp {common*propose*go-to-area
-#   (state <s> ^name common)
-#-->
-#   (<s> ^operator <op> + =)
-#   (<op> ^name go-to-area)
-#}
-#
