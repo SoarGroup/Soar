@@ -93,12 +93,6 @@ public-checkout-soartextio:
 checkout-soartextio:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/SoarTextIO
 
-public-checkout-sproom:
-	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Sproom
-
-checkout-sproom:
-	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Sproom
-
 public-checkout-tcl:
 	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Tcl
 
