@@ -1,7 +1,0 @@
-source elaborations.soar
-source selection.soar
-source compute-best-total-estimate.soar
-source evaluate-operator.soar
-pushd evaluate-operator
-source evaluate-operator_source.soar
-popd

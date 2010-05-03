@@ -1,4 +1,0 @@
-source elaborations.soar
-source copy-list-element.soar
-source init-list-copy.soar
-source terminate-list-copy.soar

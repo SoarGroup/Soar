@@ -1,3 +1,0 @@
-pushd template-agent
-source template-agent_source.soar
-popd

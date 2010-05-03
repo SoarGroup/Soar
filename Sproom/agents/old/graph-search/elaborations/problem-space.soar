@@ -1,9 +1,0 @@
-sp {graph-search*elaborate*problem-space
-   (state <s> ^name go-to-location)
--->
-   (<s> ^problem-space <p>)
-   (<p> ^name graph-search
-        ^default-state-copy yes
-        ^two-level-attributes top-state
-       # ^dont-copy empty
-                            )}

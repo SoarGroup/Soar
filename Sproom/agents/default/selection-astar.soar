@@ -1,3 +1,0 @@
-pushd selection-astar
-source selection-astar_source.soar
-popd

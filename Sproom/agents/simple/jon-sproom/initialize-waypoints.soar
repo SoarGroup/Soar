@@ -1,6 +1,0 @@
-sp {jon-sproom*propose*initialize-waypoints
-   (state <s> ^name jon-sproom)
--->
-   (<s> ^operator <op> + =)
-   (<op> ^name initialize-waypoints)
-}

@@ -1,9 +1,0 @@
-sp {clean-house*propose*deposit-block
-   (state <s> ^name robot
-              ^current-location <ca>
-             -^no-storage-area yes
-              ^io.input-link.self.carry)
--->
-   (<s> ^operator <op> + =, >)
-   (<op> ^name deposit-block)
-}
