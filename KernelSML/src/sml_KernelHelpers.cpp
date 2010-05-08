@@ -170,7 +170,7 @@ char *symbolToString (Symbol *sym,
 	Bool rereadable, 
 	char *dest) 
 {
-	Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+	Bool possible_id, possible_var, possible_ic, possible_fc;
 	Bool is_rereadable;
 	Bool has_angle_bracket;
 
@@ -214,23 +214,15 @@ char *symbolToString (Symbol *sym,
 			strlen (sym->sc.name),
 			&possible_id,
 			&possible_var,
-			&possible_sc,
 			&possible_ic,
 			&possible_fc,
 			&is_rereadable);
 
-		has_angle_bracket = sym->sc.name[0] == '<' ||
-			sym->sc.name[strlen(sym->sc.name)-1] == '>';
-
-		if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-			(!is_rereadable) ||
-			has_angle_bracket) {
-				/* BUGBUG if in context where id's could occur, should check
-				possible_id flag here also */
-				return stringToEscapedString (sym->sc.name, '|', dest);
-			}
-			strcpy (dest, sym->sc.name);
-			return dest;
+		if ( possible_id || possible_var || possible_ic || possible_fc || !is_rereadable) {
+			return stringToEscapedString (sym->sc.name, '|', dest);
+		}
+		strcpy (dest, sym->sc.name);
+		return dest;
 
 	default:
 		{ 
