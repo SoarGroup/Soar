@@ -215,9 +215,8 @@ char const* symbol_to_typeString(agent* /*thisAgent*/, Symbol* sym)
 
 char *symbol_to_string (agent* thisAgent, Symbol *sym, 
 						Bool rereadable, char *dest, size_t dest_size) {
-  Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+  Bool possible_id, possible_var, possible_ic, possible_fc;
   Bool is_rereadable;
-  Bool has_angle_bracket;
 
   switch(sym->common.symbol_type) {
   case VARIABLE_SYMBOL_TYPE:
@@ -282,19 +281,13 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
                                                 strlen (sym->sc.name),
                                                 &possible_id,
                                                 &possible_var,
-                                                &possible_sc,
                                                 &possible_ic,
                                                 &possible_fc,
                                                 &is_rereadable);
 
-    has_angle_bracket = sym->sc.name[0] == '<' ||
-                        sym->sc.name[strlen(sym->sc.name)-1] == '>';
-
-    if ((!possible_sc)   || possible_var || possible_ic || possible_fc ||
-        (!is_rereadable) ||
-        has_angle_bracket) {
-      /* BUGBUG if in context where id's could occur, should check
-         possible_id flag here also */
+    if ( possible_var || possible_ic || possible_fc ||
+        (!is_rereadable) || possible_id)
+    {
       return string_to_escaped_string (thisAgent, sym->sc.name, '|', dest);
     }
     if (!dest) return sym->sc.name;
