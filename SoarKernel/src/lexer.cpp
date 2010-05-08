@@ -305,25 +305,22 @@ void read_rest_of_floating_point_number (agent* thisAgent) {
 }
 
 Bool determine_type_of_constituent_string (agent* thisAgent) {
-	Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
+	Bool possible_id, possible_var, possible_ic, possible_fc;
 	Bool rereadable;
 
 	determine_possible_symbol_types_for_string (thisAgent->lexeme.string,
 		thisAgent->lexeme.length,
 		&possible_id,
 		&possible_var,
-		&possible_sc,
 		&possible_ic,
 		&possible_fc,
 		&rereadable);
 
-	/* --- check whether it's a variable --- */
 	if (possible_var) {
 		thisAgent->lexeme.type = VARIABLE_LEXEME;
 		return TRUE;
 	}
 
-	/* --- check whether it's an integer --- */
 	if (possible_ic) {
 		errno = 0;
 		thisAgent->lexeme.type = INT_CONSTANT_LEXEME;
@@ -336,7 +333,6 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 		return (errno == 0);
 	}
 
-	/* --- check whether it's a floating point number --- */
 	if (possible_fc) {
 		errno = 0;
 		thisAgent->lexeme.type = FLOAT_CONSTANT_LEXEME;
@@ -349,7 +345,6 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 		return (errno == 0);
 	}
 
-	/* --- check if it's an identifier --- */
 	if (thisAgent->current_file->allow_ids && possible_id) {
 		// long term identifiers start with @
 		unsigned lti_index = 0;
@@ -369,64 +364,17 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 		return (errno == 0);
 	}
 
-	/* --- otherwise it must be a symbolic constant --- */
-	if (possible_sc) {
-		thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
-		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-			if (thisAgent->lexeme.string[0] == '<') {
-				if (thisAgent->lexeme.string[1] == '<') {
-					print (thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant\n");
-					print (thisAgent, "         If a disjunctive was intended, add a space after <<\n");
-					print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-
-					xml_generate_warning(thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space after &lt;&lt;\n         If a constant was intended, surround constant with vertical bars.");		   
-					//TODO: should this be appended to previous XML message, or should it be a separate message?
-					print_location_of_most_recent_lexeme(thisAgent);
-				} else {
-					print (thisAgent, "Warning: Possible variable encountered in reading symbolic constant\n");
-					print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-
-					xml_generate_warning(thisAgent, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
-					//TODO: should this be appended to previous XML message, or should it be a separate message?
-					print_location_of_most_recent_lexeme(thisAgent);
-				}
-			} else {
-				if (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') {
-					if (thisAgent->lexeme.string[thisAgent->lexeme.length-2] == '>') {
-						print (thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant\n");
-						print (thisAgent, "         If a disjunctive was intended, add a space before >>\n");
-						print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-
-						xml_generate_warning(thisAgent, "Warning: Possible disjunctive encountered in reading symbolic constant.\n         If a disjunctive was intended, add a space before &gt;&gt;\n         If a constant was intended, surround constant with vertical bars.");
-						//TODO: should this be appended to previous XML message, or should it be a separate message?
-						print_location_of_most_recent_lexeme(thisAgent);
-
-					} else {
-						print (thisAgent, "Warning: Possible variable encountered in reading symbolic constant\n");
-						print (thisAgent, "         If a constant was intended, surround constant with vertical bars\n");
-
-						xml_generate_warning(thisAgent, "Warning: Possible variable encountered in reading symbolic constant.\n         If a constant was intended, surround constant with vertical bars.");
-						//TODO: should this be appended to previous XML message, or should it be a separate message?
-						print_location_of_most_recent_lexeme(thisAgent);
-
-						// TODO:  generate tagged output in print_location_of_most_recent_lexeme
-					}
-				}
-			}
+	thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+	if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
+		if ( (thisAgent->lexeme.string[0] == '<') || 
+		     (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') )
+		{
+			print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", thisAgent->lexeme.string);
+			print_location_of_most_recent_lexeme(thisAgent);
+			xml_generate_warning(thisAgent, "Warning: Suspicious string constant");		   
 		}
-		return TRUE;
 	}
-
-	//#if defined(USE_TCL)
-	thisAgent->lexeme.type = QUOTED_STRING_LEXEME;
 	return TRUE;
-	//#else
-	//  char msg[BUFFER_MSG_SIZE];
-	//  strncpy (msg, "Internal error: can't determine_type_of_constituent_string\n", BUFFER_MSG_SIZE);
-	//  msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
-	//  abort_with_fatal_error(thisAgent, msg);
-	//  return FALSE;
-	//#endif
 }
 
 void do_fake_rparen (agent* thisAgent) {
@@ -1172,7 +1120,6 @@ void determine_possible_symbol_types_for_string (char *s,
 												 size_t length_of_s,
 												 Bool *possible_id, 
 												 Bool *possible_var, 
-												 Bool *possible_sc, 
 												 Bool *possible_ic, 
 												 Bool *possible_fc, 
 												 Bool *rereadable) {
@@ -1181,7 +1128,6 @@ void determine_possible_symbol_types_for_string (char *s,
 
 	*possible_id = FALSE;
 	*possible_var = FALSE;
-	*possible_sc = FALSE;
 	*possible_ic = FALSE;
 	*possible_fc = FALSE;
 	*rereadable = FALSE;
@@ -1211,7 +1157,7 @@ void determine_possible_symbol_types_for_string (char *s,
 
 	/* --- check for rereadability --- */
 	all_alphanum = TRUE;
-	for (ch=s; *ch!=0; ch++) {
+	for (ch=s; *ch!='\0'; ch++) {
 		if (!isalnum(*ch)) {
 			all_alphanum = FALSE;
 			break;
@@ -1224,9 +1170,6 @@ void determine_possible_symbol_types_for_string (char *s,
 		*rereadable = TRUE;
 	}
 
-	/* --- any string of constituents could be a sym constant --- */
-	*possible_sc = TRUE;
-
 	/* --- check whether it's a variable --- */
 	if ((*s=='<')&&(*(s+length_of_s-1)=='>')) *possible_var = TRUE;
 
@@ -1237,11 +1180,11 @@ void determine_possible_symbol_types_for_string (char *s,
 	} else {
 		ch = s;
 	}
-	if (isalpha(*ch)) {
+	if (isalpha(*ch) && *(++ch) != '\0') {
 		/* --- is the rest of the string an integer? --- */
-		ch += 1;
-		while (isdigit(*ch)) ch++;         /* string of digits */
-		if ((*ch==0)&&(isdigit(*(ch-1)))) *possible_id = TRUE;
+		while (isdigit(*ch)) ch++;
+		if (*ch=='\0')
+			*possible_id = TRUE;
 	}
 }
 
