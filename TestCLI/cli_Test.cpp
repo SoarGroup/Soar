@@ -304,6 +304,12 @@ bool CommandProcessor::ProcessLine(std::string& commandLine) {
 		g_pWaitForInput->TriggerEvent();
 		return true;
 	} 
+	if (commandLine == "getpid") {
+		std::cout << getpid() << std::endl;
+		DisplayPrompt(true);
+		g_pWaitForInput->TriggerEvent();
+		return true;
+	} 
 	if (commandLine == "getport") {
 		std::cout << pKernel->GetListenerPort() << std::endl;
 		DisplayPrompt(true);
