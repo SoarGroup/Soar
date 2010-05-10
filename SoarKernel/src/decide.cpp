@@ -1748,11 +1748,11 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 						/* If the goal pointer is non-NIL, then goal is in the stack */
 						if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
 						{
-							print(thisAgent, "\nRemoving state S%d because element in GDS changed.", w->gds->goal->id.name_number);
+							print(thisAgent, "\nRemoving state S%ld because element in GDS changed.", w->gds->goal->id.name_number);
 							print(thisAgent, " WME: "); 
 
 							char buf[256];
-							SNPRINTF(buf, 254, "Removing state S%d because element in GDS changed.", w->gds->goal->id.name_number);
+							SNPRINTF(buf, 254, "Removing state S%ld because element in GDS changed.", w->gds->goal->id.name_number);
 							xml_begin_tag(thisAgent, kTagVerbose);
 							xml_att_val(thisAgent, kTypeString, buf);
 							print_wme(thisAgent, w);
