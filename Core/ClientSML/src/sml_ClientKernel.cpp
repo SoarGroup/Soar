@@ -730,7 +730,7 @@ Kernel* Kernel::CreateRemoteConnection(bool sharedFileSystem, char const* pIPadd
 	sock::SocketLib* pLib = new sock::SocketLib() ;
 
 	// Connect to the remote socket
-	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, static_cast<unsigned short>(port), &errorCode) ;
+	Connection* pConnection = Connection::CreateRemoteConnection(sharedFileSystem, pIPaddress, port, &errorCode) ;
 
 	// Even if pConnection is NULL, we still build a kernel object, so we have
 	// a clean way to pass the error code back to the caller.
