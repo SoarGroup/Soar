@@ -4,14 +4,14 @@
  * Purpose:     Compiler feature discrimination for Visual C++.
  *
  * Created:     7th February 2003
- * Updated:     21st July 2009
+ * Updated:     9th March 2010
  *
  * Thanks:      To Cláudio Albuquerque for working on the
  *              Win64-compatibility.
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2003-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2003-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -63,9 +63,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_MAJOR     3
-# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_MINOR     20
+# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_MINOR     21
 # define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_REVISION  1
-# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_EDIT      111
+# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_EDIT      115
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -259,9 +259,11 @@
 # define STLSOFT_CF_RTTI_SUPPORT
 #endif /* _CPPRTTI */
 
-#if _MSC_VER >= 1020
-# define STLSOFT_CF_NAMESPACE_SUPPORT
-#endif /* compiler */
+#ifdef __cplusplus
+# if _MSC_VER >= 1020
+#  define STLSOFT_CF_NAMESPACE_SUPPORT
+# endif /* compiler */
+#endif /* __cplusplus */
 
 #if _MSC_VER < 1100
  /* Since Visual C++ 4.2 and earlier do not correctly support using declarations
@@ -605,7 +607,7 @@
 /*  */
 #if (   _MSC_VER >= 1100 && \
         _MSC_VER < 1310) || \
-    _MSC_VER == 1500
+    _MSC_VER >= 1500
 # define STLSOFT_CF_FUNCTION_SIGNATURE_FULL_ARG_QUALIFICATION_REQUIRED
 #endif /* compiler */
 
@@ -685,7 +687,7 @@
 #else /* ? _STLSOFT_CUSTOM_ASSERT */
 # define __STLSOFT_CF_ASSERT_SUPPORT
 # define STLSOFT_CF_ASSERT_SUPPORT
- //#define   __STLSOFT_CF_USE_cassert
+ /* #define   __STLSOFT_CF_USE_cassert */
 # define __STLSOFT_CF_ASSERT_INCLUDE_NAME       <crtdbg.h>
 # define STLSOFT_ASSERT(_x)                     _ASSERTE(_x)
 #endif /* _STLSOFT_CUSTOM_ASSERT */
@@ -719,7 +721,7 @@
 # pragma warning(disable : 4237)
 #endif /* compiler */
 
-/* Suppresses: "C++ Exception Specification ignored" */
+/* Suppresses: "return type for 'identifier::operator ->' is not a UDT or reference to a UDT. Will produce errors if applied using infix notation" */
 #if _MSC_VER < 1300
 # pragma warning(disable : 4284)
 #endif /* compiler */
@@ -774,16 +776,17 @@
 
 #if _MSC_VER < 1300
 # ifdef __cplusplus
-#  include <functional>  // This is included so we get past the MSVC promotion of 4663 before we then disable it again
+#  include <functional>  /* This is included so we get past the MSVC promotion of 4663 before we then disable it again */
 # endif /* __cplusplus */
 # pragma warning(disable : 4663)
 # ifdef __cplusplus
-#  include <utility>     // This is included so we get past the MSVC promotion of 4284 before we then disable it again
+#  include <utility>     /* This is included so we get past the MSVC promotion of 4284 before we then disable it again */
 # endif /* __cplusplus */
 # pragma warning(disable : 4284)
 #endif /* compiler */
 
 #if _MSC_VER < 1300 && \
+    defined(__cplusplus) && \
     defined(_DEBUG)
 # include <cstddef>
 # ifdef _XSTDDEF_
