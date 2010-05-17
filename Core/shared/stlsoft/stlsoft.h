@@ -6,11 +6,11 @@
  *              types.
  *
  * Created:     15th January 2002
- * Updated:     10th August 2009
+ * Updated:     3rd April 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2002-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2002-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,9 +53,9 @@
 /* File version */
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_H_STLSOFT_MAJOR    3
-# define STLSOFT_VER_STLSOFT_H_STLSOFT_MINOR    21
-# define STLSOFT_VER_STLSOFT_H_STLSOFT_REVISION 7
-# define STLSOFT_VER_STLSOFT_H_STLSOFT_EDIT     394
+# define STLSOFT_VER_STLSOFT_H_STLSOFT_MINOR    22
+# define STLSOFT_VER_STLSOFT_H_STLSOFT_REVISION 3
+# define STLSOFT_VER_STLSOFT_H_STLSOFT_EDIT     404
 #else /* ? STLSOFT_DOCUMENTATION_SKIP_SECTION */
 /* # include "./internal/doxygen_defs.h" */
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
@@ -251,12 +251,21 @@
 # define _STLSOFT_VER_1_9_85    0x010955ff  /*!< Version 1.9.85 (16th June 2009) */
 # define _STLSOFT_VER_1_9_86    0x010956ff  /*!< Version 1.9.86 (21st July 2009) */
 # define _STLSOFT_VER_1_9_87    0x010957ff  /*!< Version 1.9.87 (10th August 2009) */
+# define _STLSOFT_VER_1_9_88    0x010958ff  /*!< Version 1.9.88 (12th January 2010) */
+# define _STLSOFT_VER_1_9_89    0x010959ff  /*!< Version 1.9.89 (19th January 2010) */
+# define _STLSOFT_VER_1_9_90    0x01095aff  /*!< Version 1.9.90 (21st January 2010) */
+# define _STLSOFT_VER_1_9_91    0x01095bff  /*!< Version 1.9.91 (30th January 2010) */
+# define _STLSOFT_VER_1_9_92    0x01095cff  /*!< Version 1.9.92 (11th February 2010) */
+# define _STLSOFT_VER_1_9_93    0x01095dff  /*!< Version 1.9.93 (14th February 2010) */
+# define _STLSOFT_VER_1_9_95    0x01095fff  /*!< Version 1.9.95 (7th March 2010) */
+# define _STLSOFT_VER_1_9_96    0x010960ff  /*!< Version 1.9.96 (10th March 2010) */
+# define _STLSOFT_VER_1_9_97    0x010961ff  /*!< Version 1.9.97 (3rd April 2010) */
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 #define _STLSOFT_VER_MAJOR      1
 #define _STLSOFT_VER_MINOR      9
-#define _STLSOFT_VER_REVISION   87
-#define _STLSOFT_VER            _STLSOFT_VER_1_9_87
+#define _STLSOFT_VER_REVISION   97
+#define _STLSOFT_VER            _STLSOFT_VER_1_9_97
 
 /* /////////////////////////////////////////////////////////////////////////
  * Basic macros
@@ -618,8 +627,10 @@
 #  define STLSOFT_COMPILER_VERSION_STRING       "Visual C++ 8.0"
 # elif (_MSC_VER == 1500)
 #  define STLSOFT_COMPILER_VERSION_STRING       "Visual C++ 9.0"
+# elif (_MSC_VER == 1600)
+#  define STLSOFT_COMPILER_VERSION_STRING       "Visual C++ 10.0"
 # else /* ? _MSC_VER */
-#  error Currently only versions 5.0, 6.0, 7.0, 7.1, 8.0 and 9.0 of the Visual C++ compiler are supported by the STLSoft libraries
+#  error Currently only versions 5.0, 6.0, 7.0, 7.1, 8.0, 9.0 and 10.0 of the Visual C++ compiler are supported by the STLSoft libraries
 # endif /* _MSC_VER */
 
 #else /* ? compiler */

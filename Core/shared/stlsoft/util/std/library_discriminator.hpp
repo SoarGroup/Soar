@@ -4,11 +4,11 @@
  * Purpose:     Discriminates between standard library implementations
  *
  * Created:     2nd January 2000
- * Updated:     10th August 2009
+ * Updated:     22nd March 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2000-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2000-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,9 +50,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_MAJOR       4
-# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_MINOR       5
-# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_REVISION    1
-# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_EDIT        100
+# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_MINOR       6
+# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_REVISION    2
+# define STLSOFT_VER_STLSOFT_UTIL_STD_LIBRARY_DISCRIMINATOR_EDIT        102
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -115,8 +115,8 @@ namespace stlsoft
  * of the dinkumware libraries:
  *
  * VC++ 4.2: use_ansi.h, utility { use_ansi.h, iosfwd { use_ansi.h, cstdio { stdio.h }, cstring { string.h }, cwchar { wchar.h }, xstddef { yvals.h, cstddef { stddef.h } } } }
- * VC++ 5.0: utility { iosfwd { cstdio, cstring, cwchar, xstddef { yvals.h, cstddef } } }
- * VC++ 6.0: utility { iosfwd { cstdio, cstring, cwchar, xstddef { yvals.h, cstddef } } }
+ * VC++ 5:   utility { iosfwd { cstdio, cstring, cwchar, xstddef { yvals.h, cstddef } } }
+ * VC++ 6:   utility { iosfwd { cstdio, cstring, cwchar, xstddef { yvals.h, cstddef } } }
  * VC++ 7.0: xutility { climits, utility { iosfwd { cstdio, cstring, cwchar, xstddef { yvals.h, cstddef } } }
  * VC++ 7.1: xutility { climits, utility { iosfwd { cstdio, cstring, cwchar, xstddef { yvals.h, cstddef } } }
  *
@@ -244,20 +244,26 @@ namespace stlsoft
 # error Standard library implementation not recognised
 #endif /* various "unique" macros */
 
-/* Detecting presence of Dinkumware is easy. Now comes the fun when we need to differentiate
- * between versions of the library, because there is no version information contained in any
- * of the headers, which is helpful.
+/* Detecting presence of Dinkumware is easy. Now comes the fun when we need
+ * to differentiate between versions of the library, because there is no
+ * version information contained in any of the headers, which is helpful.
  *
- * _STCONS is in 5.0, 6.0, 7.0, 7.1, but is not in 4.2
- * _TEMPLATE_MEMBER is in 7.0, but not in 4.2, 5.0, 6.0, 7.1
- * _TEMPLATE is in 7.0, but not in 4.2, 5.0, 6.0, 7.1
- * _MESG is in 7.0 and 7.1, but not in 4.2, 5.0, 5.6
+ * _STCONS               in      5, 6, 7.0, 7.1, 8,  9,    10
+ * _TEMPLATE_MEMBER      in            7.0
+ * _TEMPLATE             in            7.0
+ * _MESG                 in            7.0, 7.1, 8,  9
+ * _HAS_EXCEPTIONS       in            7.0, 7.1, 8,  9,    10
+ * _EMPTY_ARGUMENT       in                      8,  9,    10
+ * _THROWS               in                          9,    10
+ * _IS_YES               in                          (9),  10
  *
- * _XTREE_ is in 6.0, 7.0, 7.1, but not in 4.2, 5.0. Of course, this means including it, which is a PITA!
+ * _CPPLIB_VER           in      -  -  310  313  405 503/5 520
  *
- * _INC_ASSERT (from assert.h) is in 6.0, but not in 4.2, 5.0, 7.0, 7.1. This one is even
- * dodgier than the rest, since if _STLSOFT_NO_ASSERT is specified, asserts will not even
- * be included.
+ * _XTREE_ is in 6, 7.0, 7.1, but not in 4.2, 5. Of course, this means including it, which is a PITA!
+ *
+ * _INC_ASSERT (from assert.h) is in 6, but not in 4.2, 5, 7.0, 7.1. This
+ * one is even dodgier than the rest, since if _STLSOFT_NO_ASSERT is
+ * specified, asserts will not even be included.
  */
 
 #ifdef STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION
@@ -270,6 +276,9 @@ namespace stlsoft
 #define STLSOFT_CF_DINKUMWARE_VC_VERSION_6_0            (0x0600)
 #define STLSOFT_CF_DINKUMWARE_VC_VERSION_7_0            (0x0700)
 #define STLSOFT_CF_DINKUMWARE_VC_VERSION_7_1            (0x0701)
+#define STLSOFT_CF_DINKUMWARE_VC_VERSION_8_0            (0x0800)
+#define STLSOFT_CF_DINKUMWARE_VC_VERSION_9_0            (0x0900)
+#define STLSOFT_CF_DINKUMWARE_VC_VERSION_10_0           (0x0a00)
 
 #ifdef STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_VC
 # if defined(STLSOFT_COMPILER_IS_INTEL) && \
@@ -281,32 +290,147 @@ namespace stlsoft
 #  error When the Dinkumware-VC library is used, STLSoft requires that Visual C++ or a compatible compiler (e.g. DMC++, Comeau, CodeWarrior, Intel) is used
 # endif /* compiler */
 
-# if !defined(_STCONS)
-  /* Version 4.2 */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_4_2
-# elif defined(_TEMPLATE_MEMBER) && \
-       defined(_TEMPLATE)
-  /* Version 7.0 */
-#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_7_0
-# elif defined(_MESG)
+# if \
+    defined(_STCONS) && \
+    !defined(_TEMPLATE_MEMBER) && \
+    !defined(_TEMPLATE) && \
+    !defined(_MESG) && \
+    defined(_HAS_EXCEPTIONS) && \
+    defined(_EMPTY_ARGUMENT) && \
+    defined(_THROWS) && \
+    defined(_IS_YES)
+#  if _CPPLIB_VER < 520
+  /* Version 9 */
+  /*
+   * This is a bit of a hack. We've seen that some VC++ 9 versions - 
+   * apparently SP1, though I've been unable to replicate - have _IS_YES
+   * defined, so will instead go on _CPPLIB_VER. Even that's somewhat of a
+   * guess though. As far as I've been able to determine, the versions out
+   * in the wild for 9 are 503 and 505 and for 10 is 520. This may not be
+   * exhaustive, and further changes may be required.
+   */
+#   ifdef _STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 9")
+#   endif /* _STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_9_0
+#  else /* ? _CPPLIB_VER */
+  /* Version 10 */
+#   ifdef _STLSOFT_COMPILE_VERBOSE
+#    pragma message("  Dinkumware version 10")
+#   endif /* _STLSOFT_COMPILE_VERBOSE */
+#   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_10_0
+#  endif /* _CPPLIB_VER */
+
+# elif \
+    defined(_STCONS) && \
+    !defined(_TEMPLATE_MEMBER) && \
+    !defined(_TEMPLATE) && \
+    defined(_MESG) && \
+    defined(_HAS_EXCEPTIONS) && \
+    defined(_EMPTY_ARGUMENT) && \
+    defined(_THROWS) && \
+    !defined(_IS_YES)
+  /* Version 9 */
+#  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version 9")
+#  endif /* _STLSOFT_COMPILE_VERBOSE */
+#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_9_0
+
+# elif \
+    defined(_STCONS) && \
+    !defined(_TEMPLATE_MEMBER) && \
+    !defined(_TEMPLATE) && \
+    defined(_MESG) && \
+    defined(_HAS_EXCEPTIONS) && \
+    defined(_EMPTY_ARGUMENT) && \
+    !defined(_THROWS) && \
+    !defined(_IS_YES)
+  /* Version 8 */
+#  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version 8")
+#  endif /* _STLSOFT_COMPILE_VERBOSE */
+#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_8_0
+
+# elif \
+    defined(_STCONS) && \
+    !defined(_TEMPLATE_MEMBER) && \
+    !defined(_TEMPLATE) && \
+    defined(_MESG) && \
+    defined(_HAS_EXCEPTIONS) && \
+    !defined(_EMPTY_ARGUMENT) && \
+    !defined(_THROWS) && \
+    !defined(_IS_YES)
   /* Version 7.1 */
+#  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version 7.1")
+#  endif /* _STLSOFT_COMPILE_VERBOSE */
 #  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_7_1
-# elif defined(_STCONS)
-  /* Version 5.0 or 6.0
+
+# elif \
+    defined(_STCONS) && \
+    defined(_TEMPLATE_MEMBER) && \
+    defined(_TEMPLATE) && \
+    defined(_MESG) && \
+    defined(_HAS_EXCEPTIONS) && \
+    !defined(_EMPTY_ARGUMENT) && \
+    !defined(_THROWS) && \
+    !defined(_IS_YES)
+  /* Version 7.0 */
+#  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version 7.0")
+#  endif /* _STLSOFT_COMPILE_VERBOSE */
+#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_7_0
+
+# elif \
+    !defined(_STCONS) && \
+    !defined(_TEMPLATE_MEMBER) && \
+    !defined(_TEMPLATE) && \
+    !defined(_MESG) && \
+    !defined(_HAS_EXCEPTIONS) && \
+    !defined(_EMPTY_ARGUMENT) && \
+    !defined(_THROWS) && \
+    !defined(_IS_YES)
+  /* Version 4.2 */
+#  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version 4.2")
+#  endif /* _STLSOFT_COMPILE_VERBOSE */
+#  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_4_2
+
+# elif\
+    defined(_STCONS) && \
+    !defined(_TEMPLATE_MEMBER) && \
+    !defined(_TEMPLATE) && \
+    !defined(_MESG) && \
+    !defined(_HAS_EXCEPTIONS) && \
+    !defined(_EMPTY_ARGUMENT) && \
+    !defined(_THROWS) && \
+    !defined(_IS_YES)
+  /* Versions 5 or 6
    *
    * Need to skip out of the STLSoft namespace, then #include <xtree>, skip back in and then
    * test for
    */
+
+#  if _MSC_VER < 1100 || \
+      _MSC_VER > 1200
+#   error Dinkumware library version discrimination failed
+#  endif /* 1100 <= _MSC_VER < = 1200 */
 
 #  ifndef _STLSOFT_NO_NAMESPACE
 } // namespace stlsoft
 #  endif /* _STLSOFT_NO_NAMESPACE */
 #  include <xtree>
 #  if defined(_XTREE_)
-  /* Version 6.0 */
+  /* Version 6 */
+  #  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version 6")
+  #  endif /* _STLSOFT_COMPILE_VERBOSE */
 #   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION     STLSOFT_CF_DINKUMWARE_VC_VERSION_6_0
 #  elif defined(_TREE_)
-  /* Version 5.0 */
+  /* Version 5 */
+  #  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version 5")
+  #  endif /* _STLSOFT_COMPILE_VERBOSE */
 #   define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION     STLSOFT_CF_DINKUMWARE_VC_VERSION_5_0
 #  else
 #   error Does not appear to be either the VC5 or VC6 Dinkumware library
@@ -316,10 +440,12 @@ namespace stlsoft
 {
 #  endif /* _STLSOFT_NO_NAMESPACE */
 # else
+#  ifdef _STLSOFT_COMPILE_VERBOSE
+#   pragma message("  Dinkumware version unknown")
+#  endif /* _STLSOFT_COMPILE_VERBOSE */
 #  define STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION      STLSOFT_CF_DINKUMWARE_VC_VERSION_UNKNOWN
 # endif /* VC++ version */
 #endif /* STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_VC */
-
 
 /* /////////////////////////////////////////////////////////////////////////
  * Tested compatibilities

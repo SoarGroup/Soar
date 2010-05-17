@@ -4,7 +4,7 @@
  * Purpose:     WinSTL thread-time performance counter class.
  *
  * Created:     22nd March 2002
- * Updated:     10th August 2009
+ * Updated:     4th September 2009
  *
  * Home:        http://stlsoft.org/
  *
@@ -51,8 +51,8 @@
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_MAJOR    4
 # define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_MINOR    0
-# define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_REVISION 2
-# define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_EDIT     46
+# define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_REVISION 3
+# define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_EDIT     47
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -191,6 +191,9 @@ public:
     /// This represents the extent, in whole microseconds, of the measurement period
     interval_type   get_microseconds() const;
 
+private: /// Implementation
+    static epoch_type convert_(FILETIME const& ft);
+
 // Members
 private:
     epoch_type  m_kernelStart;
@@ -212,6 +215,17 @@ private:
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 
+inline /* static */ threadtimes_counter::epoch_type threadtimes_counter::convert_(FILETIME const& ft)
+{
+    epoch_type r = ft.dwHighDateTime;
+
+    r <<= 32;
+
+    r += ft.dwLowDateTime;
+
+    return r;
+}
+
 inline threadtimes_counter::threadtimes_counter()
     : m_thread(::GetCurrentThread())
 {
@@ -225,16 +239,46 @@ inline void threadtimes_counter::start()
 {
     FILETIME    creationTime;
     FILETIME    exitTime;
+    FILETIME    kernelTime;
+    FILETIME    userTime;
 
-    ::GetThreadTimes(m_thread, &creationTime, &exitTime, reinterpret_cast<LPFILETIME>(&m_kernelStart), reinterpret_cast<LPFILETIME>(&m_userStart));
+    if(!::GetThreadTimes(m_thread, &creationTime, &exitTime, &kernelTime, &userTime))
+    {
+        m_kernelStart   =   0;
+        m_userStart     =   0;
+
+#ifdef STLSOFT_CF_EXCEPTION_SUPPORT
+        ; // TODO: throw
+#endif /* STLSOFT_CF_EXCEPTION_SUPPORT */
+    }
+    else
+    {
+        m_kernelStart   =   convert_(kernelTime);
+        m_userStart     =   convert_(userTime);
+    }
 }
 
 inline void threadtimes_counter::stop()
 {
     FILETIME    creationTime;
     FILETIME    exitTime;
+    FILETIME    kernelTime;
+    FILETIME    userTime;
 
-    ::GetThreadTimes(m_thread, &creationTime, &exitTime, reinterpret_cast<LPFILETIME>(&m_kernelEnd), reinterpret_cast<LPFILETIME>(&m_userEnd));
+    if(!::GetThreadTimes(m_thread, &creationTime, &exitTime, &kernelTime, &userTime))
+    {
+        m_kernelEnd     =   0;
+        m_userEnd       =   0;
+
+#ifdef STLSOFT_CF_EXCEPTION_SUPPORT
+        ; // TODO: throw
+#endif /* STLSOFT_CF_EXCEPTION_SUPPORT */
+    }
+    else
+    {
+        m_kernelEnd     =   convert_(kernelTime);
+        m_userEnd       =   convert_(userTime);
+    }
 }
 
 // Attributes

@@ -5,11 +5,11 @@
  *              and platform discriminations, and definitions of types.
  *
  * Created:     15th January 2002
- * Updated:     10th August 2009
+ * Updated:     5th February 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2002-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2002-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,8 +47,8 @@
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define UNIXSTL_VER_UNIXSTL_H_UNIXSTL_MAJOR    3
 # define UNIXSTL_VER_UNIXSTL_H_UNIXSTL_MINOR    7
-# define UNIXSTL_VER_UNIXSTL_H_UNIXSTL_REVISION 1
-# define UNIXSTL_VER_UNIXSTL_H_UNIXSTL_EDIT     88
+# define UNIXSTL_VER_UNIXSTL_H_UNIXSTL_REVISION 2
+# define UNIXSTL_VER_UNIXSTL_H_UNIXSTL_EDIT     89
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /** \file unixstl/unixstl.h \brief [C, C++] The root header for the \ref group__project__unixstl "UNIXSTL" project. */
@@ -123,13 +123,14 @@
 # define _UNIXSTL_VER_1_6_7     0x010607ff  /*!< Version 1.6.7 (with STLSoft 1.9.31) */
 # define _UNIXSTL_VER_1_6_8     0x010608ff  /*!< Version 1.6.8 (with STLSoft 1.9.32) */
 # define _UNIXSTL_VER_1_7_1     0x010701ff  /*!< Version 1.7.1 (with STLSoft 1.9.33) */
-# define _UNIXSTL_VER_1_7_2     0x010702ff  /*!< Version 1.7.1 (with STLSoft 1.9.37) */
+# define _UNIXSTL_VER_1_7_2     0x010702ff  /*!< Version 1.7.2 (with STLSoft 1.9.37) */
+# define _UNIXSTL_VER_1_7_3     0x010703ff  /*!< Version 1.7.2 (with STLSoft 1.9.92) */
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 #define _UNIXSTL_VER_MAJOR      1
 #define _UNIXSTL_VER_MINOR      7
-#define _UNIXSTL_VER_REVISION   2
-#define _UNIXSTL_VER            _UNIXSTL_VER_1_7_2
+#define _UNIXSTL_VER_REVISION   3
+#define _UNIXSTL_VER            _UNIXSTL_VER_1_7_3
 
 /* /////////////////////////////////////////////////////////////////////////
  * Includes
@@ -144,8 +145,8 @@
  */
 
 #if !defined(_STLSOFT_VER) || \
-    _STLSOFT_VER < 0x010925ff
-# error This version of the UNIXSTL libraries requires STLSoft version 1.9.37, or later
+    _STLSOFT_VER < 0x01095cff
+# error This version of the UNIXSTL libraries requires STLSoft version 1.9.92, or later
 #endif /* _STLSOFT_VER */
 
 /* /////////////////////////////////////////////////////////////////////////
