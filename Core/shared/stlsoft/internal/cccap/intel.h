@@ -4,14 +4,14 @@
  * Purpose:     Compiler feature discrimination for Intel C/C++.
  *
  * Created:     7th February 2003
- * Updated:     21st July 2009
+ * Updated:     14th February 2010
  *
  * Thanks:      To Derek Baikie for working on the
  *              Win64-compatibility.
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2003-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2003-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -64,8 +64,8 @@
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define  STLSOFT_VER_H_STLSOFT_CCCAP_INTEL_MAJOR       3
 # define  STLSOFT_VER_H_STLSOFT_CCCAP_INTEL_MINOR       18
-# define  STLSOFT_VER_H_STLSOFT_CCCAP_INTEL_REVISION    1
-# define  STLSOFT_VER_H_STLSOFT_CCCAP_INTEL_EDIT        77
+# define  STLSOFT_VER_H_STLSOFT_CCCAP_INTEL_REVISION    2
+# define  STLSOFT_VER_H_STLSOFT_CCCAP_INTEL_EDIT        78
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -279,7 +279,9 @@
 # define STLSOFT_CF_RTTI_SUPPORT
 #endif /* _CPPRTTI */
 
-#define STLSOFT_CF_NAMESPACE_SUPPORT
+#ifdef __cplusplus
+# define STLSOFT_CF_NAMESPACE_SUPPORT
+#endif /* __cplusplus */
 
 /*
 # define _STLSOFT_NO_NAMESPACES
