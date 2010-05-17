@@ -5,11 +5,11 @@
  *              abstracting away standard library inconsistencies.
  *
  * Created:     2nd January 2000
- * Updated:     10th August 2009
+ * Updated:     9th March 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2000-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2000-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,9 +51,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_UTIL_STD_HPP_ITERATOR_HELPER_MAJOR     5
-# define STLSOFT_VER_STLSOFT_UTIL_STD_HPP_ITERATOR_HELPER_MINOR     2
+# define STLSOFT_VER_STLSOFT_UTIL_STD_HPP_ITERATOR_HELPER_MINOR     3
 # define STLSOFT_VER_STLSOFT_UTIL_STD_HPP_ITERATOR_HELPER_REVISION  1
-# define STLSOFT_VER_STLSOFT_UTIL_STD_HPP_ITERATOR_HELPER_EDIT      107
+# define STLSOFT_VER_STLSOFT_UTIL_STD_HPP_ITERATOR_HELPER_EDIT      109
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -423,8 +423,14 @@ namespace stlsoft
  /* Borland C++ + Dinkumware */
 #  define STLSOFT_ITERATOR_REVERSE_ITERATOR_FORM1_SUPPORT
 # elif defined(STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_VC) && \
-       (   STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_7_0 || \
-           STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_7_1)
+       ( \
+           STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_7_0 || \
+           STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_7_1 || \
+           STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_8_0 || \
+           STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_9_0 || \
+           STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_10_0 || \
+           0 \
+       )
  /* Visual C++ + Dinkumware */
 #  define STLSOFT_ITERATOR_REVERSE_ITERATOR_FORM1_SUPPORT
 # endif /* compiler / library */
@@ -441,9 +447,12 @@ namespace stlsoft
 
 /* Form 3 */
 # if defined(STLSOFT_CF_STD_LIBRARY_IS_DINKUMWARE_VC) && \
-     (   STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_4_2 || \
+     ( \
+         STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_4_2 || \
          STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_5_0 || \
-         STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_6_0)
+         STLSOFT_CF_STD_LIBRARY_DINKUMWARE_VC_VERSION == STLSOFT_CF_DINKUMWARE_VC_VERSION_6_0 || \
+         0 \
+     )
  /* Visual C++ + Dinkumware */
 #  define STLSOFT_ITERATOR_REVERSE_ITERATOR_FORM3_SUPPORT
 # endif /* compiler / library */
@@ -726,7 +735,52 @@ public:
     ss_explicit_k const_reverse_iterator_base(I i)
         : parent_class_type(i)
     {}
+
+    // This constructor facilitates conversion from mutable (non-const)
+    // reverse iterators
+    template<   ss_typename_param_k I2
+            ,   ss_typename_param_k V2
+            ,   ss_typename_param_k R2
+            ,   ss_typename_param_k P2
+            ,   ss_typename_param_k D2
+            >
+    const_reverse_iterator_base(reverse_iterator_base<I2, V2, R2, P2, D2> const& rhs)
+        : parent_class_type(rhs.base())
+    {}
 };
+
+template<   ss_typename_param_k I1, ss_typename_param_k V1, ss_typename_param_k R1, ss_typename_param_k P1, ss_typename_param_k D
+        ,   ss_typename_param_k I2, ss_typename_param_k V2, ss_typename_param_k R2, ss_typename_param_k P2
+        >
+inline bool operator !=(
+    const_reverse_iterator_base<I1, V1, R1, P1, D> const&   lhs
+,   reverse_iterator_base<I2, V2, R2, P2, D> const&         rhs
+)
+{
+    return lhs.base() != rhs.base();
+}
+
+template<   ss_typename_param_k I1, ss_typename_param_k V1, ss_typename_param_k R1, ss_typename_param_k P1, ss_typename_param_k D
+        ,   ss_typename_param_k I2, ss_typename_param_k V2, ss_typename_param_k R2, ss_typename_param_k P2
+        >
+inline bool operator !=(
+    reverse_iterator_base<I1, V1, R1, P1, D> const&         lhs
+,   const_reverse_iterator_base<I2, V2, R2, P2, D> const&   rhs
+)
+{
+    return lhs.base() != rhs.base();
+}
+
+template<   ss_typename_param_k I1, ss_typename_param_k V1, ss_typename_param_k R1, ss_typename_param_k P1, ss_typename_param_k D
+        >
+inline bool operator !=(
+    const_reverse_iterator_base<I1, V1, R1, P1, D> const&   lhs
+,   const_reverse_iterator_base<I1, V1, R1, P1, D> const&   rhs
+)
+{
+    return lhs.base() != rhs.base();
+}
+
 
 // class reverse_bidirectional_iterator_base
 /** \brief Base type for <b><code>reverse_bidirectional_iterator</code></b> types

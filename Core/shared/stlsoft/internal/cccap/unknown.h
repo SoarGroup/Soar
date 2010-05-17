@@ -4,11 +4,11 @@
  * Purpose:     Compiler feature discrimination for unknown compilers.
  *
  * Created:     7th February 2003
- * Updated:     21st July 2009
+ * Updated:     14th February 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2003-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2003-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,9 +56,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_H_STLSOFT_CCCAP_UNKNOWN_MAJOR      3
-# define STLSOFT_VER_H_STLSOFT_CCCAP_UNKNOWN_MINOR      15
+# define STLSOFT_VER_H_STLSOFT_CCCAP_UNKNOWN_MINOR      16
 # define STLSOFT_VER_H_STLSOFT_CCCAP_UNKNOWN_REVISION   2
-# define STLSOFT_VER_H_STLSOFT_CCCAP_UNKNOWN_EDIT       65
+# define STLSOFT_VER_H_STLSOFT_CCCAP_UNKNOWN_EDIT       67
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@
 */
 
 /* /////////////////////////////////////////////////////////////////////////
- * Compiler features
+ * Pre-processing features
  */
 
 /* Messaging
@@ -89,12 +89,25 @@
 
 /* #define STLSOFT_CF_FUNCTION_SYMBOL_SUPPORT */
 
+/* /////////////////////////////////////////////////////////////////////////
+ * C/C++ Language features
+ */
+
 /* Variadic Macros
  */
 
 #define STLSOFT_CF_SUPPORTS_VARIADIC_MACROS
 
-/* Types:
+/* Anonymous unions
+ */
+#define STLSOFT_CF_ANONYMOUS_UNION_SUPPORT
+
+/* "return void;"
+ */
+#define STLSOFT_CF_COMPILER_SUPPORTS_RETURN_VOID
+
+/* /////////////////////////////////////////////////////////////////////////
+ * Types
  */
 
 /* bool */
@@ -116,7 +129,7 @@
 /* ////////////////////////////////////////////////////////////////////// */
 /* ////////////////////////////////////////////////////////////////////// */
 
-/* /////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////
  * Integral types
  *
  * The purpose of this section is to define the following types:
@@ -174,41 +187,88 @@
 #define STLSOFT_UI64_T_BASE_TYPE    unsigned    long long
 
 
+/* /////////////////////////////////////////////////////////////////////////
+ * C++ Language Features
+ */
 
-#define STLSOFT_CF_STATIC_ASSERT_SUPPORT
+/* ///////////////////////////////////////////////
+ * Miscellaneous
+ */
 
-/* RTTI support */
+/* Does the compiler support Argument-Dependent Lookup? */
+#define STLSOFT_CF_ADL_LOOKUP_SUPPORT
+
+/* ///////////////////////////////////////////////
+ * Static array size determination
+ */
+#define STLSOFT_CF_STATIC_ARRAY_SIZE_DETERMINATION_SUPPORT
+
+/* ///////////////////////////////////////////////
+ * C++-98 keywords support
+ */
+
+#define STLSOFT_CF_EXPLICIT_KEYWORD_SUPPORT
+
+#define STLSOFT_CF_MUTABLE_KEYWORD_SUPPORT
+
+#define STLSOFT_CF_TYPENAME_PARAM_KEYWORD_SUPPORT
+
+#define STLSOFT_CF_TYPENAME_TYPE_KEYWORD_SUPPORT
+
+#define STLSOFT_CF_TYPENAME_TYPE_DEF_KEYWORD_SUPPORT
+
+#define STLSOFT_CF_TYPENAME_TYPE_MIL_KEYWORD_SUPPORT
+
+#define STLSOFT_CF_TYPENAME_TYPE_RET_KEYWORD_SUPPORT
+
+/* ///////////////////////////////////////////////
+ * RTTI support
+ */
+
 #ifdef __cplusplus
 # define STLSOFT_CF_RTTI_SUPPORT
 #endif /* __cplusplus */
 
-/* Exception support */
+/* ///////////////////////////////////////////////
+ * Exception support
+ */
+
 #ifdef __cplusplus
 # define STLSOFT_CF_EXCEPTION_SUPPORT
 #endif /* __cplusplus */
-
-/*  */
-#define STLSOFT_CF_FUNCTION_SIGNATURE_FULL_ARG_QUALIFICATION_REQUIRED
-
-/* Namespace support */
-/* #define _STLSOFT_NO_NAMESPACES */
-
-#define STLSOFT_CF_NAMESPACE_SUPPORT
-
-#define STLSOFT_CF_ANONYMOUS_UNION_SUPPORT
-
-#define STLSOFT_CF_COMPILER_SUPPORTS_RETURN_VOID
-
-/* Template support */
-#define STLSOFT_CF_TEMPLATE_SUPPORT
-
-/* #define STLSOFT_CF_TEMPLATE_TYPE_REQUIRED_IN_ARGS */
 
 #define STLSOFT_CF_EXCEPTION_SIGNATURE_SUPPORT
 
 /* #define STLSOFT_CF_EXCEPTION_SPEC_EXPENSIVE */
 
 #define STLSOFT_CF_THROW_BAD_ALLOC
+
+/* ///////////////////////////////////////////////
+ * Namespace support
+ */
+
+/* Can the compiler support namespaces? */
+#ifdef __cplusplus
+# define STLSOFT_CF_NAMESPACE_SUPPORT
+#endif /* __cplusplus */
+
+/* Should we allow the STLSoft libraries to be defined within a namespace? */
+/* #define _STLSOFT_NO_NAMESPACES */
+
+/* Does the C++ standard library exist within the std namespace */
+/* TODO: Move this out of here, and change to STLSOFT_LF_std_NAMESPACE */
+#define STLSOFT_CF_std_NAMESPACE
+
+
+
+
+/*  */
+#define STLSOFT_CF_FUNCTION_SIGNATURE_FULL_ARG_QUALIFICATION_REQUIRED
+
+/* Template support */
+#define STLSOFT_CF_TEMPLATE_SUPPORT
+
+/* #define STLSOFT_CF_TEMPLATE_TYPE_REQUIRED_IN_ARGS */
 
 #define STLSOFT_CF_TEMPLATE_CLASS_DEFAULT_FUNDAMENTAL_ARGUMENT_SUPPORT
 
@@ -234,37 +294,17 @@
 
 #define STLSOFT_CF_TEMPLATE_OUTOFCLASSFN_QUALIFIED_TYPE_SUPPORT
 
-#define STLSOFT_CF_std_NAMESPACE
-
 #define STLSOFT_CF_std_char_traits_AVAILABLE
 
 #define STLSOFT_CF_PARENT_TYPES_CAN_BE_USED_IN_NON_TEMPLATE
 
 #define STLSOFT_CF_PARENT_TYPES_CAN_BE_USED_IN_TEMPLATE
 
-#define STLSOFT_CF_EXPLICIT_KEYWORD_SUPPORT
-
-#define STLSOFT_CF_MUTABLE_KEYWORD_SUPPORT
-
-#define STLSOFT_CF_TYPENAME_PARAM_KEYWORD_SUPPORT
-
-#define STLSOFT_CF_TYPENAME_TYPE_KEYWORD_SUPPORT
-
-#define STLSOFT_CF_TYPENAME_TYPE_DEF_KEYWORD_SUPPORT
-
-#define STLSOFT_CF_TYPENAME_TYPE_MIL_KEYWORD_SUPPORT
-
-#define STLSOFT_CF_TYPENAME_TYPE_RET_KEYWORD_SUPPORT
-
 #define STLSOFT_CF_TEMPLATE_QUALIFIER_KEYWORD_SUPPORT
-
-/* #define STLSOFT_CF_MOVE_CONSTRUCTOR_SUPPORT */
-
-#define STLSOFT_CF_ADL_LOOKUP_SUPPORT
 
 #define STLSOFT_CF_TEMPLATE_TEMPLATE_SUPPORT
 
-#define STLSOFT_CF_STATIC_ARRAY_SIZE_DETERMINATION_SUPPORT
+/* #define STLSOFT_CF_MOVE_CONSTRUCTOR_SUPPORT */
 
 #define STLSOFT_CF_VENEER_SUPPORT
 
@@ -322,6 +362,13 @@
 /* #define STLSOFT_CF_OPERATOR_NOT_VIA_OPERATOR_POINTER_TO_MEMBER_SUPPORT */
 
 
+/* /////////////////////////////////////////////////////////////////////////
+ * Quality assurance features
+ */
+
+/* Dynamic assert:
+ */
+
 #if defined(_STLSOFT_CUSTOM_ASSERT)
  /* You have defined the pre-processor symbol _STLSOFT_CUSTOM_ASSERT,
   * which stipulates that you will be providing your own assert. This
@@ -359,6 +406,13 @@
 # define __STLSOFT_CF_USE_cassert
 #endif /* _STLSOFT_CUSTOM_ASSERT */
 
+/* Static assert:
+ */
+
+#define STLSOFT_CF_STATIC_ASSERT_SUPPORT
+
+/* TODO: define here whether need -1 or 0 as the static assert invalid array quantifier */
+
 /* /////////////////////////////////////////////////////////////////////////
  * Calling convention
  */
@@ -386,6 +440,9 @@
 
 #if defined(_WIN32) && \
     defined(_MSC_VER)
+ /* Special case when "forcing" any compiler on Win32 using VC++ in order
+  * to emulate UNIX compilation
+  */
 # define STLSOFT_CUSTOM_C_INLINE    __inline
 #else /* ? environment */
 # define STLSOFT_CF_C99_INLINE
