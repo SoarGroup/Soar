@@ -871,7 +871,9 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 			action_counter++;
 		}
 
-		bool good_pass = true;		
+		// good_pass detects infinite loops
+		bool good_pass = true;
+		bool good_action = true;
 		while ( good_pass && action_counter )
 		{
 			good_pass = false;
@@ -880,6 +882,8 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 			{
 				if ( !a->already_in_tc )
 				{
+					good_action = false;
+					
 					if ( a->type == MAKE_ACTION )
 					{
 						id = rhs_value_to_symbol( a->id );
@@ -887,27 +891,27 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 						// non-identifiers are ok
 						if ( id->common.symbol_type != IDENTIFIER_SYMBOL_TYPE )
 						{
-							good_pass = true;
+							good_action = true;
 						}
 						// short-term identifiers are ok
 						else if ( id->id.smem_lti == NIL )
 						{
-							good_pass = true;
+							good_action = true;
 						}
 						// valid long-term identifiers are ok
 						else if ( valid_ltis.find( id ) != valid_ltis.end() )
 						{
-							good_pass = true;
+							good_action = true;
 						}
 					}
 					else
-					{
-						good_pass = true;
+					{						
+						good_action = true;
 					}
 
 					// we've found a new good action
 					// mark as good, collect all goodies
-					if ( good_pass )
+					if ( good_action )
 					{
 						a->already_in_tc = true;
 
@@ -920,15 +924,11 @@ bool smem_valid_production( condition *lhs_top, action *rhs_top )
 							_smem_lti_from_rhs_value( a->attr, &valid_ltis );
 						}
 
-						// next pass
-						break;
+						// note that we've dealt with another action
+						action_counter--;
+						good_pass = true;
 					}
 				}
-			}
-			
-			if ( good_pass )
-			{
-				action_counter--;
 			}
 		};
 
