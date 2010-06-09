@@ -568,10 +568,10 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 		}
 		else if ( my_learning_policy == rl_param_container::q )
 		{
+			rl_perform_update( my_agent, top_value, top_rl, s->id );
+
 			if ( return_val->numeric_value != top_value )
 				rl_watkins_clear( my_agent, s->id );
-
-			rl_perform_update( my_agent, top_value, top_rl, s->id );
 		}
 	}
 
