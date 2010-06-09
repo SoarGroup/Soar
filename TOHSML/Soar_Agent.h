@@ -24,6 +24,7 @@ class Soar_Agent {
 public:
   inline Soar_Agent(sml::Kernel &kernel,
                     const std::string &name);
+  inline Soar_Agent(sml::Agent *const &agent_ptr);
   inline ~Soar_Agent();
   
   const sml::Agent & operator*() const          {return *m_agent_ptr;}
@@ -65,10 +66,24 @@ Soar_Agent::Soar_Agent(sml::Kernel &kernel, const std::string &name)
   m_kernel_ptr(&kernel)
 {
   // Check that nothing went wrong
-  // NOTE: No agent gets created if there’s a problem, so we have to check for
+  // NOTE: No agent gets created if there's a problem, so we have to check for
   // errors through the kernel object.
   if(!m_agent_ptr || kernel.HadError()) {
     std::cerr << kernel.GetLastErrorDescription() << std::endl;
+    abort();
+  }
+}
+
+Soar_Agent::Soar_Agent(sml::Agent *const &agent_ptr)
+  // Create an arbitrarily named Soar agent
+  : m_agent_ptr(agent_ptr),
+  m_kernel_ptr(agent_ptr ? agent_ptr->GetKernel() : 0)
+{
+  // Check that nothing went wrong
+  // NOTE: No agent gets created if there's a problem, so we have to check for
+  // errors through the kernel object.
+  if(!m_agent_ptr) {
+    std::cerr << "Soar Agent could not be created." << std::endl;
     abort();
   }
 }
