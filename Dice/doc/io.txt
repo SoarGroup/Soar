@@ -1,0 +1,23 @@
+input-link
+	dice-probability
+		id (any) copied from request
+		probability (float) (0..1)
+		
+output-link
+	compute-dice-probability
+		id (any) user-data to be copied to input-link to correlate result
+		number-of-dice (int) (1..)
+		number-of-faces (int) (1..) usually 3 (normal, ones wild) or 6 (ones or special rules)
+		count (int) (1..number-of-dice) Target number
+		predicate (string) (equal not-equal greater-than-equal greater-than less-than-equal less-than)
+
+Examples:
+
+id: 1, number-of-dice: 3, number-of-faces: 6, count: 2, predicate: equal
+yields: id: 1, probability: 0.69444
+
+id: 2.0, number-of-dice: 5, number-of-faces: 3, count: 3, predicate: greater-than-equal
+yields: id: 2.0, probability: 0.20988
+
+id: charlie, number-of-dice: 24, number-of-faces: 6, count: 6, predicate less-than
+yields: id: charlie, probability: 0.80047
