@@ -14,7 +14,7 @@ output-link
 Examples:
 
 id: 1, number-of-dice: 3, number-of-faces: 6, count: 2, predicate: equal
-yields: id: 1, probability: 0.69444
+yields: id: 1, probability: 0.06944
 
 id: 2.0, number-of-dice: 5, number-of-faces: 3, count: 3, predicate: greater-than-equal
 yields: id: 2.0, probability: 0.20988
