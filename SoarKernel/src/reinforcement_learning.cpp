@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
+#include <sstream>
 
 #include "reinforcement_learning.h"
 #include "production.h"
@@ -774,17 +775,15 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			
 			// For each prod with a trace, perform update
 			{
-				double old_combined, old_ecr, old_efr;
+				double old_ecr, old_efr;
 				double delta_ecr, delta_efr;
 				double new_combined, new_ecr, new_efr;
-				std::string temp_str, msg;
 				
 				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
 				{	
 					production *prod = iter->first;
 
 					// get old vals
-					old_combined = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
 					old_ecr = prod->rl_ecr;
 					old_efr = prod->rl_efr;
 					
@@ -807,42 +806,15 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					
 					// print as necessary
 					if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) 
-					{					
-						msg = ( "updating RL rule " + std::string( prod->name->sc.name ) + " from (" );
-						
-						// old ecr
-						to_string( old_ecr, temp_str );
-						msg.append( temp_str );
-
-						// old efr
-						to_string( old_efr, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-
-						// old combined
-						to_string( old_combined, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-						
-						msg.append( ") to (" );
-
-						// new ecr
-						to_string( new_ecr, temp_str );
-						msg.append( temp_str );
-
-						// new efr
-						to_string( new_efr, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-
-						// new combined
-						to_string( new_combined, temp_str );
-						msg.append( ", " );
-						msg.append( temp_str );
-						msg.append( ")" );
-						
-						print( my_agent, const_cast<char *>( msg.c_str() ) );
-						xml_generate_message( my_agent, const_cast<char *>( msg.c_str() ) );
+					{
+						std::ostringstream ss;
+						char *cs;
+						ss << "RL update " << prod->name->sc.name << " "
+						   << old_ecr << " " << old_efr << " " << old_ecr + old_efr << " -> "
+						   << new_ecr << " " << new_efr << " " << new_combined ;
+						cs = const_cast<char *>( ss.str().c_str() );
+						print( my_agent, cs );
+						xml_generate_message( my_agent, cs );
 					}
 
 					// Change value of rule
