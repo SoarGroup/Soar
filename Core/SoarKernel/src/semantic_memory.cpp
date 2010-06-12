@@ -1189,9 +1189,9 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 	smem_slot_map::iterator s;
 	smem_slot::iterator v;
 
-	smem_hash_id attr_hash = NULL;
-	smem_hash_id value_hash = NULL;
-	smem_lti_id value_lti = NULL;
+	smem_hash_id attr_hash = 0;
+	smem_hash_id value_hash = 0;
+	smem_lti_id value_lti = 0;
 
 	std::map<smem_hash_id, unsigned long> attr_ct_adjust;
 	std::map<smem_hash_id, std::map<smem_hash_id, unsigned long> > const_ct_adjust;
