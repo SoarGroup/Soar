@@ -813,7 +813,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 						   << old_ecr << " " << old_efr << " " << old_ecr + old_efr << " -> "
 						   << new_ecr << " " << new_efr << " " << new_combined ;
 						cs = const_cast<char *>( ss.str().c_str() );
-						print( my_agent, cs );
+						print( my_agent, "%s\n", cs );
 						xml_generate_message( my_agent, cs );
 					}
 
