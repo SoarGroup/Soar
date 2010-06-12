@@ -3957,7 +3957,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										new_literal_pair->parent_lit = parent_literal;
 										new_literal_pair->unique_id = unique_identity;
 										new_literal_pair->q0 = parent_id;
-										new_literal_pair->q1 = NULL;
+										new_literal_pair->q1 = 0;
 										new_literal_pair->wme = (*w_p);
 										pairs.push_back( new_literal_pair );										
 										
