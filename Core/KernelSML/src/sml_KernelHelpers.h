@@ -47,8 +47,6 @@ namespace sml
      */
      KernelHelpers(){}
 
-     bool GDSPrint(AgentSML* thisAgent);
-
 	 void GetForceLearnStates(AgentSML* pIAgent, std::stringstream& res);
 	 void GetDontLearnStates(AgentSML* pIAgent, std::stringstream& res);
 
