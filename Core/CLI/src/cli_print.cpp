@@ -18,7 +18,6 @@
 
 #include "agent.h"
 
-#include "sml_KernelHelpers.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 #include "gsysparam.h"

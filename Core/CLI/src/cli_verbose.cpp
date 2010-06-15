@@ -17,7 +17,7 @@
 #include "cli_CLIError.h"
 
 #include "sml_KernelSML.h"
-#include "sml_KernelHelpers.h"
+#include "agent.h"
 
 using namespace cli;
 using namespace sml;
@@ -58,19 +58,16 @@ bool CommandLineInterface::ParseVerbose(std::vector<std::string>& argv) {
 }
 
 bool CommandLineInterface::DoVerbose(bool* pSetting) {
-	// Attain the evil back door of doom, even though we aren't the TgD
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
-
 	if (!pSetting) {
 		if (m_RawOutput) {
-			m_Result << "Verbose is " << (pKernelHack->GetVerbosity(m_pAgentSML) ? "on." : "off.");
+			m_Result << "Verbose is " << (m_pAgentSoar->soar_verbose_flag ? "on." : "off.");
 		} else {
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetVerbosity(m_pAgentSML) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, m_pAgentSoar->soar_verbose_flag ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	pKernelHack->SetVerbosity(m_pAgentSML, *pSetting);
+	m_pAgentSoar->soar_verbose_flag = *pSetting;
 	return true;
 }
 
