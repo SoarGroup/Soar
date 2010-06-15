@@ -64,14 +64,6 @@ namespace sml
                     bool          full_prod,
                     unsigned int  productionType);
                  
-     bool ProductionFind(agent*      agnt,
-                         bool        lhs,
-                         bool        rhs,
-                         char*       arg,
-                         bool        show_bindings,
-                         bool        just_chunks,
-                         bool        no_chunks);
-
      bool GDSPrint(AgentSML* thisAgent);
 
 	 void GetForceLearnStates(AgentSML* pIAgent, std::stringstream& res);
