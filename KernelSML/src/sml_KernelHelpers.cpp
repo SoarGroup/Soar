@@ -51,24 +51,6 @@ typedef struct wme_filter_struct {
 	bool removes;
 } wme_filter;
 
-void KernelHelpers::SetSysparam (AgentSML* agent, int param_number, long new_value) 
-{
-	sml::KernelSML* pKernelSML = agent->GetKernelSML() ;
-
-	agent->GetSoarAgent()->sysparams[param_number] = new_value;
-	pKernelSML->FireSystemEvent(smlEVENT_SYSTEM_PROPERTY_CHANGED) ;
-}
-
-long KernelHelpers::GetSysparam(AgentSML* agent, int param_number)
-{
-	return agent->GetSoarAgent()->sysparams[param_number];
-}
-
-const long* const KernelHelpers::GetSysparams(AgentSML* agent) const
-{
-	return agent->GetSoarAgent()->sysparams;
-}
-
 rete_node* KernelHelpers::NameToProduction (AgentSML* agent, char* string_to_test)
 {
 	::Symbol* sym;
@@ -172,7 +154,6 @@ char *symbolToString (Symbol *sym,
 {
 	Bool possible_id, possible_var, possible_ic, possible_fc;
 	Bool is_rereadable;
-	Bool has_angle_bracket;
 
 	switch(sym->common.symbol_type) 
 	{
