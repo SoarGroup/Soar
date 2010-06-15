@@ -56,7 +56,7 @@ enum smlSystemEventId
 	smlEVENT_BEFORE_AGENTS_RUN_STEP,
 	smlEVENT_SYSTEM_STOP,
 	smlEVENT_INTERRUPT_CHECK,					// Chance for client to interrupt a run (designed to be low bandwidth)
-	smlEVENT_SYSTEM_PROPERTY_CHANGED,			// A sysparam or other value has been changed 
+	smlEVENT_SYSTEM_PROPERTY_CHANGED,			// A kernel-level parameter has been changed (note: no longer includes sysparams which are agent-level)
 	smlEVENT_LAST_SYSTEM_EVENT = smlEVENT_SYSTEM_PROPERTY_CHANGED
 } ;
 

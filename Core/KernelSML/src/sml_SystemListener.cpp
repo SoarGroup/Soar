@@ -7,20 +7,21 @@
 // Date  : October 2004
 //
 // This class's HandleEvent method is called when
-// specific events occur within the kernel:
-/*
-*      // System events
-*      smlEVENT_BEFORE_SHUTDOWN            = 1,
-*      smlEVENT_AFTER_CONNECTION_LOST,
-*      smlEVENT_BEFORE_RESTART,
-*      smlEVENT_AFTER_RESTART,
-*      smlEVENT_BEFORE_RHS_FUNCTION_ADDED,
-*      smlEVENT_AFTER_RHS_FUNCTION_ADDED,
-*      smlEVENT_BEFORE_RHS_FUNCTION_REMOVED,
-*      smlEVENT_AFTER_RHS_FUNCTION_REMOVED,
-*      smlEVENT_BEFORE_RHS_FUNCTION_EXECUTED,
-*      smlEVENT_AFTER_RHS_FUNCTION_EXECUTED,
-*/////////////////////////////////////////////////////////////////
+// specific events occur within the kernel (copied from sml_Events.h):
+//
+//enum smlSystemEventId 
+//{
+//    smlEVENT_BEFORE_SHUTDOWN            = 1,
+//	smlEVENT_AFTER_CONNECTION,
+//	smlEVENT_SYSTEM_START,
+//	smlEVENT_BEFORE_AGENTS_RUN_STEP,
+//	smlEVENT_SYSTEM_STOP,
+//	smlEVENT_INTERRUPT_CHECK,					// Chance for client to interrupt a run (designed to be low bandwidth)
+//	smlEVENT_SYSTEM_PROPERTY_CHANGED,			// A kernel-level parameter has been changed (note: no longer includes sysparams which are agent-level)
+//	smlEVENT_LAST_SYSTEM_EVENT = smlEVENT_SYSTEM_PROPERTY_CHANGED
+//} ;
+/////////////////////////////////////////////////////////////////
+
 
 #include "sml_SystemListener.h"
 

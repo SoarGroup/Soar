@@ -47,13 +47,6 @@ namespace sml
      */
      KernelHelpers(){}
 
-     /**
-     * @brief
-     */
-	 void SetSysparam (AgentSML* agent, int param_number, long new_value);
-     long GetSysparam(AgentSML* agent, int param_number);
-	 const long* const GetSysparams(AgentSML* agent) const; // USE ONLY AS READ-ONLY
-
      rete_node* NameToProduction(AgentSML* agent, char* string_to_test);
 
      void PrintStackTrace(AgentSML* thisAgent, bool print_states, bool print_operators);
