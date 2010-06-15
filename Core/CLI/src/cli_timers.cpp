@@ -60,24 +60,18 @@ bool CommandLineInterface::ParseTimers(std::vector<std::string>& argv) {
 }
 
 bool CommandLineInterface::DoTimers(bool* pSetting) {
-	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
-
 	if (pSetting) {
 		// set, don't print
-		pKernelHack->SetSysparam(m_pAgentSML, TIMERS_ENABLED, *pSetting);
+		set_sysparam(m_pAgentSoar, TIMERS_ENABLED, *pSetting);
 
 	} else {
 		// print current setting
-		// BUGBUG: Use Get/SetSysparam because it fires an event!
-		const long* pSysparams = pKernelHack->GetSysparams(m_pAgentSML);
-
 		if (m_RawOutput) {
-			m_Result << (pSysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.");
+			m_Result << (m_pAgentSoar->sysparams[TIMERS_ENABLED] ? "Timers are enabled." : "Timers are disabled.");
 		} else {
 			// adds <arg name="timers">true</arg> (or false) if the timers are
 			// enabled (or disabled)
-			AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, pSysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 	}
 	return true;

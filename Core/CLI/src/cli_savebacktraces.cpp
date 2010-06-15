@@ -55,19 +55,16 @@ bool CommandLineInterface::ParseSaveBacktraces(std::vector<std::string>& argv) {
 }
 
 bool CommandLineInterface::DoSaveBacktraces(bool* pSetting) {
-	// Attain the evil back door of doom, even though we aren't the TgD
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
-
 	if (!pSetting) {
 		if (m_RawOutput) {
-			m_Result << "Save bactraces is " << (pKernelHack->GetSysparam(m_pAgentSML, EXPLAIN_SYSPARAM) ? "enabled." : "disabled.");
+			m_Result << "Save bactraces is " << (m_pAgentSoar->sysparams[EXPLAIN_SYSPARAM] ? "enabled." : "disabled.");
 		} else {
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(m_pAgentSML, EXPLAIN_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[EXPLAIN_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	pKernelHack->SetSysparam(m_pAgentSML, EXPLAIN_SYSPARAM, *pSetting);
+	set_sysparam(m_pAgentSoar, EXPLAIN_SYSPARAM, *pSetting);
 	return true;
 }
 
