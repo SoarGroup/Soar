@@ -47,23 +47,6 @@ namespace sml
      */
      KernelHelpers(){}
 
-     void PrintStackTrace(AgentSML* thisAgent, bool print_states, bool print_operators);
-     void PrintSymbol(AgentSML*     thisAgent, 
-                      char*       arg, 
-                      bool        name_only, 
-                      bool        print_filename, 
-                      bool        internal,
-					  bool        tree,
-                      bool        full_prod,
-                      int         depth,
-					  bool        exact);
-     void PrintUser(AgentSML*       thisAgent,
-                    char*         arg,
-                    bool          internal,
-                    bool          print_filename,
-                    bool          full_prod,
-                    unsigned int  productionType);
-                 
      bool GDSPrint(AgentSML* thisAgent);
 
 	 void GetForceLearnStates(AgentSML* pIAgent, std::stringstream& res);
