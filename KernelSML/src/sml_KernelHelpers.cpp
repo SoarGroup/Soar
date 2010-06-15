@@ -33,7 +33,6 @@
 #include "soar_TraceNames.h"
 #include "utilities.h"
 
-extern Bool print_sym (agent* thisAgent, void *item, void* userdata);
 
 using namespace sml ;
 using namespace soarxml ;
@@ -50,17 +49,6 @@ typedef struct wme_filter_struct {
 	bool adds;
 	bool removes;
 } wme_filter;
-
-rete_node* KernelHelpers::NameToProduction (AgentSML* agent, char* string_to_test)
-{
-	::Symbol* sym;
-	sym = find_sym_constant(agent->GetSoarAgent(), string_to_test);
-
-	if (sym && sym->sc.production)
-		return sym->sc.production->p_node;
-	else
-		return 0;
-}
 
 void KernelHelpers::PrintStackTrace(AgentSML* agent, bool print_states, bool print_operators)
 {
@@ -132,91 +120,7 @@ void do_print_for_production (agent* agnt,
 	}
 }
 
-char *stringToEscapedString (char *s, char first_and_last_char, char *dest) 
-{
-	char *ch;
-
-	ch = dest;
-	*ch++ = first_and_last_char;
-	while (*s) {
-		if ((*s==first_and_last_char)||(*s=='\\')) *ch++ = '\\';
-		*ch++ = *s++;
-	}
-	*ch++ = first_and_last_char;
-	*ch = 0;
-	return dest;
-}
-
-
-char *symbolToString (Symbol *sym, 
-	Bool rereadable, 
-	char *dest) 
-{
-	Bool possible_id, possible_var, possible_ic, possible_fc;
-	Bool is_rereadable;
-
-	switch(sym->common.symbol_type) 
-	{
-	case VARIABLE_SYMBOL_TYPE:
-		strcpy (dest, sym->var.name);
-		return dest;
-
-	case IDENTIFIER_SYMBOL_TYPE:
-		// BADBAD: static casting for llu portability
-		sprintf (dest, "%c%llu", sym->id.name_letter, static_cast<unsigned long long>(sym->id.name_number));
-		return dest;
-
-	case INT_CONSTANT_SYMBOL_TYPE:
-		sprintf (dest, "%ld", sym->ic.value);
-		return dest;
-
-	case FLOAT_CONSTANT_SYMBOL_TYPE:
-		sprintf (dest, "%#g", sym->fc.value);
-		{ /* --- strip off trailing zeros --- */
-			char *start_of_exponent;
-			char *end_of_mantissa;
-			start_of_exponent = dest;
-			while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
-				start_of_exponent++;
-			end_of_mantissa = start_of_exponent - 1;
-			while (*end_of_mantissa == '0') end_of_mantissa--;
-			end_of_mantissa++;
-			while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
-			*end_of_mantissa = 0;
-		}
-		return dest;
-
-	case SYM_CONSTANT_SYMBOL_TYPE:
-		if (!rereadable) {
-			strcpy (dest, sym->sc.name);
-			return dest;
-		}
-		determine_possible_symbol_types_for_string (sym->sc.name,
-			strlen (sym->sc.name),
-			&possible_id,
-			&possible_var,
-			&possible_ic,
-			&possible_fc,
-			&is_rereadable);
-
-		if ( possible_id || possible_var || possible_ic || possible_fc || !is_rereadable) {
-			return stringToEscapedString (sym->sc.name, '|', dest);
-		}
-		strcpy (dest, sym->sc.name);
-		return dest;
-
-	default:
-		{ 
-			//                  char msg[128];
-			//                  strcpy(msg,
-			//                     "Internal Soar Error:  symbol_to_string called on bad symbol\n");
-			//                  abort_with_fatal_error(thisAgent, msg);
-		}
-	}
-	return NIL; /* unreachable, but without it, gcc -Wall warns here */
-}
-
-
+// compare_attr is used for cstdlib::qsort below. 
 int compare_attr (const void * e1, const void * e2)
 {
 	wme **p1, **p2;
@@ -226,12 +130,12 @@ int compare_attr (const void * e1, const void * e2)
 	p1 = (wme **) e1;
 	p2 = (wme **) e2;
 
-	symbolToString ((*p1)->attr, TRUE, s1);
-	symbolToString ((*p2)->attr, TRUE, s2);
+	// passing null thisAgent is OK as long as dest is guaranteed != 0
+	symbol_to_string (0, (*p1)->attr, TRUE, s1, MAX_LEXEME_LENGTH*2+20);
+	symbol_to_string (0, (*p2)->attr, TRUE, s2, MAX_LEXEME_LENGTH*2+20);
 
-	return (strcmp (s1, s2));
+	return strcmp (s1, s2);
 }
-
 
 /* This should probably be in the Soar kernel interface. */
 #define NEATLY_PRINT_BUF_SIZE 10000
@@ -1897,22 +1801,6 @@ int RemoveWme(agent* pSoarAgent, wme* pWme)
 #endif // NO_TOP_LEVEL_REFS
 
 	return 0;
-}
-
-void KernelHelpers::PrintInternalSymbols(AgentSML* pAgent)
-{
-	agent* pSoarAgent = pAgent->GetSoarAgent();
-
-	print_string(pSoarAgent, "\n--- Symbolic Constants: ---\n");
-	do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->sym_constant_hash_table, print_sym, 0);
-	print_string(pSoarAgent, "\n--- Integer Constants: ---\n");
-	do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->int_constant_hash_table, print_sym, 0);
-	print_string(pSoarAgent, "\n--- Floating-Point Constants: ---\n");
-	do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->float_constant_hash_table, print_sym, 0);
-	print_string(pSoarAgent, "\n--- Identifiers: ---\n");
-	do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->identifier_hash_table, print_sym, 0);
-	print_string(pSoarAgent, "\n--- Variables: ---\n");
-	do_for_all_items_in_hash_table(pSoarAgent, pSoarAgent->variable_hash_table, print_sym, 0);
 }
 
 bool read_wme_filter_component(agent* pSoarAgent, const char *s, Symbol ** sym)
