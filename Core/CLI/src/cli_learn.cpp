@@ -16,10 +16,10 @@
 
 #include "sml_Names.h"
 
-#include "sml_KernelHelpers.h"
 #include "sml_KernelSML.h"
 #include "gsysparam.h"
 #include "agent.h"
+#include "print.h"
 
 using namespace cli;
 using namespace sml;
@@ -85,10 +85,27 @@ bool CommandLineInterface::ParseLearn(std::vector<std::string>& argv) {
 	return DoLearn(options);
 }
 
-bool CommandLineInterface::DoLearn(const LearnBitset& options) {
-	// Attain the evil back door of doom, even though we aren't the TgD, because we'll need it
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
+void GetForceLearnStates(agent* agnt, std::stringstream& res) {
+	cons *c;
+	char buff[1024];
 
+	for (c = agnt->chunky_problem_spaces; c != NIL; c = c->rest) {
+		symbol_to_string(agnt, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
+		res << buff;
+	}
+}
+
+void GetDontLearnStates(agent* agnt, std::stringstream& res) {
+	cons *c;
+	char buff[1024];
+
+	for (c = agnt->chunk_free_problem_spaces; c != NIL; c = c->rest) {
+		symbol_to_string(agnt, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
+		res << buff;
+	}
+}
+
+bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 	// No options means print current settings
 	if (options.none() || options.test(LEARN_LIST)) {
 
@@ -118,17 +135,17 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 			std::stringstream output;
 			if (m_RawOutput) {
 				m_Result << "\nforce-learn states (when learn 'only'):";
-				pKernelHack->GetForceLearnStates(m_pAgentSML, output);
+				GetForceLearnStates(m_pAgentSoar, output);
 				if (output.str().size()) m_Result << '\n' << output.str();
 
 				m_Result << "\ndont-learn states (when learn 'except'):";
-				pKernelHack->GetDontLearnStates(m_pAgentSML, output);
+				GetDontLearnStates(m_pAgentSoar, output);
 				if (output.str().size()) m_Result << '\n' << output.str();
 
 			} else {
-				pKernelHack->GetForceLearnStates(m_pAgentSML, output);
+				GetForceLearnStates(m_pAgentSoar, output);
 				AppendArgTagFast(sml_Names::kParamLearnForceLearnStates, sml_Names::kTypeString, output.str());
-				pKernelHack->GetDontLearnStates(m_pAgentSML, output);
+				GetDontLearnStates(m_pAgentSoar, output);
 				AppendArgTagFast(sml_Names::kParamLearnDontLearnStates, sml_Names::kTypeString, output.str());
 			}
 		}
