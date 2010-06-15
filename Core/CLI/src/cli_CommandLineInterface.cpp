@@ -27,7 +27,6 @@
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
 #include "XMLTrace.h"
-#include "sml_KernelHelpers.h"
 #include "KernelHeaders.h"
 
 #include "agent.h"

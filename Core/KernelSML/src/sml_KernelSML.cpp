@@ -22,7 +22,6 @@
 #include "sml_ConnectionManager.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
-#include "sml_KernelHelpers.h"
 #include "sml_EmbeddedConnection.h"
 #include "KernelSMLDirect.h"
 
@@ -78,8 +77,6 @@ KernelSML::KernelSML(int portToListenOn)
 	m_SystemListener.Init(this);
 	m_UpdateListener.Init(this) ;
 	m_StringListener.Init(this) ;
-
-	m_pKernelHelpers = new KernelHelpers() ;
 
 	// We'll use this to make sure only one connection is executing commands
 	// in the kernel at a time.
@@ -215,8 +212,6 @@ KernelSML::~KernelSML()
 	m_RhsListener.Clear();
 	m_UpdateListener.Clear() ;
 	m_StringListener.Clear() ;
-
-	delete m_pKernelHelpers ;
 
 	delete m_pConnectionManager ;
 
