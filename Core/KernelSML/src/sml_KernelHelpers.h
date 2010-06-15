@@ -64,8 +64,6 @@ namespace sml
                     bool          full_prod,
                     unsigned int  productionType);
                  
-     bool Preferences(AgentSML* thisAgent, int detail, bool object, const char* idString, const char* attrString);
-
      bool ProductionFind(agent*      agnt,
                          bool        lhs,
                          bool        rhs,
