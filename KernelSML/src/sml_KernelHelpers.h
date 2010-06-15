@@ -47,9 +47,6 @@ namespace sml
      */
      KernelHelpers(){}
 
-	 void GetForceLearnStates(AgentSML* pIAgent, std::stringstream& res);
-	 void GetDontLearnStates(AgentSML* pIAgent, std::stringstream& res);
-
 	 void SetVerbosity(AgentSML* pIAgent, bool setting);
 	 bool GetVerbosity(AgentSML* pIAgent);
 
