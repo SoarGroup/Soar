@@ -47,8 +47,6 @@ namespace sml
      */
      KernelHelpers(){}
 
-     rete_node* NameToProduction(AgentSML* agent, char* string_to_test);
-
      void PrintStackTrace(AgentSML* thisAgent, bool print_states, bool print_operators);
      void PrintSymbol(AgentSML*     thisAgent, 
                       char*       arg, 
@@ -86,8 +84,6 @@ namespace sml
 
 	 bool BeginTracingProduction(AgentSML* pIAgent, const char* pProductionName);
 	 bool StopTracingProduction(AgentSML* pIAgent, const char* pProductionName);
-
-	 void PrintInternalSymbols(AgentSML* pIAgent);
 
 	 int AddWMEFilter(AgentSML* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes);
 	 int RemoveWMEFilter(AgentSML* pIAgent, const char *pIdString, const char *pAttrString, const char *pValueString, bool adds, bool removes);
