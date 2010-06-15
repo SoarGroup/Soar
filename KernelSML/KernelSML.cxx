@@ -7,7 +7,6 @@
 #include "src/sml_EventManager.cpp"
 #include "src/sml_InputListener.cpp"
 #include "src/sml_KernelCallback.cpp"
-#include "src/sml_KernelHelpers.cpp"
 #include "src/sml_KernelSML.cpp"
 #include "src/sml_KernelSMLHandlers.cpp"
 #include "src/sml_ListenerThread.cpp"

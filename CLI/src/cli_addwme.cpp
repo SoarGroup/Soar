@@ -17,7 +17,6 @@
 #include "sml_Names.h"
 
 #include "sml_KernelSML.h"
-#include "sml_KernelHelpers.h"
 
 #include "utilities.h"
 #include "wmem.h"
