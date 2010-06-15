@@ -89,7 +89,7 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
 {
 	CTDEBUG_ENTER_METHOD("ClientSocket::ConnectToServer");
 
-	SOCKET sock;
+	SOCKET sock = 0;
 
 	int res = 1; // if any of this fails, fall back on creating an internet socket
 
@@ -130,8 +130,8 @@ bool ClientSocket::ConnectToServer(char const* pNetAddress, int port)
 		}
 
 	} 
-#endif
 	if (res != 0) 
+#endif
 	{
 		in_addr* pAddress = NULL;
 
