@@ -59,18 +59,15 @@ bool CommandLineInterface::ParseWarnings(std::vector<std::string>& argv) {
 }
 
 bool CommandLineInterface::DoWarnings(bool* pSetting) {
-	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
-
 	if (pSetting) {
-		pKernelHack->SetSysparam(m_pAgentSML, PRINT_WARNINGS_SYSPARAM, *pSetting);
+		set_sysparam(m_pAgentSoar, PRINT_WARNINGS_SYSPARAM, *pSetting);
 		return true;
 	}
 
 	if (m_RawOutput) {
-		m_Result << "Printing of warnings is " << (pKernelHack->GetSysparam(m_pAgentSML, PRINT_WARNINGS_SYSPARAM) ? "enabled." : "disabled.");
+		m_Result << "Printing of warnings is " << (m_pAgentSoar->sysparams[PRINT_WARNINGS_SYSPARAM] ? "enabled." : "disabled.");
 	} else {
-		const char* setting = pKernelHack->GetSysparam(m_pAgentSML, PRINT_WARNINGS_SYSPARAM) ? sml_Names::kTrue : sml_Names::kFalse;
+		const char* setting = m_pAgentSoar->sysparams[PRINT_WARNINGS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse;
 		AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);
 	}
 	return true;

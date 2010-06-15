@@ -78,23 +78,20 @@ bool CommandLineInterface::ParseChunkNameFormat(std::vector<std::string>& argv) 
 }
 
 bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int* pCount, const std::string* pPrefix) {
-	// Attain the evil back door of doom, even though we aren't the TgD, because we'll probably need it
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
-
 	if (!pLongFormat && !pCount && !pPrefix) {
 		if (m_RawOutput) {
-			m_Result << "Using " << (pKernelHack->GetSysparam(m_pAgentSML, USE_LONG_CHUNK_NAMES) ? "long" : "short") << " chunk format.";
+			m_Result << "Using " << (m_pAgentSoar->sysparams[USE_LONG_CHUNK_NAMES] ? "long" : "short") << " chunk format.";
 		} else {
-			AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, pKernelHack->GetSysparam(m_pAgentSML, USE_LONG_CHUNK_NAMES) ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[USE_LONG_CHUNK_NAMES] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 		return true;
 	}
 
-	if (pLongFormat) pKernelHack->SetSysparam(m_pAgentSML, USE_LONG_CHUNK_NAMES, *pLongFormat);
+	if (pLongFormat) set_sysparam(m_pAgentSoar, USE_LONG_CHUNK_NAMES, *pLongFormat);
 
 	if (pCount) {
 		if (*pCount >= 0) {
-			if (*pCount >= pKernelHack->GetSysparam(m_pAgentSML, MAX_CHUNKS_SYSPARAM)) return SetError(CLIError::kCountGreaterThanMaxChunks);
+			if (*pCount >= m_pAgentSoar->sysparams[MAX_CHUNKS_SYSPARAM]) return SetError(CLIError::kCountGreaterThanMaxChunks);
 			if (static_cast<unsigned long>(*pCount) < m_pAgentSML->GetSoarAgent()->chunk_count ) return SetError(CLIError::kCountLessThanChunks);
 			m_pAgentSML->GetSoarAgent()->chunk_count = *pCount;
 		} else {

@@ -91,15 +91,13 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 	// No options means print current settings
 	if (options.none() || options.test(LEARN_LIST)) {
 
-		const long* const pSysparams = pKernelHack->GetSysparams(m_pAgentSML);
-
 		if (m_RawOutput) {
-			if (pSysparams[LEARNING_ON_SYSPARAM]) {
+			if (m_pAgentSoar->sysparams[LEARNING_ON_SYSPARAM]) {
 				m_Result << "Learning is enabled.";
-				if (pSysparams[LEARNING_ONLY_SYSPARAM]) m_Result << " (only)";
-				if (pSysparams[LEARNING_EXCEPT_SYSPARAM]) m_Result << " (except)";
-				if (pSysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_Result << " (all-levels)";
-				if (pSysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM]) {
+				if (m_pAgentSoar->sysparams[LEARNING_ONLY_SYSPARAM]) m_Result << " (only)";
+				if (m_pAgentSoar->sysparams[LEARNING_EXCEPT_SYSPARAM]) m_Result << " (except)";
+				if (m_pAgentSoar->sysparams[LEARNING_ALL_GOALS_SYSPARAM]) m_Result << " (all-levels)";
+				if (m_pAgentSoar->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM]) {
 					m_Result << " (through-local-negations)";
 				} else {
 					m_Result << " (not through-local-negations)";
@@ -109,10 +107,10 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 				m_Result << "Learning is disabled.";
 			}
 		} else {
-			AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ON_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-			AppendArgTagFast(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ONLY_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-			AppendArgTagFast(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_EXCEPT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
-			AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, pSysparams[LEARNING_ALL_GOALS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnSetting, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[LEARNING_ON_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnOnlySetting, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[LEARNING_ONLY_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnExceptSetting, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[LEARNING_EXCEPT_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamLearnAllLevelsSetting, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[LEARNING_ALL_GOALS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		if (options.test(LEARN_LIST)) {
@@ -137,43 +135,43 @@ bool CommandLineInterface::DoLearn(const LearnBitset& options) {
 	}
 
 	if (options.test(LEARN_ONLY)) {
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ON_SYSPARAM, true);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ONLY_SYSPARAM, true);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_EXCEPT_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_ON_SYSPARAM, true);
+		set_sysparam(m_pAgentSoar, LEARNING_ONLY_SYSPARAM, true);
+		set_sysparam(m_pAgentSoar, LEARNING_EXCEPT_SYSPARAM, false);
 	}
 
 	if (options.test(LEARN_EXCEPT)) {
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ON_SYSPARAM, true);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ONLY_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_EXCEPT_SYSPARAM, true);
+		set_sysparam(m_pAgentSoar, LEARNING_ON_SYSPARAM, true);
+		set_sysparam(m_pAgentSoar, LEARNING_ONLY_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_EXCEPT_SYSPARAM, true);
 	}
 
 	if (options.test(LEARN_ENABLE)) {
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ON_SYSPARAM, true);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ONLY_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_EXCEPT_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_ON_SYSPARAM, true);
+		set_sysparam(m_pAgentSoar, LEARNING_ONLY_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_EXCEPT_SYSPARAM, false);
 	}
 
 	if (options.test(LEARN_DISABLE)) {
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ON_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ONLY_SYSPARAM, false);
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_EXCEPT_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_ON_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_ONLY_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_EXCEPT_SYSPARAM, false);
 	}
 
 	if (options.test(LEARN_ALL_LEVELS)) {
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ALL_GOALS_SYSPARAM, true);
+		set_sysparam(m_pAgentSoar, LEARNING_ALL_GOALS_SYSPARAM, true);
 	}
 
 	if (options.test(LEARN_BOTTOM_UP)) {
-		pKernelHack->SetSysparam(m_pAgentSML, LEARNING_ALL_GOALS_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, LEARNING_ALL_GOALS_SYSPARAM, false);
 	}
 
 	if (options.test(LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS)) {
-		pKernelHack->SetSysparam(m_pAgentSML, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, true);
+		set_sysparam(m_pAgentSoar, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, true);
 	}
 
 	if (options.test(LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS)) {
-		pKernelHack->SetSysparam(m_pAgentSML, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, false);
+		set_sysparam(m_pAgentSoar, CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM, false);
 	}
 
 	return true;
