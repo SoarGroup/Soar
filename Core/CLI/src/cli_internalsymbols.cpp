@@ -16,7 +16,7 @@
 #include "sml_Names.h"
 
 #include "sml_KernelSML.h"
-#include "sml_KernelHelpers.h"
+#include "symtab.h"
 
 using namespace cli;
 using namespace sml;
@@ -26,11 +26,7 @@ bool CommandLineInterface::ParseInternalSymbols(std::vector<std::string>&) {
 }
 
 bool CommandLineInterface::DoInternalSymbols() {
-	// Attain the evil back door of doom, even though we aren't the TgD
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
-		
-	pKernelHack->PrintInternalSymbols(m_pAgentSML);
-
+	print_internal_symbols(m_pAgentSoar);
 	return true;
 }
 

@@ -23,6 +23,8 @@
 #include "gsysparam.h"
 #include "rete.h"
 #include "sml_AgentSML.h"
+#include "symtab.h"
+#include "production.h"
 
 using namespace cli;
 using namespace sml;
@@ -97,12 +99,12 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
 			assert(false);
 	}
 
-	// Attain the evil back door of doom, even though we aren't the TgD
-	sml::KernelHelpers* pKernelHack = m_pKernelSML->GetKernelHelpers() ;
-
 	if (mode == MATCHES_PRODUCTION) {
 		if (!pProduction) return SetError(CLIError::kProductionRequired);
-		rete_node* prod = pKernelHack->NameToProduction(m_pAgentSML, const_cast<char*>(pProduction->c_str()));
+
+		Symbol* sym = find_sym_constant(m_pAgentSoar, pProduction->c_str());
+		rete_node* prod = (sym && sym->sc.production) ? sym->sc.production->p_node : 0;
+
 		if (!prod) {
 			SetErrorDetail("Production " + *pProduction);
 			return SetError(CLIError::kProductionNotFound);
