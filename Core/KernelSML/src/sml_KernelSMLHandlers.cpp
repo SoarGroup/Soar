@@ -26,7 +26,6 @@
 #include "sml_TagCommand.h"
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
-#include "sml_KernelHelpers.h"
 #include "KernelHeaders.h"
 
 #include <iostream>

@@ -20,7 +20,6 @@
 #include "sml_Connection.h"
 #include "sml_KernelSML.h"
 #include "sml_AgentSML.h"
-#include "sml_KernelHelpers.h"
 
 #include "assert.h"
 
