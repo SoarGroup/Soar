@@ -53,30 +53,6 @@ typedef struct wme_filter_struct {
 
 ////
 
-void KernelHelpers::GetForceLearnStates(AgentSML* pAgent, std::stringstream& res) {
-	agent* pSoarAgent = pAgent->GetSoarAgent();
-
-	cons *c;
-	char buff[1024];
-
-	for (c = pSoarAgent->chunky_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
-		res << buff;
-	}
-}
-
-void KernelHelpers::GetDontLearnStates(AgentSML* pAgent, std::stringstream& res) {
-	agent* pSoarAgent = pAgent->GetSoarAgent();
-
-	cons *c;
-	char buff[1024];
-
-	for (c = pSoarAgent->chunk_free_problem_spaces; c != NIL; c = c->rest) {
-		symbol_to_string(pSoarAgent, static_cast<Symbol *>(c->first), TRUE, buff, 1024);
-		res << buff;
-	}
-}
-
 void KernelHelpers::SetVerbosity(AgentSML* pAgent, bool setting) {
 	agent* pSoarAgent = pAgent->GetSoarAgent();
 
