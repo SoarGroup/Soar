@@ -125,8 +125,6 @@ protected:
 
 	RunScheduler*	m_pRunScheduler ;
 
-	KernelHelpers*	m_pKernelHelpers ;
-
 	// If true, whenever a user issues a command that changes the state of the kernel in some manner
 	// the command and its results are echoed to anyone listening.  This is useful when two users
 	// are debugging the same kernel (and should be off at other times).
@@ -334,11 +332,6 @@ public:
 	* @brief	Look up an agent from its name.
 	*************************************************************/
 	AgentSML* GetAgentSML(char const* pAgentName) ;
-
-	/*************************************************************
-	* @brief	A set of methods generally used to implement CLI methods.
-	*************************************************************/	
-	KernelHelpers* GetKernelHelpers() { return m_pKernelHelpers ; }
 
 	/*************************************************************
 	* @brief	Returns the number of agents.
