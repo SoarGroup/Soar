@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <algorithm>
+#include "xml.h"
 
 using namespace sml ;
 
