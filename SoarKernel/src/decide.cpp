@@ -1746,18 +1746,6 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 					if (w->gds->goal != NIL)
 					{
 						/* If the goal pointer is non-NIL, then goal is in the stack */
-						if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
-						{
-							print(thisAgent, "\nRemoving state S%llu because element in GDS changed.", static_cast<unsigned long long>(w->gds->goal->id.name_number));
-							print(thisAgent, " WME: "); 
-
-							char buf[256];
-							SNPRINTF(buf, 254, "Removing state S%llu because element in GDS changed.", static_cast<unsigned long long>(w->gds->goal->id.name_number));
-							xml_begin_tag(thisAgent, kTagVerbose);
-							xml_att_val(thisAgent, kTypeString, buf);
-							print_wme(thisAgent, w);
-							xml_end_tag(thisAgent, kTagVerbose);
-						}
 						gds_invalid_so_remove_goal(thisAgent, w);
 					}
 				}
@@ -2805,25 +2793,23 @@ void uniquely_add_to_head_of_dll(agent* thisAgent, instantiation *inst)
  */
 void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
 {
-   /* Set the correct GDS for this wme (wme's point to their gds) */
-   wme_to_add->gds = gds;
-   insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
-                
-   if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
-   {
-	   print(agentPtr, "Adding to GDS for S%lu: ", wme_to_add->gds->goal->id.name_number);    
-	   print(agentPtr, " WME: "); 
-	   char buf[256];
+	/* Set the correct GDS for this wme (wme's point to their gds) */
+	wme_to_add->gds = gds;
+	insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
 
-	   // BADBAD: static casting for llu portability
-	   SNPRINTF(buf, 254, "Adding to GDS for S%llu: ", static_cast<unsigned long long>(wme_to_add->gds->goal->id.name_number));
+	if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
+	{
+		// BADBAD: the XML code makes this all very ugly
+		char msgbuf[256];
+		memset(msgbuf, 0, 256);
+		snprintf_with_symbols(agentPtr, msgbuf, 255, "Adding to GDS for %y: ", wme_to_add->gds->goal);
+		print_string(agentPtr, msgbuf);
 
-	   xml_begin_tag(agentPtr, kTagVerbose);
-	   xml_att_val(agentPtr, kTypeString, buf);
-
-	   print_wme(agentPtr, wme_to_add);
-	   xml_end_tag(agentPtr, kTagVerbose);               
-   }
+		xml_begin_tag(agentPtr, kTagVerbose);
+		xml_att_val(agentPtr, kTypeString, msgbuf);
+		print_wme(agentPtr, wme_to_add); // prints XML, too
+		xml_end_tag(agentPtr, kTagVerbose);
+	}
 }
 
 /*
@@ -3285,6 +3271,19 @@ a "twitchy" version of OPERAND2, and leave open the possibility that other
 approaches may be better */
 
 void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
+
+	if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) {
+		// BADBAD: the XML code makes this all very ugly
+		char msgbuf[256];
+		memset(msgbuf, 0, 256);
+		snprintf_with_symbols(thisAgent, msgbuf, 255, "Removing state %y because element in GDS changed. WME: ", w->gds->goal);
+		print_string(thisAgent, msgbuf);
+
+		xml_begin_tag(thisAgent, soar_TraceNames::kTagVerbose);
+		xml_att_val(thisAgent, soar_TraceNames::kTypeString, msgbuf);
+		print_wme(thisAgent, w); // prints XML, too
+		xml_end_tag(thisAgent, soar_TraceNames::kTagVerbose);
+	}
 
 	/* REW: begin 11.25.96 */ 
 #ifndef NO_TIMING_STUFF

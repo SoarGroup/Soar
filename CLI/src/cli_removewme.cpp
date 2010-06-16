@@ -109,19 +109,6 @@ bool CommandLineInterface::DoRemoveWME(unsigned long timetag) {
 		{
 			if ( pWme->gds->goal != 0 ) 
 			{
-				if ( m_pAgentSoar->soar_verbose_flag || m_pAgentSoar->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
-				{
-					std::stringstream removeMessage;
-					removeMessage << "DoRemoveWME: Removing state S" << pWme->gds->goal->id.level << " because element in GDS changed.";
-					print( m_pAgentSoar, const_cast<char*>("\n%s"), removeMessage.str().c_str() );
-					print( m_pAgentSoar, const_cast<char*>(" WME: ") ); 
-
-					xml_begin_tag( m_pAgentSoar, soar_TraceNames::kTagVerbose );
-					xml_att_val( m_pAgentSoar, soar_TraceNames::kTypeString, removeMessage.str().c_str() );
-					print_wme( m_pAgentSoar, pWme);
-					xml_end_tag( m_pAgentSoar, soar_TraceNames::kTagVerbose );
-				}
-
 				gds_invalid_so_remove_goal( m_pAgentSoar, pWme );
 				/* NOTE: the call to remove_wme_from_wm will take care of checking if
 				GDS should be removed */

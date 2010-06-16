@@ -109,14 +109,10 @@ void print (agent* thisAgent, const char *format, ...) {
   print_string (thisAgent, buf);
 }
 
-void print_with_symbols (agent* thisAgent, 
-						 const char *format, ...) {
-  va_list args;
-  char buf[PRINT_BUFSIZE];
+void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const char *format, va_list args) {
   char *ch;
   
-  va_start (args, format);
-  ch = buf;
+  ch = dest;
   while (TRUE) {
     /* --- copy anything up to the first "%" --- */
     while ((*format != '%') && (*format != 0)) *(ch++) = *(format++);
@@ -127,17 +123,30 @@ void print_with_symbols (agent* thisAgent,
 			the difference between the address of ch and
 			the address of the beginning of the buffer
 			*/
-      symbol_to_string (thisAgent, va_arg(args, Symbol *), TRUE, ch, PRINT_BUFSIZE - (ch - buf));
+      symbol_to_string (thisAgent, va_arg(args, Symbol *), TRUE, ch, count - (ch - dest));
       while (*ch) ch++;
     } else {
       *(ch++) = '%';
     }
     format += 2;
   }
-  va_end (args);
+}
 
-  *ch = 0;
+void print_with_symbols (agent* thisAgent, const char *format, ...) {
+  va_list args;
+  char buf[PRINT_BUFSIZE];
+  
+  va_start (args, format);
+  vsnprintf_with_symbols(thisAgent, buf, PRINT_BUFSIZE, format, args);
+  va_end (args);
   print_string (thisAgent, buf);
+}
+
+void snprintf_with_symbols (agent* thisAgent, char* dest, size_t count, const char *format, ...) {
+  va_list args;
+  va_start (args, format);
+  vsnprintf_with_symbols(thisAgent, dest, count, format, args);
+  va_end (args);
 }
 
 void print_spaces (agent* thisAgent, int n) {
@@ -1214,4 +1223,3 @@ Bool passes_wme_filtering(agent* /*thisAgent*/, wme * /*w*/, Bool /*isAdd*/) {
 //  }
   return TRUE; /* no defined filters match -> w passes */
 }
-
