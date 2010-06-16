@@ -79,6 +79,7 @@ extern void print_phase  (agent* thisAgent, const char *s, bool end_phase);
 
 extern void print (agent* thisAgent, const char *format, ... );
 extern void print_with_symbols (agent* thisAgent, const char *format, ...);
+extern void snprintf_with_symbols (agent* thisAgent, char* dest, size_t count, const char *format, ...);
 extern void print_spaces (agent* thisAgent, int n);
 
 extern void filtered_print_wme_remove(agent* thisAgent, wme *w);
