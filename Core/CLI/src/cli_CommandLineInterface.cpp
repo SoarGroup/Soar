@@ -30,6 +30,7 @@
 #include "KernelHeaders.h"
 
 #include "agent.h"
+#include "xml.h"
 
 using namespace cli;
 using namespace sml;
