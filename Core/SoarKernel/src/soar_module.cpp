@@ -68,19 +68,6 @@ namespace soar_module
 			{
 				if ( w->gds->goal != NIL )
 				{	             
-					if ( my_agent->soar_verbose_flag || my_agent->sysparams[TRACE_WM_CHANGES_SYSPARAM] )
-					{
-						char buf[256];
-						SNPRINTF( buf, 254, "remove_module_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level );
-						print( my_agent, buf );
-						print( my_agent, " WME: " ); 
-						
-						xml_begin_tag( my_agent, soar_TraceNames::kTagVerbose );
-						xml_att_val( my_agent, soar_TraceNames::kTypeString, buf );
-						print_wme( my_agent, w );
-						xml_end_tag( my_agent, soar_TraceNames::kTagVerbose );
-					}
-					
 					gds_invalid_so_remove_goal( my_agent, w );
 					
 					/* NOTE: the call to remove_wme_from_wm will take care of checking if GDS should be removed */

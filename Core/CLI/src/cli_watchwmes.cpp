@@ -158,19 +158,6 @@ int RemoveWme(agent* pSoarAgent, wme* pWme)
 	/* REW: begin 09.15.96 */
 	if (pWme->gds) {
 		if (pWme->gds->goal != NIL) {
-			if (pSoarAgent->soar_verbose_flag || pSoarAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM])
-				{
-					print(pSoarAgent, "\nremove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
-					print(pSoarAgent, " WME: "); 
-
-					char buf[256];
-					SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", pWme->gds->goal->id.level);
-					xml_begin_tag(pSoarAgent, soar_TraceNames::kTagVerbose);
-					xml_att_val(pSoarAgent, soar_TraceNames::kTypeString, buf);
-					print_wme(pSoarAgent, pWme);
-					xml_end_tag(pSoarAgent, soar_TraceNames::kTagVerbose);
-				}
-
 			gds_invalid_so_remove_goal(pSoarAgent, pWme);
 			/* NOTE: the call to remove_wme_from_wm will take care of checking if
 			GDS should be removed */

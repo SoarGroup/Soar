@@ -270,21 +270,7 @@ Bool remove_input_wme (agent* thisAgent, wme *w) {
 	remove_from_dll (w->id->id.input_wmes, w, next, prev);
 	/* REW: begin 09.15.96 */
 	if (w->gds) {
-		if (w->gds->goal != NIL){
-			if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
-		 {
-			 char buf[256];
-			 SNPRINTF(buf, 254, "remove_input_wme: Removing state S%d because element in GDS changed.", w->gds->goal->id.level);
-
-			 print(thisAgent, buf );
-			 print(thisAgent, " WME: "); 
-
-			 xml_begin_tag( thisAgent, kTagVerbose );
-			 xml_att_val( thisAgent, kTypeString, buf );
-			 print_wme(thisAgent, w);
-			 xml_end_tag( thisAgent, kTagVerbose );
-		 }
-
+		if (w->gds->goal != NIL) {
 			gds_invalid_so_remove_goal(thisAgent, w);
 			/* NOTE: the call to remove_wme_from_wm will take care
 			of checking if GDS should be removed */
