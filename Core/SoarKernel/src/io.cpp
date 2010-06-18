@@ -833,13 +833,14 @@ Bool tio_whitespace[256];
 Symbol *get_io_symbol_from_tio_constituent_string (agent* thisAgent, char *input_string) {
   int int_val;
   double float_val;
-  Bool possible_id, possible_var, possible_ic, possible_fc;
+  Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
   Bool rereadable;
   
   determine_possible_symbol_types_for_string (input_string,
                                               strlen(input_string),
                                               &possible_id,
                                               &possible_var,
+                                              &possible_sc,
                                               &possible_ic,
                                               &possible_fc,
                                               &rereadable);
