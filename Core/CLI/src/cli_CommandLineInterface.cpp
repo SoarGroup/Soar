@@ -272,7 +272,7 @@ void CommandLineInterface::PushCall( CallData callData )
 	if (callData.pAgent) 
 	{
 		m_pAgentSML = callData.pAgent;
-		m_pAgentSoar = m_pAgentSML->GetSoarAgent();
+		m_pAgentSoar = m_pAgentSoar;
 		assert( m_pAgentSoar );
 	} else {
 		m_pAgentSML = 0;
@@ -337,12 +337,12 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 		}
 
 		// Tell kernel to collect result in command buffer as opposed to trace buffer
-		xml_begin_command_mode( m_pAgentSML->GetSoarAgent() );
+		xml_begin_command_mode( m_pAgentSoar );
 	}
 	else
 	{
 		// Retrieve command buffer, tell kernel to use trace buffer again
-		ElementXML* pXMLCommandResult = xml_end_command_mode( m_pAgentSML->GetSoarAgent() );
+		ElementXML* pXMLCommandResult = xml_end_command_mode( m_pAgentSoar );
 
 		// The root object is just a <trace> tag.  The substance is in the children
 		// Add childrend of the command buffer to response tags
