@@ -110,6 +110,7 @@ extern void determine_possible_symbol_types_for_string (char *s,
                                                         size_t length_of_s,
                                                         Bool *possible_id,
                                                         Bool *possible_var,
+                                                        Bool *possible_sc,
                                                         Bool *possible_ic,
                                                         Bool *possible_fc,
                                                         Bool *rereadable);

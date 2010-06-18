@@ -305,13 +305,14 @@ void read_rest_of_floating_point_number (agent* thisAgent) {
 }
 
 Bool determine_type_of_constituent_string (agent* thisAgent) {
-	Bool possible_id, possible_var, possible_ic, possible_fc;
+	Bool possible_id, possible_var, possible_sc, possible_ic, possible_fc;
 	Bool rereadable;
 
 	determine_possible_symbol_types_for_string (thisAgent->lexeme.string,
 		thisAgent->lexeme.length,
 		&possible_id,
 		&possible_var,
+		&possible_sc,
 		&possible_ic,
 		&possible_fc,
 		&rereadable);
@@ -364,16 +365,21 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 		return (errno == 0);
 	}
 
-	thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
-	if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
-		if ( (thisAgent->lexeme.string[0] == '<') || 
-		     (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') )
-		{
-			print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", thisAgent->lexeme.string);
-			print_location_of_most_recent_lexeme(thisAgent);
-			xml_generate_warning(thisAgent, "Warning: Suspicious string constant");		   
+	if (possible_sc) {
+		thisAgent->lexeme.type = SYM_CONSTANT_LEXEME;
+		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) {
+			if ( (thisAgent->lexeme.string[0] == '<') || 
+				 (thisAgent->lexeme.string[thisAgent->lexeme.length-1] == '>') )
+			{
+				print (thisAgent, "Warning: Suspicious string constant \"%s\"\n", thisAgent->lexeme.string);
+				print_location_of_most_recent_lexeme(thisAgent);
+				xml_generate_warning(thisAgent, "Warning: Suspicious string constant");		   
+			}
 		}
+		return TRUE;
 	}
+
+	thisAgent->lexeme.type = QUOTED_STRING_LEXEME;
 	return TRUE;
 }
 
@@ -1120,6 +1126,7 @@ void determine_possible_symbol_types_for_string (char *s,
 												 size_t length_of_s,
 												 Bool *possible_id, 
 												 Bool *possible_var, 
+												 Bool *possible_sc, 
 												 Bool *possible_ic, 
 												 Bool *possible_fc, 
 												 Bool *rereadable) {
@@ -1128,6 +1135,7 @@ void determine_possible_symbol_types_for_string (char *s,
 
 	*possible_id = FALSE;
 	*possible_var = FALSE;
+	*possible_sc = FALSE;
 	*possible_ic = FALSE;
 	*possible_fc = FALSE;
 	*rereadable = FALSE;
@@ -1135,25 +1143,32 @@ void determine_possible_symbol_types_for_string (char *s,
 	/* --- check if it's an integer or floating point number --- */
 	if (number_starters[static_cast<unsigned char>(*s)]) {
 		ch = s;
-		if ((*ch=='+')||(*ch=='-')) ch++;  /* optional leading + or - */
-		while (isdigit(*ch)) ch++;         /* string of digits */
+		if ((*ch=='+')||(*ch=='-'))
+			ch++;								/* optional leading + or - */
+		while (isdigit(*ch)) 
+			ch++;								/* string of digits */
 		if ((*ch==0)&&(isdigit(*(ch-1))))
 			*possible_ic = TRUE;
 		if (*ch=='.') {
-			ch++;                              /* decimal point */
-			while (isdigit(*ch)) ch++;         /* string of digits */
+			ch++;								/* decimal point */
+			while (isdigit(*ch)) 
+				ch++;							/* string of digits */
 			if ((*ch=='e')||(*ch=='E')) {
-				ch++;                              /* E */
-				if ((*ch=='+')||(*ch=='-')) ch++;  /* optional leading + or - */
-				while (isdigit(*ch)) ch++;         /* string of digits */
+				ch++;							/* E */
+				if ((*ch=='+')||(*ch=='-')) 
+					ch++;						/* optional leading + or - */
+				while (isdigit(*ch))
+					ch++;						/* string of digits */
 			}
-			if (*ch==0) *possible_fc = TRUE;
+			if (*ch==0) 
+				*possible_fc = TRUE;
 		}
 	}
 
 	/* --- make sure it's entirely constituent characters --- */
 	for (ch=s; *ch!=0; ch++)
-		if (! constituent_char[static_cast<unsigned char>(*ch)]) return;
+		if (! constituent_char[static_cast<unsigned char>(*ch)]) 
+			return;
 
 	/* --- check for rereadability --- */
 	all_alphanum = TRUE;
@@ -1170,8 +1185,12 @@ void determine_possible_symbol_types_for_string (char *s,
 		*rereadable = TRUE;
 	}
 
+	/* --- any string of constituents could be a sym constant --- */
+	*possible_sc = TRUE;
+
 	/* --- check whether it's a variable --- */
-	if ((*s=='<')&&(*(s+length_of_s-1)=='>')) *possible_var = TRUE;
+	if ((*s=='<')&&(*(s+length_of_s-1)=='>')) 
+		*possible_var = TRUE;
 
 	/* --- check if it's an identifier --- */
 	// long term identifiers start with @
@@ -1182,7 +1201,8 @@ void determine_possible_symbol_types_for_string (char *s,
 	}
 	if (isalpha(*ch) && *(++ch) != '\0') {
 		/* --- is the rest of the string an integer? --- */
-		while (isdigit(*ch)) ch++;
+		while (isdigit(*ch)) 
+			ch++;
 		if (*ch=='\0')
 			*possible_id = TRUE;
 	}
