@@ -32,7 +32,7 @@ bool CommandLineInterface::DoInitSoar() {
 	bool ok = m_pAgentSML->Reinitialize() ;
 
 	// S1 gets created during Reinitialize, clear its output from the trace buffers
-	xml_invoke_callback( m_pAgentSML->GetSoarAgent() );
+	xml_invoke_callback( m_pAgentSoar );
 	m_pAgentSML->FlushPrintOutput();
 
 	SetTrapPrintCallbacks( true );

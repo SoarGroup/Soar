@@ -111,11 +111,11 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
 
 		if (m_RawOutput)
 		{
-			print_partial_match_information(m_pAgentSML->GetSoarAgent(), prod, wtt);
+			print_partial_match_information(m_pAgentSoar, prod, wtt);
 		}
 		else
 		{
-			xml_partial_match_information(m_pAgentSML->GetSoarAgent(), prod, wtt);
+			xml_partial_match_information(m_pAgentSoar, prod, wtt);
 		}
 
 	} else {
@@ -125,11 +125,11 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
 
 		if (m_RawOutput)
 		{
-			print_match_set(m_pAgentSML->GetSoarAgent(), wtt, mst);
+			print_match_set(m_pAgentSoar, wtt, mst);
 		}
 		else
 		{
-			xml_match_set(m_pAgentSML->GetSoarAgent(), wtt, mst);
+			xml_match_set(m_pAgentSoar, wtt, mst);
 		}
 	}
 
