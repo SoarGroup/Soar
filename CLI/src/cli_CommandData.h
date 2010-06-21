@@ -230,6 +230,7 @@ namespace cli {
 		WATCH_WATERFALL,
 		WATCH_EPMEM,
 		WATCH_SMEM,
+		WATCH_GDS,
 		WATCH_NUM_OPTIONS, // must be last
 	};
 
