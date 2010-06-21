@@ -2797,7 +2797,7 @@ void add_wme_to_gds(agent* agentPtr, goal_dependency_set* gds, wme* wme_to_add)
 	wme_to_add->gds = gds;
 	insert_at_head_of_dll(gds->wmes_in_gds, wme_to_add, gds_next, gds_prev);
 
-	if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_WM_CHANGES_SYSPARAM]) 
+	if (agentPtr->soar_verbose_flag || agentPtr->sysparams[TRACE_GDS_SYSPARAM]) 
 	{
 		// BADBAD: the XML code makes this all very ugly
 		char msgbuf[256];
@@ -3272,7 +3272,7 @@ approaches may be better */
 
 void gds_invalid_so_remove_goal (agent* thisAgent, wme *w) {
 
-	if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM]) {
+	if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_GDS_SYSPARAM]) {
 		// BADBAD: the XML code makes this all very ugly
 		char msgbuf[256];
 		memset(msgbuf, 0, 256);

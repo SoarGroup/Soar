@@ -374,6 +374,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	long cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM;
 	long cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM;
 	long cur_TRACE_WM_CHANGES_SYSPARAM;
+	long cur_TRACE_GDS_SYSPARAM;
 	/* kjh (CUSP-B4) end */
 
 	thisAgent->did_PE = FALSE;    /* RCHONG:  10.11 */
@@ -391,6 +392,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM   = thisAgent->sysparams[TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM];
 	cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM      = thisAgent->sysparams[TRACE_FIRINGS_PREFERENCES_SYSPARAM];
 	cur_TRACE_WM_CHANGES_SYSPARAM               = thisAgent->sysparams[TRACE_WM_CHANGES_SYSPARAM];
+	cur_TRACE_GDS_SYSPARAM                      = thisAgent->sysparams[TRACE_GDS_SYSPARAM];
 
 	/* Temporarily disable tracing: */
 	set_sysparam(thisAgent, TRACE_CONTEXT_DECISIONS_SYSPARAM,        FALSE);
@@ -400,6 +402,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   NONE_WME_TRACE);
 	set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      FALSE);
 	set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               FALSE);
+	set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      FALSE);
 	/* kjh (CUSP-B4) end */
 
 	clear_goal_stack (thisAgent);
@@ -443,6 +446,7 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM,   cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM);
 	set_sysparam(thisAgent, TRACE_FIRINGS_PREFERENCES_SYSPARAM,      cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM);
 	set_sysparam(thisAgent, TRACE_WM_CHANGES_SYSPARAM,               cur_TRACE_WM_CHANGES_SYSPARAM);
+	set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
 	/* kjh (CUSP-B4) end */
 
 	soar_invoke_callbacks(thisAgent, 
