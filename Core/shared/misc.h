@@ -18,6 +18,15 @@
 #include <string>
 #include <cstdio>
 
+inline const char* get_directory_separator()
+{
+#ifdef WIN32
+	return "\\";
+#else //!WIN32
+	return "/";
+#endif
+}
+
 // Conversion of value to string
 template<class T> std::string& to_string( const T& x, std::string& dest )
 {

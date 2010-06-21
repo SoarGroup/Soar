@@ -252,7 +252,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 	//DoCommandInternal(pCommandLine);
 	std::stringstream soarStream;
 	soarStream << pCommandLine;
-	StreamSource( soarStream, 0 );
+	StreamSource( soarStream );
 
 	SetTrapPrintCallbacks( false );
 
@@ -267,7 +267,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
 void CommandLineInterface::PushCall( CallData callData )
 {
-	m_pCallDataStack.push( callData );
+	m_CallDataStack.push( callData );
 
 	if (callData.pAgent) 
 	{
@@ -287,12 +287,12 @@ void CommandLineInterface::PushCall( CallData callData )
 
 void CommandLineInterface::PopCall()
 {
-	m_pCallDataStack.pop();
+	m_CallDataStack.pop();
 	sml::AgentSML* pAgent = 0;
 	
-	if ( m_pCallDataStack.size() )
+	if ( m_CallDataStack.size() )
 	{
-		const CallData& callData = m_pCallDataStack.top();
+		const CallData& callData = m_CallDataStack.top();
 		pAgent = callData.pAgent;
 		m_RawOutput = callData.rawOutput;
 
