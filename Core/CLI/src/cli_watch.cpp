@@ -32,6 +32,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 		{'D',"default-productions",		OPTARG_OPTIONAL},
 		{'e',"epmem",					OPTARG_OPTIONAL},
 		{'f',"fullwmes",				OPTARG_NONE},
+		{'g',"gds",						OPTARG_OPTIONAL},
 		{'i',"indifferent-selection",	OPTARG_OPTIONAL},
 		{'j',"justifications",			OPTARG_OPTIONAL},
 		{'L',"learning",				OPTARG_REQUIRED},
@@ -114,6 +115,16 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 			case 'f'://fullwmes
 				options.set(WATCH_WME_DETAIL);
 				wmeSetting = 2;
+				break;
+
+			case 'g'://gds
+				options.set(WATCH_GDS);
+				if (m_OptionArgument.size()) {
+					if (!CheckOptargRemoveOrZero()) return false; //error, code set in CheckOptargRemoveOrZero
+					settings.reset(WATCH_GDS);
+				} else {
+					settings.set(WATCH_GDS);
+				}
 				break;
 
 			case 'i'://indifferent-selection
@@ -307,6 +318,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	options.set(WATCH_PHASES);
 	options.set(WATCH_DECISIONS);
 	options.set(WATCH_WATERFALL);
+	options.set(WATCH_GDS);
 
 	// Start with all off, turn on as appropriate
 	settings.reset(WATCH_PREFERENCES);
@@ -319,6 +331,7 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 	settings.reset(WATCH_PHASES);
 	settings.reset(WATCH_DECISIONS);
 	settings.reset(WATCH_WATERFALL);
+	settings.reset(WATCH_GDS);
 
 	switch (level) {
 		case 0:// none
@@ -343,8 +356,9 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 			settings.set(WATCH_JUSTIFICATIONS);
 			settings.set(WATCH_TEMPLATES);
 			// falls through
-		case 2:// phases
+		case 2:// phases, gds
 			settings.set(WATCH_PHASES);
+			settings.set(WATCH_GDS);
 			// falls through
 		case 1:// decisions
 			settings.set(WATCH_DECISIONS);
@@ -431,6 +445,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 			m_Result << "\n  Waterfall:  " << (m_pAgentSoar->sysparams[TRACE_WATERFALL_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  EpMem:  " << (m_pAgentSoar->sysparams[TRACE_EPMEM_SYSPARAM] ? "on" : "off");
 			m_Result << "\n  SMem:  " << (m_pAgentSoar->sysparams[TRACE_SMEM_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  GDS:  " << (m_pAgentSoar->sysparams[TRACE_GDS_SYSPARAM] ? "on" : "off");
 		} else {
 			std::string temp;
 			AppendArgTag(sml_Names::kParamWatchDecisions, sml_Names::kTypeBoolean, 
@@ -484,6 +499,9 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 			AppendArgTag(sml_Names::kParamWatchSMem, sml_Names::kTypeBoolean, 
 				m_pAgentSoar->sysparams[TRACE_SMEM_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
+			AppendArgTag(sml_Names::kParamWatchGDS, sml_Names::kTypeBoolean, 
+				m_pAgentSoar->sysparams[TRACE_GDS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 
 		return true;
@@ -504,6 +522,10 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
 	if (options.test(WATCH_DEFAULT)) {
 		set_sysparam(m_pAgentSoar, TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM, settings.test(WATCH_DEFAULT));
+	}
+
+	if (options.test(WATCH_GDS)) {
+		set_sysparam(m_pAgentSoar, TRACE_GDS_SYSPARAM, settings.test(WATCH_GDS));
 	}
 
 	if (options.test(WATCH_INDIFFERENT)) {

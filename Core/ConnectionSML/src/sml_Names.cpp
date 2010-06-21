@@ -394,6 +394,7 @@ char const* const sml_Names::kParamWatchRL							= "watchrl";
 char const* const sml_Names::kParamWatchWaterfall					= "watchwaterfall";
 char const* const sml_Names::kParamWatchEpMem						= "watchepmem";
 char const* const sml_Names::kParamWatchSMem						= "watchsmem";
+char const* const sml_Names::kParamWatchGDS							= "watchgds";
 
 // Values (these are not case sensitive unlike the rest)
 char const* const sml_Names::kTrue	= "true" ;
