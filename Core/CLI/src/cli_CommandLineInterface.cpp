@@ -272,7 +272,7 @@ void CommandLineInterface::PushCall( CallData callData )
 	if (callData.pAgent) 
 	{
 		m_pAgentSML = callData.pAgent;
-		m_pAgentSoar = m_pAgentSoar;
+		m_pAgentSoar = m_pAgentSML->GetSoarAgent();
 		assert( m_pAgentSoar );
 	} else {
 		m_pAgentSML = 0;
