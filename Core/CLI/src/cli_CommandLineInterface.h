@@ -801,7 +801,7 @@ protected:
 
 	eRunInterleaveMode ParseRunInterleaveOptarg();
 
-	void HandleSourceError(int errorLine, const std::string* pFilename);
+	void HandleSourceError(int errorLine);
 
 	void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
 	void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
@@ -848,7 +848,7 @@ protected:
 	void GetReteStats(); // for stats
 	void ResetMaxStats(); // for stats
 
-	bool StreamSource( std::istream& soarStream, const std::string* pFilename );
+	bool StreamSource( std::istream& soarStream );
 
 	// These help manage nested CLI calls
 	void PushCall( CallData callData );
@@ -885,6 +885,7 @@ protected:
 	bool				m_Initialized;			// True if state has been cleared for a new command execution
 	static std::ostringstream m_Result;			// Raw output from the command
 	bool				m_RawOutput;			// True if we want string output.
+	std::stack< std::string > m_SourceFileStack;	// Current source file, if any
 	bool				m_SourceError;			// Used to control debug printing for source command errors
 	std::string			m_SourceErrorDetail;	// Used for detailed source error output
 	int					m_SourceDepth;			// Depth of source command calls.
@@ -904,7 +905,7 @@ protected:
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	sml::KernelSML*		m_pKernelSML;
 	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
-	std::stack< CallData > m_pCallDataStack;	// Call data we're currently working with
+	std::stack< CallData > m_CallDataStack;		// Call data we're currently working with
 	agent*				m_pAgentSoar;			// Agent we're currently working with (soar kernel)
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	std::string			m_LogFilename;			// Used for logging to a file.
