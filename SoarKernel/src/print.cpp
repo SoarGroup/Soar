@@ -130,6 +130,7 @@ void vsnprintf_with_symbols(agent* thisAgent, char* dest, size_t count, const ch
     }
     format += 2;
   }
+  *ch = 0;
 }
 
 void print_with_symbols (agent* thisAgent, const char *format, ...) {
