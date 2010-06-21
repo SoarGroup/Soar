@@ -142,7 +142,6 @@ protected:
 
 public:
 
-	const char* GetDirectorySeparator();	// \ or / depending on system
 	const char* GetLibraryLocation();		// Hopefully parent of bin, lib, share
 	void SetLibraryLocation(const std::string& location);
 

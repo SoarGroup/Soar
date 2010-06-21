@@ -67,6 +67,15 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
 	unsigned char rete_addition_result = 0;
 	p = parse_production( m_pAgentSoar, &rete_addition_result );
 
+	if (!m_SourceFileStack.empty()) {
+		std::string path;
+		GetCurrentWorkingDirectory(path);
+		path.append(get_directory_separator());
+		path.append(m_SourceFileStack.top());
+
+		p->filename = make_memory_block_for_string(m_pAgentSoar, path.c_str());
+	}
+
 	set_lexer_allow_ids( m_pAgentSoar, true );
 	soarAlternateInput( m_pAgentSoar, 0, 0, true ); 
 

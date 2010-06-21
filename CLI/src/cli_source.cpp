@@ -132,7 +132,9 @@ bool CommandLineInterface::DoSource(std::string filename) {
 		return SetError(CLIError::kOpenFileFail);
 	}
 
-	bool ret = StreamSource( soarFile, &filename );
+	m_SourceFileStack.push(filename);
+	bool ret = StreamSource( soarFile );
+	m_SourceFileStack.pop();
 	
 	soarFile.close();
 	if (path.length()) DoPopD();
@@ -140,7 +142,7 @@ bool CommandLineInterface::DoSource(std::string filename) {
 	return ret;
 }
 
-bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::string* pFilename ) {
+bool CommandLineInterface::StreamSource( std::istream& soarStream ) {
 	std::string line;				// Each line removed from the file
 	std::string command;			// The command, sometimes spanning multiple lines
 	std::string::size_type pos;		// Used to find braces on a line (triggering multiple line spanning commands)
@@ -178,7 +180,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 	if ( m_SourceDepth >= 100 )
 	{
 		SetError(CLIError::kSourceDepthExceeded);
-		HandleSourceError(lineCount, pFilename);
+		HandleSourceError(lineCount);
 		return false;
 	}
 
@@ -199,7 +201,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 
 		if (!isEcho && !TrimComments(line)) {
 			SetError(CLIError::kNewlineBeforePipe);
-			HandleSourceError(lineCount, pFilename);
+			HandleSourceError(lineCount);
 			return false;
 		}
 
@@ -219,7 +221,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 					TrimLeadingWhitespace(line);
 					if (!TrimComments(line)) { // Trim whitespace and comments on additional lines
 						SetError(CLIError::kNewlineBeforePipe);
-						HandleSourceError(lineCount, pFilename);
+						HandleSourceError(lineCount);
 						return false; 
 					}
 				}
@@ -238,7 +240,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 						if (iter == line.end()) {
 							// can't escape newlines
 							SetError(CLIError::kEscapedNewline);
-							HandleSourceError(lineCount, pFilename);
+							HandleSourceError(lineCount);
 							return false; 
 						}
 
@@ -297,22 +299,22 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 			if (braces > 0) {
 				// EOF while still nested
 				SetError(CLIError::kUnmatchedBrace);
-				HandleSourceError(lineCountCache, pFilename);
+				HandleSourceError(lineCountCache);
 				return false;
 
 			} else if (braces < 0) {
 				SetError(CLIError::kExtraClosingBrace);
-				HandleSourceError(lineCountCache, pFilename);
+				HandleSourceError(lineCountCache);
 				return false;
 
 			} else if (quote == true) { // bug 967 fix
 				SetError(CLIError::kUnmatchedBracketOrQuote);
-				HandleSourceError(lineCountCache, pFilename);
+				HandleSourceError(lineCountCache);
 				return false;
 
 			} else if (pipe == true) { // bug 968 fix
 				SetError(CLIError::kNewlineBeforePipe);
-				HandleSourceError(lineCountCache, pFilename);
+				HandleSourceError(lineCountCache);
 				return false;
 			}
 
@@ -341,7 +343,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 
 		} else {
 			// Command failed, error in result
-			HandleSourceError(lineCountCache, pFilename);
+			HandleSourceError(lineCountCache);
 			return false;
 		}	
 	}
@@ -350,10 +352,10 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 	--m_SourceDepth;
 
 	// If mode ALL, print summary
-	if (pFilename && m_SourceMode == SOURCE_ALL) {
+	if (!m_SourceFileStack.empty() && m_SourceMode == SOURCE_ALL) {
 		if (m_RawOutput) {
 			if (m_NumProductionsSourced) m_Result << '\n';	// add a newline if a production was sourced
-			m_Result << *pFilename << ": " << m_NumProductionsSourced << " production" << ((m_NumProductionsSourced == 1) ? " " : "s ") << "sourced.";
+			m_Result << m_SourceFileStack.top() << ": " << m_NumProductionsSourced << " production" << ((m_NumProductionsSourced == 1) ? " " : "s ") << "sourced.";
 			if (m_NumProductionsExcised) {
 				m_Result << " " << m_NumProductionsExcised << " production" << ((m_NumProductionsExcised == 1) ? " " : "s ") << "excised.";
 				if (m_SourceVerbose) {
@@ -373,7 +375,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 
 		} else {
 			std::string temp;
-			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, *pFilename);
+			AppendArgTagFast(sml_Names::kParamFilename, sml_Names::kTypeString, m_SourceFileStack.top());
 			AppendArgTag(sml_Names::kParamSourcedProductionCount, sml_Names::kTypeInt, to_string(m_NumProductionsSourced, temp));
 			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, to_string(m_NumProductionsExcised, temp));
 			AppendArgTag(sml_Names::kParamExcisedProductionCount, sml_Names::kTypeInt, to_string(m_NumProductionsIgnored, temp));
@@ -461,7 +463,7 @@ bool CommandLineInterface::StreamSource( std::istream& soarStream, const std::st
 	return true;
 }
 
-void CommandLineInterface::HandleSourceError( int errorLine, const std::string* pFilename ) {
+void CommandLineInterface::HandleSourceError( int errorLine ) {
 	if ( !m_SourceError && m_SourceDepth > 1 ) { // only do this when we're actually dealing with a source error
 
 		// Remove listener
@@ -480,14 +482,15 @@ void CommandLineInterface::HandleSourceError( int errorLine, const std::string* 
 		std::string temp;
 		m_SourceErrorDetail += to_string(errorLine, temp);
 
-		if ( pFilename )
+		if ( !m_SourceFileStack.empty() )
 		{
 			m_SourceErrorDetail += " of ";
 
-			std::string directory;
-			GetCurrentWorkingDirectory(directory); // Again, ignore error here
-
-			m_SourceErrorDetail += *pFilename + " (" + directory + ")";
+			std::string path;
+			GetCurrentWorkingDirectory(path);
+			m_SourceErrorDetail.append(path);
+			m_SourceErrorDetail.append(get_directory_separator());
+			m_SourceErrorDetail.append(m_SourceFileStack.top());
 		}
 
 		// PopD to original source directory
@@ -498,9 +501,9 @@ void CommandLineInterface::HandleSourceError( int errorLine, const std::string* 
 
 		m_SourceError = true;
 
-	} else if ( pFilename ) {
+	} else if ( !m_SourceFileStack.empty() ) {
 		std::string temp;
-		m_SourceErrorDetail += "\n\t--> Sourced by: " + *pFilename + " (line " + to_string(errorLine, temp) + ")";
+		m_SourceErrorDetail += "\n\t--> Sourced by: " + m_SourceFileStack.top() + " (line " + to_string(errorLine, temp) + ")";
 	}
 
 	// Reset depth to zero
