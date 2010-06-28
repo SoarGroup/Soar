@@ -538,6 +538,41 @@ public class MainFrame
 		setAgentFocusInternal(agent, true) ;
 	}
 	
+	private static final String kBeanName = "SoarCommandLine:name=";
+	private void registerBean()
+	{
+	    assert m_AgentFocus != null;
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        try {
+            ObjectName mbeanName = new ObjectName(kBeanName + m_AgentFocus.GetAgentName());
+            mbs.registerMBean(commandLineMXBean, mbeanName);
+        } catch (MalformedObjectNameException e) {
+            e.printStackTrace();
+        } catch (NotCompliantMBeanException e) {
+            e.printStackTrace();
+        } catch (MBeanRegistrationException e) {
+            e.printStackTrace();
+        } catch (InstanceAlreadyExistsException e) {
+            e.printStackTrace();
+        }
+	}
+	
+	private void unregisterBean()
+	{
+        assert m_AgentFocus != null;
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        try {
+            ObjectName mbeanName = new ObjectName(kBeanName + m_AgentFocus.GetAgentName());
+            mbs.unregisterMBean(mbeanName);
+        } catch (MalformedObjectNameException e) {
+            e.printStackTrace();
+        } catch (InstanceNotFoundException e) {
+            e.printStackTrace();
+        } catch (MBeanRegistrationException e) {
+            e.printStackTrace();
+        }
+	}
+	
 	/** Switch to focusing on a new agent. */
 	private void setAgentFocusInternal(Agent agent, boolean canUnregisterEvents)
 	{
@@ -546,7 +581,6 @@ public class MainFrame
 			return;
 
 		/** First let everyone know that focus is going away from one agent */
-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		if (m_AgentFocus != null)
 		{
 			if (m_Document.isAgentValid(m_AgentFocus) && canUnregisterEvents)
@@ -554,18 +588,7 @@ public class MainFrame
 			else
 				m_AgentFocusGenerator.fireAgentGone(this);
 			
-			// unregister bean
-			try {
-			    ObjectName mbeanName = new ObjectName("SoarCommandLine:name=" + m_AgentFocus.GetAgentName());
-			    mbs.unregisterMBean(mbeanName);
-			} catch (MalformedObjectNameException e) {
-			    e.printStackTrace();
-			} catch (InstanceNotFoundException e) {
-			    e.printStackTrace();
-			} catch (MBeanRegistrationException e) {
-			    e.printStackTrace();
-			}
-			
+			unregisterBean();			
 		}
 
 		/** Now let everyone know that focus has gone to the new agent */
@@ -573,19 +596,7 @@ public class MainFrame
 		
 		if (m_AgentFocus != null) 
 		{
-		    // register bean
-		    try {
-		        ObjectName mbeanName = new ObjectName("SoarCommandLine:name=" + m_AgentFocus.GetAgentName());
-		        mbs.registerMBean(commandLineMXBean, mbeanName);
-		    } catch (MalformedObjectNameException e) {
-		        e.printStackTrace();
-		    } catch (NotCompliantMBeanException e) {
-		        e.printStackTrace();
-		    } catch (MBeanRegistrationException e) {
-		        e.printStackTrace();
-		    } catch (InstanceAlreadyExistsException e) {
-		        e.printStackTrace();
-		    }
+		    registerBean();
 		    
 			m_AgentFocusGenerator.fireAgentGettingFocus(this, m_AgentFocus);
 		}
