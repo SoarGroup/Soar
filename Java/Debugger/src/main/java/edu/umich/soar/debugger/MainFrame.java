@@ -571,23 +571,25 @@ public class MainFrame
 		/** Now let everyone know that focus has gone to the new agent */
 		m_AgentFocus = agent;
 		
-	    // register bean
-        try {
-            ObjectName mbeanName = new ObjectName("SoarCommandLine:name=" + m_AgentFocus.GetAgentName());
-            mbs.registerMBean(commandLineMXBean, mbeanName);
-        } catch (MalformedObjectNameException e) {
-            e.printStackTrace();
-        } catch (NotCompliantMBeanException e) {
-            e.printStackTrace();
-        } catch (MBeanRegistrationException e) {
-            e.printStackTrace();
-        } catch (InstanceAlreadyExistsException e) {
-            e.printStackTrace();
-        }
-
-		if (m_AgentFocus != null)
+		if (m_AgentFocus != null) 
+		{
+		    // register bean
+		    try {
+		        ObjectName mbeanName = new ObjectName("SoarCommandLine:name=" + m_AgentFocus.GetAgentName());
+		        mbs.registerMBean(commandLineMXBean, mbeanName);
+		    } catch (MalformedObjectNameException e) {
+		        e.printStackTrace();
+		    } catch (NotCompliantMBeanException e) {
+		        e.printStackTrace();
+		    } catch (MBeanRegistrationException e) {
+		        e.printStackTrace();
+		    } catch (InstanceAlreadyExistsException e) {
+		        e.printStackTrace();
+		    }
+		    
 			m_AgentFocusGenerator.fireAgentGettingFocus(this, m_AgentFocus);
-
+		}
+		
 		// If we're shutting down nothing to update
 		if (this.getMainWindow().getWindow().isDisposed())
 			return;
