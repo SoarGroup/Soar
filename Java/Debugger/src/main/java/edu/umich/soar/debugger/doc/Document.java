@@ -11,7 +11,19 @@
 ********************************************************************************************/
 package edu.umich.soar.debugger.doc;
 
-import sml.* ;
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.eclipse.swt.widgets.Display;
+
+import sml.Agent;
+import sml.ClientAnalyzedXML;
+import sml.ConnectionInfo;
+import sml.Kernel;
+import sml.smlAgentEventId;
+import sml.smlSystemEventId;
+import sml.smlUpdateEventId;
+import sml.sml_Names;
 import sml.Kernel.RhsFunctionInterface;
 import sml.Kernel.UpdateEventInterface;
 import edu.umich.soar.SoarProperties;
@@ -25,11 +37,6 @@ import edu.umich.soar.debugger.doc.events.SoarChangeListener;
 import edu.umich.soar.debugger.doc.events.SoarConnectionEvent;
 import edu.umich.soar.debugger.general.AppProperties;
 import edu.umich.soar.debugger.modules.FoldingTextView;
-
-import java.io.IOException;
-import java.util.HashMap;
-
-import org.eclipse.swt.widgets.Display;
 
 /********************************************************************************************
 * 
@@ -1018,7 +1025,7 @@ public class Document implements Kernel.AgentEventInterface, Kernel.SystemEventI
 		
 		while (m_DocumentThread.isAlive() && !m_DocumentThread.isExecutedCommand(command))
 		{
-			pumpMessagesOneStep() ;
+            pumpMessagesOneStep() ;
 			
 			// The pause as we sleep here is just how quickly we respond to commands finishing (or UI events).
 			// It won't affect the speed Soar executes.
