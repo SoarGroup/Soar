@@ -9,16 +9,43 @@
 
 package edu.umich.soar.debugger;
 
-import org.eclipse.swt.*;
-import org.eclipse.swt.widgets.*;
-import org.eclipse.swt.layout.*;
-import org.eclipse.swt.graphics.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FontDialog;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 
-import java.io.*;
-import java.util.*;
-
+import sml.Agent;
+import sml.ClientAnalyzedXML;
 import edu.umich.soar.debugger.dialogs.SwtInputDialog;
 import edu.umich.soar.debugger.doc.DebuggerCommands;
 import edu.umich.soar.debugger.doc.Document;
@@ -30,6 +57,7 @@ import edu.umich.soar.debugger.doc.events.SoarAgentEvent;
 import edu.umich.soar.debugger.doc.events.SoarChangeListener;
 import edu.umich.soar.debugger.doc.events.SoarConnectionEvent;
 import edu.umich.soar.debugger.general.AppProperties;
+import edu.umich.soar.debugger.jmx.SoarCommandLineMXBean;
 import edu.umich.soar.debugger.manager.MainWindow;
 import edu.umich.soar.debugger.menu.AgentMenu;
 import edu.umich.soar.debugger.menu.CommandsMenu;
@@ -41,8 +69,6 @@ import edu.umich.soar.debugger.menu.KernelMenu;
 import edu.umich.soar.debugger.menu.LayoutMenu;
 import edu.umich.soar.debugger.menu.PrintMenu;
 import edu.umich.soar.debugger.modules.AbstractView;
-
-import sml.*;
 
 /*******************************************************************************
  * 
@@ -243,6 +269,7 @@ public class MainFrame
 		};
 
 		getDocument().addSoarChangeListener(m_SoarChangeListener);
+		
 	}
 
 	public static MainFrame createNewFrame(Display display, Document doc)
@@ -519,16 +546,44 @@ public class MainFrame
 			return;
 
 		/** First let everyone know that focus is going away from one agent */
+		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		if (m_AgentFocus != null)
 		{
 			if (m_Document.isAgentValid(m_AgentFocus) && canUnregisterEvents)
 				m_AgentFocusGenerator.fireAgentLosingFocus(this, m_AgentFocus);
 			else
 				m_AgentFocusGenerator.fireAgentGone(this);
+			
+			// unregister bean
+			try {
+			    ObjectName mbeanName = new ObjectName("SoarCommandLine:name=" + m_AgentFocus.GetAgentName());
+			    mbs.unregisterMBean(mbeanName);
+			} catch (MalformedObjectNameException e) {
+			    e.printStackTrace();
+			} catch (InstanceNotFoundException e) {
+			    e.printStackTrace();
+			} catch (MBeanRegistrationException e) {
+			    e.printStackTrace();
+			}
+			
 		}
 
 		/** Now let everyone know that focus has gone to the new agent */
 		m_AgentFocus = agent;
+		
+	    // register bean
+        try {
+            ObjectName mbeanName = new ObjectName("SoarCommandLine:name=" + m_AgentFocus.GetAgentName());
+            mbs.registerMBean(commandLineMXBean, mbeanName);
+        } catch (MalformedObjectNameException e) {
+            e.printStackTrace();
+        } catch (NotCompliantMBeanException e) {
+            e.printStackTrace();
+        } catch (MBeanRegistrationException e) {
+            e.printStackTrace();
+        } catch (InstanceAlreadyExistsException e) {
+            e.printStackTrace();
+        }
 
 		if (m_AgentFocus != null)
 			m_AgentFocusGenerator.fireAgentGettingFocus(this, m_AgentFocus);
@@ -1198,4 +1253,31 @@ public class MainFrame
 	 * java.awt.print.PageFormat.LANDSCAPE) ;
 	 * this.setAppProperty("Printing.Landscape", landscape) ; }
 	 */
+
+	private String m_CommandLineResult;
+	private final SoarCommandLineMXBean commandLineMXBean = new SoarCommandLineMXBean() {
+        @Override
+        public String getName()
+        {
+            if (m_AgentFocus == null)
+                return null;
+            return m_AgentFocus.GetAgentName();
+        }
+
+        @Override
+	    public String executeCommandLine(final String line) {
+	        m_CommandLineResult = null;
+	        getDisplay().syncExec(new Runnable()
+	        {
+	            @Override
+	            public void run()
+	            {
+	                m_CommandLineResult = executeCommandPrimeView(line, true);
+	            }
+	        });
+	        return m_CommandLineResult;
+	    }
+	    
+	};
 }
+	

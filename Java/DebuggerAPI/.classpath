@@ -5,11 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/soar-smljava"/>
 	<classpathentry kind="lib" path="/soar-smljava/lib/swt.jar"/>
-	<classpathentry kind="lib" path="lib/jcommon-1.0.10.jar"/>
-	<classpathentry kind="lib" path="lib/jfreechart-1.0.6-swt.jar"/>
-	<classpathentry kind="lib" path="lib/jfreechart-1.0.6.jar"/>
-	<classpathentry kind="lib" path="lib/swtgraphics2d.jar"/>
 	<classpathentry kind="var" path="SML"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/soar-debugger-api"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
