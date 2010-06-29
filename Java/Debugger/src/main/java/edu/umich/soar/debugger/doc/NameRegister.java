@@ -38,8 +38,8 @@ public class NameRegister
 	public AbstractView getView(String name)
 	{
 		return m_NameMap.get(name) ;
-	}
-	
+    }
+
 	/** Records that a particular window is using a given name */
 	public void registerName(String name, AbstractView view)
 	{
