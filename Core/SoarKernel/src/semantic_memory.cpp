@@ -273,8 +273,14 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	//
 
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "vars (id INTEGER PRIMARY KEY,value NONE)" );
-	add_structure( "CREATE TABLE " SMEM_SCHEMA "temporal_symbol_hash (id INTEGER PRIMARY KEY, sym_const NONE, sym_type INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "temporal_symbol_hash_const_type ON " SMEM_SCHEMA "temporal_symbol_hash (sym_type,sym_const)" );
+	
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_type (id INTEGER PRIMARY KEY, sym_type INTEGER)" );	
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_int (id INTEGER PRIMARY KEY, sym_const INTEGER)" );
+	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "symbols_int_const ON " SMEM_SCHEMA "symbols_int (sym_const)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_float (id INTEGER PRIMARY KEY, sym_const REAL)" );
+	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "symbols_float_const ON " SMEM_SCHEMA "symbols_float (sym_const)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_str (id INTEGER PRIMARY KEY, sym_const TEXT)" );
+	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "symbols_str_const ON " SMEM_SCHEMA "symbols_str (sym_const)" );	
 
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_cycle INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "lti_letter_num ON " SMEM_SCHEMA "lti (letter, num)" );
@@ -345,11 +351,35 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	hash_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "temporal_symbol_hash WHERE sym_type=? AND sym_const=?" );
-	add( hash_get );
+	hash_rev_int = new soar_module::sqlite_statement( new_db, "SELECT sym_const FROM " SMEM_SCHEMA "symbols_int WHERE id=?" );
+	add( hash_rev_int );
 
-	hash_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "temporal_symbol_hash (sym_type,sym_const) VALUES (?,?)" );
-	add( hash_add );
+	hash_rev_float = new soar_module::sqlite_statement( new_db, "SELECT sym_const FROM " SMEM_SCHEMA "symbols_float WHERE id=?" );
+	add( hash_rev_float );
+
+	hash_rev_str = new soar_module::sqlite_statement( new_db, "SELECT sym_const FROM " SMEM_SCHEMA "symbols_str WHERE id=?" );
+	add( hash_rev_str );
+	
+	hash_get_int = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "symbols_int WHERE sym_const=?" );
+	add( hash_get_int );
+
+	hash_get_float = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "symbols_float WHERE sym_const=?" );
+	add( hash_get_float );
+
+	hash_get_str = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "symbols_str WHERE sym_const=?" );
+	add( hash_get_str );
+
+	hash_add_type = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "symbols_type (sym_type) VALUES (?)" );
+	add( hash_add_type );
+
+	hash_add_int = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "symbols_int (id,sym_const) VALUES (?,?)" );
+	add( hash_add_int );
+
+	hash_add_float = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "symbols_float (id,sym_const) VALUES (?,?)" );
+	add( hash_add_float );
+
+	hash_add_str = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "symbols_str (id,sym_const) VALUES (?,?)" );
+	add( hash_add_str );
 
 	//
 
@@ -373,7 +403,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	web_truncate = new soar_module::sqlite_statement( new_db, "DELETE FROM " SMEM_SCHEMA "web WHERE parent_id=?" );
 	add( web_truncate );
 
-	web_expand = new soar_module::sqlite_statement( new_db, "SELECT tsh_a.sym_const AS attr_const, tsh_a.sym_type AS attr_type, vcl.sym_const AS value_const, vcl.sym_type AS value_type, vcl.letter AS value_letter, vcl.num AS value_num, vcl.val_lti AS value_lti FROM ((" SMEM_SCHEMA "web w LEFT JOIN " SMEM_SCHEMA "temporal_symbol_hash tsh_v ON w.val_const=tsh_v.id) vc LEFT JOIN " SMEM_SCHEMA "lti AS lti ON vc.val_lti=lti.id) vcl INNER JOIN " SMEM_SCHEMA "temporal_symbol_hash tsh_a ON vcl.attr=tsh_a.id WHERE parent_id=?" );
+	web_expand = new soar_module::sqlite_statement( new_db, "SELECT tsh_a.sym_type AS attr_type, tsh_a.id AS attr_hash, vcl.sym_type AS value_type, vcl.id AS value_hash, vcl.letter AS value_letter, vcl.num AS value_num, vcl.val_lti AS value_lti FROM ((" SMEM_SCHEMA "web w LEFT JOIN " SMEM_SCHEMA "symbols_type tsh_v ON w.val_const=tsh_v.id) vc LEFT JOIN " SMEM_SCHEMA "lti AS lti ON vc.val_lti=lti.id) vcl INNER JOIN " SMEM_SCHEMA "symbols_type tsh_a ON vcl.attr=tsh_a.id WHERE parent_id=?" );
 	add( web_expand );
 
 	//
@@ -464,10 +494,10 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num FROM " SMEM_SCHEMA "lti" );
 	add( vis_lti );
 
-	vis_value_const = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh1.sym_type AS attr_type, tsh1.sym_const AS attr_val, tsh2.sym_type AS val_type, tsh2.sym_const AS val_val FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "temporal_symbol_hash tsh1, " SMEM_SCHEMA "temporal_symbol_hash tsh2 WHERE (w.attr=tsh1.id) AND (w.val_const=tsh2.id)" );
+	vis_value_const = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh1.sym_type AS attr_type, tsh1.id AS attr_hash, tsh2.sym_type AS val_type, tsh2.id AS val_hash FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "symbols_type tsh1, " SMEM_SCHEMA "symbols_type tsh2 WHERE (w.attr=tsh1.id) AND (w.val_const=tsh2.id)" );
 	add( vis_value_const );
 
-	vis_value_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh.sym_type AS attr_type, tsh.sym_const AS attr_val, val_lti FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "temporal_symbol_hash tsh WHERE (w.attr=tsh.id) AND (val_lti IS NOT NULL)" );
+	vis_value_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh.sym_type AS attr_type, tsh.id AS attr_hash, val_lti FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "symbols_type tsh WHERE (w.attr=tsh.id) AND (val_lti IS NOT NULL)" );
 	add( vis_value_lti );
 }
 
@@ -535,53 +565,6 @@ inline bool smem_symbol_is_constant( Symbol *sym )
 	return ( ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
 		     ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
 		     ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) );
-}
-
-//
-
-inline void smem_symbol_to_bind( Symbol *sym, soar_module::sqlite_statement *q, int type_field, int val_field )
-{
-	q->bind_int( type_field, sym->common.symbol_type );
-	switch ( sym->common.symbol_type )
-	{
-		case SYM_CONSTANT_SYMBOL_TYPE:
-			q->bind_text( val_field, static_cast<const char *>( sym->sc.name ) );
-			break;
-
-		case INT_CONSTANT_SYMBOL_TYPE:
-			q->bind_int( val_field, sym->ic.value );
-			break;
-
-		case FLOAT_CONSTANT_SYMBOL_TYPE:
-			q->bind_double( val_field, sym->fc.value );
-			break;
-	}
-}
-
-inline Symbol *smem_statement_to_symbol( agent *my_agent, soar_module::sqlite_statement *q, int type_field, int val_field )
-{
-	Symbol *return_val = NULL;
-
-	switch ( q->column_int( type_field ) )
-	{
-		case SYM_CONSTANT_SYMBOL_TYPE:
-			return_val = make_sym_constant( my_agent, const_cast<char *>( q->column_text( val_field ) ) );
-			break;
-
-		case INT_CONSTANT_SYMBOL_TYPE:
-			return_val = make_int_constant( my_agent, static_cast<long>( q->column_int( val_field ) ) );
-			break;
-
-		case FLOAT_CONSTANT_SYMBOL_TYPE:
-			return_val = make_float_constant( my_agent, q->column_double( val_field ) );
-			break;
-
-		default:
-			return_val = NULL;
-			break;
-	}
-
-	return return_val;
 }
 
 //
@@ -720,11 +703,102 @@ inline void smem_variable_set( agent *my_agent, smem_variable_key variable_id, i
 // The rete has symbol hashing, but the values are
 // reliable only for the lifetime of a symbol.  This
 // isn't good for SMem.  Hence, we implement a simple
-// lookup table, relying upon SQLite to deal with
-// efficiency issues.
+// lookup table.
+//
+// Note the hashing functions for the symbol types are
+// very similar, but with enough differences that I
+// separated them out for clarity.
 //
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
+
+inline smem_hash_id smem_temporal_hash_add( agent* my_agent, byte sym_type )
+{
+	my_agent->smem_stmts->hash_add_type->bind_int( 1, sym_type );
+	my_agent->smem_stmts->hash_add_type->execute( soar_module::op_reinit );
+	return static_cast<smem_hash_id>( my_agent->smem_db->last_insert_rowid() );
+}
+
+inline smem_hash_id smem_temporal_hash_int( agent *my_agent, intptr_t val, bool add_on_fail = true )
+{
+	smem_hash_id return_val = NIL;
+	
+	// search first
+	my_agent->smem_stmts->hash_get_int->bind_int( 1, val );
+	if ( my_agent->smem_stmts->hash_get_int->execute() == soar_module::row )
+	{
+		return_val = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_int->column_int( 0 ) );
+	}
+	my_agent->smem_stmts->hash_get_int->reinitialize();
+
+	// if fail and supposed to add
+	if ( !return_val && add_on_fail )
+	{
+		// type first		
+		return_val = smem_temporal_hash_add( my_agent, INT_CONSTANT_SYMBOL_TYPE );
+
+		// then content
+		my_agent->smem_stmts->hash_add_int->bind_int( 1, return_val );
+		my_agent->smem_stmts->hash_add_int->bind_int( 2, val );
+		my_agent->smem_stmts->hash_add_int->execute( soar_module::op_reinit );
+	}
+
+	return return_val;
+}
+
+inline smem_hash_id smem_temporal_hash_float( agent *my_agent, double val, bool add_on_fail = true )
+{
+	smem_hash_id return_val = NIL;
+	
+	// search first
+	my_agent->smem_stmts->hash_get_float->bind_double( 1, val );
+	if ( my_agent->smem_stmts->hash_get_float->execute() == soar_module::row )
+	{
+		return_val = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_float->column_int( 0 ) );
+	}
+	my_agent->smem_stmts->hash_get_float->reinitialize();
+
+	// if fail and supposed to add
+	if ( !return_val && add_on_fail )
+	{
+		// type first		
+		return_val = smem_temporal_hash_add( my_agent, FLOAT_CONSTANT_SYMBOL_TYPE );
+
+		// then content
+		my_agent->smem_stmts->hash_add_float->bind_int( 1, return_val );
+		my_agent->smem_stmts->hash_add_float->bind_double( 2, val );
+		my_agent->smem_stmts->hash_add_float->execute( soar_module::op_reinit );
+	}
+
+	return return_val;
+}
+
+inline smem_hash_id smem_temporal_hash_str( agent *my_agent, char* val, bool add_on_fail = true )
+{
+	smem_hash_id return_val = NIL;
+	
+	// search first
+	my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( val ) );
+	if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
+	{
+		return_val = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
+	}
+	my_agent->smem_stmts->hash_get_str->reinitialize();
+
+	// if fail and supposed to add
+	if ( !return_val && add_on_fail )
+	{
+		// type first		
+		return_val = smem_temporal_hash_add( my_agent, SYM_CONSTANT_SYMBOL_TYPE );
+
+		// then content
+		my_agent->smem_stmts->hash_add_str->bind_int( 1, return_val );
+		my_agent->smem_stmts->hash_add_str->bind_text( 2, static_cast<const char*>( val ) );
+		my_agent->smem_stmts->hash_add_str->execute( soar_module::op_reinit );
+	}
+
+	return return_val;
+}
 
 /***************************************************************************
  * Function     : smem_temporal_hash
@@ -747,25 +821,19 @@ smem_hash_id smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail 
 			sym->common.smem_hash = NIL;
 			sym->common.smem_valid = my_agent->smem_validation;
 
-			// basic process:
-			// - search
-			// - if found, return
-			// - else, add
-
-			smem_symbol_to_bind( sym, my_agent->smem_stmts->hash_get, 1, 2 );
-			if ( my_agent->smem_stmts->hash_get->execute() == soar_module::row )
+			switch ( sym->common.symbol_type )
 			{
-				return_val = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get->column_int( 0 ) );
-			}
-			my_agent->smem_stmts->hash_get->reinitialize();
+				case SYM_CONSTANT_SYMBOL_TYPE:
+					return_val = smem_temporal_hash_str( my_agent, sym->sc.name, add_on_fail );
+					break;
 
-			//
+				case INT_CONSTANT_SYMBOL_TYPE:
+					return_val = smem_temporal_hash_int( my_agent, sym->ic.value, add_on_fail );
+					break;
 
-			if ( !return_val && add_on_fail )
-			{
-				smem_symbol_to_bind( sym, my_agent->smem_stmts->hash_add, 1, 2 );
-				my_agent->smem_stmts->hash_add->execute( soar_module::op_reinit );
-				return_val = static_cast<smem_hash_id>( my_agent->smem_db->last_insert_rowid() );
+				case FLOAT_CONSTANT_SYMBOL_TYPE:
+					return_val = smem_temporal_hash_float( my_agent, sym->fc.value, add_on_fail );
+					break;
 			}
 
 			// cache results for later re-use
@@ -779,6 +847,69 @@ smem_hash_id smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail 
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->hash->stop();
 	////////////////////////////////////////////////////////////////////////////
+
+	return return_val;
+}
+
+inline intptr_t smem_reverse_hash_int( agent* my_agent, smem_hash_id hash_value )
+{
+	intptr_t return_val = NIL;
+	
+	my_agent->smem_stmts->hash_rev_int->bind_int( 1, hash_value );
+	soar_module::exec_result res = my_agent->smem_stmts->hash_rev_int->execute();
+	assert( res == soar_module::row );
+	return_val = my_agent->smem_stmts->hash_rev_int->column_int(0);
+	my_agent->smem_stmts->hash_rev_int->reinitialize();
+
+	return return_val;
+}
+
+inline double smem_reverse_hash_float( agent* my_agent, smem_hash_id hash_value )
+{
+	double return_val = NIL;
+	
+	my_agent->smem_stmts->hash_rev_float->bind_int( 1, hash_value );
+	soar_module::exec_result res = my_agent->smem_stmts->hash_rev_float->execute();
+	assert( res == soar_module::row );
+	return_val = my_agent->smem_stmts->hash_rev_float->column_double(0);
+	my_agent->smem_stmts->hash_rev_float->reinitialize();
+
+	return return_val;
+}
+
+inline void smem_reverse_hash_str( agent* my_agent, smem_hash_id hash_value, std::string& dest )
+{
+	my_agent->smem_stmts->hash_rev_str->bind_int( 1, hash_value );
+	soar_module::exec_result res = my_agent->smem_stmts->hash_rev_str->execute();
+	assert( res == soar_module::row );
+	dest.assign( my_agent->smem_stmts->hash_rev_str->column_text(0) );
+	my_agent->smem_stmts->hash_rev_str->reinitialize();
+}
+
+inline Symbol* smem_reverse_hash( agent* my_agent, byte sym_type, smem_hash_id hash_value )
+{
+	Symbol *return_val = NULL;
+	std::string dest;
+
+	switch ( sym_type )
+	{
+		case SYM_CONSTANT_SYMBOL_TYPE:			
+			smem_reverse_hash_str( my_agent, hash_value, dest );
+			return_val = make_sym_constant( my_agent, const_cast<char *>( dest.c_str() ) );
+			break;
+
+		case INT_CONSTANT_SYMBOL_TYPE:
+			return_val = make_int_constant( my_agent, static_cast<long>( smem_reverse_hash_int( my_agent, hash_value ) ) );
+			break;
+
+		case FLOAT_CONSTANT_SYMBOL_TYPE:
+			return_val = make_float_constant( my_agent, smem_reverse_hash_float( my_agent, hash_value ) );
+			break;
+
+		default:
+			return_val = NULL;
+			break;
+	}
 
 	return return_val;
 }
@@ -1539,21 +1670,21 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 		Symbol *attr_sym;
 		Symbol *value_sym;
 
-		// get direct children: attr_const, attr_type, value_const, value_type, value_letter, value_num, value_lti
+		// get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
 		expand_q->bind_int( 1, parent_id );
 		while ( expand_q->execute() == soar_module::row )
 		{
 			// make the identifier symbol irrespective of value type
-			attr_sym = smem_statement_to_symbol( my_agent, expand_q, 1, 0 );
+			attr_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(0) ), static_cast<smem_hash_id>( expand_q->column_int(1) ) );
 
 			// identifier vs. constant
-			if ( my_agent->smem_stmts->web_expand->column_type( 2 ) == soar_module::null_t )
+			if ( expand_q->column_type( 6 ) != soar_module::null_t )
 			{
 				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<unsigned long>( expand_q->column_int( 5 ) ), lti->id.level );
 			}
 			else
 			{
-				value_sym = smem_statement_to_symbol( my_agent, expand_q, 3, 2 );
+				value_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(2) ), static_cast<smem_hash_id>( expand_q->column_int(3) ) );
 			}
 
 			// add wme
@@ -3120,8 +3251,8 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 				// proceed to terminal nodes
 				return_val->append( "node [ shape = plaintext ];" );
 				return_val->append( "\n" );
-
-				// parent_id, attr_type, attr_val, val_type, val_val
+				
+				// parent_id, attr_type, attr_hash, val_type, val_hash
 				q = my_agent->smem_stmts->vis_value_const;
 				while ( q->execute() == soar_module::row )
 				{
@@ -3146,16 +3277,16 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 						switch ( q->column_int( 3 ) )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								temp_str.assign( q->column_text( 4 ) );
+								smem_reverse_hash_str( my_agent, q->column_int(4), temp_str );								
 								break;
 
 							case INT_CONSTANT_SYMBOL_TYPE:
-								temp_int = q->column_int( 4 );
+								temp_int = smem_reverse_hash_int( my_agent, q->column_int(4) );
 								to_string( temp_int, temp_str );
 								break;
 
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
-								temp_double = q->column_double( 4 );
+								temp_double = smem_reverse_hash_float( my_agent, q->column_int(4) );
 								to_string( temp_double, temp_str );
 								break;
 
@@ -3169,19 +3300,19 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 
 					// store terminal (attribute for edge label)
 					{
-						switch ( q->column_int( 1 ) )
+						switch ( q->column_int(1) )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								temp_str.assign( q->column_text( 2 ) );
+								smem_reverse_hash_str( my_agent, q->column_int(2), temp_str );								
 								break;
 
 							case INT_CONSTANT_SYMBOL_TYPE:
-								temp_int = q->column_int( 2 );
+								temp_int = smem_reverse_hash_int( my_agent, q->column_int(2) );
 								to_string( temp_int, temp_str );
 								break;
 
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
-								temp_double = q->column_double( 2 );
+								temp_double = smem_reverse_hash_float( my_agent, q->column_int(2) );
 								to_string( temp_double, temp_str );
 								break;
 
@@ -3236,7 +3367,7 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 
 			// then links to other LTIs
 			{
-				// parent_id, attr_type, attr_val, val_lti
+				// parent_id, attr_type, attr_hash, val_lti
 				q = my_agent->smem_stmts->vis_value_lti;
 				while ( q->execute() == soar_module::row )
 				{
@@ -3254,19 +3385,19 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 
 					// output attribute
 					{
-						switch ( q->column_int( 1 ) )
+						switch ( q->column_int(1) )
 						{
 							case SYM_CONSTANT_SYMBOL_TYPE:
-								temp_str.assign( q->column_text( 2 ) );
+								smem_reverse_hash_str( my_agent, q->column_int(2), temp_str );								
 								break;
 
 							case INT_CONSTANT_SYMBOL_TYPE:
-								temp_int = q->column_int( 2 );
+								temp_int = smem_reverse_hash_int( my_agent, q->column_int(2) );
 								to_string( temp_int, temp_str );
 								break;
 
 							case FLOAT_CONSTANT_SYMBOL_TYPE:
-								temp_double = q->column_double( 2 );
+								temp_double = smem_reverse_hash_float( my_agent, q->column_int(2) );
 								to_string( temp_double, temp_str );
 								break;
 
@@ -3294,7 +3425,7 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 
 void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned long depth, std::string *return_val )
 {
-	soar_module::sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
+	soar_module::sqlite_statement* expand_q = my_agent->smem_stmts->web_expand;
 
 	unsigned long child_counter;
 
@@ -3361,13 +3492,13 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned long dept
 		bfs.pop();
 
 		child_counter = 0;
-
-		// get direct children: attr_const, attr_type, value_const, value_type, value_letter, value_num, value_lti
+		
+		// get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
 		expand_q->bind_int( 1, parent_lti->lti_id );
 		while ( expand_q->execute() == soar_module::row )
 		{
 			// identifier vs. constant
-			if ( expand_q->column_type( 2 ) == soar_module::null_t )
+			if ( expand_q->column_type( 6 ) != soar_module::null_t )
 			{
 				new_lti = new smem_vis_lti;
 				new_lti->lti_id = expand_q->column_int( 6 );
@@ -3396,19 +3527,19 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned long dept
 				// add linkage
 				{
 					// get attribute
-					switch ( expand_q->column_int( 1 ) )
+					switch ( expand_q->column_int(0) )
 					{
 						case SYM_CONSTANT_SYMBOL_TYPE:
-							temp_str.assign( expand_q->column_text( 0 ) );
+							smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );							
 							break;
 
 						case INT_CONSTANT_SYMBOL_TYPE:
-							temp_int = expand_q->column_int( 0 );
+							temp_int = smem_reverse_hash_int( my_agent, expand_q->column_int(1) );
 							to_string( temp_int, temp_str );
 							break;
 
 						case FLOAT_CONSTANT_SYMBOL_TYPE:
-							temp_double = expand_q->column_double( 0 );
+							temp_double = smem_reverse_hash_float( my_agent, expand_q->column_int(1) );
 							to_string( temp_double, temp_str );
 							break;
 
@@ -3463,19 +3594,19 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned long dept
 					}
 
 					// get value
-					switch ( expand_q->column_int( 3 ) )
+					switch ( expand_q->column_int(2) )
 					{
 						case SYM_CONSTANT_SYMBOL_TYPE:
-							temp_str.assign( expand_q->column_text( 2 ) );
+							smem_reverse_hash_str( my_agent, expand_q->column_int(3), temp_str );							
 							break;
 
 						case INT_CONSTANT_SYMBOL_TYPE:
-							temp_int = expand_q->column_int( 2 );
+							temp_int = smem_reverse_hash_int( my_agent, expand_q->column_int(3) );
 							to_string( temp_int, temp_str );
 							break;
 
 						case FLOAT_CONSTANT_SYMBOL_TYPE:
-							temp_double = expand_q->column_double( 2 );
+							temp_double = smem_reverse_hash_float( my_agent, expand_q->column_int(3) );
 							to_string( temp_double, temp_str );
 							break;
 
@@ -3497,19 +3628,19 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned long dept
 				// add linkage
 				{
 					// get attribute
-					switch ( expand_q->column_int( 1 ) )
+					switch ( expand_q->column_int(0) )
 					{
 						case SYM_CONSTANT_SYMBOL_TYPE:
-							temp_str.assign( expand_q->column_text( 0 ) );
+							smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );
 							break;
 
 						case INT_CONSTANT_SYMBOL_TYPE:
-							temp_int = expand_q->column_int( 0 );
+							temp_int = smem_reverse_hash_int( my_agent, expand_q->column_int(1) );
 							to_string( temp_int, temp_str );
 							break;
 
 						case FLOAT_CONSTANT_SYMBOL_TYPE:
-							temp_double = expand_q->column_double( 0 );
+							temp_double = smem_reverse_hash_float( my_agent, expand_q->column_int(1) );
 							to_string( temp_double, temp_str );
 							break;
 
