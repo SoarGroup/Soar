@@ -272,56 +272,56 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	add_structure( "CREATE TABLE IF NOT EXISTS vars (id INTEGER PRIMARY KEY,value NONE)" );
-	add_structure( "CREATE TABLE IF NOT EXISTS temporal_symbol_hash (id INTEGER PRIMARY KEY, sym_const NONE, sym_type INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS temporal_symbol_hash_const_type ON temporal_symbol_hash (sym_type,sym_const)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "vars (id INTEGER PRIMARY KEY,value NONE)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "temporal_symbol_hash (id INTEGER PRIMARY KEY, sym_const NONE, sym_type INTEGER)" );
+	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "temporal_symbol_hash_const_type ON " SMEM_SCHEMA "temporal_symbol_hash (sym_type,sym_const)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_cycle INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS lti_letter_num ON lti (letter, num)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_cycle INTEGER)" );
+	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "lti_letter_num ON " SMEM_SCHEMA "lti (letter, num)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS web (parent_id INTEGER, attr INTEGER, val_const INTEGER, val_lti INTEGER, act_cycle INTEGER)" );
-	add_structure( "CREATE INDEX IF NOT EXISTS web_parent_attr_val_lti ON web (parent_id, attr, val_const, val_lti)" );
-	add_structure( "CREATE INDEX IF NOT EXISTS web_attr_val_lti_cycle ON web (attr, val_const, val_lti, act_cycle)" );
-	add_structure( "CREATE INDEX IF NOT EXISTS web_attr_cycle ON web (attr, act_cycle)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "web (parent_id INTEGER, attr INTEGER, val_const INTEGER, val_lti INTEGER, act_cycle INTEGER)" );
+	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_parent_attr_val_lti ON " SMEM_SCHEMA "web (parent_id, attr, val_const, val_lti)" );
+	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_attr_val_lti_cycle ON " SMEM_SCHEMA "web (attr, val_const, val_lti, act_cycle)" );
+	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_attr_cycle ON " SMEM_SCHEMA "web (attr, act_cycle)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS ct_attr (attr INTEGER PRIMARY KEY, ct INTEGER)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "ct_attr (attr INTEGER PRIMARY KEY, ct INTEGER)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS ct_const (attr INTEGER, val_const INTEGER, ct INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS ct_const_attr_val ON ct_const (attr, val_const)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "ct_const (attr INTEGER, val_const INTEGER, ct INTEGER)" );
+	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "ct_const_attr_val ON " SMEM_SCHEMA "ct_const (attr, val_const)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS ct_lti (attr INTEGER, val_lti INTEGER, ct INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS ct_lti_attr_val ON ct_lti (attr, val_lti)" );	
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "ct_lti (attr INTEGER, val_lti INTEGER, ct INTEGER)" );
+	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "ct_lti_attr_val ON " SMEM_SCHEMA "ct_lti (attr, val_lti)" );	
 
 	// adding an ascii table just to make lti queries easier when inspecting database
-	add_structure( "CREATE TABLE IF NOT EXISTS ascii (ascii_num INTEGER PRIMARY KEY, ascii_chr TEXT)" );
-	add_structure( "DELETE FROM ascii" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "ascii (ascii_num INTEGER PRIMARY KEY, ascii_chr TEXT)" );
+	add_structure( "DELETE FROM " SMEM_SCHEMA "ascii" );
 	{
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (65,'A')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (66,'B')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (67,'C')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (68,'D')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (69,'E')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (70,'F')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (71,'G')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (72,'H')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (73,'I')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (74,'J')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (75,'K')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (76,'L')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (77,'M')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (78,'N')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (79,'O')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (80,'P')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (81,'Q')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (82,'R')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (83,'S')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (84,'T')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (85,'U')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (86,'V')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (87,'W')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (88,'X')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (89,'Y')" );
-		add_structure( "INSERT INTO ascii (ascii_num, ascii_chr) VALUES (90,'Z')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (65,'A')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (66,'B')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (67,'C')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (68,'D')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (69,'E')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (70,'F')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (71,'G')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (72,'H')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (73,'I')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (74,'J')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (75,'K')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (76,'L')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (77,'M')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (78,'N')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (79,'O')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (80,'P')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (81,'Q')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (82,'R')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (83,'S')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (84,'T')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (85,'U')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (86,'V')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (87,'W')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (88,'X')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (89,'Y')" );
+		add_structure( "INSERT INTO " SMEM_SCHEMA "ascii (ascii_num, ascii_chr) VALUES (90,'Z')" );
 	}
 
 	//
@@ -337,137 +337,137 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	var_get = new soar_module::sqlite_statement( new_db, "SELECT value FROM vars WHERE id=?" );
+	var_get = new soar_module::sqlite_statement( new_db, "SELECT value FROM " SMEM_SCHEMA "vars WHERE id=?" );
 	add( var_get );
 
-	var_set = new soar_module::sqlite_statement( new_db, "REPLACE INTO vars (id,value) VALUES (?,?)" );
+	var_set = new soar_module::sqlite_statement( new_db, "REPLACE INTO " SMEM_SCHEMA "vars (id,value) VALUES (?,?)" );
 	add( var_set );
 
 	//
 
-	hash_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM temporal_symbol_hash WHERE sym_type=? AND sym_const=?" );
+	hash_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "temporal_symbol_hash WHERE sym_type=? AND sym_const=?" );
 	add( hash_get );
 
-	hash_add = new soar_module::sqlite_statement( new_db, "INSERT INTO temporal_symbol_hash (sym_type,sym_const) VALUES (?,?)" );
+	hash_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "temporal_symbol_hash (sym_type,sym_const) VALUES (?,?)" );
 	add( hash_add );
 
 	//
 
-	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO lti (letter,num,child_ct,act_cycle) VALUES (?,?,?,?)" );
+	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "lti (letter,num,child_ct,act_cycle) VALUES (?,?,?,?)" );
 	add( lti_add );
 
-	lti_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM lti WHERE letter=? AND num=?" );
+	lti_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "lti WHERE letter=? AND num=?" );
 	add( lti_get );
 
-	lti_letter_num = new soar_module::sqlite_statement( new_db, "SELECT letter, num FROM lti WHERE id=?" );
+	lti_letter_num = new soar_module::sqlite_statement( new_db, "SELECT letter, num FROM " SMEM_SCHEMA "lti WHERE id=?" );
 	add( lti_letter_num );
 
-	lti_max = new soar_module::sqlite_statement( new_db, "SELECT letter, MAX(num) FROM lti GROUP BY letter" );
+	lti_max = new soar_module::sqlite_statement( new_db, "SELECT letter, MAX(num) FROM " SMEM_SCHEMA "lti GROUP BY letter" );
 	add( lti_max );
 
 	//
 
-	web_add = new soar_module::sqlite_statement( new_db, "INSERT INTO web (parent_id, attr, val_const, val_lti, act_cycle) VALUES (?,?,?,?,?)" );
+	web_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "web (parent_id, attr, val_const, val_lti, act_cycle) VALUES (?,?,?,?,?)" );
 	add( web_add );
 
-	web_truncate = new soar_module::sqlite_statement( new_db, "DELETE FROM web WHERE parent_id=?" );
+	web_truncate = new soar_module::sqlite_statement( new_db, "DELETE FROM " SMEM_SCHEMA "web WHERE parent_id=?" );
 	add( web_truncate );
 
-	web_expand = new soar_module::sqlite_statement( new_db, "SELECT tsh_a.sym_const AS attr_const, tsh_a.sym_type AS attr_type, vcl.sym_const AS value_const, vcl.sym_type AS value_type, vcl.letter AS value_letter, vcl.num AS value_num, vcl.val_lti AS value_lti FROM ((web w LEFT JOIN temporal_symbol_hash tsh_v ON w.val_const=tsh_v.id) vc LEFT JOIN lti ON vc.val_lti=lti.id) vcl INNER JOIN temporal_symbol_hash tsh_a ON vcl.attr=tsh_a.id WHERE parent_id=?" );
+	web_expand = new soar_module::sqlite_statement( new_db, "SELECT tsh_a.sym_const AS attr_const, tsh_a.sym_type AS attr_type, vcl.sym_const AS value_const, vcl.sym_type AS value_type, vcl.letter AS value_letter, vcl.num AS value_num, vcl.val_lti AS value_lti FROM ((" SMEM_SCHEMA "web w LEFT JOIN " SMEM_SCHEMA "temporal_symbol_hash tsh_v ON w.val_const=tsh_v.id) vc LEFT JOIN " SMEM_SCHEMA "lti AS lti ON vc.val_lti=lti.id) vcl INNER JOIN " SMEM_SCHEMA "temporal_symbol_hash tsh_a ON vcl.attr=tsh_a.id WHERE parent_id=?" );
 	add( web_expand );
 
 	//
 
-	web_attr_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, COUNT(*) AS ct FROM web WHERE parent_id=? GROUP BY attr" );
+	web_attr_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? GROUP BY attr" );
 	add( web_attr_ct );
 
-	web_const_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NOT NULL GROUP BY attr, val_const" );
+	web_const_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? AND val_const IS NOT NULL GROUP BY attr, val_const" );
 	add( web_const_ct );
 
-	web_lti_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM web WHERE parent_id=? AND val_const IS NULL GROUP BY attr, val_const, val_lti" );
+	web_lti_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? AND val_const IS NULL GROUP BY attr, val_const, val_lti" );
 	add( web_lti_ct );
 
 	//
 
-	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM web w WHERE attr=? ORDER BY act_cycle DESC" );
+	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? ORDER BY act_cycle DESC" );
 	add( web_attr_all );
 
-	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM web w WHERE attr=? AND val_const=? AND val_lti IS NULL ORDER BY act_cycle DESC" );
+	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=? AND val_lti IS NULL ORDER BY act_cycle DESC" );
 	add( web_const_all );
 
-	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM web w WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY act_cycle DESC" );
+	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY act_cycle DESC" );
 	add( web_lti_all );
 
 	//
 
-	web_attr_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=?" );
+	web_attr_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM " SMEM_SCHEMA "web WHERE parent_id=? AND attr=?" );
 	add( web_attr_child );
 
-	web_const_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const=?" );
+	web_const_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM " SMEM_SCHEMA "web WHERE parent_id=? AND attr=? AND val_const=?" );
 	add( web_const_child );
 
-	web_lti_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM web WHERE parent_id=? AND attr=? AND val_const IS NULL AND val_lti=?" );
+	web_lti_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM " SMEM_SCHEMA "web WHERE parent_id=? AND attr=? AND val_const IS NULL AND val_lti=?" );
 	add( web_lti_child );
 
 	//
 
-	ct_attr_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_attr (attr, ct) VALUES (?,0)" );
+	ct_attr_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO " SMEM_SCHEMA "ct_attr (attr, ct) VALUES (?,0)" );
 	add( ct_attr_add );
 
-	ct_const_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_const (attr, val_const, ct) VALUES (?,?,0)" );
+	ct_const_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO " SMEM_SCHEMA "ct_const (attr, val_const, ct) VALUES (?,?,0)" );
 	add( ct_const_add );
 
-	ct_lti_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO ct_lti (attr, val_lti, ct) VALUES (?,?,0)" );
+	ct_lti_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO " SMEM_SCHEMA "ct_lti (attr, val_lti, ct) VALUES (?,?,0)" );
 	add( ct_lti_add );
 
 	//
 
-	ct_attr_update = new soar_module::sqlite_statement( new_db, "UPDATE ct_attr SET ct = ct + ? WHERE attr=?" );
+	ct_attr_update = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "ct_attr SET ct = ct + ? WHERE attr=?" );
 	add( ct_attr_update );
 
-	ct_const_update = new soar_module::sqlite_statement( new_db, "UPDATE ct_const SET ct = ct + ? WHERE attr=? AND val_const=?" );
+	ct_const_update = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "ct_const SET ct = ct + ? WHERE attr=? AND val_const=?" );
 	add( ct_const_update );
 
-	ct_lti_update = new soar_module::sqlite_statement( new_db, "UPDATE ct_lti SET ct = ct + ? WHERE attr=? AND val_lti=?" );
+	ct_lti_update = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "ct_lti SET ct = ct + ? WHERE attr=? AND val_lti=?" );
 	add( ct_lti_update );
 
 	//
 
-	ct_attr_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM ct_attr WHERE attr=?" );
+	ct_attr_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM " SMEM_SCHEMA "ct_attr WHERE attr=?" );
 	add( ct_attr_get );
 
-	ct_const_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM ct_const WHERE attr=? AND val_const=?" );
+	ct_const_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM " SMEM_SCHEMA "ct_const WHERE attr=? AND val_const=?" );
 	add( ct_const_get );
 
-	ct_lti_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM ct_lti WHERE attr=? AND val_lti=?" );
+	ct_lti_get = new soar_module::sqlite_statement( new_db, "SELECT ct FROM " SMEM_SCHEMA "ct_lti WHERE attr=? AND val_lti=?" );
 	add( ct_lti_get );
 
 	//
 
-	act_set = new soar_module::sqlite_statement( new_db, "UPDATE web SET act_cycle=? WHERE parent_id=?" );
+	act_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "web SET act_cycle=? WHERE parent_id=?" );
 	add( act_set );
 
-	act_lti_child_ct_get = new soar_module::sqlite_statement( new_db, "SELECT child_ct FROM lti WHERE id=?" );
+	act_lti_child_ct_get = new soar_module::sqlite_statement( new_db, "SELECT child_ct FROM " SMEM_SCHEMA "lti WHERE id=?" );
 	add( act_lti_child_ct_get );
 
-	act_lti_child_ct_set = new soar_module::sqlite_statement( new_db, "UPDATE lti SET child_ct=? WHERE id=?" );
+	act_lti_child_ct_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET child_ct=? WHERE id=?" );
 	add( act_lti_child_ct_set );
 
-	act_lti_set = new soar_module::sqlite_statement( new_db, "UPDATE lti SET act_cycle=? WHERE id=?" );
+	act_lti_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET act_cycle=? WHERE id=?" );
 	add( act_lti_set );
 
-	act_lti_get = new soar_module::sqlite_statement( new_db, "SELECT act_cycle FROM lti WHERE id=?" );
+	act_lti_get = new soar_module::sqlite_statement( new_db, "SELECT act_cycle FROM " SMEM_SCHEMA "lti WHERE id=?" );
 	add( act_lti_get );
 
 	//
 
-	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num FROM lti" );
+	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num FROM " SMEM_SCHEMA "lti" );
 	add( vis_lti );
 
-	vis_value_const = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh1.sym_type AS attr_type, tsh1.sym_const AS attr_val, tsh2.sym_type AS val_type, tsh2.sym_const AS val_val FROM web w, temporal_symbol_hash tsh1, temporal_symbol_hash tsh2 WHERE (w.attr=tsh1.id) AND (w.val_const=tsh2.id)" );
+	vis_value_const = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh1.sym_type AS attr_type, tsh1.sym_const AS attr_val, tsh2.sym_type AS val_type, tsh2.sym_const AS val_val FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "temporal_symbol_hash tsh1, " SMEM_SCHEMA "temporal_symbol_hash tsh2 WHERE (w.attr=tsh1.id) AND (w.val_const=tsh2.id)" );
 	add( vis_value_const );
 
-	vis_value_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh.sym_type AS attr_type, tsh.sym_const AS attr_val, val_lti FROM web w, temporal_symbol_hash tsh WHERE (w.attr=tsh.id) AND (val_lti IS NOT NULL)" );
+	vis_value_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh.sym_type AS attr_type, tsh.sym_const AS attr_val, val_lti FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "temporal_symbol_hash tsh WHERE (w.attr=tsh.id) AND (val_lti IS NOT NULL)" );
 	add( vis_value_lti );
 }
 
@@ -2045,7 +2045,25 @@ void smem_init_db( agent *my_agent, bool readonly = false )
 
 		// setup common structures/queries
 		my_agent->smem_stmts = new smem_statement_container( my_agent );
-		my_agent->smem_stmts->structure();
+		{
+			// create structures if database does not contain signature table
+			// which we can detect by trying to create it
+			// note: this only could have been done with an open database (hence in initialization)		
+
+			soar_module::sqlite_statement* temp_stmt = new soar_module::sqlite_statement( my_agent->smem_db, "CREATE TABLE " SMEM_SIGNATURE " (uid INTEGER)" );
+
+			temp_stmt->prepare();
+			if ( temp_stmt->get_status() == soar_module::ready )
+			{
+				// if was possible to prepare, the table doesn't exist so we create it
+				temp_stmt->execute();
+
+				// and all other structures
+				my_agent->smem_stmts->structure();
+			}
+
+			delete temp_stmt;
+		}
 		my_agent->smem_stmts->prepare();
 
 		// reset identifier counters

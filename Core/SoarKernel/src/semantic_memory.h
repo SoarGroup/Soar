@@ -238,6 +238,15 @@ enum smem_variable_key
 
 #define SMEM_LTI_UNKNOWN_LEVEL 0
 
+// provides a distinct prefix to be used by all
+// tables for two reasons:
+// - distinguish from other modules
+// - distinguish between smem versions
+#define SMEM_SCHEMA "smem1_"
+
+// empty table used to verify proper structure
+#define SMEM_SIGNATURE SMEM_SCHEMA "signature"
+
 //////////////////////////////////////////////////////////
 // Soar Integration Types
 //////////////////////////////////////////////////////////
