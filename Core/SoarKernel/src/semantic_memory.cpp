@@ -272,7 +272,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	add_structure( "CREATE TABLE " SMEM_SCHEMA "vars (id INTEGER PRIMARY KEY,value NONE)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "vars (id INTEGER PRIMARY KEY,value INTEGER)" );
 	
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_type (id INTEGER PRIMARY KEY, sym_type INTEGER)" );	
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_int (id INTEGER PRIMARY KEY, sym_const INTEGER)" );
@@ -346,8 +346,11 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	var_get = new soar_module::sqlite_statement( new_db, "SELECT value FROM " SMEM_SCHEMA "vars WHERE id=?" );
 	add( var_get );
 
-	var_set = new soar_module::sqlite_statement( new_db, "REPLACE INTO " SMEM_SCHEMA "vars (id,value) VALUES (?,?)" );
+	var_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "vars SET value=? WHERE id=?" );
 	add( var_set );
+
+	var_create = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "vars (id,value) VALUES (?,?)" );
+	add( var_create );
 
 	//
 
@@ -441,13 +444,24 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	ct_attr_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO " SMEM_SCHEMA "ct_attr (attr, ct) VALUES (?,0)" );
+	ct_attr_check = new soar_module::sqlite_statement( new_db, "SELECT ct FROM " SMEM_SCHEMA "ct_attr WHERE attr=?" );
+	add( ct_attr_check );
+
+	ct_const_check = new soar_module::sqlite_statement( new_db, "SELECT ct FROM " SMEM_SCHEMA "ct_const WHERE attr=? AND val_const=?" );
+	add( ct_const_check );
+
+	ct_lti_check = new soar_module::sqlite_statement( new_db, "SELECT ct FROM " SMEM_SCHEMA "ct_lti WHERE attr=? AND val_lti=?" );
+	add( ct_lti_check );
+
+	//
+
+	ct_attr_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "ct_attr (attr, ct) VALUES (?,0)" );
 	add( ct_attr_add );
 
-	ct_const_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO " SMEM_SCHEMA "ct_const (attr, val_const, ct) VALUES (?,?,0)" );
+	ct_const_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "ct_const (attr, val_const, ct) VALUES (?,?,0)" );
 	add( ct_const_add );
 
-	ct_lti_add = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO " SMEM_SCHEMA "ct_lti (attr, val_lti, ct) VALUES (?,?,0)" );
+	ct_lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "ct_lti (attr, val_lti, ct) VALUES (?,?,0)" );
 	add( ct_lti_add );
 
 	//
@@ -657,11 +671,7 @@ void smem_add_meta_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-/***************************************************************************
- * Function     : smem_get_variable
- * Author		: Nate Derbinsky
- * Notes		: Gets an SMem variable from the database
- **************************************************************************/
+// gets an SMem variable from the database
 inline bool smem_variable_get( agent *my_agent, smem_variable_key variable_id, intptr_t *variable_value )
 {
 	soar_module::exec_result status;
@@ -680,19 +690,26 @@ inline bool smem_variable_get( agent *my_agent, smem_variable_key variable_id, i
 	return ( status == soar_module::row );
 }
 
-/***************************************************************************
- * Function     : smem_set_variable
- * Author		: Nate Derbinsky
- * Notes		: Sets an SMem variable in the database
- **************************************************************************/
+// sets an existing SMem variable in the database
 inline void smem_variable_set( agent *my_agent, smem_variable_key variable_id, intptr_t variable_value )
 {
 	soar_module::sqlite_statement *var_set = my_agent->smem_stmts->var_set;
-
-	var_set->bind_int( 1, variable_id );
-	var_set->bind_int( 2, variable_value );
+	
+	var_set->bind_int( 1, variable_value );
+	var_set->bind_int( 2, variable_id );
 
 	var_set->execute( soar_module::op_reinit );
+}
+
+// creates a new SMem variable in the database
+inline void smem_variable_create( agent *my_agent, smem_variable_key variable_id, intptr_t variable_value )
+{
+	soar_module::sqlite_statement *var_create = my_agent->smem_stmts->var_create;
+	
+	var_create->bind_int( 1, variable_id );
+	var_create->bind_int( 2, variable_value );	
+
+	var_create->execute( soar_module::op_reinit );
 }
 
 
@@ -800,12 +817,7 @@ inline smem_hash_id smem_temporal_hash_str( agent *my_agent, char* val, bool add
 	return return_val;
 }
 
-/***************************************************************************
- * Function     : smem_temporal_hash
- * Author		: Nate Derbinsky
- * Notes		: Returns a temporally unique integer representing
- *                a symbol constant.
- **************************************************************************/
+// returns a temporally unique integer representing a symbol constant
 smem_hash_id smem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fail = true )
 {
 	smem_hash_id return_val = NIL;
@@ -1450,9 +1462,13 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 
 		for ( p=attr_ct_adjust.begin(); p!= attr_ct_adjust.end(); p++ )
 		{
-			// make sure counter exists (attr)
-			my_agent->smem_stmts->ct_attr_add->bind_int( 1, p->first );
-			my_agent->smem_stmts->ct_attr_add->execute( soar_module::op_reinit );
+			// check if counter exists (and add if does not): attr
+			my_agent->smem_stmts->ct_attr_check->bind_int( 1, p->first );
+			if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) != soar_module::row )
+			{
+				my_agent->smem_stmts->ct_attr_add->bind_int( 1, p->first );
+				my_agent->smem_stmts->ct_attr_add->execute( soar_module::op_reinit );
+			}
 
 			// adjust count (adjustment, attr)
 			my_agent->smem_stmts->ct_attr_update->bind_int( 1, p->second );
@@ -1470,10 +1486,15 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 		{
 			for ( p2=(p1->second).begin(); p2!=(p1->second).end(); p2++ )
 			{
-				// make sure counter exists (attr, val)
-				my_agent->smem_stmts->ct_const_add->bind_int( 1, p1->first );
-				my_agent->smem_stmts->ct_const_add->bind_int( 2, p2->first );
-				my_agent->smem_stmts->ct_const_add->execute( soar_module::op_reinit );
+				// check if counter exists (and add if does not): attr, val
+				my_agent->smem_stmts->ct_const_check->bind_int( 1, p1->first );
+				my_agent->smem_stmts->ct_const_check->bind_int( 2, p2->first );
+				if ( my_agent->smem_stmts->ct_const_check->execute( soar_module::op_reinit ) != soar_module::row )
+				{
+					my_agent->smem_stmts->ct_const_add->bind_int( 1, p1->first );
+					my_agent->smem_stmts->ct_const_add->bind_int( 2, p2->first );
+					my_agent->smem_stmts->ct_const_add->execute( soar_module::op_reinit );
+				}
 
 				// adjust count (adjustment, attr, val)
 				my_agent->smem_stmts->ct_const_update->bind_int( 1, p2->second );
@@ -1493,10 +1514,15 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 		{
 			for ( p2=(p1->second).begin(); p2!=(p1->second).end(); p2++ )
 			{
-				// make sure counter exists (attr, lti)
-				my_agent->smem_stmts->ct_lti_add->bind_int( 1, p1->first );
-				my_agent->smem_stmts->ct_lti_add->bind_int( 2, p2->first );
-				my_agent->smem_stmts->ct_lti_add->execute( soar_module::op_reinit );
+				// check if counter exists (and add if does not): attr, val
+				my_agent->smem_stmts->ct_lti_check->bind_int( 1, p1->first );
+				my_agent->smem_stmts->ct_lti_check->bind_int( 2, p2->first );
+				if ( my_agent->smem_stmts->ct_lti_check->execute( soar_module::op_reinit ) != soar_module::row )
+				{
+					my_agent->smem_stmts->ct_lti_add->bind_int( 1, p1->first );
+					my_agent->smem_stmts->ct_lti_add->bind_int( 2, p2->first );
+					my_agent->smem_stmts->ct_lti_add->execute( soar_module::op_reinit );
+				}
 
 				// adjust count (adjustment, attr, lti)
 				my_agent->smem_stmts->ct_lti_update->bind_int( 1, p2->second );
@@ -2036,11 +2062,7 @@ void smem_clear_result( agent *my_agent, Symbol *state )
 	}
 }
 
-/***************************************************************************
- * Function     : smem_reset
- * Author		: Nate Derbinsky
- * Notes		: Performs cleanup when a state is removed
- **************************************************************************/
+// performs cleanup when a state is removed
 void smem_reset( agent *my_agent, Symbol *state )
 {
 	if ( state == NULL )
@@ -2070,17 +2092,8 @@ void smem_reset( agent *my_agent, Symbol *state )
 	}
 }
 
-/***************************************************************************
- * Function     : smem_init_db
- * Author		: Nate Derbinsky
- * Notes		: Opens the SQLite database and performs all
- * 				  initialization required for the current mode
- *
- *                The readonly param should only be used in
- *                experimentation where you don't want to alter
- *                previous database state.
- **************************************************************************/
-void smem_init_db( agent *my_agent, bool readonly = false )
+// opens the SQLite database and performs all initialization required for the current mode
+void smem_init_db( agent *my_agent )
 {
 	if ( my_agent->smem_db->get_status() != soar_module::disconnected )
 	{
@@ -2176,75 +2189,79 @@ void smem_init_db( agent *my_agent, bool readonly = false )
 
 		// setup common structures/queries
 		my_agent->smem_stmts = new smem_statement_container( my_agent );
+
+		// setup initial structures (if necessary)
+		bool tabula_rasa;
 		{
 			// create structures if database does not contain signature table
 			// which we can detect by trying to create it
-			// note: this only could have been done with an open database (hence in initialization)		
+			// note: this only could have been done with an open database (hence in initialization)
 
-			soar_module::sqlite_statement* temp_stmt = new soar_module::sqlite_statement( my_agent->smem_db, "CREATE TABLE " SMEM_SIGNATURE " (uid INTEGER)" );
+			temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "CREATE TABLE " SMEM_SIGNATURE " (uid INTEGER)" );
 
-			temp_stmt->prepare();
-			if ( temp_stmt->get_status() == soar_module::ready )
+			temp_q->prepare();
+			tabula_rasa = ( temp_q->get_status() == soar_module::ready );
+
+			if ( tabula_rasa )
 			{
 				// if was possible to prepare, the table doesn't exist so we create it
-				temp_stmt->execute();
+				temp_q->execute();
 
 				// and all other structures
 				my_agent->smem_stmts->structure();
 			}
 
-			delete temp_stmt;
+			delete temp_q;
+			temp_q = NULL;
 		}
+
+		// initialize queries given database structure
 		my_agent->smem_stmts->prepare();
+
+		// initialize persistent variables
+		if ( tabula_rasa )
+		{
+			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+			{
+				// max cycle
+				my_agent->smem_max_cycle = 1;
+				smem_variable_create( my_agent, var_max_cycle, 1 );
+
+				// number of nodes
+				my_agent->smem_stats->chunks->set_value( 0 );
+				smem_variable_create( my_agent, var_num_nodes, 0 );
+
+				// number of edges
+				my_agent->smem_stats->slots->set_value( 0 );
+				smem_variable_create( my_agent, var_num_edges, 0 );
+
+				// threshold (from user parameter value)
+				smem_variable_create( my_agent, var_act_thresh, static_cast<intptr_t>( my_agent->smem_params->thresh->get_value() ) );
+			}
+			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+		}
+		else
+		{
+			intptr_t temp;
+
+			// max cycle
+			smem_variable_get( my_agent, var_max_cycle, &( my_agent->smem_max_cycle ) );
+
+			// number of nodes
+			smem_variable_get( my_agent, var_num_nodes, &( temp ) );
+			my_agent->smem_stats->chunks->set_value( temp );
+
+			// number of edges
+			smem_variable_get( my_agent, var_num_edges, &( temp ) );
+			my_agent->smem_stats->slots->set_value( temp );
+
+			// threshold
+			smem_variable_get( my_agent, var_act_thresh, &( temp ) );
+			my_agent->smem_params->thresh->set_value( static_cast<long>( temp ) );
+		}
 
 		// reset identifier counters
 		smem_reset_id_counters( my_agent );
-
-		my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
-
-		if ( !readonly )
-		{
-			if ( !smem_variable_get( my_agent, var_max_cycle, &( my_agent->smem_max_cycle ) ) )
-			{
-				my_agent->smem_max_cycle = 1;
-			}
-
-			{
-				intptr_t temp;
-
-				// threshold
-				if ( smem_variable_get( my_agent, var_act_thresh, &( temp ) ) )
-				{
-					my_agent->smem_params->thresh->set_value( static_cast<long>( temp ) );
-				}
-				else
-				{
-					smem_variable_set( my_agent, var_act_thresh, static_cast<intptr_t>( my_agent->smem_params->thresh->get_value() ) );
-				}
-
-				// nodes
-				if ( smem_variable_get( my_agent, var_num_nodes, &( temp ) ) )
-				{
-					my_agent->smem_stats->chunks->set_value( temp );
-				}
-				else
-				{
-					my_agent->smem_stats->chunks->set_value( 0 );
-				}
-
-				// edges
-				if ( smem_variable_get( my_agent, var_num_edges, &( temp ) ) )
-				{
-					my_agent->smem_stats->slots->set_value( temp );
-				}
-				else
-				{
-					my_agent->smem_stats->slots->set_value( 0 );
-				}
-			}
-		}
-
-		my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
 
 		// if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
 		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
@@ -2266,12 +2283,7 @@ void smem_attach( agent *my_agent )
 	}
 }
 
-/***************************************************************************
- * Function     : smem_close
- * Author		: Nate Derbinsky
- * Notes		: Performs cleanup operations when the database needs
- * 				  to be closed (end soar, manual close, etc)
- **************************************************************************/
+// performs cleanup operations when the database needs to be closed (end soar, manual close, etc)
 void smem_close( agent *my_agent )
 {
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
