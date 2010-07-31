@@ -1,0 +1,31 @@
+sp {one_var*propose*one_var-check
+   (state <s> ^name one_var
+              ^result <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name one_var-check)
+}
+
+sp {apply*one_var-check*failure
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate.io.input-link.qna-resultset.result.key {<> <r>})
+   (<op> ^name one_var-check)
+-->
+   (write |one_var test failed!|)
+   (halt)
+}
+
+sp {apply*one_var-check*success
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate <ss>)
+   (<ss> ^io.input-link.qna-resultset.result.key <r>
+         ^test <t>)
+   (<t> ^source test_db
+        ^query one_var)
+   (<op> ^name one_var-check)
+-->
+   (<t> ^done true)
+   (write |one_var: success|)
+}

@@ -1,0 +1,4 @@
+source elaborations.soar
+source addition-check.soar
+source addition-init.soar
+source addition-query.soar

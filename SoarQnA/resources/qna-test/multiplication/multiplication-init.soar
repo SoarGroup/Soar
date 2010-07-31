@@ -1,0 +1,15 @@
+sp {multiplication*propose*multiplication-init
+   (state <s> ^name multiplication
+             -^operand1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name multiplication-init)
+}
+
+sp {apply*multiplication-init
+   (state <s> ^operator <op>)
+   (<op> ^name multiplication-init)
+-->
+   (<s> ^operand1 (rand-int 100)
+        ^operand2 (rand-int 100))
+}

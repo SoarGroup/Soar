@@ -1,0 +1,23 @@
+sp {one_var*propose*one_var-query
+   (state <s> ^name one_var
+              ^operand1
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name one_var-query)
+}
+
+sp {apply*one_var-query
+   (state <s> ^operator <op>
+              ^superstate.io.output-link <out>
+              ^operand1 <op1>)
+   (<op> ^name one_var-query)
+-->
+   (<s> ^result <op1>)
+   (<out> ^qna-query <q>)
+   (<q> ^source test_db
+        ^query one_var
+        ^parameters <ps>
+        ^results all)
+   (<ps> ^1 <op1>)
+}

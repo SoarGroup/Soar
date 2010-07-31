@@ -1,0 +1,11 @@
+sp {qna-test*propose*one_var
+   (state <s> ^name qna-test
+              ^test <t>
+              ^io.input-link.qna-registry.test_db.query one_var)
+   (<t> ^source test_db
+        ^query one_var
+       -^done)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name one_var)
+}

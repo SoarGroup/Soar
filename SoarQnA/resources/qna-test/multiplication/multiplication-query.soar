@@ -1,0 +1,25 @@
+sp {multiplication*propose*multiplication-query
+   (state <s> ^name multiplication
+              ^operand1
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name multiplication-query)
+}
+
+sp {apply*multiplication-query
+   (state <s> ^operator <op>
+              ^superstate.io.output-link <out>
+              ^operand1 <op1>
+              ^operand2 <op2>)
+   (<op> ^name multiplication-query)
+-->
+   (<s> ^result (* <op1> <op2>))
+   (<out> ^qna-query <q>)
+   (<q> ^source math
+        ^query |*|
+        ^parameters <ps>
+        ^results all)
+   (<ps> ^operand1 <op1>
+         ^operand2 <op2>)
+}

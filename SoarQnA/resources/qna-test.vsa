@@ -1,0 +1,87 @@
+VERSION 4
+/qna-test/qna-test.dm
+0	ROOT qna-test qna-test 1
+1	0	FOPERATOR _firstload _firstload.soar 3
+2	0	FOLDER all all 4
+3	0	FOLDER elaborations elaborations 2
+4	3	FOPERATOR _all _all.soar 5
+5	3	FOPERATOR top-state top-state.soar 6
+6	0	HLOPERATOR abs abs.soar abs 105 51
+7	6	FOPERATOR elaborations elaborations.soar 52
+8	6	OPERATOR abs-check abs-check.soar 55
+9	6	OPERATOR abs-init abs-init.soar 53
+10	6	OPERATOR abs-query abs-query.soar 54
+11	0	HLOPERATOR addition addition.soar addition 13 9
+12	11	FOPERATOR elaborations elaborations.soar 10
+13	11	OPERATOR addition-check addition-check.soar 13
+14	11	OPERATOR addition-init addition-init.soar 11
+15	11	OPERATOR addition-query addition-query.soar 12
+16	0	HLOPERATOR all_vars all_vars.soar all_vars 160 76
+17	16	FOPERATOR elaborations elaborations.soar 77
+18	16	OPERATOR all_vars-check all_vars-check.soar 80
+19	16	OPERATOR all_vars-init all_vars-init.soar 78
+20	16	OPERATOR all_vars-query all_vars-query.soar 79
+21	0	OPERATOR clean clean.soar 15
+22	0	HLOPERATOR div div.soar div 94 46
+23	22	FOPERATOR elaborations elaborations.soar 47
+24	22	OPERATOR div-check div-check.soar 50
+25	22	OPERATOR div-init div-init.soar 48
+26	22	OPERATOR div-query div-query.soar 49
+27	0	HLOPERATOR division division.soar division 50 26
+28	27	FOPERATOR elaborations elaborations.soar 27
+29	27	OPERATOR division-check division-check.soar 30
+30	27	OPERATOR division-init division-init.soar 28
+31	27	OPERATOR division-query division-query.soar 29
+32	0	OPERATOR done done.soar 8
+33	0	HLOPERATOR float float.soar float 138 66
+34	33	FOPERATOR elaborations elaborations.soar 67
+35	33	OPERATOR float-check float-check.soar 69
+36	33	OPERATOR float-init float-init.soar 68
+37	33	OPERATOR float-query float-query.soar 70
+38	0	HLOPERATOR inc_vars inc_vars.soar inc_vars 171 81
+39	38	FOPERATOR elaborations elaborations.soar 82
+40	38	OPERATOR inc_vars-check1 inc_vars-check1.soar 85
+41	38	OPERATOR inc_vars-check2 inc_vars-check2.soar 86
+42	38	OPERATOR inc_vars-query inc_vars-query.soar 84
+43	0	OPERATOR initialize-qna-test initialize-qna-test.soar 7
+44	0	HLOPERATOR int int.soar int 127 61
+45	44	FOPERATOR elaborations elaborations.soar 62
+46	44	OPERATOR int-check int-check.soar 64
+47	44	OPERATOR int-init int-init.soar 63
+48	44	OPERATOR int-query int-query.soar 65
+49	0	HLOPERATOR mod mod.soar mod 83 41
+50	49	FOPERATOR elaborations elaborations.soar 42
+51	49	OPERATOR mod-check mod-check.soar 45
+52	49	OPERATOR mod-init mod-init.soar 43
+53	49	OPERATOR mod-query mod-query.soar 44
+54	0	HLOPERATOR multiplication multiplication.soar multiplication 39 21
+55	54	FOPERATOR elaborations elaborations.soar 22
+56	54	OPERATOR multiplication-check multiplication-check.soar 25
+57	54	OPERATOR multiplication-init multiplication-init.soar 23
+58	54	OPERATOR multiplication-query multiplication-query.soar 24
+59	0	HLOPERATOR negation negation.soar negation 61 31
+60	59	FOPERATOR elaborations elaborations.soar 32
+61	59	OPERATOR negation-check negation-check.soar 35
+62	59	OPERATOR negation-init negation-init.soar 33
+63	59	OPERATOR negation-query negation-query.soar 34
+64	0	HLOPERATOR one_var one_var.soar one_var 149 71
+65	64	FOPERATOR elaborations elaborations.soar 72
+66	64	OPERATOR one_var-check one_var-check.soar 75
+67	64	OPERATOR one_var-init one_var-init.soar 73
+68	64	OPERATOR one_var-query one_var-query.soar 74
+69	0	HLOPERATOR reciprocation reciprocation.soar reciprocation 72 36
+70	69	FOPERATOR elaborations elaborations.soar 37
+71	69	OPERATOR reciprocation-check reciprocation-check.soar 40
+72	69	OPERATOR reciprocation-init reciprocation-init.soar 38
+73	69	OPERATOR reciprocation-query reciprocation-query.soar 39
+74	0	HLOPERATOR sqrt sqrt.soar sqrt 116 56
+75	74	FOPERATOR elaborations elaborations.soar 57
+76	74	OPERATOR sqrt-check sqrt-check.soar 60
+77	74	OPERATOR sqrt-init sqrt-init.soar 58
+78	74	OPERATOR sqrt-query sqrt-query.soar 59
+79	0	HLOPERATOR subtraction subtraction.soar subtraction 28 16
+80	79	FOPERATOR elaborations elaborations.soar 17
+81	79	OPERATOR subtraction-check subtraction-check.soar 20
+82	79	OPERATOR subtraction-init subtraction-init.soar 18
+83	79	OPERATOR subtraction-query subtraction-query.soar 19
+END

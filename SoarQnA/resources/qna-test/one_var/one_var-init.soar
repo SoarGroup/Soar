@@ -1,0 +1,14 @@
+sp {one_var*propose*one_var-init
+   (state <s> ^name one_var
+             -^operand1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name one_var-init)
+}
+
+sp {apply*one_var-init
+   (state <s> ^operator <op>)
+   (<op> ^name one_var-init)
+-->
+   (<s> ^operand1 (+ 1 (rand-int 9)))
+}

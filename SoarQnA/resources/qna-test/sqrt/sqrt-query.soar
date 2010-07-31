@@ -1,0 +1,23 @@
+sp {sqrt*propose*sqrt-query
+   (state <s> ^name sqrt
+              ^operand1
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name sqrt-query)
+}
+
+sp {apply*sqrt-query
+   (state <s> ^operator <op>
+              ^superstate.io.output-link <out>
+              ^operand1 <op1>)
+   (<op> ^name sqrt-query)
+-->
+   (<s> ^result (float <op1>))
+   (<out> ^qna-query <q>)
+   (<q> ^source math
+        ^query sqrt
+        ^parameters <ps>
+        ^results all)
+   (<ps> ^operand1 (* <op1> <op1>))
+}
