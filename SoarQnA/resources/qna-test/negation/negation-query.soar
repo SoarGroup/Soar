@@ -1,0 +1,23 @@
+sp {negation*propose*negation-query
+   (state <s> ^name negation
+              ^operand1
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name negation-query)
+}
+
+sp {apply*negation-query
+   (state <s> ^operator <op>
+              ^superstate.io.output-link <out>
+              ^operand1 <op1>)
+   (<op> ^name negation-query)
+-->
+   (<s> ^result (* <op1> -1))
+   (<out> ^qna-query <q>)
+   (<q> ^source math
+        ^query |-|
+        ^parameters <ps>
+        ^results all)
+   (<ps> ^operand1 <op1>)
+}

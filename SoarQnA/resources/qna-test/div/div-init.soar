@@ -1,0 +1,15 @@
+sp {div*propose*div-init
+   (state <s> ^name div
+             -^operand1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name div-init)
+}
+
+sp {apply*div-init
+   (state <s> ^operator <op>)
+   (<op> ^name div-init)
+-->
+   (<s> ^operand1 (rand-int 100)
+        ^operand2 (rand-int 100))
+}

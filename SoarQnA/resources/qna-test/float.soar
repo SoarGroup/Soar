@@ -1,0 +1,11 @@
+sp {qna-test*propose*float
+   (state <s> ^name qna-test
+              ^test <t>
+              ^io.input-link.qna-registry.math.query float)
+   (<t> ^source math
+        ^query float
+       -^done)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name float)
+}

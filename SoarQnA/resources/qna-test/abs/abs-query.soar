@@ -1,0 +1,23 @@
+sp {abs*propose*abs-query
+   (state <s> ^name abs
+              ^operand1
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name abs-query)
+}
+
+sp {apply*abs-query
+   (state <s> ^operator <op>
+              ^superstate.io.output-link <out>
+              ^operand1 <op1>)
+   (<op> ^name abs-query)
+-->
+   (<s> ^result <op1>)
+   (<out> ^qna-query <q>)
+   (<q> ^source math
+        ^query abs
+        ^parameters <ps>
+        ^results all)
+   (<ps> ^operand1 (* -1 <op1>))
+}

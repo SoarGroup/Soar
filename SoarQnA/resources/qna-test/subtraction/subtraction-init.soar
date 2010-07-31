@@ -1,0 +1,15 @@
+sp {subtraction*propose*subtraction-init
+   (state <s> ^name subtraction
+             -^operand1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name subtraction-init)
+}
+
+sp {apply*subtraction-init
+   (state <s> ^operator <op>)
+   (<op> ^name subtraction-init)
+-->
+   (<s> ^operand1 (rand-int 100)
+        ^operand2 (rand-int 100))
+}

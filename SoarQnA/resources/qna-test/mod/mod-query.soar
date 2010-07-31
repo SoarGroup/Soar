@@ -1,0 +1,25 @@
+sp {mod*propose*mod-query
+   (state <s> ^name mod
+              ^operand1
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name mod-query)
+}
+
+sp {apply*mod-query
+   (state <s> ^operator <op>
+              ^superstate.io.output-link <out>
+              ^operand1 <op1>
+              ^operand2 <op2>)
+   (<op> ^name mod-query)
+-->
+   (<s> ^result (mod <op1> <op2>))
+   (<out> ^qna-query <q>)
+   (<q> ^source math
+        ^query mod
+        ^parameters <ps>
+        ^results all)
+   (<ps> ^operand1 <op1>
+         ^operand2 <op2>)
+}

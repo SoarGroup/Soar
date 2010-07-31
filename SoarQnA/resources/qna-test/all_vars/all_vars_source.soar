@@ -1,0 +1,4 @@
+source elaborations.soar
+source all_vars-check.soar
+source all_vars-init.soar
+source all_vars-query.soar

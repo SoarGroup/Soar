@@ -1,0 +1,15 @@
+sp {mod*propose*mod-init
+   (state <s> ^name mod
+             -^operand1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name mod-init)
+}
+
+sp {apply*mod-init
+   (state <s> ^operator <op>)
+   (<op> ^name mod-init)
+-->
+   (<s> ^operand1 (rand-int 100)
+        ^operand2 (rand-int 100))
+}
