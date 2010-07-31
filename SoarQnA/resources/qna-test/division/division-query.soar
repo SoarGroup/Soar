@@ -1,0 +1,25 @@
+sp {division*propose*division-query
+   (state <s> ^name division
+              ^operand1
+             -^result)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name division-query)
+}
+
+sp {apply*division-query
+   (state <s> ^operator <op>
+              ^superstate.io.output-link <out>
+              ^operand1 <op1>
+              ^operand2 <op2>)
+   (<op> ^name division-query)
+-->
+   (<s> ^result <op2>)
+   (<out> ^qna-query <q>)
+   (<q> ^source math
+        ^query |/|
+        ^parameters <ps>
+        ^results all)
+   (<ps> ^operand1 (* <op1> <op2>)
+         ^operand2 <op1>)
+}

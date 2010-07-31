@@ -1,0 +1,4 @@
+source elaborations.soar
+source sqrt-check.soar
+source sqrt-init.soar
+source sqrt-query.soar

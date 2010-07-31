@@ -1,0 +1,31 @@
+sp {sqrt*propose*sqrt-check
+   (state <s> ^name sqrt
+              ^result <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name sqrt-check)
+}
+
+sp {apply*sqrt-check*failure
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate.io.input-link.qna-resultset.result.result {<> <r>})
+   (<op> ^name sqrt-check)
+-->
+   (write |sqrt test failed!|)
+   (halt)
+}
+
+sp {apply*sqrt-check*success
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate <ss>)
+   (<ss> ^io.input-link.qna-resultset.result.result <r>
+         ^test <t>)
+   (<t> ^source math
+        ^query sqrt)
+   (<op> ^name sqrt-check)
+-->
+   (<t> ^done true)
+   (write |sqrt: success|)
+}

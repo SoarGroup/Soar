@@ -1,0 +1,31 @@
+sp {float*propose*float-check
+   (state <s> ^name float
+              ^result <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name float-check)
+}
+
+sp {apply*float-check*failure
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate.io.input-link.qna-resultset.result.result {<> <r>})
+   (<op> ^name float-check)
+-->
+   (write |float test failed!|)
+   (halt)
+}
+
+sp {apply*float-check*success
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate <ss>)
+   (<ss> ^io.input-link.qna-resultset.result.result <r>
+         ^test <t>)
+   (<t> ^source math
+        ^query float)
+   (<op> ^name float-check)
+-->
+   (<t> ^done true)
+   (write |float: success|)
+}

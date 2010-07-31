@@ -1,0 +1,31 @@
+sp {div*propose*div-check
+   (state <s> ^name div
+              ^result <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name div-check)
+}
+
+sp {apply*div-check*failure
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate.io.input-link.qna-resultset.result.result {<> <r>})
+   (<op> ^name div-check)
+-->
+   (write |div test failed!|)
+   (halt)
+}
+
+sp {apply*div-check*success
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate <ss>)
+   (<ss> ^io.input-link.qna-resultset.result.result <r>
+         ^test <t>)
+   (<t> ^source math
+        ^query div)
+   (<op> ^name div-check)
+-->
+   (<t> ^done true)
+   (write |div: success|)
+}

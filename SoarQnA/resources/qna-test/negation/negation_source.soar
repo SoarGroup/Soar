@@ -1,0 +1,4 @@
+source elaborations.soar
+source negation-check.soar
+source negation-init.soar
+source negation-query.soar

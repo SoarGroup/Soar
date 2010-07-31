@@ -1,0 +1,11 @@
+sp {qna-test*propose*multiplication
+   (state <s> ^name qna-test
+              ^test <t>
+              ^io.input-link.qna-registry.math.query |*|)
+   (<t> ^source math
+        ^query |*|
+       -^done)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name multiplication)
+}

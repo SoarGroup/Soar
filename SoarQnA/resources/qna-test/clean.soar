@@ -1,0 +1,92 @@
+sp {qna-test*propose*clean
+   (state <s> ^name qna-test
+              ^test <t>)
+   (<t> ^done true
+       -^clean)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name clean
+         ^test <t>)
+}
+
+sp {qna-test*propose*clean*dispose
+   (state <s> ^name qna-test
+              ^io.output-link.qna-dispose.status)
+-->
+   (<s> ^operator <op> + >)
+   (<op> ^name clean)
+}
+
+sp {qna-test*compare*clean*uneven
+   (state <s> ^name qna-test
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name clean
+          ^test)
+   (<op2> ^name clean
+         -^test)
+-->
+   (<s> ^operator <op1> > <op2>)
+}
+
+sp {qna-test*compare*clean*even
+   (state <s> ^name qna-test
+              ^operator <op1> +
+                        <op2> +)
+   (<op1> ^name clean
+         -^test)
+   (<op2> ^name clean
+         -^test)
+-->
+   (<s> ^operator <op1> = <op2>)
+}
+
+
+sp {apply*clean*query
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<out> ^qna-query <q>)
+   (<op> ^name clean)
+-->
+   (<out> ^qna-query <q> -)
+}
+
+sp {apply*clean*next
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<out> ^qna-next <cmd>)
+   (<cmd> ^status)
+   (<op> ^name clean)
+-->
+   (<out> ^qna-next <cmd> -)
+}
+
+sp {apply*clean*dispose
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<out> ^qna-dispose <cmd>)
+   (<cmd> ^status)
+   (<op> ^name clean)
+-->
+   (<out> ^qna-dispose <cmd> -)
+}
+
+sp {apply*clean*resultset
+   (state <s> ^operator <op>
+              ^io <io>)
+   (<io> ^input-link.qna-resultset.cursor <c>
+         ^output-link <out>)
+   (<op> ^name clean)
+-->
+   (<out> ^qna-dispose.cursor <c>)
+}
+
+sp {apply*clean
+   (state <s> ^operator <op>
+              ^complete <c>)
+   (<op> ^name clean
+         ^test <t>)
+-->
+   (<t> ^clean true)
+   (<s> ^complete <c> - (+ 1 <c>))
+}

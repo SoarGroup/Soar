@@ -1,0 +1,14 @@
+sp {sqrt*propose*sqrt-init
+   (state <s> ^name sqrt
+             -^operand1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name sqrt-init)
+}
+
+sp {apply*sqrt-init
+   (state <s> ^operator <op>)
+   (<op> ^name sqrt-init)
+-->
+   (<s> ^operand1 (rand-int 100))
+}

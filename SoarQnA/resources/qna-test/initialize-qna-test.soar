@@ -1,0 +1,54 @@
+sp {propose*initialize-qna-test
+   (state <s> ^superstate nil
+              ^io.input-link.qna-registry
+             -^name)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name initialize-qna-test)
+}
+
+sp {apply*initialize-qna-test
+   (state <s> ^operator <op>)
+   (<op> ^name initialize-qna-test)
+-->
+   (<s> ^name qna-test
+        ^test <t1> <t2> <t3> <t4> <t5> <t6> <t7> <t8> <t9> <t10> <t11> <t12> <t13> <t14> <t15>
+        ^complete 0)
+   (<t1> ^source math
+         ^query |+|)
+   (<t2> ^source math
+         ^query |-|
+         ^num one)
+   (<t3> ^source math
+         ^query |*|)
+   (<t4> ^source math
+         ^query |/|
+         ^num one)
+   (<t5> ^source math
+         ^query |-|
+         ^num two)
+   (<t6> ^source math
+         ^query |/|
+         ^num two)
+   (<t7> ^source math
+         ^query mod)
+   (<t8> ^source math
+         ^query div)
+   (<t9> ^source math
+         ^query abs)
+   (<t10> ^source math
+          ^query sqrt)
+   (<t11> ^source math
+          ^query float)
+   (<t12> ^source math
+          ^query int)
+   (<t13> ^source test_db
+          ^query one_var)
+   (<t14> ^source test_db
+          ^query all_vars
+          ^num one)
+   (<t15> ^source test_db
+          ^query all_vars
+          ^num two)
+}
+
