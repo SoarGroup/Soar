@@ -197,9 +197,9 @@ if GetOption('platform') == '64':
 	print "*"
 	env.Append(CPPFLAGS = Split('-m64 -fPIC'))
 	env.Append(LINKFLAGS = ['-m64'])
-#elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1:
-#	env.Append(CPPFLAGS = Split('-m32 -march=native'))
-#	env.Append(LINKFLAGS = Split('-m32 -march=native'))
+elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1:
+	env.Append(CPPFLAGS = Split('-m32 -march=native'))
+	env.Append(LINKFLAGS = Split('-m32 -march=native'))
 else:
 	env.Append(CPPFLAGS = ['-m32'])
 	env.Append(LINKFLAGS = ['-m32'])
@@ -348,18 +348,16 @@ if sys.platform == 'darwin':
 def CheckSWIG(context):
 	"""Checks to make sure we're using a compatible version of SWIG"""
 	for line in os.popen("swig -version").readlines():
-		m = re.search(r"([0-9])\.([0-9])\.([0-9]?[0-9])", line)
+		m = re.search(r"SWIG Version ([0-9]+)\.([0-9]+)\.([0-9]+)", line)
 		if m:
-			major = int(m.group(1))
-			minor = int(m.group(2))
-			micro = int(m.group(3))
-
+			ver = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
+			minver = (1, 3, 31)
 			ret = 1
 			status = 'ok'
-			if major < 1 or minor < 3 or micro < 31:
+			if ver < minver:
 				ret = 0
 				status = 'incompatible'
-			print "Found SWIG version %d.%d.%d... %s" % (major, minor, micro, status)
+			print "Found SWIG version %d.%d.%d... %s" % (ver + (status,))
 			return ret
 	print "Didn't find SWIG, make sure SWIG is in the path and rebuild."
 	return 0
