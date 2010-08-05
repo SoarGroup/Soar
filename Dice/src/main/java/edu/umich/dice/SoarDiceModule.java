@@ -168,6 +168,7 @@ public class SoarDiceModule
         
         kernel.RegisterForSystemEvent(sml.smlSystemEventId.smlEVENT_BEFORE_SHUTDOWN, shutdownHandler, null);
         
+        System.out.println("Connected, running.");
         while(!stop) {
             try
             {
@@ -178,7 +179,10 @@ public class SoarDiceModule
                 break;
             }
         }
-        kernel.Shutdown();
+        System.out.println("Shutting down.");
+        System.exit(0);
+        // TODO: hangs on windows
+        //kernel.Shutdown();
     }
 
     private final SystemEventInterface shutdownHandler = new SystemEventInterface()
