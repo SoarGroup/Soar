@@ -12,7 +12,8 @@ knowledge stores via the io system.
 The proposal presentation for SoarQnA (same
 directory as this file) covers desired 
 objectives and a system overview in greater
-detail.
+detail (though is inaccurate as to the IO
+datamap).
 
 
 Quick Usage Guide
@@ -118,33 +119,33 @@ An example agent is provided (qna-test.soar), which runs and
 validates a [non-comprehensive] set of unit tests based upon
 available sample data source instances/queries.
 
-The proposal document shows the input/output-link structures
-all in one slide. The basic sequence is as follows:
+The basic input/output-link structures are as follows:
 
-1. An agent issues a "qna-query" that specifies the source,
-   query name, query parameters, and how results should be
-   provided (all at once or incrementally).
+1.  An agent issues a "qna-query" that specifies the source,
+    query name, query parameters, and how results should be
+    provided (all at once or incrementally).
  
-2. If the query is unsucessful, the output command will be 
-   augmented with a "^cursor nil" WME. If successful, however,
-   it will receive a cursor-id that corresponds to a
-   "qna-resultset" structure on input-link, that has that same
-   cursor id.
+2a. If the query is unsucessful, the output command will be 
+    augmented with a "^status error" WME. 
    
-3. A resultset includes source, query name, cursor, and readable
-   results. If results are provided all at once, subsequent
-   results are created via a linked-list of "next" structures.
-   Otherwise, a "^next <id>" WME will augment the result,
-   providing the cursor id of the next result (or nil if none
-   left).
+2b. If the query is successful, the output command will be
+    augmented with a "^status success" WME as well as an "id"
+    integer-valued WME (which is useful for debugging purposes,
+    as well as if a next command is issued for incremental
+    results). The first "result" will also augment the command.
+    The result identifier has a "features" identifier, with
+    key/value pairs below, and a "next" WME. The next
+    augmentation is either "nil" (no further results), "pending"
+    (additional results, incremental), or a recursive identifier
+    (additional results, all). 
    
-4. Agents can dispose of resultsets via the "qna-dispose" output
-   command, which requires a cursor id and receives a status
-   augmentation.
-   
-5. Agents can get additional incremental results via the
-   "qna-next" output command, which requires a cursor id and
-   receives a status augmentation. 
+3. Agents can get additional incremental results via the
+   "qna-next" output command, which requires a "query" WME,
+   with integer value referring to the "id" of a qna-query,
+   and receives a status augmentation. If successful, the 
+   "^next pending" WME of the associated query will be
+   replaced with an identifier, with associated features and
+   next.<< nil pending >>. 
 
 Note that currently all results come back during a single output
 phase. Care should be taken to avoid costly queries, which will

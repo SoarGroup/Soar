@@ -6,21 +6,11 @@ sp {subtraction*propose*subtraction-check
    (<op> ^name subtraction-check)
 }
 
-sp {apply*subtraction-check*failure
-   (state <s> ^operator <op>
-              ^result <r>
-              ^superstate.io.input-link.qna-resultset.result.result {<> <r>})
-   (<op> ^name subtraction-check)
--->
-   (write |subtraction test failed!|)
-   (halt)
-}
-
 sp {apply*subtraction-check*success
    (state <s> ^operator <op>
               ^result <r>
               ^superstate <ss>)
-   (<ss> ^io.input-link.qna-resultset.result.result <r>
+   (<ss> ^io.output-link.qna-query.result.features.result <r>
          ^test <t>)
    (<t> ^source math
         ^query |-|

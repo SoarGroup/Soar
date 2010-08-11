@@ -9,31 +9,31 @@ sp {all_vars*propose*all_vars-check
 sp {apply*all_vars-check*success
    (state <s> ^operator <op>
               ^superstate <ss>)
-   (<ss> ^io.input-link.qna-resultset.result <r>
+   (<ss> ^io.output-link.qna-query.result <r>
          ^test <t>)
    (<t> ^source test_db
         ^query all_vars
         ^num one)
    (<op> ^name all_vars-check)
-   (<r> ^key 10
+   (<r> ^features.key 10
         ^next <n1>)
-   (<n1> ^key 9
+   (<n1> ^features.key 9
          ^next <n2>)
-   (<n2> ^key 8
+   (<n2> ^features.key 8
          ^next <n3>)
-   (<n3> ^key 7
+   (<n3> ^features.key 7
          ^next <n4>)
-   (<n4> ^key 6
+   (<n4> ^features.key 6
          ^next <n5>)
-   (<n5> ^key 5
+   (<n5> ^features.key 5
          ^next <n6>)
-   (<n6> ^key 4
+   (<n6> ^features.key 4
          ^next <n7>)
-   (<n7> ^key 3
+   (<n7> ^features.key 3
          ^next <n8>)
-   (<n8> ^key 2
+   (<n8> ^features.key 2
          ^next <n9>)
-   (<n9> ^key 1
+   (<n9> ^features.key 1
          ^next nil)
 -->
    (<t> ^done true)

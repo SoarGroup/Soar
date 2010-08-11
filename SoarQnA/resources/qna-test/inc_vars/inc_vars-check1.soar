@@ -1,7 +1,7 @@
 sp {inc_vars*propose*inc_vars-check1
    (state <s> ^name inc_vars
               ^result <r>
-             -^cursor)
+             -^superstate.io.output-link.qna-next)
 -->
    (<s> ^operator <op> + =)
    (<op> ^name inc_vars-check1)
@@ -10,12 +10,14 @@ sp {inc_vars*propose*inc_vars-check1
 sp {apply*inc_vars-check1*success
    (state <s> ^operator <op>
               ^superstate.io <io>)
-   (<io> ^input-link.qna-resultset.result <r>
-         ^output-link <out>)
    (<op> ^name inc_vars-check1)
-   (<r> ^key 10
-        ^next <c>)
+   (<io> ^output-link <out>)
+   (<out> ^qna-query <q>)
+   (<q> ^status complete
+        ^id <q-id>
+        ^result <r>)
+   (<r> ^features.key 10
+        ^next pending)
 -->
-   (<s> ^cursor <c>)
-   (<out> ^qna-next.cursor <c>)
+   (<out> ^qna-next.query <q-id>)
 }

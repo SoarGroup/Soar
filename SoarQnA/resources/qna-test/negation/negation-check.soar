@@ -6,21 +6,11 @@ sp {negation*propose*negation-check
    (<op> ^name negation-check)
 }
 
-sp {apply*negation-check*failure
-   (state <s> ^operator <op>
-              ^result <r>
-              ^superstate.io.input-link.qna-resultset.result.result {<> <r>})
-   (<op> ^name negation-check)
--->
-   (write |negation test failed!|)
-   (halt)
-}
-
 sp {apply*negation-check*success
    (state <s> ^operator <op>
               ^result <r>
               ^superstate <ss>)
-   (<ss> ^io.input-link.qna-resultset.result.result <r>
+   (<ss> ^io.output-link.qna-query.result.features.result <r>
          ^test <t>)
    (<t> ^source math
         ^query |-|

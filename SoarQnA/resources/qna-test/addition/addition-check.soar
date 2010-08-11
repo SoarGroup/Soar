@@ -6,21 +6,11 @@ sp {addition*propose*addition-check
    (<op> ^name addition-check)
 }
 
-sp {apply*addition-check*failure
-   (state <s> ^operator <op>
-              ^result <r>
-              ^superstate.io.input-link.qna-resultset.result.result {<> <r>})
-   (<op> ^name addition-check)
--->
-   (write |addition test failed!|)
-   (halt)
-}
-
 sp {apply*addition-check*success
    (state <s> ^operator <op>
               ^result <r>
               ^superstate <ss>)
-   (<ss> ^io.input-link.qna-resultset.result.result <r>
+   (<ss> ^io.output-link.qna-query.result.features.result <r>
          ^test <t>)
    (<t> ^source math
         ^query |+|)

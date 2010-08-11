@@ -9,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
 
 import sml.Agent;
 import sml.Identifier;
+import sml.IntElement;
 import sml.Kernel;
 import sml.WMElement;
 import sml.smlSystemEventId;
@@ -17,48 +18,39 @@ import sml.Kernel.SystemEventInterface;
 
 public class QnASMLModule {
 	
-	final Identifier inputLink;
-	final Agent agent;
-	final long queryOutputHandle;
-	final long disposeOutputHandle;
-	final long nextOutputHandle;
+	private final Identifier inputLink;
+	private Identifier qnaRegistry;
 	
-	final DataSourceManager man;
-	final Map<Integer, ResultSetInfo> resultSets;
-	int maxCursor;
+	private final DataSourceManager man;
 	
-	CountDownLatch doneSignal;
-	
-	
-	private class ResultSetInfo {
-		public final String source;
-		public final String queryName;
-		public Identifier id;
-		public QueryState queryState;
+	private int queryCounter;
+	private final Map<Integer, ResultState> intermediateResults = new HashMap<Integer, ResultState>();
+	private class ResultState {
+		public final Identifier oldParent;
+		public final QueryState queryState;
 		
-		ResultSetInfo(String source, String queryName, QueryState queryState) {
-			this.source = source;
-			this.queryName = queryName;
+		ResultState(Identifier oldParent, QueryState queryState) {
+			this.oldParent = oldParent;
 			this.queryState = queryState;
-			
-			id = null;
 		}
-	}
+	};
 	
-	public static final String QUERY_COMMAND_NAME = "qna-query";
-	public static final String DISPOSE_COMMAND_NAME = "qna-dispose";
-	public static final String NEXT_COMMAND_NAME = "qna-next";
+	private CountDownLatch doneSignal;
 	
-	public static final String NEXT_NAME = "next";
-	public static final String CURSOR_NAME = "cursor";
-	public static final String RESULT_NAME = "result";
-	public static final String QUERY_NAME = "query";
-	public static final String SOURCE_NAME = "source";
-	public static final String RESULTS_NAME = "results";
-	public static final String INCREMENTAL_NAME = "incremental";
-	public static final String PARAMETERS_NAME = "parameters";
-	public static final String RESULTSET_NAME = "qna-resultset";
-	public static final String CURSOR_NIL = "nil";
+	private static final String QUERY_COMMAND_NAME = "qna-query";
+	private static final String NEXT_COMMAND_NAME = "qna-next";
+	
+	private static final String NEXT_NAME = "next";
+	private static final String RESULT_NAME = "result";
+	private static final String QUERY_NAME = "query";
+	private static final String SOURCE_NAME = "source";
+	private static final String RESULTS_NAME = "results";
+	private static final String INCREMENTAL_NAME = "incremental";
+	private static final String PARAMETERS_NAME = "parameters";
+	private static final String NIL_NAME = "nil";
+	private static final String FEATURES_NAME = "features";
+	private static final String PENDING_NAME = "pending";
+	private static final String ID_NAME = "id";
 	
 	public QnASMLModule(String host, int port, String agentName, DataSourceManager man, CountDownLatch doneSignal) {
 		final Kernel kernel = Kernel.CreateRemoteConnection(true, host, port);
@@ -70,18 +62,16 @@ public class QnASMLModule {
 		if (agent == null) {
 			throw new IllegalStateException(kernel.GetLastErrorDescription());
 		}
-		this.agent = agent;
+
 		this.inputLink = agent.GetInputLink();
 		
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_BEFORE_SHUTDOWN, shutdownHandler, null);
-
-		queryOutputHandle = agent.AddOutputHandler(QUERY_COMMAND_NAME, queryCommandHandler, null);
-		disposeOutputHandle = agent.AddOutputHandler(DISPOSE_COMMAND_NAME, disposeCommandHandler, null);
-		nextOutputHandle = agent.AddOutputHandler(NEXT_COMMAND_NAME, nextCommandHandler, null);
+		agent.AddOutputHandler(QUERY_COMMAND_NAME, queryCommandHandler, null);
+		agent.AddOutputHandler(NEXT_COMMAND_NAME, nextCommandHandler, null);
 		agent.SetOutputLinkChangeTracking(true);
 		
 		this.man = man;
-		Identifier qnaRegistry = inputLink.CreateIdWME("qna-registry");
+		qnaRegistry = inputLink.CreateIdWME("qna-registry");
 		for (Entry<String, Map<String, String>> s : man.getRegistry().entrySet()) {
 			Identifier dataSource = qnaRegistry.CreateIdWME(s.getKey());
 			
@@ -90,67 +80,77 @@ public class QnASMLModule {
 			}
 		}
 		
-		maxCursor = 1;
-		resultSets = new HashMap<Integer, ResultSetInfo>();
-		
 		this.doneSignal = doneSignal;
+		
+		this.queryCounter = 1;
 	}
 	
 	public void close() {
-		agent.RemoveOutputHandler(queryOutputHandle);
-		agent.RemoveOutputHandler(disposeOutputHandle);
-		agent.RemoveOutputHandler(nextOutputHandle);
+		qnaRegistry.DestroyWME();
 	}
 	
-	private void addResult(QueryState queryState, Identifier id) {
+	private void addFeatures(Identifier features, QueryState queryState) {
 		Map<String, List<Object>> row = queryState.next();
 		
 		for (Entry<String, List<Object>> c : row.entrySet()) {
 			for (Object v : c.getValue()) {
 				if (v instanceof Integer) {
-					id.CreateIntWME(c.getKey(), ((Integer) v).intValue());
+					features.CreateIntWME(c.getKey(), ((Integer) v).intValue());
 				} else if (v instanceof Double) {
-					id.CreateFloatWME(c.getKey(), ((Double) v).doubleValue());
+					features.CreateFloatWME(c.getKey(), ((Double) v).doubleValue());
 				} else {
-					id.CreateStringWME(c.getKey(), v.toString());
+					features.CreateStringWME(c.getKey(), v.toString());
 				}
 			}
 		}
 	}
 	
-	private void addResultSet(Integer cursorId, boolean incremental) {
+	private void addResult(Integer queryId, boolean first, boolean incremental) {
+		if (!intermediateResults.containsKey(queryId)) {
+			return;
+		}
 		
-		if (resultSets.containsKey(cursorId)) {
-			ResultSetInfo rs = resultSets.get(cursorId);
-			
-			if (rs.id == null) {
-				Identifier newResultSet = inputLink.CreateIdWME(RESULTSET_NAME);
-				rs.id = newResultSet;
-				
-				newResultSet.CreateStringWME(SOURCE_NAME, rs.source);
-				newResultSet.CreateStringWME(QUERY_NAME, rs.queryName);
-				newResultSet.CreateIntWME(CURSOR_NAME, cursorId);
-				
-				Identifier resultId = newResultSet.CreateIdWME(RESULT_NAME);
-				addResult(rs.queryState, resultId);
-				
-				if (incremental) {
-					if (rs.queryState.hasNext()) {
-						Integer nextCursor = new Integer(maxCursor++);
-						
-						resultSets.put(nextCursor, new ResultSetInfo(rs.source, rs.queryName, rs.queryState));
-						resultId.CreateIntWME(NEXT_NAME, nextCursor.intValue());
-					} else {
-						resultId.CreateStringWME(NEXT_NAME, CURSOR_NIL);
-					}
-				} else {
-					while (rs.queryState.hasNext()) {
-						resultId = resultId.CreateIdWME(NEXT_NAME);
-						addResult(rs.queryState, resultId);
-					}
-					resultId.CreateStringWME(NEXT_NAME, CURSOR_NIL);
+		ResultState rs = intermediateResults.get(queryId);
+		
+		if (incremental) {
+			{
+				WMElement oldChild = rs.oldParent.FindByAttribute(NEXT_NAME, 0);
+				if (oldChild!=null && oldChild.ConvertToStringElement()!=null && oldChild.ConvertToStringElement().GetValue().compareTo(PENDING_NAME)==0) {
+					oldChild.DestroyWME();
 				}
 			}
+			
+			Identifier newParent = rs.oldParent.CreateIdWME(first?RESULT_NAME:NEXT_NAME);
+			addFeatures(newParent.CreateIdWME(FEATURES_NAME), rs.queryState);
+			if (rs.queryState.hasNext()) {
+				newParent.CreateStringWME(NEXT_NAME, PENDING_NAME);
+				intermediateResults.put(queryId, new ResultState(newParent, rs.queryState));				
+			} else {
+				newParent.CreateStringWME(NEXT_NAME, NIL_NAME);
+				intermediateResults.remove(queryId);
+			}
+		} else {
+			Identifier oldParent = rs.oldParent;
+			Identifier newParent = null;
+			boolean firstRound = first;
+			
+			do {				
+				if (firstRound) {
+					newParent = oldParent.CreateIdWME(RESULT_NAME);
+					firstRound = false;
+				} else {
+					newParent = oldParent.CreateIdWME(NEXT_NAME);
+				}				
+				addFeatures(newParent.CreateIdWME(FEATURES_NAME), rs.queryState);
+				
+				if (rs.queryState.hasNext()) {
+					oldParent = newParent;
+				} else {
+					newParent.CreateStringWME(NEXT_NAME, NIL_NAME);
+				}
+			} while (rs.queryState.hasNext());
+			
+			intermediateResults.remove(queryId);
 		}
 	}
 	
@@ -163,66 +163,30 @@ public class QnASMLModule {
 		
 	};
 	
-	private final OutputEventInterface disposeCommandHandler = new OutputEventInterface() {
-
-		@Override
-		public void outputEventHandler(Object data, String agentName,
-				String attributeName, WMElement pWmeAdded) {
-			if (pWmeAdded.IsJustAdded() && pWmeAdded.IsIdentifier()) {
-				WMElement cursorWme = pWmeAdded.ConvertToIdentifier().FindByAttribute(CURSOR_NAME, 0);
-				boolean goodDispose = false;
-				
-				if ((cursorWme != null) && (cursorWme.ConvertToIntElement() != null)) {
-					Integer cursorId = new Integer(cursorWme.ConvertToIntElement().GetValue());
-					
-					if (resultSets.containsKey(cursorId)) {
-						ResultSetInfo rs = resultSets.get(cursorId);
-						
-						if (rs.id != null) {
-							goodDispose = true;
-							rs.id.DestroyWME();
-							resultSets.remove(cursorId);
-						}
-					}
-				}
-				
-				if (goodDispose) {
-					pWmeAdded.ConvertToIdentifier().AddStatusComplete();
-				} else {
-					pWmeAdded.ConvertToIdentifier().AddStatusError();
-				}
-				
-			}
-		}
-	
-	};
-	
 	private final OutputEventInterface nextCommandHandler = new OutputEventInterface() {
 
 		@Override
 		public void outputEventHandler(Object data, String agentName,
 				String attributeName, WMElement pWmeAdded) {
 			if (pWmeAdded.IsJustAdded() && pWmeAdded.IsIdentifier()) {
-				WMElement cursorWme = pWmeAdded.ConvertToIdentifier().FindByAttribute(CURSOR_NAME, 0);
 				boolean goodNext = false;
 				
-				if ((cursorWme != null) && (cursorWme.ConvertToIntElement() != null)) {
-					Integer cursorId = new Integer(cursorWme.ConvertToIntElement().GetValue());
-					
-					if (resultSets.containsKey(cursorId)) {
-						ResultSetInfo rs = resultSets.get(cursorId);
-						
-						if (rs.id == null) {
-							goodNext = true;
-							addResultSet(cursorId, true);
-						}
+				Identifier pIdAdded = pWmeAdded.ConvertToIdentifier();
+				
+				WMElement queryWme = pIdAdded.FindByAttribute(QUERY_NAME, 0);
+				IntElement queryInt = queryWme.ConvertToIntElement();
+				
+				if (queryInt!=null) {
+					if (intermediateResults.containsKey(queryInt.GetValue())) {
+						addResult(queryInt.GetValue(), false, true);
+						goodNext = true;
 					}
 				}
 				
 				if (goodNext) {
-					pWmeAdded.ConvertToIdentifier().AddStatusComplete();
+					pIdAdded.AddStatusComplete();
 				} else {
-					pWmeAdded.ConvertToIdentifier().AddStatusError();
+					pIdAdded.AddStatusError();
 				}
 				
 			}
@@ -237,13 +201,27 @@ public class QnASMLModule {
 				String attributeName, WMElement pWmeAdded) {
 			if (pWmeAdded.IsJustAdded() && pWmeAdded.IsIdentifier()) {
 				Identifier pIdAdded = pWmeAdded.ConvertToIdentifier();
-				Integer cursorId = null;
+				boolean goodQuery = true;
 				
 				String uid = pIdAdded.GetParameterValue(SOURCE_NAME);
+				if (uid==null) {
+					goodQuery = false;
+				}
+				
 				String queryName = pIdAdded.GetParameterValue(QUERY_NAME);
+				if (queryName==null) {
+					goodQuery = false;
+				}
+				
 				String results = pIdAdded.GetParameterValue(RESULTS_NAME);
+				if (results==null) {
+					goodQuery = false;
+				}
+				
 				WMElement paramsWme = pIdAdded.FindByAttribute(PARAMETERS_NAME, 0);
-				if ((paramsWme != null) && paramsWme.IsIdentifier()) {
+				
+				// parse parameters, try executing query
+				if (goodQuery && (paramsWme != null) && paramsWme.IsIdentifier()) {
 					Identifier paramsId = paramsWme.ConvertToIdentifier();
 					Map<Object, List<Object>> queryParams = new HashMap<Object, List<Object>>();
 					
@@ -285,23 +263,27 @@ public class QnASMLModule {
 						queryState = man.executeQuery(uid, queryName, queryParams);
 					} catch (Exception e) {
 						e.printStackTrace();
+						goodQuery = false;
 					} 
+					
 					if ((queryState != null)) {
-						cursorId = new Integer(maxCursor++);
+						pIdAdded.CreateIntWME(ID_NAME, queryCounter);						
+						intermediateResults.put(queryCounter, new ResultState(pIdAdded, queryState));
 						
-						resultSets.put(cursorId, new ResultSetInfo(uid, queryName, queryState));
-						addResultSet(cursorId, results.equals(INCREMENTAL_NAME));
+						addResult(queryCounter, true, results.compareTo(INCREMENTAL_NAME)==0);
+						
+						queryCounter++;
 					}
 				}
 				
-				if (cursorId == null) {
-					pWmeAdded.ConvertToIdentifier().CreateStringWME(CURSOR_NAME, CURSOR_NIL);
+				if (goodQuery) {
+					pIdAdded.AddStatusComplete();
 				} else {
-					pWmeAdded.ConvertToIdentifier().CreateIntWME(CURSOR_NAME, cursorId.intValue());
+					pIdAdded.AddStatusError();
 				}
-			}
-			
-		}
-		
+			}			
+		}		
 	};
+	
+	
 }
