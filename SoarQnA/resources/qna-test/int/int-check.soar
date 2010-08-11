@@ -6,21 +6,11 @@ sp {int*propose*int-check
    (<op> ^name int-check)
 }
 
-sp {apply*int-check*failure
-   (state <s> ^operator <op>
-              ^result <r>
-              ^superstate.io.input-link.qna-resultset.result.result {<> <r>})
-   (<op> ^name int-check)
--->
-   (write |int test failed!|)
-   (halt)
-}
-
 sp {apply*int-check*success
    (state <s> ^operator <op>
               ^result <r>
               ^superstate <ss>)
-   (<ss> ^io.input-link.qna-resultset.result.result <r>
+   (<ss> ^io.output-link.qna-query.result.features.result <r>
          ^test <t>)
    (<t> ^source math
         ^query int)
