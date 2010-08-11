@@ -1,4 +1,4 @@
-182
+198
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -181,7 +181,23 @@ ENUMERATION 178 1 inc_vars-check1
 SOAR_ID 179
 ENUMERATION 180 1 inc_vars-check2
 SOAR_ID 181
-197
+SOAR_ID 182
+SOAR_ID 183
+INTEGER_RANGE 184 -2147483648 2147483647
+ENUMERATION 185 2 error success
+STRING 186
+STRING 187
+SOAR_ID 188
+ENUMERATION 189 2 all incremental
+INTEGER_RANGE 190 -2147483648 2147483647
+ENUMERATION 191 1 nil
+SOAR_ID 192
+SOAR_ID 193
+ENUMERATION 194 1 nil
+SOAR_ID 195
+SOAR_ID 196
+SOAR_ID 197
+214
 0 io 1
 0 name 7
 0 operator 4
@@ -207,6 +223,9 @@ SOAR_ID 181
 0 type 5
 1 input-link 2
 1 output-link 3
+2 qna-registry 197
+3 qna-next 183
+3 qna-query 182
 4 name 8
 9 name 10
 11 name 12
@@ -379,3 +398,17 @@ SOAR_ID 181
 177 name 176
 179 name 178
 181 name 180
+182 id 190
+182 parameters 188
+182 query 187
+182 result 191
+182 result 192
+182 results 189
+182 source 186
+183 query 184
+183 status 185
+192 features 193
+192 next 194
+192 next 195
+195 features 196
+195 next 192
