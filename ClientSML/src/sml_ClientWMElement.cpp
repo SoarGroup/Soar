@@ -41,18 +41,14 @@ WMElement::WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const*
 
 WMElement::~WMElement(void)
 {
+	//std::cout << "~WMElement: " << m_TimeTag << std::endl;
 }
 
-void WMElement::SetParent(Identifier* pParent)
+// See comments in header.
+void WMElement::SetSymbol(IdentifierSymbol* p_ID)
 {
-	// We should only set the parent once and only to the same
-	// string value as the ID we used when we constructed the WME.
-	// (This method is only called when we have dangling parts of a graph while
-	//  it's being built).
-	assert(m_ID == NULL) ;
-	assert(m_IDName.compare(pParent->GetValueAsString()) == 0) ;
-
-	m_ID = pParent->GetSymbol() ;
+	m_ID = p_ID;
+	m_IDName.assign(p_ID->GetIdentifierSymbol());
 }
 
 void WMElement::GenerateNewTimeTag()
