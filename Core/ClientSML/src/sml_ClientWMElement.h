@@ -137,7 +137,13 @@ protected:
 
 	void	SetJustAdded(bool state) { m_JustAdded = state ; }
 
-	void SetParent(Identifier* pParent) ;
+	// We should only set the parent symbol once and only to the same
+	// string value as the ID we used when we constructed the WME.
+	// (This method is only called when we have dangling parts of a graph while
+	//  it's being built).
+	// This can also be re-assigned when IdentifierSymbols' children transfer
+	// ownership when converting from client side (e.g. h2) to kernel side (H1) 
+	void SetSymbol(IdentifierSymbol* p_ID) ;
 
 	// If we update the value we need to assign a new time tag to this WME.
 	// That's because we're really doing a delete followed by an add
