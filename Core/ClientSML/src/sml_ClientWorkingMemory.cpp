@@ -308,10 +308,13 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 			if (pAddId && (strcmp(pType, sml_Names::kTypeID) == 0))
 			{
 				IdentifierSymbol* pSymbol = this->FindIdentifierSymbol( pValue );
-				if (pSymbol)
-					pAddId->UpdateSymbol(pSymbol);
-				else
-					pAddId->ChangeSymbol(pValue);
+				if (!pSymbol) {
+					pSymbol = new IdentifierSymbol(pAddId);
+					pSymbol->SetIdentifierSymbol(pValue);
+				}
+
+				// This will RecordSymbolInMap
+				pAddId->UpdateSymbol(pSymbol);
 			}
 		}
 	}
@@ -372,7 +375,9 @@ bool WorkingMemory::TryToAttachOrphanedChildren(Identifier* pPossibleParent)
 
 	while (pWme)
 	{
-		pWme->SetParent(pPossibleParent) ;
+		assert(pWme->m_ID == NULL) ;
+		assert(pWme->m_IDName.compare(pPossibleParent->GetValueAsString()) == 0) ;
+		pWme->SetSymbol(pPossibleParent->GetSymbol());
 		pPossibleParent->AddChild(pWme) ;
 
 		if (this->GetAgent()->GetKernel()->IsTracingCommunications())

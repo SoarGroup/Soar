@@ -89,6 +89,17 @@ WMElement* IdentifierSymbol::GetChildByTimeTag(long timeTag)
 	return 0;
 }
 
+void IdentifierSymbol::TransferChildren(IdentifierSymbol* pDestination)
+{
+	for (Identifier::ChildrenIter iter = m_Children.begin() ; iter != m_Children.end() ; iter++)
+	{
+		WMElement* pWME = *iter ;
+		pDestination->AddChild(pWME);
+		pWME->SetSymbol(pDestination);
+	}
+	m_Children.clear();
+}
+
 void IdentifierSymbol::RemoveChild(WMElement* pWME)
 {
 	// Record that we're changing the list of children in case the
@@ -230,23 +241,12 @@ void Identifier::UpdateSymbol(IdentifierSymbol* pSymbol)
 	//m_pSymbol->DebugString(symString);
 	//std::cout << "UpdateSymbol for wme " << GetTimeTag() << " " << symString;
 
+	m_pSymbol->TransferChildren(pSymbol);
+
 	ReleaseSymbol();
 
 	m_pSymbol = pSymbol;
 	m_pSymbol->UsedBy(this) ;
-	RecordSymbolInMap(); // potentially redundant
-}
-
-void Identifier::ChangeSymbol(const char* pIdentifier)
-{
-	//std::string symString;
-	//m_pSymbol->DebugString(symString);
-	//std::cout << "ChangeSymbol for wme " << GetTimeTag() << " " << symString;
-
-	ReleaseSymbol();
-
-	m_pSymbol = new IdentifierSymbol(this) ;
-	m_pSymbol->SetIdentifierSymbol(pIdentifier) ;
 	RecordSymbolInMap();
 }
 
@@ -274,9 +274,9 @@ void Identifier::ReleaseSymbol()
 	m_pSymbol = NULL ;
 }
 
-void Identifier::SetParent(Identifier* pParent)
+void Identifier::SetSymbol(IdentifierSymbol* p_ID)
 {
-	WMElement::SetParent(pParent) ;
+	WMElement::SetSymbol(p_ID) ;
 }
 
 /*************************************************************

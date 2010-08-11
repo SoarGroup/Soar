@@ -84,6 +84,7 @@ public:
 	// it will delete the WME.
 	void AddChild(WMElement* pWME) ;
 	WMElement* GetChildByTimeTag(long timeTag);
+	void TransferChildren(IdentifierSymbol* pDestination);
 	void DeleteAllChildren() ;
 
 	void RemoveChild(WMElement* pWME) ;
@@ -129,9 +130,8 @@ protected:
 
 	IdentifierSymbol* GetSymbol() { return m_pSymbol ; }
 	void UpdateSymbol(IdentifierSymbol* pSymbol);
-	void ChangeSymbol(const char* pIdentifier);
 
-	void SetParent(Identifier* pParent) ;
+	void SetSymbol(IdentifierSymbol* p_ID) ;
 
 	void RecordSymbolInMap();
 
