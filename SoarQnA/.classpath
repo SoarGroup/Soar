@@ -4,6 +4,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.6.20.1.jar"/>
 	<classpathentry kind="lib" path="lib/ini4j-0.5.1.jar"/>
-	<classpathentry kind="lib" path="lib/sml.jar"/>
+	<classpathentry kind="var" path="SOAR_DICE"/>
+	<classpathentry kind="var" path="SML"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
