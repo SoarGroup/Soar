@@ -1,4 +1,4 @@
-package edu.umich.qna;
+package edu.umich.soar.qna;
 
 public class InvalidDataSourceUIDException extends Exception {
 

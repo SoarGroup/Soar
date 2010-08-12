@@ -1,4 +1,4 @@
-package edu.umich.qna.db;
+package edu.umich.soar.qna.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,8 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import edu.umich.qna.DataSourceConnection;
-import edu.umich.qna.DataSourceDriver;
+import edu.umich.soar.qna.DataSourceConnection;
+import edu.umich.soar.qna.DataSourceDriver;
 
 public class DatabaseDataSourceDriver implements DataSourceDriver {
 	

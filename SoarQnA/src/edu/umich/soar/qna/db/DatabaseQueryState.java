@@ -1,4 +1,4 @@
-package edu.umich.qna.db;
+package edu.umich.soar.qna.db;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import edu.umich.qna.QueryState;
+import edu.umich.soar.qna.QueryState;
 
 public class DatabaseQueryState implements QueryState {
 

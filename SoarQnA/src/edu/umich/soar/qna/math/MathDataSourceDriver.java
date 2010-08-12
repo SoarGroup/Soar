@@ -1,11 +1,11 @@
-package edu.umich.qna.math;
+package edu.umich.soar.qna.math;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import edu.umich.qna.DataSourceConnection;
-import edu.umich.qna.DataSourceDriver;
+import edu.umich.soar.qna.DataSourceConnection;
+import edu.umich.soar.qna.DataSourceDriver;
 
 public class MathDataSourceDriver implements DataSourceDriver {
 
