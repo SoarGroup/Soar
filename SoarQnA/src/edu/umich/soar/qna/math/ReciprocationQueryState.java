@@ -1,4 +1,4 @@
-package edu.umich.qna.math;
+package edu.umich.soar.qna.math;
 
 import java.util.HashMap;
 import java.util.LinkedList;

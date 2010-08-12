@@ -1,11 +1,12 @@
-package edu.umich.qna.math;
+package edu.umich.soar.qna.math;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class SubtractionQueryState extends BinaryMathQueryState {
+public class AbsQueryState extends UnaryMathQueryState {
+
 	@Override
 	public Map<String, List<Object>> next() {
 		if (!hasComputed) {
@@ -13,10 +14,10 @@ public class SubtractionQueryState extends BinaryMathQueryState {
 			HashMap<String, List<Object>> returnVal = new HashMap<String, List<Object>>();
 			List<Object> newList = new LinkedList<Object>();
 			
-			if ((operand1 instanceof Integer) && (operand2 instanceof Integer)) {
-				newList.add(new Integer(((Integer) operand1).intValue()-((Integer) operand2).intValue()));
+			if ((operand1 instanceof Integer)) {
+				newList.add(new Integer(Math.abs(((Integer) operand1).intValue())));
 			} else {
-				newList.add(new Double(((Number) operand1).doubleValue()-((Number) operand2).doubleValue()));
+				newList.add(new Double(Math.abs(((Number) operand1).doubleValue())));
 			}
 			returnVal.put("result", newList);
 			
@@ -25,4 +26,5 @@ public class SubtractionQueryState extends BinaryMathQueryState {
 		
 		return null;
 	}
+
 }

@@ -1,4 +1,4 @@
-package edu.umich.qna;
+package edu.umich.soar.qna;
 
 import java.io.File;
 import java.io.IOException;

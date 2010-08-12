@@ -1,12 +1,12 @@
-package edu.umich.qna.db;
+package edu.umich.soar.qna.db;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import edu.umich.qna.DataSourceConnection;
-import edu.umich.qna.QueryState;
+import edu.umich.soar.qna.DataSourceConnection;
+import edu.umich.soar.qna.QueryState;
 
 public class DatabaseConnection implements DataSourceConnection {
 
