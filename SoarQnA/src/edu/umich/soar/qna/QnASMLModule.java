@@ -273,6 +273,8 @@ public class QnASMLModule {
 						addResult(queryCounter, true, results.compareTo(INCREMENTAL_NAME)==0);
 						
 						queryCounter++;
+					} else {
+						goodQuery = false;
 					}
 				}
 				
