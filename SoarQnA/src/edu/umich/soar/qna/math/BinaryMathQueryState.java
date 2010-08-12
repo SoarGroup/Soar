@@ -1,9 +1,11 @@
-package edu.umich.qna.math;
+package edu.umich.soar.qna.math;
 
 import java.util.List;
 import java.util.Map;
 
-public abstract class BinaryMathQueryState extends MathQueryState {
+import edu.umich.soar.qna.ComputationalQueryState;
+
+public abstract class BinaryMathQueryState extends ComputationalQueryState {
 	Object operand1;
 	Object operand2;
 

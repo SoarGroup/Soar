@@ -1,11 +1,13 @@
-package edu.umich.qna.math;
+package edu.umich.soar.qna.math;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class FloatQueryState extends MathQueryState {
+import edu.umich.soar.qna.ComputationalQueryState;
+
+public class FloatQueryState extends ComputationalQueryState {
 	Double convertedValue;
 	
 	FloatQueryState() {
