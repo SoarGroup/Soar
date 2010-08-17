@@ -30,27 +30,32 @@ public class SoarDiceModule
      * <p>
      * Attach this module to a running Soar agent.
      * 
-     * @param args see usage()
+     * @param args
+     *            see usage()
      */
     public static void main(String[] args)
     {
         String host = HOST_DEFAULT;
         int port = PORT_DEFAULT;
         String agent = AGENT_DEFAULT;
-        
-        if (args.length >= 4) {
+
+        if (args.length >= 4)
+        {
             System.out.println(usage());
             System.exit(1);
         }
-        
-        try {
+
+        try
+        {
             if (args.length >= 1)
                 host = args[0];
             if (args.length >= 2)
                 port = Integer.parseInt(args[1]);
             if (args.length == 3)
                 agent = args[2];
-        } catch (NumberFormatException e) {
+        }
+        catch (NumberFormatException e)
+        {
             e.printStackTrace();
             System.out.println(usage());
             System.exit(1);
@@ -141,7 +146,7 @@ public class SoarDiceModule
     public static final String RESULT_PROB = "probability";
 
     private boolean stop = false;
-    
+
     /**
      * <p>
      * Connect and register, then return.
@@ -165,11 +170,14 @@ public class SoarDiceModule
 
         agent.AddOutputHandler(COMMAND_NAME, commandHandler, null);
         agent.SetOutputLinkChangeTracking(true);
-        
-        kernel.RegisterForSystemEvent(sml.smlSystemEventId.smlEVENT_BEFORE_SHUTDOWN, shutdownHandler, null);
-        
+
+        kernel.RegisterForSystemEvent(
+                sml.smlSystemEventId.smlEVENT_BEFORE_SHUTDOWN, shutdownHandler,
+                null);
+
         System.out.println("Connected, running.");
-        while(!stop) {
+        while (!stop)
+        {
             try
             {
                 Thread.sleep(1000);
@@ -181,8 +189,6 @@ public class SoarDiceModule
         }
         System.out.println("Shutting down.");
         System.exit(0);
-        // TODO: hangs on windows
-        //kernel.Shutdown();
     }
 
     private final SystemEventInterface shutdownHandler = new SystemEventInterface()
@@ -210,7 +216,7 @@ public class SoarDiceModule
                 handleCommand(outputWme);
                 return;
             }
-            catch (Throwable e)
+            catch (SoarDiceException e)
             {
                 errorMessage = e.getMessage();
                 e.printStackTrace();
@@ -224,7 +230,7 @@ public class SoarDiceModule
             command.GetAgent().Commit();
         }
     };
-    
+
     private void handleCommand(WMElement outputWme) throws SoarDiceException
     {
         if (!outputWme.IsIdentifier())
@@ -233,31 +239,37 @@ public class SoarDiceModule
         Identifier command = outputWme.ConvertToIdentifier();
         WMElement id = command.FindByAttribute(COMMAND_ID, 0);
         if (id == null)
-            throw new SoarDiceException(COMMAND_NAME + " does not have " + COMMAND_ID);
-        
+            throw new SoarDiceException(COMMAND_NAME + " does not have "
+                    + COMMAND_ID);
+
         String diceString = command.GetParameterValue(COMMAND_DICE);
         if (diceString == null)
-            throw new SoarDiceException(id.GetValueAsString() + " does not have " + COMMAND_DICE);
-        
+            throw new SoarDiceException(id.GetValueAsString()
+                    + " does not have " + COMMAND_DICE);
+
         String sidesString = command.GetParameterValue(COMMAND_SIDES);
         if (sidesString == null)
-            throw new SoarDiceException(id.GetValueAsString() + " does not have " + COMMAND_SIDES);
-        
+            throw new SoarDiceException(id.GetValueAsString()
+                    + " does not have " + COMMAND_SIDES);
+
         String countString = command.GetParameterValue(COMMAND_COUNT);
         if (countString == null)
-            throw new SoarDiceException(id.GetValueAsString() + " does not have " + COMMAND_COUNT);
-        
+            throw new SoarDiceException(id.GetValueAsString()
+                    + " does not have " + COMMAND_COUNT);
+
         String predString = command.GetParameterValue(COMMAND_PREDICATE);
         if (predString == null)
-            throw new SoarDiceException(id.GetValueAsString() + " does not have " + COMMAND_PREDICATE);
+            throw new SoarDiceException(id.GetValueAsString()
+                    + " does not have " + COMMAND_PREDICATE);
 
-        try {
+        try
+        {
             int dice = Integer.valueOf(diceString);
             int sides = Integer.valueOf(sidesString);
             int count = Integer.valueOf(countString);
-    
+
             LiarsDice.Predicate pred = LiarsDice.Predicate.valueOf(predString);
-    
+
             Identifier root = getRoot(command.GetAgent());
             String idType = id.GetValueType();
             if (idType.equals("int"))
@@ -272,19 +284,20 @@ public class SoarDiceModule
             }
             else
                 root.CreateStringWME(RESULT_ID, id.GetValueAsString());
-    
+
             double result = pred.get(dice, sides, count);
             root.CreateFloatWME(RESULT_PROB, result);
-    
+
             command.AddStatusComplete();
             command.GetAgent().Commit();
             return;
-        } 
-        catch (NumberFormatException e) 
+        }
+        catch (NumberFormatException e)
         {
-            throw new SoarDiceException("Error parsing integer parameter dice, sides, or count");
-        } 
-        catch (IllegalArgumentException e) 
+            throw new SoarDiceException(
+                    "Error parsing integer parameter dice, sides, or count");
+        }
+        catch (IllegalArgumentException e)
         {
             StringBuilder sb = new StringBuilder("Unknown predicate: ");
             sb.append(command.GetParameterValue(COMMAND_PREDICATE));
@@ -303,7 +316,7 @@ public class SoarDiceModule
      * @param agent
      *            The current agent.
      * @return Parent wme to place result structures.
-     * @throws SoarDiceException 
+     * @throws SoarDiceException
      */
     private Identifier getRoot(Agent agent) throws SoarDiceException
     {
@@ -313,9 +326,9 @@ public class SoarDiceModule
             return agent.GetInputLink().CreateIdWME(RESULT_ROOT);
 
         if (!rootwme.IsIdentifier())
-        {
-            throw new SoarDiceException(RESULT_ROOT + " exists on input-link and is not an identifier");
-        }
+            throw new SoarDiceException(RESULT_ROOT
+                    + " exists on input-link and is not an identifier");
+
         return rootwme.ConvertToIdentifier();
     }
 

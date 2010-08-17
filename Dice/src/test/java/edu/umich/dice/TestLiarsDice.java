@@ -137,4 +137,50 @@ public class TestLiarsDice
 			}
 		}
 	}
+	
+    @Test
+    public void testLowParameters()
+    {
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityAtLeast(0, 1, 1), 0);
+        Assert.assertEquals(1.0, LiarsDice.getProbabilityAtLeast(1, 1, 1), 0);
+        Assert.assertEquals(0.5, LiarsDice.getProbabilityAtLeast(1, 2, 1), 0);
+        Assert.assertEquals(1.0, LiarsDice.getProbabilityAtLeast(1, 1, 0), 0);
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityAtLeast(1, 1, 2), 0);
+        
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityExact(0, 1, 1), 0);
+        Assert.assertEquals(1.0, LiarsDice.getProbabilityExact(1, 1, 1), 0);
+        Assert.assertEquals(0.5, LiarsDice.getProbabilityExact(1, 2, 1), 0);
+        Assert.assertEquals(1.0, LiarsDice.getProbabilityExact(1, 1, 0), 0);
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityExact(1, 1, 2), 0);
+    }
+    
+    @Test
+    public void testNonsensicalParameters()
+    {
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityAtLeast(-1,  1,  1), 0);
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityAtLeast( 1, -1,  1), 0);
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityAtLeast( 1,  0,  1), 0);
+        Assert.assertEquals(1.0, LiarsDice.getProbabilityAtLeast( 1,  1, -1), 0);
+        
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityExact(-1,  1,  1), 0);
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityExact( 1, -1,  1), 0);
+        Assert.assertEquals(0.0, LiarsDice.getProbabilityExact( 1,  0,  1), 0);
+        Assert.assertEquals(1.0, LiarsDice.getProbabilityExact( 1,  1, -1), 0);
+    }
+    
+    @Test
+    public void testExpected()
+    {
+        Assert.assertEquals(0.0, LiarsDice.expected(-1, -1), 0);
+        Assert.assertEquals(0.0, LiarsDice.expected( 0, -1), 0);
+        Assert.assertEquals(0.0, LiarsDice.expected(-1,  0), 0);
+        Assert.assertEquals(0.0, LiarsDice.expected( 0,  0), 0);
+        Assert.assertEquals(0.0, LiarsDice.expected(-1,  1), 0);
+        Assert.assertEquals(0.0, LiarsDice.expected( 0,  1), 0);
+        Assert.assertEquals(0.0, LiarsDice.expected( 1, -1), 0);
+        Assert.assertEquals(0.0, LiarsDice.expected( 1,  0), 0);
+        Assert.assertEquals(1.0, LiarsDice.expected( 1,  1), 0);
+        Assert.assertEquals(0.5, LiarsDice.expected( 1,  2), 0);
+        
+    }
 }

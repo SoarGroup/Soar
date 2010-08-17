@@ -10,23 +10,36 @@ import java.math.BigInteger;
  */
 public class LiarsDice
 {
+    private static final String DICE_NEGATIVE = "Dice count is negative";
+    private static final String SIDES_NONPOSITIVE = "Dice need more than one side";
+    private static final String COUNT_NEGATIVE = "Count is negative";
+
     /**
      * <p>
      * Given a number of dice with a number of sides, returns the expected
-     * number of same faces.
+     * number of same faces. If either argument is negative, returns 0.
      * 
      * @param dice
-     *            Total number of dice, must be positive
+     *            Total number of dice
      * @param sides
-     *            Sides per die, must be positive
-     * @throws IllegalArgumentException
-     *             if parameters invalid
+     *            Sides per die
      * @return Expected number having the same face
      */
     public static double expected(int dice, int sides)
     {
-        if (dice < 1 || sides < 1)
-            throw new IllegalArgumentException("totalDice < 1 || sides < 1");
+        if (dice < 0)
+        {
+            warn(DICE_NEGATIVE, dice, sides);
+            return 0;
+        } 
+        else if (dice < 1)
+            return 0;
+        
+        if (sides < 1)
+        {
+            warn(SIDES_NONPOSITIVE, dice, sides);
+            return 0;
+        }
 
         return (double) dice / sides;
     }
@@ -44,13 +57,13 @@ public class LiarsDice
      *            Sides per die, must be positive
      * @param count
      *            Exact number with same face
-     * @throws IllegalArgumentException
-     *             if parameters invalid
      * @return 0..1
      */
     public static double getProbabilityExact(int dice, int sides, int count)
     {
-        validate(dice, sides, count);
+        double result = sanity(dice, sides, count);
+        if (result >= 0)
+            return result;
 
         // n = dice, k = exact
         // c = n! / k!(n-k)!
@@ -66,7 +79,7 @@ public class LiarsDice
         BigInteger p2nkd = BigInteger.valueOf(sides).pow(dice - count);
 
         // put it together: c * (P1)^k * (1-P1)^(n-k)
-        double result = c.doubleValue();
+        result = c.doubleValue();
         result *= 1 / p1kd.doubleValue();
         result *= p2nkn.doubleValue() / p2nkd.doubleValue();
 
@@ -87,23 +100,24 @@ public class LiarsDice
      *            Sides per die, must be positive
      * @param count
      *            At least this many with the same face
-     * @throws IllegalArgumentException
-     *             if parameters invalid
      * @return 0..1
      */
     public static double getProbabilityAtLeast(int dice, int sides, int count)
     {
-        validate(dice, sides, count);
+        double result = sanity(dice, sides, count);
+        if (result >= 0)
+            return result;
 
-        double probability = 0;
+        result = 0;
         for (int i = 0; count + i <= dice; ++i)
-            probability += getProbabilityExact(dice, sides, count + i);
-        return probability;
+            result += getProbabilityExact(dice, sides, count + i);
+        return result;
     }
 
     /**
      * <p>
-     * Validate parameters.
+     * Deal with insane parameters, warn to stderr if invalid parameters and
+     * always return valid probability.
      * 
      * @param dice
      *            greater than zero
@@ -111,11 +125,51 @@ public class LiarsDice
      *            greater than zero
      * @param count
      *            between 1 and dice
+     * @return Probability (zero or one) if parameters are nonsensical, negative
+     *         if the parameters are valid.
      */
-    private static void validate(int dice, int sides, int count)
+    private static double sanity(int dice, int sides, int count)
     {
-        if (dice < 1 || sides < 1 || count < 1 || count > dice)
-            throw new IllegalArgumentException("dice < 1 || sides < 1 || count < 1 || count > dice");
+        if (dice < 0)
+        {
+            warn(DICE_NEGATIVE, dice, sides, count);
+            return 0;
+        }
+        else if (dice < 1)
+            return 0;
+
+        if (sides < 1)
+        {
+            warn(SIDES_NONPOSITIVE, dice, sides, count);
+            return 0;
+        }
+
+        if (count < 0)
+        {
+            warn(COUNT_NEGATIVE, dice, sides, count);
+            return 1.0;
+        }
+        else if (count < 1)
+            return 1.0;
+
+        if (count > dice)
+            return 0;
+
+        return -1.0;
+    }
+
+    private static void warn(String prefix, int dice, int sides)
+    {
+        System.err.format(
+                "%s: dice: %d, sides: %d%n", prefix, dice,
+                sides);
+    }
+
+    private static void warn(String prefix, int dice, int sides, int count)
+    {
+        System.err.format(
+                "%s: dice: %d, sides: %d, count: %d%n", prefix, dice,
+                sides, count);
     }
 
     /**
@@ -129,7 +183,8 @@ public class LiarsDice
     public static BigInteger factorial(long n)
     {
         if (n < 0)
-            throw new IllegalArgumentException("n! is a sequence with integer values for nonnegative n");
+            throw new IllegalArgumentException(
+                    "n! is a sequence with integer values for nonnegative n");
 
         BigInteger result = BigInteger.ONE;
         for (long i = 2; i <= n; ++i)
