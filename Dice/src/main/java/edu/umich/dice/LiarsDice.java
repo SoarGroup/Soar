@@ -10,14 +10,10 @@ import java.math.BigInteger;
  */
 public class LiarsDice
 {
-    private static final String DICE_NEGATIVE = "Dice count is negative";
-    private static final String SIDES_NONPOSITIVE = "Dice need more than one side";
-    private static final String COUNT_NEGATIVE = "Count is negative";
-
     /**
      * <p>
      * Given a number of dice with a number of sides, returns the expected
-     * number of same faces. If either argument is negative, returns 0.
+     * number of same faces.
      * 
      * @param dice
      *            Total number of dice
@@ -27,20 +23,10 @@ public class LiarsDice
      */
     public static double expected(int dice, int sides)
     {
-        if (dice < 0)
-        {
-            warn(DICE_NEGATIVE, dice, sides);
+        if (dice < 1)
             return 0;
-        } 
-        else if (dice < 1)
-            return 0;
-        
         if (sides < 1)
-        {
-            warn(SIDES_NONPOSITIVE, dice, sides);
             return 0;
-        }
-
         return (double) dice / sides;
     }
 
@@ -52,18 +38,43 @@ public class LiarsDice
      * http://en.wikipedia.org/wiki/Binomial_probability
      * 
      * @param dice
-     *            Total number of dice, must be positive
+     *            Total number of dice
      * @param sides
-     *            Sides per die, must be positive
+     *            Sides per die
      * @param count
      *            Exact number with same face
      * @return 0..1
      */
     public static double getProbabilityExact(int dice, int sides, int count)
     {
-        double result = sanity(dice, sides, count);
-        if (result >= 0)
-            return result;
+        // these make no sense
+        if (dice < 0)
+            return 0;
+        if (count < 0)
+            return 0;
+        if (sides < 1)
+            return 0;
+
+        // if there are no dice, probability is zero unless count is also zero
+        if (dice == 0)
+        {
+            if (count == 0)
+                return 1;
+            return 0;
+        }
+        
+        // if there is only one side to the dice, probability is zero unless count == dice
+        if (sides == 1)
+        {
+            if (dice == count)
+                return 1;
+            return 0;
+        }
+
+        if (count > dice)
+            return 0;
+
+        // dice > 0, sides > 2, count <= dice
 
         // n = dice, k = exact
         // c = n! / k!(n-k)!
@@ -79,7 +90,7 @@ public class LiarsDice
         BigInteger p2nkd = BigInteger.valueOf(sides).pow(dice - count);
 
         // put it together: c * (P1)^k * (1-P1)^(n-k)
-        result = c.doubleValue();
+        double result = c.doubleValue();
         result *= 1 / p1kd.doubleValue();
         result *= p2nkn.doubleValue() / p2nkd.doubleValue();
 
@@ -95,81 +106,28 @@ public class LiarsDice
      * Note: linear performance penalty for large (dice - count).
      * 
      * @param dice
-     *            Total number of dice, must be positive
+     *            Total number of dice
      * @param sides
-     *            Sides per die, must be positive
+     *            Sides per die
      * @param count
      *            At least this many with the same face
      * @return 0..1
      */
     public static double getProbabilityAtLeast(int dice, int sides, int count)
     {
-        double result = sanity(dice, sides, count);
-        if (result >= 0)
-            return result;
+        // these make no sense
+        // these make no sense
+        if (dice < 0)
+            return 0;
+        if (count < 0)
+            return 0;
+        if (sides < 1)
+            return 0;
 
-        result = 0;
+        double result = 0;
         for (int i = 0; count + i <= dice; ++i)
             result += getProbabilityExact(dice, sides, count + i);
         return result;
-    }
-
-    /**
-     * <p>
-     * Deal with insane parameters, warn to stderr if invalid parameters and
-     * always return valid probability.
-     * 
-     * @param dice
-     *            greater than zero
-     * @param sides
-     *            greater than zero
-     * @param count
-     *            between 1 and dice
-     * @return Probability (zero or one) if parameters are nonsensical, negative
-     *         if the parameters are valid.
-     */
-    private static double sanity(int dice, int sides, int count)
-    {
-        if (dice < 0)
-        {
-            warn(DICE_NEGATIVE, dice, sides, count);
-            return 0;
-        }
-        else if (dice < 1)
-            return 0;
-
-        if (sides < 1)
-        {
-            warn(SIDES_NONPOSITIVE, dice, sides, count);
-            return 0;
-        }
-
-        if (count < 0)
-        {
-            warn(COUNT_NEGATIVE, dice, sides, count);
-            return 1.0;
-        }
-        else if (count < 1)
-            return 1.0;
-
-        if (count > dice)
-            return 0;
-
-        return -1.0;
-    }
-
-    private static void warn(String prefix, int dice, int sides)
-    {
-        System.err.format(
-                "%s: dice: %d, sides: %d%n", prefix, dice,
-                sides);
-    }
-
-    private static void warn(String prefix, int dice, int sides, int count)
-    {
-        System.err.format(
-                "%s: dice: %d, sides: %d, count: %d%n", prefix, dice,
-                sides, count);
     }
 
     /**
