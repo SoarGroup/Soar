@@ -1,8 +1,8 @@
 package edu.umich.soar.config;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,9 +11,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import edu.umich.soar.config.Config;
-import edu.umich.soar.config.ConfigFile;
 
 public class ConfigTest
 {
@@ -26,10 +23,12 @@ public class ConfigTest
         }
 
         String key;
+
         String value;
     }
 
     final String largeTest = "src/test/resources/edu/umich/soar/config/test.cnf";
+
     List<ConfigTestPair> largeTestData = new ArrayList<ConfigTestPair>();
 
     @Before
@@ -91,13 +90,17 @@ public class ConfigTest
     {
         Config cf = new Config(new ConfigFile(largeTest));
 
-        for (ConfigTestPair pair : largeTestData) {
+        for (ConfigTestPair pair : largeTestData)
+        {
             System.out.println(pair.key + ": "
                     + Arrays.toString(cf.getStrings(pair.key)));
-            if (pair.value != null) {
+            if (pair.value != null)
+            {
                 assertEquals(pair.value, Arrays.toString(cf
                         .getStrings(pair.key)));
-            } else {
+            }
+            else
+            {
                 assertTrue(cf.hasKey(pair.key));
             }
         }
@@ -121,14 +124,16 @@ public class ConfigTest
         String[] keys = cf.getKeys();
         Arrays.sort(keys);
 
-        for (ConfigTestPair pair : largeTestData) {
+        for (ConfigTestPair pair : largeTestData)
+        {
             assertTrue(Arrays.binarySearch(keys, pair.key) >= 0);
         }
 
         Config grandparent = cf.getChild("grandparent");
         Config parent = grandparent.getChild("parent");
 
-        for (String key : parent.getKeys()) {
+        for (String key : parent.getKeys())
+        {
             assertTrue(key.equals("child"));
         }
     }
@@ -137,16 +142,20 @@ public class ConfigTest
     public void testPath() throws IOException
     {
         Config cf = new Config(new ConfigFile(largeTest));
-        assertTrue(cf.getPath("path_test").length() > "sim/objects.txt".length());
+        assertTrue(cf.getPath("path_test").length() > "sim/objects.txt"
+                .length());
         assertTrue(cf.getPath("path_test").endsWith("sim/objects.txt"));
     }
-    
+
     @Test
     public void testAnonymous() throws IOException
     {
         Config cf = new Config(new ConfigFile(largeTest));
         assertNull(cf.getString("nested_root.anonymous"));
-        assertEquals(cf.getString("nested_root.nested_parent.anonymous"), "something");
-        assertEquals(cf.getString("nested_root.nested_parent.nested_child.anonymous"), "something");
+        assertEquals(cf.getString("nested_root.nested_parent.anonymous"),
+                "something");
+        assertEquals(cf
+                .getString("nested_root.nested_parent.nested_child.anonymous"),
+                "something");
     }
 }
