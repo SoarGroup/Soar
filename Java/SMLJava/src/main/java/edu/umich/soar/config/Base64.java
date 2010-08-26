@@ -6,121 +6,135 @@ import java.util.List;
 import java.util.Random;
 
 /** Base64 encoding and decoding functions. **/
-public class Base64 {
-	static char encodeLut[];
-	static int decodeLut[];
+public class Base64
+{
+    static char encodeLut[];
 
-	static {
-		String cs = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    static int decodeLut[];
 
-		assert (cs.length() == 64);
+    static
+    {
+        String cs = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-		encodeLut = new char[cs.length()];
-		decodeLut = new int[256];
+        assert (cs.length() == 64);
 
-		for (int i = 0; i < cs.length(); i++) {
-			encodeLut[i] = cs.charAt(i);
-			decodeLut[(int) cs.charAt(i)] = i;
-		}
-	}
+        encodeLut = new char[cs.length()];
+        decodeLut = new int[256];
 
-	public static String[] encode(byte in[]) {
-		StringBuilder sb = new StringBuilder();
-		List<String> lines = new ArrayList<String>();
+        for (int i = 0; i < cs.length(); i++)
+        {
+            encodeLut[i] = cs.charAt(i);
+            decodeLut[(int) cs.charAt(i)] = i;
+        }
+    }
 
-		for (int idx = 0; idx < in.length; idx += 3) {
-			int v0 = in[idx] & 0xff;
-			int v1 = idx + 1 < in.length ? in[idx + 1] & 0xff : 0;
-			int v2 = idx + 2 < in.length ? in[idx + 2] & 0xff : 0;
-			int v = (v0 << 16) | (v1 << 8) | v2;
+    public static String[] encode(byte in[])
+    {
+        StringBuilder sb = new StringBuilder();
+        List<String> lines = new ArrayList<String>();
 
-			int a = (v >> 18) & 63;
-			int b = (v >> 12) & 63;
-			int c = (v >> 6) & 63;
-			int d = v & 63;
+        for (int idx = 0; idx < in.length; idx += 3)
+        {
+            int v0 = in[idx] & 0xff;
+            int v1 = idx + 1 < in.length ? in[idx + 1] & 0xff : 0;
+            int v2 = idx + 2 < in.length ? in[idx + 2] & 0xff : 0;
+            int v = (v0 << 16) | (v1 << 8) | v2;
 
-			sb.append(encodeLut[a]);
-			sb.append(encodeLut[b]);
-			sb.append(encodeLut[c]);
-			sb.append(encodeLut[d]);
+            int a = (v >> 18) & 63;
+            int b = (v >> 12) & 63;
+            int c = (v >> 6) & 63;
+            int d = v & 63;
 
-			if (idx + 3 >= in.length || sb.length() == 72) {
-				if (idx + 2 >= in.length)
-					sb.setCharAt(sb.length() - 1, '=');
-				if (idx + 1 >= in.length)
-					sb.setCharAt(sb.length() - 2, '=');
+            sb.append(encodeLut[a]);
+            sb.append(encodeLut[b]);
+            sb.append(encodeLut[c]);
+            sb.append(encodeLut[d]);
 
-				lines.add(sb.toString());
-				sb = new StringBuilder();
-			}
-		}
+            if (idx + 3 >= in.length || sb.length() == 72)
+            {
+                if (idx + 2 >= in.length)
+                    sb.setCharAt(sb.length() - 1, '=');
+                if (idx + 1 >= in.length)
+                    sb.setCharAt(sb.length() - 2, '=');
 
-		return lines.toArray(new String[lines.size()]);
-	}
+                lines.add(sb.toString());
+                sb = new StringBuilder();
+            }
+        }
 
-	public static byte[] decode(String lines[]) {
-		ByteArrayOutputStream outs = new ByteArrayOutputStream(
-				54 * lines.length);
+        return lines.toArray(new String[lines.size()]);
+    }
 
-		for (int lineIdx = 0; lineIdx < lines.length; lineIdx++) {
-			String line = lines[lineIdx];
+    public static byte[] decode(String lines[])
+    {
+        ByteArrayOutputStream outs = new ByteArrayOutputStream(
+                54 * lines.length);
 
-			for (int idx = 0; idx < line.length(); idx += 4) {
-				int a = decodeLut[(int) line.charAt(idx)];
-				int b = decodeLut[(int) line.charAt(idx + 1)];
-				int c = decodeLut[(int) line.charAt(idx + 2)];
-				int d = decodeLut[(int) line.charAt(idx + 3)];
+        for (int lineIdx = 0; lineIdx < lines.length; lineIdx++)
+        {
+            String line = lines[lineIdx];
 
-				int v = (a << 18) | (b << 12) | (c << 6) | d;
+            for (int idx = 0; idx < line.length(); idx += 4)
+            {
+                int a = decodeLut[(int) line.charAt(idx)];
+                int b = decodeLut[(int) line.charAt(idx + 1)];
+                int c = decodeLut[(int) line.charAt(idx + 2)];
+                int d = decodeLut[(int) line.charAt(idx + 3)];
 
-				int v0 = (v >> 16) & 0xff;
-				int v1 = (v >> 8) & 0xff;
-				int v2 = v & 0xff;
+                int v = (a << 18) | (b << 12) | (c << 6) | d;
 
-				outs.write(v0);
-				if (line.charAt(idx + 2) != '=')
-					outs.write(v1);
-				if (line.charAt(idx + 3) != '=')
-					outs.write(v2);
-			}
-		}
+                int v0 = (v >> 16) & 0xff;
+                int v1 = (v >> 8) & 0xff;
+                int v2 = v & 0xff;
 
-		return outs.toByteArray();
-	}
+                outs.write(v0);
+                if (line.charAt(idx + 2) != '=')
+                    outs.write(v1);
+                if (line.charAt(idx + 3) != '=')
+                    outs.write(v2);
+            }
+        }
 
-	public static void main(String args[]) {
-		Random r = new Random();
+        return outs.toByteArray();
+    }
 
-		// self test.
+    public static void main(String args[])
+    {
+        Random r = new Random();
 
-		for (int iter = 0; iter < 10000; iter++) {
-			int len = r.nextInt(500);
-			byte in[] = new byte[len];
-			for (int i = 0; i < in.length; i++)
-				in[i] = (byte) r.nextInt(256);
+        // self test.
 
-			String enc[] = encode(in);
+        for (int iter = 0; iter < 10000; iter++)
+        {
+            int len = r.nextInt(500);
+            byte in[] = new byte[len];
+            for (int i = 0; i < in.length; i++)
+                in[i] = (byte) r.nextInt(256);
 
-			byte out[] = decode(enc);
+            String enc[] = encode(in);
 
-//			if (false) {
-//				for (int i = 0; i < enc.length; i++)
-//					System.out.println(enc[i]);
-//				System.out.println("");
-//			}
+            byte out[] = decode(enc);
 
-			System.out.printf("%4d %4d\n", in.length, out.length);
+            // if (false) {
+            // for (int i = 0; i < enc.length; i++)
+            // System.out.println(enc[i]);
+            // System.out.println("");
+            // }
 
-			assert (in.length == out.length);
-			if (true) {
-				for (int i = 0; i < in.length; i++) {
-					// System.out.printf("%2x %2x\n", in[i], out[i]);
-					assert (in[i] == out[i]);
-				}
-			}
+            System.out.printf("%4d %4d\n", in.length, out.length);
 
-		}
+            assert (in.length == out.length);
+            if (true)
+            {
+                for (int i = 0; i < in.length; i++)
+                {
+                    // System.out.printf("%2x %2x\n", in[i], out[i]);
+                    assert (in[i] == out[i]);
+                }
+            }
 
-		System.out.println("done");
-	}
+        }
+
+        System.out.println("done");
+    }
 }
