@@ -78,6 +78,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testNegatedConjunctiveTestUnbound ); // bug 517
 	CPPUNIT_TEST( testCommandToFile ); 
 	CPPUNIT_TEST( testConvertIdentifier ); 
+	CPPUNIT_TEST( testOutputLinkRemovalOrdering ); 
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -115,6 +116,7 @@ public:
 	TEST_DECLARATION( testNegatedConjunctiveTestUnbound );
 	TEST_DECLARATION( testCommandToFile );
 	TEST_DECLARATION( testConvertIdentifier );
+	TEST_DECLARATION( testOutputLinkRemovalOrdering );
 
 	void testShutdownHandlerShutdown();
 
@@ -1697,4 +1699,24 @@ TEST_DEFINITION( testConvertIdentifier )
 	std::string convertedId(pConvertedId);
 	CPPUNIT_ASSERT(convertedId == pBarWme->GetValueAsString());
 
+}
+
+TEST_DEFINITION( testOutputLinkRemovalOrdering )
+{
+	m_pAgent->SetOutputLinkChangeTracking(false);
+	// The following would crash with output-link change tracking false
+
+	// Creates an output link command O3 ^one.two 2 and then a shared wme with the same child O3 ^three.two 2
+	m_pAgent->ExecuteCommandLine("sp {one (state <s> ^superstate nil -^phase) --> (<s> ^operator.name one) }");
+	m_pAgent->ExecuteCommandLine("sp {one-apply (state <s> ^operator.name one ^io.output-link <ol>) --> (<ol> ^one.two 2) (<s> ^phase 1) }");
+	m_pAgent->ExecuteCommandLine("sp {two (state <s> ^superstate nil ^phase 1) --> (<s> ^operator.name two) }");
+	m_pAgent->ExecuteCommandLine("sp {two-apply (state <s> ^operator.name two ^io.output-link <ol>) (<ol> ^one <one>) --> (<ol> ^three <one>) (<s> ^phase 1 - 2) }");
+
+	// Removes O3 ^one <one> leaving a parent with a higher timetag than it's children, and then removes the other, then halts
+	m_pAgent->ExecuteCommandLine("sp {three (state <s> ^superstate nil ^phase 2) --> (<s> ^operator.name three) }");
+	m_pAgent->ExecuteCommandLine("sp {three-apply (state <s> ^operator.name three ^io.output-link <ol>) (<ol> ^one <one>) --> (<ol> ^one <one> -) (<s> ^phase 2 - 3) }");
+	m_pAgent->ExecuteCommandLine("sp {four (state <s> ^superstate nil ^phase 3) --> (<s> ^operator.name four) }");
+	m_pAgent->ExecuteCommandLine("sp {four-apply (state <s> ^operator.name four ^io.output-link <ol>) (<ol> ^<asdf> <one>) --> (<ol> ^<asdf> <one> -) (<s> ^phase 3 - 4) }");
+	m_pAgent->ExecuteCommandLine("sp {five (state <s> ^superstate nil ^phase 4) --> (<s> ^operator.name five) }");
+	m_pAgent->ExecuteCommandLine("sp {five-apply (state <s> ^operator.name five) --> (halt) }");
 }
