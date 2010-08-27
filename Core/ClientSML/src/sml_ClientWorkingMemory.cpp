@@ -214,11 +214,8 @@ void WorkingMemory::RecordDeletion(WMElement* pWME)
 
 	// This list takes ownership of the deleted wme.
 	// When the item is removed from the delta list it will be deleted.
-	// If we're not tracking changes, we need to delete it.
-	if (IsTrackingOutputLinkChanges())
-		m_OutputDeltaList.RemoveWME(pWME) ;
-	else
-		delete pWME;
+	// If we're not tracking changes, this list is cleared after all deletions are recorded in ReceivedOutput
+	m_OutputDeltaList.RemoveWME(pWME) ;
 }
 
 // Clear the delta list and also reset all state flags.
@@ -510,33 +507,43 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* /*pRespons
 		m_OutputOrphans.clear() ;	// Have to discard them.
 	}
 
-	// Let anyone listening for the output notification know that output was just received.
-	GetAgent()->FireOutputNotification() ;
-
-	// Call any handlers registered to listen for output
-	// (This is one way to retrieve output).
-	// We do this at the end of the output handler so that all of the children of the wme
-	// have been received and recorded before we call the handler.
-	if (GetAgent()->IsRegisteredForOutputEvent() && m_OutputLink)
+	if (IsTrackingOutputLinkChanges())
 	{
-		int nWmes = m_OutputDeltaList.GetSize() ;
-		for (int i = 0 ; i < nWmes ; i++)
+		// Let anyone listening for the output notification know that output was just received.
+		GetAgent()->FireOutputNotification() ;
+
+		// Call any handlers registered to listen for output
+		// (This is one way to retrieve output).
+		// We do this at the end of the output handler so that all of the children of the wme
+		// have been received and recorded before we call the handler.
+		if (GetAgent()->IsRegisteredForOutputEvent() && m_OutputLink)
 		{
-			WMElement* pWme = m_OutputDeltaList.GetDeltaWME(i)->getWME() ;
-
-			if (pWme->GetParent() == NULL || pWme->GetParent()->GetIdentifierSymbol() == NULL)
-				continue ;
-
-			// We're only looking for top-level wmes on the output link so check if our identifier's symbol
-			// matches the output link's value
-			if (strcmp(pWme->GetParent()->GetIdentifierSymbol(), m_OutputLink->GetValueAsString()) == 0)
+			int nWmes = m_OutputDeltaList.GetSize() ;
+			for (int i = 0 ; i < nWmes ; i++)
 			{
-				// Notify anyone who's listening to this event
-				GetAgent()->ReceivedOutputEvent(pWme) ;
+				WMElement* pWme = m_OutputDeltaList.GetDeltaWME(i)->getWME() ;
+
+				if (pWme->GetParent() == NULL || pWme->GetParent()->GetIdentifierSymbol() == NULL)
+					continue ;
+
+				// We're only looking for top-level wmes on the output link so check if our identifier's symbol
+				// matches the output link's value
+				if (strcmp(pWme->GetParent()->GetIdentifierSymbol(), m_OutputLink->GetValueAsString()) == 0)
+				{
+					// Notify anyone who's listening to this event
+					GetAgent()->ReceivedOutputEvent(pWme) ;
+				}
 			}
 		}
 	}
-
+	else
+	{
+		// ReceivedOutputRemoval above doesn't actually delete the wmes because of possible ordering issues,
+		// instead caching them on the change list (which is not being used for other output-link changes.
+		// Deleting the wmes here is safer.
+		ClearOutputLinkChanges();
+	}
+	
 #ifdef _DEBUG
 		ElementXML::DeleteString(pMsgText) ;
 #endif
