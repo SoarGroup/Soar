@@ -869,6 +869,7 @@ inline intptr_t smem_reverse_hash_int( agent* my_agent, smem_hash_id hash_value 
 	
 	my_agent->smem_stmts->hash_rev_int->bind_int( 1, hash_value );
 	soar_module::exec_result res = my_agent->smem_stmts->hash_rev_int->execute();
+	(void)res; // quells compiler warning
 	assert( res == soar_module::row );
 	return_val = my_agent->smem_stmts->hash_rev_int->column_int(0);
 	my_agent->smem_stmts->hash_rev_int->reinitialize();
@@ -882,6 +883,7 @@ inline double smem_reverse_hash_float( agent* my_agent, smem_hash_id hash_value 
 	
 	my_agent->smem_stmts->hash_rev_float->bind_int( 1, hash_value );
 	soar_module::exec_result res = my_agent->smem_stmts->hash_rev_float->execute();
+	(void)res; // quells compiler warning
 	assert( res == soar_module::row );
 	return_val = my_agent->smem_stmts->hash_rev_float->column_double(0);
 	my_agent->smem_stmts->hash_rev_float->reinitialize();
@@ -893,6 +895,7 @@ inline void smem_reverse_hash_str( agent* my_agent, smem_hash_id hash_value, std
 {
 	my_agent->smem_stmts->hash_rev_str->bind_int( 1, hash_value );
 	soar_module::exec_result res = my_agent->smem_stmts->hash_rev_str->execute();
+	(void)res; // quells compiler warning
 	assert( res == soar_module::row );
 	dest.assign( my_agent->smem_stmts->hash_rev_str->column_text(0) );
 	my_agent->smem_stmts->hash_rev_str->reinitialize();
