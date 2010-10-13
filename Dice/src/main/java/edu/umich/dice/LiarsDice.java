@@ -32,8 +32,12 @@ public class LiarsDice
 
     /**
      * <p>
-     * Given some dice, returns the probability that the exact amount of the
+     * Given some dice, returns the probability that the exact amount of the one
      * same face will show.
+     * 
+     * For example, invoked with (dice=3, sides=6, count=2), it returns the
+     * probability that exactly two of three six-sided dice are one of those six
+     * faces (e.g. fours only), or (15 / 216).
      * 
      * http://en.wikipedia.org/wiki/Binomial_probability
      * 
@@ -62,8 +66,9 @@ public class LiarsDice
                 return 1;
             return 0;
         }
-        
-        // if there is only one side to the dice, probability is zero unless count == dice
+
+        // if there is only one side to the dice, probability is zero unless
+        // count == dice
         if (sides == 1)
         {
             if (dice == count)
@@ -100,7 +105,13 @@ public class LiarsDice
     /**
      * <p>
      * Given some dice, returns the probability that at least the given amount
-     * of the same face will show.
+     * of the one same face will show.
+     * 
+     * For example, invoked with (dice=3, sides=6, count=2), it returns the
+     * probability that at least two of three six-sided dice are one of those
+     * six faces (e.g. fours only), or (16 / 216). Note that this example has
+     * only one more instance than getProbabilityExact because it includes the
+     * case where all three dice are fours.
      * 
      * <p>
      * Note: linear performance penalty for large (dice - count).
