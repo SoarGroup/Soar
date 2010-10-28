@@ -1237,6 +1237,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 			print_string (thisAgent, " Warning: chunk has no grounds, ignoring it.");
 			xml_generate_warning(thisAgent, "Warning: chunk has no grounds, ignoring it.");
 		}
+
+		symbol_remove_ref(thisAgent, prod_name);
 		goto chunking_done;
 	}
 
@@ -1249,6 +1251,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, Bool allow_vari
 			xml_generate_warning(thisAgent, "Warning: reached max-chunks! Halting system.");
 		}
 		thisAgent->max_chunks_reached = TRUE;
+
+		symbol_remove_ref(thisAgent, prod_name);
 		goto chunking_done;
 	}
 
