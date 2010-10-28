@@ -432,6 +432,39 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
 		}
 
+		temp = "Experimental";
+		if ( m_RawOutput )
+		{
+			m_Result << temp << "\n";
+		}
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		}
+		temp = "------------";
+		if ( m_RawOutput )
+		{
+			m_Result << temp << "\n";
+		}
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+		}
+
+		temp = "merge: ";
+		temp2 = m_pAgentSoar->smem_params->merge->get_string();
+		temp += temp2;
+		delete temp2;
+		if ( m_RawOutput )
+		{
+			m_Result << temp << "\n\n";
+		}
+		else
+		{
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+		}
+
 		return true;
 	}
 	else if ( pOp == 'a' )
