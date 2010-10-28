@@ -48,6 +48,8 @@ class smem_param_container: public soar_module::param_container
 		enum cache_choices { cache_S, cache_M, cache_L };
 		enum opt_choices { opt_safety, opt_speed };
 
+		enum merge_choices { merge_none, merge_add };
+
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
 		smem_path_param *path;
@@ -59,6 +61,8 @@ class smem_param_container: public soar_module::param_container
 		soar_module::constant_param<opt_choices> *opt;
 
 		soar_module::integer_param *thresh;
+
+		soar_module::constant_param<merge_choices>* merge;
 
 		smem_param_container( agent *new_agent );
 };
