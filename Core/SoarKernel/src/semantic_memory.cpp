@@ -116,6 +116,12 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// thresh
 	thresh = new soar_module::integer_param( "thresh", 100, new soar_module::predicate<long>(), new smem_db_predicate<long>( my_agent ) );
 	add( thresh );
+
+	// merge
+	merge = new soar_module::constant_param<merge_choices>( "merge", merge_none, new soar_module::f_predicate<merge_choices>() );
+	merge->add_mapping( merge_none, "none" );
+	merge->add_mapping( merge_add, "add" );
+	add( merge );
 }
 
 //
@@ -1691,9 +1697,11 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 	}	
 
 	// if no children, then retrieve children
-	if ( ( lti->id.impasse_wmes == NIL ) &&
+	// merge may override this behavior
+	if ( ( my_agent->smem_params->merge->get_value() == smem_param_container::merge_add ) || 
+		 ( ( lti->id.impasse_wmes == NIL ) &&
 		 ( lti->id.input_wmes == NIL ) &&
-		 ( lti->id.slots == NIL ) )
+		 ( lti->id.slots == NIL ) ) )
 	{
 		soar_module::sqlite_statement *expand_q = my_agent->smem_stmts->web_expand;
 		Symbol *attr_sym;
