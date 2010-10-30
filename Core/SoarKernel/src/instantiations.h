@@ -48,10 +48,15 @@
       match_goal_level:  goal stack level of the match goal, or
         ATTRIBUTE_IMPASSE_LEVEL if there is no match goal.
 
-      okay_to_variablize:  TRUE iff it's okay to variablize a
-        chunk/justification formed by backtracing through this instantiation.
-        This is used to make sure we don't variablize a chunk that got formed
-        by backtracing through some other justification.
+      unreliable:  true iff instantiation is a justification whose
+        backtrace either:
+        
+        - tests ^quiescence t, or
+        - contains a local negated condition and learn -N is set, or
+        - goes through another unreliable justification
+        
+        Intuitively, a justification is unreliable if its creation is
+        not guaranteed by the state of production and working memory
 
       in_ms:  TRUE iff this instantiation is still in the match set (i.e.,
         Rete-supported).
@@ -93,7 +98,7 @@ typedef struct instantiation_struct {
   preference *preferences_generated;    /* header for dll of prefs */
   Symbol *match_goal;                   /* symbol, or NIL if none */
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
-  byte okay_to_variablize;
+  bool unreliable;
   Bool in_ms;  /* TRUE iff this inst. is still in the match set */
   tc_number backtrace_number;
   Bool GDS_evaluated_already;
