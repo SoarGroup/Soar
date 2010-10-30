@@ -177,7 +177,7 @@ void backtrace_through_instantiation (agent* thisAgent,
                                       instantiation *inst,
                                       goal_stack_level grounds_level,
                                       condition *trace_cond,
-                                      bool *unreliable,
+                                      bool *reliable,
                                       int indent) {
 
   tc_number tc;   /* use this to mark ids in the ground set */
@@ -239,8 +239,8 @@ void backtrace_through_instantiation (agent* thisAgent,
     temp_explain_backtrace.next_backtrace = NULL;
   }
 
-  if (inst->unreliable)
-    *unreliable = true;
+  if (!inst->reliable)
+    *reliable = false;
 
   /* --- mark transitive closure of each higher goal id that was tested in
      the id field of a top-level positive condition --- */
@@ -441,7 +441,7 @@ void backtrace_through_instantiation (agent* thisAgent,
    there are no more locals to BT.
 --------------------------------------------------------------- */
 
-void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *unreliable) {
+void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *reliable) {
 
   /* mvp 5-17-94 */
   cons *c, *prohibits;
@@ -472,7 +472,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *unrel
     if (bt_pref) {
 
       /* mvp 5-17-94 */
-      backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,cond, unreliable, 0);
+      backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,cond, reliable, 0);
 
       /* check if any prohibit preferences */
       if (cond->bt.prohibits) {
@@ -483,7 +483,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *unrel
             xml_begin_tag(thisAgent, kTagProhibitPreference);
             print_preference (thisAgent, p);
           }
-          backtrace_through_instantiation (thisAgent, p->inst, grounds_level, cond, unreliable, 6);
+          backtrace_through_instantiation (thisAgent, p->inst, grounds_level, cond, reliable, 6);
 
           if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
             xml_end_tag(thisAgent, kTagProhibitPreference);
@@ -511,7 +511,7 @@ void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *unrel
           (referent_of_equality_test(cond->data.tests.value_test) ==
            thisAgent->t_symbol) &&
           (! cond->test_for_acceptable_preference)) {
-        *unreliable = true;
+        *reliable = false;
       }
       if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
           xml_end_tag(thisAgent, kTagLocal);
@@ -607,7 +607,7 @@ void trace_grounded_potentials (agent* thisAgent) {
    if anything was BT'd; FALSE if nothing changed.
 --------------------------------------------------------------- */
 
-Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *unreliable) {
+Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable) {
 
   /* mvp 5-17-94 */
   cons *c, *next_c, *prev_c, *prohibits;
@@ -661,7 +661,7 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
 		                            static_cast<goal_stack_level>(grounds_level+1));
 
     /* mvp 5-17-94 */
-    backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,potential, unreliable, 0);
+    backtrace_through_instantiation (thisAgent, bt_pref->inst, grounds_level,potential, reliable, 0);
     if (potential->bt.prohibits) {
       for (prohibits=potential->bt.prohibits; prohibits!=NIL; prohibits=prohibits->rest) {
         p = static_cast<preference_struct *>(prohibits->first);
@@ -670,7 +670,7 @@ Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_lev
           xml_begin_tag(thisAgent, kTagProhibitPreference);
           print_preference (thisAgent, p);
         }
-        backtrace_through_instantiation (thisAgent, p->inst, grounds_level, potential, unreliable, 6);
+        backtrace_through_instantiation (thisAgent, p->inst, grounds_level, potential, reliable, 6);
         
         if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) {
             xml_end_tag(thisAgent, kTagProhibitPreference);

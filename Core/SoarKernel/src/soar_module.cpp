@@ -99,7 +99,7 @@ namespace soar_module
 		inst->rete_wme = NULL;
 		inst->match_goal = state;
 		inst->match_goal_level = state->id.level;
-		inst->unreliable = false;
+		inst->reliable = true;
 		inst->backtrace_number = 0;
 		inst->in_ms = FALSE;
 		inst->GDS_evaluated_already = FALSE;
