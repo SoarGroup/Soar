@@ -413,9 +413,6 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 			double init_value = 0;
 			condition *cond_top, *cond_bottom;
 
-			Bool chunk_var = my_agent->variablize_this_chunk;
-			my_agent->variablize_this_chunk = TRUE;
-
 			// make unique production name
 			Symbol *new_name_symbol;
 			std::string new_name = "";
@@ -457,7 +454,6 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 
 			// make new production
 			production *new_production = make_production( my_agent, USER_PRODUCTION_TYPE, new_name_symbol, &cond_top, &cond_bottom, &new_action, false );
-			my_agent->variablize_this_chunk = chunk_var; // restored to original value
 
 			// set initial expected reward values
 			{

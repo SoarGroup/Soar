@@ -595,7 +595,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 	inst->prod = prod;
 	inst->rete_token = tok;
 	inst->rete_wme = w;
-	inst->unreliable = false;
+	inst->reliable = true;
 	inst->in_ms = TRUE;
 
 	/* REW: begin   09.15.96 */
@@ -760,7 +760,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 	thisAgent->production_being_fired = NIL;
 
 	/* --- build chunks/justifications if necessary --- */
-	chunk_instantiation (thisAgent, inst, thisAgent->sysparams[LEARNING_ON_SYSPARAM] != 0, &(thisAgent->newly_created_instantiations));
+	chunk_instantiation (thisAgent, inst, false, &(thisAgent->newly_created_instantiations));
 
 	/* MVP 6-8-94 */
 	if (!thisAgent->system_halted) {
