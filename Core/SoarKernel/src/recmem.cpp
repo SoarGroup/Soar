@@ -595,7 +595,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 	inst->prod = prod;
 	inst->rete_token = tok;
 	inst->rete_wme = w;
-	inst->okay_to_variablize = TRUE;
+	inst->unreliable = false;
 	inst->in_ms = TRUE;
 
 	/* REW: begin   09.15.96 */
