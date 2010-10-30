@@ -788,7 +788,7 @@ void _epmem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, S
 		// it to future adventures (potentially on new states)
 
 		instantiation *my_justification_list = NIL;
-		chunk_instantiation( my_agent, pref->inst, false, &my_justification_list );
+		chunk_instantiation( my_agent, pref->inst, true, &my_justification_list );
 
 		// if any justifications are created, assert their preferences manually
 		// (copied mainly from assert_new_preferences with respect to our circumstances)

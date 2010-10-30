@@ -48,12 +48,12 @@
       match_goal_level:  goal stack level of the match goal, or
         ATTRIBUTE_IMPASSE_LEVEL if there is no match goal.
 
-      unreliable:  true iff instantiation is a justification whose
+      reliable:  false iff instantiation is a justification whose
         backtrace either:
         
         - tests ^quiescence t, or
         - contains a local negated condition and learn -N is set, or
-        - goes through another unreliable justification
+        - goes through an unreliable justification
         
         Intuitively, a justification is unreliable if its creation is
         not guaranteed by the state of production and working memory
@@ -98,7 +98,7 @@ typedef struct instantiation_struct {
   preference *preferences_generated;    /* header for dll of prefs */
   Symbol *match_goal;                   /* symbol, or NIL if none */
   goal_stack_level match_goal_level;    /* level, or ATTRIBUTE_IMPASSE_LEVEL */
-  bool unreliable;
+  bool reliable;
   Bool in_ms;  /* TRUE iff this inst. is still in the match set */
   tc_number backtrace_number;
   Bool GDS_evaluated_already;

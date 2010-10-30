@@ -1586,7 +1586,7 @@ preference *make_fake_preference_for_goal_item (agent* thisAgent,
   inst->rete_wme = NIL;
   inst->match_goal = goal;
   inst->match_goal_level = goal->id.level;
-  inst->unreliable = false;
+  inst->reliable = true;
   inst->backtrace_number = 0;
   inst->in_ms = FALSE;
   /* --- make the fake condition --- */
