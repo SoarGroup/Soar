@@ -173,19 +173,14 @@ preference *get_results_for_instantiation (agent* thisAgent, instantiation *inst
    to convert the results--preferences--into actions.  This is done
    by copy_and_variablize_result_list(), which takes the result preferences
    and returns an action list.
-
-   The global variable "variablize_this_chunk" indicates whether to
-   variablize at all.  This flag is set to TRUE or FALSE before and during
-   backtracing.  FALSE means the new production will become a justification;
-   TRUE means it will be a chunk.
 ===================================================================== */
 
+/* sym is both an input and output parameter */
 void variablize_symbol (agent* thisAgent, Symbol **sym) {
 	char prefix[2];
 	Symbol *var;
 
 	if ((*sym)->common.symbol_type!=IDENTIFIER_SYMBOL_TYPE) return;	// only variablize identifiers
-	if (! thisAgent->variablize_this_chunk) return;					// don't variablize (justifications)
 	if ((*sym)->id.smem_lti != NIL)									// don't variablize lti (long term identifiers)
 	{
 		(*sym)->id.tc_num = thisAgent->variablization_tc;
@@ -256,39 +251,44 @@ void variablize_condition_list (agent* thisAgent, condition *cond) {
   }
 }
 
-action *copy_and_variablize_result_list (agent* thisAgent, preference *pref) {
+action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, bool variablize) {
   action *a;
-  Symbol *temp;
+  Symbol *id, *attr, *val, *ref;
   
   if (!pref) return NIL;
   allocate_with_pool (thisAgent, &thisAgent->action_pool, &a);
   a->type = MAKE_ACTION;
 
-  temp = pref->id;
-  symbol_add_ref (temp);
-  variablize_symbol (thisAgent, &temp);
-  a->id = symbol_to_rhs_value (temp);
+  id = pref->id;
+  attr = pref->attr;
+  val = pref->value;
+  ref = pref->referent;
+  
+  if (variablize) {
+    variablize_symbol (thisAgent, &id);
+    variablize_symbol (thisAgent, &attr);
+    variablize_symbol (thisAgent, &val);
+  }
+    
+  symbol_add_ref (id);
+  symbol_add_ref (attr);
+  symbol_add_ref (val);
 
-  temp = pref->attr;
-  symbol_add_ref (temp);
-  variablize_symbol (thisAgent, &temp);
-  a->attr = symbol_to_rhs_value (temp);
-
-  temp = pref->value;
-  symbol_add_ref (temp);
-  variablize_symbol (thisAgent, &temp);
-  a->value = symbol_to_rhs_value (temp);
+  a->id = symbol_to_rhs_value (id);
+  a->attr = symbol_to_rhs_value (attr);
+  a->value = symbol_to_rhs_value (val);
 
   a->preference_type = pref->type;
 
   if (preference_is_binary(pref->type)) {
-    temp = pref->referent;
-    symbol_add_ref (temp);
-    variablize_symbol (thisAgent, &temp);
-    a->referent = symbol_to_rhs_value (temp);
+    if (variablize) {
+      variablize_symbol (thisAgent, &ref);
+    }
+    symbol_add_ref (ref);
+    a->referent = symbol_to_rhs_value (ref);
   }
   
-  a->next = copy_and_variablize_result_list (thisAgent, pref->next_result);
+  a->next = copy_and_variablize_result_list (thisAgent, pref->next_result, variablize);
   return a;  
 }
 
@@ -418,7 +418,7 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
 													 chunk_cond **dest_top,
                                                      chunk_cond **dest_bottom,
                                                      tc_number tc_to_use,
-                                                     bool *unreliable) {
+                                                     bool *reliable) {
   cons *c;
   condition *ground;
   chunk_cond *cc, *first_cc, *prev_cc;
@@ -496,7 +496,7 @@ void build_chunk_conds_for_grounds_and_add_negateds (agent* thisAgent,
         // report what local negations are preventing the chunk,
         // and set flags like we saw a ^quiescence t so it won't be created
         report_local_negation ( thisAgent, cc->cond ); // in backtrace.cpp
-        *unreliable = true;    
+        *reliable = false;    
 	  }
 
       free_with_pool (&thisAgent->chunk_cond_pool, cc);
@@ -583,9 +583,6 @@ void variablize_nots_and_insert_into_conditions (agent* thisAgent,
   condition *c;
   Bool added_it;
 
-  /* --- don't bother Not-ifying justifications --- */
-  if (! thisAgent->variablize_this_chunk) return;
-  
   for (n=nots; n!=NIL; n=n->next) {
     var1 = n->s1->id.variablization;
     var2 = n->s2->id.variablization;
@@ -905,27 +902,12 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
 
 bool should_variablize(agent *thisAgent, instantiation *inst) {
 	preference *p;	
-	/* if a result is created in a state higher than the immediate
-	   superstate, don't make chunks for intermediate justifications.
-	 */
-	for (p=inst->preferences_generated; p; p=p->inst_next) 
-	{
-		if (p->id->id.level < inst->match_goal_level-1)
-		{
-			return false;
-		}
-	}
 
-	/* allow_bottom_up_chunks will be false if a chunk was already
-	   learned in a lower goal
-	 */
-	if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] && 
-	    !inst->match_goal->id.allow_bottom_up_chunks)
+	if ( thisAgent->sysparams[LEARNING_ON_SYSPARAM] == 0 )
 	{
 		return false;
 	}
-
-	/* --- check whether ps name is in chunk_free_problem_spaces --- */
+	
 	if ( thisAgent->sysparams[LEARNING_EXCEPT_SYSPARAM] &&
 	     member_of_list(inst->match_goal,thisAgent->chunk_free_problem_spaces))
 	{
@@ -939,7 +921,8 @@ bool should_variablize(agent *thisAgent, instantiation *inst) {
 		}
 		return false;
 	}
-	else if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
+	
+	if (thisAgent->sysparams[LEARNING_ONLY_SYSPARAM] &&
 	         !member_of_list(inst->match_goal,thisAgent->chunky_problem_spaces))
 	{
 		if (thisAgent->soar_verbose_flag || thisAgent->sysparams[TRACE_CHUNKS_SYSPARAM])
@@ -952,6 +935,27 @@ bool should_variablize(agent *thisAgent, instantiation *inst) {
 		}
 		return false;
 	}
+
+	/* allow_bottom_up_chunks will be false if a chunk was already
+	   learned in a lower goal
+	 */
+	if (!thisAgent->sysparams[LEARNING_ALL_GOALS_SYSPARAM] && 
+	    !inst->match_goal->id.allow_bottom_up_chunks)
+	{
+		return false;
+	}
+	
+	/* if a result is created in a state higher than the immediate
+	   superstate, don't make chunks for intermediate justifications.
+	 */
+	for (p=inst->preferences_generated; p; p=p->inst_next) 
+	{
+		if (p->id->id.level < inst->match_goal_level-1)
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -966,7 +970,7 @@ bool should_variablize(agent *thisAgent, instantiation *inst) {
 ==================================================================== */
 
 
-void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize, instantiation **custom_inst_list) 
+void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_variablize, instantiation **custom_inst_list) 
 {
 	goal_stack_level grounds_level;
 	preference *results, *pref;
@@ -980,8 +984,8 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 	condition *lhs_top, *lhs_bottom;
 	not_struct *nots;
 	chunk_cond *top_cc, *bottom_cc;
-	bool unreliable = false;
-	bool variablize_current;
+	bool reliable = true;
+	bool variablize;
 
 	explain_chunk_str temp_explain_chunk;
 	memset(temp_explain_chunk.name, 0, EXPLAIN_CHUNK_STRUCT_NAME_BUFFER_SIZE);
@@ -1068,7 +1072,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 			print_preference (thisAgent, pref);
 			print_string (thisAgent, " ");
 		}
-		backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, &unreliable, 0);
+		backtrace_through_instantiation (thisAgent, pref->inst, grounds_level, NULL, &reliable, 0);
 
 		if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) 
 		{
@@ -1078,9 +1082,9 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 
 	while (TRUE) 
 	{
-		trace_locals (thisAgent, grounds_level, &unreliable);
+		trace_locals (thisAgent, grounds_level, &reliable);
 		trace_grounded_potentials (thisAgent);
-		if (! trace_ungrounded_potentials (thisAgent, grounds_level, &unreliable)) break;
+		if (! trace_ungrounded_potentials (thisAgent, grounds_level, &reliable)) break;
 	}
 
 	free_list (thisAgent, thisAgent->positive_potentials);
@@ -1089,25 +1093,24 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 	{ 
 		tc_number tc_for_grounds;
 		tc_for_grounds = get_new_tc_number(thisAgent);
-		build_chunk_conds_for_grounds_and_add_negateds (thisAgent, &top_cc, &bottom_cc, tc_for_grounds, &unreliable);
+		build_chunk_conds_for_grounds_and_add_negateds (thisAgent, &top_cc, &bottom_cc, tc_for_grounds, &reliable);
 		nots = get_nots_for_instantiated_conditions (thisAgent, thisAgent->instantiations_with_nots, tc_for_grounds);
 	}
 
-	variablize_current = variablize && !unreliable && should_variablize(thisAgent, inst);
-	thisAgent->variablize_this_chunk = variablize_current;
+	variablize = !dont_variablize && reliable && should_variablize(thisAgent, inst);
 	
-	/* --- check for LTI validity --- */	
-	if ( variablize_current )
+	/* --- check for LTI validity --- */
+	if ( variablize )
 	{
 		if ( top_cc )
 		{
 			// need a temporary copy of the actions
 			thisAgent->variablization_tc = get_new_tc_number(thisAgent);
-			rhs = copy_and_variablize_result_list (thisAgent, results);
+			rhs = copy_and_variablize_result_list (thisAgent, results, true);
 
 			if ( !smem_valid_production( top_cc->variablized_cond, rhs ) )
 			{
-				variablize_current = false;
+				variablize = false;
 				if (thisAgent->sysparams[TRACE_BACKTRACING_SYSPARAM]) 
 				{
 					print( thisAgent, "\nWarning: LTI validation failed, creating justification instead." );
@@ -1119,9 +1122,9 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 			deallocate_action_list (thisAgent, rhs);
 		}
 	}
-
+	
 	/* --- get symbol for name of new chunk or justification --- */
-	if (variablize_current) 
+	if (variablize) 
 	{
 		/* kjh (B14) begin */
 		thisAgent->chunks_this_d_cycle++;
@@ -1187,19 +1190,17 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 		goto chunking_done;
 	}
 
-	/* --- variablize it --- */
 	lhs_top = top_cc->variablized_cond;
 	lhs_bottom = bottom_cc->variablized_cond;
-	reset_variable_generator (thisAgent, lhs_top, NIL);
-	thisAgent->variablization_tc = get_new_tc_number(thisAgent);
-	variablize_condition_list (thisAgent, lhs_top);
-	variablize_nots_and_insert_into_conditions (thisAgent, nots, lhs_top);
-	rhs = copy_and_variablize_result_list (thisAgent, results);
+	if (variablize) {
+		reset_variable_generator (thisAgent, lhs_top, NIL);
+		thisAgent->variablization_tc = get_new_tc_number(thisAgent);
+		variablize_condition_list (thisAgent, lhs_top);
+		variablize_nots_and_insert_into_conditions (thisAgent, nots, lhs_top);
+	}
+	rhs = copy_and_variablize_result_list (thisAgent, results, variablize);
 
-	/* --- add goal/impasse tests to it --- */
 	add_goal_or_impasse_tests (thisAgent, top_cc);
-
-	/* --- reorder lhs and make the production --- */
 
 	prod = make_production (thisAgent, prod_type, prod_name, &lhs_top, &lhs_bottom, &rhs, FALSE);
 
@@ -1254,7 +1255,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 	
 		chunk_inst->GDS_evaluated_already = FALSE;  /* REW:  09.15.96 */
 	
-		chunk_inst->unreliable = unreliable;
+		chunk_inst->reliable = reliable;
 	
 		chunk_inst->in_ms = TRUE;  /* set TRUE for now, we'll find out later... */
 		make_clones_of_results (thisAgent, results, chunk_inst);
@@ -1270,7 +1271,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 		condition *new_bottom = 0;
 		copy_condition_list (thisAgent, lhs_top, &new_top, &new_bottom);
 		temp_explain_chunk.conds = new_top;
-		temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results);
+		temp_explain_chunk.actions = copy_and_variablize_result_list (thisAgent, results, variablize);
 	}
 
 	rete_addition_result = add_production_to_rete (thisAgent, prod, lhs_top, chunk_inst, print_name);
@@ -1340,7 +1341,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool variablize
 
 	/* MVP 6-8-94 */
 	if (!thisAgent->max_chunks_reached)
-		chunk_instantiation (thisAgent, chunk_inst, variablize, custom_inst_list);
+		chunk_instantiation (thisAgent, chunk_inst, dont_variablize, custom_inst_list);
 
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS

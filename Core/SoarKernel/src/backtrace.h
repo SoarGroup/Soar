@@ -44,14 +44,14 @@ typedef struct backtrace_struct {
 } backtrace_str;
 
 /* RBD Note: more comments here */
-extern void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *unreliable);
+extern void trace_locals (agent* thisAgent, goal_stack_level grounds_level, bool *reliable);
 extern void trace_grounded_potentials (agent* thisAgent);
-extern Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *unreliable);
+extern Bool trace_ungrounded_potentials (agent* thisAgent, goal_stack_level grounds_level, bool *reliable);
 extern void backtrace_through_instantiation (agent* thisAgent, 
                                              instantiation *inst,
                                              goal_stack_level grounds_level,
                                              condition *trace_cond,
-                                             bool *unreliable,
+                                             bool *reliable,
                                              int indent);
 
 // To print out the message similar to: a chunk was not created because...
