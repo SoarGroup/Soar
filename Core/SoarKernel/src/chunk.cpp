@@ -263,17 +263,17 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
   attr = pref->attr;
   val = pref->value;
   ref = pref->referent;
-  
+
+  symbol_add_ref (id);
+  symbol_add_ref (attr);
+  symbol_add_ref (val);
+ 
   if (variablize) {
     variablize_symbol (thisAgent, &id);
     variablize_symbol (thisAgent, &attr);
     variablize_symbol (thisAgent, &val);
   }
-    
-  symbol_add_ref (id);
-  symbol_add_ref (attr);
-  symbol_add_ref (val);
-
+  
   a->id = symbol_to_rhs_value (id);
   a->attr = symbol_to_rhs_value (attr);
   a->value = symbol_to_rhs_value (val);
