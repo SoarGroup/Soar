@@ -106,7 +106,7 @@ inline const char* const to_c_string( const int64_t& v, char* buf )
 }
 inline const char* const to_c_string( const uint64_t& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%llu", static_cast<long long>(v) ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%llu", static_cast<long long unsigned>(v) ); 
 	return buf; 
 }
 inline const char* const to_c_string( const float& v, char* buf ) 
@@ -158,7 +158,7 @@ inline bool from_c_string( int64_t& v, const char* const str )
 }
 inline bool from_c_string( uint64_t& v, const char* const str ) 
 { 
-	unsigned long long vt = static_cast<unsigned long long>(v);
+	unsigned long long vt = static_cast<long long unsigned>(v);
 	return sscanf( str, "%llu", &vt ) == 1; 
 }
 inline bool from_c_string( float& v, const char* const str ) 
