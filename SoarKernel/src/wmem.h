@@ -42,16 +42,16 @@
 #endif
 
 typedef char Bool;
-typedef unsigned long tc_number;
+typedef uint64_t tc_number;
 typedef struct wme_struct wme;
 typedef struct agent_struct agent;
 typedef union symbol_union Symbol;
 
 typedef struct wma_decay_element_struct wma_decay_element;
 
-typedef intptr_t epmem_node_id;
-typedef uintptr_t epmem_hash_id;
-typedef uintptr_t epmem_time_id;
+typedef int64_t epmem_node_id;
+typedef uint64_t epmem_hash_id;
+typedef uint64_t epmem_time_id;
 
 extern void reset_wme_timetags (agent* thisAgent);
 extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,Bool acceptable);
@@ -135,8 +135,8 @@ typedef struct wme_struct {
   Symbol *attr;
   Symbol *value;
   Bool acceptable;
-  unsigned long timetag;
-  unsigned long reference_count;
+  uint64_t timetag;
+  uint64_t reference_count;
   struct wme_struct *rete_next, *rete_prev; /* used for dll of wmes in rete */
   struct right_mem_struct *right_mems;      /* used for dll of rm's it's in */
   struct token_struct *tokens;              /* dll of tokens in rete */
@@ -154,7 +154,7 @@ typedef struct wme_struct {
   
   
   epmem_node_id epmem_id;
-  uintptr_t epmem_valid;
+  uint64_t epmem_valid;
 
   wma_decay_element* wma_decay_el;
   tc_number wma_tc_value;

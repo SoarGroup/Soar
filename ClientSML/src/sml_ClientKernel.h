@@ -158,8 +158,8 @@ public:
 	static char const* const kDefaultLibraryName ;
 
 protected:
-	long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
-	long		m_IdCounter ;		// Used to generate unique id names
+	long long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
+	long long		m_IdCounter ;		// Used to generate unique id names
 	int			m_CallbackIDCounter ;	// Used to generate unique callback IDs
 
 	// The mapping from event number to a list of handlers to call when that event fires
@@ -249,8 +249,10 @@ protected:
 
 	void SetSocketLib(sock::SocketLib* pLibrary) { m_SocketLibrary = pLibrary ; }
 
-	long	GenerateNextID()		{ return ++m_IdCounter ; }
-	long	GenerateNextTimeTag()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
+	int	GenerateNextID()		{ return static_cast<int>(GenerateNextID64()) ; }
+	int	GenerateNextTimeTag()	{ return static_cast<int>(GenerateNextTimeTag64()) ; }
+	long long	GenerateNextID64()		{ return ++m_IdCounter ; }
+	long long	GenerateNextTimeTag64()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
 
 	/***
 	***   RHS functions and message event handlers use the same internal logic, although they look rather different to the user

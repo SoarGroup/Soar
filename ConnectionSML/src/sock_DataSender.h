@@ -54,7 +54,7 @@ public:
 	// Check if data is waiting to be read
 	// Returns true if data sender is closed--but then receiveMsg will know it's closed.
 	// The timeout for waiting for data is secondsWait + millisecondsWait, where millisecondsWait < 1000
-	virtual bool		IsReadDataAvailable(long secondsWait = 0, long millisecondsWait = 0)=0;
+	virtual bool		IsReadDataAvailable(int secondsWait = 0, int millisecondsWait = 0)=0;
 
 	// Close down our side of the data sender, locks and calls CloseInternal
 	void		Close();
@@ -75,8 +75,8 @@ public:
 
 protected:
 	// Lower level buffer send and receive calls.
-	virtual bool		SendBuffer(char const* pSendBuffer, size_t bufferSize)=0 ;
-	virtual bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)=0 ;
+	virtual bool		SendBuffer(char const* pSendBuffer, uint32_t bufferSize)=0 ;
+	virtual bool		ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)=0 ;
 
    // Specific kinds of locks have different ways of shutting themselves down, they must do it here
    virtual void CloseInternal() = 0;

@@ -67,7 +67,7 @@ Socket::~Socket()
 char* sock::GetLocalIPAddress()
 {
 	// Look up the local host's IP address
-	unsigned long hostID = GetLocalIP() ;
+	uint32_t hostID = GetLocalIP() ;
 	
 	in_addr addr ;
 	addr.s_addr = hostID ;
@@ -81,7 +81,7 @@ char* sock::GetLocalIPAddress()
 /////////////////////////////////////////////////////////////////////
 // Function name  : GetLocalIP
 // 
-// Return type    : unsigned long 	
+// Return type    : uint32_t 	
 // 
 // Description	  : Function taken from the net.
 //					Uses two approaches to get local IP address:
@@ -89,7 +89,7 @@ char* sock::GetLocalIPAddress()
 //					2) Create UDP socket and call getsockname
 //
 /////////////////////////////////////////////////////////////////////
-unsigned long sock::GetLocalIP()
+uint32_t sock::GetLocalIP()
 {
 	char szLclHost[1024];
 	HOSTENT* lpstHostent;
@@ -184,13 +184,13 @@ static bool IsErrorWouldBlock()
 // 
 // Return type    : bool 	
 // Argument       : char* pSendBuffer	
-// Argument       : size_t bufferSize	
+// Argument       : uint32_t bufferSize	
 // 
 // Description	  : Send a buffer of data to a socket.
 //					This may require repeated calls to the low level "send" call.
 //
 /////////////////////////////////////////////////////////////////////
-bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
+bool Socket::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
 {
 	CTDEBUG_ENTER_METHOD("Socket::SendBuffer");
 
@@ -204,18 +204,15 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 		return false; 
 	}
 
-	size_t bytesSent = 0 ;
+	uint32_t bytesSent = 0 ;
 	int    thisSend = 0 ;
 
 	// May need repeated calls to send all of the data.
 	while (bytesSent < bufferSize)
 	{
-		long tries = 0 ;
-
 		do
 		{
-			tries++ ;
-			thisSend = send(hSock, pSendBuffer, (int)(bufferSize - bytesSent), 0) ;
+			thisSend = send(hSock, pSendBuffer, static_cast<int>(bufferSize - bytesSent), 0) ;
 
 			// Check if there was an error
 			if (thisSend == SOCKET_ERROR)
@@ -252,8 +249,8 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 /////////////////////////////////////////////////////////////////////
 // Function name  : Socket::IsReadDataAvailable
 // 
-// Argument		  : long secondsWait -- Seconds part of how long to wait for data in secs (0 is default)
-// Argument		  : long millisecondssecondsWait -- Milliseconds part of how long to wait for data in usecs (0 is default, must be < 1000)
+// Argument		  : int secondsWait -- Seconds part of how long to wait for data in secs (0 is default)
+// Argument		  : int millisecondssecondsWait -- Milliseconds part of how long to wait for data in usecs (0 is default, must be < 1000)
 // Return type    : bool 	
 // 
 // Description	  : Returns true if data is waiting to be read on this socket.
@@ -262,7 +259,7 @@ bool Socket::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 //					indicating that the socket is closed.
 //
 /////////////////////////////////////////////////////////////////////
-bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
+bool Socket::IsReadDataAvailable(int secondsWait, int millisecondsWait)
 {
 	assert(millisecondsWait<1000 && "specified milliseconds must be less than 1000");
 
@@ -325,12 +322,12 @@ bool Socket::IsReadDataAvailable(long secondsWait, long millisecondsWait)
 // 
 // Return type    : bool 	
 // Argument       : char* pRecvBuffer	
-// Argument       : size_t bufferSize	
+// Argument       : uint32_t bufferSize	
 // 
 // Description	  : Receive a buffer of data.
 //
 /////////////////////////////////////////////////////////////////////
-bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
+bool Socket::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
 {
 	CTDEBUG_ENTER_METHOD("Socket::ReceiveBuffer");
 
@@ -344,7 +341,7 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 		return false;
 	}
 
-	size_t bytesRead = 0 ;
+	uint32_t bytesRead = 0 ;
 	int	   thisRead  = 0 ;
 
 	// Check our incoming data is valid
@@ -357,12 +354,9 @@ bool Socket::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 	// May need to make repeated calls to read all of the data
 	while (bytesRead < bufferSize)
 	{
-		long tries = 0 ;
-
 		do
 		{
-			tries++ ;
-			thisRead = recv(hSock, pRecvBuffer, (int)(bufferSize - bytesRead), 0) ;
+			thisRead = recv(hSock, pRecvBuffer, static_cast<int>(bufferSize - bytesRead), 0) ;
 
 			// Check if there was an error
 			if (thisRead == SOCKET_ERROR)

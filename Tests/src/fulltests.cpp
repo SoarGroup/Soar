@@ -595,14 +595,14 @@ TEST_DEFINITION( testWMEs )
 	// Test the blink option
 	m_pAgent->SetBlinkIfNoChange( false ) ;
 
-	long timeTag1 = pWME3->GetTimeTag() ;
+	int64_t timeTag1 = pWME3->GetTimeTag() ;
 	m_pAgent->Update( pWME3, 50.5 ) ;	// Should not change the wme, so timetag should be the same
 	
-	long timeTag2 = pWME3->GetTimeTag() ;
+	int64_t timeTag2 = pWME3->GetTimeTag() ;
 	m_pAgent->SetBlinkIfNoChange( true ) ;	// Back to the default
 	m_pAgent->Update( pWME3, 50.5 ) ;	// Should change the wme, so timetag should be different
 	
-	long timeTag3 = pWME3->GetTimeTag() ;
+	int64_t timeTag3 = pWME3->GetTimeTag() ;
 
 	CPPUNIT_ASSERT_MESSAGE( "Error in handling of SetBlinkIfNoChange flag", timeTag1 == timeTag2 );
 	CPPUNIT_ASSERT_MESSAGE( "Error in handling of SetBlinkIfNoChange flag", timeTag2 != timeTag3 );

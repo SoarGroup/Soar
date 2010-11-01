@@ -26,12 +26,12 @@ bool CommandLineInterface::ParseSRand(std::vector<std::string>& argv) {
 
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 
-	unsigned long int seed = 0;
+	uint32_t seed = 0;
 	sscanf(argv[1].c_str(), "%lu", &seed);
 	return DoSRand(&seed);
 }
 
-bool CommandLineInterface::DoSRand(unsigned long int* pSeed) {
+bool CommandLineInterface::DoSRand(uint32_t* pSeed) {
 	if (pSeed) 
 	{
 		SoarSeedRNG( *pSeed );

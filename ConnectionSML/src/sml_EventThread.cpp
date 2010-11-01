@@ -68,7 +68,7 @@ void EventThread::Run()
 /*
 #ifdef _DEBUG
 	sml::PrintDebugFormat("Starting EventThread\n") ;
-	long counter = 0 ;
+	int64_t counter = 0 ;
 #endif
 */
 	while (!m_QuitNow && !m_pConnection->IsClosed())

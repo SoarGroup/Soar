@@ -86,7 +86,7 @@ protected:
 
 	IdSymbolMap		m_IdSymbolMap;
 
-	typedef std::map< long, WMElement*> TimeTagWMEMap ;
+	typedef std::map< long long, WMElement* > TimeTagWMEMap ;
 	typedef TimeTagWMEMap::iterator TimeTagWMEMapIter ;
 
 	TimeTagWMEMap		m_TimeTagWMEMap;
@@ -98,7 +98,7 @@ protected:
 	bool				m_Deleting; // used when we're being deleted and the maps shouldn't be updated
 
 	// Create a new WME of the appropriate type based on this information.
-	WMElement*			CreateWME(IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag) ;
+	WMElement*			CreateWME(IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long long timeTag) ;
 
 public:
 	WorkingMemory() ;
@@ -122,14 +122,14 @@ public:
 	Identifier*		GetInputLink() ;
 	Identifier*		GetOutputLink() ;
 	StringElement*	CreateStringWME(Identifier* parent, char const* pAttribute, char const* pValue);
-	IntElement*		CreateIntWME(Identifier* parent, char const* pAttribute, int value) ;
+	IntElement*		CreateIntWME(Identifier* parent, char const* pAttribute, long long value) ;
 	FloatElement*	CreateFloatWME(Identifier* parent, char const* pAttribute, double value) ;
 
 	Identifier*		CreateIdWME(Identifier* parent, char const* pAttribute) ;
 	Identifier*		CreateSharedIdWME(Identifier* parent, char const* pAttribute, Identifier* pSharedValue) ;
 
 	void			UpdateString(StringElement* pWME, char const* pValue) ;
-	void			UpdateInt(IntElement* pWME, int value) ;
+	void			UpdateInt(IntElement* pWME, long long value) ;
 	void			UpdateFloat(FloatElement* pWME, double value) ;
 
 	bool			DestroyWME(WMElement* pWME) ;
@@ -142,7 +142,8 @@ public:
 	bool			SynchronizeInputLink() ;
 	bool			SynchronizeOutputLink() ;
 
-	long			GenerateTimeTag() ;
+	int     	    GenerateTimeTag() ;
+	long long	    GenerateTimeTag64() ;
 	void			GenerateNewID(char const* pAttribute, std::string* pID) ;
 
 	void			Refresh() ;

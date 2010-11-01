@@ -101,7 +101,7 @@ uint32_t hash_sym_constant_raw_info (const char *name, short num_bits) {
   return compress (hash_string(name), num_bits);
 }
 
-uint32_t hash_int_constant_raw_info (long value, short num_bits) {
+uint32_t hash_int_constant_raw_info (int64_t value, short num_bits) {
   return compress (static_cast<uint32_t>(value), num_bits);
 }
 
@@ -229,7 +229,7 @@ Symbol *find_sym_constant (agent* thisAgent, const char *name) {
   return NIL;
 }
 
-Symbol *find_int_constant (agent* thisAgent, long value) {
+Symbol *find_int_constant (agent* thisAgent, int64_t value) {
   uint32_t hash_value;
   Symbol *sym;
 
@@ -390,7 +390,7 @@ Symbol *make_sym_constant (agent* thisAgent, char const*name) {
   return sym;
 }
 
-Symbol *make_int_constant (agent* thisAgent, long value) {
+Symbol *make_int_constant (agent* thisAgent, int64_t value) {
   Symbol *sym;
 
   sym = find_int_constant(thisAgent, value);
@@ -506,7 +506,7 @@ void deallocate_symbol (agent* thisAgent, Symbol *sym) {
    Generate_new_sym_constant() is used to gensym new symbols that are
    guaranteed to not already exist.  It takes two arguments: "prefix"
    (the desired prefix of the new symbol's name), and "counter" (a
-   pointer to a counter (unsigned long) that is incremented to produce
+   pointer to a counter (uint64_t) that is incremented to produce
    new gensym names).
 ------------------------------------------------------------------- */
 
@@ -522,17 +522,17 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata) {
 			if ( sym->id.smem_lti != NIL )
 			{
 				SNPRINTF( msg, 256, 
-					"\t@%c%llu --> %lu\n", 
+					"\t@%c%llu --> %llu\n", 
 					sym->id.name_letter, 
-					static_cast<unsigned long long>(sym->id.name_number), 
+					sym->id.name_number, 
 					sym->common.reference_count);
 			}
 			else
 			{
 				SNPRINTF( msg, 256, 
-					"\t%c%llu --> %lu\n", 
+					"\t%c%llu --> %llu\n", 
 					sym->id.name_letter, 
-					static_cast<unsigned long long>(sym->id.name_number), 
+					sym->id.name_number, 
 					sym->common.reference_count);
 			}
 
@@ -556,9 +556,9 @@ bool reset_id_counters (agent* thisAgent) {
 
 	if (thisAgent->identifier_hash_table->count != 0) {
 		// As long as all of the existing identifiers are long term identifiers (lti), there's no problem
-		unsigned long ltis = 0;
+		uint64_t ltis = 0;
 		do_for_all_items_in_hash_table( thisAgent, thisAgent->identifier_hash_table, smem_count_ltis, &ltis );
-		if (thisAgent->identifier_hash_table->count != ltis) {
+		if (static_cast<uint64_t>(thisAgent->identifier_hash_table->count) != ltis) {
 			print (thisAgent, "Internal warning:  wanted to reset identifier generator numbers, but\n");
 			print (thisAgent, "there are still some identifiers allocated.  (Probably a memory leak.)\n");
 			print (thisAgent, "(Leaving identifier numbers alone.)\n");
@@ -637,8 +637,8 @@ void print_internal_symbols (agent* thisAgent) {
   do_for_all_items_in_hash_table (thisAgent, thisAgent->variable_hash_table, print_sym,0);
 }
 
-Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, unsigned long *counter) {
-#define GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE 2000 /* that ought to be long enough! */ /* and what if it's not!? -voigtjr */
+Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_t* counter) {
+#define GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE 2000 /* that ought to be long enough! */
   char name[GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE];  
   Symbol *New;
 

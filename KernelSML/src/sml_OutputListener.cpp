@@ -42,7 +42,7 @@ TagWme* OutputListener::CreateTagIOWme( AgentSML* pAgent, io_wme* wme )
 	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, false, 0, 0 ) ) ;
 	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, false, 0, 0 ), pValueType ) ;
 
-	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
+	int64_t clientTimetag = pAgent->GetClientTimetag( wme->timetag );
 	if ( clientTimetag < 0 )
 	{
 		// valid client timetag
@@ -71,7 +71,7 @@ TagWme* OutputListener::CreateTagWme( AgentSML* pAgent, wme* wme )
 	pTag->SetAttribute( symbol_to_string( pAgent->GetSoarAgent(), wme->attr, false, 0, 0 ) ) ;
 	pTag->SetValue( symbol_to_string( pAgent->GetSoarAgent(), wme->value, false, 0, 0 ), pValueType ) ;
 
-	long clientTimetag = pAgent->GetClientTimetag( wme->timetag );
+	int64_t clientTimetag = pAgent->GetClientTimetag( wme->timetag );
 	if ( clientTimetag < 0 )
 	{
 		// valid client timetag
@@ -150,7 +150,7 @@ void OutputListener::SendOutput(smlWorkingMemoryEventId eventId, AgentSML* pAgen
 	for (io_wme* wme = io_wmelist ; wme != NIL ; wme = wme->next)
 	{
 		// Build the list of WME changes
-		long timeTag = wme->timetag ;
+		uint64_t timeTag = wme->timetag ;
 
 		// See if we've already sent this wme to the client
 		OutputTimeTagIter iter = m_TimeTags.find(timeTag) ;
@@ -186,13 +186,13 @@ void OutputListener::SendOutput(smlWorkingMemoryEventId eventId, AgentSML* pAgen
 			continue ;
 		}
 
-		long timeTag = iter->first ;
+		uint64_t timeTag = iter->first ;
 
 		// Create the wme tag
 		TagWme* pTag = new TagWme() ;
 
 		// For deletions we just send the time tag
-		pTag->SetTimeTag(timeTag) ;
+		pTag->SetTimeTag(static_cast<int64_t>(timeTag)) ;
 		pTag->SetActionRemove() ;
 
 		// Add it as a child of the command tag

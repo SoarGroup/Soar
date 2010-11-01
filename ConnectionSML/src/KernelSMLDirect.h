@@ -33,16 +33,16 @@ extern "C" {
 
 // Function types, so we can more easily load the methods dynamically.
 // (The value being defined is the function pointer *DirectXXXFunction)
-typedef void (*DirectAddWMEStringFunction)(Direct_AgentSML_Handle, char const*, char const*, char const*, long) ; // agent, id, attr, val, timetag
-typedef void (*DirectAddWMEIntFunction)(Direct_AgentSML_Handle, char const*, char const*, int, long) ; // agent, id, attr, val, timetag
-typedef void (*DirectAddWMEDoubleFunction)(Direct_AgentSML_Handle, char const*, char const*, double, long) ; // agent, id, attr, val, timetag
-typedef void (*DirectRemoveWMEFunction)(Direct_AgentSML_Handle, long) ; // agent, timetag
+typedef void (*DirectAddWMEStringFunction)(Direct_AgentSML_Handle, char const*, char const*, char const*, int64_t) ; // agent, id, attr, val, timetag
+typedef void (*DirectAddWMEIntFunction)(Direct_AgentSML_Handle, char const*, char const*, int64_t, int64_t) ; // agent, id, attr, val, timetag
+typedef void (*DirectAddWMEDoubleFunction)(Direct_AgentSML_Handle, char const*, char const*, double, int64_t) ; // agent, id, attr, val, timetag
+typedef void (*DirectRemoveWMEFunction)(Direct_AgentSML_Handle, int64_t) ; // agent, timetag
 
-typedef void (*DirectAddIDFunction)(Direct_AgentSML_Handle, char const*, char const*, char const*, long) ; // agent, id, attr, value_id, timetag
+typedef void (*DirectAddIDFunction)(Direct_AgentSML_Handle, char const*, char const*, char const*, int64_t) ; // agent, id, attr, value_id, timetag
 
 typedef Direct_AgentSML_Handle (*DirectGetAgentSMLHandleFunction)(Connection_Receiver_Handle, char const*) ; // agent name
 
-typedef void (*DirectRunFunction)(Connection_Receiver_Handle hConnection, char const*, bool, int, int, int) ;
+typedef void (*DirectRunFunction)(Connection_Receiver_Handle hConnection, char const*, bool, int, int, uint64_t) ;
 
 /*************************************************************
 * @brief	Add a wme.
@@ -51,9 +51,9 @@ typedef void (*DirectRunFunction)(Connection_Receiver_Handle hConnection, char c
 * @param pAttribute The attribute name to use
 * @param value		The value to use
 *************************************************************/
-EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, long clientTimetag) ;
-EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int value, long clientTimetag) ;
-EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, double value, long clientTimetag) ;
+EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag) ;
+EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag) ;
+EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, double value, int64_t clientTimetag) ;
 
 /*************************************************************
 * @brief	Remove a wme.  This function also releases the IWme*
@@ -61,7 +61,7 @@ EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSML, char const
 * @param wm			The working memory object (either input or output)
 * @param wme		The wme we're removing
 *************************************************************/
-EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, long clientTimetag) ;
+EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, int64_t clientTimetag) ;
 
 /*************************************************************
 * @brief	Creates a new identifier (parent ^attribute <new-id>).
@@ -69,7 +69,7 @@ EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, long clientTim
 * @param parent		The identifier (WMObject) we're adding to.
 * @param pAttribute	The attribute to add
 *************************************************************/
-EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, long clientTimetag) ;
+EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag) ;
 
 EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(Connection_Receiver_Handle hConnection, char const* pAgentName) ;
 

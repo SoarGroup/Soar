@@ -55,15 +55,15 @@ typedef IdentifierRefMap::iterator			IdentifierRefMapIter ;
 typedef IdentifierRefMap::const_iterator	IdentifierRefMapConstIter ;
 
 // Map from client side time tag to a kernel time tag
-typedef std::map< long, unsigned long >		CKTimeMap ;
+typedef std::map< int64_t, uint64_t >		CKTimeMap ;
 typedef CKTimeMap::iterator					CKTimeMapIter ;
 
 // Map from kernel side time tag to client time tag
-typedef std::map< unsigned long, long >		KCTimeMap ;
+typedef std::map< uint64_t, int64_t >		KCTimeMap ;
 typedef KCTimeMap::iterator					KCTimeMapIter ;
 
 // Map from client side time tag to client time tag, for replay
-typedef std::map< long, long >				CCTimeMap ;
+typedef std::map< int64_t, int64_t >        CCTimeMap ;
 typedef CCTimeMap::iterator					CCTimeMapIter ;
 
 // List of input messages waiting for the next input phase callback from the kernel
@@ -71,8 +71,8 @@ typedef std::list<soarxml::ElementXML*>		PendingInputList ;
 typedef PendingInputList::iterator			PendingInputListIter ;
 
 // Map of kernel time tags to kernel wmes for input
-typedef std::map< unsigned long, wme* >				WmeMap;
-typedef std::map< unsigned long, wme* >::iterator	WmeMapIter;
+typedef std::map< uint64_t, wme* >			WmeMap;
+typedef WmeMap::iterator	                WmeMapIter;
 
 // This struct supports the buffered direct input calls
 struct DirectInputDelta
@@ -80,22 +80,22 @@ struct DirectInputDelta
 	enum DirectInputType { kRemove, kAddString, kAddInt, kAddDouble, kAddId };
 	std::string id;
 	std::string attribute;
-	long clientTimeTag;
+	int64_t clientTimeTag;
 	DirectInputType type;
 	std::string svalue;
-	int ivalue;
+	int64_t ivalue;
 	double dvalue;
 
-	DirectInputDelta(DirectInputType type, char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag) 
+	DirectInputDelta(DirectInputType type, char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag) 
 		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(type), svalue(pValue) {}
 
-	DirectInputDelta(char const* pID, char const* pAttribute, int value, long clientTimeTag)
+	DirectInputDelta(char const* pID, char const* pAttribute, int64_t value, int64_t clientTimeTag)
 		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(kAddInt), ivalue(value) {}
 	
-	DirectInputDelta(char const* pID, char const* pAttribute, double value, long clientTimeTag)
+	DirectInputDelta(char const* pID, char const* pAttribute, double value, int64_t clientTimeTag)
 		: id(pID), attribute(pAttribute), clientTimeTag(clientTimeTag), type(kAddDouble), dvalue(value) {}
 	
-	DirectInputDelta(long clientTimeTag)
+	DirectInputDelta(int64_t clientTimeTag)
 		: clientTimeTag(clientTimeTag), type(kRemove) {}
 };
 
@@ -107,19 +107,19 @@ class AgentSML
 protected:
    // This function actually creates a wme in Soar (and the associated mappings between client and kernel side timetags)
    // Currently, only the functions below call this, so it's protected
-   bool AddInputWME(char const* pID, char const* pAttribute, Symbol* pValueSymbol, long clientTimeTag);
+   bool AddInputWME(char const* pID, char const* pAttribute, Symbol* pValueSymbol, int64_t clientTimeTag);
 public:
 	// These functions convert values into Symbols so the above function can be called
-	bool AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
-	bool AddIntInputWME(char const* pID, char const* pAttribute, int value, long clientTimeTag);
-	bool AddDoubleInputWME(char const* pID, char const* pAttribute, double value, long clientTimeTag);
+	bool AddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag);
+	bool AddIntInputWME(char const* pID, char const* pAttribute, int64_t value, int64_t clientTimeTag);
+	bool AddDoubleInputWME(char const* pID, char const* pAttribute, double value, int64_t clientTimeTag);
 
 	// This function converts string values into typed values so the above functions can be called
 	// This function is called by InputListener and passed info taken from XML objects
-	bool AddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
+	bool AddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag);
 
 	bool AddInputWME(char const* pID, char const* pAttribute, char const* pValue, char const* pType, char const* pTimeTag) ;
-	bool RemoveInputWME(long timeTag) ;
+	bool RemoveInputWME(int64_t timeTag) ;
 	bool RemoveInputWME(char const* pTimeTag) ;
 
 protected:
@@ -127,11 +127,11 @@ protected:
 
 public:
 	// These functions are for direct, fast IO, called by the sml_Direct family
-	void BufferedAddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
-	void BufferedAddIntInputWME(char const* pID, char const* pAttribute, int value, long clientTimeTag);
-	void BufferedAddDoubleInputWME(char const* pID, char const* pAttribute, double value, long clientTimeTag);
-	void BufferedAddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, long clientTimeTag);
-	void BufferedRemoveInputWME(long timeTag) ;
+	void BufferedAddStringInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag);
+	void BufferedAddIntInputWME(char const* pID, char const* pAttribute, int64_t value, int64_t clientTimeTag);
+	void BufferedAddDoubleInputWME(char const* pID, char const* pAttribute, double value, int64_t clientTimeTag);
+	void BufferedAddIdInputWME(char const* pID, char const* pAttribute, char const* pValue, int64_t clientTimeTag);
+	void BufferedRemoveInputWME(int64_t timeTag) ;
 	std::list<DirectInputDelta>*	GetBufferedDirectList() { return &m_DirectInputDeltaList ; }
 
 protected:
@@ -181,17 +181,17 @@ protected:
 	bool m_WasOnRunList;
 	bool m_OnStepList;
 	//unsigned long	m_InitialStepCount ;
-	unsigned long	m_InitialRunCount ;
+	uint64_t        m_InitialRunCount ;
 	smlRunResult	m_ResultOfLastRun ;
-    unsigned long	m_localRunCount;
-    unsigned long	m_localStepCount;
+    uint64_t     	m_localRunCount;
+    uint64_t     	m_localStepCount;
 	smlRunState		m_runState;          // Current agent run state
-	unsigned long	m_interruptFlags;    // Flags indicating an interrupt request
+	unsigned     	m_interruptFlags;    // Flags indicating an interrupt request
 
 	  // Used for update world events
-	bool m_CompletedOutputPhase ;
-	bool m_GeneratedOutput ;
-	unsigned long m_OutputCounter ;
+	bool            m_CompletedOutputPhase ;
+	bool            m_GeneratedOutput ;
+	uint64_t        m_OutputCounter ;
 
 	RhsFunction*	m_pRhsInterrupt ;
 	RhsFunction*	m_pRhsConcat ;
@@ -202,8 +202,8 @@ protected:
 
 	WmeMap			m_KernelTimeTagToWmeMap ; // Kernel time tag to kernel wme
 
-	void AddWmeToWmeMap( long clientTimeTag, wme* w );
-	wme* FindWmeFromKernelTimetag( unsigned long timetag );
+	void AddWmeToWmeMap( int64_t clientTimeTag, wme* w );
+	wme* FindWmeFromKernelTimetag( uint64_t timetag );
 	static void InputWmeGarbageCollectedHandler( agent* pAgent, int eventID, void* pData, void* pCallData ) ;
 
 	~AgentSML() ;
@@ -228,7 +228,7 @@ private:
 		CapturedAction() { add = 0; }
 		CapturedAction(const CapturedAction& other) 
 			: dc(other.dc)
-			, timetag(other.timetag)
+			, clientTimeTag(other.clientTimeTag)
 			, add(0)
 		{
 			if (other.add) add = new CapturedActionAdd(*other.add);
@@ -237,7 +237,7 @@ private:
 		CapturedAction& operator=(const CapturedAction& other)
 		{
 			dc = other.dc;
-			timetag = other.timetag;
+			clientTimeTag = other.clientTimeTag;
 			if (other.add) 
 			{
 				add = new CapturedActionAdd(*other.add);
@@ -249,8 +249,8 @@ private:
 			return *this;
 		}
 
-		unsigned long dc;
-		long timetag;
+		uint64_t dc;
+		int64_t  clientTimeTag;
 		void CreateAdd() { if (!add) add = new CapturedActionAdd(); }
 		CapturedActionAdd* Add() const { return add; }
 
@@ -264,7 +264,7 @@ private:
 	std::string			escapeDelims(std::string target);
 
 public: 
-	bool				StartCaptureInput(const std::string& pathname, bool autoflush, unsigned long seed);
+	bool				StartCaptureInput(const std::string& pathname, bool autoflush, uint32_t seed);
 	bool				StopCaptureInput();
 	inline bool			CaptureQuery() { return m_pCaptureFile ? true : false; }
 
@@ -396,12 +396,12 @@ public:
 	*			a kernel side one.
 	*************************************************************/
 	wme* ConvertKernelTimeTag(char const* pTimeTag) ;
-    unsigned long ConvertTime(long clientTimeTag);
-	unsigned long ConvertTime(char const* pTimeTag) ;
+    uint64_t ConvertTime(int64_t clientTimeTag);
+	uint64_t ConvertTime(char const* pTimeTag) ;
 
-    void RecordTime(long clientTimeTag, long kernelTimeTag) ;
-	void RemoveKernelTime(unsigned long kernelTimeTag);
-	long GetClientTimetag( unsigned long kernelTimeTag );
+    void RecordTime(int64_t clientTimeTag, uint64_t kernelTimeTag) ;
+	void RemoveKernelTime(uint64_t kernelTimeTag);
+	int64_t GetClientTimetag( uint64_t kernelTimeTag );
 
 	// Register a RHS function with the Soar kernel
 	void RegisterRHSFunction(RhsFunction* pFunction) ;
@@ -426,14 +426,14 @@ public:
 	smlRunResult	GetResultOfLastRun()		  { return m_ResultOfLastRun ; }
 	void SetResultOfRun(smlRunResult runResult) { m_ResultOfLastRun = runResult ; }
 
-	//void SetInitialStepCount(unsigned long count)	{ m_InitialStepCount = count ; }
-	void SetInitialRunCount(unsigned long count)	{ m_InitialRunCount = count ; }
-	//unsigned long GetInitialStepCount()				{ return m_InitialStepCount ; }
-	unsigned long GetInitialRunCount()				{ return m_InitialRunCount ; }
+	//void SetInitialStepCount(uint64_t count)	    { m_InitialStepCount = count ; }
+	void SetInitialRunCount(uint64_t count)     	{ m_InitialRunCount = count ; }
+	//unsigned long GetInitialStepCount()			{ return m_InitialStepCount ; }
+	uint64_t GetInitialRunCount()			    	{ return m_InitialRunCount ; }
 	void ResetLocalRunCounters()                    { m_localRunCount = 0 ; m_localStepCount = 0 ; }
 	void IncrementLocalRunCounter()                 { m_localRunCount++ ; }
 	void IncrementLocalStepCounter()                { m_localStepCount++ ; }
-	bool CompletedRunType(unsigned long count)      { 
+	bool CompletedRunType(uint64_t count)      { 
 		//std::cout << std::endl << GetName() << ": (count" << count << " > (m_InitialRunCount" << m_InitialRunCount << " + m_localRunCount" << m_localRunCount << "))";
 		return (count > (m_InitialRunCount + m_localRunCount)) ; 
 	}
@@ -443,20 +443,20 @@ public:
 	void SetGeneratedOutput(bool state)				{ m_GeneratedOutput = state ; }
 	bool HasGeneratedOutput() 						{ return m_GeneratedOutput ; }
 
-	void SetInitialOutputCount(unsigned long count)	{ m_OutputCounter = count ; }
-	unsigned long GetInitialOutputCount()			{ return m_OutputCounter ; }
+	void SetInitialOutputCount(uint64_t count)	    { m_OutputCounter = count ; }
+	uint64_t GetInitialOutputCount()			    { return m_OutputCounter ; }
 
-	unsigned long GetNumDecisionsExecuted() ;
-	unsigned long GetNumDecisionCyclesExecuted() ;
-	unsigned long GetNumElaborationsExecuted() ;
-	unsigned long GetNumPhasesExecuted() ;
-	unsigned long GetNumOutputsGenerated() ;
-	unsigned long GetLastOutputCount() ;
+	uint64_t GetNumDecisionsExecuted() ;
+	uint64_t GetNumDecisionCyclesExecuted() ;
+	uint64_t GetNumElaborationsExecuted() ;
+	uint64_t GetNumPhasesExecuted() ;
+	uint64_t GetNumOutputsGenerated() ;
+	uint64_t GetLastOutputCount() ;
 	void ResetLastOutputCount() ;
 	smlPhase GetCurrentPhase() ;
 	AgentRunCallback* GetAgentRunCallback() { return m_pAgentRunCallback ; }
 
-	unsigned long GetRunCounter(smlRunStepSize runStepSize) ;
+	uint64_t GetRunCounter(smlRunStepSize runStepSize) ;
 
 	// Request that the agent stop soon.
 	void Interrupt(smlStopLocationFlags stopLoc) ;
@@ -464,7 +464,7 @@ public:
 	smlRunResult StepInClientThread(smlRunStepSize  stepSize) ;
 	smlRunResult Step(smlRunStepSize stepSize) ;
 
-	unsigned long GetInterruptFlags()		{ return m_interruptFlags ; }
+	unsigned    GetInterruptFlags()		    { return m_interruptFlags ; }
 	smlRunState GetRunState()				{ return m_runState ; }
 	void SetRunState(smlRunState state)	{ m_runState = state ; }
 
@@ -492,7 +492,7 @@ class AgentRunCallback : public KernelCallback
 			// If the number of outputs generated by this agent has changed record it as
 			// having generated output and possibly fire a notification event.
 			// InitialOutputCount is updated when the OutputGenerated event is fired.
-			unsigned long count = pAgentSML->GetNumOutputsGenerated() ;
+			uint64_t count = pAgentSML->GetNumOutputsGenerated() ;
 			if (count != pAgentSML->GetInitialOutputCount())
 			{
 				pAgentSML->SetGeneratedOutput(true) ;

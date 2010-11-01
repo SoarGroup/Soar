@@ -125,7 +125,7 @@ bool wma_enabled( agent *my_agent )
 wma_stat_container::wma_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
 	// update-error
-	dummy = new soar_module::integer_stat( "dummy", 0, new soar_module::f_predicate<long>() );
+	dummy = new soar_module::integer_stat( "dummy", 0, new soar_module::f_predicate<int64_t>() );
 	add( dummy );
 };
 
@@ -257,7 +257,7 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 	
 	tc_number tc = ( my_agent->wma_tc_counter++ );
 
-	unsigned long num_cond_wmes = 0;
+	uint64_t num_cond_wmes = 0;
 	double combined_activation = 0.0;
 
 	for ( cond=w->preference->inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next )

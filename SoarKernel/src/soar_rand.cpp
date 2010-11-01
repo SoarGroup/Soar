@@ -13,11 +13,11 @@ double SoarRand(const double& max)
 { return gSoarRand.rand(max); }
 
 // integer in [0,2^32-1]
-unsigned long SoarRandInt()
+uint32_t SoarRandInt()
 { return gSoarRand.randInt(); }
 
 // integer in [0,n] for n < 2^32
-unsigned long SoarRandInt(const unsigned long& max)
+uint32_t SoarRandInt(const uint32_t& max)
 { return gSoarRand.randInt(max); }
 
 
@@ -26,5 +26,5 @@ void SoarSeedRNG()
 { gSoarRand.seed(); }
 
 // seed with a provided value
-void SoarSeedRNG(const unsigned long seed)
+void SoarSeedRNG(const uint32_t seed)
 { gSoarRand.seed(seed); }

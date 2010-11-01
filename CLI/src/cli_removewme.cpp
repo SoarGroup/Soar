@@ -41,14 +41,14 @@ bool CommandLineInterface::ParseRemoveWME(std::vector<std::string>& argv) {
 		return SetError(CLIError::kTooManyArgs);
 	}
 
-	unsigned long timetag = 0;
+	uint64_t timetag = 0;
 	from_string(timetag, argv[1]);
 	if (!timetag) return SetError(CLIError::kIntegerMustBePositive);
 
 	return DoRemoveWME(timetag);
 }
 
-bool CommandLineInterface::DoRemoveWME(unsigned long timetag) {
+bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
 	wme *pWme = 0;
 
 	for ( pWme = m_pAgentSoar->all_wmes_in_rete; pWme != 0; pWme = pWme->rete_next )

@@ -25,7 +25,7 @@ using namespace cli;
 using namespace sml;
 
 struct MemoriesSort {
-	bool operator()(std::pair< std::string, unsigned long > a, std::pair< std::string, unsigned long > b) const {
+	bool operator()(std::pair< std::string, uint64_t > a, std::pair< std::string, uint64_t > b) const {
 		return a.second < b.second;
 	}
 };
@@ -96,7 +96,7 @@ bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 }
 
 bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const std::string* pProduction) {
-	std::vector< std::pair< std::string, unsigned long > > memories;
+	std::vector< std::pair< std::string, uint64_t > > memories;
 
 	// get either one production or all of them
 	if (options.none()) {
@@ -113,7 +113,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 		}
 
 		// save the tokens/name pair
-		std::pair< std::string, unsigned long > memory;
+		std::pair< std::string, uint64_t > memory;
 		memory.first = *pProduction;
 		memory.second = count_rete_tokens_for_production(m_pAgentSoar, sym->sc.production);
 		memories.push_back(memory);
@@ -175,7 +175,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 				foundProduction = true;
 				
 				// save the tokens/name pair
-				std::pair< std::string, unsigned long > memory;
+				std::pair< std::string, uint64_t > memory;
 				memory.first = pSoarProduction->name->sc.name;
 				memory.second = count_rete_tokens_for_production(m_pAgentSoar, pSoarProduction);
 				memories.push_back(memory);
@@ -191,7 +191,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 
 	// print them
 	int i = 0;
-	for (std::vector< std::pair< std::string, unsigned long > >::reverse_iterator j = memories.rbegin(); 
+	for (std::vector< std::pair< std::string, uint64_t > >::reverse_iterator j = memories.rbegin(); 
 		j != memories.rend() && (n == 0 || i < n); 
 		++j, ++i) 
 	{

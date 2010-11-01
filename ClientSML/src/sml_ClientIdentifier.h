@@ -83,7 +83,7 @@ public:
 	// Have this identifier take ownership of this WME.  So when the identifier is deleted
 	// it will delete the WME.
 	void AddChild(WMElement* pWME) ;
-	WMElement* GetChildByTimeTag(long timeTag);
+	WMElement* GetChildByTimeTag(long long timeTag);
 	void TransferChildren(IdentifierSymbol* pDestination);
 	void DeleteAllChildren() ;
 
@@ -153,7 +153,7 @@ public:
 	*
 	* @param timeTag	The tag to look for (e.g. +12 for kernel side or -15 for client side)
 	*************************************************************/
-	WMElement* FindFromTimeTag(long timeTag) const ;
+	WMElement* FindFromTimeTag(long long timeTag) const ;
 
 	/*************************************************************
 	* @brief Returns the n-th WME that has the given attribute
@@ -198,7 +198,7 @@ public:
 	/*************************************************************
 	* @brief Returns the number of children
 	*************************************************************/
-	int		GetNumberChildren() { return (int)m_pSymbol->m_Children.size() ; }
+	int GetNumberChildren() { return (int)m_pSymbol->m_Children.size() ; }
 
 	/*************************************************************
 	* @brief Gets the n-th child.
@@ -216,22 +216,22 @@ public:
 	bool AreChildrenModified() { return m_pSymbol->AreChildrenModified() ; }
 
 	StringElement*	CreateStringWME(char const* pAttribute, char const* pValue);
-	IntElement*		CreateIntWME(char const* pAttribute, int value) ;
+	IntElement*		CreateIntWME(char const* pAttribute, long long value) ;
 	FloatElement*	CreateFloatWME(char const* pAttribute, double value) ;
 	Identifier*		CreateIdWME(char const* pAttribute) ;
 	Identifier*		CreateSharedIdWME(char const* pAttribute, Identifier* pSharedValue) ;
 
 protected:
 	// This version is only needed at the top of the tree (e.g. the input link)
-	Identifier(Agent* pAgent, char const* pAttributeName, char const* pIdentifier, long timeTag);
+	Identifier(Agent* pAgent, char const* pAttributeName, char const* pIdentifier, long long timeTag);
 
 	// The normal case (where there is a parent id)
-	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
-	Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) ;
+	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long long timeTag) ;
+	Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pIdentifier, long long timeTag) ;
 
 	// The shared id case (where there is a parent id and value is an identifier that already exists)
-	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long timeTag) ;
-	Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, IdentifierSymbol* pLinkedIdentifierSymbol, long timeTag) ;
+	Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long long timeTag) ;
+	Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, IdentifierSymbol* pLinkedIdentifierSymbol, long long timeTag) ;
 
 	virtual ~Identifier(void);
 
@@ -240,7 +240,7 @@ protected:
 	void RemoveChild(WMElement* pWME) { m_pSymbol->RemoveChild(pWME) ; }
 
 #ifdef SML_DIRECT
-	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag) ;
+	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag) ;
 #endif
 
 	// Send over to the kernel again

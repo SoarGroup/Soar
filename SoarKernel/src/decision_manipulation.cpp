@@ -115,7 +115,7 @@ void predict_init( agent *my_agent )
  **************************************************************************/
 void predict_srand_store_snapshot( agent *my_agent )
 {
-	unsigned long storage_val = 0;
+	uint32_t storage_val = 0;
 
 	while ( !storage_val )
 		storage_val = SoarRandInt();

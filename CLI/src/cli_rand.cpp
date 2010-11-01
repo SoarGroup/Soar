@@ -54,10 +54,10 @@ bool CommandLineInterface::ParseRand(std::vector<std::string>& argv) {
 
 bool CommandLineInterface::DoRand( bool integer, std::string* bound ) {
 	if ( integer ) {
-		unsigned long out;
+		uint32_t out;
 
 		if ( bound ) {
-			unsigned long n(0);
+			uint32_t n(0);
 			if ( !from_string( n, *bound ) ) {
 				return SetError( CLIError::kIntegerExpected );
 			}

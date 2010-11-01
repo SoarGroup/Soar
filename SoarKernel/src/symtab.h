@@ -27,7 +27,7 @@
                    no production with that name
 
    Fields on integer constants:
-      value:  gives the value of the symbol.  This is of type (long).
+      value:  gives the value of the symbol.  This is of type (int64_t).
 
    Fields on floating-point constants:
       value:  gives the value of the symbol.  This is of type (float).
@@ -143,38 +143,38 @@
 
 typedef char Bool;
 typedef unsigned char byte;
-typedef unsigned long tc_number;
+typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
 typedef struct cons_struct cons;
 typedef struct agent_struct agent;
 typedef struct dl_cons_struct dl_cons;
 typedef cons list;
 
-typedef intptr_t epmem_node_id;
-typedef uintptr_t epmem_hash_id;
-typedef uintptr_t epmem_time_id;
-typedef uintptr_t smem_lti_id;
-typedef uintptr_t smem_hash_id;
+typedef int64_t epmem_node_id;
+typedef uint64_t epmem_hash_id;
+typedef uint64_t epmem_time_id;
+typedef uint64_t smem_lti_id;
+typedef uint64_t smem_hash_id;
 
 /* WARNING:  In the following structure, next_in_hash_table MUST be the
    first field.  This field is used by the resizable hash table routines. */
 
 typedef struct symbol_common_data_struct {
   union symbol_union *next_in_hash_table;  /* next item in hash bucket */
-  unsigned long reference_count;
+  uint64_t reference_count;
   byte symbol_type;                /* one of the above xxx_SYMBOL_TYPE's */
   byte decider_flag;               /* used only by the decider */
   union a_union {
     struct wme_struct *decider_wme;  /* used only by the decider */
-    unsigned long retesave_symindex; /* used for rete fastsave/fastload */
+    uint64_t retesave_symindex; /* used for rete fastsave/fastload */
   } a;
   uint32_t hash_id;           /* used for hashing in the rete */
 
   epmem_hash_id epmem_hash;
-  uintptr_t epmem_valid;
+  uint64_t epmem_valid;
 
   smem_hash_id smem_hash;
-  uintptr_t smem_valid;
+  uint64_t smem_valid;
 } symbol_common_data;
 
 /* WARNING:  In the following structures (the five kinds of symbols),
@@ -188,7 +188,7 @@ typedef struct sym_constant_struct {
 
 typedef struct int_constant_struct {
   symbol_common_data common_symbol_info;
-  long value;
+  int64_t value;
 } int_constant;
 
 typedef struct float_constant_struct {
@@ -201,7 +201,7 @@ typedef struct variable_struct {
   char *name;
   tc_number tc_num;
   union symbol_union *current_binding_value;
-  unsigned long gensym_number;
+  uint64_t gensym_number;
   ::list *rete_binding_locations;
 } variable;
 
@@ -224,7 +224,7 @@ typedef struct identifier_struct {
   Bool could_be_a_link_from_below;
   goal_stack_level level;
   goal_stack_level promotion_level;
-  unsigned long link_count;
+  uint64_t link_count;
   dl_cons *unknown_level;
 
   struct slot_struct *slots;  /* dll of slots for this identifier */
@@ -274,11 +274,11 @@ typedef struct identifier_struct {
   int depth; /* used to track depth of print (bug 988) RPM 4/07 */
 
   epmem_node_id epmem_id;
-  uintptr_t epmem_valid;
+  uint64_t epmem_valid;
 
   smem_lti_id smem_lti;
   epmem_time_id smem_time_id;
-  uintptr_t smem_valid;
+  uint64_t smem_valid;
 } identifier;
 
 typedef union symbol_union {
@@ -346,7 +346,7 @@ typedef union symbol_union {
      Generate_new_sym_constant() is used to gensym new symbols that are
      guaranteed to not already exist.  It takes two arguments: "prefix"
      (the desired prefix of the new symbol's name), and "counter" (a
-     pointer to a counter (unsigned long) that is incremented to produce
+     pointer to a counter (uint64_t) that is incremented to produce
      new gensym names).
 ----------------------------------------------------------------- */
 
@@ -355,12 +355,12 @@ extern void init_symbol_tables (agent* thisAgent);
 extern Symbol *find_variable (agent* thisAgent, const char *name);
 extern Symbol *find_identifier (agent* thisAgent, char name_letter, uint64_t name_number);
 extern Symbol *find_sym_constant (agent* thisAgent, const char *name);  /* AGR 600 */
-extern Symbol *find_int_constant (agent* thisAgent, long value);
+extern Symbol *find_int_constant (agent* thisAgent, int64_t value);
 extern Symbol *find_float_constant (agent* thisAgent, double value);
 
 extern Symbol *make_variable (agent* thisAgent, const char *name);
 extern Symbol *make_sym_constant (agent* thisAgent, char const *name);
-extern Symbol *make_int_constant (agent* thisAgent, long value);
+extern Symbol *make_int_constant (agent* thisAgent, int64_t value);
 extern Symbol *make_float_constant (agent* thisAgent, double value);
 extern Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_level level, uint64_t name_number = NIL);
 
@@ -370,7 +370,7 @@ extern bool reset_id_counters (agent* thisAgent);
 extern void reset_id_and_variable_tc_numbers (agent* thisAgent);
 extern void reset_variable_gensym_numbers (agent* thisAgent);
 extern void print_internal_symbols (agent* thisAgent);
-extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix,unsigned long *counter);
+extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_t *counter);
 
 #ifdef USE_MACROS
 
@@ -388,10 +388,10 @@ extern Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix,u
 extern char *symbol_to_string (agent* thisAgent, Symbol *sym, Bool rereadable, char *dest, size_t dest_size);
 #endif
 
-inline unsigned long symbol_add_ref(Symbol * x) 
+inline uint64_t symbol_add_ref(Symbol * x) 
 {
   (x)->common.reference_count++;
-  unsigned long refCount = (x)->common.reference_count ;
+  uint64_t refCount = (x)->common.reference_count ;
 #ifdef DEBUG_SYMBOL_REFCOUNTS
   char buf[64];
   OutputDebugString(symbol_to_string(0, x, FALSE, buf, 64));
@@ -402,10 +402,10 @@ inline unsigned long symbol_add_ref(Symbol * x)
   return refCount ;
 }
 
-inline unsigned long symbol_remove_ref(agent* thisAgent, Symbol * x)
+inline uint64_t symbol_remove_ref(agent* thisAgent, Symbol * x)
 {
   (x)->common.reference_count--;
-  unsigned long refCount = (x)->common.reference_count ;
+  uint64_t refCount = (x)->common.reference_count ;
 #ifdef DEBUG_SYMBOL_REFCOUNTS
   char buf[64];
   OutputDebugString(symbol_to_string(thisAgent, x, FALSE, buf, 64));

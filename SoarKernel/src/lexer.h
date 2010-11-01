@@ -100,10 +100,10 @@ struct lexeme_info {
   enum lexer_token_type type;         /* what kind of lexeme it is */
   char string[MAX_LEXEME_LENGTH+1];   /* text of the lexeme */
   int length;                         /* length of the above string */
-  long int_val;                       /* for INT_CONSTANT_LEXEME's */
+  int64_t int_val;                     /* for INT_CONSTANT_LEXEME's */
   double float_val;                    /* for FLOAT_CONSTANT_LEXEME's */
   char id_letter;                     /* for IDENTIFIER_LEXEME's */
-  unsigned long id_number;            /* for IDENTIFIER_LEXEME's */
+  uint64_t id_number;                 /* for IDENTIFIER_LEXEME's */
 };
 
 extern void determine_possible_symbol_types_for_string (char *s,
@@ -146,9 +146,9 @@ typedef struct lexer_source_file_struct {
   Bool allow_ids;
   int parentheses_level;    /* 0 means top level, no left paren's seen */
   int current_column;       /* column number of next char to read (0-based) */
-  unsigned long current_line;   /* line number of line in buffer (1-based) */
+  uint64_t current_line;   /* line number of line in buffer (1-based) */
   int column_of_start_of_last_lexeme;   /* (used for error messages) */
-  unsigned long line_of_start_of_last_lexeme;
+  uint64_t line_of_start_of_last_lexeme;
   char buffer[BUFSIZE];              /* holds text of current input line */
   struct lexeme_info saved_lexeme;   /* save/restore it during nested loads */
   int saved_current_char;           /* save/restore this too */

@@ -39,11 +39,11 @@ public:
 	// we won't delete them.
 	void Clear(bool deleteContents) ;
 
-	void RemoveWME(long timeTag) ;
+	void RemoveWME(long long timeTag) ;
 
 	void AddWME(WMElement* pWME) ;
 
-	void UpdateWME(long timeTagToRemove, WMElement* pWME)
+	void UpdateWME(long long timeTagToRemove, WMElement* pWME)
 	{
 		// This is equivalent to a remove of the old value followed by an add of the new
 		// We could choose to use a single tag for this later on.

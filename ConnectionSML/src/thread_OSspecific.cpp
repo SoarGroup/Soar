@@ -75,7 +75,7 @@ public:
 	virtual ~WindowsEvent()			{ CloseHandle(m_Event) ; }
 	void WaitForEventForever()		{ WaitForSingleObject(m_Event, INFINITE); }
 	//The timeout is seconds + milliseconds, where milliseconds < 1000
-	bool WaitForEvent(long sec, long milli)	{
+	bool WaitForEvent(int sec, int milli)	{
 		assert(milli < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
 		DWORD res = WaitForSingleObject(m_Event, (sec*1000) + milli) ; 
 		return (res != WAIT_TIMEOUT) ; 
@@ -186,7 +186,7 @@ public:
 	}
 
 	//The timeout is seconds + milliseconds, where milliseconds < 1000
-	bool WaitForEvent(long sec, long milli)	{
+	bool WaitForEvent(int sec, int milli)	{
 		assert(milli < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
 		//return false;
 		pthread_mutex_lock(&m_mutex);
@@ -200,12 +200,12 @@ public:
 		
 		struct timespec timeout;
 		timeout.tv_sec = now.tv_sec + sec;
-		timeout.tv_nsec = now.tv_usec * 1000;
-		timeout.tv_nsec += milli * 1000000;
+		timeout.tv_nsec = now.tv_usec * 1000L;
+		timeout.tv_nsec += (long)milli * 1000000L;
 
 		// make sure the nanoseconds field doesn't exceed 1 second (this is an error on OS X)
-		if(timeout.tv_nsec >= 1000000000) {
-			timeout.tv_nsec -= 1000000000;
+		if(timeout.tv_nsec >= 1000000000L) {
+			timeout.tv_nsec -= 1000000000L;
 			timeout.tv_sec++;
 		}
 		

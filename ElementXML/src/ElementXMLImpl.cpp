@@ -531,7 +531,7 @@ int ElementXMLImpl::ReleaseRef()
 	if (refCount == 0)
 		delete this ;
 
-	return refCount ;
+	return static_cast<int>(refCount) ;
 }
 
 /*************************************************************
@@ -544,7 +544,7 @@ int ElementXMLImpl::AddRef()
 {
 	elementxml_atomic_inc(&m_RefCount);
    
-	return m_RefCount ;
+	return static_cast<int>(m_RefCount) ;
 }
 
 /*************************************************************
@@ -552,7 +552,7 @@ int ElementXMLImpl::AddRef()
 *************************************************************/
 int ElementXMLImpl::GetRefCount()
 {
-	return m_RefCount ;
+	return static_cast<int>(m_RefCount) ;
 }
 
 ////////////////////////////////////////////////////////////////

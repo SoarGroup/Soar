@@ -27,7 +27,7 @@ class Connection ;
 class TagWme ;
 
 // This map is from time tag to bool to say whether a given tag has been seen in the latest event or not
-typedef std::map< long, bool >		OutputTimeTagMap ;
+typedef std::map< uint64_t, bool >  OutputTimeTagMap ;
 typedef OutputTimeTagMap::iterator	OutputTimeTagIter ;
 
 class OutputListener : public EventManager<smlWorkingMemoryEventId>

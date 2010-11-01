@@ -56,9 +56,9 @@ bool ListenerNamedPipe::CreateListener(int port)
 	if (port == -1) 
 		port = getpid();
 
-	unsigned long usernamesize = UNLEN+1;
+    DWORD usernamesize = UNLEN+1;
 	char username[UNLEN+1];
-	GetUserName(username,&usernamesize);
+	GetUserName(username, &usernamesize);
 	std::stringstream pipeName;
 	pipeName << "\\\\.\\pipe\\" << username << "-" << port;
 

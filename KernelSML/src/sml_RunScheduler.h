@@ -79,7 +79,7 @@ public:
 	* @return Not clear on how to set this when have multiple agents.
 	*		  Can query each for "GetLastRunResult()".
 	*************************************************************/	
-	smlRunResult RunScheduledAgents(bool forever, smlRunStepSize runStepSize, unsigned long count, smlRunFlags runFlags, smlRunStepSize interleaveStepSize, bool synchronize) ;
+	smlRunResult RunScheduledAgents(bool forever, smlRunStepSize runStepSize, uint64_t count, smlRunFlags runFlags, smlRunStepSize interleaveStepSize, bool synchronize) ;
 
 	/*************************************************************
 	* @brief	Returns true if at least one agent is currently running.
@@ -116,11 +116,11 @@ protected:
 	void            InitializeRunCounters(smlRunStepSize runStepSize) ;
     void            InitializeStepList() ;
 	void			InitializeUpdateWorldEvents(bool addListeners) ;
-	bool			IsAgentFinished(AgentSML* pAgentSML, bool forever,  smlRunStepSize runStepSize, unsigned long count) ;
+	bool			IsAgentFinished(AgentSML* pAgentSML, bool forever,  smlRunStepSize runStepSize, uint64_t count) ;
  	void			ResetRunCounters(smlRunStepSize runStepSize) ;
 	void			TerminateUpdateWorldEvents(bool removeListeners) ;
 	void			TestForFiringUpdateWorldEvents();
-	bool			TestIfAllFinished(bool forever, smlRunStepSize runStepSize, unsigned long count) ;
+	bool			TestIfAllFinished(bool forever, smlRunStepSize runStepSize, uint64_t count) ;
 
 	AgentSML*		GetAgentToSynchronizeWith() ;
 } ;

@@ -36,7 +36,7 @@ class IntElement : public WMElement
 
 protected:
 	// The value for this wme is an int
-	int		m_Value ;
+	long long		m_Value ;
 
 public:
 	// Returns the type of the value stored here (e.g. "string" or "int" etc.)
@@ -45,7 +45,8 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() const ;
 
-	int GetValue() const { return m_Value ; }
+	int GetValue() const { return static_cast<int>(GetValue64()) ; }
+	long long GetValue64() const { return m_Value ; }
 	
 	virtual IntElement* ConvertToIntElement() { return this; }
 
@@ -62,20 +63,20 @@ public:
 	*		 which will trigger rules to rematch.
 	*		 You can turn this flag on and off around a set of calls to update if you wish.
 	*************************************************************/
-	void	Update(int value);
+	void	Update(long long value);
 
 protected:
-	IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) ;
-	IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, int value, long timeTag) ;
+	IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long long value, long long timeTag) ;
+	IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long long value, long long timeTag) ;
 	virtual ~IntElement(void);
 
-	void SetValue(int value)
+	void SetValue(long long value)
 	{
 		m_Value = value ;
 	}
 
 #ifdef SML_DIRECT
-	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag) ;
+	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag) ;
 #endif
 };
 

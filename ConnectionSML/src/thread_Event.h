@@ -34,7 +34,7 @@ public:
 
 	// Returns true if event was triggered.  False if we just timed out.
 	//The timeout is seconds + milliseconds, where milliseconds < 1000
-	bool WaitForEvent(long seconds, long milliseconds)
+	bool WaitForEvent(int seconds, int milliseconds)
 	{
 		return m_Imp->WaitForEvent(seconds, milliseconds) ;
 	}

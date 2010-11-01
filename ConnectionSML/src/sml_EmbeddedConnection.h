@@ -96,24 +96,24 @@ public:
 #ifdef KERNEL_SML_DIRECT
 	// Direct methods, only supported for embedded connections and only used to optimize
 	// the speed when doing I/O over an embedded connection (where speed is most critical)
-	void DirectAddWME_String(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, long clientTimetag)
+	void DirectAddWME_String(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
 	{
 		m_pDirectAddWMEStringFunction(pAgentSML, pId, pAttribute, pValue, clientTimetag) ;
 	}
-	void DirectAddWME_Int(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int value, long clientTimetag)
+	void DirectAddWME_Int(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
 	{
 		m_pDirectAddWMEIntFunction(pAgentSML, pId, pAttribute, value, clientTimetag) ;
 	}
-	void DirectAddWME_Double(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, double value, long clientTimetag)
+	void DirectAddWME_Double(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
 	{
 		m_pDirectAddWMEDoubleFunction(pAgentSML, pId, pAttribute, value, clientTimetag) ;
 	}
-	void DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, long clientTimetag)
+	void DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, int64_t clientTimetag)
 	{
 		m_pDirectRemoveWMEFunction(pAgentSML, clientTimetag) ;
 	}
 
-	void DirectAddID(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, long clientTimetag)
+	void DirectAddID(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
 	{
 		m_pDirectAddIDFunction(pAgentSML, pId, pAttribute, pValueId, clientTimetag) ;
 	}
@@ -123,7 +123,7 @@ public:
 		return m_pDirectGetAgentSMLHandleFunction(m_hConnection, pAgentName) ;
 	}
 
-	void DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, int count)
+	void DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, uint64_t count)
 	{
 		m_pDirectRunFunction(m_hConnection, pAgentName, forever, stepSize, interleaveSize, count) ;
 	}

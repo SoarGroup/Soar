@@ -94,7 +94,7 @@ protected:
 	xmlAttributeMap	m_AttributeMap ;	// Mapping from attribute-name to attribute-value (e.g. in <name first="Albert"> first is an attribute with value "Albert")
 	xmlList			m_Children ;		// List of children of this element
 	xmlString		m_Comment ;			// Used to attach a comment to this object.  It will appear ahead of the element when stored/retrieved.
-	volatile long	m_RefCount ;		// Reference count.  Set to 1 on initialization.  When reaches 0 the object is deleted.
+	volatile long   m_RefCount ;		// Reference count.  Set to 1 on initialization.  When reaches 0 the object is deleted.
 	bool			m_DataIsBinary ;	// If true, then the character data is treated as a binary buffer (can contain embedded nulls) and the binary length is needed
 	int				m_BinaryDataLength ;// Gives the length of the character data buffer, when it's being treated as a binary buffer.  (only valid if m_IsDataBinary is true).
 	ElementXMLImpl*	m_pParent ;			// The parent of this object (can be NULL)
