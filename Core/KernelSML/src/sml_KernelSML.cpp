@@ -512,7 +512,7 @@ bool KernelSML::ReturnResult(Connection* pConnection, soarxml::ElementXML* pResp
 /*************************************************************
 * @brief	Return an integer result to the caller.
 *************************************************************/
-bool KernelSML::ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int result)
+bool KernelSML::ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int64_t result)
 {
 	char buf[TO_C_STRING_BUFSIZE];
 	pConnection->AddSimpleResultToSMLResponse( pResponse, to_c_string( result, buf ) ) ;
@@ -794,7 +794,7 @@ void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts ) {
 * @param pAttribute The attribute name to use
 * @param value		The value to use
 *************************************************************/
-EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValue, long clientTimetag)
+EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -802,7 +802,7 @@ EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char con
 	pAgentSML->BufferedAddStringInputWME( pId, pAttribute, pValue, clientTimetag );
 }
 
-EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, int value, long clientTimetag)
+EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -810,7 +810,7 @@ EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const*
 	pAgentSML->BufferedAddIntInputWME( pId, pAttribute, value, clientTimetag );
 }
 
-EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, long clientTimetag)
+EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -824,7 +824,7 @@ EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char con
 * @param wm			The working memory object (either input or output)
 * @param wme		The wme we're removing
 *************************************************************/
-EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, long clientTimetag)
+EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -838,7 +838,7 @@ EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, long clientT
 * @param parent		The identifier (WMObject) we're adding to.
 * @param pAttribute	The attribute to add
 *************************************************************/
-EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValueId, long clientTimetag)
+EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);

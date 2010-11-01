@@ -25,13 +25,13 @@
 
 using namespace sml ;
 
-FloatElement::FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long timeTag) 
+FloatElement::FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long long timeTag) 
 : WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
 }
 
-FloatElement::FloatElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, double value, long timeTag) 
+FloatElement::FloatElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, double value, long long timeTag) 
 : WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
@@ -58,7 +58,7 @@ char const* FloatElement::GetValueAsString() const
 }
 
 #ifdef SML_DIRECT
-void FloatElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
+void FloatElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag)
 {
 	EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
 	pConnection->DirectAddWME_Double( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);

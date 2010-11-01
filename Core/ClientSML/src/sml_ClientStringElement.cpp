@@ -19,13 +19,13 @@
 
 using namespace sml ;
 
-StringElement::StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) 
+StringElement::StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long long timeTag) 
 : WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
 	m_Value = pValue ;
 }
 
-StringElement::StringElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) 
+StringElement::StringElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pValue, long long timeTag) 
 : WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
 	m_Value = pValue ;
@@ -42,7 +42,7 @@ char const* StringElement::GetValueType() const
 }
 
 #ifdef SML_DIRECT
-void StringElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
+void StringElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag)
 {
 	EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
 	pConnection->DirectAddWME_String( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);

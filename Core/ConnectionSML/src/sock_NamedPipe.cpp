@@ -73,13 +73,13 @@ static bool IsErrorWouldBlock()
 // 
 // Return type    : bool 	
 // Argument       : char* pSendBuffer	
-// Argument       : size_t bufferSize	
+// Argument       : uint32_t bufferSize	
 // 
 // Description	  : Send a buffer of data to a pipe.
 //					This may require repeated calls to the low level "send" call.
 //
 /////////////////////////////////////////////////////////////////////
-bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
+bool NamedPipe::SendBuffer(char const* pSendBuffer, uint32_t bufferSize)
 {
 	CTDEBUG_ENTER_METHOD("NamedPipe::SendBuffer");
 
@@ -93,23 +93,19 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 		return false; 
 	}
 
-	unsigned long thisSend = 0;
-	unsigned long bytesSent = 0 ;
+	DWORD thisSend = 0;
+	uint32_t bytesSent = 0 ;
 	int    success = 0 ;
 
 	// May need repeated calls to send all of the data.
 	while (bytesSent < bufferSize)
 	{
-		long tries = 0 ;
-
 		do
 		{
-			tries++ ;
-
 			success = WriteFile( 
 				hPipe,        // handle to pipe 
 				pSendBuffer,      // buffer to write from 
-				static_cast<DWORD>(bufferSize), // number of bytes to write 
+				bufferSize, // number of bytes to write 
 				&thisSend,   // number of bytes written 
 				NULL);        // not overlapped I/O 
 
@@ -148,8 +144,8 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 /////////////////////////////////////////////////////////////////////
 // Function name  : NamedPipe::IsReadDataAvailable
 // 
-// Argument		  : long secondsWait -- Seconds part of how long to wait for data in secs (0 is default)
-// Argument		  : long millisecondssecondsWait -- Milliseconds part of how long to wait for data in usecs (0 is default, must be < 1000)
+// Argument		  : int secondsWait -- Seconds part of how long to wait for data in secs (0 is default)
+// Argument		  : int millisecondssecondsWait -- Milliseconds part of how long to wait for data in usecs (0 is default, must be < 1000)
 // Return type    : bool 	
 // 
 // Description	  : Returns true if data is waiting to be read on this pipe.
@@ -158,11 +154,8 @@ bool NamedPipe::SendBuffer(char const* pSendBuffer, size_t bufferSize)
 //					indicating that the pipe is closed.
 //
 /////////////////////////////////////////////////////////////////////
-bool NamedPipe::IsReadDataAvailable(long /*secondsWait*/, long millisecondsWait)
+bool NamedPipe::IsReadDataAvailable(int /*secondsWait*/, int /*millisecondsWait*/)
 {
-	unused(millisecondsWait);
-	assert(millisecondsWait<1000 && "specified milliseconds must be less than 1000");
-
 	CTDEBUG_ENTER_METHOD("NamedPipe::IsReadDataAvailable");
 
 	HANDLE hPipe = m_hPipe ;
@@ -174,7 +167,7 @@ bool NamedPipe::IsReadDataAvailable(long /*secondsWait*/, long millisecondsWait)
 	}
 
 	// Check if anything is waiting to be read
-	unsigned long bytesAvail = 0;
+	DWORD bytesAvail = 0;
 	int res = 0;
 
 	res = PeekNamedPipe(hPipe, NULL, NULL, NULL, &bytesAvail, NULL);
@@ -213,12 +206,12 @@ bool NamedPipe::IsReadDataAvailable(long /*secondsWait*/, long millisecondsWait)
 // 
 // Return type    : bool 	
 // Argument       : char* pRecvBuffer	
-// Argument       : size_t bufferSize	
+// Argument       : uint32_t bufferSize	
 // 
 // Description	  : Receive a buffer of data.
 //
 /////////////////////////////////////////////////////////////////////
-bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
+bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize)
 {
 	CTDEBUG_ENTER_METHOD("Socket::ReceiveBuffer");
 
@@ -232,8 +225,8 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 		return false;
 	}
 
-	unsigned long bytesRead = 0 ;
-	unsigned long thisRead  = 0 ;
+	uint32_t bytesRead = 0 ;
+	DWORD thisRead  = 0 ;
 	int success = 0;
 
 	// Check our incoming data is valid
@@ -255,7 +248,7 @@ bool NamedPipe::ReceiveBuffer(char* pRecvBuffer, size_t bufferSize)
 			success = ReadFile( 
 				hPipe,        // handle to pipe 
 				pRecvBuffer,    // buffer to receive data 
-				(unsigned long)bufferSize, // size of buffer 
+				bufferSize, // size of buffer 
 				&thisRead, // number of bytes read 
 				NULL);        // not overlapped I/O 
 

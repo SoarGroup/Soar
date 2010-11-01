@@ -180,7 +180,7 @@ protected:
 	int		m_CallbackIDCounter ;
 
 	// Used to generate unique IDs for visited values when walking graph
-	long	m_VisitedCounter ;
+	uint64_t	m_VisitedCounter ;
 
 	// Internally we register a print callback and store its id here.
 	int		m_XMLCallback ;
@@ -262,7 +262,7 @@ public:
 	* of the Identifier class to safely walk a graph that may contain
 	* loops.
 	*************************************************************/
-	long GenerateNewVisitedCounter()	{ return ++m_VisitedCounter ; }
+	uint64_t GenerateNewVisitedCounter()	{ return ++m_VisitedCounter ; }
 
 	/*************************************************************
 	* @brief Load a set of productions from a file.
@@ -333,7 +333,7 @@ public:
 	*        removed during the last decision cycle. Dereferencing
 	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
-	IntElement* CreateIntWME(Identifier* parent, char const* pAttribute, int value) ;
+	IntElement* CreateIntWME(Identifier* parent, char const* pAttribute, long long value) ;
 
 	/*************************************************************
 	* @brief Same as CreateStringWME but for a new WME that has
@@ -407,7 +407,7 @@ public:
 	*	     a removed WME causes a segmentation fault.
 	*************************************************************/
 	void	Update(StringElement* pWME, char const* pValue) ;
-	void	Update(IntElement* pWME, int value) ;
+	void	Update(IntElement* pWME, long long value) ;
 	void	Update(FloatElement* pWME, double value) ;
 
 	/*************************************************************
@@ -710,7 +710,7 @@ public:
 	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* RunSelf(unsigned long numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
+	char const* RunSelf(uint64_t numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
 	char const* RunSelfForever() ;
 
 	/*************************************************************

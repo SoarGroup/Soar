@@ -29,8 +29,8 @@
 #include "cli_Aliases.h"
 #include "kernel.h"
 
-typedef uintptr_t epmem_time_id;
-typedef uintptr_t smem_lti_id;
+typedef uint64_t epmem_time_id;
+typedef uint64_t smem_lti_id;
 
 // For test
 //#define WIN_STATIC_LINK
@@ -303,7 +303,7 @@ public:
 	* @param pPrefix Pointer to the new prefix, must not contain '*' character, 
 	*        null for query
 	*************************************************************/
-	bool DoChunkNameFormat(const bool* pLongFormat = 0, const int* pCount = 0, const std::string* pPrefix = 0);
+	bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
 
 	/*************************************************************
 	* @brief clog command
@@ -396,7 +396,7 @@ public:
 	* @brief gp-max command
 	* @param maximum The maximum number of productions to allow generation of
 	*************************************************************/
-	bool DoGPMax(const long& maximum);
+	bool DoGPMax(const int& maximum);
 
 	/*************************************************************
 	* @brief help command
@@ -582,7 +582,7 @@ public:
 	* @brief remove-wme command
 	* @param timetag The timetag of the wme to remove
 	*************************************************************/
-	bool DoRemoveWME(unsigned long timetag);
+	bool DoRemoveWME(uint64_t timetag);
 
 	/*************************************************************
 	* @brief replay-input command
@@ -646,7 +646,7 @@ public:
 	* @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
 	* @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
 	*************************************************************/
-	bool DoSMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0, smem_lti_id lti_id = 0, unsigned long depth = 0);
+	bool DoSMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0, smem_lti_id lti_id = 0, unsigned int depth = 0);
 
 	/*************************************************************
 	* @brief soar8 command
@@ -676,7 +676,7 @@ public:
 	* @param pSeed Number to seed the random number generator with, pass
 	*		 null to seed randomly.
 	*************************************************************/
-	bool DoSRand(unsigned long int* pSeed = 0);
+	bool DoSRand(uint32_t* pSeed = 0);
 
 	/*************************************************************
 	* @brief stats command
@@ -896,7 +896,7 @@ protected:
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
 	EchoMap				m_EchoMap;				// If command appears in this map, always echo it.
 	bool				m_VarPrint;				// Used in print command to put <>'s around identifiers.
-	long				m_GPMax;				// Max number of productions to allow gp to produce
+	size_t              m_GPMax;				// Max number of productions to allow gp to produce
 
 	soarxml::XMLTrace*	m_XMLResult;			// Used to collect up XML output from commands that directly support that.
 	ElementXMLList		m_ResponseTags;			// List of tags for the response.

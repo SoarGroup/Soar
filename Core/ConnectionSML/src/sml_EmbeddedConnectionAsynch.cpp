@@ -217,14 +217,14 @@ ElementXML* EmbeddedConnectionAsynch::GetResponseForID(char const* pID, bool wai
 	// How long we sleep in seconds+milliseconds each pass through
 	// (0 means we only sleep if another thread is scheduled to run --
 	//  it ensures maximum performance otherwise).
-	long sleepTimeSecs = 0 ;
-	long sleepTimeMillisecs = 0 ;
+	int sleepTimeSecs = 0 ;
+	int sleepTimeMillisecs = 0 ;
 
 	// How long we will wait before checking for a message (in msecs)
 	// (If one comes in it'll wake us up from this immediately, but having
 	//  a timeout ensures we don't get stuck forever somehow).
-	long maximumWaitTimeSeconds = 1 ;
-	long maximumWaitTimeMilliseconds = 0 ;
+	int maximumWaitTimeSeconds = 1 ;
+	int maximumWaitTimeMilliseconds = 0 ;
 
 	// If we don't already have this response cached,
 	// then read any pending messages.

@@ -876,7 +876,7 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
  
   /* Any user who named a production like this deserves to be burned, but we'll have mercy: */
   if (find_sym_constant (thisAgent, name)) {
-    unsigned long collision_count;
+    uint64_t collision_count;
     
     collision_count = 1;
     print (thisAgent, "Warning: generated chunk name already exists.  Will find unique name.\n");
@@ -1177,7 +1177,7 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	}
 
 	/* MVP 6-8-94 */
-	if (thisAgent->chunks_this_d_cycle > static_cast<unsigned long>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) ) 
+	if (thisAgent->chunks_this_d_cycle > static_cast<uint64_t>(thisAgent->sysparams[MAX_CHUNKS_SYSPARAM]) ) 
 	{
 		if (thisAgent->sysparams[PRINT_WARNINGS_SYSPARAM]) 
 		{

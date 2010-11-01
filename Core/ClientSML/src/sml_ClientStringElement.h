@@ -66,8 +66,8 @@ public:
 	void	Update(char const* pValue);
 
 protected:
-	StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) ;
-	StringElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pValue, long timeTag) ;
+	StringElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pValue, long long timeTag) ;
+	StringElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pValue, long long timeTag) ;
 	virtual ~StringElement(void);
 
 	void SetValue(char const* pValue)
@@ -76,7 +76,7 @@ protected:
 	}
 
 #ifdef SML_DIRECT
-	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag) ;
+	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag) ;
 #endif
 };
 

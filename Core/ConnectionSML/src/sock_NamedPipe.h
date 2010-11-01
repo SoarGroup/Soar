@@ -76,7 +76,7 @@ public:
 	// Check if data is waiting to be read
 	// Returns true if pipe is closed--but then receiveMsg will know it's closed.
 	// The timeout for waiting for data is secondsWait + millisecondsWait, where millisecondsWait < 1000
-	bool		IsReadDataAvailable(long secondsWait = 0, long millisecondsWait = 0) ;
+	bool		IsReadDataAvailable(int secondsWait = 0, int millisecondsWait = 0) ;
 
 public:
 	// Print out debug information about the messages we are sending and receiving.
@@ -91,8 +91,8 @@ public:
 
 protected:
 	// Lower level buffer send and receive calls.
-	bool		SendBuffer(char const* pSendBuffer, size_t bufferSize) ;
-	bool		ReceiveBuffer(char* pRecvBuffer, size_t bufferSize) ;
+	virtual bool SendBuffer(char const* pSendBuffer, uint32_t bufferSize) ;
+	virtual bool ReceiveBuffer(char* pRecvBuffer, uint32_t bufferSize) ;
 
 	// Close down our side of the pipe
 	virtual void		CloseInternal() ;

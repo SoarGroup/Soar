@@ -1391,7 +1391,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_STATES_TF:
 			//create XML trace for state object
 			xml_begin_tag( thisAgent, kTagState );
-			xml_att_val( thisAgent, kState_StackLevel, static_cast<unsigned long>(state->id.level - 1) );
+			xml_att_val( thisAgent, kState_StackLevel, state->id.level - 1 );
 			xml_att_val( thisAgent, kState_DecisionCycleCt, thisAgent->d_cycle_count );
 			xml_att_val( thisAgent, kState_ID, object );
 			
@@ -1418,7 +1418,7 @@ void print_stack_trace_xml(agent* thisAgent, Symbol *object, Symbol *state, int 
 		case FOR_OPERATORS_TF:
 			//create XML trace for operator object
 			xml_begin_tag( thisAgent, kTagOperator );
-			xml_att_val( thisAgent, kState_StackLevel, static_cast<unsigned long>(object->id.level - 1) );
+			xml_att_val( thisAgent, kState_StackLevel, object->id.level - 1 );
 			xml_att_val( thisAgent, kOperator_DecisionCycleCt, thisAgent->d_cycle_count );
 			
 			if (state->id.operator_slot->wmes)

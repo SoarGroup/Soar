@@ -158,7 +158,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( path );
 
 	// commit
-	commit = new soar_module::integer_param( "commit", 1, new soar_module::gt_predicate<long>( 1, true ), new soar_module::f_predicate<long>() );
+	commit = new soar_module::integer_param( "commit", 1, new soar_module::gt_predicate<int64_t>( 1, true ), new soar_module::f_predicate<int64_t>() );
 	add( commit );	
 
 
@@ -252,23 +252,23 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	add( time );
 
 	// mem-usage
-	mem_usage = new epmem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<intptr_t>() );
+	mem_usage = new epmem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<int64_t>() );
 	add( mem_usage );
 
 	// mem-high
-	mem_high = new epmem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<intptr_t>() );
+	mem_high = new epmem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<int64_t>() );
 	add( mem_high );
 
 	// ncb-wmes
-	ncb_wmes = new soar_module::integer_stat( "ncb-wmes", 0, new soar_module::f_predicate<long>() );
+	ncb_wmes = new soar_module::integer_stat( "ncb-wmes", 0, new soar_module::f_predicate<int64_t>() );
 	add( ncb_wmes );
 
 	// qry-pos
-	qry_pos = new soar_module::integer_stat( "qry-pos", 0, new soar_module::f_predicate<long>() );
+	qry_pos = new soar_module::integer_stat( "qry-pos", 0, new soar_module::f_predicate<int64_t>() );
 	add( qry_pos );
 
 	// qry-neg
-	qry_neg = new soar_module::integer_stat( "qry-neg", 0, new soar_module::f_predicate<long>() );
+	qry_neg = new soar_module::integer_stat( "qry-neg", 0, new soar_module::f_predicate<int64_t>() );
 	add( qry_neg );
 
 	// qry-ret
@@ -276,11 +276,11 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	add( qry_ret );
 
 	// qry-card
-	qry_card = new soar_module::integer_stat( "qry-card", 0, new soar_module::f_predicate<long>() );
+	qry_card = new soar_module::integer_stat( "qry-card", 0, new soar_module::f_predicate<int64_t>() );
 	add( qry_card );
 
 	// qry-lits
-	qry_lits = new soar_module::integer_stat( "qry-lits", 0, new soar_module::f_predicate<long>() );
+	qry_lits = new soar_module::integer_stat( "qry-lits", 0, new soar_module::f_predicate<int64_t>() );
 	add( qry_lits );
 
 	// next-id
@@ -288,35 +288,35 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	add( next_id );
 
 	// rit-offset-1
-	rit_offset_1 = new soar_module::intptr_stat( "rit-offset-1", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_offset_1 = new soar_module::integer_stat( "rit-offset-1", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_offset_1 );
 
 	// rit-left-root-1
-	rit_left_root_1 = new soar_module::intptr_stat( "rit-left-root-1", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_left_root_1 = new soar_module::integer_stat( "rit-left-root-1", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_left_root_1 );
 
 	// rit-right-root-1
-	rit_right_root_1 = new soar_module::intptr_stat( "rit-right-root-1", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_right_root_1 = new soar_module::integer_stat( "rit-right-root-1", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_right_root_1 );
 
 	// rit-min-step-1
-	rit_min_step_1 = new soar_module::intptr_stat( "rit-min-step-1", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_min_step_1 = new soar_module::integer_stat( "rit-min-step-1", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_min_step_1 );
 
 	// rit-offset-2
-	rit_offset_2 = new soar_module::intptr_stat( "rit-offset-2", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_offset_2 = new soar_module::integer_stat( "rit-offset-2", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_offset_2 );
 
 	// rit-left-root-2
-	rit_left_root_2 = new soar_module::intptr_stat( "rit-left-root-2", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_left_root_2 = new soar_module::integer_stat( "rit-left-root-2", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_left_root_2 );
 
 	// rit-right-root-2
-	rit_right_root_2 = new soar_module::intptr_stat( "rit-right-root-2", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_right_root_2 = new soar_module::integer_stat( "rit-right-root-2", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_right_root_2 );
 
 	// rit-min-step-2
-	rit_min_step_2 = new soar_module::intptr_stat( "rit-min-step-2", 0, new epmem_db_predicate<intptr_t>( my_agent ) );
+	rit_min_step_2 = new soar_module::integer_stat( "rit-min-step-2", 0, new epmem_db_predicate<int64_t>( my_agent ) );
 	add( rit_min_step_2 );
 
 
@@ -346,18 +346,18 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 
 //
 
-epmem_mem_usage_stat::epmem_mem_usage_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred ): soar_module::intptr_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+epmem_mem_usage_stat::epmem_mem_usage_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
-intptr_t epmem_mem_usage_stat::get_value()
+int64_t epmem_mem_usage_stat::get_value()
 {
 	return my_agent->epmem_db->memory_usage();
 }
 
 //
 
-epmem_mem_high_stat::epmem_mem_high_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred ): soar_module::intptr_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+epmem_mem_high_stat::epmem_mem_high_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred ): soar_module::integer_stat( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
-intptr_t epmem_mem_high_stat::get_value()
+int64_t epmem_mem_high_stat::get_value()
 {
 	return my_agent->epmem_db->memory_highwater();
 }
@@ -908,7 +908,7 @@ void epmem_transaction_end( agent *my_agent, bool commit )
  * Author		: Nate Derbinsky
  * Notes		: Gets an EpMem variable from the database
  **************************************************************************/
-bool epmem_get_variable( agent *my_agent, epmem_variable_key variable_id, intptr_t *variable_value )
+bool epmem_get_variable( agent *my_agent, epmem_variable_key variable_id, int64_t *variable_value )
 {
 	soar_module::exec_result status;
 	soar_module::sqlite_statement *var_get = my_agent->epmem_stmts_common->var_get;
@@ -931,7 +931,7 @@ bool epmem_get_variable( agent *my_agent, epmem_variable_key variable_id, intptr
  * Author		: Nate Derbinsky
  * Notes		: Sets an EpMem variable in the database
  **************************************************************************/
-void epmem_set_variable( agent *my_agent, epmem_variable_key variable_id, intptr_t variable_value )
+void epmem_set_variable( agent *my_agent, epmem_variable_key variable_id, int64_t variable_value )
 {
 	soar_module::sqlite_statement *var_set = my_agent->epmem_stmts_common->var_set;
 
@@ -952,19 +952,19 @@ void epmem_set_variable( agent *my_agent, epmem_variable_key variable_id, intptr
  * Author		: Nate Derbinsky
  * Notes		: Implements the forkNode function of RIT
  **************************************************************************/
-intptr_t epmem_rit_fork_node( intptr_t lower, intptr_t upper, bool /*bounds_offset*/, intptr_t *step_return, epmem_rit_state *rit_state )
+int64_t epmem_rit_fork_node( int64_t lower, int64_t upper, bool /*bounds_offset*/, int64_t *step_return, epmem_rit_state *rit_state )
 {
 	// never called
 	/*if ( !bounds_offset )
 	{
-		intptr_t offset = rit_state->offset.stat->get_value();
+		int64_t offset = rit_state->offset.stat->get_value();
 
 		lower = ( lower - offset );
 		upper = ( upper - offset );
 	}*/
 
 	// descend the tree down to the fork node
-	intptr_t node = EPMEM_RIT_ROOT;
+	int64_t node = EPMEM_RIT_ROOT;
 	if ( upper < EPMEM_RIT_ROOT )
 	{
 		node = rit_state->leftroot.stat->get_value();
@@ -974,7 +974,7 @@ intptr_t epmem_rit_fork_node( intptr_t lower, intptr_t upper, bool /*bounds_offs
 		node = rit_state->rightroot.stat->get_value();
 	}
 
-	intptr_t step;
+	int64_t step;
 	for ( step = ( ( ( node >= 0 )?( node ):( -1 * node ) ) / 2 ); step >= 1; step /= 2 )
 	{
 		if ( upper < node )
@@ -1040,16 +1040,16 @@ void epmem_rit_add_right( agent *my_agent, epmem_time_id id )
  * Notes		: Implements the computational components of the RIT
  * 				  query algorithm
  **************************************************************************/
-void epmem_rit_prep_left_right( agent *my_agent, intptr_t lower, intptr_t upper, epmem_rit_state *rit_state )
+void epmem_rit_prep_left_right( agent *my_agent, int64_t lower, int64_t upper, epmem_rit_state *rit_state )
 {
 	////////////////////////////////////////////////////////////////////////////
 	rit_state->timer->start();	
 	////////////////////////////////////////////////////////////////////////////
 
-	intptr_t offset = rit_state->offset.stat->get_value();
-	intptr_t node, step;
-	intptr_t left_node, left_step;
-	intptr_t right_node, right_step;
+	int64_t offset = rit_state->offset.stat->get_value();
+	int64_t node, step;
+	int64_t left_node, left_step;
+	int64_t right_node, right_step;
 
 	lower = ( lower - offset );
 	upper = ( upper - offset );
@@ -1140,10 +1140,10 @@ void epmem_rit_prep_left_right( agent *my_agent, intptr_t lower, intptr_t upper,
  * Author		: Nate Derbinsky
  * Notes		: Inserts an interval in the RIT
  **************************************************************************/
-void epmem_rit_insert_interval( agent *my_agent, intptr_t lower, intptr_t upper, epmem_node_id id, epmem_rit_state *rit_state )
+void epmem_rit_insert_interval( agent *my_agent, int64_t lower, int64_t upper, epmem_node_id id, epmem_rit_state *rit_state )
 {
 	// initialize offset
-	intptr_t offset = rit_state->offset.stat->get_value();
+	int64_t offset = rit_state->offset.stat->get_value();
 	if ( offset == EPMEM_RIT_OFFSET_INIT )
 	{
 		offset = lower;
@@ -1156,20 +1156,20 @@ void epmem_rit_insert_interval( agent *my_agent, intptr_t lower, intptr_t upper,
 	}
 
 	// get node
-	intptr_t node;
+	int64_t node;
 	{
-		intptr_t left_root = rit_state->leftroot.stat->get_value();
-		intptr_t right_root = rit_state->rightroot.stat->get_value();
-		intptr_t min_step = rit_state->minstep.stat->get_value();
+		int64_t left_root = rit_state->leftroot.stat->get_value();
+		int64_t right_root = rit_state->rightroot.stat->get_value();
+		int64_t min_step = rit_state->minstep.stat->get_value();
 
 		// shift interval
-		intptr_t l = ( lower - offset );
-		intptr_t u = ( upper - offset );
+		int64_t l = ( lower - offset );
+		int64_t u = ( upper - offset );
 
 		// update left_root
 		if ( ( u < EPMEM_RIT_ROOT ) && ( l <= ( 2 * left_root ) ) )
 		{
-			left_root = static_cast<intptr_t>( pow( -2.0, floor( log( static_cast<double>( -l ) ) / EPMEM_LN_2 ) ) );
+			left_root = static_cast<int64_t>( pow( -2.0, floor( log( static_cast<double>( -l ) ) / EPMEM_LN_2 ) ) );
 
 			// update database
 			epmem_set_variable( my_agent, rit_state->leftroot.var_key, left_root );
@@ -1181,7 +1181,7 @@ void epmem_rit_insert_interval( agent *my_agent, intptr_t lower, intptr_t upper,
 		// update right_root
 		if ( ( l > EPMEM_RIT_ROOT ) && ( u >= ( 2 * right_root ) ) )
 		{
-			right_root = static_cast<intptr_t>( pow( 2.0, floor( log( static_cast<double>( u ) ) / EPMEM_LN_2 ) ) );
+			right_root = static_cast<int64_t>( pow( 2.0, floor( log( static_cast<double>( u ) ) / EPMEM_LN_2 ) ) );
 
 			// update database
 			epmem_set_variable( my_agent, rit_state->rightroot.var_key, right_root );
@@ -1191,7 +1191,7 @@ void epmem_rit_insert_interval( agent *my_agent, intptr_t lower, intptr_t upper,
 		}
 
 		// update min_step
-		intptr_t step;
+		int64_t step;
 		node = epmem_rit_fork_node( l, u, true, &step, rit_state );
 
 		if ( ( node != EPMEM_RIT_ROOT ) && ( step < min_step ) )
@@ -1469,7 +1469,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// initialize next_id
 			my_agent->epmem_stats->next_id->set_value( 1 );
 			{
-				intptr_t stored_id = NIL;
+				int64_t stored_id = NIL;
 				if ( epmem_get_variable( my_agent, var_next_id, &stored_id ) )
 				{
 					my_agent->epmem_stats->next_id->set_value( stored_id );
@@ -1495,7 +1495,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 
 			// get/set RIT variables
 			{
-				intptr_t var_val = NIL;
+				int64_t var_val = NIL;
 
 				for ( int i=EPMEM_RIT_STATE_NODE; i<=EPMEM_RIT_STATE_EDGE; i++ )
 				{
@@ -1628,7 +1628,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// get id pools
 			{
 				epmem_node_id q0;
-				intptr_t w;
+				int64_t w;
 				epmem_node_id q1;
 				epmem_node_id parent_id;
 
@@ -1823,9 +1823,8 @@ void epmem_new_episode( agent *my_agent )
 	if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 	{
 		char buf[256];
-		unsigned long temp_time = static_cast<unsigned long>( time_counter );
 
-		SNPRINTF( buf, 254, "NEW EPISODE: %ld", temp_time );
+		SNPRINTF( buf, 254, "NEW EPISODE: %ld", time_counter );
 
 		print( my_agent, buf );
 		xml_generate_warning( my_agent, buf );
@@ -1973,8 +1972,8 @@ void epmem_new_episode( agent *my_agent )
 
 									// try to find
 									{
-										my_agent->epmem_stmts_graph->find_lti->bind_int( 1, static_cast<uintptr_t>( (*w_p)->value->id.name_letter ) );
-										my_agent->epmem_stmts_graph->find_lti->bind_int( 2, static_cast<uintptr_t>( (*w_p)->value->id.name_number ) );
+										my_agent->epmem_stmts_graph->find_lti->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
+										my_agent->epmem_stmts_graph->find_lti->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 
 										if ( my_agent->epmem_stmts_graph->find_lti->execute() == soar_module::row )
 										{
@@ -1993,8 +1992,8 @@ void epmem_new_episode( agent *my_agent )
 										
 										// parent_id,letter,num,time_id
 										my_agent->epmem_stmts_graph->promote_id->bind_int( 1, (*w_p)->value->id.epmem_id );
-										my_agent->epmem_stmts_graph->promote_id->bind_int( 2, static_cast<uintptr_t>( (*w_p)->value->id.name_letter ) );
-										my_agent->epmem_stmts_graph->promote_id->bind_int( 3, static_cast<uintptr_t>( (*w_p)->value->id.name_number ) );
+										my_agent->epmem_stmts_graph->promote_id->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
+										my_agent->epmem_stmts_graph->promote_id->bind_int( 3, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 										my_agent->epmem_stmts_graph->promote_id->bind_int( 4, time_counter );
 										my_agent->epmem_stmts_graph->promote_id->execute( soar_module::op_reinit );
 									}
@@ -2207,8 +2206,8 @@ void epmem_new_episode( agent *my_agent )
 								{
 									// parent_id,letter,num,time_id
 									my_agent->epmem_stmts_graph->promote_id->bind_int( 1, (*w_p)->value->id.epmem_id );
-									my_agent->epmem_stmts_graph->promote_id->bind_int( 2, static_cast<uintptr_t>( (*w_p)->value->id.name_letter ) );
-									my_agent->epmem_stmts_graph->promote_id->bind_int( 3, static_cast<uintptr_t>( (*w_p)->value->id.name_number ) );
+									my_agent->epmem_stmts_graph->promote_id->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
+									my_agent->epmem_stmts_graph->promote_id->bind_int( 3, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 									my_agent->epmem_stmts_graph->promote_id->bind_int( 4, time_counter );
 									my_agent->epmem_stmts_graph->promote_id->execute( soar_module::op_reinit );
 								}
@@ -2450,7 +2449,7 @@ bool epmem_valid_episode( agent *my_agent, epmem_time_id memory_id )
 	return return_val;
 }
 
-inline void _epmem_install_id_wme( agent* my_agent, Symbol* state, Symbol* parent, Symbol* attr, std::map< epmem_node_id, std::pair< Symbol*, bool > >* ids, epmem_node_id q1, bool val_is_short_term, char val_letter, unsigned long val_num, epmem_id_mapping* id_record )
+inline void _epmem_install_id_wme( agent* my_agent, Symbol* state, Symbol* parent, Symbol* attr, std::map< epmem_node_id, std::pair< Symbol*, bool > >* ids, epmem_node_id q1, bool val_is_short_term, char val_letter, uint64_t val_num, epmem_id_mapping* id_record )
 {
 	std::map< epmem_node_id, std::pair< Symbol*, bool > >::iterator id_p = ids->find( q1 );
 	bool existing_identifier = ( id_p != ids->end() );
@@ -2528,7 +2527,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	Symbol *result_header = state->id.epmem_result_header;
 
 	// initialize stat
-	long num_wmes = 0;
+	int64_t num_wmes = 0;
 	my_agent->epmem_stats->ncb_wmes->set_value( num_wmes );
 
 	// if no memory, say so
@@ -2563,11 +2562,11 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 	{
 		Symbol *my_meta;
 
-		my_meta = make_int_constant( my_agent, static_cast<long>( memory_id ) );
+		my_meta = make_int_constant( my_agent, static_cast<int64_t>( memory_id ) );
 		epmem_add_meta_wme( my_agent, state, result_header, my_agent->epmem_sym_memory_id, my_meta );		
 		symbol_remove_ref( my_agent, my_meta );
 
-		my_meta = make_int_constant( my_agent, static_cast<long>( my_agent->epmem_stats->time->get_value() ) );
+		my_meta = make_int_constant( my_agent, static_cast<int64_t>( my_agent->epmem_stats->time->get_value() ) );
 		epmem_add_meta_wme( my_agent, state, result_header, my_agent->epmem_sym_present_id, my_meta );		
 		symbol_remove_ref( my_agent, my_meta );
 	}
@@ -2603,11 +2602,11 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 			// relates to finite automata: q1 = d(q0, w)
 			epmem_node_id q0; // id
 			epmem_node_id q1; // attribute
-			intptr_t w_type; // we support any constant attribute symbol
+			int64_t w_type; // we support any constant attribute symbol
 
 			bool val_is_short_term = false;
 			char val_letter = NIL;
-			unsigned long val_num = NIL;
+			int64_t val_num = NIL;
 
 			// used to lookup shared identifiers
 			// the bool in the pair refers to if children are allowed on this id (re: lti)
@@ -2634,7 +2633,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				switch ( w_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						attr = make_int_constant( my_agent, static_cast<long>( my_q->column_int( 1 ) ) );
+						attr = make_int_constant( my_agent,my_q->column_int( 1 ) );
 						break;
 
 					case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -2651,7 +2650,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				if ( !val_is_short_term )
 				{
 					val_letter = static_cast<char>( my_q->column_int( 4 ) );
-					val_num = static_cast<unsigned long>( my_q->column_int( 5 ) );
+					val_num = static_cast<uint64_t>( my_q->column_int( 5 ) );
 				}
 
 				// get a reference to the parent
@@ -2751,8 +2750,8 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 		{
 			epmem_node_id child_id;
 			epmem_node_id parent_id;
-			intptr_t attr_type;
-			intptr_t value_type;
+			int64_t attr_type;
+			int64_t value_type;
 
 			std::pair< Symbol*, bool > parent;
 			Symbol *value = NULL;			
@@ -2780,7 +2779,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					switch ( attr_type )
 					{
 						case INT_CONSTANT_SYMBOL_TYPE:
-							attr = make_int_constant( my_agent, static_cast<long>( my_q->column_int( 2 ) ) );
+							attr = make_int_constant( my_agent, my_q->column_int( 2 ) );
 							break;
 
 						case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -2796,7 +2795,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 					switch ( value_type )
 					{
 						case INT_CONSTANT_SYMBOL_TYPE:
-							value = make_int_constant( my_agent, static_cast<long>( my_q->column_int( 3 ) ) );
+							value = make_int_constant( my_agent,my_q->column_int( 3 ) );
 							break;
 
 						case FLOAT_CONSTANT_SYMBOL_TYPE:
@@ -3003,9 +3002,9 @@ inline epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double le
  * Notes		: Implements flipping a literal in the DNF Graph
  * 				  (see above description).
  **************************************************************************/
-void epmem_shared_flip( epmem_shared_literal_pair *flip, const unsigned int list, long &ct, double &v, long &updown )
+void epmem_shared_flip( epmem_shared_literal_pair *flip, const unsigned int list, int64_t &ct, double &v, int64_t &updown )
 {	
-	long ct_change = ( ( list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
+	int64_t ct_change = ( ( list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
 	
 	// if recursive propogation, count change
 	// is dependent upon wme count
@@ -3047,13 +3046,13 @@ void epmem_shared_flip( epmem_shared_literal_pair *flip, const unsigned int list
 
 		// find the wme map, get the literal count		
 		epmem_shared_incoming_identity_counter* sym_ct = (*(*id_map))[ flip->wme->id ];
-		unsigned long *lit_ct =& (*(sym_ct->cts))[ flip->wme ];		
+		uint64_t *lit_ct =& (*(sym_ct->cts))[ flip->wme ];		
 
 		// update the count	
 		(*lit_ct) += ct_change;
 
 		// if appropriate, change the id count
-		if ( (*lit_ct) == ( static_cast<unsigned long>( ( list == EPMEM_RANGE_START )?( EPMEM_DNF - 1 ):( EPMEM_DNF ) ) ) )
+		if ( (*lit_ct) == ( static_cast<uint64_t>( ( list == EPMEM_RANGE_START )?( EPMEM_DNF - 1 ):( EPMEM_DNF ) ) ) )
 		{
 			sym_ct->ct += ct_change;
 
@@ -3087,7 +3086,7 @@ void epmem_shared_flip( epmem_shared_literal_pair *flip, const unsigned int list
 
 	if ( alter_ct )
 	{
-		unsigned long max_compare = ( ( list == EPMEM_RANGE_START )?( flip->lit->max - 1 ):( flip->lit->max ) );
+		uint64_t max_compare = ( ( list == EPMEM_RANGE_START )?( flip->lit->max - 1 ):( flip->lit->max ) );
 
 		flip->lit->ct += ct_change;
 		if ( flip->lit->ct == max_compare )
@@ -3107,7 +3106,7 @@ void epmem_shared_flip( epmem_shared_literal_pair *flip, const unsigned int list
 			}
 			else if ( flip->lit->match )
 			{
-				unsigned long match_compare = ( ( list == EPMEM_RANGE_START )?( 0 ):( 1 ) );
+				uint64_t match_compare = ( ( list == EPMEM_RANGE_START )?( 0 ):( 1 ) );
 				flip->lit->match->ct += ct_change;
 
 				if ( flip->lit->match->ct == match_compare )
@@ -3128,7 +3127,7 @@ void epmem_shared_flip( epmem_shared_literal_pair *flip, const unsigned int list
  * Notes		: Implements a step in the range search algorithm for
  * 				  WM Graph (see above description).
  **************************************************************************/
-void epmem_shared_increment( epmem_shared_query_list *queries, epmem_time_id &id, long &ct, double &v, long &updown, const unsigned int list )
+void epmem_shared_increment( epmem_shared_query_list *queries, epmem_time_id &id, int64_t &ct, double &v, int64_t &updown, const unsigned int list )
 {
 	// initialize variables
 	id = queries[ list ].top()->val;
@@ -3463,14 +3462,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_shared_literal_pair_list pairs;						
 
 			// graph match
-			const long graph_match = my_agent->epmem_params->graph_match->get_value();			
+			const int64_t graph_match = my_agent->epmem_params->graph_match->get_value();			
 			epmem_shared_literal_pair_map* gm_pairs = NULL;
 			if ( graph_match != soar_module::off )
 			{
 				gm_pairs = new epmem_shared_literal_pair_map;
 			}
 
-			unsigned long leaf_ids[2] = { 0, 0 };
+			uint64_t leaf_ids[2] = { 0, 0 };
 
 			epmem_time_id time_now = my_agent->epmem_stats->time->get_value() - 1;
 
@@ -3703,8 +3702,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 									if ( (*w_p)->value->id.smem_lti )
 									{
-										my_agent->epmem_stmts_graph->find_lti->bind_int( 1, static_cast<uintptr_t>( (*w_p)->value->id.name_letter ) );
-										my_agent->epmem_stmts_graph->find_lti->bind_int( 2, static_cast<uintptr_t>( (*w_p)->value->id.name_number ) );
+										my_agent->epmem_stmts_graph->find_lti->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
+										my_agent->epmem_stmts_graph->find_lti->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 
 										if ( my_agent->epmem_stmts_graph->find_lti->execute() == soar_module::row )
 										{
@@ -3781,7 +3780,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												}
 
 												new_literal->ct = 0;
-												new_literal->max = static_cast<unsigned long>( new_literal->incoming->parents->size() );
+												new_literal->max = static_cast<uint64_t>( new_literal->incoming->parents->size() );
 
 												new_literal->shared_id = shared_identity;
 												new_literal->shared_sym = (*w_p)->value;
@@ -4121,16 +4120,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			my_agent->epmem_stats->qry_neg->set_value( leaf_ids[ EPMEM_NODE_NEG ] );
 			my_agent->epmem_stats->qry_ret->set_value( 0 );
 			my_agent->epmem_stats->qry_card->set_value( 0 );
-			my_agent->epmem_stats->qry_lits->set_value( static_cast<long>( literals.size() ) );
+			my_agent->epmem_stats->qry_lits->set_value( static_cast<int64_t>( literals.size() ) );
 
 			// useful statistics
-			int cue_size = ( leaf_ids[ EPMEM_NODE_POS ] + leaf_ids[ EPMEM_NODE_NEG ] );
-			unsigned long perfect_match = leaf_ids[ EPMEM_NODE_POS ];
+			int64_t cue_size = static_cast<int64_t>( leaf_ids[ EPMEM_NODE_POS ] + leaf_ids[ EPMEM_NODE_NEG ] );
+			uint64_t perfect_match = leaf_ids[ EPMEM_NODE_POS ];
 
 			// vars to set in range search
 			epmem_time_id king_id = EPMEM_MEMID_NONE;
 			double king_score = -1000;
-			unsigned long king_cardinality = 0;
+			uint64_t king_cardinality = 0;
 			bool king_graph_match = false;
 			epmem_gm_assignment_map king_assignments;
 
@@ -4141,15 +4140,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				double balance_inv = 1 - balance;
 
 				// dynamic programming stuff
-				long sum_ct = 0;
+				int64_t sum_ct = 0;
 				double sum_v = 0;
-				long sum_updown = 0;
+				int64_t sum_updown = 0;
 
 				// current pointer
 				epmem_time_id current_id = EPMEM_MEMID_NONE;
-				long current_ct = 0;
+				int64_t current_ct = 0;
 				double current_v = 0;
-				long current_updown = 0;
+				int64_t current_updown = 0;
 				epmem_time_id current_end;
 				epmem_time_id current_valid_end;
 				double current_score;
@@ -4242,9 +4241,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
 							{
 								char buf[256];
-								unsigned long temp_end = static_cast<unsigned long>( current_valid_end );
 
-								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%ld, %ld, %f)", temp_end, sum_ct, current_score );
+								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%lld, %ld, %f)", current_valid_end, sum_ct, current_score );
 
 								print( my_agent, buf );
 								xml_generate_warning( my_agent, buf );
@@ -4259,7 +4257,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 								if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 								{
-									if ( sum_ct == (long) perfect_match )
+									if ( sum_ct == (int64_t) perfect_match )
 									{
 										current_assignments.clear();
 										current_assignments.insert( std::make_pair( query, EPMEM_NODEID_ROOT ) );
@@ -4661,14 +4659,14 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 			// relates to finite automata: q1 = d(q0, w)
 			epmem_node_id q0; // id
 			epmem_node_id q1; // attribute
-			intptr_t w_type; // we support any constant attribute symbol			
+			int64_t w_type; // we support any constant attribute symbol			
 			std::string temp, temp2, temp3, temp4;
 			double temp_d;
-			long temp_i;
+			int64_t temp_i;
 
 			bool val_is_short_term;
 			char val_letter;
-			unsigned long val_num;
+			uint64_t val_num;
 
 			// 0 is magic
 			temp.assign( "ID_0" );
@@ -4718,7 +4716,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 						// "L#"
 						val_letter = static_cast<char>( my_q->column_int( 4 ) );
 						to_string( val_letter, temp4 );
-						val_num = static_cast<unsigned long>( my_q->column_int( 5 ) );
+						val_num = static_cast<uint64_t>( my_q->column_int( 5 ) );
 						to_string( val_num, temp2 );
 						temp4.append( temp2 );
 
@@ -4735,7 +4733,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 				switch ( w_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						temp_i = static_cast<long>( my_q->column_int( 1 ) );
+						temp_i = static_cast<int64_t>( my_q->column_int( 1 ) );
 						to_string( temp_i, temp2 );
 						break;
 
@@ -4803,15 +4801,15 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 		{
 			epmem_node_id child_id;
 			epmem_node_id parent_id;
-			intptr_t attr_type;
-			intptr_t value_type;
+			int64_t attr_type;
+			int64_t value_type;
 
 			std::list< std::string > edges;
 			std::list< std::string > consts;
 
 			std::string temp, temp2;
 			double temp_d;
-			long temp_i;
+			int64_t temp_i;
 
 			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ] ) );
 
@@ -4839,7 +4837,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 				switch ( attr_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						temp_i = static_cast<long>( my_q->column_int( 2 ) );
+						temp_i = static_cast<int64_t>( my_q->column_int( 2 ) );
 						to_string( temp_i, temp2 );						
 						break;
 
@@ -4866,7 +4864,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 				switch ( value_type )
 				{
 					case INT_CONSTANT_SYMBOL_TYPE:
-						temp_i = static_cast<long>( my_q->column_int( 3 ) );
+						temp_i = static_cast<int64_t>( my_q->column_int( 3 ) );
 						to_string( temp_i, temp2 );						
 						break;
 
@@ -4937,12 +4935,12 @@ void epmem_consider_new_episode( agent *my_agent )
 	my_agent->epmem_timers->trigger->start();
 	////////////////////////////////////////////////////////////////////////////
 
-	const long force = my_agent->epmem_params->force->get_value();
+	const int64_t force = my_agent->epmem_params->force->get_value();
 	bool new_memory = false;
 
 	if ( force == epmem_param_container::force_off )
 	{
-		const long trigger = my_agent->epmem_params->trigger->get_value();
+		const int64_t trigger = my_agent->epmem_params->trigger->get_value();
 
 		if ( trigger == epmem_param_container::output )
 		{
@@ -5026,7 +5024,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	bool good_cue;
 	int path;
 	
-	unsigned long wme_count;
+	uint64_t wme_count;
 	bool new_cue;
 
 	while ( state != NULL )

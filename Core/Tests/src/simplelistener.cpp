@@ -64,9 +64,9 @@ int SimpleListener::run()
 	// Comment this in if you need to debug the messages going back and forth.
 	//pKernel->SetTraceCommunications(true) ;
 
-	long pauseSecs = 0;
-	long pauseMsecs = 100 ;
-	long pauseMsecsTotal = pauseSecs*1000+pauseMsecs;
+	int pauseSecs = 0;
+	int pauseMsecs = 100 ;
+	int pauseMsecsTotal = pauseSecs*1000+pauseMsecs;
 
 	// If we're running in this thread we need to wake up more rapidly.
 	if (useCurrentThread) 
@@ -92,4 +92,3 @@ int SimpleListener::run()
 	
 	return 0;
 }
-

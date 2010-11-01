@@ -51,7 +51,7 @@ void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
 	p = static_cast<char *>(malloc (size));
 	if (p==NULL) {
 		char msg[BUFFER_MSG_SIZE];
-		SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %lu bytes of memory.\n", static_cast<unsigned long>(size));
+		SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %llu bytes of memory.\n", static_cast<uint64_t>(size));
 		msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
 		abort_with_fatal_error (thisAgent, msg);
 	}
@@ -239,7 +239,7 @@ void add_block_to_memory_pool (agent* thisAgent, memory_pool *p) {
 	can we keep a block counter on the agent and check it modulo some function of the limit?
 	*/
 	/*
-	unsigned long total = 0;
+	uint64_t total = 0;
 	for (i=0; i<NUM_MEM_USAGE_CODES; i++) total += thisAgent->memory_for_usage[i];
 
 	if (total > thisAgent->sysparams[MAX_MEMORY_USAGE_SYSPARAM]) {      

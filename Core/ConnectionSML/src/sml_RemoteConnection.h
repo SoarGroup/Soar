@@ -62,7 +62,7 @@ protected:
 	bool DoesResponseMatch(soarxml::ElementXML* pResponse, char const* pID) ;
 
 	/** The timeout for receiving messages is secondsWait + millisecondsWait, where millisecondsWait < 1000 */
-	bool ReceiveMessages(bool allMessages, long secondsWait, long millisecondsWait) ;
+	bool ReceiveMessages(bool allMessages, int secondsWait, int millisecondsWait) ;
 
 public:
 	virtual ~RemoteConnection();

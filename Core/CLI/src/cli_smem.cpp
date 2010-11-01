@@ -243,7 +243,7 @@ bool CommandLineInterface::ParseSMem( std::vector<std::string>& argv )
 		else if ( ( m_NonOptionArguments == 1 ) || ( m_NonOptionArguments == 2 ) )
 		{
 			smem_lti_id lti_id = NIL;
-			unsigned long depth = 0;
+			unsigned int depth = 0;
 
 			get_lexeme_from_string( m_pAgentSoar, argv[2].c_str() );
 			if ( m_pAgentSoar->lexeme.type == IDENTIFIER_LEXEME )
@@ -278,7 +278,7 @@ bool CommandLineInterface::ParseSMem( std::vector<std::string>& argv )
 	return false;
 }
 
-bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, const std::string* pVal, smem_lti_id lti_id, unsigned long depth )
+bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, const std::string* pVal, smem_lti_id lti_id, unsigned int depth )
 {
 	if ( !pOp )
 	{

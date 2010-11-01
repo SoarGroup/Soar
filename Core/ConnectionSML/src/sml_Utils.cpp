@@ -10,14 +10,14 @@
 /////////////////////////////////////////////////////////////////////
 // Function name  : Sleep
 // 
-// Argument       : long secs
-// Argument       : long msecs
+// Argument       : int secs
+// Argument       : int msecs
 // Return type    : void 	
 // 
 // Description	  : Sleep for the specified seconds and milliseconds
 //
 /////////////////////////////////////////////////////////////////////
-void sml::Sleep(long secs, long msecs)
+void sml::Sleep(int secs, int msecs)
 {
 	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
 #ifdef _WIN32
@@ -140,7 +140,7 @@ void sml::PrintDebugFormat(char const* pFormat, ...)
 #ifdef DEBUG_CALLS
 	CTDebugEnterMethod::PrintStackTrace() ;
 
-	PrintDebugMethod(CTDebugEnterMethod::GetCurrentNestLevel(), CTDebugEnterMethod::GetCurrentMethodName(), szBuffer) ;
+	PrintDebugMethod(CTDebugEnterMethod::GetCurrentMethodName(), szBuffer) ;
 #else
 	PrintDebugSimple(szBuffer) ;
 #endif
@@ -153,20 +153,15 @@ void sml::PrintDebug(char const* pStr)
 #ifdef DEBUG_CALLS
 	CTDebugEnterMethod::PrintStackTrace() ;
 
-	PrintDebugMethod(CTDebugEnterMethod::GetCurrentNestLevel(), CTDebugEnterMethod::GetCurrentMethodName(), pStr) ;
+	PrintDebugMethod(CTDebugEnterMethod::GetCurrentMethodName(), pStr) ;
 #else
 	PrintDebugSimple(pStr) ;
 #endif
 }
 
 #ifdef _WIN32
-void sml::PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
+void sml::PrintDebugMethod(char const* pMethodName, char const* pStr)
 {
-	indent = 0 ;
-
-//	if (!CTDebugEnterMethod::IsOutputIndented())
-//		indent = 0 ;
-
 	// We want PrintDebug to be able to output to the test
 	// application as well as the debug stream.
 	// BADBAD: I'm not sure how we should pass an "error handler"
@@ -186,13 +181,6 @@ void sml::PrintDebugMethod(long indent, char const* pMethodName, char const* pSt
 		// Text that is our string indent
 		char szIndent[1024];
 		szIndent[0]='\0';
-
-		// Indent to the correct nested level
-		int i;
-		for (i=0; i < indent; i++)
-		{
-			strcat(szIndent, "   ");
-		}
 
 		// Add the debug string
 		TCHAR textDebugString[1024] ;
@@ -237,10 +225,8 @@ void PrintDebugSimple(char const* pStr)
 
 #else	// _WINDOWS
 // On Linux, dump to stderr (the console)
-void sml::PrintDebugMethod(long indent, char const* pMethodName, char const* pStr)
+void sml::PrintDebugMethod(char const* pMethodName, char const* pStr)
 {
-	indent += 0 ;
-
 	fprintf(stderr, "%s", pMethodName) ;
 	fprintf(stderr, "%s", pStr) ;
 	fprintf(stderr, "\n") ;

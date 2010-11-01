@@ -213,12 +213,12 @@ bool RunScheduler::AllAgentsAtStopBeforePhase()
 /*************************************************************************
 * @brief	Returns true if the given agent has reached the end of its run
 **************************************************************************/
-bool RunScheduler::IsAgentFinished(AgentSML* pAgentSML, bool forever, smlRunStepSize runStepSize, unsigned long count)
+bool RunScheduler::IsAgentFinished(AgentSML* pAgentSML, bool forever, smlRunStepSize runStepSize, uint64_t count)
 {
-	unsigned long current = pAgentSML->GetRunCounter(runStepSize) ;
-	unsigned long initial = pAgentSML->GetInitialRunCount() ;
+	uint64_t current = pAgentSML->GetRunCounter(runStepSize) ;
+	uint64_t initial = pAgentSML->GetInitialRunCount() ;
 
-	unsigned long difference = current - initial ;
+	uint64_t difference = current - initial ;
 
 	//fprintf(stdout, "Agent %s current is %d initial is %d diff is %d\n", pAgent->GetName(), current, initial, difference) ; fflush(stdout) ;
 
@@ -311,7 +311,7 @@ void RunScheduler::RecordInitialRunCounters(smlRunStepSize runStepSize)
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
  			gSKI::Agent* pAgent = pAgentSML->GetgSKIAgent() ;
-			unsigned long count = GetStepCounter(pAgent, runStepSize) ;  
+			uint64_t count = GetStepCounter(pAgent, runStepSize) ;  
 			pAgentSML->SetInitialStepCount(count) ; 
 		}
 	}
@@ -329,7 +329,7 @@ void RunScheduler::InitializeRunCounters(smlRunStepSize runStepSize)
 		if (pAgentSML->IsAgentScheduledToRun())
 		{
 			pAgentSML->ResetLastOutputCount() ;
-			unsigned long count = pAgentSML->GetRunCounter(runStepSize) ;
+			uint64_t count = pAgentSML->GetRunCounter(runStepSize) ;
 			pAgentSML->SetInitialRunCount(count) ;
 			pAgentSML->ResetLocalRunCounters() ;
 		}
@@ -631,7 +631,7 @@ bool RunScheduler::AnAgentHaltedDuringRun()
 *			Returns true if all agents are done.
 *			Does not remove anyone from the run list.
 *********************************************************************/
-bool RunScheduler::TestIfAllFinished(bool forever, smlRunStepSize runStepSize, unsigned long count)
+bool RunScheduler::TestIfAllFinished(bool forever, smlRunStepSize runStepSize, uint64_t count)
 {
 	bool allDone = true ;
 
@@ -670,7 +670,7 @@ bool RunScheduler::IsRunning()
 *		  Can query each for "GetLastRunResult()".
 *************************************************************/	
 smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runStepSize, 
-											  unsigned long count, 
+											  uint64_t count, 
 											  smlRunFlags runFlags, 
 											  smlRunStepSize interleaveStepSize, 
 											  bool synchronize)
@@ -716,8 +716,8 @@ smlRunResult RunScheduler::RunScheduledAgents(bool forever, smlRunStepSize runSt
 	FireBeforeRunStartsEvents() ;
 
 	bool runFinished = false ;
-	long stepCount   = 0 ;
-	//	long runCount    = 0 ;
+	uint64_t stepCount   = 0 ;
+	//uint64_t runCount    = 0 ;
 	smlRunResult overallResult = sml_RUN_COMPLETED ;	
 	for (AgentMapIter iter = m_pKernelSML->m_AgentMap.begin() ; iter != m_pKernelSML->m_AgentMap.end() ; iter++)		
 	{		

@@ -70,7 +70,7 @@ struct timeval *current_real_time;
 #ifdef ATTENTION_LAPSE
 /* RMJ; just a temporary variable, but we don't want to
       reallocate it every time we process a phase, so we make it global */
-long lapse_duration;
+int64_t lapse_duration;
 #endif
 
 /* ===================================================================
@@ -183,7 +183,7 @@ void abort_with_fatal_error (agent* thisAgent, const char *msg) {
 =================================================================== */
 
 
-void set_sysparam (agent* thisAgent, int param_number, long new_value) {
+void set_sysparam (agent* thisAgent, int param_number, int64_t new_value) {
 	if ((param_number < 0) || (param_number > HIGHEST_SYSPARAM_NUMBER)) {
 		print (thisAgent, "Internal error: tried to set bad sysparam #: %d\n", param_number);
 		return;
@@ -367,14 +367,14 @@ void reset_statistics (agent* thisAgent) {
 bool reinitialize_soar (agent* thisAgent) {
 
 	/* kjh (CUSP-B4) begin */
-	long cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
-	long cur_TRACE_PHASES_SYSPARAM;
-	long cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM;
-	long cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM;
-	long cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM;
-	long cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM;
-	long cur_TRACE_WM_CHANGES_SYSPARAM;
-	long cur_TRACE_GDS_SYSPARAM;
+	int64_t cur_TRACE_CONTEXT_DECISIONS_SYSPARAM;
+	int64_t cur_TRACE_PHASES_SYSPARAM;
+	int64_t cur_TRACE_FIRINGS_OF_DEFAULT_PRODS_SYSPARAM;
+	int64_t cur_TRACE_FIRINGS_OF_USER_PRODS_SYSPARAM;
+	int64_t cur_TRACE_FIRINGS_WME_TRACE_TYPE_SYSPARAM;
+	int64_t cur_TRACE_FIRINGS_PREFERENCES_SYSPARAM;
+	int64_t cur_TRACE_WM_CHANGES_SYSPARAM;
+	int64_t cur_TRACE_GDS_SYSPARAM;
 	/* kjh (CUSP-B4) end */
 
 	thisAgent->did_PE = FALSE;    /* RCHONG:  10.11 */
@@ -488,11 +488,11 @@ bool reinitialize_soar (agent* thisAgent) {
        an elaboration cycle.)  (If n==-1, it runs forever.)
      - Run_for_n_decision_cycles() runs Soar for a given number (n) of
        decision cycles.  (If n==-1, it runs forever.)
-     - Run_for_n_selections_of_slot (long n, Symbol *attr_of_slot): this
+     - Run_for_n_selections_of_slot (int64_t n, Symbol *attr_of_slot): this
        runs Soar until the nth time a selection is made for a given
        type of slot.  Attr_of_slot should be either state_symbol or 
        operator_symbol.
-     - Run_for_n_selections_of_slot_at_level (long n, Symbol *attr_of_slot,
+     - Run_for_n_selections_of_slot_at_level (int64_t n, Symbol *attr_of_slot,
        goal_stack_level level):  this runs Soar for n selections of the
        given slot at the given level, or until the goal stack is popped
        so that level no longer exists.
@@ -912,7 +912,7 @@ void do_one_top_level_phase (agent* thisAgent)
 	  }
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
-	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<unsigned long>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))
+	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<uint64_t>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))
 	  {
 		  thisAgent->run_last_output_count = 0 ;
 		  thisAgent->run_generated_output_count++ ;
@@ -940,9 +940,9 @@ void do_one_top_level_phase (agent* thisAgent)
 
       // Update per-cycle statistics
 	  {
-		  unsigned long dc_time_msec = 0;
+		  uint64_t dc_time_msec = 0;
 #ifndef NO_TIMING_STUFF
-		  dc_time_msec = static_cast<unsigned long>(thisAgent->timers_decision_cycle.get_msec());
+		  dc_time_msec = static_cast<uint64_t>(thisAgent->timers_decision_cycle.get_msec());
 		  if (thisAgent->max_dc_time_msec < dc_time_msec) {
 			  thisAgent->max_dc_time_msec = dc_time_msec;
 			  thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
@@ -950,7 +950,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  thisAgent->timers_decision_cycle.reset();
 #endif // NO_TIMING_STUFF
 
-		  unsigned long dc_wm_changes = thisAgent->wme_addition_count - thisAgent->start_dc_wme_addition_count;
+		  uint64_t dc_wm_changes = thisAgent->wme_addition_count - thisAgent->start_dc_wme_addition_count;
 		  dc_wm_changes += thisAgent->wme_removal_count - thisAgent->start_dc_wme_removal_count;
 		  if (thisAgent->max_dc_wm_changes_value < dc_wm_changes) {
 			  thisAgent->max_dc_wm_changes_value = dc_wm_changes;
@@ -959,7 +959,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  thisAgent->start_dc_wme_addition_count = thisAgent->wme_addition_count;
 		  thisAgent->start_dc_wme_removal_count = thisAgent->wme_removal_count;
 
-		  unsigned long dc_firing_counts = thisAgent->production_firing_count - thisAgent->start_dc_production_firing_count;
+		  uint64_t dc_firing_counts = thisAgent->production_firing_count - thisAgent->start_dc_production_firing_count;
 		  if (thisAgent->max_dc_production_firing_count_value < dc_firing_counts) {
 			  thisAgent->max_dc_production_firing_count_value = dc_firing_counts;
 			  thisAgent->max_dc_production_firing_count_cycle = thisAgent->d_cycle_count;
@@ -1151,7 +1151,7 @@ void run_forever (agent* thisAgent) {
     #endif
 }
 
-void run_for_n_phases (agent* thisAgent, long n) {
+void run_for_n_phases (agent* thisAgent, int64_t n) {
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
 #ifndef NO_TIMING_STUFF
@@ -1172,8 +1172,8 @@ void run_for_n_phases (agent* thisAgent, long n) {
 #endif
 }
 
-void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
-  long e_cycles_at_start, d_cycles_at_start, elapsed_cycles = 0;
+void run_for_n_elaboration_cycles (agent* thisAgent, int64_t n) {
+  int64_t e_cycles_at_start, d_cycles_at_start, elapsed_cycles = 0;
   go_type_enum save_go_type = GO_PHASE;
   
   if (n == -1) { run_forever(thisAgent); return; }
@@ -1206,9 +1206,9 @@ void run_for_n_elaboration_cycles (agent* thisAgent, long n) {
 #endif
 }
 
-void run_for_n_modifications_of_output (agent* thisAgent, long n) {
+void run_for_n_modifications_of_output (agent* thisAgent, int64_t n) {
   Bool was_output_phase;
-  long count = 0;
+  int64_t count = 0;
 
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
@@ -1241,8 +1241,8 @@ void run_for_n_modifications_of_output (agent* thisAgent, long n) {
 #endif
 }
 
-void run_for_n_decision_cycles (agent* thisAgent, long n) {
-  long d_cycles_at_start;
+void run_for_n_decision_cycles (agent* thisAgent, int64_t n) {
+  int64_t d_cycles_at_start;
   
   if (n == -1) { run_forever(thisAgent); return; }
   if (n < -1) return;
@@ -1257,7 +1257,7 @@ void run_for_n_decision_cycles (agent* thisAgent, long n) {
   if (d_cycles_at_start == 0)
     d_cycles_at_start++;
   while (!thisAgent->stop_soar) {
-    if (n == static_cast<long>(thisAgent->d_cycle_count-d_cycles_at_start)) break;
+    if (n == static_cast<int64_t>(thisAgent->d_cycle_count-d_cycles_at_start)) break;
     do_one_top_level_phase(thisAgent);
   }
 #ifndef NO_TIMING_STUFF
@@ -1274,8 +1274,8 @@ Symbol *attr_of_slot_just_decided (agent* thisAgent) {
   return thisAgent->state_symbol;
 }
 
-void run_for_n_selections_of_slot (agent* thisAgent, long n, Symbol *attr_of_slot) {
-  long count;
+void run_for_n_selections_of_slot (agent* thisAgent, int64_t n, Symbol *attr_of_slot) {
+  int64_t count;
   Bool was_decision_phase;
   
   if (n == -1) { run_forever(thisAgent); return; }
@@ -1301,10 +1301,10 @@ void run_for_n_selections_of_slot (agent* thisAgent, long n, Symbol *attr_of_slo
 #endif
 }
 
-void run_for_n_selections_of_slot_at_level (agent* thisAgent, long n,
+void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
                                             Symbol *attr_of_slot,
                                             goal_stack_level level) {
-  long count;
+  int64_t count;
   Bool was_decision_phase;
   
   if (n == -1) { run_forever(thisAgent); return; }

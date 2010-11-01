@@ -641,7 +641,7 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 	case INT_CONSTANT_LEXEME:
 		for (w=thisAgent->all_wmes_in_rete; w!=NIL; w=w->rete_next)
 		{
-			if (w->timetag == static_cast<unsigned long>(thisAgent->lexeme.int_val))
+			if (w->timetag == static_cast<uint64_t>(thisAgent->lexeme.int_val))
 			{
 				do_print_for_wme(thisAgent, w, depth, intern, tree);
 				break;

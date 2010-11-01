@@ -285,7 +285,7 @@ void init_attention_lapse (void) {
          (struct timeval *) malloc(sizeof(struct timeval));
 #endif // REAL_TIME_BEHAVIOR
 }
-void start_attention_lapse (long duration) {
+void start_attention_lapse (int64_t duration) {
    /* Set tracker to time we should wake up */
    start_timer (thisAgent->attention_lapse_tracker);
    thisAgent->attention_lapse_tracker->tv_usec += 1000 * duration;
@@ -326,7 +326,7 @@ void determine_lapsing (agent* thisAgent) {
    will normally be provided as a user-defined TCL procedure.  But
    we need to put a placeholder function here just to be safe.
 */
-long init_lapse_duration(struct timeval *tv) {
+int64_t init_lapse_duration(struct timeval *tv) {
    return 0;
 }
 #endif // ATTENTION_LAPSE
@@ -402,7 +402,7 @@ void stats_init_db( agent *my_agent )
 }
 
 
-void stats_db_store(agent* my_agent, const unsigned long& dc_time, const unsigned long& dc_wm_changes, const unsigned long& dc_firing_counts) 
+void stats_db_store(agent* my_agent, const uint64_t& dc_time, const uint64_t& dc_wm_changes, const uint64_t& dc_firing_counts) 
 {
 	if ( my_agent->stats_db->get_status() == soar_module::disconnected )
 	{

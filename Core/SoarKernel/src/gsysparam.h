@@ -15,7 +15,7 @@
    an array sysparams[].  Below, we #define various indices into this array
    corresponding to various system parameters.
 
-   Most of the parameters are of type "long".  A few parameters are more
+   Most of the parameters are of type "int64_t".  A few parameters are more
    naturally handled as lists; for these, the array value is just a dummy,
    and callback routines must inspect a global variable to get the real 
    value.  Chunk_free_problem_spaces is an example of this.
@@ -199,7 +199,7 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 ----------------------------------------- */
 
 extern void init_sysparams (agent* thisAgent);
-extern void set_sysparam (agent* thisAgent, int param_number, long new_value);
+extern void set_sysparam (agent* thisAgent, int param_number, int64_t new_value);
 
 #define kChunkNamePrefixMaxLength  64  /* kjh (B14) */
 

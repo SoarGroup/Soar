@@ -967,7 +967,7 @@ Identifier*	Agent::CreateSharedIdWME(Identifier* parent, char const* pAttribute,
 	return GetWM()->CreateSharedIdWME(parent, pAttribute, pSharedValue) ;
 }
 
-IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
+IntElement* Agent::CreateIntWME(Identifier* parent, char const* pAttribute, long long value)
 {
 	if (!parent || parent->GetAgent() != this)
 		return NULL ;
@@ -987,7 +987,7 @@ void Agent::Update(StringElement* pWME, char const* pValue)
 { 
 	GetWM()->UpdateString(pWME, pValue) ; 
 }
-void Agent::Update(IntElement* pWME, int value)				
+void Agent::Update(IntElement* pWME, long long value)				
 { 
 	GetWM()->UpdateInt(pWME, value) ; 
 }
@@ -1044,7 +1044,7 @@ char const*	Agent::StopSelf()
 	return pResult ;
 }
 
-char const* Agent::RunSelf(unsigned long numberSteps, smlRunStepSize stepSize)
+char const* Agent::RunSelf(uint64_t numberSteps, smlRunStepSize stepSize)
 {
 	if (IsCommitRequired())
 	{

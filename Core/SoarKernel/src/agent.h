@@ -146,19 +146,19 @@ typedef struct agent_struct {
    * global variables, but in the deglobalization effort, they were moved
    * to the (this) agent structure.
    */
-  unsigned long actual[256], if_no_merging[256], if_no_sharing[256];
+  uint64_t actual[256], if_no_merging[256], if_no_sharing[256];
 
-  unsigned long current_retesave_amindex;
-  unsigned long reteload_num_ams;
+  uint64_t current_retesave_amindex;
+  uint64_t reteload_num_ams;
   alpha_mem **reteload_am_table;
 
-  unsigned long current_retesave_symindex;
-  unsigned long reteload_num_syms;
+  uint64_t current_retesave_symindex;
+  uint64_t reteload_num_syms;
   Symbol **reteload_symbol_table;
 
   token *dummy_matches_node_tokens;
 
-  long highest_rhs_unboundvar_index;
+  int64_t highest_rhs_unboundvar_index;
 
   //
   // Moved here from parser.cpp.  This is used to create temporary unique
@@ -166,12 +166,12 @@ typedef struct agent_struct {
   // production, but for now, this is much better than having it as a 
   // global.
   //
-  unsigned long placeholder_counter[26];
+  uint64_t placeholder_counter[26];
 
   //
   // Used to be a global,  this has been moved here from recmem.cpp
   //
-  long firer_highest_rhs_unboundvar_index;
+  int64_t firer_highest_rhs_unboundvar_index;
 
   //
   // This was taked from reorder.cpp, but it is also used in production.cpp
@@ -197,7 +197,7 @@ typedef struct agent_struct {
   hash_table        *(alpha_hash_tables[16]);
   
   /* Number of WMEs, and list of WMEs, the Rete has been told about */
-  unsigned long       num_wmes_in_rete;
+  uint64_t            num_wmes_in_rete;
   wme               * all_wmes_in_rete;
   
   /* Memory pools */
@@ -216,14 +216,14 @@ typedef struct agent_struct {
   struct token_struct * dummy_top_token;
 
   /* Various Rete statistics counters */
-  unsigned long       rete_node_counts[256];
-  unsigned long       rete_node_counts_if_no_sharing[256];
-  unsigned long       token_additions;
-  unsigned long       token_additions_without_sharing;
-  unsigned long       num_right_activations;
-  unsigned long       num_left_activations;
-  unsigned long       num_null_right_activations;
-  unsigned long       num_null_left_activations;
+  uint64_t       rete_node_counts[256];
+  uint64_t       rete_node_counts_if_no_sharing[256];
+  uint64_t       token_additions;
+  uint64_t       token_additions_without_sharing;
+  uint64_t       num_right_activations;
+  uint64_t       num_left_activations;
+  uint64_t       num_null_right_activations;
+  uint64_t       num_null_left_activations;
   
   
   /* Miscellaneous other stuff */
@@ -356,7 +356,7 @@ typedef struct agent_struct {
   /* --- headers of dll's of all productions of each type --- */
   production        * all_productions_of_type[NUM_PRODUCTION_TYPES];
   /* --- counts of how many productions there are of each type --- */
-  unsigned long       num_productions_of_type[NUM_PRODUCTION_TYPES];
+  uint64_t            num_productions_of_type[NUM_PRODUCTION_TYPES];
   
   /* --- lists of symbols (PS names) declared chunk-free and chunky --- */
   ::list            * chunk_free_problem_spaces;
@@ -382,18 +382,18 @@ typedef struct agent_struct {
   Bool                system_halted;
 
   /* --- stuff for max-chunks (which is a sysparam) --- */
-  unsigned long       chunks_this_d_cycle; /* # chunks built this DC */
-  Bool		    max_chunks_reached;
+  uint64_t       chunks_this_d_cycle; /* # chunks built this DC */
+  Bool		     max_chunks_reached;
   
   /* --- list of productions whose firings are being traced --- */
   ::list            * productions_being_traced; 
   
   /* --- various user-settable system parameters --- */
-  long                sysparams[HIGHEST_SYSPARAM_NUMBER+1];
+  int64_t             sysparams[HIGHEST_SYSPARAM_NUMBER+1];
   
   /* --- parameters for running Soar --- */
   /*  --- the code loops go_number times over the go_type phases --- */
-  long                go_number;     /* How many times to "go" */
+  int64_t             go_number;     /* How many times to "go" */
   Symbol            * go_slot_attr;  /* The context slot checked */
   goal_stack_level    go_slot_level; /* The goal stack level checked */
   enum go_type_enum   go_type;       /* The phase type used */
@@ -403,48 +403,48 @@ typedef struct agent_struct {
   /* running total of WM sizes at end of phases */
   double              cumulative_wm_size;
   /* number of items included in "cumulative_wm_size" sum */
-  unsigned long       num_wm_sizes_accumulated; 
+  uint64_t            num_wm_sizes_accumulated; 
   
-  unsigned long       max_wm_size;    /* maximum size of WM so far */
-  unsigned long       wme_addition_count; /* # of wmes added to WM */
-  unsigned long       wme_removal_count;  /* # of wmes removed from WM */
+  uint64_t            max_wm_size;    /* maximum size of WM so far */
+  uint64_t            wme_addition_count; /* # of wmes added to WM */
+  uint64_t            wme_removal_count;  /* # of wmes removed from WM */
 
-  unsigned long       start_dc_wme_addition_count; /* for calculating max_dc_wm_changes */
-  unsigned long       start_dc_wme_removal_count;  /* for calculating max_dc_wm_changes */
-  unsigned long       max_dc_wm_changes_value;  /* # of wmes added + removed in a single dc */
-  unsigned long       max_dc_wm_changes_cycle;  /* # cycle of max_dc_wm_changes */
+  uint64_t            start_dc_wme_addition_count; /* for calculating max_dc_wm_changes */
+  uint64_t            start_dc_wme_removal_count;  /* for calculating max_dc_wm_changes */
+  uint64_t            max_dc_wm_changes_value;  /* # of wmes added + removed in a single dc */
+  uint64_t            max_dc_wm_changes_cycle;  /* # cycle of max_dc_wm_changes */
 
-  unsigned long       d_cycle_count;          /* # of DC's run so far */
-  unsigned long       e_cycle_count;          /* # of EC's run so far */
+  uint64_t            d_cycle_count;          /* # of DC's run so far */
+  uint64_t            e_cycle_count;          /* # of EC's run so far */
   /*  in Soar 8, e_cycles_this_d_cycle is reset to zero for every
       propose and apply phase */
-  unsigned long       e_cycles_this_d_cycle;  /* # of EC's run this DC */
-  unsigned long       num_existing_wmes;      /* current WM size */
-  unsigned long       production_firing_count;  /* # of prod. firings */
-  unsigned long       start_dc_production_firing_count;  /* # of prod. firings this decision cycle */
-  unsigned long       max_dc_production_firing_count_value;  /* max # of prod. firings per dc */
-  unsigned long       max_dc_production_firing_count_cycle;  /* cycle of max_dc_production_firing_count_value */
-  unsigned long       d_cycle_last_output;    /* last time agent produced output */  //KJC 11.17.05
-  unsigned long       decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
-  //?? unsigned long       out_cycle_count;       /* # of output phases have gen'd output */
-  //?? unsigned long       phase_count;       /* # of phases run so far */
+  uint64_t            e_cycles_this_d_cycle;  /* # of EC's run this DC */
+  uint64_t            num_existing_wmes;      /* current WM size */
+  uint64_t            production_firing_count;  /* # of prod. firings */
+  uint64_t            start_dc_production_firing_count;  /* # of prod. firings this decision cycle */
+  uint64_t            max_dc_production_firing_count_value;  /* max # of prod. firings per dc */
+  uint64_t            max_dc_production_firing_count_cycle;  /* cycle of max_dc_production_firing_count_value */
+  uint64_t            d_cycle_last_output;    /* last time agent produced output */  //KJC 11.17.05
+  uint64_t            decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
+  //?? uint64_t            out_cycle_count;       /* # of output phases have gen'd output */
+  //?? uint64_t            phase_count;       /* # of phases run so far */
   /* DJP 2/22/07: These counts are based around the counts that the run command understands and are intended to capture the same semantics as run expects.
      That may differ from some of the other counters above which historically may track slightly different values */
-  unsigned long		  run_phase_count ;				/* # of phases run since last init-soar */
-  unsigned long		  run_elaboration_count ;		/* # of elaboration cycles run since last init-soar.  A phase where nothing happens counts as an elaboration cycle */
-  unsigned long		  run_last_output_count ;		/* # of output phases since this agent last generated output */
-  unsigned long		  run_generated_output_count ;	/* # of output phases when this agent either generated output or reached "max-nil-output" cycles since last init-soar */
+  uint64_t     		  run_phase_count ;				/* # of phases run since last init-soar */
+  uint64_t     		  run_elaboration_count ;		/* # of elaboration cycles run since last init-soar.  A phase where nothing happens counts as an elaboration cycle */
+  uint64_t     		  run_last_output_count ;		/* # of output phases since this agent last generated output */
+  uint64_t     		  run_generated_output_count ;	/* # of output phases when this agent either generated output or reached "max-nil-output" cycles since last init-soar */
 
   /* REW: begin 09.15.96 */
 /* in Soar 8, PE's are done only during the APPLY phase */
-  unsigned long       pe_cycle_count;          /* # of PE's run so far */
-  unsigned long       pe_cycles_this_d_cycle;  /* # of PE's run this DC */
+  uint64_t            pe_cycle_count;          /* # of PE's run so far */
+  uint64_t            pe_cycles_this_d_cycle;  /* # of PE's run this DC */
 
   parent_inst *parent_list_head;
 /* REW: end   09.15.96 */
   
   /* State for new waterfall model */
-  unsigned long       inner_e_cycle_count;     /* # of inner elaboration cycles run so far */
+  uint64_t            inner_e_cycle_count;     /* # of inner elaboration cycles run so far */
 
   /* ----------------------- Timing statistics -------------------------- */
 
@@ -563,21 +563,21 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
    /* Keep track of real time steps for constant real-time per decision */
    /* used only if #def'd REAL_TIME_BEHAVIOR */
    struct timeval	*real_time_tracker;
-   Bool			real_time_idling;
+   Bool			     real_time_idling;
  
    /* RMJ */
    /* Keep track of duration of attentional lapses */
    /* Used only if #def'd ATTENTION_LAPSE in */
    struct timeval	*attention_lapse_tracker;
-   Bool			attention_lapsing;
+   Bool			     attention_lapsing;
  
   
   /* ----------------------- Chunker stuff -------------------------- */
   
   tc_number           backtrace_number;
   memory_pool         chunk_cond_pool;
-  unsigned long       chunk_count;
-  unsigned long       justification_count;
+  uint64_t            chunk_count;
+  uint64_t            justification_count;
   ::list            * grounds;
   tc_number           grounds_tc;
   ::list            * instantiations_with_nots;
@@ -609,7 +609,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* ----------------------- Memory utilities -------------------------- */
   
   /* Counters for memory usage of various types */
-  size_t       memory_for_usage[NUM_MEM_USAGE_CODES];
+  size_t              memory_for_usage[NUM_MEM_USAGE_CODES];
   
   /* List of all memory pools being used */
   memory_pool       * memory_pools_in_use;
@@ -633,7 +633,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* production_being_fired -- during firing, points to the prod. being fired */
   production        * production_being_fired;
   
-  unsigned long       max_rhs_unbound_variables;
+  uint64_t            max_rhs_unbound_variables;
   Symbol           ** rhs_variable_bindings;
   
   /* ==================================================================
@@ -642,7 +642,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   memory_pool         preference_pool;
   
-  unsigned long       current_wme_timetag;
+  uint64_t            current_wme_timetag;
   memory_pool         wme_pool;
   ::list            * wmes_to_add;
   ::list            * wmes_to_remove;
@@ -695,7 +695,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* ----------------------- RHS Function Stuff -------------------------- */
   
   /* --- "make-constant-symbol" counter --- */
-  unsigned long       mcs_counter;
+  uint64_t            mcs_counter;
 
   /* ----------------------- O support stuff -------------------------- */
   
@@ -724,8 +724,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   
   /* ------------ Varible Generator stuff (in production.c) ---------------- */
   
-  unsigned long       current_variable_gensym_number;
-  unsigned long       gensymed_variable_count[26];
+  uint64_t            current_variable_gensym_number;
+  uint64_t            gensymed_variable_count[26];
   
   /* ------------------- Experimental features ---------------------- */
   int                 o_support_calculation_type;
@@ -828,7 +828,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   select_info *select;
 
   // predict
-  unsigned long predict_seed;
+  uint32_t     predict_seed;
   std::string *prediction;
 
   // wma
@@ -866,7 +866,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   epmem_rit_state epmem_rit_state_graph[2];
 
-  uintptr_t epmem_validation;
+  uint64_t epmem_validation;
   bool epmem_first_switch;
 
 
@@ -878,11 +878,10 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   soar_module::sqlite_database *smem_db;
   smem_statement_container *smem_stmts;
 
-  uintptr_t smem_validation;
+  uint64_t smem_validation;
   bool smem_first_switch;
   bool smem_made_changes;
-  intptr_t smem_max_cycle;
-
+  int64_t smem_max_cycle;
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h

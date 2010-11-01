@@ -21,13 +21,13 @@
 
 using namespace sml ;
 
-IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, int value, long timeTag) 
+IntElement::IntElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, long long value, long long timeTag) 
 : WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
 }
 
-IntElement::IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, int value, long timeTag) 
+IntElement::IntElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long long value, long long timeTag) 
 : WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
 	m_Value = value ;
@@ -54,14 +54,14 @@ char const* IntElement::GetValueAsString() const
 }
 
 #ifdef SML_DIRECT
-void IntElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
+void IntElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag)
 {
 	EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
-	pConnection->DirectAddWME_Double( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
+	pConnection->DirectAddWME_Int( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValue(), timeTag);
 }
 #endif
 
-void IntElement::Update(int value) 
+void IntElement::Update(long long value) 
 { 
 	this->m_Agent->GetWM()->UpdateInt(this, value); 
 }

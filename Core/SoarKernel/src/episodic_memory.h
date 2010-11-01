@@ -75,13 +75,13 @@ enum epmem_variable_key
 //////////////////////////////////////////////////////////
 
 // represents a unique node identifier in the episodic store
-typedef intptr_t epmem_node_id;
+typedef int64_t epmem_node_id;
 
 // represents a unique temporal hash in the episodic store
-typedef uintptr_t epmem_hash_id;
+typedef uint64_t epmem_hash_id;
 
 // represents a unique episode identifier in the episodic store
-typedef uintptr_t epmem_time_id;
+typedef uint64_t epmem_time_id;
 
 
 //////////////////////////////////////////////////////////
@@ -179,39 +179,39 @@ class epmem_stat_container: public soar_module::stat_container
 
 		epmem_node_id_stat *next_id;
 
-		soar_module::intptr_stat *rit_offset_1;
-		soar_module::intptr_stat *rit_left_root_1;
-		soar_module::intptr_stat *rit_right_root_1;
-		soar_module::intptr_stat *rit_min_step_1;
+		soar_module::integer_stat *rit_offset_1;
+		soar_module::integer_stat *rit_left_root_1;
+		soar_module::integer_stat *rit_right_root_1;
+		soar_module::integer_stat *rit_min_step_1;
 
-		soar_module::intptr_stat *rit_offset_2;
-		soar_module::intptr_stat *rit_left_root_2;
-		soar_module::intptr_stat *rit_right_root_2;
-		soar_module::intptr_stat *rit_min_step_2;
+		soar_module::integer_stat *rit_offset_2;
+		soar_module::integer_stat *rit_left_root_2;
+		soar_module::integer_stat *rit_right_root_2;
+		soar_module::integer_stat *rit_min_step_2;
 
 		epmem_stat_container( agent *my_agent );
 };
 
-class epmem_mem_usage_stat: public soar_module::intptr_stat
+class epmem_mem_usage_stat: public soar_module::integer_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_mem_usage_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred );
-		intptr_t get_value();
+		epmem_mem_usage_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred );
+		int64_t get_value();
 };
 
 //
 
-class epmem_mem_high_stat: public soar_module::intptr_stat
+class epmem_mem_high_stat: public soar_module::integer_stat
 {
 	protected:
 		agent *my_agent;
 
 	public:
-		epmem_mem_high_stat( agent *new_agent, const char *new_name, intptr_t new_value, soar_module::predicate<intptr_t> *new_prot_pred );
-		intptr_t get_value();
+		epmem_mem_high_stat( agent *new_agent, const char *new_name, int64_t new_value, soar_module::predicate<int64_t> *new_prot_pred );
+		int64_t get_value();
 };
 
 
@@ -354,7 +354,7 @@ typedef std::list<wme *> epmem_wme_list;
 // keeping state for multiple RIT's
 typedef struct epmem_rit_state_param_struct
 {
-	soar_module::intptr_stat *stat;
+	soar_module::integer_stat *stat;
 	epmem_variable_key var_key;
 } epmem_rit_state_param;
 
@@ -376,11 +376,11 @@ typedef struct epmem_rit_state_struct
 // data associated with each state
 typedef struct epmem_data_struct
 {
-	unsigned long last_ol_time;				// last update to output-link
-	unsigned long last_ol_count;			// last count of output-link
+	uint64_t last_ol_time;				// last update to output-link
+	uint64_t last_ol_count;			// last count of output-link
 
-	unsigned long last_cmd_time;			// last update to epmem.command
-	unsigned long last_cmd_count;			// last update to epmem.command
+	uint64_t last_cmd_time;			// last update to epmem.command
+	uint64_t last_cmd_count;			// last update to epmem.command
 
 	epmem_time_id last_memory;				// last retrieved memory
 
@@ -407,7 +407,7 @@ typedef struct epmem_range_query_struct
 	epmem_time_id val;						// current b-tree leaf value
 
 	double weight;							// wma value
-	long ct;								// cardinality w.r.t. positive/negative query
+	int64_t ct;								// cardinality w.r.t. positive/negative query
 } epmem_range_query;
 
 // functor to maintain a priority cue of b-tree pointers
@@ -443,7 +443,7 @@ typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
-typedef std::map<epmem_node_id, uintptr_t> epmem_id_ref_counter;
+typedef std::map<epmem_node_id, uint64_t> epmem_id_ref_counter;
 typedef struct epmem_id_reservation_struct
 {
 	epmem_node_id my_id;
@@ -462,7 +462,7 @@ typedef struct epmem_edge_struct
 
 	bool val_is_short_term;
 	char val_letter;
-	unsigned long val_num;
+	uint64_t val_num;
 
 } epmem_edge;
 
@@ -480,9 +480,9 @@ typedef struct epmem_wme_cache_element_struct
 typedef struct epmem_shared_match_struct
 {
 	double value_weight;						// wma value
-	long value_ct;								// cardinality w.r.t. positive/negative query
+	int64_t value_ct;								// cardinality w.r.t. positive/negative query
 
-	unsigned long ct;							// number of contributing literals that are "on"
+	uint64_t ct;							// number of contributing literals that are "on"
 } epmem_shared_match;
 
 // represents a set of literals grouped by cue wme
@@ -502,10 +502,10 @@ typedef struct epmem_shared_incoming_id_book_struct
 } epmem_shared_incoming_id_book;
 typedef std::map< Symbol*, epmem_shared_incoming_id_book* > epmem_shared_incoming_ids_book; 
 
-typedef std::map< wme*, unsigned long > epmem_shared_incoming_wme_counter_map;
+typedef std::map< wme*, uint64_t > epmem_shared_incoming_wme_counter_map;
 typedef struct epmem_shared_incoming_identity_counter_struct
 {
-	unsigned long ct;
+	uint64_t ct;
 	epmem_shared_incoming_wme_counter_map* cts;
 } epmem_shared_incoming_identity_counter;
 typedef std::map< Symbol*, epmem_shared_incoming_identity_counter* > epmem_shared_incoming_wme_map;
@@ -542,8 +542,8 @@ struct epmem_shared_literal_struct
 	epmem_node_id shared_id;					// shared q1, if identifier
 	Symbol* shared_sym;							// identifier symbol, if literal represents an identifier
 
-	unsigned long ct;							// number of contributing literals that are "on"
-	unsigned long max;							// number of contributing literals that *need* to be on	
+	uint64_t ct;							// number of contributing literals that are "on"
+	uint64_t max;							// number of contributing literals that *need* to be on	
 
 	epmem_shared_incoming_book* incoming;		// bookkeeping to support correct distribution of incoming edges
 	
