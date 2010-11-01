@@ -51,7 +51,7 @@ void *allocate_memory (agent* thisAgent, size_t size, int usage_code) {
 	p = static_cast<char *>(malloc (size));
 	if (p==NULL) {
 		char msg[BUFFER_MSG_SIZE];
-		SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %llu bytes of memory.\n", static_cast<uint64_t>(size));
+		SNPRINTF(msg, BUFFER_MSG_SIZE, "\nmem.c: Error:  Tried but failed to allocate %llu bytes of memory.\n", static_cast<long long unsigned>(size));
 		msg[BUFFER_MSG_SIZE - 1] = 0; /* ensure null termination */
 		abort_with_fatal_error (thisAgent, msg);
 	}

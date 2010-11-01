@@ -4242,7 +4242,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							{
 								char buf[256];
 
-								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%lld, %ld, %f)", current_valid_end, sum_ct, current_score );
+								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%lld, %ld, %f)", static_cast<long long>(current_valid_end), sum_ct, current_score );
 
 								print( my_agent, buf );
 								xml_generate_warning( my_agent, buf );

@@ -524,16 +524,16 @@ Bool print_identifier_ref_info(agent* thisAgent, void* item, void* userdata) {
 				SNPRINTF( msg, 256, 
 					"\t@%c%llu --> %llu\n", 
 					sym->id.name_letter, 
-					sym->id.name_number, 
-					sym->common.reference_count);
+					static_cast<long long unsigned>(sym->id.name_number), 
+					static_cast<long long unsigned>(sym->common.reference_count));
 			}
 			else
 			{
 				SNPRINTF( msg, 256, 
 					"\t%c%llu --> %llu\n", 
 					sym->id.name_letter, 
-					sym->id.name_number, 
-					sym->common.reference_count);
+					static_cast<long long unsigned>(sym->id.name_number),
+					static_cast<long long unsigned>(sym->common.reference_count));
 			}
 
 			msg[255] = 0; /* ensure null termination */
