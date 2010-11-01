@@ -26,7 +26,7 @@
 
 typedef char Bool;
 typedef unsigned char byte;
-typedef unsigned long tc_number;
+typedef uint64_t tc_number;
 typedef signed short goal_stack_level;
 typedef struct complex_test_struct complex_test;
 typedef struct cons_struct cons;
@@ -36,7 +36,7 @@ typedef union symbol_union Symbol;
 typedef cons list;
 
 typedef std::set< wme* > wma_wme_set;
-typedef unsigned long wma_reference;
+typedef uint64_t wma_reference;
 
 /* REW: begin 09.15.96 */
 
@@ -198,7 +198,7 @@ typedef struct preference_struct {
   Bool o_supported;  /* is the preference o-supported? */
   Bool in_tm;        /* is this currently in TM? */
   Bool on_goal_list; /* is this pref on the list for its match goal */
-  unsigned long reference_count;
+  uint64_t reference_count;
   Symbol *id;
   Symbol *attr;
   Symbol *value;
@@ -335,7 +335,7 @@ typedef char * test;
 #ifdef USE_MACROS
 
 #define test_is_blank_test(t) ((t)==NIL)
-#define test_is_complex_test(t) (((unsigned long)(t)) & 1)
+#define test_is_complex_test(t) (((uint64_t)(t)) & 1)
 #define test_is_blank_or_equality_test(t) (! test_is_complex_test(t))
 
 #define make_blank_test() ((test)NIL)
@@ -355,16 +355,16 @@ inline Bool test_is_blank_test(test t)
   return (t == NIL); 
 }
 
-// This is to silence a warning (warning C4311: 'static_cast' : pointer truncation from 'test' to 'unsigned long')
-// that only appears when the project settings are set to warn on possible 64-bit portability issues.
-#ifdef _MSC_VER
-#pragma warning (disable : 4311)
-#endif
+//// This is to silence a warning (warning C4311: 'static_cast' : pointer truncation from 'test' to 'uint64_t')
+//// that only appears when the project settings are set to warn on possible 64-bit portability issues.
+//#ifdef _MSC_VER
+//#pragma warning (disable : 4311)
+//#endif
 
 inline Bool test_is_complex_test(test t) 
 { 
   return (char)(
-	  reinterpret_cast<unsigned long>(t) 
+	  reinterpret_cast<uint64_t>(t) 
 	  & 1);
 }
 

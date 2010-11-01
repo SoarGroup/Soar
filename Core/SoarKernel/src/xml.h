@@ -40,17 +40,17 @@ void xml_move_current_to_parent( agent* pAgent ) ;
 void xml_move_current_to_child( agent* pAgent, int index ) ;
 void xml_move_current_to_last_child( agent* pAgent ) ;
 
-void xml_att_val( agent* pAgent, char const* pAttribute, unsigned long value ) ;
+void xml_att_val( agent* pAgent, char const* pAttribute, uint64_t value ) ;
 void xml_att_val( agent* pAgent, char const* pAttribute, int value ) ;
-void xml_att_val( agent* pAgent, char const* pAttribute, long value ) ;
+void xml_att_val( agent* pAgent, char const* pAttribute, int64_t value ) ;
 void xml_att_val( agent* pAgent, char const* pAttribute, double value ) ;
 void xml_att_val( agent* pAgent, char const* pAttribute, char const* pValue ) ;
 void xml_att_val( agent* pAgent, char const* pAttribute, Symbol* pSymbol ) ;
 
 void xml_object( agent* pAgent, char const* pTag ) ;
 void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, char const* pValue ) ;
-void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, unsigned long value ) ;
-void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, long value ) ;
+void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, uint64_t value ) ;
+void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, int64_t value ) ;
 void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, double value ) ;
 
 #define XML_WME_NO_TIMETAG false

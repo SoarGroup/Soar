@@ -129,7 +129,7 @@ bool KernelSML::HandleCreateAgent(AgentSML* pAgentSML, char const* pCommandName,
 		// FIXME: this is duplicated code from the following functions:
 		// InitializeRunCounters():
 		pAgentSML->ResetLastOutputCount() ;
-		unsigned long count = pAgentSML->GetRunCounter(this->m_pRunScheduler->GetCurrentRunStepSize()) ;
+		uint64_t count = pAgentSML->GetRunCounter(this->m_pRunScheduler->GetCurrentRunStepSize()) ;
 		pAgentSML->SetInitialRunCount(count) ;
 		pAgentSML->ResetLocalRunCounters() ;
 		// InitializeUpdateWorldEvents():
@@ -421,7 +421,7 @@ bool KernelSML::HandleGetResultOfLastRun(AgentSML* pAgentSML, char const* /*pCom
 bool KernelSML::HandleGetInitialTimeTag(AgentSML* /*pAgentSML*/, char const* /*pCommandName*/, Connection* pConnection, AnalyzeXML* /*pIncoming*/, soarxml::ElementXML* pResponse) 	 
 { 	 
 	// We use negative values for client time tags (so we can tell they're client side not kernel side) 	 
-	long timeTagStart = -1 ; 	 
+	int64_t timeTagStart = -1 ; 	 
 
 	// Allow up to 8 simultaneous clients using different ids 	 
 	int maxTries = 8 ; 	 

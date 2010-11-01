@@ -399,7 +399,7 @@ protected:
 	/*************************************************************
 	* @brief	Return an integer result to the caller.
 	*************************************************************/
-	bool ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int result) ;
+	bool ReturnIntResult(Connection* pConnection, soarxml::ElementXML* pResponse, int64_t result) ;
 
 	/*************************************************************
 	* @brief	Return a boolean result to the caller.

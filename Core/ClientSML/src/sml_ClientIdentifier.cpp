@@ -70,16 +70,16 @@ void IdentifierSymbol::AddChild(WMElement* pWME)
 	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
 	if ( iter == m_Children.end() )
 	{
-		//std::cout << "AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		//std::cout << "AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag64() << ")" << " (" << pWME << ")" << std::endl;
 		m_Children.push_back(pWME) ;
 	} 
 	else
 	{
-		//std::cout << "Did not AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		//std::cout << "Did not AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag64() << ")" << " (" << pWME << ")" << std::endl;
 	}
 }
 
-WMElement* IdentifierSymbol::GetChildByTimeTag(long timeTag)
+WMElement* IdentifierSymbol::GetChildByTimeTag(long long timeTag)
 {
 	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinderTimeTag( timeTag ) );
 	if ( iter != m_Children.end() )
@@ -109,12 +109,12 @@ void IdentifierSymbol::RemoveChild(WMElement* pWME)
 	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
 	if ( iter != m_Children.end() )
 	{
-		//std::cout << "RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		//std::cout << "RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag64() << ")" << " (" << pWME << ")" << std::endl;
 		m_Children.erase( iter ) ;
 	} 
 	else
 	{
-		//std::cout << "Did not RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
+		//std::cout << "Did not RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag64() << ")" << " (" << pWME << ")" << std::endl;
 	}
 }
 
@@ -137,7 +137,7 @@ void IdentifierSymbol::DebugString(std::string& result)
 		ss << ": children:";
 		for (Identifier::ChildrenIter iter = m_Children.begin(); iter != m_Children.end(); ++iter)
 		{
-			ss << " " << (*iter)->GetTimeTag();
+			ss << " " << (*iter)->GetTimeTag64();
 		}
 	}
 
@@ -146,7 +146,7 @@ void IdentifierSymbol::DebugString(std::string& result)
 		ss << " used by:";
 		for (std::list<Identifier*>::iterator iter = m_UsedBy.begin(); iter != m_UsedBy.end(); ++iter)
 		{
-			ss << " " << (*iter)->GetTimeTag();
+			ss << " " << (*iter)->GetTimeTag64();
 		}
 	}
 	ss << "]";
@@ -154,7 +154,7 @@ void IdentifierSymbol::DebugString(std::string& result)
 }
 
 // This version is only needed at the top of the tree (e.g. the input link)
-Identifier::Identifier(Agent* pAgent, char const* pAttributeName, char const* pIdentifier, long timeTag) 
+Identifier::Identifier(Agent* pAgent, char const* pAttributeName, char const* pIdentifier, long long timeTag) 
 : WMElement(pAgent, NULL, pIdentifier, pAttributeName, timeTag)
 {
 	//m_pSymbol = GetAgent()->GetWM()->FindIdentifierSymbol(pIdentifier);
@@ -169,11 +169,11 @@ Identifier::Identifier(Agent* pAgent, char const* pAttributeName, char const* pI
 		RecordSymbolInMap();
 	//}
 	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
-	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag64() << ")" << std::endl;
 }
 
 // The normal case (where there is a parent id)
-Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) 
+Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, char const* pIdentifier, long long timeTag) 
 : WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
 	//m_pSymbol = GetAgent()->GetWM()->FindIdentifierSymbol(pIdentifier);
@@ -188,10 +188,10 @@ Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char
 		RecordSymbolInMap();
 	//}
 	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
-	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag64() << ")" << std::endl;
 }
 
-Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pIdentifier, long timeTag) 
+Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, char const* pIdentifier, long long timeTag) 
 : WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
 	//m_pSymbol = GetAgent()->GetWM()->FindIdentifierSymbol(pIdentifier);
@@ -206,28 +206,28 @@ Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char cons
 		RecordSymbolInMap();
 	//}
 	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
-	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag64() << ")" << std::endl;
 }
 
 // Creating one identifier to have the same value as another
-Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long timeTag) 
+Identifier::Identifier(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, Identifier* pLinkedIdentifier, long long timeTag) 
 : WMElement(pAgent, pParent->GetSymbol(), pID, pAttributeName, timeTag)
 {
 	m_pSymbol = pLinkedIdentifier->m_pSymbol ;
 	m_pSymbol->UsedBy(this) ;
 	//RecordSymbolInMap();	// redundant, if it is on another symbol, it is already in the map
 	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
-	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag64() << ")" << std::endl;
 }
 
-Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, IdentifierSymbol* pLinkedIdentifierSymbol, long timeTag) 
+Identifier::Identifier(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, IdentifierSymbol* pLinkedIdentifierSymbol, long long timeTag) 
 : WMElement(pAgent, pParentSymbol, pID, pAttributeName, timeTag)
 {
 	m_pSymbol = pLinkedIdentifierSymbol;
 	m_pSymbol->UsedBy(this) ;
 	RecordSymbolInMap(); // potentially redundant
 	//std::cout << "created (" << this->GetIdentifierName() << " ^" << this->GetAttribute() 
-	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag() << ")" << std::endl;
+	//	<< " " << this->GetValueAsString() << ": " << this->GetTimeTag64() << ")" << std::endl;
 }
 
 void Identifier::RecordSymbolInMap()
@@ -239,7 +239,7 @@ void Identifier::UpdateSymbol(IdentifierSymbol* pSymbol)
 {
 	//std::string symString;
 	//m_pSymbol->DebugString(symString);
-	//std::cout << "UpdateSymbol for wme " << GetTimeTag() << " " << symString;
+	//std::cout << "UpdateSymbol for wme " << GetTimeTag64() << " " << symString;
 
 	m_pSymbol->TransferChildren(pSymbol);
 
@@ -254,7 +254,7 @@ Identifier::~Identifier(void)
 {
 	//std::string symString;
 	//m_pSymbol->DebugString(symString);
-	//std::cout << "~Identifier " << GetTimeTag() << " " << symString;
+	//std::cout << "~Identifier " << GetTimeTag64() << " " << symString;
 
 	ReleaseSymbol();
 }
@@ -335,14 +335,14 @@ void Identifier::AddErrorCode(int errorCode)
 *
 * @param timeTag	The tag to look for (e.g. +12 for kernel side or -15 for client side)
 *************************************************************/
-WMElement* Identifier::FindFromTimeTag(long timeTag) const
+WMElement* Identifier::FindFromTimeTag(long long timeTag) const
 {
 	// SLOWSLOW: We could use a hash table to speed this up and replace O(n) with O(1).
 	// Right now that will only impact performance when elements are removed from the output link,
 	// but if clients start to use this (or the output link is really large for an application)
 	// the saving could be significant.
 
-	if (this->GetTimeTag() == timeTag)
+	if (this->GetTimeTag64() == timeTag)
 		return const_cast<WMElement*>(static_cast<const WMElement*>(this)) ;
 
 	// Go through each child in turn and if it's an identifier search its children for a matching id.
@@ -350,7 +350,7 @@ WMElement* Identifier::FindFromTimeTag(long timeTag) const
 	{
 		WMElement* pWME = *iter ;
 
-		if (pWME->GetTimeTag() == timeTag)
+		if (pWME->GetTimeTag64() == timeTag)
 			return pWME ;
 
 		// If this is an identifer, we search deeper for the match
@@ -412,7 +412,7 @@ void Identifier::Refresh()
 }
 
 #ifdef SML_DIRECT
-void Identifier::DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag)
+void Identifier::DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag)
 {
 	EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>(GetAgent()->GetConnection());
 	pConnection->DirectAddID( pAgentSML, m_ID->GetIdentifierSymbol(), GetAttribute(), GetValueAsString(), timeTag);
@@ -424,7 +424,7 @@ StringElement* Identifier::CreateStringWME(char const* pAttribute, char const* p
 	return this->m_Agent->GetWM()->CreateStringWME(this, pAttribute, pValue);
 }
 
-IntElement* Identifier::CreateIntWME(char const* pAttribute, int value)
+IntElement* Identifier::CreateIntWME(char const* pAttribute, long long value)
 {
 	return this->m_Agent->GetWM()->CreateIntWME(this, pAttribute, value);
 }

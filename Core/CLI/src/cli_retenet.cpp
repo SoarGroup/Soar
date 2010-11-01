@@ -73,7 +73,7 @@ bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
 			return SetError( CLIError::kOpenFileFail );
 		}
 
-		if ( ! save_rete_net( m_pAgentSoar, file ) )
+		if ( ! save_rete_net( m_pAgentSoar, file, TRUE ) )
 		{
 			// TODO: additional error information
 			return SetError( CLIError::kReteSaveOperationFail );

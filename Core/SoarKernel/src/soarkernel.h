@@ -109,8 +109,8 @@ struct node_varnames_struct;
 //  int     window_y;
 //  int     width;
 //  int     height;
-//  unsigned long foreground;
-//  unsigned long background;
+//  uint64_t foreground;
+//  uint64_t background;
 //  int     borderwidth;
 //  Symbol * last_op_id; /* Used in monitors */
 //} x_info;

@@ -288,9 +288,9 @@ namespace soar_module
 
 			//
 
-			inline intptr_t last_insert_rowid() { return static_cast<intptr_t>( sqlite3_last_insert_rowid( my_db ) ); }
-			inline intptr_t memory_usage() { return static_cast<intptr_t>( sqlite3_memory_used() ); }
-			inline intptr_t memory_highwater() { return static_cast<intptr_t>( sqlite3_memory_highwater( false ) ); }
+			inline int64_t last_insert_rowid() { return static_cast<int64_t>( sqlite3_last_insert_rowid( my_db ) ); }
+			inline int64_t memory_usage() { return static_cast<int64_t>( sqlite3_memory_used() ); }
+			inline int64_t memory_highwater() { return static_cast<int64_t>( sqlite3_memory_highwater( false ) ); }
 	};
 
 
@@ -370,21 +370,9 @@ namespace soar_module
 
 			//
 
-			inline void bind_int( int param, intptr_t val )
+			inline void bind_int( int param, int64_t val )
 			{
-				if ( sizeof(intptr_t) == 4 )
-				{
-					sqlite3_bind_int( my_stmt, param, static_cast<int>( val ) );
-				}
-				else if ( sizeof(intptr_t) == 8 )
-				{
-					sqlite3_bind_int64( my_stmt, param, static_cast<sqlite3_int64>( val ) );
-				}
-				else
-				{
-					// something other than a 32/64-bit platform
-					assert( false );
-				}
+				sqlite3_bind_int64( my_stmt, param, static_cast<sqlite3_int64>( val ) );
 			}
 
 			inline void bind_double( int param, double val )
@@ -404,21 +392,9 @@ namespace soar_module
 
 			//
 
-			inline intptr_t column_int( int col )
+			inline int64_t column_int( int col )
 			{
-				if ( sizeof(intptr_t) == 4 )
-				{
-					return static_cast<intptr_t>( sqlite3_column_int( my_stmt, col ) );
-				}
-				else if ( sizeof(intptr_t) == 8 )
-				{
-					return static_cast<intptr_t>( sqlite3_column_int64( my_stmt, col ) );
-				}
-				else
-				{
-					// something other than a 32/64-bit platform
-					assert( false );
-				}
+				return sqlite3_column_int64( my_stmt, col );
 			}
 
 			inline double column_double( int col )

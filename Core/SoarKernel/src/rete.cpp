@@ -192,8 +192,8 @@ typedef struct alpha_mem_struct {
   Symbol *value;
   Bool acceptable;             /* does it test for acceptable pref? */
   uint32_t am_id;            /* id for hashing */
-  unsigned long reference_count;  /* number of beta nodes using this mem */
-  unsigned long retesave_amindex;
+  uint64_t reference_count;  /* number of beta nodes using this mem */
+  uint64_t retesave_amindex;
 } alpha_mem;
 
 /* --- the entry for one WME in one alpha memory --- */
@@ -415,7 +415,7 @@ typedef struct rete_node_struct {
   uint32_t node_id;                   
 
 #ifdef SHARING_FACTORS
-  unsigned long sharing_factor;
+  uint64_t sharing_factor;
 #endif
 
   struct rete_node_struct *parent;       /* points to parent node */
@@ -449,10 +449,10 @@ inline rete_node * real_parent_node(rete_node * x)
    node->b.posneg.next_from_alpha_mem is 1 */
 
 /*#define node_is_right_unlinked(node) \
-  (((unsigned long)((node)->b.posneg.next_from_alpha_mem)) & 1)*/
-inline unsigned long node_is_right_unlinked(rete_node * node)
+  (((uint64_t)((node)->b.posneg.next_from_alpha_mem)) & 1)*/
+inline uint64_t node_is_right_unlinked(rete_node * node)
 {
-  return reinterpret_cast<unsigned long>(node->b.posneg.next_from_alpha_mem) & 1;
+  return reinterpret_cast<uint64_t>(node->b.posneg.next_from_alpha_mem) & 1;
 }
 
 /*#define mark_node_as_right_unlinked(node) { \
@@ -533,10 +533,10 @@ inline void relink_to_right_mem(rete_node * node)
    node->a.pos.next_from_beta_mem is 1 */
 
 /*#define node_is_left_unlinked(node) \
-  (((unsigned long)((node)->a.pos.next_from_beta_mem)) & 1)*/
-inline unsigned long node_is_left_unlinked(rete_node * node)
+  (((uint64_t)((node)->a.pos.next_from_beta_mem)) & 1)*/
+inline uint64_t node_is_left_unlinked(rete_node * node)
 {
-  return reinterpret_cast<unsigned long>(node->a.pos.next_from_beta_mem) & 1;
+  return reinterpret_cast<uint64_t>(node->a.pos.next_from_beta_mem) & 1;
 }
 
 /*#define mark_node_as_left_unlinked(node) { \
@@ -834,13 +834,13 @@ inline void init_sharing_stats_for_new_node(node * node)
 }
 
 /*#define set_sharing_factor(node,sf) { \
-  long ssf_237; \
+  int64_t ssf_237; \
   ssf_237 = (sf) - ((node)->sharing_factor); \
   (node)->sharing_factor = (sf); \
   thisAgent->rete_node_counts_if_no_sharing[(node)->node_type]+=ssf_237; }*/
-inline void set_sharing_factor(rete_node * node, unsigned long sf)
+inline void set_sharing_factor(rete_node * node, uint64_t sf)
 {
-  long ssf_237;
+  int64_t ssf_237;
   ssf_237 = (sf) - ((node)->sharing_factor);
   (node)->sharing_factor = (sf);
   thisAgent->rete_node_counts_if_no_sharing[(node)->node_type]+=ssf_237;
@@ -878,7 +878,7 @@ void adjust_sharing_factors_from_here_to_top (rete_node *node, int delta) {
    newly created nodes while we're adding a production to the net) to 1 */
 /*#define real_sharing_factor(node) \
   ((node)->sharing_factor ? (node)->sharing_factor : 1)*/
-inline unsigned long real_sharing_factor(rete_node * node)
+inline uint64_t real_sharing_factor(rete_node * node)
 {
   return ((node)->sharing_factor ? (node)->sharing_factor : 1);
 }
@@ -2358,13 +2358,13 @@ inline void * varloc_to_dummy(rete_node_level depth, byte field_num)
   return reinterpret_cast<void *>((depth << 2) + field_num);
 }
 
-//#define dummy_to_varloc_depth(d)     (((unsigned long)(d))>>2)
+//#define dummy_to_varloc_depth(d)     (((uint64_t)(d))>>2)
 inline rete_node_level dummy_to_varloc_depth(void * d)
 {
   return static_cast<rete_node_level>(reinterpret_cast<uintptr_t>(d) >> 2);
 }
 
-//#define dummy_to_varloc_field_num(d) (((unsigned long)(d)) & 3)
+//#define dummy_to_varloc_field_num(d) (((uint64_t)(d)) & 3)
 inline byte dummy_to_varloc_field_num(void * d)
 {
   return static_cast<byte>(reinterpret_cast<uintptr_t>(d) & 3);
@@ -2522,14 +2522,14 @@ typedef char varnames;
 #define one_var_to_varnames(x) ((varnames *) (x))
 #define var_list_to_varnames(x) ((varnames *) (((char *)(x)) + 1))
 #define varnames_is_one_var(x) (! (varnames_is_var_list(x)))
-#define varnames_is_var_list(x) (((unsigned long)(x)) & 1)
+#define varnames_is_var_list(x) (((uint64_t)(x)) & 1)
 #define varnames_to_one_var(x) ((Symbol *) (x))
 #define varnames_to_var_list(x) ((list *) (((char *)(x)) - 1))
 */
 
 inline varnames * one_var_to_varnames(Symbol * x) { return reinterpret_cast<varnames *>(x); }
 inline varnames * var_list_to_varnames(cons * x) { return reinterpret_cast<varnames *>(reinterpret_cast<char *>(x) + 1); }
-inline unsigned long varnames_is_var_list(varnames * x) { return reinterpret_cast<unsigned long>(x) & 1; }
+inline uint64_t varnames_is_var_list(varnames * x) { return reinterpret_cast<uint64_t>(x) & 1; }
 inline Bool varnames_is_one_var(varnames * x) { return ! varnames_is_var_list(x); }
 inline Symbol * varnames_to_one_var(varnames * x) { return reinterpret_cast<Symbol *>(x); }
 inline list * varnames_to_var_list(varnames * x) { return reinterpret_cast<list *>(static_cast<char *>(x) - 1); }
@@ -3466,7 +3466,7 @@ Bool same_rhs (action *rhs1, action *rhs2) {
 void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
                                           rete_node_level bottom_depth, 
                                           list * & rhs_unbound_vars_for_new_prod, 
-                                          unsigned long & num_rhs_unbound_vars_for_new_prod, 
+                                          uint64_t & num_rhs_unbound_vars_for_new_prod, 
                                           tc_number rhs_unbound_vars_tc)
 {
   cons *c;
@@ -3474,7 +3474,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
   var_location var_loc;
   var_loc.var_location_struct::levels_up = 0;
   var_loc.var_location_struct::field_num = 0;
-  unsigned long index;
+  uint64_t index;
   
   if (rhs_value_is_symbol(*rv)) {
     sym = rhs_value_to_symbol (*rv);
@@ -3493,7 +3493,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
         index = num_rhs_unbound_vars_for_new_prod++;
         sym->var.current_binding_value = reinterpret_cast<Symbol *>(index);
       } else {
-        index = reinterpret_cast<unsigned long>(sym->var.current_binding_value);
+        index = reinterpret_cast<uint64_t>(sym->var.current_binding_value);
       }
       *rv = unboundvar_to_rhs_value (index);
       symbol_remove_ref (thisAgent, sym);
@@ -3521,8 +3521,7 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
    production, and grows the array if necessary.
 --------------------------------------------------------------------- */
 
-void update_max_rhs_unbound_variables (agent* thisAgent, 
-                                                                           unsigned long num_for_new_production) {
+void update_max_rhs_unbound_variables (agent* thisAgent, uint64_t num_for_new_production) {
   if (num_for_new_production > thisAgent->max_rhs_unbound_variables) {
     free_memory (thisAgent, thisAgent->rhs_variable_bindings,MISCELLANEOUS_MEM_USAGE);
     thisAgent->max_rhs_unbound_variables = num_for_new_production;
@@ -3573,7 +3572,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	/* --- change variable names in RHS to Rete location references or
 	unbound variable indices --- */
 	list* rhs_unbound_vars_for_new_prod = NIL;
-	unsigned long num_rhs_unbound_vars_for_new_prod = 0;
+	uint64_t num_rhs_unbound_vars_for_new_prod = 0;
 	tc_number rhs_unbound_vars_tc = get_new_tc_number(thisAgent);
 	for (a=p->action_list; a!=NIL; a=a->next) {
 		fixup_rhs_value_variable_references (thisAgent, &(a->value), bottom_depth, 
@@ -4264,7 +4263,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
   cons *c, *new_c, *prev_new_c;
   list *fl, *new_fl;
   Symbol *sym;
-  long index;
+  int64_t index;
   char prefix[2];
   
   if (rhs_value_is_reteloc(rv)) {
@@ -4277,7 +4276,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
 
   if (rhs_value_is_unboundvar(rv)) 
   {
-    index = rhs_value_to_unboundvar(rv);
+    index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
     if (! *(thisAgent->rhs_variable_bindings+index)) 
     {
       prefix[0] = first_letter;
@@ -4383,7 +4382,7 @@ void p_node_to_conditions_and_nots (agent* thisAgent,
                                     action **dest_rhs) {
   cons *c;
   Symbol **cell;
-  long index;
+  int64_t index;
   production *prod;
 
   prod = p_node->b.p.prod;
@@ -6188,8 +6187,8 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
     /* --- for CN nodes --- */
     } else if (node_type==CN_BNODE) {
       remove_token_from_left_ht (thisAgent, tok, node->node_id ^
-                                      reinterpret_cast<unsigned long>(tok->parent) ^
-                                      reinterpret_cast<unsigned long>(tok->w));
+                                      reinterpret_cast<uint32_t>(tok->parent) ^
+                                      reinterpret_cast<uint32_t>(tok->w));
       for (t=tok->negrm_tokens; t!=NIL; t=next_t) {
         next_t = t->a.neg.next_negrm;
         if (t->w) fast_remove_from_dll (t->w->tokens, t, token,
@@ -6312,6 +6311,7 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
 ********************************************************************** */
 
 FILE *rete_fs_file;  /* File handle we're using -- "fs" for "fast-save" */
+Bool rete_net_64; // used by reteload_eight_bytes, retesave_eight_bytes, BADBAD global, fix with rete_fs_file above
 
 /* ----------------------------------------------------------------------
                 Save/Load Bytes, Short and Long Integers
@@ -6355,6 +6355,45 @@ uint32_t reteload_four_bytes (FILE* f) {
   i += (reteload_one_byte(f) << 8);
   i += (reteload_one_byte(f) << 16);
   i += (reteload_one_byte(f) << 24);
+  return i;
+}
+
+void retesave_eight_bytes (uint64_t w, FILE* f) {
+  if (!rete_net_64) {
+    retesave_four_bytes(static_cast<uint32_t>(w), f);
+    return;
+  }
+  retesave_one_byte (static_cast<uint8_t>(w & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 8) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 16) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 24) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 32) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 40) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 48) & 0xFF), f);
+  retesave_one_byte (static_cast<uint8_t>((w >> 56) & 0xFF), f);
+}
+
+uint64_t reteload_eight_bytes (FILE* f) {
+  if (!rete_net_64) 
+    return reteload_four_bytes(f);
+
+  uint64_t i;
+  uint64_t tmp;
+  i = reteload_one_byte(f);
+  tmp = reteload_one_byte(f);
+  i += (tmp << 8);
+  tmp = reteload_one_byte(f);
+  i += (tmp << 16);
+  tmp = reteload_one_byte(f);
+  i += (tmp << 24);
+  tmp = reteload_one_byte(f);
+  i += (tmp << 32);
+  tmp = reteload_one_byte(f);
+  i += (tmp << 40);
+  tmp = reteload_one_byte(f);
+  i += (tmp << 48);
+  tmp = reteload_one_byte(f);
+  i += (tmp << 56);
   return i;
 }
 
@@ -6427,10 +6466,10 @@ Bool retesave_symbol_and_assign_index (agent* thisAgent, void *item, void* userd
 void retesave_symbol_table (agent* thisAgent, FILE* f) {
   thisAgent->current_retesave_symindex = 0;
 
-  retesave_four_bytes (thisAgent->sym_constant_hash_table->count,f);
-  retesave_four_bytes (thisAgent->variable_hash_table->count,f);
-  retesave_four_bytes (thisAgent->int_constant_hash_table->count,f);
-  retesave_four_bytes (thisAgent->float_constant_hash_table->count,f);
+  retesave_eight_bytes (thisAgent->sym_constant_hash_table->count,f);
+  retesave_eight_bytes (thisAgent->variable_hash_table->count,f);
+  retesave_eight_bytes (thisAgent->int_constant_hash_table->count,f);
+  retesave_eight_bytes (thisAgent->float_constant_hash_table->count,f);
 
   do_for_all_items_in_hash_table (thisAgent, thisAgent->sym_constant_hash_table,
                                   retesave_symbol_and_assign_index,f);
@@ -6443,15 +6482,15 @@ void retesave_symbol_table (agent* thisAgent, FILE* f) {
 }
 
 void reteload_all_symbols (agent* thisAgent, FILE* f) {
-  unsigned long num_sym_constants, num_variables;
-  unsigned long num_int_constants, num_float_constants;
+  uint64_t num_sym_constants, num_variables;
+  uint64_t num_int_constants, num_float_constants;
   Symbol **current_place_in_symtab;
-  unsigned long i;
+  uint64_t i;
 
-  num_sym_constants = reteload_four_bytes(f);
-  num_variables = reteload_four_bytes(f);
-  num_int_constants = reteload_four_bytes(f);
-  num_float_constants = reteload_four_bytes(f);
+  num_sym_constants = reteload_eight_bytes(f);
+  num_variables = reteload_eight_bytes(f);
+  num_int_constants = reteload_eight_bytes(f);
+  num_float_constants = reteload_eight_bytes(f);
 
   thisAgent->reteload_num_syms = num_sym_constants + num_variables + num_int_constants
     + num_float_constants;
@@ -6483,9 +6522,9 @@ void reteload_all_symbols (agent* thisAgent, FILE* f) {
 }
 
 Symbol *reteload_symbol_from_index (agent* thisAgent, FILE* f) {
-  unsigned long index;
+  uint64_t index;
   
-  index = reteload_four_bytes(f);
+  index = reteload_eight_bytes(f);
   if (index==0) return NIL;
   index--;
   if (index >= thisAgent->reteload_num_syms) {
@@ -6498,7 +6537,7 @@ Symbol *reteload_symbol_from_index (agent* thisAgent, FILE* f) {
 }
 
 void reteload_free_symbol_table (agent* thisAgent) {
-  unsigned long i;
+  uint64_t i;
 
   for (i=0; i<thisAgent->reteload_num_syms; i++)
     symbol_remove_ref (thisAgent, *(thisAgent->reteload_symbol_table+i));
@@ -6537,31 +6576,31 @@ Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, void* us
   am = static_cast<alpha_mem_struct *>(item);
   thisAgent->current_retesave_amindex++;
   am->retesave_amindex = thisAgent->current_retesave_amindex;
-  retesave_four_bytes (am->id ? am->id->common.a.retesave_symindex : 0,f);
-  retesave_four_bytes (am->attr ? am->attr->common.a.retesave_symindex : 0,f);
-  retesave_four_bytes (am->value ? am->value->common.a.retesave_symindex : 0,f);
+  retesave_eight_bytes (am->id ? am->id->common.a.retesave_symindex : 0,f);
+  retesave_eight_bytes (am->attr ? am->attr->common.a.retesave_symindex : 0,f);
+  retesave_eight_bytes (am->value ? am->value->common.a.retesave_symindex : 0,f);
   retesave_one_byte (static_cast<byte>(am->acceptable ? 1 : 0),f);
   return FALSE;
 }
 
 void retesave_alpha_memories (agent* thisAgent, FILE* f) {
-  unsigned long i, num_ams;
+  uint64_t i, num_ams;
 
   thisAgent->current_retesave_amindex = 0;
   num_ams = 0;
   for (i=0; i<16; i++) num_ams += thisAgent->alpha_hash_tables[i]->count;
-  retesave_four_bytes (num_ams,f);
+  retesave_eight_bytes (num_ams,f);
   for (i=0; i<16; i++)
     do_for_all_items_in_hash_table (thisAgent, thisAgent->alpha_hash_tables[i],
                                     retesave_alpha_mem_and_assign_index,f);
 }
 
 void reteload_alpha_memories (agent* thisAgent, FILE* f) {
-  unsigned long i;
+  uint64_t i;
   Symbol *id, *attr, *value;
   Bool acceptable;
 
-  thisAgent->reteload_num_ams = reteload_four_bytes(f);
+  thisAgent->reteload_num_ams = reteload_eight_bytes(f);
   thisAgent->reteload_am_table = (alpha_mem **)
     allocate_memory (thisAgent, thisAgent->reteload_num_ams*sizeof(char *),MISCELLANEOUS_MEM_USAGE);
   for (i=0; i<thisAgent->reteload_num_ams; i++) {
@@ -6574,9 +6613,9 @@ void reteload_alpha_memories (agent* thisAgent, FILE* f) {
 }
 
 alpha_mem *reteload_am_from_index (agent* thisAgent, FILE* f) {
-  unsigned long amindex;
+  uint64_t amindex;
 
-  amindex = reteload_four_bytes(f) - 1;
+  amindex = reteload_eight_bytes(f) - 1;
   if (amindex >= thisAgent->reteload_num_ams) {
     char msg[BUFFER_MSG_SIZE];
     strncpy (msg,
@@ -6588,7 +6627,7 @@ alpha_mem *reteload_am_from_index (agent* thisAgent, FILE* f) {
 }
 
 void reteload_free_am_table (agent* thisAgent) {
-  unsigned long i;
+  uint64_t i;
 
   for (i=0; i<thisAgent->reteload_num_ams; i++)
     remove_ref_to_alpha_mem (thisAgent, *(thisAgent->reteload_am_table+i));
@@ -6612,7 +6651,7 @@ void reteload_free_am_table (agent* thisAgent) {
 
 void retesave_varnames (varnames *names, FILE* f) {
   list *c;
-  unsigned long i;
+  uint64_t i;
   Symbol *sym;
 
   if (! names) {
@@ -6620,19 +6659,19 @@ void retesave_varnames (varnames *names, FILE* f) {
   } else if (varnames_is_one_var(names)) {
     retesave_one_byte (1,f);
     sym = varnames_to_one_var (names);
-    retesave_four_bytes (sym->common.a.retesave_symindex,f);
+    retesave_eight_bytes (sym->common.a.retesave_symindex,f);
   } else {
     retesave_one_byte (2,f);
     for (i=0, c=varnames_to_var_list(names); c!=NIL; i++, c=c->rest);
-    retesave_four_bytes (i,f);
+    retesave_eight_bytes (i,f);
     for (c=varnames_to_var_list(names); c!=NIL; c=c->rest)
-      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
 varnames *reteload_varnames (agent* thisAgent, FILE* f) {
   list *c;
-  unsigned long i, count;
+  uint64_t i, count;
   Symbol *sym;
 
   i = reteload_one_byte (f);
@@ -6642,7 +6681,7 @@ varnames *reteload_varnames (agent* thisAgent, FILE* f) {
     symbol_add_ref (sym);
     return one_var_to_varnames (sym);
   } else {
-    count = reteload_four_bytes (f);
+    count = reteload_eight_bytes (f);
     c = NIL;
     while (count--) {
       sym = reteload_symbol_from_index (thisAgent,f);
@@ -6707,22 +6746,22 @@ node_varnames *reteload_node_varnames (agent* thisAgent, rete_node *node, FILE* 
 ---------------------------------------------------------------------- */
 
 void retesave_rhs_value (rhs_value rv, FILE* f) {
-  unsigned long i;
+  uint64_t i;
   Symbol *sym;
   cons *c;
   
   if (rhs_value_is_symbol(rv)) {
     retesave_one_byte (0,f);
     sym = rhs_value_to_symbol (rv);
-    retesave_four_bytes (sym->common.a.retesave_symindex,f);
+    retesave_eight_bytes (sym->common.a.retesave_symindex,f);
   } else if (rhs_value_is_funcall(rv)) {
     retesave_one_byte (1,f);
     c = rhs_value_to_funcall_list (rv);
     sym = static_cast<rhs_function *>(c->first)->name;
-    retesave_four_bytes (sym->common.a.retesave_symindex,f);
+    retesave_eight_bytes (sym->common.a.retesave_symindex,f);
     c=c->rest;
     for (i=0; c!=NIL; i++, c=c->rest);
-    retesave_four_bytes (i,f);
+    retesave_eight_bytes (i,f);
     for (c=rhs_value_to_funcall_list(rv)->rest; c!=NIL; c=c->rest)
       retesave_rhs_value (static_cast<rhs_value>(c->first),f);
   } else if (rhs_value_is_reteloc(rv)) {
@@ -6731,13 +6770,13 @@ void retesave_rhs_value (rhs_value rv, FILE* f) {
     retesave_two_bytes (rhs_value_to_reteloc_levels_up(rv),f);
   } else {
     retesave_one_byte (3,f);
-    retesave_four_bytes (rhs_value_to_unboundvar(rv),f);
+    retesave_eight_bytes (rhs_value_to_unboundvar(rv),f);
   }
 }
 
 rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
   rhs_value rv, temp;
-  unsigned long i, count;
+  uint64_t i, count;
   Symbol *sym;
   byte type, field_num;
   int levels_up;
@@ -6764,7 +6803,7 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
       abort_with_fatal_error(thisAgent, msg);
     }
     push(thisAgent, rf, funcall_list);
-    count = reteload_four_bytes(f);    
+    count = reteload_eight_bytes(f);    
     while (count--) {
       temp = reteload_rhs_value(thisAgent,f);
       push(thisAgent, temp, funcall_list);
@@ -6778,7 +6817,7 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
     rv = reteloc_to_rhs_value (field_num, static_cast<rete_node_level>(levels_up));
     break;
   case 3:
-    i = reteload_four_bytes(f);
+    i = reteload_eight_bytes(f);
     update_max_rhs_unbound_variables (thisAgent, i+1);
     rv = unboundvar_to_rhs_value (i);
     break;
@@ -6847,19 +6886,19 @@ action *reteload_rhs_action (agent* thisAgent, FILE* f) {
 }
 
 void retesave_action_list (action *first_a, FILE* f) {
-  unsigned long i;
+  uint64_t i;
   action *a;
 
   for (i=0, a=first_a; a!=NIL; i++, a=a->next);
-  retesave_four_bytes (i,f);
+  retesave_eight_bytes (i,f);
   for (a=first_a; a!=NIL; a=a->next) retesave_rhs_action (a,f);
 }
 
 action *reteload_action_list (agent* thisAgent, FILE* f) {
   action *a, *prev_a, *first_a;
-  unsigned long count;
+  uint64_t count;
   
-  count = reteload_four_bytes (f);
+  count = reteload_eight_bytes (f);
   prev_a = NIL;
   first_a = NIL;  /* unneeded, but without it gcc -Wall warns here */
   while (count--) {
@@ -6893,7 +6932,7 @@ void retesave_rete_test (rete_test *rt, FILE* f) {
   retesave_one_byte (rt->type,f);
   retesave_one_byte (rt->right_field_num,f);
   if (test_is_constant_relational_test(rt->type)) {
-    retesave_four_bytes(rt->data.constant_referent->common.a.retesave_symindex, f);
+    retesave_eight_bytes(rt->data.constant_referent->common.a.retesave_symindex, f);
   } else if (test_is_variable_relational_test(rt->type)) {
     retesave_one_byte (rt->data.variable_referent.field_num,f);
     retesave_two_bytes (rt->data.variable_referent.levels_up,f);
@@ -6901,14 +6940,14 @@ void retesave_rete_test (rete_test *rt, FILE* f) {
     for (i=0, c=rt->data.disjunction_list; c!=NIL; i++, c=c->rest);
     retesave_two_bytes (static_cast<uint16_t>(i),f);
     for (c=rt->data.disjunction_list; c!=NIL; c=c->rest)
-      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
   }
 }
 
 rete_test *reteload_rete_test (agent* thisAgent, FILE* f) {
   rete_test *rt;
   Symbol *sym;
-  unsigned long count;
+  uint64_t count;
   list *temp;
 
   allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &rt);
@@ -6935,7 +6974,7 @@ rete_test *reteload_rete_test (agent* thisAgent, FILE* f) {
 }
 
 void retesave_rete_test_list (rete_test *first_rt, FILE* f) {
-  unsigned long i;
+  uint64_t i;
   rete_test *rt;
 
   for (i=0, rt=first_rt; rt!=NIL; i++, rt=rt->next);
@@ -6946,7 +6985,7 @@ void retesave_rete_test_list (rete_test *first_rt, FILE* f) {
 
 rete_test *reteload_rete_test_list (agent* thisAgent, FILE* f) {
   rete_test *rt, *prev_rt, *first;
-  unsigned long count;
+  uint64_t count;
   
   prev_rt = NIL;
   first = NIL;  /* unneeded, but without it gcc -Wall warns here */
@@ -7010,12 +7049,12 @@ rete_test *reteload_rete_test_list (agent* thisAgent, FILE* f) {
 void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f);
 
 void retesave_children_of_node (agent* thisAgent, rete_node *node, FILE* f) {
-  unsigned long i; rete_node *child;
+  uint64_t i; rete_node *child;
 
   /* --- Count number of non-CN-node children. --- */
   for (i=0, child=node->first_child; child; child=child->next_sibling)
     if (child->node_type != CN_BNODE) i++;
-  retesave_four_bytes (i,f);
+  retesave_eight_bytes (i,f);
 
   /* --- Write out records for all the node's children except CN's. --- */
   for (child=node->first_child; child; child=child->next_sibling)
@@ -7024,7 +7063,7 @@ void retesave_children_of_node (agent* thisAgent, rete_node *node, FILE* f) {
 }
 
 void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f) {
-  unsigned long i;
+  uint64_t i;
   production *prod;
   cons *c;
   rete_node *temp;
@@ -7046,14 +7085,14 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
     retesave_two_bytes (node->left_hash_loc_levels_up,f);
     /* ... and fall through to the next case below ... */
   case UNHASHED_MP_BNODE:
-    retesave_four_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
+    retesave_eight_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
     retesave_rete_test_list (node->b.posneg.other_tests,f);
     retesave_one_byte (static_cast<byte>(node->a.np.is_left_unlinked ? 1 : 0),f);
     break;
 
   case POSITIVE_BNODE:
   case UNHASHED_POSITIVE_BNODE:
-    retesave_four_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
+    retesave_eight_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
     retesave_rete_test_list (node->b.posneg.other_tests,f);
     retesave_one_byte (static_cast<byte>(node_is_left_unlinked(node) ? 1 : 0),f);
     break;
@@ -7063,7 +7102,7 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
     retesave_two_bytes (node->left_hash_loc_levels_up,f );
     /* ... and fall through to the next case below ... */
   case UNHASHED_NEGATIVE_BNODE:
-    retesave_four_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
+    retesave_eight_bytes (node->b.posneg.alpha_mem_->retesave_amindex,f);
     retesave_rete_test_list (node->b.posneg.other_tests,f);
     break;
 
@@ -7074,12 +7113,12 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
       temp = real_parent_node (temp);
       i++;
     }
-    retesave_four_bytes (i,f);
+    retesave_eight_bytes (i,f);
     break;
 
   case P_BNODE:
     prod = node->b.p.prod;
-    retesave_four_bytes (prod->name->common.a.retesave_symindex,f);
+    retesave_eight_bytes (prod->name->common.a.retesave_symindex,f);
     if (prod->documentation) {
       retesave_one_byte (1,f);
       retesave_string (prod->documentation,f);
@@ -7090,9 +7129,9 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
     retesave_one_byte (prod->declared_support,f);
     retesave_action_list (prod->action_list,f );
     for (i=0, c=prod->rhs_unbound_variables; c!=NIL; i++, c=c->rest);
-    retesave_four_bytes (i,f);
+    retesave_eight_bytes (i,f);
     for (c=prod->rhs_unbound_variables; c!=NIL; c=c->rest)
-      retesave_four_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
+      retesave_eight_bytes (static_cast<Symbol *>(c->first)->common.a.retesave_symindex,f);
     if (node->b.p.parents_nvn) {
       retesave_one_byte (1,f);
       retesave_node_varnames (node->b.p.parents_nvn, node->parent, f);
@@ -7119,7 +7158,7 @@ void retesave_rete_node_and_children (agent* thisAgent, rete_node *node, FILE* f
 void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
   byte type, left_unlinked_flag;
   rete_node *New, *ncc_top;
-  unsigned long count;
+  uint64_t count;
   alpha_mem *am;
   production *prod;
   Symbol *sym;
@@ -7181,7 +7220,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     break;
 
   case CN_PARTNER_BNODE:
-    count = reteload_four_bytes(f);
+    count = reteload_eight_bytes(f);
     ncc_top = parent;
     while (count--) ncc_top = real_parent_node (ncc_top);
     New = make_new_cn_node (thisAgent, ncc_top, parent);
@@ -7211,7 +7250,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     prod->declared_support = reteload_one_byte (f);
     prod->action_list = reteload_action_list (thisAgent,f);
 
-    count = reteload_four_bytes (f);
+    count = reteload_eight_bytes (f);
     update_max_rhs_unbound_variables (thisAgent, count);
     ubv_list = NIL;
     while (count--) {
@@ -7267,7 +7306,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
   } /* end of switch statement */
 
   /* --- read in the children of the node --- */
-  count = reteload_four_bytes(f);
+  count = reteload_eight_bytes(f);
   while (count--) reteload_node_and_children (thisAgent, New,f);
 }
 
@@ -7279,7 +7318,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
   FALSE if any error occurred.
 ---------------------------------------------------------------------- */
 
-Bool save_rete_net (agent* thisAgent, FILE *dest_file) {
+Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64) {
 
   /* --- make sure there are no justifications present --- */
   if (thisAgent->all_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE]) {
@@ -7288,9 +7327,11 @@ Bool save_rete_net (agent* thisAgent, FILE *dest_file) {
   }
   
   rete_fs_file = dest_file;
+  rete_net_64 = use_rete_net_64;
+  uint8_t version = use_rete_net_64 ? 4 : 3;
 
   retesave_string ("SoarCompactReteNet\n",dest_file);
-  retesave_one_byte (3,dest_file);  /* format version number */
+  retesave_one_byte (version,dest_file);  /* format version number */
   retesave_symbol_table(thisAgent, dest_file);
   retesave_alpha_memories(thisAgent,dest_file);
   retesave_children_of_node (thisAgent, thisAgent->dummy_top_node,dest_file);
@@ -7299,7 +7340,7 @@ Bool save_rete_net (agent* thisAgent, FILE *dest_file) {
 
 Bool load_rete_net (agent* thisAgent, FILE *source_file) {
   int format_version_num;
-  unsigned long i, count;
+  uint64_t i, count;
 
   /* RDF: 20020814 RDF Cleaning up the agent working memory and production
      memory to avoid unecessary errors in this function. */
@@ -7308,7 +7349,6 @@ Bool load_rete_net (agent* thisAgent, FILE *source_file) {
 
   /* DONE clearing old productions */
   
-
   /* --- check for empty system --- */
   if (thisAgent->all_wmes_in_rete) {
     print (thisAgent, "Internal error: load_rete_net() called with nonempty WM.\n");
@@ -7320,6 +7360,7 @@ Bool load_rete_net (agent* thisAgent, FILE *source_file) {
       return FALSE;
     }
   
+  // BADBAD: this is global, used in retesave_one_byte
   rete_fs_file = source_file;
 
   /* --- read file header, make sure it's a valid file --- */
@@ -7329,15 +7370,24 @@ Bool load_rete_net (agent* thisAgent, FILE *source_file) {
     return FALSE;
   }
   format_version_num = reteload_one_byte(source_file);
-  if (format_version_num!=3) {
-    print (thisAgent, "This file is in a format (version %d) I don't understand.\n",
-           format_version_num);
-    return FALSE;
+  switch(format_version_num)
+  {
+    case 3:
+      // Since there's already a global, I'm putting the 32- or 64-bit switch out there globally
+      rete_net_64 = FALSE; // used by reteload_eight_bytes
+      break;
+    case 4:
+      // Since there's already a global, I'm putting the 32- or 64-bit switch out there globally
+      rete_net_64 = TRUE; // used by reteload_eight_bytes
+      break;
+    default:
+      print (thisAgent, "This file is in a format (version %d) I don't understand.\n", format_version_num);
+      return FALSE;
   }
 
   reteload_all_symbols(thisAgent,source_file);
   reteload_alpha_memories(thisAgent,source_file);
-  count = reteload_four_bytes(source_file);
+  count = reteload_eight_bytes(source_file);
   while (count--) reteload_node_and_children (thisAgent, thisAgent->dummy_top_node,source_file);
 
   /* --- clean up auxilliary tables --- */
@@ -7384,9 +7434,8 @@ Bool load_rete_net (agent* thisAgent, FILE *source_file) {
      local join result tokens on (real) tokens in negative/NCC nodes
 ---------------------------------------------------------------------- */
 
-unsigned long count_rete_tokens_for_production (agent* thisAgent, 
-                                                                                                production *prod) {
-  unsigned long count;
+uint64_t count_rete_tokens_for_production (agent* thisAgent, production *prod) {
+  uint64_t count;
   rete_node *node;
   token *tok;
 
@@ -7495,10 +7544,10 @@ void get_all_node_count_stats (agent* thisAgent) {
 int get_node_count_statistic (agent* thisAgent, 
                                   char * node_type_name, 
                               char * column_name,
-                              unsigned long * result) 
+                              uint64_t * result) 
 {
   int i;
-  unsigned long tot;
+  uint64_t tot;
 
   get_all_node_count_stats(thisAgent);
 
@@ -7649,7 +7698,7 @@ void print_whole_token (agent* thisAgent, token *t, wme_trace_type wtt) {
 
 /* --- Print stuff for given node and higher, up to but not including the
        cutoff node.  Return number of matches at the given node/cond. --- */
-long ppmi_aux (agent* thisAgent,   /* current agent */
+int64_t ppmi_aux (agent* thisAgent,   /* current agent */
                            rete_node *node,    /* current node */
                rete_node *cutoff,  /* don't print cutoff node or any higher */
                condition *cond,    /* cond for current node */
@@ -7657,8 +7706,8 @@ long ppmi_aux (agent* thisAgent,   /* current agent */
                int indent) {       /* number of spaces indent */
   token *tokens, *t, *parent_tokens;
   right_mem *rm;
-  long matches_one_level_up;
-  long matches_at_this_level;
+  int64_t matches_one_level_up;
+  int64_t matches_at_this_level;
 #define MATCH_COUNT_STRING_BUFFER_SIZE 20
   char match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE];
   rete_node *parent;
@@ -7741,7 +7790,7 @@ long ppmi_aux (agent* thisAgent,   /* current agent */
 void print_partial_match_information (agent* thisAgent, rete_node *p_node, 
                                                                           wme_trace_type wtt) {
   condition *top_cond, *bottom_cond;
-  long n;
+  int64_t n;
   token *tokens, *t;
 
   p_node_to_conditions_and_nots (thisAgent, p_node, NIL, NIL, &top_cond, &bottom_cond,
@@ -8597,7 +8646,7 @@ void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type mst) {
 
 /* --- Print stuff for given node and higher, up to but not including the
        cutoff node.  Return number of matches at the given node/cond. --- */
-long xml_aux (agent* thisAgent,   /* current agent */
+int64_t xml_aux (agent* thisAgent,   /* current agent */
                            rete_node *node,    /* current node */
                rete_node *cutoff,  /* don't print cutoff node or any higher */
                condition *cond,    /* cond for current node */
@@ -8605,8 +8654,8 @@ long xml_aux (agent* thisAgent,   /* current agent */
                int indent) {       /* number of spaces indent */
   token *tokens, *t, *parent_tokens;
   right_mem *rm;
-  long matches_one_level_up;
-  long matches_at_this_level;
+  int64_t matches_one_level_up;
+  int64_t matches_at_this_level;
   //#define MATCH_COUNT_STRING_BUFFER_SIZE 20
   //char match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE];
   rete_node *parent;
@@ -8711,7 +8760,7 @@ long xml_aux (agent* thisAgent,   /* current agent */
 
 void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_trace_type wtt) {
   condition *top_cond, *bottom_cond;
-  long n;
+  int64_t n;
   token *tokens, *t;
 
   xml_begin_tag(thisAgent, kTagProduction) ;

@@ -60,6 +60,9 @@ public:
 	// Returns the character data from the result tag as an int (or default value if there is no character data in the tag)
 	int GetResultInt(int defaultValue) const ;
 
+	// Returns the character data from the result tag as an long long (or default value if there is no character data in the tag)
+	long long GetResultInt(long long defaultValue) const ;
+
 	// Returns the result as a bool
 	bool GetResultBool(bool defaultValue) const ;
 
@@ -85,6 +88,11 @@ public:
 	* @brief As "GetArgString" but parsed as an int.
 	*************************************************************/
 	int GetArgInt(char const* pArgName, int defaultValue) const ;
+
+	/*************************************************************
+	* @brief As "GetArgString" but parsed as an long long.
+	*************************************************************/
+	long long GetArgInt(char const* pArgName, long long defaultValue) const ;
 
 	/*************************************************************
 	* @brief As "GetArgString" but parsed as an float (double).

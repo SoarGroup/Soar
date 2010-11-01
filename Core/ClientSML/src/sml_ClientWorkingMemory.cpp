@@ -152,7 +152,7 @@ WMElement* WorkingMemory::SearchWmeListForID(WmeList* pWmeList, char const* pID,
 }
 
 // Create a new WME of the appropriate type based on this information.
-WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long timeTag)
+WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttribute, char const* pValue, char const* pType, long long timeTag)
 {
 	// Value is an identifier
 	if (strcmp(pType, sml_Names::kTypeID) == 0)
@@ -177,7 +177,7 @@ WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const*
 	// Value is an int
 	if (strcmp(pType, sml_Names::kTypeInt) == 0)
 	{
-		int value = 0;
+		long long value = 0;
 		from_c_string(value, pValue);
 		return new IntElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
@@ -204,13 +204,13 @@ void WorkingMemory::RecordAddition(WMElement* pWME)
 	pWME->SetJustAdded(true) ;
 
 	// record timetag -> WME mapping for deletion lookup
-	m_TimeTagWMEMap[ pWME->GetTimeTag() ] = pWME;
+	m_TimeTagWMEMap[ pWME->GetTimeTag64() ] = pWME;
 }
 
 void WorkingMemory::RecordDeletion(WMElement* pWME)
 {
 	// remove timetag -> WME mapping
-	m_TimeTagWMEMap.erase( pWME->GetTimeTag() );
+	m_TimeTagWMEMap.erase( pWME->GetTimeTag64() );
 
 	// This list takes ownership of the deleted wme.
 	// When the item is removed from the delta list it will be deleted.
@@ -266,7 +266,7 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 		sml::PrintDebugFormat("Received output wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
 	}
 
-	long timeTag = 0;
+	long long timeTag = 0;
 	from_c_string(timeTag, pTimeTag);
 
 	// Find the parent wme that we're adding this new wme to
@@ -378,7 +378,7 @@ bool WorkingMemory::TryToAttachOrphanedChildren(Identifier* pPossibleParent)
 		pPossibleParent->AddChild(pWme) ;
 
 		if (this->GetAgent()->GetKernel()->IsTracingCommunications())
-			sml::PrintDebugFormat("Adding orphaned child to this ID: %s ^%s %s (time tag %d)", pWme->GetIdentifierName(), pWme->GetAttribute(), pWme->GetValueAsString(), pWme->GetTimeTag()) ;
+			sml::PrintDebugFormat("Adding orphaned child to this ID: %s ^%s %s (time tag %d)", pWme->GetIdentifierName(), pWme->GetAttribute(), pWme->GetValueAsString(), pWme->GetTimeTag64()) ;
 
 		// If the wme being attached is itself an identifier, we have to check in turn to see if it has any orphaned children
 		if (pWme->IsIdentifier())
@@ -404,7 +404,7 @@ bool WorkingMemory::ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing)
 	// We're removing structure from the output link
 	char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will usually be kernel side time tags (e.g. +5 not -7)
 
-	long timeTag = 0;
+	long long timeTag = 0;
 	from_c_string(timeTag, pTimeTag);
 
 	// If we have no output link we can't delete things from it.
@@ -578,7 +578,7 @@ Identifier* WorkingMemory::GetInputLink()
 
 		if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInputLink, GetAgentName()))
 		{
-			m_InputLink = new Identifier(GetAgent(), "input-link", response.GetResultString(), GenerateTimeTag()) ;
+			m_InputLink = new Identifier(GetAgent(), "input-link", response.GetResultString(), GenerateTimeTag64()) ;
 		}
 	}
 
@@ -658,7 +658,7 @@ bool WorkingMemory::SynchronizeInputLink()
 			sml::PrintDebugFormat("Received input wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
 		}
 
-		long timeTag = 0;
+		long long timeTag = 0;
 		from_c_string(timeTag, pTimeTag);
 
 		// Find the parent wme that we're adding this new wme to
@@ -769,7 +769,7 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 {
 	assert(m_Agent == parent->GetAgent()) ;
 
-	StringElement* pWME = new StringElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pValue, GenerateTimeTag()) ;
+	StringElement* pWME = new StringElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pValue, GenerateTimeTag64()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -778,7 +778,7 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 	if ( GetConnection()->IsDirectConnection() )
 	{
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
-		pConnection->DirectAddWME_String( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, pValue, pWME->GetTimeTag());
+		pConnection->DirectAddWME_String( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, pValue, pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return pWME ;
@@ -799,11 +799,11 @@ StringElement* WorkingMemory::CreateStringWME(Identifier* parent, char const* pA
 * @brief Same as CreateStringWME but for a new WME that has
 *		 an int as its value.
 *************************************************************/
-IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribute, int value)
+IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribute, long long value)
 {
 	assert(m_Agent == parent->GetAgent()) ;
 
-	IntElement* pWME = new IntElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
+	IntElement* pWME = new IntElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag64()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -812,7 +812,7 @@ IntElement* WorkingMemory::CreateIntWME(Identifier* parent, char const* pAttribu
 	if ( GetConnection()->IsDirectConnection() )
 	{
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
-		pConnection->DirectAddWME_Int( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, value, pWME->GetTimeTag());
+		pConnection->DirectAddWME_Int( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, value, pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return pWME ;
@@ -837,7 +837,7 @@ FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAtt
 {
 	assert(m_Agent == parent->GetAgent()) ;
 
-	FloatElement* pWME = new FloatElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag()) ;
+	FloatElement* pWME = new FloatElement(GetAgent(), parent, parent->GetValueAsString(), pAttribute, value, GenerateTimeTag64()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -846,7 +846,7 @@ FloatElement* WorkingMemory::CreateFloatWME(Identifier* parent, char const* pAtt
 	if ( GetConnection()->IsDirectConnection() )
 	{
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
-		pConnection->DirectAddWME_Double( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, value, pWME->GetTimeTag());
+		pConnection->DirectAddWME_Double( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, value, pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return pWME ;
@@ -886,7 +886,7 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 	// Changing the value logically is a remove and then an add
 
 	// Get the tag of the value to remove
-	long removeTimeTag = pWME->GetTimeTag() ;
+	long long removeTimeTag = pWME->GetTimeTag64() ;
 
 	// Change the value and the time tag (this is equivalent to us deleting the old object
 	// and then creating a new one).
@@ -899,7 +899,7 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
 		pConnection->DirectRemoveWME( m_AgentSMLHandle, removeTimeTag );
 
-		pConnection->DirectAddWME_String( m_AgentSMLHandle, pWME->GetIdentifierName(), pWME->GetAttribute(), pValue, pWME->GetTimeTag());
+		pConnection->DirectAddWME_String( m_AgentSMLHandle, pWME->GetIdentifierName(), pWME->GetAttribute(), pValue, pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return ;
@@ -914,7 +914,7 @@ void WorkingMemory::UpdateString(StringElement* pWME, char const* pValue)
 		Commit() ;
 }
 
-void WorkingMemory::UpdateInt(IntElement* pWME, int value)
+void WorkingMemory::UpdateInt(IntElement* pWME, long long value)
 {
 	if (!pWME)
 		return ;
@@ -932,7 +932,7 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 	// Changing the value logically is a remove and then an add
 
 	// Get the tag of the value to remove
-	long removeTimeTag = pWME->GetTimeTag() ;
+	long long removeTimeTag = pWME->GetTimeTag64() ;
 
 	// Change the value and the time tag (this is equivalent to us deleting the old object
 	// and then creating a new one).
@@ -945,7 +945,7 @@ void WorkingMemory::UpdateInt(IntElement* pWME, int value)
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
 		pConnection->DirectRemoveWME( m_AgentSMLHandle, removeTimeTag );
 
-		pConnection->DirectAddWME_Int( m_AgentSMLHandle, pWME->GetIdentifierName(), pWME->GetAttribute(), value, pWME->GetTimeTag());
+		pConnection->DirectAddWME_Int( m_AgentSMLHandle, pWME->GetIdentifierName(), pWME->GetAttribute(), value, pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return ;
@@ -980,7 +980,7 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 	// Changing the value logically is a remove and then an add
 
 	// Get the tag of the value to remove
-	long removeTimeTag = pWME->GetTimeTag() ;
+	long long removeTimeTag = pWME->GetTimeTag64() ;
 
 	// Change the value and the time tag (this is equivalent to us deleting the old object
 	// and then creating a new one).
@@ -993,7 +993,7 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
 		pConnection->DirectRemoveWME( m_AgentSMLHandle, removeTimeTag );
 
-		pConnection->DirectAddWME_Double( m_AgentSMLHandle, pWME->GetIdentifierName(), pWME->GetAttribute(), value, pWME->GetTimeTag());
+		pConnection->DirectAddWME_Double( m_AgentSMLHandle, pWME->GetIdentifierName(), pWME->GetAttribute(), value, pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return ;
@@ -1020,7 +1020,7 @@ void WorkingMemory::UpdateFloat(FloatElement* pWME, double value)
 *************************************************************/
 void WorkingMemory::GenerateNewID(char const* pAttribute, std::string* pID)
 {
-	int id = GetAgent()->GetKernel()->GenerateNextID() ;
+	long long id = GetAgent()->GetKernel()->GenerateNextID64() ;
 
 	// we'll start our ids with lower case so we can distinguish them
 	// from soar id's.  We'll take the first letter of the attribute,
@@ -1055,7 +1055,7 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 	std::string id ;
 	GenerateNewID(pAttribute, &id) ;
 
-	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, id.c_str(), GenerateTimeTag()) ;
+	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, id.c_str(), GenerateTimeTag64()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -1064,7 +1064,7 @@ Identifier* WorkingMemory::CreateIdWME(Identifier* parent, char const* pAttribut
 	if (GetConnection()->IsDirectConnection())
 	{
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
-		pConnection->DirectAddID( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, id.c_str(), pWME->GetTimeTag());
+		pConnection->DirectAddID( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, id.c_str(), pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return pWME ;
@@ -1109,7 +1109,7 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 	std::string id = pSharedValue->GetValueAsString() ;
 
 	// Create the new WME with the same value
-	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pSharedValue, GenerateTimeTag()) ;
+	Identifier* pWME = new Identifier(GetAgent(), parent, parent->GetValueAsString(), pAttribute, pSharedValue, GenerateTimeTag64()) ;
 
 	// Record that the identifer owns this new WME
 	parent->AddChild(pWME) ;
@@ -1118,7 +1118,7 @@ Identifier*	WorkingMemory::CreateSharedIdWME(Identifier* parent, char const* pAt
 	if (GetConnection()->IsDirectConnection())
 	{
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
-		pConnection->DirectAddID( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, id.c_str(), pWME->GetTimeTag());
+		pConnection->DirectAddID( m_AgentSMLHandle, parent->GetValueAsString(), pAttribute, id.c_str(), pWME->GetTimeTag64());
 
 		// Return immediately, without adding it to the commit list.
 		return pWME ;
@@ -1162,7 +1162,7 @@ bool WorkingMemory::DestroyWME(WMElement* pWME)
 	if ( GetConnection()->IsDirectConnection() )
 	{
 		EmbeddedConnection* pConnection = static_cast<EmbeddedConnection*>( GetConnection() );
-		pConnection->DirectRemoveWME( m_AgentSMLHandle, pWME->GetTimeTag() );
+		pConnection->DirectRemoveWME( m_AgentSMLHandle, pWME->GetTimeTag64() );
 
 		// Return immediately, without adding it to the commit list
 		delete pWME ;
@@ -1172,7 +1172,7 @@ bool WorkingMemory::DestroyWME(WMElement* pWME)
 #endif
 
 	// Add it to the list of changes to send to Soar.
-	m_DeltaList.RemoveWME(pWME->GetTimeTag()) ;
+	m_DeltaList.RemoveWME(pWME->GetTimeTag64()) ;
 
 	// Now we can delete it
 	delete pWME ;
@@ -1187,11 +1187,15 @@ bool WorkingMemory::DestroyWME(WMElement* pWME)
 /*************************************************************
 * @brief Generate a unique integer id (a time tag)
 *************************************************************/
-long WorkingMemory::GenerateTimeTag()
+int WorkingMemory::GenerateTimeTag()
+{
+	return static_cast<int>(GenerateTimeTag64()) ;
+}
+long long WorkingMemory::GenerateTimeTag64()
 {
 	// We use negative tags on the client, so we don't mistake them
 	// for ones from the real kernel.
-	int tag = GetAgent()->GetKernel()->GenerateNextTimeTag() ;
+	long long tag = GetAgent()->GetKernel()->GenerateNextTimeTag64() ;
 
 	return tag ;
 }

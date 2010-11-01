@@ -30,7 +30,7 @@ protected:
 
 protected:
 	// Cause this thread to sleep for a while
-	void Sleep(long seconds, long milliseconds) ;
+	void Sleep(int seconds, int milliseconds) ;
 
 public:
 	Thread() ;

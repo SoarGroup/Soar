@@ -85,6 +85,17 @@ int AnalyzeXML::GetResultInt(int defaultValue) const
 	return value ;
 }
 
+int64_t AnalyzeXML::GetResultInt(int64_t defaultValue) const
+{
+	if (!m_pResult || m_pResult->GetCharacterData() == NULL)
+		return defaultValue ;
+
+	int64_t value = defaultValue;
+	from_c_string(value, m_pResult->GetCharacterData());
+
+	return value ;
+}
+
 // Returns the result as a bool
 bool AnalyzeXML::GetResultBool(bool defaultValue) const
 {
@@ -144,6 +155,19 @@ int AnalyzeXML::GetArgInt(char const* pArgName, int argPos, int defaultValue) co
 		return defaultValue ;
 
 	int value = defaultValue;
+	from_c_string(value, pValue);
+
+	return value ;
+}
+
+int64_t AnalyzeXML::GetArgInt(char const* pArgName, int argPos, int64_t defaultValue) const
+{
+	char const* pValue = m_ArgMap.GetArgValue(pArgName, argPos) ;
+
+	if (!pValue)
+		return defaultValue ;
+
+	int64_t value = defaultValue;
 	from_c_string(value, pValue);
 
 	return value ;

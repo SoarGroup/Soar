@@ -109,8 +109,8 @@ class wma_stat_container: public soar_module::stat_container
 // WMA Types
 //////////////////////////////////////////////////////////
 
-typedef unsigned long wma_reference;
-typedef unsigned long wma_d_cycle;
+typedef uint64_t wma_reference;
+typedef uint64_t wma_d_cycle;
 
 typedef struct wma_cycle_reference_struct
 {

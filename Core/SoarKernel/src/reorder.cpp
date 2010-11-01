@@ -706,7 +706,7 @@ Bool test_covered_by_bound_vars (test t, tc_number tc, list *extra_vars) {
    set list.
 ------------------------------------------------------------- */
 
-long get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol *sym)
+int64_t get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol *sym)
 {
   multi_attribute *m = thisAgent->multi_attributes;
   while(m) {
@@ -723,12 +723,12 @@ long get_cost_of_possible_multi_attribute(agent* thisAgent, Symbol *sym)
    variables.
 ------------------------------------------------------------- */
 
-long cost_of_adding_condition (agent* thisAgent, 
+int64_t cost_of_adding_condition (agent* thisAgent, 
 							   condition *cond,
                                tc_number tc,
                                list *root_vars_not_bound_yet) {
   cons *c;
-  long result;
+  int64_t result;
 
   /* --- handle the common simple case quickly up front --- */
   if ((! root_vars_not_bound_yet) &&
@@ -794,13 +794,13 @@ long cost_of_adding_condition (agent* thisAgent,
    added first.
 ------------------------------------------------------------- */
 
-long find_lowest_cost_lookahead (agent* thisAgent, 
+int64_t find_lowest_cost_lookahead (agent* thisAgent, 
 								 condition *candidates,
                                  condition *chosen,
                                  tc_number tc,
                                  list *root_vars_not_bound_yet) {
   condition *c;
-  long min_cost, cost;
+  int64_t min_cost, cost;
   list *new_vars;
 
   new_vars = NIL;
@@ -845,8 +845,8 @@ void reorder_simplified_conditions (agent* thisAgent,
   condition *first_cond, *last_cond;
   condition *cond, *next_cond;
   condition *min_cost_conds, *chosen;
-  long cost = 0;
-  long min_cost = 0;
+  int64_t cost = 0;
+  int64_t min_cost = 0;
   list *new_vars;
 
   remaining_conds = *top_of_conds;

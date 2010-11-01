@@ -59,8 +59,8 @@ struct rete_node_struct;
 //  int     window_y;
 //  int     width;
 //  int     height;
-//  unsigned long foreground;
-//  unsigned long background;
+//  uint64_t foreground;
+//  uint64_t background;
 //  int     borderwidth;
 //  Symbol * last_op_id; /* Used in monitors */
 //} x_info;
@@ -224,7 +224,7 @@ typedef signed short goal_stack_level;
 -------------------------------------------------------------------- */
 
 typedef char Bool;
-typedef unsigned long tc_number;
+typedef uint64_t tc_number;
 typedef unsigned char byte;
 typedef struct agent_struct agent;
 

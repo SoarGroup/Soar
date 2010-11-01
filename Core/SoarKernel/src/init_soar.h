@@ -21,7 +21,7 @@ typedef union symbol_union Symbol;
 typedef struct agent_struct agent;
 
 /* added this prototype -ajc (5/3/02) */
-extern void set_sysparam (agent* thisAgent, int param_number, long new_value);
+extern void set_sysparam (agent* thisAgent, int param_number, int64_t new_value);
 
 extern void reset_statistics (agent* thisAgent);
 extern void setup_signal_handling (void);
@@ -95,11 +95,11 @@ extern void init_agent_memory (agent* thisAgent);
        output link is modified by the agent.  n is not incremented when
        the output-link is created nor when the output-link is modified
        during the Input Cycle, ie when getting feedback from a simulator.
-     - Run_for_n_selections_of_slot (agent*, long n, Symbol *attr_of_slot): this
+     - Run_for_n_selections_of_slot (agent*, int64_t n, Symbol *attr_of_slot): this
        runs Soar until the nth time a selection is made for a given
        type of slot.  Attr_of_slot should be either state_symbol or 
        operator_symbol.
-     - Run_for_n_selections_of_slot_at_level (agent*, long n, Symbol *attr_of_slot,
+     - Run_for_n_selections_of_slot_at_level (agent*, int64_t n, Symbol *attr_of_slot,
        goal_stack_level level):  this runs Soar for n selections of the
        given slot at the given level, or until the goal stack is popped
        so that level no longer exists.
@@ -109,12 +109,12 @@ enum go_type_enum { GO_PHASE, GO_ELABORATION, GO_DECISION,
                     GO_STATE, GO_OPERATOR, GO_SLOT, GO_OUTPUT };
 
 extern void run_forever (agent* thisAgent);
-extern void run_for_n_phases (agent* thisAgent, long n);
-extern void run_for_n_elaboration_cycles (agent* thisAgent, long n);
-extern void run_for_n_decision_cycles (agent* thisAgent, long n);
-extern void run_for_n_modifications_of_output (agent* thisAgent, long n);
-extern void run_for_n_selections_of_slot (agent*, long n, Symbol *attr_of_slot);
-extern void run_for_n_selections_of_slot_at_level (agent* thisAgent, long n,
+extern void run_for_n_phases (agent* thisAgent, int64_t n);
+extern void run_for_n_elaboration_cycles (agent* thisAgent, int64_t n);
+extern void run_for_n_decision_cycles (agent* thisAgent, int64_t n);
+extern void run_for_n_modifications_of_output (agent* thisAgent, int64_t n);
+extern void run_for_n_selections_of_slot (agent*, int64_t n, Symbol *attr_of_slot);
+extern void run_for_n_selections_of_slot_at_level (agent* thisAgent, int64_t n,
                                                    Symbol *attr_of_slot,
                                                    goal_stack_level level);
 

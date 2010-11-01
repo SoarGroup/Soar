@@ -20,7 +20,7 @@
 
 using namespace sml ;
 
-void DeltaList::RemoveWME(long timeTag)
+void DeltaList::RemoveWME(long long timeTag)
 {
 // BADBAD: We should scan the existing list of tags and if we are adding this value
 // just delete that tag and don't add anything to the delta list.
@@ -49,7 +49,7 @@ void DeltaList::AddWME(WMElement* pWME)
 	pTag->SetIdentifier(pWME->GetIdentifier()->GetIdentifierSymbol()) ;
 	pTag->SetAttribute(pWME->GetAttribute()) ;
 	pTag->SetValue(pWME->GetValueAsString(), pWME->GetValueType()) ;
-	pTag->SetTimeTag(pWME->GetTimeTag()) ;
+	pTag->SetTimeTag(pWME->GetTimeTag64()) ;
 	pTag->SetActionAdd() ;
 
 	m_DeltaList.push_back(pTag) ;	

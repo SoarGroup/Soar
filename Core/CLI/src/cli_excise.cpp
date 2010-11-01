@@ -90,7 +90,7 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 }
 
 bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::string* pProduction) {
-	int exciseCount = 0;
+	int64_t exciseCount = 0;
 
 	// Process the general options
 	if (options.test(EXCISE_ALL)) {

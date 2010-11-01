@@ -352,7 +352,7 @@ void CommandLineInterface::GetSystemStats()
 
 	m_Result << "Soar " << sml_Names::kSoarVersionValue << " on " << hostname << " at " << ctime(&current_time) << "\n";
 
-	unsigned long totalProductions = m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
+	uint64_t totalProductions = m_pAgentSoar->num_productions_of_type[DEFAULT_PRODUCTION_TYPE];
 	totalProductions += m_pAgentSoar->num_productions_of_type[USER_PRODUCTION_TYPE];
 	totalProductions += m_pAgentSoar->num_productions_of_type[CHUNK_PRODUCTION_TYPE];
 
@@ -446,7 +446,7 @@ void CommandLineInterface::GetSystemStats()
 		<< " msec/pf)\n";
 #endif // NO_TIMING_STUFF
 
-	unsigned long wme_changes = m_pAgentSoar->wme_addition_count + m_pAgentSoar->wme_removal_count;
+	uint64_t wme_changes = m_pAgentSoar->wme_addition_count + m_pAgentSoar->wme_removal_count;
 	m_Result << wme_changes << " wme changes ("
 		<< m_pAgentSoar->wme_addition_count << " additions, "
 		<< m_pAgentSoar->wme_removal_count << " removals)\n";
@@ -515,7 +515,7 @@ void CommandLineInterface::GetMemoryPoolStatistics()
 		m_Result << std::setw(MAX_POOL_NAME_LENGTH) << p->name; 
 #ifdef MEMORY_POOL_STATS
 		m_Result << "  " << std::setw(10) << p->used_count;
-		long total_items = p->num_blocks * p->items_per_block;
+		size_t total_items = p->num_blocks * p->items_per_block;
 		m_Result << "  " << std::setw(10) << total_items - p->used_count;
 #endif
 		m_Result << "  " << std::setw(9) << p->item_size;
@@ -533,7 +533,7 @@ void CommandLineInterface::GetReteStats()
 #endif
 
 	int i;
-	unsigned long tot;
+	uint64_t tot;
 
 	get_all_node_count_stats( m_pAgentSoar );
 

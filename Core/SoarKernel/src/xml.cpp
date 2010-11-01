@@ -129,10 +129,10 @@ void xml_move_current_to_last_child( agent* pAgent )
 	pXML->MoveCurrentToLastChild();
 }
 
-void xml_att_val( agent* pAgent, char const* pAttribute, unsigned long value )
+void xml_att_val( agent* pAgent, char const* pAttribute, uint64_t value )
 {
 	char buf[51];
-	SNPRINTF(buf, 50, "%lu", value);
+	SNPRINTF(buf, 50, "%llu", value);
 
 	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, buf ) ;
@@ -147,10 +147,10 @@ void xml_att_val( agent* pAgent, char const* pAttribute, int value )
 	pXML->AddAttribute( pAttribute, buf ) ;
 }
 
-void xml_att_val( agent* pAgent, char const* pAttribute, long value )
+void xml_att_val( agent* pAgent, char const* pAttribute, int64_t value )
 {
 	char buf[51];
-	SNPRINTF(buf, 50, "%ld", value);
+	SNPRINTF(buf, 50, "%lld", value);
 
 	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 	pXML->AddAttribute( pAttribute, buf ) ;
@@ -196,7 +196,7 @@ void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, char c
 	pXML->EndTag( pTag ) ;
 }
 
-void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, unsigned long value )
+void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, uint64_t value )
 {
 	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 
@@ -205,7 +205,7 @@ void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, unsign
 	pXML->EndTag( pTag ) ;
 }
 
-void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, long value )
+void xml_object( agent* pAgent, char const* pTag, char const* pAttribute, int64_t value )
 {
 	soarxml::XMLTrace* pXML = static_cast< soarxml::XMLTrace* >( pAgent->xml_destination );
 

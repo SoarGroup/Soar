@@ -119,11 +119,11 @@ extern Symbol *get_next_io_symbol_from_text_input_line (agent* thisAgent,
 #define TOP_STATE_JUST_REMOVED 3
 
 extern Symbol *get_new_io_identifier(agent* thisAgent, char first_letter) ;
-extern Symbol *get_io_identifier (agent* thisAgent, char first_letter, unsigned long number);
+extern Symbol *get_io_identifier (agent* thisAgent, char first_letter, uint64_t number);
 extern Symbol *get_io_sym_constant (agent* thisAgent, char const *name);
-extern Symbol *get_io_int_constant (agent* thisAgent, long value);
+extern Symbol *get_io_int_constant (agent* thisAgent, int64_t value);
 extern Symbol *get_io_float_constant (agent* thisAgent, double value);
-extern unsigned long release_io_symbol (agent* thisAgent, Symbol *sym);
+extern uint64_t release_io_symbol (agent* thisAgent, Symbol *sym);
 
 extern wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value);
 extern Bool remove_input_wme (agent* thisAgent, wme *w);
@@ -172,7 +172,7 @@ typedef struct io_wme_struct {
   Symbol *id;                  /* id, attribute, and value of the wme */
   Symbol *attr;
   Symbol *value;
-  unsigned long timetag ;		/* DJP: Added.  Only guaranteed valid for an output wme. */
+  uint64_t timetag ;		/* DJP: Added.  Only guaranteed valid for an output wme. */
 } io_wme;
 
 typedef struct output_link_struct {

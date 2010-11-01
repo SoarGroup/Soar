@@ -70,10 +70,10 @@ typedef union symbol_union Symbol;
 
 #ifdef USE_MACROS
 
-#define rhs_value_is_symbol(rv) ((((unsigned long)(rv)) & 3)==0)
-#define rhs_value_is_funcall(rv) ((((unsigned long)(rv)) & 3)==1)
-#define rhs_value_is_reteloc(rv) ((((unsigned long)(rv)) & 3)==2)
-#define rhs_value_is_unboundvar(rv) ((((unsigned long)(rv)) & 3)==3)
+#define rhs_value_is_symbol(rv) ((((uint64_t)(rv)) & 3)==0)
+#define rhs_value_is_funcall(rv) ((((uint64_t)(rv)) & 3)==1)
+#define rhs_value_is_reteloc(rv) ((((uint64_t)(rv)) & 3)==2)
+#define rhs_value_is_unboundvar(rv) ((((uint64_t)(rv)) & 3)==3)
 
 /* Warning: symbol_to_rhs_value() doesn't symbol_add_ref.  The caller must
    do the reference count update */
@@ -85,31 +85,31 @@ typedef union symbol_union Symbol;
 
 #define rhs_value_to_symbol(rv) ((Symbol *)(rv))
 #define rhs_value_to_funcall_list(rv) ((list *) (((char *)(rv))-1))
-#define rhs_value_to_reteloc_field_num(rv) ((((unsigned long)(rv))>>2) & 3)
-#define rhs_value_to_reteloc_levels_up(rv) ((((unsigned long)(rv))>>4)& 0xFFFF)
-#define rhs_value_to_unboundvar(rv) (((unsigned long)(rv))>>2)
+#define rhs_value_to_reteloc_field_num(rv) ((((uint64_t)(rv))>>2) & 3)
+#define rhs_value_to_reteloc_levels_up(rv) ((((uint64_t)(rv))>>4)& 0xFFFF)
+#define rhs_value_to_unboundvar(rv) (((uint64_t)(rv))>>2)
 
 #else
 
-//#define rhs_value_is_symbol(rv) ((((unsigned long)(rv)) & 3)==0)
+//#define rhs_value_is_symbol(rv) ((((uintptr_t)(rv)) & 3)==0)
 inline bool rhs_value_is_symbol(rhs_value rv) 
 { 
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 0; 
 }
 
-//#define rhs_value_is_funcall(rv) ((((unsigned long)(rv)) & 3)==1)
+//#define rhs_value_is_funcall(rv) ((((uintptr_t)(rv)) & 3)==1)
 inline bool rhs_value_is_funcall(rhs_value rv) 
 {
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 1;
 }
 
-//#define rhs_value_is_reteloc(rv) ((((unsigned long)(rv)) & 3)==2)
+//#define rhs_value_is_reteloc(rv) ((((uintptr_t)(rv)) & 3)==2)
 inline bool rhs_value_is_reteloc(rhs_value rv) 
 { 
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 2;
 }
 
-//#define rhs_value_is_unboundvar(rv) ((((unsigned long)(rv)) & 3)==3)
+//#define rhs_value_is_unboundvar(rv) ((((uintptr_t)(rv)) & 3)==3)
 inline bool rhs_value_is_unboundvar(rhs_value rv) 
 { 
   return (reinterpret_cast<uintptr_t>(rv) & 3) == 3;
@@ -136,7 +136,7 @@ inline rhs_value reteloc_to_rhs_value(byte field_num, rete_node_level levels_up)
 }
 
 //#define unboundvar_to_rhs_value(n) ((rhs_value) (((n)<<2) + 3))
-inline rhs_value unboundvar_to_rhs_value(unsigned long n) 
+inline rhs_value unboundvar_to_rhs_value(uint64_t n) 
 { 
   return reinterpret_cast<rhs_value>((n << 2) + 3);
 }
@@ -153,22 +153,22 @@ inline ::list * rhs_value_to_funcall_list(rhs_value rv)
   return reinterpret_cast< ::list * >(reinterpret_cast<char *>(rv) - 1);
 }
 
-//#define rhs_value_to_reteloc_field_num(rv) ((((unsigned long)(rv))>>2) & 3)
+//#define rhs_value_to_reteloc_field_num(rv) ((((uintptr_t)(rv))>>2) & 3)
 inline uint8_t rhs_value_to_reteloc_field_num(rhs_value rv)
 {
   return static_cast<uint8_t>((reinterpret_cast<uintptr_t>(rv) >> 2) & 3);
 }
 
-//#define rhs_value_to_reteloc_levels_up(rv) ((((unsigned long)(rv))>>4)& 0xFFFF)
+//#define rhs_value_to_reteloc_levels_up(rv) ((((uintptr_t)(rv))>>4)& 0xFFFF)
 inline uint16_t rhs_value_to_reteloc_levels_up(rhs_value rv)
 {
   return static_cast<uint16_t>((reinterpret_cast<uintptr_t>(rv) >> 4) & 0xFFFF);
 }
 
-//#define rhs_value_to_unboundvar(rv) (((unsigned long)(rv))>>2)
-inline uint32_t rhs_value_to_unboundvar(rhs_value rv)
+//#define rhs_value_to_unboundvar(rv) (((uintptr_t)(rv))>>2)
+inline uint64_t rhs_value_to_unboundvar(rhs_value rv)
 {
-  return static_cast<uint32_t>((reinterpret_cast<uintptr_t>(rv) >> 2));
+  return static_cast<uint64_t>((reinterpret_cast<uintptr_t>(rv) >> 2));
 }
 
 #endif /* USE_MACROS */

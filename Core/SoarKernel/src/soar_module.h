@@ -308,7 +308,7 @@ namespace soar_module
 	};
 	
 	// these are easy definitions for int and double parameters
-	typedef primitive_param<long> integer_param;
+	typedef primitive_param<int64_t> integer_param;
 	typedef primitive_param<double> decimal_param;
 	
 
@@ -686,13 +686,9 @@ namespace soar_module
 	};
 
 	// these are easy definitions for int and double stats
-	typedef primitive_stat<long> integer_stat;
+	typedef primitive_stat<int64_t> integer_stat;
 	typedef primitive_stat<double> decimal_stat;	
 	
-	// ptr size stats
-	typedef primitive_stat<intptr_t> intptr_stat;
-	typedef primitive_stat<uintptr_t> uintptr_stat;
-
 	///////////////////////////////////////////////////////////////////////////
 	// Statistic Containers
 	///////////////////////////////////////////////////////////////////////////
