@@ -65,7 +65,7 @@ int ClientAnalyzedXML::GetResultInt(int defaultValue) const
 
 long long ClientAnalyzedXML::GetResultInt(long long defaultValue) const
 {
-	return m_pAnalyzeXML->GetResultInt(defaultValue) ;
+	return m_pAnalyzeXML->GetResultInt(static_cast<int64_t>(defaultValue));
 }
 
 // Returns the result as a bool
@@ -117,7 +117,7 @@ int ClientAnalyzedXML::GetArgInt(char const* pArgName, int defaultValue) const
 
 long long ClientAnalyzedXML::GetArgInt(char const* pArgName, long long defaultValue) const
 {
-	return m_pAnalyzeXML->GetArgInt(pArgName, defaultValue) ;
+	return m_pAnalyzeXML->GetArgInt(pArgName, static_cast<int64_t>(defaultValue)) ;
 }
 
 /*************************************************************

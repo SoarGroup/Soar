@@ -177,7 +177,7 @@ WMElement* WorkingMemory::CreateWME(IdentifierSymbol* pParentSymbol, char const*
 	// Value is an int
 	if (strcmp(pType, sml_Names::kTypeInt) == 0)
 	{
-		long long value = 0;
+		int64_t value = 0;
 		from_c_string(value, pValue);
 		return new IntElement(GetAgent(), pParentSymbol, pID, pAttribute, value, timeTag) ;
 	}
@@ -266,7 +266,7 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 		sml::PrintDebugFormat("Received output wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
 	}
 
-	long long timeTag = 0;
+	int64_t timeTag = 0;
 	from_c_string(timeTag, pTimeTag);
 
 	// Find the parent wme that we're adding this new wme to
@@ -318,6 +318,7 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 	else
 	{
 		// See if this is the output-link itself (we want to keep a handle to that specially)
+		std::cout << "***" << std::endl << "*** m_OutputLink:" << m_OutputLink << ", pAttribute:" << pAttribute << std::endl << "***" << std::endl;
 		if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 		{
 			m_OutputLink = new Identifier(GetAgent(), "output-link", pValue, timeTag) ;
@@ -404,7 +405,7 @@ bool WorkingMemory::ReceivedOutputRemoval(ElementXML* pWmeXML, bool tracing)
 	// We're removing structure from the output link
 	char const* pTimeTag = pWmeXML->GetAttribute(sml_Names::kWME_TimeTag) ;	// These will usually be kernel side time tags (e.g. +5 not -7)
 
-	long long timeTag = 0;
+	int64_t timeTag = 0;
 	from_c_string(timeTag, pTimeTag);
 
 	// If we have no output link we can't delete things from it.
@@ -658,7 +659,7 @@ bool WorkingMemory::SynchronizeInputLink()
 			sml::PrintDebugFormat("Received input wme: %s ^%s %s (time tag %s)", pID, pAttribute, pValue, pTimeTag) ;
 		}
 
-		long long timeTag = 0;
+		int64_t timeTag = 0;
 		from_c_string(timeTag, pTimeTag);
 
 		// Find the parent wme that we're adding this new wme to
