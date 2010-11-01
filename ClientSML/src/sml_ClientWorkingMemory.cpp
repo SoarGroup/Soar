@@ -318,7 +318,6 @@ bool WorkingMemory::ReceivedOutputAddition(ElementXML* pWmeXML, bool tracing)
 	else
 	{
 		// See if this is the output-link itself (we want to keep a handle to that specially)
-		std::cout << "***" << std::endl << "*** m_OutputLink:" << m_OutputLink << ", pAttribute:" << pAttribute << std::endl << "***" << std::endl;
 		if (!m_OutputLink && IsStringEqualIgnoreCase(pAttribute, sml_Names::kOutputLinkName))
 		{
 			m_OutputLink = new Identifier(GetAgent(), "output-link", pValue, timeTag) ;
