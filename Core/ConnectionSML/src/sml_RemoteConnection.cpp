@@ -216,15 +216,15 @@ ElementXML* RemoteConnection::GetResponseForID(char const* pID, bool wait)
 		return pResponse ;
 	}
 
-	long sleepTimeSecs = 0 ;			// How long we sleep in seconds each pass through
-	long sleepTimeMillisecs = 0 ;		// How long we sleep in milliseconds each pass through
+	int sleepTimeSecs = 0 ;			// How long we sleep in seconds each pass through
+	int sleepTimeMillisecs = 0 ;		// How long we sleep in milliseconds each pass through
 
 	// How long we sleep on the socket waiting for data in msecs
 	// We want to wait for a long time.  We used to set this to 0 and just poll the socket,
 	// but that means we're consuming all of the CPU.  Setting a long wait doesn't
 	// impact performance because we're not trying to do anything else other than get a response here.
-	long waitForMessageTimeSeconds = 1 ;
-	long waitForMessageTimeMilliseconds = 0 ;
+	int waitForMessageTimeSeconds = 1 ;
+	int waitForMessageTimeMilliseconds = 0 ;
 
 	// If we don't already have this response cached,
 	// then read any pending messages.
@@ -281,7 +281,7 @@ bool RemoteConnection::ReceiveMessages(bool allMessages)
 	return ReceiveMessages(allMessages, 0, 0) ;
 }
 
-bool RemoteConnection::ReceiveMessages(bool allMessages, long secondsWait, long millisecondsWait)
+bool RemoteConnection::ReceiveMessages(bool allMessages, int secondsWait, int millisecondsWait)
 {
 	assert(millisecondsWait<1000 && "specified milliseconds must be less than 1000");
 

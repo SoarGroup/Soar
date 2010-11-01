@@ -243,11 +243,11 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	}
 	if (sym->id.smem_lti == NIL) {
 		// NOT an lti (long term identifier), print like we always have 
-	    SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, static_cast<unsigned long long>(sym->id.name_number));
+	    SNPRINTF (dest, dest_size, "%c%llu", sym->id.name_letter, sym->id.name_number);
 	} 
 	else {
 		// IS an lti (long term identifier), prepend an @ symbol
-	    SNPRINTF (dest, dest_size, "@%c%llu", sym->id.name_letter, static_cast<unsigned long long>(sym->id.name_number));
+	    SNPRINTF (dest, dest_size, "@%c%llu", sym->id.name_letter, sym->id.name_number);
 	}
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;

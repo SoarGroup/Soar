@@ -69,6 +69,9 @@ public:
 	// Returns the character data from the result tag as an int (or default value if there is no character data in the tag)
 	int GetResultInt(int defaultValue) const ;
 
+	// Returns the character data from the result tag as an int64_t (or default value if there is no character data in the tag)
+	int64_t GetResultInt(int64_t defaultValue) const ;
+
 	// Returns the result as a bool
 	bool GetResultBool(bool defaultValue) const ;
 
@@ -99,6 +102,14 @@ public:
 	* @brief As "GetArgString" but parsed as an int.
 	*************************************************************/
 	int GetArgInt(char const* pArgName, int defaultValue) const
+	{
+		return GetArgInt(pArgName, -1, defaultValue) ;
+	}
+
+	/*************************************************************
+	* @brief As "GetArgString" but parsed as an int64_t.
+	*************************************************************/
+	int64_t GetArgInt(char const* pArgName, int64_t defaultValue) const
 	{
 		return GetArgInt(pArgName, -1, defaultValue) ;
 	}
@@ -134,6 +145,11 @@ protected:
 	* @brief As "GetArgString" but parsed as an int.
 	*************************************************************/
 	int GetArgInt(char const* pArgName, int argPos, int defaultValue) const ;
+
+	/*************************************************************
+	* @brief As "GetArgString" but parsed as an int.
+	*************************************************************/
+	int64_t GetArgInt(char const* pArgName, int argPos, int64_t defaultValue) const ;
 
 	/*************************************************************
 	* @brief As "GetArgString" but parsed as a double.

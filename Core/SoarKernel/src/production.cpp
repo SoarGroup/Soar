@@ -665,7 +665,7 @@ Consistency checks:
 
 Changed  < to > 10/5/92*/
 {
-  unsigned long test_order_1,test_order_2;
+  uint32_t test_order_1,test_order_2;
 
   if ((test_order_1 = CANONICAL_TEST_ORDER(c1->data.tests.attr_test)) <
       (test_order_2 = CANONICAL_TEST_ORDER(c2->data.tests.attr_test))) {
@@ -1513,7 +1513,7 @@ void reset_variable_generator (agent* thisAgent,
 }
 
 Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
-#define GENERATE_NEW_VARIABLE_BUFFER_SIZE 200 /* that ought to be long enough! */ /* but what if it isn't?! -voigtjr */
+#define GENERATE_NEW_VARIABLE_BUFFER_SIZE 200 /* that ought to be long enough! */
   char name[GENERATE_NEW_VARIABLE_BUFFER_SIZE];
   Symbol *New;
   char first_letter;

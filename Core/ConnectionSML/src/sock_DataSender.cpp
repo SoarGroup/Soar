@@ -17,11 +17,11 @@ using namespace sock ;
 /////////////////////////////////////////////////////////////////////
 bool DataSender::SendString(char const* pString)
 {
-	unsigned long len = static_cast<unsigned long>(strlen(pString));
+	uint32_t len = static_cast<uint32_t>(strlen(pString));
 
 	// Convert the value into network byte ordering (so it's compatible if we send it
 	// from a big-endian machine to a little endian one or vice-versa).
-	unsigned long netLen = htonl(len) ;
+	uint32_t netLen = htonl(len) ;
 
 	// Send the length out first
 	bool ok = SendBuffer(reinterpret_cast<const char *>(&netLen), sizeof(netLen)) ;
@@ -45,7 +45,7 @@ bool DataSender::SendString(char const* pString)
 /////////////////////////////////////////////////////////////////////
 bool DataSender::ReceiveString(std::string* pString)
 {
-	unsigned long netLen = 0 ;
+	uint32_t netLen = 0 ;
 
 	// Make sure we return an empty string if we get an error
 	pString->clear() ;
@@ -54,7 +54,7 @@ bool DataSender::ReceiveString(std::string* pString)
 	bool ok = ReceiveBuffer((char*)&netLen, sizeof(netLen)) ;
 
 	// Convert the length from network byte ordering back to our local order
-	unsigned long len = ntohl(netLen) ;
+	uint32_t len = ntohl(netLen) ;
 
 	// If we got a zero length string.
 	if (len == 0)

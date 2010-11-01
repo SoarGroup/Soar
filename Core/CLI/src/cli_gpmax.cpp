@@ -19,7 +19,7 @@ using namespace cli;
 
 bool CommandLineInterface::ParseGPMax(std::vector<std::string>& argv) {
 	// n defaults to 0 (print current value)
-	long n = -1;
+	int n = -1;
 
 	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
 
@@ -32,7 +32,7 @@ bool CommandLineInterface::ParseGPMax(std::vector<std::string>& argv) {
 	return DoGPMax(n);
 }
 
-bool CommandLineInterface::DoGPMax(const long& maximum) {
+bool CommandLineInterface::DoGPMax(const int& maximum) {
 	if (maximum < 0) {
 		// query
 		if (m_RawOutput) {
@@ -44,7 +44,7 @@ bool CommandLineInterface::DoGPMax(const long& maximum) {
 		return true;
 	}
 
-	m_GPMax = maximum;
+	m_GPMax = static_cast<size_t>(maximum);
 	return true;
 
 }

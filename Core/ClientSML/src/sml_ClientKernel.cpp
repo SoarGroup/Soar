@@ -788,7 +788,7 @@ void Kernel::InitializeTimeTagCounter()
 	AnalyzeXML response ;
 	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetInitialTimeTag))
 	{
-		int initialTimeTag = response.GetResultInt(0) ;
+		long long initialTimeTag = response.GetResultInt(0) ;
 
 		// Client side time tags are negative (to distinguish them from kernel side ones)
 		assert(initialTimeTag <= 0) ;

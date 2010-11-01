@@ -81,7 +81,7 @@ typedef char Bool;
 typedef char * test;
 typedef char * rhs_value;
 typedef unsigned char byte;
-typedef unsigned long tc_number;
+typedef uint64_t tc_number;
 typedef struct action_struct action;
 typedef struct condition_struct condition;
 typedef struct cons_struct cons;
@@ -99,8 +99,8 @@ typedef struct production_struct {
   Symbol *name;
   char *documentation;        /* pointer to memory block, or NIL */
   char *filename;             /* name of source file, or NIL.  kjh CUSP(b11) */
-  unsigned long reference_count;
-  unsigned long firing_count;             /* how many times it's fired */
+  uint64_t reference_count;
+  uint64_t firing_count;             /* how many times it's fired */
   struct production_struct *next, *prev;  /* used for dll */
   byte type;
   byte declared_support;
@@ -134,7 +134,7 @@ typedef struct production_struct {
 /* This structure is used to break ties in favor of non-multi-attributes */
 typedef struct multi_attributes_struct {
   Symbol *symbol;
-  long value;
+  int64_t value;
   struct multi_attributes_struct *next;
 } multi_attribute;
 

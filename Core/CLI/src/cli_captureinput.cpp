@@ -80,7 +80,7 @@ bool CommandLineInterface::DoCaptureInput(eCaptureInputMode mode, bool autoflush
 
 				StripQuotes(*pathname);
 
-				unsigned long seed = SoarRandInt();
+				uint32_t seed = SoarRandInt();
 
 				if (!m_pAgentSML->StartCaptureInput(*pathname, autoflush, seed))
 				{

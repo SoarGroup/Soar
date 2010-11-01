@@ -21,7 +21,7 @@
 
 using namespace sml ;
 
-WMElement::WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long timeTag)
+WMElement::WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long long timeTag)
 {
 	m_TimeTag = timeTag;
 	m_Agent = pAgent;
@@ -54,7 +54,7 @@ void WMElement::SetSymbol(IdentifierSymbol* p_ID)
 void WMElement::GenerateNewTimeTag()
 {
 	// Generate a new time tag for this wme
-	m_TimeTag = GetAgent()->GetWM()->GenerateTimeTag() ;
+	m_TimeTag = GetAgent()->GetWM()->GenerateTimeTag64() ;
 }
 
 // Send over to the kernel again
@@ -68,7 +68,7 @@ void WMElement::Refresh()
 		Direct_AgentSML_Handle agentSMLHandle = pConnection->DirectGetAgentSMLHandle( GetAgent()->GetAgentName() );
 
 		// Add the new value immediately
-		DirectAdd( agentSMLHandle, GetTimeTag() ) ;
+		DirectAdd( agentSMLHandle, GetTimeTag64() ) ;
 
 		// Return immediately, without adding it to the commit list.
 		return ;
@@ -86,6 +86,6 @@ bool WMElement::DestroyWME()
 void WMElement::DebugString(std::string& result)
 {
 	std::stringstream ss;
-	ss << "(" << GetTimeTag() << ": " << GetIdentifierName() << " ^" << GetAttribute() << " " << GetValueAsString() << ")";
+	ss << "(" << GetTimeTag64() << ": " << GetIdentifierName() << " ^" << GetAttribute() << " " << GetValueAsString() << ")";
 	result.assign(ss.str());
 }

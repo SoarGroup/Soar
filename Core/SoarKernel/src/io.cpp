@@ -163,7 +163,7 @@ Symbol *get_new_io_identifier(agent* thisAgent, char first_letter)
 	return make_new_identifier (thisAgent, first_letter, TOP_GOAL_LEVEL);
 }
 
-Symbol *get_io_identifier (agent* thisAgent, char first_letter, unsigned long number) {
+Symbol *get_io_identifier (agent* thisAgent, char first_letter, uint64_t number) {
   Symbol* id = find_identifier(thisAgent, first_letter, number) ;
 
   // DJP: The other "make_<type>" methods either make a new object or incremenent the refence
@@ -184,7 +184,7 @@ Symbol *get_io_sym_constant (agent* thisAgent, char const *name) {
   return make_sym_constant (thisAgent, name);
 }
 
-Symbol *get_io_int_constant (agent* thisAgent, long value) {
+Symbol *get_io_int_constant (agent* thisAgent, int64_t value) {
   return make_int_constant (thisAgent, value);
 }
 
@@ -192,7 +192,7 @@ Symbol *get_io_float_constant (agent* thisAgent, double value) {
   return make_float_constant (thisAgent, value);
 }
 
-unsigned long release_io_symbol (agent* thisAgent, Symbol *sym) {
+uint64_t release_io_symbol (agent* thisAgent, Symbol *sym) {
   return symbol_remove_ref (thisAgent, sym);
 }
 
@@ -221,7 +221,7 @@ wme *add_input_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
   return w;
 }
 
-wme* find_input_wme_by_timetag_from_id (agent* thisAgent, Symbol* idSym, unsigned long timetag, tc_number tc) {
+wme* find_input_wme_by_timetag_from_id (agent* thisAgent, Symbol* idSym, uint64_t timetag, tc_number tc) {
    wme *pWME,*w;
 
   //PrintDebugFormat("Scanning id %c%d", idSym->id.name_letter, idSym->id.name_number) ;

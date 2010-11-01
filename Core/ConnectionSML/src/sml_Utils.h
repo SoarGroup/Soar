@@ -26,14 +26,14 @@ namespace sml {
 /////////////////////////////////////////////////////////////////////
 // Function name  : Sleep
 // 
-// Argument       : long secs
-// Argument       : long msecs
+// Argument       : int secs
+// Argument       : int msecs
 // Return type    : void 	
 // 
 // Description	  : Sleep for the specified seconds and milliseconds
 //
 /////////////////////////////////////////////////////////////////////
-void Sleep(long secs, long msecs);
+void Sleep(int secs, int msecs);
 
 /////////////////////////////////////////////////////////////////////
 // Function name  : ReportSystemErrorMessage
@@ -59,7 +59,7 @@ void ReportSystemErrorMessage();
 // Have to comment this in before we can turn on dump of method entry and exit (currently used in socket code)
 //#define DEBUG_CALLS
 
-void PrintDebugMethod(long indent, char const* pMethodName, char const* pStr) ;
+void PrintDebugMethod(char const* pMethodName, char const* pStr) ;
 void PrintDebug(char const* pStr) ;
 void PrintDebugFormat(char const* pFormat, ...) ;
 
@@ -78,7 +78,7 @@ public:
 		m_stackTrace.push_back(pszMethodName) ;
 
 		if (m_bPrintOnEnterMethod)
-			PrintDebugMethod(GetCurrentNestLevel(), pszMethodName, "Entered");
+			PrintDebugMethod(pszMethodName, "Entered");
 
 		m_nCurrentNestLevel++;
 	}
@@ -92,7 +92,7 @@ public:
 		if (m_bPrintOnExitMethod)
 		{
 			char const* pMethodName = m_stackTrace.back() ;
-			PrintDebugMethod(GetCurrentNestLevel(), pMethodName, "Exiting");
+			PrintDebugMethod(pMethodName, "Exiting");
 		}
 
 		m_stackTrace.pop_back() ;
@@ -108,7 +108,7 @@ public:
 		for (long i = m_stackTraceDisplayPos ; i != (long)m_stackTrace.size() ; i++)
 		{
 			char const* pMethodName = m_stackTrace[i] ;
-			PrintDebugMethod(i,pMethodName, "Entered") ;
+			PrintDebugMethod(pMethodName, "Entered") ;
 		}
 
 		m_stackTraceDisplayPos = (int)m_stackTrace.size() ;

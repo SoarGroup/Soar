@@ -250,10 +250,10 @@ Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv,
   }
 
   if (rhs_value_is_unboundvar(rv)) {
-    long index;
+    int64_t index;
     Symbol *sym;
 
-    index = rhs_value_to_unboundvar(rv);
+    index = static_cast<int64_t>(rhs_value_to_unboundvar(rv));
     if (thisAgent->firer_highest_rhs_unboundvar_index < index)
       thisAgent->firer_highest_rhs_unboundvar_index = index;
     sym = *(thisAgent->rhs_variable_bindings+index);
@@ -577,7 +577,7 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 	cons *c;
 	Bool need_to_do_support_calculations;
 	Bool trace_it;
-	long index;
+	int64_t index;
 	Symbol **cell;
 
 #ifdef BUG_139_WORKAROUND

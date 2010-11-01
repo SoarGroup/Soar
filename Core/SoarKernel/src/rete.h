@@ -103,7 +103,6 @@ typedef struct token_struct {
 
 extern void init_rete (agent* thisAgent);
 
-extern Bool save_rete_net (agent* thisAgent, FILE *dest_file);
 extern Bool any_assertions_or_retractions_ready (agent* thisAgent);
 extern Bool postpone_assertion (agent* thisAgent, production **prod, struct token_struct **tok, wme **w);
 extern void consume_last_postponed_assertion(agent* thisAgent);
@@ -138,7 +137,7 @@ extern Symbol *get_symbol_from_rete_loc (unsigned short levels_up,
                                          byte field_num,
                                          struct token_struct *tok, wme *w);
 
-extern unsigned long count_rete_tokens_for_production (agent* thisAgent, production *prod);
+extern uint64_t count_rete_tokens_for_production (agent* thisAgent, production *prod);
 extern void print_partial_match_information (agent* thisAgent, struct rete_node_struct *p_node,
                                              wme_trace_type wtt);
 extern void xml_partial_match_information (agent* thisAgent, rete_node *p_node, wme_trace_type wtt) ;
@@ -148,9 +147,9 @@ extern void xml_match_set (agent* thisAgent, wme_trace_type wtt, ms_trace_type  
 extern void get_all_node_count_stats (agent* thisAgent);
 extern int get_node_count_statistic (agent* thisAgent, char * node_type_name, 
 				     char * column_name, 
-				     unsigned long * result);
+				     uint64_t * result);
 
-extern Bool save_rete_net (agent* thisAgent, FILE *dest_file);
+extern Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64);
 extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
 
 #ifdef __cplusplus

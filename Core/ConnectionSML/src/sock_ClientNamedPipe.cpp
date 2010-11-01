@@ -50,7 +50,7 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 
 	if (pPipeName == NULL) { pPipeName = "12121"; }
 
-	unsigned long usernamesize = UNLEN+1;
+	DWORD usernamesize = UNLEN+1;
 	char username[UNLEN+1];
 	GetUserName(username,&usernamesize);
 
@@ -67,11 +67,10 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 	HANDLE hPipe;
 
 // silence warning about constant conditional expression
-#ifdef _MSC_VER
+#pragma warning( push ) 
 #pragma warning (disable : 4127)
-#endif
-
 	while(1) {
+#pragma warning( pop ) 
 		// Create the pipe
 		hPipe = CreateFile( 
 			name.c_str(),	// pipe name 
@@ -100,9 +99,7 @@ bool ClientNamedPipe::ConnectToServer(char const* pPipeName)
 			return false;
 		}
 	}
-#ifdef _MSC_VER
-#pragma warning (default : 4127)
-#endif
+
 	// Record the sock so it's cleaned up correctly on exit
 	m_hPipe = hPipe ;
 

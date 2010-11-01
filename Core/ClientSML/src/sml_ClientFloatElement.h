@@ -66,8 +66,8 @@ public:
 	void	Update(double value);
 
 protected:
-	FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long timeTag) ;
-	FloatElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, double value, long timeTag) ;
+	FloatElement(Agent* pAgent, Identifier* pParent, char const* pID, char const* pAttributeName, double value, long long timeTag) ;
+	FloatElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, double value, long long timeTag) ;
 	virtual ~FloatElement(void);
 
 	void SetValue(double value)
@@ -76,7 +76,7 @@ protected:
 	}
 
 #ifdef SML_DIRECT
-	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag) ;
+	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag) ;
 #endif
 };
 

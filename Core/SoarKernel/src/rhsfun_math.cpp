@@ -41,7 +41,7 @@
 
 Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Bool float_found;
-  long i;
+  int64_t i;
   double f = 0;
   Symbol *arg;
   cons *c;
@@ -82,7 +82,7 @@ Symbol *plus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*
 
 Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Bool float_found;
-  long i;
+  int64_t i;
   double f = 0;
   Symbol *arg;
   cons *c;
@@ -126,7 +126,7 @@ Symbol *times_rhs_function_code (agent* thisAgent, list *args, void* /*user_data
 Symbol *minus_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
   Symbol *arg;
   double f = 0;  /* For gcc -Wall */
-  long i = 0;   /* For gcc -Wall */
+  int64_t i = 0;   /* For gcc -Wall */
   cons *c;
   Bool float_found;
 
@@ -495,7 +495,7 @@ Symbol *int_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
 			sym);
     return NIL;
   } else if (sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) {
-    long int_val;
+    int64_t int_val;
 
     errno = 0;
     int_val = strtol(symbol_to_string (thisAgent, sym, FALSE, NIL, 0), NULL, 10);
@@ -511,7 +511,7 @@ Symbol *int_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/
   } else if (sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
     double int_part;
     modf(sym->fc.value, &int_part);
-    return make_int_constant(thisAgent, static_cast<long>(int_part) );
+    return make_int_constant(thisAgent, static_cast<int64_t>(int_part) );
   }
 
   print (thisAgent, "Error: unknown symbol type (%y) given to 'int' RHS function\n",
@@ -582,7 +582,7 @@ are modified versions of the routines taken from TacAir-Soar.
 *************************************************************/
 
 /* "Normalizes" an integral heading to be between -180 and +180 */
-long normalize_heading_int(long n)
+int64_t normalize_heading_int(int64_t n)
 {
     /* we need to make sure that -180 < value <= 180 so we modify */
     /*  the original rounded value using the fact that for heading, */
@@ -611,9 +611,9 @@ double normalize_heading_float(double n)
     return n;
 }
 
-long round_off_heading_int(long n, long m)
+int64_t round_off_heading_int(int64_t n, int64_t m)
 {
-    long unbounded_rounded;
+    int64_t unbounded_rounded;
 
     /* need to round the first (i_n) to the nearest second (i_m) */
     if (n < 0)
@@ -657,7 +657,7 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
 {
     Symbol *arg;
     double n = 0, f_m = 0;
-    long i_m = 0;
+    int64_t i_m = 0;
     cons *c;
     bool float_found = FALSE;
 
@@ -698,7 +698,7 @@ Symbol *round_off_heading_air_rhs_function_code(agent* thisAgent, list *args, vo
     if (float_found)
         return make_float_constant(thisAgent, normalize_heading_float(round_off_heading_float(n, f_m)));
     else
-        return make_int_constant(thisAgent, normalize_heading_int(round_off_heading_int(static_cast<long>(n) , i_m)));
+        return make_int_constant(thisAgent, normalize_heading_int(round_off_heading_int(static_cast<int64_t>(n) , i_m)));
 
 }
 
@@ -713,7 +713,7 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* /*us
 {
     Symbol *arg;
     double n = 0, f_m = 0;
-    long i_m = 0;
+    int64_t i_m = 0;
     cons *c;
     bool float_found = FALSE;
 
@@ -754,7 +754,7 @@ Symbol *round_off_air_rhs_function_code(agent* thisAgent, list *args, void* /*us
     if (float_found)
         return make_float_constant(thisAgent, round_off_heading_float(n, f_m));
     else
-        return make_int_constant(thisAgent, round_off_heading_int(static_cast<long>(n), i_m));
+        return make_int_constant(thisAgent, round_off_heading_int(static_cast<int64_t>(n), i_m));
 }
 
 #define PI 3.141592653589
@@ -810,9 +810,9 @@ void hrl_xydof_to_heading(double xydof[3], double * output)
     (*output) = heading_in_rads;
 }
 
-long air_soar_round_off_angle(long n, long m)
+int64_t air_soar_round_off_angle(int64_t n, int64_t m)
 {
-    long unbounded_rounded, bounded_rounded;
+    int64_t unbounded_rounded, bounded_rounded;
 
     /* need to round the first (n) to the nearest second (m) */
     if (n < 0)
@@ -834,15 +834,15 @@ long air_soar_round_off_angle(long n, long m)
 
 double bracket_rad_to_deg(double var)
 {
-    return static_cast<double>(air_soar_round_off_angle(static_cast<long>(RAD_TO_DEG(var)), 1)) ;
+    return static_cast<double>(air_soar_round_off_angle(static_cast<int64_t>(RAD_TO_DEG(var)), 1)) ;
 }
 
-long convert(double flo)
+int64_t convert(double flo)
 {
-    return static_cast<long>(flo);
+    return static_cast<int64_t>(flo);
 }
 
-long heading_to_point(long current_x, long current_y, long x, long y)
+int64_t heading_to_point(int64_t current_x, int64_t current_y, int64_t x, int64_t y)
 {
     double plane_pos[3], waypoint_pos[3], dir[3];
     double heading;
@@ -871,8 +871,8 @@ long heading_to_point(long current_x, long current_y, long x, long y)
 Symbol *compute_heading_rhs_function_code(agent* thisAgent, list *args, void* /*user_data*/)
 {
     Symbol *arg;
-    long current_x, current_y;
-    long waypoint_x, waypoint_y;
+    int64_t current_x, current_y;
+    int64_t waypoint_x, waypoint_y;
     int count;
     cons *c;
 
@@ -909,16 +909,16 @@ Symbol *compute_heading_rhs_function_code(agent* thisAgent, list *args, void* /*
     }
 
     arg = static_cast<Symbol *>(args->first);
-    current_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
+    current_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<int64_t>(arg->fc.value);
 
     arg = static_cast<Symbol *>(args->rest->first);
-    current_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
+    current_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<int64_t>(arg->fc.value);
 
     arg = static_cast<Symbol *>(args->rest->rest->first);
-    waypoint_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
+    waypoint_x = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<int64_t>(arg->fc.value);
 
     arg = static_cast<Symbol *>(args->rest->rest->rest->first);
-    waypoint_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<long>(arg->fc.value);
+    waypoint_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? arg->ic.value : static_cast<int64_t>(arg->fc.value);
 
     return make_int_constant(thisAgent, heading_to_point(current_x, current_y, waypoint_x, waypoint_y));
 }
@@ -981,7 +981,7 @@ Symbol *compute_range_rhs_function_code(agent* thisAgent, list *args, void* /*us
     arg = static_cast<Symbol *>(args->rest->rest->rest->first);
     waypoint_y = (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) ? static_cast<double>(arg->ic.value) : arg->fc.value;
 
-    return make_int_constant(thisAgent, static_cast<long>(sqrt((current_x - waypoint_x)
+    return make_int_constant(thisAgent, static_cast<int64_t>(sqrt((current_x - waypoint_x)
                                              * (current_x - waypoint_x)
                                              + (current_y - waypoint_y)
                                              * (current_y - waypoint_y))));
@@ -1031,7 +1031,7 @@ Symbol* rand_float_rhs_function_code(agent* thisAgent, list* args, void* /*user_
 -------------------------------------------------------------------- */
 Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
 {
-	long n = 0;
+	int64_t n = 0;
 	if (args) 
 	{
 	    cons* c = args;
@@ -1040,7 +1040,7 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
 			if (arg->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE) {
 				n = arg->ic.value;
 			} else if (arg->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) {
-				n = static_cast<long>(arg->fc.value);
+				n = static_cast<int64_t>(arg->fc.value);
 			} else {
 	            print_with_symbols(thisAgent, "Error: non-number (%y) passed to - rand-int\n", arg);
 				return NIL;
@@ -1052,7 +1052,7 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
 	}
 
 	if (n > 0) {
-		return make_int_constant(thisAgent, SoarRandInt(n));
+		return make_int_constant(thisAgent, static_cast<int64_t>(SoarRandInt(static_cast<uint32_t>(n))));
 	} 
 	return make_int_constant(thisAgent, SoarRandInt());
 }

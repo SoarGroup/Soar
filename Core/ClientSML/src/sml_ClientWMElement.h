@@ -44,7 +44,7 @@ protected:
 	
 	// The time tag (a unique id for this WME)
 	// We used negative values so it's clear that this time tag is a client side tag.
-	long	m_TimeTag ;
+	long long	m_TimeTag ;
 
 	// The identifier symbol as a string.  This can be necessary when connecting up
 	// disconnected segments of a graph.
@@ -79,7 +79,8 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() const = 0 ;
 
-	long		GetTimeTag() const	{ return m_TimeTag ; }
+	int		  GetTimeTag() const	{ return static_cast<int>(GetTimeTag64()) ; }
+	long long GetTimeTag64() const	{ return m_TimeTag ; }
 
 	// The Identifier class overrides this to return true.  (The poor man's RTTI).
 	virtual bool IsIdentifier() const { return false ; }
@@ -90,7 +91,7 @@ public:
 	//       The reference returned by this command will not pass a reference
 	//       equality test with other references to other WMEs pointing to 
 	//       the same working memory element, even though in C++ these 
-	//       pointers are the same. Workaround: use GetTimeTag to test
+	//       pointers are the same. Workaround: use GetTimeTag64 to test
 	//       if the returned WMElements are indeed the same WME.
 	virtual Identifier* ConvertToIdentifier() { return NULL; }
 	virtual IntElement* ConvertToIntElement() { return NULL; }
@@ -132,7 +133,7 @@ protected:
 	// Keep these protected, so user can only create and destroy WMEs through
 	// the methods exposed in the agent class.  This makes it clear that the
 	// agent owns all objects.
-	WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long timeTag);
+	WMElement(Agent* pAgent, IdentifierSymbol* pParentSymbol, char const* pID, char const* pAttributeName, long long timeTag);
 	virtual ~WMElement(void);
 
 	void	SetJustAdded(bool state) { m_JustAdded = state ; }
@@ -154,7 +155,7 @@ protected:
 	virtual void Refresh() ;
 
 #ifdef SML_DIRECT
-	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long timeTag) = 0 ;
+	virtual void DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag) = 0 ;
 #endif
 
 private:
@@ -174,7 +175,7 @@ struct WMEFinder
 
 	bool operator()( const WMElement* wme2 ) const
 	{
-		return wme->GetTimeTag() == wme2->GetTimeTag();
+		return wme->GetTimeTag64() == wme2->GetTimeTag64();
 	}
 
 	const WMElement* wme;
@@ -182,17 +183,17 @@ struct WMEFinder
 
 struct WMEFinderTimeTag
 {
-	WMEFinderTimeTag( long timeTag )
+	WMEFinderTimeTag( long long timeTag )
 	: timeTag( timeTag )
 	{
 	}
 
 	bool operator()( const WMElement* wme ) const
 	{
-		return timeTag == wme->GetTimeTag();
+		return timeTag == wme->GetTimeTag64();
 	}
 
-	long timeTag;
+	long long timeTag;
 };
 
 }	// namespace
