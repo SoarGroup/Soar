@@ -6187,8 +6187,8 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
     /* --- for CN nodes --- */
     } else if (node_type==CN_BNODE) {
       remove_token_from_left_ht (thisAgent, tok, node->node_id ^
-                                      reinterpret_cast<uint32_t>(tok->parent) ^
-                                      reinterpret_cast<uint32_t>(tok->w));
+                                      static_cast<uint32_t>(reinterpret_cast<uint64_t>(tok->parent)) ^
+                                      static_cast<uint32_t>(reinterpret_cast<uint64_t>(tok->w))); // double cast necessary for avoiding precision loss warning
       for (t=tok->negrm_tokens; t!=NIL; t=next_t) {
         next_t = t->a.neg.next_negrm;
         if (t->w) fast_remove_from_dll (t->w->tokens, t, token,

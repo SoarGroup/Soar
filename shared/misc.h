@@ -101,12 +101,12 @@ inline const char* const to_c_string( const uint32_t& v, char* buf )
 }
 inline const char* const to_c_string( const int64_t& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%lld", v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%lld", static_cast<long long>(v) ); 
 	return buf; 
 }
 inline const char* const to_c_string( const uint64_t& v, char* buf ) 
 { 
-	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%llu", v ); 
+	SNPRINTF( buf, TO_C_STRING_BUFSIZE, "%llu", static_cast<long long>(v) ); 
 	return buf; 
 }
 inline const char* const to_c_string( const float& v, char* buf ) 
@@ -153,13 +153,13 @@ inline bool from_c_string( uint32_t& v, const char* const str )
 }
 inline bool from_c_string( int64_t& v, const char* const str ) 
 { 
-	//v = atol(str);
-	return sscanf( str, "%lld", &v ) == 1; 
+	long long vt = static_cast<long long>(v);
+	return sscanf( str, "%lld", &vt ) == 1; 
 }
 inline bool from_c_string( uint64_t& v, const char* const str ) 
 { 
-	//v = strtoul(str, NULL, 10);
-	return sscanf( str, "%llu", &v ) == 1; 
+	unsigned long long vt = static_cast<unsigned long long>(v);
+	return sscanf( str, "%llu", &vt ) == 1; 
 }
 inline bool from_c_string( float& v, const char* const str ) 
 {
