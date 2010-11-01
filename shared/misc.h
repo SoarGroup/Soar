@@ -153,13 +153,17 @@ inline bool from_c_string( uint32_t& v, const char* const str )
 }
 inline bool from_c_string( int64_t& v, const char* const str ) 
 { 
-	long long vt = static_cast<long long>(v);
-	return sscanf( str, "%lld", &vt ) == 1; 
+	long long vt = 0;
+	bool ret = sscanf( str, "%lld", &vt ) == 1; 
+	v = static_cast<int64_t>(vt);
+	return ret;
 }
 inline bool from_c_string( uint64_t& v, const char* const str ) 
 { 
-	unsigned long long vt = static_cast<long long unsigned>(v);
-	return sscanf( str, "%llu", &vt ) == 1; 
+	long long unsigned vt = 0;
+	bool ret = sscanf( str, "%llu", &vt ) == 1; 
+	v = static_cast<uint64_t>(vt);
+	return ret;
 }
 inline bool from_c_string( float& v, const char* const str ) 
 {
