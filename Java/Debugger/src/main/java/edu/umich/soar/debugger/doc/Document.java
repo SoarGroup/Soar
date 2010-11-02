@@ -500,7 +500,6 @@ public class Document implements Kernel.AgentEventInterface,
                 smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES,
                 new UpdateEventInterface()
                 {
-                    @Override
                     public void updateEventHandler(int eventID, Object data,
                             Kernel kernel, int runFlags)
                     {

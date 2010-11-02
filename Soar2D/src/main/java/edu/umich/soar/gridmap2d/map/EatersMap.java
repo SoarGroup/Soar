@@ -48,7 +48,6 @@ public class EatersMap extends GridMapBase implements GridMap,
 		reset();
 	}
 
-	@Override
 	public void reset() {
 		foodCount = 0;
 		scoreCount = 0;
@@ -236,7 +235,6 @@ public class EatersMap extends GridMapBase implements GridMap,
 		}
 	}
 
-	@Override
 	public boolean isAvailable(int[] location) {
 		Cell cell = getData().cells.getCell(location);
 		boolean enterable = !cell.hasObjectWithProperty(Names.kPropertyBlock);
@@ -244,7 +242,6 @@ public class EatersMap extends GridMapBase implements GridMap,
 		return enterable && noPlayer;
 	}
 
-	@Override
 	public void addStateUpdate(CellObject added) {
 		if (generatePhase) {
 			if (added.getProperty("apply.reward-info", false, Boolean.class)) {
@@ -283,7 +280,6 @@ public class EatersMap extends GridMapBase implements GridMap,
 		}
 	}
 
-	@Override
 	public void removalStateUpdate(CellObject removed) {
 		if (unopenedBoxesTerminal) {
 			if (isUnopenedBox(removed)) {

@@ -222,13 +222,11 @@ public class CellTest {
 			observerExpectedObject = null;
 		}
 		
-		@Override
 		public void addStateUpdate(CellObject object) {
 			checkParams(object);
 			observerAddCalled += 1;
 		}
 
-		@Override
 		public void removalStateUpdate(CellObject object) {
 			checkParams(object);
 			observerRemoveCalled += 1;

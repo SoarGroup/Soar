@@ -193,7 +193,6 @@ public class SoarDiceModule
 
     private final SystemEventInterface shutdownHandler = new SystemEventInterface()
     {
-        @Override
         public void systemEventHandler(int eventID, Object data, Kernel kernel)
         {
             stop = true;

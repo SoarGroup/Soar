@@ -215,7 +215,6 @@ public class SimpleAsyncEnv
                     smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES,
                     new UpdateEventInterface()
                     {
-                        @Override
                         public void updateEventHandler(int eventID,
                                 Object data, Kernel kernel, int runFlags)
                         {
@@ -473,7 +472,6 @@ public class SimpleAsyncEnv
              */
             this.soar.setPrintListener(new PrintListener()
             {
-                @Override
                 public void printEvent(String message)
                 {
                     /*

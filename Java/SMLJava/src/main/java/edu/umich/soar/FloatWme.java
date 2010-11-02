@@ -85,7 +85,6 @@ public class FloatWme implements Wme
         return wme.GetValue();
     }
 
-    @Override
     public void destroy()
     {
         if (wme != null)
