@@ -34,7 +34,6 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		reset();
 	}
 
-	@Override
 	public void reset() {
 		destinations.clear();
 		passengerDestination = null;
@@ -77,7 +76,6 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		return object.getProperty("name");
 	}
 
-	@Override
 	public boolean isAvailable(int[] location) {
 		Cell cell = getData().cells.getCell(location);
 		boolean destination = cell.hasObjectWithProperty("destination");
@@ -86,7 +84,6 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		return !destination && !fuel && noPlayer;
 	}
 
-	@Override
 	public void addStateUpdate(CellObject added) {
 		// Update state we keep track of specific to game type
 		if (added.hasProperty("destination")) {
@@ -112,7 +109,6 @@ public class TaxiMap extends GridMapBase implements GridMap, CellObjectObserver 
 		return passengerSourceColor;
 	}
 
-	@Override
 	public void removalStateUpdate(CellObject removed) {
 		if (removed.hasProperty("destination")) {
 			Iterator<int[]> iter = destinations.iterator();

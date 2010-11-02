@@ -18,8 +18,8 @@
 	<property name="target.classes" location="${target}/classes" />
 	<property name="main.resources" location="src/main/resources" />
 
-	<property name="java.source.level" value="1.6"/>
-	<property name="java.target.level" value="1.6"/>
+	<property name="java.source.level" value="1.5"/>
+	<property name="java.target.level" value="1.5"/>
 	
 	<property name="jar.name" value="${ant.project.name}-${version}.jar"/>
 	<property name="jar.source.name" value="${ant.project.name}-${version}.src.jar"/>

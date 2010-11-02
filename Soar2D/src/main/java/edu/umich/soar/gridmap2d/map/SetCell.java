@@ -23,36 +23,30 @@ class SetCell implements Cell {
 		this.location = new int[] { location[0], location[1] };
 	}
 
-	@Override
 	public int[] getLocation() {
 		return new int[] { location[0], location[1] };
 	}
 
-	@Override
 	public boolean isModified() {
 		return modified;
 	}
 
-	@Override
 	public void setModified(boolean value) {
 		modified = value;
 	}
 
-	@Override
 	public Player getFirstPlayer() {
 		synchronized (players) {
 			return players.size() > 0 ? players.get(0) : null;
 		}
 	}
 
-	@Override
 	public List<Player> getAllPlayers() {
 		synchronized (players) {
 			return new ArrayList<Player>(players);
 		}
 	}
 
-	@Override
 	public void addPlayer(Player player) {
 		if (player == null) {
 			throw new NullPointerException();
@@ -62,14 +56,12 @@ class SetCell implements Cell {
 		}
 	}
 
-	@Override
 	public void removePlayer(Player player) {
 		synchronized (players) {
 			modified = players.remove(player) || modified;
 		}
 	}
 
-	@Override
 	public void clearPlayers() {
 		synchronized (players) {
 			modified = !players.isEmpty() || modified;
@@ -77,14 +69,12 @@ class SetCell implements Cell {
 		}
 	}
 
-	@Override
 	public boolean hasPlayers() {
 		synchronized (players) {
 			return !players.isEmpty();
 		}
 	}
 
-	@Override
 	public void addObject(CellObject object) {
 		if (cellObjects.add(object)) {
 			modified = true;
@@ -93,12 +83,10 @@ class SetCell implements Cell {
 		}
 	}
 
-	@Override
 	public Set<CellObject> getAllObjects() {
 		return new HashSet<CellObject>(cellObjects);
 	}
 
-	@Override
 	public Set<CellObject> removeAllObjects() {
 		Set<CellObject> removed = new HashSet<CellObject>(cellObjects);
 		cellObjects.clear();
@@ -113,7 +101,6 @@ class SetCell implements Cell {
 		return removed;
 	}
 
-	@Override
 	public Set<CellObject> getAllObjectsWithProperty(String property) {
 		Set<CellObject> ret = new HashSet<CellObject>();
 		for (CellObject object : cellObjects) {
@@ -124,7 +111,6 @@ class SetCell implements Cell {
 		return ret;
 	}
 
-	@Override
 	public CellObject getFirstObjectWithProperty(String property) {
 		for (CellObject object : cellObjects) {
 			if (object.hasProperty(property)) {
@@ -134,7 +120,6 @@ class SetCell implements Cell {
 		return null;
 	}
 
-	@Override
 	public boolean hasObjectWithProperty(String property) {
 		if (property == null) {
 			throw new NullPointerException();
@@ -142,7 +127,6 @@ class SetCell implements Cell {
 		return getFirstObjectWithProperty(property) != null;
 	}
 
-	@Override
 	public Set<CellObject> removeAllObjectsByProperty(String property) {
 		Set<CellObject> ret = new HashSet<CellObject>();
 		Iterator<CellObject> iter = cellObjects.iterator();
@@ -159,7 +143,6 @@ class SetCell implements Cell {
 		return ret;
 	}
 
-	@Override
 	public boolean removeObject(CellObject object) {
 		if (cellObjects.remove(object)) {
 			modified = true;
@@ -170,7 +153,6 @@ class SetCell implements Cell {
 		return false;
 	}
 
-	@Override
 	public boolean hasObject(CellObject object) {
 		if (object == null) {
 			throw new NullPointerException();

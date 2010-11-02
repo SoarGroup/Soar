@@ -33,12 +33,10 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 		return mapPath;
 	}
 	
-	@Override
 	public boolean isInBounds(int[] xy) {
 		return data.cells.isInBounds(xy);
 	}
 	
-	@Override
 	public String getCurrentMapName() {
 		// can't just use system separator, could come from config file which needs to work across systems
 		int index = mapPath.lastIndexOf("/");
@@ -51,12 +49,10 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 		return mapPath.substring(index + 1);
 	}
 
-	@Override
 	public int size() {
 		return data.cells.size();
 	}
 
-	@Override
 	public int[] getAvailableLocationAmortized() {
 		int size = size();
 		
@@ -84,12 +80,10 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 		return locations.get(Simulation.random.nextInt(locations.size()));
 	}
 
-	@Override
 	public CellObject createObjectByName(String name) {
 		return data.cellObjectManager.createObject(name);
 	}
 
-	@Override
 	public List<CellObject> getTemplatesWithProperty(String name) {
 		return data.cellObjectManager.getTemplatesWithProperty(name);
 	}
@@ -199,7 +193,6 @@ abstract class GridMapBase implements GridMap, CellObjectObserver {
 		}
 	}
 	
-	@Override
 	public Cell getCell(int[] xy) {
 		return data.cells.getCell(xy);
 	}
