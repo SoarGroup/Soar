@@ -197,7 +197,7 @@ if GetOption('platform') == '64':
 	print "*"
 	env.Append(CPPFLAGS = Split('-m64 -fPIC'))
 	env.Append(LINKFLAGS = ['-m64'])
-elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1:
+elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1 and sys.platform not in [ 'darwin', ]:
 	env.Append(CPPFLAGS = Split('-m32 -march=native'))
 	env.Append(LINKFLAGS = Split('-m32 -march=native'))
 else:
