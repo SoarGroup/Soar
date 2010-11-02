@@ -643,7 +643,7 @@ Symbol *generate_new_sym_constant (agent* thisAgent, const char *prefix, uint64_
   Symbol *New;
 
   while (TRUE) {
-    SNPRINTF (name,GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE, "%s%lu", prefix, (*counter)++);
+    SNPRINTF (name,GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE, "%s%lu", prefix, static_cast<long unsigned int>((*counter)++));
 	name[GENERATE_NEW_SYM_CONSTANT_BUFFER_SIZE - 1] = 0;
     if (! find_sym_constant (thisAgent, name)) break;
   }

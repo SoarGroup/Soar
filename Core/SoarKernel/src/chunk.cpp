@@ -866,10 +866,10 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
 
   SNPRINTF (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu", 
           thisAgent->chunk_name_prefix,
-          thisAgent->chunk_count++,
-          thisAgent->d_cycle_count,
+          static_cast<long unsigned int>(thisAgent->chunk_count++),
+          static_cast<long unsigned int>(thisAgent->d_cycle_count),
           impass_name,
-          thisAgent->chunks_this_d_cycle
+          static_cast<long unsigned int>(thisAgent->chunks_this_d_cycle)
           );
   name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
 
@@ -884,11 +884,11 @@ Symbol *generate_chunk_name_sym_constant (agent* thisAgent, instantiation *inst)
     do {
       SNPRINTF (name, BUFFER_GEN_CHUNK_NAME_SIZE, "%s-%lu*d%lu*%s*%lu*%lu", 
               thisAgent->chunk_name_prefix,
-              thisAgent->chunk_count++,
-              thisAgent->d_cycle_count,
+              static_cast<long unsigned int>(thisAgent->chunk_count++),
+              static_cast<long unsigned int>(thisAgent->d_cycle_count),
               impass_name,
-              thisAgent->chunks_this_d_cycle,
-              collision_count++
+              static_cast<long unsigned int>(thisAgent->chunks_this_d_cycle),
+              static_cast<long unsigned int>(collision_count++)
               );
       name[BUFFER_GEN_CHUNK_NAME_SIZE - 1] = 0; /* ensure null termination */
 

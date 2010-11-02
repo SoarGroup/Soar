@@ -81,7 +81,7 @@ test make_placeholder_test (agent* thisAgent, char first_letter) {
   }
   /* --- create variable with "#" in its name:  this couldn't possibly be a
      variable in the user's code, since the lexer doesn't handle "#" --- */
-  SNPRINTF (namebuf, MAKE_PLACEHOLDER_TEST_BUFFER_SIZE, "<#%c*%lu>", first_letter, thisAgent->placeholder_counter[first_letter-'a']++);
+  SNPRINTF (namebuf, MAKE_PLACEHOLDER_TEST_BUFFER_SIZE, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[first_letter-'a']++));
   namebuf[MAKE_PLACEHOLDER_TEST_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 
   new_var = make_variable (thisAgent, namebuf);
@@ -1651,7 +1651,7 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
        variable in the user's code, since the lexer doesn't handle "#" --- */
     /* KJC used same format so could steal code... */
     first_letter = first_letter_from_rhs_value (attr);
-    SNPRINTF (namebuf,PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE, "<#%c*%lu>", first_letter, thisAgent->placeholder_counter[first_letter-'a']++);
+    SNPRINTF (namebuf,PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[first_letter-'a']++));
 	namebuf[PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE - 1] = 0;
     new_var = make_variable (thisAgent, namebuf);
     /* --- indicate that there is no corresponding "real" variable yet --- */

@@ -1824,7 +1824,7 @@ void epmem_new_episode( agent *my_agent )
 	{
 		char buf[256];
 
-		SNPRINTF( buf, 254, "NEW EPISODE: %ld", time_counter );
+		SNPRINTF( buf, 254, "NEW EPISODE: %ld", static_cast<long int>(time_counter) );
 
 		print( my_agent, buf );
 		xml_generate_warning( my_agent, buf );
@@ -4242,7 +4242,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 							{
 								char buf[256];
 
-								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%lld, %ld, %f)", static_cast<long long>(current_valid_end), sum_ct, current_score );
+								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%lld, %ld, %f)", static_cast<long long int>(current_valid_end), static_cast<long int>(sum_ct), current_score );
 
 								print( my_agent, buf );
 								xml_generate_warning( my_agent, buf );

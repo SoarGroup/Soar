@@ -1439,7 +1439,7 @@ void AgentSML::ReplayInputWMEs()
 		{
 			// add-wme
 			char timetagString[25];
-			SNPRINTF(timetagString, 25, "%ld", ca.clientTimeTag);
+			SNPRINTF(timetagString, 25, "%ld", static_cast<long int>(ca.clientTimeTag));
 
 			if (!AddInputWME(ca.Add()->id.c_str(), ca.Add()->attr.c_str(), ca.Add()->value.c_str(), ca.Add()->type, timetagString))
 			{

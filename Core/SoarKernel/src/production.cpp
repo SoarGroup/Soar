@@ -1527,7 +1527,7 @@ Symbol *generate_new_variable (agent* thisAgent, const char *prefix) {
 
   while (TRUE) {
     SNPRINTF (name,GENERATE_NEW_VARIABLE_BUFFER_SIZE, "<%s%lu>", prefix,
-             thisAgent->gensymed_variable_count[first_letter-'a']++);
+             static_cast<long unsigned int>(thisAgent->gensymed_variable_count[first_letter-'a']++));
 	name[GENERATE_NEW_VARIABLE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
 
     New = make_variable (thisAgent, name);
