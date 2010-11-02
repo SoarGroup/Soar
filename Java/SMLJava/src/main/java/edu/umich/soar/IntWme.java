@@ -37,7 +37,7 @@ public class IntWme implements Wme
      *            Initial value
      * @return Wme ready for update
      */
-    public static IntWme newInstance(Identifier parent, String attr, int val)
+    public static IntWme newInstance(Identifier parent, String attr, long val)
     {
         IntWme temp = new IntWme(parent, attr);
         temp.update(val);
@@ -62,7 +62,7 @@ public class IntWme implements Wme
      * @param val
      *            The new value
      */
-    public void update(int val)
+    public void update(long val)
     {
         if (wme != null)
             wme.Update(val);
@@ -82,6 +82,20 @@ public class IntWme implements Wme
         if (wme == null)
             throw new IllegalStateException();
         return wme.GetValue();
+    }
+
+    /**
+     * Get the current value.
+     * 
+     * @throws IllegalStateException
+     *             if destroyed or value was not set
+     * @return Current value
+     */
+    public long getValue64()
+    {
+        if (wme == null)
+            throw new IllegalStateException();
+        return wme.GetValue64();
     }
 
     public void destroy()
