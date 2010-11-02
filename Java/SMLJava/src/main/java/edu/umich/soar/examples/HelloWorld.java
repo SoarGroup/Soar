@@ -2,13 +2,12 @@ package edu.umich.soar.examples;
 
 import java.io.IOException;
 
-import edu.umich.soar.ProductionUtils;
-
 import sml.Agent;
 import sml.Identifier;
 import sml.Kernel;
 import sml.smlUpdateEventId;
 import sml.Kernel.UpdateEventInterface;
+import edu.umich.soar.ProductionUtils;
 
 /**
  * Very simple environment that adds a WME to the agent's input link with
@@ -102,7 +101,6 @@ public class HelloWorld
                 smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES,
                 new UpdateEventInterface()
                 {
-                    @Override
                     public void updateEventHandler(int eventID, Object data,
                             Kernel kernel, int runFlags)
                     {

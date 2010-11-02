@@ -358,7 +358,6 @@ public class CellObject implements Comparable<CellObject> {
 		return builder.toString();
 	}
 
-	@Override
 	public int compareTo(CellObject o) {
 		return (int) (this.serial - o.serial);
 	}

@@ -42,7 +42,6 @@ public class TankSoarWorld implements World {
 		this.cogArch = cogArch;
 	}
 	
-	@Override
 	public void setAndResetMap(String mapPath) {
 		TankSoarMap newMap = TankSoarMap.generateInstance(mapPath, Gridmap2D.config.tanksoarConfig().max_sound_distance);
 		if (newMap == null) {
@@ -804,12 +803,10 @@ public class TankSoarWorld implements World {
 		newLocations.put(tank, players.getLocation(tank));
 	}
 	
-	@Override
 	public boolean hasPlayer(String name) {
 		return players.get(name) != null;
 	}
 	
-	@Override
 	public boolean addPlayer(String id, PlayerConfig cfg, boolean debug) {
 		int [] location = WorldUtil.getStartingLocation(map, cfg.pos);
 		if (location == null) {

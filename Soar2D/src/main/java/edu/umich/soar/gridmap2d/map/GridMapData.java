@@ -9,14 +9,12 @@ class GridMapData implements CellObjectObserver {
 
 	Set<CellObject> updatables = new HashSet<CellObject>();
 
-	@Override
 	public void addStateUpdate(CellObject added) {
 		if (Cells.updatable(added)) {
 			updatables.add(added);
 		}
 	}
 
-	@Override
 	public void removalStateUpdate(CellObject removed) {
 		if (Cells.updatable(removed)) {
 			updatables.remove(removed);

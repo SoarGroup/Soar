@@ -166,23 +166,6 @@ public class SoarCommandLineClient
     }
 
     /**
-     * Open command line proxy with agent and JMX port on localhost.
-     * 
-     * @param agent
-     *            The agent to connect to.
-     * @param port
-     *            JMX port.
-     * @return Proxy, or null if error.
-     * @throws IOException
-     *             Usually if there is some connection error.
-     */
-    public SoarCommandLineMXBean openDebuggerProxy(String agent, int port)
-            throws IOException
-    {
-        return openDebuggerProxy(agent, "localhost", port);
-    }
-
-    /**
      * Open command line proxy with agent and JMX port on some other host.
      * 
      * @param agent
@@ -256,7 +239,6 @@ public class SoarCommandLineClient
             ExecutorService exec = Executors.newSingleThreadExecutor();
             exec.execute(new Runnable()
             {
-                @Override
                 public void run()
                 {
                     try
@@ -298,7 +280,7 @@ public class SoarCommandLineClient
      * @throws IOException
      *             As thrown by Runtime.
      */
-    public boolean spawnDebuggerWithJMX(int port) throws IOException
+    public boolean spawnDebuggerWithJMX(String host, int port) throws IOException
     {
         File debugger = new File(soarHome.getAbsolutePath() + File.separator
                 + "bin" + File.separator + "SoarJavaDebugger.jar");
@@ -307,6 +289,8 @@ public class SoarCommandLineClient
         cmd.add("java");
 
         // Set the JMX server port and other settings
+        cmd.add("-Dcom.sun.management.jmxremote");
+        cmd.add("-Dcom.sun.management.jmxremote.host=" + host);
         cmd.add("-Dcom.sun.management.jmxremote.port=" + port);
         cmd.add("-Dcom.sun.management.jmxremote.authenticate=false");
         cmd.add("-Dcom.sun.management.jmxremote.ssl=false");
@@ -363,10 +347,12 @@ public class SoarCommandLineClient
     public SoarCommandLineMXBean startDebuggerGetProxy() throws IOException
     {
         int port = getUnusedPort();
-        if (!spawnDebuggerWithJMX(port))
+        final String host = "127.0.0.1";
+        System.out.println("SoarCommandLineClient using " + host + ":" + port);
+        if (!spawnDebuggerWithJMX(host, port))
             return null;
         managed = true;
-        return openDebuggerProxy("soar1", port);
+        return openDebuggerProxy("soar1", host, port);
     }
 
     /**

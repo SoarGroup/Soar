@@ -39,7 +39,6 @@ public class TaxiWorld implements World {
 		this.disableFuel = disableFuel;
 	}
 	
-	@Override
 	public void setAndResetMap(String mapPath) {
 		TaxiMap newMap = TaxiMap.generateInstance(mapPath);
 		if (newMap == null) {
@@ -208,12 +207,10 @@ public class TaxiWorld implements World {
 		resetState();
 	}
 
-	@Override
 	public boolean hasPlayer(String name) {
 		return players.get(name) != null;
 	}
 	
-	@Override
 	public boolean addPlayer(String id, PlayerConfig cfg, boolean debug) {
 		int [] location = WorldUtil.getStartingLocation(map, cfg.pos);
 		if (location == null) {

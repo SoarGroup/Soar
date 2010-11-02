@@ -440,12 +440,10 @@ public class EatersWorld implements World {
 		return players.numberOfPlayers();
 	}
 
-	@Override
 	public boolean hasPlayer(String name) {
 		return players.get(name) != null;
 	}
 	
-	@Override
 	public boolean addPlayer(String id, PlayerConfig cfg, boolean debug) {
 		int [] location = WorldUtil.getStartingLocation(map, cfg.pos);
 		if (location == null) {

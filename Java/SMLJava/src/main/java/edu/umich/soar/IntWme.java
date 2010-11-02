@@ -84,7 +84,6 @@ public class IntWme implements Wme
         return wme.GetValue();
     }
 
-    @Override
     public void destroy()
     {
         if (wme != null)

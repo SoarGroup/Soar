@@ -43,7 +43,6 @@ public class TankSoarMap extends GridMapBase implements GridMap,
 		reset();
 	}
 
-	@Override
 	public void reset() {
 		energy = false;
 		missilePacks = 0;
@@ -80,7 +79,6 @@ public class TankSoarMap extends GridMapBase implements GridMap,
 		return false;
 	}
 
-	@Override
 	public boolean isAvailable(int[] xy) {
 		Cell cell = getData().cells.getCell(xy);
 		boolean enterable = !cell
@@ -92,7 +90,6 @@ public class TankSoarMap extends GridMapBase implements GridMap,
 		return enterable && noPlayer && noMissilePack && noCharger;
 	}
 
-	@Override
 	public void addStateUpdate(CellObject added) {
 		// Update state we keep track of specific to game type
 		if (added.hasProperty(Names.kPropertyCharger)) {
@@ -108,7 +105,6 @@ public class TankSoarMap extends GridMapBase implements GridMap,
 		}
 	}
 
-	@Override
 	public void removalStateUpdate(CellObject removed) {
 		if (removed.hasProperty(Names.kPropertyCharger)) {
 			if (health && removed.hasProperty(Names.kPropertyHealth)) {

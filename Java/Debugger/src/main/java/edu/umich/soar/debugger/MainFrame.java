@@ -1379,7 +1379,6 @@ public class MainFrame
 
     private final SoarCommandLineMXBean commandLineMXBean = new SoarCommandLineMXBean()
     {
-        @Override
         public String getName()
         {
             if (m_AgentFocus == null)
@@ -1387,13 +1386,11 @@ public class MainFrame
             return m_AgentFocus.GetAgentName();
         }
 
-        @Override
         public String executeCommandLine(final String line)
         {
             m_CommandLineResult = null;
             getDisplay().syncExec(new Runnable()
             {
-                @Override
                 public void run()
                 {
                     m_CommandLineResult = executeCommandPrimeView(line, true);

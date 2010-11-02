@@ -91,7 +91,6 @@ public class StringWme implements Wme
         return wme.GetValue();
     }
 
-    @Override
     public void destroy()
     {
         if (wme != null)
