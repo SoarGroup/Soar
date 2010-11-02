@@ -257,7 +257,7 @@ char *symbol_to_string (agent* thisAgent, Symbol *sym,
 	  dest=thisAgent->printed_output_string;
 	  dest_size = MAX_LEXEME_LENGTH*2+10; /* from agent.h */
 	}
-    SNPRINTF (dest, dest_size, "%ld", sym->ic.value);
+    SNPRINTF (dest, dest_size, "%ld", static_cast<long int>(sym->ic.value));
 	dest[dest_size - 1] = 0; /* ensure null termination */
     return dest;
     
