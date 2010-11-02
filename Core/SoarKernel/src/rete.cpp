@@ -7735,7 +7735,7 @@ int64_t ppmi_aux (agent* thisAgent,   /* current agent */
     strncpy (match_count_string, ">>>>", MATCH_COUNT_STRING_BUFFER_SIZE);
 	match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
   } else {
-    SNPRINTF (match_count_string, MATCH_COUNT_STRING_BUFFER_SIZE, "%4ld", matches_at_this_level);
+    SNPRINTF (match_count_string, MATCH_COUNT_STRING_BUFFER_SIZE, "%4ld", static_cast<long int>(matches_at_this_level));
 	match_count_string[MATCH_COUNT_STRING_BUFFER_SIZE - 1] = 0; /* ensure null termination */
   }
 
