@@ -255,6 +255,9 @@ enum smem_variable_key
 
 #define SMEM_LTI_UNKNOWN_LEVEL 0
 
+#define SMEM_WEB_NULL 0
+#define SMEM_WEB_NULL_STR "0"
+
 // provides a distinct prefix to be used by all
 // tables for two reasons:
 // - distinguish from other modules

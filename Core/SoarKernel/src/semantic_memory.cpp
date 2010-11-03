@@ -420,10 +420,10 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	web_attr_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? GROUP BY attr" );
 	add( web_attr_ct );
 
-	web_const_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? AND val_const IS NOT NULL GROUP BY attr, val_const" );
+	web_const_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_const, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? AND val_const<>" SMEM_WEB_NULL_STR " GROUP BY attr, val_const" );
 	add( web_const_ct );
 
-	web_lti_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? AND val_const IS NULL GROUP BY attr, val_const, val_lti" );
+	web_lti_ct = new soar_module::sqlite_statement( new_db, "SELECT attr, val_lti, COUNT(*) AS ct FROM " SMEM_SCHEMA "web WHERE parent_id=? AND val_const=" SMEM_WEB_NULL_STR " GROUP BY attr, val_const, val_lti" );
 	add( web_lti_ct );
 
 	//
@@ -431,10 +431,10 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? ORDER BY act_cycle DESC" );
 	add( web_attr_all );
 
-	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=? AND val_lti IS NULL ORDER BY act_cycle DESC" );
+	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=? AND val_lti=" SMEM_WEB_NULL_STR " ORDER BY act_cycle DESC" );
 	add( web_const_all );
 
-	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const IS NULL AND val_lti=? ORDER BY act_cycle DESC" );
+	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=" SMEM_WEB_NULL_STR " AND val_lti=? ORDER BY act_cycle DESC" );
 	add( web_lti_all );
 
 	//
@@ -445,7 +445,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	web_const_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM " SMEM_SCHEMA "web WHERE parent_id=? AND attr=? AND val_const=?" );
 	add( web_const_child );
 
-	web_lti_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM " SMEM_SCHEMA "web WHERE parent_id=? AND attr=? AND val_const IS NULL AND val_lti=?" );
+	web_lti_child = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM " SMEM_SCHEMA "web WHERE parent_id=? AND attr=? AND val_const=" SMEM_WEB_NULL_STR " AND val_lti=?" );
 	add( web_lti_child );
 
 	//
@@ -517,7 +517,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	vis_value_const = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh1.sym_type AS attr_type, tsh1.id AS attr_hash, tsh2.sym_type AS val_type, tsh2.id AS val_hash FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "symbols_type tsh1, " SMEM_SCHEMA "symbols_type tsh2 WHERE (w.attr=tsh1.id) AND (w.val_const=tsh2.id)" );
 	add( vis_value_const );
 
-	vis_value_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh.sym_type AS attr_type, tsh.id AS attr_hash, val_lti FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "symbols_type tsh WHERE (w.attr=tsh.id) AND (val_lti IS NOT NULL)" );
+	vis_value_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh.sym_type AS attr_type, tsh.id AS attr_hash, val_lti FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "symbols_type tsh WHERE (w.attr=tsh.id) AND (val_lti<>" SMEM_WEB_NULL_STR ")" );
 	add( vis_value_lti );
 }
 
@@ -1409,11 +1409,12 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 		// get attribute hash and contribute to count adjustment
 		attr_hash = smem_temporal_hash( my_agent, s->first );
 		attr_ct_adjust[ attr_hash ]++;
-		stat_adjust++;
 
 		// for all values in the slot
 		for ( v=s->second->begin(); v!=s->second->end(); v++ )
 		{			
+			stat_adjust++;
+			
 			// most handling is specific to constant vs. identifier
 			if ( (*v)->val_const.val_type == value_const_t )
 			{
@@ -1423,7 +1424,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 				my_agent->smem_stmts->web_add->bind_int( 1, parent_id );
 				my_agent->smem_stmts->web_add->bind_int( 2, attr_hash );
 				my_agent->smem_stmts->web_add->bind_int( 3, value_hash );
-				my_agent->smem_stmts->web_add->bind_null( 4 );
+				my_agent->smem_stmts->web_add->bind_int( 4, SMEM_WEB_NULL );
 				my_agent->smem_stmts->web_add->bind_int( 5, web_act_cycle );
 				my_agent->smem_stmts->web_add->execute( soar_module::op_reinit );
 
@@ -1449,7 +1450,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 				// parent_id, attr, val_const, val_lti, act_cycle
 				my_agent->smem_stmts->web_add->bind_int( 1, parent_id );
 				my_agent->smem_stmts->web_add->bind_int( 2, attr_hash );
-				my_agent->smem_stmts->web_add->bind_null( 3 );
+				my_agent->smem_stmts->web_add->bind_int( 3, SMEM_WEB_NULL );
 				my_agent->smem_stmts->web_add->bind_int( 4, value_lti );
 				my_agent->smem_stmts->web_add->bind_int( 5, web_act_cycle );
 				my_agent->smem_stmts->web_add->execute( soar_module::op_reinit );
@@ -1715,7 +1716,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 			attr_sym = smem_reverse_hash( my_agent, static_cast<byte>( expand_q->column_int(0) ), static_cast<smem_hash_id>( expand_q->column_int(1) ) );
 
 			// identifier vs. constant
-			if ( expand_q->column_type( 6 ) != soar_module::null_t )
+			if ( expand_q->column_int( 6 ) != SMEM_WEB_NULL )
 			{
 				value_sym = smem_lti_soar_make( my_agent, static_cast<smem_lti_id>( expand_q->column_int( 6 ) ), static_cast<char>( expand_q->column_int( 4 ) ), static_cast<uint64_t>( expand_q->column_int( 5 ) ), lti->id.level );
 			}
@@ -3521,7 +3522,7 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 		while ( expand_q->execute() == soar_module::row )
 		{
 			// identifier vs. constant
-			if ( expand_q->column_type( 6 ) != soar_module::null_t )
+			if ( expand_q->column_int( 6 ) != SMEM_WEB_NULL )
 			{
 				new_lti = new smem_vis_lti;
 				new_lti->lti_id = expand_q->column_int( 6 );
