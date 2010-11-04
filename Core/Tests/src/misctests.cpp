@@ -21,6 +21,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( test_clog );
 	CPPUNIT_TEST( test_gp );
 	CPPUNIT_TEST( test_echo );
+	CPPUNIT_TEST( test_stats );
 
 	CPPUNIT_TEST( testWrongAgentWmeFunctions );
 	CPPUNIT_TEST( testRHSRand );
@@ -38,6 +39,7 @@ protected:
 	void test_clog();
 	void test_gp();
 	void test_echo();
+	void test_stats();
 
 	void testWrongAgentWmeFunctions();
 	void testRHSRand();
@@ -89,6 +91,29 @@ void MiscTest::testInstiationDeallocationStackOverflow()
 	pAgent->ExecuteCommandLine("w 0");
 
 	pKernel->RunAllAgentsForever();
+}
+
+void MiscTest::test_clog()
+{
+	pAgent->ExecuteCommandLine("clog clog-test.txt");
+	CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+	pAgent->ExecuteCommandLine("watch 5");
+	CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
+	pAgent->RunSelf(5);
+	pAgent->InitSoar();
+	pAgent->RunSelf(5);
+	pKernel->DestroyAgent(pAgent);
+	pAgent = pKernel->CreateAgent( "soar1" );
+	CPPUNIT_ASSERT( pAgent != NULL );
+	pAgent->ExecuteCommandLine("clog clog-test.txt");
+	CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
+	pAgent->ExecuteCommandLine("watch 5");
+	CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
+	pAgent->RunSelf(5);
+	pAgent->InitSoar();
+	pAgent->RunSelf(5);
+	pAgent->ExecuteCommandLine("clog --close");
+	remove("clog-test.txt");
 }
 
 void MiscTest::test_gp()
@@ -154,27 +179,102 @@ void MiscTest::test_echo()
 	CPPUNIT_ASSERT_MESSAGE("misc chars", pAgent->GetLastCommandLineResult());
 }
 
-void MiscTest::test_clog()
+void MiscTest::test_stats()
 {
-	pAgent->ExecuteCommandLine("clog clog-test.txt");
-	CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
-	pAgent->ExecuteCommandLine("watch 5");
-	CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
-	pAgent->RunSelf(5);
-	pAgent->InitSoar();
-	pAgent->RunSelf(5);
-	pKernel->DestroyAgent(pAgent);
-	pAgent = pKernel->CreateAgent( "soar1" );
-	CPPUNIT_ASSERT( pAgent != NULL );
-	pAgent->ExecuteCommandLine("clog clog-test.txt");
-	CPPUNIT_ASSERT_MESSAGE("clog clog-test.txt", pAgent->GetLastCommandLineResult());
-	pAgent->ExecuteCommandLine("watch 5");
-	CPPUNIT_ASSERT_MESSAGE("watch 5", pAgent->GetLastCommandLineResult());
-	pAgent->RunSelf(5);
-	pAgent->InitSoar();
-	pAgent->RunSelf(5);
-	pAgent->ExecuteCommandLine("clog --close");
-	remove("clog-test.txt");
+	sml::ClientAnalyzedXML stats;
+    pAgent->ExecuteCommandLineXML("stats", &stats);
+    CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
+
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountDefault, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountUser, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountChunk, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionCountJustification, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountInnerElaboration, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionFiringCount, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountAddition, -1) == 12);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountRemoval, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCount, -1) == 12);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsWmeCountAverage, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountMax, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsKernelCPUTime, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsTotalCPUTime, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsPhaseTimeInputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsPhaseTimeProposePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsPhaseTimeDecisionPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsPhaseTimeApplyPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsPhaseTimeOutputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsPhaseTimePreferencePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsPhaseTimeWorkingMemoryPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimeInputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimeProposePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimeDecisionPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimeApplyPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimeOutputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimePreferencePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimeWorkingMemoryPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsInputFunctionTime, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOutputFunctionTime, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeInputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimePreferencePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeWorkingMemoryPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeOutputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeDecisionPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeProposePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeApplyPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOwnershipTimeInputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOwnershipTimePreferencePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOwnershipTimeWorkingMemoryPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOwnershipTimeOutputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOwnershipTimeDecisionPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOwnershipTimeProposePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOwnershipTimeApplyPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeInputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimePreferencePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeWorkingMemoryPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeOutputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeDecisionPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeProposePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeApplyPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleTimeCycle, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleTimeValue, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesValue, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountCycle, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountValue, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 4520);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1) == 264032);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageString, -1) == 900);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 326824);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 2072);
+
+    pAgent->ExecuteCommandLine("stats -t");
+    CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
+    pAgent->RunSelf(10);
+    std::string res = pAgent->ExecuteCommandLine("stats -c");
+    CPPUNIT_ASSERT(!res.empty());
+
+    pAgent->ExecuteCommandLine("stats -t");
+    CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
+    pAgent->RunSelf(10);
+    res = pAgent->ExecuteCommandLine("stats -c");
+    CPPUNIT_ASSERT(!res.empty());
+
+    pAgent->ExecuteCommandLine("stats -T");
+    CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
+    pAgent->RunSelf(10);
+    res = pAgent->ExecuteCommandLine("stats -c");
+    CPPUNIT_ASSERT(res.empty());
+
+    pAgent->ExecuteCommandLine("stats -t");
+    CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
+    pAgent->RunSelf(10);
+    res = pAgent->ExecuteCommandLine("stats -c");
+    CPPUNIT_ASSERT(!res.empty());
+
+    pAgent->ExecuteCommandLine("stats -T");
+    CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
 }
 
 void MiscTest::testWrongAgentWmeFunctions()
