@@ -4,11 +4,11 @@
  * Purpose:     Contains the std_swap() function.
  *
  * Created:     27th June 2005
- * Updated:     10th August 2009
+ * Updated:     12th August 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2005-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2005-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -51,7 +51,7 @@
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_STD_SWAP_MAJOR    1
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_STD_SWAP_MINOR    2
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_STD_SWAP_REVISION 2
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_STD_SWAP_EDIT     18
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_STD_SWAP_EDIT     19
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ namespace stlsoft_nostd_util
 template<ss_typename_param_k T>
 inline void std_swap(T& lhs, T& rhs)
 {
-    // Here we introduce the 'std' implementation, via a using namespace 'std'
+    // Here we introduce the 'std' implementation, via a 'using namespace std'
     // directive, so that Argument-Dependent Lookup can have the best grab
 
 #ifdef STLSOFT_STD_SWAP_NO_USE_STD

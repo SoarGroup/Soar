@@ -4,11 +4,11 @@
  * Purpose:     Definition of minimum() and maximum() template functions.
  *
  * Created:     11th April 2005
- * Updated:     10th August 2009
+ * Updated:     10th August 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2005-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2005-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,9 +50,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_MINMAX_MAJOR       2
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_MINMAX_MINOR       0
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_MINMAX_MINOR       1
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_MINMAX_REVISION    1
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_MINMAX_EDIT        14
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_MINMAX_EDIT        15
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -99,6 +99,89 @@ inline T const& maximum(T const& lhs, T const& rhs)
 {
     return (lhs < rhs) ? rhs : lhs;
 }
+
+
+#ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
+
+template <
+    ss_typename_param_k T
+>
+inline T const& maximum(
+    T const& v0
+,   T const& v1
+,   T const& v2
+)
+{
+    return maximum(maximum(v0, v1), v2);
+}
+
+template <
+    ss_typename_param_k T
+>
+inline T const& minimum(
+    T const& v0
+,   T const& v1
+,   T const& v2
+)
+{
+    return minimum(minimum(v0, v1), v2);
+}
+
+template <
+    ss_typename_param_k T
+>
+inline T const& maximum(
+    T const& v0
+,   T const& v1
+,   T const& v2
+,   T const& v3
+)
+{
+    return maximum(maximum(v0, v1), maximum(v2, v3));
+}
+
+template <
+    ss_typename_param_k T
+>
+inline T const& minimum(
+    T const& v0
+,   T const& v1
+,   T const& v2
+,   T const& v3
+)
+{
+    return minimum(minimum(v0, v1), minimum(v2, v3));
+}
+
+template <
+    ss_typename_param_k T
+>
+inline T const& maximum(
+    T const& v0
+,   T const& v1
+,   T const& v2
+,   T const& v3
+,   T const& v4
+)
+{
+    return maximum(maximum(maximum(v0, v1), maximum(v2, v3)), v4);
+}
+
+template <
+    ss_typename_param_k T
+>
+inline T const& minimum(
+    T const& v0
+,   T const& v1
+,   T const& v2
+,   T const& v3
+,   T const& v4
+)
+{
+    return minimum(minimum(minimum(v0, v1), minimum(v2, v3)), v4);
+}
+
+#endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* ////////////////////////////////////////////////////////////////////// */
 

@@ -4,11 +4,11 @@
  * Purpose:     WinSTL thread-time performance counter class.
  *
  * Created:     22nd March 2002
- * Updated:     4th September 2009
+ * Updated:     6th May 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2002-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2002-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@
 # define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_MAJOR    4
 # define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_MINOR    0
 # define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_REVISION 3
-# define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_EDIT     47
+# define WINSTL_VER_WINSTL_PERFORMANCE_HPP_THREADTIMES_COUNTER_EDIT     48
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ public:
     /// This represents the extent, in whole microseconds, of the measurement period
     interval_type   get_microseconds() const;
 
-private: /// Implementation
+private: // Implementation
     static epoch_type convert_(FILETIME const& ft);
 
 // Members
