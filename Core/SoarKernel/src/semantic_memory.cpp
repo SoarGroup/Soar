@@ -2554,6 +2554,8 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 
 					if ( chunk_attr != NIL )
 					{
+						bool first_value = true;
+						
 						do
 						{
 							// value by type
@@ -2635,6 +2637,13 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 
 								// add to appropriate slot
 								s = smem_make_slot( intermediate_parent->slots, chunk_attr );
+								if ( first_value && !s->empty() )
+								{
+									// in the case of a repeated attribute, remove ref here to avoid leak
+									symbol_remove_ref( my_agent, chunk_attr );
+
+									first_value = false;
+								}
 								s->push_back( chunk_value );
 
 								// if this was the last attribute
