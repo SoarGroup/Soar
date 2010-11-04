@@ -209,6 +209,7 @@ namespace cli {
 		STATS_TRACK,
 		STATS_CYCLE,
 		STATS_CSV,
+		STATS_STOP_TRACK,
 		STATS_NUM_OPTIONS, // must be last
 	};
 
