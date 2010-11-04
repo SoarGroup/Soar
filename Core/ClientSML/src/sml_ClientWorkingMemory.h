@@ -142,8 +142,7 @@ public:
 	bool			SynchronizeInputLink() ;
 	bool			SynchronizeOutputLink() ;
 
-	int     	    GenerateTimeTag() ;
-	long long	    GenerateTimeTag64() ;
+	long long	    GenerateTimeTag() ;
 	void			GenerateNewID(char const* pAttribute, std::string* pID) ;
 
 	void			Refresh() ;

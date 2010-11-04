@@ -23,8 +23,8 @@ public class QnASMLModule {
 	
 	private final DataSourceManager man;
 	
-	private int queryCounter;
-	private final Map<Integer, ResultState> intermediateResults = new HashMap<Integer, ResultState>();
+	private long queryCounter;
+	private final Map<Long, ResultState> intermediateResults = new HashMap<Long, ResultState>();
 	private class ResultState {
 		public final Identifier oldParent;
 		public final QueryState queryState;
@@ -105,7 +105,7 @@ public class QnASMLModule {
 		}
 	}
 	
-	private void addResult(Integer queryId, boolean first, boolean incremental) {
+	private void addResult(Long queryId, boolean first, boolean incremental) {
 		if (!intermediateResults.containsKey(queryId)) {
 			return;
 		}
@@ -249,7 +249,7 @@ public class QnASMLModule {
 							}
 							
 							if (childWme.ConvertToIntElement()!=null) {
-								queryParams.get(childAttr).add(new Integer(childWme.ConvertToIntElement().GetValue()));
+								queryParams.get(childAttr).add(new Long(childWme.ConvertToIntElement().GetValue()));
 							} else if (childWme.ConvertToFloatElement()!=null) {
 								queryParams.get(childAttr).add(new Double(childWme.ConvertToFloatElement().GetValue()));
 							} else {

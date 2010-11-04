@@ -49,7 +49,7 @@ void DeltaList::AddWME(WMElement* pWME)
 	pTag->SetIdentifier(pWME->GetIdentifier()->GetIdentifierSymbol()) ;
 	pTag->SetAttribute(pWME->GetAttribute()) ;
 	pTag->SetValue(pWME->GetValueAsString(), pWME->GetValueType()) ;
-	pTag->SetTimeTag(pWME->GetTimeTag64()) ;
+	pTag->SetTimeTag(pWME->GetTimeTag()) ;
 	pTag->SetActionAdd() ;
 
 	m_DeltaList.push_back(pTag) ;	
