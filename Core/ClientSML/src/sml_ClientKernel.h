@@ -249,10 +249,8 @@ protected:
 
 	void SetSocketLib(sock::SocketLib* pLibrary) { m_SocketLibrary = pLibrary ; }
 
-	int	GenerateNextID()		{ return static_cast<int>(GenerateNextID64()) ; }
-	int	GenerateNextTimeTag()	{ return static_cast<int>(GenerateNextTimeTag64()) ; }
-	long long	GenerateNextID64()		{ return ++m_IdCounter ; }
-	long long	GenerateNextTimeTag64()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
+	long long	GenerateNextID()		{ return ++m_IdCounter ; }
+	long long	GenerateNextTimeTag()	{ return --m_TimeTagCounter ; }	// Count down so different from Soar kernel
 
 	/***
 	***   RHS functions and message event handlers use the same internal logic, although they look rather different to the user

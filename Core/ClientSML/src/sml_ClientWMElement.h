@@ -79,8 +79,7 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() const = 0 ;
 
-	int		  GetTimeTag() const	{ return static_cast<int>(GetTimeTag64()) ; }
-	long long GetTimeTag64() const	{ return m_TimeTag ; }
+	long long GetTimeTag() const	{ return m_TimeTag ; }
 
 	// The Identifier class overrides this to return true.  (The poor man's RTTI).
 	virtual bool IsIdentifier() const { return false ; }
@@ -91,7 +90,7 @@ public:
 	//       The reference returned by this command will not pass a reference
 	//       equality test with other references to other WMEs pointing to 
 	//       the same working memory element, even though in C++ these 
-	//       pointers are the same. Workaround: use GetTimeTag64 to test
+	//       pointers are the same. Workaround: use GetTimeTag to test
 	//       if the returned WMElements are indeed the same WME.
 	virtual Identifier* ConvertToIdentifier() { return NULL; }
 	virtual IntElement* ConvertToIntElement() { return NULL; }
@@ -175,7 +174,7 @@ struct WMEFinder
 
 	bool operator()( const WMElement* wme2 ) const
 	{
-		return wme->GetTimeTag64() == wme2->GetTimeTag64();
+		return wme->GetTimeTag() == wme2->GetTimeTag();
 	}
 
 	const WMElement* wme;
@@ -190,7 +189,7 @@ struct WMEFinderTimeTag
 
 	bool operator()( const WMElement* wme ) const
 	{
-		return timeTag == wme->GetTimeTag64();
+		return timeTag == wme->GetTimeTag();
 	}
 
 	long long timeTag;

@@ -185,13 +185,13 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
                 
                 wme = cmd.FindByAttribute(MISSIONARIES, 0);
                 ie  = (wme != null ? wme.ConvertToIntElement() : null);
-                int missionaries = (ie != null ? ie.GetValue() : 0);
+                int missionaries = (int)(ie != null ? ie.GetValue() : 0);
                 wme = cmd.FindByAttribute(CANNIBALS, 0);
                 ie  = (wme != null ? wme.ConvertToIntElement() : null);
-                int cannibals = (ie != null ? ie.GetValue() : 0);
+                int cannibals = (int)(ie != null ? ie.GetValue() : 0);
                 wme = cmd.FindByAttribute(BOAT, 0);
                 ie  = (wme != null ? wme.ConvertToIntElement() : null);
-                int boats = (ie != null ? ie.GetValue() : 0);
+                int boats = (int)(ie != null ? ie.GetValue() : 0);
                 
                 // whichever bank has the boat is the from bank
                 RiverBank fromBank = (leftBank.getBoatCount() > 0 ?
