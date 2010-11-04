@@ -55,6 +55,7 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testAgent );
 	CPPUNIT_TEST( testSimpleCopy );
 	CPPUNIT_TEST( testSimpleReteNetLoader );
+	CPPUNIT_TEST( test64BitReteNet );
 	CPPUNIT_TEST( testOSupportCopyDestroy );
 	CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );
 	CPPUNIT_TEST( testOSupportCopyDestroyCircular );
@@ -94,6 +95,7 @@ public:
 	TEST_DECLARATION( testAgent );
 	TEST_DECLARATION( testSimpleCopy );
 	TEST_DECLARATION( testSimpleReteNetLoader );
+	TEST_DECLARATION( test64BitReteNet );
 	TEST_DECLARATION( testOSupportCopyDestroy );
 	TEST_DECLARATION( testOSupportCopyDestroyCircularParent );
 	TEST_DECLARATION( testOSupportCopyDestroyCircular );
@@ -1131,7 +1133,21 @@ TEST_DEFINITION( testSimpleCopy )
 TEST_DEFINITION( testSimpleReteNetLoader )
 {
 	std::string path = std::string(m_pKernel->GetLibraryLocation()) + "share/soar/Tests/test.soarx" ;
-	std::string command = std::string("rete-net -l \"") + path + "\"";  // RPM: wrap path in quotes in case it contains a space
+	std::string command = std::string("rete-net -l \"") + path + "\"";  
+	std::string result = m_pAgent->ExecuteCommandLine(command.c_str()) ;
+	CPPUNIT_ASSERT( m_pAgent->GetLastCommandLineResult() );
+
+	// Get the latest id from the input link
+	sml::Identifier* pID = m_pAgent->GetInputLink() ;
+	//cout << "Input link id is " << pID->GetValueAsString() << endl ;
+
+	CPPUNIT_ASSERT( pID );
+}
+
+TEST_DEFINITION( test64BitReteNet )
+{
+	std::string path = std::string(m_pKernel->GetLibraryLocation()) + "share/soar/Tests/test64.soarx" ;
+	std::string command = std::string("rete-net -l \"") + path + "\""; 
 	std::string result = m_pAgent->ExecuteCommandLine(command.c_str()) ;
 	CPPUNIT_ASSERT( m_pAgent->GetLastCommandLineResult() );
 
