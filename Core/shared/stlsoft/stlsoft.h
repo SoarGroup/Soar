@@ -6,7 +6,7 @@
  *              types.
  *
  * Created:     15th January 2002
- * Updated:     3rd April 2010
+ * Updated:     30th September 2010
  *
  * Home:        http://stlsoft.org/
  *
@@ -53,9 +53,9 @@
 /* File version */
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_H_STLSOFT_MAJOR    3
-# define STLSOFT_VER_STLSOFT_H_STLSOFT_MINOR    22
-# define STLSOFT_VER_STLSOFT_H_STLSOFT_REVISION 3
-# define STLSOFT_VER_STLSOFT_H_STLSOFT_EDIT     404
+# define STLSOFT_VER_STLSOFT_H_STLSOFT_MINOR    23
+# define STLSOFT_VER_STLSOFT_H_STLSOFT_REVISION 2
+# define STLSOFT_VER_STLSOFT_H_STLSOFT_EDIT     408
 #else /* ? STLSOFT_DOCUMENTATION_SKIP_SECTION */
 /* # include "./internal/doxygen_defs.h" */
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
@@ -260,12 +260,16 @@
 # define _STLSOFT_VER_1_9_95    0x01095fff  /*!< Version 1.9.95 (7th March 2010) */
 # define _STLSOFT_VER_1_9_96    0x010960ff  /*!< Version 1.9.96 (10th March 2010) */
 # define _STLSOFT_VER_1_9_97    0x010961ff  /*!< Version 1.9.97 (3rd April 2010) */
+# define _STLSOFT_VER_1_9_98    0x010962ff  /*!< Version 1.9.98 (7th June 2010) */
+# define _STLSOFT_VER_1_9_99    0x010963ff  /*!< Version 1.9.99 (21st June 2010) */
+# define _STLSOFT_VER_1_9_100   0x010964ff  /*!< Version 1.9.100 (29th July 2010) */
+# define _STLSOFT_VER_1_9_101   0x010965ff  /*!< Version 1.9.101 (30th September 2010) */
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 #define _STLSOFT_VER_MAJOR      1
 #define _STLSOFT_VER_MINOR      9
-#define _STLSOFT_VER_REVISION   97
-#define _STLSOFT_VER            _STLSOFT_VER_1_9_97
+#define _STLSOFT_VER_REVISION   101
+#define _STLSOFT_VER            _STLSOFT_VER_1_9_101
 
 /* /////////////////////////////////////////////////////////////////////////
  * Basic macros
@@ -745,9 +749,9 @@
  */
 
 #if defined(STLSOFT_CF_FUNCTION_SYMBOL_SUPPORT)
-# define STLSOFT_FUNCTION_SYMBOL	__FUNCTION__
+# define STLSOFT_FUNCTION_SYMBOL    __FUNCTION__
 #elif defined(STLSOFT_CF_func_SYMBOL_SUPPORT)
-# define STLSOFT_FUNCTION_SYMBOL	__func__
+# define STLSOFT_FUNCTION_SYMBOL    __func__
 #endif /* __FUNCTION__ or __func__ */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -998,17 +1002,65 @@
 
 /* Calling convention facility values */
 
+/** \def STLSOFT_CC_CDECL_VALUE
+ *
+ * An unique (flag) integer value set to
+ * <code>0x01</code>
+ * if the
+ * <strong>cdecl</strong>
+ * calling convention is supported, otherwise set to
+ * <code>0</code>.
+ */
+
+/** \def STLSOFT_CC_FASTCALL_VALUE
+ *
+ * An unique (flag) integer value set to
+ * <code>0x02</code>
+ * if the
+ * <strong>fastcall</strong>
+ * calling convention is supported, otherwise set to
+ * <code>0</code>.
+ */
+
+/** \def STLSOFT_CC_STDCALL_VALUE
+ *
+ * An unique (flag) integer value set to
+ * <code>0x04</code>
+ * if the
+ * <strong>stdcall</strong>
+ * calling convention is supported, otherwise set to
+ * <code>0</code>.
+ */
+
+/** \def STLSOFT_CC_COMBINED_VALUE
+ * 
+ * Combination of STLSOFT_CC_CDECL_VALUE, STLSOFT_CC_FASTCALL_VALUE
+ * and STLSOFT_CC_STDCALL_VALUE.
+ */
+
 #if defined(STLSOFT_CF_CDECL_SUPPORTED)
-# define STLSOFT_CDECL_VALUE        (1)     /*!< \brief A unique value indicating <b>cdecl</b> calling convention. */
+# define STLSOFT_CDECL_VALUE            (1)     /*!< \deprecated This symbol is deprecated, and will be removed from a future version */
+# define STLSOFT_CC_CDECL_VALUE         (0x01)
+#else                                   
+# define STLSOFT_CC_CDECL_VALUE         (0)
 #endif /* STLSOFT_CF_CDECL_SUPPORTED */
 
 #if defined(STLSOFT_CF_FASTCALL_SUPPORTED)
-# define STLSOFT_FASTCALL_VALUE     (2)     /*!< \brief A unique value indicating <b>fastcall</b> calling convention. */
+# define STLSOFT_FASTCALL_VALUE         (2)     /*!< \deprecated This symbol is deprecated, and will be removed from a future version */
+# define STLSOFT_CC_FASTCALL_VALUE      (0x02)
+#else                                   
+# define STLSOFT_CC_FASTCALL_VALUE      (0)
 #endif /* STLSOFT_CF_FASTCALL_SUPPORTED */
 
 #if defined(STLSOFT_CF_STDCALL_SUPPORTED)
-# define STLSOFT_STDCALL_VALUE      (3)     /*!< \brief A unique value indicating <b>stdcall</b> calling convention. */
+# define STLSOFT_STDCALL_VALUE          (3)     /*!< \deprecated This symbol is deprecated, and will be removed from a future version */
+# define STLSOFT_CC_STDCALL_VALUE       (0x04)
+#else                                   
+# define STLSOFT_CC_STDCALL_VALUE       (0)
 #endif /* STLSOFT_CF_STDCALL_SUPPORTED */
+
+#define STLSOFT_CC_COMBINED_VALUE   (STLSOFT_CC_CDECL_VALUE | STLSOFT_CC_FASTCALL_VALUE | STLSOFT_CC_STDCALL_VALUE)
+
 
 /* /////////////////////////////////////////////////////////////////////////
  * operator bool()

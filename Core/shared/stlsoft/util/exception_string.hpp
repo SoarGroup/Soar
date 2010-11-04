@@ -4,36 +4,37 @@
  * Purpose:     Contains the exception_string limited functionality string class.
  *
  * Created:     26th December 2005
- * Updated:     10th August 2009
+ * Updated:     28th May 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2005-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2005-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * modification, are permitted provided that the following conditions are
+ * met:
  *
- * - Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- * - Neither the name(s) of Matthew Wilson and Synesis Software nor the names of
- *   any contributors may be used to endorse or promote products derived from
- *   this software without specific prior written permission.
+ * - Redistributions of source code must retain the above copyright notice,
+ *   this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the distribution.
+ * - Neither the name(s) of Matthew Wilson and Synesis Software nor the
+ *   names of any contributors may be used to endorse or promote products
+ *   derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ////////////////////////////////////////////////////////////////////// */
 
@@ -49,9 +50,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_EXCEPTION_STRING_MAJOR    1
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_EXCEPTION_STRING_MINOR    3
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_EXCEPTION_STRING_REVISION 2
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_EXCEPTION_STRING_EDIT     19
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_EXCEPTION_STRING_MINOR    4
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_EXCEPTION_STRING_REVISION 1
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_EXCEPTION_STRING_EDIT     21
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -100,9 +101,9 @@ public:
     /// The character type
     typedef char                                            char_type;
     /// The traits type
-    typedef stlsoft_char_traits<char>                       traits_type;
+    typedef stlsoft_char_traits<char_type>                  traits_type;
     /// The allocator type
-    typedef allocator_selector<char>::allocator_type        allocator_type;
+    typedef allocator_selector<char_type>::allocator_type   allocator_type;
     /// This type
     typedef exception_string                                class_type;
     /// The size type
@@ -121,8 +122,15 @@ public:
         m_message[0] = '\0';
     }
     /// Constructs an exception from the given message
-    ss_explicit_k exception_string(char const* message)
+    ss_explicit_k exception_string(char_type const* message)
         : m_message(1 + ((NULL == message) ? 0 : traits_type::length(message)))
+    {
+        traits_type::copy(&m_message[0], message, m_message.size() - 1);
+        m_message[m_message.size() - 1] = '\0';
+    }
+    /// Constructs an exception from the given message, to the given length
+    exception_string(char_type const* message, size_type len)
+        : m_message(1 + len)
     {
         traits_type::copy(&m_message[0], message, m_message.size() - 1);
         m_message[m_message.size() - 1] = '\0';
@@ -136,7 +144,7 @@ public:
     }
 
     /// Appends the given string to the message
-    void operator +=(char const* s)
+    void operator +=(char_type const* s)
     {
         const ss_size_t n       =   traits_type::length(s);
         const ss_size_t currLen =   this->length();
@@ -160,7 +168,7 @@ public:
         }
     }
     /// Appends the given character to the message
-    void operator +=(char ch)
+    void operator +=(char_type ch)
     {
         const ss_size_t n       =   1;
         const ss_size_t currLen =   this->length();
@@ -195,12 +203,23 @@ public:
 public:
     /// Returns a null-terminated c-style string string representing
     /// the message
-    char const* c_str() const
+    char_type const* c_str() const
+    {
+        return data();
+    }
+    /// Returns a null-terminated c-style string string representing
+    /// the message
+    char_type const* data() const
     {
         return m_message.data();
     }
     /// Returns the number of characters in the message
     size_type   length() const
+    {
+        return size();
+    }
+    /// Returns the number of characters in the message
+    size_type   size() const
     {
         STLSOFT_ASSERT(m_message.size() > 0);
 
@@ -227,6 +246,40 @@ private:
 };
 
 /* /////////////////////////////////////////////////////////////////////////
+ * Shims
+ */
+
+inline exception_string::char_type const* c_str_data(exception_string const& xs)
+{
+    return xs.data();
+}
+
+inline exception_string::size_type c_str_len(exception_string const& xs)
+{
+    return xs.size();
+}
+
+inline exception_string::char_type const* c_str_ptr(exception_string const& xs)
+{
+    return xs.c_str();
+}
+
+inline exception_string::char_type const* c_str_data_a(exception_string const& xs)
+{
+    return c_str_data(xs);
+}
+
+inline exception_string::size_type c_str_len_a(exception_string const& xs)
+{
+    return c_str_len(xs);
+}
+
+inline exception_string::char_type const* c_str_ptr_a(exception_string const& xs)
+{
+    return c_str_ptr(xs);
+}
+
+/* /////////////////////////////////////////////////////////////////////////
  * Operators
  */
 
@@ -234,9 +287,9 @@ private:
  *
  * \ingroup group__library__string
  */
-inline exception_string operator +(exception_string const& lhs, char const* rhs)
+inline exception_string operator +(exception_string const& lhs, exception_string::char_type const* rhs)
 {
-    exception_string    s(lhs);
+    exception_string s(lhs);
 
     s += rhs;
 
@@ -247,10 +300,10 @@ inline exception_string operator +(exception_string const& lhs, char const* rhs)
  *
  * \ingroup group__library__string
  */
-inline exception_string operator +(char lhs, exception_string const& rhs)
+inline exception_string operator +(exception_string::char_type lhs, exception_string const& rhs)
 {
-    char                lhs_[2] = { lhs, '\0' };
-    exception_string    s(lhs_);
+    exception_string::char_type lhs_[2] = { lhs, '\0' };
+    exception_string            s(lhs_);
 
     s += rhs;
 
@@ -261,9 +314,9 @@ inline exception_string operator +(char lhs, exception_string const& rhs)
  *
  * \ingroup group__library__string
  */
-inline exception_string operator +(exception_string const& lhs, char rhs)
+inline exception_string operator +(exception_string const& lhs, exception_string::char_type rhs)
 {
-    exception_string    s(lhs);
+    exception_string s(lhs);
 
     s += rhs;
 
@@ -274,9 +327,9 @@ inline exception_string operator +(exception_string const& lhs, char rhs)
  *
  * \ingroup group__library__string
  */
-inline exception_string operator +(char const* lhs, exception_string const& rhs)
+inline exception_string operator +(exception_string::char_type const* lhs, exception_string const& rhs)
 {
-    exception_string    s(lhs);
+    exception_string s(lhs);
 
     s += rhs;
 
@@ -289,7 +342,7 @@ inline exception_string operator +(char const* lhs, exception_string const& rhs)
  */
 inline exception_string operator +(exception_string const& lhs, exception_string const& rhs)
 {
-    exception_string    s(lhs);
+    exception_string s(lhs);
 
     s += rhs;
 

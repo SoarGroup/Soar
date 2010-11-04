@@ -4,7 +4,7 @@
  * Purpose:     Compile-time template constraints templates.
  *
  * Created:     19th November 1998
- * Updated:     10th August 2009
+ * Updated:     11th August 2010
  *
  * Thanks:      To Peter Bannister for having the clear thinking to see the
  *              obvious (but only in hindsight) tactic of overloading the
@@ -12,7 +12,7 @@
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 1998-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 1998-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,8 +55,8 @@
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_CONSTRAINTS_MAJOR      5
 # define STLSOFT_VER_STLSOFT_UTIL_HPP_CONSTRAINTS_MINOR      0
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_CONSTRAINTS_REVISION   2
-# define STLSOFT_VER_STLSOFT_UTIL_HPP_CONSTRAINTS_EDIT       97
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_CONSTRAINTS_REVISION   4
+# define STLSOFT_VER_STLSOFT_UTIL_HPP_CONSTRAINTS_EDIT       99
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -386,12 +386,22 @@ public:
     }
 
     // Required by CodeWarrior
+    must_be_pod()
+    {}
+
+    // Required by CodeWarrior
     ~must_be_pod() stlsoft_throw_0()
     {
         int   (*pfn)(void) = constraints;
 
         STLSOFT_SUPPRESS_UNUSED(pfn);
     }
+
+private:
+#if !defined(STLSOFT_COMPILER_IS_MWERKS)
+    must_be_pod(class_type const&);
+    class_type& operator =(class_type const&);
+#endif
 
 private:
     static int constraints()

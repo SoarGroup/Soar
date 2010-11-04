@@ -4,7 +4,7 @@
  * Purpose:     Compiler feature discrimination for Visual C++.
  *
  * Created:     7th February 2003
- * Updated:     9th March 2010
+ * Updated:     9th June 2010
  *
  * Thanks:      To Cláudio Albuquerque for working on the
  *              Win64-compatibility.
@@ -63,9 +63,9 @@
 
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_MAJOR     3
-# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_MINOR     21
-# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_REVISION  1
-# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_EDIT      115
+# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_MINOR     22
+# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_REVISION  2
+# define STLSOFT_VER_H_STLSOFT_CCCAP_MSVC_EDIT      117
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -182,11 +182,16 @@
 /* /////////////////////////////////////////////////////////////////////////
  * Support for C/C++ language features
  *
+ * - nullptr (C++0x)
  * - return void
  * - static assertions
  * - anonymous unions
  * - -ve % +ve => -ve result
  */
+
+#if _MSC_VER >= 1600
+# define STLSOFT_CF_BUILTIN_nullptr_SUPPORT
+#endif /* compiler */
 
 #if _MSC_VER >= 1300
 # define STLSOFT_CF_return_void_SUPPORT
