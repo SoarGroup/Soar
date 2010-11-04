@@ -38,8 +38,9 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 		{'s', "system",	OPTARG_NONE},
 		{'R', "reset",	OPTARG_NONE},
 		{'t', "track",	OPTARG_NONE},
+        {'T', "stop-track", OPTARG_NONE},
 		{'c', "cycle",	OPTARG_NONE},
-		{'C', "cycle-csv",	OPTARG_NONE},
+		{'C', "cycle-csv", OPTARG_NONE},
 		{'S', "sort",	OPTARG_REQUIRED},
 		{0, 0, OPTARG_NONE}
 	};
@@ -69,6 +70,9 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 				break;
 			case 't':
 				options.set(STATS_TRACK);
+				break;
+			case 'T':
+				options.set(STATS_STOP_TRACK);
 				break;
 			case 'c':
 				options.set(STATS_CYCLE);
@@ -132,6 +136,7 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 	{
 		GetReteStats();
 	}
+
 	if ( options.test(STATS_CYCLE) )
 	{
 		if (m_pAgentSoar->stats_db->get_status() == soar_module::disconnected) {
@@ -177,11 +182,17 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 		select->reinitialize();
 
 	}
-	if ( options.test(STATS_TRACK) )
-	{
+	
+    if ( options.test(STATS_TRACK) )
 		this->m_pAgentSoar->dc_stat_tracking = true;
-	}
-	if ( (!options.test(STATS_CYCLE) && !options.test(STATS_TRACK) && !options.test(STATS_MEMORY) && !options.test(STATS_RETE) && !options.test(STATS_MAX) && !options.test(STATS_RESET)) 
+
+	if ( options.test(STATS_STOP_TRACK) ) 
+    {
+        stats_close( this->m_pAgentSoar );
+		this->m_pAgentSoar->dc_stat_tracking = false;
+    }
+
+	if ( (!options.test(STATS_CYCLE) && !options.test(STATS_TRACK) && !options.test(STATS_STOP_TRACK) && !options.test(STATS_MEMORY) && !options.test(STATS_RETE) && !options.test(STATS_MAX) && !options.test(STATS_RESET)) 
 		|| options.test(STATS_SYSTEM) )
 	{
 		GetSystemStats();
