@@ -25,6 +25,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testWrongAgentWmeFunctions );
 	CPPUNIT_TEST( testRHSRand );
 	CPPUNIT_TEST( testMultipleKernels );
+	CPPUNIT_TEST( testSmemArithmetic );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -41,6 +42,7 @@ protected:
 	void testWrongAgentWmeFunctions();
 	void testRHSRand();
 	void testMultipleKernels();
+	void testSmemArithmetic();
 
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
@@ -229,4 +231,22 @@ void MiscTest::testMultipleKernels()
 
 	pAgent->ExecuteCommandLine("p s1");
 	CPPUNIT_ASSERT( pAgent->GetLastCommandLineResult() );
+}
+
+void MiscTest::testSmemArithmetic()
+{
+	std::stringstream productionsPath;
+	productionsPath << pKernel->GetLibraryLocation() << "share/soar/Demos/arithmetic/arithmetic.soar";
+
+	pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+	CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult() );
+
+    pAgent->ExecuteCommandLine("watch 0");
+    pAgent->ExecuteCommandLine("srand 1080");
+
+    pAgent->RunSelfForever();
+
+	sml::ClientAnalyzedXML stats;
+    pAgent->ExecuteCommandLineXML("stats", &stats);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
 }
