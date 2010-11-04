@@ -77,25 +77,11 @@ public class IntWme implements Wme
      *             if destroyed or value was not set
      * @return Current value
      */
-    public int getValue()
+    public long getValue()
     {
         if (wme == null)
             throw new IllegalStateException();
         return wme.GetValue();
-    }
-
-    /**
-     * Get the current value.
-     * 
-     * @throws IllegalStateException
-     *             if destroyed or value was not set
-     * @return Current value
-     */
-    public long getValue64()
-    {
-        if (wme == null)
-            throw new IllegalStateException();
-        return wme.GetValue64();
     }
 
     public void destroy()

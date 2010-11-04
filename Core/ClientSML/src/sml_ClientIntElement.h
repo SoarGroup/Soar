@@ -45,8 +45,7 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() const ;
 
-	int GetValue() const { return static_cast<int>(GetValue64()) ; }
-	long long GetValue64() const { return m_Value ; }
+	long long GetValue() const { return m_Value ; }
 	
 	virtual IntElement* ConvertToIntElement() { return this; }
 
