@@ -243,11 +243,18 @@ void MiscTest::test_stats()
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesValue, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountCycle, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountValue, -1) == 0);
+#if defined(_WIN64) || !defined(_WIN32)
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 4520);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1) == 264032);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageString, -1) == 900);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 326824);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 2072);
+#else // 32-bit windows
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 3628);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1) == 132232);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 326984);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 1036);
+#endif
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageString, -1) == 900);
 
     pAgent->ExecuteCommandLine("stats -t");
     CPPUNIT_ASSERT(pAgent->GetLastCommandLineResult());
