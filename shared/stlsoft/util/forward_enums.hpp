@@ -4,11 +4,11 @@
  * Purpose:     Contains macros for forward declaring enums.
  *
  * Created:     3rd November 2000
- * Updated:     10th August 2009
+ * Updated:     29th April 2010
  *
  * Home:        http://stlsoft.org/
  *
- * Copyright (c) 2000-2009, Matthew Wilson and Synesis Software
+ * Copyright (c) 2000-2010, Matthew Wilson and Synesis Software
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,8 +50,8 @@
 #ifndef STLSOFT_DOCUMENTATION_SKIP_SECTION
 # define STLSOFT_VER_STLSOFT_HPP_FORWARD_ENUM_MAJOR      3
 # define STLSOFT_VER_STLSOFT_HPP_FORWARD_ENUM_MINOR      0
-# define STLSOFT_VER_STLSOFT_HPP_FORWARD_ENUM_REVISION   1
-# define STLSOFT_VER_STLSOFT_HPP_FORWARD_ENUM_EDIT       45
+# define STLSOFT_VER_STLSOFT_HPP_FORWARD_ENUM_REVISION   2
+# define STLSOFT_VER_STLSOFT_HPP_FORWARD_ENUM_EDIT       46
 #endif /* !STLSOFT_DOCUMENTATION_SKIP_SECTION */
 
 /* /////////////////////////////////////////////////////////////////////////
@@ -78,13 +78,13 @@ namespace stlsoft
 
 #define STLSOFT_DECLARE_FWD_ENUM(X)                             \
                                                                 \
-    struct X ## __type;                                         \
+    struct X ## _type_;                                         \
                                                                 \
-    typedef X ## __type X
+    typedef X ## _type_ X
 
 #define STLSOFT_DEFINE_FWD_ENUM_BEGIN(X)                        \
                                                                 \
-    enum X ## __enum                                            \
+    enum X ## _enum_                                            \
     {
 
 
@@ -94,22 +94,22 @@ namespace stlsoft
                                                                 \
     STLSOFT_DECLARE_FWD_ENUM(X);                                \
                                                                 \
-    struct X ## __type                                          \
+    struct X ## _type_                                          \
     {                                                           \
     public:                                                     \
-        typedef X ## __enum     enum_type;                      \
+        typedef X ## _enum_     enum_type;                      \
     public:                                                     \
-        static X ## __type cast(long l)                         \
+        static X ## _type_ cast(long l)                         \
         {                                                       \
-            return X ## __type (static_cast<X ## __enum>(l));   \
+            return X ## _type_ (static_cast<X ## _enum_>(l));   \
         }                                                       \
                                                                 \
     public:                                                     \
-        X ## __type(X ## __enum e)                              \
+        X ## _type_(X ## _enum_ e)                              \
             : m_e(e)                                            \
         {}                                                      \
                                                                 \
-        operator X ## __enum () const                           \
+        operator X ## _enum_ () const                           \
         {                                                       \
             return m_e;                                         \
         }                                                       \
@@ -120,7 +120,7 @@ namespace stlsoft
         }                                                       \
                                                                 \
     private:                                                    \
-        X ## __enum m_e;                                        \
+        X ## _enum_ m_e;                                        \
     };
 
 /* ////////////////////////////////////////////////////////////////////// */
