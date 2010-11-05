@@ -200,9 +200,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *web_truncate;
 		soar_module::sqlite_statement *web_expand;
 
-		soar_module::sqlite_statement *web_attr_ct;
-		soar_module::sqlite_statement *web_const_ct;
-		soar_module::sqlite_statement *web_lti_ct;
+		soar_module::sqlite_statement *web_all;
 
 		soar_module::sqlite_statement *web_attr_all;
 		soar_module::sqlite_statement *web_const_all;
