@@ -99,6 +99,8 @@ void Test1(int numTrials, StatsTracker* pSt, vector<string>* commands) {
 		
 		agent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, NULL);
 
+		agent->SetOutputLinkChangeTracking(false);
+
 		for(vector<string>::iterator itr = commands->begin(); itr != commands->end(); itr++) {
 			string command = *itr;
 			size_t pos = command.find(SOAR_HOME);
