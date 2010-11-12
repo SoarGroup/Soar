@@ -117,7 +117,7 @@ typedef union symbol_union Symbol;
    on how much time is spent in various parts of the system.  If you
    have DETAILED_TIMING_STATS defined, you must NOT define NO_TIMING_STUFF */
 #ifndef NO_TIMING_STUFF
-#define DETAILED_TIMING_STATS
+//#define DETAILED_TIMING_STATS
 #endif // NO_TIMING_STUFF
 
 /* UNcomment the following line to have Soar maintain reference counts 
