@@ -66,6 +66,7 @@ protected:
 
 	// List of changes to output-link since last time client checked
 	OutputDeltaList m_OutputDeltaList ;
+    enum ChangeListMode { CHANGE_LIST_AUTO_DISABLED = -1, CHANGE_LIST_USER_DISABLED = -2 };
 	int m_changeListHandlerId;
 	static void ClearHandlerStatic(sml::smlRunEventId id, void* pUserData, sml::Agent* pAgent, sml::smlPhase phase);
 
@@ -111,7 +112,7 @@ public:
 	Connection*		GetConnection()	const ;
 
 	void			SetOutputLinkChangeTracking(bool setting);
-	bool			IsTrackingOutputLinkChanges() { return m_changeListHandlerId != -1; }
+	bool			IsTrackingOutputLinkChanges() { return m_changeListHandlerId < 0; }
 	void			ClearOutputLinkChanges() ;
 
 	OutputDeltaList* GetOutputLinkChanges() { return &m_OutputDeltaList ; }

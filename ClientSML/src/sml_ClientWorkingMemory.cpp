@@ -53,7 +53,7 @@ WorkingMemory::WorkingMemory()
 
 	m_Deleting = false;
 
-	m_changeListHandlerId = -1;
+	m_changeListHandlerId = CHANGE_LIST_AUTO_DISABLED;
 }
 
 WorkingMemory::~WorkingMemory()
@@ -91,6 +91,10 @@ IdentifierSymbol* WorkingMemory::FindIdentifierSymbol(char const* pID)
 
 void WorkingMemory::SetOutputLinkChangeTracking(bool setting)
 {
+    // switch out of auto-disable as soon as this is called
+    if (m_changeListHandlerId == CHANGE_LIST_AUTO_DISABLED)
+        m_changeListHandlerId = CHANGE_LIST_USER_DISABLED;
+
 	if (IsTrackingOutputLinkChanges() == setting)
 		return;
 
@@ -98,7 +102,7 @@ void WorkingMemory::SetOutputLinkChangeTracking(bool setting)
 	{
 		// turning off
 		GetAgent()->UnregisterForRunEvent(m_changeListHandlerId);
-		m_changeListHandlerId = -1;
+		m_changeListHandlerId = CHANGE_LIST_USER_DISABLED;
 		ClearOutputLinkChanges();
 	}
 	else
@@ -752,6 +756,10 @@ bool WorkingMemory::SynchronizeOutputLink()
 *************************************************************/
 Identifier* WorkingMemory::GetOutputLink()
 {
+    // auto-enable output link change tracking only if the user hasn't specifically disabled it.
+    if (m_changeListHandlerId == CHANGE_LIST_AUTO_DISABLED)
+        SetOutputLinkChangeTracking(true);
+
 	return m_OutputLink ;
 }
 
