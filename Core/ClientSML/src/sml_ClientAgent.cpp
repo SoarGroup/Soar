@@ -63,7 +63,6 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_BlinkIfNoChange = true ;
 
 	m_WorkingMemory.SetAgent(this) ;
-	m_WorkingMemory.SetOutputLinkChangeTracking(true);
 
 	m_pDPI = 0;
 
