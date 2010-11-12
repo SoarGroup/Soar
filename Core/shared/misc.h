@@ -240,7 +240,7 @@ struct Dangerous_Pointer_Cast {
 #ifdef WIN32
 #include <winstl/performance/performance_counter.hpp>
 typedef winstl::performance_counter performance_counter;
-#define USE_PERFORMANCE_FOR_BOTH 1
+//#define USE_PERFORMANCE_FOR_BOTH 1
 #ifdef USE_PERFORMANCE_FOR_BOTH
 typedef winstl::performance_counter processtimes_counter;	// it turns out this has higher resolution
 #else // USE_PERFORMANCE_FOR_BOTH
