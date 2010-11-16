@@ -234,15 +234,15 @@ struct Dangerous_Pointer_Cast {
 // We are using two different types of timers from STLSoft, 
 // performance_counter and processtimes_counter. The performance timer is 
 // a high-performance wall-clock timer. The processtimes_counter is a cpu-
-// time timer. Unfortunately, the processtimes_counter on Windows has 
-// unacceptable resolution, so the performance timer is used for both.
+// time timer. Keep in mind that as of 11/2010 the resolution of process-time
+// counters on windows is 16 milliseconds.
 //
 #ifdef WIN32
 #include <winstl/performance/performance_counter.hpp>
 typedef winstl::performance_counter performance_counter;
 //#define USE_PERFORMANCE_FOR_BOTH 1
 #ifdef USE_PERFORMANCE_FOR_BOTH
-typedef winstl::performance_counter processtimes_counter;	// it turns out this has higher resolution
+typedef winstl::performance_counter processtimes_counter;
 #else // USE_PERFORMANCE_FOR_BOTH
 #include <winstl/performance/processtimes_counter.hpp>
 typedef winstl::processtimes_counter processtimes_counter;
