@@ -353,6 +353,13 @@ public:
 	static char const* const kParamStatsChunkingTimeDecisionPhase;
 	static char const* const kParamStatsChunkingTimeProposePhase;
 	static char const* const kParamStatsChunkingTimeApplyPhase;
+	static char const* const kParamStatsGDSTimeInputPhase;
+ 	static char const* const kParamStatsGDSTimePreferencePhase;
+	static char const* const kParamStatsGDSTimeWorkingMemoryPhase;
+	static char const* const kParamStatsGDSTimeOutputPhase;
+	static char const* const kParamStatsGDSTimeDecisionPhase;
+	static char const* const kParamStatsGDSTimeProposePhase;
+	static char const* const kParamStatsGDSTimeApplyPhase;
 	static char const* const kParamStatsMemoryUsageMiscellaneous;
 	static char const* const kParamStatsMemoryUsageHash;
 	static char const* const kParamStatsMemoryUsageString;
