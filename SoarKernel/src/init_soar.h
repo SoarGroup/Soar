@@ -69,6 +69,13 @@ extern void remove_pwatch (agent* thisAgent, struct production_struct *prod);
 extern bool reinitialize_soar (agent* thisAgent);
 
 /* ---------------------------------------------------------------------
+                         Reset Timers
+   This code was duplicated in three spots. It is now consolidated.
+   This stops and sets all timers to zero.
+--------------------------------------------------------------------- */
+extern void reset_timers (agent* thisAgent);
+
+/* ---------------------------------------------------------------------
                          Reinitializing Soar
 
    This adds the top state (S1) and the io header symbols and wme's to the

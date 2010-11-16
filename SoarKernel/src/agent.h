@@ -551,11 +551,13 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   /* accumulated cpu time spent in various parts of the system */
   /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
+#ifdef DETAILED_TIMING_STATS
   soar_process_timer timers_gds;										// start_gds_tv
   soar_timer_accumulator timers_ownership_cpu_time[NUM_PHASE_TYPES];	// ownership_cpu_time
   soar_timer_accumulator timers_chunking_cpu_time[NUM_PHASE_TYPES];		// chunking_cpu_time
   soar_timer_accumulator timers_match_cpu_time[NUM_PHASE_TYPES];		// match_cpu_time
   soar_timer_accumulator timers_gds_cpu_time[NUM_PHASE_TYPES];			// gds_cpu_time
+#endif // DETAILED_TIMING_STATS
   /* REW: end 28.07.96 */
 #endif // NO_TIMING_STUFF
 

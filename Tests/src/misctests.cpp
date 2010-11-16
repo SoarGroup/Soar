@@ -3,6 +3,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "handlers.h"
+#include "kernel.h"
 
 namespace sml
 {
@@ -216,6 +217,7 @@ void MiscTest::test_stats()
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMonitorTimeWorkingMemoryPhase, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsInputFunctionTime, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsOutputFunctionTime, -1) == 0);
+#ifdef DETAILED_TIMING_STATS
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeInputPhase, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimePreferencePhase, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMatchTimeWorkingMemoryPhase, -1) == 0);
@@ -237,6 +239,14 @@ void MiscTest::test_stats()
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeDecisionPhase, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeProposePhase, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsChunkingTimeApplyPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimeInputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimePreferencePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimeWorkingMemoryPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimeOutputPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimeDecisionPhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimeProposePhase, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimeApplyPhase, -1) == 0);
+#endif
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleTimeCycle, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleTimeValue, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle, -1) == 0);
