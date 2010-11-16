@@ -364,6 +364,14 @@ char const* const sml_Names::kParamStatsChunkingTimeDecisionPhase			= "statschun
 char const* const sml_Names::kParamStatsChunkingTimeProposePhase			= "statschunkingtimedecisionphase" ;
 char const* const sml_Names::kParamStatsChunkingTimeApplyPhase			= "statschunkingtimedecisionphase" ;
 
+char const* const sml_Names::kParamStatsGDSTimeInputPhase         = "statsgdstimeinputphase" ;
+char const* const sml_Names::kParamStatsGDSTimePreferencePhase    = "statsgdstimepreferencephase" ;
+char const* const sml_Names::kParamStatsGDSTimeWorkingMemoryPhase = "statsgdstimeworkingmemoryphase" ;
+char const* const sml_Names::kParamStatsGDSTimeOutputPhase        = "statsgdstimeoutputphase" ;
+char const* const sml_Names::kParamStatsGDSTimeDecisionPhase      = "statsgdstimedecisionphase" ;
+char const* const sml_Names::kParamStatsGDSTimeProposePhase       = "statsgdstimedecisionphase" ;
+char const* const sml_Names::kParamStatsGDSTimeApplyPhase         = "statsgdstimedecisionphase" ;
+
 char const* const sml_Names::kParamStatsMemoryUsageMiscellaneous			= "statsmemoryusagemiscellaneous" ;
 char const* const sml_Names::kParamStatsMemoryUsageHash						= "statsmemoryusagehash" ;
 char const* const sml_Names::kParamStatsMemoryUsageString					= "statsmemoryusagestring" ;
