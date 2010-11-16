@@ -17,15 +17,6 @@
  * =======================================================================
  */
 
-/* 
-   RDF 20020710: Added this define because some needed timer 
-   functionality has been hidden behind the __USE_BSD define in sys/time.h
-   (see sys/features.h for more information)
-*/
-#ifndef _BSD_SOURCE
-# define _BSD_SOURCE
-#endif
-
 #include "init_soar.h"
 #include "agent.h"
 #include "consistency.h"
@@ -334,34 +325,39 @@ void reset_statistics (agent* thisAgent) {
 
   reset_production_firing_counts(thisAgent);
 
+  reset_timers(thisAgent);
+
+  thisAgent->epmem_timers->reset(); 
+  thisAgent->smem_timers->reset();
+}
+
+void reset_timers (agent* thisAgent) {
 #ifndef NO_TIMING_STUFF
-  /* Initializing all the timer structures */
   thisAgent->timers_cpu.reset();
   thisAgent->timers_kernel.reset();
   thisAgent->timers_phase.reset();
+#ifdef DETAILED_TIMER_STATS
+  thisAgent->timers_gds.set_enabled(&(thisAgent->sysparams[TIMERS_ENABLED]));
+  thisAgent->timers_gds.reset();
+#endif
+
   thisAgent->timers_total_cpu_time.reset();
   thisAgent->timers_total_kernel_time.reset();
-
   thisAgent->timers_input_function_cpu_time.reset();
   thisAgent->timers_output_function_cpu_time.reset();
 
-  thisAgent->timers_gds.reset();
-
-  for (int ii=0;ii < NUM_PHASE_TYPES; ii++) {
-     thisAgent->timers_decision_cycle_phase[ii].reset();
-     thisAgent->timers_monitors_cpu_time[ii].reset();
-     thisAgent->timers_ownership_cpu_time[ii].reset();
-     thisAgent->timers_chunking_cpu_time[ii].reset();
-     thisAgent->timers_match_cpu_time[ii].reset();
-     thisAgent->timers_gds_cpu_time[ii].reset();
+  for (int i=0;i < NUM_PHASE_TYPES; i++) {
+     thisAgent->timers_decision_cycle_phase[i].reset();
+     thisAgent->timers_monitors_cpu_time[i].reset();
+#ifdef DETAILED_TIMER_STATS
+     thisAgent->timers_ownership_cpu_time[i].reset();
+     thisAgent->timers_chunking_cpu_time[i].reset();
+     thisAgent->timers_match_cpu_time[i].reset();
+     thisAgent->timers_gds_cpu_time[i].reset();
+#endif
   }
-
   thisAgent->timers_decision_cycle.reset();
-  thisAgent->max_dc_time_cycle = 0;
-  thisAgent->max_dc_time_msec = 0;
 #endif // NO_TIMING_STUFF
-  thisAgent->epmem_timers->reset(); 
-  thisAgent->smem_timers->reset();
 }
 
 bool reinitialize_soar (agent* thisAgent) {
@@ -1472,29 +1468,7 @@ void init_agent_memory(agent* thisAgent)
   //do_buffered_wm_and_ownership_changes(thisAgent);
 
   /* executing the IO cycles above, increments the timers, so reset */
-  /* Initializing all the timer structures */
-#ifndef NO_TIMING_STUFF
-  thisAgent->timers_cpu.reset();
-  thisAgent->timers_kernel.reset();
-  thisAgent->timers_phase.reset();
-  thisAgent->timers_total_cpu_time.reset();
-  thisAgent->timers_total_kernel_time.reset();
-
-  thisAgent->timers_input_function_cpu_time.reset();
-  thisAgent->timers_output_function_cpu_time.reset();
-
-  thisAgent->timers_gds.reset();
-
-  for (int ii=0;ii < NUM_PHASE_TYPES; ii++) {
-     thisAgent->timers_decision_cycle_phase[ii].reset();
-     thisAgent->timers_monitors_cpu_time[ii].reset();
-     thisAgent->timers_ownership_cpu_time[ii].reset();
-     thisAgent->timers_chunking_cpu_time[ii].reset();
-     thisAgent->timers_match_cpu_time[ii].reset();
-     thisAgent->timers_gds_cpu_time[ii].reset();
-  }
-  thisAgent->timers_decision_cycle.reset();
-#endif // NO_TIMING_STUFF
+  reset_timers(thisAgent);
 
   thisAgent->epmem_timers->reset();
   thisAgent->smem_timers->reset();

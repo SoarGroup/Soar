@@ -121,12 +121,6 @@ void init_soar_agent(agent* thisAgent) {
 
 }
 
-
-/*
-===============================
-
-===============================
-*/
 agent * create_soar_agent (char * agent_name) {                                          /* loop index */
   char cur_path[MAXPATHLEN];   /* AGR 536 */
 
@@ -253,33 +247,13 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->lexeme.id_number = 0;
 
   /* Initializing all the timer structures */
-#ifndef NO_TIMING_STUFF
-
-  newAgent->timers_cpu.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
-  newAgent->timers_kernel.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
-  newAgent->timers_phase.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
-  newAgent->timers_gds.set_enabled( &( newAgent->sysparams[ TIMERS_ENABLED ] ) );
-
-  newAgent->timers_cpu.reset();
-  newAgent->timers_kernel.reset();
-  newAgent->timers_phase.reset();
-  newAgent->timers_total_cpu_time.reset();
-  newAgent->timers_total_kernel_time.reset();
-
-  newAgent->timers_input_function_cpu_time.reset();
-  newAgent->timers_output_function_cpu_time.reset();
-  newAgent->timers_gds.reset();
-
-  for (int ii=0;ii < NUM_PHASE_TYPES; ii++) {
-     newAgent->timers_decision_cycle_phase[ii].reset();
-     newAgent->timers_monitors_cpu_time[ii].reset();
-     newAgent->timers_ownership_cpu_time[ii].reset();
-     newAgent->timers_chunking_cpu_time[ii].reset();
-     newAgent->timers_match_cpu_time[ii].reset();
-     newAgent->timers_gds_cpu_time[ii].reset();
-  }
-  newAgent->timers_decision_cycle.reset();
-#endif // NO_TIMING_STUFF
+  newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#ifdef DETAILED_TIMING_STATS
+  newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#endif
+  reset_timers(newAgent);
 
   newAgent->real_time_tracker = 0;
   newAgent->attention_lapse_tracker = 0;
