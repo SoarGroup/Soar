@@ -233,6 +233,8 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 	AppendArgTagFast(sml_Names::kParamStatsMonitorTimeWorkingMemoryPhase,		sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_monitors_cpu_time[WM_PHASE].get_sec(), temp));
 	AppendArgTagFast(sml_Names::kParamStatsInputFunctionTime,					sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_input_function_cpu_time.get_sec(), temp));
 	AppendArgTagFast(sml_Names::kParamStatsOutputFunctionTime,					sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_output_function_cpu_time.get_sec(), temp));	
+
+#ifdef DETAILED_TIMING_STATS
 	AppendArgTagFast(sml_Names::kParamStatsMatchTimeInputPhase,					sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_match_cpu_time[INPUT_PHASE].get_sec(), temp));
 	AppendArgTagFast(sml_Names::kParamStatsMatchTimePreferencePhase,			sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_match_cpu_time[PREFERENCE_PHASE].get_sec(), temp));
 	AppendArgTagFast(sml_Names::kParamStatsMatchTimeWorkingMemoryPhase,			sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_match_cpu_time[WM_PHASE].get_sec(), temp));
@@ -254,6 +256,14 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeDecisionPhase,			sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_chunking_cpu_time[DECISION_PHASE].get_sec(), temp));
 	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeProposePhase,			sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_chunking_cpu_time[PROPOSE_PHASE].get_sec(), temp));
 	AppendArgTagFast(sml_Names::kParamStatsChunkingTimeApplyPhase,				sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_chunking_cpu_time[APPLY_PHASE].get_sec(), temp));
+	AppendArgTagFast(sml_Names::kParamStatsGDSTimeInputPhase,         sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_gds_cpu_time[INPUT_PHASE].get_sec(), temp));
+	AppendArgTagFast(sml_Names::kParamStatsGDSTimePreferencePhase,    sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_gds_cpu_time[PREFERENCE_PHASE].get_sec(), temp));
+	AppendArgTagFast(sml_Names::kParamStatsGDSTimeWorkingMemoryPhase, sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_gds_cpu_time[WM_PHASE].get_sec(), temp));
+	AppendArgTagFast(sml_Names::kParamStatsGDSTimeOutputPhase,        sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_gds_cpu_time[OUTPUT_PHASE].get_sec(), temp));
+	AppendArgTagFast(sml_Names::kParamStatsGDSTimeDecisionPhase,      sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_gds_cpu_time[DECISION_PHASE].get_sec(), temp));
+	AppendArgTagFast(sml_Names::kParamStatsGDSTimeProposePhase,       sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_gds_cpu_time[PROPOSE_PHASE].get_sec(), temp));
+	AppendArgTagFast(sml_Names::kParamStatsGDSTimeApplyPhase,         sml_Names::kTypeDouble, to_string(m_pAgentSoar->timers_gds_cpu_time[APPLY_PHASE].get_sec(), temp));
+#endif // DETAILED_TIMING_STATS
 
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeCycle,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_cycle, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValue,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_msec, temp));
