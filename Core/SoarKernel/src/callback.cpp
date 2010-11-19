@@ -310,7 +310,6 @@ void soar_invoke_callbacks (agent* thisAgent,
 		thisAgent->timers_kernel.stop();
 		thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	    thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-		thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 		thisAgent->timers_phase.start();
         break;
   case INPUT_PHASE_CALLBACK:
@@ -320,7 +319,6 @@ void soar_invoke_callbacks (agent* thisAgent,
        thisAgent->timers_kernel.stop();
        thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	   thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-	   thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 	   thisAgent->timers_kernel.start();
        break;
  
@@ -429,7 +427,6 @@ void soar_invoke_first_callback (agent* thisAgent,
 	   thisAgent->timers_kernel.stop();
 	   thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	   thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-	   thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 	   thisAgent->timers_phase.start();
        break;
   case INPUT_PHASE_CALLBACK:
@@ -439,7 +436,6 @@ void soar_invoke_first_callback (agent* thisAgent,
 	   thisAgent->timers_kernel.stop();
 	   thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	   thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-	   thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 	   thisAgent->timers_kernel.start();
        break;
   default: break;

@@ -307,7 +307,7 @@ void determine_lapsing (agent* thisAgent) {
       if (thisAgent->attention_lapsing) {
          /* If lapsing, is it time to stop? */
          start_timer (thisAgent, current_real_time);
-         if (timercmp(current_real_time,
+         if (`cmp(current_real_time,
                       thisAgent->attention_lapse_tracker, >)) {
             wake_from_attention_lapse();
          }
@@ -367,11 +367,6 @@ double get_number_from_symbol( Symbol *sym )
 	
 	return 0.0;
 }
-
-
-
-
-
 
 void stats_init_db( agent *my_agent )
 {
@@ -478,5 +473,19 @@ void stats_close( agent *my_agent )
 		// close the database
 		my_agent->stats_db->disconnect();
 	}
+}
+
+uint64_t get_derived_kernel_time_usec(agent* thisAgent) {
+#ifndef NO_TIMING_STUFF
+    return thisAgent->timers_decision_cycle_phase[INPUT_PHASE].get_usec()
+        + thisAgent->timers_decision_cycle_phase[PROPOSE_PHASE].get_usec()
+        + thisAgent->timers_decision_cycle_phase[APPLY_PHASE].get_usec()
+        + thisAgent->timers_decision_cycle_phase[PREFERENCE_PHASE].get_usec()
+        + thisAgent->timers_decision_cycle_phase[WM_PHASE].get_usec()
+        + thisAgent->timers_decision_cycle_phase[OUTPUT_PHASE].get_usec()
+        + thisAgent->timers_decision_cycle_phase[DECISION_PHASE].get_usec();
+#else
+    return 0;
+#endif
 }
 
