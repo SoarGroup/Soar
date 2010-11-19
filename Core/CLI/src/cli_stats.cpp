@@ -169,12 +169,12 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 			if (count % 20 == 0) {
 				m_Result << "\n";
 				m_Result << "----------- ----------- ----------- -----------\n";
-				m_Result << "DC          Time (msec) WM Changes  Firing Cnt\n";
+				m_Result << "DC          Time (sec)  WM Changes  Firing Cnt\n";
 				m_Result << "----------- ----------- ----------- -----------\n";
 			}
 
 			m_Result << std::setw(11) << select->column_int(0) << " ";
-			m_Result << std::setw(11) << select->column_int(1) << " ";
+			m_Result << std::setw(11) << (select->column_int(1) / 1000000.0) << " ";
 			m_Result << std::setw(11) << select->column_int(2) << " ";
 			m_Result << std::setw(11) << select->column_int(3) << "\n";
 		}
@@ -266,7 +266,8 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 #endif // DETAILED_TIMING_STATS
 
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeCycle,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_cycle, temp));
-	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValue,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_msec, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValueSec,        sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_time_usec / 100000.0, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValueUSec,       sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_usec, temp));
 #endif // NO_TIMING_STUFF
 
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle,		sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_wm_changes_cycle, temp));
@@ -281,23 +282,9 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 	AppendArgTagFast(sml_Names::kParamStatsMemoryUsageStatsOverhead,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->memory_for_usage[STATS_OVERHEAD_MEM_USAGE], temp));
 
 	if ( options.test(STATS_RESET) )
-	{
-		ResetMaxStats();
-	}
+        reset_max_stats(m_pAgentSoar);
 
 	return true;
-}
-
-void CommandLineInterface::ResetMaxStats()
-{
-	m_pAgentSoar->max_dc_production_firing_count_cycle = 0;
-	m_pAgentSoar->max_dc_production_firing_count_value = 0;
-	m_pAgentSoar->max_dc_wm_changes_value = 0;
-	m_pAgentSoar->max_dc_wm_changes_cycle = 0;
-#ifndef NO_TIMING_STUFF
-	m_pAgentSoar->max_dc_time_cycle = 0;
-	m_pAgentSoar->max_dc_time_msec = 0;
-#endif // NO_TIMING_STUFF
 }
 
 void CommandLineInterface::GetSystemStats()
@@ -317,19 +304,6 @@ void CommandLineInterface::GetSystemStats()
 	double total_kernel_time = m_pAgentSoar->timers_total_kernel_time.get_sec();
 	double total_kernel_msec = total_kernel_time * 1000.0;
 
-	/* derived_kernel_time := Total of the time spent in the phases of the decision cycle, 
-	excluding Input Function, Output function, and pre-defined callbacks. 
-	This computed time should be roughly equal to total_kernel_time, 
-	as determined above. */
-
-	double derived_kernel_time = m_pAgentSoar->timers_decision_cycle_phase[INPUT_PHASE].get_sec()
-		+ m_pAgentSoar->timers_decision_cycle_phase[PROPOSE_PHASE].get_sec()
-		+ m_pAgentSoar->timers_decision_cycle_phase[APPLY_PHASE].get_sec()
-		+ m_pAgentSoar->timers_decision_cycle_phase[PREFERENCE_PHASE].get_sec()
-		+ m_pAgentSoar->timers_decision_cycle_phase[WM_PHASE].get_sec()
-		+ m_pAgentSoar->timers_decision_cycle_phase[OUTPUT_PHASE].get_sec()
-		+ m_pAgentSoar->timers_decision_cycle_phase[DECISION_PHASE].get_sec();
-
 	double input_function_time = m_pAgentSoar->timers_input_function_cpu_time.get_sec();
 	double output_function_time = m_pAgentSoar->timers_output_function_cpu_time.get_sec();
 
@@ -342,6 +316,7 @@ void CommandLineInterface::GetSystemStats()
 		+ m_pAgentSoar->timers_monitors_cpu_time[OUTPUT_PHASE].get_sec()
 		+ m_pAgentSoar->timers_monitors_cpu_time[DECISION_PHASE].get_sec();
 
+    double derived_kernel_time = get_derived_kernel_time_usec(m_pAgentSoar) / 1000000.0;
 	double derived_total_cpu_time = derived_kernel_time + monitors_sum + input_function_time + output_function_time;
 
 	/* Total time spent in the input phase */
@@ -487,8 +462,8 @@ void CommandLineInterface::GetMaxStats()
 	m_Result << "------------- ----------- -----------\n";
 
 #ifndef NO_TIMING_STUFF
-	m_Result << "Time (msec)   "
-		<< std::setw(11) << m_pAgentSoar->max_dc_time_msec << " "
+	m_Result << "Time (sec)    "
+		<< std::setw(11) << (m_pAgentSoar->max_dc_time_usec / 1000000.0) << " "
 		<< std::setw(11) << m_pAgentSoar->max_dc_time_cycle << "\n";
 #endif // NO_TIMING_STUFF
 

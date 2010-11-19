@@ -689,7 +689,6 @@ void do_output_cycle (agent* thisAgent) {
 	  thisAgent->timers_kernel.stop();
 	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
@@ -713,7 +712,6 @@ void do_output_cycle (agent* thisAgent) {
 	  thisAgent->timers_kernel.stop();
 	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
@@ -739,7 +737,6 @@ void do_output_cycle (agent* thisAgent) {
 	  thisAgent->timers_kernel.stop();
 	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);
@@ -764,7 +761,6 @@ void do_output_cycle (agent* thisAgent) {
 	  thisAgent->timers_kernel.stop();
 	  thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);
 	  thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 	  thisAgent->timers_kernel.start();
       #endif
 	  if (ol->cb) (ol->cb->function)(thisAgent, ol->cb->eventid, ol->cb->data, &output_call_data);

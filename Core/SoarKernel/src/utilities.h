@@ -133,4 +133,11 @@ extern void stats_close( agent *my_agent );
 // Useful for converting enumerations to string
 #define stringify( name ) # name
 
+/* derived_kernel_time := Total of the time spent in the phases of the decision cycle, 
+excluding Input Function, Output function, and pre-defined callbacks. 
+This computed time should be roughly equal to total_kernel_time, 
+as determined above. */
+uint64_t get_derived_kernel_time_usec(agent* thisAgent);
+
+
 #endif //UTILITIES_H

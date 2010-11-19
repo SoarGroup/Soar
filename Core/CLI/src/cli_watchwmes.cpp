@@ -185,7 +185,6 @@ int RemoveWme(agent* thisAgent, wme* pWme)
 #ifndef KERNEL_TIME_ONLY
 		thisAgent->timers_phase.stop();
 		thisAgent->timers_decision_cycle_phase[thisAgent->current_phase].update(thisAgent->timers_phase);
-		thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 #endif // KERNEL_TIME_ONLY
 		thisAgent->timers_kernel.stop();
 		thisAgent->timers_total_kernel_time.update(thisAgent->timers_kernel);

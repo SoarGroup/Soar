@@ -846,7 +846,6 @@ protected:
 	void GetMemoryStats(); // for stats
 	void GetMaxStats(); // for stats
 	void GetReteStats(); // for stats
-	void ResetMaxStats(); // for stats
 
 	bool StreamSource( std::istream& soarStream );
 
