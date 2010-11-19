@@ -248,7 +248,8 @@ void MiscTest::test_stats()
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsGDSTimeApplyPhase, -1) == 0);
 #endif
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleTimeCycle, -1) == 0);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleTimeValue, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsMaxDecisionCycleTimeValueSec, -1) == 0);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleTimeValueUSec, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleWMChangesValue, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMaxDecisionCycleFireCountCycle, -1) == 0);

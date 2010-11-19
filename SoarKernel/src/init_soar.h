@@ -76,6 +76,12 @@ extern bool reinitialize_soar (agent* thisAgent);
 extern void reset_timers (agent* thisAgent);
 
 /* ---------------------------------------------------------------------
+                         Reset Timers
+   This code used to be in the CLI, it resets the per-cycle max stats.
+--------------------------------------------------------------------- */
+extern void reset_max_stats (agent* thisAgent);
+
+/* ---------------------------------------------------------------------
                          Reinitializing Soar
 
    This adds the top state (S1) and the io header symbols and wme's to the
