@@ -297,16 +297,12 @@ void reset_statistics (agent* thisAgent) {
   thisAgent->chunks_this_d_cycle = 0;
   thisAgent->production_firing_count = 0;
   thisAgent->start_dc_production_firing_count = 0;
-  thisAgent->max_dc_production_firing_count_value = 0;
-  thisAgent->max_dc_production_firing_count_cycle = 0;
   thisAgent->wme_addition_count = 0;
   thisAgent->wme_removal_count = 0;
   thisAgent->max_wm_size = 0;
 
   thisAgent->start_dc_wme_addition_count = 0;
   thisAgent->start_dc_wme_removal_count = 0;
-  thisAgent->max_dc_wm_changes_value = 0;
-  thisAgent->max_dc_wm_changes_cycle = 0;
 
   thisAgent->cumulative_wm_size = 0.0;
   thisAgent->num_wm_sizes_accumulated = 0;
@@ -326,6 +322,7 @@ void reset_statistics (agent* thisAgent) {
   reset_production_firing_counts(thisAgent);
 
   reset_timers(thisAgent);
+  reset_max_stats(thisAgent);
 
   thisAgent->epmem_timers->reset(); 
   thisAgent->smem_timers->reset();
@@ -356,7 +353,19 @@ void reset_timers (agent* thisAgent) {
      thisAgent->timers_gds_cpu_time[i].reset();
 #endif
   }
-  thisAgent->timers_decision_cycle.reset();
+
+  thisAgent->last_derived_kernel_time_usec = 0;
+#endif // NO_TIMING_STUFF
+}
+
+void reset_max_stats (agent* thisAgent) {
+  thisAgent->max_dc_production_firing_count_cycle = 0;
+  thisAgent->max_dc_production_firing_count_value = 0;
+  thisAgent->max_dc_wm_changes_value = 0;
+  thisAgent->max_dc_wm_changes_cycle = 0;
+#ifndef NO_TIMING_STUFF
+  thisAgent->max_dc_time_cycle = 0;
+  thisAgent->max_dc_time_usec = 0;
 #endif // NO_TIMING_STUFF
 }
 
@@ -586,7 +595,6 @@ void do_one_top_level_phase (agent* thisAgent)
      #ifndef NO_TIMING_STUFF  /* REW:  28.07.96 */
 		thisAgent->timers_phase.stop();
 	    thisAgent->timers_decision_cycle_phase[INPUT_PHASE].update(thisAgent->timers_phase);
-		thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
      #endif
 
 	thisAgent->current_phase = PROPOSE_PHASE;
@@ -692,7 +700,6 @@ void do_one_top_level_phase (agent* thisAgent)
 	  #ifndef NO_TIMING_STUFF
 	  thisAgent->timers_phase.stop();
 	  thisAgent->timers_decision_cycle_phase[PROPOSE_PHASE].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
       #endif
 
 	  break;  /* END of Soar8 PROPOSE PHASE */
@@ -726,7 +733,6 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF       /* REW:  28.07.96 */
 	  thisAgent->timers_phase.stop();
 	  thisAgent->timers_decision_cycle_phase[PREFERENCE_PHASE].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
       #endif
 
 	  /* tell gSKI PREF_PHASE ending... 
@@ -761,7 +767,6 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF      /* REW:  28.07.96 */
 	  thisAgent->timers_phase.stop();
 	  thisAgent->timers_decision_cycle_phase[WM_PHASE].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
       #endif
 
 	  // FIXME return the correct enum top_level_phase constant in soar_call_data? /*(soar_call_data)((thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE)*/
@@ -869,7 +874,6 @@ void do_one_top_level_phase (agent* thisAgent)
 	  #ifndef NO_TIMING_STUFF
 	  thisAgent->timers_phase.stop();
 	  thisAgent->timers_decision_cycle_phase[APPLY_PHASE].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
       #endif
 
       break;  /* END of Soar8 APPLY PHASE */
@@ -931,19 +935,19 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF    /* timers stopped KJC 10-04-98 */
 	  thisAgent->timers_phase.stop();
 	  thisAgent->timers_decision_cycle_phase[OUTPUT_PHASE].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
       #endif
 
       // Update per-cycle statistics
 	  {
-		  uint64_t dc_time_msec = 0;
+          uint64_t dc_time_usec = 0;
 #ifndef NO_TIMING_STUFF
-		  dc_time_msec = static_cast<uint64_t>(thisAgent->timers_decision_cycle.get_msec());
-		  if (thisAgent->max_dc_time_msec < dc_time_msec) {
-			  thisAgent->max_dc_time_msec = dc_time_msec;
+		  uint64_t derived_kernel_time_usec = get_derived_kernel_time_usec(thisAgent);
+          dc_time_usec = derived_kernel_time_usec - thisAgent->last_derived_kernel_time_usec;
+		  if (thisAgent->max_dc_time_usec < dc_time_usec) {
+			  thisAgent->max_dc_time_usec = dc_time_usec;
 			  thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
 		  }
-		  thisAgent->timers_decision_cycle.reset();
+          thisAgent->last_derived_kernel_time_usec = derived_kernel_time_usec;
 #endif // NO_TIMING_STUFF
 
 		  uint64_t dc_wm_changes = thisAgent->wme_addition_count - thisAgent->start_dc_wme_addition_count;
@@ -964,7 +968,7 @@ void do_one_top_level_phase (agent* thisAgent)
 
 		  // Commit per-cycle stats to db
 		  if (thisAgent->dc_stat_tracking) {
-			  stats_db_store(thisAgent, dc_time_msec, dc_wm_changes, dc_firing_counts);
+			  stats_db_store(thisAgent, dc_time_usec, dc_wm_changes, dc_firing_counts);
 		  }
 	  }
 
@@ -1056,7 +1060,6 @@ void do_one_top_level_phase (agent* thisAgent)
 #ifndef NO_TIMING_STUFF
 		  thisAgent->timers_phase.stop();
 		  thisAgent->timers_decision_cycle_phase[DECISION_PHASE].update(thisAgent->timers_phase);
-		  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
 #endif
 		  /* REW: end 28.07.96 */
 
@@ -1082,7 +1085,6 @@ void do_one_top_level_phase (agent* thisAgent)
       #ifndef NO_TIMING_STUFF
 	  thisAgent->timers_phase.stop();
 	  thisAgent->timers_decision_cycle_phase[DECISION_PHASE].update(thisAgent->timers_phase);
-	  thisAgent->timers_decision_cycle.update(thisAgent->timers_phase);
       #endif
 	  /* REW: end 28.07.96 */
 
@@ -1469,6 +1471,7 @@ void init_agent_memory(agent* thisAgent)
 
   /* executing the IO cycles above, increments the timers, so reset */
   reset_timers(thisAgent);
+  reset_max_stats(thisAgent);
 
   thisAgent->epmem_timers->reset();
   thisAgent->smem_timers->reset();

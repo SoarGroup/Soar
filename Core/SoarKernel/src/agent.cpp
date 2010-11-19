@@ -247,6 +247,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->lexeme.id_number = 0;
 
   /* Initializing all the timer structures */
+#ifndef NO_TIMING_STUFF
   newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
   newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
   newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
@@ -254,6 +255,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
 #endif
   reset_timers(newAgent);
+#endif
+
+  reset_max_stats(newAgent);
 
   newAgent->real_time_tracker = 0;
   newAgent->attention_lapse_tracker = 0;
