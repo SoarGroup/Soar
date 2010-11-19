@@ -237,10 +237,10 @@ struct Dangerous_Pointer_Cast {
 // time timer. Keep in mind that as of 11/2010 the resolution of process-time
 // counters on windows is 16 milliseconds.
 //
+//#define USE_PERFORMANCE_FOR_BOTH 1
 #ifdef WIN32
 #include <winstl/performance/performance_counter.hpp>
 typedef winstl::performance_counter performance_counter;
-//#define USE_PERFORMANCE_FOR_BOTH 1
 #ifdef USE_PERFORMANCE_FOR_BOTH
 typedef winstl::performance_counter processtimes_counter;
 #else // USE_PERFORMANCE_FOR_BOTH
@@ -249,9 +249,13 @@ typedef winstl::processtimes_counter processtimes_counter;
 #endif // USE_PERFORMANCE_FOR_BOTH
 #else // WIN32
 #include <unixstl/performance/performance_counter.hpp>
-#include <unixstl/performance/processtimes_counter.hpp>
 typedef unixstl::performance_counter performance_counter;
+#ifdef USE_PERFORMANCE_FOR_BOTH
+typedef unixstl::performance_counter processtimes_counter;
+#else // USE_PERFORMANCE_FOR_BOTH
+#include <unixstl/performance/processtimes_counter.hpp>
 typedef unixstl::processtimes_counter processtimes_counter;
+#endif // USE_PERFORMANCE_FOR_BOTH
 #endif // WIN32
 
 // soar_timer is the basic timer interface, shared by both types of timers.
