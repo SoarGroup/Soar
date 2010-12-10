@@ -10,7 +10,6 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_AgentSML.h"
@@ -49,7 +48,7 @@ bool CommandLineInterface::ParseReplayInput(std::vector<std::string>& argv) {
 				mode = REPLAY_INPUT_QUERY;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
@@ -59,23 +58,21 @@ bool CommandLineInterface::ParseReplayInput(std::vector<std::string>& argv) {
 bool CommandLineInterface::DoReplayInput(eReplayInputMode mode, std::string* pathname) {
 	switch (mode) {
 		case REPLAY_INPUT_CLOSE:
-			if (!m_pAgentSML->ReplayQuery()) return SetError(CLIError::kFileNotOpen);
+			if (!m_pAgentSML->ReplayQuery()) return SetError(kFileNotOpen);
 			if (!m_pAgentSML->StopReplayInput())
 			{
-				return SetError(CLIError::kCloseFileFail);
+				return SetError(kCloseFileFail);
 			} 
 			break;
 
 		case REPLAY_INPUT_OPEN:
-			if (m_pAgentSML->ReplayQuery()) return SetError(CLIError::kFileOpen);
-			if (!pathname) return SetError(CLIError::kMissingFilenameArg);
-			if (!pathname->size()) return SetError(CLIError::kMissingFilenameArg);
-
-			StripQuotes(*pathname);
+			if (m_pAgentSML->ReplayQuery()) return SetError(kFileOpen);
+			if (!pathname) return SetError(kMissingFilenameArg);
+			if (!pathname->size()) return SetError(kMissingFilenameArg);
 
 			if (!m_pAgentSML->StartReplayInput(*pathname))
 			{
-				return SetError(CLIError::kOpenFileFail);
+				return SetError(kOpenFileFail);
 			} 
 			m_Result << "Loaded " << m_pAgentSML->NumberOfCapturedActions() << " actions.";
 			break;

@@ -2773,7 +2773,7 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 	return return_val;
 }
 
-bool smem_parse_chunks( agent *my_agent, const char *chunks, std::string **err_msg )
+bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **err_msg )
 {
 	bool return_val = false;
 	uint64_t clause_count = 0;
@@ -2782,112 +2782,101 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks, std::string **err_m
 	smem_attach( my_agent );
 
 	// copied primarily from cli_sp
-	my_agent->alternate_input_string = chunks;
+	my_agent->alternate_input_string = chunks_str;
 	my_agent->alternate_input_suffix = const_cast<char *>( ") " );
 	my_agent->current_char = ' ';
 	my_agent->alternate_input_exit = true;
 	set_lexer_allow_ids( my_agent, true );
+
+    bool good_chunk = true;
+		
+	smem_str_to_chunk_map chunks;
+	smem_str_to_chunk_map::iterator c_old;
+	
+	smem_chunk_set newbies;
+	smem_chunk_set::iterator c_new;		
+
+	// consume next token
 	get_lexeme( my_agent );
 
-	if ( my_agent->lexeme.type == L_BRACE_LEXEME )
+	// while there are chunks to consume
+	while ( ( my_agent->lexeme.type == L_PAREN_LEXEME ) && ( good_chunk ) )
 	{
-		bool good_chunk = true;
-		
-		smem_str_to_chunk_map chunks;
-		smem_str_to_chunk_map::iterator c_old;
-		
-		smem_chunk_set newbies;
-		smem_chunk_set::iterator c_new;		
+		good_chunk = smem_parse_chunk( my_agent, &( chunks ), &( newbies ) );
 
-		// consume next token
-		get_lexeme( my_agent );
-
-		// while there are chunks to consume
-		while ( ( my_agent->lexeme.type == L_PAREN_LEXEME ) && ( good_chunk ) )
+		if ( good_chunk )
 		{
-			good_chunk = smem_parse_chunk( my_agent, &( chunks ), &( newbies ) );
-
-			if ( good_chunk )
+			// add all newbie lti's as appropriate
+			for ( c_new=newbies.begin(); c_new!=newbies.end(); c_new++ )
 			{
-				// add all newbie lti's as appropriate
-				for ( c_new=newbies.begin(); c_new!=newbies.end(); c_new++ )
-				{
-					if ( (*c_new)->lti_id == NIL )
-					{					
-						// deal differently with variable vs. lti
-						if ( (*c_new)->lti_number == NIL )
+				if ( (*c_new)->lti_id == NIL )
+				{					
+					// deal differently with variable vs. lti
+					if ( (*c_new)->lti_number == NIL )
+					{
+						// add a new lti id (we have a guarantee this won't be in Soar's WM)
+						(*c_new)->lti_number = ( my_agent->id_counter[ (*c_new)->lti_letter - static_cast<char>('A') ]++ );
+						(*c_new)->lti_id = smem_lti_add_id( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
+					}
+					else
+					{
+						// should ALWAYS be the case (it's a newbie and we've initialized lti_id to NIL)
+						if ( (*c_new)->lti_id == NIL )
 						{
-							// add a new lti id (we have a guarantee this won't be in Soar's WM)
-							(*c_new)->lti_number = ( my_agent->id_counter[ (*c_new)->lti_letter - static_cast<char>('A') ]++ );
-							(*c_new)->lti_id = smem_lti_add_id( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
-						}
-						else
-						{
-							// should ALWAYS be the case (it's a newbie and we've initialized lti_id to NIL)
+							// get existing
+							(*c_new)->lti_id = smem_lti_get_id( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
+
+							// if doesn't exist, add it
 							if ( (*c_new)->lti_id == NIL )
 							{
-								// get existing
-								(*c_new)->lti_id = smem_lti_get_id( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
+								(*c_new)->lti_id = smem_lti_add_id( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
 
-								// if doesn't exist, add it
-								if ( (*c_new)->lti_id == NIL )
+								// this could affect an existing identifier in Soar's WM
+								Symbol *id_parent = find_identifier( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
+								if ( id_parent != NIL )
 								{
-									(*c_new)->lti_id = smem_lti_add_id( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
+									// if so we make it an lti manually
+									id_parent->id.smem_lti = (*c_new)->lti_id;
 
-									// this could affect an existing identifier in Soar's WM
-									Symbol *id_parent = find_identifier( my_agent, (*c_new)->lti_letter, (*c_new)->lti_number );
-									if ( id_parent != NIL )
-									{
-										// if so we make it an lti manually
-										id_parent->id.smem_lti = (*c_new)->lti_id;
-
-										id_parent->id.smem_time_id = my_agent->epmem_stats->time->get_value();
-										id_parent->id.smem_valid = my_agent->epmem_validation;
-									}
+									id_parent->id.smem_time_id = my_agent->epmem_stats->time->get_value();
+									id_parent->id.smem_valid = my_agent->epmem_validation;
 								}
 							}
 						}
 					}
 				}
-
-				// add all newbie contents (append, as opposed to replace, children)
-				for ( c_new=newbies.begin(); c_new!=newbies.end(); c_new++ )
-				{
-					if ( (*c_new)->slots != NIL )
-					{
-						smem_store_chunk( my_agent, (*c_new)->lti_id, (*c_new)->slots, false );
-					}
-				}
-
-				// deallocate *contents* of all newbies (need to keep around name->id association for future chunks)
-				for ( c_new=newbies.begin(); c_new!=newbies.end(); c_new++ )
-				{
-					smem_deallocate_chunk( my_agent, (*c_new), false );
-				}
-
-				// increment clause counter
-				clause_count++;
-
-				// clear newbie list
-				newbies.clear();
 			}
-		};
 
-		if ( good_chunk && ( my_agent->lexeme.type == R_BRACE_LEXEME ) )
-		{
-			// consume right brace
-			get_lexeme( my_agent );
-
-			// confirm (but don't consume) suffix
-			return_val = ( my_agent->lexeme.type == R_PAREN_LEXEME );		
-		}
-
-		// deallocate all chunks
-		{
-			for ( c_old=chunks.begin(); c_old!=chunks.end(); c_old++ )
+			// add all newbie contents (append, as opposed to replace, children)
+			for ( c_new=newbies.begin(); c_new!=newbies.end(); c_new++ )
 			{
-				smem_deallocate_chunk( my_agent, c_old->second, true );
+				if ( (*c_new)->slots != NIL )
+				{
+					smem_store_chunk( my_agent, (*c_new)->lti_id, (*c_new)->slots, false );
+				}
 			}
+
+			// deallocate *contents* of all newbies (need to keep around name->id association for future chunks)
+			for ( c_new=newbies.begin(); c_new!=newbies.end(); c_new++ )
+			{
+				smem_deallocate_chunk( my_agent, (*c_new), false );
+			}
+
+			// increment clause counter
+			clause_count++;
+
+			// clear newbie list
+			newbies.clear();
+		}
+	};
+
+    return_val = good_chunk;
+
+	// deallocate all chunks
+	{
+		for ( c_old=chunks.begin(); c_old!=chunks.end(); c_old++ )
+		{
+			smem_deallocate_chunk( my_agent, c_old->second, true );
 		}
 	}
 

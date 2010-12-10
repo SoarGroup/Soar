@@ -17,7 +17,6 @@
 
 #include "sml_KernelSML.h"
 #include "gsysparam.h"
-#include "cli_CLIError.h"
 #include "agent.h"
 
 using namespace cli;
@@ -49,11 +48,11 @@ bool CommandLineInterface::ParseWarnings(std::vector<std::string>& argv) {
 				query = false;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
-	if (m_NonOptionArguments) SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) SetError(kTooManyArgs);
 
 	return DoWarnings(query ? 0 : &setting);
 }

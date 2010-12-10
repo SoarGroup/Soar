@@ -10,7 +10,6 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
@@ -38,12 +37,12 @@ bool CommandLineInterface::ParseRand(std::vector<std::string>& argv) {
 				integer = true;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	if ( m_NonOptionArguments > 1 ) {
-		return SetError( CLIError::kTooManyArgs );
+		return SetError( kTooManyArgs );
 	} else if ( m_NonOptionArguments == 1 ) {
 		unsigned optind = m_Argument - m_NonOptionArguments;
 		return DoRand( integer, &(argv[optind]) );
@@ -59,7 +58,7 @@ bool CommandLineInterface::DoRand( bool integer, std::string* bound ) {
 		if ( bound ) {
 			uint32_t n(0);
 			if ( !from_string( n, *bound ) ) {
-				return SetError( CLIError::kIntegerExpected );
+				return SetError( kIntegerExpected );
 			}
 			out = SoarRandInt( n );
 		} else {
@@ -73,7 +72,7 @@ bool CommandLineInterface::DoRand( bool integer, std::string* bound ) {
 		if ( bound ) {
 			double n(0);
 			if ( !from_string( n, *bound ) ) {
-				return SetError( CLIError::kRealExpected );
+				return SetError( kRealExpected );
 			}
 			out = SoarRand( n );
 		} else {

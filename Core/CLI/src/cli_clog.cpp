@@ -16,7 +16,6 @@
 
 #include "cli_Commands.h"
 #include "cli_CommandData.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_Events.h"
@@ -59,7 +58,7 @@ bool CommandLineInterface::ParseCLog(std::vector<std::string>& argv) {
 				mode = LOG_QUERY;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 	
@@ -70,7 +69,7 @@ bool CommandLineInterface::ParseCLog(std::vector<std::string>& argv) {
 				// no less than one non-option argument
 				if (m_NonOptionArguments < 1) {
 					SetErrorDetail("Provide a string to add.");
-					return SetError(CLIError::kTooFewArgs);
+					return SetError(kTooFewArgs);
 				}
 
 				// move to the first non-option arg
@@ -90,7 +89,7 @@ bool CommandLineInterface::ParseCLog(std::vector<std::string>& argv) {
 			// no more than one argument, no filename == query
 			if (m_NonOptionArguments > 1) {
 				SetErrorDetail("Filename or nothing expected, enclose filename in quotes if there are spaces in the path.");
-				return SetError(CLIError::kTooManyArgs);
+				return SetError(kTooManyArgs);
 			}
 			if (m_NonOptionArguments == 1) return DoCLog(mode, &argv[1]);
 			break; // no args case handled below
@@ -99,12 +98,12 @@ bool CommandLineInterface::ParseCLog(std::vector<std::string>& argv) {
 			// exactly one argument
 			if (m_NonOptionArguments > 1) {
 				SetErrorDetail("Filename expected, enclose filename in quotes if there are spaces in the path.");
-				return SetError(CLIError::kTooManyArgs);
+				return SetError(kTooManyArgs);
 			}
 
 			if (m_NonOptionArguments < 1) {
 				SetErrorDetail("Please provide a filename.");
-				return SetError(CLIError::kTooFewArgs);
+				return SetError(kTooFewArgs);
 			}
 			return DoCLog(mode, &argv[1]);
 
@@ -113,12 +112,12 @@ bool CommandLineInterface::ParseCLog(std::vector<std::string>& argv) {
 			// no arguments
 			if (m_NonOptionArguments) {
 				SetErrorDetail("No arguments when querying log status.");
-				return SetError(CLIError::kTooManyArgs);
+				return SetError(kTooManyArgs);
 			}
 			break; // no args case handled below
 
 		default:
-			return SetError(CLIError::kInvalidOperation);
+			return SetError(kInvalidOperation);
 	}
 
 	// the no args case
@@ -138,17 +137,16 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
 
 			if (m_pLogFile) {
 				SetErrorDetail("Currently logging to " + m_LogFilename);
-				return SetError(CLIError::kLogAlreadyOpen);
+				return SetError(kLogAlreadyOpen);
 			}
 
             {
                 std::string filename = *pFilename;
-                StripQuotes(filename);
 
 			    m_pLogFile = new std::ofstream(filename.c_str(), openmode);
 			    if (!m_pLogFile) {
 				    SetErrorDetail("Failed to open " + filename);
-				    return SetError(CLIError::kLogOpenFailure);
+				    return SetError(kLogOpenFailure);
 			    }
 
 			    m_LogFilename = filename;
@@ -156,12 +154,12 @@ bool CommandLineInterface::DoCLog(const eLogMode mode, const std::string* pFilen
 			break;
 
 		case LOG_ADD:
-			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
+			if (!m_pLogFile) return SetError(kLogNotOpen);
 			(*m_pLogFile) << *pToAdd << std::endl;
 			return true;
 
 		case LOG_CLOSE:
-			if (!m_pLogFile) return SetError(CLIError::kLogNotOpen);
+			if (!m_pLogFile) return SetError(kLogNotOpen);
 
 			delete m_pLogFile;
 			m_pLogFile = 0;

@@ -16,7 +16,6 @@
 #include <assert.h>
 
 #include "sml_Names.h"
-#include "cli_CLIError.h"
 
 #include "sml_KernelSML.h"
 #include "gsysparam.h"
@@ -64,18 +63,18 @@ bool CommandLineInterface::ParseMatches(std::vector<std::string>& argv) {
 				mode = MATCHES_RETRACTIONS;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	// Max one additional argument and it is a production
 	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Expected production name or nothing.");
-		return SetError(CLIError::kTooManyArgs);		
+		return SetError(kTooManyArgs);		
 	}
 
 	if (m_NonOptionArguments == 1) {
-		if (mode != MATCHES_ASSERTIONS_RETRACTIONS) return SetError(CLIError::kTooManyArgs);
+		if (mode != MATCHES_ASSERTIONS_RETRACTIONS) return SetError(kTooManyArgs);
 		return DoMatches(MATCHES_PRODUCTION, detail, &argv[m_Argument - m_NonOptionArguments]);
 	}
 
@@ -99,14 +98,14 @@ bool CommandLineInterface::DoMatches(const eMatchesMode mode, const eWMEDetail d
 	}
 
 	if (mode == MATCHES_PRODUCTION) {
-		if (!pProduction) return SetError(CLIError::kProductionRequired);
+		if (!pProduction) return SetError(kProductionRequired);
 
 		Symbol* sym = find_sym_constant(m_pAgentSoar, pProduction->c_str());
 		rete_node* prod = (sym && sym->sc.production) ? sym->sc.production->p_node : 0;
 
 		if (!prod) {
 			SetErrorDetail("Production " + *pProduction);
-			return SetError(CLIError::kProductionNotFound);
+			return SetError(kProductionNotFound);
 		}
 
 		if (m_RawOutput)

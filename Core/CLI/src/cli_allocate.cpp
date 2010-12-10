@@ -12,7 +12,6 @@
 
 #include "cli_Commands.h"
 #include "agent.h"
-#include "cli_CLIError.h"
 
 using namespace cli;
 using namespace sml;
@@ -25,17 +24,17 @@ bool CommandLineInterface::ParseAllocate(std::vector<std::string>& argv)
 		return DoAllocate(empty, 0);
 
 	if (argv.size() > 3) 
-		return SetError(CLIError::kTooManyArgs);
+		return SetError(kTooManyArgs);
 
 	if (argv.size() < 3) 
-		return SetError(CLIError::kTooFewArgs);
+		return SetError(kTooFewArgs);
 
 	int blocks = 0;
 	if (!from_string(blocks, argv[2]))
-		return SetError(CLIError::kIntegerExpected);
+		return SetError(kIntegerExpected);
 
 	if (blocks < 1)
-		return SetError(CLIError::kIntegerMustBePositive);
+		return SetError(kIntegerMustBePositive);
 
 	return DoAllocate(argv[1], blocks);
 }

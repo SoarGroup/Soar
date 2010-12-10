@@ -27,6 +27,14 @@ inline const char* get_directory_separator()
 #endif
 }
 
+inline void normalize_separators(std::string& path)
+{
+    // Normalize separator chars.
+    std::string::size_type j; 
+    while ((j = path.find('\\')) != std::string::npos)
+        path.replace(j, 1, "/");
+}
+
 // Conversion of value to string
 template<class T> std::string& to_string( const T& x, std::string& dest )
 {
@@ -237,7 +245,7 @@ struct Dangerous_Pointer_Cast {
 // time timer. Keep in mind that as of 11/2010 the resolution of process-time
 // counters on windows is 16 milliseconds.
 //
-//#define USE_PERFORMANCE_FOR_BOTH 1
+#define USE_PERFORMANCE_FOR_BOTH 1
 #ifdef WIN32
 #include <winstl/performance/performance_counter.hpp>
 typedef winstl::performance_counter performance_counter;

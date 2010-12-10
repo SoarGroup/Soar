@@ -10,7 +10,6 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
@@ -63,13 +62,13 @@ bool CommandLineInterface::ParseProductionFind(std::vector<std::string>& argv) {
 				options.set(PRODUCTION_FIND_SHOWBINDINGS);
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	if (!m_NonOptionArguments) {
 		SetErrorDetail("Pattern required.");
-		return SetError(CLIError::kTooFewArgs);
+		return SetError(kTooFewArgs);
 	}
 
 	if (options.none()) options.set(PRODUCTION_FIND_INCLUDE_LHS);

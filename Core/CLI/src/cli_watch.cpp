@@ -12,7 +12,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -156,7 +155,7 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 			case 'l'://level
 				{
 					int level = 0;
-					if ( !from_string( level, m_OptionArgument ) ) return SetError( CLIError::kIntegerExpected );
+					if ( !from_string( level, m_OptionArgument ) ) return SetError( kIntegerExpected );
 					if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 				}
 				break;
@@ -276,20 +275,20 @@ bool CommandLineInterface::ParseWatch(std::vector<std::string>& argv) {
 				}
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Only non option argument allowed is watch level.");
-		return SetError(CLIError::kTooManyArgs);
+		return SetError(kTooManyArgs);
 	}
 
 	// Allow watch level by itself
 	if (m_NonOptionArguments == 1) {
 		int optind = m_Argument - m_NonOptionArguments;
 		int level = 0;
-		if ( !from_string( level, argv[optind] ) ) return SetError(CLIError::kIntegerExpected);
+		if ( !from_string( level, argv[optind] ) ) return SetError(kIntegerExpected);
 		if (!ProcessWatchLevelSettings(level, options, settings, wmeSetting, learnSetting)) return false; //error, code set in ProcessWatchLevel
 	}
 
@@ -300,11 +299,11 @@ bool CommandLineInterface::ProcessWatchLevelSettings(const int level, WatchBitse
 
 	if (level < 0)  {
 		SetErrorDetail("Expected watch level from 0 to 5.");
-		return SetError(CLIError::kIntegerMustBeNonNegative);
+		return SetError(kIntegerMustBeNonNegative);
 	}
 	if (level > 5) {
 		SetErrorDetail("Expected watch level from 0 to 5.");
-		return SetError(CLIError::kIntegerOutOfRange);
+		return SetError(kIntegerOutOfRange);
 	}
 
 	// All of these are going to change
@@ -372,14 +371,14 @@ int CommandLineInterface::ParseLearningOptarg() {
 	if (m_OptionArgument == "fullprint" || m_OptionArgument == "2") return 2;
 
 	SetErrorDetail("Got: " + m_OptionArgument);
-	SetError(CLIError::kInvalidLearnSetting);
+	SetError(kInvalidLearnSetting);
 	return -1;
 }
 
 bool CommandLineInterface::CheckOptargRemoveOrZero() {
 	if (m_OptionArgument == "remove" || m_OptionArgument == "0") return true;
 	SetErrorDetail("Got: " + m_OptionArgument);
-	return SetError(CLIError::kRemoveOrZeroExpected);
+	return SetError(kRemoveOrZeroExpected);
 }
 
 bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) {

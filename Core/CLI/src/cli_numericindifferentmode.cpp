@@ -9,7 +9,6 @@
 #include <portability.h>
 
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
@@ -48,12 +47,12 @@ bool CommandLineInterface::ParseNumericIndifferentMode(std::vector<std::string>&
 				query = false;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	// No additional arguments
-	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);		
+	if (m_NonOptionArguments) return SetError(kTooManyArgs);		
 
 	return DoNumericIndifferentMode( query, mode );
 }
@@ -75,7 +74,7 @@ bool CommandLineInterface::DoNumericIndifferentMode( bool query, const ni_mode m
 				default:
 					m_Result << "unknown";
 					assert( false );
-					return SetError(CLIError::kInvalidNumericIndifferentMode);
+					return SetError(kInvalidNumericIndifferentMode);
 			}
 		}
 		else
