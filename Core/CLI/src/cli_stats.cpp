@@ -32,16 +32,17 @@ using namespace sml;
 
 bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 	Options optionsData[] = {
-		{'m', "memory",	OPTARG_NONE},
-		{'M', "max",	OPTARG_NONE},
-		{'r', "rete",	OPTARG_NONE},
-		{'s', "system",	OPTARG_NONE},
-		{'R', "reset",	OPTARG_NONE},
-		{'t', "track",	OPTARG_NONE},
-        {'T', "stop-track", OPTARG_NONE},
-		{'c', "cycle",	OPTARG_NONE},
-		{'C', "cycle-csv", OPTARG_NONE},
-		{'S', "sort",	OPTARG_REQUIRED},
+		{'d', "decision",   OPTARG_NONE},
+		{'m', "memory",     OPTARG_NONE},
+		{'M', "max",        OPTARG_NONE},
+		{'r', "rete",       OPTARG_NONE},
+		{'s', "system",     OPTARG_NONE},
+		{'R', "reset",      OPTARG_NONE},
+		{'t', "track",      OPTARG_NONE},
+		{'T', "stop-track", OPTARG_NONE},
+		{'c', "cycle",      OPTARG_NONE},
+		{'C', "cycle-csv",  OPTARG_NONE},
+		{'S', "sort",       OPTARG_REQUIRED},
 		{0, 0, OPTARG_NONE}
 	};
 
@@ -53,6 +54,9 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 		if (m_Option == -1) break;
 
 		switch (m_Option) {
+			case 'd':
+				options.set(STATS_DECISION);
+				break;
 			case 'm':
 				options.set(STATS_MEMORY);
 				break;
@@ -101,6 +105,12 @@ bool CommandLineInterface::ParseStats(std::vector<std::string>& argv) {
 bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 
 	//soar_print_detailed_callback_stats();
+
+	if ( options.test(STATS_DECISION) )
+	{
+		m_Result << m_pAgentSoar->decision_phases_count;
+		return true;
+	}
 
 	if ( options.test(STATS_CSV) )
 	{
