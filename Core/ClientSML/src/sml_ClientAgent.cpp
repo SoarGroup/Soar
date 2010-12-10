@@ -217,21 +217,20 @@ void Agent::ReceivedProductionEvent(smlProductionEventId id, AnalyzeXML* pIncomi
 
 bool Agent::LoadProductions(char const* pFilename, bool echoResults)
 {
-	// gSKI's LoadProductions command doesn't support all of the command line commands we need,
-	// so we'll send this through the command line processor instead by creating a "source" command.
-	std::stringstream cmd;
-	cmd << "source ";
-	if (strlen(pFilename) && (pFilename[0] == '\"') && (pFilename[strlen(pFilename) - 1] == '\"'))
-	{
-		cmd << pFilename ;
-	} else {
-		cmd << '\"';
-		cmd << pFilename ;
-		cmd << '\"';
-	}
+    if (!pFilename)
+        return false;
 
-	// Execute the source command
-	char const* pResult = ExecuteCommandLine(cmd.str().c_str(), echoResults) ;
+    // remove quotes or braces if they exist
+    std::string cmd("source {");
+    size_t len = strlen(pFilename);
+    if ((pFilename[0] == '\"' && pFilename[len - 1] == '\"') || (pFilename[0] == '{' && pFilename[len - 1] == '}'))
+        cmd.append(pFilename + 1, len - 2);
+    else
+        cmd.append(pFilename, len);
+    cmd.push_back('}');
+
+	// Execute the source command, insert braces
+    char const* pResult = ExecuteCommandLine(cmd.c_str(), echoResults) ;
 
 	bool ok = GetLastCommandLineResult() ;
 

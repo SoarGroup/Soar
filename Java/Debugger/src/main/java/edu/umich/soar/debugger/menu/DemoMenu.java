@@ -218,8 +218,9 @@ public class DemoMenu
         m_Frame.executeCommandPrimeView(exciseLine, true);
 
         // Then do an init-soar
-        String initSoar = m_Document.getSoarCommands().getInitSoarCommand();
-        m_Frame.executeCommandPrimeView(initSoar, true);
+        // redundant, performed by ex -a
+//        String initSoar = m_Document.getSoarCommands().getInitSoarCommand();
+//        m_Frame.executeCommandPrimeView(initSoar, true);
 
         File filePath = null;
 

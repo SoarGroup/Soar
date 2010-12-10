@@ -79,5 +79,4 @@
 
 #include "src/cli_CommandLineInterface.cpp"
 #include "src/cli_Commands.cpp"
-
 #include "src/cli_Aliases.cpp"

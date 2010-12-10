@@ -11,7 +11,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "agent.h"
 #include "production.h"
@@ -22,23 +21,16 @@
 using namespace cli;
 
 bool CommandLineInterface::ParseSP(std::vector<std::string>& argv) {
-	// One argument (in brackets)
+	// One argument (the stuff in the brackets, minus the brackets
 	if (argv.size() < 2) {
-		return SetError(CLIError::kTooFewArgs);
+		return SetError(kTooFewArgs);
 	}
 	if (argv.size() > 2) {
 		SetErrorDetail("Expected one argument (the production) enclosed in braces.");
-		return SetError(CLIError::kTooManyArgs);
+		return SetError(kTooManyArgs);
 	}
 
-	// Remove first and last characters (the braces)
-	std::string production = argv[1];
-	if (production.length() < 3) {
-		return SetError(CLIError::kInvalidProduction);
-	}
-	production = production.substr(1, production.length() - 2);
-
-	return DoSP(production);
+	return DoSP(argv[1]);
 }
 
 // FIXME: copied from gSKI
@@ -73,22 +65,16 @@ bool CommandLineInterface::DoSP(const std::string& productionString) {
 	if (!p) { 
 		// There was an error, but duplicate production is just a warning
 		if (rete_addition_result != DUPLICATE_PRODUCTION) {
-		  return SetError( CLIError::kProductionAddFailed );
+		  return SetError( kProductionAddFailed );
 		}
 		// production ignored
-		++m_NumProductionsIgnored;
+		m_NumProductionsIgnored += 1;
 	} else {
-		if (!m_SourceFileStack.empty()) {
-			std::string path;
-			GetCurrentWorkingDirectory(path);
-			path.append(get_directory_separator());
-			path.append(m_SourceFileStack.top());
-
-			p->filename = make_memory_block_for_string(m_pAgentSoar, path.c_str());
-		}
+		if (!m_SourceFileStack.empty())
+			p->filename = make_memory_block_for_string(m_pAgentSoar, m_SourceFileStack.top().c_str());
 
 		// production was sourced
-		++m_NumProductionsSourced;
+        m_NumProductionsSourced += 1;
 		if (m_RawOutput) {
 			m_Result << '*';
 		}

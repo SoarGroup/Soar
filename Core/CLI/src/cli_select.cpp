@@ -12,7 +12,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -25,7 +24,7 @@ bool CommandLineInterface::ParseSelect( std::vector<std::string>& argv )
 {
 	// At most one argument to select the next operator
 	if ( argv.size() > 2 ) 
-		return SetError( CLIError::kTooManyArgs );
+		return SetError( kTooManyArgs );
 	
 	if ( argv.size() == 2 )
 		return DoSelect( &( argv[1] ) );

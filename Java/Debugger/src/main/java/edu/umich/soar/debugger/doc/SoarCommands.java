@@ -29,7 +29,7 @@ public class SoarCommands
      */
     public String getSourceCommand(String arg)
     {
-        return "source \"" + arg + "\"";
+        return "source {" + arg + "}";
     }
 
     public String getPrintCommand(String arg)

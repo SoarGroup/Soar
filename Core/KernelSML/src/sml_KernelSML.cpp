@@ -107,13 +107,7 @@ void KernelSML::InitializeLibraryLocation()
 
 	m_LibraryDirectory.assign(dllpath);
 
-	// This chops off the dll part to get just the path (/path/to/out/bin)
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(get_directory_separator()));
-
-	// This takes the parent directory to get (/path/to/out)
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(get_directory_separator()));
-	m_LibraryDirectory.append(get_directory_separator());
-	return;
+    normalize_separators(m_LibraryDirectory);
 
 #else // WIN32
 	struct stat statbuf;
@@ -142,14 +136,16 @@ void KernelSML::InitializeLibraryLocation()
 
 	// Get parent directory
 	buf[size-1] = 0;
-	m_LibraryDirectory = buf;
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(get_directory_separator()));
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.find_last_of(get_directory_separator()));
-	//std::cout << m_LibraryDirectory << std::endl;
-	m_LibraryDirectory.append(get_directory_separator());
-	return;
+	m_LibraryDirectory.assign(buf);
 
 #endif // WIN32
+
+    // This chops off the dll part to get just the path (/path/to/out/bin)
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.rfind('/'));
+
+	// This takes the parent directory to get (/path/to/out)
+	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.rfind('/'));
+	m_LibraryDirectory.push_back('/');
 }
 
 const char* KernelSML::GetLibraryLocation()

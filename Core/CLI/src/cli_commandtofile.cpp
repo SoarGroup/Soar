@@ -16,7 +16,6 @@
 
 #include "cli_Commands.h"
 #include "cli_CommandData.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -26,7 +25,7 @@ using namespace sml;
 bool CommandLineInterface::ParseCommandToFile(std::vector<std::string>& argv) {
 	// Not going to use normal option parsing in this case because I do not want to disturb the other command on the line
 	if (argv.size() < 3) {
-		return SetError(CLIError::kTooFewArgs);
+		return SetError(kTooFewArgs);
 	}
 
 	// Index of command in argv:  command-to-file filename command ...
@@ -56,7 +55,7 @@ bool CommandLineInterface::ParseCommandToFile(std::vector<std::string>& argv) {
 		
 		if (unrecognized) {
 			SetErrorDetail(arg);
-			return SetError(CLIError::kUnrecognizedOption);
+			return SetError(kUnrecognizedOption);
 		}
 
 		if (append) {
@@ -64,7 +63,7 @@ bool CommandLineInterface::ParseCommandToFile(std::vector<std::string>& argv) {
 
 			// Index of command in argv:  command-to-file -a filename command ...
 			if (argv.size() < 4) {
-				return SetError(CLIError::kTooFewArgs);
+				return SetError(kTooFewArgs);
 			}
 			startOfCommand = 3;
 
@@ -87,7 +86,7 @@ bool CommandLineInterface::ParseCommandToFile(std::vector<std::string>& argv) {
 	std::string wtf(m_Result.str());
 
 	// Fire off command
-	bool ret = DoCommandInternal(newArgv);
+	bool ret = HandleCommand(newArgv);
 
 	std::string ctfOutput;
 	if (ret)

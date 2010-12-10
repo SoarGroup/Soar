@@ -29,6 +29,38 @@ class MiscTest : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testMultipleKernels );
 	CPPUNIT_TEST( testSmemArithmetic );
 
+    CPPUNIT_TEST( testSourceCountEpmem );
+    CPPUNIT_TEST( testSourceHelloWorldOperator );
+    CPPUNIT_TEST( testSourceHelloWorldRule );
+    CPPUNIT_TEST( testSourceKb );
+    CPPUNIT_TEST( testSourceLeftRight );
+    CPPUNIT_TEST( testSourceRlUnit );
+    CPPUNIT_TEST( testSourceArithmetic );
+    CPPUNIT_TEST( testSourceBlocksOpsub );
+    CPPUNIT_TEST( testSourceBlocksWorld );
+    CPPUNIT_TEST( testSourceBlocksWorldLookAhead );
+    CPPUNIT_TEST( testSourceBlocksWorldOperatorSubgoaling );
+    CPPUNIT_TEST( testSourceEightPuzzle );
+    CPPUNIT_TEST( testSourceFifteenPuzzle );
+    CPPUNIT_TEST( testSourceMac );
+    CPPUNIT_TEST( testSourceMacPlanning );
+    CPPUNIT_TEST( testSourceMac1 );
+    CPPUNIT_TEST( testSourceMac1Planning );
+    CPPUNIT_TEST( testSourceMac1PlanningNumeric );
+    CPPUNIT_TEST( testSourceMac2 );
+    CPPUNIT_TEST( testSourceMac3Planning );
+    CPPUNIT_TEST( testSourceTowersOfHanoi );
+    CPPUNIT_TEST( testSourceTowersOfHanoiFast );
+    CPPUNIT_TEST( testSourceTowersOfHanoiFaster );
+    CPPUNIT_TEST( testSourceTowersOfHanoiNoOps );
+    CPPUNIT_TEST( testSourceTowersOfHanoiRecur );
+    CPPUNIT_TEST( testSourceTowersOfHanoiRecursive );
+    CPPUNIT_TEST( testSourceWaterJug );
+    CPPUNIT_TEST( testSourceWaterJugHierarchy );
+    CPPUNIT_TEST( testSourceWaterJugLookAhead );
+    CPPUNIT_TEST( testSourceWaterJugRl );
+    CPPUNIT_TEST( testSourceWaterJugTie );
+
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -46,6 +78,40 @@ protected:
 	void testRHSRand();
 	void testMultipleKernels();
 	void testSmemArithmetic();
+
+    void testSourceCountEpmem();
+    void testSourceHelloWorldOperator();
+    void testSourceHelloWorldRule();
+    void testSourceKb();
+    void testSourceLeftRight();
+    void testSourceRlUnit();
+    void testSourceArithmetic();
+    void testSourceBlocksOpsub();
+    void testSourceBlocksWorld();
+    void testSourceBlocksWorldLookAhead();
+    void testSourceBlocksWorldOperatorSubgoaling();
+    void testSourceEightPuzzle();
+    void testSourceFifteenPuzzle();
+    void testSourceMac();
+    void testSourceMacPlanning();
+    void testSourceMac1();
+    void testSourceMac1Planning();
+    void testSourceMac1PlanningNumeric();
+    void testSourceMac2();
+    void testSourceMac3Planning();
+    void testSourceTowersOfHanoi();
+    void testSourceTowersOfHanoiFast();
+    void testSourceTowersOfHanoiFaster();
+    void testSourceTowersOfHanoiNoOps();
+    void testSourceTowersOfHanoiRecur();
+    void testSourceTowersOfHanoiRecursive();
+    void testSourceWaterJug();
+    void testSourceWaterJugHierarchy();
+    void testSourceWaterJugLookAhead();
+    void testSourceWaterJugRl();
+    void testSourceWaterJugTie();
+
+    bool loadDemo(std::string demo);
 
 	sml::Kernel* pKernel;
 	sml::Agent* pAgent;
@@ -367,4 +433,136 @@ void MiscTest::testSmemArithmetic()
 	sml::ClientAnalyzedXML stats;
     pAgent->ExecuteCommandLineXML("stats", &stats);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 46436);
+}
+
+bool MiscTest::loadDemo(std::string demo)
+{
+	std::stringstream productionsPath;
+	productionsPath << pKernel->GetLibraryLocation() << "share/soar/Demos/" << demo;
+    return pAgent->LoadProductions(productionsPath.str().c_str());
+}
+
+void MiscTest::testSourceCountEpmem()
+{
+    CPPUNIT_ASSERT(loadDemo("count-epmem.soar"));
+}
+void MiscTest::testSourceHelloWorldOperator()
+{
+    CPPUNIT_ASSERT(loadDemo("hello-world-operator.soar"));
+}
+void MiscTest::testSourceHelloWorldRule()
+{
+    CPPUNIT_ASSERT(loadDemo("hello-world-rule.soar"));
+}
+void MiscTest::testSourceKb()
+{
+    CPPUNIT_ASSERT(loadDemo("kb.soar"));
+}
+void MiscTest::testSourceLeftRight()
+{
+    CPPUNIT_ASSERT(loadDemo("left-right.soar"));
+}
+void MiscTest::testSourceRlUnit()
+{
+    CPPUNIT_ASSERT(loadDemo("rl-unit.soar"));
+}
+void MiscTest::testSourceArithmetic()
+{
+    CPPUNIT_ASSERT(loadDemo("arithmetic/arithmetic.soar"));
+}
+void MiscTest::testSourceBlocksOpsub()
+{
+    CPPUNIT_ASSERT(loadDemo("blocks-world/blocks-opsub.soar"));
+}
+void MiscTest::testSourceBlocksWorld()
+{
+    CPPUNIT_ASSERT(loadDemo("blocks-world/blocks-world.soar"));
+}
+void MiscTest::testSourceBlocksWorldLookAhead()
+{
+    CPPUNIT_ASSERT(loadDemo("blocks-world/blocks-world-look-ahead.soar"));
+}
+void MiscTest::testSourceBlocksWorldOperatorSubgoaling()
+{
+    CPPUNIT_ASSERT(loadDemo("blocks-world/blocks-world-operator-subgoaling.soar"));
+}
+void MiscTest::testSourceEightPuzzle()
+{
+    CPPUNIT_ASSERT(loadDemo("eight-puzzle/eight-puzzle.soar"));
+}
+void MiscTest::testSourceFifteenPuzzle()
+{
+    CPPUNIT_ASSERT(loadDemo("eight-puzzle/fifteen-puzzle.soar"));
+}
+void MiscTest::testSourceMac()
+{
+    CPPUNIT_ASSERT(loadDemo("mac/mac.soar"));
+}
+void MiscTest::testSourceMacPlanning()
+{
+    CPPUNIT_ASSERT(loadDemo("mac/mac-planning.soar"));
+}
+void MiscTest::testSourceMac1()
+{
+    CPPUNIT_ASSERT(loadDemo("mac/mac1.soar"));
+}
+void MiscTest::testSourceMac1Planning()
+{
+    CPPUNIT_ASSERT(loadDemo("mac/mac1-planning.soar"));
+}
+void MiscTest::testSourceMac1PlanningNumeric()
+{
+    CPPUNIT_ASSERT(loadDemo("mac/mac1-planning-numeric.soar"));
+}
+void MiscTest::testSourceMac2()
+{
+    CPPUNIT_ASSERT(loadDemo("mac/mac2.soar"));
+}
+void MiscTest::testSourceMac3Planning()
+{
+    CPPUNIT_ASSERT(loadDemo("mac/mac3-planning.soar"));
+}
+void MiscTest::testSourceTowersOfHanoi()
+{
+    CPPUNIT_ASSERT(loadDemo("towers-of-hanoi/towers-of-hanoi.soar"));
+}
+void MiscTest::testSourceTowersOfHanoiFast()
+{
+    CPPUNIT_ASSERT(loadDemo("towers-of-hanoi/towers-of-hanoi-fast.soar"));
+}
+void MiscTest::testSourceTowersOfHanoiFaster()
+{
+    CPPUNIT_ASSERT(loadDemo("towers-of-hanoi/towers-of-hanoi-faster.soar"));
+}
+void MiscTest::testSourceTowersOfHanoiNoOps()
+{
+    CPPUNIT_ASSERT(loadDemo("towers-of-hanoi/towers-of-hanoi-no-ops.soar"));
+}
+void MiscTest::testSourceTowersOfHanoiRecur()
+{
+    CPPUNIT_ASSERT(loadDemo("towers-of-hanoi/towers-of-hanoi-recur.soar"));
+}
+void MiscTest::testSourceTowersOfHanoiRecursive()
+{
+    CPPUNIT_ASSERT(loadDemo("towers-of-hanoi/towers-of-hanoi-recursive.soar"));
+}
+void MiscTest::testSourceWaterJug()
+{
+    CPPUNIT_ASSERT(loadDemo("water-jug/water-jug.soar"));
+}
+void MiscTest::testSourceWaterJugHierarchy()
+{
+    CPPUNIT_ASSERT(loadDemo("water-jug/water-jug-hierarchy.soar"));
+}
+void MiscTest::testSourceWaterJugLookAhead()
+{
+    CPPUNIT_ASSERT(loadDemo("water-jug/water-jug-look-ahead.soar"));
+}
+void MiscTest::testSourceWaterJugRl()
+{
+    CPPUNIT_ASSERT(loadDemo("water-jug/water-jug-rl.soar"));
+}
+void MiscTest::testSourceWaterJugTie()
+{
+    CPPUNIT_ASSERT(loadDemo("water-jug/water-jug-tie.soar"));
 }

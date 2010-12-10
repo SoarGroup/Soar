@@ -11,7 +11,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -25,13 +24,13 @@ using namespace sml;
 
 bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) {
 	// No more than three arguments
-	if (argv.size() > 3) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() > 3) return SetError(kTooManyArgs);
 
 	int n = 0;
 	// If we have 3 arguments, third one is an integer
 	if (argv.size() > 2) {
-		if ( !from_string( n, argv[2] ) ) return SetError(CLIError::kIntegerExpected);
-		if (n <= 0) return SetError(CLIError::kIntegerMustBeNonNegative);
+		if ( !from_string( n, argv[2] ) ) return SetError(kIntegerExpected);
+		if (n <= 0) return SetError(kIntegerMustBeNonNegative);
 	}
 
 	// If we have two arguments, second arg is an attribute/identifer/whatever

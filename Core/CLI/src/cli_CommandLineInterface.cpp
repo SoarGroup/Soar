@@ -17,7 +17,6 @@
 #include <fstream>
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 // SML includes
 #include "sml_Connection.h"
@@ -35,8 +34,6 @@
 using namespace cli;
 using namespace sml;
 using namespace soarxml;
-
-std::ostringstream CommandLineInterface::m_Result;	
 
 EXPORT CommandLineInterface::CommandLineInterface() {
 
@@ -169,11 +166,8 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIWatchWMEs]					= true ;
 
 	// Initialize other members
-	m_SourceError = false;
-	m_SourceDepth = 0;
-	m_SourceDirDepth = 0;
 	m_pLogFile = 0;
-	m_LastError = CLIError::kNoError;
+	m_LastError = kNoError;
 	m_Initialized = true;
 	m_TrapPrintEvents = false;
 	m_EchoResult = false ;
@@ -229,13 +223,15 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
 * @param echoResults If true send a copy of the result to the echo event
 * @param pResponse Pointer to XML response object
 *************************************************************/
-EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse) {
+EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse) 
+{
 	if (!m_pKernelSML) return false;
 
 	PushCall( CallData(pAgent, rawOutput) );
 
 	// Log input
-	if (m_pLogFile) {
+	if (m_pLogFile) 
+    {
 		if (pAgent) (*m_pLogFile) << pAgent->GetName() << "> ";
 		(*m_pLogFile) << pCommandLine << std::endl;
 	}
@@ -244,15 +240,13 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
 	SetTrapPrintCallbacks( true );
 
-	m_SourceDepth = 0;
-	m_SourceMode = SOURCE_DEFAULT;
-	m_SourceVerbose = false; 
+    m_LastError = kNoError;
+    m_LastErrorDetail.clear();
 
 	// Process the command, ignoring its result (errors detected with m_LastError)
-	//DoCommandInternal(pCommandLine);
-	std::stringstream soarStream;
-	soarStream << pCommandLine;
-	StreamSource( soarStream );
+    cli::Tokenizer tokenizer;
+    tokenizer.SetHandler(this);
+	tokenizer.Evaluate(pCommandLine);
 
 	SetTrapPrintCallbacks( false );
 
@@ -315,15 +309,11 @@ void CommandLineInterface::PopCall()
 void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 {
 	if (!m_pAgentSML)
-	{
 		return;
-	}
 
 	// If we've already set it, don't re-set it
 	if ( m_TrapPrintEvents == setting )
-	{
 		return;
-	}
 
 	if (setting)
 	{
@@ -331,10 +321,8 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
 		m_pAgentSML->DisablePrintCallback();
 		m_TrapPrintEvents = true;
 		if (!m_pLogFile) 
-		{
 			// If we're logging, we're already registered for this.
 			RegisterWithKernel(smlEVENT_PRINT);
-		}
 
 		// Tell kernel to collect result in command buffer as opposed to trace buffer
 		xml_begin_command_mode( m_pAgentSoar );
@@ -381,14 +369,7 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
 	assert(pConnection);
 	assert(pResponse);
 
-	// Handle source error output
-	if (m_SourceError) {
-		//SetError(CLIError::kSourceError);
-		SetErrorDetail(m_SourceErrorDetail);
-		m_SourceError = false;
-	}
-
-	if (m_LastError == CLIError::kNoError) {
+	if (m_LastError == kNoError) {
         // Log output
         if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
 
@@ -436,13 +417,13 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
 	}
 	m_ResponseTags.clear();	
 
-	m_LastError = CLIError::kNoError;	
+	m_LastError = kNoError;	
 	m_LastErrorDetail.clear();			
 }
 
 std::string CommandLineInterface::GenerateErrorString()
 {
-	std::string errorDescription = CLIError::GetErrorDescription(m_LastError);
+	std::string errorDescription(GetErrorDescription(m_LastError));
 	if (m_LastErrorDetail.size()) {
 		errorDescription += "\nError detail: ";
 		errorDescription += m_LastErrorDetail;
@@ -452,6 +433,84 @@ std::string CommandLineInterface::GenerateErrorString()
 		errorDescription += m_Result.str();
 	}
 	return errorDescription;
+}
+
+const char* CommandLineInterface::GetErrorDescription(CLIError code) 
+{
+    switch (code) {
+        case kNoError:                             return "No Error.";
+        case kGetOptError:                         return "GetOpt returned with an error.";
+        case kCommandNotImplemented:               return "Command not implemented.";
+        case kProductionNotFound:                  return "Production not found.";
+        case kNotImplemented:                      return "Not implemented.";
+        case kTooManyArgs:                         return "Too many arguments for the specified (or unspecified) options, check syntax.";
+        case kTooFewArgs:                          return "Too few arguments for the specified (or unspecified) options, check syntax.";
+        case kUnrecognizedOption:                  return "Unrecognized option.";
+        case kMissingOptionArg:                    return "Missing option argument.";
+        case kgetcwdFail:                          return "Error getting current working directory.";
+        case kgettimeofdayFail:                    return "gettimeofday() failed.";
+        case kchdirFail:                           return "Error changing to directory.";
+        case kAliasNotFound:                       return "Alias not found.";
+        case kIntegerExpected:                     return "Integer argument expected.";
+        case kIntegerMustBePositive:               return "Integer argument must be positive.";
+        case kIntegerMustBeNonNegative:            return "Integer argument must be non-negative.";
+        case kIntegerOutOfRange:                   return "Integer argument out of range.";
+        case kInvalidOperation:                    return "Invalid operation.";
+        case kInvalidNumericIndifferentMode:       return "Invalid numeric indifferent mode.";
+        case kInvalidIndifferentSelectionMode:     return "Invalid indifferent selection mode.";
+        case kNoProdTypeWhenProdName:              return "Do not specify production type when specifying a production name.";
+        case kSourceOnlyOneFile:                   return "Too many arguments: source only one file at a time.  If there are spaces in the path, check that you are using quotes.";
+        case kLogAlreadyOpen:                      return "Log already open.";
+        case kLogOpenFailure:                      return "Failed to open file for logging.";
+        case kLogNotOpen:                          return "Log is not open.";
+        case kDirectoryOpenFailure:                return "Unable to open directory for reading.";
+        case kDirectoryEntryReadFailure:           return "Unable to read directory entry for reading.";
+        case kDirectoryStackEmpty:                 return "Directory stack empty, no directory to change to.";
+        case kMissingFilenameArg:                  return "Missing filename argument.";
+        case kOpenFileFail:                        return "Failed to open file for reading.";
+        case kReteSaveOperationFail:               return "Rete save operation failed.";
+        case kReteLoadOperationFail:               return "Rete load operation failed.";
+        case kInvalidLearnSetting:                 return "Invalid learn setting, expected noprint, print, fullprint, or 0-2.";
+        case kRemoveOrZeroExpected:                return "Invalid argument, expected remove or 0.";
+        case kInvalidID:                           return "Unknown or invalid ID.";
+        case kInvalidAttribute:                    return "Unknown or invalid attribute.";
+        case kInvalidValue:                        return "Unknown or invalid value.";
+        case kInvalidWMEFilterType:                return "Invalid WME filter type, expected 'adds' 'removes' or 'both'.";
+        case kFilterExpected:                      return "ID/Attribute/Value filter expected, one or more missing.";
+        case kDuplicateWMEFilter:                  return "That WME filter already exists.";
+        case kInvalidMode:                         return "Invalid mode.";
+        case kTypeRequired:                        return "A type (-t adds/removes/both) is required for this command.";
+        case kWMEFilterNotFound:                   return "The specified WME filter was not found.";
+        case kProductionRequired:                  return "A production is required.";
+        case kInvalidConditionNumber:              return "Condition number must be a non-negative integer.";
+        case kInvalidPrefix:                       return "Failed to set prefix (does it contain a '*'?).";
+        case kCountGreaterThanMaxChunks:           return "Cannot set count greater than the max-chunks sysparam.";
+        case kCountLessThanChunks:                 return "Cannot set chunk count less than the current number of chunks.";
+        case kAcceptableOrNothingExpected:         return "Expected acceptable preference (+) or nothing, check syntax.";
+        case kMustSaveOrLoad:                      return "Must save or load, check command syntax.";
+        case kPrintSubOptionsOfStack:              return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
+        case kRunFailed:                           return "Run failed.";
+        case kAmbiguousCommand:                    return "Received command is ambiguous, try adding more letters.";
+        case kAmbiguousOption:                     return "Ambiguous option.";
+        case kInitSoarFailed:                      return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
+        case kPreferencesError:                    return "Preferences command failed." ;
+        case kInvalidRunInterleaveSetting:         return "Invalid setting for run interleave option." ;
+        case kLoadLibraryError:                    return "Error occurred while loading library";
+        case kProductionAddFailed:                 return "Production addition failed.";
+        case kSourceDepthExceeded:                 return "Source depth (100) exceeded, possible recursive source.";
+        case kCloseFileFail:                       return "File close failed.";
+        case kFileOpen:                            return "File already open.";
+        case kFileNotOpen:                         return "File is not open.";
+        case kRealExpected:                        return "Real number expected.";
+        case kValuesError:                         return "gp values error.";
+        case kGPMaxExceeded:                       return "gp maximum exceeded. Set it to higher value with gp-max command.";
+        case kParseError:                          return "Parse error.";
+        case kSMemError:                           return "smem command error.";
+        case kWmaError:                            return "wma command error.";
+        case kRlError:                             return "rl command error.";
+        case kEpMemError:                          return "epmem command error.";
+    }
+    return "Unknown error code.";
 }
 
 /************************************************************* 	 
@@ -468,6 +527,25 @@ void CommandLineInterface::EchoString(sml::Connection* pConnection, char const* 
 		m_pAgentSML->FireEchoEvent(pConnection, pString) ;
 }
 
+class ExpandHandler : public cli::TokenizerCallback
+{
+public:
+    ExpandHandler(std::vector< std::string >& argv)
+        : argv(argv) {}
+    virtual ~ExpandHandler() {}
+
+    virtual bool HandleCommand(std::vector< std::string >& argv)
+    {
+        this->argv.assign(argv.begin(), argv.end());
+        return true;
+    }
+
+private:
+    std::vector< std::string >& argv;
+
+    ExpandHandler& operator=(const ExpandHandler&) { return *this; }
+};
+
 /*************************************************************
 * @brief Takes a command line and expands any aliases and returns
 *		 the result.  The command is NOT executed.
@@ -476,13 +554,14 @@ void CommandLineInterface::EchoString(sml::Connection* pConnection, char const* 
 *************************************************************/
 bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine)
 {
-	SetError(CLIError::kNoError);
-
-	std::vector<std::string> argv;
+	SetError(kNoError);
 
 	// 1) Parse command
-	if (CLITokenize(pCommandLine, argv) == -1)
-		return false ;
+    cli::Tokenizer tokenizer;
+	std::vector<std::string> argv;
+    ExpandHandler handler(argv);
+    tokenizer.SetHandler(&handler);
+	tokenizer.Evaluate(pCommandLine);
 
 	if (!argv.empty())
 	{
@@ -520,15 +599,6 @@ EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, co
 		pConnection->AddSimpleResultToSMLResponse(pResponse, result.c_str());
 
 	return ok ;
-}
-
-bool CommandLineInterface::DoCommandInternal(const std::string& commandLine) {
-	std::vector<std::string> argv;
-	// Parse command:
-	if (CLITokenize(commandLine, argv) == -1)  return false;	// Parsing failed
-
-	// Execute the command
-	return DoCommandInternal(argv);
 }
 
 bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
@@ -576,7 +646,7 @@ bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
 		if (!possibilities.size()) {
 			// Not implemented
 			SetErrorDetail("(No such command: " + argv[0] + ")");
-			return SetError(CLIError::kCommandNotImplemented);
+			return SetError(kCommandNotImplemented);
 
 		} 
 	}
@@ -592,7 +662,7 @@ bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
 				++liter;
 			}
 			SetErrorDetail(detail.str());
-			return SetError(CLIError::kAmbiguousCommand);
+			return SetError(kAmbiguousCommand);
 
 		} else {
 			// We have a partial match
@@ -603,8 +673,8 @@ bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
 	return true;
 }
 
-bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
-	if (!argv.size()) return true;
+bool CommandLineInterface::HandleCommand(std::vector<std::string>& argv) {
+    if (argv.empty()) return true;
 
 	// Check for help flags
 	bool helpFlag = false;
@@ -617,7 +687,7 @@ bool CommandLineInterface::DoCommandInternal(std::vector<std::string>& argv) {
 		// Is the alias target implemented?
 		if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
 			SetErrorDetail("(No such command: " + argv[0] + ")");
-			return SetError(CLIError::kCommandNotImplemented);
+			return SetError(kCommandNotImplemented);
 		}
 
 	} else {
@@ -666,10 +736,11 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory) {
 	char* ret = getcwd(buf, 1024);
 
 	// If getcwd returns 0, that is bad
-	if (!ret) return SetError(CLIError::kgetcwdFail);
+	if (!ret) return SetError(kgetcwdFail);
 
 	// Store directory in output parameter and return success
 	directory = buf;
+    normalize_separators(directory);
 	return true;
 }
 
@@ -721,21 +792,13 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 	m_ResponseTags.push_front(pTag);
 }
 
-bool CommandLineInterface::SetError(cli::ErrorCode code) {
+bool CommandLineInterface::SetError(cli::CLIError code) {
 	m_LastError = code;
 	return false;
 }
 bool CommandLineInterface::SetErrorDetail(const std::string detail) {
 	m_LastErrorDetail = detail;
 	return false;
-}
-
-bool CommandLineInterface::StripQuotes(std::string& str) {
-    if ((str.size() >= 2) && (str[0] == '"') && (str[str.length() - 1] == '"')) {
-        str.assign(str.substr(1, str.length() - 2));
-        return true;
-    }
-    return false;
 }
 
 void CommandLineInterface::ResetOptions() {
@@ -809,7 +872,7 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 
 						if (!possibilities.size()) {
 							SetErrorDetail("No such option: " + longOption);
-							return SetError(CLIError::kUnrecognizedOption);
+							return SetError(kUnrecognizedOption);
 						} 
 					}
 
@@ -823,7 +886,7 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 							++liter;
 						}
 						SetErrorDetail(detail.str());
-						return SetError(CLIError::kAmbiguousOption);
+						return SetError(kAmbiguousOption);
 
 					}
 					// We have a partial match
@@ -860,7 +923,7 @@ bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Option
 			}
 			char theOption = argv.at( m_Argument ).at( 1 );
 			SetErrorDetail( std::string("No such option: ") + theOption );
-			return SetError(CLIError::kUnrecognizedOption);
+			return SetError(kUnrecognizedOption);
 		}
 		++m_NonOptionArguments;
 	}
@@ -902,7 +965,7 @@ bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, 
 			if (static_cast<unsigned>(++m_Argument) >= argv.size()) {
 				std::string detail(option);
 				SetErrorDetail("Option '" + detail + "' requires an argument.");
-				return SetError(CLIError::kMissingOptionArg);
+				return SetError(kMissingOptionArg);
 			}
 			m_OptionArgument = argv[m_Argument];
 			MoveBack(argv, m_Argument, m_NonOptionArguments);
@@ -925,6 +988,16 @@ bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, 
 	}
 	return true;
 }
+
+bool CommandLineInterface::CheckNumNonOptArgs(int min, int max)
+{
+    if ( m_NonOptionArguments < min )
+        return SetError( kTooFewArgs );
+    else if ( m_NonOptionArguments > max )
+        return SetError( kTooManyArgs );
+    return true;
+}
+
 
 /*************************************************************
 * @brief Methods to create an XML element by starting a tag, adding attributes and
@@ -997,103 +1070,9 @@ void CommandLineInterface::XMLResultToResponse(char const* pCommandName)
 	m_XMLResult->Reset() ;
 }
 
-int CommandLineInterface::CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector) 
-{
-	// bug 987: echo needs special handling
-	TrimLeadingWhitespace(cmdline);
-
-	// if it is echo, put echo in first arg and everything else in second arg
-	if (cmdline.substr(0, 4) == "echo")
-	{
-		argumentVector.push_back("echo");
-		std::string::size_type pos = cmdline.find_first_not_of(" \t", 4);
-		if (pos != std::string::npos)
-		{
-			argumentVector.push_back(cmdline.substr(pos));
-		}
-		return 0;
-	}
-
-	int ret = Tokenize(cmdline, argumentVector);
-	
-	if (ret >= 0) {
-		return ret; // no error
-	}
-
-	// there is an error
-
-	// handle easy errors with a switch
-	switch (ret) {
-		case -1:
-			SetError(CLIError::kNewlineBeforePipe);
-			break;
-
-		case -2:
-			SetErrorDetail("An extra '}' was found.");
-			SetError(CLIError::kExtraClosingParen);
-			break;
-
-		case -3:
-			SetErrorDetail("An extra ')' was found.");
-			SetError(CLIError::kExtraClosingParen);
-			break;
-
-		default:
-			{
-				int errorCode = abs(ret);
-
-				const int QUOTES_MASK = 4;
-				const int BRACKETS_MASK = 8;
-				const int PARENS_MASK = 16;
-				const int PIPES_MASK = 32;
-
-				std::string errorDetail = "These quoting characters were not closed: ";
-				bool foundError = false;
-				if (QUOTES_MASK & errorCode) {
-					foundError = true;
-					errorDetail += "\"";
-				}
-				if (BRACKETS_MASK & errorCode) {
-					foundError = true;
-					errorDetail += "{";
-				}
-				if (PARENS_MASK & errorCode) {
-					foundError = true;
-					errorDetail += "(";
-				}
-				if (PIPES_MASK & errorCode) {
-					foundError = true;
-					errorDetail += "|";
-				}
-				assert(foundError);
-				SetErrorDetail(errorDetail);
-			}
-			SetError(CLIError::kUnmatchedBracketOrQuote);
-			break;
-	}
-
-	return ret;
-}
-
 void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData)
 {
-	// Registered for this event in source command
-	if (eventID == smlEVENT_BEFORE_PRODUCTION_REMOVED)
-	{
-		// Only called when source command is active
-		++m_NumProductionsExcised;
-
-		if (m_SourceVerbose) {
-			production* p = static_cast<production*>(pCallData);
-			assert(p) ;
-			assert(p->name->sc.name) ;
-
-			std::string name( p->name->sc.name );
-
-			m_ExcisedDuringSource.push_back( name );
-		}
-	}
-	else if (eventID == smlEVENT_PRINT)
+	if (eventID == smlEVENT_PRINT)
 	{
 		char const* msg = static_cast<char const*>(pCallData);
 
@@ -1137,6 +1116,14 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
 			}
 		}
 	}
+    else if (eventID == smlEVENT_BEFORE_PRODUCTION_REMOVED)
+    {
+		// Only called when source command is active
+		production* p = static_cast<production*>(pCallData);
+		assert(p);
+		assert(p->name->sc.name);
+		m_ExcisedDuringSource.push_back(std::string(p->name->sc.name));
+    }
 	else
 	{
 		assert(false);

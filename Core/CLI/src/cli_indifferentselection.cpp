@@ -12,7 +12,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 #include "sml_Names.h"
 
 #include "agent.h"
@@ -112,7 +111,7 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 			break;
 
 		default:
-			return SetError( CLIError::kGetOptError );
+			return SetError( kGetOptError );
 		}
 	}
 
@@ -120,12 +119,12 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 	if ( options.count() > 1 )
 	{
 		SetErrorDetail( "indifferent-selection takes only one option at a time." );
-		return SetError( CLIError::kTooManyArgs );
+		return SetError( kTooManyArgs );
 	}
 
 	// bad: no option, but more than one argument
 	if ( !options.count() && ( argv.size() > 1 ) )
-		return SetError( CLIError::kTooManyArgs );
+		return SetError( kTooManyArgs );
 
 	// case: nothing = full configuration information
 	if ( argv.size() == 1 )
@@ -140,7 +139,7 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 		options.test( INDIFFERENT_SOFTMAX ) )
 	{
 		if ( m_NonOptionArguments )
-			return SetError( CLIError::kTooManyArgs );
+			return SetError( kTooManyArgs );
 
 		// run appropriate policy
 		if ( options.test( INDIFFERENT_BOLTZMANN ) )
@@ -175,25 +174,25 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 			bool convert = from_string( new_val, argv[2] );
 
 			if ( !convert )
-				return SetError( CLIError::kInvalidValue );
+				return SetError( kInvalidValue );
 
 			if ( options.test( INDIFFERENT_EPSILON ) )
 			{
 				if ( exploration_valid_parameter_value( m_pAgentSoar, "epsilon", new_val ) )
 					return DoIndifferentSelection( 'e', &( argv[2] ) );
 				else
-					return SetError( CLIError::kInvalidValue );
+					return SetError( kInvalidValue );
 			}
 			else if ( options.test( INDIFFERENT_TEMPERATURE ) ) {
 				if ( exploration_valid_parameter_value( m_pAgentSoar, "temperature", new_val ) ) {
 					return DoIndifferentSelection( 't', &( argv[2] ) );
 				} else {
-					return SetError( CLIError::kInvalidValue );
+					return SetError( kInvalidValue );
 				}
 			}
 		}
 		else
-			return SetError( CLIError::kTooManyArgs );
+			return SetError( kTooManyArgs );
 	}
 
 	// case: auto reduction control can do zero or one non-option arguments
@@ -209,23 +208,23 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 			if ( ( argv[2].compare("on") == 0 ) || ( argv[2].compare("off") == 0 ) )
 				return DoIndifferentSelection( 'a', &( argv[2] ) );
 			else
-				return SetError( CLIError::kInvalidValue );
+				return SetError( kInvalidValue );
 		}
 		else
-			return SetError( CLIError::kTooManyArgs );
+			return SetError( kTooManyArgs );
 	}
 
 	// case: reduction policy requires one or two non-option arguments
 	else if ( options.test( INDIFFERENT_RED_POLICY ) )
 	{
 		if ( m_NonOptionArguments < 1 )
-			return SetError( CLIError::kTooFewArgs );
+			return SetError( kTooFewArgs );
 		else if ( m_NonOptionArguments > 2 )
-			return SetError( CLIError::kTooManyArgs );
+			return SetError( kTooManyArgs );
 
 		// make sure first argument is a valid parameter name
 		if ( !exploration_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
-			return SetError( CLIError::kInvalidAttribute );
+			return SetError( kInvalidAttribute );
 
 		if ( m_NonOptionArguments == 1 )
 			return DoIndifferentSelection( 'p', &( argv[2] ) );
@@ -235,7 +234,7 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 			if ( exploration_valid_reduction_policy( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
 				return DoIndifferentSelection( 'p', &( argv[2] ), &( argv[3] ) );
 			else
-				return SetError( CLIError::kInvalidValue );
+				return SetError( kInvalidValue );
 		}
 	}
 
@@ -243,17 +242,17 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 	else if ( options.test( INDIFFERENT_RED_RATE ) )
 	{
 		if ( m_NonOptionArguments < 2 )
-			return SetError( CLIError::kTooFewArgs );
+			return SetError( kTooFewArgs );
 		else if ( m_NonOptionArguments > 3 )
-			return SetError( CLIError::kTooManyArgs );
+			return SetError( kTooManyArgs );
 
 		// make sure first argument is a valid parameter name
 		if ( !exploration_valid_parameter( m_pAgentSoar, argv[2].c_str() ) )
-			return SetError( CLIError::kInvalidAttribute );
+			return SetError( kInvalidAttribute );
 
 		// make sure second argument is a valid reduction policy
 		if ( !exploration_valid_reduction_policy( m_pAgentSoar, argv[2].c_str(), argv[3].c_str() ) )
-			return SetError( CLIError::kInvalidAttribute );
+			return SetError( kInvalidAttribute );
 
 		if ( m_NonOptionArguments == 2 )
 			return DoIndifferentSelection( 'r', &( argv[2] ), &( argv[3] ) );
@@ -264,7 +263,7 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 
 			// validate setting
 			if ( !exploration_valid_reduction_rate( m_pAgentSoar, argv[2].c_str(), argv[3].c_str(), new_val ) )
-				return SetError( CLIError::kInvalidValue );
+				return SetError( kInvalidValue );
 			else
 				return DoIndifferentSelection( 'r', &( argv[2] ), &( argv[3] ), &( argv[4] ) ); 
 		}
@@ -274,7 +273,7 @@ bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& a
 	else if ( options.test( INDIFFERENT_STATS ) )
 	{
 		if ( m_NonOptionArguments )
-			return SetError( CLIError::kTooManyArgs );
+			return SetError( kTooManyArgs );
 
 		return DoIndifferentSelection( 's' );
 	}
@@ -511,6 +510,6 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 		return true;
 	}
 
-	return SetError( CLIError::kCommandNotImplemented );
+	return SetError( kCommandNotImplemented );
 }
 
