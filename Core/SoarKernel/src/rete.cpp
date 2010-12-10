@@ -275,6 +275,19 @@ inline Bool var_locations_equal(var_location v1, var_location v2)
    the wme structure (defined in soarkernel.h) */
 /*#define field_from_wme(wme,field_num) \
   ( (&((wme)->id))[(field_num)] )*/
+
+/* The semantics of this function is the same as
+ * inline Symbol * field_from_wme(wme * _wme, byte field_num) {
+ *   switch (field_num) {
+ *     case 0:
+ *       return _wme->id;
+ *     case 1:
+ *       return _wme->attr;
+ *     case 2:
+ *       return _wme->value;
+ *   }
+ * }
+ */
 inline Symbol * field_from_wme(wme * _wme, byte field_num)
 {
   return ( (&((_wme)->id))[(field_num)] );
@@ -4480,6 +4493,7 @@ inline Bool match_left_and_right(agent* thisAgent, rete_test * _rete_test,
 /* This macro cannot be easily converted to an inline function. 
    Some additional changes are required.
 */
+/*
 #define numeric_comparison_between_symbols(s1,s2,comparator_op) ( \
   ( ((s1)->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) && \
     ((s2)->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) ) ? \
@@ -4494,9 +4508,64 @@ inline Bool match_left_and_right(agent* thisAgent, rete_test * _rete_test,
     ((s2)->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE) ) ? \
     (((s1)->fc.value) comparator_op ((s2)->fc.value)) : \
   FALSE )
+*/
 
 /* Note:  "=" and "<>" tests always return FALSE when one argument is
    an integer and the other is a floating point number */
+
+#define numcmp(x,y) (((x) < (y)) ? -1 : (((x) > (y)) ? 1 : 0))
+
+/* return -1, 0, or 1 if s1 is less than, equal to, or greater than s2,
+ * respectively
+ */
+inline int compare_symbols(Symbol* s1, Symbol* s2) {
+  switch (s1->common.symbol_type) {
+    case INT_CONSTANT_SYMBOL_TYPE:
+      switch (s2->common.symbol_type) {
+        case INT_CONSTANT_SYMBOL_TYPE:
+          return s1->ic.value - s2->ic.value;
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+          return numcmp(s1->ic.value, s2->fc.value);
+        default:
+          return -1;
+      }
+    case FLOAT_CONSTANT_SYMBOL_TYPE:
+      switch (s2->common.symbol_type) {
+        case INT_CONSTANT_SYMBOL_TYPE:
+          return numcmp(s1->fc.value, s2->ic.value);
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+          return numcmp(s1->fc.value, s2->fc.value);
+        default:
+          return -1;
+      }
+    case SYM_CONSTANT_SYMBOL_TYPE:
+      switch (s2->common.symbol_type) {
+        case INT_CONSTANT_SYMBOL_TYPE:
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+          return 1;
+        case SYM_CONSTANT_SYMBOL_TYPE:
+          return strcmp(s1->sc.name, s2->sc.name);
+        default:
+          return -1;
+      }
+    case IDENTIFIER_SYMBOL_TYPE:
+      switch (s2->common.symbol_type) {
+        case INT_CONSTANT_SYMBOL_TYPE:
+        case FLOAT_CONSTANT_SYMBOL_TYPE:
+        case SYM_CONSTANT_SYMBOL_TYPE:
+          return 1;
+        case IDENTIFIER_SYMBOL_TYPE:
+          if (s1->id.name_letter == s2->id.name_letter)
+            return s1->id.name_number - s2->id.name_number;
+          else
+            return numcmp(s1->id.name_letter, s2->id.name_letter);
+        default:
+          return -1;
+      }
+    default:
+      return -1;
+  }
+}
 
 Bool error_rete_test_routine (agent* thisAgent, rete_test * /*rt*/, token * /*left*/, wme * /*w*/) {
   char msg[BUFFER_MSG_SIZE];
@@ -4546,7 +4615,7 @@ Bool constant_less_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, < ));
+  return static_cast<Bool>(compare_symbols(s1, s2) < 0);
 }
 
 Bool constant_greater_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
@@ -4554,7 +4623,7 @@ Bool constant_greater_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, to
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, > ));
+  return static_cast<Bool>(compare_symbols(s1, s2) > 0);
 }
 
 Bool constant_less_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/,
@@ -4563,7 +4632,7 @@ Bool constant_less_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, <= ));
+  return static_cast<Bool>(compare_symbols(s1, s2) <= 0);
 }
 
 Bool constant_greater_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/,
@@ -4572,7 +4641,7 @@ Bool constant_greater_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_tes
  
   s1 = field_from_wme (w,rt->right_field_num);
   s2 = rt->data.constant_referent;
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, >= ));
+  return static_cast<Bool>(compare_symbols(s1, s2) >= 0);
 }
 
 Bool constant_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/,
@@ -4639,7 +4708,7 @@ Bool variable_less_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, < ));
+  return static_cast<Bool>(compare_symbols(s1, s2) < 0);
 }
 
 Bool variable_greater_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left, wme *w) {
@@ -4658,7 +4727,7 @@ Bool variable_greater_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, to
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, > ));
+  return static_cast<Bool>(compare_symbols(s1, s2) > 0);
 }
 
 Bool variable_less_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left,
@@ -4678,7 +4747,7 @@ Bool variable_less_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, <= ));
+  return static_cast<Bool>(compare_symbols(s1, s2) <= 0);
 }
 
 Bool variable_greater_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left,
@@ -4698,7 +4767,7 @@ Bool variable_greater_or_equal_rete_test_routine (agent* /*thisAgent*/, rete_tes
   }
   s2 = field_from_wme (w, rt->data.variable_referent.field_num);
 
-  return static_cast<Bool>(numeric_comparison_between_symbols (s1, s2, >= ));
+  return static_cast<Bool>(compare_symbols(s1, s2) >= 0);
 }
 
 Bool variable_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token *left,
