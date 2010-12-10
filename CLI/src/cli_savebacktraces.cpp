@@ -10,7 +10,6 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -47,10 +46,10 @@ bool CommandLineInterface::ParseSaveBacktraces(std::vector<std::string>& argv) {
 				query = false;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
-	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) return SetError(kTooManyArgs);
 	return DoSaveBacktraces(query ? 0 : &setting);
 }
 

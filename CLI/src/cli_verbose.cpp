@@ -14,7 +14,6 @@
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
-#include "cli_CLIError.h"
 
 #include "sml_KernelSML.h"
 #include "agent.h"
@@ -48,11 +47,11 @@ bool CommandLineInterface::ParseVerbose(std::vector<std::string>& argv) {
 				query = false;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
-	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) return SetError(kTooManyArgs);
 
 	return DoVerbose(query ? 0 : &setting);
 }

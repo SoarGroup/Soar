@@ -9,7 +9,6 @@
 #include <portability.h>
 
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
@@ -21,18 +20,18 @@ using namespace sml;
 
 bool CommandLineInterface::ParseOSupportMode(std::vector<std::string>& argv) {
 	
-	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() > 2) return SetError(kTooManyArgs);
 
 	int mode = -1;
 	if (argv.size() == 2) {
 		if (!isdigit(argv[1][0])) {
 			SetErrorDetail("Expected an integer 0, 2, 3, or 4.");
-			return SetError(CLIError::kIntegerOutOfRange);
+			return SetError(kIntegerOutOfRange);
 		}
 		from_string(mode, argv[1]);
 		if (mode < 0 || mode > 4 || mode == 1) {
 			SetErrorDetail("Expected an integer 0, 2, 3, or 4.");
-			return SetError(CLIError::kIntegerOutOfRange);
+			return SetError(kIntegerOutOfRange);
 		}
 	}
 

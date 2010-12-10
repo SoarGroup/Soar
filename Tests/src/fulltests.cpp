@@ -1648,7 +1648,7 @@ TEST_DEFINITION( testNegatedConjunctiveTestReorder )
 {
 	m_pAgent->ExecuteCommandLine("sp {test (state <s> ^a <val> -^a {<val> < 1}) --> }");
 	std::string production(m_pAgent->ExecuteCommandLine("print test"));
-	CPPUNIT_ASSERT(production == "sp {test\n    (state <s> ^a <val> -^a { <val> < 1 })\n    -->\n    \n}\n\n\n");
+	CPPUNIT_ASSERT(production == "sp {test\n    (state <s> ^a <val> -^a { <val> < 1 })\n    -->\n    \n}\n\n");
 }
 
 TEST_DEFINITION( testNegatedConjunctiveTestUnbound )
@@ -1688,7 +1688,7 @@ TEST_DEFINITION( testCommandToFile )
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
 	const char* result = m_pAgent->ExecuteCommandLine( "source testCommandToFile-output.soar" );
 	CPPUNIT_ASSERT(result);
-	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\nSource finished.\n");
+	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*Total: 144 productions sourced. 144 productions excised.\n");
 	CPPUNIT_ASSERT(result == resultString);
 	remove("testCommandToFile-output.soar");
 }

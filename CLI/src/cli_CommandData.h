@@ -13,16 +13,6 @@
 #define COMMAND_DATA_H
 
 namespace cli {
-	enum eEpMemOptions {
-		EPMEM_CLOSE,
-		EPMEM_GET,		
-		EPMEM_SET,
-		EPMEM_STAT,
-		EPMEM_TIMER,
-		EPMEM_VIZ,
-		EPMEM_NUM_OPTIONS,	// must be last
-	};
-
 	enum eCaptureInputMode {
 		CAPTURE_INPUT_OPEN,
 		CAPTURE_INPUT_QUERY,
@@ -154,13 +144,6 @@ namespace cli {
 		PRODUCTION_FIND_NUM_OPTIONS, // must be last
 	};
 	
-	enum eRLOptions {
-		RL_GET,
-		RL_SET,
-		RL_STAT,
-		RL_NUM_OPTIONS,	// must be last
-	};
-
 	enum eRunOptions {
 		RUN_DECISION,
 		RUN_ELABORATION,
@@ -183,21 +166,11 @@ namespace cli {
 		RUN_INTERLEAVE_OUTPUT,
 	};
 
-	enum eSMemOptions {		
-		SMEM_ADD,
-		SMEM_GET,		
-		SMEM_SET,
-		SMEM_INIT,
-		SMEM_STAT,
-		SMEM_TIMER,
-		SMEM_VIZ,
-		SMEM_NUM_OPTIONS,	// must be last
-	};
-
-	enum eSourceMode { 
-		SOURCE_DISABLE, 
-		SOURCE_DEFAULT, 
-		SOURCE_ALL, 
+	enum eSourceOptions {		
+		SOURCE_ALL,
+		SOURCE_DISABLE,		
+		SOURCE_VERBOSE,		
+		SOURCE_NUM_OPTIONS,	// must be last
 	};
 
 	enum eStatsOptions {
@@ -247,13 +220,6 @@ namespace cli {
 		WATCH_WMES_TYPE_ADDS,
 		WATCH_WMES_TYPE_REMOVES,
 		WATCH_WMES_TYPE_NUM_OPTIONS, // must be last
-	};
-
-	enum eWMAOptions {
-		WMA_GET,
-		WMA_SET,
-		WMA_STAT,
-		WMA_NUM_OPTIONS,	// must be last
 	};
 
 } // namespace cli

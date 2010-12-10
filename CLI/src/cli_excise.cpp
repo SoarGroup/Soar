@@ -11,7 +11,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -65,24 +64,24 @@ bool CommandLineInterface::ParseExcise(std::vector<std::string>& argv) {
 				options.set(EXCISE_USER);
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	// If there are options, no additional argument.
 	if (options.any()) {
-		if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
+		if (m_NonOptionArguments) return SetError(kTooManyArgs);
 		return DoExcise(options);
 	}
 
 	// If there are no options, there must be only one production name argument
 	if (m_NonOptionArguments < 1) {
 		SetErrorDetail("Production name is required.");
-		return SetError(CLIError::kTooFewArgs);		
+		return SetError(kTooFewArgs);		
 	}
 	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Only one production name allowed, call excise multiple times to excise more than one specific production.");
-		return SetError(CLIError::kTooManyArgs);		
+		return SetError(kTooManyArgs);		
 	}
 
 	// Pass the production to the DoExcise function
@@ -172,7 +171,7 @@ bool CommandLineInterface::DoExcise(const ExciseBitset& options, const std::stri
 
 		if (!sym || !(sym->sc.production))
 		{
-			return SetError(CLIError::kProductionNotFound);
+			return SetError(kProductionNotFound);
 		}
 		
 		if (!m_RawOutput) 

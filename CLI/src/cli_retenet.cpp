@@ -11,7 +11,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_KernelSML.h"
 
@@ -48,21 +47,19 @@ bool CommandLineInterface::ParseReteNet(std::vector<std::string>& argv) {
 				filename = m_OptionArgument;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	// Must have a save or load operation
-	if (!save && !load) return SetError(CLIError::kMustSaveOrLoad);
-	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
+	if (!save && !load) return SetError(kMustSaveOrLoad);
+	if (m_NonOptionArguments) return SetError(kTooManyArgs);
 
 	return DoReteNet(save, filename);
 }
 
 bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
-	if (!filename.size()) return SetError(CLIError::kMissingFilenameArg);
-
-	StripQuotes(filename);
+	if (!filename.size()) return SetError(kMissingFilenameArg);
 
 	if ( save ) 
 	{
@@ -70,13 +67,13 @@ bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
 
 		if( file == 0 )
 		{
-			return SetError( CLIError::kOpenFileFail );
+			return SetError( kOpenFileFail );
 		}
 
 		if ( ! save_rete_net( m_pAgentSoar, file, TRUE ) )
 		{
 			// TODO: additional error information
-			return SetError( CLIError::kReteSaveOperationFail );
+			return SetError( kReteSaveOperationFail );
 		}
 
 		fclose( file );
@@ -86,13 +83,13 @@ bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
 
 		if(file == 0)
 		{
-			return SetError( CLIError::kOpenFileFail );
+			return SetError( kOpenFileFail );
 		}
 
 		if ( ! load_rete_net( m_pAgentSoar, file ) )
 		{
 			// TODO: additional error information
-			return SetError( CLIError::kReteLoadOperationFail );
+			return SetError( kReteLoadOperationFail );
 		}
 
 		fclose( file );

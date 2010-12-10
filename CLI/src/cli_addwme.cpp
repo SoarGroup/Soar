@@ -12,7 +12,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -29,18 +28,18 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::ParseAddWME(std::vector<std::string>& argv) {
-	if (argv.size() < 4) return SetError(CLIError::kTooFewArgs);
+	if (argv.size() < 4) return SetError(kTooFewArgs);
 
 	unsigned attributeIndex = (argv[2] == "^") ? 3 : 2;
 
-	if (argv.size() < (attributeIndex + 2)) return SetError(CLIError::kTooFewArgs);
-    if (argv.size() > (attributeIndex + 3)) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() < (attributeIndex + 2)) return SetError(kTooFewArgs);
+    if (argv.size() > (attributeIndex + 3)) return SetError(kTooManyArgs);
 
 	bool acceptable = false;
 	if (argv.size() > (attributeIndex + 2)) {
 		if (argv[attributeIndex + 2] != "+") {
 			SetErrorDetail("Got: " + argv[attributeIndex + 2]);
-			return SetError(CLIError::kAcceptableOrNothingExpected);
+			return SetError(kAcceptableOrNothingExpected);
 		}
 		acceptable = true;
 	}
@@ -53,7 +52,7 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 	Symbol* pId = 0;
 	if ( !read_id_or_context_var_from_string( m_pAgentSoar, id.c_str(), &pId ) ) 
 	{
-		return SetError(CLIError::kInvalidID);
+		return SetError(kInvalidID);
 	}
 
 	// skip optional '^', if present
@@ -88,12 +87,12 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 			pAttr = read_identifier_or_context_variable( m_pAgentSoar );
 			if ( !pAttr ) 
 			{
-				return SetError( CLIError::kInvalidAttribute );
+				return SetError( kInvalidAttribute );
 			}
 			symbol_add_ref( pAttr );
 			break;
 		default:
-			return SetError( CLIError::kInvalidAttribute );
+			return SetError( kInvalidAttribute );
 		}
 	}
 
@@ -123,13 +122,13 @@ bool CommandLineInterface::DoAddWME(const std::string& id, std::string attribute
 			if (!pValue) 
 			{
 				symbol_remove_ref( m_pAgentSoar, pAttr );
-				return SetError( CLIError::kInvalidValue );
+				return SetError( kInvalidValue );
 			}
 			symbol_add_ref(pValue);
 			break;
 		default:
 			symbol_remove_ref( m_pAgentSoar, pAttr );
-			return SetError( CLIError::kInvalidValue );
+			return SetError( kInvalidValue );
 		}
 	}
 

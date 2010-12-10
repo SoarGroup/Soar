@@ -12,7 +12,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "sml_KernelSML.h"
@@ -45,14 +44,14 @@ bool CommandLineInterface::ParseEchoCommands(std::vector<std::string>& argv) {
 				onlyGetValue = false ;
 				break ;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	if (m_NonOptionArguments)
 	{
 		SetErrorDetail("Format is 'echo-commands [--yes | --no]") ;
-		return SetError(CLIError::kGetOptError) ;
+		return SetError(kGetOptError) ;
 	}
 
 	return DoEchoCommands(onlyGetValue, echoCommands);
