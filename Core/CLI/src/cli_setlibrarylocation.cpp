@@ -10,7 +10,6 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
@@ -22,7 +21,7 @@ using namespace sml;
 bool CommandLineInterface::ParseSetLibraryLocation(std::vector<std::string>& argv) {
 	if (argv.size() > 2) {
 		SetErrorDetail("Expected a path, please enclose in quotes if there are spaces in the path.");
-		return SetError(CLIError::kTooManyArgs);
+		return SetError(kTooManyArgs);
 	}
 	if (argv.size() == 2) return DoSetLibraryLocation(&(argv[1]));
 	return DoSetLibraryLocation();
@@ -37,7 +36,6 @@ bool CommandLineInterface::DoSetLibraryLocation(std::string* pLocation) {
 			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, m_pKernelSML->GetLibraryLocation());
 		}
 	} else {
-		StripQuotes(*pLocation);
 		m_pKernelSML->SetLibraryLocation(*pLocation);
 	}
 	return true;

@@ -27,6 +27,7 @@
 
 #include "cli_CommandData.h"
 #include "cli_Aliases.h"
+#include "cli_Tokenizer.h"
 #include "kernel.h"
 
 typedef uint64_t epmem_time_id;
@@ -48,22 +49,96 @@ namespace soarxml
 	class XMLTrace;
 }
 
-namespace sml {
+namespace sml 
+{
 	class KernelSML;
 	class Connection ;
 	class AgentSML;
 }
 
-namespace cli {
-
-// Forward declarations
-class CommandLineInterface;
-class GetOpt;
+namespace cli 
+{
+    // Forward declarations
+    class CommandLineInterface;
+    class GetOpt;
 }
-typedef int ErrorCode;
 
-namespace cli {
-using ::ErrorCode;
+namespace cli 
+{
+    enum CLIError 
+    {
+        kNoError                                = 0,
+        kGetOptError                            = 3,
+        kCommandNotImplemented                  = 4,
+        kProductionNotFound                     = 5,
+        kNotImplemented                         = 8,
+        kTooManyArgs                            = 14,
+        kTooFewArgs                             = 15,
+        kUnrecognizedOption                     = 16,
+        kMissingOptionArg                       = 17,
+        kgetcwdFail                             = 18,
+        kgettimeofdayFail                       = 19,
+        kchdirFail                              = 20,
+        kAliasNotFound                          = 23,
+        kIntegerExpected                        = 28,
+        kIntegerMustBePositive                  = 29,
+        kIntegerMustBeNonNegative               = 30,
+        kIntegerOutOfRange                      = 31,
+        kInvalidOperation                       = 32,
+        kInvalidNumericIndifferentMode          = 34,
+        kInvalidIndifferentSelectionMode        = 35,
+        kNoProdTypeWhenProdName                 = 37,
+        kSourceOnlyOneFile                      = 38,
+        kLogAlreadyOpen                         = 39,
+        kLogOpenFailure                         = 40,
+        kLogNotOpen                             = 41,
+        kDirectoryOpenFailure                   = 42,
+        kDirectoryEntryReadFailure              = 43,
+        kDirectoryStackEmpty                    = 44,
+        kMissingFilenameArg                     = 45,
+        kOpenFileFail                           = 46,
+        kReteSaveOperationFail                  = 49,
+        kReteLoadOperationFail                  = 50,
+        kInvalidLearnSetting                    = 52,
+        kRemoveOrZeroExpected                   = 53,
+        kInvalidID                              = 54,
+        kInvalidAttribute                       = 55,
+        kInvalidValue                           = 56,
+        kInvalidWMEFilterType                   = 59,
+        kFilterExpected                         = 60,
+        kDuplicateWMEFilter                     = 61, 
+        kInvalidMode                            = 62,
+        kTypeRequired                           = 63,
+        kWMEFilterNotFound                      = 64,
+        kProductionRequired                     = 65,
+        kInvalidConditionNumber                 = 66,
+        kInvalidPrefix                          = 67,
+        kCountGreaterThanMaxChunks              = 68,
+        kCountLessThanChunks                    = 69,
+        kAcceptableOrNothingExpected            = 70,
+        kMustSaveOrLoad                         = 72,
+        kPrintSubOptionsOfStack                 = 73,
+        kRunFailed                              = 77,
+        kAmbiguousCommand                       = 79,
+        kAmbiguousOption                        = 80, 
+        kInitSoarFailed                         = 84, 
+        kPreferencesError                       = 85,
+        kInvalidRunInterleaveSetting            = 86,
+        kLoadLibraryError                       = 87,
+        kProductionAddFailed                    = 90, 
+        kSourceDepthExceeded                    = 92,
+        kCloseFileFail                          = 93,
+        kFileOpen                               = 94,
+        kFileNotOpen                            = 95,
+        kRealExpected                           = 96,
+        kValuesError                            = 97,
+        kGPMaxExceeded                          = 98,
+        kParseError                             = 99,
+        kSMemError                              = 100,
+        kWmaError                               = 101,
+        kRlError                                = 102,
+        kEpMemError                             = 103,
+    };
 
 // Define the CommandFunction which we'll call to process commands
 typedef bool (CommandLineInterface::*CommandFunction)(std::vector<std::string>& argv);
@@ -84,20 +159,17 @@ typedef std::list<soarxml::ElementXML*> ElementXMLList;
 typedef ElementXMLList::iterator ElementXMLListIter;
 
 // Define bitsets for various commands
-typedef std::bitset<EPMEM_NUM_OPTIONS> EpMemBitset;
 typedef std::bitset<EXCISE_NUM_OPTIONS> ExciseBitset;
 typedef std::bitset<INDIFFERENT_NUM_OPTIONS> IndifferentBitset;
 typedef std::bitset<LEARN_NUM_OPTIONS> LearnBitset;
 typedef std::bitset<MEMORIES_NUM_OPTIONS> MemoriesBitset;
 typedef std::bitset<PRINT_NUM_OPTIONS> PrintBitset;
 typedef std::bitset<PRODUCTION_FIND_NUM_OPTIONS> ProductionFindBitset;
-typedef std::bitset<RL_NUM_OPTIONS> RLBitset;
 typedef std::bitset<RUN_NUM_OPTIONS> RunBitset;
-typedef std::bitset<SMEM_NUM_OPTIONS> SMemBitset;
+typedef std::bitset<SOURCE_NUM_OPTIONS> SourceBitset;
 typedef std::bitset<STATS_NUM_OPTIONS> StatsBitset;
 typedef std::bitset<WATCH_NUM_OPTIONS> WatchBitset;
 typedef std::bitset<WATCH_WMES_TYPE_NUM_OPTIONS> WatchWMEsTypeBitset;
-typedef std::bitset<WMA_NUM_OPTIONS> WMABitset;
 
 // For option parsing
 enum eOptionArgument {
@@ -120,7 +192,7 @@ struct CallData {
 	bool rawOutput;
 };
 
-class CommandLineInterface : public sml::KernelCallback {
+class CommandLineInterface : public sml::KernelCallback, public cli::TokenizerCallback {
 public:
 
 	EXPORT CommandLineInterface();
@@ -187,7 +259,7 @@ public:
 	bool XMLMoveCurrentToLastChild() ;
 
 	// The internal Parse functions follow
-	// do not call these directly, these should only be called in DoCommandInternal
+	// do not call these directly, these should only be called in HandleCommand
 	bool ParseAddWME(std::vector<std::string>& argv);
 	bool ParseAlias(std::vector<std::string>& argv);
 	bool ParseAllocate(std::vector<std::string>& argv);
@@ -663,7 +735,7 @@ public:
 	* @brief source command
 	* @param filename The file to source
 	*************************************************************/
-	bool DoSource(std::string filename);
+	bool DoSource(std::string filename, SourceBitset* pOptions = 0);
 
 	/*************************************************************
 	* @brief sp command
@@ -759,25 +831,17 @@ public:
 
 	bool GetCurrentWorkingDirectory(std::string& directory);
 
+    virtual bool HandleCommand(std::vector<std::string>& argv);
+
 protected:
 
 	void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse);
 
-	/*************************************************************
-	* @brief Does the bulk of command parsing and chooses what function
-	*		 to call to process the command.  DoCommand mainly does
-	*		 SML stuff.
-	*************************************************************/
-	bool DoCommandInternal(const std::string& commandLine);
-	bool DoCommandInternal(std::vector<std::string>& argv);
 	bool PartialMatch(std::vector<std::string>& argv);
 
 	void SetTrapPrintCallbacks(bool setting);
 
 	virtual void OnKernelEvent(int eventID, sml::AgentSML* pAgentSML, void* pCallData) ;
-
-	// Wrapped to handle errors more easily
-	int CLITokenize(std::string cmdline, std::vector<std::string>& argumentVector);
 
 	/*************************************************************
 	* @brief Standard parsing of -h and --help flags.  Returns
@@ -826,15 +890,9 @@ protected:
 	*************************************************************/ 	 
 	void EchoString(sml::Connection* pConnection, char const* pString);	
 
-	/************************************************************* 	 
-	* @brief Strip quotes off of a string.  Must start and end with
-    *        a '"' character.
-    * @return True if quotes were removed from the string.
-	*************************************************************/ 	 
-	bool StripQuotes(std::string& str); 	 
-
-	bool SetError(cli::ErrorCode code);				// always returns false
+    bool SetError(cli::CLIError code);				// always returns false
 	bool SetErrorDetail(const std::string detail);	// always returns false
+    const char* GetErrorDescription(CLIError code);
 
 	void XMLResultToResponse(char const* pCommandName) ; // clears m_XMLResult
 
@@ -847,7 +905,7 @@ protected:
 	void GetMaxStats(); // for stats
 	void GetReteStats(); // for stats
 
-	bool StreamSource( std::istream& soarStream );
+	bool Evaluate(const char* pInput); // source, formerly StreamSource
 
 	// These help manage nested CLI calls
 	void PushCall( CallData callData );
@@ -858,6 +916,10 @@ protected:
 
 	// stats, allocate
 	void GetMemoryPoolStatistics();
+
+    void PrintSourceSummary(int sourced, const std::list< std::string >& excised, int ignored);
+
+    bool CheckNumNonOptArgs(int min, int max);
 
 ////////////////////////////////////////////
 	// New options code
@@ -872,24 +934,12 @@ protected:
 	std::string m_OptionArgument;
 	int			m_NonOptionArguments;
 
-	eSourceMode m_SourceMode;
-	int			m_NumProductionsSourced;
-	int			m_NumProductionsExcised;
-	int			m_NumProductionsIgnored;
-	std::list< std::string > m_ExcisedDuringSource;
-	bool		m_SourceVerbose;
-
 ////////////////////////////////////////////
 
 	bool				m_Initialized;			// True if state has been cleared for a new command execution
-	static std::ostringstream m_Result;			// Raw output from the command
+	std::ostringstream  m_Result;			    // Raw output from the command
 	bool				m_RawOutput;			// True if we want string output.
-	std::stack< std::string > m_SourceFileStack;	// Current source file, if any
-	bool				m_SourceError;			// Used to control debug printing for source command errors
-	std::string			m_SourceErrorDetail;	// Used for detailed source error output
-	int					m_SourceDepth;			// Depth of source command calls.
-	int					m_SourceDirDepth;		// Depth of directory stack since source command, used to return to the dir that source was issued in.
-	cli::ErrorCode		m_LastError;			// Last error code (see cli_CLIError.h)
+    cli::CLIError 		m_LastError;			// Last error code (see cli_CLIError.h)
 	std::string			m_LastErrorDetail;		// Additional detail concerning the last error
 	bool				m_TrapPrintEvents;		// True when print events should be trapped
 	bool				m_EchoResult;			// If true, copy result of command to echo event stream
@@ -909,6 +959,18 @@ protected:
 	StringStack			m_DirectoryStack;		// Directory stack for pushd/popd
 	std::string			m_LogFilename;			// Used for logging to a file.
 	std::ofstream*		m_pLogFile;				// The log file stream
+
+    SourceBitset*       m_pSourceOptions;
+	std::stack< std::string > m_SourceFileStack;	// Stack of source calls, if zero then command line
+    std::string         m_SourceErrorDetail;    // holds the source stack output
+
+    int                 m_NumProductionsSourced;
+	std::list< std::string > m_ExcisedDuringSource;
+    int                 m_NumProductionsIgnored;
+
+    int                 m_NumTotalProductionsSourced;
+	std::list< std::string > m_TotalExcisedDuringSource;
+    int                 m_NumTotalProductionsIgnored;
 };
 
 } // namespace cli

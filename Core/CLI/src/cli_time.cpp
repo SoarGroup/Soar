@@ -13,7 +13,6 @@
 #include <time.h>
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 #include "misc.h"
@@ -25,7 +24,7 @@ bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
 	// There must at least be a command
 	if (argv.size() < 2) {
 		SetErrorDetail("Please supply a command to time.");
-		return SetError(CLIError::kTooFewArgs);
+		return SetError(kTooFewArgs);
 	}
 
 	std::vector<std::string>::iterator iter = argv.begin();
@@ -43,7 +42,7 @@ bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 	real.start();
 
 	// Execute command
-	bool ret = DoCommandInternal(argv);
+	bool ret = HandleCommand(argv);
 
 	real.stop();
 	proc.stop();

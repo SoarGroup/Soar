@@ -14,7 +14,6 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
-#include "cli_CLIError.h"
 
 #include "agent.h"
 #include "production.h"
@@ -64,14 +63,14 @@ bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 				options.set(MEMORIES_USER);
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 
 	// Max one additional argument
 	if (m_NonOptionArguments > 1) {
 		SetErrorDetail("Expected at most one additional argument, either a production or a number.");
-		return SetError(CLIError::kTooManyArgs);		
+		return SetError(kTooManyArgs);		
 	}
 
 	// It is either a production or a number
@@ -80,10 +79,10 @@ bool CommandLineInterface::ParseMemories(std::vector<std::string>& argv) {
 		int optind = m_Argument - m_NonOptionArguments;
 		if ( from_string( n, argv[optind] ) ) {
 			// number
-			if (n <= 0) return SetError(CLIError::kIntegerMustBePositive);
+			if (n <= 0) return SetError(kIntegerMustBePositive);
 		} else {
 			// production
-			if (options.any()) return SetError(CLIError::kNoProdTypeWhenProdName);
+			if (options.any()) return SetError(kNoProdTypeWhenProdName);
 			return DoMemories(options, 0, &argv[optind]);
 		}
 	}
@@ -102,14 +101,14 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 	if (options.none()) {
 		if (!pProduction)
 		{
-			return SetError(CLIError::kProductionRequired);
+			return SetError(kProductionRequired);
 		}
 
 		Symbol* sym = find_sym_constant( m_pAgentSoar, pProduction->c_str() );
 
 		if (!sym || !(sym->sc.production))
 		{
-			return SetError(CLIError::kProductionNotFound);
+			return SetError(kProductionNotFound);
 		}
 
 		// save the tokens/name pair
@@ -182,7 +181,7 @@ bool CommandLineInterface::DoMemories(const MemoriesBitset options, int n, const
 			}
 		}
 	
-		if (!foundProduction) return SetError(CLIError::kProductionNotFound);
+		if (!foundProduction) return SetError(kProductionNotFound);
 	}
 
 	// sort them

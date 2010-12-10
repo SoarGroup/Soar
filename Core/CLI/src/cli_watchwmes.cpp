@@ -14,7 +14,6 @@
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
-#include "cli_CLIError.h"
 
 #include "sml_KernelSML.h"
 #include "wmem.h"
@@ -74,29 +73,29 @@ bool CommandLineInterface::ParseWatchWMEs(std::vector<std::string>& argv) {
 						type.set(WATCH_WMES_TYPE_REMOVES);
 					} else {
 						SetErrorDetail("Got: " + typeString);
-						return SetError(CLIError::kInvalidWMEFilterType);
+						return SetError(kInvalidWMEFilterType);
 					}
 				}
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 	
 	if (mode == WATCH_WMES_ADD || mode == WATCH_WMES_REMOVE) {
 		// type required
-		if (type.none()) return SetError(CLIError::kTypeRequired);
+		if (type.none()) return SetError(kTypeRequired);
 	
 		// check for too few/many args
-		if (m_NonOptionArguments > 3) return SetError(CLIError::kTooManyArgs);
-		if (m_NonOptionArguments < 3) return SetError(CLIError::kTooFewArgs);
+		if (m_NonOptionArguments > 3) return SetError(kTooManyArgs);
+		if (m_NonOptionArguments < 3) return SetError(kTooFewArgs);
 
 		int optind = m_Argument - m_NonOptionArguments;
 		return DoWatchWMEs(mode, type, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
 	}
 
 	// no additional arguments
-	if (m_NonOptionArguments) return SetError(CLIError::kTooManyArgs);
+	if (m_NonOptionArguments) return SetError(kTooManyArgs);
 
 	return DoWatchWMEs(mode, type);
 }
@@ -367,39 +366,39 @@ bool CommandLineInterface::DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeB
 	bool retb = false;
 	switch (mode) {
 		case WATCH_WMES_ADD:
-			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
+			if (!pIdString || !pAttributeString || !pValueString) return SetError(kFilterExpected);
 			ret = AddWMEFilter(m_pAgentSoar, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			if (ret == -1) {
 				SetErrorDetail("Got: " + *pIdString);
-				return SetError(CLIError::kInvalidID);
+				return SetError(kInvalidID);
 			}
 			if (ret == -2) {
 				SetErrorDetail("Got: " + *pAttributeString);
-				return SetError(CLIError::kInvalidAttribute);
+				return SetError(kInvalidAttribute);
 			}
 			if (ret == -3) {
 				SetErrorDetail("Got: " + *pValueString);
-				return SetError(CLIError::kInvalidValue);
+				return SetError(kInvalidValue);
 			}
-			if (ret == -4) return SetError(CLIError::kDuplicateWMEFilter);
+			if (ret == -4) return SetError(kDuplicateWMEFilter);
 			break;
 
 		case WATCH_WMES_REMOVE:
-			if (!pIdString || !pAttributeString || !pValueString) return SetError(CLIError::kFilterExpected);
+			if (!pIdString || !pAttributeString || !pValueString) return SetError(kFilterExpected);
 			ret = RemoveWMEFilter(m_pAgentSoar, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			if (ret == -1) {
 				SetErrorDetail("Got: " + *pIdString);
-				return SetError(CLIError::kInvalidID);
+				return SetError(kInvalidID);
 			}
 			if (ret == -2) {
 				SetErrorDetail("Got: " + *pAttributeString);
-				return SetError(CLIError::kInvalidAttribute);
+				return SetError(kInvalidAttribute);
 			}
 			if (ret == -3) {
 				SetErrorDetail("Got: " + *pValueString);
-				return SetError(CLIError::kInvalidValue);
+				return SetError(kInvalidValue);
 			}
-			if (ret == -4) return SetError(CLIError::kWMEFilterNotFound);
+			if (ret == -4) return SetError(kWMEFilterNotFound);
 			break;
 
 		case WATCH_WMES_LIST:
@@ -413,11 +412,11 @@ bool CommandLineInterface::DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeB
 
 			retb = ResetWMEFilters(m_pAgentSoar, type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 
-			if (!retb) return SetError(CLIError::kWMEFilterNotFound);
+			if (!retb) return SetError(kWMEFilterNotFound);
 			break;
 
 		default:
-			return SetError(CLIError::kInvalidMode);
+			return SetError(kInvalidMode);
 	}
 
 	return true;

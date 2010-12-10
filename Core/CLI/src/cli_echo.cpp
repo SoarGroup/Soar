@@ -10,7 +10,6 @@
 
 #include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-#include "cli_CLIError.h"
 
 #include "cli_Commands.h"
 
@@ -36,7 +35,7 @@ bool CommandLineInterface::ParseEcho(std::vector<std::string>& argv) {
 				echoNewline = false;
 				break;
 			default:
-				return SetError(CLIError::kGetOptError);
+				return SetError(kGetOptError);
 		}
 	}
 

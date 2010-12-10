@@ -11,7 +11,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include <iostream>
 #include <sstream>
@@ -19,13 +18,13 @@
 using namespace cli;
 
 bool CommandLineInterface::ParseGP(std::vector<std::string>& argv) {
-	// One argument (in brackets)
+	// One argument
 	if (argv.size() < 2) {
-		return SetError(CLIError::kTooFewArgs);
+		return SetError(kTooFewArgs);
 	}
 	if (argv.size() > 2) {
 		SetErrorDetail("Expected one argument (the production) enclosed in braces.");
-		return SetError(CLIError::kTooManyArgs);
+		return SetError(kTooManyArgs);
 	}
 
 	return DoGP(argv[1]);
@@ -39,10 +38,8 @@ struct iterTriple
 	valueCollection::iterator end;
 };
 
-bool CommandLineInterface::DoGP(const std::string& productionString) {
-
-	// productionString comments are trimmed off at this point.
-
+bool CommandLineInterface::DoGP(const std::string& productionString) 
+{
 	// set up collection of collections of strings segments:
 	std::list< valueCollection > topLevel;
 
@@ -50,7 +47,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 	bool inValues = false;
 	std::string::size_type pos = 0;			// result of current search
 	std::string::size_type searchpos = 0;	// result of previous search
-	const char* targets = "\\|[] \n\r\t";
+    const char* targets = "\\|[] \n\r\t#";
 	valueCollection currentValueCollection;
 	std::string currentValueToken;
 	size_t total = 0;
@@ -98,12 +95,12 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 					if ( productionString.size() < pos + 2 )
 					{
 						SetErrorDetail( "gp production ends with [");
-						return SetError( CLIError::kValuesError );
+						return SetError( kValuesError );
 					}
 					if ( productionString[ pos + 1 ] == ']' )
 					{
 						SetErrorDetail( "gp can't have empty value collections");
-						return SetError( CLIError::kValuesError );;
+						return SetError( kValuesError );;
 					}
 
 					// we've started a values list, finish and save the previous segment
@@ -132,12 +129,12 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 					if ( productionString.size() < pos + 2 )
 					{
 						SetErrorDetail( "gp production ends with ]");
-						return SetError( CLIError::kValuesError );
+						return SetError( kValuesError );
 					}
 					if ( productionString[ pos + 1 ] == '[' )
 					{
 						SetErrorDetail( "gp production requires space between value lists");
-						return SetError( CLIError::kValuesError );;
+						return SetError( kValuesError );;
 					}
 
 					// end of values list
@@ -203,6 +200,19 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 				// consume it
 				searchpos = pos + 1;
 				break;
+
+            case '#':
+                if (!pipe)
+                {
+                    // if not in a pipe string, ignore to end of line.
+                    searchpos = productionString.find_first_of("\n", pos + 1);
+                }
+                else
+                {
+					// in a pipe, append it
+					currentValueToken += productionString.substr( searchpos, (pos - searchpos) + 1 );
+                }
+                break;
 				
 			default:
 				assert( false );
@@ -234,7 +244,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 		}
 		message << ".";
 		SetErrorDetail( message.str() );
-		return SetError( CLIError::kValuesError );;
+		return SetError( kValuesError );;
 	}
 
 	if (m_GPMax != 0) {
@@ -242,7 +252,7 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 			std::ostringstream message;
 			message << "Current production produces " << total << " productions.";
 			SetErrorDetail( message.str() );
-			return SetError( CLIError::kGPMaxExceeded );
+			return SetError( kGPMaxExceeded );
 		}
 	}
 
@@ -290,8 +300,6 @@ bool CommandLineInterface::DoGP(const std::string& productionString) {
 		}
 
 		//std::cout << std::endl << "++++++" << std::endl << generatedProduction <<  std::endl << "++++++" << std::endl;
-		// Remove first and last characters (the braces)
-		generatedProduction = generatedProduction.substr(1, generatedProduction.length() - 2);
 		if(!DoSP(generatedProduction))
 		{
 			return false;

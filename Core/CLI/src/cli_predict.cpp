@@ -12,7 +12,6 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -27,7 +26,7 @@ bool CommandLineInterface::ParsePredict( std::vector<std::string>& argv )
 	if ( argv.size() != 1 ) 
 	{
 		SetErrorDetail( "predict takes no arguments." );
-		return SetError( CLIError::kTooManyArgs );
+		return SetError( kTooManyArgs );
 	}
 	
 	return DoPredict( );

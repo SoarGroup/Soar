@@ -13,7 +13,6 @@
 #include <algorithm>
 
 #include "cli_Commands.h"
-#include "cli_CLIError.h"
 
 #include "sml_Names.h"
 
@@ -39,12 +38,12 @@ bool CommandLineInterface::ParseFiringCounts(std::vector<std::string>& argv) {
 	std::string* pProduction = 0;
 
 	// no more than 1 arg
-	if (argv.size() > 2) return SetError(CLIError::kTooManyArgs);
+	if (argv.size() > 2) return SetError(kTooManyArgs);
 
 	if (argv.size() == 2) {
 		// one argument, figure out if it is a non-negative integer or a production
 		if ( from_string( numberToList, argv[1] ) ){
-			if (numberToList < 0) return SetError(CLIError::kIntegerMustBeNonNegative);
+			if (numberToList < 0) return SetError(kIntegerMustBeNonNegative);
 
 		} else {
 			numberToList = -1;
@@ -67,7 +66,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 
 		if (!sym || !(sym->sc.production))
 		{
-			return SetError(CLIError::kProductionNotFound);
+			return SetError(kProductionNotFound);
 		}
 
 		std::pair< std::string, uint64_t > firing;
@@ -102,7 +101,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 			}
 		}
 	
-		if (!foundProduction) return SetError(CLIError::kProductionNotFound);
+		if (!foundProduction) return SetError(kProductionNotFound);
 	}
 
 	// Sort the list

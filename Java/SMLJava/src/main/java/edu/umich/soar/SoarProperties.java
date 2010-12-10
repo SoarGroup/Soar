@@ -22,21 +22,21 @@ public class SoarProperties
     {
         String prefix = tryEnvironment();
         if (prefix != null)
-            return escapeBackslashes(prefix);
+            return convertBackslashes(prefix);
 
         prefix = tryJarLocation();
         if (prefix != null)
-            return escapeBackslashes(prefix);
+            return convertBackslashes(prefix);
 
         // TODO: try looking at relative paths?
 
         return null;
     }
 
-    private String escapeBackslashes(String prefix)
+    private String convertBackslashes(String prefix)
     {
         return prefix.replaceAll(Matcher.quoteReplacement("\\"), Matcher
-                .quoteReplacement("\\\\"));
+                .quoteReplacement("/"));
     }
 
     private String tryEnvironment()
