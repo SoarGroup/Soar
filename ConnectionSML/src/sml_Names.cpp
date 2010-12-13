@@ -382,6 +382,10 @@ char const* const sml_Names::kParamStatsMaxDecisionCycleTimeValueUSec       = "s
 char const* const sml_Names::kParamStatsMaxDecisionCycleTimeCycle           = "statsmaxdecisioncycletimecycle" ;
 char const* const sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle		= "statsmaxdecisioncyclewmchangescycle" ;
 char const* const sml_Names::kParamStatsMaxDecisionCycleWMChangesValue		= "statsmaxdecisioncyclewmchangesvalue" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleEpMemTimeCycle      = "statsmaxdecisioncycleepmemtimecycle" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleEpMemTimeValueSec   = "statsmaxdecisioncycleepmemtimevaluesec" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleSMemTimeCycle       = "statsmaxdecisioncyclesmemtimecycle" ;
+char const* const sml_Names::kParamStatsMaxDecisionCycleSMemTimeValueSec    = "statsmaxdecisioncyclesmemtimevaluesec" ;
 char const* const sml_Names::kParamStatsMaxDecisionCycleFireCountCycle		= "statsmaxdecisioncyclefirecountcycle" ;
 char const* const sml_Names::kParamStatsMaxDecisionCycleFireCountValue		= "statsmaxdecisioncyclefirecountvalue" ;
 

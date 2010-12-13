@@ -368,6 +368,10 @@ public:
 	static char const* const kParamStatsMaxDecisionCycleTimeValueSec;
 	static char const* const kParamStatsMaxDecisionCycleTimeValueUSec;
 	static char const* const kParamStatsMaxDecisionCycleTimeCycle;
+	static char const* const kParamStatsMaxDecisionCycleEpMemTimeCycle;
+	static char const* const kParamStatsMaxDecisionCycleEpMemTimeValueSec;
+	static char const* const kParamStatsMaxDecisionCycleSMemTimeCycle;
+	static char const* const kParamStatsMaxDecisionCycleSMemTimeValueSec;
 	static char const* const kParamStatsMaxDecisionCycleWMChangesCycle;
 	static char const* const kParamStatsMaxDecisionCycleWMChangesValue;
 	static char const* const kParamStatsMaxDecisionCycleFireCountCycle;

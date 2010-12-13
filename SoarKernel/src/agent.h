@@ -552,6 +552,14 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   uint64_t max_dc_time_usec;					// Holds maximum amount of decision cycle time
   uint64_t max_dc_time_cycle;					// Holds cycle_count that maximum amount of decision cycle time happened
 
+  double max_dc_epmem_time_sec;                 // Holds maximum amount epmem time
+  double total_dc_epmem_time_sec;               // Holds last amount epmem time, used to calculate delta
+  uint64_t max_dc_epmem_time_cycle;             // Holds what cycle max_dc_epmem_time_sec was acheived
+
+  double max_dc_smem_time_sec;                  // Holds maximum amount smem time
+  double total_dc_smem_time_sec;                // Holds last amount smem time, used to calculate delta
+  uint64_t max_dc_smem_time_cycle;              // Holds what cycle max_dc_smem_time_sec was acheived
+
   /* accumulated cpu time spent in various parts of the system */
   /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
 #ifdef DETAILED_TIMING_STATS
