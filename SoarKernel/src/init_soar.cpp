@@ -363,7 +363,7 @@ void reset_max_stats (agent* thisAgent) {
   thisAgent->max_dc_production_firing_count_value = 0;
   thisAgent->max_dc_wm_changes_value = 0;
   thisAgent->max_dc_wm_changes_cycle = 0;
-#ifndef NO_TIMING_STUFF
+
   thisAgent->max_dc_time_cycle = 0;
   thisAgent->max_dc_time_usec = 0;
 
@@ -374,7 +374,6 @@ void reset_max_stats (agent* thisAgent) {
   thisAgent->max_dc_smem_time_sec = 0;
   thisAgent->total_dc_smem_time_sec = -1;
   thisAgent->max_dc_smem_time_cycle = 0;
-#endif // NO_TIMING_STUFF
 }
 
 bool reinitialize_soar (agent* thisAgent) {
