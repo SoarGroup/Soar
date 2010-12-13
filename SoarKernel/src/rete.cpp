@@ -4518,7 +4518,7 @@ inline Bool match_left_and_right(agent* thisAgent, rete_test * _rete_test,
 /* return -1, 0, or 1 if s1 is less than, equal to, or greater than s2,
  * respectively
  */
-inline int compare_symbols(Symbol* s1, Symbol* s2) {
+inline int64_t compare_symbols(Symbol* s1, Symbol* s2) {
   switch (s1->common.symbol_type) {
     case INT_CONSTANT_SYMBOL_TYPE:
       switch (s2->common.symbol_type) {
@@ -4556,7 +4556,7 @@ inline int compare_symbols(Symbol* s1, Symbol* s2) {
           return 1;
         case IDENTIFIER_SYMBOL_TYPE:
           if (s1->id.name_letter == s2->id.name_letter)
-            return s1->id.name_number - s2->id.name_number;
+            return static_cast<int64_t>(s1->id.name_number - s2->id.name_number);
           else
             return numcmp(s1->id.name_letter, s2->id.name_letter);
         default:
