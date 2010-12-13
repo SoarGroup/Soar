@@ -366,6 +366,14 @@ void reset_max_stats (agent* thisAgent) {
 #ifndef NO_TIMING_STUFF
   thisAgent->max_dc_time_cycle = 0;
   thisAgent->max_dc_time_usec = 0;
+
+  thisAgent->max_dc_epmem_time_sec = 0;
+  thisAgent->total_dc_epmem_time_sec = -1;
+  thisAgent->max_dc_epmem_time_cycle = 0;
+
+  thisAgent->max_dc_smem_time_sec = 0;
+  thisAgent->total_dc_smem_time_sec = -1;
+  thisAgent->max_dc_smem_time_cycle = 0;
 #endif // NO_TIMING_STUFF
 }
 
@@ -948,6 +956,29 @@ void do_one_top_level_phase (agent* thisAgent)
 			  thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
 		  }
           thisAgent->last_derived_kernel_time_usec = derived_kernel_time_usec;
+
+          double total_epmem_time = thisAgent->epmem_timers->total->value();
+          if (thisAgent->total_dc_epmem_time_sec >= 0)
+          {
+              double delta_epmem_time = total_epmem_time - thisAgent->total_dc_epmem_time_sec;
+              if (thisAgent->max_dc_epmem_time_sec < delta_epmem_time) {
+                  thisAgent->max_dc_epmem_time_sec = delta_epmem_time;
+                  thisAgent->max_dc_epmem_time_cycle = thisAgent->d_cycle_count;
+              }
+          }
+          thisAgent->total_dc_epmem_time_sec = total_epmem_time;
+ 
+          double total_smem_time = thisAgent->smem_timers->total->value();
+          if (thisAgent->total_dc_smem_time_sec >= 0)
+          {
+              double delta_smem_time = total_smem_time - thisAgent->total_dc_smem_time_sec;
+              if (thisAgent->max_dc_smem_time_sec < delta_smem_time) {
+                  thisAgent->max_dc_smem_time_sec = delta_smem_time;
+                  thisAgent->max_dc_smem_time_cycle = thisAgent->d_cycle_count;
+              }
+          }
+          thisAgent->total_dc_smem_time_sec = total_smem_time;
+          
 #endif // NO_TIMING_STUFF
 
 		  uint64_t dc_wm_changes = thisAgent->wme_addition_count - thisAgent->start_dc_wme_addition_count;
