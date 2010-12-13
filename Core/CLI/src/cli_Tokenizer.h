@@ -331,7 +331,8 @@ namespace cli
 
                 case ';':
                     semi = true;
-                    // falls to be consumed
+                    break;
+
                 default:
                     current.Increment();
                     break;

@@ -91,6 +91,7 @@ class TokenizerTest : public CPPUNIT_NS::TestCase, public cli::TokenizerCallback
 	CPPUNIT_TEST( testTokenizer44 );
 	CPPUNIT_TEST( testTokenizer45 );
 	CPPUNIT_TEST( testTokenizer46 );
+	CPPUNIT_TEST( testTokenizer47 );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -151,6 +152,7 @@ protected:
 	void testTokenizer44();
 	void testTokenizer45();
 	void testTokenizer46();
+	void testTokenizer47();
 
     void evaluate(CallData& cd);
 
@@ -489,4 +491,11 @@ void TokenizerTest::testTokenizer46()
     CallData cd("a {b c\\\n \td \\n\n \\}}"); 
     cd.addResult(2, "a", "b c d \\n\n \\}");
     evaluate(cd); 
+}
+void TokenizerTest::testTokenizer47()
+{
+    CallData a("w 0; run");
+    a.addResult(2, "w", "0");
+    a.addResult(1, "run");
+    evaluate(a);
 }
