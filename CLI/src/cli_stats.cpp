@@ -277,7 +277,7 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeCycle,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_cycle, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValueSec,        sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_time_usec / 100000.0, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValueUSec,       sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_usec, temp));
-	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleEpMemTimeCycle,      sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_smem_time_cycle, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleEpMemTimeCycle,      sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_epmem_time_cycle, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleEpMemTimeValueSec,   sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_epmem_time_sec, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleSMemTimeCycle,       sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_smem_time_cycle, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleSMemTimeValueSec,    sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_smem_time_sec, temp));
