@@ -277,6 +277,10 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeCycle,			sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_cycle, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValueSec,        sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_time_usec / 100000.0, temp));
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleTimeValueUSec,       sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_time_usec, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleEpMemTimeCycle,      sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_smem_time_cycle, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleEpMemTimeValueSec,   sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_epmem_time_sec, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleSMemTimeCycle,       sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_smem_time_cycle, temp));
+	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleSMemTimeValueSec,    sml_Names::kTypeDouble,	to_string(m_pAgentSoar->max_dc_smem_time_sec, temp));
 #endif // NO_TIMING_STUFF
 
 	AppendArgTagFast(sml_Names::kParamStatsMaxDecisionCycleWMChangesCycle,		sml_Names::kTypeInt,	to_string(m_pAgentSoar->max_dc_wm_changes_cycle, temp));
@@ -467,20 +471,28 @@ void CommandLineInterface::GetMaxStats()
 {
 	m_Result << "Single decision cycle maximums:\n";
 
-	m_Result << "Stat          Value       Cycle\n";
-	m_Result << "------------- ----------- -----------\n";
+	m_Result << "Stat             Value       Cycle\n";
+	m_Result << "---------------- ----------- -----------\n";
 
 #ifndef NO_TIMING_STUFF
-	m_Result << "Time (sec)    "
-		<< std::setw(11) << (m_pAgentSoar->max_dc_time_usec / 1000000.0) << " "
+	m_Result << std::setw(16) << "Time (sec)"
+        << std::setw(11) << std::setprecision(6) << (m_pAgentSoar->max_dc_time_usec / 1000000.0) << " "
 		<< std::setw(11) << m_pAgentSoar->max_dc_time_cycle << "\n";
+
+	m_Result << std::setw(16) << "EpMem Time (sec)"
+		<< std::setw(11) << std::setprecision(6) << m_pAgentSoar->max_dc_epmem_time_sec << " "
+		<< std::setw(11) << m_pAgentSoar->max_dc_epmem_time_cycle << "\n";
+
+	m_Result << std::setw(16) << "SMem Time (sec)"
+		<< std::setw(11) << std::setprecision(6) << m_pAgentSoar->max_dc_smem_time_sec << " "
+		<< std::setw(11) << m_pAgentSoar->max_dc_smem_time_cycle << "\n";
 #endif // NO_TIMING_STUFF
 
-	m_Result << "WM changes    "
+	m_Result << std::setw(16) << "WM changes"
 		<< std::setw(11) << m_pAgentSoar->max_dc_wm_changes_value << " "
 		<< std::setw(11) << m_pAgentSoar->max_dc_wm_changes_cycle << "\n";
 
-	m_Result << "Firing count  "
+	m_Result << std::setw(16) << "Firing count"
 		<< std::setw(11) << m_pAgentSoar->max_dc_production_firing_count_value << " "
 		<< std::setw(11) << m_pAgentSoar->max_dc_production_firing_count_cycle << "\n";
 
