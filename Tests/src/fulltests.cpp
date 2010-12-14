@@ -526,14 +526,14 @@ TEST_DEFINITION( testFilterHandler )
 
 	// Our filter adds "--depth 2" to all commands
 	// so this should give us the result of "print s1 --depth 2"
-	std::string output = m_pAgent->ExecuteCommandLine("print s1") ;
-	CPPUNIT_ASSERT_MESSAGE( "print s1", m_pAgent->GetLastCommandLineResult() );
+	std::string output = m_pAgent->ExecuteCommandLine("print <s>") ;
+	CPPUNIT_ASSERT_MESSAGE( "print <s>", m_pAgent->GetLastCommandLineResult() );
 
 	CPPUNIT_ASSERT( filterHandlerReceived );
 	filterHandlerReceived = false;
 
 	// depth 2 should reveal I2
-	CPPUNIT_ASSERT( output.find( "I2" ) != std::string::npos );
+	CPPUNIT_ASSERT( output.find( "input-link" ) != std::string::npos );
 
 	// This is important -- if we don't unregister all subsequent commands will
 	// come to our filter and promptly fail!
