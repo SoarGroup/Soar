@@ -94,7 +94,7 @@ uint32_t hash_variable_raw_info (const char *name, short num_bits) {
 uint32_t hash_identifier_raw_info (char name_letter,
                                         uint64_t name_number,
                                         short num_bits) {
-  return compress (static_cast<uint32_t>(name_number) | (name_letter << 24), num_bits); // FIXME: casting from 64 to 32 bits
+  return compress (static_cast<uint32_t>(name_number) ^ (static_cast<uint32_t>(name_letter) << 24), num_bits); // FIXME: cast from 64 to 32 bits
 }
 
 uint32_t hash_sym_constant_raw_info (const char *name, short num_bits) {
