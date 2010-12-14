@@ -356,11 +356,11 @@ Bool determine_type_of_constituent_string (agent* thisAgent) {
 		lti_index += 1;
 		errno = 0;
 		thisAgent->lexeme.type = IDENTIFIER_LEXEME;
-		thisAgent->lexeme.id_number = strtoul (&(thisAgent->lexeme.string[lti_index]),NULL,10);
-		if (errno) {
+        if (!from_c_string(thisAgent->lexeme.id_number, &(thisAgent->lexeme.string[lti_index]))) {
 			print (thisAgent, "Error: bad number for identifier (probably too large)\n");
 			print_location_of_most_recent_lexeme(thisAgent);
 			thisAgent->lexeme.id_number = 0;
+            errno = 1;
 		}
 		return (errno == 0);
 	}
