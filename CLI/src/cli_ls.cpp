@@ -44,7 +44,8 @@ bool CommandLineInterface::DoLS() {
 
 	// At least one file found, concatinate additional ones with newlines
 	do {
-		m_Result << '\n';
+        if (m_RawOutput)
+    		m_Result << '\n';
 		PrintFilename(FindFileData.cFileName, FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ? true : false);
 
 	} while (FindNextFile(hFind, &FindFileData));

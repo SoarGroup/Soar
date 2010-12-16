@@ -98,8 +98,8 @@
 // apply to this parser.]
 /////////////////////////////////////////////////////////////////////////////
 
-#ifndef CLI_TOKENIZER_H
-#define CLI_TOKENIZER_H
+#ifndef TOKENIZER_H
+#define TOKENIZER_H
 
 #include <string>
 #include <vector>
@@ -109,7 +109,7 @@
 #include <iostream>
 #endif
 
-namespace cli
+namespace soar
 {
     class TokenizerCallback
     {
@@ -167,22 +167,22 @@ namespace cli
             offset += 1;
         }
 
-        int GetLine()
+        int GetLine() const
         {
             return line;
         }
 
-        int GetOffset()
+        int GetOffset() const
         {
             return offset;
         }
 
-        bool Good()
+        bool Good() const
         {
             return current != 0;
         }
 
-        bool Bad()
+        bool Bad() const
         {
             return !current;
         }
@@ -192,7 +192,7 @@ namespace cli
             return *current;
         }
 
-        bool Eof()
+        bool Eof() const
         {
             return !*current;
         }
@@ -232,12 +232,12 @@ namespace cli
             return current.Good();
         }
 
-        int GetCommandLineNumber()
+        int GetCommandLineNumber() const
         {
             return commandStartLine;
         }
 
-        int GetCurrentLineNumber()
+        int GetCurrentLineNumber() const
         {
             return current.GetLine();
         }
@@ -532,4 +532,4 @@ namespace cli
     };
 }
 
-#endif // CLI_TOKENIZER_H
+#endif // TOKENIZER_H

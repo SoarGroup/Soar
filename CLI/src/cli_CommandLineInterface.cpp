@@ -84,7 +84,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_CommandMap[Commands::kCLIPushD]						= &cli::CommandLineInterface::ParsePushD;
 	m_CommandMap[Commands::kCLIPWatch]						= &cli::CommandLineInterface::ParsePWatch;
 	m_CommandMap[Commands::kCLIPWD]							= &cli::CommandLineInterface::ParsePWD;
-	m_CommandMap[Commands::kCLIQuit]						= &cli::CommandLineInterface::ParseQuit;
 	m_CommandMap[Commands::kCLIRand]						= &cli::CommandLineInterface::ParseRand;
 	m_CommandMap[Commands::kCLIRemoveWME]					= &cli::CommandLineInterface::ParseRemoveWME;
 	m_CommandMap[Commands::kCLIReplayInput]					= &cli::CommandLineInterface::ParseReplayInput;
@@ -144,7 +143,6 @@ EXPORT CommandLineInterface::CommandLineInterface() {
 	m_EchoMap[Commands::kCLIPort]						= true ;
 	m_EchoMap[Commands::kCLIPreferences]				= true ;
 	m_EchoMap[Commands::kCLIPushD]						= true ;
-	m_EchoMap[Commands::kCLIQuit]						= true ;
 	m_EchoMap[Commands::kCLIRand]						= true ;
 	m_EchoMap[Commands::kCLIRemoveWME]					= true ;
 	m_EchoMap[Commands::kCLIReplayInput]				= true ;
@@ -244,7 +242,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     m_LastErrorDetail.clear();
 
 	// Process the command, ignoring its result (errors detected with m_LastError)
-    cli::Tokenizer tokenizer;
+    soar::Tokenizer tokenizer;
     tokenizer.SetHandler(this);
 	tokenizer.Evaluate(pCommandLine);
 
@@ -527,81 +525,8 @@ void CommandLineInterface::EchoString(sml::Connection* pConnection, char const* 
 		m_pAgentSML->FireEchoEvent(pConnection, pString) ;
 }
 
-class ExpandHandler : public cli::TokenizerCallback
-{
-public:
-    ExpandHandler(std::vector< std::string >& argv)
-        : argv(argv) {}
-    virtual ~ExpandHandler() {}
-
-    virtual bool HandleCommand(std::vector< std::string >& argv)
-    {
-        this->argv.assign(argv.begin(), argv.end());
-        return true;
-    }
-
-private:
-    std::vector< std::string >& argv;
-
-    ExpandHandler& operator=(const ExpandHandler&) { return *this; }
-};
-
-/*************************************************************
-* @brief Takes a command line and expands any aliases and returns
-*		 the result.  The command is NOT executed.
-* @param pCommandLine The command line string, arguments separated by spaces
-* @param pExpandedLine The return value -- the expanded version of the command
-*************************************************************/
-bool CommandLineInterface::ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine)
-{
-	SetError(kNoError);
-
-	// 1) Parse command
-    cli::Tokenizer tokenizer;
-	std::vector<std::string> argv;
-    ExpandHandler handler(argv);
-    tokenizer.SetHandler(&handler);
-	tokenizer.Evaluate(pCommandLine);
-
-	if (!argv.empty())
-	{
-		// 2) Translate aliases, irrelevant return value ignored
-		m_Aliases.Translate(argv);
-
-		// 3) Partial match, irrelevant return value ignored
-		PartialMatch(argv);
-
-		// 4) Reassemble the command line
-		for (unsigned int i = 0 ; i < argv.size() ; i++)
-		{
-			*pExpandedLine += argv[i] ;
-			if (i != argv.size()-1) *pExpandedLine += " " ;
-		}
-	}
-
-	return true ;
-}
-
-/*************************************************************
-* @brief Takes a command line and expands any aliases and returns
-*		 the result.  The command is NOT executed.
-* @param pConnection The connection, for communication to the client
-* @param pCommandLine The command line string, arguments separated by spaces
-* @param pResponse Pointer to XML response object
-*************************************************************/
-EXPORT bool CommandLineInterface::ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, soarxml::ElementXML* pResponse)
-{
-	std::string result ;
-
-	bool ok = ExpandCommandToString(pCommandLine, &result) ;
-
-	if (ok)
-		pConnection->AddSimpleResultToSMLResponse(pResponse, result.c_str());
-
-	return ok ;
-}
-
 bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
+
 	// Not an alias, check for partial match
 	std::list<std::string> possibilities;
 	std::list<std::string>::iterator liter;
@@ -686,7 +611,7 @@ bool CommandLineInterface::HandleCommand(std::vector<std::string>& argv) {
 	if (m_Aliases.Translate(argv)) {
 		// Is the alias target implemented?
 		if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
-			SetErrorDetail("(No such command: " + argv[0] + ")");
+			SetErrorDetail("No such command: " + argv[0]);
 			return SetError(kCommandNotImplemented);
 		}
 

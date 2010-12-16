@@ -2,7 +2,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "cli_Tokenizer.h"
+#include "tokenizer.h"
 #include <stdarg.h>
 #include <queue>
 
@@ -41,7 +41,7 @@ struct CallData
     std::queue< std::vector<std::string> > q;
 };
 
-class TokenizerTest : public CPPUNIT_NS::TestCase, public cli::TokenizerCallback
+class TokenizerTest : public CPPUNIT_NS::TestCase, public soar::TokenizerCallback
 {
 	CPPUNIT_TEST_SUITE( TokenizerTest );	// The name of this class
 
@@ -156,7 +156,7 @@ protected:
 
     void evaluate(CallData& cd);
 
-    cli::Tokenizer* tokenizer;
+    soar::Tokenizer* tokenizer;
     CallData* cd;
 };
 
@@ -164,7 +164,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TokenizerTest ); // Registers the test so it wi
 
 void TokenizerTest::setUp()
 {
-    tokenizer = new cli::Tokenizer();
+    tokenizer = new soar::Tokenizer();
     tokenizer->SetHandler(this);
 }
 
