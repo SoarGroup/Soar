@@ -20,8 +20,6 @@ import sml.smlPhase;
  ********************************************************************************************/
 public class SoarCommands
 {
-    private Document m_Document;
-
     /**
      * At this point we just return the command. But in later versions of the
      * debugger we might use the version of Soar to decide what to return (note
@@ -307,11 +305,6 @@ public class SoarCommands
         return "watch --loading " + (state ? "" : " remove");
     }
 
-    public SoarCommands(Document doc)
-    {
-        m_Document = doc;
-    }
-
     public String getPhaseName(smlPhase phase)
     {
         if (phase == smlPhase.sml_APPLY_PHASE)
@@ -329,6 +322,25 @@ public class SoarCommands
 
     public boolean isRunCommand(String command)
     {
-        return m_Document.isRunCommand(command);
+    	//BADBAD this will only work with the default aliases for run commands
+    	command = command.trim();
+    	if (command.startsWith("time") 
+    			|| command.startsWith("command-to-file") 
+    			|| command.startsWith("ctf"))
+    	{
+    		int x = command.indexOf(" ");
+    		if (x < 0)
+    			return false;
+    		return isRunCommand(command.substring(x));
+    	}
+    	if (command.equals("run") || command.startsWith("run "))
+    		return true;
+    	if (command.equals("step") || command.startsWith("step "))
+    		return true;
+    	if (command.equals("d") || command.startsWith("d "))
+    		return true;
+    	if (command.equals("e") || command.startsWith("e "))
+    		return true;
+    	return false;
     }
 }

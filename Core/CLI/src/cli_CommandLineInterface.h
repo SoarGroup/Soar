@@ -27,7 +27,7 @@
 
 #include "cli_CommandData.h"
 #include "cli_Aliases.h"
-#include "cli_Tokenizer.h"
+#include "tokenizer.h"
 #include "kernel.h"
 
 typedef uint64_t epmem_time_id;
@@ -192,7 +192,7 @@ struct CallData {
 	bool rawOutput;
 };
 
-class CommandLineInterface : public sml::KernelCallback, public cli::TokenizerCallback {
+class CommandLineInterface : public sml::KernelCallback, public soar::TokenizerCallback {
 public:
 
 	EXPORT CommandLineInterface();
@@ -220,28 +220,11 @@ public:
 	EXPORT bool DoCommand(sml::Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, soarxml::ElementXML* pResponse);
 
 	/*************************************************************
-	* @brief Takes a command line and expands any aliases and returns
-	*		 the result.  The command is NOT executed.
-	* @param pConnection The connection, for communication to the client
-	* @param pCommandLine The command line string, arguments separated by spaces
-	* @param pResponse Pointer to XML response object
-	*************************************************************/
-	EXPORT bool ExpandCommand(sml::Connection* pConnection, const char* pCommandLine, soarxml::ElementXML* pResponse);
-
-	/*************************************************************
 	* @brief Returns true if the given command should always be echoed (to any listeners)
 	*        The current implementation doesn't support aliases or short forms of the commands.
 	* @param pCommandLine	The command line being tested
 	*************************************************************/
 	EXPORT bool ShouldEchoCommand(char const* pCommandLine) ;
-
-	/*************************************************************
-	* @brief Takes a command line and expands any aliases and returns
-	*		 the result.  The command is NOT executed.
-	* @param pCommandLine The command line string, arguments separated by spaces
-	* @param pExpandedLine The return value -- the expanded version of the command
-	*************************************************************/
-	bool ExpandCommandToString(const char* pCommandLine, std::string* pExpandedLine) ;
 
 	/*************************************************************
 	* @brief Methods to create an XML element by starting a tag, adding attributes and
@@ -306,7 +289,6 @@ public:
 	bool ParsePushD(std::vector<std::string>& argv);
 	bool ParsePWatch(std::vector<std::string>& argv);
 	bool ParsePWD(std::vector<std::string>& argv);
-	bool ParseQuit(std::vector<std::string>& argv);
 	bool ParseRand(std::vector<std::string>& argv);
 	bool ParseRemoveWME(std::vector<std::string>& argv);
 	bool ParseReplayInput(std::vector<std::string>& argv);
@@ -639,11 +621,6 @@ public:
 	* @brief pwd command
 	*************************************************************/
 	bool DoPWD();
-
-	/*************************************************************
-	* @brief quit command
-	*************************************************************/
-	bool DoQuit();
 
 	/*************************************************************
 	* @brief rand command

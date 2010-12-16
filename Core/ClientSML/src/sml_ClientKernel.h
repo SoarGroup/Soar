@@ -630,34 +630,11 @@ public:
 	bool SuppressSystemStop(bool state) ;
 
 	/*************************************************************
-	* @brief Takes a command line and expands all the aliases within
-	*		 it without executing it.
-	*
-	*		 This can be useful when trying to determine what a command
-	*		 is about to do.  It does NOT need to be called before
-	*		 calling ExecuteCommandLine() as that expands aliases automatically.
-	*
-	* @param pCommandLine Command line string to process.
-	* @returns The expanded command line.
-	*************************************************************/
-	char const* ExpandCommandLine(char const* pCommandLine) ;
-
-	/*************************************************************
 	* @brief Get last command line result
 	*
 	* @returns True if the last command line call succeeded.
 	*************************************************************/
 	bool GetLastCommandLineResult();
-
-	/*************************************************************
-	* @brief Returns true if this command line is a run command
-	*************************************************************/
-	bool IsRunCommand(char const* pCommandLine) ;
-
-	/*************************************************************
-	* @brief Returns true if this command line is a stop command
-	*************************************************************/
-	bool IsStopCommand(char const* pCommandLine) ;
 
 	/*************************************************************
 	* @brief If this is an embedded connection using "synchronous execution"
