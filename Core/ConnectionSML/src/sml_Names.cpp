@@ -450,4 +450,3 @@ char const* const sml_Names::kCommand_GetLibraryLocation	= "get_library_location
 
 // command line interface
 char const* const sml_Names::kCommand_CommandLine		 = "cmdline" ;
-char const* const sml_Names::kCommand_ExpandCommandLine  = "expandcmd" ;

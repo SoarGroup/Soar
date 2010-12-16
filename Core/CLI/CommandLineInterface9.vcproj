@@ -744,10 +744,6 @@
 				RelativePath=".\src\cli_Commands.h"
 				>
 			</File>
-			<File
-				RelativePath=".\src\cli_Tokenizer.h"
-				>
-			</File>
 			<Filter
 				Name="Commands"
 				>
@@ -2373,42 +2369,6 @@
 				</File>
 				<File
 					RelativePath=".\src\cli_pwd.cpp"
-					>
-					<FileConfiguration
-						Name="Debug SCU|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Debug SCU|x64"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release SCU|Win32"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release SCU|x64"
-						ExcludedFromBuild="true"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath=".\src\cli_quit.cpp"
 					>
 					<FileConfiguration
 						Name="Debug SCU|Win32"

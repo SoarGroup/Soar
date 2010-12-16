@@ -60,7 +60,6 @@ char const* Commands::kCLIProductionFind			= "production-find";
 char const* Commands::kCLIPushD						= "pushd";
 char const* Commands::kCLIPWatch					= "pwatch";
 char const* Commands::kCLIPWD						= "pwd";
-char const* Commands::kCLIQuit						= "quit";
 char const* Commands::kCLIRemoveWME					= "remove-wme";
 char const* Commands::kCLIReplayInput				= "replay-input";
 char const* Commands::kCLIRand						= "rand";
