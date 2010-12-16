@@ -45,7 +45,6 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetInputLink]		= &sml::KernelSML::HandleGetInputLink ;
 	m_CommandMap[sml_Names::kCommand_Input]				= &sml::KernelSML::HandleInput ;
 	m_CommandMap[sml_Names::kCommand_CommandLine]		= &sml::KernelSML::HandleCommandLine ;
-	m_CommandMap[sml_Names::kCommand_ExpandCommandLine]	= &sml::KernelSML::HandleExpandCommandLine ;
 	m_CommandMap[sml_Names::kCommand_CheckForIncomingCommands] = &sml::KernelSML::HandleCheckForIncomingCommands ;
 	m_CommandMap[sml_Names::kCommand_GetAgentList]		= &sml::KernelSML::HandleGetAgentList ;
 	m_CommandMap[sml_Names::kCommand_RegisterForEvent]	= &sml::KernelSML::HandleRegisterForEvent ;
@@ -852,16 +851,11 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 
 	if (!noFiltering && HasFilterRegistered())
 	{
-		// Expand any aliases before passing the command to the filter.
-		// It's possible this is a mistake because a really powerful filter might want to do
-		// something with the original, unaliased form (and could call this expansion itself) but
-		// it seems this will be correct in almost all cases, so let's start with this assumption and
-		// wait until it's proved incorrect.
-		std::string expandedLine ;
-		if (m_CommandLineInterface.ExpandCommandToString(pLine, &expandedLine))
-			pLine = expandedLine.c_str() ;
+        // Update: to simplify things, I'm removing expand command line. 
+        // If aliases need to be expanded before going to the filter, we can change this then.
+        // Removed code that called removed function m_CommandLineInterface.ExpandCommandToString
 
-		// We'll send the command over as an XML packet, so there's some structure to work with.
+        // We'll send the command over as an XML packet, so there's some structure to work with.
 		// The current structure is:
 		// <filter command="command" output="generated output" error="true | false"></filter>
 		// Each filter is passed this string and can modify it as they go.
@@ -928,21 +922,6 @@ bool KernelSML::HandleCommandLine(AgentSML* pAgentSML, char const* pCommandName,
 	delete pFilteredXML ;
 
 	return result ;
-}
-
-// Expands a command line's aliases and returns it without executing it.
-bool KernelSML::HandleExpandCommandLine(AgentSML* /*pAgentSML*/, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse)
-{
-	// Get the parameters
-	char const* pLine = pIncoming->GetArgString(sml_Names::kParamLine) ;
-
-	if (!pLine)
-	{
-		return InvalidArg(pConnection, pResponse, pCommandName, "Command line missing") ;
-	}
-
-	// Make the call.
-	return m_CommandLineInterface.ExpandCommand(pConnection, pLine, pResponse) ;
 }
 
 bool KernelSML::HandleGetListenerPort(AgentSML* /*pAgentSML*/, char const* /*pCommandName*/, Connection* pConnection, AnalyzeXML* /*pIncoming*/, soarxml::ElementXML* pResponse)

@@ -75,7 +75,7 @@ public class Document implements Kernel.AgentEventInterface,
      * This object is used to get strings for Soar commands in a version
      * independent way
      */
-    private SoarCommands m_SoarCommands = new SoarCommands(this);
+    private SoarCommands m_SoarCommands = new SoarCommands();
 
     /**
      * The properties for this application (holds user preferences). Version
@@ -368,19 +368,6 @@ public class Document implements Kernel.AgentEventInterface,
             return false;
 
         return a.GetAgentName().equals(b.GetAgentName());
-    }
-
-    public boolean isRunCommand(String command)
-    {
-        return m_Kernel.IsRunCommand(command);
-    }
-
-    public String getExpandedCommandLine(String commandLine)
-    {
-        if (m_Kernel == null)
-            return commandLine;
-
-        return m_Kernel.ExpandCommandLine(commandLine);
     }
 
     public boolean isProductionLoaded(Agent agent, final String productionName)

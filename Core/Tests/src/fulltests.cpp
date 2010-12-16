@@ -50,7 +50,6 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testClientMessageHandler );
 	CPPUNIT_TEST( testFilterHandler );
 	CPPUNIT_TEST( testWMEs );
-	CPPUNIT_TEST( testAlias );
 	CPPUNIT_TEST( testXML );
 	CPPUNIT_TEST( testAgent );
 	CPPUNIT_TEST( testSimpleCopy );
@@ -90,7 +89,6 @@ public:
 	TEST_DECLARATION( testClientMessageHandler );
 	TEST_DECLARATION( testFilterHandler );
 	TEST_DECLARATION( testWMEs );
-	TEST_DECLARATION( testAlias );
 	TEST_DECLARATION( testXML );
 	TEST_DECLARATION( testAgent );
 	TEST_DECLARATION( testSimpleCopy );
@@ -639,16 +637,6 @@ TEST_DEFINITION( testWMEs )
 	std::string pattern = m_pAgent->ExecuteCommandLine( "print -i (s1 ^* *)" ) ;
 	CPPUNIT_ASSERT_MESSAGE( "print -i (s1 ^* *)", m_pAgent->GetLastCommandLineResult() );
 
-}
-
-TEST_DEFINITION( testAlias )
-{
-	CPPUNIT_ASSERT( m_pKernel->ExpandCommandLine( "p s1" ) );	// test for null first
-	CPPUNIT_ASSERT( std::string( m_pKernel->ExpandCommandLine( "p s1" ) ) == "print s1" );
-
-	CPPUNIT_ASSERT( m_pKernel->IsRunCommand( "d 3" ) );
-	CPPUNIT_ASSERT( m_pKernel->IsRunCommand( "e 5" ) );
-	CPPUNIT_ASSERT( m_pKernel->IsRunCommand( "run -d 10" ) );
 }
 
 TEST_DEFINITION( testXML )

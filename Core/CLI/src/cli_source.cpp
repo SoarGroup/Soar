@@ -212,7 +212,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     temp.append(filename);
     m_SourceFileStack.push(temp);
 
-    cli::Tokenizer tokenizer;
+    soar::Tokenizer tokenizer;
     tokenizer.SetHandler(this);
     bool ret = tokenizer.Evaluate(buffer);
     if (!ret)
