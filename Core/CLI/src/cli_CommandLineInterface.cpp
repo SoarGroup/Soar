@@ -241,12 +241,18 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     m_LastError = kNoError;
     m_LastErrorDetail.clear();
 
-	// Process the command, ignoring its result (errors detected with m_LastError)
+	// Process the command
     soar::Tokenizer tokenizer;
     tokenizer.SetHandler(this);
-	tokenizer.Evaluate(pCommandLine);
+    bool ret = tokenizer.Evaluate(pCommandLine);
 
 	SetTrapPrintCallbacks( false );
+
+    if (!ret && m_LastError == kNoError)
+    {
+        SetError(kParseError);
+        SetErrorDetail(tokenizer.GetErrorString());
+    }
 
 	if (pConnection && pResponse)
 		GetLastResultSML(pConnection, pResponse);
