@@ -1,14 +1,20 @@
-/////////////////////////////////////////////////////////////////////////////
-// Command line interface test app / simple agent command line debugger
-//
-// Author: Jonathan Voigt <voigtjr@gmail.com>
-// Date: 2010
-//
-// This is a simple application that creates one agent and allows command-
-// line interaction with the agent.
-//
-// If passed arguments on the command line, it will source those files before
-// prompting for new input.
+/** 
+ * @file cli_Test.h
+ * @author Jonathan Voigt <voigtjr@gmail.com>
+ * @date 2010
+ *
+ * This is a simple application that creates one agent and allows command- line
+ * interaction with the agent.
+ *
+ * If passed arguments on the command line, it will source those files before
+ * prompting for new input.
+ *
+ * Note that this simple implementation does not support input spanning
+ * multiple lines even though the tokenizer used by Soar does support this.
+ * This implementation simply uses a newline as a delimeter and sends
+ * everything up to the newline to Soar unless it is a special command (such as
+ * raw, structured, or quit) handled locally.
+ */
 
 #ifndef CLI_TEST_H
 #define CLI_TEST_H
@@ -27,14 +33,30 @@ void PrintCallbackHandler(sml::smlPrintEventId, void*, sml::Agent*, char const*)
 void XMLCallbackHandler(sml::smlXMLEventId, void*, sml::Agent*, sml::ClientXML*);
 void InterruptCallbackHandler(sml::smlSystemEventId, void*, sml::Kernel*);
 
+/** 
+ * Reads lines from input and stores them in a queue for processing.
+ *
+ * InputThread blocks on stdin using std::getline reading strings delimited by
+ * newline characters. This operation must be in its own thread so that its
+ * results can be polled in a callback during a run.
+ */
 class InputThread : public soar_thread::Thread
 {
 public:
-    void Run()
+    virtual ~InputThread() {}
+
+    /**
+     * Thread entry point. 
+     *
+     * This thread spends most of its time blocking on getline. It loops until
+     * stdin goes bad or the thread is stopped before it blocks on getline
+     * again. Most of the time this thread can't be stopped because quit isn't
+     * called until after it is blocking again.
+     */
+    virtual void Run()
     {
-        std::string line;
         soar_thread::Lock* lock;
-        while (std::cin.good())
+        while (!this->m_QuitNow && std::cin.good())
         {
             std::getline(std::cin, line);
             if (std::cin.bad())
@@ -47,6 +69,9 @@ public:
         }
     }
 
+    /**
+     * Get a line of input, block until it is received.
+     */
     void get_line(std::string& line)
     {
         soar_thread::Lock* lock = new soar_thread::Lock(&mutex);
@@ -61,6 +86,10 @@ public:
         delete lock;
     }
 
+    /**
+     * Try to get a line of input, do not block if one is not available.
+     * @return true if a line of input was received.
+     */
     bool try_get_line(std::string& line)
     {
         soar_thread::Lock lock(&mutex);
@@ -72,11 +101,16 @@ public:
     }
 
 private:
-    soar_thread::Mutex mutex;
-    soar_thread::Event write_event;
-    std::queue<std::string> lines;
+    soar_thread::Mutex mutex;           ///< Protects lines
+    soar_thread::Event write_event;     ///< Signals new input
+    std::string line;                   ///< Buffer for getline
+    std::queue<std::string> lines;      ///< Lines read from input, protected by mutex
 };
 
+/**
+ * Container for Soar objects and the main program loop with some extra logic
+ * to make the output look nice.
+ */
 class CommandProcessor {
 public:
     CommandProcessor()
@@ -88,6 +122,7 @@ public:
     {
         if (kernel)
         {
+            kernel->StopAllAgents();
             agent = 0;
             delete kernel;
             kernel = 0;
