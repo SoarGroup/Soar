@@ -1,3 +1,15 @@
+/////////////////////////////////////////////////////////////////////////////
+// Command line interface test app / simple agent command line debugger
+//
+// Author: Jonathan Voigt <voigtjr@gmail.com>
+// Date: 2010
+//
+// This is a simple application that creates one agent and allows command-
+// line interaction with the agent.
+//
+// If passed arguments on the command line, it will source those files before
+// prompting for new input.
+
 #ifndef CLI_TEST_H
 #define CLI_TEST_H
 
@@ -197,7 +209,8 @@ private:
         else if (raw)
         {
             const char* out = agent->ExecuteCommandLine(line.c_str());
-            seen_newline = out[strlen(out) - 1] == '\n';
+            if (out && strlen(out))
+                seen_newline = out[strlen(out) - 1] == '\n';
             std::cout << out;
         }
         else 
@@ -209,18 +222,22 @@ private:
             if (result) 
             {
                 char* out = result->GenerateXMLString(true, true);
-                seen_newline = out[strlen(out) - 1] == '\n';
-                if (out)
+                if (out && strlen(out))
+                {
+                    seen_newline = out[strlen(out) - 1] == '\n';
                     std::cout << out;
+                }
                 result->DeleteString(out);
             }
 
             const soarxml::ElementXML* error = response->GetErrorTag();
             if (error) {
                 char* out = error->GenerateXMLString(true, true);
-                seen_newline = out[strlen(out) - 1] == '\n';
-                if (out)
+                if (out && strlen(out))
+                {
+                    seen_newline = out[strlen(out) - 1] == '\n';
                     std::cout << out;
+                }
                 error->DeleteString(out);
             }
 
