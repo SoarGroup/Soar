@@ -2671,8 +2671,6 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 								{
 									// in the case of a repeated attribute, remove ref here to avoid leak
 									symbol_remove_ref( my_agent, chunk_attr );
-
-									first_value = false;
 								}
 								s->push_back( chunk_value );
 
@@ -2683,6 +2681,8 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 									get_lexeme( my_agent );
 									chunk_value = NIL;
 								}
+								
+								first_value = false;
 							}
 						} while ( chunk_value != NIL );
 					}
@@ -2961,7 +2961,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 				{
 					for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
 					{
-						if ( ( ( store_only ) && ( ( parent_level != 0 ) || ( ( (*w_p)->attr != my_agent->smem_sym_query ) && ( (*w_p)->attr != my_agent->smem_sym_retrieve ) ) ) ) || 
+						if ( ( ( store_only ) && ( ( parent_level != 0 ) || ( (*w_p)->attr == my_agent->smem_sym_store ) ) ) || 
 							 ( ( !store_only ) && ( ( parent_level != 0 ) || ( (*w_p)->attr != my_agent->smem_sym_store ) ) ) )
 						{						
 							wme_count++;
