@@ -206,13 +206,13 @@ void MiscTest::test_gp()
 
 void MiscTest::test_echo()
 {
-	pAgent->ExecuteCommandLine("echo sp {my*prod"); // bug 987
+	pAgent->ExecuteCommandLine("echo sp \\{my*prod"); // bug 987
 	CPPUNIT_ASSERT_MESSAGE("bug 987", pAgent->GetLastCommandLineResult());
 
 	pAgent->ExecuteCommandLine("echo \"#########################################################\""); // bug 1013
 	CPPUNIT_ASSERT_MESSAGE("bug 1013", pAgent->GetLastCommandLineResult());
 
-	pAgent->ExecuteCommandLine("echo \"");
+	pAgent->ExecuteCommandLine("echo \\\"");
 	CPPUNIT_ASSERT_MESSAGE("quote", pAgent->GetLastCommandLineResult());
 
 	pAgent->ExecuteCommandLine("echo [");
@@ -221,7 +221,7 @@ void MiscTest::test_echo()
 	pAgent->ExecuteCommandLine("echo ]");
 	CPPUNIT_ASSERT_MESSAGE("right brace", pAgent->GetLastCommandLineResult());
 
-	pAgent->ExecuteCommandLine("echo {");
+	pAgent->ExecuteCommandLine("echo \\{");
 	CPPUNIT_ASSERT_MESSAGE("left bracket", pAgent->GetLastCommandLineResult());
 
 	pAgent->ExecuteCommandLine("echo }");
