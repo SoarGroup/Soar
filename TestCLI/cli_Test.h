@@ -113,6 +113,9 @@ private:
  */
 class CommandProcessor {
 public:
+    /**
+     * Creates the object, must call initialize next.
+     */
     CommandProcessor()
         : kernel(0), agent(0), raw(true), quit(false), seen_newline(true)
     {
@@ -129,9 +132,13 @@ public:
         }
     }
 
+    /**
+     * Create and prepare Soar interface, start input thread.
+     * @return false on failure, error message to stderr
+     */
     bool initialize()
     {
-        kernel = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultLibraryName, sml::Kernel::kUseAnyPort);
+        kernel = sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true, sml::Kernel::kUseAnyPort);
         if(!kernel || kernel->HadError()) 
         {
             std::cerr << "Error creating kernel";
@@ -161,6 +168,10 @@ public:
         return true;
     }
 
+    /**
+     * Source a file, report errors to stderr.
+     * @return false on error
+     */
     bool source(const char* sourcefile)
     {
         if (!agent->LoadProductions(sourcefile))
@@ -172,6 +183,10 @@ public:
         return true;
     }
 
+    /**
+     * Run the command loop, returning when major error (not an error with a
+     * command) or when "quit" is entered.
+     */
     void loop()
     {
         while (!quit)
@@ -184,6 +199,10 @@ public:
         }
     }
 
+    /**
+     * Called while Soar is running to pump the command line queue, allowing
+     * "stop-soar" to work.
+     */
     void update()
     {
         std::string line;
@@ -191,6 +210,11 @@ public:
             process_line(line);
     }
 
+    /**
+     * Helper function called by print callbacks to assist in formatting output to the screen.
+     *
+     * Call with a true value when the last character written is a newline.
+     */
     void newline(bool seen)
     {
         seen_newline = seen;
@@ -202,8 +226,8 @@ private:
     bool raw;
     bool quit;
     InputThread input;
-    int trace;
-    bool seen_newline;
+    int trace;              ///< Print callback id, used to switch between raw/structured.
+    bool seen_newline;      ///< True if last character printed is a newline.
 
     void prompt() const
     {
@@ -282,3 +306,4 @@ private:
 };
 
 #endif // CLI_TEST_H
+
