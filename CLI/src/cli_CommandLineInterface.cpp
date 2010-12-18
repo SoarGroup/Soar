@@ -605,44 +605,26 @@ bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
 }
 
 bool CommandLineInterface::handle_command(std::vector<std::string>& argv) {
-    if (argv.empty()) return true;
+    if (argv.empty()) 
+        return true;
 
-	// Check for help flags
-	bool helpFlag = false;
-	if (CheckForHelp(argv)) {
-		helpFlag = true;
-	}
+    // Check for help flags
+    if (CheckForHelp(argv)) 
+        return DoHelp();
 
-	// Expand aliases
-	if (m_Aliases.Translate(argv)) {
-		// Is the alias target implemented?
-		if (m_CommandMap.find(argv[0]) == m_CommandMap.end()) {
-			SetErrorDetail("No such command: " + argv[0]);
-			return SetError(kCommandNotImplemented);
-		}
+    m_Aliases.Expand(argv);
+    if (!PartialMatch(argv)) 
+        return false; // error set inside PartialMatch
 
-	} else {
-		if (!PartialMatch(argv)) 
-		{
-			// error set inside PartialMatch
-			return false;
-		}
-	}
+    // Process command
+    CommandFunction pFunction = m_CommandMap[argv[0]];
+    assert(pFunction);
+    
+    // Initialize option parsing each call
+    ResetOptions();
 
-	// Show help if requested
-	if (helpFlag) {
-		return DoHelp();
-	}
-
-	// Process command
-	CommandFunction pFunction = m_CommandMap[argv[0]];
-	assert(pFunction);
-	
-	// Initialize option parsing each call
-	ResetOptions();
-
-	// Make the Parse call
-	return (this->*pFunction)(argv);
+    // Make the Parse call
+    return (this->*pFunction)(argv);
 }
 
 bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) {
