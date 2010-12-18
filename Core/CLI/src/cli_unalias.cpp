@@ -12,6 +12,7 @@
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
+#include "cli_Aliases.h"
 
 #include "sml_Names.h"
 
@@ -27,5 +28,8 @@ bool CommandLineInterface::ParseUnalias(std::vector<std::string>& argv) {
 		SetErrorDetail("Need exactly one command to unalias. See also: alias");
 		return SetError(kTooManyArgs);
 	}
-	return DoAlias(&(argv[1]));
+        argv.erase(argv.begin());
+        m_Aliases.SetAlias(argv);
+        return true;
 }
+

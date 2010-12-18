@@ -24,7 +24,6 @@
 // Local includes
 #include "sml_KernelCallback.h"
 #include "sml_Events.h"
-
 #include "cli_CommandData.h"
 #include "cli_Aliases.h"
 #include "tokenizer.h"
@@ -328,12 +327,11 @@ public:
 
 	/*************************************************************
 	* @brief alias command
-	* @param command The alias to enable or disable, pass 0 to list aliases
-	* @param pSubstitution Pass a pointer to a vector strings to enable a new 
-	*        alias, pass 0 to disable a current alias, pass empty vector to list
-	*        command's (the parameter) alias
+	* @param argv Alias command arguments with the command name removed.
+        *        Ex: { "stop", "stop-soar" }
+        *        Null to list.
 	*************************************************************/
-	bool DoAlias(const std::string* pCommand = 0, const std::vector<std::string>* pSubstitution = 0);
+	bool DoAlias(std::vector< std::string >* argv = 0);
 
 	bool DoAllocate(const std::string& pool, int blocks);
 
@@ -925,7 +923,7 @@ protected:
 	soarxml::XMLTrace*	m_XMLResult;			// Used to collect up XML output from commands that directly support that.
 	ElementXMLList		m_ResponseTags;			// List of tags for the response.
 
-	Aliases				m_Aliases;				// Alias management object
+        cli::Aliases    m_Aliases;
 	CommandMap			m_CommandMap;			// Mapping of command names to function pointers
 	sml::KernelSML*		m_pKernelSML;
 	sml::AgentSML*		m_pAgentSML;			// Agent we're currently working with
