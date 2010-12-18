@@ -13,9 +13,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\cli_Aliases.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\cli_CommandLineInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -249,9 +246,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\cli_Aliases.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\cli_CLIError.h">
       <Filter>Source Files</Filter>
     </ClInclude>
