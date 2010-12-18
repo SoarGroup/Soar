@@ -41,7 +41,7 @@ struct CallData
     std::queue< std::vector<std::string> > q;
 };
 
-class TokenizerTest : public CPPUNIT_NS::TestCase, public soar::TokenizerCallback
+class TokenizerTest : public CPPUNIT_NS::TestCase, public soar::tokenizer_callback
 {
 	CPPUNIT_TEST_SUITE( TokenizerTest );	// The name of this class
 
@@ -100,7 +100,7 @@ public:
         : cd(0) 
     {}
     virtual ~TokenizerTest() {}
-    virtual bool HandleCommand(std::vector<std::string>& argv);
+    virtual bool handle_command(std::vector<std::string>& argv);
 
 	void setUp();		// Called before each function outlined by CPPUNIT_TEST
 	void tearDown();	// Called after each function outlined by CPPUNIT_TEST
@@ -156,7 +156,7 @@ protected:
 
     void evaluate(CallData& cd);
 
-    soar::Tokenizer* tokenizer;
+    soar::tokenizer* tokenizer;
     CallData* cd;
 };
 
@@ -164,8 +164,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TokenizerTest ); // Registers the test so it wi
 
 void TokenizerTest::setUp()
 {
-    tokenizer = new soar::Tokenizer();
-    tokenizer->SetHandler(this);
+    tokenizer = new soar::tokenizer();
+    tokenizer->set_handler(this);
 }
 
 void TokenizerTest::tearDown()
@@ -173,7 +173,7 @@ void TokenizerTest::tearDown()
     delete tokenizer;
 }
 
-bool TokenizerTest::HandleCommand(std::vector<std::string>& argv)
+bool TokenizerTest::handle_command(std::vector<std::string>& argv)
 {
     CPPUNIT_ASSERT_MESSAGE(cd->input, argv.size() == cd->q.front().size());
     for (int i=0; i < argv.size(); i++)
@@ -185,7 +185,7 @@ bool TokenizerTest::HandleCommand(std::vector<std::string>& argv)
 void TokenizerTest::evaluate(CallData& cd)
 {
     this->cd = &cd;
-    CPPUNIT_ASSERT_MESSAGE(cd.input, tokenizer->Evaluate(cd.input));
+    CPPUNIT_ASSERT_MESSAGE(cd.input, tokenizer->evaluate(cd.input));
 }
 
 void TokenizerTest::testTokenizer01() 
@@ -422,35 +422,35 @@ void TokenizerTest::testTokenizer35()
 }
 void TokenizerTest::testTokenizer36()
 {
-    CPPUNIT_ASSERT(!tokenizer->Evaluate("sp a\" \""));
-    CPPUNIT_ASSERT(tokenizer->GetErrorString());
-    CPPUNIT_ASSERT(tokenizer->GetCurrentLineNumber() == 1);
-    CPPUNIT_ASSERT(tokenizer->GetCommandLineNumber() == 1);
-    CPPUNIT_ASSERT(tokenizer->GetOffset() == 8);
+    CPPUNIT_ASSERT(!tokenizer->evaluate("sp a\" \""));
+    CPPUNIT_ASSERT(tokenizer->get_error_string());
+    CPPUNIT_ASSERT(tokenizer->get_current_line_number() == 1);
+    CPPUNIT_ASSERT(tokenizer->get_command_line_number() == 1);
+    CPPUNIT_ASSERT(tokenizer->get_offset() == 8);
 }
 void TokenizerTest::testTokenizer37()
 {
-    CPPUNIT_ASSERT(!tokenizer->Evaluate(" \t\nsp a\" \""));
-    CPPUNIT_ASSERT(tokenizer->GetErrorString());
-    CPPUNIT_ASSERT(tokenizer->GetCurrentLineNumber() == 2);
-    CPPUNIT_ASSERT(tokenizer->GetCommandLineNumber() == 2);
-    CPPUNIT_ASSERT(tokenizer->GetOffset() == 8);
+    CPPUNIT_ASSERT(!tokenizer->evaluate(" \t\nsp a\" \""));
+    CPPUNIT_ASSERT(tokenizer->get_error_string());
+    CPPUNIT_ASSERT(tokenizer->get_current_line_number() == 2);
+    CPPUNIT_ASSERT(tokenizer->get_command_line_number() == 2);
+    CPPUNIT_ASSERT(tokenizer->get_offset() == 8);
 }
 void TokenizerTest::testTokenizer38()
 {
-    CPPUNIT_ASSERT(!tokenizer->Evaluate(" \t\n  sp a {\n\\n \""));
-    CPPUNIT_ASSERT(tokenizer->GetErrorString());
-    CPPUNIT_ASSERT(tokenizer->GetCurrentLineNumber() == 3);
-    CPPUNIT_ASSERT(tokenizer->GetCommandLineNumber() == 2);
-    CPPUNIT_ASSERT(tokenizer->GetOffset() == 5);
+    CPPUNIT_ASSERT(!tokenizer->evaluate(" \t\n  sp a {\n\\n \""));
+    CPPUNIT_ASSERT(tokenizer->get_error_string());
+    CPPUNIT_ASSERT(tokenizer->get_current_line_number() == 3);
+    CPPUNIT_ASSERT(tokenizer->get_command_line_number() == 2);
+    CPPUNIT_ASSERT(tokenizer->get_offset() == 5);
 }
 void TokenizerTest::testTokenizer39()
 {
-    CPPUNIT_ASSERT(!tokenizer->Evaluate("\\n\\"));
-    CPPUNIT_ASSERT(tokenizer->GetErrorString());
-    CPPUNIT_ASSERT(tokenizer->GetCurrentLineNumber() == 1);
-    CPPUNIT_ASSERT(tokenizer->GetCommandLineNumber() == 1);
-    CPPUNIT_ASSERT(tokenizer->GetOffset() == 4);
+    CPPUNIT_ASSERT(!tokenizer->evaluate("\\n\\"));
+    CPPUNIT_ASSERT(tokenizer->get_error_string());
+    CPPUNIT_ASSERT(tokenizer->get_current_line_number() == 1);
+    CPPUNIT_ASSERT(tokenizer->get_command_line_number() == 1);
+    CPPUNIT_ASSERT(tokenizer->get_offset() == 4);
 }
 void TokenizerTest::testTokenizer40()
 {

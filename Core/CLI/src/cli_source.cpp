@@ -212,19 +212,19 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     temp.append(filename);
     m_SourceFileStack.push(temp);
 
-    soar::Tokenizer tokenizer;
-    tokenizer.SetHandler(this);
-    bool ret = tokenizer.Evaluate(buffer);
+    soar::tokenizer tokenizer;
+    tokenizer.set_handler(this);
+    bool ret = tokenizer.evaluate(buffer);
     if (!ret)
     {
-        int line = tokenizer.GetCommandLineNumber();
+        int line = tokenizer.get_command_line_number();
         int offset = -1;
         if (m_LastError == kNoError)
         {
             SetError(kParseError);
-            SetErrorDetail(tokenizer.GetErrorString());
-            line = tokenizer.GetCurrentLineNumber();
-            offset = tokenizer.GetOffset();
+            SetErrorDetail(tokenizer.get_error_string());
+            line = tokenizer.get_current_line_number();
+            offset = tokenizer.get_offset();
         }
 
         m_SourceErrorDetail.append("\n\t");
