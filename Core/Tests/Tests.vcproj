@@ -426,6 +426,10 @@
 				RelativePath=".\src\tokenizertest.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\src\aliastest.cpp"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
