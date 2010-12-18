@@ -242,16 +242,16 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     m_LastErrorDetail.clear();
 
 	// Process the command
-    soar::Tokenizer tokenizer;
-    tokenizer.SetHandler(this);
-    bool ret = tokenizer.Evaluate(pCommandLine);
+    soar::tokenizer tokenizer;
+    tokenizer.set_handler(this);
+    bool ret = tokenizer.evaluate(pCommandLine);
 
 	SetTrapPrintCallbacks( false );
 
     if (!ret && m_LastError == kNoError)
     {
         SetError(kParseError);
-        SetErrorDetail(tokenizer.GetErrorString());
+        SetErrorDetail(tokenizer.get_error_string());
     }
 
 	if (pConnection && pResponse)
@@ -604,7 +604,7 @@ bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) {
 	return true;
 }
 
-bool CommandLineInterface::HandleCommand(std::vector<std::string>& argv) {
+bool CommandLineInterface::handle_command(std::vector<std::string>& argv) {
     if (argv.empty()) return true;
 
 	// Check for help flags

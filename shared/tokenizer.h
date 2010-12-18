@@ -1,102 +1,13 @@
-/////////////////////////////////////////////////////////////////////////////
-// Tokenizer / Parser for Soar commands and source files.
-//
-// Author: Jonathan Voigt <voigtjr@gmail.com>
-// Date: 2010
-//
-// Essentially implements a simple Tcl parser. Takes a string and farily 
-// efficiently converts it in to a series of callbacks with arguments 
-// separated in to a vector of strings (what Tcl refers to as "words").
-//
-// Here are the rules, copied from the Tcl language summary (man tcl), with 
-// modifications [in square brackets] as they apply to this parser:
-// 
-// [1] A Tcl script is a string containing one or more commands. Semi-colons
-// and newlines are command separators unless quoted as described below. 
-// Close brackets are command terminators during command substitution (see 
-// below) unless quoted. [Square brackets have no special meaning in this
-// parser.]
-//
-// [2] A command is evaluated in two steps. First, the Tcl interpreter breaks
-// the command into words and performs substitutions as described below. 
-// These substitutions are performed in the same way for all commands. [The
-// first word of the command has no special meaning in this parser.] All of 
-// the words of the command are passed to the command procedure [via a 
-// callback interface]. The command procedure is free to interpret each of 
-// its words in any way it likes, such as an integer, variable name, list, or
-// Tcl script. Different commands interpret their words differently.
-//
-// [3] Words of a command are separated by white space (except for newlines,
-// which are command separators).
-//
-// [4] If the first character of a word is double-quote (") then the word is
-// terminated by the next double-quote character. If semi-colons, close 
-// brackets, or white space characters (including newlines) appear between 
-// the quotes then they are treated as ordinary characters and included in 
-// the word. Backslash substitution [but not command substitution or variable
-// substitution] is performed on the characters between the quotes as 
-// described below. The double-quotes are not retained as part of the word.
-//
-// [5] If the first character of a word is an open brace ({) then the word is
-// terminated by the matching close brace (}). Braces nest within the word: 
-// for each additional open brace there must be an additional close brace 
-// (however, if an open brace or close brace within the word is quoted with a 
-// backslash then it is not counted in locating the matching close brace). No
-// substitutions are performed on the characters between the braces except 
-// for backslash-newline substitutions described below, nor do semi-colons, 
-// newlines, close brackets, or white space receive any special 
-// interpretation. The word will consist of exactly the characters between 
-// the outer braces, not including the braces themselves.
-//
-// [6] [Square brackets are not special in this parser. No command
-// substitution.]
-//
-// [7] [Dollar signs are not special in this parser. No variable 
-// substitution.]
-//
-// [8] If a backslash (\) appears within a word then backslash substitution
-// occurs. In all cases but those described below the backslash is dropped 
-// and the following character is treated as an ordinary character and 
-// included in the word. This allows characters such as double quotes, and
-// close brackets [and dollar signs but they aren't special characters in
-// this parser] to be included in words without triggering special 
-// processing. The following table lists the backslash sequences that are 
-// handled specially, along with the value that replaces each sequence.
-//
-// \a Audible alert (bell) (0x7).
-// \b Backspace (0x8).
-// \f Form feed (0xc).
-// \n Newline (0xa).
-// \r Carriage-return (0xd).
-// \t Tab (0x9).
-// \v Vertical tab (0xb).
-// \<newline>whiteSpace
-//     A single space character replaces the backslash, newline, and all 
-//     spaces and tabs after the newline. This backslash sequence is unique 
-//     in that [...] it will be replaced even when it occurs between braces, 
-//     and the resulting space will be treated as a word separator if it 
-//     isn't in braces or quotes.
-// \\ Backslash (``\'').
-// [Not implemented: \ooo The digits ooo (one, two, or three of them) give 
-// the octal value of the character.]
-// [Not implemented: \xhh The hexadecimal digits hh give the hexadecimal 
-// value of the character. Any number of digits may be present.]
-//
-// Backslash substitution is not performed on words enclosed in braces, 
-// except for backslash-newline as described above.
-//
-// [9] If a hash character (#) appears at a point where Tcl is expecting the
-// first character of the first word of a command, then the hash character 
-// and the characters that follow it, up through the next newline, are 
-// treated as a comment and ignored. The comment character only has 
-// significance when it appears at the beginning of a command.
-// 
-// [10] [Talks about details regarding substitution and generally does not 
-// apply to this parser.]
-//
-// [11] [Talks about details regarding substitution and generally does not 
-// apply to this parser.]
-/////////////////////////////////////////////////////////////////////////////
+/**
+ * @file tokenizer.h
+ * @author Jonathan Voigt <voigtjr@gmail.com>
+ * @date 2010
+ *
+ * Implementation of a simple Tcl-like parser used by the Soar command line
+ * interface. Detailed rules of parsing are listed under the class comments for
+ * tokenizer below and are very similar to the rules followed by the Tcl
+ * language.
+ */
 
 #ifndef TOKENIZER_H
 #define TOKENIZER_H
@@ -104,21 +15,48 @@
 #include <string>
 #include <vector>
 
+/**
+ * Define PRINT_CALLBACKS to enable dumping of callback argvs to stdout before
+ * the callback is called.
+ */
 //#define PRINT_CALLBACKS 1
 #ifdef PRINT_CALLBACKS
 #include <iostream>
 #endif
 
+/**
+ * The soar namespace is not well defined yet, it would be nice if the Soar
+ * kernel and surrounding utilities were all defined inside this namespace.
+ */
 namespace soar
 {
-    class TokenizerCallback
+    /**
+     * Interface called by the tokenizer to be implemented by tokenizer users.
+     * When a command is parsed, the command and its arguments (words) are
+     * passed to this interface's handle_command function.
+     */
+    class tokenizer_callback
     {
     public:
-        virtual ~TokenizerCallback() {}
-        virtual bool HandleCommand(std::vector<std::string>& argv) = 0;
+        virtual ~tokenizer_callback() {}
+
+        /**
+         * Implement to handle commands. The words of the command are in the
+         * passed argv vector. The first entry in the vector is the command.
+         * The vector is guaranteed to never be empty, though the first command
+         * could be.
+         * @return true if the command was ok, or false if there is an error.
+         *         Returning false will stop parsing and cause
+         *         tokenizer::evaluate to return false.
+         */
+        virtual bool handle_command(std::vector<std::string>& argv) = 0;
     };
 
-    class TokenizerCurrent
+    /**
+     * A smart index in to the tokenizer input buffer. Encapsulates a lot of
+     * code necessary for figuring out where errors happen.
+     */
+    class tokenizer_current
     {
     private:
         int line;
@@ -126,17 +64,32 @@ namespace soar
         const char* current;
 
     public:
-        TokenizerCurrent()
+        /**
+         * Create with null input buffer, call set_current before using.
+         */
+        tokenizer_current()
         {
-            SetCurrent(0);
+            set_current(0);
         }
-        TokenizerCurrent(const char* initial)
+
+        /**
+         * Create with input buffer, equivalient to using default constructor
+         * and calling set_current.
+         * @param[in] initial Initial buffer to pass to set_current.
+         */
+        tokenizer_current(const char* initial)
         {
-            SetCurrent(initial);
+            set_current(initial);
         }
-        virtual ~TokenizerCurrent() {}
+
+        virtual ~tokenizer_current() {}
         
-        void SetCurrent(const char* initial)
+        /**
+         * Set the input buffer, point to the first character in the buffer.
+         * Resets line and offset counters.
+         * @param initial
+         */
+        void set_current(const char* initial)
         {
             current = initial;
             if (current && *current)
@@ -151,12 +104,19 @@ namespace soar
             }
         }
 
-        void Fail()
+        /**
+         * Invalidate the current pointer. Used to indicate error state.
+         */
+        void invalidate()
         {
             current = 0;
         }
 
-        void Increment()
+        /**
+         * Increment the current pointer to the next char in the buffer.  Keeps
+         * track of offset in to buffer and newline count as they occur.
+         */
+        void increment()
         {
             if (*current == '\n')
             {
@@ -167,100 +127,251 @@ namespace soar
             offset += 1;
         }
 
-        int GetLine() const
+        /**
+         * Returns the current line number.
+         * @return The current line number.
+         */
+        int get_line() const
         {
             return line;
         }
 
-        int GetOffset() const
+        /**
+         * Returns how many characters of the current line have been read.
+         * @return The current offset.
+         */
+        int get_offset() const
         {
             return offset;
         }
 
-        bool Good() const
+        /**
+         * Returns true if not in an error state.
+         * @return true if not in an error state.
+         */
+        bool good() const
         {
             return current != 0;
         }
 
-        bool Bad() const
+        /**
+         * Returns true if in an error state.
+         * @return true if in an error state.
+         */
+        bool bad() const
         {
             return !current;
         }
 
-        char Get()
+        /**
+         * Dereference the pointer and retrieve the current character.
+         * This will segfault if this->bad() is true.
+         * @return The current character in the stream.
+         */
+        char get()
         {
             return *current;
         }
 
-        bool Eof() const
+        /**
+         * Check to see if the current character is the end of input.
+         * @return true if at end of input.
+         */
+        bool eof() const
         {
             return !*current;
         }
     };
 
-    class Tokenizer
+    /**
+     * Essentially implements a simple Tcl parser. 
+     *
+     * Takes a string and farily efficiently converts it in to a series of
+     * callbacks with arguments separated in to a vector of strings (what Tcl
+     * refers to as "words").
+     *
+     * Here are the rules, copied from the Tcl language summary (man tcl), with
+     * modifications [in square brackets] as they apply to this parser:
+     * 
+     * [1] A Tcl script is a string containing one or more commands. Semi-colons
+     * and newlines are command separators unless quoted as described below.  Close
+     * brackets are command terminators during command substitution (see below)
+     * unless quoted. [Square brackets have no special meaning in this parser.]
+     *
+     * [2] A command is evaluated in two steps. First, the Tcl interpreter breaks
+     * the command into words and performs substitutions as described below.  These
+     * substitutions are performed in the same way for all commands. [The first
+     * word of the command has no special meaning in this parser.] All of the words
+     * of the command are passed to the command procedure [via a callback
+     * interface]. The command procedure is free to interpret each of its words in
+     * any way it likes, such as an integer, variable name, list, or Tcl script.
+     * Different commands interpret their words differently.
+     *
+     * [3] Words of a command are separated by white space (except for newlines,
+     * which are command separators).
+     *
+     * [4] If the first character of a word is double-quote (") then the word is
+     * terminated by the next double-quote character. If semi-colons, close
+     * brackets, or white space characters (including newlines) appear between the
+     * quotes then they are treated as ordinary characters and included in the
+     * word. Backslash substitution [but not command substitution or variable
+     * substitution] is performed on the characters between the quotes as described
+     * below. The double-quotes are not retained as part of the word.
+     *
+     * [5] If the first character of a word is an open brace ({) then the word is
+     * terminated by the matching close brace (}). Braces nest within the word: for
+     * each additional open brace there must be an additional close brace (however,
+     * if an open brace or close brace within the word is quoted with a backslash
+     * then it is not counted in locating the matching close brace). No
+     * substitutions are performed on the characters between the braces except for
+     * backslash-newline substitutions described below, nor do semi-colons,
+     * newlines, close brackets, or white space receive any special interpretation.
+     * The word will consist of exactly the characters between the outer braces,
+     * not including the braces themselves.
+     *
+     * [6] [Square brackets are not special in this parser. No command
+     * substitution.]
+     *
+     * [7] [Dollar signs are not special in this parser. No variable substitution.]
+     *
+     * [8] If a backslash (\) appears within a word then backslash substitution
+     * occurs. In all cases but those described below the backslash is dropped and
+     * the following character is treated as an ordinary character and included in
+     * the word. This allows characters such as double quotes, and close brackets
+     * [and dollar signs but they aren't special characters in this parser] to be
+     * included in words without triggering special processing. The following table
+     * lists the backslash sequences that are handled specially, along with the
+     * value that replaces each sequence.
+     *
+     * \a Audible alert (bell) (0x7).
+     * \b Backspace (0x8).
+     * \f Form feed (0xc).
+     * \n Newline (0xa).
+     * \r Carriage-return (0xd).
+     * \t Tab (0x9).
+     * \v Vertical tab (0xb).
+     * \<newline>whiteSpace
+     *     A single space character replaces the backslash, newline, and all spaces
+     *     and tabs after the newline. This backslash sequence is unique in that
+     *     [...] it will be replaced even when it occurs between braces, and the
+     *     resulting space will be treated as a word separator if it isn't in
+     *     braces or quotes.
+     * \\ Backslash (``\'').
+     * [Not implemented: \ooo The digits ooo (one, two, or three of them) give the
+     * octal value of the character.]
+     * [Not implemented: \xhh The hexadecimal digits hh give the hexadecimal value
+     * of the character. Any number of digits may be present.]
+     *
+     * Backslash substitution is not performed on words enclosed in braces, except
+     * for backslash-newline as described above.
+     *
+     * [9] If a hash character (#) appears at a point where Tcl is expecting the
+     * first character of the first word of a command, then the hash character and
+     * the characters that follow it, up through the next newline, are treated as a
+     * comment and ignored. The comment character only has significance when it
+     * appears at the beginning of a command.
+     * 
+     * [10] [Talks about details regarding substitution and generally does not
+     * apply to this parser.]
+     *
+     * [11] [Talks about details regarding substitution and generally does not
+     * apply to this parser.]
+     *
+     */
+    class tokenizer
     {
     private:
-        TokenizerCurrent current;
-        TokenizerCallback* callback;
-        int commandStartLine;
-        const char* error;
+        tokenizer_current current;      ///< A smart index to the current position in the stream.
+        tokenizer_callback* callback;   ///< The current argv callback (only one).
+        int command_start_line;         ///< The line that the first word is on.
+        const char* error;              ///< Error message.
 
     public:
-        Tokenizer()
+        tokenizer()
             : callback(0), error(0) 
         {}
-        virtual ~Tokenizer() {}
+        virtual ~tokenizer() {}
 
-        void SetHandler(TokenizerCallback* callback)
+        /**
+         * Set the current callback handler. There can only be one at a time.
+         * To unset, call this with null.
+         * @param callback An object to receive the argv callbacks.
+         */
+        void set_handler(tokenizer_callback* callback)
         {
             this->callback = callback;
         }
 
-        bool Evaluate(const char* const input)
+        /**
+         * Evaluate some input, return true if there were no errors, and issue
+         * callbacks at command separators (if a callback is registered).
+         * @return true if no errors, parse or errors returned by commands.
+         */
+        bool evaluate(const char* const input)
         {
-            current.SetCurrent(input);
-            commandStartLine = 1;
+            current.set_current(input);
+            command_start_line = 1;
             error = 0;
 
-            while (current.Good())
+            while (current.good())
             {
-                if (current.Eof())
+                if (current.eof())
                     break;
-                ParseCommand();
+                parse_command();
             }
-            return current.Good();
+            return current.good();
         }
 
-        int GetCommandLineNumber() const
+        /**
+         * Returns the line number that the command started on.
+         * @return The line number that the command started on.
+         */
+        int get_command_line_number() const
         {
-            return commandStartLine;
+            return command_start_line;
         }
 
-        int GetCurrentLineNumber() const
+        /**
+         * Returns the current line number, useful when there was a parse
+         * error.
+         * @return The current line number.
+         */
+        int get_current_line_number() const
         {
-            return current.GetLine();
+            return current.get_line();
         }
 
-        const char* GetErrorString()
+        /**
+         * Returns an error string if there was a parse error, or null if the
+         * error came from a callback.
+         * @return Error message or null if no parse error.
+         */
+        const char* get_error_string()
         {
             return error;
         }
 
-        int GetOffset()
+        /**
+         * Returns how many characters of the current line have been read.
+         * @return The current offset.
+         */
+        int get_offset()
         {
-            return current.GetOffset();
+            return current.get_offset();
         }
 
     private:
-        void ParseCommand()
+        /**
+         * Parses a command, at least one word. Calls the callback handler.
+         */
+        void parse_command()
         {
             std::vector< std::string > argv;
-            SkipWhitespaceAndComments();
-            while (ParseWord(argv))
-                SkipWhitespace();
+            skip_whitespace_and_comments();
+            while (parse_word(argv))
+                skip_whitespace();
 
-            if (current.Bad())
+            if (current.bad())
                 return;
 
             if (argv.empty())
@@ -274,58 +385,66 @@ namespace soar
 #endif
             if (callback)
             {
-                if (!callback->HandleCommand(argv))
+                if (!callback->handle_command(argv))
                 {
                     error = "callback returned error";
-                    current.Fail();
+                    current.invalidate();
                 }
             }
         }
 
-        bool ParseWord(std::vector< std::string >& argv)
+        /**
+         * Parse the next word, return false when a command separator is
+         * encountered.
+         * @return false if a command separator is encountered.
+         */
+        bool parse_word(std::vector< std::string >& argv)
         {
-            if (current.Eof())
+            if (current.eof())
                 return false;
 
             std::string word;
             if (argv.empty())
-                commandStartLine = current.GetLine();
+                command_start_line = current.get_line();
 
-            switch (current.Get())
+            switch (current.get())
             {
             case ';':
                 break;
 
             case '"':
                 argv.push_back(word);
-                ReadQuotedString(argv);
+                read_quoted_string(argv);
                 break;
 
             case '{':
                 argv.push_back(word);
-                ReadBraces(argv);
+                read_braces(argv);
                 break;
 
             default:
                 argv.push_back(word);
-                ReadNormalWord(argv);
+                read_normal_word(argv);
                 break;
             }
 
-            return !AtEndOfCommand();
+            return !at_end_of_command();
         }
 
-        void ReadNormalWord(std::vector< std::string >& argv)
+        /**
+         * Store a word that doesn't start with { or " in to argv.back().
+         */
+        void read_normal_word(std::vector< std::string >& argv)
         {
             do
             {
-                char c = current.Get();
+                char c = current.get();
                 bool semi = false;
                 switch (c)
                 {
                 case '\\':
-                    c = ParseEscapeSequence();
-                    if (current.Bad())
+                    c = parse_escape_sequence();
+                    if (current.bad())
                         return;
                     break;
 
@@ -334,7 +453,7 @@ namespace soar
                     break;
 
                 default:
-                    current.Increment();
+                    current.increment();
                     break;
                 }
 
@@ -343,18 +462,21 @@ namespace soar
 
                 argv.back().push_back(c);
             }
-            while (!current.Eof() && !isspace(current.Get()));
+            while (!current.eof() && !isspace(current.get()));
         }
 
-        bool AtEndOfCommand()
+        /**
+         * @return true if at command separator.
+         */
+        bool at_end_of_command()
         {
-            while (current.Good())
+            while (current.good())
             {
-                switch (current.Get())
+                switch (current.get())
                 {
                 case '\n':
                 case ';':
-                    current.Increment();
+                    current.increment();
                 case 0:
                     return true;
 
@@ -362,58 +484,67 @@ namespace soar
                     break;
                 }
 
-                if (!isspace(current.Get()))
+                if (!isspace(current.get()))
                     return false;
 
-                current.Increment();
+                current.increment();
             }
             return true;
         }
 
-        void ReadQuotedString(std::vector< std::string >& argv)
+        /**
+         * Read a word started with a double quote character.
+         */
+        void read_quoted_string(std::vector< std::string >& argv)
         {
-            current.Increment(); // consume "
+            current.increment(); // consume "
 
-            while (current.Get() != '"')
+            while (current.get() != '"')
             {
-                switch (current.Get())
+                switch (current.get())
                 {
                 case 0: 
                     error = "unexpected eof";
-                    current.Fail();
+                    current.invalidate();
                     return;
 
                 case '\\':
                     {
-                        char c = ParseEscapeSequence();
-                        if (current.Bad()) return;
+                        char c = parse_escape_sequence();
+                        if (current.bad()) return;
                         argv.back().push_back(c);
                     }
                     break;
 
                 default:
-                    argv.back().push_back(current.Get());
-                    current.Increment();
+                    argv.back().push_back(current.get());
+                    current.increment();
                     break;
                 }
             }
 
-            current.Increment(); // consume "
+            current.increment(); // consume "
         }
 
-        char ParseEscapeSequence()
+        /**
+         * The current character is a backslash, return the next character
+         * converting it if necessary.  Special codes become new characters
+         * here and are returned as them. Braces and quotes lose special
+         * meaning when inside of an escape sequence.
+         */
+        char parse_escape_sequence()
         {
-            current.Increment(); // consume backslash
+            current.increment(); // consume backslash
 
             // future work? newline, octal, hex, wide hex
 
             char ret = 0;
             bool increment = true;
-            switch (current.Get())
+            switch (current.get())
             {
             case 0:
                 error = "unexpected eof";
-                current.Fail();
+                current.invalidate();
                 return 0;
             case 'a':
                 ret = '\a';
@@ -437,39 +568,43 @@ namespace soar
                 ret = '\v';
                 break;
             case '\n':
-                SkipWhitespace();
+                skip_whitespace();
                 ret = ' ';
-                increment = false; // SkipWhitespace leaves us past where we want to be
+                increment = false; // skip_whitespace leaves us past where we want to be
                 break;
             default:
-                ret = current.Get();
+                ret = current.get();
                 break;
             }
             if (increment)
-                current.Increment();
+                current.increment();
             return ret;
         }
 
-        void ReadBraces(std::vector< std::string >& argv)
+        /**
+         * Read a word enclosed in braces. Brace levels must match unless
+         * braces are escaped.
+         */
+        void read_braces(std::vector< std::string >& argv)
         {
-            current.Increment(); // consume brace;
+            current.increment(); // consume brace;
             int depth = 1;
             while (depth)
             {
                 bool increment = true;
-                switch (current.Get())
+                switch (current.get())
                 {
                 case 0:
                     error = "unexpected eof, unmatched opening brace";
-                    current.Fail();
+                    current.invalidate();
                     return;
 
                 case '\\':
                     // special case for backslash-newline substitution
-                    current.Increment();
-                    if (current.Get() == '\n')
+                    current.increment();
+                    if (current.get() == '\n')
                     {
-                        SkipWhitespace();
+                        skip_whitespace();
                         increment = false;
                         argv.back().push_back(' ');
                         break;
@@ -477,55 +612,65 @@ namespace soar
 
                     // current is escaped but no substitution
                     argv.back().push_back('\\');
-                    argv.back().push_back(current.Get());
+                    argv.back().push_back(current.get());
                     break;
 
                 case '}':
                     depth -= 1;
                     if (depth) // consume only the final closing brace
-                        argv.back().push_back(current.Get());
+                        argv.back().push_back(current.get());
                     break;
 
                 case '{':
                     depth += 1;
                     // falls through
                 default:
-                    argv.back().push_back(current.Get());
+                    argv.back().push_back(current.get());
                     break;
                 }
                 if (increment)
-                    current.Increment();
+                    current.increment();
             }
         }
 
-        void SkipWhitespaceAndComments()
+        /**
+         * Skip whitespace and a comment (to the end of the line) if a pound
+         * sign is encountered.
+         */
+        void skip_whitespace_and_comments()
         {
-            SkipWhitespace();
-            switch (current.Get())
+            skip_whitespace();
+            switch (current.get())
             {
             case '0':
                 return;
             case '#':
-                SkipToEndOfLine();
-                SkipWhitespaceAndComments();
+                skip_to_end_of_line();
+                skip_whitespace_and_comments();
                 return;
             default:
                 break;
             }
         }
 
-        void SkipWhitespace()
+        /**
+         * Read until first non-whitespace character.
+         */
+        void skip_whitespace()
         {
-            while (!current.Eof() && isspace(current.Get()))
-                current.Increment();
+            while (!current.eof() && isspace(current.get()))
+                current.increment();
         }
 
-        void SkipToEndOfLine()
+        /**
+         * Read until newline and consume the newline.
+         */
+        void skip_to_end_of_line()
         {
-            while (current.Get() != '\n')
+            while (current.get() != '\n')
             {
-                current.Increment();
-                if (current.Eof())
+                current.increment();
+                if (current.eof())
                     break;
             }
         }

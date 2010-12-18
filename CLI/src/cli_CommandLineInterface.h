@@ -192,7 +192,7 @@ struct CallData {
 	bool rawOutput;
 };
 
-class CommandLineInterface : public sml::KernelCallback, public soar::TokenizerCallback {
+class CommandLineInterface : public sml::KernelCallback, public soar::tokenizer_callback {
 public:
 
 	EXPORT CommandLineInterface();
@@ -242,7 +242,7 @@ public:
 	bool XMLMoveCurrentToLastChild() ;
 
 	// The internal Parse functions follow
-	// do not call these directly, these should only be called in HandleCommand
+	// do not call these directly, these should only be called in handle_command
 	bool ParseAddWME(std::vector<std::string>& argv);
 	bool ParseAlias(std::vector<std::string>& argv);
 	bool ParseAllocate(std::vector<std::string>& argv);
@@ -808,7 +808,7 @@ public:
 
 	bool GetCurrentWorkingDirectory(std::string& directory);
 
-    virtual bool HandleCommand(std::vector<std::string>& argv);
+    virtual bool handle_command(std::vector<std::string>& argv);
 
 protected:
 
@@ -841,8 +841,6 @@ protected:
 	bool ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting);
 
 	eRunInterleaveMode ParseRunInterleaveOptarg();
-
-	void HandleSourceError(int errorLine);
 
 	void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
 	void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
