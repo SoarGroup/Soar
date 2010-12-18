@@ -261,10 +261,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="cli_Test.cpp" />
+    <ClCompile Include="testcli.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cli_Test.h" />
+    <ClInclude Include="testcli.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ElementXML\ElementXML9.vcxproj">
