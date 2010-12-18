@@ -384,11 +384,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\cli_Test.cpp"
+				RelativePath=".\testcli.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\cli_Test.h"
+				RelativePath=".\testcli.h"
 				>
 			</File>
 		</Filter>

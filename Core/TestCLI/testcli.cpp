@@ -1,6 +1,6 @@
 #include <portability.h>
 
-#include "cli_Test.h"
+#include "testcli.h"
 
 /**
  * Entry point, expected arguments are 0 or more files to source before
