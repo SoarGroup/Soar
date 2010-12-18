@@ -71,6 +71,7 @@ public:
 
     /**
      * Get a line of input, block until it is received.
+     * @param[out] Buffer to copy the line of input to.
      */
     void get_line(std::string& line)
     {
@@ -88,6 +89,7 @@ public:
 
     /**
      * Try to get a line of input, do not block if one is not available.
+     * @param[out] Buffer to copy the line of input to, only valid if function returns true.
      * @return true if a line of input was received.
      */
     bool try_get_line(std::string& line)
@@ -170,6 +172,8 @@ public:
 
     /**
      * Source a file, report errors to stderr.
+     * @param[in] The file to source, passed to source command so relative to
+     *            working directory.
      * @return false on error
      */
     bool source(const char* sourcefile)
@@ -214,6 +218,7 @@ public:
      * Helper function called by print callbacks to assist in formatting output to the screen.
      *
      * Call with a true value when the last character written is a newline.
+     * @param[in] New setting.
      */
     void newline(bool seen)
     {
