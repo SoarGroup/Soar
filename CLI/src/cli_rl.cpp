@@ -44,22 +44,12 @@ bool CommandLineInterface::ParseRL( std::vector<std::string>& argv )
 
         if (m_Option == -1) break;
 
-        switch (m_Option) 
-        {
-        case 'g':
-        case 's':
-        case 'S':
-            if (option != 0)
-            {
-                SetErrorDetail( "rl takes only one option at a time." );
-                return SetError( kTooManyArgs );
-            }
-            option = static_cast<char>(m_Option);
-            break;
-
-        default:
-            return SetError( kGetOptError );
+        if (option != 0)
+        {  
+            SetErrorDetail( "rl takes only one option at a time." );
+            return SetError( kTooManyArgs );
         }
+        option = static_cast<char>(m_Option);
     }
 
     switch (option)

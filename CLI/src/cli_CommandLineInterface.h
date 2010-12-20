@@ -148,7 +148,6 @@ namespace cli
 
     // Define bitsets for various commands
     typedef std::bitset<EXCISE_NUM_OPTIONS>          ExciseBitset;
-    typedef std::bitset<INDIFFERENT_NUM_OPTIONS>     IndifferentBitset;
     typedef std::bitset<LEARN_NUM_OPTIONS>           LearnBitset;
     typedef std::bitset<MEMORIES_NUM_OPTIONS>        MemoriesBitset;
     typedef std::bitset<PRINT_NUM_OPTIONS>           PrintBitset;
