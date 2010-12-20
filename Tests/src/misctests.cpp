@@ -4,6 +4,7 @@
 
 #include "handlers.h"
 #include "kernel.h"
+#include "soar_rand.h"
 
 namespace sml
 {
@@ -61,6 +62,8 @@ class MiscTest : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST( testSourceWaterJugRl );
     CPPUNIT_TEST( testSourceWaterJugTie );
 
+    CPPUNIT_TEST( testSoarRand );
+
     CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -110,6 +113,8 @@ protected:
     void testSourceWaterJugLookAhead();
     void testSourceWaterJugRl();
     void testSourceWaterJugTie();
+
+    void testSoarRand();
 
     bool loadDemo(std::string demo);
 
@@ -565,4 +570,14 @@ void MiscTest::testSourceWaterJugRl()
 void MiscTest::testSourceWaterJugTie()
 {
     CPPUNIT_ASSERT(loadDemo("water-jug/water-jug-tie.soar"));
+}
+
+void MiscTest::testSoarRand()
+{
+    int halftrials = 50000000;
+    double accum = 0;
+    for (int i = 0; i < halftrials * 2; ++i)
+        accum += SoarRand();
+    double off = (accum - halftrials) / halftrials;
+    CPPUNIT_ASSERT(off < 0.0001);
 }
