@@ -11,7 +11,7 @@ public class SoarProperties
 {
     private static final String SOAR_HOME = "SOAR_HOME";
 
-    private static final String VERSION = "9_3_0";
+    private static final String VERSION = "9_3_1";
 
     public String getVersion()
     {
