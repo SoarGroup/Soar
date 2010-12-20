@@ -371,6 +371,10 @@
 			CopyLocal="false"
 			RelativePathToProject=".\ElementXML\ElementXML9.vcproj"
 		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{844AB204-F1B2-43D5-A6E5-1EA19FF289F2}"
+			RelativePathToProject=".\SoarKernel\SoarKernel9.vcproj"
+		/>
 	</References>
 	<Files>
 		<Filter
