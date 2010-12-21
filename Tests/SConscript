@@ -9,9 +9,7 @@ clone = env.Clone()
 
 clone.Prepend(CPPPATH = Split('src #ClientSML/src #KernelSML/src #CLI/src #SoarKernel/src #ElementXML/src #ConnectionSML/src'))
 
-libadd = Split('ClientSML ConnectionSML ElementXML') 
-if env['STATIC_LINKED']:
-	libadd.append(Split('SoarKernelSML SoarKernel CommandLineInterface sqlite3'))
+libadd = Split('ClientSML ConnectionSML ElementXML SoarKernelSML SoarKernel CommandLineInterface sqlite3')
 
 if sys.platform == "darwin":
 	if GetOption('platform') == '64':
