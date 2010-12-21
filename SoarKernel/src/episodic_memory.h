@@ -103,7 +103,7 @@ class epmem_param_container: public soar_module::param_container
 		enum force_choices { remember, ignore, force_off };
 
 		// performance
-		enum cache_choices { cache_S, cache_M, cache_L };
+		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k };
 		enum opt_choices { opt_safety, opt_speed };
 
 		////////////////////////////////////////////////////////////
@@ -127,7 +127,8 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::decimal_param *balance;
 
 		// performance
-		soar_module::constant_param<cache_choices> *cache;
+		soar_module::constant_param<page_choices> *page_size;
+		soar_module::integer_param *cache_size;
 		soar_module::constant_param<opt_choices> *opt;
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 
