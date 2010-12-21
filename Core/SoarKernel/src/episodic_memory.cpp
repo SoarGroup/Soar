@@ -186,13 +186,20 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	timers->add_mapping( soar_module::timer::two, "two" );
 	timers->add_mapping( soar_module::timer::three, "three" );
 	add( timers );
+	
+	// page_size
+	page_size = new soar_module::constant_param<page_choices>( "page_size", page_8k, new epmem_db_predicate<page_choices>( my_agent ) );
+	page_size->add_mapping( page_1k, "1k" );
+	page_size->add_mapping( page_2k, "2k" );
+	page_size->add_mapping( page_4k, "4k" );
+	page_size->add_mapping( page_8k, "8k" );
+	page_size->add_mapping( page_16k, "16k" );
+	page_size->add_mapping( page_32k, "32k" );
+	add( page_size );
 
-	// cache
-	cache = new soar_module::constant_param<cache_choices>( "cache", cache_L, new epmem_db_predicate<cache_choices>( my_agent ) );
-	cache->add_mapping( cache_S, "small" );
-	cache->add_mapping( cache_M, "medium" );
-	cache->add_mapping( cache_L, "large" );
-	add( cache );
+	// cache_size
+	cache_size = new soar_module::integer_param( "cache_size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new epmem_db_predicate<int64_t>( my_agent ) );
+	add( cache_size );
 
 	// opt
 	opt = new soar_module::constant_param<opt_choices>( "optimization", opt_speed, new epmem_db_predicate<opt_choices>( my_agent ) );
@@ -1382,25 +1389,47 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 
 		// apply performance options
 		{
-			// cache
+			// page_size
 			{
-				switch ( my_agent->epmem_params->cache->get_value() )
+				switch ( my_agent->epmem_params->page_size->get_value() )
 				{
-					// 5MB cache
-					case ( epmem_param_container::cache_S ):
-						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA cache_size = 5000" );
+					case ( epmem_param_container::page_1k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 1024" );
 						break;
-
-					// 20MB cache
-					case ( epmem_param_container::cache_M ):
-						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA cache_size = 20000" );
+						
+					case ( epmem_param_container::page_2k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 2048" );
 						break;
-
-					// 100MB cache
-					case ( epmem_param_container::cache_L ):
-						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA cache_size = 100000" );
+						
+					case ( epmem_param_container::page_4k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 4096" );
+						break;
+						
+					case ( epmem_param_container::page_8k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 8192" );
+						break;
+						
+					case ( epmem_param_container::page_16k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 16384" );
+						break;
+						
+					case ( epmem_param_container::page_32k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 32768" );
 						break;
 				}
+				
+				temp_q->prepare();
+				temp_q->execute();
+				delete temp_q;
+				temp_q = NULL;
+			}
+			
+			// cache_size
+			{
+				std::string cache_sql( "PRAGMA cache_size = " );
+				cache_sql.append( my_agent->epmem_params->cache_size->get_string() );
+				
+				temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, cache_sql.c_str() );
 
 				temp_q->prepare();
 				temp_q->execute();
@@ -1874,7 +1903,7 @@ void epmem_new_episode( agent *my_agent )
 		// 1. value known in phase one (try reservation)
 		// 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
 		// 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
-
+		
 		while ( !parent_syms.empty() )
 		{
 			parent_sym = parent_syms.front();
@@ -2323,7 +2352,7 @@ void epmem_new_episode( agent *my_agent )
 				epmem_edge.pop();
 			}
 		}
-
+		
 		// all removals
 		{
 			std::map<epmem_node_id, bool>::iterator r;
@@ -2335,18 +2364,18 @@ void epmem_new_episode( agent *my_agent )
 			while ( r != my_agent->epmem_node_removals->end() )
 			{
 				if ( r->second )
-				{
+				{					
 					// remove NOW entry
 					// id = ?
 					my_agent->epmem_stmts_graph->delete_node_now->bind_int( 1, r->first );
 					my_agent->epmem_stmts_graph->delete_node_now->execute( soar_module::op_reinit );
-
+					
 					range_start = (*my_agent->epmem_node_mins)[ r->first - 1 ];
 					range_end = ( time_counter - 1 );
 
 					// point (id, start)
 					if ( range_start == range_end )
-					{
+					{						
 						my_agent->epmem_stmts_graph->add_node_point->bind_int( 1, r->first );
 						my_agent->epmem_stmts_graph->add_node_point->bind_int( 2, range_start );
 						my_agent->epmem_stmts_graph->add_node_point->execute( soar_module::op_reinit );
@@ -2370,7 +2399,7 @@ void epmem_new_episode( agent *my_agent )
 			while ( r != my_agent->epmem_edge_removals->end() )
 			{
 				if ( r->second )
-				{
+				{					
 					// remove NOW entry
 					// id = ?
 					my_agent->epmem_stmts_graph->delete_edge_now->bind_int( 1, r->first );
@@ -2381,10 +2410,10 @@ void epmem_new_episode( agent *my_agent )
 
 					// point (id, start)
 					if ( range_start == range_end )
-					{
+					{						
 						my_agent->epmem_stmts_graph->add_edge_point->bind_int( 1, r->first );
 						my_agent->epmem_stmts_graph->add_edge_point->bind_int( 2, range_start );
-						my_agent->epmem_stmts_graph->add_edge_point->execute( soar_module::op_reinit );						
+						my_agent->epmem_stmts_graph->add_edge_point->execute( soar_module::op_reinit );
 					}
 					// node
 					else
@@ -2393,7 +2422,7 @@ void epmem_new_episode( agent *my_agent )
 					}
 
 					// update max
-					(*my_agent->epmem_edge_maxes)[ r->first - 1 ] = true;
+					(*my_agent->epmem_edge_maxes)[ r->first - 1 ] = true;					
 				}
 
 				r++;
