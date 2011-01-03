@@ -159,7 +159,7 @@ void FullTests::setUp()
 	assert( MINOR_VERSION_NUMBER == SML_MINOR_VERSION_NUMBER );
 	assert( MICRO_VERSION_NUMBER == SML_MICRO_VERSION_NUMBER );
 	assert( GREEK_VERSION_NUMBER == SML_GREEK_VERSION_NUMBER );
-	assert( strcmp( VERSION_STRING, SML_VERSION_STRING ) == 0 );
+	assert( strcmp( VERSION_STRING(), SML_VERSION_STRING() ) == 0 );
 
 	m_pKernel = 0;
 	m_pAgent = 0;
