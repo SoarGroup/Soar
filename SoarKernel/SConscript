@@ -10,12 +10,18 @@ clone.Prepend(CPPPATH = Split('src #ElementXML/src'))
 
 sqlclone = clone.Clone()
 sqlclone.Append(CPPFLAGS = ['-w'])
+
+# Workaround for sqlite linker error.
+Import('gcc')
+if gcc[0] >= 4 or gcc[1] >= 3 or gcc[2] >= 3:
+    sqlclone.Append(CPPFLAGS = ['-O0'])
+
 SQLite = sqlclone.StaticLibrary('sqlite3', 'sqlite/sqlite3.c')
 
 if env['SCU']:
-	SoarKernel = clone.StaticLibrary('SoarKernel', 'SoarKernel.cxx')
+    SoarKernel = clone.StaticLibrary('SoarKernel', 'SoarKernel.cxx')
 else:
-	SoarKernel = clone.StaticLibrary('SoarKernel', Glob('src/*.cpp'))
+    SoarKernel = clone.StaticLibrary('SoarKernel', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', SoarKernel)
 env.Install('$PREFIX/lib', SQLite)
