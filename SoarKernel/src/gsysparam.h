@@ -154,8 +154,6 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* KJC 3/01 limit number of cycles in run_til_output */
 #define MAX_NIL_OUTPUT_CYCLES_SYSPARAM           32
 
-/* SAN (??) */
-//NUMERIC_INDIFFERENCE
 #define TRACE_INDIFFERENT_SYSPARAM               33
 
 /* rmarinie 11/04 */

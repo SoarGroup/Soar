@@ -27,49 +27,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseExplainBacktraces(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'c', "condition",	OPTARG_REQUIRED},
-		{'f', "full",		OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	int condition = 0;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'f':
-				condition = -1;
-				break;
-
-			case 'c':
-				if ( !from_string( condition, m_OptionArgument ) ) return SetError(kIntegerExpected);
-				if (condition <= 0) return SetError(kIntegerMustBePositive);
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// never more than one arg
-	if (m_NonOptionArguments > 1) return SetError(kTooManyArgs);
-
-	// we need a production if full or condition given
-	if (condition) if (m_NonOptionArguments < 1) {
-		SetErrorDetail("Production name required for that option.");
-		return SetError(kTooFewArgs);
-	}
-
-	// we have a production
-	if (m_NonOptionArguments == 1) return DoExplainBacktraces(&argv[m_Argument - m_NonOptionArguments], condition);
-	
-	// query
-	return DoExplainBacktraces();
-}
-
 void ExplainListChunks(agent* thisAgent)
 {
 	explain_chunk_str *chunk;
@@ -154,15 +111,16 @@ bool ExplainChunks(agent* thisAgent, const char* pProduction, int mode)
 
 bool CommandLineInterface::DoExplainBacktraces(const std::string* pProduction, const int condition) {
 	// quick sanity check
-	if (condition < -1) return SetError(kInvalidConditionNumber);
+	if (condition < -1) return SetError("Condition number must be a non-negative integer.");
 
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if (!pProduction) {
 		// no production means query, ignore other args
-		ExplainListChunks(m_pAgentSoar);
+		ExplainListChunks(agnt);
 		return true;
 	}
 
-	ExplainChunks(m_pAgentSoar, pProduction->c_str(), condition);
+	ExplainChunks(agnt, pProduction->c_str(), condition);
 	return true;
 }
 

@@ -22,18 +22,11 @@
 
 #include "sml_KernelCallback.h"
 #include "sml_Events.h"
-#include "cli_CommandData.h"
-#include "cli_Aliases.h"
-#include "tokenizer.h"
 #include "kernel.h"
-
-typedef uint64_t epmem_time_id;
-typedef uint64_t smem_lti_id;
+#include "cli_Cli.h"
+#include "cli_Parser.h"
 
 #include "Export.h"
-
-typedef struct agent_struct agent;
-typedef struct production_struct production;
 
 namespace soarxml
 {
@@ -50,128 +43,12 @@ namespace sml
 
 namespace cli 
 {
-    class CommandLineInterface;
-    class GetOpt;
-
-    enum CLIError 
-    {
-        kNoError                         = 0,
-        kGetOptError                     = 3,
-        kCommandNotImplemented           = 4,
-        kProductionNotFound              = 5,
-        kNotImplemented                  = 8,
-        kTooManyArgs                     = 14,
-        kTooFewArgs                      = 15,
-        kUnrecognizedOption              = 16,
-        kMissingOptionArg                = 17,
-        kgetcwdFail                      = 18,
-        kgettimeofdayFail                = 19,
-        kchdirFail                       = 20,
-        kAliasNotFound                   = 23,
-        kIntegerExpected                 = 28,
-        kIntegerMustBePositive           = 29,
-        kIntegerMustBeNonNegative        = 30,
-        kIntegerOutOfRange               = 31,
-        kInvalidOperation                = 32,
-        kInvalidNumericIndifferentMode   = 34,
-        kInvalidIndifferentSelectionMode = 35,
-        kNoProdTypeWhenProdName          = 37,
-        kSourceOnlyOneFile               = 38,
-        kLogAlreadyOpen                  = 39,
-        kLogOpenFailure                  = 40,
-        kLogNotOpen                      = 41,
-        kDirectoryOpenFailure            = 42,
-        kDirectoryEntryReadFailure       = 43,
-        kDirectoryStackEmpty             = 44,
-        kMissingFilenameArg              = 45,
-        kOpenFileFail                    = 46,
-        kReteSaveOperationFail           = 49,
-        kReteLoadOperationFail           = 50,
-        kInvalidLearnSetting             = 52,
-        kRemoveOrZeroExpected            = 53,
-        kInvalidID                       = 54,
-        kInvalidAttribute                = 55,
-        kInvalidValue                    = 56,
-        kInvalidWMEFilterType            = 59,
-        kFilterExpected                  = 60,
-        kDuplicateWMEFilter              = 61,
-        kInvalidMode                     = 62,
-        kTypeRequired                    = 63,
-        kWMEFilterNotFound               = 64,
-        kProductionRequired              = 65,
-        kInvalidConditionNumber          = 66,
-        kInvalidPrefix                   = 67,
-        kCountGreaterThanMaxChunks       = 68,
-        kCountLessThanChunks             = 69,
-        kAcceptableOrNothingExpected     = 70,
-        kMustSaveOrLoad                  = 72,
-        kPrintSubOptionsOfStack          = 73,
-        kRunFailed                       = 77,
-        kAmbiguousCommand                = 79,
-        kAmbiguousOption                 = 80,
-        kInitSoarFailed                  = 84,
-        kPreferencesError                = 85,
-        kInvalidRunInterleaveSetting     = 86,
-        kLoadLibraryError                = 87,
-        kProductionAddFailed             = 90,
-        kSourceDepthExceeded             = 92,
-        kCloseFileFail                   = 93,
-        kFileOpen                        = 94,
-        kFileNotOpen                     = 95,
-        kRealExpected                    = 96,
-        kValuesError                     = 97,
-        kGPMaxExceeded                   = 98,
-        kParseError                      = 99,
-        kSMemError                       = 100,
-        kWmaError                        = 101,
-        kRlError                         = 102,
-        kEpMemError                      = 103,
-    };
-
-    // Define the CommandFunction which we'll call to process commands
-    typedef bool (CommandLineInterface::*CommandFunction)(std::vector<std::string>& argv);
-
-    // Used to store a map from command name to function handler for that command
-    typedef std::map<std::string, CommandFunction> CommandMap;
-    typedef CommandMap::iterator                   CommandMapIter;
-    typedef CommandMap::const_iterator             CommandMapConstIter;
-
-    // Used to decide if a given command should always be echoed
-    typedef std::map<std::string, bool> EchoMap ;
-
     // Define the stack for pushd/popd
     typedef std::stack<std::string> StringStack;
 
     // Define the list for structured responses
     typedef std::list<soarxml::ElementXML*> ElementXMLList;
     typedef ElementXMLList::iterator        ElementXMLListIter;
-
-    // Define bitsets for various commands
-    typedef std::bitset<EXCISE_NUM_OPTIONS>          ExciseBitset;
-    typedef std::bitset<LEARN_NUM_OPTIONS>           LearnBitset;
-    typedef std::bitset<MEMORIES_NUM_OPTIONS>        MemoriesBitset;
-    typedef std::bitset<PRINT_NUM_OPTIONS>           PrintBitset;
-    typedef std::bitset<PRODUCTION_FIND_NUM_OPTIONS> ProductionFindBitset;
-    typedef std::bitset<RUN_NUM_OPTIONS>             RunBitset;
-    typedef std::bitset<SOURCE_NUM_OPTIONS>          SourceBitset;
-    typedef std::bitset<STATS_NUM_OPTIONS>           StatsBitset;
-    typedef std::bitset<WATCH_NUM_OPTIONS>           WatchBitset;
-    typedef std::bitset<WATCH_WMES_TYPE_NUM_OPTIONS> WatchWMEsTypeBitset;
-
-    // For option parsing
-    enum eOptionArgument 
-    {
-        OPTARG_NONE,
-        OPTARG_REQUIRED,
-        OPTARG_OPTIONAL,
-    };
-
-    struct Options 
-    {
-        int shortOpt;
-        const char* longOpt;
-        eOptionArgument argument;
-    };
 
     // for nested command calls
     struct CallData 
@@ -182,7 +59,7 @@ namespace cli
         bool rawOutput;
     };
 
-    class CommandLineInterface : public sml::KernelCallback, public soar::tokenizer_callback 
+    class CommandLineInterface : public sml::KernelCallback, public cli::Cli
     {
     public:
 
@@ -232,579 +109,102 @@ namespace cli
         bool XMLMoveCurrentToChild(int index) ;
         bool XMLMoveCurrentToLastChild() ;
 
-        // The internal Parse functions follow
-        // do not call these directly, these should only be called in handle_command
-        bool ParseAddWME                ( std::vector<std::string>& argv);
-        bool ParseAlias                 ( std::vector<std::string>& argv);
-        bool ParseAllocate              ( std::vector<std::string>& argv);
-        bool ParseCaptureInput          ( std::vector<std::string>& argv);
-        bool ParseCD                    ( std::vector<std::string>& argv);
-        bool ParseChunkNameFormat       ( std::vector<std::string>& argv);
-        bool ParseCLog                  ( std::vector<std::string>& argv);
-        bool ParseCommandToFile         ( std::vector<std::string>& argv);
-        bool ParseDefaultWMEDepth       ( std::vector<std::string>& argv);
-        bool ParseDirs                  ( std::vector<std::string>& argv);
-        bool ParseEcho                  ( std::vector<std::string>& argv);
-        bool ParseEchoCommands          ( std::vector<std::string>& argv);
-        bool ParseEditProduction        ( std::vector<std::string>& argv);
-        bool ParseEpMem                 ( std::vector<std::string>& argv);
-        bool ParseExcise                ( std::vector<std::string>& argv);
-        bool ParseExplainBacktraces     ( std::vector<std::string>& argv);
-        bool ParseFiringCounts          ( std::vector<std::string>& argv);
-        bool ParseGDSPrint              ( std::vector<std::string>& argv);
-        bool ParseGP                    ( std::vector<std::string>& argv);
-        bool ParseGPMax                 ( std::vector<std::string>& argv);
-        bool ParseHelp                  ( std::vector<std::string>& argv);
-        bool ParseIndifferentSelection  ( std::vector<std::string>& argv);
-        bool ParseInitSoar              ( std::vector<std::string>& argv);
-        bool ParseInternalSymbols       ( std::vector<std::string>& argv);
-        bool ParseLearn                 ( std::vector<std::string>& argv);
-        bool ParseLoadLibrary           ( std::vector<std::string>& argv);
-        bool ParseLS                    ( std::vector<std::string>& argv);
-        bool ParseMatches               ( std::vector<std::string>& argv);
-        bool ParseMaxChunks             ( std::vector<std::string>& argv);
-        bool ParseMaxElaborations       ( std::vector<std::string>& argv);
-        bool ParseMaxGoalDepth          ( std::vector<std::string>& argv);
-        bool ParseMaxMemoryUsage        ( std::vector<std::string>& argv);
-        bool ParseMaxNilOutputCycles    ( std::vector<std::string>& argv);
-        bool ParseMemories              ( std::vector<std::string>& argv);
-        bool ParseMultiAttributes       ( std::vector<std::string>& argv);
-        bool ParseNumericIndifferentMode( std::vector<std::string>& argv);
-        bool ParseOSupportMode          ( std::vector<std::string>& argv);
-        bool ParsePopD                  ( std::vector<std::string>& argv);
-        bool ParsePort                  ( std::vector<std::string>& argv);
-        bool ParsePredict               ( std::vector<std::string>& argv);
-        bool ParsePreferences           ( std::vector<std::string>& argv);
-        bool ParsePrint                 ( std::vector<std::string>& argv);
-        bool ParseProductionFind        ( std::vector<std::string>& argv);
-        bool ParsePushD                 ( std::vector<std::string>& argv);
-        bool ParsePWatch                ( std::vector<std::string>& argv);
-        bool ParsePWD                   ( std::vector<std::string>& argv);
-        bool ParseRand                  ( std::vector<std::string>& argv);
-        bool ParseRemoveWME             ( std::vector<std::string>& argv);
-        bool ParseReplayInput           ( std::vector<std::string>& argv);
-        bool ParseReteNet               ( std::vector<std::string>& argv);
-        bool ParseRL                    ( std::vector<std::string>& argv);
-        bool ParseRun                   ( std::vector<std::string>& argv);
-        bool ParseSaveBacktraces        ( std::vector<std::string>& argv);
-        bool ParseSelect                ( std::vector<std::string>& argv);
-        bool ParseSetLibraryLocation    ( std::vector<std::string>& argv);
-        bool ParseSMem                  ( std::vector<std::string>& argv);
-        bool ParseSoarNews              ( std::vector<std::string>& argv);
-        bool ParseSource                ( std::vector<std::string>& argv);
-        bool ParseSP                    ( std::vector<std::string>& argv);
-        bool ParseSRand                 ( std::vector<std::string>& argv);
-        bool ParseStats                 ( std::vector<std::string>& argv);
-        bool ParseSetStopPhase          ( std::vector<std::string>& argv);
-        bool ParseStopSoar              ( std::vector<std::string>& argv);
-        bool ParseTime                  ( std::vector<std::string>& argv);
-        bool ParseTimers                ( std::vector<std::string>& argv);
-        bool ParseUnalias               ( std::vector<std::string>& argv);
-        bool ParseVerbose               ( std::vector<std::string>& argv);
-        bool ParseVersion               ( std::vector<std::string>& argv);
-        bool ParseWaitSNC               ( std::vector<std::string>& argv);
-        bool ParseWarnings              ( std::vector<std::string>& argv);
-        bool ParseWatch                 ( std::vector<std::string>& argv);
-        bool ParseWatchWMEs             ( std::vector<std::string>& argv);
-        bool ParseWMA                   ( std::vector<std::string>& argv);
-
-        /*************************************************************
-        * @brief add-wme command
-        * @param id Id string for the new wme
-        * @param attribute Attribute string for the new wme
-        * @param value Value string for the new wme
-        * @param acceptable True to give wme acceptable preference
-        *************************************************************/
-        bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
-
-        /*************************************************************
-        * @brief alias command
-        * @param argv Alias command arguments with the command name removed.
-            *        Ex: { "stop", "stop-soar" }
-            *        Null to list.
-        *************************************************************/
-        bool DoAlias(std::vector< std::string >* argv = 0);
-
-        bool DoAllocate(const std::string& pool, int blocks);
-
-        /*************************************************************
-        * @brief capture-input command
-        *************************************************************/
-        bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
-
-        /*************************************************************
-        * @brief cd command
-        * @param pDirectory Pointer to the directory to pass in to. Pass null to return 
-        *        to the initial (home) directory. 
-        *************************************************************/
-        bool DoCD(const std::string* pDirectory = 0);
-
-        /*************************************************************
-        * @brief chunk-name-format command
-        * @param pLongFormat Pointer to the new format type, true for long format, false 
-        *        for short format, 0 (null) for query or no change
-        * @param pCount Pointer to the new counter, non negative integer, 0 (null) for query
-        * @param pPrefix Pointer to the new prefix, must not contain '*' character, 
-        *        null for query
-        *************************************************************/
-        bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
-
-        /*************************************************************
-        * @brief clog command
-        * @param mode The mode for the log command, see cli_CommandData.h
-        * @param pFilename The log filename, pass 0 (null) if not applicable to mode
-        * @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
-        * @param silent Supress query messages (log file open/closed).
-        *************************************************************/
-        bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
-
-        /*************************************************************
-        * @brief default-wme-depth command
-        * @param pDepth The pointer to the new wme depth, a positive integer.  
-        *        Pass 0 (null) pointer for query.
-        *************************************************************/
-        bool DoDefaultWMEDepth(const int* pDepth);
-
-        /*************************************************************
-        * @brief dirs command
-        *************************************************************/
-        bool DoDirs();
-
-        /*************************************************************
-        * @brief echo command
-        * @param argv The args to echo
-        * @param echoNewline True means a newline character will be appended to string
-        *************************************************************/
-        bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
-
-        /*************************************************************
-        * @brief echo-commands command
-        * @param onlyGetValue
-        * @param echoCommands
-        *************************************************************/
-        bool DoEchoCommands(bool onlyGetValue, bool echoCommands);
-
-        /*************************************************************
-        * @brief edit-production command
-        * @param productionName Production to edit
-        *************************************************************/
-        bool DoEditProduction(std::string productionName);
-        
-        /*************************************************************
-        * @brief epmem command
-        * @param pOp the epmem switch to implement, pass 0 (null) for full parameter configuration
-        * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
-        * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
-        *************************************************************/
-        bool DoEpMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0, const epmem_time_id memory_id = 0);
-
-        /*************************************************************
-        * @brief excise command
-        * @param options The various options set on the command line, see 
-        *        cli_CommandData.h
-        * @param pProduction A production to excise, optional
-        *************************************************************/
-        bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
-
-        /*************************************************************
-        * @brief explain-backtraces command
-        * @param pProduction Pointer to involved production. Pass 0 (null) for 
-        *        query
-        * @param condition A number representing the condition number to explain, 
-        *        0 for production name, -1 for full, 
-        *        this argument ignored if pProduction is 0 (null)
-        *************************************************************/
-        bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0);
-
-        /*************************************************************
-        * @brief firing-counts command
-        * @param numberToList The number of top-firing productions to list.  
-        *        Use 0 to list those that haven't fired. -1 lists all
-        * @param pProduction The specific production to list, pass 0 (null) to list 
-        *        multiple productions
-        *************************************************************/
-        bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0);
-
-        /*************************************************************
-        * @brief gds-print command
-        *************************************************************/
-        bool DoGDSPrint();
-
-        /*************************************************************
-        * @brief gp command
-        * @param productionString The general soar production to generate more productions to load to memory
-        *************************************************************/
-        bool DoGP(const std::string& productionString);
-
-        /*************************************************************
-        * @brief gp-max command
-        * @param maximum The maximum number of productions to allow generation of
-        *************************************************************/
-        bool DoGPMax(const int& maximum);
-
-        /*************************************************************
-        * @brief help command
-        *************************************************************/
-        bool DoHelp();
-
-        /*************************************************************
-        * @brief indifferent-selection command
-        * @param pOp The operation to perform, pass 0 if unnecssary
-        * @param p1 First parameter, pass 0 (null) if unnecessary
-        * @param p2 Second parameter, pass 0 (null) if unnecessary
-        * @param p3 Third parameter, pass 0 (null) if unnecessary
-        *************************************************************/
-        bool DoIndifferentSelection( const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0 );
-
-        /*************************************************************
-        * @brief init-soar command
-        *************************************************************/
-        bool DoInitSoar();
-
-        /*************************************************************
-        * @brief internal-symbols command
-        *************************************************************/
-        bool DoInternalSymbols();
-
-        /*************************************************************
-        * @brief learn command
-        * @param options The various options set on the command line, 
-        *        see cli_CommandData.h
-        *************************************************************/
-        bool DoLearn(const LearnBitset& options);
-
-        /*************************************************************
-        * @brief load-library command
-        * @param libraryCommand The name of the library to load 
-        * WITHOUT the .so/.dll/etc plus its arguments.
-        *************************************************************/
-        bool DoLoadLibrary(const std::string& libraryCommand);
-
-        /*************************************************************
-        * @brief ls command
-        *************************************************************/
-        bool DoLS();
-
-        /*************************************************************
-        * @brief matches command
-        * @param mode The mode for the command, see cli_CommandData.h
-        * @param detail The WME detail, see cli_CommandData.h
-        * @param pProduction The production, pass 0 (null) if not applicable to mode
-        *************************************************************/
-        bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
-
-        /*************************************************************
-        * @brief max-chunks command
-        * @param n The new max chunks value, use 0 to query
-        *************************************************************/
-        bool DoMaxChunks(const int n = 0);
-
-        /*************************************************************
-        * @brief max-elaborations command
-        * @param n The new max elaborations value, use 0 to query
-        *************************************************************/
-        bool DoMaxElaborations(const int n = 0);
-
-        /*************************************************************
-        * @brief max-goal-depth command
-        * @param n The new max goal depth value, use 0 to query
-        *************************************************************/
-        bool DoMaxGoalDepth(const int n = 0);
-
-        /*************************************************************
-        * @brief max-memory-usage command
-        * @param n The new memory usage value, in bytes
-        *************************************************************/
-        bool DoMaxMemoryUsage(const int n = 0);
-
-        /*************************************************************
-        * @brief max-nil-output-cycles command
-        * @param n The new max nil output cycles value, use 0 to query
-        *************************************************************/
-        bool DoMaxNilOutputCycles(const int n = 0);
-
-        /*************************************************************
-        * @brief memories command
-        * @param options Options for the memories flag, see cli_CommandData.h
-        * @param n number of productions to print sorted by most memory use, use 0 for all
-        * @param pProduction specific production to print, ignored if any 
-        *        options are set, pass 0 (null) if not applicable
-        *************************************************************/
-        bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
-
-        /*************************************************************
-        * @brief multi-attributes command
-        * @param pAttribute The attribute, pass 0 (null) for query
-        * @param n The count, pass 0 (null) for query if pAttribute is also null, 
-        *        otherwise this will default to 10
-        *************************************************************/
-        bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
-
-        /*************************************************************
-        * @brief numeric-indifferent mode command
-        * @param query true to query
-        * @param mode The new mode, ignored on query
-        *************************************************************/
-        bool DoNumericIndifferentMode(bool query, const ni_mode mode);
-
-        /*************************************************************
-        * @brief o-support-mode command
-        * @param mode The new o-support mode.  Use -1 to query.
-        *************************************************************/
-        bool DoOSupportMode(int mode = -1);
-
-        /*************************************************************
-        * @brief popd command
-        *************************************************************/
-        bool DoPopD();
-
-        /*************************************************************
-        * @brief port command
-        *************************************************************/
-        bool DoPort();
-
-        /*************************************************************
-        * @brief predict command
-        *************************************************************/
-        bool DoPredict();
-
-        /*************************************************************
-        * @brief preferences command
-        * @param detail The preferences detail level, see cli_CommandData.h
-        * @param pId An existing soar identifier or 0 (null)
-        * @param pAttribute An existing soar attribute of the specified identifier or 0 (null)
-        *************************************************************/
-        bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0);
-
-        /*************************************************************
-        * @brief print command
-        * @param options The options to the print command, see cli_CommandData.h
-        * @param depth WME depth
-        * @param pArg The identifier/timetag/pattern/production name to print, 
-        *        or 0 (null) if not applicable
-        *************************************************************/
-        bool DoPrint(PrintBitset options, int depth, const std::string* pArg = 0);
-
-        /*************************************************************
-        * @brief production-find command
-        * @param options The options to the command, see cli_CommandData.h
-        * @param pattern Any pattern that can appear in productions.
-        *************************************************************/
-        bool DoProductionFind(const ProductionFindBitset& options, const std::string& pattern);
-
-        /*************************************************************
-        * @brief pushd command
-        * @param directory The directory to change to
-        *************************************************************/
-        bool DoPushD(const std::string& directory);
-
-        /*************************************************************
-        * @brief pwatch command
-        * @param query Pass true to query, all other args ignored
-        * @param pProduction The production to watch or stop watching, pass 0 (null) 
-        *        to disable watching of all productions (setting ignored)
-        * @param setting True to watch the pProduction, false to stop watching it
-        *************************************************************/
-        bool DoPWatch(bool query = true, const std::string* pProduction = 0, bool setting = false);
-
-        /*************************************************************
-        * @brief pwd command
-        *************************************************************/
-        bool DoPWD();
-
-        /*************************************************************
-        * @brief rand command
-        *************************************************************/
-        bool DoRand( bool integer, std::string* bound );
-
-        /*************************************************************
-        * @brief remove-wme command
-        * @param timetag The timetag of the wme to remove
-        *************************************************************/
-        bool DoRemoveWME(uint64_t timetag);
-
-        /*************************************************************
-        * @brief replay-input command
-        *************************************************************/
-        bool DoReplayInput(eReplayInputMode mode, std::string* pathname);
-
-        /*************************************************************
-        * @brief rete-net command
-        * @param save true to save, false to load
-        * @param filename the rete-net file
-        *************************************************************/
-        bool DoReteNet(bool save, std::string filename);
-        
-        /*************************************************************
-        * @brief rl command
-        * @param pOp the rl switch to implement, pass 0 (null) for full parameter configuration
-        * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
-        * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
-        *************************************************************/
-        bool DoRL( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 );
-
-        /*************************************************************
-        * @brief run command
-        * @param options Options for the run command, see cli_CommandData.h
-        * @param count The count, units or applicability depends on options
-        * @param interleave Support for round robin execution across agents 
-        *         at a finer grain than the run-size parameter.
-        *************************************************************/
-        bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
-
-        /*************************************************************
-        * @brief save-backtraces command
-        * @param setting The new setting, pass 0 (null) for query
-        *************************************************************/
-        bool DoSaveBacktraces(bool* pSetting = 0);
-        
-        /*************************************************************
-        * @brief select command
-        * @param pAgent The pointer to the gSKI agent interface
-        * @param setting The new setting, pass 0 (null) for query
-        *************************************************************/
-        bool DoSelect(const std::string* pOp = 0);
-
-        /*************************************************************
-        * @brief set-library-location command
-        * @param pLocation String of new location, pass null for query.
-        *************************************************************/
-        bool DoSetLibraryLocation(std::string* pLocation = 0);
-
-        /*************************************************************
-        * @brief set-stop-phase command
-        * @param setPhase
-        * @param before
-        * @param phase
-        *************************************************************/
-        bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
-
-        /*************************************************************
-        * @brief smem command
-        * @param pOp the smem switch to implement, pass 0 (null) for full parameter configuration
-        * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
-        * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
-        *************************************************************/
-        bool DoSMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0, smem_lti_id lti_id = 0, unsigned int depth = 0);
-
-        /*************************************************************
-        * @brief soar8 command
-        * @param pSoar8 True to enable Soar 8, false for Soar 7
-        *************************************************************/
-        bool DoSoar8(bool* pSoar8);
-
-        /*************************************************************
-        * @brief soarnews command
-        *************************************************************/
-        bool DoSoarNews();
-
-        /*************************************************************
-        * @brief source command
-        * @param filename The file to source
-        *************************************************************/
-        bool DoSource(std::string filename, SourceBitset* pOptions = 0);
-
-        /*************************************************************
-        * @brief sp command
-        * @param production The production to add to working memory
-        *************************************************************/
-        bool DoSP(const std::string& production);
-
-        /*************************************************************
-        * @brief srand command
-        * @param pSeed Number to seed the random number generator with, pass
-        *         null to seed randomly.
-        *************************************************************/
-        bool DoSRand(uint32_t* pSeed = 0);
-
-        /*************************************************************
-        * @brief stats command
-        * @param options The options for the stats command, see cli_CommandData.h
-        * @param sort The column to sort by
-        *************************************************************/
-        bool DoStats(const StatsBitset& options, int sort = 0);
-
-        /*************************************************************
-        * @brief stop-soar command
-        * @param self Stop the only pAgent (false means stop all agents in kernel)
-        * @param reasonForStopping optional reason for stopping
-        *************************************************************/
-        bool DoStopSoar(bool self, const std::string* reasonForStopping = 0);
-
-        /*************************************************************
-        * @brief time command
-        * @param argv The command line with the time arg removed
-        *************************************************************/
-        bool DoTime(std::vector<std::string>& argv);
-
-        /*************************************************************
-        * @brief timers command
-        * @param pSetting The timers setting, true to turn on, false to turn off, 
-        *        pass 0 (null) to query
-        *************************************************************/
-        bool DoTimers(bool* pSetting = 0);
-
-        /*************************************************************
-        * @brief verbose command
-        * @param pSetting The verbose setting, true to turn on, false to turn off, 
-        *        pass 0 (null) to query
-        *************************************************************/
-        bool DoVerbose(bool* pSetting = 0);
-
-        /*************************************************************
-        * @brief version command
-        *************************************************************/
-        bool DoVersion();
-
-        /*************************************************************
-        * @brief waitsnc command
-        * @param pSetting The waitsnc setting, true to turn on, false to turn off, 
-        *        pass 0 (null) to query
-        *************************************************************/
-        bool DoWaitSNC(bool* pSetting = 0);
-
-        /*************************************************************
-        * @brief warnings command
-        * @param pSetting The warnings setting, true to turn on, false to turn off, 
-        *        pass 0 (null) to query
-        *************************************************************/
-        bool DoWarnings(bool* pSetting = 0);
-
-        /*************************************************************
-        * @brief watch command
-        * @param options Options for the watch command, see cli_CommandData.h
-        * @param settings Settings for the watch command, if a flag (option) is set, its 
-        *        setting is set using this (true/on or false/off)
-        * @param wmeSetting Setting for wme detail, not binary so it has its own arg
-        * @param learnSetting Setting for learn level, not binary so it has its own arg
-        *************************************************************/
-        bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
-
-        /*************************************************************
-        * @brief watch-wmes command
-        *************************************************************/
-        bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
-
-        /*************************************************************
-        * @brief wma command
-        * @param pOp the wma switch to implement, pass 0 (null) for full parameter configuration
-        * @param pAttr the attribute to get/set/stats, pass 0 (null) only if no pOp (all config) or stats (full stats)
-        * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
-        *************************************************************/
-        bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 );
+        virtual bool DoAddWME(const std::string& id, std::string attribute, const std::string& value, bool acceptable);
+        virtual bool DoAlias(std::vector< std::string >* argv = 0);
+        virtual bool DoAllocate(const std::string& pool, int blocks);
+        virtual bool DoCaptureInput(eCaptureInputMode mode, bool autoflush = false, std::string* pathname = 0);
+        virtual bool DoCD(const std::string* pDirectory = 0);
+        virtual bool DoChunkNameFormat(const bool* pLongFormat = 0, const int64_t* pCount = 0, const std::string* pPrefix = 0);
+        virtual bool DoCLog(const eLogMode mode = LOG_QUERY, const std::string* pFilename = 0, const std::string* pToAdd = 0, bool silent = false);
+        virtual bool DoCommandToFile(const eLogMode mode, const std::string& filename, std::vector< std::string >& argv);
+        virtual bool DoDefaultWMEDepth(const int* pDepth);
+        virtual bool DoDirs();
+        virtual bool DoEcho(const std::vector<std::string>& argv, bool echoNewline);
+        virtual bool DoEchoCommands(bool onlyGetValue, bool echoCommands);
+        virtual bool DoEditProduction(std::string productionName);
+        virtual bool DoEpMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0, const epmem_time_id memory_id = 0);
+        virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0);
+        virtual bool DoExplainBacktraces(const std::string* pProduction = 0, const int condition = 0);
+        virtual bool DoFiringCounts(const int numberToList = -1, const std::string* pProduction = 0);
+        virtual bool DoGDSPrint();
+        virtual bool DoGP(const std::string& productionString);
+        virtual bool DoGPMax(const int& maximum);
+        virtual bool DoHelp();
+        virtual bool DoIndifferentSelection( const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0 );
+        virtual bool DoInitSoar();
+        virtual bool DoInternalSymbols();
+        virtual bool DoLearn(const LearnBitset& options);
+        virtual bool DoLoadLibrary(const std::string& libraryCommand);
+        virtual bool DoLS();
+        virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
+        virtual bool DoMaxChunks(const int n = 0);
+        virtual bool DoMaxElaborations(const int n = 0);
+        virtual bool DoMaxGoalDepth(const int n = 0);
+        virtual bool DoMaxMemoryUsage(const int n = 0);
+        virtual bool DoMaxNilOutputCycles(const int n = 0);
+        virtual bool DoMemories(const MemoriesBitset options, int n = 0, const std::string* pProduction = 0);
+        virtual bool DoMultiAttributes(const std::string* pAttribute = 0, int n = 0);
+        virtual bool DoNumericIndifferentMode(bool query, const ni_mode mode);
+        virtual bool DoOSupportMode(int mode = -1);
+        virtual bool DoPopD();
+        virtual bool DoPort();
+        virtual bool DoPredict();
+        virtual bool DoPreferences(const ePreferencesDetail detail, const bool object, const std::string* pId = 0, const std::string* pAttribute = 0);
+        virtual bool DoPrint(PrintBitset options, int depth, const std::string* pArg = 0);
+        virtual bool DoProductionFind(const ProductionFindBitset& options, const std::string& pattern);
+        virtual bool DoPushD(const std::string& directory);
+        virtual bool DoPWatch(bool query = true, const std::string* pProduction = 0, bool setting = false);
+        virtual bool DoPWD();
+        virtual bool DoRand( bool integer, std::string* bound );
+        virtual bool DoRemoveWME(uint64_t timetag);
+        virtual bool DoReplayInput(eReplayInputMode mode, std::string* pathname);
+        virtual bool DoReteNet(bool save, std::string filename);
+        virtual bool DoRL( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 );
+        virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT);
+        virtual bool DoSaveBacktraces(bool* pSetting = 0);
+        virtual bool DoSelect(const std::string* pOp = 0);
+        virtual bool DoSetLibraryLocation(std::string* pLocation = 0);
+        virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase);
+        virtual bool DoSMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0);
+        virtual bool DoSoarNews();
+        virtual bool DoSource(std::string filename, SourceBitset* pOptions = 0);
+        virtual bool DoSP(const std::string& production);
+        virtual bool DoSRand(uint32_t* pSeed = 0);
+        virtual bool DoStats(const StatsBitset& options, int sort = 0);
+        virtual bool DoStopSoar(bool self, const std::string* reasonForStopping = 0);
+        virtual bool DoTime(std::vector<std::string>& argv);
+        virtual bool DoTimers(bool* pSetting = 0);
+        virtual bool DoUnalias(std::vector<std::string>& argv);
+        virtual bool DoVerbose(bool* pSetting = 0);
+        virtual bool DoVersion();
+        virtual bool DoWaitSNC(bool* pSetting = 0);
+        virtual bool DoWarnings(bool* pSetting = 0);
+        virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
+        virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0);
+        virtual bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 );
 
         // utility for kernel SML
         bool IsLogOpen();
 
         bool GetCurrentWorkingDirectory(std::string& directory);
 
-        virtual bool handle_command(std::vector<std::string>& argv);
+        virtual bool SetError(const std::string& error);
+
+        void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
+        void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
+
+        void AppendArgTagFast(const char* pParam, const char* pType, const char* pValue);
+        void AppendArgTagFast(const char* pParam, const char* pType, const std::string& value);
+
+        void PrependArgTag(const char* pParam, const char* pType, const char* pValue);
+        void PrependArgTag(const char* pParam, const char* pType, const std::string& value);
+
+        void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
+        void PrependArgTagFast(const char* pParam, const char* pType, const std::string& value);
 
     protected:
 
-        void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse);
-
-        bool PartialMatch(std::vector<std::string>& argv);
+        void GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults);
 
         void SetTrapPrintCallbacks(bool setting);
 
@@ -822,48 +222,12 @@ namespace cli
         *************************************************************/
         bool GetHelpString(const std::string& helpFile);
 
-        /*************************************************************
-        * @brief 
-        *************************************************************/
-        int ParseLevelOptarg();
-        int ParseLearningOptarg();
-        bool CheckOptargRemoveOrZero();
-        bool ProcessWatchLevelSettings(const int level, WatchBitset& options, WatchBitset& settings, int& wmeSetting, int& learnSetting);
-
-        eRunInterleaveMode ParseRunInterleaveOptarg();
-
-        void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
-        void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
-
-        void AppendArgTagFast(const char* pParam, const char* pType, const char* pValue);
-        void AppendArgTagFast(const char* pParam, const char* pType, const std::string& value);
-
-        void PrependArgTag(const char* pParam, const char* pType, const char* pValue);
-        void PrependArgTag(const char* pParam, const char* pType, const std::string& value);
-
-        void PrependArgTagFast(const char* pParam, const char* pType, const char* pValue);
-        void PrependArgTagFast(const char* pParam, const char* pType, const std::string& value);
-
         /*************************************************************      
         * @brief This is a utility function used by DoLS      
         *************************************************************/      
         void PrintFilename(const std::string& name, bool isDirectory);      
 
-        /*************************************************************      
-        * @brief Echo the given string through the smlEVENT_ECHO event
-        *         if the call requested that commands be echoed.
-        *************************************************************/      
-        void EchoString(sml::Connection* pConnection, char const* pString);    
-
-        bool SetError(cli::CLIError code);                // always returns false
-        bool SetErrorDetail(const std::string detail);    // always returns false
-        const char* GetErrorDescription(CLIError code);
-
         void XMLResultToResponse(char const* pCommandName) ; // clears m_XMLResult
-
-        void LogQuery(); // for CLog command
-
-        std::string GenerateErrorString();
 
         void GetSystemStats(); // for stats
         void GetMemoryStats(); // for stats
@@ -884,49 +248,30 @@ namespace cli
 
         void PrintSourceSummary(int sourced, const std::list< std::string >& excised, int ignored);
 
-        bool CheckNumNonOptArgs(int min, int max);
-
-        void ResetOptions();
-        bool ProcessOptions(std::vector<std::string>& argv, Options* options);
-        void MoveBack(std::vector<std::string>& argv, int what, int howFar);
-        bool HandleOptionArgument(std::vector<std::string>& argv, const char* option, eOptionArgument arg);
-
-        int                     m_Argument;
-        int                     m_Option;
-        std::string             m_OptionArgument;
-        int                     m_NonOptionArguments;
-        bool                    m_Initialized;                // True if state has been cleared for a new command execution
         std::ostringstream      m_Result;                     // Raw output from the command
         bool                    m_RawOutput;                  // True if we want string output.
-        cli::CLIError           m_LastError;                  // Last error code (see cli_CLIError.h)
-        std::string             m_LastErrorDetail;            // Additional detail concerning the last error
+        std::string             m_LastError;                  // Last error
         bool                    m_TrapPrintEvents;            // True when print events should be trapped
-        bool                    m_EchoResult;                 // If true, copy result of command to echo event stream
-        EchoMap                 m_EchoMap;                    // If command appears in this map, always echo it.
         bool                    m_VarPrint;                   // Used in print command to put <>'s around identifiers.
         size_t                  m_GPMax;                      // Max number of productions to allow gp to produce
         soarxml::XMLTrace*      m_XMLResult;                  // Used to collect up XML output from commands that directly support that.
         ElementXMLList          m_ResponseTags;               // List of tags for the response.
-        cli::Aliases            m_Aliases;
-        CommandMap              m_CommandMap;                 // Mapping of command names to function pointers
         sml::KernelSML*         m_pKernelSML;
         sml::AgentSML*          m_pAgentSML;                  // Agent we're currently working with
         std::stack<CallData>    m_CallDataStack;              // Call data we're currently working with
-        agent*                  m_pAgentSoar;                 // Agent we're currently working with (soar kernel)
         StringStack             m_DirectoryStack;             // Directory stack for pushd/popd
         std::string             m_LogFilename;                // Used for logging to a file.
         std::ofstream*          m_pLogFile;                   // The log file stream
         SourceBitset*           m_pSourceOptions;
         std::stack<std::string> m_SourceFileStack;            // Stack of source calls, if zero then command line
-        std::string             m_SourceErrorDetail;          // holds the source stack output
         int                     m_NumProductionsSourced;
         std::list<std::string>  m_ExcisedDuringSource;
         int                     m_NumProductionsIgnored;
         int                     m_NumTotalProductionsSourced;
         std::list<std::string>  m_TotalExcisedDuringSource;
         int                     m_NumTotalProductionsIgnored;
+        cli::Parser             m_Parser;
     };
-
 } // namespace cli
 
 #endif //COMMAND_LINE_INTERFACE_H

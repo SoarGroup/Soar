@@ -16,37 +16,24 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseCD(std::vector<std::string>& argv) {
-	// Only takes one optional argument, the directory to change into
-	if (argv.size() > 2) return SetError(kTooManyArgs);
-
-	if (argv.size() > 1) {
-		return DoCD(&(argv[1]));
-	}
-	return DoCD();
-}
-
 bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 
 	// if directory 0, return SoarLibrary/bin
-	if (!pDirectory) {
+	if (!pDirectory) 
+    {
 		std::string binDir(this->m_pKernelSML->GetLibraryLocation());
 		binDir.append("bin");
 
-		if (chdir(binDir.c_str())) {
-			SetErrorDetail("Error changing to " + binDir);
-			return SetError(kchdirFail);
-		}
+		if (chdir(binDir.c_str())) 
+			return SetError("Error changing to " + binDir);
 		return true;
 	}
    
     std::string dir = *pDirectory;
 
     // Change to directory
-	if (chdir(dir.c_str())) {
-		SetErrorDetail("Error changing to " + dir);
-		return SetError(kchdirFail);
-	}
+	if (chdir(dir.c_str())) 
+		return SetError("Error changing to " + dir);
 	return true;
 }
 

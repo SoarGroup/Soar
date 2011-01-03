@@ -17,15 +17,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePWD(std::vector<std::string>& argv) {
-	// No arguments to print working directory
-	if (argv.size() != 1) {
-		SetErrorDetail("pwd takes no arguments.");
-		return SetError(kTooManyArgs);
-	}
-	return DoPWD();
-}
-
 bool CommandLineInterface::DoPWD() {
 
 	std::string directory;

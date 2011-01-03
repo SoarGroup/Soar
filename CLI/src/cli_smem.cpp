@@ -23,166 +23,16 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSMem( std::vector<std::string>& argv )
+bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, const std::string* pVal )
 {
-    Options optionsData[] =
-    {
-        {'a', "add",		OPTARG_NONE},
-        {'g', "get",		OPTARG_NONE},
-        {'i', "init",		OPTARG_NONE},
-        {'s', "set",		OPTARG_NONE},
-        {'S', "stats",		OPTARG_NONE},
-        {'t', "timers",		OPTARG_NONE},
-        {'v', "viz",		OPTARG_NONE},
-        {0, 0, OPTARG_NONE} // null
-    };
-
-    char option = 0;
-
-    for (;;)
-    {
-        if ( !ProcessOptions( argv, optionsData ) )
-            return false;
-
-        if (m_Option == -1) break;
-
-        if (option != 0)
-        {  
-            SetErrorDetail( "smem takes only one option at a time." );
-            return SetError( kTooManyArgs );
-        }
-        option = static_cast<char>(m_Option);
-    }
-
-    switch (option)
-    {
-    case 0:
-    default:
-        // no options
-        break;
-
-    case 'a':
-        // case: add requires one non-option argument
-        if (!CheckNumNonOptArgs(1, 1)) return false;
-
-        return DoSMem( option, &( argv[2] ) );
-
-    case 'g':
-        {
-            // case: get requires one non-option argument
-            if (!CheckNumNonOptArgs(1, 1)) return false;
-
-            // check attribute name here
-            soar_module::param *my_param = m_pAgentSoar->smem_params->get( argv[2].c_str() );
-            if ( !my_param )
-                return SetError( kInvalidAttribute );
-
-            return DoSMem( option, &( argv[2] ) );
-        }
-
-    case 'i':
-        // case: init takes no arguments
-        if (!CheckNumNonOptArgs(0, 0)) return false;
-
-        return DoSMem( option );
-
-    case 's':
-        {
-            // case: set requires two non-option arguments
-            if (!CheckNumNonOptArgs(2, 2)) return false;
-
-            // check attribute name/potential vals here
-            soar_module::param *my_param = m_pAgentSoar->smem_params->get( argv[2].c_str() );
-            if ( !my_param )
-                return SetError( kInvalidAttribute );
-
-            if ( !my_param->validate_string( argv[3].c_str() ) )
-                return SetError( kInvalidValue );
-
-            return DoSMem( option, &( argv[2] ), &( argv[3] ) );
-        }
-
-    case 'S':
-        {
-            // case: stat can do zero or one non-option arguments
-            if (!CheckNumNonOptArgs(0, 1)) return false;
-
-            if ( m_NonOptionArguments == 0 )
-                return DoSMem( 'S' );
-
-            // check attribute name
-            soar_module::stat *my_stat = m_pAgentSoar->smem_stats->get( argv[2].c_str() );
-            if ( !my_stat )
-                return SetError( kInvalidAttribute );
-
-            return DoSMem( option, &( argv[2] ) );
-        }
-
-    case 't':
-        {
-            // case: timer can do zero or one non-option arguments
-            if (!CheckNumNonOptArgs(0, 1)) return false;
-
-            if ( m_NonOptionArguments == 0 )
-                return DoSMem( 't' );
-
-            // check attribute name
-            soar_module::timer *my_timer = m_pAgentSoar->smem_timers->get( argv[2].c_str() );
-            if ( !my_timer )
-                return SetError( kInvalidAttribute );
-
-            return DoSMem( option, &( argv[2] ) );
-        }
-
-    case 'v':
-        {
-            // case: viz does zero or 1/2 non-option arguments
-            if (!CheckNumNonOptArgs(0, 2)) return false;
-
-            if ( m_NonOptionArguments == 0 )
-                return DoSMem( option );
-
-            smem_lti_id lti_id = NIL;
-            unsigned int depth = 0;
-
-            get_lexeme_from_string( m_pAgentSoar, argv[2].c_str() );
-            if ( m_pAgentSoar->lexeme.type == IDENTIFIER_LEXEME )
-            {
-                if ( m_pAgentSoar->smem_db->get_status() == soar_module::connected )
-                {
-                    lti_id = smem_lti_get_id( m_pAgentSoar, m_pAgentSoar->lexeme.id_letter, m_pAgentSoar->lexeme.id_number );
-
-                    if ( ( lti_id != NIL ) && ( m_NonOptionArguments == 2 ) )
-                    {
-                        from_c_string( depth, argv[3].c_str() );
-                    }
-                }
-            }
-
-            if ( lti_id == NIL )
-                return SetError( kInvalidAttribute );
-
-            return DoSMem( option, NIL, NIL, lti_id, depth );
-        }
-    }
-
-    // bad: no option, but more than one argument
-    if ( argv.size() > 1 ) 
-        return SetError( kTooManyArgs );
-
-    // case: nothing = full configuration information
-    return DoSMem();
-}
-
-bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, const std::string* pVal, smem_lti_id lti_id, unsigned int depth )
-{
+    agent* agnt = m_pAgentSML->GetSoarAgent();
     if ( !pOp )
     {
         std::string temp;
         char *temp2;
 
         temp = "SMem learning: ";
-        temp2 = m_pAgentSoar->smem_params->learning->get_string();
+        temp2 = agnt->smem_params->learning->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -216,7 +66,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "database: ";
-        temp2 = m_pAgentSoar->smem_params->database->get_string();
+        temp2 = agnt->smem_params->database->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -229,7 +79,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "path: ";
-        temp2 = m_pAgentSoar->smem_params->path->get_string();
+        temp2 = agnt->smem_params->path->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -242,7 +92,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "lazy-commit: ";
-        temp2 = m_pAgentSoar->smem_params->lazy_commit->get_string();
+        temp2 = agnt->smem_params->lazy_commit->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -276,7 +126,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "thresh: ";
-        temp2 = m_pAgentSoar->smem_params->thresh->get_string();
+        temp2 = agnt->smem_params->thresh->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -289,7 +139,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "cache: ";
-        temp2 = m_pAgentSoar->smem_params->cache->get_string();
+        temp2 = agnt->smem_params->cache->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -302,7 +152,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "optimization: ";
-        temp2 = m_pAgentSoar->smem_params->opt->get_string();
+        temp2 = agnt->smem_params->opt->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -315,7 +165,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "timers: ";
-        temp2 = m_pAgentSoar->smem_params->timers->get_string();
+        temp2 = agnt->smem_params->timers->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -348,7 +198,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "merge: ";
-        temp2 = m_pAgentSoar->smem_params->merge->get_string();
+        temp2 = agnt->smem_params->merge->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -366,12 +216,11 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     else if ( pOp == 'a' )
     {
         std::string *err = NULL;
-        bool result = smem_parse_chunks( m_pAgentSoar, pAttr->c_str(), &( err ) );
+        bool result = smem_parse_chunks( agnt, pAttr->c_str(), &( err ) );
 
         if ( !result )
         {
-            SetError( kSMemError );
-            SetErrorDetail( *err );
+            SetError( *err );
             delete err;
         }
 
@@ -379,7 +228,11 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'g' )
     {
-        char *temp2 = m_pAgentSoar->smem_params->get( pAttr->c_str() )->get_string();
+        soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
+        if ( !my_param )
+            return SetError( "Invalid attribute." );
+
+        char *temp2 = my_param->get_string();
         std::string output( temp2 );
         delete temp2;
 
@@ -402,7 +255,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         DoEpMem( 'c' );
 
         // smem - close before working/production memories to prevent id counter mess-ups
-        smem_close( m_pAgentSoar );
+        smem_close( agnt );
 
         // production memory (automatic init-soar clears working memory as a result)		
         ExciseBitset options(EXCISE_ALL);
@@ -412,15 +265,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 's' )
     {
-        bool result = m_pAgentSoar->smem_params->get( pAttr->c_str() )->set_string( pVal->c_str() );
+        soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
+        if ( !my_param )
+            return SetError( "Invalid attribute." );
+
+        if ( !my_param->validate_string( pVal->c_str() ) )
+            return SetError( "Invalid value." );
+
+        bool result = my_param->set_string( pVal->c_str() );
 
         // since parameter name and value have been validated,
         // this can only mean the parameter is protected
         if ( !result )
-        {
-            SetError( kSMemError );
-            SetErrorDetail( "ERROR: this parameter is protected while the SMem database is open." );
-        }
+            SetError( "ERROR: this parameter is protected while the SMem database is open." );
 
         return result;
     }
@@ -432,7 +289,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             char *temp2;
 
             output = "Memory Usage: ";
-            temp2 = m_pAgentSoar->smem_stats->mem_usage->get_string();
+            temp2 = agnt->smem_stats->mem_usage->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -445,7 +302,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             }
 
             output = "Memory Highwater: ";
-            temp2 = m_pAgentSoar->smem_stats->mem_high->get_string();
+            temp2 = agnt->smem_stats->mem_high->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -458,7 +315,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             }
 
             output = "Retrieves: ";
-            temp2 = m_pAgentSoar->smem_stats->expansions->get_string();
+            temp2 = agnt->smem_stats->expansions->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -471,7 +328,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             }
 
             output = "Queries: ";
-            temp2 = m_pAgentSoar->smem_stats->cbr->get_string();
+            temp2 = agnt->smem_stats->cbr->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -484,7 +341,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             }
 
             output = "Stores: ";
-            temp2 = m_pAgentSoar->smem_stats->stores->get_string();
+            temp2 = agnt->smem_stats->stores->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -497,7 +354,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             }
 
             output = "Nodes: ";
-            temp2 = m_pAgentSoar->smem_stats->chunks->get_string();
+            temp2 = agnt->smem_stats->chunks->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -510,7 +367,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             }
 
             output = "Edges: ";
-            temp2 = m_pAgentSoar->smem_stats->slots->get_string();
+            temp2 = agnt->smem_stats->slots->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -524,7 +381,11 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            char *temp2 = m_pAgentSoar->smem_stats->get( pAttr->c_str() )->get_string();
+            soar_module::stat *my_stat = agnt->smem_stats->get( pAttr->c_str() );
+            if ( !my_stat )
+                return SetError( "Invalid statistic." );
+
+            char *temp2 = my_stat->get_string();
             std::string output( temp2 );
             delete temp2;
 
@@ -576,11 +437,15 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
                 }
             } bar( m_RawOutput, this, m_Result );
 
-            m_pAgentSoar->smem_timers->for_each( bar );
+            agnt->smem_timers->for_each( bar );
         }
         else
         {
-            char *temp2 = m_pAgentSoar->smem_timers->get( pAttr->c_str() )->get_string();
+            soar_module::timer *my_timer = agnt->smem_timers->get( pAttr->c_str() );
+            if ( !my_timer )
+                return SetError( "Invalid timer." );
+
+            char *temp2 = my_timer->get_string();
             std::string output( temp2 );
             delete temp2;
 
@@ -598,15 +463,35 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'v' )
     {
+        smem_lti_id lti_id = NIL;
+        unsigned int depth = 0;
+
+        get_lexeme_from_string( agnt, pAttr->c_str() );
+        if ( agnt->lexeme.type == IDENTIFIER_LEXEME )
+        {
+            if ( agnt->smem_db->get_status() == soar_module::connected )
+            {
+                lti_id = smem_lti_get_id( agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number );
+
+                if ( ( lti_id != NIL ) && pVal )
+                {
+                    from_c_string( depth, pVal->c_str() );
+                }
+            }
+        }
+
+        if ( lti_id == NIL )
+            return SetError( "Invalid attribute." );
+
         std::string viz;
 
         if ( lti_id == NIL )
         {
-            smem_visualize_store( m_pAgentSoar, &( viz ) );
+            smem_visualize_store( agnt, &( viz ) );
         }
         else
         {
-            smem_visualize_lti( m_pAgentSoar, lti_id, depth, &( viz ) );
+            smem_visualize_lti( agnt, lti_id, depth, &( viz ) );
         }
 
         if ( m_RawOutput )
@@ -621,5 +506,5 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         return true;
     }
 
-    return SetError( kCommandNotImplemented );
+    return SetError( "Option not implemented." );
 }

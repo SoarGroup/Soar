@@ -30,137 +30,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePrint(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'a', "all",			OPTARG_NONE},
-		{'c', "chunks",			OPTARG_NONE},
-		{'d', "depth",			OPTARG_REQUIRED},
-		{'D', "defaults",		OPTARG_NONE},
-		{'e', "exact",			OPTARG_NONE},
-		{'f', "full",			OPTARG_NONE},
-		{'F', "filename",		OPTARG_NONE},
-		{'i', "internal",		OPTARG_NONE},
-		{'j', "justifications",	OPTARG_NONE},
-		{'n', "name",			OPTARG_NONE},
-		{'o', "operators",		OPTARG_NONE},
-		{'r', "rl",				OPTARG_NONE},
-		{'s', "stack",			OPTARG_NONE},
-		{'S', "states",			OPTARG_NONE},
-		{'t', "tree",			OPTARG_NONE},
-		{'T', "template",		OPTARG_NONE},
-		{'u', "user",			OPTARG_NONE},
-		{'v', "varprint",		OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	int depth = m_pAgentSoar->default_wme_depth;
-	PrintBitset options(0);
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'a':
-				options.set(PRINT_ALL);
-				break;
-			case 'c':
-				options.set(PRINT_CHUNKS);
-				break;
-			case 'd':
-				options.set(PRINT_DEPTH);
-				if ( !from_string( depth, m_OptionArgument ) ) return SetError(kIntegerExpected);
-				if (depth < 0) return SetError(kIntegerMustBeNonNegative);
-				break;
-			case 'D':
-				options.set(PRINT_DEFAULTS);
-				break;
-			case 'e':
-				options.set(PRINT_EXACT);
-				break;
-			case 'f':
-				options.set(PRINT_FULL);
-				break;
-			case 'F':
-				options.set(PRINT_FILENAME);
-				break;
-			case 'i':
-				options.set(PRINT_INTERNAL);
-				break;
-			case 'j':
-				options.set(PRINT_JUSTIFICATIONS);
-				break;
-			case 'n':
-				options.set(PRINT_NAME);
-				break;
-			case 'o':
-				options.set(PRINT_OPERATORS);
-				break;
-			case 'r':
-				options.set(PRINT_RL);
-				break;
-			case 's':
-				options.set(PRINT_STACK);
-				break;
-			case 'S':
-				options.set(PRINT_STATES);
-				break;
-			case 't':
-				options.set(PRINT_TREE);
-				break;
-			case 'T':
-				options.set(PRINT_TEMPLATE);
-				break;
-			case 'u':
-				options.set(PRINT_USER);
-				break;
-			case 'v':
-				options.set(PRINT_VARPRINT);
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// STATES and OPERATORS are sub-options of STACK
-	if (options.test(PRINT_OPERATORS) || options.test(PRINT_STATES)) {
-		if (!options.test(PRINT_STACK)) return SetError(kPrintSubOptionsOfStack);
-	}
-
-	if (m_NonOptionArguments == 0) {
-		// d and t options require an argument
-		if (options.test(PRINT_TREE) || options.test(PRINT_DEPTH)) return SetError(kTooFewArgs);
-		return DoPrint(options, depth);
-	} 
-
-    // the acDjus options don't allow an argument
-    if (options.test(PRINT_ALL) 
-	    || options.test(PRINT_CHUNKS) 
-	    || options.test(PRINT_DEFAULTS) 
-	    || options.test(PRINT_JUSTIFICATIONS)
-	    || options.test(PRINT_RL)
-	    || options.test(PRINT_TEMPLATE)
-	    || options.test(PRINT_USER) 
-	    || options.test(PRINT_STACK)) 
-    {
-	    SetErrorDetail("No argument allowed when printing all/chunks/defaults/justifications/rl/template/user/stack.");
-	    return SetError(kTooManyArgs);
-    }
-    if (options.test(PRINT_EXACT) && (options.test(PRINT_DEPTH) || options.test(PRINT_TREE))) 
-    {
-	    SetErrorDetail("No depth/tree flags allowed when printing exact.");
-	    return SetError(kTooManyArgs);
-    }
-    std::string arg;
-    for (int i = m_Argument - m_NonOptionArguments; i < argv.size(); ++i)
-    {
-        if (!arg.empty())
-            arg.push_back(' ');
-        arg.append(argv[i]);
-    }
-    return DoPrint(options, depth, &arg);
-}
-
 void print_stack_trace(agent* thisAgent, bool print_states, bool print_operators)
 {
 	// We don't want to keep printing forever (in case we're in a state no change cascade).
@@ -735,6 +604,10 @@ void print_symbol(agent* thisAgent, const char* arg, bool print_filename, bool i
 
 bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::string* pArg) 
 {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
+    if (depth < 0)
+        depth = agnt->default_wme_depth;
+
 	if (options.test(PRINT_STACK)) 
 	{
 		// if neither states option nor operators option are set, set them both
@@ -744,7 +617,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
 			options.set(PRINT_OPERATORS);
 		}
 
-		print_stack_trace(m_pAgentSoar, options.test(PRINT_STATES), options.test(PRINT_OPERATORS));
+		print_stack_trace(agnt, options.test(PRINT_STATES), options.test(PRINT_OPERATORS));
 		return true;
 	}
 
@@ -762,7 +635,7 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
 
 		// Watch out, this case handles all args identifier/pattern/timetag/production_name
 		m_VarPrint = options.test(PRINT_VARPRINT); // This is a member because it affects the print callback.
-		print_symbol(m_pAgentSoar, pArg->c_str(), filename, intern, tree, full, depth, exact);
+		print_symbol(agnt, pArg->c_str(), filename, intern, tree, full, depth, exact);
 		m_VarPrint = false;
 		return true;
 	} 
@@ -785,17 +658,17 @@ bool CommandLineInterface::DoPrint(PrintBitset options, int depth, const std::st
 	} 
 
 	if (options.test(PRINT_CHUNKS)) 
-		print_productions_of_type(m_pAgentSoar, intern, filename, full, CHUNK_PRODUCTION_TYPE);
+		print_productions_of_type(agnt, intern, filename, full, CHUNK_PRODUCTION_TYPE);
 	if (options.test(PRINT_DEFAULTS)) 
-		print_productions_of_type(m_pAgentSoar, intern, filename, full, DEFAULT_PRODUCTION_TYPE);
+		print_productions_of_type(agnt, intern, filename, full, DEFAULT_PRODUCTION_TYPE);
 	if (options.test(PRINT_JUSTIFICATIONS)) 
-		print_productions_of_type(m_pAgentSoar, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
+		print_productions_of_type(agnt, intern, filename, full, JUSTIFICATION_PRODUCTION_TYPE);
 	if (options.test(PRINT_USER)) 
-		print_productions_of_type(m_pAgentSoar, intern, filename, full, USER_PRODUCTION_TYPE);
+		print_productions_of_type(agnt, intern, filename, full, USER_PRODUCTION_TYPE);
 	if (options.test(PRINT_RL)) 
-		print_rl_rules(m_pAgentSoar, intern, filename, full);
+		print_rl_rules(agnt, intern, filename, full);
 	if (options.test(PRINT_TEMPLATE)) 
-		print_productions_of_type(m_pAgentSoar, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
+		print_productions_of_type(agnt, intern, filename, full, TEMPLATE_PRODUCTION_TYPE);
 
 	return true;
 }

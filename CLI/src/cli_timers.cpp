@@ -22,46 +22,11 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseTimers(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'e', "enable",		OPTARG_NONE},
-		{'d', "disable",	OPTARG_NONE},
-		{'d', "off",		OPTARG_NONE},
-		{'e', "on",			OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool print = true;
-	bool setting = false;	// enable or disable timers, default of false ignored
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'e':
-				print = false;
-				setting = true; // enable timers
-				break;
-			case 'd':
-				print = false;
-				setting = false; // disable timers
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// No non-option arguments
-	if (m_NonOptionArguments) return SetError(kTooManyArgs);
-
-	return DoTimers(print ? 0 : &setting);
-}
-
 bool CommandLineInterface::DoTimers(bool* pSetting) {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if (pSetting) {
 		// set, don't print
-		set_sysparam(m_pAgentSoar, TIMERS_ENABLED, *pSetting);
+		set_sysparam(agnt, TIMERS_ENABLED, *pSetting);
 
 	} else {
 		// print current setting
@@ -74,7 +39,7 @@ bool CommandLineInterface::DoTimers(bool* pSetting) {
 #else // USE_PERFORMANCE_FOR_BOTH
 			m_Result << "Timers are ";
 #endif // USE_PERFORMANCE_FOR_BOTH
-			m_Result << (m_pAgentSoar->sysparams[TIMERS_ENABLED] ? "enabled" : "disabled");
+			m_Result << (agnt->sysparams[TIMERS_ENABLED] ? "enabled" : "disabled");
 #ifdef DETAILED_TIMING_STATS
 			m_Result << ", detailed stats are on";
 #endif // DETAILED_TIMING_STATS
@@ -83,7 +48,7 @@ bool CommandLineInterface::DoTimers(bool* pSetting) {
 		} else {
 			// adds <arg name="timers">true</arg> (or false) if the timers are
 			// enabled (or disabled)
-			AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
+			AppendArgTagFast(sml_Names::kParamTimers, sml_Names::kTypeBoolean, agnt->sysparams[TIMERS_ENABLED] ? sml_Names::kTrue : sml_Names::kFalse);
 		}
 	}
 	return true;

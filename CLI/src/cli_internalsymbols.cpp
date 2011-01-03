@@ -21,12 +21,8 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseInternalSymbols(std::vector<std::string>&) {
-	return DoInternalSymbols();
-}
-
 bool CommandLineInterface::DoInternalSymbols() {
-	print_internal_symbols(m_pAgentSoar);
+	print_internal_symbols(m_pAgentSML->GetSoarAgent());
 	return true;
 }
 

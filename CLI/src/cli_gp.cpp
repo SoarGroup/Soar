@@ -17,19 +17,6 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseGP(std::vector<std::string>& argv) {
-	// One argument
-	if (argv.size() < 2) {
-		return SetError(kTooFewArgs);
-	}
-	if (argv.size() > 2) {
-		SetErrorDetail("Expected one argument (the production) enclosed in braces.");
-		return SetError(kTooManyArgs);
-	}
-
-	return DoGP(argv[1]);
-}
-
 typedef std::list< std::string > valueCollection;
 struct iterTriple
 {
@@ -93,15 +80,9 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
 				{
 					// make sure there is not a square bracket immediately following this one
 					if ( productionString.size() < pos + 2 )
-					{
-						SetErrorDetail( "gp production ends with [");
-						return SetError( kValuesError );
-					}
+						return SetError( "gp production ends with [" );
 					if ( productionString[ pos + 1 ] == ']' )
-					{
-						SetErrorDetail( "gp can't have empty value collections");
-						return SetError( kValuesError );;
-					}
+						return SetError( "gp can't have empty value collections" );
 
 					// we've started a values list, finish and save the previous segment
 					currentValueToken += productionString.substr( searchpos, pos - searchpos );
@@ -127,15 +108,9 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
 				{
 					// make sure there is not a square bracket immediately following this one
 					if ( productionString.size() < pos + 2 )
-					{
-						SetErrorDetail( "gp production ends with ]");
-						return SetError( kValuesError );
-					}
+						return SetError( "gp production ends with ]" );
 					if ( productionString[ pos + 1 ] == '[' )
-					{
-						SetErrorDetail( "gp production requires space between value lists");
-						return SetError( kValuesError );;
-					}
+						return SetError( "gp production requires space between value lists" );
 
 					// end of values list
 					currentValueToken += productionString.substr( searchpos, pos - searchpos );
@@ -243,16 +218,14 @@ bool CommandLineInterface::DoGP(const std::string& productionString)
 			message << "values bracket";
 		}
 		message << ".";
-		SetErrorDetail( message.str() );
-		return SetError( kValuesError );;
+		return SetError( message.str() );;
 	}
 
 	if (m_GPMax != 0) {
 		if (total > m_GPMax) {
 			std::ostringstream message;
-			message << "Current production produces " << total << " productions.";
-			SetErrorDetail( message.str() );
-			return SetError( kGPMaxExceeded );
+            message << "gp-max exceeded, current production produces " << total << " productions.";
+			return SetError( message.str() );
 		}
 	}
 

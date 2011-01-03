@@ -20,23 +20,12 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSelect( std::vector<std::string>& argv ) 
-{
-	// At most one argument to select the next operator
-	if ( argv.size() > 2 ) 
-		return SetError( kTooManyArgs );
-	
-	if ( argv.size() == 2 )
-		return DoSelect( &( argv[1] ) );
-	
-	return DoSelect( );
-}
-
 bool CommandLineInterface::DoSelect( const std::string* pOp ) 
 {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if ( !pOp )
 	{
-		const char *my_selection = select_get_operator( m_pAgentSoar );
+		const char *my_selection = select_get_operator( agnt );
 		
 		if ( my_selection != NULL )
 		{
@@ -54,7 +43,7 @@ bool CommandLineInterface::DoSelect( const std::string* pOp )
 		}
 	}
 	else
-		select_next_operator( m_pAgentSoar, pOp->c_str() );
+		select_next_operator( agnt, pOp->c_str() );
 	
 	return true;
 }

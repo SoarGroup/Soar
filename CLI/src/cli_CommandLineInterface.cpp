@@ -1,7 +1,7 @@
 #include <portability.h>
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
+#include "sml_Utils.h"
 
 #include <assert.h>
 
@@ -29,142 +29,87 @@ using namespace soarxml;
 
 EXPORT CommandLineInterface::CommandLineInterface() 
 {
-    // Map command names to processing function pointers
-    m_CommandMap[Commands::kCLIAddWME]                 = &cli::CommandLineInterface::ParseAddWME;
-    m_CommandMap[Commands::kCLIAlias]                  = &cli::CommandLineInterface::ParseAlias;
-    m_CommandMap[Commands::kCLIAllocate]               = &cli::CommandLineInterface::ParseAllocate;
-    m_CommandMap[Commands::kCLICaptureInput]           = &cli::CommandLineInterface::ParseCaptureInput;
-    m_CommandMap[Commands::kCLICD]                     = &cli::CommandLineInterface::ParseCD;
-    m_CommandMap[Commands::kCLIChunkNameFormat]        = &cli::CommandLineInterface::ParseChunkNameFormat;
-    m_CommandMap[Commands::kCLICLog]                   = &cli::CommandLineInterface::ParseCLog;
-    m_CommandMap[Commands::kCLICommandToFile]          = &cli::CommandLineInterface::ParseCommandToFile;
-    m_CommandMap[Commands::kCLIDefaultWMEDepth]        = &cli::CommandLineInterface::ParseDefaultWMEDepth;
-    m_CommandMap[Commands::kCLIDirs]                   = &cli::CommandLineInterface::ParseDirs;
-    m_CommandMap[Commands::kCLIEcho]                   = &cli::CommandLineInterface::ParseEcho;
-    m_CommandMap[Commands::kCLIEchoCommands]           = &cli::CommandLineInterface::ParseEchoCommands;
-    m_CommandMap[Commands::kCLIEditProduction]         = &cli::CommandLineInterface::ParseEditProduction;
-    m_CommandMap[Commands::kCLIEpMem]                  = &cli::CommandLineInterface::ParseEpMem;
-    m_CommandMap[Commands::kCLIExcise]                 = &cli::CommandLineInterface::ParseExcise;
-    m_CommandMap[Commands::kCLIExplainBacktraces]      = &cli::CommandLineInterface::ParseExplainBacktraces;
-    m_CommandMap[Commands::kCLIFiringCounts]           = &cli::CommandLineInterface::ParseFiringCounts;
-    m_CommandMap[Commands::kCLIGDSPrint]               = &cli::CommandLineInterface::ParseGDSPrint;
-    m_CommandMap[Commands::kCLIGP]                     = &cli::CommandLineInterface::ParseGP;
-    m_CommandMap[Commands::kCLIGPMax]                  = &cli::CommandLineInterface::ParseGPMax;
-    m_CommandMap[Commands::kCLIHelp]                   = &cli::CommandLineInterface::ParseHelp;
-    m_CommandMap[Commands::kCLIIndifferentSelection]   = &cli::CommandLineInterface::ParseIndifferentSelection;
-    m_CommandMap[Commands::kCLIInitSoar]               = &cli::CommandLineInterface::ParseInitSoar;
-    m_CommandMap[Commands::kCLIInternalSymbols]        = &cli::CommandLineInterface::ParseInternalSymbols;
-    m_CommandMap[Commands::kCLILearn]                  = &cli::CommandLineInterface::ParseLearn;
-    m_CommandMap[Commands::kCLILoadLibrary]            = &cli::CommandLineInterface::ParseLoadLibrary;
-    m_CommandMap[Commands::kCLILS]                     = &cli::CommandLineInterface::ParseLS;
-    m_CommandMap[Commands::kCLIMatches]                = &cli::CommandLineInterface::ParseMatches;
-    m_CommandMap[Commands::kCLIMaxChunks]              = &cli::CommandLineInterface::ParseMaxChunks;
-    m_CommandMap[Commands::kCLIMaxElaborations]        = &cli::CommandLineInterface::ParseMaxElaborations;
-    m_CommandMap[Commands::kCLIMaxGoalDepth]           = &cli::CommandLineInterface::ParseMaxGoalDepth;
-    m_CommandMap[Commands::kCLIMaxMemoryUsage]         = &cli::CommandLineInterface::ParseMaxMemoryUsage;
-    m_CommandMap[Commands::kCLIMaxNilOutputCycles]     = &cli::CommandLineInterface::ParseMaxNilOutputCycles;
-    m_CommandMap[Commands::kCLIMemories]               = &cli::CommandLineInterface::ParseMemories;
-    m_CommandMap[Commands::kCLIMultiAttributes]        = &cli::CommandLineInterface::ParseMultiAttributes;
-    m_CommandMap[Commands::kCLINumericIndifferentMode] = &cli::CommandLineInterface::ParseNumericIndifferentMode;
-    m_CommandMap[Commands::kCLIOSupportMode]           = &cli::CommandLineInterface::ParseOSupportMode;
-    m_CommandMap[Commands::kCLIPopD]                   = &cli::CommandLineInterface::ParsePopD;
-    m_CommandMap[Commands::kCLIPort]                   = &cli::CommandLineInterface::ParsePort;
-    m_CommandMap[Commands::kCLIPredict]                = &cli::CommandLineInterface::ParsePredict;
-    m_CommandMap[Commands::kCLIPreferences]            = &cli::CommandLineInterface::ParsePreferences;
-    m_CommandMap[Commands::kCLIPrint]                  = &cli::CommandLineInterface::ParsePrint;
-    m_CommandMap[Commands::kCLIProductionFind]         = &cli::CommandLineInterface::ParseProductionFind;
-    m_CommandMap[Commands::kCLIPushD]                  = &cli::CommandLineInterface::ParsePushD;
-    m_CommandMap[Commands::kCLIPWatch]                 = &cli::CommandLineInterface::ParsePWatch;
-    m_CommandMap[Commands::kCLIPWD]                    = &cli::CommandLineInterface::ParsePWD;
-    m_CommandMap[Commands::kCLIRand]                   = &cli::CommandLineInterface::ParseRand;
-    m_CommandMap[Commands::kCLIRemoveWME]              = &cli::CommandLineInterface::ParseRemoveWME;
-    m_CommandMap[Commands::kCLIReplayInput]            = &cli::CommandLineInterface::ParseReplayInput;
-    m_CommandMap[Commands::kCLIReteNet]                = &cli::CommandLineInterface::ParseReteNet;
-    m_CommandMap[Commands::kCLIRL]                     = &cli::CommandLineInterface::ParseRL;
-    m_CommandMap[Commands::kCLIRun]                    = &cli::CommandLineInterface::ParseRun;
-    m_CommandMap[Commands::kCLISaveBacktraces]         = &cli::CommandLineInterface::ParseSaveBacktraces;
-    m_CommandMap[Commands::kCLISelect]                 = &cli::CommandLineInterface::ParseSelect;
-    m_CommandMap[Commands::kCLISetLibraryLocation]     = &cli::CommandLineInterface::ParseSetLibraryLocation;
-    m_CommandMap[Commands::kCLISMem]                   = &cli::CommandLineInterface::ParseSMem;
-    m_CommandMap[Commands::kCLISoarNews]               = &cli::CommandLineInterface::ParseSoarNews;
-    m_CommandMap[Commands::kCLISource]                 = &cli::CommandLineInterface::ParseSource;
-    m_CommandMap[Commands::kCLISP]                     = &cli::CommandLineInterface::ParseSP;
-    m_CommandMap[Commands::kCLISRand]                  = &cli::CommandLineInterface::ParseSRand;
-    m_CommandMap[Commands::kCLIStats]                  = &cli::CommandLineInterface::ParseStats;
-    m_CommandMap[Commands::kCLISetStopPhase]           = &cli::CommandLineInterface::ParseSetStopPhase;
-    m_CommandMap[Commands::kCLIStopSoar]               = &cli::CommandLineInterface::ParseStopSoar;
-    m_CommandMap[Commands::kCLITime]                   = &cli::CommandLineInterface::ParseTime;
-    m_CommandMap[Commands::kCLITimers]                 = &cli::CommandLineInterface::ParseTimers;
-    m_CommandMap[Commands::kCLIUnalias]                = &cli::CommandLineInterface::ParseUnalias;
-    m_CommandMap[Commands::kCLIVerbose]                = &cli::CommandLineInterface::ParseVerbose;
-    m_CommandMap[Commands::kCLIVersion]                = &cli::CommandLineInterface::ParseVersion;
-    m_CommandMap[Commands::kCLIWaitSNC]                = &cli::CommandLineInterface::ParseWaitSNC;
-    m_CommandMap[Commands::kCLIWarnings]               = &cli::CommandLineInterface::ParseWarnings;
-    m_CommandMap[Commands::kCLIWatch]                  = &cli::CommandLineInterface::ParseWatch;
-    m_CommandMap[Commands::kCLIWatchWMEs]              = &cli::CommandLineInterface::ParseWatchWMEs;
-    m_CommandMap[Commands::kCLIWMA]                    = &cli::CommandLineInterface::ParseWMA;
-
-    // Indicate which commands should be echoed so that all users can see them when doing a shared debugging session
-    // FIXME: missing stuff like GDSPRINT?
-    m_EchoMap[Commands::kCLIAddWME]                 = true ;
-    m_EchoMap[Commands::kCLIAlias]                  = true ;
-    m_EchoMap[Commands::kCLIAllocate]               = true ;
-    m_EchoMap[Commands::kCLICaptureInput]           = true ;
-    m_EchoMap[Commands::kCLICD]                     = true ;
-    m_EchoMap[Commands::kCLIChunkNameFormat]        = true ;
-    m_EchoMap[Commands::kCLICLog]                   = true ;
-    m_EchoMap[Commands::kCLICommandToFile]          = true ;
-    m_EchoMap[Commands::kCLIDefaultWMEDepth]        = true ;
-    m_EchoMap[Commands::kCLIEcho]                   = true ;
-    m_EchoMap[Commands::kCLIEchoCommands]           = true ;
-    m_EchoMap[Commands::kCLIEpMem]                  = true ;
-    m_EchoMap[Commands::kCLIExcise]                 = true ;
-    m_EchoMap[Commands::kCLIGP]                     = true ;
-    m_EchoMap[Commands::kCLIGPMax]                  = true ;
-    m_EchoMap[Commands::kCLIIndifferentSelection]   = true ;
-    m_EchoMap[Commands::kCLIInitSoar]               = true ;
-    m_EchoMap[Commands::kCLILearn]                  = true ;
-    m_EchoMap[Commands::kCLILoadLibrary]            = true ; // TODO: figure out if we actually want to echo this
-    m_EchoMap[Commands::kCLIMaxChunks]              = true ;
-    m_EchoMap[Commands::kCLIMaxElaborations]        = true ;
-    m_EchoMap[Commands::kCLIMaxNilOutputCycles]     = true ;
-    m_EchoMap[Commands::kCLIMultiAttributes]        = true ;
-    m_EchoMap[Commands::kCLINumericIndifferentMode] = true ;
-    m_EchoMap[Commands::kCLIOSupportMode]           = true ;
-    m_EchoMap[Commands::kCLIPopD]                   = true ;
-    m_EchoMap[Commands::kCLIPort]                   = true ;
-    m_EchoMap[Commands::kCLIPreferences]            = true ;
-    m_EchoMap[Commands::kCLIPushD]                  = true ;
-    m_EchoMap[Commands::kCLIRand]                   = true ;
-    m_EchoMap[Commands::kCLIRemoveWME]              = true ;
-    m_EchoMap[Commands::kCLIReplayInput]            = true ;
-    m_EchoMap[Commands::kCLIReteNet]                = true ;
-    m_EchoMap[Commands::kCLIRL]                     = true ;
-    m_EchoMap[Commands::kCLIRun]                    = true ;
-    m_EchoMap[Commands::kCLISelect]                 = true ;
-    m_EchoMap[Commands::kCLISetLibraryLocation]     = true ;
-    m_EchoMap[Commands::kCLISMem]                   = true ;
-    m_EchoMap[Commands::kCLISource]                 = true ;
-    m_EchoMap[Commands::kCLISP]                     = true ;
-    m_EchoMap[Commands::kCLISRand]                  = true ;
-    m_EchoMap[Commands::kCLISetStopPhase]           = true ;
-    m_EchoMap[Commands::kCLIStopSoar]               = true ;
-    m_EchoMap[Commands::kCLITimers]                 = true ;
-    m_EchoMap[Commands::kCLIVerbose]                = true ;
-    m_EchoMap[Commands::kCLIWaitSNC]                = true ;
-    m_EchoMap[Commands::kCLIWatch]                  = true ;
-    m_EchoMap[Commands::kCLIWatchWMEs]              = true ;
-
     m_pLogFile        = 0;
-    m_LastError       = kNoError;
-    m_Initialized     = true;
     m_TrapPrintEvents = false;
-    m_EchoResult      = false ;
     m_pAgentSML       = 0 ;
-    m_pAgentSoar      = 0;
     m_VarPrint        = false;
     m_GPMax           = 20000;
     m_XMLResult       = new XMLTrace() ;
+
+    // parser takes ownership and deletes commands in its destructor
+    m_Parser.AddCommand(new cli::AddWMECommand(*this));
+    m_Parser.AddCommand(new cli::AliasCommand(*this));
+    m_Parser.AddCommand(new cli::AllocateCommand(*this));
+    m_Parser.AddCommand(new cli::CaptureInputCommand(*this));
+    m_Parser.AddCommand(new cli::CDCommand(*this));
+    m_Parser.AddCommand(new cli::ChunkNameFormatCommand(*this));
+    m_Parser.AddCommand(new cli::CLogCommand(*this));
+    m_Parser.AddCommand(new cli::CommandToFileCommand(*this));
+    m_Parser.AddCommand(new cli::DefaultWMEDepthCommand(*this));
+    m_Parser.AddCommand(new cli::DirsCommand(*this));
+    m_Parser.AddCommand(new cli::EchoCommand(*this));
+    m_Parser.AddCommand(new cli::EchoCommandsCommand(*this));
+    m_Parser.AddCommand(new cli::EditProductionCommand(*this));
+    m_Parser.AddCommand(new cli::EpMemCommand(*this));
+    m_Parser.AddCommand(new cli::ExciseCommand(*this));
+    m_Parser.AddCommand(new cli::ExplainBacktracesCommand(*this));
+    m_Parser.AddCommand(new cli::FiringCountsCommand(*this));
+    m_Parser.AddCommand(new cli::GDSPrintCommand(*this));
+    m_Parser.AddCommand(new cli::GPCommand(*this));
+    m_Parser.AddCommand(new cli::GPMaxCommand(*this));
+    m_Parser.AddCommand(new cli::HelpCommand(*this));
+    m_Parser.AddCommand(new cli::IndifferentSelectionCommand(*this));
+    m_Parser.AddCommand(new cli::InitSoarCommand(*this));
+    m_Parser.AddCommand(new cli::InternalSymbolsCommand(*this));
+    m_Parser.AddCommand(new cli::LearnCommand(*this));
+    m_Parser.AddCommand(new cli::LoadLibraryCommand(*this));
+    m_Parser.AddCommand(new cli::LSCommand(*this));
+    m_Parser.AddCommand(new cli::MatchesCommand(*this));
+    m_Parser.AddCommand(new cli::MaxChunksCommand(*this));
+    m_Parser.AddCommand(new cli::MaxElaborationsCommand(*this));
+    m_Parser.AddCommand(new cli::MaxGoalDepthCommand(*this));
+    m_Parser.AddCommand(new cli::MaxMemoryUsageCommand(*this));
+    m_Parser.AddCommand(new cli::MaxNilOutputCyclesCommand(*this));
+    m_Parser.AddCommand(new cli::MemoriesCommand(*this));
+    m_Parser.AddCommand(new cli::MultiAttributesCommand(*this));
+    m_Parser.AddCommand(new cli::NumericIndifferentModeCommand(*this));
+    m_Parser.AddCommand(new cli::OSupportModeCommand(*this));
+    m_Parser.AddCommand(new cli::PopDCommand(*this));
+    m_Parser.AddCommand(new cli::PortCommand(*this));
+    m_Parser.AddCommand(new cli::PredictCommand(*this));
+    m_Parser.AddCommand(new cli::PreferencesCommand(*this));
+    m_Parser.AddCommand(new cli::PrintCommand(*this));
+    m_Parser.AddCommand(new cli::ProductionFindCommand(*this));
+    m_Parser.AddCommand(new cli::PushDCommand(*this));
+    m_Parser.AddCommand(new cli::PWatchCommand(*this));
+    m_Parser.AddCommand(new cli::PWDCommand(*this));
+    m_Parser.AddCommand(new cli::RandCommand(*this));
+    m_Parser.AddCommand(new cli::RemoveWMECommand(*this));
+    m_Parser.AddCommand(new cli::ReplayInputCommand(*this));
+    m_Parser.AddCommand(new cli::ReteNetCommand(*this));
+    m_Parser.AddCommand(new cli::RLCommand(*this));
+    m_Parser.AddCommand(new cli::RunCommand(*this));
+    m_Parser.AddCommand(new cli::SaveBacktracesCommand(*this));
+    m_Parser.AddCommand(new cli::SelectCommand(*this));
+    m_Parser.AddCommand(new cli::SetLibraryLocationCommand(*this));
+    m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
+    m_Parser.AddCommand(new cli::SMemCommand(*this));
+    m_Parser.AddCommand(new cli::SoarNewsCommand(*this));
+    m_Parser.AddCommand(new cli::SourceCommand(*this));
+    m_Parser.AddCommand(new cli::SPCommand(*this));
+    m_Parser.AddCommand(new cli::SRandCommand(*this));
+    m_Parser.AddCommand(new cli::StatsCommand(*this));
+    m_Parser.AddCommand(new cli::StopSoarCommand(*this));
+    m_Parser.AddCommand(new cli::TimeCommand(*this));
+    m_Parser.AddCommand(new cli::TimersCommand(*this));
+    m_Parser.AddCommand(new cli::UnaliasCommand(*this));
+    m_Parser.AddCommand(new cli::VerboseCommand(*this));
+    m_Parser.AddCommand(new cli::VersionCommand(*this));
+    m_Parser.AddCommand(new cli::WaitSNCCommand(*this));
+    m_Parser.AddCommand(new cli::WarningsCommand(*this));
+    m_Parser.AddCommand(new cli::WatchCommand(*this));
+    m_Parser.AddCommand(new cli::WatchWMEsCommand(*this));
+    m_Parser.AddCommand(new cli::WMACommand(*this));
 }
 
 EXPORT CommandLineInterface::~CommandLineInterface() 
@@ -184,17 +129,8 @@ EXPORT bool CommandLineInterface::ShouldEchoCommand(char const* pCommandLine)
     if (!pCommandLine)
         return false ;
 
-    std::string command = pCommandLine ;
-
-    char const* pSpace = strchr(pCommandLine, ' ') ;
-    // Trim everything from space on
-    if (pSpace)
-        command.erase(pSpace-pCommandLine, command.length()) ;
-
-    // See if there's an entry in the echo map for this command
-    // BADBAD: This won't work for short forms of the command or aliases; but making this test
-    // happen later in the command line processing causes too many re-entrancy problem within the command line module.
-    return (m_EchoMap.find(command) != m_EchoMap.end()) ;
+    // echo everything but edit-production
+    return strncmp(pCommandLine, "edit-production", strlen("edit_production")) != 0;
 }
 
 EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentSML* pAgent, const char* pCommandLine, bool echoResults, bool rawOutput, ElementXML* pResponse) 
@@ -210,28 +146,24 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
         (*m_pLogFile) << pCommandLine << std::endl;
     }
 
-    m_EchoResult = echoResults ;
-
     SetTrapPrintCallbacks( true );
 
-    m_LastError = kNoError;
-    m_LastErrorDetail.clear();
+    m_LastError.clear();
 
-    // Process the command
     soar::tokenizer tokenizer;
-    tokenizer.set_handler(this);
-    bool ret = tokenizer.evaluate(pCommandLine);
+    tokenizer.set_handler(&m_Parser);
+    if (!tokenizer.evaluate(pCommandLine))
+    {
+        if (!m_Parser.GetError().empty())
+            m_LastError = m_Parser.GetError();
+        else if (!tokenizer.get_error_string())
+            m_LastError = tokenizer.get_error_string();
+    }
 
     SetTrapPrintCallbacks( false );
 
-    if (!ret && m_LastError == kNoError)
-    {
-        SetError(kParseError);
-        SetErrorDetail(tokenizer.get_error_string());
-    }
-
     if (pConnection && pResponse)
-        GetLastResultSML(pConnection, pResponse);
+        GetLastResultSML(pConnection, pResponse, echoResults);
 
     PopCall();
 
@@ -244,16 +176,9 @@ void CommandLineInterface::PushCall( CallData callData )
     m_CallDataStack.push( callData );
 
     if (callData.pAgent) 
-    {
         m_pAgentSML = callData.pAgent;
-        m_pAgentSoar = m_pAgentSML->GetSoarAgent();
-        assert( m_pAgentSoar );
-    } 
     else 
-    {
         m_pAgentSML = 0;
-        m_pAgentSoar = 0;
-    }
 
     m_RawOutput = callData.rawOutput;
 
@@ -274,15 +199,7 @@ void CommandLineInterface::PopCall()
 
         // reset these for the next command
         SetAgentSML( pAgent ) ;
-
         m_pAgentSML = pAgent;
-        if (pAgent) 
-        {
-            m_pAgentSoar = pAgent->GetSoarAgent();
-            assert( m_pAgentSoar );
-        }
-        else 
-            m_pAgentSoar = 0;
     }
 }
 
@@ -305,12 +222,12 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
             RegisterWithKernel(smlEVENT_PRINT);
 
         // Tell kernel to collect result in command buffer as opposed to trace buffer
-        xml_begin_command_mode( m_pAgentSoar );
+        xml_begin_command_mode( m_pAgentSML->GetSoarAgent() );
     }
     else
     {
         // Retrieve command buffer, tell kernel to use trace buffer again
-        ElementXML* pXMLCommandResult = xml_end_command_mode( m_pAgentSoar );
+        ElementXML* pXMLCommandResult = xml_end_command_mode( m_pAgentSML->GetSoarAgent() );
 
         // The root object is just a <trace> tag.  The substance is in the children
         // Add childrend of the command buffer to response tags
@@ -345,12 +262,12 @@ void CommandLineInterface::SetTrapPrintCallbacks(bool setting)
     }
 }
 
-void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse) 
+void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxml::ElementXML* pResponse, bool echoResults) 
 {
     assert(pConnection);
     assert(pResponse);
 
-    if (m_LastError == kNoError) 
+    if (m_LastError.empty()) 
     {
         // Log output
         if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
@@ -359,7 +276,8 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
         if (m_RawOutput) 
         {
             pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
-            EchoString(pConnection, m_Result.str().c_str()) ;
+            if (echoResults && m_pAgentSML)
+                m_pAgentSML->FireEchoEvent(pConnection, m_Result.str().c_str()) ;
         } 
         else 
         {
@@ -389,13 +307,16 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
     else 
     {
         // The command failed, add the error message
-        std::string errorDescription = GenerateErrorString();
+        if (!m_Result.str().empty())
+            m_Result << std::endl;
+        m_Result << m_LastError;
 
-        pConnection->AddErrorToSMLResponse(pResponse, errorDescription.c_str(), m_LastError);
-        EchoString(pConnection, errorDescription.c_str()) ;
+        pConnection->AddErrorToSMLResponse(pResponse, m_Result.str().c_str(), 1);
+        if (echoResults && m_pAgentSML)
+            m_pAgentSML->FireEchoEvent(pConnection, m_Result.str().c_str()) ;
 
         // Log error
-        if (m_pLogFile) (*m_pLogFile) << errorDescription << std::endl;
+        if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
     }
 
     // reset state
@@ -406,221 +327,6 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
         delete *cleanupIter;
 
     m_ResponseTags.clear();    
-
-    m_LastError = kNoError;    
-    m_LastErrorDetail.clear();            
-}
-
-std::string CommandLineInterface::GenerateErrorString()
-{
-    std::string errorDescription(GetErrorDescription(m_LastError));
-    if (m_LastErrorDetail.size()) 
-    {
-        errorDescription += "\nError detail: ";
-        errorDescription += m_LastErrorDetail;
-    }
-    if (m_Result.str().size()) 
-    {
-        errorDescription += "\nResult before error happened:\n";
-        errorDescription += m_Result.str();
-    }
-    return errorDescription;
-}
-
-const char* CommandLineInterface::GetErrorDescription(CLIError code) 
-{
-    switch (code) {
-        case kNoError:                         return "No Error.";
-        case kGetOptError:                     return "GetOpt returned with an error.";
-        case kCommandNotImplemented:           return "Command not implemented.";
-        case kProductionNotFound:              return "Production not found.";
-        case kNotImplemented:                  return "Not implemented.";
-        case kTooManyArgs:                     return "Too many arguments for the specified (or unspecified) options, check syntax.";
-        case kTooFewArgs:                      return "Too few arguments for the specified (or unspecified) options, check syntax.";
-        case kUnrecognizedOption:              return "Unrecognized option.";
-        case kMissingOptionArg:                return "Missing option argument.";
-        case kgetcwdFail:                      return "Error getting current working directory.";
-        case kgettimeofdayFail:                return "gettimeofday() failed.";
-        case kchdirFail:                       return "Error changing to directory.";
-        case kAliasNotFound:                   return "Alias not found.";
-        case kIntegerExpected:                 return "Integer argument expected.";
-        case kIntegerMustBePositive:           return "Integer argument must be positive.";
-        case kIntegerMustBeNonNegative:        return "Integer argument must be non-negative.";
-        case kIntegerOutOfRange:               return "Integer argument out of range.";
-        case kInvalidOperation:                return "Invalid operation.";
-        case kInvalidNumericIndifferentMode:   return "Invalid numeric indifferent mode.";
-        case kInvalidIndifferentSelectionMode: return "Invalid indifferent selection mode.";
-        case kNoProdTypeWhenProdName:          return "Do not specify production type when specifying a production name.";
-        case kSourceOnlyOneFile:               return "Too many arguments: source only one file at a time.  If there are spaces in the path, check that you are using quotes.";
-        case kLogAlreadyOpen:                  return "Log already open.";
-        case kLogOpenFailure:                  return "Failed to open file for logging.";
-        case kLogNotOpen:                      return "Log is not open.";
-        case kDirectoryOpenFailure:            return "Unable to open directory for reading.";
-        case kDirectoryEntryReadFailure:       return "Unable to read directory entry for reading.";
-        case kDirectoryStackEmpty:             return "Directory stack empty, no directory to change to.";
-        case kMissingFilenameArg:              return "Missing filename argument.";
-        case kOpenFileFail:                    return "Failed to open file for reading.";
-        case kReteSaveOperationFail:           return "Rete save operation failed.";
-        case kReteLoadOperationFail:           return "Rete load operation failed.";
-        case kInvalidLearnSetting:             return "Invalid learn setting, expected noprint, print, fullprint, or 0-2.";
-        case kRemoveOrZeroExpected:            return "Invalid argument, expected remove or 0.";
-        case kInvalidID:                       return "Unknown or invalid ID.";
-        case kInvalidAttribute:                return "Unknown or invalid attribute.";
-        case kInvalidValue:                    return "Unknown or invalid value.";
-        case kInvalidWMEFilterType:            return "Invalid WME filter type, expected 'adds' 'removes' or 'both'.";
-        case kFilterExpected:                  return "ID/Attribute/Value filter expected, one or more missing.";
-        case kDuplicateWMEFilter:              return "That WME filter already exists.";
-        case kInvalidMode:                     return "Invalid mode.";
-        case kTypeRequired:                    return "A type (-t adds/removes/both) is required for this command.";
-        case kWMEFilterNotFound:               return "The specified WME filter was not found.";
-        case kProductionRequired:              return "A production is required.";
-        case kInvalidConditionNumber:          return "Condition number must be a non-negative integer.";
-        case kInvalidPrefix:                   return "Failed to set prefix (does it contain a '*'?).";
-        case kCountGreaterThanMaxChunks:       return "Cannot set count greater than the max-chunks sysparam.";
-        case kCountLessThanChunks:             return "Cannot set chunk count less than the current number of chunks.";
-        case kAcceptableOrNothingExpected:     return "Expected acceptable preference (+) or nothing, check syntax.";
-        case kMustSaveOrLoad:                  return "Must save or load, check command syntax.";
-        case kPrintSubOptionsOfStack:          return "Options --operators (-o) and --states (-S) are only valid when printing the stack.";
-        case kRunFailed:                       return "Run failed.";
-        case kAmbiguousCommand:                return "Received command is ambiguous, try adding more letters.";
-        case kAmbiguousOption:                 return "Ambiguous option.";
-        case kInitSoarFailed:                  return "Agent could not be reinitialized.  Probably due to an internal memory leak." ;
-        case kPreferencesError:                return "Preferences command failed." ;
-        case kInvalidRunInterleaveSetting:     return "Invalid setting for run interleave option." ;
-        case kLoadLibraryError:                return "Error occurred while loading library";
-        case kProductionAddFailed:             return "Production addition failed.";
-        case kSourceDepthExceeded:             return "Source depth (100) exceeded, possible recursive source.";
-        case kCloseFileFail:                   return "File close failed.";
-        case kFileOpen:                        return "File already open.";
-        case kFileNotOpen:                     return "File is not open.";
-        case kRealExpected:                    return "Real number expected.";
-        case kValuesError:                     return "gp values error.";
-        case kGPMaxExceeded:                   return "gp maximum exceeded. Set it to higher value with gp-max command.";
-        case kParseError:                      return "Parse error.";
-        case kSMemError:                       return "smem command error.";
-        case kWmaError:                        return "wma command error.";
-        case kRlError:                         return "rl command error.";
-        case kEpMemError:                      return "epmem command error.";
-    }
-    return "Unknown error code.";
-}
-
-void CommandLineInterface::EchoString(sml::Connection* pConnection, char const* pString)
-{
-    if (!m_EchoResult)
-        return ;
-
-    // BUGBUG: We may need to support this for kernel level commands without an agent
-    if (m_pAgentSML)
-        m_pAgentSML->FireEchoEvent(pConnection, pString) ;
-}
-
-bool CommandLineInterface::PartialMatch(std::vector<std::string>& argv) 
-{
-    std::list<std::string> possibilities;
-    std::list<std::string>::iterator liter;
-    bool exactMatch = false;
-
-    for(unsigned index = 0; index < argv[0].size(); ++index) 
-    {
-        if (index == 0) 
-        {
-            // Bootstrap the list of possibilities
-            CommandMapConstIter citer = m_CommandMap.begin();
-
-            while (citer != m_CommandMap.end()) 
-            {
-                if (citer->first[index] == argv[0][index]) 
-                    possibilities.push_back(citer->first);
-                ++citer;
-            }
-
-        } 
-        else 
-        {
-            // Update the list of possiblities
-
-            // A more efficient search here would be nice.
-            liter = possibilities.begin();
-            while (liter != possibilities.end()) 
-            {
-                if ((*liter)[index] != argv[0][index]) 
-                {
-                    // Remove this possibility from the list
-                    liter = possibilities.erase(liter);
-                } 
-                else 
-                {
-                    // check for exact match
-                    if (argv[0] == (*liter)) 
-                    {
-                        // Exact match, we're done
-                        argv[0] = (*liter);
-                        exactMatch = true;
-                        break;
-                    }
-                    ++liter;
-                }
-            }
-            if (exactMatch) break;
-        }
-
-        if (!possibilities.size()) 
-        {
-            // Not implemented
-            SetErrorDetail("(No such command: " + argv[0] + ")");
-            return SetError(kCommandNotImplemented);
-        } 
-    }
-
-    if (!exactMatch) 
-    {
-        if (possibilities.size() != 1) 
-        {
-            // Ambiguous
-            std::stringstream detail;
-            detail << "Ambiguous command, possibilities: ";
-            liter = possibilities.begin();
-            while (liter != possibilities.end()) 
-            {
-                detail << "'" << (*liter) << "' ";
-                ++liter;
-            }
-            SetErrorDetail(detail.str());
-            return SetError(kAmbiguousCommand);
-        } 
-        else 
-        {
-            // We have a partial match
-            argv[0] = (*(possibilities.begin()));
-        }
-        return true;
-    }
-    return true;
-}
-
-bool CommandLineInterface::handle_command(std::vector<std::string>& argv) 
-{
-    if (argv.empty()) 
-        return true;
-
-    // Check for help flags
-    if (CheckForHelp(argv)) 
-        return DoHelp();
-
-    m_Aliases.Expand(argv);
-    if (!PartialMatch(argv)) 
-        return false; // error set inside PartialMatch
-
-    // Process command
-    CommandFunction pFunction = m_CommandMap[argv[0]];
-    assert(pFunction);
-    
-    // Initialize option parsing each call
-    ResetOptions();
-
-    // Make the Parse call
-    return (this->*pFunction)(argv);
 }
 
 bool CommandLineInterface::CheckForHelp(std::vector<std::string>& argv) 
@@ -647,7 +353,7 @@ bool CommandLineInterface::GetCurrentWorkingDirectory(std::string& directory)
     char* ret = getcwd(buf, 1024);
 
     // If getcwd returns 0, that is bad
-    if (!ret) return SetError(kgetcwdFail);
+    if (!ret) return SetError("Error getting current working directory.");
 
     // Store directory in output parameter and return success
     directory = buf;
@@ -711,235 +417,10 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
     m_ResponseTags.push_front(pTag);
 }
 
-bool CommandLineInterface::SetError(cli::CLIError code) 
+bool CommandLineInterface::SetError(const std::string& error) 
 {
-    m_LastError = code;
+    m_LastError = error;
     return false;
-}
-
-bool CommandLineInterface::SetErrorDetail(const std::string detail) 
-{
-    m_LastErrorDetail = detail;
-    return false;
-}
-
-void CommandLineInterface::ResetOptions() 
-{
-    m_Argument = 0;
-    m_NonOptionArguments = 0;    
-}
-
-bool CommandLineInterface::ProcessOptions(std::vector<std::string>& argv, Options* options) 
-{
-    // default to indifference
-    m_Option         = 0;
-    m_OptionArgument = "";
-
-    // increment current argument and check bounds
-    while (static_cast<unsigned>(++m_Argument) < argv.size()) 
-    {
-        // args less than 2 characters cannot mean anything to us
-        if (argv[m_Argument].size() < 2) 
-        {
-            ++m_NonOptionArguments;
-            continue;
-        }
-
-        if (argv[m_Argument][0] == '-') 
-        {
-            if (argv[m_Argument][1] == '-') 
-            {
-                // possible long m_Option
-                if (argv[m_Argument].size() > 2) 
-                {
-                    // long m_Option, save it
-                    std::string longOption = argv[m_Argument].substr(2);
-
-                    // check for partial match
-                    std::list<Options> possibilities;
-                    std::list<Options>::iterator liter;
-                    std::set< std::string > addedLongOptions;
-
-                    for(unsigned index = 0; index < longOption.size(); ++index) 
-                    {
-                        if (index == 0) 
-                        {
-                            // Bootstrap the list of possibilities
-                            for (int i = 0; options[i].shortOpt != 0; ++i) 
-                            {
-                                if (options[i].longOpt[index] == longOption[index]) 
-                                {
-                                    // don't add duplicates (bug 976)
-                                    if ( addedLongOptions.insert( options[i].longOpt ).second )
-                                        possibilities.push_back(options[i]);
-                                }
-                            }
-                        } 
-                        else 
-                        {
-                            // Update the list of possiblities
-
-                            // A more efficient search here would be nice.
-                            liter = possibilities.begin();
-                            while (liter != possibilities.end()) 
-                            {
-                                if ((*liter).longOpt[index] != longOption[index]) 
-                                {
-                                    // Remove this possibility from the list
-                                    liter = possibilities.erase(liter);
-                                } 
-                                else 
-                                {
-                                    // check for exact match
-                                    if (longOption == (*liter).longOpt) 
-                                    {
-                                        // exact match, we're done
-                                        m_Option = liter->shortOpt;
-                                        MoveBack(argv, m_Argument, m_NonOptionArguments);
-                                        if (!HandleOptionArgument(argv, liter->longOpt, liter->argument)) return false;
-                                        return true;
-                                    }
-                                    ++liter;
-                                }
-                            }
-                        }
-
-                        if (!possibilities.size()) 
-                        {
-                            SetErrorDetail("No such option: " + longOption);
-                            return SetError(kUnrecognizedOption);
-                        } 
-                    }
-
-                    if (possibilities.size() != 1) 
-                    {
-                        // Ambiguous
-                        std::stringstream detail;
-                        detail << "Ambiguous option, possibilities: ";
-                        liter = possibilities.begin();
-                        while (liter != possibilities.end()) 
-                        {
-                            detail << "'--" << (*liter).longOpt << "' ";
-                            ++liter;
-                        }
-                        SetErrorDetail(detail.str());
-                        return SetError(kAmbiguousOption);
-                    }
-                    // We have a partial match
-                    m_Option = (*(possibilities.begin())).shortOpt;
-                    MoveBack(argv, m_Argument, m_NonOptionArguments);
-                    if (!HandleOptionArgument(argv, (*(possibilities.begin())).longOpt, (*(possibilities.begin())).argument)) return false;
-                    return true;
-                }
-
-                // end of options special flag '--'
-                // FIXME: remove -- argument?
-                m_Option = -1; // done
-                return true; // no error
-            }
-
-            // short m_Option(s)
-            for (int i = 0; options[i].shortOpt != 0; ++i) 
-            {
-                if (argv[m_Argument][1] == options[i].shortOpt) 
-                {
-                    if (argv[m_Argument].size() > 2) 
-                    {
-                        std::vector<std::string>::iterator target = argv.begin();
-                        target += m_Argument;
-
-                        std::string original = *target;
-                        *target = (*target).substr(0,2);
-                        ++target;
-
-                        argv.insert(target, "-" + original.substr(2));
-                    }
-                    m_Option = options[i].shortOpt;
-                    MoveBack(argv, m_Argument, m_NonOptionArguments);
-                    if (!HandleOptionArgument(argv, options[i].longOpt, options[i].argument)) 
-                        return false;
-                    return true;
-                }
-            }
-            char theOption = argv.at( m_Argument ).at( 1 );
-            SetErrorDetail( std::string("No such option: ") + theOption );
-            return SetError(kUnrecognizedOption);
-        }
-        ++m_NonOptionArguments;
-    }
-
-    // out of arguments
-    m_Option = -1;    // done
-    return true;    // no error
-}
-
-void CommandLineInterface::MoveBack(std::vector<std::string>& argv, int what, int howFar) 
-{
-    assert(what >= howFar);
-    assert(what > 0);
-    assert(howFar >= 0);
-
-    if (howFar == 0)
-        return;
-
-    std::vector<std::string>::iterator target = argv.begin();
-    target += what;
-
-    std::vector<std::string>::iterator dest = target - howFar;
-
-    argv.insert(dest, *target);
-
-    target = argv.begin();
-    target += what + 1;
-
-    argv.erase(target);
-}
-
-bool CommandLineInterface::HandleOptionArgument(std::vector<std::string>& argv, const char* option, eOptionArgument arg) 
-{
-    switch (arg) 
-    {
-        case OPTARG_NONE:
-            break;
-        case OPTARG_REQUIRED:
-            // required argument
-            if (static_cast<unsigned>(++m_Argument) >= argv.size()) 
-            {
-                std::string detail(option);
-                SetErrorDetail("Option '" + detail + "' requires an argument.");
-                return SetError(kMissingOptionArg);
-            }
-            m_OptionArgument = argv[m_Argument];
-            MoveBack(argv, m_Argument, m_NonOptionArguments);
-            break;
-        case OPTARG_OPTIONAL:
-        default:
-            // optional argument
-            if (static_cast<unsigned>(++m_Argument) < argv.size()) 
-            {
-                if (argv[m_Argument].size()) 
-                {
-                    if (argv[m_Argument][0] != '-') 
-                    {
-                        m_OptionArgument = argv[m_Argument];
-                        MoveBack(argv, m_Argument, m_NonOptionArguments);
-                    } 
-                }
-            }
-            if (!m_OptionArgument.size()) 
-                --m_Argument;
-            break;
-    }
-    return true;
-}
-
-bool CommandLineInterface::CheckNumNonOptArgs(int min, int max)
-{
-    if ( m_NonOptionArguments < min )
-        return SetError( kTooFewArgs );
-    else if ( m_NonOptionArguments > max )
-        return SetError( kTooManyArgs );
-    return true;
 }
 
 void CommandLineInterface::XMLBeginTag(char const* pTagName)
@@ -1059,3 +540,6 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
     }
 } // function
 
+bool CommandLineInterface::IsLogOpen() {
+	return m_pLogFile ? true : false;
+}
