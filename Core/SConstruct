@@ -127,6 +127,7 @@ def gcc_version():
 			continue
 	return [int(split_version_string[0]), int(split_version_string[1]), int(split_version_string[2])]
 gcc = gcc_version()
+Export('gcc')
 #################
 
 
