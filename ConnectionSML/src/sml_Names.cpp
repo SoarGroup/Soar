@@ -29,8 +29,8 @@ char const* const sml_Names::kSMLVersion		= "smlversion" ;
 char const* const sml_Names::kOutputLinkName	= "output-link" ;
 
 // Version strings
-char const* const sml_Names::kSoarVersionValue = VERSION_STRING;
-char const* const sml_Names::kSMLVersionValue = SML_VERSION_STRING;
+char const* const sml_Names::kSoarVersionValue = VERSION_STRING();
+char const* const sml_Names::kSMLVersionValue = SML_VERSION_STRING();
 
 // <command> tag identifiers
 char const* const sml_Names::kTagCommand		= "command" ;
