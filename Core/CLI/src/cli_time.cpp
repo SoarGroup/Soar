@@ -20,19 +20,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseTime(std::vector<std::string>& argv) {
-	// There must at least be a command
-	if (argv.size() < 2) {
-		SetErrorDetail("Please supply a command to time.");
-		return SetError(kTooFewArgs);
-	}
-
-	std::vector<std::string>::iterator iter = argv.begin();
-	argv.erase(iter);
-
-	return DoTime(argv);
-}
-
 bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 
 	soar_wallclock_timer real;
@@ -42,7 +29,7 @@ bool CommandLineInterface::DoTime(std::vector<std::string>& argv) {
 	real.start();
 
 	// Execute command
-	bool ret = handle_command(argv);
+	bool ret = m_Parser.handle_command(argv);
 
 	real.stop();
 	proc.stop();

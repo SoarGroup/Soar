@@ -27,62 +27,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseProductionFind(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'c', "chunks",			OPTARG_NONE},
-		{'l', "lhs",				OPTARG_NONE},
-		{'n', "nochunks",		OPTARG_NONE},
-		{'r', "rhs",				OPTARG_NONE},
-		{'s', "show-bindings",	OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	ProductionFindBitset options(0);
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'c':
-				options.set(PRODUCTION_FIND_ONLY_CHUNKS);
-				options.reset(PRODUCTION_FIND_NO_CHUNKS);
-				break;
-			case 'l':
-				options.set(PRODUCTION_FIND_INCLUDE_LHS);
-				break;
-			case 'n':
-				options.set(PRODUCTION_FIND_NO_CHUNKS);
-				options.reset(PRODUCTION_FIND_ONLY_CHUNKS);
-				break;
-			case 'r':
-				options.set(PRODUCTION_FIND_INCLUDE_RHS);
-				break;
-			case 's':
-				options.set(PRODUCTION_FIND_SHOWBINDINGS);
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	if (!m_NonOptionArguments) {
-		SetErrorDetail("Pattern required.");
-		return SetError(kTooFewArgs);
-	}
-
-	if (options.none()) options.set(PRODUCTION_FIND_INCLUDE_LHS);
-
-	std::string pattern;
-	for (unsigned i = m_Argument - m_NonOptionArguments; i < argv.size(); ++i) {
-		pattern += argv[i];
-		pattern += ' ';
-	}
-	pattern = pattern.substr(0, pattern.length() - 1);
-
-	return DoProductionFind(options, pattern);
-}
-
 void free_binding_list (agent* agnt, list *bindings) 
 {
 	cons *c;
@@ -574,42 +518,43 @@ void read_rhs_pattern_and_get_matching_productions (agent* agnt,
 
 bool CommandLineInterface::DoProductionFind(const ProductionFindBitset& options, const std::string& pattern) {
 	list* current_pf_list = 0;
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 
 	if (options.test(PRODUCTION_FIND_INCLUDE_LHS)) 
 	{
 		/* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
 		/* Soar-Bugs #54 TMH */
-		m_pAgentSoar->alternate_input_string = pattern.c_str();
-		m_pAgentSoar->alternate_input_suffix = ") ";
+		agnt->alternate_input_string = pattern.c_str();
+		agnt->alternate_input_suffix = ") ";
 
-		get_lexeme(m_pAgentSoar);
-		read_pattern_and_get_matching_productions (m_pAgentSoar, 
+		get_lexeme(agnt);
+		read_pattern_and_get_matching_productions (agnt, 
 			&current_pf_list,
 			options.test(PRODUCTION_FIND_SHOWBINDINGS),
 			options.test(PRODUCTION_FIND_ONLY_CHUNKS), 
 			options.test(PRODUCTION_FIND_NO_CHUNKS));
-		m_pAgentSoar->current_char = ' ';
+		agnt->current_char = ' ';
 	}
 	if (options.test(PRODUCTION_FIND_INCLUDE_RHS))
 	{
 		/* this patch failed for -rhs, so I removed altogether.  KJC 3/99 */
 		/* Soar-Bugs #54 TMH */
-		m_pAgentSoar->alternate_input_string = pattern.c_str();
-		m_pAgentSoar->alternate_input_suffix = ") ";
+		agnt->alternate_input_string = pattern.c_str();
+		agnt->alternate_input_suffix = ") ";
 
-		get_lexeme(m_pAgentSoar);
-		read_rhs_pattern_and_get_matching_productions (m_pAgentSoar, &current_pf_list,
+		get_lexeme(agnt);
+		read_rhs_pattern_and_get_matching_productions (agnt, &current_pf_list,
 			options.test(PRODUCTION_FIND_SHOWBINDINGS),
 			options.test(PRODUCTION_FIND_ONLY_CHUNKS), 
 			options.test(PRODUCTION_FIND_NO_CHUNKS));
-		m_pAgentSoar->current_char = ' ';
+		agnt->current_char = ' ';
 	}
 	if (current_pf_list == NIL) 
 	{
-		print(m_pAgentSoar, "No matches.\n");
+		print(agnt, "No matches.\n");
 	}
 
-	free_list(m_pAgentSoar, current_pf_list);
+	free_list(agnt, current_pf_list);
 	return true;
 }
 

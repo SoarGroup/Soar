@@ -20,10 +20,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseSoarNews(std::vector<std::string>&) {
-	return DoSoarNews();
-}
-
 bool CommandLineInterface::DoSoarNews() {
 
 	m_Result << "This is Soar ";

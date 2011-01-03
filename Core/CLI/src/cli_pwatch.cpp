@@ -25,41 +25,8 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePWatch(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'d', "disable",	OPTARG_NONE},
-		{'e', "enable",		OPTARG_NONE},
-		{'d', "off",		OPTARG_NONE},
-		{'e', "on",			OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool setting = true;
-	bool query = true;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'd':
-				setting = false;
-				query = false;
-				break;
-			case 'e':
-				setting = true;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-	if (m_NonOptionArguments > 1) return SetError(kTooManyArgs);
-
-	if (m_NonOptionArguments == 1) return DoPWatch(false, &argv[m_Argument - m_NonOptionArguments], setting);
-	return DoPWatch(query, 0);
-}
-
 bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, bool setting) {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	// check for query or not production 
 	if (query || !pProduction) {
 		// list all productions currently being traced
@@ -67,7 +34,7 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
 		int productionCount = 0;
 		for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
 		{
-			for( pSoarProduction = m_pAgentSoar->all_productions_of_type[i]; 
+			for( pSoarProduction = agnt->all_productions_of_type[i]; 
 				pSoarProduction != 0; 
 				pSoarProduction = pSoarProduction->next )
 			{
@@ -87,7 +54,7 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
 					else
 					{
 						// not querying, shut it off
-						remove_pwatch( m_pAgentSoar, pSoarProduction );
+						remove_pwatch( agnt, pSoarProduction );
 					}
 				}
 
@@ -111,18 +78,18 @@ bool CommandLineInterface::DoPWatch(bool query, const std::string* pProduction, 
 		return true;
 	}
 
-	Symbol* sym = find_sym_constant( m_pAgentSoar, pProduction->c_str() );
+	Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
 
 	if (!sym || !(sym->sc.production))
 	{
-		return SetError(kProductionNotFound);
+		return SetError("Production not found.");
 	}
 
 	// we have a production
 	if (setting) {
-		add_pwatch( m_pAgentSoar, sym->sc.production );
+		add_pwatch( agnt, sym->sc.production );
 	} else {
-		remove_pwatch( m_pAgentSoar, sym->sc.production );
+		remove_pwatch( agnt, sym->sc.production );
 	}
 	return true;
 }

@@ -141,17 +141,11 @@ typedef union symbol_union Symbol;
 /* #define USE_X_DISPLAY */
 /* #endif */ /* #ifndef USE_TCL */
 
-/* UnComment the following line to enable numeric indifference preferences */
-/* Has no effect on Soar-RL release */
-#define NUMERIC_INDIFFERENCE
-
-//#ifdef NUMERIC_INDIFFERENCE
 /* Possible modes for numeric indifference */
 enum ni_mode {
     NUMERIC_INDIFFERENT_MODE_AVG,
     NUMERIC_INDIFFERENT_MODE_SUM,
 };
-//#endif 
 
 /* Comment the following line to disable workaround for bug 139 */
 #define BUG_139_WORKAROUND

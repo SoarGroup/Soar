@@ -23,103 +23,65 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseChunkNameFormat(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'c', "count",		OPTARG_OPTIONAL},
-		{'l', "long",		OPTARG_NONE},
-		{'p', "prefix",		OPTARG_OPTIONAL},
-		{'s', "short",		OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool changeFormat = false;
-	bool countFlag = false;
-	int64_t count = -1;
-	bool patternFlag = false;
-	std::string pattern;
-	bool longFormat = true;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'c': 
-				countFlag = true;
-				if (m_OptionArgument.size()) {
-					if ( !from_string( count, m_OptionArgument ) ) return SetError(kIntegerExpected);
-					if (count < 0) return SetError(kIntegerMustBeNonNegative);
-				}
-				break;
-			case 'p': 
-				patternFlag = true;
-				if (m_OptionArgument.size()) {
-					pattern = std::string(m_OptionArgument);
-				}
-				break;
-			case 'l':
-				changeFormat = true;
-				longFormat = true;
-				break;
-			case 's':
-				changeFormat = true;
-				longFormat = false;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	if (m_NonOptionArguments) return SetError(kTooManyArgs);
-
-	return DoChunkNameFormat(changeFormat ? &longFormat : 0, countFlag ? &count : 0, patternFlag ? &pattern : 0);
-}
-
-bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int64_t* pCount, const std::string* pPrefix) {
-	if (!pLongFormat && !pCount && !pPrefix) {
-		if (m_RawOutput) {
-			m_Result << "Using " << (m_pAgentSoar->sysparams[USE_LONG_CHUNK_NAMES] ? "long" : "short") << " chunk format.";
-		} else {
-			AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, m_pAgentSoar->sysparams[USE_LONG_CHUNK_NAMES] ? sml_Names::kTrue : sml_Names::kFalse);
-		}
+bool CommandLineInterface::DoChunkNameFormat(const bool* pLongFormat, const int64_t* pCount, const std::string* pPrefix) 
+{
+    agent* agnt = m_pAgentSML->GetSoarAgent();
+	if (!pLongFormat && !pCount && !pPrefix)
+    {
+		if (m_RawOutput) 
+			m_Result << "Using " << (agnt->sysparams[USE_LONG_CHUNK_NAMES] ? "long" : "short") << " chunk format.";
+        else 
+			AppendArgTagFast(sml_Names::kParamChunkLongFormat, sml_Names::kTypeBoolean, agnt->sysparams[USE_LONG_CHUNK_NAMES] ? sml_Names::kTrue : sml_Names::kFalse);
 		return true;
 	}
 
-	if (pLongFormat) set_sysparam(m_pAgentSoar, USE_LONG_CHUNK_NAMES, *pLongFormat);
+	if (pLongFormat) set_sysparam(agnt, USE_LONG_CHUNK_NAMES, *pLongFormat);
 
-	if (pCount) {
-		if (*pCount >= 0) {
-			if (*pCount >= m_pAgentSoar->sysparams[MAX_CHUNKS_SYSPARAM]) return SetError(kCountGreaterThanMaxChunks);
-			if (static_cast<uint64_t>(*pCount) < m_pAgentSoar->chunk_count ) return SetError(kCountLessThanChunks);
-			m_pAgentSoar->chunk_count = static_cast<uint64_t>(*pCount);
-		} else {
+	if (pCount) 
+    {
+		if (*pCount >= 0)
+        {
+			if (*pCount >= agnt->sysparams[MAX_CHUNKS_SYSPARAM]) 
+                return SetError("Cannot set count greater than the max-chunks sysparam.");
+
+			if (static_cast<uint64_t>(*pCount) < agnt->chunk_count )
+                return SetError("Cannot set chunk count less than the current number of chunks.");
+
+			agnt->chunk_count = static_cast<uint64_t>(*pCount);
+		} 
+        else
+        {
 			// query
-			if (m_RawOutput) {
-				m_Result << "Chunk count: " << m_pAgentSoar->chunk_count;
-			} else {
+			if (m_RawOutput) 
+				m_Result << "Chunk count: " << agnt->chunk_count;
+            else 
+            {
 				std::string temp;
-				AppendArgTagFast(sml_Names::kParamChunkCount, sml_Names::kTypeInt, to_string(m_pAgentSoar->chunk_count, temp));
+				AppendArgTagFast(sml_Names::kParamChunkCount, sml_Names::kTypeInt, to_string(agnt->chunk_count, temp));
 			}
 		}
 	}
 
-	if (pPrefix) {
-		if (pPrefix->size()) {
+	if (pPrefix) 
+    {
+		if (pPrefix->size())
+        {
 			if ( strchr(pPrefix->c_str(), '*') ) 
-			{
-				return SetError(kInvalidPrefix);
-			}
+				return SetError("Failed to set prefix (does it contain a '*'?).");
 			
-			strcpy( m_pAgentSoar->chunk_name_prefix, pPrefix->c_str() );
+			strcpy( agnt->chunk_name_prefix, pPrefix->c_str() );
 
-		} else {
+		} 
+        else 
+        {
 			// query
-			if (m_RawOutput) {
+			if (m_RawOutput) 
+            {
 				if (pCount && *pCount < 0) m_Result << "\n";
-				m_Result << "Prefix: " << m_pAgentSoar->chunk_name_prefix;
-			} else {
-				AppendArgTagFast(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, m_pAgentSoar->chunk_name_prefix);
-			}
+				m_Result << "Prefix: " << agnt->chunk_name_prefix;
+			} 
+            else 
+				AppendArgTagFast(sml_Names::kParamChunkNamePrefix, sml_Names::kTypeString, agnt->chunk_name_prefix);
 		}
 	}
 

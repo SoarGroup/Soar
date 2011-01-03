@@ -277,9 +277,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   }
 
   newAgent->o_support_calculation_type = 4; /* KJC 7/00 */ // changed from 3 to 4 by voigtjr  (/* bugzilla bug 339 */)
-//#ifdef NUMERIC_INDIFFERENCE
   newAgent->numeric_indifferent_mode = NUMERIC_INDIFFERENT_MODE_SUM;
-//#endif
 
   /* JC ADDED: Make sure that the RHS functions get initialized correctly */
   newAgent->rhs_functions = NIL;

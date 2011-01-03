@@ -19,44 +19,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseEchoCommands(std::vector<std::string>& argv) {
-
-	Options optionsData[] = {
-		{'y', "yes",		OPTARG_NONE},
-		{'n', "no",			OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool echoCommands = true ;
-	bool onlyGetValue = true ;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'y':
-				echoCommands = true ;
-				onlyGetValue = false ;
-				break ;
-			case 'n':
-				echoCommands = false ;
-				onlyGetValue = false ;
-				break ;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	if (m_NonOptionArguments)
-	{
-		SetErrorDetail("Format is 'echo-commands [--yes | --no]") ;
-		return SetError(kGetOptError) ;
-	}
-
-	return DoEchoCommands(onlyGetValue, echoCommands);
-}
-
 bool CommandLineInterface::DoEchoCommands(bool onlyGetValue, bool echoCommands) {
 
 	// We only set the value if asked, but we always report the current setting.

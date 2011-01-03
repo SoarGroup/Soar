@@ -23,102 +23,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseRun(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'d', "decision",		OPTARG_NONE},
-		{'e', "elaboration",	OPTARG_NONE},
-		{'f', "forever",		OPTARG_NONE},
-		{'g', "goal",			OPTARG_NONE},
-		{'i', "interleave",		OPTARG_REQUIRED},
-		{'n', "noupdate",		OPTARG_NONE},
-		{'o', "output",			OPTARG_NONE},
-		{'p', "phase",			OPTARG_NONE},
-		{'s', "self",			OPTARG_NONE},
-		{'u', "update",			OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	RunBitset options(0);
-	eRunInterleaveMode interleaveMode = RUN_INTERLEAVE_DEFAULT;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'd':
-				options.set(RUN_DECISION);
-				break;
-			case 'e':
-				options.set(RUN_ELABORATION);
-				break;
-			case 'f':
-				options.set(RUN_FOREVER);
-				break;
-			case 'g':
-				options.set(RUN_GOAL);
-				break;
-			case 'i':
-				options.set(RUN_INTERLEAVE);
-				interleaveMode = ParseRunInterleaveOptarg();
-				if (interleaveMode == RUN_INTERLEAVE_DEFAULT) {
-					return false; // error set in parse function
-				}
-				break;
-			case 'o':
-				options.set(RUN_OUTPUT);
-				break;
-			case 'p':
-				options.set(RUN_PHASE);
-				break;
-			case 's':
-				options.set(RUN_SELF);
-				break;
-			case 'u':
-				options.set(RUN_UPDATE) ;
-				break ;
-			case 'n':
-				options.set(RUN_NO_UPDATE) ;
-				break ;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// Only one non-option argument allowed, count
-	if (m_NonOptionArguments > 1) return SetError(kTooManyArgs);
-
-	// Decide if we explicitly indicated how to run
-	bool specifiedType = (options.test(RUN_FOREVER) || options.test(RUN_ELABORATION) || options.test(RUN_DECISION) || options.test(RUN_PHASE) || options.test(RUN_OUTPUT)) ;
-
-	// Count defaults to -1
-	int count = -1;
-	if (m_NonOptionArguments == 1) {
-		int optind = m_Argument - m_NonOptionArguments;
-		if ( !from_string( count, argv[optind] ) ) return SetError(kIntegerExpected);
-		// Allow "run 0" for decisions -- which means run agents to the current stop-before phase
-		if (count < 0 || (count == 0 && specifiedType && !options.test(RUN_DECISION))) return SetError(kIntegerMustBePositive);
-	} 
-
-	return DoRun(options, count, interleaveMode);
-}
-
-eRunInterleaveMode CommandLineInterface::ParseRunInterleaveOptarg() {
-	if (m_OptionArgument == "d") {
-		return RUN_INTERLEAVE_DECISION;
-	} else if (m_OptionArgument == "e") {
-		return RUN_INTERLEAVE_ELABORATION;
-	} else if (m_OptionArgument == "o") {
-		return RUN_INTERLEAVE_OUTPUT;
-	} else if (m_OptionArgument == "p") {
-		return RUN_INTERLEAVE_PHASE;
-	}
-
-	SetErrorDetail("Invalid switch: " + m_OptionArgument);
-	SetError(kInvalidRunInterleaveSetting);
-	return RUN_INTERLEAVE_DEFAULT;
-}
-
 bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterleaveMode interleaveIn) {
 	// Default run type is sml_DECISION
 	smlRunStepSize runType = sml_DECISION;
@@ -201,9 +105,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 	}
 
 	if (!pScheduler->VerifyStepSizeForRunType(forever, runType, interleave) ) {
-		SetError(kInvalidRunInterleaveSetting);
-		SetErrorDetail("Run type and interleave setting incompatible.");
-		return false;
+		return SetError("Run type and interleave setting incompatible.");
 	}
 
 	// If we're running by decision cycle synchronize up the agents to the same phase before we start
@@ -211,26 +113,26 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 
 	SetTrapPrintCallbacks( false );
 
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if (options.test(RUN_GOAL))
 	{
-		this->m_pAgentSoar->substate_break_level = this->m_pAgentSoar->bottom_goal->id.level;
+		agnt->substate_break_level = agnt->bottom_goal->id.level;
 	}
 
 	// Do the run
 	runResult = pScheduler->RunScheduledAgents(forever, runType, count, runFlags, interleave, synchronizeAtStart) ;
 
 	// Reset goal retraction stop flag after any run
-	this->m_pAgentSoar->substate_break_level = 0;
+	agnt->substate_break_level = 0;
 
 	SetTrapPrintCallbacks( true );
 
 	switch (runResult) {
 		case sml_RUN_ERROR_ALREADY_RUNNING:
-			SetErrorDetail( "Soar is already running" );
-			return SetError(kRunFailed);
+			return SetError("Soar is already running");
 
 		case sml_RUN_ERROR:
-			return SetError(kRunFailed);
+			return SetError("Run failed.");
 
 		case sml_RUN_EXECUTING:
 			if (m_RawOutput) {
@@ -278,7 +180,7 @@ bool CommandLineInterface::DoRun(const RunBitset& options, int count, eRunInterl
 
 		default:
 			assert(false);
-			return SetError(kRunFailed);
+			return SetError("Run failed.");
 	}
 	return true;
 }

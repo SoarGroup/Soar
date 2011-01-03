@@ -1,5 +1,3 @@
-/** Begin Commands Subdirectory **/
-
 #include "src/cli_addwme.cpp"
 #include "src/cli_alias.cpp"
 #include "src/cli_allocate.cpp"
@@ -73,8 +71,4 @@
 #include "src/cli_watch.cpp"
 #include "src/cli_watchwmes.cpp"
 #include "src/cli_wma.cpp"
-
-/** End Commands Subdirectory **/
-
 #include "src/cli_CommandLineInterface.cpp"
-#include "src/cli_Commands.cpp"

@@ -13,10 +13,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseHelp(std::vector<std::string>& /*argv*/) {
-	return DoHelp();
-}
-
 bool CommandLineInterface::DoHelp() {
 
 	m_Result << "Please view help online: http://code.google.com/p/soar/wiki/CommandLineInterface";

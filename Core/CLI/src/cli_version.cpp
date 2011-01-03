@@ -25,10 +25,6 @@ using namespace sml;
 const char* kTimestamp = __TIME__;
 const char* kDatestamp = __DATE__;
 
-bool CommandLineInterface::ParseVersion(std::vector<std::string>&) {
-	return DoVersion();
-}
-
 bool CommandLineInterface::DoVersion() {
 
 	std::ostringstream timedatestamp;

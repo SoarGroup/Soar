@@ -19,37 +19,6 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseStopSoar(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'s', "self",		OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool self = false;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 's':
-				self = true;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// Concatinate remaining args for 'reason'
-	if (m_NonOptionArguments) {
-		std::string reasonForStopping;
-		unsigned int optind = m_Argument - m_NonOptionArguments;
-		while (optind < argv.size()) reasonForStopping += argv[optind++] + ' ';
-		return DoStopSoar(self, &reasonForStopping);
-	}
-	return DoStopSoar(self);
-}
-
 bool CommandLineInterface::DoStopSoar(bool self, const std::string* /*reasonForStopping*/) {
 
 	if (self) {

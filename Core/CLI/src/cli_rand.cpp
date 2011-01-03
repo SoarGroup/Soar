@@ -20,37 +20,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseRand(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'i', "integer", OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool integer(false);
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'i':
-				integer = true;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	if ( m_NonOptionArguments > 1 ) {
-		return SetError( kTooManyArgs );
-	} else if ( m_NonOptionArguments == 1 ) {
-		unsigned optind = m_Argument - m_NonOptionArguments;
-		return DoRand( integer, &(argv[optind]) );
-	}
-
-	return DoRand( integer, 0 );
-}
-
 bool CommandLineInterface::DoRand( bool integer, std::string* bound ) {
 	if ( integer ) {
 		uint32_t out;
@@ -58,7 +27,7 @@ bool CommandLineInterface::DoRand( bool integer, std::string* bound ) {
 		if ( bound ) {
 			uint32_t n(0);
 			if ( !from_string( n, *bound ) ) {
-				return SetError( kIntegerExpected );
+				return SetError( "Integer expected." );
 			}
 			out = SoarRandInt( n );
 		} else {
@@ -72,7 +41,7 @@ bool CommandLineInterface::DoRand( bool integer, std::string* bound ) {
 		if ( bound ) {
 			double n(0);
 			if ( !from_string( n, *bound ) ) {
-				return SetError( kRealExpected );
+				return SetError( "Real number expected." );
 			}
 			out = SoarRand( n );
 		} else {

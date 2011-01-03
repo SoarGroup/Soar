@@ -8,45 +8,12 @@
 
 #include <portability.h>
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-
-#include "cli_Commands.h"
-
+#include "sml_Utils.h"
 #include "sml_Names.h"
 
 using namespace cli;
 using namespace sml;
-
-bool CommandLineInterface::ParseEcho(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'n', "no-newline", OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool echoNewline(true);
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'n':
-				echoNewline = false;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	std::vector<std::string> newArgv;
-	newArgv.push_back(argv[0]);
-	unsigned optind = m_Argument - m_NonOptionArguments;
-	for (unsigned i = optind; i < argv.size(); ++i) {
-		newArgv.push_back(argv[i]);
-	}
-	return DoEcho(newArgv, echoNewline);
-}
 
 bool CommandLineInterface::DoEcho(const std::vector<std::string>& argv, bool echoNewline) {
 
