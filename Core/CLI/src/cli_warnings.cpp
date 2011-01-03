@@ -22,51 +22,17 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWarnings(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'e', "enable",		OPTARG_NONE},
-		{'d', "disable",	OPTARG_NONE},
-		{'e', "on",			OPTARG_NONE},
-		{'d', "off",		OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool query = true;
-	bool setting = true;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'e':
-				setting = true;
-				query = false;
-				break;
-			case 'd':
-				setting = false;
-				query = false;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	if (m_NonOptionArguments) SetError(kTooManyArgs);
-
-	return DoWarnings(query ? 0 : &setting);
-}
-
 bool CommandLineInterface::DoWarnings(bool* pSetting) {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if (pSetting) {
-		set_sysparam(m_pAgentSoar, PRINT_WARNINGS_SYSPARAM, *pSetting);
+		set_sysparam(agnt, PRINT_WARNINGS_SYSPARAM, *pSetting);
 		return true;
 	}
 
 	if (m_RawOutput) {
-		m_Result << "Printing of warnings is " << (m_pAgentSoar->sysparams[PRINT_WARNINGS_SYSPARAM] ? "enabled." : "disabled.");
+		m_Result << "Printing of warnings is " << (agnt->sysparams[PRINT_WARNINGS_SYSPARAM] ? "enabled." : "disabled.");
 	} else {
-		const char* setting = m_pAgentSoar->sysparams[PRINT_WARNINGS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse;
+		const char* setting = agnt->sysparams[PRINT_WARNINGS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse;
 		AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);
 	}
 	return true;

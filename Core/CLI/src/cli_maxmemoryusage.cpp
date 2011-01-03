@@ -19,35 +19,20 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMaxMemoryUsage(std::vector<std::string>& argv) {
-
-	// n defaults to 0 (print current value)
-	int n = 0;
-
-	if (argv.size() > 2) return SetError(kTooManyArgs);
-
-	// one argument, figure out if it is a positive integer
-	if (argv.size() == 2) {
-		from_string(n, argv[1]);
-		if (n <= 0) return SetError(kIntegerMustBePositive);
-	}
-
-	return DoMaxMemoryUsage(n);
-}
-
 bool CommandLineInterface::DoMaxMemoryUsage(const int n) {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if (!n) {
 		// query
 		if (m_RawOutput) {
-			m_Result << m_pAgentSoar->sysparams[MAX_MEMORY_USAGE_SYSPARAM] << " bytes";
+			m_Result << agnt->sysparams[MAX_MEMORY_USAGE_SYSPARAM] << " bytes";
 		} else {
 			std::string temp;
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(m_pAgentSoar->sysparams[MAX_CHUNKS_SYSPARAM], temp));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(agnt->sysparams[MAX_CHUNKS_SYSPARAM], temp));
 		}
 		return true;
 	}
 
-	m_pAgentSoar->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = n;
+	agnt->sysparams[MAX_MEMORY_USAGE_SYSPARAM] = n;
 	return true;
 }
 

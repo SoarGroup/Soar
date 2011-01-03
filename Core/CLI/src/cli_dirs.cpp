@@ -18,11 +18,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseDirs(std::vector<std::string>&) {
-
-	return DoDirs();
-}
-
 bool CommandLineInterface::DoDirs() {
 	
 	StringStack tempStack;

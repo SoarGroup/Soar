@@ -31,75 +31,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseWatchWMEs(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'a', "add-filter",		OPTARG_NONE},
-		{'r', "remove-filter",	OPTARG_NONE},
-		{'l', "list-filter",	OPTARG_NONE},
-		{'R', "reset-filter",	OPTARG_NONE},
-		{'t', "type",			OPTARG_REQUIRED},
-		{0, 0, OPTARG_NONE}
-	};
-
-	eWatchWMEsMode mode = WATCH_WMES_LIST;
-	WatchWMEsTypeBitset type(0);
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'a':
-				mode = WATCH_WMES_ADD;
-				break;
-			case 'r':
-				mode = WATCH_WMES_REMOVE;
-				break;
-			case 'l':
-				mode = WATCH_WMES_LIST;
-				break;
-			case 'R':
-				mode = WATCH_WMES_RESET;
-				break;
-			case 't':
-				{
-					std::string typeString = m_OptionArgument;
-					if (typeString == "adds") {
-						type.set(WATCH_WMES_TYPE_ADDS);
-					} else if (typeString == "removes") {
-						type.set(WATCH_WMES_TYPE_REMOVES);
-					} else if (typeString == "both") {
-						type.set(WATCH_WMES_TYPE_ADDS);
-						type.set(WATCH_WMES_TYPE_REMOVES);
-					} else {
-						SetErrorDetail("Got: " + typeString);
-						return SetError(kInvalidWMEFilterType);
-					}
-				}
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-	
-	if (mode == WATCH_WMES_ADD || mode == WATCH_WMES_REMOVE) {
-		// type required
-		if (type.none()) return SetError(kTypeRequired);
-	
-		// check for too few/many args
-		if (m_NonOptionArguments > 3) return SetError(kTooManyArgs);
-		if (m_NonOptionArguments < 3) return SetError(kTooFewArgs);
-
-		int optind = m_Argument - m_NonOptionArguments;
-		return DoWatchWMEs(mode, type, &argv[optind], &argv[optind + 1], &argv[optind + 2]);
-	}
-
-	// no additional arguments
-	if (m_NonOptionArguments) return SetError(kTooManyArgs);
-
-	return DoWatchWMEs(mode, type);
-}
-
 typedef struct wme_filter_struct {
 	Symbol *id;
 	Symbol *attr;
@@ -366,57 +297,51 @@ bool CommandLineInterface::DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeB
 	bool retb = false;
 	switch (mode) {
 		case WATCH_WMES_ADD:
-			if (!pIdString || !pAttributeString || !pValueString) return SetError(kFilterExpected);
-			ret = AddWMEFilter(m_pAgentSoar, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
+			if (!pIdString || !pAttributeString || !pValueString) return SetError("ID/Attribute/Value filter expected, one or more missing.");
+			ret = AddWMEFilter(m_pAgentSML->GetSoarAgent(), pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			if (ret == -1) {
-				SetErrorDetail("Got: " + *pIdString);
-				return SetError(kInvalidID);
+				return SetError("Invalid id, got: " + *pIdString);
 			}
 			if (ret == -2) {
-				SetErrorDetail("Got: " + *pAttributeString);
-				return SetError(kInvalidAttribute);
+				return SetError("Invalid attribute, got: " + *pAttributeString);
 			}
 			if (ret == -3) {
-				SetErrorDetail("Got: " + *pValueString);
-				return SetError(kInvalidValue);
+				return SetError("Invalid value, got: " + *pValueString);
 			}
-			if (ret == -4) return SetError(kDuplicateWMEFilter);
+			if (ret == -4) return SetError("That WME filter already exists.");
 			break;
 
 		case WATCH_WMES_REMOVE:
-			if (!pIdString || !pAttributeString || !pValueString) return SetError(kFilterExpected);
-			ret = RemoveWMEFilter(m_pAgentSoar, pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
+			if (!pIdString || !pAttributeString || !pValueString) return SetError("ID/Attribute/Value filter expected, one or more missing.");
+			ret = RemoveWMEFilter(m_pAgentSML->GetSoarAgent(), pIdString->c_str(), pAttributeString->c_str(), pValueString->c_str(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			if (ret == -1) {
-				SetErrorDetail("Got: " + *pIdString);
-				return SetError(kInvalidID);
+				return SetError("Invalid id, got: " + *pIdString);
 			}
 			if (ret == -2) {
-				SetErrorDetail("Got: " + *pAttributeString);
-				return SetError(kInvalidAttribute);
+				return SetError("Invalid attribute, got: " + *pAttributeString);
 			}
 			if (ret == -3) {
-				SetErrorDetail("Got: " + *pValueString);
-				return SetError(kInvalidValue);
+				return SetError("Invalid value, got: " + *pValueString);
 			}
-			if (ret == -4) return SetError(kWMEFilterNotFound);
+			if (ret == -4) return SetError("The specified WME filter was not found.");
 			break;
 
 		case WATCH_WMES_LIST:
 			if (type.none()) type.flip();
 
-			ListWMEFilters(m_pAgentSoar, type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
+			ListWMEFilters(m_pAgentSML->GetSoarAgent(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 			break;
 
 		case WATCH_WMES_RESET:
 			if (type.none()) type.flip();
 
-			retb = ResetWMEFilters(m_pAgentSoar, type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
+			retb = ResetWMEFilters(m_pAgentSML->GetSoarAgent(), type.test(WATCH_WMES_TYPE_ADDS), type.test(WATCH_WMES_TYPE_REMOVES));
 
-			if (!retb) return SetError(kWMEFilterNotFound);
+			if (!retb) return SetError("The specified WME filter was not found.");
 			break;
 
 		default:
-			return SetError(kInvalidMode);
+			return SetError("Invalid mode.");
 	}
 
 	return true;

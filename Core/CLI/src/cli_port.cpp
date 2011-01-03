@@ -18,10 +18,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePort(std::vector<std::string>&) {
-	return DoPort();
-}
-
 bool CommandLineInterface::DoPort() {
 
 	int port = m_pKernelSML->GetListenerPort();

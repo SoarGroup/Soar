@@ -29,44 +29,18 @@ struct FiringsSort {
 	}
 };
 
-bool CommandLineInterface::ParseFiringCounts(std::vector<std::string>& argv) {
-
-	// The number to list defaults to -1 (list all)
-	int numberToList = -1;
-
-	// Production defaults to no production
-	std::string* pProduction = 0;
-
-	// no more than 1 arg
-	if (argv.size() > 2) return SetError(kTooManyArgs);
-
-	if (argv.size() == 2) {
-		// one argument, figure out if it is a non-negative integer or a production
-		if ( from_string( numberToList, argv[1] ) ){
-			if (numberToList < 0) return SetError(kIntegerMustBeNonNegative);
-
-		} else {
-			numberToList = -1;
-
-			// non-integer argument, hopfully a production
-			pProduction = &(argv[1]);
-		}
-	}
-
-	return DoFiringCounts(numberToList, pProduction);
-}
-
 bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::string* pProduction) {
 	std::vector< std::pair< std::string, uint64_t > > firings;
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 
 	// if we have a production, just get that one, otherwise get them all
 	if (pProduction) 
 	{
-		Symbol* sym = find_sym_constant( m_pAgentSoar, pProduction->c_str() );
+		Symbol* sym = find_sym_constant( agnt, pProduction->c_str() );
 
 		if (!sym || !(sym->sc.production))
 		{
-			return SetError(kProductionNotFound);
+            return SetError("Production not found.");
 		}
 
 		std::pair< std::string, uint64_t > firing;
@@ -80,7 +54,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 
 		for(unsigned int i = 0; i < NUM_PRODUCTION_TYPES; ++i)
 		{
-			for( production* pSoarProduction = m_pAgentSoar->all_productions_of_type[i]; 
+			for( production* pSoarProduction = agnt->all_productions_of_type[i]; 
 				pSoarProduction != 0; 
 				pSoarProduction = pSoarProduction->next )
 			{
@@ -101,7 +75,7 @@ bool CommandLineInterface::DoFiringCounts(const int numberToList, const std::str
 			}
 		}
 	
-		if (!foundProduction) return SetError(kProductionNotFound);
+		if (!foundProduction) return SetError("Production not found.");
 	}
 
 	// Sort the list

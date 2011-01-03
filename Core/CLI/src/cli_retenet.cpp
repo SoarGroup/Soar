@@ -18,62 +18,23 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseReteNet(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'l', "load",		OPTARG_REQUIRED},
-		{'r', "restore",	OPTARG_REQUIRED},
-		{'s', "save",		OPTARG_REQUIRED},
-		{0, 0, OPTARG_NONE}
-	};
-
-	bool save = false;
-	bool load = false;
-	std::string filename;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case 'l':
-			case 'r':
-				load = true;
-				save = false;
-				filename = m_OptionArgument;
-				break;
-			case 's':
-				save = true;
-				load = false;
-				filename = m_OptionArgument;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// Must have a save or load operation
-	if (!save && !load) return SetError(kMustSaveOrLoad);
-	if (m_NonOptionArguments) return SetError(kTooManyArgs);
-
-	return DoReteNet(save, filename);
-}
-
 bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
-	if (!filename.size()) return SetError(kMissingFilenameArg);
+	if (!filename.size()) return SetError("Missing file name.");
 
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if ( save ) 
 	{
 		FILE* file = fopen( filename.c_str(), "wb" );
 
 		if( file == 0 )
 		{
-			return SetError( kOpenFileFail );
+			return SetError( "Open file failed." );
 		}
 
-		if ( ! save_rete_net( m_pAgentSoar, file, TRUE ) )
+		if ( ! save_rete_net( agnt, file, TRUE ) )
 		{
 			// TODO: additional error information
-			return SetError( kReteSaveOperationFail );
+			return SetError( "Rete save operation failed." );
 		}
 
 		fclose( file );
@@ -83,13 +44,13 @@ bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
 
 		if(file == 0)
 		{
-			return SetError( kOpenFileFail );
+			return SetError(  "Open file failed." );
 		}
 
-		if ( ! load_rete_net( m_pAgentSoar, file ) )
+		if ( ! load_rete_net( agnt, file ) )
 		{
 			// TODO: additional error information
-			return SetError( kReteLoadOperationFail );
+			return SetError( "Rete load operation failed." );
 		}
 
 		fclose( file );

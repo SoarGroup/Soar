@@ -18,10 +18,6 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseInitSoar(std::vector<std::string>&) {
-	return DoInitSoar();
-}
-
 bool CommandLineInterface::DoInitSoar() {
 	// Save the current result
 	std::string oldResult = m_Result.str();
@@ -31,7 +27,7 @@ bool CommandLineInterface::DoInitSoar() {
 	bool ok = m_pAgentSML->Reinitialize() ;
 
 	// S1 gets created during Reinitialize, clear its output from the trace buffers
-	xml_invoke_callback( m_pAgentSoar );
+	xml_invoke_callback( m_pAgentSML->GetSoarAgent() );
 	m_pAgentSML->FlushPrintOutput();
 
 	SetTrapPrintCallbacks( true );
@@ -40,10 +36,7 @@ bool CommandLineInterface::DoInitSoar() {
 	m_Result.str(oldResult); 
 
 	if (!ok)
-	{
-		m_Result << "Agent failed to reinitialize" ;
-		return SetError(kInitSoarFailed);
-	}
+		return SetError("Agent failed to reinitialize");
 
 	if (m_RawOutput) m_Result << "Agent reinitialized.";
 

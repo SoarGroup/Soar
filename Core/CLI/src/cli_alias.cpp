@@ -1,33 +1,25 @@
 #include <portability.h>
 
-#include "sml_Utils.h"
 #include "cli_CommandLineInterface.h"
-#include "cli_Commands.h"
+#include "sml_Utils.h"
 #include "cli_Aliases.h"
 #include "sml_Names.h"
 
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseAlias(std::vector<std::string>& argv) 
-{
-    if (argv.size() == 1) 
-        return DoAlias(); // list all
-
-    argv.erase(argv.begin());
-
-    return DoAlias(&argv);
-}
-
 bool CommandLineInterface::DoAlias(std::vector< std::string >* argv)
 {
     if (!argv || argv->size() == 1)
     {
-        std::map< std::string, std::vector< std::string > >::const_iterator iter = m_Aliases.Begin();
-        if (iter == m_Aliases.End())
-            return SetError(kAliasNotFound);
+        std::map< std::string, std::vector< std::string > >::const_iterator iter = m_Parser.GetAliases().Begin();
+        if (iter == m_Parser.GetAliases().End())
+        {
+            m_Result << "No aliases found.";
+            return true;
+        }
 
-        while (iter != m_Aliases.End())
+        while (iter != m_Parser.GetAliases().End())
         {
             if (!argv || argv->front() == iter->first)
             {
@@ -54,7 +46,7 @@ bool CommandLineInterface::DoAlias(std::vector< std::string >* argv)
         return true;
     }
 
-    m_Aliases.SetAlias(*argv);
+    m_Parser.GetAliases().SetAlias(*argv);
     return true;
 }
 

@@ -18,34 +18,20 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMaxGoalDepth(std::vector<std::string>& argv) {
-	// n defaults to 0 (print current value)
-	int n = 0;
-
-	if (argv.size() > 2) return SetError(kTooManyArgs);
-
-	// one argument, figure out if it is a positive integer
-	if (argv.size() == 2) {
-		from_string(n, argv[1]);
-		if (n <= 0) return SetError(kIntegerMustBePositive);
-	}
-
-	return DoMaxGoalDepth(n);
-}
-
 bool CommandLineInterface::DoMaxGoalDepth(const int n) {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if (!n) {
 		// query
 		if (m_RawOutput) {
-			m_Result << m_pAgentSoar->sysparams[MAX_GOAL_DEPTH];
+			m_Result << agnt->sysparams[MAX_GOAL_DEPTH];
 		} else {
 			std::string temp;
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(m_pAgentSoar->sysparams[MAX_GOAL_DEPTH], temp));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(agnt->sysparams[MAX_GOAL_DEPTH], temp));
 		}
 		return true;
 	}
 
-	m_pAgentSoar->sysparams[MAX_GOAL_DEPTH] = n;
+	agnt->sysparams[MAX_GOAL_DEPTH] = n;
 	return true;
 }
 

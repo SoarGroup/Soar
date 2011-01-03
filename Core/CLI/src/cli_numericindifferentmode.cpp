@@ -18,75 +18,34 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseNumericIndifferentMode(std::vector<std::string>& argv) {
-
-	Options optionsData[] = 
-	{
-		{'a', "average",	OPTARG_NONE},
-		{'a', "avg",		OPTARG_NONE},
-		{'s', "sum",		OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	ni_mode mode = NUMERIC_INDIFFERENT_MODE_AVG;
-	bool query = true;
-
-	for (;;) 
-	{
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) 
-		{
-			case 'a':
-				mode = NUMERIC_INDIFFERENT_MODE_AVG;
-				query = false;
-				break;
-			case 's':
-				mode = NUMERIC_INDIFFERENT_MODE_SUM;
-				query = false;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// No additional arguments
-	if (m_NonOptionArguments) return SetError(kTooManyArgs);		
-
-	return DoNumericIndifferentMode( query, mode );
-}
-
 bool CommandLineInterface::DoNumericIndifferentMode( bool query, const ni_mode mode ) 
 {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if ( query )
 	{
 		if (m_RawOutput) {
 			m_Result << "Current numeric indifferent mode: ";
 
-			switch (m_pAgentSoar->numeric_indifferent_mode) {
+			switch (agnt->numeric_indifferent_mode) {
+                default:
 				case NUMERIC_INDIFFERENT_MODE_AVG:
 					m_Result << "average";
 					break;
 				case NUMERIC_INDIFFERENT_MODE_SUM:
 					m_Result << "sum";
 					break;
-				default:
-					m_Result << "unknown";
-					assert( false );
-					return SetError(kInvalidNumericIndifferentMode);
 			}
 		}
 		else
 		{
 			std::stringstream modeString;
-			modeString << static_cast< int >( m_pAgentSoar->numeric_indifferent_mode );
+			modeString << static_cast< int >( agnt->numeric_indifferent_mode );
 			AppendArgTagFast(sml_Names::kParamNumericIndifferentMode, sml_Names::kTypeInt, modeString.str() );
 		}
 	}
 	else // !query
 	{
-		m_pAgentSoar->numeric_indifferent_mode = mode;
+		agnt->numeric_indifferent_mode = mode;
 	}
 
 	return true;
