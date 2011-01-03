@@ -19,24 +19,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseLoadLibrary(std::vector<std::string>& argv) {
-	// command-name library-name [library-args ...]
-
-	if (argv.size() < 2) {
-		SetErrorDetail("Library command expected.");
-		return SetError(kTooFewArgs);
-	}
-
-	// strip the command name, combine the rest
-	std::string libraryCommand(argv[1]);
-	for(std::string::size_type i = 2; i < argv.size(); ++i) {
-		libraryCommand += " ";
-		libraryCommand += argv[i];
-	}
-
-	return DoLoadLibrary(libraryCommand);
-}
-
 bool CommandLineInterface::DoLoadLibrary(const std::string& libraryCommand) {
 
 	std::string result = this->m_pKernelSML->FireLoadLibraryEvent(libraryCommand.c_str());
@@ -46,7 +28,6 @@ bool CommandLineInterface::DoLoadLibrary(const std::string& libraryCommand) {
 		return true;
 	}
 
-	SetErrorDetail(result);
-	return SetError(kLoadLibraryError);
+    return SetError("load library failed: " + result);
 }
 

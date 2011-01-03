@@ -22,25 +22,9 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseMultiAttributes(std::vector<std::string>& argv) {
-	// No more than three arguments
-	if (argv.size() > 3) return SetError(kTooManyArgs);
-
-	int n = 0;
-	// If we have 3 arguments, third one is an integer
-	if (argv.size() > 2) {
-		if ( !from_string( n, argv[2] ) ) return SetError(kIntegerExpected);
-		if (n <= 0) return SetError(kIntegerMustBeNonNegative);
-	}
-
-	// If we have two arguments, second arg is an attribute/identifer/whatever
-	if (argv.size() > 1) return DoMultiAttributes(&argv[1], n);
-
-	return DoMultiAttributes();
-}
-
 bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int n) {
-	multi_attribute* maList = m_pAgentSoar->multi_attributes;
+    agent* agnt = m_pAgentSML->GetSoarAgent();
+	multi_attribute* maList = agnt->multi_attributes;
 
 	if (!pAttribute && !n) {
 
@@ -60,10 +44,10 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 		{
 			// Arbitrary buffer and size
 			char attributeName[1024];
-			symbol_to_string(m_pAgentSoar, maList->symbol, TRUE, attributeName, 1024);
+			symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024);
 
 			if (m_RawOutput) {
-				m_Result << "\n" << maList->value << "\t" << symbol_to_string(m_pAgentSoar, maList->symbol, TRUE, attributeName, 1024);
+				m_Result << "\n" << maList->value << "\t" << symbol_to_string(agnt, maList->symbol, TRUE, attributeName, 1024);
 
 			} else {
 				buffer << maList->value;
@@ -91,14 +75,14 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 	if (!n) n = 10;
 
 	// Set it
-	Symbol* s = make_sym_constant( m_pAgentSoar, pAttribute->c_str() );
+	Symbol* s = make_sym_constant( agnt, pAttribute->c_str() );
 
 	while (maList) 
 	{
 		if (maList->symbol == s) 
 		{
 			maList->value = n;
-			symbol_remove_ref(m_pAgentSoar, s);
+			symbol_remove_ref(agnt, s);
 			return true;
 		}
 
@@ -106,13 +90,13 @@ bool CommandLineInterface::DoMultiAttributes(const std::string* pAttribute, int 
 	}
 
 	/* sym wasn't in the table if we get here, so add it */
-	maList = static_cast<multi_attribute *>(allocate_memory(m_pAgentSoar, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
+	maList = static_cast<multi_attribute *>(allocate_memory(agnt, sizeof(multi_attribute), MISCELLANEOUS_MEM_USAGE));
 	assert(maList);
 
 	maList->value = n;
 	maList->symbol = s;
-	maList->next = m_pAgentSoar->multi_attributes;
-	m_pAgentSoar->multi_attributes = maList;
+	maList->next = agnt->multi_attributes;
+	agnt->multi_attributes = maList;
 
  	return true;
 }

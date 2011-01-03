@@ -29,28 +29,11 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseRemoveWME(std::vector<std::string>& argv) {
-	// Exactly one argument
-	if (argv.size() < 2) {
-		SetErrorDetail("Please supply a timetag.");
-		return SetError(kTooFewArgs);
-	}
-	if (argv.size() > 2) {
-		SetErrorDetail("Please supply only one timetag.");
-		return SetError(kTooManyArgs);
-	}
-
-	uint64_t timetag = 0;
-	from_string(timetag, argv[1]);
-	if (!timetag) return SetError(kIntegerMustBePositive);
-
-	return DoRemoveWME(timetag);
-}
-
 bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
 	wme *pWme = 0;
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 
-	for ( pWme = m_pAgentSoar->all_wmes_in_rete; pWme != 0; pWme = pWme->rete_next )
+	for ( pWme = agnt->all_wmes_in_rete; pWme != 0; pWme = pWme->rete_next )
 	{
 		if ( pWme->timetag == timetag )
 		{
@@ -108,7 +91,7 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
 		{
 			if ( pWme->gds->goal != 0 ) 
 			{
-				gds_invalid_so_remove_goal( m_pAgentSoar, pWme );
+				gds_invalid_so_remove_goal( agnt, pWme );
 				/* NOTE: the call to remove_wme_from_wm will take care of checking if
 				GDS should be removed */
 			}
@@ -116,10 +99,10 @@ bool CommandLineInterface::DoRemoveWME(uint64_t timetag) {
 		/* REW: end   09.15.96 */
 
 		// now remove w from working memory
-		remove_wme_from_wm( m_pAgentSoar, pWme );
+		remove_wme_from_wm( agnt, pWme );
 
 #ifndef NO_TOP_LEVEL_REFS
-		do_buffered_wm_and_ownership_changes( m_pAgentSoar );
+		do_buffered_wm_and_ownership_changes( agnt );
 #endif // NO_TOP_LEVEL_REFS
 	}
 

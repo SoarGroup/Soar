@@ -16,21 +16,6 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseGPMax(std::vector<std::string>& argv) {
-	// n defaults to 0 (print current value)
-	int n = -1;
-
-	if (argv.size() > 2) return SetError(kTooManyArgs);
-
-	// one argument, figure out if it is a positive integer
-	if (argv.size() == 2) {
-		from_string(n, argv[1]);
-		if (n < 0) return SetError(kIntegerMustBeNonNegative);
-	}
-
-	return DoGPMax(n);
-}
-
 bool CommandLineInterface::DoGPMax(const int& maximum) {
 	if (maximum < 0) {
 		// query

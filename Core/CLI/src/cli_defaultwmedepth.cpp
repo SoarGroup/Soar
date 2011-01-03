@@ -17,33 +17,19 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseDefaultWMEDepth(std::vector<std::string>& argv) {
-	// n defaults to 0 (query)
-	int n = 0;
-
-	if (argv.size() > 2) return SetError(kTooManyArgs);
-
-	// one argument, figure out if it is a positive integer
-	if (argv.size() == 2) {
-		from_string(n, argv[1]);
-		if (n <= 0) return SetError(kIntegerMustBePositive);
-	}
-
-	return DoDefaultWMEDepth(n ? &n : 0);
-}
-
 bool CommandLineInterface::DoDefaultWMEDepth(const int* pDepth) {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 	if (!pDepth) {
 		if (m_RawOutput) {
-			m_Result << m_pAgentSoar->default_wme_depth;
+			m_Result << agnt->default_wme_depth;
 		} else {
 			std::string temp;
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(m_pAgentSoar->default_wme_depth, temp));
+			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(agnt->default_wme_depth, temp));
 		}
 		return true;
 	}
 
-	m_pAgentSoar->default_wme_depth = *pDepth;
+	agnt->default_wme_depth = *pDepth;
 	return true;
 }
 

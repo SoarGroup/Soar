@@ -17,15 +17,6 @@
 
 using namespace cli;
 
-bool CommandLineInterface::ParseEditProduction(std::vector<std::string>& argv) {
-	if (argv.size() != 2) {
-		SetErrorDetail("Need to include the name of the production to edit.");
-		return SetError(kTooFewArgs);
-	}
-
-	return DoEditProduction(argv[1]);
-}
-
 bool CommandLineInterface::DoEditProduction(std::string production) {
 	m_pKernelSML->FireEditProductionEvent(production.c_str()) ;
 	return true;

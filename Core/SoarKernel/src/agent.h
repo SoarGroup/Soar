@@ -823,9 +823,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* JC ADDED: Need to store RHS functions here so that agent's don't step on each other */
   rhs_function* rhs_functions;
 
-  //#ifdef NUMERIC_INDIFFERENCE
   enum ni_mode numeric_indifferent_mode;      /* SW 08.19.2003 */
-  //#endif
   
   // exploration
   exploration_parameter *exploration_params[ EXPLORATION_PARAMS ];

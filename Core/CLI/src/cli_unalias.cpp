@@ -19,17 +19,8 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseUnalias(std::vector<std::string>& argv) {
-	// Need exactly one argument
-	if (argv.size() < 2) {
-		SetErrorDetail("Need exactly one command to unalias. See also: alias");
-		return SetError(kTooFewArgs);
-	} else if (argv.size() > 2) {
-		SetErrorDetail("Need exactly one command to unalias. See also: alias");
-		return SetError(kTooManyArgs);
-	}
-        argv.erase(argv.begin());
-        m_Aliases.SetAlias(argv);
-        return true;
+bool CommandLineInterface::DoUnalias(std::vector<std::string>& argv) 
+{
+    m_Parser.GetAliases().SetAlias(argv);
+    return true;
 }
-

@@ -27,54 +27,6 @@ using namespace cli;
 using namespace sml;
 using namespace std;
 
-bool CommandLineInterface::ParseSource(std::vector<std::string>& argv) 
-{
-    Options optionsData[] = 
-    {
-        {'a', "all",			OPTARG_NONE},
-        {'d', "disable",		OPTARG_NONE},
-        {'v', "verbose",		OPTARG_NONE},
-        {0, 0, OPTARG_NONE}
-    };
-
-    SourceBitset options(0);
-
-    for (;;) 
-    {
-        if (!ProcessOptions(argv, optionsData)) return false;
-        if (m_Option == -1) break;
-
-        switch (m_Option) 
-        {
-        case 'd':
-            options.set(SOURCE_DISABLE);
-            break;
-        case 'a':
-            options.set(SOURCE_ALL);
-            break;
-        case 'v':
-            options.set(SOURCE_VERBOSE);
-            break;
-        default:
-            return SetError(kGetOptError);
-        }
-    }
-
-    if (m_NonOptionArguments < 1) 
-    {
-        SetErrorDetail("Please supply one file to source.");
-        return SetError(kTooFewArgs);
-
-    } 
-    else if (m_NonOptionArguments > 2) 
-    {
-        SetErrorDetail("Please supply one file to source. If there are spaces in the path, enclose it in quotes.");
-        return SetError(kSourceOnlyOneFile);
-    }
-
-    return DoSource(argv[m_Argument - m_NonOptionArguments], &options);
-}
-
 void CommandLineInterface::PrintSourceSummary(int sourced, const std::list< std::string >& excised, int ignored)
 {
     if (!m_SourceFileStack.empty())
@@ -127,7 +79,7 @@ void CommandLineInterface::PrintSourceSummary(int sourced, const std::list< std:
 bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions) 
 {
     if (m_SourceFileStack.size() >= 100)
-        return SetError(kSourceDepthExceeded);
+        return SetError("Source depth (100) exceeded, possible recursive source.");
 
     normalize_separators(path);
 
@@ -153,8 +105,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     if (!pFile) 
     {
         if (!folder.empty()) DoPopD();
-        SetErrorDetail(path);
-        return SetError(kOpenFileFail);
+		return SetError("Failed to open file for reading: " + path);
     }
 
     // obtain file size:
@@ -168,8 +119,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     {
         if (!folder.empty()) DoPopD();
         path.insert(0, "Memory allocation failed: ");
-        SetErrorDetail(path);
-        return SetError(kOpenFileFail);
+        return SetError("Failed to open file for reading: " + path);
     }
 
     // copy the file into the buffer:
@@ -179,8 +129,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
         free(buffer);
         if (!folder.empty()) DoPopD();
         path.insert(0, "Read failed: ");
-        SetErrorDetail(path);
-        return SetError(kOpenFileFail);
+        return SetError("Failed to open file for reading: " + path);
     }
     buffer[lSize] = 0;
 
@@ -199,8 +148,6 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
         m_TotalExcisedDuringSource.clear();
         m_NumTotalProductionsIgnored = 0;
 
-        m_SourceErrorDetail.clear();
-
         // Need to listen for excise callbacks
 		if (m_pAgentSML)
     		this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
@@ -213,28 +160,33 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     m_SourceFileStack.push(temp);
 
     soar::tokenizer tokenizer;
-    tokenizer.set_handler(this);
+    tokenizer.set_handler(&m_Parser);
     bool ret = tokenizer.evaluate(buffer);
     if (!ret)
     {
         int line = tokenizer.get_command_line_number();
         int offset = -1;
-        if (m_LastError == kNoError)
-        {
-            SetError(kParseError);
-            SetErrorDetail(tokenizer.get_error_string());
-            line = tokenizer.get_current_line_number();
-            offset = tokenizer.get_offset();
+		
+		if (m_LastError.empty())
+		{
+			if (!m_Parser.GetError().empty())
+				m_LastError = m_Parser.GetError();
+			else if (!tokenizer.get_error_string())
+			{
+				m_LastError = tokenizer.get_error_string();
+				line = tokenizer.get_current_line_number();
+				offset = tokenizer.get_offset();
+			}
         }
 
-        m_SourceErrorDetail.append("\n\t");
-        m_SourceErrorDetail.append(m_SourceFileStack.top());
-        m_SourceErrorDetail.append(":");
-        m_SourceErrorDetail.append(to_string(line, temp));
+        m_LastError.append("\n\t");
+        m_LastError.append(m_SourceFileStack.top());
+        m_LastError.append(":");
+        m_LastError.append(to_string(line, temp));
         if (offset > 0)
         {
-            m_SourceErrorDetail.append(":");
-            m_SourceErrorDetail.append(to_string(line, temp));
+            m_LastError.append(":");
+            m_LastError.append(to_string(line, temp));
         }
     }
 
@@ -260,8 +212,6 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
             PrintSourceSummary(m_NumTotalProductionsSourced, m_TotalExcisedDuringSource, m_NumTotalProductionsIgnored);
 
         m_pSourceOptions = 0;
-        if (!m_SourceErrorDetail.empty())
-            m_LastErrorDetail.append(m_SourceErrorDetail);
     }
 
     if (!folder.empty()) DoPopD();

@@ -3,6 +3,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "cli_Aliases.h"
+#include "cli_Parser.h"
 
 class AliasTest : public CPPUNIT_NS::TestCase
 {
@@ -13,6 +14,8 @@ class AliasTest : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST( testThree );
     CPPUNIT_TEST( testRemove );
     CPPUNIT_TEST( testDefaults );
+
+    CPPUNIT_TEST( testSimpleCommand );
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -32,6 +35,8 @@ protected:
     void testThree();
     void testRemove();
     void testDefaults();
+
+    void testSimpleCommand();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( AliasTest ); // Registers the test so it will be used
@@ -172,4 +177,32 @@ void AliasTest::testDefaults()
     CPPUNIT_ASSERT(aliases->Expand(w));
     CPPUNIT_ASSERT(w.size() == 1);
     CPPUNIT_ASSERT(w.front() == "watch");
+}
+
+void AliasTest::testSimpleCommand()
+{
+    cli::Parser parser;
+    soar::tokenizer tok;
+    tok.set_handler(&parser);
+
+    class TestCommand : public cli::ParserCommand
+    {
+    public:
+        virtual ~TestCommand() {}
+
+        virtual const char* GetString() const { return "test"; }
+        virtual const char* GetSyntax() const { return "Syntax"; }
+
+        virtual bool Parse(std::vector<std::string>& argv)
+        {
+            CPPUNIT_ASSERT(argv.size() == 3);
+            CPPUNIT_ASSERT(argv[0] == "test");
+            CPPUNIT_ASSERT(argv[1] == "one");
+            CPPUNIT_ASSERT(argv[2] == "two");
+            return true;
+        }
+    };
+    parser.AddCommand(new TestCommand());
+
+    tok.evaluate("test one two");
 }

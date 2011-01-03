@@ -20,21 +20,10 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePredict( std::vector<std::string>& argv ) 
-{
-	// No arguments to predict next operator
-	if ( argv.size() != 1 ) 
-	{
-		SetErrorDetail( "predict takes no arguments." );
-		return SetError( kTooManyArgs );
-	}
-	
-	return DoPredict( );
-}
-
 bool CommandLineInterface::DoPredict() 
 {
-	const char *prediction_result = predict_get( m_pAgentSoar );
+    agent* agnt = m_pAgentSML->GetSoarAgent();
+	const char *prediction_result = predict_get( agnt );
 
 	if ( m_RawOutput )
 		m_Result << prediction_result;

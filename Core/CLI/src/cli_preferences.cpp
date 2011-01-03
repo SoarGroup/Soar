@@ -27,70 +27,6 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParsePreferences(std::vector<std::string>& argv) {
-	Options optionsData[] = {
-		{'0', "none",		OPTARG_NONE},
-		{'n', "names",		OPTARG_NONE},
-		{'1', "names",		OPTARG_NONE},
-		{'N', "names",		OPTARG_NONE},
-		{'2', "timetags",	OPTARG_NONE},
-		{'t', "timetags",	OPTARG_NONE},
-		{'3', "wmes",		OPTARG_NONE},
-		{'w', "wmes",		OPTARG_NONE},
-		{'o', "object",		OPTARG_NONE},
-		{0, 0, OPTARG_NONE}
-	};
-
-	ePreferencesDetail detail = PREFERENCES_ONLY;
-	bool object = false;
-
-	for (;;) {
-		if (!ProcessOptions(argv, optionsData)) return false;
-		if (m_Option == -1) break;
-
-		switch (m_Option) {
-			case '0':
-				detail = PREFERENCES_ONLY;
-				break;
-			case '1':
-			case 'n':
-			case 'N':
-				detail = PREFERENCES_NAMES;
-				break;
-			case '2':
-			case 't':
-				detail = PREFERENCES_TIMETAGS;
-				break;
-			case '3':
-			case 'w':
-				detail = PREFERENCES_WMES;
-				break;
-				
-			case 'o':
-			case 'O':
-				object = true;
-				break;
-			default:
-				return SetError(kGetOptError);
-		}
-	}
-
-	// Up to two non-option arguments allowed, id/attribute
-	if (m_NonOptionArguments > 2) return SetError(kTooManyArgs);
-
-	int optind = m_Argument - m_NonOptionArguments;
-	if (m_NonOptionArguments == 2) {
-		// id & attribute
-		return DoPreferences(detail, object, &argv[optind], &argv[optind + 1]);
-	}
-	if (m_NonOptionArguments == 1) {
-		// id
-		return DoPreferences(detail, object, &argv[optind]);
-	}
-
-	return DoPreferences(detail, object);
-}
-
 /*
 *	This procedure parses a string to determine if it is a
 *      lexeme for an existing attribute.
@@ -359,10 +295,11 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
 
 	const char* idString = pId ? pId->c_str() : 0;
 	const char* attrString = pAttribute ? pAttribute->c_str() : 0;
+    agent* agnt = m_pAgentSML->GetSoarAgent();
 
 	// Establish defaults
-	symbol_to_string(m_pAgentSoar, m_pAgentSoar->bottom_goal, TRUE, id, PREFERENCES_BUFFER_SIZE);
-	symbol_to_string(m_pAgentSoar, m_pAgentSoar->operator_symbol, TRUE, attr, PREFERENCES_BUFFER_SIZE);
+	symbol_to_string(agnt, agnt->bottom_goal, TRUE, id, PREFERENCES_BUFFER_SIZE);
+	symbol_to_string(agnt, agnt->operator_symbol, TRUE, attr, PREFERENCES_BUFFER_SIZE);
 
 	// Override defaults
 	if (idString) {
@@ -398,9 +335,7 @@ bool CommandLineInterface::DoPreferences(const ePreferencesDetail detail, bool o
 			break;
 	}
 
-	if (soar_ecPrintPreferences(m_pAgentSoar, id, attr, object, print_productions, wtt)) {
-		print(m_pAgentSoar, "An Error occured trying to print the prefs.");
-		return SetError(kPreferencesError);
-	}
+	if (soar_ecPrintPreferences(agnt, id, attr, object, print_productions, wtt))
+		return SetError("An Error occured trying to print the prefs.");
 	return true;
 }

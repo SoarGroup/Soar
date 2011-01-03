@@ -25,126 +25,13 @@
 using namespace cli;
 using namespace sml;
 
-bool CommandLineInterface::ParseIndifferentSelection(std::vector<std::string>& argv) 
-{
-    Options optionsData[] = 
-    {
-        // selection policies
-        {'b', "boltzmann",			OPTARG_NONE},
-        {'g', "epsilon-greedy",		OPTARG_NONE},
-        {'f', "first",				OPTARG_NONE},
-        {'l', "last",				OPTARG_NONE},
-        //{'u', "random-uniform",		OPTARG_NONE},
-        {'x', "softmax",			OPTARG_NONE},
-
-        // selection parameters
-        {'e', "epsilon",			OPTARG_NONE},
-        {'t', "temperature",		OPTARG_NONE},
-
-        // auto-reduction control
-        {'a', "auto-reduce",		OPTARG_NONE},
-
-        // selection parameter reduction
-        {'p', "reduction-policy",	OPTARG_NONE},
-        {'r', "reduction-rate",		OPTARG_NONE},
-
-        // stats
-        {'s', "stats",				OPTARG_NONE},
-
-        {0, 0, OPTARG_NONE} // null
-    };
-
-    char option = 0;
-
-    for (;;) 
-    {
-        if ( !ProcessOptions( argv, optionsData ) ) 
-            return false;
-
-        if (m_Option == -1) break;
-
-        if (option != 0)
-        {  
-            SetErrorDetail( "indifferent-selection takes only one option at a time." );
-            return SetError( kTooManyArgs );
-        }
-        option = static_cast<char>(m_Option);
-    }
-
-    switch (option)
-    {
-    case 0:
-    default:
-        // no options
-        break;
-
-    case 'b':
-    case 'g':
-    case 'f':
-    case 'l':
-    case 'x':
-        // case: exploration policy takes no non-option arguments
-        if (!CheckNumNonOptArgs(0, 0)) return false;
-        return DoIndifferentSelection( option );
-
-    case 'e':
-    case 't':
-        // case: selection parameter can do zero or one non-option arguments
-        if (!CheckNumNonOptArgs(0, 1)) return false;
-
-        if ( m_NonOptionArguments == 0 )
-            return DoIndifferentSelection( option );
-
-        return DoIndifferentSelection( option, &( argv[2] ) );
-
-    case 'a':
-        // case: auto reduction control can do zero or one non-option arguments
-        if (!CheckNumNonOptArgs(0, 1)) return false;
-
-        if ( m_NonOptionArguments == 0 )
-            return DoIndifferentSelection( option );
-
-        return DoIndifferentSelection( option, &( argv[2] ) );
-
-    case 'p':
-        // case: reduction policy requires one or two non-option arguments
-        if (!CheckNumNonOptArgs(1, 2)) return false;
-
-        if ( m_NonOptionArguments == 1 )
-            return DoIndifferentSelection( option, &( argv[2] ) );
-
-        return DoIndifferentSelection( option, &( argv[2] ), &( argv[3] ) );
-
-    case 'r':
-        // case: reduction policy rate requires two or three arguments
-        if (!CheckNumNonOptArgs(2, 3)) return false;
-
-        if ( m_NonOptionArguments == 2 )
-            return DoIndifferentSelection( option, &( argv[2] ), &( argv[3] ) );
-
-         return DoIndifferentSelection( option, &( argv[2] ), &( argv[3] ), &( argv[4] ) ); 
-
-    case 's':
-        // case: stats takes no parameters
-        if (!CheckNumNonOptArgs(0, 0)) return false;
-
-        return DoIndifferentSelection( option );
-    }
-
-    // bad: no option, but more than one argument
-    if ( argv.size() > 1 ) 
-        return SetError( kTooManyArgs );
-
-    // case: nothing = full configuration information
-    return DoIndifferentSelection();	
-}
-
 bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::string* p1, const std::string* p2, const std::string* p3 ) 
 {
+    agent* agnt = m_pAgentSML->GetSoarAgent();
     // show selection policy
     if ( !pOp )
     {
-        const char *policy_name = exploration_convert_policy( exploration_get_policy( m_pAgentSoar ) );
+        const char *policy_name = exploration_convert_policy( exploration_get_policy( agnt ) );
 
         if ( m_RawOutput )
             m_Result << policy_name;
@@ -156,24 +43,24 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
 
     // selection policy
     else if ( pOp == 'b' )
-        return exploration_set_policy( m_pAgentSoar, "boltzmann" );
+        return exploration_set_policy( agnt, "boltzmann" );
     else if ( pOp == 'g' )
-        return exploration_set_policy( m_pAgentSoar, "epsilon-greedy" );
+        return exploration_set_policy( agnt, "epsilon-greedy" );
     else if ( pOp == 'f' )
-        return exploration_set_policy( m_pAgentSoar, "first" );
+        return exploration_set_policy( agnt, "first" );
     else if ( pOp == 'l' )
-        return exploration_set_policy( m_pAgentSoar, "last" );
+        return exploration_set_policy( agnt, "last" );
     /*else if ( pOp == 'u' )
-    return exploration_set_policy( m_pAgentSoar, "random-uniform" );*/
+    return exploration_set_policy( agnt, "random-uniform" );*/
     else if ( pOp == 'x' )
-        return exploration_set_policy( m_pAgentSoar, "softmax" );
+        return exploration_set_policy( agnt, "softmax" );
 
     // auto-update control
     else if ( pOp == 'a' )
     {
         if ( !p1 )
         {
-            bool setting = exploration_get_auto_update( m_pAgentSoar );
+            bool setting = exploration_get_auto_update( agnt );
 
             if ( m_RawOutput )
                 m_Result << ( ( setting )?( "on" ):( "off" ) );
@@ -185,9 +72,9 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         else
         {	
             if ( *p1 != "on" && *p1 != "off" )
-                return SetError( kInvalidValue );
+                return SetError( "Invalid value." );
 
-            return exploration_set_auto_update( m_pAgentSoar, ( *p1 == "on" ) );
+            return exploration_set_auto_update( agnt, ( *p1 == "on" ) );
         }
     }
 
@@ -196,7 +83,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
     {
         if ( !p1 )
         {
-            double param_value = exploration_get_parameter_value( m_pAgentSoar, "epsilon" ); 
+            double param_value = exploration_get_parameter_value( agnt, "epsilon" ); 
             std::string temp;
             to_string( param_value, temp );
 
@@ -211,19 +98,19 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         {
             double new_val;
             if ( !from_string( new_val, *p1 ))
-                return SetError( kInvalidValue );
+                return SetError( "Invalid value." );
 
-            if ( !exploration_valid_parameter_value( m_pAgentSoar, "epsilon", new_val ) )
-                return SetError( kInvalidValue );
+            if ( !exploration_valid_parameter_value( agnt, "epsilon", new_val ) )
+                return SetError( "Invalid value." );
 
-            return exploration_set_parameter_value( m_pAgentSoar, "epsilon", new_val );
+            return exploration_set_parameter_value( agnt, "epsilon", new_val );
         }
     }
     else if ( pOp == 't' )
     {
         if ( !p1 )
         {
-            double param_value = exploration_get_parameter_value( m_pAgentSoar, "temperature" ); 
+            double param_value = exploration_get_parameter_value( agnt, "temperature" ); 
             std::string temp;
             to_string( param_value, temp );
 
@@ -238,12 +125,12 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         {
             double new_val;
             if ( !from_string( new_val, *p1 ))
-                return SetError( kInvalidValue );
+                return SetError( "Invalid value." );
 
-            if ( !exploration_valid_parameter_value( m_pAgentSoar, "temperature", new_val ) )
-                return SetError( kInvalidValue );
+            if ( !exploration_valid_parameter_value( agnt, "temperature", new_val ) )
+                return SetError( "Invalid value." );
 
-            return exploration_set_parameter_value( m_pAgentSoar, "temperature", new_val );
+            return exploration_set_parameter_value( agnt, "temperature", new_val );
         }
     }
 
@@ -252,10 +139,10 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
     {
         if ( !p2 )
         {
-            if ( !exploration_valid_parameter( m_pAgentSoar, p1->c_str() ) )
-                return SetError( kInvalidAttribute );
+            if ( !exploration_valid_parameter( agnt, p1->c_str() ) )
+                return SetError( "Invalid attribute." );
 
-            const char *policy_name = exploration_convert_reduction_policy( exploration_get_reduction_policy( m_pAgentSoar, p1->c_str() ) );
+            const char *policy_name = exploration_convert_reduction_policy( exploration_get_reduction_policy( agnt, p1->c_str() ) );
 
             if ( m_RawOutput )
                 m_Result << policy_name;
@@ -266,25 +153,25 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         }
         else
         {
-            if ( !exploration_valid_reduction_policy( m_pAgentSoar, p1->c_str(), p2->c_str() ) )
-                return SetError( kInvalidValue );
+            if ( !exploration_valid_reduction_policy( agnt, p1->c_str(), p2->c_str() ) )
+                return SetError( "Invalid value." );
 
-            return exploration_set_reduction_policy( m_pAgentSoar, p1->c_str(), p2->c_str() );
+            return exploration_set_reduction_policy( agnt, p1->c_str(), p2->c_str() );
         }
     }
 
     // selection parameter reduction rate
     else if ( pOp == 'r' )
     {
-        if ( !exploration_valid_parameter( m_pAgentSoar, p1->c_str() ) )
-            return SetError( kInvalidAttribute );
+        if ( !exploration_valid_parameter( agnt, p1->c_str() ) )
+            return SetError( "Invalid attribute." );
 
-        if ( !exploration_valid_reduction_policy( m_pAgentSoar, p1->c_str(), p2->c_str() ) )
-            return SetError( kInvalidAttribute );
+        if ( !exploration_valid_reduction_policy( agnt, p1->c_str(), p2->c_str() ) )
+            return SetError( "Invalid attribute." );
 
         if ( !p3 )
         {
-            double reduction_rate = exploration_get_reduction_rate( m_pAgentSoar, p1->c_str(), p2->c_str() );
+            double reduction_rate = exploration_get_reduction_rate( agnt, p1->c_str(), p2->c_str() );
             std::string temp;
             to_string( reduction_rate, temp );
 
@@ -299,12 +186,12 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         {
             double new_val;
             if ( !from_string( new_val, *p3 ) )
-                return SetError( kInvalidValue );
+                return SetError( "Invalid value." );
 
-            if ( !exploration_valid_reduction_rate( m_pAgentSoar, p1->c_str(), p2->c_str(), new_val ) )
-                return SetError( kInvalidValue );
+            if ( !exploration_valid_reduction_rate( agnt, p1->c_str(), p2->c_str(), new_val ) )
+                return SetError( "Invalid value." );
 
-            return exploration_set_reduction_rate( m_pAgentSoar, p1->c_str(), p2->c_str(), new_val );
+            return exploration_set_reduction_rate( agnt, p1->c_str(), p2->c_str(), new_val );
         }
     }
 
@@ -317,7 +204,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         double temp_value;
 
         temp = "Exploration Policy: ";
-        temp += exploration_convert_policy( exploration_get_policy( m_pAgentSoar ) );
+        temp += exploration_convert_policy( exploration_get_policy( agnt ) );
 
         if ( m_RawOutput )
             m_Result << temp << "\n"; 
@@ -328,7 +215,7 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         temp = "";
 
         temp = "Automatic Policy Parameter Reduction: ";
-        temp += ( ( exploration_get_auto_update( m_pAgentSoar ) )?( "on" ):( "off" ) );
+        temp += ( ( exploration_get_auto_update( agnt ) )?( "on" ):( "off" ) );
 
         if ( m_RawOutput )
             m_Result << temp << "\n\n"; 
@@ -342,9 +229,9 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         for ( int i=0; i<EXPLORATION_PARAMS; i++ )
         {	
             // value
-            temp = exploration_convert_parameter( m_pAgentSoar, i );
+            temp = exploration_convert_parameter( agnt, i );
             temp += ": ";
-            temp_value = exploration_get_parameter_value( m_pAgentSoar, i ); 
+            temp_value = exploration_get_parameter_value( agnt, i ); 
             to_string( temp_value, temp4 );
             temp += temp4;
 
@@ -354,9 +241,9 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp );
 
             // reduction policy
-            temp = exploration_convert_parameter( m_pAgentSoar, i );
+            temp = exploration_convert_parameter( agnt, i );
             temp += " Reduction Policy: ";
-            temp += exploration_convert_reduction_policy( exploration_get_reduction_policy( m_pAgentSoar, i ) );
+            temp += exploration_convert_reduction_policy( exploration_get_reduction_policy( agnt, i ) );
             if ( m_RawOutput )
                 m_Result << temp << "\n";
             else
@@ -371,13 +258,13 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
                 if ( j != ( EXPLORATION_REDUCTIONS - 1 ) )
                     temp2 += "/";
 
-                temp_value = exploration_get_reduction_rate( m_pAgentSoar, i, j );
+                temp_value = exploration_get_reduction_rate( agnt, i, j );
                 to_string( temp_value, temp4 );
                 temp3 += temp4;
                 if ( j != ( EXPLORATION_REDUCTIONS - 1 ) )
                     temp3 += "/";
             }
-            temp = exploration_convert_parameter( m_pAgentSoar, i );
+            temp = exploration_convert_parameter( agnt, i );
             temp += " Reduction Rate (";
             temp += temp2;
             temp += "): ";
@@ -396,6 +283,6 @@ bool CommandLineInterface::DoIndifferentSelection( const char pOp, const std::st
         return true;
     }
 
-    return SetError( kCommandNotImplemented );
+    return SetError( "Unknown option." );
 }
 
