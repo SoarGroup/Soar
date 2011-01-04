@@ -15,7 +15,7 @@ is available online: http://www.gnu.org/software/wget/
 -------------------------------------------------------------------------------
 SOAR LICENSE:
 
-Copyright (C) 2000-2010. The Regents of University of Michigan.
+Copyright (C) 2000-2011. The Regents of University of Michigan.
 Copyright (C) 1995-1999. Carnegie Mellon University,
                          The Regents of University of Michigan,
                          University of Southern California/Information
