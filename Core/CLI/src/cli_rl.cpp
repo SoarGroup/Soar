@@ -16,6 +16,7 @@
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
+#include "sml_AgentSML.h"
 
 #include "agent.h"
 

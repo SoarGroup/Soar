@@ -19,17 +19,17 @@ using namespace sml;
 
 bool CommandLineInterface::DoPWD() {
 
-	std::string directory;
-	bool ret = GetCurrentWorkingDirectory(directory);
+    std::string directory;
+    bool ret = GetCurrentWorkingDirectory(directory);
 
-	if (directory.size()) {
-		if (m_RawOutput) {
-			m_Result << directory;
-		} else {
-			AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, directory);
-		}
-	}
+    if (directory.size()) {
+        if (m_RawOutput) {
+            m_Result << directory;
+        } else {
+            AppendArgTagFast(sml_Names::kParamDirectory, sml_Names::kTypeString, directory);
+        }
+    }
 
-	return ret;
+    return ret;
 }
 

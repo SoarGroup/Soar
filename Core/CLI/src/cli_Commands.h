@@ -2851,7 +2851,7 @@ namespace cli
                 {0, 0, OPTARG_NONE}
             };
 
-            smlPhase phase = sml_INPUT_PHASE ;
+            sml::smlPhase phase = sml::sml_INPUT_PHASE ;
             int countPhaseArgs = 0 ;
             bool before = true ;
 
@@ -2869,23 +2869,23 @@ namespace cli
                         before = false ;
                         break ;
                     case 'i':
-                        phase = sml_INPUT_PHASE ;
+                        phase = sml::sml_INPUT_PHASE ;
                         countPhaseArgs++ ;
                         break;
                     case 'p':
-                        phase = sml_PROPOSAL_PHASE ;
+                        phase = sml::sml_PROPOSAL_PHASE ;
                         countPhaseArgs++ ;
                         break;
                     case 'd':
-                        phase = sml_DECISION_PHASE ;
+                        phase = sml::sml_DECISION_PHASE ;
                         countPhaseArgs++ ;
                         break;
                     case 'a':
-                        phase = sml_APPLY_PHASE ;
+                        phase = sml::sml_APPLY_PHASE ;
                         countPhaseArgs++ ;
                         break;
                     case 'o':
-                        phase = sml_OUTPUT_PHASE ;
+                        phase = sml::sml_OUTPUT_PHASE ;
                         countPhaseArgs++ ;
                         break;
                 }
