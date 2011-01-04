@@ -4,6 +4,7 @@
 
 #include "cli_Commands.h"
 #include "agent.h"
+#include "sml_AgentSML.h"
 
 using namespace cli;
 using namespace sml;

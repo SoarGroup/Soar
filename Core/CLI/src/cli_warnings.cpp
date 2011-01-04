@@ -9,6 +9,7 @@
 #include <portability.h>
 
 #include "sml_Utils.h"
+#include "sml_AgentSML.h"
 #include "cli_CommandLineInterface.h"
 
 #include "cli_Commands.h"
@@ -24,17 +25,17 @@ using namespace sml;
 
 bool CommandLineInterface::DoWarnings(bool* pSetting) {
     agent* agnt = m_pAgentSML->GetSoarAgent();
-	if (pSetting) {
-		set_sysparam(agnt, PRINT_WARNINGS_SYSPARAM, *pSetting);
-		return true;
-	}
+    if (pSetting) {
+        set_sysparam(agnt, PRINT_WARNINGS_SYSPARAM, *pSetting);
+        return true;
+    }
 
-	if (m_RawOutput) {
-		m_Result << "Printing of warnings is " << (agnt->sysparams[PRINT_WARNINGS_SYSPARAM] ? "enabled." : "disabled.");
-	} else {
-		const char* setting = agnt->sysparams[PRINT_WARNINGS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse;
-		AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);
-	}
-	return true;
+    if (m_RawOutput) {
+        m_Result << "Printing of warnings is " << (agnt->sysparams[PRINT_WARNINGS_SYSPARAM] ? "enabled." : "disabled.");
+    } else {
+        const char* setting = agnt->sysparams[PRINT_WARNINGS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse;
+        AppendArgTagFast(sml_Names::kParamWarningsSetting, sml_Names::kTypeBoolean, setting);
+    }
+    return true;
 }
 

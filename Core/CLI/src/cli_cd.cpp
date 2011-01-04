@@ -18,22 +18,22 @@ using namespace cli;
 
 bool CommandLineInterface::DoCD(const std::string* pDirectory) {
 
-	// if directory 0, return SoarLibrary/bin
-	if (!pDirectory) 
+    // if directory 0, return SoarLibrary/bin
+    if (!pDirectory) 
     {
-		std::string binDir(this->m_pKernelSML->GetLibraryLocation());
-		binDir.append("bin");
+        std::string binDir(this->m_pKernelSML->GetLibraryLocation());
+        binDir.append("bin");
 
-		if (chdir(binDir.c_str())) 
-			return SetError("Error changing to " + binDir);
-		return true;
-	}
+        if (chdir(binDir.c_str())) 
+            return SetError("Error changing to " + binDir);
+        return true;
+    }
    
     std::string dir = *pDirectory;
 
     // Change to directory
-	if (chdir(dir.c_str())) 
-		return SetError("Error changing to " + dir);
-	return true;
+    if (chdir(dir.c_str())) 
+        return SetError("Error changing to " + dir);
+    return true;
 }
 

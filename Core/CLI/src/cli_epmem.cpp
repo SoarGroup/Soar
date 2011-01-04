@@ -13,6 +13,7 @@
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
+#include "sml_AgentSML.h"
 
 #include "episodic_memory.h"
 #include "agent.h"
