@@ -1,7 +1,7 @@
 @echo off
 
 set SOAR_HOME=%CD%\out
-set SOAR_VERSION=9.3.0
+set SOAR_VERSION=9.3.1
 if "%1" == "" (
 	set TARGET=build
 ) else (

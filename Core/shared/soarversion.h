@@ -4,9 +4,17 @@
 #define _soar_xstr(s) _soar_str(s)
 #define _soar_str(s) #s
 
-// There is also a version string in Java/SMLJava edu.umich.soar.SoarProperties.VERSION
-// Yet another version string in  (root)/SConstruct
+/*
+Many places to change the version number (this list is shorter than it used to be):
 
+Core/shared/soarversion.h
+rename Java/Debugger/src/main/resources/.dlf files
+Java/SMLJava/ edu.umich.soar.SoarProperties.VERSION
+Inside the root SConstruct file
+Inside all Java launchers in Release/ subfolders
+soar-vars.bat in root
+
+*/
 #define MAJOR_VERSION_NUMBER 9
 #define MINOR_VERSION_NUMBER 3
 #define MICRO_VERSION_NUMBER 1
