@@ -18,7 +18,7 @@
 using namespace cli;
 
 bool CommandLineInterface::DoEditProduction(std::string production) {
-	m_pKernelSML->FireEditProductionEvent(production.c_str()) ;
-	return true;
+    m_pKernelSML->FireEditProductionEvent(production.c_str()) ;
+    return true;
 }
 

@@ -21,12 +21,12 @@ using namespace sml;
 
 bool CommandLineInterface::DoLoadLibrary(const std::string& libraryCommand) {
 
-	std::string result = this->m_pKernelSML->FireLoadLibraryEvent(libraryCommand.c_str());
+    std::string result = this->m_pKernelSML->FireLoadLibraryEvent(libraryCommand.c_str());
 
-	// zero length is success
-	if (result.size() == 0) {
-		return true;
-	}
+    // zero length is success
+    if (result.size() == 0) {
+        return true;
+    }
 
     return SetError("load library failed: " + result);
 }

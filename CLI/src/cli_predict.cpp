@@ -14,6 +14,7 @@
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
+#include "sml_AgentSML.h"
 
 #include "decision_manipulation.h"
 
@@ -23,12 +24,12 @@ using namespace sml;
 bool CommandLineInterface::DoPredict() 
 {
     agent* agnt = m_pAgentSML->GetSoarAgent();
-	const char *prediction_result = predict_get( agnt );
+    const char *prediction_result = predict_get( agnt );
 
-	if ( m_RawOutput )
-		m_Result << prediction_result;
-	else
-		AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, prediction_result );
+    if ( m_RawOutput )
+        m_Result << prediction_result;
+    else
+        AppendArgTagFast( sml_Names::kParamMessage, sml_Names::kTypeString, prediction_result );
 
-	return true;
+    return true;
 }

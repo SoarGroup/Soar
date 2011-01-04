@@ -12,6 +12,7 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
+#include "sml_AgentSML.h"
 
 #include "agent.h"
 
@@ -20,15 +21,15 @@ using namespace sml;
 
 bool CommandLineInterface::DoWaitSNC(bool* pSetting) {
     agent* agnt = m_pAgentSML->GetSoarAgent();
-	if (!pSetting) {
-		if (m_RawOutput) {
-			m_Result << "Current waitsnc setting: " << (agnt->waitsnc ? "enabled" : "disabled");
-		} else {
-			AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, agnt->waitsnc ? sml_Names::kTrue : sml_Names::kFalse);
-		}
-		return true;
-	}
+    if (!pSetting) {
+        if (m_RawOutput) {
+            m_Result << "Current waitsnc setting: " << (agnt->waitsnc ? "enabled" : "disabled");
+        } else {
+            AppendArgTagFast(sml_Names::kParamWaitSNC, sml_Names::kTypeBoolean, agnt->waitsnc ? sml_Names::kTrue : sml_Names::kFalse);
+        }
+        return true;
+    }
 
-	agnt->waitsnc = *pSetting;
-	return true;
+    agnt->waitsnc = *pSetting;
+    return true;
 }

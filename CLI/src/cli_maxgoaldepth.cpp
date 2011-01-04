@@ -12,6 +12,7 @@
 
 #include "cli_Commands.h"
 #include "sml_Names.h"
+#include "sml_AgentSML.h"
 
 #include "agent.h"
 
@@ -20,18 +21,18 @@ using namespace sml;
 
 bool CommandLineInterface::DoMaxGoalDepth(const int n) {
     agent* agnt = m_pAgentSML->GetSoarAgent();
-	if (!n) {
-		// query
-		if (m_RawOutput) {
-			m_Result << agnt->sysparams[MAX_GOAL_DEPTH];
-		} else {
-			std::string temp;
-			AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(agnt->sysparams[MAX_GOAL_DEPTH], temp));
-		}
-		return true;
-	}
+    if (!n) {
+        // query
+        if (m_RawOutput) {
+            m_Result << agnt->sysparams[MAX_GOAL_DEPTH];
+        } else {
+            std::string temp;
+            AppendArgTagFast(sml_Names::kParamValue, sml_Names::kTypeInt, to_string(agnt->sysparams[MAX_GOAL_DEPTH], temp));
+        }
+        return true;
+    }
 
-	agnt->sysparams[MAX_GOAL_DEPTH] = n;
-	return true;
+    agnt->sysparams[MAX_GOAL_DEPTH] = n;
+    return true;
 }
 

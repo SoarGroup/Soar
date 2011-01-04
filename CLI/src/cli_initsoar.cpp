@@ -19,27 +19,27 @@
 using namespace cli;
 
 bool CommandLineInterface::DoInitSoar() {
-	// Save the current result
-	std::string oldResult = m_Result.str();
+    // Save the current result
+    std::string oldResult = m_Result.str();
 
-	SetTrapPrintCallbacks( false );
+    SetTrapPrintCallbacks( false );
 
-	bool ok = m_pAgentSML->Reinitialize() ;
+    bool ok = m_pAgentSML->Reinitialize() ;
 
-	// S1 gets created during Reinitialize, clear its output from the trace buffers
-	xml_invoke_callback( m_pAgentSML->GetSoarAgent() );
-	m_pAgentSML->FlushPrintOutput();
+    // S1 gets created during Reinitialize, clear its output from the trace buffers
+    xml_invoke_callback( m_pAgentSML->GetSoarAgent() );
+    m_pAgentSML->FlushPrintOutput();
 
-	SetTrapPrintCallbacks( true );
+    SetTrapPrintCallbacks( true );
 
-	// restore the old result, ignoring output from init-soar
-	m_Result.str(oldResult); 
+    // restore the old result, ignoring output from init-soar
+    m_Result.str(oldResult); 
 
-	if (!ok)
-		return SetError("Agent failed to reinitialize");
+    if (!ok)
+        return SetError("Agent failed to reinitialize");
 
-	if (m_RawOutput) m_Result << "Agent reinitialized.";
+    if (m_RawOutput) m_Result << "Agent reinitialized.";
 
-	return ok;
+    return ok;
 }
 
