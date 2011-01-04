@@ -9,7 +9,7 @@ bug fix release.
 
 Soar can be downloaded from the Soar home page at:
 
-	http://sitemaker.umich.edu/soar
+        http://sitemaker.umich.edu/soar
 
 Soar releases include source code, demo programs, and a number of
 applications that serve as examples of how to interface Soar to an
@@ -21,23 +21,28 @@ Soar programs are also included.
 
 Please do not hesitate to contact the Soar group by sending mail to:
 
-	For general Soar-related discussion and announcements:
-		soar-group@lists.sourceforge.net
-	
-	For more technical developer discussion:
-		soar-sml-list@lists.sourceforge.net
+        For general Soar-related discussion and announcements:
+                soar-group@lists.sourceforge.net
+        
+        For more technical developer discussion:
+                soar-sml-list@lists.sourceforge.net
 
 Please do not hesitate to file bugs on our issue tracker (search for
 duplicates first):
 
-	http://code.google.com/p/soar/issues/list	
+        http://code.google.com/p/soar/issues/list       
 
 [Important Changes for 9.3.1]
 
+Inequality comparisons on string constants and identifiers are now
+evaluated lexically rather than always returning false. Watch out--we
+found that this changed the behavior on some agents that relied on the
+old, broken behavior.
+
 Improvements in stability and performance for the learning modules that
-rely on databases (EpMem and SMem). Sqlite, the backing database,
-upgraded to 3.7.4. Database schemas have been changed breaking backwards
-compatibility.
+rely on databases (EpMem and SMem). Sqlite, the backing database, has
+been upgraded to 3.7.4. Database schemas have been changed breaking
+backwards compatibility.
 
 The Soar kernel and SML interface now uses 64-bit integers for things
 like WME values, timetags, stats, counters, and rete data structures.
@@ -69,11 +74,11 @@ systems:
 Other platforms may work but have not specifically been tested, you can
 try binaries or attempt to compile from source:
 
-	http://code.google.com/p/soar/wiki/Build
+        http://code.google.com/p/soar/wiki/Build
 
 Due to path length limits on some versions of Windows, you may need to
 extract Soar to C:\ -- watch for errors during the extraction process.
-	
+        
 [Java]
 
 Java is required to use the Java applications distributed with Soar,
@@ -82,7 +87,7 @@ operating systems already have Java installed, but be aware that we only
 develop and test our applications using the Sun Java runtime environment
 6 and other JVMs (such as GCJ) may not work:
 
-	http://www.oracle.com/technetwork/indexes/downloads/index.html
+        http://www.oracle.com/technetwork/indexes/downloads/index.html
 
 IMPORTANT NOTE ABOUT 64-BIT BINARIES: 32-bit Java virtual machines
 cannot load 64-bit shared libraries. Please download appropriate
@@ -94,7 +99,7 @@ OS X USERS CAN CHECK/SELECT WHAT JVM THEY ARE USING WITH A UTILITY: Use
 spotlight or look for the utility application "Java Preferences". More
 information:
 
-	http://developer.apple.com/java/faq/
+        http://developer.apple.com/java/faq/
 
 [Python]
 
@@ -164,7 +169,7 @@ long-term identifiers in working memory.
 Fixed error in GDS where multiple references to removed states weren't
 all getting cleared.
 
-Fixed issue 65:	chunks being built despite justifications in backtrace
+Fixed issue 65: chunks being built despite justifications in backtrace
 when creating result on super-superstate. 
 
 Moved to 64-bit integers in many data structures.
@@ -203,4 +208,3 @@ The TestCLI program has been rewritten, is much cleaner and a good
 example of a lightweight debugger.
 
 sqlite upgraded to version 3.7.4
-
