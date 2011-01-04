@@ -176,7 +176,7 @@ void TokenizerTest::tearDown()
 bool TokenizerTest::handle_command(std::vector<std::string>& argv)
 {
     CPPUNIT_ASSERT_MESSAGE(cd->input, argv.size() == cd->q.front().size());
-    for (int i=0; i < argv.size(); i++)
+	for (std::vector<std::string>::size_type i = 0; i < argv.size(); i++)
         CPPUNIT_ASSERT(argv[i] == cd->q.front()[i]);
     cd->q.pop();
     return true;
