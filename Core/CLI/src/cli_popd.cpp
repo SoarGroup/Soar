@@ -17,14 +17,14 @@ using namespace cli;
 
 bool CommandLineInterface::DoPopD() {
 
-	// There must be a directory on the stack to pop
-	if (m_DirectoryStack.empty()) return SetError("Directory stack is empty.");
+    // There must be a directory on the stack to pop
+    if (m_DirectoryStack.empty()) return SetError("Directory stack is empty.");
 
-	// Change to the directory
-	if (!DoCD(&(m_DirectoryStack.top()))) return false;	// error handled in DoCD
+    // Change to the directory
+    if (!DoCD(&(m_DirectoryStack.top()))) return false;    // error handled in DoCD
 
-	// Pop the directory stack
-	m_DirectoryStack.pop();
-	return true;
+    // Pop the directory stack
+    m_DirectoryStack.pop();
+    return true;
 }
 

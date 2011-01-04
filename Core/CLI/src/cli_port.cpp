@@ -20,14 +20,14 @@ using namespace sml;
 
 bool CommandLineInterface::DoPort() {
 
-	int port = m_pKernelSML->GetListenerPort();
+    int port = m_pKernelSML->GetListenerPort();
 
-	if (m_RawOutput) {
-		m_Result << port;
-	} else {
-		std::string temp;
-		AppendArgTag(sml_Names::kParamPort, sml_Names::kTypeInt, to_string(port, temp));
-	}
-	return true;
+    if (m_RawOutput) {
+        m_Result << port;
+    } else {
+        std::string temp;
+        AppendArgTag(sml_Names::kParamPort, sml_Names::kTypeInt, to_string(port, temp));
+    }
+    return true;
 }
 

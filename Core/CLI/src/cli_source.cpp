@@ -16,6 +16,7 @@
 #include "cli_Commands.h"
 #include "sml_StringOps.h"
 #include "sml_Names.h"
+#include "sml_AgentSML.h"
 #include "sml_Events.h"
 #include "misc.h"
 

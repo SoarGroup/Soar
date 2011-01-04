@@ -20,15 +20,15 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoSRand(uint32_t* pSeed) {
-	if (pSeed) 
-	{
-		SoarSeedRNG( *pSeed );
-	}
-	else
-	{
-		SoarSeedRNG();
-	}
+    if (pSeed) 
+    {
+        SoarSeedRNG( *pSeed );
+    }
+    else
+    {
+        SoarSeedRNG();
+    }
 
-	return true;
+    return true;
 }
 

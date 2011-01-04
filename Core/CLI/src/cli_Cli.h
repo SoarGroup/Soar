@@ -71,7 +71,7 @@ namespace cli
 
         /**
          * @brief clog command
-         * @param mode The mode for the log command, see cli_CommandData.h
+         * @param mode The mode for the log command
          * @param pFilename The log filename, pass 0 (null) if not applicable to mode
          * @param pToAdd The string to add to the log, pass 0 (null) if not applicable to mode
          * @param silent Supress query messages (log file open/closed).
@@ -135,8 +135,7 @@ namespace cli
 
         /**
          * @brief excise command
-         * @param options The various options set on the command line, see 
-         *        cli_CommandData.h
+         * @param options The various options set on the command line
          * @param pProduction A production to excise, optional
          */
         virtual bool DoExcise(const ExciseBitset& options, const std::string* pProduction = 0) = 0;
@@ -218,8 +217,7 @@ namespace cli
 
         /**
          * @brief learn command
-         * @param options The various options set on the command line, 
-         *        see cli_CommandData.h
+         * @param options The various options set on the command line
          */
         virtual bool DoLearn(const LearnBitset& options) = 0;
 
@@ -252,8 +250,8 @@ namespace cli
 
         /**
          * @brief matches command
-         * @param mode The mode for the command, see cli_CommandData.h
-         * @param detail The WME detail, see cli_CommandData.h
+         * @param mode The mode for the command
+         * @param detail The WME detail
          * @param pProduction The production, pass 0 (null) if not applicable to mode
          */
         virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0) = 0;
@@ -301,7 +299,7 @@ namespace cli
 
         /**
          * @brief memories command
-         * @param options Options for the memories flag, see cli_CommandData.h
+         * @param options Options for the memories flag
          * @param n number of productions to print sorted by most memory use, use 0 for all
          * @param pProduction specific production to print, ignored if any 
          *        options are set, pass 0 (null) if not applicable
@@ -354,7 +352,7 @@ namespace cli
 
         /**
          * @brief preferences command
-         * @param detail The preferences detail level, see cli_CommandData.h
+         * @param detail The preferences detail level
          * @param pId An existing soar identifier or 0 (null)
          * @param pAttribute An existing soar attribute of the specified identifier or 0 (null)
          */
@@ -386,7 +384,7 @@ namespace cli
 
         /**
          * @brief print command
-         * @param options The options to the print command, see cli_CommandData.h
+         * @param options The options to the print command
          * @param depth WME depth
          * @param pArg The identifier/timetag/pattern/production name to print, 
          *        or 0 (null) if not applicable
@@ -406,7 +404,7 @@ namespace cli
     
         /**
          * @brief production-find command
-         * @param options The options to the command, see cli_CommandData.h
+         * @param options The options to the command
          * @param pattern Any pattern that can appear in productions.
          */
         virtual bool DoProductionFind(const ProductionFindBitset& options, const std::string& pattern) = 0;
@@ -496,7 +494,7 @@ namespace cli
 
         /**
          * @brief run command
-         * @param options Options for the run command, see cli_CommandData.h
+         * @param options Options for the run command
          * @param count The count, units or applicability depends on options
          * @param interleave Support for round robin execution across agents 
          *         at a finer grain than the run-size parameter.
@@ -589,7 +587,7 @@ namespace cli
 
         /**
          * @brief stats command
-         * @param options The options for the stats command, see cli_CommandData.h
+         * @param options The options for the stats command
          * @param sort The column to sort by
          */
         virtual bool DoStats(const StatsBitset& options, int sort = 0) = 0;
@@ -668,7 +666,7 @@ namespace cli
 
         /**
          * @brief watch command
-         * @param options Options for the watch command, see cli_CommandData.h
+         * @param options Options for the watch command
          * @param settings Settings for the watch command, if a flag (option) is set, its 
          *        setting is set using this (true/on or false/off)
          * @param wmeSetting Setting for wme detail, not binary so it has its own arg

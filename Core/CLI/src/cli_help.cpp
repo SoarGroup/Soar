@@ -15,6 +15,6 @@ using namespace sml;
 
 bool CommandLineInterface::DoHelp() {
 
-	m_Result << "Please view help online: http://code.google.com/p/soar/wiki/CommandLineInterface";
-	return true;
+    m_Result << "Please view help online: http://code.google.com/p/soar/wiki/CommandLineInterface";
+    return true;
 }

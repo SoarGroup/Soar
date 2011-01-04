@@ -14,6 +14,7 @@
 #include "cli_Commands.h"
 
 #include "sml_Names.h"
+#include "sml_AgentSML.h"
 
 #include "sml_KernelSML.h"
 #include "symtab.h"
@@ -22,7 +23,7 @@ using namespace cli;
 using namespace sml;
 
 bool CommandLineInterface::DoInternalSymbols() {
-	print_internal_symbols(m_pAgentSML->GetSoarAgent());
-	return true;
+    print_internal_symbols(m_pAgentSML->GetSoarAgent());
+    return true;
 }
 
