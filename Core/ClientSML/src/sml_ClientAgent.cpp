@@ -551,6 +551,8 @@ bool Agent::UnregisterForOutputNotification(int callbackID)
 
 int	Agent::AddOutputHandler(char const* pAttributeName, OutputEventHandler handler, void* pUserData, bool addToBack)
 {
+    m_WorkingMemory.SetOutputLinkChangeTracking(true);
+
 	// Start by checking if this attributeName, handler, pUSerData combination has already been registered
 	TestOutputCallbackFull test(pAttributeName, handler, pUserData) ;
 
