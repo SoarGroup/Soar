@@ -629,10 +629,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\cli_CommandData.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\cli_CommandLineInterface.cpp"
 				>
 				<FileConfiguration

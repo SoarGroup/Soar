@@ -1,7 +1,14 @@
 #ifndef CLI_CLI_H
 #define CLI_CLI_H
 
+#include <bitset>
+
 typedef uint64_t epmem_time_id;
+enum ni_mode;
+namespace sml
+{
+    enum smlPhase;
+}
 
 namespace cli 
 {
