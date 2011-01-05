@@ -5,6 +5,8 @@
 #include "cli_Cli.h"
 #include "misc.h"
 #include "cli_Options.h"
+#include "kernel.h"
+#include "sml_Events.h"
 
 namespace cli 
 {
