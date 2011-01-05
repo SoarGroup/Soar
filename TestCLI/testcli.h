@@ -209,9 +209,15 @@ public:
      */
     void update()
     {
+        if (quit)
+            kernel->StopAllAgents();
+
         std::string line;
         if (input.try_get_line(line))
+        {
+            seen_newline = true;
             process_line(line);
+        }
     }
 
     /**
@@ -250,7 +256,6 @@ private:
         if (line.substr(0, 4) == "quit" || line.substr(0, 4) == "exit")
         {
             quit = true;
-            kernel->StopAllAgents();
         }
         else if (line.substr(0, 3) == "raw")
         {
