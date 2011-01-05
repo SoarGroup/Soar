@@ -387,6 +387,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\cliparsertest.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\cliparsertest.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\elementxmltest.cpp"
 				>
 			</File>

@@ -92,6 +92,7 @@ class TokenizerTest : public CPPUNIT_NS::TestCase, public soar::tokenizer_callba
 	CPPUNIT_TEST( testTokenizer45 );
 	CPPUNIT_TEST( testTokenizer46 );
 	CPPUNIT_TEST( testTokenizer47 );
+	CPPUNIT_TEST( testTokenizer48 );
 
 	CPPUNIT_TEST_SUITE_END();
 
@@ -153,6 +154,7 @@ protected:
 	void testTokenizer45();
 	void testTokenizer46();
 	void testTokenizer47();
+	void testTokenizer48();
 
     void evaluate(CallData& cd);
 
@@ -498,4 +500,24 @@ void TokenizerTest::testTokenizer47()
     a.addResult(2, "w", "0");
     a.addResult(1, "run");
     evaluate(a);
+}
+
+void TokenizerTest::testTokenizer48()
+{
+    const char* body =
+        "add*propose*toggle-to-b\n"
+        "   (state <s> ^superstate.operator.name add\n"
+        "              ^tss <tss>\n"
+        "             #-^sum\n"
+        "              ^superstate.toggle a)\n"
+        "            # -^superstate.toggle b)\n"
+        "   (<tss> -^sum)\n"
+        "-->\n"
+        "   (<s> ^operator <o> +)\n"
+        "   (<o> ^name toggle-to-b)\n";
+    std::string rule("sp \"");
+    rule.append(body);
+    rule.append("\"");
+    CallData cd(rule.c_str(), 2, "sp", body);
+    evaluate(cd); 
 }
