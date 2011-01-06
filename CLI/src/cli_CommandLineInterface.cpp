@@ -156,7 +156,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
     {
         if (!m_Parser.GetError().empty())
             m_LastError = m_Parser.GetError();
-        else if (!tokenizer.get_error_string())
+        else if (tokenizer.get_error_string())
             m_LastError = tokenizer.get_error_string();
     }
 
