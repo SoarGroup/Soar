@@ -112,7 +112,7 @@ public:
 	Connection*		GetConnection()	const ;
 
 	void			SetOutputLinkChangeTracking(bool setting);
-	bool			IsTrackingOutputLinkChanges() { return m_changeListHandlerId < 0; }
+	bool			IsTrackingOutputLinkChanges() { return m_changeListHandlerId > 0; }
 	void			ClearOutputLinkChanges() ;
 
 	OutputDeltaList* GetOutputLinkChanges() { return &m_OutputDeltaList ; }
