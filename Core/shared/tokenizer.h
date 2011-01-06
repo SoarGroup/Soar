@@ -386,10 +386,7 @@ namespace soar
             if (callback)
             {
                 if (!callback->handle_command(argv))
-                {
-                    error = "callback returned error";
                     current.invalidate();
-                }
             }
         }
 

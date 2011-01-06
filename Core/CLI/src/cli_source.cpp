@@ -172,7 +172,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 		{
 			if (!m_Parser.GetError().empty())
 				m_LastError = m_Parser.GetError();
-			else if (!tokenizer.get_error_string())
+			else if (tokenizer.get_error_string())
 			{
 				m_LastError = tokenizer.get_error_string();
 				line = tokenizer.get_current_line_number();

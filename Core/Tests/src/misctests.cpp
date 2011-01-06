@@ -23,6 +23,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST( test_clog );
     CPPUNIT_TEST( test_gp );
     CPPUNIT_TEST( test_echo );
+    CPPUNIT_TEST( test_ls );
     CPPUNIT_TEST( test_stats );
 
     CPPUNIT_TEST( testWrongAgentWmeFunctions );
@@ -75,6 +76,7 @@ protected:
     void test_clog();
     void test_gp();
     void test_echo();
+    void test_ls();
     void test_stats();
 
     void testWrongAgentWmeFunctions();
@@ -249,6 +251,12 @@ void MiscTest::test_echo()
 
     pAgent->ExecuteCommandLine("echo ~!@#$%^&*()_+`1234567890-=\\:,.?/");
     CPPUNIT_ASSERT_MESSAGE("misc chars", pAgent->GetLastCommandLineResult());
+}
+
+void MiscTest::test_ls()
+{
+    pAgent->ExecuteCommandLine("ls pci");
+    CPPUNIT_ASSERT(!pAgent->GetLastCommandLineResult());
 }
 
 void MiscTest::test_stats()
