@@ -14,6 +14,7 @@
 #include <iostream>
 #include <queue>
 #include <vector>
+#include <fstream>
 
 #include "misc.h"
 #include "sml_Client.h"
@@ -21,6 +22,7 @@
 #include "thread_Lock.h"
 #include "thread_Event.h"
 #include "ElementXML.h"
+#include "tokenizer.h"
 
 void PrintCallbackHandler(sml::smlPrintEventId, void*, sml::Agent*, char const*);
 void XMLCallbackHandler(sml::smlXMLEventId, void*, sml::Agent*, sml::ClientXML*);
@@ -102,10 +104,40 @@ private:
     std::queue<std::string> lines;      ///< Lines read from input, protected by mutex
 };
 
-struct run_data
+struct rlcli_command_data
 {
-    int decisions;
+    rlcli_command_data()
+    {
+        reset();
+    }
 
+    void reset()
+    {
+        productions.clear();
+        episodes = -1;
+        trials = -1;
+        filename.clear();
+    }
+
+    std::string productions;
+    int episodes;
+    int trials;
+    std::string filename;
+};
+
+struct rlcli_run_result
+{
+    rlcli_run_result()
+    {
+        decisions = 0;
+    }
+
+    int decisions;
+};
+
+struct rlcli_trial_data
+{
+    std::vector<rlcli_run_result> results;
 };
 
 /**
@@ -118,7 +150,7 @@ public:
      * Creates the object, must call initialize next.
      */
     CommandProcessor()
-        : kernel(0), agent(0), quit(false), seen_newline(true), runs(-1)
+        : kernel(0), agent(0), quit(false), seen_newline(true), trace(0)
     {
     }
 
@@ -159,12 +191,16 @@ public:
         kernel->RegisterForSystemEvent(sml::smlEVENT_INTERRUPT_CHECK, InterruptCallbackHandler, this);
         kernel->SetInterruptCheckRate(10);
 
-        agent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, this);
+        trace = agent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, this);
 
         // No change tracking
         agent->SetOutputLinkChangeTracking(false);
 
-        std::cout << "Help text goes here." << std::endl;
+        std::cout
+            << "rlcli special commands:\n"
+            << "\trlcli: Start a run. Issue without args for help.\n"
+            << "\tnoprint: Issue without args to disable print callbacks."
+            << std::endl;
         input.Start();
         return true;
     }
@@ -214,7 +250,7 @@ public:
         if (input.try_get_line(line))
         {
             // stop rlcli on any user input
-            runs = -1;
+            config.reset();
 
             process_line(line);
         }
@@ -237,10 +273,12 @@ private:
     bool quit;
     InputThread input;
     bool seen_newline;      ///< True if last character printed is a newline.
-    int runs;
-    std::vector<run_data> data;
+    int trace;
 
-    void println()
+    rlcli_command_data config;
+    std::vector<rlcli_trial_data> data;
+
+    void maybe_println()
     {
         if (!seen_newline)
             std::cout << "\n";
@@ -249,7 +287,7 @@ private:
 
     void prompt()
     {
-        println();
+        maybe_println();
         std::cout << "soar> ";
         std::cout.flush();
     }
@@ -263,58 +301,156 @@ private:
         {
             quit = true;
         }
+        else if (line.substr(0,7) == "noprint")
+        {
+            if (trace != 0)
+                agent->UnregisterForPrintEvent(trace);
+            trace = 0;
+        }
         else if (line.substr(0,5) == "rlcli")
         {
-            if (runs != -1)
+            if (config.episodes != -1)
             {
                 std::cout << "Already running." << std::endl;
                 return;
             }
 
-            if (line.length() < 7)
+            class rlcli_handler : public soar::tokenizer_callback
             {
-                std::cout << "Number of runs required." << std::endl;
-                return;
-            }
+            public:
+                virtual ~rlcli_handler() {}
 
-            if (!from_string(runs, line.substr(6)))
+                virtual bool handle_command(std::vector<std::string>& argv)
+                {
+                    if (argv.size() != 5 || ((argv.size() == 2 && (argv[1] == "-h" || argv[1] == "--help"))))
+                    {
+                        std::cout 
+                            << "Usage: rlcli productions episodes trials output_filename\n"
+                            << "\tproductions:     Soar productions to load\n"
+                            << "\tepisodes:        Number of run->init loops for a single agent\n"
+                            << "\ttrials:          Number of times to run n episodes\n"
+                            << "\toutput_filename: CSV output filename / path (will overwrite)\n"
+                            << "\n"
+                            << "Examples:\n"
+                            << "\trlcli a.soar 20 50 a.csv\n"
+                            << "\trlcli joshua.soar 50 100 \"war games/joshua.csv\""
+                            << std::endl;
+                        return false;
+                    }
+
+                    cd.productions = argv[1];
+
+                    if (!from_string(cd.episodes, argv[2]))
+                    {
+                        std::cout << "Error parsing number of episodes." << std::endl;
+                        return false;
+                    }
+
+                    if (cd.episodes <= 0)
+                    {  
+                        std::cout << "Episodes must be positive." << std::endl;
+                        return false;
+                    }
+
+                    if (!from_string(cd.trials, argv[3]))
+                    {
+                        std::cout << "Error parsing number of trials." << std::endl;
+                        return false;
+                    }
+
+                    if (cd.trials <= 0)
+                    {  
+                        std::cout << "Trials must be positive." << std::endl;
+                        return false;
+                    }
+
+                    cd.filename = argv[4];
+                    return true;
+                }
+
+                const rlcli_command_data& get_command_data() const
+                {
+                    return cd;
+                }
+
+            private: 
+                rlcli_command_data cd;
+            };
+
+            rlcli_handler rh;
+            soar::tokenizer tok;
+
+            tok.set_handler(&rh);
+            if (!tok.evaluate(line.c_str()))
             {
-                std::cout << "Error parsing number of runs." << std::endl;
+                if (tok.get_error_string())
+                    std::cout << tok.get_error_string() << std::endl;
                 return;
             }
-
-            if (runs <= 0)
-            {  
-                std::cout << "Runs must be positive." << std::endl;
-                runs = -1;
-                return;
-            }
-
+            config = rh.get_command_data();
             data.clear();
 
-            for (int i = 0; i < runs; ++i)
+            if (!agent->LoadProductions(config.productions.c_str()))
             {
-                print_and_check_newline(kernel->RunAllAgentsForever());
-                println();
+                std::cout << "Failed to source " << config.productions << ": ";
+                print_and_check_newline(agent->GetLastErrorDescription());
+                maybe_println();
+                config.reset();
+                return;
+            }
 
-                const char* dcs = agent->ExecuteCommandLine("stats --decision");
-                run_data d;
-                from_string(d.decisions, dcs);
+            for (int i = 0; i < config.trials; ++i)
+            {
+                rlcli_trial_data d;
+
+                for (int j = 0; j < config.episodes; ++j)
+                {
+                    kernel->RunAllAgentsForever();
+
+                    const char* dcs = agent->ExecuteCommandLine("stats --decision");
+                    rlcli_run_result r;
+                    from_string(r.decisions, dcs);
+                    d.results.push_back(r);
+
+                    std::cout << "Trial " << std::setw(2) << i + 1 
+                        << ", Episode " << std::setw(2) << j + 1 
+                        << ": " << std::setw(4) << dcs << std::endl;
+
+                    agent->InitSoar();
+                }
+
+                agent->ExecuteCommandLine("excise -a");
+                agent->LoadProductions(config.productions.c_str());
                 data.push_back(d);
-
-                print_and_check_newline(agent->InitSoar());
-                println();
             }
 
-            std::vector<run_data>::iterator iter = data.begin();
-            std::cout << "\nSummary: ";
-            while (iter != data.end())
+            std::ofstream fout(config.filename.c_str());
+            fout << "Trial,";
+            for (int i = 0; i < config.episodes; )
             {
-                std::cout << iter->decisions << ", ";
-                ++iter;
+                fout << "Episode " << ++i;
+                if (i < config.episodes)
+                    fout << ",";
             }
-            std::cout << std::endl;
-            runs = -1;
+            fout << std::endl;
+            
+            for (int i = 0; i < data.size(); ++i)
+            {
+                fout << i + 1 << ",";
+                std::vector<rlcli_run_result>::const_iterator j = data[i].results.begin();
+                while (j != data[i].results.end())
+                {
+                    fout << j->decisions;
+                    ++j;
+                    if (j != data[i].results.end())
+                        fout << ",";
+                }
+                fout << std::endl;
+            }
+            fout.flush();
+
+            config.reset();
+
         }
         else
         {
