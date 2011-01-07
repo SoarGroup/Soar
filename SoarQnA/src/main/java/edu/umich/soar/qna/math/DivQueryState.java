@@ -12,7 +12,7 @@ public class DivQueryState extends BinaryMathQueryState {
 		boolean returnVal = false;
 		
 		if (super.initialize(querySource, queryParameters)) {
-			if ((operand1 instanceof Integer) && (operand2 instanceof Integer)) {
+			if ((operand1 instanceof Long) && (operand2 instanceof Long)) {
 				returnVal = true;
 			} else {
 				hasComputed = true;
@@ -29,7 +29,7 @@ public class DivQueryState extends BinaryMathQueryState {
 			HashMap<String, List<Object>> returnVal = new HashMap<String, List<Object>>();
 			List<Object> newList = new LinkedList<Object>();
 			
-			newList.add(new Integer(((Integer) operand1).intValue() / ((Integer) operand2).intValue()));
+			newList.add(new Long(((Long) operand1).longValue() / ((Long) operand2).longValue()));
 			returnVal.put("result", newList);
 			
 			return returnVal;

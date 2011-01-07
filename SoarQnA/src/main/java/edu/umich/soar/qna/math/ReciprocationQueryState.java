@@ -19,7 +19,7 @@ public class ReciprocationQueryState extends UnaryMathQueryState {
 		if (super.initialize(querySource, queryParameters)) {
 			Map<Object, List<Object>> augmentedParameters = new HashMap<Object, List<Object>>();
 			List<Object> op1 = new LinkedList<Object>();
-			op1.add(new Integer(1));
+			op1.add(new Long(1));
 			augmentedParameters.put("operand1", op1);
 			augmentedParameters.put("operand2", queryParameters.get("operand1"));
 			

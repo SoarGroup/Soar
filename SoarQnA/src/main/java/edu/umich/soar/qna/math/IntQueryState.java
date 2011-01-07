@@ -8,7 +8,7 @@ import java.util.Map;
 import edu.umich.soar.qna.ComputationalQueryState;
 
 public class IntQueryState extends ComputationalQueryState {
-	Integer convertedValue;
+	Long convertedValue;
 	
 	IntQueryState() {
 		convertedValue = null;
@@ -26,10 +26,10 @@ public class IntQueryState extends ComputationalQueryState {
 				Object tempObject = tempList.iterator().next();
 				
 				if (tempObject instanceof Number) {
-					convertedValue = new Integer(((Number) tempObject).intValue());
+					convertedValue = new Long(((Number) tempObject).longValue());
 				} else if (tempObject instanceof String) {
 					try {
-						convertedValue = new Integer(Integer.parseInt(((String) tempObject)));
+						convertedValue = new Long(Long.parseLong(((String) tempObject)));
 					} catch (NumberFormatException e) {
 					}
 				}
