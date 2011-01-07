@@ -23,6 +23,7 @@
 #include "thread_Event.h"
 #include "ElementXML.h"
 #include "tokenizer.h"
+#include "sml_Utils.h"
 
 void PrintCallbackHandler(sml::smlPrintEventId, void*, sml::Agent*, char const*);
 void XMLCallbackHandler(sml::smlXMLEventId, void*, sml::Agent*, sml::ClientXML*);
@@ -146,6 +147,8 @@ struct rlcli_trial_data
  */
 class CommandProcessor {
 public:
+    static const int MAX_DECISIONS;
+
     /**
      * Creates the object, must call initialize next.
      */
@@ -171,7 +174,7 @@ public:
      */
     bool initialize()
     {
-        kernel = sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true, sml::Kernel::kUseAnyPort);
+        kernel = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultLibraryName, sml::Kernel::kUseAnyPort);
         if(!kernel || kernel->HadError()) 
         {
             std::cerr << "Error creating kernel";
@@ -181,6 +184,10 @@ public:
             return false;
         }
 
+        while (kernel->GetListenerPort() == -1)
+            sml::Sleep(0, 5);
+        std::cout << "Kernel listening on localhost:" << kernel->GetListenerPort() << std::endl;
+
         agent = kernel->CreateAgent("soar");
         if (!agent)
         {
@@ -189,7 +196,7 @@ public:
         }
 
         kernel->RegisterForSystemEvent(sml::smlEVENT_INTERRUPT_CHECK, InterruptCallbackHandler, this);
-        kernel->SetInterruptCheckRate(10);
+        kernel->SetInterruptCheckRate(100);
 
         trace = agent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, this);
 
@@ -199,7 +206,8 @@ public:
         std::cout
             << "rlcli special commands:\n"
             << "\trlcli: Start a run. Issue without args for help.\n"
-            << "\tnoprint: Issue without args to disable print callbacks."
+            << "\tnoprint: Issue without args to disable print callbacks.\n"
+            << "\tspawn: Spawn a Java Debugger."
             << std::endl;
         input.Start();
         return true;
@@ -243,6 +251,18 @@ public:
      */
     void update()
     {
+        kernel->CheckForIncomingCommands();
+
+        const char* dcs = agent->ExecuteCommandLine("stats --decision");
+        int decisions = 0;
+        from_string(decisions, dcs);
+
+        if (decisions >= MAX_DECISIONS)
+        {
+            std::cout << "Max decisions reached, stopping Soar." << std::endl;
+            kernel->StopAllAgents();
+        }
+
         if (quit)
             kernel->StopAllAgents();
 
@@ -274,6 +294,7 @@ private:
     InputThread input;
     bool seen_newline;      ///< True if last character printed is a newline.
     int trace;
+    int decisions;
 
     rlcli_command_data config;
     std::vector<rlcli_trial_data> data;
@@ -306,6 +327,10 @@ private:
             if (trace != 0)
                 agent->UnregisterForPrintEvent(trace);
             trace = 0;
+        }
+        else if (line.substr(0,5) == "spawn")
+        {
+            agent->SpawnDebugger(kernel->GetListenerPort());
         }
         else if (line.substr(0,5) == "rlcli")
         {
@@ -390,11 +415,9 @@ private:
             config = rh.get_command_data();
             data.clear();
 
-            if (!agent->LoadProductions(config.productions.c_str()))
+            agent->ExecuteCommandLine("excise -a");
+            if (!source(config.productions.c_str()))
             {
-                std::cout << "Failed to source " << config.productions << ": ";
-                print_and_check_newline(agent->GetLastErrorDescription());
-                maybe_println();
                 config.reset();
                 return;
             }
@@ -407,11 +430,15 @@ private:
                 {
                     kernel->RunAllAgentsForever();
 
+                    if (config.episodes == -1)
+                        return; // aborted
+
                     const char* dcs = agent->ExecuteCommandLine("stats --decision");
                     rlcli_run_result r;
                     from_string(r.decisions, dcs);
                     d.results.push_back(r);
 
+                    maybe_println();
                     std::cout << "Trial " << std::setw(2) << i + 1 
                         << ", Episode " << std::setw(2) << j + 1 
                         << ": " << std::setw(4) << dcs << std::endl;
@@ -420,7 +447,11 @@ private:
                 }
 
                 agent->ExecuteCommandLine("excise -a");
-                agent->LoadProductions(config.productions.c_str());
+                if (!source(config.productions.c_str()))
+                {
+                    config.reset();
+                    return;
+                }
                 data.push_back(d);
             }
 
@@ -457,7 +488,7 @@ private:
             print_and_check_newline(agent->ExecuteCommandLine(line.c_str()));
         }
     }
-
+    
     void print_and_check_newline(const char* out)
     {
         if (out && strlen(out))
