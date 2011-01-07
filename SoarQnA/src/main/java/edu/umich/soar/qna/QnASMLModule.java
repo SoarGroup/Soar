@@ -12,8 +12,10 @@ import sml.Identifier;
 import sml.IntElement;
 import sml.Kernel;
 import sml.WMElement;
+import sml.smlRunEventId;
 import sml.smlSystemEventId;
 import sml.Agent.OutputEventInterface;
+import sml.Agent.RunEventInterface;
 import sml.Kernel.SystemEventInterface;
 
 public class QnASMLModule {
@@ -52,20 +54,13 @@ public class QnASMLModule {
 	private static final String PENDING_NAME = "pending";
 	private static final String ID_NAME = "id";
 	
-	public QnASMLModule(String host, int port, String agentName, DataSourceManager man, CountDownLatch doneSignal) {
-		final Kernel kernel = Kernel.CreateRemoteConnection(true, host, port);
-		if (kernel.HadError()) {
-			throw new IllegalStateException(kernel.GetLastErrorDescription());
-		}
-
-		final Agent agent = kernel.GetAgent(agentName);
-		if (agent == null) {
-			throw new IllegalStateException(kernel.GetLastErrorDescription());
-		}
-
+	public QnASMLModule(Kernel kernel, Agent agent, DataSourceManager man, CountDownLatch doneSignal) {
 		this.inputLink = agent.GetInputLink();
 		
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_BEFORE_SHUTDOWN, shutdownHandler, null);
+		
+		agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_HALTED, haltHandler, null);
+		
 		agent.AddOutputHandler(QUERY_COMMAND_NAME, queryCommandHandler, null);
 		agent.AddOutputHandler(NEXT_COMMAND_NAME, nextCommandHandler, null);
 		agent.SetOutputLinkChangeTracking(true);
@@ -94,8 +89,10 @@ public class QnASMLModule {
 		
 		for (Entry<String, List<Object>> c : row.entrySet()) {
 			for (Object v : c.getValue()) {
-				if (v instanceof Integer) {
-					features.CreateIntWME(c.getKey(), ((Integer) v).intValue());
+				if (v instanceof Long) {
+					features.CreateIntWME(c.getKey(), ((Long) v).longValue());
+				} else if (v instanceof Integer) {
+					features.CreateIntWME(c.getKey(), ((Integer) v).longValue());
 				} else if (v instanceof Double) {
 					features.CreateFloatWME(c.getKey(), ((Double) v).doubleValue());
 				} else {
@@ -161,6 +158,15 @@ public class QnASMLModule {
 			doneSignal.countDown();
 		}
 		
+	};
+
+	private final RunEventInterface haltHandler = new RunEventInterface() {
+
+		@Override
+		public void runEventHandler(int eventID, Object data, Agent agent, int phase) {
+			doneSignal.countDown();
+		}
+
 	};
 	
 	private final OutputEventInterface nextCommandHandler = new OutputEventInterface() {
@@ -231,7 +237,7 @@ public class QnASMLModule {
 						if (!childWme.IsIdentifier()) {
 							Object childAttr = null;
 							try {
-								childAttr = new Integer(Integer.parseInt(childWme.GetAttribute()));
+								childAttr = new Long(Long.parseLong(childWme.GetAttribute()));
 							} catch (Exception e) {
 							}
 							if (childAttr == null) {

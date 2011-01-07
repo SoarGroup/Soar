@@ -25,7 +25,7 @@ public class DataSourceManager {
 	
 	Map<String, ConnectionInstance> connections;
 	
-	DataSourceManager() {
+	public DataSourceManager() {
 		connections = new HashMap<String, ConnectionInstance>();
 	}
 	

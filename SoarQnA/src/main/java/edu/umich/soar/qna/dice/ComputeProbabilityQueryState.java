@@ -32,14 +32,14 @@ public class ComputeProbabilityQueryState extends ComputationalQueryState {
 				queryParameters.containsKey(COMMAND_COUNT) && queryParameters.get(COMMAND_COUNT).size()==1 &&
 				queryParameters.containsKey(COMMAND_PREDICATE) && queryParameters.get(COMMAND_PREDICATE).size()==1) {
 				
-				if ((queryParameters.get(COMMAND_DICE).iterator().next() instanceof Integer) &&
-					(queryParameters.get(COMMAND_SIDES).iterator().next() instanceof Integer) &&
-					(queryParameters.get(COMMAND_COUNT).iterator().next() instanceof Integer) &&
+				if ((queryParameters.get(COMMAND_DICE).iterator().next() instanceof Long) &&
+					(queryParameters.get(COMMAND_SIDES).iterator().next() instanceof Long) &&
+					(queryParameters.get(COMMAND_COUNT).iterator().next() instanceof Long) &&
 					(queryParameters.get(COMMAND_PREDICATE).iterator().next() instanceof String)) {
 					
-					myDice = (Integer) queryParameters.get(COMMAND_DICE).iterator().next();
-					mySides = (Integer) queryParameters.get(COMMAND_SIDES).iterator().next();
-					myCount = (Integer) queryParameters.get(COMMAND_COUNT).iterator().next();
+					myDice = ((Long) queryParameters.get(COMMAND_DICE).iterator().next()).intValue();
+					mySides = ((Long) queryParameters.get(COMMAND_SIDES).iterator().next()).intValue();
+					myCount = ((Long) queryParameters.get(COMMAND_COUNT).iterator().next()).intValue();
 					myPred = Predicate.valueOf((String) queryParameters.get(COMMAND_PREDICATE).iterator().next());					
 					
 					try {

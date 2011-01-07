@@ -10,6 +10,9 @@ import java.util.concurrent.CountDownLatch;
 import org.ini4j.Wini;
 import org.ini4j.spi.EscapeTool;
 
+import sml.Agent;
+import sml.Kernel;
+
 public class SoarQnA {
 
 	private static void addSources(String fileName, DataSourceManager man) {
@@ -59,10 +62,19 @@ public class SoarQnA {
 
 		DataSourceManager man = new DataSourceManager();
 		addSources(args[3], man);
+		
+		final Kernel kernel = Kernel.CreateRemoteConnection(true, args[0], Integer.parseInt(args[1]));
+		if (kernel.HadError()) {
+			throw new IllegalStateException(kernel.GetLastErrorDescription());
+		}
+		
+		final Agent agent = kernel.GetAgent(args[2]);
+		if (agent == null) {
+			throw new IllegalStateException(kernel.GetLastErrorDescription());
+		}
 
 		CountDownLatch doneSignal = new CountDownLatch(1);
-		QnASMLModule SoarQnA = new QnASMLModule(args[0], Integer
-				.parseInt(args[1]), args[2], man, doneSignal);
+		QnASMLModule SoarQnA = new QnASMLModule(kernel, agent, man, doneSignal);
 
 		try {
 			doneSignal.await();
