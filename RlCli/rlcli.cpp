@@ -2,6 +2,8 @@
 
 #include "rlcli.h"
 
+const int CommandProcessor::MAX_DECISIONS = 10000;
+
 void usage(char command[])
 {
     std::cout << "Usage: " << command << "[productions] [runs]" 
@@ -59,4 +61,3 @@ void InterruptCallbackHandler(sml::smlSystemEventId /*id*/, void* userdata, sml:
     cmd->update();
     kernel->CheckForIncomingCommands();
 }
-
