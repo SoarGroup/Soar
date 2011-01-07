@@ -59,7 +59,7 @@ public class DatabaseQueryState implements QueryState {
 		
 		if (statement != null) {
 			for ( Entry<Object, List<Object>> p : queryParameters.entrySet() ) {
-				if (!(p.getKey() instanceof Integer) || (p.getValue().size()!=1)) {
+				if (!(p.getKey() instanceof Long) || (p.getValue().size()!=1)) {
 					statement = null;
 				}
 			}
@@ -68,7 +68,7 @@ public class DatabaseQueryState implements QueryState {
 		if (statement != null) {
 			for ( Entry<Object, List<Object>> p : queryParameters.entrySet() ) {
 				try {
-					statement.setObject(((Integer) p.getKey()).intValue(), p.getValue().iterator().next());
+					statement.setObject(((Long) p.getKey()).intValue(), p.getValue().iterator().next());
 				} catch (SQLException e) {
 					statement = null;
 					e.printStackTrace();

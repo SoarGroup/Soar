@@ -14,8 +14,8 @@ public class AbsQueryState extends UnaryMathQueryState {
 			HashMap<String, List<Object>> returnVal = new HashMap<String, List<Object>>();
 			List<Object> newList = new LinkedList<Object>();
 			
-			if ((operand1 instanceof Integer)) {
-				newList.add(new Integer(Math.abs(((Integer) operand1).intValue())));
+			if ((operand1 instanceof Long)) {
+				newList.add(new Long(Math.abs(((Long) operand1).longValue())));
 			} else {
 				newList.add(new Double(Math.abs(((Number) operand1).doubleValue())));
 			}
