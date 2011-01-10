@@ -2,7 +2,7 @@
 
 #include "rlcli.h"
 
-const int CommandProcessor::MAX_DECISIONS = 10000;
+const int CommandProcessor::DEFAULT_MAX_DECISIONS = 50000;
 
 void usage(char command[])
 {
