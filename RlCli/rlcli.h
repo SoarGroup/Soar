@@ -147,13 +147,13 @@ struct rlcli_trial_data
  */
 class CommandProcessor {
 public:
-    static const int MAX_DECISIONS;
+    static const int DEFAULT_MAX_DECISIONS;
 
     /**
      * Creates the object, must call initialize next.
      */
     CommandProcessor()
-        : kernel(0), agent(0), quit(false), seen_newline(true), trace(0)
+        : kernel(0), agent(0), quit(false), seen_newline(true), trace(0), max_decisions(DEFAULT_MAX_DECISIONS)
     {
     }
 
@@ -205,9 +205,10 @@ public:
 
         std::cout
             << "rlcli special commands:\n"
-            << "\trlcli: Start a run. Issue without args for help.\n"
-            << "\tnoprint: Issue without args to disable print callbacks.\n"
-            << "\tspawn: Spawn a Java Debugger."
+            << "  rlcli: Start a run. Issue without args for help.\n"
+            << "  noprint: Issue without args to disable print callbacks.\n"
+            << "  spawn: Spawn a Java Debugger.\n"
+            << "  maxd: Change the max decisions number, issue without an arg to query.\n"
             << std::endl;
         input.Start();
         return true;
@@ -257,7 +258,7 @@ public:
         int decisions = 0;
         from_string(decisions, dcs);
 
-        if (decisions >= MAX_DECISIONS)
+        if (decisions >= max_decisions)
         {
             std::cout << "Max decisions reached, stopping Soar." << std::endl;
             kernel->StopAllAgents();
@@ -294,7 +295,7 @@ private:
     InputThread input;
     bool seen_newline;      ///< True if last character printed is a newline.
     int trace;
-    int decisions;
+    int max_decisions;
 
     rlcli_command_data config;
     std::vector<rlcli_trial_data> data;
@@ -331,6 +332,62 @@ private:
         else if (line.substr(0,5) == "spawn")
         {
             agent->SpawnDebugger(kernel->GetListenerPort());
+        }
+        else if (line.substr(0,4) == "maxd")
+        {
+            class maxd_handler : public soar::tokenizer_callback
+            {
+            public:
+                maxd_handler(int current) : maxd(0), current(current) {}
+                virtual ~maxd_handler() {}
+
+                virtual bool handle_command(std::vector<std::string>& argv)
+                {
+                    maxd = 0;
+                    if (argv.size() < 2)
+                    {
+                        std::cout << current << std::endl;
+                        return true;
+                    }
+
+                    if (!from_string(maxd, argv[1]))
+                    {
+                        std::cout << "Error parsing number." << std::endl;
+                        return false;
+                    }
+
+                    if (maxd <= 0)
+                    {  
+                        std::cout << "Number must be positive." << std::endl;
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                int get_maxd() const
+                {
+                    return maxd;
+                }
+
+            private: 
+                int maxd;
+                int current;
+            };
+
+            maxd_handler mh(max_decisions);
+            soar::tokenizer tok;
+
+            tok.set_handler(&mh);
+            if (!tok.evaluate(line.c_str()))
+            {
+                if (tok.get_error_string())
+                    std::cout << tok.get_error_string() << std::endl;
+                return;
+            }
+
+            if (mh.get_maxd() > 0)
+                max_decisions = mh.get_maxd();
         }
         else if (line.substr(0,5) == "rlcli")
         {
