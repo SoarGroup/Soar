@@ -180,7 +180,7 @@ public:
     {
         if (!agent->LoadProductions(sourcefile))
         {
-            std::cerr << "Error loading productions: " << agent->GetLastErrorDescription() << std::endl;
+            std::cerr << agent->GetLastErrorDescription() << std::endl;
             return false;
         }
 
