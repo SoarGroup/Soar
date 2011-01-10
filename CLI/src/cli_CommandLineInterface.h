@@ -189,6 +189,7 @@ namespace cli
         bool GetCurrentWorkingDirectory(std::string& directory);
 
         virtual bool SetError(const std::string& error);
+        virtual bool AppendError(const std::string& error);
 
         void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
         void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
@@ -247,6 +248,7 @@ namespace cli
         void GetMemoryPoolStatistics();
 
         void PrintSourceSummary(int sourced, const std::list< std::string >& excised, int ignored);
+        bool Source(const char* input, bool printFileStack = false);
 
         std::ostringstream      m_Result;                     // Raw output from the command
         bool                    m_RawOutput;                  // True if we want string output.
