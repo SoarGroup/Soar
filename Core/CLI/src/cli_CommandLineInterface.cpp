@@ -150,15 +150,7 @@ EXPORT bool CommandLineInterface::DoCommand(Connection* pConnection, sml::AgentS
 
     m_LastError.clear();
 
-    soar::tokenizer tokenizer;
-    tokenizer.set_handler(&m_Parser);
-    if (!tokenizer.evaluate(pCommandLine))
-    {
-        if (!m_Parser.GetError().empty())
-            m_LastError = m_Parser.GetError();
-        else if (tokenizer.get_error_string())
-            m_LastError = tokenizer.get_error_string();
-    }
+    Source(pCommandLine);
 
     SetTrapPrintCallbacks( false );
 
@@ -267,22 +259,17 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
     assert(pConnection);
     assert(pResponse);
 
-    if (m_LastError.empty()) 
-    {
-        // Log output
-        if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
+    // Log output
+    if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
 
-        // The command succeeded, so return the result if raw output
-        if (m_RawOutput) 
-        {
+    if (m_LastError.empty())
+    {
+        if (m_RawOutput)
             pConnection->AddSimpleResultToSMLResponse(pResponse, m_Result.str().c_str());
-            if (echoResults && m_pAgentSML)
-                m_pAgentSML->FireEchoEvent(pConnection, m_Result.str().c_str()) ;
-        } 
-        else 
+        else
         {
-            // If there are tags in the response list, add them and return
-            if (m_ResponseTags.size()) 
+            // If there are tags in the response list, add them
+            if (!m_ResponseTags.empty()) 
             {
                 TagResult* pTag = new TagResult();
 
@@ -295,29 +282,16 @@ void CommandLineInterface::GetLastResultSML(sml::Connection* pConnection, soarxm
                 }
 
                 pResponse->AddChild(pTag);
-
             } 
-            else 
-            {
-                // Or, simply return true
+            else
                 pConnection->AddSimpleResultToSMLResponse(pResponse, sml_Names::kTrue);
-            }
         }
     }
-    else 
-    {
-        // The command failed, add the error message
-        if (!m_Result.str().empty())
-            m_Result << std::endl;
-        m_Result << m_LastError;
-
+    else
         pConnection->AddErrorToSMLResponse(pResponse, m_Result.str().c_str(), 1);
-        if (echoResults && m_pAgentSML)
-            m_pAgentSML->FireEchoEvent(pConnection, m_Result.str().c_str()) ;
 
-        // Log error
-        if (m_pLogFile) (*m_pLogFile) << m_Result.str() << std::endl;
-    }
+    if (echoResults && m_pAgentSML)
+        m_pAgentSML->FireEchoEvent(pConnection, m_Result.str().c_str()) ;
 
     // reset state
     m_Result.str("");
@@ -419,7 +393,18 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 
 bool CommandLineInterface::SetError(const std::string& error) 
 {
+    if (!m_Result.str().empty())
+        if (m_Result.str().at(m_Result.str().length() - 1 != '\n'))
+            m_Result << std::endl;
+    m_Result << error;
     m_LastError = error;
+    return false;
+}
+
+bool CommandLineInterface::AppendError(const std::string& error) 
+{
+    m_Result << error;
+    m_LastError.append(error);
     return false;
 }
 

@@ -24,7 +24,6 @@ bool CommandLineInterface::DoCommandToFile(const eLogMode mode, const std::strin
     if (!m_Result.str().empty())
         m_Result << std::endl;
 
-    m_Result << m_LastError;
 	std::string res = m_Result.str();
     m_Result.str("");
 	m_Result << oldResult;
