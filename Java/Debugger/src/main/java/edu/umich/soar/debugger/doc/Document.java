@@ -973,6 +973,9 @@ public class Document implements Kernel.AgentEventInterface,
      ********************************************************************************************/
     public boolean remoteDisconnect()
     {
+        if (!m_IsRemote)
+            return false;
+        
         if (m_Kernel == null)
             return false;
 
