@@ -20,10 +20,7 @@ int main(int argc, char** argv)
             exit(1);
 
         for (int i = 1; i < argc; ++i)
-        {
-            if (!cmd.source(argv[i]))
-                exit(2);
-        }
+            cmd.source(argv[i]);
 
         cmd.loop();
     }
