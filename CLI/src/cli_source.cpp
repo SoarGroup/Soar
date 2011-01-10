@@ -106,7 +106,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     if (!pFile) 
     {
         if (!folder.empty()) DoPopD();
-		return SetError("Failed to open file for reading: " + path);
+        return SetError("Failed to open file for reading: " + path);
     }
 
     // obtain file size:
@@ -150,8 +150,8 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
         m_NumTotalProductionsIgnored = 0;
 
         // Need to listen for excise callbacks
-		if (m_pAgentSML)
-    		this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
+        if (m_pAgentSML)
+            this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
     }
 
     std::string temp;
@@ -167,17 +167,17 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     {
         int line = tokenizer.get_command_line_number();
         int offset = -1;
-		
-		if (m_LastError.empty())
-		{
-			if (!m_Parser.GetError().empty())
-				m_LastError = m_Parser.GetError();
-			else if (tokenizer.get_error_string())
-			{
-				m_LastError = tokenizer.get_error_string();
-				line = tokenizer.get_current_line_number();
-				offset = tokenizer.get_offset();
-			}
+        
+        if (m_LastError.empty())
+        {
+            if (!m_Parser.GetError().empty())
+                m_LastError = m_Parser.GetError();
+            else if (tokenizer.get_error_string())
+            {
+                m_LastError = tokenizer.get_error_string();
+                line = tokenizer.get_current_line_number();
+                offset = tokenizer.get_offset();
+            }
         }
 
         m_LastError.append("\n\t");
@@ -190,6 +190,8 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
             m_LastError.append(to_string(line, temp));
         }
     }
+
+    std::cout << "\n***" << m_LastError << "***" << std::endl;
 
     if (m_pSourceOptions && m_pSourceOptions->test(SOURCE_ALL))
         PrintSourceSummary(m_NumProductionsSourced, m_ExcisedDuringSource, m_NumProductionsIgnored);
@@ -206,8 +208,8 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 
     if (m_SourceFileStack.empty())
     {
-		if (m_pAgentSML)
-			this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
+        if (m_pAgentSML)
+            this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
 
         if (m_pSourceOptions && !m_pSourceOptions->test(SOURCE_DISABLE))
             PrintSourceSummary(m_NumTotalProductionsSourced, m_TotalExcisedDuringSource, m_NumTotalProductionsIgnored);
