@@ -281,10 +281,10 @@ action *copy_and_variablize_result_list (agent* thisAgent, preference *pref, boo
   a->preference_type = pref->type;
 
   if (preference_is_binary(pref->type)) {
+    symbol_add_ref (ref);
     if (variablize) {
       variablize_symbol (thisAgent, &ref);
     }
-    symbol_add_ref (ref);
     a->referent = symbol_to_rhs_value (ref);
   }
   
