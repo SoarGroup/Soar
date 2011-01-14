@@ -513,6 +513,7 @@ struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2s
   ht->buckets = static_cast<item_in_hash_table_struct **>(allocate_memory_and_zerofill (thisAgent, ht->size * sizeof(char *),
                                                                                         HASH_TABLE_MEM_USAGE));
   ht->h = h;
+  ht->is_sym = FALSE; // HASHTABLEDEBUG
   return ht;
 }
 
@@ -565,9 +566,12 @@ void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht,
     prev = *(ht->buckets+hash_value);
     while (prev && prev->next != this_one) prev=prev->next;
     if ( !prev ) {
-       /* Reaching here means that we couldn't find this_one item */
-       assert(prev && "Couldn't find item to remove from hash table!");
-       return;
+      /* Reaching here means that we couldn't find this_one item */
+      // HASHTABLEDEBUG
+      if (ht->is_sym) printf("\n\n*** Item: %s\n\n", 
+        symbol_to_string(thisAgent, reinterpret_cast<Symbol*>(item), FALSE, 0, 0));
+      assert(prev && "Couldn't find item to remove from hash table!");
+      return;
     }
     prev->next = this_one->next;
   }
