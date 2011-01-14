@@ -162,6 +162,13 @@ void init_symbol_tables (agent* thisAgent) {
   thisAgent->int_constant_hash_table = make_hash_table (thisAgent, 0, hash_int_constant);
   thisAgent->float_constant_hash_table = make_hash_table (thisAgent, 0, hash_float_constant);
 
+  // HASHTABLEDEBUG
+  thisAgent->variable_hash_table->is_sym = TRUE;
+  thisAgent->identifier_hash_table->is_sym = TRUE;
+  thisAgent->sym_constant_hash_table->is_sym = TRUE;
+  thisAgent->int_constant_hash_table->is_sym = TRUE;
+  thisAgent->float_constant_hash_table->is_sym = TRUE;
+
   init_memory_pool (thisAgent, &thisAgent->variable_pool, sizeof(variable), "variable");
   init_memory_pool (thisAgent, &thisAgent->identifier_pool, sizeof(identifier), "identifier");
   init_memory_pool (thisAgent, &thisAgent->sym_constant_pool, sizeof(sym_constant), "sym constant");
