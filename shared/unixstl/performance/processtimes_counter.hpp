@@ -256,7 +256,12 @@ inline processtimes_counter::interval_type processtimes_counter::get_kernel_seco
     long    secs    =   m_kernelEnd.tv_sec - m_kernelStart.tv_sec;
     long    usecs   =   m_kernelEnd.tv_usec - m_kernelStart.tv_usec;
 
-    UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    //UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    if (usecs < 0 && secs <= 0)
+    {
+        usecs = 0;
+        secs = 0;
+    }
 
     return secs + usecs / (1000 * 1000);
 }
@@ -268,7 +273,12 @@ inline processtimes_counter::interval_type processtimes_counter::get_kernel_mill
     long    secs    =   m_kernelEnd.tv_sec - m_kernelStart.tv_sec;
     long    usecs   =   m_kernelEnd.tv_usec - m_kernelStart.tv_usec;
 
-    UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    //UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    if (usecs < 0 && secs <= 0)
+    {
+        usecs = 0;
+        secs = 0;
+    }
 
     return secs * 1000 + usecs / 1000;
 }
@@ -280,7 +290,12 @@ inline processtimes_counter::interval_type processtimes_counter::get_kernel_micr
     long    secs    =   m_kernelEnd.tv_sec - m_kernelStart.tv_sec;
     long    usecs   =   m_kernelEnd.tv_usec - m_kernelStart.tv_usec;
 
-    UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    //UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    if (usecs < 0 && secs <= 0)
+    {
+        usecs = 0;
+        secs = 0;
+    }
 
     return secs * (1000 * 1000) + usecs;
 }
@@ -298,7 +313,12 @@ inline processtimes_counter::interval_type processtimes_counter::get_user_second
     long    secs    =   m_userEnd.tv_sec - m_userStart.tv_sec;
     long    usecs   =   m_userEnd.tv_usec - m_userStart.tv_usec;
 
-    UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    //UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    if (usecs < 0 && secs <= 0)
+    {
+        usecs = 0;
+        secs = 0;
+    }
 
     return secs + usecs / (1000 * 1000);
 }
@@ -310,7 +330,12 @@ inline processtimes_counter::interval_type processtimes_counter::get_user_millis
     long    secs    =   m_userEnd.tv_sec - m_userStart.tv_sec;
     long    usecs   =   m_userEnd.tv_usec - m_userStart.tv_usec;
 
-    UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    //UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    if (usecs < 0 && secs <= 0)
+    {
+        usecs = 0;
+        secs = 0;
+    }
 
     return secs * 1000 + usecs / 1000;
 }
@@ -322,7 +347,12 @@ inline processtimes_counter::interval_type processtimes_counter::get_user_micros
     long    secs    =   m_userEnd.tv_sec - m_userStart.tv_sec;
     long    usecs   =   m_userEnd.tv_usec - m_userStart.tv_usec;
 
-    UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    //UNIXSTL_ASSERT(usecs >= 0 || secs > 0);
+    if (usecs < 0 && secs <= 0)
+    {
+        usecs = 0;
+        secs = 0;
+    }
 
     return secs * (1000 * 1000) + usecs;
 }
