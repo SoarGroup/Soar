@@ -191,6 +191,8 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
+                if (count < 0 || count > dice)
+                    return 0;
                 return zeroTolerance(getProbabilityExact(dice, sides, count));
             }
         },
@@ -202,6 +204,8 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
+                if (count < 0 || count > dice)
+                    return 1;
                 return zeroTolerance(1 - getProbabilityExact(dice, sides, count));
             }
         },
@@ -213,9 +217,10 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
-                // Special edge case, temporary
-                if (count < 1)
+                if (count <= 0)
                     return 0;
+                if (count > dice)
+                    return 1;
                 return zeroTolerance(1 - getProbabilityAtLeast(dice, sides, count));
             }
         },
@@ -227,6 +232,10 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
+                if (count < 0)
+                    return 1;
+                if (count >= dice)
+                    return 0;
                 return zeroTolerance(getProbabilityAtLeast(dice, sides, count)
                         - getProbabilityExact(dice, sides, count));
             }
@@ -239,6 +248,10 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
+                if (count < 0)
+                    return 0;
+                if (count >= dice)
+                    return 1;
                 return zeroTolerance((1 - getProbabilityAtLeast(dice, sides, count))
                         + getProbabilityExact(dice, sides, count));
             }
@@ -251,6 +264,10 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
+                if (count <= 0)
+                    return 1;
+                if (count > dice)
+                    return 0;
                 return zeroTolerance(getProbabilityAtLeast(dice, sides, count));
             }
         },
