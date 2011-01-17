@@ -12,6 +12,22 @@ public class LiarsDice
 {
     /**
      * <p>
+     * Zero is a very important number.
+     */
+    private static final double ZERO_TOLERANCE = 0.00001; 
+
+    /**
+     * <p>
+     * Zero is a very important number, if abs(in) is less/equal than
+     * ZERO_TOLERANCE, make it zero.
+     */
+    public static double zeroTolerance(double in)
+    {
+        return Math.abs(in) <= ZERO_TOLERANCE ? 0 : in;
+    }
+    
+    /**
+     * <p>
      * Given a number of dice with a number of sides, returns the expected
      * number of same faces.
      * 
@@ -176,7 +192,7 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
-                return getProbabilityExact(dice, sides, count);
+                return zeroTolerance(getProbabilityExact(dice, sides, count));
             }
         },
         /**
@@ -187,7 +203,7 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
-                return 1 - getProbabilityExact(dice, sides, count);
+                return zeroTolerance(1 - getProbabilityExact(dice, sides, count));
             }
         },
         /**
@@ -198,7 +214,7 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
-                return 1 - getProbabilityAtLeast(dice, sides, count);
+                return zeroTolerance(1 - getProbabilityAtLeast(dice, sides, count));
             }
         },
         /**
@@ -209,8 +225,8 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
-                return getProbabilityAtLeast(dice, sides, count)
-                        - getProbabilityExact(dice, sides, count);
+                return zeroTolerance(getProbabilityAtLeast(dice, sides, count)
+                        - getProbabilityExact(dice, sides, count));
             }
         },
         /**
@@ -221,8 +237,8 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
-                return (1 - getProbabilityAtLeast(dice, sides, count))
-                        + getProbabilityExact(dice, sides, count);
+                return zeroTolerance((1 - getProbabilityAtLeast(dice, sides, count))
+                        + getProbabilityExact(dice, sides, count));
             }
         },
         /**
@@ -233,7 +249,7 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
-                return getProbabilityAtLeast(dice, sides, count);
+                return zeroTolerance(getProbabilityAtLeast(dice, sides, count));
             }
         },
         ;
