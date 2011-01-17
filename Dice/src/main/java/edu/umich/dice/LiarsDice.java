@@ -143,7 +143,6 @@ public class LiarsDice
     public static double getProbabilityAtLeast(int dice, int sides, int count)
     {
         // these make no sense
-        // these make no sense
         if (dice < 0)
             return 0;
         if (count < 0)
@@ -214,6 +213,9 @@ public class LiarsDice
         {
             public double get(int dice, int sides, int count)
             {
+                // Special edge case, temporary
+                if (count < 1)
+                    return 0;
                 return zeroTolerance(1 - getProbabilityAtLeast(dice, sides, count));
             }
         },
