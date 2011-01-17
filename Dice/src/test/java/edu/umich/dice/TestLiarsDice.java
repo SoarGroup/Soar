@@ -90,17 +90,31 @@ public class TestLiarsDice
 					Assert.assertEquals(p1as, p2as);
 					
 					// predicate opposites
-					double a = Predicate.eq.get(dice, sides, count) + Predicate.ne.get(dice, sides, count);
+					double eq = Predicate.eq.get(dice, sides, count);
+					double ne = Predicate.ne.get(dice, sides, count);
+					double gt = Predicate.gt.get(dice, sides, count);
+					double le = Predicate.le.get(dice, sides, count);
+					double lt = Predicate.lt.get(dice, sides, count);
+					double ge = Predicate.ge.get(dice, sides, count);
+				
+					double a = eq + ne;
 					String as = String.format("%1.5f", a);
-					Assert.assertEquals(as, "1.00000");
-					double b = Predicate.gt.get(dice, sides, count) + Predicate.le.get(dice, sides, count);
+					double b = gt + le;
 					String bs = String.format("%1.5f", b);
-					Assert.assertEquals(bs, "1.00000");
-					double c = Predicate.lt.get(dice, sides, count) + Predicate.ge.get(dice, sides, count);
+					double c = lt + ge;
 					String cs = String.format("%1.5f", c);
-					Assert.assertEquals(cs, "1.00000");
 					
-					//System.out.format("%dd%d=%d: p1: %1.5f, p2: %1.5f, a%1.5f b%1.5f c%1.5f%n", dice, sides, count, p1e, p2e, a, b, c);
+//					System.out.format("%dd%d=%d: p1:%1.5f, p2:%1.5f, " +
+//							"eq%1.5f+ne%1.5f=%1.5f, " +
+//							"gt%1.5f+le%1.5f=%1.5f, " +
+//							"lt%1.5f+ge%1.5f=%1.5f%n", dice, sides, count, p1e, p2e, 
+//							eq, ne, a, 
+//							gt, le, b, 
+//							lt, ge, c);
+
+					Assert.assertEquals(as, "1.00000");
+                    Assert.assertEquals(bs, "1.00000");
+                    Assert.assertEquals(cs, "1.00000");
 				}
 			}
 		}
@@ -199,5 +213,32 @@ public class TestLiarsDice
     {
         Assert.assertEquals(0.0, LiarsDice.zeroTolerance(1 - LiarsDice
                 .getProbabilityAtLeast(5, 6, 0)), 0);
+        Assert.assertEquals(0.0, Predicate.lt.get(5, 6, 0), 0);
+    }
+    
+    @Test
+    public void testEdgeCases()
+    {
+        Assert.assertEquals(0.0, Predicate.eq.get(3, 3, -1), 0);
+        Assert.assertEquals(0.0, Predicate.eq.get(3, 3,  4), 0);
+        
+        Assert.assertEquals(1.0, Predicate.ne.get(3, 3, -1), 0);
+        Assert.assertEquals(1.0, Predicate.ne.get(3, 3,  4), 0);
+        
+        Assert.assertEquals(1.0, Predicate.ge.get(3, 3, -1), 0);
+        Assert.assertEquals(1.0, Predicate.ge.get(3, 3,  0), 0);
+        Assert.assertEquals(0.0, Predicate.ge.get(3, 3,  4), 0);
+        
+        Assert.assertEquals(1.0, Predicate.gt.get(3, 3, -1), 0);
+        Assert.assertEquals(0.0, Predicate.gt.get(3, 3,  3), 0);
+        Assert.assertEquals(0.0, Predicate.gt.get(3, 3,  4), 0);
+        
+        Assert.assertEquals(0.0, Predicate.le.get(3, 3, -1), 0);
+        Assert.assertEquals(1.0, Predicate.le.get(3, 3,  3), 0);
+        Assert.assertEquals(1.0, Predicate.le.get(3, 3,  4), 0);
+        
+        Assert.assertEquals(0.0, Predicate.lt.get(3, 3, -1), 0);
+        Assert.assertEquals(0.0, Predicate.lt.get(3, 3,  0), 0);
+        Assert.assertEquals(1.0, Predicate.lt.get(3, 3,  4), 0);
     }
 }
