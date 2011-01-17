@@ -192,6 +192,12 @@ public class TestLiarsDice
         Assert.assertEquals(0.0, LiarsDice.expected( 1,  0), 0);
         Assert.assertEquals(1.0, LiarsDice.expected( 1,  1), 0);
         Assert.assertEquals(0.5, LiarsDice.expected( 1,  2), 0);
-        
+    }
+    
+    @Test
+    public void testZeroTolerance()
+    {
+        Assert.assertEquals(0.0, LiarsDice.zeroTolerance(1 - LiarsDice
+                .getProbabilityAtLeast(5, 6, 0)), 0);
     }
 }
