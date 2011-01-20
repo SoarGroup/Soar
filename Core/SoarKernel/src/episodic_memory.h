@@ -103,7 +103,7 @@ class epmem_param_container: public soar_module::param_container
 		enum force_choices { remember, ignore, force_off };
 
 		// performance
-		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k };
+		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
 		enum opt_choices { opt_safety, opt_speed };
 
 		////////////////////////////////////////////////////////////
