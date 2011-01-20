@@ -195,6 +195,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	page_size->add_mapping( page_8k, "8k" );
 	page_size->add_mapping( page_16k, "16k" );
 	page_size->add_mapping( page_32k, "32k" );
+	page_size->add_mapping( page_64k, "64k" );
 	add( page_size );
 
 	// cache_size
@@ -1415,6 +1416,10 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 						
 					case ( epmem_param_container::page_32k ):
 						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 32768" );
+						break;
+						
+					case ( epmem_param_container::page_64k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, "PRAGMA page_size = 65536" );
 						break;
 				}
 				
