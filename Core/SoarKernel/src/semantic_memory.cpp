@@ -100,12 +100,20 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 
 	//
 
-	// cache
-	cache = new soar_module::constant_param<cache_choices>( "cache", cache_L, new smem_db_predicate<cache_choices>( my_agent ) );
-	cache->add_mapping( cache_S, "small" );
-	cache->add_mapping( cache_M, "medium" );
-	cache->add_mapping( cache_L, "large" );
-	add( cache );
+	// page_size
+	page_size = new soar_module::constant_param<page_choices>( "page_size", page_8k, new smem_db_predicate<page_choices>( my_agent ) );
+	page_size->add_mapping( page_1k, "1k" );
+	page_size->add_mapping( page_2k, "2k" );
+	page_size->add_mapping( page_4k, "4k" );
+	page_size->add_mapping( page_8k, "8k" );
+	page_size->add_mapping( page_16k, "16k" );
+	page_size->add_mapping( page_32k, "32k" );
+	page_size->add_mapping( page_64k, "64k" );
+	add( page_size );
+	
+	// cache_size
+	cache_size = new soar_module::integer_param( "cache_size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new smem_db_predicate<int64_t>( my_agent ) );
+	add( cache_size );
 
 	// opt
 	opt = new soar_module::constant_param<opt_choices>( "optimization", opt_speed, new smem_db_predicate<opt_choices>( my_agent ) );
@@ -2174,26 +2182,52 @@ void smem_init_db( agent *my_agent )
 
 		// apply performance options
 		{
-			// cache
+			// page_size
 			{
-				switch ( my_agent->smem_params->cache->get_value() )
+				switch ( my_agent->smem_params->page_size->get_value() )
 				{
-					// 5MB cache
-					case ( smem_param_container::cache_S ):
-						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA cache_size = 5000" );
+					case ( smem_param_container::page_1k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA page_size = 1024" );
 						break;
-
-					// 20MB cache
-					case ( smem_param_container::cache_M ):
-						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA cache_size = 20000" );
+						
+					case ( smem_param_container::page_2k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA page_size = 2048" );
 						break;
-
-					// 100MB cache
-					case ( smem_param_container::cache_L ):
-						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA cache_size = 100000" );
+						
+					case ( smem_param_container::page_4k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA page_size = 4096" );
+						break;
+						
+					case ( smem_param_container::page_8k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA page_size = 8192" );
+						break;
+						
+					case ( smem_param_container::page_16k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA page_size = 16384" );
+						break;
+						
+					case ( smem_param_container::page_32k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA page_size = 32768" );
+						break;
+						
+					case ( smem_param_container::page_64k ):
+						temp_q = new soar_module::sqlite_statement( my_agent->smem_db, "PRAGMA page_size = 65536" );
 						break;
 				}
-
+				
+				temp_q->prepare();
+				temp_q->execute();
+				delete temp_q;
+				temp_q = NULL;
+			}
+			
+			// cache_size
+			{
+				std::string cache_sql( "PRAGMA cache_size = " );
+				cache_sql.append( my_agent->smem_params->cache_size->get_string() );
+				
+				temp_q = new soar_module::sqlite_statement( my_agent->smem_db, cache_sql.c_str() );
+				
 				temp_q->prepare();
 				temp_q->execute();
 				delete temp_q;

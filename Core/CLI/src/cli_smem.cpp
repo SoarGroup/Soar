@@ -139,8 +139,21 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
         }
 
-        temp = "cache: ";
-        temp2 = agnt->smem_params->cache->get_string();
+        temp = "page_size: ";
+        temp2 = agnt->smem_params->page_size->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+        }
+		
+		temp = "cache_size: ";
+        temp2 = agnt->smem_params->cache_size->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
