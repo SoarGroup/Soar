@@ -2278,8 +2278,11 @@ void smem_init_db( agent *my_agent )
 			// cache_size
 			{
 				std::string cache_sql( "PRAGMA cache_size = " );
-				cache_sql.append( my_agent->smem_params->cache_size->get_string() );
-				
+                char* str = my_agent->smem_params->cache_size->get_string();
+				cache_sql.append( str );
+				free(str);
+                str = NULL;
+
 				temp_q = new soar_module::sqlite_statement( my_agent->smem_db, cache_sql.c_str() );
 				
 				temp_q->prepare();
