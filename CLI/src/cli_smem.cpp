@@ -217,6 +217,32 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         delete temp2;
         if ( m_RawOutput )
         {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+		
+		temp = "activate_on_query: ";
+        temp2 = agnt->smem_params->activate_on_query->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+		
+		temp = "activation_mode: ";
+        temp2 = agnt->smem_params->activation_mode->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
             m_Result << temp << "\n\n";
         }
         else
