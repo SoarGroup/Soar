@@ -50,6 +50,7 @@ class smem_param_container: public soar_module::param_container
 		enum opt_choices { opt_safety, opt_speed };
 
 		enum merge_choices { merge_none, merge_add };
+		enum act_choices { act_recency, act_frequency };
 
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
@@ -65,6 +66,8 @@ class smem_param_container: public soar_module::param_container
 		soar_module::integer_param *thresh;
 
 		soar_module::constant_param<merge_choices>* merge;
+		soar_module::boolean_param* activate_on_query;
+		soar_module::constant_param<act_choices>* activation_mode;
 
 		smem_param_container( agent *new_agent );
 };
@@ -248,7 +251,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 
 enum smem_variable_key
 {
-	var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh
+	var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh, var_act_mode
 };
 
 #define SMEM_ACT_MAX static_cast<uint64_t>( static_cast<uint64_t>( 0 - 1 ) / static_cast<uint64_t>(2) )
@@ -262,7 +265,7 @@ enum smem_variable_key
 // tables for two reasons:
 // - distinguish from other modules
 // - distinguish between smem versions
-#define SMEM_SCHEMA "smem3_"
+#define SMEM_SCHEMA "smem4_"
 
 // empty table used to verify proper structure
 #define SMEM_SIGNATURE SMEM_SCHEMA "signature"
@@ -329,7 +332,7 @@ struct smem_compare_weighted_cue_elements
 typedef std::priority_queue<smem_weighted_cue_element *, std::vector<smem_weighted_cue_element *>, smem_compare_weighted_cue_elements> smem_prioritized_weighted_cue;
 typedef std::list<smem_weighted_cue_element *> smem_weighted_cue_list;
 
-typedef std::pair< int64_t, smem_lti_id > smem_activated_lti;
+typedef std::pair< double, smem_lti_id > smem_activated_lti;
 
 struct smem_compare_activated_lti
 {
