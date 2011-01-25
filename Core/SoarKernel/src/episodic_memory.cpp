@@ -2026,6 +2026,9 @@ void epmem_new_episode( agent *my_agent )
 										(*w_p)->value->id.epmem_id = my_agent->epmem_stats->next_id->get_value();										
 										my_agent->epmem_stats->next_id->set_value( (*w_p)->value->id.epmem_id + 1 );
 										epmem_set_variable( my_agent, var_next_id, (*w_p)->value->id.epmem_id + 1 );
+
+										// add repository
+										(*my_agent->epmem_id_repository)[ (*w_p)->value->id.epmem_id ] = new epmem_hashed_id_pool;
 										
 										// parent_id,letter,num,time_id
 										my_agent->epmem_stmts_graph->promote_id->bind_int( 1, (*w_p)->value->id.epmem_id );
