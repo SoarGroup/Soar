@@ -492,7 +492,6 @@ typedef struct hash_table_struct {
   short minimum_log2size;   /* table never shrinks below this size */
   bucket_array *buckets;
   hash_function h;          /* call this to hash or rehash an item */
-  Bool is_sym;              // HASHTABLEDEBUG
 } hash_table;  
 
 extern struct hash_table_struct *make_hash_table (agent* thisAgent, short minimum_log2size,
