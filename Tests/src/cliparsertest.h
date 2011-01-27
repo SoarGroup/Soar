@@ -39,6 +39,7 @@ public:
     virtual bool DoLS() { return false; }
     virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0) { return false; }
     virtual bool DoMaxChunks(const int n = 0) { return false; }
+    virtual bool DoMaxDCTime(const int n = 0) { return false; }
     virtual bool DoMaxElaborations(const int n = 0) { return false; }
     virtual bool DoMaxGoalDepth(const int n = 0) { return false; }
     virtual bool DoMaxMemoryUsage(const int n = 0) { return false; }
@@ -64,7 +65,7 @@ public:
     virtual bool DoRun(const RunBitset& options, int count = 0, eRunInterleaveMode interleave = RUN_INTERLEAVE_DEFAULT) { return false; }
     virtual bool DoSaveBacktraces(bool* pSetting = 0) { return false; }
     virtual bool DoSelect(const std::string* pOp = 0) { return false; }
-    virtual bool DoSetLibraryLocation(std::string* pLocation = 0) { return false; }
+    virtual bool DoSetLibraryLocation(std::string* pLocation = 0) { return false; } 
     virtual bool DoSetStopPhase(bool setPhase, bool before, sml::smlPhase phase) { return false; }
     virtual bool DoSMem(const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0) { return false; }
     virtual bool DoSoarNews() { return false; }
@@ -103,6 +104,24 @@ public:
 private:
     std::vector<std::string>::size_type numArgs;
     bool newLine;
+};
+
+class CliMaxDCTime : public CliAdapter
+{
+public:
+    virtual ~CliMaxDCTime() {}
+
+    void SetExpected(int n)
+    {
+        this->n = n;
+    }
+
+    virtual bool DoMaxDCTime(const int n) 
+    { 
+        return this->n == n;
+    }
+private:
+    int n;
 };
 
 

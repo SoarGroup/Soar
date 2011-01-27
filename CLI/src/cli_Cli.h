@@ -270,6 +270,12 @@ namespace cli
         virtual bool DoMaxChunks(const int n = 0) = 0;
 
         /**
+         * @brief max-dc-time command
+         * @param n The new max dc time value in microseconds, use 
+         * 0 to query, negative to disable.
+         */
+        virtual bool DoMaxDCTime(const int n = 0) = 0;
+        /**
          * @brief max-elaborations command
          * @param n The new max elaborations value, use 0 to query
          */
