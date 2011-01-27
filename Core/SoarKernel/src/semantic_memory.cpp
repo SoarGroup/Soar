@@ -1491,7 +1491,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 		smem_param_container::act_choices act_mode = my_agent->smem_params->activation_mode->get_value();
 		if ( act_mode == smem_param_container::act_recency )
 		{
-			lti_act = my_agent->smem_max_cycle++;
+			lti_act = static_cast<double>(my_agent->smem_max_cycle++);
 		}
 		else if ( act_mode == smem_param_container::act_frequency )
 		{
