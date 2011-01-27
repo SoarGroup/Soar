@@ -1492,6 +1492,84 @@ namespace cli
         MaxChunksCommand& operator=(const MaxChunksCommand&);
     };
 
+    class MaxDCTimeCommand : public cli::ParserCommand
+    {
+    public:
+        MaxDCTimeCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+        virtual ~MaxDCTimeCommand() {}
+        virtual const char* GetString() const { return "max-dc-time"; }
+        virtual const char* GetSyntax() const 
+        {
+            return "Syntax: max-dc-time [--seconds] [n]";
+        }
+
+        virtual bool Parse(std::vector< std::string >&argv)
+        {
+            cli::Options opt;
+            OptionsData optionsData[] = 
+            {
+                {'s', "seconds", OPTARG_NONE},
+                {'d', "disable", OPTARG_NONE},
+                {'o', "off", OPTARG_NONE},
+                {0, 0, OPTARG_NONE}
+            };
+
+            bool seconds = false;
+
+            // n defaults to 0 (print current value)
+            int n = 0;
+
+            for (;;) 
+            {
+                if (!opt.ProcessOptions(argv, optionsData)) return false;
+                if (opt.GetOption() == -1) break;
+
+                switch (opt.GetOption()) 
+                {
+                    case 's':
+                        seconds = true;
+                        break;
+                    case 'd':
+                    case 'o':
+                        n = -1;
+                        break;
+                }
+            }
+
+            if (opt.GetNonOptionArguments() > 1) 
+                return cli.SetError(GetSyntax());       
+            
+            if (opt.GetNonOptionArguments() == 1)
+            {
+                int index = opt.GetArgument() - opt.GetNonOptionArguments();
+
+                if (seconds)
+                {
+                    double nsec = 0;
+
+                    if (!from_string(nsec, argv[index]))
+                        return cli.SetError(GetSyntax());   
+
+                    n = static_cast<int>(nsec * 1000000);
+                }
+                else
+                {
+                    from_string(n, argv[index]);
+                }
+
+                if (n <= 0) 
+                    return cli.SetError("Expected positive value.");
+            }
+
+            return cli.DoMaxDCTime(n);
+        }
+
+    private:
+        cli::Cli& cli;
+
+        MaxDCTimeCommand& operator=(const MaxDCTimeCommand&);
+    };
+
     class MaxElaborationsCommand : public cli::ParserCommand
     {
     public:

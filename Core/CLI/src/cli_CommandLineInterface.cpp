@@ -66,6 +66,7 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::LSCommand(*this));
     m_Parser.AddCommand(new cli::MatchesCommand(*this));
     m_Parser.AddCommand(new cli::MaxChunksCommand(*this));
+    m_Parser.AddCommand(new cli::MaxDCTimeCommand(*this));
     m_Parser.AddCommand(new cli::MaxElaborationsCommand(*this));
     m_Parser.AddCommand(new cli::MaxGoalDepthCommand(*this));
     m_Parser.AddCommand(new cli::MaxMemoryUsageCommand(*this));
