@@ -27,6 +27,7 @@
 #include "src/cli_ls.cpp"
 #include "src/cli_matches.cpp"
 #include "src/cli_maxchunks.cpp"
+#include "src/cli_maxdctime.cpp"
 #include "src/cli_maxelaborations.cpp"
 #include "src/cli_maxgoaldepth.cpp"
 #include "src/cli_maxmemoryusage.cpp"

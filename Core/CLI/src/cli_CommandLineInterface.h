@@ -138,6 +138,7 @@ namespace cli
         virtual bool DoLS();
         virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
         virtual bool DoMaxChunks(const int n = 0);
+        virtual bool DoMaxDCTime(const int n = 0);
         virtual bool DoMaxElaborations(const int n = 0);
         virtual bool DoMaxGoalDepth(const int n = 0);
         virtual bool DoMaxMemoryUsage(const int n = 0);

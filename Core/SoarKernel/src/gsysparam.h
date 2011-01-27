@@ -188,8 +188,11 @@ typedef byte wme_trace_type;   /* must be one of the above constants */
 /* JRV: GDS */
 #define TRACE_GDS_SYSPARAM						 44
 
+/* JRV: Break on long decision cycle time */
+#define DECISION_CYCLE_MAX_USEC_INTERRUPT        45
+
 /* --- Warning: if you add sysparams, be sure to update the next line! --- */
-#define HIGHEST_SYSPARAM_NUMBER                  44
+#define HIGHEST_SYSPARAM_NUMBER                  45
 
 /* -----------------------------------------
    Sysparams[] stores the parameters; set_sysparam()

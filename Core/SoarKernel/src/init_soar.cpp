@@ -232,6 +232,8 @@ void init_sysparams (agent* thisAgent) {
   
   // JRV: Chunk through local negations by default
   thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] = TRUE;
+
+  thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = 0;
 }
 
 /* ===================================================================
@@ -955,6 +957,12 @@ void do_one_top_level_phase (agent* thisAgent)
 			  thisAgent->max_dc_time_usec = dc_time_usec;
 			  thisAgent->max_dc_time_cycle = thisAgent->d_cycle_count;
 		  }
+          if (thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] > 0) {
+              if (dc_time_usec >= static_cast<uint64_t>(thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT])) {
+                  thisAgent->stop_soar++;
+                  thisAgent->reason_for_stopping = "decision cycle time greater than interrupt threshold";
+              }
+          }
           thisAgent->last_derived_kernel_time_usec = derived_kernel_time_usec;
 
           double total_epmem_time = thisAgent->epmem_timers->total->value();
@@ -978,7 +986,7 @@ void do_one_top_level_phase (agent* thisAgent)
               }
           }
           thisAgent->total_dc_smem_time_sec = total_smem_time;
-          
+
 #endif // NO_TIMING_STUFF
 
 		  uint64_t dc_wm_changes = thisAgent->wme_addition_count - thisAgent->start_dc_wme_addition_count;
