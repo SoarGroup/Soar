@@ -52,6 +52,8 @@ class rl_param_container: public soar_module::param_container
 		soar_module::boolean_param *hrl_discount;
 		soar_module::boolean_param *temporal_discount;
 
+		soar_module::boolean_param *chunk_stop;
+
 		rl_param_container( agent *new_agent );
 };
 
