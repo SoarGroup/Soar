@@ -89,6 +89,13 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
+
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, "Experimental" );
+        CLI_DoRL_print( *this, m_RawOutput, m_Result, "------------" );
+
+		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "chunk-stop: ", agnt->rl_params->chunk_stop->get_string() ) );
+
         return true;
     }
     else if ( pOp == 'g' )

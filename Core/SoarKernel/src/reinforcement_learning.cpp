@@ -80,6 +80,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	// temporal-discount
 	temporal_discount = new soar_module::boolean_param( "temporal-discount", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( temporal_discount );
+
+	// chunk-stop
+	chunk_stop = new soar_module::boolean_param( "chunk-stop", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+	add( chunk_stop );
 };
 
 //
