@@ -448,15 +448,12 @@ void fill_in_new_instantiation_stuff (agent* thisAgent, instantiation *inst,
         if (cond->bt.trace->inst->match_goal_level > level) { 
           cond->bt.trace = find_clone_for_level (cond->bt.trace, level);
 		} 
-        // voigtjr: Bactrace preferences now processed even at top level
-        // to fix obscure bug. See also mirrored fix in 
-        // deallocate_instantiation
-        //#ifdef DO_TOP_LEVEL_REF_CTS
+        #ifdef DO_TOP_LEVEL_REF_CTS
 		if (cond->bt.trace) preference_add_ref (cond->bt.trace);
-        //#else
-		//if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL)) 
-		//	preference_add_ref (cond->bt.trace);
-        //#endif
+        #else
+		if ((cond->bt.trace) && (level > TOP_GOAL_LEVEL)) 
+			preference_add_ref (cond->bt.trace);
+        #endif
       }
     }
 
@@ -903,84 +900,79 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 #endif
 				{
 				    wme_remove_ref (thisAgent, cond->bt.wme_);
-                    // voigtjr: The entire block below used to be included inside
-                    // this block, which means it wouldn't run if top-level
-                    // ref counts were disabled. It is enabled all the time now to 
-                    // fix an obscure bug with bt preference references. See also
-                    // mirrored fix in fill_in_new_instantiation_stuff
-                }
-				if (cond->bt.trace) 
-				{
-					cond->bt.trace->reference_count--;
-					if (cond->bt.trace->reference_count == 0) 
-					{
-						preference *clone;
+				    if (cond->bt.trace) 
+				    {
+					    cond->bt.trace->reference_count--;
+					    if (cond->bt.trace->reference_count == 0) 
+					    {
+						    preference *clone;
 
-						if (cond->bt.trace->reference_count) 
-						{
-							continue;
-						}
-						bool has_active_clones = false;
-						for (clone=cond->bt.trace->next_clone; clone!=NIL; clone=clone->next_clone) 
-						{
-							if ( clone->reference_count ) 
-							{
-								has_active_clones = true;
-							}
-						}
-						if ( has_active_clones ) 
-						{
-							continue;
-						}
-						for ( clone = cond->bt.trace->prev_clone; clone != NIL; clone = clone->prev_clone ) 
-						{
-							if ( clone->reference_count ) 
-							{
-								has_active_clones = true;
-							}
-						}
-						if ( has_active_clones ) 
-						{
-							continue;
-						}
+						    if (cond->bt.trace->reference_count) 
+						    {
+							    continue;
+						    }
+						    bool has_active_clones = false;
+						    for (clone=cond->bt.trace->next_clone; clone!=NIL; clone=clone->next_clone) 
+						    {
+							    if ( clone->reference_count ) 
+							    {
+								    has_active_clones = true;
+							    }
+						    }
+						    if ( has_active_clones ) 
+						    {
+							    continue;
+						    }
+						    for ( clone = cond->bt.trace->prev_clone; clone != NIL; clone = clone->prev_clone ) 
+						    {
+							    if ( clone->reference_count ) 
+							    {
+								    has_active_clones = true;
+							    }
+						    }
+						    if ( has_active_clones ) 
+						    {
+							    continue;
+						    }
 
-						// The clones are hopefully a simple case so we just call deallocate_preference on them.
-						// Someone needs to create a test case to push this boundary...
-						{
-							preference* clone = cond->bt.trace->next_clone;
-							preference* next;
-							while (clone) {
-								next = clone->next_clone;
-								deallocate_preference (thisAgent, clone);
-								clone = next;
-							}
-							clone = cond->bt.trace->prev_clone;
-							while (clone) {
-								next = clone->prev_clone;
-								deallocate_preference (thisAgent, clone);
-								clone = next;
-							}
-						}
+						    // The clones are hopefully a simple case so we just call deallocate_preference on them.
+						    // Someone needs to create a test case to push this boundary...
+						    {
+							    preference* clone = cond->bt.trace->next_clone;
+							    preference* next;
+							    while (clone) {
+								    next = clone->next_clone;
+								    deallocate_preference (thisAgent, clone);
+								    clone = next;
+							    }
+							    clone = cond->bt.trace->prev_clone;
+							    while (clone) {
+								    next = clone->prev_clone;
+								    deallocate_preference (thisAgent, clone);
+								    clone = next;
+							    }
+						    }
 
-						/* --- deallocate pref --- */
-						/* --- remove it from the list of bt.trace's for its match goal --- */
-						if ( cond->bt.trace->on_goal_list ) 
-						{
-							remove_from_dll( 
-								cond->bt.trace->inst->match_goal->id.preferences_from_goal, 
-								cond->bt.trace, all_of_goal_next, all_of_goal_prev );
-						}
+						    /* --- deallocate pref --- */
+						    /* --- remove it from the list of bt.trace's for its match goal --- */
+						    if ( cond->bt.trace->on_goal_list ) 
+						    {
+							    remove_from_dll( 
+								    cond->bt.trace->inst->match_goal->id.preferences_from_goal, 
+								    cond->bt.trace, all_of_goal_next, all_of_goal_prev );
+						    }
 
-						/* --- remove it from the list of bt.trace's from that instantiation --- */
-						remove_from_dll( cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev );
-						if ( ( !cond->bt.trace->inst->preferences_generated ) && ( !cond->bt.trace->inst->in_ms ) ) 
-						{
-							next_iter = inst_list.insert( next_iter, cond->bt.trace->inst );
-						}
+						    /* --- remove it from the list of bt.trace's from that instantiation --- */
+						    remove_from_dll( cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev );
+						    if ( ( !cond->bt.trace->inst->preferences_generated ) && ( !cond->bt.trace->inst->in_ms ) ) 
+						    {
+							    next_iter = inst_list.insert( next_iter, cond->bt.trace->inst );
+						    }
 
-						cond_stack.push( cond );
-					} // if
-				} // if
+						    cond_stack.push( cond );
+					    } // if
+				    } // if
+                } // if
 				/* voigtjr, nlderbin end */
 			} // if
 		} // for
