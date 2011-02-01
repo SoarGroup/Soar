@@ -1102,7 +1102,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
    and throw away the rest.
 ----------------------------------------------------------------------- */
 
-void assert_new_preferences (agent* thisAgent) 
+void assert_new_preferences (agent* thisAgent, std::vector<preference*>& bufdeallo) 
 {
 	instantiation *inst, *next_inst;
 	preference *pref, *next_pref;
@@ -1141,7 +1141,7 @@ void assert_new_preferences (agent* thisAgent)
 		}
 
 		if (o_rejects) 
-			process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
+			process_o_rejects_and_deallocate_them (thisAgent, o_rejects, bufdeallo);
 
 		//               s = find_slot(pref->id, pref->attr);
 		//               if (s) {
@@ -1291,6 +1291,10 @@ void do_preference_phase (agent* thisAgent) {
   thisAgent->change_level = thisAgent->highest_active_level;
   thisAgent->next_change_level = thisAgent->highest_active_level;
 
+  // Temporary list to buffer deallocation of some preferences until 
+  // the inner elaboration loop is over.
+  std::vector<preference*> bufdeallo;
+
   // inner elaboration cycle
   for (;;) {
 	  thisAgent->change_level = thisAgent->next_change_level;
@@ -1347,7 +1351,7 @@ void do_preference_phase (agent* thisAgent) {
 	  // New waterfall model: push unfired matches back on to the assertion lists
 	  restore_postponed_assertions(thisAgent);
 
-	  assert_new_preferences (thisAgent);
+	  assert_new_preferences (thisAgent, bufdeallo);
 
 	  // Update accounting
 	  thisAgent->inner_e_cycle_count++;
@@ -1383,6 +1387,11 @@ void do_preference_phase (agent* thisAgent) {
 		  break;
 	  }
   } // end inner elaboration loop
+
+  // Deallocate preferences delayed during inner elaboration loop.
+  for (std::vector<preference*>::iterator iter = bufdeallo.begin(); iter != bufdeallo.end(); ++iter) {
+      preference_remove_ref(thisAgent, *iter);
+  }
 
   // Restore previous active level
   thisAgent->active_level = thisAgent->highest_active_level;
