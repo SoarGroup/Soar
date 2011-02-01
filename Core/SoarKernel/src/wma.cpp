@@ -714,14 +714,20 @@ void wma_go( agent* my_agent )
 		{
 			if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
 			{
-				print( my_agent, "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n" );
+				const char *msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
+				
+				print( my_agent, const_cast<char *>( msg ) );
+				xml_generate_message( my_agent, const_cast<char *>( msg ) );
 			}
 
 			do_working_memory_phase( my_agent );
 
 			if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
 			{
-				print( my_agent, "\nWMA: END FORGOTTEN WME LIST\n\n" );
+				const char *msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
+				
+				print( my_agent, const_cast<char *>( msg ) );
+				xml_generate_message( my_agent, const_cast<char *>( msg ) );
 			}
 		}
 	}
