@@ -84,7 +84,7 @@ extern void deallocate_preference (agent* thisAgent, preference *pref);
 extern void add_preference_to_tm (agent* thisAgent, preference *pref);
 extern void remove_preference_from_tm (agent* thisAgent, preference *pref);
 extern void process_o_rejects_and_deallocate_them (agent* thisAgent, 
-												   preference *o_rejects);
+												   preference *o_rejects, std::vector<preference*>& bufdeallo);
 
 #ifdef __cplusplus
 //}

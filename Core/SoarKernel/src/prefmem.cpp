@@ -335,7 +335,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
    done.
 ------------------------------------------------------------------------ */
 
-void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects) 
+void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects, std::vector<preference*>& bufdeallo) 
 {
   preference *pref, *next_pref, *p, *next_p;
   slot *s;
@@ -359,8 +359,14 @@ void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_reje
       p = s->all_preferences;
       while (p) {
         next_p = p->all_of_slot_next;
-        if (p->value==pref->value)
+        if (p->value==pref->value) {
+          // Buffer deallocation by adding a reference here and putting it
+          // on a list. These are deallocated after the inner elaboration
+          // loop completes.
+          preference_add_ref(p);
+          bufdeallo.push_back(p);
           remove_preference_from_tm (thisAgent, p);
+        }
         p = next_p;
       }
     }
