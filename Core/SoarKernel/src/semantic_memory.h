@@ -50,7 +50,7 @@ class smem_param_container: public soar_module::param_container
 		enum opt_choices { opt_safety, opt_speed };
 
 		enum merge_choices { merge_none, merge_add };
-		enum act_choices { act_recency, act_frequency };
+		enum act_choices { act_recency, act_frequency, act_base };
 
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
@@ -68,6 +68,7 @@ class smem_param_container: public soar_module::param_container
 		soar_module::constant_param<merge_choices>* merge;
 		soar_module::boolean_param* activate_on_query;
 		soar_module::constant_param<act_choices>* activation_mode;
+		soar_module::decimal_param* base_decay;
 
 		smem_param_container( agent *new_agent );
 };
@@ -239,6 +240,10 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *act_lti_set;
 		soar_module::sqlite_statement *act_lti_get;
 
+		soar_module::sqlite_statement *history_get;
+		soar_module::sqlite_statement *history_push;
+		soar_module::sqlite_statement *history_add;
+
 		soar_module::sqlite_statement *vis_lti;
 		soar_module::sqlite_statement *vis_value_const;
 		soar_module::sqlite_statement *vis_value_lti;
@@ -263,11 +268,14 @@ enum smem_variable_key
 #define SMEM_WEB_NULL 0
 #define SMEM_WEB_NULL_STR "0"
 
+#define SMEM_ACT_HISTORY_ENTRIES 10
+#define SMEM_ACT_LOW -1000000000
+
 // provides a distinct prefix to be used by all
 // tables for two reasons:
 // - distinguish from other modules
 // - distinguish between smem versions
-#define SMEM_SCHEMA "smem5_"
+#define SMEM_SCHEMA "smem6_"
 
 // empty table used to verify proper structure
 #define SMEM_SIGNATURE SMEM_SCHEMA "signature"
