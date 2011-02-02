@@ -243,6 +243,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         delete temp2;
         if ( m_RawOutput )
         {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "base_decay: ";
+        temp2 = agnt->smem_params->base_decay->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
             m_Result << temp << "\n\n";
         }
         else
