@@ -256,6 +256,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         delete temp2;
         if ( m_RawOutput )
         {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "base_update_policy: ";
+        temp2 = agnt->smem_params->base_update->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
             m_Result << temp << "\n\n";
         }
         else
@@ -395,6 +408,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
             output = "Stores: ";
             temp2 = agnt->smem_stats->stores->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
+			output = "Activation Updates: ";
+            temp2 = agnt->smem_stats->act_updates->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
