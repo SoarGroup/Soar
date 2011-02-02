@@ -140,7 +140,12 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	activation_mode = new soar_module::constant_param<act_choices>( "activation_mode", act_recency, new soar_module::f_predicate<act_choices>() );
 	activation_mode->add_mapping( act_recency, "recency" );
 	activation_mode->add_mapping( act_frequency, "frequency" );
+	activation_mode->add_mapping( act_base, "base-level" );
 	add( activation_mode );
+
+	// base_decay
+	base_decay = new soar_module::decimal_param( "base_decay", 0.5, new soar_module::gt_predicate<double>( 0, false ), new soar_module::f_predicate<double>() );
+	add( base_decay );
 }
 
 //
@@ -307,8 +312,10 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_str (id INTEGER PRIMARY KEY, sym_const TEXT)" );
 	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "symbols_str_const ON " SMEM_SCHEMA "symbols_str (sym_const)" );	
 
-	add_structure( "CREATE TABLE " SMEM_SCHEMA "lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_value REAL, access_n INTEGER, access_t INTEGER)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_value REAL, access_n INTEGER, access_t INTEGER, access_1 INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "lti_letter_num ON " SMEM_SCHEMA "lti (letter, num)" );
+
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "history (id INTEGER PRIMARY KEY, t1 INTEGER, t2 INTEGER, t3 INTEGER, t4 INTEGER, t5 INTEGER, t6 INTEGER, t7 INTEGER, t8 INTEGER, t9 INTEGER, t10 INTEGER)" );
 
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "web (parent_id INTEGER, attr INTEGER, val_const INTEGER, val_lti INTEGER, act_value REAL)" );
 	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_parent_attr_val_lti ON " SMEM_SCHEMA "web (parent_id, attr, val_const, val_lti)" );
@@ -411,7 +418,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "lti (letter,num,child_ct,act_value,access_n,access_t) VALUES (?,?,?,?,?,?)" );
+	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "lti (letter,num,child_ct,act_value,access_n,access_t,access_1) VALUES (?,?,?,?,?,?,?)" );
 	add( lti_add );
 
 	lti_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "lti WHERE letter=? AND num=?" );
@@ -423,10 +430,10 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	lti_max = new soar_module::sqlite_statement( new_db, "SELECT letter, MAX(num) FROM " SMEM_SCHEMA "lti GROUP BY letter" );
 	add( lti_max );
 
-	lti_access_get = new soar_module::sqlite_statement( new_db, "SELECT access_n, access_t FROM " SMEM_SCHEMA "lti WHERE id=?" );
+	lti_access_get = new soar_module::sqlite_statement( new_db, "SELECT access_n, access_t, access_1 FROM " SMEM_SCHEMA "lti WHERE id=?" );
 	add( lti_access_get );
 
-	lti_access_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET access_n=?, access_t=? WHERE id=?" );
+	lti_access_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET access_n=?, access_t=?, access_1=? WHERE id=?" );
 	add( lti_access_set );
 
 	//
@@ -527,6 +534,15 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	act_lti_get = new soar_module::sqlite_statement( new_db, "SELECT act_value FROM " SMEM_SCHEMA "lti WHERE id=?" );
 	add( act_lti_get );
+
+	history_get = new soar_module::sqlite_statement( new_db, "SELECT t1,t2,t3,t4,t5,t6,t7,t8,t9,t10 FROM " SMEM_SCHEMA "history WHERE id=?" );
+	add( history_get );
+
+	history_push = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "history SET t10=t9,t9=t8,t8=t7,t8=t7,t7=t6,t6=t5,t5=t4,t4=t3,t3=t2,t2=t1,t1=? WHERE id=?" );
+	add( history_push );
+
+	history_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "history (id,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10) VALUES (?,?,0,0,0,0,0,0,0,0,0)" );
+	add( history_add );
 
 	//
 
@@ -961,7 +977,49 @@ inline Symbol* smem_reverse_hash( agent* my_agent, byte sym_type, smem_hash_id h
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+inline double smem_lti_calc_base( agent *my_agent, smem_lti_id lti, int64_t time_now, uint64_t n = 0, uint64_t access_1 = 0 )
+{
+	double sum = 0.0;
+	double d = my_agent->smem_params->base_decay->get_value();
+	uint64_t t_k;
+	uint64_t t_n = ( time_now - access_1 );
+	
+	if ( n == 0 )
+	{
+		my_agent->smem_stmts->lti_access_get->bind_int( 1, lti );
+		my_agent->smem_stmts->lti_access_get->execute();
 
+		n = my_agent->smem_stmts->lti_access_get->column_int( 0 );
+		
+		my_agent->smem_stmts->lti_access_get->reinitialize();
+	}
+
+	// get all history
+	my_agent->smem_stmts->history_get->bind_int( 1, lti );
+	my_agent->smem_stmts->history_get->execute();
+	{
+		int available_history = static_cast<int>( min( SMEM_ACT_HISTORY_ENTRIES, n ) );
+		t_k = static_cast<uint64_t>( time_now - my_agent->smem_stmts->history_get->column_int( available_history-1 ) );
+
+		for ( int i=0; i<available_history; i++ )
+		{
+			sum += pow( static_cast<double>( time_now - my_agent->smem_stmts->history_get->column_int( i ) ), 
+						static_cast<double>( -d ) );
+		}
+	}
+	my_agent->smem_stmts->history_get->reinitialize();
+
+	// if available history was insufficient, approximate rest
+	if ( n > SMEM_ACT_HISTORY_ENTRIES )
+	{
+		double apx_numerator = ( static_cast<double>( n - SMEM_ACT_HISTORY_ENTRIES ) * ( pow( static_cast<double>( t_n ), 1.0-d ) - pow( static_cast<double>( t_k ), 1.0-d ) ) );
+		double apx_denominator = ( ( 1.0-d ) * static_cast<double>( t_n - t_k ) );
+
+		sum += ( apx_numerator / apx_denominator );
+	}
+
+	return ( ( sum > 0 )?( log(sum) ):( SMEM_ACT_LOW ) );
+}
 
 // activates a new or existing long-term identifier
 // note: optional num_edges parameter saves us a lookup 
@@ -977,6 +1035,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_
 	// access updates
 	uint64_t prev_access_n = 0;
 	uint64_t prev_access_t = 0;
+	uint64_t prev_access_1 = 0;
 	int64_t time_now = my_agent->smem_max_cycle++;
 	{
 		// get old (potentially useful below)
@@ -986,6 +1045,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_
 
 			prev_access_n = my_agent->smem_stmts->lti_access_get->column_int( 0 );
 			prev_access_t = my_agent->smem_stmts->lti_access_get->column_int( 1 );
+			prev_access_1 = my_agent->smem_stmts->lti_access_get->column_int( 2 );
 
 			my_agent->smem_stmts->lti_access_get->reinitialize();
 		}
@@ -994,7 +1054,8 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_
 		{
 			my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
 			my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
-			my_agent->smem_stmts->lti_access_set->bind_int( 3, lti );
+			my_agent->smem_stmts->lti_access_set->bind_int( 3, ( ( prev_access_n == 0 )?( time_now ):( prev_access_1 ) ) );
+			my_agent->smem_stmts->lti_access_set->bind_int( 4, lti );
 			my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
 		}
 	}
@@ -1009,6 +1070,25 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_
 	else if ( act_mode == smem_param_container::act_frequency )
 	{
 		new_activation = static_cast<double>( prev_access_n + 1 );
+	}
+	else if ( act_mode == smem_param_container::act_base )
+	{
+		if ( prev_access_n == 0 )
+		{
+			my_agent->smem_stmts->history_add->bind_int( 1, lti );
+			my_agent->smem_stmts->history_add->bind_int( 2, time_now );
+			my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
+
+			new_activation = 0;
+		}
+		else
+		{
+			my_agent->smem_stmts->history_push->bind_int( 1, time_now );
+			my_agent->smem_stmts->history_push->bind_int( 2, lti );
+			my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
+
+			new_activation = smem_lti_calc_base( my_agent, lti, time_now+1, prev_access_n+1, prev_access_1 );
+		}
 	}
 
 	// get number of augmentations (if not supplied)
@@ -1242,13 +1322,14 @@ inline smem_lti_id smem_lti_add_id( agent *my_agent, char name_letter, uint64_t 
 {
 	smem_lti_id return_val;
 
-	// create lti: letter, number, child_ct, act_value, access_n, access_t
+	// create lti: letter, number, child_ct, act_value, access_n, access_t, access_1
 	my_agent->smem_stmts->lti_add->bind_int( 1, static_cast<uint64_t>( name_letter ) );
 	my_agent->smem_stmts->lti_add->bind_int( 2, static_cast<uint64_t>( name_number ) );
 	my_agent->smem_stmts->lti_add->bind_int( 3, static_cast<uint64_t>( 0 ) );
 	my_agent->smem_stmts->lti_add->bind_double( 4, static_cast<double>( 0 ) );
 	my_agent->smem_stmts->lti_add->bind_int( 5, static_cast<uint64_t>( 0 ) );
 	my_agent->smem_stmts->lti_add->bind_int( 6, static_cast<uint64_t>( 0 ) );
+	my_agent->smem_stmts->lti_add->bind_int( 7, static_cast<uint64_t>( 0 ) );
 	my_agent->smem_stmts->lti_add->execute( soar_module::op_reinit );
 
 	return_val = static_cast<smem_lti_id>( my_agent->smem_db->last_insert_rowid() );
