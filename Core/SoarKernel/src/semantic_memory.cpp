@@ -990,6 +990,7 @@ inline double smem_lti_calc_base( agent *my_agent, smem_lti_id lti, int64_t time
 		my_agent->smem_stmts->lti_access_get->execute();
 
 		n = my_agent->smem_stmts->lti_access_get->column_int( 0 );
+		access_1 = my_agent->smem_stmts->lti_access_get->column_int( 2 );
 		
 		my_agent->smem_stmts->lti_access_get->reinitialize();
 	}
@@ -998,7 +999,7 @@ inline double smem_lti_calc_base( agent *my_agent, smem_lti_id lti, int64_t time
 	my_agent->smem_stmts->history_get->bind_int( 1, lti );
 	my_agent->smem_stmts->history_get->execute();
 	{
-		int available_history = static_cast<int>( min( SMEM_ACT_HISTORY_ENTRIES, n ) );
+		int available_history = static_cast<int>( ( SMEM_ACT_HISTORY_ENTRIES<n )?(SMEM_ACT_HISTORY_ENTRIES):(n) );
 		t_k = static_cast<uint64_t>( time_now - my_agent->smem_stmts->history_get->column_int( available_history-1 ) );
 
 		for ( int i=0; i<available_history; i++ )
