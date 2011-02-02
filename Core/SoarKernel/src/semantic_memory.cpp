@@ -307,13 +307,13 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "symbols_str (id INTEGER PRIMARY KEY, sym_const TEXT)" );
 	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "symbols_str_const ON " SMEM_SCHEMA "symbols_str (sym_const)" );	
 
-	add_structure( "CREATE TABLE " SMEM_SCHEMA "lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_cycle REAL)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_value REAL, access_n INTEGER, access_t INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "lti_letter_num ON " SMEM_SCHEMA "lti (letter, num)" );
 
-	add_structure( "CREATE TABLE " SMEM_SCHEMA "web (parent_id INTEGER, attr INTEGER, val_const INTEGER, val_lti INTEGER, act_cycle REAL)" );
+	add_structure( "CREATE TABLE " SMEM_SCHEMA "web (parent_id INTEGER, attr INTEGER, val_const INTEGER, val_lti INTEGER, act_value REAL)" );
 	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_parent_attr_val_lti ON " SMEM_SCHEMA "web (parent_id, attr, val_const, val_lti)" );
-	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_attr_val_lti_cycle ON " SMEM_SCHEMA "web (attr, val_const, val_lti, act_cycle)" );
-	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_attr_cycle ON " SMEM_SCHEMA "web (attr, act_cycle)" );
+	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_attr_val_lti_cycle ON " SMEM_SCHEMA "web (attr, val_const, val_lti, act_value)" );
+	add_structure( "CREATE INDEX " SMEM_SCHEMA "web_attr_cycle ON " SMEM_SCHEMA "web (attr, act_value)" );
 
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "ct_attr (attr INTEGER PRIMARY KEY, ct INTEGER)" );
 
@@ -411,7 +411,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "lti (letter,num,child_ct,act_cycle) VALUES (?,?,?,?)" );
+	lti_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "lti (letter,num,child_ct,act_value,access_n,access_t) VALUES (?,?,?,?,?,?)" );
 	add( lti_add );
 
 	lti_get = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "lti WHERE letter=? AND num=?" );
@@ -423,9 +423,15 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	lti_max = new soar_module::sqlite_statement( new_db, "SELECT letter, MAX(num) FROM " SMEM_SCHEMA "lti GROUP BY letter" );
 	add( lti_max );
 
+	lti_access_get = new soar_module::sqlite_statement( new_db, "SELECT access_n, access_t FROM " SMEM_SCHEMA "lti WHERE id=?" );
+	add( lti_access_get );
+
+	lti_access_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET access_n=?, access_t=? WHERE id=?" );
+	add( lti_access_set );
+
 	//
 
-	web_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "web (parent_id, attr, val_const, val_lti, act_cycle) VALUES (?,?,?,?,?)" );
+	web_add = new soar_module::sqlite_statement( new_db, "INSERT INTO " SMEM_SCHEMA "web (parent_id, attr, val_const, val_lti, act_value) VALUES (?,?,?,?,?)" );
 	add( web_add );
 
 	web_truncate = new soar_module::sqlite_statement( new_db, "DELETE FROM " SMEM_SCHEMA "web WHERE parent_id=?" );
@@ -441,13 +447,13 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? ORDER BY act_cycle DESC" );
+	web_attr_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_value FROM " SMEM_SCHEMA "web w WHERE attr=? ORDER BY act_value DESC" );
 	add( web_attr_all );
 
-	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=? AND val_lti=" SMEM_WEB_NULL_STR " ORDER BY act_cycle DESC" );
+	web_const_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_value FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=? AND val_lti=" SMEM_WEB_NULL_STR " ORDER BY act_value DESC" );
 	add( web_const_all );
 
-	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_cycle FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=" SMEM_WEB_NULL_STR " AND val_lti=? ORDER BY act_cycle DESC" );
+	web_lti_all = new soar_module::sqlite_statement( new_db, "SELECT parent_id, act_value FROM " SMEM_SCHEMA "web w WHERE attr=? AND val_const=" SMEM_WEB_NULL_STR " AND val_lti=? ORDER BY act_value DESC" );
 	add( web_lti_all );
 
 	//
@@ -507,7 +513,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	act_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "web SET act_cycle=? WHERE parent_id=?" );
+	act_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "web SET act_value=? WHERE parent_id=?" );
 	add( act_set );
 
 	act_lti_child_ct_get = new soar_module::sqlite_statement( new_db, "SELECT child_ct FROM " SMEM_SCHEMA "lti WHERE id=?" );
@@ -516,10 +522,10 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 	act_lti_child_ct_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET child_ct=? WHERE id=?" );
 	add( act_lti_child_ct_set );
 
-	act_lti_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET act_cycle=? WHERE id=?" );
+	act_lti_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET act_value=? WHERE id=?" );
 	add( act_lti_set );
 
-	act_lti_get = new soar_module::sqlite_statement( new_db, "SELECT act_cycle FROM " SMEM_SCHEMA "lti WHERE id=?" );
+	act_lti_get = new soar_module::sqlite_statement( new_db, "SELECT act_value FROM " SMEM_SCHEMA "lti WHERE id=?" );
 	add( act_lti_get );
 
 	//
@@ -958,36 +964,68 @@ inline Symbol* smem_reverse_hash( agent* my_agent, byte sym_type, smem_hash_id h
 
 
 // activates a new or existing long-term identifier
-inline void smem_lti_activate( agent *my_agent, smem_lti_id lti )
+// note: optional num_edges parameter saves us a lookup 
+//       just when storing a new chunk (default is a 
+//       big number that should never come up naturally
+//       and if it does, satisfies thresholding behavior).
+inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_edges = SMEM_ACT_MAX )
 {
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->act->start();
 	////////////////////////////////////////////////////////////////////////////
+
+	// access updates
+	uint64_t prev_access_n = 0;
+	uint64_t prev_access_t = 0;
+	int64_t time_now = my_agent->smem_max_cycle++;
+	{
+		// get old (potentially useful below)
+		{
+			my_agent->smem_stmts->lti_access_get->bind_int( 1, lti );
+			my_agent->smem_stmts->lti_access_get->execute();
+
+			prev_access_n = my_agent->smem_stmts->lti_access_get->column_int( 0 );
+			prev_access_t = my_agent->smem_stmts->lti_access_get->column_int( 1 );
+
+			my_agent->smem_stmts->lti_access_get->reinitialize();
+		}
+
+		// set new
+		{
+			my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
+			my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
+			my_agent->smem_stmts->lti_access_set->bind_int( 3, lti );
+			my_agent->smem_stmts->lti_access_set->execute( soar_module::op_reinit );
+		}
+	}
 	
+	// get new activation value (depends upon bias)
 	double new_activation = 0.0;
 	smem_param_container::act_choices act_mode = my_agent->smem_params->activation_mode->get_value();
 	if ( act_mode == smem_param_container::act_recency )
 	{
-		new_activation = static_cast<double>( my_agent->smem_max_cycle++ );
+		new_activation = static_cast<double>( time_now );
 	}
 	else if ( act_mode == smem_param_container::act_frequency )
 	{
-		my_agent->smem_stmts->act_lti_get->bind_int( 1, lti );
-		my_agent->smem_stmts->act_lti_get->execute();
-		
-		new_activation = ( my_agent->smem_stmts->act_lti_get->column_double(0) + 1 );
-		
-		my_agent->smem_stmts->act_lti_get->reinitialize();
+		new_activation = static_cast<double>( prev_access_n + 1 );
 	}
 
-	
-	my_agent->smem_stmts->act_lti_child_ct_get->bind_int( 1, lti );
-	my_agent->smem_stmts->act_lti_child_ct_get->execute();
-	
-	// only if child count is less than threshold do we associate with edges
-	if ( my_agent->smem_stmts->act_lti_child_ct_get->column_int( 0 ) < my_agent->smem_params->thresh->get_value() )
+	// get number of augmentations (if not supplied)
+	if ( num_edges == SMEM_ACT_MAX )
 	{
-		// cycle=? WHERE lti=?
+		my_agent->smem_stmts->act_lti_child_ct_get->bind_int( 1, lti );
+		my_agent->smem_stmts->act_lti_child_ct_get->execute();
+
+		num_edges = my_agent->smem_stmts->act_lti_child_ct_get->column_int( 0 );
+
+		my_agent->smem_stmts->act_lti_child_ct_get->reinitialize();
+	}
+
+	// only if augmentation count is less than threshold do we associate with edges
+	if ( num_edges < my_agent->smem_params->thresh->get_value() )
+	{
+		// act_value=? WHERE lti=?
 		my_agent->smem_stmts->act_set->bind_double( 1, new_activation );
 		my_agent->smem_stmts->act_set->bind_int( 2, lti );
 		my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
@@ -995,17 +1033,17 @@ inline void smem_lti_activate( agent *my_agent, smem_lti_id lti )
 
 	// always associate activation with lti
 	{
-		// cycle=? WHERE lti=?
+		// act_value=? WHERE lti=?
 		my_agent->smem_stmts->act_lti_set->bind_double( 1, new_activation );
 		my_agent->smem_stmts->act_lti_set->bind_int( 2, lti );
 		my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
 	}
 	
-	my_agent->smem_stmts->act_lti_child_ct_get->reinitialize();
-	
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->act->stop();
 	////////////////////////////////////////////////////////////////////////////
+
+	return new_activation;
 }
 
 
@@ -1204,11 +1242,13 @@ inline smem_lti_id smem_lti_add_id( agent *my_agent, char name_letter, uint64_t 
 {
 	smem_lti_id return_val;
 
-	// create lti: letter, number, child_ct, act_cycle
+	// create lti: letter, number, child_ct, act_value, access_n, access_t
 	my_agent->smem_stmts->lti_add->bind_int( 1, static_cast<uint64_t>( name_letter ) );
 	my_agent->smem_stmts->lti_add->bind_int( 2, static_cast<uint64_t>( name_number ) );
 	my_agent->smem_stmts->lti_add->bind_int( 3, static_cast<uint64_t>( 0 ) );
 	my_agent->smem_stmts->lti_add->bind_double( 4, static_cast<double>( 0 ) );
+	my_agent->smem_stmts->lti_add->bind_int( 5, static_cast<uint64_t>( 0 ) );
+	my_agent->smem_stmts->lti_add->bind_int( 6, static_cast<uint64_t>( 0 ) );
 	my_agent->smem_stmts->lti_add->execute( soar_module::op_reinit );
 
 	return_val = static_cast<smem_lti_id>( my_agent->smem_db->last_insert_rowid() );
@@ -1484,53 +1524,50 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 		}
 	}
 
-	// activation calculations/updates
-	double web_act = 0.0;
+	// activation function assumes proper thresholding state
+	// thus, consider four cases of augmentation counts (w.r.t. thresh)
+	// 1. before=below, after=below: good (activation will update web)
+	// 2. before=below, after=above: need to update web->inf
+	// 3. before=after, after=below: good (activation will update web, free transition)
+	// 4. before=after, after=after: good (activation won't touch web)
+	//
+	// hence, we detect + handle case #2 here
+	uint64_t new_edges = ( existing_edges + const_new.size() + lti_new.size() );
+	bool after_above;
+	double web_act;
 	{
-		double lti_act = 0.0;
-		smem_param_container::act_choices act_mode = my_agent->smem_params->activation_mode->get_value();
-		if ( act_mode == smem_param_container::act_recency )
-		{
-			lti_act = static_cast<double>(my_agent->smem_max_cycle++);
-		}
-		else if ( act_mode == smem_param_container::act_frequency )
-		{
-			my_agent->smem_stmts->act_lti_get->bind_int( 1, parent_id );
-			my_agent->smem_stmts->act_lti_get->execute();
-			
-			lti_act = ( my_agent->smem_stmts->act_lti_get->column_double(0) + 1 );
-			
-			my_agent->smem_stmts->act_lti_get->reinitialize();
-		}
-		
-		// was already above threshold?
 		uint64_t thresh = my_agent->smem_params->thresh->get_value();
-		bool before_above = ( existing_edges >= thresh );
-
-		// above threshold after?
-		bool after_above = ( ( existing_edges + const_new.size() + lti_new.size() ) >= thresh );
-		web_act = ( ( after_above )?( static_cast<double>( SMEM_ACT_MAX ) ):( lti_act ) );
-
-		// if didn't clear and wasn't already above, need to update kids
-		if ( ( !remove_old_children ) && ( !before_above ) )
+		after_above = ( new_edges >= thresh );
+		
+		// if before below
+		if ( existing_edges < thresh )
 		{
-			my_agent->smem_stmts->act_set->bind_double( 1, web_act );
-			my_agent->smem_stmts->act_set->bind_int( 2, parent_id );
-			my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+			if ( after_above )
+			{
+				web_act = static_cast<double>( SMEM_ACT_MAX );
+
+				// update web to inf
+				my_agent->smem_stmts->act_set->bind_double( 1, web_act );
+				my_agent->smem_stmts->act_set->bind_int( 2, parent_id );
+				my_agent->smem_stmts->act_set->execute( soar_module::op_reinit );
+			}
 		}
+	}
 
-		// always update parent activation
-		{
-			my_agent->smem_stmts->act_lti_set->bind_double( 1, lti_act );
-			my_agent->smem_stmts->act_lti_set->bind_int( 2, parent_id );
-			my_agent->smem_stmts->act_lti_set->execute( soar_module::op_reinit );
-		}
+	// update edge counter
+	{
+		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 1, new_edges );
+		my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 2, parent_id );
+		my_agent->smem_stmts->act_lti_child_ct_set->execute( soar_module::op_reinit );
+	}
 
-		// update edge counter
+	// now we can safely activate the lti
+	{
+		double lti_act = smem_lti_activate( my_agent, parent_id, new_edges );
+
+		if ( !after_above )
 		{
-			my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 1, ( existing_edges + const_new.size() + lti_new.size() ) );
-			my_agent->smem_stmts->act_lti_child_ct_set->bind_int( 2, parent_id );
-			my_agent->smem_stmts->act_lti_child_ct_set->execute( soar_module::op_reinit );
+			web_act = lti_act;
 		}
 	}
 
@@ -1542,7 +1579,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 			{
 				// insert
 				{
-					// parent_id, attr, val_const, val_lti, act_cycle
+					// parent_id, attr, val_const, val_lti, act_value
 					my_agent->smem_stmts->web_add->bind_int( 1, parent_id );
 					my_agent->smem_stmts->web_add->bind_int( 2, p->first );
 					my_agent->smem_stmts->web_add->bind_int( 3, p->second );
@@ -1580,7 +1617,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 			{
 				// insert
 				{
-					// parent_id, attr, val_const, val_lti, act_cycle
+					// parent_id, attr, val_const, val_lti, act_value
 					my_agent->smem_stmts->web_add->bind_int( 1, parent_id );
 					my_agent->smem_stmts->web_add->bind_int( 2, p->first );
 					my_agent->smem_stmts->web_add->bind_int( 3, SMEM_WEB_NULL );
