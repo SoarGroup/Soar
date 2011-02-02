@@ -1023,7 +1023,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_
 	}
 
 	// only if augmentation count is less than threshold do we associate with edges
-	if ( num_edges < my_agent->smem_params->thresh->get_value() )
+	if ( num_edges < static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() ) )
 	{
 		// act_value=? WHERE lti=?
 		my_agent->smem_stmts->act_set->bind_double( 1, new_activation );
@@ -1534,9 +1534,9 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 	// hence, we detect + handle case #2 here
 	uint64_t new_edges = ( existing_edges + const_new.size() + lti_new.size() );
 	bool after_above;
-	double web_act;
+	double web_act = static_cast<double>( SMEM_ACT_MAX );
 	{
-		uint64_t thresh = my_agent->smem_params->thresh->get_value();
+		uint64_t thresh = static_cast<uint64_t>( my_agent->smem_params->thresh->get_value() );
 		after_above = ( new_edges >= thresh );
 		
 		// if before below
@@ -1544,8 +1544,6 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 		{
 			if ( after_above )
 			{
-				web_act = static_cast<double>( SMEM_ACT_MAX );
-
 				// update web to inf
 				my_agent->smem_stmts->act_set->bind_double( 1, web_act );
 				my_agent->smem_stmts->act_set->bind_int( 2, parent_id );
