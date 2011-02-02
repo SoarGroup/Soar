@@ -200,6 +200,8 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *lti_get;
 		soar_module::sqlite_statement *lti_letter_num;
 		soar_module::sqlite_statement *lti_max;
+		soar_module::sqlite_statement *lti_access_get;
+		soar_module::sqlite_statement *lti_access_set;
 
 		soar_module::sqlite_statement *web_add;
 		soar_module::sqlite_statement *web_truncate;
@@ -265,7 +267,7 @@ enum smem_variable_key
 // tables for two reasons:
 // - distinguish from other modules
 // - distinguish between smem versions
-#define SMEM_SCHEMA "smem4_"
+#define SMEM_SCHEMA "smem5_"
 
 // empty table used to verify proper structure
 #define SMEM_SIGNATURE SMEM_SCHEMA "signature"
