@@ -70,6 +70,9 @@ class smem_param_container: public soar_module::param_container
 		soar_module::constant_param<act_choices>* activation_mode;
 		soar_module::decimal_param* base_decay;
 
+		enum base_update_choices { bupt_stable, bupt_naive };
+		soar_module::constant_param<base_update_choices>* base_update;
+
 		smem_param_container( agent *new_agent );
 };
 
@@ -108,6 +111,7 @@ class smem_stat_container: public soar_module::stat_container
 		soar_module::integer_stat *expansions;
 		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *stores;
+		soar_module::integer_stat *act_updates;
 
 		soar_module::integer_stat *chunks;
 		soar_module::integer_stat *slots;

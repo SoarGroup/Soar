@@ -146,6 +146,12 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// base_decay
 	base_decay = new soar_module::decimal_param( "base_decay", 0.5, new soar_module::gt_predicate<double>( 0, false ), new soar_module::f_predicate<double>() );
 	add( base_decay );
+
+	// base_update_policy
+	base_update = new soar_module::constant_param<base_update_choices>( "base_update_policy", bupt_stable, new soar_module::f_predicate<base_update_choices>() );
+	base_update->add_mapping( bupt_stable, "stable" );
+	base_update->add_mapping( bupt_naive, "naive" );
+	add( base_update );
 }
 
 //
@@ -211,6 +217,10 @@ smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_
 	// stores
 	stores = new soar_module::integer_stat( "stores", 0, new soar_module::f_predicate<int64_t>() );
 	add( stores );
+
+	// activations
+	act_updates = new soar_module::integer_stat( "act_updates", 0, new soar_module::f_predicate<int64_t>() );
+	add( act_updates );
 
 	//
 
@@ -1027,17 +1037,28 @@ inline double smem_lti_calc_base( agent *my_agent, smem_lti_id lti, int64_t time
 //       just when storing a new chunk (default is a 
 //       big number that should never come up naturally
 //       and if it does, satisfies thresholding behavior).
-inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_edges = SMEM_ACT_MAX )
+inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_access, uint64_t num_edges = SMEM_ACT_MAX )
 {
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->act->start();
 	////////////////////////////////////////////////////////////////////////////
 
-	// access updates
+	int64_t time_now;
+	if ( add_access )
+	{
+		time_now = my_agent->smem_max_cycle++;
+	}
+	else
+	{
+		time_now = my_agent->smem_max_cycle;
+
+		my_agent->smem_stats->act_updates->set_value( my_agent->smem_stats->act_updates->get_value() + 1 );
+	}
+
+	// access information
 	uint64_t prev_access_n = 0;
 	uint64_t prev_access_t = 0;
 	uint64_t prev_access_1 = 0;
-	int64_t time_now = my_agent->smem_max_cycle++;
 	{
 		// get old (potentially useful below)
 		{
@@ -1052,6 +1073,7 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_
 		}
 
 		// set new
+		if ( add_access )
 		{
 			my_agent->smem_stmts->lti_access_set->bind_int( 1, ( prev_access_n + 1 ) );
 			my_agent->smem_stmts->lti_access_set->bind_int( 2, time_now );
@@ -1070,25 +1092,31 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, uint64_t num_
 	}
 	else if ( act_mode == smem_param_container::act_frequency )
 	{
-		new_activation = static_cast<double>( prev_access_n + 1 );
+		new_activation = static_cast<double>( prev_access_n + ( ( add_access )?(1):(0) ) );
 	}
 	else if ( act_mode == smem_param_container::act_base )
 	{
 		if ( prev_access_n == 0 )
 		{
-			my_agent->smem_stmts->history_add->bind_int( 1, lti );
-			my_agent->smem_stmts->history_add->bind_int( 2, time_now );
-			my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
+			if ( add_access )
+			{
+				my_agent->smem_stmts->history_add->bind_int( 1, lti );
+				my_agent->smem_stmts->history_add->bind_int( 2, time_now );
+				my_agent->smem_stmts->history_add->execute( soar_module::op_reinit );
+			}
 
 			new_activation = 0;
 		}
 		else
 		{
-			my_agent->smem_stmts->history_push->bind_int( 1, time_now );
-			my_agent->smem_stmts->history_push->bind_int( 2, lti );
-			my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
+			if ( add_access )
+			{
+				my_agent->smem_stmts->history_push->bind_int( 1, time_now );
+				my_agent->smem_stmts->history_push->bind_int( 2, lti );
+				my_agent->smem_stmts->history_push->execute( soar_module::op_reinit );
+			}
 
-			new_activation = smem_lti_calc_base( my_agent, lti, time_now+1, prev_access_n+1, prev_access_1 );
+			new_activation = smem_lti_calc_base( my_agent, lti, time_now+( ( add_access )?(1):(0) ), prev_access_n+( ( add_access )?(1):(0) ), prev_access_1 );
 		}
 	}
 
@@ -1643,7 +1671,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 
 	// now we can safely activate the lti
 	{
-		double lti_act = smem_lti_activate( my_agent, parent_id, new_edges );
+		double lti_act = smem_lti_activate( my_agent, parent_id, true, new_edges );
 
 		if ( !after_above )
 		{
@@ -1892,7 +1920,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 	// activate lti
 	if ( activate_lti )
 	{
-		smem_lti_activate( my_agent, parent_id );
+		smem_lti_activate( my_agent, parent_id, true );
 	}
 
 	// point retrieved to lti
@@ -1956,6 +1984,36 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 // Cue-Based Retrieval Functions (smem::cbr)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
+
+inline soar_module::sqlite_statement* smem_setup_web_crawl(agent* my_agent, smem_weighted_cue_element* el)
+{
+	soar_module::sqlite_statement* q = NULL;
+
+	// first, point to correct query and setup
+	// query-specific parameters
+	if ( el->element_type == attr_t )
+	{
+		// attr=?
+		q = my_agent->smem_stmts->web_attr_all;
+	}
+	else if ( el->element_type == value_const_t )
+	{
+		// attr=? AND val_const=?
+		q = my_agent->smem_stmts->web_const_all;
+		q->bind_int( 2, el->value_hash );
+	}
+	else if ( el->element_type == value_lti_t )
+	{
+		// attr=? AND val_lti=?
+		q = my_agent->smem_stmts->web_lti_all;
+		q->bind_int( 2, el->value_lti );
+	}
+
+	// all require hash as first parameter
+	q->bind_int( 1, el->attr_hash );
+
+	return q;
+}
 
 smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti_set *prohibit, smem_query_levels query_level = qry_full )
 {	
@@ -2105,31 +2163,39 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 
 		smem_lti_id cand;
 		bool good_cand;
+
+		if ( my_agent->smem_params->activation_mode->get_value() == smem_param_container::act_base )
+		{
+			// naive base-level updates means update activation of
+			// every candidate in the minimal list before the
+			// confirmation walk
+			if ( my_agent->smem_params->base_update->get_value() == smem_param_container::bupt_naive )
+			{
+				q = smem_setup_web_crawl( my_agent, (*first_element) );
+
+				// queue up distinct lti's to update
+				// - set because queries could contain wilds
+				// - not in loop because the effects of activation may actually
+				//   alter the resultset of the query (isolation???)
+				std::set< smem_lti_id > to_update;
+				while ( q->execute() == soar_module::row )
+				{
+					to_update.insert( q->column_int(0) );
+				}
+
+				for ( std::set< smem_lti_id >::iterator it=to_update.begin(); it!=to_update.end(); it++ )
+				{
+					smem_lti_activate( my_agent, (*it), false );
+				}
+
+				q->reinitialize();
+			}
+		}
 		
 		// setup first query, which is sorted on activation already
-		{
-			if ( (*first_element)->element_type == attr_t )
-			{
-				// attr=?
-				q = my_agent->smem_stmts->web_attr_all;
-			}
-			else if ( (*first_element)->element_type == value_const_t )
-			{
-				// attr=? AND val_const=?
-				q = my_agent->smem_stmts->web_const_all;
-				q->bind_int( 2, (*first_element)->value_hash );
-			}
-			else if ( (*first_element)->element_type == value_lti_t )
-			{
-				// attr=? AND val_lti=?
-				q = my_agent->smem_stmts->web_lti_all;
-				q->bind_int( 2, (*first_element)->value_lti );
-			}
+		q = smem_setup_web_crawl( my_agent, (*first_element) );
 
-			// all require hash as first parameter
-			q->bind_int( 1, (*first_element)->attr_hash );
-		}
-
+		// this becomes the minimal set to walk (till match or fail)
 		if ( q->execute() == soar_module::row )
 		{
 			smem_prioritized_activated_lti_queue plentiful_parents;
