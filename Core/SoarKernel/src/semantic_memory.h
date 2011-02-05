@@ -70,8 +70,10 @@ class smem_param_container: public soar_module::param_container
 		soar_module::constant_param<act_choices>* activation_mode;
 		soar_module::decimal_param* base_decay;
 
-		enum base_update_choices { bupt_stable, bupt_naive };
+		enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
 		soar_module::constant_param<base_update_choices>* base_update;
+
+		soar_module::integer_param* base_incremental_thresh;
 
 		smem_param_container( agent *new_agent );
 };
@@ -207,6 +209,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *lti_max;
 		soar_module::sqlite_statement *lti_access_get;
 		soar_module::sqlite_statement *lti_access_set;
+		soar_module::sqlite_statement *lti_get_t;
 
 		soar_module::sqlite_statement *web_add;
 		soar_module::sqlite_statement *web_truncate;
@@ -279,7 +282,7 @@ enum smem_variable_key
 // tables for two reasons:
 // - distinguish from other modules
 // - distinguish between smem versions
-#define SMEM_SCHEMA "smem6_"
+#define SMEM_SCHEMA "smem7_"
 
 // empty table used to verify proper structure
 #define SMEM_SIGNATURE SMEM_SCHEMA "signature"
