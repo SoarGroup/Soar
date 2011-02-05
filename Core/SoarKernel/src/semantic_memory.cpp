@@ -151,7 +151,12 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	base_update = new soar_module::constant_param<base_update_choices>( "base_update_policy", bupt_stable, new soar_module::f_predicate<base_update_choices>() );
 	base_update->add_mapping( bupt_stable, "stable" );
 	base_update->add_mapping( bupt_naive, "naive" );
+	base_update->add_mapping( bupt_incremental, "incremental" );
 	add( base_update );
+
+	// incremental update threshold
+	base_incremental_thresh = new soar_module::integer_param( "base_incremental_thresh", 10, new soar_module::gt_predicate<int64_t>( 0, false ), new soar_module::f_predicate<int64_t>() );
+	add( base_incremental_thresh );
 }
 
 //
@@ -324,6 +329,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "lti (id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, child_ct INTEGER, act_value REAL, access_n INTEGER, access_t INTEGER, access_1 INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX " SMEM_SCHEMA "lti_letter_num ON " SMEM_SCHEMA "lti (letter, num)" );
+	add_structure( "CREATE INDEX " SMEM_SCHEMA "lti_t ON " SMEM_SCHEMA "lti (access_t)" );
 
 	add_structure( "CREATE TABLE " SMEM_SCHEMA "history (id INTEGER PRIMARY KEY, t1 INTEGER, t2 INTEGER, t3 INTEGER, t4 INTEGER, t5 INTEGER, t6 INTEGER, t7 INTEGER, t8 INTEGER, t9 INTEGER, t10 INTEGER)" );
 
@@ -445,6 +451,9 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	lti_access_set = new soar_module::sqlite_statement( new_db, "UPDATE " SMEM_SCHEMA "lti SET access_n=?, access_t=?, access_1=? WHERE id=?" );
 	add( lti_access_set );
+
+	lti_get_t = new soar_module::sqlite_statement( new_db, "SELECT id FROM " SMEM_SCHEMA "lti WHERE access_t=?" );
+	add ( lti_get_t );
 
 	//
 
@@ -1047,6 +1056,28 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	if ( add_access )
 	{
 		time_now = my_agent->smem_max_cycle++;
+
+		if ( my_agent->smem_params->base_update->get_value() == smem_param_container::bupt_incremental )
+		{
+			int64_t time_diff = ( time_now - my_agent->smem_params->base_incremental_thresh->get_value() );
+
+			if ( time_diff > 0 )
+			{
+				std::list< smem_lti_id > to_update;
+
+				my_agent->smem_stmts->lti_get_t->bind_int( 1, time_diff );
+				while ( my_agent->smem_stmts->lti_get_t->execute() == soar_module::row )
+				{
+					to_update.push_back( static_cast< smem_lti_id >( my_agent->smem_stmts->lti_get_t->column_int(0) ) );
+				}
+				my_agent->smem_stmts->lti_get_t->reinitialize();
+
+				for ( std::list< smem_lti_id >::iterator it=to_update.begin(); it!=to_update.end(); it++ )
+				{
+					smem_lti_activate( my_agent, (*it), false );
+				}
+			}
+		}
 	}
 	else
 	{
