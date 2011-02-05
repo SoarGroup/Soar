@@ -2925,7 +2925,8 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 										temp_chunk->lti_letter = temp_letter;
 										temp_chunk->lti_number = temp_number;
 										temp_chunk->lti_id = NIL;
-										temp_chunk->slots = NULL;
+										temp_chunk->slots = NIL;
+										temp_chunk->soar_id = NIL;
 
 										// associate with value
 										chunk_value->val_lti.val_value = temp_chunk;
