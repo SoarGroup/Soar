@@ -2524,7 +2524,7 @@ inline void _epmem_install_id_wme( agent* my_agent, Symbol* state, Symbol* paren
 		}
 		else
 		{
-			Symbol* value = smem_lti_soar_make( my_agent, q1, val_letter, val_num, parent->id.level );			
+			Symbol* value = smem_lti_soar_make( my_agent, smem_lti_get_id( my_agent, val_letter, val_num ), val_letter, val_num, parent->id.level );			
 
 			if ( id_record )
 			{
