@@ -2626,6 +2626,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		// shared identifier lookup table
 		std::map< epmem_node_id, std::pair< Symbol*, bool > > ids;
+		bool dont_abide_by_ids_second = ( my_agent->smem_params->merge->get_value() == smem_param_container::merge_add );
 
 		// symbols used to create WMEs		
 		Symbol *attr = NULL;
@@ -2698,7 +2699,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				if ( id_p != ids.end() )
 				{
 					// if existing lti with kids don't touch
-					if ( id_p->second.second )
+					if ( dont_abide_by_ids_second || id_p->second.second )
 					{
 						_epmem_install_id_wme( my_agent, state, id_p->second.first, attr, &( ids ), q1, val_is_short_term, val_letter, val_num, id_record );
 						num_wmes++;
@@ -2749,7 +2750,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 						id_p = ids.find( orphan->q0 );
 						if ( id_p != ids.end() )
 						{
-							if ( id_p->second.second )
+							if ( dont_abide_by_ids_second || id_p->second.second )
 							{
 								_epmem_install_id_wme( my_agent, state, id_p->second.first, orphan->w, &( ids ), orphan->q1, orphan->val_is_short_term, orphan->val_letter, orphan->val_num, id_record );							
 								num_wmes++;
@@ -2813,7 +2814,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 				// get a reference to the parent
 				parent = ids[ parent_id ];
 
-				if ( parent.second )
+				if ( dont_abide_by_ids_second || parent.second )
 				{
 					// make a symbol to represent the attribute
 					switch ( attr_type )
