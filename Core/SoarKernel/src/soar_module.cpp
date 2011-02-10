@@ -78,21 +78,11 @@ namespace soar_module
 		}
 	}
 
-	preference *make_fake_preference( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, wme_set *conditions )
+	instantiation* make_fake_instantiation( agent* my_agent, Symbol* state, wme_set* conditions, symbol_triple_list* actions )
 	{
-		// make fake preference
-		preference *pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, id, attr, value, NIL );
-		pref->o_supported = true;
-		symbol_add_ref( pref->id );
-		symbol_add_ref( pref->attr );
-		symbol_add_ref( pref->value );
-
 		// make fake instantiation
-		instantiation *inst;
+		instantiation* inst;
 		allocate_with_pool( my_agent, &( my_agent->instantiation_pool ), &inst );
-		pref->inst = inst;
-		pref->inst_next = pref->inst_prev = NULL;
-		inst->preferences_generated = pref;
 		inst->prod = NULL;
 		inst->next = inst->prev = NULL;
 		inst->rete_token = NULL;
@@ -103,13 +93,33 @@ namespace soar_module
 		inst->backtrace_number = 0;
 		inst->in_ms = FALSE;
 		inst->GDS_evaluated_already = FALSE;
-		
-		condition *cond = NULL;
-		condition *prev_cond = NULL;	
-		{
-			wme_set::iterator p = conditions->begin();
 
-			while ( p != conditions->end() )
+		// create preferences
+		inst->preferences_generated = NULL;
+		{
+			preference* pref;
+
+			for ( symbol_triple_list::iterator a_it=actions->begin(); a_it!=actions->end(); a_it++ )
+			{
+				pref = make_preference( my_agent, ACCEPTABLE_PREFERENCE_TYPE, (*a_it)->id, (*a_it)->attr, (*a_it)->value, NIL );
+				pref->o_supported = true;
+				symbol_add_ref( pref->id );
+				symbol_add_ref( pref->attr );
+				symbol_add_ref( pref->value );
+
+				pref->inst = inst;
+				pref->inst_next = pref->inst_prev = NULL;
+
+				insert_at_head_of_dll( inst->preferences_generated, pref, inst_next, inst_prev );
+			}
+		}
+
+		// create conditions
+		{
+			condition *cond = NULL;
+			condition *prev_cond = NULL;
+
+			for ( wme_set::iterator c_it=conditions->begin(); c_it!=conditions->end(); c_it++ )
 			{
 				// construct the condition
 				allocate_with_pool( my_agent, &( my_agent->condition_pool ), &cond );
@@ -126,21 +136,21 @@ namespace soar_module
 					inst->bottom_of_instantiated_conditions = cond;
 					inst->nots = NULL;
 				}
-				cond->data.tests.id_test = make_equality_test( (*p)->id );
-				cond->data.tests.attr_test = make_equality_test( (*p)->attr );
-				cond->data.tests.value_test = make_equality_test( (*p)->value );
-				cond->test_for_acceptable_preference = (*p)->acceptable;
-				cond->bt.wme_ = (*p);
+				cond->data.tests.id_test = make_equality_test( (*c_it)->id );
+				cond->data.tests.attr_test = make_equality_test( (*c_it)->attr );
+				cond->data.tests.value_test = make_equality_test( (*c_it)->value );
+				cond->test_for_acceptable_preference = (*c_it)->acceptable;
+				cond->bt.wme_ = (*c_it);
 
 				#ifndef DO_TOP_LEVEL_REF_CTS
 				if ( inst->match_goal_level > TOP_GOAL_LEVEL )
 				#endif
 				{
-					wme_add_ref( (*p) );
+					wme_add_ref( (*c_it) );
 				}			
 				
-				cond->bt.level = (*p)->id->id.level;
-				cond->bt.trace = (*p)->preference;
+				cond->bt.level = (*c_it)->id->id.level;
+				cond->bt.trace = (*c_it)->preference;
 				
 				if ( cond->bt.trace )
 				{
@@ -155,12 +165,10 @@ namespace soar_module
 				cond->bt.prohibits = NULL;
 
 				prev_cond = cond;
-
-				p++;
 			}
 		}
 
-		return pref;
+		return inst;
 	}
 }
 

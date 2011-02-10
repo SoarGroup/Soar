@@ -317,7 +317,6 @@ typedef struct smem_data_struct
 	uint64_t last_cmd_time[2];			// last update to smem.command
 	uint64_t last_cmd_count[2];		// last update to smem.command
 
-	std::set<wme *> *cue_wmes;				// wmes in last cue
 	std::stack<preference *> *smem_wmes;	// wmes in last smem
 } smem_data;
 
