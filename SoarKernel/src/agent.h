@@ -32,6 +32,7 @@
 #include "callback.h"
 #include <map>
 
+#include "soar_module.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "wma.h"
@@ -891,7 +892,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   uint64_t smem_validation;
   bool smem_first_switch;
-  bool smem_made_changes;
   int64_t smem_max_cycle;
 
   // JRV: Added to support XML management inside Soar

@@ -18,6 +18,7 @@
 #include <map>
 #include <string>
 #include <set>
+#include <list>
 #include <functional>
 
 #include "misc.h"
@@ -36,9 +37,19 @@ namespace soar_module
 
 	typedef std::set<wme *> wme_set;
 	
+	typedef struct symbol_triple_struct
+	{
+		Symbol* id;
+		Symbol* attr;
+		Symbol* value;
+
+		symbol_triple_struct( Symbol* new_id, Symbol* new_attr, Symbol* new_value ): id(new_id), attr(new_attr), value(new_value) {}
+	} symbol_triple;
+	typedef std::list< symbol_triple* > symbol_triple_list;
+	
 	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value );
 	void remove_module_wme( agent *my_agent, wme *w );
-	preference *make_fake_preference( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, wme_set *conditions );
+	instantiation* make_fake_instantiation( agent* my_agent, Symbol* state, wme_set* conditions, symbol_triple_list* actions );
 	
 	///////////////////////////////////////////////////////////////////////////
 	// Predicates
