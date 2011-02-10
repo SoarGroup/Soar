@@ -643,39 +643,36 @@ inline bool smem_symbol_is_constant( Symbol *sym )
 
 //
 
-void _smem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, bool meta )
+inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, bool meta )
 {
-	// this fake preference is just for this state.
-	// it serves the purpose of simulating a completely
-	// local production firing to provide backtracing
-	// information, making the result wmes dependent
-	// upon the cue wmes.
-	preference *pref = soar_module::make_fake_preference( my_agent, state, id, attr, value, state->id.smem_info->cue_wmes );
+	instantiation* inst = soar_module::make_fake_instantiation( my_agent, state, &cue_wmes, &my_list );
 
-	// add the preference to temporary memory
-	add_preference_to_tm( my_agent, pref );
-
-	// and add it to the list of preferences to be removed
-	// when the goal is removed
-	insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
-	pref->on_goal_list = true;
-
-
-	if ( meta )
+	for ( preference* pref=inst->preferences_generated; pref; pref=pref->inst_next )
 	{
-		// if this is a meta wme, then it is completely local
-		// to the state and thus we will manually remove it
-		// (via preference removal) when the time comes
-		state->id.smem_info->smem_wmes->push( pref );
+		// add the preference to temporary memory
+		add_preference_to_tm( my_agent, pref );
+
+		// and add it to the list of preferences to be removed
+		// when the goal is removed
+		insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
+		pref->on_goal_list = true;
+
+		if ( meta )
+		{
+			// if this is a meta wme, then it is completely local
+			// to the state and thus we will manually remove it
+			// (via preference removal) when the time comes
+			state->id.smem_info->smem_wmes->push( pref );
+		}
 	}
-	else
+
+	if ( !meta )
 	{
 		// otherwise, we submit the fake instantiation to backtracing
 		// such as to potentially produce justifications that can follow
 		// it to future adventures (potentially on new states)
-
 		instantiation *my_justification_list = NIL;
-		chunk_instantiation( my_agent, pref->inst, false, &my_justification_list );
+		chunk_instantiation( my_agent, inst, false, &my_justification_list );
 
 		// if any justifications are created, assert their preferences manually
 		// (copied mainly from assert_new_preferences with respect to our circumstances)
@@ -689,7 +686,7 @@ void _smem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Sy
 				  my_justification=next_justification )
 			{
 				next_justification = my_justification->next;
-
+				
 				if ( my_justification->in_ms )
 				{
 					insert_at_head_of_dll( my_justification->prod->instantiations, my_justification, next, prev );
@@ -709,16 +706,20 @@ void _smem_add_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Sy
 	}
 }
 
-void smem_add_retrieved_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value )
+inline void smem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes )
 {
-	_smem_add_wme( my_agent, state, id, attr, value, false );
+	_smem_process_buffered_wme_list( my_agent, state, cue_wmes, meta_wmes, true );
+	_smem_process_buffered_wme_list( my_agent, state, cue_wmes, retrieval_wmes, false );
 }
 
-void smem_add_meta_wme( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value )
+inline void smem_buffer_add_wme( soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
 {
-	_smem_add_wme( my_agent, state, id, attr, value, true );
-}
+	my_list.push_back( new soar_module::symbol_triple( id, attr, value ) );
 
+	symbol_add_ref( id );
+	symbol_add_ref( attr );
+	symbol_add_ref( value );
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -1923,7 +1924,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id, Symbol *lti, bool activate_lti )
+void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id, Symbol *lti, bool activate_lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes )
 {
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->smem_timers->ncb_retrieval->start();
@@ -1955,7 +1956,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 	}
 
 	// point retrieved to lti
-	smem_add_meta_wme( my_agent, state, result_header, my_agent->smem_sym_retrieved, lti );
+	smem_buffer_add_wme( meta_wmes, result_header, my_agent->smem_sym_retrieved, lti );
 	if ( lti_created_here )
 	{
 		// if the identifier was created above we need to
@@ -1994,7 +1995,7 @@ void smem_install_memory( agent *my_agent, Symbol *state, smem_lti_id parent_id,
 			}
 
 			// add wme
-			smem_add_retrieved_wme( my_agent, state, lti, attr_sym, value_sym );
+			smem_buffer_add_wme( retrieval_wmes, lti, attr_sym, value_sym );
 
 			// deal with ref counts - attribute/values are always created in this function
 			// (thus an extra ref count is set before adding a wme)
@@ -2046,7 +2047,7 @@ inline soar_module::sqlite_statement* smem_setup_web_crawl(agent* my_agent, smem
 	return q;
 }
 
-smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti_set *prohibit, smem_query_levels query_level = qry_full )
+smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti_set *prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full )
 {	
 	smem_weighted_cue_list weighted_cue;	
 	bool good_cue = true;
@@ -2078,7 +2079,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 		{
 			w = (*cue_p);
 
-			state->id.smem_info->cue_wmes->insert( w );
+			cue_wmes.insert( w );
 
 			if ( good_cue )
 			{
@@ -2330,17 +2331,17 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 		if ( king_id != NIL )
 		{
 			// success!
-			smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_success, query );
+			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, query );
 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->smem_timers->query->stop();
 			////////////////////////////////////////////////////////////////////////////
 
-			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == soar_module::on ) );
+			smem_install_memory( my_agent, state, king_id, NIL, ( my_agent->smem_params->activate_on_query->get_value() == soar_module::on ), meta_wmes, retrieval_wmes );
 		}
 		else
 		{
-			smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_failure, query );
+			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, query );
 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->smem_timers->query->stop();
@@ -2396,8 +2397,6 @@ void smem_reset( agent *my_agent, Symbol *state )
 		data->last_cmd_time[1] = 0;
 		data->last_cmd_count[0] = 0;
 		data->last_cmd_count[1] = 0;
-
-		data->cue_wmes->clear();
 		
 		// this will be called after prefs from goal are already removed,
 		// so just clear out result stack
@@ -3223,6 +3222,10 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	smem_wme_list *cmds;
 	smem_wme_list::iterator w_p;
 
+	soar_module::symbol_triple_list meta_wmes;
+	soar_module::symbol_triple_list retrieval_wmes;
+	soar_module::wme_set cue_wmes;
+
 	Symbol *query;
 	Symbol *retrieve;
 	smem_sym_list prohibit;
@@ -3241,6 +3244,8 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 	int parent_level;
 	std::queue<int> levels;	
+
+	bool do_wm_phase = false;
 
 	while ( state != NULL )
 	{
@@ -3317,14 +3322,10 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 			if ( new_cue )
 			{
-				// clear old cue
-				state->id.smem_info->cue_wmes->clear();
-
 				// clear old results
 				smem_clear_result( my_agent, state );
 
-				// change is afoot!
-				my_agent->smem_made_changes = true;
+				do_wm_phase = true;
 			}
 		}		
 
@@ -3332,6 +3333,10 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		// and there is something on the cue
 		if ( new_cue && wme_count )
 		{
+			cue_wmes.clear();
+			meta_wmes.clear();
+			retrieval_wmes.clear();
+			
 			// initialize command vars
 			retrieve = NIL;
 			query = NIL;
@@ -3342,7 +3347,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			// process top-level symbols
 			for ( w_p=cmds->begin(); w_p!=cmds->end(); w_p++ )
 			{
-				state->id.smem_info->cue_wmes->insert( (*w_p) );
+				cue_wmes.insert( (*w_p) );
 
 				if ( path != cmd_bad )
 				{
@@ -3437,15 +3442,15 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 					if ( retrieve->id.smem_lti == NIL )
 					{
 						// retrieve is not pointing to an lti!
-						smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
+						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, retrieve );
 					}
 					else
 					{
 						// status: success
-						smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
+						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, retrieve );
 
 						// install memory directly onto the retrieve identifier
-						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true );
+						smem_install_memory( my_agent, state, retrieve->id.smem_lti, retrieve, true, meta_wmes, retrieval_wmes );
 
 						// add one to the expansions stat
 						my_agent->smem_stats->expansions->set_value( my_agent->smem_stats->expansions->get_value() + 1 );
@@ -3462,7 +3467,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						prohibit_lti.insert( (*sym_p)->id.smem_lti );
 					}
 
-					smem_process_query( my_agent, state, query, &( prohibit_lti ) );
+					smem_process_query( my_agent, state, query, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
 
 					// add one to the cbr stat
 					my_agent->smem_stats->cbr->set_value( my_agent->smem_stats->cbr->get_value() + 1 );
@@ -3486,7 +3491,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						smem_soar_store( my_agent, (*sym_p) );
 
 						// status: success
-						smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
+						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
 
 						// add one to the store stat
 						my_agent->smem_stats->stores->set_value( my_agent->smem_stats->stores->get_value() + 1 );
@@ -3505,8 +3510,45 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			}
 			else
 			{
-				smem_add_meta_wme( my_agent, state, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
+				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_bad_cmd, state->id.smem_cmd_header );
 			}
+
+			if ( !meta_wmes.empty() || !retrieval_wmes.empty() )
+			{
+				// process preference assertion en masse
+				smem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, retrieval_wmes );
+
+				// clear cache
+				{
+					soar_module::symbol_triple_list::iterator mw_it;
+
+					for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
+					{
+						symbol_remove_ref( my_agent, (*mw_it)->id );
+						symbol_remove_ref( my_agent, (*mw_it)->attr );
+						symbol_remove_ref( my_agent, (*mw_it)->value );
+						
+						delete (*mw_it);
+					}
+					retrieval_wmes.clear();
+
+					for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
+					{
+						symbol_remove_ref( my_agent, (*mw_it)->id );
+						symbol_remove_ref( my_agent, (*mw_it)->attr );
+						symbol_remove_ref( my_agent, (*mw_it)->value );
+						
+						delete (*mw_it);
+					}
+					meta_wmes.clear();
+				}
+
+				// process wm changes on this state
+				do_wm_phase = true;
+			}
+
+			// clear cue wmes
+			cue_wmes.clear();
 		}
 		else
 		{
@@ -3520,14 +3562,15 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 		state = state->id.higher_goal;
 	}
+
+	if ( do_wm_phase )
+	{
+		do_working_memory_phase( my_agent );
+	}
 }
 
 void smem_go( agent *my_agent, bool store_only )
-{
-	// after we are done we will perform a wm phase
-	// if any adds/removes
-	my_agent->smem_made_changes = false;
-	
+{	
 	my_agent->smem_timers->total->start();
 
 #ifndef SMEM_EXPERIMENT
@@ -3539,11 +3582,6 @@ void smem_go( agent *my_agent, bool store_only )
 #endif // SMEM_EXPERIMENT
 
 	my_agent->smem_timers->total->stop();
-
-	if ( my_agent->smem_made_changes )
-	{
-		do_working_memory_phase( my_agent );
-	}
 }
 
 

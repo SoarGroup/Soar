@@ -51,6 +51,8 @@
 #include "xml.h"
 #include "soar_TraceNames.h"
 
+#include "soar_module.h"
+
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
@@ -2150,7 +2152,6 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 
   remove_existing_context_and_descendents_rl(thisAgent, goal);
 
-  delete goal->id.epmem_info->cue_wmes;
   delete goal->id.epmem_info->epmem_wmes;
   symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );  
   symbol_remove_ref( thisAgent, goal->id.epmem_result_header );  
@@ -2158,7 +2159,6 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   free_memory( thisAgent, goal->id.epmem_info, MISCELLANEOUS_MEM_USAGE );
 
 
-  delete goal->id.smem_info->cue_wmes;
   delete goal->id.smem_info->smem_wmes;
   symbol_remove_ref( thisAgent, goal->id.smem_cmd_header );  
   symbol_remove_ref( thisAgent, goal->id.smem_result_header );  
@@ -2264,7 +2264,6 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.epmem_info->last_ol_time = 0;  
   id->id.epmem_info->last_cmd_time = 0;
   id->id.epmem_info->last_cmd_count = 0;
-  id->id.epmem_info->cue_wmes = new std::set<wme *>();
   
   id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;  
   id->id.epmem_info->epmem_wmes = new std::stack<preference *>();
@@ -2275,7 +2274,6 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.smem_info->last_cmd_time[1] = 0;
   id->id.smem_info->last_cmd_count[0] = 0;
   id->id.smem_info->last_cmd_count[1] = 0;
-  id->id.smem_info->cue_wmes = new std::set<wme *>();
   id->id.smem_info->smem_wmes = new std::stack<preference *>();
 
 
