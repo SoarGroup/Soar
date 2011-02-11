@@ -3232,7 +3232,7 @@ void epmem_shared_increment( epmem_shared_query_list *queries, epmem_time_id &id
 // Graph Match
 //////////////////////////////////////////////////////////
 
-bool _epmem_gm_compare_mcv( epmem_shared_literal_pair_pair& a, epmem_shared_literal_pair_pair& b )
+bool _epmem_gm_compare_mcv( const epmem_shared_literal_pair_pair& a, const epmem_shared_literal_pair_pair& b )
 {
 	return ( a.second->size() < b.second->size() );
 }
