@@ -207,6 +207,17 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	opt->add_mapping( opt_safety, "safety" );
 	opt->add_mapping( opt_speed, "performance" );	
 	add( opt );
+
+
+	////////////////////
+	// Experimental
+	////////////////////
+
+	gm_ordering = new soar_module::constant_param<gm_ordering_choices>( "graph_match_ordering", gm_order_undefined, new soar_module::f_predicate<gm_ordering_choices>() );
+	gm_ordering->add_mapping( gm_order_undefined, "undefined" );
+	gm_ordering->add_mapping( gm_order_dfs, "dfs" );
+	gm_ordering->add_mapping( gm_order_mcv, "mcv" );
+	add( gm_ordering );
 }
 
 //
@@ -3221,6 +3232,33 @@ void epmem_shared_increment( epmem_shared_query_list *queries, epmem_time_id &id
 // Graph Match
 //////////////////////////////////////////////////////////
 
+bool _epmem_gm_compare_mcv( epmem_shared_literal_pair_pair& a, epmem_shared_literal_pair_pair& b )
+{
+	return ( a.second->size() < b.second->size() );
+}
+
+void _epmem_gm_sort_wmes_dfs( Symbol* id, tc_number tc, std::list< wme* >& ordered_wmes )
+{
+	slot* s;
+	wme* w;
+	Symbol* val;
+
+	for ( s=id->id.slots; s; s=s->next ) 
+	{
+		for ( w=s->wmes; w; w=w->next ) 
+		{
+			ordered_wmes.push_back( w );
+			val = w->value;
+
+			if ( ( val->var.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( val->id.tc_num != tc ) )
+			{
+				val->id.tc_num = tc;
+				_epmem_gm_sort_wmes_dfs( val, tc, ordered_wmes );
+			}
+		}
+	}
+}
+
 // finds a shared id for a symbol in a symbol->shared id map, or returns constant
 inline epmem_node_id epmem_gm_find_assignment( Symbol* needle, epmem_gm_assignment_map* haystack )
 {
@@ -3363,7 +3401,7 @@ inline bool epmem_gm_pair_satisfied( epmem_shared_literal_pair* pair, epmem_gm_a
 // a wme is satisfied if:
 // - it is the end of the list of wmes OR
 // - a pair in the WME is satisfied AND the rest of the list is satisfied
-bool epmem_gm_wme_satisfied( epmem_shared_literal_pair_map::iterator wme_p, epmem_shared_literal_pair_map::iterator end_wme_p, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
+bool epmem_gm_wme_satisfied( epmem_shared_literal_pair_pair_vector::iterator wme_p, epmem_shared_literal_pair_pair_vector::iterator end_wme_p, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
 {
 	bool return_val = false;
 
@@ -3376,7 +3414,7 @@ bool epmem_gm_wme_satisfied( epmem_shared_literal_pair_map::iterator wme_p, epme
 		epmem_shared_literal_pair_list* pairs = wme_p->second;
 		epmem_shared_literal_pair_list::iterator pair_p = pairs->begin();
 
-		epmem_shared_literal_pair_map::iterator next_wme_p = wme_p;
+		epmem_shared_literal_pair_pair_vector::iterator next_wme_p = wme_p;
 		next_wme_p++;
 
 		// the pair call can modify these
@@ -3422,7 +3460,7 @@ bool epmem_gm_wme_satisfied( epmem_shared_literal_pair_map::iterator wme_p, epme
 
 // graph match is achieved if we can develop a set of assignments/constraints
 // that satisfies the entire list of wmes
-bool epmem_graph_match( epmem_shared_literal_pair_map* pairs, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
+inline bool epmem_graph_match( epmem_shared_literal_pair_pair_vector* pairs, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
 {
 	return epmem_gm_wme_satisfied( pairs->begin(), pairs->end(), id_assignments, used_ids, sym_constraints );
 }
@@ -3507,11 +3545,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_shared_literal_pair_list pairs;						
 
 			// graph match
-			const int64_t graph_match = my_agent->epmem_params->graph_match->get_value();			
+			bool graph_match = ( my_agent->epmem_params->graph_match->get_value() ==  soar_module::on );
 			epmem_shared_literal_pair_map* gm_pairs = NULL;
-			if ( graph_match != soar_module::off )
+			epmem_shared_literal_pair_pair_vector* gm_ordered = NULL;
+			if ( graph_match )
 			{
 				gm_pairs = new epmem_shared_literal_pair_map;
+				gm_ordered = new epmem_shared_literal_pair_pair_vector;
 			}
 
 			uint64_t leaf_ids[2] = { 0, 0 };
@@ -4119,7 +4159,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 					if ( i == EPMEM_NODE_POS )
 					{
-						if ( graph_match != soar_module::off )
+						if ( graph_match )
 						{
 							epmem_shared_literal_pair_list::iterator pairs_p;
 							epmem_shared_literal_pair_list** new_pair_list;
@@ -4293,7 +4333,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								xml_generate_warning( my_agent, buf );
 							}
 
-							if ( graph_match != soar_module::off )
+							if ( graph_match )
 							{
 								// policy:
 								// - king candidate MUST have AT LEAST king score
@@ -4302,7 +4342,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 								if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
 								{
-									if ( sum_ct == (int64_t) perfect_match )
+									if ( sum_ct == static_cast<int64_t>( perfect_match ) )
 									{
 										current_assignments.clear();
 										current_assignments.insert( std::make_pair( query, EPMEM_NODEID_ROOT ) );
@@ -4316,7 +4356,43 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										my_agent->epmem_timers->query_graph_match->start();
 										////////////////////////////////////////////////////////////////////////////
 
-										graph_match_result = epmem_graph_match( gm_pairs, &( current_assignments ), &( current_used_ids ), &( current_sym_constraints ) );
+										if ( gm_ordered->size() != gm_pairs->size() )
+										{
+											epmem_param_container::gm_ordering_choices gm_ordering = my_agent->epmem_params->gm_ordering->get_value();
+											epmem_shared_literal_pair_map::iterator it;
+											
+											if ( ( gm_ordering == epmem_param_container::gm_order_undefined ) ||
+												 ( gm_ordering == epmem_param_container::gm_order_mcv ) )
+											{
+												for ( it=gm_pairs->begin(); it!=gm_pairs->end(); it++ )
+												{
+													gm_ordered->push_back( (*it) );
+												}
+
+												if ( gm_ordering == epmem_param_container::gm_order_mcv )
+												{
+													std::sort( gm_ordered->begin(), gm_ordered->end(), _epmem_gm_compare_mcv );
+												}
+											}
+											else if ( gm_ordering == epmem_param_container::gm_order_dfs )
+											{
+												// sort wmes
+												std::list< wme* > ordered_cue;
+												_epmem_gm_sort_wmes_dfs( query, get_new_tc_number( my_agent ), ordered_cue );
+
+												// add the pairs in order
+												epmem_shared_literal_pair_map::iterator pair_it;
+												for ( std::list< wme* >::iterator oc_it=ordered_cue.begin(); oc_it!=ordered_cue.end(); oc_it++ )
+												{
+													pair_it = gm_pairs->find( (*oc_it) );
+													assert( pair_it != gm_pairs->end() );
+
+													gm_ordered->push_back( (*pair_it) );
+												}
+											}
+										}
+
+										graph_match_result = epmem_graph_match( gm_ordered, &( current_assignments ), &( current_used_ids ), &( current_sym_constraints ) );
 
 										////////////////////////////////////////////////////////////////////////////
 										my_agent->epmem_timers->query_graph_match->stop();
@@ -4503,7 +4579,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				delete [] queries;
 
 				// graph match
-				if ( graph_match != soar_module::off )
+				if ( graph_match )
 				{
 					for ( epmem_shared_literal_pair_map::iterator gm_p=gm_pairs->begin(); gm_p!=gm_pairs->end(); gm_p++ )
 					{
@@ -4512,6 +4588,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 					}
 					gm_pairs->clear();
 					delete gm_pairs;
+
+					delete gm_ordered;
 				}
 			}
 
@@ -4554,7 +4632,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				symbol_remove_ref( my_agent, my_meta );
 
 				// graph match
-				if ( graph_match == soar_module::on )
+				if ( graph_match )
 				{
 					// graph-match 0/1
 					my_meta = make_int_constant( my_agent, ( ( king_graph_match )?(1):(0) ) );
