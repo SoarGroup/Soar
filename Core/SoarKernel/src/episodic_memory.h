@@ -106,6 +106,9 @@ class epmem_param_container: public soar_module::param_container
 		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
 		enum opt_choices { opt_safety, opt_speed };
 
+		// experimental
+		enum gm_ordering_choices { gm_order_undefined, gm_order_dfs, gm_order_mcv };
+
 		////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////
 
@@ -131,6 +134,9 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::integer_param *cache_size;
 		soar_module::constant_param<opt_choices> *opt;
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
+
+		// experimental
+		soar_module::constant_param<gm_ordering_choices>* gm_ordering;
 
 		epmem_param_container( agent *new_agent );
 };
@@ -527,6 +533,8 @@ typedef struct epmem_shared_incoming_book_struct
 //
 
 typedef std::map< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_map;
+typedef std::pair< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_pair;
+typedef std::vector< epmem_shared_literal_pair_pair > epmem_shared_literal_pair_pair_vector;
 
 typedef std::map< Symbol*, epmem_node_id > epmem_gm_assignment_map;
 typedef std::map< Symbol*, epmem_shared_literal_set > epmem_gm_sym_constraints;
