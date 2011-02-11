@@ -319,6 +319,19 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         delete temp2;
         if ( m_RawOutput )
         {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "merge: ";
+		temp2 = agnt->epmem_params->merge->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
             m_Result << temp << "\n\n";
         }
         else
