@@ -218,6 +218,12 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	gm_ordering->add_mapping( gm_order_dfs, "dfs" );
 	gm_ordering->add_mapping( gm_order_mcv, "mcv" );
 	add( gm_ordering );
+
+	// merge
+	merge = new soar_module::constant_param<merge_choices>( "merge", merge_none, new soar_module::f_predicate<merge_choices>() );
+	merge->add_mapping( merge_none, "none" );
+	merge->add_mapping( merge_add, "add" );
+	add( merge );
 }
 
 //
@@ -2641,7 +2647,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 		// shared identifier lookup table
 		std::map< epmem_node_id, std::pair< Symbol*, bool > > ids;
-		bool dont_abide_by_ids_second = ( my_agent->smem_params->merge->get_value() == smem_param_container::merge_add );
+		bool dont_abide_by_ids_second = ( my_agent->epmem_params->merge->get_value() == epmem_param_container::merge_add );
 
 		// symbols used to create WMEs		
 		Symbol *attr = NULL;

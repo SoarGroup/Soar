@@ -108,6 +108,7 @@ class epmem_param_container: public soar_module::param_container
 
 		// experimental
 		enum gm_ordering_choices { gm_order_undefined, gm_order_dfs, gm_order_mcv };
+		enum merge_choices { merge_none, merge_add };
 
 		////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////
@@ -137,6 +138,7 @@ class epmem_param_container: public soar_module::param_container
 
 		// experimental
 		soar_module::constant_param<gm_ordering_choices>* gm_ordering;
+		soar_module::constant_param<merge_choices>* merge;
 
 		epmem_param_container( agent *new_agent );
 };
