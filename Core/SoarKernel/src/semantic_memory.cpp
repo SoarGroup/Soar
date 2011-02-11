@@ -645,6 +645,11 @@ inline bool smem_symbol_is_constant( Symbol *sym )
 
 inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, bool meta )
 {
+	if ( my_list.empty() )
+	{
+		return;
+	}
+	
 	instantiation* inst = soar_module::make_fake_instantiation( my_agent, state, &cue_wmes, &my_list );
 
 	for ( preference* pref=inst->preferences_generated; pref; pref=pref->inst_next )
