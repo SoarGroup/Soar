@@ -64,6 +64,7 @@ class MiscTest : public CPPUNIT_NS::TestCase
     CPPUNIT_TEST( testSourceWaterJugTie );
 
     CPPUNIT_TEST( testSoarRand );
+    CPPUNIT_TEST( testPreferenceDeallocation );
 
     CPPUNIT_TEST_SUITE_END();
 
@@ -117,6 +118,7 @@ protected:
     void testSourceWaterJugTie();
 
     void testSoarRand();
+    void testPreferenceDeallocation();
 
     bool loadDemo(std::string demo);
 
@@ -601,3 +603,19 @@ void MiscTest::testSoarRand()
     double off = (accum - halftrials) / halftrials;
     CPPUNIT_ASSERT(off < 0.001);
 }
+
+void MiscTest::testPreferenceDeallocation()
+{
+    std::stringstream productionsPath;
+    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Tests/testPreferenceDeallocation.soar";
+
+    pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+    CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
+
+    pAgent->ExecuteCommandLine("run 10");
+
+    sml::ClientAnalyzedXML response;
+    pAgent->ExecuteCommandLineXML("stats", &response);
+    CPPUNIT_ASSERT(response.GetArgInt(sml::sml_Names::kParamStatsCycleCountDecision, -1) == 6);
+}
+
