@@ -291,7 +291,40 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         else
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+        }
+
+		temp = "Experimental";
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+        temp = "------------";
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "graph_match_ordering: ";
+		temp2 = agnt->epmem_params->gm_ordering->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
 
         return true;
