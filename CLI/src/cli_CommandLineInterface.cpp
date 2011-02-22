@@ -395,7 +395,7 @@ void CommandLineInterface::PrependArgTagFast(const char* pParam, const char* pTy
 bool CommandLineInterface::SetError(const std::string& error) 
 {
     if (!m_Result.str().empty())
-        if (m_Result.str().at(m_Result.str().length() - 1 != '\n'))
+        if (m_Result.str().at(m_Result.str().length() - 1) != '\n')
             m_Result << std::endl;
     m_Result << error;
     m_LastError = error;
