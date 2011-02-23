@@ -361,6 +361,11 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 			for ( wme_p=my_o_set->begin(); wme_p!=my_o_set->end(); wme_p++ )
 			{
 				wme_add_ref( (*wme_p) );
+
+				if ( (*wme_p)->preference && (*wme_p)->preference->reference_count )
+				{
+					preference_add_ref( (*wme_p)->preference );
+				}
 			}
 		}	
 
@@ -433,6 +438,11 @@ void wma_remove_pref_o_set( agent* my_agent, preference* pref )
 		
 		for ( wma_wme_set::iterator p=victim->begin(); p!=victim->end(); p++ )
 		{
+			if ( (*p)->preference && (*p)->preference->reference_count )
+			{
+				preference_remove_ref( my_agent, (*p)->preference );
+			}
+			
 			wme_remove_ref( my_agent, (*p) );
 		}
 
