@@ -111,7 +111,7 @@ slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr)
    s->acceptable_preference_wmes = NIL;
    s->marked_for_possible_removal = FALSE;
 
-   s->wma_num_references = 0;
+   s->wma_val_references = NIL;
 
    return s;  
 }
@@ -134,11 +134,7 @@ void mark_slot_as_changed (agent* thisAgent, slot *s) {
       dc->item = s;
       s->changed = dc;
 
-	  s->wma_num_references = 1;
-
       insert_at_head_of_dll (thisAgent->changed_slots, dc, next, prev);
-	} else {
-	  s->wma_num_references++;
 	}
   }
 }
@@ -192,6 +188,11 @@ void remove_garbage_slots (agent* thisAgent) {
     remove_from_dll (s->id->id.slots, s, next, prev);
     symbol_remove_ref (thisAgent, s->id);
     symbol_remove_ref (thisAgent, s->attr);
+	if ( s->wma_val_references != NIL )
+	{
+	  delete s->wma_val_references;
+	  s->wma_val_references = NIL;
+	}
     free_with_pool (&thisAgent->slot_pool, s);
   }
 }
