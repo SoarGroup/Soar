@@ -1776,7 +1776,17 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 
 				if ( wma_enabled( thisAgent ) )
 				{
-					wma_activate_wme( thisAgent, w, s->wma_num_references );
+					std::map< Symbol*, uint64_t >::iterator it = s->wma_val_references->find( w->value );
+					assert( it != s->wma_val_references->end() );
+
+					wma_activate_wme( thisAgent, w, it->second );
+
+					s->wma_val_references->erase( it );
+					if ( s->wma_val_references->empty() )
+					{
+						delete s->wma_val_references;
+						s->wma_val_references = NIL;
+					}
 				}
 
 				/* REW: begin 09.15.96 */
