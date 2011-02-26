@@ -309,10 +309,12 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 
 void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wma_wme_set* o_set )
 {	
+	// o-supported, non-architectural WME
 	if ( wma_should_have_decay_element( w ) )
 	{
 		wma_decay_element* temp_el = w->wma_decay_el;
 
+		// if decay structure doesn't exist, create it
 		if ( !temp_el )
 		{
 			allocate_with_pool( my_agent, &( my_agent->wma_decay_element_pool ), &temp_el );		
@@ -329,22 +331,25 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 			w->wma_decay_el = temp_el;
 		}
 
+		// add to o_set if necessary
 		if ( o_set )
 		{
 			o_set->insert( w );
 		}
+		// otherwise update the decay element
 		else
 		{
 			temp_el->num_references += num_references;
 			my_agent->wma_touched_elements->insert( w );
 		}
 	}
-	// i-supported WME
+	// i-supported, non-architectural WME
 	else if ( ( w->preference ) && ( w->preference->reference_count ) )
 	{		
 		wma_wme_set* my_o_set = w->preference->wma_o_set;
 		wma_wme_set::iterator wme_p;
 
+		// if doesn't have an o_set, populate
 		if ( !my_o_set )
 		{
 			my_o_set = new wma_wme_set;
@@ -360,30 +365,36 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 
 			for ( wme_p=my_o_set->begin(); wme_p!=my_o_set->end(); wme_p++ )
 			{
+				// add a ref to wmes on this list
 				wme_add_ref( (*wme_p) );
-
-				if ( (*wme_p)->preference && (*wme_p)->preference->reference_count )
-				{
-					preference_add_ref( (*wme_p)->preference );
-				}
 			}
 		}	
 
+		// iterate over the o_set
 		for ( wme_p=my_o_set->begin(); wme_p!=my_o_set->end(); wme_p++ )
 		{
+			// if populating o_set, add
 			if ( o_set )
 			{
 				o_set->insert( (*wme_p) );
 			}
+			// otherwise, "activate" the wme if it is
+			// non-architectural (avoids dereferencing
+			// the wme preference)
 			else
-			{				
-				wma_activate_wme( my_agent, (*wme_p), num_references );
+			{
+				if ( (*wme_p)->wma_decay_el )
+				{
+					(*wme_p)->wma_decay_el->num_references += num_references;
+					my_agent->wma_touched_elements->insert( (*wme_p) );
+				}
 			}
 		}
 	}
 	// architectural
 	else if ( !w->preference )
 	{
+		// only action is to add it to the o_set
 		if ( o_set )
 		{
 			o_set->insert( w );
@@ -438,11 +449,6 @@ void wma_remove_pref_o_set( agent* my_agent, preference* pref )
 		
 		for ( wma_wme_set::iterator p=victim->begin(); p!=victim->end(); p++ )
 		{
-			if ( (*p)->preference && (*p)->preference->reference_count )
-			{
-				preference_remove_ref( my_agent, (*p)->preference );
-			}
-			
 			wme_remove_ref( my_agent, (*p) );
 		}
 
