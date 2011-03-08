@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
-#
+
 import os
 import sys
 import platform
@@ -9,6 +9,90 @@ import socket
 import subprocess
 import re
 
+def execute(cmd):
+	try:
+		p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+	except OSError:
+		print cmd[0], ' not in path'
+		Exit(1)
+
+	out = p.communicate()[0]
+	if p.returncode != 0:
+		print 'error executing ', cmd
+		Exit(1)
+	else:
+		return out
+	
+def gcc_version(cc):
+	for f in execute([cc, '--version']).split():
+		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
+		if m:
+			return tuple(int(n) for n in m.groups())
+	
+	print 'cannot identify compiler version'
+	Exit(1)
+
+def Mac_m64_Capable():
+	return execute('sysctl -n hw.optional.x86_64'.split()).strip() == '1'
+
+#################
+# Fun Java Stuff
+# TODO: Clean doesn't work quite right with jars
+# theComponent: the top level folder name, just as JavaTOH
+# theTargets: target jar name (or list of names) with -version.extension removed, makes .jar and .src.jar
+# theSources: source folder (or list of folders) relative to component folder (such as 'src')
+def javaRunAnt(theComponent, theTargets, theSources):
+	if env['STATIC_LINKED']:
+		print "Skipping Java component", theComponent
+		return
+
+	theDir = env.Dir('#../%s/' % theComponent)
+
+	sharejava = env['PREFIX'] + '/share/java'
+	javaSources = [sharejava + '/sml.jar']
+	if type(theSources) == str:
+		theSources = [theSources]
+	for s in theSources:
+		for root, dirs, files in os.walk(os.path.join(str(theDir), s)):
+			if ".svn" in dirs:
+				dirs.remove(".svn")
+			for f in files:
+				javaSources.append(env.File(os.path.join(root, f)))
+
+	javaSources.append(env.File(os.path.join(str(theDir), "build.xml")))
+
+	ver = env['SOAR_VERSION']
+	jarTargets = []
+	if type(theTargets) == str:
+		theTargets = [theTargets]
+	for i in theTargets:
+		targetRoot = sharejava + '/' + i + '-' + ver
+		jarTargets.append(targetRoot + '.jar')
+		jarTargets.append(targetRoot + '.src.jar')
+
+	ret = env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$PREFIX -Dversion=%s' % ver, chdir = theDir)
+
+	if GetOption('clean'):
+		env.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + env['SOAR_VERSION'], chdir = theDir)
+	return ret
+	
+#################
+# Verify swig if enabled
+def CheckSWIG():
+	for f in execute(['swig', '-version']).split():
+		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
+		if m:
+			ver = tuple(int(n) for n in m.groups())
+			minver = (1, 3, 31)
+			if ver < minver:
+				print 'swig version 1.3.31 or higher is required'
+				Exit(1)
+			else:
+				return
+				
+	print 'cannot determine swig version'
+	Exit(1)
+	
 SOAR_VERSION = "9.3.1"
 
 # host:                  winter,           seagull,          macsoar,       fugu,
@@ -29,23 +113,10 @@ if platform.machine() not in ['x86_64', 'i686', 'i386', ]:
 
 #################
 # Option defaults 
-def Mac_m64_Capable():
-        proc = subprocess.Popen('sysctl -n hw.optional.x86_64', shell=True, stdout=subprocess.PIPE,)
-        stdout_value = proc.communicate()[0]
-        if proc.returncode != 0:
-                return False
-        if stdout_value.strip() == '1':
-                return True
-        return False
 
 m64_default = '32'
-if sys.platform == 'linux2':
-	if platform.machine() == 'x86_64':
-		m64_default = '64'
-elif sys.platform == 'darwin':
-	if platform.machine() == 'i386':
-		if Mac_m64_Capable():
-			m64_default = '64'
+if platform.machine() == 'x86_64' or (sys.platform == 'darwin' and Mac_m64_Capable()):
+	m64_default = '64'
 
 default_prefix = os.path.join('..','out')
 if os.environ.has_key('SOAR_HOME'):
@@ -110,23 +181,7 @@ env = Environment(
 	)
 #################
 
-
-#################
-# Get g++ Version
-def gcc_version():
-	proc = subprocess.Popen(env['CXX'] + ' --version ', shell=True, stdout=subprocess.PIPE)
-	proc.wait()
-	version_line = proc.stdout.readline().rsplit('\n', 1)[0]
-	for possible_vs in version_line.split(' '):
-		possible_svs = possible_vs.split('.')
-		try:
-			if len(possible_svs) is 3 and str(int(possible_svs[0])) and str(int(possible_svs[1])) and str(int(possible_svs[2])):
-				split_version_string = possible_svs
-				break
-		except ValueError:
-			continue
-	return [int(split_version_string[0]), int(split_version_string[1]), int(split_version_string[2])]
-gcc = gcc_version()
+gcc = gcc_version(env['CXX'])
 Export('gcc')
 #################
 
@@ -136,25 +191,25 @@ Export('gcc')
 conf = Configure(env)
 # check if the compiler supports -fvisibility=hidden (GCC >= 4)
 if gcc[0] > 3:
-	print "Checking for visiblity=hidden...",
 	lastCPPFLAGS = env['CPPFLAGS']
 	env.Append(CPPFLAGS = ['-fvisibility=hidden'])
 	if conf.TryCompile("char foo;", '.c'):
-		print "yes"
 		env['VISHIDDEN'] = True # needed by swig
 	else:
-		print "no"
 		env['VISHIDDEN'] = False
 		env.Replace(CPPFLAGS = lastCPPFLAGS)
 
 # check for required libraries
 if not conf.CheckLib('dl'):
+	print 'cannot locate libdl'
 	Exit(1)
 	
 if not conf.CheckLib('m'):
+	print 'cannot locate libm'
 	Exit(1)
 
 if not conf.CheckLib('pthread'):
+	print 'cannot locate libpthread'
 	Exit(1)
 		
 # Check for optional libraries
@@ -193,9 +248,6 @@ if GetOption('build-verbose'):
 	env.Append(LINKFLAGS = ['-v'])
 
 if GetOption('platform') == '64':
-	print "*"
-	print "* Note: Targeting x86_64 (64-bit native)"
-	print "*"
 	env.Append(CPPFLAGS = Split('-m64 -fPIC'))
 	env.Append(LINKFLAGS = ['-m64'])
 elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1 and sys.platform not in [ 'darwin', ]:
@@ -221,49 +273,6 @@ Export('env')
 #################
 
 
-#################
-# Fun Java Stuff
-# TODO: Clean doesn't work quite right with jars
-# theComponent: the top level folder name, just as JavaTOH
-# theTargets: target jar name (or list of names) with -version.extension removed, makes .jar and .src.jar
-# theSources: source folder (or list of folders) relative to component folder (such as 'src')
-def javaRunAnt(theComponent, theTargets, theSources):
-	if env['STATIC_LINKED']:
-		print "Skipping Java component", theComponent
-		return
-
-	theDir = env.Dir('#../%s/' % theComponent)
-
-	sharejava = env['PREFIX'] + '/share/java'
-	javaSources = [sharejava + '/sml.jar']
-	if type(theSources) == str:
-		theSources = [theSources]
-	for s in theSources:
-		#print "walking:", os.path.join(str(theDir), s)
-		for root, dirs, files in os.walk(os.path.join(str(theDir), s)):
-			if ".svn" in dirs:
-				dirs.remove(".svn")
-			for f in files:
-				#print "java dep:", os.path.join(root, f)
-				javaSources.append(env.File(os.path.join(root, f)))
-
-	javaSources.append(env.File(os.path.join(str(theDir), "build.xml")))
-
-	ver = env['SOAR_VERSION']
-	jarTargets = []
-	if type(theTargets) == str:
-		theTargets = [theTargets]
-	for i in theTargets:
-		targetRoot = sharejava + '/' + i + '-' + ver
-		jarTargets.append(targetRoot + '.jar')
-		jarTargets.append(targetRoot + '.src.jar')
-
-	#print "-->", theComponent, jarTargets, javaSources
-	ret = env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$PREFIX -Dversion=%s' % ver, chdir = theDir)
-
-	if GetOption('clean'):
-		env.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + env['SOAR_VERSION'], chdir = theDir)
-	return ret
 Export('javaRunAnt')
 #################
 
@@ -289,7 +298,6 @@ def InstallDir(comp, target, source, globstring="*"):
 		# sourceglob is all files in sub directory
 		sourceglob = os.path.join(root, globstring)
 
-		#print "install '%s' to '%s'" % (sourceglob, targetsub)
 		env.Install(targetsub, env.Glob(sourceglob))
 		for f in env.Glob(sourceglob, strings = True):
 			(head, tail) = os.path.split(f)
@@ -301,7 +309,7 @@ Export('InstallDir')
 #################
 # Auto detect components
 components = []
-print "Detected components: ",
+print 'Detected components:',
 for root, dirs, files in os.walk('..'):
 	if root != '..':
 		del dirs[:]
@@ -310,7 +318,7 @@ for root, dirs, files in os.walk('..'):
 	if 'SConscript' in files:
 		component = root[3:]
 		components.append(component)
-		print component, 
+		print component,
 print
 
 if 'Tcl' in components:
@@ -337,31 +345,9 @@ if sys.platform == 'darwin':
 		if 'Python' in components:
 			print "* Warning: 64-bit python binaries may not be available on your system."
 			print "* You may need to rebuild with m64=no to use Python Soar bindings."
-#################
 
-
-#################
-# Verify swig if enabled
-def CheckSWIG(context):
-	"""Checks to make sure we're using a compatible version of SWIG"""
-	for line in os.popen("swig -version").readlines():
-		m = re.search(r"SWIG Version ([0-9]+)\.([0-9]+)\.([0-9]+)", line)
-		if m:
-			ver = (int(m.group(1)), int(m.group(2)), int(m.group(3)))
-			minver = (1, 3, 31)
-			ret = 1
-			status = 'ok'
-			if ver < minver:
-				ret = 0
-				status = 'incompatible'
-			print "Found SWIG version %d.%d.%d... %s" % (ver + (status,))
-			return ret
-	print "Didn't find SWIG, make sure SWIG is in the path and rebuild."
-	return 0
-if swig and not CheckSWIG(conf.env):
-	Exit(1)
-#################
-
+if swig:
+	CheckSWIG()
 
 #################
 # Build core modules
@@ -389,7 +375,7 @@ print "Building intermediates to directory ", env['BUILD_DIR']
 print "Installing targets to prefix directory ", env['PREFIX']
 
 for d in subdirs:
-	script = '#%s/SConscript' % d
+	script = '#%s/SConscript' %d
 	print "Processing", script + "..."
 	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
@@ -400,7 +386,7 @@ compEnv = env.Clone()
 compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
 libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
 if compEnv['STATIC_LINKED']:
-        libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
+	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
 compEnv.Append(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
 Export('compEnv')
 
