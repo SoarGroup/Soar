@@ -25,7 +25,7 @@ sed 's|^\(#define NO_TIMING_STUFF\)|//\1|g
      s|^\(#define DETAILED_TIMING_STATS\)|//\1|g' Core/SoarKernel/src/kernel.h >tmp
 mv tmp Core/SoarKernel/src/kernel.h
 
-if !(cd Core; scons $sconsopts)
+if !(cd Core; scons --clean; scons $sconsopts)
 then
 	echo build failed
 	exit 1
@@ -41,6 +41,7 @@ cp Release/*.txt "$reldir"
 cp Release/$os/* "$reldir"
 rm "$reldir"/share/java/*.src.jar
 rm "$reldir"/share/soar/Documentation/*.doc*
+find "$reldir" -type f -print0 | xargs -0 dos2unix
 
 echo release is in $reldir
 echo don\'t forget to copy the manual pdfs into $reldir/share/soar/Documentation

@@ -1,5 +1,5 @@
-Soar 9.3.1 Release Notes, January, 2011
-=======================================
+Soar 9.3.1 Release Notes, March, 2011
+=====================================
 
 This release of Soar continues the 9.3 line which includes modules for
 reinforcement learning (RL), episodic memory (EpMem), and semantic
@@ -103,108 +103,142 @@ information:
 
 [Python]
 
-The included Python libraries support Python 2.6. Your installed Python
-architecture (32- or 64-bit) must be the same as the binaries you
-download.
+The included Python libraries support Python versions 2.6 and 2.7.
+Your installed Python architecture (32- or 64-bit) must be the same as
+the binaries you download.
 
-Changes for 9.3.1
-=================
+DETAILED CHANGELIST
+===================
 
-Fixed issue 70: Weird printing for strings that look like identifiers
+Bugfixes
+--------
 
-Fixed GDS trace output, reports state number instead of internal level.
+Issue 65: chunks being built despite justifications in backtrace when
+creating result on super-superstate.
 
-Fixed a bug when trying to connect to a remote kernel via process number
-that overflows a short.
+Issue 70: Weird printing for strings that look like identifiers
 
-Visual Studio 2010 migration started, not officially supported yet.
+Issue 75: Incorrect id printed in GDS removal messages
+
+Issue 77: Lots of duplicate code in sml_KernelHelpers.cpp
+
+Issue 79: Print command now works as documented.
+
+GDS trace output now reports state number instead of internal level.
+
+Connecting to a remote kernel via process number overflows a short.
 
 Major performance fix in semantic memory when validating long-term
 identifiers on rules with lots of actions.
 
-New liar's dice probability calculator added to Dice project.
-
-New features and fixes in SMLJava library.
-
-Code cleanup and maintenance fixes throughout the code. Fixed issue 77:
-Lots of duplicate code in sml_KernelHelpers.cpp
-
-Fixed issue 75: Incorrect id printed in GDS removal messages
-
-Fixed issue 79: print command issues. Print command now works as
-documented. It's pretty broken in 9.3.0.
-
-Added (yet another) flag to the watch command (-g, --gds) for watching
-only GDS messages. These messages were lumped in to wm-changes before.
-
 vsnprintf_with_symbols was not null-terminating strings converted from
-ids causing overruns. Fixed.
-
-Kernel production struct's field for filename is now filled out
-correctly, easing debugging and troubleshooting. The filename is
-reported when inspected with the print command.
-
-Experimental JMX API interface added for debugger for Soar IDE
-integration. Not officially supported.
-
-smem database schema changed breaking backwards compatibility but for
-good reasons detailed in r12070.
-
-Support for swig 2 added.
+ids causing overruns.
 
 Client SML identifier symbol bug fixed that was causing crashes
 (r12087).
 
-SoarQnA bug fixes and updates.
+Crash caused by disabling output link change tracking.
 
-Fixed a crash caused by disabling output link change tracking. The order
-that wmes were getting deleted was depending on them being sorted on
-that list.
+Memory leak caused during chunking (r12151).
 
-Fixed a memory leak caused during chunking (r12151).
+GDS issue where multiple references to removed states weren't all
+getting cleared.
 
-New, experimental merge parameter added to smem allowing modification of
-long-term identifiers in working memory.
+Segfault when storing a wme in epmem whose value was an identifier and
+id a long-term identifier that had never been stored in epmem.
 
-Fixed error in GDS where multiple references to removed states weren't
-all getting cleared.
+Segfault that would occur when a wme is added and removed in the same
+phase
 
-Fixed issue 65: chunks being built despite justifications in backtrace
-when creating result on super-superstate. 
+Major bugfix in interaction between epmem and smem.  (r12411)
 
-Moved to 64-bit integers in many data structures.
+WMA bug wherein preferences in an i-supported wme's cached o-set were
+getting deallocated.
 
-Build procedure cleanup, some stuff wasn't getting built or cleaned
-correctly. Some issues still exist but can be worked around by make
-clean && make.
+Code cleanup and maintenance fixes throughout the code.
 
-Jars all target Java 1.5 for better compatibility.
 
-stlsoft utility headers updated to 1.9.101
+Episodic & Semantic Memory Changes
+----------------------------------
+
+Semantic and episodic memory retrievals can now produce chunks as
+opposed to only justifications.
+
+Various experimental activation behaviors added to semantic memory.
+Activation is now represented as a real number.  As a result, the
+database schema was changed, breaking backwards compatibility.  A
+frequency-based activation mode is introduced.
+
+An experimental merge parameter added to semantic and episodic
+memories allowing modification of long-term identifiers in working
+memory.
+
+An experimental parameter added to episodic memory that controls how
+cue wmes are ordered during graph matching.
+
+
+Command Line Interface Changes
+------------------------------
+
+-g/--gds flag added to the watch command for watching only GDS
+messages.
+
+Printing productions with print command now displays name of file
+production was sourced from.
 
 It is now possible to disable per-cycle stat tracking.
 
-Updated headers from msinttypes.googlecode.com
-
-Output-link change tracking is now disabled by default until the
-output-link identifier is requested--unless the user specifically
-enables it.
-
-GDS stats added to stats xml output.
-
-Lots of changes to stats reporting especially with respect to timers and
-time per decision cycle. Precision increased in many places.
-Configurable at runtime using timers command.
-
-New -d flag to stat returns the current decision count.
-
-Inequality comparisons on string constants and identifiers are now
-evaluated lexically rather than always returning false.
-
-Many more tests added, specifically regarding the command line interface
-changes.
+-d flag added to stat which makes it print only the current decision
+count.
 
 The TestCLI program has been rewritten, is much cleaner and a good
 example of a lightweight debugger.
 
-sqlite upgraded to version 3.7.4
+Added check to prevent crash when disconnecting Java debugger from
+remote Soar when not connected.
+
+Added new max-dc-time command to interrupt kernel execution after a
+long decision cycle.
+
+
+New SML Applications
+--------------------
+
+RLCLI: a simple debugger for RL experiments.
+
+SoarQNA: facilitates agent access to external knowledge stores via the
+IO system.
+
+Liar's Dice probability calculator.
+
+
+Miscellaneous Changes
+---------------------
+
+Visual Studio 2010 migration started, not officially supported yet.
+
+New features and fixes in SMLJava library.
+
+Experimental JMX API interface added for debugger for Soar IDE
+integration.  Not officially supported.
+
+Support for swig 2 added.
+
+Build procedure cleanup, some stuff wasn't getting built or cleaned
+correctly.  Some issues still exist but can be worked around by make
+clean && make.
+
+Jars all target Java 1.5 for better compatibility.
+
+Output-link change tracking is now disabled by default until the
+output-link identifier is requested unless the user explicitly enables
+it.
+
+GDS stats added to stats xml output.
+
+Lots of changes to stats reporting especially with respect to timers
+and time per decision cycle.  Precision increased in many places.
+Configurable at runtime using timers command.
+
+Experimental support to discard learned chunks that are duplicates of
+existing RL rules modulo numeric preference value.
