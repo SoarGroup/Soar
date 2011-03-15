@@ -617,8 +617,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w INTEGER,q1 INTEGER)" );
 	add_structure( "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)" );
 
-	// FIXME lti table creation
-	add_structure( "CREATE TABLE IF NOT EXISTS lti (parent_id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, time_id INTEGER)" );
+	add_structure( "CREATE TABLE IF NOT EXISTS lti (parent_id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, time_id INTEGER, current INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS lti_letter_num ON lti (letter,num)" );
 
 	// adding an ascii table just to make lti queries easier when inspecting database
@@ -729,6 +728,8 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	find_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM lti WHERE letter=? AND num=?" );
 	add( find_lti );
 
+	update_lti = new soar_module::sqlite_statement( new_db, "UPDATE OR IGNORE lti SET current=? WHERE letter=? AND num=?" );
+	add( update_lti );
 }
 
 
@@ -4755,9 +4756,25 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-void epmem_store_lti( agent *my_agent, Symbol *state, Symbol *store, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, epmem_id_mapping *id_record = NULL )
+void epmem_store_lti( agent *my_agent, Symbol *state, Symbol *lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, epmem_id_mapping *id_record = NULL )
 {
-	// FIXME issue SQL query
+	// FIXME is it possible for the LTI not to be already in epmem?
+	// for example, if the LTI was blinked (which Nate should have taken care of with a previous bug)
+	// or if the LTI is removed after this fires, so the episode stored does not in fact contain the LTI
+	my_agent->epmem_stmts_graph->update_lti->bind_int( 1, static_cast<uint64_t>( my_agent->epmem_stats->time->get_value() ) - 1 );
+	my_agent->epmem_stmts_graph->update_lti->bind_int( 2, static_cast<uint64_t>( lti->id.name_letter ) );
+	my_agent->epmem_stmts_graph->update_lti->bind_int( 3, static_cast<uint64_t>( lti->id.name_number ) );
+
+	if ( my_agent->epmem_stmts_graph->update_lti->execute() == soar_module::ok )
+	{
+		epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, lti );
+	}
+	else
+	{
+		epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, lti );
+	}
+
+	my_agent->epmem_stmts_graph->update_lti->reinitialize();
 }
 
 //////////////////////////////////////////////////////////
@@ -5391,16 +5408,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 					}
 					else if ( (*w_p)->attr == my_agent->epmem_sym_store )
 					{
-						// detect store command
-						if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-						{
-							char buf[256];
-
-							SNPRINTF( buf, 254, "STORE" );
-
-							print( my_agent, buf );
-							xml_generate_warning( my_agent, buf );
-						}
 						// error checking; command is only valid if the value is an LTI
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( (*w_p)->value->id.smem_lti ) &&
