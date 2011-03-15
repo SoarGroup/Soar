@@ -58,6 +58,7 @@
 // storing new episodes			epmem::storage
 // non-cue-based queries		epmem::ncb
 // cue-based queries			epmem::cbr
+// lti storage					epmem::store
 
 // vizualization				epmem::viz
 
@@ -73,6 +74,7 @@
 // shared SQL to perform cue-based queries
 // on true ranges, "now" ranges (i.e. wme in WM), and
 // "point" ranges (in/out in sequential episodes)
+// FIXME range queries (might be useful)
 const char *epmem_range_queries[2][2][3] =
 {
 	{
@@ -615,7 +617,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w INTEGER,q1 INTEGER)" );
 	add_structure( "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)" );
 
-    // FIXME lti table creation
+	// FIXME lti table creation
 	add_structure( "CREATE TABLE IF NOT EXISTS lti (parent_id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, time_id INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS lti_letter_num ON lti (letter,num)" );
 
@@ -1455,10 +1457,10 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// cache_size
 			{
 				std::string cache_sql( "PRAGMA cache_size = " );
-                char* str = my_agent->epmem_params->cache_size->get_string();
+				char* str = my_agent->epmem_params->cache_size->get_string();
 				cache_sql.append( str );
 				free(str);
-                str = NULL;
+				str = NULL;
 
 				temp_q = new soar_module::sqlite_statement( my_agent->epmem_db, cache_sql.c_str() );
 
@@ -3511,7 +3513,7 @@ inline void epmem_add_literal_to_group( epmem_shared_literal_group *dest_group, 
  * 				  - level 2: no installing of found memory
  * 				  - level 1: no interval search
  **************************************************************************/
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, epmem_time_list& prohibit, epmem_time_id before, epmem_time_id after, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, int level=3 )
+void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, epmem_time_list& prohibit, epmem_time_id before, epmem_time_id after, epmem_lti_list& ltis, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, int level=3 )
 {
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->epmem_timers->query->start();
@@ -3795,7 +3797,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 									if ( (*w_p)->value->id.smem_lti )
 									{
-                                        // FIXME binds LTIs if in query; probably useful for later
+										// FIXME binds LTIs if in query; probably useful for later
 										my_agent->epmem_stmts_graph->find_lti->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
 										my_agent->epmem_stmts_graph->find_lti->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 
@@ -3924,7 +3926,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												{
 													for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 													{
-                                                        // FIXME iterate through intervals types, add if found
+														// FIXME iterate through intervals types, add if found
 														// assign timer
 														switch ( m )
 														{
@@ -4747,6 +4749,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	}
 }
 
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+// LTI Storage (epmem::store)
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+void epmem_store_lti( agent *my_agent, Symbol *state, Symbol *store, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, epmem_id_mapping *id_record = NULL )
+{
+	// FIXME issue SQL query
+}
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -5158,6 +5170,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 	Symbol *neg_query;
 	epmem_time_list prohibit;
 	epmem_time_id before, after;
+	Symbol *store;
+	epmem_lti_list ltis;
 	bool good_cue;
 	int path;
 	
@@ -5255,6 +5269,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 			before = EPMEM_MEMID_NONE;
 			after = EPMEM_MEMID_NONE;
 			good_cue = true;
+			store = NULL;
 			path = 0;
 
 			// process top-level symbols
@@ -5374,13 +5389,138 @@ void epmem_respond_to_cmd( agent *my_agent )
 							good_cue = false;
 						}
 					}
+					else if ( (*w_p)->attr == my_agent->epmem_sym_store )
+					{
+						// detect store command
+						if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+						{
+							char buf[256];
+
+							SNPRINTF( buf, 254, "STORE" );
+
+							print( my_agent, buf );
+							xml_generate_warning( my_agent, buf );
+						}
+						// error checking; command is only valid if the value is an LTI
+						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+							 ( (*w_p)->value->id.smem_lti ) &&
+							 ( path == 0 ) )
+						{
+							store = (*w_p)->value;
+							path = 4;
+						}
+						else
+						{
+							good_cue = false;
+						}
+					}
+					else if ( (*w_p)->attr == my_agent->epmem_sym_lti )
+					{
+						// detect lti command
+						if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+						{
+							char buf[256];
+
+							SNPRINTF( buf, 254, "LTI" );
+
+							print( my_agent, buf );
+							xml_generate_warning( my_agent, buf );
+						}
+						// error checking; make sure the value is an identifier (since there's substructure
+						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+							 ( ( path == 0 ) || ( path == 3 ) ) )
+						{
+							// prevent infinite loops
+							tc_number tc = get_new_tc_number( my_agent );
+
+							// flags
+							Symbol * lti = NULL;
+							bool current = true; // FIXME there should be a default for this
+
+							epmem_wme_list::iterator lti_p;
+							epmem_wme_list* lti_wmes = epmem_get_augs_of_id( (*w_p)->value, tc );
+
+							// error check one layer deeper
+							// if the attribute is wme, check value is an LTI
+							// if the attribute is current, check value is a symbol and is either yes or no
+							// anything outside of these cases is a bad command
+							if ( lti_wmes->size() == 1 && lti_wmes->size() == 2 )
+							{
+								for ( lti_p=lti_wmes->begin(); lti_p!=lti_wmes->end(); lti_p++)
+								{
+									if ( (*lti_p)->attr == my_agent->epmem_sym_wme )
+									{
+										if ( ( (*lti_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+											 ( (*lti_p)->value->id.smem_lti ) )
+										{
+											lti = (*lti_p)->attr;
+										}
+										else
+										{
+											good_cue = false;
+										}
+
+									}
+									else if ( (*lti_p)->attr == my_agent->epmem_sym_current )
+									{
+										if ( (*lti_p)->value->sc.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )
+										{
+											if ( (*lti_p)->value == my_agent->epmem_sym_no )
+											{
+												current = false;
+											}
+											else if ( (*lti_p)->value == my_agent->epmem_sym_yes )
+											{
+												current = true;
+											}
+											else
+											{
+												good_cue = false;
+											}
+										}
+										else
+										{
+											good_cue = false;
+										}
+									}
+									else
+									{
+										// otherwise, it's a bad command
+										good_cue = false;
+									}
+								}
+							}
+							else
+							{
+								good_cue = false;
+							}
+
+							// check than an LTI has been specified
+							if ( !lti )
+							{
+								good_cue = false;
+							}
+
+							// if the LTI is specified
+							if ( good_cue )
+							{
+								epmem_lti_param lti_param = { lti, current };
+								ltis.push_back( lti_param );
+								path = 3;
+							}
+							
+							delete lti_wmes;
+						}
+						else
+						{
+							good_cue = false;
+						}
+					}
 					else
 					{
 						good_cue = false;
 					}
-                    // FIXME insert detection for lti and store commands here (look at prohibit on how to collect things into a list)
-                    // FIXME store pairs of (lti, current) in list to be passed to epmem_process_query; use epmem_get_augs_of_id to get children (or just do it yourself)
-                    
+					
 				}
 			}
 
@@ -5416,7 +5556,11 @@ void epmem_respond_to_cmd( agent *my_agent )
 				// query
 				else if ( path == 3 )
 				{
-					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes );
+					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, ltis, cue_wmes, meta_wmes, retrieval_wmes );
+				}
+				else if ( path == 4 )
+				{
+					epmem_store_lti( my_agent, state, store, meta_wmes, retrieval_wmes );
 				}
 			}
 			else

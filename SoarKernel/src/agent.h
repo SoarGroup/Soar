@@ -318,6 +318,12 @@ typedef struct agent_struct {
   Symbol			* epmem_sym_before;
   Symbol			* epmem_sym_after;
   Symbol			* epmem_sym_prohibit;
+  Symbol			* epmem_sym_lti;
+  Symbol			* epmem_sym_wme;
+  Symbol			* epmem_sym_current;
+  Symbol			* epmem_sym_store;
+  Symbol			* epmem_sym_yes;
+  Symbol			* epmem_sym_no;
 
   Symbol            * smem_sym;
   Symbol            * smem_sym_cmd;
