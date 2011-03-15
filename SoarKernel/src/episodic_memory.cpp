@@ -514,6 +514,7 @@ epmem_timer::epmem_timer(const char *new_name, agent *new_agent, soar_module::ti
 
 epmem_common_statement_container::epmem_common_statement_container( agent *new_agent ): soar_module::sqlite_statement_container( new_agent->epmem_db )
 {
+
 	soar_module::sqlite_database *new_db = new_agent->epmem_db;
 
 	//
@@ -614,6 +615,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w INTEGER,q1 INTEGER)" );
 	add_structure( "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)" );
 
+    // FIXME lti table creation
 	add_structure( "CREATE TABLE IF NOT EXISTS lti (parent_id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, time_id INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS lti_letter_num ON lti (letter,num)" );
 
@@ -3793,6 +3795,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 									if ( (*w_p)->value->id.smem_lti )
 									{
+                                        // FIXME binds LTIs if in query; probably useful for later
 										my_agent->epmem_stmts_graph->find_lti->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
 										my_agent->epmem_stmts_graph->find_lti->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 
@@ -3921,6 +3924,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												{
 													for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 													{
+                                                        // FIXME iterate through intervals types, add if found
 														// assign timer
 														switch ( m )
 														{
@@ -5374,6 +5378,9 @@ void epmem_respond_to_cmd( agent *my_agent )
 					{
 						good_cue = false;
 					}
+                    // FIXME insert detection for lti and store commands here (look at prohibit on how to collect things into a list)
+                    // FIXME store pairs of (lti, current) in list to be passed to epmem_process_query; use epmem_get_augs_of_id to get children (or just do it yourself)
+                    
 				}
 			}
 
