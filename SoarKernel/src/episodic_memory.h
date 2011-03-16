@@ -344,7 +344,11 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 		soar_module::sqlite_statement *promote_id;
 		soar_module::sqlite_statement *find_lti;
 
+		//
+
 		soar_module::sqlite_statement *update_lti;
+
+		soar_module::sqlite_statement *find_edge_unique_lti;
 
 		//
 		
@@ -362,15 +366,8 @@ typedef std::vector<epmem_time_id> epmem_time_list;
 // represents a list of wmes
 typedef std::list<wme *> epmem_wme_list;
 
-// the params for one LTI in an epmem query
-typedef struct epmem_lti_param_struct
-{
-	Symbol * lti;
-	bool current;
-} epmem_lti_param;
-
 // represents a list of query LTI params
-typedef std::list<epmem_lti_param> epmem_lti_list;
+typedef std::map<Symbol *, bool> epmem_lti_map;
 
 // keeping state for multiple RIT's
 typedef struct epmem_rit_state_param_struct
