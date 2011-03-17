@@ -633,6 +633,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE INDEX IF NOT EXISTS edge_range_upper ON edge_range (rit_node,end)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_start ON edge_range (id,start DESC)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)" );
+    add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end_start ON edge_range (id, end, start)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_parent_attrib_value ON node_unique (parent_id,attrib,value)" );
@@ -4265,6 +4266,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->epmem_timers->query_dnf->stop();
 			////////////////////////////////////////////////////////////////////////////
+
+            assert( queries->size() );
 
 			my_agent->epmem_stats->qry_pos->set_value( leaf_ids[ EPMEM_NODE_POS ] );
 			my_agent->epmem_stats->qry_neg->set_value( leaf_ids[ EPMEM_NODE_NEG ] );
