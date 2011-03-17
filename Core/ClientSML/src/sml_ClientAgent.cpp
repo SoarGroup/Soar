@@ -58,7 +58,6 @@ Agent::Agent(Kernel* pKernel, char const* pName)
 	m_Kernel = pKernel ;
 	m_Name	 = pName ;
 	m_CallbackIDCounter = 0 ;
-	m_VisitedCounter = 0 ;
 	m_XMLCallback = -1 ;
 	m_BlinkIfNoChange = true ;
 
@@ -1044,7 +1043,7 @@ char const*	Agent::StopSelf()
 	return pResult ;
 }
 
-char const* Agent::RunSelf(uint64_t numberSteps, smlRunStepSize stepSize)
+char const* Agent::RunSelf(int numberSteps, smlRunStepSize stepSize)
 {
 	if (IsCommitRequired())
 	{
@@ -1053,12 +1052,12 @@ char const* Agent::RunSelf(uint64_t numberSteps, smlRunStepSize stepSize)
 	}	
 
 #ifdef SML_DIRECT
-		if (GetConnection()->IsDirectConnection())
-		{
-			EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
-			ec->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, int(numberSteps)) ;
-			return "DirectRun completed" ;
-		}
+	if (GetConnection()->IsDirectConnection())
+	{
+		EmbeddedConnection* ec = static_cast<EmbeddedConnection*>(GetConnection());
+		ec->DirectRun(this->GetAgentName(), false, stepSize, sml_DECISION, numberSteps) ;
+		return "DirectRun completed" ;
+	}
 #endif
 
 	// Convert int to a string
