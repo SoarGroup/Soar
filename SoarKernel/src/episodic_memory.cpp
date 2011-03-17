@@ -4417,8 +4417,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 										current_sym_constraints.clear();
 
-                                        // FIXME check that all matches to WMEs which should be current LTIs are within the current interval
-
 										////////////////////////////////////////////////////////////////////////////
 										my_agent->epmem_timers->query_graph_match->start();
 										////////////////////////////////////////////////////////////////////////////
