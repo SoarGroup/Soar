@@ -116,14 +116,14 @@ const char *epmem_range_queries[2][2][3] =
 const char *epmem_range_queries_lti[2][3] =
 {
     {
-        "SELECT e.start AS start FROM edge_range e INNER JOIN lti WHERE e.id=? AND e.start<=lti.current AND e.end>=lti.current ORDER BY e.start DESC",
-        "SELECT e.start AS start FROM edge_now e INNER JOIN lti WHERE e.id=? AND e.start<=lti.current ORDER BY e.start DESC",
-        "SELECT e.start AS start FROM edge_point e INNER JOIN lti WHERE e.id=? AND e.start=lti.current ORDER BY e.start DESC"
+        "SELECT e.start AS start FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.start DESC",
+        "SELECT e.start AS start FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current ORDER BY e.start DESC",
+        "SELECT e.start AS start FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
     },
     {
-        "SELECT e.end AS end FROM edge_range e INNER JOIN lti WHERE e.id=? AND e.start<=lti.current AND e.end>=lti.current ORDER BY e.end DESC",
-        "SELECT ? AS end FROM edge_now e INNER JOIN lti WHERE e.id=? AND e.start<=lti.current",
-        "SELECT e.start AS end FROM edge_point e INNER JOIN lti WHERE e.id=? AND e.start=lti.current ORDER BY e.start DESC"
+        "SELECT e.end AS end FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.end DESC",
+        "SELECT ? AS end FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current",
+        "SELECT e.start AS end FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
     }
 };
 
@@ -745,7 +745,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	//
 
-	promote_id = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO lti (parent_id,letter,num,time_id) VALUES (?,?,?,?)" );
+	promote_id = new soar_module::sqlite_statement( new_db, "INSERT OR IGNORE INTO lti (parent_id,letter,num,time_id,current) VALUES (?,?,?,?,?)" );
 	add( promote_id );
 
 	find_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM lti WHERE letter=? AND num=?" );
@@ -2090,6 +2090,7 @@ void epmem_new_episode( agent *my_agent )
 										my_agent->epmem_stmts_graph->promote_id->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
 										my_agent->epmem_stmts_graph->promote_id->bind_int( 3, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 										my_agent->epmem_stmts_graph->promote_id->bind_int( 4, time_counter );
+										my_agent->epmem_stmts_graph->promote_id->bind_int( 5, time_counter );
 										my_agent->epmem_stmts_graph->promote_id->execute( soar_module::op_reinit );
 									}
 								}
@@ -2304,6 +2305,7 @@ void epmem_new_episode( agent *my_agent )
 									my_agent->epmem_stmts_graph->promote_id->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
 									my_agent->epmem_stmts_graph->promote_id->bind_int( 3, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
 									my_agent->epmem_stmts_graph->promote_id->bind_int( 4, time_counter );
+									my_agent->epmem_stmts_graph->promote_id->bind_int( 5, time_counter );
 									my_agent->epmem_stmts_graph->promote_id->execute( soar_module::op_reinit );
 								}
 							}
@@ -3664,7 +3666,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// short- vs. long-term identifiers
 				soar_module::sqlite_statement* my_q;
-                bool q1_should_be_lti;
+                bool lti_should_be_current;
 				bool good_q;
 
 				// fully populate wme cache (we need to know parent info a priori)
@@ -3824,7 +3826,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								{
 									my_hash = epmem_temporal_hash( my_agent, (*w_p)->attr );
 									good_q = false;
-                                    q1_should_be_lti = false;
+                                    lti_should_be_current = false;
 									my_q = NULL;
 
 									if ( (*w_p)->value->id.smem_lti )
@@ -3846,7 +3848,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
                                     {
                                         // if the symbol *should* be an LTI
                                         // set my_q to a query such that the child must be an LTI
-                                        q1_should_be_lti = true;
+                                        lti_should_be_current = ltis[(*w_p)->value];
                                         my_q = my_agent->epmem_stmts_graph->find_edge_unique_lti;
                                         good_q = true;
                                     }
@@ -3982,7 +3984,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														}
 
 														// assign sql
-                                                        if ( q1_should_be_lti )
+                                                        if ( lti_should_be_current )
                                                         {
                                                             // use different table to specify LTI must be current
                                                             new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries_lti[ k ][ m ], new_timer );
@@ -4000,11 +4002,26 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														{
 															new_stmt->bind_int( position++, time_now );
 														}
-														new_stmt->bind_int( position++, unique_identity );
+                                                        if ( lti_should_be_current )
+                                                        {
+                                                            // do extra bind for nested query if LTI must be current
+														    new_stmt->bind_int( position++, unique_identity );
+                                                        }
+														new_stmt->bind_int( position, unique_identity );
 
 														// take first step
 														if ( new_stmt->execute() == soar_module::row )
 														{
+                                                            // FIXME
+                                                            if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+                                                            {
+                                                                char buf[256];
+
+                                                                SNPRINTF( buf, 254, "\nprocess query: %s %d %d %d\n", (lti_should_be_current?"true":"false"), k, m, (int) new_stmt->column_int( 0 ) );
+
+                                                                print( my_agent, buf );
+                                                                xml_generate_warning( my_agent, buf );
+                                                            }
 															new_query = new epmem_shared_query;
 															new_query->val = new_stmt->column_int( 0 );
 															new_query->stmt = new_stmt;
@@ -5468,16 +5485,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 					}
 					else if ( (*w_p)->attr == my_agent->epmem_sym_lti )
 					{
-						// detect lti command
-						if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-						{
-							char buf[256];
-
-							SNPRINTF( buf, 254, "LTI" );
-
-							print( my_agent, buf );
-							xml_generate_warning( my_agent, buf );
-						}
 						// error checking; make sure the value is an identifier (since there's substructure
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == 0 ) || ( path == 3 ) ) )
@@ -5493,22 +5500,31 @@ void epmem_respond_to_cmd( agent *my_agent )
 							epmem_wme_list* lti_wmes = epmem_get_augs_of_id( (*w_p)->value, tc );
 
 							// error check one layer deeper
-							// if the attribute is wme, check value is an LTI
+							// if the attribute is wme, check value is an identifier
 							// if the attribute is current, check value is a symbol and is either yes or no
 							// anything outside of these cases is a bad command
-							if ( lti_wmes && lti_wmes->size() == 1 && lti_wmes->size() == 2 )
+							if ( lti_wmes && ( lti_wmes->size() == 1 || lti_wmes->size() == 2 ) )
 							{
 								for ( lti_p=lti_wmes->begin(); lti_p!=lti_wmes->end(); lti_p++)
 								{
 									if ( (*lti_p)->attr == my_agent->epmem_sym_wme )
 									{
-										if ( ( (*lti_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-											 ( (*lti_p)->value->id.smem_lti ) )
+										if ( (*lti_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 										{
-											lti = (*lti_p)->attr;
+											lti = (*lti_p)->value;
 										}
 										else
 										{
+                                            // FIXME
+                                            if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+                                            {
+                                                char buf[256];
+
+                                                SNPRINTF( buf, 254, "LTIF1" );
+
+                                                print( my_agent, buf );
+                                                xml_generate_warning( my_agent, buf );
+                                            }
 											good_cue = false;
 										}
 
@@ -5527,29 +5543,78 @@ void epmem_respond_to_cmd( agent *my_agent )
 											}
 											else
 											{
+                                                // FIXME
+                                                if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+                                                {
+                                                    char buf[256];
+
+                                                    SNPRINTF( buf, 254, "LTIF2" );
+
+                                                    print( my_agent, buf );
+                                                    xml_generate_warning( my_agent, buf );
+                                                }
 												good_cue = false;
 											}
 										}
 										else
 										{
+                                            // FIXME
+                                            if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+                                            {
+                                                char buf[256];
+
+                                                SNPRINTF( buf, 254, "LTIF3" );
+
+                                                print( my_agent, buf );
+                                                xml_generate_warning( my_agent, buf );
+                                            }
 											good_cue = false;
 										}
 									}
 									else
 									{
-										// otherwise, it's a bad command
+                                        // FIXME
+                                        if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+                                        {
+                                            char buf[256];
+
+                                            SNPRINTF( buf, 254, "LTIF4" );
+
+                                            print( my_agent, buf );
+                                            xml_generate_warning( my_agent, buf );
+                                        }
 										good_cue = false;
 									}
 								}
 							}
 							else
 							{
+                                // FIXME
+                                if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+                                {
+                                    char buf[256];
+
+                                    SNPRINTF( buf, 254, "LTIF5" );
+
+                                    print( my_agent, buf );
+                                    xml_generate_warning( my_agent, buf );
+                                }
 								good_cue = false;
 							}
 
 							// check than an LTI has been specified and has not already been specified
 							if ( !lti || ltis.count(lti) > 0 )
 							{
+                                // FIXME
+                                if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
+                                {
+                                    char buf[256];
+
+                                    SNPRINTF( buf, 254, "LTIF6" );
+
+                                    print( my_agent, buf );
+                                    xml_generate_warning( my_agent, buf );
+                                }
 								good_cue = false;
 							}
 
