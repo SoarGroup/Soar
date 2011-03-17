@@ -843,6 +843,12 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_sym_before ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_after ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_prohibit ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_lti ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_wme ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_current ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_store ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_yes ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_no ) );
 
   release_helper( thisAgent, &( thisAgent->smem_sym ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_cmd ) );

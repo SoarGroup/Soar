@@ -115,16 +115,16 @@ const char *epmem_range_queries[2][2][3] =
 // intervals where a specific set of LTIs are current.
 const char *epmem_range_queries_lti[2][3] =
 {
-    {
-        "SELECT e.start AS start FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.start DESC",
-        "SELECT e.start AS start FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current ORDER BY e.start DESC",
-        "SELECT e.start AS start FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
-    },
-    {
-        "SELECT e.end AS end FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.end DESC",
-        "SELECT ? AS end FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current",
-        "SELECT e.start AS end FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
-    }
+	{
+		"SELECT e.start AS start FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.start DESC",
+		"SELECT e.start AS start FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current ORDER BY e.start DESC",
+		"SELECT e.start AS start FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
+	},
+	{
+		"SELECT e.end AS end FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.end DESC",
+		"SELECT ? AS end FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current",
+		"SELECT e.start AS end FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
+	}
 };
 
 //////////////////////////////////////////////////////////
@@ -3666,7 +3666,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// short- vs. long-term identifiers
 				soar_module::sqlite_statement* my_q;
-                bool lti_should_be_current;
+				bool lti_should_be_current;
 				bool good_q;
 
 				// fully populate wme cache (we need to know parent info a priori)
@@ -3826,7 +3826,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								{
 									my_hash = epmem_temporal_hash( my_agent, (*w_p)->attr );
 									good_q = false;
-                                    lti_should_be_current = false;
+									lti_should_be_current = false;
 									my_q = NULL;
 
 									if ( (*w_p)->value->id.smem_lti )
@@ -3844,14 +3844,14 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 										my_agent->epmem_stmts_graph->find_lti->reinitialize();
 									}
-                                    else if ( ltis.count((*w_p)->value) > 0 )
-                                    {
-                                        // if the symbol *should* be an LTI
-                                        // set my_q to a query such that the child must be an LTI
-                                        lti_should_be_current = ltis[(*w_p)->value];
-                                        my_q = my_agent->epmem_stmts_graph->find_edge_unique_lti;
-                                        good_q = true;
-                                    }
+									else if ( i == EPMEM_NODE_POS && ltis.count((*w_p)->value) > 0 )
+									{
+										// if it's a positive query and the symbol *should* be an LTI
+										// set my_q to a query such that the child must be an LTI
+										lti_should_be_current = ltis[(*w_p)->value];
+										my_q = my_agent->epmem_stmts_graph->find_edge_unique_lti;
+										good_q = true;
+									}
 									else
 									{
 										my_q = my_agent->epmem_stmts_graph->find_edge_unique;
@@ -3984,16 +3984,16 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														}
 
 														// assign sql
-                                                        if ( lti_should_be_current )
-                                                        {
-                                                            // use different table to specify LTI must be current
-                                                            new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries_lti[ k ][ m ], new_timer );
-                                                        }
-                                                        else
-                                                        {
-                                                            new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
-                                                        }
-                                                        new_stmt->prepare();
+														if ( lti_should_be_current )
+														{
+															// use different table to specify LTI must be current
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries_lti[ k ][ m ], new_timer );
+														}
+														else
+														{
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
+														}
+														new_stmt->prepare();
 
 														// bind values
 														position = 1;
@@ -4002,11 +4002,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														{
 															new_stmt->bind_int( position++, time_now );
 														}
-                                                        if ( lti_should_be_current )
-                                                        {
-                                                            // do extra bind for nested query if LTI must be current
-														    new_stmt->bind_int( position++, unique_identity );
-                                                        }
+														if ( lti_should_be_current )
+														{
+															// do extra bind for nested query if LTI must be current
+															new_stmt->bind_int( position++, unique_identity );
+														}
 														new_stmt->bind_int( position, unique_identity );
 
 														// take first step
@@ -4416,6 +4416,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 										current_used_ids.insert( EPMEM_NODEID_ROOT );
 
 										current_sym_constraints.clear();
+
+                                        // FIXME check that all matches to WMEs which should be current LTIs are within the current interval
 
 										////////////////////////////////////////////////////////////////////////////
 										my_agent->epmem_timers->query_graph_match->start();
@@ -5551,7 +5553,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 							// if the LTI is specified
 							if ( good_cue )
 							{
-                                ltis[lti] = current;
+								ltis[lti] = current;
 								path = 3;
 							}
 
