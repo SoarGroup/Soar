@@ -4012,16 +4012,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														// take first step
 														if ( new_stmt->execute() == soar_module::row )
 														{
-                                                            // FIXME
-                                                            if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-                                                            {
-                                                                char buf[256];
-
-                                                                SNPRINTF( buf, 254, "\nprocess query: %s %d %d %d\n", (lti_should_be_current?"true":"false"), k, m, (int) new_stmt->column_int( 0 ) );
-
-                                                                print( my_agent, buf );
-                                                                xml_generate_warning( my_agent, buf );
-                                                            }
 															new_query = new epmem_shared_query;
 															new_query->val = new_stmt->column_int( 0 );
 															new_query->stmt = new_stmt;
@@ -5515,16 +5505,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 										}
 										else
 										{
-                                            // FIXME
-                                            if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-                                            {
-                                                char buf[256];
-
-                                                SNPRINTF( buf, 254, "LTIF1" );
-
-                                                print( my_agent, buf );
-                                                xml_generate_warning( my_agent, buf );
-                                            }
 											good_cue = false;
 										}
 
@@ -5543,78 +5523,28 @@ void epmem_respond_to_cmd( agent *my_agent )
 											}
 											else
 											{
-                                                // FIXME
-                                                if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-                                                {
-                                                    char buf[256];
-
-                                                    SNPRINTF( buf, 254, "LTIF2" );
-
-                                                    print( my_agent, buf );
-                                                    xml_generate_warning( my_agent, buf );
-                                                }
 												good_cue = false;
 											}
 										}
 										else
 										{
-                                            // FIXME
-                                            if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-                                            {
-                                                char buf[256];
-
-                                                SNPRINTF( buf, 254, "LTIF3" );
-
-                                                print( my_agent, buf );
-                                                xml_generate_warning( my_agent, buf );
-                                            }
 											good_cue = false;
 										}
 									}
 									else
 									{
-                                        // FIXME
-                                        if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-                                        {
-                                            char buf[256];
-
-                                            SNPRINTF( buf, 254, "LTIF4" );
-
-                                            print( my_agent, buf );
-                                            xml_generate_warning( my_agent, buf );
-                                        }
 										good_cue = false;
 									}
 								}
 							}
 							else
 							{
-                                // FIXME
-                                if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-                                {
-                                    char buf[256];
-
-                                    SNPRINTF( buf, 254, "LTIF5" );
-
-                                    print( my_agent, buf );
-                                    xml_generate_warning( my_agent, buf );
-                                }
 								good_cue = false;
 							}
 
 							// check than an LTI has been specified and has not already been specified
 							if ( !lti || ltis.count(lti) > 0 )
 							{
-                                // FIXME
-                                if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-                                {
-                                    char buf[256];
-
-                                    SNPRINTF( buf, 254, "LTIF6" );
-
-                                    print( my_agent, buf );
-                                    xml_generate_warning( my_agent, buf );
-                                }
 								good_cue = false;
 							}
 
