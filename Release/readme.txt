@@ -64,15 +64,14 @@ Prerequisites
 
 [Platforms]
 
-Officially supported platforms include 32- and 64-bit versions of these
-systems:
+Officially supported platforms are:
 
-  * Windows XP, Vista, 7
-  * Ubuntu Linux 9.10
-  * Mac OS X 10.6
+  * Windows XP, Vista, 7 32/64 bit
+  * Ubuntu Linux 10.10 32/64 bit
+  * Mac OS X 10.6 64 bit
 
 Other platforms may work but have not specifically been tested, you can
-try binaries or attempt to compile from source:
+try binaries or compile from source:
 
         http://code.google.com/p/soar/wiki/Build
 
@@ -103,9 +102,9 @@ information:
 
 [Python]
 
-The included Python libraries support Python versions 2.6 and 2.7.
-Your installed Python architecture (32- or 64-bit) must be the same as
-the binaries you download.
+The included Python libraries support Python versions 2.6.  Your
+installed Python architecture (32- or 64-bit) must be the same as the
+binaries you download.
 
 DETAILED CHANGELIST
 ===================
