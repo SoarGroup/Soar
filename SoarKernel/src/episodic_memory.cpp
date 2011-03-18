@@ -4267,8 +4267,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			my_agent->epmem_timers->query_dnf->stop();
 			////////////////////////////////////////////////////////////////////////////
 
-            assert( queries->size() );
-
 			my_agent->epmem_stats->qry_pos->set_value( leaf_ids[ EPMEM_NODE_POS ] );
 			my_agent->epmem_stats->qry_neg->set_value( leaf_ids[ EPMEM_NODE_NEG ] );
 			my_agent->epmem_stats->qry_ret->set_value( 0 );
@@ -4286,8 +4284,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			bool king_graph_match = false;
 			epmem_gm_assignment_map king_assignments;
 
-			// perform range search if any leaf wmes
-			if ( ( level > 1 ) && cue_size && !matches.empty() )
+			// perform range search if there are queries and leaf wmes
+			if ( queries->size() && level > 1 && cue_size && !matches.empty() )
 			{
 				double balance = my_agent->epmem_params->balance->get_value();
 				double balance_inv = 1 - balance;
