@@ -5,10 +5,12 @@
 #  several kinds of callbacks, inreinitializing, agent destruction, and kernel
 #  destruction (and maybe some other things, too).
 #
-import sys
+import sys, os
 sys.path.append('../lib')
-
+import Python_sml_ClientInterface
 from Python_sml_ClientInterface import *
+
+BASEDIR = os.path.dirname(os.path.dirname(Python_sml_ClientInterface.__file__))
 
 def PrintCallback(id, userData, agent, message):
 	print message
@@ -49,6 +51,9 @@ def UserMessageCallback(id, userData, agent, clientName, message):
 	return ""
 
 kernel = Kernel.CreateKernelInNewThread()
+if not kernel:
+	print >> sys.stderr, 'kernel creation failed'
+	sys.exit(1)
 
 agentCallbackId0 = kernel.RegisterForAgentEvent(smlEVENT_AFTER_AGENT_CREATED, AgentCreatedCallback, None)
 agentCallbackId1 = kernel.RegisterForAgentEvent(smlEVENT_BEFORE_AGENT_REINITIALIZED, AgentReinitializedCallback, None)
@@ -58,8 +63,10 @@ rhsCallbackId = kernel.AddRhsFunction("RhsFunctionTest", RhsFunctionTest, None)
 updateCallbackId = kernel.RegisterForUpdateEvent(smlEVENT_AFTER_ALL_OUTPUT_PHASES, UpdateEventCallback, None)
 messageCallbackId = kernel.RegisterForClientMessageEvent("TestMessage", UserMessageCallback, None)
 
-#create an agent named Soar1
 agent = kernel.CreateAgent('Soar1')
+if not agent:
+	print >> sys.stderr, 'agent creation failed'
+	sys.exit(1)
 
 printcallbackid = agent.RegisterForPrintEvent(smlEVENT_PRINT, PrintCallback, None)
 productionCallbackId = agent.RegisterForProductionEvent(smlEVENT_BEFORE_PRODUCTION_REMOVED, ProductionExcisedCallback, None)
@@ -68,9 +75,9 @@ runCallbackId = agent.RegisterForRunEvent(smlEVENT_AFTER_PHASE_EXECUTED, PhaseEx
 structuredCallbackId = agent.RegisterForXMLEvent(smlEVENT_XML_TRACE_OUTPUT, StructuredTraceCallback, None)
 
 #load the TOH productions
-result = agent.LoadProductions('../Demos/towers-of-hanoi/towers-of-hanoi.soar')
+result = agent.LoadProductions(os.path.join(BASEDIR, 'share', 'soar', 'Demos', 'towers-of-hanoi', 'towers-of-hanoi.soar'))
 #loads a function to test the user-defined RHS function stuff
-result = agent.LoadProductions('../Tests/TOHtest.soar')
+result = agent.LoadProductions(os.path.join(BASEDIR, 'share', 'soar', 'Tests', 'TOHtest.soar'))
 
 kernel.SendClientMessage(agent, "TestMessage", "This is a \"quoted\"\" message")
 kernel.UnregisterForClientMessageEvent(messageCallbackId)
@@ -101,9 +108,8 @@ print "\nTime in seconds:", end - start
 
 #the output of "print s1" should contain "^rhstest success"
 if kernel.ExecuteCommandLine("print s1", "Soar1").find("^rhstest success") == -1:
-	print "\nRHS test FAILED"
-else:
-	print "\nRHS test SUCCEEDED"
+	print >> sys.stderr, "\nRHS test FAILED"
+	sys.exit(1)
 
 result = kernel.ExecuteCommandLine("init-soar", "Soar1")
 
