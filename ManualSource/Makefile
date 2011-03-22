@@ -77,20 +77,20 @@ CMDS=add-wme                  \
 
 CMD_SRC=${addsuffix .tex,${addprefix wikicmd/tex/,$(CMDS)}}
 
-SRC = a-blockscode.tex a-gds.tex a-grammars.tex a-preferences.tex a-support.tex a-tcl-io.tex a-tclexp.tex architecture.tex chunking.tex functions.tex interface-8.6.tex intro.tex manual8.tex syntax.tex $(CMD_SRC)
+SRC = a-blockscode.tex a-gds.tex a-grammars.tex a-preferences.tex a-support.tex a-tcl-io.tex a-tclexp.tex architecture.tex chunking.tex functions.tex interface.tex intro.tex manual.tex syntax.tex $(CMD_SRC)
 
-GENERATED = syntax.aux manual8.lof manual8.log intro.aux manual8.toc manual8.aux chunking.aux functions.aux manual8.out manual8.pdf architecture.aux manual8.ind manual8.ilg manual8.glo manual8.idx interface-8.6.aux
+GENERATED = syntax.aux manual.lof manual.log intro.aux manual.toc manual.aux chunking.aux functions.aux manual.out manual.pdf architecture.aux manual.ind manual.ilg manual.glo manual.idx interface.aux
 
-manual8.pdf : manual8.ind $(SRC)
-	$(LATEX) manual8
-	$(LATEX) manual8 # has to be compiled twice to get references right
+manual.pdf : manual.ind $(SRC)
+	$(LATEX) manual
+	$(LATEX) manual # has to be compiled twice to get references right
 
-manual8.ind : manual8.idx
-	makeindex manual8
-	sed -i -f fix_index.sed manual8.ind
+manual.ind : manual.idx
+	makeindex manual
+	sed -i -f fix_index.sed manual.ind
 
-manual8.idx : $(SRC)
-	$(LATEX) manual8
+manual.idx : $(SRC)
+	$(LATEX) manual
 
 $(CMD_SRC) :
 	cd wikicmd && sh gen_tex.sh
