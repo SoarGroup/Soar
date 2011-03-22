@@ -59,6 +59,29 @@ void reset_placeholder_variable_generator (agent* thisAgent) {
   for (i=0; i<26; i++) thisAgent->placeholder_counter[i] = 1;
 }
 
+Symbol *make_placeholder_var(agent* thisAgent, char first_letter) {
+  Symbol *v;
+  char buf[30];
+  int i;
+
+  if (!isalpha(first_letter)) {
+    first_letter = 'v';
+  }
+  i = tolower(first_letter) - static_cast<int>('a');
+  assert (i >= 0 && i < 26);
+
+  /* --- create variable with "#" in its name:  this couldn't possibly be a
+     variable in the user's code, since the lexer doesn't handle "#" --- */
+  SNPRINTF (buf, sizeof(buf)-1, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[i]++));
+  buf[sizeof(buf)-1] = '\0'; 
+
+  v = make_variable(thisAgent, buf);
+  /* --- indicate that there is no corresponding "real" variable yet --- */
+  v->var.current_binding_value = NIL; 
+  
+  return v;
+}
+
 /* -----------------------------------------------------------------
                Make Placeholder (Dummy) Equality Test
    
@@ -67,29 +90,7 @@ void reset_placeholder_variable_generator (agent* thisAgent) {
 ----------------------------------------------------------------- */
 
 test make_placeholder_test (agent* thisAgent, char first_letter) {
-#define MAKE_PLACEHOLDER_TEST_BUFFER_SIZE 30
-  char namebuf[MAKE_PLACEHOLDER_TEST_BUFFER_SIZE];
-  Symbol *new_var;
-
-  if (isalpha(first_letter)) 
-  {
-    if (isupper(first_letter)) first_letter = static_cast<char>(tolower(first_letter));
-  } 
-  else 
-  {
-    first_letter = 'v';
-  }
-  /* --- create variable with "#" in its name:  this couldn't possibly be a
-     variable in the user's code, since the lexer doesn't handle "#" --- */
-  SNPRINTF (namebuf, MAKE_PLACEHOLDER_TEST_BUFFER_SIZE, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[first_letter-'a']++));
-  namebuf[MAKE_PLACEHOLDER_TEST_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-
-  new_var = make_variable (thisAgent, namebuf);
-  /* --- indicate that there is no corresponding "real" variable yet --- */
-  
-  new_var->var.current_binding_value = NIL; 
-  /* --- return an equality test for that variable --- */
-  
+  Symbol *new_var = make_placeholder_var(thisAgent, first_letter);
   return make_equality_test_without_adding_reference (new_var);
 }
 
@@ -1617,8 +1618,6 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
   rhs_value attr, value;
   action *all_actions, *new_actions, *last;
   Symbol *old_id, *new_var;
-#define PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE 30
-  char    namebuf[PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE],first_letter;
   
   /* JC Added, need to store the attribute name */
   char    szAttribute[256];
@@ -1644,18 +1643,10 @@ action *parse_attr_value_make (agent* thisAgent, Symbol *id)
   while (thisAgent->lexeme.type == PERIOD_LEXEME) 
   {
     get_lexeme(thisAgent); /* consume the "."  */
+
     /* set up for next attribute in path: make dummy variable,
        and create new action in the path */
-    
-    /* --- create variable with "#" in its name:  this couldn't possibly be a
-       variable in the user's code, since the lexer doesn't handle "#" --- */
-    /* KJC used same format so could steal code... */
-    first_letter = first_letter_from_rhs_value (attr);
-    SNPRINTF (namebuf,PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE, "<#%c*%lu>", first_letter, static_cast<long unsigned int>(thisAgent->placeholder_counter[first_letter-'a']++));
-	namebuf[PARSE_ATTR_VALUE_MAKE_BUFFER_SIZE - 1] = 0;
-    new_var = make_variable (thisAgent, namebuf);
-    /* --- indicate that there is no corresponding "real" variable yet --- */
-    new_var->var.current_binding_value = NIL; 
+    new_var = make_placeholder_var(thisAgent, first_letter_from_rhs_value (attr));
 
     /* parse_preferences actually creates the action.  eventhough
      there aren't really any preferences to read, we need the default
