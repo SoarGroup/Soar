@@ -119,7 +119,7 @@
 %\usepackage{epic}
 %\usepackage{lscape}
 \usepackage{tabularx}
-
+\usepackage{longtable}
 
 %---------------------------------------------------------------------------
 % setup the environment
@@ -361,7 +361,7 @@
 \begin{large}
 	John E. Laird and Clare Bates Congdon  \\
         User interface sections by Karen J. Coulter \\
-	Electrical Engineering and Computer Science Department\\
+	Computer Science and Engineering Department\\
 	University of Michigan \vspace{.3in} \\
 
 \end{large}
@@ -591,9 +591,6 @@ and Ocean Surveillance Center, RDT\&E division.
 \small
 \twocolumn
 \printindex
-\nocomment{Yes, I know this index is lousy. I didn't have time to finish the
-	indexing process, and figured that it was better than nothing. If you
-	disagree, just rip these pages out of your manual. :-)}
 \onecolumn
 
 % ----------------------------------------------------------------------------
@@ -606,16 +603,5 @@ and Ocean Surveillance Center, RDT\&E division.
 %\def\leftmark{\textit{SUMMARY OF SOAR FUNCTIONS}}
 %\def\rightmark{\textit{SUMMARY OF SOAR FUNCTIONS}}
 \include{functions}
-
-\typeout{  }
-\typeout{  }
-\typeout{          MAKE SURE TO UPDATE FUNCTION SUMMARY AND INDEX }
-\typeout{          BY EDITING manual.glo FILE INTO functions.glo }
-\typeout{          AND RUN LATEX AGAIN.}
-\typeout{  }
-\typeout{  	   ALSO, OFTEN HAVE TO EDIT THE .toc FILE BY HAND TO }
-\typeout{          FIX PROBLEMS WITH THE APPENDICES, AND TO TAKE OUT THE }
-\typeout{          ARGUMENTS TO USER-INTERFACE COMMANDS.}
-\typeout{  }
 
 \end{document}
