@@ -61,9 +61,9 @@ class Formatter(FormatterBase):
 
 	def pagelink(self, on, pagename, text=None, **kw):
 		#import pdb; pdb.set_trace()
-		assert pagename == 'CommandLineInterface', pagename
+		assert pagename.startswith('cmd_'), pagename
 		if on:
-			return self.write_text('\\hyperref[%s]{' % kw['anchor'])
+			return self.write_text('\\hyperref[%s]{' % pagename[4:].replace('_', '-'))
 		else:
 			return self.write_text('}')
 
