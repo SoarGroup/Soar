@@ -241,6 +241,7 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *next;
 		soar_module::timer *prev;
 		soar_module::timer *hash;
+		soar_module::timer *wm_phase;
 
 		soar_module::timer *ncb_edge;
 		soar_module::timer *ncb_edge_rit;
