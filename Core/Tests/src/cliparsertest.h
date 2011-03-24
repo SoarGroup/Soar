@@ -30,7 +30,7 @@ public:
     virtual bool DoGDSPrint() { return false; }
     virtual bool DoGP(const std::string& productionString) { return false; }
     virtual bool DoGPMax(const int& maximum) { return false; }
-    virtual bool DoHelp() { return false; }
+    virtual bool DoHelp(const std::vector<std::string> &argv) { return false; }
     virtual bool DoIndifferentSelection( const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0 ) { return false; }
     virtual bool DoInitSoar() { return false; }
     virtual bool DoInternalSymbols() { return false; }

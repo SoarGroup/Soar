@@ -36,10 +36,8 @@ public class DebuggerCommands
 
     public final static String kEditProduction = "edit-production";
 
-    public final static String kHelp = "help";
-
     protected String[] kCommands = new String[] { kClear, kQuit, kExit,
-            kEditProduction, kHelp };
+            kEditProduction };
 
     public DebuggerCommands(MainFrame frame, Document doc)
     {
@@ -87,23 +85,6 @@ public class DebuggerCommands
             }
             return null; // this means DO send the command to Soar, that we are
                          // adding behavior
-        }
-        else if (line.startsWith(kHelp))
-        {
-            // pass argument if there is one
-            // send "" to soar, we are replacing behavior
-            String[] args = line.split(" ");
-            for (String arg : args)
-            {
-                if (arg.startsWith(kHelp))
-                    continue;
-                if (arg.isEmpty())
-                    continue;
-                m_Frame.showHelp(arg);
-                return "";
-            }
-            m_Frame.showHelp(null);
-
         }
         return ""; // this means do not send the command to Soar
     }
