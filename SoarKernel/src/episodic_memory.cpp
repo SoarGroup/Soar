@@ -429,6 +429,9 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::t
 
 	hash = new epmem_timer( "epmem_hash", my_agent, soar_module::timer::two );
 	add( hash );
+	
+	wm_phase = new epmem_timer( "epmem_wm_phase", my_agent, soar_module::timer::two );
+	add( wm_phase );
 
 	// three
 
@@ -5475,7 +5478,15 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 	if ( do_wm_phase )
 	{
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->epmem_timers->wm_phase->start();
+		////////////////////////////////////////////////////////////////////////////
+		
 		do_working_memory_phase( my_agent );
+		
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->epmem_timers->wm_phase->stop();
+		////////////////////////////////////////////////////////////////////////////
 	}
 }
 
