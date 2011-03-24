@@ -283,6 +283,10 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	// mem-high
 	mem_high = new epmem_mem_high_stat( my_agent, "mem-high", 0, new soar_module::predicate<int64_t>() );
 	add( mem_high );
+	
+	// cue-based-retrievals
+	cbr = new soar_module::integer_stat( "queries", 0, new soar_module::f_predicate<int64_t>() );
+	add( cbr );
 
 	// ncb-wmes
 	ncb_wmes = new soar_module::integer_stat( "ncb-wmes", 0, new soar_module::f_predicate<int64_t>() );
@@ -5413,6 +5417,9 @@ void epmem_respond_to_cmd( agent *my_agent )
 				else if ( path == 3 )
 				{
 					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes );
+					
+					// add one to the cbr stat
+					my_agent->epmem_stats->cbr->set_value( my_agent->epmem_stats->cbr->get_value() + 1 );
 				}
 			}
 			else
