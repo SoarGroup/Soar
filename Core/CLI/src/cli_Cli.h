@@ -186,7 +186,7 @@ namespace cli
         /**
          * @brief help command
          */
-        virtual bool DoHelp() = 0;
+        virtual bool DoHelp(const std::vector<std::string> &argv) = 0;
 
         /**
          * @brief indifferent-selection command
