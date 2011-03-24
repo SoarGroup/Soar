@@ -1053,9 +1053,9 @@ namespace cli
             return "Syntax: help [command]";
         }
 
-        virtual bool Parse(std::vector< std::string >&)
+        virtual bool Parse(std::vector< std::string >&argv)
         {
-            return cli.DoHelp();
+            return cli.DoHelp(argv);
         }
 
     private:

@@ -129,7 +129,7 @@ namespace cli
         virtual bool DoGDSPrint();
         virtual bool DoGP(const std::string& productionString);
         virtual bool DoGPMax(const int& maximum);
-        virtual bool DoHelp();
+        virtual bool DoHelp(const std::vector<std::string> &argv);
         virtual bool DoIndifferentSelection( const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0 );
         virtual bool DoInitSoar();
         virtual bool DoInternalSymbols();
