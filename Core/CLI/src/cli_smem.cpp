@@ -276,8 +276,8 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "base_incremental_thresh: ";
-        temp2 = agnt->smem_params->base_incremental_thresh->get_string();
+		temp = "base_incremental_threshes: ";
+        temp2 = agnt->smem_params->base_incremental_threshes->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )

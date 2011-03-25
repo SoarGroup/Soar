@@ -36,12 +36,19 @@ inline void normalize_separators(std::string& path)
 }
 
 // Conversion of value to string
-template<class T> std::string& to_string( const T& x, std::string& dest )
+template<class T> std::string& to_string( const T& x, std::string& dest, int precision = 16, bool floatfixed = false )
 {
 	static std::ostringstream o;
 	
 	// get value into stream
-	o << std::setprecision( 16 ) << x;
+	if ( floatfixed )
+	{
+		o << std::fixed << std::setprecision( precision ) << x;
+	}
+	else
+	{
+		o << std::setprecision( precision ) << x;
+	}
 	
 	dest.assign( o.str() );
 	o.str("");

@@ -154,9 +154,9 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	base_update->add_mapping( bupt_incremental, "incremental" );
 	add( base_update );
 
-	// incremental update threshold
-	base_incremental_thresh = new soar_module::integer_param( "base_incremental_thresh", 10, new soar_module::gt_predicate<int64_t>( 0, false ), new soar_module::f_predicate<int64_t>() );
-	add( base_incremental_thresh );
+	// incremental update thresholds
+	base_incremental_threshes = new soar_module::int_set_param( "base_incremental_threshes", new soar_module::f_predicate< int64_t >() );
+	add( base_incremental_threshes );
 }
 
 //
@@ -565,8 +565,11 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num FROM " SMEM_SCHEMA "lti" );
+	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num, act_value FROM " SMEM_SCHEMA "lti" );
 	add( vis_lti );
+
+	vis_lti_act = new soar_module::sqlite_statement( new_db, "SELECT act_value FROM " SMEM_SCHEMA "lti WHERE id=?" );
+	add( vis_lti_act );
 
 	vis_value_const = new soar_module::sqlite_statement( new_db, "SELECT parent_id, tsh1.sym_type AS attr_type, tsh1.id AS attr_hash, tsh2.sym_type AS val_type, tsh2.id AS val_hash FROM " SMEM_SCHEMA "web w, " SMEM_SCHEMA "symbols_type tsh1, " SMEM_SCHEMA "symbols_type tsh2 WHERE (w.attr=tsh1.id) AND (w.val_const=tsh2.id)" );
 	add( vis_value_const );
@@ -1063,24 +1066,33 @@ inline double smem_lti_activate( agent *my_agent, smem_lti_id lti, bool add_acce
 	{
 		time_now = my_agent->smem_max_cycle++;
 
-		if ( my_agent->smem_params->base_update->get_value() == smem_param_container::bupt_incremental )
+		if ( ( my_agent->smem_params->activation_mode->get_value() == smem_param_container::act_base ) && 
+			 ( my_agent->smem_params->base_update->get_value() == smem_param_container::bupt_incremental ) )
 		{
-			int64_t time_diff = ( time_now - my_agent->smem_params->base_incremental_thresh->get_value() );
-
-			if ( time_diff > 0 )
+			int64_t time_diff;
+			
+			for ( std::set< int64_t >::iterator b=my_agent->smem_params->base_incremental_threshes->set_begin(); b!=my_agent->smem_params->base_incremental_threshes->set_end(); b++ )
 			{
-				std::list< smem_lti_id > to_update;
-
-				my_agent->smem_stmts->lti_get_t->bind_int( 1, time_diff );
-				while ( my_agent->smem_stmts->lti_get_t->execute() == soar_module::row )
+				if ( *b > 0 )
 				{
-					to_update.push_back( static_cast< smem_lti_id >( my_agent->smem_stmts->lti_get_t->column_int(0) ) );
-				}
-				my_agent->smem_stmts->lti_get_t->reinitialize();
+					time_diff = ( time_now - *b );
 
-				for ( std::list< smem_lti_id >::iterator it=to_update.begin(); it!=to_update.end(); it++ )
-				{
-					smem_lti_activate( my_agent, (*it), false );
+					if ( time_diff > 0 )
+					{
+						std::list< smem_lti_id > to_update;
+
+						my_agent->smem_stmts->lti_get_t->bind_int( 1, time_diff );
+						while ( my_agent->smem_stmts->lti_get_t->execute() == soar_module::row )
+						{
+							to_update.push_back( static_cast< smem_lti_id >( my_agent->smem_stmts->lti_get_t->column_int(0) ) );
+						}
+						my_agent->smem_stmts->lti_get_t->reinitialize();
+
+						for ( std::list< smem_lti_id >::iterator it=to_update.begin(); it!=to_update.end(); it++ )
+						{
+							smem_lti_activate( my_agent, (*it), false );
+						}
+					}
 				}
 			}
 		}
@@ -3638,7 +3650,21 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 			lti_name->append( temp_str );
 
 			return_val->append( (*lti_name) );
-			return_val->append( " " );
+			return_val->append( " [ label=\"" );
+			return_val->append( (*lti_name) );
+			return_val->append( "\\n[" );
+
+			temp_double = q->column_double( 3 );
+			to_string( temp_double, temp_str, 3, true );
+			if ( temp_double >= 0 )
+			{
+				return_val->append( "+" );
+			}
+			return_val->append( temp_str );
+
+			return_val->append( "]\"" );
+			return_val->append( " ];" );
+			return_val->append( "\n" );
 		}
 		q->reinitialize();
 
@@ -3653,7 +3679,6 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 				std::list<std::string> *my_terminals;
 				std::list<std::string>::size_type terminal_num;
 
-				return_val->append( ";" );
 				return_val->append( "\n" );
 
 				// proceed to terminal nodes
@@ -3833,6 +3858,9 @@ void smem_visualize_store( agent *my_agent, std::string *return_val )
 
 void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val )
 {
+	// buffer
+	std::string return_val2;
+	
 	soar_module::sqlite_statement* expand_q = my_agent->smem_stmts->web_expand;
 
 	uint64_t child_counter;
@@ -3846,8 +3874,8 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 	smem_vis_lti *new_lti;
 	smem_vis_lti *parent_lti;
 
-	std::set<smem_lti_id> close_list;
-	std::set<smem_lti_id>::iterator cl_p;
+	std::map< smem_lti_id, smem_vis_lti* > close_list;
+	std::map< smem_lti_id, smem_vis_lti* >::iterator cl_p;
 
 	// header
 	return_val->append( "digraph smem_lti {" );
@@ -3875,22 +3903,17 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 			to_string( temp_int, temp_str );
 			new_lti->lti_name.append( temp_str );
 
+			// activation
+			temp_double = lti_q->column_double( 2 );
+
 			// done with lookup
 			lti_q->reinitialize();
-
-			// output without linkage
-			return_val->append( "node [ shape = doublecircle ];" );
-			return_val->append( "\n" );
-
-			return_val->append( new_lti->lti_name );
-			return_val->append( ";" );
-			return_val->append( "\n" );
 		}
 
 		bfs.push( new_lti );
-		new_lti = NULL;
+		close_list.insert( std::make_pair< smem_lti_id, smem_vis_lti* >( lti_id, new_lti ) );
 
-		close_list.insert( lti_id );
+		new_lti = NULL;
 	}
 
 	// optionally depth-limited breadth-first-search of children
@@ -3921,14 +3944,6 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					temp_int = expand_q->column_int( 5 );
 					to_string( temp_int, temp_str );
 					new_lti->lti_name.append( temp_str );
-
-					// output node
-					return_val->append( "node [ shape = doublecircle ];" );
-					return_val->append( "\n" );
-
-					return_val->append( new_lti->lti_name );
-					return_val->append( ";" );
-					return_val->append( "\n" );
 				}
 
 
@@ -3957,33 +3972,31 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					}
 
 					// output linkage
-					return_val->append( parent_lti->lti_name );
-					return_val->append( " -> " );
-					return_val->append( new_lti->lti_name );
-					return_val->append( " [ label = \"" );
-					return_val->append( temp_str );
-					return_val->append( "\" ];" );
-					return_val->append( "\n" );
+					return_val2.append( parent_lti->lti_name );
+					return_val2.append( " -> " );
+					return_val2.append( new_lti->lti_name );
+					return_val2.append( " [ label = \"" );
+					return_val2.append( temp_str );
+					return_val2.append( "\" ];" );
+					return_val2.append( "\n" );
 				}
 
-				// add to bfs (if still in depth limit)
-				if ( ( depth == 0 ) || ( new_lti->level < depth ) )
+				// prevent looping
 				{
-					// prevent looping
 					cl_p = close_list.find( new_lti->lti_id );
 					if ( cl_p == close_list.end() )
 					{
-						close_list.insert( new_lti->lti_id );						
-						bfs.push( new_lti );
+						close_list.insert( std::make_pair< smem_lti_id, smem_vis_lti* >( new_lti->lti_id, new_lti ) );
+
+						if ( ( depth == 0 ) || ( new_lti->level < depth ) )
+						{
+							bfs.push( new_lti );
+						}
 					}
 					else
 					{
 						delete new_lti;
-					}				
-				}
-				else
-				{
-					delete new_lti;
+					}
 				}
 
 				new_lti = NULL;
@@ -4024,13 +4037,13 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					}
 
 					// output node
-					return_val->append( "node [ shape = plaintext ];" );
-					return_val->append( "\n" );
-					return_val->append( temp_str2 );
-					return_val->append( " [ label=\"" );
-					return_val->append( temp_str );
-					return_val->append( "\" ];" );
-					return_val->append( "\n" );
+					return_val2.append( "node [ shape = plaintext ];" );
+					return_val2.append( "\n" );
+					return_val2.append( temp_str2 );
+					return_val2.append( " [ label=\"" );
+					return_val2.append( temp_str );
+					return_val2.append( "\" ];" );
+					return_val2.append( "\n" );
 				}
 
 				// add linkage
@@ -4058,25 +4071,61 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 					}
 
 					// output linkage
-					return_val->append( parent_lti->lti_name );
-					return_val->append( " -> " );
-					return_val->append( temp_str2 );
-					return_val->append( " [ label = \"" );
-					return_val->append( temp_str );
-					return_val->append( "\" ];" );
-					return_val->append( "\n" );
+					return_val2.append( parent_lti->lti_name );
+					return_val2.append( " -> " );
+					return_val2.append( temp_str2 );
+					return_val2.append( " [ label = \"" );
+					return_val2.append( temp_str );
+					return_val2.append( "\" ];" );
+					return_val2.append( "\n" );
 				}
 
 				child_counter++;
 			}
 		}
 		expand_q->reinitialize();
-
-		delete parent_lti;
 	}
 
 	// footer
-	return_val->append( "}" );
-	return_val->append( "\n" );
+	return_val2.append( "}" );
+	return_val2.append( "\n" );
+
+	// handle lti nodes at once 
+	{
+		soar_module::sqlite_statement* act_q = my_agent->smem_stmts->vis_lti_act;
+		
+		return_val->append( "node [ shape = doublecircle ];" );
+		return_val->append( "\n" );
+		
+		for ( cl_p=close_list.begin(); cl_p!=close_list.end(); cl_p++ )
+		{
+			return_val->append( cl_p->second->lti_name );
+			return_val->append( " [ label=\"" );
+			return_val->append( cl_p->second->lti_name );
+			return_val->append( "\\n[" );
+
+			act_q->bind_int( 1, cl_p->first );
+			if ( act_q->execute() == soar_module::row )
+			{
+				temp_double = act_q->column_double( 0 );
+				to_string( temp_double, temp_str, 3, true );
+				if ( temp_double >= 0 )
+				{
+					return_val->append( "+" );
+				}
+				return_val->append( temp_str );
+			}
+			act_q->reinitialize();
+
+			return_val->append( "]\"" );
+			return_val->append( " ];" );
+			return_val->append( "\n" );
+			
+			delete cl_p->second;
+		}
+	}
+
+	// transfer buffer after nodes
+	return_val->append( return_val2 );
 }
 
