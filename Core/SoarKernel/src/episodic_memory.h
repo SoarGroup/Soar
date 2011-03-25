@@ -119,7 +119,7 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::constant_param<phase_choices> *phase;
 		soar_module::constant_param<trigger_choices> *trigger;
 		soar_module::constant_param<force_choices> *force;
-		soar_module::set_param *exclusions;
+		soar_module::sym_set_param *exclusions;
 
 		// storage
 		soar_module::constant_param<db_choices> *database;

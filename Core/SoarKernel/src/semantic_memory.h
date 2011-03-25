@@ -73,7 +73,7 @@ class smem_param_container: public soar_module::param_container
 		enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
 		soar_module::constant_param<base_update_choices>* base_update;
 
-		soar_module::integer_param* base_incremental_thresh;
+		soar_module::int_set_param* base_incremental_threshes;
 
 		smem_param_container( agent *new_agent );
 };
@@ -252,6 +252,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *history_add;
 
 		soar_module::sqlite_statement *vis_lti;
+		soar_module::sqlite_statement *vis_lti_act;
 		soar_module::sqlite_statement *vis_value_const;
 		soar_module::sqlite_statement *vis_value_lti;
 
