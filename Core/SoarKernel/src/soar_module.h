@@ -429,7 +429,7 @@ namespace soar_module
 				}
 				else
 				{
-					std::set< T >::iterator it = my_set->find( new_val );
+					typename std::set< T >::iterator it = my_set->find( new_val );
 					std::string temp_str;
 
 					if ( it != my_set->end() )
@@ -470,12 +470,12 @@ namespace soar_module
 				return ( my_set->find( test_val ) != my_set->end() );
 			}
 
-			typename virtual std::set< T >::iterator set_begin()
+			virtual typename std::set< T >::iterator set_begin()
 			{
 				return my_set->begin();
 			}
 
-			typename virtual std::set< T >::iterator set_end()
+			virtual typename std::set< T >::iterator set_end()
 			{
 				return my_set->end();
 			}
