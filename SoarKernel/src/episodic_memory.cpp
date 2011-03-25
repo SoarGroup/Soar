@@ -139,7 +139,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( force );
 
 	// exclusions - this is initialized with "epmem" directly after hash tables
-	exclusions = new soar_module::set_param( "exclusions", new soar_module::f_predicate<const char *>, my_agent );
+	exclusions = new soar_module::sym_set_param( "exclusions", new soar_module::f_predicate<const char *>, my_agent );
 	add( exclusions );
 
 
