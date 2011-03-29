@@ -383,8 +383,109 @@ namespace soar_module
 			}
 	};
 
-	// a set param maintains a set of strings
-	class set_param: public param
+	// a primitive_set param maintains a set of primitives
+	template <typename T>
+	class primitive_set_param: public param
+	{
+		protected:
+			std::set< T > *my_set;
+			std::string *value;
+			predicate< T > *prot_pred;
+
+		public:
+			primitive_set_param( const char *new_name, predicate< T > *new_prot_pred ): param( new_name ), my_set( new std::set< T >() ), value( new std::string ), prot_pred( new_prot_pred ) {}
+
+			virtual ~primitive_set_param()
+			{
+				delete my_set;
+				delete value;
+				delete prot_pred;
+			}
+
+			virtual char *get_string()
+			{
+				char *return_val = new char[ value->length() + 1 ];
+				strcpy( return_val, value->c_str() );
+				return_val[ value->length() ] = '\0';
+
+				return return_val;
+			}
+
+			virtual bool validate_string( const char *new_value )
+			{
+				T test_val;
+
+				return from_string( test_val, new_value );
+			}
+
+			virtual bool set_string( const char *new_string )
+			{
+				T new_val;
+				from_string( new_val, new_string );
+				
+				if ( (*prot_pred)( new_val ) )
+				{
+					return false;
+				}
+				else
+				{
+					typename std::set< T >::iterator it = my_set->find( new_val );
+					std::string temp_str;
+
+					if ( it != my_set->end() )
+					{
+						my_set->erase( it );
+
+						// regenerate value from scratch
+						value->clear();
+						for ( it=my_set->begin(); it!=my_set->end(); )
+						{
+							to_string( *it, temp_str );
+							value->append( temp_str );
+
+							it++;
+
+							if ( it != my_set->end() )
+								value->append( ", " );
+						}
+					}
+					else
+					{
+						my_set->insert( new_val );
+
+						if ( !value->empty() )
+							value->append( ", " );
+
+						to_string( new_val, temp_str );
+						value->append( temp_str );
+					}
+
+
+					return true;
+				}
+			}
+
+			virtual bool in_set( T test_val )
+			{
+				return ( my_set->find( test_val ) != my_set->end() );
+			}
+
+			virtual typename std::set< T >::iterator set_begin()
+			{
+				return my_set->begin();
+			}
+
+			virtual typename std::set< T >::iterator set_end()
+			{
+				return my_set->end();
+			}
+	};
+
+	// these are easy definitions for sets
+	typedef primitive_set_param< int64_t > int_set_param;
+
+	// a sym_set param maintains a set of strings
+	class sym_set_param: public param
 	{
 		protected:
 			std::set<Symbol *> *my_set;
@@ -394,9 +495,9 @@ namespace soar_module
 			agent *my_agent;
 
 		public:
-			set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent ): param( new_name ), my_set( new std::set<Symbol *>() ), value( new std::string ), prot_pred( new_prot_pred ), my_agent( new_agent ) {}
+			sym_set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent ): param( new_name ), my_set( new std::set<Symbol *>() ), value( new std::string ), prot_pred( new_prot_pred ), my_agent( new_agent ) {}
 
-			virtual ~set_param()
+			virtual ~sym_set_param()
 			{
 				for ( std::set<Symbol *>::iterator p=my_set->begin(); p!=my_set->end(); p++ )
 					symbol_remove_ref( my_agent, (*p) );

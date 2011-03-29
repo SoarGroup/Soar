@@ -119,7 +119,7 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::constant_param<phase_choices> *phase;
 		soar_module::constant_param<trigger_choices> *trigger;
 		soar_module::constant_param<force_choices> *force;
-		soar_module::set_param *exclusions;
+		soar_module::sym_set_param *exclusions;
 
 		// storage
 		soar_module::constant_param<db_choices> *database;
@@ -178,6 +178,7 @@ class epmem_stat_container: public soar_module::stat_container
 		epmem_time_id_stat *time;
 		epmem_mem_usage_stat *mem_usage;
 		epmem_mem_high_stat *mem_high;
+		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *ncb_wmes;
 
 		soar_module::integer_stat *qry_pos;
@@ -241,6 +242,7 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *next;
 		soar_module::timer *prev;
 		soar_module::timer *hash;
+		soar_module::timer *wm_phase;
 
 		soar_module::timer *ncb_edge;
 		soar_module::timer *ncb_edge_rit;
