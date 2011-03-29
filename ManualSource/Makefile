@@ -21,7 +21,8 @@ manual.pdf : manual.ind $(SRC)
 manual.ind : $(SRC)
 	$(LATEX) manual
 	makeindex manual
-	sed -i -f fix_index.sed manual.ind
+	awk -f fix_index.awk manual.ind > tmp.ind
+	mv tmp.ind manual.ind
 
 funclist.tex : wikicmd/tex
 	sh genfunclist.sh
