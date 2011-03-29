@@ -1,5 +1,5 @@
 #!/bin/sh
-PYTHON=python2
+PYTHON=python
 
 if [ ! -d wiki ]
 then
