@@ -101,6 +101,22 @@ const char *epmem_range_queries[2][2][3] =
 	},
 };
 
+// special queries for LTIs, so we don't retrieve episodes before the promotion
+const char *epmem_range_lti_queries[2][3] =
+{
+	{
+		"SELECT e.start AS start FROM edge_range e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+		"SELECT e.start AS start FROM edge_now e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+		"SELECT e.start AS start FROM edge_point e WHERE e.start>? AND e.id=? ORDER BY e.start DESC"
+	},
+	{
+		"SELECT e.end AS end FROM edge_range e WHERE e.end>=? AND e.id=? ORDER BY e.end DESC",
+		"SELECT ? AS end FROM edge_now e WHERE e.id=?",
+		"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+	}
+};
+
+const char *epmem_range_lti_start = "SELECT ? as start";
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -731,6 +747,9 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	find_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM lti WHERE letter=? AND num=?" );
 	add( find_lti );
+
+	find_lti_promotion_time = new soar_module::sqlite_statement( new_db, "SELECT time_id FROM lti WHERE letter=? AND num=?" );
+	add( find_lti_promotion_time );
 
 }
 
@@ -3606,6 +3625,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int i, k, m;				
 				epmem_wme_list::iterator w_p, w_p2;
 
+				// special variables for LTIs
+				epmem_time_id promotion_time = 0;
+				soar_module::sqlite_statement *lti_start_stmt = NULL;
+
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_node_query;
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_edge_query;
@@ -3923,6 +3946,18 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												new_trigger_list = new epmem_shared_literal_pair_list;
 												trigger_lists.push_back( new_trigger_list );
 
+                                                // find the promotion time for an LTI
+                                                promotion_time = 0;
+                                                if ( (*w_p)->value->id.smem_lti )
+                                                {
+                                                    // get the promotion time of the LTI
+                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
+                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
+                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->execute();
+                                                    promotion_time = my_agent->epmem_stmts_graph->find_lti_promotion_time->column_int( 0 );
+                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->reinitialize();
+                                                }
+
 												// add all respective queries
 												for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
 												{
@@ -3944,16 +3979,48 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 																break;
 														}
 
-														// assign sql
-														new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
-														new_stmt->prepare();
-
 														// bind values
 														position = 1;
+
+														// assign sql
+														// check for LTI and use special SQL commands
+														if ( promotion_time > 0 )
+														{
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_queries[ k ][ m ], new_timer );
+															new_stmt->prepare();
+
+															// add special query for promotion start point to query list (if start)
+                                                            if ( k == EPMEM_RANGE_START )
+                                                            {
+                                                                lti_start_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_start, new_timer );
+                                                                lti_start_stmt->prepare();
+					                                            assert( lti_start_stmt->get_status() == soar_module::ready );
+                                                                lti_start_stmt->bind_int( 1, promotion_time );
+                                                                lti_start_stmt->execute();
+                                                                new_query = new epmem_shared_query;
+                                                                new_query->val = lti_start_stmt->column_int( 0 );
+                                                                new_query->stmt = lti_start_stmt;
+                                                                new_query->unique_id = unique_identity;
+                                                                new_query->triggers = new_trigger_list;
+                                                                queries[ k ].push( new_query );
+                                                                new_query = NULL;
+                                                                lti_start_stmt = NULL;
+                                                            }
+														}
+														else
+														{
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
+															new_stmt->prepare();
+														}
+                                                        assert( new_stmt->get_status() == soar_module::ready );
 
 														if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
 														{
 															new_stmt->bind_int( position++, time_now );
+														}
+                                                        if ( (promotion_time > 0) && ( ( k != EPMEM_RANGE_END ) || ( m == EPMEM_RANGE_EP ) ) )
+														{
+															new_stmt->bind_int( position++, promotion_time );
 														}
 														new_stmt->bind_int( position, unique_identity );													
 
