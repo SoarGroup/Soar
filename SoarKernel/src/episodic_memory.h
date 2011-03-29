@@ -264,6 +264,8 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *query_neg_end_now;
 		soar_module::timer *query_neg_end_point;
 
+        soar_module::timer *query_lti;
+
 		epmem_timer_container( agent *my_agent );
 };
 

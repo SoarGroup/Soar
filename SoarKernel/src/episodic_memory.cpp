@@ -518,6 +518,9 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::t
 	query_neg_end_point = new epmem_timer( "query_neg_end_point", my_agent, soar_module::timer::three );
 	add( query_neg_end_point );
 
+	query_lti = new epmem_timer( "query_lti", my_agent, soar_module::timer::three );
+	add( query_lti );
+
 	/////////////////////////////
 	// connect to rit state
 	/////////////////////////////
@@ -3976,19 +3979,26 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 													{
 														// assign timer
-                                                        switch ( m )
+                                                        if ( lti_should_be_current )
                                                         {
-                                                            case EPMEM_RANGE_EP:
-                                                                new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
-                                                                break;
+                                                            new_timer = my_agent->epmem_timers->query_lti;
+                                                        }
+                                                        else
+                                                        {
+                                                            switch ( m )
+                                                            {
+                                                                case EPMEM_RANGE_EP:
+                                                                    new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
+                                                                    break;
 
-                                                            case EPMEM_RANGE_NOW:
-                                                                new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
-                                                                break;
+                                                                case EPMEM_RANGE_NOW:
+                                                                    new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
+                                                                    break;
 
-                                                            case EPMEM_RANGE_POINT:
-                                                                new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
-                                                                break;
+                                                                case EPMEM_RANGE_POINT:
+                                                                    new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
+                                                                    break;
+                                                            }
                                                         }
 
 														// assign sql
