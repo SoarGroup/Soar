@@ -1,8 +1,8 @@
 rm -f funclist.tex
 
-for f in `ls wikicmd/tex`
+for f in wikicmd/tex/*
 do
-	cmd=`echo $f | awk -F. '{print $1}'`
+	cmd=`echo $f | awk -F[./] '{print $3}'`
 	awk '
 		BEGIN {cmd="'$cmd'"}
 		/^\\index/ {
@@ -15,6 +15,6 @@ do
 		insummary == 1 {
 			s = s " " $0
 		}
-	' wikicmd/tex/$f >>funclist.tex
+	' $f >>funclist.tex
 done
 
