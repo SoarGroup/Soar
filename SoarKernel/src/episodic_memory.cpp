@@ -102,26 +102,74 @@ const char *epmem_range_queries[2][2][3] =
 	},
 };
 
+// special queries for LTIs, so we don't retrieve episodes before the promotion
+const char *epmem_range_lti_queries[2][3] =
+{
+	{
+		"SELECT e.start AS start FROM edge_range e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+		"SELECT e.start AS start FROM edge_now e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+		"SELECT e.start AS start FROM edge_point e WHERE e.start>? AND e.id=? ORDER BY e.start DESC"
+	},
+	{
+		"SELECT e.end AS end FROM edge_range e WHERE e.end>=? AND e.id=? ORDER BY e.end DESC",
+		"SELECT ? AS end FROM edge_now e WHERE e.id=?",
+		"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+	}
+};
+
+const char *epmem_range_lti_start = "SELECT ? as start";
+
 // copy of the above table for finding current LTIs
 // note only the queries for the edge_* tables are necessary
 // as LTIs are WMEs and never nodes
 // 
-// The SQL looks a little clunky, but it should be efficient.
-// The constraint of e.id limits which LTIs could possibly match,
-// since we already select for the parent and the attribute.
-// The further constraints over start and end requires the 
-// retrieved intervals to only be those where/when the above LTIs
-// are current. These two constraints together retrieves only
-// intervals where a specific set of LTIs are current.
-const char *epmem_range_queries_lti[2][3] =
+// The SQL needs a little explanation.
+// 
+// First, since the DNF construction enumerates all matching WMEs, we
+// know the parent_id of the unique_edge in question. Second, because
+// these edges are unique, their intervals are disjoint (ie. they do
+// not overlap). This means there is at most one interval which contains
+// the update time of the LTI, but there might not be one (for example,
+// if the LTI was updated in a substate and does not exist on top
+// state).
+// 
+// Given the above, the job of the queries below is to find the interval
+// which contains the update time if it does exist, or return a null
+// set if it doesn't.
+// 
+// The edge_range queries look for an edge where the start and end
+// bound the update time. This uses the (id, end, start) index, which
+// in the general case is inefficient. Since the intervals are disjoint,
+// however, the first interval to end after the update time MUST either
+// contain the update or be entirely after the update. That is, even
+// without the "start<=?" constraint, the query will return the closest
+// interval afterwards. The "start<=?" constraint assures that if the
+// interval does not contain the update, no rows will be returned.
+// 
+// For the edge_now queries, the start must be before or equal to the
+// update time; otherwise, no rows are returned. Ditto for edge_point,
+// except that the start must be equal.
+// 
+// Since the non-edge_range queries use existing indices, and the
+// edge_range queries has a LIMIT 1 (as well as an (id, end, start)
+// index that may not be necessary... but better safe than sorry), all
+// queries will be executed efficiently.
+// 
+// Final note: since we don't want to return an episode in the interval
+// but before the update time, we artificially return the update time
+// for the start times. Since we know the update time must be in the
+// interval (as otherwise the query would return a null set), the
+// endpoints are guaranteed to form an equal or smaller interval.
+
+const char *epmem_range_lti_current_queries[2][3] =
 {
 	{
-		"SELECT ? AS start FROM edge_range e WHERE e.id=? AND e.start<=? LIMIT 1",
+		"SELECT ? AS start FROM edge_range e WHERE e.id=? AND e.end>=? AND e.start<=? ORDER BY e.end ASC LIMIT 1",
 		"SELECT ? AS start FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1",
 		"SELECT ? AS start FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1"
 	},
 	{
-		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>=? ORDER BY e.end ASC LIMIT 1",
+		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>=? AND e.start<=? ORDER BY e.end ASC LIMIT 1",
 		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1",
 		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1",
 	}
@@ -643,6 +691,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE INDEX IF NOT EXISTS edge_range_upper ON edge_range (rit_node,end)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_start ON edge_range (id,start DESC)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end_start ON edge_range (id, end, start)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_parent_attrib_value ON node_unique (parent_id,attrib,value)" );
@@ -760,6 +809,9 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	find_lti = new soar_module::sqlite_statement( new_db, "SELECT parent_id FROM lti WHERE letter=? AND num=?" );
 	add( find_lti );
+
+	find_lti_promotion_time = new soar_module::sqlite_statement( new_db, "SELECT time_id FROM lti WHERE letter=? AND num=?" );
+	add( find_lti_promotion_time );
 
 	//
 
@@ -3651,6 +3703,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				// variables for requiring LTIs
 				epmem_time_id lti_current_time;
 
+				// special variables for LTIs
+				epmem_time_id promotion_time = 0;
+				soar_module::sqlite_statement *lti_start_stmt = NULL;
+
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_node_query;
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_edge_query;
@@ -3988,6 +4044,18 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
 												}
 
+												// find the promotion time for an LTI
+												promotion_time = 0;
+												if ( (*w_p)->value->id.smem_lti )
+												{
+													// get the promotion time of the LTI
+													my_agent->epmem_stmts_graph->find_lti_promotion_time->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
+													my_agent->epmem_stmts_graph->find_lti_promotion_time->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
+													my_agent->epmem_stmts_graph->find_lti_promotion_time->execute();
+													promotion_time = my_agent->epmem_stmts_graph->find_lti_promotion_time->column_int( 0 );
+													my_agent->epmem_stmts_graph->find_lti_promotion_time->reinitialize();
+												}
+
 												// add all respective queries
 												for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
 												{
@@ -4016,37 +4084,74 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 															}
 														}
 
+														// bind values
+														position = 1;
+
 														// assign sql
+														// requiring a WME to be an LTI (and be current) takes priority
+														// since the unique_identity makes sure that it's an LTI anyway
 														if ( lti_should_be_current )
 														{
 															// use different query table to specify LTI must be current
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries_lti[ k ][ m ], new_timer );
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_current_queries[ k ][ m ], new_timer );
+														}
+														else if ( promotion_time > 0 )
+														{
+															// otherwise if the value is an LTI
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_queries[ k ][ m ], new_timer );
+
+															// add special query for promotion start point to query list (if start)
+															if ( k == EPMEM_RANGE_START )
+															{
+																lti_start_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_start, new_timer );
+																lti_start_stmt->prepare();
+																assert( lti_start_stmt->get_status() == soar_module::ready );
+																lti_start_stmt->bind_int( 1, promotion_time );
+																lti_start_stmt->execute();
+																new_query = new epmem_shared_query;
+																new_query->val = lti_start_stmt->column_int( 0 );
+																new_query->stmt = lti_start_stmt;
+																new_query->unique_id = unique_identity;
+																new_query->triggers = new_trigger_list;
+																queries[ k ].push( new_query );
+																new_query = NULL;
+																lti_start_stmt = NULL;
+															}
 														}
 														else
 														{
 															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
 														}
 														new_stmt->prepare();
-														assert( new_stmt->get_status() == soar_module::ready );
 
 														// bind values
-														position = 1;
-
+														// bind return value as the stored current episode of the LTI
 														if ( lti_should_be_current && ( k == EPMEM_RANGE_START ) )
 														{
-															// bind return value as the stored current episode of the LTI
 															new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
 														}
+														// bind return value as the current time
 														if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
 														{
 															new_stmt->bind_int( position++, time_now );
 														}
-														new_stmt->bind_int( position++, unique_identity );
+														// bind constraints for promotion time
+														if ( (promotion_time > 0) && ( ( k != EPMEM_RANGE_END ) || ( m == EPMEM_RANGE_EP ) ) )
+														{
+															new_stmt->bind_int( position++, promotion_time );
+														}
+														// bind edge unique id
+														new_stmt->bind_int( position++, unique_identity );													
 														if ( lti_should_be_current )
 														{
 															// do extra bind for start/end constraints wrt. current
 															new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
+															if ( m == EPMEM_RANGE_EP )
+															{
+																new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
+															}
 														}
+														assert( new_stmt->get_status() == soar_module::ready );
 
 														// take first step
 														if ( new_stmt->execute() == soar_module::row )

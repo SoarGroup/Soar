@@ -347,6 +347,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		soar_module::sqlite_statement *promote_id;
 		soar_module::sqlite_statement *find_lti;
+		soar_module::sqlite_statement *find_lti_promotion_time;
 
 		//
 
