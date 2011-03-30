@@ -1,0 +1,267 @@
+
+%\documentclass{book}
+
+%\usepackage{epsfig}
+
+%\newcommand{\soar}[1]{\texttt{#1}}
+%\newcommand{\soarb}[1]{\textsf{\textbf{#1}}}
+
+%\newcommand{\insertfigure}[2]{		%\protect\rule[0.0in]{6in}{.01in}
+%			   %   \capstart   % works with hypcap package, figures must have captions
+%			      \begin{center}
+%                              \ \epsfig{file=#1,height=#2}
+%                              \end{center}}
+
+%\newcommand{\insertcaption}[1]{\singl\caption{\small#1}
+%                                       \protect\rule[0.0in]{6in}{.01in}   }
+
+%\begin{document}
+
+\chapter{Reinforcement Learning}
+
+\index{reinforcement learning}
+\index{preference!numeric-indifferent}
+\index{rl}
+
+Whereas chunking learns new productions to summarize subgoal processing, the reinforcement learning (RL) mechanism in Soar automatically tunes the values of numeric indifferent preferences in existing operator evaluation rules based on experience in the environment. This chapter details the integration of RL and Soar; for more information about reinforcement learning, we recommend reading \emph{Reinforcement Learning: An Introduction} (1998) by Richard S. Sutton and Andrew G. Barto.
+
+The RL learning mechanism tunes operator selection knowledge such as to maximize the expected receipt of future reward. The sections in this chapter detail (\ref{RL-rules}) representation of the this operator selection knowledge; (\ref{RL-reward}) reward representation; and (\ref{RL-algo}) the update algorithm. The chapter refers to numerous parameters that can be controlled and configured via the \soarb{rl} command (see Section \ref{rl} on page \pageref{rl}).
+
+\section{Operator Selection Knowledge}
+\label{RL-rules}
+
+The reinforcement learning algorithm updates operator selection knowledge represented within specially formulated productions, which are termed \emph{RL rules}. These productions condition upon a subset of working memory, including a reference to a proposed operator, and elaborate a numeric indifferent preference (see Section \ref{ARCH-prefmem-semantics} on page \pageref{ARCH-prefmem-semantics}) for that operator as their sole action.
+
+\subsection{RL Rule Format}
+
+RL rules are identified by syntax.  A rule is a RL rule if and only if its right hand side (RHS) consists of a single numeric indifferent preference (and it is not a template rule, described in \ref{RL-templates}).  This format exists to ease technical requirements of identifying/updating RL rules, as well as to make it easy for the agent programmer to add/maintain RL capabilities within an agent.
+
+Consider the following [non-RL] rules:
+
+\begin{verbatim}
+sp {multiple*preferences
+    (state <s> ^operator <o> +)
+-->
+    (<s> ^operator <o> = 5, >)
+}
+\end{verbatim}  \vspace{12pt}
+
+\begin{verbatim}
+sp {variable*binding
+    (state <s> ^operator <o> +
+               ^value <v>)
+-->
+    (<s> ^operator <o> = <v>)
+}
+\end{verbatim}  \vspace{12pt}
+
+The first rule proposes multiple preferences for the proposed operator and thus does not comply with the rule format.  The second rule does not comply because it does not provide a \emph{constant} for the numeric indifferent preference value.
+
+\subsection{Generating RL Rules}
+
+RL rules can be learned via chunking. To ease programmer burden, however, Soar provides two facilities to generate rules, which are especially useful in context of RL rules. First, the \soarb{gp} command (see Section \ref{gp} on page \pageref{gp}) can be used to generate productions, at the time of sourcing, according to a specified pattern. The second option option is to use rule templates, described in the following section, which dynamically generate rules as the agent encounters novel situations.
+
+\subsubsection{Rule Templates}
+\label{RL-templates}
+
+Rule templates have variables that are filled in to generate RL rules as the agent encounters novel combinations of variable values.  Consider the following rule template:
+
+\begin{verbatim}
+sp {sample*rule*template
+    :template
+    (state <s> ^operator <o> +
+               ^value <v>)
+-->
+    (<s> ^operator <o> = 2.3)
+}
+\end{verbatim}  \vspace{12pt}
+
+The \soarb{:template} flag means to use the template to generate new productions by filling in those variables that match constants (\soar{<v>} in this case) in working memory.  Without the \soarb{:template} flag, this would have been a single RL rule that would match to multiple states.
+
+A rule template is valid if and only if it has the \soarb{:template} flag and, in all other respects, adheres to the format of an RL rule.  However, wherein an RL rule may only use constants as the numeric indifference preference value, a rule template may use a variable.  Consider the following rule template:
+
+\begin{verbatim}
+sp {sample*rule*template2
+    :template
+    (state <s> ^operator <o> +
+               ^value <v>)
+-->
+    (<s> ^operator <o> = <v>)
+}
+\end{verbatim}  \vspace{12pt}
+
+In this case, the instantiated productions will have numeric indifference preference values initialized to the value of \soar{<v>} at the time this rule template first matches.  If, at this time, the value of \soar{<v>} is non-numeric, the numeric indifference preference value is initialized to zero.
+
+Upon adding a production to production memory, Soar checks for the existence of a \soarb{:template} flag.  If a rule contains this flag and validates as a rule template, it is categorized as a template.  If a rule contains this flag but is not a valid template, it is immediately excised.
+
+During Soar's proposal phase, a valid rule template is supplied to the matcher as would any other rule.  Matched instances of the rule, however, do not directly contribute preferences.  Instead, they are used to create new productions.  Each matched instance is compared against existing rules. If the LHS of the instance is not unique, the instance is ignored.  If the LHS of the instance is unique, a new rule is added to production memory.  It should be noted that the current process of identifying unique template match instances can become quite expensive in long agent runs.  For performance reasons, if all productions can be predicted at agent design time, and this rule set is not intractably large, it is recommended to pre-generate them manually, using Soar’s gp command (see Section \ref{gp} on page \pageref{gp}), or via custom scripting.
+
+A rule created from a template has two special characteristics: production name and constant replacement.  The new production’s name adheres to the following pattern: \soarb{rl*template-name*id}, where \soarb{id} is a unique identifier and \soarb{template-name} is the name of the originating rule template.  The unique identifier is an incrementing counter maintained automatically for the agent.  When a new production is generated, it receives an id value greater than the greatest identifier in production memory.  The counter is updated during every successful instantiation of a rule from a template, as well as creation of productions (such as when sourcing an agent) that match the above naming scheme.
+
+All variables in the new production that map to constants (as opposed to structures) are replaced with these constant values.  This replacement applies to both the LHS conditions, as well as numeric indifferent preference value.
+
+For example, consider \soarb{sample*rule*template2} above.  Assume that the first time this template matches the value of \soar{<v>} is \soarb{3.2}.  The following new RL rule is added to production memory during the proposal phase:
+
+\begin{verbatim}
+sp {rl*sample*rule*template2*1
+    :template
+    (state <s> ^operator <o> +
+               ^value 3.2)
+-->
+    (<s> ^operator <o> = 3.2)
+}
+\end{verbatim}  \vspace{12pt}
+
+As with other RL rules, the value of \soarb{3.2} on the RHS of this rule may be updated later by reinforcement learning, whereas the value of \soarb{3.2} on the LHS will remain unchanged.
+
+\section{Reward Representation}
+\label{RL-reward}
+
+Soar updates RL rules based upon reward, which is a numeric value in the range ($\infty$, -$\infty$). Upon creation of a new state within working memory, Soar automatically creates a structure in working memory called \soarb{reward-link}. The reinforcement learning algorithm (\ref{RL-algo}) gets reward from a state's \soarb{reward-link}. Operator selection knowledge for an operator at a particular state is affected only by reward at that state.
+
+Reward has a working memory representation composed of two working memory elements in sequence that create the following pattern: \soarb{state.reward-link.reward.value \#}. First, a working memory element has a (\soarb{reward-link} \emph{identifier}, \soarb{reward} \emph{attribute}, and identifier \emph{value}). Then, the \emph{value} of this WME serves as the \emph{identifier} of the second working memory element, whose \emph{attribute} is \soarb{value} and \emph{value} is a numeric constant. For instance, the following reward attributions are correct:
+
+\begin{verbatim}
+   state ^reward-link.reward.value 1.2
+   
+   state ^reward-link.reward.value -2
+\end{verbatim}  
+%\vspace{6pt}
+
+All non-numeric WMEs that match this pattern, or any values that do not match this pattern, are ignored.
+
+\subsection{Environmental Reward}
+The \soarb{reward-link} is not part of the \soarb{io} structure and is not modified directly by the environment.  Reward information from the environment should be copied, via rules, from the \soarb{input-link} to the \soarb{reward-link}.
+
+\subsection{Accumulation of Reward}
+Reward is accumulated (and summed if there are multiple reward WMEs) at the beginning of each decision phase.  Working memory elements composing reward are not modified or removed from working memory as they are accumulated, so, for instance, an o-supported reward will continue to be accumulated until it is explicitly removed.
+
+As special cases, reward accumulation will occur immediately after agent \soarb{halt} (see Section \ref{RHS-stopping} on page \pageref{RHS-stopping}) and immediately before subgoal retraction (see \ref{RL-hrl}).
+
+\section{Reinforcement Learning Algorithm}
+\label{RL-algo}
+
+The reinforcement learning algorithm has the following major components: operator selection (\ref{RL-op-selection}), preference updates (\ref{RL-pref-updates}), gaps in rule coverage (\ref{RL-gaps}), eligibility traces (\ref{RL-et}), and hierarchical learning (\ref{RL-hrl}).
+
+\subsection{Operator Selection}
+\label{RL-op-selection}
+
+The purpose of tuning procedural knowledge is so that the agent can make decisions that are informed by experience with the environment. This section details how numeric indifferent preferences participate in Soar's existing operator selection process (see Section \ref{ARCH-prefmem} on page \pageref{ARCH-prefmem}) and exploration policies that ensure that the reinforcement learning algorithm is able to balance \emph{exploration} over the problem space with \emph{exploitation} of learned knowledge.
+
+\subsubsection{Numeric and Symbolic Preferences}
+%\label{RL-numeric-symbolic}
+
+Symbolic preferences take precedence over numeric preferences.  Symbolic preferences are processed first, and only if there are tied operators remaining, are numeric preferences examined.  Consider the following example set of preferences:
+
+In this situation, \soarb{O1} would be selected.
+
+\begin{verbatim}
+   O1 > O2
+   O1 = 0
+   O2 = 2.1
+\end{verbatim}  
+%\vspace{12pt}
+
+\subsubsection{Exploration Policies}
+%\label{RL-exploration-exploitation}
+
+When operator selection is decided on the basis of numeric preferences, the decision mechanism should usually choose the operator with the highest numeric preferences, that is, to exploit the present operator selection knowledge.  However, for reinforcement learning to discover the optimal policy, it is necessary that the agent sometimes choose an action that does not have the maximum predicted value.  Such exploration is necessary because actions may be undervalued.  This situation can occur both during the initial learning of a task and as a result of change in the dynamics or reward structure of a task.
+
+The exploration policy is selected and configured using the \soarb{indifferent-selection} command (see Section \ref{indifferent-selection} on page \pageref{indifferent-selection}). In an effort to maintain backwards compatibility, the default exploration policy is \soarb{softmax}.  However, the first time that the reinforcement learning mechanism is enabled, the architecture changes this policy to \soarb{episilon-greedy} (a more suitable default for RL agents) and issues a message to the trace.
+
+\subsection{Preference Updates}
+\label{RL-pref-updates}
+
+The RL mechanism implements Temporal Difference (TD) learning: the estimated value of selecting an operator in the present state is \emph{updated} in the direction of a later estimate of this quantity.  This update, where $\alpha$ is the \emph{learning rate}, is computed according to the following equation:
+
+\begin{center}
+Current Estimate += $\alpha$(Target Estimate - Current Estimate)
+\end{center}
+
+The update is computed in decision phase \soarb{n+1} and then is apportioned to the RL rules that fired for the operator selected in decision phase \soarb{n} in a least mean squares (LMS), gradient-descent fashion.
+
+Updating an RL rule involves changing the value of its numeric indifference preference.  For example:
+
+\begin{enumerate}
+
+\item In decision phase \soarb{n}, RL rules \soarb{rl-1} and \soarb{rl-2} fire for operator \soarb{O2}. They have the following numeric indifferent preferences:
+\begin{verbatim}
+   rl-1: (<s> ^operator <o> = 2.3)
+   rl-2: (<s> ^operator <o> = -1)
+\end{verbatim}  
+
+\item \soarb{O2} is selected.
+
+\item In decision phase \soarb{n+1}, update \soarb{0.2} is computed.
+
+\item \soarb{rl-1} and \soarb{rl-2} are updated with the following numeric indifferent preferences:
+\begin{verbatim}
+   rl-1: (<s> ^operator <o> = 2.4)
+   rl-2: (<s> ^operator <o> = -0.9)
+\end{verbatim}
+
+Note that the update value is divided amongst and applied equally to all contributing numeric indifference preferences originating from RL rules.
+
+\end{enumerate}
+
+\subsubsection{Target Estimate Calculation}
+The target estimate is the result of applying discounting to accumulated reward.  The discount factor ($\gamma$), configured using the \soarb{discount-rate} parameter, allows the agent to value immediate rewards over more temporally distant rewards.  The value that is chosen for discount is configured by the \soarb{learning-policy} parameter.
+
+\subsection{Gaps in Rule Coverage}
+\label{RL-gaps}
+
+As described, RL updates are transmitted backwards through time, between subsequent decisions. However, requiring that RL rules support operators at every decision can be difficult for agent programmers, particularly when operators are required that do not represent steps in a task, but instead perform generic maintenance functions, such as cleaning processed output-link structures.
+
+To address this practical issue, RL supports automatic propagation of updates over "gaps," defined as one or more contiguous decision cycles during which no RL rules fire. By default, Soar will automatically propagate updates over gaps, discounted exponentially by the \soarb{discount-rate} parameter, with respect to the length of the gap (defined as the number of decision cycles). This behavior can be enabled/disabled by manipulating the \soarb{temporal-extension} parameter. If the \soarb{temporal-extension} parameter is set to \soarb{off}, no updates will propagate across gaps. The \soarb{rl} setting of the \soarb{watch} command (see Section \ref{watch} on page \pageref{watch}) is useful in identifying gaps.
+
+\subsection{Eligibility Traces}
+\label{RL-et}
+The RL mechanism supports eligibility traces, which can improve the speed of learning by updating RL rules across multiple sequential steps. The \soarb{eligibility-trace-decay-rate} and \soarb{eligibility-trace-tolerance} parameters control this mechanism. By setting \soarb{eligibility-trace-decay-rate} to \soarb{0} (default), eligibility traces are in effect disabled. When eligibility traces are enabled, the particular algorithm used is dependent upon the current value of the \soarb{learning-policy} parameter. If the learning policy is \soarb{sarsa}, the eligibility trace implementation is \emph{Sarsa($\lambda$)}; whereas if the learning policy is \soarb{q-learning}, the eligibility trace implementation is \emph{Watkin's Q($\lambda$)}.
+
+\subsection{Hierarchical Learning}
+\label{RL-hrl}
+
+Hierarchical reinforcement learning (HRL) is reinforcement learning done over a hierarchically decomposed task structure. Learning can be applied both to improving the implementation of a subtask and to the selection among subtasks. Compared to flat RL, HRL can demonstrate faster learning on a single task and can learn policies that are easier to transfer to related tasks. As applied to Soar, HRL relates to how the RL mechanism behaves during subgoal processing.
+
+\subsubsection{Operator No-Change Impasses}
+Consider the operator trace in Figure \ref{fig:rl-optrace} where operator \soarb{O1} is selected and impassed at state \soarb{S1}, with operators \soarb{O11}, \soarb{O12}, and \soarb{O13} being selected and applied at substate \soarb{S2}:
+
+\begin{figure}
+\insertfigure{Figures/rl-optrace}{1.5in}
+\insertcaption{Example Soar subgoal operator trace.}
+\label{fig:rl-optrace}
+\end{figure}
+
+The reinforcement learning algorithm will treat the operator selection at \soarb{S1} and \soarb{S2} as two separate RL problems (\soarb{S1} and \soarb{S2} have independent reward-link structures):
+
+\begin{list}{S1}
+\item Rewards at \soarb{S1} while \soarb{O1} is impassed are attributed to \soarb{O1}. By default, these rewards and the next-state prediction are discounted by the number of decision cycles that \soarb{O1} has been impassed.  So if rewards \soarb{r1}, \soarb{r2}, and \soarb{r3} are the rewards received at \soarb{S1} while \soarb{O1} is impassed, the target estimate for \soarb{Q(S1, O1)} is
+
+$$r1 + \gamma(r2) + \gamma^2(r3) + \gamma^3[  Q(S1, O2)  ]$$
+
+This model maintains the definition of the Q-function as representing the expected discounted sum of future reward received after selecting an operator.
+
+Setting the \soarb{hrl-discount} parameter to \soarb{off} will change this behavior, such that the number of cycles \soarb{O1} has been impassed will be ignored.  Thus the target estimate for \soarb{Q(S1, O1)} would be
+
+$$r1 + r2 + r3 + \gamma[  Q(S1, O2)  ]$$
+
+\end{list}
+
+\begin{list}{S2}
+\item After applying \soarb{O13}, immediately before the state \soarb{S2} is removed, the architecture checks for reward \soarb{r} at \soarb{S2}. The target estimate for \soarb{Q(S2, O13)} is just \soarb{r}.
+
+\end{list}
+
+\subsubsection{Other Soar Impasses}
+For impasses other than operator no-change, the behavior of RL at top-state \soarb{S1} and substate \soarb{S2} is as follows:
+
+\begin{list}{S1}
+\item During these impasses, there is no operator installed at \soarb{S1}.  If \soarb{O1} is the last operator selected before the impasse, \soarb{r} the reward received in the decision cycle immediately following \soarb{O1}, and \soarb{O2} the first operator selected after the impasse, then \soarb{O1} is updated with the target \soarb{r} + $\gamma$[\soarb{Q(S1, O2)}]. In other words, RL acts as if the impasse hadn't occurred.
+\end{list}
+
+\begin{list}{S2}
+\item RL acts exactly as it does for an operator no-change: the substate is treated as an episodic task.
+
+\end{list}
+
+%\end{document}
