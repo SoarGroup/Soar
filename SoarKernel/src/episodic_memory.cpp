@@ -116,14 +116,14 @@ const char *epmem_range_queries[2][2][3] =
 const char *epmem_range_queries_lti[2][3] =
 {
 	{
-		"SELECT e.start AS start FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.start DESC",
-		"SELECT e.start AS start FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current ORDER BY e.start DESC",
-		"SELECT e.start AS start FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
+		"SELECT ? AS start FROM edge_range e WHERE e.id=? AND e.start<=? LIMIT 1",
+		"SELECT ? AS start FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1",
+		"SELECT ? AS start FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1"
 	},
 	{
-		"SELECT e.end AS end FROM edge_range e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current AND e.end>=current ORDER BY e.end DESC",
-		"SELECT ? AS end FROM edge_now e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start<=current",
-		"SELECT e.start AS end FROM edge_point e INNER JOIN (SELECT current FROM edge_unique as eq, lti WHERE eq.parent_id=? AND eq.q1=lti.parent_id) WHERE e.id=? AND e.start=current ORDER BY e.start DESC"
+		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>=? ORDER BY e.end ASC LIMIT 1",
+		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1",
+		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1",
 	}
 };
 
@@ -643,7 +643,6 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE INDEX IF NOT EXISTS edge_range_upper ON edge_range (rit_node,end)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_start ON edge_range (id,start DESC)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)" );
-    add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end_start ON edge_range (id, end, start)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_parent_attrib_value ON node_unique (parent_id,attrib,value)" );
@@ -767,8 +766,11 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	update_lti = new soar_module::sqlite_statement( new_db, "UPDATE OR IGNORE lti SET current=? WHERE letter=? AND num=?" );
 	add( update_lti );
 
-	find_edge_unique_lti = new soar_module::sqlite_statement( new_db, "SELECT eq.parent_id as parent_id, eq.q1 as q1 FROM edge_unique as eq INNER JOIN lti WHERE eq.q0=? AND eq.w=? AND eq.q1=lti.parent_id" );
+	find_edge_unique_lti = new soar_module::sqlite_statement( new_db, "SELECT eq.parent_id as parent_id, eq.q1 as q1 FROM edge_unique as eq JOIN lti ON eq.q1=lti.parent_id WHERE eq.q0=? AND eq.w=?" );
 	add( find_edge_unique_lti );
+
+	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" ); // FIXME check the indices for this
+	add( find_lti_current_time );
 
 }
 
@@ -3646,6 +3648,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int i, k, m;
 				epmem_wme_list::iterator w_p, w_p2;
 
+				// variables for requiring LTIs
+				epmem_time_id lti_current_time;
+
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_node_query;
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_edge_query;
@@ -3973,38 +3978,49 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												new_trigger_list = new epmem_shared_literal_pair_list;
 												trigger_lists.push_back( new_trigger_list );
 
+												lti_current_time = 0;
+												if ( lti_should_be_current )
+												{
+                                                    // get the current time of the LTI
+                                                    my_agent->epmem_stmts_graph->find_lti_current_time->bind_int( 1, shared_identity );
+                                                    my_agent->epmem_stmts_graph->find_lti_current_time->execute();
+                                                    lti_current_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int( 0 );
+                                                    my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
+                                                    std::cout << lti_current_time << std::endl;
+												}
+
 												// add all respective queries
 												for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
 												{
 													for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 													{
 														// assign timer
-                                                        if ( lti_should_be_current )
-                                                        {
-                                                            new_timer = my_agent->epmem_timers->query_lti;
-                                                        }
-                                                        else
-                                                        {
-                                                            switch ( m )
-                                                            {
-                                                                case EPMEM_RANGE_EP:
-                                                                    new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
-                                                                    break;
+														if ( lti_should_be_current )
+														{
+															new_timer = my_agent->epmem_timers->query_lti;
+														}
+														else
+														{
+															switch ( m )
+															{
+																case EPMEM_RANGE_EP:
+																	new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
+																	break;
 
-                                                                case EPMEM_RANGE_NOW:
-                                                                    new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
-                                                                    break;
+																case EPMEM_RANGE_NOW:
+																	new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
+																	break;
 
-                                                                case EPMEM_RANGE_POINT:
-                                                                    new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
-                                                                    break;
-                                                            }
-                                                        }
+																case EPMEM_RANGE_POINT:
+																	new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
+																	break;
+															}
+														}
 
 														// assign sql
 														if ( lti_should_be_current )
 														{
-															// use different table to specify LTI must be current
+															// use different query table to specify LTI must be current
 															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries_lti[ k ][ m ], new_timer );
 														}
 														else
@@ -4012,20 +4028,26 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
 														}
 														new_stmt->prepare();
+                                                        assert( new_stmt->get_status() == soar_module::ready );
 
 														// bind values
 														position = 1;
 
+														if ( lti_should_be_current && ( k == EPMEM_RANGE_START ) )
+														{
+															// bind return value as the stored current episode of the LTI
+															new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
+														}
 														if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
 														{
 															new_stmt->bind_int( position++, time_now );
 														}
+														new_stmt->bind_int( position++, unique_identity );
 														if ( lti_should_be_current )
 														{
-															// do extra bind for nested query if LTI must be current
-															new_stmt->bind_int( position++, unique_identity );
+															// do extra bind for start/end constraints wrt. current
+															new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
 														}
-														new_stmt->bind_int( position, unique_identity );
 
 														// take first step
 														if ( new_stmt->execute() == soar_module::row )
@@ -4302,7 +4324,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_gm_assignment_map king_assignments;
 
 			// perform range search if there are queries and leaf wmes
-			if ( queries->size() && level > 1 && cue_size && !matches.empty() )
+            // FIXME I think some more checking is in order - queries is an ARRAY of priority queues, should check all of them
+			if ( queries[ EPMEM_RANGE_START ].size() && queries[ EPMEM_RANGE_END ].size() && level > 1 && cue_size && !matches.empty() )
 			{
 				double balance = my_agent->epmem_params->balance->get_value();
 				double balance_inv = 1 - balance;

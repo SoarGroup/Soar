@@ -354,6 +354,8 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		soar_module::sqlite_statement *find_edge_unique_lti;
 
+		soar_module::sqlite_statement *find_lti_current_time;
+
 		//
 		
 		epmem_graph_statement_container( agent *new_agent );
