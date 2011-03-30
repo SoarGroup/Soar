@@ -769,7 +769,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	find_edge_unique_lti = new soar_module::sqlite_statement( new_db, "SELECT eq.parent_id as parent_id, eq.q1 as q1 FROM edge_unique as eq JOIN lti ON eq.q1=lti.parent_id WHERE eq.q0=? AND eq.w=?" );
 	add( find_edge_unique_lti );
 
-	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" ); // FIXME check the indices for this
+	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" );
 	add( find_lti_current_time );
 
 }
@@ -3981,12 +3981,11 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 												lti_current_time = 0;
 												if ( lti_should_be_current )
 												{
-                                                    // get the current time of the LTI
-                                                    my_agent->epmem_stmts_graph->find_lti_current_time->bind_int( 1, shared_identity );
-                                                    my_agent->epmem_stmts_graph->find_lti_current_time->execute();
-                                                    lti_current_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int( 0 );
-                                                    my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
-                                                    std::cout << lti_current_time << std::endl;
+													// get the current time of the LTI
+													my_agent->epmem_stmts_graph->find_lti_current_time->bind_int( 1, shared_identity );
+													my_agent->epmem_stmts_graph->find_lti_current_time->execute();
+													lti_current_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int( 0 );
+													my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
 												}
 
 												// add all respective queries
@@ -4028,7 +4027,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
 														}
 														new_stmt->prepare();
-                                                        assert( new_stmt->get_status() == soar_module::ready );
+														assert( new_stmt->get_status() == soar_module::ready );
 
 														// bind values
 														position = 1;
@@ -4324,7 +4323,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			epmem_gm_assignment_map king_assignments;
 
 			// perform range search if there are queries and leaf wmes
-            // FIXME I think some more checking is in order - queries is an ARRAY of priority queues, should check all of them
 			if ( queries[ EPMEM_RANGE_START ].size() && queries[ EPMEM_RANGE_END ].size() && level > 1 && cue_size && !matches.empty() )
 			{
 				double balance = my_agent->epmem_params->balance->get_value();
@@ -4851,9 +4849,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 void epmem_store_lti( agent *my_agent, Symbol *state, Symbol *lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, epmem_id_mapping *id_record = NULL )
 {
-	// FIXME is it possible for the LTI to not be in epmem?
-	// for example, if the LTI was blinked (which Nate should have taken care of with a previous bug)
-	// or if the LTI is removed after this fires, so the episode stored does not in fact contain the LTI
 	my_agent->epmem_stmts_graph->update_lti->bind_int( 1, static_cast<uint64_t>( my_agent->epmem_stats->time->get_value() ) - 1 );
 	my_agent->epmem_stmts_graph->update_lti->bind_int( 2, static_cast<uint64_t>( lti->id.name_letter ) );
 	my_agent->epmem_stmts_graph->update_lti->bind_int( 3, static_cast<uint64_t>( lti->id.name_number ) );
@@ -5525,7 +5520,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 							// flags
 							Symbol * lti = NULL;
-							bool current = true; // FIXME there should be a default for this
+							bool current = true;
 
 							epmem_wme_list::iterator lti_p;
 							epmem_wme_list* lti_wmes = epmem_get_augs_of_id( (*w_p)->value, tc );
