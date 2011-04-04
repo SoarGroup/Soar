@@ -172,6 +172,12 @@
 % define new commands
 %---------------------------------------------------------------------------
 
+% soar version information
+\newcommand{\SoarVersionMajor}{9}
+\newcommand{\SoarVersionMinor}{3}
+\newcommand{\SoarVersionRevision}{1}
+
+
 % to add functions to .glo file:
 \newcommand{\funsum}[2]{\glossary{#1 & #2 & \textit{#1}}}
 
@@ -351,7 +357,7 @@
 \begin{center}
 \begin{huge}
 	The Soar User's Manual \vspace{10pt} \\
-	Version 9.3.1 \vspace{20pt} \\
+	Version \SoarVersionMajor.\SoarVersionMinor.\SoarVersionRevision \vspace{20pt} \\
 \end{huge}
 \begin{large}
 	\nocomment{Edition 1}
@@ -360,7 +366,8 @@
 
 \begin{large}
 	John E. Laird and Clare Bates Congdon  \\
-        User interface sections by Karen J. Coulter \\
+         User interface sections by Karen J. Coulter \\
+         Soar 9 Modules by Nate Derbinsky and Joseph Xu \\
 	Computer Science and Engineering Department\\
 	University of Michigan \vspace{.3in} \\
 
@@ -536,6 +543,8 @@ and Ocean Surveillance Center, RDT\&E division.
 \include{syntax}
 \include{chunking}
 \include{rl}
+\include{smem}
+\include{epmem}
 \include{interface}
 
 \cleardoublepage
