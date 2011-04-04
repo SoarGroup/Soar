@@ -6,7 +6,7 @@
 Soar has been developed to be an architecture for constructing general
 intelligent systems. It has been in use since 1983, and has evolved through
 many different versions. This manual documents the most current of these:
-Soar, version 9.0.
+Soar, version \SoarVersionMajor.\SoarVersionMinor.\SoarVersionRevision.
 
 Our goals for Soar include that it is to be an architecture that can: \vspace{-12pt}
 
@@ -27,10 +27,16 @@ are the cornerstones of Soar's design:  \vspace{-12pt}
 
 \begin{enumerate} 
 \item The number of distinct architectural mechanisms should be minimized.
-        In Soar there is a single representation of permanent knowledge
+        Classically Soar had a single representation of permanent knowledge
         (productions), a single representation of temporary knowledge (objects
         with attributes and values), a single mechanism for generating goals
-        (automatic subgoaling), and a single learning mechanism (chunking).\vspace{-6pt}
+        (automatic subgoaling), and a single learning mechanism (chunking).
+        It was only as Soar was applied to diverse tasks in complex environments that 
+        we found these mechanisms to be insufficient and have recently added new 
+        long-term memories (semantic and episodic) and learning mechanisms
+        (semantic, episodic, and reinforcement learning) to extend Soar agents
+        with crucial new functionalities.
+\vspace{-6pt}
 
 \item All decisions are made through the combination of relevant knowledge at
         run-time.  In Soar, every decision is based on the current
@@ -56,15 +62,23 @@ architecture, but avoids issues of syntax, while \textbf{Chapter \ref{SYNTAX}}
 describes the syntax of Soar, including the specific conditions and actions
 allowed in Soar productions.
 
-\item[Chapter \ref{CHUNKING}] describes chunking, Soar's learning
-mechanism.  Not all users will make use of chunking, but it is important to
-know that this capability exists.
+\item[Chapter \ref{CHUNKING}] describes chunking, Soar's
+mechanism to learn new procedural knowledge.  Not all users will make use of 
+chunking, but it is important to know that this capability exists.
+
+\item[Chapter \ref{RL}] describes reinforcement learning (RL), a mechanism
+by which Soar's procedural knowledge is tuned given task experience.
+Not all users will make use of RL, but it is important to know that this capability exists.
+
+\item[Chapter \ref{SMEM} and Chapter \ref{EPMEM}] describe Soar's long-term declarative
+memory systems, semantic and episodic. Not all users will make use of these mechanisms, 
+but it is important to know that they exist.
 
 \item[Chapter \ref{INTERFACE}] describes the Soar user interface --- how the
 user interacts with Soar. The chapter is a catalog of user-interface commands,
 grouped by functionality.  The most accurate and up-to-date information on the syntax of the Soar User Interface is found online, on the Soar Wiki, at
 
-\hspace{2em}\soar{http://winter.eecs.umich.edu/soarwiki}.
+\hspace{2em}\soar{\htmladdnormallink{http://code.google.com/p/soar/}{http://code.google.com/p/soar/}}.
 
 \end{description}
 
@@ -111,9 +125,10 @@ functions for quick reference.
 Some of the more advanced features of Soar are not described in this
 manual, such as how to interface with a simulator, or how to create Soar
 applications using multiple interacting agents.  A discussion of
-these topics is provided in a separate document, the \textit{SML Quick Start Guide}.
+these topics is provided in a separate document, the \textit{SML Quick Start Guide}, 
+which is available at the Soar project website (see link below).
 
-For novice Soar users, try \textit{The Soar 9 Tutorial}, which guides the reader 
+For novice Soar users, try \textit{The Soar} \textit{\SoarVersionMajor} \textit{Tutorial}, which guides the reader 
 through several example tasks and exercises.
 
 See Section \ref{CONTACT} for information about obtaining Soar documentation.
@@ -144,7 +159,7 @@ See Section \ref{CONTACT} for information about obtaining Soar documentation.
 
 The primary website for Soar is:
 
-\hspace{2em}\soar{http://sitemaker.umich.edu/soar}
+\hspace{2em}\soar{\htmladdnormallink{http://sitemaker.umich.edu/soar/}{http://sitemaker.umich.edu/soar/}}
 
 Look here for the latest downloads, documentation, and Soar-related announcements, as well
 as links to information about specific Soar research projects and researchers and a FAQ
@@ -152,18 +167,18 @@ as links to information about specific Soar research projects and researchers an
 
 Soar kernel development is hosted on Google Code at
 
-\hspace{2em}\soar{http://code.google.com/p/soar/}
+\hspace{2em}\soar{\htmladdnormallink{http://code.google.com/p/soar/}{http://code.google.com/p/soar/}}
 
 This site contains the public subversion repository, active
 documentation wiki, and is also where bugs should be reported.
 
 For questions about Soar, you may write to the Soar e-mail list at:
 
-\hspace{2em}\soar{soar-group@lists.sourceforge.net}
+\hspace{2em}\soar{\htmladdnormallink{soar-group@lists.sourceforge.net}{mailto:soar-group@lists.sourceforge.net}}
 
 If you would like to be on this list yourself, visit:
 
-\hspace{2em}\soar{http://lists.sourceforge.net/lists/listinfo/soar-group}
+\hspace{2em}\soar{\htmladdnormallink{http://lists.sourceforge.net/lists/listinfo/soar-group/}{http://lists.sourceforge.net/lists/listinfo/soar-group/}}
 
 
 %The online FAQ will usually contain the most current information on Soar. It
@@ -182,7 +197,7 @@ address:
 \hspace{2em}Artificial Intelligence Laboratory \\
 \hspace{2em}University of Michigan\\
 \hspace{2em}2260 Hayward Street\\
-\hspace{2em}Ann Arbor, MI 48109-2110 \\
+\hspace{2em}Ann Arbor, MI 48109-2121 \\
 \hspace{2em}USA 
 \end{flushleft}
 
@@ -198,7 +213,7 @@ address:
 \index{Operating System}
 
 Soar runs on a wide variety of platforms, including Linux, Unix
-(although not heavily tested), Mac OSX, and Windows 7, Vista, and XP
+(although not heavily tested), Mac OS X, and Windows 7, Vista, and XP
 (and probably 2000 and NT).
 
 This manual documents Soar generally, although all references to files
