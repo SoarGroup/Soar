@@ -23,10 +23,10 @@ do
 	tf=`echo "$f" | sed 's:^wiki/cmd_::
 	                     s:_:-:g
 	                     s:wiki$:tex:'`
-	echo -n "$tf "
-	$PYTHON moin2latex.py "$f" > "tex/$tf" || exit 1
+	printf "$tf "
+	sed '/#summary/d' "$f" | $PYTHON moin2latex.py > "tex/$tf" || exit 1
 done
-echo
+printf "\n"
 
 # make sure every command listed on the wiki is included in the
 # interface section of the manual
