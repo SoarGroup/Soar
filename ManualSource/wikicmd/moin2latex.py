@@ -319,10 +319,16 @@ class Request:
 class Page:
 	hilite_re = None
 	page_name = 'arst'
-		
-req = Request()
-p = Parser(open(sys.argv[1]).read(), req)
-f = Formatter(req)
-f.page = Page()
 
-p.format(f)
+if __name__ == '__main__':
+	req = Request()
+	if len(sys.argv) == 1:
+		contents = sys.stdin.read()
+	else:
+		contents = open(sys.argv[1]).read()
+		
+	p = Parser(contents, req)
+	f = Formatter(req)
+	f.page = Page()
+	
+	p.format(f)
