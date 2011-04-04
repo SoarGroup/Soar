@@ -868,30 +868,17 @@ selected
 
 \index{preference!numeric-indifferent}
 \index{numeric-indifferent preference|see{preference!numeric-indifferent}}
-\item [Numeric-Indifferent (= \emph{number})] A \soar{numeric-indifferent} preference
-	is used to bias the random selection from mutually indifferent values. This
-	preference includes a unary indifferent preference, so an operator with a
-	\soar{numeric-indifferent} preference will not force a tie impasse. Additionally,
-	the preference weights the operator's probability of being selected according to
-	the number given. For instance, given the preferences
+\item [Numeric-Indifferent (= \emph{number})]
+	A \soar{numeric-indifferent} preference is used to bias the random selection from mutually indifferent values.
+	This preference includes a unary indifferent preference, so an operator with a \soar{numeric-indifferent} preference will not force a tie impasse.
+	When a set of operators are determined to be indifferent based on all other asserted preference types and at least one operator has a numeric-indifferent preference, the decision mechanism will choose an operator based on their numeric-indifferent values and the exploration policy.
+	The available exploration policies and how they calculate selection probability are detailed in the documentation for the \soar{indifferent-selection} command on page \pageref{indifferent-selection}.
+	When a single operator is given multiple numeric-indifferent preferences, they are either averaged or summed into a single value based on the setting of the \soar{numeric-indifferent-mode} command (see page \pageref{numeric-indifferent-mode}).
 	
-	\begin{verbatim}
-	(<s> ^operator <o1> = 40)
-	(<s> ^operator <o2> = 10)
-	\end{verbatim}
+	Numeric-indifferent preferences that are asserted by RL rules can be adjusted by the reinforcement learning mechanism.
+	In this way, it's possible for an agent to begin a task with only arbitrarily initialized numeric indifferent preferences and with experience learn to make the optimal decisions.
+	See chapter \ref{RL} for more information.
 	
-	the operator bound to \verb!<o1>! would be more likely to be selected, whereas 
-	
-	\begin{verbatim}
-	(<s> ^operator <o1> =)
-	(<s> ^operator <o2> =)
-	\end{verbatim}
-	
-	would give equal probability to the two choices. There are two schemes for
-	combining multiple numeric-indifferent preferences and performing the probabilistic
-	selection; details are given in the description of the \soar{numeric-indifferent-mode}
-	command on page \pageref{numeric-indifferent-mode}.
-
 \index{preference!require}
 \index{"!|see{preference!require}}
 \index{require preference|see{preference!require}}
@@ -931,8 +918,6 @@ unless additional preferences resolve this conflict); or there may be
 one preference to say that value \soar{A} is better than value \soar{B}
 and a second preference to say that value \soar{B} is better than value
 \soar{A}.
-
-
 
 % ----------------------------------------------------------------------------
 % ----------------------------------------------------------------------------
