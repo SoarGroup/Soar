@@ -4,18 +4,21 @@
 \index{preference!numeric-indifferent}
 \index{rl}
 
-The reinforcement learning (RL) mechanism in Soar automatically tunes the values of numeric indifferent preferences in existing operator evaluation rules to maximize the expected sum of a future reward signal.
+The reinforcement learning (RL) mechanism in Soar tunes the values of numeric indifferent preferences for each operator to represent how beneficial the operator is to execute.
+More precisely, the numeric indifferent preference values are adjusted to approximate the total discounted future reward the agent should expect from executing an operator, given a fixed policy of future decisions.
+
 The main components of Soar's RL mechanism are (\ref{RL-rules}) representation of operator selection knowledge; (\ref{RL-reward}) reward representation; and (\ref{RL-algo}) the update algorithm. 
-The chapter refers to numerous parameters that can be controlled and configured via the \soarb{rl} command (see Section \ref{rl} on page \pageref{rl}).
-We assume that the reader is familiar with basic reinforcement learning concepts and notation. If not, we recommend \emph{Reinforcement Learning: An Introduction} (1998) by Richard S. Sutton and Andrew G. Barto.
+The detailed behavior of the RL mechanism is determined by numerous parameters that can be controlled and configured via the \soarb{rl} command. Please refer to the documentation for that command in section \ref{rl} on page \pageref{rl}.
+
+We assume that the reader is familiar with basic reinforcement learning concepts and notation. If not, we recommend first reading \emph{Reinforcement Learning: An Introduction} (1998) by Richard S. Sutton and Andrew G. Barto.
 
 \section{RL Rules}
 \label{RL-rules}
 
-The reinforcement learning mechanism affects agent behavior by updating numeric indifferent preference values asserted by specially formulated productions called \emph{RL rules}.
+The RL mechanism changes agent behavior by updating numeric indifferent preference values asserted by specially formulated productions called \emph{RL rules}.
 RL rules are identified by syntax.
 A production is a RL rule if and only if its left hand side tests for a proposed operator, its right hand side asserts a single numeric indifferent preference, and it is not a template rule (see \ref{RL-templates}).
-These constraints exists to ease technical requirements of identifying/updating RL rules, as well as to make it easy for the agent programmer to add/maintain RL capabilities within an agent.
+These constraints ease the technical requirements of identifying/updating RL rules and makes it easy for the agent programmer to add/maintain RL capabilities within an agent.
 
 The following is an RL rule:
 
@@ -58,82 +61,69 @@ The second rule does not comply because it does not provide a \emph{constant} fo
 \section{Reward Representation}
 \label{RL-reward}
 
-Soar updates RL rules based upon reward, which is a numeric value in the range ($\infty$, -$\infty$).
-Upon creation of a new state within working memory, Soar automatically creates a structure in working memory called \soarb{reward-link}.
-The reinforcement learning algorithm (\ref{RL-algo}) gets reward from a state's \soarb{reward-link}.
 Operator selection knowledge for an operator at a particular state is affected only by reward at that state.
 
-Reward has a working memory representation composed of two working memory elements in sequence that create the following pattern: \soarb{state.reward-link.reward.value \#}.
-First, a working memory element has a (\soarb{reward-link} \emph{identifier}, \soarb{reward} \emph{attribute}, and identifier \emph{value}).
-Then, the \emph{value} of this WME serves as the \emph{identifier} of the second working memory element, whose \emph{attribute} is \soarb{value} and \emph{value} is a numeric constant.
-For instance, the following reward attributions are correct:
+RL updates are driven by reward signals.
+In Soar, these reward signals are fed to the RL mechanism through a working memory link called the \soarb{reward-link}.
+Each state in Soar's goal stack is automatically populated with a \soarb{reward-link} structure upon creation.
+Soar will check this structure for a numeric reward signal for the last operator executed in the associated state at the beginning of every decision phase.
+Reward is also counted when the agent is halted or a substate is retracted.
+% What happens when an agent with multiple states is halted? Do the rewards in the substates get counted?
+
+In order to be recognized, the reward signal must follow this pattern:
 
 \begin{verbatim}
-   state ^reward-link.reward.value 1.2
-   
-   state ^reward-link.reward.value -2
+(<r1> ^reward <r2>)
+(<r2> ^value [val])
+\end{verbatim}
+
+where \verb=<r1>= is the \soarb{reward-link} identifier, \verb=<r2>= is some intermediate identifier, and \verb=[val]= is any constant numeric value.
+Any structure that does not match this pattern are ignored.
+If there are multiple matching WMEs, their values are summed into a single reward signal.
+
+As an example, consider the following state:
+
+\begin{verbatim}
+(S1 ^reward-link R1)
+  (R1 ^reward R2)
+    (R2 ^value 1.0)
+    (R2 ^source environment)
+  (R1 ^reward R3)
+    (R3 ^value -0.2)
+    (R3 ^source intrinsic)
 \end{verbatim}  
-%\vspace{6pt}
 
-All non-numeric WMEs that match this pattern, or any values that do not match this pattern, are ignored.
+In this state, there are two reward signals with values 1.0 and -0.2.
+They will be summed together for a total reward of 0.8 and this will be the value given to the RL update algorithm.
+The \verb=(R2 ^source environment)= and \verb=(R3 ^source intrinsic)= WMEs are not counted as rewards or special in any way, but were added by the agent to keep track of where the rewards came from.
 
-\subsection{Environmental Reward}
-The \soarb{reward-link} is not part of the \soarb{io} structure and is not modified directly by the environment.
+Note that the \soarb{reward-link} is not part of the \soarb{io} structure and is not modified directly by the environment.
 Reward information from the environment should be copied, via rules, from the \soarb{input-link} to the \soarb{reward-link}.
+Also note that when counting rewards, Soar simply scans the \soarb{reward-link} and sums the values of all valid reward WMEs.
+The WMEs are not modified and no bookkeeping is done to keep track of previously seen WMEs.
+This means that reward WMEs that exist for multiple decision cycles such as o-supported WMEs will be counted multiple times.
 
-\subsection{Accumulation of Reward}
-Reward is accumulated (and summed if there are multiple reward WMEs) at the beginning of each decision phase.
-Working memory elements composing reward are not modified or removed from working memory as they are accumulated, so, for instance, an o-supported reward will continue to be accumulated until it is explicitly removed.
-
-As special cases, reward accumulation will occur immediately after agent \soarb{halt} (see Section \ref{RHS-stopping} on page \pageref{RHS-stopping}) and immediately before subgoal retraction (see \ref{RL-hrl}).
-
-\section{Reinforcement Learning Algorithm}
+\section{Updating RL Rule Values}
 \label{RL-algo}
 
-The reinforcement learning algorithm has the following major components: operator selection (\ref{RL-op-selection}), preference updates (\ref{RL-pref-updates}), gaps in rule coverage (\ref{RL-gaps}), eligibility traces (\ref{RL-et}), and hierarchical learning (\ref{RL-hrl}).
-
-\subsection{Operator Selection}
-\label{RL-op-selection}
-
-The purpose of tuning procedural knowledge is so that the agent can make decisions that are informed by experience with the environment. This section details how numeric indifferent preferences participate in Soar's existing operator selection process (see Section \ref{ARCH-prefmem} on page \pageref{ARCH-prefmem}) and exploration policies that ensure that the reinforcement learning algorithm is able to balance \emph{exploration} over the problem space with \emph{exploitation} of learned knowledge.
-
-\subsubsection{Numeric and Symbolic Preferences}
-%\label{RL-numeric-symbolic}
-
-Symbolic preferences take precedence over numeric preferences.  Symbolic preferences are processed first, and only if there are tied operators remaining, are numeric preferences examined.  Consider the following example set of preferences:
-
-In this situation, \soarb{O1} would be selected.
-
-\begin{verbatim}
-   O1 > O2
-   O1 = 0
-   O2 = 2.1
-\end{verbatim}  
-%\vspace{12pt}
-
-\subsubsection{Exploration Policies}
-%\label{RL-exploration-exploitation}
-
-When operator selection is decided on the basis of numeric preferences, the decision mechanism should usually choose the operator with the highest numeric preferences, that is, to exploit the present operator selection knowledge.  However, for reinforcement learning to discover the optimal policy, it is necessary that the agent sometimes choose an action that does not have the maximum predicted value.  Such exploration is necessary because actions may be undervalued.  This situation can occur both during the initial learning of a task and as a result of change in the dynamics or reward structure of a task.
-
-The exploration policy is selected and configured using the \soarb{indifferent-selection} command (see Section \ref{indifferent-selection} on page \pageref{indifferent-selection}). In an effort to maintain backwards compatibility, the default exploration policy is \soarb{softmax}.  However, the first time that the reinforcement learning mechanism is enabled, the architecture changes this policy to \soarb{episilon-greedy} (a more suitable default for RL agents) and issues a message to the trace.
-
-\subsection{Preference Updates}
-\label{RL-pref-updates}
-
-The RL mechanism implements Temporal Difference (TD) learning: the estimated value of selecting an operator in the present state is \emph{updated} in the direction of a later estimate of this quantity.  This update, where $\alpha$ is the \emph{learning rate}, is computed according to the following equation:
+The RL mechanism implements Temporal Difference (TD) learning: the estimated value of selecting an operator in the present state is \emph{updated} in the direction of a later estimate of this quantity.
+This update is computed according to the following equation:
 
 \begin{center}
 Current Estimate += $\alpha$(Target Estimate - Current Estimate)
 \end{center}
 
+where $\alpha$ is the \emph{learning rate}.
+
 The update is computed in decision phase \soarb{n+1} and then is apportioned to the RL rules that fired for the operator selected in decision phase \soarb{n} in a least mean squares (LMS), gradient-descent fashion.
 
-Updating an RL rule involves changing the value of its numeric indifference preference.  For example:
+Updating an RL rule involves changing the value of its numeric indifference preference.
+For example:
 
 \begin{enumerate}
 
-\item In decision phase \soarb{n}, RL rules \soarb{rl-1} and \soarb{rl-2} fire for operator \soarb{O2}. They have the following numeric indifferent preferences:
+\item In decision phase \soarb{n}, RL rules \soarb{rl-1} and \soarb{rl-2} fire for operator \soarb{O2}.
+	They have the following numeric indifferent preferences:
 \begin{verbatim}
    rl-1: (<s> ^operator <o> = 2.3)
    rl-2: (<s> ^operator <o> = -1)
@@ -154,7 +144,9 @@ Note that the update value is divided amongst and applied equally to all contrib
 \end{enumerate}
 
 \subsubsection{Target Estimate Calculation}
-The target estimate is the result of applying discounting to accumulated reward.  The discount factor ($\gamma$), configured using the \soarb{discount-rate} parameter, allows the agent to value immediate rewards over more temporally distant rewards.  The value that is chosen for discount is configured by the \soarb{learning-policy} parameter.
+The target estimate is the result of applying discounting to accumulated reward.
+The discount factor ($\gamma$), configured using the \soarb{discount-rate} parameter, allows the agent to value immediate rewards over more temporally distant rewards.
+The value that is chosen for discount is configured by the \soarb{learning-policy} parameter.
 
 \subsection{Gaps in Rule Coverage}
 \label{RL-gaps}
