@@ -3,7 +3,7 @@
 \index{episodic memory}
 \index{epmem}
 
-Episodic memory is a record of an agent’s stream of experience. The episodic storage mechanism will automatically record episodes as a Soar agent executes. The agent can later deliberately retrieve episodic knowledge to extract information and regularities that may not have been noticed during the original experience and combine them with current knowledge such as to improve performance on future tasks.
+Episodic memory is a record of an agent's stream of experience. The episodic storage mechanism will automatically record episodes as a Soar agent executes. The agent can later deliberately retrieve episodic knowledge to extract information and regularities that may not have been noticed during the original experience and combine them with current knowledge such as to improve performance on future tasks.
 
 This chapter is organized as follows: episodic storage (\ref{EPMEM-storage}); retrieving episodes (\ref{EPMEM-retrieval}); and a discussion of performance (\ref{EPMEM-perf}).
 
@@ -39,7 +39,7 @@ Episodic memory uses SQLite to facilitate efficient and standardized storage and
 \section{Retrieving Episodes}
 \label{EPMEM-retrieval}
 
-An agent retrieves episodes by creating an appropriate command (we detail the types of commands below) on the \emph{command} link of a state's \emph{epmem} structure. At the end of the \soarb{phase} of each decision, after episodic storage, episodic memory processes each state's \emph{epmem} command structure.  Results, meta-data, and errors are placed on the \emph{result} structure of that state’s \emph{epmem} structure.
+An agent retrieves episodes by creating an appropriate command (we detail the types of commands below) on the \emph{command} link of a state's \emph{epmem} structure. At the end of the \soarb{phase} of each decision, after episodic storage, episodic memory processes each state's \emph{epmem} command structure.  Results, meta-data, and errors are placed on the \emph{result} structure of that state's \emph{epmem} structure.
 
 Only one type of retrieval command (which may consist of multiple WMEs) can be issued per state in a single decision cycle.  Malformed commands (including attempts at multiple retrieval types) will result in an error:
 
@@ -194,6 +194,6 @@ The next two parameters deal with the SQLite cache, which is a memory store used
 \label{fig:epmem-cache}
 \end{figure}
 
-The next parameter is \soarb{optimization}.  The \soarb{safety} parameter setting will use SQLite default settings.  If data integrity is of importance, this setting is ideal.  The performance setting will make use of lesser data consistency guarantees for significantly greater performance.  First, writes are no longer synchronous with the OS (synchronous pragma), thus episodic memory won’t wait for writes to complete before continuing execution.  Second, transaction journaling is turned off (journal\_mode pragma), thus groups of modifications to the episodic store are not atomic (and thus interruptions due to application/os/hardware failure could lead to inconsistent database state).  Finally, upon initialization, episodic memory maintains a continuous exclusive lock to the database (locking\_mode pragma), thus other applications/agents cannot make simultaneous read/write calls to the database (thereby reducing the need for potentially expensive system calls to secure/release file locks).
+The next parameter is \soarb{optimization}.  The \soarb{safety} parameter setting will use SQLite default settings.  If data integrity is of importance, this setting is ideal.  The performance setting will make use of lesser data consistency guarantees for significantly greater performance.  First, writes are no longer synchronous with the OS (synchronous pragma), thus episodic memory won't wait for writes to complete before continuing execution.  Second, transaction journaling is turned off (journal\_mode pragma), thus groups of modifications to the episodic store are not atomic (and thus interruptions due to application/os/hardware failure could lead to inconsistent database state).  Finally, upon initialization, episodic memory maintains a continuous exclusive lock to the database (locking\_mode pragma), thus other applications/agents cannot make simultaneous read/write calls to the database (thereby reducing the need for potentially expensive system calls to secure/release file locks).
 
 Finally, maintaining accurate operation timers can be relatively expensive in Soar.  Thus, these should be enabled with caution and understanding of their limitations.  First, they will affect performance, depending on the level (set via the \soarb{timers} parameter).  A level of \soarb{three}, for instance, times every step in the cue-based retrieval candidate episode search.  Furthermore, because these iterations are relatively cheap (typically a single step in the linked-list of a b+-tree), timer values are typically unreliable (depending upon the system, resolution is 1 microsecond more).
