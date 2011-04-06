@@ -4,19 +4,17 @@
 \index{preference!numeric-indifferent}
 \index{rl}
 
-The reinforcement learning (RL) mechanism in Soar tunes operator selection knowledge to maximize a given reward function.
-The reinforcement learning (RL) mechanism in Soar tunes the values of numeric indifferent preferences for operators to represent how beneficial the operator is to execute.
-More precisely, the numeric indifferent preference values are adjusted to approximate the total discounted future reward the agent should expect from executing an operator, given a fixed policy of future decisions.
-
-The main components of Soar's RL mechanism are (\ref{RL-rules}) representation of operator selection knowledge; (\ref{RL-reward}) reward representation; and (\ref{RL-algo}) the update algorithm. 
-The detailed behavior of the RL mechanism is determined by numerous parameters that can be controlled and configured via the \soarb{rl} command. Please refer to the documentation for that command in section \ref{rl} on page \pageref{rl}.
-
+Soar has a reinforcement learning (RL) mechanism that tunes operator selection knowledge based on a given reward function.
+This chapter describes the RL mechanism and how it is integrated with production memory, the decision cycle, and the state stack.
 We assume that the reader is familiar with basic reinforcement learning concepts and notation. If not, we recommend first reading \emph{Reinforcement Learning: An Introduction} (1998) by Richard S. Sutton and Andrew G. Barto.
+The detailed behavior of the RL mechanism is determined by numerous parameters that can be controlled and configured via the \soarb{rl} command.
+Please refer to the documentation for that command in section \ref{rl} on page \pageref{rl}.
 
 \section{RL Rules}
 \label{RL-rules}
 
-Soar's RL mechanism learns Q-values for state-operator\footnote{In this context, the term ``state'' refers to the state of the task or environment, not a state identifier.} pairs.
+Soar's RL mechanism learns Q-values for state-operator\footnote{In this context, the term ``state'' refers to the state of the task or environment, not a state identifier.
+For the rest of this chapter, bold capital letter names such as \soarb{S1} will refer to identifiers and italic lowercase names such as $s_1$ will refer to task states.} pairs.
 Q-values are stored as numeric indifferent preferences asserted by specially formulated productions called \emph{RL rules}.
 RL rules are identified by syntax.
 A production is a RL rule if and only if its left hand side tests for a proposed operator, its right hand side asserts a single numeric indifferent preference, and it is not a template rule (see \ref{RL-templates}).
@@ -25,8 +23,10 @@ These constraints ease the technical requirements of identifying/updating RL rul
 The following is an RL rule:
 
 \begin{verbatim}
-sp {example*rl*rule
+sp {rl*3*12*left
    (state <s> ^name task-name
+              ^x 3
+              ^y 12
 	          ^operator <o> +)
    (<o> ^name move
 	    ^direction left)
@@ -65,7 +65,7 @@ The most straightforward way to achieve this is to give the agent a set of RL ru
 This approach is equivalent to a table-based RL algorithm, where the Q-value of each state-operator pair corresponds to the numeric indifferent preference asserted by exactly one RL rule.
 
 In the more general case, multiple RL rules can match a single state-operator pair, and a single RL rule can match multiple state-operator pairs.
-Assuming that \soarb{numeric-indifferent-mode} is set to \soarb{sum}, all numeric indifferent preferences for an operator are summed when calculating the operator's selection probability.
+Assuming that the value of \soarb{numeric-indifferent-mode} is set to \soarb{sum} (see page \pageref{numeric-indifferent-mode}), all numeric indifferent preferences for an operator are summed when calculating the operator's Q-value.
 In this context, RL rules can be interpreted more generally as binary features in a linear approximator of each state-operator pair's Q-value, and their numeric indifferent preference values their weights.
 In other words,
 $$Q(s, a) = w_1 \phi_2 (s, a) + w_2 \phi_2 (s, a) + \ldots + w_n \phi_n (s, a)$$
@@ -74,8 +74,6 @@ This interpretation allows RL rules to simulate a number of popular function app
 
 \section{Reward Representation}
 \label{RL-reward}
-
-Operator selection knowledge for an operator at a particular state is affected only by reward at that state.
 
 RL updates are driven by reward signals.
 In Soar, these reward signals are fed to the RL mechanism through a working memory link called the \soarb{reward-link}.
@@ -139,7 +137,7 @@ where $A_{t+1}$ is the set of operators proposed in the next decision cycle.
 
 Finally, $\delta_t$ is divided by the number of RL rules comprising the Q-value for the operator and the numeric indifferent values for each RL rule is updated by that amount.
 
-An example walkthrough of a Sarsa update follows.
+An example walkthrough of a Sarsa update with $\alpha = 0.3$ and $\gamma = 0.9$ follows.
 
 \begin{enumerate}
 
@@ -193,22 +191,24 @@ Gap propagation can be disabled by setting the \soarb{temporal-extension} parame
 When gap propagation is disabled, the RL rules supporting an operator that is followed by a gap are simply not updated.
 The \soarb{rl} setting of the \soarb{watch} command (see Section \ref{watch} on page \pageref{watch}) is useful in identifying gaps.
 
-\subsection{Eligibility Traces}
-\label{RL-et}
-The RL mechanism supports eligibility traces, which can improve the speed of learning by updating RL rules across multiple sequential steps.
-The \soarb{eligibility-trace-decay-rate} and \soarb{eligibility-trace-tolerance} parameters control this mechanism.
-By setting \soarb{eligibility-trace-decay-rate} to \soarb{0} (default), eligibility traces are in effect disabled.
-When eligibility traces are enabled, the particular algorithm used is dependent upon the learning policy.
-For Sarsa, the eligibility trace implementation is \emph{Sarsa($\lambda$)}. 
-For Q-Learning, is \soarb{q-learning}, the eligibility trace implementation is \emph{Watkin's Q($\lambda$)}.
 
-\subsection{Hierarchical Learning}
-\label{RL-hrl}
+\subsection{RL and Substates}
+\label{RL-substates}
 
-Hierarchical reinforcement learning (HRL) is reinforcement learning done over a hierarchically decomposed task structure. Learning can be applied both to improving the implementation of a subtask and to the selection among subtasks. Compared to flat RL, HRL can demonstrate faster learning on a single task and can learn policies that are easier to transfer to related tasks. As applied to Soar, HRL relates to how the RL mechanism behaves during subgoal processing.
+When an agent has multiple states in its state stack, the RL mechanism will treat each substate independently.
+As mentioned previously, each state has its own \soarb{reward-link}.
+When an RL operator is selected in a state \soarb{S}, the RL updates for that operator are only affected by the rewards counted on the \soarb{reward-link} for \soarb{S} and the Q-values of subsequent RL operators selected in \soarb{S}.
 
-\subsubsection{Operator No-Change Impasses}
-Consider the operator trace in Figure \ref{fig:rl-optrace} where operator \soarb{O1} is selected and impassed at state \soarb{S1}, with operators \soarb{O11}, \soarb{O12}, and \soarb{O13} being selected and applied at substate \soarb{S2}:
+The only exception to this independence is when a selected RL operator forces an operator-no-change impasse.
+When this occurs, the number of decision cycles the RL operator at the superstate remains selected is dependent upon the processing in the impasse state.
+Consider the operator trace in Figure \ref{fig:rl-optrace}.
+
+\begin{itemize}
+\item At decision cycle 1, RL operator \soarb{O1} is selected in \soarb{S1} and causes an operator-no-change impass for three decision cycles.
+\item In the substate \soarb{S2}, operators \soarb{O2}, \soarb{O3}, and \soarb{O4} are selected and applied sequentially.
+\item Meanwhile in \soarb{S1}, reward values $r_2$, $r_3$, and $r_4$ are put on the \soarb{reward-link} sequentially.
+\item Finally, the impasse is resolved by \soarb{O4}, the proposal for \soarb{O1} is retracted, and RL operator \soarb{O5} is selected in \soarb{S1}.
+\end{itemize}
 
 \begin{figure}
 \insertfigure{Figures/rl-optrace}{1.5in}
@@ -216,37 +216,42 @@ Consider the operator trace in Figure \ref{fig:rl-optrace} where operator \soarb
 \label{fig:rl-optrace}
 \end{figure}
 
-The reinforcement learning algorithm will treat the operator selection at \soarb{S1} and \soarb{S2} as two separate RL problems (\soarb{S1} and \soarb{S2} have independent reward-link structures):
+In this scenario, only the RL update for $Q(s_1, \soarb{O1})$ will be different from the ordinary case.
+Its value depends on the setting of the \soarb{hrl-discount} parameter of the \soarb{rl} command.
+When this parameter is set to the default value \soarb{on}, the rewards on \soarb{S1} and the Q-value of \soarb{O5} are discounted by the number of decision cycles they are removed from the selection of \soarb{O1}.
+In this case the update for $Q(s_1, \soarb{O1})$ is
+$$\delta_1 = \alpha \left[ r_2 + \gamma r_3 + \gamma^2 r_4 + \gamma^3 Q(s_5, \soarb{O5}) \right]$$
+which is equivalent to having a three decision gap separating \soarb{O1} and \soarb{O5}.
 
-\begin{list}{S1}
-\item Rewards at \soarb{S1} while \soarb{O1} is impassed are attributed to \soarb{O1}. By default, these rewards and the next-state prediction are discounted by the number of decision cycles that \soarb{O1} has been impassed.  So if rewards \soarb{r1}, \soarb{r2}, and \soarb{r3} are the rewards received at \soarb{S1} while \soarb{O1} is impassed, the target estimate for \soarb{Q(S1, O1)} is
+When \soarb{hrl-discount} is set to \soarb{off}, the number of cycles \soarb{O1} has been impassed will be ignored.
+Thus the update would be
+$$\delta_1 = \alpha \left[ r_2 + r_3 + r_4 + \gamma Q(s_5, \soarb{O5}) \right]$$
 
-$$r1 + \gamma(r2) + \gamma^2(r3) + \gamma^3[  Q(S1, O2)  ]$$
+For impasses other than operator no-change, RL acts as if the impasse hadn't occurred.
+If \soarb{O1} is the last RL operator selected before the impasse, $r_2$ the reward received in the decision cycle immediately following, and \soarb{On} the first operator selected after the impasse, then \soarb{O1} is updated with 
+$$\delta_1 = \alpha \left[ r_2 + \gamma Q(s_n, \soarb{On}) \right]$$
 
-This model maintains the definition of the Q-function as representing the expected discounted sum of future reward received after selecting an operator.
+Soar's automatic subgoaling and RL mechanisms can be combined to naturally implement hierarchical reinforcement learning algorithms such as MAXQ and options.
 
-Setting the \soarb{hrl-discount} parameter to \soarb{off} will change this behavior, such that the number of cycles \soarb{O1} has been impassed will be ignored.  Thus the target estimate for \soarb{Q(S1, O1)} would be
+\subsection{Eligibility Traces}
+\label{RL-et}
+The RL mechanism supports eligibility traces, which can improve the speed of learning by updating RL rules across multiple sequential steps.
+The \soarb{eligibility-trace-decay-rate} and \soarb{eligibility-trace-tolerance} parameters control this mechanism.
+By setting \soarb{eligibility-trace-decay-rate} to \soarb{0} (default), eligibility traces are in effect disabled.
+When eligibility traces are enabled, the particular algorithm used is dependent upon the learning policy.
+For Sarsa, the eligibility trace implementation is \emph{Sarsa($\lambda$)}. 
+For Q-Learning, the eligibility trace implementation is \emph{Watkin's Q($\lambda$)}.
 
-$$r1 + r2 + r3 + \gamma[  Q(S1, O2)  ]$$
+\subsubsection{Exploration}
 
-\end{list}
+When operator selection is decided on the basis of numeric preferences, the decision mechanism should usually choose the operator with the highest numeric preferences, that is, to exploit the present operator selection knowledge.
+However, for reinforcement learning to discover the optimal policy, it is necessary that the agent sometimes choose an action that does not have the maximum predicted value.
+Such exploration is necessary because actions may be undervalued.
+This situation can occur both during the initial learning of a task and as a result of change in the dynamics or reward structure of a task.
 
-\begin{list}{S2}
-\item After applying \soarb{O13}, immediately before the state \soarb{S2} is removed, the architecture checks for reward \soarb{r} at \soarb{S2}. The target estimate for \soarb{Q(S2, O13)} is just \soarb{r}.
-
-\end{list}
-
-\subsubsection{Other Soar Impasses}
-For impasses other than operator no-change, the behavior of RL at top-state \soarb{S1} and substate \soarb{S2} is as follows:
-
-\begin{list}{S1}
-\item During these impasses, there is no operator installed at \soarb{S1}.  If \soarb{O1} is the last operator selected before the impasse, \soarb{r} the reward received in the decision cycle immediately following \soarb{O1}, and \soarb{O2} the first operator selected after the impasse, then \soarb{O1} is updated with the target \soarb{r} + $\gamma$[\soarb{Q(S1, O2)}]. In other words, RL acts as if the impasse hadn't occurred.
-\end{list}
-
-\begin{list}{S2}
-\item RL acts exactly as it does for an operator no-change: the substate is treated as an episodic task.
-
-\end{list}
+The exploration policy is selected and configured using the \soarb{indifferent-selection} command (see Section \ref{indifferent-selection} on page \pageref{indifferent-selection}).
+In an effort to maintain backwards compatibility, the default exploration policy is \soarb{softmax}.
+However, the first time that the reinforcement learning mechanism is enabled, the architecture changes this policy to \soarb{episilon-greedy} (a more suitable default for RL agents) and issues a message to the trace.
 
 \section{Automatic Generation of RL Rules}
 
