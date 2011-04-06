@@ -4,7 +4,8 @@
 \index{preference!numeric-indifferent}
 \index{rl}
 
-The reinforcement learning (RL) mechanism in Soar tunes the values of numeric indifferent preferences for each operator to represent how beneficial the operator is to execute.
+The reinforcement learning (RL) mechanism in Soar tunes operator selection knowledge to maximize a given reward function.
+The reinforcement learning (RL) mechanism in Soar tunes the values of numeric indifferent preferences for operators to represent how beneficial the operator is to execute.
 More precisely, the numeric indifferent preference values are adjusted to approximate the total discounted future reward the agent should expect from executing an operator, given a fixed policy of future decisions.
 
 The main components of Soar's RL mechanism are (\ref{RL-rules}) representation of operator selection knowledge; (\ref{RL-reward}) reward representation; and (\ref{RL-algo}) the update algorithm. 
@@ -15,7 +16,8 @@ We assume that the reader is familiar with basic reinforcement learning concepts
 \section{RL Rules}
 \label{RL-rules}
 
-The RL mechanism changes agent behavior by updating numeric indifferent preference values asserted by specially formulated productions called \emph{RL rules}.
+Soar's RL mechanism learns Q-values for state-operator\footnote{In this context, the term ``state'' refers to the state of the task or environment, not a state identifier.} pairs.
+Q-values are stored as numeric indifferent preferences asserted by specially formulated productions called \emph{RL rules}.
 RL rules are identified by syntax.
 A production is a RL rule if and only if its left hand side tests for a proposed operator, its right hand side asserts a single numeric indifferent preference, and it is not a template rule (see \ref{RL-templates}).
 These constraints ease the technical requirements of identifying/updating RL rules and makes it easy for the agent programmer to add/maintain RL capabilities within an agent.
@@ -53,10 +55,22 @@ sp {variable*binding
 -->
     (<s> ^operator <o> = <v>)
 }
-\end{verbatim}  \vspace{12pt}
+\end{verbatim}
 
 The first rule proposes multiple preferences for the proposed operator and thus does not comply with the rule format.
 The second rule does not comply because it does not provide a \emph{constant} for the numeric indifferent preference value.
+
+In the typical RL use case, the agent should learn to choose the optimal operator in each possible state of the environment.
+The most straightforward way to achieve this is to give the agent a set of RL rules, each matching exactly one possible state-operator pair.
+This approach is equivalent to a table-based RL algorithm, where the Q-value of each state-operator pair corresponds to the numeric indifferent preference asserted by exactly one RL rule.
+
+In the more general case, multiple RL rules can match a single state-operator pair, and a single RL rule can match multiple state-operator pairs.
+Assuming that \soarb{numeric-indifferent-mode} is set to \soarb{sum}, all numeric indifferent preferences for an operator are summed when calculating the operator's selection probability.
+In this context, RL rules can be interpreted more generally as binary features in a linear approximator of each state-operator pair's Q-value, and their numeric indifferent preference values their weights.
+In other words,
+$$Q(s, a) = w_1 \phi_2 (s, a) + w_2 \phi_2 (s, a) + \ldots + w_n \phi_n (s, a)$$
+where all RL rules in production memory are numbered $1 \dots n$, $Q(s, a)$ is the Q-value of the state-operator pair $(s, a)$, $w_i$ is the numeric indifferent preference value of RL rule $i$, $\phi_i (s, a) = 0$ if RL rule $i$ does not match $(s, a)$, and $\phi_i (s, a) = 1$ if it does.
+This interpretation allows RL rules to simulate a number of popular function approximation schemes used in RL such as tile coding and sparse coarse coding.
 
 \section{Reward Representation}
 \label{RL-reward}
@@ -106,58 +120,87 @@ This means that reward WMEs that exist for multiple decision cycles such as o-su
 \section{Updating RL Rule Values}
 \label{RL-algo}
 
-The RL mechanism implements Temporal Difference (TD) learning: the estimated value of selecting an operator in the present state is \emph{updated} in the direction of a later estimate of this quantity.
-This update is computed according to the following equation:
+Soar's RL mechanism is integrated naturally with the decision cycle and performs online updates of RL rules.
+Whenever an operator supported by RL rules is selected, the values of those RL rules are updated.
+The update can be on-policy (Sarsa) or off-policy (Q-Learning), as controlled by the \soarb{learning-policy} parameter of the \soarb{rl} command.
+For Sarsa, the update is
+$$ \delta_t = \alpha \left[ r_{t+1} + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right] $$
+where 
+\begin{itemize}
+\item $Q(s_t, a_t)$ is the Q-value of the state and chosen operator in decision cycle $t$.
+\item $Q(s_{t+1}, a_{t+1})$ is the Q-value of the state and chosen operator in the next decision cycle.
+\item $r_{t+1}$ is the total reward counted in the next decision cycle.
+\item $\alpha$ and $\gamma$ are the settings of the \soarb{learning-rate} and \soarb{discount-rate} parameters of the \soarb{rl} command, respectively.
+\end{itemize}
 
-\begin{center}
-Current Estimate += $\alpha$(Target Estimate - Current Estimate)
-\end{center}
+For Q-Learning, the update is
+$$ \delta_t = \alpha \left[ r_{t+1} + \gamma \underset{a \in A_{t+1}}{\max} Q(s_{t+1}, a) - Q(s_t, a_t) \right] $$
+where $A_{t+1}$ is the set of operators proposed in the next decision cycle.
 
-where $\alpha$ is the \emph{learning rate}.
+Finally, $\delta_t$ is divided by the number of RL rules comprising the Q-value for the operator and the numeric indifferent values for each RL rule is updated by that amount.
 
-The update is computed in decision phase \soarb{n+1} and then is apportioned to the RL rules that fired for the operator selected in decision phase \soarb{n} in a least mean squares (LMS), gradient-descent fashion.
-
-Updating an RL rule involves changing the value of its numeric indifference preference.
-For example:
+An example walkthrough of a Sarsa update follows.
 
 \begin{enumerate}
 
-\item In decision phase \soarb{n}, RL rules \soarb{rl-1} and \soarb{rl-2} fire for operator \soarb{O2}.
-	They have the following numeric indifferent preferences:
+\item In decision cycle $t$, an operator \soarb{O1} is proposed, and RL rules \soarb{rl-1} and \soarb{rl-2} assert the following numeric indifferent preferences for it:
 \begin{verbatim}
-   rl-1: (<s> ^operator <o> = 2.3)
-   rl-2: (<s> ^operator <o> = -1)
+   rl-1: (S1 ^operator O1 = 2.3)
+   rl-2: (S1 ^operator O1 =  -1)
 \end{verbatim}  
+	The Q-value for \soarb{O1} is $Q(s_t, \soarb{O1}) = 2.3 - 1 = 1.3$.
+	 
+\item \soarb{O1} is selected and executed, so $Q(s_t, a_t) = Q(s_t, \soarb{O1}) = 1.3$.
 
-\item \soarb{O2} is selected.
-
-\item In decision phase \soarb{n+1}, update \soarb{0.2} is computed.
-
-\item \soarb{rl-1} and \soarb{rl-2} are updated with the following numeric indifferent preferences:
+\item In decision cycle $t+1$, a total reward of 1.0 is counted on the \soarb{reward-link}, an operator \soarb{O2} is proposed, and another RL rule \soarb{rl-3} asserts the following numeric indifferent preference for it:
 \begin{verbatim}
-   rl-1: (<s> ^operator <o> = 2.4)
-   rl-2: (<s> ^operator <o> = -0.9)
+	rl-3: (S1 ^operator O2 = 0.5)
+\end{verbatim}
+	So $Q(s_{t+1}, \soarb{O2}) = 0.5$.
+
+\item \soarb{O2} is selected, so $Q(s_{t+1}, a_{t+1}) = Q(s_{t+1}, \soarb{O2}) = 0.5$
+	Therefore, 
+	$$\delta_t = \alpha \left[r_{t+1} + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right] = 0.3 \times [ 1.0 + 0.9 \times 0.5 - 1.3 ] = 0.045$$
+	Since \soarb{rl-1} and \soarb{rl-2} both contributed to the Q-value of \soarb{O1}, $\delta_t$ is evenly divided amongst them, resulting in updated values of
+\begin{verbatim}
+   rl-1: (<s> ^operator <o> = 2.3225)
+   rl-2: (<s> ^operator <o> = -0.9775)
 \end{verbatim}
 
-Note that the update value is divided amongst and applied equally to all contributing numeric indifference preferences originating from RL rules.
-
 \end{enumerate}
-
-\subsubsection{Target Estimate Calculation}
-The target estimate is the result of applying discounting to accumulated reward.
-The discount factor ($\gamma$), configured using the \soarb{discount-rate} parameter, allows the agent to value immediate rewards over more temporally distant rewards.
-The value that is chosen for discount is configured by the \soarb{learning-policy} parameter.
 
 \subsection{Gaps in Rule Coverage}
 \label{RL-gaps}
 
-As described, RL updates are transmitted backwards through time, between subsequent decisions. However, requiring that RL rules support operators at every decision can be difficult for agent programmers, particularly when operators are required that do not represent steps in a task, but instead perform generic maintenance functions, such as cleaning processed output-link structures.
+Call an operator with numeric indifferent preferences an RL operator.
+The previous description had assumed that RL operators were selected in both decision cycles $t$ and $t+1$.
+If the operator selected in $t+1$ is not an RL operator, then $Q(s_{t+1}, a_{t+1})$ would not be defined, and an update for the RL operator selected at time $t$ will be undefined.
+% This is true for Sarsa, but what about Q-Learning?
+We will call a sequence of one or more decision cycles in which RL operators are not selected between two decision cycles in which RL operators are selected a \emph{gap}.
+Conceptually, it is desirable to use the temporal difference information from the RL operator after the gap to update the Q-value of the RL operator before the gap.
+There are just no intermediate storage locations for these updates.
+Requiring that RL rules support operators at every decision can be difficult for agent programmers, particularly when operators are required that do not represent steps in a task, but instead perform generic maintenance functions, such as cleaning processed output-link structures.
 
-To address this practical issue, RL supports automatic propagation of updates over "gaps," defined as one or more contiguous decision cycles during which no RL rules fire. By default, Soar will automatically propagate updates over gaps, discounted exponentially by the \soarb{discount-rate} parameter, with respect to the length of the gap (defined as the number of decision cycles). This behavior can be enabled/disabled by manipulating the \soarb{temporal-extension} parameter. If the \soarb{temporal-extension} parameter is set to \soarb{off}, no updates will propagate across gaps. The \soarb{rl} setting of the \soarb{watch} command (see Section \ref{watch} on page \pageref{watch}) is useful in identifying gaps.
+To address this issue, Soar's RL mechanism supports automatic propagation of updates over gaps.
+For a gap of length $n$, the Sarsa update is
+$$\delta_t = \alpha \left[ \sum_{i=t}^{t+n}{\gamma^{i-t} r_i} + \gamma^{n+1} Q(s_{t+n+1}, a_{t+n+1}) - Q(s_t, a_t) \right]$$
+and the Q-Learning update is
+$$\delta_t = \alpha \left[ \sum_{i=t}^{t+n}{\gamma^{i-t} r_i} + \gamma^{n+1} \underset{a \in A_{t+n+1}}{\max} Q(s_{t+n+1}, a) - Q(s_t, a_t) \right]$$
+
+Note that rewards will still be counted during the gap, but they are discounted based on the number of decisions removed they are from the initial RL operator.
+
+Gap propagation can be disabled by setting the \soarb{temporal-extension} parameter of the \soarb{rl} command to \soarb{off}.
+When gap propagation is disabled, the RL rules supporting an operator that is followed by a gap are simply not updated.
+The \soarb{rl} setting of the \soarb{watch} command (see Section \ref{watch} on page \pageref{watch}) is useful in identifying gaps.
 
 \subsection{Eligibility Traces}
 \label{RL-et}
-The RL mechanism supports eligibility traces, which can improve the speed of learning by updating RL rules across multiple sequential steps. The \soarb{eligibility-trace-decay-rate} and \soarb{eligibility-trace-tolerance} parameters control this mechanism. By setting \soarb{eligibility-trace-decay-rate} to \soarb{0} (default), eligibility traces are in effect disabled. When eligibility traces are enabled, the particular algorithm used is dependent upon the current value of the \soarb{learning-policy} parameter. If the learning policy is \soarb{sarsa}, the eligibility trace implementation is \emph{Sarsa($\lambda$)}; whereas if the learning policy is \soarb{q-learning}, the eligibility trace implementation is \emph{Watkin's Q($\lambda$)}.
+The RL mechanism supports eligibility traces, which can improve the speed of learning by updating RL rules across multiple sequential steps.
+The \soarb{eligibility-trace-decay-rate} and \soarb{eligibility-trace-tolerance} parameters control this mechanism.
+By setting \soarb{eligibility-trace-decay-rate} to \soarb{0} (default), eligibility traces are in effect disabled.
+When eligibility traces are enabled, the particular algorithm used is dependent upon the learning policy.
+For Sarsa, the eligibility trace implementation is \emph{Sarsa($\lambda$)}. 
+For Q-Learning, is \soarb{q-learning}, the eligibility trace implementation is \emph{Watkin's Q($\lambda$)}.
 
 \subsection{Hierarchical Learning}
 \label{RL-hrl}
@@ -207,11 +250,8 @@ For impasses other than operator no-change, the behavior of RL at top-state \soa
 
 \section{Automatic Generation of RL Rules}
 
-In the basic RL use case, the programmer would like the agent to learn to choose the optimal operator in each possible state of the environment.
-The most straightforward way to achieve this is to give the agent a set of RL rules, each of which matches exactly one possible state-operator pair.
-This approach is equivalent to a table-based RL algorithm, where the numeric indifferent preference asserted by each RL rule corresponds to the Q-value of one state-action pair.
-Even for small environments, this approach can require a large number of rules.
-It would be undesirable to write each rule by hand, so several methods exist to automate this.
+The number of RL rules required for an agent to accurately approximate operator Q-values is usually infeasibly large to write by hand, even for small domains.
+Therefore, several methods exist to automate this.
 
 \subsection{The gp Command}
 The \soar{gp} command can be used to generate productions based on simple patterns.
