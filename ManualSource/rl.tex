@@ -244,14 +244,10 @@ For Q-Learning, the eligibility trace implementation is \emph{Watkin's Q($\lambd
 
 \subsubsection{Exploration}
 
-When operator selection is decided on the basis of numeric preferences, the decision mechanism should usually choose the operator with the highest numeric preferences, that is, to exploit the present operator selection knowledge.
-However, for reinforcement learning to discover the optimal policy, it is necessary that the agent sometimes choose an action that does not have the maximum predicted value.
-Such exploration is necessary because actions may be undervalued.
-This situation can occur both during the initial learning of a task and as a result of change in the dynamics or reward structure of a task.
-
-The exploration policy is selected and configured using the \soarb{indifferent-selection} command (see Section \ref{indifferent-selection} on page \pageref{indifferent-selection}).
+The \soarb{indifferent-selection} command (page \pageref{indifferent-selection}) determines how operators are selected based on their numeric indifferent preferences.
+Although all the indifferent selection settings are valid regardless of how the numeric indifferent preferences were arrived at, the \soarb{epsilon-greedy} and \soarb{boltzmann} settings are specifically designed for use with RL and correspond to the two most common exploration strategies.
 In an effort to maintain backwards compatibility, the default exploration policy is \soarb{softmax}.
-However, the first time that the reinforcement learning mechanism is enabled, the architecture changes this policy to \soarb{episilon-greedy} (a more suitable default for RL agents) and issues a message to the trace.
+But this is automatically changed to \soarb{episilon-greedy} the first time the reinforcement learning mechanism is enabled.
 
 \section{Automatic Generation of RL Rules}
 
