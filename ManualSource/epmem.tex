@@ -5,7 +5,7 @@
 
 Episodic memory is a record of an agent's stream of experience. The episodic storage mechanism will automatically record episodes as a Soar agent executes. The agent can later deliberately retrieve episodic knowledge to extract information and regularities that may not have been noticed during the original experience and combine them with current knowledge such as to improve performance on future tasks.
 
-This chapter is organized as follows: episodic storage (\ref{EPMEM-storage}); retrieving episodes (\ref{EPMEM-retrieval}); and a discussion of performance (\ref{EPMEM-perf}).
+This chapter is organized as follows: episodic storage (\ref{EPMEM-storage}); retrieving episodes (\ref{EPMEM-retrieval}); and a discussion of performance (\ref{EPMEM-perf}). The detailed behavior of episodic memory is determined by numerous parameters that can be controlled and configured via the \soarb{epmem} command. Please refer to the documentation for that command in Section \ref{epmem} on page \pageref{epmem}.
 
 %\section{Working Memory Activation}
 %\label{EPMEM-wma}
@@ -60,7 +60,14 @@ state.epmem.command.neg-query <optional-negative-cue>
 A \emph{query} cue describes structures desired in the retrieved episode, whereas a \emph{neg-query} cue describes non-desired structures.  For example, the following Soar production creates a \emph{query} cue consisting of a particular state name and a copy of a current value on the \emph{input-link} structure:
 
 \begin{verbatim}
-sp {epmem*sample*query    (state <s> ^epmem.command <ec>               ^io.input-link.foo <bar>)-->    (<ec> ^query <q>)    (<q> ^name my-state-name         ^io.input-link.foo <bar>)}
+sp {epmem*sample*query
+    (state <s> ^epmem.command <ec>
+               ^io.input-link.foo <bar>)
+-->
+    (<ec> ^query <q>)
+    (<q> ^name my-state-name
+         ^io.input-link.foo <bar>)
+}
 \end{verbatim}
 
 As detailed below, multiple prior episodes may equally match the structure and contents of an agent's cue. Nuxoll has produced initial evidence that in some tasks, retrieval quality improves when using \emph{activation} of cue WMEs as a form of feature weighting.  Thus, episodic memory supports integration with working memory activation (see Section \ref{wma} on page \pageref{wma}).  For a theoretical discussion of the Soar implementation of working memory activation, consider reading \emph{Comprehensive Working Memory Activation in Soar} (Nuxoll, A., Laird, J., James, M., ICCM 2004).
@@ -121,7 +128,8 @@ Episodic memory supports the ability for an agent to ``play forward" episodes us
 Episodic memory stores the time of the last successful retrieval (non-cue-based or cue-based).  Agents can indirectly make use of this information by issuing \emph{next} or \emph{previous} commands.  Episodic memory executes these commands by attempting to retrieve the episode immediately proceeding/preceding the last successful retrieval (respectively).  To issue one of these commands, the agent must create a new WME on the \emph{command} link with the appropriate attribute (\emph{next} or \emph{previous}) and value of an arbitrary identifier:
 
 \begin{verbatim}
-state.epmem.command.next <n>state.epmem.command.previous <p>
+state.epmem.command.next <n>
+state.epmem.command.previous <p>
 \end{verbatim}
 
 If no such episode exists then an error is returned.
