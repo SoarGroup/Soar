@@ -86,6 +86,8 @@ void init_soar_agent(agent* thisAgent) {
   predict_init(thisAgent);
 
   init_memory_pool( thisAgent, &( thisAgent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
+  init_memory_pool( thisAgent, &( thisAgent->wma_wme_oset_pool ), sizeof( wma_wme_set ), "wma_oset" );
+  
   wma_init(thisAgent);
 
   thisAgent->epmem_params->exclusions->set_value( "epmem" );

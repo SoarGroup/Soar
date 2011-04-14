@@ -317,7 +317,7 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 		// if decay structure doesn't exist, create it
 		if ( !temp_el )
 		{
-			allocate_with_pool( my_agent, &( my_agent->wma_decay_element_pool ), &temp_el );		
+			allocate_with_pool( my_agent, &( my_agent->wma_decay_element_pool ), &temp_el );
 			
 			temp_el->this_wme = w;			
 			temp_el->just_removed = false;			
@@ -352,7 +352,9 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 		// if doesn't have an o_set, populate
 		if ( !my_o_set )
 		{
-			my_o_set = new wma_wme_set;
+			allocate_with_pool( my_agent, &( my_agent->wma_wme_oset_pool ), &my_o_set );
+			my_o_set = new( my_o_set ) wma_wme_set();
+			
 			w->preference->wma_o_set = my_o_set;
 
 			for ( condition* c=w->preference->inst->top_of_instantiated_conditions; c; c=c->next )
@@ -452,7 +454,8 @@ void wma_remove_pref_o_set( agent* my_agent, preference* pref )
 			wme_remove_ref( my_agent, (*p) );
 		}
 
-		delete victim;
+		victim->~wma_wme_set();
+		free_with_pool( &( my_agent->wma_wme_oset_pool ), victim );
 	}
 }
 
