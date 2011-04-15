@@ -127,7 +127,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( thresh );
 
 	// merge
-	merge = new soar_module::constant_param<merge_choices>( "merge", merge_none, new soar_module::f_predicate<merge_choices>() );
+	merge = new soar_module::constant_param<merge_choices>( "merge", merge_add, new soar_module::f_predicate<merge_choices>() );
 	merge->add_mapping( merge_none, "none" );
 	merge->add_mapping( merge_add, "add" );
 	add( merge );
