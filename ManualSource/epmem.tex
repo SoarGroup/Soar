@@ -7,18 +7,24 @@ Episodic memory is a record of an agent's stream of experience.
 The episodic storage mechanism will automatically record episodes as a Soar agent executes. 
 The agent can later deliberately retrieve episodic knowledge to extract information and regularities that may not have been noticed during the original experience and combine them with current knowledge such as to improve performance on future tasks.
 
-This chapter is organized as follows: episodic storage (\ref{EPMEM-storage}); retrieving episodes (\ref{EPMEM-retrieval}); and a discussion of performance (\ref{EPMEM-perf}). 
+This chapter is organized as follows: episodic memory structures in working memory (\ref{EPMEM-wm}); episodic storage (\ref{EPMEM-storage}); retrieving episodes (\ref{EPMEM-retrieval}); and a discussion of performance (\ref{EPMEM-perf}). 
 The detailed behavior of episodic memory is determined by numerous parameters that can be controlled and configured via the \soarb{epmem} command. 
 Please refer to the documentation for that command in Section \ref{epmem} on page \pageref{epmem}.
 
-%\section{Working Memory Activation}
-%\label{EPMEM-wma}
-%\index{wma}
-%
-As detailed later (\ref{EPMEM-retrieval}), multiple prior episodes may equally match the structure and contents of an agent's episodic cue.  
-Nuxoll has produced initial data that in some domains, retrieval quality improves when using \emph{activation} of cue WMEs as a form of feature weighting.  
-Thus, episodic memory supports integration with working memory activation (see Section \ref{wma} on page \pageref{wma}).  
-For a theoretical discussion of the Soar implementation of working memory activation, consider reading \emph{Comprehensive Working Memory Activation in Soar} (Nuxoll, A., Laird, J., James, M., ICCM 2004).
+\section{Working Memory Structure}
+\label{EPMEM-wm}
+
+Upon creation of a new state in working memory (see Section \ref{ARCH-impasses-types} on page \pageref{ARCH-impasses-types}; Section \ref{SYNTAX-impasses} on page \pageref{SYNTAX-impasses}), the architecture creates the following augmentations to facilitate agent interaction with episodic memory:
+
+\begin{verbatim}
+(<s> ^epmem <e>)
+  (<e> ^command <e-c>)
+  (<e> ^result <e-r>)
+\end{verbatim}
+
+As rules augment the \emph{command} structure in order to retrieve episodes (\ref{EPMEM-retrieval}), episodic memory augments the \emph{result} structure in response.
+Production actions should not remove augmentations of the \emph{result} structure directly, as episodic memory will maintain these WMEs.
+
 
 \section{Episodic Storage}
 \label{EPMEM-storage}
@@ -26,14 +32,18 @@ For a theoretical discussion of the Soar implementation of working memory activa
 Episodic memory records new episodes without deliberate action/consideration by the agent. 
 The timing and frequency of recording new episodes is controlled by the \soarb{phase} and \soarb{trigger} parameters.  
 The \soarb{phase} parameter sets the phase in the decision cycle (default: end of Output phase) during which episodic memory stores episodes and processes commands.  
-The value of the \soarb{trigger} parameter indicates to the architecture the event that concludes an episode: adding a new command to the output-link (default) or each decision cycle.
+The value of the \soarb{trigger} parameter indicates to the architecture the event that concludes an episode: adding a new augmentation to the output-link (default) or each decision cycle.
 
 For debugging purposes, the \soarb{force} parameter allows the user to manually request that an episode be recorded (or not) during the current decision cycle.  
 Behavior is as follows:
 
 \begin{itemize}
-\item The value of the \soarb{force} parameter is initialized to \soarb{off} every decision cycle.
-\item During the \soarb{phase} of episodic storage, episodic memory tests the value of the \soarb{force} parameter; if it has a value other than of off, episodic memory follows the \emph{forced} policy irrespective of the value of the \soarb{trigger} parameter.
+\item 
+The value of the \soarb{force} parameter is initialized to \soarb{off} every decision cycle.
+
+\item 
+During the \soarb{phase} of episodic storage, episodic memory tests the value of the \soarb{force} parameter; if it has a value other than of off, episodic memory follows the \emph{forced} policy irrespective of the value of the \soarb{trigger} parameter.
+
 \end{itemize}
 
 \subsection{Episode Contents}
@@ -41,8 +51,15 @@ When episodic memory stores a new episode, it captures the entire top-state of w
 There are currently two exceptions to this policy:
 
 \begin{itemize}
-\item Episodic memory only supports WMEs whose attribute is a constant. Behavior is currently undefined when attempting to store a WME that has an attribute that is an identifier.
-\item The \soarb{exclusions} parameter allows the user to specify a set of attributes for which Soar will not store WMEs. The storage process currently walks the top-state of working memory in a breadth-first manner, and any WME that is not reachable other than via an excluded WME will not be stored.
+\item 
+Episodic memory only supports WMEs whose attribute is a constant. 
+Behavior is currently undefined when attempting to store a WME that has an attribute that is an identifier.
+
+\item 
+The \soarb{exclusions} parameter allows the user to specify a set of attributes for which Soar will not store WMEs. 
+The storage process currently walks the top-state of working memory in a breadth-first manner, and any WME that is not reachable other than via an excluded WME will not be stored. 
+By default, episodic memory excludes the \emph{epmem} and \emph{smem} structures, to prevent encoding of potentially large and/or frequently changing memory retrievals.
+
 \end{itemize}
 
 \subsection{Storage Location}
@@ -58,11 +75,11 @@ An agent retrieves episodes by creating an appropriate command (we detail the ty
 At the end of the \soarb{phase} of each decision, after episodic storage, episodic memory processes each state's \emph{epmem} command structure.  
 Results, meta-data, and errors are placed on the \emph{result} structure of that state's \emph{epmem} structure.
 
-Only one type of retrieval command (which may consist of multiple WMEs) can be issued per state in a single decision cycle.  
+Only one type of retrieval command (which may include optional modifiers) can be issued per state in a single decision cycle.  
 Malformed commands (including attempts at multiple retrieval types) will result in an error:
 
 \begin{verbatim}
-state.epmem.result.status bad-cmd
+<s> ^epmem.result.status bad-cmd
 \end{verbatim}
 
 After a command has been processed, episodic memory will ignore it until some aspect of the command structure changes (via addition/removal of WMEs).  
@@ -74,8 +91,8 @@ A cue is composed of WMEs that partially describe a top-state of working memory 
 All cue-based retrieval requests must contain a single \emph{query} cue and, optionally, a single \emph{neg-query} cue.  
 
 \begin{verbatim}
-state.epmem.command.query <required-cue>
-state.epmem.command.neg-query <optional-negative-cue>
+<s> ^epmem.command.query <required-cue>
+<s> ^epmem.command.neg-query <optional-negative-cue>
 \end{verbatim}
 
 A \emph{query} cue describes structures desired in the retrieved episode, whereas a \emph{neg-query} cue describes non-desired structures.  
@@ -98,15 +115,16 @@ Thus, episodic memory supports integration with working memory activation (see S
 For a theoretical discussion of the Soar implementation of working memory activation, consider reading \emph{Comprehensive Working Memory Activation in Soar} (Nuxoll, A., Laird, J., James, M., ICCM 2004).
 
 The cue-based retrieval process can be thought of conceptually as a nearest-neighbor search. 
-First, all candidate episodes, defined as episodes containing at least one leaf WME (a WME with no sub-structure) in at least one cue, are identified.  
+First, all candidate episodes, defined as episodes containing at least one leaf WME (a cue WME with no sub-structure) in at least one cue, are identified.  
 Two quantities are calculated for each candidate episode, with respect to the supplied cue(s): the cardinality of the match (defined as the number of matching leaf WMEs) and the activation of the match (defined as the sum of the activation values of each matching leaf WME).  
 Note that each of these values is negated when applied to a negative query.  
 To compute each candidate episode's match score, these quantities are combined with respect to the \soarb{balance} parameter as follows:
 
 $$(balance)*(cardinality) + (1-balance)*(activation)$$
 
+Performing a graph match on each candidate episode, with respect to the structure of the cue, could be very computationally expensive, so episodic memory implements a two-stage matching process.
 An episode with perfect cardinality is considered a perfect \emph{surface} match and, per the \soarb{graph-match} parameter, is subjected to further \emph{structural} matching.  
-Whereas surface matching efficiently determines if all paths to leaf WMEs exist in a candidate episode, graph matching indicates whether or not the cue can be unified with the candidate episode (paying special regard to the structural constraints imposed by shared identifiers).  
+Whereas surface matching efficiently determines if all paths to leaf WMEs exist in a candidate episode, graph matching indicates whether or not the cue can be structurally unified with the candidate episode (paying special regard to the structural constraints imposed by shared identifiers).  
 Cue-based matching will return the most recent structural match, or the most recent candidate episode with the greatest match score.
 
 A special note should be made with respect to how short- vs. long-term identifiers (see Section \ref{SMEM-kr} on page \pageref{SMEM-kr}) are interpreted in a cue.  
@@ -118,19 +136,23 @@ Thus, when analyzing the cue, episodic memory will not consider long-term identi
 The case-based retrieval process can be further controlled using optional modifiers:
 
 \begin{itemize}
-\item The \emph{before} command requires that the retrieved episode come relatively before a supplied time:
+
+\item 
+The \emph{before} command requires that the retrieved episode come relatively before a supplied time:
 \begin{verbatim}
-state.epmem.command.before time
+<s> ^epmem.command.before time
 \end{verbatim}
 
-\item The \emph{after} command requires that the retrieved episode come relatively after a supplied time:
+\item 
+The \emph{after} command requires that the retrieved episode come relatively after a supplied time:
 \begin{verbatim}
-state.epmem.command.after time
+<s> ^epmem.command.after time
 \end{verbatim}
 
-\item The \emph{prohibit} command requires that the time of the retrieved episode is not equal to a supplied time:
+\item 
+The \emph{prohibit} command requires that the time of the retrieved episode is not equal to a supplied time:
 \begin{verbatim}
-state.epmem.command.prohibit time
+<s> ^epmem.command.prohibit time
 \end{verbatim}
 Multiple prohibit command WMEs may be issued as modifiers to a single CB retrieval.
 
@@ -139,7 +161,7 @@ Multiple prohibit command WMEs may be issued as modifiers to a single CB retriev
 If no episode satisfies the cue(s) and optional modifiers an error is returned:
 
 \begin{verbatim}
-state.epmem.result.failure <query> <optional-neg-query>
+<s> ^epmem.result.failure <query> <optional-neg-query>
 \end{verbatim}
 
 If an episode is returned, there is additional meta-data supplied (\ref{EPMEM-meta}).
@@ -151,7 +173,7 @@ An absolute non-cue-based retrieval is one that requests an episode by time.
 An agent issues an absolute non-cue-based retrieval by creating a WME on the \emph{command} structure with attribute \emph{retrieve} and value equal to the desired time:
 
 \begin{verbatim}
-state.epmem.command.retrieve time
+<s> ^epmem.command.retrieve time
 \end{verbatim}
 
 Supplying an invalid value for the \emph{retrieve} command will result in an error.
@@ -172,8 +194,8 @@ Episodic memory executes these commands by attempting to retrieve the episode im
 To issue one of these commands, the agent must create a new WME on the \emph{command} link with the appropriate attribute (\emph{next} or \emph{previous}) and value of an arbitrary identifier:
 
 \begin{verbatim}
-state.epmem.command.next <n>
-state.epmem.command.previous <p>
+<s> ^epmem.command.next <n>
+<s> ^epmem.command.previous <p>
 \end{verbatim}
 
 If no such episode exists then an error is returned.
