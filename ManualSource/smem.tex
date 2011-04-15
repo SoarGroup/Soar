@@ -5,11 +5,28 @@
 
 Soar's semantic memory is a repository for long-term declarative knowledge, supplementing what is contained in short-term working memory (and production memory). 
 Episodic memory, which contains memories of the agent's experiences, is described in Chapter \ref{EPMEM}. 
-The knowledge encoded in episodic memory is organized temporally, and specific information is embedded within the context of when it was experienced, whereas knowledge in semantic memory is independent of any specific context, representing more general facts about the world, which can be accessed efficiently in a variety of situations.
+The knowledge encoded in episodic memory is organized temporally, and specific information is embedded within the context of when it was experienced, whereas knowledge in semantic memory is independent of any specific context, representing more general facts about the world.
 
-This chapter is organized as follows: representation of knowledge in semantic memory (\ref{SMEM-kr}); storing concepts to memory (\ref{SMEM-store}); retrieving concepts from memory (\ref{SMEM-retrieve}); and a discussion of performance (\ref{SMEM-perf}). 
+This chapter is organized as follows: semantic memory structures in working memory (\ref{SMEM-wm}); representation of knowledge in semantic memory (\ref{SMEM-kr}); storing semantic knowledge (\ref{SMEM-store}); retrieving semantic knowledge (\ref{SMEM-retrieve}); and a discussion of performance (\ref{SMEM-perf}). 
 The detailed behavior of semantic memory is determined by numerous parameters that can be controlled and configured via the \soarb{smem} command. 
 Please refer to the documentation for that command in Section \ref{smem} on page \pageref{smem}.
+
+
+\section{Working Memory Structure}
+\label{SMEM-wm}
+
+Upon creation of a new state in working memory (see Section \ref{ARCH-impasses-types} on page \pageref{ARCH-impasses-types}; Section \ref{SYNTAX-impasses} on page \pageref{SYNTAX-impasses}), the architecture creates the following augmentations to facilitate agent interaction with semantic memory:
+
+\begin{verbatim}
+(<s> ^smem <smem>)
+  (<smem> ^command <smem-c>)
+  (<smem> ^result <smem-r>)
+\end{verbatim}
+
+As rules augment the \emph{command} structure in order to access/change semantic knowledge (\ref{SMEM-store}, \ref{SMEM-retrieve}), semantic memory augments the \emph{result} structure in response.
+Production actions should not remove augmentations of the \emph{result} structure directly, as semantic memory will maintain these WMEs.
+
+
 
 \section{Knowledge Representation}
 \label{SMEM-kr}
@@ -19,22 +36,23 @@ It is important to note, however, key differences:
 
 \begin{itemize}
 
-\item Currently semantic memory only supports attributes that are symbolic constants (string, integer, or decimal)
+\item 
+Currently semantic memory only supports attributes that are symbolic constants (string, integer, or decimal), but \emph{not} attributes that are identifiers
 
-\item Whereas working memory is a single, connected, directed graph, semantic memory is disconnected, consisting of multiple directed, connected sub-graphs
+\item 
+Whereas working memory is a single, connected, directed graph, semantic memory can be disconnected, consisting of multiple directed, connected sub-graphs
 
 \end{itemize}
 
-All identifiers in semantic memory are defined as \emph{long-term} and, for convenience, we will use the terms long-term identifier and \emph{concept} interchangeably. 
-The specific letter-number combination that labels long-term identifiers (i.e. S5 or C7) is permanently associated with the stored concept.  
-Any retrievals of the concept are guaranteed to return the associated letter-number pair.  
-For clarity, when printed, a long-term identifier is prefaced with the {@} symbol (i.e. {@}S5 or {@}C7). 
+\emph{Long-term} identifiers (LTIs) are defined as identifiers that exist in semantic memory.
+The specific letter-number combination that labels an LTI (e.g. S5 or C7) is permanently associated with that long-term identifier: any retrievals of the long-term identifier are guaranteed to return the associated letter-number pair.  
+For clarity, when printed, a long-term identifier is prefaced with the {@} symbol (e.g. {@}S5 or {@}C7). 
 Also, when presented in a figure, long-term identifiers will be indicated by a double-circle. 
 For instance, Figure \ref{fig:smem-concept} depicts the long-term identifier {@}A68, with four augmentations, representing the addition fact of ${6+7=13}$ (or, rather, 3, carry 1, in context of multi-column arithmetic).
 
 \begin{figure}
 \insertfigure{Figures/smem-concept}{1.5in}
-\insertcaption{Example semantic memory concept.}
+\insertcaption{Example long-term identifier with four augmentations.}
 \label{fig:smem-concept}
 \end{figure}
 
@@ -46,7 +64,8 @@ This section discusses the state of integration with each of Soar's memories/lea
 Long-term identifiers exist as peers with short-term identifiers in Working Memory.
 
 \subsubsection{Procedural Memory}
-Soar's production parser (i.e. the \soarb{sp} command) has been modified to allow specification of long-term identifiers (prefaced with an {@} symbol) in any context where a variable is valid.  
+Soar's production parser (i.e. the \soarb{sp} command) has been modified to allow specification of long-term identifiers (prefaced with an {@} symbol) in any context where a variable is valid.
+If a rule contains a long-term identifier that is not currently in semantic memory, a fatal error will be raised and Soar will quit.  
 Once added to the rete, the long-term identifier is treated as a constant for matching purposes.  
 If specified as the value of a WME in an action, a long-term identifier will be added to working memory if it does not already exist.  
 There is also preliminary support for chunking over long-term identifiers.
@@ -59,13 +78,13 @@ They will be detected and disallowed in future versions of semantic memory.
 Episodic memory (see Section \ref{EPMEM} on page \pageref{EPMEM}) faithfully captures short- vs. long-term identifiers, including the episode of transition.  
 Cues are handled in much the same way as cue-based retrievals, with respect to the differences in semantics of a short- vs. long-term identifier.
 
-\section{Storing Concepts}
+\section{Storing Semantic Knowledge}
 \label{SMEM-store}
 
-An agent stores a concept in semantic memory by creating a \emph{store} command: this is a WME whose identifier is the \emph{command} link of a state's \emph{smem} structure, the attribute is \emph{store}, and the value is an identifier (short or long).
+An agent stores a long-term identifier to semantic memory by creating a \emph{store} command: this is a WME whose identifier is the \emph{command} link of a state's \emph{smem} structure, the attribute is \emph{store}, and the value is an identifier (short or long).
 
 \begin{verbatim}
-state.smem.command.store <identifier>
+<s> ^smem.command.store <identifier>
 \end{verbatim}
 
 Semantic memory will encode and store all WMEs whose identifier is the value of the store command.  
@@ -76,15 +95,15 @@ Storage commands are processed on every state at the end of every phase of every
 Storage is guaranteed to succeed and a status WME will be created, where the identifier is the \emph{result} link of the \emph{smem} structure of that state, the attribute is \emph{success}, and the value is the value of the store command above.
 
 \begin{verbatim}
-state.smem.result.success <identifier>
+<s> ^smem.result.success <identifier>
 \end{verbatim}
 
 Any short-term identifiers that compose the stored WMEs will be converted to long-term identifiers. 
-If a long-term identifier is the value of a store command, the stored WMEs replace those associated with the concept in semantic memory. 
+If a long-term identifier is the value of a store command, the stored WMEs replace those associated with the LTI in semantic memory. 
 It should be noted that between issuing store commands, it is possible that the augmentations of a long-term identifier in working memory are inconsistent with those in semantic memory.
 
-\subsection{Manual Storage}
-Semantic memory provides the ability to manually store concepts via the \soarb{add} switch of the \soarb{smem} command (see Section \ref{smem} on page \pageref{smem}).  
+\subsection{User-Initiated Storage}
+Semantic memory provides agent designers the ability to store semantic knowledge via the \soarb{add} switch of the \soarb{smem} command (see Section \ref{smem} on page \pageref{smem}).  
 The format of the command is nearly identical to the working memory manipulation components of the RHS of a production (i.e. no RHS-functions; see Section \ref{SYNTAX-pm-action} on page \pageref{SYNTAX-pm-action}).  
 For instance:
 
@@ -98,66 +117,68 @@ smem --add {
 \end{verbatim}
 
 Unlike agent storage, declarative storage is automatically recursive.  
-Thus, this command instance will add a new concept (represented by the temporary 'arithmetic' variable) with three augmentations.  
-The value of each augmentation will each become concepts with two constant attribute/value pairs.  
+Thus, this command instance will add a new long-term identifier (represented by the temporary 'arithmetic' variable) with three augmentations.  
+The value of each augmentation will each become an LTI with two constant attribute/value pairs.  
 Manual storage can be arbitrarily complex and use standard dot-notation.
 
 \subsection{Storage Location}
-Semantic memory uses SQLite to facilitate efficient and standardized storage and querying of concepts.  
+Semantic memory uses SQLite to facilitate efficient and standardized storage and querying of knowledge.  
 The semantic store can be maintained in memory or on disk (per the \soarb{database} and \soarb{path} parameters). 
-If the store is located on disk, users can use any standard SQLite programs/components to access/query its contents. 
+If the store is located on disk, users can use any standard SQLite programs/components to access/query its contents.
+However, using a disk-based semantic store is very costly (performance is discussed in greater detail in Section \ref{SMEM-perf} on page \pageref{SMEM-perf}), and running in memory is recommended for most runs.
 
-The \soarb{lazy-commit} parameter is a performance optimization.  
+The \soarb{lazy-commit} parameter is a performance optimization. 
 If set to \soarb{on} (default), disk databases will not reflect semantic memory changes until the Soar kernel shuts down. 
 This improves performance by avoiding disk writes. 
 The \soarb{optimization} parameter (see Section \ref{SMEM-perf} on page \pageref{SMEM-perf}) will have an affect on whether databases on disk can be opened while the Soar kernel is running.
 
 
-\section{Retrieving Concepts}
+\section{Retrieving Semantic Knowledge}
 \label{SMEM-retrieve}
 
 An agent retrieves knowledge from semantic memory by creating an appropriate command (we detail the types of commands below) on the \emph{command} link of a state's \emph{smem} structure. 
-At the end of the \soarb{phase} of each decision, after concept storage, semantic memory processes each state's \emph{smem} command structure.  
-Results, meta-data, and errors are placed on the \emph{result} structure of that state's \emph{smem} structure.
+At the end of the output of each decision, semantic memory processes each state's \emph{smem} command structure.  
+Results, meta-data, and errors are added to the \emph{result} structure of that state's \emph{smem} structure.
 
-Only one type of retrieval command (which may consist of multiple WMEs) can be issued per state in a single decision cycle.  
+Only one type of retrieval command (which may include optional modifiers) can be issued per state in a single decision cycle.  
 Malformed commands (including attempts at multiple retrieval types) will result in an error:
 
 \begin{verbatim}
-state.smem.result.bad-cmd state.smem.command
+<s> ^smem.result.bad-cmd <smem-c>
 \end{verbatim}
+
+Where the \soarb{smem-c} variable refers to the \emph{command} structure of the state.
 
 After a command has been processed, semantic memory will ignore it until some aspect of the command structure changes (via addition/removal of WMEs).  
 When this occurs, the result structure is cleared and the new command (if one exists) is processed.
 
 \subsection{Non-Cue-Based Retrievals}
-A non-cue-based retrieval is a request by the agent to reflect in working memory the current augmentations of a concept in semantic memory. 
+A non-cue-based retrieval is a request by the agent to reflect in working memory the current augmentations of a long-term identifier in semantic memory. 
 The command WME has a \emph{retrieve} attribute and a long-term identifier value:
 
 \begin{verbatim}
-state.smem.command.retrieve <lti>
+<s> ^smem.command.retrieve <lti>
 \end{verbatim}
 
 If the value of the command is not a long-term identifier, an error will result: 
 
 \begin{verbatim}
-state.smem.result.failure <lti>
+<s> ^smem.result.failure <lti>
 \end{verbatim}
 
 Otherwise, two new WMEs will be placed on the result structure:
 
 \begin{verbatim}
-state.smem.result.success <lti>
-state.smem.result.retrieved <lti>
+<s> ^smem.result.success <lti>
+<s> ^smem.result.retrieved <lti>
 \end{verbatim}
 
-If the long-term identifier in working memory has augmentations, the substructure of the concept will remain unchanged. 
-Otherwise, the augmentations in semantic memory will be created as new WMEs in working memory.
+All augmentations of the long-term identifier in semantic memory will be created as new WMEs in working memory.
 
 \subsection{Cue-Based Retrievals}
-A cue-based retrieval performs a search for a concept in semantic memory that exactly matches an agent-supplied cue, as well as optional cue modifiers.
+A cue-based retrieval performs a search for a long-term identifier in semantic memory whose augmentations exactly match an agent-supplied cue, as well as optional cue modifiers.
 
-A cue is composed of WMEs that describe a concept's augmentations.  
+A cue is composed of WMEs that describe the augmentations of a long-term identifier.  
 A cue WME with a constant value denotes an exact match of both attribute and value.  
 A cue WME with a long-term identifier as its value denotes an exact match as well.  
 A cue WME with a short-term identifier as its value denotes an exact match of attribute, but with any value (constant or identifier).  
@@ -165,7 +186,7 @@ A cue WME with a short-term identifier as its value denotes an exact match of at
 A cue-based retrieval command has a \emph{query} attribute and an identifier value, the cue:
 
 \begin{verbatim}
-state.smem.command.query <cue>
+<s> ^smem.command.query <cue>
 \end{verbatim}
 
 For instance, consider the following rule that creates a cue-based retrieval command:
@@ -185,58 +206,68 @@ sp {smem*sample*query
 \end{verbatim}
 
 In this example, assume that the \soar{<lti>} variable will match a long-term identifier and the \soar{<bar>} variable will match a constant.  
-Thus, the query requests retrieval of a concept from semantic memory with augmentations that satisfy ALL of the following requirements:
+Thus, the query requests retrieval of a long-term identifier from semantic memory with augmentations that satisfy ALL of the following requirements:
 
 \begin{itemize}
-\item Attribute \soar{name} and ANY value
-\item Attribute \soar{foo} and value equal to the value of variable \soar{<bar>} at the time this rule fires
-\item Attribute \soar{associate} and value equal to the long-term identifier \soar{<lti>} at the time this rule fires
-\item Attribute \soar{age} and integer value \soar{25}
+
+\item 
+Attribute \soar{name} and ANY value
+
+\item 
+Attribute \soar{foo} and value equal to the value of variable \soar{<bar>} at the time this rule fires
+
+\item 
+Attribute \soar{associate} and value equal to the long-term identifier \soar{<lti>} at the time this rule fires
+
+\item 
+Attribute \soar{age} and integer value \soar{25}
+
 \end{itemize}
 
 If no long-term identifier satisfies ALL of these requirements, an error is returned:
 
 \begin{verbatim}
-state.smem.result.failure <cue>
+<s> ^smem.result.failure <cue>
 \end{verbatim}
 
 Otherwise, two WMEs are added:
 
 \begin{verbatim}
-state.smem.result.success <cue>
-state.smem.result.retrieved <retrieved-lti>
+<s> ^smem.result.success <cue>
+<s> ^smem.result.retrieved <retrieved-lti>
 \end{verbatim}
 
-During a cue-based retrieval it is possible that the retrieved concept is not in working memory.  
-If this is the case, semantic memory will create a new identifier with letter-number pair as was originally stored.
+During a cue-based retrieval it is possible that the retrieved long-term identifier is not in working memory.  
+If this is the case, semantic memory will add the long-term identifier to working memory with letter-number pair as was originally stored.
 
-As with non-cue-based retrievals, if the long-term identifier is in working memory and has augmentations, the substructure of the concept will remain unchanged. 
-Otherwise the augmentations of the long-term identifier in semantic memory are added as new WMEs to working memory.
+As with non-cue-based retrievals all of the augmentations of the long-term identifier in semantic memory are added as new WMEs to working memory.
 
-It is possible that multiple concepts match the cue equally well. 
+It is possible that multiple long-term identifiers match the cue equally well. 
 In this case, semantic memory will retrieve the long-term identifier that was most recently stored/retrieved.
 
 The cue-based retrieval process can be further tempered using optional modifiers:
 
 \begin{itemize}
-\item The \emph{prohibit} command requires that the retrieved long-term identifier is not equal to a supplied long-term identifier:
+
+\item 
+The \emph{prohibit} command requires that the retrieved long-term identifier is not equal to a supplied long-term identifier:
 \begin{verbatim}
-state.smem.command.prohibit <bad-lti>
+<s> ^smem.command.prohibit <bad-lti>
 \end{verbatim}
 Multiple prohibit command WMEs may be issued as modifiers to a single cue-based retrieval.  
-This method can be used to iterate over all matching concepts.
+This method can be used to iterate over all matching long-term identifiers.
 \end{itemize}
 
 \section{Performance}
 \label{SMEM-perf}
 
 Initial empirical results with toy agents show that semantic memory queries carry up to a 40\% overhead as compared to comparable rete matching.  
-However, the retrieval mechanism implements some basic query optimization: statistics are maintained about all concept storage.  
+However, the retrieval mechanism implements some basic query optimization: statistics are maintained about all stored knowledge.  
 When a query is issued, semantic memory re-orders the cue such as to minimize expected query time.  
 Because only perfect matches are acceptable, and there is no symbol variablization, semantic memory retrievals do not contend with the same combinatorial search space as the rete.  
 Preliminary empirical study shows that semantic memory maintains sub-millisecond retrieval time for a large class of queries, even in very large stores (millions of nodes/edges).
 
-Once the number of concepts overcomes initial overhead (about 1000 WMEs), initial empirical study shows that semantic storage requires far less than 1KB per WME.
+Once the number of long-term identifiers overcomes initial overhead (about 1000 WMEs), initial empirical study shows that semantic storage requires far less than 1KB per stored WME.
 
 \subsection{Performance Tweaking}
 
@@ -246,13 +277,13 @@ The default setting (\soarb{on}) will keep all writes in memory and only commit 
 The \soarb{off} setting will write each change to disk and thus incurs massive I/O delay.
 
 The next parameter is \soarb{thresh}. 
-This has to do with the locality of storing/updating activation information with semantic concepts. 
+This has to do with the locality of storing/updating activation information with semantic augmentations. 
 By default, all WME augmentations are incrementally sorted by activation, such that cue-based retrievals need not sort large number of candidate long-term identifiers on demand, and thus retrieval time is independent of cue selectivity. 
 However, each activation update (such as after a retrieval) incurs an update cost linear in the number of augmentations. 
 If the number of augmentations for a long-term identifier is large, this cost can dominate. 
 Thus, the \soarb{thresh} parameter sets the upper bound of augmentations, after which activation is stored with the long-term identifier. 
 This allows the user to establish a balance between cost of updating augmentation activation and the number of long-term identifiers that must be pre-sorted during a cue-based retrieval. 
-As long as the threshold is greater than the number of augmentations of most concepts, performance should be fine (as it will bound the effects of selectivity).
+As long as the threshold is greater than the number of augmentations of most long-term identifiers, performance should be fine (as it will bound the effects of selectivity).
 
 The next two parameters deal with the SQLite cache, which is a memory store used to speed operations like queries by keeping in memory structures like levels of index B+-trees. 
 The first parameter, \soarb{page\_size}, indicates the size, in bytes, of each cache page. 
