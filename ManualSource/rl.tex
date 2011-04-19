@@ -272,24 +272,21 @@ For impasses other than operator no-change, RL acts as if the impasse hadn't occ
 If \soarb{O1} is the last RL operator selected before the impasse, $r_2$ the reward received in the decision cycle immediately following, and \soarb{O}$_\soarb{n}$, the first operator selected after the impasse, then \soarb{O1} is updated with 
 $$\delta_1 = \alpha \left[ r_2 + \gamma Q(s_n, \soarb{O}_\soarb{n}) - Q(s_1, \soarb{O1}) \right]$$
 
-If an RL operator is selected in a substate immediately prior to the state's retraction, the RL rules will be updated based only on the reward signals present and not on the Q-values of future operators\footnote{
+If an RL operator is selected in a substate immediately prior to the state's retraction, the RL rules will be updated based only on the reward signals present and not on the Q-values of future operators.
 This point is not covered in traditional RL theory.
 The retraction of a substate corresponds to a suspension of the RL task in that state rather than its termination, so the last update assumes the lack of information about future rewards rather than the discontinuation of future rewards.
 To handle this case, the numeric indifferent preference value of each RL rule is stored as two separate values, the expected current reward (ECR) and expected future reward (EFR).
 The ECR is an estimate of the expected immediate reward signal for executing the corresponding RL operator.
 The EFR is an estimate of the time discounted Q-value of the next RL operator.
 Normal updates correspond to traditional RL theory (showing the Sarsa case for simplicity):
-
-\begin{eqnarray}
-\delta_{ECR} &=& \alpha \left[ r_t - ECR(s_t, a_t) \right]
-\delta_{EFR} &=& \alpha \left[ \gamma Q(s_{t+1}, a_{t+1}) - EFR(s_t, a_t) \right]
-\delta_t &=& \delta_{ECR} + \delta_{EFR}
-&=& \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - \left( ECR(s_t, a_t) + EFR(s_t, a_t) \right) \right]
-&=& \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
-\end{eqnarray}
-
+\begin{align*}
+\delta_{ECR} &= \alpha \left[ r_t - ECR(s_t, a_t) \right] \\
+\delta_{EFR} &= \alpha \left[ \gamma Q(s_{t+1}, a_{t+1}) - EFR(s_t, a_t) \right] \\
+\delta_t &= \delta_{ECR} + \delta_{EFR} \\
+&= \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - \left( ECR(s_t, a_t) + EFR(s_t, a_t) \right) \right] \\
+&= \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+\end{align*}
 During substate retraction, only the ECR is updated based on the reward signals present at the time of retraction, and the EFR is unchanged.
-}.
 
 Soar's automatic subgoaling and RL mechanisms can be combined to naturally implement hierarchical reinforcement learning algorithms such as MAXQ and options.
 
