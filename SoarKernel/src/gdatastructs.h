@@ -35,7 +35,10 @@ typedef struct wme_struct wme;
 typedef union symbol_union Symbol;
 typedef cons list;
 
-typedef std::set< wme* > wma_wme_set;
+template <class T>
+class SoarMemoryPoolAllocator;
+
+typedef std::set<wme*, std::less<wme*>, SoarMemoryPoolAllocator<wme*> > SoarSTLWMEPoolSet;
 typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 
 /* REW: begin 09.15.96 */
@@ -226,7 +229,7 @@ typedef struct preference_struct {
   double numeric_value;
   bool rl_contribution;
 
-  wma_wme_set* wma_o_set;
+  SoarSTLWMEPoolSet* wma_o_set;
 
 } preference;
 
