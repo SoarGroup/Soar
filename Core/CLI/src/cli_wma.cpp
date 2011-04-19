@@ -64,6 +64,28 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
+		temp = "decay-thresh: ";
+        temp2 = agnt->wma_params->decay_thresh->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "petrov-approx: ";
+        temp2 = agnt->wma_params->petrov_approx->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
         temp = "forgetting: ";
         temp2 = agnt->wma_params->forgetting->get_string();
         temp += temp2;
