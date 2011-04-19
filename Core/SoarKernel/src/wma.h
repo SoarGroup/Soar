@@ -16,6 +16,7 @@
 #include <string>
 #include <queue>
 #include "soar_module.h"
+#include "stl_support.h"
 
 typedef struct wme_struct wme;
 
@@ -185,7 +186,7 @@ extern bool wma_enabled( agent* my_agent );
 //////////////////////////////////////////////////////////
 
 // generic call to activate a wme
-extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, wma_wme_set* o_set = NULL );
+extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, SoarSTLWMEPoolSet* o_set = NULL );
 
 // Removes a decay element from an existing WME so that 
 // it is no longer activated.
