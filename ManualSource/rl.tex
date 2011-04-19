@@ -13,12 +13,15 @@ Please refer to the documentation for that command in section \ref{rl} on page \
 \section{RL Rules}
 \label{RL-rules}
 
-Soar's RL mechanism learns Q-values for state-operator\footnote{In this context, the term ``state'' refers to the state of the task or environment, not a state identifier.
-For the rest of this chapter, bold capital letter names such as \soarb{S1} will refer to identifiers and italic lowercase names such as $s_1$ will refer to task states.} pairs.
-Q-values are stored as numeric indifferent preferences asserted by specially formulated productions called \emph{RL rules}.
+Soar's RL mechanism learns Q-values for state-operator\footnote{
+In this context, the term ``state'' refers to the state of the task or environment, not a state identifier.
+For the rest of this chapter, bold capital letter names such as \soarb{S1} will refer to identifiers and italic lowercase names such as $s_1$ will refer to task states.}
+pairs.
+Q-values are stored as numeric indifferent preferences created by specially formulated productions called \emph{RL rules}.
 RL rules are identified by syntax.
-A production is a RL rule if and only if its left hand side tests for a proposed operator, its right hand side asserts a single numeric indifferent preference, and it is not a template rule (see \ref{RL-templates}).
+A production is a RL rule if and only if its left hand side tests for a proposed operator, its right hand side creates a single numeric indifferent preference, and it is not a template rule (see \ref{RL-templates}).
 These constraints ease the technical requirements of identifying/updating RL rules and makes it easy for the agent programmer to add/maintain RL capabilities within an agent.
+We define an \emph{RL operator} as an operator with numeric indifferent preferences created by RL rules.
 
 The following is an RL rule:
 
@@ -36,7 +39,7 @@ sp {rl*3*12*left
 \end{verbatim}
 
 Note that the LHS of the rule can test for anything as long as it contains a test for a proposed operator.
-The RHS is constrained to exactly one action: asserting a numeric indifferent preference for the proposed operator.
+The RHS is constrained to exactly one action: creating a numeric indifferent preference for the proposed operator.
 
 The following are not RL rules:
 
@@ -46,9 +49,7 @@ sp {multiple*preferences
 -->
    (<s> ^operator <o> = 5, >)
 }
-\end{verbatim}  \vspace{12pt}
 
-\begin{verbatim}
 sp {variable*binding
     (state <s> ^operator <o> +
                ^value <v>)
@@ -60,27 +61,30 @@ sp {variable*binding
 The first rule proposes multiple preferences for the proposed operator and thus does not comply with the rule format.
 The second rule does not comply because it does not provide a \emph{constant} for the numeric indifferent preference value.
 
-In the typical RL use case, the agent should learn to choose the optimal operator in each possible state of the environment.
+In the typical RL use case, the user intends for the agent to learn the best operator in each possible state of the environment.
 The most straightforward way to achieve this is to give the agent a set of RL rules, each matching exactly one possible state-operator pair.
-This approach is equivalent to a table-based RL algorithm, where the Q-value of each state-operator pair corresponds to the numeric indifferent preference asserted by exactly one RL rule.
+This approach is equivalent to a table-based RL algorithm, where the Q-value of each state-operator pair corresponds to the numeric indifferent preference created by exactly one RL rule.
 
 In the more general case, multiple RL rules can match a single state-operator pair, and a single RL rule can match multiple state-operator pairs.
-Assuming that the value of \soarb{numeric-indifferent-mode} is set to \soarb{sum} (see page \pageref{numeric-indifferent-mode}), all numeric indifferent preferences for an operator are summed when calculating the operator's Q-value.
+all numeric indifferent preferences for an operator are summed when calculating the operator's Q-value\footnote{
+This is assuming the value of \soarb{numeric-indifferent-mode} is set to \soarb{sum}.
+In general, the RL mechanism only works correctly when this is the case, and we assume this case in the rest of the chapter.
+See page \pageref{numeric-indifferent-mode} for more information about this parameter.}.
 In this context, RL rules can be interpreted more generally as binary features in a linear approximator of each state-operator pair's Q-value, and their numeric indifferent preference values their weights.
 In other words,
 $$Q(s, a) = w_1 \phi_2 (s, a) + w_2 \phi_2 (s, a) + \ldots + w_n \phi_n (s, a)$$
 where all RL rules in production memory are numbered $1 \dots n$, $Q(s, a)$ is the Q-value of the state-operator pair $(s, a)$, $w_i$ is the numeric indifferent preference value of RL rule $i$, $\phi_i (s, a) = 0$ if RL rule $i$ does not match $(s, a)$, and $\phi_i (s, a) = 1$ if it does.
-This interpretation allows RL rules to simulate a number of popular function approximation schemes used in RL such as tile coding and sparse coarse coding.
+This interpretation allows RL rules to simulate a number of popular function approximation schemes used in RL such as tile coding and sparse coding.
 
 \section{Reward Representation}
 \label{RL-reward}
 
 RL updates are driven by reward signals.
-In Soar, these reward signals are fed to the RL mechanism through a working memory link called the \soarb{reward-link}.
-Each state in Soar's goal stack is automatically populated with a \soarb{reward-link} structure upon creation.
+In Soar, these reward signals are given to the RL mechanism through a working memory link called the \soarb{reward-link}.
+Each state in Soar's state stack is automatically populated with a \soarb{reward-link} structure upon creation.
 Soar will check this structure for a numeric reward signal for the last operator executed in the associated state at the beginning of every decision phase.
-Reward is also counted when the agent is halted or a substate is retracted.
-% What happens when an agent with multiple states is halted? Do the rewards in the substates get counted?
+Reward is also collected when the agent is halted or a state is retracted.
+% What happens when an agent with multiple states is halted? Do the rewards in the substates get collected?
 
 In order to be recognized, the reward signal must follow this pattern:
 
@@ -90,10 +94,46 @@ In order to be recognized, the reward signal must follow this pattern:
 \end{verbatim}
 
 where \verb=<r1>= is the \soarb{reward-link} identifier, \verb=<r2>= is some intermediate identifier, and \verb=[val]= is any constant numeric value.
-Any structure that does not match this pattern are ignored.
-If there are multiple matching WMEs, their values are summed into a single reward signal.
-
+Any structure that does not match this pattern is ignored.
+If there are multiple valid reward signals, their values are summed into a single reward signal.
 As an example, consider the following state:
+
+\begin{verbatim}
+(S1 ^reward-link R1)
+  (R1 ^reward R2)
+    (R2 ^value 1.0)
+  (R1 ^reward R3)
+    (R3 ^value -0.2)
+\end{verbatim}  
+
+In this state, there are two reward signals with values 1.0 and -0.2.
+They will be summed together for a total reward of 0.8 and this will be the value given to the RL update algorithm.
+
+There are two reasons for requiring the intermediate identifier.
+The first is so that multiple reward signals with the same value can exist simultaneously.
+Since working memory is a set, multiple WMEs with identical values in all three positions (identifier, attribute, value) cannot exist simultaneously.
+Without an intermediate identifier, specifying two rewards with the same value would require a WME structure such as
+
+\begin{verbatim}
+(S1 ^reward-link R1)
+  (R1 ^reward 1.0)
+  (R1 ^reward 1.0)
+\end{verbatim}
+
+which is invalid. With the intermediate identifier, the rewards would be specified as
+
+\begin{verbatim}
+(S1 ^reward-link R1)
+  (R1 ^reward R2)
+    (R2 ^value 1.0)
+  (R1 ^reward R3)
+    (R3 ^value 1.0)
+\end{verbatim}
+
+which is valid.
+The second reason for requiring an intermediate identifier in the reward signal is so that the rewards can be augmented with additional information, such as their source or how long they have existed.
+Although this information will be ignored by the RL mechanism, it can be useful to the agent or programmer.
+For example:
 
 \begin{verbatim}
 (S1 ^reward-link R1)
@@ -103,45 +143,46 @@ As an example, consider the following state:
   (R1 ^reward R3)
     (R3 ^value -0.2)
     (R3 ^source intrinsic)
+    (R3 ^duration 5)
 \end{verbatim}  
 
-In this state, there are two reward signals with values 1.0 and -0.2.
-They will be summed together for a total reward of 0.8 and this will be the value given to the RL update algorithm.
-The \verb=(R2 ^source environment)= and \verb=(R3 ^source intrinsic)= WMEs are not counted as rewards or special in any way, but were added by the agent to keep track of where the rewards came from.
+The \verb=(R2 ^source environment)=, \verb=(R3 ^source intrinsic)=, and \verb=(R3 ^duration 5)= WMEs are arbitrary and ignored by RL, but were added by the agent to keep track of where the rewards came from and for how long.
 
 Note that the \soarb{reward-link} is not part of the \soarb{io} structure and is not modified directly by the environment.
 Reward information from the environment should be copied, via rules, from the \soarb{input-link} to the \soarb{reward-link}.
-Also note that when counting rewards, Soar simply scans the \soarb{reward-link} and sums the values of all valid reward WMEs.
+Also note that when collecting rewards, Soar simply scans the \soarb{reward-link} and sums the values of all valid reward WMEs.
 The WMEs are not modified and no bookkeeping is done to keep track of previously seen WMEs.
-This means that reward WMEs that exist for multiple decision cycles such as o-supported WMEs will be counted multiple times.
+This means that reward WMEs that exist for multiple decision cycles will be collected multiple times.
 
 \section{Updating RL Rule Values}
 \label{RL-algo}
 
 Soar's RL mechanism is integrated naturally with the decision cycle and performs online updates of RL rules.
-Whenever an operator supported by RL rules is selected, the values of those RL rules are updated.
+Whenever an RL operator is selected, the values of the corresponding RL rules will be updated.
 The update can be on-policy (Sarsa) or off-policy (Q-Learning), as controlled by the \soarb{learning-policy} parameter of the \soarb{rl} command.
-For Sarsa, the update is
+Let $\delta_t$ be the amount the Q-value of an RL operator changes in an update.
+For Sarsa, we have
 $$ \delta_t = \alpha \left[ r_{t+1} + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right] $$
 where 
 \begin{itemize}
 \item $Q(s_t, a_t)$ is the Q-value of the state and chosen operator in decision cycle $t$.
-\item $Q(s_{t+1}, a_{t+1})$ is the Q-value of the state and chosen operator in the next decision cycle.
-\item $r_{t+1}$ is the total reward counted in the next decision cycle.
+\item $Q(s_{t+1}, a_{t+1})$ is the Q-value of the state and chosen RL operator in the next decision cycle.
+\item $r_{t+1}$ is the total reward collected in the next decision cycle.
 \item $\alpha$ and $\gamma$ are the settings of the \soarb{learning-rate} and \soarb{discount-rate} parameters of the \soarb{rl} command, respectively.
 \end{itemize}
 
-For Q-Learning, the update is
+Note that since $\delta_t$ depends on $Q(s_{t+1}, a_{t+1})$, the update for the operator selected in decision cycle $t$ is not applied until the next RL operator is chosen.
+For Q-Learning, we have
 $$ \delta_t = \alpha \left[ r_{t+1} + \gamma \underset{a \in A_{t+1}}{\max} Q(s_{t+1}, a) - Q(s_t, a_t) \right] $$
-where $A_{t+1}$ is the set of operators proposed in the next decision cycle.
+where $A_{t+1}$ is the set of RL operators proposed in the next decision cycle.
 
 Finally, $\delta_t$ is divided by the number of RL rules comprising the Q-value for the operator and the numeric indifferent values for each RL rule is updated by that amount.
 
-An example walkthrough of a Sarsa update with $\alpha = 0.3$ and $\gamma = 0.9$ follows.
+An example walkthrough of a Sarsa update with $\alpha = 0.3$ and $\gamma = 0.9$ (the default settings in Soar) follows.
 
 \begin{enumerate}
 
-\item In decision cycle $t$, an operator \soarb{O1} is proposed, and RL rules \soarb{rl-1} and \soarb{rl-2} assert the following numeric indifferent preferences for it:
+\item In decision cycle $t$, an operator \soarb{O1} is proposed, and RL rules \soarb{rl-1} and \soarb{rl-2} create the following numeric indifferent preferences for it:
 \begin{verbatim}
    rl-1: (S1 ^operator O1 = 2.3)
    rl-2: (S1 ^operator O1 =  -1)
@@ -150,7 +191,7 @@ An example walkthrough of a Sarsa update with $\alpha = 0.3$ and $\gamma = 0.9$ 
 	 
 \item \soarb{O1} is selected and executed, so $Q(s_t, a_t) = Q(s_t, \soarb{O1}) = 1.3$.
 
-\item In decision cycle $t+1$, a total reward of 1.0 is counted on the \soarb{reward-link}, an operator \soarb{O2} is proposed, and another RL rule \soarb{rl-3} asserts the following numeric indifferent preference for it:
+\item In decision cycle $t+1$, a total reward of 1.0 is collected on the \soarb{reward-link}, an operator \soarb{O2} is proposed, and another RL rule \soarb{rl-3} creates the following numeric indifferent preference for it:
 \begin{verbatim}
 	rl-3: (S1 ^operator O2 = 0.5)
 \end{verbatim}
@@ -165,6 +206,7 @@ An example walkthrough of a Sarsa update with $\alpha = 0.3$ and $\gamma = 0.9$ 
    rl-2: (<s> ^operator <o> = -0.9775)
 \end{verbatim}
 
+\item \soarb{rl-3} will be updated when the next RL operator is selected.
 \end{enumerate}
 
 \subsection{Gaps in Rule Coverage}
@@ -173,11 +215,10 @@ An example walkthrough of a Sarsa update with $\alpha = 0.3$ and $\gamma = 0.9$ 
 Call an operator with numeric indifferent preferences an RL operator.
 The previous description had assumed that RL operators were selected in both decision cycles $t$ and $t+1$.
 If the operator selected in $t+1$ is not an RL operator, then $Q(s_{t+1}, a_{t+1})$ would not be defined, and an update for the RL operator selected at time $t$ will be undefined.
-% This is true for Sarsa, but what about Q-Learning?
 We will call a sequence of one or more decision cycles in which RL operators are not selected between two decision cycles in which RL operators are selected a \emph{gap}.
 Conceptually, it is desirable to use the temporal difference information from the RL operator after the gap to update the Q-value of the RL operator before the gap.
-There are just no intermediate storage locations for these updates.
-Requiring that RL rules support operators at every decision can be difficult for agent programmers, particularly when operators are required that do not represent steps in a task, but instead perform generic maintenance functions, such as cleaning processed output-link structures.
+There are no intermediate storage locations for these updates.
+Requiring that RL rules support operators at every decision can be difficult for agent programmers, particularly for operators that do not represent steps in a task, but instead perform generic maintenance functions, such as cleaning processed output-link structures.
 
 To address this issue, Soar's RL mechanism supports automatic propagation of updates over gaps.
 For a gap of length $n$, the Sarsa update is
@@ -185,10 +226,10 @@ $$\delta_t = \alpha \left[ \sum_{i=t}^{t+n}{\gamma^{i-t} r_i} + \gamma^{n+1} Q(s
 and the Q-Learning update is
 $$\delta_t = \alpha \left[ \sum_{i=t}^{t+n}{\gamma^{i-t} r_i} + \gamma^{n+1} \underset{a \in A_{t+n+1}}{\max} Q(s_{t+n+1}, a) - Q(s_t, a_t) \right]$$
 
-Note that rewards will still be counted during the gap, but they are discounted based on the number of decisions removed they are from the initial RL operator.
+Note that rewards will still be collected during the gap, but they are discounted based on the number of decisions they are removed from the initial RL operator.
 
 Gap propagation can be disabled by setting the \soarb{temporal-extension} parameter of the \soarb{rl} command to \soarb{off}.
-When gap propagation is disabled, the RL rules supporting an operator that is followed by a gap are simply not updated.
+When gap propagation is disabled, the RL rules preceding a gap are updated using $Q(s_{t+1}, a_{t+1}) = 0$.
 The \soarb{rl} setting of the \soarb{watch} command (see Section \ref{watch} on page \pageref{watch}) is useful in identifying gaps.
 
 
@@ -197,7 +238,7 @@ The \soarb{rl} setting of the \soarb{watch} command (see Section \ref{watch} on 
 
 When an agent has multiple states in its state stack, the RL mechanism will treat each substate independently.
 As mentioned previously, each state has its own \soarb{reward-link}.
-When an RL operator is selected in a state \soarb{S}, the RL updates for that operator are only affected by the rewards counted on the \soarb{reward-link} for \soarb{S} and the Q-values of subsequent RL operators selected in \soarb{S}.
+When an RL operator is selected in a state \soarb{S}, the RL updates for that operator are only affected by the rewards collected on the \soarb{reward-link} for \soarb{S} and the Q-values of subsequent RL operators selected in \soarb{S}.
 
 The only exception to this independence is when a selected RL operator forces an operator-no-change impasse.
 When this occurs, the number of decision cycles the RL operator at the superstate remains selected is dependent upon the processing in the impasse state.
@@ -212,7 +253,7 @@ Consider the operator trace in Figure \ref{fig:rl-optrace}.
 
 \begin{figure}
 \insertfigure{Figures/rl-optrace}{1.5in}
-\insertcaption{Example Soar subgoal operator trace.}
+\insertcaption{Example Soar substate operator trace.}
 \label{fig:rl-optrace}
 \end{figure}
 
@@ -220,16 +261,35 @@ In this scenario, only the RL update for $Q(s_1, \soarb{O1})$ will be different 
 Its value depends on the setting of the \soarb{hrl-discount} parameter of the \soarb{rl} command.
 When this parameter is set to the default value \soarb{on}, the rewards on \soarb{S1} and the Q-value of \soarb{O5} are discounted by the number of decision cycles they are removed from the selection of \soarb{O1}.
 In this case the update for $Q(s_1, \soarb{O1})$ is
-$$\delta_1 = \alpha \left[ r_2 + \gamma r_3 + \gamma^2 r_4 + \gamma^3 Q(s_5, \soarb{O5}) \right]$$
+$$\delta_1 = \alpha \left[ r_2 + \gamma r_3 + \gamma^2 r_4 + \gamma^3 Q(s_5, \soarb{O5}) - Q(s_1, \soarb{O1}) \right]$$
 which is equivalent to having a three decision gap separating \soarb{O1} and \soarb{O5}.
 
 When \soarb{hrl-discount} is set to \soarb{off}, the number of cycles \soarb{O1} has been impassed will be ignored.
 Thus the update would be
-$$\delta_1 = \alpha \left[ r_2 + r_3 + r_4 + \gamma Q(s_5, \soarb{O5}) \right]$$
+$$\delta_1 = \alpha \left[ r_2 + r_3 + r_4 + \gamma Q(s_5, \soarb{O5}) - Q(s_1, \soarb{O1}) \right]$$
 
 For impasses other than operator no-change, RL acts as if the impasse hadn't occurred.
-If \soarb{O1} is the last RL operator selected before the impasse, $r_2$ the reward received in the decision cycle immediately following, and \soarb{On} the first operator selected after the impasse, then \soarb{O1} is updated with 
-$$\delta_1 = \alpha \left[ r_2 + \gamma Q(s_n, \soarb{On}) \right]$$
+If \soarb{O1} is the last RL operator selected before the impasse, $r_2$ the reward received in the decision cycle immediately following, and \soarb{O}$_\soarb{n}$, the first operator selected after the impasse, then \soarb{O1} is updated with 
+$$\delta_1 = \alpha \left[ r_2 + \gamma Q(s_n, \soarb{O}_\soarb{n}) - Q(s_1, \soarb{O1}) \right]$$
+
+If an RL operator is selected in a substate immediately prior to the state's retraction, the RL rules will be updated based only on the reward signals present and not on the Q-values of future operators\footnote{
+This point is not covered in traditional RL theory.
+The retraction of a substate corresponds to a suspension of the RL task in that state rather than its termination, so the last update assumes the lack of information about future rewards rather than the discontinuation of future rewards.
+To handle this case, the numeric indifferent preference value of each RL rule is stored as two separate values, the expected current reward (ECR) and expected future reward (EFR).
+The ECR is an estimate of the expected immediate reward signal for executing the corresponding RL operator.
+The EFR is an estimate of the time discounted Q-value of the next RL operator.
+Normal updates correspond to traditional RL theory (showing the Sarsa case for simplicity):
+
+\begin{eqnarray}
+\delta_{ECR} &=& \alpha \left[ r_t - ECR(s_t, a_t) \right]
+\delta_{EFR} &=& \alpha \left[ \gamma Q(s_{t+1}, a_{t+1}) - EFR(s_t, a_t) \right]
+\delta_t &=& \delta_{ECR} + \delta_{EFR}
+&=& \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - \left( ECR(s_t, a_t) + EFR(s_t, a_t) \right) \right]
+&=& \alpha \left[ r_t + \gamma Q(s_{t+1}, a_{t+1}) - Q(s_t, a_t) \right]
+\end{eqnarray}
+
+During substate retraction, only the ECR is updated based on the reward signals present at the time of retraction, and the EFR is unchanged.
+}.
 
 Soar's automatic subgoaling and RL mechanisms can be combined to naturally implement hierarchical reinforcement learning algorithms such as MAXQ and options.
 
@@ -247,7 +307,7 @@ For Q-Learning, the eligibility trace implementation is \emph{Watkin's Q($\lambd
 The \soarb{indifferent-selection} command (page \pageref{indifferent-selection}) determines how operators are selected based on their numeric indifferent preferences.
 Although all the indifferent selection settings are valid regardless of how the numeric indifferent preferences were arrived at, the \soarb{epsilon-greedy} and \soarb{boltzmann} settings are specifically designed for use with RL and correspond to the two most common exploration strategies.
 In an effort to maintain backwards compatibility, the default exploration policy is \soarb{softmax}.
-But this is automatically changed to \soarb{episilon-greedy} the first time the reinforcement learning mechanism is enabled.
+But this is automatically changed to \soarb{epsilon-greedy} when the reinforcement learning mechanism is enabled.
 
 \section{Automatic Generation of RL Rules}
 
@@ -300,9 +360,7 @@ sp {sample*rule*template
 }
 \end{verbatim}
 
-During agent execution, this rule template will match working memory and fire like any other rule.
-However, the rule firing will not create the numeric indifferent preference on the RHS.
-Instead, a new production is created by substituting all variables in the rule template that matched against constant values with the values themselves.
+During agent execution, this rule template will match working memory and create new productions by substituting all variables in the rule template that matched against constant values with the values themselves.
 Suppose that the LHS of the rule template matched against the state
 
 \begin{verbatim}
@@ -326,7 +384,7 @@ As with other RL rules, the value of \soar{3.2} on the RHS of this rule may be u
 If \soar{<v>} had matched against a non-numeric constant, it will be replaced by that constant on the LHS, but the RHS numeric indifference preference value will be set to zero to make the new rule valid.
 
 The new production's name adheres to the following pattern:
-\soarb{rl*template-name*id}, where \soarb{template-name} is the name of the originating rule template and \soarb{id} is the smallest positive integer such that the new production's name is unique.
+\soarb{rl*template-name*id}, where \soarb{template-name} is the name of the originating rule template and \soarb{id} is monotonically increasing integer that guarantees the uniqueness of the name.
 
 If an identical production already exists in production memory, then the newly generate production is discarded.
 It should be noted that the current process of identifying unique template match instances can become quite expensive in long agent runs.
