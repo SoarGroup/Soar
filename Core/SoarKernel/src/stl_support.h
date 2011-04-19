@@ -104,10 +104,10 @@ typedef std::set<wme*, std::less<wme*>, SoarMemoryPoolAllocator<wme*> > SoarSTLW
 // Notice how we give the constructor our custom SoarMemoryPoolAllocator with the agent and memory pool to use
 // Also note how the set is different from the others
 //
-// SoarSTLWMEPoolList* list = new SoarSTLWMEList(SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
-// SoarSTLWMEPoolVector* vect = new SoarSTLWMEVector(SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
-// SoarSTLWMEPoolDeque* deq = new SoarSTLWMEDeque(SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
-// SoarSTLWMEPoolSet* set = new SoarSTLWMESet(std::less<wme*>(), SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
+// SoarSTLWMEPoolList* list = new SoarSTLWMEPoolList(SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
+// SoarSTLWMEPoolVector* vect = new SoarSTLWMEPoolVector(SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
+// SoarSTLWMEPoolDeque* deq = new SoarSTLWMEPoolDeque(SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
+// SoarSTLWMEPoolSet* set = new SoarSTLWMEPoolSet(std::less<wme*>(), SoarMemoryPoolAllocator<wme*>(thisAgent, &thisAgent->wme_pool));
 //
 
 ////////////////////////////////////

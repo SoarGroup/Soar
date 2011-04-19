@@ -314,7 +314,7 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 	wma_reference return_val = 0;
 	condition *cond;
 	wme *cond_wme;
-	wma_wme_set::iterator wme_p;
+	SoarSTLWMEPoolSet::iterator wme_p;
 	
 	tc_number tc = ( my_agent->wma_tc_counter++ );
 
@@ -368,7 +368,7 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 	return return_val;
 }
 
-void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wma_wme_set* o_set )
+void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, SoarSTLWMEPoolSet* o_set )
 {	
 	// o-supported, non-architectural WME
 	if ( wma_should_have_decay_element( w ) )
@@ -417,14 +417,14 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 	// i-supported, non-architectural WME
 	else if ( ( w->preference ) && ( w->preference->reference_count ) )
 	{		
-		wma_wme_set* my_o_set = w->preference->wma_o_set;
-		wma_wme_set::iterator wme_p;
+		SoarSTLWMEPoolSet* my_o_set = w->preference->wma_o_set;
+		SoarSTLWMEPoolSet::iterator wme_p;
 
 		// if doesn't have an o_set, populate
 		if ( !my_o_set )
 		{
 			allocate_with_pool( my_agent, &( my_agent->wma_wme_oset_pool ), &my_o_set );
-			my_o_set = new( my_o_set ) wma_wme_set();
+			my_o_set = new( my_o_set ) SoarSTLWMEPoolSet( std::less< wme* >(), SoarMemoryPoolAllocator< wme* >( my_agent, &( my_agent->wme_pool ) ) );
 			
 			w->preference->wma_o_set = my_o_set;
 
@@ -517,15 +517,15 @@ void wma_remove_pref_o_set( agent* my_agent, preference* pref )
 {
 	if ( pref && pref->wma_o_set )
 	{
-		wma_wme_set* victim = pref->wma_o_set;
+		SoarSTLWMEPoolSet* victim = pref->wma_o_set;
 		pref->wma_o_set = NULL;
 		
-		for ( wma_wme_set::iterator p=victim->begin(); p!=victim->end(); p++ )
+		for ( SoarSTLWMEPoolSet::iterator p=victim->begin(); p!=victim->end(); p++ )
 		{
 			wme_remove_ref( my_agent, (*p) );
 		}
 
-		victim->~wma_wme_set();
+		victim->~SoarSTLWMEPoolSet();
 		free_with_pool( &( my_agent->wma_wme_oset_pool ), victim );
 	}
 }
