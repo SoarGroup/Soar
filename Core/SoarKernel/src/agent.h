@@ -212,6 +212,7 @@ typedef struct agent_struct {
 
   memory_pool		  wma_decay_element_pool;
   memory_pool		  wma_wme_oset_pool;
+  memory_pool		  wma_slot_refs_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;

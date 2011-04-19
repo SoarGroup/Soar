@@ -1784,7 +1784,8 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 					s->wma_val_references->erase( it );
 					if ( s->wma_val_references->empty() )
 					{
-						delete s->wma_val_references;
+						s->wma_val_references->~wma_sym_reference_map();
+						free_with_pool( &( thisAgent->wma_slot_refs_pool ), s->wma_val_references );
 						s->wma_val_references = NIL;
 					}
 				}

@@ -36,6 +36,7 @@ typedef union symbol_union Symbol;
 typedef cons list;
 
 typedef std::set< wme* > wma_wme_set;
+typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
 
 /* REW: begin 09.15.96 */
 
@@ -311,7 +312,7 @@ typedef struct slot_struct {
                                              or points to dl_cons if the slot
                                              has changed + or ! pref's */
 
-  std::map< Symbol*, uint64_t >* wma_val_references;
+  wma_sym_reference_map* wma_val_references;
 
 } slot;
 
