@@ -24,16 +24,15 @@ typedef struct wme_struct wme;
 //////////////////////////////////////////////////////////
 
 /**
- * This is the size of the boost history.
+ * This is the size of the reference history.
  */
 #define WMA_DECAY_HISTORY 10
 
 /**
- * The decay system uses a dynamic program algorithm
- * to calculate integer powers of numbers and avoid
- * calls to pow() after initialization.
- */
-#define WMA_POWER_SIZE 270
+  * How many references are expected per decision
+  * (this affects creation of the power cache)
+  */
+#define WMA_REFERENCES_PER_DECISION 5
 
 /**
  * If an external caller asks for the activation level/value 
@@ -48,13 +47,6 @@ typedef struct wme_struct wme;
  */
 #define WMA_ACTIVATION_LOW -1000000000
 
-/**
- * If forgetting is enabled and a WME's activation 
- * falls below this level it will be removed from 
- * working memory.
- */
-#define WMA_ACTIVATION_CUTOFF -1.6
-
 
 //////////////////////////////////////////////////////////
 // WMA Parameters
@@ -68,6 +60,8 @@ class wma_param_container: public soar_module::param_container
 	public:		
 		wma_activation_param* activation;
 		wma_decay_param* decay_rate;
+		wma_decay_param* decay_thresh;
+		soar_module::boolean_param* petrov_approx;
 		soar_module::boolean_param* forgetting;		
 				
 		wma_param_container( agent* new_agent );
@@ -182,17 +176,6 @@ typedef std::map< wma_d_cycle, wma_decay_set > wma_forget_p_queue;
 
 // shortcut for determining if WMA is enabled
 extern bool wma_enabled( agent* my_agent );
-
-
-//////////////////////////////////////////////////////////
-// Initialization
-//////////////////////////////////////////////////////////
-
-// Must be called before execution to init wma
-extern void wma_init( agent* my_agent );
-
-// Cleanup
-extern void wma_deinit( agent* my_agent );
 
 
 //////////////////////////////////////////////////////////
