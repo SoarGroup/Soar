@@ -150,10 +150,11 @@ void wma_init( agent *my_agent )
 	// repeated calls to pow() at runtime
 	{
 		double decay_rate = my_agent->wma_params->decay_rate->get_value();
-		
-		for( int i=0; i<WMA_POWER_SIZE; i++ )
+
+		my_agent->wma_power_array[0] = 0.0;
+		for( int i=1; i<WMA_POWER_SIZE; i++ )
 		{
-			my_agent->wma_power_array[ i ] = pow( static_cast<double>( i + 1 ), decay_rate );
+			my_agent->wma_power_array[ i ] = pow( static_cast<double>( i ), decay_rate );
 		}
 	}
 
@@ -202,49 +203,86 @@ inline bool wma_should_have_decay_element( wme* w )
 	return ( ( w->preference ) && ( w->preference->reference_count ) && ( w->preference->o_supported ) );
 }
 
-inline double wma_calculate_decay_activation( agent* my_agent, wma_decay_element* decay_el, wma_d_cycle current_cycle )
+inline double wma_pow( agent* my_agent, wma_d_cycle cycle_diff )
+{
+	if ( cycle_diff < WMA_POWER_SIZE )
+	{
+		return my_agent->wma_power_array[ cycle_diff ];
+	}
+	else
+	{
+		return pow( static_cast<double>( cycle_diff ), my_agent->wma_params->decay_rate->get_value() );
+	}
+}
+
+inline double wma_sum_history( agent* my_agent, wma_history* history, wma_d_cycle current_cycle, bool include_distant_approx = true )
+{
+	double return_val = 0.0;
+	
+	unsigned int p = history->next_p;
+	unsigned int counter = history->history_ct;
+	wma_d_cycle cycle_diff = 0;
+
+	//
+
+	while ( counter )
+	{
+		p = wma_history_prev( p );
+
+		cycle_diff = ( current_cycle - history->access_history[ p ].d_cycle );
+		assert( cycle_diff > 0 );
+
+		return_val += ( history->access_history[ p ].num_references * wma_pow( my_agent, cycle_diff ) );
+		
+		counter--;
+	}
+
+	// see (Petrov, 2006)
+	if ( include_distant_approx )
+	{
+		// if ( n > k )
+		if ( history->total_references > history->history_references )
+		{
+			// ( n - k ) * ( tn^(1-d) - tk^(1-d) )
+			// -----------------------------------
+			// ( 1 - d ) * ( tn - tk )
+
+			// decay_rate is negated (for nice printing)
+			double d_inv = ( 1 + my_agent->wma_params->decay_rate->get_value() );
+			
+			return_val += ( ( ( history->total_references - history->history_references ) * ( pow( static_cast<double>( current_cycle - history->first_reference ), d_inv ) - pow( static_cast<double>( cycle_diff ), d_inv ) ) ) / 
+							( d_inv * ( ( current_cycle - history->first_reference ) - cycle_diff ) ) );
+		}
+	}
+
+	return return_val;
+}
+
+inline double wma_calculate_decay_activation( agent* my_agent, wma_decay_element* decay_el, wma_d_cycle current_cycle, bool log_result )
 {
 	wma_history* history = &( decay_el->touches );
 		
 	if ( history->history_ct )
 	{
-		double return_val = 0.0;
+		double history_sum = wma_sum_history( my_agent, history, current_cycle );
 
-		double* powers = my_agent->wma_power_array;		
-
-		unsigned int p = history->next_p;
-		unsigned int counter = history->history_ct;
-		wma_d_cycle cycle_diff;
-		bool did_something = false;
-
-		while ( counter )
+		if ( !log_result )
 		{
-			p = wma_history_prev( p );
-
-			cycle_diff = ( current_cycle - history->access_history[ p ].d_cycle );
-			if ( cycle_diff < WMA_POWER_SIZE )
-			{
-				return_val += ( history->access_history[ p ].num_references * powers[ cycle_diff ] );
-				did_something = true;
-			}			
-			
-			counter--;
+			return history_sum;
 		}
 
-		if ( did_something )
+		if ( history_sum > 0.0 )
 		{
-			return_val = log( return_val );
+			return log( history_sum );
 		}
 		else
 		{
-			return_val = WMA_ACTIVATION_CUTOFF;
+			return WMA_ACTIVATION_LOW;
 		}
-
-		return return_val;
 	}
 	else
 	{
-		return WMA_ACTIVATION_NONE;
+		return ( ( log_result )?( WMA_ACTIVATION_LOW ):( 0.0 ) );
 	}
 }
 
@@ -258,7 +296,7 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 	tc_number tc = ( my_agent->wma_tc_counter++ );
 
 	uint64_t num_cond_wmes = 0;
-	double combined_activation = 0.0;
+	double combined_time_sum = 0.0;
 
 	for ( cond=w->preference->inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next )
 	{
@@ -272,7 +310,7 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 				if ( !cond_wme->wma_decay_el->just_created )
 				{
 					num_cond_wmes++;
-					combined_activation += wma_get_wme_activation( my_agent, cond_wme );
+					combined_time_sum += wma_get_wme_activation( my_agent, cond_wme, false );
 				}
 			}
 			else if ( cond_wme->preference )
@@ -284,7 +322,7 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 						if ( ( (*wme_p)->wma_tc_value != tc ) && ( !(*wme_p)->wma_decay_el || !(*wme_p)->wma_decay_el->just_created ) )
 						{
 							num_cond_wmes++;
-							combined_activation += wma_get_wme_activation( my_agent, (*wme_p) );
+							combined_time_sum += wma_get_wme_activation( my_agent, (*wme_p), false );
 
 							(*wme_p)->wma_tc_value = tc;
 						}
@@ -294,14 +332,14 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 			else
 			{
 				num_cond_wmes++;
-				combined_activation += wma_get_wme_activation( my_agent, cond_wme );
+				combined_time_sum += wma_get_wme_activation( my_agent, cond_wme, false );
 			}
 		}		
 	}
 
 	if ( num_cond_wmes )
 	{
-		return_val = static_cast<wma_reference>( floor( exp( combined_activation / num_cond_wmes ) ) );
+		return_val = static_cast<wma_reference>( floor( combined_time_sum / num_cond_wmes ) );
 	}
 
 	return return_val;
@@ -327,6 +365,16 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 			
 			temp_el->touches.history_ct = 0;
 			temp_el->touches.next_p = 0;
+
+			for ( int i=0; i<WMA_DECAY_HISTORY; i++ )
+			{
+				temp_el->touches.access_history[ i ].d_cycle = 0;
+				temp_el->touches.access_history[ i ].num_references = 0;
+			}
+
+			temp_el->touches.history_references = 0;
+			temp_el->touches.total_references = 0;
+			temp_el->touches.first_reference = 0;
 
 			w->wma_decay_el = temp_el;
 		}
@@ -519,7 +567,7 @@ inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_ele
 	do
 	{
 		
-		predicted_activation = wma_calculate_decay_activation( my_agent, decay_el, ++return_val );
+		predicted_activation = wma_calculate_decay_activation( my_agent, decay_el, ++return_val, true );
 
 	} while ( predicted_activation > WMA_ACTIVATION_CUTOFF );
 	
@@ -565,7 +613,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 		{
 			for ( wma_decay_set::iterator d_p=pq_p->second.begin(); d_p!=pq_p->second.end(); d_p++ )
 			{
-				if ( wma_calculate_decay_activation( my_agent, (*d_p), current_cycle ) <= WMA_ACTIVATION_CUTOFF )
+				if ( wma_calculate_decay_activation( my_agent, (*d_p), current_cycle, true ) <= WMA_ACTIVATION_CUTOFF )
 				{
 					if ( wma_forgetting_forget_wme( my_agent, (*d_p)->this_wme ) )
 					{
@@ -665,11 +713,21 @@ inline void wma_update_decay_histories( agent* my_agent )
 	// add to history for changed elements
 	for ( wme_p=my_agent->wma_touched_elements->begin(); wme_p!=my_agent->wma_touched_elements->end(); wme_p++ )
 	{
-		temp_el = (*wme_p)->wma_decay_el;			
+		temp_el = (*wme_p)->wma_decay_el;
+
+		// update number of references in the current history
+		// (has to come before history overwrite)
+		temp_el->touches.history_references += ( temp_el->num_references - temp_el->touches.access_history[ temp_el->touches.next_p ].num_references );
 		
 		// set history
 		temp_el->touches.access_history[ temp_el->touches.next_p ].d_cycle = current_cycle;
 		temp_el->touches.access_history[ temp_el->touches.next_p ].num_references = temp_el->num_references;
+
+		// keep track of first reference
+		if ( temp_el->touches.total_references == 0 )
+		{
+			temp_el->touches.first_reference = current_cycle;
+		}
 		
 		// update counters
 		if ( temp_el->touches.history_ct < WMA_DECAY_HISTORY )
@@ -677,6 +735,7 @@ inline void wma_update_decay_histories( agent* my_agent )
 			temp_el->touches.history_ct++;
 		}
 		temp_el->touches.next_p = wma_history_next( temp_el->touches.next_p );
+		temp_el->touches.total_references += temp_el->num_references;
 
 		// reset cycle counter
 		temp_el->num_references = 0;
@@ -709,13 +768,13 @@ inline void wma_update_decay_histories( agent* my_agent )
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-double wma_get_wme_activation( agent* my_agent, wme* w )
+double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result )
 {
-	double return_val = static_cast<double>( WMA_ACTIVATION_NONE );
+	double return_val = static_cast<double>( ( log_result )?( WMA_ACTIVATION_NONE ):( WMA_TIME_SUM_NONE ) );
 
 	if ( w->wma_decay_el )
 	{
-		return_val = wma_calculate_decay_activation( my_agent, w->wma_decay_el, my_agent->d_cycle_count );
+		return_val = wma_calculate_decay_activation( my_agent, w->wma_decay_el, my_agent->d_cycle_count, log_result );
 	}
 
 	return return_val;

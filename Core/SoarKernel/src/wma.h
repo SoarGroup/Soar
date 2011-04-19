@@ -41,6 +41,12 @@ typedef struct wme_struct wme;
  * is returned.
  */
 #define WMA_ACTIVATION_NONE 1.0
+#define WMA_TIME_SUM_NONE 2.71828182845905
+
+/**
+ * If no history, this is a low number to report as activation
+ */
+#define WMA_ACTIVATION_LOW -1000000000
 
 /**
  * If forgetting is enabled and a WME's activation 
@@ -123,6 +129,10 @@ typedef struct wma_history_struct
 	wma_cycle_reference access_history[ WMA_DECAY_HISTORY ];
 	unsigned int next_p;
 	unsigned int history_ct;
+
+	wma_reference history_references;
+	wma_reference total_references;
+	wma_d_cycle first_reference;
 } wma_history;
 
 typedef std::set< wme* > wma_wme_set;
@@ -230,7 +240,7 @@ extern void wma_go( agent* my_agent );
 /**
  * Retrieve wme activation exact/approximate
  */
-extern double wma_get_wme_activation( agent* my_agent, wme* w );
+extern double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result = true );
 
 
 #endif
