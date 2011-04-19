@@ -420,8 +420,16 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      FALSE);
 	/* kjh (CUSP-B4) end */
 
+	bool wma_was_enabled = wma_enabled( thisAgent );
+	thisAgent->wma_params->activation->set_value( soar_module::off );
+
 	clear_goal_stack (thisAgent);
-	wma_deinit( thisAgent );
+
+	if ( wma_was_enabled )
+	{
+		thisAgent->wma_params->activation->set_value( soar_module::on );
+	}
+
 	thisAgent->rl_stats->reset();
 	thisAgent->wma_stats->reset();
 	thisAgent->epmem_stats->reset();
@@ -435,9 +443,6 @@ bool reinitialize_soar (agent* thisAgent) {
 	bool ok = reset_id_counters (thisAgent);
 	reset_wme_timetags (thisAgent);
 	reset_statistics (thisAgent);
-
-	// should come after reset statistics
-	wma_init( thisAgent );
 
 	// JRV: For XML generation
 	xml_reset( thisAgent );

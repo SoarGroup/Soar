@@ -55,6 +55,10 @@
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+void wma_init( agent *my_agent );
+void wma_deinit( agent *my_agent );
+
+
 wma_activation_param::wma_activation_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {};
 
 void wma_activation_param::set_value( soar_module::boolean new_value ) 
@@ -97,8 +101,16 @@ wma_param_container::wma_param_container( agent *new_agent ): soar_module::param
 	add( activation );
 
 	// decay-rate
-	decay_rate = new wma_decay_param( "decay-rate", -0.8, new soar_module::btw_predicate<double>( 0, 1, true ), new wma_activation_predicate<double>( my_agent ) );
+	decay_rate = new wma_decay_param( "decay-rate", -0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new wma_activation_predicate<double>( my_agent ) );
 	add( decay_rate );
+
+	// decay-thresh
+	decay_thresh = new wma_decay_param( "decay-thresh", -2.0, new soar_module::gt_predicate<double>( 0, false ), new wma_activation_predicate<double>( my_agent ) );
+	add( decay_thresh );
+
+	// do we compute an approximation of the distant references?
+	petrov_approx = new soar_module::boolean_param( "petrov-approx", soar_module::off, new wma_activation_predicate<soar_module::boolean>( my_agent ) );
+	add( petrov_approx );
 	
 	// are WMEs removed from WM when activation gets too low?
 	forgetting = new soar_module::boolean_param( "forgetting", soar_module::off, new wma_activation_predicate<soar_module::boolean>( my_agent ) );
@@ -150,9 +162,16 @@ void wma_init( agent *my_agent )
 	// repeated calls to pow() at runtime
 	{
 		double decay_rate = my_agent->wma_params->decay_rate->get_value();
+		double decay_thresh = my_agent->wma_params->decay_thresh->get_value();
+
+		// computes how many powers to compute
+		// basic idea: solve for the time that would just fall below the decay threshold, given decay rate and assumption of max references/decision
+		// t = e^( ( thresh - ln( max_refs ) ) / -decay_rate )
+		my_agent->wma_power_size = static_cast< unsigned int >( ceil( static_cast<double>( exp( ( decay_thresh - log( static_cast<double>( WMA_REFERENCES_PER_DECISION ) ) ) / decay_rate ) ) ) );
+		my_agent->wma_power_array = new double[ my_agent->wma_power_size ];
 
 		my_agent->wma_power_array[0] = 0.0;
-		for( int i=1; i<WMA_POWER_SIZE; i++ )
+		for( unsigned int i=1; i<my_agent->wma_power_size; i++ )
 		{
 			my_agent->wma_power_array[ i ] = pow( static_cast<double>( i ), decay_rate );
 		}
@@ -168,6 +187,9 @@ void wma_deinit( agent *my_agent )
 	{
 		return;
 	}
+
+	// release power array memory
+	delete[] my_agent->wma_power_array;
 
 	// clear touched
 	my_agent->wma_touched_elements->clear();
@@ -205,17 +227,18 @@ inline bool wma_should_have_decay_element( wme* w )
 
 inline double wma_pow( agent* my_agent, wma_d_cycle cycle_diff )
 {
-	if ( cycle_diff < WMA_POWER_SIZE )
+	if ( cycle_diff < my_agent->wma_power_size )
 	{
 		return my_agent->wma_power_array[ cycle_diff ];
 	}
 	else
 	{
-		return pow( static_cast<double>( cycle_diff ), my_agent->wma_params->decay_rate->get_value() );
+		return 0.0;
+		//return pow( static_cast<double>( cycle_diff ), my_agent->wma_params->decay_rate->get_value() );
 	}
 }
 
-inline double wma_sum_history( agent* my_agent, wma_history* history, wma_d_cycle current_cycle, bool include_distant_approx = true )
+inline double wma_sum_history( agent* my_agent, wma_history* history, wma_d_cycle current_cycle )
 {
 	double return_val = 0.0;
 	
@@ -238,7 +261,7 @@ inline double wma_sum_history( agent* my_agent, wma_history* history, wma_d_cycl
 	}
 
 	// see (Petrov, 2006)
-	if ( include_distant_approx )
+	if ( my_agent->wma_params->petrov_approx->get_value() == soar_module::on )
 	{
 		// if ( n > k )
 		if ( history->total_references > history->history_references )
@@ -563,13 +586,14 @@ inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_ele
 {	
 	wma_d_cycle return_val = static_cast<wma_d_cycle>( my_agent->d_cycle_count );
 	double predicted_activation;
+	double decay_thresh = my_agent->wma_params->decay_thresh->get_value();
 	
 	do
 	{
 		
 		predicted_activation = wma_calculate_decay_activation( my_agent, decay_el, ++return_val, true );
 
-	} while ( predicted_activation > WMA_ACTIVATION_CUTOFF );
+	} while ( predicted_activation >= decay_thresh );
 	
 	return return_val;	
 }
@@ -608,12 +632,13 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 	{
 		wma_forget_p_queue::iterator pq_p = my_agent->wma_forget_pq->begin();
 		wma_d_cycle current_cycle = my_agent->d_cycle_count;
+		double decay_thresh = my_agent->wma_params->decay_thresh->get_value();
 
 		if ( pq_p->first == current_cycle )
 		{
 			for ( wma_decay_set::iterator d_p=pq_p->second.begin(); d_p!=pq_p->second.end(); d_p++ )
 			{
-				if ( wma_calculate_decay_activation( my_agent, (*d_p), current_cycle, true ) <= WMA_ACTIVATION_CUTOFF )
+				if ( wma_calculate_decay_activation( my_agent, (*d_p), current_cycle, true ) < decay_thresh )
 				{
 					if ( wma_forgetting_forget_wme( my_agent, (*d_p)->this_wme ) )
 					{

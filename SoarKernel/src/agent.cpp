@@ -87,8 +87,6 @@ void init_soar_agent(agent* thisAgent) {
 
   init_memory_pool( thisAgent, &( thisAgent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
   init_memory_pool( thisAgent, &( thisAgent->wma_wme_oset_pool ), sizeof( wma_wme_set ), "wma_oset" );
-  
-  wma_init(thisAgent);
 
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
   thisAgent->epmem_params->exclusions->set_value( "smem" );
@@ -413,7 +411,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->prediction;
 
   // cleanup wma
-  wma_deinit( delete_agent );
+  delete_agent->wma_params->activation->set_value( soar_module::off );
   delete delete_agent->wma_forget_pq;
   delete delete_agent->wma_touched_elements;  
   delete delete_agent->wma_params;
