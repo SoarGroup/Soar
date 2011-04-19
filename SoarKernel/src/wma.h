@@ -164,6 +164,8 @@ typedef struct wma_decay_element_struct
 typedef std::set< wma_decay_element* > wma_decay_set;
 typedef std::map< wma_d_cycle, wma_decay_set > wma_forget_p_queue;
 
+typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
+
 //
 // These must go below types
 //
