@@ -165,7 +165,8 @@ typedef struct wma_decay_element_struct
 typedef std::set< wma_decay_element* > wma_decay_set;
 typedef std::map< wma_d_cycle, wma_decay_set > wma_forget_p_queue;
 
-typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
+typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
+typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
 
 //
 // These must go below types
@@ -186,7 +187,7 @@ extern bool wma_enabled( agent* my_agent );
 //////////////////////////////////////////////////////////
 
 // generic call to activate a wme
-extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, SoarSTLWMEPoolSet* o_set = NULL );
+extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, wma_pooled_wme_set* o_set = NULL );
 
 // Removes a decay element from an existing WME so that 
 // it is no longer activated.
