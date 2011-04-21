@@ -298,7 +298,7 @@ void add_preference_to_tm (agent* thisAgent, preference *pref)
          if ( s->wma_val_references == NIL )
          {
 			 allocate_with_pool( thisAgent, &( thisAgent->wma_slot_refs_pool ), &( s->wma_val_references ) );
-			 s->wma_val_references = new( s->wma_val_references ) wma_sym_reference_map();
+			 s->wma_val_references = new( s->wma_val_references ) wma_sym_reference_map( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >( thisAgent, "wma" ) );
          }
 
          (*s->wma_val_references)[ pref->value ]++;

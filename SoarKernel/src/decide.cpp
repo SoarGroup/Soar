@@ -1776,7 +1776,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 
 				if ( wma_enabled( thisAgent ) )
 				{
-					std::map< Symbol*, uint64_t >::iterator it = s->wma_val_references->find( w->value );
+					wma_sym_reference_map::iterator it = s->wma_val_references->find( w->value );
 					assert( it != s->wma_val_references->end() );
 
 					wma_activate_wme( thisAgent, w, it->second );
