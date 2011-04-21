@@ -31,9 +31,9 @@ typedef struct wme_struct wme;
 
 /**
   * How many references are expected per decision
-  * (this affects creation of the power cache)
+  * (this affects creation of the power/approx cache)
   */
-#define WMA_REFERENCES_PER_DECISION 5
+#define WMA_REFERENCES_PER_DECISION 10
 
 /**
  * If an external caller asks for the activation level/value 
@@ -63,7 +63,9 @@ class wma_param_container: public soar_module::param_container
 		wma_decay_param* decay_rate;
 		wma_decay_param* decay_thresh;
 		soar_module::boolean_param* petrov_approx;
-		soar_module::boolean_param* forgetting;		
+
+		enum forgetting_choices { off, naive, bsearch, approx };
+		soar_module::constant_param<forgetting_choices>* forgetting;
 				
 		wma_param_container( agent* new_agent );
 };
@@ -160,8 +162,8 @@ typedef struct wma_decay_element_struct
 
 } wma_decay_element;
 
-typedef std::set< wma_decay_element* > wma_decay_set;
-typedef std::map< wma_d_cycle, wma_decay_set > wma_forget_p_queue;
+typedef std::set< wma_decay_element*, std::less< wma_decay_element* >, soar_module::soar_memory_pool_allocator< wma_decay_element* > > wma_decay_set;
+typedef std::map< wma_d_cycle, wma_decay_set*, std::less< wma_d_cycle >, soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > > > wma_forget_p_queue;
 
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
 typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
