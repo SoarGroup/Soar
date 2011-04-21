@@ -176,7 +176,7 @@ namespace soar_module
 	// Memory Pool Allocators
 	/////////////////////////////////////////////////////////////
 
-	memory_pool* get_memory_pool( agent* my_agent, const char* prefix, size_t size )
+	memory_pool* get_memory_pool( agent* my_agent, size_t size )
 	{
 		memory_pool* return_val = NULL;
 
@@ -185,7 +185,7 @@ namespace soar_module
 		{
 			memory_pool* newbie = new memory_pool;
 
-			init_memory_pool( my_agent, newbie, size, prefix );
+			init_memory_pool( my_agent, newbie, size, "dynamic" );
 			my_agent->dyn_memory_pools->insert( std::make_pair< size_t, memory_pool* >( size, newbie ) );
 
 			return_val = newbie;
