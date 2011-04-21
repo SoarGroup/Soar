@@ -916,7 +916,7 @@ namespace soar_module
 	// Memory Pool Allocators
 	///////////////////////////////////////////////////////////////////////////
 
-	memory_pool* get_memory_pool( agent* my_agent, const char* prefix, size_t size );
+	memory_pool* get_memory_pool( agent* my_agent, size_t size );
 
 	template <class T>
 	class soar_memory_pool_allocator
@@ -934,36 +934,34 @@ namespace soar_module
 
 	public:
 		agent* get_agent() const { return my_agent; }
-		const char* get_prefix() const { return pool_prefix; }
 
-		soar_memory_pool_allocator( agent* new_agent, const char* new_prefix ): my_agent(new_agent), pool_prefix(new_prefix)
+		soar_memory_pool_allocator( agent* new_agent ): my_agent(new_agent), mem_pool(NULL), size(sizeof(value_type))
 		{
 			// useful for debugging
 			// std::string temp_this( typeid( value_type ).name() );
-			
-			mem_pool = get_memory_pool( my_agent, pool_prefix, sizeof( value_type ) );
 		}
 
-		soar_memory_pool_allocator( const soar_memory_pool_allocator& obj ): my_agent(obj.get_agent()), pool_prefix(obj.get_prefix())
+		soar_memory_pool_allocator( const soar_memory_pool_allocator& obj ): my_agent(obj.get_agent()), mem_pool(NULL), size(sizeof(value_type))
 		{
 			// useful for debugging
 			// std::string temp_this( typeid( value_type ).name() );
-			
-			mem_pool = get_memory_pool( my_agent, pool_prefix, sizeof( value_type ) );
 		}
 
 		template <class _other>
-		soar_memory_pool_allocator( const soar_memory_pool_allocator<_other>& other ): my_agent(other.get_agent()), pool_prefix(other.get_prefix())
+		soar_memory_pool_allocator( const soar_memory_pool_allocator<_other>& other ): my_agent(other.get_agent()), mem_pool(NULL), size(sizeof(value_type))
 		{
 			// useful for debugging
 			// std::string temp_this( typeid( T ).name() );
 			// std::string temp_other( typeid( _other ).name() );
-			
-			mem_pool = get_memory_pool( my_agent, pool_prefix, sizeof( value_type ) );
 		}
 
 		pointer allocate( size_type /*n*/, const void* = 0 )
 		{
+			if ( !mem_pool )
+			{
+				mem_pool = get_memory_pool( my_agent, size );
+			}
+			
 			pointer t;
 			allocate_with_pool( my_agent, mem_pool, &t );
 
@@ -1014,7 +1012,7 @@ namespace soar_module
 	private:
 		agent* my_agent;
 		memory_pool* mem_pool;
-		const char* pool_prefix;
+		size_type size;
 
 		soar_memory_pool_allocator() {}
 
