@@ -179,21 +179,14 @@ namespace soar_module
 	memory_pool* get_memory_pool( agent* my_agent, const char* prefix, size_t size )
 	{
 		memory_pool* return_val = NULL;
-		
-		std::string size_str;
-		to_string( size, size_str );
 
-		std::string pool_name( prefix );
-		pool_name.append( "-" );
-		pool_name.append( size_str );
-
-		std::map< std::string, memory_pool* >::iterator it = my_agent->dyn_memory_pools->find( pool_name );
+		std::map< size_t, memory_pool* >::iterator it = my_agent->dyn_memory_pools->find( size );
 		if ( it == my_agent->dyn_memory_pools->end() )
 		{
 			memory_pool* newbie = new memory_pool;
 
-			init_memory_pool( my_agent, newbie, size, pool_name.c_str() );
-			my_agent->dyn_memory_pools->insert( std::make_pair< std::string, memory_pool* >( pool_name, newbie ) );
+			init_memory_pool( my_agent, newbie, size, prefix );
+			my_agent->dyn_memory_pools->insert( std::make_pair< size_t, memory_pool* >( size, newbie ) );
 
 			return_val = newbie;
 		}

@@ -130,8 +130,6 @@ typedef struct wma_history_struct
 	wma_d_cycle first_reference;
 } wma_history;
 
-typedef std::set< wme* > wma_wme_set;
-
 // attached to o-supported WMEs to keep track of its activation.
 typedef struct wma_decay_element_struct
 {

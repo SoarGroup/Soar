@@ -849,7 +849,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   wma_param_container* wma_params;
   wma_stat_container* wma_stats;
   
-  wma_wme_set* wma_touched_elements;  
+  wma_pooled_wme_set* wma_touched_elements;  
   wma_forget_p_queue* wma_forget_pq;
 
   unsigned int wma_power_size;
@@ -899,7 +899,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
 
   // dynamic memory pools
-  std::map< std::string, memory_pool* >* dyn_memory_pools;
+  std::map< size_t, memory_pool* >* dyn_memory_pools;
 
 
   // JRV: Added to support XML management inside Soar

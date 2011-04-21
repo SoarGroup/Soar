@@ -730,7 +730,7 @@ void wma_activate_wmes_tested_in_prods( agent* my_agent )
 
 inline void wma_update_decay_histories( agent* my_agent )
 {
-	wma_wme_set::iterator wme_p;
+	wma_pooled_wme_set::iterator wme_p;
 	wma_decay_element* temp_el;
 	wma_d_cycle current_cycle = my_agent->d_cycle_count;
 	bool forgetting = ( my_agent->wma_params->forgetting->get_value() == soar_module::on );
