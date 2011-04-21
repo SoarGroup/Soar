@@ -86,6 +86,7 @@ void init_soar_agent(agent* thisAgent) {
   predict_init(thisAgent);
 
   init_memory_pool( thisAgent, &( thisAgent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
+  init_memory_pool( thisAgent, &( thisAgent->wma_decay_set_pool ), sizeof( wma_decay_set ), "wma_decay_set" );
   init_memory_pool( thisAgent, &( thisAgent->wma_wme_oset_pool ), sizeof( wma_pooled_wme_set ), "wma_oset" );
   init_memory_pool( thisAgent, &( thisAgent->wma_slot_refs_pool ), sizeof( wma_sym_reference_map ), "wma_slot_ref" );
 
@@ -330,7 +331,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->wma_params = new wma_param_container( newAgent );
   newAgent->wma_stats = new wma_stat_container( newAgent );
 
-  newAgent->wma_forget_pq = new wma_forget_p_queue;
+  newAgent->wma_forget_pq = new wma_forget_p_queue( std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >( newAgent ) );
   newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );  
   newAgent->wma_initialized = false;
   newAgent->wma_tc_counter = 2;
