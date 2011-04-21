@@ -300,6 +300,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   // be set before the agent was initialized.
   init_sysparams (newAgent);
 
+  // dynamic memory pools (should come before consumers of dynamic pools)
+  newAgent->dyn_memory_pools = new std::map< size_t, memory_pool* >();
 
   // exploration initialization
   newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter( 0.1, &exploration_validate_epsilon, "epsilon" );
@@ -329,7 +331,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->wma_stats = new wma_stat_container( newAgent );
 
   newAgent->wma_forget_pq = new wma_forget_p_queue;
-  newAgent->wma_touched_elements = new wma_wme_set;  
+  newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent, "wma" ) );  
   newAgent->wma_initialized = false;
   newAgent->wma_tc_counter = 2;
 
@@ -367,9 +369,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->smem_validation = 0;
   newAgent->smem_first_switch = true;
-
-  // dynamic memory pools
-  newAgent->dyn_memory_pools = new std::map< std::string, memory_pool* >();
 
   // statistics initialization
   newAgent->dc_stat_tracking = false;
@@ -539,7 +538,7 @@ void destroy_soar_agent (agent * delete_agent)
   /* RPM 9/06 end */
 
   // dynamic memory pools (cleared in the last step)
-  for ( std::map< std::string, memory_pool* >::iterator it=delete_agent->dyn_memory_pools->begin(); it!=delete_agent->dyn_memory_pools->end(); it++ ) 
+  for ( std::map< size_t, memory_pool* >::iterator it=delete_agent->dyn_memory_pools->begin(); it!=delete_agent->dyn_memory_pools->end(); it++ ) 
   {
 	  delete it->second;
   }
