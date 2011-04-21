@@ -331,7 +331,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->wma_stats = new wma_stat_container( newAgent );
 
   newAgent->wma_forget_pq = new wma_forget_p_queue;
-  newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent, "wma" ) );  
+  newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );  
   newAgent->wma_initialized = false;
   newAgent->wma_tc_counter = 2;
 
