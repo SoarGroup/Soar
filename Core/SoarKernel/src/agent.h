@@ -211,6 +211,7 @@ typedef struct agent_struct {
   memory_pool         node_varnames_pool;
 
   memory_pool		  wma_decay_element_pool;
+  memory_pool		  wma_decay_set_pool;
   memory_pool		  wma_wme_oset_pool;
   memory_pool		  wma_slot_refs_pool;
   
@@ -853,7 +854,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   wma_forget_p_queue* wma_forget_pq;
 
   unsigned int wma_power_size;
-  double* wma_power_array;  
+  double* wma_power_array;
+  wma_d_cycle* wma_approx_array;
+  double wma_thresh_exp;
   bool wma_initialized;
   tc_number wma_tc_counter;
 
