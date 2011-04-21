@@ -86,7 +86,7 @@ void init_soar_agent(agent* thisAgent) {
   predict_init(thisAgent);
 
   init_memory_pool( thisAgent, &( thisAgent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
-  init_memory_pool( thisAgent, &( thisAgent->wma_wme_oset_pool ), sizeof( SoarSTLWMEPoolSet ), "wma_oset" );
+  init_memory_pool( thisAgent, &( thisAgent->wma_wme_oset_pool ), sizeof( wma_pooled_wme_set ), "wma_oset" );
   init_memory_pool( thisAgent, &( thisAgent->wma_slot_refs_pool ), sizeof( wma_sym_reference_map ), "wma_slot_ref" );
 
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
@@ -368,6 +368,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->smem_validation = 0;
   newAgent->smem_first_switch = true;
 
+  // dynamic memory pools
+  newAgent->dyn_memory_pools = new std::map< std::string, memory_pool* >();
+
   // statistics initialization
   newAgent->dc_stat_tracking = false;
   newAgent->stats_db = new soar_module::sqlite_database();
@@ -534,6 +537,13 @@ void destroy_soar_agent (agent * delete_agent)
   }
 
   /* RPM 9/06 end */
+
+  // dynamic memory pools (cleared in the last step)
+  for ( std::map< std::string, memory_pool* >::iterator it=delete_agent->dyn_memory_pools->begin(); it!=delete_agent->dyn_memory_pools->end(); it++ ) 
+  {
+	  delete it->second;
+  }
+  delete delete_agent->dyn_memory_pools;
 
   // JRV: Frees data used by XML generation
   xml_destroy( delete_agent );
