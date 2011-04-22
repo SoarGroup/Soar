@@ -605,14 +605,6 @@ inline void wma_forgetting_remove_from_p_queue( agent* my_agent, wma_decay_eleme
 			if ( d_p != pq_p->second->end() )
 			{
 				pq_p->second->erase( d_p );
-
-				if ( pq_p->second->empty() )
-				{
-					pq_p->second->~wma_decay_set();
-					free_with_pool( &( my_agent->wma_decay_set_pool ), pq_p->second );
-
-					my_agent->wma_forget_pq->erase( pq_p );
-				}
 			}
 		}
 	}
@@ -779,18 +771,23 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 
 		if ( pq_p->first == current_cycle )
 		{
-			for ( wma_decay_set::iterator d_p=pq_p->second->begin(); d_p!=pq_p->second->end(); d_p++ )
+			wma_decay_set::iterator d_p=pq_p->second->begin();
+			wma_decay_set::iterator current_p;
+
+			while ( d_p != pq_p->second->end() )
 			{
-				if ( wma_calculate_decay_activation( my_agent, (*d_p), current_cycle, true ) < decay_thresh )
+				current_p = d_p++;
+
+				if ( wma_calculate_decay_activation( my_agent, (*current_p), current_cycle, true ) < decay_thresh )
 				{
-					if ( wma_forgetting_forget_wme( my_agent, (*d_p)->this_wme ) )
+					if ( wma_forgetting_forget_wme( my_agent, (*current_p)->this_wme ) )
 					{
 						return_val = true;
 					}
 				}
 				else
 				{
-					wma_forgetting_move_in_p_queue( my_agent, (*d_p), wma_forgetting_estimate_cycle( my_agent, (*d_p), false ) );
+					wma_forgetting_move_in_p_queue( my_agent, (*current_p), wma_forgetting_estimate_cycle( my_agent, (*current_p), false ) );
 				}
 			}
 
