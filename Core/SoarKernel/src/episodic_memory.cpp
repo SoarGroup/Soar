@@ -187,7 +187,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( graph_match );
 
 	// balance
-	balance = new soar_module::decimal_param( "balance", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
+	balance = new soar_module::decimal_param( "balance", 1, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( balance );
 
 
@@ -3590,6 +3590,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			epmem_time_id time_now = my_agent->epmem_stats->time->get_value() - 1;
 
+			double balance = my_agent->epmem_params->balance->get_value();
+			bool balance_approximately_1 = ( ( balance > ( 1.0 - 1.0e-8 ) ) && ( balance < ( 1.0 + 1.0e-8 ) ) );
+
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->epmem_timers->query_dnf->start();
 			////////////////////////////////////////////////////////////////////////////
@@ -4072,7 +4075,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														matches.push_back( new_match );
 														new_match->ct = 0;
 														new_match->value_ct = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) );
-														new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * wma_get_wme_activation( my_agent, (*w_p) );
+														new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * ( ( balance_approximately_1 )?( WMA_ACTIVATION_NONE ):( wma_get_wme_activation( my_agent, (*w_p), true ) ) );
 
 														(*wme_match) = new_match;
 														new_match = NULL;
@@ -4151,7 +4154,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											matches.push_back( new_match );
 											new_match->ct = 0;
 											new_match->value_ct = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) );
-											new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * wma_get_wme_activation( my_agent, (*w_p) );
+											new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * ( ( balance_approximately_1 )?( WMA_ACTIVATION_NONE ):( wma_get_wme_activation( my_agent, (*w_p), true ) ) );
 
 											(*wme_match) = new_match;
 											new_match = NULL;
@@ -4301,7 +4304,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// perform range search if any leaf wmes
 			if ( ( level > 1 ) && cue_size && !matches.empty() )
 			{
-				double balance = my_agent->epmem_params->balance->get_value();
 				double balance_inv = 1 - balance;
 
 				// dynamic programming stuff

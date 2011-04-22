@@ -223,7 +223,7 @@ extern void wma_go( agent* my_agent, wma_go_action go_action );
 /**
  * Retrieve wme activation exact/approximate
  */
-extern double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result = true );
+extern double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result );
 
 
 #endif
