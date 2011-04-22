@@ -168,11 +168,7 @@ typedef std::map< wma_d_cycle, wma_decay_set*, std::less< wma_d_cycle >, soar_mo
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
 typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
 
-//
-// These must go below types
-//
-
-#include "stl_support.h"
+enum wma_go_action { wma_histories, wma_forgetting };
 
 //////////////////////////////////////////////////////////
 // Parameter Functions
@@ -217,7 +213,7 @@ extern void wma_activate_wmes_tested_in_prods( agent* my_agent );
  * This routine performs WME activation
  * and forgetting at the end of each cycle.
  */
-extern void wma_go( agent* my_agent );
+extern void wma_go( agent* my_agent, wma_go_action go_action );
 
 
 //////////////////////////////////////////////////////////

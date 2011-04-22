@@ -623,7 +623,7 @@ inline void wma_forgetting_move_in_p_queue( agent* my_agent, wma_decay_element* 
 // - pretend you get no further updates, calculate how long you'd last
 inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_element* decay_el, bool fresh_reference )
 {	
-	wma_d_cycle return_val = static_cast<wma_d_cycle>( my_agent->d_cycle_count );
+	wma_d_cycle return_val = static_cast<wma_d_cycle>( my_agent->wma_d_cycle_count );
 	wma_param_container::forgetting_choices forgetting = my_agent->wma_params->forgetting->get_value();
 	
 	if ( fresh_reference && ( forgetting == wma_param_container::approx ) )
@@ -656,7 +656,7 @@ inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_ele
 		return_val += to_add;
 	}
 	
-	if ( return_val == static_cast<wma_d_cycle>( my_agent->d_cycle_count ) )
+	if ( return_val == static_cast<wma_d_cycle>( my_agent->wma_d_cycle_count ) )
 	{
 		double my_thresh = my_agent->wma_thresh_exp;
 		
@@ -766,7 +766,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 	if ( !my_agent->wma_forget_pq->empty() )
 	{
 		wma_forget_p_queue::iterator pq_p = my_agent->wma_forget_pq->begin();
-		wma_d_cycle current_cycle = my_agent->d_cycle_count;
+		wma_d_cycle current_cycle = my_agent->wma_d_cycle_count;
 		double decay_thresh = my_agent->wma_params->decay_thresh->get_value();
 
 		if ( pq_p->first == current_cycle )
@@ -878,7 +878,7 @@ inline void wma_update_decay_histories( agent* my_agent )
 {
 	wma_pooled_wme_set::iterator wme_p;
 	wma_decay_element* temp_el;
-	wma_d_cycle current_cycle = my_agent->d_cycle_count;
+	wma_d_cycle current_cycle = my_agent->wma_d_cycle_count;
 	bool forgetting = ( my_agent->wma_params->forgetting->get_value() != wma_param_container::off );
 
 	// add to history for changed elements
@@ -945,19 +945,21 @@ double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result )
 
 	if ( w->wma_decay_el )
 	{
-		return_val = wma_calculate_decay_activation( my_agent, w->wma_decay_el, my_agent->d_cycle_count, log_result );
+		return_val = wma_calculate_decay_activation( my_agent, w->wma_decay_el, my_agent->wma_d_cycle_count, log_result );
 	}
 
 	return return_val;
 }
 
-void wma_go( agent* my_agent )
+void wma_go( agent* my_agent, wma_go_action go_action )
 {
 	// update history for all touched elements
-	wma_update_decay_histories( my_agent );			
-
+	if ( go_action == wma_histories )
+	{
+		wma_update_decay_histories( my_agent );
+	}
 	// check forgetting queue
-	if ( my_agent->wma_params->forgetting->get_value() != wma_param_container::off )
+	else if ( ( go_action == wma_forgetting ) && ( my_agent->wma_params->forgetting->get_value() != wma_param_container::off ) )
 	{
 		if ( wma_forgetting_update_p_queue( my_agent ) )
 		{

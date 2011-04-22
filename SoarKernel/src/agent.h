@@ -859,6 +859,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   double wma_thresh_exp;
   bool wma_initialized;
   tc_number wma_tc_counter;
+  wma_d_cycle wma_d_cycle_count;
 
   // epmem
   epmem_param_container *epmem_params;
