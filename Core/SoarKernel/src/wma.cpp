@@ -117,7 +117,7 @@ wma_param_container::wma_param_container( agent *new_agent ): soar_module::param
 	forgetting->add_mapping( off, "off" );
 	forgetting->add_mapping( naive, "naive" );
 	forgetting->add_mapping( bsearch, "bsearch" );
-	forgetting->add_mapping( approx, "approx" );
+	forgetting->add_mapping( approx, "on" );
 	add( forgetting );
 };
 
