@@ -20,6 +20,7 @@
 #include <set>
 #include <list>
 #include <functional>
+#include <assert.h>
 
 #include "misc.h"
 #include "symtab.h"
@@ -955,8 +956,11 @@ namespace soar_module
 			// std::string temp_other( typeid( _other ).name() );
 		}
 
-		pointer allocate( size_type /*n*/, const void* = 0 )
+		pointer allocate( size_type n, const void* = 0 )
 		{
+			size_type test = n;
+			assert( test == 1 );
+			
 			if ( !mem_pool )
 			{
 				mem_pool = get_memory_pool( my_agent, size );
@@ -968,8 +972,11 @@ namespace soar_module
 			return t;
 		}
 
-		void deallocate( void* p, size_type /*n*/ )
+		void deallocate( void* p, size_type n )
 		{
+			size_type test = n;
+			assert( test == 1 );
+			
 			if ( p )
 			{
 				free_with_pool( mem_pool, p );
