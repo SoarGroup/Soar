@@ -119,6 +119,12 @@ wma_param_container::wma_param_container( agent *new_agent ): soar_module::param
 	forgetting->add_mapping( bsearch, "bsearch" );
 	forgetting->add_mapping( approx, "on" );
 	add( forgetting );
+
+	// which WMEs are removed?
+	forget_wme = new soar_module::constant_param<forget_wme_choices>( "forget-wme", all, new wma_activation_predicate<forget_wme_choices>( my_agent ) );
+	forget_wme->add_mapping( all, "all" );
+	forget_wme->add_mapping( lti, "lti" );
+	add( forget_wme );
 };
 
 //
@@ -768,6 +774,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 		wma_forget_p_queue::iterator pq_p = my_agent->wma_forget_pq->begin();
 		wma_d_cycle current_cycle = my_agent->wma_d_cycle_count;
 		double decay_thresh = my_agent->wma_params->decay_thresh->get_value();
+		bool forget_only_lti = ( my_agent->wma_params->forget_wme->get_value() == wma_param_container::lti );
 
 		if ( pq_p->first == current_cycle )
 		{
@@ -780,9 +787,12 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 
 				if ( wma_calculate_decay_activation( my_agent, (*current_p), current_cycle, true ) < decay_thresh )
 				{
-					if ( wma_forgetting_forget_wme( my_agent, (*current_p)->this_wme ) )
+					if ( !forget_only_lti || ( (*current_p)->this_wme->id->id.smem_lti != NIL ) )
 					{
-						return_val = true;
+						if ( wma_forgetting_forget_wme( my_agent, (*current_p)->this_wme ) )
+						{
+							return_val = true;
+						}
 					}
 				}
 				else
