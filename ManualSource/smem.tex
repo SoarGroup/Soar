@@ -286,8 +286,8 @@ This allows the user to establish a balance between cost of updating augmentatio
 As long as the threshold is greater than the number of augmentations of most long-term identifiers, performance should be fine (as it will bound the effects of selectivity).
 
 The next two parameters deal with the SQLite cache, which is a memory store used to speed operations like queries by keeping in memory structures like levels of index B+-trees. 
-The first parameter, \soarb{page\_size}, indicates the size, in bytes, of each cache page. 
-The second parameter, \soarb{cache\_size}, suggests to SQLite how many pages are available for the cache. 
+The first parameter, \soarb{page-size}, indicates the size, in bytes, of each cache page. 
+The second parameter, \soarb{cache-size}, suggests to SQLite how many pages are available for the cache. 
 Total cache size is the product of these two parameter settings. 
 The cache memory is not pre-allocated, so short/small runs will not necessarily make use of this space. 
 Generally speaking, a greater number of cache pages will benefit query time, as SQLite can keep necessary meta-data in memory. 
