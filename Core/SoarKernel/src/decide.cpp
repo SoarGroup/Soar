@@ -1446,6 +1446,19 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
 	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_result, id->id.epmem_result_header );
 
+	{
+	  int64_t my_time = static_cast<int64_t>( thisAgent->epmem_stats->time->get_value() );
+	  if ( my_time == 0 )
+	  {
+		  // special case: pre-initialization
+		  my_time = 1;
+	  }
+	  
+	  Symbol* my_time_sym = make_int_constant( thisAgent, my_time );
+	  id->id.epmem_time_wme = soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_present_id, my_time_sym );
+	  symbol_remove_ref( thisAgent, my_time_sym );
+	}
+
 	id->id.smem_header = make_new_identifier( thisAgent, 'S', level );		
 	soar_module::add_module_wme( thisAgent, id, thisAgent->smem_sym, id->id.smem_header );
 	id->id.smem_cmd_header = make_new_identifier( thisAgent, 'C', level );

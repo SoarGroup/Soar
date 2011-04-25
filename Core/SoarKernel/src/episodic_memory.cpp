@@ -2493,6 +2493,26 @@ void epmem_new_episode( agent *my_agent )
 		my_agent->epmem_stmts_graph->add_time->execute( soar_module::op_reinit );
 
 		my_agent->epmem_stats->time->set_value( time_counter + 1 );
+
+		// update time wme on all states
+		{
+			Symbol* state = my_agent->bottom_goal;
+			Symbol* my_time_sym = make_int_constant( my_agent, time_counter + 1 );
+
+			while ( state != NULL )
+			{
+				if ( state->id.epmem_time_wme != NIL )
+				{
+					soar_module::remove_module_wme( my_agent, state->id.epmem_time_wme );
+				}
+
+				state->id.epmem_time_wme = soar_module::add_module_wme( my_agent, state->id.epmem_header, my_agent->epmem_sym_present_id, my_time_sym );
+				
+				state = state->id.higher_goal;
+			}
+
+			symbol_remove_ref( my_agent, my_time_sym );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
