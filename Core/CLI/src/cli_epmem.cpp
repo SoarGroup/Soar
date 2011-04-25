@@ -241,7 +241,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 		
-		temp = "page_size: ";
+		temp = "page-size: ";
         temp2 = agnt->epmem_params->page_size->get_string();
         temp += temp2;
         delete temp2;
@@ -254,7 +254,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
         }
 
-        temp = "cache_size: ";
+        temp = "cache-size: ";
         temp2 = agnt->epmem_params->cache_size->get_string();
         temp += temp2;
         delete temp2;
@@ -313,7 +313,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "graph_match_ordering: ";
+		temp = "graph-match-ordering: ";
 		temp2 = agnt->epmem_params->gm_ordering->get_string();
         temp += temp2;
         delete temp2;

@@ -139,7 +139,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
         }
 
-        temp = "page_size: ";
+        temp = "page-size: ";
         temp2 = agnt->smem_params->page_size->get_string();
         temp += temp2;
         delete temp2;
@@ -152,7 +152,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
         }
 		
-		temp = "cache_size: ";
+		temp = "cache-size: ";
         temp2 = agnt->smem_params->cache_size->get_string();
         temp += temp2;
         delete temp2;
@@ -224,7 +224,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 		
-		temp = "activate_on_query: ";
+		temp = "activate-on-query: ";
         temp2 = agnt->smem_params->activate_on_query->get_string();
         temp += temp2;
         delete temp2;
@@ -237,7 +237,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 		
-		temp = "activation_mode: ";
+		temp = "activation-mode: ";
         temp2 = agnt->smem_params->activation_mode->get_string();
         temp += temp2;
         delete temp2;
@@ -250,7 +250,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "base_decay: ";
+		temp = "base-decay: ";
         temp2 = agnt->smem_params->base_decay->get_string();
         temp += temp2;
         delete temp2;
@@ -263,7 +263,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "base_update_policy: ";
+		temp = "base-update-policy: ";
         temp2 = agnt->smem_params->base_update->get_string();
         temp += temp2;
         delete temp2;
@@ -276,7 +276,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "base_incremental_threshes: ";
+		temp = "base-incremental-threshes: ";
         temp2 = agnt->smem_params->base_incremental_threshes->get_string();
         temp += temp2;
         delete temp2;
