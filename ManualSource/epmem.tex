@@ -20,11 +20,14 @@ Upon creation of a new state in working memory (see Section \ref{ARCH-impasses-t
 (<s> ^epmem <e>)
   (<e> ^command <e-c>)
   (<e> ^result <e-r>)
+  (<e> ^present-id #)
 \end{verbatim}
 
 As rules augment the \emph{command} structure in order to retrieve episodes (\ref{EPMEM-retrieval}), episodic memory augments the \emph{result} structure in response.
 Production actions should not remove augmentations of the \emph{result} structure directly, as episodic memory will maintain these WMEs.
 
+The value of the \emph{present-id} augmentation is an integer and will update to expose to the agent the current episode number.
+This information is identical to what is available via the \emph{time} statistic (see Section \ref{epmem} on page \pageref{epmem}) and the \emph{present-id} retrieval meta-data (\ref{EPMEM-meta}).
 
 \section{Episodic Storage}
 \label{EPMEM-storage}
