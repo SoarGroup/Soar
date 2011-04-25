@@ -66,6 +66,9 @@ class wma_param_container: public soar_module::param_container
 
 		enum forgetting_choices { off, naive, bsearch, approx };
 		soar_module::constant_param<forgetting_choices>* forgetting;
+
+		enum forget_wme_choices { all, lti };
+		soar_module::constant_param<forget_wme_choices>* forget_wme;
 				
 		wma_param_container( agent* new_agent );
 };
