@@ -289,8 +289,8 @@ The first is \soarb{commit}, which controls the number of episodes that occur be
 If the total number of episodes (or a range) is known ahead of time, setting this value to a greater number will result in greatest performance (due to decreased I/O).
 
 The next two parameters deal with the SQLite cache, which is a memory store used to speed operations like queries by keeping in memory structures like levels of index B+-trees. 
-The first parameter, \soarb{page\_size}, indicates the size, in bytes, of each cache page. 
-The second parameter, \soarb{cache\_size}, suggests to SQLite how many pages are available for the cache. 
+The first parameter, \soarb{page-size}, indicates the size, in bytes, of each cache page. 
+The second parameter, \soarb{cache-size}, suggests to SQLite how many pages are available for the cache. 
 Total cache size is the product of these two parameter settings. 
 The cache memory is not pre-allocated, so short/small runs will not necessarily make use of this space. 
 Generally speaking, a greater number of cache pages will benefit query time, as SQLite can keep necessary meta-data in memory. 
