@@ -204,7 +204,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( timers );
 	
 	// page_size
-	page_size = new soar_module::constant_param<page_choices>( "page_size", page_8k, new epmem_db_predicate<page_choices>( my_agent ) );
+	page_size = new soar_module::constant_param<page_choices>( "page-size", page_8k, new epmem_db_predicate<page_choices>( my_agent ) );
 	page_size->add_mapping( page_1k, "1k" );
 	page_size->add_mapping( page_2k, "2k" );
 	page_size->add_mapping( page_4k, "4k" );
@@ -215,7 +215,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( page_size );
 
 	// cache_size
-	cache_size = new soar_module::integer_param( "cache_size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new epmem_db_predicate<int64_t>( my_agent ) );
+	cache_size = new soar_module::integer_param( "cache-size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new epmem_db_predicate<int64_t>( my_agent ) );
 	add( cache_size );
 
 	// opt
@@ -229,7 +229,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	// Experimental
 	////////////////////
 
-	gm_ordering = new soar_module::constant_param<gm_ordering_choices>( "graph_match_ordering", gm_order_undefined, new soar_module::f_predicate<gm_ordering_choices>() );
+	gm_ordering = new soar_module::constant_param<gm_ordering_choices>( "graph-match-ordering", gm_order_undefined, new soar_module::f_predicate<gm_ordering_choices>() );
 	gm_ordering->add_mapping( gm_order_undefined, "undefined" );
 	gm_ordering->add_mapping( gm_order_dfs, "dfs" );
 	gm_ordering->add_mapping( gm_order_mcv, "mcv" );
