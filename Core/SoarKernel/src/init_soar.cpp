@@ -689,6 +689,8 @@ void do_one_top_level_phase (agent* thisAgent)
 		  determine_highest_active_production_level_in_stack_propose(thisAgent);
 		    // FIXME return the correct enum top_level_phase constant in soar_call_data? /*(soar_call_data)((thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE)*/
 			soar_invoke_callbacks(thisAgent, AFTER_ELABORATION_CALLBACK, NULL ) ;
+
+		  if (thisAgent->system_halted) break;
           if (thisAgent->go_type == GO_ELABORATION) break;
 	  }
  
@@ -864,6 +866,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  // FIXME return the correct enum top_level_phase constant in soar_call_data? /*(soar_call_data)((thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE)*/
 		  soar_invoke_callbacks(thisAgent, AFTER_ELABORATION_CALLBACK, NULL ) ;
 
+		  if (thisAgent->system_halted) break;
 		  if (thisAgent->go_type == GO_ELABORATION) break;
       }
 
