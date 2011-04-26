@@ -85,10 +85,19 @@ void init_soar_agent(agent* thisAgent) {
   select_init(thisAgent);
   predict_init(thisAgent);
 
+  init_memory_pool( thisAgent, &( thisAgent->rl_info_pool ), sizeof( rl_data ), "rl_id_data" );
+  init_memory_pool( thisAgent, &( thisAgent->rl_et_pool ), sizeof( rl_et_map ), "rl_et" );
+  init_memory_pool( thisAgent, &( thisAgent->rl_rule_pool ), sizeof( rl_rule_list ), "rl_rules" );
+
   init_memory_pool( thisAgent, &( thisAgent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
   init_memory_pool( thisAgent, &( thisAgent->wma_decay_set_pool ), sizeof( wma_decay_set ), "wma_decay_set" );
   init_memory_pool( thisAgent, &( thisAgent->wma_wme_oset_pool ), sizeof( wma_pooled_wme_set ), "wma_oset" );
   init_memory_pool( thisAgent, &( thisAgent->wma_slot_refs_pool ), sizeof( wma_sym_reference_map ), "wma_slot_ref" );
+
+  init_memory_pool( thisAgent, &( thisAgent->epmem_wmes_pool ), sizeof( epmem_wme_stack ), "epmem_wmes" );
+  init_memory_pool( thisAgent, &( thisAgent->epmem_info_pool ), sizeof( epmem_data ), "epmem_id_data" );
+  init_memory_pool( thisAgent, &( thisAgent->smem_wmes_pool ), sizeof( smem_wme_stack ), "smem_wmes" );
+  init_memory_pool( thisAgent, &( thisAgent->smem_info_pool ), sizeof( smem_data ), "smem_id_data" );
 
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
   thisAgent->epmem_params->exclusions->set_value( "smem" );

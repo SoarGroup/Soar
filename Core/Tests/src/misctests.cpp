@@ -339,10 +339,10 @@ void MiscTest::test_stats()
     if (sizeof(intptr_t) > 4)
     {
         // 64-bit any
-        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 4504);
+        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 4376);
         CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1) == 264032);
-        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 359904);
-        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 2080);
+        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 687216);
+        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 2136);
     }
     else
     {
@@ -353,10 +353,10 @@ void MiscTest::test_stats()
         CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 1036);
     }
 #else // 32-bit windows
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 3628);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 3508);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1) == 132232);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 326984);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 1036);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 687240);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 1068);
 #endif
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageString, -1) == 900);
 

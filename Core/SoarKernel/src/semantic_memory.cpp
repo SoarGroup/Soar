@@ -670,7 +670,7 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 			// if this is a meta wme, then it is completely local
 			// to the state and thus we will manually remove it
 			// (via preference removal) when the time comes
-			state->id.smem_info->smem_wmes->push( pref );
+			state->id.smem_info->smem_wmes->push_back( pref );
 		}
 	}
 
@@ -2388,8 +2388,8 @@ void smem_clear_result( agent *my_agent, Symbol *state )
 
 	while ( !state->id.smem_info->smem_wmes->empty() )
 	{
-		pref = state->id.smem_info->smem_wmes->top();
-		state->id.smem_info->smem_wmes->pop();
+		pref = state->id.smem_info->smem_wmes->back();
+		state->id.smem_info->smem_wmes->pop_back();
 
 		if ( pref->in_tm )
 		{
@@ -2417,10 +2417,7 @@ void smem_reset( agent *my_agent, Symbol *state )
 		
 		// this will be called after prefs from goal are already removed,
 		// so just clear out result stack
-		while ( !data->smem_wmes->empty() )
-		{
-			data->smem_wmes->pop();
-		}		
+		data->smem_wmes->clear();
 
 		state = state->id.lower_goal;
 	}
