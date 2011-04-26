@@ -1836,6 +1836,17 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 						* then we need to create one */
 						if (w->preference->inst->match_goal_level == w->preference->id->id.level) 
 						{
+							/*
+							* NLD: BUG when the system has already halted and this code is reached, Soar will 
+							* report a memory leak because the elaborate_gds call below will not execute (notice the 
+							* check for system_halted), and hence the gds for this goal will not be populated, 
+							* leading to the gds struct not being freed on quit.
+							*
+							* I'm not sure if this situation will come up anymore (after r12593), so not doing
+							* anything about it. However, if it does, this can lead to a memory leak. I know
+							* it can add up between calls to init-soar, but I'm not sure if it can increase
+							* more frequently than that.
+							*/
 							create_gds_for_goal( thisAgent, w->preference->inst->match_goal );
 
 							/* REW: BUG When chunks and result instantiations both create
