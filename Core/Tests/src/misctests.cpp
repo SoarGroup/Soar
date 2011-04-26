@@ -275,9 +275,9 @@ void MiscTest::test_stats()
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountElaboration, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsCycleCountInnerElaboration, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsProductionFiringCount, -1) == 0);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountAddition, -1) == 12);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountAddition, -1) == 13);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountRemoval, -1) == 0);
-    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCount, -1) == 12);
+    CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCount, -1) == 13);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsWmeCountAverage, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsWmeCountMax, -1) == 0);
     CPPUNIT_ASSERT(stats.GetArgFloat(sml::sml_Names::kParamStatsKernelCPUTime, -1) == 0);
@@ -341,8 +341,8 @@ void MiscTest::test_stats()
         // 64-bit any
         CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageMiscellaneous, -1) == 4504);
         CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageHash, -1) == 264032);
-        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 326824);
-        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 2072);
+        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsagePool, -1) == 359904);
+        CPPUNIT_ASSERT(stats.GetArgInt(sml::sml_Names::kParamStatsMemoryUsageStatsOverhead, -1) == 2080);
     }
     else
     {
