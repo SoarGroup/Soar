@@ -831,7 +831,7 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 			// if this is a meta wme, then it is completely local
 			// to the state and thus we will manually remove it
 			// (via preference removal) when the time comes
-			state->id.epmem_info->epmem_wmes->push( pref );
+			state->id.epmem_info->epmem_wmes->push_back( pref );
 		}
 	}
 
@@ -1336,8 +1336,8 @@ void epmem_clear_result( agent *my_agent, Symbol *state )
 
 	while ( !state->id.epmem_info->epmem_wmes->empty() )
 	{
-		pref = state->id.epmem_info->epmem_wmes->top();
-		state->id.epmem_info->epmem_wmes->pop();
+		pref = state->id.epmem_info->epmem_wmes->back();
+		state->id.epmem_info->epmem_wmes->pop_back();
 
 		if ( pref->in_tm )
 		{
@@ -1371,10 +1371,7 @@ void epmem_reset( agent *my_agent, Symbol *state )
 		
 		// this will be called after prefs from goal are already removed,
 		// so just clear out result stack
-		while ( !data->epmem_wmes->empty() )
-		{
-			data->epmem_wmes->pop();
-		}		
+		data->epmem_wmes->clear();		
 
 		state = state->id.lower_goal;
 	}
