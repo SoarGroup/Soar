@@ -210,10 +210,19 @@ typedef struct agent_struct {
   memory_pool         ms_change_pool;
   memory_pool         node_varnames_pool;
 
+  memory_pool		  rl_info_pool;
+  memory_pool		  rl_et_pool;
+  memory_pool		  rl_rule_pool;
+
   memory_pool		  wma_decay_element_pool;
   memory_pool		  wma_decay_set_pool;
   memory_pool		  wma_wme_oset_pool;
   memory_pool		  wma_slot_refs_pool;
+
+  memory_pool		  epmem_wmes_pool;
+  memory_pool		  epmem_info_pool;
+  memory_pool		  smem_wmes_pool;
+  memory_pool		  smem_info_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;

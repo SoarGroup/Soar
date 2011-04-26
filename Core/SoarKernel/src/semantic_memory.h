@@ -312,13 +312,16 @@ enum smem_storage_type { store_level, store_recursive };
 // represents a list of wmes
 typedef std::list<wme *> smem_wme_list;
 
+// list used primarily like a stack
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > smem_wme_stack;
+
 // data associated with each state
 typedef struct smem_data_struct
 {
 	uint64_t last_cmd_time[2];			// last update to smem.command
-	uint64_t last_cmd_count[2];		// last update to smem.command
+	uint64_t last_cmd_count[2];			// last update to smem.command
 
-	std::stack<preference *> *smem_wmes;	// wmes in last smem
+	smem_wme_stack* smem_wmes;			// wmes in last smem
 } smem_data;
 
 //
