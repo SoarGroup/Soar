@@ -2058,13 +2058,6 @@ void remove_wmes_for_context_slot (agent* thisAgent, slot *s) {
    entire context stack is removed.)
 ------------------------------------------------------------------ */
 
-inline void remove_existing_context_and_descendents_rl( agent * const &thisAgent, Symbol * const &goal ) {
-  delete goal->id.rl_info->eligibility_traces;
-  delete goal->id.rl_info->prev_op_rl_rules;
-  symbol_remove_ref( thisAgent, goal->id.reward_header );
-  free_memory( thisAgent, goal->id.rl_info, MISCELLANEOUS_MEM_USAGE );
-}
-
 void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   preference *p;
 
@@ -2174,20 +2167,26 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
     }
   }
 
-  remove_existing_context_and_descendents_rl(thisAgent, goal);
+  goal->id.rl_info->eligibility_traces->~rl_et_map();
+  free_with_pool( &( thisAgent->rl_et_pool ),goal->id.rl_info->eligibility_traces  );
+  goal->id.rl_info->prev_op_rl_rules->~rl_rule_list();
+  free_with_pool( &( thisAgent->rl_rule_pool ),goal->id.rl_info->prev_op_rl_rules  );
+  symbol_remove_ref( thisAgent, goal->id.reward_header );
+  free_with_pool( &( thisAgent->rl_info_pool ), goal->id.rl_info );
 
-  delete goal->id.epmem_info->epmem_wmes;
+  goal->id.epmem_info->epmem_wmes->~epmem_wme_stack();
+  free_with_pool( &( thisAgent->epmem_wmes_pool ), goal->id.epmem_info->epmem_wmes );
   symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );  
-  symbol_remove_ref( thisAgent, goal->id.epmem_result_header );  
+  symbol_remove_ref( thisAgent, goal->id.epmem_result_header );
   symbol_remove_ref( thisAgent, goal->id.epmem_header );
-  free_memory( thisAgent, goal->id.epmem_info, MISCELLANEOUS_MEM_USAGE );
+  free_with_pool( &( thisAgent->epmem_info_pool ), goal->id.epmem_info );
 
-
-  delete goal->id.smem_info->smem_wmes;
+  goal->id.smem_info->smem_wmes->~smem_wme_stack();
+  free_with_pool( &( thisAgent->smem_wmes_pool ), goal->id.smem_info->smem_wmes );
   symbol_remove_ref( thisAgent, goal->id.smem_cmd_header );  
   symbol_remove_ref( thisAgent, goal->id.smem_result_header );  
   symbol_remove_ref( thisAgent, goal->id.smem_header );
-  free_memory( thisAgent, goal->id.smem_info, MISCELLANEOUS_MEM_USAGE );
+  free_with_pool( &( thisAgent->smem_info_pool ), goal->id.smem_info );
 
 
   /* REW: BUG
@@ -2223,16 +2222,6 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
    bottom goal, this routine creates a new goal and makes it both
    the top and bottom goal.
 ------------------------------------------------------------------ */
-
-inline void create_new_context_rl( agent * const &thisAgent, Symbol * const &id ) {
-  id->id.rl_info = static_cast<rl_data *>( allocate_memory( thisAgent, sizeof( rl_data ), MISCELLANEOUS_MEM_USAGE ) );
-  id->id.rl_info->eligibility_traces = new rl_et_map;
-  id->id.rl_info->prev_op_rl_rules = new rl_rule_list;
-  id->id.rl_info->previous_q = 0;
-  id->id.rl_info->reward = 0;
-  id->id.rl_info->gap_age = 0;
-  id->id.rl_info->hrl_age = 0;
-}
 
 void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse_type)
 {
@@ -2282,23 +2271,31 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.operator_slot = make_slot (thisAgent, id, thisAgent->operator_symbol);
   id->id.allow_bottom_up_chunks = TRUE;
 
-  create_new_context_rl(thisAgent, id);
+  allocate_with_pool( thisAgent, &( thisAgent->rl_info_pool ), &( id->id.rl_info ) );
+  id->id.rl_info->previous_q = 0;
+  id->id.rl_info->reward = 0;
+  id->id.rl_info->gap_age = 0;
+  id->id.rl_info->hrl_age = 0;
+  allocate_with_pool( thisAgent, &( thisAgent->rl_et_pool ), &( id->id.rl_info->eligibility_traces ) );
+  id->id.rl_info->eligibility_traces = new ( id->id.rl_info->eligibility_traces ) rl_et_map( std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >( thisAgent ) );
+  allocate_with_pool( thisAgent, &( thisAgent->rl_rule_pool ), &( id->id.rl_info->prev_op_rl_rules ) );
+  id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list( soar_module::soar_memory_pool_allocator< production* >( thisAgent ) );
 
-  id->id.epmem_info = static_cast<epmem_data *>( allocate_memory( thisAgent, sizeof( epmem_data ), MISCELLANEOUS_MEM_USAGE ) );
+  allocate_with_pool( thisAgent, &( thisAgent->epmem_info_pool ), &( id->id.epmem_info ) );
   id->id.epmem_info->last_ol_time = 0;  
   id->id.epmem_info->last_cmd_time = 0;
   id->id.epmem_info->last_cmd_count = 0;
-  
-  id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;  
-  id->id.epmem_info->epmem_wmes = new std::stack<preference *>();
+  id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
+  allocate_with_pool( thisAgent, &( thisAgent->epmem_wmes_pool ), &( id->id.epmem_info->epmem_wmes ) );
+  id->id.epmem_info->epmem_wmes = new ( id->id.epmem_info->epmem_wmes ) epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
 
-
-  id->id.smem_info = static_cast<smem_data *>( allocate_memory( thisAgent, sizeof( smem_data ), MISCELLANEOUS_MEM_USAGE ) );  
+  allocate_with_pool( thisAgent, &( thisAgent->smem_info_pool ), &( id->id.smem_info ) );
   id->id.smem_info->last_cmd_time[0] = 0;
   id->id.smem_info->last_cmd_time[1] = 0;
   id->id.smem_info->last_cmd_count[0] = 0;
   id->id.smem_info->last_cmd_count[1] = 0;
-  id->id.smem_info->smem_wmes = new std::stack<preference *>();
+  allocate_with_pool( thisAgent, &( thisAgent->smem_wmes_pool ), &( id->id.smem_info->smem_wmes ) );
+  id->id.smem_info->smem_wmes = new ( id->id.smem_info->smem_wmes ) smem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
 
 
   /* --- invoke callback routine --- */
