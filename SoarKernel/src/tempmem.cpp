@@ -190,7 +190,8 @@ void remove_garbage_slots (agent* thisAgent) {
     symbol_remove_ref (thisAgent, s->attr);
 	if ( s->wma_val_references != NIL )
 	{
-	  delete s->wma_val_references;
+	  s->wma_val_references->~wma_sym_reference_map();
+	  free_with_pool( &( thisAgent->wma_slot_refs_pool ), s->wma_val_references );
 	  s->wma_val_references = NIL;
 	}
     free_with_pool (&thisAgent->slot_pool, s);

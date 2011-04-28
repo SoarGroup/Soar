@@ -344,7 +344,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.epmem_result_header = NIL;
   sym->id.epmem_id = EPMEM_NODEID_BAD;
   sym->id.epmem_valid = NIL;
-
+  sym->id.epmem_time_wme = NIL;
 
   sym->id.smem_header = NIL;
   sym->id.smem_cmd_header = NIL;

@@ -20,9 +20,11 @@
 #include <set>
 #include <list>
 #include <functional>
+#include <assert.h>
 
 #include "misc.h"
 #include "symtab.h"
+#include "mem.h"
 
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;
@@ -35,7 +37,7 @@ namespace soar_module
 	// Utility functions
 	/////////////////////////////////////////////////////////////
 
-	typedef std::set<wme *> wme_set;
+	typedef std::set< wme* > wme_set;
 	
 	typedef struct symbol_triple_struct
 	{
@@ -908,6 +910,119 @@ namespace soar_module
 				for ( std::map<std::string, timer *>::iterator p=objects->begin(); p!=objects->end(); p++ )
 					p->second->reset();
 			}
+	};
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Memory Pool Allocators
+	///////////////////////////////////////////////////////////////////////////
+
+	memory_pool* get_memory_pool( agent* my_agent, size_t size );
+
+	template <class T>
+	class soar_memory_pool_allocator
+	{
+	public:
+		typedef T			value_type;
+		typedef size_t		size_type;
+		typedef ptrdiff_t	difference_type;
+
+		typedef T*			pointer;
+		typedef const T*	const_pointer;
+
+		typedef T&			reference;
+		typedef const T&	const_reference;
+
+	public:
+		agent* get_agent() const { return my_agent; }
+
+		soar_memory_pool_allocator( agent* new_agent ): my_agent(new_agent), mem_pool(NULL), size(sizeof(value_type))
+		{
+			// useful for debugging
+			// std::string temp_this( typeid( value_type ).name() );
+		}
+
+		soar_memory_pool_allocator( const soar_memory_pool_allocator& obj ): my_agent(obj.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+		{
+			// useful for debugging
+			// std::string temp_this( typeid( value_type ).name() );
+		}
+
+		template <class _other>
+		soar_memory_pool_allocator( const soar_memory_pool_allocator<_other>& other ): my_agent(other.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+		{
+			// useful for debugging
+			// std::string temp_this( typeid( T ).name() );
+			// std::string temp_other( typeid( _other ).name() );
+		}
+
+		pointer allocate( size_type n, const void* = 0 )
+		{
+			size_type test = n;
+			assert( test == 1 );
+			
+			if ( !mem_pool )
+			{
+				mem_pool = get_memory_pool( my_agent, size );
+			}
+			
+			pointer t;
+			allocate_with_pool( my_agent, mem_pool, &t );
+
+			return t;
+		}
+
+		void deallocate( void* p, size_type n )
+		{
+			size_type test = n;
+			assert( test == 1 );
+			
+			if ( p )
+			{
+				free_with_pool( mem_pool, p );
+			}
+		}
+
+		void construct( pointer p, const_reference val )
+		{
+			new (p) T( val );
+		}
+
+		void destroy( pointer p )
+		{
+			p;
+			p->~T();
+		}
+
+		size_type max_size() const
+		{
+			return static_cast< size_type >( -1 );
+		}
+
+		const_pointer address( const_reference r ) const
+		{
+			return &r;
+		}
+
+		pointer address( reference r ) const
+		{
+			return &r;
+		}
+
+		template <class U>
+		struct rebind
+		{
+			typedef soar_memory_pool_allocator<U> other;
+		};
+
+
+	private:
+		agent* my_agent;
+		memory_pool* mem_pool;
+		size_type size;
+
+		soar_memory_pool_allocator() {}
+
 	};
 
 }

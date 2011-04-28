@@ -102,7 +102,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	//
 
 	// page_size
-	page_size = new soar_module::constant_param<page_choices>( "page_size", page_8k, new smem_db_predicate<page_choices>( my_agent ) );
+	page_size = new soar_module::constant_param<page_choices>( "page-size", page_8k, new smem_db_predicate<page_choices>( my_agent ) );
 	page_size->add_mapping( page_1k, "1k" );
 	page_size->add_mapping( page_2k, "2k" );
 	page_size->add_mapping( page_4k, "4k" );
@@ -113,7 +113,7 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( page_size );
 	
 	// cache_size
-	cache_size = new soar_module::integer_param( "cache_size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new smem_db_predicate<int64_t>( my_agent ) );
+	cache_size = new soar_module::integer_param( "cache-size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new smem_db_predicate<int64_t>( my_agent ) );
 	add( cache_size );
 
 	// opt
@@ -127,35 +127,35 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( thresh );
 
 	// merge
-	merge = new soar_module::constant_param<merge_choices>( "merge", merge_none, new soar_module::f_predicate<merge_choices>() );
+	merge = new soar_module::constant_param<merge_choices>( "merge", merge_add, new soar_module::f_predicate<merge_choices>() );
 	merge->add_mapping( merge_none, "none" );
 	merge->add_mapping( merge_add, "add" );
 	add( merge );
 	
 	// activate_on_query
-	activate_on_query = new soar_module::boolean_param( "activate_on_query", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
+	activate_on_query = new soar_module::boolean_param( "activate-on-query", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( activate_on_query );
 	
 	// activation_mode
-	activation_mode = new soar_module::constant_param<act_choices>( "activation_mode", act_recency, new soar_module::f_predicate<act_choices>() );
+	activation_mode = new soar_module::constant_param<act_choices>( "activation-mode", act_recency, new soar_module::f_predicate<act_choices>() );
 	activation_mode->add_mapping( act_recency, "recency" );
 	activation_mode->add_mapping( act_frequency, "frequency" );
 	activation_mode->add_mapping( act_base, "base-level" );
 	add( activation_mode );
 
 	// base_decay
-	base_decay = new soar_module::decimal_param( "base_decay", 0.5, new soar_module::gt_predicate<double>( 0, false ), new soar_module::f_predicate<double>() );
+	base_decay = new soar_module::decimal_param( "base-decay", 0.5, new soar_module::gt_predicate<double>( 0, false ), new soar_module::f_predicate<double>() );
 	add( base_decay );
 
 	// base_update_policy
-	base_update = new soar_module::constant_param<base_update_choices>( "base_update_policy", bupt_stable, new soar_module::f_predicate<base_update_choices>() );
+	base_update = new soar_module::constant_param<base_update_choices>( "base-update-policy", bupt_stable, new soar_module::f_predicate<base_update_choices>() );
 	base_update->add_mapping( bupt_stable, "stable" );
 	base_update->add_mapping( bupt_naive, "naive" );
 	base_update->add_mapping( bupt_incremental, "incremental" );
 	add( base_update );
 
 	// incremental update thresholds
-	base_incremental_threshes = new soar_module::int_set_param( "base_incremental_threshes", new soar_module::f_predicate< int64_t >() );
+	base_incremental_threshes = new soar_module::int_set_param( "base-incremental-threshes", new soar_module::f_predicate< int64_t >() );
 	add( base_incremental_threshes );
 }
 
@@ -670,7 +670,7 @@ inline void _smem_process_buffered_wme_list( agent* my_agent, Symbol* state, soa
 			// if this is a meta wme, then it is completely local
 			// to the state and thus we will manually remove it
 			// (via preference removal) when the time comes
-			state->id.smem_info->smem_wmes->push( pref );
+			state->id.smem_info->smem_wmes->push_back( pref );
 		}
 	}
 
@@ -2388,8 +2388,8 @@ void smem_clear_result( agent *my_agent, Symbol *state )
 
 	while ( !state->id.smem_info->smem_wmes->empty() )
 	{
-		pref = state->id.smem_info->smem_wmes->top();
-		state->id.smem_info->smem_wmes->pop();
+		pref = state->id.smem_info->smem_wmes->back();
+		state->id.smem_info->smem_wmes->pop_back();
 
 		if ( pref->in_tm )
 		{
@@ -2417,10 +2417,7 @@ void smem_reset( agent *my_agent, Symbol *state )
 		
 		// this will be called after prefs from goal are already removed,
 		// so just clear out result stack
-		while ( !data->smem_wmes->empty() )
-		{
-			data->smem_wmes->pop();
-		}		
+		data->smem_wmes->clear();
 
 		state = state->id.lower_goal;
 	}

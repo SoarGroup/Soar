@@ -1007,7 +1007,7 @@ void print_wme (agent* thisAgent, wme *w) {
   
   if (wma_enabled(thisAgent))
   {
-    print (thisAgent, " [%0.2g]", wma_get_wme_activation(thisAgent, w));
+    print (thisAgent, " [%0.2g]", wma_get_wme_activation(thisAgent, w, true));
   }
   
   if (w->acceptable) print_string (thisAgent, " +");

@@ -244,7 +244,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( graph_match );
 
 	// balance
-	balance = new soar_module::decimal_param( "balance", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
+	balance = new soar_module::decimal_param( "balance", 1, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( balance );
 
 
@@ -261,7 +261,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( timers );
 
 	// page_size
-	page_size = new soar_module::constant_param<page_choices>( "page_size", page_8k, new epmem_db_predicate<page_choices>( my_agent ) );
+	page_size = new soar_module::constant_param<page_choices>( "page-size", page_8k, new epmem_db_predicate<page_choices>( my_agent ) );
 	page_size->add_mapping( page_1k, "1k" );
 	page_size->add_mapping( page_2k, "2k" );
 	page_size->add_mapping( page_4k, "4k" );
@@ -272,7 +272,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( page_size );
 
 	// cache_size
-	cache_size = new soar_module::integer_param( "cache_size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new epmem_db_predicate<int64_t>( my_agent ) );
+	cache_size = new soar_module::integer_param( "cache-size", 10000, new soar_module::gt_predicate<int64_t>( 1, true ), new epmem_db_predicate<int64_t>( my_agent ) );
 	add( cache_size );
 
 	// opt
@@ -286,7 +286,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	// Experimental
 	////////////////////
 
-	gm_ordering = new soar_module::constant_param<gm_ordering_choices>( "graph_match_ordering", gm_order_undefined, new soar_module::f_predicate<gm_ordering_choices>() );
+	gm_ordering = new soar_module::constant_param<gm_ordering_choices>( "graph-match-ordering", gm_order_undefined, new soar_module::f_predicate<gm_ordering_choices>() );
 	gm_ordering->add_mapping( gm_order_undefined, "undefined" );
 	gm_ordering->add_mapping( gm_order_dfs, "dfs" );
 	gm_ordering->add_mapping( gm_order_mcv, "mcv" );
@@ -823,7 +823,6 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" );
 	add( find_lti_current_time );
-
 }
 
 
@@ -904,7 +903,7 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 			// if this is a meta wme, then it is completely local
 			// to the state and thus we will manually remove it
 			// (via preference removal) when the time comes
-			state->id.epmem_info->epmem_wmes->push( pref );
+			state->id.epmem_info->epmem_wmes->push_back( pref );
 		}
 	}
 
@@ -1409,8 +1408,8 @@ void epmem_clear_result( agent *my_agent, Symbol *state )
 
 	while ( !state->id.epmem_info->epmem_wmes->empty() )
 	{
-		pref = state->id.epmem_info->epmem_wmes->top();
-		state->id.epmem_info->epmem_wmes->pop();
+		pref = state->id.epmem_info->epmem_wmes->back();
+		state->id.epmem_info->epmem_wmes->pop_back();
 
 		if ( pref->in_tm )
 		{
@@ -1444,10 +1443,7 @@ void epmem_reset( agent *my_agent, Symbol *state )
 
 		// this will be called after prefs from goal are already removed,
 		// so just clear out result stack
-		while ( !data->epmem_wmes->empty() )
-		{
-			data->epmem_wmes->pop();
-		}
+		data->epmem_wmes->clear();		
 
 		state = state->id.lower_goal;
 	}
@@ -2568,6 +2564,26 @@ void epmem_new_episode( agent *my_agent )
 		my_agent->epmem_stmts_graph->add_time->execute( soar_module::op_reinit );
 
 		my_agent->epmem_stats->time->set_value( time_counter + 1 );
+
+		// update time wme on all states
+		{
+			Symbol* state = my_agent->bottom_goal;
+			Symbol* my_time_sym = make_int_constant( my_agent, time_counter + 1 );
+
+			while ( state != NULL )
+			{
+				if ( state->id.epmem_time_wme != NIL )
+				{
+					soar_module::remove_module_wme( my_agent, state->id.epmem_time_wme );
+				}
+
+				state->id.epmem_time_wme = soar_module::add_module_wme( my_agent, state->id.epmem_header, my_agent->epmem_sym_present_id, my_time_sym );
+				
+				state = state->id.higher_goal;
+			}
+
+			symbol_remove_ref( my_agent, my_time_sym );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -3665,6 +3681,9 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 			epmem_time_id time_now = my_agent->epmem_stats->time->get_value() - 1;
 
+			double balance = my_agent->epmem_params->balance->get_value();
+			bool balance_approximately_1 = ( ( balance > ( 1.0 - 1.0e-8 ) ) && ( balance < ( 1.0 + 1.0e-8 ) ) );
+
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->epmem_timers->query_dnf->start();
 			////////////////////////////////////////////////////////////////////////////
@@ -3700,12 +3719,12 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				int i, k, m;
 				epmem_wme_list::iterator w_p, w_p2;
 
-				// variables for requiring LTIs
-				epmem_time_id lti_current_time;
-
 				// special variables for LTIs
 				epmem_time_id promotion_time = 0;
 				soar_module::sqlite_statement *lti_start_stmt = NULL;
+
+				// variables for requiring LTIs
+				epmem_time_id lti_current_time;
 
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_node_query;
@@ -4131,10 +4150,43 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 															new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
 														}
 														// bind return value as the current time
+														// assign sql
+														// check for LTI and use special SQL commands
+														if ( promotion_time > 0 )
+														{
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_queries[ k ][ m ], new_timer );
+															new_stmt->prepare();
+
+															// add special query for promotion start point to query list (if start)
+															if ( k == EPMEM_RANGE_START )
+															{
+																lti_start_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_start, new_timer );
+																lti_start_stmt->prepare();
+																assert( lti_start_stmt->get_status() == soar_module::ready );
+																lti_start_stmt->bind_int( 1, promotion_time );
+																lti_start_stmt->execute();
+																new_query = new epmem_shared_query;
+																new_query->val = lti_start_stmt->column_int( 0 );
+																new_query->stmt = lti_start_stmt;
+																new_query->unique_id = unique_identity;
+																new_query->triggers = new_trigger_list;
+																queries[ k ].push( new_query );
+																new_query = NULL;
+																lti_start_stmt = NULL;
+															}
+														}
+														else
+														{
+															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
+															new_stmt->prepare();
+														}
+														assert( new_stmt->get_status() == soar_module::ready );
+
 														if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
 														{
 															new_stmt->bind_int( position++, time_now );
 														}
+
 														// bind constraints for promotion time
 														if ( (promotion_time > 0) && ( ( k != EPMEM_RANGE_END ) || ( m == EPMEM_RANGE_EP ) ) )
 														{
@@ -4201,7 +4253,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														matches.push_back( new_match );
 														new_match->ct = 0;
 														new_match->value_ct = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) );
-														new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * wma_get_wme_activation( my_agent, (*w_p) );
+														new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * ( ( balance_approximately_1 )?( WMA_ACTIVATION_NONE ):( wma_get_wme_activation( my_agent, (*w_p), true ) ) );
 
 														(*wme_match) = new_match;
 														new_match = NULL;
@@ -4280,7 +4332,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 											matches.push_back( new_match );
 											new_match->ct = 0;
 											new_match->value_ct = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) );
-											new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * wma_get_wme_activation( my_agent, (*w_p) );
+											new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * ( ( balance_approximately_1 )?( WMA_ACTIVATION_NONE ):( wma_get_wme_activation( my_agent, (*w_p), true ) ) );
 
 											(*wme_match) = new_match;
 											new_match = NULL;
@@ -4430,7 +4482,6 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			// perform range search if there are queries and leaf wmes
 			if ( queries[ EPMEM_RANGE_START ].size() && queries[ EPMEM_RANGE_END ].size() && level > 1 && cue_size && !matches.empty() )
 			{
-				double balance = my_agent->epmem_params->balance->get_value();
 				double balance_inv = 1 - balance;
 
 				// dynamic programming stuff

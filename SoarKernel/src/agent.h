@@ -210,7 +210,19 @@ typedef struct agent_struct {
   memory_pool         ms_change_pool;
   memory_pool         node_varnames_pool;
 
+  memory_pool		  rl_info_pool;
+  memory_pool		  rl_et_pool;
+  memory_pool		  rl_rule_pool;
+
   memory_pool		  wma_decay_element_pool;
+  memory_pool		  wma_decay_set_pool;
+  memory_pool		  wma_wme_oset_pool;
+  memory_pool		  wma_slot_refs_pool;
+
+  memory_pool		  epmem_wmes_pool;
+  memory_pool		  epmem_info_pool;
+  memory_pool		  smem_wmes_pool;
+  memory_pool		  smem_info_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;
@@ -853,12 +865,16 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   wma_param_container* wma_params;
   wma_stat_container* wma_stats;
   
-  wma_wme_set* wma_touched_elements;  
+  wma_pooled_wme_set* wma_touched_elements;  
   wma_forget_p_queue* wma_forget_pq;
 
-  double wma_power_array[ WMA_POWER_SIZE ];  
+  unsigned int wma_power_size;
+  double* wma_power_array;
+  wma_d_cycle* wma_approx_array;
+  double wma_thresh_exp;
   bool wma_initialized;
   tc_number wma_tc_counter;
+  wma_d_cycle wma_d_cycle_count;
 
   // epmem
   epmem_param_container *epmem_params;
@@ -899,6 +915,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   uint64_t smem_validation;
   bool smem_first_switch;
   int64_t smem_max_cycle;
+
+
+  // dynamic memory pools
+  std::map< size_t, memory_pool* >* dyn_memory_pools;
+
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h

@@ -170,5 +170,32 @@ namespace soar_module
 
 		return inst;
 	}
+
+
+	/////////////////////////////////////////////////////////////
+	// Memory Pool Allocators
+	/////////////////////////////////////////////////////////////
+
+	memory_pool* get_memory_pool( agent* my_agent, size_t size )
+	{
+		memory_pool* return_val = NULL;
+
+		std::map< size_t, memory_pool* >::iterator it = my_agent->dyn_memory_pools->find( size );
+		if ( it == my_agent->dyn_memory_pools->end() )
+		{
+			memory_pool* newbie = new memory_pool;
+
+			init_memory_pool( my_agent, newbie, size, "dynamic" );
+			my_agent->dyn_memory_pools->insert( std::make_pair< size_t, memory_pool* >( size, newbie ) );
+
+			return_val = newbie;
+		}
+		else
+		{
+			return_val = it->second;
+		}
+
+		return return_val;
+	}
 }
 

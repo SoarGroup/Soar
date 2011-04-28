@@ -328,6 +328,8 @@ void reset_statistics (agent* thisAgent) {
 
   thisAgent->epmem_timers->reset(); 
   thisAgent->smem_timers->reset();
+
+  thisAgent->wma_d_cycle_count = 0;
 }
 
 void reset_timers (agent* thisAgent) {
@@ -420,8 +422,16 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      FALSE);
 	/* kjh (CUSP-B4) end */
 
+	bool wma_was_enabled = wma_enabled( thisAgent );
+	thisAgent->wma_params->activation->set_value( soar_module::off );
+
 	clear_goal_stack (thisAgent);
-	wma_deinit( thisAgent );
+
+	if ( wma_was_enabled )
+	{
+		thisAgent->wma_params->activation->set_value( soar_module::on );
+	}
+
 	thisAgent->rl_stats->reset();
 	thisAgent->wma_stats->reset();
 	thisAgent->epmem_stats->reset();
@@ -435,9 +445,6 @@ bool reinitialize_soar (agent* thisAgent) {
 	bool ok = reset_id_counters (thisAgent);
 	reset_wme_timetags (thisAgent);
 	reset_statistics (thisAgent);
-
-	// should come after reset statistics
-	wma_init( thisAgent );
 
 	// JRV: For XML generation
 	xml_reset( thisAgent );
@@ -682,6 +689,8 @@ void do_one_top_level_phase (agent* thisAgent)
 		  determine_highest_active_production_level_in_stack_propose(thisAgent);
 		    // FIXME return the correct enum top_level_phase constant in soar_call_data? /*(soar_call_data)((thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE)*/
 			soar_invoke_callbacks(thisAgent, AFTER_ELABORATION_CALLBACK, NULL ) ;
+
+		  if (thisAgent->system_halted) break;
           if (thisAgent->go_type == GO_ELABORATION) break;
 	  }
  
@@ -857,6 +866,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  // FIXME return the correct enum top_level_phase constant in soar_call_data? /*(soar_call_data)((thisAgent->applyPhase == TRUE)? gSKI_K_APPLY_PHASE: gSKI_K_PROPOSAL_PHASE)*/
 		  soar_invoke_callbacks(thisAgent, AFTER_ELABORATION_CALLBACK, NULL ) ;
 
+		  if (thisAgent->system_halted) break;
 		  if (thisAgent->go_type == GO_ELABORATION) break;
       }
 
@@ -909,17 +919,45 @@ void do_one_top_level_phase (agent* thisAgent)
 	  if ( smem_enabled( thisAgent ) )
 	  {
 		  smem_go( thisAgent, false );
-	  }	  
+	  }
+
+	  ///////////////////////////////////////////////////////////////////
+	  assert( thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count );
+	  ///////////////////////////////////////////////////////////////////
+
+	  // update histories only first, allows:
+	  // - epmem retrieval cues to be biased by activation
+	  // - epmem encoding to capture wmes that may be forgotten shortly
+	  if ( wma_enabled( thisAgent ) )
+	  {
+		  wma_go( thisAgent, wma_histories );
+	  }
 
 	  if ( epmem_enabled( thisAgent ) && ( thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_output ) )
 	  {
-		  epmem_go( thisAgent );
+		  // since we consolidated wma histories from this decision,
+		  // we need to pretend it's the next time step in case
+		  // an epmem retrieval wants to know current activation value
+		  thisAgent->wma_d_cycle_count++;
+		  {
+			  epmem_go( thisAgent );
+		  }
+		  thisAgent->wma_d_cycle_count--;
 	  }
 
+	  // now both update histories and forget, allows
+	  // - epmem retrieval to affect history
+	  // - epmem encoding to capture wmes that may be forgotten shortly
 	  if ( wma_enabled( thisAgent ) )
 	  {
-		  wma_go( thisAgent );
+		  wma_go( thisAgent, wma_histories );
+		  wma_go( thisAgent, wma_forgetting );
 	  }
+
+	  ///////////////////////////////////////////////////////////////////
+	  assert( thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count );
+	  ///////////////////////////////////////////////////////////////////
+
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
 	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<uint64_t>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))
@@ -1014,7 +1052,8 @@ void do_one_top_level_phase (agent* thisAgent)
 	  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])
 		  print_phase (thisAgent, "\n--- END Output Phase ---\n",1);
 	  thisAgent->current_phase = INPUT_PHASE;
-	  thisAgent->d_cycle_count++;	  
+	  thisAgent->d_cycle_count++;
+	  thisAgent->wma_d_cycle_count++;
       /* REW: end 09.15.96 */
       break;
     
@@ -1467,6 +1506,7 @@ void init_agent_memory(agent* thisAgent)
     }
   thisAgent->current_phase = INPUT_PHASE;
   thisAgent->d_cycle_count++;
+  thisAgent->wma_d_cycle_count++;
 
   /* The following code was taken from the do_input_cycle function of io.cpp */
   // Creating the io_header and adding the top state io header wme
