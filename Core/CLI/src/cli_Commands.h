@@ -4227,9 +4227,10 @@ namespace cli
             cli::Options opt;
             OptionsData optionsData[] = 
             {
-                {'g', "get",    OPTARG_NONE},
-                {'s', "set",    OPTARG_NONE},
-                {'S', "stats",    OPTARG_NONE},        
+                {'g', "get",		OPTARG_NONE},
+				{'h', "history",	OPTARG_NONE},
+                {'s', "set",		OPTARG_NONE},
+                {'S', "stats",		OPTARG_NONE},        
                 {0, 0, OPTARG_NONE} // null
             };
 
@@ -4262,6 +4263,14 @@ namespace cli
 
                     return cli.DoWMA( option, &( argv[2] ) );
                 }
+
+			case 'h':
+				// case: history requires one non-option argument
+				{
+					if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                    return cli.DoWMA( option, &( argv[2] ) );
+				}
 
             case 's':
                 // case: set requires two non-option arguments

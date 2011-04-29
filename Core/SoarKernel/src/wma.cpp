@@ -961,6 +961,76 @@ double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result )
 	return return_val;
 }
 
+inline void _wma_ref_to_str( wma_cycle_reference& ref, wma_d_cycle current_cycle, std::string& str )
+{
+	std::string temp;
+	wma_d_cycle cycle_diff = ( current_cycle - ref.d_cycle );
+
+	to_string( ref.num_references, temp );
+	str.append( temp );
+
+	str.append( " @ d" );
+
+	to_string( ref.d_cycle, temp );
+	str.append( temp );
+
+	str.append( " (-" );
+
+	to_string( cycle_diff, temp );
+	str.append( temp );
+	
+	str.append( ")" );
+}
+
+void wma_get_wme_history( agent* my_agent, wme* w, std::string& buffer )
+{
+	if ( w->wma_decay_el )
+	{
+		wma_history* history = &( w->wma_decay_el->touches );
+		unsigned int p = history->next_p;
+		unsigned int counter = history->history_ct;
+		wma_d_cycle current_cycle = my_agent->wma_d_cycle_count;
+
+		//
+
+		buffer.append( "history (" );
+
+		{
+			std::string temp;
+
+			to_string( history->history_references, temp );
+			buffer.append( temp );
+			
+			buffer.append( "/" );
+
+			to_string( history->total_references, temp );
+			buffer.append( temp );
+
+			buffer.append( ", first @ d" );
+
+			to_string( history->first_reference, temp );
+			buffer.append( temp );
+		}
+
+		buffer.append( "):" );
+
+		//
+
+		while ( counter )
+		{
+			p = wma_history_prev( p );
+			counter--;
+
+			buffer.append( "\n " );
+			_wma_ref_to_str( history->access_history[ p ], current_cycle, buffer );
+		}
+	}
+	else
+	{
+		buffer.assign( "WME has no decay history" );
+	}
+}
+
 void wma_go( agent* my_agent, wma_go_action go_action )
 {
 	// update history for all touched elements

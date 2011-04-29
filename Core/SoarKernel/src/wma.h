@@ -228,5 +228,9 @@ extern void wma_go( agent* my_agent, wma_go_action go_action );
  */
 extern double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result );
 
+/**
+ * Debugging: get list of wme references
+ */
+extern void wma_get_wme_history( agent* my_agent, wme* w, std::string& buffer );
 
 #endif
