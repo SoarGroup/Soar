@@ -189,6 +189,36 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 
         return true;
     }
+	else if ( pOp == 'h' )
+	{
+		uint64_t timetag;
+		if ( !from_string( timetag, *pAttr ) || ( timetag == 0 ) )
+			return SetError( "Invalid timetag." );
+		
+		wme* pWme = NULL;
+		agent* agnt = m_pAgentSML->GetSoarAgent();
+
+		for ( pWme = agnt->all_wmes_in_rete; pWme; pWme=pWme->rete_next )
+		{
+			if ( pWme->timetag == timetag )
+			{
+				break;
+			}
+		}
+
+		if ( pWme )
+		{
+			std::string output;
+			wma_get_wme_history( agnt, pWme, output );
+
+			if ( m_RawOutput )
+                m_Result << output;
+            else
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+		}
+		
+		return true;
+	}
 
     return SetError( "Unknown option." );
 }
