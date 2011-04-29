@@ -858,6 +858,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // wma
   wma_param_container* wma_params;
   wma_stat_container* wma_stats;
+  wma_timer_container* wma_timers;
   
   wma_pooled_wme_set* wma_touched_elements;  
   wma_forget_p_queue* wma_forget_pq;
