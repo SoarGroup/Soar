@@ -4230,7 +4230,8 @@ namespace cli
                 {'g', "get",		OPTARG_NONE},
 				{'h', "history",	OPTARG_NONE},
                 {'s', "set",		OPTARG_NONE},
-                {'S', "stats",		OPTARG_NONE},        
+                {'S', "stats",		OPTARG_NONE},
+				{'t', "timers",		OPTARG_NONE},
                 {0, 0, OPTARG_NONE} // null
             };
 
@@ -4287,6 +4288,17 @@ namespace cli
 
                     if ( opt.GetNonOptionArguments() == 0 )
                         return cli.DoWMA( 'S' );
+
+                    return cli.DoWMA( option, &( argv[2] ) );
+                }
+
+			case 't':
+                // case: timer can do zero or one non-option arguments
+                {
+                    if (!opt.CheckNumNonOptArgs(0, 1)) return false;
+
+                    if ( opt.GetNonOptionArguments() == 0 )
+                        return cli.DoWMA( option );
 
                     return cli.DoWMA( option, &( argv[2] ) );
                 }

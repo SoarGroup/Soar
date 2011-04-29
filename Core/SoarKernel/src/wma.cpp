@@ -39,6 +39,7 @@
 
 // parameters	 				wma::param
 // stats 						wma::stats
+// timers 						wma::timers
 //
 // initialization				wma::init
 //
@@ -125,6 +126,12 @@ wma_param_container::wma_param_container( agent *new_agent ): soar_module::param
 	forget_wme->add_mapping( all, "all" );
 	forget_wme->add_mapping( lti, "lti" );
 	add( forget_wme );
+
+	// timer level
+	timers = new soar_module::constant_param< soar_module::timer::timer_level >( "timers", soar_module::timer::zero, new soar_module::f_predicate< soar_module::timer::timer_level >() );
+	timers->add_mapping( soar_module::timer::zero, "off" );
+	timers->add_mapping( soar_module::timer::one, "one" );
+	add( timers );
 };
 
 //
@@ -146,13 +153,40 @@ bool wma_enabled( agent *my_agent )
 
 wma_stat_container::wma_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
-	// update-error
-	dummy = new soar_module::integer_stat( "dummy", 0, new soar_module::f_predicate<int64_t>() );
-	add( dummy );
+	// forgotten-wmes
+	forgotten_wmes = new soar_module::integer_stat( "forgotten-wmes", 0, new soar_module::f_predicate<int64_t>() );
+	add( forgotten_wmes );
 };
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+// Timer Functions (wma::timers)
+//////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////
+
+wma_timer_container::wma_timer_container( agent *new_agent ): soar_module::timer_container( new_agent )
+{
+	// one
+	history = new wma_timer( "wma_history", my_agent, soar_module::timer::one );
+	add( history );
+
+	forgetting = new wma_timer( "wma_forgetting", my_agent, soar_module::timer::one );
+	add( forgetting );
+}
+
+//
+
+wma_timer_level_predicate::wma_timer_level_predicate( agent *new_agent ): soar_module::agent_predicate< soar_module::timer::timer_level >( new_agent ) {}
+
+bool wma_timer_level_predicate::operator() ( soar_module::timer::timer_level val ) { return ( my_agent->wma_params->timers->get_value() >= val ); }
+
+//
+
+wma_timer::wma_timer(const char *new_name, agent *new_agent, soar_module::timer::timer_level new_level): soar_module::timer( new_name, new_agent, new_level, new wma_timer_level_predicate( new_agent ) ) {}
 
 
 //////////////////////////////////////////////////////////
@@ -1036,11 +1070,17 @@ void wma_go( agent* my_agent, wma_go_action go_action )
 	// update history for all touched elements
 	if ( go_action == wma_histories )
 	{
+		my_agent->wma_timers->history->start();
+		
 		wma_update_decay_histories( my_agent );
+
+		my_agent->wma_timers->history->stop();
 	}
 	// check forgetting queue
 	else if ( ( go_action == wma_forgetting ) && ( my_agent->wma_params->forgetting->get_value() != wma_param_container::off ) )
 	{
+		my_agent->wma_timers->forgetting->start();
+		
 		if ( wma_forgetting_update_p_queue( my_agent ) )
 		{
 			if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
@@ -1051,7 +1091,16 @@ void wma_go( agent* my_agent, wma_go_action go_action )
 				xml_generate_message( my_agent, const_cast<char *>( msg ) );
 			}
 
-			do_working_memory_phase( my_agent );
+			uint64_t wm_removal_diff = my_agent->wme_removal_count;
+			{
+				do_working_memory_phase( my_agent );
+			}
+			wm_removal_diff = ( my_agent->wme_removal_count - wm_removal_diff );
+
+			if ( wm_removal_diff > 0 )
+			{
+				my_agent->wma_stats->forgotten_wmes->set_value( my_agent->wma_stats->forgotten_wmes->get_value() + static_cast< int64_t >( wm_removal_diff ) );
+			}
 
 			if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
 			{
@@ -1061,6 +1110,8 @@ void wma_go( agent* my_agent, wma_go_action go_action )
 				xml_generate_message( my_agent, const_cast<char *>( msg ) );
 			}
 		}
+
+		my_agent->wma_timers->forgetting->stop();
 	}
 }
 

@@ -326,6 +326,7 @@ void reset_statistics (agent* thisAgent) {
   reset_timers(thisAgent);
   reset_max_stats(thisAgent);
 
+  thisAgent->wma_timers->reset();
   thisAgent->epmem_timers->reset(); 
   thisAgent->smem_timers->reset();
 
@@ -1552,6 +1553,7 @@ void init_agent_memory(agent* thisAgent)
   reset_timers(thisAgent);
   reset_max_stats(thisAgent);
 
+  thisAgent->wma_timers->reset();
   thisAgent->epmem_timers->reset();
   thisAgent->smem_timers->reset();
 

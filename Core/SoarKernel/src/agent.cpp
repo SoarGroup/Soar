@@ -339,6 +339,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   // wma initialization
   newAgent->wma_params = new wma_param_container( newAgent );
   newAgent->wma_stats = new wma_stat_container( newAgent );
+  newAgent->wma_timers = new wma_timer_container( newAgent );
 
   newAgent->wma_forget_pq = new wma_forget_p_queue( std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >( newAgent ) );
   newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );  
@@ -429,6 +430,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->wma_touched_elements;  
   delete delete_agent->wma_params;
   delete delete_agent->wma_stats;
+  delete delete_agent->wma_timers;
 
   // cleanup epmem
   epmem_close( delete_agent );
