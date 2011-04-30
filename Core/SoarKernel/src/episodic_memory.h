@@ -608,19 +608,12 @@ struct epmem_compare_shared_queries
 };
 typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
 
-//
-// These must go below types
-//
-
-#include "stl_support.h"
-
 //////////////////////////////////////////////////////////
 // Parameter Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
-
 
 //////////////////////////////////////////////////////////
 // Soar Functions (see cpp for comments)

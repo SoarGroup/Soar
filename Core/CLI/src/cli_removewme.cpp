@@ -15,9 +15,9 @@
 
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-
 #include "sml_KernelSML.h"
 
+#include "agent.h"
 #include "utilities.h"
 #include "wmem.h"
 #include "symtab.h"

@@ -19,19 +19,19 @@
 #include <stdlib.h>
 #include <math.h>
 #include <float.h>
+#include <list>
+#include <limits>
 
+#include "agent.h"
 #include "soar_rand.h"
 #include "xml.h"
 #include "print.h"
 #include "soar_TraceNames.h"
-
+#include "gsysparam.h"
 #include "reinforcement_learning.h"
 #include "misc.h"
 #include "utilities.h"
 #include "instantiations.h"
-
-#include <list>
-#include <limits>
 
 using namespace soar_TraceNames;
 
