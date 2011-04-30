@@ -50,12 +50,16 @@
 #include "soar_TraceNames.h"
 #include "consistency.h"
 #include "misc.h"
+#include "soar_module.h"
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
 #include <stack>
+#include <list>
 
 using namespace soar_TraceNames;
+
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
 
 /* Uncomment the following line to get instantiation printouts */
 /* #define DEBUG_INSTANTIATIONS */
@@ -1102,7 +1106,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
    and throw away the rest.
 ----------------------------------------------------------------------- */
 
-void assert_new_preferences (agent* thisAgent, std::vector<preference*>& bufdeallo) 
+void assert_new_preferences (agent* thisAgent, pref_buffer_list& bufdeallo) 
 {
 	instantiation *inst, *next_inst;
 	preference *pref, *next_pref;
@@ -1293,7 +1297,7 @@ void do_preference_phase (agent* thisAgent) {
 
   // Temporary list to buffer deallocation of some preferences until 
   // the inner elaboration loop is over.
-  std::vector<preference*> bufdeallo;
+  pref_buffer_list bufdeallo = pref_buffer_list( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) ); 
 
   // inner elaboration cycle
   for (;;) {
@@ -1389,8 +1393,9 @@ void do_preference_phase (agent* thisAgent) {
   } // end inner elaboration loop
 
   // Deallocate preferences delayed during inner elaboration loop.
-  for (std::vector<preference*>::iterator iter = bufdeallo.begin(); iter != bufdeallo.end(); ++iter) {
-      preference_remove_ref(thisAgent, *iter);
+  for ( pref_buffer_list::iterator iter=bufdeallo.begin(); iter!=bufdeallo.end(); ++iter ) 
+  {
+      preference_remove_ref( thisAgent, *iter );
   }
 
   // Restore previous active level
