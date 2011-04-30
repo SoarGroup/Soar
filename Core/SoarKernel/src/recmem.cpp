@@ -54,12 +54,13 @@
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
-#include <stack>
 #include <list>
 
 using namespace soar_TraceNames;
 
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
+typedef std::list< instantiation*, soar_module::soar_memory_pool_allocator< instantiation* > > inst_mpool_list;
+typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > > cond_mpool_list;
 
 /* Uncomment the following line to get instantiation printouts */
 /* #define DEBUG_INSTANTIATIONS */
@@ -843,10 +844,10 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 	preference *pref;
 	goal_stack_level level;
 
-	std::stack<condition*> cond_stack;
-	std::list<instantiation*> inst_list;
+	cond_mpool_list cond_stack = cond_mpool_list( soar_module::soar_memory_pool_allocator< condition* >( thisAgent ) );
+	inst_mpool_list inst_list = inst_mpool_list( soar_module::soar_memory_pool_allocator< instantiation* >( thisAgent ) );
 	inst_list.push_back(inst);
-	std::list<instantiation*>::iterator next_iter = inst_list.begin();
+	inst_mpool_list::iterator next_iter = inst_list.begin();
 
 	while ( next_iter != inst_list.end() ) 
 	{
@@ -973,7 +974,7 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 							    next_iter = inst_list.insert( next_iter, cond->bt.trace->inst );
 						    }
 
-						    cond_stack.push( cond );
+						    cond_stack.push_back( cond );
 					    } // if
 				    } // if
                 } // if
@@ -985,8 +986,8 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 	// free condition symbols and pref
 	while( !cond_stack.empty() ) 
 	{
-		condition* temp = cond_stack.top();
-		cond_stack.pop();
+		condition* temp = cond_stack.back();
+		cond_stack.pop_back();
 
 		/* --- dereference component symbols --- */
 		symbol_remove_ref( thisAgent, temp->bt.trace->id );
@@ -1007,7 +1008,7 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 	}
 
 	// free instantiations in the reverse order
-	std::list<instantiation*>::reverse_iterator riter = inst_list.rbegin();
+	inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
 	while( riter != inst_list.rend() ) 
 	{
 		instantiation* temp = *riter;
