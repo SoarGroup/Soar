@@ -6883,8 +6883,21 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
   case 1:
     funcall_list = NIL;
     sym = reteload_symbol_from_index(thisAgent,f);
-    symbol_add_ref (sym);
-    rf = lookup_rhs_function (thisAgent, sym);
+    
+	/* NLD: 4/30/2011
+	 * I'm fairly certain function calls do not need an added ref. 
+	 * 
+	 * I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol 
+	 * (as opposed to "make", which adds a ref) and uses that to hash to the existing RHS function structure (which keeps a 
+	 * ref on the symbol name). The initial symbol ref comes from init_built_in_rhs_functions (+1 ref) and then is removed 
+	 * later via remove_built_in_rhs_functions (-1 ref).
+	 *
+	 * The parallel in rete-net loading is the symbol table that is loaded in via reteload_all_symbols (+1 ref) and then freed 
+	 * in reteload_free_symbol_table (-1 ref).
+	 */
+	// symbol_add_ref (sym);
+    
+	rf = lookup_rhs_function (thisAgent, sym);
     if (!rf) {
       char msg[BUFFER_MSG_SIZE];
       print_with_symbols (thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);
