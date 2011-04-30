@@ -16,6 +16,8 @@
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
 
+#include "agent.h"
+#include "wmem.h"
 #include "wma.h"
 #include "misc.h"
 

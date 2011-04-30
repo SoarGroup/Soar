@@ -9,17 +9,9 @@
 #define UTILITIES_H
 
 #include <list>
-#include "stl_support.h"
+#include <map>
 
-////////////////////////////////
-// Returns a list of wmes that share a specified id
-// The tc number of the id is checked against the tc number passed in
-// If they match, then NULL is returned
-// Otherwise the tc number of the id is set to the specified tc number
-// To guarantee any existing wmes will be returned, use get_new_tc_num()
-//  for the tc parameter
-////////////////////////////////
-extern SoarSTLWMEPoolList* get_augs_of_id(agent* thisAgent, Symbol * id, tc_number tc);
+#include "soar_db.h"
 
 /*
 *	This procedure parses a string to determine if it is a
@@ -68,30 +60,6 @@ extern void start_attention_lapse (int64_t duration);
 // Determine if a string represents a natural number (i.e. all numbers)
 extern bool is_whole_number(const std::string &str);
 extern bool is_whole_number(const char * str);
-
-//////////////////////////////////////////////////////////
-// Map functions
-//////////////////////////////////////////////////////////
-
-// get a list of all keys of a map
-template <class X, class Y> std::vector<X> *map_keys( std::map<X,Y> *my_map )
-{
-	typename std::vector<X> *return_val = new std::vector<X>();
-	typename std::map<X,Y>::iterator b, e;
-	
-	e = my_map->end();
-	
-	for ( b = my_map->begin(); b != e; b++ )
-		return_val->push_back( b->first );
-	
-	return return_val;
-}
-
-// determine if a key is being used
-template <class X, class Y> bool is_set( std::map<X,Y> *my_map, X *key )
-{
-	return ( my_map->find( *key ) != my_map->end() );
-}
 
 //////////////////////////////////////////////////////////
 // Misc

@@ -35,6 +35,7 @@
 #include "prefmem.h"
 #include "print.h"
 #include "wma.h"
+#include "wmem.h"
 
 const char * preference_name[] =
 { "acceptable",
