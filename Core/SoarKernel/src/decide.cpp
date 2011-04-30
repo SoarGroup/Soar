@@ -64,9 +64,12 @@
 
 #include "assert.h"
 
-#include <stack>
+#include <list>
 
 using namespace soar_TraceNames;
+
+typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_list;
+
 
 /* REW: 2003-01-06 A temporary helper function */
 
@@ -548,7 +551,7 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
    The marked ids are added to ids_with_unknown_level.
 ---------------------------------------------- */
 
-inline bool mark_level_unknown_needed(agent* /*thisAgent*/, Symbol* sym)
+inline bool mark_level_unknown_needed(agent* thisAgent, Symbol* sym)
 {
   return ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE );
 }
@@ -560,13 +563,13 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
   dl_cons *dc;
 
   Symbol *id;
-  std::stack<Symbol *> ids_to_walk;
-  ids_to_walk.push( root );
+  symbol_list ids_to_walk = symbol_list( soar_module::soar_memory_pool_allocator< Symbol* >( thisAgent ) );
+  ids_to_walk.push_back( root );
 
   while ( !ids_to_walk.empty() )
   {
-	id = ids_to_walk.top();
-	ids_to_walk.pop();
+	id = ids_to_walk.back();
+	ids_to_walk.pop_back();
   
     /* --- if id is already marked, do nothing --- */
     if (id->id.tc_num==thisAgent->mark_tc_number) continue;
@@ -600,7 +603,7 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
 	{
       if ( mark_level_unknown_needed( thisAgent, w->value ) )
 	  {
-		ids_to_walk.push( w->value );
+		ids_to_walk.push_back( w->value );
 	  }
 	}
       
@@ -610,14 +613,14 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
 	  {        
 		if ( mark_level_unknown_needed( thisAgent, pref->value ) )
 		{
-		  ids_to_walk.push( pref->value );
+		  ids_to_walk.push_back( pref->value );
 		}
 
         if (preference_is_binary(pref->type))
 		{
           if ( mark_level_unknown_needed( thisAgent, pref->referent ) )
 		  {
-			ids_to_walk.push( pref->referent );
+			ids_to_walk.push_back( pref->referent );
 		  }
 		}
       }
@@ -626,7 +629,7 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
 	  {
 		if ( mark_level_unknown_needed( thisAgent, s->impasse_id ) )
 		{
-		  ids_to_walk.push( s->impasse_id );
+		  ids_to_walk.push_back( s->impasse_id );
 		}		
 	  }
       
@@ -634,7 +637,7 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
 	  {
         if ( mark_level_unknown_needed( thisAgent, w->value ) )
 		{
-		  ids_to_walk.push( w->value );
+		  ids_to_walk.push_back( w->value );
 		}
 	  }
     } /* end of for slots loop */
@@ -662,13 +665,13 @@ void walk_and_update_levels (agent* thisAgent, Symbol *root) {
   dl_cons *dc;
   Symbol *id;
 
-  std::stack<Symbol *> ids_to_walk;
-  ids_to_walk.push( root );
+  symbol_list ids_to_walk = symbol_list( soar_module::soar_memory_pool_allocator< Symbol* >( thisAgent ) );
+  ids_to_walk.push_back( root );
 
   while ( !ids_to_walk.empty() )
   {
-	id = ids_to_walk.top();
-	ids_to_walk.pop();
+	id = ids_to_walk.back();
+	ids_to_walk.pop_back();
 	  
 	/* --- mark id so we don't walk it twice --- */
     id->id.tc_num = thisAgent->walk_tc_number;
@@ -692,7 +695,7 @@ void walk_and_update_levels (agent* thisAgent, Symbol *root) {
 	{
 	  if ( level_update_needed( thisAgent, w->value ) )
 	  {
-        ids_to_walk.push( w->value );
+        ids_to_walk.push_back( w->value );
 	  }
 	}
 
@@ -702,13 +705,13 @@ void walk_and_update_levels (agent* thisAgent, Symbol *root) {
 	  {
 	    if ( level_update_needed( thisAgent, pref->value ) )
 		{
-		  ids_to_walk.push( pref->value );
+		  ids_to_walk.push_back( pref->value );
 
 		  if ( preference_is_binary( pref->type ) )
 		  {
 		    if ( level_update_needed( thisAgent, pref->referent ) )
 	        {
-			  ids_to_walk.push( pref->referent );
+			  ids_to_walk.push_back( pref->referent );
 			}
 		  }
 		}
@@ -718,7 +721,7 @@ void walk_and_update_levels (agent* thisAgent, Symbol *root) {
 	  {
 	    if ( level_update_needed( thisAgent, s->impasse_id ) )
 		{
-		  ids_to_walk.push( s->impasse_id );
+		  ids_to_walk.push_back( s->impasse_id );
 		}
 	  }
 
@@ -726,7 +729,7 @@ void walk_and_update_levels (agent* thisAgent, Symbol *root) {
 	  {
 	    if ( level_update_needed( thisAgent, w->value ) )
 		{
-			ids_to_walk.push( w->value );
+			ids_to_walk.push_back( w->value );
 		}
 	  }
 	}    
