@@ -2290,7 +2290,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   allocate_with_pool( thisAgent, &( thisAgent->rl_et_pool ), &( id->id.rl_info->eligibility_traces ) );
   id->id.rl_info->eligibility_traces = new ( id->id.rl_info->eligibility_traces ) rl_et_map( std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >( thisAgent ) );
   allocate_with_pool( thisAgent, &( thisAgent->rl_rule_pool ), &( id->id.rl_info->prev_op_rl_rules ) );
-  id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list( soar_module::soar_memory_pool_allocator< production* >( thisAgent ) );
+  id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list( soar_module::soar_memory_pool_allocator< rl_rule_info >( thisAgent ) );
 
   allocate_with_pool( thisAgent, &( thisAgent->epmem_info_pool ), &( id->id.epmem_info ) );
   id->id.epmem_info->last_ol_time = 0;  

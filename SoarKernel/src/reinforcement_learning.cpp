@@ -168,9 +168,9 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 		rl_rule_list::iterator p;
 		for ( p=state->id.rl_info->prev_op_rl_rules->begin(); p!=state->id.rl_info->prev_op_rl_rules->end(); p++ )
 		{
-			if ( (*p) == prod )
+			if ( (*p).first == prod )
 			{
-				(*p) = NIL;
+				(*p).first = NIL;
 			}
 		}
 	}
@@ -644,7 +644,20 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 				data->prev_op_rl_rules->clear();					
 			}
 			
-			data->prev_op_rl_rules->push_back( pref->inst->prod );				
+			{
+				rl_label_map labels;
+				for ( condition* c=pref->inst->top_of_instantiated_conditions; c; c=c->next )
+				{
+					if ( ( c->bt.wme_->id == goal->id.reward_header ) &&
+						 ( c->bt.wme_->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) )
+					{
+						labels.insert( c->bt.wme_->attr );
+					}
+				}
+				
+				data->prev_op_rl_rules->push_back( std::make_pair< production*, rl_label_map >( pref->inst->prod, labels ) );
+			}
+
 			just_fired++;			
 		}
 	}
@@ -694,7 +707,52 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 		rl_data *data = goal->id.rl_info;
 		
 		if ( !data->prev_op_rl_rules->empty() )
-		{			
+		{
+			if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] )
+			{
+				std::cout << std::endl << std::endl;
+
+				rl_rule_list::iterator p;
+				
+				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
+				{
+					std::cout << "Examining instantiation of " << (*p).first->name->sc.name << ":";
+
+					if ( (*p).second.empty() )
+					{
+						std::cout << " none";
+					}
+					else
+					{
+						for ( rl_label_map::iterator it=(*p).second.begin(); it!=(*p).second.end(); it++ )
+						{
+							std::cout << " ";
+							
+							if ( (*it)->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+							{
+								std::cout << (*it)->id.name_letter << (*it)->id.name_number;
+							}
+							else if ( (*it)->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )
+							{
+								std::cout << (*it)->sc.name;
+							}
+							else if ( (*it)->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+							{
+								std::cout << (*it)->ic.value;
+							}
+							else if ( (*it)->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+							{
+								std::cout << (*it)->fc.value;
+							}
+						}
+					}
+					
+					std::cout << std::endl;
+				}
+
+				std::cout << std::endl << std::endl;
+			}
+
 			rl_et_map::iterator iter;			
 			double alpha = my_agent->rl_params->learning_rate->get_value();
 			double lambda = my_agent->rl_params->et_decay_rate->get_value();
@@ -754,12 +812,12 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				
 				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
 				{					
-					if ( (*p) != NIL )
+					if ( (*p).first != NIL )
 					{
-						sum_old_ecr += (*p)->rl_ecr;
-						sum_old_efr += (*p)->rl_efr;
+						sum_old_ecr += (*p).first->rl_ecr;
+						sum_old_efr += (*p).first->rl_efr;
 						
-						iter = data->eligibility_traces->find( (*p) );
+						iter = data->eligibility_traces->find( (*p).first );
 						
 						if ( iter != data->eligibility_traces->end() ) 
 						{
@@ -767,7 +825,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 						}
 						else 
 						{
-							(*data->eligibility_traces)[ (*p) ] = trace_increment;
+							(*data->eligibility_traces)[ (*p).first ] = trace_increment;
 						}
 					}
 				}

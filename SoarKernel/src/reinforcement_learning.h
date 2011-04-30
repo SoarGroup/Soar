@@ -90,8 +90,12 @@ class rl_stat_container: public soar_module::stat_container
 // map of eligibility traces
 typedef std::map< production*, double, std::less< production* >, soar_module::soar_memory_pool_allocator< std::pair< production*, double > > > rl_et_map;
 
+// not mem pool for now
+typedef std::set< Symbol* > rl_label_map;
+typedef std::pair< production*, rl_label_map > rl_rule_info;
+
 // list of rules associated with the last operator
-typedef std::list< production*, soar_module::soar_memory_pool_allocator< production* > > rl_rule_list;
+typedef std::list< rl_rule_info, soar_module::soar_memory_pool_allocator< rl_rule_info > > rl_rule_list;
 
 // rl data associated with each state
 typedef struct rl_data_struct {
