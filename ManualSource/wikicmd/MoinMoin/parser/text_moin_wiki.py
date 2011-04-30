@@ -223,14 +223,26 @@ class Parser:
     # the big, fat, less ugly one ;)
     # please be very careful: blanks and # must be escaped with \ !
     scan_rules = ur"""
-(?P<emph_ibb>
-    '''''(?=[^']+''')  # italic on, bold on, ..., bold off
-)|(?P<emph_ibi>
-    '''''(?=[^']+'')  # italic on, bold on, ..., italic off
-)|(?P<emph_ib_or_bi>
-    '{5}(?=[^'])  # italic and bold or bold and italic
-)|(?P<emph>
-    '{2,3}  # italic or bold
+(?P<emph>
+    (
+     (?<=[^a-zA-Z0-9])_
+    |
+     _(?=[^a-zA-Z0-9])
+    |
+     ^_
+    |
+     _$
+    )
+)|(?P<strong>
+    (
+     (?<=[^ 	])[*]
+    |
+     [*](?=[^ 	])
+    |
+     ^[*]
+    |
+     [*]$
+    )
 )|(?P<u>
     __ # underline
 )|(?P<small>
@@ -485,43 +497,18 @@ class Parser:
     _big_off_repl = _big_repl
 
     def _emph_repl(self, word, groups):
-        """Handle emphasis, i.e. '' and '''."""
-        if len(word) == 3:
-            self.is_b = not self.is_b
-            if self.is_em and self.is_b:
-                self.is_b = 2
-            return self.formatter.strong(self.is_b)
-        else:
-            self.is_em = not self.is_em
-            if self.is_em and self.is_b:
-                self.is_em = 2
-            return self.formatter.emphasis(self.is_em)
-
-    def _emph_ibb_repl(self, word, groups):
-        """Handle mixed emphasis, i.e. ''''' followed by '''."""
-        self.is_b = not self.is_b
-        self.is_em = not self.is_em
-        if self.is_em and self.is_b:
-            self.is_b = 2
-        return self.formatter.emphasis(self.is_em) + self.formatter.strong(self.is_b)
-
-    def _emph_ibi_repl(self, word, groups):
-        """Handle mixed emphasis, i.e. ''''' followed by ''."""
-        self.is_b = not self.is_b
+        """Handle emphasis, i.e. * and _."""
         self.is_em = not self.is_em
         if self.is_em and self.is_b:
             self.is_em = 2
-        return self.formatter.strong(self.is_b) + self.formatter.emphasis(self.is_em)
+        return self.formatter.emphasis(self.is_em)
 
-    def _emph_ib_or_bi_repl(self, word, groups):
-        """Handle mixed emphasis, exactly five '''''."""
-        b_before_em = self.is_b > self.is_em > 0
+    def _strong_repl(self, word, groups):
+        """Handle emphasis, i.e. * and _."""
         self.is_b = not self.is_b
-        self.is_em = not self.is_em
-        if b_before_em:
-            return self.formatter.strong(self.is_b) + self.formatter.emphasis(self.is_em)
-        else:
-            return self.formatter.emphasis(self.is_em) + self.formatter.strong(self.is_b)
+        if self.is_em and self.is_b:
+            self.is_b = 2
+        return self.formatter.strong(self.is_b)
 
     def _sup_repl(self, word, groups):
         """Handle superscript."""
