@@ -551,7 +551,7 @@ void garbage_collect_id (agent* thisAgent, Symbol *id)
    The marked ids are added to ids_with_unknown_level.
 ---------------------------------------------- */
 
-inline bool mark_level_unknown_needed(agent* thisAgent, Symbol* sym)
+inline bool mark_level_unknown_needed(agent* /*thisAgent*/, Symbol* sym)
 {
   return ( sym->common.symbol_type == IDENTIFIER_SYMBOL_TYPE );
 }
