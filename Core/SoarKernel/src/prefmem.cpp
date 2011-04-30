@@ -53,6 +53,9 @@ const char * preference_name[] =
   "worse",
   "numeric indifferent"};
 
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
+
+
 /*                     Preference Management Routines
 
 ====================================================================== */
@@ -380,7 +383,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
    done.
 ------------------------------------------------------------------------ */
 
-void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects, std::vector<preference*>& bufdeallo) 
+void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects, pref_buffer_list& bufdeallo) 
 {
   preference *pref, *next_pref, *p, *next_p;
   slot *s;
