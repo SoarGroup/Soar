@@ -1,6 +1,10 @@
 #!/bin/sh
 PYTHON=python
 
+preproc() {
+	sed '/#summary/d' $1
+}
+
 if ! $PYTHON -V 2>&1 | awk '{split($2, v, "."); if (v[1] != 2 || v[2] < 4) exit 1}'
 then
 	echo "moin2latex.py needs 2.4 <= Python version < 3.0"
@@ -24,7 +28,7 @@ do
 	                     s:_:-:g
 	                     s:wiki$:tex:'`
 	printf "$tf "
-	sed '/#summary/d' "$f" | $PYTHON moin2latex.py > "tex/$tf" || exit 1
+	preproc "$f" | $PYTHON moin2latex.py > "tex/$tf" || exit 1
 done
 printf "\n"
 
