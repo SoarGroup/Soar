@@ -20,6 +20,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include "agent.h"
 #include "wmem.h"
 #include "instantiations.h"
 #include "explain.h"
@@ -28,7 +29,7 @@
 #include "prefmem.h"
 
 #include "misc.h"
-
+#include "xml.h"
 #include "print.h"
 
 //////////////////////////////////////////////////////////

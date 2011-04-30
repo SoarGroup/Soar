@@ -16,7 +16,6 @@
 #include <string>
 #include <queue>
 #include "soar_module.h"
-#include "stl_support.h"
 
 typedef struct wme_struct wme;
 

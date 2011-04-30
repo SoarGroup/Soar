@@ -2250,24 +2250,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\stl_support.h"
-				>
-				<FileConfiguration
-					Name="Debug SCU|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release SCU|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\src\symtab.cpp"
 				>
 				<FileConfiguration

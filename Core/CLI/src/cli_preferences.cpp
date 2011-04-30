@@ -15,8 +15,9 @@
 
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-
 #include "sml_KernelSML.h"
+
+#include "agent.h"
 #include "gdatastructs.h"
 #include "utilities.h"
 #include "print.h"

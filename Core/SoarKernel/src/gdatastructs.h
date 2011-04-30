@@ -16,6 +16,7 @@
 
 #include "symtab.h" /* needed for definition of symbol_union */
 #include "kernel.h" /* needed for definition of NIL */
+#include "soar_module.h" /* needed for definition of memory pool allocator */
 
 #include <set>
 

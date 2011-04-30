@@ -19,6 +19,7 @@
 #include <vector>
 #include <sstream>
 
+#include "agent.h"
 #include "reinforcement_learning.h"
 #include "production.h"
 #include "rhsfun.h"
