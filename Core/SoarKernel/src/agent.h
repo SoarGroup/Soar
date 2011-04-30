@@ -210,6 +210,8 @@ typedef struct agent_struct {
   memory_pool         ms_change_pool;
   memory_pool         node_varnames_pool;
 
+  memory_pool         gds_pool;
+	
   memory_pool		  rl_info_pool;
   memory_pool		  rl_et_pool;
   memory_pool		  rl_rule_pool;
