@@ -2933,8 +2933,8 @@ void elaborate_gds (agent* thisAgent) {
                   if (!wme_matching_this_cond->gds->wmes_in_gds) 
                   {
                      if (wme_matching_this_cond->gds->goal) wme_matching_this_cond->gds->goal->id.gds = NIL;
-					 free_memory(thisAgent, wme_matching_this_cond->gds,
-                        MISCELLANEOUS_MEM_USAGE);
+					 free_with_pool( &( thisAgent->gds_pool ), wme_matching_this_cond->gds );
+					 
 #ifdef DEBUG_GDS
                      print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
@@ -2971,8 +2971,8 @@ void elaborate_gds (agent* thisAgent) {
                      gds_next, gds_prev);
                   if (!wme_matching_this_cond->gds->wmes_in_gds) {
                      if (wme_matching_this_cond->gds->goal) wme_matching_this_cond->gds->goal->id.gds = NIL;
-					 free_memory(thisAgent, wme_matching_this_cond->gds,
-                        MISCELLANEOUS_MEM_USAGE);
+					 free_with_pool( &( thisAgent->gds_pool ), wme_matching_this_cond->gds );
+					 
 #ifdef DEBUG_GDS
                      print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
@@ -3085,7 +3085,8 @@ void elaborate_gds (agent* thisAgent) {
                               if (!fake_inst_wme_cond->gds->wmes_in_gds) 
                               {
                                  if (fake_inst_wme_cond->gds->goal) fake_inst_wme_cond->gds->goal->id.gds = NIL;
-								 free_memory(thisAgent, fake_inst_wme_cond->gds, MISCELLANEOUS_MEM_USAGE);
+								 free_with_pool( &( thisAgent->gds_pool ), fake_inst_wme_cond->gds );
+								 
 #ifdef DEBUG_GDS
                                  print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
@@ -3120,8 +3121,8 @@ void elaborate_gds (agent* thisAgent) {
                               if (!fake_inst_wme_cond->gds->wmes_in_gds) 
                               {
                                  if (fake_inst_wme_cond->gds->goal) fake_inst_wme_cond->gds->goal->id.gds = NIL;
-								 free_memory(thisAgent, fake_inst_wme_cond->gds,
-                                    MISCELLANEOUS_MEM_USAGE);
+								 free_with_pool( &( thisAgent->gds_pool ), fake_inst_wme_cond->gds );
+
 #ifdef DEBUG_GDS
                                  print(thisAgent, "\n  REMOVING GDS FROM MEMORY.");
 #endif
@@ -3412,9 +3413,9 @@ void free_parent_list(agent* thisAgent)
 
 void create_gds_for_goal( agent* thisAgent, Symbol *goal){
    goal_dependency_set *gds;
+	
+   allocate_with_pool( thisAgent, &( thisAgent->gds_pool ), &gds );
 
-   gds = static_cast<gds_struct *>(allocate_memory(thisAgent, sizeof(goal_dependency_set), 
-												   MISCELLANEOUS_MEM_USAGE));
    gds->goal = goal;
    gds->wmes_in_gds = NIL;
    goal->id.gds = gds;

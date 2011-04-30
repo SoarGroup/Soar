@@ -84,6 +84,8 @@ void init_soar_agent(agent* thisAgent) {
   init_explain(thisAgent);  /* AGR 564 */
   select_init(thisAgent);
   predict_init(thisAgent);
+	
+  init_memory_pool( thisAgent, &( thisAgent->gds_pool ), sizeof( goal_dependency_set ), "gds" );
 
   init_memory_pool( thisAgent, &( thisAgent->rl_info_pool ), sizeof( rl_data ), "rl_id_data" );
   init_memory_pool( thisAgent, &( thisAgent->rl_et_pool ), sizeof( rl_et_map ), "rl_et" );
