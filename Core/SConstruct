@@ -163,7 +163,7 @@ AddOption('--no-debug-symbols', action='store_false', dest='debug-symbols', defa
 	help='Don\'t add debugging symbols to binaries.')
 
 AddOption('--static', action='store_true', dest='static', default=False,
-	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl interfaces)')
+	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl/PHP interfaces)')
 
 #################
 # Create the environment using the options
@@ -326,9 +326,9 @@ if 'Tcl' in components:
 		print "* Removing Tcl from components (can't find tcl8.4 lib)"
 		components.remove('Tcl')
 
-# SWIG: build if any of (Java/Python/Tcl) are enabled
+# SWIG: build if any of (Java/Python/Tcl/PHP) are enabled
 swig = False
-for x in ['Java', 'Python', 'Tcl']:
+for x in ['Java', 'Python', 'Tcl', 'PHP']:
 	if x in components:
 		if env['STATIC_LINKED']:
 			components.remove(x)
@@ -369,6 +369,9 @@ if 'Java' in components:
 
 if 'Tcl' in components:
 	subdirs.append('ClientSMLSWIG/Tcl')
+
+if 'PHP' in components:
+	subdirs.append('ClientSMLSWIG/PHP')
 
 # Build/Output Directory
 print "Building intermediates to directory ", env['BUILD_DIR']
