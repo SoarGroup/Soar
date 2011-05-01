@@ -15,11 +15,13 @@
 %rename(SetBinaryCharacterDataConst) soarxml::ElementXML::SetBinaryCharacterData(char const* characterData, int length);
 
 //
-// These static functions create a new Kernel object that should be destroyed later
+// These static functions create a new Kernel object that should be destroyed later.
+// For compatibility with PHP, these have been copied to the end of every
+// language except PHP.
 //
-%newobject sml::Kernel::CreateKernelInCurrentThread;
-%newobject sml::Kernel::CreateKernelInNewThread;
-%newobject sml::Kernel::CreateRemoteConnection;
+// %newobject sml::Kernel::CreateKernelInCurrentThread;
+// %newobject sml::Kernel::CreateKernelInNewThread;
+// %newobject sml::Kernel::CreateRemoteConnection;
 
 //
 // These static functions generate a new char* object that should be destroyed later
