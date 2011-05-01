@@ -1,0 +1,45 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Nate Derbinsky (copied from Python version)
+#
+import distutils.sysconfig
+import sys
+import os
+import SCons.Script
+
+Import('env')
+clone = env.Clone()
+
+# Targets, sources, other constants
+swig_cmdline = 'swig -o ClientSMLSWIG/PHP/PHP_sml_ClientInterface.cpp -c++ -php -w503 -w509 -IClientSML/src -IElementXML/src -IConnectionSML/src ClientSMLSWIG/PHP/PHP_sml_ClientInterface.i'
+phpsml_wrap = env.File('#ClientSMLSWIG/PHP/PHP_sml_ClientInterface.cpp')
+phpsml_wrap_h = env.File('#ClientSMLSWIG/PHP/php_PHP_sml_ClientInterface.h')
+phpsml_i = env.File('#ClientSMLSWIG/PHP/PHP_sml_ClientInterface.i')
+phpsml_php = env.File('#ClientSMLSWIG/PHP/PHP_sml_ClientInterface.php')
+phpsml_shlib = 'PHP_sml_ClientInterface'
+
+# Create the wrap cpp, h, and php file
+env.Command(phpsml_wrap, phpsml_i, swig_cmdline)
+env.SideEffect([phpsml_php,phpsml_wrap_h], phpsml_wrap)
+
+# Prepare environment to build shared library
+clone.Prepend(CPPPATH = Split('#ClientSML/src #ElementXML/src #ConnectionSML/src'))
+
+clone.Append(CXXFLAGS = '`php-config --includes`')
+clone.Append(CPPFLAGS = ['-w'])
+
+if os.name == 'posix':
+	clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
+
+clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML'))
+clone.Append(LIBPATH = ['$PREFIX/lib'])
+
+if sys.platform == 'darwin':
+	clone.Replace(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
+	clone.Replace(SHLIBSUFFIX = ['.so'])
+
+shlib = clone.SharedLibrary(phpsml_shlib, phpsml_wrap)
+
+# copy out shared library and php include
+env.Install('$PREFIX/lib', shlib)
+env.Install('$PREFIX/lib', phpsml_php)
