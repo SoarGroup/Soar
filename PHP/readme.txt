@@ -6,7 +6,7 @@ Author: Nate Derbinsky
 For Soar to interact with PHP, there are a couple manual steps:
 
 1. Open php.ini and set the enable_dl = On
-2. Copy (or, preferably, create a symbolic link) of libPHP_sml_ClientInterface.so (in lib) to the PHP extension_dir.
+2. Copy (or, preferably, create a symbolic link) of libPHP_sml_ClientInterface.so (in lib) to the PHP extension_dir (sans the lib prefix).
    This is visible via phpInfo() (search for extension_dir) or `php-config --extension-dir`.
 
 
