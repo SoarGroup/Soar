@@ -1,0 +1,9 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Nate Derbinsky
+#
+# The presence of this file triggers the build for the PHP SWIG interface.
+# (copied from Python)
+
+Import('compEnv')
+compEnv.Install('$PREFIX/bin', 'soar_php_cli.php')
