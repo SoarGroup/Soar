@@ -15,7 +15,7 @@
 	// terminal vs. web
 	if ( isset( $argc ) )
 	{
-		function readline( $prompt = '' ) 
+		function customReadline( $prompt = '' ) 
 		{
 			echo $prompt;
 			
@@ -63,7 +63,7 @@
 		$cmd = '';
 		do
 		{
-			$cmd = readline('> ');
+			$cmd = customReadline('> ');
 			
 			if ( $cmd == 'silence' )
 			{
