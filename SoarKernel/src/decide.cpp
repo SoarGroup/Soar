@@ -2178,6 +2178,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
     }
   }
 
+  delete goal->id.rl_info->rewards;
   goal->id.rl_info->eligibility_traces->~rl_et_map();
   free_with_pool( &( thisAgent->rl_et_pool ),goal->id.rl_info->eligibility_traces  );
   goal->id.rl_info->prev_op_rl_rules->~rl_rule_list();
@@ -2287,6 +2288,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->reward = 0;
   id->id.rl_info->gap_age = 0;
   id->id.rl_info->hrl_age = 0;
+  id->id.rl_info->rewards = new rl_reward_map();
   allocate_with_pool( thisAgent, &( thisAgent->rl_et_pool ), &( id->id.rl_info->eligibility_traces ) );
   id->id.rl_info->eligibility_traces = new ( id->id.rl_info->eligibility_traces ) rl_et_map( std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >( thisAgent ) );
   allocate_with_pool( thisAgent, &( thisAgent->rl_rule_pool ), &( id->id.rl_info->prev_op_rl_rules ) );

@@ -91,8 +91,9 @@ class rl_stat_container: public soar_module::stat_container
 typedef std::map< production*, double, std::less< production* >, soar_module::soar_memory_pool_allocator< std::pair< production*, double > > > rl_et_map;
 
 // not mem pool for now
-typedef std::set< Symbol* > rl_label_map;
-typedef std::pair< production*, rl_label_map > rl_rule_info;
+typedef std::set< Symbol* > rl_label_set;
+typedef std::pair< production*, rl_label_set > rl_rule_info;
+typedef std::map< Symbol*, double > rl_reward_map;
 
 // list of rules associated with the last operator
 typedef std::list< rl_rule_info, soar_module::soar_memory_pool_allocator< rl_rule_info > > rl_rule_list;
@@ -104,6 +105,7 @@ typedef struct rl_data_struct {
 	
 	double previous_q;						// q-value of the previous state
 	double reward;							// accumulated discounted reward
+	rl_reward_map* rewards;					// accumulated discounted reward, by label
 
 	unsigned int gap_age;					// the number of steps since a cycle containing rl rules
 	unsigned int hrl_age;					// the number of steps in a subgoal

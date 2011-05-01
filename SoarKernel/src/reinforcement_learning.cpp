@@ -145,6 +145,7 @@ void rl_reset_data( agent *my_agent )
 	{
 		rl_data *data = goal->id.rl_info;
 
+		data->rewards->clear();
 		data->eligibility_traces->clear();
 		data->prev_op_rl_rules->clear();
 
@@ -565,12 +566,18 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	
 	if ( !data->prev_op_rl_rules->empty() )
 	{
-		slot *s = make_slot( my_agent, goal->id.reward_header, my_agent->rl_sym_reward );
-		slot *t;
-		wme *w, *x;
+		slot *s = find_slot( goal->id.reward_header, my_agent->rl_sym_reward );
+		slot *t, *t2;
+		wme *w, *x, *w2, *x2;
 		
 		double reward = 0.0;
 		double discount_rate = my_agent->rl_params->discount_rate->get_value();
+
+		// if temporal_discount is off, don't discount for gaps
+		unsigned int effective_age = data->hrl_age;
+		if (my_agent->rl_params->temporal_discount->get_value() == soar_module::on) {
+			effective_age += data->gap_age;
+		}
 
 		if ( s )
 		{			
@@ -578,7 +585,7 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 			{
 				if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 				{
-					t = make_slot( my_agent, w->value, my_agent->rl_sym_value );
+					t = find_slot( w->value, my_agent->rl_sym_value );
 					if ( t )
 					{
 						for ( x=t->wmes; x; x=x->next )
@@ -591,14 +598,55 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 					}
 				}
 			}
-			
-			// if temporal_discount is off, don't discount for gaps
-			unsigned int effective_age = data->hrl_age;
-			if (my_agent->rl_params->temporal_discount->get_value() == soar_module::on) {
-				effective_age += data->gap_age;
-			}
 
 			data->reward += ( reward * pow( discount_rate, static_cast< double >( effective_age ) ) );
+		}
+
+		//
+
+		// experimental
+		{
+			rl_reward_map rewards;
+			
+			for ( slot* s=goal->id.reward_header->id.slots; s; s=s->next )
+			{
+				for ( w=s->wmes; w; w=w->next )
+				{
+					if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+					{
+						t = find_slot( w->value, my_agent->rl_sym_reward );
+
+						if ( t )
+						{
+							for ( w2=t->wmes; w2; w2=w2->next )
+							{
+								if ( w2->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+								{
+									t2 = find_slot( w2->value, my_agent->rl_sym_value );
+									if ( t2 )
+									{
+										for ( x2=t2->wmes; x2; x2=x2->next )
+										{
+											if ( ( x2->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x2->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
+											{
+												rewards[ w->attr ] += get_number_from_symbol( x2->value );
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if ( !rewards.empty() )
+			{
+				for ( rl_reward_map::iterator it=rewards.begin(); it!=rewards.end(); it++ )
+				{
+					(*data->rewards)[ it->first ] += ( it->second * pow( discount_rate, static_cast< double >( effective_age ) ) );
+				}
+			}
 		}
 
 		// update stats
@@ -645,7 +693,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 			}
 			
 			{
-				rl_label_map labels;
+				rl_label_set labels;
 				for ( condition* c=pref->inst->top_of_instantiated_conditions; c; c=c->next )
 				{
 					if ( ( c->bt.wme_->id == goal->id.reward_header ) &&
@@ -655,7 +703,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 					}
 				}
 				
-				data->prev_op_rl_rules->push_back( std::make_pair< production*, rl_label_map >( pref->inst->prod, labels ) );
+				data->prev_op_rl_rules->push_back( std::make_pair< production*, rl_label_set >( pref->inst->prod, labels ) );
 			}
 
 			just_fired++;			
@@ -712,9 +760,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			{
 				std::cout << std::endl << std::endl;
 
-				rl_rule_list::iterator p;
-				
-				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
+				for ( rl_rule_list::iterator p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
 				{
 					std::cout << "Examining instantiation of " << (*p).first->name->sc.name << ":";
 
@@ -724,7 +770,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					}
 					else
 					{
-						for ( rl_label_map::iterator it=(*p).second.begin(); it!=(*p).second.end(); it++ )
+						for ( rl_label_set::iterator it=(*p).second.begin(); it!=(*p).second.end(); it++ )
 						{
 							std::cout << " ";
 							
@@ -748,6 +794,32 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					}
 					
 					std::cout << std::endl;
+				}
+
+				std::cout << std::endl << std::endl;
+
+				for ( rl_reward_map::iterator r=data->rewards->begin(); r!=data->rewards->end(); r++ )
+				{
+					std::cout << "Reward collected for ";
+
+					if ( r->first->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+					{
+						std::cout << r->first->id.name_letter << r->first->id.name_number;
+					}
+					else if ( r->first->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )
+					{
+						std::cout << r->first->sc.name;
+					}
+					else if ( r->first->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )
+					{
+						std::cout << r->first->ic.value;
+					}
+					else if ( r->first->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE )
+					{
+						std::cout << r->first->fc.value;
+					}
+
+					std::cout << ": " << r->second << std::endl;
 				}
 
 				std::cout << std::endl << std::endl;
@@ -901,6 +973,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 		data->gap_age = 0;
 		data->hrl_age = 0;
 		data->reward = 0.0;
+		data->rewards->clear();
 	}
 }
 
