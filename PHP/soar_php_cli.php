@@ -7,7 +7,7 @@
 	 * If accessed from the web, just converts request variables to input-link structures.
 	 */
 	
-	require '../lib/PHP_sml_ClientInterface.php';
+	require ( dirname( realpath( $_SERVER['PHP_SELF'] ) ) . '/../lib/PHP_sml_ClientInterface.php' );
 	
 	$kernel = Kernel::CreateKernelInCurrentThread( Kernel::GetDefaultLibraryName(), true, 0 );
 	$agent = $kernel->CreateAgent('php');
