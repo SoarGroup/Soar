@@ -808,7 +808,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 	{
 		wma_forget_p_queue::iterator pq_p = my_agent->wma_forget_pq->begin();
 		wma_d_cycle current_cycle = my_agent->wma_d_cycle_count;
-		double decay_thresh = my_agent->wma_params->decay_thresh->get_value();
+		double decay_thresh = my_agent->wma_thresh_exp;
 		bool forget_only_lti = ( my_agent->wma_params->forget_wme->get_value() == wma_param_container::lti );
 
 		if ( pq_p->first == current_cycle )
@@ -820,7 +820,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 			{
 				current_p = d_p++;
 
-				if ( wma_calculate_decay_activation( my_agent, (*current_p), current_cycle, true ) < decay_thresh )
+				if ( wma_calculate_decay_activation( my_agent, (*current_p), current_cycle, false ) < decay_thresh )
 				{
 					if ( !forget_only_lti || ( (*current_p)->this_wme->id->id.smem_lti != NIL ) )
 					{
