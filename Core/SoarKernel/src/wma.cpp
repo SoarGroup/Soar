@@ -778,7 +778,7 @@ inline bool wma_forgetting_forget_wme( agent *my_agent, wme *w )
 {	
 	bool return_val = false;
 	
-	if ( w->preference )
+	if ( w->preference && w->preference->slot )
 	{
 		preference* p = w->preference->slot->all_preferences;
 		preference* next_p;
