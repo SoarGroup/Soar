@@ -663,8 +663,6 @@ inline void wma_forgetting_move_in_p_queue( agent* my_agent, wma_decay_element* 
 	}
 }
 
-// naive algorithm:
-// - pretend you get no further updates, calculate how long you'd last
 inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_element* decay_el, bool fresh_reference )
 {	
 	wma_d_cycle return_val = static_cast<wma_d_cycle>( my_agent->wma_d_cycle_count );
@@ -846,7 +844,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 
 inline bool wma_forgetting_naive_sweep( agent* my_agent )
 {
-	wma_d_cycle current_cycle = my_agent->wma_d_cycle_count+1;
+	wma_d_cycle current_cycle = my_agent->wma_d_cycle_count;
 	double decay_thresh = my_agent->wma_thresh_exp;
 	bool forget_only_lti = ( my_agent->wma_params->forget_wme->get_value() == wma_param_container::lti );
 	bool return_val = false;
@@ -855,7 +853,13 @@ inline bool wma_forgetting_naive_sweep( agent* my_agent )
 	{
 		if ( w->wma_decay_el && ( !forget_only_lti || ( w->id->id.smem_lti != NIL ) ) )
 		{
-			if ( wma_calculate_decay_activation( my_agent, w->wma_decay_el, current_cycle, false ) < decay_thresh )
+			// to be forgotten, wme must...
+			// - have been accessed (can't imagine why not, but just in case)
+			// - not have been accessed this cycle (i.e. no decay)
+			// - have activation less than threshold
+			if ( ( w->wma_decay_el->touches.total_references>0 ) && 
+				 ( w->wma_decay_el->touches.access_history[ wma_history_prev( w->wma_decay_el->touches.next_p ) ].d_cycle < current_cycle ) && 
+				 ( wma_calculate_decay_activation( my_agent, w->wma_decay_el, current_cycle, false ) < decay_thresh ) )
 			{
 				if ( wma_forgetting_forget_wme( my_agent, w ) )
 				{
