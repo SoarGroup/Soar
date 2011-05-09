@@ -304,8 +304,7 @@ inline double wma_pow( agent* my_agent, wma_d_cycle cycle_diff )
 	}
 	else
 	{
-		return 0.0;
-		//return pow( static_cast<double>( cycle_diff ), my_agent->wma_params->decay_rate->get_value() );
+		return pow( static_cast<double>( cycle_diff ), my_agent->wma_params->decay_rate->get_value() );
 	}
 }
 
@@ -557,7 +556,7 @@ void wma_deactivate_element( agent* my_agent, wme* w )
 		{			
 			my_agent->wma_touched_elements->erase( w );
 
-			if ( my_agent->wma_params->forgetting->get_value() != wma_param_container::off )
+			if ( ( my_agent->wma_params->forgetting->get_value() == wma_param_container::approx ) || ( my_agent->wma_params->forgetting->get_value() == wma_param_container::bsearch ) )
 			{
 				wma_forgetting_remove_from_p_queue( my_agent, temp_el );
 			}
@@ -701,19 +700,7 @@ inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_ele
 	{
 		double my_thresh = my_agent->wma_thresh_exp;
 		
-		if ( forgetting == wma_param_container::naive )
-		{
-			double predicted_activation;
-			
-			do
-			{
-				
-				predicted_activation = wma_calculate_decay_activation( my_agent, decay_el, ++return_val, false );
-
-			} while ( predicted_activation >= my_thresh );
-		}
-		// binary search
-		else
+		// binary parameter search
 		{
 			wma_d_cycle to_add = 1;
 			double act = wma_calculate_decay_activation( my_agent, decay_el, ( return_val + to_add ), false );
@@ -849,6 +836,30 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 	return return_val;
 }
 
+inline bool wma_forgetting_naive_sweep( agent* my_agent )
+{
+	wma_d_cycle current_cycle = my_agent->wma_d_cycle_count+1;
+	double decay_thresh = my_agent->wma_thresh_exp;
+	bool forget_only_lti = ( my_agent->wma_params->forget_wme->get_value() == wma_param_container::lti );
+	bool return_val = false;
+
+	for ( wme* w=my_agent->all_wmes_in_rete; w; w=w->rete_next )
+	{
+		if ( w->wma_decay_el && ( !forget_only_lti || ( w->id->id.smem_lti != NIL ) ) )
+		{
+			if ( wma_calculate_decay_activation( my_agent, w->wma_decay_el, current_cycle, false ) < decay_thresh )
+			{
+				if ( wma_forgetting_forget_wme( my_agent, w ) )
+				{
+					return_val = true;
+				}
+			}
+		}
+	}
+
+	return return_val;
+}
+
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 
@@ -924,7 +935,7 @@ inline void wma_update_decay_histories( agent* my_agent )
 	wma_pooled_wme_set::iterator wme_p;
 	wma_decay_element* temp_el;
 	wma_d_cycle current_cycle = my_agent->wma_d_cycle_count;
-	bool forgetting = ( my_agent->wma_params->forgetting->get_value() != wma_param_container::off );
+	bool forgetting = ( ( my_agent->wma_params->forgetting->get_value() == wma_param_container::approx ) || ( my_agent->wma_params->forgetting->get_value() == wma_param_container::bsearch ) );
 
 	// add to history for changed elements
 	for ( wme_p=my_agent->wma_touched_elements->begin(); wme_p!=my_agent->wma_touched_elements->end(); wme_p++ )
@@ -1078,41 +1089,57 @@ void wma_go( agent* my_agent, wma_go_action go_action )
 		my_agent->wma_timers->history->stop();
 	}
 	// check forgetting queue
-	else if ( ( go_action == wma_forgetting ) && ( my_agent->wma_params->forgetting->get_value() != wma_param_container::off ) )
+	else if ( go_action == wma_forgetting )
 	{
-		my_agent->wma_timers->forgetting->start();
-		
-		if ( wma_forgetting_update_p_queue( my_agent ) )
+		wma_param_container::forgetting_choices forgetting = my_agent->wma_params->forgetting->get_value();
+
+		if ( forgetting != wma_param_container::off )
 		{
-			if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
+			my_agent->wma_timers->forgetting->start();
+
+			bool forgot_something = false;
+
+			if ( forgetting == wma_param_container::naive )
 			{
-				const char *msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
-				
-				print( my_agent, const_cast<char *>( msg ) );
-				xml_generate_message( my_agent, const_cast<char *>( msg ) );
+				forgot_something = wma_forgetting_naive_sweep( my_agent );
+			}
+			else
+			{			
+				forgot_something = wma_forgetting_update_p_queue( my_agent );
 			}
 
-			uint64_t wm_removal_diff = my_agent->wme_removal_count;
+			if ( forgot_something )
 			{
-				do_working_memory_phase( my_agent );
-			}
-			wm_removal_diff = ( my_agent->wme_removal_count - wm_removal_diff );
+				if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
+				{
+					const char *msg = "\n\nWMA: BEGIN FORGOTTEN WME LIST\n\n";
+					
+					print( my_agent, const_cast<char *>( msg ) );
+					xml_generate_message( my_agent, const_cast<char *>( msg ) );
+				}
 
-			if ( wm_removal_diff > 0 )
-			{
-				my_agent->wma_stats->forgotten_wmes->set_value( my_agent->wma_stats->forgotten_wmes->get_value() + static_cast< int64_t >( wm_removal_diff ) );
+				uint64_t wm_removal_diff = my_agent->wme_removal_count;
+				{
+					do_working_memory_phase( my_agent );
+				}
+				wm_removal_diff = ( my_agent->wme_removal_count - wm_removal_diff );
+
+				if ( wm_removal_diff > 0 )
+				{
+					my_agent->wma_stats->forgotten_wmes->set_value( my_agent->wma_stats->forgotten_wmes->get_value() + static_cast< int64_t >( wm_removal_diff ) );
+				}
+
+				if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
+				{
+					const char *msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
+					
+					print( my_agent, const_cast<char *>( msg ) );
+					xml_generate_message( my_agent, const_cast<char *>( msg ) );
+				}
 			}
 
-			if ( my_agent->sysparams[ TRACE_WM_CHANGES_SYSPARAM ] )
-			{
-				const char *msg = "\nWMA: END FORGOTTEN WME LIST\n\n";
-				
-				print( my_agent, const_cast<char *>( msg ) );
-				xml_generate_message( my_agent, const_cast<char *>( msg ) );
-			}
+			my_agent->wma_timers->forgetting->stop();
 		}
-
-		my_agent->wma_timers->forgetting->stop();
 	}
 }
 
