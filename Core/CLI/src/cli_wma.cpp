@@ -129,6 +129,17 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
+		temp = "fake-forgetting: ";
+        temp2 = agnt->wma_params->fake_forgetting->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
 		if ( m_RawOutput )
             m_Result << "\n";
         else

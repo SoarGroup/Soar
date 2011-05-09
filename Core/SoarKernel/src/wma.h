@@ -69,6 +69,8 @@ class wma_param_container: public soar_module::param_container
 		enum forget_wme_choices { all, lti };
 		soar_module::constant_param<forget_wme_choices>* forget_wme;
 
+		soar_module::boolean_param* fake_forgetting;
+
 		// performance
 		soar_module::constant_param< soar_module::timer::timer_level >* timers;
 				
