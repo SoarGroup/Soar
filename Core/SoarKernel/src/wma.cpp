@@ -128,6 +128,10 @@ wma_param_container::wma_param_container( agent *new_agent ): soar_module::param
 	forget_wme->add_mapping( lti, "lti" );
 	add( forget_wme );
 
+	// fake forgetting?
+	fake_forgetting = new soar_module::boolean_param( "fake-forgetting", soar_module::off, new wma_activation_predicate<soar_module::boolean>( my_agent ) );
+	add( fake_forgetting );
+
 	// timer level
 	timers = new soar_module::constant_param< soar_module::timer::timer_level >( "timers", soar_module::timer::zero, new soar_module::f_predicate< soar_module::timer::timer_level >() );
 	timers->add_mapping( soar_module::timer::zero, "off" );
@@ -764,6 +768,7 @@ inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_ele
 inline bool wma_forgetting_forget_wme( agent *my_agent, wme *w )
 {	
 	bool return_val = false;
+	bool fake = ( my_agent->wma_params->fake_forgetting->get_value() == soar_module::on );
 	
 	if ( w->preference && w->preference->slot )
 	{
@@ -776,8 +781,11 @@ inline bool wma_forgetting_forget_wme( agent *my_agent, wme *w )
 
 			if ( p->o_supported && p->in_tm && ( p->value == w->value ) )
 			{
-				remove_preference_from_tm( my_agent, p );
-				return_val = true;				
+				if ( !fake )
+				{
+					remove_preference_from_tm( my_agent, p );
+					return_val = true;				
+				}
 			}
 
 			p = next_p;
