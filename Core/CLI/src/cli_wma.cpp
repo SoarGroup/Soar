@@ -32,6 +32,13 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
         std::string temp;
         char *temp2;
 
+		if ( m_RawOutput )
+            m_Result << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+        }
+
         temp = "WMA activation: ";
         temp2 = agnt->wma_params->activation->get_string();
         temp += temp2;
