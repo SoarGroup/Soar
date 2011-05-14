@@ -32,7 +32,7 @@ typedef struct wme_struct wme;
   * How many references are expected per decision
   * (this affects creation of the power/approx cache)
   */
-#define WMA_REFERENCES_PER_DECISION 10
+#define WMA_REFERENCES_PER_DECISION 50
 
 /**
  * If an external caller asks for the activation level/value 
@@ -73,6 +73,7 @@ class wma_param_container: public soar_module::param_container
 
 		// performance
 		soar_module::constant_param< soar_module::timer::timer_level >* timers;
+		soar_module::integer_param* max_pow_cache;
 				
 		wma_param_container( agent* new_agent );
 };
