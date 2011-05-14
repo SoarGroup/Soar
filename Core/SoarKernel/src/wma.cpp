@@ -137,6 +137,10 @@ wma_param_container::wma_param_container( agent *new_agent ): soar_module::param
 	timers->add_mapping( soar_module::timer::zero, "off" );
 	timers->add_mapping( soar_module::timer::one, "one" );
 	add( timers );
+
+	// max size of power cache
+	max_pow_cache = new soar_module::integer_param( "max-pow-cache", 10, new soar_module::gt_predicate< int64_t >( 0, false ), new wma_activation_predicate< int64_t >( my_agent ) );
+	add( max_pow_cache );
 };
 
 //
@@ -209,14 +213,26 @@ void wma_init( agent *my_agent )
 
 	double decay_rate = my_agent->wma_params->decay_rate->get_value();
 	double decay_thresh = my_agent->wma_params->decay_thresh->get_value();
+	int64_t max_pow_cache = my_agent->wma_params->max_pow_cache->get_value();
 
 	// Pre-compute the integer powers of the decay exponent in order to avoid
 	// repeated calls to pow() at runtime
 	{
-		// computes how many powers to compute
-		// basic idea: solve for the time that would just fall below the decay threshold, given decay rate and assumption of max references/decision
-		// t = e^( ( thresh - ln( max_refs ) ) / -decay_rate )
-		my_agent->wma_power_size = static_cast< unsigned int >( ceil( static_cast<double>( exp( ( decay_thresh - log( static_cast<double>( WMA_REFERENCES_PER_DECISION ) ) ) / decay_rate ) ) ) );
+		// determine cache size
+		{
+			// computes how many powers to compute
+			// basic idea: solve for the time that would just fall below the decay threshold, given decay rate and assumption of max references/decision
+			// t = e^( ( thresh - ln( max_refs ) ) / -decay_rate )
+			double cache_full = static_cast<double>( exp( ( decay_thresh - log( static_cast<double>( WMA_REFERENCES_PER_DECISION ) ) ) / decay_rate ) );
+
+			// we bound this by the max-pow-cache parameter to control the space vs. time tradeoff the cache supports
+			// max-pow-cache is in MB, so do the conversion:
+			// MB * 1024 bytes/KB * 1024 KB/MB
+			double cache_bound = ( static_cast<unsigned int>( max_pow_cache * 1024 * 1024 ) / static_cast<unsigned int>( sizeof( double ) ) );
+
+			my_agent->wma_power_size = static_cast< unsigned int >( ceil( ( cache_full > cache_bound )?( cache_bound ):( cache_full ) ) );
+		}
+
 		my_agent->wma_power_array = new double[ my_agent->wma_power_size ];
 
 		my_agent->wma_power_array[0] = 0.0;
@@ -235,7 +251,8 @@ void wma_init( agent *my_agent )
 	{
 		my_agent->wma_approx_array = new wma_d_cycle[ WMA_REFERENCES_PER_DECISION ];
 		
-		for ( int i=0; i<WMA_REFERENCES_PER_DECISION; i++ )
+		my_agent->wma_approx_array[0] = 0;
+		for ( int i=1; i<WMA_REFERENCES_PER_DECISION; i++ )
 		{
 			my_agent->wma_approx_array[i] = static_cast< wma_d_cycle >( ceil( exp( static_cast<double>( decay_thresh - log( static_cast<double>(i) ) ) / static_cast<double>( decay_rate ) ) ) );
 		}
@@ -686,7 +703,7 @@ inline wma_d_cycle wma_forgetting_estimate_cycle( agent* my_agent, wma_decay_ele
 
 			cycle_diff = ( return_val - history->access_history[ p ].d_cycle );
 
-			approx_ref = ( ( history->access_history[ p ].num_references < WMA_DECAY_HISTORY )?( history->access_history[ p ].num_references ):( WMA_DECAY_HISTORY-1 ) );
+			approx_ref = ( ( history->access_history[ p ].num_references < WMA_REFERENCES_PER_DECISION )?( history->access_history[ p ].num_references ):( WMA_REFERENCES_PER_DECISION-1 ) );
 			if ( my_agent->wma_approx_array[ approx_ref ] > cycle_diff )
 			{
 				to_add += ( my_agent->wma_approx_array[ approx_ref ] - cycle_diff );
@@ -1081,6 +1098,20 @@ void wma_get_wme_history( agent* my_agent, wme* w, std::string& buffer )
 
 			buffer.append( "\n " );
 			_wma_ref_to_str( history->access_history[ p ], current_cycle, buffer );
+		}
+
+		//
+
+		wma_param_container::forgetting_choices forget = my_agent->wma_params->forgetting->get_value();
+
+		if ( ( forget == wma_param_container::bsearch ) || ( forget == wma_param_container::approx ) )
+		{
+			buffer.append( "\n\n" );
+			buffer.append( "considering WME for decay @ d" );
+
+			std::string temp;
+			to_string( w->wma_decay_el->forget_cycle, temp );
+			buffer.append( temp );
 		}
 	}
 	else
