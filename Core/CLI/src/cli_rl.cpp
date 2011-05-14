@@ -51,7 +51,9 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
     agent* agnt = m_pAgentSML->GetSoarAgent();
     if ( !pOp )
     {
-        CLI_DoRL_print( *this, m_RawOutput, m_Result,
+		CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
+		
+		CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "Soar-RL learning: ", agnt->rl_params->learning->get_string() ) );
 
         CLI_DoRL_print( *this, m_RawOutput, m_Result,
@@ -95,6 +97,8 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "chunk-stop: ", agnt->rl_params->chunk_stop->get_string() ) );
+
+		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
         return true;
     }
