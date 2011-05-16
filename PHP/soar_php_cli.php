@@ -60,6 +60,22 @@
 		
 		//
 		
+		if ( $argc > 1 )
+		{
+			$fname = $argv[1];
+			
+			if ( file_exists( $fname ) && is_readable( $fname ) )
+			{
+				echo $agent->ExecuteCommandLine( 'source ' . $fname );
+			}
+			else
+			{
+				echo ( 'Could not read file: ' . $fname . "\n" );
+			}
+		}
+		
+		//
+		
 		$cmd = '';
 		do
 		{
