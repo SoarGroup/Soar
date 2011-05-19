@@ -7,4 +7,6 @@
 
 Import('compEnv')
 compEnv.Install('$PREFIX/bin', 'soar_php_cli.php')
-compEnv.Install('$PREFIX/bin', 'test_rl.php')
+compEnv.Install('$PREFIX/lib', 'test_rl.inc.php')
+compEnv.Install('$PREFIX/bin', 'test_rl_unit.php')
+compEnv.Install('$PREFIX/bin', 'test_rl_left_right.php')
