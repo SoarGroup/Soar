@@ -7,11 +7,11 @@
 	 */
     
     define( 'THIS_DIR', dirname( realpath( $_SERVER['PHP_SELF'] ) ) );
-    define( 'EPSILON', 0.00001 );
     
     //
 	
 	require ( THIS_DIR . '/../lib/PHP_sml_ClientInterface.php' );
+    require ( THIS_DIR . '/../lib/test_rl.inc.php' );
     
     //
 	
@@ -33,7 +33,7 @@
         }
         else
         {
-            echo ( 'Cannot read rl-unit agent source.' . "\n" );
+            echo ( 'Cannot read agent source.' . "\n" );
             exit;
         }
         
@@ -41,66 +41,6 @@
     }
     
     $agent->ExecuteCommandLine( 'timers -d' );
-    
-    //
-    
-    function parse_rl_rules()
-    {
-        global $agent;
-        $rules = array();
-        
-        $str = explode( "\n", trim( $agent->ExecuteCommandLine( 'p --rl' ) ) );
-        foreach ( $str as $s )
-        {
-            $s = explode( ' ', $s );
-            foreach ( $s as $k => $v )
-            {
-                if ( !strlen( $v ) )
-                {
-                    unset( $s[ $k ] );
-                }
-            }
-            $s = array_values( $s );
-            
-            $rules[ $s[0] ] = array( 'u'=>intval( $s[1] ), 'v'=>doubleval( $s[2] ) );
-        }
-        
-        return $rules;
-    }
-    
-    function compare_values( $v1, $v2 )
-    {
-        return ( ( $v1 > ( $v2 - EPSILON ) ) && ( $v1 < ( $v2 + EPSILON ) ) );
-    }
-    
-    function compare_rules( &$gold, &$test )
-    {
-        $return_val = array();
-        
-        foreach ( $gold as $rule => $info )
-        {
-            if ( isset( $test[ $rule ] ) )
-            {
-                if ( $info['u'] == $test[ $rule ]['u'] )
-                {
-                    if ( !compare_values( $info['v'], $test[ $rule ]['v'] ) )
-                    {
-                        $return_val[] = ( 'Rule "' . $rule . '": value should be ' . $info['v'] . ', is ' . $test[ $rule ]['v'] );
-                    }
-                }
-                else
-                {
-                    $return_val[] = ( 'Rule "' . $rule . '": update should be ' . $info['u'] . ', is ' . $test[ $rule ]['u'] );
-                }
-            }
-            else
-            {
-                $return_val[] = ( 'Does not contain rule "' . $rule . '"' );
-            }
-        }
-        
-        return $return_val;
-    }
     
     //
     
@@ -186,8 +126,8 @@
             $agent->ExecuteCommandLine( 'init' );
         }
         
-        $agent_rules = parse_rl_rules();
-        $result = compare_rules( $info, $agent_rules );
+        $agent_rules = parse_rl_rules( $agent );
+        $result = compare_rules( $info, $agent_rules, true );
         
         echo ( 'Run #' . $current_run . ': ' . ( ( empty( $result ) )?('success'):('failure') ) . "\n" );
         
