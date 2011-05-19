@@ -403,6 +403,7 @@ inline double wma_calculate_decay_activation( agent* my_agent, wma_decay_element
 inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 {
 	wma_reference return_val = 0;
+	preference* pref;
 	condition *cond;
 	wme *cond_wme;
 	wma_pooled_wme_set::iterator wme_p;
@@ -412,43 +413,49 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 	uint64_t num_cond_wmes = 0;
 	double combined_time_sum = 0.0;
 
-	for ( cond=w->preference->inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next )
+	for ( pref=w->preference->slot->preferences[ACCEPTABLE_PREFERENCE_TYPE]; pref; pref=pref->next )
 	{
-		if ( ( cond->type == POSITIVE_CONDITION ) && ( cond->bt.wme_->wma_tc_value != tc ) )
+		if ( ( pref->value == w->value ) && ( pref->o_supported ) )
 		{
-			cond_wme = cond->bt.wme_;
-			cond_wme->wma_tc_value = tc;
+			for ( cond=pref->inst->top_of_instantiated_conditions; cond!=NIL; cond=cond->next )
+			{
+				if ( ( cond->type == POSITIVE_CONDITION ) && ( cond->bt.wme_->wma_tc_value != tc ) )
+				{
+					cond_wme = cond->bt.wme_;
+					cond_wme->wma_tc_value = tc;
 
-			if ( cond_wme->wma_decay_el )
-			{
-				if ( !cond_wme->wma_decay_el->just_created )
-				{
-					num_cond_wmes++;
-					combined_time_sum += wma_get_wme_activation( my_agent, cond_wme, false );
-				}
-			}
-			else if ( cond_wme->preference )
-			{
-				if ( cond_wme->preference->wma_o_set )
-				{
-					for ( wme_p=cond_wme->preference->wma_o_set->begin(); wme_p!=cond_wme->preference->wma_o_set->end(); wme_p++ )
+					if ( cond_wme->wma_decay_el )
 					{
-						if ( ( (*wme_p)->wma_tc_value != tc ) && ( !(*wme_p)->wma_decay_el || !(*wme_p)->wma_decay_el->just_created ) )
+						if ( !cond_wme->wma_decay_el->just_created )
 						{
 							num_cond_wmes++;
-							combined_time_sum += wma_get_wme_activation( my_agent, (*wme_p), false );
-
-							(*wme_p)->wma_tc_value = tc;
+							combined_time_sum += wma_get_wme_activation( my_agent, cond_wme, false );
 						}
 					}
-				}
+					else if ( cond_wme->preference )
+					{
+						if ( cond_wme->preference->wma_o_set )
+						{
+							for ( wme_p=cond_wme->preference->wma_o_set->begin(); wme_p!=cond_wme->preference->wma_o_set->end(); wme_p++ )
+							{
+								if ( ( (*wme_p)->wma_tc_value != tc ) && ( !(*wme_p)->wma_decay_el || !(*wme_p)->wma_decay_el->just_created ) )
+								{
+									num_cond_wmes++;
+									combined_time_sum += wma_get_wme_activation( my_agent, (*wme_p), false );
+
+									(*wme_p)->wma_tc_value = tc;
+								}
+							}
+						}
+					}
+					else
+					{
+						num_cond_wmes++;
+						combined_time_sum += wma_get_wme_activation( my_agent, cond_wme, false );
+					}
+				}		
 			}
-			else
-			{
-				num_cond_wmes++;
-				combined_time_sum += wma_get_wme_activation( my_agent, cond_wme, false );
-			}
-		}		
+		}
 	}
 
 	if ( num_cond_wmes )
