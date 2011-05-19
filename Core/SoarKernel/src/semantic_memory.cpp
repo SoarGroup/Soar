@@ -230,11 +230,11 @@ smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_
 	//
 
 	// chunks
-	chunks = new soar_module::integer_stat( "nodes", 0, new soar_module::f_predicate<int64_t>() );
+	chunks = new soar_module::integer_stat( "nodes", 0, new smem_db_predicate< int64_t >( my_agent ) );
 	add( chunks );
 
 	// slots
-	slots = new soar_module::integer_stat( "edges", 0, new soar_module::f_predicate<int64_t>() );
+	slots = new soar_module::integer_stat( "edges", 0, new smem_db_predicate< int64_t >( my_agent ) );
 	add( slots );
 }
 
