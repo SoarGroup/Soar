@@ -459,7 +459,7 @@ inline wma_reference wma_calculate_initial_boost( agent* my_agent, wme* w )
 	return return_val;
 }
 
-void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wma_pooled_wme_set* o_set )
+void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wma_pooled_wme_set* o_set, bool o_only )
 {	
 	// o-supported, non-architectural WME
 	if ( wma_should_have_decay_element( w ) )
@@ -506,7 +506,7 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 		}
 	}
 	// i-supported, non-architectural WME
-	else if ( ( w->preference ) && ( w->preference->reference_count ) )
+	else if ( !o_only && ( w->preference ) && ( w->preference->reference_count ) )
 	{		
 		wma_pooled_wme_set* my_o_set = w->preference->wma_o_set;
 		wma_pooled_wme_set::iterator wme_p;
@@ -556,7 +556,7 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 		}
 	}
 	// architectural
-	else if ( !w->preference )
+	else if ( !o_only && !w->preference )
 	{
 		// only action is to add it to the o_set
 		if ( o_set )
