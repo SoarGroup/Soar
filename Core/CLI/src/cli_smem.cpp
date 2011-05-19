@@ -378,8 +378,9 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         smem_close( agnt );
 
         // production memory (automatic init-soar clears working memory as a result)		
-        ExciseBitset options(EXCISE_ALL);
-        DoExcise(options, 0);
+        ExciseBitset options(0);
+		options.set( EXCISE_ALL, true );
+        DoExcise( options, 0 );
 
         return true;
     }
