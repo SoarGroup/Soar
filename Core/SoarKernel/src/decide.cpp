@@ -1795,7 +1795,8 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 					wma_sym_reference_map::iterator it = s->wma_val_references->find( w->value );
 					assert( it != s->wma_val_references->end() );
 
-					wma_activate_wme( thisAgent, w, it->second );
+					// should only activate at this point if WME is o-supported
+					wma_activate_wme( thisAgent, w, it->second, NULL, true );
 
 					s->wma_val_references->erase( it );
 					if ( s->wma_val_references->empty() )
