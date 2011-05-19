@@ -40,14 +40,13 @@ sp {left-right*rl*right
 # When a direction is chosen:
 # - change location
 # - output choice
-# - halt
 ##
 sp {apply*move
-   (state <s> ^operator <op>)
+   (state <s> ^operator <op>
+              ^location start)
    (<op> ^name move
          ^dir <dir>)
 -->
-   (<s> ^location <dir>)
+   (<s> ^location start - <dir>)
    (write (crlf) |Moved: | <dir>)
-   (halt)
 }
