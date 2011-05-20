@@ -497,6 +497,9 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 			temp_el->touches.total_references = 0;
 			temp_el->touches.first_reference = 0;
 
+			// prevents confusion with delayed forgetting
+			temp_el->forget_cycle = static_cast< wma_d_cycle>( -1 );
+
 			w->wma_decay_el = temp_el;
 		}
 
@@ -820,6 +823,9 @@ inline bool wma_forgetting_forget_wme( agent *my_agent, wme *w )
 inline bool wma_forgetting_update_p_queue( agent* my_agent )
 {
 	bool return_val = false;
+	bool do_forget = false;
+	slot* s;
+	wme* w;
 	
 	if ( !my_agent->wma_forget_pq->empty() )
 	{
@@ -839,11 +845,50 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 
 				if ( wma_calculate_decay_activation( my_agent, (*current_p), current_cycle, false ) < decay_thresh )
 				{
+					(*current_p)->forget_cycle = WMA_FORGOTTEN_CYCLE;
+					
 					if ( !forget_only_lti || ( (*current_p)->this_wme->id->id.smem_lti != NIL ) )
 					{
-						if ( wma_forgetting_forget_wme( my_agent, (*current_p)->this_wme ) )
+						do_forget = true;
+
+						// implements all-or-nothing check for lti mode
+						if ( forget_only_lti )
 						{
-							return_val = true;
+							for ( s=(*current_p)->this_wme->id->id.slots; (s && do_forget); s=s->next )
+							{
+								for ( w=s->wmes; (w && do_forget); w=w->next )
+								{
+									if ( !w->wma_decay_el || ( w->wma_decay_el->forget_cycle != WMA_FORGOTTEN_CYCLE ) )
+									{
+										do_forget = false;
+									}
+								}
+							}
+						}
+						
+						if ( do_forget )
+						{
+							if ( forget_only_lti )
+							{
+								// implements all-or-nothing forget for lti mode
+								for ( s=(*current_p)->this_wme->id->id.slots; (s && do_forget); s=s->next )
+								{
+									for ( w=s->wmes; (w && do_forget); w=w->next )
+									{
+										if ( wma_forgetting_forget_wme( my_agent, w ) )
+										{
+											return_val = true;
+										}
+									}
+								}
+							}
+							else
+							{
+								if ( wma_forgetting_forget_wme( my_agent, (*current_p)->this_wme ) )
+								{
+									return_val = true;
+								}
+							}
 						}
 					}
 				}
