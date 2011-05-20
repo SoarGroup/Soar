@@ -47,6 +47,10 @@ typedef struct wme_struct wme;
  */
 #define WMA_ACTIVATION_LOW -1000000000
 
+/**
+ * If below decay thresh, but not forgotten, forget_cycle = 
+ */
+#define WMA_FORGOTTEN_CYCLE 0
 
 //////////////////////////////////////////////////////////
 // WMA Parameters
