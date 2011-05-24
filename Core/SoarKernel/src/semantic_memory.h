@@ -75,6 +75,8 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::int_set_param* base_incremental_threshes;
 
+		soar_module::boolean_param* mirroring;
+
 		smem_param_container( agent *new_agent );
 };
 
@@ -116,6 +118,7 @@ class smem_stat_container: public soar_module::stat_container
 		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *stores;
 		soar_module::integer_stat *act_updates;
+		soar_module::integer_stat *mirrors;
 
 		soar_module::integer_stat *chunks;
 		soar_module::integer_stat *slots;
@@ -327,6 +330,9 @@ enum smem_storage_type { store_level, store_recursive };
 
 // represents a list of wmes
 typedef std::list<wme *> smem_wme_list;
+
+// represents a set of symbols
+typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > smem_pooled_symbol_set;
 
 // list used primarily like a stack
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > smem_wme_stack;

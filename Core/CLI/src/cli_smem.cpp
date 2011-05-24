@@ -320,6 +320,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
+		temp = "mirroring: ";
+        temp2 = agnt->smem_params->mirroring->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
 		//
 
         if ( m_RawOutput )
@@ -489,6 +502,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
 			output = "Activation Updates: ";
             temp2 = agnt->smem_stats->act_updates->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
+			output = "Mirrors: ";
+            temp2 = agnt->smem_stats->mirrors->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
