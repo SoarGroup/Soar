@@ -157,6 +157,10 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// incremental update thresholds
 	base_incremental_threshes = new soar_module::int_set_param( "base-incremental-threshes", new soar_module::f_predicate< int64_t >() );
 	add( base_incremental_threshes );
+
+	// mirroring
+	mirroring = new soar_module::boolean_param( "mirroring", soar_module::off, new smem_db_predicate< soar_module::boolean >( my_agent ) );
+	add( mirroring );
 }
 
 //
@@ -230,6 +234,10 @@ smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_
 	// activations
 	act_updates = new soar_module::integer_stat( "act_updates", 0, new soar_module::f_predicate<int64_t>() );
 	add( act_updates );
+
+	// mirrors
+	mirrors = new soar_module::integer_stat( "mirrors", 0, new soar_module::f_predicate<int64_t>() );
+	add( mirrors );
 
 	//
 
@@ -3590,9 +3598,53 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		state = state->id.higher_goal;
 	}
 
+	if ( store_only && ( my_agent->smem_params->mirroring->get_value() == soar_module::on ) && ( !my_agent->smem_changed_ids->empty() ) )
+	{
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->smem_timers->storage->start();
+		////////////////////////////////////////////////////////////////////////////
+
+		// start transaction (if not lazy)
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+		{
+			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+		}
+		
+		for ( smem_pooled_symbol_set::iterator it=my_agent->smem_changed_ids->begin(); it!=my_agent->smem_changed_ids->end(); it++ )
+		{
+			// require that the lti has at least one augmentation
+			if ( (*it)->id.slots )
+			{
+				smem_soar_store( my_agent, (*it) );
+
+				// add one to the mirrors stat
+				my_agent->smem_stats->mirrors->set_value( my_agent->smem_stats->mirrors->get_value() + 1 );
+			}
+
+			symbol_remove_ref( my_agent, (*it) );
+		}
+
+		// commit transaction (if not lazy)
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+		{
+			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+		}
+
+		// clear symbol set
+		my_agent->smem_changed_ids->clear();
+
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->smem_timers->storage->stop();
+		////////////////////////////////////////////////////////////////////////////
+	}
+
 	if ( do_wm_phase )
 	{
+		my_agent->smem_ignore_changes = true;
+		
 		do_working_memory_phase( my_agent );
+
+		my_agent->smem_ignore_changes = false;
 	}
 }
 
