@@ -292,6 +292,10 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	time = new epmem_time_id_stat( "time", 0, new epmem_db_predicate<epmem_time_id>( my_agent ) );
 	add( time );
 
+	// db-lib-version
+	db_lib_version = new epmem_db_lib_version_stat( my_agent, "db-lib-version", NULL, new soar_module::predicate< const char* >() );
+	add( db_lib_version );
+
 	// mem-usage
 	mem_usage = new epmem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<int64_t>() );
 	add( mem_usage );
@@ -387,6 +391,15 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].rightroot.var_key = var_rit_rightroot_2;
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.stat = rit_min_step_2;
 	my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].minstep.var_key = var_rit_minstep_2;
+}
+
+//
+
+epmem_db_lib_version_stat::epmem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred ): soar_module::primitive_stat< const char* >( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+
+const char* epmem_db_lib_version_stat::get_value()
+{
+	return my_agent->epmem_db->lib_version();
 }
 
 //

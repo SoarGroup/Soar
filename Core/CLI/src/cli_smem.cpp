@@ -409,6 +409,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             std::string output;
             char *temp2;
 
+			output = "SQLite Version: ";
+            temp2 = agnt->smem_stats->db_lib_version->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
             output = "Memory Usage: ";
             temp2 = agnt->smem_stats->mem_usage->get_string();
             output += temp2;

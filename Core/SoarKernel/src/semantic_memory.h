@@ -101,12 +101,14 @@ class smem_db_predicate: public soar_module::agent_predicate<T>
 // SMem Statistics
 //////////////////////////////////////////////////////////
 
+class smem_db_lib_version_stat;
 class smem_mem_usage_stat;
 class smem_mem_high_stat;
 
 class smem_stat_container: public soar_module::stat_container
 {
 	public:
+		smem_db_lib_version_stat* db_lib_version;
 		smem_mem_usage_stat *mem_usage;
 		smem_mem_high_stat *mem_high;
 
@@ -120,6 +122,20 @@ class smem_stat_container: public soar_module::stat_container
 
 		smem_stat_container( agent *my_agent );
 };
+
+//
+
+class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* >
+{
+	protected:
+		agent* my_agent;
+
+	public:
+		smem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred );
+		const char* get_value();
+};
+
+//
 
 class smem_mem_usage_stat: public soar_module::integer_stat
 {
