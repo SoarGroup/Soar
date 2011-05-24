@@ -913,6 +913,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool smem_first_switch;
   int64_t smem_max_cycle;
 
+  smem_pooled_symbol_set* smem_changed_ids;
+  bool smem_ignore_changes;
 
   // dynamic memory pools
   std::map< size_t, memory_pool* >* dyn_memory_pools;
