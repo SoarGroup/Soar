@@ -201,6 +201,10 @@ bool smem_enabled( agent *my_agent )
 
 smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
+	// db-lib-version
+	db_lib_version = new smem_db_lib_version_stat( my_agent, "db-lib-version", NULL, new soar_module::predicate< const char* >() );
+	add( db_lib_version );
+	
 	// mem-usage
 	mem_usage = new smem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<int64_t>() );
 	add( mem_usage );
@@ -236,6 +240,15 @@ smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_
 	// slots
 	slots = new soar_module::integer_stat( "edges", 0, new smem_db_predicate< int64_t >( my_agent ) );
 	add( slots );
+}
+
+//
+
+smem_db_lib_version_stat::smem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred ): soar_module::primitive_stat< const char* >( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+
+const char* smem_db_lib_version_stat::get_value()
+{
+	return my_agent->smem_db->lib_version();
 }
 
 //

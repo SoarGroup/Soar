@@ -291,6 +291,7 @@ namespace soar_module
 			inline int64_t last_insert_rowid() { return static_cast<int64_t>( sqlite3_last_insert_rowid( my_db ) ); }
 			inline int64_t memory_usage() { return static_cast<int64_t>( sqlite3_memory_used() ); }
 			inline int64_t memory_highwater() { return static_cast<int64_t>( sqlite3_memory_highwater( false ) ); }
+			inline const char* lib_version() { return sqlite3_libversion(); }
 	};
 
 
