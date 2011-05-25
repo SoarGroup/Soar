@@ -359,6 +359,18 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
         return result;
     }
+	else if ( pOp == 'b' )
+    {
+        std::string err;
+		bool result = smem_backup_db( agnt, pAttr->c_str(), &( err ) );
+
+        if ( !result )
+        {
+            SetError( err );
+        }
+
+        return result;
+    }
     else if ( pOp == 'g' )
     {
         soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );

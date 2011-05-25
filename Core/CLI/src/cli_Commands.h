@@ -667,12 +667,13 @@ namespace cli
             cli::Options opt;
             OptionsData optionsData[] =
             {
+				{'b', "backup",       OPTARG_NONE},
                 {'c', "close",        OPTARG_NONE},
-                {'g', "get",        OPTARG_NONE},
-                {'s', "set",        OPTARG_NONE},
+                {'g', "get",          OPTARG_NONE},
+                {'s', "set",          OPTARG_NONE},
                 {'S', "stats",        OPTARG_NONE},
-                {'t', "timers",        OPTARG_NONE},
-                {'v', "viz",        OPTARG_NONE},
+                {'t', "timers",       OPTARG_NONE},
+                {'v', "viz",          OPTARG_NONE},
                 {0, 0, OPTARG_NONE} // null
             };
 
@@ -704,6 +705,12 @@ namespace cli
 
                     return cli.DoEpMem( option );
                 }
+
+			case 'b':
+                // case: backup requires one non-option argument
+                if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                return cli.DoEpMem( option, &( argv[2] ) );
 
             case 'g':
                 // case: get requires one non-option argument
@@ -3000,6 +3007,7 @@ namespace cli
             OptionsData optionsData[] =
             {
                 {'a', "add",        OPTARG_NONE},
+				{'b', "backup",		OPTARG_NONE},
                 {'g', "get",        OPTARG_NONE},
                 {'i', "init",       OPTARG_NONE},
 				{'p', "print",      OPTARG_NONE},
@@ -3034,6 +3042,12 @@ namespace cli
 
             case 'a':
                 // case: add requires one non-option argument
+                if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                return cli.DoSMem( option, &( argv[2] ) );
+
+			case 'b':
+                // case: backup requires one non-option argument
                 if (!opt.CheckNumNonOptArgs(1, 1)) return false;
 
                 return cli.DoSMem( option, &( argv[2] ) );
