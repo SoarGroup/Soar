@@ -153,8 +153,8 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-        temp = "commit: ";
-        temp2 = agnt->epmem_params->commit->get_string();
+        temp = "lazy-commit: ";
+        temp2 = agnt->epmem_params->lazy_commit->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -350,6 +350,18 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         }
 
         return true;
+    }
+	else if ( pOp == 'b' )
+    {
+        std::string err;
+		bool result = epmem_backup_db( agnt, pAttr->c_str(), &( err ) );
+
+        if ( !result )
+        {
+            SetError( err );
+        }
+
+        return result;
     }
     else if ( pOp == 'c' )
     {

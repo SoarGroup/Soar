@@ -124,7 +124,7 @@ class epmem_param_container: public soar_module::param_container
 		// storage
 		soar_module::constant_param<db_choices> *database;
 		epmem_path_param *path;
-		soar_module::integer_param *commit;
+		soar_module::boolean_param *lazy_commit;
 
 		// retrieval
 		soar_module::boolean_param *graph_match;
@@ -641,6 +641,7 @@ extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
 extern void epmem_go( agent *my_agent );
+extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 
 // visualization
 extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );

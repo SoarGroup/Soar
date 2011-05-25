@@ -470,5 +470,6 @@ extern void smem_close( agent *my_agent );
 
 // perform smem actions
 extern void smem_go( agent *my_agent, bool store_only );
+extern bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 
 #endif
