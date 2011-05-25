@@ -452,6 +452,8 @@ extern bool smem_parse_chunks( agent *my_agent, const char *chunks, std::string 
 
 extern void smem_visualize_store( agent *my_agent, std::string *return_val );
 extern void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
+extern void smem_print_store( agent *my_agent, std::string *return_val );
+extern void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;

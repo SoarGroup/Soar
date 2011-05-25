@@ -397,6 +397,53 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
         return true;
     }
+	else if ( pOp == 'p' )
+    {
+        smem_lti_id lti_id = NIL;
+        unsigned int depth = 1;
+
+		if ( pAttr )
+		{
+			get_lexeme_from_string( agnt, pAttr->c_str() );
+			if ( agnt->lexeme.type == IDENTIFIER_LEXEME )
+			{
+				if ( agnt->smem_db->get_status() == soar_module::connected )
+				{
+					lti_id = smem_lti_get_id( agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number );
+
+					if ( ( lti_id != NIL ) && pVal )
+					{
+						from_c_string( depth, pVal->c_str() );
+					}
+				}
+			}
+
+			if ( lti_id == NIL )
+				return SetError( "Invalid attribute." );
+		}
+
+        std::string viz;
+
+        if ( lti_id == NIL )
+        {
+            smem_print_store( agnt, &( viz ) );
+        }
+        else
+        {
+            smem_print_lti( agnt, lti_id, depth, &( viz ) );
+        }
+
+        if ( m_RawOutput )
+        {
+            m_Result << viz;
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, viz.c_str() );
+        }
+
+        return true;
+    }
     else if ( pOp == 's' )
     {
         soar_module::param *my_param = agnt->smem_params->get( pAttr->c_str() );
@@ -637,7 +684,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     else if ( pOp == 'v' )
     {
         smem_lti_id lti_id = NIL;
-        unsigned int depth = 0;
+        unsigned int depth = 1;
 
 		if ( pAttr )
 		{

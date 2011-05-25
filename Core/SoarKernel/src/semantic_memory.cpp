@@ -586,7 +586,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num, act_value FROM " SMEM_SCHEMA "lti" );
+	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num, act_value FROM " SMEM_SCHEMA "lti ORDER BY letter ASC, num ASC" );
 	add( vis_lti );
 
 	vis_lti_act = new soar_module::sqlite_statement( new_db, "SELECT act_value FROM " SMEM_SCHEMA "lti WHERE id=?" );
@@ -3965,9 +3965,6 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 			to_string( temp_int, temp_str );
 			new_lti->lti_name.append( temp_str );
 
-			// activation
-			temp_double = lti_q->column_double( 2 );
-
 			// done with lookup
 			lti_q->reinitialize();
 		}
@@ -4191,3 +4188,201 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 	return_val->append( return_val2 );
 }
 
+inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string *return_val )
+{
+	std::set< smem_lti_id > next;
+
+	std::string temp_str, temp_str2, temp_str3;
+	int64_t temp_int;
+	double temp_double;
+
+	std::map< std::string, std::list< std::string > > augmentations;
+	std::map< std::string, std::list< std::string > >::iterator lti_slot;
+	std::list< std::string >::iterator slot_val;
+
+	soar_module::sqlite_statement* expand_q = my_agent->smem_stmts->web_expand;
+
+	//
+	//
+
+	return_val->append( "(@" );
+	return_val->push_back( lti_letter );
+	to_string( lti_number, temp_str );
+	return_val->append( temp_str );
+
+	// get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
+	expand_q->bind_int( 1, lti_id );
+	while ( expand_q->execute() == soar_module::row )
+	{
+		// get attribute
+		switch ( expand_q->column_int(0) )
+		{
+			case SYM_CONSTANT_SYMBOL_TYPE:
+				smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );							
+				break;
+
+			case INT_CONSTANT_SYMBOL_TYPE:
+				temp_int = smem_reverse_hash_int( my_agent, expand_q->column_int(1) );
+				to_string( temp_int, temp_str );
+				break;
+
+			case FLOAT_CONSTANT_SYMBOL_TYPE:
+				temp_double = smem_reverse_hash_float( my_agent, expand_q->column_int(1) );
+				to_string( temp_double, temp_str );
+				break;
+
+			default:
+				temp_str.clear();
+				break;
+		}
+
+		// identifier vs. constant
+		if ( expand_q->column_int( 6 ) != SMEM_WEB_NULL )
+		{
+			temp_str2.clear();
+			temp_str2.push_back( '@' );
+			
+			// letter
+			temp_str2.push_back( static_cast<char>( expand_q->column_int( 4 ) ) );
+
+			// number
+			temp_int = expand_q->column_int( 5 );
+			to_string( temp_int, temp_str3 );
+			temp_str2.append( temp_str3 );
+
+			// add to next
+			next.insert( static_cast< smem_lti_id >( expand_q->column_int( 6 ) ) );
+		}
+		else
+		{
+			switch ( expand_q->column_int(2) )
+			{
+				case SYM_CONSTANT_SYMBOL_TYPE:
+					smem_reverse_hash_str( my_agent, expand_q->column_int(3), temp_str2 );							
+					break;
+
+				case INT_CONSTANT_SYMBOL_TYPE:
+					temp_int = smem_reverse_hash_int( my_agent, expand_q->column_int(3) );
+					to_string( temp_int, temp_str2 );
+					break;
+
+				case FLOAT_CONSTANT_SYMBOL_TYPE:
+					temp_double = smem_reverse_hash_float( my_agent, expand_q->column_int(3) );
+					to_string( temp_double, temp_str2 );
+					break;
+
+				default:
+					temp_str2.clear();
+					break;
+			}
+		}
+
+		augmentations[ temp_str ].push_back( temp_str2 );
+	}
+	expand_q->reinitialize();
+
+	// output augmentations nicely
+	{
+		for ( lti_slot=augmentations.begin(); lti_slot!=augmentations.end(); lti_slot++ )
+		{
+			return_val->append( " ^" );
+			return_val->append( lti_slot->first );
+			
+			for ( slot_val=lti_slot->second.begin(); slot_val!=lti_slot->second.end(); slot_val++ )
+			{
+				return_val->append( " " );
+				return_val->append( (*slot_val) );
+			}
+		}
+	}
+	augmentations.clear();
+
+	return_val->append( " [" );
+	to_string( lti_act, temp_str, 3, true );
+	if ( lti_act >= 0 )
+	{
+		return_val->append( "+" );
+	}
+	return_val->append( temp_str );
+	return_val->append( "]" );
+	return_val->append( ")\n" );
+
+	return next;
+}
+
+void smem_print_store( agent *my_agent, std::string *return_val )
+{
+	// vizualizing the store requires an open semantic database
+	smem_attach( my_agent );
+
+	// id, letter, number
+	soar_module::sqlite_statement* q = my_agent->smem_stmts->vis_lti;
+	while ( q->execute() == soar_module::row )
+	{
+		_smem_print_lti( my_agent, q->column_int( 0 ), static_cast<char>( q->column_int( 1 ) ), static_cast<uint64_t>( q->column_int( 2 ) ), q->column_double( 3 ), return_val );
+	}
+	q->reinitialize();
+}
+
+void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val )
+{
+	std::set< smem_lti_id > visited;
+	std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
+
+	std::queue< std::pair< smem_lti_id, unsigned int > > to_visit;
+	std::pair< smem_lti_id, unsigned int > c;
+	
+	std::set< smem_lti_id > next;
+	std::set< smem_lti_id >::iterator next_it;
+
+	soar_module::sqlite_statement* lti_q = my_agent->smem_stmts->lti_letter_num;
+	soar_module::sqlite_statement* act_q = my_agent->smem_stmts->vis_lti_act;
+	unsigned int i;
+	
+	// vizualizing the store requires an open semantic database
+	smem_attach( my_agent );
+
+	// initialize queue/set
+	to_visit.push( std::make_pair< smem_lti_id, unsigned int >( lti_id, 1 ) );
+	visited.insert( lti_id );
+
+	while ( !to_visit.empty() )
+	{
+		c = to_visit.front();
+		to_visit.pop();
+
+		// output leading spaces ala depth
+		for ( i=1; i<c.second; i++ )
+		{
+			return_val->append( "  " );
+		}
+
+		// get lti info
+		{
+			lti_q->bind_int( 1, c.first );
+			lti_q->execute();
+
+			act_q->bind_int( 1, c.first );
+			act_q->execute();
+
+			next = _smem_print_lti( my_agent, c.first, static_cast<char>( lti_q->column_int( 0 ) ), static_cast<uint64_t>( lti_q->column_int( 1 ) ), act_q->column_double( 0 ), return_val );
+
+			// done with lookup
+			lti_q->reinitialize();
+			act_q->reinitialize();
+
+			// consider further depth
+			if ( c.second < depth )
+			{
+				for ( next_it=next.begin(); next_it!=next.end(); next_it++ )
+				{
+					visited_ins_result = visited.insert( (*next_it) );
+					if ( visited_ins_result.second )
+					{
+						to_visit.push( std::make_pair< smem_lti_id, unsigned int >( (*next_it), c.second+1 ) );
+					}
+				}
+			}
+		}
+	}
+}

@@ -3001,10 +3001,11 @@ namespace cli
             {
                 {'a', "add",        OPTARG_NONE},
                 {'g', "get",        OPTARG_NONE},
-                {'i', "init",        OPTARG_NONE},
+                {'i', "init",       OPTARG_NONE},
+				{'p', "print",      OPTARG_NONE},
                 {'s', "set",        OPTARG_NONE},
-                {'S', "stats",        OPTARG_NONE},
-                {'t', "timers",        OPTARG_NONE},
+                {'S', "stats",      OPTARG_NONE},
+                {'t', "timers",     OPTARG_NONE},
                 {'v', "viz",        OPTARG_NONE},
                 {0, 0, OPTARG_NONE} // null
             };
@@ -3050,6 +3051,20 @@ namespace cli
                 if (!opt.CheckNumNonOptArgs(0, 0)) return false;
 
                 return cli.DoSMem( option );
+
+			case 'p':
+                {
+                    // case: print does zero or 1/2 non-option arguments
+                    if (!opt.CheckNumNonOptArgs(0, 2)) return false;
+
+                    if ( opt.GetNonOptionArguments() == 0 )
+                        return cli.DoSMem( option );
+
+                    if (opt.GetNonOptionArguments() == 1)
+                        return cli.DoSMem( option, &(argv[2]), 0 );
+
+                    return cli.DoSMem( option, &(argv[2]), &(argv[3]) );
+                }
 
             case 's':
                 {
