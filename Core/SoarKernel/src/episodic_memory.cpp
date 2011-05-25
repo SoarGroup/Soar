@@ -45,7 +45,6 @@
 
 // wme-related					epmem::wmes
 
-// sqlite transactions			epmem::transaction
 // variable abstraction			epmem::var
 
 // relational interval tree		epmem::rit
@@ -173,9 +172,9 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	path = new epmem_path_param( "path", "", new soar_module::predicate<const char *>(), new epmem_db_predicate<const char *>( my_agent ), my_agent );
 	add( path );
 
-	// commit
-	commit = new soar_module::integer_param( "commit", 1, new soar_module::gt_predicate<int64_t>( 1, true ), new soar_module::f_predicate<int64_t>() );
-	add( commit );	
+	// auto-commit
+	lazy_commit = new soar_module::boolean_param( "lazy-commit", soar_module::on, new epmem_db_predicate<soar_module::boolean>( my_agent ) );
+	add( lazy_commit );	
 
 
 	////////////////////
@@ -903,64 +902,6 @@ inline void epmem_buffer_add_wme( soar_module::symbol_triple_list& my_list, Symb
 	symbol_add_ref( value );
 }
 
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-// Transaction Functions (epmem::transaction)
-//
-//  SQLite has support for transactions nearly ACID
-//  transactions.  Unfortunately, each commit writes
-//  everything to disk (i.e. no recovery log).
-//
-//  Thus I have implemented support for keeping
-//  transactions open for a constant number of episodes
-//  as controlled by the "commit" parameter.
-//
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-
-/***************************************************************************
- * Function     : epmem_in_transaction
- * Author		: Nate Derbinsky
- * Notes		: Returns true if currently in a transaction according
- * 				  to the value of commit
- **************************************************************************/
-bool epmem_in_transaction( agent *my_agent )
-{
-	if ( my_agent->epmem_db->get_status() != soar_module::connected )
-	{
-		return false;
-	}
-
-	return ( ( my_agent->epmem_stats->time->get_value() % my_agent->epmem_params->commit->get_value() ) != 0 );
-}
-
-/***************************************************************************
- * Function     : epmem_transaction_begin
- * Author		: Nate Derbinsky
- * Notes		: Starts a transaction
- **************************************************************************/
-void epmem_transaction_begin( agent *my_agent )
-{
-	if ( my_agent->epmem_db->get_status() == soar_module::connected )
-	{
-		my_agent->epmem_stmts_common->begin->execute( soar_module::op_reinit );		
-	}
-}
-
-/***************************************************************************
- * Function     : epmem_transaction_end
- * Author		: Nate Derbinsky
- * Notes		: Ends the current transaction
- **************************************************************************/
-void epmem_transaction_end( agent *my_agent, bool commit )
-{
-	if ( my_agent->epmem_db->get_status() == soar_module::connected )
-	{		
-		soar_module::sqlite_statement *end_type = ( ( commit )?( my_agent->epmem_stmts_common->commit ):( my_agent->epmem_stmts_common->rollback ) );
-		end_type->execute( soar_module::op_reinit );		
-	}
-}
-
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -1302,12 +1243,12 @@ void epmem_close( agent *my_agent )
 {
 	if ( my_agent->epmem_db->get_status() == soar_module::connected )
 	{
-		// end any pending transactions
-		if ( epmem_in_transaction( my_agent ) )
+		// if lazy, commit
+		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
 		{
-			epmem_transaction_end( my_agent, true );
+			my_agent->epmem_stmts_common->commit->execute( soar_module::op_reinit );
 		}
-
+		
 		// de-allocate statements
 		delete my_agent->epmem_stmts_common;
 		delete my_agent->epmem_stmts_graph;
@@ -1759,7 +1700,11 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			}
 		}
 
-		epmem_transaction_begin( my_agent );
+		// if lazy commit, then we encapsulate the entire lifetime of the agent in a single transaction
+		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->epmem_stmts_common->begin->execute( soar_module::op_reinit );
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////
@@ -5607,20 +5552,10 @@ void epmem_go( agent *my_agent )
 	
 	my_agent->epmem_timers->total->start();
 
-#ifndef EPMEM_EXPERIMENT	
-	
-	if ( !epmem_in_transaction( my_agent ) )
-	{
-		epmem_transaction_begin( my_agent );	
-	}
+#ifndef EPMEM_EXPERIMENT
 
 	epmem_consider_new_episode( my_agent );
 	epmem_respond_to_cmd( my_agent );
-
-	if ( !epmem_in_transaction( my_agent ) )
-	{
-		epmem_transaction_end( my_agent, true );
-	}
 
 #else // EPMEM_EXPERIMENT
 
@@ -5628,4 +5563,30 @@ void epmem_go( agent *my_agent )
 
 	my_agent->epmem_timers->total->stop();
 
+}
+
+bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err )
+{
+	bool return_val = false;
+	
+	if ( my_agent->epmem_db->get_status() == soar_module::connected )
+	{
+		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->epmem_stmts_common->commit->execute( soar_module::op_reinit );
+		}
+
+		return_val = my_agent->epmem_db->backup( file_name, err );
+
+		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->epmem_stmts_common->begin->execute( soar_module::op_reinit );
+		}
+	}
+	else
+	{
+		err->assign( "Episodic database is not currently connected." );
+	}
+
+	return return_val;
 }

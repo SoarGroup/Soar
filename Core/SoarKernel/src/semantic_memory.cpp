@@ -3663,6 +3663,32 @@ void smem_go( agent *my_agent, bool store_only )
 	my_agent->smem_timers->total->stop();
 }
 
+bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err )
+{
+	bool return_val = false;
+	
+	if ( my_agent->smem_db->get_status() == soar_module::connected )
+	{	
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+		}
+
+		return_val = my_agent->smem_db->backup( file_name, err );
+
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+		}
+	}
+	else
+	{
+		err->assign( "Semantic database is not currently connected." );
+	}
+
+	return return_val;
+}
+
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////

@@ -292,6 +292,50 @@ namespace soar_module
 			inline int64_t memory_usage() { return static_cast<int64_t>( sqlite3_memory_used() ); }
 			inline int64_t memory_highwater() { return static_cast<int64_t>( sqlite3_memory_highwater( false ) ); }
 			inline const char* lib_version() { return sqlite3_libversion(); }
+			
+			inline bool backup( const char* file_name, std::string* err )
+			{
+				sqlite3* backup_db;
+				bool return_val = false;
+
+				err->clear();
+
+				if ( get_status() == connected )
+				{
+					int sqlite_err = sqlite3_open_v2( file_name, &( backup_db ), ( SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE ), NULL );
+					if ( sqlite_err == SQLITE_OK )
+					{
+						sqlite3_backup* backup_h = sqlite3_backup_init( backup_db, "main", my_db, "main" );
+						if ( backup_h )
+						{
+							sqlite3_backup_step( backup_h, -1 );
+							sqlite3_backup_finish( backup_h );
+						}
+
+						if ( sqlite3_errcode( backup_db ) == SQLITE_OK )
+						{
+							return_val = true;
+						}
+						else
+						{
+							err->assign( "Error during backup: " );
+							err->append( sqlite3_errmsg( backup_db ) );
+						}
+					}
+					else
+					{
+						err->assign( "Error opening backup file: " );
+						err->append( sqlite3_errmsg( backup_db ) );
+					}
+					sqlite3_close( backup_db );
+				}
+				else
+				{
+					err->assign( "Database is not currently connected." );
+				}
+
+				return return_val;
+			}
 	};
 
 
