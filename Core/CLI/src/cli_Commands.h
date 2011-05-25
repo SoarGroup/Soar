@@ -670,6 +670,7 @@ namespace cli
 				{'b', "backup",       OPTARG_NONE},
                 {'c', "close",        OPTARG_NONE},
                 {'g', "get",          OPTARG_NONE},
+				{'p', "print",        OPTARG_NONE},
                 {'s', "set",          OPTARG_NONE},
                 {'S', "stats",        OPTARG_NONE},
                 {'t', "timers",       OPTARG_NONE},
@@ -718,6 +719,20 @@ namespace cli
                     if (!opt.CheckNumNonOptArgs(1, 1)) return false;
 
                     return cli.DoEpMem( option, &( argv[2] ) );
+                }
+
+			case 'p':
+                // case: print takes one non-option argument
+                {
+                    if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                    std::string temp_str( argv[2] );
+                    epmem_time_id memory_id;        
+
+                    if ( !from_string( memory_id, temp_str ) )
+                        return cli.SetError( "Invalid attribute." );
+
+                    return cli.DoEpMem( option, 0, 0, memory_id );
                 }
 
             case 's':
