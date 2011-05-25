@@ -645,5 +645,6 @@ extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string
 
 // visualization
 extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
+extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
 
 #endif

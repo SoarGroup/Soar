@@ -401,6 +401,27 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 
         return true;
     }
+	else if ( pOp == 'p' )
+    {
+        std::string viz;
+
+        epmem_print_episode( agnt, memory_id, &( viz ) );
+        if ( viz.empty() )
+        {
+            return SetError( "Invalid episode." );
+        }
+
+        if ( m_RawOutput )
+        {
+            m_Result << viz;
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, viz.c_str() );
+        }
+
+        return true;
+    }
     else if ( pOp == 's' )
     {
         // check attribute name/potential vals here
@@ -662,8 +683,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         epmem_visualize_episode( agnt, memory_id, &( viz ) );
         if ( viz.empty() )
         {
-            viz.assign( "Invalid episode." );
-            return SetError( "epmem viz: Invalid episode." );
+            return SetError( "Invalid episode." );
         }
 
         if ( m_RawOutput )

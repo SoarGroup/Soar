@@ -4801,6 +4801,203 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+inline std::string _epmem_print_sti( epmem_node_id id )
+{
+	std::string t1, t2;
+
+	t1.assign( "<id" );
+
+	to_string( id, t2 );
+	t1.append( t2 );
+	t1.append( ">" );
+
+	return t1;
+}
+
+void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf )
+{
+	// if this is before the first episode, initialize db components
+	if ( my_agent->epmem_db->get_status() == soar_module::disconnected )
+	{
+		epmem_init_db( my_agent );
+	}
+
+	// if bad memory, bail
+	buf->clear();
+	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
+		 !epmem_valid_episode( my_agent, memory_id ) )
+	{		
+		return;
+	}
+
+	// fill episode map
+	std::map< epmem_node_id, std::string > ltis;
+	std::map< epmem_node_id, std::map< std::string, std::list< std::string > > > ep;
+	{
+		soar_module::sqlite_statement *my_q;
+		std::string temp_s, temp_s2, temp_s3;
+		double temp_d;
+		int64_t temp_i;
+
+		my_q = my_agent->epmem_stmts_graph->get_edges;		
+		{
+			epmem_node_id q0;
+			epmem_node_id q1;
+			int64_t w_type;
+			bool val_is_short_term;
+			
+			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ] ) );
+
+			// query for edges
+			my_q->bind_int( 1, memory_id );
+			my_q->bind_int( 2, memory_id );
+			my_q->bind_int( 3, memory_id );
+			my_q->bind_int( 4, memory_id );
+			my_q->bind_int( 5, memory_id );
+			while ( my_q->execute() == soar_module::row )
+			{
+				q0 = my_q->column_int( 0 );
+				q1 = my_q->column_int( 2 );
+				w_type = my_q->column_int( 3 );
+				val_is_short_term = ( my_q->column_type( 4 ) == soar_module::null_t );
+
+				switch ( w_type )
+				{
+					case INT_CONSTANT_SYMBOL_TYPE:
+						temp_i = static_cast<int64_t>( my_q->column_int( 1 ) );
+						to_string( temp_i, temp_s );
+						break;
+
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
+						temp_d = my_q->column_double( 1 );
+						to_string( temp_d, temp_s );
+						break;
+
+					case SYM_CONSTANT_SYMBOL_TYPE:
+						temp_s.assign( const_cast<char *>( reinterpret_cast<const char *>( my_q->column_text( 1 ) ) ) );
+						break;
+				}
+
+				if ( val_is_short_term )
+				{
+					temp_s2 = _epmem_print_sti( q1 );
+				}
+				else
+				{
+					temp_s2.assign( "@" );
+					temp_s2.push_back( static_cast< char >( my_q->column_int( 4 ) ) );
+
+					temp_i = static_cast< uint64_t >( my_q->column_int( 5 ) );
+					to_string( temp_i, temp_s3 );
+					temp_s2.append( temp_s3 );
+
+					ltis[ q1 ] = temp_s2;
+				}
+
+				ep[ q0 ][ temp_s ].push_back( temp_s2 );
+			}
+			my_q->reinitialize();			
+			epmem_rit_clear_left_right( my_agent );
+		}
+
+		my_q = my_agent->epmem_stmts_graph->get_nodes;
+		{
+			epmem_node_id parent_id;
+			int64_t attr_type, value_type;
+			
+			epmem_rit_prep_left_right( my_agent, memory_id, memory_id, &( my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ] ) );
+
+			my_q->bind_int( 1, memory_id );
+			my_q->bind_int( 2, memory_id );
+			my_q->bind_int( 3, memory_id );
+			my_q->bind_int( 4, memory_id );
+			while ( my_q->execute() == soar_module::row )
+			{
+				parent_id = my_q->column_int( 1 );
+				attr_type = my_q->column_int( 4 );
+				value_type = my_q->column_int( 5 );
+
+				switch ( attr_type )
+				{
+					case INT_CONSTANT_SYMBOL_TYPE:
+						temp_i = static_cast<int64_t>( my_q->column_int( 2 ) );
+						to_string( temp_i, temp_s );
+						break;
+
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
+						temp_d = my_q->column_double( 2 );
+						to_string( temp_d, temp_s );
+						break;
+
+					case SYM_CONSTANT_SYMBOL_TYPE:
+						temp_s.assign( const_cast<char *>( reinterpret_cast<const char *>( my_q->column_text( 2 ) ) ) );
+						break;
+				}
+
+				switch ( value_type )
+				{
+					case INT_CONSTANT_SYMBOL_TYPE:
+						temp_i = static_cast<int64_t>( my_q->column_int( 3 ) );
+						to_string( temp_i, temp_s2 );
+						break;
+
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
+						temp_d = my_q->column_double( 3 );
+						to_string( temp_d, temp_s2 );
+						break;
+
+					case SYM_CONSTANT_SYMBOL_TYPE:
+						temp_s2.assign( const_cast<char *>( reinterpret_cast<const char *>( my_q->column_text( 3 ) ) ) );
+						break;
+				}
+
+				ep[ parent_id ][ temp_s ].push_back( temp_s2 );
+			}
+			my_q->reinitialize();			
+			epmem_rit_clear_left_right( my_agent );
+		}
+	}
+
+	// output
+	{
+		std::map< epmem_node_id, std::string >::iterator lti_it;
+		std::map< epmem_node_id, std::map< std::string, std::list< std::string > > >::iterator ep_it;
+		std::map< std::string, std::list< std::string > >::iterator slot_it;
+		std::list< std::string >::iterator val_it;
+
+		for ( ep_it=ep.begin(); ep_it!=ep.end(); ep_it++ )
+		{
+			buf->append( "(" );
+
+			// id
+			lti_it = ltis.find( ep_it->first );
+			if ( lti_it == ltis.end() )
+			{
+				buf->append( _epmem_print_sti( ep_it->first ) );
+			}
+			else
+			{
+				buf->append( lti_it->second );
+			}
+
+			// attr
+			for ( slot_it=ep_it->second.begin(); slot_it!=ep_it->second.end(); slot_it++ )
+			{
+				buf->append( " ^" );
+				buf->append( slot_it->first );
+
+				for ( val_it=slot_it->second.begin(); val_it!=slot_it->second.end(); val_it++ )
+				{
+					buf->append( " " );
+					buf->append( *val_it );
+				}
+			}
+
+			buf->append( ")\n" );
+		}
+	}
+}
+
 void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf )
 {
 	// if this is before the first episode, initialize db components
