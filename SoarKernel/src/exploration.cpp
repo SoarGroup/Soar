@@ -564,11 +564,13 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 
 		if ( my_learning_policy == rl_param_container::sarsa )
 		{
-			rl_perform_update( my_agent, return_val->numeric_value, return_val->rl_contribution, s->id );
+		  // 	rl_perform_update_new( my_agent, return_val->numeric_value, return_val->rl_contribution, s->id );
+		  rl_perform_update_new( my_agent, return_val->numeric_value, return_val->rl_contribution, s->id , return_val);
 		}
 		else if ( my_learning_policy == rl_param_container::q )
 		{
-			rl_perform_update( my_agent, top_value, top_rl, s->id );
+		  //			rl_perform_update_new( my_agent, top_value, top_rl, s->id );
+		  rl_perform_update_new( my_agent, top_value, top_rl, s->id, return_val);
 
 			if ( return_val->numeric_value != top_value )
 				rl_watkins_clear( my_agent, s->id );

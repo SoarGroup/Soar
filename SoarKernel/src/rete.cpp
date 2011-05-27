@@ -7364,7 +7364,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 	  prod->rl_rule = rl_valid_rule( prod );
 	  if ( prod->rl_rule )
 	  {
-	    prod->rl_efr = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
+	    	    prod->rl_efr = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
 	  }
 	}
 	prod->rl_template_conds = NIL;

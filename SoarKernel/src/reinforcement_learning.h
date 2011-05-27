@@ -1,3 +1,4 @@
+
 /*************************************************************************
  * PLEASE SEE THE FILE "license.txt" (INCLUDED WITH THIS SOFTWARE PACKAGE)
  * FOR LICENSE AND COPYRIGHT INFORMATION. 
@@ -102,6 +103,7 @@ typedef std::list< rl_rule_info, soar_module::soar_memory_pool_allocator< rl_rul
 typedef struct rl_data_struct {
 	rl_et_map *eligibility_traces;			// traces associated with productions
 	rl_rule_list *prev_op_rl_rules;			// rl rules associated with the previous operator
+        rl_rule_list *current_op_rl_rules;
 	
 	double previous_q;						// q-value of the previous state
 	double reward;							// accumulated discounted reward
@@ -181,6 +183,7 @@ extern void rl_add_goal_or_impasse_tests_to_conds(agent *my_agent, condition *al
 extern void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal );
 
 // tabulation of all agent goal reward
+
 extern void rl_tabulate_reward_values( agent *my_agent );
 
 //////////////////////////////////////////////////////////
@@ -192,8 +195,13 @@ extern void rl_store_data( agent *my_agent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
 extern void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr = true );
+//overloaded to accomodate multi-mdp updates
+extern void rl_perform_update_new( agent *my_agent, double op_value, bool op_rl, Symbol *goal, preference *candidates, bool update_efr = true );
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear( agent *my_agent, Symbol *goal );
+
+// collects all current fired rules
+extern void rl_collect_current_op_rules( agent *my_agent, Symbol *goal, preference *cand);
 
 #endif

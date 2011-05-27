@@ -909,7 +909,8 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   {
 	  rl_tabulate_reward_values( thisAgent );
 	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-	  rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+	  //	  rl_perform_update_new( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+	  rl_perform_update_new( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id , candidates);
   }
 
   return NONE_IMPASSE_TYPE;
@@ -945,7 +946,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 				{
 					rl_tabulate_reward_values( thisAgent );
 					exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
-					rl_perform_update( thisAgent, force_result->numeric_value, force_result->rl_contribution, s->id );
+					//					rl_perform_update_new( thisAgent, force_result->numeric_value, force_result->rl_contribution, s->id );
+					rl_perform_update_new( thisAgent, force_result->numeric_value, force_result->rl_contribution, s->id , force_result);
 				}
 
 				return NONE_IMPASSE_TYPE;
@@ -994,7 +996,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			// perform update here for just one candidate
 			rl_tabulate_reward_values( thisAgent );
 			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+			//			rl_perform_update_new( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id);
+			rl_perform_update_new( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id, candidates);
 		}
 
 		return NONE_IMPASSE_TYPE;
@@ -1276,7 +1279,9 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			// perform update here for just one candidate
 			rl_tabulate_reward_values( thisAgent );
 			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+			//			rl_perform_update_new( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+			rl_perform_update_new( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id, candidates );
+
 		}
 
 		return NONE_IMPASSE_TYPE;
@@ -2087,7 +2092,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   if ( ( goal != thisAgent->top_goal ) && rl_enabled( thisAgent ) )
   {
 	  rl_tabulate_reward_value_for_goal( thisAgent, goal );
-	  rl_perform_update( thisAgent, 0, true, goal, false ); // this update only sees reward - there is no next state
+	  //	  rl_perform_update_new( thisAgent, 0, true, goal, false ); // this update only sees reward - there is no next state
+	  rl_perform_update_new( thisAgent, 0, true, goal, NIL, false ); // this update only sees reward - there is no next state
   }
 
   /* --- disconnect this goal from the goal stack --- */
@@ -2292,7 +2298,9 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   allocate_with_pool( thisAgent, &( thisAgent->rl_et_pool ), &( id->id.rl_info->eligibility_traces ) );
   id->id.rl_info->eligibility_traces = new ( id->id.rl_info->eligibility_traces ) rl_et_map( std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >( thisAgent ) );
   allocate_with_pool( thisAgent, &( thisAgent->rl_rule_pool ), &( id->id.rl_info->prev_op_rl_rules ) );
+  allocate_with_pool( thisAgent, &( thisAgent->rl_rule_pool ), &( id->id.rl_info->current_op_rl_rules ) );
   id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list( soar_module::soar_memory_pool_allocator< rl_rule_info >( thisAgent ) );
+  id->id.rl_info->current_op_rl_rules = new ( id->id.rl_info->current_op_rl_rules ) rl_rule_list( soar_module::soar_memory_pool_allocator< rl_rule_info >( thisAgent ) );
 
   allocate_with_pool( thisAgent, &( thisAgent->epmem_info_pool ), &( id->id.epmem_info ) );
   id->id.epmem_info->last_ol_time = 0;  
