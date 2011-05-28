@@ -1595,7 +1595,7 @@ void smem_disconnect_chunk( agent *my_agent, smem_lti_id parent_id )
 	}
 }
 
-void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *children, bool remove_old_children = true )
+void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *children, bool remove_old_children = true, Symbol* print_id = NULL )
 {	
 	// if remove children, disconnect chunk -> no existing edges
 	// else, need to query number of existing edges
@@ -1603,6 +1603,17 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 	if ( remove_old_children )
 	{
 		smem_disconnect_chunk( my_agent, parent_id );
+		
+		// provide trace output
+		if ( my_agent->sysparams[ TRACE_SMEM_SYSPARAM ] && ( print_id ) )
+		{
+			char buf[256];
+			
+			snprintf_with_symbols( my_agent, buf, 256, "<=SMEM: (%y ^* *)\n", print_id );
+			
+			print( my_agent, buf );
+			xml_generate_warning( my_agent, buf );
+		}
 	}
 	else
 	{
@@ -1666,6 +1677,17 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 							const_new.insert( std::make_pair< smem_hash_id, smem_hash_id >( attr_hash, value_hash ) );
 						}
 					}
+					
+					// provide trace output
+					if ( my_agent->sysparams[ TRACE_SMEM_SYSPARAM ] && ( print_id ) )
+					{
+						char buf[256];
+						
+						snprintf_with_symbols( my_agent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_const.val_value );
+						
+						print( my_agent, buf );
+						xml_generate_warning( my_agent, buf );
+					}
 				}
 				else
 				{
@@ -1698,6 +1720,17 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 						{
 							lti_new.insert( std::make_pair< smem_hash_id, smem_lti_id >( attr_hash, value_lti ) );
 						}
+					}
+					
+					// provide trace output
+					if ( my_agent->sysparams[ TRACE_SMEM_SYSPARAM ] && ( print_id ) )
+					{
+						char buf[256];
+						
+						snprintf_with_symbols( my_agent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_lti.val_value->soar_id );
+						
+						print( my_agent, buf );
+						xml_generate_warning( my_agent, buf );
 					}
 				}
 			}
@@ -1862,6 +1895,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 	{
 		tc = get_new_tc_number( my_agent );
 	}
+	smem_sym_list shorties;
 
 	// get level
 	smem_wme_list *children = smem_get_direct_augs_of_id( id, tc );
@@ -1907,6 +1941,12 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 					(*c)->lti_number = (*w)->value->id.name_number;
 					(*c)->slots = NULL;
 					(*c)->soar_id = (*w)->value;
+					
+					// only traverse to short-term identifiers
+					if ( ( store_type == store_recursive ) && ( (*c)->lti_id == NIL ) )
+					{
+						shorties.push_back( (*c)->soar_id );
+					}
 				}
 
 				v->val_lti.val_value = (*c);
@@ -1916,7 +1956,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			s->push_back( v );
 		}
 
-		smem_store_chunk( my_agent, smem_lti_soar_add( my_agent, id ), &( slots ) );
+		smem_store_chunk( my_agent, smem_lti_soar_add( my_agent, id ), &( slots ), true, id );
 
 		// clean up
 		{
@@ -1936,23 +1976,16 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			{
 				delete c_p->second;
 			}
+			
+			delete children;
 		}
 	}
 
 	// recurse as necessary
-	if ( store_type == store_recursive )
+	for ( smem_sym_list::iterator shorty=shorties.begin(); shorty!=shorties.end(); shorty++ )
 	{
-		for ( w=children->begin(); w!=children->end(); w++ )
-		{
-			if ( !smem_symbol_is_constant( (*w)->value ) )
-			{
-				smem_soar_store( my_agent, (*w)->value, store_type, tc );
-			}
-		}
+		smem_soar_store( my_agent, (*shorty), store_recursive, tc );
 	}
-
-	// clean up child wme list
-	delete children;
 }
 
 
@@ -3281,6 +3314,9 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	std::queue<int> levels;	
 
 	bool do_wm_phase = false;
+	bool mirroring_on = ( my_agent->smem_params->mirroring->get_value() == soar_module::on );
+	
+	//
 
 	while ( state != NULL )
 	{
@@ -3523,7 +3559,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 					for ( sym_p=store.begin(); sym_p!=store.end(); sym_p++ )
 					{
-						smem_soar_store( my_agent, (*sym_p) );
+						smem_soar_store( my_agent, (*sym_p), ( ( mirroring_on )?( store_recursive ):( store_level ) ) );
 
 						// status: success
 						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
@@ -3598,7 +3634,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		state = state->id.higher_goal;
 	}
 
-	if ( store_only && ( my_agent->smem_params->mirroring->get_value() == soar_module::on ) && ( !my_agent->smem_changed_ids->empty() ) )
+	if ( store_only && mirroring_on && ( !my_agent->smem_changed_ids->empty() ) )
 	{
 		////////////////////////////////////////////////////////////////////////////
 		my_agent->smem_timers->storage->start();
@@ -3615,7 +3651,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			// require that the lti has at least one augmentation
 			if ( (*it)->id.slots )
 			{
-				smem_soar_store( my_agent, (*it) );
+				smem_soar_store( my_agent, (*it), store_recursive );
 
 				// add one to the mirrors stat
 				my_agent->smem_stats->mirrors->set_value( my_agent->smem_stats->mirrors->get_value() + 1 );
