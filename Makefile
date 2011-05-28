@@ -18,6 +18,12 @@ noscu:
 static:
 	cd Core && scons --static
 
+ios-simulator:
+	cd Core && scons --static --platform=32 --ios=simulator
+
+ios-device:
+	cd Core && scons --static --platform=32 --ios=device
+
 up: update
 update:
 	svn update && find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn update {} \;
