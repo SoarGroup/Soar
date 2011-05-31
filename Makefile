@@ -21,8 +21,11 @@ static:
 ios-simulator:
 	cd Core && scons --static --platform=32 --ios=simulator
 
-ios-device:
-	cd Core && scons --static --platform=32 --ios=device
+ios-armv6:
+	cd Core && scons --static --platform=32 --ios=armv6
+
+ios-armv7:
+	cd Core && scons --static --platform=32 --ios=armv7
 
 up: update
 update:
