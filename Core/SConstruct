@@ -165,7 +165,7 @@ AddOption('--no-debug-symbols', action='store_false', dest='debug-symbols', defa
 AddOption('--static', action='store_true', dest='static', default=False,
 	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl/PHP interfaces)')
 
-AddOption('--ios', action='store', type='choice', choices=['none','simulator','device'], dest='ios', default='none', nargs=1, metavar='IOS',
+AddOption('--ios', action='store', type='choice', choices=['none','simulator','armv6','armv7'], dest='ios', default='none', nargs=1, metavar='IOS',
 		  help='Sets up for iOS compilation')
 
 #################
@@ -263,12 +263,12 @@ if GetOption('ios') == 'none':
 elif GetOption('ios') == 'simulator':
 	env.Append(CPPFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk -mmacosx-version-min=10.6 -L/Developer/usr/lib/gcc/i686-apple-darwin10/4.2.1'))
 	env.Append(LINKFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk -mmacosx-version-min=10.6 -L/Developer/usr/lib/gcc/i686-apple-darwin10/4.2.1'))
-elif GetOption('ios') == 'device':
+else:
 	env.Append(CPPFLAGS = ['-DIPHONE_SDK', '-D__LLP64__']); # (the last is for STLSOFT)
 	env['CC'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-gcc-4.2'
 	env['CXX'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-g++-4.2'
-	env.Append(CPPFLAGS = Split('-arch armv7 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
-	env.Append(LINKFLAGS = Split('-arch armv7 -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
+	env.Append(CPPFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
+	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
 
 if GetOption('gprof'):
 	env.Append(CPPFLAGS = ['-pg'])
