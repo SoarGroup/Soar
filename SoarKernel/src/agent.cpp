@@ -84,6 +84,8 @@ void init_soar_agent(agent* thisAgent) {
   init_explain(thisAgent);  /* AGR 564 */
   select_init(thisAgent);
   predict_init(thisAgent);
+	
+  init_memory_pool( thisAgent, &( thisAgent->gds_pool ), sizeof( goal_dependency_set ), "gds" );
 
   init_memory_pool( thisAgent, &( thisAgent->rl_info_pool ), sizeof( rl_data ), "rl_id_data" );
   init_memory_pool( thisAgent, &( thisAgent->rl_et_pool ), sizeof( rl_et_map ), "rl_et" );
@@ -339,9 +341,10 @@ agent * create_soar_agent (char * agent_name) {                                 
   // wma initialization
   newAgent->wma_params = new wma_param_container( newAgent );
   newAgent->wma_stats = new wma_stat_container( newAgent );
+  newAgent->wma_timers = new wma_timer_container( newAgent );
 
   newAgent->wma_forget_pq = new wma_forget_p_queue( std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >( newAgent ) );
-  newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );  
+  newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );
   newAgent->wma_initialized = false;
   newAgent->wma_tc_counter = 2;
 
@@ -379,6 +382,9 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->smem_validation = 0;
   newAgent->smem_first_switch = true;
+
+  newAgent->smem_changed_ids = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
+  newAgent->smem_ignore_changes = false;
 
   // statistics initialization
   newAgent->dc_stat_tracking = false;
@@ -429,6 +435,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->wma_touched_elements;  
   delete delete_agent->wma_params;
   delete delete_agent->wma_stats;
+  delete delete_agent->wma_timers;
 
   // cleanup epmem
   epmem_close( delete_agent );
@@ -451,6 +458,7 @@ void destroy_soar_agent (agent * delete_agent)
 
   // cleanup smem
   smem_close( delete_agent );
+  delete delete_agent->smem_changed_ids;
   delete delete_agent->smem_params;
   delete delete_agent->smem_stats;
   delete delete_agent->smem_timers;

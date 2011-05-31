@@ -16,7 +16,6 @@
 #include <string>
 #include <queue>
 #include "soar_module.h"
-#include "stl_support.h"
 
 typedef struct wme_struct wme;
 
@@ -33,7 +32,7 @@ typedef struct wme_struct wme;
   * How many references are expected per decision
   * (this affects creation of the power/approx cache)
   */
-#define WMA_REFERENCES_PER_DECISION 10
+#define WMA_REFERENCES_PER_DECISION 50
 
 /**
  * If an external caller asks for the activation level/value 
@@ -48,6 +47,10 @@ typedef struct wme_struct wme;
  */
 #define WMA_ACTIVATION_LOW -1000000000
 
+/**
+ * If below decay thresh, but not forgotten, forget_cycle = 
+ */
+#define WMA_FORGOTTEN_CYCLE 0
 
 //////////////////////////////////////////////////////////
 // WMA Parameters
@@ -69,6 +72,12 @@ class wma_param_container: public soar_module::param_container
 
 		enum forget_wme_choices { all, lti };
 		soar_module::constant_param<forget_wme_choices>* forget_wme;
+
+		soar_module::boolean_param* fake_forgetting;
+
+		// performance
+		soar_module::constant_param< soar_module::timer::timer_level >* timers;
+		soar_module::integer_param* max_pow_cache;
 				
 		wma_param_container( agent* new_agent );
 };
@@ -105,9 +114,36 @@ class wma_activation_predicate: public soar_module::agent_predicate<T>
 class wma_stat_container: public soar_module::stat_container
 {
 	public:	
-		soar_module::integer_stat* dummy;		
+		soar_module::integer_stat* forgotten_wmes;		
 				
 		wma_stat_container( agent* new_agent );
+};
+
+
+//////////////////////////////////////////////////////////
+// WMA Timers
+//////////////////////////////////////////////////////////
+
+class wma_timer_container: public soar_module::timer_container
+{
+	public:
+		soar_module::timer* history;
+		soar_module::timer* forgetting;
+
+		wma_timer_container( agent *my_agent );
+};
+
+class wma_timer_level_predicate: public soar_module::agent_predicate< soar_module::timer::timer_level >
+{
+	public:
+		wma_timer_level_predicate( agent *new_agent );
+		bool operator() ( soar_module::timer::timer_level val );
+};
+
+class wma_timer: public soar_module::timer
+{
+	public:
+		wma_timer( const char *new_name, agent *new_agent, timer_level new_level );
 };
 
 
@@ -186,7 +222,7 @@ extern bool wma_enabled( agent* my_agent );
 //////////////////////////////////////////////////////////
 
 // generic call to activate a wme
-extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, wma_pooled_wme_set* o_set = NULL );
+extern void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references = 1, wma_pooled_wme_set* o_set = NULL, bool o_only = false );
 
 // Removes a decay element from an existing WME so that 
 // it is no longer activated.
@@ -228,5 +264,9 @@ extern void wma_go( agent* my_agent, wma_go_action go_action );
  */
 extern double wma_get_wme_activation( agent* my_agent, wme* w, bool log_result );
 
+/**
+ * Debugging: get list of wme references
+ */
+extern void wma_get_wme_history( agent* my_agent, wme* w, std::string& buffer );
 
 #endif

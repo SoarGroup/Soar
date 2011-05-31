@@ -163,7 +163,10 @@ AddOption('--no-debug-symbols', action='store_false', dest='debug-symbols', defa
 	help='Don\'t add debugging symbols to binaries.')
 
 AddOption('--static', action='store_true', dest='static', default=False,
-	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl interfaces)')
+	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl/PHP interfaces)')
+
+AddOption('--ios', action='store', type='choice', choices=['none','simulator','armv6','armv7'], dest='ios', default='none', nargs=1, metavar='IOS',
+		  help='Sets up for iOS compilation')
 
 #################
 # Create the environment using the options
@@ -247,15 +250,25 @@ if GetOption('build-verbose'):
 	env.Append(CPPFLAGS = ['-v'])
 	env.Append(LINKFLAGS = ['-v'])
 
-if GetOption('platform') == '64':
-	env.Append(CPPFLAGS = Split('-m64 -fPIC'))
-	env.Append(LINKFLAGS = ['-m64'])
-elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1 and sys.platform not in [ 'darwin', ]:
-	env.Append(CPPFLAGS = Split('-m32 -march=native'))
-	env.Append(LINKFLAGS = Split('-m32 -march=native'))
+if GetOption('ios') == 'none':
+	if GetOption('platform') == '64':
+		env.Append(CPPFLAGS = Split('-m64 -fPIC'))
+		env.Append(LINKFLAGS = ['-m64'])
+	elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1 and sys.platform not in [ 'darwin', ]:
+		env.Append(CPPFLAGS = Split('-m32 -march=native'))
+		env.Append(LINKFLAGS = Split('-m32 -march=native'))
+	else:
+		env.Append(CPPFLAGS = ['-m32'])
+		env.Append(LINKFLAGS = ['-m32'])
+elif GetOption('ios') == 'simulator':
+	env.Append(CPPFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk -mmacosx-version-min=10.6 -L/Developer/usr/lib/gcc/i686-apple-darwin10/4.2.1'))
+	env.Append(LINKFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk -mmacosx-version-min=10.6 -L/Developer/usr/lib/gcc/i686-apple-darwin10/4.2.1'))
 else:
-	env.Append(CPPFLAGS = ['-m32'])
-	env.Append(LINKFLAGS = ['-m32'])
+	env.Append(CPPFLAGS = ['-DIPHONE_SDK', '-D__LLP64__']); # (the last is for STLSOFT)
+	env['CC'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-gcc-4.2'
+	env['CXX'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-g++-4.2'
+	env.Append(CPPFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
+	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
 
 if GetOption('gprof'):
 	env.Append(CPPFLAGS = ['-pg'])
@@ -326,9 +339,9 @@ if 'Tcl' in components:
 		print "* Removing Tcl from components (can't find tcl8.4 lib)"
 		components.remove('Tcl')
 
-# SWIG: build if any of (Java/Python/Tcl) are enabled
+# SWIG: build if any of (Java/Python/Tcl/PHP) are enabled
 swig = False
-for x in ['Java', 'Python', 'Tcl']:
+for x in ['Java', 'Python', 'Tcl', 'PHP']:
 	if x in components:
 		if env['STATIC_LINKED']:
 			components.remove(x)
@@ -358,17 +371,22 @@ subdirs= [
 	'CLI',
 	'ClientSML',
 	'KernelSML',
-	'Tests',
 	]
 
-if 'Python' in components:
-	subdirs.append('ClientSMLSWIG/Python')
+if GetOption('ios') == 'none':
+	subdirs.append('Tests')
 
-if 'Java' in components:
-	subdirs.append('ClientSMLSWIG/Java')
+	if 'Python' in components:
+		subdirs.append('ClientSMLSWIG/Python')
 
-if 'Tcl' in components:
-	subdirs.append('ClientSMLSWIG/Tcl')
+	if 'Java' in components:
+		subdirs.append('ClientSMLSWIG/Java')
+
+	if 'Tcl' in components:
+		subdirs.append('ClientSMLSWIG/Tcl')
+
+	if 'PHP' in components:
+		subdirs.append('ClientSMLSWIG/PHP')
 
 # Build/Output Directory
 print "Building intermediates to directory ", env['BUILD_DIR']
@@ -393,10 +411,11 @@ Export('compEnv')
 # Add TestCLI to components (it uses compEnv which wasn't exported earlier):
 components.insert(0, 'Core/TestCLI')
 
-for d in components:
-	script = '../%s/SConscript' % d
-	if os.path.exists(script):
-		print "Processing", script + "..."
-		SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
+if GetOption('ios') == 'none':
+	for d in components:
+		script = '../%s/SConscript' % d
+		if os.path.exists(script):
+			print "Processing", script + "..."
+			SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 #################
 

@@ -171,7 +171,7 @@ void remove_wme_from_wm (agent* thisAgent, wme *w)
       if (!w->gds->wmes_in_gds) 
 	  {
 		 if (w->gds->goal) w->gds->goal->id.gds = NIL;
-         free_memory(thisAgent, w->gds, MISCELLANEOUS_MEM_USAGE);
+		 free_with_pool( &( thisAgent->gds_pool ), w->gds );
          /* printf("REMOVING GDS FROM MEMORY. \n"); */
       }
    }

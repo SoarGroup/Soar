@@ -19,6 +19,7 @@
 #include <vector>
 #include <sstream>
 
+#include "agent.h"
 #include "reinforcement_learning.h"
 #include "production.h"
 #include "rhsfun.h"
@@ -565,7 +566,7 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 	
 	if ( !data->prev_op_rl_rules->empty() )
 	{
-		slot *s = make_slot( my_agent, goal->id.reward_header, my_agent->rl_sym_reward );
+		slot *s = find_slot( goal->id.reward_header, my_agent->rl_sym_reward );
 		slot *t;
 		wme *w, *x;
 		
@@ -578,7 +579,7 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 			{
 				if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 				{
-					t = make_slot( my_agent, w->value, my_agent->rl_sym_value );
+					t = find_slot( w->value, my_agent->rl_sym_value );
 					if ( t )
 					{
 						for ( x=t->wmes; x; x=x->next )

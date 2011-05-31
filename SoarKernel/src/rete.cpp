@@ -1602,6 +1602,15 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
       }
 	}
   }
+
+  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
+  {
+	  std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
+	  if ( insert_result.second )
+	  {
+	    symbol_add_ref( w->id );
+	  }
+  }
 }
 
 /* --- Removes a WME from the Rete. --- */
@@ -1641,6 +1650,15 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 	  {
 	    (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
 	  }
+	}
+  }
+
+  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
+  {
+	std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
+	if ( insert_result.second )
+	{
+	  symbol_add_ref( w->id );
 	}
   }
   
@@ -6883,8 +6901,21 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
   case 1:
     funcall_list = NIL;
     sym = reteload_symbol_from_index(thisAgent,f);
-    symbol_add_ref (sym);
-    rf = lookup_rhs_function (thisAgent, sym);
+    
+	/* NLD: 4/30/2011
+	 * I'm fairly certain function calls do not need an added ref. 
+	 * 
+	 * I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol 
+	 * (as opposed to "make", which adds a ref) and uses that to hash to the existing RHS function structure (which keeps a 
+	 * ref on the symbol name). The initial symbol ref comes from init_built_in_rhs_functions (+1 ref) and then is removed 
+	 * later via remove_built_in_rhs_functions (-1 ref).
+	 *
+	 * The parallel in rete-net loading is the symbol table that is loaded in via reteload_all_symbols (+1 ref) and then freed 
+	 * in reteload_free_symbol_table (-1 ref).
+	 */
+	// symbol_add_ref (sym);
+    
+	rf = lookup_rhs_function (thisAgent, sym);
     if (!rf) {
       char msg[BUFFER_MSG_SIZE];
       print_with_symbols (thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);

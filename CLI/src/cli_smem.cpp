@@ -106,6 +106,113 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
 
+		//
+
+		temp = "Activation";
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+        temp = "----------";
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "activation-mode: ";
+        temp2 = agnt->smem_params->activation_mode->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "activate-on-query: ";
+        temp2 = agnt->smem_params->activate_on_query->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "base-decay: ";
+        temp2 = agnt->smem_params->base_decay->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "base-update-policy: ";
+        temp2 = agnt->smem_params->base_update->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "base-incremental-threshes: ";
+        temp2 = agnt->smem_params->base_incremental_threshes->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "thresh: ";
+        temp2 = agnt->smem_params->thresh->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+        }
+
+		if ( m_RawOutput )
+            m_Result << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+        }
+
+		//
 
         temp = "Performance";
         if ( m_RawOutput )
@@ -124,19 +231,6 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         else
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-        }
-
-        temp = "thresh: ";
-        temp2 = agnt->smem_params->thresh->get_string();
-        temp += temp2;
-        delete temp2;
-        if ( m_RawOutput )
-        {
-            m_Result << temp << "\n";
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
         }
 
         temp = "page-size: ";
@@ -192,6 +286,8 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
 
+		//
+
         temp = "Experimental";
         if ( m_RawOutput )
         {
@@ -223,22 +319,9 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
-		
-		temp = "activate-on-query: ";
-        temp2 = agnt->smem_params->activate_on_query->get_string();
-        temp += temp2;
-        delete temp2;
-        if ( m_RawOutput )
-        {
-            m_Result << temp << "\n";
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-        }
-		
-		temp = "activation-mode: ";
-        temp2 = agnt->smem_params->activation_mode->get_string();
+
+		temp = "mirroring: ";
+        temp2 = agnt->smem_params->mirroring->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -250,45 +333,16 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "base-decay: ";
-        temp2 = agnt->smem_params->base_decay->get_string();
-        temp += temp2;
-        delete temp2;
-        if ( m_RawOutput )
-        {
-            m_Result << temp << "\n";
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-        }
+		//
 
-		temp = "base-update-policy: ";
-        temp2 = agnt->smem_params->base_update->get_string();
-        temp += temp2;
-        delete temp2;
         if ( m_RawOutput )
-        {
-            m_Result << temp << "\n";
-        }
+            m_Result << "\n";
         else
         {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-        }
-
-		temp = "base-incremental-threshes: ";
-        temp2 = agnt->smem_params->base_incremental_threshes->get_string();
-        temp += temp2;
-        delete temp2;
-        if ( m_RawOutput )
-        {
-            m_Result << temp << "\n\n";
-        }
-        else
-        {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
+
+		//
 
         return true;
     }
@@ -301,6 +355,18 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         {
             SetError( *err );
             delete err;
+        }
+
+        return result;
+    }
+	else if ( pOp == 'b' )
+    {
+        std::string err;
+		bool result = smem_backup_db( agnt, pAttr->c_str(), &( err ) );
+
+        if ( !result )
+        {
+            SetError( err );
         }
 
         return result;
@@ -337,8 +403,56 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         smem_close( agnt );
 
         // production memory (automatic init-soar clears working memory as a result)		
-        ExciseBitset options(EXCISE_ALL);
-        DoExcise(options, 0);
+        ExciseBitset options(0);
+		options.set( EXCISE_ALL, true );
+        DoExcise( options, 0 );
+
+        return true;
+    }
+	else if ( pOp == 'p' )
+    {
+        smem_lti_id lti_id = NIL;
+        unsigned int depth = 1;
+
+		if ( pAttr )
+		{
+			get_lexeme_from_string( agnt, pAttr->c_str() );
+			if ( agnt->lexeme.type == IDENTIFIER_LEXEME )
+			{
+				if ( agnt->smem_db->get_status() == soar_module::connected )
+				{
+					lti_id = smem_lti_get_id( agnt, agnt->lexeme.id_letter, agnt->lexeme.id_number );
+
+					if ( ( lti_id != NIL ) && pVal )
+					{
+						from_c_string( depth, pVal->c_str() );
+					}
+				}
+			}
+
+			if ( lti_id == NIL )
+				return SetError( "Invalid attribute." );
+		}
+
+        std::string viz;
+
+        if ( lti_id == NIL )
+        {
+            smem_print_store( agnt, &( viz ) );
+        }
+        else
+        {
+            smem_print_lti( agnt, lti_id, depth, &( viz ) );
+        }
+
+        if ( m_RawOutput )
+        {
+            m_Result << viz;
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, viz.c_str() );
+        }
 
         return true;
     }
@@ -366,6 +480,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         {
             std::string output;
             char *temp2;
+
+			output = "SQLite Version: ";
+            temp2 = agnt->smem_stats->db_lib_version->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
 
             output = "Memory Usage: ";
             temp2 = agnt->smem_stats->mem_usage->get_string();
@@ -434,6 +561,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
 
 			output = "Activation Updates: ";
             temp2 = agnt->smem_stats->act_updates->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
+			output = "Mirrors: ";
+            temp2 = agnt->smem_stats->mirrors->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -556,7 +696,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     else if ( pOp == 'v' )
     {
         smem_lti_id lti_id = NIL;
-        unsigned int depth = 0;
+        unsigned int depth = 1;
 
 		if ( pAttr )
 		{

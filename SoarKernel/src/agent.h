@@ -210,6 +210,8 @@ typedef struct agent_struct {
   memory_pool         ms_change_pool;
   memory_pool         node_varnames_pool;
 
+  memory_pool         gds_pool;
+	
   memory_pool		  rl_info_pool;
   memory_pool		  rl_et_pool;
   memory_pool		  rl_rule_pool;
@@ -864,6 +866,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // wma
   wma_param_container* wma_params;
   wma_stat_container* wma_stats;
+  wma_timer_container* wma_timers;
   
   wma_pooled_wme_set* wma_touched_elements;  
   wma_forget_p_queue* wma_forget_pq;
@@ -916,6 +919,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool smem_first_switch;
   int64_t smem_max_cycle;
 
+  smem_pooled_symbol_set* smem_changed_ids;
+  bool smem_ignore_changes;
 
   // dynamic memory pools
   std::map< size_t, memory_pool* >* dyn_memory_pools;

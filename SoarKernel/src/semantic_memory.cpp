@@ -157,6 +157,10 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	// incremental update thresholds
 	base_incremental_threshes = new soar_module::int_set_param( "base-incremental-threshes", new soar_module::f_predicate< int64_t >() );
 	add( base_incremental_threshes );
+
+	// mirroring
+	mirroring = new soar_module::boolean_param( "mirroring", soar_module::off, new smem_db_predicate< soar_module::boolean >( my_agent ) );
+	add( mirroring );
 }
 
 //
@@ -201,6 +205,10 @@ bool smem_enabled( agent *my_agent )
 
 smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_container( new_agent )
 {
+	// db-lib-version
+	db_lib_version = new smem_db_lib_version_stat( my_agent, "db-lib-version", NULL, new soar_module::predicate< const char* >() );
+	add( db_lib_version );
+	
 	// mem-usage
 	mem_usage = new smem_mem_usage_stat( my_agent, "mem-usage", 0, new soar_module::predicate<int64_t>() );
 	add( mem_usage );
@@ -227,15 +235,28 @@ smem_stat_container::smem_stat_container( agent *new_agent ): soar_module::stat_
 	act_updates = new soar_module::integer_stat( "act_updates", 0, new soar_module::f_predicate<int64_t>() );
 	add( act_updates );
 
+	// mirrors
+	mirrors = new soar_module::integer_stat( "mirrors", 0, new soar_module::f_predicate<int64_t>() );
+	add( mirrors );
+
 	//
 
 	// chunks
-	chunks = new soar_module::integer_stat( "nodes", 0, new soar_module::f_predicate<int64_t>() );
+	chunks = new soar_module::integer_stat( "nodes", 0, new smem_db_predicate< int64_t >( my_agent ) );
 	add( chunks );
 
 	// slots
-	slots = new soar_module::integer_stat( "edges", 0, new soar_module::f_predicate<int64_t>() );
+	slots = new soar_module::integer_stat( "edges", 0, new smem_db_predicate< int64_t >( my_agent ) );
 	add( slots );
+}
+
+//
+
+smem_db_lib_version_stat::smem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred ): soar_module::primitive_stat< const char* >( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+
+const char* smem_db_lib_version_stat::get_value()
+{
+	return my_agent->smem_db->lib_version();
 }
 
 //
@@ -565,7 +586,7 @@ smem_statement_container::smem_statement_container( agent *new_agent ): soar_mod
 
 	//
 
-	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num, act_value FROM " SMEM_SCHEMA "lti" );
+	vis_lti = new soar_module::sqlite_statement( new_db, "SELECT id, letter, num, act_value FROM " SMEM_SCHEMA "lti ORDER BY letter ASC, num ASC" );
 	add( vis_lti );
 
 	vis_lti_act = new soar_module::sqlite_statement( new_db, "SELECT act_value FROM " SMEM_SCHEMA "lti WHERE id=?" );
@@ -1574,7 +1595,7 @@ void smem_disconnect_chunk( agent *my_agent, smem_lti_id parent_id )
 	}
 }
 
-void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *children, bool remove_old_children = true )
+void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *children, bool remove_old_children = true, Symbol* print_id = NULL )
 {	
 	// if remove children, disconnect chunk -> no existing edges
 	// else, need to query number of existing edges
@@ -1582,6 +1603,17 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 	if ( remove_old_children )
 	{
 		smem_disconnect_chunk( my_agent, parent_id );
+		
+		// provide trace output
+		if ( my_agent->sysparams[ TRACE_SMEM_SYSPARAM ] && ( print_id ) )
+		{
+			char buf[256];
+			
+			snprintf_with_symbols( my_agent, buf, 256, "<=SMEM: (%y ^* *)\n", print_id );
+			
+			print( my_agent, buf );
+			xml_generate_warning( my_agent, buf );
+		}
 	}
 	else
 	{
@@ -1645,6 +1677,17 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 							const_new.insert( std::make_pair< smem_hash_id, smem_hash_id >( attr_hash, value_hash ) );
 						}
 					}
+					
+					// provide trace output
+					if ( my_agent->sysparams[ TRACE_SMEM_SYSPARAM ] && ( print_id ) )
+					{
+						char buf[256];
+						
+						snprintf_with_symbols( my_agent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_const.val_value );
+						
+						print( my_agent, buf );
+						xml_generate_warning( my_agent, buf );
+					}
 				}
 				else
 				{
@@ -1677,6 +1720,17 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 						{
 							lti_new.insert( std::make_pair< smem_hash_id, smem_lti_id >( attr_hash, value_lti ) );
 						}
+					}
+					
+					// provide trace output
+					if ( my_agent->sysparams[ TRACE_SMEM_SYSPARAM ] && ( print_id ) )
+					{
+						char buf[256];
+						
+						snprintf_with_symbols( my_agent, buf, 256, "=>SMEM: (%y ^%y %y)\n", print_id, s->first, (*v)->val_lti.val_value->soar_id );
+						
+						print( my_agent, buf );
+						xml_generate_warning( my_agent, buf );
 					}
 				}
 			}
@@ -1841,6 +1895,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 	{
 		tc = get_new_tc_number( my_agent );
 	}
+	smem_sym_list shorties;
 
 	// get level
 	smem_wme_list *children = smem_get_direct_augs_of_id( id, tc );
@@ -1886,6 +1941,12 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 					(*c)->lti_number = (*w)->value->id.name_number;
 					(*c)->slots = NULL;
 					(*c)->soar_id = (*w)->value;
+					
+					// only traverse to short-term identifiers
+					if ( ( store_type == store_recursive ) && ( (*c)->lti_id == NIL ) )
+					{
+						shorties.push_back( (*c)->soar_id );
+					}
 				}
 
 				v->val_lti.val_value = (*c);
@@ -1895,7 +1956,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			s->push_back( v );
 		}
 
-		smem_store_chunk( my_agent, smem_lti_soar_add( my_agent, id ), &( slots ) );
+		smem_store_chunk( my_agent, smem_lti_soar_add( my_agent, id ), &( slots ), true, id );
 
 		// clean up
 		{
@@ -1915,23 +1976,16 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			{
 				delete c_p->second;
 			}
+			
+			delete children;
 		}
 	}
 
 	// recurse as necessary
-	if ( store_type == store_recursive )
+	for ( smem_sym_list::iterator shorty=shorties.begin(); shorty!=shorties.end(); shorty++ )
 	{
-		for ( w=children->begin(); w!=children->end(); w++ )
-		{
-			if ( !smem_symbol_is_constant( (*w)->value ) )
-			{
-				smem_soar_store( my_agent, (*w)->value, store_type, tc );
-			}
-		}
+		smem_soar_store( my_agent, (*shorty), store_recursive, tc );
 	}
-
-	// clean up child wme list
-	delete children;
 }
 
 
@@ -3260,6 +3314,9 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	std::queue<int> levels;	
 
 	bool do_wm_phase = false;
+	bool mirroring_on = ( my_agent->smem_params->mirroring->get_value() == soar_module::on );
+	
+	//
 
 	while ( state != NULL )
 	{
@@ -3502,7 +3559,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 					for ( sym_p=store.begin(); sym_p!=store.end(); sym_p++ )
 					{
-						smem_soar_store( my_agent, (*sym_p) );
+						smem_soar_store( my_agent, (*sym_p), ( ( mirroring_on )?( store_recursive ):( store_level ) ) );
 
 						// status: success
 						smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, (*sym_p) );
@@ -3577,9 +3634,53 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 		state = state->id.higher_goal;
 	}
 
+	if ( store_only && mirroring_on && ( !my_agent->smem_changed_ids->empty() ) )
+	{
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->smem_timers->storage->start();
+		////////////////////////////////////////////////////////////////////////////
+
+		// start transaction (if not lazy)
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+		{
+			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+		}
+		
+		for ( smem_pooled_symbol_set::iterator it=my_agent->smem_changed_ids->begin(); it!=my_agent->smem_changed_ids->end(); it++ )
+		{
+			// require that the lti has at least one augmentation
+			if ( (*it)->id.slots )
+			{
+				smem_soar_store( my_agent, (*it), store_recursive );
+
+				// add one to the mirrors stat
+				my_agent->smem_stats->mirrors->set_value( my_agent->smem_stats->mirrors->get_value() + 1 );
+			}
+
+			symbol_remove_ref( my_agent, (*it) );
+		}
+
+		// commit transaction (if not lazy)
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::off )
+		{
+			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+		}
+
+		// clear symbol set
+		my_agent->smem_changed_ids->clear();
+
+		////////////////////////////////////////////////////////////////////////////
+		my_agent->smem_timers->storage->stop();
+		////////////////////////////////////////////////////////////////////////////
+	}
+
 	if ( do_wm_phase )
 	{
+		my_agent->smem_ignore_changes = true;
+		
 		do_working_memory_phase( my_agent );
+
+		my_agent->smem_ignore_changes = false;
 	}
 }
 
@@ -3596,6 +3697,32 @@ void smem_go( agent *my_agent, bool store_only )
 #endif // SMEM_EXPERIMENT
 
 	my_agent->smem_timers->total->stop();
+}
+
+bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err )
+{
+	bool return_val = false;
+	
+	if ( my_agent->smem_db->get_status() == soar_module::connected )
+	{	
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
+		}
+
+		return_val = my_agent->smem_db->backup( file_name, err );
+
+		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
+		{
+			my_agent->smem_stmts->begin->execute( soar_module::op_reinit );
+		}
+	}
+	else
+	{
+		err->assign( "Semantic database is not currently connected." );
+	}
+
+	return return_val;
 }
 
 
@@ -3900,9 +4027,6 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 			to_string( temp_int, temp_str );
 			new_lti->lti_name.append( temp_str );
 
-			// activation
-			temp_double = lti_q->column_double( 2 );
-
 			// done with lookup
 			lti_q->reinitialize();
 		}
@@ -4126,3 +4250,201 @@ void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth
 	return_val->append( return_val2 );
 }
 
+inline std::set< smem_lti_id > _smem_print_lti( agent* my_agent, smem_lti_id lti_id, char lti_letter, uint64_t lti_number, double lti_act, std::string *return_val )
+{
+	std::set< smem_lti_id > next;
+
+	std::string temp_str, temp_str2, temp_str3;
+	int64_t temp_int;
+	double temp_double;
+
+	std::map< std::string, std::list< std::string > > augmentations;
+	std::map< std::string, std::list< std::string > >::iterator lti_slot;
+	std::list< std::string >::iterator slot_val;
+
+	soar_module::sqlite_statement* expand_q = my_agent->smem_stmts->web_expand;
+
+	//
+	//
+
+	return_val->append( "(@" );
+	return_val->push_back( lti_letter );
+	to_string( lti_number, temp_str );
+	return_val->append( temp_str );
+
+	// get direct children: attr_type, attr_hash, value_type, value_hash, value_letter, value_num, value_lti
+	expand_q->bind_int( 1, lti_id );
+	while ( expand_q->execute() == soar_module::row )
+	{
+		// get attribute
+		switch ( expand_q->column_int(0) )
+		{
+			case SYM_CONSTANT_SYMBOL_TYPE:
+				smem_reverse_hash_str( my_agent, expand_q->column_int(1), temp_str );							
+				break;
+
+			case INT_CONSTANT_SYMBOL_TYPE:
+				temp_int = smem_reverse_hash_int( my_agent, expand_q->column_int(1) );
+				to_string( temp_int, temp_str );
+				break;
+
+			case FLOAT_CONSTANT_SYMBOL_TYPE:
+				temp_double = smem_reverse_hash_float( my_agent, expand_q->column_int(1) );
+				to_string( temp_double, temp_str );
+				break;
+
+			default:
+				temp_str.clear();
+				break;
+		}
+
+		// identifier vs. constant
+		if ( expand_q->column_int( 6 ) != SMEM_WEB_NULL )
+		{
+			temp_str2.clear();
+			temp_str2.push_back( '@' );
+			
+			// letter
+			temp_str2.push_back( static_cast<char>( expand_q->column_int( 4 ) ) );
+
+			// number
+			temp_int = expand_q->column_int( 5 );
+			to_string( temp_int, temp_str3 );
+			temp_str2.append( temp_str3 );
+
+			// add to next
+			next.insert( static_cast< smem_lti_id >( expand_q->column_int( 6 ) ) );
+		}
+		else
+		{
+			switch ( expand_q->column_int(2) )
+			{
+				case SYM_CONSTANT_SYMBOL_TYPE:
+					smem_reverse_hash_str( my_agent, expand_q->column_int(3), temp_str2 );							
+					break;
+
+				case INT_CONSTANT_SYMBOL_TYPE:
+					temp_int = smem_reverse_hash_int( my_agent, expand_q->column_int(3) );
+					to_string( temp_int, temp_str2 );
+					break;
+
+				case FLOAT_CONSTANT_SYMBOL_TYPE:
+					temp_double = smem_reverse_hash_float( my_agent, expand_q->column_int(3) );
+					to_string( temp_double, temp_str2 );
+					break;
+
+				default:
+					temp_str2.clear();
+					break;
+			}
+		}
+
+		augmentations[ temp_str ].push_back( temp_str2 );
+	}
+	expand_q->reinitialize();
+
+	// output augmentations nicely
+	{
+		for ( lti_slot=augmentations.begin(); lti_slot!=augmentations.end(); lti_slot++ )
+		{
+			return_val->append( " ^" );
+			return_val->append( lti_slot->first );
+			
+			for ( slot_val=lti_slot->second.begin(); slot_val!=lti_slot->second.end(); slot_val++ )
+			{
+				return_val->append( " " );
+				return_val->append( (*slot_val) );
+			}
+		}
+	}
+	augmentations.clear();
+
+	return_val->append( " [" );
+	to_string( lti_act, temp_str, 3, true );
+	if ( lti_act >= 0 )
+	{
+		return_val->append( "+" );
+	}
+	return_val->append( temp_str );
+	return_val->append( "]" );
+	return_val->append( ")\n" );
+
+	return next;
+}
+
+void smem_print_store( agent *my_agent, std::string *return_val )
+{
+	// vizualizing the store requires an open semantic database
+	smem_attach( my_agent );
+
+	// id, letter, number
+	soar_module::sqlite_statement* q = my_agent->smem_stmts->vis_lti;
+	while ( q->execute() == soar_module::row )
+	{
+		_smem_print_lti( my_agent, q->column_int( 0 ), static_cast<char>( q->column_int( 1 ) ), static_cast<uint64_t>( q->column_int( 2 ) ), q->column_double( 3 ), return_val );
+	}
+	q->reinitialize();
+}
+
+void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val )
+{
+	std::set< smem_lti_id > visited;
+	std::pair< std::set< smem_lti_id >::iterator, bool > visited_ins_result;
+
+	std::queue< std::pair< smem_lti_id, unsigned int > > to_visit;
+	std::pair< smem_lti_id, unsigned int > c;
+	
+	std::set< smem_lti_id > next;
+	std::set< smem_lti_id >::iterator next_it;
+
+	soar_module::sqlite_statement* lti_q = my_agent->smem_stmts->lti_letter_num;
+	soar_module::sqlite_statement* act_q = my_agent->smem_stmts->vis_lti_act;
+	unsigned int i;
+	
+	// vizualizing the store requires an open semantic database
+	smem_attach( my_agent );
+
+	// initialize queue/set
+	to_visit.push( std::make_pair< smem_lti_id, unsigned int >( lti_id, 1 ) );
+	visited.insert( lti_id );
+
+	while ( !to_visit.empty() )
+	{
+		c = to_visit.front();
+		to_visit.pop();
+
+		// output leading spaces ala depth
+		for ( i=1; i<c.second; i++ )
+		{
+			return_val->append( "  " );
+		}
+
+		// get lti info
+		{
+			lti_q->bind_int( 1, c.first );
+			lti_q->execute();
+
+			act_q->bind_int( 1, c.first );
+			act_q->execute();
+
+			next = _smem_print_lti( my_agent, c.first, static_cast<char>( lti_q->column_int( 0 ) ), static_cast<uint64_t>( lti_q->column_int( 1 ) ), act_q->column_double( 0 ), return_val );
+
+			// done with lookup
+			lti_q->reinitialize();
+			act_q->reinitialize();
+
+			// consider further depth
+			if ( c.second < depth )
+			{
+				for ( next_it=next.begin(); next_it!=next.end(); next_it++ )
+				{
+					visited_ins_result = visited.insert( (*next_it) );
+					if ( visited_ins_result.second )
+					{
+						to_visit.push( std::make_pair< smem_lti_id, unsigned int >( (*next_it), c.second+1 ) );
+					}
+				}
+			}
+		}
+	}
+}

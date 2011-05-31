@@ -16,6 +16,8 @@
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
 
+#include "agent.h"
+#include "wmem.h"
 #include "wma.h"
 #include "misc.h"
 
@@ -29,6 +31,13 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
     {
         std::string temp;
         char *temp2;
+
+		if ( m_RawOutput )
+            m_Result << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+        }
 
         temp = "WMA activation: ";
         temp2 = agnt->wma_params->activation->get_string();
@@ -64,8 +73,8 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "decay-thresh: ";
-        temp2 = agnt->wma_params->decay_thresh->get_string();
+		temp = "petrov-approx: ";
+        temp2 = agnt->wma_params->petrov_approx->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -75,8 +84,27 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-		temp = "petrov-approx: ";
-        temp2 = agnt->wma_params->petrov_approx->get_string();
+		if ( m_RawOutput )
+            m_Result << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+        }
+
+
+		temp = "Forgetting";
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        temp = "----------";
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+
+		temp = "decay-thresh: ";
+        temp2 = agnt->wma_params->decay_thresh->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -99,6 +127,57 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 
 		temp = "forget-wme: ";
         temp2 = agnt->wma_params->forget_wme->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "fake-forgetting: ";
+        temp2 = agnt->wma_params->fake_forgetting->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		if ( m_RawOutput )
+            m_Result << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+        }
+
+		temp = "Performance";
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        temp = "-----------";
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+
+		temp = "timers: ";
+        temp2 = agnt->wma_params->timers->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+            m_Result << temp << "\n";
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "max-pow-cache: ";
+        temp2 = agnt->wma_params->max_pow_cache->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -135,7 +214,37 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
 
         return true;
-    }	
+    }
+	else if ( pOp == 'h' )
+	{
+		uint64_t timetag;
+		if ( !from_string( timetag, *pAttr ) || ( timetag == 0 ) )
+			return SetError( "Invalid timetag." );
+		
+		wme* pWme = NULL;
+		agent* agnt = m_pAgentSML->GetSoarAgent();
+
+		for ( pWme = agnt->all_wmes_in_rete; pWme; pWme=pWme->rete_next )
+		{
+			if ( pWme->timetag == timetag )
+			{
+				break;
+			}
+		}
+
+		if ( pWme )
+		{
+			std::string output;
+			wma_get_wme_history( agnt, pWme, output );
+
+			if ( m_RawOutput )
+                m_Result << output;
+            else
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+		}
+		
+		return true;
+	}
     else if ( pOp == 's' )
     {
         soar_module::param *my_param = agnt->wma_params->get( pAttr->c_str() );
@@ -161,8 +270,8 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
             std::string output;
             char *temp2;			
 
-            output = "Dummy: ";
-            temp2 = agnt->wma_stats->dummy->get_string();
+            output = "Forgotten WMEs: ";
+            temp2 = agnt->wma_stats->forgotten_wmes->get_string();
             output += temp2;
             delete temp2;
 
@@ -189,6 +298,68 @@ bool CommandLineInterface::DoWMA( const char pOp, const std::string* pAttr, cons
 
         return true;
     }
+	else if ( pOp == 't' )
+	{
+		if ( !pAttr )
+        {
+            struct foo: public soar_module::accumulator< soar_module::timer* >
+            {				
+            private:
+                bool raw;
+                cli::CommandLineInterface* this_cli;
+                std::ostringstream& m_Result;
+
+                foo& operator= (const foo&) { return *this; }
+
+            public:				
+                foo( bool m_RawOutput, cli::CommandLineInterface *new_cli, std::ostringstream& m_Result ): raw( m_RawOutput ), this_cli( new_cli ), m_Result( m_Result ) {};
+
+
+                void operator() ( soar_module::timer* t )
+                {
+                    std::string output( t->get_name() );
+                    output += ": ";
+
+                    char *temp = t->get_string();
+                    output += temp;
+                    delete temp;
+
+                    if ( raw )
+                    {
+                        m_Result << output << "\n";
+                    }
+                    else
+                    {
+                        this_cli->AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+                    }
+                }
+            } bar( m_RawOutput, this, m_Result );
+
+            agnt->wma_timers->for_each( bar );
+        }
+        else
+        {
+            // check attribute name
+            soar_module::timer* my_timer = agnt->wma_timers->get( pAttr->c_str() );
+            if ( !my_timer )
+                return SetError( "Invalid timer." );
+
+            char *temp2 = my_timer->get_string();
+            std::string output( temp2 );
+            delete temp2;			
+
+            if ( m_RawOutput )
+            {
+                m_Result << output;
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+        }
+
+        return true;
+	}
 
     return SetError( "Unknown option." );
 }

@@ -75,6 +75,8 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::int_set_param* base_incremental_threshes;
 
+		soar_module::boolean_param* mirroring;
+
 		smem_param_container( agent *new_agent );
 };
 
@@ -101,12 +103,14 @@ class smem_db_predicate: public soar_module::agent_predicate<T>
 // SMem Statistics
 //////////////////////////////////////////////////////////
 
+class smem_db_lib_version_stat;
 class smem_mem_usage_stat;
 class smem_mem_high_stat;
 
 class smem_stat_container: public soar_module::stat_container
 {
 	public:
+		smem_db_lib_version_stat* db_lib_version;
 		smem_mem_usage_stat *mem_usage;
 		smem_mem_high_stat *mem_high;
 
@@ -114,12 +118,27 @@ class smem_stat_container: public soar_module::stat_container
 		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *stores;
 		soar_module::integer_stat *act_updates;
+		soar_module::integer_stat *mirrors;
 
 		soar_module::integer_stat *chunks;
 		soar_module::integer_stat *slots;
 
 		smem_stat_container( agent *my_agent );
 };
+
+//
+
+class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* >
+{
+	protected:
+		agent* my_agent;
+
+	public:
+		smem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred );
+		const char* get_value();
+};
+
+//
 
 class smem_mem_usage_stat: public soar_module::integer_stat
 {
@@ -312,6 +331,9 @@ enum smem_storage_type { store_level, store_recursive };
 // represents a list of wmes
 typedef std::list<wme *> smem_wme_list;
 
+// represents a set of symbols
+typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > smem_pooled_symbol_set;
+
 // list used primarily like a stack
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > smem_wme_stack;
 
@@ -430,6 +452,8 @@ extern bool smem_parse_chunks( agent *my_agent, const char *chunks, std::string 
 
 extern void smem_visualize_store( agent *my_agent, std::string *return_val );
 extern void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
+extern void smem_print_store( agent *my_agent, std::string *return_val );
+extern void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;
@@ -446,5 +470,6 @@ extern void smem_close( agent *my_agent );
 
 // perform smem actions
 extern void smem_go( agent *my_agent, bool store_only );
+extern bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 
 #endif
