@@ -683,6 +683,11 @@ void do_one_top_level_phase (agent* thisAgent)
 			smem_go( thisAgent, true );
 		  }
 
+		  if ( epmem_enabled( thisAgent ) )
+		  {
+		    epmem_go( thisAgent, false );
+		  }
+
 		  /* Update accounting.  Moved here by KJC 04/05/05 */
           thisAgent->e_cycle_count++;
           thisAgent->e_cycles_this_d_cycle++;
@@ -941,7 +946,7 @@ void do_one_top_level_phase (agent* thisAgent)
 		  // an epmem retrieval wants to know current activation value
 		  thisAgent->wma_d_cycle_count++;
 		  {
-			  epmem_go( thisAgent );
+			  epmem_go( thisAgent, true );
 		  }
 		  thisAgent->wma_d_cycle_count--;
 	  }
@@ -1148,7 +1153,7 @@ void do_one_top_level_phase (agent* thisAgent)
 #endif //AGRESSIVE_ONC
 	  
       if ( epmem_enabled( thisAgent ) && ( thisAgent->epmem_params->phase->get_value() == epmem_param_container::phase_selection ) )
-        epmem_go( thisAgent );
+        epmem_go( thisAgent, true );
 	  
 	  {
 		  if (thisAgent->sysparams[TRACE_PHASES_SYSPARAM])			 

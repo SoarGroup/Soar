@@ -4120,7 +4120,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
                                                             {
                                                                 lti_start_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_start, new_timer );
                                                                 lti_start_stmt->prepare();
-					                                            assert( lti_start_stmt->get_status() == soar_module::ready );
+																assert( lti_start_stmt->get_status() == soar_module::ready );
                                                                 lti_start_stmt->bind_int( 1, promotion_time );
                                                                 lti_start_stmt->execute();
                                                                 new_query = new epmem_shared_query;
@@ -6040,14 +6040,17 @@ void epmem_respond_to_cmd( agent *my_agent )
  * Notes		: The kernel calls this function to implement Soar-EpMem:
  * 				  consider new storage and respond to any commands
  **************************************************************************/
-void epmem_go( agent *my_agent )
+void epmem_go( agent *my_agent, bool allow_store )
 {
 	
 	my_agent->epmem_timers->total->start();
 
 #ifndef EPMEM_EXPERIMENT
 
-	epmem_consider_new_episode( my_agent );
+	if ( allow_store )
+	{
+		epmem_consider_new_episode( my_agent );
+	}
 	epmem_respond_to_cmd( my_agent );
 
 #else // EPMEM_EXPERIMENT
