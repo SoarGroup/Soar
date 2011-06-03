@@ -660,4 +660,43 @@ extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string
 extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
 extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
 
+//////////////////////////////////////////////////////////
+// Justin's stuff
+//////////////////////////////////////////////////////////
+
+// defined below
+typedef struct epmem_unique_edge_query_struct epmem_unique_edge_query;
+typedef struct epmem_interval_query_struct epmem_interval_query;
+typedef struct epmem_dnf_literal_struct epmem_dnf_literal;
+
+// collection classes
+typedef std::set<epmem_interval_query*> epmem_interval_set;
+typedef std::set<epmem_dnf_literal*> epmem_literal_set;
+typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literal_map;
+
+struct epmem_dnf_literal_struct {
+    epmem_attr_literal_map parents;
+    epmem_attr_literal_map children;
+    uint64_t num_children;
+    double weight;
+    int64_t sign;
+    bool leaf_node;
+	Symbol* value;
+    epmem_interval_set intervals;
+};
+
+struct epmem_unique_edge_query_struct {
+    uint64_t depth;
+    soar_module::sqlite_statement *sql;
+    epmem_time_id time;
+    std::set<epmem_dnf_literal*> literals;
+};
+
+struct epmem_interval_query_struct {
+    soar_module::sqlite_statement *sql;
+    epmem_time_id time;
+    bool start;
+	epmem_unique_edge_query* unique_edge;
+};
+
 #endif
