@@ -1,7 +1,7 @@
 SoarQnA
 
 Author: Nate Derbinsky, nlderbin@umich.edu
-Date  : 2010
+Date  : 2011
 
 
 Abstract
@@ -134,7 +134,8 @@ The basic input/output-link structures are as follows:
     as well as if a next command is issued for incremental
     results). The first "result" will also augment the command.
     The result identifier has a "features" identifier, with
-    key/value pairs below, and a "next" WME. The next
+    key/value pairs below, an integer-valued "num" WME, which 
+    indicates the result number, and a "next" WME. The next
     augmentation is either "nil" (no further results), "pending"
     (additional results, incremental), or a recursive identifier
     (additional results, all). 
@@ -143,9 +144,9 @@ The basic input/output-link structures are as follows:
    "qna-next" output command, which requires a "query" WME,
    with integer value referring to the "id" of a qna-query,
    and receives a status augmentation. If successful, the 
-   "^next pending" WME of the associated query will be
-   replaced with an identifier, with associated features and
-   next.<< nil pending >>. 
+   "result" of the associated query will be changed in-place,
+   including the augmentations of the "features" WME, the
+   "num" WME, and, if appropriate, the "next" WME.
 
 Note that currently all results come back during a single output
 phase. Care should be taken to avoid costly queries, which will
