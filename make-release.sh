@@ -1,7 +1,7 @@
-outdir=out
-builddir=build
+outdir=`pwd`/out
+builddir=`pwd`/build
 
-sconsopts="-Q --prefix=$OUTDIR --no-debug-symbols --optimization=full"
+sconsopts="-Q --prefix=$outdir --no-debug-symbols --optimization=full"
 
 case `uname` in
 Linux)
