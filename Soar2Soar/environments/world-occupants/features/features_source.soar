@@ -1,5 +1,0 @@
-source elaborations.soar
-source features-agent.soar
-source features-done.soar
-source features-init.soar
-source features-random.soar

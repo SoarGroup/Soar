@@ -1,5 +1,0 @@
-source elaborations.soar
-source spots-add.soar
-source spots-inc.soar
-source spots-init.soar
-source spots-relations.soar

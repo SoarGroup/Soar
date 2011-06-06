@@ -1,8 +1,0 @@
-sp {world*propose*light
-   (state <s> ^name world
-              ^spots ready
-             -^agents ready)
--->
-   (<s> ^operator <op> + =)
-   (<op> ^name light)
-}
