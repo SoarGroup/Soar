@@ -1,3 +1,0 @@
-pushd world
-source world_source.soar
-popd

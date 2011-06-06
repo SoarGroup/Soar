@@ -1,8 +1,0 @@
-sp {world*propose*features
-   (state <s> ^name world
-              ^spots ready
-             -^features ready)
--->
-   (<s> ^operator <op> + =)
-   (<op> ^name features)
-}

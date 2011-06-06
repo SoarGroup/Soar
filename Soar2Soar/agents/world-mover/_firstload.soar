@@ -1,7 +1,0 @@
-timers --disable
-
-wait -e
-
-rl --set learning-rate 1
-rl --set discount-rate 0
-rl --set learning on
