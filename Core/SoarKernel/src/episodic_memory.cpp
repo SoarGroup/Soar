@@ -3529,7 +3529,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 	}
 
 	// only perform a query if there potentially valid cue(s)
-	if ( wmes_query || wmes_neg_query )
+	if ( ( before > after ) && ( wmes_query || wmes_neg_query ) )
 	{
 		if ( !prohibit.empty() )
 		{
