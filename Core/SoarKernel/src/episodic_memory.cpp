@@ -3528,8 +3528,15 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 		wmes_neg_query = epmem_get_augs_of_id( neg_query, get_new_tc_number( my_agent ) );
 	}
 
+	// make sure that before and after, if set, are valid
+	bool before_after_valid = true;
+	if ( ( before != EPMEM_MEMID_NONE ) && ( after != EPMEM_MEMID_NONE ) && ( before < after ) )
+	{
+		before_after_valid = false;
+	}
+
 	// only perform a query if there potentially valid cue(s)
-	if ( ( before > after ) && ( wmes_query || wmes_neg_query ) )
+	if ( ( before_after_valid ) && ( wmes_query || wmes_neg_query ) )
 	{
 		if ( !prohibit.empty() )
 		{
