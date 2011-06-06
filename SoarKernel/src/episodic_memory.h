@@ -698,7 +698,8 @@ struct epmem_interval_query_comparator {
 				return b->unique_edge->depth < a->unique_edge->depth
 			}
 		} else {
-			return true; // FIXME should ends be first or should starts?
+			// put ends before starts; the larger the distance to the frontier, the more expensive updating an end is
+			return b->end_point;
 		}
 
 	}
@@ -711,10 +712,10 @@ struct epmem_dnf_literal_struct {
     epmem_attr_literal_map parents;
     epmem_attr_literal_map children;
     double weight;
-    int neg_q;
-    int internal_node;
+    int is_neg_q;
+    int is_internal_node;
 	Symbol* value;
-    epmem_interval_set intervals; // FIXME I'm not sure I need this yet
+    epmem_interval_set intervals; // FIXME I'm not sure I need this yet; it'll probably be for retractions
 };
 
 struct epmem_unique_edge_query_struct {
@@ -728,7 +729,7 @@ struct epmem_unique_edge_query_struct {
 struct epmem_interval_query_struct {
     soar_module::sqlite_statement *sql;
     epmem_time_id time;
-    int end_point;
+    int is_end_point;
 	epmem_unique_edge_query* unique_edge;
 };
 
