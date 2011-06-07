@@ -10,7 +10,7 @@
 # make clean			# clean all checked-out modules
 
 all:
-	export JAVA_HOME=/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK && cd Core && scons
+	cd Core && scons
 
 noscu:
 	cd Core && scons --no-scu
