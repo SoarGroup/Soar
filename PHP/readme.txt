@@ -3,6 +3,8 @@ PHP SWIG Bindings for Soar
 Author: Nate Derbinsky
 =================================
 
+For the PHP bindings to build correctly, SWIG Version 1.3.40 is required.
+
 For Soar to interact with PHP, there are a couple manual steps:
 
 1. Open php.ini and set the enable_dl = On
