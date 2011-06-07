@@ -19,6 +19,7 @@
 #include <iterator>
 #include <fstream>
 #include <set>
+#include <climits>
 
 #include "episodic_memory.h"
 #include "semantic_memory.h"
@@ -723,12 +724,13 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end_start ON edge_range (id, end, start)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER)" );
+	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER,last INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_parent_attrib_value ON node_unique (parent_id,attrib,value)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_last_parent_attrib_value ON node_unique (last,parent_id,attrib,value)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w INTEGER,q1 INTEGER,last INTEGER)" );
-	add_structure( "CREATE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)" );
-	add_structure( "CREATE INDEX IF NOT EXISTS edge_unique_last_q0_w_q1 ON edge_unique (last,q0,w,q1)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_unique_last_q0_w_q1 ON edge_unique (last,q0,w,q1)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS lti (parent_id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, time_id INTEGER, current INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS lti_letter_num ON lti (letter,num)" );
@@ -785,7 +787,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add( add_node_range );
 
 
-	add_node_unique = new soar_module::sqlite_statement( new_db, "INSERT INTO node_unique (parent_id,attrib,value) VALUES (?,?,?)" );
+	add_node_unique = new soar_module::sqlite_statement( new_db, "INSERT INTO node_unique (parent_id,attrib,value,last) VALUES (?,?,?,?)" );
 	add( add_node_unique );
 
 	find_node_unique = new soar_module::sqlite_statement( new_db, "SELECT child_id FROM node_unique WHERE parent_id=? AND attrib=? AND value=?" );
@@ -844,7 +846,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	find_lti_promotion_time = new soar_module::sqlite_statement( new_db, "SELECT time_id FROM lti WHERE letter=? AND num=?" );
 	add( find_lti_promotion_time );
 
-	//
+	// current LTI stuff
 
 	update_lti = new soar_module::sqlite_statement( new_db, "UPDATE OR IGNORE lti SET current=? WHERE letter=? AND num=?" );
 	add( update_lti );
@@ -854,6 +856,14 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" );
 	add( find_lti_current_time );
+
+	// 
+
+	update_node_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE node_unique SET last=? WHERE parent_id=?" );
+	add( update_node_unique_last );
+
+	update_edge_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE edge_unique SET last=? WHERE parent_id=?" );
+	add( update_edge_unique_last );
 }
 
 
@@ -1712,6 +1722,20 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 						{
 							epmem_rit_insert_interval( my_agent, range_start, time_last, temp_q2->column_int( 0 ), &( my_agent->epmem_rit_state_graph[i] ) );
 						}
+
+						switch (i)
+						{
+							case EPMEM_RIT_STATE_NODE:
+								my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 1, time_last );
+								my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 2, temp_q2->column_int( 0 ) );
+								my_agent->epmem_stmts_graph->update_node_unique_last->execute( soar_module::op_reinit );
+								break;
+							case EPMEM_RIT_STATE_EDGE:
+								my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 1, time_last );
+								my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 2, temp_q2->column_int( 0 ) );
+								break;
+						}
+								my_agent->epmem_stmts_graph->update_edge_unique_last->execute( soar_module::op_reinit );
 					}
 					delete temp_q2;
 					temp_q2 = NULL;
@@ -2296,6 +2320,7 @@ void epmem_new_episode( agent *my_agent )
 								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 1, parent_id );
 								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 2, my_hash );
 								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 3, (*w_p)->value->id.epmem_id );
+								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 4, LLONG_MAX);
 								my_agent->epmem_stmts_graph->add_edge_unique->execute( soar_module::op_reinit );
 
 								(*w_p)->epmem_id = static_cast<epmem_node_id>( my_agent->epmem_db->last_insert_rowid() );
@@ -2390,6 +2415,7 @@ void epmem_new_episode( agent *my_agent )
 								my_agent->epmem_stmts_graph->add_node_unique->bind_int( 1, parent_id );
 								my_agent->epmem_stmts_graph->add_node_unique->bind_int( 2, my_hash );
 								my_agent->epmem_stmts_graph->add_node_unique->bind_int( 3, my_hash2 );
+								my_agent->epmem_stmts_graph->add_node_unique->bind_int( 4, LLONG_MAX );
 								my_agent->epmem_stmts_graph->add_node_unique->execute( soar_module::op_reinit );
 
 								(*w_p)->epmem_id = (epmem_node_id) my_agent->epmem_db->last_insert_rowid();
@@ -2438,6 +2464,12 @@ void epmem_new_episode( agent *my_agent )
 				// update min
 				(*my_agent->epmem_node_mins)[ (*temp_node) - 1 ] = time_counter;
 
+				/* FIXME
+				my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 1, LLONG_MAX );
+				my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 2, *temp_node );
+				my_agent->epmem_stmts_graph->update_node_unique_last->execute( soar_module::op_reinit );
+				*/
+
 				epmem_node.pop();
 			}
 
@@ -2454,6 +2486,12 @@ void epmem_new_episode( agent *my_agent )
 
 				// update min
 				(*my_agent->epmem_edge_mins)[ (*temp_node) - 1 ] = time_counter;
+
+				/* FIXME
+				my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 1, LLONG_MAX );
+				my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 2, *temp_node );
+				my_agent->epmem_stmts_graph->update_edge_unique_last->execute( soar_module::op_reinit );
+				*/
 
 				epmem_edge.pop();
 			}
@@ -2479,6 +2517,9 @@ void epmem_new_episode( agent *my_agent )
 					range_start = (*my_agent->epmem_node_mins)[ r->first - 1 ];
 					range_end = ( time_counter - 1 );
 
+					my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 1, range_end );
+					my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 2, r->first );
+					my_agent->epmem_stmts_graph->update_node_unique_last->execute( soar_module::op_reinit );
 					// point (id, start)
 					if ( range_start == range_end )
 					{						
@@ -2514,6 +2555,9 @@ void epmem_new_episode( agent *my_agent )
 					range_start = (*my_agent->epmem_edge_mins)[ r->first - 1 ];
 					range_end = ( time_counter - 1 );
 
+					my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 1, range_end );
+					my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 2, r->first );
+					my_agent->epmem_stmts_graph->update_edge_unique_last->execute( soar_module::op_reinit );
 					// point (id, start)
 					if ( range_start == range_end )
 					{						
@@ -3141,6 +3185,8 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
+const char* epmem_find_unique_node_query = "SELECT parent_id, q1, last FROM node_unique WHERE q0=? AND w=? ORDER BY last DESC";
+const char* epmem_find_unique_node_value_query = "SELECT parent_id, q1, last FROM node_unique WHERE q0=? AND w=? AND q1=? ORDER BY last DESC";
 const char* epmem_find_unique_edge_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? ORDER BY last DESC";
 const char* epmem_find_unique_edge_value_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? ORDER BY last DESC";
 
@@ -3150,12 +3196,12 @@ const char* epmem_find_interval_queries[2][2][3] =
 		{
 			"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
 			"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC" // FIXME this needs to change (since we process all endpoints before changing the score)
+			"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT (e.end - 1) AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
 			"SELECT ? AS end FROM node_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
 		}
 	},
 	{
@@ -3165,9 +3211,9 @@ const char* epmem_find_interval_queries[2][2][3] =
 			"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT (e.end - 1) AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
 			"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
 		}
 	},
 };
@@ -3247,20 +3293,30 @@ epmem_dnf_literal* epmem_build_dnf(wme* wme, int query_type, std::map<wme*, epme
 	return literal;
 }
 
-/*
 void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 	if (visited.count(root)) {
 		return;
 	}
-	std::cout << '"' << root << '"' << std::endl;
+	visited.insert(root);
 	for (epmem_attr_literal_map::iterator attr_iter = root->children.begin(); attr_iter != root->children.end(); attr_iter++) {
 		Symbol* attr = (*attr_iter).first;
 		epmem_literal_set* children_set = (*attr_iter).second;
-		for (epmem_literal_set::iterator child_iter = children_set.begin(); child_iter != children_set.end(); child_iter++) {
+		for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+			epmem_dnf_literal* child = *child_iter;
+			std::cout << '"' << root << '"' << "->" << '"' << child << '"' << " [label=\"";
+			switch (attr->common.symbol_type) {
+				case SYM_CONSTANT_SYMBOL_TYPE:
+					std::cout << attr->sc.name;
+				case INT_CONSTANT_SYMBOL_TYPE:
+					std::cout << attr->ic.value;
+				case FLOAT_CONSTANT_SYMBOL_TYPE:
+					std::cout << attr->fc.value;
+			}
+			std::cout << "\"]" << std::endl;
+			epmem_print_dnf(child, visited);
 		}
 	}
 }
-*/
 
 void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_lti_map& ltis, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes) {
 	// a query must contain a positive cue
@@ -3346,8 +3402,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 	// FIXME FIXME FIXME diagnostic code: print out the DNF
 	{
+		epmem_literal_set visited;
+		std::cout << "digraph {" << std::endl;
+		epmem_print_dnf(dnf_root, visited);
+		std::cout << "}" << std::endl;
 
-		
 		// clean up code
 	}
 
@@ -3367,44 +3426,56 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			info.q0 = 0;
 			info.w = attr;
 			info.has_q1 = child->has_q1;
-			// fill out the rest of the edge and create an sql statement
-			soar_module::sqlite_statement* uedge_sql = NULL;
+
+			// select the query
+			const char* sql_statement = NULL;
 			if (child->has_q1) {
-				uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_query, my_agent->epmem_timers->edge_query);
-				uedge_sql->prepare();
-				assert(uedge_sql->get_status() == soar_module::ready);
-				uedge_sql->bind_int(1, info.q0);
-				uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
-				info.q1 = 0;
-			} else {
-				uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_value_query, my_agent->epmem_timers->edge_query);
-				uedge_sql->prepare();
-				assert(uedge_sql->get_status() == soar_module::ready);
-				uedge_sql->bind_int(1, info.q0);
-				uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
 				info.q1 = epmem_temporal_hash(my_agent, child->value);
-				uedge_sql->bind_int(3, info.q1);
+				if (child->is_edge_not_node) {
+					sql_statement = epmem_find_unique_edge_value_query;
+				} else {
+					sql_statement = epmem_find_unique_node_value_query;
+				}
+			} else {
+				info.q1 = 0;
+				if (child->is_edge_not_node) {
+					sql_statement = epmem_find_unique_edge_query;
+				} else {
+					sql_statement = epmem_find_unique_node_query;
+				}
 			}
+
 			// if we've seen this edge before, just add the literal to it and continue)
 			if (sqlcache.count(info)) {
-				delete uedge_sql;
 				sqlcache[info]->literals.insert(child);
 				continue;
 			}
-			// otherwise, create a new unique edge query
+
+			// create the sql statement and the container
 			epmem_unique_edge_query* uedge_q = new epmem_unique_edge_query();
 			uedge_q->edge_info = info;
 			uedge_q->depth = 1;
 			uedge_q->is_edge_not_node = child->is_edge_not_node;
-			uedge_q->sql = uedge_sql;
+			uedge_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->edge_query);
 			uedge_q->literals.insert(child);
 			sqlcache[uedge_q->edge_info] = uedge_q;
+
 			// take first step
-			assert(uedge_sql->execute() == soar_module::row);
-			if (uedge_sql->execute() == soar_module::row) {
-				uedge_q->time = uedge_sql->column_int(2);
+			uedge_q->sql->prepare();
+			assert(uedge_q->sql->get_status() == soar_module::ready);
+			uedge_q->sql->bind_int(1, info.q0);
+			uedge_q->sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
+			if (child->has_q1) {
+				uedge_q->sql->bind_int(3, info.q1);
 			}
-			edge_pq.push(uedge_q);
+			assert(uedge_q->sql->execute() == soar_module::row);
+			if (uedge_q->sql->execute() == soar_module::row) {
+				uedge_q->time = uedge_q->sql->column_int(2);
+				edge_pq.push(uedge_q);
+			} else {
+				delete uedge_q;
+				// FIXME retractions from lack of edges
+			}
 		}
 	}
 
@@ -3471,7 +3542,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					// bind the SQL query
 					int bind_pos = 1;
 					if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
-						interval_sql->bind_int(bind_pos++, my_agent->epmem_stats->time->get_value());
+						interval_sql->bind_int(bind_pos++, my_agent->epmem_stats->time->get_value() - 1);
 					}
 					interval_sql->bind_int(bind_pos++, edge_id);
 					assert(interval_sql->execute() == soar_module::row);
@@ -3494,45 +3565,53 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						epmem_sql_edge info;
 						info.q0 = uedge->sql->column_int(1);
 						info.w = attr;
-						info.has_q1 = literal->has_q1;
-						// fill out the rest of the edge and create an sql statement
-						soar_module::sqlite_statement* uedge_sql = NULL;
-						if (literal->has_q1) {
-							uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_query, my_agent->epmem_timers->edge_query);
-							uedge_sql->prepare();
-							assert(uedge_sql->get_status() == soar_module::ready);
-							uedge_sql->bind_int(1, info.q0);
-							uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
-							info.q1 = 0;
-						} else {
-							uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_value_query, my_agent->epmem_timers->edge_query);
-							uedge_sql->prepare();
-							assert(uedge_sql->get_status() == soar_module::ready);
-							uedge_sql->bind_int(1, info.q0);
-							uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
+						info.has_q1 = child->has_q1;
+
+						// select the query
+						const char* sql_statement = NULL;
+						if (child->has_q1) {
 							info.q1 = epmem_temporal_hash(my_agent, child->value);
-							uedge_sql->bind_int(3, info.q1);
+							if (child->is_edge_not_node) {
+								sql_statement = epmem_find_unique_edge_value_query;
+							} else {
+								sql_statement = epmem_find_unique_node_value_query;
+							}
+						} else {
+							info.q1 = 0;
+							if (child->is_edge_not_node) {
+								sql_statement = epmem_find_unique_edge_query;
+							} else {
+								sql_statement = epmem_find_unique_node_query;
+							}
 						}
+
 						// if we've seen this edge before, just add the literal to it and continue)
 						if (sqlcache.count(info)) {
-							delete uedge_sql;
 							sqlcache[info]->literals.insert(child);
 							continue;
 						}
+
 						// otherwise, create a new unique edge query
 						epmem_unique_edge_query* uedge_q = new epmem_unique_edge_query();
 						uedge_q->edge_info = info;
 						uedge_q->depth = uedge->depth + 1;
-						uedge_q->sql = uedge_sql;
+						uedge_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->edge_query);
 						uedge_q->literals.insert(literal);
 						sqlcache[uedge_q->edge_info] = uedge_q;
+
 						// take first step
-						assert(uedge_sql->execute() == soar_module::row);
-						if (uedge_sql->execute() == soar_module::row) {
-							uedge_q->time = uedge_sql->column_int(2);
+						uedge_q->sql->prepare();
+						assert(uedge_q->sql->get_status() == soar_module::ready);
+						uedge_q->sql->bind_int(1, info.q0);
+						uedge_q->sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
+						if (child->has_q1) {
+							uedge_q->sql->bind_int(3, info.q1);
+						}
+						assert(uedge_q->sql->execute() == soar_module::row);
+						if (uedge_q->sql->execute() == soar_module::row) {
+							uedge_q->time = uedge_q->sql->column_int(2);
 							edge_pq.push(uedge_q);
 						} else {
-							delete uedge_sql;
 							delete uedge_q;
 							// FIXME retractions from lack of edges
 						}
