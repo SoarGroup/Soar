@@ -578,6 +578,24 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::t
 	query_neg_end_point = new epmem_timer( "query_neg_end_point", my_agent, soar_module::timer::three );
 	add( query_neg_end_point );
 
+	query_start_ep = new epmem_timer( "query_start_ep", my_agent, soar_module::timer::three );
+	add( query_start_ep );
+
+	query_start_now = new epmem_timer( "query_start_now", my_agent, soar_module::timer::three );
+	add( query_start_now );
+
+	query_start_point = new epmem_timer( "query_start_point", my_agent, soar_module::timer::three );
+	add( query_start_point );
+
+	query_end_ep = new epmem_timer( "query_end_ep", my_agent, soar_module::timer::three );
+	add( query_end_ep );
+
+	query_end_now = new epmem_timer( "query_end_now", my_agent, soar_module::timer::three );
+	add( query_end_now );
+
+	query_end_point = new epmem_timer( "query_end_point", my_agent, soar_module::timer::three );
+	add( query_end_point );
+
 	query_lti = new epmem_timer( "query_lti", my_agent, soar_module::timer::three );
 	add( query_lti );
 
@@ -3119,1841 +3137,589 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-/***************************************************************************
- * Function     : epmem_create_leaf_node
- * Author		: Nate Derbinsky
- * Notes		: Just a quicky constructor
- **************************************************************************/
-inline epmem_leaf_node *epmem_create_leaf_node( epmem_node_id leaf_id, double leaf_weight )
-{
-	epmem_leaf_node *newbie = new epmem_leaf_node;
-
-	newbie->leaf_id = leaf_id;
-	newbie->leaf_weight = leaf_weight;
-
-	return newbie;
-}
-
-/***************************************************************************
- * Function     : epmem_shared_flip
- * Author		: Nate Derbinsky
- * Notes		: Implements flipping a literal in the DNF Graph
- * 				  (see above description).
- **************************************************************************/
-void epmem_shared_flip( epmem_shared_literal_pair *flip, const unsigned int list, int64_t &ct, double &v, int64_t &updown )
-{	
-	int64_t ct_change = ( ( list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
-	
-	// if recursive propogation, count change
-	// is dependent upon wme count
-	bool alter_ct = true;
-	if ( flip->lit->incoming )
-	{
-		alter_ct = false;
-
-		// find the map with respect to the parent identity
-		epmem_shared_incoming_wme_map** id_map =& (*flip->lit->incoming->book)[ flip->q0 ];
-		if ( !(*id_map) )
-		{
-			(*id_map) = new epmem_shared_incoming_wme_map;
-
-			// initialize counts below
-			{
-				bool rooted = ( flip->q0 == EPMEM_NODEID_ROOT );
-				
-				epmem_shared_incoming_ids_book::iterator id_p;
-				epmem_wme_list::iterator w_p;								
-				epmem_shared_incoming_identity_counter* new_identity_counter;
-				
-				for ( id_p=flip->lit->incoming->parents->begin(); id_p!=flip->lit->incoming->parents->end(); id_p++ )
-				{				
-					new_identity_counter = new epmem_shared_incoming_identity_counter;
-
-					new_identity_counter->ct = 0;
-
-					new_identity_counter->cts = new epmem_shared_incoming_wme_counter_map;					
-					for ( w_p=id_p->second->outgoing->begin(); w_p!=id_p->second->outgoing->end(); w_p++ )
-					{
-						new_identity_counter->cts->insert( std::make_pair( (*w_p), ( ( rooted )?( 1 ):( 0 ) ) ) );
-					}
-
-					(*id_map)->insert( std::make_pair( id_p->first, new_identity_counter ) );
-				}
-			}
-		}
-
-		// find the wme map, get the literal count		
-		epmem_shared_incoming_identity_counter* sym_ct = (*(*id_map))[ flip->wme->id ];
-		uint64_t *lit_ct =& (*(sym_ct->cts))[ flip->wme ];		
-
-		// update the count	
-		(*lit_ct) += ct_change;
-
-		// if appropriate, change the id count
-		if ( (*lit_ct) == ( static_cast<uint64_t>( ( list == EPMEM_RANGE_START )?( EPMEM_DNF - 1 ):( EPMEM_DNF ) ) ) )
-		{
-			sym_ct->ct += ct_change;
-
-			// if appropriate modify the parent set and possibly children
-			{
-				epmem_shared_incoming_id_book* book_p;
-
-				if ( list == EPMEM_RANGE_START )
-				{
-					if ( sym_ct->ct == ( sym_ct->cts->size() - 1 ) )
-					{
-						book_p = (*flip->lit->incoming->parents)[ flip->wme->id ];
-
-						book_p->satisfactory->erase( flip->q0 );
-						alter_ct = ( book_p->satisfactory->empty() );						
-					}
-				}
-				else
-				{
-					if ( sym_ct->ct == sym_ct->cts->size() )
-					{
-						book_p = (*flip->lit->incoming->parents)[ flip->wme->id ];
-
-						book_p->satisfactory->insert( flip->q0 );
-						alter_ct = ( book_p->satisfactory->size() == 1 );
-					}
-				}
-			}
-		}
-	}
-
-	if ( alter_ct )
-	{
-		uint64_t max_compare = ( ( list == EPMEM_RANGE_START )?( flip->lit->max - 1 ):( flip->lit->max ) );
-
-		flip->lit->ct += ct_change;
-		if ( flip->lit->ct == max_compare )
-		{
-			if ( flip->lit->children )
-			{
-				epmem_shared_literal_group::iterator wme_p;
-				epmem_shared_literal_map::iterator lit_p;
-				
-				for ( wme_p=flip->lit->children->begin(); wme_p!= flip->lit->children->end(); wme_p++ )
-				{
-					for ( lit_p=wme_p->second->begin(); lit_p!=wme_p->second->end(); lit_p++ )
-					{
-						epmem_shared_flip( lit_p->second, list, ct, v, updown );
-					}
-				}
-			}
-			else if ( flip->lit->match )
-			{
-				uint64_t match_compare = ( ( list == EPMEM_RANGE_START )?( 0 ):( 1 ) );
-				flip->lit->match->ct += ct_change;
-
-				if ( flip->lit->match->ct == match_compare )
-				{
-					ct += flip->lit->match->value_ct;
-					v += flip->lit->match->value_weight;
-
-					updown++;
-				}
-			}
-		}
-	}
-}
-
-/***************************************************************************
- * Function     : epmem_shared_increment
- * Author		: Nate Derbinsky
- * Notes		: Implements a step in the range search algorithm for
- * 				  WM Graph (see above description).
- **************************************************************************/
-void epmem_shared_increment( epmem_shared_query_list *queries, epmem_time_id &id, int64_t &ct, double &v, int64_t &updown, const unsigned int list )
-{
-	// initialize variables
-	id = queries[ list ].top()->val;
-	ct = 0;
-	v = 0;
-	updown = 0;
-
-	bool more_data;
-	epmem_shared_query *temp_query;
-	epmem_shared_literal_pair_list::iterator literal_p;
-
-	// a step continues until we run out
-	// of endpoints or we get to a new
-	// endpoint
-	do
-	{
-		// get the next range endpoint
-		temp_query = queries[ list ].top();
-		queries[ list ].pop();
-
-		// update current state by flipping all associated literals
-		for ( literal_p=temp_query->triggers->begin(); literal_p!=temp_query->triggers->end(); literal_p++ )
-			epmem_shared_flip( (*literal_p), list, ct, v, updown );
-
-		// check if more endpoints exist for this wme
-		more_data = ( temp_query->stmt->execute() == soar_module::row );
-		if ( more_data )
-		{
-			// if so, add back to the priority queue
-			temp_query->val = temp_query->stmt->column_int( 0 );
-			queries[ list ].push( temp_query );
-		}
-		else
-		{
-			// away with ye
-			delete temp_query->stmt;
-			delete temp_query;
-		}
-	} while ( ( !queries[ list ].empty() ) && ( queries[ list ].top()->val == id ) );
-
-	if ( list == EPMEM_RANGE_START )
-		updown = -updown;
-}
-
 //////////////////////////////////////////////////////////
-// Graph Match
+// Justin's Stuff
 //////////////////////////////////////////////////////////
 
-bool _epmem_gm_compare_mcv( const epmem_shared_literal_pair_pair& a, const epmem_shared_literal_pair_pair& b )
-{
-	return ( a.second->size() < b.second->size() );
-}
+const char* epmem_find_unique_edge_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? ORDER BY last DESC";
+const char* epmem_find_unique_edge_value_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? ORDER BY last DESC";
 
-void _epmem_gm_sort_wmes_dfs( Symbol* id, tc_number tc, std::list< wme* >& ordered_wmes )
+const char* epmem_find_interval_queries[2][2][3] =
 {
-	slot* s;
-	wme* w;
-	Symbol* val;
-
-	for ( s=id->id.slots; s; s=s->next ) 
 	{
-		for ( w=s->wmes; w; w=w->next ) 
 		{
-			ordered_wmes.push_back( w );
-			val = w->value;
-
-			if ( ( val->var.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( val->id.tc_num != tc ) )
-			{
-				val->id.tc_num = tc;
-				_epmem_gm_sort_wmes_dfs( val, tc, ordered_wmes );
-			}
+			"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC" // FIXME this needs to change (since we process all endpoints before changing the score)
+		},
+		{
+			"SELECT e.end AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT ? AS end FROM node_now e WHERE e.id=?",
+			"SELECT e.start AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
 		}
-	}
-}
-
-// finds a shared id for a symbol in a symbol->shared id map, or returns constant
-inline epmem_node_id epmem_gm_find_assignment( Symbol* needle, epmem_gm_assignment_map* haystack )
-{
-	epmem_node_id return_val = EPMEM_NODEID_BAD;
-
-	if ( needle->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	},
 	{
-		epmem_gm_assignment_map::iterator p = haystack->find( needle );
-		if ( p != haystack->end() )
 		{
-			return_val = p->second;
+			"SELECT e.start AS start FROM edge_range e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM edge_now e WHERE e.id=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+		},
+		{
+			"SELECT e.end AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT ? AS end FROM edge_now e WHERE e.id=?",
+			"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
 		}
+	},
+};
+
+epmem_dnf_literal* epmem_build_dnf(wme* wme, int query_type, std::map<wme*, epmem_dnf_literal*>& wme_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<wme*>& stack) {
+	// if we've been here before, we can return the previous literal
+	if (wme_cache.count(wme)) {
+		return wme_cache[wme];
 	}
 
-	return return_val;
-}
+	epmem_dnf_literal* literal = new epmem_dnf_literal();
+	Symbol* value = wme->value;
+	literal->value = value;
 
-// returns true if a shared id has been used
-inline bool epmem_gm_identity_used( epmem_node_id needle, epmem_shared_literal_set* haystack )
-{
-	return ( haystack->find( needle ) != haystack->end() );
-}
+	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
+		literal->is_edge_not_node = 0;
+		literal->has_q1 = true;
+		literal->is_leaf = true;
+		leaf_literals.insert(literal);
+	} else if (value->id.smem_lti) { // WME is an LTI
+		literal->is_edge_not_node = 1;
+		literal->has_q1 = true;
+		literal->is_leaf = true;
+		leaf_literals.insert(literal);
+	} else { // WME is a normal identifier
+		// we determine whether it is a leaf by checking for children
+		epmem_wme_list* children = epmem_get_augs_of_id(value, tc);
 
-// does a quick check on literal ct vs. max on id and value
-inline bool epmem_gm_pair_satisfiable( epmem_shared_literal_pair* pair )
-{
-	return ( ( ( !pair->parent_lit ) || ( pair->parent_lit->ct == pair->parent_lit->max ) ) && ( pair->lit->ct == pair->lit->max ) );
-}
-
-inline bool epmem_gm_assign_identifier( epmem_shared_literal* lit, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
-{
-	bool return_val = false;
-	
-	Symbol* id = lit->shared_sym;
-	epmem_node_id assignment = lit->shared_id;	
-
-	{
-		// find if the value has already been assigned
-		epmem_node_id existing_assignment = epmem_gm_find_assignment( id, id_assignments );
-
-		// if so, satisfied only if this literal agrees
-		if ( existing_assignment != EPMEM_NODEID_BAD )
-		{
-			return_val = ( existing_assignment == assignment );		
-		}
-		else
-		{
-			// we know the value of the wme is not assigned,
-			// so for consistency our shared_id cannot have
-			// already been given out
-			if ( !epmem_gm_identity_used( assignment, used_ids ) )
-			{
-				bool good_state = true;
-				epmem_gm_sym_constraints::iterator existing_constraint;
-				
-				// and we can't violate constraints on the symbol
-				existing_constraint = sym_constraints->find( id );
-				if ( existing_constraint != sym_constraints->end() )
-				{
-					good_state = ( existing_constraint->second.find( assignment ) != existing_constraint->second.end() );
-				}
-				
-				// and no parents can violate constraints
-				if ( good_state )
-				{
-					epmem_shared_literal_set constraint_intersection;				
-					epmem_shared_incoming_ids_book::iterator incoming_p = lit->incoming->parents->begin();				
-
-					while ( good_state && ( incoming_p != lit->incoming->parents->end() ) )
-					{
-						// see if the id of the incoming wme has already been assigned
-						existing_assignment = epmem_gm_find_assignment( incoming_p->first, id_assignments );
-						if ( existing_assignment != EPMEM_NODEID_BAD )
-						{
-							// if so, it must be in the satisfied set
-							good_state = ( incoming_p->second->satisfactory->find( existing_assignment ) != incoming_p->second->satisfactory->end() );
+		// if the WME has no children, then it's a leaf
+		// otherwise, we recurse for all children
+		if (!children->size()) {
+			literal->is_edge_not_node = 1;
+			literal->has_q1 = false;
+			literal->is_leaf = true;
+			leaf_literals.insert(literal);
+		} else {
+			literal->is_edge_not_node = 1;
+			literal->has_q1 = false;
+			literal->is_leaf = false;
+			bool cycle = false;
+			stack.insert(wme);
+			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
+				// check to see if this child forms a cycle
+				// if it does, we skip over it
+				if (stack.count(*wme_iter)) {
+					cycle = true;
+				} else {
+					epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, wme_cache, leaf_literals, tc, stack);
+					if (child) {
+						Symbol* attr = (*wme_iter)->attr;
+						if (!child->parents.count(attr)) {
+							child->parents[attr] = new epmem_literal_set();
 						}
-						else
-						{
-							// make sure the added constraint will allow for a valid parent identifier (i.e. intersection is not null)						
-							existing_constraint = sym_constraints->find( incoming_p->first );
-							if ( existing_constraint != sym_constraints->end() )
-							{
-								constraint_intersection.clear();							
-								set_intersection( existing_constraint->second.begin(), existing_constraint->second.end(), incoming_p->second->satisfactory->begin(), incoming_p->second->satisfactory->end(), inserter( constraint_intersection, constraint_intersection.begin() ) );
-
-								if ( !constraint_intersection.empty() )
-								{
-									// if the intersection is non-null, propogate the intersection to future assignments
-									existing_constraint->second = constraint_intersection;
-								}
-								else
-								{
-									good_state = false;
-								}
-							}
-							else
-							{
-								// if there are no existing constraints, just copy this literal's satisfying set for the edge
-								sym_constraints->insert( std::make_pair( incoming_p->first, (*incoming_p->second->satisfactory) ) );
-							}						
+						child->parents[attr]->insert(literal);
+						if (!literal->children.count(attr)) {
+							literal->children[attr] = new epmem_literal_set();
 						}
-
-						if ( good_state )
-						{
-							incoming_p++;
-						}
-					}
-
-					// all constraints are satisfied!
-					// add assignment, add used id, (constraints are added above)
-					if ( good_state )
-					{					
-						id_assignments->insert( std::make_pair( id, assignment ) );
-						used_ids->insert( assignment );
-
-						return_val = true;
+						literal->children[attr]->insert(child);
 					}
 				}
+			}
+			stack.erase(wme);
+			// if all children of this WME lead to cycles, then we don't need to walk this path
+			// in essence, this forces the DNF graph to be acyclic
+			// this results in savings in not walking edges and intevals
+			if (cycle && !literal->children.size()) {
+				delete literal;
+				return NULL;
 			}
 		}
 	}
 
-	return return_val;
+	wme_cache[wme] = literal;
+	// FIXME weight
+	// FIXME multiply weight by (query_type == EPMEM_NODE_POS ? 1 : -1);
+	literal->is_neg_q = query_type;
+	return literal;
 }
 
-inline bool epmem_gm_pair_satisfied( epmem_shared_literal_pair* pair, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
-{
-	if ( pair->wme->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-	{
-		return ( ( ( !pair->parent_lit ) || epmem_gm_assign_identifier( pair->parent_lit, id_assignments, used_ids, sym_constraints ) ) &&
-			epmem_gm_assign_identifier( pair->lit, id_assignments, used_ids, sym_constraints ) );
+/*
+void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
+	if (visited.count(root)) {
+		return;
 	}
-	else
-	{
-		return ( ( !pair->parent_lit ) || epmem_gm_assign_identifier( pair->parent_lit, id_assignments, used_ids, sym_constraints ) );
+	std::cout << '"' << root << '"' << std::endl;
+	for (epmem_attr_literal_map::iterator attr_iter = root->children.begin(); attr_iter != root->children.end(); attr_iter++) {
+		Symbol* attr = (*attr_iter).first;
+		epmem_literal_set* children_set = (*attr_iter).second;
+		for (epmem_literal_set::iterator child_iter = children_set.begin(); child_iter != children_set.end(); child_iter++) {
+		}
 	}
 }
+*/
 
-// a wme is satisfied if:
-// - it is the end of the list of wmes OR
-// - a pair in the WME is satisfied AND the rest of the list is satisfied
-bool epmem_gm_wme_satisfied( epmem_shared_literal_pair_pair_vector::iterator wme_p, epmem_shared_literal_pair_pair_vector::iterator end_wme_p, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
-{
-	bool return_val = false;
-
-	if ( wme_p == end_wme_p )
-	{
-		return_val = true;
+void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_lti_map& ltis, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes) {
+	// a query must contain a positive cue
+	if (pos_query == NULL) {
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
+		return;
 	}
-	else
+
+	// before and after, if specified, must be valid relative to each other
+	if (before != EPMEM_MEMID_NONE && after != EPMEM_MEMID_NONE && before < after) {
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
+		return;
+	}
+
+	// explicitly set now as the last episode to return
+	if (before == EPMEM_MEMID_NONE) {
+		before = my_agent->epmem_stats->time->get_value() - 1;
+	}
+
+	// FIXME need to put this somwehere
+	double balance = my_agent->epmem_params->balance->get_value();
+	bool balance_approximately_1 = ( ( balance > ( 1.0 - 1.0e-8 ) ) && ( balance < ( 1.0 + 1.0e-8 ) ) );
+
+	// sort probibits
+	if (!prohibits.empty()) {
+		std::sort(prohibits.begin(), prohibits.end());
+	}
+
+	epmem_dnf_literal* dnf_root = new epmem_dnf_literal();
+	epmem_literal_set leaf_literals;
+	epmem_literal_set settled;
+	epmem_literal_set frontier;
+
+	// build the DNF graph while checking for leaf WMEs
 	{
-		epmem_shared_literal_pair_list* pairs = wme_p->second;
-		epmem_shared_literal_pair_list::iterator pair_p = pairs->begin();
-
-		epmem_shared_literal_pair_pair_vector::iterator next_wme_p = wme_p;
-		next_wme_p++;
-
-		// the pair call can modify these
-		// note: we only propogate if the rest of the wmes are satisfied	
-		epmem_gm_assignment_map temp_id_assignments;
-		epmem_shared_literal_set temp_used_ids;
-		epmem_gm_sym_constraints temp_sym_constraints;
-
-		while ( ( !return_val ) && ( pair_p != pairs->end() ) )
-		{
-			if ( epmem_gm_pair_satisfiable( (*pair_p) ) )
-			{			
-				temp_id_assignments = (*id_assignments);
-				temp_used_ids = (*used_ids);
-				temp_sym_constraints = (*sym_constraints);
-				
-				return_val = ( epmem_gm_pair_satisfied( (*pair_p), &( temp_id_assignments ), &( temp_used_ids ), &( temp_sym_constraints ) ) && epmem_gm_wme_satisfied( next_wme_p, end_wme_p, &( temp_id_assignments ) , &( temp_used_ids ), &( temp_sym_constraints ) ) );
-
-				if ( !return_val )
-				{
-					pair_p++;
-				}
+		tc_number tc = get_new_tc_number(my_agent);
+		epmem_wme_list* pos_query_wmes = epmem_get_augs_of_id(pos_query, tc);
+		epmem_wme_list* neg_query_wmes = NULL;
+		if (neg_query != NULL) {
+			neg_query_wmes = epmem_get_augs_of_id(neg_query, tc);
+		}
+		std::map<wme*, epmem_dnf_literal*> wme_cache;
+		dnf_root->weight = 0.0;
+		dnf_root->is_neg_q = EPMEM_NODE_POS;
+		dnf_root->is_edge_not_node = 1;
+		dnf_root->has_q1 = false;
+		dnf_root->is_leaf = false;
+		dnf_root->value = NULL;
+		settled.insert(dnf_root);
+		for (int query_type = EPMEM_NODE_POS; query_type <= EPMEM_NODE_NEG; query_type++) {
+			epmem_wme_list* query_wmes = NULL;
+			switch (query_type) {
+				case EPMEM_NODE_POS:
+					query_wmes = pos_query_wmes;
+					break;
+				case EPMEM_NODE_NEG:
+					query_wmes = neg_query_wmes;
+					break;
 			}
-			else
-			{
-				// a small optimization to prevent unnecessary copying
-				// and function calls
-				pair_p++;
-			}	
+			if (!query_wmes) {
+				continue;
+			}
+			// pre-cache the (same) root
+			wme_cache[query_wmes->front()] = dnf_root;
+			// for each first level WME, build up a DNF
+			while (query_wmes) {
+				wme* wme1 = query_wmes->front();
+				query_wmes->pop_front();
+				std::set<wme*> stack;
+				epmem_dnf_literal* root = epmem_build_dnf(wme1, query_type, wme_cache, leaf_literals, tc, stack);
+				if (!dnf_root->parents.count(wme1->attr)) {
+					dnf_root->parents[wme1->attr] = new epmem_literal_set();
+				}
+				dnf_root->parents[wme1->attr]->insert(root);
+				frontier.insert(root);
+			}
 		}
-
-		// if all went well, pass back the constraints
-		if ( return_val )
-		{		
-			(*id_assignments) = temp_id_assignments;
-			(*used_ids) = temp_used_ids;
-			(*sym_constraints) = temp_sym_constraints;
+		delete pos_query_wmes;
+		if (neg_query_wmes) {
+			delete neg_query_wmes;
 		}
 	}
 
-	return return_val;
-}
-
-// graph match is achieved if we can develop a set of assignments/constraints
-// that satisfies the entire list of wmes
-inline bool epmem_graph_match( epmem_shared_literal_pair_pair_vector* pairs, epmem_gm_assignment_map* id_assignments, epmem_shared_literal_set* used_ids, epmem_gm_sym_constraints* sym_constraints )
-{
-	return epmem_gm_wme_satisfied( pairs->begin(), pairs->end(), id_assignments, used_ids, sym_constraints );
-}
-
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-
-
-inline void epmem_clear_literal_group( epmem_shared_literal_group *del_group )
-{
-	for ( epmem_shared_literal_group::iterator p=del_group->begin(); p!=del_group->end(); p++ )
+	// FIXME FIXME FIXME diagnostic code: print out the DNF
 	{
-		delete p->second;
-	}
-}
 
-inline void epmem_add_literal_to_group( epmem_shared_literal_group *dest_group, epmem_shared_literal_pair *literal_pair )
-{
-	// refer to appropriate literal map (keyed by cue wme)
-	epmem_shared_literal_map **dest_map =& (*dest_group)[ literal_pair->wme ];
-	
-	// if literal map doesn't exist, create it
-	if ( !(*dest_map) )
-	{
-		(*dest_map) = new epmem_shared_literal_map;
-	}
-
-	// add literal to the map (if id doesn't already exist here)
-	(*dest_map)->insert( std::make_pair( literal_pair->unique_id, literal_pair ) );
-}
-
-/***************************************************************************
- * Function     : epmem_process_query
- * Author		: Nate Derbinsky
- * Notes		: Performs cue-based query (see section description above).
- *
- * 				  The level parameter should be used only for profiling
- * 				  in experimentation:
- * 				  - level 3 (default): full query processing
- * 				  - level 2: no installing of found memory
- * 				  - level 1: no interval search
- **************************************************************************/
-void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *neg_query, epmem_time_list& prohibit, epmem_time_id before, epmem_time_id after, epmem_lti_map& ltis, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, int level=3 )
-{
-	////////////////////////////////////////////////////////////////////////////
-	my_agent->epmem_timers->query->start();
-	////////////////////////////////////////////////////////////////////////////
-	
-	epmem_wme_list *wmes_query = NULL;
-	if ( query != NULL )
-	{
-		wmes_query = epmem_get_augs_of_id( query, get_new_tc_number( my_agent ) );
-	}
-
-	epmem_wme_list *wmes_neg_query = NULL;
-	if ( neg_query != NULL )
-	{
-		wmes_neg_query = epmem_get_augs_of_id( neg_query, get_new_tc_number( my_agent ) );
-	}
-
-	// only perform a query if there potentially valid cue(s)
-	if ( wmes_query || wmes_neg_query )
-	{
-		if ( !prohibit.empty() )
-		{
-			std::sort( prohibit.begin(), prohibit.end() );
-		}
 		
-		// perform query
-		{
-			// queries
-			epmem_shared_query_list *queries = new epmem_shared_query_list[2];
-			std::list<epmem_shared_literal_pair_list *> trigger_lists;
+		// clean up code
+	}
 
-			// match counters
-			std::list<epmem_shared_match *> matches;
+	epmem_edge_sql_map sqlcache; // SQL query cache
 
-			// literals
-			std::list<epmem_shared_literal *> literals;
+	// priority queues for interval walk
+	epmem_unique_edge_pq edge_pq;
+	epmem_interval_pq interval_pq;
 
-			// pairs
-			epmem_shared_literal_pair_list pairs;						
-
-			// graph match
-			bool graph_match = ( my_agent->epmem_params->graph_match->get_value() ==  soar_module::on );
-			epmem_shared_literal_pair_map* gm_pairs = NULL;
-			epmem_shared_literal_pair_pair_vector* gm_ordered = NULL;
-			if ( graph_match )
-			{
-				gm_pairs = new epmem_shared_literal_pair_map;
-				gm_ordered = new epmem_shared_literal_pair_pair_vector;
+	// create unique edge queries for first level WMEs
+	for (epmem_attr_literal_map::iterator attr_iter = dnf_root->children.begin(); attr_iter != dnf_root->children.end(); attr_iter++) {
+		Symbol* attr = (*attr_iter).first;
+		epmem_literal_set* children_set = (*attr_iter).second;
+		for (epmem_literal_set::iterator iter = children_set->begin(); iter != children_set->end(); iter++) {
+			epmem_dnf_literal* child = (*iter);
+			epmem_sql_edge info;
+			info.q0 = 0;
+			info.w = attr;
+			info.has_q1 = child->has_q1;
+			// fill out the rest of the edge and create an sql statement
+			soar_module::sqlite_statement* uedge_sql = NULL;
+			if (child->has_q1) {
+				uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_query, my_agent->epmem_timers->edge_query);
+				uedge_sql->prepare();
+				assert(uedge_sql->get_status() == soar_module::ready);
+				uedge_sql->bind_int(1, info.q0);
+				uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
+				info.q1 = 0;
+			} else {
+				uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_value_query, my_agent->epmem_timers->edge_query);
+				uedge_sql->prepare();
+				assert(uedge_sql->get_status() == soar_module::ready);
+				uedge_sql->bind_int(1, info.q0);
+				uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
+				info.q1 = epmem_temporal_hash(my_agent, child->value);
+				uedge_sql->bind_int(3, info.q1);
 			}
-
-			uint64_t leaf_ids[2] = { 0, 0 };
-
-			epmem_time_id time_now = my_agent->epmem_stats->time->get_value() - 1;
-
-			double balance = my_agent->epmem_params->balance->get_value();
-			bool balance_approximately_1 = ( ( balance > ( 1.0 - 1.0e-8 ) ) && ( balance < ( 1.0 + 1.0e-8 ) ) );
-
-			////////////////////////////////////////////////////////////////////////////
-			my_agent->epmem_timers->query_dnf->start();
-			////////////////////////////////////////////////////////////////////////////
-
-			// simultaneously process cue, construct DNF graph, and add queries to priority cue
-			// (i.e. prep for range search query)
-			{
-				// wme cache
-				tc_number tc = get_new_tc_number( my_agent );
-				std::map<Symbol *, epmem_wme_cache_element *> wme_cache;
-				epmem_wme_cache_element *current_cache_element;
-				epmem_wme_cache_element **cache_hit;
-
-				// literal mapping
-				epmem_literal_mapping::iterator lit_map_p;
-				bool shared_cue_id;
-
-				// parent info
-				std::queue< wme* > parent_wmes;
-				std::queue<Symbol *> parent_syms;
-				std::queue<epmem_node_id> parent_ids;
-				std::queue<epmem_shared_literal *> parent_literals;
-
-				Symbol *parent_sym;
-				wme* parent_wme;
-				epmem_node_id parent_id;
-				epmem_shared_literal *parent_literal;
-
-				// misc query				
-				int position;
-
-				// misc
-				int i, k, m;				
-				epmem_wme_list::iterator w_p, w_p2;
-
-				// special variables for LTIs
-				epmem_time_id promotion_time = 0;
-				soar_module::sqlite_statement *lti_start_stmt = NULL;
-
-				// variables for requiring LTIs
-				epmem_time_id lti_current_time;
-
-				// associate common literals with a query
-				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_node_query;
-				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_edge_query;
-				epmem_shared_literal_pair_list **query_triggers;
-
-				// associate common WMEs with a match
-				std::map<wme *, epmem_shared_match *> wme_to_match;
-				epmem_shared_match **wme_match;
-
-				// temp new things
-				epmem_shared_literal *new_literal = NULL;
-				epmem_shared_match *new_match = NULL;
-				epmem_shared_query *new_query = NULL;
-				epmem_wme_cache_element *new_cache_element = NULL;
-				epmem_shared_literal_pair_list *new_trigger_list = NULL;
-				soar_module::timer *new_timer = NULL;
-				soar_module::sqlite_statement *new_stmt = NULL;
-				epmem_shared_literal_pair *new_literal_pair;
-				epmem_shared_incoming_book* new_incoming;
-				epmem_shared_incoming_id_book** new_incoming_wme_book;
-
-				// identity (i.e. database id)
-				epmem_node_id unique_identity;
-				epmem_node_id shared_identity;
-
-				// temporal hashing
-				epmem_hash_id my_hash;	// attribute
-				epmem_hash_id my_hash2;	// value
-
-				// short- vs. long-term identifiers
-				soar_module::sqlite_statement* my_q;
-				bool lti_should_be_current;
-				bool good_q;
-
-				// fully populate wme cache (we need to know parent info a priori)
-				{
-					epmem_wme_list *starter_wmes = NULL;
-
-					// query
-					new_cache_element = new epmem_wme_cache_element;					
-					new_cache_element->wmes = wmes_query;
-					new_cache_element->parents = new epmem_wme_list;
-					new_cache_element->lits = new epmem_literal_mapping;
-					wme_cache[ query ] = new_cache_element;
-					new_cache_element = NULL;
-
-					// negative query
-					new_cache_element = new epmem_wme_cache_element;					
-					new_cache_element->wmes = wmes_neg_query;
-					new_cache_element->parents = new epmem_wme_list;
-					new_cache_element->lits = new epmem_literal_mapping;
-					wme_cache[ neg_query ] = new_cache_element;
-					new_cache_element = NULL;
-
-					for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
-					{
-						switch ( i )
-						{
-							case EPMEM_NODE_POS:
-								starter_wmes = wmes_query;								
-								break;
-
-							case EPMEM_NODE_NEG:
-								starter_wmes = wmes_neg_query;								
-								break;
-						}
-
-						if ( starter_wmes )
-						{
-							for ( w_p=starter_wmes->begin(); w_p!=starter_wmes->end(); w_p++ )
-							{
-								if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-								{
-									parent_wmes.push( (*w_p) );
-								}
-								else
-								{
-									leaf_ids[i]++;
-								}
-							}
-
-							while ( !parent_wmes.empty() )
-							{
-								parent_wme = parent_wmes.front();
-								parent_wmes.pop();
-
-								parent_sym = parent_wme->value;
-
-								cache_hit =& wme_cache[ parent_sym ];
-								if ( (*cache_hit) )
-								{									
-									(*cache_hit)->parents->push_back( parent_wme );
-								}
-								else
-								{
-									new_cache_element = new epmem_wme_cache_element;									
-									new_cache_element->lits = new epmem_literal_mapping;
-
-									// look at children, if not lti
-									if ( !parent_sym->id.smem_lti )
-									{
-										new_cache_element->wmes = epmem_get_augs_of_id( parent_sym, tc );
-									}
-									else
-									{
-										new_cache_element->wmes = new epmem_wme_list;
-									}
-									
-									// incoming
-									{
-										new_cache_element->parents = new epmem_wme_list;
-										new_cache_element->parents->push_back( parent_wme );
-									}
-									
-									// add to cache
-									wme_cache[ parent_sym ] = new_cache_element;
-									
-
-									if ( new_cache_element->wmes->size() )
-									{
-										for ( w_p=new_cache_element->wmes->begin(); w_p!=new_cache_element->wmes->end(); w_p++ )										
-										{
-											if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-											{
-												parent_wmes.push( (*w_p) );
-											}
-											else
-											{
-												leaf_ids[i]++;
-											}
-										}
-									}
-									else
-									{
-										leaf_ids[i]++;
-									}
-
-									new_cache_element = NULL;
-								}
-
-								cache_hit = NULL;
-							}
-
-							parent_sym = NULL;
-							parent_wme = NULL;
-						}
-					}
-				}
-
-				// initialize pos/neg lists
-				for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
-				{
-					switch ( i )
-					{
-						case EPMEM_NODE_POS:
-							parent_syms.push( query );
-							parent_ids.push( EPMEM_NODEID_ROOT );
-							parent_literals.push( NULL );
-							break;
-
-						case EPMEM_NODE_NEG:
-							parent_syms.push( neg_query );
-							parent_ids.push( EPMEM_NODEID_ROOT );
-							parent_literals.push( NULL );
-							break;
-					}
-
-					while ( !parent_syms.empty() )
-					{
-						parent_sym = parent_syms.front();
-						parent_syms.pop();
-
-						parent_id = parent_ids.front();
-						parent_ids.pop();
-
-						parent_literal = parent_literals.front();
-						parent_literals.pop();
-
-						current_cache_element = wme_cache[ parent_sym ];
-
-						if ( current_cache_element->wmes )
-						{
-							for ( w_p=current_cache_element->wmes->begin(); w_p!=current_cache_element->wmes->end(); w_p++ )							
-							{
-								// add to cue list
-								cue_wmes.insert( (*w_p) );
-
-								if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-								{
-									my_hash = epmem_temporal_hash( my_agent, (*w_p)->attr );
-									good_q = false;
-									lti_should_be_current = false;
-									my_q = NULL;
-
-									if ( (*w_p)->value->id.smem_lti )
-									{
-										my_agent->epmem_stmts_graph->find_lti->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
-										my_agent->epmem_stmts_graph->find_lti->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
-
-										if ( my_agent->epmem_stmts_graph->find_lti->execute() == soar_module::row )
-										{
-											my_q = my_agent->epmem_stmts_graph->find_edge_unique_shared;
-											my_q->bind_int( 3, my_agent->epmem_stmts_graph->find_lti->column_int( 0 ) );
-
-											good_q = true;
-										}
-
-										my_agent->epmem_stmts_graph->find_lti->reinitialize();
-									}
-									else if ( i == EPMEM_NODE_POS && ltis.count((*w_p)->value) > 0 )
-									{
-										// if it's a positive query and the symbol *should* be an LTI
-										// set my_q to a query such that the child must be an LTI
-										lti_should_be_current = ltis[(*w_p)->value];
-										my_q = my_agent->epmem_stmts_graph->find_edge_unique_lti;
-										good_q = true;
-									}
-									else
-									{
-										my_q = my_agent->epmem_stmts_graph->find_edge_unique;
-										good_q = true;
-									}
-
-									if ( good_q )
-									{
-										// q0=? AND w=?
-										my_q->bind_int( 1, parent_id );
-										my_q->bind_int( 2, my_hash );
-										
-										while ( my_q->execute() == soar_module::row )
-										{
-											// get identity
-											unique_identity = my_q->column_int( 0 );
-											shared_identity = my_q->column_int( 1 );
-
-											// have we seen this identifier before?
-											shared_cue_id = false;
-											cache_hit =& wme_cache[ (*w_p)->value ];
-											lit_map_p = (*cache_hit)->lits->find( shared_identity );
-											shared_cue_id = ( lit_map_p != (*cache_hit)->lits->end() );
-
-											if ( shared_cue_id )
-											{
-												new_literal = lit_map_p->second;
-											}
-											else
-											{
-												// create new literal
-												new_literal = new epmem_shared_literal;											
-												
-												// incoming edges
-												{
-													new_incoming = new epmem_shared_incoming_book;
-
-													// parents
-													{
-														new_incoming->parents = new epmem_shared_incoming_ids_book;
-														for ( w_p2=(*cache_hit)->parents->begin(); w_p2!=(*cache_hit)->parents->end(); w_p2++ )
-														{
-															new_incoming_wme_book =& (*new_incoming->parents)[ (*w_p2)->id ];
-
-															if ( !(*new_incoming_wme_book) )
-															{
-																(*new_incoming_wme_book) = new epmem_shared_incoming_id_book;
-																
-																(*new_incoming_wme_book)->outgoing = new epmem_wme_list;
-																(*new_incoming_wme_book)->satisfactory = new epmem_shared_literal_set;
-															}
-
-															(*new_incoming_wme_book)->outgoing->push_back( (*w_p2) );
-														}
-													}
-
-													// book
-													{
-														new_incoming->book = new epmem_shared_incoming_book_map;
-													}												
-
-													new_literal->incoming = new_incoming;
-												}
-
-												new_literal->ct = 0;
-												new_literal->max = static_cast<uint64_t>( new_literal->incoming->parents->size() );
-
-												new_literal->shared_id = shared_identity;
-												new_literal->shared_sym = (*w_p)->value;
-
-												new_literal->wme_kids = ( (*cache_hit)->wmes->size() != 0 );
-												new_literal->children = NULL;
-
-												new_literal->match = NULL;
-
-												literals.push_back( new_literal );
-												(*(*cache_hit)->lits)[ shared_identity ] = new_literal;
-											}
-											cache_hit = NULL;
-
-											new_literal_pair = new epmem_shared_literal_pair;
-											new_literal_pair->lit = new_literal;
-											new_literal_pair->parent_lit = parent_literal;
-											new_literal_pair->unique_id = unique_identity;
-											new_literal_pair->q0 = parent_id;
-											new_literal_pair->q1 = shared_identity;
-											new_literal_pair->wme = (*w_p);
-											pairs.push_back( new_literal_pair );
-
-											// add literal to appropriate group
-											{
-												if ( parent_id != EPMEM_NODEID_ROOT )											
-												{
-													// if this is parent's first child, init
-													if ( !parent_literal->children )
-													{
-														parent_literal->children = new epmem_shared_literal_group;
-													}
-													
-													epmem_add_literal_to_group( parent_literal->children, new_literal_pair );											
-												}
-											}
-
-											// create queries if necessary
-											query_triggers =& literal_to_edge_query[ unique_identity ];
-											if ( !(*query_triggers) )
-											{
-												new_trigger_list = new epmem_shared_literal_pair_list;
-												trigger_lists.push_back( new_trigger_list );
-
-												lti_current_time = 0;
-												if ( lti_should_be_current )
-												{
-													// get the current time of the LTI
-													my_agent->epmem_stmts_graph->find_lti_current_time->bind_int( 1, shared_identity );
-													my_agent->epmem_stmts_graph->find_lti_current_time->execute();
-													lti_current_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int( 0 );
-													my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
-												}
-
-                                                // find the promotion time for an LTI
-                                                promotion_time = 0;
-                                                if ( (*w_p)->value->id.smem_lti )
-                                                {
-                                                    // get the promotion time of the LTI
-                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->bind_int( 1, static_cast<uint64_t>( (*w_p)->value->id.name_letter ) );
-                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->bind_int( 2, static_cast<uint64_t>( (*w_p)->value->id.name_number ) );
-                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->execute();
-                                                    promotion_time = my_agent->epmem_stmts_graph->find_lti_promotion_time->column_int( 0 );
-                                                    my_agent->epmem_stmts_graph->find_lti_promotion_time->reinitialize();
-                                                }
-
-												// add all respective queries
-												for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
-												{
-													for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
-													{
-														// assign timer
-														if ( lti_should_be_current )
-														{
-															new_timer = my_agent->epmem_timers->query_lti;
-														}
-														else
-														{
-														switch ( m )
-														{
-															case EPMEM_RANGE_EP:
-																new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
-																break;
-
-															case EPMEM_RANGE_NOW:
-																new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
-																break;
-
-															case EPMEM_RANGE_POINT:
-																new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
-																break;
-														}
-														}
-
-														// bind values
-														position = 1;
-
-														// assign sql
-														// requiring a WME to be an LTI (and be current) takes priority
-														// since the unique_identity makes sure that it's an LTI anyway
-														if ( lti_should_be_current )
-														{
-															// use different query table to specify LTI must be current
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_current_queries[ k ][ m ], new_timer );
-														}
-														else if ( promotion_time > 0 )
-														{
-															// otherwise if the value is an LTI
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_queries[ k ][ m ], new_timer );
-
-															// add special query for promotion start point to query list (if start)
-															if ( k == EPMEM_RANGE_START )
-															{
-																lti_start_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_start, new_timer );
-																lti_start_stmt->prepare();
-																assert( lti_start_stmt->get_status() == soar_module::ready );
-																lti_start_stmt->bind_int( 1, promotion_time );
-																lti_start_stmt->execute();
-																new_query = new epmem_shared_query;
-																new_query->val = lti_start_stmt->column_int( 0 );
-																new_query->stmt = lti_start_stmt;
-																new_query->unique_id = unique_identity;
-																new_query->triggers = new_trigger_list;
-																queries[ k ].push( new_query );
-																new_query = NULL;
-																lti_start_stmt = NULL;
-															}
-														}
-														else
-														{
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
-														}
-														new_stmt->prepare();
-
-														// bind values
-														// bind return value as the stored current episode of the LTI
-														if ( lti_should_be_current && ( k == EPMEM_RANGE_START ) )
-														{
-															new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
-														}
-														// bind return value as the current time
-														// assign sql
-														// check for LTI and use special SQL commands
-														if ( promotion_time > 0 )
-														{
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_queries[ k ][ m ], new_timer );
-															new_stmt->prepare();
-
-															// add special query for promotion start point to query list (if start)
-                                                            if ( k == EPMEM_RANGE_START )
-                                                            {
-                                                                lti_start_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_start, new_timer );
-                                                                lti_start_stmt->prepare();
-																assert( lti_start_stmt->get_status() == soar_module::ready );
-                                                                lti_start_stmt->bind_int( 1, promotion_time );
-                                                                lti_start_stmt->execute();
-                                                                new_query = new epmem_shared_query;
-                                                                new_query->val = lti_start_stmt->column_int( 0 );
-                                                                new_query->stmt = lti_start_stmt;
-                                                                new_query->unique_id = unique_identity;
-                                                                new_query->triggers = new_trigger_list;
-                                                                queries[ k ].push( new_query );
-                                                                new_query = NULL;
-                                                                lti_start_stmt = NULL;
-                                                            }
-														}
-														else
-														{
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
-															new_stmt->prepare();
-														}
-                                                        assert( new_stmt->get_status() == soar_module::ready );
-
-														if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
-														{
-															new_stmt->bind_int( position++, time_now );
-														}
-
-														// bind constraints for promotion time
-                                                        if ( (promotion_time > 0) && ( ( k != EPMEM_RANGE_END ) || ( m == EPMEM_RANGE_EP ) ) )
-														{
-															new_stmt->bind_int( position++, promotion_time );
-														}
-														// bind edge unique id
-														new_stmt->bind_int( position++, unique_identity );													
-														if ( lti_should_be_current )
-														{
-															// do extra bind for start/end constraints wrt. current
-															new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
-															if ( m == EPMEM_RANGE_EP )
-															{
-																new_stmt->bind_int( position++, static_cast<uint64_t>( lti_current_time ) );
-															}
-														}
-														assert( new_stmt->get_status() == soar_module::ready );
-
-														// take first step
-														if ( new_stmt->execute() == soar_module::row )
-														{
-															new_query = new epmem_shared_query;
-															new_query->val = new_stmt->column_int( 0 );
-															new_query->stmt = new_stmt;
-
-															new_query->unique_id = unique_identity;
-
-															new_query->triggers = new_trigger_list;
-
-															// add to query list
-															queries[ k ].push( new_query );
-															new_query = NULL;
-														}
-														else
-														{
-															delete new_stmt;
-														}
-
-														new_stmt = NULL;
-														new_timer = NULL;
-													}
-												}
-
-												(*query_triggers) = new_trigger_list;
-												new_trigger_list = NULL;
-											}
-											(*query_triggers)->push_back( new_literal_pair );
-
-											if ( !shared_cue_id )
-											{
-												if ( new_literal->wme_kids )
-												{
-													parent_syms.push( (*w_p)->value );
-													parent_ids.push( shared_identity );
-													parent_literals.push( new_literal );
-												}
-												else
-												{
-													// create match if necessary
-													wme_match =& wme_to_match[ (*w_p) ];
-													if ( !(*wme_match) )
-													{
-														new_match = new epmem_shared_match;
-														matches.push_back( new_match );
-														new_match->ct = 0;
-														new_match->value_ct = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) );
-														new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * ( ( balance_approximately_1 )?( WMA_ACTIVATION_NONE ):( wma_get_wme_activation( my_agent, (*w_p), true ) ) );
-
-														(*wme_match) = new_match;
-														new_match = NULL;
-													}
-													new_literal->match = (*wme_match);
-												}
-											}
-
-											new_literal = NULL;
-										}
-										my_q->reinitialize();
-									}
-								}
-								else
-								{
-									my_hash = epmem_temporal_hash( my_agent, (*w_p)->attr );
-									my_hash2 = epmem_temporal_hash( my_agent, (*w_p)->value );
-
-									// parent_id=? AND attr=? AND value=?
-									my_agent->epmem_stmts_graph->find_node_unique->bind_int( 1, parent_id );
-									my_agent->epmem_stmts_graph->find_node_unique->bind_int( 2, my_hash );
-									my_agent->epmem_stmts_graph->find_node_unique->bind_int( 3, my_hash2 );									
-
-									if ( my_agent->epmem_stmts_graph->find_node_unique->execute() == soar_module::row )
-									{
-										// get identity
-										unique_identity = my_agent->epmem_stmts_graph->find_node_unique->column_int( 0 );
-
-										// create new literal
-										new_literal = new epmem_shared_literal;
-
-										new_literal->ct = 0;
-										new_literal->max = EPMEM_DNF;										
-										new_literal->incoming = NULL;
-
-										new_literal->shared_id = EPMEM_NODEID_ROOT;
-										new_literal->shared_sym = NULL;
-
-										new_literal->wme_kids = 0;										
-										new_literal->children = NULL;
-
-										literals.push_back( new_literal );
-
-										new_literal_pair = new epmem_shared_literal_pair;
-										new_literal_pair->lit = new_literal;
-										new_literal_pair->parent_lit = parent_literal;
-										new_literal_pair->unique_id = unique_identity;
-										new_literal_pair->q0 = parent_id;
-										new_literal_pair->q1 = 0;
-										new_literal_pair->wme = (*w_p);
-										pairs.push_back( new_literal_pair );										
-										
-										// add to appropriate group
-										{
-											if ( parent_id == EPMEM_NODEID_ROOT )
-											{
-												new_literal->ct++;
-											}
-											else
-											{
-												// if this is parent's first child, init
-												if ( !parent_literal->children )
-												{
-													parent_literal->children = new epmem_shared_literal_group;												
-												}
-
-												epmem_add_literal_to_group( parent_literal->children, new_literal_pair );
-											}
-										}
-
-										// create match if necessary
-										wme_match =& wme_to_match[ (*w_p) ];
-										if ( !(*wme_match) )
-										{
-											new_match = new epmem_shared_match;
-											matches.push_back( new_match );
-											new_match->ct = 0;
-											new_match->value_ct = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) );
-											new_match->value_weight = ( ( i == EPMEM_NODE_POS )?( 1 ):( -1 ) ) * ( ( balance_approximately_1 )?( WMA_ACTIVATION_NONE ):( wma_get_wme_activation( my_agent, (*w_p), true ) ) );
-
-											(*wme_match) = new_match;
-											new_match = NULL;
-										}
-										new_literal->match = (*wme_match);
-
-										// create queries if necessary
-										query_triggers =& literal_to_node_query[ unique_identity ];
-										if ( !(*query_triggers) )
-										{
-											new_trigger_list = new epmem_shared_literal_pair_list;
-											trigger_lists.push_back( new_trigger_list );
-
-											// add all respective queries
-											for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
-											{
-												for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
-												{
-													// assign timer
-													switch ( m )
-													{
-														case EPMEM_RANGE_EP:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_ep ):( my_agent->epmem_timers->query_pos_end_ep ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_ep ):( my_agent->epmem_timers->query_neg_end_ep ) ) );
-															break;
-
-														case EPMEM_RANGE_NOW:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_now ):( my_agent->epmem_timers->query_pos_end_now ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_now ):( my_agent->epmem_timers->query_neg_end_now ) ) );
-															break;
-
-														case EPMEM_RANGE_POINT:
-															new_timer = ( ( i == EPMEM_NODE_POS )?( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_pos_start_point ):( my_agent->epmem_timers->query_pos_end_point ) ):( ( k == EPMEM_RANGE_START )?( my_agent->epmem_timers->query_neg_start_point ):( my_agent->epmem_timers->query_neg_end_point ) ) );
-															break;
-													}
-
-													// assign sql
-													new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ k ][ m ], new_timer );
-													new_stmt->prepare();
-
-													// bind values
-													position = 1;
-
-													if ( ( m == EPMEM_RANGE_NOW ) && ( k == EPMEM_RANGE_END ) )
-													{
-														new_stmt->bind_int( position++, time_now );
-													}
-													new_stmt->bind_int( position, unique_identity );													
-
-													// take first step
-													if ( new_stmt->execute() == soar_module::row )
-													{
-														new_query = new epmem_shared_query;
-														new_query->val = new_stmt->column_int( 0 );
-														new_query->stmt = new_stmt;
-
-														new_query->unique_id = unique_identity;
-
-														new_query->triggers = new_trigger_list;
-
-														// add to query list
-														queries[ k ].push( new_query );
-														new_query = NULL;
-													}
-													else
-													{
-														delete new_stmt;
-													}
-
-													new_stmt = NULL;
-													new_timer = NULL;
-												}
-											}
-
-											(*query_triggers) = new_trigger_list;
-											new_trigger_list = NULL;
-										}										
-										(*query_triggers)->push_back( new_literal_pair );
-
-										new_literal = NULL;
-									}
-									my_agent->epmem_stmts_graph->find_node_unique->reinitialize();
-								}
-							}
-						}
-					}
-
-					if ( i == EPMEM_NODE_POS )
-					{
-						if ( graph_match )
-						{
-							epmem_shared_literal_pair_list::iterator pairs_p;
-							epmem_shared_literal_pair_list** new_pair_list;
-
-							for ( pairs_p=pairs.begin(); pairs_p!=pairs.end(); pairs_p++ )
-							{
-								new_pair_list =& (*gm_pairs)[ (*pairs_p)->wme ];
-
-								if ( !(*new_pair_list) )
-								{
-									(*new_pair_list) = new epmem_shared_literal_pair_list;
-								}
-
-								(*new_pair_list)->push_back( (*pairs_p) );
-							}
-						}
-					}
-				}
-
-				// clean up wme cache
-				{
-					std::map<Symbol *, epmem_wme_cache_element *>::iterator cache_p;
-					for ( cache_p=wme_cache.begin(); cache_p!=wme_cache.end(); cache_p++ )
-					{
-						if ( cache_p->second->wmes )
-						{
-							delete cache_p->second->wmes;
-						}
-
-						delete cache_p->second->lits;
-						delete cache_p->second->parents;
-
-						delete cache_p->second;
-					}
-				}
+			// if we've seen this edge before, just add the literal to it and continue)
+			if (sqlcache.count(info)) {
+				delete uedge_sql;
+				sqlcache[info]->literals.insert(child);
+				continue;
 			}
-
-			////////////////////////////////////////////////////////////////////////////
-			my_agent->epmem_timers->query_dnf->stop();
-			////////////////////////////////////////////////////////////////////////////
-
-			my_agent->epmem_stats->qry_pos->set_value( leaf_ids[ EPMEM_NODE_POS ] );
-			my_agent->epmem_stats->qry_neg->set_value( leaf_ids[ EPMEM_NODE_NEG ] );
-			my_agent->epmem_stats->qry_ret->set_value( 0 );
-			my_agent->epmem_stats->qry_card->set_value( 0 );
-			my_agent->epmem_stats->qry_lits->set_value( static_cast<int64_t>( literals.size() ) );
-
-			// useful statistics
-			int64_t cue_size = static_cast<int64_t>( leaf_ids[ EPMEM_NODE_POS ] + leaf_ids[ EPMEM_NODE_NEG ] );
-			uint64_t perfect_match = leaf_ids[ EPMEM_NODE_POS ];
-
-			// vars to set in range search
-			epmem_time_id king_id = EPMEM_MEMID_NONE;
-			double king_score = -1000;
-			uint64_t king_cardinality = 0;
-			bool king_graph_match = false;
-			epmem_gm_assignment_map king_assignments;
-
-			// perform range search if there are queries and leaf wmes
-			if ( queries[ EPMEM_RANGE_START ].size() && queries[ EPMEM_RANGE_END ].size() && level > 1 && cue_size && !matches.empty() )
-			{
-				double balance_inv = 1 - balance;
-
-				// dynamic programming stuff
-				int64_t sum_ct = 0;
-				double sum_v = 0;
-				int64_t sum_updown = 0;
-
-				// current pointer
-				epmem_time_id current_id = EPMEM_MEMID_NONE;
-				int64_t current_ct = 0;
-				double current_v = 0;
-				int64_t current_updown = 0;
-				epmem_time_id current_end;
-				epmem_time_id current_valid_end;
-				double current_score;
-
-				// next pointers
-				epmem_time_id start_id = EPMEM_MEMID_NONE;
-				epmem_time_id end_id = EPMEM_MEMID_NONE;
-				epmem_time_id *next_id;
-				unsigned int next_list = NIL;
-
-				// prohibit pointer
-				epmem_time_list::size_type current_prohibit = ( prohibit.size() - 1 );
-
-				// completion (allows for smart cut-offs later)
-				bool done = false;
-
-				// graph match
-				bool graph_match_result = false;
-				epmem_gm_assignment_map current_assignments;
-				epmem_shared_literal_set current_used_ids;
-				epmem_gm_sym_constraints current_sym_constraints;
-
-				// initialize current as last end
-				// initialize next end
-				epmem_shared_increment( queries, current_id, current_ct, current_v, current_updown, EPMEM_RANGE_END );
-				end_id = ( ( queries[ EPMEM_RANGE_END ].empty() )?( EPMEM_MEMID_NONE ):( queries[ EPMEM_RANGE_END ].top()->val ) );
-
-				// initialize next start
-				start_id = ( ( queries[ EPMEM_RANGE_START ].empty() )?( EPMEM_MEMID_NONE ):( queries[ EPMEM_RANGE_START ].top()->val ) );
-
-				do
-				{
-					// if both lists are finished, we are done
-					if ( ( start_id == EPMEM_MEMID_NONE ) && ( end_id == EPMEM_MEMID_NONE ) )
-					{
-						done = true;
-					}
-					// if we are beyond a specified after, we are done
-					else if ( ( after != EPMEM_MEMID_NONE ) && ( current_id <= after ) )
-					{
-						done = true;
-					}
-					// if one list finished, go to the other
-					else if ( ( start_id == EPMEM_MEMID_NONE ) || ( end_id == EPMEM_MEMID_NONE ) )
-					{
-						next_list = ( ( start_id == EPMEM_MEMID_NONE )?( EPMEM_RANGE_END ):( EPMEM_RANGE_START ) );
-					}
-					// if neither list finished, we prefer the higher id (end in case of tie)
-					else
-					{
-						next_list = ( ( start_id > end_id )?( EPMEM_RANGE_START ):( EPMEM_RANGE_END ) );
-					}
-
-					if ( !done )
-					{
-						// update sums
-						sum_ct += current_ct;
-						sum_v += current_v;
-						sum_updown += current_updown;
-
-						// update end
-						current_end = ( ( next_list == EPMEM_RANGE_END )?( end_id + 1 ):( start_id ) );
-						if ( before == EPMEM_MEMID_NONE )
-						{
-							current_valid_end = current_id;
-						}
-						else
-						{
-							current_valid_end = ( ( current_id < before )?( current_id ):( before - 1 ) );
-						}
-
-						while ( ( current_prohibit < prohibit.size() ) && ( current_valid_end >= current_end ) && ( current_valid_end <= prohibit[ current_prohibit ] ) )
-						{
-							if ( current_valid_end == prohibit[ current_prohibit ] )
-							{
-								current_valid_end--;
-							}
-
-							current_prohibit--;
-						}
-
-						// if we are beyond before AND
-						// we are in a range, compute score
-						// for possible new king
-						if ( ( current_valid_end >= current_end ) && ( sum_updown != 0 ) )
-						{
-							current_score = ( balance * sum_ct ) + ( balance_inv * sum_v );
-
-							// provide trace output
-							if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-							{
-								char buf[256];
-
-								SNPRINTF( buf, 254, "CONSIDERING EPISODE (time, cardinality, score): (%lld, %ld, %f)", static_cast<long long int>(current_valid_end), static_cast<long int>(sum_ct), current_score );
-
-								print( my_agent, buf );
-								xml_generate_warning( my_agent, buf );
-							}
-
-							if ( graph_match )
-							{
-								// policy:
-								// - king candidate MUST have AT LEAST king score
-								// - perform graph match ONLY if cardinality is perfect
-								// - ONLY stop if graph match is perfect
-
-								if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score >= king_score ) )
-								{
-									if ( sum_ct == static_cast<int64_t>( perfect_match ) )
-									{
-										current_assignments.clear();
-										current_assignments.insert( std::make_pair( query, EPMEM_NODEID_ROOT ) );
-
-										current_used_ids.clear();
-										current_used_ids.insert( EPMEM_NODEID_ROOT );
-
-										current_sym_constraints.clear();
-
-										////////////////////////////////////////////////////////////////////////////
-										my_agent->epmem_timers->query_graph_match->start();
-										////////////////////////////////////////////////////////////////////////////
-
-										if ( gm_ordered->size() != gm_pairs->size() )
-										{
-											epmem_param_container::gm_ordering_choices gm_ordering = my_agent->epmem_params->gm_ordering->get_value();
-											epmem_shared_literal_pair_map::iterator it;
-											
-											if ( ( gm_ordering == epmem_param_container::gm_order_undefined ) ||
-												 ( gm_ordering == epmem_param_container::gm_order_mcv ) )
-											{
-												for ( it=gm_pairs->begin(); it!=gm_pairs->end(); it++ )
-												{
-													gm_ordered->push_back( (*it) );
-												}
-
-												if ( gm_ordering == epmem_param_container::gm_order_mcv )
-												{
-													std::sort( gm_ordered->begin(), gm_ordered->end(), _epmem_gm_compare_mcv );
-												}
-											}
-											else if ( gm_ordering == epmem_param_container::gm_order_dfs )
-											{
-												// sort wmes
-												std::list< wme* > ordered_cue;
-												_epmem_gm_sort_wmes_dfs( query, get_new_tc_number( my_agent ), ordered_cue );
-
-												// add the pairs in order
-												epmem_shared_literal_pair_map::iterator pair_it;
-												for ( std::list< wme* >::iterator oc_it=ordered_cue.begin(); oc_it!=ordered_cue.end(); oc_it++ )
-												{
-													pair_it = gm_pairs->find( (*oc_it) );
-													assert( pair_it != gm_pairs->end() );
-
-													gm_ordered->push_back( (*pair_it) );
-												}
-											}
-										}
-
-										graph_match_result = epmem_graph_match( gm_ordered, &( current_assignments ), &( current_used_ids ), &( current_sym_constraints ) );
-
-										////////////////////////////////////////////////////////////////////////////
-										my_agent->epmem_timers->query_graph_match->stop();
-										////////////////////////////////////////////////////////////////////////////
-
-										if ( ( king_id == EPMEM_MEMID_NONE ) ||
-											 ( current_score > king_score ) ||
-											 ( graph_match_result ) )
-										{
-											king_id = current_valid_end;
-											king_score = current_score;
-											king_cardinality = sum_ct;											
-											king_assignments = current_assignments;
-
-											if ( graph_match_result )
-											{
-												king_graph_match = true;
-												done = true;
-											}
-
-											// provide trace output
-											if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-											{
-												char buf[256];
-												SNPRINTF( buf, 254, "NEW KING (perfect, graph-match): (true, %s)", ( ( king_graph_match )?("true"):("false") ) );
-
-												print( my_agent, buf );
-												xml_generate_warning( my_agent, buf );
-											}											
-										}
-									}
-									else
-									{
-										if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score > king_score ) )
-										{
-											king_id = current_valid_end;
-											king_score = current_score;
-											king_cardinality = sum_ct;											
-
-											// provide trace output
-											if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-											{
-												char buf[256];
-												SNPRINTF( buf, 254, "NEW KING (perfect, graph-match): (false, false)" );
-
-												print( my_agent, buf );
-												xml_generate_warning( my_agent, buf );
-											}
-										}
-									}
-								}
-							}
-							else
-							{
-								// new king if no old king OR better score
-								if ( ( king_id == EPMEM_MEMID_NONE ) || ( current_score > king_score ) )
-								{
-									king_id = current_valid_end;
-									king_score = current_score;
-									king_cardinality = sum_ct;
-
-									// provide trace output
-									if ( my_agent->sysparams[ TRACE_EPMEM_SYSPARAM ] )
-									{
-										char buf[256];
-										SNPRINTF( buf, 254, "NEW KING (perfect): (%s)", ( ( king_cardinality == perfect_match )?("true"):("false") ) );
-
-										print( my_agent, buf );
-										xml_generate_warning( my_agent, buf );
-									}
-
-									if ( king_cardinality == perfect_match )
-									{
-										done = true;
-									}
-								}
-							}
-						}
-
-						if ( !done )
-						{
-							// based upon choice, update variables
-							epmem_shared_increment( queries, current_id, current_ct, current_v, current_updown, next_list );
-							current_id = current_end - 1;
-							current_ct *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
-							current_v *= ( ( next_list == EPMEM_RANGE_START )?( -1 ):( 1 ) );
-
-							next_id = ( ( next_list == EPMEM_RANGE_START )?( &start_id ):( &end_id ) );
-							(*next_id) = ( ( queries[ next_list ].empty() )?( EPMEM_MEMID_NONE ):( queries[ next_list ].top()->val ) );
-						}
-					}
-
-				} while ( !done );
+			// otherwise, create a new unique edge query
+			epmem_unique_edge_query* uedge_q = new epmem_unique_edge_query();
+			uedge_q->edge_info = info;
+			uedge_q->depth = 1;
+			uedge_q->is_edge_not_node = child->is_edge_not_node;
+			uedge_q->sql = uedge_sql;
+			uedge_q->literals.insert(child);
+			sqlcache[uedge_q->edge_info] = uedge_q;
+			// take first step
+			assert(uedge_sql->execute() == soar_module::row);
+			if (uedge_sql->execute() == soar_module::row) {
+				uedge_q->time = uedge_sql->column_int(2);
 			}
-
-			// clean up
-			{
-				int i;
-
-				// pairs
-				epmem_shared_literal_pair_list::iterator pair_p;
-				for ( pair_p=pairs.begin(); pair_p!=pairs.end(); pair_p++ )
-				{
-					delete (*pair_p);
-				}
-
-				// literals
-				std::list<epmem_shared_literal *>::iterator literal_p;
-				epmem_shared_incoming_ids_book::iterator incoming_id_p;
-				epmem_shared_incoming_book_map::iterator incoming_book_p;
-				epmem_shared_incoming_wme_map::iterator incoming_wme_p;
-				for ( literal_p=literals.begin(); literal_p!=literals.end(); literal_p++ )
-				{
-					if ( (*literal_p)->children )
-					{
-						epmem_clear_literal_group( (*literal_p)->children );
-						
-						delete (*literal_p)->children;
-					}					
-
-					if ( (*literal_p)->incoming )
-					{
-						// parents
-						{
-							for ( incoming_id_p=(*literal_p)->incoming->parents->begin(); incoming_id_p!=(*literal_p)->incoming->parents->end(); incoming_id_p++ )
-							{
-								delete incoming_id_p->second->outgoing;
-								delete incoming_id_p->second->satisfactory;
-
-								delete incoming_id_p->second;
-							}
-							delete (*literal_p)->incoming->parents;
-						}
-
-						// book
-						{
-							for ( incoming_book_p=(*literal_p)->incoming->book->begin(); incoming_book_p!=(*literal_p)->incoming->book->end(); incoming_book_p++ )
-							{
-								for ( incoming_wme_p=incoming_book_p->second->begin(); incoming_wme_p!=incoming_book_p->second->end(); incoming_wme_p++ )
-								{
-									delete incoming_wme_p->second->cts;
-									
-									delete incoming_wme_p->second;
-								}
-								
-								delete incoming_book_p->second;
-							}
-							delete (*literal_p)->incoming->book;
-						}
-						
-						delete (*literal_p)->incoming;
-					}
-
-					delete (*literal_p);
-				}
-
-				// matches
-				std::list<epmem_shared_match *>::iterator match_p;
-				for ( match_p=matches.begin(); match_p!=matches.end(); match_p++ )
-				{
-					delete (*match_p);
-				}
-
-				// trigger lists
-				std::list<epmem_shared_literal_pair_list *>::iterator trigger_list_p;
-				for ( trigger_list_p=trigger_lists.begin(); trigger_list_p!=trigger_lists.end(); trigger_list_p++ )
-				{
-					delete (*trigger_list_p);
-				}
-
-				// queries
-				epmem_shared_query *del_query;
-				for ( i=EPMEM_NODE_POS; i<=EPMEM_NODE_NEG; i++ )
-				{
-					while ( !queries[ i ].empty() )
-					{
-						del_query = queries[ i ].top();
-						queries[ i ].pop();
-
-						delete del_query->stmt;						
-						delete del_query;
-					}
-				}
-				delete [] queries;
-
-				// graph match
-				if ( graph_match )
-				{
-					for ( epmem_shared_literal_pair_map::iterator gm_p=gm_pairs->begin(); gm_p!=gm_pairs->end(); gm_p++ )
-					{
-						delete gm_p->second;
-						gm_p->second = NULL;
-					}
-					gm_pairs->clear();
-					delete gm_pairs;
-
-					delete gm_ordered;
-				}
-			}
-
-			// place results in WM
-			if ( king_id != EPMEM_MEMID_NONE )
-			{
-				Symbol *my_meta;
-				epmem_id_mapping *my_mapping = NULL;
-				epmem_id_mapping *my_mapping_nodes = NULL;
-
-				my_agent->epmem_stats->qry_ret->set_value( king_id );
-				my_agent->epmem_stats->qry_card->set_value( king_cardinality );
-
-				// status		
-				epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, query );
-
-				if ( neg_query )
-				{
-					epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, neg_query );
-				}
-
-				// match score
-				my_meta = make_float_constant( my_agent, king_score );
-				epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_score, my_meta );				
-				symbol_remove_ref( my_agent, my_meta );
-
-				// cue-size
-				my_meta = make_int_constant( my_agent, cue_size );
-				epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_cue_size, my_meta );
-				symbol_remove_ref( my_agent, my_meta );
-
-				// normalized-match-score
-				my_meta = make_float_constant( my_agent, ( king_score / perfect_match ) );
-				epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_normalized_match_score, my_meta );
-				symbol_remove_ref( my_agent, my_meta );
-
-				// match-cardinality
-				my_meta = make_int_constant( my_agent, king_cardinality );
-				epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_cardinality, my_meta );
-				symbol_remove_ref( my_agent, my_meta );
-
-				// graph match
-				if ( graph_match )
-				{
-					// graph-match 0/1
-					my_meta = make_int_constant( my_agent, ( ( king_graph_match )?(1):(0) ) );
-					epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match, my_meta );
-					symbol_remove_ref( my_agent, my_meta );
-
-					// full mapping if appropriate
-					if ( king_graph_match )
-					{
-						Symbol *my_meta2;
-						epmem_id_mapping::iterator idm_p;
-
-						my_meta = make_new_identifier( my_agent, 'M', state->id.epmem_result_header->id.level );
-						epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping, my_meta );
-						symbol_remove_ref( my_agent, my_meta );
-
-						my_mapping = new epmem_id_mapping;
-						my_mapping_nodes = new epmem_id_mapping;
-						for ( epmem_gm_assignment_map::iterator c_p=king_assignments.begin(); c_p!=king_assignments.end(); c_p++ )
-						{
-							// create the node
-							my_meta2 = make_new_identifier( my_agent, 'N', my_meta->id.level );
-							epmem_buffer_add_wme( meta_wmes, my_meta, my_agent->epmem_sym_graph_match_mapping_node, my_meta2 );
-							symbol_remove_ref( my_agent, my_meta2 );							
-
-							// point to the cue identifier
-							epmem_buffer_add_wme( meta_wmes, my_meta2, my_agent->epmem_sym_graph_match_mapping_cue, c_p->first );
-
-							// keep a reference to the node
-							(*my_mapping_nodes)[ c_p->second ] = my_meta2;
-
-							// make a spot for the retrieved identifier
-							(*my_mapping)[ c_p->second ] = NULL;
-						}
-					}
-				}
-
-				////////////////////////////////////////////////////////////////////////////
-				my_agent->epmem_timers->query->stop();
-				////////////////////////////////////////////////////////////////////////////
-
-				// actual memory
-				if ( level > 2 )
-				{
-					epmem_install_memory( my_agent, state, king_id, meta_wmes, retrieval_wmes, my_mapping );
-				}
-
-				if ( my_mapping )
-				{
-					epmem_id_mapping::iterator id_p, node_p;
-
-					for ( id_p=my_mapping->begin(); id_p!=my_mapping->end(); id_p++ )
-					{
-						if ( id_p->second )
-						{
-							node_p = my_mapping_nodes->find( id_p->first );
-							if ( node_p != my_mapping_nodes->end() )
-							{
-								epmem_buffer_add_wme( meta_wmes, node_p->second, my_agent->epmem_sym_retrieved, id_p->second );
-							}
-						}
-					}
-					
-					delete my_mapping;
-					delete my_mapping_nodes;
-				}
-			}
-			else
-			{
-				epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, query );
-
-				if ( neg_query )
-				{
-					epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, neg_query );
-				}
-
-				////////////////////////////////////////////////////////////////////////////
-				my_agent->epmem_timers->query->stop();
-				////////////////////////////////////////////////////////////////////////////
-			}
+			edge_pq.push(uedge_q);
 		}
 	}
-	else
-	{
-		epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd );
 
-		//
+	// the best episode and its score
+	epmem_time_id best_episode = 0;
+	double best_score = 0;
+	bool best_graph_match = false;
+	double current_score = 0;
 
-		if ( wmes_query )
-		{
-			delete wmes_query;
+	epmem_time_id current_time = before;
+	epmem_literal_set satisfied_leaves;
+
+	// FIXME before constraints
+	// main loop of interval walk
+	while (current_time > after && edge_pq.size()) {
+		epmem_time_id next_edge;
+		epmem_time_id next_interval;
+		epmem_time_id next_either;
+
+		next_edge = edge_pq.top()->time;
+		// process all edges which were last used at this timepoint
+		while (edge_pq.top()->time == next_edge) {
+			epmem_unique_edge_query* uedge = edge_pq.top();
+			edge_pq.pop();
+
+			int64_t edge_id = uedge->sql->column_int(0);
+
+			// create interval queries for this unique edge
+			for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
+				for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
+
+					epmem_interval_query* interval_q = new epmem_interval_query();
+					interval_q->is_end_point = point_type;
+					interval_q->unique_edge = uedge;
+					soar_module::timer* sql_timer = NULL;
+
+					// pick a timer (any timer)
+					switch (interval_type) {
+						case EPMEM_RANGE_EP:
+							if (point_type == EPMEM_RANGE_START) {
+								sql_timer = my_agent->epmem_timers->query_start_ep;
+							} else {
+								sql_timer = my_agent->epmem_timers->query_end_ep;
+							}
+							break;
+						case EPMEM_RANGE_NOW:
+							if (point_type == EPMEM_RANGE_START) {
+								sql_timer = my_agent->epmem_timers->query_start_now;
+							} else {
+								sql_timer = my_agent->epmem_timers->query_end_now;
+							}
+							break;
+						case EPMEM_RANGE_POINT:
+							if (point_type == EPMEM_RANGE_START) {
+								sql_timer = my_agent->epmem_timers->query_start_point;
+							} else {
+								sql_timer = my_agent->epmem_timers->query_end_point;
+							}
+							break;
+					}
+					soar_module::sqlite_statement* interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_edge_not_node][point_type][interval_type], sql_timer);
+					interval_sql->prepare();
+					assert(interval_sql->get_status() == soar_module::ready);
+					// bind the SQL query
+					int bind_pos = 1;
+					if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
+						interval_sql->bind_int(bind_pos++, my_agent->epmem_stats->time->get_value());
+					}
+					interval_sql->bind_int(bind_pos++, edge_id);
+					assert(interval_sql->execute() == soar_module::row);
+					if (interval_sql->execute() == soar_module::row) {
+						interval_q->time = interval_sql->column_int(0);
+					}
+					interval_q->sql = interval_sql;
+					interval_pq.push(interval_q);
+				}
+			}
+
+			// create queries for the unique edge children of this unique edge
+			for (epmem_literal_set::iterator interval_iter = uedge->literals.begin(); interval_iter != uedge->literals.end(); interval_iter++) {
+				epmem_dnf_literal* literal = *interval_iter;
+				for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+					Symbol* attr = (*attr_iter).first;
+					epmem_literal_set* children_set = (*attr_iter).second;
+					for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+						epmem_dnf_literal* child = *child_iter;
+						epmem_sql_edge info;
+						info.q0 = uedge->sql->column_int(1);
+						info.w = attr;
+						info.has_q1 = literal->has_q1;
+						// fill out the rest of the edge and create an sql statement
+						soar_module::sqlite_statement* uedge_sql = NULL;
+						if (literal->has_q1) {
+							uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_query, my_agent->epmem_timers->edge_query);
+							uedge_sql->prepare();
+							assert(uedge_sql->get_status() == soar_module::ready);
+							uedge_sql->bind_int(1, info.q0);
+							uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
+							info.q1 = 0;
+						} else {
+							uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_value_query, my_agent->epmem_timers->edge_query);
+							uedge_sql->prepare();
+							assert(uedge_sql->get_status() == soar_module::ready);
+							uedge_sql->bind_int(1, info.q0);
+							uedge_sql->bind_int(2, epmem_temporal_hash(my_agent, info.w));
+							info.q1 = epmem_temporal_hash(my_agent, child->value);
+							uedge_sql->bind_int(3, info.q1);
+						}
+						// if we've seen this edge before, just add the literal to it and continue)
+						if (sqlcache.count(info)) {
+							delete uedge_sql;
+							sqlcache[info]->literals.insert(child);
+							continue;
+						}
+						// otherwise, create a new unique edge query
+						epmem_unique_edge_query* uedge_q = new epmem_unique_edge_query();
+						uedge_q->edge_info = info;
+						uedge_q->depth = uedge->depth + 1;
+						uedge_q->sql = uedge_sql;
+						uedge_q->literals.insert(literal);
+						sqlcache[uedge_q->edge_info] = uedge_q;
+						// take first step
+						assert(uedge_sql->execute() == soar_module::row);
+						if (uedge_sql->execute() == soar_module::row) {
+							uedge_q->time = uedge_sql->column_int(2);
+							edge_pq.push(uedge_q);
+						} else {
+							delete uedge_sql;
+							delete uedge_q;
+							// FIXME retractions from lack of edges
+						}
+					}
+				}
+			}
+
+			// put the unique edge query back into the queue if there's more
+			if (uedge->sql->execute() == soar_module::row) {
+				uedge->time = uedge->sql->column_int(2);
+				edge_pq.push(uedge);
+			}
+		}
+		next_edge = edge_pq.top()->time;
+
+		bool changed_score = false;
+
+		// process all intervals before the next edge arives
+		while (current_time < next_edge) {
+			// process all interval endpoints at this timestep
+			next_interval = interval_pq.top()->time;
+			current_time = next_interval;
+			while (interval_pq.top()->time == next_interval) {
+				epmem_interval_query* interval_q = interval_pq.top();
+				interval_pq.pop();
+				epmem_unique_edge_query* uedge_q = interval_q->unique_edge;
+				
+				// update the DNF, recording changes in boolean value to the frontier and to leaves
+				for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
+					epmem_dnf_literal* literal = *lit_iter;
+					if (interval_q->is_end_point) {
+						literal->matches[interval_q->unique_edge->edge_info.q1] = interval_q;
+					} else {
+						literal->matches.erase(interval_q->unique_edge->edge_info.q1);
+					}
+					// TODO what if two different intervals change the same literal? what could we do to save there?
+					if (interval_q->is_end_point && literal->matches.size() && frontier.count(literal)) {
+						// this literal just got activated and is part of the frontier
+						// move the literal to the settled region
+						settled.insert(literal);
+						frontier.erase(literal);
+						// if the literal is internal, propagate frontier information
+						// otherwise, change the score for this episode
+						if (!literal->is_leaf) {
+							// propagate the frontier to its descendents
+							epmem_literal_list queue;
+							for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+								epmem_literal_set* children_set = (*attr_iter).second;
+								for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+									queue.push_back(*child_iter);
+								}
+							}
+							while (queue.size()) {
+								// if the literal is already part of the frontier or part of the settled region, skip it
+								// if the literal is activated, it is settled; further propagate to its descendants
+								// otherwise, the literal is part of the frontier
+								epmem_dnf_literal* descendant = queue.front();
+								queue.pop_front();
+								if (settled.count(descendant) || frontier.count(descendant)) {
+									continue;
+								} else if (descendant->matches.size()) {
+									settled.insert(descendant);
+									if (!descendant->is_leaf) {
+										for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
+											epmem_literal_set* children_set = (*attr_iter).second;
+											for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+												queue.push_back(*child_iter);
+											}
+										}
+									} else {
+										// update score
+										current_score += descendant->weight;
+										changed_score = true;
+										satisfied_leaves.insert(descendant);
+									}
+								} else {
+									frontier.insert(descendant);
+								}
+							}
+						} else {
+							// update score
+							current_score += literal->weight;
+							changed_score = true;
+							satisfied_leaves.insert(literal);
+						}
+					} else if (!interval_q->is_end_point && !literal->matches.size() && settled.count(literal)) {
+						// this literal just got deactivated and is part of the settled region
+						// move the literal to the frontier
+						settled.erase(literal);
+						frontier.insert(literal);
+						// if the literal is internal, propagate frontier information
+						// otherwise, change the score for this episode
+						if (!literal->is_leaf) {
+							// remove all descendents from the settled region
+							epmem_literal_list queue;
+							for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+								epmem_literal_set* children_set = (*attr_iter).second;
+								for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+									queue.push_back(*child_iter);
+								}
+							}
+							while (queue.size()) {
+								// if the literal is in the frontier, remove it from the frontier
+								// if the literal is activated, check if it has another activated parent
+								//   if it doesn't, remove it from settled and propagate to its children
+								epmem_dnf_literal* descendant = queue.front();
+								queue.pop_front();
+								if (frontier.count(descendant)) {
+									frontier.erase(descendant);
+								} else {
+									bool has_activated_parent = false;
+									for (epmem_attr_literal_map::iterator attr_iter = descendant->parents.begin(); attr_iter != descendant->parents.end(); attr_iter++) {
+										epmem_literal_set* parents_set = (*attr_iter).second;
+										for (epmem_literal_set::iterator parent_iter = parents_set->begin(); parent_iter != parents_set->end(); parent_iter++) {
+											epmem_dnf_literal* parent = *parent_iter;
+											if (parent != descendant && settled.count(parent)) {
+												has_activated_parent = true;
+												break;
+											}
+										}
+									}
+									if (has_activated_parent) {
+										if (descendant->is_leaf) {
+											// update score
+											current_score -= descendant->weight;
+											changed_score = true;
+											satisfied_leaves.erase(descendant);
+										}
+									} else {
+										settled.erase(descendant);
+										for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
+											epmem_literal_set* children_set = (*attr_iter).second;
+											for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+												queue.push_back(*child_iter);
+											}
+										}
+									}
+								}
+							}
+						} else {
+							// update score
+							current_score -= literal->weight;
+							changed_score = true;
+							satisfied_leaves.erase(literal);
+						}
+					}
+				}
+
+				// put the interval query back into the queue if there's more
+				if (interval_q->sql->execute() == soar_module::row) {
+					interval_q->time = interval_q->sql->column_int(0);
+					interval_pq.push(interval_q);
+				}
+			}
+			next_interval = interval_pq.top()->time;
+			next_either = (next_edge < next_interval ? next_edge : next_interval);
+
+			// update the prohibits list to catch up
+			while (prohibits.back() > current_time) {
+				prohibits.pop_back();
+			}
+
+			// ignore the episode if it is prohibited
+			while (current_time < next_either && current_time == prohibits.back()) {
+				current_time++;
+				prohibits.pop_back();
+			}
+
+			// if
+			// * the current time is still before any new intervals
+			// * and the score was changed in this period
+			// * and the new score is higher than the best score
+			// then save the current time as the best one
+			if (current_time < next_either && changed_score && current_score > best_score) {
+				best_episode = current_time;
+				best_score = current_score;
+				// we should graph match if all leaf literals are satisfied
+				if (satisfied_leaves.size() == leaf_literals.size()) {
+					// FIXME graph match
+					// FIXME if graph match is perfect, return
+				}
+			}
 		}
 
-		if ( wmes_neg_query )
-		{
-			delete wmes_neg_query;
-		}
-
-		////////////////////////////////////////////////////////////////////////////
-		my_agent->epmem_timers->query->stop();
-		////////////////////////////////////////////////////////////////////////////
 	}
+
+	// FIXME cleanup
 }
 
 //////////////////////////////////////////////////////////
@@ -6088,521 +4854,3 @@ bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err )
 	return return_val;
 }
 
-//////////////////////////////////////////////////////////
-// Justin's Stuff
-//////////////////////////////////////////////////////////
-
-const char* epmem_find_unique_edge_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? ORDER BY last DESC";
-const char* epmem_find_unique_edge_value_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? ORDER BY last DESC";
-
-const char* epmem_find_interval_queries[2][2][3] =
-{
-	{
-		{
-			"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC" // FIXME this needs to change (since we process all endpoints before changing the score)
-		},
-		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM node_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
-		}
-	},
-	{
-		{
-			"SELECT e.start AS start FROM edge_range e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_now e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
-		},
-		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
-		}
-	},
-};
-
-void new_epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_lti_map& ltis, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes) {
-	// a query must contain a positive cue
-	if (pos_query == NULL) {
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
-		return;
-	}
-
-	// before and after, if specified, must be valid relative to each other
-	if (before != EPMEM_MEMID_NONE && after != EPMEM_MEMID_NONE && before < after) {
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
-		return;
-	}
-
-	// explicitly set now as the last episode to return
-	if (before == EPMEM_MEMID_NONE) {
-		before = my_agent->epmem_stats->time->get_value() - 1;
-	}
-
-	// FIXME need to put this somwehere
-	double balance = my_agent->epmem_params->balance->get_value();
-	bool balance_approximately_1 = ( ( balance > ( 1.0 - 1.0e-8 ) ) && ( balance < ( 1.0 + 1.0e-8 ) ) );
-
-	// sort probibits
-	if (!prohibits.empty()) {
-		std::sort(prohibits.begin(), prohibits.end());
-	}
-
-	epmem_dnf_literal* dnf_root = new epmem_dnf_literal();
-	epmem_literal_set leaf_literals;
-	epmem_literal_set settled;
-	epmem_literal_set frontier;
-
-	// build the DNF graph while checking for leaf WMEs
-	{
-		tc_number tc = get_new_tc_number(my_agent);
-		epmem_wme_list* pos_query_wmes = epmem_get_augs_of_id(pos_query, tc);
-		epmem_wme_list* neg_query_wmes = NULL;
-		if (neg_query != NULL) {
-			neg_query_wmes = epmem_get_augs_of_id(neg_query, tc);
-		}
-		std::map<Symbol*, epmem_dnf_literal*> wme_cache;
-		dnf_root->weight = 0.0;
-		dnf_root->is_neg_q = EPMEM_NODE_POS;
-		dnf_root->is_internal_node = 1;
-		dnf_root->value = NULL;
-		settled.add(dnf_root);
-		for (int query_type = EPMEM_NODE_POS; query_type <= EPMEM_NODE_NEG; query_type++) {
-			epmem_wme_list* query_wmes = NULL;
-			switch (query_type) {
-				case EPMEM_NODE_POS:
-					query_wmes = pos_query_wmes;
-					break;
-				case EPMEM_NODE_NEG:
-					query_wmes = neg_query_wmes;
-					break;
-			}
-			if (!query_wmes) {
-				continue;
-			}
-			// pre-cache the (same) root
-			wme_cache[query_wmes->front()->id] = dnf_root;
-			// for each first level WME, build up a DNF
-			while (query_wmes) {
-				wme* wme = query_wmes->pop_front();
-				std::set<wme*> stack;
-				epmem_dnf_literal* root = epmem_build_dnf(wme, query_type, wme_cache, leaf_literals, tc, stack);
-				dnf_root->parents[wme->attr] = root;
-				frontier.add(root);
-			}
-		}
-		delete pos_query_wmes;
-		if (neg_query_wmes) {
-			delete neg_query_wmes;
-		}
-	}
-
-	epmem_edge_sql_map sqlcache; // SQL query cache
-
-	// priority queues for interval walk
-	epmem_unique_edge_query_pq edge_pq;
-	epmem_interval_pq interval_pq;
-
-	// create unique edge queries for first level WMEs
-	for (epmem_attr_literal_map::iterator iter = dnf_root->children.begin(); iter != dnf_root->children.end(); iter++) {
-		epmem_dnf_literal* child = (*iter).second;
-		edge_info info;
-		info.q0 = 0;
-		info.w = (*iter).first;
-		// fill out the rest of the edge and create an sql statement
-		soar_module::sqlite_statement* uedge_sql = NULL;
-		if (child->is_internal_node) {
-			uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_query, my_agent->epmem_timers->edge_query);
-			uedge_sql->prepare();
-			assert(uedge_sql->get_status() == soar_module::ready);
-			uedge_sql->bind_int(1, info.q0);
-			uedge_sql->bind_int(2, info.w);
-			info.q1 = 0;
-			info.has_q1 = false;
-		} else {
-			uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_value_query, my_agent->epmem_timers->edge_query);
-			uedge_sql->prepare();
-			assert(uedge_sql->get_status() == soar_module::ready);
-			uedge_sql->bind_int(1, info.q0);
-			uedge_sql->bind_int(2, info.w);
-			info.q1 = epmem_temporal_hash(my_agent, child->value);
-			uedge_sql->bind_int(3, info.q1);
-			info.has_q1 = true;
-		}
-		// if we've seen this edge before, just add the literal to it and continue)
-		if (sqlcache.count(info)) {
-			delete uedge_sql;
-			sqlcache[info]->literals.add(child);
-			continue;
-		}
-		// otherwise, create a new unique edge query
-		epmem_unique_edge_query* uedge_q = new epmem_unique_edge_query();
-		uedge_q->edge_info = info;
-		uedge_q->depth = 1;
-		uedge_q->sql = uedge_sql;
-		uedge_q->literals.add(child):
-		sqlcache[uedge_q->edge_info] = uedge_sql;
-		// take first step
-		assert(uedge_sql->execute() == soar_module::row);
-		if (uedge_sql->execute() == soar_module::row) {
-			uedge_q->time = uedge_sql->column_int(2);
-		}
-		edge_pq.push(uedge_q);
-	}
-
-	// the best episode and its score
-	epmem_time_id best_episode = 0;
-	double best_score = 0;
-	bool best_graph_match = false;
-	double current_score = 0;
-
-	epmem_time_id current_time = before;
-	epmem_literal_set satisfied_leaves;
-
-	// FIXME before constraints
-	// main loop of interval walk
-	while (current_time > after && edge_pq.size()) {
-		epmem_time_id next_edge;
-		epmem_time_id next_interval;
-		epmem_time_id next_either;
-
-		next_edge = edge_pq.top()->time;
-		// process all edges which were last used at this timepoint
-		while (edge_pq.top()->time == next_edge) {
-			epmem_unique_edge_query* uedge = edge_pq.top();
-			edge_pq.pop();
-
-			int64_t q1 = uedge->sql->column_int(0);
-
-			// create interval queries for this unique edge
-			for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
-				for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
-
-					epmem_interval_query* interval_q = new epmem_interval_query();
-					interval_q->is_end_point = point_type;
-					interval_q->unique_edge = uedge;
-					soar_module::timer* sql_timer = NULL;
-
-					// pick a timer (any timer)
-					switch (interval_type) {
-						case EPMEM_RANGE_EP:
-							if (point_type == EPMEM_RANGE_START) {
-								sql_timer = (uedge->is_neg_q ? my_agent->epmem_timers->query_neg_start_ep : my_agent->epmem_timers->query_pos_start_ep);
-							} else {
-								sql_timer = (uedge->is_neg_q ? my_agent->epmem_timers->query_neg_end_ep : my_agent->epmem_timers->query_pos_end_ep);
-							}
-							break;
-						case EPMEM_RANGE_NOW:
-							if (point_type == EPMEM_RANGE_START) {
-								sql_timer = (uedge->is_neg_q ? my_agent->epmem_timers->query_neg_start_now : my_agent->epmem_timers->query_pos_start_now);
-							} else {
-								sql_timer = (uedge->is_neg_q ? my_agent->epmem_timers->query_neg_end_now : my_agent->epmem_timers->query_pos_end_now);
-							}
-							break;
-						case EPMEM_RANGE_POINT:
-							if (point_type == EPMEM_RANGE_START) {
-								sql_timer = (uedge->is_neg_q ? my_agent->epmem_timers->query_neg_start_point : my_agent->epmem_timers->query_pos_start_point);
-							} else {
-								sql_timer = (uedge->is_neg_q ? my_agent->epmem_timers->query_neg_end_point : my_agent->epmem_timers->query_pos_end_point);
-							}
-							break;
-					}
-					soar_module::sqlite_statement* interval_sql = new soar_module::sqlite_statemnt(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_internal_node][point_type][interval_type], sql_timer);
-					interval_sql->prepare();
-					assert(interval_sql->get_status() == soar_module::ready);
-					// bind the SQL query
-					int bind_pos = 1;
-					if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
-						interval_sql->bind_int(bind_pos++, my_agent->epmem_stats->time->get_value());
-					}
-					interval_sql->bind_int(bind_pos++, q1);
-					assert(interval_sql->execute() == soar_module::row);
-					if (interval_sql->execute() == soar_module::row) {
-						interval_q->time = interval_sql->column_int(0);
-					}
-					interval_q->sql = interval_sql;
-					interval_pq.push(interval_q);
-				}
-			}
-
-			// create queries for the unique edge children of this unique edge
-			for (epmem_interval_set::iterator interval_iter = uedge->literals.begin(); interval_iter != uedge->literals.end(); interval_iter++) {
-				epmem_dnf_literal* literal = *interval_iter;
-				for (epmem_attr_literal_map::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-					epmem_dnf_literal* child = (*child_iter).second;
-					edge_info info;
-					info.q0 = q1;
-					info.w = (*child_iter).first;
-					// fill out the rest of the edge and create an sql statement
-					soar_module::sqlite_statement* uedge_sql = NULL;
-					if (uedge_q->is_internal_node) {
-						uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_query, my_agent->epmem_timers->edge_query);
-						uedge_sql->prepare();
-						assert(uedge_sql->get_status() == soar_module::ready);
-						uedge_sql->bind_int(1, info.q0);
-						uedge_sql->bind_int(2, info.w);
-						info.q1 = 0;
-						info.has_q1 = false;
-					} else {
-						uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_unique_edge_value_query, my_agent->epmem_timers->edge_query);
-						uedge_sql->prepare();
-						assert(uedge_sql->get_status() == soar_module::ready);
-						uedge_sql->bind_int(1, info.q0);
-						uedge_sql->bind_int(2, info.w);
-						info.q1 = epmem_temporal_hash(my_agent, uedge_q->value);
-						uedge_sql->bind_int(3, info.q1);
-						info.has_q1 = true;
-					}
-					// if we've seen this edge before, just add the literal to it and continue)
-					if (sqlcache.count(info)) {
-						delete uedge_sql;
-						sqlcache[info]->literals.add(child);
-						continue;
-					}
-					// otherwise, create a new unique edge query
-					epmem_unique_edge_query* uedge_q = new epmem_unique_edge_query();
-					uedge_q->edge_info = info;
-					uedge_q->depth = uedge.depth + 1;
-					uedge_q->sql = uedge_sql;
-					uedge_q->literals.add(literal);
-					sqlcache[uedge_q->edge_info] = uedge_sql;
-					// take first step
-					assert(uedge_sql->execute() == soar_module::row);
-					if (uedge_sql->execute() == soar_module::row) {
-						uedge_q->time = uedge_sql->column_int(2);
-						edge_pq.push(uedge_q);
-					} else {
-						delete uedge_sql;
-						delete uedge_q;
-						// FIXME retractions from lack of edges
-					}
-				}
-			}
-
-			// put the unique edge query back into the queue if there's more
-			if (uedge->sql->execute() == soar_module::row) {
-				uedge->time = uedge->sql->column_int(2);
-				edge_pq.push(uedge);
-			}
-		}
-		next_edge = edge_pq.top()->time;
-
-		bool changed_score = false;
-
-		// process all intervals before the next edge arives
-		while (current_time < next_edge) {
-			// process all interval endpoints at this timestep
-			next_interval = interval_pq.top()->time;
-			current-time = next_interval;
-			while (interval_pq.top()->time == next_interval) {
-				epmem_interval_query* interval_q = interval_pq.top();
-				interval_pq.pop();
-				epmem_unique_edge_query* uedge_q = interval_q->unique_edge;
-				
-				// update the DNF, recording changes in boolean value to the frontier and to leaves
-				for (epmem_literal_set::iterator iter = uedge_q->literals.begin(); iter != uedge_q->literals.end(); iter++) {
-					epmem_dnf_literal* literal = *iter;
-					if (interval_q->is_end_point) {
-						literal->matches[interval_q->unique_edge->edge_info.q1] = interval_q:
-					} else {
-						literal->matches.erase(interval_q->unique_edge->edge_info.q1):
-					}
-					// TODO what if two different intervals change the same literal? what could we do to save there?
-					if (interval_q->is_end_point && literal->matches.size() && frontier.count(literal)) {
-						// this literal just got activated and is part of the frontier
-						// move the literal to the settled region
-						settled.add(literal);
-						frontier.erase(literal);
-						// if the literal is internal, propagate frontier information
-						// otherwise, change the score for this episode
-						if (literal->is_internal_node) {
-							// propagate the frontier to its descendents
-							epmem_literal_list queue;
-							for (epmem_attr_literal_map::iterator iter = literal->children.begin(); iter != literal->children.end(); iter++) {
-								queue.push_back((*iter).second);
-							}
-							while (queue.size()) {
-								// if the literal is already part of the frontier or part of the settled region, skip it
-								// if the literal is activated, it is settled; further propagate to its descendants
-								// otherwise, the literal is part of the frontier
-								epmem_dnf_literal* descendant = queue.pop_front();
-								if (settled.count(descendant) || frontier.count(descendant)) {
-									continue;
-								} else if (descendant->matches.size()) {
-									settled.add(descendant);
-									if (descendant->is_internal_node) {
-										for (epmem_attr_descendant_map::iterator iter = descendant->children.begin(); iter != descendant->children.end(); iter++) {
-											queue.push_back((*iter).second);
-										}
-									} else {
-										// update score
-										current_score += descendant->weight;
-										changed_score = true;
-										satisfied_leaves.add(descendant);
-									}
-								} else {
-									frontier.add(descendant);
-								}
-							}
-						} else {
-							// update score
-							current_score += literal->weight;
-							changed_score = true;
-							satisfied_leaves.add(descendant);
-						}
-					} else if (!interval_q->is_end_point && !literal->matches.size() && settled.count(literal)) {
-						// this literal just got deactivated and is part of the settled region
-						// move the literal to the frontier
-						settled.erase(literal);
-						frontier.add(literal);
-						// if the literal is internal, propagate frontier information
-						// otherwise, change the score for this episode
-						if (literal->is_internal_node) {
-							// remove all descendents from the settled region
-							epmem_literal_list queue;
-							for (epmem_attr_literal_map::iterator iter = literal->children.begin(); iter != literal->children.end(); iter++) {
-								queue.push_back(*iter);
-							}
-							while (queue.size()) {
-								// if the literal is in the frontier, remove it from the frontier
-								// if the literal is activated, check if it has another activated parent
-								//   if it doesn't, remove it from settled and propagate to its children
-								epmem_dnf_literal* descendant = queue.pop_front();
-								if (frontier.count(descendant)) {
-									frontier.erase(descendant);
-								} else {
-									bool has_activated_parent = false;
-									for (epmem_attr_descendant_map::iterator iter = descendant->parents.begin(); iter != descendant->parents.end(); iter++) {
-										epmem_dnf_literal* parent = *iter;
-										if (parent != descendant && settled.count(parent)) {
-											has_activated_parent = true;
-											break;
-										}
-									}
-									if (has_activated_parent) {
-										if (!descendant->is_internal_node) {
-											// update score
-											current_score -= descendant->weight;
-											changed_score = true;
-											satisfied_leaves.remove(descendant);
-										}
-									} else {
-										settled.erase(descendant);
-										for (epmem_attr_descendant_map::iterator iter = descendant->children.begin(); iter != descendant->children.end(); iter++) {
-											queue.push_back(*iter);
-										}
-									}
-								}
-							}
-						} else {
-							// update score
-							current_score -= literal->weight;
-							changed_score = true;
-							satisfied_leaves.remove(descendant);
-						}
-					}
-				}
-
-				// put the interval query back into the queue if there's more
-				if (interval_q->execute() == soar_module::row) {
-					interval_q->time = interval_q->sql->column_int(0);
-					interval_pq.push(interval_q);
-				}
-			}
-			next_interval = interval_pq.top()->time;
-			next_either = (next_edge < next_interval ? next_edge : next_interval);
-
-			// update the prohibits list to catch up
-			while (prohibits.back() > current_time) {
-				prohibits.pop_back();
-			}
-
-			// ignore the episode if it is prohibited
-			while (current_time < next_either && current_time == prohibits.back()) {
-				current_time++;
-				prohibits.pop_back();
-			}
-
-			// if
-			// * the current time is still before any new intervals
-			// * and the score was changed in this period
-			// * and the new score is higher than the best score
-			// then save the current time as the best one
-			if (current_time < next_either && changed_score && current_score > best_score) {
-				best_episode = current_time;
-				best_score = current_score;
-				// we should graph match if all leaf literals are satisfied
-				if (satisfied_leaves.size() == leaf_literals.size()) {
-					// FIXME graph match
-					// FIXME if graph match is perfect, return
-				}
-			}
-		}
-
-	}
-
-	// FIXME cleanup
-}
-
-epmem_dnf_literal* epmem_build_dnf(wme* wme, std::map<Symbol*, int query_type, std::map<Symbol*, epmem_dnf_literal*>& wme_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<wme*>& stack) {
-	// if we've been here before, we can return the previous literal
-	if (wme_cache.count(wme)) {
-		return wme_cache[wme];
-	}
-
-	epmem_dnf_literal* literal = new epmem_dnf_literal();
-	Symbol* value = wme->value;
-	literal->value = value;
-
-	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
-		literal->is_internal_node = 0;
-		leaf_literals.add(literal);
-	} else if (value->id.smem_lti) { // WME is an LTI
-		literal->is_internal_node = 0;
-		leaf_literals.add(literal);
-	} else { // WME is a normal identifier
-		// we determine whether it is a leaf by checking for children
-		epmem_wme_list* children = epmem_get_augs_of_id(value, tc);
-
-		// if the WME has no children, then it's a leaf
-		// otherwise, we recurse for all children
-		if (!children.size()) {
-			literal->is_internal_node = 0;
-			leaf_literals.add(literal);
-		} else {
-			literal->is_internal_node = 1;
-			bool cycle = false;
-			stack.add(wme);
-			for (epmem_wme_list::wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
-				// check to see if this child forms a cycle
-				// if it does, we skip over it
-				if (stack.count(*wme_iter)) {
-					cycle = true;
-				} else {
-					epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, wme_cache, leaf_literals, tc, stack);
-					if (child) {
-						Symbol* attr = (*wme_iter)->attr;
-						child.parents[attr] = literal;
-						literal->children[attr] = child;
-					}
-				}
-			}
-			stack.erase(wme);
-			// if all children of this WME lead to cycles, then we don't need to walk this path
-			// in essence, this forces the DNF graph to be acyclic
-			// this results in savings in not walking edges and intevals
-			if (cycle && !literal->children.size()) {
-				delete literal;
-				return NULL;
-			}
-		}
-	}
-
-	wme_cache[wme] = literal;
-	// FIXME weight
-	// FIXME multiply weight by (query_type == EPMEM_NODE_POS ? 1 : -1);
-	literal->is_neg_q = query_type;
-	return literal;
-}

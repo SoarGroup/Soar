@@ -280,6 +280,13 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *query_neg_end_now;
 		soar_module::timer *query_neg_end_point;
 
+		soar_module::timer *query_start_ep;
+		soar_module::timer *query_start_now;
+		soar_module::timer *query_start_point;
+		soar_module::timer *query_end_ep;
+		soar_module::timer *query_end_now;
+		soar_module::timer *query_end_point;
+
         soar_module::timer *query_lti;
 
         soar_module::timer *edge_query;
@@ -679,32 +686,7 @@ typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::list<epmem_dnf_literal*> epmem_literal_list;
 typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literal_map;
 typedef std::map<epmem_node_id, epmem_interval_query*> epmem_node_interval_map;
-typedef std::map<epmem_sql_edge, soar_module::sqlite_statement> epmem_edge_sql_map; // FIXME I'm not convinced the value is correct
-struct epmem_unique_edge_query_comparator {
-	bool operator()(const epmem_unique_edge_query *a, const epmem_unique_edge_query *b) const {
-		return (a->time < b->time);
-	}
-};
-typedef std::priority_queue<epmem_unique_edge_query*, std::vector<epmem_unique_edge_query*>, epmem_unique_edge_queries_comparator> epmem_unique_edge_pq;
-struct epmem_interval_query_comparator {
-	bool operator()(const epmem_interval_query *a, const epmem_interval_query *b) const {
-		if (a->time != b->time) {
-			return (a->time < b->time);
-		} else if ((a->end_point && b->end_point) || !(a->endpoint || b->endpoint)) {
-			// both a and b are ends/starts
-			if (a->endpoint) {
-				return a->unique_edge->depth < b->unique_edge->depth
-			} else {
-				return b->unique_edge->depth < a->unique_edge->depth
-			}
-		} else {
-			// put ends before starts; the larger the distance to the frontier, the more expensive updating an end is
-			return b->end_point;
-		}
-
-	}
-};
-typedef std::priority_queue<epmem_interval_query*, std::vector<epmem_interval_query*>, epmem_interval_queries_comparator> epmem_interval_pq;
+typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map; // FIXME I'm not convinced the value is correct
 
 // structs
 struct epmem_dnf_literal_struct {
@@ -713,14 +695,37 @@ struct epmem_dnf_literal_struct {
     epmem_attr_literal_map children;
     double weight;
     int is_neg_q;
-    int is_internal_node;
+    int is_edge_not_node;
+	bool has_q1;
+	bool is_leaf;
 	Symbol* value;
     epmem_interval_set intervals; // FIXME I'm not sure I need this yet; it'll probably be for retractions
+};
+
+struct epmem_sql_edge_struct {
+	epmem_node_id q0;
+	Symbol *w;
+	epmem_node_id q1;
+	bool has_q1;
+	bool operator<(const epmem_sql_edge &other) const {
+		if (q0 < other.q0) {
+			return true;
+		} else if (w < other.w) {
+			return true;
+		} else if (!has_q1 && other.has_q1) {
+			return true;
+		} else if (has_q1 && !other.has_q1) {
+			return false;
+		} else {
+			return q1 < other.q1;
+		}
+	}
 };
 
 struct epmem_unique_edge_query_struct {
 	epmem_sql_edge edge_info;
 	int depth;
+	int is_edge_not_node;
     soar_module::sqlite_statement *sql;
     epmem_time_id time;
     epmem_literal_set literals;
@@ -733,11 +738,31 @@ struct epmem_interval_query_struct {
 	epmem_unique_edge_query* unique_edge;
 };
 
-struct epmem_sql_edge_struct {
-	epmem_node_id q0;
-	Symbol *w;
-	epmem_node_id q1;
-	bool has_q1;
+// priority queues and comparison functions
+struct epmem_unique_edge_query_comparator {
+	bool operator()(const epmem_unique_edge_query *a, const epmem_unique_edge_query *b) const {
+		return (a->time < b->time);
+	}
 };
+typedef std::priority_queue<epmem_unique_edge_query*, std::vector<epmem_unique_edge_query*>, epmem_unique_edge_query_comparator> epmem_unique_edge_pq;
+struct epmem_interval_query_comparator {
+	bool operator()(const epmem_interval_query *a, const epmem_interval_query *b) const {
+		if (a->time != b->time) {
+			return (a->time < b->time);
+		} else if ((a->is_end_point && b->is_end_point) || !(a->is_end_point || b->is_end_point)) {
+			// both a and b are ends/starts
+			if (a->is_end_point) {
+				return a->unique_edge->depth < b->unique_edge->depth;
+			} else {
+				return b->unique_edge->depth < a->unique_edge->depth;
+			}
+		} else {
+			// put ends before starts; the larger the distance to the frontier, the more expensive updating an end is
+			return b->is_end_point;
+		}
+
+	}
+};
+typedef std::priority_queue<epmem_interval_query*, std::vector<epmem_interval_query*>, epmem_interval_query_comparator> epmem_interval_pq;
 
 #endif
