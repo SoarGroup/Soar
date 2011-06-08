@@ -859,7 +859,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	// 
 
-	update_node_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE node_unique SET last=? WHERE parent_id=?" );
+	update_node_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE node_unique SET last=? WHERE child_id=?" );
 	add( update_node_unique_last );
 
 	update_edge_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE edge_unique SET last=? WHERE parent_id=?" );
@@ -1733,9 +1733,9 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 							case EPMEM_RIT_STATE_EDGE:
 								my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 1, time_last );
 								my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 2, temp_q2->column_int( 0 ) );
+								my_agent->epmem_stmts_graph->update_edge_unique_last->execute( soar_module::op_reinit );
 								break;
 						}
-								my_agent->epmem_stmts_graph->update_edge_unique_last->execute( soar_module::op_reinit );
 					}
 					delete temp_q2;
 					temp_q2 = NULL;
@@ -2320,7 +2320,7 @@ void epmem_new_episode( agent *my_agent )
 								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 1, parent_id );
 								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 2, my_hash );
 								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 3, (*w_p)->value->id.epmem_id );
-								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 4, LLONG_MAX);
+								my_agent->epmem_stmts_graph->add_edge_unique->bind_int( 4, LLONG_MAX );
 								my_agent->epmem_stmts_graph->add_edge_unique->execute( soar_module::op_reinit );
 
 								(*w_p)->epmem_id = static_cast<epmem_node_id>( my_agent->epmem_db->last_insert_rowid() );
@@ -2464,11 +2464,9 @@ void epmem_new_episode( agent *my_agent )
 				// update min
 				(*my_agent->epmem_node_mins)[ (*temp_node) - 1 ] = time_counter;
 
-				/* FIXME
 				my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 1, LLONG_MAX );
 				my_agent->epmem_stmts_graph->update_node_unique_last->bind_int( 2, *temp_node );
 				my_agent->epmem_stmts_graph->update_node_unique_last->execute( soar_module::op_reinit );
-				*/
 
 				epmem_node.pop();
 			}
@@ -2487,11 +2485,9 @@ void epmem_new_episode( agent *my_agent )
 				// update min
 				(*my_agent->epmem_edge_mins)[ (*temp_node) - 1 ] = time_counter;
 
-				/* FIXME
 				my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 1, LLONG_MAX );
 				my_agent->epmem_stmts_graph->update_edge_unique_last->bind_int( 2, *temp_node );
 				my_agent->epmem_stmts_graph->update_edge_unique_last->execute( soar_module::op_reinit );
-				*/
 
 				epmem_edge.pop();
 			}
