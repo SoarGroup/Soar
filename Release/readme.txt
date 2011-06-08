@@ -1,5 +1,5 @@
-Soar 9.3.1 Release Notes, March, 2011
-=====================================
+Soar 9.3.1 Release Notes, June 2011
+===================================
 
 This release of Soar continues the 9.3 line which includes modules for
 reinforcement learning (RL), episodic memory (EpMem), and semantic
@@ -51,11 +51,26 @@ agents that were rolling over 32-bit integers in some instances. The
 client interface is mostly backwards compatible but some errors or
 warnings (because of loss of precision) may be encountered.
 
+Working memory activation based forgetting is now stable and
+efficient. However, parameters controlling its behavior are still
+under experimentation and will likely change in the future.
+
 The command line interface has been updated to behave much more like it
 behaved before 8.6.0. The parsing is simplified and follows most of the
 rules of the Tcl language and its behavior is now much easier to
 validate (and many tests have been added). This should be mostly
 transparent to the end user. 
+
+The help command now displays command documentation text directly
+in the terminal again, similar to the pre-9.0 behavior. The help
+text can now be automatically pulled from the wiki pages, making
+it much easier to keep up to date. See Core/CLI/gen_cli_help.sh for
+more details.
+
+The Soar manual has been revised significantly. New sections
+describing reinforcement learning, episodic memory, and semantic
+memory have been added, and other sections have been updated to
+reflect recent kernel changes.
 
 A more comprehensive list of changes is below.
 
@@ -66,8 +81,8 @@ Prerequisites
 
 Officially supported platforms are:
 
-  * Windows XP, Vista, 7 32/64 bit
-  * Ubuntu Linux 10.10 32/64 bit
+  * Windows XP (32 bit), Vista & 7 32/64 bit
+  * Ubuntu Linux 10/11 32/64 bit
   * Mac OS X 10.6 64 bit
 
 Other platforms may work but have not specifically been tested, you can
@@ -86,7 +101,7 @@ operating systems already have Java installed, but be aware that we only
 develop and test our applications using the Sun Java runtime environment
 6 and other JVMs (such as GCJ) may not work:
 
-        http://www.oracle.com/technetwork/indexes/downloads/index.html
+   http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 IMPORTANT NOTE ABOUT 64-BIT BINARIES: 32-bit Java virtual machines
 cannot load 64-bit shared libraries. Please download appropriate
