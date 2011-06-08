@@ -1,4 +1,3 @@
 source elaborations.soar
-source inc_vars-check1.soar
-source inc_vars-check2.soar
+source inc_vars-check.soar
 source inc_vars-query.soar

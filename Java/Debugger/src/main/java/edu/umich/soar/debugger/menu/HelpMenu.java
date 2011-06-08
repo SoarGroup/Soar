@@ -57,7 +57,7 @@ public class HelpMenu
     {
         public void actionPerformed(ActionEvent e)
         {
-            open("http://code.google.com/p/soar/wiki/CommandLineInterface");
+            open("http://code.google.com/p/soar/wiki/CommandIndex");
         }
     };
 

@@ -1,4 +1,4 @@
-198
+200
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -197,7 +197,9 @@ ENUMERATION 194 1 nil
 SOAR_ID 195
 SOAR_ID 196
 SOAR_ID 197
-214
+ENUMERATION 198 1 inc_vars-check
+SOAR_ID 199
+216
 0 io 1
 0 name 7
 0 operator 4
@@ -391,6 +393,7 @@ SOAR_ID 197
 171 operator 177
 171 operator 179
 171 operator 181
+171 operator 199
 171 superstate 0
 171 top-state 0
 171 type 172
@@ -412,3 +415,4 @@ SOAR_ID 197
 192 next 195
 195 features 196
 195 next 192
+199 name 198

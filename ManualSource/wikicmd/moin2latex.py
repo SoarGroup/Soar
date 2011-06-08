@@ -1,10 +1,34 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import sys
 sys.path.append('.')
 from MoinMoin.formatter import FormatterBase
 from MoinMoin.parser.text_moin_wiki import Parser
+
+replacement_table = [
+	('\\', r'$\\backslash$ '),
+	('$', r'\$'),
+	(r'\$\backslash\$', r'$\backslash$'),
+	('#', r'\#'),
+	('%', r'\%'),
+	('^', r'\carat '),
+	('&', r'\&'),
+	('_', r'\_'),
+	('{', r'\{'),
+	('}', r'\}'),
+	('<', r'\verb=<='),
+	('>', r'\verb=>='),
+	('~', r'\~{}'),
+	('"', r'\"{}'),
+	(u'ä', r'"a'),
+	(u'ü', r'"u'),
+	(u'ö', r'"o'),
+	(u'Ä', r'"A'),
+	(u'Ü', r'"U'),
+	(u'Ö', r'"O'),
+	(u'ß', r'\ss{}'),
+]
 
 # LaTeX Formatter
 class Formatter(FormatterBase):
@@ -28,25 +52,8 @@ class Formatter(FormatterBase):
 	def text2latex(self, text):
 		"Escape special characters if not in verbatim mode"
 		if self.verbatim: return text
-		text = text.replace('\\', '$\\backslash$ ');
-		text = text.replace('$', r'\$');
-		text = text.replace(r'\$\backslash\$', r'$\backslash$')
-		text = text.replace('#', r'\#');
-		text = text.replace('%', r'\%');
-		text = text.replace('^', r'\^{}');
-		text = text.replace('&', r'\&');
-		text = text.replace('_', r'\_');
-		text = text.replace('{', r'\{');
-		text = text.replace('}', r'\}');
-		text = text.replace('~', r'\~{}');
-		text = text.replace('"', r'\"{}');
-		text = text.replace(u'ä', r'"a');
-		text = text.replace(u'ü', r'"u');
-		text = text.replace(u'ö', r'"o');
-		text = text.replace(u'Ä', r'"A');
-		text = text.replace(u'Ü', r'"U');
-		text = text.replace(u'Ö', r'"O');
-		text = text.replace(u'ß', r'\ss{}');
+		for a, b in replacement_table:
+			text = text.replace(a, b)
 		return text
 
 	def write_text(self, text):
@@ -61,9 +68,9 @@ class Formatter(FormatterBase):
 
 	def pagelink(self, on, pagename, text=None, **kw):
 		#import pdb; pdb.set_trace()
-		assert pagename == 'CommandLineInterface', pagename
+		assert pagename.startswith('cmd_'), pagename
 		if on:
-			return self.write_text('\\hyperref[%s]{' % kw['anchor'])
+			return self.write_text('\\hyperref[%s]{' % pagename[4:].replace('_', '-'))
 		else:
 			return self.write_text('}')
 
@@ -319,10 +326,16 @@ class Request:
 class Page:
 	hilite_re = None
 	page_name = 'arst'
-		
-req = Request()
-p = Parser(open(sys.argv[1]).read(), req)
-f = Formatter(req)
-f.page = Page()
 
-p.format(f)
+if __name__ == '__main__':
+	req = Request()
+	if len(sys.argv) == 1:
+		contents = sys.stdin.read()
+	else:
+		contents = open(sys.argv[1]).read()
+		
+	p = Parser(contents, req)
+	f = Formatter(req)
+	f.page = Page()
+	
+	p.format(f)

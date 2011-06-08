@@ -129,7 +129,7 @@ namespace cli
         virtual bool DoGDSPrint();
         virtual bool DoGP(const std::string& productionString);
         virtual bool DoGPMax(const int& maximum);
-        virtual bool DoHelp();
+        virtual bool DoHelp(const std::vector<std::string> &argv);
         virtual bool DoIndifferentSelection( const char pOp = 0, const std::string* p1 = 0, const std::string* p2 = 0, const std::string* p3 = 0 );
         virtual bool DoInitSoar();
         virtual bool DoInternalSymbols();
@@ -138,6 +138,7 @@ namespace cli
         virtual bool DoLS();
         virtual bool DoMatches(const eMatchesMode mode, const eWMEDetail detail = WME_DETAIL_NONE, const std::string* pProduction = 0);
         virtual bool DoMaxChunks(const int n = 0);
+        virtual bool DoMaxDCTime(const int n = 0);
         virtual bool DoMaxElaborations(const int n = 0);
         virtual bool DoMaxGoalDepth(const int n = 0);
         virtual bool DoMaxMemoryUsage(const int n = 0);
@@ -189,6 +190,7 @@ namespace cli
         bool GetCurrentWorkingDirectory(std::string& directory);
 
         virtual bool SetError(const std::string& error);
+        virtual bool AppendError(const std::string& error);
 
         void AppendArgTag(const char* pParam, const char* pType, const char* pValue);
         void AppendArgTag(const char* pParam, const char* pType, const std::string& value);
@@ -247,6 +249,7 @@ namespace cli
         void GetMemoryPoolStatistics();
 
         void PrintSourceSummary(int sourced, const std::list< std::string >& excised, int ignored);
+        bool Source(const char* input, bool printFileStack = false);
 
         std::ostringstream      m_Result;                     // Raw output from the command
         bool                    m_RawOutput;                  // True if we want string output.

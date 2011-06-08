@@ -1,3 +1,0 @@
-pushd world-occupants
-source world-occupants_source.soar
-popd

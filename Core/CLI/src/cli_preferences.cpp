@@ -15,8 +15,9 @@
 
 #include "sml_Names.h"
 #include "sml_AgentSML.h"
-
 #include "sml_KernelSML.h"
+
+#include "agent.h"
 #include "gdatastructs.h"
 #include "utilities.h"
 #include "print.h"
@@ -249,41 +250,44 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
         }
     }
 
-    // voigtjr march 2010
-    // print selection probabilities re: issue 18
-    // run preference semantics "read only" via _consistency_check
-    // returns a list of candidates without deciding which one in the event of indifference
-    preference* cand = 0;
-    byte impasse_type = run_preference_semantics_for_consistency_check(soarAgent, s, &cand);
+	if ( id->id.isa_goal && !strcmp(szAttr, "operator") )
+	{
+		// voigtjr march 2010
+		// print selection probabilities re: issue 18
+		// run preference semantics "read only" via _consistency_check
+		// returns a list of candidates without deciding which one in the event of indifference
+		preference* cand = 0;
+		byte impasse_type = run_preference_semantics_for_consistency_check(soarAgent, s, &cand);
 
-    // if the impasse isn't NONE_IMPASSE_TYPE, there's an impasse and we don't want to print anything
-    // if we have no candidates, we don't want to print anything
-    if ((impasse_type == NONE_IMPASSE_TYPE) && cand)
-    {
-        print(soarAgent, "\nselection probabilities:\n");
+		// if the impasse isn't NONE_IMPASSE_TYPE, there's an impasse and we don't want to print anything
+		// if we have no candidates, we don't want to print anything
+		if ((impasse_type == NONE_IMPASSE_TYPE) && cand)
+		{
+			print(soarAgent, "\nselection probabilities:\n");
 
-        // some of this following code is redundant with code in exploration.cpp
-        // see exploration_choose_according_to_policy
-        // see exploration_compute_value_of_candidate
-        // see exploration_probabilistically_select
-        int count = 0;
-        double total_probability = 0;
-        // add up positive numeric values, count candidates
-        for (p = cand; p; p = p->next_candidate) 
-        {
-            exploration_compute_value_of_candidate(soarAgent, p, s);
-            ++count;
-            if ( p->numeric_value > 0 )
-                total_probability += p->numeric_value;
-        }
-        assert (count != 0);
-        for (p = cand; p; p = p->next_candidate) 
-        {
-            // if total probability is zero, fall back to random
-            double prob = total_probability > 0.0 ? p->numeric_value / total_probability : 1.0 / count;
-            print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
-        }
-    }
+			// some of this following code is redundant with code in exploration.cpp
+			// see exploration_choose_according_to_policy
+			// see exploration_compute_value_of_candidate
+			// see exploration_probabilistically_select
+			int count = 0;
+			double total_probability = 0;
+			// add up positive numeric values, count candidates
+			for (p = cand; p; p = p->next_candidate) 
+			{
+				exploration_compute_value_of_candidate(soarAgent, p, s);
+				++count;
+				if ( p->numeric_value > 0 )
+					total_probability += p->numeric_value;
+			}
+			assert (count != 0);
+			for (p = cand; p; p = p->next_candidate) 
+			{
+				// if total probability is zero, fall back to random
+				double prob = total_probability > 0.0 ? p->numeric_value / total_probability : 1.0 / count;
+				print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
+			}
+		}
+	}
 
     return 0;
 }

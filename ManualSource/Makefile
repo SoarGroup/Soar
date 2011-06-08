@@ -5,96 +5,30 @@
 
 LATEX = pdflatex -halt-on-error # need to use pdf latex to insert some of the pdf figures correctly
 
-CMDS=add-wme                  \
-     alias                    \
-     capture-input            \
-     cd                       \
-     chunk-name-format        \
-     clog                     \
-     command-to-file          \
-     default-wme-depth        \
-     dirs                     \
-     echo                     \
-     echo-commands            \
-     edit-production          \
-     excise                   \
-     explain-backtraces       \
-     firing-counts            \
-     gds-print                \
-     gp                       \
-     gp-max                   \
-     help                     \
-     indifferent-selection    \
-     init-soar                \
-     internal-symbols         \
-     learn                    \
-     load-library             \
-     ls                       \
-     matches                  \
-     max-chunks               \
-     max-elaborations         \
-     max-memory-usage         \
-     max-nil-output-cycles    \
-     memories                 \
-     multi-attributes         \
-     numeric-indifferent-mode \
-     o-support-mode           \
-     popd                     \
-	 port                     \
-     predict                  \
-     preferences              \
-     print                    \
-     production-find          \
-     pushd                    \
-     pwatch                   \
-     pwd                      \
-     quit                     \
-     remove-wme               \
-     replay-input             \
-     rand                     \
-     rete-net                 \
-     rl                       \
-     run                      \
-     save-backtraces          \
-     select                   \
-     set-library-location     \
-     set-stop-phase           \
-     soarnews                 \
-     source                   \
-     sp                       \
-     srand                    \
-     stats                    \
-     stop-soar                \
-     time                     \
-     timers                   \
-     unalias                  \
-     verbose                  \
-     version                  \
-     waitsnc                  \
-     warnings                 \
-     watch                    \
-     watch-wmes
+SRC = a-blockscode.tex a-gds.tex a-grammars.tex a-preferences.tex a-support.tex a-tcl-io.tex a-tclexp.tex architecture.tex chunking.tex functions.tex interface.tex intro.tex manual.tex syntax.tex funclist.tex rl.tex smem.tex epmem.tex
 
-CMD_SRC=${addsuffix .tex,${addprefix wikicmd/tex/,$(CMDS)}}
+.PHONY : trans_wiki
 
-SRC = a-blockscode.tex a-gds.tex a-grammars.tex a-preferences.tex a-support.tex a-tcl-io.tex a-tclexp.tex architecture.tex chunking.tex functions.tex interface-8.6.tex intro.tex manual8.tex syntax.tex $(CMD_SRC)
+all : trans_wiki manual.pdf
 
-GENERATED = syntax.aux manual8.lof manual8.log intro.aux manual8.toc manual8.aux chunking.aux functions.aux manual8.out manual8.pdf architecture.aux manual8.ind manual8.ilg manual8.glo manual8.idx interface-8.6.aux
-
-manual8.pdf : manual8.ind $(SRC)
-	$(LATEX) manual8
-	$(LATEX) manual8 # has to be compiled twice to get references right
-
-manual8.ind : manual8.idx
-	makeindex manual8
-	sed -i -f fix_index.sed manual8.ind
-
-manual8.idx : $(SRC)
-	$(LATEX) manual8
-
-$(CMD_SRC) :
+trans_wiki ::
 	cd wikicmd && sh gen_tex.sh
+
+manual.pdf : manual.ind $(SRC)
+	$(LATEX) manual
+	$(LATEX) manual # has to be compiled twice to get references right
+
+manual.ind : $(SRC)
+	$(LATEX) manual
+	makeindex manual
+	awk -f fix_index.awk manual.ind > tmp.ind
+	mv tmp.ind manual.ind
+
+funclist.tex : wikicmd/tex
+	sh genfunclist.sh
 	
 clean :
-	rm -rf $(GENERATED)
-	rm -f $(CMD_SRC)
+	rm -f manual.lof manual.log manual.toc manual.out manual.pdf manual.ind manual.ilg manual.glo manual.idx *.aux
+	rm -f funclist.tex
+	rm -rf wikicmd/wiki wikicmd/tex
+	

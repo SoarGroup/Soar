@@ -1602,6 +1602,15 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
       }
 	}
   }
+
+  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
+  {
+	  std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
+	  if ( insert_result.second )
+	  {
+	    symbol_add_ref( w->id );
+	  }
+  }
 }
 
 /* --- Removes a WME from the Rete. --- */
@@ -1641,6 +1650,15 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 	  {
 	    (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
 	  }
+	}
+  }
+
+  if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
+  {
+	std::pair< smem_pooled_symbol_set::iterator, bool > insert_result = thisAgent->smem_changed_ids->insert( w->id );
+	if ( insert_result.second )
+	{
+	  symbol_add_ref( w->id );
 	}
   }
   
@@ -3426,7 +3444,7 @@ void build_network_for_condition_list (agent* thisAgent,
    for function calls).  This is used for finding duplicate productions.
 --------------------------------------------------------------------- */
 
-Bool same_rhs (action *rhs1, action *rhs2) {
+Bool same_rhs (action *rhs1, action *rhs2, bool rl_chunk_stop) {
   action *a1, *a2;
   
   /* --- Scan through the two RHS's; make sure there's no function calls,
@@ -3446,7 +3464,28 @@ Bool same_rhs (action *rhs1, action *rhs2) {
     if (a1->attr != a2->attr) return FALSE;
     if (a1->value != a2->value) return FALSE;
     if (preference_is_binary(a1->preference_type))
-      if (a1->referent != a2->referent) return FALSE;
+      if (a1->referent != a2->referent)
+	  {
+	    bool stop=true;
+	    if (rl_chunk_stop)
+	    {
+		  if ( rhs_value_is_symbol(a1->referent) && rhs_value_is_symbol(a2->referent) )
+		  {
+		    Symbol* a1r = rhs_value_to_symbol(a1->referent);
+			Symbol* a2r = rhs_value_to_symbol(a2->referent);
+
+			if (((a1r->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) || (a1r->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE)) && 
+				((a2r->common.symbol_type==INT_CONSTANT_SYMBOL_TYPE) || (a2r->common.symbol_type==FLOAT_CONSTANT_SYMBOL_TYPE)))
+			{
+				if (((a1==rhs1) && (!a1->next)) && ((a2==rhs2) && (!a2->next)))
+			  {
+			    stop=false;
+			  }
+			}
+		  }
+	    }
+	    if (stop) return FALSE;
+	  }
     a1 = a1->next;
     a2 = a2->next;
   }
@@ -3610,7 +3649,7 @@ byte add_production_to_rete (agent* thisAgent, production *p, condition *lhs_top
 	for (p_node=bottom_node->first_child; p_node!=NIL;
 		p_node=p_node->next_sibling) {
 			if (p_node->node_type != P_BNODE) continue;
-			if ( !ignore_rhs && !same_rhs (p_node->b.p.prod->action_list, p->action_list)) continue;
+			if ( !ignore_rhs && !same_rhs (p_node->b.p.prod->action_list, p->action_list, thisAgent->rl_params->chunk_stop->get_value()==soar_module::on)) continue;
 			/* --- duplicate production found --- */
 			if (warn_on_duplicates)
 			{
@@ -6862,8 +6901,21 @@ rhs_value reteload_rhs_value (agent* thisAgent, FILE* f) {
   case 1:
     funcall_list = NIL;
     sym = reteload_symbol_from_index(thisAgent,f);
-    symbol_add_ref (sym);
-    rf = lookup_rhs_function (thisAgent, sym);
+    
+	/* NLD: 4/30/2011
+	 * I'm fairly certain function calls do not need an added ref. 
+	 * 
+	 * I traced through production parsing and the RHS function name is not kept around there. Instead, it "finds" the symbol 
+	 * (as opposed to "make", which adds a ref) and uses that to hash to the existing RHS function structure (which keeps a 
+	 * ref on the symbol name). The initial symbol ref comes from init_built_in_rhs_functions (+1 ref) and then is removed 
+	 * later via remove_built_in_rhs_functions (-1 ref).
+	 *
+	 * The parallel in rete-net loading is the symbol table that is loaded in via reteload_all_symbols (+1 ref) and then freed 
+	 * in reteload_free_symbol_table (-1 ref).
+	 */
+	// symbol_add_ref (sym);
+    
+	rf = lookup_rhs_function (thisAgent, sym);
     if (!rf) {
       char msg[BUFFER_MSG_SIZE];
       print_with_symbols (thisAgent, "Error: can't load this file because it uses an undefined RHS function %y\n", sym);

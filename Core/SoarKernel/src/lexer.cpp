@@ -144,7 +144,7 @@ void get_next_char (agent* thisAgent) {
 		(thisAgent->alternate_input_string == NULL) &&
 		(thisAgent->alternate_input_suffix == NULL)   ) {
 			thisAgent->current_char = EOF;
-			assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
+			//assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
 			return;
 	}
 
@@ -169,7 +169,7 @@ void get_next_char (agent* thisAgent) {
 
 			if ( thisAgent->alternate_input_exit ) {
 				thisAgent->current_char = EOF;
-				assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
+				//assert(0 && "error in lexer.cpp (control_c_handler() used to be called here)");
 				return;
 			}
 

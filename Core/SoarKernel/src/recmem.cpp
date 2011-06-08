@@ -50,12 +50,17 @@
 #include "soar_TraceNames.h"
 #include "consistency.h"
 #include "misc.h"
+#include "soar_module.h"
 
 #include "assert.h"
 #include <string> // SBW 8/4/08
-#include <stack>
+#include <list>
 
 using namespace soar_TraceNames;
+
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
+typedef std::list< instantiation*, soar_module::soar_memory_pool_allocator< instantiation* > > inst_mpool_list;
+typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > > cond_mpool_list;
 
 /* Uncomment the following line to get instantiation printouts */
 /* #define DEBUG_INSTANTIATIONS */
@@ -839,10 +844,10 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 	preference *pref;
 	goal_stack_level level;
 
-	std::stack<condition*> cond_stack;
-	std::list<instantiation*> inst_list;
+	cond_mpool_list cond_stack = cond_mpool_list( soar_module::soar_memory_pool_allocator< condition* >( thisAgent ) );
+	inst_mpool_list inst_list = inst_mpool_list( soar_module::soar_memory_pool_allocator< instantiation* >( thisAgent ) );
 	inst_list.push_back(inst);
-	std::list<instantiation*>::iterator next_iter = inst_list.begin();
+	inst_mpool_list::iterator next_iter = inst_list.begin();
 
 	while ( next_iter != inst_list.end() ) 
 	{
@@ -899,80 +904,80 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 				if (level > TOP_GOAL_LEVEL) 
 #endif
 				{
-					wme_remove_ref (thisAgent, cond->bt.wme_);
-					if (cond->bt.trace) 
-					{
-						cond->bt.trace->reference_count--;
-						if (cond->bt.trace->reference_count == 0) 
-						{
-							preference *clone;
+				    wme_remove_ref (thisAgent, cond->bt.wme_);
+				    if (cond->bt.trace) 
+				    {
+					    cond->bt.trace->reference_count--;
+					    if (cond->bt.trace->reference_count == 0) 
+					    {
+						    preference *clone;
 
-							if (cond->bt.trace->reference_count) 
-							{
-								continue;
-							}
-							bool has_active_clones = false;
-							for (clone=cond->bt.trace->next_clone; clone!=NIL; clone=clone->next_clone) 
-							{
-								if ( clone->reference_count ) 
-								{
-									has_active_clones = true;
-								}
-							}
-							if ( has_active_clones ) 
-							{
-								continue;
-							}
-							for ( clone = cond->bt.trace->prev_clone; clone != NIL; clone = clone->prev_clone ) 
-							{
-								if ( clone->reference_count ) 
-								{
-									has_active_clones = true;
-								}
-							}
-							if ( has_active_clones ) 
-							{
-								continue;
-							}
+						    if (cond->bt.trace->reference_count) 
+						    {
+							    continue;
+						    }
+						    bool has_active_clones = false;
+						    for (clone=cond->bt.trace->next_clone; clone!=NIL; clone=clone->next_clone) 
+						    {
+							    if ( clone->reference_count ) 
+							    {
+								    has_active_clones = true;
+							    }
+						    }
+						    if ( has_active_clones ) 
+						    {
+							    continue;
+						    }
+						    for ( clone = cond->bt.trace->prev_clone; clone != NIL; clone = clone->prev_clone ) 
+						    {
+							    if ( clone->reference_count ) 
+							    {
+								    has_active_clones = true;
+							    }
+						    }
+						    if ( has_active_clones ) 
+						    {
+							    continue;
+						    }
 
-							// The clones are hopefully a simple case so we just call deallocate_preference on them.
-							// Someone needs to create a test case to push this boundary...
-							{
-								preference* clone = cond->bt.trace->next_clone;
-								preference* next;
-								while (clone) {
-									next = clone->next_clone;
-									deallocate_preference (thisAgent, clone);
-									clone = next;
-								}
-								clone = cond->bt.trace->prev_clone;
-								while (clone) {
-									next = clone->prev_clone;
-									deallocate_preference (thisAgent, clone);
-									clone = next;
-								}
-							}
+						    // The clones are hopefully a simple case so we just call deallocate_preference on them.
+						    // Someone needs to create a test case to push this boundary...
+						    {
+							    preference* clone = cond->bt.trace->next_clone;
+							    preference* next;
+							    while (clone) {
+								    next = clone->next_clone;
+								    deallocate_preference (thisAgent, clone);
+								    clone = next;
+							    }
+							    clone = cond->bt.trace->prev_clone;
+							    while (clone) {
+								    next = clone->prev_clone;
+								    deallocate_preference (thisAgent, clone);
+								    clone = next;
+							    }
+						    }
 
-							/* --- deallocate pref --- */
-							/* --- remove it from the list of bt.trace's for its match goal --- */
-							if ( cond->bt.trace->on_goal_list ) 
-							{
-								remove_from_dll( 
-									cond->bt.trace->inst->match_goal->id.preferences_from_goal, 
-									cond->bt.trace, all_of_goal_next, all_of_goal_prev );
-							}
+						    /* --- deallocate pref --- */
+						    /* --- remove it from the list of bt.trace's for its match goal --- */
+						    if ( cond->bt.trace->on_goal_list ) 
+						    {
+							    remove_from_dll( 
+								    cond->bt.trace->inst->match_goal->id.preferences_from_goal, 
+								    cond->bt.trace, all_of_goal_next, all_of_goal_prev );
+						    }
 
-							/* --- remove it from the list of bt.trace's from that instantiation --- */
-							remove_from_dll( cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev );
-							if ( ( !cond->bt.trace->inst->preferences_generated ) && ( !cond->bt.trace->inst->in_ms ) ) 
-							{
-								next_iter = inst_list.insert( next_iter, cond->bt.trace->inst );
-							}
+						    /* --- remove it from the list of bt.trace's from that instantiation --- */
+						    remove_from_dll( cond->bt.trace->inst->preferences_generated, cond->bt.trace, inst_next, inst_prev );
+						    if ( ( !cond->bt.trace->inst->preferences_generated ) && ( !cond->bt.trace->inst->in_ms ) ) 
+						    {
+							    next_iter = inst_list.insert( next_iter, cond->bt.trace->inst );
+						    }
 
-							cond_stack.push( cond );
-						} // if
-					} // if
-				} // if
+						    cond_stack.push_back( cond );
+					    } // if
+				    } // if
+                } // if
 				/* voigtjr, nlderbin end */
 			} // if
 		} // for
@@ -981,8 +986,8 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 	// free condition symbols and pref
 	while( !cond_stack.empty() ) 
 	{
-		condition* temp = cond_stack.top();
-		cond_stack.pop();
+		condition* temp = cond_stack.back();
+		cond_stack.pop_back();
 
 		/* --- dereference component symbols --- */
 		symbol_remove_ref( thisAgent, temp->bt.trace->id );
@@ -1003,7 +1008,7 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 	}
 
 	// free instantiations in the reverse order
-	std::list<instantiation*>::reverse_iterator riter = inst_list.rbegin();
+	inst_mpool_list::reverse_iterator riter = inst_list.rbegin();
 	while( riter != inst_list.rend() ) 
 	{
 		instantiation* temp = *riter;
@@ -1102,7 +1107,7 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
    and throw away the rest.
 ----------------------------------------------------------------------- */
 
-void assert_new_preferences (agent* thisAgent) 
+void assert_new_preferences (agent* thisAgent, pref_buffer_list& bufdeallo) 
 {
 	instantiation *inst, *next_inst;
 	preference *pref, *next_pref;
@@ -1141,7 +1146,7 @@ void assert_new_preferences (agent* thisAgent)
 		}
 
 		if (o_rejects) 
-			process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
+			process_o_rejects_and_deallocate_them (thisAgent, o_rejects, bufdeallo);
 
 		//               s = find_slot(pref->id, pref->attr);
 		//               if (s) {
@@ -1291,6 +1296,10 @@ void do_preference_phase (agent* thisAgent) {
   thisAgent->change_level = thisAgent->highest_active_level;
   thisAgent->next_change_level = thisAgent->highest_active_level;
 
+  // Temporary list to buffer deallocation of some preferences until 
+  // the inner elaboration loop is over.
+  pref_buffer_list bufdeallo = pref_buffer_list( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) ); 
+
   // inner elaboration cycle
   for (;;) {
 	  thisAgent->change_level = thisAgent->next_change_level;
@@ -1347,7 +1356,7 @@ void do_preference_phase (agent* thisAgent) {
 	  // New waterfall model: push unfired matches back on to the assertion lists
 	  restore_postponed_assertions(thisAgent);
 
-	  assert_new_preferences (thisAgent);
+	  assert_new_preferences (thisAgent, bufdeallo);
 
 	  // Update accounting
 	  thisAgent->inner_e_cycle_count++;
@@ -1383,6 +1392,12 @@ void do_preference_phase (agent* thisAgent) {
 		  break;
 	  }
   } // end inner elaboration loop
+
+  // Deallocate preferences delayed during inner elaboration loop.
+  for ( pref_buffer_list::iterator iter=bufdeallo.begin(); iter!=bufdeallo.end(); ++iter ) 
+  {
+      preference_remove_ref( thisAgent, *iter );
+  }
 
   // Restore previous active level
   thisAgent->active_level = thisAgent->highest_active_level;

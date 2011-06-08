@@ -50,7 +50,7 @@ void CommandLineInterface::PrintSourceSummary(int sourced, const std::list< std:
     if (m_RawOutput) 
     {
         if (m_SourceFileStack.empty())
-            m_Result << "Total";
+            m_Result << "\nTotal";
         else
             m_Result << m_SourceFileStack.top();
         m_Result << ": " << sourced << " production" << ((sourced == 1) ? " " : "s ") << "sourced.";
@@ -106,7 +106,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     if (!pFile) 
     {
         if (!folder.empty()) DoPopD();
-		return SetError("Failed to open file for reading: " + path);
+        return SetError("Failed to open file for reading: " + path);
     }
 
     // obtain file size:
@@ -150,8 +150,8 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
         m_NumTotalProductionsIgnored = 0;
 
         // Need to listen for excise callbacks
-		if (m_pAgentSML)
-    		this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
+        if (m_pAgentSML)
+            this->RegisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
     }
 
     std::string temp;
@@ -160,36 +160,7 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
     temp.append(filename);
     m_SourceFileStack.push(temp);
 
-    soar::tokenizer tokenizer;
-    tokenizer.set_handler(&m_Parser);
-    bool ret = tokenizer.evaluate(buffer);
-    if (!ret)
-    {
-        int line = tokenizer.get_command_line_number();
-        int offset = -1;
-		
-		if (m_LastError.empty())
-		{
-			if (!m_Parser.GetError().empty())
-				m_LastError = m_Parser.GetError();
-			else if (!tokenizer.get_error_string())
-			{
-				m_LastError = tokenizer.get_error_string();
-				line = tokenizer.get_current_line_number();
-				offset = tokenizer.get_offset();
-			}
-        }
-
-        m_LastError.append("\n\t");
-        m_LastError.append(m_SourceFileStack.top());
-        m_LastError.append(":");
-        m_LastError.append(to_string(line, temp));
-        if (offset > 0)
-        {
-            m_LastError.append(":");
-            m_LastError.append(to_string(line, temp));
-        }
-    }
+    bool ret = Source(buffer, true);
 
     if (m_pSourceOptions && m_pSourceOptions->test(SOURCE_ALL))
         PrintSourceSummary(m_NumProductionsSourced, m_ExcisedDuringSource, m_NumProductionsIgnored);
@@ -206,8 +177,8 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 
     if (m_SourceFileStack.empty())
     {
-		if (m_pAgentSML)
-			this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
+        if (m_pAgentSML)
+            this->UnregisterWithKernel(smlEVENT_BEFORE_PRODUCTION_REMOVED);
 
         if (m_pSourceOptions && !m_pSourceOptions->test(SOURCE_DISABLE))
             PrintSourceSummary(m_NumTotalProductionsSourced, m_TotalExcisedDuringSource, m_NumTotalProductionsIgnored);
@@ -219,4 +190,43 @@ bool CommandLineInterface::DoSource(std::string path, SourceBitset* pOptions)
 
     free(buffer);
     return ret;
+}
+
+bool CommandLineInterface::Source(const char* buffer, bool printFileStack)
+{
+    soar::tokenizer tokenizer;
+    tokenizer.set_handler(&m_Parser);
+    if (tokenizer.evaluate(buffer))
+        return true;
+
+    int line = tokenizer.get_command_line_number();
+    int offset = -1;
+    
+    std::string sourceError;
+    if (m_LastError.empty())
+    {
+        if (!m_Parser.GetError().empty())
+            sourceError = m_Parser.GetError();
+        else if (tokenizer.get_error_string())
+        {
+            sourceError = tokenizer.get_error_string();
+            line = tokenizer.get_current_line_number();
+            offset = tokenizer.get_offset();
+        }
+    }
+    if (printFileStack)
+    {
+        std::string temp;
+        sourceError.append("\n\t");
+        sourceError.append(m_SourceFileStack.top());
+        sourceError.append(":");
+        sourceError.append(to_string(line, temp));
+        if (offset > 0)
+        {
+            sourceError.append(":");
+            sourceError.append(to_string(line, temp));
+        }
+    }
+    AppendError(sourceError);
+    return false;
 }

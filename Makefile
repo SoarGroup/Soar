@@ -18,12 +18,22 @@ noscu:
 static:
 	cd Core && scons --static
 
+ios-simulator:
+	cd Core && scons --static --platform=32 --ios=simulator
+
+ios-armv6:
+	cd Core && scons --static --platform=32 --ios=armv6
+
+ios-armv7:
+	cd Core && scons --static --platform=32 --ios=armv7
+
 up: update
 update:
-	find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn update {} \;
+	svn update && find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn update {} \;
 
+st: status
 status:
-	find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn status {} \;
+	svn status && find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn status {} \;
 
 clean:
 	cd Core && scons -c

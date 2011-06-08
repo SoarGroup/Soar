@@ -16,6 +16,7 @@
 
 #include "symtab.h" /* needed for definition of symbol_union */
 #include "kernel.h" /* needed for definition of NIL */
+#include "soar_module.h" /* needed for definition of memory pool allocator */
 
 #include <set>
 
@@ -35,8 +36,11 @@ typedef struct wme_struct wme;
 typedef union symbol_union Symbol;
 typedef cons list;
 
-typedef std::set< wme* > wma_wme_set;
-typedef uint64_t wma_reference;
+template <class T>
+class SoarMemoryPoolAllocator;
+
+typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
+typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
 
 /* REW: begin 09.15.96 */
 
@@ -226,7 +230,7 @@ typedef struct preference_struct {
   double numeric_value;
   bool rl_contribution;
 
-  wma_wme_set* wma_o_set;
+  wma_pooled_wme_set* wma_o_set;
 
 } preference;
 
@@ -312,7 +316,7 @@ typedef struct slot_struct {
                                              or points to dl_cons if the slot
                                              has changed + or ! pref's */
 
-  wma_reference wma_num_references;
+  wma_sym_reference_map* wma_val_references;
 
 } slot;
 

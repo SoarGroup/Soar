@@ -11,9 +11,12 @@ import sml.Agent;
 import sml.Identifier;
 import sml.IntElement;
 import sml.Kernel;
+import sml.StringElement;
 import sml.WMElement;
+import sml.smlRunEventId;
 import sml.smlSystemEventId;
 import sml.Agent.OutputEventInterface;
+import sml.Agent.RunEventInterface;
 import sml.Kernel.SystemEventInterface;
 
 public class QnASMLModule {
@@ -26,12 +29,23 @@ public class QnASMLModule {
 	private long queryCounter;
 	private final Map<Long, ResultState> intermediateResults = new HashMap<Long, ResultState>();
 	private class ResultState {
-		public final Identifier oldParent;
 		public final QueryState queryState;
 		
+		public Identifier oldParent;
+		
+		public long resultNum;
+		public IntElement resultNumWME;
+		public Identifier featuresId;
+		public StringElement nextWME;
+		
 		ResultState(Identifier oldParent, QueryState queryState) {
-			this.oldParent = oldParent;
 			this.queryState = queryState;
+			
+			this.oldParent = oldParent;
+			this.resultNum = 1;
+			this.resultNumWME = null;
+			this.featuresId = null;
+			this.nextWME = null;
 		}
 	};
 	
@@ -51,21 +65,15 @@ public class QnASMLModule {
 	private static final String FEATURES_NAME = "features";
 	private static final String PENDING_NAME = "pending";
 	private static final String ID_NAME = "id";
+	private static final String NUM_NAME = "num";
 	
-	public QnASMLModule(String host, int port, String agentName, DataSourceManager man, CountDownLatch doneSignal) {
-		final Kernel kernel = Kernel.CreateRemoteConnection(true, host, port);
-		if (kernel.HadError()) {
-			throw new IllegalStateException(kernel.GetLastErrorDescription());
-		}
-
-		final Agent agent = kernel.GetAgent(agentName);
-		if (agent == null) {
-			throw new IllegalStateException(kernel.GetLastErrorDescription());
-		}
-
+	public QnASMLModule(Kernel kernel, Agent agent, DataSourceManager man, CountDownLatch doneSignal) {
 		this.inputLink = agent.GetInputLink();
 		
 		kernel.RegisterForSystemEvent(smlSystemEventId.smlEVENT_BEFORE_SHUTDOWN, shutdownHandler, null);
+		
+		//agent.RegisterForRunEvent(smlRunEventId.smlEVENT_AFTER_HALTED, haltHandler, null);
+		
 		agent.AddOutputHandler(QUERY_COMMAND_NAME, queryCommandHandler, null);
 		agent.AddOutputHandler(NEXT_COMMAND_NAME, nextCommandHandler, null);
 		agent.SetOutputLinkChangeTracking(true);
@@ -94,8 +102,10 @@ public class QnASMLModule {
 		
 		for (Entry<String, List<Object>> c : row.entrySet()) {
 			for (Object v : c.getValue()) {
-				if (v instanceof Integer) {
-					features.CreateIntWME(c.getKey(), ((Integer) v).intValue());
+				if (v instanceof Long) {
+					features.CreateIntWME(c.getKey(), ((Long) v).longValue());
+				} else if (v instanceof Integer) {
+					features.CreateIntWME(c.getKey(), ((Integer) v).longValue());
 				} else if (v instanceof Double) {
 					features.CreateFloatWME(c.getKey(), ((Double) v).doubleValue());
 				} else {
@@ -105,7 +115,7 @@ public class QnASMLModule {
 		}
 	}
 	
-	private void addResult(Long queryId, boolean first, boolean incremental) {
+	private void addResult(Long queryId, boolean incremental) {
 		if (!intermediateResults.containsKey(queryId)) {
 			return;
 		}
@@ -113,35 +123,52 @@ public class QnASMLModule {
 		ResultState rs = intermediateResults.get(queryId);
 		
 		if (incremental) {
-			{
-				WMElement oldChild = rs.oldParent.FindByAttribute(NEXT_NAME, 0);
-				if (oldChild!=null && oldChild.ConvertToStringElement()!=null && oldChild.ConvertToStringElement().GetValue().compareTo(PENDING_NAME)==0) {
-					oldChild.DestroyWME();
+			if (rs.resultNum==1) {
+				rs.oldParent = rs.oldParent.CreateIdWME(RESULT_NAME);
+			} else {
+				if (rs.resultNumWME!=null) {
+					rs.resultNumWME.DestroyWME();
+					rs.resultNumWME = null;
+				}
+				
+				if (rs.featuresId!=null) {
+					rs.featuresId.DestroyWME();
+					rs.featuresId = null;
 				}
 			}
 			
-			Identifier newParent = rs.oldParent.CreateIdWME(first?RESULT_NAME:NEXT_NAME);
-			addFeatures(newParent.CreateIdWME(FEATURES_NAME), rs.queryState);
+			rs.featuresId = rs.oldParent.CreateIdWME(FEATURES_NAME);
+			rs.resultNumWME = rs.oldParent.CreateIntWME(NUM_NAME, rs.resultNum++);
+			
+			addFeatures(rs.featuresId, rs.queryState);
+			
 			if (rs.queryState.hasNext()) {
-				newParent.CreateStringWME(NEXT_NAME, PENDING_NAME);
-				intermediateResults.put(queryId, new ResultState(newParent, rs.queryState));				
+				if (rs.nextWME==null) {
+					rs.nextWME = rs.oldParent.CreateStringWME(NEXT_NAME, PENDING_NAME);
+				}
 			} else {
-				newParent.CreateStringWME(NEXT_NAME, NIL_NAME);
+				if (rs.nextWME!=null) {
+					rs.nextWME.DestroyWME();
+					rs.nextWME = null;
+				}
+				rs.oldParent.CreateStringWME(NEXT_NAME, NIL_NAME);
+				
 				intermediateResults.remove(queryId);
 			}
 		} else {
 			Identifier oldParent = rs.oldParent;
 			Identifier newParent = null;
-			boolean firstRound = first;
+			long roundNum = rs.resultNum;
 			
 			do {				
-				if (firstRound) {
+				if (roundNum==1) {
 					newParent = oldParent.CreateIdWME(RESULT_NAME);
-					firstRound = false;
 				} else {
 					newParent = oldParent.CreateIdWME(NEXT_NAME);
-				}				
+				}
+				
 				addFeatures(newParent.CreateIdWME(FEATURES_NAME), rs.queryState);
+				newParent.CreateIntWME(NUM_NAME, roundNum++);
 				
 				if (rs.queryState.hasNext()) {
 					oldParent = newParent;
@@ -162,6 +189,15 @@ public class QnASMLModule {
 		}
 		
 	};
+
+	private final RunEventInterface haltHandler = new RunEventInterface() {
+
+		@Override
+		public void runEventHandler(int eventID, Object data, Agent agent, int phase) {
+			doneSignal.countDown();
+		}
+
+	};
 	
 	private final OutputEventInterface nextCommandHandler = new OutputEventInterface() {
 
@@ -178,7 +214,7 @@ public class QnASMLModule {
 				
 				if (queryInt!=null) {
 					if (intermediateResults.containsKey(queryInt.GetValue())) {
-						addResult(queryInt.GetValue(), false, true);
+						addResult(queryInt.GetValue(), true);
 						goodNext = true;
 					}
 				}
@@ -231,7 +267,7 @@ public class QnASMLModule {
 						if (!childWme.IsIdentifier()) {
 							Object childAttr = null;
 							try {
-								childAttr = new Integer(Integer.parseInt(childWme.GetAttribute()));
+								childAttr = new Long(Long.parseLong(childWme.GetAttribute()));
 							} catch (Exception e) {
 							}
 							if (childAttr == null) {
@@ -270,7 +306,7 @@ public class QnASMLModule {
 						pIdAdded.CreateIntWME(ID_NAME, queryCounter);						
 						intermediateResults.put(queryCounter, new ResultState(pIdAdded, queryState));
 						
-						addResult(queryCounter, true, results.compareTo(INCREMENTAL_NAME)==0);
+						addResult(queryCounter, results.compareTo(INCREMENTAL_NAME)==0);
 						
 						queryCounter++;
 					} else {

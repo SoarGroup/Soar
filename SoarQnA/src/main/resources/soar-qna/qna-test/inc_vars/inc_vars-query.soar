@@ -1,6 +1,6 @@
 sp {inc_vars*propose*inc_vars-query
    (state <s> ^name inc_vars
-             -^result)
+             -^superstate.io.output-link.qna-query)
 -->
    (<s> ^operator <op> + =)
    (<op> ^name inc_vars-query)
@@ -11,7 +11,6 @@ sp {apply*inc_vars-query
               ^superstate.io.output-link <out>)
    (<op> ^name inc_vars-query)
 -->
-   (<s> ^result foo)
    (<out> ^qna-query <q>)
    (<q> ^source test_db
         ^query all_vars

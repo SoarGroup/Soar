@@ -9,9 +9,8 @@ sp {reciprocation*propose*reciprocation-check
 sp {apply*reciprocation-check*success
    (state <s> ^operator <op>
               ^result <r>
-              ^superstate <ss>)
-   (<ss> ^io.output-link.qna-query.result.features.result <r>
-         ^test <t>)
+              ^superstate.test <t>
+              ^outcome <r>)
    (<t> ^source math
         ^query |/|
         ^num two)

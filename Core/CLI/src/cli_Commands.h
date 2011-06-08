@@ -2,9 +2,11 @@
 #define CLI_COMMANDS_H
 
 #include "cli_Parser.h"
-#include "cli_Cli.h"
 #include "misc.h"
 #include "cli_Options.h"
+#include "kernel.h"
+#include "sml_Events.h"
+#include "cli_Cli.h"
 
 namespace cli 
 {
@@ -665,12 +667,14 @@ namespace cli
             cli::Options opt;
             OptionsData optionsData[] =
             {
+				{'b', "backup",       OPTARG_NONE},
                 {'c', "close",        OPTARG_NONE},
-                {'g', "get",        OPTARG_NONE},
-                {'s', "set",        OPTARG_NONE},
+                {'g', "get",          OPTARG_NONE},
+				{'p', "print",        OPTARG_NONE},
+                {'s', "set",          OPTARG_NONE},
                 {'S', "stats",        OPTARG_NONE},
-                {'t', "timers",        OPTARG_NONE},
-                {'v', "viz",        OPTARG_NONE},
+                {'t', "timers",       OPTARG_NONE},
+                {'v', "viz",          OPTARG_NONE},
                 {0, 0, OPTARG_NONE} // null
             };
 
@@ -703,12 +707,32 @@ namespace cli
                     return cli.DoEpMem( option );
                 }
 
+			case 'b':
+                // case: backup requires one non-option argument
+                if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                return cli.DoEpMem( option, &( argv[2] ) );
+
             case 'g':
                 // case: get requires one non-option argument
                 {
                     if (!opt.CheckNumNonOptArgs(1, 1)) return false;
 
                     return cli.DoEpMem( option, &( argv[2] ) );
+                }
+
+			case 'p':
+                // case: print takes one non-option argument
+                {
+                    if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                    std::string temp_str( argv[2] );
+                    epmem_time_id memory_id;        
+
+                    if ( !from_string( memory_id, temp_str ) )
+                        return cli.SetError( "Invalid attribute." );
+
+                    return cli.DoEpMem( option, 0, 0, memory_id );
                 }
 
             case 's':
@@ -1051,9 +1075,9 @@ namespace cli
             return "Syntax: help [command]";
         }
 
-        virtual bool Parse(std::vector< std::string >&)
+        virtual bool Parse(std::vector< std::string >&argv)
         {
-            return cli.DoHelp();
+            return cli.DoHelp(argv);
         }
 
     private:
@@ -1488,6 +1512,84 @@ namespace cli
         cli::Cli& cli;
 
         MaxChunksCommand& operator=(const MaxChunksCommand&);
+    };
+
+    class MaxDCTimeCommand : public cli::ParserCommand
+    {
+    public:
+        MaxDCTimeCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
+        virtual ~MaxDCTimeCommand() {}
+        virtual const char* GetString() const { return "max-dc-time"; }
+        virtual const char* GetSyntax() const 
+        {
+            return "Syntax: max-dc-time [--seconds] [n]";
+        }
+
+        virtual bool Parse(std::vector< std::string >&argv)
+        {
+            cli::Options opt;
+            OptionsData optionsData[] = 
+            {
+                {'s', "seconds", OPTARG_NONE},
+                {'d', "disable", OPTARG_NONE},
+                {'o', "off", OPTARG_NONE},
+                {0, 0, OPTARG_NONE}
+            };
+
+            bool seconds = false;
+
+            // n defaults to 0 (print current value)
+            int n = 0;
+
+            for (;;) 
+            {
+                if (!opt.ProcessOptions(argv, optionsData)) return false;
+                if (opt.GetOption() == -1) break;
+
+                switch (opt.GetOption()) 
+                {
+                    case 's':
+                        seconds = true;
+                        break;
+                    case 'd':
+                    case 'o':
+                        n = -1;
+                        break;
+                }
+            }
+
+            if (opt.GetNonOptionArguments() > 1) 
+                return cli.SetError(GetSyntax());       
+            
+            if (opt.GetNonOptionArguments() == 1)
+            {
+                int index = opt.GetArgument() - opt.GetNonOptionArguments();
+
+                if (seconds)
+                {
+                    double nsec = 0;
+
+                    if (!from_string(nsec, argv[index]))
+                        return cli.SetError(GetSyntax());   
+
+                    n = static_cast<int>(nsec * 1000000);
+                }
+                else
+                {
+                    from_string(n, argv[index]);
+                }
+
+                if (n <= 0) 
+                    return cli.SetError("Expected positive value.");
+            }
+
+            return cli.DoMaxDCTime(n);
+        }
+
+    private:
+        cli::Cli& cli;
+
+        MaxDCTimeCommand& operator=(const MaxDCTimeCommand&);
     };
 
     class MaxElaborationsCommand : public cli::ParserCommand
@@ -2920,11 +3022,13 @@ namespace cli
             OptionsData optionsData[] =
             {
                 {'a', "add",        OPTARG_NONE},
+				{'b', "backup",		OPTARG_NONE},
                 {'g', "get",        OPTARG_NONE},
-                {'i', "init",        OPTARG_NONE},
+                {'i', "init",       OPTARG_NONE},
+				{'p', "print",      OPTARG_NONE},
                 {'s', "set",        OPTARG_NONE},
-                {'S', "stats",        OPTARG_NONE},
-                {'t', "timers",        OPTARG_NONE},
+                {'S', "stats",      OPTARG_NONE},
+                {'t', "timers",     OPTARG_NONE},
                 {'v', "viz",        OPTARG_NONE},
                 {0, 0, OPTARG_NONE} // null
             };
@@ -2957,6 +3061,12 @@ namespace cli
 
                 return cli.DoSMem( option, &( argv[2] ) );
 
+			case 'b':
+                // case: backup requires one non-option argument
+                if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                return cli.DoSMem( option, &( argv[2] ) );
+
             case 'g':
                 {
                     // case: get requires one non-option argument
@@ -2970,6 +3080,20 @@ namespace cli
                 if (!opt.CheckNumNonOptArgs(0, 0)) return false;
 
                 return cli.DoSMem( option );
+
+			case 'p':
+                {
+                    // case: print does zero or 1/2 non-option arguments
+                    if (!opt.CheckNumNonOptArgs(0, 2)) return false;
+
+                    if ( opt.GetNonOptionArguments() == 0 )
+                        return cli.DoSMem( option );
+
+                    if (opt.GetNonOptionArguments() == 1)
+                        return cli.DoSMem( option, &(argv[2]), 0 );
+
+                    return cli.DoSMem( option, &(argv[2]), &(argv[3]) );
+                }
 
             case 's':
                 {
@@ -4147,9 +4271,11 @@ namespace cli
             cli::Options opt;
             OptionsData optionsData[] = 
             {
-                {'g', "get",    OPTARG_NONE},
-                {'s', "set",    OPTARG_NONE},
-                {'S', "stats",    OPTARG_NONE},        
+                {'g', "get",		OPTARG_NONE},
+				{'h', "history",	OPTARG_NONE},
+                {'s', "set",		OPTARG_NONE},
+                {'S', "stats",		OPTARG_NONE},
+				{'t', "timers",		OPTARG_NONE},
                 {0, 0, OPTARG_NONE} // null
             };
 
@@ -4183,6 +4309,14 @@ namespace cli
                     return cli.DoWMA( option, &( argv[2] ) );
                 }
 
+			case 'h':
+				// case: history requires one non-option argument
+				{
+					if (!opt.CheckNumNonOptArgs(1, 1)) return false;
+
+                    return cli.DoWMA( option, &( argv[2] ) );
+				}
+
             case 's':
                 // case: set requires two non-option arguments
                 {
@@ -4198,6 +4332,17 @@ namespace cli
 
                     if ( opt.GetNonOptionArguments() == 0 )
                         return cli.DoWMA( 'S' );
+
+                    return cli.DoWMA( option, &( argv[2] ) );
+                }
+
+			case 't':
+                // case: timer can do zero or one non-option arguments
+                {
+                    if (!opt.CheckNumNonOptArgs(0, 1)) return false;
+
+                    if ( opt.GetNonOptionArguments() == 0 )
+                        return cli.DoWMA( option );
 
                     return cli.DoWMA( option, &( argv[2] ) );
                 }

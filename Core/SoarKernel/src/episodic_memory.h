@@ -103,8 +103,12 @@ class epmem_param_container: public soar_module::param_container
 		enum force_choices { remember, ignore, force_off };
 
 		// performance
-		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k };
+		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
 		enum opt_choices { opt_safety, opt_speed };
+
+		// experimental
+		enum gm_ordering_choices { gm_order_undefined, gm_order_dfs, gm_order_mcv };
+		enum merge_choices { merge_none, merge_add };
 
 		////////////////////////////////////////////////////////////
 		////////////////////////////////////////////////////////////
@@ -115,12 +119,12 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::constant_param<phase_choices> *phase;
 		soar_module::constant_param<trigger_choices> *trigger;
 		soar_module::constant_param<force_choices> *force;
-		soar_module::set_param *exclusions;
+		soar_module::sym_set_param *exclusions;
 
 		// storage
 		soar_module::constant_param<db_choices> *database;
 		epmem_path_param *path;
-		soar_module::integer_param *commit;
+		soar_module::boolean_param *lazy_commit;
 
 		// retrieval
 		soar_module::boolean_param *graph_match;
@@ -131,6 +135,10 @@ class epmem_param_container: public soar_module::param_container
 		soar_module::integer_param *cache_size;
 		soar_module::constant_param<opt_choices> *opt;
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
+
+		// experimental
+		soar_module::constant_param<gm_ordering_choices>* gm_ordering;
+		soar_module::constant_param<merge_choices>* merge;
 
 		epmem_param_container( agent *new_agent );
 };
@@ -161,6 +169,7 @@ class epmem_db_predicate: public soar_module::agent_predicate<T>
 typedef soar_module::primitive_stat<epmem_time_id> epmem_time_id_stat;
 typedef soar_module::primitive_stat<epmem_node_id> epmem_node_id_stat;
 
+class epmem_db_lib_version_stat;
 class epmem_mem_usage_stat;
 class epmem_mem_high_stat;
 
@@ -168,8 +177,10 @@ class epmem_stat_container: public soar_module::stat_container
 {
 	public:
 		epmem_time_id_stat *time;
+		epmem_db_lib_version_stat* db_lib_version;
 		epmem_mem_usage_stat *mem_usage;
 		epmem_mem_high_stat *mem_high;
+		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *ncb_wmes;
 
 		soar_module::integer_stat *qry_pos;
@@ -192,6 +203,20 @@ class epmem_stat_container: public soar_module::stat_container
 
 		epmem_stat_container( agent *my_agent );
 };
+
+//
+
+class epmem_db_lib_version_stat: public soar_module::primitive_stat< const char* >
+{
+	protected:
+		agent* my_agent;
+
+	public:
+		epmem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred );
+		const char* get_value();
+};
+
+//
 
 class epmem_mem_usage_stat: public soar_module::integer_stat
 {
@@ -233,6 +258,7 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *next;
 		soar_module::timer *prev;
 		soar_module::timer *hash;
+		soar_module::timer *wm_phase;
 
 		soar_module::timer *ncb_edge;
 		soar_module::timer *ncb_edge_rit;
@@ -335,6 +361,7 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		soar_module::sqlite_statement *promote_id;
 		soar_module::sqlite_statement *find_lti;
+		soar_module::sqlite_statement *find_lti_promotion_time;
 
 		//
 		
@@ -374,19 +401,21 @@ typedef struct epmem_rit_state_struct
 // Soar Integration Types
 //////////////////////////////////////////////////////////
 
+// list used primarily like a stack
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > epmem_wme_stack;
+
 // data associated with each state
 typedef struct epmem_data_struct
 {
-	uint64_t last_ol_time;				// last update to output-link
-	uint64_t last_ol_count;			// last count of output-link
+	uint64_t last_ol_time;									// last update to output-link
+	uint64_t last_ol_count;									// last count of output-link
 
-	uint64_t last_cmd_time;			// last update to epmem.command
-	uint64_t last_cmd_count;			// last update to epmem.command
+	uint64_t last_cmd_time;									// last update to epmem.command
+	uint64_t last_cmd_count;								// last update to epmem.command
 
-	epmem_time_id last_memory;				// last retrieved memory
+	epmem_time_id last_memory;								// last retrieved memory
 
-	std::set<wme *> *cue_wmes;				// wmes in last cue
-	std::stack<preference *> *epmem_wmes;	// wmes in last epmem
+	epmem_wme_stack* epmem_wmes;							// preferences generated in last epmem
 } epmem_data;
 
 
@@ -528,6 +557,8 @@ typedef struct epmem_shared_incoming_book_struct
 //
 
 typedef std::map< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_map;
+typedef std::pair< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_pair;
+typedef std::vector< epmem_shared_literal_pair_pair > epmem_shared_literal_pair_pair_vector;
 
 typedef std::map< Symbol*, epmem_node_id > epmem_gm_assignment_map;
 typedef std::map< Symbol*, epmem_shared_literal_set > epmem_gm_sym_constraints;
@@ -593,19 +624,12 @@ struct epmem_compare_shared_queries
 };
 typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
 
-//
-// These must go below types
-//
-
-#include "stl_support.h"
-
 //////////////////////////////////////////////////////////
 // Parameter Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
 
 // shortcut for determining if EpMem is enabled
 extern bool epmem_enabled( agent *my_agent );
-
 
 //////////////////////////////////////////////////////////
 // Soar Functions (see cpp for comments)
@@ -617,8 +641,10 @@ extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
 extern void epmem_go( agent *my_agent );
+extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 
 // visualization
 extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
+extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
 
 #endif

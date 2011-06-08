@@ -45,6 +45,8 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
 
+		//
+
         temp = "Encoding";
         if ( m_RawOutput )
         {
@@ -117,6 +119,8 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
 
+		//
+
         temp = "Storage";
         if ( m_RawOutput )
         {
@@ -149,8 +153,8 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
-        temp = "commit: ";
-        temp2 = agnt->epmem_params->commit->get_string();
+        temp = "lazy-commit: ";
+        temp2 = agnt->epmem_params->lazy_commit->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
@@ -175,6 +179,8 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
+
+		//
 
         temp = "Retrieval";
         if ( m_RawOutput )
@@ -214,13 +220,28 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         delete temp2;
         if ( m_RawOutput )
         {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "graph-match-ordering: ";
+		temp2 = agnt->epmem_params->gm_ordering->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
             m_Result << temp << "\n\n";
         }
         else
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
+
+		//
 
         temp = "Performance";
         if ( m_RawOutput )
@@ -241,7 +262,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 		
-		temp = "page_size: ";
+		temp = "page-size: ";
         temp2 = agnt->epmem_params->page_size->get_string();
         temp += temp2;
         delete temp2;
@@ -254,7 +275,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
         }
 
-        temp = "cache_size: ";
+        temp = "cache-size: ";
         temp2 = agnt->epmem_params->cache_size->get_string();
         temp += temp2;
         delete temp2;
@@ -291,10 +312,56 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         else
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
+        }
+
+		temp = "Experimental";
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+        
+		temp = "------------";
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+		temp = "merge: ";
+		temp2 = agnt->epmem_params->merge->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
 
         return true;
+    }
+	else if ( pOp == 'b' )
+    {
+        std::string err;
+		bool result = epmem_backup_db( agnt, pAttr->c_str(), &( err ) );
+
+        if ( !result )
+        {
+            SetError( err );
+        }
+
+        return result;
     }
     else if ( pOp == 'c' )
     {
@@ -330,6 +397,27 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         else
         {
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+        }
+
+        return true;
+    }
+	else if ( pOp == 'p' )
+    {
+        std::string viz;
+
+        epmem_print_episode( agnt, memory_id, &( viz ) );
+        if ( viz.empty() )
+        {
+            return SetError( "Invalid episode." );
+        }
+
+        if ( m_RawOutput )
+        {
+            m_Result << viz;
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, viz.c_str() );
         }
 
         return true;
@@ -373,6 +461,19 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
             }
 
+			output = "SQLite Version: ";
+            temp2 = agnt->epmem_stats->db_lib_version->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
             output = "Memory Usage: ";
             temp2 = agnt->epmem_stats->mem_usage->get_string();
             output += temp2;
@@ -388,6 +489,19 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 
             output = "Memory Highwater: ";
             temp2 = agnt->epmem_stats->mem_high->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+			
+			output = "Queries: ";
+            temp2 = agnt->epmem_stats->cbr->get_string();
             output += temp2;
             delete temp2;
             if ( m_RawOutput )
@@ -569,8 +683,7 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
         epmem_visualize_episode( agnt, memory_id, &( viz ) );
         if ( viz.empty() )
         {
-            viz.assign( "Invalid episode." );
-            return SetError( "epmem viz: Invalid episode." );
+            return SetError( "Invalid episode." );
         }
 
         if ( m_RawOutput )

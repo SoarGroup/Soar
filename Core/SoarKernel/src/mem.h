@@ -486,8 +486,8 @@ typedef struct item_in_hash_table_struct {
 typedef item_in_hash_table *bucket_array;
 
 typedef struct hash_table_struct {
-  int64_t count;      /* number of items in the table */
-  uint32_t size;       /* number of buckets */
+  int64_t count;            /* number of items in the table */
+  uint32_t size;            /* number of buckets */
   short log2size;           /* log (base 2) of size */
   short minimum_log2size;   /* table never shrinks below this size */
   bucket_array *buckets;

@@ -18,10 +18,13 @@
 #include <map>
 #include <string>
 #include <set>
+#include <list>
 #include <functional>
+#include <assert.h>
 
 #include "misc.h"
 #include "symtab.h"
+#include "mem.h"
 
 typedef struct wme_struct wme;
 typedef struct preference_struct preference;
@@ -34,11 +37,21 @@ namespace soar_module
 	// Utility functions
 	/////////////////////////////////////////////////////////////
 
-	typedef std::set<wme *> wme_set;
+	typedef std::set< wme* > wme_set;
+	
+	typedef struct symbol_triple_struct
+	{
+		Symbol* id;
+		Symbol* attr;
+		Symbol* value;
+
+		symbol_triple_struct( Symbol* new_id, Symbol* new_attr, Symbol* new_value ): id(new_id), attr(new_attr), value(new_value) {}
+	} symbol_triple;
+	typedef std::list< symbol_triple* > symbol_triple_list;
 	
 	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value );
 	void remove_module_wme( agent *my_agent, wme *w );
-	preference *make_fake_preference( agent *my_agent, Symbol *state, Symbol *id, Symbol *attr, Symbol *value, wme_set *conditions );
+	instantiation* make_fake_instantiation( agent* my_agent, Symbol* state, wme_set* conditions, symbol_triple_list* actions );
 	
 	///////////////////////////////////////////////////////////////////////////
 	// Predicates
@@ -372,8 +385,109 @@ namespace soar_module
 			}
 	};
 
-	// a set param maintains a set of strings
-	class set_param: public param
+	// a primitive_set param maintains a set of primitives
+	template <typename T>
+	class primitive_set_param: public param
+	{
+		protected:
+			std::set< T > *my_set;
+			std::string *value;
+			predicate< T > *prot_pred;
+
+		public:
+			primitive_set_param( const char *new_name, predicate< T > *new_prot_pred ): param( new_name ), my_set( new std::set< T >() ), value( new std::string ), prot_pred( new_prot_pred ) {}
+
+			virtual ~primitive_set_param()
+			{
+				delete my_set;
+				delete value;
+				delete prot_pred;
+			}
+
+			virtual char *get_string()
+			{
+				char *return_val = new char[ value->length() + 1 ];
+				strcpy( return_val, value->c_str() );
+				return_val[ value->length() ] = '\0';
+
+				return return_val;
+			}
+
+			virtual bool validate_string( const char *new_value )
+			{
+				T test_val;
+
+				return from_string( test_val, new_value );
+			}
+
+			virtual bool set_string( const char *new_string )
+			{
+				T new_val;
+				from_string( new_val, new_string );
+				
+				if ( (*prot_pred)( new_val ) )
+				{
+					return false;
+				}
+				else
+				{
+					typename std::set< T >::iterator it = my_set->find( new_val );
+					std::string temp_str;
+
+					if ( it != my_set->end() )
+					{
+						my_set->erase( it );
+
+						// regenerate value from scratch
+						value->clear();
+						for ( it=my_set->begin(); it!=my_set->end(); )
+						{
+							to_string( *it, temp_str );
+							value->append( temp_str );
+
+							it++;
+
+							if ( it != my_set->end() )
+								value->append( ", " );
+						}
+					}
+					else
+					{
+						my_set->insert( new_val );
+
+						if ( !value->empty() )
+							value->append( ", " );
+
+						to_string( new_val, temp_str );
+						value->append( temp_str );
+					}
+
+
+					return true;
+				}
+			}
+
+			virtual bool in_set( T test_val )
+			{
+				return ( my_set->find( test_val ) != my_set->end() );
+			}
+
+			virtual typename std::set< T >::iterator set_begin()
+			{
+				return my_set->begin();
+			}
+
+			virtual typename std::set< T >::iterator set_end()
+			{
+				return my_set->end();
+			}
+	};
+
+	// these are easy definitions for sets
+	typedef primitive_set_param< int64_t > int_set_param;
+
+	// a sym_set param maintains a set of strings
+	class sym_set_param: public param
 	{
 		protected:
 			std::set<Symbol *> *my_set;
@@ -383,9 +497,9 @@ namespace soar_module
 			agent *my_agent;
 
 		public:
-			set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent ): param( new_name ), my_set( new std::set<Symbol *>() ), value( new std::string ), prot_pred( new_prot_pred ), my_agent( new_agent ) {}
+			sym_set_param( const char *new_name, predicate<const char *> *new_prot_pred, agent *new_agent ): param( new_name ), my_set( new std::set<Symbol *>() ), value( new std::string ), prot_pred( new_prot_pred ), my_agent( new_agent ) {}
 
-			virtual ~set_param()
+			virtual ~sym_set_param()
 			{
 				for ( std::set<Symbol *>::iterator p=my_set->begin(); p!=my_set->end(); p++ )
 					symbol_remove_ref( my_agent, (*p) );
@@ -796,6 +910,121 @@ namespace soar_module
 				for ( std::map<std::string, timer *>::iterator p=objects->begin(); p!=objects->end(); p++ )
 					p->second->reset();
 			}
+	};
+
+
+	///////////////////////////////////////////////////////////////////////////
+	// Memory Pool Allocators
+	///////////////////////////////////////////////////////////////////////////
+
+	memory_pool* get_memory_pool( agent* my_agent, size_t size );
+
+	template <class T>
+	class soar_memory_pool_allocator
+	{
+	public:
+		typedef T			value_type;
+		typedef size_t		size_type;
+		typedef ptrdiff_t	difference_type;
+
+		typedef T*			pointer;
+		typedef const T*	const_pointer;
+
+		typedef T&			reference;
+		typedef const T&	const_reference;
+
+	public:
+		agent* get_agent() const { return my_agent; }
+
+		soar_memory_pool_allocator( agent* new_agent ): my_agent(new_agent), mem_pool(NULL), size(sizeof(value_type))
+		{
+			// useful for debugging
+			// std::string temp_this( typeid( value_type ).name() );
+		}
+
+		soar_memory_pool_allocator( const soar_memory_pool_allocator& obj ): my_agent(obj.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+		{
+			// useful for debugging
+			// std::string temp_this( typeid( value_type ).name() );
+		}
+
+		template <class _other>
+		soar_memory_pool_allocator( const soar_memory_pool_allocator<_other>& other ): my_agent(other.get_agent()), mem_pool(NULL), size(sizeof(value_type))
+		{
+			// useful for debugging
+			// std::string temp_this( typeid( T ).name() );
+			// std::string temp_other( typeid( _other ).name() );
+		}
+
+		pointer allocate( size_type n, const void* = 0 )
+		{
+			size_type test = n;
+			test; // prevents release-mode warning, since assert is compiled out
+			assert( test == 1 );
+			
+			if ( !mem_pool )
+			{
+				mem_pool = get_memory_pool( my_agent, size );
+			}
+			
+			pointer t;
+			allocate_with_pool( my_agent, mem_pool, &t );
+
+			return t;
+		}
+
+		void deallocate( void* p, size_type n )
+		{
+			size_type test = n;
+			test; // prevents release-mode warning, since assert is compiled out
+			assert( test == 1 );
+			
+			if ( p )
+			{
+				free_with_pool( mem_pool, p );
+			}
+		}
+
+		void construct( pointer p, const_reference val )
+		{
+			new (p) T( val );
+		}
+
+		void destroy( pointer p )
+		{
+			p;
+			p->~T();
+		}
+
+		size_type max_size() const
+		{
+			return static_cast< size_type >( -1 );
+		}
+
+		const_pointer address( const_reference r ) const
+		{
+			return &r;
+		}
+
+		pointer address( reference r ) const
+		{
+			return &r;
+		}
+
+		template <class U>
+		struct rebind
+		{
+			typedef soar_memory_pool_allocator<U> other;
+		};
+
+
+	private:
+		agent* my_agent;
+		memory_pool* mem_pool;
+		size_type size;
+
+		soar_memory_pool_allocator() {}
+
 	};
 
 }

@@ -1,3 +1,4 @@
 source _all.soar
+source done.soar
 source reward.soar
 source top-state.soar

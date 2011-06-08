@@ -35,6 +35,7 @@
 #include "prefmem.h"
 #include "print.h"
 #include "wma.h"
+#include "wmem.h"
 
 const char * preference_name[] =
 { "acceptable",
@@ -51,6 +52,9 @@ const char * preference_name[] =
   "better",
   "worse",
   "numeric indifferent"};
+
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
+
 
 /*                     Preference Management Routines
 
@@ -259,7 +263,51 @@ void add_preference_to_tm (agent* thisAgent, preference *pref)
    pref->in_tm = TRUE;
    preference_add_ref (pref);
    
+   // if it's the case that the slot is unchanged, but has
+   // some references laying around, clear them
+   // this doesn't cause immediate memory deallocate/allocate
+   // but once the WMEs are resolved, this should free the
+   // memory, as opposed to lead to a "leak"
+   if ( wma_enabled( thisAgent ) && !s->isa_context_slot )
+   {
+	   if ( !s->changed )
+	   {
+		   if ( s->wma_val_references != NIL )
+		   {
+			   s->wma_val_references->clear();
+		   }
+	   }
+   }
+
    mark_slot_as_changed (thisAgent, s);
+
+   if ( wma_enabled( thisAgent ) && !s->isa_context_slot )
+   {
+      bool exists = false;
+      wme* w = pref->slot->wmes;
+      while ( !exists && w )
+      {
+         if ( w->value == pref->value )
+         {
+            exists = true;
+         }
+
+         w = w->next;
+      }
+
+	  // if wme exists, it should already have been updated
+	  // during assertion of new preferences
+      if ( !exists )
+      {
+         if ( s->wma_val_references == NIL )
+         {
+			 allocate_with_pool( thisAgent, &( thisAgent->wma_slot_refs_pool ), &( s->wma_val_references ) );
+			 s->wma_val_references = new( s->wma_val_references ) wma_sym_reference_map( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >( thisAgent ) );
+         }
+
+         (*s->wma_val_references)[ pref->value ]++;
+      }
+   }
    
    /* --- update identifier levels --- */
    if (pref->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE)
@@ -335,7 +383,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
    done.
 ------------------------------------------------------------------------ */
 
-void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects) 
+void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_rejects, pref_buffer_list& bufdeallo) 
 {
   preference *pref, *next_pref, *p, *next_p;
   slot *s;
@@ -359,8 +407,14 @@ void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_reje
       p = s->all_preferences;
       while (p) {
         next_p = p->all_of_slot_next;
-        if (p->value==pref->value)
+        if (p->value==pref->value) {
+          // Buffer deallocation by adding a reference here and putting it
+          // on a list. These are deallocated after the inner elaboration
+          // loop completes.
+          preference_add_ref(p);
+          bufdeallo.push_back(p);
           remove_preference_from_tm (thisAgent, p);
+        }
         p = next_p;
       }
     }

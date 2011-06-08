@@ -45,6 +45,7 @@
 #include "io_soar.h"
 #include "xml.h"
 #include "utilities.h"
+#include "soar_module.h"
 #include "exploration.h"
 #include "reinforcement_learning.h"
 #include "decision_manipulation.h"
@@ -83,12 +84,27 @@ void init_soar_agent(agent* thisAgent) {
   init_explain(thisAgent);  /* AGR 564 */
   select_init(thisAgent);
   predict_init(thisAgent);
+	
+  init_memory_pool( thisAgent, &( thisAgent->gds_pool ), sizeof( goal_dependency_set ), "gds" );
+
+  init_memory_pool( thisAgent, &( thisAgent->rl_info_pool ), sizeof( rl_data ), "rl_id_data" );
+  init_memory_pool( thisAgent, &( thisAgent->rl_et_pool ), sizeof( rl_et_map ), "rl_et" );
+  init_memory_pool( thisAgent, &( thisAgent->rl_rule_pool ), sizeof( rl_rule_list ), "rl_rules" );
 
   init_memory_pool( thisAgent, &( thisAgent->wma_decay_element_pool ), sizeof( wma_decay_element ), "wma_decay" );
-  wma_init(thisAgent);
+  init_memory_pool( thisAgent, &( thisAgent->wma_decay_set_pool ), sizeof( wma_decay_set ), "wma_decay_set" );
+  init_memory_pool( thisAgent, &( thisAgent->wma_wme_oset_pool ), sizeof( wma_pooled_wme_set ), "wma_oset" );
+  init_memory_pool( thisAgent, &( thisAgent->wma_slot_refs_pool ), sizeof( wma_sym_reference_map ), "wma_slot_ref" );
+
+  init_memory_pool( thisAgent, &( thisAgent->epmem_wmes_pool ), sizeof( epmem_wme_stack ), "epmem_wmes" );
+  init_memory_pool( thisAgent, &( thisAgent->epmem_info_pool ), sizeof( epmem_data ), "epmem_id_data" );
+  init_memory_pool( thisAgent, &( thisAgent->smem_wmes_pool ), sizeof( smem_wme_stack ), "smem_wmes" );
+  init_memory_pool( thisAgent, &( thisAgent->smem_info_pool ), sizeof( smem_data ), "smem_id_data" );
 
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
   thisAgent->epmem_params->exclusions->set_value( "smem" );
+
+  thisAgent->smem_params->base_incremental_threshes->set_string( "10" );
 
 #ifdef REAL_TIME_BEHAVIOR
   /* RMJ */
@@ -296,6 +312,8 @@ agent * create_soar_agent (char * agent_name) {                                 
   // be set before the agent was initialized.
   init_sysparams (newAgent);
 
+  // dynamic memory pools (should come before consumers of dynamic pools)
+  newAgent->dyn_memory_pools = new std::map< size_t, memory_pool* >();
 
   // exploration initialization
   newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter( 0.1, &exploration_validate_epsilon, "epsilon" );
@@ -323,9 +341,10 @@ agent * create_soar_agent (char * agent_name) {                                 
   // wma initialization
   newAgent->wma_params = new wma_param_container( newAgent );
   newAgent->wma_stats = new wma_stat_container( newAgent );
+  newAgent->wma_timers = new wma_timer_container( newAgent );
 
-  newAgent->wma_forget_pq = new wma_forget_p_queue;
-  newAgent->wma_touched_elements = new wma_wme_set;  
+  newAgent->wma_forget_pq = new wma_forget_p_queue( std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >( newAgent ) );
+  newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );
   newAgent->wma_initialized = false;
   newAgent->wma_tc_counter = 2;
 
@@ -363,6 +382,9 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->smem_validation = 0;
   newAgent->smem_first_switch = true;
+
+  newAgent->smem_changed_ids = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
+  newAgent->smem_ignore_changes = false;
 
   // statistics initialization
   newAgent->dc_stat_tracking = false;
@@ -408,11 +430,12 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->prediction;
 
   // cleanup wma
-  wma_deinit( delete_agent );
+  delete_agent->wma_params->activation->set_value( soar_module::off );
   delete delete_agent->wma_forget_pq;
   delete delete_agent->wma_touched_elements;  
   delete delete_agent->wma_params;
   delete delete_agent->wma_stats;
+  delete delete_agent->wma_timers;
 
   // cleanup epmem
   epmem_close( delete_agent );
@@ -435,6 +458,7 @@ void destroy_soar_agent (agent * delete_agent)
 
   // cleanup smem
   smem_close( delete_agent );
+  delete delete_agent->smem_changed_ids;
   delete delete_agent->smem_params;
   delete delete_agent->smem_stats;
   delete delete_agent->smem_timers;
@@ -530,6 +554,13 @@ void destroy_soar_agent (agent * delete_agent)
   }
 
   /* RPM 9/06 end */
+
+  // dynamic memory pools (cleared in the last step)
+  for ( std::map< size_t, memory_pool* >::iterator it=delete_agent->dyn_memory_pools->begin(); it!=delete_agent->dyn_memory_pools->end(); it++ ) 
+  {
+	  delete it->second;
+  }
+  delete delete_agent->dyn_memory_pools;
 
   // JRV: Frees data used by XML generation
   xml_destroy( delete_agent );

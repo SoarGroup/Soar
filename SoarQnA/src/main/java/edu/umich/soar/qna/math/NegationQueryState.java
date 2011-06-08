@@ -19,7 +19,7 @@ public class NegationQueryState extends UnaryMathQueryState {
 		if (super.initialize(querySource, queryParameters)) {
 			Map<Object, List<Object>> augmentedParameters = new HashMap<Object, List<Object>>(queryParameters);
 			List<Object> op2 = new LinkedList<Object>();
-			op2.add(new Integer(-1));
+			op2.add(new Long(-1));
 			augmentedParameters.put("operand2", op2);
 			
 			multQueryState = new MultiplicationQueryState();

@@ -565,9 +565,9 @@ void remove_from_hash_table (agent* thisAgent, struct hash_table_struct *ht,
     prev = *(ht->buckets+hash_value);
     while (prev && prev->next != this_one) prev=prev->next;
     if ( !prev ) {
-       /* Reaching here means that we couldn't find this_one item */
-       assert(prev && "Couldn't find item to remove from hash table!");
-       return;
+      /* Reaching here means that we couldn't find this_one item */
+      assert(prev && "Couldn't find item to remove from hash table!");
+      return;
     }
     prev->next = this_one->next;
   }

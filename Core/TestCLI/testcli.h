@@ -21,6 +21,7 @@
 
 #include <string>
 #include <iostream>
+#include <sstream>
 #include <queue>
 
 #include "sml_Client.h"
@@ -178,13 +179,10 @@ public:
      */
     bool source(const char* sourcefile)
     {
-        if (!agent->LoadProductions(sourcefile))
-        {
-            std::cerr << "Error loading productions: " << agent->GetLastErrorDescription() << std::endl;
-            return false;
-        }
-
-        return true;
+        std::stringstream ss;
+        ss << "source " << sourcefile;
+        std::cout << agent->ExecuteCommandLine(ss.str().c_str()) << std::endl;
+        return agent->GetLastCommandLineResult();
     }
 
     /**
@@ -209,9 +207,15 @@ public:
      */
     void update()
     {
+        if (quit)
+            kernel->StopAllAgents();
+
         std::string line;
         if (input.try_get_line(line))
+        {
+            seen_newline = true;
             process_line(line);
+        }
     }
 
     /**
@@ -250,7 +254,6 @@ private:
         if (line.substr(0, 4) == "quit" || line.substr(0, 4) == "exit")
         {
             quit = true;
-            kernel->StopAllAgents();
         }
         else if (line.substr(0, 3) == "raw")
         {

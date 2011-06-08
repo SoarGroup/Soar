@@ -46,9 +46,11 @@ class smem_param_container: public soar_module::param_container
 	public:
 		enum db_choices { memory, file };
 		enum cache_choices { cache_S, cache_M, cache_L };
+		enum page_choices { page_1k, page_2k, page_4k, page_8k, page_16k, page_32k, page_64k };
 		enum opt_choices { opt_safety, opt_speed };
 
 		enum merge_choices { merge_none, merge_add };
+		enum act_choices { act_recency, act_frequency, act_base };
 
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
@@ -57,12 +59,23 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::constant_param<soar_module::timer::timer_level> *timers;
 
-		soar_module::constant_param<cache_choices> *cache;
+		soar_module::constant_param<page_choices> *page_size;
+		soar_module::integer_param *cache_size;
 		soar_module::constant_param<opt_choices> *opt;
 
 		soar_module::integer_param *thresh;
 
 		soar_module::constant_param<merge_choices>* merge;
+		soar_module::boolean_param* activate_on_query;
+		soar_module::constant_param<act_choices>* activation_mode;
+		soar_module::decimal_param* base_decay;
+
+		enum base_update_choices { bupt_stable, bupt_naive, bupt_incremental };
+		soar_module::constant_param<base_update_choices>* base_update;
+
+		soar_module::int_set_param* base_incremental_threshes;
+
+		soar_module::boolean_param* mirroring;
 
 		smem_param_container( agent *new_agent );
 };
@@ -90,24 +103,42 @@ class smem_db_predicate: public soar_module::agent_predicate<T>
 // SMem Statistics
 //////////////////////////////////////////////////////////
 
+class smem_db_lib_version_stat;
 class smem_mem_usage_stat;
 class smem_mem_high_stat;
 
 class smem_stat_container: public soar_module::stat_container
 {
 	public:
+		smem_db_lib_version_stat* db_lib_version;
 		smem_mem_usage_stat *mem_usage;
 		smem_mem_high_stat *mem_high;
 
 		soar_module::integer_stat *expansions;
 		soar_module::integer_stat *cbr;
 		soar_module::integer_stat *stores;
+		soar_module::integer_stat *act_updates;
+		soar_module::integer_stat *mirrors;
 
 		soar_module::integer_stat *chunks;
 		soar_module::integer_stat *slots;
 
 		smem_stat_container( agent *my_agent );
 };
+
+//
+
+class smem_db_lib_version_stat: public soar_module::primitive_stat< const char* >
+{
+	protected:
+		agent* my_agent;
+
+	public:
+		smem_db_lib_version_stat( agent* new_agent, const char* new_name, const char* new_value, soar_module::predicate< const char* >* new_prot_pred );
+		const char* get_value();
+};
+
+//
 
 class smem_mem_usage_stat: public soar_module::integer_stat
 {
@@ -195,6 +226,9 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *lti_get;
 		soar_module::sqlite_statement *lti_letter_num;
 		soar_module::sqlite_statement *lti_max;
+		soar_module::sqlite_statement *lti_access_get;
+		soar_module::sqlite_statement *lti_access_set;
+		soar_module::sqlite_statement *lti_get_t;
 
 		soar_module::sqlite_statement *web_add;
 		soar_module::sqlite_statement *web_truncate;
@@ -232,7 +266,12 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 		soar_module::sqlite_statement *act_lti_set;
 		soar_module::sqlite_statement *act_lti_get;
 
+		soar_module::sqlite_statement *history_get;
+		soar_module::sqlite_statement *history_push;
+		soar_module::sqlite_statement *history_add;
+
 		soar_module::sqlite_statement *vis_lti;
+		soar_module::sqlite_statement *vis_lti_act;
 		soar_module::sqlite_statement *vis_value_const;
 		soar_module::sqlite_statement *vis_value_lti;
 
@@ -246,7 +285,7 @@ class smem_statement_container: public soar_module::sqlite_statement_container
 
 enum smem_variable_key
 {
-	var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh
+	var_max_cycle, var_num_nodes, var_num_edges, var_act_thresh, var_act_mode
 };
 
 #define SMEM_ACT_MAX static_cast<uint64_t>( static_cast<uint64_t>( 0 - 1 ) / static_cast<uint64_t>(2) )
@@ -256,11 +295,14 @@ enum smem_variable_key
 #define SMEM_WEB_NULL 0
 #define SMEM_WEB_NULL_STR "0"
 
+#define SMEM_ACT_HISTORY_ENTRIES 10
+#define SMEM_ACT_LOW -1000000000
+
 // provides a distinct prefix to be used by all
 // tables for two reasons:
 // - distinguish from other modules
 // - distinguish between smem versions
-#define SMEM_SCHEMA "smem3_"
+#define SMEM_SCHEMA "smem7_"
 
 // empty table used to verify proper structure
 #define SMEM_SIGNATURE SMEM_SCHEMA "signature"
@@ -289,14 +331,19 @@ enum smem_storage_type { store_level, store_recursive };
 // represents a list of wmes
 typedef std::list<wme *> smem_wme_list;
 
+// represents a set of symbols
+typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > smem_pooled_symbol_set;
+
+// list used primarily like a stack
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > smem_wme_stack;
+
 // data associated with each state
 typedef struct smem_data_struct
 {
 	uint64_t last_cmd_time[2];			// last update to smem.command
-	uint64_t last_cmd_count[2];		// last update to smem.command
+	uint64_t last_cmd_count[2];			// last update to smem.command
 
-	std::set<wme *> *cue_wmes;				// wmes in last cue
-	std::stack<preference *> *smem_wmes;	// wmes in last smem
+	smem_wme_stack* smem_wmes;			// wmes in last smem
 } smem_data;
 
 //
@@ -327,7 +374,7 @@ struct smem_compare_weighted_cue_elements
 typedef std::priority_queue<smem_weighted_cue_element *, std::vector<smem_weighted_cue_element *>, smem_compare_weighted_cue_elements> smem_prioritized_weighted_cue;
 typedef std::list<smem_weighted_cue_element *> smem_weighted_cue_list;
 
-typedef std::pair< int64_t, smem_lti_id > smem_activated_lti;
+typedef std::pair< double, smem_lti_id > smem_activated_lti;
 
 struct smem_compare_activated_lti
 {
@@ -405,6 +452,8 @@ extern bool smem_parse_chunks( agent *my_agent, const char *chunks, std::string 
 
 extern void smem_visualize_store( agent *my_agent, std::string *return_val );
 extern void smem_visualize_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
+extern void smem_print_store( agent *my_agent, std::string *return_val );
+extern void smem_print_lti( agent *my_agent, smem_lti_id lti_id, unsigned int depth, std::string *return_val );
 
 typedef struct condition_struct condition;
 typedef struct action_struct action;
@@ -421,5 +470,6 @@ extern void smem_close( agent *my_agent );
 
 // perform smem actions
 extern void smem_go( agent *my_agent, bool store_only );
+extern bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 
 #endif

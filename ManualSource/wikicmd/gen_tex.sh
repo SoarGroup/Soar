@@ -1,26 +1,51 @@
 #!/bin/sh
-PYTHON=python2
+PYTHON=python
 
-svn export http://soar.googlecode.com/svn/wiki/CommandLineInterface.wiki
+preproc() {
+	sed '/#summary/d' $1
+}
 
-# split into single file for each command
-awk '
-	BEGIN { f="/dev/null" }
-	
-	/^= *[-_a-zA-Z]* *=$/ {
-		f="wiki/" $2 ".wiki"
-	}
-	
-	/----/ { next }   # delete horizontal separators
-	
-	{ print > f }' CommandLineInterface.wiki || exit 1
+if ! $PYTHON -V 2>&1 | awk '{split($2, v, "."); if (v[1] != 2 || v[2] < 4) exit 1}'
+then
+	echo "moin2latex.py needs 2.4 <= Python version < 3.0"
+	exit 1
+fi
 
-# translate to tex
-echo generating command sources
-for f in `ls wiki`
+if [ ! -d wiki ]
+then
+	svn co http://soar.googlecode.com/svn/wiki
+elif ! svn update wiki | grep -q Updated
+then
+	exit 0
+fi
+
+rm -rf tex
+mkdir tex
+
+for f in wiki/cmd_*.wiki
 do
-	tf=`echo "$f" | sed 's/wiki$/tex/'`
-	echo -n "$tf "
-	$PYTHON moin2latex.py "wiki/$f" > "tex/$tf" || exit 1
+	tf=`echo "$f" | sed 's:^wiki/cmd_::
+	                     s:_:-:g
+	                     s:wiki$:tex:'`
+	printf "$tf "
+	preproc "$f" | $PYTHON moin2latex.py > "tex/$tf" || exit 1
 done
-echo finished
+printf "\n"
+
+# make sure every command listed on the wiki is included in the
+# interface section of the manual
+
+for f in tex/*
+do
+	f=`echo $f | awk -F. '{print $1}'`
+	if ! grep -q "input{wikicmd/$f}" ../interface.tex
+	then
+		unused=1
+		echo UNUSED: $f
+	fi
+done
+
+if [ -n "$unused" ]
+then
+	exit 1
+fi

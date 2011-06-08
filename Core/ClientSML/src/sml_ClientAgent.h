@@ -177,17 +177,14 @@ protected:
 	class TestOutputNotificationCallback ;
 
 	// Used to generate unique IDs for callbacks
-	int		m_CallbackIDCounter ;
-
-	// Used to generate unique IDs for visited values when walking graph
-	uint64_t	m_VisitedCounter ;
+	int m_CallbackIDCounter ;
 
 	// Internally we register a print callback and store its id here.
-	int		m_XMLCallback ;
+	int m_XMLCallback ;
 
 	// When true, if a wme is updated to the same value as before we "blink" the wme by removing
 	// the old wme and adding a new one, causing rules to rematch in Soar.
-	bool	m_BlinkIfNoChange ;
+	bool m_BlinkIfNoChange ;
 
 protected:
 	Agent(Kernel* pKernel, char const* pAgentName);
@@ -255,14 +252,6 @@ public:
 	* @brief Returns a pointer to the kernel object that owns this Agent.
 	*************************************************************/
 	Kernel*		GetKernel() const		{ return m_Kernel ; }
-
-	/*************************************************************
-	* @brief Returns a new, unique visited value which can be used
-	* in conjunction with the SetVisited() and GetVisited() methods
-	* of the Identifier class to safely walk a graph that may contain
-	* loops.
-	*************************************************************/
-	uint64_t GenerateNewVisitedCounter()	{ return ++m_VisitedCounter ; }
 
 	/*************************************************************
 	* @brief Load a set of productions from a file.
@@ -710,7 +699,7 @@ public:
 	* @returns The result of executing the run command.
 	*		   The output from during the run is sent to a different callback.
 	*************************************************************/
-	char const* RunSelf(uint64_t numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
+	char const* RunSelf(int numberSteps, smlRunStepSize stepSize = sml_DECISION) ;
 	char const* RunSelfForever() ;
 
 	/*************************************************************

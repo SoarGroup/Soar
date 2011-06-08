@@ -685,7 +685,7 @@ TEST_DEFINITION( testXML )
 TEST_DEFINITION( testAgent )
 {
 	//m_pKernel->SetTraceCommunications( true );
-
+	m_pAgent->SetOutputLinkChangeTracking(true);
 	loadProductions( "share/soar/Tests/testsml.soar" );
 
 	// Test that we get a callback after the decision cycle runs
@@ -977,6 +977,7 @@ TEST_DEFINITION( testAgent )
 
 TEST_DEFINITION( testSimpleCopy )
 {
+	m_pAgent->SetOutputLinkChangeTracking(true);
 	loadProductions( "share/soar/Tests/testcopy.soar" );
 
 /* Input structure for the test
@@ -1676,7 +1677,7 @@ TEST_DEFINITION( testCommandToFile )
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
 	const char* result = m_pAgent->ExecuteCommandLine( "source testCommandToFile-output.soar" );
 	CPPUNIT_ASSERT(result);
-	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*Total: 144 productions sourced. 144 productions excised.\n");
+	const std::string resultString("#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*#*\nTotal: 144 productions sourced. 144 productions excised.\n");
 	CPPUNIT_ASSERT(result == resultString);
 	remove("testCommandToFile-output.soar");
 }
