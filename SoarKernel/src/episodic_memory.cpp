@@ -725,12 +725,12 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end_start ON edge_range (id, end, start)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER,last INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_parent_attrib_value ON node_unique (parent_id,attrib,value)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_last_parent_attrib_value ON node_unique (last,parent_id,attrib,value)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_parent_attrib_value ON node_unique (parent_id,attrib,value)" ); // TODO is this necessary, or is the one below sufficient?
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_last_parent_attrib_value ON node_unique (parent_id,attrib,value,last)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w INTEGER,q1 INTEGER,last INTEGER)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)" );
-	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_unique_last_q0_w_q1 ON edge_unique (last,q0,w,q1)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_unique_q0_w_q1 ON edge_unique (q0,w,q1)" ); // TODO is this necessary, or is the one below sufficient?
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_unique_last_q0_w_q1 ON edge_unique (q0,w,q1,last)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS lti (parent_id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, time_id INTEGER, current INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS lti_letter_num ON lti (letter,num)" );
@@ -3181,47 +3181,47 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-const char* epmem_find_unique_node_query = "SELECT parent_id, q1, last FROM node_unique WHERE q0=? AND w=? ORDER BY last DESC";
-const char* epmem_find_unique_node_value_query = "SELECT parent_id, q1, last FROM node_unique WHERE q0=? AND w=? AND q1=? ORDER BY last DESC";
-const char* epmem_find_unique_edge_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? ORDER BY last DESC";
-const char* epmem_find_unique_edge_value_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? ORDER BY last DESC";
+const char* epmem_find_unique_node_query = "SELECT parent_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<=last ORDER BY last DESC";
+const char* epmem_find_unique_node_value_query = "SELECT parent_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<=last ORDER BY last DESC";
+const char* epmem_find_unique_edge_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND ?<=last ORDER BY last DESC";
+const char* epmem_find_unique_edge_value_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? AND ?<=last ORDER BY last DESC";
 
 const char* epmem_find_interval_queries[2][2][3] =
 {
 	{
 		{
-			"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+			"SELECT e.start AS start FROM node_range e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM node_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM node_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT (e.end - 1) AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT (e.end - 1) AS end FROM node_range e WHERE e.id=? AND ?<=e.end AND e.end<=? ORDER BY e.end DESC",
 			"SELECT ? AS end FROM node_now e WHERE e.id=?",
-			"SELECT (e.start - 1) AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS end FROM node_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		}
 	},
 	{
 		{
-			"SELECT e.start AS start FROM edge_range e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_now e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+			"SELECT e.start AS start FROM edge_range e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT e.start AS start FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT (e.end - 1) AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
+			"SELECT (e.end - 1) AS end FROM edge_range e WHERE e.id=? AND ?<=e.end AND e.end<=? ORDER BY e.end DESC",
 			"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-			"SELECT (e.start - 1) AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		}
 	},
 };
 
-epmem_dnf_literal* epmem_build_dnf(wme* wme, int query_type, std::map<wme*, epmem_dnf_literal*>& wme_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<wme*>& stack) {
+epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<wme*, epmem_dnf_literal*>& wme_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<wme*>& stack) {
 	// if we've been here before, we can return the previous literal
-	if (wme_cache.count(wme)) {
-		return wme_cache[wme];
+	if (wme_cache.count(root)) {
+		return wme_cache[root];
 	}
 
 	epmem_dnf_literal* literal = new epmem_dnf_literal();
-	Symbol* value = wme->value;
+	Symbol* value = root->value;
 	literal->value = value;
 
 	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
@@ -3250,7 +3250,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* wme, int query_type, std::map<wme*, epme
 			literal->has_q1 = false;
 			literal->is_leaf = false;
 			bool cycle = false;
-			stack.insert(wme);
+			stack.insert(root);
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
@@ -3271,7 +3271,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* wme, int query_type, std::map<wme*, epme
 					}
 				}
 			}
-			stack.erase(wme);
+			stack.erase(root);
 			// if all children of this WME lead to cycles, then we don't need to walk this path
 			// in essence, this forces the DNF graph to be acyclic
 			// this results in savings in not walking edges and intevals
@@ -3282,7 +3282,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* wme, int query_type, std::map<wme*, epme
 		}
 	}
 
-	wme_cache[wme] = literal;
+	wme_cache[root] = literal;
 	// FIXME weight
 	// FIXME multiply weight by (query_type == EPMEM_NODE_POS ? 1 : -1);
 	literal->is_neg_q = query_type;
@@ -3327,11 +3327,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		return;
 	}
 
-	// explicitly set now as the last episode to return
-	if (before == EPMEM_MEMID_NONE) {
-		before = my_agent->epmem_stats->time->get_value() - 1;
-	}
-
 	// FIXME need to put this somwehere
 	double balance = my_agent->epmem_params->balance->get_value();
 	bool balance_approximately_1 = ( ( balance > ( 1.0 - 1.0e-8 ) ) && ( balance < ( 1.0 + 1.0e-8 ) ) );
@@ -3345,6 +3340,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_literal_set leaf_literals;
 	epmem_literal_set settled;
 	epmem_literal_set frontier;
+	epmem_literal_set satisfied_leaves;
 
 	// build the DNF graph while checking for leaf WMEs
 	{
@@ -3379,20 +3375,17 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			wme_cache[query_wmes->front()] = dnf_root;
 			// for each first level WME, build up a DNF
 			while (query_wmes) {
-				wme* wme1 = query_wmes->front();
+				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
 				std::set<wme*> stack;
-				epmem_dnf_literal* root = epmem_build_dnf(wme1, query_type, wme_cache, leaf_literals, tc, stack);
-				if (!dnf_root->parents.count(wme1->attr)) {
-					dnf_root->parents[wme1->attr] = new epmem_literal_set();
+				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, wme_cache, leaf_literals, tc, stack);
+				if (!dnf_root->parents.count(first_level->attr)) {
+					dnf_root->parents[first_level->attr] = new epmem_literal_set();
 				}
-				dnf_root->parents[wme1->attr]->insert(root);
+				dnf_root->parents[first_level->attr]->insert(root);
 				frontier.insert(root);
 			}
-		}
-		delete pos_query_wmes;
-		if (neg_query_wmes) {
-			delete neg_query_wmes;
+			delete query_wmes;
 		}
 	}
 
@@ -3406,12 +3399,38 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// clean up code
 	}
 
+	assert(0);
+
 	epmem_edge_sql_map sqlcache; // SQL query cache
 
 	// priority queues for interval walk
 	epmem_unique_edge_pq edge_pq;
 	epmem_interval_pq interval_pq;
 
+	// the best episode and its score
+	epmem_time_id best_episode = 0;
+	double best_score = 0;
+	bool best_graph_match = false;
+	double current_score = 0;
+
+	// set default values for before and after
+	if (before == EPMEM_MEMID_NONE) {
+		before = my_agent->epmem_stats->time->get_value() - 1;
+	}
+	if (after == EPMEM_MEMID_NONE) {
+		after = 0;
+	}
+
+	epmem_time_id current_time = my_agent->epmem_stats->time->get_value();
+
+	// skip through episodes after the before constraint
+	if (current_time > before) {
+		// FIXME find all edges with last use times after constraint
+		// FIXME for each, find all intervals, adding to matches if the first endpoint is an end
+		// FIXME traverse the DNF, updating the settled, frontier, and satisfied_leaves sets and updating the score
+	}
+
+	// FIXME this should be incorporated into the condition above
 	// create unique edge queries for first level WMEs
 	for (epmem_attr_literal_map::iterator attr_iter = dnf_root->children.begin(); attr_iter != dnf_root->children.end(); attr_iter++) {
 		Symbol* attr = (*attr_iter).first;
@@ -3464,6 +3483,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			if (child->has_q1) {
 				uedge_q->sql->bind_int(3, info.q1);
 			}
+			// FIXME bind before
+			// FIXME bind after
 			assert(uedge_q->sql->execute() == soar_module::row);
 			if (uedge_q->sql->execute() == soar_module::row) {
 				uedge_q->time = uedge_q->sql->column_int(2);
@@ -3475,16 +3496,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 	}
 
-	// the best episode and its score
-	epmem_time_id best_episode = 0;
-	double best_score = 0;
-	bool best_graph_match = false;
-	double current_score = 0;
-
-	epmem_time_id current_time = before;
-	epmem_literal_set satisfied_leaves;
-
-	// FIXME before constraints
 	// main loop of interval walk
 	while (current_time > after && edge_pq.size()) {
 		epmem_time_id next_edge;
@@ -3541,6 +3552,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						interval_sql->bind_int(bind_pos++, my_agent->epmem_stats->time->get_value() - 1);
 					}
 					interval_sql->bind_int(bind_pos++, edge_id);
+					// FIXME bind before
+					// FIXME bind after
 					assert(interval_sql->execute() == soar_module::row);
 					if (interval_sql->execute() == soar_module::row) {
 						interval_q->time = interval_sql->column_int(0);
@@ -3603,6 +3616,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						if (child->has_q1) {
 							uedge_q->sql->bind_int(3, info.q1);
 						}
+						// FIXME bind before
+						// FIXME bind after
 						assert(uedge_q->sql->execute() == soar_module::row);
 						if (uedge_q->sql->execute() == soar_module::row) {
 							uedge_q->time = uedge_q->sql->column_int(2);
