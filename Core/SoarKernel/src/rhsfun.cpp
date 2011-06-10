@@ -700,6 +700,28 @@ Symbol* deep_copy_rhs_function_code(agent* thisAgent, list *args, void* /*user_d
    return retval;;
 }
 
+/* --------------------------------------------------------------------
+                                Count
+
+   Takes arbitrary arguments and adds one to the associated 
+   dynamic counters.
+-------------------------------------------------------------------- */
+
+Symbol *count_rhs_function_code (agent* thisAgent, list *args, void* /*user_data*/) {
+  Symbol *arg;
+  char *string;
+
+  for ( ; args!=NIL; args=args->rest) {
+    arg = static_cast<symbol_union *>(args->first);
+    /* --- Note use of FALSE here--print the symbol itself, not a rereadable
+       version of it --- */
+    string = symbol_to_string (thisAgent, arg, FALSE, NIL, 0);
+	(*thisAgent->dyn_counters)[ string ]++;
+  }
+  
+  return NIL;
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Functions
@@ -757,6 +779,10 @@ void init_built_in_rhs_functions (agent* thisAgent) {
                     deep_copy_rhs_function_code,
                     1,TRUE,FALSE,0);
 
+  add_rhs_function (thisAgent, make_sym_constant (thisAgent, "count"),
+					count_rhs_function_code,
+					-1,FALSE,TRUE,0);
+
   init_built_in_rhs_math_functions(thisAgent);
 }
 
@@ -776,6 +802,7 @@ void remove_built_in_rhs_functions (agent* thisAgent) {
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "dont-learn"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "force-learn"));
   remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "deep-copy"));
+  remove_rhs_function (thisAgent, find_sym_constant (thisAgent, "count"));
 
   remove_built_in_rhs_math_functions(thisAgent);
 }
