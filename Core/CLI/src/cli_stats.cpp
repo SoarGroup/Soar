@@ -35,6 +35,12 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
     //soar_print_detailed_callback_stats();
     agent* agnt = m_pAgentSML->GetSoarAgent();
 
+	if ( options.test(STATS_AGENT) )
+	{
+		GetAgentStats();
+		return true;
+	}
+
     if ( options.test(STATS_DECISION) )
     {
         m_Result << agnt->decision_phases_count;
@@ -228,6 +234,20 @@ bool CommandLineInterface::DoStats(const StatsBitset& options, int sort) {
         reset_max_stats(agnt);
 
     return true;
+}
+
+void CommandLineInterface::GetAgentStats()
+{
+	agent* agnt = m_pAgentSML->GetSoarAgent();
+    m_Result << "Agent counters:\n";
+
+    m_Result << "Counter          Value\n";
+    m_Result << "---------------- -----------\n";
+
+	for ( std::map< std::string, uint64_t >::iterator it=agnt->dyn_counters->begin(); it!=agnt->dyn_counters->end(); it++ )
+	{
+		m_Result << std::setw(16) << it->first << " " << std::setw(11) << it->second << "\n";
+	}
 }
 
 void CommandLineInterface::GetSystemStats()
