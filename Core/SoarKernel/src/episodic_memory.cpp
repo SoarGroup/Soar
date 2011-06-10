@@ -307,6 +307,14 @@ epmem_stat_container::epmem_stat_container( agent *new_agent ): soar_module::sta
 	cbr = new soar_module::integer_stat( "queries", 0, new soar_module::f_predicate<int64_t>() );
 	add( cbr );
 
+	// nexts
+	nexts = new soar_module::integer_stat( "nexts", 0, new soar_module::f_predicate<int64_t>() );
+	add( nexts );
+
+	// prev's
+	prevs = new soar_module::integer_stat( "prevs", 0, new soar_module::f_predicate<int64_t>() );
+	add( prevs );
+
 	// ncb-wmes
 	ncb_wmes = new soar_module::integer_stat( "ncb-wmes", 0, new soar_module::f_predicate<int64_t>() );
 	add( ncb_wmes );
@@ -5659,7 +5667,20 @@ void epmem_respond_to_cmd( agent *my_agent )
 				// previous or next
 				else if ( path == 2 )
 				{
-					epmem_install_memory( my_agent, state, ( ( next )?( epmem_next_episode( my_agent, state->id.epmem_info->last_memory ) ):( epmem_previous_episode( my_agent, state->id.epmem_info->last_memory ) ) ), meta_wmes, retrieval_wmes );
+					if ( next )
+					{
+						epmem_install_memory( my_agent, state, epmem_next_episode( my_agent, state->id.epmem_info->last_memory ), meta_wmes, retrieval_wmes );
+						
+						// add one to the next stat
+						my_agent->epmem_stats->nexts->set_value( my_agent->epmem_stats->nexts->get_value() + 1 );
+					}
+					else
+					{
+						epmem_install_memory( my_agent, state, epmem_previous_episode( my_agent, state->id.epmem_info->last_memory ), meta_wmes, retrieval_wmes );
+						
+						// add one to the prev stat
+						my_agent->epmem_stats->prevs->set_value( my_agent->epmem_stats->prevs->get_value() + 1 );
+					}
 				}
 				// query
 				else if ( path == 3 )
