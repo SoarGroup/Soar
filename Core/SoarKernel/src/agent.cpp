@@ -315,6 +315,9 @@ agent * create_soar_agent (char * agent_name) {                                 
   // dynamic memory pools (should come before consumers of dynamic pools)
   newAgent->dyn_memory_pools = new std::map< size_t, memory_pool* >();
 
+  // dynamic counters
+  newAgent->dyn_counters = new std::map< std::string, uint64_t >();
+
   // exploration initialization
   newAgent->exploration_params[ EXPLORATION_PARAM_EPSILON ] = exploration_add_parameter( 0.1, &exploration_validate_epsilon, "epsilon" );
   newAgent->exploration_params[ EXPLORATION_PARAM_TEMPERATURE ] = exploration_add_parameter( 25, &exploration_validate_temperature, "temperature" );
@@ -561,6 +564,8 @@ void destroy_soar_agent (agent * delete_agent)
 	  delete it->second;
   }
   delete delete_agent->dyn_memory_pools;
+
+  delete delete_agent->dyn_counters;
 
   // JRV: Frees data used by XML generation
   xml_destroy( delete_agent );
