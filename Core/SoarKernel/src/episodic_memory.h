@@ -181,6 +181,8 @@ class epmem_stat_container: public soar_module::stat_container
 		epmem_mem_usage_stat *mem_usage;
 		epmem_mem_high_stat *mem_high;
 		soar_module::integer_stat *cbr;
+		soar_module::integer_stat *nexts;
+		soar_module::integer_stat *prevs;
 		soar_module::integer_stat *ncb_wmes;
 
 		soar_module::integer_stat *qry_pos;
