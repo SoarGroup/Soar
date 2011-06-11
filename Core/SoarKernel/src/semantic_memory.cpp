@@ -2708,17 +2708,22 @@ void smem_attach( agent *my_agent )
 	}
 }
 
+inline void _smem_close_vars( agent* my_agent )
+{
+	// store max cycle for future use of the smem database
+	smem_variable_set( my_agent, var_max_cycle, my_agent->smem_max_cycle );
+
+	// store num nodes/edges for future use of the smem database
+	smem_variable_set( my_agent, var_num_nodes, my_agent->smem_stats->chunks->get_value() );
+	smem_variable_set( my_agent, var_num_edges, my_agent->smem_stats->slots->get_value() );
+}
+
 // performs cleanup operations when the database needs to be closed (end soar, manual close, etc)
 void smem_close( agent *my_agent )
 {
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
 	{
-		// store max cycle for future use of the smem database
-		smem_variable_set( my_agent, var_max_cycle, my_agent->smem_max_cycle );
-
-		// store num nodes/edges for future use of the smem database
-		smem_variable_set( my_agent, var_num_nodes, my_agent->smem_stats->chunks->get_value() );
-		smem_variable_set( my_agent, var_num_edges, my_agent->smem_stats->slots->get_value() );
+		_smem_close_vars( my_agent );
 
 		// if lazy, commit
 		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
@@ -3708,7 +3713,9 @@ bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err )
 	bool return_val = false;
 	
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
-	{	
+	{
+		_smem_close_vars( my_agent );
+		
 		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
 		{
 			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );
