@@ -1901,6 +1901,10 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 	smem_wme_list *children = smem_get_direct_augs_of_id( id, tc );
 	smem_wme_list::iterator w;
 
+	// make the target an lti, so intermediary data structure has lti_id
+	// (takes care of short-term id self-referencing)
+	smem_lti_soar_add( my_agent, id );
+
 	// encode this level
 	{
 		smem_sym_to_chunk_map sym_to_chunk;
@@ -1956,7 +1960,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			s->push_back( v );
 		}
 
-		smem_store_chunk( my_agent, smem_lti_soar_add( my_agent, id ), &( slots ), true, id );
+		smem_store_chunk( my_agent, id->id.smem_lti, &( slots ), true, id );
 
 		// clean up
 		{
