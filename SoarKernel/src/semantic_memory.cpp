@@ -1901,6 +1901,10 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 	smem_wme_list *children = smem_get_direct_augs_of_id( id, tc );
 	smem_wme_list::iterator w;
 
+	// make the target an lti, so intermediary data structure has lti_id
+	// (takes care of short-term id self-referencing)
+	smem_lti_soar_add( my_agent, id );
+
 	// encode this level
 	{
 		smem_sym_to_chunk_map sym_to_chunk;
@@ -1956,7 +1960,7 @@ void smem_soar_store( agent *my_agent, Symbol *id, smem_storage_type store_type 
 			s->push_back( v );
 		}
 
-		smem_store_chunk( my_agent, smem_lti_soar_add( my_agent, id ), &( slots ), true, id );
+		smem_store_chunk( my_agent, id->id.smem_lti, &( slots ), true, id );
 
 		// clean up
 		{
@@ -2704,17 +2708,22 @@ void smem_attach( agent *my_agent )
 	}
 }
 
+inline void _smem_close_vars( agent* my_agent )
+{
+	// store max cycle for future use of the smem database
+	smem_variable_set( my_agent, var_max_cycle, my_agent->smem_max_cycle );
+
+	// store num nodes/edges for future use of the smem database
+	smem_variable_set( my_agent, var_num_nodes, my_agent->smem_stats->chunks->get_value() );
+	smem_variable_set( my_agent, var_num_edges, my_agent->smem_stats->slots->get_value() );
+}
+
 // performs cleanup operations when the database needs to be closed (end soar, manual close, etc)
 void smem_close( agent *my_agent )
 {
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
 	{
-		// store max cycle for future use of the smem database
-		smem_variable_set( my_agent, var_max_cycle, my_agent->smem_max_cycle );
-
-		// store num nodes/edges for future use of the smem database
-		smem_variable_set( my_agent, var_num_nodes, my_agent->smem_stats->chunks->get_value() );
-		smem_variable_set( my_agent, var_num_edges, my_agent->smem_stats->slots->get_value() );
+		_smem_close_vars( my_agent );
 
 		// if lazy, commit
 		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
@@ -3704,7 +3713,9 @@ bool smem_backup_db( agent* my_agent, const char* file_name, std::string *err )
 	bool return_val = false;
 	
 	if ( my_agent->smem_db->get_status() == soar_module::connected )
-	{	
+	{
+		_smem_close_vars( my_agent );
+		
 		if ( my_agent->smem_params->lazy_commit->get_value() == soar_module::on )
 		{
 			my_agent->smem_stmts->commit->execute( soar_module::op_reinit );

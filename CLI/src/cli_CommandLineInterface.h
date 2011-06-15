@@ -235,6 +235,7 @@ namespace cli
         void GetMemoryStats(); // for stats
         void GetMaxStats(); // for stats
         void GetReteStats(); // for stats
+		void GetAgentStats(); // for stats
 
         bool Evaluate(const char* pInput); // source, formerly StreamSource
 

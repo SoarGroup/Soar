@@ -925,6 +925,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // dynamic memory pools
   std::map< size_t, memory_pool* >* dyn_memory_pools;
 
+  // dynamic RHS counters
+  std::map< std::string, uint64_t >* dyn_counters;
+
 
   // JRV: Added to support XML management inside Soar
   // These handles should not be used directly, see xml.h

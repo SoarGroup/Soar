@@ -513,6 +513,32 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
                 AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
             }
 
+			output = "Nexts: ";
+            temp2 = agnt->epmem_stats->nexts->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
+			output = "Prevs: ";
+            temp2 = agnt->epmem_stats->prevs->get_string();
+            output += temp2;
+            delete temp2;
+            if ( m_RawOutput )
+            {
+                m_Result << output << "\n";
+            }
+            else
+            {
+                AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, output.c_str() );
+            }
+
             output = "Last Retrieval WMEs: ";
             temp2 = agnt->epmem_stats->ncb_wmes->get_string();
             output += temp2;

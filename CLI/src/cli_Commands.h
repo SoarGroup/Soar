@@ -3320,6 +3320,7 @@ namespace cli
                 {'c', "cycle",      OPTARG_NONE},
                 {'C', "cycle-csv",  OPTARG_NONE},
                 {'S', "sort",       OPTARG_REQUIRED},
+				{'a', "agent",      OPTARG_NONE},
                 {0, 0, OPTARG_NONE}
             };
 
@@ -3369,6 +3370,9 @@ namespace cli
                             return cli.SetError("Integer expected");
                         }
                         break;
+					case 'a':
+						options.set(Cli::STATS_AGENT);
+						break;
                 }
             }
 
