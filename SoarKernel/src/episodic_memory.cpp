@@ -3212,13 +3212,14 @@ const char* epmem_find_interval_queries[2][2][3] =
 	},
 };
 
-epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<wme*, epmem_dnf_literal*>& wme_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<wme*>& stack) {
+epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<wme*>& stack) {
 	// if we've been here before, we can return the previous literal
-	if (wme_cache.count(root)) {
-		return wme_cache[root];
+	if (sym_cache.count(root->value)) {
+		return sym_cache[root->value];
 	}
 
 	epmem_dnf_literal* literal = new epmem_dnf_literal();
+	sym_cache[root->value] = literal;
 	Symbol* value = root->value;
 	literal->value = value;
 
@@ -3255,7 +3256,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<wme*, epm
 				if (stack.count(*wme_iter)) {
 					cycle = true;
 				} else {
-					epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, wme_cache, leaf_literals, tc, stack);
+					epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, stack);
 					if (child) {
 						Symbol* attr = (*wme_iter)->attr;
 						if (!child->parents.count(attr)) {
@@ -3280,7 +3281,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<wme*, epm
 		}
 	}
 
-	wme_cache[root] = literal;
 	// FIXME weight
 	// FIXME multiply weight by (query_type == EPMEM_NODE_POS ? 1 : -1);
 	literal->is_neg_q = query_type;
@@ -3360,10 +3360,13 @@ void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 			switch (attr->common.symbol_type) {
 				case SYM_CONSTANT_SYMBOL_TYPE:
 					std::cout << attr->sc.name;
+					break;
 				case INT_CONSTANT_SYMBOL_TYPE:
 					std::cout << attr->ic.value;
+					break;
 				case FLOAT_CONSTANT_SYMBOL_TYPE:
 					std::cout << attr->fc.value;
+					break;
 			}
 			std::cout << "\"]" << std::endl;
 			epmem_print_dnf(child, visited);
@@ -3407,7 +3410,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		if (neg_query != NULL) {
 			neg_query_wmes = epmem_get_augs_of_id(neg_query, tc);
 		}
-		std::map<wme*, epmem_dnf_literal*> wme_cache;
+		std::map<Symbol*, epmem_dnf_literal*> sym_cache;
 		dnf_root->weight = 0.0;
 		dnf_root->is_neg_q = EPMEM_NODE_POS;
 		dnf_root->is_edge_not_node = 1;
@@ -3420,26 +3423,31 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			switch (query_type) {
 				case EPMEM_NODE_POS:
 					query_wmes = pos_query_wmes;
+					sym_cache[pos_query] = dnf_root;
 					break;
 				case EPMEM_NODE_NEG:
 					query_wmes = neg_query_wmes;
+					sym_cache[neg_query] = dnf_root;
 					break;
 			}
 			if (!query_wmes) {
 				continue;
 			}
-			// pre-cache the (same) root
-			wme_cache[query_wmes->front()] = dnf_root;
 			// for each first level WME, build up a DNF
-			while (query_wmes) {
+			while (query_wmes->size()) {
 				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
 				std::set<wme*> stack;
-				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, wme_cache, leaf_literals, tc, stack);
-				if (!dnf_root->parents.count(first_level->attr)) {
-					dnf_root->parents[first_level->attr] = new epmem_literal_set();
+				std::cout << '"' << first_level << '"' << std::endl;
+				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, stack);
+				if (!root->parents.count(first_level->attr)) {
+					root->parents[first_level->attr] = new epmem_literal_set();
 				}
-				dnf_root->parents[first_level->attr]->insert(root);
+				root->parents[first_level->attr]->insert(dnf_root);
+				if (!dnf_root->children.count(first_level->attr)) {
+					dnf_root->children[first_level->attr] = new epmem_literal_set();
+				}
+				dnf_root->children[first_level->attr]->insert(root);
 				frontier.insert(root);
 			}
 			delete query_wmes;
@@ -3452,8 +3460,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		std::cout << "digraph {" << std::endl;
 		epmem_print_dnf(dnf_root, visited);
 		std::cout << "}" << std::endl;
-
-		// clean up code
 	}
 
 	assert(0);
@@ -3480,15 +3486,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 	epmem_time_id current_time = my_agent->epmem_stats->time->get_value();
 
-	// skip through episodes after the before constraint
-	while (current_time > before) {
-
-		// FIXME find all edges with last use times after constraint
-		// FIXME for each, find all intervals, adding to matches if the first endpoint is an end
-		// FIXME traverse the DNF, updating the settled, frontier, and satisfied_leaves sets and updating the score
-	}
-
-	// FIXME this should be incorporated into the condition above
+	// FIXME I think we can create a fake edge for the root, then we don't need this to be here
 	// create unique edge queries for first level WMEs
 	for (epmem_attr_literal_map::iterator attr_iter = dnf_root->children.begin(); attr_iter != dnf_root->children.end(); attr_iter++) {
 		Symbol* attr = (*attr_iter).first;
@@ -3502,11 +3500,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 	}
 
+	// TODO an alternative is to jump straight to BEFORE; whether that's faster is to be determined
+
 	// main loop of interval walk
 	while (current_time > after && edge_pq.size()) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
 		epmem_time_id next_either;
+
+		// FIXME if current_time just crossed before, update the frontier
 
 		next_edge = edge_pq.top()->time;
 		// process all edges which were last used at this timepoint
@@ -3615,6 +3617,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					} else {
 						literal->matches.erase(interval_q->unique_edge->edge_info.q1);
 					}
+					// FIXME condition this next part on whether it's after before
 					// TODO what if two different intervals change the same literal? what could we do to save there?
 					if (interval_q->is_end_point && literal->matches.size() && frontier.count(literal)) {
 						// this literal just got activated and is part of the frontier
