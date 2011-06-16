@@ -22,10 +22,10 @@ ios-simulator:
 	cd Core && scons --static --platform=32 --ios=simulator
 
 ios-armv6:
-	cd Core && scons --static --platform=32 --ios=armv6
+	cd Core && scons --static --platform=32 --ios=armv6 --no-debug-symbols
 
 ios-armv7:
-	cd Core && scons --static --platform=32 --ios=armv7
+	cd Core && scons --static --platform=32 --ios=armv7 --no-debug-symbols
 
 up: update
 update:
