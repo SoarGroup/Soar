@@ -3220,7 +3220,12 @@ const char* epmem_find_interval_queries[2][2][3] =
 	},
 };
 
-epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<wme*>& stack) {
+epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting) {
+	// if the value is being visited, this is part of a loop; return NULL
+	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
+	if (visiting.count(root->value)) {
+		return NULL;
+	}
 	// if we've been here before, we can return the previous literal
 	if (sym_cache.count(root->value)) {
 		return sym_cache[root->value];
@@ -3257,28 +3262,26 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 			literal->has_q1 = false;
 			literal->is_leaf = false;
 			bool cycle = false;
-			stack.insert(root);
+			visiting.insert(root->value);
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				if (stack.count(*wme_iter)) {
-					cycle = true;
-				} else {
-					epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, stack);
-					if (child) {
-						Symbol* attr = (*wme_iter)->attr;
-						if (!child->parents.count(attr)) {
-							child->parents[attr] = new epmem_literal_set();
-						}
-						child->parents[attr]->insert(literal);
-						if (!literal->children.count(attr)) {
-							literal->children[attr] = new epmem_literal_set();
-						}
-						literal->children[attr]->insert(child);
+				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting);
+				if (child) {
+					Symbol* attr = (*wme_iter)->attr;
+					if (!child->parents.count(attr)) {
+						child->parents[attr] = new epmem_literal_set();
 					}
+					child->parents[attr]->insert(literal);
+					if (!literal->children.count(attr)) {
+						literal->children[attr] = new epmem_literal_set();
+					}
+					literal->children[attr]->insert(child);
+				} else {
+					cycle = true;
 				}
 			}
-			stack.erase(root);
+			visiting.erase(root->value);
 			// if all children of this WME lead to cycles, then we don't need to walk this path
 			// in essence, this forces the DNF graph to be acyclic
 			// this results in savings in not walking edges and intevals
@@ -3404,6 +3407,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		std::sort(prohibits.begin(), prohibits.end());
 	}
 
+	epmem_dnf_literal* fake_root = new epmem_dnf_literal();
 	epmem_dnf_literal* dnf_root = new epmem_dnf_literal();
 	epmem_literal_set leaf_literals;
 	epmem_literal_set settled;
@@ -3419,6 +3423,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			neg_query_wmes = epmem_get_augs_of_id(neg_query, tc);
 		}
 		std::map<Symbol*, epmem_dnf_literal*> sym_cache;
+		std::set<Symbol*> visiting;
+		// FIXME initialize fake_root
 		dnf_root->weight = 0.0;
 		dnf_root->is_neg_q = EPMEM_NODE_POS;
 		dnf_root->is_edge_not_node = 1;
@@ -3426,16 +3432,18 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		dnf_root->is_leaf = false;
 		dnf_root->value = NULL;
 		settled.insert(dnf_root);
+		sym_cache[pos_query] = dnf_root;
+		sym_cache[neg_query] = dnf_root;
+		visiting.insert(pos_query);
+		visiting.insert(neg_query);
 		for (int query_type = EPMEM_NODE_POS; query_type <= EPMEM_NODE_NEG; query_type++) {
 			epmem_wme_list* query_wmes = NULL;
 			switch (query_type) {
 				case EPMEM_NODE_POS:
 					query_wmes = pos_query_wmes;
-					sym_cache[pos_query] = dnf_root;
 					break;
 				case EPMEM_NODE_NEG:
 					query_wmes = neg_query_wmes;
-					sym_cache[neg_query] = dnf_root;
 					break;
 			}
 			if (!query_wmes) {
@@ -3445,18 +3453,19 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			while (query_wmes->size()) {
 				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
-				std::set<wme*> stack;
 				std::cout << '"' << first_level << '"' << std::endl;
-				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, stack);
-				if (!root->parents.count(first_level->attr)) {
-					root->parents[first_level->attr] = new epmem_literal_set();
+				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting);
+				if (root) {
+					if (!root->parents.count(first_level->attr)) {
+						root->parents[first_level->attr] = new epmem_literal_set();
+					}
+					root->parents[first_level->attr]->insert(dnf_root);
+					if (!dnf_root->children.count(first_level->attr)) {
+						dnf_root->children[first_level->attr] = new epmem_literal_set();
+					}
+					dnf_root->children[first_level->attr]->insert(root);
+					frontier.insert(root);
 				}
-				root->parents[first_level->attr]->insert(dnf_root);
-				if (!dnf_root->children.count(first_level->attr)) {
-					dnf_root->children[first_level->attr] = new epmem_literal_set();
-				}
-				dnf_root->children[first_level->attr]->insert(root);
-				frontier.insert(root);
 			}
 			delete query_wmes;
 		}
