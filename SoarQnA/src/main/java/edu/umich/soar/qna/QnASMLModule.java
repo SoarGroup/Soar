@@ -8,16 +8,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 
 import sml.Agent;
+import sml.Agent.OutputEventInterface;
 import sml.Identifier;
 import sml.IntElement;
 import sml.Kernel;
+import sml.Kernel.SystemEventInterface;
 import sml.StringElement;
 import sml.WMElement;
-import sml.smlRunEventId;
 import sml.smlSystemEventId;
-import sml.Agent.OutputEventInterface;
-import sml.Agent.RunEventInterface;
-import sml.Kernel.SystemEventInterface;
 
 public class QnASMLModule {
 	
@@ -188,15 +186,6 @@ public class QnASMLModule {
 			doneSignal.countDown();
 		}
 		
-	};
-
-	private final RunEventInterface haltHandler = new RunEventInterface() {
-
-		@Override
-		public void runEventHandler(int eventID, Object data, Agent agent, int phase) {
-			doneSignal.countDown();
-		}
-
 	};
 	
 	private final OutputEventInterface nextCommandHandler = new OutputEventInterface() {
