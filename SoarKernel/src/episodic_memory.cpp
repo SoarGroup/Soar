@@ -3220,7 +3220,7 @@ const char* epmem_find_interval_queries[2][2][3] =
 	},
 };
 
-epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting) {
+epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
 	if (visiting.count(root->value)) {
@@ -3266,7 +3266,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting);
+				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting, my_agent);
 				if (child) {
 					Symbol* attr = (*wme_iter)->attr;
 					if (!child->parents.count(attr)) {
@@ -3292,8 +3292,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 		}
 	}
 
-	// FIXME weight
-	// FIXME multiply weight by (query_type == EPMEM_NODE_POS ? 1 : -1);
+	literal->weight = (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
 	literal->is_neg_q = query_type;
 	return literal;
 }
@@ -3398,10 +3397,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		return;
 	}
 
-	// FIXME need to put this somwehere
-	double balance = my_agent->epmem_params->balance->get_value();
-	bool balance_approximately_1 = ( ( balance > ( 1.0 - 1.0e-8 ) ) && ( balance < ( 1.0 + 1.0e-8 ) ) );
-
 	// sort probibits
 	if (!prohibits.empty()) {
 		std::sort(prohibits.begin(), prohibits.end());
@@ -3424,14 +3419,19 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 		std::map<Symbol*, epmem_dnf_literal*> sym_cache;
 		std::set<Symbol*> visiting;
-		// FIXME initialize fake_root
+		fake_root->weight = 0.0;
+		fake_root->is_neg_q = EPMEM_NODE_POS;
+		fake_root->is_edge_not_node = 1;
+		fake_root->has_q1 = false;
+		fake_root->is_leaf = false;
+		fake_root->value = NULL;
+		frontier.insert(fake_root);
 		dnf_root->weight = 0.0;
 		dnf_root->is_neg_q = EPMEM_NODE_POS;
 		dnf_root->is_edge_not_node = 1;
 		dnf_root->has_q1 = false;
 		dnf_root->is_leaf = false;
 		dnf_root->value = NULL;
-		settled.insert(dnf_root);
 		sym_cache[pos_query] = dnf_root;
 		sym_cache[neg_query] = dnf_root;
 		visiting.insert(pos_query);
@@ -3454,7 +3454,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
 				std::cout << '"' << first_level << '"' << std::endl;
-				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting);
+				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting, my_agent);
 				if (root) {
 					if (!root->parents.count(first_level->attr)) {
 						root->parents[first_level->attr] = new epmem_literal_set();
@@ -3634,8 +3634,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					} else {
 						literal->matches.erase(interval_q->unique_edge->edge_info.q1);
 					}
-					// FIXME condition this next part on whether it's after before
-					// TODO what if two different intervals change the same literal? what could we do to save there?
 					if (interval_q->is_end_point && literal->matches.size() && frontier.count(literal)) {
 						// this literal just got activated and is part of the frontier
 						// move the literal to the settled region
