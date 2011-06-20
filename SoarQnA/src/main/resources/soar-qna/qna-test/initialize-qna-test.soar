@@ -12,7 +12,7 @@ sp {apply*initialize-qna-test
    (<op> ^name initialize-qna-test)
 -->
    (<s> ^name qna-test
-        ^test <t1> <t2> <t3> <t4> <t5> <t6> <t7> <t8> <t9> <t10> <t11> <t12> <t13> <t14> <t15>
+        ^test <t1> <t2> <t3> <t4> <t5> <t6> <t7> <t8> <t9> <t10> <t11> <t12> <t13> <t14> <t15> <t16>
         ^complete 0)
    (<t1> ^source math
          ^query |+|)
@@ -50,5 +50,7 @@ sp {apply*initialize-qna-test
    (<t15> ^source test_db
           ^query all_vars
           ^num two)
+   (<t16> ^source math
+          ^query sleep)
 }
 

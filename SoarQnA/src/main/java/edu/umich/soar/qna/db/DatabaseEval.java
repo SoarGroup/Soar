@@ -1,4 +1,4 @@
-package edu.umich.soar.qna;
+package edu.umich.soar.qna.db;
 
 import java.io.File;
 import java.sql.Connection;
@@ -10,8 +10,12 @@ import java.util.concurrent.CountDownLatch;
 
 import sml.Agent;
 import sml.Kernel;
+import edu.umich.soar.qna.AsynchronousSMLModule;
+import edu.umich.soar.qna.DataSourceManager;
+import edu.umich.soar.qna.SMLModule;
+import edu.umich.soar.qna.SynchronousSMLModule;
 
-public class QnAEval {
+public class DatabaseEval {
 	
 	private static final String dbFileName = "temp.db";
 	private static final String dbDriver = "org.sqlite.JDBC";
@@ -21,19 +25,21 @@ public class QnAEval {
 	private static final String qnaDriver = "edu.umich.soar.qna.db.DatabaseDataSourceDriver";
 
 	private static void usage() {
-		System.out.println("Usage: " + QnAEval.class.getSimpleName() + " <set size> <trials>");
+		System.out.println("Usage: " + DatabaseEval.class.getSimpleName() + " <set size> <trials> [asynchronous: any value]");
 	}
 	
 	public static void main(String[] args) {
 		
 		try {
-			if (args.length!=2) {
+			if ((args.length!=2) && (args.length!=3)) {
 				usage();
 				System.exit(1);
 			}
 			
 			Integer setSize = Integer.parseInt(args[0]);
 			Integer trials = Integer.parseInt(args[1]);
+			
+			boolean synch = (args.length == 2);
 			
 			// create database
 			File r = new File(dbFileName);
@@ -44,13 +50,13 @@ public class QnAEval {
 				Class.forName(dbDriver).newInstance();
 				conn = DriverManager.getConnection((dbURLPrefix + dbFileName), "", "");
 				
-				System.err.println(" create table.");
+				System.err.println(" create table");
 				{
 					PreparedStatement statement = conn.prepareStatement("CREATE TABLE data (k INTEGER, v INTEGER)");
 					statement.execute();
 				}
 				
-				System.err.println(" create index.");
+				System.err.println(" create index");
 				{
 					PreparedStatement statement = conn.prepareStatement("CREATE INDEX data_index ON data (k,v)");
 					statement.execute();
@@ -58,6 +64,9 @@ public class QnAEval {
 				
 				System.err.print(" populate table");
 				{
+					PreparedStatement begin = conn.prepareStatement("BEGIN");
+					begin.execute();
+					
 					PreparedStatement statement = conn.prepareStatement("INSERT INTO data (k,v) VALUES (?,?)");
 					
 					for (int k=1; k<=10; k++) {
@@ -69,6 +78,9 @@ public class QnAEval {
 						
 						System.err.print(".");
 					}
+					
+					PreparedStatement commit = conn.prepareStatement("COMMIT");
+					commit.execute();
 				}
 				System.err.println("");
 				System.err.println("");
@@ -109,10 +121,10 @@ public class QnAEval {
 			System.err.println("");
 			
 			
-			System.err.println("Setting up QnA:");
+			System.err.println("Setting up QnA ("+( (synch)?("synchronous"):("asynchronous") )+"):");
 			DataSourceManager man = new DataSourceManager();
 			CountDownLatch doneSignal = new CountDownLatch(1);
-			QnASMLModule qna = null;
+			SMLModule qna = null;
 			{
 				System.err.println(" connection parameters");
 				{
@@ -132,7 +144,11 @@ public class QnAEval {
 				
 				System.err.println(" initialize");
 				{
-					qna = new QnASMLModule(kernel, agent, man, doneSignal);
+					if (synch) {
+						qna = new SynchronousSMLModule(kernel, agent, man, doneSignal);
+					} else {
+						qna = new AsynchronousSMLModule(kernel, agent, man, doneSignal);
+					}
 				}
 			}
 			System.err.println("");

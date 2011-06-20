@@ -8,7 +8,6 @@ import edu.umich.soar.qna.ComputationalQueryState;
 public abstract class UnaryMathQueryState extends ComputationalQueryState {
 	Object operand1;
 
-	@Override
 	public boolean initialize(String querySource, Map<Object, List<Object>> queryParameters) {
 		boolean returnVal = false;
 		

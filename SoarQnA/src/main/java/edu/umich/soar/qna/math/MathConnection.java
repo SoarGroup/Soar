@@ -8,11 +8,9 @@ import edu.umich.soar.qna.QueryState;
 
 public class MathConnection implements DataSourceConnection {
 
-	@Override
 	public void disconnect() {
 	}
 
-	@Override
 	public QueryState executeQuery(String querySource,
 			Map<Object, List<Object>> queryParameters) {
 		QueryState returnVal = null;
@@ -45,6 +43,8 @@ public class MathConnection implements DataSourceConnection {
 			returnVal = new IntQueryState();
 		} else if (querySource.equals("float")) {
 			returnVal = new FloatQueryState();
+		} else if (querySource.equals("sleep")) {
+			returnVal = new SleepQueryState();
 		}
 		
 		if ((returnVal!=null) && !returnVal.initialize(querySource, queryParameters)) {

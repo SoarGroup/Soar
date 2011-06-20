@@ -13,7 +13,6 @@ public class DatabaseDataSourceDriver implements DataSourceDriver {
 	
 	private static final List<String> instanceParameters = Arrays.asList( "driver", "url", "username", "password" );
 
-	@Override
 	public DataSourceConnection connect(Map<String, String> parameters) {
 		DataSourceConnection returnVal = null;
 		
@@ -39,7 +38,6 @@ public class DatabaseDataSourceDriver implements DataSourceDriver {
 		return returnVal;
 	}
 
-	@Override
 	public List<String> getInstanceParameters() {
 		return DatabaseDataSourceDriver.instanceParameters;
 	}

@@ -21,7 +21,6 @@ public class ComputeProbabilityQueryState extends ComputationalQueryState {
 	private Predicate myPred = null;
 	private Double myResult = null;
 
-	@Override
 	public boolean initialize(String querySource,
 			Map<Object, List<Object>> queryParameters) {
 		boolean returnVal = false;
@@ -57,7 +56,6 @@ public class ComputeProbabilityQueryState extends ComputationalQueryState {
 		return returnVal;
 	}
 
-	@Override
 	public Map<String, List<Object>> next() {
 		if (!hasComputed) {
 			hasComputed = true;

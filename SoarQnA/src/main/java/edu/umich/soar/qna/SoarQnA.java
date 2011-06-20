@@ -40,7 +40,7 @@ public class SoarQnA {
 
 	private static void usage() {
 		System.out.println("java " + SoarQnA.class.getSimpleName()
-				+ " <host> <port> <agent name> <configuration file>");
+				+ " <host> <port> <agent name> <configuration file> [asynchronous: any value]");
 	}
 
 	public static void main(String[] args) {
@@ -55,7 +55,7 @@ public class SoarQnA {
 							+ System.getProperty("user.dir"));
 		}
 
-		if (args.length != 4) {
+		if ((args.length != 4) && (args.length != 5)) {
 			usage();
 			System.exit(0);
 		}
@@ -72,9 +72,20 @@ public class SoarQnA {
 		if (agent == null) {
 			throw new IllegalStateException(kernel.GetLastErrorDescription());
 		}
+		
+		final boolean synch = (args.length == 4);
 
 		CountDownLatch doneSignal = new CountDownLatch(1);
-		QnASMLModule SoarQnA = new QnASMLModule(kernel, agent, man, doneSignal);
+		
+		SMLModule SoarQnA = null;
+		System.out.print("Operating mode: ");
+		if (synch) {
+			SoarQnA = new SynchronousSMLModule(kernel, agent, man, doneSignal);
+			System.out.println("synchronous");
+		} else {
+			SoarQnA = new AsynchronousSMLModule(kernel, agent, man, doneSignal);
+			System.out.println("asynchronous");
+		}
 
 		try {
 			doneSignal.await();
@@ -217,6 +228,12 @@ public class SoarQnA {
 			"soar-qna/qna-test/reciprocation/reciprocation-query.soar",
 			"soar-qna/qna-test/reciprocation/reciprocation_source.soar",
 			"soar-qna/qna-test/reciprocation.soar",
+			"soar-qna/qna-test/sleep/sleep-check.soar",
+			"soar-qna/qna-test/sleep/sleep-init.soar",
+			"soar-qna/qna-test/sleep/sleep-query.soar",
+			"soar-qna/qna-test/sleep/sleep_source.soar",
+			"soar-qna/qna-test/sleep/elaborations.soar",
+			"soar-qna/qna-test/sleep.soar",
 			"soar-qna/qna-test/sqrt/elaborations.soar",
 			"soar-qna/qna-test/sqrt/sqrt-check.soar",
 			"soar-qna/qna-test/sqrt/sqrt-init.soar",

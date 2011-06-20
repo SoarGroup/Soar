@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SubtractionQueryState extends BinaryMathQueryState {
-	@Override
+	
 	public Map<String, List<Object>> next() {
 		if (!hasComputed) {
 			hasComputed = true;
