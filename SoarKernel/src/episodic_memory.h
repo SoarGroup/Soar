@@ -687,6 +687,7 @@ typedef struct epmem_sql_edge_struct epmem_sql_edge;
 
 // collection classes
 typedef std::set<epmem_interval_query*> epmem_interval_set;
+typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::list<epmem_dnf_literal*> epmem_literal_list;
 typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literal_map;
