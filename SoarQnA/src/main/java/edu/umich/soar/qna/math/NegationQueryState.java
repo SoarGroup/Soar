@@ -12,7 +12,6 @@ public class NegationQueryState extends UnaryMathQueryState {
 		multQueryState = null;
 	}
 	
-	@Override
 	public boolean initialize(String querySource, Map<Object, List<Object>> queryParameters) {
 		boolean returnVal = false;
 		
@@ -29,7 +28,6 @@ public class NegationQueryState extends UnaryMathQueryState {
 		return returnVal;
 	}
 	
-	@Override
 	public Map<String, List<Object>> next() {
 		Map<String, List<Object>> returnVal = null;
 		

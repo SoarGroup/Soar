@@ -16,7 +16,6 @@ public class DatabaseConnection implements DataSourceConnection {
 		this.conn = conn;
 	}
 	
-	@Override
 	public void disconnect() {
 		if (conn != null) {
 			try {
@@ -27,7 +26,6 @@ public class DatabaseConnection implements DataSourceConnection {
 		}
 	}
 
-	@Override
 	public QueryState executeQuery(String querySource,
 			Map<Object, List<Object>> queryParameters) {
 		

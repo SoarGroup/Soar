@@ -14,7 +14,6 @@ public class IntQueryState extends ComputationalQueryState {
 		convertedValue = null;
 	}
 
-	@Override
 	public boolean initialize(String querySource, Map<Object, List<Object>> queryParameters) {
 		boolean returnVal = false;
 		
@@ -44,7 +43,6 @@ public class IntQueryState extends ComputationalQueryState {
 		return returnVal;
 	}
 
-	@Override
 	public Map<String, List<Object>> next() {
 		if (!hasComputed) {
 			hasComputed = true;

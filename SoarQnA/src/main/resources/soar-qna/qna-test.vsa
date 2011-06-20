@@ -73,14 +73,19 @@ VERSION 4
 70	68	OPERATOR reciprocation-check reciprocation-check.soar 71
 71	68	OPERATOR reciprocation-init reciprocation-init.soar 72
 72	68	OPERATOR reciprocation-query reciprocation-query.soar 73
-73	0	HLOPERATOR sqrt sqrt.soar sqrt 116 74
-74	73	FOPERATOR elaborations elaborations.soar 75
-75	73	OPERATOR sqrt-check sqrt-check.soar 76
-76	73	OPERATOR sqrt-init sqrt-init.soar 77
-77	73	OPERATOR sqrt-query sqrt-query.soar 78
-78	0	HLOPERATOR subtraction subtraction.soar subtraction 28 79
-79	78	FOPERATOR elaborations elaborations.soar 80
-80	78	OPERATOR subtraction-check subtraction-check.soar 81
-81	78	OPERATOR subtraction-init subtraction-init.soar 82
-82	78	OPERATOR subtraction-query subtraction-query.soar 83
+73	0	HLOPERATOR sleep sleep.soar sleep 202 84
+74	73	FOPERATOR elaborations elaborations.soar 85
+75	73	OPERATOR sleep-check sleep-check.soar 88
+76	73	OPERATOR sleep-init sleep-init.soar 86
+77	73	OPERATOR sleep-query sleep-query.soar 87
+78	0	HLOPERATOR sqrt sqrt.soar sqrt 116 74
+79	78	FOPERATOR elaborations elaborations.soar 75
+80	78	OPERATOR sqrt-check sqrt-check.soar 76
+81	78	OPERATOR sqrt-init sqrt-init.soar 77
+82	78	OPERATOR sqrt-query sqrt-query.soar 78
+83	0	HLOPERATOR subtraction subtraction.soar subtraction 28 79
+84	83	FOPERATOR elaborations elaborations.soar 80
+85	83	OPERATOR subtraction-check subtraction-check.soar 81
+86	83	OPERATOR subtraction-init subtraction-init.soar 82
+87	83	OPERATOR subtraction-query subtraction-query.soar 83
 END

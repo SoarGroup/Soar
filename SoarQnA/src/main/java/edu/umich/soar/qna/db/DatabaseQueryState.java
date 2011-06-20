@@ -28,7 +28,6 @@ public class DatabaseQueryState implements QueryState {
 		dataAvailable = false;
 	}
 	
-	@Override
 	public void dispose() {
 		dataAvailable = false;
 		
@@ -42,12 +41,10 @@ public class DatabaseQueryState implements QueryState {
 		}
 	}
 
-	@Override
 	public boolean hasNext() {
 		return dataAvailable;
 	}
-
-	@Override
+	
 	public boolean initialize(String querySource, Map<Object, List<Object>> queryParameters) {
 		
 		try {
@@ -90,7 +87,6 @@ public class DatabaseQueryState implements QueryState {
 		return dataAvailable;
 	}
 
-	@Override
 	public Map<String, List<Object>> next() {
 		Map<String, List<Object>> returnVal = null;
 		

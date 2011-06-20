@@ -9,12 +9,10 @@ import edu.umich.soar.qna.DataSourceDriver;
 
 public class DiceDataSourceDriver implements DataSourceDriver {
 
-	@Override
 	public DataSourceConnection connect(Map<String, String> parameters) {
 		return new DiceConnection();
 	}
 
-	@Override
 	public List<String> getInstanceParameters() {
 		return new LinkedList<String>();
 	}

@@ -9,12 +9,10 @@ import edu.umich.soar.qna.DataSourceDriver;
 
 public class MathDataSourceDriver implements DataSourceDriver {
 
-	@Override
 	public List<String> getInstanceParameters() {
 		return new LinkedList<String>();
 	}	
 
-	@Override
 	public DataSourceConnection connect(Map<String, String> parameters) {
 		return new MathConnection();
 	}

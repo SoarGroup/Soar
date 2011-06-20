@@ -12,7 +12,6 @@ public class ReciprocationQueryState extends UnaryMathQueryState {
 		divQueryState = null;
 	}
 	
-	@Override
 	public boolean initialize(String querySource, Map<Object, List<Object>> queryParameters) {
 		boolean returnVal = false;
 		
@@ -30,7 +29,6 @@ public class ReciprocationQueryState extends UnaryMathQueryState {
 		return returnVal;
 	}
 	
-	@Override
 	public Map<String, List<Object>> next() {
 		Map<String, List<Object>> returnVal = null;
 		

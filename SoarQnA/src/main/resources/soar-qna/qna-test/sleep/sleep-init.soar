@@ -1,0 +1,14 @@
+sp {sleep*propose*sleep-init
+   (state <s> ^name sleep
+             -^operand1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name sleep-init)
+}
+
+sp {apply*sleep-init
+   (state <s> ^operator <op>)
+   (<op> ^name sleep-init)
+-->
+   (<s> ^operand1 5000)
+}
