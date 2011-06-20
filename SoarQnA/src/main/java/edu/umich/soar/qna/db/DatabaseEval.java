@@ -103,18 +103,24 @@ public class DatabaseEval {
 				{
 					agent = kernel.CreateAgent("qna");
 					agent.ExecuteCommandLine("timers -d");
+					agent.ExecuteCommandLine("waitsnc -e");
 					
 					// initialize
 					agent.ExecuteCommandLine("sp {propose*initialize-eval (state <s> ^superstate nil -^name) --> (<s> ^operator <o> +) (<o> ^name initialize-eval)}");
 					agent.ExecuteCommandLine("sp {apply*initialize-eval (state <s> ^operator <op> ^io <io>) (<io> ^input-link.qna-registry.<src>.query <qry> ^output-link <out>) (<op> ^name initialize-eval) --> (<s> ^name eval ^counter 1) (<out> ^qna-query <q>) (<q> ^source <src> ^query <qry> ^parameters <ps> ^results incremental) (<ps> ^1 1)}");
 					
 					// next
-					agent.ExecuteCommandLine("sp {eval*propose*next (state <s> ^name eval ^counter <c> ^io.output-link.qna-query.result <r>) (<r> ^features.v <c> ^next pending) --> (<s> ^operator <op> + =) (<op> ^name next)}");
+					agent.ExecuteCommandLine("sp {propose*next (state <s> ^name eval ^counter <c> ^io.output-link.qna-query.result <r>) (<r> ^features.v <c> ^next pending) --> (<s> ^operator <op> + =) (<op> ^name next)}");
 					agent.ExecuteCommandLine("sp {apply*next (state <s> ^operator <op> ^counter <c> ^io.output-link <out>) (<op> ^name next) (<out> ^qna-query.id <q-id>) --> (<s> ^counter <c> - (+ <c> 1)) (<out> ^qna-next.query <q-id>)}");
 					agent.ExecuteCommandLine("sp {apply*next-clean (state <s> ^operator <op> ^io.output-link <out>) (<op> ^name next) (<out> ^qna-next <q>) (<q> ^status) --> (<out> ^qna-next <q> -)}");
 					
+					// finish
+					agent.ExecuteCommandLine("sp {propose*finish (state <s> ^name eval ^counter <c> ^io.output-link.qna-query.result <r>) (<r> ^features.v <c> ^next nil) --> (<s> ^operator <op>) (<op> ^name finish)}");
+					agent.ExecuteCommandLine("sp {apply*finish (state <s> ^operator <op> ^counter <c>) (<op> ^name finish) --> (<s> ^done t ^counter <c> -)}");
+					agent.ExecuteCommandLine("sp {apply*finish*clean (state <s> ^operator <op> ^io.output-link <out>) (<out> ^<cmd-name> <cmd>) (<op> ^name finish) --> (<out> ^<cmd-name> <cmd> -)}");
+					
 					// done
-					agent.ExecuteCommandLine("sp {eval*propose*done (state <s> ^name eval ^counter <c> ^io.output-link.qna-query.result <r>) (<r> ^features.v <c> ^next nil) --> (<s> ^operator <op> + =) (<op> ^name done)}");
+					agent.ExecuteCommandLine("sp {propose*done (state <s> ^name eval ^done t) --> (<s> ^operator <op> + =) (<op> ^name done)}");
 					agent.ExecuteCommandLine("sp {apply*done (state <s> ^operator <op>) (<op> ^name done) --> (halt)}");
 				}
 			}
