@@ -1,0 +1,21 @@
+sp {sleep*propose*sleep-check
+   (state <s> ^name sleep
+              ^result <r>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name sleep-check)
+}
+
+sp {apply*sleep-check*success
+   (state <s> ^operator <op>
+              ^result <r>
+              ^superstate <ss>)
+   (<ss> ^io.output-link.qna-query.result.features.result <r>
+         ^test <t>)
+   (<t> ^source math
+        ^query sleep)
+   (<op> ^name sleep-check)
+-->
+   (<t> ^done true)
+   (write |sleep: success|)
+}

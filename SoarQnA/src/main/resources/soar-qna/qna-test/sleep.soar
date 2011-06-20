@@ -1,0 +1,11 @@
+sp {qna-test*propose*sleep
+   (state <s> ^name qna-test
+              ^test <t>
+              ^io.input-link.qna-registry.math.query sleep)
+   (<t> ^source math
+        ^query sleep
+       -^done)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name sleep)
+}

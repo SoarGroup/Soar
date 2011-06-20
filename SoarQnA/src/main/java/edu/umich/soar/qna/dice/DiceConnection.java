@@ -8,11 +8,9 @@ import edu.umich.soar.qna.QueryState;
 
 public class DiceConnection implements DataSourceConnection {
 
-	@Override
 	public void disconnect() {
 	}
 
-	@Override
 	public QueryState executeQuery(String querySource,
 			Map<Object, List<Object>> queryParameters) {
 		QueryState returnVal = null;

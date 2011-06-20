@@ -148,7 +148,12 @@ The basic input/output-link structures are as follows:
    including the augmentations of the "features" WME, the
    "num" WME, and, if appropriate, the "next" WME.
 
-Note that currently all results come back during a single output
-phase. Care should be taken to avoid costly queries, which will
-severely impact Soar decision cycle time. Ideally a future version
-will support multi-cycle queries to eliminate this weakness.
+Note that results, by default, come back during a single output phase. 
+Care should be taken to avoid costly queries, which will impact Soar 
+reactivity. There is an experimental asynchronous SML module that 
+addresses this issue, which can be activated via an extra command-line
+parameter. As an example, the test agent executes a "sleep" query, which
+will stop synchronous Soar decisions for 5s, whereas asynchronous Soar
+decisions will continue unaffected. In this mode, status for qna-query
+and qna-next commands will be "pending" until the next result is ready,
+at which point it will reflect "complete."

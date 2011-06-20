@@ -1,4 +1,4 @@
-200
+211
 SOAR_ID 0
 SOAR_ID 1
 SOAR_ID 2
@@ -199,7 +199,18 @@ SOAR_ID 196
 SOAR_ID 197
 ENUMERATION 198 1 inc_vars-check
 SOAR_ID 199
-216
+SOAR_ID 200
+ENUMERATION 201 1 sleep
+SOAR_ID 202
+ENUMERATION 203 1 state
+ENUMERATION 204 1 sleep
+ENUMERATION 205 1 sleep-init
+SOAR_ID 206
+ENUMERATION 207 1 sleep-query
+SOAR_ID 208
+ENUMERATION 209 1 sleep-check
+SOAR_ID 210
+228
 0 io 1
 0 name 7
 0 operator 4
@@ -220,6 +231,7 @@ SOAR_ID 199
 0 operator 147
 0 operator 158
 0 operator 169
+0 operator 200
 0 superstate 6
 0 top-state 0
 0 type 5
@@ -416,3 +428,14 @@ SOAR_ID 199
 195 features 196
 195 next 192
 199 name 198
+200 name 201
+202 name 204
+202 operator 206
+202 operator 208
+202 operator 210
+202 superstate 0
+202 top-state 0
+202 type 203
+206 name 205
+208 name 207
+210 name 209

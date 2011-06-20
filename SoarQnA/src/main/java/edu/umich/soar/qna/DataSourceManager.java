@@ -91,16 +91,34 @@ public class DataSourceManager {
 		inst.queries.put(queryName, querySource);
 	}
 	
+	private boolean validateQueryUID(String connectionUID) {
+		return connections.containsKey(connectionUID);
+	}
+	
+	private boolean validateQueryName(String connectionUID, String queryName, boolean skipUID) {
+		if (!skipUID) {
+			if (!validateQueryUID(connectionUID)) {
+				return false;
+			}
+		}
+		
+		return (connections.get(connectionUID).queries.containsKey(queryName));
+	}
+	
+	public boolean validateQuery(String connectionUID, String queryName) {
+		return (validateQueryUID(connectionUID) && validateQueryName(connectionUID, queryName, true));
+	}
+	
 	public QueryState executeQuery(String connectionUID, String queryName, Map<Object, List<Object>> queryParameters) throws InvalidDataSourceUIDException, InvalidQueryUIDException {
-		if (!connections.containsKey(connectionUID)) {
+		if (!validateQueryUID(connectionUID)) {
 			throw new InvalidDataSourceUIDException();
 		}
-		ConnectionInstance inst = connections.get(connectionUID);
 		
-		if (!inst.queries.containsKey(queryName)) {
+		if (!validateQueryName(connectionUID, queryName, true)) {
 			throw new InvalidQueryUIDException();
 		}
 		
+		ConnectionInstance inst = connections.get(connectionUID);
 		return inst.conn.executeQuery(inst.queries.get(queryName), queryParameters);
 	}
 	

@@ -60,6 +60,10 @@ source reciprocation.soar
 pushd reciprocation
 source reciprocation_source.soar
 popd
+source sleep.soar
+pushd sleep
+source sleep_source.soar
+popd
 source sqrt.soar
 pushd sqrt
 source sqrt_source.soar

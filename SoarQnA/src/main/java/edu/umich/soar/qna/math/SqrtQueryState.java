@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class SqrtQueryState extends UnaryMathQueryState {
 
-	@Override
 	public Map<String, List<Object>> next() {
 		if (!hasComputed) {
 			hasComputed = true;

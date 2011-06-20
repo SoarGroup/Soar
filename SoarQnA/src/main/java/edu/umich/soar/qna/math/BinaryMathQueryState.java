@@ -9,7 +9,6 @@ public abstract class BinaryMathQueryState extends ComputationalQueryState {
 	Object operand1;
 	Object operand2;
 
-	@Override
 	public boolean initialize(String querySource, Map<Object, List<Object>> queryParameters) {
 		boolean returnVal = false;
 		
