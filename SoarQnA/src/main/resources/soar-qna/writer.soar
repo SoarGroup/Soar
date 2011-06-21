@@ -1,0 +1,3 @@
+pushd writer
+source writer_source.soar
+popd

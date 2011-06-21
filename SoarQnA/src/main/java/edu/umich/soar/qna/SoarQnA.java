@@ -248,5 +248,19 @@ public class SoarQnA {
 			"soar-qna/qna-test/subtraction.soar", "soar-qna/qna-test.soar",
 			"soar-qna/qna-test.vsa", "soar-qna/qna.ini",
 			"soar-qna/qna_proposal.pdf", "soar-qna/readme.txt",
-			"soar-qna/test.db", "soar-qna/test_db.ini", };
+			"soar-qna/test.db", "soar-qna/test_db.ini",
+			"soar-qna/qna-writer.ini", "soar-qna/db-writer.ini",
+			"soar-qna/writer.vsa","soar-qna/writer.soar",
+			"soar-qna/writer/_firstload.soar","soar-qna/writer/add-done.soar",
+			"soar-qna/writer/add.soar","soar-qna/writer/all/all_source.soar",
+			"soar-qna/writer/begin-done.soar","soar-qna/writer/comment.dm",
+			"soar-qna/writer/commit-done.soar","soar-qna/writer/delete-done.soar",
+			"soar-qna/writer/done.soar","soar-qna/writer/elaborations/_all.soar",
+			"soar-qna/writer/elaborations/elaborations_source.soar",
+			"soar-qna/writer/elaborations/top-state.soar",
+			"soar-qna/writer/finish.soar","soar-qna/writer/index-done.soar",
+			"soar-qna/writer/initialize-writer.soar","soar-qna/writer/rollback-done.soar",
+			"soar-qna/writer/table-done.soar","soar-qna/writer/writer.dm",
+			"soar-qna/writer/writer_source.soar",
+			};
 }

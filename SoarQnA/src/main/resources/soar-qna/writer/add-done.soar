@@ -1,0 +1,23 @@
+sp {writer*propose*add-done
+   (state <s> ^name writer
+              ^phase add
+              ^counter <m>
+              ^max <m>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name add-done)
+}
+
+sp {apply*add-done
+   (state <s> ^operator <op>
+              ^phase add
+              ^io.output-link <out>)
+   (<op> ^name add-done)
+-->
+   (<s> ^phase add - commit)
+   (<out> ^qna-query <q>)
+   (<q> ^source db
+        ^query commit
+        ^results incremental
+        ^parameters <ps>)
+}
