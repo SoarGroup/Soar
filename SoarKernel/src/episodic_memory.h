@@ -758,9 +758,9 @@ struct epmem_interval_query_comparator {
 		} else if ((a->is_end_point && b->is_end_point) || !(a->is_end_point || b->is_end_point)) {
 			// both a and b are ends/starts
 			if (a->is_end_point) {
-				return a->unique_edge->depth < b->unique_edge->depth;
+				return a->unique_edge->depth > b->unique_edge->depth;
 			} else {
-				return b->unique_edge->depth < a->unique_edge->depth;
+				return b->unique_edge->depth > a->unique_edge->depth;
 			}
 		} else {
 			// put ends before starts; the larger the distance to the frontier, the more expensive updating an end is

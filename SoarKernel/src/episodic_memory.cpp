@@ -3251,7 +3251,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 
 		// if the WME has no children, then it's a leaf
 		// otherwise, we recurse for all children
-		if (!children->size()) {
+		if (children->empty()) {
 			literal->is_edge_not_node = 1;
 			literal->has_q1 = false;
 			literal->is_leaf = true;
@@ -3284,7 +3284,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 			// if all children of this WME lead to cycles, then we don't need to walk this path
 			// in essence, this forces the DNF graph to be acyclic
 			// this results in savings in not walking edges and intevals
-			if (cycle && !literal->children.size()) {
+			if (cycle && literal->children.empty()) {
 				delete literal;
 				return NULL;
 			}
@@ -3373,6 +3373,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		dnf_root->has_q1 = false;
 		dnf_root->is_leaf = false;
 		dnf_root->value = NULL;
+		fake_root->children[NULL] = new epmem_literal_set();
+		fake_root->children[NULL]->insert(dnf_root);
 		sym_cache[pos_query] = dnf_root;
 		sym_cache[neg_query] = dnf_root;
 		visiting.insert(pos_query);
@@ -3404,7 +3406,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						dnf_root->children[first_level->attr] = new epmem_literal_set();
 					}
 					dnf_root->children[first_level->attr]->insert(root);
-					frontier.insert(root);
 				}
 			}
 			delete query_wmes;
@@ -3448,6 +3449,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// insert dummy unique edge and interval end point queries for fake root
 		// we make an sql statement just so we don't have to do anything special at cleanup
 		epmem_unique_edge_query* fake_root_uedge = new epmem_unique_edge_query();
+		fake_root_uedge->depth = -1;
 		fake_root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		fake_root_uedge->literals.insert(fake_root);
 		epmem_interval_query* dummy = new epmem_interval_query();
@@ -3457,6 +3459,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		dummy->sql->prepare();
 		dummy->sql->bind_int(1, before);
+		dummy->sql->execute();
+		dummy->time = dummy->sql->column_int(0);
 		interval_pq.push(dummy);
 		intervals.insert(dummy);
 	}
@@ -3480,10 +3484,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_interval_query* dummy = new epmem_interval_query();
 		dummy->is_end_point = true;
 		dummy->unique_edge = dnf_root_uedge;
-		dummy->time = before;
 		dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		dummy->sql->prepare();
 		dummy->sql->bind_int(1, before);
+		dummy->sql->execute();
+		dummy->time = dummy->sql->column_int(0);
 		interval_pq.push(dummy);
 		intervals.insert(dummy);
 	}
@@ -3633,7 +3638,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				edge_pq.push(uedge);
 			}
 		}
-		next_edge = edge_pq.top()->time;
+		next_edge = (edge_pq.empty() ? 0 : edge_pq.top()->time);
 
 		bool changed_score = false;
 
@@ -3655,7 +3660,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					} else {
 						literal->matches.erase(interval_q->unique_edge->edge_info.q1);
 					}
-					if (interval_q->is_end_point && literal->matches.size() && frontier.count(literal)) {
+					if (interval_q->is_end_point && !literal->matches.empty() && frontier.count(literal)) {
 						// this literal just got activated and is part of the frontier
 						// move the literal to the settled region
 						settled.insert(literal);
@@ -3679,7 +3684,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								queue.pop_front();
 								if (settled.count(descendant) || frontier.count(descendant)) {
 									continue;
-								} else if (descendant->matches.size()) {
+								} else if (!descendant->matches.empty()) {
 									settled.insert(descendant);
 									if (!descendant->is_leaf) {
 										for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
@@ -3704,7 +3709,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							changed_score = true;
 							satisfied_leaves.insert(literal);
 						}
-					} else if (!interval_q->is_end_point && !literal->matches.size() && settled.count(literal)) {
+					} else if (!interval_q->is_end_point && literal->matches.empty() && settled.count(literal)) {
 						// this literal just got deactivated and is part of the settled region
 						// move the literal to the frontier
 						settled.erase(literal);
