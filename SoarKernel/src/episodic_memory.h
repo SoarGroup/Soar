@@ -691,12 +691,15 @@ typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::list<epmem_dnf_literal*> epmem_literal_list;
 typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literal_map;
-typedef std::map<epmem_node_id, epmem_interval_query*> epmem_node_interval_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map; // FIXME I'm not convinced the value is correct
+
+// for graph match
+typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_bindings;
+typedef std::set<epmem_node_id> epmem_node_set;
 
 // structs
 struct epmem_dnf_literal_struct {
-	epmem_node_interval_map matches;
+	epmem_interval_set matches;
     epmem_attr_literal_map parents;
     epmem_attr_literal_map children;
     double weight;
@@ -705,7 +708,6 @@ struct epmem_dnf_literal_struct {
 	bool has_q1;
 	bool is_leaf;
 	Symbol* value;
-    epmem_interval_set intervals; // FIXME I'm not sure I need this yet; it'll probably be for retractions
 };
 
 struct epmem_sql_edge_struct {

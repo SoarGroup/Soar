@@ -3219,7 +3219,7 @@ const char* epmem_find_interval_queries[2][2][3] =
 	},
 };
 
-epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent) {
+epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_list& gm_dfs_ordering) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
 	if (visiting.count(root->value)) {
@@ -3245,6 +3245,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 		literal->has_q1 = true;
 		literal->is_leaf = true;
 		leaf_literals.insert(literal);
+		gm_dfs_ordering.push_back(literal); // FIXME only do this if literal is positive
 	} else { // WME is a normal identifier
 		// we determine whether it is a leaf by checking for children
 		epmem_wme_list* children = epmem_get_augs_of_id(value, tc);
@@ -3265,7 +3266,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting, my_agent);
+				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_dfs_ordering);
 				if (child) {
 					Symbol* attr = (*wme_iter)->attr;
 					if (!child->parents.count(attr)) {
@@ -3288,14 +3289,103 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 				delete literal;
 				return NULL;
 			}
+			gm_dfs_ordering.push_back(literal); // FIXME only do this if literal is positive
 		}
 	}
 
+	// FIXME this check should be lifted out of this recursion
 	literal->weight = (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
 	literal->is_neg_q = query_type;
 	return literal;
 }
 
+bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_list::iterator& iter_end, epmem_literal_node_bindings& bindings, epmem_node_set& bound_nodes) {
+	epmem_dnf_literal* literal = *dnf_iter;
+	if (bindings.count(literal)) {
+		return false;
+	} else if (dnf_iter == iter_end) {
+		return true;
+	}
+	bool found_binding = false;
+	epmem_literal_list::iterator next_iter = dnf_iter;
+	next_iter++;
+	// create a list of possible nodes this literal could be unified with
+	epmem_node_set possibilities;
+	for (epmem_interval_set::iterator iter = literal->matches.begin(); iter != literal->matches.end(); iter++) {
+		// get an interval and related info
+		epmem_sql_edge edge_info = (*iter)->unique_edge->edge_info;
+		epmem_node_id parent_id = edge_info.q0;
+		Symbol* attr = edge_info.w;
+		epmem_node_id node_id = edge_info.q1;
+		// if the node is already a possibility (ie. this is a join node) or if it's already bound, move on
+		if (possibilities.count(node_id) && bound_nodes.count(node_id)) {
+			continue;
+		}
+		// check all relations. four things could happen
+		// 1. no relations have any bindings, in which case we add the node by default
+		// 2. relations have bindings, but this node satisfies all of them. add it
+		// 3. relations have bindings, and this node cannot satisfy all of them. discard
+		bool node_satisfies = true;
+		// for the parents, we fail if the parent was bound to something not in this interval
+		// note that the node could still be added if a different parent was satisfied
+		epmem_literal_set* parent_set = literal->parents[attr];
+		for (epmem_literal_set::iterator parent_iter = parent_set->begin(); node_satisfies && parent_iter != parent_set->end(); parent_iter++) {
+			epmem_dnf_literal* parent = *parent_iter;
+			if (bindings.count(parent) && bindings[parent] != parent_id) {
+				node_satisfies = false;
+			}
+		}
+		// for the children, since we don't know their nodes, we need to do more work
+		// if a child is bound, check to make sure that we are in at least one matching interval
+		// otherwise, discard
+		// check children; if bound, check intervals; if no intervals have me as a parent, discard
+		for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); node_satisfies && attr_iter != literal->children.end(); attr_iter++) {
+			epmem_literal_set* child_set = (*attr_iter).second;
+				for (epmem_literal_set::iterator child_iter = child_set->begin(); node_satisfies && child_iter != child_set->end(); child_iter++) {
+				epmem_dnf_literal* child = *child_iter;
+				if (bindings.count(child)) {
+					bool child_satisfies = false;
+					for (epmem_interval_set::iterator child_interval_iter = child->matches.begin(); !child_satisfies && child_interval_iter != child->matches.end(); child_interval_iter++) {
+						epmem_sql_edge child_info = (*child_interval_iter)->unique_edge->edge_info;
+						if (child_info.q0 == node_id && bindings[child] == child_info.q1) {
+							child_satisfies = true;
+						}
+					}
+					if (!child_satisfies) {
+						node_satisfies = false;
+					}
+				}
+			}
+		}
+		// finally, if after all this the node is still a valid match, add it to the list of bindings to try
+		if (node_satisfies) {
+			possibilities.insert(node_id);
+		}
+	}
+	// if no bindings are possible, fail
+	if (possibilities.empty()) {
+		return false;
+	}
+	for (epmem_node_set::iterator iter = possibilities.begin(); !found_binding && iter != possibilities.end(); iter++) {
+		epmem_node_id node_id = *iter;
+		// temporarily modify the bindings and bound nodes
+		bindings[literal] = node_id;
+		bound_nodes.insert(node_id);
+		// recurse on the rest of the list
+		bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes);
+		// if the rest of the list matched, we've succeeded
+		// otherwise, undo the temporarly modifications and try again
+		if (list_satisfied) {
+			return true;
+		} else {
+			bindings.erase(literal);
+			bound_nodes.erase(node_id);
+		}
+	}
+	// this means we've tried everything and this whole exercise was a waste of time
+	// EPIC FAIL
+	return false;
+}
 
 void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 	if (visited.count(root)) {
@@ -3350,6 +3440,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_literal_set frontier;
 	epmem_literal_set satisfied_leaves;
 
+	epmem_literal_list gm_dfs_ordering;
+
 	// build the DNF graph while checking for leaf WMEs
 	{
 		tc_number tc = get_new_tc_number(my_agent);
@@ -3396,7 +3488,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			while (query_wmes->size()) {
 				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
-				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting, my_agent);
+				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_dfs_ordering);
 				if (root) {
 					if (!root->parents.count(first_level->attr)) {
 						root->parents[first_level->attr] = new epmem_literal_set();
@@ -3433,6 +3525,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_time_id best_episode = 0;
 	double best_score = 0;
 	bool best_graph_match = false;
+	epmem_literal_node_bindings best_bindings;
 	double current_score = 0;
 
 	// set default values for before and after
@@ -3449,6 +3542,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// insert dummy unique edge and interval end point queries for fake root
 		// we make an sql statement just so we don't have to do anything special at cleanup
 		epmem_unique_edge_query* fake_root_uedge = new epmem_unique_edge_query();
+		fake_root_uedge->edge_info.q0 = 42;
+		fake_root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
+		fake_root_uedge->edge_info.q1 = 42;
+		fake_root_uedge->edge_info.has_q1 = true;
 		fake_root_uedge->depth = -1;
 		fake_root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		fake_root_uedge->literals.insert(fake_root);
@@ -3468,8 +3565,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	{
 		// insert dummy unique edge and interval end point queries for DNF root
 		epmem_unique_edge_query* dnf_root_uedge = new epmem_unique_edge_query();
-		dnf_root_uedge->edge_info.q0 = 0;
-		dnf_root_uedge->edge_info.w = NULL;
+		dnf_root_uedge->edge_info.q0 = 42;
+		dnf_root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
 		dnf_root_uedge->edge_info.q1 = 0;
 		dnf_root_uedge->edge_info.has_q1 = true;
 		dnf_root_uedge->depth = 0;
@@ -3643,11 +3740,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		bool changed_score = false;
 
 		// process all intervals before the next edge arives
-		while (current_time > next_edge) {
+		while (!interval_pq.empty() && interval_pq.top()->time > next_edge) {
 			// process all interval endpoints at this timestep
 			next_interval = interval_pq.top()->time;
 			current_time = next_interval;
-			while (interval_pq.top()->time == next_interval) {
+			while (!interval_pq.empty() && interval_pq.top()->time == next_interval) {
 				epmem_interval_query* interval_q = interval_pq.top();
 				interval_pq.pop();
 				epmem_unique_edge_query* uedge_q = interval_q->unique_edge;
@@ -3656,9 +3753,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
 					epmem_dnf_literal* literal = *lit_iter;
 					if (interval_q->is_end_point) {
-						literal->matches[interval_q->unique_edge->edge_info.q1] = interval_q;
+						literal->matches.insert(interval_q);
 					} else {
-						literal->matches.erase(interval_q->unique_edge->edge_info.q1);
+						literal->matches.erase(interval_q);
 					}
 					if (interval_q->is_end_point && !literal->matches.empty() && frontier.count(literal)) {
 						// this literal just got activated and is part of the frontier
@@ -3668,39 +3765,51 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						// if the literal is internal, propagate frontier information
 						// otherwise, change the score for this episode
 						if (!literal->is_leaf) {
-							// propagate the frontier to its descendents
-							epmem_literal_list queue;
-							for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
-								epmem_literal_set* children_set = (*attr_iter).second;
-								for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
-									queue.push_back(*child_iter);
+							// check that at least one of its parents is satisfied
+							epmem_node_id parent_node_id = uedge_q->edge_info.q0;
+							bool should_propagate = (parent_node_id == uedge_q->edge_info.q1);
+							should_propagate = true; // FIXME skip this check for now; I'm not sure if it needs to be repeated for everything it's propagated to
+							if (!should_propagate) {
+								epmem_literal_set* parents_set = literal->parents[uedge_q->edge_info.w];
+								for (epmem_literal_set::iterator parent_iter = parents_set->begin(); parent_iter != parents_set->end(); parent_iter++) {
+									// TODO make frontier propagation stricter - require nodes to be connected
 								}
 							}
-							while (queue.size()) {
-								// if the literal is already part of the frontier or part of the settled region, skip it
-								// if the literal is activated, it is settled; further propagate to its descendants
-								// otherwise, the literal is part of the frontier
-								epmem_dnf_literal* descendant = queue.front();
-								queue.pop_front();
-								if (settled.count(descendant) || frontier.count(descendant)) {
-									continue;
-								} else if (!descendant->matches.empty()) {
-									settled.insert(descendant);
-									if (!descendant->is_leaf) {
-										for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
-											epmem_literal_set* children_set = (*attr_iter).second;
-											for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
-												queue.push_back(*child_iter);
+							if (should_propagate) {
+								// propagate the frontier to its descendents
+								epmem_literal_list queue;
+								for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+									epmem_literal_set* children_set = (*attr_iter).second;
+									for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+										queue.push_back(*child_iter);
+									}
+								}
+								while (queue.size()) {
+									// if the literal is already part of the frontier or part of the settled region, skip it
+									// if the literal is activated, it is settled; further propagate to its descendants
+									// otherwise, the literal is part of the frontier
+									epmem_dnf_literal* descendant = queue.front();
+									queue.pop_front();
+									if (settled.count(descendant) || frontier.count(descendant)) {
+										continue;
+									} else if (!descendant->matches.empty()) {
+										settled.insert(descendant);
+										if (!descendant->is_leaf) {
+											for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
+												epmem_literal_set* children_set = (*attr_iter).second;
+												for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+													queue.push_back(*child_iter);
+												}
 											}
+										} else {
+											// update score
+											current_score += descendant->weight;
+											changed_score = true;
+											satisfied_leaves.insert(descendant);
 										}
 									} else {
-										// update score
-										current_score += descendant->weight;
-										changed_score = true;
-										satisfied_leaves.insert(descendant);
+										frontier.insert(descendant);
 									}
-								} else {
-									frontier.insert(descendant);
 								}
 							}
 						} else {
@@ -3779,15 +3888,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 			next_interval = interval_pq.top()->time;
-			next_either = (next_edge < next_interval ? next_edge : next_interval);
+			next_either = (next_edge > next_interval ? next_edge : next_interval);
 
 			// update the prohibits list to catch up
-			while (prohibits.back() > current_time) {
+			while (!prohibits.empty() && prohibits.back() > current_time) {
 				prohibits.pop_back();
 			}
 
 			// ignore the episode if it is prohibited
-			while (current_time < next_either && current_time == prohibits.back()) {
+			while (!prohibits.empty() && current_time > next_either && current_time == prohibits.back()) {
 				current_time++;
 				prohibits.pop_back();
 			}
@@ -3797,18 +3906,35 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			// * and the score was changed in this period
 			// * and the new score is higher than the best score
 			// then save the current time as the best one
-			if (current_time < next_either && changed_score && current_score > best_score) {
+			if (current_time > next_either && changed_score && current_score > best_score) {
 				best_episode = current_time;
 				best_score = current_score;
 				// we should graph match if all leaf literals are satisfied
 				if (satisfied_leaves.size() == leaf_literals.size()) {
-					// FIXME graph match
-					// FIXME if graph match is perfect, return
+					// FIXME satisfy as many uniquely constrained variables as possible, starting from the root
+					// FIXME order literals
+					epmem_param_container::gm_ordering_choices gm_ordering = my_agent->epmem_params->gm_ordering->get_value();
+					epmem_literal_list gm_ordered_list;
+					if (gm_ordering == epmem_param_container::gm_order_undefined || gm_ordering == epmem_param_container::gm_order_mcv) {
+						// FIXME
+					} else if (gm_ordering == epmem_param_container::gm_order_dfs) {
+						gm_ordered_list = gm_dfs_ordering;
+					}
+					epmem_literal_list::iterator begin = gm_ordered_list.begin();
+					epmem_literal_list::iterator end = gm_ordered_list.end();
+					best_bindings.clear();
+					epmem_node_set bound_nodes;
+					if (epmem_graph_match(begin, end, best_bindings, bound_nodes)) {
+						best_graph_match = true;
+						current_time = 0;
+					}
 				}
 			}
 		}
-
 	}
+
+	// FIXME is an episode has been selected, put in working memory
+	// otherwise, declare a failure
 
 	assert(0);
 
