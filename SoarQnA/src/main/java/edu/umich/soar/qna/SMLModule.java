@@ -99,10 +99,12 @@ public abstract class SMLModule {
 			Identifier pIdAdded = pWmeAdded.ConvertToIdentifier();
 
 			WMElement queryWme = pIdAdded.FindByAttribute(QUERY_NAME, 0);
-			IntElement queryInt = queryWme.ConvertToIntElement();
-
-			if (queryInt != null) {
-				returnValue = queryInt.GetValue();
+			if (queryWme!=null) {
+				IntElement queryInt = queryWme.ConvertToIntElement();
+	
+				if (queryInt != null) {
+					returnValue = queryInt.GetValue();
+				}
 			}
 		}
 
