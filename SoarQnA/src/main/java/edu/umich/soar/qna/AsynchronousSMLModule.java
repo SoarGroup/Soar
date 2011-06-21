@@ -312,6 +312,8 @@ public class AsynchronousSMLModule extends SMLModule {
 					e.printStackTrace();
 				}
 			}
+			
+			queryState.dispose();
 		}
 		
 		public QueryWorker(QueryCommandContents queryInfo, BlockingQueue<QueryResultDatum> resultQueue) {

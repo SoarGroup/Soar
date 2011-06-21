@@ -80,6 +80,7 @@ public class SynchronousSMLModule extends SMLModule {
 				rs.oldParent.CreateStringWME(NEXT_NAME, NIL_NAME);
 				
 				intermediateResults.remove(queryId);
+				rs.queryState.dispose();
 			}
 		} else {
 			Identifier oldParent = rs.oldParent;
@@ -104,6 +105,7 @@ public class SynchronousSMLModule extends SMLModule {
 			} while (rs.queryState.hasNext());
 			
 			intermediateResults.remove(queryId);
+			rs.queryState.dispose();
 		}
 	}
 	
