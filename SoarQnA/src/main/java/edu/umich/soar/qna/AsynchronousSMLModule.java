@@ -12,8 +12,10 @@ import sml.Agent;
 import sml.Agent.OutputEventInterface;
 import sml.Identifier;
 import sml.Kernel;
+import sml.Kernel.AgentEventInterface;
 import sml.Kernel.UpdateEventInterface;
 import sml.WMElement;
+import sml.smlAgentEventId;
 import sml.smlUpdateEventId;
 
 public class AsynchronousSMLModule extends SMLModule {
@@ -23,6 +25,7 @@ public class AsynchronousSMLModule extends SMLModule {
 		registerCallbacks(queryCommandHandler, null, nextCommandHandler, null);
 		
 		kernel.RegisterForUpdateEvent(smlUpdateEventId.smlEVENT_AFTER_ALL_OUTPUT_PHASES, updateHandler, agent);
+		kernel.RegisterForAgentEvent(smlAgentEventId.smlEVENT_BEFORE_AGENT_REINITIALIZED, initHandler, agent);
 		
 		meta = new HashMap<Long, QueryMetaData>();
 		resultsFirst = new HashMap<Long, BlockingQueue<QueryResultDatum>>();
@@ -31,14 +34,17 @@ public class AsynchronousSMLModule extends SMLModule {
 		resultsNext = new HashMap<Long, BlockingQueue<QueryResultDatum>>();
 	}
 	
-	public void close() {
-		super.close();
-		
+	private void interruptThreads() {
 		for (Map.Entry<Long, QueryMetaData> w : meta.entrySet()) {
 			if (w.getValue().worker.getState()!=Thread.State.TERMINATED) {
 				w.getValue().worker.interrupt();
 			}
 		}
+	}
+	
+	public void close() {
+		super.close();
+		interruptThreads();
 	}
 	
 	private final OutputEventInterface nextCommandHandler = new OutputEventInterface() {
@@ -98,6 +104,18 @@ public class AsynchronousSMLModule extends SMLModule {
 				}
 			}			
 		}		
+	};
+	
+	private final AgentEventInterface initHandler = new AgentEventInterface() {
+		
+		public void agentEventHandler(int eventID, Object data, String agentName) {
+			interruptThreads();
+			meta.clear();
+			resultsFirst.clear();
+			resultsAll.clear();
+			resultsNext.clear();
+			resultsIncremental.clear();
+		}
 	};
 	
 	private final UpdateEventInterface updateHandler = new UpdateEventInterface() {
@@ -268,6 +286,8 @@ public class AsynchronousSMLModule extends SMLModule {
 
 		public void run() {
 			QueryState queryState = null;
+			boolean interrupted = false;
+			
 			try {
 				queryState = man.executeQuery(queryInfo.uid, queryInfo.queryName, queryInfo.parameters);
 			} catch (InvalidDataSourceUIDException e) {
@@ -276,18 +296,21 @@ public class AsynchronousSMLModule extends SMLModule {
 			} catch (InvalidQueryUIDException e) {
 				e.printStackTrace();
 				queryState = null;
+				interrupted = true;
 			}
 			
-			try {
-				if ((queryState!=null) && (queryState.hasNext())) {
-					do {
-						resultQueue.put(new QueryResultDatum(queryState.next(), !queryState.hasNext()));
-					} while (queryState.hasNext());
-				} else {
-					resultQueue.put(new QueryResultDatum(null, true));
+			if (!interrupted) {
+				try {
+					if ((queryState!=null) && (queryState.hasNext())) {
+						do {
+							resultQueue.put(new QueryResultDatum(queryState.next(), !queryState.hasNext()));
+						} while (queryState.hasNext());
+					} else {
+						resultQueue.put(new QueryResultDatum(null, true));
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 		}
 		
