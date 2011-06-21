@@ -1,0 +1,34 @@
+sp {writer*propose*table-done
+   (state <s> ^name writer
+              ^phase table
+              ^io.output-link.qna-query <q>)
+   (<q> ^status complete
+        ^result.features.updates 0)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name table-done)
+}
+
+
+sp {apply*table-done*clean
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name table-done)
+   (<out> ^qna-query <q>)
+-->
+   (<out> ^qna-query <q> -)
+}
+
+sp {apply*table-done
+   (state <s> ^operator <op>
+              ^phase table
+              ^io.output-link <out>)
+   (<op> ^name table-done)
+-->
+   (<s> ^phase table - index)
+   (<out> ^qna-query <q>)
+   (<q> ^source db
+        ^query index
+        ^results incremental
+        ^parameters <ps>)
+}

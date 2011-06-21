@@ -294,7 +294,7 @@ public class AsynchronousSMLModule extends SMLModule {
 				e.printStackTrace();
 				queryState = null;
 			} catch (InvalidQueryUIDException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
 				queryState = null;
 				interrupted = true;
 			}
@@ -309,11 +309,13 @@ public class AsynchronousSMLModule extends SMLModule {
 						resultQueue.put(new QueryResultDatum(null, true));
 					}
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					//e.printStackTrace();
 				}
 			}
 			
-			queryState.dispose();
+			if (queryState!=null) {
+				queryState.dispose();
+			}
 		}
 		
 		public QueryWorker(QueryCommandContents queryInfo, BlockingQueue<QueryResultDatum> resultQueue) {
