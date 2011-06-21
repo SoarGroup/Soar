@@ -14,16 +14,27 @@ import java.util.Map.Entry;
 import edu.umich.soar.qna.QueryState;
 
 public class DatabaseQueryState implements QueryState {
+	
+	private enum QueryType {
+		qQuery,
+		qUpdate
+	}
+	
+	private static final String UPDATES_NAME = "updates";
 
 	Connection conn;
 	ResultSet rs;
 	PreparedStatement statement;
 	boolean dataAvailable;
+	QueryType t;
+	int numUpdates;
 	
 	DatabaseQueryState(Connection conn) {
 		this.conn = conn;
 		this.statement = null;
 		this.rs = null;
+		this.t = null;
+		this.numUpdates = -1;
 		
 		dataAvailable = false;
 	}
@@ -75,8 +86,24 @@ public class DatabaseQueryState implements QueryState {
 		
 		if (statement != null) {
 			try {
-				rs = statement.executeQuery();
-				dataAvailable = rs.next();
+				boolean res = statement.execute();
+				
+				if (res) {
+					rs = statement.getResultSet();
+					t = QueryType.qQuery;
+					dataAvailable = rs.next();
+				} else {
+					if (statement.getUpdateCount()!=-1) {
+						rs = null;
+						numUpdates = statement.getUpdateCount();
+						t = QueryType.qUpdate;
+						dataAvailable = true;
+					} else {
+						rs = null;
+						t = QueryType.qQuery;
+						dataAvailable = false;
+					}
+				}
 			} catch (SQLException e) {
 				rs = null;
 				statement = null;
@@ -93,22 +120,28 @@ public class DatabaseQueryState implements QueryState {
 		if (dataAvailable) {
 			returnVal = new HashMap<String, List<Object>>();
 			
-			try {
-				ResultSetMetaData md = rs.getMetaData();
-				int numColumns = md.getColumnCount();
-				
-				for (int i=1; i<=numColumns; i++) {
-					String columnName = md.getColumnLabel(i);
+			if (t == QueryType.qQuery) {
+				try {
+					ResultSetMetaData md = rs.getMetaData();
+					int numColumns = md.getColumnCount();
 					
-					if (!returnVal.containsKey(columnName)) {
-						returnVal.put(columnName, new LinkedList<Object>());
+					for (int i=1; i<=numColumns; i++) {
+						String columnName = md.getColumnLabel(i);
+						
+						if (!returnVal.containsKey(columnName)) {
+							returnVal.put(columnName, new LinkedList<Object>());
+						}
+						returnVal.get(columnName).add(rs.getObject(i));
 					}
-					returnVal.get(columnName).add(rs.getObject(i));
+					
+					dataAvailable = rs.next();
+				} catch (SQLException e) {
+					e.printStackTrace();
 				}
-				
-				dataAvailable = rs.next();
-			} catch (SQLException e) {
-				e.printStackTrace();
+			} else {
+				returnVal.put(UPDATES_NAME, new LinkedList<Object>());
+				returnVal.get(UPDATES_NAME).add(new Long(numUpdates));
+				dataAvailable = false;
 			}
 		}
 		

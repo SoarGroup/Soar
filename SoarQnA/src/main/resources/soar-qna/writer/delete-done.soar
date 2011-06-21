@@ -1,0 +1,35 @@
+sp {writer*propose*delete-done
+   (state <s> ^name writer
+              ^phase delete
+              ^io.output-link.qna-query <q>
+              ^expected <e>)
+   (<q> ^status complete
+        ^result.features.updates <e>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name delete-done)
+}
+
+sp {apply*delete-done*clean
+   (state <s> ^operator <op>
+              ^io.output-link <out>)
+   (<op> ^name delete-done)
+   (<out> ^qna-query <q>)
+-->
+   (<out> ^qna-query <q> -)
+}
+
+
+sp {apply*delete-done
+   (state <s> ^operator <op>
+              ^phase delete
+              ^io.output-link <out>)
+   (<op> ^name delete-done)
+-->
+   (<s> ^phase delete - rollback)
+   (<out> ^qna-query <q>)
+   (<q> ^source db
+        ^query rollback
+        ^results incremental
+        ^parameters <ps>)
+}

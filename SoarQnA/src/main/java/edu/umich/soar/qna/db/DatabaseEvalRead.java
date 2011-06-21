@@ -15,7 +15,7 @@ import edu.umich.soar.qna.DataSourceManager;
 import edu.umich.soar.qna.SMLModule;
 import edu.umich.soar.qna.SynchronousSMLModule;
 
-public class DatabaseEval {
+public class DatabaseEvalRead {
 	
 	private static final String dbFileName = "temp.db";
 	private static final String dbDriver = "org.sqlite.JDBC";
@@ -25,7 +25,7 @@ public class DatabaseEval {
 	private static final String qnaDriver = "edu.umich.soar.qna.db.DatabaseDataSourceDriver";
 
 	private static void usage() {
-		System.out.println("Usage: " + DatabaseEval.class.getSimpleName() + " <set size> <trials> [asynchronous: any value]");
+		System.out.println("Usage: " + DatabaseEvalRead.class.getSimpleName() + " <set size> <trials> [asynchronous: any value]");
 	}
 	
 	public static void main(String[] args) {

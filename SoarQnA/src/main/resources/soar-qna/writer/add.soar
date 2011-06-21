@@ -1,0 +1,37 @@
+sp {writer*propose*add
+   (state <s> ^name writer
+              ^phase add
+              ^counter <c>
+              ^max {<> <c>})
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name add)
+}
+
+sp {apply*add*query
+   (state <s> ^operator <op>
+              ^counter <c>
+              ^io.output-link <out>)
+   (<op> ^name add)
+-->
+   (<out> ^qna-query <q>)
+   (<q> ^source db
+        ^query add
+        ^results incremental
+        ^parameters <ps>)
+   (<ps> ^1 1
+         ^2 <c>)
+}
+
+sp {apply*add*clean
+   (state <s> ^operator <op>
+              ^io.output-link <out>
+              ^counter <c>)
+   (<op> ^name add)
+   (<out> ^qna-query <cmd>)
+   (<cmd> ^status complete
+          ^result.features.updates 1)
+-->
+   (<out> ^qna-query <cmd> -)
+   (<s> ^counter <c> - (+ <c> 1))
+}
