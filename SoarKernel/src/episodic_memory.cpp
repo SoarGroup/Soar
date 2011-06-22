@@ -1626,7 +1626,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 				my_agent->epmem_rit_state_graph[ i ].offset.stat->set_value( EPMEM_RIT_OFFSET_INIT );
 				my_agent->epmem_rit_state_graph[ i ].leftroot.stat->set_value( 0 );
 				my_agent->epmem_rit_state_graph[ i ].rightroot.stat->set_value( 1 );
-				my_agent->epmem_rit_state_graph[ i ].minstep.stat->set_value( LONG_MAX );
+				my_agent->epmem_rit_state_graph[ i ].minstep.stat->set_value( LLONG_MAX );
 			}
 			my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_NODE ].add_query = my_agent->epmem_stmts_graph->add_node_range;
 			my_agent->epmem_rit_state_graph[ EPMEM_RIT_STATE_EDGE ].add_query = my_agent->epmem_stmts_graph->add_edge_range;		
@@ -3403,6 +3403,7 @@ void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 		epmem_literal_set* children_set = (*attr_iter).second;
 		for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 			epmem_dnf_literal* child = *child_iter;
+			std::cout << '"' << child << "\" [style=\"filled\", fillcolor=\"" << (child->is_neg_q ? "#CC0000" : "#3465A4") << "\", label=\"" << child << " [" << child->weight << "]\"]" << std::endl;
 			std::cout << '"' << root << '"' << "->" << '"' << child << '"' << " [label=\"";
 			switch (attr->common.symbol_type) {
 				case SYM_CONSTANT_SYMBOL_TYPE:
@@ -3543,19 +3544,23 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	// store all intervals so we can delete them later
 	epmem_interval_set intervals;
 
-	// the best episode and its score
+	// various things about the current and the best episodes
 	epmem_time_id best_episode = EPMEM_MEMID_NONE;
 	double best_score = 0;
 	bool best_graph_matched = false;
 	int best_cardinality = 0;
 	epmem_literal_node_map best_bindings;
 	double current_score = 0;
+	int current_cardinality = 0;
 
-	// the highest score possible (necessary for normalized match score)
+	// the highest possible score and cardinality score
 	double perfect_score = 0;
+	int perfect_cardinality = 0;
 	for (epmem_literal_set::iterator iter = leaf_literals.begin(); iter != leaf_literals.end(); iter++) {
-		double addend = (*iter)->weight;
-		perfect_score += (addend > 0 ? 1 : -1) * addend;
+		if (!(*iter)->is_neg_q) {
+			perfect_score += (*iter)->weight;
+			perfect_cardinality++;
+		}
 	}
 
 	// set default values for before and after
@@ -3606,7 +3611,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		dnf_root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		dnf_root_uedge->literals.insert(dnf_root);
 		dnf_root_uedge->sql->prepare();
-		dnf_root_uedge->sql->bind_int(1, LONG_MAX);
+		dnf_root_uedge->sql->bind_int(1, LLONG_MAX);
 		dnf_root_uedge->sql->execute();
 		dnf_root_uedge->time = dnf_root_uedge->sql->column_int(2);
 		edge_pq.push(dnf_root_uedge);
@@ -3635,7 +3640,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			edge_pq.pop();
 
 			// create queries for the unique edge children of this unique edge
-			// FIXME bad naming of first level variable
 			for (epmem_literal_set::iterator literal_iter = uedge->literals.begin(); literal_iter != uedge->literals.end(); literal_iter++) {
 				epmem_dnf_literal* literal = *literal_iter;
 				for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
@@ -3836,6 +3840,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 										} else {
 											// update score
 											current_score += descendant->weight;
+											current_cardinality += (descendant->is_neg_q ? -1 : 1);
 											changed_score = true;
 											satisfied_leaves.insert(descendant);
 										}
@@ -3847,6 +3852,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						} else {
 							// update score
 							current_score += literal->weight;
+							current_cardinality += (literal->is_neg_q ? -1 : 1);
 							changed_score = true;
 							satisfied_leaves.insert(literal);
 						}
@@ -3890,6 +3896,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 										if (descendant->is_leaf) {
 											// update score
 											current_score -= descendant->weight;
+											current_cardinality -= (descendant->is_neg_q ? -1 : 1);
 											changed_score = true;
 											satisfied_leaves.erase(descendant);
 										}
@@ -3907,6 +3914,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						} else {
 							// update score
 							current_score -= literal->weight;
+							current_cardinality -= (literal->is_neg_q ? -1 : 1);
 							changed_score = true;
 							satisfied_leaves.erase(literal);
 						}
@@ -3945,14 +3953,14 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			// * and the new score is higher than the best score
 			// then save the current time as the best one
 			// FIXME logic is wrong
-			if (current_time > next_either && changed_score && (current_score > best_score || (current_score == best_score && !best_graph_matched))) {
-				if (current_score > best_score) {
+			if (current_time > next_either && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
+				if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
 					best_episode = current_time;
 				}
 				best_score = current_score;
-				best_cardinality = satisfied_leaves.size();
+				best_cardinality = current_cardinality;
 				// we should graph match if the option is set and all leaf literals are satisfied
-				if (do_graph_match && satisfied_leaves.size() == leaf_literals.size()) {
+				if (do_graph_match && current_cardinality == perfect_cardinality) {
 					// FIXME satisfy as many uniquely constrained variables as possible, starting from the root
 					// FIXME order literals
 					epmem_param_container::gm_ordering_choices gm_ordering = my_agent->epmem_params->gm_ordering->get_value();
