@@ -3294,12 +3294,12 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 	}
 
 	// FIXME this check should be lifted out of this recursion
-	literal->weight = (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
 	literal->is_neg_q = query_type;
+	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
 	return literal;
 }
 
-bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_list::iterator& iter_end, epmem_literal_node_bindings& bindings, epmem_node_set& bound_nodes) {
+bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_list::iterator& iter_end, epmem_literal_node_map& bindings, epmem_node_set& bound_nodes) {
 	epmem_dnf_literal* literal = *dnf_iter;
 	if (bindings.count(literal)) {
 		return false;
@@ -3433,6 +3433,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		std::sort(prohibits.begin(), prohibits.end());
 	}
 
+	// epmem options
+	bool do_graph_match = (my_agent->epmem_params->graph_match->get_value() == soar_module::on);
+
+	// variables needed for building the DNF
 	epmem_dnf_literal* fake_root = new epmem_dnf_literal();
 	epmem_dnf_literal* dnf_root = new epmem_dnf_literal();
 	epmem_literal_set leaf_literals;
@@ -3522,11 +3526,18 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_interval_set intervals;
 
 	// the best episode and its score
-	epmem_time_id best_episode = 0;
+	epmem_time_id best_episode = EPMEM_MEMID_NONE;
 	double best_score = 0;
-	bool best_graph_match = false;
-	epmem_literal_node_bindings best_bindings;
+	bool best_graph_matched = false;
+	epmem_literal_node_map best_bindings;
 	double current_score = 0;
+
+	// the highest score possible (necessary for normalized match score)
+	double perfect_score = 0;
+	for (epmem_literal_set::iterator iter = leaf_literals.begin(); iter != leaf_literals.end(); iter++) {
+		double addend = (*iter)->weight;
+		perfect_score += (addend > 0 ? 1 : -1) * addend;
+	}
 
 	// set default values for before and after
 	if (before == EPMEM_MEMID_NONE) {
@@ -3909,8 +3920,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			if (current_time > next_either && changed_score && current_score > best_score) {
 				best_episode = current_time;
 				best_score = current_score;
-				// we should graph match if all leaf literals are satisfied
-				if (satisfied_leaves.size() == leaf_literals.size()) {
+				// we should graph match if the option is set and all leaf literals are satisfied
+				if (do_graph_match && satisfied_leaves.size() == leaf_literals.size()) {
 					// FIXME satisfy as many uniquely constrained variables as possible, starting from the root
 					// FIXME order literals
 					epmem_param_container::gm_ordering_choices gm_ordering = my_agent->epmem_params->gm_ordering->get_value();
@@ -3925,7 +3936,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					best_bindings.clear();
 					epmem_node_set bound_nodes;
 					if (epmem_graph_match(begin, end, best_bindings, bound_nodes)) {
-						best_graph_match = true;
+						best_graph_matched = true;
 						current_time = 0;
 					}
 				}
@@ -3933,12 +3944,81 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 	}
 
-	// FIXME is an episode has been selected, put in working memory
-	// otherwise, declare a failure
+	// if the best episode is the default, faile
+	// otherwise, put the episode in working memory
+	if (best_episode == EPMEM_MEMID_NONE) {
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, pos_query);
+		if (neg_query) {
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, neg_query);
+		}
+	} else {
+		Symbol* temp_sym;
+		epmem_id_mapping node_map_map;
+		epmem_id_mapping node_mem_map;
+		// cue size
+		temp_sym = make_int_constant(my_agent, leaf_literals.size());
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_cue_size, temp_sym);
+		symbol_remove_ref(my_agent, temp_sym);
+		// match cardinality
+		temp_sym = make_int_constant(my_agent, satisfied_leaves.size());
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_score, temp_sym);
+		symbol_remove_ref(my_agent, temp_sym);
+		// match score
+		temp_sym = make_float_constant(my_agent, best_score);
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_score, temp_sym);
+		symbol_remove_ref(my_agent, temp_sym);
+		// normalized match score
+		temp_sym = make_float_constant(my_agent, best_score / perfect_score);
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_normalized_match_score, temp_sym);
+		symbol_remove_ref(my_agent, temp_sym);
+		// status
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, pos_query);
+		if (neg_query) {
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, neg_query);
+		}
+		// give more metadata if graph match is turned on
+		if (do_graph_match) {
+			// graph match
+			temp_sym = make_int_constant(my_agent, (best_graph_matched ? 1 : 0));
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match, temp_sym);
+			symbol_remove_ref(my_agent, temp_sym);
 
-	assert(0);
+			// mapping
+			if (best_graph_matched) {
+				goal_stack_level level = state->id.epmem_result_header->id.level;
+				// mapping identifier
+				temp_sym = make_new_identifier(my_agent, 'M', level);
+				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping, temp_sym);
+				symbol_remove_ref(my_agent, temp_sym);
+
+				for (epmem_literal_node_map::iterator iter = best_bindings.begin(); iter != best_bindings.end(); iter++) {
+					// create the node
+					temp_sym = make_new_identifier(my_agent, 'N', level);
+					epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
+					symbol_remove_ref(my_agent, temp_sym);
+					// point to the cue identifier
+					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_node, (*iter).first->value);
+					// save the mapping point for the episode
+					node_map_map[(*iter).second] = temp_sym;
+					node_mem_map[(*iter).second] = NULL;
+				}
+			}
+		}
+		// reconstruct the actual episode
+		epmem_install_memory(my_agent, state, best_episode, meta_wmes, retrieval_wmes, &node_mem_map);
+		if (best_graph_matched) {
+			for (epmem_id_mapping::iterator iter = node_mem_map.begin(); iter != node_mem_map.end(); iter++) {
+				epmem_id_mapping::iterator map_iter = node_map_map.find((*iter).first);
+				if (map_iter != node_map_map.end()) {
+					epmem_buffer_add_wme(meta_wmes, (*map_iter).second, my_agent->epmem_sym_retrieved, (*iter).second);
+				}
+			}
+
+		}
+	}
 
 	// cleanup
+	// FIXME have I missed anything?
 	epmem_uedge_set uedges;
 	for (epmem_interval_set::iterator iter = intervals.begin(); iter != intervals.end(); iter++) {
 		epmem_interval_query* interval = *iter;

@@ -694,7 +694,7 @@ typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literal_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map; // FIXME I'm not convinced the value is correct
 
 // for graph match
-typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_bindings;
+typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_map;
 typedef std::set<epmem_node_id> epmem_node_set;
 
 // structs
