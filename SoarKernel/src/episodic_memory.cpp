@@ -3541,6 +3541,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_time_id best_episode = EPMEM_MEMID_NONE;
 	double best_score = 0;
 	bool best_graph_matched = false;
+	int best_cardinality = 0;
 	epmem_literal_node_map best_bindings;
 	double current_score = 0;
 
@@ -3920,13 +3921,13 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 			// ignore the episode if it is prohibited
 			while (!prohibits.empty() && current_time > next_either && current_time == prohibits.back()) {
-				current_time++;
+				current_time--;
 				prohibits.pop_back();
 			}
 
 			if (true) {
 				char buf[256];
-				SNPRINTF( buf, 254, "CONSIDERING EPISODE %lld; (edges, intervals) = (%d, %d)\n", current_time, (int) edge_pq.size(), (int) interval_pq.size());
+				SNPRINTF( buf, 254, "CONSIDERING EPISODE %lld; (edges, intervals, score) = (%d, %d, %f)\n", current_time, (int) edge_pq.size(), (int) interval_pq.size(), current_score);
 				print( my_agent, buf );
 				xml_generate_warning( my_agent, buf );
 			}
@@ -3942,6 +3943,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					best_episode = current_time;
 				}
 				best_score = current_score;
+				best_cardinality = satisfied_leaves.size();
 				// we should graph match if the option is set and all leaf literals are satisfied
 				if (do_graph_match && satisfied_leaves.size() == leaf_literals.size()) {
 					// FIXME satisfy as many uniquely constrained variables as possible, starting from the root
@@ -3983,7 +3985,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_cue_size, temp_sym);
 		symbol_remove_ref(my_agent, temp_sym);
 		// match cardinality
-		temp_sym = make_int_constant(my_agent, satisfied_leaves.size());
+		temp_sym = make_int_constant(my_agent, best_cardinality);
 		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_cardinality, temp_sym);
 		symbol_remove_ref(my_agent, temp_sym);
 		// match score
