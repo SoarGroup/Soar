@@ -346,8 +346,13 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->wma_stats = new wma_stat_container( newAgent );
   newAgent->wma_timers = new wma_timer_container( newAgent );
 
+#ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->wma_forget_pq = new wma_forget_p_queue( std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >( newAgent ) );
   newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );
+#else
+  newAgent->wma_forget_pq = new wma_forget_p_queue();
+  newAgent->wma_touched_elements = new wma_pooled_wme_set();
+#endif
   newAgent->wma_initialized = false;
   newAgent->wma_tc_counter = 2;
 
@@ -386,7 +391,11 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->smem_validation = 0;
   newAgent->smem_first_switch = true;
 
+#ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->smem_changed_ids = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
+#else
+  newAgent->smem_changed_ids = new smem_pooled_symbol_set();
+#endif
   newAgent->smem_ignore_changes = false;
 
   // statistics initialization

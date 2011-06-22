@@ -36,11 +36,16 @@ typedef struct wme_struct wme;
 typedef union symbol_union Symbol;
 typedef cons list;
 
+#ifdef USE_MEM_POOL_ALLOCATORS
 template <class T>
 class SoarMemoryPoolAllocator;
 
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
 typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
+#else
+typedef std::set< wme* > wma_pooled_wme_set;
+typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
+#endif
 
 /* REW: begin 09.15.96 */
 
