@@ -58,8 +58,13 @@
 
 using namespace soar_TraceNames;
 
+#ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< instantiation*, soar_module::soar_memory_pool_allocator< instantiation* > > inst_mpool_list;
 typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > > cond_mpool_list;
+#else
+typedef std::list< instantiation* > inst_mpool_list;
+typedef std::list< condition* > cond_mpool_list;
+#endif
 
 /* Uncomment the following line to get instantiation printouts */
 /* #define DEBUG_INSTANTIATIONS */
@@ -843,8 +848,14 @@ void deallocate_instantiation (agent* thisAgent, instantiation *inst)
 	preference *pref;
 	goal_stack_level level;
 
+#ifdef USE_MEM_POOL_ALLOCATORS
 	cond_mpool_list cond_stack = cond_mpool_list( soar_module::soar_memory_pool_allocator< condition* >( thisAgent ) );
 	inst_mpool_list inst_list = inst_mpool_list( soar_module::soar_memory_pool_allocator< instantiation* >( thisAgent ) );
+#else
+	cond_mpool_list cond_stack;
+	inst_mpool_list inst_list;
+#endif
+
 	inst_list.push_back(inst);
 	inst_mpool_list::iterator next_iter = inst_list.begin();
 
@@ -1297,7 +1308,11 @@ void do_preference_phase (agent* thisAgent) {
 
   // Temporary list to buffer deallocation of some preferences until 
   // the inner elaboration loop is over.
+#ifdef USE_MEM_POOL_ALLOCATORS
   pref_buffer_list bufdeallo = pref_buffer_list( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) ); 
+#else
+  pref_buffer_list bufdeallo; 
+#endif
 
   // inner elaboration cycle
   for (;;) {

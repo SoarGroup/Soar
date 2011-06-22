@@ -917,6 +917,10 @@ namespace soar_module
 	// Memory Pool Allocators
 	///////////////////////////////////////////////////////////////////////////
 
+#define USE_MEM_POOL_ALLOCATORS 1
+
+#ifdef USE_MEM_POOL_ALLOCATORS
+
 	memory_pool* get_memory_pool( agent* my_agent, size_t size );
 
 	template <class T>
@@ -978,6 +982,15 @@ namespace soar_module
 			size_type test = n;
 			test; // prevents release-mode warning, since assert is compiled out
 			assert( test == 1 );
+
+			// not sure if this is correct...
+			// it only comes up if an object uses another object's
+			// allocator to deallocate memory that it allocated.
+			// it's quite possible, then, that the sizes would be off
+			if ( !mem_pool )
+			{
+				mem_pool = get_memory_pool( my_agent, size );
+			}
 			
 			if ( p )
 			{
@@ -1026,6 +1039,8 @@ namespace soar_module
 		soar_memory_pool_allocator() {}
 
 	};
+
+#endif
 
 }
 
