@@ -549,7 +549,6 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
     <ClInclude Include="src\sml_EventManager.h" />
     <ClInclude Include="src\sml_InputListener.h" />
     <ClInclude Include="src\sml_KernelCallback.h" />
-    <ClInclude Include="src\sml_KernelHelpers.h" />
     <ClInclude Include="src\sml_KernelSML.h" />
     <ClInclude Include="src\sml_ListenerThread.h" />
     <ClInclude Include="src\sml_OldRunScheduler.h" />
@@ -616,12 +615,6 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release SCU|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\sml_KernelCallback.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug SCU|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug SCU|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release SCU|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release SCU|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="src\sml_KernelHelpers.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug SCU|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug SCU|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release SCU|Win32'">true</ExcludedFromBuild>
