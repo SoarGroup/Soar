@@ -16,9 +16,6 @@
     <ClCompile Include="src\cli_CommandLineInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cli_Commands.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\cli_addwme.cpp">
       <Filter>Source Files\Commands</Filter>
     </ClCompile>
@@ -157,9 +154,6 @@
     <ClCompile Include="src\cli_pwd.cpp">
       <Filter>Source Files\Commands</Filter>
     </ClCompile>
-    <ClCompile Include="src\cli_quit.cpp">
-      <Filter>Source Files\Commands</Filter>
-    </ClCompile>
     <ClCompile Include="src\cli_rand.cpp">
       <Filter>Source Files\Commands</Filter>
     </ClCompile>
@@ -244,6 +238,9 @@
     <ClCompile Include="CommandLineInterface.cxx">
       <Filter>SCU Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\cli_maxdctime.cpp">
+      <Filter>Source Files\Commands</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cli_CLIError.h">
@@ -258,5 +255,6 @@
     <ClInclude Include="src\cli_Commands.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\cli_Aliases.h" />
   </ItemGroup>
 </Project>
