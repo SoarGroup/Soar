@@ -35,6 +35,10 @@ st: status
 status:
 	svn status && find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn status {} \;
 
+di: diff
+diff:
+	svn diff && find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn diff {} \;
+
 clean:
 	cd Core && scons -c
 	cd Core && scons --static -c
