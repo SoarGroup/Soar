@@ -3185,8 +3185,8 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-const char* epmem_find_unique_node_query = "SELECT parent_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<=last ORDER BY last DESC";
-const char* epmem_find_unique_node_value_query = "SELECT parent_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<=last ORDER BY last DESC";
+const char* epmem_find_unique_node_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<=last ORDER BY last DESC";
+const char* epmem_find_unique_node_value_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<=last ORDER BY last DESC";
 const char* epmem_find_unique_edge_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND ?<=last ORDER BY last DESC";
 const char* epmem_find_unique_edge_value_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? AND ?<=last ORDER BY last DESC";
 const char* epmem_dummy = "SELECT ? as start";
@@ -3195,26 +3195,26 @@ const char* epmem_find_interval_queries[2][2][3] =
 {
 	{
 		{
-			"SELECT e.start AS start FROM node_range e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM node_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT (e.end - 1) AS end FROM node_range e WHERE e.id=? AND ?<=e.end AND e.end<=? ORDER BY e.end DESC",
+			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND ?<=e.end AND e.end<=? ORDER BY e.end DESC",
 			"SELECT ? AS end FROM node_now e WHERE e.id=?",
-			"SELECT (e.start - 1) AS end FROM node_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
+			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		}
 	},
 	{
 		{
-			"SELECT e.start AS start FROM edge_range e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT (e.end - 1) AS end FROM edge_range e WHERE e.id=? AND ?<=e.end AND e.end<=? ORDER BY e.end DESC",
+			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND ?<=e.end AND e.end<=? ORDER BY e.end DESC",
 			"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-			"SELECT (e.start - 1) AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
+			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 		}
 	},
 };
@@ -3311,9 +3311,9 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 	next_iter++;
 	// create a list of possible nodes this literal could be unified with
 	epmem_node_set possibilities;
-	for (epmem_interval_set::iterator iter = literal->matches.begin(); iter != literal->matches.end(); iter++) {
+	for (epmem_uedge_set::iterator iter = literal->matches.begin(); iter != literal->matches.end(); iter++) {
 		// get an interval and related info
-		epmem_sql_edge edge_info = (*iter)->unique_edge->edge_info;
+		epmem_sql_edge edge_info = (*iter)->edge_info;
 		epmem_node_id parent_id = edge_info.q0;
 		Symbol* attr = edge_info.w;
 		epmem_node_id node_id = edge_info.q1;
@@ -3345,8 +3345,8 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 				epmem_dnf_literal* child = *child_iter;
 				if (bindings.count(child)) {
 					bool child_satisfies = false;
-					for (epmem_interval_set::iterator child_interval_iter = child->matches.begin(); !child_satisfies && child_interval_iter != child->matches.end(); child_interval_iter++) {
-						epmem_sql_edge child_info = (*child_interval_iter)->unique_edge->edge_info;
+					for (epmem_uedge_set::iterator child_uedge_iter = child->matches.begin(); !child_satisfies && child_uedge_iter != child->matches.end(); child_uedge_iter++) {
+						epmem_sql_edge child_info = (*child_uedge_iter)->edge_info;
 						if (child_info.q0 == node_id && bindings[child] == child_info.q1) {
 							child_satisfies = true;
 						}
@@ -3412,6 +3412,18 @@ void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 			std::cout << "\"]" << std::endl;
 			epmem_print_dnf(child, visited);
 		}
+	}
+}
+
+void epmem_print_literal_set(epmem_literal_set& set) {
+	for (epmem_literal_set::iterator iter = set.begin(); iter != set.end(); iter++) {
+		std::cout << *iter << std::endl;
+	}
+}
+
+void epmem_print_interval_set(epmem_interval_set& set) {
+	for (epmem_interval_set::iterator iter = set.begin(); iter != set.end(); iter++) {
+		std::cout << *iter << std::endl;
 	}
 }
 
@@ -3602,7 +3614,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// main loop of interval walk
-	while (edge_pq.size()) {
+	while (edge_pq.size() && current_time != EPMEM_MEMID_NONE) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
 		epmem_time_id next_either;
@@ -3723,7 +3735,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					interval_sql->prepare();
 					int bind_pos = 1;
 					if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
-						interval_sql->bind_int(bind_pos++, current_time - 1);
+						interval_sql->bind_int(bind_pos++, current_time);
 					}
 					interval_sql->bind_int(bind_pos++, edge_id);
 					// FIXME do something special for LTIs (lower bound it by promotion time)
@@ -3751,7 +3763,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		bool changed_score = false;
 
 		// process all intervals before the next edge arives
-		while (!interval_pq.empty() && interval_pq.top()->time > next_edge) {
+		while (!interval_pq.empty() && interval_pq.top()->time > next_edge && current_time != EPMEM_MEMID_NONE) {
 			// process all interval endpoints at this timestep
 			next_interval = interval_pq.top()->time;
 			current_time = next_interval;
@@ -3764,9 +3776,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
 					epmem_dnf_literal* literal = *lit_iter;
 					if (interval_q->is_end_point) {
-						literal->matches.insert(interval_q);
+						literal->matches.insert(uedge_q);
 					} else {
-						literal->matches.erase(interval_q);
+						literal->matches.erase(uedge_q);
 					}
 					if (interval_q->is_end_point && !literal->matches.empty() && frontier.count(literal)) {
 						// this literal just got activated and is part of the frontier
@@ -3912,13 +3924,23 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				prohibits.pop_back();
 			}
 
+			if (true) {
+				char buf[256];
+				SNPRINTF( buf, 254, "CONSIDERING EPISODE %lld; (edges, intervals) = (%d, %d)\n", current_time, (int) edge_pq.size(), (int) interval_pq.size());
+				print( my_agent, buf );
+				xml_generate_warning( my_agent, buf );
+			}
+
 			// if
 			// * the current time is still before any new intervals
 			// * and the score was changed in this period
 			// * and the new score is higher than the best score
 			// then save the current time as the best one
-			if (current_time > next_either && changed_score && current_score > best_score) {
-				best_episode = current_time;
+			// FIXME logic is wrong
+			if (current_time > next_either && changed_score && (current_score > best_score || (current_score == best_score && !best_graph_matched))) {
+				if (current_score > best_score) {
+					best_episode = current_time;
+				}
 				best_score = current_score;
 				// we should graph match if the option is set and all leaf literals are satisfied
 				if (do_graph_match && satisfied_leaves.size() == leaf_literals.size()) {
@@ -3936,15 +3958,16 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					best_bindings.clear();
 					epmem_node_set bound_nodes;
 					if (epmem_graph_match(begin, end, best_bindings, bound_nodes)) {
+						best_episode = current_time;
 						best_graph_matched = true;
-						current_time = 0;
+						current_time = EPMEM_MEMID_NONE;
 					}
 				}
 			}
 		}
 	}
 
-	// if the best episode is the default, faile
+	// if the best episode is the default, fail
 	// otherwise, put the episode in working memory
 	if (best_episode == EPMEM_MEMID_NONE) {
 		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, pos_query);
@@ -3961,7 +3984,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		symbol_remove_ref(my_agent, temp_sym);
 		// match cardinality
 		temp_sym = make_int_constant(my_agent, satisfied_leaves.size());
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_score, temp_sym);
+		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_cardinality, temp_sym);
 		symbol_remove_ref(my_agent, temp_sym);
 		// match score
 		temp_sym = make_float_constant(my_agent, best_score);

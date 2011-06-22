@@ -699,7 +699,7 @@ typedef std::set<epmem_node_id> epmem_node_set;
 
 // structs
 struct epmem_dnf_literal_struct {
-	epmem_interval_set matches;
+	epmem_uedge_set matches;
     epmem_attr_literal_map parents;
     epmem_attr_literal_map children;
     double weight;
