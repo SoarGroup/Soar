@@ -231,7 +231,7 @@ namespace cli
 
             std::vector<std::string>::iterator dest = target - howFar;
 
-            argv.insert(dest, *target);
+            argv.insert(dest, std::string(*target));
 
             target = argv.begin();
             target += what + 1;
