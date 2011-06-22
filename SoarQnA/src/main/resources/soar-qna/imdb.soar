@@ -1,0 +1,19 @@
+waitsnc -e
+
+sp {query
+   (state <s> ^io.output-link <out>)
+-->
+   (<out> ^qna-query <q>)
+   (<q> ^source |http-json-get|
+        ^query imdb
+        ^results incremental
+        ^parameters <ps>)
+   (<ps> ^t |midnight in paris|
+         ^i 2011)
+}
+
+sp {halt
+   (state <s> ^io.output-link.qna-query.status << complete failure >>)
+-->
+   (halt)
+}

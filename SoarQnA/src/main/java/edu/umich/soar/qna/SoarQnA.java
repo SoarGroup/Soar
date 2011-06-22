@@ -262,5 +262,6 @@ public class SoarQnA {
 			"soar-qna/writer/initialize-writer.soar","soar-qna/writer/rollback-done.soar",
 			"soar-qna/writer/table-done.soar","soar-qna/writer/writer.dm",
 			"soar-qna/writer/writer_source.soar",
+			"soar-qna/qna-http.ini","soar-qna/http-json-get.ini","soar-qna/imdb.soar",
 			};
 }
