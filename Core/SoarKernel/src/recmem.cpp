@@ -58,7 +58,6 @@
 
 using namespace soar_TraceNames;
 
-typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
 typedef std::list< instantiation*, soar_module::soar_memory_pool_allocator< instantiation* > > inst_mpool_list;
 typedef std::list< condition*, soar_module::soar_memory_pool_allocator< condition* > > cond_mpool_list;
 
