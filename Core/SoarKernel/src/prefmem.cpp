@@ -53,8 +53,6 @@ const char * preference_name[] =
   "worse",
   "numeric indifferent"};
 
-typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
-
 
 /*                     Preference Management Routines
 
