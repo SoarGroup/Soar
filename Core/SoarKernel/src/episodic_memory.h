@@ -404,7 +404,11 @@ typedef struct epmem_rit_state_struct
 //////////////////////////////////////////////////////////
 
 // list used primarily like a stack
+#ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > epmem_wme_stack;
+#else
+typedef std::list< preference* > epmem_wme_stack;
+#endif
 
 // data associated with each state
 typedef struct epmem_data_struct
