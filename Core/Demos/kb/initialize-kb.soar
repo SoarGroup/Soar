@@ -58,7 +58,7 @@ sp {apply*intialize-kb*fill
    (<a1> ^kind-of rorqual
          ^order Cetacea
          ^is warm-blooded
-         ^may-catch rabbies)
+         ^may-catch rabies)
    (<e2> ^id 2
          ^name |humpback whale|
          ^scientific-name |Megaptera novaeangliae|
@@ -70,7 +70,7 @@ sp {apply*intialize-kb*fill
    (<a3> ^kind-of |dolphin or porpoise|
          ^order Cetacea
          ^is warm-blooded
-         ^may-catch rabbies)
+         ^may-catch rabies)
    (<e4> ^id 4
          ^name |blue dolphin|
          ^scientific-name |Stenella caeruleoalba|
@@ -82,7 +82,7 @@ sp {apply*intialize-kb*fill
    (<a5> ^kind-of |beaked whale|
          ^order Cetacea
          ^is warm-blooded
-         ^may-catch rabbies)
+         ^may-catch rabies)
    ###
    (<t1> ^id 1
          ^name |bad retrieval|
@@ -835,7 +835,7 @@ sp {apply*intialize-kb*fill
    (<q15-3> ^observing-entry <oe15-3>)
    (<oe15-3> ^attributes <a15-3>)
    (<a15-3> ^is warm-blooded 
-            ^may-catch rabbies)
+            ^may-catch rabies)
    (<n15-3> ^observing-entry <noe15-3>)
    (<noe15-3> ^attributes <na15-3>)
    (<na15-3> ^order Cetacea)
@@ -850,7 +850,7 @@ sp {apply*intialize-kb*fill
    (<q15-4> ^observing-entry <oe15-4>)
    (<oe15-4> ^attributes <a15-4>)
    (<a15-4> ^is warm-blooded 
-              ^may-catch rabbies)
+            ^may-catch rabies)
    (<n15-4> ^observing-entry <noe15-4>)
    (<noe15-4> ^attributes <na15-4>)
    (<na15-4> ^kind-of |beaked whale|)
