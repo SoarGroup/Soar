@@ -3183,7 +3183,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 			visiting.erase(root->value);
 			// if all children of this WME lead to cycles, then we don't need to walk this path
 			// in essence, this forces the DNF graph to be acyclic
-			// this results in savings in not walking edges and intevals
+			// this results in savings in not walking edges and intervals
 			if (cycle && literal->children.empty()) {
 				delete literal;
 				return NULL;
@@ -3275,7 +3275,7 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 		// recurse on the rest of the list
 		bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes);
 		// if the rest of the list matched, we've succeeded
-		// otherwise, undo the temporarly modifications and try again
+		// otherwise, undo the temporarily modifications and try again
 		if (list_satisfied) {
 			return true;
 		} else {
@@ -3342,7 +3342,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		return;
 	}
 
-	// sort probibits
+	// sort probibit's
 	if (!prohibits.empty()) {
 		std::sort(prohibits.begin(), prohibits.end());
 	}
@@ -3462,7 +3462,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	if (before == EPMEM_MEMID_NONE) {
 		before = my_agent->epmem_stats->time->get_value() - 1;
 	} else {
-		before = before - 1; // since befores are strict
+		before = before - 1; // since before's are strict
 	}
 	if (after == EPMEM_MEMID_NONE) {
 		after = 0;
@@ -3472,7 +3472,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 	{
 		// insert dummy unique edge and interval end point queries for fake root
-		// we make an sql statement just so we don't have to do anything special at cleanup
+		// we make an SQL statement just so we don't have to do anything special at cleanup
 		epmem_unique_edge_query* fake_root_uedge = new epmem_unique_edge_query();
 		fake_root_uedge->edge_info.q0 = 42;
 		fake_root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
@@ -3529,7 +3529,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_time_id next_either;
 
 		next_edge = edge_pq.top()->time;
-		// process all edges which were last used at this timepoint
+		// process all edges which were last used at this time point
 		while (edge_pq.size() && (edge_pq.top()->time == next_edge || edge_pq.top()->time > current_time)) {
 			epmem_unique_edge_query* uedge = edge_pq.top();
 			edge_pq.pop();
@@ -3669,9 +3669,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 		bool changed_score = false;
 
-		// process all intervals before the next edge arives
+		// process all intervals before the next edge arrives
 		while (!interval_pq.empty() && interval_pq.top()->time > next_edge && current_time > after) {
-			// process all interval endpoints at this timestep
+			// process all interval endpoints at this time step
 			next_interval = interval_pq.top()->time;
 			if (next_interval < current_time) {
 				current_time = next_interval;
@@ -3682,135 +3682,89 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				epmem_unique_edge_query* uedge_q = interval_q->unique_edge;
 
 				// update the DNF, recording changes in boolean value to the frontier and to leaves
+				// note that because of the interval order, we know that before this toggle it must have at least one satisfied parent
+				// this is important for the recursion, which includes the base case of this very literal
 				for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
 					epmem_dnf_literal* literal = *lit_iter;
 					if (interval_q->is_end_point) {
 						literal->matches.insert(uedge_q);
-					} else {
-						literal->matches.erase(uedge_q);
-					}
-					if (interval_q->is_end_point && !literal->matches.empty() && frontier.count(literal)) {
-						// this literal just got activated and is part of the frontier
-						// move the literal to the settled region
-						settled.insert(literal);
-						frontier.erase(literal);
-						// if the literal is internal, propagate frontier information
-						// otherwise, change the score for this episode
-						if (!literal->is_leaf) {
-							// check that at least one of its parents is satisfied
-							epmem_node_id parent_node_id = uedge_q->edge_info.q0;
-							bool should_propagate = (parent_node_id == uedge_q->edge_info.q1);
-							should_propagate = true; // FIXME skip this check for now; I'm not sure if it needs to be repeated for everything it's propagated to
-							if (!should_propagate) {
-								epmem_literal_set* parents_set = literal->parents[uedge_q->edge_info.w];
-								for (epmem_literal_set::iterator parent_iter = parents_set->begin(); parent_iter != parents_set->end(); parent_iter++) {
-									// TODO make frontier propagation stricter - require nodes to be connected
-								}
-							}
-							if (should_propagate) {
-								// propagate the frontier to its descendents
-								epmem_literal_list queue;
-								for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
-									epmem_literal_set* children_set = (*attr_iter).second;
-									for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
-										queue.push_back(*child_iter);
-									}
-								}
-								while (queue.size()) {
-									// if the literal is already part of the frontier or part of the settled region, skip it
-									// if the literal is activated, it is settled; further propagate to its descendants and potentially update score
-									// otherwise, the literal is part of the frontier
-									epmem_dnf_literal* descendant = queue.front();
-									queue.pop_front();
-									if (settled.count(descendant) || frontier.count(descendant)) {
-										continue;
-									} else if (!descendant->matches.empty()) {
-										settled.insert(descendant);
-										if (!descendant->is_leaf) {
-											for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
-												epmem_literal_set* children_set = (*attr_iter).second;
-												for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
-													queue.push_back(*child_iter);
-												}
-											}
-										} else {
-											// update score
-											current_score += descendant->weight;
-											current_cardinality += (descendant->is_neg_q ? -1 : 1);
-											changed_score = true;
-											satisfied_leaves.insert(descendant);
-										}
-									} else {
-										frontier.insert(descendant);
-									}
-								}
-							}
-						} else {
-							// update score
-							current_score += literal->weight;
-							current_cardinality += (literal->is_neg_q ? -1 : 1);
-							changed_score = true;
-							satisfied_leaves.insert(literal);
-						}
-					} else if (!interval_q->is_end_point && literal->matches.empty() && settled.count(literal)) {
-						// this literal just got deactivated and is part of the settled region
-						// move the literal to the frontier
-						settled.erase(literal);
-						frontier.insert(literal);
-						// if the literal is internal, propagate frontier information
-						// otherwise, change the score for this episode
-						if (!literal->is_leaf) {
-							// remove all descendents from the settled region
+						if (frontier.count(literal)) {
+							frontier.erase(literal);
 							epmem_literal_list queue;
-							for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
-								epmem_literal_set* children_set = (*attr_iter).second;
-								for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
-									queue.push_back(*child_iter);
-								}
-							}
+							queue.push_back(literal);
 							while (queue.size()) {
-								// if the literal is in the frontier, remove it from the frontier
-								// if the literal is activated, check if it has another activated parent
-								//   if it doesn't, remove it from settled and propagate to its children and potentially change the score
+								// if the literal is already part of the frontier or part of the settled region, skip it
+								// if the literal is not satisfied, it is part of the frontier
+								// otherwise, it is settled; update score or propagate as appropriate
 								epmem_dnf_literal* descendant = queue.front();
 								queue.pop_front();
-								if (frontier.count(descendant)) {
-									frontier.erase(descendant);
+								if (settled.count(descendant) || frontier.count(descendant)) {
+									continue;
+								} else if (descendant->matches.empty()) {
+									frontier.insert(descendant);
 								} else {
-									bool has_activated_parent = false;
-									for (epmem_attr_literal_map::iterator attr_iter = descendant->parents.begin(); !has_activated_parent && attr_iter != descendant->parents.end(); attr_iter++) {
-										epmem_literal_set* parents_set = (*attr_iter).second;
-										for (epmem_literal_set::iterator parent_iter = parents_set->begin(); !has_activated_parent && parent_iter != parents_set->end(); parent_iter++) {
-											epmem_dnf_literal* parent = *parent_iter;
-											if (parent != descendant && settled.count(parent)) {
-												has_activated_parent = true;
-											}
-										}
-									}
-									if (!has_activated_parent) {
-										settled.erase(descendant);
+									settled.insert(descendant);
+									if (descendant->is_leaf) {
+										current_score += descendant->weight;
+										current_cardinality += (descendant->is_neg_q ? -1 : 1);
+										changed_score = true;
+										satisfied_leaves.insert(descendant);
+									} else {
+										// FIXME make the propagation criteria stricter (require connected parent/child matches)
 										for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
 											epmem_literal_set* children_set = (*attr_iter).second;
 											for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 												queue.push_back(*child_iter);
 											}
 										}
+									}
+								}
+							}
+						}
+					} else {
+						literal->matches.erase(uedge_q);
+						if (settled.count(literal)) {
+							epmem_literal_list queue;
+							queue.push_back(literal);
+							while (queue.size()) {
+								// if the literal is settled or is in the frontier, check for satisfied parents
+								// if there are no satisfied parents, remove it from the sets; update score or propagate as appropriate
+								epmem_dnf_literal* descendant = queue.front();
+								queue.pop_front();
+								if (settled.count(descendant) || frontier.count(descendant)) {
+									bool has_activated_parent = false;
+									if (descendant != literal) {
+										for (epmem_attr_literal_map::iterator attr_iter = descendant->parents.begin(); !has_activated_parent && attr_iter != descendant->parents.end(); attr_iter++) {
+											epmem_literal_set* parents_set = (*attr_iter).second;
+											for (epmem_literal_set::iterator parent_iter = parents_set->begin(); !has_activated_parent && parent_iter != parents_set->end(); parent_iter++) {
+												epmem_dnf_literal* parent = *parent_iter;
+												if (parent != descendant && settled.count(parent)) {
+													has_activated_parent = true;
+												}
+											}
+										}
+									}
+									if (!has_activated_parent || descendant == literal) {
+										settled.erase(descendant);
+										frontier.erase(descendant);
 										if (descendant->is_leaf) {
-											// update score
 											current_score -= descendant->weight;
 											current_cardinality -= (descendant->is_neg_q ? -1 : 1);
 											changed_score = true;
 											satisfied_leaves.erase(descendant);
+										} else {
+											// FIXME make propagation criteria stricter (require connected parent/child matches)
+											for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
+												epmem_literal_set* children_set = (*attr_iter).second;
+												for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+													queue.push_back(*child_iter);
+												}
+											}
 										}
 									}
 								}
 							}
-						} else {
-							// update score
-							current_score -= literal->weight;
-							current_cardinality -= (literal->is_neg_q ? -1 : 1);
-							changed_score = true;
-							satisfied_leaves.erase(literal);
+							frontier.insert(literal);
 						}
 					}
 				}
