@@ -3189,32 +3189,35 @@ const char* epmem_find_unique_node_query = "SELECT child_id, value, last FROM no
 const char* epmem_find_unique_node_value_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<last ORDER BY last DESC";
 const char* epmem_find_unique_edge_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND ?<last ORDER BY last DESC";
 const char* epmem_find_unique_edge_value_query = "SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? AND ?<last ORDER BY last DESC";
-const char* epmem_dummy = "SELECT ? as start"; // FIXME insert one of these when creating intervals (check if end<start, etc.)
+const char* epmem_dummy = "SELECT ? as start";
 
+// Because the DB records when things are /inserted/, we need to offset
+// the start by 1 to /remove/ them at the right time. Ditto to even
+// include those intervals correctly
 const char* epmem_find_interval_queries[2][2][3] =
 {
 	{
 		{
-			"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM node_now e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM node_now e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND ?<e.end AND e.end<=(?+1) ORDER BY e.end DESC",
-			"SELECT ? AS end FROM node_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end<=(?+1) ORDER BY e.end DESC",
+			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=(?+1)",
+			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		}
 	},
 	{
 		{
-			"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND ?<e.end AND e.end<=(?+1) ORDER BY e.end DESC",
-			"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end<=(?+1) ORDER BY e.end DESC",
+			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=(?+1)",
+			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		}
 	},
 };
@@ -3225,8 +3228,8 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 	if (visiting.count(root->value)) {
 		return NULL;
 	}
-	// if we've been here before, we can return the previous literal
-	if (sym_cache.count(root->value)) {
+	// if the value is an identifier and we've been here before, we can return the previous literal
+	if (root->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE && sym_cache.count(root->value)) {
 		return sym_cache[root->value];
 	}
 
@@ -3573,7 +3576,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		after = 0;
 	}
 
-	epmem_time_id current_time = my_agent->epmem_stats->time->get_value();
+	epmem_time_id current_time = my_agent->epmem_stats->time->get_value() - 1;
 
 	{
 		// insert dummy unique edge and interval end point queries for fake root
@@ -3628,7 +3631,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// main loop of interval walk
-	while (edge_pq.size() && current_time != EPMEM_MEMID_NONE) {
+	while (edge_pq.size() && current_time > after) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
 		epmem_time_id next_either;
@@ -3752,7 +3755,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					}
 					interval_sql->bind_int(bind_pos++, edge_id);
 					// FIXME do something special for LTIs (lower bound it by promotion time)
-					interval_sql->bind_int(bind_pos++, after);
 					interval_sql->bind_int(bind_pos++, before);
 					if (interval_sql->execute() == soar_module::row) {
 						interval_q->time = interval_sql->column_int(0);
@@ -3776,10 +3778,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		bool changed_score = false;
 
 		// process all intervals before the next edge arives
-		while (!interval_pq.empty() && interval_pq.top()->time > next_edge && current_time != EPMEM_MEMID_NONE) {
+		while (!interval_pq.empty() && interval_pq.top()->time > next_edge && current_time > after) {
 			// process all interval endpoints at this timestep
 			next_interval = interval_pq.top()->time;
-			current_time = next_interval;
+			if (next_interval < current_time) {
+				current_time = next_interval;
+			}
 			while (!interval_pq.empty() && interval_pq.top()->time == next_interval) {
 				epmem_interval_query* interval_q = interval_pq.top();
 				interval_pq.pop();
@@ -3822,7 +3826,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								}
 								while (queue.size()) {
 									// if the literal is already part of the frontier or part of the settled region, skip it
-									// if the literal is activated, it is settled; further propagate to its descendants
+									// if the literal is activated, it is settled; further propagate to its descendants and potentially update score
 									// otherwise, the literal is part of the frontier
 									epmem_dnf_literal* descendant = queue.front();
 									queue.pop_front();
@@ -3875,38 +3879,36 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							while (queue.size()) {
 								// if the literal is in the frontier, remove it from the frontier
 								// if the literal is activated, check if it has another activated parent
-								//   if it doesn't, remove it from settled and propagate to its children
+								//   if it doesn't, remove it from settled and propagate to its children and potentially change the score
 								epmem_dnf_literal* descendant = queue.front();
 								queue.pop_front();
 								if (frontier.count(descendant)) {
 									frontier.erase(descendant);
 								} else {
 									bool has_activated_parent = false;
-									for (epmem_attr_literal_map::iterator attr_iter = descendant->parents.begin(); attr_iter != descendant->parents.end(); attr_iter++) {
+									for (epmem_attr_literal_map::iterator attr_iter = descendant->parents.begin(); !has_activated_parent && attr_iter != descendant->parents.end(); attr_iter++) {
 										epmem_literal_set* parents_set = (*attr_iter).second;
-										for (epmem_literal_set::iterator parent_iter = parents_set->begin(); parent_iter != parents_set->end(); parent_iter++) {
+										for (epmem_literal_set::iterator parent_iter = parents_set->begin(); !has_activated_parent && parent_iter != parents_set->end(); parent_iter++) {
 											epmem_dnf_literal* parent = *parent_iter;
 											if (parent != descendant && settled.count(parent)) {
 												has_activated_parent = true;
-												break;
 											}
 										}
 									}
-									if (has_activated_parent) {
-										if (descendant->is_leaf) {
-											// update score
-											current_score -= descendant->weight;
-											current_cardinality -= (descendant->is_neg_q ? -1 : 1);
-											changed_score = true;
-											satisfied_leaves.erase(descendant);
-										}
-									} else {
+									if (!has_activated_parent) {
 										settled.erase(descendant);
 										for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
 											epmem_literal_set* children_set = (*attr_iter).second;
 											for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 												queue.push_back(*child_iter);
 											}
+										}
+										if (descendant->is_leaf) {
+											// update score
+											current_score -= descendant->weight;
+											current_cardinality -= (descendant->is_neg_q ? -1 : 1);
+											changed_score = true;
+											satisfied_leaves.erase(descendant);
 										}
 									}
 								}
