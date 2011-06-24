@@ -688,18 +688,22 @@ typedef struct epmem_sql_edge_struct epmem_sql_edge;
 // collection classes
 typedef std::list<epmem_dnf_literal*> epmem_literal_list;
 typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_map;
+typedef std::map<epmem_sql_edge, epmem_interval_query*> epmem_edge_interval_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
-typedef std::multiset<epmem_unique_edge_query*> epmem_uedge_multiset;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;
 typedef std::set<epmem_node_id> epmem_node_set;
+typedef std::set<epmem_sql_edge> epmem_sql_edge_set;
 typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
 
 typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literals_map;
+typedef std::map<epmem_node_id, epmem_sql_edge_set*> epmem_node_edges_map;
 
 // structs
 struct epmem_dnf_literal_struct {
-	epmem_uedge_multiset matches;
+	epmem_sql_edge_set matches;
+	epmem_node_edges_map potentials;
+	epmem_edge_interval_map edge_map;
     epmem_attr_literals_map parents;
     epmem_attr_literals_map children;
     double weight;
@@ -742,6 +746,7 @@ struct epmem_unique_edge_query_struct {
 struct epmem_interval_query_struct {
     soar_module::sqlite_statement *sql;
     epmem_time_id time;
+	epmem_node_id q1;
     int is_end_point;
 	epmem_unique_edge_query* unique_edge;
 };
