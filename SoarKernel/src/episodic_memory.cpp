@@ -3240,7 +3240,7 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 		// if a child is bound, check to make sure that we are in at least one matching interval
 		// otherwise, discard
 		// check children; if bound, check intervals; if no intervals have me as a parent, discard
-		for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); node_satisfies && attr_iter != literal->children.end(); attr_iter++) {
+		for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); node_satisfies && attr_iter != literal->children.end(); attr_iter++) {
 			epmem_literal_set* child_set = (*attr_iter).second;
 				for (epmem_literal_set::iterator child_iter = child_set->begin(); node_satisfies && child_iter != child_set->end(); child_iter++) {
 				epmem_dnf_literal* child = *child_iter;
@@ -3293,7 +3293,7 @@ void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 		return;
 	}
 	visited.insert(root);
-	for (epmem_attr_literal_map::iterator attr_iter = root->children.begin(); attr_iter != root->children.end(); attr_iter++) {
+	for (epmem_attr_literals_map::iterator attr_iter = root->children.begin(); attr_iter != root->children.end(); attr_iter++) {
 		Symbol* attr = (*attr_iter).first;
 		epmem_literal_set* children_set = (*attr_iter).second;
 		for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
@@ -3468,8 +3468,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		after = 0;
 	}
 
-	epmem_time_id current_time = my_agent->epmem_stats->time->get_value() - 1;
-
+	// create dummy edges and intervals
 	{
 		// insert dummy unique edge and interval end point queries for fake root
 		// we make an SQL statement just so we don't have to do anything special at cleanup
@@ -3481,20 +3480,18 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		fake_root_uedge->depth = -1;
 		fake_root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		fake_root_uedge->literals.insert(fake_root);
-		epmem_interval_query* dummy = new epmem_interval_query();
-		dummy->is_end_point = true;
-		dummy->unique_edge = fake_root_uedge;
-		dummy->time = before;
-		dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-		dummy->sql->prepare();
-		dummy->sql->bind_int(1, before);
-		dummy->sql->execute();
-		dummy->time = dummy->sql->column_int(0);
-		interval_pq.push(dummy);
-		intervals.insert(dummy);
-	}
+		epmem_interval_query* fake_dummy = new epmem_interval_query();
+		fake_dummy->is_end_point = true;
+		fake_dummy->unique_edge = fake_root_uedge;
+		fake_dummy->time = before;
+		fake_dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		fake_dummy->sql->prepare();
+		fake_dummy->sql->bind_int(1, before);
+		fake_dummy->sql->execute();
+		fake_dummy->time = fake_dummy->sql->column_int(0);
+		interval_pq.push(fake_dummy);
+		intervals.insert(fake_dummy);
 
-	{
 		// insert dummy unique edge and interval end point queries for DNF root
 		epmem_unique_edge_query* dnf_root_uedge = new epmem_unique_edge_query();
 		dnf_root_uedge->edge_info.q0 = 42;
@@ -3510,19 +3507,20 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		dnf_root_uedge->sql->execute();
 		dnf_root_uedge->time = dnf_root_uedge->sql->column_int(2);
 		edge_pq.push(dnf_root_uedge);
-		epmem_interval_query* dummy = new epmem_interval_query();
-		dummy->is_end_point = true;
-		dummy->unique_edge = dnf_root_uedge;
-		dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-		dummy->sql->prepare();
-		dummy->sql->bind_int(1, before);
-		dummy->sql->execute();
-		dummy->time = dummy->sql->column_int(0);
-		interval_pq.push(dummy);
-		intervals.insert(dummy);
+		epmem_interval_query* dnf_dummy = new epmem_interval_query();
+		dnf_dummy->is_end_point = true;
+		dnf_dummy->unique_edge = dnf_root_uedge;
+		dnf_dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		dnf_dummy->sql->prepare();
+		dnf_dummy->sql->bind_int(1, before);
+		dnf_dummy->sql->execute();
+		dnf_dummy->time = dnf_dummy->sql->column_int(0);
+		interval_pq.push(dnf_dummy);
+		intervals.insert(dnf_dummy);
 	}
 
 	// main loop of interval walk
+	epmem_time_id current_time = my_agent->epmem_stats->time->get_value() - 1;
 	while (edge_pq.size() && current_time > after) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
@@ -3537,7 +3535,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			// create queries for the unique edge children of this unique edge
 			for (epmem_literal_set::iterator literal_iter = uedge->literals.begin(); literal_iter != uedge->literals.end(); literal_iter++) {
 				epmem_dnf_literal* literal = *literal_iter;
-				for (epmem_attr_literal_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+				for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
 					Symbol* attr = (*attr_iter).first;
 					epmem_literal_set* children_set = (*attr_iter).second;
 					for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
@@ -3684,6 +3682,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				// update the DNF, recording changes in boolean value to the frontier and to leaves
 				// note that because of the interval order, we know that before this toggle it must have at least one satisfied parent
 				// this is important for the recursion, which includes the base case of this very literal
+				// also, note that we propagate on the _intervals_, not the _literals_; this ensures all ancestors are real ancestors (and not step-ancestors)
 				for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
 					epmem_dnf_literal* literal = *lit_iter;
 					if (interval_q->is_end_point) {
@@ -3711,7 +3710,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 										satisfied_leaves.insert(descendant);
 									} else {
 										// FIXME make the propagation criteria stricter (require connected parent/child matches)
-										for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
+										for (epmem_attr_literals_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
 											epmem_literal_set* children_set = (*attr_iter).second;
 											for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 												queue.push_back(*child_iter);
@@ -3734,7 +3733,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								if (settled.count(descendant) || frontier.count(descendant)) {
 									bool has_activated_parent = false;
 									if (descendant != literal) {
-										for (epmem_attr_literal_map::iterator attr_iter = descendant->parents.begin(); !has_activated_parent && attr_iter != descendant->parents.end(); attr_iter++) {
+										for (epmem_attr_literals_map::iterator attr_iter = descendant->parents.begin(); !has_activated_parent && attr_iter != descendant->parents.end(); attr_iter++) {
 											epmem_literal_set* parents_set = (*attr_iter).second;
 											for (epmem_literal_set::iterator parent_iter = parents_set->begin(); !has_activated_parent && parent_iter != parents_set->end(); parent_iter++) {
 												epmem_dnf_literal* parent = *parent_iter;
@@ -3754,7 +3753,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 											satisfied_leaves.erase(descendant);
 										} else {
 											// FIXME make propagation criteria stricter (require connected parent/child matches)
-											for (epmem_attr_literal_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
+											for (epmem_attr_literals_map::iterator attr_iter = descendant->children.begin(); attr_iter != descendant->children.end(); attr_iter++) {
 												epmem_literal_set* children_set = (*attr_iter).second;
 												for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 													queue.push_back(*child_iter);
@@ -3922,6 +3921,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		delete uedge;
 	}
 	for (epmem_literal_set::iterator iter = literals.begin(); iter != literals.end(); iter++) {
+		for (epmem_attr_literals_map::iterator map_iter = (*iter)->parents.begin(); map_iter != (*iter)->parents.end(); map_iter++) {
+			delete (*map_iter).second;
+		}
+		for (epmem_attr_literals_map::iterator map_iter = (*iter)->children.begin(); map_iter != (*iter)->children.end(); map_iter++) {
+			delete (*map_iter).second;
+		}
 		delete *iter;
 	}
 }

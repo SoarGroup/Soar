@@ -686,23 +686,22 @@ typedef struct epmem_dnf_literal_struct epmem_dnf_literal;
 typedef struct epmem_sql_edge_struct epmem_sql_edge;
 
 // collection classes
-typedef std::set<epmem_interval_query*> epmem_interval_set;
-typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
+typedef std::list<epmem_dnf_literal*> epmem_literal_list;
+typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_map;
+typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
 typedef std::multiset<epmem_unique_edge_query*> epmem_uedge_multiset;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
-typedef std::list<epmem_dnf_literal*> epmem_literal_list;
-typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literal_map;
-typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map; // FIXME I'm not convinced the value is correct
-
-// for graph match
-typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_map;
+typedef std::set<epmem_interval_query*> epmem_interval_set;
 typedef std::set<epmem_node_id> epmem_node_set;
+typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
+
+typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literals_map;
 
 // structs
 struct epmem_dnf_literal_struct {
 	epmem_uedge_multiset matches;
-    epmem_attr_literal_map parents;
-    epmem_attr_literal_map children;
+    epmem_attr_literals_map parents;
+    epmem_attr_literals_map children;
     double weight;
     int is_neg_q;
     int is_edge_not_node;
@@ -766,8 +765,7 @@ struct epmem_interval_query_comparator {
 				return b->unique_edge->depth > a->unique_edge->depth;
 			}
 		} else {
-			// remove matches before added them (ie. putting starts before ends
-			// the larger the distance to the frontier, the more expensive updating an end is
+			// arbitrarily put starts before ends
 			return a->is_end_point;
 		}
 
