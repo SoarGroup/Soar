@@ -3220,11 +3220,14 @@ void epmem_expand_frontier(epmem_interval_query* interval_q, epmem_literal_set& 
 		literal->edge_map[edge_info] = interval_q;
 		if (literal->matches.size() || frontier.count(literal)) {
 			frontier.erase(literal);
+			bool was_matching = !literal->matches.empty();
 			literal->matches.insert(edge_info);
 			if (literal->is_leaf) {
-				current_score += literal->weight;
-				current_cardinality += (literal->is_neg_q ? -1 : 1);
-				changed_score = true;
+				if (!was_matching && literal->matches.size()) {
+					current_score += literal->weight;
+					current_cardinality += (literal->is_neg_q ? -1 : 1);
+					changed_score = true;
+				}
 			} else {
 				for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
 					epmem_literal_set* children = (*attr_iter).second;
@@ -3256,13 +3259,14 @@ void epmem_shrink_frontier(epmem_interval_query* interval_q, epmem_literal_set& 
 	edge_info.has_q1 = true;
 	for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
 		epmem_dnf_literal* literal = *lit_iter;
-		literal->potentials[edge_info.q0]->erase(edge_info);
 		if (literal->matches.size()) {
 			literal->matches.erase(edge_info);
-			if (literal->is_leaf) {
-				current_score -= literal->weight;
-				current_cardinality -= (literal->is_neg_q ? -1 : 1);
-				changed_score = true;
+			if (literal->is_leaf){
+				if (!literal->matches.size()) {
+					current_score -= literal->weight;
+					current_cardinality -= (literal->is_neg_q ? -1 : 1);
+					changed_score = true;
+				}
 			} else {
 				for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
 					epmem_literal_set* children = (*attr_iter).second;
@@ -3280,6 +3284,8 @@ void epmem_shrink_frontier(epmem_interval_query* interval_q, epmem_literal_set& 
 		} else if (frontier.count(literal)) {
 			frontier.erase(literal);
 		}
+		// erased after so the parent stack frame iterators are still correct
+		literal->potentials[edge_info.q0]->erase(edge_info);
 	}
 }
 
