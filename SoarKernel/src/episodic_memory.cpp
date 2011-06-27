@@ -3128,37 +3128,48 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 	epmem_dnf_literal* literal = new epmem_dnf_literal();
 	sym_cache[root->value] = literal;
 	Symbol* value = root->value;
-	literal->value = value;
+	literal->symbol = value;
 	literal->is_neg_q = query_type;
 
 	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
 		literal->is_edge_not_node = 0;
 		literal->has_q1 = true;
 		literal->is_leaf = true;
+		literal->node_id = epmem_temporal_hash(my_agent, value);
 		leaf_literals.insert(literal);
 	} else if (value->id.smem_lti) { // WME is an LTI
 		literal->is_edge_not_node = 1;
 		literal->has_q1 = true;
 		literal->is_leaf = true;
-		leaf_literals.insert(literal);
-		// only graph match on positive queries
-		if (!literal->is_neg_q) {
-			gm_dfs_ordering.push_back(literal);
+		// if we can find the LTI node id, cache it; otherwise, return failure
+		my_agent->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>(value->id.name_letter));
+		my_agent->epmem_stmts_graph->find_lti->bind_int(2, static_cast<uint64_t>(value->id.name_number));
+		if (my_agent->epmem_stmts_graph->find_lti->execute() == soar_module::row) {
+			literal->node_id = my_agent->epmem_stmts_graph->find_lti->column_int(0);
+			my_agent->epmem_stmts_graph->find_lti->reinitialize();
+			leaf_literals.insert(literal);
+			// only graph match on positive queries
+			if (!literal->is_neg_q) {
+				gm_dfs_ordering.push_back(literal);
+			}
+		} else {
+			my_agent->epmem_stmts_graph->find_lti->reinitialize();
+			delete literal;
+			return NULL;
 		}
 	} else { // WME is a normal identifier
 		// we determine whether it is a leaf by checking for children
 		epmem_wme_list* children = epmem_get_augs_of_id(value, tc);
+		literal->is_edge_not_node = 1;
+		literal->has_q1 = false;
+		literal->node_id = EPMEM_NODEID_BAD;
 
 		// if the WME has no children, then it's a leaf
 		// otherwise, we recurse for all children
 		if (children->empty()) {
-			literal->is_edge_not_node = 1;
-			literal->has_q1 = false;
 			literal->is_leaf = true;
 			leaf_literals.insert(literal);
 		} else {
-			literal->is_edge_not_node = 1;
-			literal->has_q1 = false;
 			literal->is_leaf = false;
 			bool cycle = false;
 			visiting.insert(root->value);
@@ -3405,14 +3416,14 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		fake_root->is_edge_not_node = 1;
 		fake_root->has_q1 = false;
 		fake_root->is_leaf = false;
-		fake_root->value = NULL;
+		fake_root->node_id = EPMEM_NODEID_BAD;
 		frontier.insert(fake_root);
 		dnf_root->weight = 0.0;
 		dnf_root->is_neg_q = EPMEM_NODE_POS;
 		dnf_root->is_edge_not_node = 1;
 		dnf_root->has_q1 = false;
 		dnf_root->is_leaf = false;
-		dnf_root->value = NULL;
+		dnf_root->node_id = EPMEM_NODEID_BAD;
 		fake_root->children[NULL] = new epmem_literal_set();
 		fake_root->children[NULL]->insert(dnf_root);
 		sym_cache[pos_query] = dnf_root;
@@ -3503,9 +3514,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// insert dummy unique edge and interval end point queries for fake root
 		// we make an SQL statement just so we don't have to do anything special at cleanup
 		epmem_unique_edge_query* fake_root_uedge = new epmem_unique_edge_query();
-		fake_root_uedge->edge_info.q0 = -1;
+		fake_root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
 		fake_root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
-		fake_root_uedge->edge_info.q1 = -1;
+		fake_root_uedge->edge_info.q1 = EPMEM_NODEID_BAD;
 		fake_root_uedge->edge_info.has_q1 = true;
 		fake_root_uedge->depth = -1;
 		fake_root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
@@ -3524,9 +3535,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 		// insert dummy unique edge and interval end point queries for DNF root
 		epmem_unique_edge_query* dnf_root_uedge = new epmem_unique_edge_query();
-		dnf_root_uedge->edge_info.q0 = -1;
+		dnf_root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
 		dnf_root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
-		dnf_root_uedge->edge_info.q1 = 0;
+		dnf_root_uedge->edge_info.q1 = EPMEM_NODEID_ROOT;
 		dnf_root_uedge->edge_info.has_q1 = true;
 		dnf_root_uedge->depth = 0;
 		dnf_root_uedge->is_edge_not_node = 1;
@@ -3579,7 +3590,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						// select the query
 						const char* sql_statement = NULL;
 						if (child_literal->has_q1) {
-							info.q1 = epmem_temporal_hash(my_agent, child_literal->value);
+							info.q1 = child_literal->node_id;
 							if (child_literal->is_edge_not_node) {
 								sql_statement = epmem_find_unique_edge_value_query;
 							} else {
@@ -3836,7 +3847,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
 					symbol_remove_ref(my_agent, temp_sym);
 					// point to the cue identifier
-					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_node, (*iter).first->value);
+					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_node, (*iter).first->symbol);
 					// save the mapping point for the episode
 					node_map_map[(*iter).second] = temp_sym;
 					node_mem_map[(*iter).second] = NULL;
