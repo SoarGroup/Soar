@@ -3268,7 +3268,10 @@ void _epmem_gm_sort_wmes_dfs( Symbol* id, tc_number tc, std::list< wme* >& order
 			if ( ( val->var.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) && ( val->id.tc_num != tc ) )
 			{
 				val->id.tc_num = tc;
-				_epmem_gm_sort_wmes_dfs( val, tc, ordered_wmes );
+				if ( !val->id.smem_lti )
+				{
+					_epmem_gm_sort_wmes_dfs( val, tc, ordered_wmes );
+				}
 			}
 		}
 	}
