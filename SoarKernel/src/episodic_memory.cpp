@@ -3086,8 +3086,7 @@ const char* epmem_dummy = "SELECT ? as start";
 // Because the DB records when things are /inserted/, we need to offset
 // the start by 1 to /remove/ them at the right time. Ditto to even
 // include those intervals correctly
-const char* epmem_find_interval_queries[2][2][3] =
-{
+const char* epmem_find_interval_queries[2][2][3] = {
 	{
 		{
 			"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
@@ -3095,7 +3094,7 @@ const char* epmem_find_interval_queries[2][2][3] =
 			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end<=(?+1) ORDER BY e.end DESC",
+			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.end DESC",
 			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=(?+1)",
 			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		}
@@ -3107,11 +3106,30 @@ const char* epmem_find_interval_queries[2][2][3] =
 			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end<=(?+1) ORDER BY e.end DESC",
+			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.end DESC",
 			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=(?+1)",
 			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		}
+	}
+};
+
+const char* epmem_find_lti_queries[2][3] = {
+	{
+		"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC",
+		"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC",
+		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC"
 	},
+	{
+		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.end DESC",
+		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1)",
+		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+	}
+};
+
+const char *epmem_find_lti_single_queries[3] = {
+	"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=? AND ?<=e.end LIMIT 1",
+	"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1",
+	"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1"
 };
 
 epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_list& gm_dfs_ordering) {
@@ -3643,58 +3661,122 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 
-			int64_t edge_id = uedge->sql->column_int(0);
 			// create interval queries for this unique edge
-			for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
+			{
+				int64_t edge_id = uedge->sql->column_int(0); // FIXME epmem_hash_id vs epmem_node_id? (also in dnf_literal)
+				epmem_time_id promo_time;
+				bool is_lti = (uedge->is_edge_not_node && uedge->edge_info.has_q1);
+				if (is_lti) {
+					// find the promotion time of the LTI
+					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, uedge->sql->column_int(1));
+					my_agent->epmem_stmts_graph->find_lti_current_time->execute();
+					promo_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int(0);
+					my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
+					// check the END point of closest interval that started before promotion time
+					// the thing to catch here is an interval which is a superset of the BEFORE/promo time constraints
+					// if such an interval exists, add its start/end points to the priority queue
+					for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
+						// first, find the interval
+						soar_module::sqlite_statement* interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_single_queries[interval_type]);
+						interval_sql->prepare();
+						int bind_pos = 1;
+						if (interval_type == EPMEM_RANGE_NOW) {
+							interval_sql->bind_int(bind_pos++, current_time);
+						}
+						interval_sql->bind_int(bind_pos++, edge_id);
+						interval_sql->bind_int(bind_pos++, promo_time);
+						if (interval_type == EPMEM_RANGE_EP) {
+							interval_sql->bind_int(bind_pos++, promo_time);
+						}
+						// if we find one, check that they do slip through the normal net
+						if (interval_sql->execute() == soar_module::row && interval_sql->column_int(0) >= promo_time) {
+							// we create two fake interval queries and add them appropriately
+							// create new sql queries to simplify the cleanup (no double frees)
+							epmem_interval_query* end_q = new epmem_interval_query();
+							end_q->is_end_point = 1;
+							end_q->unique_edge = uedge;
+							end_q->q1 = uedge->sql->column_int(1);
+							end_q->time = interval_sql->column_int(0);
+							end_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+							end_q->sql->prepare();
+							end_q->sql->bind_int(1, end_q->time);
+							end_q->sql->execute();
+							interval_pq.push(end_q);
+							intervals.insert(end_q);
+							epmem_interval_query* start_q = new epmem_interval_query();
+							start_q->is_end_point = 0;
+							start_q->unique_edge = uedge;
+							start_q->q1 = uedge->sql->column_int(1);
+							start_q->time = promo_time - 1;
+							start_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+							start_q->sql->prepare();
+							start_q->sql->bind_int(1, start_q->time);
+							start_q->sql->execute();
+							interval_pq.push(start_q);
+							intervals.insert(start_q);
+						}
+						delete interval_sql;
+					}
+				}
 				for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
-					epmem_interval_query* interval_q = new epmem_interval_query();
-					interval_q->is_end_point = point_type;
-					interval_q->unique_edge = uedge;
-					interval_q->q1 = uedge->sql->column_int(1);
+					for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
+						epmem_interval_query* interval_q = new epmem_interval_query();
+						interval_q->is_end_point = point_type;
+						interval_q->unique_edge = uedge;
+						interval_q->q1 = uedge->sql->column_int(1);
 
-					// pick a timer (any timer)
-					soar_module::timer* sql_timer = NULL;
-					switch (interval_type) {
-						case EPMEM_RANGE_EP:
-							if (point_type == EPMEM_RANGE_START) {
-								sql_timer = my_agent->epmem_timers->query_start_ep;
-							} else {
-								sql_timer = my_agent->epmem_timers->query_end_ep;
-							}
-							break;
-						case EPMEM_RANGE_NOW:
-							if (point_type == EPMEM_RANGE_START) {
-								sql_timer = my_agent->epmem_timers->query_start_now;
-							} else {
-								sql_timer = my_agent->epmem_timers->query_end_now;
-							}
-							break;
-						case EPMEM_RANGE_POINT:
-							if (point_type == EPMEM_RANGE_START) {
-								sql_timer = my_agent->epmem_timers->query_start_point;
-							} else {
-								sql_timer = my_agent->epmem_timers->query_end_point;
-							}
-							break;
-					}
+						// pick a timer (any timer)
+						soar_module::timer* sql_timer = NULL;
+						switch (interval_type) {
+							case EPMEM_RANGE_EP:
+								if (point_type == EPMEM_RANGE_START) {
+									sql_timer = my_agent->epmem_timers->query_start_ep;
+								} else {
+									sql_timer = my_agent->epmem_timers->query_end_ep;
+								}
+								break;
+							case EPMEM_RANGE_NOW:
+								if (point_type == EPMEM_RANGE_START) {
+									sql_timer = my_agent->epmem_timers->query_start_now;
+								} else {
+									sql_timer = my_agent->epmem_timers->query_end_now;
+								}
+								break;
+							case EPMEM_RANGE_POINT:
+								if (point_type == EPMEM_RANGE_START) {
+									sql_timer = my_agent->epmem_timers->query_start_point;
+								} else {
+									sql_timer = my_agent->epmem_timers->query_end_point;
+								}
+								break;
+						}
 
-					// create the SQL query and bind it
-					soar_module::sqlite_statement* interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_edge_not_node][point_type][interval_type], sql_timer);
-					interval_sql->prepare();
-					int bind_pos = 1;
-					if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
-						interval_sql->bind_int(bind_pos++, current_time);
-					}
-					interval_sql->bind_int(bind_pos++, edge_id);
-					// FIXME do something special for LTIs (lower bound it by promotion time)
-					interval_sql->bind_int(bind_pos++, before);
-					if (interval_sql->execute() == soar_module::row) {
-						interval_q->time = interval_sql->column_int(0);
-						interval_q->sql = interval_sql;
-						interval_pq.push(interval_q);
-						intervals.insert(interval_q);
-					} else {
-						delete interval_q;
+						// create the SQL query and bind it
+						soar_module::sqlite_statement* interval_sql;
+						if (is_lti) {
+							interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_queries[point_type][interval_type], sql_timer);
+						} else {
+							interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_edge_not_node][point_type][interval_type], sql_timer);
+						}
+						interval_sql->prepare();
+						int bind_pos = 1;
+						if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
+							interval_sql->bind_int(bind_pos++, current_time);
+						}
+						interval_sql->bind_int(bind_pos++, edge_id);
+						if (is_lti) {
+							// find the promotion time of the LTI, and use that as an after constraint
+							interval_sql->bind_int(bind_pos++, promo_time);
+						}
+						interval_sql->bind_int(bind_pos++, before);
+						if (interval_sql->execute() == soar_module::row) {
+							interval_q->time = interval_sql->column_int(0);
+							interval_q->sql = interval_sql;
+							interval_pq.push(interval_q);
+							intervals.insert(interval_q);
+						} else {
+							delete interval_q;
+						}
 					}
 				}
 			}
