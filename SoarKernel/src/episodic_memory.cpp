@@ -3224,7 +3224,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 		}
 	}
 
-	// FIXME this check should be lifted out of this recursion
 	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
 	return literal;
 }
@@ -3966,6 +3965,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		delete uedge;
 	}
 	for (epmem_literal_set::iterator iter = literals.begin(); iter != literals.end(); iter++) {
+		for (epmem_node_edges_map::iterator map_iter = (*iter)->potentials.begin(); map_iter != (*iter)->potentials.end(); map_iter++) {
+			delete (*map_iter).second;
+		}
 		for (epmem_attr_literals_map::iterator map_iter = (*iter)->parents.begin(); map_iter != (*iter)->parents.end(); map_iter++) {
 			delete (*map_iter).second;
 		}
