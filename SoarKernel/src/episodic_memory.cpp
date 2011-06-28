@@ -3730,10 +3730,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					// add this interval as a potential match for its literals
 					for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
 						epmem_dnf_literal* literal = *lit_iter;
-						if (!literal->potentials.count(uedge->edge_info.q0)) {
-							literal->potentials[uedge->edge_info.q0] = new epmem_sql_edge_set();
+						if (!literal->potentials.count(edge_info.q0)) {
+							literal->potentials[edge_info.q0] = new epmem_sql_edge_set();
 						}
-						literal->potentials[uedge->edge_info.q0]->insert(edge_info);
+						literal->potentials[edge_info.q0]->insert(edge_info);
 						literal->edge_map[edge_info] = interval_q;
 					}
 					// now recurse through the descendants of the interval
@@ -3745,14 +3745,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 						visited.insert(descendant);
 						uedge = descendant->unique_edge;
-						std::cout<<"uedge: "<<uedge<<std::endl;
-						edge_info;
 						edge_info.q0 = uedge->edge_info.q0;
 						edge_info.w = uedge->edge_info.w;
 						edge_info.q1 = descendant->q1;
 						for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
 							epmem_dnf_literal* literal = *lit_iter;
-							std::cout<<"literal: "<<literal<<std::endl;
 							// we only care to make it a match if
 							// it is in the frontier (ie. there is a satisfied path to the root), or
 							// it is already satisfied (ditto)
@@ -3762,7 +3759,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 									literal->matches[edge_info.q0] = new epmem_sql_edge_multiset();
 								}
 								literal->matches[edge_info.q0]->insert(edge_info);
-								literal->edge_map[edge_info] = descendant;
 								bool was_matching = (literal->num_matches > 0);
 								literal->num_matches++;
 								// if it's a leaf and it wasn't satisfied before, change the score
@@ -3782,10 +3778,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 											if (child->potentials.count(edge_info.q1)) {
 												epmem_sql_edge_set* edges = child->potentials[edge_info.q1];
 												for (epmem_sql_edge_set::iterator edge_iter = edges->begin(); edge_iter != edges->end(); edge_iter++) {
-													std::cout<<"pushing: "<<child->edge_map[*edge_iter]<<std::endl;
-													if (child->edge_map[*edge_iter]) { // FIXME HACK I don't like this, but I don't understand why something could be in potentials but not in edge_map
-														queue.push_back(child->edge_map[*edge_iter]);
-													}
+													queue.push_back(child->edge_map[*edge_iter]);
 												}
 											}
 										}
@@ -3830,7 +3823,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 										changed_score = true;
 									}
 								} else {
-									// FIXME should really turn this into a parent_interval map
 									for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
 										epmem_literal_set* children = (*attr_iter).second;
 										for (epmem_literal_set::iterator child_iter = children->begin(); child_iter != children->end(); child_iter++) {
@@ -3952,14 +3944,14 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			if (best_graph_matched) {
 				goal_stack_level level = state->id.epmem_result_header->id.level;
 				// mapping identifier
-				temp_sym = make_new_identifier(my_agent, 'M', level);
-				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping, temp_sym);
-				symbol_remove_ref(my_agent, temp_sym);
+				Symbol* mapping = make_new_identifier(my_agent, 'M', level);
+				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping, mapping);
+				symbol_remove_ref(my_agent, mapping);
 
 				for (epmem_literal_node_map::iterator iter = best_bindings.begin(); iter != best_bindings.end(); iter++) {
 					// create the node
 					temp_sym = make_new_identifier(my_agent, 'N', level);
-					epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
+					epmem_buffer_add_wme(meta_wmes, mapping, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
 					symbol_remove_ref(my_agent, temp_sym);
 					// point to the cue identifier
 					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_node, (*iter).first->symbol);

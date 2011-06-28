@@ -729,12 +729,10 @@ struct epmem_sql_edge_struct {
 			return true;
 		} else if (w < other.w) {
 			return true;
-		} else if (!has_q1 && other.has_q1) {
+		} else if (q1 < other.q1) {
 			return true;
-		} else if (has_q1 && !other.has_q1) {
-			return false;
 		} else {
-			return q1 < other.q1;
+			return !has_q1;
 		}
 	}
 };
