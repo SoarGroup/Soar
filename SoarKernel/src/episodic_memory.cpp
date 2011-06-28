@@ -3144,8 +3144,8 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 	}
 
 	epmem_dnf_literal* literal = new epmem_dnf_literal();
-	sym_cache[root->value] = literal;
 	Symbol* value = root->value;
+	literal->num_matches = 0;
 	literal->symbol = value;
 	literal->is_neg_q = query_type;
 
@@ -3225,96 +3225,8 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 	}
 
 	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
+	sym_cache[root->value] = literal;
 	return literal;
-}
-
-void epmem_expand_frontier(epmem_interval_query* interval_q, epmem_literal_set& frontier, double& current_score, int& current_cardinality, bool& changed_score) {
-	// This function recursively expands the frontier, changing the score when leaf nodes are reached.
-	// For each literal which an interval matches, it adds the interval to the literal as a potential match.
-	// If the literal already has matches or in the frontier, we recurse, adding intervals to verified matches and expanding the frontier
-	// If the literal is neither settled nor in the frontier, it must be part of the new frontier (since we just came from a settled literal)
-	epmem_unique_edge_query* uedge_q = interval_q->unique_edge;
-	epmem_sql_edge edge_info;
-	edge_info.q0 = uedge_q->edge_info.q0;
-	edge_info.w = uedge_q->edge_info.w;
-	edge_info.q1 = interval_q->q1;
-	edge_info.has_q1 = true;
-	for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
-		epmem_dnf_literal* literal = *lit_iter;
-		if (!literal->potentials.count(edge_info.q0)) {
-			literal->potentials[edge_info.q0] = new epmem_sql_edge_set();
-		}
-		literal->potentials[edge_info.q0]->insert(edge_info);
-		literal->edge_map[edge_info] = interval_q;
-		if (literal->matches.size() || frontier.count(literal)) {
-			frontier.erase(literal);
-			bool was_matching = !literal->matches.empty();
-			literal->matches.insert(edge_info);
-			if (literal->is_leaf) {
-				if (!was_matching && literal->matches.size()) {
-					current_score += literal->weight;
-					current_cardinality += (literal->is_neg_q ? -1 : 1);
-					changed_score = true;
-				}
-			} else {
-				for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
-					epmem_literal_set* children = (*attr_iter).second;
-					for (epmem_literal_set::iterator child_iter = children->begin(); child_iter != children->end(); child_iter++) {
-						epmem_dnf_literal* child = *child_iter;
-						frontier.insert(child);
-						if (child->potentials.count(edge_info.q1)) {
-							epmem_sql_edge_set* edges = child->potentials[edge_info.q1];
-							for (epmem_sql_edge_set::iterator edge_iter = edges->begin(); edge_iter != edges->end(); edge_iter++) {
-								epmem_expand_frontier(child->edge_map[*edge_iter], frontier, current_score, current_cardinality, changed_score);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-void epmem_shrink_frontier(epmem_interval_query* interval_q, epmem_literal_set& frontier, double& current_score, int& current_cardinality, bool& changed_score) {
-	// This function recursively shrinks the frontier, changing the score when leaf nodes are reached
-	// For each literal which an interval matches, it removes the interval from the literal's set of verified and potential matches
-	// If the literal had matches before, we recurse, removing intervals and shrinking the frontier if the literal no longer has any matches
-	epmem_unique_edge_query* uedge_q = interval_q->unique_edge;
-	epmem_sql_edge edge_info;
-	edge_info.q0 = uedge_q->edge_info.q0;
-	edge_info.w = uedge_q->edge_info.w;
-	edge_info.q1 = interval_q->q1;
-	edge_info.has_q1 = true;
-	for (epmem_literal_set::iterator lit_iter = uedge_q->literals.begin(); lit_iter != uedge_q->literals.end(); lit_iter++) {
-		epmem_dnf_literal* literal = *lit_iter;
-		if (literal->matches.size()) {
-			literal->matches.erase(edge_info);
-			if (literal->is_leaf){
-				if (!literal->matches.size()) {
-					current_score -= literal->weight;
-					current_cardinality -= (literal->is_neg_q ? -1 : 1);
-					changed_score = true;
-				}
-			} else {
-				for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
-					epmem_literal_set* children = (*attr_iter).second;
-					for (epmem_literal_set::iterator child_iter = children->begin(); child_iter != children->end(); child_iter++) {
-						epmem_dnf_literal* child = *child_iter;
-						if (child->potentials.count(edge_info.q1)) {
-							epmem_sql_edge_set* edges = child->potentials[edge_info.q1];
-							for (epmem_sql_edge_set::iterator edge_iter = edges->begin(); edge_iter != edges->end(); edge_iter++) {
-								epmem_shrink_frontier(child->edge_map[*edge_iter], frontier, current_score, current_cardinality, changed_score);
-							}
-						}
-					}
-				}
-			}
-		} else if (frontier.count(literal)) {
-			frontier.erase(literal);
-		}
-		// erased after so the parent stack frame iterators are still correct
-		literal->potentials[edge_info.q0]->erase(edge_info);
-	}
 }
 
 bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_list::iterator& iter_end, epmem_literal_node_map& bindings, epmem_node_set& bound_nodes) {
@@ -3327,20 +3239,23 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 	epmem_literal_list::iterator next_iter = dnf_iter;
 	next_iter++;
 	// go through the list of matches, binding each one to this literal in turn
-	for (epmem_sql_edge_set::iterator iter = literal->matches.begin(); iter != literal->matches.end(); iter++) {
-		epmem_node_id node_id = (*iter).q1;
-		// temporarily modify the bindings and bound nodes
-		bindings[literal] = node_id;
-		bound_nodes.insert(node_id);
-		// recurse on the rest of the list
-		bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes);
-		// if the rest of the list matched, we've succeeded
-		// otherwise, undo the temporarily modifications and try again
-		if (list_satisfied) {
-			return true;
-		} else {
-			bindings.erase(literal);
-			bound_nodes.erase(node_id);
+	for (epmem_node_edges_multimap::iterator q0_iter = literal->matches.begin(); q0_iter != literal->matches.end(); q0_iter++) {
+		epmem_sql_edge_multiset* matches = (*q0_iter).second;
+		for (epmem_sql_edge_multiset::iterator interval_iter = matches->begin(); interval_iter != matches->end(); interval_iter++) {
+			epmem_node_id node_id = (*interval_iter).q1;
+			// temporarily modify the bindings and bound nodes
+			bindings[literal] = node_id;
+			bound_nodes.insert(node_id);
+			// recurse on the rest of the list
+			bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes);
+			// if the rest of the list matched, we've succeeded
+			// otherwise, undo the temporarily modifications and try again
+			if (list_satisfied) {
+				return true;
+			} else {
+				bindings.erase(literal);
+				bound_nodes.erase(node_id);
+			}
 		}
 	}
 	// this means we've tried everything and this whole exercise was a waste of time
@@ -3428,6 +3343,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 		std::map<Symbol*, epmem_dnf_literal*> sym_cache;
 		std::set<Symbol*> visiting;
+		fake_root->num_matches = 0;
 		fake_root->weight = 0.0;
 		fake_root->is_neg_q = EPMEM_NODE_POS;
 		fake_root->is_edge_not_node = 1;
@@ -3435,6 +3351,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		fake_root->is_leaf = false;
 		fake_root->node_id = EPMEM_NODEID_BAD;
 		frontier.insert(fake_root);
+		dnf_root->num_matches = 0;
 		dnf_root->weight = 0.0;
 		dnf_root->is_neg_q = EPMEM_NODE_POS;
 		dnf_root->is_edge_not_node = 1;
@@ -3578,15 +3495,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// main loop of interval walk
-	epmem_time_id current_time = my_agent->epmem_stats->time->get_value() - 1;
-	while (edge_pq.size() && current_time > after) {
+	epmem_time_id current_episode = my_agent->epmem_stats->time->get_value() - 1;
+	while (edge_pq.size() && current_episode > after) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
 		epmem_time_id next_either;
 
 		next_edge = edge_pq.top()->time;
 		// process all edges which were last used at this time point
-		while (edge_pq.size() && (edge_pq.top()->time == next_edge || edge_pq.top()->time > current_time)) {
+		while (edge_pq.size() && (edge_pq.top()->time == next_edge || edge_pq.top()->time > current_episode)) {
 			epmem_unique_edge_query* uedge = edge_pq.top();
 			edge_pq.pop();
 
@@ -3614,7 +3531,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								sql_statement = epmem_find_unique_node_value_query;
 							}
 						} else {
-							info.q1 = 0;
+							info.q1 = EPMEM_NODEID_BAD;
 							if (child_literal->is_edge_not_node) {
 								sql_statement = epmem_find_unique_edge_query;
 							} else {
@@ -3634,7 +3551,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							child_uedge->is_edge_not_node = child_literal->is_edge_not_node;
 							child_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->edge_query);
 							child_uedge->literals.insert(child_literal);
-							sql_cache[child_uedge->edge_info] = child_uedge;
 
 							// take first step
 							child_uedge->sql->prepare();
@@ -3648,6 +3564,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							if (child_uedge->sql->execute() == soar_module::row) {
 								child_uedge->time = child_uedge->sql->column_int(2);
 								edge_pq.push(child_uedge);
+								sql_cache[child_uedge->edge_info] = child_uedge;
 								created = true;
 							} else {
 								delete child_uedge;
@@ -3680,7 +3597,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						interval_sql->prepare();
 						int bind_pos = 1;
 						if (interval_type == EPMEM_RANGE_NOW) {
-							interval_sql->bind_int(bind_pos++, current_time);
+							interval_sql->bind_int(bind_pos++, current_episode);
 						}
 						interval_sql->bind_int(bind_pos++, edge_id);
 						interval_sql->bind_int(bind_pos++, promo_time);
@@ -3760,7 +3677,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						interval_sql->prepare();
 						int bind_pos = 1;
 						if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
-							interval_sql->bind_int(bind_pos++, current_time);
+							interval_sql->bind_int(bind_pos++, current_episode);
 						}
 						interval_sql->bind_int(bind_pos++, edge_id);
 						if (is_lti) {
@@ -3791,28 +3708,145 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		bool changed_score = false;
 
 		// process all intervals before the next edge arrives
-		while (!interval_pq.empty() && interval_pq.top()->time > next_edge && current_time > after) {
+		while (!interval_pq.empty() && interval_pq.top()->time > next_edge && current_episode > after) {
 			// process all interval endpoints at this time step
 			next_interval = interval_pq.top()->time;
-			if (next_interval < current_time) {
-				current_time = next_interval;
+			if (next_interval < current_episode) {
+				current_episode = next_interval;
 			}
 			while (!interval_pq.empty() && interval_pq.top()->time == next_interval) {
 				epmem_interval_query* interval_q = interval_pq.top();
 				interval_pq.pop();
+				epmem_unique_edge_query* uedge = interval_q->unique_edge;
+				epmem_sql_edge edge_info;
+				edge_info.q0 = uedge->edge_info.q0;
+				edge_info.w = uedge->edge_info.w;
+				edge_info.q1 = interval_q->q1;
+				edge_info.has_q1 = true;
+				epmem_interval_list queue;
+				epmem_interval_set visited;
+				queue.push_back(interval_q);
 				if (interval_q->is_end_point) {
-					epmem_expand_frontier(interval_q, frontier, current_score, current_cardinality, changed_score);
-				} else {
-					epmem_literal_set future_frontier;
-					for (epmem_literal_set::iterator iter = interval_q->unique_edge->literals.begin(); iter != interval_q->unique_edge->literals.end(); iter++) {
-						epmem_dnf_literal* literal = *iter;
-						if (literal->matches.size() == 1) {
-							future_frontier.insert(literal);
+					// add this interval as a potential match for its literals
+					for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
+						epmem_dnf_literal* literal = *lit_iter;
+						if (!literal->potentials.count(uedge->edge_info.q0)) {
+							literal->potentials[uedge->edge_info.q0] = new epmem_sql_edge_set();
+						}
+						literal->potentials[uedge->edge_info.q0]->insert(edge_info);
+						literal->edge_map[edge_info] = interval_q;
+					}
+					// now recurse through the descendants of the interval
+					while (queue.size()) {
+						epmem_interval_query* descendant = queue.front();
+						queue.pop_front();
+						if (visited.count(descendant)) {
+							continue;
+						}
+						visited.insert(descendant);
+						uedge = descendant->unique_edge;
+						std::cout<<"uedge: "<<uedge<<std::endl;
+						edge_info;
+						edge_info.q0 = uedge->edge_info.q0;
+						edge_info.w = uedge->edge_info.w;
+						edge_info.q1 = descendant->q1;
+						for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
+							epmem_dnf_literal* literal = *lit_iter;
+							std::cout<<"literal: "<<literal<<std::endl;
+							// we only care to make it a match if
+							// it is in the frontier (ie. there is a satisfied path to the root), or
+							// it is already satisfied (ditto)
+							if (literal->num_matches || frontier.count(literal)) {
+								frontier.erase(literal);
+								if (!literal->matches.count(edge_info.q0)) {
+									literal->matches[edge_info.q0] = new epmem_sql_edge_multiset();
+								}
+								literal->matches[edge_info.q0]->insert(edge_info);
+								literal->edge_map[edge_info] = descendant;
+								bool was_matching = (literal->num_matches > 0);
+								literal->num_matches++;
+								// if it's a leaf and it wasn't satisfied before, change the score
+								// otherwise, recursively put mark descendant intervals as matching
+								if (literal->is_leaf) {
+									if (!was_matching) {
+										current_score += literal->weight;
+										current_cardinality += (literal->is_neg_q ? -1 : 1);
+										changed_score = true;
+									}
+								} else {
+									for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+										epmem_literal_set* children = (*attr_iter).second;
+										for (epmem_literal_set::iterator child_iter = children->begin(); child_iter != children->end(); child_iter++) {
+											epmem_dnf_literal* child = *child_iter;
+											frontier.insert(child);
+											if (child->potentials.count(edge_info.q1)) {
+												epmem_sql_edge_set* edges = child->potentials[edge_info.q1];
+												for (epmem_sql_edge_set::iterator edge_iter = edges->begin(); edge_iter != edges->end(); edge_iter++) {
+													std::cout<<"pushing: "<<child->edge_map[*edge_iter]<<std::endl;
+													if (child->edge_map[*edge_iter]) { // FIXME HACK I don't like this, but I don't understand why something could be in potentials but not in edge_map
+														queue.push_back(child->edge_map[*edge_iter]);
+													}
+												}
+											}
+										}
+									}
+								}
+							}
 						}
 					}
-					epmem_shrink_frontier(interval_q, frontier, current_score, current_cardinality, changed_score);
-					for (epmem_literal_set::iterator iter = future_frontier.begin(); iter != future_frontier.end(); iter++) {
-						frontier.insert(*iter);
+				} else {
+					// remove this interval as a potential match for its literals
+					for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
+						epmem_dnf_literal* literal = *lit_iter;
+						literal->potentials[uedge->edge_info.q0]->erase(edge_info);
+						if (literal->num_matches == 1) {
+							frontier.insert(literal);
+						}
+					}
+					// recursively remove matches from descendants
+					while (queue.size()) {
+						epmem_interval_query* descendant = queue.front();
+						queue.pop_front();
+						if (visited.count(descendant)) {
+							continue;
+						}
+						visited.insert(descendant);
+						uedge = descendant->unique_edge;
+						edge_info.q0 = uedge->edge_info.q0;
+						edge_info.w = uedge->edge_info.w;
+						edge_info.q1 = descendant->q1;
+						for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
+							epmem_dnf_literal* literal = *lit_iter;
+							// work only needs to be done if the interval is satisfying the literal
+							if (literal->matches.count(edge_info.q0) && literal->matches[edge_info.q0]->count(edge_info)) {
+								literal->matches[edge_info.q0]->erase(edge_info);
+								literal->num_matches--;
+								// if it's a leaf before and is no longer satisfied, decrease the score
+								// otherwise, recursively remove matches from descendants
+								if (literal->is_leaf) {
+									if (!literal->num_matches) {
+										current_score -= literal->weight;
+										current_cardinality -= (literal->is_neg_q ? -1 : 1);
+										changed_score = true;
+									}
+								} else {
+									// FIXME should really turn this into a parent_interval map
+									for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+										epmem_literal_set* children = (*attr_iter).second;
+										for (epmem_literal_set::iterator child_iter = children->begin(); child_iter != children->end(); child_iter++) {
+											epmem_dnf_literal* child = *child_iter;
+											if (child->potentials.count(edge_info.q1)) {
+												epmem_sql_edge_set* edges = child->potentials[edge_info.q1];
+												for (epmem_sql_edge_set::iterator edge_iter = edges->begin(); edge_iter != edges->end(); edge_iter++) {
+													queue.push_back(child->edge_map[*edge_iter]);
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+
 					}
 				}
 				// put the interval query back into the queue if there's more
@@ -3825,19 +3859,19 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			next_either = (next_edge > next_interval ? next_edge : next_interval);
 
 			// update the prohibits list to catch up
-			while (!prohibits.empty() && prohibits.back() > current_time) {
+			while (!prohibits.empty() && prohibits.back() > current_episode) {
 				prohibits.pop_back();
 			}
 
 			// ignore the episode if it is prohibited
-			while (!prohibits.empty() && current_time > next_either && current_time == prohibits.back()) {
-				current_time--;
+			while (!prohibits.empty() && current_episode > next_either && current_episode == prohibits.back()) {
+				current_episode--;
 				prohibits.pop_back();
 			}
 
 			if (true) {
 				char buf[256];
-				SNPRINTF( buf, 254, "CONSIDERING EPISODE %lld; (edges, intervals, score) = (%d, %d, %f)", current_time, (int) edge_pq.size(), (int) interval_pq.size(), current_score);
+				SNPRINTF( buf, 254, "CONSIDERING EPISODE %lld; (edges, intervals, score) = (%d, %d, %f)", current_episode, (int) edge_pq.size(), (int) interval_pq.size(), current_score);
 				std::cout << buf << std::endl;
 			}
 
@@ -3846,9 +3880,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			// * and the score was changed in this period
 			// * and the new score is higher than the best score
 			// then save the current time as the best one
-			if (current_time > next_either && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
+			if (current_episode > next_either && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
 				if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
-					best_episode = current_time;
+					best_episode = current_episode;
 				}
 				best_score = current_score;
 				best_cardinality = current_cardinality;
@@ -3866,9 +3900,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					best_bindings.clear();
 					epmem_node_set bound_nodes;
 					if (epmem_graph_match(begin, end, best_bindings, bound_nodes)) {
-						best_episode = current_time;
+						best_episode = current_episode;
 						best_graph_matched = true;
-						current_time = EPMEM_MEMID_NONE;
+						current_episode = EPMEM_MEMID_NONE;
 					}
 				}
 			}

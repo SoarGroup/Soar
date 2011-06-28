@@ -687,9 +687,11 @@ typedef struct epmem_sql_edge_struct epmem_sql_edge;
 
 // collection classes
 typedef std::list<epmem_dnf_literal*> epmem_literal_list;
+typedef std::list<epmem_interval_query*> epmem_interval_list;
 typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_map;
 typedef std::map<epmem_sql_edge, epmem_interval_query*> epmem_edge_interval_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
+typedef std::multiset<epmem_sql_edge> epmem_sql_edge_multiset;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;
 typedef std::set<epmem_node_id> epmem_node_set;
@@ -698,11 +700,13 @@ typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
 
 typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literals_map;
 typedef std::map<epmem_node_id, epmem_sql_edge_set*> epmem_node_edges_map;
+typedef std::map<epmem_node_id, epmem_sql_edge_multiset*> epmem_node_edges_multimap;
 
 // structs
 struct epmem_dnf_literal_struct {
-	epmem_sql_edge_set matches;
+	epmem_node_edges_multimap matches;
 	epmem_node_edges_map potentials;
+	int num_matches;
 	epmem_edge_interval_map edge_map;
     epmem_attr_literals_map parents;
     epmem_attr_literals_map children;
