@@ -3456,14 +3456,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 	}
 
-	// FIXME diagnostic code: print out the DNF
-	{
-		epmem_literal_set visited;
-		std::cout << "\ndigraph {" << std::endl;
-		epmem_print_dnf(dnf_root, visited);
-		std::cout << "}" << std::endl;
-	}
-
 	epmem_edge_sql_map sql_cache; // SQL query cache
 
 	// priority queues for interval walk
@@ -3638,7 +3630,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 			// create interval queries for this unique edge
 			{
-				int64_t edge_id = uedge->sql->column_int(0); // FIXME epmem_hash_id vs epmem_node_id? (also in dnf_literal)
+				int64_t edge_id = uedge->sql->column_int(0);
 				epmem_time_id promo_time;
 				bool is_lti = (uedge->is_edge_not_node && uedge->edge_info.has_q1);
 				if (is_lti) {
@@ -3920,10 +3912,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				prohibits.pop_back();
 			}
 
-			if (true) {
+			if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
 				char buf[256];
-				SNPRINTF( buf, 254, "CONSIDERING EPISODE %lld; (edges, intervals, score) = (%d, %d, %f)", current_episode, (int) edge_pq.size(), (int) interval_pq.size(), current_score);
-				std::cout << buf << std::endl;
+				SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %d, %f)\n", current_episode, current_cardinality, current_score);
+				print(my_agent, buf);
+				xml_generate_warning(my_agent, buf);
 			}
 
 			// if
@@ -3955,6 +3948,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						best_graph_matched = true;
 						current_episode = EPMEM_MEMID_NONE;
 					}
+				}
+				if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
+					char buf[256];
+					SNPRINTF(buf, 254, "NEW KING (perfect, graph-match): (%s, %s)\n", (current_cardinality == perfect_cardinality ? "true" : "false"), (best_graph_matched ? "true" : "false"));
+					print(my_agent, buf);
+					xml_generate_warning(my_agent, buf);
 				}
 			}
 		}
@@ -4034,7 +4033,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// cleanup
-	// FIXME have I missed anything?
 	epmem_uedge_set uedges;
 	for (epmem_interval_set::iterator iter = intervals.begin(); iter != intervals.end(); iter++) {
 		epmem_interval_query* interval = *iter;
@@ -4050,16 +4048,20 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		delete uedge;
 	}
 	for (epmem_literal_set::iterator iter = literals.begin(); iter != literals.end(); iter++) {
-		for (epmem_node_edges_map::iterator map_iter = (*iter)->potentials.begin(); map_iter != (*iter)->potentials.end(); map_iter++) {
+		epmem_dnf_literal* literal = *iter;
+		for (epmem_node_edges_multimap::iterator map_iter = literal->matches.begin(); map_iter != literal->matches.end(); map_iter++) {
 			delete (*map_iter).second;
 		}
-		for (epmem_attr_literals_map::iterator map_iter = (*iter)->parents.begin(); map_iter != (*iter)->parents.end(); map_iter++) {
+		for (epmem_node_edges_map::iterator map_iter = literal->potentials.begin(); map_iter != literal->potentials.end(); map_iter++) {
 			delete (*map_iter).second;
 		}
-		for (epmem_attr_literals_map::iterator map_iter = (*iter)->children.begin(); map_iter != (*iter)->children.end(); map_iter++) {
+		for (epmem_attr_literals_map::iterator map_iter = literal->parents.begin(); map_iter != literal->parents.end(); map_iter++) {
 			delete (*map_iter).second;
 		}
-		delete *iter;
+		for (epmem_attr_literals_map::iterator map_iter = literal->children.begin(); map_iter != literal->children.end(); map_iter++) {
+			delete (*map_iter).second;
+		}
+		delete literal;
 	}
 }
 
