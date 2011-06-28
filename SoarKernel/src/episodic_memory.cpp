@@ -3238,11 +3238,70 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 	}
 	epmem_literal_list::iterator next_iter = dnf_iter;
 	next_iter++;
+	epmem_node_set tried;
 	// go through the list of matches, binding each one to this literal in turn
 	for (epmem_node_edges_multimap::iterator q0_iter = literal->matches.begin(); q0_iter != literal->matches.end(); q0_iter++) {
+		epmem_node_id q0 = (*q0_iter).first;
 		epmem_sql_edge_multiset* matches = (*q0_iter).second;
 		for (epmem_sql_edge_multiset::iterator interval_iter = matches->begin(); interval_iter != matches->end(); interval_iter++) {
-			epmem_node_id node_id = (*interval_iter).q1;
+			epmem_sql_edge edge_info = (*interval_iter);
+			epmem_node_id node_id = edge_info.q1;
+			// try a different node if this one is already in use
+			if (bound_nodes.count(node_id) || tried.count(node_id)) {
+				continue;
+			}
+			tried.insert(node_id);
+			// check that it satisfies any parent/child relationships
+			bool relations_okay = true;
+			// for all parents
+			for (epmem_attr_literals_map::iterator attr_iter = literal->parents.begin(); relations_okay && attr_iter != literal->parents.end(); attr_iter++) {
+				epmem_literal_set* parents = (*attr_iter).second;
+				for (epmem_literal_set::iterator par_iter = parents->begin(); relations_okay && par_iter != parents->end(); par_iter++) {
+					epmem_dnf_literal* parent = *par_iter;
+					// if the parent is not bound, there is no constraint to violate
+					if (bindings.count(parent)) {
+						epmem_node_id parent_id = bindings[parent];
+						// if the parent is bound but nothing with that node is matching, or
+						// if the edge with this bound parent is not matching this node,
+						// this binding cannot be correct
+						if (!literal->matches.count(parent_id) || !literal->matches[parent_id]->count(edge_info)) {
+							relations_okay = false;
+						}
+					}
+				}
+			}
+			// for all children
+			for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); relations_okay && attr_iter != literal->children.end(); attr_iter++) {
+				Symbol* attr = (*attr_iter).first;
+				epmem_literal_set* children = (*attr_iter).second;
+				for (epmem_literal_set::iterator child_iter = children->begin(); relations_okay && child_iter != children->end(); child_iter++) {
+					epmem_dnf_literal* child = *child_iter;
+					// if the child is not bound, there is no constraint to violate
+					if (bindings.count(child)) {
+						epmem_node_id child_id = bindings[child];
+						// if nothing with this binding is matching, this binding cannot be correct
+						// otherwise, check that the exact edge is matching
+						if (!child->matches.count(node_id)) {
+							relations_okay = false;
+						} else {
+							epmem_sql_edge_multiset* child_matches = child->matches[node_id];
+							bool child_okay = false;
+							for (epmem_sql_edge_multiset::iterator edge_iter = child_matches->begin(); !child_okay && edge_iter != child_matches->end(); edge_iter++) {
+								epmem_sql_edge child_edge = *edge_iter;
+								if (child_edge.q0 == node_id && child_edge.w == attr && child_edge.q1 == child_id) {
+									child_okay = true;
+								}
+							}
+							if (!child_okay) {
+								relations_okay = false;
+							}
+						}
+					}
+				}
+			}
+			if (!relations_okay) {
+				continue;
+			}
 			// temporarily modify the bindings and bound nodes
 			bindings[literal] = node_id;
 			bound_nodes.insert(node_id);
