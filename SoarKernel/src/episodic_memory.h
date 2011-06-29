@@ -480,17 +480,35 @@ typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
 typedef std::map<epmem_node_id, epmem_shared_literal *> epmem_literal_mapping;
 
 // types/structures to facilitate re-use of identifiers
+typedef struct epmem_id_pair_time_struct epmem_id_pair_time;
 typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
 typedef std::map<epmem_node_id, uint64_t> epmem_id_ref_counter;
+typedef std::priority_queue<epmem_id_pair_time> epmem_id_time_queue;
+typedef std::map<epmem_id_pool*, epmem_id_time_queue*> epmem_pool_last_use;
 typedef struct epmem_id_reservation_struct
 {
 	epmem_node_id my_id;
 	epmem_hash_id my_hash;
 	epmem_id_pool *my_pool;
 } epmem_id_reservation;
+typedef struct epmem_id_pair_time_struct
+{
+	epmem_node_id value;
+	epmem_node_id parent;
+	epmem_time_id time;
+	bool operator<(const epmem_id_pair_time&other) const {
+		if (time < other.time) {
+			return true;
+		} else if (value < other.value) {
+			return true;
+		} else {
+			return (parent < other.parent);
+		}
+	}
+};
 
 // represents a graph edge (i.e. identifier)
 // follows cs theory notation of finite automata: q1 = d( q0, w )

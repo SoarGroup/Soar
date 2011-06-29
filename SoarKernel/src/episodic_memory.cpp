@@ -58,7 +58,6 @@
 // storing new episodes			epmem::storage
 // non-cue-based queries		epmem::ncb
 // cue-based queries			epmem::cbr
-// lti storage					epmem::store
 
 // vizualization				epmem::viz
 
@@ -2129,25 +2128,17 @@ void epmem_new_episode( agent *my_agent )
 										// if something leftover, try to use it
 										if ( !(*my_id_repo)->empty() )
 										{										
-											pool_p = (*my_id_repo)->begin();
-
-											do
-											{
-												if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ] == 0 )
-												{
-													(*w_p)->epmem_id = pool_p->second;
-													(*w_p)->value->id.epmem_id = pool_p->first;
-													(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
-													(*my_id_repo)->erase( pool_p );
-													(*my_agent->epmem_id_replacement)[ (*w_p)->epmem_id ] = (*my_id_repo);
-
-													pool_p = (*my_id_repo)->end();
-												}
-												else
-												{
-													pool_p++;
-												}
-											} while ( pool_p != (*my_id_repo)->end() );
+											// grab the cached last-used node
+											if ( ( my_agent->epmem_pool_use_time->count(*my_id_repo) ) && ( (*my_agent->epmem_pool_use_time)[*my_id_repo]->size() > 0 ) ) {
+												epmem_id_pair_time id_pair = (*my_agent->epmem_pool_use_time)[*my_id_repo]->top();
+												(*my_agent->epmem_pool_use_time)[*my_id_repo]->pop();
+												(*w_p)->epmem_id = id_pair.parent;
+												(*w_p)->value->id.epmem_id = id_pair.value;
+												(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
+												pool_p = (*my_id_repo)->find(id_pair.value);
+												(*my_id_repo)->erase( pool_p );
+												(*my_agent->epmem_id_replacement)[ (*w_p)->epmem_id ] = (*my_id_repo);
+											}
 										}									
 									}
 									else
@@ -4034,30 +4025,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
-// LTI Storage (epmem::store)
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-
-void epmem_store_lti( agent *my_agent, Symbol *state, Symbol *lti, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, epmem_id_mapping *id_record = NULL )
-{
-	my_agent->epmem_stmts_graph->update_lti->bind_int( 1, static_cast<uint64_t>( my_agent->epmem_stats->time->get_value() ) - 1 );
-	my_agent->epmem_stmts_graph->update_lti->bind_int( 2, static_cast<uint64_t>( lti->id.name_letter ) );
-	my_agent->epmem_stmts_graph->update_lti->bind_int( 3, static_cast<uint64_t>( lti->id.name_number ) );
-
-	if ( my_agent->epmem_stmts_graph->update_lti->execute() == soar_module::ok )
-	{
-		epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, lti );
-	}
-	else
-	{
-		epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, lti );
-	}
-
-	my_agent->epmem_stmts_graph->update_lti->reinitialize();
-}
-
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
 // Visualization (epmem::viz)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -5043,10 +5010,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 					
 					// add one to the cbr stat
 					my_agent->epmem_stats->cbr->set_value( my_agent->epmem_stats->cbr->get_value() + 1 );
-				}
-				else if ( path == 4 )
-				{
-					epmem_store_lti( my_agent, state, store, meta_wmes, retrieval_wmes );
 				}
 			}
 			else

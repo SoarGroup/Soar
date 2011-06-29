@@ -1626,6 +1626,7 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 	  if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 	  {
 		bool lti = ( w->value->id.smem_lti != NIL );
+		epmem_id_pool* replacement = NULL;
 		  
 		if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
 	    {
@@ -1635,7 +1636,8 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 		  if ( !lti )
 		  {
 		    epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find( w->epmem_id );
-		    (*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
+			replacement = p->second;
+		    (*replacement)[ w->value->id.epmem_id ] = w->epmem_id;
 		    thisAgent->epmem_id_replacement->erase( p );
 		  }
 		}
@@ -1644,6 +1646,14 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 		if ( !lti )
 		{
 		  (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
+		  // if the id is no longer in use, make it the last used ID of its pool
+		  if ( replacement && ( (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ] == 0 ) ) {
+			if ( !thisAgent->epmem_pool_use_time->count( replacement ) ) {
+			  (*thisAgent->epmem_pool_use_time)[replacement] = new epmem_id_time_queue();
+			}
+			epmem_id_pair_time id_pair_time = { w->value->id.epmem_id, w->epmem_id, thisAgent->epmem_stats->time->get_value() };
+			(*thisAgent->epmem_pool_use_time)[replacement]->push(id_pair_time);
+		  }
 		}
 	  }
 	  else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
