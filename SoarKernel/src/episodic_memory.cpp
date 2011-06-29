@@ -3596,29 +3596,28 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							created = true;
 						} else {
 							// otherwise, create a new unique edge query
-							epmem_unique_edge_query* child_uedge = new epmem_unique_edge_query();
-							child_uedge->edge_info = info;
-							child_uedge->depth = (uedge ? uedge->depth + 1 : 1);
-							child_uedge->is_edge_not_node = child_literal->is_edge_not_node;
-							child_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->edge_query);
-							child_uedge->literals.insert(child_literal);
-
-							// take first step
-							child_uedge->sql->prepare();
+							soar_module::sqlite_statement* uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->edge_query);
+							uedge_sql->prepare();
 							int bind_pos = 1;
-							child_uedge->sql->bind_int(bind_pos++, info.q0);
-							child_uedge->sql->bind_int(bind_pos++, epmem_temporal_hash(my_agent, info.w));
+							uedge_sql->bind_int(bind_pos++, info.q0);
+							uedge_sql->bind_int(bind_pos++, epmem_temporal_hash(my_agent, info.w));
 							if (child_literal->has_q1) {
-								child_uedge->sql->bind_int(bind_pos++, info.q1);
+								uedge_sql->bind_int(bind_pos++, info.q1);
 							}
-							child_uedge->sql->bind_int(bind_pos++, after);
-							if (child_uedge->sql->execute() == soar_module::row) {
+							uedge_sql->bind_int(bind_pos++, after);
+							if (uedge_sql->execute() == soar_module::row) {
+								epmem_unique_edge_query* child_uedge = new epmem_unique_edge_query();
+								child_uedge->edge_info = info;
+								child_uedge->depth = (uedge ? uedge->depth + 1 : 1);
+								child_uedge->is_edge_not_node = child_literal->is_edge_not_node;
+								child_uedge->sql = uedge_sql;
+								child_uedge->literals.insert(child_literal);
 								child_uedge->time = child_uedge->sql->column_int(2);
 								edge_pq.push(child_uedge);
 								sql_cache[child_uedge->edge_info] = child_uedge;
 								created = true;
 							} else {
-								delete child_uedge;
+								delete uedge_sql;
 							}
 						}
 						if (!created) {
@@ -3687,11 +3686,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 				for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
 					for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
-						epmem_interval_query* interval_q = new epmem_interval_query();
-						interval_q->is_end_point = point_type;
-						interval_q->unique_edge = uedge;
-						interval_q->q1 = uedge->sql->column_int(1);
-
 						// pick a timer (any timer)
 						soar_module::timer* sql_timer = NULL;
 						switch (interval_type) {
@@ -3737,12 +3731,16 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 						interval_sql->bind_int(bind_pos++, before);
 						if (interval_sql->execute() == soar_module::row) {
+							epmem_interval_query* interval_q = new epmem_interval_query();
+							interval_q->is_end_point = point_type;
+							interval_q->unique_edge = uedge;
+							interval_q->q1 = uedge->sql->column_int(1);
 							interval_q->time = interval_sql->column_int(0);
 							interval_q->sql = interval_sql;
 							interval_pq.push(interval_q);
 							intervals.insert(interval_q);
 						} else {
-							delete interval_q;
+							delete interval_sql;
 						}
 					}
 				}
