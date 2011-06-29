@@ -268,31 +268,14 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *ncb_node_rit;
 
 		soar_module::timer *query_dnf;
-		soar_module::timer *query_graph_match;
-		soar_module::timer *query_pos_start_ep;
-		soar_module::timer *query_pos_start_now;
-		soar_module::timer *query_pos_start_point;
-		soar_module::timer *query_pos_end_ep;
-		soar_module::timer *query_pos_end_now;
-		soar_module::timer *query_pos_end_point;
-		soar_module::timer *query_neg_start_ep;
-		soar_module::timer *query_neg_start_now;
-		soar_module::timer *query_neg_start_point;
-		soar_module::timer *query_neg_end_ep;
-		soar_module::timer *query_neg_end_now;
-		soar_module::timer *query_neg_end_point;
-
+        soar_module::timer *edge_query;
 		soar_module::timer *query_start_ep;
 		soar_module::timer *query_start_now;
 		soar_module::timer *query_start_point;
 		soar_module::timer *query_end_ep;
 		soar_module::timer *query_end_now;
 		soar_module::timer *query_end_point;
-
-        soar_module::timer *query_lti;
-
-        soar_module::timer *edge_query;
-        soar_module::timer *interval_query;
+		soar_module::timer *query_graph_match;
 
 		epmem_timer_container( agent *my_agent );
 };

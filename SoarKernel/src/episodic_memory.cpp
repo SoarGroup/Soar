@@ -438,44 +438,8 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::t
 	query_dnf = new epmem_timer( "query_dnf", my_agent, soar_module::timer::three );
 	add( query_dnf );
 
-	query_graph_match = new epmem_timer( "query_graph_match", my_agent, soar_module::timer::three );
-	add( query_graph_match );
-
-	query_pos_start_ep = new epmem_timer( "query_pos_start_ep", my_agent, soar_module::timer::three );
-	add( query_pos_start_ep );
-
-	query_pos_start_now = new epmem_timer( "query_pos_start_now", my_agent, soar_module::timer::three );
-	add( query_pos_start_now );
-
-	query_pos_start_point = new epmem_timer( "query_pos_start_point", my_agent, soar_module::timer::three );
-	add( query_pos_start_point );
-
-	query_pos_end_ep = new epmem_timer( "query_pos_end_ep", my_agent, soar_module::timer::three );
-	add( query_pos_end_ep );
-
-	query_pos_end_now = new epmem_timer( "query_pos_end_now", my_agent, soar_module::timer::three );
-	add( query_pos_end_now );
-
-	query_pos_end_point = new epmem_timer( "query_pos_end_point", my_agent, soar_module::timer::three );
-	add( query_pos_end_point );
-
-	query_neg_start_ep = new epmem_timer( "query_neg_start_ep", my_agent, soar_module::timer::three );
-	add( query_neg_start_ep );
-
-	query_neg_start_now = new epmem_timer( "query_neg_start_now", my_agent, soar_module::timer::three );
-	add( query_neg_start_now );
-
-	query_neg_start_point = new epmem_timer( "query_neg_start_point", my_agent, soar_module::timer::three );
-	add( query_neg_start_point );
-
-	query_neg_end_ep = new epmem_timer( "query_neg_end_ep", my_agent, soar_module::timer::three );
-	add( query_neg_end_ep );
-
-	query_neg_end_now = new epmem_timer( "query_neg_end_now", my_agent, soar_module::timer::three );
-	add( query_neg_end_now );
-
-	query_neg_end_point = new epmem_timer( "query_neg_end_point", my_agent, soar_module::timer::three );
-	add( query_neg_end_point );
+	edge_query = new epmem_timer( "edge_query", my_agent, soar_module::timer::three );
+	add( edge_query );
 
 	query_start_ep = new epmem_timer( "query_start_ep", my_agent, soar_module::timer::three );
 	add( query_start_ep );
@@ -495,8 +459,8 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::t
 	query_end_point = new epmem_timer( "query_end_point", my_agent, soar_module::timer::three );
 	add( query_end_point );
 
-	query_lti = new epmem_timer( "query_lti", my_agent, soar_module::timer::three );
-	add( query_lti );
+	query_graph_match = new epmem_timer( "query_graph_match", my_agent, soar_module::timer::three );
+	add( query_graph_match );
 
 	/////////////////////////////
 	// connect to rit state
@@ -3394,6 +3358,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 	// build the DNF graph while checking for leaf WMEs
 	{
+		my_agent->epmem_timers->query_dnf->start();
 		tc_number tc = get_new_tc_number(my_agent);
 		epmem_wme_list* pos_query_wmes = epmem_get_augs_of_id(pos_query, tc);
 		epmem_wme_list* neg_query_wmes = NULL;
@@ -3454,6 +3419,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			}
 			delete query_wmes;
 		}
+		my_agent->epmem_timers->query_dnf->stop();
 	}
 
 	epmem_edge_sql_map sql_cache; // SQL query cache
@@ -3941,7 +3907,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_literal_list::iterator end = gm_ordered_list.end();
 					best_bindings.clear();
 					epmem_node_set bound_nodes;
-					if (epmem_graph_match(begin, end, best_bindings, bound_nodes)) {
+					my_agent->epmem_timers->query_graph_match->start();
+					bool graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes);
+					my_agent->epmem_timers->query_graph_match->stop();
+					if (graph_matched) {
 						best_episode = current_episode;
 						best_graph_matched = true;
 						current_episode = EPMEM_MEMID_NONE;
