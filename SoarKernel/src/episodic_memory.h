@@ -494,7 +494,7 @@ typedef struct epmem_id_reservation_struct
 	epmem_hash_id my_hash;
 	epmem_id_pool *my_pool;
 } epmem_id_reservation;
-typedef struct epmem_id_pair_time_struct
+struct epmem_id_pair_time_struct
 {
 	epmem_node_id value;
 	epmem_node_id parent;
