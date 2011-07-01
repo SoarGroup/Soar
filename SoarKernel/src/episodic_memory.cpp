@@ -3315,6 +3315,71 @@ void epmem_print_interval_set(epmem_interval_set& set) {
 	}
 }
 
+void epmem_print_state(epmem_interval_set& intervals) {
+	std::cout << "digraph {" << std::endl;
+	epmem_uedge_set uedges;
+	std::set<std::pair<epmem_unique_edge_query*, epmem_node_id> > triples;
+	for (epmem_interval_set::iterator iter = intervals.begin(); iter != intervals.end(); iter++) {
+		epmem_interval_query* interval = *iter;
+		uedges.insert(interval->uedge);
+		std::pair<epmem_unique_edge_query*, epmem_node_id> pair = std::make_pair(interval->uedge, interval->q1);
+		if (!triples.count(pair)) {
+			triples.insert(pair);
+			std::cout << "\"" << interval->q1 << interval->uedge << "\" [fontcolor=\"#4E9A06\", label=\"" << interval << "\\n" << interval->q1 << "\"]" << std::endl;
+			std::cout << "\"" << interval->uedge << "\" -> \"" << interval->q1 << interval->uedge << "\"" << std::endl;
+		}
+	}
+	epmem_literal_set literals;
+	for (epmem_uedge_set::iterator iter = uedges.begin(); iter != uedges.end(); iter++) {
+		epmem_unique_edge_query* uedge = *iter;
+		literals.insert(uedge->literals.begin(), uedge->literals.end());
+		std::cout << "\"" << uedge << "\" [fontcolor=\"#5C3566\", label=\"" << uedge << "\\n" << uedge->edge_info.q0 << "\"]" << std::endl;
+		for (epmem_literal_set::iterator liter = uedge->literals.begin(); liter != uedge->literals.end(); liter++) {
+			std::cout << "\"" << *liter << "\" -> \"" << uedge << "\"" << std::endl;
+		}
+	}
+	for (epmem_literal_set::iterator iter = literals.begin(); iter != literals.end(); iter++) {
+		epmem_dnf_literal* literal = *iter;
+		for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
+			Symbol* attr = (*attr_iter).first;
+			if (!attr) {
+				continue;
+			}
+			epmem_literal_set* children_set = (*attr_iter).second;
+			for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
+				epmem_dnf_literal* child = *child_iter;
+				std::cout << '"' << child << "\" [style=\"filled\", fillcolor=\"" << (child->is_neg_q ? "#CC0000" : "#3465A4") << "\", label=\"" << child << " [" << child->weight << "]\"]" << std::endl;
+				std::cout << '"' << literal << '"' << "->" << '"' << child << '"' << " [label=\"";
+				switch (attr->common.symbol_type) {
+					case SYM_CONSTANT_SYMBOL_TYPE:
+						std::cout << attr->sc.name;
+						break;
+					case INT_CONSTANT_SYMBOL_TYPE:
+						std::cout << attr->ic.value;
+						break;
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
+						std::cout << attr->fc.value;
+						break;
+				}
+				std::cout << "\"]" << std::endl;
+			}
+		}
+		epmem_interval_set matches;
+		for (epmem_node_edges_multimap::iterator node_iter = literal->matches.begin(); node_iter != literal->matches.end(); node_iter++) {
+			epmem_sql_edge_multiset* intervs = (*node_iter).second;
+			for (epmem_sql_edge_multiset::iterator edge_iter = intervs->begin(); edge_iter != intervs->end(); edge_iter++) {
+				matches.insert(literal->edge_map[*edge_iter]);
+			}
+		}
+		for (epmem_interval_set::iterator inter = matches.begin(); inter != matches.end(); inter++) {
+			epmem_interval_query* interval = *inter;
+			std::cout << "\"" << interval->q1 << interval->uedge << "\" [style=\"filled\", fillcolor=\"#D3D7CF\"]" << std::endl;
+			std::cout << "\"" << interval->uedge << "\" [style=\"filled\", fillcolor=\"#D3D7CF\"]" << std::endl;
+		}
+	}
+	std::cout << "}" << std::endl;
+}
+
 void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_lti_map& ltis, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes) {
 	// a query must contain a positive cue
 	if (pos_query == NULL) {
@@ -3455,29 +3520,29 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// we make an SQL statement just so we don't have to do anything special at cleanup
 		epmem_unique_edge_query* fake_uedge = new epmem_unique_edge_query();
 		fake_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
-		fake_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
+		fake_uedge->edge_info.w = NULL;
 		fake_uedge->edge_info.q1 = EPMEM_NODEID_BAD;
 		fake_uedge->is_edge_not_node = 1;
 		fake_uedge->depth = -1;
 		fake_uedge->literals.insert(fake_root);
 		fake_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-		fake_uedge->time = -1;
+		fake_uedge->time = before;
 		epmem_interval_query* fake_interval = new epmem_interval_query();
 		fake_interval->q1 = EPMEM_NODEID_BAD;
 		fake_interval->is_end_point = true;
-		fake_interval->unique_edge = fake_uedge;
+		fake_interval->uedge = fake_uedge;
 		fake_interval->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		fake_interval->sql->prepare();
 		fake_interval->sql->bind_int(1, before);
 		fake_interval->sql->execute();
-		fake_interval->time = fake_interval->sql->column_int(0);
+		fake_interval->time = before;
 		interval_pq.push(fake_interval);
 		intervals.insert(fake_interval);
 
 		// insert dummy unique edge and interval end point queries for DNF root
 		epmem_unique_edge_query* root_uedge = new epmem_unique_edge_query();
 		root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
-		root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
+		root_uedge->edge_info.w = NULL;
 		root_uedge->edge_info.q1 = EPMEM_NODEID_ROOT;
 		root_uedge->is_edge_not_node = 1;
 		root_uedge->depth = 0;
@@ -3491,14 +3556,22 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_interval_query* root_interval = new epmem_interval_query();
 		root_interval->q1 = EPMEM_NODEID_ROOT;
 		root_interval->is_end_point = true;
-		root_interval->unique_edge = root_uedge;
+		root_interval->uedge = root_uedge;
 		root_interval->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		root_interval->sql->prepare();
 		root_interval->sql->bind_int(1, before);
 		root_interval->sql->execute();
-		root_interval->time = root_interval->sql->column_int(0);
+		root_interval->time = before;
 		interval_pq.push(root_interval);
 		intervals.insert(root_interval);
+	}
+
+	// FIXME diagnostic code: print out the DNF 
+	{
+		epmem_literal_set visited;
+		std::cout << "\ndigraph {" << std::endl;
+		epmem_print_dnf(dnf_root, visited);
+		std::cout << "}" << std::endl;
 	}
 
 	// main loop of interval walk
@@ -3547,7 +3620,20 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 						// if we've seen this edge before, just add the literal to it and continue)
 						if (sql_cache.count(info)) {
-							sql_cache[info]->literals.insert(child_literal);
+							epmem_unique_edge_query* child_uedge = sql_cache[info];
+							child_uedge->literals.insert(child_literal);
+							epmem_node_id q0 = info.q0;
+							// add currently matching intervals to the literal
+							for (epmem_node_intervals_multimap::iterator matchter = child_uedge->matches.begin(); matchter != child_uedge->matches.end(); matchter++) {
+								if (!child_literal->potentials.count(q0)) {
+									child_literal->potentials[q0] = new epmem_sql_edge_set();
+								}
+								child_literal->potentials[q0]->insert(info);
+								if (!child_literal->matches.count(q0)) {
+									child_literal->matches[q0] = new epmem_sql_edge_multiset();
+								}
+								child_literal->matches[q0]->insert(info);
+							}
 							created = true;
 						} else {
 							// otherwise, create a new unique edge query
@@ -3615,7 +3701,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							// create new sql queries to simplify the cleanup (no double frees)
 							epmem_interval_query* end_q = new epmem_interval_query();
 							end_q->is_end_point = 1;
-							end_q->unique_edge = uedge;
+							end_q->uedge = uedge;
 							end_q->q1 = uedge->sql->column_int(1);
 							end_q->time = interval_sql->column_int(0);
 							end_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
@@ -3626,7 +3712,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							intervals.insert(end_q);
 							epmem_interval_query* start_q = new epmem_interval_query();
 							start_q->is_end_point = 0;
-							start_q->unique_edge = uedge;
+							start_q->uedge = uedge;
 							start_q->q1 = uedge->sql->column_int(1);
 							start_q->time = promo_time - 1;
 							start_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
@@ -3688,7 +3774,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						if (interval_sql->execute() == soar_module::row) {
 							epmem_interval_query* interval_q = new epmem_interval_query();
 							interval_q->is_end_point = point_type;
-							interval_q->unique_edge = uedge;
+							interval_q->uedge = uedge;
 							interval_q->q1 = uedge->sql->column_int(1);
 							interval_q->time = interval_sql->column_int(0);
 							interval_q->sql = interval_sql;
@@ -3712,32 +3798,32 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		bool changed_score = false;
 
 		// process all intervals before the next edge arrives
-		while (!interval_pq.empty() && interval_pq.top()->time > next_edge && current_episode > after) {
+		while (interval_pq.size() && interval_pq.top()->time > next_edge && current_episode > after) {
 			// process all interval endpoints at this time step
 			next_interval = interval_pq.top()->time;
 			if (next_interval < current_episode) {
 				current_episode = next_interval;
 			}
-			while (!interval_pq.empty() && interval_pq.top()->time == next_interval) {
-				epmem_interval_query* interval_q = interval_pq.top();
+			while (interval_pq.size() && interval_pq.top()->time == next_interval) {
+				epmem_interval_query* interval = interval_pq.top();
 				interval_pq.pop();
-				epmem_unique_edge_query* uedge = interval_q->unique_edge;
-				epmem_sql_edge edge_info;
-				edge_info.q0 = uedge->edge_info.q0;
-				edge_info.w = uedge->edge_info.w;
-				edge_info.q1 = interval_q->q1;
+				epmem_unique_edge_query* uedge = interval->uedge;
+				epmem_sql_edge info;
+				info.q0 = uedge->edge_info.q0;
+				info.w = uedge->edge_info.w;
+				info.q1 = interval->q1;
 				epmem_interval_list queue;
 				epmem_interval_set visited;
-				queue.push_back(interval_q);
-				if (interval_q->is_end_point) {
+				queue.push_back(interval);
+				if (interval->is_end_point) {
 					// add this interval as a potential match for its literals
 					for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
 						epmem_dnf_literal* literal = *lit_iter;
-						if (!literal->potentials.count(edge_info.q0)) {
-							literal->potentials[edge_info.q0] = new epmem_sql_edge_set();
+						if (!literal->potentials.count(info.q0)) {
+							literal->potentials[info.q0] = new epmem_sql_edge_set();
 						}
-						literal->potentials[edge_info.q0]->insert(edge_info);
-						literal->edge_map[edge_info] = interval_q;
+						literal->potentials[info.q0]->insert(info);
+						literal->edge_map[info] = interval;
 					}
 					// now recurse through the descendants of the interval
 					while (queue.size()) {
@@ -3747,10 +3833,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							continue;
 						}
 						visited.insert(descendant);
-						uedge = descendant->unique_edge;
-						edge_info.q0 = uedge->edge_info.q0;
-						edge_info.w = uedge->edge_info.w;
-						edge_info.q1 = descendant->q1;
+						uedge = descendant->uedge;
+						info.q0 = uedge->edge_info.q0;
+						info.w = uedge->edge_info.w;
+						info.q1 = descendant->q1;
+						// add this interval as a match for its unique query
+						if (!uedge->matches.count(info.q0)) {
+							uedge->matches[info.q0] = new epmem_interval_multiset();
+						}
+						uedge->matches[info.q0]->insert(interval);
 						for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
 							epmem_dnf_literal* literal = *lit_iter;
 							// we only care to make it a match if
@@ -3758,10 +3849,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							// it is already satisfied (ditto)
 							if (literal->num_matches || frontier.count(literal)) {
 								frontier.erase(literal);
-								if (!literal->matches.count(edge_info.q0)) {
-									literal->matches[edge_info.q0] = new epmem_sql_edge_multiset();
+								if (!literal->matches.count(info.q0)) {
+									literal->matches[info.q0] = new epmem_sql_edge_multiset();
 								}
-								literal->matches[edge_info.q0]->insert(edge_info);
+								literal->matches[info.q0]->insert(info);
 								bool was_matching = (literal->num_matches > 0);
 								literal->num_matches++;
 								// if it's a leaf and it wasn't satisfied before, change the score
@@ -3778,8 +3869,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 										for (epmem_literal_set::iterator child_iter = children->begin(); child_iter != children->end(); child_iter++) {
 											epmem_dnf_literal* child = *child_iter;
 											frontier.insert(child);
-											if (child->potentials.count(edge_info.q1)) {
-												epmem_sql_edge_set* edges = child->potentials[edge_info.q1];
+											if (child->potentials.count(info.q1)) {
+												epmem_sql_edge_set* edges = child->potentials[info.q1];
 												for (epmem_sql_edge_set::iterator edge_iter = edges->begin(); edge_iter != edges->end(); edge_iter++) {
 													queue.push_back(child->edge_map[*edge_iter]);
 												}
@@ -3794,7 +3885,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					// remove this interval as a potential match for its literals
 					for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
 						epmem_dnf_literal* literal = *lit_iter;
-						literal->potentials[uedge->edge_info.q0]->erase(edge_info);
+						literal->potentials[uedge->edge_info.q0]->erase(info);
 						if (literal->num_matches == 1) {
 							frontier.insert(literal);
 						}
@@ -3807,15 +3898,17 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							continue;
 						}
 						visited.insert(descendant);
-						uedge = descendant->unique_edge;
-						edge_info.q0 = uedge->edge_info.q0;
-						edge_info.w = uedge->edge_info.w;
-						edge_info.q1 = descendant->q1;
+						uedge = descendant->uedge;
+						info.q0 = uedge->edge_info.q0;
+						info.w = uedge->edge_info.w;
+						info.q1 = descendant->q1;
+						// remove this interval as a match from its unique edge
+						uedge->matches[info.q0]->erase(interval);
 						for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
 							epmem_dnf_literal* literal = *lit_iter;
 							// work only needs to be done if the interval is satisfying the literal
-							if (literal->matches.count(edge_info.q0) && literal->matches[edge_info.q0]->count(edge_info)) {
-								literal->matches[edge_info.q0]->erase(edge_info);
+							if (literal->matches.count(info.q0) && literal->matches[info.q0]->count(info)) {
+								literal->matches[info.q0]->erase(info);
 								literal->num_matches--;
 								// if it's a leaf before and is no longer satisfied, decrease the score
 								// otherwise, recursively remove matches from descendants
@@ -3830,8 +3923,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 										epmem_literal_set* children = (*attr_iter).second;
 										for (epmem_literal_set::iterator child_iter = children->begin(); child_iter != children->end(); child_iter++) {
 											epmem_dnf_literal* child = *child_iter;
-											if (child->potentials.count(edge_info.q1)) {
-												epmem_sql_edge_set* edges = child->potentials[edge_info.q1];
+											if (child->potentials.count(info.q1)) {
+												epmem_sql_edge_set* edges = child->potentials[info.q1];
 												for (epmem_sql_edge_set::iterator edge_iter = edges->begin(); edge_iter != edges->end(); edge_iter++) {
 													queue.push_back(child->edge_map[*edge_iter]);
 												}
@@ -3845,21 +3938,21 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					}
 				}
 				// put the interval query back into the queue if there's more
-				if (interval_q->sql->execute() == soar_module::row) {
-					interval_q->time = interval_q->sql->column_int(0);
-					interval_pq.push(interval_q);
+				if (interval->sql->execute() == soar_module::row) {
+					interval->time = interval->sql->column_int(0);
+					interval_pq.push(interval);
 				}  
 			}
 			next_interval = interval_pq.top()->time;
 			next_either = (next_edge > next_interval ? next_edge : next_interval);
 
 			// update the prohibits list to catch up
-			while (!prohibits.empty() && prohibits.back() > current_episode) {
+			while (prohibits.size() && prohibits.back() > current_episode) {
 				prohibits.pop_back();
 			}
 
 			// ignore the episode if it is prohibited
-			while (!prohibits.empty() && current_episode > next_either && current_episode == prohibits.back()) {
+			while (prohibits.size() && current_episode > next_either && current_episode == prohibits.back()) {
 				current_episode--;
 				prohibits.pop_back();
 			}
@@ -3870,6 +3963,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				print(my_agent, buf);
 				xml_generate_warning(my_agent, buf);
 			}
+
+			epmem_print_state(intervals);
 
 			// if
 			// * the current time is still before any new intervals
@@ -3991,7 +4086,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_uedge_set uedges;
 	for (epmem_interval_set::iterator iter = intervals.begin(); iter != intervals.end(); iter++) {
 		epmem_interval_query* interval = *iter;
-		uedges.insert(interval->unique_edge);
+		uedges.insert(interval->uedge);
 		delete interval->sql;
 		delete interval;
 	}
@@ -3999,6 +4094,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	for (epmem_uedge_set::iterator iter = uedges.begin(); iter != uedges.end(); iter++) {
 		epmem_unique_edge_query* uedge = *iter;
 		literals.insert(uedge->literals.begin(), uedge->literals.end());
+		for (epmem_node_intervals_multimap::iterator map_iter = uedge->matches.begin(); map_iter != uedge->matches.end(); map_iter++) {
+			delete (*map_iter).second;
+		}
 		delete uedge->sql;
 		delete uedge;
 	}

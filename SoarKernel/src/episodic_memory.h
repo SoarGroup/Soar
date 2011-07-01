@@ -689,9 +689,11 @@ typedef struct epmem_sql_edge_struct epmem_sql_edge;
 // collection classes
 typedef std::list<epmem_dnf_literal*> epmem_literal_list;
 typedef std::list<epmem_interval_query*> epmem_interval_list;
+typedef std::list<epmem_unique_edge_query*> epmem_uedge_list;
 typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_map;
 typedef std::map<epmem_sql_edge, epmem_interval_query*> epmem_edge_interval_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
+typedef std::multiset<epmem_interval_query*> epmem_interval_multiset;
 typedef std::multiset<epmem_sql_edge> epmem_sql_edge_multiset;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;
@@ -700,21 +702,22 @@ typedef std::set<epmem_sql_edge> epmem_sql_edge_set;
 typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
 
 typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literals_map;
-typedef std::map<epmem_node_id, epmem_sql_edge_set*> epmem_node_edges_map;
+typedef std::map<epmem_node_id, epmem_interval_multiset*> epmem_node_intervals_multimap;
 typedef std::map<epmem_node_id, epmem_sql_edge_multiset*> epmem_node_edges_multimap;
+typedef std::map<epmem_node_id, epmem_sql_edge_set*> epmem_node_edges_map;
 
 // structs
 struct epmem_sql_edge_struct {
 	epmem_node_id q0;
 	Symbol *w;
 	epmem_node_id q1;
-	bool operator<(const epmem_sql_edge &other) const {
+	bool operator<(const epmem_sql_edge& other) const {
 		if (q0 != other.q0) {
-			return q0 < other.q0;;
+			return (q0 < other.q0);
 		} else if (w != other.w) {
-			return w < other.w;;
+			return (w < other.w);
 		} else {
-			return q1 < other.q1;;
+			return (q1 < other.q1);
 		}
 	}
 };
@@ -741,12 +744,13 @@ struct epmem_unique_edge_query_struct {
 	epmem_literal_set literals;
 	soar_module::sqlite_statement *sql;
 	epmem_time_id time;
+	epmem_node_intervals_multimap matches;
 };
 
 struct epmem_interval_query_struct {
 	epmem_node_id q1;
 	int is_end_point;
-	epmem_unique_edge_query* unique_edge;
+	epmem_unique_edge_query* uedge;
 	soar_module::sqlite_statement *sql;
 	epmem_time_id time;
 };
@@ -754,7 +758,11 @@ struct epmem_interval_query_struct {
 // priority queues and comparison functions
 struct epmem_unique_edge_query_comparator {
 	bool operator()(const epmem_unique_edge_query *a, const epmem_unique_edge_query *b) const {
-		return (a->time < b->time);
+		if (a->time != b->time) {
+			return (a->time < b->time);
+		} else {
+			return (b->depth < a->depth);
+		}
 	}
 };
 typedef std::priority_queue<epmem_unique_edge_query*, std::vector<epmem_unique_edge_query*>, epmem_unique_edge_query_comparator> epmem_unique_edge_pq;
@@ -765,9 +773,9 @@ struct epmem_interval_query_comparator {
 		} else if ((a->is_end_point && b->is_end_point) || !(a->is_end_point || b->is_end_point)) {
 			// both a and b are ends/starts
 			if (a->is_end_point) {
-				return a->unique_edge->depth > b->unique_edge->depth;
+				return a->uedge->depth > b->uedge->depth;
 			} else {
-				return b->unique_edge->depth > a->unique_edge->depth;
+				return b->uedge->depth > a->uedge->depth;
 			}
 		} else {
 			// arbitrarily put starts before ends
