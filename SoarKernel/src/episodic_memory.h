@@ -704,55 +704,51 @@ typedef std::map<epmem_node_id, epmem_sql_edge_set*> epmem_node_edges_map;
 typedef std::map<epmem_node_id, epmem_sql_edge_multiset*> epmem_node_edges_multimap;
 
 // structs
-struct epmem_dnf_literal_struct {
-	epmem_node_edges_multimap matches;
-	epmem_node_edges_map potentials;
-	int num_matches;
-	epmem_edge_interval_map edge_map;
-    epmem_attr_literals_map parents;
-    epmem_attr_literals_map children;
-    double weight;
-    int is_neg_q;
-    int is_edge_not_node;
-	bool has_q1;
-	bool is_leaf;
-	epmem_node_id node_id;
-	Symbol* symbol;
-};
-
 struct epmem_sql_edge_struct {
 	epmem_node_id q0;
 	Symbol *w;
 	epmem_node_id q1;
-	bool has_q1;
 	bool operator<(const epmem_sql_edge &other) const {
-		if (q0 < other.q0) {
-			return true;
-		} else if (w < other.w) {
-			return true;
-		} else if (q1 < other.q1) {
-			return true;
+		if (q0 != other.q0) {
+			return q0 < other.q0;;
+		} else if (w != other.w) {
+			return w < other.w;;
 		} else {
-			return !has_q1;
+			return q1 < other.q1;;
 		}
 	}
 };
 
+struct epmem_dnf_literal_struct {
+	Symbol* symbol;
+	int is_neg_q;
+	int is_edge_not_node;
+	bool is_leaf;
+	epmem_node_id q1;
+	double weight;
+	epmem_attr_literals_map parents;
+	epmem_attr_literals_map children;
+	epmem_node_edges_multimap matches;
+	epmem_node_edges_map potentials;
+	int num_matches;
+	epmem_edge_interval_map edge_map;
+};
+
 struct epmem_unique_edge_query_struct {
 	epmem_sql_edge edge_info;
-	int depth;
 	int is_edge_not_node;
-    soar_module::sqlite_statement *sql;
-    epmem_time_id time;
-    epmem_literal_set literals;
+	int depth;
+	epmem_literal_set literals;
+	soar_module::sqlite_statement *sql;
+	epmem_time_id time;
 };
 
 struct epmem_interval_query_struct {
-    soar_module::sqlite_statement *sql;
-    epmem_time_id time;
 	epmem_node_id q1;
-    int is_end_point;
+	int is_end_point;
 	epmem_unique_edge_query* unique_edge;
+	soar_module::sqlite_statement *sql;
+	epmem_time_id time;
 };
 
 // priority queues and comparison functions

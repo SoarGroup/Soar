@@ -3098,27 +3098,22 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 		return sym_cache[root->value];
 	}
 
-	epmem_dnf_literal* literal = new epmem_dnf_literal();
 	Symbol* value = root->value;
-	literal->num_matches = 0;
-	literal->symbol = value;
-	literal->is_neg_q = query_type;
+	epmem_dnf_literal* literal = new epmem_dnf_literal();
 
 	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
 		literal->is_edge_not_node = 0;
-		literal->has_q1 = true;
 		literal->is_leaf = true;
-		literal->node_id = epmem_temporal_hash(my_agent, value);
+		literal->q1 = epmem_temporal_hash(my_agent, value);
 		leaf_literals.insert(literal);
 	} else if (value->id.smem_lti) { // WME is an LTI
-		literal->is_edge_not_node = 1;
-		literal->has_q1 = true;
-		literal->is_leaf = true;
 		// if we can find the LTI node id, cache it; otherwise, return failure
 		my_agent->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>(value->id.name_letter));
 		my_agent->epmem_stmts_graph->find_lti->bind_int(2, static_cast<uint64_t>(value->id.name_number));
 		if (my_agent->epmem_stmts_graph->find_lti->execute() == soar_module::row) {
-			literal->node_id = my_agent->epmem_stmts_graph->find_lti->column_int(0);
+			literal->is_edge_not_node = 1;
+			literal->is_leaf = true;
+			literal->q1 = my_agent->epmem_stmts_graph->find_lti->column_int(0);
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
 			leaf_literals.insert(literal);
 			// only graph match on positive queries
@@ -3134,8 +3129,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 		// we determine whether it is a leaf by checking for children
 		epmem_wme_list* children = epmem_get_augs_of_id(value, tc);
 		literal->is_edge_not_node = 1;
-		literal->has_q1 = false;
-		literal->node_id = EPMEM_NODEID_BAD;
+		literal->q1 = EPMEM_NODEID_BAD;
 
 		// if the WME has no children, then it's a leaf
 		// otherwise, we recurse for all children
@@ -3143,7 +3137,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 			literal->is_leaf = true;
 			leaf_literals.insert(literal);
 		} else {
-			literal->is_leaf = false;
 			bool cycle = false;
 			visiting.insert(root->value);
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
@@ -3172,6 +3165,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 				delete literal;
 				return NULL;
 			}
+			literal->is_leaf = false;
 			// only graph match on positive queries
 			if (!literal->is_neg_q) {
 				gm_dfs_ordering.push_back(literal);
@@ -3179,6 +3173,9 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 		}
 	}
 
+	literal->symbol = value;
+	literal->is_neg_q = query_type;
+	literal->num_matches = 0;
 	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
 	sym_cache[root->value] = literal;
 	return literal;
@@ -3356,25 +3353,26 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		if (neg_query != NULL) {
 			neg_query_wmes = epmem_get_augs_of_id(neg_query, tc);
 		}
-		std::map<Symbol*, epmem_dnf_literal*> sym_cache;
-		std::set<Symbol*> visiting;
-		fake_root->num_matches = 0;
-		fake_root->weight = 0.0;
+		fake_root->symbol = NULL;
 		fake_root->is_neg_q = EPMEM_NODE_POS;
 		fake_root->is_edge_not_node = 1;
-		fake_root->has_q1 = false;
 		fake_root->is_leaf = false;
-		fake_root->node_id = EPMEM_NODEID_BAD;
-		frontier.insert(fake_root);
-		dnf_root->num_matches = 0;
-		dnf_root->weight = 0.0;
+		fake_root->q1 = EPMEM_NODEID_BAD;
+		fake_root->weight = 0.0;
+		fake_root->num_matches = 0;
+		dnf_root->symbol = NULL;
 		dnf_root->is_neg_q = EPMEM_NODE_POS;
 		dnf_root->is_edge_not_node = 1;
-		dnf_root->has_q1 = false;
 		dnf_root->is_leaf = false;
-		dnf_root->node_id = EPMEM_NODEID_BAD;
+		dnf_root->q1 = EPMEM_NODEID_BAD;
+		dnf_root->weight = 0.0;
+		dnf_root->num_matches = 0;
 		fake_root->children[NULL] = new epmem_literal_set();
 		fake_root->children[NULL]->insert(dnf_root);
+
+		frontier.insert(fake_root);
+		std::map<Symbol*, epmem_dnf_literal*> sym_cache;
+		std::set<Symbol*> visiting;
 		sym_cache[pos_query] = dnf_root;
 		sym_cache[neg_query] = dnf_root;
 		visiting.insert(pos_query);
@@ -3455,51 +3453,52 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	{
 		// insert dummy unique edge and interval end point queries for fake root
 		// we make an SQL statement just so we don't have to do anything special at cleanup
-		epmem_unique_edge_query* fake_root_uedge = new epmem_unique_edge_query();
-		fake_root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
-		fake_root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
-		fake_root_uedge->edge_info.q1 = EPMEM_NODEID_BAD;
-		fake_root_uedge->edge_info.has_q1 = true;
-		fake_root_uedge->depth = -1;
-		fake_root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-		fake_root_uedge->literals.insert(fake_root);
-		epmem_interval_query* fake_dummy = new epmem_interval_query();
-		fake_dummy->is_end_point = true;
-		fake_dummy->unique_edge = fake_root_uedge;
-		fake_dummy->time = before;
-		fake_dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-		fake_dummy->sql->prepare();
-		fake_dummy->sql->bind_int(1, before);
-		fake_dummy->sql->execute();
-		fake_dummy->time = fake_dummy->sql->column_int(0);
-		interval_pq.push(fake_dummy);
-		intervals.insert(fake_dummy);
+		epmem_unique_edge_query* fake_uedge = new epmem_unique_edge_query();
+		fake_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
+		fake_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
+		fake_uedge->edge_info.q1 = EPMEM_NODEID_BAD;
+		fake_uedge->is_edge_not_node = 1;
+		fake_uedge->depth = -1;
+		fake_uedge->literals.insert(fake_root);
+		fake_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		fake_uedge->time = -1;
+		epmem_interval_query* fake_interval = new epmem_interval_query();
+		fake_interval->q1 = EPMEM_NODEID_BAD;
+		fake_interval->is_end_point = true;
+		fake_interval->unique_edge = fake_uedge;
+		fake_interval->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		fake_interval->sql->prepare();
+		fake_interval->sql->bind_int(1, before);
+		fake_interval->sql->execute();
+		fake_interval->time = fake_interval->sql->column_int(0);
+		interval_pq.push(fake_interval);
+		intervals.insert(fake_interval);
 
 		// insert dummy unique edge and interval end point queries for DNF root
-		epmem_unique_edge_query* dnf_root_uedge = new epmem_unique_edge_query();
-		dnf_root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
-		dnf_root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
-		dnf_root_uedge->edge_info.q1 = EPMEM_NODEID_ROOT;
-		dnf_root_uedge->edge_info.has_q1 = true;
-		dnf_root_uedge->depth = 0;
-		dnf_root_uedge->is_edge_not_node = 1;
-		dnf_root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-		dnf_root_uedge->literals.insert(dnf_root);
-		dnf_root_uedge->sql->prepare();
-		dnf_root_uedge->sql->bind_int(1, LLONG_MAX);
-		dnf_root_uedge->sql->execute();
-		dnf_root_uedge->time = dnf_root_uedge->sql->column_int(2);
-		edge_pq.push(dnf_root_uedge);
-		epmem_interval_query* dnf_dummy = new epmem_interval_query();
-		dnf_dummy->is_end_point = true;
-		dnf_dummy->unique_edge = dnf_root_uedge;
-		dnf_dummy->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-		dnf_dummy->sql->prepare();
-		dnf_dummy->sql->bind_int(1, before);
-		dnf_dummy->sql->execute();
-		dnf_dummy->time = dnf_dummy->sql->column_int(0);
-		interval_pq.push(dnf_dummy);
-		intervals.insert(dnf_dummy);
+		epmem_unique_edge_query* root_uedge = new epmem_unique_edge_query();
+		root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
+		root_uedge->edge_info.w = (Symbol*) 0xDEADBEEF;
+		root_uedge->edge_info.q1 = EPMEM_NODEID_ROOT;
+		root_uedge->is_edge_not_node = 1;
+		root_uedge->depth = 0;
+		root_uedge->literals.insert(dnf_root);
+		root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		root_uedge->sql->prepare();
+		root_uedge->sql->bind_int(1, LLONG_MAX);
+		root_uedge->sql->execute();
+		root_uedge->time = root_uedge->sql->column_int(2);
+		edge_pq.push(root_uedge);
+		epmem_interval_query* root_interval = new epmem_interval_query();
+		root_interval->q1 = EPMEM_NODEID_ROOT;
+		root_interval->is_end_point = true;
+		root_interval->unique_edge = root_uedge;
+		root_interval->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		root_interval->sql->prepare();
+		root_interval->sql->bind_int(1, before);
+		root_interval->sql->execute();
+		root_interval->time = root_interval->sql->column_int(0);
+		interval_pq.push(root_interval);
+		intervals.insert(root_interval);
 	}
 
 	// main loop of interval walk
@@ -3527,12 +3526,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						epmem_sql_edge info;
 						info.q0 = uedge->sql->column_int(1);
 						info.w = attr;
-						info.has_q1 = child_literal->has_q1;
 
 						// select the query
 						const char* sql_statement = NULL;
-						if (child_literal->has_q1) {
-							info.q1 = child_literal->node_id;
+						if (child_literal->q1 != EPMEM_NODEID_BAD) {
+							info.q1 = child_literal->q1;
 							if (child_literal->is_edge_not_node) {
 								sql_statement = epmem_find_unique_edge_value_query;
 							} else {
@@ -3558,7 +3556,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							int bind_pos = 1;
 							uedge_sql->bind_int(bind_pos++, info.q0);
 							uedge_sql->bind_int(bind_pos++, epmem_temporal_hash(my_agent, info.w));
-							if (child_literal->has_q1) {
+							if (child_literal->q1 != EPMEM_NODEID_BAD) {
 								uedge_sql->bind_int(bind_pos++, info.q1);
 							}
 							uedge_sql->bind_int(bind_pos++, after);
@@ -3588,7 +3586,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			{
 				int64_t edge_id = uedge->sql->column_int(0);
 				epmem_time_id promo_time;
-				bool is_lti = (uedge->is_edge_not_node && uedge->edge_info.has_q1);
+				bool is_lti = (uedge->is_edge_not_node && uedge->edge_info.q1 != EPMEM_NODEID_BAD);
 				if (is_lti) {
 					// find the promotion time of the LTI
 					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, uedge->sql->column_int(1));
@@ -3728,7 +3726,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				edge_info.q0 = uedge->edge_info.q0;
 				edge_info.w = uedge->edge_info.w;
 				edge_info.q1 = interval_q->q1;
-				edge_info.has_q1 = true;
 				epmem_interval_list queue;
 				epmem_interval_set visited;
 				queue.push_back(interval_q);
