@@ -577,6 +577,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE INDEX IF NOT EXISTS node_range_upper ON node_range (rit_node,end)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_start ON node_range (id,start DESC)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end ON node_range (id,end DESC)" );
+	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_range_id_end_start on node_range (id, end, start)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS edge_range (rit_node INTEGER,start INTEGER,end INTEGER,id INTEGER)" );
 	add_structure( "CREATE INDEX IF NOT EXISTS edge_range_lower ON edge_range (rit_node,start)" );
@@ -585,10 +586,10 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end ON edge_range (id,end DESC)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_range_id_end_start ON edge_range (id, end, start)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER,last INTEGER)" );
+	add_structure( "CREATE TABLE IF NOT EXISTS node_unique (child_id INTEGER PRIMARY KEY AUTOINCREMENT,parent_id INTEGER,attrib INTEGER, value INTEGER, last INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS node_unique_parent_attrib_value_last ON node_unique (parent_id,attrib,value,last)" );
 
-	add_structure( "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w INTEGER,q1 INTEGER,last INTEGER)" );
+	add_structure( "CREATE TABLE IF NOT EXISTS edge_unique (parent_id INTEGER PRIMARY KEY AUTOINCREMENT,q0 INTEGER,w INTEGER,q1 INTEGER, last INTEGER)" );
 	add_structure( "CREATE UNIQUE INDEX IF NOT EXISTS edge_unique_q0_w_q1_last ON edge_unique (q0,w,q1,last)" );
 
 	add_structure( "CREATE TABLE IF NOT EXISTS lti (parent_id INTEGER PRIMARY KEY, letter INTEGER, num INTEGER, time_id INTEGER, current INTEGER)" );
@@ -3049,7 +3050,7 @@ const char* epmem_find_interval_queries[2][2][3] = {
 			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.end DESC",
+			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end>0 AND e.start<=(?+1) ORDER BY e.end DESC",
 			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=(?+1)",
 			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		}
@@ -3061,7 +3062,7 @@ const char* epmem_find_interval_queries[2][2][3] = {
 			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.end DESC",
+			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND e.start<=(?+1) ORDER BY e.end DESC",
 			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=(?+1)",
 			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
 		}
@@ -3075,7 +3076,7 @@ const char* epmem_find_lti_queries[2][3] = {
 		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC"
 	},
 	{
-		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.end DESC",
+		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<=e.start AND e.start<=(?+1) ORDER BY e.end DESC",
 		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1)",
 		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC"
 	}
