@@ -10,18 +10,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\config_Config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\config_File.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\config_Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\config_Util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\sml_AnalyzeXML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -126,18 +114,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\config_Config.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\config_File.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\config_Source.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\config_Util.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\EmbeddedSMLInterface.h">
       <Filter>Source Files</Filter>
     </ClInclude>

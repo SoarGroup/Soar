@@ -37,9 +37,6 @@
     <ClInclude Include="src\sml_KernelCallback.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\sml_KernelHelpers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\sml_KernelSML.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -112,9 +109,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\sml_KernelCallback.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sml_KernelHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\sml_KernelSML.cpp">
