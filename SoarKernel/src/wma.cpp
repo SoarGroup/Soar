@@ -525,7 +525,11 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 		if ( !my_o_set )
 		{
 			allocate_with_pool( my_agent, &( my_agent->wma_wme_oset_pool ), &my_o_set );
+#ifdef USE_MEM_POOL_ALLOCATORS
 			my_o_set = new( my_o_set ) wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+#else
+			my_o_set = new( my_o_set ) wma_pooled_wme_set();
+#endif
 			
 			w->preference->wma_o_set = my_o_set;
 
@@ -652,7 +656,11 @@ inline void wma_forgetting_add_to_p_queue( agent* my_agent, wma_decay_element* d
 		{
 			wma_decay_set* newbie;
 			allocate_with_pool( my_agent, &( my_agent->wma_decay_set_pool ), &newbie );
+#ifdef USE_MEM_POOL_ALLOCATORS
 			newbie = new (newbie) wma_decay_set( std::less< wma_decay_element* >(), soar_module::soar_memory_pool_allocator< wma_decay_element* >( my_agent ) );
+#else
+			newbie = new (newbie) wma_decay_set();
+#endif
 			newbie->insert( decay_el );
 			
 			my_agent->wma_forget_pq->insert( std::make_pair< wma_d_cycle, wma_decay_set* >( new_cycle, newbie ) );

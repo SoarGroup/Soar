@@ -68,7 +68,11 @@
 
 using namespace soar_TraceNames;
 
+#ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_list;
+#else
+typedef std::list< Symbol* > symbol_list;
+#endif
 
 
 /* REW: 2003-01-06 A temporary helper function */
@@ -563,7 +567,11 @@ void mark_id_and_tc_as_unknown_level (agent* thisAgent, Symbol *root) {
   dl_cons *dc;
 
   Symbol *id;
+#ifdef USE_MEM_POOL_ALLOCATORS
   symbol_list ids_to_walk = symbol_list( soar_module::soar_memory_pool_allocator< Symbol* >( thisAgent ) );
+#else
+  symbol_list ids_to_walk;
+#endif
   ids_to_walk.push_back( root );
 
   while ( !ids_to_walk.empty() )
@@ -665,7 +673,11 @@ void walk_and_update_levels (agent* thisAgent, Symbol *root) {
   dl_cons *dc;
   Symbol *id;
 
+#ifdef USE_MEM_POOL_ALLOCATORS
   symbol_list ids_to_walk = symbol_list( soar_module::soar_memory_pool_allocator< Symbol* >( thisAgent ) );
+#else
+  symbol_list ids_to_walk;
+#endif
   ids_to_walk.push_back( root );
 
   while ( !ids_to_walk.empty() )
@@ -1790,20 +1802,21 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 				insert_at_head_of_dll (s->wmes, w, next, prev);
 				w->preference = cand;
 
-				if ( wma_enabled( thisAgent ) )
+				if ( ( s->wma_val_references != NIL ) && wma_enabled( thisAgent ) )
 				{
 					wma_sym_reference_map::iterator it = s->wma_val_references->find( w->value );
-					assert( it != s->wma_val_references->end() );
-
-					// should only activate at this point if WME is o-supported
-					wma_activate_wme( thisAgent, w, it->second, NULL, true );
-
-					s->wma_val_references->erase( it );
-					if ( s->wma_val_references->empty() )
+					if ( it != s->wma_val_references->end() )
 					{
-						s->wma_val_references->~wma_sym_reference_map();
-						free_with_pool( &( thisAgent->wma_slot_refs_pool ), s->wma_val_references );
-						s->wma_val_references = NIL;
+						// should only activate at this point if WME is o-supported
+						wma_activate_wme( thisAgent, w, it->second, NULL, true );
+
+						s->wma_val_references->erase( it );
+						if ( s->wma_val_references->empty() )
+						{
+							s->wma_val_references->~wma_sym_reference_map();
+							free_with_pool( &( thisAgent->wma_slot_refs_pool ), s->wma_val_references );
+							s->wma_val_references = NIL;
+						}
 					}
 				}
 
@@ -2292,9 +2305,17 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->gap_age = 0;
   id->id.rl_info->hrl_age = 0;
   allocate_with_pool( thisAgent, &( thisAgent->rl_et_pool ), &( id->id.rl_info->eligibility_traces ) );
+#ifdef USE_MEM_POOL_ALLOCATORS
   id->id.rl_info->eligibility_traces = new ( id->id.rl_info->eligibility_traces ) rl_et_map( std::less< production* >(), soar_module::soar_memory_pool_allocator< std::pair< production*, double > >( thisAgent ) );
+#else
+  id->id.rl_info->eligibility_traces = new ( id->id.rl_info->eligibility_traces ) rl_et_map();
+#endif
   allocate_with_pool( thisAgent, &( thisAgent->rl_rule_pool ), &( id->id.rl_info->prev_op_rl_rules ) );
+#ifdef USE_MEM_POOL_ALLOCATORS
   id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list( soar_module::soar_memory_pool_allocator< production* >( thisAgent ) );
+#else
+  id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list();
+#endif
 
   allocate_with_pool( thisAgent, &( thisAgent->epmem_info_pool ), &( id->id.epmem_info ) );
   id->id.epmem_info->last_ol_time = 0;  
@@ -2302,7 +2323,11 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.epmem_info->last_cmd_count = 0;
   id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
   allocate_with_pool( thisAgent, &( thisAgent->epmem_wmes_pool ), &( id->id.epmem_info->epmem_wmes ) );
+#ifdef USE_MEM_POOL_ALLOCATORS
   id->id.epmem_info->epmem_wmes = new ( id->id.epmem_info->epmem_wmes ) epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
+#else
+  id->id.epmem_info->epmem_wmes = new ( id->id.epmem_info->epmem_wmes ) epmem_wme_stack();
+#endif
 
   allocate_with_pool( thisAgent, &( thisAgent->smem_info_pool ), &( id->id.smem_info ) );
   id->id.smem_info->last_cmd_time[0] = 0;
@@ -2310,8 +2335,11 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.smem_info->last_cmd_count[0] = 0;
   id->id.smem_info->last_cmd_count[1] = 0;
   allocate_with_pool( thisAgent, &( thisAgent->smem_wmes_pool ), &( id->id.smem_info->smem_wmes ) );
+#ifdef USE_MEM_POOL_ALLOCATORS
   id->id.smem_info->smem_wmes = new ( id->id.smem_info->smem_wmes ) smem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
-
+#else
+  id->id.smem_info->smem_wmes = new ( id->id.smem_info->smem_wmes ) smem_wme_stack();
+#endif
 
   /* --- invoke callback routine --- */
   soar_invoke_callbacks(thisAgent, 

@@ -50,6 +50,12 @@ typedef struct agent_struct agent;
 typedef struct preference_struct preference;
 typedef union symbol_union Symbol;
 
+#ifdef USE_MEM_POOL_ALLOCATORS
+typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
+#else
+typedef std::list< preference* > pref_buffer_list;
+#endif
+
 extern preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *attr,
                                     Symbol *value, Symbol *referent);
 
@@ -84,7 +90,7 @@ extern void deallocate_preference (agent* thisAgent, preference *pref);
 extern void add_preference_to_tm (agent* thisAgent, preference *pref);
 extern void remove_preference_from_tm (agent* thisAgent, preference *pref);
 extern void process_o_rejects_and_deallocate_them (agent* thisAgent, 
-												   preference *o_rejects, std::vector<preference*>& bufdeallo);
+												   preference *o_rejects, pref_buffer_list& bufdeallo);
 
 #ifdef __cplusplus
 //}

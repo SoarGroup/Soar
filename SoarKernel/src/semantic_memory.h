@@ -332,10 +332,18 @@ enum smem_storage_type { store_level, store_recursive };
 typedef std::list<wme *> smem_wme_list;
 
 // represents a set of symbols
+#ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > smem_pooled_symbol_set;
+#else
+typedef std::set< Symbol* > smem_pooled_symbol_set;
+#endif
 
 // list used primarily like a stack
+#ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > smem_wme_stack;
+#else
+typedef std::list< preference* > smem_wme_stack;
+#endif
 
 // data associated with each state
 typedef struct smem_data_struct

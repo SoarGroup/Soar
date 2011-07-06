@@ -53,8 +53,6 @@ const char * preference_name[] =
   "worse",
   "numeric indifferent"};
 
-typedef std::list< preference*, soar_module::soar_memory_pool_allocator< preference* > > pref_buffer_list;
-
 
 /*                     Preference Management Routines
 
@@ -302,7 +300,11 @@ void add_preference_to_tm (agent* thisAgent, preference *pref)
          if ( s->wma_val_references == NIL )
          {
 			 allocate_with_pool( thisAgent, &( thisAgent->wma_slot_refs_pool ), &( s->wma_val_references ) );
+#ifdef USE_MEM_POOL_ALLOCATORS
 			 s->wma_val_references = new( s->wma_val_references ) wma_sym_reference_map( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > >( thisAgent ) );
+#else
+			 s->wma_val_references = new( s->wma_val_references ) wma_sym_reference_map();
+#endif
          }
 
          (*s->wma_val_references)[ pref->value ]++;
