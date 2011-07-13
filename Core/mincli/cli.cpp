@@ -1,12 +1,12 @@
-/* Minimal Soar CLI suitable for scripting
-   Last modified Aug 30 2010
-*/
+/* Minimal Soar CLI suitable for scripting */
 #include <ctype.h>
-#include <string>
+#include <string.h>
+#include <signal.h>
 #include <iostream>
+#include <vector>
+#include <string>
 #include <sstream>
 #include <fstream>
-#include <signal.h>
 #include "sml_Client.h"
 
 using namespace std;
@@ -21,17 +21,6 @@ string strip(string s, string lc, string rc) {
 	b = s.find_first_not_of(lc);
 	e = s.find_last_not_of(rc);
 	return s.substr(b, e - b + 1);
-}
-
-bool isidentifier(const string &s) {
-	int i;
-	if (s.empty() || !isupper(s[0]))
-		return false;
-	for (i = 1; i < s.size(); ++i) {
-		if (!isdigit(s[i]))
-			return false;
-	}
-	return true;
 }
 
 /*
@@ -183,11 +172,49 @@ string log_handler(smlRhsEventId id, void *userdata, Agent *agent, char const *f
 }
 
 int main(int argc, char *argv[]) {
-	kernel = Kernel::CreateKernelInNewThread(Kernel::kDefaultLibraryName, 12122);
+	int i, port = 12121;
+	bool newthread = false, parse_error = false;
+	const char *agentname = "soar";
+	vector<string> sources;
+	vector<string>::iterator j;
+
+	for (i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "-h") == 0) {
+			parse_error = true;
+			break;
+		} else if (strcmp(argv[i], "-t") == 0) {
+			newthread = true;
+		} else if (strcmp(argv[i], "-n") == 0) {
+			if (i + 1 >= argc) {
+				parse_error = true;
+				break;
+			}
+			agentname = argv[++i];
+		} else if (strcmp(argv[i], "-p") == 0) {
+			if (i + 1 >= argc || !(stringstream(argv[++i]) >> port)) {
+				parse_error = true;
+				break;
+			}
+		} else {
+			sources.push_back(argv[i]);
+		}
+	}
+
+	if (parse_error) {
+		cout << "usage: " << argv[0] << " [-o] [-n <agent name>] [-p <port>] <sources ...>" << endl;
+		return 1;
+	}
+
+	if (newthread) {
+		kernel = Kernel::CreateKernelInNewThread(Kernel::kDefaultLibraryName, port);
+	} else {
+		kernel = Kernel::CreateKernelInCurrentThread(Kernel::kDefaultLibraryName, true, port);
+	}
+
 	kernel->AddRhsFunction("exit", exit_handler, NULL);
 	kernel->AddRhsFunction("log", log_handler, NULL);
 	
-	agent = kernel->CreateAgent("soar");
+	agent = kernel->CreateAgent(agentname);
 	agent->RegisterForPrintEvent(smlEVENT_PRINT, printcb, NULL);
 	agent->SetOutputLinkChangeTracking(false);
 	
@@ -195,11 +222,10 @@ int main(int argc, char *argv[]) {
 		signal(stopsig, sighandler);
 	}
 	
-	for (int i = 1; i < argc; ++i) {
-		string cmd = "source ";
-		cmd.append(argv[i]);
-		execcmd(cmd);
+	for (j = sources.begin(); j != sources.end(); ++j) {
+		execcmd("source " + *j);
 	}
+
 	repl();
 	return 0;
 }
