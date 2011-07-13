@@ -410,6 +410,7 @@ Export('compEnv')
 
 # Add TestCLI to components (it uses compEnv which wasn't exported earlier):
 components.insert(0, 'Core/TestCLI')
+components.insert(0, 'Core/cli')
 
 if GetOption('ios') == 'none':
 	for d in components:
