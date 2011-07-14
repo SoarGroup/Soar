@@ -900,7 +900,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_parent_id_pool *epmem_id_repository;
   epmem_return_id_pool *epmem_id_replacement;
   epmem_id_ref_counter *epmem_id_ref_counts;
-  epmem_pool_last_use *epmem_pool_use_time;
 
   epmem_rit_state epmem_rit_state_graph[2];
 
