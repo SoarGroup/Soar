@@ -437,35 +437,44 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::t
 	query_dnf = new epmem_timer( "query_dnf", my_agent, soar_module::timer::three );
 	add( query_dnf );
 
-	query_edge_walk = new epmem_timer( "query_edge_walk", my_agent, soar_module::timer::three );
-	add( query_edge_walk );
+	query_walk = new epmem_timer( "query_walk", my_agent, soar_module::timer::three );
+	add( query_walk );
 
-	query_interval_walk = new epmem_timer( "query_interval_walk", my_agent, soar_module::timer::three );
-	add( query_interval_walk );
+	query_walk_edge = new epmem_timer( "query_walk_edge", my_agent, soar_module::timer::three );
+	add( query_walk_edge );
 
-	edge_query = new epmem_timer( "edge_query", my_agent, soar_module::timer::three );
-	add( edge_query );
-
-	query_start_ep = new epmem_timer( "query_start_ep", my_agent, soar_module::timer::three );
-	add( query_start_ep );
-
-	query_start_now = new epmem_timer( "query_start_now", my_agent, soar_module::timer::three );
-	add( query_start_now );
-
-	query_start_point = new epmem_timer( "query_start_point", my_agent, soar_module::timer::three );
-	add( query_start_point );
-
-	query_end_ep = new epmem_timer( "query_end_ep", my_agent, soar_module::timer::three );
-	add( query_end_ep );
-
-	query_end_now = new epmem_timer( "query_end_now", my_agent, soar_module::timer::three );
-	add( query_end_now );
-
-	query_end_point = new epmem_timer( "query_end_point", my_agent, soar_module::timer::three );
-	add( query_end_point );
+	query_walk_inner = new epmem_timer( "query_walk_inner", my_agent, soar_module::timer::three );
+	add( query_walk_inner );
 
 	query_graph_match = new epmem_timer( "query_graph_match", my_agent, soar_module::timer::three );
 	add( query_graph_match );
+
+	query_result = new epmem_timer( "query_result", my_agent, soar_module::timer::three );
+	add( query_result );
+
+	query_cleanup = new epmem_timer( "query_cleanup", my_agent, soar_module::timer::three );
+	add( query_cleanup );
+
+	query_sql_edge = new epmem_timer( "query_sql_edge", my_agent, soar_module::timer::three );
+	add( query_sql_edge );
+
+	query_sql_start_ep = new epmem_timer( "query_sql_start_ep", my_agent, soar_module::timer::three );
+	add( query_sql_start_ep );
+
+	query_sql_start_now = new epmem_timer( "query_sql_start_now", my_agent, soar_module::timer::three );
+	add( query_sql_start_now );
+
+	query_sql_start_point = new epmem_timer( "query_sql_start_point", my_agent, soar_module::timer::three );
+	add( query_sql_start_point );
+
+	query_sql_end_ep = new epmem_timer( "query_sql_end_ep", my_agent, soar_module::timer::three );
+	add( query_sql_end_ep );
+
+	query_sql_end_now = new epmem_timer( "query_sql_end_now", my_agent, soar_module::timer::three );
+	add( query_sql_end_now );
+
+	query_sql_end_point = new epmem_timer( "query_sql_end_point", my_agent, soar_module::timer::three );
+	add( query_sql_end_point );
 
 	/////////////////////////////
 	// connect to rit state
@@ -3606,13 +3615,14 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// main loop of interval walk
+	my_agent->epmem_timers->query_walk->start();
 	epmem_time_id current_episode = my_agent->epmem_stats->time->get_value() - 1;
 	while (edge_pq.size() && current_episode > after) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
 		epmem_time_id next_either;
 
-		my_agent->epmem_timers->query_edge_walk->start();
+		my_agent->epmem_timers->query_walk_edge->start();
 		next_edge = edge_pq.top()->time;
 		// process all edges which were last used at this time point
 		while (edge_pq.size() && (edge_pq.top()->time == next_edge || edge_pq.top()->time > current_episode)) {
@@ -3669,7 +3679,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							created = true;
 						} else {
 							// otherwise, create a new unique edge query
-							soar_module::sqlite_statement* uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->edge_query);
+							soar_module::sqlite_statement* uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->query_sql_edge);
 							uedge_sql->prepare();
 							int bind_pos = 1;
 							uedge_sql->bind_int(bind_pos++, info.q0);
@@ -3765,23 +3775,23 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						switch (interval_type) {
 							case EPMEM_RANGE_EP:
 								if (point_type == EPMEM_RANGE_START) {
-									sql_timer = my_agent->epmem_timers->query_start_ep;
+									sql_timer = my_agent->epmem_timers->query_sql_start_ep;
 								} else {
-									sql_timer = my_agent->epmem_timers->query_end_ep;
+									sql_timer = my_agent->epmem_timers->query_sql_end_ep;
 								}
 								break;
 							case EPMEM_RANGE_NOW:
 								if (point_type == EPMEM_RANGE_START) {
-									sql_timer = my_agent->epmem_timers->query_start_now;
+									sql_timer = my_agent->epmem_timers->query_sql_start_now;
 								} else {
-									sql_timer = my_agent->epmem_timers->query_end_now;
+									sql_timer = my_agent->epmem_timers->query_sql_end_now;
 								}
 								break;
 							case EPMEM_RANGE_POINT:
 								if (point_type == EPMEM_RANGE_START) {
-									sql_timer = my_agent->epmem_timers->query_start_point;
+									sql_timer = my_agent->epmem_timers->query_sql_start_point;
 								} else {
-									sql_timer = my_agent->epmem_timers->query_end_point;
+									sql_timer = my_agent->epmem_timers->query_sql_end_point;
 								}
 								break;
 						}
@@ -3827,12 +3837,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			}
 		}
 		next_edge = (edge_pq.empty() ? 0 : edge_pq.top()->time);
-		my_agent->epmem_timers->query_edge_walk->stop();
+		my_agent->epmem_timers->query_walk_edge->stop();
 
 		bool changed_score = false;
 
-		my_agent->epmem_timers->query_interval_walk->start();
 		// process all intervals before the next edge arrives
+		my_agent->epmem_timers->query_walk_inner->start();
 		while (interval_pq.size() && interval_pq.top()->time > next_edge && current_episode > after) {
 			// process all interval endpoints at this time step
 			next_interval = interval_pq.top()->time;
@@ -3979,14 +3989,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
-			//next_interval = interval_pq.top()->time;
 			next_either = (next_edge > next_interval ? next_edge : next_interval);
 
 			// update the prohibits list to catch up
 			while (prohibits.size() && prohibits.back() > current_episode) {
 				prohibits.pop_back();
 			}
-
 			// ignore the episode if it is prohibited
 			while (prohibits.size() && current_episode > next_either && current_episode == prohibits.back()) {
 				current_episode--;
@@ -4016,8 +4024,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				// we should graph match if the option is set and all leaf literals are satisfied
 				if (do_graph_match && current_cardinality == perfect_cardinality) {
 					epmem_param_container::gm_ordering_choices gm_ordering = my_agent->epmem_params->gm_ordering->get_value();
-					// FIXME
-					epmem_literal_list gm_ordered_list = gm_dfs_ordering;
+					epmem_literal_list gm_ordered_list = gm_dfs_ordering; // FIXME
 					if (gm_ordering == epmem_param_container::gm_order_undefined || gm_ordering == epmem_param_container::gm_order_mcv) {
 						// FIXME
 					} else if (gm_ordering == epmem_param_container::gm_order_dfs) {
@@ -4044,8 +4051,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 		}
-		my_agent->epmem_timers->query_interval_walk->stop();
+		my_agent->epmem_timers->query_walk_inner->stop();
 	}
+	my_agent->epmem_timers->query_walk->stop();
 
 	// if the best episode is the default, fail
 	// otherwise, put the episode in working memory
@@ -4055,6 +4063,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, neg_query);
 		}
 	} else {
+		my_agent->epmem_timers->query_result->start();
 		Symbol* temp_sym;
 		epmem_id_mapping node_map_map;
 		epmem_id_mapping node_mem_map;
@@ -4116,22 +4125,19 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_buffer_add_wme(meta_wmes, (*map_iter).second, my_agent->epmem_sym_retrieved, (*iter).second);
 				}
 			}
-
 		}
+		my_agent->epmem_timers->query_result->stop();
 	}
 
 	// cleanup
-
+	my_agent->epmem_timers->query_cleanup->start();
 	for (epmem_interval_set::iterator iter = interval_cleanup.begin(); iter != interval_cleanup.end(); iter++) {
 		epmem_interval_query* interval = *iter;
-
 		delete interval->sql;
 		delete interval;
 	}
-
 	for (epmem_uedge_set::iterator iter = uedge_cleanup.begin(); iter != uedge_cleanup.end(); iter++) {
 		epmem_unique_edge_query* uedge = *iter;
-
 		for (epmem_node_intervals_multimap::iterator map_iter = uedge->matches.begin(); map_iter != uedge->matches.end(); map_iter++) {
 			delete (*map_iter).second;
 		}
@@ -4154,6 +4160,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 		delete literal;
 	}
+	my_agent->epmem_timers->query_cleanup->stop();
 
 	my_agent->epmem_timers->query->stop();
 }
