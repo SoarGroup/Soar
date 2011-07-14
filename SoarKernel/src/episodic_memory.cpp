@@ -3099,7 +3099,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 		return sym_cache[root->value];
 	}
 
-	cue_wmes.insert( root );
+	cue_wmes.insert(root);
 
 	Symbol* value = root->value;
 	epmem_dnf_literal* literal = new epmem_dnf_literal();
@@ -3414,8 +3414,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_literal_set leaf_literals;
 	epmem_literal_set frontier;
 
-	epmem_literal_set literal_cleanup;
+	epmem_interval_set interval_cleanup;
 	epmem_uedge_set uedge_cleanup;
+	epmem_literal_set literal_cleanup;
 
 	epmem_literal_list gm_dfs_ordering;
 
@@ -3494,9 +3495,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_unique_edge_pq edge_pq;
 	epmem_interval_pq interval_pq;
 
-	// store all intervals so we can delete them later
-	epmem_interval_set intervals;
-
 	// various things about the current and the best episodes
 	epmem_time_id best_episode = EPMEM_MEMID_NONE;
 	double best_score = 0;
@@ -3549,7 +3547,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		fake_interval->sql->execute();
 		fake_interval->time = before;
 		interval_pq.push(fake_interval);
-		intervals.insert(fake_interval);
+		interval_cleanup.insert(fake_interval);
 		uedge_cleanup.insert(fake_uedge);
 
 		// insert dummy unique edge and interval end point queries for DNF root
@@ -3576,13 +3574,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_interval->sql->execute();
 		root_interval->time = before;
 		interval_pq.push(root_interval);
-		intervals.insert(root_interval);
+		interval_cleanup.insert(root_interval);
 		uedge_cleanup.insert(root_uedge);
 	}
 
 	// FIXME diagnostic code: print out the DNF
-	if ( false )
-	{
+	if (false) {
 		epmem_literal_set visited;
 		std::cout << "\ndigraph {" << std::endl;
 		epmem_print_dnf(dnf_root, visited);
@@ -3725,7 +3722,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							end_q->sql->bind_int(1, end_q->time);
 							end_q->sql->execute();
 							interval_pq.push(end_q);
-							intervals.insert(end_q);
+							interval_cleanup.insert(end_q);
 							epmem_interval_query* start_q = new epmem_interval_query();
 							start_q->is_end_point = 0;
 							start_q->uedge = uedge;
@@ -3736,7 +3733,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							start_q->sql->bind_int(1, start_q->time);
 							start_q->sql->execute();
 							interval_pq.push(start_q);
-							intervals.insert(start_q);
+							interval_cleanup.insert(start_q);
 						}
 						delete interval_sql;
 					}
@@ -3786,7 +3783,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							// find the promotion time of the LTI, and use that as an after constraint
 							interval_sql->bind_int(bind_pos++, promo_time);
 						}
-						interval_sql->bind_int(bind_pos++, before);
+						interval_sql->bind_int(bind_pos++, current_episode + 1);
 						if (interval_sql->execute() == soar_module::row) {
 							epmem_interval_query* interval_q = new epmem_interval_query();
 							interval_q->is_end_point = point_type;
@@ -3795,7 +3792,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval_q->time = interval_sql->column_int(0);
 							interval_q->sql = interval_sql;
 							interval_pq.push(interval_q);
-							intervals.insert(interval_q);
+							interval_cleanup.insert(interval_q);
 						} else {
 							delete interval_sql;
 						}
@@ -3959,7 +3956,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					interval_pq.push(interval);
 				}  
 			}
-			next_interval = ( ( interval_pq.empty() )?( after ):( interval_pq.top()->time ) );
+			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
 			//next_interval = interval_pq.top()->time;
 			next_either = (next_edge > next_interval ? next_edge : next_interval);
 
@@ -4102,7 +4099,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 	// cleanup
 	
-	for (epmem_interval_set::iterator iter = intervals.begin(); iter != intervals.end(); iter++) {
+	for (epmem_interval_set::iterator iter = interval_cleanup.begin(); iter != interval_cleanup.end(); iter++) {
 		epmem_interval_query* interval = *iter;
 		
 		delete interval->sql;
