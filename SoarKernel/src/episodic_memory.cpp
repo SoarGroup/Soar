@@ -443,8 +443,8 @@ epmem_timer_container::epmem_timer_container( agent *new_agent ): soar_module::t
 	query_walk_edge = new epmem_timer( "query_walk_edge", my_agent, soar_module::timer::three );
 	add( query_walk_edge );
 
-	query_walk_inner = new epmem_timer( "query_walk_inner", my_agent, soar_module::timer::three );
-	add( query_walk_inner );
+	query_walk_interval = new epmem_timer( "query_walk_interval", my_agent, soar_module::timer::three );
+	add( query_walk_interval );
 
 	query_graph_match = new epmem_timer( "query_graph_match", my_agent, soar_module::timer::three );
 	add( query_graph_match );
@@ -3842,7 +3842,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		bool changed_score = false;
 
 		// process all intervals before the next edge arrives
-		my_agent->epmem_timers->query_walk_inner->start();
+		my_agent->epmem_timers->query_walk_interval->start();
 		while (interval_pq.size() && interval_pq.top()->time > next_edge && current_episode > after) {
 			// process all interval endpoints at this time step
 			next_interval = interval_pq.top()->time;
@@ -4051,7 +4051,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 		}
-		my_agent->epmem_timers->query_walk_inner->stop();
+		my_agent->epmem_timers->query_walk_interval->stop();
 	}
 	my_agent->epmem_timers->query_walk->stop();
 

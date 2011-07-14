@@ -270,7 +270,7 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *query_dnf;
 		soar_module::timer *query_walk;
 		soar_module::timer *query_walk_edge;
-		soar_module::timer *query_walk_inner;
+		soar_module::timer *query_walk_interval;
 		soar_module::timer *query_graph_match;
 		soar_module::timer *query_result;
 		soar_module::timer *query_cleanup;
@@ -682,7 +682,6 @@ typedef struct epmem_sql_edge_struct epmem_sql_edge;
 // collection classes
 typedef std::list<epmem_dnf_literal*> epmem_literal_list;
 typedef std::list<epmem_interval_query*> epmem_interval_list;
-typedef std::list<epmem_unique_edge_query*> epmem_uedge_list;
 typedef std::map<epmem_dnf_literal*, epmem_node_id> epmem_literal_node_map;
 typedef std::map<epmem_sql_edge, epmem_interval_query*> epmem_edge_interval_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
