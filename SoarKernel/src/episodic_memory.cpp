@@ -3114,20 +3114,20 @@ const char *epmem_find_lti_single_queries[3] = {
 	"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1"
 };
 
-epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_list& gm_dfs_ordering, soar_module::wme_set& cue_wmes, epmem_literal_set& cleanup_literals) {
+epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_list& gm_dfs_ordering, soar_module::wme_set& cue_wmes, epmem_literal_set& cleanup_literals) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
-	if (visiting.count(root->value)) {
+	if (visiting.count(cue_wme->value)) {
 		return NULL;
 	}
 	// if the value is an identifier and we've been here before, we can return the previous literal
-	if (root->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE && sym_cache.count(root->value)) {
-		return sym_cache[root->value];
+	if (sym_cache.count(cue_wme)) {
+		return sym_cache[cue_wme];
 	}
 
-	cue_wmes.insert(root);
+	cue_wmes.insert(cue_wme);
 
-	Symbol* value = root->value;
+	Symbol* value = cue_wme->value;
 	epmem_dnf_literal* literal = new epmem_dnf_literal();
 
 	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
@@ -3168,7 +3168,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 			delete children;
 		} else {
 			bool cycle = false;
-			visiting.insert(root->value);
+			visiting.insert(cue_wme->value);
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
@@ -3188,7 +3188,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 				}
 			}
 			delete children;
-			visiting.erase(root->value);
+			visiting.erase(cue_wme->value);
 			// if all children of this WME lead to cycles, then we don't need to walk this path
 			// in essence, this forces the DNF graph to be acyclic
 			// this results in savings in not walking edges and intervals
@@ -3206,11 +3206,11 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 
 	cleanup_literals.insert(literal);
 
-	literal->symbol = value;
+	literal->cue_wme = cue_wme;
 	literal->is_neg_q = query_type;
 	literal->num_matches = 0;
-	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, root, true));
-	sym_cache[root->value] = literal;
+	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, cue_wme, true));
+	sym_cache[cue_wme] = literal;
 	return literal;
 }
 
@@ -3442,8 +3442,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	bool do_graph_match = (my_agent->epmem_params->graph_match->get_value() == soar_module::on);
 
 	// variables needed for building the DNF
-	epmem_dnf_literal* fake_root = new epmem_dnf_literal();
-	epmem_dnf_literal* dnf_root = new epmem_dnf_literal();
+	epmem_dnf_literal* fake_literal = new epmem_dnf_literal();
+	epmem_dnf_literal* root_literal = new epmem_dnf_literal();
 	epmem_literal_set leaf_literals;
 	epmem_literal_set frontier;
 
@@ -3462,30 +3462,28 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		if (neg_query != NULL) {
 			neg_query_wmes = epmem_get_augs_of_id(neg_query, tc);
 		}
-		fake_root->symbol = NULL;
-		fake_root->is_neg_q = EPMEM_NODE_POS;
-		fake_root->is_edge_not_node = 1;
-		fake_root->is_leaf = false;
-		fake_root->q1 = EPMEM_NODEID_BAD;
-		fake_root->weight = 0.0;
-		fake_root->num_matches = 0;
-		dnf_root->symbol = NULL;
-		dnf_root->is_neg_q = EPMEM_NODE_POS;
-		dnf_root->is_edge_not_node = 1;
-		dnf_root->is_leaf = false;
-		dnf_root->q1 = EPMEM_NODEID_BAD;
-		dnf_root->weight = 0.0;
-		dnf_root->num_matches = 0;
-		fake_root->children[NULL] = new epmem_literal_set();
-		fake_root->children[NULL]->insert(dnf_root);
-		literal_cleanup.insert(fake_root);
-		literal_cleanup.insert(dnf_root);
+		fake_literal->cue_wme = NULL;
+		fake_literal->is_neg_q = EPMEM_NODE_POS;
+		fake_literal->is_edge_not_node = 1;
+		fake_literal->is_leaf = false;
+		fake_literal->q1 = EPMEM_NODEID_BAD;
+		fake_literal->weight = 0.0;
+		fake_literal->num_matches = 0;
+		root_literal->cue_wme= NULL;
+		root_literal->is_neg_q = EPMEM_NODE_POS;
+		root_literal->is_edge_not_node = 1;
+		root_literal->is_leaf = false;
+		root_literal->q1 = EPMEM_NODEID_BAD;
+		root_literal->weight = 0.0;
+		root_literal->num_matches = 0;
+		fake_literal->children[EPMEM_NODEID_BAD] = new epmem_literal_set();
+		fake_literal->children[EPMEM_NODEID_BAD]->insert(root_literal);
+		literal_cleanup.insert(fake_literal);
+		literal_cleanup.insert(root_literal);
 
-		frontier.insert(fake_root);
-		std::map<Symbol*, epmem_dnf_literal*> sym_cache;
+		frontier.insert(fake_literal);
+		std::map<wme*, epmem_dnf_literal*> sym_cache;
 		std::set<Symbol*> visiting;
-		sym_cache[pos_query] = dnf_root;
-		sym_cache[neg_query] = dnf_root;
 		visiting.insert(pos_query);
 		visiting.insert(neg_query);
 		for (int query_type = EPMEM_NODE_POS; query_type <= EPMEM_NODE_NEG; query_type++) {
@@ -3511,11 +3509,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					if (!root->parents.count(attr)) {
 						root->parents[attr] = new epmem_literal_set();
 					}
-					root->parents[attr]->insert(dnf_root);
-					if (!dnf_root->children.count(attr)) {
-						dnf_root->children[attr] = new epmem_literal_set();
+					root->parents[attr]->insert(root_literal);
+					if (!root_literal->children.count(attr)) {
+						root_literal->children[attr] = new epmem_literal_set();
 					}
-					dnf_root->children[attr]->insert(root);
+					root_literal->children[attr]->insert(root);
 				}
 			}
 			delete query_wmes;
@@ -3564,11 +3562,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// we make an SQL statement just so we don't have to do anything special at cleanup
 		epmem_unique_edge_query* fake_uedge = new epmem_unique_edge_query();
 		fake_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
-		fake_uedge->edge_info.w = NULL;
+		fake_uedge->edge_info.w = EPMEM_NODEID_BAD;
 		fake_uedge->edge_info.q1 = EPMEM_NODEID_BAD;
 		fake_uedge->is_edge_not_node = 1;
 		fake_uedge->depth = -1;
-		fake_uedge->literals.insert(fake_root);
+		fake_uedge->literals.insert(fake_literal);
 		fake_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		fake_uedge->time = before;
 		epmem_interval_query* fake_interval = new epmem_interval_query();
@@ -3587,11 +3585,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// insert dummy unique edge and interval end point queries for DNF root
 		epmem_unique_edge_query* root_uedge = new epmem_unique_edge_query();
 		root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
-		root_uedge->edge_info.w = NULL;
+		root_uedge->edge_info.w = EPMEM_NODEID_BAD;
 		root_uedge->edge_info.q1 = EPMEM_NODEID_ROOT;
 		root_uedge->is_edge_not_node = 1;
 		root_uedge->depth = 0;
-		root_uedge->literals.insert(dnf_root);
+		root_uedge->literals.insert(root_literal);
 		root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		root_uedge->sql->prepare();
 		root_uedge->sql->bind_int(1, LLONG_MAX);
@@ -3616,7 +3614,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	if (false) {
 		epmem_literal_set visited;
 		std::cout << "\ndigraph {" << std::endl;
-		epmem_print_dnf(dnf_root, visited);
+		epmem_print_dnf(root_literal, visited);
 		std::cout << "}" << std::endl;
 	}
 
@@ -3721,7 +3719,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			{
 				int64_t edge_id = uedge->sql->column_int(0);
 				epmem_time_id promo_time = EPMEM_MEMID_NONE;
-				bool is_lti = (uedge->is_edge_not_node && uedge->edge_info.q1 != EPMEM_NODEID_BAD);
+				bool is_lti = (uedge->is_edge_not_node && uedge->edge_info.q1 != EPMEM_NODEID_BAD && uedge->edge_info.q1 != EPMEM_NODEID_ROOT);
 				if (is_lti) {
 					// find the promotion time of the LTI
 					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, uedge->sql->column_int(1));
@@ -4115,7 +4113,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_buffer_add_wme(meta_wmes, mapping, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
 					symbol_remove_ref(my_agent, temp_sym);
 					// point to the cue identifier
-					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_node, (*iter).first->symbol);
+					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_node, (*iter).first->cue_wme->value);
 					// save the mapping point for the episode
 					node_map_map[(*iter).second] = temp_sym;
 					node_mem_map[(*iter).second] = NULL;

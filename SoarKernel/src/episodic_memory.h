@@ -715,7 +715,7 @@ struct epmem_sql_edge_struct {
 };
 
 struct epmem_dnf_literal_struct {
-	Symbol* symbol;
+	wme* cue_wme;
 	int is_neg_q;
 	int is_edge_not_node;
 	bool is_leaf;
