@@ -693,7 +693,7 @@ typedef std::set<epmem_node_id> epmem_node_set;
 typedef std::set<epmem_sql_edge> epmem_sql_edge_set;
 typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
 
-typedef std::map<Symbol*, epmem_literal_set*> epmem_attr_literals_map;
+typedef std::map<epmem_node_id, epmem_literal_set*> epmem_attr_literals_map;
 typedef std::map<epmem_node_id, epmem_interval_multiset*> epmem_node_intervals_multimap;
 typedef std::map<epmem_node_id, epmem_sql_edge_multiset*> epmem_node_edges_multimap;
 typedef std::map<epmem_node_id, epmem_sql_edge_set*> epmem_node_edges_map;
@@ -701,7 +701,7 @@ typedef std::map<epmem_node_id, epmem_sql_edge_set*> epmem_node_edges_map;
 // structs
 struct epmem_sql_edge_struct {
 	epmem_node_id q0;
-	Symbol *w;
+	epmem_node_id w;
 	epmem_node_id q1;
 	bool operator<(const epmem_sql_edge& other) const {
 		if (q0 != other.q0) {

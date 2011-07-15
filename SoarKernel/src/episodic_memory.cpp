@@ -3174,7 +3174,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* root, int query_type, std::map<Symbol*, 
 				// if it does, we skip over it
 				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_dfs_ordering, cue_wmes, cleanup_literals);
 				if (child) {
-					Symbol* attr = (*wme_iter)->attr;
+					epmem_node_id attr = epmem_temporal_hash(my_agent, (*wme_iter)->attr);
 					if (!child->parents.count(attr)) {
 						child->parents[attr] = new epmem_literal_set();
 					}
@@ -3257,7 +3257,7 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 			}
 			// for all children
 			for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); relations_okay && attr_iter != literal->children.end(); attr_iter++) {
-				Symbol* attr = (*attr_iter).first;
+				epmem_node_id attr = (*attr_iter).first;
 				epmem_literal_set* children = (*attr_iter).second;
 				for (epmem_literal_set::iterator child_iter = children->begin(); relations_okay && child_iter != children->end(); child_iter++) {
 					epmem_dnf_literal* child = *child_iter;
@@ -3313,12 +3313,14 @@ void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 	}
 	visited.insert(root);
 	for (epmem_attr_literals_map::iterator attr_iter = root->children.begin(); attr_iter != root->children.end(); attr_iter++) {
-		Symbol* attr = (*attr_iter).first;
+		epmem_node_id attr = (*attr_iter).first;
 		epmem_literal_set* children_set = (*attr_iter).second;
 		for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 			epmem_dnf_literal* child = *child_iter;
 			std::cout << '"' << child << "\" [style=\"filled\", fillcolor=\"" << (child->is_neg_q ? "#CC0000" : "#3465A4") << "\", label=\"" << child << " [" << child->weight << "]\"]" << std::endl;
-			std::cout << '"' << root << '"' << "->" << '"' << child << '"' << " [label=\"";
+			std::cout << '"' << root << '"' << "->" << '"' << child << '"' << " [label=\"" << attr << "\"]" << std::endl;
+			/*
+			   // FIXME should write a query for this
 			switch (attr->common.symbol_type) {
 				case SYM_CONSTANT_SYMBOL_TYPE:
 					std::cout << attr->sc.name;
@@ -3331,6 +3333,7 @@ void epmem_print_dnf(epmem_dnf_literal* root, epmem_literal_set& visited) {
 					break;
 			}
 			std::cout << "\"]" << std::endl;
+			*/
 			epmem_print_dnf(child, visited);
 		}
 	}
@@ -3374,15 +3377,16 @@ void epmem_print_state(epmem_interval_set& intervals) {
 	for (epmem_literal_set::iterator iter = literals.begin(); iter != literals.end(); iter++) {
 		epmem_dnf_literal* literal = *iter;
 		for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
-			Symbol* attr = (*attr_iter).first;
-			if (!attr) {
+			epmem_node_id attr = (*attr_iter).first;
+			if (attr == EPMEM_NODEID_BAD) {
 				continue;
 			}
 			epmem_literal_set* children_set = (*attr_iter).second;
 			for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 				epmem_dnf_literal* child = *child_iter;
 				std::cout << '"' << child << "\" [style=\"filled\", fillcolor=\"" << (child->is_neg_q ? "#CC0000" : "#3465A4") << "\", label=\"" << child << " [" << child->weight << "]\"]" << std::endl;
-				std::cout << '"' << literal << '"' << "->" << '"' << child << '"' << " [label=\"";
+				std::cout << '"' << literal << '"' << "->" << '"' << child << '"' << " [label=\"" << attr << "\"]" << std::endl;
+				/* FIXME
 				switch (attr->common.symbol_type) {
 					case SYM_CONSTANT_SYMBOL_TYPE:
 						std::cout << attr->sc.name;
@@ -3395,6 +3399,7 @@ void epmem_print_state(epmem_interval_set& intervals) {
 						break;
 				}
 				std::cout << "\"]" << std::endl;
+				*/
 			}
 		}
 		epmem_interval_set matches;
@@ -3502,14 +3507,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				query_wmes->pop_front();
 				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_dfs_ordering, cue_wmes, literal_cleanup);
 				if (root) {
-					if (!root->parents.count(first_level->attr)) {
-						root->parents[first_level->attr] = new epmem_literal_set();
+					epmem_node_id attr = epmem_temporal_hash(my_agent, first_level->attr);
+					if (!root->parents.count(attr)) {
+						root->parents[attr] = new epmem_literal_set();
 					}
-					root->parents[first_level->attr]->insert(dnf_root);
-					if (!dnf_root->children.count(first_level->attr)) {
-						dnf_root->children[first_level->attr] = new epmem_literal_set();
+					root->parents[attr]->insert(dnf_root);
+					if (!dnf_root->children.count(attr)) {
+						dnf_root->children[attr] = new epmem_literal_set();
 					}
-					dnf_root->children[first_level->attr]->insert(root);
+					dnf_root->children[attr]->insert(root);
 				}
 			}
 			delete query_wmes;
@@ -3633,7 +3639,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			for (epmem_literal_set::iterator literal_iter = uedge->literals.begin(); literal_iter != uedge->literals.end(); literal_iter++) {
 				epmem_dnf_literal* literal = *literal_iter;
 				for (epmem_attr_literals_map::iterator attr_iter = literal->children.begin(); attr_iter != literal->children.end(); attr_iter++) {
-					Symbol* attr = (*attr_iter).first;
+					epmem_node_id attr = (*attr_iter).first;
 					epmem_literal_set* children_set = (*attr_iter).second;
 					for (epmem_literal_set::iterator child_iter = children_set->begin(); child_iter != children_set->end(); child_iter++) {
 						epmem_dnf_literal* child_literal = *child_iter;
@@ -3683,7 +3689,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							uedge_sql->prepare();
 							int bind_pos = 1;
 							uedge_sql->bind_int(bind_pos++, info.q0);
-							uedge_sql->bind_int(bind_pos++, epmem_temporal_hash(my_agent, info.w));
+							uedge_sql->bind_int(bind_pos++, info.w);
 							if (child_literal->q1 != EPMEM_NODEID_BAD) {
 								uedge_sql->bind_int(bind_pos++, info.q1);
 							}
