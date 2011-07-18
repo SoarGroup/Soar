@@ -3059,7 +3059,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG true
+#define JUSTIN_DEBUG false
 
 const char* epmem_find_unique_node_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<last ORDER BY last DESC";
 const char* epmem_find_unique_node_value_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<last ORDER BY last DESC";
@@ -3150,8 +3150,8 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
 			leaf_literals.insert(literal);
 			// only graph match on positive queries
-			if (!literal->is_neg_q) {
-				gm_dfs_ordering.push_back(literal);
+			if (!query_type) {
+				gm_dfs_ordering.push_front(literal);
 			}
 		} else {
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
@@ -3197,8 +3197,8 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			}
 			literal->is_leaf = false;
 			// only graph match on positive queries
-			if (!literal->is_neg_q) {
-				gm_dfs_ordering.push_back(literal);
+			if (!query_type) {
+				gm_dfs_ordering.push_front(literal);
 			}
 		}
 	}
@@ -3296,14 +3296,11 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 						break;
 					}
 					epmem_unique_edge_query* child_uedge = (*uedge_iter).second;
-					if (child_edge.q1 == EPMEM_NODEID_BAD || child_uedge == NULL) {
+					if (child_edge.q1 == EPMEM_NODEID_BAD) {
 						continue;
 					}
-					// need to make sure the value is an identifier, not a value
-					if (child_uedge->is_edge_not_node) {
-						for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-							epmem_register_uedges(child_edge.q1, *child_iter, edge_pq, current_score, current_cardinality, changed_score, after, uedge_cache, my_agent);
-						}
+					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+						epmem_register_uedges(child_edge.q1, *child_iter, edge_pq, current_score, current_cardinality, changed_score, after, uedge_cache, my_agent);
 					}
 				}
 			}
@@ -3315,7 +3312,7 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 	}
 }
 
-bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_list::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_set& bound_nodes) {
+bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_list::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_symbol_map& bound_nodes) {
 	if (dnf_iter == iter_end) {
 		return true;
 	}
@@ -3325,31 +3322,39 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 	}
 	epmem_literal_list::iterator next_iter = dnf_iter;
 	next_iter++;
-	epmem_node_set tried;
 	// go through the list of matches, binding each one to this literal in turn
 	for (epmem_uedge_set::iterator uedge_iter = literal->uedges.begin(); uedge_iter != literal->uedges.end(); uedge_iter++) {
 		epmem_unique_edge_query* uedge = *uedge_iter;
 		epmem_node_id q0 = uedge->edge_info.q0;
+		// check that it satisfies all parent/child relationships
+		bool relations_okay = true;
+		// for all parents
+		for (epmem_literal_set::iterator parent_iter = literal->parents.begin(); relations_okay && parent_iter != literal->parents.end(); parent_iter++) {
+			epmem_dnf_literal* parent = *parent_iter;
+			if (bindings.count(parent) && bindings[parent].second != q0) {
+				relations_okay = false;
+			}
+		}
+		if (!relations_okay) {
+			continue;
+		}
+		epmem_node_set tried;
 		for (epmem_node_set::iterator node_iter = uedge->matches.begin(); node_iter != uedge->matches.end(); node_iter++) {
 			epmem_node_id q1 = *node_iter;
-			// try a different node if this one is already in use
-			if (bound_nodes.count(q1) || tried.count(q1)) {
+			// don't try the same node twice
+			if (tried.count(q1)) {
+				continue;
+			}
+			// if the node has already been bound, make sure it's bound to the same thing
+			epmem_node_symbol_map::iterator binder = bound_nodes.find(q1);
+			if (binder != bound_nodes.end() && (*binder).second != literal->cue_wme->value) {
 				continue;
 			}
 			tried.insert(q1);
-			// check that it satisfies any parent/child relationships
-			bool relations_okay = true;
-			// for all parents
-			for (epmem_literal_set::iterator parent_iter = literal->parents.begin(); relations_okay && parent_iter != literal->parents.end(); parent_iter++) {
-				epmem_dnf_literal* parent = *parent_iter;
-				if (bindings.count(parent) && bindings[parent].second != q0) {
-					relations_okay = false;
-				}
-			}
 			// for all children
 			for (epmem_literal_set::iterator child_iter = literal->children.begin(); relations_okay && child_iter != literal->children.end(); child_iter++) {
 				epmem_dnf_literal* child = *child_iter;
-				if (bindings.count(child) && bindings[child].first != q0) {
+				if (bindings.count(child) && bindings[child].first != q1) {
 					relations_okay = false;
 				}
 			}
@@ -3358,7 +3363,7 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 			}
 			// temporarily modify the bindings and bound nodes
 			bindings[literal] = std::make_pair(q0, q1);
-			bound_nodes.insert(q1);
+			bound_nodes[q1] = literal->cue_wme->value;
 			// recurse on the rest of the list
 			bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes);
 			// if the rest of the list matched, we've succeeded
@@ -3612,12 +3617,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				epmem_dnf_literal* literal = *literal_iter;
 				for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
 					epmem_register_uedges(q1, *child_iter, edge_pq, current_score, current_cardinality, changed_score, after, uedge_cache, my_agent);
-
-					// FIXME diagnostic code: print out the DNF
-					if (JUSTIN_DEBUG) {
-						epmem_print_state(literal_cleanup, uedge_cache, interval_cleanup);
-					}
-
 				}
 			}
 
@@ -3954,8 +3953,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_literal_list::iterator begin = gm_ordered_list.begin();
 					epmem_literal_list::iterator end = gm_ordered_list.end();
 					best_bindings.clear();
-					epmem_node_set bound_nodes;
+					epmem_node_symbol_map bound_nodes;
 					my_agent->epmem_timers->query_graph_match->start();
+					// FIXME diagnostic code: print out the DNF
+					if (JUSTIN_DEBUG) {
+						epmem_print_state(literal_cleanup, uedge_cache, interval_cleanup);
+					}
 					bool graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes);
 					my_agent->epmem_timers->query_graph_match->stop();
 					if (graph_matched) {
