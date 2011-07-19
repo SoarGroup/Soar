@@ -3136,7 +3136,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 		literal->is_edge_not_node = 0;
 		literal->is_leaf = true;
 		literal->q1 = epmem_temporal_hash(my_agent, value);
-		literal->depth = 0;
 		leaf_literals.insert(literal);
 	} else if (value->id.smem_lti) { // WME is an LTI
 		// if we can find the LTI node id, cache it; otherwise, return failure
@@ -3146,7 +3145,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			literal->is_edge_not_node = 1;
 			literal->is_leaf = true;
 			literal->q1 = my_agent->epmem_stmts_graph->find_lti->column_int(0);
-			literal->depth = 0;
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
 			leaf_literals.insert(literal);
 			// only graph match on positive queries
@@ -3163,7 +3161,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 		epmem_wme_list* children = epmem_get_augs_of_id(value, tc);
 		literal->is_edge_not_node = 1;
 		literal->q1 = EPMEM_NODEID_BAD;
-		literal->depth = 0;
 
 		// if the WME has no children, then it's a leaf
 		// otherwise, we recurse for all children
@@ -3179,7 +3176,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 				// if it does, we skip over it
 				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_dfs_ordering, cue_wmes, cleanup_literals);
 				if (child) {
-					child->depth = (child->depth > literal->depth + 1 ? child->depth : literal->depth + 1);
 					child->parents.insert(literal);
 					literal->children.insert(child);
 				} else {
@@ -3255,7 +3251,6 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 		if (uedge_sql->execute() == soar_module::row) {
 			epmem_unique_edge_query* child_uedge = new epmem_unique_edge_query();
 			child_uedge->edge_info = info;
-			child_uedge->depth = literal->depth;
 			child_uedge->is_edge_not_node = literal->is_edge_not_node;
 			child_uedge->sql = uedge_sql;
 			child_uedge->literals.insert(literal);
@@ -3331,7 +3326,8 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 		// for all parents
 		for (epmem_literal_set::iterator parent_iter = literal->parents.begin(); relations_okay && parent_iter != literal->parents.end(); parent_iter++) {
 			epmem_dnf_literal* parent = *parent_iter;
-			if (bindings.count(parent) && bindings[parent].second != q0) {
+			epmem_literal_node_pair_map::iterator bind_iter = bindings.find(parent);
+			if (bind_iter != bindings.end() && (*bind_iter).second.second != q0) {
 				relations_okay = false;
 			}
 		}
@@ -3354,7 +3350,8 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 			// for all children
 			for (epmem_literal_set::iterator child_iter = literal->children.begin(); relations_okay && child_iter != literal->children.end(); child_iter++) {
 				epmem_dnf_literal* child = *child_iter;
-				if (bindings.count(child) && bindings[child].first != q1) {
+				epmem_literal_node_pair_map::iterator bind_iter = bindings.find(child);
+				if (bind_iter != bindings.end() && (*bind_iter).second.first != q1) {
 					relations_okay = false;
 				}
 			}
@@ -3492,7 +3489,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_literal->is_leaf = false;
 		root_literal->attr = EPMEM_NODEID_BAD;
 		root_literal->q1 = EPMEM_NODEID_ROOT;
-		root_literal->depth = 0;
 		root_literal->weight = 0.0;
 		literal_cleanup.insert(root_literal);
 
@@ -3571,7 +3567,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_uedge->edge_info.w = EPMEM_NODEID_BAD;
 		root_uedge->edge_info.q1 = EPMEM_NODEID_ROOT;
 		root_uedge->is_edge_not_node = 1;
-		root_uedge->depth = 0;
 		root_uedge->literals.insert(root_literal);
 		root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		root_uedge->sql->prepare();
@@ -3613,10 +3608,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			epmem_node_id q1 = uedge->sql->column_int(1);
 
 			// create queries for the unique edge children of this unique edge
-			for (epmem_literal_set::iterator literal_iter = uedge->literals.begin(); literal_iter != uedge->literals.end(); literal_iter++) {
-				epmem_dnf_literal* literal = *literal_iter;
-				for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-					epmem_register_uedges(q1, *child_iter, edge_pq, current_score, current_cardinality, changed_score, after, uedge_cache, my_agent);
+			if (uedge->is_edge_not_node) {
+				for (epmem_literal_set::iterator literal_iter = uedge->literals.begin(); literal_iter != uedge->literals.end(); literal_iter++) {
+					epmem_dnf_literal* literal = *literal_iter;
+					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+						epmem_register_uedges(q1, *child_iter, edge_pq, current_score, current_cardinality, changed_score, after, uedge_cache, my_agent);
+					}
 				}
 			}
 
@@ -3807,8 +3804,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								continue;
 							}
 							visited.insert(q0);
-							if (reachable.count(q0)) {
-								reachable[q0]++;
+							epmem_node_int_map::iterator reach_iter = reachable.find(q0);
+							if (reach_iter != reachable.end()) {
+								(*reach_iter).second++;
 							} else {
 								reachable[q0] = 1;
 							}
@@ -3848,9 +3846,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					}
 				} else {
 					activated.erase(info);
-					if (uedge->matches.count(info.q1)) {
+					epmem_node_set::iterator node_iter = uedge->matches.find(info.q1);
+					if (node_iter != uedge->matches.end()) {
 						// make changes for this interval
-						uedge->matches.erase(info.q1);
+						uedge->matches.erase(node_iter);
 						for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
 							epmem_dnf_literal* literal = *lit_iter;
 							literal->num_matches--;

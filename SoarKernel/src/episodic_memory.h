@@ -718,7 +718,6 @@ struct epmem_dnf_literal_struct {
 	bool is_leaf;
 	epmem_node_id attr;
 	epmem_node_id q1;
-	int depth;
 	double weight;
 	epmem_literal_set parents;
 	epmem_literal_set children;
@@ -729,7 +728,6 @@ struct epmem_dnf_literal_struct {
 struct epmem_unique_edge_query_struct {
 	epmem_sql_edge edge_info;
 	int is_edge_not_node;
-	int depth;
 	epmem_literal_set literals;
 	soar_module::sqlite_statement *sql;
 	epmem_time_id time;
@@ -750,7 +748,7 @@ struct epmem_unique_edge_query_comparator {
 		if (a->time != b->time) {
 			return (a->time < b->time);
 		} else {
-			return (b->depth < a->depth);
+			return false;
 		}
 	}
 };
@@ -759,18 +757,10 @@ struct epmem_interval_query_comparator {
 	bool operator()(const epmem_interval_query *a, const epmem_interval_query *b) const {
 		if (a->time != b->time) {
 			return (a->time < b->time);
-		} else if ((a->is_end_point && b->is_end_point) || !(a->is_end_point || b->is_end_point)) {
-			// both a and b are ends/starts
-			if (a->is_end_point) {
-				return a->uedge->depth > b->uedge->depth;
-			} else {
-				return b->uedge->depth > a->uedge->depth;
-			}
 		} else {
 			// arbitrarily put starts before ends
-			return ( a->is_end_point == 1 );
+			return (a->is_end_point == 1);
 		}
-
 	}
 };
 typedef std::priority_queue<epmem_interval_query*, std::vector<epmem_interval_query*>, epmem_interval_query_comparator> epmem_interval_pq;
