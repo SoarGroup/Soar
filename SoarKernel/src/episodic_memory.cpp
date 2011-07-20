@@ -3116,7 +3116,11 @@ const char *epmem_find_lti_single_queries[3] = {
 	"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1"
 };
 
-epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_list& gm_dfs_ordering, soar_module::wme_set& cue_wmes, epmem_literal_set& cleanup_literals) {
+bool epmem_gm_mcv_comparator(const epmem_dnf_literal* a, const epmem_dnf_literal* b) {
+	return (a->num_matches < b->num_matches);
+}
+
+epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, tc_number tc, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_deque& gm_ordering, soar_module::wme_set& cue_wmes, epmem_literal_set& cleanup_literals) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
 	if (visiting.count(cue_wme->value)) {
@@ -3128,7 +3132,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 	}
 
 	cue_wmes.insert(cue_wme);
-
 	Symbol* value = cue_wme->value;
 	epmem_dnf_literal* literal = new epmem_dnf_literal();
 
@@ -3149,7 +3152,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			leaf_literals.insert(literal);
 			// only graph match on positive queries
 			if (!query_type) {
-				gm_dfs_ordering.push_front(literal);
+				gm_ordering.push_front(literal);
 			}
 		} else {
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
@@ -3174,7 +3177,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_dfs_ordering, cue_wmes, cleanup_literals);
+				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_ordering, cue_wmes, cleanup_literals);
 				if (child) {
 					child->parents.insert(literal);
 					literal->children.insert(child);
@@ -3194,7 +3197,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			literal->is_leaf = false;
 			// only graph match on positive queries
 			if (!query_type) {
-				gm_dfs_ordering.push_front(literal);
+				gm_ordering.push_front(literal);
 			}
 		}
 	}
@@ -3209,8 +3212,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 	sym_cache[cue_wme] = literal;
 	return literal;
 }
-
-// FIXME for all if not in map adds, use find instead to we can keep the iterator
 
 void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epmem_unique_edge_pq& edge_pq, double& current_score, uint64_t& current_cardinality, bool& changed_score, epmem_time_id after, epmem_edge_sql_map& uedge_cache, agent* my_agent) {
 	// we don't need to keep track of visited literals/nodes because the literals are guaranteed to be acyclic
@@ -3307,7 +3308,7 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 	}
 }
 
-bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_list::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_symbol_map& bound_nodes) {
+bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_deque::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_symbol_map& bound_nodes) {
 	if (dnf_iter == iter_end) {
 		return true;
 	}
@@ -3315,7 +3316,7 @@ bool epmem_graph_match(epmem_literal_list::iterator& dnf_iter, epmem_literal_lis
 	if (bindings.count(literal)) {
 		return false;
 	}
-	epmem_literal_list::iterator next_iter = dnf_iter;
+	epmem_literal_deque::iterator next_iter = dnf_iter;
 	next_iter++;
 	// go through the list of matches, binding each one to this literal in turn
 	for (epmem_uedge_set::iterator uedge_iter = literal->uedges.begin(); uedge_iter != literal->uedges.end(); uedge_iter++) {
@@ -3471,7 +3472,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_edge_sql_map uedge_cache;
 	epmem_literal_set literal_cleanup;
 
-	epmem_literal_list gm_dfs_ordering;
+	// variables needed for graphmatch
+	epmem_literal_deque gm_ordering;
 
 	// build the DNF graph while checking for leaf WMEs
 	{
@@ -3513,7 +3515,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			while (query_wmes->size()) {
 				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
-				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_dfs_ordering, cue_wmes, literal_cleanup);
+				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, tc, visiting, my_agent, gm_ordering, cue_wmes, literal_cleanup);
 				if (root) {
 					epmem_node_id attr = epmem_temporal_hash(my_agent, first_level->attr);
 					root->parents.insert(root_literal);
@@ -3781,6 +3783,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				info.q1 = interval->q1;
 				epmem_node_list queue;
 				epmem_node_set visited;
+				// FIXME these recursions should be done at the end of all intervals
 				if (interval->is_end_point) {
 					activated.insert(info);
 					if (reachable.count(info.q0)) {
@@ -3942,15 +3945,14 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				best_cardinality = current_cardinality;
 				// we should graph match if the option is set and all leaf literals are satisfied
 				if (do_graph_match && current_cardinality == perfect_cardinality) {
-					epmem_param_container::gm_ordering_choices gm_ordering = my_agent->epmem_params->gm_ordering->get_value();
-					epmem_literal_list gm_ordered_list = gm_dfs_ordering; // FIXME
-					if (gm_ordering == epmem_param_container::gm_order_undefined || gm_ordering == epmem_param_container::gm_order_mcv) {
-						// FIXME
-					} else if (gm_ordering == epmem_param_container::gm_order_dfs) {
-						gm_ordered_list = gm_dfs_ordering;
+					epmem_param_container::gm_ordering_choices gm_order = my_agent->epmem_params->gm_ordering->get_value();
+					if (gm_order == epmem_param_container::gm_order_undefined) {
+						std::sort(gm_ordering.begin(), gm_ordering.end());
+					} else if (gm_order == epmem_param_container::gm_order_mcv) {
+						std::sort(gm_ordering.begin(), gm_ordering.end(), epmem_gm_mcv_comparator);
 					}
-					epmem_literal_list::iterator begin = gm_ordered_list.begin();
-					epmem_literal_list::iterator end = gm_ordered_list.end();
+					epmem_literal_deque::iterator begin = gm_ordering.begin();
+					epmem_literal_deque::iterator end = gm_ordering.end();
 					best_bindings.clear();
 					epmem_node_symbol_map bound_nodes;
 					my_agent->epmem_timers->query_graph_match->start();
@@ -4032,7 +4034,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_buffer_add_wme(meta_wmes, mapping, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
 					symbol_remove_ref(my_agent, temp_sym);
 					// point to the cue identifier
-					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_node, (*iter).first->cue_wme->value);
+					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_cue, (*iter).first->cue_wme->value);
 					// save the mapping point for the episode
 					node_map_map[(*iter).second.second] = temp_sym;
 					node_mem_map[(*iter).second.second] = NULL;

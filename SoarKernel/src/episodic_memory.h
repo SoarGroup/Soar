@@ -683,7 +683,7 @@ typedef struct epmem_sql_edge_struct epmem_sql_edge;
 typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
 
 // collection classes
-typedef std::list<epmem_dnf_literal*> epmem_literal_list;
+typedef std::deque<epmem_dnf_literal*> epmem_literal_deque;
 typedef std::list<epmem_node_id> epmem_node_list;
 typedef std::map<epmem_dnf_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
