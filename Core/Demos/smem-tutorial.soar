@@ -1,0 +1,113 @@
+# Rules to accompany the Semantic Memory tutorial
+# that illustrates simple examples of all
+# agent interactions with semantic memory.
+
+smem --set learning on
+
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator.name init
+              ^smem.command <cmd>)
+-->
+   (<s> ^name friends)
+   (<cmd> ^store <a> <b> <c>)
+   (<a> ^name alice ^friend <b>)
+   (<b> ^name bob ^friend <a>)
+   (<c> ^name charley)
+}
+
+sp {propose*mod
+   (state <s> ^name friends
+              ^smem.command <cmd>)
+   (<cmd> ^store <a> <b> <c>)
+   (<a> ^name alice)
+   (<b> ^name bob)
+   (<c> ^name charley)
+-->
+   (<s> ^operator <op> +)
+   (<op> ^name mod)
+}
+
+sp {apply*mod
+   (state <s> ^operator.name mod
+              ^smem.command <cmd>)
+   (<cmd> ^store <a> <b> <c>)
+   (<a> ^name alice)
+   (<b> ^name bob)
+   (<c> ^name charley)
+-->
+   (<a> ^name alice -)
+   (<a> ^name anna
+        ^friend <c>)
+   (<cmd> ^store <b> -)
+   (<cmd> ^store <c> -)
+}
+
+sp {propose*ncb-retrieval
+   (state <s> ^name friends
+              ^smem.command <cmd>)
+   (<cmd> ^store <a>)
+   (<a> ^name anna
+        ^friend <f>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name ncb-retrieval
+         ^friend <f>)
+}
+
+sp {apply*ncb-retrieval*retrieve
+   (state <s> ^operator <op>
+              ^smem.command <cmd>)
+   (<op> ^name ncb-retrieval
+         ^friend <f>)
+   (<cmd> ^store <a>)
+-->
+   (<cmd> ^store <a> -
+          ^retrieve <f>)
+}
+
+sp {apply*ncb-retrieval*clean
+   (state <s> ^operator <op>
+              ^smem.command <cmd>)
+   (<op> ^name ncb-retrieval
+         ^friend <f>)
+   (<f> ^<attr> <val>)
+-->
+   (<f> ^<attr> <val> -)
+}
+
+sp {propose*cb-retrieval
+   (state <s> ^name friends
+              ^smem.command <cmd>)
+   (<cmd> ^retrieve)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name cb-retrieval)
+}
+
+sp {apply*cb-retrieval
+   (state <s> ^operator <op>
+              ^smem.command <cmd>)
+   (<op> ^name cb-retrieval)
+   (<cmd> ^retrieve <lti>)
+-->
+   (<cmd> ^retrieve <lti> -
+          ^query <cue>)
+   (<cue> ^name <any-name>
+          ^friend <lti>)
+}
+
+sp {done
+   (state <s> ^smem <smem>)
+   (<smem> ^command.query <q>
+           ^result.<status> <q>)
+-->
+   (halt)
+}
