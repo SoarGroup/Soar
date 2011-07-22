@@ -732,6 +732,15 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" );
 	add( find_lti_current_time );
 
+	find_lti_first_range = new soar_module::sqlite_statement( new_db, "SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=? AND ?<=e.end LIMIT 1" );
+	add( find_lti_first_range );
+
+	find_lti_first_now = new soar_module::sqlite_statement( new_db, "SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1" );
+	add( find_lti_first_now );
+
+	find_lti_first_point = new soar_module::sqlite_statement( new_db, "SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1" );
+	add( find_lti_first_point );
+
 	//
 
 	update_node_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE node_unique SET last=? WHERE child_id=?" );
@@ -3099,21 +3108,15 @@ const char* epmem_find_interval_queries[2][2][3] = {
 
 const char* epmem_find_lti_queries[2][3] = {
 	{
-		"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-		"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+		"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
+		"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
+		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
 	},
 	{
-		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<=e.start AND e.start<=(?+1) ORDER BY e.end DESC",
-		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1)",
-		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<e.start AND e.start<=(?+1) ORDER BY e.end DESC",
+		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=(?+1)",
+		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
 	}
-};
-
-const char *epmem_find_lti_single_queries[3] = {
-	"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=? AND ?<=e.end LIMIT 1",
-	"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1",
-	"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1"
 };
 
 bool epmem_gm_mcv_comparator(const epmem_dnf_literal* a, const epmem_dnf_literal* b) {
@@ -3598,7 +3601,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		reachable[EPMEM_NODEID_BAD] = 1;
 	}
 
-	// FIXME diagnostic code: print out the DNF
 	if (JUSTIN_DEBUG) {
 		epmem_print_state(literal_cleanup, uedge_cache, interval_cleanup, reachable);
 	}
@@ -3651,8 +3653,18 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					// if such an interval exists, add its start/end points to the priority queue
 					for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
 						// first, find the interval
-						soar_module::sqlite_statement* interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_single_queries[interval_type]);
-						interval_sql->prepare();
+						soar_module::sqlite_statement* interval_sql;
+						switch (interval_type) {
+							case EPMEM_RANGE_EP:
+								interval_sql = my_agent->epmem_stmts_graph->find_lti_first_range;
+								break;
+							case EPMEM_RANGE_NOW:
+								interval_sql = my_agent->epmem_stmts_graph->find_lti_first_now;
+								break;
+							case EPMEM_RANGE_POINT:
+								interval_sql = my_agent->epmem_stmts_graph->find_lti_first_point;
+								break;
+						}
 						int bind_pos = 1;
 						if (interval_type == EPMEM_RANGE_NOW) {
 							interval_sql->bind_int(bind_pos++, current_episode);
@@ -3690,7 +3702,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval_cleanup.insert(start_q);
 							created = true;
 						}
-						delete interval_sql;
+						interval_sql->reinitialize();
 					}
 				}
 				for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
