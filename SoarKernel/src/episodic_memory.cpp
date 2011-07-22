@@ -3683,10 +3683,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							end_q->is_end_point = 1;
 							end_q->uedge = uedge;
 							end_q->time = interval_sql->column_int(0);
-							end_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-							end_q->sql->prepare();
-							end_q->sql->bind_int(1, end_q->time);
-							end_q->sql->execute();
+							end_q->sql = NULL;
 							interval_pq.push(end_q);
 							interval_cleanup.insert(end_q);
 							epmem_interval_query* start_q = new epmem_interval_query();
@@ -3694,10 +3691,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							start_q->is_end_point = 0;
 							start_q->uedge = uedge;
 							start_q->time = promo_time - 1;
-							start_q->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
-							start_q->sql->prepare();
-							start_q->sql->bind_int(1, start_q->time);
-							start_q->sql->execute();
+							start_q->sql = NULL;
 							interval_pq.push(start_q);
 							interval_cleanup.insert(start_q);
 							created = true;
@@ -3784,7 +3778,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			}
 
 			// put the unique edge query back into the queue if there's more
-			if (uedge->sql->execute() == soar_module::row) {
+			if (uedge->sql && uedge->sql->execute() == soar_module::row) {
 				uedge->time = uedge->sql->column_int(2);
 				edge_pq.push(uedge);
 			}
@@ -3945,29 +3939,13 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					}
 				}
 				// put the interval query back into the queue if there's more
-				if (interval->sql->execute() == soar_module::row) {
+				if (interval->sql && interval->sql->execute() == soar_module::row) {
 					interval->time = interval->sql->column_int(0);
 					interval_pq.push(interval);
 				}
 			}
 			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
 			next_either = (next_edge > next_interval ? next_edge : next_interval);
-
-			// FIXME
-			/*
-				visited = {}
-				for node changed
-					if visited
-						continue
-					visited.insert(node)
-					if (changed[node] != 0) {
-						net = reachable[node] + changed[node]
-						if (net > 0) {
-						} else if (net == 0) {
-
-						}
-					}
-			   */
 
 			// update the prohibits list to catch up
 			while (prohibits.size() && prohibits.back() > current_episode) {
@@ -4108,13 +4086,17 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	my_agent->epmem_timers->query_cleanup->start();
 	for (epmem_interval_set::iterator iter = interval_cleanup.begin(); iter != interval_cleanup.end(); iter++) {
 		epmem_interval_query* interval = *iter;
-		delete interval->sql;
+		if (interval->sql) {
+			delete interval->sql;
+		}
 		delete interval;
 	}
 	for (epmem_edge_sql_map::iterator iter = uedge_cache.begin(); iter != uedge_cache.end(); iter++) {
 		epmem_unique_edge_query* uedge = (*iter).second;
 		if (uedge) {
-			delete uedge->sql;
+			if (uedge->sql) {
+				delete uedge->sql;
+			}
 			delete uedge;
 		}
 	}
