@@ -349,9 +349,11 @@ agent * create_soar_agent (char * agent_name) {                                 
 #ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->wma_forget_pq = new wma_forget_p_queue( std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > >( newAgent ) );
   newAgent->wma_touched_elements = new wma_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( newAgent ) );
+  newAgent->wma_touched_sets = new wma_decay_cycle_set( std::less< wma_d_cycle >(), soar_module::soar_memory_pool_allocator< wma_d_cycle >( newAgent ) );
 #else
   newAgent->wma_forget_pq = new wma_forget_p_queue();
   newAgent->wma_touched_elements = new wma_pooled_wme_set();
+  newAgent->wma_touched_sets = new wma_decay_cycle_set();
 #endif
   newAgent->wma_initialized = false;
   newAgent->wma_tc_counter = 2;
@@ -444,7 +446,8 @@ void destroy_soar_agent (agent * delete_agent)
   // cleanup wma
   delete_agent->wma_params->activation->set_value( soar_module::off );
   delete delete_agent->wma_forget_pq;
-  delete delete_agent->wma_touched_elements;  
+  delete delete_agent->wma_touched_elements;
+  delete delete_agent->wma_touched_sets;
   delete delete_agent->wma_params;
   delete delete_agent->wma_stats;
   delete delete_agent->wma_timers;
