@@ -280,6 +280,7 @@ void wma_deinit( agent *my_agent )
 
 	// clear touched
 	my_agent->wma_touched_elements->clear();
+	my_agent->wma_touched_sets->clear();
 
 	// clear forgetting priority queue
 	for ( wma_forget_p_queue::iterator pq_p=my_agent->wma_forget_pq->begin(); pq_p!=my_agent->wma_forget_pq->end(); pq_p++ )
@@ -684,6 +685,11 @@ inline void wma_forgetting_remove_from_p_queue( agent* my_agent, wma_decay_eleme
 			if ( d_p != pq_p->second->end() )
 			{
 				pq_p->second->erase( d_p );
+
+				if ( pq_p->second->empty() )
+				{
+					my_agent->wma_touched_sets->insert( pq_p->first );
+				}
 			}
 		}
 	}
@@ -907,6 +913,16 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 			}
 
 			// clean up decay set
+			my_agent->wma_touched_sets->insert( pq_p->first );
+			pq_p->second->clear();
+		}
+
+		// clean up touched sets			
+		for ( wma_decay_cycle_set::iterator touched_it=my_agent->wma_touched_sets->begin(); touched_it!=my_agent->wma_touched_sets->end(); touched_it++ )
+		{
+			pq_p = my_agent->wma_forget_pq->find( *touched_it );
+			
+			if ( ( pq_p != my_agent->wma_forget_pq->end() ) && ( pq_p->second->empty() ) )
 			{
 				pq_p->second->~wma_decay_set();
 				free_with_pool( &( my_agent->wma_decay_set_pool ), pq_p->second );
@@ -914,6 +930,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 				my_agent->wma_forget_pq->erase( pq_p );
 			}
 		}
+		my_agent->wma_touched_sets->clear();
 	}
 
 	return return_val;
