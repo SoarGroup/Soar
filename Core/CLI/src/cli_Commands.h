@@ -3763,29 +3763,30 @@ namespace cli
             cli::Options opt;
             OptionsData optionsData[] = 
             {
-                {'b',"backtracing",                OPTARG_OPTIONAL},
-                {'c',"chunks",                    OPTARG_OPTIONAL},
-                {'d',"decisions",                OPTARG_OPTIONAL},
-                {'D',"default-productions",        OPTARG_OPTIONAL},
-                {'e',"epmem",                    OPTARG_OPTIONAL},
-                {'f',"fullwmes",                OPTARG_NONE},
-                {'g',"gds",                        OPTARG_OPTIONAL},
-                {'i',"indifferent-selection",    OPTARG_OPTIONAL},
-                {'j',"justifications",            OPTARG_OPTIONAL},
-                {'L',"learning",                OPTARG_REQUIRED},
-                {'l',"level",                    OPTARG_REQUIRED},
-                {'N',"none",                    OPTARG_NONE},
-                {'n',"nowmes",                    OPTARG_NONE},
-                {'p',"phases",                    OPTARG_OPTIONAL},
-                {'P',"productions",                OPTARG_OPTIONAL},
-                {'r',"preferences",                OPTARG_OPTIONAL},
-                {'R',"rl",                        OPTARG_OPTIONAL},
-                {'s',"smem",                    OPTARG_OPTIONAL},
-                {'t',"timetags",                OPTARG_NONE},
-                {'T',"template",                OPTARG_OPTIONAL},
-                {'u',"user-productions",        OPTARG_OPTIONAL},
-                {'w',"wmes",                    OPTARG_OPTIONAL},
-                {'W',"waterfall",                OPTARG_OPTIONAL}, // TODO: document. note: added to watch 5
+				{'a',"wma",							OPTARG_OPTIONAL},
+                {'b',"backtracing",					OPTARG_OPTIONAL},
+                {'c',"chunks",						OPTARG_OPTIONAL},
+                {'d',"decisions",					OPTARG_OPTIONAL},
+                {'D',"default-productions",			OPTARG_OPTIONAL},
+                {'e',"epmem",						OPTARG_OPTIONAL},
+                {'f',"fullwmes",					OPTARG_NONE},
+                {'g',"gds",							OPTARG_OPTIONAL},
+                {'i',"indifferent-selection",		OPTARG_OPTIONAL},
+                {'j',"justifications",				OPTARG_OPTIONAL},
+                {'L',"learning",					OPTARG_REQUIRED},
+                {'l',"level",						OPTARG_REQUIRED},
+                {'N',"none",						OPTARG_NONE},
+                {'n',"nowmes",						OPTARG_NONE},
+                {'p',"phases",						OPTARG_OPTIONAL},
+                {'P',"productions",					OPTARG_OPTIONAL},
+                {'r',"preferences",					OPTARG_OPTIONAL},
+                {'R',"rl",							OPTARG_OPTIONAL},
+                {'s',"smem",						OPTARG_OPTIONAL},
+                {'t',"timetags",					OPTARG_NONE},
+                {'T',"template",					OPTARG_OPTIONAL},
+                {'u',"user-productions",			OPTARG_OPTIONAL},
+                {'w',"wmes",						OPTARG_OPTIONAL},
+                {'W',"waterfall",					OPTARG_OPTIONAL}, // TODO: document. note: added to watch 5
                 {0, 0, OPTARG_NONE}
             };
                      
@@ -3802,6 +3803,18 @@ namespace cli
                 if (opt.GetOption() == -1) break;
 
                 switch (opt.GetOption()) {
+					case 'a':
+                        options.set(Cli::WATCH_WMA);
+                        if (opt.GetOptionArgument().size()) 
+                        {
+                            if (!CheckOptargRemoveOrZero(opt)) 
+                                return false; 
+                            settings.reset(Cli::WATCH_WMA);
+                        } 
+                        else 
+                            settings.set(Cli::WATCH_WMA);
+                        break;
+
                     case 'b':
                         options.set(Cli::WATCH_BACKTRACING);
                         if (opt.GetOptionArgument().size()) 
