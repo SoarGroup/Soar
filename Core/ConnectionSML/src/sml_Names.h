@@ -395,6 +395,7 @@ public:
 	static char const* const kParamWatchWaterfall;
 	static char const* const kParamWatchEpMem;
 	static char const* const kParamWatchSMem;
+	static char const* const kParamWatchWMA;
 	static char const* const kParamWatchGDS;
 
 	// Values (these are not case sensitive unlike the rest)

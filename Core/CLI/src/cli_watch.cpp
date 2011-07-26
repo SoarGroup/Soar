@@ -99,6 +99,7 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
             m_Result << "\n  Waterfall:  " << (agnt->sysparams[TRACE_WATERFALL_SYSPARAM] ? "on" : "off");
             m_Result << "\n  EpMem:  " << (agnt->sysparams[TRACE_EPMEM_SYSPARAM] ? "on" : "off");
             m_Result << "\n  SMem:  " << (agnt->sysparams[TRACE_SMEM_SYSPARAM] ? "on" : "off");
+			m_Result << "\n  WMA:  " << (agnt->sysparams[TRACE_WMA_SYSPARAM] ? "on" : "off");
             m_Result << "\n  GDS:  " << (agnt->sysparams[TRACE_GDS_SYSPARAM] ? "on" : "off");
 
         } 
@@ -157,6 +158,9 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
             AppendArgTag(sml_Names::kParamWatchSMem, sml_Names::kTypeBoolean, 
                 agnt->sysparams[TRACE_SMEM_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
 
+			AppendArgTag(sml_Names::kParamWatchWMA, sml_Names::kTypeBoolean, 
+                agnt->sysparams[TRACE_WMA_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
+
             AppendArgTag(sml_Names::kParamWatchGDS, sml_Names::kTypeBoolean, 
                 agnt->sysparams[TRACE_GDS_SYSPARAM] ? sml_Names::kTrue : sml_Names::kFalse);
         }
@@ -212,6 +216,9 @@ bool CommandLineInterface::DoWatch(const WatchBitset& options, const WatchBitset
 
     if (options.test(WATCH_WATERFALL))
         set_sysparam(agnt, TRACE_WATERFALL_SYSPARAM, settings.test(WATCH_WATERFALL));
+
+	if (options.test(WATCH_WMA)) 
+        set_sysparam(agnt, TRACE_WMA_SYSPARAM, settings.test(WATCH_WMA));
 
     if (options.test(WATCH_LEARNING)) 
     {
