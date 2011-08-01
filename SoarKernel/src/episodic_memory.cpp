@@ -3253,12 +3253,17 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 		}
 		uedge_sql->bind_int(bind_pos++, after);
 		if (uedge_sql->execute() == soar_module::row) {
-			epmem_unique_edge_query* child_uedge = new epmem_unique_edge_query();
+			epmem_unique_edge_query* child_uedge;
+			allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &child_uedge);
 			child_uedge->edge_info = info;
 			child_uedge->is_edge_not_node = literal->is_edge_not_node;
 			child_uedge->sql = uedge_sql;
+			new(&(child_uedge->literals)) epmem_literal_set();
 			child_uedge->literals.insert(literal);
 			child_uedge->time = child_uedge->sql->column_int(2);
+#ifdef USE_MEM_POOL_ALLOCATORS
+			new(&(child_uedge->matches)) epmem_node_set(std::less<epmem_node_id>(), soar_module::soar_memory_pool_allocator<epmem_node_id>(my_agent));
+#endif
 			literal->uedges.insert(child_uedge);
 			edge_pq.push(child_uedge);
 			uedge_cache[info] = child_uedge;
@@ -3311,7 +3316,7 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 	}
 }
 
-bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_deque::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_symbol_map& bound_nodes) {
+bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_deque::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_symbol_map& bound_nodes, agent* my_agent) {
 	if (dnf_iter == iter_end) {
 		return true;
 	}
@@ -3338,7 +3343,11 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 		if (!relations_okay) {
 			continue;
 		}
+#ifdef USE_MEM_POOL_ALLOCATORS
+		epmem_node_set tried = epmem_node_set(std::less<epmem_node_id>(), soar_module::soar_memory_pool_allocator<epmem_node_id>(my_agent));
+#else
 		epmem_node_set tried;
+#endif
 		for (epmem_node_set::iterator node_iter = uedge->matches.begin(); node_iter != uedge->matches.end(); node_iter++) {
 			epmem_node_id q1 = *node_iter;
 			// don't try the same node twice
@@ -3366,7 +3375,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			bindings[literal] = std::make_pair(q0, q1);
 			bound_nodes[q1] = literal->cue_wme->value;
 			// recurse on the rest of the list
-			bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes);
+			bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes, my_agent);
 			// if the rest of the list matched, we've succeeded
 			// otherwise, undo the temporarily modifications and try again
 			if (list_satisfied) {
@@ -3474,8 +3483,13 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_literal_set leaf_literals;
 
 	// variables needed to track satisfiability
+#ifdef USE_MEM_POOL_ALLOCATORS
+	epmem_node_int_map reachable = epmem_node_int_map(std::less<epmem_node_id>(), soar_module::soar_memory_pool_allocator<std::pair<epmem_node_id, uint64_t> >(my_agent));
+	epmem_sql_edge_set activated = epmem_sql_edge_set(std::less<epmem_sql_edge>(), soar_module::soar_memory_pool_allocator<epmem_sql_edge>(my_agent));
+#else
 	epmem_node_int_map reachable;
 	epmem_sql_edge_set activated;
+#endif
 
 	// variables needed for cleanup
 	epmem_interval_set interval_cleanup;
@@ -3574,20 +3588,26 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	{
 		// insert dummy unique edge and interval end point queries for DNF root
 		// we make an SQL statement just so we don't have to do anything special at cleanup
-		epmem_unique_edge_query* root_uedge = new epmem_unique_edge_query();
+		epmem_unique_edge_query* root_uedge;
+		allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
 		root_uedge->edge_info.q0 = EPMEM_NODEID_BAD;
 		root_uedge->edge_info.w = EPMEM_NODEID_BAD;
 		root_uedge->edge_info.q1 = EPMEM_NODEID_ROOT;
 		root_uedge->is_edge_not_node = 1;
+		new(&(root_uedge->literals)) epmem_literal_set();
 		root_uedge->literals.insert(root_literal);
 		root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		root_uedge->sql->prepare();
 		root_uedge->sql->bind_int(1, LLONG_MAX);
 		root_uedge->sql->execute();
 		root_uedge->time = LLONG_MAX;
+#ifdef USE_MEM_POOL_ALLOCATORS
+		new(&(root_uedge->matches)) epmem_node_set(std::less<epmem_node_id>(), soar_module::soar_memory_pool_allocator<epmem_node_id>(my_agent));
+#endif
 		edge_pq.push(root_uedge);
 		uedge_cache[root_uedge->edge_info] = root_uedge;
-		epmem_interval_query* root_interval = new epmem_interval_query();
+		epmem_interval_query* root_interval;
+		allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &root_interval);
 		root_interval->q1 = EPMEM_NODEID_ROOT;
 		root_interval->is_end_point = true;
 		root_interval->uedge = root_uedge;
@@ -3678,7 +3698,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						if (interval_sql->execute() == soar_module::row && interval_sql->column_int(0) >= static_cast<int64_t>(promo_time)) {
 							// we create two fake interval queries and add them appropriately
 							// create new sql queries to simplify the cleanup (no double frees)
-							epmem_interval_query* end_q = new epmem_interval_query();
+							epmem_interval_query* end_q;
+							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &end_q);
 							end_q->q1 = q1;
 							end_q->is_end_point = 1;
 							end_q->uedge = uedge;
@@ -3686,7 +3707,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							end_q->sql = NULL;
 							interval_pq.push(end_q);
 							interval_cleanup.insert(end_q);
-							epmem_interval_query* start_q = new epmem_interval_query();
+							epmem_interval_query* start_q;
+							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &start_q);
 							start_q->q1 = q1;
 							start_q->is_end_point = 0;
 							start_q->uedge = uedge;
@@ -3745,7 +3767,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 						interval_sql->bind_int(bind_pos++, current_episode + 1);
 						if (interval_sql->execute() == soar_module::row) {
-							epmem_interval_query* interval_q = new epmem_interval_query();
+							epmem_interval_query* interval_q;
+							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &interval_q);
 							interval_q->is_end_point = point_type;
 							interval_q->uedge = uedge;
 							interval_q->q1 = q1;
@@ -3811,7 +3834,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 
 				epmem_node_list queue;
+#ifdef USE_MEM_POOL_ALLOCATORS
+				epmem_sql_edge_set visited = epmem_sql_edge_set(std::less<epmem_sql_edge>(), soar_module::soar_memory_pool_allocator<epmem_sql_edge>(my_agent));
+#else
 				epmem_sql_edge_set visited;
+#endif
 				visited.insert(info);
 				if (interval->is_end_point) {
 					activated.insert(info);
@@ -3988,7 +4015,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					best_bindings.clear();
 					epmem_node_symbol_map bound_nodes;
 					my_agent->epmem_timers->query_graph_match->start();
-					bool graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes);
+					bool graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent);
 					my_agent->epmem_timers->query_graph_match->stop();
 					if (graph_matched) {
 						best_episode = current_episode;
@@ -4089,7 +4116,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		if (interval->sql) {
 			delete interval->sql;
 		}
-		delete interval;
+		free_with_pool(&(my_agent->epmem_interval_pool), interval);
 	}
 	for (epmem_edge_sql_map::iterator iter = uedge_cache.begin(); iter != uedge_cache.end(); iter++) {
 		epmem_unique_edge_query* uedge = (*iter).second;
@@ -4097,7 +4124,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			if (uedge->sql) {
 				delete uedge->sql;
 			}
-			delete uedge;
+			uedge->literals.~epmem_literal_set();
+			free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
 		}
 	}
 	for (epmem_literal_set::iterator iter = literal_cleanup.begin(); iter != literal_cleanup.end(); iter++) {

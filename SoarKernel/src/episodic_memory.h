@@ -691,13 +691,20 @@ typedef std::deque<epmem_dnf_literal*> epmem_literal_deque;
 typedef std::list<epmem_node_id> epmem_node_list;
 typedef std::map<epmem_dnf_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
-typedef std::map<epmem_node_id, uint64_t> epmem_node_int_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;
+typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
+
+#ifdef USE_MEM_POOL_ALLOCATORS
+typedef std::map<epmem_node_id, uint64_t, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<std::pair<epmem_node_id, uint64_t> > > epmem_node_int_map;
+typedef std::set<epmem_node_id, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<epmem_node_id> > epmem_node_set;
+typedef std::set<epmem_sql_edge, std::less<epmem_sql_edge>, soar_module::soar_memory_pool_allocator<epmem_sql_edge> > epmem_sql_edge_set;
+#else
+typedef std::map<epmem_node_id, uint64_t> epmem_node_int_map;
 typedef std::set<epmem_node_id> epmem_node_set;
 typedef std::set<epmem_sql_edge> epmem_sql_edge_set;
-typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
+#endif
 
 // structs
 struct epmem_sql_edge_struct {

@@ -101,6 +101,9 @@ void init_soar_agent(agent* thisAgent) {
   init_memory_pool( thisAgent, &( thisAgent->smem_wmes_pool ), sizeof( smem_wme_stack ), "smem_wmes" );
   init_memory_pool( thisAgent, &( thisAgent->smem_info_pool ), sizeof( smem_data ), "smem_id_data" );
 
+  init_memory_pool( thisAgent, &( thisAgent->epmem_uedge_pool ), sizeof( epmem_unique_edge_query ), "epmem_uedges" );
+  init_memory_pool( thisAgent, &( thisAgent->epmem_interval_pool ), sizeof( epmem_interval_query ), "epmem_intervals" );
+
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
   thisAgent->epmem_params->exclusions->set_value( "smem" );
 
