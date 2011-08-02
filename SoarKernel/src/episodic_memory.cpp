@@ -3866,6 +3866,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						while (queue.size()) {
 							epmem_node_id q0 = queue.front();
 							queue.pop_front();
+							if (JUSTIN_DEBUG) {
+								std::cout << "		RECURSING ON " << q0 << std::endl;
+							}
 							epmem_node_int_map::iterator reach_iter = reachable.find(q0);
 							if (reach_iter == reachable.end()) {
 								reachable[q0] = 1;
@@ -3929,6 +3932,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						while (queue.size()) {
 							epmem_node_id q0 = queue.front();
 							queue.pop_front();
+							if (JUSTIN_DEBUG) {
+								std::cout << "		RECURSING ON " << q0 << std::endl;
+							}
 							epmem_node_int_map::iterator reach_iter = reachable.find(q0);
 							(*reach_iter).second--;
 							if ((*reach_iter).second == 0) {
@@ -4021,6 +4027,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					epmem_literal_deque::iterator end = gm_ordering.end();
 					best_bindings.clear();
 					epmem_node_symbol_map bound_nodes;
+					if (JUSTIN_DEBUG) {
+						std::cout << "	GRAPH MATCH" << std::endl;
+					}
 					my_agent->epmem_timers->query_graph_match->start();
 					bool graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent);
 					my_agent->epmem_timers->query_graph_match->stop();
