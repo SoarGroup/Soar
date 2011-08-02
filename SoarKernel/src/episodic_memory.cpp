@@ -732,13 +732,13 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" );
 	add( find_lti_current_time );
 
-	find_lti_first_range = new soar_module::sqlite_statement( new_db, "SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=? AND ?<=e.end LIMIT 1" );
+	find_lti_first_range = new soar_module::sqlite_statement( new_db, "SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=? AND ?<=e.end ORDER BY e.start LIMIT 1" );
 	add( find_lti_first_range );
 
-	find_lti_first_now = new soar_module::sqlite_statement( new_db, "SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? LIMIT 1" );
+	find_lti_first_now = new soar_module::sqlite_statement( new_db, "SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start LIMIT 1" );
 	add( find_lti_first_now );
 
-	find_lti_first_point = new soar_module::sqlite_statement( new_db, "SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? LIMIT 1" );
+	find_lti_first_point = new soar_module::sqlite_statement( new_db, "SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? ORDER BY e.start LIMIT 1" );
 	add( find_lti_first_point );
 
 	//
