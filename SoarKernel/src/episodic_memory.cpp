@@ -3271,6 +3271,7 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 			uedge_cache[info] = child_uedge;
 			created = true;
 		} else {
+			uedge_sql->~sqlite_statement();
 			free_with_pool(&(my_agent->epmem_sql_pool), uedge_sql);
 		}
 	} else {
@@ -3785,6 +3786,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval_cleanup.insert(interval_q);
 							created = true;
 						} else {
+							interval_sql->~sqlite_statement();
 							free_with_pool(&(my_agent->epmem_sql_pool), interval_sql);
 						}
 					}
@@ -4119,6 +4121,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	for (epmem_interval_set::iterator iter = interval_cleanup.begin(); iter != interval_cleanup.end(); iter++) {
 		epmem_interval_query* interval = *iter;
 		if (interval->sql) {
+			interval->sql->~sqlite_statement();
 			free_with_pool(&(my_agent->epmem_sql_pool), interval->sql);
 		}
 		free_with_pool(&(my_agent->epmem_interval_pool), interval);
@@ -4127,6 +4130,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_unique_edge_query* uedge = (*iter).second;
 		if (uedge) {
 			if (uedge->sql) {
+				uedge->sql->~sqlite_statement();
 				free_with_pool(&(my_agent->epmem_sql_pool), uedge->sql);
 			}
 			uedge->literals.~epmem_literal_set();
