@@ -374,10 +374,6 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		soar_module::sqlite_statement *find_lti_current_time;
 
-		soar_module::sqlite_statement *find_lti_first_range;
-		soar_module::sqlite_statement *find_lti_first_now;
-		soar_module::sqlite_statement *find_lti_first_point;
-
 		//
 
 		soar_module::sqlite_statement *update_node_unique_last;

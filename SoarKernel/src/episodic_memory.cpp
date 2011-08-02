@@ -732,15 +732,6 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	find_lti_current_time = new soar_module::sqlite_statement( new_db, "SELECT current FROM lti WHERE parent_id=?" );
 	add( find_lti_current_time );
 
-	find_lti_first_range = new soar_module::sqlite_statement( new_db, "SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.start<=? AND ?<=e.end ORDER BY e.start LIMIT 1" );
-	add( find_lti_first_range );
-
-	find_lti_first_now = new soar_module::sqlite_statement( new_db, "SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start LIMIT 1" );
-	add( find_lti_first_now );
-
-	find_lti_first_point = new soar_module::sqlite_statement( new_db, "SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start=? ORDER BY e.start LIMIT 1" );
-	add( find_lti_first_point );
-
 	//
 
 	update_node_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE node_unique SET last=? WHERE child_id=?" );
@@ -3106,6 +3097,12 @@ const char* epmem_find_interval_queries[2][2][3] = {
 	}
 };
 
+// notice that the start and end queries in epmem_find_lti_queries are _asymetric_
+// in that the the starts have ?<e.start and the ends have ?<=e.start
+// this small difference means that the start of the very first interval
+// (ie. the one where the start is at or before the promotion time) will be ignored
+// then we can simply add a single epmem_interval_query to the queue, and it will
+// terminate any LTI interval appropriately
 const char* epmem_find_lti_queries[2][3] = {
 	{
 		"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC",
@@ -3113,9 +3110,9 @@ const char* epmem_find_lti_queries[2][3] = {
 		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC"
 	},
 	{
-		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<e.start AND e.start<=? ORDER BY e.end DESC",
-		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start",
-		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC"
+		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<=e.start AND e.start<=? ORDER BY e.end DESC",
+		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start",
+		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 	}
 };
 
@@ -3672,63 +3669,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				epmem_time_id promo_time = EPMEM_MEMID_NONE;
 				bool is_lti = (uedge->is_edge_not_node && uedge->edge_info.q1 != EPMEM_NODEID_BAD && uedge->edge_info.q1 != EPMEM_NODEID_ROOT);
 				if (is_lti) {
-					// find the promotion time of the LTI
+					// find the promotion time of the LTI and
 					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, q1);
 					my_agent->epmem_stmts_graph->find_lti_current_time->execute();
 					promo_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int(0);
 					my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
-					// check the END point of closest interval that started before promotion time
-					// the thing to catch here is an interval which is a superset of the BEFORE/promo time constraints
-					// if such an interval exists, add its start/end points to the priority queue
-					for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
-						// first, find the interval
-						soar_module::sqlite_statement* interval_sql;
-						switch (interval_type) {
-							case EPMEM_RANGE_EP:
-								interval_sql = my_agent->epmem_stmts_graph->find_lti_first_range;
-								break;
-							case EPMEM_RANGE_NOW:
-								interval_sql = my_agent->epmem_stmts_graph->find_lti_first_now;
-								break;
-							case EPMEM_RANGE_POINT:
-								interval_sql = my_agent->epmem_stmts_graph->find_lti_first_point;
-								break;
-						}
-						int bind_pos = 1;
-						if (interval_type == EPMEM_RANGE_NOW) {
-							interval_sql->bind_int(bind_pos++, current_episode);
-						}
-						interval_sql->bind_int(bind_pos++, edge_id);
-						interval_sql->bind_int(bind_pos++, promo_time);
-						if (interval_type == EPMEM_RANGE_EP) {
-							interval_sql->bind_int(bind_pos++, promo_time);
-						}
-						// if we find one, check that they do slip through the normal net
-						if (interval_sql->execute() == soar_module::row && interval_sql->column_int(0) >= static_cast<int64_t>(promo_time)) {
-							// we create two fake interval queries and add them appropriately
-							// create new sql queries to simplify the cleanup (no double frees)
-							epmem_interval_query* end_q;
-							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &end_q);
-							end_q->q1 = q1;
-							end_q->is_end_point = 1;
-							end_q->uedge = uedge;
-							end_q->time = interval_sql->column_int(0);
-							end_q->sql = NULL;
-							interval_pq.push(end_q);
-							interval_cleanup.insert(end_q);
-							epmem_interval_query* start_q;
-							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &start_q);
-							start_q->q1 = q1;
-							start_q->is_end_point = 0;
-							start_q->uedge = uedge;
-							start_q->time = promo_time - 1;
-							start_q->sql = NULL;
-							interval_pq.push(start_q);
-							interval_cleanup.insert(start_q);
-							created = true;
-						}
-						interval_sql->reinitialize();
-					}
 				}
 				for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
 					for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
@@ -3796,10 +3741,22 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					}
 				}
 				if (created) {
+					if (is_lti) {
+						// insert a dummy promo time start for LTIs
+						epmem_interval_query* start_q;
+						allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &start_q);
+						start_q->q1 = q1;
+						start_q->is_end_point = 0;
+						start_q->uedge = uedge;
+						start_q->time = promo_time - 1;
+						start_q->sql = NULL;
+						interval_pq.push(start_q);
+						interval_cleanup.insert(start_q);
+					}
 					epmem_sql_edge triple = uedge->edge_info;
 					triple.q1 = q1;
 					epmem_edge_sql_map::iterator uedge_iter = uedge_cache.find(triple);
-					if (uedge_iter == uedge_cache.end() || (*uedge_iter).second == NULL) {
+					if (uedge_iter == uedge_cache.end()) {
 						uedge_cache[triple] = NULL;
 					}
 				}
