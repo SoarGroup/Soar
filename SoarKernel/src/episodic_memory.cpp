@@ -3243,7 +3243,9 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 	epmem_edge_sql_map::iterator uedge_iter = uedge_cache.find(info);
 	if (uedge_iter == uedge_cache.end() || (*uedge_iter).second == NULL) {
 		// if the unique edge does not exist, create a new unique edge query
-		soar_module::sqlite_statement* uedge_sql = new soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->query_sql_edge);
+		soar_module::sqlite_statement* uedge_sql;
+		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &uedge_sql);
+		new(uedge_sql) soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->query_sql_edge);
 		uedge_sql->prepare();
 		int bind_pos = 1;
 		uedge_sql->bind_int(bind_pos++, info.q0);
@@ -3269,7 +3271,7 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 			uedge_cache[info] = child_uedge;
 			created = true;
 		} else {
-			delete uedge_sql;
+			free_with_pool(&(my_agent->epmem_sql_pool), uedge_sql);
 		}
 	} else {
 		// otherwse, if the uedge has not been registered with this literal
@@ -3596,7 +3598,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_uedge->is_edge_not_node = 1;
 		new(&(root_uedge->literals)) epmem_literal_set();
 		root_uedge->literals.insert(root_literal);
-		root_uedge->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_uedge->sql);
+		new(root_uedge->sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		root_uedge->sql->prepare();
 		root_uedge->sql->bind_int(1, LLONG_MAX);
 		root_uedge->sql->execute();
@@ -3611,7 +3614,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_interval->q1 = EPMEM_NODEID_ROOT;
 		root_interval->is_end_point = true;
 		root_interval->uedge = root_uedge;
-		root_interval->sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_interval->sql);
+		new(root_interval->sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		root_interval->sql->prepare();
 		root_interval->sql->bind_int(1, before);
 		root_interval->sql->execute();
@@ -3750,10 +3754,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 						// create the SQL query and bind it
 						soar_module::sqlite_statement* interval_sql;
+						allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &interval_sql);
 						if (is_lti) {
-							interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_queries[point_type][interval_type], sql_timer);
+							new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_queries[point_type][interval_type], sql_timer);
 						} else {
-							interval_sql = new soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_edge_not_node][point_type][interval_type], sql_timer);
+							new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_edge_not_node][point_type][interval_type], sql_timer);
 						}
 						interval_sql->prepare();
 						int bind_pos = 1;
@@ -3780,7 +3785,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval_cleanup.insert(interval_q);
 							created = true;
 						} else {
-							delete interval_sql;
+							free_with_pool(&(my_agent->epmem_sql_pool), interval_sql);
 						}
 					}
 				}
@@ -4114,7 +4119,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	for (epmem_interval_set::iterator iter = interval_cleanup.begin(); iter != interval_cleanup.end(); iter++) {
 		epmem_interval_query* interval = *iter;
 		if (interval->sql) {
-			delete interval->sql;
+			free_with_pool(&(my_agent->epmem_sql_pool), interval->sql);
 		}
 		free_with_pool(&(my_agent->epmem_interval_pool), interval);
 	}
@@ -4122,7 +4127,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_unique_edge_query* uedge = (*iter).second;
 		if (uedge) {
 			if (uedge->sql) {
-				delete uedge->sql;
+				free_with_pool(&(my_agent->epmem_sql_pool), uedge->sql);
 			}
 			uedge->literals.~epmem_literal_set();
 			free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
