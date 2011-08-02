@@ -770,7 +770,7 @@ struct epmem_interval_query_comparator {
 			return (a->time < b->time);
 		} else {
 			// arbitrarily put starts before ends
-			return (a->is_end_point == 1);
+			return (a->is_end_point == 0);
 		}
 	}
 };

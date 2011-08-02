@@ -3082,40 +3082,40 @@ const char* epmem_dummy = "SELECT ? as start";
 const char* epmem_find_interval_queries[2][2][3] = {
 	{
 		{
-			"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM node_now e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end>0 AND e.start<=(?+1) ORDER BY e.end DESC",
-			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=(?+1)",
-			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
+			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start",
+			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 		}
 	},
 	{
 		{
-			"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 		},
 		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND e.start<=(?+1) ORDER BY e.end DESC",
-			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=(?+1)",
-			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=(?+1) ORDER BY e.start DESC"
+			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
+			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start",
+			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 		}
 	}
 };
 
 const char* epmem_find_lti_queries[2][3] = {
 	{
-		"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-		"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC",
-		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+		"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC",
+		"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC",
+		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC"
 	},
 	{
-		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<e.start AND e.start<=(?+1) ORDER BY e.end DESC",
-		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=(?+1)",
-		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=(?+1) ORDER BY e.start DESC"
+		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<e.start AND e.start<=? ORDER BY e.end DESC",
+		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start",
+		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC"
 	}
 };
 
@@ -3238,6 +3238,9 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 		} else {
 			sql_statement = epmem_find_unique_node_query;
 		}
+	}
+	if (JUSTIN_DEBUG) {
+		std::cout << "		RECURSING ON " << parent << " " << literal << std::endl;
 	}
 	bool created = false;
 	epmem_edge_sql_map::iterator uedge_iter = uedge_cache.find(info);
@@ -3462,7 +3465,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// before and after, if specified, must be valid relative to each other
-	if (before != EPMEM_MEMID_NONE && after != EPMEM_MEMID_NONE && before < after) {
+	if (before != EPMEM_MEMID_NONE && after != EPMEM_MEMID_NONE && before <= after) {
 		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
 		return;
 	}
@@ -3563,7 +3566,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	bool best_graph_matched = false;
 	int best_cardinality = 0;
 	epmem_literal_node_pair_map best_bindings;
-	epmem_time_id current_episode = my_agent->epmem_stats->time->get_value() - 1;
+	epmem_time_id current_episode;
 	double current_score = 0;
 	uint64_t current_cardinality = 0;
 
@@ -3586,6 +3589,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	if (after == EPMEM_MEMID_NONE) {
 		after = 0;
 	}
+	current_episode = before;
 
 	// create dummy edges and intervals
 	{
@@ -3771,7 +3775,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							// find the promotion time of the LTI, and use that as an after constraint
 							interval_sql->bind_int(bind_pos++, promo_time);
 						}
-						interval_sql->bind_int(bind_pos++, current_episode + 1);
+						interval_sql->bind_int(bind_pos++, current_episode);
 						if (interval_sql->execute() == soar_module::row) {
 							epmem_interval_query* interval_q;
 							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &interval_q);
