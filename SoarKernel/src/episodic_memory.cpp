@@ -3150,10 +3150,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			literal->q1 = my_agent->epmem_stmts_graph->find_lti->column_int(0);
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
 			leaf_literals.insert(literal);
-			// only graph match on positive queries
-			if (!query_type) {
-				gm_ordering.push_front(literal);
-			}
 		} else {
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
 			delete literal;
@@ -3195,14 +3191,13 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 				return NULL;
 			}
 			literal->is_leaf = false;
-			// only graph match on positive queries
-			if (!query_type) {
-				gm_ordering.push_front(literal);
-			}
 		}
 	}
 
 	cleanup_literals.insert(literal);
+	if (!query_type) {
+		gm_ordering.push_front(literal);
+	}
 
 	literal->attr = epmem_temporal_hash(my_agent, cue_wme->attr);
 	literal->cue_wme = cue_wme;
