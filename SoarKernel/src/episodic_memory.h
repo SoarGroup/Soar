@@ -54,6 +54,8 @@ enum epmem_variable_key
 
 #define EPMEM_NODE_POS								0
 #define EPMEM_NODE_NEG								1
+#define EPMEM_TYPE_NODE								0
+#define EPMEM_TYPE_EDGE								1
 #define EPMEM_RANGE_START							0
 #define EPMEM_RANGE_END								1
 #define EPMEM_RANGE_EP								0
