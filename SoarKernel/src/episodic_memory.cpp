@@ -3286,6 +3286,9 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 					current_score += literal->weight;
 					current_cardinality += (literal->is_neg_q ? -1 : 1);
 					changed_score = true;
+					if (JUSTIN_DEBUG) {
+						std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+					}
 				}
 			} else {
 				//  for uedges with {parent, attr, *}, where *!=EPMEM_NODEID_BAD
@@ -3815,6 +3818,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								current_score += literal->weight;
 								current_cardinality += (literal->is_neg_q ? -1 : 1);
 								changed_score = true;
+								if (JUSTIN_DEBUG) {
+									std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+								}
 							}
 						}
 						// recurse through descedants
@@ -3860,6 +3866,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 												current_score += literal->weight;
 												current_cardinality += (literal->is_neg_q ? -1 : 1);
 												changed_score = true;
+												if (JUSTIN_DEBUG) {
+													std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+												}
 											}
 										}
 									}
@@ -3881,6 +3890,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								current_score -= literal->weight;
 								current_cardinality -= (literal->is_neg_q ? -1 : 1);
 								changed_score = true;
+								if (JUSTIN_DEBUG) {
+									std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+								}
 							}
 						}
 						// recurse through descendants
@@ -3924,6 +3936,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 													current_score -= literal->weight;
 													current_cardinality -= (literal->is_neg_q ? -1 : 1);
 													changed_score = true;
+													if (JUSTIN_DEBUG) {
+														std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+													}
 												}
 											}
 										}
@@ -4073,7 +4088,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		if (best_graph_matched) {
 			for (epmem_id_mapping::iterator iter = node_mem_map.begin(); iter != node_mem_map.end(); iter++) {
 				epmem_id_mapping::iterator map_iter = node_map_map.find((*iter).first);
-				if (map_iter != node_map_map.end()) {
+				if (map_iter != node_map_map.end() && (*iter).second) {
 					epmem_buffer_add_wme(meta_wmes, (*map_iter).second, my_agent->epmem_sym_retrieved, (*iter).second);
 				}
 			}
