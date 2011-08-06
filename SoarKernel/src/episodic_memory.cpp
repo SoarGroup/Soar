@@ -3903,56 +3903,56 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								epmem_node_int_map::iterator reach_iter = reachable[EPMEM_TYPE_EDGE].find(q0);
 								if (reach_iter == reachable[EPMEM_TYPE_EDGE].end()) {
 									reachable[EPMEM_TYPE_EDGE][q0] = 1;
-								} else {
-									(*reach_iter).second++;
-								}
-								// recurse on the edges and nodes
-								for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
-									epmem_sql_edge temp_triple = {q0, EPMEM_NODEID_BAD, EPMEM_NODEID_BAD};
-									for (epmem_sql_edge_set::iterator triple_iter = activated[type].find(temp_triple); triple_iter != activated[type].end() && (*triple_iter).q0 == q0; triple_iter++) {
-										epmem_sql_edge child_triple = *triple_iter;
-										epmem_node_id q1 = child_triple.q1;
-										if (q1 != EPMEM_NODEID_BAD && !visited.count(child_triple)) {
-											visited.insert(child_triple);
-											epmem_unique_edge_query* child_uedges[2];
-											int count = 0;
-											epmem_edge_sql_map::iterator uedge_iter = uedge_cache[type].find(child_triple);
-											if (uedge_iter != uedge_cache[type].end() && (*uedge_iter).second != NULL) {
-												child_uedges[count++] = uedge_cache[type][child_triple];
-											}
-											child_triple.q1 = EPMEM_NODEID_BAD;
-											uedge_iter = uedge_cache[type].find(child_triple);
-											if (uedge_iter != uedge_cache[type].end() && (*uedge_iter).second != NULL) {
-												child_uedges[count++] = uedge_cache[type][child_triple];
-											}
-											for (int i = 0; i < count; i++) {
-												epmem_unique_edge_query* child_uedge = child_uedges[i];
-												child_uedge->matches.insert(q1);
-												for (epmem_literal_set::iterator lit_iter = child_uedge->literals.begin(); lit_iter != child_uedge->literals.end(); lit_iter++) {
-													epmem_dnf_literal* literal = *lit_iter;
-													literal->num_matches++;
-													if (literal->is_leaf && literal->num_matches == 1) {
-														current_score += literal->weight;
-														current_cardinality += (literal->is_neg_q ? -1 : 1);
-														changed_score = true;
-														if (JUSTIN_DEBUG) {
-															std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+									// recurse on the edges and nodes
+									for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
+										epmem_sql_edge temp_triple = {q0, EPMEM_NODEID_BAD, EPMEM_NODEID_BAD};
+										for (epmem_sql_edge_set::iterator triple_iter = activated[type].find(temp_triple); triple_iter != activated[type].end() && (*triple_iter).q0 == q0; triple_iter++) {
+											epmem_sql_edge child_triple = *triple_iter;
+											epmem_node_id q1 = child_triple.q1;
+											if (q1 != EPMEM_NODEID_BAD && !visited.count(child_triple)) {
+												visited.insert(child_triple);
+												epmem_unique_edge_query* child_uedges[2];
+												int count = 0;
+												epmem_edge_sql_map::iterator uedge_iter = uedge_cache[type].find(child_triple);
+												if (uedge_iter != uedge_cache[type].end() && (*uedge_iter).second != NULL) {
+													child_uedges[count++] = uedge_cache[type][child_triple];
+												}
+												child_triple.q1 = EPMEM_NODEID_BAD;
+												uedge_iter = uedge_cache[type].find(child_triple);
+												if (uedge_iter != uedge_cache[type].end() && (*uedge_iter).second != NULL) {
+													child_uedges[count++] = uedge_cache[type][child_triple];
+												}
+												for (int i = 0; i < count; i++) {
+													epmem_unique_edge_query* child_uedge = child_uedges[i];
+													child_uedge->matches.insert(q1);
+													for (epmem_literal_set::iterator lit_iter = child_uedge->literals.begin(); lit_iter != child_uedge->literals.end(); lit_iter++) {
+														epmem_dnf_literal* literal = *lit_iter;
+														literal->num_matches++;
+														if (literal->is_leaf && literal->num_matches == 1) {
+															current_score += literal->weight;
+															current_cardinality += (literal->is_neg_q ? -1 : 1);
+															changed_score = true;
+															if (JUSTIN_DEBUG) {
+																std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+															}
 														}
 													}
 												}
-											}
-											if (type == EPMEM_TYPE_EDGE) {
-												queue.push_back(q1);
-											} else {
-												reach_iter = reachable[EPMEM_TYPE_NODE].find(q1);
-												if (reach_iter == reachable[EPMEM_TYPE_NODE].end()) {
-													reachable[EPMEM_TYPE_NODE][q1] = 1;
+												if (type == EPMEM_TYPE_EDGE) {
+													queue.push_back(q1);
 												} else {
-													(*reach_iter).second++;
+													reach_iter = reachable[EPMEM_TYPE_NODE].find(q1);
+													if (reach_iter == reachable[EPMEM_TYPE_NODE].end()) {
+														reachable[EPMEM_TYPE_NODE][q1] = 1;
+													} else {
+														(*reach_iter).second++;
+													}
 												}
 											}
 										}
 									}
+								} else {
+									(*reach_iter).second++;
 								}
 							}
 						}
