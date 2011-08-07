@@ -3059,7 +3059,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG true
+#define JUSTIN_DEBUG false
 
 const char* epmem_find_unique_node_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<last ORDER BY last DESC";
 const char* epmem_find_unique_node_value_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<last ORDER BY last DESC";
@@ -3736,9 +3736,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 		my_agent->epmem_timers->query_walk_edge->start();
 		next_edge = edge_pq.top()->time;
-		if (JUSTIN_DEBUG) {
-			std::cout << "EPISODE " << next_edge << std::endl;
-		}
+
 		// process all edges which were last used at this time point
 		while (edge_pq.size() && (edge_pq.top()->time == next_edge || edge_pq.top()->time >= current_episode)) {
 			epmem_unique_edge_query* uedge = edge_pq.top();
@@ -3871,6 +3869,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// process all intervals before the next edge arrives
 		my_agent->epmem_timers->query_walk_interval->start();
 		while (interval_pq.size() && interval_pq.top()->time > next_edge) {
+			if (JUSTIN_DEBUG) {
+				std::cout << "EPISODE " << current_episode << std::endl;
+			}
 			// process all interval endpoints at this time step
 			while (interval_pq.size() && interval_pq.top()->time >= current_episode) {
 				epmem_interval_query* interval = interval_pq.top();
@@ -3899,6 +3900,13 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						epmem_mark_reachable(info, uedge, reachable, current_score, current_cardinality, changed_score);
 						if (is_edge && (uedge->edge_info.q1 == EPMEM_NODEID_BAD || uedge->edge_info.q1 == EPMEM_NODEID_ROOT)) {
 							queue.push_back(info.q1);
+						} else if (!is_edge) {
+							epmem_node_int_map::iterator reach_iter = reachable[uedge->is_edge_not_node].find(info.q1);
+							if (reach_iter == reachable[uedge->is_edge_not_node].end()) {
+								reachable[uedge->is_edge_not_node][info.q1] = 1;
+							} else {
+								(*reach_iter).second++;
+							}
 						}
 					}
 					while (queue.size()) {
@@ -3928,9 +3936,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 										epmem_edge_sql_map::iterator uedge_iter = uedge_cache[is_edge].find(child_triple);
 										if (uedge_iter != uedge_cache[is_edge].end() && (*uedge_iter).second != NULL) {
 											epmem_mark_reachable(child_triple, (*uedge_iter).second, reachable, current_score, current_cardinality, changed_score);
-											epmem_node_int_map::iterator reach_iter = reachable[uedge->is_edge_not_node].find(info.q1);
-											if (reach_iter == reachable[uedge->is_edge_not_node].end()) {
-												reachable[uedge->is_edge_not_node][info.q1] = 1;
+											epmem_node_int_map::iterator reach_iter = reachable[is_edge].find(child_triple.q1);
+											if (reach_iter == reachable[is_edge].end()) {
+												reachable[is_edge][child_triple.q1] = 1;
 											} else {
 												(*reach_iter).second++;
 											}
@@ -3958,6 +3966,14 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						epmem_mark_unreachable(info,  uedge, reachable, current_score, current_cardinality, changed_score);
 						if (is_edge && uedge->edge_info.q1 == EPMEM_NODEID_BAD) {
 							queue.push_back(info.q1);
+						} else if (!is_edge) {
+							epmem_node_int_map::iterator reach_iter = reachable[uedge->is_edge_not_node].find(info.q1);
+							assert(reach_iter != reachable[is_edge].end());
+							assert((*reach_iter).second > 0);
+							(*reach_iter).second--;
+							if ((*reach_iter).second == 0) {
+								reachable[is_edge].erase(reach_iter);
+							}
 						}
 						// FIXME check if uedge is edge or node first
 						// recurse through descendants
@@ -3973,6 +3989,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							}
 							epmem_node_int_map::iterator reach_iter = reachable[EPMEM_TYPE_EDGE].find(q0);
 							assert(reach_iter != reachable[EPMEM_TYPE_EDGE].end());
+							assert((*reach_iter).second > 0);
 							(*reach_iter).second--;
 							if ((*reach_iter).second == 0) {
 								reachable[EPMEM_TYPE_EDGE].erase(reach_iter);
@@ -3985,11 +4002,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 											epmem_edge_sql_map::iterator uedge_iter = uedge_cache[is_edge].find(child_triple);
 											if (uedge_iter != uedge_cache[is_edge].end() && (*uedge_iter).second != NULL) {
 												epmem_mark_unreachable(child_triple, (*uedge_iter).second, reachable, current_score, current_cardinality, changed_score);
-												epmem_node_int_map::iterator reach_iter = reachable[uedge->is_edge_not_node].find(info.q1);
-												assert(reach_iter != reachable[uedge->is_edge_not_node].end());
+												epmem_node_int_map::iterator reach_iter = reachable[is_edge].find(child_triple.q1);
+												assert(reach_iter != reachable[is_edge].end());
+												assert((*reach_iter).second > 0);
 												(*reach_iter).second--;
 												if ((*reach_iter).second == 0) {
-													reachable[uedge->is_edge_not_node].erase(reach_iter);
+													reachable[is_edge].erase(reach_iter);
 												}
 											}
 											if (is_edge == EPMEM_TYPE_EDGE) {
@@ -4083,7 +4101,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 
-			if (current_episode != EPMEM_MEMID_NONE) {
+			if (current_episode == EPMEM_MEMID_NONE) {
+				break;
+			} else {
 				current_episode = next_episode;
 			}
 		}
