@@ -3059,7 +3059,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG false
+#define JUSTIN_DEBUG true
 
 const char* epmem_find_unique_node_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<last ORDER BY last DESC";
 const char* epmem_find_unique_node_value_query = "SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<last ORDER BY last DESC";
@@ -3658,6 +3658,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_time_id current_episode;
 	double current_score = 0;
 	int current_cardinality = 0;
+	epmem_time_id next_episode;
 
 	// the highest possible score and cardinality score
 	double perfect_score = 0;
@@ -3730,7 +3731,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	while (edge_pq.size() && current_episode > after) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
-		epmem_time_id next_either;
 
 		bool changed_score = false;
 
@@ -3865,20 +3865,13 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				edge_pq.push(uedge);
 			}
 		}
-		next_edge = (edge_pq.empty() ? 0 : edge_pq.top()->time);
+		next_edge = (edge_pq.empty() ? after : edge_pq.top()->time);
 		my_agent->epmem_timers->query_walk_edge->stop();
 
 		// process all intervals before the next edge arrives
 		my_agent->epmem_timers->query_walk_interval->start();
-		while (interval_pq.size() && interval_pq.top()->time > next_edge && current_episode > after) {
+		while (interval_pq.size() && interval_pq.top()->time > next_edge) {
 			// process all interval endpoints at this time step
-			next_interval = interval_pq.top()->time;
-			if (next_interval < current_episode) {
-				current_episode = next_interval;
-				if (JUSTIN_DEBUG) {
-					std::cout << "EPISODE " << current_episode << std::endl;
-				}
-			}
 			while (interval_pq.size() && interval_pq.top()->time >= current_episode) {
 				epmem_interval_query* interval = interval_pq.top();
 				interval_pq.pop();
@@ -4022,21 +4015,21 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
-			next_either = (next_edge > next_interval ? next_edge : next_interval);
+			next_episode = (next_edge > next_interval ? next_edge : next_interval);
 
 			// update the prohibits list to catch up
 			while (prohibits.size() && prohibits.back() > current_episode) {
 				prohibits.pop_back();
 			}
 			// ignore the episode if it is prohibited
-			while (prohibits.size() && current_episode > next_either && current_episode == prohibits.back()) {
+			while (prohibits.size() && current_episode > next_episode && current_episode == prohibits.back()) {
 				current_episode--;
 				prohibits.pop_back();
 			}
 
 			if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
 				char buf[256];
-				SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %lld, %f)\n", current_episode, current_cardinality, current_score);
+				SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %d, %f)\n", current_episode, current_cardinality, current_score);
 				print(my_agent, buf);
 				xml_generate_warning(my_agent, buf);
 			}
@@ -4046,7 +4039,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			// * and the score was changed in this period
 			// * and the new score is higher than the best score
 			// then save the current time as the best one
-			if (current_episode > next_either && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
+			if (current_episode > next_episode && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
 				if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
 					best_episode = current_episode;
 				}
@@ -4090,8 +4083,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 			}
 
-			// force consideration of the next episode
-			current_episode--;
+			if (current_episode != EPMEM_MEMID_NONE) {
+				current_episode = next_episode;
+			}
 		}
 		my_agent->epmem_timers->query_walk_interval->stop();
 	}
