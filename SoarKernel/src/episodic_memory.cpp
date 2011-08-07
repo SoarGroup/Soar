@@ -3901,7 +3901,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 									std::cout << "		RECURSING ON " << q0 << std::endl;
 								}
 								epmem_node_int_map::iterator reach_iter = reachable[EPMEM_TYPE_EDGE].find(q0);
-								if (reach_iter == reachable[EPMEM_TYPE_EDGE].end()) {
+								if (reach_iter != reachable[EPMEM_TYPE_EDGE].end()) {
+									(*reach_iter).second++;
+								} else {
 									reachable[EPMEM_TYPE_EDGE][q0] = 1;
 									// recurse on the edges and nodes
 									for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
@@ -3951,8 +3953,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 											}
 										}
 									}
-								} else {
-									(*reach_iter).second++;
 								}
 							}
 						}
@@ -4025,10 +4025,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 												if (type == EPMEM_TYPE_EDGE) {
 													queue.push_back(q1);
 												} else {
-													reach_iter = reachable[EPMEM_TYPE_NODE].find(q0);
+													reach_iter = reachable[EPMEM_TYPE_NODE].find(q1);
 													(*reach_iter).second--;
 													if ((*reach_iter).second == 0) {
-														reachable[EPMEM_TYPE_EDGE].erase(reach_iter);
+														reachable[EPMEM_TYPE_NODE].erase(reach_iter);
 													}
 												}
 											}
