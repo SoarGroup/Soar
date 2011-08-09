@@ -676,21 +676,24 @@ extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::
 //////////////////////////////////////////////////////////
 
 // defined below
+typedef struct epmem_sql_edge_struct epmem_sql_edge;
 typedef struct epmem_unique_edge_query_struct epmem_unique_edge_query;
 typedef struct epmem_interval_query_struct epmem_interval_query;
 typedef struct epmem_dnf_literal_struct epmem_dnf_literal;
-typedef struct epmem_sql_edge_struct epmem_sql_edge;
 
 // pairs
 typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
+typedef struct std::pair<Symbol*, epmem_node_id> epmem_symbol_node_pair;
 
 // collection classes
 typedef std::deque<epmem_dnf_literal*> epmem_literal_deque;
 typedef std::list<epmem_node_id> epmem_node_list;
+typedef std::map<Symbol*, int> epmem_symbol_int_map;
 typedef std::map<epmem_dnf_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
-typedef std::map<Symbol*, int> epmem_symbol_int_map;
+typedef std::map<epmem_symbol_node_pair, int> epmem_match_int_map;
+typedef std::set<epmem_node_pair> epmem_node_pair_set;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;
 typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
@@ -722,7 +725,8 @@ struct epmem_sql_edge_struct {
 };
 
 struct epmem_dnf_literal_struct {
-	wme* cue_wme;
+	Symbol* id_sym;
+	Symbol* value_sym;
 	int is_neg_q;
 	int is_edge_not_node;
 	bool is_leaf;
@@ -732,8 +736,7 @@ struct epmem_dnf_literal_struct {
 	bool satisfied;
 	epmem_literal_set parents;
 	epmem_literal_set children;
-	epmem_uedge_set uedges;
-	int num_matches;
+	epmem_node_pair_set matches;
 };
 
 struct epmem_unique_edge_query_struct {
@@ -742,7 +745,6 @@ struct epmem_unique_edge_query_struct {
 	epmem_literal_set literals;
 	soar_module::sqlite_statement *sql;
 	epmem_time_id time;
-	epmem_node_set matches;
 };
 
 struct epmem_interval_query_struct {
