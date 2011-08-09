@@ -204,12 +204,14 @@ typedef struct wma_decay_element_struct
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::set< wma_decay_element*, std::less< wma_decay_element* >, soar_module::soar_memory_pool_allocator< wma_decay_element* > > wma_decay_set;
 typedef std::map< wma_d_cycle, wma_decay_set*, std::less< wma_d_cycle >, soar_module::soar_memory_pool_allocator< std::pair< wma_d_cycle, wma_decay_set* > > > wma_forget_p_queue;
+typedef std::set< wma_d_cycle, std::less< wma_d_cycle >, soar_module::soar_memory_pool_allocator< wma_d_cycle > > wma_decay_cycle_set;
 
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > wma_pooled_wme_set;
 typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, uint64_t > > > wma_sym_reference_map;
 #else
 typedef std::set< wma_decay_element* > wma_decay_set;
 typedef std::map< wma_d_cycle, wma_decay_set* > wma_forget_p_queue;
+typedef std::set< wma_d_cycle > wma_decay_cyle_set;
 
 typedef std::set< wme* > wma_pooled_wme_set;
 typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;

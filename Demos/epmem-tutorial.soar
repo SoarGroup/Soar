@@ -1,0 +1,92 @@
+epmem --set trigger dc
+epmem --set learning on
+watch --epmem
+
+sp {propose*init
+   (state <s> ^superstate nil
+             -^name)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name init)
+}
+
+sp {apply*init
+   (state <s> ^operator <op>)
+   (<op> ^name init)
+-->
+   (<s> ^name epmem
+        ^feature2 value
+        ^feature value3
+        ^id <e2>
+        ^id <e3>
+        ^other-id <e4>)
+   (<e2> ^sub-feature value2)
+   (<e3> ^sub-id <e5>)
+   (<e4> ^sub-id <e6>
+         ^sub-feature value2)
+}
+
+sp {epmem*propose*cbr
+   (state <s> ^name epmem
+             -^epmem.command.<cmd>)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name cbr)
+}
+
+sp {epmem*apply*cbr-clean
+   (state <s> ^operator <op>
+              ^feature2 <f2>
+              ^feature <f>
+              ^id <e2>
+              ^id <e3>
+              ^other-id <e4>)
+   (<e2> ^sub-feature value2)
+   (<e3> ^sub-id)
+   (<op> ^name cbr)
+-->
+   (<s> ^feature2 <f2> -
+        ^feature <f> -
+        ^id <e2> -
+        ^id <e3> -
+        ^other-id <e4> -)
+}
+
+sp {epmem*apply*cbr-query
+   (state <s> ^operator <op>
+              ^epmem.command <cmd>)
+   (<op> ^name cbr)
+-->
+   (<cmd> ^query <n1>)
+   (<n1> ^feature value
+        ^id <n2>)
+   (<n2> ^sub-feature value2
+         ^sub-id <n3>)
+}
+
+sp {epmem*propose*next
+   (state <s> ^name epmem
+              ^epmem.command.query)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name next)
+}
+
+sp {epmem*apply*next
+   (state <s> ^operator <op>
+              ^epmem.command <cmd>)
+   (<op> ^name next)
+   (<cmd> ^query <q>)
+-->
+   (<cmd> ^query <q> -
+          ^next <next>)
+}
+
+sp {epmem*done
+   (state <s> ^name epmem
+              ^epmem <epmem>)
+   (<epmem> ^command.next <next>
+            ^result.success <next>)
+-->
+   (halt)
+}

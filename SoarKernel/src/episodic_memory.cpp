@@ -4774,7 +4774,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 	soar_module::symbol_triple_list retrieval_wmes;
 
 	epmem_time_id retrieve;
-	bool next, previous;
+	Symbol *next;
+	Symbol *previous;
 	Symbol *query;
 	Symbol *neg_query;
 	epmem_time_list prohibit;
@@ -4870,8 +4871,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 			// initialize command vars
 			retrieve = EPMEM_MEMID_NONE;
-			next = false;
-			previous = false;
+			next = NULL;
+			previous = NULL;
 			query = NULL;
 			neg_query = NULL;
 			prohibit.clear();
@@ -4908,7 +4909,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( path == 0 ) )
 						{
-							next = true;
+							next = (*w_p)->value;
 							path = 2;
 						}
 						else
@@ -4921,7 +4922,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( path == 0 ) )
 						{
-							previous = true;
+							previous = (*w_p)->value;
 							path = 2;
 						}
 						else
@@ -5150,6 +5151,15 @@ void epmem_respond_to_cmd( agent *my_agent )
 
 						// add one to the prev stat
 						my_agent->epmem_stats->prevs->set_value( my_agent->epmem_stats->prevs->get_value() + 1 );
+					}
+					
+					if ( state->id.epmem_info->last_memory == EPMEM_MEMID_NONE )
+					{
+						epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, ( ( next )?( next ):( previous ) ) );
+					}
+					else
+					{
+						epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, ( ( next )?( next ):( previous ) ) );
 					}
 				}
 				// query

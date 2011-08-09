@@ -1,0 +1,4 @@
+#!/usr/bin/python
+Import('compEnv')
+compEnv.Install('$PREFIX/bin', compEnv.Program('cli', 'cli.cpp'))
+

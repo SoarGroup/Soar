@@ -61,7 +61,7 @@ void wma_init( agent *my_agent );
 void wma_deinit( agent *my_agent );
 
 
-wma_activation_param::wma_activation_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {};
+wma_activation_param::wma_activation_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 void wma_activation_param::set_value( soar_module::boolean new_value ) 
 { 
@@ -78,13 +78,13 @@ void wma_activation_param::set_value( soar_module::boolean new_value )
 			wma_deinit( my_agent );
 		}
 	}
-};
+}
 
 //
 
-wma_decay_param::wma_decay_param( const char *new_name, double new_value, soar_module::predicate<double> *new_val_pred, soar_module::predicate<double> *new_prot_pred ): soar_module::decimal_param( new_name, new_value, new_val_pred, new_prot_pred ) {};
+wma_decay_param::wma_decay_param( const char *new_name, double new_value, soar_module::predicate<double> *new_val_pred, soar_module::predicate<double> *new_prot_pred ): soar_module::decimal_param( new_name, new_value, new_val_pred, new_prot_pred ) {}
 
-void wma_decay_param::set_value( double new_value ) { value = -new_value; };
+void wma_decay_param::set_value( double new_value ) { value = -new_value; }
 
 //
 
@@ -280,6 +280,7 @@ void wma_deinit( agent *my_agent )
 
 	// clear touched
 	my_agent->wma_touched_elements->clear();
+	my_agent->wma_touched_sets->clear();
 
 	// clear forgetting priority queue
 	for ( wma_forget_p_queue::iterator pq_p=my_agent->wma_forget_pq->begin(); pq_p!=my_agent->wma_forget_pq->end(); pq_p++ )
@@ -498,9 +499,71 @@ void wma_activate_wme( agent* my_agent, wme* w, wma_reference num_references, wm
 			temp_el->touches.first_reference = 0;
 
 			// prevents confusion with delayed forgetting
-			temp_el->forget_cycle = static_cast< wma_d_cycle>( -1 );
+			temp_el->forget_cycle = static_cast< wma_d_cycle >( -1 );
 
 			w->wma_decay_el = temp_el;
+
+			if ( my_agent->sysparams[ TRACE_WMA_SYSPARAM ] )
+			{
+				std::string msg( "WMA @" );
+				std::string temp;
+				
+				to_string( my_agent->d_cycle_count, temp );
+				msg.append( temp );
+				msg.append( ": " );
+				
+				msg.append( "add " );
+
+				to_string( w->timetag, temp );
+				msg.append( temp );
+				msg.append( " " );
+
+				to_string( w->id->id.name_letter, temp );
+				msg.append( temp );
+
+				to_string( w->id->id.name_number, temp );
+				msg.append( temp );
+				msg.append( " " );
+
+				switch ( w->attr->common.symbol_type )
+				{
+					case INT_CONSTANT_SYMBOL_TYPE:
+						to_string( w->attr->ic.value, temp );
+						break;
+
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
+						to_string( w->attr->fc.value, temp );
+						break;
+
+					case SYM_CONSTANT_SYMBOL_TYPE:
+						to_string( w->attr->sc.name, temp );
+						break;
+				}
+
+				msg.append( temp );
+				msg.append( " " );
+
+				switch ( w->value->common.symbol_type )
+				{
+					case INT_CONSTANT_SYMBOL_TYPE:
+						to_string( w->value->ic.value, temp );
+						break;
+
+					case FLOAT_CONSTANT_SYMBOL_TYPE:
+						to_string( w->value->fc.value, temp );
+						break;
+
+					case SYM_CONSTANT_SYMBOL_TYPE:
+						to_string( w->value->sc.name, temp );
+						break;
+				}
+
+				msg.append( temp );
+				msg.append( "\n" );
+
+				print( my_agent, msg.c_str() );
+				xml_generate_warning( my_agent, msg.c_str() );
+			}
 		}
 
 		// add to o_set if necessary
@@ -611,7 +674,28 @@ void wma_remove_decay_element( agent* my_agent, wme* w )
 		if ( !temp_el->just_removed )
 		{
 			wma_deactivate_element( my_agent, w );
-		}		
+		}
+
+		// log
+		if ( my_agent->sysparams[ TRACE_WMA_SYSPARAM ] )
+		{
+			std::string msg( "WMA @" );
+			std::string temp;
+			
+			to_string( my_agent->d_cycle_count, temp );
+			msg.append( temp );
+			msg.append( ": " );
+			
+			msg.append( "remove " );
+
+			to_string( w->timetag, temp );
+			msg.append( temp );
+
+			msg.append( "\n" );
+
+			print( my_agent, msg.c_str() );
+			xml_generate_warning( my_agent, msg.c_str() );
+		}
 
 		free_with_pool( &( my_agent->wma_decay_element_pool ), temp_el );
 		w->wma_decay_el = NULL;
@@ -684,6 +768,11 @@ inline void wma_forgetting_remove_from_p_queue( agent* my_agent, wma_decay_eleme
 			if ( d_p != pq_p->second->end() )
 			{
 				pq_p->second->erase( d_p );
+
+				if ( pq_p->second->empty() )
+				{
+					my_agent->wma_touched_sets->insert( pq_p->first );
+				}
 			}
 		}
 	}
@@ -907,6 +996,16 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 			}
 
 			// clean up decay set
+			my_agent->wma_touched_sets->insert( pq_p->first );
+			pq_p->second->clear();
+		}
+
+		// clean up touched sets			
+		for ( wma_decay_cycle_set::iterator touched_it=my_agent->wma_touched_sets->begin(); touched_it!=my_agent->wma_touched_sets->end(); touched_it++ )
+		{
+			pq_p = my_agent->wma_forget_pq->find( *touched_it );
+			
+			if ( ( pq_p != my_agent->wma_forget_pq->end() ) && ( pq_p->second->empty() ) )
 			{
 				pq_p->second->~wma_decay_set();
 				free_with_pool( &( my_agent->wma_decay_set_pool ), pq_p->second );
@@ -914,6 +1013,7 @@ inline bool wma_forgetting_update_p_queue( agent* my_agent )
 				my_agent->wma_forget_pq->erase( pq_p );
 			}
 		}
+		my_agent->wma_touched_sets->clear();
 	}
 
 	return return_val;
@@ -1038,6 +1138,31 @@ inline void wma_update_decay_histories( agent* my_agent )
 		// set history
 		temp_el->touches.access_history[ temp_el->touches.next_p ].d_cycle = current_cycle;
 		temp_el->touches.access_history[ temp_el->touches.next_p ].num_references = temp_el->num_references;
+
+		// log
+		if ( my_agent->sysparams[ TRACE_WMA_SYSPARAM ] )
+		{
+			std::string msg( "WMA @" );
+			std::string temp;
+			
+			to_string( my_agent->d_cycle_count, temp );
+			msg.append( temp );
+			msg.append( ": " );
+			
+			msg.append( "activate " );
+
+			to_string( temp_el->this_wme->timetag, temp );
+			msg.append( temp );
+			msg.append( " " );
+
+			to_string( temp_el->num_references, temp );
+			msg.append( temp );
+
+			msg.append( "\n" );
+
+			print( my_agent, msg.c_str() );
+			xml_generate_warning( my_agent, msg.c_str() );
+		}
 
 		// keep track of first reference
 		if ( temp_el->touches.total_references == 0 )
