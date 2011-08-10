@@ -3116,97 +3116,101 @@ const char* epmem_find_lti_queries[2][3] = {
 	}
 };
 
-void epmem_new_print_state(epmem_literal_set& literals, epmem_edge_sql_map uedge_cache[], epmem_interval_set& intervals, epmem_node_int_map reachable[]) {
+void epmem_print_state(epmem_literal_set& literals, epmem_edge_sql_map uedge_cache[], epmem_interval_set& intervals) {
+	//std::map<epmem_node_id, std::string> tsh;
 	std::cout << std::endl;
 	std::cout << "digraph {" << std::endl;
 	std::cout << "node [style=\"filled\"]" << std::endl;
+	// LITERALS
 	std::cout << "subgraph cluster_literals {" << std::endl;
+	std::cout << "node [fillcolor=\"#0084D1\"]" << std::endl;
 	for (epmem_literal_set::iterator lit_iter = literals.begin(); lit_iter != literals.end(); lit_iter++) {
 		epmem_dnf_literal* literal = *lit_iter;
 		if (literal->id_sym) {
-			std::cout << "\"" << literal->id_sym << "\"" << std::endl;
-			std::cout << "\"" << literal->value_sym << "\"" << std::endl;
+			std::cout << "\"" << literal->value_sym << "\" [label=\"" << literal->value_sym << "\"";
+			if (!literal->is_edge_not_node) {
+				std::cout << ", shape=\"rectangle\"";
+			}
+			if (literal->satisfied) {
+				std::cout << ", penwidth=\"2.0\"";
+			}
+			if (literal->is_neg_q) {
+				std::cout << ", fillcolor=\"#C5000B\"";
+			}
+			std::cout << "]" << std::endl;
 			std::cout << "\"" << literal->id_sym << "\" -> \"" << literal->value_sym << "\" [label=\"";
 			if (literal->attr == EPMEM_NODEID_BAD) {
 				std::cout << "?";
 			} else {
 				std::cout << literal->attr;
 			}
-			std::cout << "\\n" << literal << "\"";
+			std::cout << "\\n" << literal << "\"]" << std::endl;
 		}
-		if (literal->satisfied) {
-			std::cout << ", penwidth=\"2.0\"";
-		}
-		std::cout << ", fillcolor=\"" << (literal->is_neg_q ? "#C5000B" : "#0084D1") << "\"]" << std::endl;
 	}
 	std::cout << "}" << std::endl;
+	// NODES / NODE->NODE
 	std::cout << "subgraph cluster_intervals {" << std::endl;
 	std::cout << "node [fillcolor=\"#FFD320\"]" << std::endl;
-	std::set<epmem_sql_edge> drawn;
+	std::set<std::pair<epmem_unique_edge_query*, epmem_node_id> > drawn;
 	for (epmem_interval_set::iterator inter_iter = intervals.begin(); inter_iter != intervals.end(); inter_iter++) {
 		epmem_interval_query* interval = *inter_iter;
-		epmem_sql_edge triple = interval->uedge->edge_info;
+		epmem_unique_edge_query* uedge = interval->uedge;
+		epmem_sql_edge triple = uedge->edge_info;
 		triple.q1 = interval->q1;
-		if (triple.q1 == EPMEM_NODEID_ROOT || drawn.count(triple)) {
-			continue;
-		}
-		std::cout << "\"" << triple.q1 << "\" -> \"" << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
-	}
-	std::cout << "}" << std::endl;
-	std::cout << "}" << std::endl;
-}
-
-void epmem_print_state(epmem_literal_set& literals, epmem_edge_sql_map uedge_cache[], epmem_interval_set& intervals) {
-	std::cout << std::endl;
-	std::cout << "digraph {" << std::endl;
-	std::cout << "node [style=\"filled\"]" << std::endl;
-	for (epmem_literal_set::iterator lit_iter = literals.begin(); lit_iter != literals.end(); lit_iter++) {
-		epmem_dnf_literal* literal = *lit_iter;
-		std::cout << "\"" << literal << "\" [label=\"" << literal << "\\n(?, ";
-		if (literal->attr == EPMEM_NODEID_BAD) {
-			std::cout << "?";
-		} else {
-			std::cout << literal->attr;
-		}
-		std::cout << ", ";
-		if (literal->q1 == EPMEM_NODEID_BAD) {
-			std::cout << "?";
-		} else {
-			std::cout << literal->q1;
-		}
-		std::cout << ")\"";
-		if (literal->satisfied) {
-			std::cout << ", penwidth=\"2.0\"";
-		}
-		std::cout << ", fillcolor=\"" << (literal->is_neg_q ? "#C5000B" : "#0084D1") << "\"]" << std::endl;
-		for (epmem_literal_set::iterator iter = literal->children.begin(); iter != literal->children.end(); iter++) {
-			epmem_dnf_literal* child = *iter;
-			std::cout << "\"" << literal << "\" -> \"" << child << "\"" << std::endl;
+		std::pair<epmem_unique_edge_query*, epmem_node_id> pair = std::make_pair(uedge, triple.q1);
+		if (triple.q1 != EPMEM_NODEID_ROOT && !drawn.count(pair)) {
+			drawn.insert(pair);
+			if (!uedge->is_edge_not_node) {
+				std::cout << "\"" << triple.q1 << "\" [shape=\"rect\"]" << std::endl;
+			}
+			std::cout << "\"" << triple.q0 << "\" -> \"" << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
 		}
 	}
+	std::cout << "}" << std::endl;
+	// UEDGES / LITERAL->UEDGE
+	std::cout << "subgraph cluster_uedges {" << std::endl;
+	std::cout << "node [fillcolor=\"#008000\"]" << std::endl;
+	std::multimap<epmem_node_id, epmem_unique_edge_query*> parent_uedge_map;
 	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
 		for (epmem_edge_sql_map::iterator uedge_iter = uedge_cache[type].begin(); uedge_iter != uedge_cache[type].end(); uedge_iter++) {
+			epmem_sql_edge triple = (*uedge_iter).first;
 			epmem_unique_edge_query* uedge = (*uedge_iter).second;
-			if (uedge) {
-				std::cout << "\"" << uedge << "\" [label=\"(" << uedge << "\\n" << uedge->edge_info.q0 << ", " << uedge->edge_info.w << ", ";
-				if (uedge->edge_info.q1 == EPMEM_NODEID_BAD) {
+			if (triple.w != EPMEM_NODEID_BAD && uedge) {
+				std::cout << "\"" << uedge << "\" [label=\"" << uedge << "\\n(" << triple.q0 << ", " << triple.w << ", ";
+				if (triple.q1 == EPMEM_NODEID_BAD) {
 					std::cout << "?";
 				} else {
-					std::cout << uedge->edge_info.q1;
+					std::cout << triple.q1;
 				}
-				std::cout << ")\", fillcolor=\"#008000\"]" << std::endl;
+				std::cout << ")\"";
+				if (!uedge->is_edge_not_node) {
+					std::cout << ", [shape=\"rect\"";
+				}
+				std::cout << "]" << std::endl;
 				for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
-					std::cout << "\"" << *lit_iter << "\" -> \"" << uedge << "\"" << std::endl;
+					epmem_dnf_literal* literal = *lit_iter;
+					std::cout << "\"" << literal->value_sym << "\" -> \"" << uedge << "\"" << std::endl;
 				}
+				parent_uedge_map.insert(std::make_pair(triple.q0, uedge));
 			}
 		}
 	}
+	std::cout << "}" << std::endl;
+	// UEDGE->UEDGE / UEDGE->NODE
+	drawn.clear();
 	for (epmem_interval_set::iterator inter_iter = intervals.begin(); inter_iter != intervals.end(); inter_iter++) {
 		epmem_interval_query* interval = *inter_iter;
-		epmem_sql_edge triple = interval->uedge->edge_info;
-		triple.q1 = interval->q1;
-		std::cout << "\"" << interval->uedge << "_" << triple.q1 << "\" [label=\"(" << triple.q0 << ", " << triple.w << ", " << triple.q1 << ")\"]" << std::endl;
-		std::cout << "\"" << interval->uedge << "\" -> \"" << interval->uedge << "_" << triple.q1 << "\"" << std::endl;
+		epmem_unique_edge_query* uedge = interval->uedge;
+		std::pair<epmem_unique_edge_query*, epmem_node_id> pair = std::make_pair(uedge, interval->q1);
+		if (uedge->edge_info.w != EPMEM_NODEID_BAD && !drawn.count(pair)) {
+			drawn.insert(pair);
+			std::cout << "\"" << uedge << "\" -> \"" << uedge->edge_info.q0 << "\"" << std::endl;
+			std::cout << "\"" << uedge << "\" -> \"" << interval->q1 << "\" [style=\"dashed\"]" << std::endl;
+			std::pair<std::multimap<epmem_node_id, epmem_unique_edge_query*>::iterator, std::multimap<epmem_node_id, epmem_unique_edge_query*>::iterator> uedge_iters = parent_uedge_map.equal_range(interval->q1);
+			for (std::multimap<epmem_node_id, epmem_unique_edge_query*>::iterator uedge_iter = uedge_iters.first; uedge_iter != uedge_iters.second; uedge_iter++) {
+				std::cout << "\"" << uedge << "\" -> \"" << (*uedge_iter).second << "\"" << std::endl;
+			}
+		}
 	}
 	std::cout << "}" << std::endl;
 }
