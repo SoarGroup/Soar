@@ -1005,7 +1005,6 @@ namespace soar_module
 
 		void destroy( pointer p )
 		{
-			p;
 			p->~T();
 		}
 
