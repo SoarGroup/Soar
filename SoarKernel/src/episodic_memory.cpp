@@ -3428,7 +3428,7 @@ bool epmem_unsatisfy_literal(epmem_dnf_literal* literal, epmem_node_id parent, e
 	}
 }
 
-void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epmem_unique_edge_pq& edge_pq, epmem_sql_list find_uedge_pool[][2], epmem_time_id after, epmem_edge_sql_map uedge_cache[], epmem_sql_edge_set activated[], agent* my_agent) {
+void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epmem_unique_edge_pq& edge_pq, epmem_sql_list find_uedge_pool[], epmem_time_id after, epmem_edge_sql_map uedge_cache[], epmem_sql_edge_set activated[], agent* my_agent) {
 	// we don't need to keep track of visited literals/nodes because the literals are guaranteed to be acyclic
 	// that is, the expansion to the literal's children will eventually bottom out
 	// select the query
@@ -3447,7 +3447,7 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 		int has_value = (literal->q1 != EPMEM_NODEID_BAD ? 1 : 0);
 		const char* sql_statement = epmem_find_unique_edge_queries[is_edge][has_value];
 		soar_module::sqlite_statement* uedge_sql = NULL;
-		epmem_sql_list* sql_pool = &find_uedge_pool[is_edge][has_value];
+		epmem_sql_list* sql_pool = &find_uedge_pool[(2 * is_edge) + has_value];
 		if (sql_pool->size()) {
 			uedge_sql = sql_pool->front();
 			sql_pool->pop_front();
@@ -3813,7 +3813,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	// pools of interval SQL queries
-	epmem_sql_list find_uedge_pool[2][2];
+	epmem_sql_list find_uedge_pool[4];
 	epmem_sql_list find_interval_pool[2][2][3];
 	epmem_sql_list find_lti_pool[2][3];
 
@@ -4211,7 +4211,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 2; j++) {
-			epmem_sql_list* pool = &find_uedge_pool[i][j];
+			epmem_sql_list* pool = &find_uedge_pool[(2*i)+j];
 			for (epmem_sql_list::iterator iter = pool->begin(); iter != pool->end(); iter++) {
 				(*iter)->~sqlite_statement();
 				free_with_pool(&(my_agent->epmem_sql_pool), *iter);
