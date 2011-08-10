@@ -697,6 +697,7 @@ typedef std::set<epmem_node_pair> epmem_node_pair_set;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;
 typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
+typedef std::list<soar_module::sqlite_statement*> epmem_sql_list;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::map<epmem_node_id, uint64_t, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<std::pair<epmem_node_id, uint64_t> > > epmem_node_int_map;
@@ -753,6 +754,7 @@ struct epmem_interval_query_struct {
 	epmem_unique_edge_query* uedge;
 	soar_module::sqlite_statement *sql;
 	epmem_time_id time;
+	epmem_sql_list* pool;
 };
 
 // priority queues and comparison functions

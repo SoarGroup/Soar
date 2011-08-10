@@ -3672,7 +3672,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 #endif
 
 	// variables needed for cleanup
-	epmem_interval_set interval_cleanup;
+	epmem_interval_set interval_cleanup; // FIXME replace this with sym_cache below
+	std::map<wme*, epmem_dnf_literal*> sym_cache;
 	epmem_edge_sql_map uedge_cache[2];
 	epmem_literal_set literal_cleanup;
 
@@ -3700,7 +3701,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		literal_cleanup.insert(root_literal);
 		symbol_incoming_count[pos_query] = 1;
 
-		std::map<wme*, epmem_dnf_literal*> sym_cache;
 		std::set<Symbol*> visiting;
 		visiting.insert(pos_query);
 		visiting.insert(neg_query);
@@ -3802,6 +3802,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_interval->sql->bind_int(1, before);
 		root_interval->sql->execute();
 		root_interval->time = before;
+		root_interval->pool = NULL;
 		interval_pq.push(root_interval);
 		interval_cleanup.insert(root_interval);
 	}
@@ -3809,6 +3810,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	if (JUSTIN_DEBUG) {
 		epmem_print_state(literal_cleanup, uedge_cache, interval_cleanup);
 	}
+
+	// pools of interval SQL queries
+	epmem_sql_list find_interval_pool[2][2][3];
+	epmem_sql_list find_lti_pool[2][3];
 
 	// main loop of interval walk
 	my_agent->epmem_timers->query_walk->start();
@@ -3882,14 +3887,30 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								break;
 						}
 						// create the SQL query and bind it
+						// try to find an existing query first; if none exist, allocate a new one from the memory pools
 						soar_module::sqlite_statement* interval_sql;
-						allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &interval_sql);
+						epmem_sql_list* sql_pool = NULL;
 						if (is_lti) {
-							new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_queries[point_type][interval_type], sql_timer);
+							sql_pool = &find_lti_pool[point_type][interval_type];
+							if (sql_pool->size()) {
+								interval_sql = sql_pool->front();
+								sql_pool->pop_front();
+							} else {
+								allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &interval_sql);
+								new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_queries[point_type][interval_type], sql_timer);
+								interval_sql->prepare();
+							}
 						} else {
-							new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_edge_not_node][point_type][interval_type], sql_timer);
+							sql_pool = &find_interval_pool[uedge->is_edge_not_node][point_type][interval_type];
+							if (sql_pool->size()) {
+								interval_sql = sql_pool->front();
+								sql_pool->pop_front();
+							} else {
+								allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &interval_sql);
+								new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[uedge->is_edge_not_node][point_type][interval_type], sql_timer);
+								interval_sql->prepare();
+							}
 						}
-						interval_sql->prepare();
 						int bind_pos = 1;
 						if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
 							interval_sql->bind_int(bind_pos++, current_episode);
@@ -3908,14 +3929,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval_q->q1 = q1;
 							interval_q->time = interval_sql->column_int(0);
 							interval_q->sql = interval_sql;
+							interval_q->pool = sql_pool;
 							interval_pq.push(interval_q);
 							epmem_sql_edge triple = uedge->edge_info;
 							triple.q1 = q1;
 							interval_cleanup.insert(interval_q);
 							created = true;
 						} else {
-							interval_sql->~sqlite_statement();
-							free_with_pool(&(my_agent->epmem_sql_pool), interval_sql);
+							interval_sql->reinitialize();
+							sql_pool->push_front(interval_sql);
 						}
 					}
 				}
@@ -3929,6 +3951,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						start_q->uedge = uedge;
 						start_q->time = promo_time - 1;
 						start_q->sql = NULL;
+						start_q->pool = NULL;
 						interval_pq.push(start_q);
 						interval_cleanup.insert(start_q);
 					}
@@ -3990,9 +4013,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					}
 				}
 				// put the interval query back into the queue if there's more
+				// otherwise, reinitialize the query and put it in a pool
 				if (interval->sql && interval->sql->execute() == soar_module::row) {
 					interval->time = interval->sql->column_int(0);
 					interval_pq.push(interval);
+				} else if (interval->sql && interval->pool) {
+					// put it in the right pool depending on whether its an LTI
+					interval->sql->reinitialize();
+					interval->pool->push_front(interval->sql);
+					interval->sql = NULL;
 				}
 			}
 			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
