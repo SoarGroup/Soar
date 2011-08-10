@@ -3161,9 +3161,9 @@ void epmem_print_state(epmem_literal_set& literals, epmem_edge_sql_map uedge_cac
 		if (triple.q1 != EPMEM_NODEID_ROOT && !drawn.count(pair)) {
 			drawn.insert(pair);
 			if (!uedge->is_edge_not_node) {
-				std::cout << "\"" << triple.q1 << "\" [shape=\"rect\"]" << std::endl;
+				std::cout << "\"n" << triple.q1 << "\" [shape=\"rect\"]" << std::endl;
 			}
-			std::cout << "\"" << triple.q0 << "\" -> \"" << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
+			std::cout << "\"e" << triple.q0 << "\" -> \"" << (uedge->is_edge_not_node ? "e" : "n") << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
 		}
 	}
 	std::cout << "}" << std::endl;
@@ -3204,8 +3204,12 @@ void epmem_print_state(epmem_literal_set& literals, epmem_edge_sql_map uedge_cac
 		std::pair<epmem_unique_edge_query*, epmem_node_id> pair = std::make_pair(uedge, interval->q1);
 		if (uedge->edge_info.w != EPMEM_NODEID_BAD && !drawn.count(pair)) {
 			drawn.insert(pair);
-			std::cout << "\"" << uedge << "\" -> \"" << uedge->edge_info.q0 << "\"" << std::endl;
-			std::cout << "\"" << uedge << "\" -> \"" << interval->q1 << "\" [style=\"dashed\"]" << std::endl;
+			pair = std::make_pair(uedge, uedge->edge_info.q0);
+			if (!drawn.count(pair)) {
+				drawn.insert(pair);
+				std::cout << "\"" << uedge << "\" -> \"e" << uedge->edge_info.q0 << "\"" << std::endl;
+			}
+			std::cout << "\"" << uedge << "\" -> \"" << (uedge->is_edge_not_node ? "e" : "n") << interval->q1 << "\" [style=\"dashed\"]" << std::endl;
 			std::pair<std::multimap<epmem_node_id, epmem_unique_edge_query*>::iterator, std::multimap<epmem_node_id, epmem_unique_edge_query*>::iterator> uedge_iters = parent_uedge_map.equal_range(interval->q1);
 			for (std::multimap<epmem_node_id, epmem_unique_edge_query*>::iterator uedge_iter = uedge_iters.first; uedge_iter != uedge_iters.second; uedge_iter++) {
 				std::cout << "\"" << uedge << "\" -> \"" << (*uedge_iter).second << "\"" << std::endl;
