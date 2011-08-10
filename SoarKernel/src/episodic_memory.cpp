@@ -4209,6 +4209,29 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_dnf_literal* literal = *iter;
 		delete literal;
 	}
+	for (int i = 0; i < 2; i++) {
+		for (int j = 0; j < 2; j++) {
+			epmem_sql_list* pool = &find_uedge_pool[i][j];
+			for (epmem_sql_list::iterator iter = pool->begin(); iter != pool->end(); iter++) {
+				(*iter)->~sqlite_statement();
+				free_with_pool(&(my_agent->epmem_sql_pool), *iter);
+			}
+			for (int k = 0; k < 3; k++) {
+				epmem_sql_list* pool = &find_interval_pool[i][j][k];
+				for (epmem_sql_list::iterator iter = pool->begin(); iter != pool->end(); iter++) {
+					(*iter)->~sqlite_statement();
+					free_with_pool(&(my_agent->epmem_sql_pool), *iter);
+				}
+			}
+		}
+		for (int k = 0; k < 3; k++) {
+			epmem_sql_list* pool = &find_lti_pool[i][k];
+			for (epmem_sql_list::iterator iter = pool->begin(); iter != pool->end(); iter++) {
+				(*iter)->~sqlite_statement();
+				free_with_pool(&(my_agent->epmem_sql_pool), *iter);
+			}
+		}
+	}
 	my_agent->epmem_timers->query_cleanup->stop();
 
 	my_agent->epmem_timers->query->stop();
