@@ -746,6 +746,7 @@ struct epmem_unique_edge_query_struct {
 	epmem_literal_set literals;
 	soar_module::sqlite_statement *sql;
 	epmem_time_id time;
+	epmem_sql_list* pool;
 };
 
 struct epmem_interval_query_struct {
