@@ -693,6 +693,7 @@ typedef std::map<epmem_dnf_literal*, epmem_node_pair> epmem_literal_node_pair_ma
 typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
 typedef std::map<epmem_symbol_node_pair, int> epmem_match_int_map;
+typedef std::map<wme*, epmem_dnf_literal*> epmem_wme_literal_map;
 typedef std::set<epmem_node_pair> epmem_node_pair_set;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;

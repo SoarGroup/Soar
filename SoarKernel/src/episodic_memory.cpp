@@ -3123,7 +3123,7 @@ const char* epmem_find_lti_queries[2][3] = {
 	}
 };
 
-void epmem_print_state(epmem_literal_set& literals, epmem_edge_sql_map uedge_cache[], epmem_interval_set& intervals) {
+void epmem_print_state(epmem_wme_literal_map& literals, epmem_edge_sql_map uedge_cache[], epmem_interval_set& intervals) {
 	//std::map<epmem_node_id, std::string> tsh;
 	std::cout << std::endl;
 	std::cout << "digraph {" << std::endl;
@@ -3131,8 +3131,8 @@ void epmem_print_state(epmem_literal_set& literals, epmem_edge_sql_map uedge_cac
 	// LITERALS
 	std::cout << "subgraph cluster_literals {" << std::endl;
 	std::cout << "node [fillcolor=\"#0084D1\"]" << std::endl;
-	for (epmem_literal_set::iterator lit_iter = literals.begin(); lit_iter != literals.end(); lit_iter++) {
-		epmem_dnf_literal* literal = *lit_iter;
+	for (epmem_wme_literal_map::iterator lit_iter = literals.begin(); lit_iter != literals.end(); lit_iter++) {
+		epmem_dnf_literal* literal = (*lit_iter).second;
 		if (literal->id_sym) {
 			std::cout << "\"" << literal->value_sym << "\" [label=\"" << literal->value_sym << "\"";
 			if (!literal->is_edge_not_node) {
@@ -3230,7 +3230,7 @@ bool epmem_gm_mcv_comparator(const epmem_dnf_literal* a, const epmem_dnf_literal
 	return (a->matches.size() < b->matches.size());
 }
 
-epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, epmem_dnf_literal*>& sym_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_incoming_count, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_deque& gm_ordering, soar_module::wme_set& cue_wmes, epmem_literal_set& cleanup_literals) {
+epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_literal_map& sym_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_incoming_count, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_deque& gm_ordering, soar_module::wme_set& cue_wmes) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
 	if (visiting.count(cue_wme->value)) {
@@ -3283,7 +3283,7 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, symbol_incoming_count, visiting, my_agent, gm_ordering, cue_wmes, cleanup_literals);
+				epmem_dnf_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, symbol_incoming_count, visiting, my_agent, gm_ordering, cue_wmes);
 				if (child) {
 					child->parents.insert(literal);
 					literal->children.insert(child);
@@ -3310,7 +3310,6 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, std::map<wme*, 
 		}
 	}
 
-	cleanup_literals.insert(literal);
 	if (!query_type) {
 		gm_ordering.push_front(literal);
 	}
@@ -3673,10 +3672,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 #endif
 
 	// variables needed for cleanup
-	epmem_interval_set interval_cleanup; // FIXME replace this with sym_cache below
-	std::map<wme*, epmem_dnf_literal*> sym_cache;
+	epmem_wme_literal_map sym_cache;
 	epmem_edge_sql_map uedge_cache[2];
-	epmem_literal_set literal_cleanup;
+	epmem_interval_set interval_cleanup;
 
 	// variables needed for graphmatch
 	epmem_literal_deque gm_ordering;
@@ -3699,8 +3697,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_literal->q1 = EPMEM_NODEID_ROOT;
 		root_literal->weight = 0.0;
 		root_literal->satisfied = false;
-		literal_cleanup.insert(root_literal);
 		symbol_incoming_count[pos_query] = 1;
+		sym_cache[NULL] = root_literal;
 
 		std::set<Symbol*> visiting;
 		visiting.insert(pos_query);
@@ -3722,7 +3720,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			while (query_wmes->size()) {
 				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
-				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, symbol_incoming_count, visiting, my_agent, gm_ordering, cue_wmes, literal_cleanup);
+				epmem_dnf_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, symbol_incoming_count, visiting, my_agent, gm_ordering, cue_wmes);
 				if (root) {
 					// force all first level literals to have the same id symbol
 					root->id_sym = pos_query;
@@ -3809,7 +3807,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	if (JUSTIN_DEBUG) {
-		epmem_print_state(literal_cleanup, uedge_cache, interval_cleanup);
+		epmem_print_state(sym_cache, uedge_cache, interval_cleanup);
 	}
 
 	// pools of interval SQL queries
@@ -4079,7 +4077,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 						my_agent->epmem_timers->query_graph_match->start();
 						if (JUSTIN_DEBUG) {
-							epmem_print_state(literal_cleanup, uedge_cache, interval_cleanup);
+							epmem_print_state(sym_cache, uedge_cache, interval_cleanup);
 						}
 						graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent, 2);
 						my_agent->epmem_timers->query_graph_match->stop();
@@ -4205,8 +4203,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			}
 		}
 	}
-	for (epmem_literal_set::iterator iter = literal_cleanup.begin(); iter != literal_cleanup.end(); iter++) {
-		epmem_dnf_literal* literal = *iter;
+	for (epmem_wme_literal_map::iterator iter = sym_cache.begin(); iter != sym_cache.end(); iter++) {
+		epmem_dnf_literal* literal = (*iter).second;
 		delete literal;
 	}
 	for (int i = 0; i < 2; i++) {
