@@ -694,19 +694,18 @@ typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
 typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
 typedef std::map<epmem_symbol_node_pair, int> epmem_match_int_map;
 typedef std::map<wme*, epmem_dnf_literal*> epmem_wme_literal_map;
-typedef std::set<epmem_node_pair> epmem_node_pair_set;
 typedef std::set<epmem_dnf_literal*> epmem_literal_set;
 typedef std::set<epmem_interval_query*> epmem_interval_set;
 typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
 typedef std::list<soar_module::sqlite_statement*> epmem_sql_list;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
-typedef std::map<epmem_node_id, uint64_t, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<std::pair<epmem_node_id, uint64_t> > > epmem_node_int_map;
 typedef std::set<epmem_node_id, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<epmem_node_id> > epmem_node_set;
+typedef std::set<epmem_node_pair, std::less<epmem_node_pair>, soar_module::soar_memory_pool_allocator<epmem_node_pair> > epmem_node_pair_set;
 typedef std::set<epmem_sql_edge, std::less<epmem_sql_edge>, soar_module::soar_memory_pool_allocator<epmem_sql_edge> > epmem_sql_edge_set;
 #else
-typedef std::map<epmem_node_id, uint64_t> epmem_node_int_map;
 typedef std::set<epmem_node_id> epmem_node_set;
+typedef std::set<epmem_node_pair> epmem_node_pair_set;
 typedef std::set<epmem_sql_edge> epmem_sql_edge_set;
 #endif
 

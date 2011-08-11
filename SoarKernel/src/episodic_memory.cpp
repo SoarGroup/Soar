@@ -3243,7 +3243,10 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_liter
 
 	cue_wmes.insert(cue_wme);
 	Symbol* value = cue_wme->value;
-	epmem_dnf_literal* literal = new epmem_dnf_literal();
+	epmem_dnf_literal* literal;
+	allocate_with_pool(my_agent, &(my_agent->epmem_literal_pool), &literal);
+	new(&(literal->parents)) epmem_literal_set();
+	new(&(literal->children)) epmem_literal_set();
 
 	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
 		literal->is_edge_not_node = EPMEM_TYPE_NODE;
@@ -3262,7 +3265,9 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_liter
 			leaf_literals.insert(literal);
 		} else {
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
-			delete literal;
+			literal->parents.~epmem_literal_set();
+			literal->children.~epmem_literal_set();
+			free_with_pool(&(my_agent->epmem_literal_pool), literal);
 			return NULL;
 		}
 	} else { // WME is a normal identifier
@@ -3297,7 +3302,9 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_liter
 			// in essence, this forces the DNF graph to be acyclic
 			// this results in savings in not walking edges and intervals
 			if (cycle && literal->children.empty()) {
-				delete literal;
+				literal->parents.~epmem_literal_set();
+				literal->children.~epmem_literal_set();
+				free_with_pool(&(my_agent->epmem_literal_pool), literal);
 				return NULL;
 			}
 			literal->is_leaf = false;
@@ -3320,111 +3327,14 @@ epmem_dnf_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_liter
 	literal->is_neg_q = query_type;
 	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, cue_wme, true));
 	literal->satisfied = false;
+#ifdef USE_MEM_POOL_ALLOCATORS
+	new(&(literal->matches)) epmem_node_pair_set(std::less<epmem_node_pair>(), soar_module::soar_memory_pool_allocator<epmem_node_pair>(my_agent));
+#else
+	new(&(literal->matches)) epmem_node_pair_set();
+#endif
+
 	sym_cache[cue_wme] = literal;
 	return literal;
-}
-
-bool epmem_satisfy_literal(epmem_dnf_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_match_int_map& symbol_match_count, epmem_sql_edge_set activated[], epmem_symbol_int_map& symbol_incoming_count) {
-	epmem_symbol_node_pair match;
-	epmem_match_int_map::iterator match_iter;
-	// check if the ancestors of this literal are satisfied
-	bool parents_satisfied = (literal->id_sym == NULL);
-	if (!parents_satisfied) {
-		match = std::make_pair(literal->id_sym, parent);
-		match_iter = symbol_match_count.find(match);
-		parents_satisfied = (match_iter != symbol_match_count.end()) && ((*match_iter).second == symbol_incoming_count[literal->id_sym]);
-	}
-	// if yes
-	if (parents_satisfied) {
-		literal->satisfied = true;
-		// add the edge as a match
-		literal->matches.insert(std::make_pair(parent, child));
-		if (literal->is_leaf && literal->matches.size() == 1) {
-			current_score += literal->weight;
-			current_cardinality += (literal->is_neg_q ? -1 : 1);
-			if (JUSTIN_DEBUG) {
-				std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
-			}
-			return true;
-		} else {
-			bool changed_score = false;
-			// increase the matches for its child symbol
-			match = std::make_pair(literal->value_sym, child);
-			match_iter = symbol_match_count.find(match);
-			if (match_iter == symbol_match_count.end()) {
-				symbol_match_count[match] = 1;
-				// recurse over child literals
-				for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-					epmem_dnf_literal* child_lit = *child_iter;
-					epmem_sql_edge temp_triple = {child, child_lit->attr+1, EPMEM_NODEID_BAD};
-					epmem_sql_edge_set::iterator end = activated[child_lit->is_edge_not_node].lower_bound(temp_triple);
- 					temp_triple.w = child_lit->attr;
-					for (epmem_sql_edge_set::iterator edge_iter = activated[child_lit->is_edge_not_node].lower_bound(temp_triple); edge_iter != end; edge_iter++) {
-						epmem_sql_edge edge = *edge_iter;
-						if (edge.q1 == EPMEM_NODEID_BAD) {
-							continue;
-						}
-						changed_score |= epmem_satisfy_literal(child_lit, edge.q0, edge.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
-					}
-				}
-			} else {
-				(*match_iter).second++;
-			}
-			return changed_score;
-		}
-	}
-	return false;
-}
-
-bool epmem_unsatisfy_literal(epmem_dnf_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_match_int_map& symbol_match_count, epmem_symbol_int_map& symbol_incoming_count) {
-	if (!literal->satisfied) {
-		return false;
-	}
-	epmem_symbol_node_pair match;
-	epmem_match_int_map::iterator match_iter;
-	// erase the edge from this literal's matches
-	literal->matches.erase(std::make_pair(parent, child));
-	if (literal->is_leaf && literal->matches.size() == 0) {
-		literal->satisfied = false;
-		current_score -= literal->weight;
-		current_cardinality -= (literal->is_neg_q ? -1 : 1);
-		if (JUSTIN_DEBUG) {
-			std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
-		}
-		return true;
-	} else {
-		bool changed_score = false;
-		// if this literal is no longer satisfied, recurse on all children
-		// if this literal is still satisfied, recurse on children who is matching on descendants of this edge
-		if (literal->matches.size() == 0) {
-			literal->satisfied = false;
-			// decrease the matches for its child symbol
-			match = std::make_pair(literal->value_sym, child);
-			match_iter = symbol_match_count.find(match);
-			assert(match_iter != symbol_match_count.end());
-			(*match_iter).second--;
-			if ((*match_iter).second == 0) {
-				symbol_match_count.erase(match_iter);
-			}
-			for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-				epmem_dnf_literal* child_lit = *child_iter;
-				epmem_node_pair_set::iterator node_iter = child_lit->matches.begin();
-				if (node_iter != child_lit->matches.end()) {
-					changed_score |= epmem_unsatisfy_literal(child_lit, (*node_iter).first, (*node_iter).second, current_score, current_cardinality, symbol_match_count, symbol_incoming_count);
-				}
-			}
-		} else {
-			epmem_node_pair node_pair = std::make_pair(child, EPMEM_NODEID_BAD);
-			for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-				epmem_dnf_literal* child_lit = *child_iter;
-				epmem_node_pair_set::iterator node_iter = child_lit->matches.lower_bound(node_pair);
-				if (node_iter != child_lit->matches.end() && (*node_iter).first == child) {
-					changed_score |= epmem_unsatisfy_literal(child_lit, (*node_iter).first, (*node_iter).second, current_score, current_cardinality, symbol_match_count, symbol_incoming_count);
-				}
-			}
-		}
-		return changed_score;
-	}
 }
 
 void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epmem_unique_edge_pq& edge_pq, epmem_sql_list find_uedge_pool[], epmem_time_id after, epmem_edge_sql_map uedge_cache[], epmem_sql_edge_set activated[], agent* my_agent) {
@@ -3512,6 +3422,109 @@ void epmem_register_uedges(epmem_node_id parent, epmem_dnf_literal* literal, epm
 	}
 	if (!created) {
 		// FIXME retractions from lack of edges
+	}
+}
+
+bool epmem_satisfy_literal(epmem_dnf_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_match_int_map& symbol_match_count, epmem_sql_edge_set activated[], epmem_symbol_int_map& symbol_incoming_count) {
+	epmem_symbol_node_pair match;
+	epmem_match_int_map::iterator match_iter;
+	// check if the ancestors of this literal are satisfied
+	bool parents_satisfied = (literal->id_sym == NULL);
+	if (!parents_satisfied) {
+		match = std::make_pair(literal->id_sym, parent);
+		match_iter = symbol_match_count.find(match);
+		parents_satisfied = (match_iter != symbol_match_count.end()) && ((*match_iter).second == symbol_incoming_count[literal->id_sym]);
+	}
+	// if yes
+	if (parents_satisfied) {
+		literal->satisfied = true;
+		// add the edge as a match
+		literal->matches.insert(std::make_pair(parent, child));
+		if (literal->is_leaf && literal->matches.size() == 1) {
+			current_score += literal->weight;
+			current_cardinality += (literal->is_neg_q ? -1 : 1);
+			if (JUSTIN_DEBUG) {
+				std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+			}
+			return true;
+		} else {
+			bool changed_score = false;
+			// increase the matches for its child symbol
+			match = std::make_pair(literal->value_sym, child);
+			match_iter = symbol_match_count.find(match);
+			if (match_iter == symbol_match_count.end()) {
+				symbol_match_count[match] = 1;
+				// recurse over child literals
+				for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+					epmem_dnf_literal* child_lit = *child_iter;
+					epmem_sql_edge temp_triple = {child, child_lit->attr+1, EPMEM_NODEID_BAD};
+					epmem_sql_edge_set::iterator end = activated[child_lit->is_edge_not_node].lower_bound(temp_triple);
+ 					temp_triple.w = child_lit->attr;
+					for (epmem_sql_edge_set::iterator edge_iter = activated[child_lit->is_edge_not_node].lower_bound(temp_triple); edge_iter != end; edge_iter++) {
+						epmem_sql_edge edge = *edge_iter;
+						if (edge.q1 == EPMEM_NODEID_BAD) {
+							continue;
+						}
+						changed_score |= epmem_satisfy_literal(child_lit, edge.q0, edge.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+					}
+				}
+			} else {
+				(*match_iter).second++;
+			}
+			return changed_score;
+		}
+	}
+	return false;
+}
+
+bool epmem_unsatisfy_literal(epmem_dnf_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_match_int_map& symbol_match_count) {
+	if (!literal->satisfied) {
+		return false;
+	}
+	epmem_symbol_node_pair match;
+	epmem_match_int_map::iterator match_iter;
+	// erase the edge from this literal's matches
+	literal->matches.erase(std::make_pair(parent, child));
+	if (literal->is_leaf && literal->matches.size() == 0) {
+		literal->satisfied = false;
+		current_score -= literal->weight;
+		current_cardinality -= (literal->is_neg_q ? -1 : 1);
+		if (JUSTIN_DEBUG) {
+			std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
+		}
+		return true;
+	} else {
+		bool changed_score = false;
+		// if this literal is no longer satisfied, recurse on all children
+		// if this literal is still satisfied, recurse on children who is matching on descendants of this edge
+		if (literal->matches.size() == 0) {
+			literal->satisfied = false;
+			// decrease the matches for its child symbol
+			match = std::make_pair(literal->value_sym, child);
+			match_iter = symbol_match_count.find(match);
+			assert(match_iter != symbol_match_count.end());
+			(*match_iter).second--;
+			if ((*match_iter).second == 0) {
+				symbol_match_count.erase(match_iter);
+			}
+			for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+				epmem_dnf_literal* child_lit = *child_iter;
+				epmem_node_pair_set::iterator node_iter = child_lit->matches.begin();
+				if (node_iter != child_lit->matches.end()) {
+					changed_score |= epmem_unsatisfy_literal(child_lit, (*node_iter).first, (*node_iter).second, current_score, current_cardinality, symbol_match_count);
+				}
+			}
+		} else {
+			epmem_node_pair node_pair = std::make_pair(child, EPMEM_NODEID_BAD);
+			for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+				epmem_dnf_literal* child_lit = *child_iter;
+				epmem_node_pair_set::iterator node_iter = child_lit->matches.lower_bound(node_pair);
+				if (node_iter != child_lit->matches.end() && (*node_iter).first == child) {
+					changed_score |= epmem_unsatisfy_literal(child_lit, (*node_iter).first, (*node_iter).second, current_score, current_cardinality, symbol_match_count);
+				}
+			}
+		}
+		return changed_score;
 	}
 }
 
@@ -3654,10 +3667,21 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 	// epmem options
 	bool do_graph_match = (my_agent->epmem_params->graph_match->get_value() == soar_module::on);
+	epmem_param_container::gm_ordering_choices gm_order = my_agent->epmem_params->gm_ordering->get_value();
+
+	// variables needed for cleanup
+	epmem_wme_literal_map sym_cache;
+	epmem_edge_sql_map uedge_cache[2];
+	epmem_interval_set interval_cleanup;
 
 	// variables needed for building the DNF
-	epmem_dnf_literal* root_literal = new epmem_dnf_literal();
+	epmem_dnf_literal* root_literal;
+	allocate_with_pool(my_agent, &(my_agent->epmem_literal_pool), &root_literal);
 	epmem_literal_set leaf_literals;
+
+	// priority queues for interval walk
+	epmem_unique_edge_pq edge_pq;
+	epmem_interval_pq interval_pq;
 
 	// variables needed to track satisfiability
 	epmem_symbol_int_map symbol_incoming_count;
@@ -3671,10 +3695,19 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_sql_edge_set activated[2] = {epmem_sql_edge_set(), epmem_sql_edge_set()};
 #endif
 
-	// variables needed for cleanup
-	epmem_wme_literal_map sym_cache;
-	epmem_edge_sql_map uedge_cache[2];
-	epmem_interval_set interval_cleanup;
+	// various things about the current and the best episodes
+	epmem_time_id best_episode = EPMEM_MEMID_NONE;
+	double best_score = 0;
+	bool best_graph_matched = false;
+	int best_cardinality = 0;
+	epmem_literal_node_pair_map best_bindings;
+	double current_score = 0;
+	int current_cardinality = 0;
+
+	// pools of interval SQL queries
+	epmem_sql_list find_uedge_pool[4];
+	epmem_sql_list find_interval_pool[2][2][3];
+	epmem_sql_list find_lti_pool[2][3];
 
 	// variables needed for graphmatch
 	epmem_literal_deque gm_ordering;
@@ -3697,6 +3730,13 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_literal->q1 = EPMEM_NODEID_ROOT;
 		root_literal->weight = 0.0;
 		root_literal->satisfied = false;
+		new(&(root_literal->parents)) epmem_literal_set();
+		new(&(root_literal->children)) epmem_literal_set();
+#ifdef USE_MEM_POOL_ALLOCATORS
+		new(&(root_literal->matches)) epmem_node_pair_set(std::less<epmem_node_pair>(), soar_module::soar_memory_pool_allocator<epmem_node_pair>(my_agent));
+#else
+		new(&(root_literal->matches)) epmem_node_pair_set();
+#endif
 		symbol_incoming_count[pos_query] = 1;
 		sym_cache[NULL] = root_literal;
 
@@ -3733,22 +3773,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		my_agent->epmem_timers->query_dnf->stop();
 	}
 
-	// priority queues for interval walk
-	epmem_unique_edge_pq edge_pq;
-	epmem_interval_pq interval_pq;
+	// sort the literals if the order is undefined
+	if (gm_order == epmem_param_container::gm_order_undefined) {
+		std::sort(gm_ordering.begin(), gm_ordering.end());
+	}
 
-	// various things about the current and the best episodes
-	epmem_time_id best_episode = EPMEM_MEMID_NONE;
-	double best_score = 0;
-	bool best_graph_matched = false;
-	int best_cardinality = 0;
-	epmem_literal_node_pair_map best_bindings;
-	epmem_time_id current_episode;
-	double current_score = 0;
-	int current_cardinality = 0;
-	epmem_time_id next_episode;
-
-	// the highest possible score and cardinality score
+	// calculate the highest possible score and cardinality score
 	double perfect_score = 0;
 	int perfect_cardinality = 0;
 	for (epmem_literal_set::iterator iter = leaf_literals.begin(); iter != leaf_literals.end(); iter++) {
@@ -3767,7 +3797,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	if (after == EPMEM_MEMID_NONE) {
 		after = 0;
 	}
-	current_episode = before;
+	epmem_time_id current_episode = before;
+	epmem_time_id next_episode;
 
 	// create dummy edges and intervals
 	{
@@ -3809,11 +3840,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	if (JUSTIN_DEBUG) {
 		epmem_print_state(sym_cache, uedge_cache, interval_cleanup);
 	}
-
-	// pools of interval SQL queries
-	epmem_sql_list find_uedge_pool[4];
-	epmem_sql_list find_interval_pool[2][2][3];
-	epmem_sql_list find_lti_pool[2][3];
 
 	// main loop of interval walk
 	my_agent->epmem_timers->query_walk->start();
@@ -4013,7 +4039,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				} else {
 					activated[is_edge].erase(info);
 					for (epmem_literal_set::iterator lit_iter = uedge->literals.begin(); lit_iter != uedge->literals.end(); lit_iter++) {
-						changed_score |= epmem_unsatisfy_literal(*lit_iter, info.q0, info.q1, current_score, current_cardinality, symbol_match_count, symbol_incoming_count);
+						changed_score |= epmem_unsatisfy_literal(*lit_iter, info.q0, info.q1, current_score, current_cardinality, symbol_match_count);
 					}
 				}
 				// put the interval query back into the queue if there's more
@@ -4062,10 +4088,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				if (current_cardinality == perfect_cardinality) {
 					bool graph_matched = false;
 					if (do_graph_match) {
-						epmem_param_container::gm_ordering_choices gm_order = my_agent->epmem_params->gm_ordering->get_value();
-						if (gm_order == epmem_param_container::gm_order_undefined) {
-							std::sort(gm_ordering.begin(), gm_ordering.end());
-						} else if (gm_order == epmem_param_container::gm_order_mcv) {
+						if (gm_order == epmem_param_container::gm_order_mcv) {
 							std::sort(gm_ordering.begin(), gm_ordering.end(), epmem_gm_mcv_comparator);
 						}
 						epmem_literal_deque::iterator begin = gm_ordering.begin();
@@ -4074,11 +4097,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						epmem_node_symbol_map bound_nodes[2];
 						if (JUSTIN_DEBUG) {
 							std::cout << "	GRAPH MATCH" << std::endl;
-						}
-						my_agent->epmem_timers->query_graph_match->start();
-						if (JUSTIN_DEBUG) {
 							epmem_print_state(sym_cache, uedge_cache, interval_cleanup);
 						}
+						my_agent->epmem_timers->query_graph_match->start();
 						graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent, 2);
 						my_agent->epmem_timers->query_graph_match->stop();
 					}
@@ -4205,7 +4226,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 	for (epmem_wme_literal_map::iterator iter = sym_cache.begin(); iter != sym_cache.end(); iter++) {
 		epmem_dnf_literal* literal = (*iter).second;
-		delete literal;
+		literal->parents.~epmem_literal_set();
+		literal->children.~epmem_literal_set();
+		literal->matches.~epmem_node_pair_set();
+		free_with_pool(&(my_agent->epmem_literal_pool), literal);
 	}
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < 2; j++) {
