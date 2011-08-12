@@ -3836,6 +3836,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_uedge* root_uedge;
 		allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
 		root_uedge->triple = triple;
+		root_uedge->value_is_id = EPMEM_TYPE_EDGE;
 		new(&(root_uedge->pedges)) epmem_pedge_set();
 		root_uedge->intervals = 1;
 		root_uedge->activated = false;
