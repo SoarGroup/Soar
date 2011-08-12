@@ -677,9 +677,10 @@ extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::
 
 // defined below
 typedef struct epmem_triple_struct epmem_triple;
-typedef struct epmem_pedge_struct epmem_pedge;
-typedef struct epmem_interval_struct epmem_interval;
 typedef struct epmem_literal_struct epmem_literal;
+typedef struct epmem_pedge_struct epmem_pedge;
+typedef struct epmem_uedge_struct epmem_uedge;
+typedef struct epmem_interval_struct epmem_interval;
 
 // pairs
 typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
@@ -695,15 +696,18 @@ typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
 typedef std::map<epmem_symbol_node_pair, int> epmem_match_int_map;
 typedef std::map<epmem_triple, epmem_pedge*> epmem_triple_pedge_map;
 typedef std::map<wme*, epmem_literal*> epmem_wme_literal_map;
-typedef std::set<epmem_interval*> epmem_interval_set;
 typedef std::set<epmem_literal*> epmem_literal_set;
 typedef std::set<epmem_pedge*> epmem_pedge_set;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
+typedef std::map<epmem_triple, epmem_uedge*, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<std::pair<const epmem_triple, epmem_uedge*> > > epmem_triple_uedge_map;
+typedef std::set<epmem_interval*, std::less<epmem_interval*>, soar_module::soar_memory_pool_allocator<epmem_interval*> > epmem_interval_set;
 typedef std::set<epmem_node_id, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<epmem_node_id> > epmem_node_set;
 typedef std::set<epmem_node_pair, std::less<epmem_node_pair>, soar_module::soar_memory_pool_allocator<epmem_node_pair> > epmem_node_pair_set;
 typedef std::set<epmem_triple, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<epmem_triple> > epmem_triple_set;
 #else
+typedef std::map<epmem_triple, epmem_uedge*> epmem_triple_uedge_map;
+typedef std::set<epmem_interval*> epmem_interval_set;
 typedef std::set<epmem_node_id> epmem_node_set;
 typedef std::set<epmem_node_pair> epmem_node_pair_set;
 typedef std::set<epmem_triple> epmem_triple_set;
@@ -744,18 +748,25 @@ struct epmem_pedge_struct {
 	epmem_triple triple;
 	int value_is_id;
 	epmem_literal_set literals;
+	epmem_sql_deque* pool;
 	soar_module::sqlite_statement* sql;
 	epmem_time_id time;
-	epmem_sql_deque* pool;
+};
+
+struct epmem_uedge_struct {
+	epmem_triple triple;
+	int value_is_id;
+	epmem_pedge_set pedges;
+	int intervals;
+	bool activated;
 };
 
 struct epmem_interval_struct {
-	epmem_node_id q1;
+	epmem_uedge* uedge;
 	int is_end_point;
-	epmem_pedge* uedge;
+	epmem_sql_deque* pool;
 	soar_module::sqlite_statement* sql;
 	epmem_time_id time;
-	epmem_sql_deque* pool;
 };
 
 // priority queues and comparison functions
@@ -768,14 +779,14 @@ struct epmem_pedge_comparator {
 		}
 	}
 };
-typedef std::priority_queue<epmem_pedge*, std::vector<epmem_pedge*>, epmem_pedge_comparator> epmem_unique_edge_pq;
+typedef std::priority_queue<epmem_pedge*, std::vector<epmem_pedge*>, epmem_pedge_comparator> epmem_pedge_pq;
 struct epmem_interval_comparator {
 	bool operator()(const epmem_interval *a, const epmem_interval *b) const {
 		if (a->time != b->time) {
 			return (a->time < b->time);
 		} else {
 			// arbitrarily put starts before ends
-			return (a->is_end_point == 0);
+			return (a->is_end_point == EPMEM_RANGE_START);
 		}
 	}
 };

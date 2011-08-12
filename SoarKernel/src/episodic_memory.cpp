@@ -3059,7 +3059,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG false
+#define JUSTIN_DEBUG true
 
 const char* epmem_dummy = "SELECT ? as start";
 
@@ -3123,7 +3123,7 @@ const char* epmem_find_lti_queries[2][3] = {
 	}
 };
 
-void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_cache[], epmem_interval_set& intervals) {
+void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
 	//std::map<epmem_node_id, std::string> tsh;
 	std::cout << std::endl;
 	std::cout << "digraph {" << std::endl;
@@ -3134,9 +3134,14 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 	for (epmem_wme_literal_map::iterator lit_iter = literals.begin(); lit_iter != literals.end(); lit_iter++) {
 		epmem_literal* literal = (*lit_iter).second;
 		if (literal->id_sym) {
-			std::cout << "\"" << literal->value_sym << "\" [label=\"" << literal->value_sym << "\"";
+			std::cout << "\"" << literal->value_sym << "\" [";
+			if (literal->q1 == EPMEM_NODEID_BAD) {
+				std::cout << "label=\"?\"";
+			} else {
+				std::cout << "label=\"" << literal->q1 << "\"";
+			}
 			if (!literal->value_is_id) {
-				std::cout << ", shape=\"rectangle\"";
+				std::cout << ", shape=\"rect\"";
 			}
 			if (literal->satisfied) {
 				std::cout << ", penwidth=\"2.0\"";
@@ -3156,33 +3161,30 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 	}
 	std::cout << "}" << std::endl;
 	// NODES / NODE->NODE
-	std::cout << "subgraph cluster_intervals {" << std::endl;
+	std::cout << "subgraph cluster_uedges{" << std::endl;
 	std::cout << "node [fillcolor=\"#FFD320\"]" << std::endl;
-	std::set<std::pair<epmem_pedge*, epmem_node_id> > drawn;
-	for (epmem_interval_set::iterator inter_iter = intervals.begin(); inter_iter != intervals.end(); inter_iter++) {
-		epmem_interval* interval = *inter_iter;
-		epmem_pedge* pedge = interval->uedge;
-		epmem_triple triple = pedge->triple;
-		triple.q1 = interval->q1;
-		std::pair<epmem_pedge*, epmem_node_id> pair = std::make_pair(pedge, triple.q1);
-		if (triple.q1 != EPMEM_NODEID_ROOT && !drawn.count(pair)) {
-			drawn.insert(pair);
-			if (!pedge->value_is_id) {
-				std::cout << "\"n" << triple.q1 << "\" [shape=\"rect\"]" << std::endl;
+	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
+		epmem_triple_uedge_map* uedge_cache = &uedge_caches[type];
+		for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->begin(); uedge_iter != uedge_cache->end(); uedge_iter++) {
+			epmem_triple triple = (*uedge_iter).first;
+			if (triple.q1 != EPMEM_NODEID_ROOT) {
+				if (type == EPMEM_TYPE_NODE) {
+					std::cout << "\"n" << triple.q1 << "\" [shape=\"rect\"]" << std::endl;
+				}
+				std::cout << "\"e" << triple.q0 << "\" -> \"" << (type == EPMEM_TYPE_NODE ? "n" : "e") << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
 			}
-			std::cout << "\"e" << triple.q0 << "\" -> \"" << (pedge->value_is_id ? "e" : "n") << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
 		}
 	}
 	std::cout << "}" << std::endl;
-	// pedgeS / LITERAL->UEDGE
+	// PEDGES / LITERAL->PEDGE
 	std::cout << "subgraph cluster_pedges {" << std::endl;
 	std::cout << "node [fillcolor=\"#008000\"]" << std::endl;
 	std::multimap<epmem_node_id, epmem_pedge*> parent_pedge_map;
 	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
-		for (epmem_triple_pedge_map::iterator pedge_iter = pedge_cache[type].begin(); pedge_iter != pedge_cache[type].end(); pedge_iter++) {
+		for (epmem_triple_pedge_map::iterator pedge_iter = pedge_caches[type].begin(); pedge_iter != pedge_caches[type].end(); pedge_iter++) {
 			epmem_triple triple = (*pedge_iter).first;
 			epmem_pedge* pedge = (*pedge_iter).second;
-			if (triple.w != EPMEM_NODEID_BAD && pedge) {
+			if (triple.w != EPMEM_NODEID_BAD) {
 				std::cout << "\"" << pedge << "\" [label=\"" << pedge << "\\n(" << triple.q0 << ", " << triple.w << ", ";
 				if (triple.q1 == EPMEM_NODEID_BAD) {
 					std::cout << "?";
@@ -3191,7 +3193,7 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 				}
 				std::cout << ")\"";
 				if (!pedge->value_is_id) {
-					std::cout << ", [shape=\"rect\"";
+					std::cout << ", shape=\"rect\"";
 				}
 				std::cout << "]" << std::endl;
 				for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
@@ -3203,23 +3205,27 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 		}
 	}
 	std::cout << "}" << std::endl;
-	// pedge->UEDGE / pedge->NODE
-	drawn.clear();
-	for (epmem_interval_set::iterator inter_iter = intervals.begin(); inter_iter != intervals.end(); inter_iter++) {
-		epmem_interval* interval = *inter_iter;
-		epmem_pedge* pedge = interval->uedge;
-		std::pair<epmem_pedge*, epmem_node_id> pair = std::make_pair(pedge, interval->q1);
-		if (pedge->triple.w != EPMEM_NODEID_BAD && !drawn.count(pair)) {
-			drawn.insert(pair);
-			pair = std::make_pair(pedge, pedge->triple.q0);
-			if (!drawn.count(pair)) {
-				drawn.insert(pair);
-				std::cout << "\"" << pedge << "\" -> \"e" << pedge->triple.q0 << "\"" << std::endl;
-			}
-			std::cout << "\"" << pedge << "\" -> \"" << (pedge->value_is_id ? "e" : "n") << interval->q1 << "\" [style=\"dashed\"]" << std::endl;
-			std::pair<std::multimap<epmem_node_id, epmem_pedge*>::iterator, std::multimap<epmem_node_id, epmem_pedge*>::iterator> pedge_iters = parent_pedge_map.equal_range(interval->q1);
-			for (std::multimap<epmem_node_id, epmem_pedge*>::iterator pedge_iter = pedge_iters.first; pedge_iter != pedge_iters.second; pedge_iter++) {
-				std::cout << "\"" << pedge << "\" -> \"" << (*pedge_iter).second << "\"" << std::endl;
+	// PEDGE->PEDGE / PEDGE->NODE
+	std::set<std::pair<epmem_pedge*, epmem_node_id> > drawn;
+	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
+		epmem_triple_uedge_map* uedge_cache = &uedge_caches[type];
+		for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->begin(); uedge_iter != uedge_cache->end(); uedge_iter++) {
+			epmem_triple triple = (*uedge_iter).first;
+			epmem_uedge* uedge = (*uedge_iter).second;
+			if (triple.w != EPMEM_NODEID_BAD) {
+				for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
+					epmem_pedge* pedge = *pedge_iter;
+					std::pair<epmem_pedge*, epmem_node_id> pair = std::make_pair(pedge, triple.q0);
+					if (!drawn.count(pair)) {
+						drawn.insert(pair);
+						std::cout << "\"" << pedge << "\" -> \"e" << triple.q0 << "\"" << std::endl;
+					}
+					std::cout << "\"" << pedge << "\" -> \"" << (pedge->value_is_id ? "e" : "n") << triple.q1 << "\" [style=\"dashed\"]" << std::endl;
+					std::pair<std::multimap<epmem_node_id, epmem_pedge*>::iterator, std::multimap<epmem_node_id, epmem_pedge*>::iterator> pedge_iters = parent_pedge_map.equal_range(triple.q1);
+					for (std::multimap<epmem_node_id, epmem_pedge*>::iterator pedge_iter = pedge_iters.first; pedge_iter != pedge_iters.second; pedge_iter++) {
+						std::cout << "\"" << pedge << "\" -> \"" << (*pedge_iter).second << "\"" << std::endl;
+					}
+				}
 			}
 		}
 	}
@@ -3337,21 +3343,18 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_literal_m
 	return literal;
 }
 
-void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_unique_edge_pq& edge_pq, epmem_sql_deque pedge_sql_pool[], epmem_time_id after, epmem_triple_pedge_map pedge_cache[], epmem_triple_set activated[], agent* my_agent) {
+void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_pedge_pq& pedge_pq, epmem_sql_deque pedge_sql_pool[], epmem_time_id after, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[], epmem_triple_set activated[], agent* my_agent) {
 	// we don't need to keep track of visited literals/nodes because the literals are guaranteed to be acyclic
 	// that is, the expansion to the literal's children will eventually bottom out
 	// select the query
-	epmem_triple triple;
-	triple.q0 = parent;
-	triple.w = literal->w;
-	triple.q1 = literal->q1;
+	epmem_triple triple = {parent, literal->w, literal->q1};
 	int is_edge = literal->value_is_id;
 	if (JUSTIN_DEBUG) {
 		std::cout << "		RECURSING ON " << parent << " " << literal << std::endl;
 	}
 	bool created = false;
-	epmem_triple_pedge_map::iterator pedge_iter = pedge_cache[is_edge].find(triple);
-	if (pedge_iter == pedge_cache[is_edge].end() || (*pedge_iter).second == NULL) {
+	epmem_triple_pedge_map::iterator pedge_iter = pedge_caches[is_edge].find(triple);
+	if (pedge_iter == pedge_caches[is_edge].end() || (*pedge_iter).second == NULL) {
 		// if the unique edge does not exist, create a new unique edge query
 		int has_value = (literal->q1 != EPMEM_NODEID_BAD ? 1 : 0);
 		const char* sql_statement = epmem_find_unique_edge_queries[is_edge][has_value];
@@ -3382,8 +3385,8 @@ void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_u
 			child_pedge->literals.insert(literal);
 			child_pedge->time = child_pedge->sql->column_int(2);
 			child_pedge->pool = sql_pool;
-			edge_pq.push(child_pedge);
-			pedge_cache[is_edge][triple] = child_pedge;
+			pedge_pq.push(child_pedge);
+			pedge_caches[is_edge][triple] = child_pedge;
 			created = true;
 		} else {
 			pedge_sql->reinitialize();
@@ -3395,33 +3398,25 @@ void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_u
 		if (!child_pedge->literals.count(literal)) {
 			child_pedge->literals.insert(literal);
 			// if the literal is an edge with no specified value, add the literal to all potential pedges
-			if (literal->q1 == EPMEM_NODEID_BAD) {
-				for (pedge_iter++; pedge_iter != pedge_cache[is_edge].end(); pedge_iter++) {
-					epmem_triple child_edge = (*pedge_iter).first;
+			if (!literal->is_leaf && literal->q1 == EPMEM_NODEID_BAD) {
+				epmem_triple_uedge_map* uedge_cache = &uedge_caches[is_edge];
+				for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->lower_bound(triple); uedge_iter != uedge_cache->end(); uedge_iter++) {
+					epmem_triple child_triple = (*pedge_iter).first;
 					// make sure we're still looking at the right edge(s)
-					if (child_edge.q0 != triple.q0 || child_edge.w != triple.w) {
+					if (child_triple.q0 != triple.q0 || child_triple.w != triple.w) {
 						break;
 					}
-					child_pedge = (*pedge_iter).second;
-					if (child_edge.q1 == EPMEM_NODEID_BAD || (child_pedge && !child_pedge->value_is_id)) {
+					epmem_uedge* child_uedge = (*uedge_iter).second;
+					if (child_triple.q1 == EPMEM_NODEID_BAD || !child_uedge->value_is_id) {
 						continue;
 					}
-					// if the literal is a leaf, add the literal to the pedge and continue
-					// otherwise, we need to recurse
-					if (literal->is_leaf) {
-						child_pedge->literals.insert(literal);
-					} else {
-						for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-							epmem_register_pedges(child_edge.q1, *child_iter, edge_pq, pedge_sql_pool, after, pedge_cache, activated, my_agent);
-						}
+					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+						epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
 					}
 				}
 			}
 			created = true;
 		}
-	}
-	if (!created) {
-		// FIXME retractions from lack of edges
 	}
 }
 
@@ -3677,8 +3672,19 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 	// variables needed for cleanup
 	epmem_wme_literal_map sym_cache;
-	epmem_triple_pedge_map pedge_cache[2];
-	epmem_interval_set interval_cleanup;
+	epmem_triple_pedge_map pedge_caches[2];
+#ifdef USE_MEM_POOL_ALLOCATORS
+	epmem_triple_uedge_map uedge_caches[2] = {
+		epmem_triple_uedge_map(std::less<epmem_triple>(), soar_module::soar_memory_pool_allocator<std::pair<const epmem_triple, epmem_uedge*> >(my_agent)),
+		epmem_triple_uedge_map(std::less<epmem_triple>(), soar_module::soar_memory_pool_allocator<std::pair<const epmem_triple, epmem_uedge*> >(my_agent))
+	};
+	epmem_interval_set interval_cleanup = epmem_interval_set(std::less<epmem_interval*>(), soar_module::soar_memory_pool_allocator<epmem_interval*>(my_agent));
+#else
+	epmem_triple_uedge_map uedge_caches[2] = {epmem_triple_uedge_map(), epmem_triple_uedge_map()};
+	epmem_interval_set interval_cleanup = epmem_interval_set();
+#endif
+
+	// additional indices
 
 	// variables needed for building the DNF
 	epmem_literal* root_literal;
@@ -3686,7 +3692,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_literal_set leaf_literals;
 
 	// priority queues for interval walk
-	epmem_unique_edge_pq edge_pq;
+	epmem_pedge_pq pedge_pq;
 	epmem_interval_pq interval_pq;
 
 	// variables needed to track satisfiability
@@ -3810,11 +3816,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	{
 		// insert dummy unique edge and interval end point queries for DNF root
 		// we make an SQL statement just so we don't have to do anything special at cleanup
+		epmem_triple triple = {EPMEM_NODEID_BAD, EPMEM_NODEID_BAD, EPMEM_NODEID_ROOT};
 		epmem_pedge* root_pedge;
 		allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &root_pedge);
-		root_pedge->triple.q0 = EPMEM_NODEID_BAD;
-		root_pedge->triple.w = EPMEM_NODEID_BAD;
-		root_pedge->triple.q1 = EPMEM_NODEID_ROOT;
+		root_pedge->triple = triple;
 		root_pedge->value_is_id = EPMEM_TYPE_EDGE;
 		new(&(root_pedge->literals)) epmem_literal_set();
 		root_pedge->literals.insert(root_literal);
@@ -3825,13 +3830,21 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_pedge->sql->execute();
 		root_pedge->time = LLONG_MAX;
 		root_pedge->pool = NULL;
-		edge_pq.push(root_pedge);
-		pedge_cache[EPMEM_TYPE_EDGE][root_pedge->triple] = root_pedge;
+		pedge_pq.push(root_pedge);
+		pedge_caches[EPMEM_TYPE_EDGE][triple] = root_pedge;
+
+		epmem_uedge* root_uedge;
+		allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
+		root_uedge->triple = triple;
+		new(&(root_uedge->pedges)) epmem_pedge_set();
+		root_uedge->intervals = 1;
+		root_uedge->activated = false;
+		uedge_caches[EPMEM_TYPE_EDGE][triple] = root_uedge;
+
 		epmem_interval* root_interval;
 		allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &root_interval);
-		root_interval->q1 = EPMEM_NODEID_ROOT;
+		root_interval->uedge = root_uedge;
 		root_interval->is_end_point = true;
-		root_interval->uedge = root_pedge;
 		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_interval->sql);
 		new(root_interval->sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
 		root_interval->sql->prepare();
@@ -3844,49 +3857,61 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	}
 
 	if (JUSTIN_DEBUG) {
-		epmem_print_state(sym_cache, pedge_cache, interval_cleanup);
+		epmem_print_state(sym_cache, pedge_caches, uedge_caches);
 	}
 
 	// main loop of interval walk
 	my_agent->epmem_timers->query_walk->start();
-	while (edge_pq.size() && current_episode > after) {
+	while (pedge_pq.size() && current_episode > after) {
 		epmem_time_id next_edge;
 		epmem_time_id next_interval;
 
 		bool changed_score = false;
 
 		my_agent->epmem_timers->query_walk_edge->start();
-		next_edge = edge_pq.top()->time;
+		next_edge = pedge_pq.top()->time;
 
 		// process all edges which were last used at this time point
-		while (edge_pq.size() && (edge_pq.top()->time == next_edge || edge_pq.top()->time >= current_episode)) {
-			epmem_pedge* pedge = edge_pq.top();
-			edge_pq.pop();
-			epmem_node_id q1 = pedge->sql->column_int(1);
+		while (pedge_pq.size() && (pedge_pq.top()->time == next_edge || pedge_pq.top()->time >= current_episode)) {
+			epmem_pedge* pedge = pedge_pq.top();
+			pedge_pq.pop();
+			epmem_triple triple = pedge->triple;
+			triple.q1 = pedge->sql->column_int(1);
 
 			if (JUSTIN_DEBUG) {
-				std::cout << "	EDGE " << pedge->triple.q0 << "-" << pedge->triple.w << "-" << q1 << std::endl;
+				std::cout << "	EDGE " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
 			}
 
-			// create queries for the unique edge children of this unique edge
+			// create queries for the unique edge children of this partial edge
 			if (pedge->value_is_id) {
 				for (epmem_literal_set::iterator literal_iter = pedge->literals.begin(); literal_iter != pedge->literals.end(); literal_iter++) {
 					epmem_literal* literal = *literal_iter;
 					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						epmem_register_pedges(q1, *child_iter, edge_pq, pedge_sql_pool, after, pedge_cache, activated, my_agent);
+						epmem_register_pedges(triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
 					}
 				}
 			}
 
-			// create interval queries for this unique edge
-			{
+			// look for uedge with triple; if none exist, create one
+			// create interval queries for this partial edge
+			epmem_triple_uedge_map* uedge_cache = &uedge_caches[pedge->value_is_id];
+			epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->find(triple);
+			if (uedge_iter == uedge_cache->end()) {
+				// create a uedge for this
+				epmem_uedge* uedge;
+				allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &uedge);
+				uedge->triple = triple;
+				uedge->value_is_id = pedge->value_is_id;
+				new(&(uedge->pedges)) epmem_pedge_set();
+				uedge->intervals = 0;
+				uedge->activated = false;
 				bool created = false;
 				int64_t edge_id = pedge->sql->column_int(0);
 				epmem_time_id promo_time = EPMEM_MEMID_NONE;
-				bool is_lti = (pedge->value_is_id && pedge->triple.q1 != EPMEM_NODEID_BAD && pedge->triple.q1 != EPMEM_NODEID_ROOT);
+				bool is_lti = (pedge->value_is_id && triple.q1 != EPMEM_NODEID_BAD && triple.q1 != EPMEM_NODEID_ROOT);
 				if (is_lti) {
-					// find the promotion time of the LTI and
-					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, q1);
+					// find the promotion time of the LTI
+					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, triple.q1);
 					my_agent->epmem_stmts_graph->find_lti_current_time->execute();
 					promo_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int(0);
 					my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
@@ -3957,15 +3982,13 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							epmem_interval* interval;
 							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &interval);
 							interval->is_end_point = point_type;
-							interval->uedge = pedge;
-							interval->q1 = q1;
+							interval->uedge = uedge;
 							interval->time = interval_sql->column_int(0);
 							interval->sql = interval_sql;
 							interval->pool = sql_pool;
 							interval_pq.push(interval);
-							epmem_triple triple = pedge->triple;
-							triple.q1 = q1;
 							interval_cleanup.insert(interval);
+							uedge->intervals++;
 							created = true;
 						} else {
 							interval_sql->reinitialize();
@@ -3978,37 +4001,46 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						// insert a dummy promo time start for LTIs
 						epmem_interval* start_interval;
 						allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &start_interval);
-						start_interval->q1 = q1;
-						start_interval->is_end_point = 0;
-						start_interval->uedge = pedge;
+						start_interval->uedge = uedge;
+						start_interval->is_end_point = EPMEM_RANGE_START;
 						start_interval->time = promo_time - 1;
 						start_interval->sql = NULL;
 						start_interval->pool = NULL;
 						interval_pq.push(start_interval);
 						interval_cleanup.insert(start_interval);
 					}
-					epmem_triple triple = pedge->triple;
-					triple.q1 = q1;
-					epmem_triple_pedge_map::iterator pedge_iter = pedge_cache[pedge->value_is_id].find(triple);
-					if (pedge_iter == pedge_cache[pedge->value_is_id].end()) {
-						pedge_cache[pedge->value_is_id][triple] = NULL;
+					uedge->pedges.insert(pedge);
+					uedge_cache->insert(std::make_pair(triple, uedge));
+				} else {
+					uedge->pedges.~epmem_pedge_set();
+					free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
+				}
+			} else {
+				(*uedge_iter).second->pedges.insert(pedge);
+				if ((*uedge_iter).second->activated) {
+					for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
+						changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
 					}
 				}
 			}
 
-			// put the unique edge query back into the queue if there's more
+			// put the partial edge query back into the queue if there's more
 			// otherwise, reinitialize the query and put it in a pool
 			if (pedge->sql && pedge->sql->execute() == soar_module::row) {
 				pedge->time = pedge->sql->column_int(2);
-				edge_pq.push(pedge);
+				pedge_pq.push(pedge);
 			} else if (pedge->sql && pedge->pool) {
 				pedge->sql->reinitialize();
 				pedge->pool->push_front(pedge->sql);
 				pedge->sql = NULL;
 			}
 		}
-		next_edge = (edge_pq.empty() ? after : edge_pq.top()->time);
+		next_edge = (pedge_pq.empty() ? after : pedge_pq.top()->time);
 		my_agent->epmem_timers->query_walk_edge->stop();
+
+		if (JUSTIN_DEBUG) {
+			epmem_print_state(sym_cache, pedge_caches, uedge_caches);
+		}
 
 		// process all intervals before the next edge arrives
 		my_agent->epmem_timers->query_walk_interval->start();
@@ -4020,32 +4052,28 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			while (interval_pq.size() && interval_pq.top()->time >= current_episode) {
 				epmem_interval* interval = interval_pq.top();
 				interval_pq.pop();
-				epmem_pedge* pedge = interval->uedge;
-				epmem_triple triple;
-				triple.q0 = pedge->triple.q0;
-				triple.w = pedge->triple.w;
-				triple.q1 = interval->q1;
-				int is_edge = pedge->value_is_id;
-
+				epmem_uedge* uedge = interval->uedge;
+				epmem_triple triple = uedge->triple;
 				if (JUSTIN_DEBUG) {
 					std::cout << "	INTERVAL (" << (interval->is_end_point ? "end" : "start") << "): " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
 				}
-
-				epmem_node_deque queue;
-#ifdef USE_MEM_POOL_ALLOCATORS
-				epmem_node_set visited = epmem_node_set(std::less<epmem_node_id>(), soar_module::soar_memory_pool_allocator<epmem_node_id>(my_agent));
-#else
-				epmem_node_set visited;
-#endif
 				if (interval->is_end_point) {
-					activated[is_edge].insert(triple);
-					for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-						changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+					activated[uedge->value_is_id].insert(triple);
+					uedge->activated = true;
+					for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
+						epmem_pedge* pedge = *pedge_iter;
+						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
+							changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+						}
 					}
 				} else {
-					activated[is_edge].erase(triple);
-					for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-						changed_score |= epmem_unsatisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count);
+					activated[uedge->value_is_id].erase(triple);
+					uedge->activated = false;
+					for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
+						epmem_pedge* pedge = *pedge_iter;
+						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
+							changed_score |= epmem_unsatisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count);
+						}
 					}
 				}
 				// put the interval query back into the queue if there's more
@@ -4057,6 +4085,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					interval->sql->reinitialize();
 					interval->pool->push_front(interval->sql);
 					interval->sql = NULL;
+					uedge->intervals--;
 				}
 			}
 			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
@@ -4103,7 +4132,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						epmem_node_symbol_map bound_nodes[2];
 						if (JUSTIN_DEBUG) {
 							std::cout << "	GRAPH MATCH" << std::endl;
-							epmem_print_state(sym_cache, pedge_cache, interval_cleanup);
+							epmem_print_state(sym_cache, pedge_caches, uedge_caches);
 						}
 						my_agent->epmem_timers->query_graph_match->start();
 						graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent, 2);
@@ -4218,16 +4247,19 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		free_with_pool(&(my_agent->epmem_interval_pool), interval);
 	}
 	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
-		for (epmem_triple_pedge_map::iterator iter = pedge_cache[type].begin(); iter != pedge_cache[type].end(); iter++) {
+		for (epmem_triple_pedge_map::iterator iter = pedge_caches[type].begin(); iter != pedge_caches[type].end(); iter++) {
 			epmem_pedge* pedge = (*iter).second;
-			if (pedge) {
-				if (pedge->sql) {
-					pedge->sql->~sqlite_statement();
-					free_with_pool(&(my_agent->epmem_sql_pool), pedge->sql);
-				}
-				pedge->literals.~epmem_literal_set();
-				free_with_pool(&(my_agent->epmem_pedge_pool), pedge);
+			if (pedge->sql) {
+				pedge->sql->~sqlite_statement();
+				free_with_pool(&(my_agent->epmem_sql_pool), pedge->sql);
 			}
+			pedge->literals.~epmem_literal_set();
+			free_with_pool(&(my_agent->epmem_pedge_pool), pedge);
+		}
+		for (epmem_triple_uedge_map::iterator iter = uedge_caches[type].begin(); iter != uedge_caches[type].end(); iter++) {
+			epmem_uedge* uedge = (*iter).second;
+			uedge->pedges.~epmem_pedge_set();
+			free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
 		}
 	}
 	for (epmem_wme_literal_map::iterator iter = sym_cache.begin(); iter != sym_cache.end(); iter++) {
