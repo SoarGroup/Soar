@@ -3157,6 +3157,10 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 				std::cout << literal->w;
 			}
 			std::cout << "\\n" << literal << "\"]" << std::endl;
+			for (epmem_node_pair_set::iterator match_iter = literal->matches.begin(); match_iter != literal->matches.end(); match_iter++) {
+				std::cout << "// " << (*match_iter).first;
+				std::cout << " " << (*match_iter).second << std::endl;
+			}
 		}
 	}
 	std::cout << "}" << std::endl;
@@ -3401,17 +3405,16 @@ void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			if (!literal->is_leaf && literal->q1 == EPMEM_NODEID_BAD) {
 				epmem_triple_uedge_map* uedge_cache = &uedge_caches[is_edge];
 				for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->lower_bound(triple); uedge_iter != uedge_cache->end(); uedge_iter++) {
-					epmem_triple child_triple = (*pedge_iter).first;
+					epmem_triple child_triple = (*uedge_iter).first;
 					// make sure we're still looking at the right edge(s)
 					if (child_triple.q0 != triple.q0 || child_triple.w != triple.w) {
 						break;
 					}
 					epmem_uedge* child_uedge = (*uedge_iter).second;
-					if (child_triple.q1 == EPMEM_NODEID_BAD || !child_uedge->value_is_id) {
-						continue;
-					}
-					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
+					if (child_triple.q1 != EPMEM_NODEID_BAD && child_uedge->value_is_id) {
+						for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+							epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
+						}
 					}
 				}
 			}
