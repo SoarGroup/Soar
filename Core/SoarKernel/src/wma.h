@@ -211,7 +211,7 @@ typedef std::map< Symbol*, uint64_t, std::less< Symbol* >, soar_module::soar_mem
 #else
 typedef std::set< wma_decay_element* > wma_decay_set;
 typedef std::map< wma_d_cycle, wma_decay_set* > wma_forget_p_queue;
-typedef std::set< wma_d_cycle > wma_decay_cyle_set;
+typedef std::set< wma_d_cycle > wma_decay_cycle_set;
 
 typedef std::set< wme* > wma_pooled_wme_set;
 typedef std::map< Symbol*, uint64_t > wma_sym_reference_map;
