@@ -676,45 +676,45 @@ extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::
 //////////////////////////////////////////////////////////
 
 // defined below
-typedef struct epmem_sql_edge_struct epmem_sql_edge;
-typedef struct epmem_unique_edge_query_struct epmem_unique_edge_query;
-typedef struct epmem_interval_query_struct epmem_interval_query;
-typedef struct epmem_dnf_literal_struct epmem_dnf_literal;
+typedef struct epmem_triple_struct epmem_triple;
+typedef struct epmem_pedge_struct epmem_pedge;
+typedef struct epmem_interval_struct epmem_interval;
+typedef struct epmem_literal_struct epmem_literal;
 
 // pairs
 typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
 typedef struct std::pair<Symbol*, epmem_node_id> epmem_symbol_node_pair;
 
 // collection classes
-typedef std::deque<epmem_dnf_literal*> epmem_literal_deque;
-typedef std::list<epmem_node_id> epmem_node_list;
+typedef std::deque<epmem_literal*> epmem_literal_deque;
+typedef std::deque<epmem_node_id> epmem_node_deque;
+typedef std::deque<soar_module::sqlite_statement*> epmem_sql_deque;
 typedef std::map<Symbol*, int> epmem_symbol_int_map;
-typedef std::map<epmem_dnf_literal*, epmem_node_pair> epmem_literal_node_pair_map;
+typedef std::map<epmem_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
-typedef std::map<epmem_sql_edge, epmem_unique_edge_query*> epmem_edge_sql_map;
 typedef std::map<epmem_symbol_node_pair, int> epmem_match_int_map;
-typedef std::map<wme*, epmem_dnf_literal*> epmem_wme_literal_map;
-typedef std::set<epmem_dnf_literal*> epmem_literal_set;
-typedef std::set<epmem_interval_query*> epmem_interval_set;
-typedef std::set<epmem_unique_edge_query*> epmem_uedge_set;
-typedef std::list<soar_module::sqlite_statement*> epmem_sql_list;
+typedef std::map<epmem_triple, epmem_pedge*> epmem_triple_pedge_map;
+typedef std::map<wme*, epmem_literal*> epmem_wme_literal_map;
+typedef std::set<epmem_interval*> epmem_interval_set;
+typedef std::set<epmem_literal*> epmem_literal_set;
+typedef std::set<epmem_pedge*> epmem_pedge_set;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::set<epmem_node_id, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<epmem_node_id> > epmem_node_set;
 typedef std::set<epmem_node_pair, std::less<epmem_node_pair>, soar_module::soar_memory_pool_allocator<epmem_node_pair> > epmem_node_pair_set;
-typedef std::set<epmem_sql_edge, std::less<epmem_sql_edge>, soar_module::soar_memory_pool_allocator<epmem_sql_edge> > epmem_sql_edge_set;
+typedef std::set<epmem_triple, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<epmem_triple> > epmem_triple_set;
 #else
 typedef std::set<epmem_node_id> epmem_node_set;
 typedef std::set<epmem_node_pair> epmem_node_pair_set;
-typedef std::set<epmem_sql_edge> epmem_sql_edge_set;
+typedef std::set<epmem_triple> epmem_triple_set;
 #endif
 
 // structs
-struct epmem_sql_edge_struct {
+struct epmem_triple_struct {
 	epmem_node_id q0;
 	epmem_node_id w;
 	epmem_node_id q1;
-	bool operator<(const epmem_sql_edge& other) const {
+	bool operator<(const epmem_triple& other) const {
 		if (q0 != other.q0) {
 			return (q0 < other.q0);
 		} else if (w != other.w) {
@@ -725,13 +725,13 @@ struct epmem_sql_edge_struct {
 	}
 };
 
-struct epmem_dnf_literal_struct {
+struct epmem_literal_struct {
 	Symbol* id_sym;
 	Symbol* value_sym;
 	int is_neg_q;
-	int is_edge_not_node;
+	int value_is_id;
 	bool is_leaf;
-	epmem_node_id attr;
+	epmem_node_id w;
 	epmem_node_id q1;
 	double weight;
 	bool satisfied;
@@ -740,27 +740,27 @@ struct epmem_dnf_literal_struct {
 	epmem_node_pair_set matches;
 };
 
-struct epmem_unique_edge_query_struct {
-	epmem_sql_edge edge_info;
-	int is_edge_not_node;
+struct epmem_pedge_struct {
+	epmem_triple triple;
+	int value_is_id;
 	epmem_literal_set literals;
-	soar_module::sqlite_statement *sql;
+	soar_module::sqlite_statement* sql;
 	epmem_time_id time;
-	epmem_sql_list* pool;
+	epmem_sql_deque* pool;
 };
 
-struct epmem_interval_query_struct {
+struct epmem_interval_struct {
 	epmem_node_id q1;
 	int is_end_point;
-	epmem_unique_edge_query* uedge;
-	soar_module::sqlite_statement *sql;
+	epmem_pedge* uedge;
+	soar_module::sqlite_statement* sql;
 	epmem_time_id time;
-	epmem_sql_list* pool;
+	epmem_sql_deque* pool;
 };
 
 // priority queues and comparison functions
-struct epmem_unique_edge_query_comparator {
-	bool operator()(const epmem_unique_edge_query *a, const epmem_unique_edge_query *b) const {
+struct epmem_pedge_comparator {
+	bool operator()(const epmem_pedge *a, const epmem_pedge *b) const {
 		if (a->time != b->time) {
 			return (a->time < b->time);
 		} else {
@@ -768,9 +768,9 @@ struct epmem_unique_edge_query_comparator {
 		}
 	}
 };
-typedef std::priority_queue<epmem_unique_edge_query*, std::vector<epmem_unique_edge_query*>, epmem_unique_edge_query_comparator> epmem_unique_edge_pq;
-struct epmem_interval_query_comparator {
-	bool operator()(const epmem_interval_query *a, const epmem_interval_query *b) const {
+typedef std::priority_queue<epmem_pedge*, std::vector<epmem_pedge*>, epmem_pedge_comparator> epmem_unique_edge_pq;
+struct epmem_interval_comparator {
+	bool operator()(const epmem_interval *a, const epmem_interval *b) const {
 		if (a->time != b->time) {
 			return (a->time < b->time);
 		} else {
@@ -779,6 +779,6 @@ struct epmem_interval_query_comparator {
 		}
 	}
 };
-typedef std::priority_queue<epmem_interval_query*, std::vector<epmem_interval_query*>, epmem_interval_query_comparator> epmem_interval_pq;
+typedef std::priority_queue<epmem_interval*, std::vector<epmem_interval*>, epmem_interval_comparator> epmem_interval_pq;
 
 #endif

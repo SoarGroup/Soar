@@ -227,7 +227,7 @@ typedef struct agent_struct {
   memory_pool		  smem_info_pool;
 
   memory_pool		  epmem_literal_pool;
-  memory_pool		  epmem_uedge_pool;
+  memory_pool		  epmem_pedge_pool;
   memory_pool		  epmem_interval_pool;
   memory_pool		  epmem_sql_pool;
   
