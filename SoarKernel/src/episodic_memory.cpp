@@ -3059,7 +3059,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG true
+#define JUSTIN_DEBUG false
 
 const char* epmem_dummy = "SELECT ? as start";
 
@@ -3458,15 +3458,20 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 				// recurse over child literals
 				for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
 					epmem_literal* child_lit = *child_iter;
-					epmem_triple temp_triple = {child, child_lit->w+1, EPMEM_NODEID_BAD};
-					epmem_triple_set::iterator end = activated[child_lit->value_is_id].lower_bound(temp_triple);
- 					temp_triple.w = child_lit->w;
-					for (epmem_triple_set::iterator edge_iter = activated[child_lit->value_is_id].lower_bound(temp_triple); edge_iter != end; edge_iter++) {
-						epmem_triple edge = *edge_iter;
-						if (edge.q1 == EPMEM_NODEID_BAD) {
-							continue;
+					epmem_triple_set* activated_set = &activated[child_lit->value_is_id];
+					epmem_triple child_triple = {child, child_lit->w, child_lit->q1};
+					if (child_lit->q1 == EPMEM_NODEID_BAD) {
+						epmem_triple_set::iterator edge_iter = activated_set->lower_bound(child_triple);
+						while (edge_iter != activated_set->end()) {
+							epmem_triple edge = *edge_iter;
+							if (edge.q0 != child || edge.w != child_lit->w) {
+								break;
+							}
+							changed_score |= epmem_satisfy_literal(child_lit, edge.q0, edge.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+							edge_iter++;
 						}
-						changed_score |= epmem_satisfy_literal(child_lit, edge.q0, edge.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+					} else if (activated_set->count(child_triple)) {
+						changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
 					}
 				}
 			} else {
@@ -3912,7 +3917,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				bool created = false;
 				int64_t edge_id = pedge->sql->column_int(0);
 				epmem_time_id promo_time = EPMEM_MEMID_NONE;
-				bool is_lti = (pedge->value_is_id && triple.q1 != EPMEM_NODEID_BAD && triple.q1 != EPMEM_NODEID_ROOT);
+				bool is_lti = (pedge->value_is_id && pedge->triple.q1 != EPMEM_NODEID_BAD && pedge->triple.q1 != EPMEM_NODEID_ROOT);
 				if (is_lti) {
 					// find the promotion time of the LTI
 					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, triple.q1);
