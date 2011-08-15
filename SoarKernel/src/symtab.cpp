@@ -736,10 +736,7 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_sym_before = make_sym_constant( thisAgent, "before" );
   thisAgent->epmem_sym_after = make_sym_constant( thisAgent, "after" );
   thisAgent->epmem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
-  thisAgent->epmem_sym_lti = make_sym_constant( thisAgent, "lti" );
-  thisAgent->epmem_sym_wme = make_sym_constant( thisAgent, "wme" );
   thisAgent->epmem_sym_current = make_sym_constant( thisAgent, "current" );
-  thisAgent->epmem_sym_store = make_sym_constant( thisAgent, "store" );
   thisAgent->epmem_sym_yes = make_sym_constant( thisAgent, "yes" );
   thisAgent->epmem_sym_no = make_sym_constant( thisAgent, "no" );
 
@@ -843,10 +840,7 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_sym_before ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_after ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_prohibit ) );
-  release_helper( thisAgent, &( thisAgent->epmem_sym_lti ) );
-  release_helper( thisAgent, &( thisAgent->epmem_sym_wme ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_current ) );
-  release_helper( thisAgent, &( thisAgent->epmem_sym_store ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_yes ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_no ) );
 

@@ -395,9 +395,6 @@ typedef std::vector<epmem_time_id> epmem_time_list;
 // represents a list of wmes
 typedef std::list<wme *> epmem_wme_list;
 
-// represents a list of query LTI params
-typedef std::map<Symbol *, bool> epmem_lti_map;
-
 // keeping state for multiple RIT's
 typedef struct epmem_rit_state_param_struct
 {
@@ -698,6 +695,7 @@ typedef std::map<epmem_triple, epmem_pedge*> epmem_triple_pedge_map;
 typedef std::map<wme*, epmem_literal*> epmem_wme_literal_map;
 typedef std::set<epmem_literal*> epmem_literal_set;
 typedef std::set<epmem_pedge*> epmem_pedge_set;
+typedef std::set<Symbol*> epmem_symbol_set;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::map<epmem_triple, epmem_uedge*, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<std::pair<const epmem_triple, epmem_uedge*> > > epmem_triple_uedge_map;
@@ -735,6 +733,7 @@ struct epmem_literal_struct {
 	int is_neg_q;
 	int value_is_id;
 	bool is_leaf;
+	bool is_current;
 	epmem_node_id w;
 	epmem_node_id q1;
 	double weight;

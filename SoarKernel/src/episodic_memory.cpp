@@ -3240,7 +3240,7 @@ bool epmem_gm_mcv_comparator(const epmem_literal* a, const epmem_literal* b) {
 	return (a->matches.size() < b->matches.size());
 }
 
-epmem_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_literal_map& sym_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_incoming_count, std::set<Symbol*>& visiting, agent* my_agent, epmem_literal_deque& gm_ordering, soar_module::wme_set& cue_wmes) {
+epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_incoming_count, epmem_literal_deque& gm_ordering, epmem_symbol_set& currents, int query_type, std::set<Symbol*>& visiting, soar_module::wme_set& cue_wmes, agent* my_agent) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
 	if (visiting.count(cue_wme->value)) {
@@ -3298,7 +3298,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_literal_m
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				epmem_literal* child = epmem_build_dnf(*wme_iter, query_type, sym_cache, leaf_literals, symbol_incoming_count, visiting, my_agent, gm_ordering, cue_wmes);
+				epmem_literal* child = epmem_build_dnf(*wme_iter, sym_cache, leaf_literals, symbol_incoming_count, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
 				if (child) {
 					child->parents.insert(literal);
 					literal->children.insert(child);
@@ -3331,9 +3331,10 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, int query_type, epmem_wme_literal_m
 		gm_ordering.push_front(literal);
 	}
 
-	literal->w = epmem_temporal_hash(my_agent, cue_wme->attr);
 	literal->id_sym = cue_wme->id;
 	literal->value_sym = cue_wme->value;
+	literal->is_current = (currents.count(value) > 0);
+	literal->w = epmem_temporal_hash(my_agent, cue_wme->attr);
 	literal->is_neg_q = query_type;
 	literal->weight = (literal->is_neg_q ? -1 : 1) * (my_agent->epmem_params->balance->get_value() >= 1.0 - 1.0e-8 ? 1.0 : wma_get_wme_activation(my_agent, cue_wme, true));
 	literal->satisfied = false;
@@ -3650,7 +3651,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 	return false;
 }
 
-void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_lti_map& /*ltis*/, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes) {
+void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_symbol_set& currents, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes) {
 	// a query must contain a positive cue
 	if (pos_query == NULL) {
 		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
@@ -3746,6 +3747,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_literal->is_neg_q = EPMEM_NODE_POS;
 		root_literal->value_is_id = EPMEM_TYPE_EDGE;
 		root_literal->is_leaf = false;
+		root_literal->is_current = false;
 		root_literal->w = EPMEM_NODEID_BAD;
 		root_literal->q1 = EPMEM_NODEID_ROOT;
 		root_literal->weight = 0.0;
@@ -3780,7 +3782,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			while (query_wmes->size()) {
 				wme* first_level = query_wmes->front();
 				query_wmes->pop_front();
-				epmem_literal* root = epmem_build_dnf(first_level, query_type, sym_cache, leaf_literals, symbol_incoming_count, visiting, my_agent, gm_ordering, cue_wmes);
+				epmem_literal* root = epmem_build_dnf(first_level, sym_cache, leaf_literals, symbol_incoming_count, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
 				if (root) {
 					// force all first level literals to have the same id symbol
 					root->id_sym = pos_query;
@@ -3967,6 +3969,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								interval_sql->prepare();
 							}
 						} else {
+							// FIXME need to do special things for should be current WMEs
 							sql_pool = &interval_sql_pool[pedge->value_is_id][point_type][interval_type];
 							if (sql_pool->size()) {
 								interval_sql = sql_pool->front();
@@ -4915,7 +4918,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 	epmem_time_list prohibit;
 	epmem_time_id before, after;
 	Symbol *store;
-	epmem_lti_map ltis;
+	epmem_symbol_set currents;
 	bool good_cue;
 	int path;
 
@@ -5133,104 +5136,14 @@ void epmem_respond_to_cmd( agent *my_agent )
 							good_cue = false;
 						}
 					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_store )
+					else if ( (*w_p)->attr == my_agent->epmem_sym_current )
 					{
-						// error checking; command is only valid if the value is an LTI
-						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( (*w_p)->value->id.smem_lti ) &&
-							 ( path == 0 ) )
-						{
-							store = (*w_p)->value;
-							path = 4;
-						}
-					else
-					{
-						good_cue = false;
-					}
-				}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_lti )
-					{
-						// error checking; make sure the value is an identifier (since there's substructure
+						// make sure the value is an identifier
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 							 ( ( path == 0 ) || ( path == 3 ) ) )
 						{
-							// prevent infinite loops
-							tc_number tc = get_new_tc_number( my_agent );
-
-							// flags
-							Symbol * lti = NULL;
-							bool current = true;
-
-							epmem_wme_list::iterator lti_p;
-							epmem_wme_list* lti_wmes = epmem_get_augs_of_id( (*w_p)->value, tc );
-
-							// error check one layer deeper
-							// if the attribute is wme, check value is an identifier
-							// if the attribute is current, check value is a symbol and is either yes or no
-							// anything outside of these cases is a bad command
-							if ( lti_wmes && ( lti_wmes->size() == 1 || lti_wmes->size() == 2 ) )
-							{
-								for ( lti_p=lti_wmes->begin(); lti_p!=lti_wmes->end(); lti_p++)
-								{
-									if ( (*lti_p)->attr == my_agent->epmem_sym_wme )
-									{
-										if ( (*lti_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-										{
-											lti = (*lti_p)->value;
-										}
-										else
-										{
-											good_cue = false;
-										}
-
-									}
-									else if ( (*lti_p)->attr == my_agent->epmem_sym_current )
-									{
-										if ( (*lti_p)->value->sc.common_symbol_info.symbol_type == SYM_CONSTANT_SYMBOL_TYPE )
-										{
-											if ( (*lti_p)->value == my_agent->epmem_sym_no )
-											{
-												current = false;
-											}
-											else if ( (*lti_p)->value == my_agent->epmem_sym_yes )
-											{
-												current = true;
-											}
-											else
-											{
-												good_cue = false;
-											}
-										}
-										else
-										{
-											good_cue = false;
-										}
-									}
-									else
-									{
-										good_cue = false;
-									}
-								}
-							}
-							else
-							{
-								good_cue = false;
-							}
-
-							// check than an LTI has been specified and has not already been specified
-							if ( !lti || ltis.count(lti) > 0 )
-							{
-								good_cue = false;
-							}
-
-							// if the LTI is specified
-							if ( good_cue )
-							{
-								ltis[lti] = current;
-								path = 3;
-							}
-
-							delete lti_wmes;
+							currents.insert((*w_p)->value);
+							path = 3;
 						}
 						else
 						{
@@ -5241,7 +5154,6 @@ void epmem_respond_to_cmd( agent *my_agent )
 					{
 						good_cue = false;
 					}
-
 				}
 			}
 
@@ -5299,7 +5211,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 				// query
 				else if ( path == 3 )
 				{
-					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, ltis, cue_wmes, meta_wmes, retrieval_wmes );
+					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, currents, cue_wmes, meta_wmes, retrieval_wmes );
 
 					// add one to the cbr stat
 					my_agent->epmem_stats->cbr->set_value( my_agent->epmem_stats->cbr->get_value() + 1 );
