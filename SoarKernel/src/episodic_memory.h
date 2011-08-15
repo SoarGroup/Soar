@@ -775,7 +775,7 @@ struct epmem_pedge_comparator {
 		if (a->time != b->time) {
 			return (a->time < b->time);
 		} else {
-			return false;
+			return (a < b);
 		}
 	}
 };
@@ -784,6 +784,8 @@ struct epmem_interval_comparator {
 	bool operator()(const epmem_interval *a, const epmem_interval *b) const {
 		if (a->time != b->time) {
 			return (a->time < b->time);
+		} else if (a->is_end_point == b->is_end_point) {
+			return (a < b);
 		} else {
 			// arbitrarily put starts before ends
 			return (a->is_end_point == EPMEM_RANGE_START);
