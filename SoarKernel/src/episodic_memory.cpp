@@ -761,7 +761,7 @@ epmem_wme_list *epmem_get_augs_of_id( Symbol * id, tc_number tc )
 
 	// augs only exist for identifiers
 	if ( ( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-		 ( id->id.tc_num != tc ) )
+			( id->id.tc_num != tc ) )
 	{
 		id->id.tc_num = tc;
 
@@ -839,8 +839,8 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 			instantiation *next_justification = NIL;
 
 			for ( instantiation *my_justification=my_justification_list;
-				  my_justification!=NIL;
-				  my_justification=next_justification )
+					my_justification!=NIL;
+					my_justification=next_justification )
 			{
 				next_justification = my_justification->next;
 
@@ -943,12 +943,12 @@ int64_t epmem_rit_fork_node( int64_t lower, int64_t upper, bool /*bounds_offset*
 {
 	// never called
 	/*if ( !bounds_offset )
-	{
-		int64_t offset = rit_state->offset.stat->get_value();
+	  {
+	  int64_t offset = rit_state->offset.stat->get_value();
 
-		lower = ( lower - offset );
-		upper = ( upper - offset );
-	}*/
+	  lower = ( lower - offset );
+	  upper = ( upper - offset );
+	  }*/
 
 	// descend the tree down to the fork node
 	int64_t node = EPMEM_RIT_ROOT;
@@ -1731,8 +1731,8 @@ epmem_hash_id epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fai
 	////////////////////////////////////////////////////////////////////////////
 
 	if ( ( sym->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) ||
-		 ( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
-		 ( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
+			( sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) ||
+			( sym->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) )
 	{
 		if ( ( !sym->common.epmem_hash ) || ( sym->common.epmem_valid != my_agent->epmem_validation ) )
 		{
@@ -1920,9 +1920,9 @@ void epmem_new_episode( agent *my_agent )
 				for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
 				{
 					if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-						 ( ( (*w_p)->epmem_id == EPMEM_NODEID_BAD ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) ) &&
-						 ( ( (*w_p)->value->id.epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->value->id.epmem_valid == my_agent->epmem_validation ) ) &&
-						 ( !(*w_p)->value->id.smem_lti ) )
+							( ( (*w_p)->epmem_id == EPMEM_NODEID_BAD ) || ( (*w_p)->epmem_valid != my_agent->epmem_validation ) ) &&
+							( ( (*w_p)->value->id.epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->value->id.epmem_valid == my_agent->epmem_validation ) ) &&
+							( !(*w_p)->value->id.smem_lti ) )
 					{
 						// prevent exclusions from being recorded
 						if ( my_agent->epmem_params->exclusions->in_set( (*w_p)->attr ) )
@@ -2605,7 +2605,7 @@ void epmem_install_memory( agent *my_agent, Symbol *state, epmem_time_id memory_
 
 	// if no memory, say so
 	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
-		 !epmem_valid_episode( my_agent, memory_id ) )
+			!epmem_valid_episode( my_agent, memory_id ) )
 	{
 		epmem_buffer_add_wme( meta_wmes, result_header, my_agent->epmem_sym_retrieved, my_agent->epmem_sym_no_memory );
 		state->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
@@ -4339,7 +4339,7 @@ void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string*
 	// if bad memory, bail
 	buf->clear();
 	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
-		 !epmem_valid_episode( my_agent, memory_id ) )
+			!epmem_valid_episode( my_agent, memory_id ) )
 	{
 		return;
 	}
@@ -4523,7 +4523,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
 	// if bad memory, bail
 	buf->clear();
 	if ( ( memory_id == EPMEM_MEMID_NONE ) ||
-		 !epmem_valid_episode( my_agent, memory_id ) )
+			!epmem_valid_episode( my_agent, memory_id ) )
 	{
 		return;
 	}
@@ -5030,8 +5030,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 					if ( (*w_p)->attr == my_agent->epmem_sym_retrieve )
 					{
 						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( path == 0 ) &&
-							 ( (*w_p)->value->ic.value > 0 ) )
+								( path == 0 ) &&
+								( (*w_p)->value->ic.value > 0 ) )
 						{
 							retrieve = (*w_p)->value->ic.value;
 							path = 1;
@@ -5044,7 +5044,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( (*w_p)->attr == my_agent->epmem_sym_next )
 					{
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( path == 0 ) )
+								( path == 0 ) )
 						{
 							next = (*w_p)->value;
 							path = 2;
@@ -5057,7 +5057,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( (*w_p)->attr == my_agent->epmem_sym_prev )
 					{
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( path == 0 ) )
+								( path == 0 ) )
 						{
 							previous = (*w_p)->value;
 							path = 2;
@@ -5070,8 +5070,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( (*w_p)->attr == my_agent->epmem_sym_query )
 					{
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) &&
-							 ( query == NULL ) )
+								( ( path == 0 ) || ( path == 3 ) ) &&
+								( query == NULL ) )
 
 						{
 							query = (*w_p)->value;
@@ -5085,8 +5085,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( (*w_p)->attr == my_agent->epmem_sym_negquery )
 					{
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) &&
-							 ( neg_query == NULL ) )
+								( ( path == 0 ) || ( path == 3 ) ) &&
+								( neg_query == NULL ) )
 
 						{
 							neg_query = (*w_p)->value;
@@ -5100,7 +5100,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( (*w_p)->attr == my_agent->epmem_sym_before )
 					{
 						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) )
+								( ( path == 0 ) || ( path == 3 ) ) )
 						{
 							before = (*w_p)->value->ic.value;
 							path = 3;
@@ -5113,7 +5113,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( (*w_p)->attr == my_agent->epmem_sym_after )
 					{
 						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) )
+								( ( path == 0 ) || ( path == 3 ) ) )
 						{
 							after = (*w_p)->value->ic.value;
 							path = 3;
@@ -5126,7 +5126,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					else if ( (*w_p)->attr == my_agent->epmem_sym_prohibit )
 					{
 						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) )
+								( ( path == 0 ) || ( path == 3 ) ) )
 						{
 							prohibit.push_back( (*w_p)->value->ic.value );
 							path = 3;
@@ -5140,7 +5140,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 					{
 						// make sure the value is an identifier
 						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) )
+								( ( path == 0 ) || ( path == 3 ) ) )
 						{
 							currents.insert((*w_p)->value);
 							path = 3;
@@ -5198,7 +5198,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 						// add one to the prev stat
 						my_agent->epmem_stats->prevs->set_value( my_agent->epmem_stats->prevs->get_value() + 1 );
 					}
-					
+
 					if ( state->id.epmem_info->last_memory == EPMEM_MEMID_NONE )
 					{
 						epmem_buffer_add_wme( meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, ( ( next )?( next ):( previous ) ) );
