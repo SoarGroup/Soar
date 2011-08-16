@@ -3086,7 +3086,7 @@ const char* epmem_find_interval_queries[2][2][3] = {
 		},
 		{
 			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start",
+			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
 			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 		}
 	},
@@ -3098,7 +3098,7 @@ const char* epmem_find_interval_queries[2][2][3] = {
 		},
 		{
 			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start",
+			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
 			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 		}
 	}
@@ -3348,7 +3348,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 	return literal;
 }
 
-bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_pedge_pq& pedge_pq, epmem_sql_deque pedge_sql_pool[], epmem_time_id after, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[], epmem_triple_set activated[], agent* my_agent) {
+bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_pedge_pq& pedge_pq, epmem_sql_deque pedge_sql_pool[], epmem_time_id after, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[], agent* my_agent) {
 	// we don't need to keep track of visited literals/nodes because the literals are guaranteed to be acyclic
 	// that is, the expansion to the literal's children will eventually bottom out
 	// select the query
@@ -3359,9 +3359,10 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 	}
 	// if the unique edge does not exist, create a new unique edge query
 	// otherwse, if the pedge has not been registered with this literal
-	epmem_triple_pedge_map::iterator pedge_iter = pedge_caches[is_edge].find(triple);
+	epmem_triple_pedge_map* pedge_cache = &(pedge_caches[is_edge]);
+	epmem_triple_pedge_map::iterator pedge_iter = pedge_cache->find(triple);
 	epmem_pedge* child_pedge = (*pedge_iter).second;
-	if (pedge_iter == pedge_caches[is_edge].end() || (*pedge_iter).second == NULL) {
+	if (pedge_iter == pedge_cache->end() || (*pedge_iter).second == NULL) {
 		int has_value = (literal->q1 != EPMEM_NODEID_BAD ? 1 : 0);
 		const char* sql_statement = epmem_find_unique_edge_queries[is_edge][has_value];
 		soar_module::sqlite_statement* pedge_sql = NULL;
@@ -3386,13 +3387,14 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &child_pedge);
 			child_pedge->triple = triple;
 			child_pedge->value_is_id = literal->value_is_id;
+			child_pedge->has_noncurrent = !literal->is_current;
 			child_pedge->sql = pedge_sql;
 			new(&(child_pedge->literals)) epmem_literal_set();
 			child_pedge->literals.insert(literal);
 			child_pedge->time = child_pedge->sql->column_int(2);
 			child_pedge->pool = sql_pool;
 			pedge_pq.push(child_pedge);
-			pedge_caches[is_edge][triple] = child_pedge;
+			(*pedge_cache)[triple] = child_pedge;
 			return true;
 		} else {
 			pedge_sql->reinitialize();
@@ -3401,6 +3403,9 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 		}
 	} else if (!child_pedge->literals.count(literal)) {
 		child_pedge->literals.insert(literal);
+		if (!literal->is_current) {
+			child_pedge->has_noncurrent = true;
+		}
 		// if the literal is an edge with no specified value, add the literal to all potential pedges
 		if (!literal->is_leaf && literal->q1 == EPMEM_NODEID_BAD) {
 			bool created = false;
@@ -3414,7 +3419,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 				epmem_uedge* child_uedge = (*uedge_iter).second;
 				if (child_triple.q1 != EPMEM_NODEID_BAD && child_uedge->value_is_id) {
 					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						created |= epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
+						created |= epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, my_agent);
 					}
 				}
 			}
@@ -3424,7 +3429,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 	}
 }
 
-bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_match_int_map& symbol_match_count, epmem_triple_set activated[], epmem_symbol_int_map& symbol_incoming_count) {
+bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_match_int_map& symbol_match_count, epmem_triple_uedge_map uedge_caches[], epmem_symbol_int_map& symbol_incoming_count) {
 	epmem_symbol_node_pair match;
 	epmem_match_int_map::iterator match_iter;
 	if (JUSTIN_DEBUG) {
@@ -3459,20 +3464,27 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 				// recurse over child literals
 				for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
 					epmem_literal* child_lit = *child_iter;
-					epmem_triple_set* activated_set = &activated[child_lit->value_is_id];
+					epmem_triple_uedge_map* uedge_cache = &uedge_caches[child_lit->value_is_id];
 					epmem_triple child_triple = {child, child_lit->w, child_lit->q1};
+					epmem_triple_uedge_map::iterator uedge_iter;
 					if (child_lit->q1 == EPMEM_NODEID_BAD) {
-						epmem_triple_set::iterator edge_iter = activated_set->lower_bound(child_triple);
-						while (edge_iter != activated_set->end()) {
-							epmem_triple edge = *edge_iter;
-							if (edge.q0 != child || edge.w != child_lit->w) {
+						uedge_iter = uedge_cache->lower_bound(child_triple);
+						while (uedge_iter != uedge_cache->end()) {
+							child_triple = (*uedge_iter).first;
+							epmem_uedge* child_uedge = (*uedge_iter).second;
+							if (child_triple.q0 != child || child_triple.w != child_lit->w) {
 								break;
 							}
-							changed_score |= epmem_satisfy_literal(child_lit, edge.q0, edge.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
-							edge_iter++;
+							if (child_uedge->activated) {
+								changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
+							}
+							uedge_iter++;
 						}
-					} else if (activated_set->count(child_triple)) {
-						changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+					} else {
+						uedge_iter = uedge_cache->find(child_triple);
+						if (uedge_iter != uedge_cache->end() && (*uedge_iter).second->activated) {
+							changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
+						}
 					}
 				}
 			} else {
@@ -3708,14 +3720,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	// variables needed to track satisfiability
 	epmem_symbol_int_map symbol_incoming_count;
 	epmem_match_int_map symbol_match_count;
-#ifdef USE_MEM_POOL_ALLOCATORS
-	epmem_triple_set activated[2] = {
-		epmem_triple_set(std::less<epmem_triple>(), soar_module::soar_memory_pool_allocator<epmem_triple>(my_agent)),
-		epmem_triple_set(std::less<epmem_triple>(), soar_module::soar_memory_pool_allocator<epmem_triple>(my_agent))
-	};
-#else
-	epmem_triple_set activated[2] = {epmem_triple_set(), epmem_triple_set()};
-#endif
 
 	// various things about the current and the best episodes
 	epmem_time_id best_episode = EPMEM_MEMID_NONE;
@@ -3832,6 +3836,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &root_pedge);
 		root_pedge->triple = triple;
 		root_pedge->value_is_id = EPMEM_TYPE_EDGE;
+		root_pedge->has_noncurrent = false;
 		new(&(root_pedge->literals)) epmem_literal_set();
 		root_pedge->literals.insert(root_literal);
 		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_pedge->sql);
@@ -3848,6 +3853,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
 		root_uedge->triple = triple;
 		root_uedge->value_is_id = EPMEM_TYPE_EDGE;
+		root_uedge->has_noncurrent = false;
+		root_uedge->activation_count = 0;
 		new(&(root_uedge->pedges)) epmem_pedge_set();
 		root_uedge->intervals = 1;
 		root_uedge->activated = false;
@@ -3900,7 +3907,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				for (epmem_literal_set::iterator literal_iter = pedge->literals.begin(); literal_iter != pedge->literals.end(); literal_iter++) {
 					epmem_literal* literal = *literal_iter;
 					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						created |= epmem_register_pedges(triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
+						created |= epmem_register_pedges(triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, my_agent);
 					}
 				}
 			}
@@ -3908,7 +3915,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			// I'm not sure how to properly test for this though
 
 			// look for uedge with triple; if none exist, create one
-			// create interval queries for this partial edge
+			// otherwise, link up the uedge with the pedge and consider score changes
 			epmem_triple_uedge_map* uedge_cache = &uedge_caches[pedge->value_is_id];
 			epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->find(triple);
 			if (uedge_iter == uedge_cache->end()) {
@@ -3917,9 +3924,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &uedge);
 				uedge->triple = triple;
 				uedge->value_is_id = pedge->value_is_id;
+				uedge->has_noncurrent = pedge->has_noncurrent;
+				uedge->activation_count = 0;
 				new(&(uedge->pedges)) epmem_pedge_set();
 				uedge->intervals = 0;
 				uedge->activated = false;
+				// create interval queries for this partial edge
 				bool created = false;
 				int64_t edge_id = pedge->sql->column_int(0);
 				epmem_time_id promo_time = EPMEM_MEMID_NONE;
@@ -3973,7 +3983,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 								interval_sql->prepare();
 							}
 						} else {
-							// FIXME need to do special things for should be current WMEs
 							sql_pool = &interval_sql_pool[pedge->value_is_id][point_type][interval_type];
 							if (sql_pool->size()) {
 								interval_sql = sql_pool->front();
@@ -4035,7 +4044,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				(*uedge_iter).second->pedges.insert(pedge);
 				if ((*uedge_iter).second->activated) {
 					for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-						changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+						changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
 					}
 				}
 			}
@@ -4074,16 +4083,15 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					std::cout << "	INTERVAL (" << (interval->is_end_point ? "end" : "start") << "): " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
 				}
 				if (interval->is_end_point) {
-					activated[uedge->value_is_id].insert(triple);
 					uedge->activated = true;
+					uedge->activation_count++;
 					for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
 						epmem_pedge* pedge = *pedge_iter;
 						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-							changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, activated, symbol_incoming_count);
+							changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
 						}
 					}
 				} else {
-					activated[uedge->value_is_id].erase(triple);
 					uedge->activated = false;
 					for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
 						epmem_pedge* pedge = *pedge_iter;
@@ -4092,9 +4100,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 					}
 				}
-				// put the interval query back into the queue if there's more
+				// put the interval query back into the queue if there's more and some literal cares
 				// otherwise, reinitialize the query and put it in a pool
-				if (interval->sql && interval->sql->execute() == soar_module::row) {
+				if (interval->uedge->has_noncurrent && interval->sql && interval->sql->execute() == soar_module::row) {
 					interval->time = interval->sql->column_int(0);
 					interval_pq.push(interval);
 				} else if (interval->sql && interval->pool) {

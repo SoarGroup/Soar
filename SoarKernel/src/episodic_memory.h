@@ -746,6 +746,7 @@ struct epmem_literal_struct {
 struct epmem_pedge_struct {
 	epmem_triple triple;
 	int value_is_id;
+	bool has_noncurrent;
 	epmem_literal_set literals;
 	epmem_sql_deque* pool;
 	soar_module::sqlite_statement* sql;
@@ -755,6 +756,8 @@ struct epmem_pedge_struct {
 struct epmem_uedge_struct {
 	epmem_triple triple;
 	int value_is_id;
+	bool has_noncurrent;
+	int activation_count;
 	epmem_pedge_set pedges;
 	int intervals;
 	bool activated;
