@@ -1005,6 +1005,7 @@ namespace soar_module
 
 		void destroy( pointer p )
 		{
+			p; // prevents warning
 			p->~T();
 		}
 
