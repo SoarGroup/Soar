@@ -37,7 +37,7 @@ status:
 
 di: diff
 diff:
-	svn diff && find . -maxdepth 1 -type d -not -name ".*" -exec echo {} \; -exec svn diff {} \;
+	@svn diff && find . -maxdepth 1 -type d -not -name ".*" -exec svn diff {} \;
 
 clean:
 	cd Core && scons -c
