@@ -65,60 +65,6 @@
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
-// Global Variables
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
-
-// shared SQL to perform cue-based queries
-// on true ranges, "now" ranges (i.e. wme in WM), and
-// "point" ranges (in/out in sequential episodes)
-const char *epmem_range_queries[2][2][3] =
-{
-	{
-		{
-			"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
-		},
-		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM node_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
-		}
-	},
-	{
-		{
-			"SELECT e.start AS start FROM edge_range e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_now e WHERE e.id=? ORDER BY e.start DESC",
-			"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
-		},
-		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-			"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
-		}
-	},
-};
-
-// special queries for LTIs, so we don't retrieve episodes before the promotion
-const char *epmem_range_lti_queries[2][3] =
-{
-	{
-		"SELECT e.start AS start FROM edge_range e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
-		"SELECT e.start AS start FROM edge_now e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
-		"SELECT e.start AS start FROM edge_point e WHERE e.start>? AND e.id=? ORDER BY e.start DESC"
-	},
-	{
-		"SELECT e.end AS end FROM edge_range e WHERE e.end>=? AND e.id=? ORDER BY e.end DESC",
-		"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-		"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
-	}
-};
-
-const char *epmem_range_lti_start = "SELECT ? as start";
-
-//////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////
 // Parameter Functions (epmem::params)
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
@@ -771,6 +717,80 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	find_lti_promotion_time = new soar_module::sqlite_statement( new_db, "SELECT time_id FROM lti WHERE letter=? AND num=?" );
 	add( find_lti_promotion_time );
 
+	//
+	//
+
+	// init statement pools
+	{
+		int j, k, m;
+
+		const char *epmem_range_queries[2][2][3] =
+		{
+			{
+				{
+					"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+				},
+				{
+					"SELECT e.end AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
+					"SELECT ? AS end FROM node_now e WHERE e.id=?",
+					"SELECT e.start AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+				}
+			},
+			{
+				{
+					"SELECT e.start AS start FROM edge_range e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM edge_now e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+				},
+				{
+					"SELECT e.end AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
+					"SELECT ? AS end FROM edge_now e WHERE e.id=?",
+					"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+				}
+			},
+		};
+
+		for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
+		{
+			for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+			{
+				for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+				{
+					pool_range_queries[ j ][ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_range_queries[ j ][ k ][ m ] );
+				}
+			}
+		}
+
+		//
+
+		const char *epmem_range_lti_queries[2][3] =
+		{
+			{
+				"SELECT e.start AS start FROM edge_range e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+				"SELECT e.start AS start FROM edge_now e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+				"SELECT e.start AS start FROM edge_point e WHERE e.start>? AND e.id=? ORDER BY e.start DESC"
+			},
+			{
+				"SELECT e.end AS end FROM edge_range e WHERE e.end>=? AND e.id=? ORDER BY e.end DESC",
+				"SELECT ? AS end FROM edge_now e WHERE e.id=?",
+				"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+			}
+		};
+
+		for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+		{
+			for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+			{
+				pool_range_lti_queries[ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_range_lti_queries[ k ][ m ] );
+			}
+		}
+
+		//
+
+		pool_range_lti_start = new soar_module::sqlite_statement_pool( new_agent, new_db, "SELECT ? as start" );
+	}
 }
 
 
@@ -1255,6 +1275,32 @@ void epmem_close( agent *my_agent )
 		if ( my_agent->epmem_params->lazy_commit->get_value() == soar_module::on )
 		{
 			my_agent->epmem_stmts_common->commit->execute( soar_module::op_reinit );
+		}
+
+		// de-allocate statement pools
+		{
+			int j, k, m;
+
+			for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
+			{
+				for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+				{
+					for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+					{
+						delete my_agent->epmem_stmts_graph->pool_range_queries[ j ][ k ][ m ];
+					}
+				}
+			}
+
+			for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+			{
+				for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+				{
+					delete my_agent->epmem_stmts_graph->pool_range_lti_queries[ k ][ m ];
+				}
+			}
+			
+			delete my_agent->epmem_stmts_graph->pool_range_lti_start;
 		}
 		
 		// de-allocate statements
@@ -3623,7 +3669,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 
 				// special variables for LTIs
 				epmem_time_id promotion_time = 0;
-				soar_module::sqlite_statement *lti_start_stmt = NULL;
+				soar_module::pooled_sqlite_statement *lti_start_stmt = NULL;
 
 				// associate common literals with a query
 				std::map<epmem_node_id, epmem_shared_literal_pair_list *> literal_to_node_query;
@@ -3641,7 +3687,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 				epmem_wme_cache_element *new_cache_element = NULL;
 				epmem_shared_literal_pair_list *new_trigger_list = NULL;
 				soar_module::timer *new_timer = NULL;
-				soar_module::sqlite_statement *new_stmt = NULL;
+				soar_module::pooled_sqlite_statement *new_stmt = NULL;
 				epmem_shared_literal_pair *new_literal_pair;
 				epmem_shared_incoming_book* new_incoming;
 				epmem_shared_incoming_id_book** new_incoming_wme_book;
@@ -3982,13 +4028,13 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														// check for LTI and use special SQL commands
 														if ( promotion_time > 0 )
 														{
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_queries[ k ][ m ], new_timer );
+															new_stmt = my_agent->epmem_stmts_graph->pool_range_lti_queries[ k ][ m ]->request( new_timer );
 															new_stmt->prepare();
 
 															// add special query for promotion start point to query list (if start)
                                                             if ( k == EPMEM_RANGE_START )
                                                             {
-                                                                lti_start_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_lti_start, new_timer );
+																lti_start_stmt = my_agent->epmem_stmts_graph->pool_range_lti_start->request( new_timer );
                                                                 lti_start_stmt->prepare();
 					                                            assert( lti_start_stmt->get_status() == soar_module::ready );
                                                                 lti_start_stmt->bind_int( 1, promotion_time );
@@ -4005,7 +4051,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														}
 														else
 														{
-															new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ], new_timer );
+															new_stmt = my_agent->epmem_stmts_graph->pool_range_queries[ EPMEM_RIT_STATE_EDGE ][ k ][ m ]->request( new_timer );
 															new_stmt->prepare();
 														}
                                                         assert( new_stmt->get_status() == soar_module::ready );
@@ -4037,7 +4083,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 														}
 														else
 														{
-															delete new_stmt;
+															new_stmt->get_pool()->release( new_stmt );
 														}
 
 														new_stmt = NULL;
@@ -4183,7 +4229,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													}
 
 													// assign sql
-													new_stmt = new soar_module::sqlite_statement( my_agent->epmem_db, epmem_range_queries[ EPMEM_RIT_STATE_NODE ][ k ][ m ], new_timer );
+													new_stmt = my_agent->epmem_stmts_graph->pool_range_queries[ EPMEM_RIT_STATE_NODE ][ k ][ m ]->request( new_timer );
 													new_stmt->prepare();
 
 													// bind values
@@ -4212,7 +4258,7 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 													}
 													else
 													{
-														delete new_stmt;
+														new_stmt->get_pool()->release( new_stmt );
 													}
 
 													new_stmt = NULL;
@@ -4647,7 +4693,8 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 						del_query = queries[ i ].top();
 						queries[ i ].pop();
 
-						delete del_query->stmt;						
+						del_query->stmt->get_pool()->release( del_query->stmt );
+
 						delete del_query;
 					}
 				}

@@ -366,6 +366,12 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 		soar_module::sqlite_statement *find_lti_promotion_time;
 
 		//
+
+		soar_module::sqlite_statement_pool *pool_range_lti_start;
+		soar_module::sqlite_statement_pool *pool_range_queries[2][2][3];
+		soar_module::sqlite_statement_pool *pool_range_lti_queries[2][3];
+
+		//
 		
 		epmem_graph_statement_container( agent *new_agent );
 };
@@ -611,12 +617,12 @@ struct epmem_shared_literal_pair_struct
 // maintains state within sqlite b-trees
 typedef struct epmem_shared_query_struct
 {
-	soar_module::sqlite_statement *stmt;		// associated query
-	epmem_time_id val;							// current b-tree leaf value
+	soar_module::pooled_sqlite_statement *stmt;		// associated query
+	epmem_time_id val;								// current b-tree leaf value
 
-	epmem_node_id unique_id;					// id searched by this statement
+	epmem_node_id unique_id;						// id searched by this statement
 
-	epmem_shared_literal_pair_list *triggers;	// literals to update when stepping this b-tree
+	epmem_shared_literal_pair_list *triggers;		// literals to update when stepping this b-tree
 } epmem_shared_query;
 
 // functor to maintain a priority cue of b-tree pointers
