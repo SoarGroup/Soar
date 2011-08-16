@@ -3348,7 +3348,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 	return literal;
 }
 
-void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_pedge_pq& pedge_pq, epmem_sql_deque pedge_sql_pool[], epmem_time_id after, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[], epmem_triple_set activated[], agent* my_agent) {
+bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_pedge_pq& pedge_pq, epmem_sql_deque pedge_sql_pool[], epmem_time_id after, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[], epmem_triple_set activated[], agent* my_agent) {
 	// we don't need to keep track of visited literals/nodes because the literals are guaranteed to be acyclic
 	// that is, the expansion to the literal's children will eventually bottom out
 	// select the query
@@ -3357,10 +3357,11 @@ void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 	if (JUSTIN_DEBUG) {
 		std::cout << "		RECURSING ON " << parent << " " << literal << std::endl;
 	}
-	bool created = false;
+	// if the unique edge does not exist, create a new unique edge query
+	// otherwse, if the pedge has not been registered with this literal
 	epmem_triple_pedge_map::iterator pedge_iter = pedge_caches[is_edge].find(triple);
+	epmem_pedge* child_pedge = (*pedge_iter).second;
 	if (pedge_iter == pedge_caches[is_edge].end() || (*pedge_iter).second == NULL) {
-		// if the unique edge does not exist, create a new unique edge query
 		int has_value = (literal->q1 != EPMEM_NODEID_BAD ? 1 : 0);
 		const char* sql_statement = epmem_find_unique_edge_queries[is_edge][has_value];
 		soar_module::sqlite_statement* pedge_sql = NULL;
@@ -3392,35 +3393,34 @@ void epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			child_pedge->pool = sql_pool;
 			pedge_pq.push(child_pedge);
 			pedge_caches[is_edge][triple] = child_pedge;
-			created = true;
+			return true;
 		} else {
 			pedge_sql->reinitialize();
 			sql_pool->push_front(pedge_sql);
+			return false;
 		}
-	} else {
-		// otherwse, if the pedge has not been registered with this literal
-		epmem_pedge* child_pedge = (*pedge_iter).second;
-		if (!child_pedge->literals.count(literal)) {
-			child_pedge->literals.insert(literal);
-			// if the literal is an edge with no specified value, add the literal to all potential pedges
-			if (!literal->is_leaf && literal->q1 == EPMEM_NODEID_BAD) {
-				epmem_triple_uedge_map* uedge_cache = &uedge_caches[is_edge];
-				for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->lower_bound(triple); uedge_iter != uedge_cache->end(); uedge_iter++) {
-					epmem_triple child_triple = (*uedge_iter).first;
-					// make sure we're still looking at the right edge(s)
-					if (child_triple.q0 != triple.q0 || child_triple.w != triple.w) {
-						break;
-					}
-					epmem_uedge* child_uedge = (*uedge_iter).second;
-					if (child_triple.q1 != EPMEM_NODEID_BAD && child_uedge->value_is_id) {
-						for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-							epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
-						}
+	} else if (!child_pedge->literals.count(literal)) {
+		child_pedge->literals.insert(literal);
+		// if the literal is an edge with no specified value, add the literal to all potential pedges
+		if (!literal->is_leaf && literal->q1 == EPMEM_NODEID_BAD) {
+			bool created = false;
+			epmem_triple_uedge_map* uedge_cache = &uedge_caches[is_edge];
+			for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->lower_bound(triple); uedge_iter != uedge_cache->end(); uedge_iter++) {
+				epmem_triple child_triple = (*uedge_iter).first;
+				// make sure we're still looking at the right edge(s)
+				if (child_triple.q0 != triple.q0 || child_triple.w != triple.w) {
+					break;
+				}
+				epmem_uedge* child_uedge = (*uedge_iter).second;
+				if (child_triple.q1 != EPMEM_NODEID_BAD && child_uedge->value_is_id) {
+					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+						created |= epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
 					}
 				}
 			}
-			created = true;
+			return created;
 		}
+		return true;
 	}
 }
 
@@ -3694,6 +3694,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 #endif
 
 	// additional indices
+	// FIXME
 
 	// variables needed for building the DNF
 	epmem_literal* root_literal;
@@ -3895,13 +3896,16 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 			// create queries for the unique edge children of this partial edge
 			if (pedge->value_is_id) {
+				bool created = false;
 				for (epmem_literal_set::iterator literal_iter = pedge->literals.begin(); literal_iter != pedge->literals.end(); literal_iter++) {
 					epmem_literal* literal = *literal_iter;
 					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						epmem_register_pedges(triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
+						created |= epmem_register_pedges(triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, activated, my_agent);
 					}
 				}
 			}
+			// FIXME what I want to do here is, if there is no children which leads to a leaf, retract everything
+			// I'm not sure how to properly test for this though
 
 			// look for uedge with triple; if none exist, create one
 			// create interval queries for this partial edge
@@ -4098,6 +4102,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					interval->pool->push_front(interval->sql);
 					interval->sql = NULL;
 					uedge->intervals--;
+					if (uedge->intervals) {
+						interval_cleanup.erase(interval);
+						free_with_pool(&(my_agent->epmem_interval_pool), interval);
+					} else {
+						// FIXME
+					}
 				}
 			}
 			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
