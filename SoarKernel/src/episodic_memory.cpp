@@ -3467,22 +3467,24 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 					epmem_triple_uedge_map* uedge_cache = &uedge_caches[child_lit->value_is_id];
 					epmem_triple child_triple = {child, child_lit->w, child_lit->q1};
 					epmem_triple_uedge_map::iterator uedge_iter;
+					epmem_uedge* child_uedge = NULL;
 					if (child_lit->q1 == EPMEM_NODEID_BAD) {
 						uedge_iter = uedge_cache->lower_bound(child_triple);
 						while (uedge_iter != uedge_cache->end()) {
 							child_triple = (*uedge_iter).first;
-							epmem_uedge* child_uedge = (*uedge_iter).second;
+							child_uedge = (*uedge_iter).second;
 							if (child_triple.q0 != child || child_triple.w != child_lit->w) {
 								break;
 							}
-							if (child_uedge->activated) {
+							if (child_uedge->activated && (!literal->is_current || child_uedge->activation_count == 1)) {
 								changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
 							}
 							uedge_iter++;
 						}
 					} else {
 						uedge_iter = uedge_cache->find(child_triple);
-						if (uedge_iter != uedge_cache->end() && (*uedge_iter).second->activated) {
+						child_uedge = (*uedge_iter).second;
+						if (uedge_iter != uedge_cache->end() && child_uedge->activated && (!literal->is_current || child_uedge->activation_count == 1)) {
 							changed_score |= epmem_satisfy_literal(child_lit, child_triple.q0, child_triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
 						}
 					}
@@ -3705,8 +3707,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_interval_set interval_cleanup = epmem_interval_set();
 #endif
 
-	// additional indices
-	// FIXME
+	// FIXME additional indices
 
 	// variables needed for building the DNF
 	epmem_literal* root_literal;
@@ -4041,10 +4042,14 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
 				}
 			} else {
-				(*uedge_iter).second->pedges.insert(pedge);
-				if ((*uedge_iter).second->activated) {
+				epmem_uedge* uedge = (*uedge_iter).second;
+				uedge->pedges.insert(pedge);
+				if (uedge->activated) {
 					for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-						changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
+						epmem_literal* literal = (*lit_iter);
+						if (!literal->is_current || uedge->activation_count == 1) {
+							changed_score |= epmem_satisfy_literal(literal, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
+						}
 					}
 				}
 			}
@@ -4088,7 +4093,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
 						epmem_pedge* pedge = *pedge_iter;
 						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-							changed_score |= epmem_satisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
+							epmem_literal* literal = *lit_iter;
+							if (!literal->is_current || uedge->activation_count == 1) {
+								changed_score |= epmem_satisfy_literal(literal, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
+							}
 						}
 					}
 				} else {
@@ -4114,7 +4122,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						interval_cleanup.erase(interval);
 						free_with_pool(&(my_agent->epmem_interval_pool), interval);
 					} else {
-						// FIXME
+						// FIXME retract intervals
 					}
 				}
 			}
