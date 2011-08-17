@@ -445,55 +445,8 @@ typedef struct epmem_data_struct
 	epmem_wme_stack* epmem_wmes;							// preferences generated in last epmem
 } epmem_data;
 
-// FIXME remove unnecessary types
-//////////////////////////////////////////////////////////
-// Mode "one" Types (i.e. Working Memory Tree)
-//////////////////////////////////////////////////////////
-
-// represents a leaf wme
-typedef struct epmem_leaf_node_struct
-{
-	double leaf_weight;						// wma value
-	epmem_node_id leaf_id;					// node id
-} epmem_leaf_node;
-
-// maintains state within sqlite b-trees
-typedef struct epmem_range_query_struct
-{
-	soar_module::sqlite_statement *stmt;	// query
-	epmem_time_id val;						// current b-tree leaf value
-
-	double weight;							// wma value
-	int64_t ct;								// cardinality w.r.t. positive/negative query
-} epmem_range_query;
-
-// functor to maintain a priority cue of b-tree pointers
-// based upon their current value
-struct epmem_compare_range_queries
-{
-	bool operator() ( const epmem_range_query *a, const epmem_range_query *b ) const
-	{
-		return ( a->val < b->val );
-	}
-};
-typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *>, epmem_compare_range_queries> epmem_range_query_list;
-
-
-//////////////////////////////////////////////////////////
-// Mode "three" Types (i.e. Working Memory Graph)
-//////////////////////////////////////////////////////////
-
-// see below
-typedef struct epmem_shared_literal_struct epmem_shared_literal;
-typedef struct epmem_shared_literal_pair_struct epmem_shared_literal_pair;
-typedef std::vector<epmem_shared_literal *> epmem_shared_literal_list;
-typedef std::vector<epmem_shared_literal_pair *> epmem_shared_literal_pair_list;
-typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_index;
-typedef std::vector<wme *> epmem_shared_wme_list;
-
 // lookup tables to facilitate shared identifiers
 typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
-typedef std::map<epmem_node_id, epmem_shared_literal *> epmem_literal_mapping;
 
 // types/structures to facilitate re-use of identifiers
 typedef std::pair<epmem_node_id, epmem_node_id> epmem_id_pair;
@@ -524,134 +477,6 @@ typedef struct epmem_edge_struct
 
 } epmem_edge;
 
-// represents cached children of an identifier in working memory
-typedef struct epmem_wme_cache_element_struct
-{
-	epmem_wme_list *wmes;						// child wmes	
-	epmem_wme_list *parents;					// number of parents
-
-	epmem_literal_mapping *lits;				// child literals
-} epmem_wme_cache_element;
-
-// represents state of a leaf wme
-// at a particular episode
-typedef struct epmem_shared_match_struct
-{
-	double value_weight;						// wma value
-	int64_t value_ct;								// cardinality w.r.t. positive/negative query
-
-	uint64_t ct;							// number of contributing literals that are "on"
-} epmem_shared_match;
-
-// represents a set of literals grouped by cue wme
-typedef std::map< epmem_node_id, epmem_shared_literal_pair * > epmem_shared_literal_map;
-typedef std::map< wme *, epmem_shared_literal_map * > epmem_shared_literal_group;
-
-//
-// structures necessary to maintain bookkeeping information
-// about incoming WMEs for identifiers in the DNF
-//
-
-typedef std::set< epmem_node_id > epmem_shared_literal_set;
-typedef struct epmem_shared_incoming_id_book_struct
-{	
-	epmem_wme_list* outgoing;
-	epmem_shared_literal_set* satisfactory;
-} epmem_shared_incoming_id_book;
-typedef std::map< Symbol*, epmem_shared_incoming_id_book* > epmem_shared_incoming_ids_book; 
-
-typedef std::map< wme*, uint64_t > epmem_shared_incoming_wme_counter_map;
-typedef struct epmem_shared_incoming_identity_counter_struct
-{
-	uint64_t ct;
-	epmem_shared_incoming_wme_counter_map* cts;
-} epmem_shared_incoming_identity_counter;
-typedef std::map< Symbol*, epmem_shared_incoming_identity_counter* > epmem_shared_incoming_wme_map;
-typedef std::map< epmem_node_id, epmem_shared_incoming_wme_map* > epmem_shared_incoming_book_map;
-
-typedef struct epmem_shared_incoming_book_struct
-{
-	
-	// aggregatation
-	epmem_shared_incoming_ids_book *parents;
-
-	// mapping
-	epmem_shared_incoming_book_map* book;
-
-} epmem_shared_incoming_book;
-
-//
-// structures necessary to represent constraints during graph-match
-//
-
-typedef std::map< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_map;
-typedef std::pair< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_pair;
-typedef std::vector< epmem_shared_literal_pair_pair > epmem_shared_literal_pair_pair_vector;
-
-typedef std::map< Symbol*, epmem_node_id > epmem_gm_assignment_map;
-typedef std::map< Symbol*, epmem_shared_literal_set > epmem_gm_sym_constraints;
-
-//
-
-
-// represents state of one historical
-// identity of a cue wme at a particular
-// episode
-struct epmem_shared_literal_struct
-{
-	epmem_node_id shared_id;					// shared q1, if identifier
-	Symbol* shared_sym;							// identifier symbol, if literal represents an identifier
-
-	uint64_t ct;							// number of contributing literals that are "on"
-	uint64_t max;							// number of contributing literals that *need* to be on	
-
-	epmem_shared_incoming_book* incoming;		// bookkeeping to support correct distribution of incoming edges
-	
-	bool wme_kids;								// does the cue wme have children (indicative of leaf wme status)
-	epmem_shared_literal_group *children;		// grouped child literals, if not leaf wme
-
-	epmem_shared_match *match;					// associated match, if leaf wme	
-};
-
-// pair in the sense of (debug info, actual literal)
-struct epmem_shared_literal_pair_struct
-{
-	// debug
-	epmem_node_id unique_id;
-	epmem_node_id q0;
-	epmem_node_id q1;
-
-	struct wme_struct *wme;
-
-	// literal
-	epmem_shared_literal *lit;
-
-	// parent literal
-	epmem_shared_literal *parent_lit;
-};
-
-// maintains state within sqlite b-trees
-typedef struct epmem_shared_query_struct
-{
-	soar_module::pooled_sqlite_statement *stmt;		// associated query
-	epmem_time_id val;								// current b-tree leaf value
-
-	epmem_node_id unique_id;						// id searched by this statement
-
-	epmem_shared_literal_pair_list *triggers;		// literals to update when stepping this b-tree
-} epmem_shared_query;
-
-// functor to maintain a priority cue of b-tree pointers
-// based upon their current value
-struct epmem_compare_shared_queries
-{
-	bool operator() ( const epmem_shared_query *a, const epmem_shared_query *b ) const
-	{
-		return ( a->val < b->val );
-	}
-};
-typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
-
 //////////////////////////////////////////////////////////
 // Parameter Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
@@ -676,7 +501,7 @@ extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, s
 extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
 
 //////////////////////////////////////////////////////////
-// Justin's stuff
+// Episodic Memory Search
 //////////////////////////////////////////////////////////
 
 // defined below
