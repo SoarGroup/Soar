@@ -184,6 +184,11 @@ namespace soar_module
 						set_status( unprepared );
 				}
 			}
+
+			inline void set_timer( timer *new_query_timer )
+			{
+				query_timer = new_query_timer;
+			}
 	};
 
 	
@@ -516,6 +521,93 @@ namespace soar_module
 
 					delete temp_stmt;
 				}
+			}
+	};
+
+
+	///////////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////
+
+	class sqlite_statement_pool;
+	
+	class pooled_sqlite_statement: public sqlite_statement
+	{
+		protected:
+			sqlite_statement_pool* stmt_pool;
+
+		public:
+			pooled_sqlite_statement( sqlite_statement_pool* new_pool, sqlite_database* new_db, const char* new_sql, timer* new_query_timer = NULL ): sqlite_statement( new_db, new_sql, new_query_timer ), stmt_pool( new_pool ) {}
+			
+			inline sqlite_statement_pool* get_pool()
+			{
+				return stmt_pool;
+			}
+	};
+
+	class sqlite_statement_pool
+	{
+		protected:
+			#ifdef USE_MEM_POOL_ALLOCATORS
+			typedef std::list< pooled_sqlite_statement*, soar_memory_pool_allocator< pooled_sqlite_statement* > > sqlite_statement_pool_pool;
+			#else
+			typedef std::list< pooled_sqlite_statement* > sqlite_statement_pool_pool;
+			#endif
+
+			sqlite_statement_pool_pool* statements;
+
+			sqlite_database* my_db;
+			const char* my_sql;
+
+		public:
+			sqlite_statement_pool( agent* my_agent, sqlite_database* new_db, const char* new_sql ): my_db( new_db ), my_sql( new_sql )
+			{
+				#ifdef USE_MEM_POOL_ALLOCATORS
+				statements = new sqlite_statement_pool_pool( my_agent );
+				#else
+				statements = new sqlite_statement_pool_pool();
+				#endif
+			}
+
+			~sqlite_statement_pool()
+			{
+				for ( sqlite_statement_pool_pool::iterator it=statements->begin(); it!=statements->end(); it++ )
+				{
+					delete (*it);
+				}
+
+				delete statements;
+			}
+
+			void release( pooled_sqlite_statement* stmt )
+			{
+				statements->push_front( stmt );
+			}
+
+			pooled_sqlite_statement* request( timer* query_timer = NULL )
+			{
+				pooled_sqlite_statement* return_val = NULL;
+
+				if ( statements->empty() )
+				{
+					// make new (assigns timer)
+					return_val = new pooled_sqlite_statement( this, my_db, my_sql, query_timer );
+
+					// ready to use
+					return_val->prepare();
+				}
+				else
+				{
+					return_val = statements->front();
+					statements->pop_front();
+
+					// assign timer
+					return_val->set_timer( query_timer );
+
+					// ready to use
+					return_val->reinitialize();
+				}
+
+				return return_val;
 			}
 	};
 }

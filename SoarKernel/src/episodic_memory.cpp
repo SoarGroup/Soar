@@ -739,6 +739,80 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 
 	update_edge_unique_last = new soar_module::sqlite_statement( new_db, "UPDATE edge_unique SET last=? WHERE parent_id=?" );
 	add( update_edge_unique_last );
+
+	//
+
+	// init statement pools
+	{
+		int j, k, m;
+
+		const char *epmem_range_queries[2][2][3] =
+		{
+			{
+				{
+					"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+				},
+				{
+					"SELECT e.end AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
+					"SELECT ? AS end FROM node_now e WHERE e.id=?",
+					"SELECT e.start AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+				}
+			},
+			{
+				{
+					"SELECT e.start AS start FROM edge_range e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM edge_now e WHERE e.id=? ORDER BY e.start DESC",
+					"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+				},
+				{
+					"SELECT e.end AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
+					"SELECT ? AS end FROM edge_now e WHERE e.id=?",
+					"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+				}
+			},
+		};
+
+		for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
+		{
+			for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+			{
+				for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+				{
+					pool_range_queries[ j ][ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_range_queries[ j ][ k ][ m ] );
+				}
+			}
+		}
+
+		//
+
+		const char *epmem_range_lti_queries[2][3] =
+		{
+			{
+				"SELECT e.start AS start FROM edge_range e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+				"SELECT e.start AS start FROM edge_now e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
+				"SELECT e.start AS start FROM edge_point e WHERE e.start>? AND e.id=? ORDER BY e.start DESC"
+			},
+			{
+				"SELECT e.end AS end FROM edge_range e WHERE e.end>=? AND e.id=? ORDER BY e.end DESC",
+				"SELECT ? AS end FROM edge_now e WHERE e.id=?",
+				"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+			}
+		};
+
+		for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+		{
+			for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+			{
+				pool_range_lti_queries[ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_range_lti_queries[ k ][ m ] );
+			}
+		}
+
+		//
+
+		pool_range_lti_start = new soar_module::sqlite_statement_pool( new_agent, new_db, "SELECT ? as start" );
+	}
 }
 
 
@@ -1225,6 +1299,32 @@ void epmem_close( agent *my_agent )
 			my_agent->epmem_stmts_common->commit->execute( soar_module::op_reinit );
 		}
 
+		// de-allocate statement pools
+		{
+			int j, k, m;
+
+			for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
+			{
+				for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+				{
+					for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+					{
+						delete my_agent->epmem_stmts_graph->pool_range_queries[ j ][ k ][ m ];
+					}
+				}
+			}
+
+			for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
+			{
+				for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
+				{
+					delete my_agent->epmem_stmts_graph->pool_range_lti_queries[ k ][ m ];
+				}
+			}
+			
+			delete my_agent->epmem_stmts_graph->pool_range_lti_start;
+		}
+		
 		// de-allocate statements
 		delete my_agent->epmem_stmts_common;
 		delete my_agent->epmem_stmts_graph;
