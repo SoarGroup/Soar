@@ -54,8 +54,6 @@ enum epmem_variable_key
 
 #define EPMEM_NODE_POS								0
 #define EPMEM_NODE_NEG								1
-#define EPMEM_TYPE_NODE								0
-#define EPMEM_TYPE_EDGE								1
 #define EPMEM_RANGE_START							0
 #define EPMEM_RANGE_END								1
 #define EPMEM_RANGE_EP								0
@@ -383,9 +381,10 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		//
 
-		soar_module::sqlite_statement_pool *pool_range_lti_start;
-		soar_module::sqlite_statement_pool *pool_range_queries[2][2][3];
-		soar_module::sqlite_statement_pool *pool_range_lti_queries[2][3];
+		soar_module::sqlite_statement_pool *pool_find_edge_queries[2][2];
+		soar_module::sqlite_statement_pool *pool_find_interval_queries[2][2][3];
+		soar_module::sqlite_statement_pool *pool_find_lti_queries[2][3];
+		soar_module::sqlite_statement_pool *pool_dummy;
 
 		//
 		
@@ -446,7 +445,7 @@ typedef struct epmem_data_struct
 	epmem_wme_stack* epmem_wmes;							// preferences generated in last epmem
 } epmem_data;
 
-
+// FIXME remove unnecessary types
 //////////////////////////////////////////////////////////
 // Mode "one" Types (i.e. Working Memory Tree)
 //////////////////////////////////////////////////////////
@@ -694,7 +693,6 @@ typedef struct std::pair<Symbol*, epmem_node_id> epmem_symbol_node_pair;
 // collection classes
 typedef std::deque<epmem_literal*> epmem_literal_deque;
 typedef std::deque<epmem_node_id> epmem_node_deque;
-typedef std::deque<soar_module::sqlite_statement*> epmem_sql_deque;
 typedef std::map<Symbol*, int> epmem_symbol_int_map;
 typedef std::map<epmem_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
@@ -756,8 +754,7 @@ struct epmem_pedge_struct {
 	int value_is_id;
 	bool has_noncurrent;
 	epmem_literal_set literals;
-	epmem_sql_deque* pool;
-	soar_module::sqlite_statement* sql;
+	soar_module::pooled_sqlite_statement* sql;
 	epmem_time_id time;
 };
 
@@ -774,8 +771,7 @@ struct epmem_uedge_struct {
 struct epmem_interval_struct {
 	epmem_uedge* uedge;
 	int is_end_point;
-	epmem_sql_deque* pool;
-	soar_module::sqlite_statement* sql;
+	soar_module::pooled_sqlite_statement* sql;
 	epmem_time_id time;
 };
 

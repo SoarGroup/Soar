@@ -746,32 +746,56 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 	{
 		int j, k, m;
 
-		const char *epmem_range_queries[2][2][3] =
+		const char* epmem_find_edge_queries[2][2] = {
+			{
+				"SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<last ORDER BY last DESC",
+				"SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<last ORDER BY last DESC"
+			},
+			{
+				"SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND ?<last ORDER BY last DESC",
+				"SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? AND ?<last ORDER BY last DESC"
+			}
+		};
+
+		for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
+		{
+			for ( k=0; k<=1; k++ )
+			{
+				pool_find_edge_queries[ j ][ k ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_find_edge_queries[ j ][ k ] );
+			}
+		}
+
+		//
+
+		// Because the DB records when things are /inserted/, we need to offset
+		// the start by 1 to /remove/ them at the right time. Ditto to even
+		// include those intervals correctly
+		const char *epmem_find_interval_queries[2][2][3] =
 		{
 			{
 				{
-					"SELECT e.start AS start FROM node_range e WHERE e.id=? ORDER BY e.start DESC",
-					"SELECT e.start AS start FROM node_now e WHERE e.id=? ORDER BY e.start DESC",
-					"SELECT e.start AS start FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+					"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+					"SELECT (e.start - 1) AS start FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+					"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 				},
 				{
-					"SELECT e.end AS end FROM node_range e WHERE e.id=? ORDER BY e.end DESC",
-					"SELECT ? AS end FROM node_now e WHERE e.id=?",
-					"SELECT e.start AS end FROM node_point e WHERE e.id=? ORDER BY e.start DESC"
+					"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
+					"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+					"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 				}
 			},
 			{
 				{
-					"SELECT e.start AS start FROM edge_range e WHERE e.id=? ORDER BY e.start DESC",
-					"SELECT e.start AS start FROM edge_now e WHERE e.id=? ORDER BY e.start DESC",
-					"SELECT e.start AS start FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+					"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+					"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+					"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 				},
 				{
-					"SELECT e.end AS end FROM edge_range e WHERE e.id=? ORDER BY e.end DESC",
-					"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-					"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+					"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
+					"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
+					"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 				}
-			},
+			}
 		};
 
 		for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
@@ -780,24 +804,30 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 			{
 				for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 				{
-					pool_range_queries[ j ][ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_range_queries[ j ][ k ][ m ] );
+					pool_find_interval_queries[ j ][ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_find_interval_queries[ j ][ k ][ m ] );
 				}
 			}
 		}
 
 		//
 
-		const char *epmem_range_lti_queries[2][3] =
+		// notice that the start and end queries in epmem_find_lti_queries are _asymetric_
+		// in that the the starts have ?<e.start and the ends have ?<=e.start
+		// this small difference means that the start of the very first interval
+		// (ie. the one where the start is at or before the promotion time) will be ignored
+		// then we can simply add a single epmem_interval to the queue, and it will
+		// terminate any LTI interval appropriately
+		const char *epmem_find_lti_queries[2][3] =
 		{
 			{
-				"SELECT e.start AS start FROM edge_range e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
-				"SELECT e.start AS start FROM edge_now e WHERE e.start>? AND e.id=? ORDER BY e.start DESC",
-				"SELECT e.start AS start FROM edge_point e WHERE e.start>? AND e.id=? ORDER BY e.start DESC"
+				"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC",
+				"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC",
+				"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC"
 			},
 			{
-				"SELECT e.end AS end FROM edge_range e WHERE e.end>=? AND e.id=? ORDER BY e.end DESC",
-				"SELECT ? AS end FROM edge_now e WHERE e.id=?",
-				"SELECT e.start AS end FROM edge_point e WHERE e.id=? ORDER BY e.start DESC"
+				"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<=e.start AND e.start<=? ORDER BY e.end DESC",
+				"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start",
+				"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
 			}
 		};
 
@@ -805,13 +835,13 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 		{
 			for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 			{
-				pool_range_lti_queries[ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_range_lti_queries[ k ][ m ] );
+				pool_find_lti_queries[ k ][ m ] = new soar_module::sqlite_statement_pool( new_agent, new_db, epmem_find_lti_queries[ k ][ m ] );
 			}
 		}
-
+		
 		//
 
-		pool_range_lti_start = new soar_module::sqlite_statement_pool( new_agent, new_db, "SELECT ? as start" );
+		pool_dummy = new soar_module::sqlite_statement_pool( new_agent, new_db, "SELECT ? as start" );
 	}
 }
 
@@ -1305,11 +1335,19 @@ void epmem_close( agent *my_agent )
 
 			for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
 			{
+				for ( k=0; k<=1; k++ )
+				{
+					delete my_agent->epmem_stmts_graph->pool_find_edge_queries[ j ][ k ];
+				}
+			}
+
+			for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
+			{
 				for ( k=EPMEM_RANGE_START; k<=EPMEM_RANGE_END; k++ )
 				{
 					for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 					{
-						delete my_agent->epmem_stmts_graph->pool_range_queries[ j ][ k ][ m ];
+						delete my_agent->epmem_stmts_graph->pool_find_interval_queries[ j ][ k ][ m ];
 					}
 				}
 			}
@@ -1318,11 +1356,11 @@ void epmem_close( agent *my_agent )
 			{
 				for( m=EPMEM_RANGE_EP; m<=EPMEM_RANGE_POINT; m++ )
 				{
-					delete my_agent->epmem_stmts_graph->pool_range_lti_queries[ k ][ m ];
+					delete my_agent->epmem_stmts_graph->pool_find_lti_queries[ k ][ m ];
 				}
 			}
 			
-			delete my_agent->epmem_stmts_graph->pool_range_lti_start;
+			delete my_agent->epmem_stmts_graph->pool_dummy;
 		}
 		
 		// de-allocate statements
@@ -3161,68 +3199,6 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 
 #define JUSTIN_DEBUG false
 
-const char* epmem_dummy = "SELECT ? as start";
-
-const char* epmem_find_unique_edge_queries[2][2] = {
-	{
-		"SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND ?<last ORDER BY last DESC",
-		"SELECT child_id, value, last FROM node_unique WHERE parent_id=? AND attrib=? AND value=? AND ?<last ORDER BY last DESC"
-	},
-	{
-		"SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND ?<last ORDER BY last DESC",
-		"SELECT parent_id, q1, last FROM edge_unique WHERE q0=? AND w=? AND q1=? AND ?<last ORDER BY last DESC"
-	}
-};
-
-// Because the DB records when things are /inserted/, we need to offset
-// the start by 1 to /remove/ them at the right time. Ditto to even
-// include those intervals correctly
-const char* epmem_find_interval_queries[2][2][3] = {
-	{
-		{
-			"SELECT (e.start - 1) AS start FROM node_range e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM node_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
-		},
-		{
-			"SELECT e.end AS end FROM node_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM node_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
-			"SELECT e.start AS end FROM node_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
-		}
-	},
-	{
-		{
-			"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
-			"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
-		},
-		{
-			"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND e.start<=? ORDER BY e.end DESC",
-			"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
-			"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
-		}
-	}
-};
-
-// notice that the start and end queries in epmem_find_lti_queries are _asymetric_
-// in that the the starts have ?<e.start and the ends have ?<=e.start
-// this small difference means that the start of the very first interval
-// (ie. the one where the start is at or before the promotion time) will be ignored
-// then we can simply add a single epmem_interval to the queue, and it will
-// terminate any LTI interval appropriately
-const char* epmem_find_lti_queries[2][3] = {
-	{
-		"SELECT (e.start - 1) AS start FROM edge_range e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC",
-		"SELECT (e.start - 1) AS start FROM edge_now e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC",
-		"SELECT (e.start - 1) AS start FROM edge_point e WHERE e.id=? AND ?<e.start AND e.start<=? ORDER BY e.start DESC"
-	},
-	{
-		"SELECT e.end AS end FROM edge_range e WHERE e.id=? AND e.end>0 AND ?<=e.start AND e.start<=? ORDER BY e.end DESC",
-		"SELECT ? AS end FROM edge_now e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start",
-		"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND ?<=e.start AND e.start<=? ORDER BY e.start DESC"
-	}
-};
-
 void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
 	//std::map<epmem_node_id, std::string> tsh;
 	std::cout << std::endl;
@@ -3267,15 +3243,15 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 	// NODES / NODE->NODE
 	std::cout << "subgraph cluster_uedges{" << std::endl;
 	std::cout << "node [fillcolor=\"#FFD320\"]" << std::endl;
-	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
+	for (int type = EPMEM_RIT_STATE_NODE; type <= EPMEM_RIT_STATE_EDGE; type++) {
 		epmem_triple_uedge_map* uedge_cache = &uedge_caches[type];
 		for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->begin(); uedge_iter != uedge_cache->end(); uedge_iter++) {
 			epmem_triple triple = (*uedge_iter).first;
 			if (triple.q1 != EPMEM_NODEID_ROOT) {
-				if (type == EPMEM_TYPE_NODE) {
+				if (type == EPMEM_RIT_STATE_NODE) {
 					std::cout << "\"n" << triple.q1 << "\" [shape=\"rect\"]" << std::endl;
 				}
-				std::cout << "\"e" << triple.q0 << "\" -> \"" << (type == EPMEM_TYPE_NODE ? "n" : "e") << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
+				std::cout << "\"e" << triple.q0 << "\" -> \"" << (type == EPMEM_RIT_STATE_NODE ? "n" : "e") << triple.q1 << "\" [label=\"" << triple.w << "\"]" << std::endl;
 			}
 		}
 	}
@@ -3284,7 +3260,7 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 	std::cout << "subgraph cluster_pedges {" << std::endl;
 	std::cout << "node [fillcolor=\"#008000\"]" << std::endl;
 	std::multimap<epmem_node_id, epmem_pedge*> parent_pedge_map;
-	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
+	for (int type = EPMEM_RIT_STATE_NODE; type <= EPMEM_RIT_STATE_EDGE; type++) {
 		for (epmem_triple_pedge_map::iterator pedge_iter = pedge_caches[type].begin(); pedge_iter != pedge_caches[type].end(); pedge_iter++) {
 			epmem_triple triple = (*pedge_iter).first;
 			epmem_pedge* pedge = (*pedge_iter).second;
@@ -3311,7 +3287,7 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 	std::cout << "}" << std::endl;
 	// PEDGE->PEDGE / PEDGE->NODE
 	std::set<std::pair<epmem_pedge*, epmem_node_id> > drawn;
-	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
+	for (int type = EPMEM_RIT_STATE_NODE; type <= EPMEM_RIT_STATE_EDGE; type++) {
 		epmem_triple_uedge_map* uedge_cache = &uedge_caches[type];
 		for (epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->begin(); uedge_iter != uedge_cache->end(); uedge_iter++) {
 			epmem_triple triple = (*uedge_iter).first;
@@ -3359,7 +3335,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 	new(&(literal->children)) epmem_literal_set();
 
 	if (value->common.symbol_type != IDENTIFIER_SYMBOL_TYPE) { // WME is a value
-		literal->value_is_id = EPMEM_TYPE_NODE;
+		literal->value_is_id = EPMEM_RIT_STATE_NODE;
 		literal->is_leaf = true;
 		literal->q1 = epmem_temporal_hash(my_agent, value);
 		leaf_literals.insert(literal);
@@ -3368,7 +3344,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 		my_agent->epmem_stmts_graph->find_lti->bind_int(1, static_cast<uint64_t>(value->id.name_letter));
 		my_agent->epmem_stmts_graph->find_lti->bind_int(2, static_cast<uint64_t>(value->id.name_number));
 		if (my_agent->epmem_stmts_graph->find_lti->execute() == soar_module::row) {
-			literal->value_is_id = EPMEM_TYPE_EDGE;
+			literal->value_is_id = EPMEM_RIT_STATE_EDGE;
 			literal->is_leaf = true;
 			literal->q1 = my_agent->epmem_stmts_graph->find_lti->column_int(0);
 			my_agent->epmem_stmts_graph->find_lti->reinitialize();
@@ -3383,7 +3359,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 	} else { // WME is a normal identifier
 		// we determine whether it is a leaf by checking for children
 		epmem_wme_list* children = epmem_get_augs_of_id(value, get_new_tc_number(my_agent));
-		literal->value_is_id = EPMEM_TYPE_EDGE;
+		literal->value_is_id = EPMEM_RIT_STATE_EDGE;
 		literal->q1 = EPMEM_NODEID_BAD;
 
 		// if the WME has no children, then it's a leaf
@@ -3448,7 +3424,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 	return literal;
 }
 
-bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_pedge_pq& pedge_pq, epmem_sql_deque pedge_sql_pool[], epmem_time_id after, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[], agent* my_agent) {
+bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_pedge_pq& pedge_pq, epmem_time_id after, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[], agent* my_agent) {
 	// we don't need to keep track of visited literals/nodes because the literals are guaranteed to be acyclic
 	// that is, the expansion to the literal's children will eventually bottom out
 	// select the query
@@ -3464,17 +3440,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 	epmem_pedge* child_pedge = (*pedge_iter).second;
 	if (pedge_iter == pedge_cache->end() || (*pedge_iter).second == NULL) {
 		int has_value = (literal->q1 != EPMEM_NODEID_BAD ? 1 : 0);
-		const char* sql_statement = epmem_find_unique_edge_queries[is_edge][has_value];
-		soar_module::sqlite_statement* pedge_sql = NULL;
-		epmem_sql_deque* sql_pool = &pedge_sql_pool[(2 * is_edge) + has_value];
-		if (sql_pool->size()) {
-			pedge_sql = sql_pool->front();
-			sql_pool->pop_front();
-		} else {
-			allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &pedge_sql);
-			new(pedge_sql) soar_module::sqlite_statement(my_agent->epmem_db, sql_statement, my_agent->epmem_timers->query_sql_edge);
-			pedge_sql->prepare();
-		}
+		soar_module::pooled_sqlite_statement* pedge_sql = my_agent->epmem_stmts_graph->pool_find_edge_queries[is_edge][has_value]->request(my_agent->epmem_timers->query_sql_edge);
 		int bind_pos = 1;
 		pedge_sql->bind_int(bind_pos++, triple.q0);
 		pedge_sql->bind_int(bind_pos++, triple.w);
@@ -3492,13 +3458,11 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			new(&(child_pedge->literals)) epmem_literal_set();
 			child_pedge->literals.insert(literal);
 			child_pedge->time = child_pedge->sql->column_int(2);
-			child_pedge->pool = sql_pool;
 			pedge_pq.push(child_pedge);
 			(*pedge_cache)[triple] = child_pedge;
 			return true;
 		} else {
-			pedge_sql->reinitialize();
-			sql_pool->push_front(pedge_sql);
+			pedge_sql->get_pool()->release(pedge_sql);
 			return false;
 		}
 	} else if (!child_pedge->literals.count(literal)) {
@@ -3519,7 +3483,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 				epmem_uedge* child_uedge = (*uedge_iter).second;
 				if (child_triple.q1 != EPMEM_NODEID_BAD && child_uedge->value_is_id) {
 					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						created |= epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, my_agent);
+						created |= epmem_register_pedges(child_triple.q1, *child_iter, pedge_pq, after, pedge_caches, uedge_caches, my_agent);
 					}
 				}
 			}
@@ -3831,11 +3795,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	double current_score = 0;
 	int current_cardinality = 0;
 
-	// pools of interval SQL queries
-	epmem_sql_deque pedge_sql_pool[4];
-	epmem_sql_deque interval_sql_pool[2][2][3];
-	epmem_sql_deque interval_lti_sql_pool[2][3];
-
 	// variables needed for graphmatch
 	epmem_literal_deque gm_ordering;
 
@@ -3851,7 +3810,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		root_literal->id_sym = NULL;
 		root_literal->value_sym = pos_query;
 		root_literal->is_neg_q = EPMEM_NODE_POS;
-		root_literal->value_is_id = EPMEM_TYPE_EDGE;
+		root_literal->value_is_id = EPMEM_RIT_STATE_EDGE;
 		root_literal->is_leaf = false;
 		root_literal->is_current = false;
 		root_literal->w = EPMEM_NODEID_BAD;
@@ -3936,42 +3895,40 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		epmem_pedge* root_pedge;
 		allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &root_pedge);
 		root_pedge->triple = triple;
-		root_pedge->value_is_id = EPMEM_TYPE_EDGE;
+		root_pedge->value_is_id = EPMEM_RIT_STATE_EDGE;
 		root_pedge->has_noncurrent = false;
 		new(&(root_pedge->literals)) epmem_literal_set();
 		root_pedge->literals.insert(root_literal);
 		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_pedge->sql);
-		new(root_pedge->sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		root_pedge->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
 		root_pedge->sql->prepare();
 		root_pedge->sql->bind_int(1, LLONG_MAX);
 		root_pedge->sql->execute();
 		root_pedge->time = LLONG_MAX;
-		root_pedge->pool = NULL;
 		pedge_pq.push(root_pedge);
-		pedge_caches[EPMEM_TYPE_EDGE][triple] = root_pedge;
+		pedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_pedge;
 
 		epmem_uedge* root_uedge;
 		allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
 		root_uedge->triple = triple;
-		root_uedge->value_is_id = EPMEM_TYPE_EDGE;
+		root_uedge->value_is_id = EPMEM_RIT_STATE_EDGE;
 		root_uedge->has_noncurrent = false;
 		root_uedge->activation_count = 0;
 		new(&(root_uedge->pedges)) epmem_pedge_set();
 		root_uedge->intervals = 1;
 		root_uedge->activated = false;
-		uedge_caches[EPMEM_TYPE_EDGE][triple] = root_uedge;
+		uedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_uedge;
 
 		epmem_interval* root_interval;
 		allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &root_interval);
 		root_interval->uedge = root_uedge;
 		root_interval->is_end_point = true;
 		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_interval->sql);
-		new(root_interval->sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_dummy);
+		root_interval->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
 		root_interval->sql->prepare();
 		root_interval->sql->bind_int(1, before);
 		root_interval->sql->execute();
 		root_interval->time = before;
-		root_interval->pool = NULL;
 		interval_pq.push(root_interval);
 		interval_cleanup.insert(root_interval);
 	}
@@ -4008,7 +3965,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				for (epmem_literal_set::iterator literal_iter = pedge->literals.begin(); literal_iter != pedge->literals.end(); literal_iter++) {
 					epmem_literal* literal = *literal_iter;
 					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						created |= epmem_register_pedges(triple.q1, *child_iter, pedge_pq, pedge_sql_pool, after, pedge_caches, uedge_caches, my_agent);
+						created |= epmem_register_pedges(triple.q1, *child_iter, pedge_pq, after, pedge_caches, uedge_caches, my_agent);
 					}
 				}
 			}
@@ -4071,28 +4028,11 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 						// create the SQL query and bind it
 						// try to find an existing query first; if none exist, allocate a new one from the memory pools
-						soar_module::sqlite_statement* interval_sql = NULL;
-						epmem_sql_deque* sql_pool = NULL;
+						soar_module::pooled_sqlite_statement* interval_sql = NULL;
 						if (is_lti) {
-							sql_pool = &interval_lti_sql_pool[point_type][interval_type];
-							if (sql_pool->size()) {
-								interval_sql = sql_pool->front();
-								sql_pool->pop_front();
-							} else {
-								allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &interval_sql);
-								new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_lti_queries[point_type][interval_type], sql_timer);
-								interval_sql->prepare();
-							}
+							interval_sql = my_agent->epmem_stmts_graph->pool_find_lti_queries[point_type][interval_type]->request(sql_timer);
 						} else {
-							sql_pool = &interval_sql_pool[pedge->value_is_id][point_type][interval_type];
-							if (sql_pool->size()) {
-								interval_sql = sql_pool->front();
-								sql_pool->pop_front();
-							} else {
-								allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &interval_sql);
-								new(interval_sql) soar_module::sqlite_statement(my_agent->epmem_db, epmem_find_interval_queries[pedge->value_is_id][point_type][interval_type], sql_timer);
-								interval_sql->prepare();
-							}
+							interval_sql = my_agent->epmem_stmts_graph->pool_find_interval_queries[pedge->value_is_id][point_type][interval_type]->request(sql_timer);
 						}
 						int bind_pos = 1;
 						if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
@@ -4111,14 +4051,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval->uedge = uedge;
 							interval->time = interval_sql->column_int(0);
 							interval->sql = interval_sql;
-							interval->pool = sql_pool;
 							interval_pq.push(interval);
 							interval_cleanup.insert(interval);
 							uedge->intervals++;
 							created = true;
 						} else {
-							interval_sql->reinitialize();
-							sql_pool->push_front(interval_sql);
+							interval_sql->get_pool()->release(interval_sql);
 						}
 					}
 				}
@@ -4131,7 +4069,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						start_interval->is_end_point = EPMEM_RANGE_START;
 						start_interval->time = promo_time - 1;
 						start_interval->sql = NULL;
-						start_interval->pool = NULL;
 						interval_pq.push(start_interval);
 						interval_cleanup.insert(start_interval);
 					}
@@ -4159,9 +4096,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			if (pedge->sql && pedge->sql->execute() == soar_module::row) {
 				pedge->time = pedge->sql->column_int(2);
 				pedge_pq.push(pedge);
-			} else if (pedge->sql && pedge->pool) {
-				pedge->sql->reinitialize();
-				pedge->pool->push_front(pedge->sql);
+			} else if (pedge->sql) {
+				pedge->sql->get_pool()->release(pedge->sql);
 				pedge->sql = NULL;
 			}
 		}
@@ -4213,9 +4149,8 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				if (interval->uedge->has_noncurrent && interval->sql && interval->sql->execute() == soar_module::row) {
 					interval->time = interval->sql->column_int(0);
 					interval_pq.push(interval);
-				} else if (interval->sql && interval->pool) {
-					interval->sql->reinitialize();
-					interval->pool->push_front(interval->sql);
+				} else if (interval->sql) {
+					interval->sql->get_pool()->release(interval->sql);
 					interval->sql = NULL;
 					uedge->intervals--;
 					if (uedge->intervals) {
@@ -4384,7 +4319,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 		free_with_pool(&(my_agent->epmem_interval_pool), interval);
 	}
-	for (int type = EPMEM_TYPE_NODE; type <= EPMEM_TYPE_EDGE; type++) {
+	for (int type = EPMEM_RIT_STATE_NODE; type <= EPMEM_RIT_STATE_EDGE; type++) {
 		for (epmem_triple_pedge_map::iterator iter = pedge_caches[type].begin(); iter != pedge_caches[type].end(); iter++) {
 			epmem_pedge* pedge = (*iter).second;
 			if (pedge->sql) {
@@ -4406,29 +4341,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		literal->children.~epmem_literal_set();
 		literal->matches.~epmem_node_pair_set();
 		free_with_pool(&(my_agent->epmem_literal_pool), literal);
-	}
-	for (int i = 0; i < 2; i++) {
-		for (int j = 0; j < 2; j++) {
-			epmem_sql_deque* pool = &pedge_sql_pool[(2*i)+j];
-			for (epmem_sql_deque::iterator iter = pool->begin(); iter != pool->end(); iter++) {
-				(*iter)->~sqlite_statement();
-				free_with_pool(&(my_agent->epmem_sql_pool), *iter);
-			}
-			for (int k = 0; k < 3; k++) {
-				epmem_sql_deque* pool = &interval_sql_pool[i][j][k];
-				for (epmem_sql_deque::iterator iter = pool->begin(); iter != pool->end(); iter++) {
-					(*iter)->~sqlite_statement();
-					free_with_pool(&(my_agent->epmem_sql_pool), *iter);
-				}
-			}
-		}
-		for (int k = 0; k < 3; k++) {
-			epmem_sql_deque* pool = &interval_lti_sql_pool[i][k];
-			for (epmem_sql_deque::iterator iter = pool->begin(); iter != pool->end(); iter++) {
-				(*iter)->~sqlite_statement();
-				free_with_pool(&(my_agent->epmem_sql_pool), *iter);
-			}
-		}
 	}
 	my_agent->epmem_timers->query_cleanup->stop();
 
