@@ -32,6 +32,10 @@
 #include "instantiations.h"
 #include "decide.h"
 
+#ifdef EPMEM_EXPERIMENT
+std::ofstream* epmem_exp_output = NULL;
+#endif
+
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 // Bookmark strings to help navigate the code
@@ -1330,6 +1334,15 @@ void epmem_close( agent *my_agent )
 		// close the database
 		my_agent->epmem_db->disconnect();
 	}
+
+#ifdef EPMEM_EXPERIMENT
+	if ( epmem_exp_output )
+	{
+		epmem_exp_output->close();
+		delete epmem_exp_output;
+		epmem_exp_output = NULL;
+	}
+#endif
 }
 
 /***************************************************************************
@@ -5371,7 +5384,7 @@ void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::str
  * Notes		: Based upon trigger/force parameter settings, potentially
  * 				  records a new episode
  **************************************************************************/
-void epmem_consider_new_episode( agent *my_agent )
+bool epmem_consider_new_episode( agent *my_agent )
 {
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->epmem_timers->trigger->start();
@@ -5427,6 +5440,159 @@ void epmem_consider_new_episode( agent *my_agent )
 	if ( new_memory )
 	{
 		epmem_new_episode( my_agent );
+	}
+
+	return new_memory;
+}
+
+void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, bool& good_cue, int& path, epmem_time_id& retrieve, Symbol*& next, Symbol*& previous, Symbol*& query, Symbol*& neg_query, epmem_time_list& prohibit, epmem_time_id& before, epmem_time_id& after, soar_module::wme_set& cue_wmes )
+{
+	cue_wmes.clear();
+	
+	retrieve = EPMEM_MEMID_NONE;
+	next = NULL;
+	previous = NULL;
+	query = NULL;
+	neg_query = NULL;
+	prohibit.clear();
+	before = EPMEM_MEMID_NONE;
+	after = EPMEM_MEMID_NONE;
+	good_cue = true;
+	path = 0;
+	
+	for ( epmem_wme_list::iterator w_p=cmds->begin(); w_p!=cmds->end(); w_p++ )
+	{
+		cue_wmes.insert( (*w_p) );
+		
+		if ( good_cue )
+		{
+			// collect information about known commands
+			if ( (*w_p)->attr == my_agent->epmem_sym_retrieve )
+			{
+				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
+					 ( path == 0 ) &&
+					 ( (*w_p)->value->ic.value > 0 ) )
+				{							
+					retrieve = (*w_p)->value->ic.value;
+					path = 1;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_next )
+			{
+				if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+					 ( path == 0 ) )
+				{							
+					next = (*w_p)->value;
+					path = 2;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_prev )
+			{
+				if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+					 ( path == 0 ) )
+				{
+					previous = (*w_p)->value;
+					path = 2;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_query )
+			{
+				if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+					 ( ( path == 0 ) || ( path == 3 ) ) &&
+					 ( query == NULL ) )
+
+				{
+					query = (*w_p)->value;
+					path = 3;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_negquery )
+			{
+				if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+					 ( ( path == 0 ) || ( path == 3 ) ) &&
+					 ( neg_query == NULL ) )
+
+				{
+					neg_query = (*w_p)->value;
+					path = 3;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_before )
+			{
+				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
+					 ( ( path == 0 ) || ( path == 3 ) ) )
+				{
+					before = (*w_p)->value->ic.value;
+					path = 3;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_after )
+			{
+				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
+					 ( ( path == 0 ) || ( path == 3 ) ) )
+				{
+					after = (*w_p)->value->ic.value;
+					path = 3;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_prohibit )
+			{
+				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
+					 ( ( path == 0 ) || ( path == 3 ) ) )
+				{
+					prohibit.push_back( (*w_p)->value->ic.value );
+					path = 3;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else
+			{
+				good_cue = false;
+			}
+		}
+	}
+
+	// if on path 3 must have query
+	if ( ( path == 3 ) && ( query == NULL ) )
+	{
+		good_cue = false;
+	}
+
+	// must be on a path
+	if ( path == 0 )
+	{
+		good_cue = false;
 	}
 }
 
@@ -5550,162 +5716,15 @@ void epmem_respond_to_cmd( agent *my_agent )
 		// a command is issued if the cue is new
 		// and there is something on the cue
 		if ( new_cue && wme_count )
-		{
-			cue_wmes.clear();
-			retrieval_wmes.clear();
-			meta_wmes.clear();
-			
-			// initialize command vars
-			retrieve = EPMEM_MEMID_NONE;
-			next = NULL;
-			previous = NULL;
-			query = NULL;
-			neg_query = NULL;
-			prohibit.clear();
-			before = EPMEM_MEMID_NONE;
-			after = EPMEM_MEMID_NONE;
-			good_cue = true;
-			path = 0;
-
-			// process top-level symbols
-			for ( w_p=cmds->begin(); w_p!=cmds->end(); w_p++ )
-			{
-				cue_wmes.insert( (*w_p) );
-				
-				if ( good_cue )
-				{
-					// collect information about known commands
-					if ( (*w_p)->attr == my_agent->epmem_sym_retrieve )
-					{
-						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( path == 0 ) &&
-							 ( (*w_p)->value->ic.value > 0 ) )
-						{							
-							retrieve = (*w_p)->value->ic.value;
-							path = 1;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_next )
-					{
-						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( path == 0 ) )
-						{							
-							next = (*w_p)->value;
-							path = 2;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_prev )
-					{
-						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( path == 0 ) )
-						{
-							previous = (*w_p)->value;
-							path = 2;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_query )
-					{
-						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) &&
-							 ( query == NULL ) )
-
-						{
-							query = (*w_p)->value;
-							path = 3;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_negquery )
-					{
-						if ( ( (*w_p)->value->id.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) &&
-							 ( neg_query == NULL ) )
-
-						{
-							neg_query = (*w_p)->value;
-							path = 3;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_before )
-					{
-						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) )
-						{
-							before = (*w_p)->value->ic.value;
-							path = 3;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_after )
-					{
-						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) )
-						{
-							after = (*w_p)->value->ic.value;
-							path = 3;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else if ( (*w_p)->attr == my_agent->epmem_sym_prohibit )
-					{
-						if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
-							 ( ( path == 0 ) || ( path == 3 ) ) )
-						{
-							prohibit.push_back( (*w_p)->value->ic.value );
-							path = 3;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else
-					{
-						good_cue = false;
-					}
-				}
-			}
-
-			// if on path 3 must have query
-			if ( ( path == 3 ) && ( query == NULL ) )
-			{
-				good_cue = false;
-			}
-
-			// must be on a path
-			if ( path == 0 )
-			{
-				good_cue = false;
-			}
+		{			
+			_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes );
 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->epmem_timers->api->stop();
 			////////////////////////////////////////////////////////////////////////////
+
+			retrieval_wmes.clear();
+			meta_wmes.clear();
 
 			// process command
 			if ( good_cue )
@@ -5826,6 +5845,260 @@ void epmem_respond_to_cmd( agent *my_agent )
 	}
 }
 
+#ifdef EPMEM_EXPERIMENT
+void inline _epmem_exp( agent* my_agent )
+{
+	// hopefully generally useful code for evaluating
+	// query speed as number of episodes increases
+	// usage: top-state.epmem.queries <q>
+	//        <q> ^reps #
+	//            ^output |filename|
+	//            ^format << csv speedy >>
+	//            ^commands <cmds>
+	//        <cmds> ^|label| <cmd>
+
+	clock_t c1;
+
+	c1 = clock();
+	bool new_episode = epmem_consider_new_episode( my_agent );
+	c1 = ( clock() - c1 );
+
+	if ( new_episode )
+	{
+		Symbol* queries = make_sym_constant( my_agent, "queries" );
+		Symbol* reps = make_sym_constant( my_agent, "reps" );
+		Symbol* output = make_sym_constant( my_agent, "output" );
+		Symbol* format = make_sym_constant( my_agent, "format" );
+		Symbol* cmds = make_sym_constant( my_agent, "commands" );
+
+		Symbol* csv = make_sym_constant( my_agent, "csv" );
+		
+		// TODO:
+		// - refactor respond_to_cmd
+		//   - memory pools
+		//   - separate "parser" (to be called by both experimentation and respond_to_cmd)
+		// - parse this syntax
+		// - output formatting
+
+		slot* queries_slot = find_slot( my_agent->top_goal->id.epmem_header, queries );
+		if ( queries_slot )
+		{
+			wme* queries_wme = queries_slot->wmes;
+			
+			if ( queries_wme->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+			{
+				Symbol* queries_id = queries_wme->value;
+				slot* reps_slot = find_slot( queries_id, reps );
+				slot* output_slot = find_slot( queries_id, output );
+				slot* format_slot = find_slot( queries_id, format );
+				slot* commands_slot = find_slot( queries_id, cmds );
+
+				if ( reps_slot && output_slot && format_slot && commands_slot )
+				{
+					wme* reps_wme = reps_slot->wmes;
+					wme* output_wme = output_slot->wmes;
+					wme* format_wme = format_slot->wmes;
+					wme* commands_wme = commands_slot->wmes;
+
+					if ( ( reps_wme->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
+						 ( output_wme->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) && 
+						 ( format_wme->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) &&
+						 ( commands_wme->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) )
+					{
+						int64_t reps = reps_wme->value->ic.value;
+						const char* output_fname = output_wme->value->sc.name;
+						bool format_csv = ( format_wme->value == csv );
+						std::map< std::string, std::string > output_contents;
+						std::string temp_str, temp_str2;
+
+						// all fields (used to produce csv header), possibly stub values at this point
+						{
+							// episode number
+							{
+								to_string( my_agent->epmem_stats->time->get_value()-1, temp_str );
+								output_contents[ "episodes" ] = temp_str;
+							}
+
+							// decision
+							{
+								to_string( my_agent->d_cycle_count, temp_str );
+								output_contents[ "dc" ] = temp_str;
+							}
+							
+							// storage time in seconds
+							{
+								to_string( static_cast<double>( static_cast<double>( c1 ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
+								output_contents[ "storagesec" ] = temp_str;
+							}
+
+							// reps
+							{
+								to_string( reps, temp_str );
+								output_contents[ "reps" ] = temp_str;
+							}
+
+							// commands
+							for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
+							{
+								temp_str.assign( "v" );
+								temp_str.append( s->attr->sc.name );
+								temp_str.append( "totalsec" );
+
+								output_contents[ temp_str ] = "";
+							}
+						}
+
+						// open file, write header
+						if ( !epmem_exp_output )
+						{
+							epmem_exp_output = new std::ofstream( output_fname );
+
+							if ( format_csv )
+							{
+								for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
+								{
+									if ( it != output_contents.begin() )
+									{
+										(*epmem_exp_output) << ",";
+									}
+
+									(*epmem_exp_output) << "\"" << it->first << "\"";
+								}
+
+								(*epmem_exp_output) << std::endl;
+							}
+						}
+
+						// collect timing data
+						{
+							epmem_wme_list* cmds = NULL;
+							soar_module::wme_set cue_wmes;
+							soar_module::symbol_triple_list meta_wmes;
+							soar_module::symbol_triple_list retrieval_wmes;
+
+							epmem_time_id retrieve;
+							Symbol* next;
+							Symbol* previous;
+							Symbol* query;
+							Symbol* neg_query;
+							epmem_time_list prohibit;
+							epmem_time_id before, after;
+							bool good_cue;
+							int path;
+
+							//
+							
+							for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
+							{
+								if ( s->wmes->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+								{
+									// parse command once
+									{
+										cmds = epmem_get_augs_of_id( s->wmes->value, get_new_tc_number( my_agent ) );
+										_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes );
+									}
+
+									if ( good_cue && ( path == 3 ) )
+									{
+										// execute lots of times
+										clock_t c_total = 0;
+										{
+											c1 = clock();
+											for ( int64_t i=1; i<=reps; i++ )
+											{												
+												epmem_process_query( my_agent, my_agent->top_goal, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes, 2 );
+
+												if ( !retrieval_wmes.empty() || !meta_wmes.empty() )
+												{
+													soar_module::symbol_triple_list::iterator mw_it;
+
+													for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
+													{
+														symbol_remove_ref( my_agent, (*mw_it)->id );
+														symbol_remove_ref( my_agent, (*mw_it)->attr );
+														symbol_remove_ref( my_agent, (*mw_it)->value );
+														
+														delete (*mw_it);
+													}
+													retrieval_wmes.clear();
+
+													for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
+													{
+														symbol_remove_ref( my_agent, (*mw_it)->id );
+														symbol_remove_ref( my_agent, (*mw_it)->attr );
+														symbol_remove_ref( my_agent, (*mw_it)->value );
+														
+														delete (*mw_it);
+													}
+													meta_wmes.clear();
+												}
+											}
+											c_total += ( clock() - c1 );
+										}
+
+										// update results
+										{
+											temp_str.assign( "v" );
+											temp_str.append( s->attr->sc.name );
+											temp_str.append( "totalsec" );
+
+											to_string( static_cast<double>( static_cast<double>( c_total ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str2 );
+											output_contents[ temp_str ] = temp_str2;
+										}
+									}
+
+									// clean
+									{
+										delete cmds;
+									}
+								}
+							}
+						}
+
+						// output data
+						if ( format_csv )
+						{
+							for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
+							{
+								if ( it != output_contents.begin() )
+								{
+									(*epmem_exp_output) << ",";
+								}
+
+								(*epmem_exp_output) << "\"" << it->second << "\"";
+							}
+
+							(*epmem_exp_output) << std::endl;
+						}
+						else
+						{
+							for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
+							{
+								if ( it != output_contents.begin() )
+								{
+									(*epmem_exp_output) << " ";
+								}
+
+								(*epmem_exp_output) << it->first << "=" << it->second;
+							}
+
+							(*epmem_exp_output) << std::endl;
+						}
+					}
+				}
+			}
+		}
+
+		symbol_remove_ref( my_agent, queries );
+		symbol_remove_ref( my_agent, reps );
+		symbol_remove_ref( my_agent, output );
+		symbol_remove_ref( my_agent, format );
+		symbol_remove_ref( my_agent, cmds );
+		symbol_remove_ref( my_agent, csv );
+	}
+}
+#endif
+
 /***************************************************************************
  * Function     : epmem_go
  * Author		: Nate Derbinsky
@@ -5843,6 +6116,9 @@ void epmem_go( agent *my_agent )
 	epmem_respond_to_cmd( my_agent );
 
 #else // EPMEM_EXPERIMENT
+
+	_epmem_exp( my_agent );
+	epmem_respond_to_cmd( my_agent );
 
 #endif // EPMEM_EXPERIMENT
 
