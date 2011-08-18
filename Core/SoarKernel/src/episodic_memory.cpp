@@ -5852,6 +5852,7 @@ void inline _epmem_exp( agent* my_agent )
 	// query speed as number of episodes increases
 	// usage: top-state.epmem.queries <q>
 	//        <q> ^reps #
+	//            ^mod # (optional, defaults to 1)
 	//            ^output |filename|
 	//            ^format << csv speedy >>
 	//            ^commands <cmds>
@@ -5867,6 +5868,7 @@ void inline _epmem_exp( agent* my_agent )
 	{
 		Symbol* queries = make_sym_constant( my_agent, "queries" );
 		Symbol* reps = make_sym_constant( my_agent, "reps" );
+		Symbol* mod = make_sym_constant( my_agent, "mod" );
 		Symbol* output = make_sym_constant( my_agent, "output" );
 		Symbol* format = make_sym_constant( my_agent, "format" );
 		Symbol* cmds = make_sym_constant( my_agent, "commands" );
@@ -5889,6 +5891,7 @@ void inline _epmem_exp( agent* my_agent )
 			{
 				Symbol* queries_id = queries_wme->value;
 				slot* reps_slot = find_slot( queries_id, reps );
+				slot* mod_slot = find_slot( queries_id, mod );
 				slot* output_slot = find_slot( queries_id, output );
 				slot* format_slot = find_slot( queries_id, format );
 				slot* commands_slot = find_slot( queries_id, cmds );
@@ -5896,6 +5899,7 @@ void inline _epmem_exp( agent* my_agent )
 				if ( reps_slot && output_slot && format_slot && commands_slot )
 				{
 					wme* reps_wme = reps_slot->wmes;
+					wme* mod_wme = ( ( mod_slot )?( mod_slot->wmes ):( NULL ) );
 					wme* output_wme = output_slot->wmes;
 					wme* format_wme = format_slot->wmes;
 					wme* commands_wme = commands_slot->wmes;
@@ -5906,53 +5910,160 @@ void inline _epmem_exp( agent* my_agent )
 						 ( commands_wme->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) )
 					{
 						int64_t reps = reps_wme->value->ic.value;
+						int64_t mod = ( ( mod_wme && ( mod_wme->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )?( mod_wme->value->ic.value ):(1) );
 						const char* output_fname = output_wme->value->sc.name;
 						bool format_csv = ( format_wme->value == csv );
 						std::map< std::string, std::string > output_contents;
 						std::string temp_str, temp_str2;
 
-						// all fields (used to produce csv header), possibly stub values at this point
+						if ( ( my_agent->d_cycle_count % mod ) == 0 )
 						{
-							// episode number
+
+							// all fields (used to produce csv header), possibly stub values at this point
 							{
-								to_string( my_agent->epmem_stats->time->get_value()-1, temp_str );
-								output_contents[ "episodes" ] = temp_str;
+								// episode number
+								{
+									to_string( my_agent->epmem_stats->time->get_value()-1, temp_str );
+									output_contents[ "episodes" ] = temp_str;
+								}
+
+								// decision
+								{
+									to_string( my_agent->d_cycle_count, temp_str );
+									output_contents[ "dc" ] = temp_str;
+								}
+								
+								// storage time in seconds
+								{
+									to_string( static_cast<double>( static_cast<double>( c1 ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
+									output_contents[ "storagesec" ] = temp_str;
+								}
+
+								// reps
+								{
+									to_string( reps, temp_str );
+									output_contents[ "reps" ] = temp_str;
+								}
+
+								// commands
+								for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
+								{
+									temp_str.assign( "v" );
+									temp_str.append( s->attr->sc.name );
+									temp_str.append( "totalsec" );
+
+									output_contents[ temp_str ] = "";
+								}
 							}
 
-							// decision
+							// open file, write header
+							if ( !epmem_exp_output )
 							{
-								to_string( my_agent->d_cycle_count, temp_str );
-								output_contents[ "dc" ] = temp_str;
+								epmem_exp_output = new std::ofstream( output_fname );
+
+								if ( format_csv )
+								{
+									for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
+									{
+										if ( it != output_contents.begin() )
+										{
+											(*epmem_exp_output) << ",";
+										}
+
+										(*epmem_exp_output) << "\"" << it->first << "\"";
+									}
+
+									(*epmem_exp_output) << std::endl;
+								}
 							}
-							
-							// storage time in seconds
+
+							// collect timing data
 							{
-								to_string( static_cast<double>( static_cast<double>( c1 ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
-								output_contents[ "storagesec" ] = temp_str;
+								epmem_wme_list* cmds = NULL;
+								soar_module::wme_set cue_wmes;
+								soar_module::symbol_triple_list meta_wmes;
+								soar_module::symbol_triple_list retrieval_wmes;
+
+								epmem_time_id retrieve;
+								Symbol* next;
+								Symbol* previous;
+								Symbol* query;
+								Symbol* neg_query;
+								epmem_time_list prohibit;
+								epmem_time_id before, after;
+								bool good_cue;
+								int path;
+
+								//
+								
+								for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
+								{
+									if ( s->wmes->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+									{
+										// parse command once
+										{
+											cmds = epmem_get_augs_of_id( s->wmes->value, get_new_tc_number( my_agent ) );
+											_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes );
+										}
+
+										if ( good_cue && ( path == 3 ) )
+										{
+											// execute lots of times
+											clock_t c_total = 0;
+											{
+												c1 = clock();
+												for ( int64_t i=1; i<=reps; i++ )
+												{												
+													epmem_process_query( my_agent, my_agent->top_goal, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes, 2 );
+
+													if ( !retrieval_wmes.empty() || !meta_wmes.empty() )
+													{
+														soar_module::symbol_triple_list::iterator mw_it;
+
+														for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
+														{
+															symbol_remove_ref( my_agent, (*mw_it)->id );
+															symbol_remove_ref( my_agent, (*mw_it)->attr );
+															symbol_remove_ref( my_agent, (*mw_it)->value );
+															
+															delete (*mw_it);
+														}
+														retrieval_wmes.clear();
+
+														for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
+														{
+															symbol_remove_ref( my_agent, (*mw_it)->id );
+															symbol_remove_ref( my_agent, (*mw_it)->attr );
+															symbol_remove_ref( my_agent, (*mw_it)->value );
+															
+															delete (*mw_it);
+														}
+														meta_wmes.clear();
+													}
+												}
+												c_total += ( clock() - c1 );
+											}
+
+											// update results
+											{
+												temp_str.assign( "v" );
+												temp_str.append( s->attr->sc.name );
+												temp_str.append( "totalsec" );
+
+												to_string( static_cast<double>( static_cast<double>( c_total ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str2 );
+												output_contents[ temp_str ] = temp_str2;
+											}
+										}
+
+										// clean
+										{
+											delete cmds;
+										}
+									}
+								}
 							}
 
-							// reps
-							{
-								to_string( reps, temp_str );
-								output_contents[ "reps" ] = temp_str;
-							}
-
-							// commands
-							for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
-							{
-								temp_str.assign( "v" );
-								temp_str.append( s->attr->sc.name );
-								temp_str.append( "totalsec" );
-
-								output_contents[ temp_str ] = "";
-							}
-						}
-
-						// open file, write header
-						if ( !epmem_exp_output )
-						{
-							epmem_exp_output = new std::ofstream( output_fname );
-
+							// output data
 							if ( format_csv )
 							{
 								for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
@@ -5962,127 +6073,25 @@ void inline _epmem_exp( agent* my_agent )
 										(*epmem_exp_output) << ",";
 									}
 
-									(*epmem_exp_output) << "\"" << it->first << "\"";
+									(*epmem_exp_output) << "\"" << it->second << "\"";
 								}
 
 								(*epmem_exp_output) << std::endl;
 							}
-						}
-
-						// collect timing data
-						{
-							epmem_wme_list* cmds = NULL;
-							soar_module::wme_set cue_wmes;
-							soar_module::symbol_triple_list meta_wmes;
-							soar_module::symbol_triple_list retrieval_wmes;
-
-							epmem_time_id retrieve;
-							Symbol* next;
-							Symbol* previous;
-							Symbol* query;
-							Symbol* neg_query;
-							epmem_time_list prohibit;
-							epmem_time_id before, after;
-							bool good_cue;
-							int path;
-
-							//
-							
-							for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
+							else
 							{
-								if ( s->wmes->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+								for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
 								{
-									// parse command once
+									if ( it != output_contents.begin() )
 									{
-										cmds = epmem_get_augs_of_id( s->wmes->value, get_new_tc_number( my_agent ) );
-										_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes );
+										(*epmem_exp_output) << " ";
 									}
 
-									if ( good_cue && ( path == 3 ) )
-									{
-										// execute lots of times
-										clock_t c_total = 0;
-										{
-											c1 = clock();
-											for ( int64_t i=1; i<=reps; i++ )
-											{												
-												epmem_process_query( my_agent, my_agent->top_goal, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes, 2 );
-
-												if ( !retrieval_wmes.empty() || !meta_wmes.empty() )
-												{
-													soar_module::symbol_triple_list::iterator mw_it;
-
-													for ( mw_it=retrieval_wmes.begin(); mw_it!=retrieval_wmes.end(); mw_it++ )
-													{
-														symbol_remove_ref( my_agent, (*mw_it)->id );
-														symbol_remove_ref( my_agent, (*mw_it)->attr );
-														symbol_remove_ref( my_agent, (*mw_it)->value );
-														
-														delete (*mw_it);
-													}
-													retrieval_wmes.clear();
-
-													for ( mw_it=meta_wmes.begin(); mw_it!=meta_wmes.end(); mw_it++ )
-													{
-														symbol_remove_ref( my_agent, (*mw_it)->id );
-														symbol_remove_ref( my_agent, (*mw_it)->attr );
-														symbol_remove_ref( my_agent, (*mw_it)->value );
-														
-														delete (*mw_it);
-													}
-													meta_wmes.clear();
-												}
-											}
-											c_total += ( clock() - c1 );
-										}
-
-										// update results
-										{
-											temp_str.assign( "v" );
-											temp_str.append( s->attr->sc.name );
-											temp_str.append( "totalsec" );
-
-											to_string( static_cast<double>( static_cast<double>( c_total ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str2 );
-											output_contents[ temp_str ] = temp_str2;
-										}
-									}
-
-									// clean
-									{
-										delete cmds;
-									}
-								}
-							}
-						}
-
-						// output data
-						if ( format_csv )
-						{
-							for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
-							{
-								if ( it != output_contents.begin() )
-								{
-									(*epmem_exp_output) << ",";
+									(*epmem_exp_output) << it->first << "=" << it->second;
 								}
 
-								(*epmem_exp_output) << "\"" << it->second << "\"";
+								(*epmem_exp_output) << std::endl;
 							}
-
-							(*epmem_exp_output) << std::endl;
-						}
-						else
-						{
-							for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
-							{
-								if ( it != output_contents.begin() )
-								{
-									(*epmem_exp_output) << " ";
-								}
-
-								(*epmem_exp_output) << it->first << "=" << it->second;
-							}
-
-							(*epmem_exp_output) << std::endl;
 						}
 					}
 				}
@@ -6091,6 +6100,7 @@ void inline _epmem_exp( agent* my_agent )
 
 		symbol_remove_ref( my_agent, queries );
 		symbol_remove_ref( my_agent, reps );
+		symbol_remove_ref( my_agent, mod );
 		symbol_remove_ref( my_agent, output );
 		symbol_remove_ref( my_agent, format );
 		symbol_remove_ref( my_agent, cmds );
