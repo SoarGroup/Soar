@@ -93,7 +93,7 @@ namespace cli
             insertion->assign(iter->second[0]);
 
             // insert any remaining args after that one
-            for (int i = 1; i < iter->second.size(); ++i)
+            for (unsigned int i = 1; i < iter->second.size(); ++i)
             {
                 ++insertion;
                 insertion = argv.insert(insertion, iter->second[i]);
