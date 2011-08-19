@@ -5916,7 +5916,7 @@ void inline _epmem_exp( agent* my_agent )
 						std::map< std::string, std::string > output_contents;
 						std::string temp_str, temp_str2;
 
-						if ( ( my_agent->d_cycle_count % mod ) == 0 )
+						if ( ( ( my_agent->epmem_stats->time->get_value()-1 ) % mod ) == 1 )
 						{
 
 							// all fields (used to produce csv header), possibly stub values at this point
