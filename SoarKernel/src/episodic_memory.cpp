@@ -33,8 +33,6 @@
 #include "instantiations.h"
 #include "decide.h"
 
-#define EPMEM_EXPERIMENT 1
-
 #ifdef EPMEM_EXPERIMENT
 std::ofstream* epmem_exp_output = NULL;
 #endif
@@ -3744,7 +3742,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 	return false;
 }
 
-void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_symbol_set& currents, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes) {
+void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symbol *neg_query, epmem_time_list& prohibits, epmem_time_id before, epmem_time_id after, epmem_symbol_set& currents, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, int level=3) {
 	// a query must contain a positive cue
 	if (pos_query == NULL) {
 		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_status, my_agent->epmem_sym_bad_cmd);
@@ -3813,515 +3811,519 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	// variables needed for graphmatch
 	epmem_literal_deque gm_ordering;
 
-	// build the DNF graph while checking for leaf WMEs
-	{
-		my_agent->epmem_timers->query_dnf->start();
-		epmem_wme_list* pos_query_wmes = epmem_get_augs_of_id(pos_query, get_new_tc_number(my_agent));
-		epmem_wme_list* neg_query_wmes = NULL;
-		if (neg_query != NULL) {
-			neg_query_wmes = epmem_get_augs_of_id(neg_query, get_new_tc_number(my_agent));
-		}
+	if (level > 1) {
+		// build the DNF graph while checking for leaf WMEs
+		{
+			my_agent->epmem_timers->query_dnf->start();
+			epmem_wme_list* pos_query_wmes = epmem_get_augs_of_id(pos_query, get_new_tc_number(my_agent));
+			epmem_wme_list* neg_query_wmes = NULL;
+			if (neg_query != NULL) {
+				neg_query_wmes = epmem_get_augs_of_id(neg_query, get_new_tc_number(my_agent));
+			}
 
-		root_literal->id_sym = NULL;
-		root_literal->value_sym = pos_query;
-		root_literal->is_neg_q = EPMEM_NODE_POS;
-		root_literal->value_is_id = EPMEM_RIT_STATE_EDGE;
-		root_literal->is_leaf = false;
-		root_literal->is_current = false;
-		root_literal->w = EPMEM_NODEID_BAD;
-		root_literal->q1 = EPMEM_NODEID_ROOT;
-		root_literal->weight = 0.0;
-		root_literal->satisfied = false;
-		new(&(root_literal->parents)) epmem_literal_set();
-		new(&(root_literal->children)) epmem_literal_set();
+			root_literal->id_sym = NULL;
+			root_literal->value_sym = pos_query;
+			root_literal->is_neg_q = EPMEM_NODE_POS;
+			root_literal->value_is_id = EPMEM_RIT_STATE_EDGE;
+			root_literal->is_leaf = false;
+			root_literal->is_current = false;
+			root_literal->w = EPMEM_NODEID_BAD;
+			root_literal->q1 = EPMEM_NODEID_ROOT;
+			root_literal->weight = 0.0;
+			root_literal->satisfied = false;
+			new(&(root_literal->parents)) epmem_literal_set();
+			new(&(root_literal->children)) epmem_literal_set();
 #ifdef USE_MEM_POOL_ALLOCATORS
-		new(&(root_literal->matches)) epmem_node_pair_set(std::less<epmem_node_pair>(), soar_module::soar_memory_pool_allocator<epmem_node_pair>(my_agent));
+			new(&(root_literal->matches)) epmem_node_pair_set(std::less<epmem_node_pair>(), soar_module::soar_memory_pool_allocator<epmem_node_pair>(my_agent));
 #else
-		new(&(root_literal->matches)) epmem_node_pair_set();
+			new(&(root_literal->matches)) epmem_node_pair_set();
 #endif
-		symbol_incoming_count[pos_query] = 1;
-		sym_cache[NULL] = root_literal;
+			symbol_incoming_count[pos_query] = 1;
+			sym_cache[NULL] = root_literal;
 
-		std::set<Symbol*> visiting;
-		visiting.insert(pos_query);
-		visiting.insert(neg_query);
-		for (int query_type = EPMEM_NODE_POS; query_type <= EPMEM_NODE_NEG; query_type++) {
-			epmem_wme_list* query_wmes = NULL;
-			switch (query_type) {
-				case EPMEM_NODE_POS:
-					query_wmes = pos_query_wmes;
-					break;
-				case EPMEM_NODE_NEG:
-					query_wmes = neg_query_wmes;
-					break;
-			}
-			if (!query_wmes) {
-				continue;
-			}
-			// for each first level WME, build up a DNF
-			while (query_wmes->size()) {
-				wme* first_level = query_wmes->front();
-				query_wmes->pop_front();
-				epmem_literal* root = epmem_build_dnf(first_level, sym_cache, leaf_literals, symbol_incoming_count, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
-				if (root) {
-					// force all first level literals to have the same id symbol
-					root->id_sym = pos_query;
-					root->parents.insert(root_literal);
-					root_literal->children.insert(root);
+			std::set<Symbol*> visiting;
+			visiting.insert(pos_query);
+			visiting.insert(neg_query);
+			for (int query_type = EPMEM_NODE_POS; query_type <= EPMEM_NODE_NEG; query_type++) {
+				epmem_wme_list* query_wmes = NULL;
+				switch (query_type) {
+					case EPMEM_NODE_POS:
+						query_wmes = pos_query_wmes;
+						break;
+					case EPMEM_NODE_NEG:
+						query_wmes = neg_query_wmes;
+						break;
 				}
+				if (!query_wmes) {
+					continue;
+				}
+				// for each first level WME, build up a DNF
+				while (query_wmes->size()) {
+					wme* first_level = query_wmes->front();
+					query_wmes->pop_front();
+					epmem_literal* root = epmem_build_dnf(first_level, sym_cache, leaf_literals, symbol_incoming_count, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
+					if (root) {
+						// force all first level literals to have the same id symbol
+						root->id_sym = pos_query;
+						root->parents.insert(root_literal);
+						root_literal->children.insert(root);
+					}
+				}
+				delete query_wmes;
 			}
-			delete query_wmes;
+			my_agent->epmem_timers->query_dnf->stop();
 		}
-		my_agent->epmem_timers->query_dnf->stop();
-	}
 
-	// sort the literals if the order is undefined
-	if (gm_order == epmem_param_container::gm_order_undefined) {
-		std::sort(gm_ordering.begin(), gm_ordering.end());
-	}
-
-	// calculate the highest possible score and cardinality score
-	double perfect_score = 0;
-	int perfect_cardinality = 0;
-	for (epmem_literal_set::iterator iter = leaf_literals.begin(); iter != leaf_literals.end(); iter++) {
-		if (!(*iter)->is_neg_q) {
-			perfect_score += (*iter)->weight;
-			perfect_cardinality++;
+		// sort the literals if the order is undefined
+		if (gm_order == epmem_param_container::gm_order_undefined) {
+			std::sort(gm_ordering.begin(), gm_ordering.end());
 		}
-	}
 
-	// set default values for before and after
-	if (before == EPMEM_MEMID_NONE) {
-		before = my_agent->epmem_stats->time->get_value() - 1;
-	} else {
-		before = before - 1; // since before's are strict
-	}
-	if (after == EPMEM_MEMID_NONE) {
-		after = 0;
-	}
-	epmem_time_id current_episode = before;
-	epmem_time_id next_episode;
-
-	// create dummy edges and intervals
-	{
-		// insert dummy unique edge and interval end point queries for DNF root
-		// we make an SQL statement just so we don't have to do anything special at cleanup
-		epmem_triple triple = {EPMEM_NODEID_BAD, EPMEM_NODEID_BAD, EPMEM_NODEID_ROOT};
-		epmem_pedge* root_pedge;
-		allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &root_pedge);
-		root_pedge->triple = triple;
-		root_pedge->value_is_id = EPMEM_RIT_STATE_EDGE;
-		root_pedge->has_noncurrent = false;
-		new(&(root_pedge->literals)) epmem_literal_set();
-		root_pedge->literals.insert(root_literal);
-		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_pedge->sql);
-		root_pedge->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
-		root_pedge->sql->prepare();
-		root_pedge->sql->bind_int(1, LLONG_MAX);
-		root_pedge->sql->execute();
-		root_pedge->time = LLONG_MAX;
-		pedge_pq.push(root_pedge);
-		pedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_pedge;
-
-		epmem_uedge* root_uedge;
-		allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
-		root_uedge->triple = triple;
-		root_uedge->value_is_id = EPMEM_RIT_STATE_EDGE;
-		root_uedge->has_noncurrent = false;
-		root_uedge->activation_count = 0;
-		new(&(root_uedge->pedges)) epmem_pedge_set();
-		root_uedge->intervals = 1;
-		root_uedge->activated = false;
-		uedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_uedge;
-
-		epmem_interval* root_interval;
-		allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &root_interval);
-		root_interval->uedge = root_uedge;
-		root_interval->is_end_point = true;
-		allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_interval->sql);
-		root_interval->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
-		root_interval->sql->prepare();
-		root_interval->sql->bind_int(1, before);
-		root_interval->sql->execute();
-		root_interval->time = before;
-		interval_pq.push(root_interval);
-		interval_cleanup.insert(root_interval);
-	}
-
-	if (JUSTIN_DEBUG) {
-		epmem_print_state(sym_cache, pedge_caches, uedge_caches);
-	}
-
-	// main loop of interval walk
-	my_agent->epmem_timers->query_walk->start();
-	while (pedge_pq.size() && current_episode > after) {
-		epmem_time_id next_edge;
-		epmem_time_id next_interval;
-
-		bool changed_score = false;
-
-		my_agent->epmem_timers->query_walk_edge->start();
-		next_edge = pedge_pq.top()->time;
-
-		// process all edges which were last used at this time point
-		while (pedge_pq.size() && (pedge_pq.top()->time == next_edge || pedge_pq.top()->time >= current_episode)) {
-			epmem_pedge* pedge = pedge_pq.top();
-			pedge_pq.pop();
-			epmem_triple triple = pedge->triple;
-			triple.q1 = pedge->sql->column_int(1);
-
-			if (JUSTIN_DEBUG) {
-				std::cout << "	EDGE " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
-			}
-
-			// create queries for the unique edge children of this partial edge
-			if (pedge->value_is_id) {
-				bool created = false;
-				for (epmem_literal_set::iterator literal_iter = pedge->literals.begin(); literal_iter != pedge->literals.end(); literal_iter++) {
-					epmem_literal* literal = *literal_iter;
-					for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
-						created |= epmem_register_pedges(triple.q1, *child_iter, pedge_pq, after, pedge_caches, uedge_caches, my_agent);
-					}
-				}
-			}
-			// FIXME what I want to do here is, if there is no children which leads to a leaf, retract everything
-			// I'm not sure how to properly test for this though
-
-			// look for uedge with triple; if none exist, create one
-			// otherwise, link up the uedge with the pedge and consider score changes
-			epmem_triple_uedge_map* uedge_cache = &uedge_caches[pedge->value_is_id];
-			epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->find(triple);
-			if (uedge_iter == uedge_cache->end()) {
-				// create a uedge for this
-				epmem_uedge* uedge;
-				allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &uedge);
-				uedge->triple = triple;
-				uedge->value_is_id = pedge->value_is_id;
-				uedge->has_noncurrent = pedge->has_noncurrent;
-				uedge->activation_count = 0;
-				new(&(uedge->pedges)) epmem_pedge_set();
-				uedge->intervals = 0;
-				uedge->activated = false;
-				// create interval queries for this partial edge
-				bool created = false;
-				int64_t edge_id = pedge->sql->column_int(0);
-				epmem_time_id promo_time = EPMEM_MEMID_NONE;
-				bool is_lti = (pedge->value_is_id && pedge->triple.q1 != EPMEM_NODEID_BAD && pedge->triple.q1 != EPMEM_NODEID_ROOT);
-				if (is_lti) {
-					// find the promotion time of the LTI
-					my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, triple.q1);
-					my_agent->epmem_stmts_graph->find_lti_current_time->execute();
-					promo_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int(0);
-					my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
-				}
-				for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
-					for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
-						// pick a timer (any timer)
-						soar_module::timer* sql_timer = NULL;
-						switch (interval_type) {
-							case EPMEM_RANGE_EP:
-								if (point_type == EPMEM_RANGE_START) {
-									sql_timer = my_agent->epmem_timers->query_sql_start_ep;
-								} else {
-									sql_timer = my_agent->epmem_timers->query_sql_end_ep;
-								}
-								break;
-							case EPMEM_RANGE_NOW:
-								if (point_type == EPMEM_RANGE_START) {
-									sql_timer = my_agent->epmem_timers->query_sql_start_now;
-								} else {
-									sql_timer = my_agent->epmem_timers->query_sql_end_now;
-								}
-								break;
-							case EPMEM_RANGE_POINT:
-								if (point_type == EPMEM_RANGE_START) {
-									sql_timer = my_agent->epmem_timers->query_sql_start_point;
-								} else {
-									sql_timer = my_agent->epmem_timers->query_sql_end_point;
-								}
-								break;
-						}
-						// create the SQL query and bind it
-						// try to find an existing query first; if none exist, allocate a new one from the memory pools
-						soar_module::pooled_sqlite_statement* interval_sql = NULL;
-						if (is_lti) {
-							interval_sql = my_agent->epmem_stmts_graph->pool_find_lti_queries[point_type][interval_type]->request(sql_timer);
-						} else {
-							interval_sql = my_agent->epmem_stmts_graph->pool_find_interval_queries[pedge->value_is_id][point_type][interval_type]->request(sql_timer);
-						}
-						int bind_pos = 1;
-						if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
-							interval_sql->bind_int(bind_pos++, current_episode);
-						}
-						interval_sql->bind_int(bind_pos++, edge_id);
-						if (is_lti) {
-							// find the promotion time of the LTI, and use that as an after constraint
-							interval_sql->bind_int(bind_pos++, promo_time);
-						}
-						interval_sql->bind_int(bind_pos++, current_episode);
-						if (interval_sql->execute() == soar_module::row) {
-							epmem_interval* interval;
-							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &interval);
-							interval->is_end_point = point_type;
-							interval->uedge = uedge;
-							interval->time = interval_sql->column_int(0);
-							interval->sql = interval_sql;
-							interval_pq.push(interval);
-							interval_cleanup.insert(interval);
-							uedge->intervals++;
-							created = true;
-						} else {
-							interval_sql->get_pool()->release(interval_sql);
-						}
-					}
-				}
-				if (created) {
-					if (is_lti) {
-						// insert a dummy promo time start for LTIs
-						epmem_interval* start_interval;
-						allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &start_interval);
-						start_interval->uedge = uedge;
-						start_interval->is_end_point = EPMEM_RANGE_START;
-						start_interval->time = promo_time - 1;
-						start_interval->sql = NULL;
-						interval_pq.push(start_interval);
-						interval_cleanup.insert(start_interval);
-					}
-					uedge->pedges.insert(pedge);
-					uedge_cache->insert(std::make_pair(triple, uedge));
-				} else {
-					uedge->pedges.~epmem_pedge_set();
-					free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
-				}
-			} else {
-				epmem_uedge* uedge = (*uedge_iter).second;
-				uedge->pedges.insert(pedge);
-				if (uedge->activated) {
-					for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-						epmem_literal* literal = (*lit_iter);
-						if (!literal->is_current || uedge->activation_count == 1) {
-							changed_score |= epmem_satisfy_literal(literal, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
-						}
-					}
-				}
-			}
-
-			// put the partial edge query back into the queue if there's more
-			// otherwise, reinitialize the query and put it in a pool
-			if (pedge->sql && pedge->sql->execute() == soar_module::row) {
-				pedge->time = pedge->sql->column_int(2);
-				pedge_pq.push(pedge);
-			} else if (pedge->sql) {
-				pedge->sql->get_pool()->release(pedge->sql);
-				pedge->sql = NULL;
+		// calculate the highest possible score and cardinality score
+		double perfect_score = 0;
+		int perfect_cardinality = 0;
+		for (epmem_literal_set::iterator iter = leaf_literals.begin(); iter != leaf_literals.end(); iter++) {
+			if (!(*iter)->is_neg_q) {
+				perfect_score += (*iter)->weight;
+				perfect_cardinality++;
 			}
 		}
-		next_edge = (pedge_pq.empty() ? after : pedge_pq.top()->time);
-		my_agent->epmem_timers->query_walk_edge->stop();
+
+		// set default values for before and after
+		if (before == EPMEM_MEMID_NONE) {
+			before = my_agent->epmem_stats->time->get_value() - 1;
+		} else {
+			before = before - 1; // since before's are strict
+		}
+		if (after == EPMEM_MEMID_NONE) {
+			after = 0;
+		}
+		epmem_time_id current_episode = before;
+		epmem_time_id next_episode;
+
+		// create dummy edges and intervals
+		{
+			// insert dummy unique edge and interval end point queries for DNF root
+			// we make an SQL statement just so we don't have to do anything special at cleanup
+			epmem_triple triple = {EPMEM_NODEID_BAD, EPMEM_NODEID_BAD, EPMEM_NODEID_ROOT};
+			epmem_pedge* root_pedge;
+			allocate_with_pool(my_agent, &(my_agent->epmem_pedge_pool), &root_pedge);
+			root_pedge->triple = triple;
+			root_pedge->value_is_id = EPMEM_RIT_STATE_EDGE;
+			root_pedge->has_noncurrent = false;
+			new(&(root_pedge->literals)) epmem_literal_set();
+			root_pedge->literals.insert(root_literal);
+			allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_pedge->sql);
+			root_pedge->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
+			root_pedge->sql->prepare();
+			root_pedge->sql->bind_int(1, LLONG_MAX);
+			root_pedge->sql->execute();
+			root_pedge->time = LLONG_MAX;
+			pedge_pq.push(root_pedge);
+			pedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_pedge;
+
+			epmem_uedge* root_uedge;
+			allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &root_uedge);
+			root_uedge->triple = triple;
+			root_uedge->value_is_id = EPMEM_RIT_STATE_EDGE;
+			root_uedge->has_noncurrent = false;
+			root_uedge->activation_count = 0;
+			new(&(root_uedge->pedges)) epmem_pedge_set();
+			root_uedge->intervals = 1;
+			root_uedge->activated = false;
+			uedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_uedge;
+
+			epmem_interval* root_interval;
+			allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &root_interval);
+			root_interval->uedge = root_uedge;
+			root_interval->is_end_point = true;
+			allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_interval->sql);
+			root_interval->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
+			root_interval->sql->prepare();
+			root_interval->sql->bind_int(1, before);
+			root_interval->sql->execute();
+			root_interval->time = before;
+			interval_pq.push(root_interval);
+			interval_cleanup.insert(root_interval);
+		}
 
 		if (JUSTIN_DEBUG) {
 			epmem_print_state(sym_cache, pedge_caches, uedge_caches);
 		}
 
-		// process all intervals before the next edge arrives
-		my_agent->epmem_timers->query_walk_interval->start();
-		while (interval_pq.size() && interval_pq.top()->time > next_edge) {
-			if (JUSTIN_DEBUG) {
-				std::cout << "EPISODE " << current_episode << std::endl;
-			}
-			// process all interval endpoints at this time step
-			while (interval_pq.size() && interval_pq.top()->time >= current_episode) {
-				epmem_interval* interval = interval_pq.top();
-				interval_pq.pop();
-				epmem_uedge* uedge = interval->uedge;
-				epmem_triple triple = uedge->triple;
+		// main loop of interval walk
+		my_agent->epmem_timers->query_walk->start();
+		while (pedge_pq.size() && current_episode > after) {
+			epmem_time_id next_edge;
+			epmem_time_id next_interval;
+
+			bool changed_score = false;
+
+			my_agent->epmem_timers->query_walk_edge->start();
+			next_edge = pedge_pq.top()->time;
+
+			// process all edges which were last used at this time point
+			while (pedge_pq.size() && (pedge_pq.top()->time == next_edge || pedge_pq.top()->time >= current_episode)) {
+				epmem_pedge* pedge = pedge_pq.top();
+				pedge_pq.pop();
+				epmem_triple triple = pedge->triple;
+				triple.q1 = pedge->sql->column_int(1);
+
 				if (JUSTIN_DEBUG) {
-					std::cout << "	INTERVAL (" << (interval->is_end_point ? "end" : "start") << "): " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
+					std::cout << "	EDGE " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
 				}
-				if (interval->is_end_point) {
-					uedge->activated = true;
-					uedge->activation_count++;
-					for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
-						epmem_pedge* pedge = *pedge_iter;
+
+				// create queries for the unique edge children of this partial edge
+				if (pedge->value_is_id) {
+					bool created = false;
+					for (epmem_literal_set::iterator literal_iter = pedge->literals.begin(); literal_iter != pedge->literals.end(); literal_iter++) {
+						epmem_literal* literal = *literal_iter;
+						for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
+							created |= epmem_register_pedges(triple.q1, *child_iter, pedge_pq, after, pedge_caches, uedge_caches, my_agent);
+						}
+					}
+				}
+				// FIXME what I want to do here is, if there is no children which leads to a leaf, retract everything
+				// I'm not sure how to properly test for this though
+
+				// look for uedge with triple; if none exist, create one
+				// otherwise, link up the uedge with the pedge and consider score changes
+				epmem_triple_uedge_map* uedge_cache = &uedge_caches[pedge->value_is_id];
+				epmem_triple_uedge_map::iterator uedge_iter = uedge_cache->find(triple);
+				if (uedge_iter == uedge_cache->end()) {
+					// create a uedge for this
+					epmem_uedge* uedge;
+					allocate_with_pool(my_agent, &(my_agent->epmem_uedge_pool), &uedge);
+					uedge->triple = triple;
+					uedge->value_is_id = pedge->value_is_id;
+					uedge->has_noncurrent = pedge->has_noncurrent;
+					uedge->activation_count = 0;
+					new(&(uedge->pedges)) epmem_pedge_set();
+					uedge->intervals = 0;
+					uedge->activated = false;
+					// create interval queries for this partial edge
+					bool created = false;
+					int64_t edge_id = pedge->sql->column_int(0);
+					epmem_time_id promo_time = EPMEM_MEMID_NONE;
+					bool is_lti = (pedge->value_is_id && pedge->triple.q1 != EPMEM_NODEID_BAD && pedge->triple.q1 != EPMEM_NODEID_ROOT);
+					if (is_lti) {
+						// find the promotion time of the LTI
+						my_agent->epmem_stmts_graph->find_lti_current_time->bind_int(1, triple.q1);
+						my_agent->epmem_stmts_graph->find_lti_current_time->execute();
+						promo_time = my_agent->epmem_stmts_graph->find_lti_current_time->column_int(0);
+						my_agent->epmem_stmts_graph->find_lti_current_time->reinitialize();
+					}
+					for (int interval_type = EPMEM_RANGE_EP; interval_type <= EPMEM_RANGE_POINT; interval_type++) {
+						for (int point_type = EPMEM_RANGE_START; point_type <= EPMEM_RANGE_END; point_type++) {
+							// pick a timer (any timer)
+							soar_module::timer* sql_timer = NULL;
+							switch (interval_type) {
+								case EPMEM_RANGE_EP:
+									if (point_type == EPMEM_RANGE_START) {
+										sql_timer = my_agent->epmem_timers->query_sql_start_ep;
+									} else {
+										sql_timer = my_agent->epmem_timers->query_sql_end_ep;
+									}
+									break;
+								case EPMEM_RANGE_NOW:
+									if (point_type == EPMEM_RANGE_START) {
+										sql_timer = my_agent->epmem_timers->query_sql_start_now;
+									} else {
+										sql_timer = my_agent->epmem_timers->query_sql_end_now;
+									}
+									break;
+								case EPMEM_RANGE_POINT:
+									if (point_type == EPMEM_RANGE_START) {
+										sql_timer = my_agent->epmem_timers->query_sql_start_point;
+									} else {
+										sql_timer = my_agent->epmem_timers->query_sql_end_point;
+									}
+									break;
+							}
+							// create the SQL query and bind it
+							// try to find an existing query first; if none exist, allocate a new one from the memory pools
+							soar_module::pooled_sqlite_statement* interval_sql = NULL;
+							if (is_lti) {
+								interval_sql = my_agent->epmem_stmts_graph->pool_find_lti_queries[point_type][interval_type]->request(sql_timer);
+							} else {
+								interval_sql = my_agent->epmem_stmts_graph->pool_find_interval_queries[pedge->value_is_id][point_type][interval_type]->request(sql_timer);
+							}
+							int bind_pos = 1;
+							if (point_type == EPMEM_RANGE_END && interval_type == EPMEM_RANGE_NOW) {
+								interval_sql->bind_int(bind_pos++, current_episode);
+							}
+							interval_sql->bind_int(bind_pos++, edge_id);
+							if (is_lti) {
+								// find the promotion time of the LTI, and use that as an after constraint
+								interval_sql->bind_int(bind_pos++, promo_time);
+							}
+							interval_sql->bind_int(bind_pos++, current_episode);
+							if (interval_sql->execute() == soar_module::row) {
+								epmem_interval* interval;
+								allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &interval);
+								interval->is_end_point = point_type;
+								interval->uedge = uedge;
+								interval->time = interval_sql->column_int(0);
+								interval->sql = interval_sql;
+								interval_pq.push(interval);
+								interval_cleanup.insert(interval);
+								uedge->intervals++;
+								created = true;
+							} else {
+								interval_sql->get_pool()->release(interval_sql);
+							}
+						}
+					}
+					if (created) {
+						if (is_lti) {
+							// insert a dummy promo time start for LTIs
+							epmem_interval* start_interval;
+							allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &start_interval);
+							start_interval->uedge = uedge;
+							start_interval->is_end_point = EPMEM_RANGE_START;
+							start_interval->time = promo_time - 1;
+							start_interval->sql = NULL;
+							interval_pq.push(start_interval);
+							interval_cleanup.insert(start_interval);
+						}
+						uedge->pedges.insert(pedge);
+						uedge_cache->insert(std::make_pair(triple, uedge));
+					} else {
+						uedge->pedges.~epmem_pedge_set();
+						free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
+					}
+				} else {
+					epmem_uedge* uedge = (*uedge_iter).second;
+					uedge->pedges.insert(pedge);
+					if (uedge->activated) {
 						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-							epmem_literal* literal = *lit_iter;
+							epmem_literal* literal = (*lit_iter);
 							if (!literal->is_current || uedge->activation_count == 1) {
 								changed_score |= epmem_satisfy_literal(literal, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
 							}
 						}
 					}
-				} else {
-					uedge->activated = false;
-					for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
-						epmem_pedge* pedge = *pedge_iter;
-						for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
-							changed_score |= epmem_unsatisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count);
-						}
-					}
 				}
-				// put the interval query back into the queue if there's more and some literal cares
+
+				// put the partial edge query back into the queue if there's more
 				// otherwise, reinitialize the query and put it in a pool
-				if (interval->uedge->has_noncurrent && interval->sql && interval->sql->execute() == soar_module::row) {
-					interval->time = interval->sql->column_int(0);
-					interval_pq.push(interval);
-				} else if (interval->sql) {
-					interval->sql->get_pool()->release(interval->sql);
-					interval->sql = NULL;
-					uedge->intervals--;
-					if (uedge->intervals) {
-						interval_cleanup.erase(interval);
-						free_with_pool(&(my_agent->epmem_interval_pool), interval);
+				if (pedge->sql && pedge->sql->execute() == soar_module::row) {
+					pedge->time = pedge->sql->column_int(2);
+					pedge_pq.push(pedge);
+				} else if (pedge->sql) {
+					pedge->sql->get_pool()->release(pedge->sql);
+					pedge->sql = NULL;
+				}
+			}
+			next_edge = (pedge_pq.empty() ? after : pedge_pq.top()->time);
+			my_agent->epmem_timers->query_walk_edge->stop();
+
+			if (JUSTIN_DEBUG) {
+				epmem_print_state(sym_cache, pedge_caches, uedge_caches);
+			}
+
+			// process all intervals before the next edge arrives
+			my_agent->epmem_timers->query_walk_interval->start();
+			while (interval_pq.size() && interval_pq.top()->time > next_edge) {
+				if (JUSTIN_DEBUG) {
+					std::cout << "EPISODE " << current_episode << std::endl;
+				}
+				// process all interval endpoints at this time step
+				while (interval_pq.size() && interval_pq.top()->time >= current_episode) {
+					epmem_interval* interval = interval_pq.top();
+					interval_pq.pop();
+					epmem_uedge* uedge = interval->uedge;
+					epmem_triple triple = uedge->triple;
+					if (JUSTIN_DEBUG) {
+						std::cout << "	INTERVAL (" << (interval->is_end_point ? "end" : "start") << "): " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
+					}
+					if (interval->is_end_point) {
+						uedge->activated = true;
+						uedge->activation_count++;
+						for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
+							epmem_pedge* pedge = *pedge_iter;
+							for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
+								epmem_literal* literal = *lit_iter;
+								if (!literal->is_current || uedge->activation_count == 1) {
+									changed_score |= epmem_satisfy_literal(literal, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count, uedge_caches, symbol_incoming_count);
+								}
+							}
+						}
 					} else {
-						// FIXME retract intervals
-					}
-				}
-			}
-			next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
-			next_episode = (next_edge > next_interval ? next_edge : next_interval);
-
-			// update the prohibits list to catch up
-			while (prohibits.size() && prohibits.back() > current_episode) {
-				prohibits.pop_back();
-			}
-			// ignore the episode if it is prohibited
-			while (prohibits.size() && current_episode > next_episode && current_episode == prohibits.back()) {
-				current_episode--;
-				prohibits.pop_back();
-			}
-
-			if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
-				char buf[256];
-				SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %d, %f)\n", current_episode, current_cardinality, current_score);
-				print(my_agent, buf);
-				xml_generate_warning(my_agent, buf);
-			}
-
-			// if
-			// * the current time is still before any new intervals
-			// * and the score was changed in this period
-			// * and the new score is higher than the best score
-			// then save the current time as the best one
-			if (current_episode > next_episode && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
-				if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
-					best_episode = current_episode;
-				}
-				best_score = current_score;
-				best_cardinality = current_cardinality;
-				// we should graph match if the option is set and all leaf literals are satisfied
-				if (current_cardinality == perfect_cardinality) {
-					bool graph_matched = false;
-					if (do_graph_match) {
-						if (gm_order == epmem_param_container::gm_order_mcv) {
-							std::sort(gm_ordering.begin(), gm_ordering.end(), epmem_gm_mcv_comparator);
+						uedge->activated = false;
+						for (epmem_pedge_set::iterator pedge_iter = uedge->pedges.begin(); pedge_iter != uedge->pedges.end(); pedge_iter++) {
+							epmem_pedge* pedge = *pedge_iter;
+							for (epmem_literal_set::iterator lit_iter = pedge->literals.begin(); lit_iter != pedge->literals.end(); lit_iter++) {
+								changed_score |= epmem_unsatisfy_literal(*lit_iter, triple.q0, triple.q1, current_score, current_cardinality, symbol_match_count);
+							}
 						}
-						epmem_literal_deque::iterator begin = gm_ordering.begin();
-						epmem_literal_deque::iterator end = gm_ordering.end();
-						best_bindings.clear();
-						epmem_node_symbol_map bound_nodes[2];
-						if (JUSTIN_DEBUG) {
-							std::cout << "	GRAPH MATCH" << std::endl;
-							epmem_print_state(sym_cache, pedge_caches, uedge_caches);
-						}
-						my_agent->epmem_timers->query_graph_match->start();
-						graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent, 2);
-						my_agent->epmem_timers->query_graph_match->stop();
 					}
-					if (!do_graph_match || graph_matched) {
-						best_episode = current_episode;
-						best_graph_matched = true;
-						current_episode = EPMEM_MEMID_NONE;
+					// put the interval query back into the queue if there's more and some literal cares
+					// otherwise, reinitialize the query and put it in a pool
+					if (interval->uedge->has_noncurrent && interval->sql && interval->sql->execute() == soar_module::row) {
+						interval->time = interval->sql->column_int(0);
+						interval_pq.push(interval);
+					} else if (interval->sql) {
+						interval->sql->get_pool()->release(interval->sql);
+						interval->sql = NULL;
+						uedge->intervals--;
+						if (uedge->intervals) {
+							interval_cleanup.erase(interval);
+							free_with_pool(&(my_agent->epmem_interval_pool), interval);
+						} else {
+							// FIXME retract intervals
+						}
 					}
 				}
+				next_interval = (interval_pq.empty() ? after : interval_pq.top()->time);
+				next_episode = (next_edge > next_interval ? next_edge : next_interval);
+
+				// update the prohibits list to catch up
+				while (prohibits.size() && prohibits.back() > current_episode) {
+					prohibits.pop_back();
+				}
+				// ignore the episode if it is prohibited
+				while (prohibits.size() && current_episode > next_episode && current_episode == prohibits.back()) {
+					current_episode--;
+					prohibits.pop_back();
+				}
+
 				if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
 					char buf[256];
-					SNPRINTF(buf, 254, "NEW KING (perfect, graph-match): (%s, %s)\n", (current_cardinality == perfect_cardinality ? "true" : "false"), (best_graph_matched ? "true" : "false"));
+					SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %d, %f)\n", current_episode, current_cardinality, current_score);
 					print(my_agent, buf);
 					xml_generate_warning(my_agent, buf);
 				}
-			}
 
-			if (current_episode == EPMEM_MEMID_NONE) {
-				break;
-			} else {
-				current_episode = next_episode;
-			}
-		}
-		my_agent->epmem_timers->query_walk_interval->stop();
-	}
-	my_agent->epmem_timers->query_walk->stop();
+				// if
+				// * the current time is still before any new intervals
+				// * and the score was changed in this period
+				// * and the new score is higher than the best score
+				// then save the current time as the best one
+				if (current_episode > next_episode && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
+					if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
+						best_episode = current_episode;
+					}
+					best_score = current_score;
+					best_cardinality = current_cardinality;
+					// we should graph match if the option is set and all leaf literals are satisfied
+					if (current_cardinality == perfect_cardinality) {
+						bool graph_matched = false;
+						if (do_graph_match) {
+							if (gm_order == epmem_param_container::gm_order_mcv) {
+								std::sort(gm_ordering.begin(), gm_ordering.end(), epmem_gm_mcv_comparator);
+							}
+							epmem_literal_deque::iterator begin = gm_ordering.begin();
+							epmem_literal_deque::iterator end = gm_ordering.end();
+							best_bindings.clear();
+							epmem_node_symbol_map bound_nodes[2];
+							if (JUSTIN_DEBUG) {
+								std::cout << "	GRAPH MATCH" << std::endl;
+								epmem_print_state(sym_cache, pedge_caches, uedge_caches);
+							}
+							my_agent->epmem_timers->query_graph_match->start();
+							graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent, 2);
+							my_agent->epmem_timers->query_graph_match->stop();
+						}
+						if (!do_graph_match || graph_matched) {
+							best_episode = current_episode;
+							best_graph_matched = true;
+							current_episode = EPMEM_MEMID_NONE;
+						}
+					}
+					if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
+						char buf[256];
+						SNPRINTF(buf, 254, "NEW KING (perfect, graph-match): (%s, %s)\n", (current_cardinality == perfect_cardinality ? "true" : "false"), (best_graph_matched ? "true" : "false"));
+						print(my_agent, buf);
+						xml_generate_warning(my_agent, buf);
+					}
+				}
 
-	// if the best episode is the default, fail
-	// otherwise, put the episode in working memory
-	if (best_episode == EPMEM_MEMID_NONE) {
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, pos_query);
-		if (neg_query) {
-			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, neg_query);
+				if (current_episode == EPMEM_MEMID_NONE) {
+					break;
+				} else {
+					current_episode = next_episode;
+				}
+			}
+			my_agent->epmem_timers->query_walk_interval->stop();
 		}
-	} else {
-		my_agent->epmem_timers->query_result->start();
-		Symbol* temp_sym;
-		epmem_id_mapping node_map_map;
-		epmem_id_mapping node_mem_map;
-		// cue size
-		temp_sym = make_int_constant(my_agent, leaf_literals.size());
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_cue_size, temp_sym);
-		symbol_remove_ref(my_agent, temp_sym);
-		// match cardinality
-		temp_sym = make_int_constant(my_agent, best_cardinality);
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_cardinality, temp_sym);
-		symbol_remove_ref(my_agent, temp_sym);
-		// match score
-		temp_sym = make_float_constant(my_agent, best_score);
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_score, temp_sym);
-		symbol_remove_ref(my_agent, temp_sym);
-		// normalized match score
-		temp_sym = make_float_constant(my_agent, best_score / perfect_score);
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_normalized_match_score, temp_sym);
-		symbol_remove_ref(my_agent, temp_sym);
-		// status
-		epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, pos_query);
-		if (neg_query) {
-			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, neg_query);
-		}
-		// give more metadata if graph match is turned on
-		if (do_graph_match) {
-			// graph match
-			temp_sym = make_int_constant(my_agent, (best_graph_matched ? 1 : 0));
-			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match, temp_sym);
+		my_agent->epmem_timers->query_walk->stop();
+
+		// if the best episode is the default, fail
+		// otherwise, put the episode in working memory
+		if (best_episode == EPMEM_MEMID_NONE) {
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, pos_query);
+			if (neg_query) {
+				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_failure, neg_query);
+			}
+		} else {
+			my_agent->epmem_timers->query_result->start();
+			Symbol* temp_sym;
+			epmem_id_mapping node_map_map;
+			epmem_id_mapping node_mem_map;
+			// cue size
+			temp_sym = make_int_constant(my_agent, leaf_literals.size());
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_cue_size, temp_sym);
 			symbol_remove_ref(my_agent, temp_sym);
+			// match cardinality
+			temp_sym = make_int_constant(my_agent, best_cardinality);
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_cardinality, temp_sym);
+			symbol_remove_ref(my_agent, temp_sym);
+			// match score
+			temp_sym = make_float_constant(my_agent, best_score);
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_match_score, temp_sym);
+			symbol_remove_ref(my_agent, temp_sym);
+			// normalized match score
+			temp_sym = make_float_constant(my_agent, best_score / perfect_score);
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_normalized_match_score, temp_sym);
+			symbol_remove_ref(my_agent, temp_sym);
+			// status
+			epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, pos_query);
+			if (neg_query) {
+				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_success, neg_query);
+			}
+			// give more metadata if graph match is turned on
+			if (do_graph_match) {
+				// graph match
+				temp_sym = make_int_constant(my_agent, (best_graph_matched ? 1 : 0));
+				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match, temp_sym);
+				symbol_remove_ref(my_agent, temp_sym);
 
-			// mapping
+				// mapping
+				if (best_graph_matched) {
+					goal_stack_level level = state->id.epmem_result_header->id.level;
+					// mapping identifier
+					Symbol* mapping = make_new_identifier(my_agent, 'M', level);
+					epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping, mapping);
+					symbol_remove_ref(my_agent, mapping);
+
+					for (epmem_literal_node_pair_map::iterator iter = best_bindings.begin(); iter != best_bindings.end(); iter++) {
+						// create the node
+						temp_sym = make_new_identifier(my_agent, 'N', level);
+						epmem_buffer_add_wme(meta_wmes, mapping, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
+						symbol_remove_ref(my_agent, temp_sym);
+						// point to the cue identifier
+						epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_cue, (*iter).first->value_sym);
+						// save the mapping point for the episode
+						node_map_map[(*iter).second.second] = temp_sym;
+						node_mem_map[(*iter).second.second] = NULL;
+					}
+				}
+			}
+			// reconstruct the actual episode
+			if (level > 2) {
+				epmem_install_memory(my_agent, state, best_episode, meta_wmes, retrieval_wmes, &node_mem_map);
+			}
 			if (best_graph_matched) {
-				goal_stack_level level = state->id.epmem_result_header->id.level;
-				// mapping identifier
-				Symbol* mapping = make_new_identifier(my_agent, 'M', level);
-				epmem_buffer_add_wme(meta_wmes, state->id.epmem_result_header, my_agent->epmem_sym_graph_match_mapping, mapping);
-				symbol_remove_ref(my_agent, mapping);
-
-				for (epmem_literal_node_pair_map::iterator iter = best_bindings.begin(); iter != best_bindings.end(); iter++) {
-					// create the node
-					temp_sym = make_new_identifier(my_agent, 'N', level);
-					epmem_buffer_add_wme(meta_wmes, mapping, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
-					symbol_remove_ref(my_agent, temp_sym);
-					// point to the cue identifier
-					epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_cue, (*iter).first->value_sym);
-					// save the mapping point for the episode
-					node_map_map[(*iter).second.second] = temp_sym;
-					node_mem_map[(*iter).second.second] = NULL;
+				for (epmem_id_mapping::iterator iter = node_mem_map.begin(); iter != node_mem_map.end(); iter++) {
+					epmem_id_mapping::iterator map_iter = node_map_map.find((*iter).first);
+					if (map_iter != node_map_map.end() && (*iter).second) {
+						epmem_buffer_add_wme(meta_wmes, (*map_iter).second, my_agent->epmem_sym_retrieved, (*iter).second);
+					}
 				}
 			}
+			my_agent->epmem_timers->query_result->stop();
 		}
-		// reconstruct the actual episode
-		epmem_install_memory(my_agent, state, best_episode, meta_wmes, retrieval_wmes, &node_mem_map);
-		if (best_graph_matched) {
-			for (epmem_id_mapping::iterator iter = node_mem_map.begin(); iter != node_mem_map.end(); iter++) {
-				epmem_id_mapping::iterator map_iter = node_map_map.find((*iter).first);
-				if (map_iter != node_map_map.end() && (*iter).second) {
-					epmem_buffer_add_wme(meta_wmes, (*map_iter).second, my_agent->epmem_sym_retrieved, (*iter).second);
-				}
-			}
-		}
-		my_agent->epmem_timers->query_result->stop();
 	}
 
 	// cleanup
@@ -4934,7 +4936,7 @@ bool epmem_consider_new_episode( agent *my_agent )
 	return new_memory;
 }
 
-void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, bool& good_cue, int& path, epmem_time_id& retrieve, Symbol*& next, Symbol*& previous, Symbol*& query, Symbol*& neg_query, epmem_time_list& prohibit, epmem_time_id& before, epmem_time_id& after, soar_module::wme_set& cue_wmes )
+void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, bool& good_cue, int& path, epmem_time_id& retrieve, Symbol*& next, Symbol*& previous, Symbol*& query, Symbol*& neg_query, epmem_time_list& prohibit, epmem_time_id& before, epmem_time_id& after, epmem_symbol_set& currents, soar_module::wme_set& cue_wmes )
 {
 	cue_wmes.clear();
 	
@@ -5058,6 +5060,19 @@ void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, 
 					 ( ( path == 0 ) || ( path == 3 ) ) )
 				{
 					prohibit.push_back( (*w_p)->value->ic.value );
+					path = 3;
+				}
+				else
+				{
+					good_cue = false;
+				}
+			}
+			else if ( (*w_p)->attr == my_agent->epmem_sym_current )
+			{
+				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+					 ( ( path == 0 ) || ( path == 3 ) ) )
+				{
+					currents.insert( (*w_p)->value );
 					path = 3;
 				}
 				else
@@ -5208,7 +5223,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 		// and there is something on the cue
 		if ( new_cue && wme_count )
 		{
-			_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes );
+			_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, currents, cue_wmes );
 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->epmem_timers->api->stop();
@@ -5255,7 +5270,7 @@ void epmem_respond_to_cmd( agent *my_agent )
 				// query
 				else if ( path == 3 )
 				{
-					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes );
+					epmem_process_query( my_agent, state, query, neg_query, prohibit, before, after, currents, cue_wmes, meta_wmes, retrieval_wmes );
 					
 					// add one to the cbr stat
 					my_agent->epmem_stats->cbr->set_value( my_agent->epmem_stats->cbr->get_value() + 1 );
@@ -5482,6 +5497,7 @@ void inline _epmem_exp( agent* my_agent )
 								Symbol* neg_query;
 								epmem_time_list prohibit;
 								epmem_time_id before, after;
+								epmem_symbol_set currents;
 								bool good_cue;
 								int path;
 
@@ -5494,7 +5510,7 @@ void inline _epmem_exp( agent* my_agent )
 										// parse command once
 										{
 											cmds = epmem_get_augs_of_id( s->wmes->value, get_new_tc_number( my_agent ) );
-											_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, cue_wmes );
+											_epmem_respond_to_cmd_parse( my_agent, cmds, good_cue, path, retrieve, next, previous, query, neg_query, prohibit, before, after, currents, cue_wmes );
 										}
 
 										if ( good_cue && ( path == 3 ) )
@@ -5505,7 +5521,7 @@ void inline _epmem_exp( agent* my_agent )
 												c1 = clock();
 												for ( int64_t i=1; i<=reps; i++ )
 												{												
-													epmem_process_query( my_agent, my_agent->top_goal, query, neg_query, prohibit, before, after, cue_wmes, meta_wmes, retrieval_wmes, 2 );
+													epmem_process_query( my_agent, my_agent->top_goal, query, neg_query, prohibit, before, after, currents, cue_wmes, meta_wmes, retrieval_wmes, 2 );
 
 													if ( !retrieval_wmes.empty() || !meta_wmes.empty() )
 													{
