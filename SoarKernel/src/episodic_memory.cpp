@@ -1396,6 +1396,15 @@ void epmem_close( agent *my_agent )
 		// close the database
 		my_agent->epmem_db->disconnect();
 	}
+
+#ifdef EPMEM_EXPERIMENT
+	if ( epmem_exp_output )
+	{
+		epmem_exp_output->close();
+		delete epmem_exp_output;
+		epmem_exp_output = NULL;
+	}
+#endif
 }
 
 /***************************************************************************
