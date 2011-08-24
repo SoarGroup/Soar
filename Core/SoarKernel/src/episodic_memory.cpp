@@ -863,19 +863,25 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 	for ( preference* pref=inst->preferences_generated; pref; pref=pref->inst_next )
 	{
 		// add the preference to temporary memory
-		add_preference_to_tm( my_agent, pref );
-
-		// and add it to the list of preferences to be removed
-		// when the goal is removed
-		insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
-		pref->on_goal_list = true;
-
-		if ( meta )
+		if ( add_preference_to_tm( my_agent, pref ) )
 		{
-			// if this is a meta wme, then it is completely local
-			// to the state and thus we will manually remove it
-			// (via preference removal) when the time comes
-			state->id.epmem_info->epmem_wmes->push_back( pref );
+			// add to the list of preferences to be removed
+			// when the goal is removed
+			insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
+			pref->on_goal_list = true;
+
+			if ( meta )
+			{
+				// if this is a meta wme, then it is completely local
+				// to the state and thus we will manually remove it
+				// (via preference removal) when the time comes
+				state->id.epmem_info->epmem_wmes->push_back( pref );
+			}
+		}
+		else
+		{
+			preference_add_ref( pref );
+			preference_remove_ref( my_agent, pref );
 		}
 	}
 
@@ -907,11 +913,17 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 
 				for ( just_pref=my_justification->preferences_generated; just_pref!=NIL; just_pref=just_pref->inst_next ) 
 				{
-					add_preference_to_tm( my_agent, just_pref );						
-					
-					if ( wma_enabled( my_agent ) )
+					if ( add_preference_to_tm( my_agent, just_pref ) )
 					{
-						wma_activate_wmes_in_pref( my_agent, just_pref );
+						if ( wma_enabled( my_agent ) )
+						{
+							wma_activate_wmes_in_pref( my_agent, just_pref );
+						}
+					}
+					else
+					{
+						preference_add_ref( just_pref );
+						preference_remove_ref( my_agent, just_pref );
 					}
 				}
 			}
