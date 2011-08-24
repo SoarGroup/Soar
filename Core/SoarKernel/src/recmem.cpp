@@ -1222,6 +1222,10 @@ void assert_new_preferences (agent* thisAgent, pref_buffer_list& bufdeallo)
 				/* REW: end   09.15.96 */
 
 
+				if ( wma_enabled( thisAgent ) )
+				{
+					wma_activate_wmes_in_pref( thisAgent, pref );
+				}
 			} 
 			else 
 			{
@@ -1241,11 +1245,6 @@ void assert_new_preferences (agent* thisAgent, pref_buffer_list& bufdeallo)
 				/* --- now add then remove ref--this should result in deallocation */
 				preference_add_ref (pref);
 				preference_remove_ref (thisAgent, pref);
-			}
-
-			if ( wma_enabled( thisAgent ) )
-			{
-				wma_activate_wmes_in_pref( thisAgent, pref );
 			}
 		}
 	}
