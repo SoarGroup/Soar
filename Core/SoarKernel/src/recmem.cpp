@@ -1251,7 +1251,7 @@ void assert_new_preferences (agent* thisAgent, pref_buffer_list& bufdeallo)
 	}
 #ifndef O_REJECTS_FIRST
 	if (o_rejects) 
-		process_o_rejects_and_deallocate_them (thisAgent, o_rejects);
+		process_o_rejects_and_deallocate_them (thisAgent, o_rejects, bufdeallo);
 #endif
 }
 
