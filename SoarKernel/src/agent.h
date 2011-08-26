@@ -230,7 +230,6 @@ typedef struct agent_struct {
   memory_pool		  epmem_pedge_pool;
   memory_pool		  epmem_uedge_pool;
   memory_pool		  epmem_interval_pool;
-  memory_pool		  epmem_sql_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;

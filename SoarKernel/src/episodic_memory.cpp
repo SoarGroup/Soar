@@ -3935,7 +3935,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			root_pedge->has_noncurrent = false;
 			new(&(root_pedge->literals)) epmem_literal_set();
 			root_pedge->literals.insert(root_literal);
-			allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_pedge->sql);
 			root_pedge->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
 			root_pedge->sql->prepare();
 			root_pedge->sql->bind_int(1, LLONG_MAX);
@@ -3959,7 +3958,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			allocate_with_pool(my_agent, &(my_agent->epmem_interval_pool), &root_interval);
 			root_interval->uedge = root_uedge;
 			root_interval->is_end_point = true;
-			allocate_with_pool(my_agent, &(my_agent->epmem_sql_pool), &root_interval->sql);
 			root_interval->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
 			root_interval->sql->prepare();
 			root_interval->sql->bind_int(1, before);
@@ -4353,8 +4351,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	for (epmem_interval_set::iterator iter = interval_cleanup.begin(); iter != interval_cleanup.end(); iter++) {
 		epmem_interval* interval = *iter;
 		if (interval->sql) {
-			interval->sql->~sqlite_statement();
-			free_with_pool(&(my_agent->epmem_sql_pool), interval->sql);
+			interval->sql->get_pool()->release(interval->sql);
 		}
 		free_with_pool(&(my_agent->epmem_interval_pool), interval);
 	}
@@ -4362,8 +4359,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		for (epmem_triple_pedge_map::iterator iter = pedge_caches[type].begin(); iter != pedge_caches[type].end(); iter++) {
 			epmem_pedge* pedge = (*iter).second;
 			if (pedge->sql) {
-				pedge->sql->~sqlite_statement();
-				free_with_pool(&(my_agent->epmem_sql_pool), pedge->sql);
+				pedge->sql->get_pool()->release(pedge->sql);
 			}
 			pedge->literals.~epmem_literal_set();
 			free_with_pool(&(my_agent->epmem_pedge_pool), pedge);

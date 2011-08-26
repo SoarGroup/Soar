@@ -105,7 +105,6 @@ void init_soar_agent(agent* thisAgent) {
   init_memory_pool( thisAgent, &( thisAgent->epmem_pedge_pool ), sizeof( epmem_pedge ), "epmem_pedges" );
   init_memory_pool( thisAgent, &( thisAgent->epmem_uedge_pool ), sizeof( epmem_uedge ), "epmem_uedges" );
   init_memory_pool( thisAgent, &( thisAgent->epmem_interval_pool ), sizeof( epmem_interval ), "epmem_intervals" );
-  init_memory_pool( thisAgent, &( thisAgent->epmem_sql_pool ), sizeof( soar_module::sqlite_statement ), "epmem_sqls" );
 
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
   thisAgent->epmem_params->exclusions->set_value( "smem" );
