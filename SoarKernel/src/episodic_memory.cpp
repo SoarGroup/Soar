@@ -33,8 +33,6 @@
 #include "instantiations.h"
 #include "decide.h"
 
-#define EPMEM_EXPERIMENT 1
-
 #ifdef EPMEM_EXPERIMENT
 std::ofstream* epmem_exp_output = NULL;
 #endif
