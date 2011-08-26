@@ -3593,7 +3593,10 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 	epmem_symbol_int_map::iterator count_iter;
 	// change bookkeeping information about ancestry
 	epmem_literal_node_pair_int_map::iterator match_iter = symbol_match_count.find(std::make_pair(literal, child));
-	assert(match_iter != symbol_match_count.end());
+	// if we don't have a match symbol for this thing, it's ancestors are not satisfied and we have nothing to do
+	if (match_iter == symbol_match_count.end()) {
+		return false;
+	}
 	(*match_iter).second--;
 	if ((*match_iter).second == 0) {
 		symbol_match_count.erase(match_iter);
