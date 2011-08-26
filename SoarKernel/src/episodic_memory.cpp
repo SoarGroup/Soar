@@ -3211,7 +3211,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG 3
+#define JUSTIN_DEBUG 0
 
 void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
 	//std::map<epmem_node_id, std::string> tsh;
@@ -3220,7 +3220,7 @@ void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map p
 	std::cout << "node [style=\"filled\"];" << std::endl;
 	// LITERALS
 	std::cout << "subgraph cluster_literals {" << std::endl;
-	std::cout << "node [fillcolor=\"#0084D1\"]" << std::endl;
+	std::cout << "node [fillcolor=\"#0084D1\"];" << std::endl;
 	for (epmem_wme_literal_map::iterator lit_iter = literals.begin(); lit_iter != literals.end(); lit_iter++) {
 		epmem_literal* literal = (*lit_iter).second;
 		if (literal->id_sym) {
@@ -3514,41 +3514,38 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 		count_iter = symbol_incoming_count.find(literal->id_sym);
 		parents_satisfied = (count_iter != symbol_incoming_count.end()) && ((*count_iter).second == symbol_num_incoming[literal->id_sym]);
 	}
-	if (JUSTIN_DEBUG >= 1) {
-		std::cout << "			" << parents_satisfied << std::endl;
-	}
 	// if yes
 	if (parents_satisfied) {
 		literal->satisfied = true;
 		// add the edge as a match
 		literal->matches.insert(std::make_pair(parent, child));
-		if (literal->is_leaf && literal->matches.size() == 1) {
-			current_score += literal->weight;
-			current_cardinality += (literal->is_neg_q ? -1 : 1);
-			if (JUSTIN_DEBUG >= 1) {
-				std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
-			}
-			return true;
-		} else {
-			bool changed_score = false;
-			// increase the matches for its child symbol
-			epmem_symbol_literal_pair incoming = std::make_pair(literal->value_sym, literal);
-			epmem_symbol_literal_pair_int_map::iterator incoming_iter = symbol_incomings.find(incoming);
-			if (incoming_iter == symbol_incomings.end()) {
-				count_iter = symbol_incoming_count.find(literal->value_sym);
-				if (count_iter == symbol_incoming_count.end()) {
-					symbol_incoming_count[literal->value_sym] = 1;
-				} else {
-					(*count_iter).second++;
+		epmem_literal_node_pair match = std::make_pair(literal, child);
+		epmem_literal_node_pair_int_map::iterator match_iter = symbol_match_count.find(match);
+		if (match_iter == symbol_match_count.end()) {
+			symbol_match_count[match] = 1;
+			if (literal->is_leaf && literal->matches.size() == 1) {
+				current_score += literal->weight;
+				current_cardinality += (literal->is_neg_q ? -1 : 1);
+				if (JUSTIN_DEBUG >= 1) {
+					std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
 				}
-				symbol_incomings[incoming] = 1;
+				return true;
 			} else {
-				symbol_incomings[incoming]++;
-			}
-			epmem_literal_node_pair match = std::make_pair(literal, child);
-			epmem_literal_node_pair_int_map::iterator match_iter = symbol_match_count.find(match);
-			if (match_iter == symbol_match_count.end()) {
-				symbol_match_count[match] = 1;
+				bool changed_score = false;
+				// change bookkeeping information about ancestry
+				epmem_symbol_literal_pair incoming = std::make_pair(literal->value_sym, literal);
+				epmem_symbol_literal_pair_int_map::iterator incoming_iter = symbol_incomings.find(incoming);
+				if (incoming_iter == symbol_incomings.end()) {
+					count_iter = symbol_incoming_count.find(literal->value_sym);
+					if (count_iter == symbol_incoming_count.end()) {
+						symbol_incoming_count[literal->value_sym] = 1;
+					} else {
+						(*count_iter).second++;
+					}
+					symbol_incomings[incoming] = 1;
+				} else {
+					symbol_incomings[incoming]++;
+				}
 				// recurse over child literals
 				for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
 					epmem_literal* child_lit = *child_iter;
@@ -3577,10 +3574,10 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 						}
 					}
 				}
-			} else {
-				(*match_iter).second++;
+				return changed_score;
 			}
-			return changed_score;
+		} else {
+			(*match_iter).second++;
 		}
 	}
 	return false;
@@ -3594,6 +3591,13 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 		std::cout << "		RECURSING ON " << parent << " " << child << " " << literal << std::endl;
 	}
 	epmem_symbol_int_map::iterator count_iter;
+	// change bookkeeping information about ancestry
+	epmem_literal_node_pair_int_map::iterator match_iter = symbol_match_count.find(std::make_pair(literal, child));
+	assert(match_iter != symbol_match_count.end());
+	(*match_iter).second--;
+	if ((*match_iter).second == 0) {
+		symbol_match_count.erase(match_iter);
+	}
 	// erase the edge from this literal's matches
 	literal->matches.erase(std::make_pair(parent, child));
 	if (literal->is_leaf && literal->matches.size() == 0) {
@@ -3620,12 +3624,6 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 				if ((*count_iter).second == 0) {
 					symbol_incoming_count.erase(count_iter);
 				}
-			}
-			epmem_literal_node_pair_int_map::iterator match_iter = symbol_match_count.find(std::make_pair(literal, child));
-			assert(match_iter != symbol_match_count.end());
-			(*match_iter).second--;
-			if ((*match_iter).second == 0) {
-				symbol_match_count.erase(match_iter);
 			}
 			for (epmem_literal_set::iterator child_iter = literal->children.begin(); child_iter != literal->children.end(); child_iter++) {
 				epmem_literal* child_lit = *child_iter;
@@ -4221,12 +4219,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				// * and the score was changed in this period
 				// * and the new score is higher than the best score
 				// then save the current time as the best one
-				if (current_episode > next_episode && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (current_score == best_score && !best_graph_matched))) {
+				if (current_episode > next_episode && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (do_graph_match && current_score == best_score && !best_graph_matched))) {
 					if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
 						best_episode = current_episode;
+						best_score = current_score;
+						best_cardinality = current_cardinality;
 					}
-					best_score = current_score;
-					best_cardinality = current_cardinality;
 					// we should graph match if the option is set and all leaf literals are satisfied
 					if (current_cardinality == perfect_cardinality) {
 						bool graph_matched = false;
