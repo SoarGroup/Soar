@@ -3209,7 +3209,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG 2
+#define JUSTIN_DEBUG 0
 
 void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
 	//std::map<epmem_node_id, std::string> tsh;
@@ -3503,7 +3503,6 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 
 bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_symbol_int_map& symbol_incoming_count, epmem_symbol_node_pair_int_map& symbol_node_count, epmem_triple_uedge_map uedge_caches[], epmem_symbol_int_map& symbol_num_incoming) {
 	epmem_symbol_int_map::iterator count_iter;
-	epmem_symbol_node_pair match;
 	epmem_symbol_node_pair_int_map::iterator match_iter;
 	if (JUSTIN_DEBUG >= 1) {
 		std::cout << "		RECURSING ON " << parent << " " << child << " " << literal << std::endl;
@@ -3547,7 +3546,7 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 						(*count_iter).second++;
 					}
 				}
-				match = std::make_pair(literal->value_sym, child);
+				epmem_symbol_node_pair match = std::make_pair(literal->value_sym, child);
 				match_iter = symbol_node_count.find(match);
 				if (match_iter == symbol_node_count.end()) {
 					symbol_node_count[match] = 1;
@@ -3619,6 +3618,12 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 				}
 			} else {
 				bool changed_score = false;
+				epmem_symbol_node_pair match = std::make_pair(literal->value_sym, child);
+				epmem_symbol_node_pair_int_map::iterator match_iter = symbol_node_count.find(match);
+				(*match_iter).second--;
+				if ((*match_iter).second == 0) {
+					symbol_node_count.erase(match_iter);
+				}
 				// if this literal is no longer satisfied, recurse on all children
 				// if this literal is still satisfied, recurse on children who is matching on descendants of this edge
 				if (literal->matches.size() == 0) {

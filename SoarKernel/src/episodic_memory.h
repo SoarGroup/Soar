@@ -529,9 +529,9 @@ typedef std::map<epmem_symbol_literal_pair, int> epmem_symbol_literal_pair_int_m
 typedef std::map<epmem_symbol_node_pair, int> epmem_symbol_node_pair_int_map;
 typedef std::map<epmem_triple, epmem_pedge*> epmem_triple_pedge_map;
 typedef std::map<wme*, epmem_literal*> epmem_wme_literal_map;
+typedef std::set<Symbol*> epmem_symbol_set;
 typedef std::set<epmem_literal*> epmem_literal_set;
 typedef std::set<epmem_pedge*> epmem_pedge_set;
-typedef std::set<Symbol*> epmem_symbol_set;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::map<epmem_triple, epmem_uedge*, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<std::pair<const epmem_triple, epmem_uedge*> > > epmem_triple_uedge_map;
