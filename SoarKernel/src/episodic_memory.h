@@ -512,18 +512,21 @@ typedef struct epmem_uedge_struct epmem_uedge;
 typedef struct epmem_interval_struct epmem_interval;
 
 // pairs
-typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
 typedef struct std::pair<Symbol*, epmem_literal*> epmem_symbol_literal_pair;
+typedef struct std::pair<Symbol*, epmem_node_id> epmem_symbol_node_pair;
 typedef struct std::pair<epmem_literal*, epmem_node_id> epmem_literal_node_pair;
+typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
 
 // collection classes
 typedef std::deque<epmem_literal*> epmem_literal_deque;
 typedef std::deque<epmem_node_id> epmem_node_deque;
 typedef std::map<Symbol*, int> epmem_symbol_int_map;
 typedef std::map<epmem_literal*, epmem_node_pair> epmem_literal_node_pair_map;
-typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
-typedef std::map<epmem_symbol_literal_pair, int> epmem_symbol_literal_pair_int_map;
 typedef std::map<epmem_literal_node_pair, int> epmem_literal_node_pair_int_map;
+typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
+typedef std::map<epmem_node_id, int> epmem_node_int_map;
+typedef std::map<epmem_symbol_literal_pair, int> epmem_symbol_literal_pair_int_map;
+typedef std::map<epmem_symbol_node_pair, int> epmem_symbol_node_pair_int_map;
 typedef std::map<epmem_triple, epmem_pedge*> epmem_triple_pedge_map;
 typedef std::map<wme*, epmem_literal*> epmem_wme_literal_map;
 typedef std::set<epmem_literal*> epmem_literal_set;
@@ -570,10 +573,10 @@ struct epmem_literal_struct {
 	epmem_node_id w;
 	epmem_node_id q1;
 	double weight;
-	bool satisfied;
 	epmem_literal_set parents;
 	epmem_literal_set children;
 	epmem_node_pair_set matches;
+	epmem_node_int_map values;
 };
 
 struct epmem_pedge_struct {
