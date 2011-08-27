@@ -3539,11 +3539,13 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 			} else {
 				bool changed_score = false;
 				// change bookkeeping information about ancestry
-				count_iter = symbol_incoming_count.find(literal->value_sym);
-				if (count_iter == symbol_incoming_count.end()) {
-					symbol_incoming_count[literal->value_sym] = 1;
-				} else {
-					(*count_iter).second++;
+				if (literal->matches.size() == 1) {
+					count_iter = symbol_incoming_count.find(literal->value_sym);
+					if (count_iter == symbol_incoming_count.end()) {
+						symbol_incoming_count[literal->value_sym] = 1;
+					} else {
+						(*count_iter).second++;
+					}
 				}
 				match = std::make_pair(literal->value_sym, child);
 				match_iter = symbol_node_count.find(match);
@@ -3616,18 +3618,13 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 					return true;
 				}
 			} else {
-				// change bookkeeping information about ancestry
-				count_iter = symbol_incoming_count.find(literal->value_sym);
-				(*count_iter).second--;
-				if ((*count_iter).second == 0) {
-					symbol_incoming_count.erase(count_iter);
-				}
 				bool changed_score = false;
 				// if this literal is no longer satisfied, recurse on all children
 				// if this literal is still satisfied, recurse on children who is matching on descendants of this edge
 				if (literal->matches.size() == 0) {
 					// decrease the matches for its child symbol
-					epmem_symbol_int_map::iterator count_iter = symbol_incoming_count.find(literal->value_sym);
+					count_iter = symbol_incoming_count.find(literal->value_sym);
+					assert(count_iter != symbol_incoming_count.end());
 					(*count_iter).second--;
 					if ((*count_iter).second == 0) {
 						symbol_incoming_count.erase(count_iter);
