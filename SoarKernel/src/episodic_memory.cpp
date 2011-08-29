@@ -914,19 +914,25 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 	for ( preference* pref=inst->preferences_generated; pref; pref=pref->inst_next )
 	{
 		// add the preference to temporary memory
-		add_preference_to_tm( my_agent, pref );
-
-		// and add it to the list of preferences to be removed
-		// when the goal is removed
-		insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
-		pref->on_goal_list = true;
-
-		if ( meta )
+		if ( add_preference_to_tm( my_agent, pref ) )
 		{
-			// if this is a meta wme, then it is completely local
-			// to the state and thus we will manually remove it
-			// (via preference removal) when the time comes
-			state->id.epmem_info->epmem_wmes->push_back( pref );
+			// add to the list of preferences to be removed
+			// when the goal is removed
+			insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
+			pref->on_goal_list = true;
+
+			if ( meta )
+			{
+				// if this is a meta wme, then it is completely local
+				// to the state and thus we will manually remove it
+				// (via preference removal) when the time comes
+				state->id.epmem_info->epmem_wmes->push_back( pref );
+			}
+		}
+		else
+		{
+			preference_add_ref( pref );
+			preference_remove_ref( my_agent, pref );
 		}
 	}
 
@@ -958,11 +964,17 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 
 				for ( just_pref=my_justification->preferences_generated; just_pref!=NIL; just_pref=just_pref->inst_next )
 				{
-					add_preference_to_tm( my_agent, just_pref );
-
-					if ( wma_enabled( my_agent ) )
+					if ( add_preference_to_tm( my_agent, just_pref ) )
 					{
-						wma_activate_wmes_in_pref( my_agent, just_pref );
+						if ( wma_enabled( my_agent ) )
+						{
+							wma_activate_wmes_in_pref( my_agent, just_pref );
+						}
+					}
+					else
+					{
+						preference_add_ref( just_pref );
+						preference_remove_ref( my_agent, just_pref );
 					}
 				}
 			}
@@ -5386,8 +5398,10 @@ void inline _epmem_exp( agent* my_agent )
 	//            ^mod # (optional, defaults to 1)
 	//            ^output |filename|
 	//            ^format << csv speedy >>
+	//            ^features <fs>
+	//               <fs> ^|key| |value|
 	//            ^commands <cmds>
-	//        <cmds> ^|label| <cmd>
+	//               <cmds> ^|label| <cmd>
 
 	clock_t c1;
 
@@ -5402,16 +5416,9 @@ void inline _epmem_exp( agent* my_agent )
 		Symbol* mod = make_sym_constant( my_agent, "mod" );
 		Symbol* output = make_sym_constant( my_agent, "output" );
 		Symbol* format = make_sym_constant( my_agent, "format" );
+		Symbol* features = make_sym_constant( my_agent, "features" );
 		Symbol* cmds = make_sym_constant( my_agent, "commands" );
-
 		Symbol* csv = make_sym_constant( my_agent, "csv" );
-
-		// TODO:
-		// - refactor respond_to_cmd
-		//   - memory pools
-		//   - separate "parser" (to be called by both experimentation and respond_to_cmd)
-		// - parse this syntax
-		// - output formatting
 
 		slot* queries_slot = find_slot( my_agent->top_goal->id.epmem_header, queries );
 		if ( queries_slot )
@@ -5425,6 +5432,7 @@ void inline _epmem_exp( agent* my_agent )
 				slot* mod_slot = find_slot( queries_id, mod );
 				slot* output_slot = find_slot( queries_id, output );
 				slot* format_slot = find_slot( queries_id, format );
+				slot* features_slot = find_slot( queries_id, features );
 				slot* commands_slot = find_slot( queries_id, cmds );
 
 				if ( reps_slot && output_slot && format_slot && commands_slot )
@@ -5433,6 +5441,7 @@ void inline _epmem_exp( agent* my_agent )
 					wme* mod_wme = ( ( mod_slot )?( mod_slot->wmes ):( NULL ) );
 					wme* output_wme = output_slot->wmes;
 					wme* format_wme = format_slot->wmes;
+					wme* features_wme = ( ( features_slot )?( features_slot->wmes ):( NULL ) );
 					wme* commands_wme = commands_slot->wmes;
 
 					if ( ( reps_wme->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
@@ -5444,46 +5453,67 @@ void inline _epmem_exp( agent* my_agent )
 						int64_t mod = ( ( mod_wme && ( mod_wme->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )?( mod_wme->value->ic.value ):(1) );
 						const char* output_fname = output_wme->value->sc.name;
 						bool format_csv = ( format_wme->value == csv );
-						std::map< std::string, std::string > output_contents;
+						std::list< std::pair< std::string, std::string > > output_contents;
 						std::string temp_str, temp_str2;
+						std::set< std::string > cmd_names;
+						
+						std::map< std::string, std::string > features;
+						if ( features_wme && features_wme->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+						{
+							for ( slot* s=features_wme->value->id.slots; s; s=s->next )
+							{
+								for ( wme* w=s->wmes; w; w=w->next )
+								{
+									if ( ( w->attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) &&
+										 ( w->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE ) )
+									{
+										features[ w->attr->sc.name ] = w->value->sc.name;
+									}
+								}
+							}
+						}
 
 						if ( ( ( my_agent->epmem_stats->time->get_value()-1 ) % mod ) == 1 )
 						{
 
 							// all fields (used to produce csv header), possibly stub values at this point
 							{
-								// episode number
+								// features
+								for ( std::map< std::string, std::string >::iterator f_it=features.begin(); f_it!=features.end(); f_it++ )
 								{
-									to_string( my_agent->epmem_stats->time->get_value()-1, temp_str );
-									output_contents[ "episodes" ] = temp_str;
+									output_contents.push_back( std::make_pair< std::string, std::string >( f_it->first, f_it->second ) );
 								}
 
 								// decision
 								{
 									to_string( my_agent->d_cycle_count, temp_str );
-									output_contents[ "dc" ] = temp_str;
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dc", temp_str ) );
 								}
 
-								// storage time in seconds
+								// episode number
 								{
-									to_string( static_cast<double>( static_cast<double>( c1 ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
-									output_contents[ "storagesec" ] = temp_str;
+									to_string( my_agent->epmem_stats->time->get_value()-1, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "episodes", temp_str ) );
 								}
 
 								// reps
 								{
 									to_string( reps, temp_str );
-									output_contents[ "reps" ] = temp_str;
+									output_contents.push_back( std::make_pair< std::string, std::string >( "reps", temp_str ) );
+								}
+								
+								// storage time in seconds
+								{
+									to_string( static_cast<double>( static_cast<double>( c1 ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
+									
+									output_contents.push_back( std::make_pair< std::string, std::string >( "storage", temp_str ) );
+									cmd_names.insert( "storage" );
 								}
 
 								// commands
 								for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
 								{
-									temp_str.assign( "v" );
-									temp_str.append( s->attr->sc.name );
-									temp_str.append( "totalsec" );
-
-									output_contents[ temp_str ] = "";
+									output_contents.push_back( std::make_pair< std::string, std::string >( s->attr->sc.name, "" ) );
 								}
 							}
 
@@ -5494,7 +5524,7 @@ void inline _epmem_exp( agent* my_agent )
 
 								if ( format_csv )
 								{
-									for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
+									for ( std::list< std::pair< std::string, std::string > >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
 									{
 										if ( it != output_contents.begin() )
 										{
@@ -5578,12 +5608,17 @@ void inline _epmem_exp( agent* my_agent )
 
 											// update results
 											{
-												temp_str.assign( "v" );
-												temp_str.append( s->attr->sc.name );
-												temp_str.append( "totalsec" );
+												to_string( static_cast<double>( static_cast<double>( c_total ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
 
-												to_string( static_cast<double>( static_cast<double>( c_total ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str2 );
-												output_contents[ temp_str ] = temp_str2;
+												for ( std::list< std::pair< std::string, std::string > >::iterator oc_it=output_contents.begin(); oc_it!=output_contents.end(); oc_it++ )
+												{
+													if ( oc_it->first.compare( s->attr->sc.name ) == 0 )
+													{
+														oc_it->second.assign( temp_str );
+													}
+												}
+												
+												cmd_names.insert( s->attr->sc.name );
 											}
 										}
 
@@ -5598,7 +5633,7 @@ void inline _epmem_exp( agent* my_agent )
 							// output data
 							if ( format_csv )
 							{
-								for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
+								for ( std::list< std::pair< std::string, std::string > >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
 								{
 									if ( it != output_contents.begin() )
 									{
@@ -5612,17 +5647,27 @@ void inline _epmem_exp( agent* my_agent )
 							}
 							else
 							{
-								for ( std::map< std::string, std::string >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
+								for ( std::set< std::string >::iterator c_it=cmd_names.begin(); c_it!=cmd_names.end(); c_it++ )
 								{
-									if ( it != output_contents.begin() )
+									for ( std::list< std::pair< std::string, std::string > >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
 									{
-										(*epmem_exp_output) << " ";
+										if ( cmd_names.find( it->first  ) == cmd_names.end() )
+										{
+											if ( it != output_contents.begin() )
+											{
+												(*epmem_exp_output) << " ";
+											}
+											
+											(*epmem_exp_output) << it->first << "=" << it->second;
+										}
+										else if ( c_it->compare( it->first ) == 0 )
+										{
+											(*epmem_exp_output) << " cmd=" << it->first << " totalsec=" << it->second;
+										}
 									}
-
-									(*epmem_exp_output) << it->first << "=" << it->second;
+									
+									(*epmem_exp_output) << std::endl;
 								}
-
-								(*epmem_exp_output) << std::endl;
 							}
 						}
 					}
@@ -5635,6 +5680,7 @@ void inline _epmem_exp( agent* my_agent )
 		symbol_remove_ref( my_agent, mod );
 		symbol_remove_ref( my_agent, output );
 		symbol_remove_ref( my_agent, format );
+		symbol_remove_ref( my_agent, features );
 		symbol_remove_ref( my_agent, cmds );
 		symbol_remove_ref( my_agent, csv );
 	}
