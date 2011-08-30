@@ -2269,9 +2269,10 @@ void epmem_new_episode( agent *my_agent )
 												{
 													if ( pool_p->first == (*w_p)->value->id.epmem_id )
 													{
-														new_id_reservation->my_id = pool_p->second;
+														(*w_p)->epmem_id = pool_p->second;
 														(*my_id_repo)->erase( pool_p );
 														(*my_agent->epmem_id_replacement)[ (*w_p)->epmem_id ] = (*my_id_repo);
+														break;
 													}
 												}
 											}
@@ -3509,8 +3510,8 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 			}
 			return created;
 		}
-		return true;
 	}
+	return true;
 }
 
 bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_symbol_int_map& symbol_incoming_count, epmem_symbol_node_pair_int_map& symbol_node_count, epmem_triple_uedge_map uedge_caches[], epmem_symbol_int_map& symbol_num_incoming) {
