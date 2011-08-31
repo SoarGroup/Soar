@@ -6119,14 +6119,21 @@ void inline _epmem_exp( agent* my_agent )
 								{
 									for ( std::list< std::pair< std::string, std::string > >::iterator it=output_contents.begin(); it!=output_contents.end(); it++ )
 									{
-										if ( cmd_names.find( it->first  ) == cmd_names.end() )
+										if ( cmd_names.find( it->first ) == cmd_names.end() )
 										{
 											if ( it != output_contents.begin() )
 											{
 												(*epmem_exp_output) << " ";
 											}
 											
-											(*epmem_exp_output) << it->first << "=" << it->second;
+											if ( ( it->first.compare( "reps" ) == 0 ) && ( c_it->compare( "storage" ) == 0 ) )
+											{
+												(*epmem_exp_output) << it->first << "=" << "1";
+											}
+											else
+											{
+												(*epmem_exp_output) << it->first << "=" << it->second;
+											}
 										}
 										else if ( c_it->compare( it->first ) == 0 )
 										{
