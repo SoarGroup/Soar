@@ -349,7 +349,7 @@ convention, but are not necessary.
 
 \begin{verbatim}
 sp {production-name
-    “Documentation string”
+    Documentation string
     :type
     CONDITIONS
     -->
@@ -1831,11 +1831,24 @@ sp {
     -->
     (write (float (+ 2 3))) }
 \end{verbatim}
+
+% ----------------------------------------------------------------------------
+\index{ifeq}
+\item [\soarb{ifeq} --- ] Conditionally return a symbol.
+        This function takes four arguments. It returns the third argument if
+        the first two are equal and the fourth argument otherwise. Note that
+        symbols of different types will always be considered unequal. For example,
+        1.0 and 1 will be unequal because the first is a float and the second is
+        an integer.
+
+\begin{verbatim}
+sp {example-rule
+    (state <s> ^a <a> ^b <b>)
+    ...
+    -->
+    (write (ifeq <a> <b> equal not-equal)) }
+\end{verbatim}
 \end{description}
-
-        \nocomment{is there a reason you'd ever need to cast a int to a float? I
-                can't think of a simple example}
-
 
 % ----------------------------------------------------------------------------
 \subsubsection{Generating and manipulating symbols}
