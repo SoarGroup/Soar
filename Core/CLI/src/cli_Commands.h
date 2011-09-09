@@ -3919,7 +3919,8 @@ namespace cli
                     case 'L':
                         options.set(Cli::WATCH_LEARNING);
                         learnSetting = ParseLearningOptarg(opt);
-                        if (learnSetting == -1) return false; 
+                        if (learnSetting == -1) return false;
+                        break;
 
                     case 'l':
                         {
