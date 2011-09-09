@@ -3337,15 +3337,15 @@ bool epmem_gm_mcv_comparator(const epmem_literal* a, const epmem_literal* b) {
 	return (a->matches.size() < b->matches.size());
 }
 
-epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_num_incoming, epmem_literal_deque& gm_ordering, epmem_symbol_set& currents, int query_type, std::set<Symbol*>& visiting, soar_module::wme_set& cue_wmes, agent* my_agent) {
+epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& literal_cache, epmem_literal_set& leaf_literals, epmem_symbol_int_map& symbol_num_incoming, epmem_literal_deque& gm_ordering, epmem_symbol_set& currents, int query_type, std::set<Symbol*>& visiting, soar_module::wme_set& cue_wmes, agent* my_agent) {
 	// if the value is being visited, this is part of a loop; return NULL
 	// remove this check (and in fact, the entire visiting parameter) if cyclic cues are allowed
 	if (visiting.count(cue_wme->value)) {
 		return NULL;
 	}
 	// if the value is an identifier and we've been here before, we can return the previous literal
-	if (sym_cache.count(cue_wme)) {
-		return sym_cache[cue_wme];
+	if (literal_cache.count(cue_wme)) {
+		return literal_cache[cue_wme];
 	}
 
 	cue_wmes.insert(cue_wme);
@@ -3395,7 +3395,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 			for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
 				// check to see if this child forms a cycle
 				// if it does, we skip over it
-				epmem_literal* child = epmem_build_dnf(*wme_iter, sym_cache, leaf_literals, symbol_num_incoming, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
+				epmem_literal* child = epmem_build_dnf(*wme_iter, literal_cache, leaf_literals, symbol_num_incoming, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
 				if (child) {
 					child->parents.insert(literal);
 					literal->children.insert(child);
@@ -3441,7 +3441,7 @@ epmem_literal* epmem_build_dnf(wme* cue_wme, epmem_wme_literal_map& sym_cache, e
 #endif
 	new(&(literal->values)) epmem_node_int_map();
 
-	sym_cache[cue_wme] = literal;
+	literal_cache[cue_wme] = literal;
 	return literal;
 }
 
@@ -3796,7 +3796,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_param_container::gm_ordering_choices gm_order = my_agent->epmem_params->gm_ordering->get_value();
 
 	// variables needed for cleanup
-	epmem_wme_literal_map sym_cache;
+	epmem_wme_literal_map literal_cache;
 	epmem_triple_pedge_map pedge_caches[2];
 #ifdef USE_MEM_POOL_ALLOCATORS
 	epmem_triple_uedge_map uedge_caches[2] = {
@@ -3840,12 +3840,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		// build the DNF graph while checking for leaf WMEs
 		{
 			my_agent->epmem_timers->query_dnf->start();
-			epmem_wme_list* pos_query_wmes = epmem_get_augs_of_id(pos_query, get_new_tc_number(my_agent));
-			epmem_wme_list* neg_query_wmes = NULL;
-			if (neg_query != NULL) {
-				neg_query_wmes = epmem_get_augs_of_id(neg_query, get_new_tc_number(my_agent));
-			}
-
 			root_literal->id_sym = NULL;
 			root_literal->value_sym = pos_query;
 			root_literal->is_neg_q = EPMEM_NODE_POS;
@@ -3864,37 +3858,36 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 #endif
 			new(&(root_literal->values)) epmem_node_int_map();
 			symbol_num_incoming[pos_query] = 1;
-			sym_cache[NULL] = root_literal;
+			literal_cache[NULL] = root_literal;
 
 			std::set<Symbol*> visiting;
 			visiting.insert(pos_query);
 			visiting.insert(neg_query);
 			for (int query_type = EPMEM_NODE_POS; query_type <= EPMEM_NODE_NEG; query_type++) {
-				epmem_wme_list* query_wmes = NULL;
+				Symbol* query_root = NULL;
 				switch (query_type) {
 					case EPMEM_NODE_POS:
-						query_wmes = pos_query_wmes;
+						query_root = pos_query;
 						break;
 					case EPMEM_NODE_NEG:
-						query_wmes = neg_query_wmes;
+						query_root = neg_query;
 						break;
 				}
-				if (!query_wmes) {
+				if (!query_root) {
 					continue;
 				}
+				epmem_wme_list* children = epmem_get_augs_of_id(query_root, get_new_tc_number(my_agent));
 				// for each first level WME, build up a DNF
-				while (query_wmes->size()) {
-					wme* first_level = query_wmes->front();
-					query_wmes->pop_front();
-					epmem_literal* root = epmem_build_dnf(first_level, sym_cache, leaf_literals, symbol_num_incoming, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
-					if (root) {
+				for (epmem_wme_list::iterator wme_iter = children->begin(); wme_iter != children->end(); wme_iter++) {
+					epmem_literal* child = epmem_build_dnf(*wme_iter, literal_cache, leaf_literals, symbol_num_incoming, gm_ordering, currents, query_type, visiting, cue_wmes, my_agent);
+					if (child) {
 						// force all first level literals to have the same id symbol
-						root->id_sym = pos_query;
-						root->parents.insert(root_literal);
-						root_literal->children.insert(root);
+						child->id_sym = pos_query;
+						child->parents.insert(root_literal);
+						root_literal->children.insert(child);
 					}
 				}
-				delete query_wmes;
+				delete children;
 			}
 			my_agent->epmem_timers->query_dnf->stop();
 		}
@@ -3971,7 +3964,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 
 		if (JUSTIN_DEBUG >= 1) {
-			epmem_print_state(sym_cache, pedge_caches, uedge_caches);
+			epmem_print_state(literal_cache, pedge_caches, uedge_caches);
 		}
 
 		// main loop of interval walk
@@ -4208,7 +4201,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 
 				if (JUSTIN_DEBUG >= 2) {
-					epmem_print_state(sym_cache, pedge_caches, uedge_caches);
+					epmem_print_state(literal_cache, pedge_caches, uedge_caches);
 				}
 
 				if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
@@ -4242,7 +4235,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							epmem_node_symbol_map bound_nodes[2];
 							if (JUSTIN_DEBUG >= 1) {
 								std::cout << "	GRAPH MATCH" << std::endl;
-								epmem_print_state(sym_cache, pedge_caches, uedge_caches);
+								epmem_print_state(literal_cache, pedge_caches, uedge_caches);
 							}
 							my_agent->epmem_timers->query_graph_match->start();
 							graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent, 2);
@@ -4373,7 +4366,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			free_with_pool(&(my_agent->epmem_uedge_pool), uedge);
 		}
 	}
-	for (epmem_wme_literal_map::iterator iter = sym_cache.begin(); iter != sym_cache.end(); iter++) {
+	for (epmem_wme_literal_map::iterator iter = literal_cache.begin(); iter != literal_cache.end(); iter++) {
 		epmem_literal* literal = (*iter).second;
 		literal->parents.~epmem_literal_set();
 		literal->children.~epmem_literal_set();
