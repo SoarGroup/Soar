@@ -76,9 +76,9 @@ namespace cli
             }
             else
             {
-            	std::vector<std::string> &cmd = aliases[*(i++)];
-            	cmd.clear();
-            	std::copy(i, argv.end(), std::back_inserter(cmd));
+                std::vector<std::string> &cmd = aliases[*(i++)];
+                cmd.clear();
+                std::copy(i, argv.end(), std::back_inserter(cmd));
             }
         }
 
