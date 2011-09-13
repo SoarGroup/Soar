@@ -26,7 +26,7 @@ namespace cli
             t.evaluate("ex excise");
             t.evaluate("eb explain-backtraces");
             t.evaluate("fc firing-counts");
-            t.evaluate("gds-print gds_print");
+            t.evaluate("gds_print gds-print");
             t.evaluate("h help");
             t.evaluate("man help");
             t.evaluate("? help");
