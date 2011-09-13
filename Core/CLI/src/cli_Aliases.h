@@ -18,43 +18,42 @@ namespace cli
             soar::tokenizer t;
             t.set_handler(this);
 
-            t.evaluate("alias a");
-            t.evaluate("add-wme aw");
-            t.evaluate("cd chdir");
-            t.evaluate("command-to-file ctf");
-            t.evaluate("default-wme-depth set-default-depth");
-            t.evaluate("excise ex");
-            t.evaluate("explain-backtraces eb");
-            t.evaluate("firing-counts fc");
+            t.evaluate("a alias");
+            t.evaluate("aw add-wme");
+            t.evaluate("chdir cd");
+            t.evaluate("ctf command-to-file");
+            t.evaluate("set-default-depth default-wme-depth");
+            t.evaluate("ex excise");
+            t.evaluate("eb explain-backtraces");
+            t.evaluate("fc firing-counts");
             t.evaluate("gds-print gds_print");
-            t.evaluate("help h");
-            t.evaluate("help man");
-            t.evaluate("help ?");
-            t.evaluate("indifferent-selection inds");
-            t.evaluate("init-soar init");
-            t.evaluate("init-soar is");
-            t.evaluate("learn l");
-            t.evaluate("ls dir");
-            t.evaluate("preferences pr");
-            t.evaluate("preferences support");
-            t.evaluate("print p");
-            t.evaluate("print --chunks pc");
-            t.evaluate("print -i wmes");
-            t.evaluate("print -v -d 100 varprint");
-            t.evaluate("pwd topd");
-            t.evaluate("pwatch pw");
-            t.evaluate("run -d step");
-            t.evaluate("run -d d");
-            t.evaluate("run -e e");
-            t.evaluate("remove-wme rw");
-            t.evaluate("rete-net rn");
-            t.evaluate("soarnews sn");
-            t.evaluate("stats st");
-            t.evaluate("stop-soar stop");
-            t.evaluate("stop-soar ss");
-            t.evaluate("stop-soar interrupt");
-            t.evaluate("unalias un");
-            t.evaluate("watch w");
+            t.evaluate("h help");
+            t.evaluate("man help");
+            t.evaluate("? help");
+            t.evaluate("inds indifferent-selection");
+            t.evaluate("init init-soar");
+            t.evaluate("is init-soar");
+            t.evaluate("l learn");
+            t.evaluate("dir ls");
+            t.evaluate("pr preferences");
+            t.evaluate("p print");
+            t.evaluate("pc print --chunks");
+            t.evaluate("wmes print -i");
+            t.evaluate("varprint print -v -d 100");
+            t.evaluate("topd pwd");
+            t.evaluate("pw pwatch");
+            t.evaluate("step run -d");
+            t.evaluate("d run -d");
+            t.evaluate("e run -e");
+            t.evaluate("rw remove-wme");
+            t.evaluate("rn rete-net");
+            t.evaluate("sn soarnews");
+            t.evaluate("st stats");
+            t.evaluate("stop stop-soar");
+            t.evaluate("ss stop-soar");
+            t.evaluate("interrupt stop-soar");
+            t.evaluate("un unalias");
+            t.evaluate("w watch");
         }
 
         virtual ~Aliases() {}
@@ -65,18 +64,22 @@ namespace cli
             return true;
         }
         
-        void SetAlias(std::vector< std::string >& argv)
+        void SetAlias(const std::vector< std::string >& argv)
         {
             if (argv.empty())
                 return;
-
-            std::string command( argv.back() );
-            argv.pop_back();
-
-            if (argv.empty())
-                aliases.erase(command);
+            
+            std::vector<std::string>::const_iterator i = argv.begin();
+            if (argv.size() == 1)
+            {
+                aliases.erase(*i);
+            }
             else
-                aliases[command] = argv;
+            {
+            	std::vector<std::string> &cmd = aliases[*(i++)];
+            	cmd.clear();
+            	std::copy(i, argv.end(), std::back_inserter(cmd));
+            }
         }
 
         bool Expand(std::vector<std::string>& argv)
