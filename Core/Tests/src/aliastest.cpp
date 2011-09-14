@@ -54,8 +54,8 @@ void AliasTest::tearDown()
 void AliasTest::testOne()
 {
     std::vector< std::string > a;
-    a.push_back("1");
     a.push_back("alias");
+    a.push_back("1");
     aliases->SetAlias(a);
     std::vector< std::string > b;
     b.push_back("alias");
@@ -67,9 +67,9 @@ void AliasTest::testOne()
 void AliasTest::testTwo()
 {
     std::vector< std::string > a;
+    a.push_back("alias");
     a.push_back("1");
     a.push_back("2");
-    a.push_back("alias");
     aliases->SetAlias(a);
     std::vector< std::string > b;
     b.push_back("alias");
@@ -82,10 +82,10 @@ void AliasTest::testTwo()
 void AliasTest::testThree()
 {
     std::vector< std::string > a;
+    a.push_back("alias");
     a.push_back("1");
     a.push_back("2");
     a.push_back("3");
-    a.push_back("alias");
     aliases->SetAlias(a);
     std::vector< std::string > b;
     b.push_back("alias");
