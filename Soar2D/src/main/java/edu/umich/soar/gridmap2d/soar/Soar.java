@@ -79,7 +79,14 @@ public class Soar implements CognitiveArchitecture, Kernel.UpdateEventInterface,
 			kernel = Kernel.CreateRemoteConnection(true, config.remote, config.port);
 		} else {
 			// Create kernel
-			kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kDefaultSMLPort);
+			if (!this.debug && config.optimized)
+			{
+				kernel = Kernel.CreateKernelInCurrentThread(Kernel.GetDefaultLibraryName(),true,0);
+			}
+			else
+			{
+				kernel = Kernel.CreateKernelInNewThread(Kernel.GetDefaultLibraryName(), Kernel.kDefaultSMLPort);
+			}
 		}
 
 		if (kernel.HadError()) {

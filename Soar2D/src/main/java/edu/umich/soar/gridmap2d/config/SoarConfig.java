@@ -8,6 +8,7 @@ public class SoarConfig {
 	public String remote = null;
 	public boolean spawn_debuggers = true;
 	public boolean soar_print = false;
+	public boolean optimized = false;
 	
 	public boolean runTilOutput(Game game) {
 		if (game.equals(Game.TANKSOAR)) {
