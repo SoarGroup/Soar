@@ -1286,7 +1286,7 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
 		std::string::size_type rpos = 0;
 
 		CapturedAction ca;
-
+		
 		// decision cycle
 		rpos = line.find(CAPTURE_SEPARATOR, lpos);
 		if (rpos == std::string::npos) return false;
@@ -1301,7 +1301,17 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
 		// action type
 		lpos = rpos + 1;
 		rpos = line.find(CAPTURE_SEPARATOR, lpos);
-		if (rpos == std::string::npos) return false;
+		if (rpos == std::string::npos)
+		{
+			if (lpos<line.length()-1)
+			{
+				rpos = line.length();
+			}
+			else
+			{
+				return false;
+			}
+		}
 		std::string actionType = line.substr(lpos, rpos - lpos);
 		
 		if (actionType == "add-wme")
@@ -1328,12 +1338,13 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
 			if (rpos == std::string::npos) return false;
 			ca.Add()->value = line.substr(lpos, rpos - lpos);
 			std::cout << ca.Add()->value << std::endl;
-
+			
 			// type
 			lpos = rpos + 1;
-			rpos = line.find(CAPTURE_SEPARATOR, lpos);
+			rpos = line.length();
 			if (rpos == std::string::npos) return false;
 			std::string type = line.substr(lpos, rpos - lpos);
+			std::cout << type << std::endl;
 	
 			if (type == sml_Names::kTypeID)
 			{
@@ -1356,6 +1367,14 @@ bool AgentSML::StartReplayInput(const std::string& pathname)
 				assert(false);
 				return false;
 			}
+		}
+		else if (actionType == "remove-wme")
+		{
+			// timetag already copied above
+		}
+		else
+		{
+			return false;
 		}
 		m_CapturedActions.push(ca);
 	}
