@@ -33,7 +33,18 @@
 #include "decide.h"
 
 #ifdef EPMEM_EXPERIMENT
+
 std::ofstream* epmem_exp_output = NULL;
+
+enum epmem_exp_states
+{
+	exp_state_wm_adds,
+	exp_state_wm_removes,
+	exp_state_sqlite_mem,
+};
+
+int64_t epmem_exp_state[] = { 0, 0, 0 };
+
 #endif
 
 //////////////////////////////////////////////////////////
@@ -5942,7 +5953,7 @@ void inline _epmem_exp( agent* my_agent )
 							}
 						}
 
-						if ( ( ( my_agent->epmem_stats->time->get_value()-1 ) % mod ) == 1 )
+						if ( ( mod == 1 ) || ( ( ( my_agent->epmem_stats->time->get_value()-1 ) % mod ) == 1 ) )
 						{
 
 							// all fields (used to produce csv header), possibly stub values at this point
@@ -5969,6 +5980,35 @@ void inline _epmem_exp( agent* my_agent )
 								{
 									to_string( reps, temp_str );
 									output_contents.push_back( std::make_pair< std::string, std::string >( "reps", temp_str ) );
+								}
+
+								// current wm size
+								{
+									to_string( my_agent->num_wmes_in_rete, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "wmcurrent", temp_str ) );
+								}
+
+								// wm adds/removes
+								{
+									to_string( ( my_agent->wme_addition_count - epmem_exp_state[ exp_state_wm_adds ] ), temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "wmadds", temp_str ) );
+									epmem_exp_state[ exp_state_wm_adds ] = static_cast< int64_t >( my_agent->wme_addition_count );
+
+									to_string( ( my_agent->wme_removal_count - epmem_exp_state[ exp_state_wm_removes ] ), temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "wmremoves", temp_str ) );
+									epmem_exp_state[ exp_state_wm_removes ] = static_cast< int64_t >( my_agent->wme_removal_count );
+								}
+
+								// sqlite memory
+								{
+									int64_t sqlite_mem = my_agent->epmem_stats->mem_usage->get_value();
+									
+									to_string( ( sqlite_mem - epmem_exp_state[ exp_state_sqlite_mem ] ), temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "sqlitememadd", temp_str ) );
+									epmem_exp_state[ exp_state_sqlite_mem ] = sqlite_mem;
+
+									to_string( sqlite_mem, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "sqlitememcurrent", temp_str ) );
 								}
 								
 								// storage time in seconds
