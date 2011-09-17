@@ -19,8 +19,25 @@ import sml.FloatElement;
 import sml.Identifier;
 import sml.IntElement;
 import sml.StringElement;
+import sml.WMElement;
 
 class SoarEaterIL {
+	
+	private static StringElement myCreateStringWME(Agent agent, Identifier id, String attr, String val) {
+		for (int i=0; i<id.GetNumberChildren(); i++) {
+			WMElement w=id.GetChild(i);
+			if (w.ConvertToStringElement()!=null) {
+				if (w.GetAttribute().compareTo(attr)==0) {
+					if (w.ConvertToStringElement().GetValue().compareTo(val)==0) {
+						return null;
+					}
+				}
+			}
+		}
+		
+		return agent.CreateStringWME(id, attr, val);
+	}
+	
 	private static final Log logger = LogFactory.getLog(SoarEaterIL.class);
 	
 	private class RandomIL {
@@ -179,7 +196,8 @@ class SoarEaterIL {
 		
 		private void createContent(Map<String, StringElement> map, Cell cell, String name) {
 			// create the wme
-			StringElement element = agent.CreateStringWME(cell.me, Names.kContentID, name);
+			//StringElement element = agent.CreateStringWME(cell.me, Names.kContentID, name);
+			StringElement element = myCreateStringWME(agent, cell.me, Names.kContentID, name);
 			assert element != null;
 			
 			// store the element
@@ -256,7 +274,9 @@ class SoarEaterIL {
 					// Keep it and remove it from the remaining
 					remaining.remove(property);
 				} else {
-					StringElement element = agent.CreateStringWME(cell.box, property, box.getProperty(property));
+					//StringElement element = agent.CreateStringWME(cell.box, property, box.getProperty(property));
+					StringElement element = myCreateStringWME(agent, cell.box, property, box.getProperty(property));
+					assert element != null;
 					cell.boxProperties.put(property, element);
 				}
 			}
@@ -289,7 +309,9 @@ class SoarEaterIL {
 							continue;
 						}
 
-						StringElement element = agent.CreateStringWME(cell.box, property, box.getProperty(property));
+						//StringElement element = agent.CreateStringWME(cell.box, property, box.getProperty(property));
+						StringElement element = myCreateStringWME(agent, cell.box, property, box.getProperty(property));
+						assert element!=null;
 						cell.boxProperties.put(property, element);
 					}
 				} else {
