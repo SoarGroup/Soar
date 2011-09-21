@@ -1593,14 +1593,34 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
   {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
+      // if identifier-valued and short-term, known value
       if ( ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 	       ( w->value->id.epmem_id != EPMEM_NODEID_BAD ) &&
 		   ( w->value->id.epmem_valid == thisAgent->epmem_validation ) &&
 		   ( !w->value->id.smem_lti ) )
       {
+	    // add id ref count
 	    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]++;
       }
-	}
+
+	  // if known id
+	  if ( ( w->id->id.epmem_id != EPMEM_NODEID_BAD ) && ( w->id->id.epmem_valid == thisAgent->epmem_validation ) )
+      {
+	    // add to add/remove maps
+	  	epmem_pooled_wme_set** add_set =& (*thisAgent->epmem_wme_adds)[ w->id ];
+        if ( (*add_set) == NIL )
+        {
+          allocate_with_pool( thisAgent, &( thisAgent->epmem_add_set_pool ), add_set );
+#ifdef USE_MEM_POOL_ALLOCATORS
+          (*add_set) = new (*add_set) epmem_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( thisAgent ) );
+#else
+          (*add_set) = new (*add_set) epmem_pooled_wme_set();
+#endif
+        }
+        (*add_set)->insert( w );
+        (*thisAgent->epmem_wme_removes)[ w->timetag ] = (*add_set);
+	  }
+    }
   }
 
   if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
@@ -1623,11 +1643,16 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
+	  uint64_t epmem_validation = thisAgent->epmem_validation;
+      bool known_wme = ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == epmem_validation ) );
+	  bool known_id = ( ( w->id->id.epmem_id != EPMEM_NODEID_BAD ) && ( w->id->id.epmem_valid == epmem_validation ) );
+
 	  if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 	  {
 		bool lti = ( w->value->id.smem_lti != NIL );
+		bool known_value = ( ( w->value->id.epmem_id != EPMEM_NODEID_BAD ) && ( w->value->id.epmem_valid == epmem_validation ) );
 		  
-		if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
+		if ( known_wme )
 	    {
 		  (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
 
@@ -1640,15 +1665,31 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 		  }
 		}
 
-		// reduce the ref count on the identifier
-		if ( !lti )
+		// reduce the ref count on the identifier, if known
+		if ( !lti && known_value )
 		{
 		  (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
 		}
 	  }
-	  else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
+	  else if ( known_wme )
 	  {
 	    (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
+	  }
+
+	  // only new stuff (i.e. wme is unknown to epmem)
+	  // with id known to epmem can be in the add/remove maps
+	  if ( !known_wme && known_id )
+	  {
+	    epmem_wme_removal_map::iterator r_p = thisAgent->epmem_wme_removes->find( w->timetag );
+	    if ( r_p != thisAgent->epmem_wme_removes->end() )
+	    {
+		  epmem_pooled_wme_set::iterator w_p = r_p->second->find( w );
+		  if ( w_p != r_p->second->end() )
+		  {
+		    r_p->second->erase( w_p );
+		    thisAgent->epmem_wme_removes->erase( r_p );
+		  }
+	    }
 	  }
 	}
   }

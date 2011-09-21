@@ -223,6 +223,7 @@ typedef struct agent_struct {
 
   memory_pool		  epmem_wmes_pool;
   memory_pool		  epmem_info_pool;
+  memory_pool		  epmem_add_set_pool;
   memory_pool		  smem_wmes_pool;
   memory_pool		  smem_info_pool;
 
@@ -892,17 +893,21 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_graph_statement_container *epmem_stmts_graph;
   
 
-  std::map<epmem_node_id, bool> *epmem_node_removals;
+  epmem_id_removal_map *epmem_node_removals;
   std::vector<epmem_time_id> *epmem_node_mins;
   std::vector<bool> *epmem_node_maxes;
 
-  std::map<epmem_node_id, bool> *epmem_edge_removals;
+  epmem_id_removal_map *epmem_edge_removals;
   std::vector<epmem_time_id> *epmem_edge_mins;
   std::vector<bool> *epmem_edge_maxes;
 
   epmem_parent_id_pool *epmem_id_repository;
   epmem_return_id_pool *epmem_id_replacement;
   epmem_id_ref_counter *epmem_id_ref_counts;
+
+  epmem_wme_addition_map* epmem_wme_adds;
+  epmem_wme_removal_map* epmem_wme_removes;
+  epmem_symbol_set* epmem_promotions;
 
   epmem_rit_state epmem_rit_state_graph[2];
 
