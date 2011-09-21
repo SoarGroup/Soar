@@ -2720,7 +2720,6 @@ namespace cli
             {
                 {'d', "decision",        OPTARG_NONE},
                 {'e', "elaboration",    OPTARG_NONE},
-                {'f', "forever",        OPTARG_NONE},
                 {'g', "goal",            OPTARG_NONE},
                 {'i', "interleave",        OPTARG_REQUIRED},
                 {'n', "noupdate",        OPTARG_NONE},
@@ -2746,9 +2745,6 @@ namespace cli
                         break;
                     case 'e':
                         options.set(Cli::RUN_ELABORATION);
-                        break;
-                    case 'f':
-                        options.set(Cli::RUN_FOREVER);
                         break;
                     case 'g':
                         options.set(Cli::RUN_GOAL);
@@ -2782,7 +2778,7 @@ namespace cli
                 return cli.SetError(GetSyntax());
 
             // Decide if we explicitly indicated how to run
-            bool specifiedType = (options.test(Cli::RUN_FOREVER) || options.test(Cli::RUN_ELABORATION) || options.test(Cli::RUN_DECISION) || options.test(Cli::RUN_PHASE) || options.test(Cli::RUN_OUTPUT)) ;
+            bool specifiedType = (options.test(Cli::RUN_ELABORATION) || options.test(Cli::RUN_DECISION) || options.test(Cli::RUN_PHASE) || options.test(Cli::RUN_OUTPUT)) ;
 
             // Count defaults to -1
             int count = -1;
@@ -3919,7 +3915,8 @@ namespace cli
                     case 'L':
                         options.set(Cli::WATCH_LEARNING);
                         learnSetting = ParseLearningOptarg(opt);
-                        if (learnSetting == -1) return false; 
+                        if (learnSetting == -1) return false;
+                        break;
 
                     case 'l':
                         {
