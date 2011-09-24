@@ -368,15 +368,6 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		//
 
-		soar_module::sqlite_statement *update_lti;
-
-		soar_module::sqlite_statement *find_edge_unique_lti;
-
-		soar_module::sqlite_statement *find_lti_current_time;
-
-		//
-
-		soar_module::sqlite_statement *update_node_unique_last;
 		soar_module::sqlite_statement *update_edge_unique_last;
 
 		//
