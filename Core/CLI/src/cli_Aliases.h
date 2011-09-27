@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <iterator>
 #include "tokenizer.h"
 
 namespace cli 
