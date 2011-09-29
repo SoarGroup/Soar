@@ -5802,8 +5802,13 @@ void inline _epmem_exp( agent* my_agent )
 										else if ( c_it->compare( it->first ) == 0 )
 										{
 											(*epmem_exp_output) << " command=" << it->first << " totalsec=" << it->second;
-											it++;
-											(*epmem_exp_output) << " numsearched=" << it->second;
+											if ( it->first.compare( "storage" ) == 0 ) {
+												(*epmem_exp_output) << " numsearched=0";
+												break;
+											} else {
+												it++;
+												(*epmem_exp_output) << " numsearched=" << it->second;
+											}
 										}
 									}
 
