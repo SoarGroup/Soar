@@ -684,9 +684,11 @@ void do_one_top_level_phase (agent* thisAgent)
 			smem_go( thisAgent, true );
 		  }
 
+		  // allow epmem searches in proposal phase
+		  // FIXME should turn this into a command line option
 		  if ( epmem_enabled( thisAgent ) )
 		  {
-			epmem_go( thisAgent, false );
+			// epmem_go( thisAgent, false );
 		  }
 
 		  /* Update accounting.  Moved here by KJC 04/05/05 */

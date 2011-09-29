@@ -35,6 +35,7 @@
 
 #ifdef EPMEM_EXPERIMENT
 
+uint64_t epmem_episodes_searched = 0;
 std::ofstream* epmem_exp_output = NULL;
 
 enum epmem_exp_states
@@ -4070,6 +4071,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			epmem_print_state(literal_cache, pedge_caches, uedge_caches);
 		}
 
+#ifdef EPMEM_EXPERIMENT
+		epmem_episodes_searched = 0;
+#endif
+
 		// main loop of interval walk
 		my_agent->epmem_timers->query_walk->start();
 		while (pedge_pq.size() && current_episode > after) {
@@ -4313,6 +4318,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					print(my_agent, buf);
 					xml_generate_warning(my_agent, buf);
 				}
+
+#ifdef EPMEM_EXPERIMENT
+				epmem_episodes_searched++;
+#endif
 
 				// if
 				// * the current time is still before any new intervals
@@ -5627,6 +5636,9 @@ void inline _epmem_exp( agent* my_agent )
 								for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
 								{
 									output_contents.push_back( std::make_pair< std::string, std::string >( s->attr->sc.name, "" ) );
+									std::string searched = "epsearched";
+									searched.append(s->attr->sc.name);
+									output_contents.push_back( std::make_pair< std::string, std::string >( searched , "" ) );
 								}
 							}
 
@@ -5731,6 +5743,9 @@ void inline _epmem_exp( agent* my_agent )
 												{
 													if ( oc_it->first.compare( s->attr->sc.name ) == 0 )
 													{
+														oc_it->second.assign( temp_str );
+														oc_it++;
+														to_string( epmem_episodes_searched , temp_str );
 														oc_it->second.assign( temp_str );
 													}
 												}
