@@ -34,6 +34,7 @@
 
 #ifdef EPMEM_EXPERIMENT
 
+uint64_t epmem_episodes_searched = 0;
 std::ofstream* epmem_exp_output = NULL;
 
 enum epmem_exp_states
@@ -4376,6 +4377,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 			bool king_graph_match = false;
 			epmem_gm_assignment_map king_assignments;
 
+#ifdef EPMEM_EXPERIMENT
+			epmem_episodes_searched = 0;
+#endif
+
 			// perform range search if any leaf wmes
 			if ( ( level > 1 ) && cue_size && !matches.empty() )
 			{
@@ -4489,6 +4494,10 @@ void epmem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol 
 								print( my_agent, buf );
 								xml_generate_warning( my_agent, buf );
 							}
+
+#ifdef EPMEM_EXPERIMENT
+							epmem_episodes_searched++;
+#endif
 
 							if ( graph_match )
 							{
@@ -6023,6 +6032,9 @@ void inline _epmem_exp( agent* my_agent )
 								for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
 								{
 									output_contents.push_back( std::make_pair< std::string, std::string >( s->attr->sc.name, "" ) );
+									std::string searched = "numsearched";
+									searched.append(s->attr->sc.name);
+									output_contents.push_back( std::make_pair< std::string, std::string >( searched , "" ) );
 								}
 							}
 
@@ -6123,6 +6135,9 @@ void inline _epmem_exp( agent* my_agent )
 													if ( oc_it->first.compare( s->attr->sc.name ) == 0 )
 													{
 														oc_it->second.assign( temp_str );
+														oc_it++;
+														to_string( epmem_episodes_searched , temp_str );
+														oc_it->second.assign( temp_str );
 													}
 												}
 												
@@ -6178,6 +6193,13 @@ void inline _epmem_exp( agent* my_agent )
 										else if ( c_it->compare( it->first ) == 0 )
 										{
 											(*epmem_exp_output) << " command=" << it->first << " totalsec=" << it->second;
+											if ( it->first.compare( "storage" ) == 0 ) {
+												(*epmem_exp_output) << " numsearched=0";
+												break;
+											} else {
+												it++;
+												(*epmem_exp_output) << " numsearched=" << it->second;
+											}
 										}
 									}
 									
