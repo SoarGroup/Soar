@@ -5636,7 +5636,7 @@ void inline _epmem_exp( agent* my_agent )
 								for ( slot* s=commands_wme->value->id.slots; s; s=s->next )
 								{
 									output_contents.push_back( std::make_pair< std::string, std::string >( s->attr->sc.name, "" ) );
-									std::string searched = "epsearched";
+									std::string searched = "numsearched";
 									searched.append(s->attr->sc.name);
 									output_contents.push_back( std::make_pair< std::string, std::string >( searched , "" ) );
 								}
@@ -5802,6 +5802,8 @@ void inline _epmem_exp( agent* my_agent )
 										else if ( c_it->compare( it->first ) == 0 )
 										{
 											(*epmem_exp_output) << " command=" << it->first << " totalsec=" << it->second;
+											it++;
+											(*epmem_exp_output) << " numsearched=" << it->second;
 										}
 									}
 
