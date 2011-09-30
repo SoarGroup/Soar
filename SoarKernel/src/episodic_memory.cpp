@@ -47,6 +47,8 @@ enum epmem_exp_states
 
 int64_t epmem_exp_state[] = { 0, 0, 0 };
 
+soar_module::timer* epmem_exp_timer = NULL;
+
 #endif
 
 //////////////////////////////////////////////////////////
@@ -1424,6 +1426,11 @@ void epmem_close( agent *my_agent )
 		epmem_exp_output->close();
 		delete epmem_exp_output;
 		epmem_exp_output = NULL;
+
+		if ( epmem_exp_timer )
+		{
+			delete epmem_exp_timer;
+		}
 	}
 #endif
 }
@@ -3619,7 +3626,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 	return true;
 }
 
-bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_symbol_node_pair_int_map& symbol_node_count, epmem_triple_uedge_map uedge_caches[], epmem_symbol_int_map& symbol_num_incoming) {
+bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, long int& current_cardinality, epmem_symbol_node_pair_int_map& symbol_node_count, epmem_triple_uedge_map uedge_caches[], epmem_symbol_int_map& symbol_num_incoming) {
 	epmem_symbol_node_pair_int_map::iterator match_iter;
 	if (JUSTIN_DEBUG >= 1) {
 		std::cout << "		RECURSING ON " << parent << " " << child << " " << literal << std::endl;
@@ -3698,7 +3705,7 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 	return false;
 }
 
-bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, int& current_cardinality, epmem_symbol_node_pair_int_map& symbol_node_count) {
+bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, long int& current_cardinality, epmem_symbol_node_pair_int_map& symbol_node_count) {
 	epmem_symbol_int_map::iterator count_iter;
 	if (literal->matches.size() == 0) {
 		return false;
@@ -3932,10 +3939,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_time_id best_episode = EPMEM_MEMID_NONE;
 	double best_score = 0;
 	bool best_graph_matched = false;
-	int best_cardinality = 0;
+	long int best_cardinality = 0;
 	epmem_literal_node_pair_map best_bindings;
 	double current_score = 0;
-	int current_cardinality = 0;
+	long int current_cardinality = 0;
 
 	// variables needed for graphmatch
 	epmem_literal_deque gm_ordering;
@@ -4314,7 +4321,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 				if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
 					char buf[256];
-					SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>( current_episode), static_cast<long int>( current_cardinality ), current_score);
+					SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>(current_episode), current_cardinality, current_score);
 					print(my_agent, buf);
 					xml_generate_warning(my_agent, buf);
 				}
@@ -5495,12 +5502,19 @@ void inline _epmem_exp( agent* my_agent )
 	//               <fs> ^|key| |value|
 	//            ^commands <cmds>
 	//               <cmds> ^|label| <cmd>
+	
+	if ( !epmem_exp_timer )
+	{
+		epmem_exp_timer = new soar_module::timer( "exp", my_agent, soar_module::timer::zero, new soar_module::predicate<soar_module::timer::timer_level>(), false );
+	}
 
-	clock_t c1;
+	double c1;
 
-	c1 = clock();
+	epmem_exp_timer->reset();
+	epmem_exp_timer->start();
 	bool new_episode = epmem_consider_new_episode( my_agent );
-	c1 = ( clock() - c1 );
+	epmem_exp_timer->stop();
+	c1 = epmem_exp_timer->value();
 
 	if ( new_episode )
 	{
@@ -5626,7 +5640,7 @@ void inline _epmem_exp( agent* my_agent )
 
 								// storage time in seconds
 								{
-									to_string( static_cast<double>( static_cast<double>( c1 ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
+									to_string( c1, temp_str );
 
 									output_contents.push_back( std::make_pair< std::string, std::string >( "storage", temp_str ) );
 									cmd_names.insert( "storage" );
@@ -5700,9 +5714,10 @@ void inline _epmem_exp( agent* my_agent )
 										if ( good_cue && ( path == 3 ) )
 										{
 											// execute lots of times
-											clock_t c_total = 0;
+											double c_total = 0;
 											{
-												c1 = clock();
+												epmem_exp_timer->reset();
+												epmem_exp_timer->start();
 												for ( int64_t i=1; i<=reps; i++ )
 												{
 													epmem_process_query( my_agent, my_agent->top_goal, query, neg_query, prohibit, before, after, currents, cue_wmes, meta_wmes, retrieval_wmes, 2 );
@@ -5732,12 +5747,13 @@ void inline _epmem_exp( agent* my_agent )
 														meta_wmes.clear();
 													}
 												}
-												c_total += ( clock() - c1 );
+												epmem_exp_timer->stop();
+												c_total = epmem_exp_timer->value();
 											}
 
 											// update results
 											{
-												to_string( static_cast<double>( static_cast<double>( c_total ) / static_cast<double>( CLOCKS_PER_SEC ) ), temp_str );
+												to_string( c_total, temp_str );
 
 												for ( std::list< std::pair< std::string, std::string > >::iterator oc_it=output_contents.begin(); oc_it!=output_contents.end(); oc_it++ )
 												{
@@ -5785,11 +5801,15 @@ void inline _epmem_exp( agent* my_agent )
 									{
 										if ( cmd_names.find( it->first ) == cmd_names.end() )
 										{
+											if ( it->first.substr( 0, 11 ).compare( "numsearched " ) == 0 )
+											{
+												continue;
+											}
+
 											if ( it != output_contents.begin() )
 											{
 												(*epmem_exp_output) << " ";
 											}
-
 											if ( ( it->first.compare( "reps" ) == 0 ) && ( c_it->compare( "storage" ) == 0 ) )
 											{
 												(*epmem_exp_output) << it->first << "=" << "1";
@@ -5808,6 +5828,7 @@ void inline _epmem_exp( agent* my_agent )
 											} else {
 												it++;
 												(*epmem_exp_output) << " numsearched=" << it->second;
+												break;
 											}
 										}
 									}
