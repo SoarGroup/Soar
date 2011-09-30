@@ -842,7 +842,7 @@ namespace soar_module
 
 		public:
 
-			timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred );
+			timer( const char *new_name, agent *new_agent, timer_level new_level, predicate<timer_level> *new_pred, bool soar_control = true );
 
 			virtual ~timer()
 			{
