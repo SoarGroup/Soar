@@ -4314,7 +4314,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 
 				if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
 					char buf[256];
-					SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %d, %f)\n", current_episode, current_cardinality, current_score);
+					SNPRINTF(buf, 254, "CONSIDERING EPISODE (time, cardinality, score) (%lld, %ld, %f)\n", static_cast<long long int>( current_episode), static_cast<long int>( current_cardinality ), current_score);
 					print(my_agent, buf);
 					xml_generate_warning(my_agent, buf);
 				}
