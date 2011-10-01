@@ -6188,7 +6188,7 @@ void inline _epmem_exp( agent* my_agent )
 									{
 										if ( cmd_names.find( it->first ) == cmd_names.end() )
 										{
-											if ( it->first.substr( 0, 11 ).compare( "numsearched " ) == 0 )
+											if ( it->first.substr( 0, 11 ).compare( "numsearched" ) == 0 )
 											{
 												continue;
 											}
