@@ -36,6 +36,8 @@
 #ifdef EPMEM_EXPERIMENT
 
 uint64_t epmem_episodes_searched = 0;
+uint64_t epmem_dc_wme_adds = 0;
+uint64_t epmem_dc_wme_removes = 0;
 std::ofstream* epmem_exp_output = NULL;
 
 enum epmem_exp_states
@@ -2579,6 +2581,10 @@ void epmem_new_episode( agent *my_agent )
 		{
 			epmem_node_id *temp_node;
 
+#ifdef EPMEM_EXPERIMENT
+			epmem_dc_wme_adds = epmem_node.size() + epmem_edge.size();
+#endif
+
 			// nodes
 			while ( !epmem_node.empty() )
 			{
@@ -2624,12 +2630,20 @@ void epmem_new_episode( agent *my_agent )
 			epmem_time_id range_start;
 			epmem_time_id range_end;
 
+#ifdef EPMEM_EXPERIMENT
+			epmem_dc_wme_removes = 0;
+#endif
+
 			// nodes
 			r = my_agent->epmem_node_removals->begin();
 			while ( r != my_agent->epmem_node_removals->end() )
 			{
 				if ( r->second )
 				{
+#ifdef EPMEM_EXPERIMENT
+					epmem_dc_wme_removes++;
+#endif
+
 					// remove NOW entry
 					// id = ?
 					my_agent->epmem_stmts_graph->delete_node_now->bind_int( 1, r->first );
@@ -2665,6 +2679,10 @@ void epmem_new_episode( agent *my_agent )
 			{
 				if ( r->second )
 				{
+#ifdef EPMEM_EXPERIMENT
+					epmem_dc_wme_removes++;
+#endif
+
 					// remove NOW entry
 					// id = ?
 					my_agent->epmem_stmts_graph->delete_edge_now->bind_int( 1, r->first );
@@ -5624,6 +5642,15 @@ void inline _epmem_exp( agent* my_agent )
 									to_string( ( my_agent->wme_removal_count - epmem_exp_state[ exp_state_wm_removes ] ), temp_str );
 									output_contents.push_back( std::make_pair< std::string, std::string >( "wmremoves", temp_str ) );
 									epmem_exp_state[ exp_state_wm_removes ] = static_cast< int64_t >( my_agent->wme_removal_count );
+								}
+
+								// dc wme add/removes
+								{
+									to_string( epmem_dc_wme_adds, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcadds", temp_str ) );
+
+									to_string( epmem_dc_wme_removes, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcremoves", temp_str ) );
 								}
 
 								// sqlite memory
