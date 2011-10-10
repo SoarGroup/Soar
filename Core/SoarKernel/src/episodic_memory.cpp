@@ -2407,7 +2407,7 @@ void epmem_new_episode( agent *my_agent )
 								// definitely don't remove
 								(*my_agent->epmem_node_removals)[ (*w_p)->epmem_id ] = false;
 
-								// add ONLY if the last thing we did was add
+								// add ONLY if the last thing we did was remove
 								if ( (*my_agent->epmem_node_maxes)[ (*w_p)->epmem_id - 1 ] )
 								{
 									epmem_node.push( (*w_p)->epmem_id );
