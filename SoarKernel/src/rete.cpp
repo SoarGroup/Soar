@@ -1663,13 +1663,12 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 		    (*p->second).push_front( std::make_pair( w->value->id.epmem_id, w->epmem_id ) );
 		    thisAgent->epmem_id_replacement->erase( p );
 		  }
+		}
 
-		  // reduce the ref count on the identifier, if known
-		  if ( !lti && known_value )
-		  {
-			assert((*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ] > 0);
-		    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
-		  }
+		// reduce the ref count on the identifier, if known
+		if ( !lti && known_value )
+		{
+		  (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
 		}
 	  }   
 	  else if ( known_wme )
