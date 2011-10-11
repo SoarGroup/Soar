@@ -1638,13 +1638,15 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
 		    (*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
 		    thisAgent->epmem_id_replacement->erase( p );
 		  }
+
+		  // reduce the ref count on the identifier
+		  if ( !lti )
+		  {
+		    assert((*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ] > 0);
+		    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
+		  }
 		}
 
-		// reduce the ref count on the identifier
-		if ( !lti )
-		{
-		  (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
-		}
 	  }
 	  else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
 	  {
