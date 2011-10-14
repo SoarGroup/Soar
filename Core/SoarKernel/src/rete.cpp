@@ -1598,7 +1598,7 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
 		   ( w->value->id.epmem_valid == thisAgent->epmem_validation ) &&
 		   ( !w->value->id.smem_lti ) )
       {
-	    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]++;
+	    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]->insert( w );
       }
 	}
   }
@@ -1613,6 +1613,119 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
   }
 }
 
+inline void _epmem_remove_wme( agent* my_agent, wme* w )
+{
+	bool was_encoded = false;
+	
+	if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
+	{
+		bool lti = ( w->value->id.smem_lti != NIL );
+
+		if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == my_agent->epmem_validation ) )
+		{
+			was_encoded = true;
+			
+			(*my_agent->epmem_edge_removals)[ w->epmem_id ] = true;
+
+			// return to the id pool
+			if ( !lti )
+			{
+				epmem_return_id_pool::iterator p = my_agent->epmem_id_replacement->find( w->epmem_id );
+				(*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
+				my_agent->epmem_id_replacement->erase( p );
+			}
+		}
+
+		// reduce the ref count on the value
+		if ( !lti && ( w->value->id.epmem_id != EPMEM_NODEID_BAD ) && ( w->value->id.epmem_valid == my_agent->epmem_validation ) )
+		{
+			epmem_wme_set* my_refs = (*my_agent->epmem_id_ref_counts)[ w->value->id.epmem_id ];
+			
+			epmem_wme_set::iterator rc_it = my_refs->find( w );
+			if ( rc_it != my_refs->end() )
+			{
+				my_refs->erase( rc_it );
+
+				// recurse if no incoming edges from top-state (i.e. not in transitive closure of top-state)
+				bool recurse = true;
+				for ( rc_it=my_refs->begin(); ( recurse && rc_it!=my_refs->end() ); rc_it++ )
+				{
+					if ( ( !(*rc_it) ) || ( (*rc_it)->id->id.level == my_agent->top_state->id.level ) )
+					{
+						recurse = false;
+					}
+				}
+
+				if ( recurse )
+				{
+					my_refs->clear();
+					my_agent->epmem_id_removes->push_front( w->value );
+				}
+			}
+		}
+	}
+	else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == my_agent->epmem_validation ) )
+	{
+		was_encoded = true;
+		
+		(*my_agent->epmem_node_removals)[ w->epmem_id ] = true;
+	}
+
+	if ( was_encoded )
+	{
+		w->epmem_id = EPMEM_NODEID_BAD;
+		w->epmem_valid = NIL;
+	}
+}
+
+inline void _epmem_process_ids( agent* my_agent )
+{
+	Symbol* id;
+	slot* s;
+	wme* w;
+	
+	while ( !my_agent->epmem_id_removes->empty() )
+	{
+		id = my_agent->epmem_id_removes->front();
+		my_agent->epmem_id_removes->pop_front();
+
+		assert( id->common.symbol_type == IDENTIFIER_SYMBOL_TYPE );
+
+		if ( ( id->id.epmem_id != EPMEM_NODEID_BAD ) && ( id->id.epmem_valid == my_agent->epmem_validation ) )
+		{
+			// invalidate identifier encoding
+			id->id.epmem_id = EPMEM_NODEID_BAD;
+			id->id.epmem_valid = NIL;
+
+			// impasse wmes
+			for ( w=id->id.impasse_wmes; w!=NIL; w=w->next )
+			{
+				_epmem_remove_wme( my_agent, w );
+			}
+
+			// input wmes
+			for ( w=id->id.input_wmes; w!=NIL; w=w->next )
+			{
+				_epmem_remove_wme( my_agent, w );
+			}
+
+			// regular wmes
+			for ( s=id->id.slots; s!=NIL; s=s->next )
+			{
+				for ( w=s->wmes; w!=NIL; w=w->next )
+				{
+					_epmem_remove_wme( my_agent, w );
+				}
+
+				for ( w=s->acceptable_preference_wmes; w!=NIL; w=w->next )
+				{
+					_epmem_remove_wme( my_agent, w );
+				}
+			}
+		}
+	}
+}
+
 /* --- Removes a WME from the Rete. --- */
 void remove_wme_from_rete (agent* thisAgent, wme *w) {
   right_mem *rm;
@@ -1623,33 +1736,8 @@ void remove_wme_from_rete (agent* thisAgent, wme *w) {
   {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
-	  if ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-	  {
-		bool lti = ( w->value->id.smem_lti != NIL );
-		  
-		if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
-	    {
-		  (*thisAgent->epmem_edge_removals)[ w->epmem_id ] = true;
-
-		  // return to the id pool
-		  if ( !lti )
-		  {
-		    epmem_return_id_pool::iterator p = thisAgent->epmem_id_replacement->find( w->epmem_id );
-		    (*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
-		    thisAgent->epmem_id_replacement->erase( p );
-		  }
-		}
-
-		// reduce the ref count on the identifier
-		if ( !lti )
-		{
-		  (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]--;
-		}
-	  }
-	  else if ( ( w->epmem_id != EPMEM_NODEID_BAD ) && ( w->epmem_valid == thisAgent->epmem_validation ) )
-	  {
-	    (*thisAgent->epmem_node_removals)[ w->epmem_id ] = true;
-	  }
+	  _epmem_remove_wme( thisAgent, w );
+	  _epmem_process_ids( thisAgent );
 	}
   }
 

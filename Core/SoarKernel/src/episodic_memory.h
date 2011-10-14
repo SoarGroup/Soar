@@ -485,7 +485,16 @@ typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
-typedef std::map<epmem_node_id, uint64_t> epmem_id_ref_counter;
+
+#ifdef USE_MEM_POOL_ALLOCATORS
+typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > epmem_wme_set;
+typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_stack;
+#else
+typedef std::set< wme* > epmem_wme_set;
+typedef std::list< Symbol* > epmem_symbol_stack;
+#endif
+typedef std::map< epmem_node_id, epmem_wme_set* > epmem_id_ref_counter;
+
 typedef struct epmem_id_reservation_struct
 {
 	epmem_node_id my_id;
