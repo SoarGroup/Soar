@@ -564,6 +564,7 @@ namespace soar_module
 				#ifdef USE_MEM_POOL_ALLOCATORS
 				statements = new sqlite_statement_pool_pool( my_agent );
 				#else
+				my_agent;
 				statements = new sqlite_statement_pool_pool();
 				#endif
 			}
