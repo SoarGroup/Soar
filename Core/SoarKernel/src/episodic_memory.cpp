@@ -1357,6 +1357,11 @@ void epmem_close( agent *my_agent )
 
 			my_agent->epmem_id_repository->clear();
 			my_agent->epmem_id_replacement->clear();
+
+			for ( epmem_id_ref_counter::iterator rf_it=my_agent->epmem_id_ref_counts->begin(); rf_it!=my_agent->epmem_id_ref_counts->end(); rf_it++ )
+			{
+				delete rf_it->second;
+			}
 			my_agent->epmem_id_ref_counts->clear();
 		}
 
@@ -1593,6 +1598,17 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			my_agent->epmem_edge_removals->clear();
 
 			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool;
+			{
+#ifdef USE_MEM_POOL_ALLOCATORS
+				epmem_wme_set* wms_temp = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+#else
+				epmem_wme_set* wms_temp = new epmem_wme_set();
+#endif
+				
+				wms_temp->insert( NULL );
+
+				(*my_agent->epmem_id_ref_counts)[ EPMEM_NODEID_ROOT ] = wms_temp;
+			}
 
 			// initialize time
 			my_agent->epmem_stats->time->set_value( 1 );
@@ -2253,7 +2269,7 @@ void epmem_new_episode( agent *my_agent )
 
 											do
 											{
-												if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ] == 0 )
+												if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
 												{
 													(*w_p)->epmem_id = pool_p->second;
 													(*w_p)->value->id.epmem_id = pool_p->first;
@@ -2294,6 +2310,13 @@ void epmem_new_episode( agent *my_agent )
 
 									// add repository
 									(*my_agent->epmem_id_repository)[ (*w_p)->value->id.epmem_id ] = new epmem_hashed_id_pool;
+
+									// add ref set
+#ifdef USE_MEM_POOL_ALLOCATORS
+									(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+#else
+									(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set;
+#endif
 								}
 
 								// insert (q0,w,q1)
@@ -2333,7 +2356,7 @@ void epmem_new_episode( agent *my_agent )
 							// to update its ref count for each WME added.
 							if ( new_identifiers.find( (*w_p)->value ) != new_identifiers.end() )
 							{
-								(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]++;
+								(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->insert( (*w_p) );
 							}
 						}
 						else

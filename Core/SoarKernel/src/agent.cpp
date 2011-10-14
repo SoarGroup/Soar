@@ -380,6 +380,12 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_id_replacement = new epmem_return_id_pool();
   newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
 
+#ifdef USE_MEM_POOL_ALLOCATORS
+  newAgent->epmem_id_removes = new epmem_symbol_stack( soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
+#else
+  newAgent->epmem_id_removes = new epmem_symbol_stack();
+#endif
+
   newAgent->epmem_validation = 0;
   newAgent->epmem_first_switch = true;
 
@@ -467,6 +473,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_id_repository;
   delete delete_agent->epmem_id_replacement;
   delete delete_agent->epmem_id_ref_counts;
+  delete delete_agent->epmem_id_removes;
 
   delete delete_agent->epmem_db;
 
