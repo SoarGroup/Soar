@@ -66,6 +66,10 @@ public:
             lock = new soar_thread::Lock(&mutex);
             lines.push(line);
             write_event.TriggerEvent();
+            if (line == "quit" || line == "exit")
+            {
+				this->m_QuitNow = true;
+            }
             delete lock;
         }
     }
@@ -251,7 +255,7 @@ private:
         if (line.empty())
             return;
 
-        if (line.substr(0, 4) == "quit" || line.substr(0, 4) == "exit")
+        if (line == "quit" || line == "exit")
         {
             quit = true;
         }
