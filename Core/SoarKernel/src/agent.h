@@ -587,6 +587,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   /* REW: end 28.07.96 */
 #endif // NO_TIMING_STUFF
 
+   // This could probably go in the not NO_TIMING_STUFF block
+   std::map<SOAR_CALLBACK_TYPE, soar_timer_accumulator> callback_timers;
+
    /* RMJ */
    /* Keep track of real time steps for constant real-time per decision */
    /* used only if #def'd REAL_TIME_BEHAVIOR */

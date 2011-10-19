@@ -88,8 +88,6 @@ const char * soar_callback_names[] =
   //NUMBER_OF_CALLBACKS
 };
 
-std::map<SOAR_CALLBACK_TYPE, soar_timer_accumulator> callback_timers;
-
 void soar_init_callbacks (agent* the_agent)
 {
 	int ct; // ct was originally of type SOAR_CALLBACK_TYPE, changed for c++ compatibility (5/1/02)
@@ -364,7 +362,7 @@ void soar_invoke_callbacks (agent* thisAgent,
     /* for soar7: thisAgent->current_phase = DECISION_PHASE; for soar8 it's OUTPUT_PHASE */
 	   thisAgent->timers_phase.stop();
 	   thisAgent->timers_monitors_cpu_time[thisAgent->current_phase].update(thisAgent->timers_phase);
-	   callback_timers[callback_type].update(thisAgent->timers_phase);
+	   thisAgent->callback_timers[callback_type].update(thisAgent->timers_phase);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
@@ -372,7 +370,7 @@ void soar_invoke_callbacks (agent* thisAgent,
     /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
        thisAgent->timers_kernel.stop();
        thisAgent->timers_input_function_cpu_time.update(thisAgent->timers_kernel);
-	   callback_timers[callback_type].update(thisAgent->timers_kernel);
+	   thisAgent->callback_timers[callback_type].update(thisAgent->timers_kernel);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
@@ -472,7 +470,7 @@ void soar_invoke_first_callback (agent* thisAgent,
   case AFTER_DECISION_CYCLE_CALLBACK:
 	   thisAgent->timers_phase.stop();
 	   thisAgent->timers_monitors_cpu_time[thisAgent->current_phase].update(thisAgent->timers_phase);
-	   callback_timers[callback_type].update(thisAgent->timers_phase);
+	   thisAgent->callback_timers[callback_type].update(thisAgent->timers_phase);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
@@ -480,7 +478,7 @@ void soar_invoke_first_callback (agent* thisAgent,
     /* Stop input_function_cpu_time timer.  Restart kernel and phase timers */
 	   thisAgent->timers_kernel.stop();
 	   thisAgent->timers_input_function_cpu_time.update(thisAgent->timers_kernel);
-	   callback_timers[callback_type].update(thisAgent->timers_kernel);
+	   thisAgent->callback_timers[callback_type].update(thisAgent->timers_kernel);
 	   thisAgent->timers_kernel.start();
 	   thisAgent->timers_phase.start();
        break;
