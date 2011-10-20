@@ -57,6 +57,12 @@ char const* FloatElement::GetValueAsString() const
 	return temp.c_str() ;
 }
 
+char const* FloatElement::GetValueAsString(std::string& buf) const
+{
+	to_string( m_Value, buf );
+	return buf.c_str() ;
+}
+
 #ifdef SML_DIRECT
 void FloatElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag)
 {

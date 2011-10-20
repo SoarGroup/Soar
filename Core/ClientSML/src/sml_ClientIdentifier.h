@@ -141,6 +141,9 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() const { return m_pSymbol->GetIdentifierSymbol() ; }
 
+	// Returns a string form of the value, uses buf to create the string
+	virtual char const* GetValueAsString(std::string& buf) const { buf.assign(m_pSymbol->GetIdentifierSymbol()); return buf.c_str(); }
+
 	// The Identifier class overrides this to return true.  (The poor man's RTTI).
 	virtual bool IsIdentifier() const { return true ; }
 	
