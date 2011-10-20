@@ -45,6 +45,9 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() const ;
 
+	// Returns a string form of the value, uses buf to create the string
+	virtual char const* GetValueAsString(std::string& buf) const ;
+
 	// Returns the current value
 	double GetValue() const { return m_Value ; }
 	

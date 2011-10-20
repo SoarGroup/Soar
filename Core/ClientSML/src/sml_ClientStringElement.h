@@ -48,6 +48,9 @@ public:
 	// Returns the current value
 	char const* GetValue() const { return m_Value.c_str() ; }
 	
+	// Returns a string form of the value, uses buf to create the string
+	virtual char const* GetValueAsString(std::string& buf) const { buf.assign(m_Value); return buf.c_str(); }
+
 	virtual StringElement* ConvertToStringElement() { return this; }
 
 	/*************************************************************
