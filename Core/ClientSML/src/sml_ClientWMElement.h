@@ -79,6 +79,9 @@ public:
 	// Returns a string form of the value stored here.
 	virtual char const* GetValueAsString() const = 0 ;
 
+	// Returns a string form of the value, uses buf to create the string
+	virtual char const* GetValueAsString(std::string& buf) const = 0 ;
+
 	long long GetTimeTag() const	{ return m_TimeTag ; }
 
 	// The Identifier class overrides this to return true.  (The poor man's RTTI).
