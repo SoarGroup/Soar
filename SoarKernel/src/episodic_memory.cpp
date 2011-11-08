@@ -1406,6 +1406,10 @@ void epmem_close( agent *my_agent )
 
 			my_agent->epmem_id_repository->clear();
 			my_agent->epmem_id_replacement->clear();
+			for ( epmem_id_ref_counter::iterator rf_it=my_agent->epmem_id_ref_counts->begin(); rf_it!=my_agent->epmem_id_ref_counts->end(); rf_it++ )
+			{
+				delete rf_it->second;
+			}
 			my_agent->epmem_id_ref_counts->clear();
 
 			my_agent->epmem_wme_adds->clear();
@@ -1656,6 +1660,17 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			my_agent->epmem_edge_removals->clear();
 
 			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool;
+			{
+#ifdef USE_MEM_POOL_ALLOCATORS
+				epmem_wme_set* wms_temp = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+#else
+				epmem_wme_set* wms_temp = new epmem_wme_set();
+#endif
+
+				wms_temp->insert( NULL );
+
+				(*my_agent->epmem_id_ref_counts)[ EPMEM_NODEID_ROOT ] = wms_temp;
+			}
 
 			// initialize time
 			my_agent->epmem_stats->time->set_value( 1 );
@@ -2049,7 +2064,7 @@ inline void _epmem_promote_id( agent* my_agent, Symbol* id, epmem_time_id t )
 // 1. value known in phase one (try reservation)
 // 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
 // 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
-inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_syms, std::queue< epmem_node_id >& parent_ids, tc_number tc, epmem_pooled_wme_set::iterator w_b, epmem_pooled_wme_set::iterator w_e, epmem_node_id parent_id, epmem_time_id time_counter, 
+inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_syms, std::queue< epmem_node_id >& parent_ids, tc_number tc, epmem_pooled_wme_set::iterator w_b, epmem_pooled_wme_set::iterator w_e, epmem_node_id parent_id, epmem_time_id time_counter,
 		std::map< wme*, epmem_id_reservation* >& id_reservations, std::set< Symbol* >& new_identifiers, std::queue< epmem_node_id >& epmem_node, std::queue< epmem_node_id >& epmem_edge )
 {
 	epmem_pooled_wme_set::iterator w_p;
@@ -2086,7 +2101,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			}
 
 			// if still here, create reservation (case 1)
-			new_id_reservation = new epmem_id_reservation;						
+			new_id_reservation = new epmem_id_reservation;
 			new_id_reservation->my_id = EPMEM_NODEID_BAD;
 			new_id_reservation->my_pool = NULL;
 
@@ -2137,11 +2152,11 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 		}
 
 		if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
-		{			
+		{
 			(*w_p)->epmem_valid = my_agent->epmem_validation;
 			(*w_p)->epmem_id = EPMEM_NODEID_BAD;
 
-			my_hash = NIL;							
+			my_hash = NIL;
 			my_id_repo2 = NIL;
 
 			value_known_apriori = ( ( (*w_p)->value->id.epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->value->id.epmem_valid == my_agent->epmem_validation ) );
@@ -2171,7 +2186,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					// add if necessary
 					if ( (*w_p)->value->id.epmem_id == EPMEM_NODEID_BAD )
 					{
-						(*w_p)->value->id.epmem_id = my_agent->epmem_stats->next_id->get_value();										
+						(*w_p)->value->id.epmem_id = my_agent->epmem_stats->next_id->get_value();
 						my_agent->epmem_stats->next_id->set_value( (*w_p)->value->id.epmem_id + 1 );
 						epmem_set_variable( my_agent, var_next_id, (*w_p)->value->id.epmem_id + 1 );
 
@@ -2211,7 +2226,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			}
 			else
 			{
-				// in the case of a known value, we already have a reservation (case 1)						
+				// in the case of a known value, we already have a reservation (case 1)
 				if ( value_known_apriori )
 				{
 					r_p = id_reservations.find( (*w_p) );
@@ -2295,12 +2310,12 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					{
 						// if something leftover, try to use it
 						if ( !(*my_id_repo)->empty() )
-						{										
+						{
 							pool_p = (*my_id_repo)->begin();
 
 							do
 							{
-								if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ] == 0 )
+								if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
 								{
 									(*w_p)->epmem_id = pool_p->second;
 									(*w_p)->value->id.epmem_id = pool_p->first;
@@ -2315,7 +2330,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 									pool_p++;
 								}
 							} while ( pool_p != (*my_id_repo)->end() );
-						}									
+						}
 					}
 					else
 					{
@@ -2326,7 +2341,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					// keep the address for later (used if w->epmem_id was not assgined)
 					my_id_repo2 = (*my_id_repo);
 				}
-			}							
+			}
 
 			// add wme if no success above
 			if ( (*w_p)->epmem_id == EPMEM_NODEID_BAD )
@@ -2342,6 +2357,13 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 
 					// add repository
 					(*my_agent->epmem_id_repository)[ (*w_p)->value->id.epmem_id ] = new epmem_hashed_id_pool;
+
+					// add ref set
+#ifdef USE_MEM_POOL_ALLOCATORS
+					(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+#else
+					(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set();
+#endif
 				}
 
 				// insert (q0,w,q1)
@@ -2383,10 +2405,10 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			// up with ref counts that would have been accumulated via wme adds)
 			if ( new_identifiers.find( (*w_p)->value ) != new_identifiers.end() )
 			{
-				(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]++;
+				(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->insert( (*w_p) );
 			}
 
-			// continue to augmentations?						
+			// continue to augmentations?
 			if ( (*w_p)->value->id.tc_num != tc )
 			{
 				good_recurse = false;
@@ -2397,7 +2419,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					good_recurse = true;
 				}
 				else
-				{					
+				{
 					wmes = epmem_get_augs_of_id( (*w_p)->value, tc );
 
 					if ( !wmes->empty() )
@@ -2451,7 +2473,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						(*w_p)->epmem_id = my_agent->epmem_stmts_graph->find_node_unique->column_int( 0 );
 					}
 
-					my_agent->epmem_stmts_graph->find_node_unique->reinitialize();								
+					my_agent->epmem_stmts_graph->find_node_unique->reinitialize();
 				}
 
 				// act depending on new/existing feature
@@ -2502,7 +2524,7 @@ void epmem_new_episode( agent *my_agent )
 	}
 
 	////////////////////////////////////////////////////////////////////////////
-	my_agent->epmem_timers->storage->start();	
+	my_agent->epmem_timers->storage->start();
 	////////////////////////////////////////////////////////////////////////////
 
 	epmem_time_id time_counter = my_agent->epmem_stats->time->get_value();
@@ -5520,7 +5542,7 @@ void inline _epmem_exp( agent* my_agent )
 	//               <fs> ^|key| |value|
 	//            ^commands <cmds>
 	//               <cmds> ^|label| <cmd>
-	
+
 	if ( !epmem_exp_timer )
 	{
 		epmem_exp_timer = new soar_module::timer( "exp", my_agent, soar_module::timer::zero, new soar_module::predicate<soar_module::timer::timer_level>(), false );

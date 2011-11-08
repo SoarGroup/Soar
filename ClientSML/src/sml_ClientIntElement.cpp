@@ -53,6 +53,12 @@ char const* IntElement::GetValueAsString() const
 	return temp.c_str() ;
 }
 
+char const* IntElement::GetValueAsString(std::string& buf) const
+{
+	to_string( m_Value, buf );
+	return buf.c_str() ;
+}
+
 #ifdef SML_DIRECT
 void IntElement::DirectAdd(Direct_AgentSML_Handle pAgentSML, long long timeTag)
 {

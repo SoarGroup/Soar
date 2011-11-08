@@ -134,7 +134,7 @@ AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nar
 AddOption('--build-warnings', action='store', type='choice', choices=['none','all','error'], dest='build-warnings', default='error', nargs=1, metavar='WARN_LEVEL',
 	help='Set warning level when building. Must be one of none, all, error (default).')
 
-AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='full', nargs=1, metavar='LEVEL',
+AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='none', nargs=1, metavar='LEVEL',
 	help='Set optimization level. Must be one of none, partial, full (default).')
 
 AddOption('--platform', action='store', type='choice', choices=['32','64'], dest='platform', default=m64_default, nargs=1, metavar='PLATFORM',
@@ -261,14 +261,14 @@ if GetOption('ios') == 'none':
 		env.Append(CPPFLAGS = ['-m32'])
 		env.Append(LINKFLAGS = ['-m32'])
 elif GetOption('ios') == 'simulator':
-	env.Append(CPPFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk -mmacosx-version-min=10.6 -L/Developer/usr/lib/gcc/i686-apple-darwin10/4.2.1'))
-	env.Append(LINKFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator4.3.sdk -mmacosx-version-min=10.6 -L/Developer/usr/lib/gcc/i686-apple-darwin10/4.2.1'))
+	env.Append(CPPFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk'))
+	env.Append(LINKFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk'))
 else:
 	env.Append(CPPFLAGS = ['-DIPHONE_SDK', '-D__LLP64__']); # (the last is for STLSOFT)
 	env['CC'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-gcc-4.2'
 	env['CXX'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-g++-4.2'
-	env.Append(CPPFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
-	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk'))
+	env.Append(CPPFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
+	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
 
 if GetOption('gprof'):
 	env.Append(CPPFLAGS = ['-pg'])
