@@ -1605,7 +1605,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 				epmem_wme_set* wms_temp = new epmem_wme_set();
 #endif
 				
-				wms_temp->insert( NULL );
+								wms_temp->insert( static_cast<wme*>(NULL) );
 
 				(*my_agent->epmem_id_ref_counts)[ EPMEM_NODEID_ROOT ] = wms_temp;
 			}
