@@ -675,9 +675,13 @@ void create_predefined_symbols (agent* thisAgent) {
   // SBW 5/07
   thisAgent->item_count_symbol = make_sym_constant (thisAgent, "item-count");
 
+  // NLD 11/11
+  thisAgent->non_numeric_count_symbol = make_sym_constant( thisAgent, "non-numeric-count" );
+
   thisAgent->conflict_symbol = make_sym_constant (thisAgent, "conflict");
   thisAgent->tie_symbol = make_sym_constant (thisAgent, "tie");
   thisAgent->item_symbol = make_sym_constant (thisAgent, "item");
+  thisAgent->non_numeric_symbol = make_sym_constant (thisAgent, "non-numeric"); 
   thisAgent->quiescence_symbol = make_sym_constant (thisAgent, "quiescence");
   thisAgent->t_symbol = make_sym_constant (thisAgent, "t");
   thisAgent->nil_symbol = make_sym_constant (thisAgent, "nil");
@@ -776,6 +780,7 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper(thisAgent,&(thisAgent->conflict_symbol));
   release_helper(thisAgent,&(thisAgent->tie_symbol));
   release_helper(thisAgent,&(thisAgent->item_symbol));
+  release_helper(thisAgent,&(thisAgent->non_numeric_symbol));
   release_helper(thisAgent,&(thisAgent->quiescence_symbol));
   release_helper(thisAgent,&(thisAgent->t_symbol));
   release_helper(thisAgent,&(thisAgent->nil_symbol));
@@ -794,6 +799,9 @@ void release_predefined_symbols(agent* thisAgent) {
 
   // SBW 5/07
   release_helper(thisAgent,&(thisAgent->item_count_symbol));
+
+  // NLD 11/11
+  release_helper(thisAgent,&(thisAgent->non_numeric_count_symbol));
 
   /* REW: begin 10.24.97 */
   release_helper(thisAgent,&(thisAgent->wait_symbol));
