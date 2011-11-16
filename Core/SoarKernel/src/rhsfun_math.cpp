@@ -1083,25 +1083,6 @@ uint64_t _dice_binom( uint64_t n, uint64_t m )
 	return ret;
 }
 
-std::map< std::pair< uint64_t, uint64_t >, uint64_t > _dice_binom_cache;
-uint64_t _dice_binomial( uint64_t n, uint64_t m )
-{
-	uint64_t res = 0;
-	
-	std::map< std::pair< uint64_t, uint64_t >, uint64_t >::iterator it = _dice_binom_cache.find( std::make_pair< uint64_t, uint64_t >( n, m ) );
-	if ( it == _dice_binom_cache.end() )
-	{
-		res = _dice_binom( n, m );
-		_dice_binom_cache[ std::make_pair< uint64_t, uint64_t >( n, m ) ] = res;
-	}
-	else
-	{
-		res = it->second;
-	}
-
-	return res;
-}
-
 double _dice_prob_exact( int64_t dice, int64_t sides, int64_t count )
 {
 	// makes no sense
@@ -1128,7 +1109,7 @@ double _dice_prob_exact( int64_t dice, int64_t sides, int64_t count )
 	double p2nkn = pow( static_cast< double >( sides - 1 ), static_cast< double >( dice - count ) );
 	double p2nkd = pow( static_cast< double >( sides ), static_cast< double >( dice - count ) );
 
-	double result = static_cast< double >( _dice_binomial( static_cast< uint64_t >( dice ), static_cast< uint64_t >( count ) ) );
+	double result = static_cast< double >( _dice_binom( static_cast< uint64_t >( dice ), static_cast< uint64_t >( count ) ) );
 	result *= ( static_cast< double >( 1.0 ) / p1kd );
 	result *= ( p2nkn / p2nkd );
 
