@@ -1059,7 +1059,7 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
 
 inline double _dice_zero_tolerance( double in )
 {
-	return ( ( abs( in ) <= 0.00001 )?( 0 ):( in ) );
+	return ( ( fabs( in ) <= 0.00001 )?( 0 ):( in ) );
 }
 
 // http://www.brpreiss.com/books/opus4/html/page467.html
