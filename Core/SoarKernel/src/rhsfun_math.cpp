@@ -1057,6 +1057,273 @@ Symbol* rand_int_rhs_function_code(agent* thisAgent, list* args, void* /*user_da
 	return make_int_constant(thisAgent, SoarRandInt());
 }
 
+inline double _dice_zero_tolerance( double in )
+{
+	return ( ( abs( in ) <= 0.00001 )?( 0 ):( in ) );
+}
+
+// http://www.brpreiss.com/books/opus4/html/page467.html
+uint64_t _dice_binom( uint64_t n, uint64_t m )
+{
+	uint64_t* b = new uint64_t[ n+1 ];
+	uint64_t i, j, ret;
+
+	b[0] = 1;
+	for ( i=1; i<=n; ++i )
+	{
+		b[i] = 1;
+		for ( j=(i-1); j>0; --j )
+		{
+			b[j] += b[j-1];
+		}
+	}
+	ret = b[m];
+	delete[] b;
+
+	return ret;
+}
+
+std::map< std::pair< uint64_t, uint64_t >, uint64_t > _dice_binom_cache;
+uint64_t _dice_binomial( uint64_t n, uint64_t m )
+{
+	uint64_t res = 0;
+	
+	std::map< std::pair< uint64_t, uint64_t >, uint64_t >::iterator it = _dice_binom_cache.find( std::make_pair< uint64_t, uint64_t >( n, m ) );
+	if ( it == _dice_binom_cache.end() )
+	{
+		res = _dice_binom( n, m );
+		_dice_binom_cache[ std::make_pair< uint64_t, uint64_t >( n, m ) ] = res;
+	}
+	else
+	{
+		res = it->second;
+	}
+
+	return res;
+}
+
+double _dice_prob_exact( int64_t dice, int64_t sides, int64_t count )
+{
+	// makes no sense
+	if ( dice < 0 )
+		return 0;
+	if ( count < 0 )
+		return 0;
+	if ( sides < 1 )
+		return 0;
+
+	// if there are no dice, probability is zero unless count is also zero
+	if ( dice == 0 )
+	{
+		if ( count == 0 )
+			return 1;
+
+		return 0;
+	}
+
+	if ( count > dice )
+		return 0;
+
+	double p1kd = pow( static_cast< double >( sides ), static_cast< double >( count ) );
+	double p2nkn = pow( static_cast< double >( sides - 1 ), static_cast< double >( dice - count ) );
+	double p2nkd = pow( static_cast< double >( sides ), static_cast< double >( dice - count ) );
+
+	double result = static_cast< double >( _dice_binomial( static_cast< uint64_t >( dice ), static_cast< uint64_t >( count ) ) );
+	result *= ( static_cast< double >( 1.0 ) / p1kd );
+	result *= ( p2nkn / p2nkd );
+
+	return result;
+}
+
+double _dice_prob_atleast( int64_t dice, int64_t sides, int64_t count )
+{
+	// makes no sense
+	if ( dice < 0 )
+		return 0;
+	if ( count < 0 )
+		return 0;
+	if ( sides < 1 )
+		return 0;
+
+	double result = 0.0;
+	for ( int64_t i=0; ( count + i <= dice ); ++i )
+	{
+		result += _dice_prob_exact( dice, sides, count+i );
+	}
+
+	return result;
+}
+
+// Taken primarily from Jon Voigt's soar-dice project
+// (compute-dice-probability dice sides count predicate) = 0..1
+Symbol* dice_prob_rhs_function_code(agent* thisAgent, list* args, void* /*user_data*/)
+{
+	int64_t dice;
+	int64_t sides;
+	int64_t count;
+
+	enum pred_type { eq, ne, lt, gt, le, ge, bad };
+	pred_type pred = bad;
+
+	// parse + validate
+	{
+		Symbol* temp_sym;
+
+		// dice
+		temp_sym = static_cast< Symbol* >( args->first );
+		if ( ( temp_sym->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE ) &&
+			 ( temp_sym->common.symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE ) )
+		{
+			print_with_symbols( thisAgent, "Error: non-number (%y) passed as 'dice' to - compute-dice-probability\n", temp_sym );
+			return NIL;
+		}
+		dice = ( ( temp_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )?( temp_sym->ic.value ):( static_cast< int64_t >( temp_sym->fc.value ) ) );
+
+		// sides
+		temp_sym = static_cast< Symbol* >( args->rest->first );
+		if ( ( temp_sym->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE ) &&
+			 ( temp_sym->common.symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE ) )
+		{
+			print_with_symbols( thisAgent, "Error: non-number (%y) passed as 'sides' to - compute-dice-probability\n", temp_sym );
+			return NIL;
+		}
+		sides = ( ( temp_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )?( temp_sym->ic.value ):( static_cast< int64_t >( temp_sym->fc.value ) ) );
+
+		// count
+		temp_sym = static_cast< Symbol* >( args->rest->rest->first );
+		if ( ( temp_sym->common.symbol_type != INT_CONSTANT_SYMBOL_TYPE ) &&
+			 ( temp_sym->common.symbol_type != FLOAT_CONSTANT_SYMBOL_TYPE ) )
+		{
+			print_with_symbols( thisAgent, "Error: non-number (%y) passed as 'count' to - compute-dice-probability\n", temp_sym );
+			return NIL;
+		}
+		count = ( ( temp_sym->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE )?( temp_sym->ic.value ):( static_cast< int64_t >( temp_sym->fc.value ) ) );
+
+		// pred
+		temp_sym = static_cast< Symbol* >( args->rest->rest->rest->first );
+		if ( temp_sym->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE )
+		{
+			print_with_symbols( thisAgent, "Error: non-string (%y) passed as 'pred' to - compute-dice-probability\n", temp_sym );
+			return NIL;
+		}
+		if ( strcmp( temp_sym->sc.name, "eq" ) == 0 )
+		{
+			pred = eq;
+		}
+		else if ( strcmp( temp_sym->sc.name, "ne" ) == 0 )
+		{
+			pred = ne;
+		}
+		else if ( strcmp( temp_sym->sc.name, "lt" ) == 0 )
+		{
+			pred = lt;
+		}
+		else if ( strcmp( temp_sym->sc.name, "gt" ) == 0 )
+		{
+			pred = gt;
+		}
+		else if ( strcmp( temp_sym->sc.name, "le" ) == 0 )
+		{
+			pred = le;
+		}
+		else if ( strcmp( temp_sym->sc.name, "ge" ) == 0 )
+		{
+			pred = ge;
+		}
+		if ( pred == bad )
+		{
+			print_with_symbols( thisAgent, "Error: invalid string (%y) passed as 'pred' to - compute-dice-probability\n", temp_sym );
+			return NIL;
+		}
+	}
+
+	double ret = 0;
+	if ( pred == eq )
+	{
+		if ( ( count < 0 ) || ( count > dice ) )
+		{
+			ret = 0;
+		}
+		else
+		{
+			ret = _dice_zero_tolerance( _dice_prob_exact( dice, sides, count ) );
+		}
+	}
+	else if ( pred == ne )
+	{
+		if ( ( count < 0 ) || ( count > dice ) )
+		{
+			ret = 1;
+		}
+		else
+		{
+			ret = _dice_zero_tolerance( 1 - _dice_prob_exact( dice, sides, count ) );
+		}
+	}
+	else if ( pred == lt )
+	{
+		if ( count <= 0 )
+		{
+			ret = 0;
+		}
+		else if ( count > dice )
+		{
+			ret = 1;
+		}
+		else
+		{
+			ret = _dice_zero_tolerance( 1 - _dice_prob_atleast( dice, sides, count ) );
+		}
+	}
+	else if ( pred == gt )
+	{
+		if ( count < 0 )
+		{
+			ret = 1;
+		}
+		else if ( count >= dice )
+		{
+			ret = 0;
+		}
+		else
+		{
+			ret = _dice_zero_tolerance( _dice_prob_atleast( dice, sides, count ) - _dice_prob_exact( dice, sides, count ) );
+		}
+	}
+	else if ( pred == le )
+	{
+		if ( count < 0 )
+		{
+			ret = 0;
+		}
+		else if ( count >= dice )
+		{
+			ret = 1;
+		}
+		else
+		{
+			ret = _dice_zero_tolerance( ( 1 - _dice_prob_atleast( dice, sides, count ) ) + _dice_prob_exact( dice, sides, count ) );
+		}
+	}
+	else if ( pred == ge )
+	{
+		if ( count <= 0 )
+		{
+			ret = 1;
+		}
+		else if ( count > dice )
+		{
+			ret = 0;
+		}
+		else
+		{
+			ret = _dice_zero_tolerance( _dice_prob_atleast( dice, sides, count ) );
+		}
+	}
+	
+	return make_float_constant(thisAgent, ret);
+}
+
 /* ====================================================================
 
                   Initialize the Built-In RHS Math Functions
@@ -1129,6 +1396,10 @@ void init_built_in_rhs_math_functions (agent* thisAgent)
 	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "compute-range"), 
 		compute_range_rhs_function_code, 4, TRUE, FALSE, 0);
 
+	// NLD: 11/11 (ditto voigtjr's motivation above)
+	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "compute-dice-probability"),
+		dice_prob_rhs_function_code, 4, TRUE, FALSE, 0);
+
 	// Bug 800: implement rhs rand functions
 	add_rhs_function (thisAgent, make_sym_constant(thisAgent, "rand-int"), 
 		rand_int_rhs_function_code, -1, TRUE, FALSE, 0);
@@ -1161,6 +1432,9 @@ void remove_built_in_rhs_math_functions (agent* thisAgent)
 	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "round-off"));
 	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "compute-heading"));
 	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "compute-range"));
+
+	// NLD: 11/11
+	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "compute-dice-probability"));
 
 	// Bug 800: implement rand
 	remove_rhs_function(thisAgent, find_sym_constant(thisAgent, "rand-int"));
