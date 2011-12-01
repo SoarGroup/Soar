@@ -101,6 +101,9 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
          CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "decay-mode: ", agnt->rl_params->decay_mode->get_string() ) );
 
+		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "meta: ", agnt->rl_params->meta->get_string() ) );
+
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
         return true;
