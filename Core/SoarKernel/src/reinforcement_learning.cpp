@@ -62,6 +62,13 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	learning_policy->add_mapping( q, "q-learning" );
 	add( learning_policy );
 
+    // decay-mode
+    decay_mode = new soar_module::constant_param<decay_choices>( "decay-mode", normal_decay, new soar_module::f_predicate<decay_choices>() );
+    decay_mode->add_mapping( normal_decay, "normal" );
+    decay_mode->add_mapping( exponential_decay, "exp" );
+    decay_mode->add_mapping( logarithmic_decay, "log" );
+    add( decay_mode );
+
 	// eligibility-trace-decay-rate
 	et_decay_rate = new soar_module::decimal_param( "eligibility-trace-decay-rate", 0, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( et_decay_rate );
@@ -787,15 +794,32 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					// get old vals
 					old_ecr = prod->rl_ecr;
 					old_efr = prod->rl_efr;
-					
-					// calculate updates
-					delta_ecr = ( alpha * iter->second * ( data->reward - sum_old_ecr ) );
-					
-					if ( update_efr )
-					{
-						delta_efr = ( alpha * iter->second * ( ( discount * op_value ) - sum_old_efr ) );
-					}
-					else
+
+                    // Adjust alpha based on decay policy
+                    // Miller 11/14/2011
+                    double adjusted_alpha;
+                    switch (my_agent->rl_params->decay_mode->get_value())
+                    {
+                        case rl_param_container::exponential_decay:
+                            adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
+                            break;
+                        case rl_param_container::logarithmic_decay:
+                            adjusted_alpha = 1.0 / (log(prod->rl_update_count + 1.0) + 1.0);
+                            break;
+                        case rl_param_container::normal_decay:
+                        default:
+                            adjusted_alpha = alpha;
+                            break;
+                    }
+
+                    // calculate updates
+                    delta_ecr = ( adjusted_alpha * iter->second * ( data->reward - sum_old_ecr ) );
+
+                    if ( update_efr )
+                    {
+                        delta_efr = ( adjusted_alpha * iter->second * ( ( discount * op_value ) - sum_old_efr ) );
+                    }
+                    else
 					{
 						delta_efr = 0.0;
 					}					

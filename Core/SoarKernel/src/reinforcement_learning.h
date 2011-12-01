@@ -41,11 +41,19 @@ class rl_param_container: public soar_module::param_container
 {
 	public:
 		enum learning_choices { sarsa, q };
+        
+        // How the learning rate cools over time.
+        // normal_decay: default, same learning rate for each rule
+        // exponential_decay: rate = rate / # updates for this rule
+        // logarithmic_decay: rate = rate / log(# updates for this rule)
+        // Miller, 11/14/2011
+        enum decay_choices { normal_decay, exponential_decay, logarithmic_decay };
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
 		soar_module::decimal_param *learning_rate;
 		soar_module::constant_param<learning_choices> *learning_policy;
+		soar_module::constant_param<decay_choices> *decay_mode;
 		soar_module::decimal_param *et_decay_rate;
 		soar_module::decimal_param *et_tolerance;
 		soar_module::boolean_param *temporal_extension;
