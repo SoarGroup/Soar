@@ -2043,6 +2043,11 @@ production *parse_production (agent* thisAgent, unsigned char* rete_addition_res
     p = NIL;
   }
 
+  if ( p->rl_rule && p->documentation )
+  {
+	  rl_rule_meta( thisAgent, p );
+  }
+
   return p;
 }
 

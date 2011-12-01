@@ -61,6 +61,7 @@ class rl_param_container: public soar_module::param_container
 		soar_module::boolean_param *temporal_discount;
 
 		soar_module::boolean_param *chunk_stop;
+		soar_module::boolean_param *meta;
 
 		rl_param_container( agent *new_agent );
 };
@@ -150,6 +151,9 @@ extern bool rl_valid_template( production *prod );
 
 // validate rl rule
 extern bool rl_valid_rule( production *prod );
+
+// sets rl meta-data from a production documentation string
+extern void rl_rule_meta( agent* my_agent, production* prod );
 
 // template instantiation
 extern int rl_get_template_id( const char *prod_name );
