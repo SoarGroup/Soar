@@ -1653,6 +1653,13 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 				epmem_return_id_pool::iterator p = my_agent->epmem_id_replacement->find( w->epmem_id );
 				(*p->second).push_front( std::make_pair( w->value->id.epmem_id, w->epmem_id ) );
 				my_agent->epmem_id_replacement->erase( p );
+				// return to the master pool if id was from there
+				p = my_agent->epmem_id_master_replacement->find( w->epmem_id );
+				if ( p != my_agent->epmem_id_master_replacement->end() )
+				{
+					(*p->second).push_front( std::make_pair( w->value->id.epmem_id, NULL ) );
+					my_agent->epmem_id_master_replacement->erase( p );
+				}
 			}
 		}
 

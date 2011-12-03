@@ -1412,6 +1412,12 @@ void epmem_close( agent *my_agent )
 			}
 			my_agent->epmem_id_ref_counts->clear();
 
+			for ( epmem_pool_map::iterator it = my_agent->epmem_pool_graph->begin(); it != my_agent->epmem_pool_graph->end(); it++)
+			{
+				delete (*it).second;
+			}
+			my_agent->epmem_pool_graph->clear();
+
 			my_agent->epmem_wme_adds->clear();
 			my_agent->epmem_wme_removes->clear();
 
@@ -1659,7 +1665,10 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			my_agent->epmem_edge_maxes->clear();
 			my_agent->epmem_edge_removals->clear();
 
+			// FIXME rebuild pool-pool maps
+
 			(*my_agent->epmem_id_repository)[ EPMEM_NODEID_ROOT ] = new epmem_hashed_id_pool;
+			(*my_agent->epmem_pool_graph)[ EPMEM_NODEID_ROOT ] = new epmem_attr_pool;
 			{
 #ifdef USE_MEM_POOL_ALLOCATORS
 				epmem_wme_set* wms_temp = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
@@ -2063,9 +2072,12 @@ inline void _epmem_promote_id( agent* my_agent, Symbol* id, epmem_time_id t )
 // three cases for sharing ids amongst identifiers in two passes:
 // 1. value known in phase one (try reservation)
 // 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
-// 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
+// 3. value unknown in phase one/two, which can be further divided into:
+// 3a. can reuse a pooled ID from before
+// 3b. can reuse ID of a niece/nephew (have value id, but still need new WME id)
+// 3c. needs both a value id and a WME id
 inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_syms, std::queue< epmem_node_id >& parent_ids, tc_number tc, epmem_pooled_wme_set::iterator w_b, epmem_pooled_wme_set::iterator w_e, epmem_node_id parent_id, epmem_time_id time_counter,
-		std::map< wme*, epmem_id_reservation* >& id_reservations, std::set< Symbol* >& new_identifiers, std::queue< epmem_node_id >& epmem_node, std::queue< epmem_node_id >& epmem_edge )
+		std::map< wme*, epmem_id_reservation* >& id_reservations, std::set< Symbol* >& new_identifiers, std::queue< epmem_node_id >& epmem_node, std::queue< epmem_node_id >& epmem_edge , std::set< std::pair< Symbol*, Symbol* > >& unrecognized_wmes )
 {
 	epmem_pooled_wme_set::iterator w_p;
 	bool value_known_apriori = false;
@@ -2077,6 +2089,9 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 	// id repository
 	epmem_id_pool **my_id_repo;
 	epmem_id_pool *my_id_repo2;
+	epmem_id_pool *parent_repo;
+	epmem_id_pool *nephew_repo;
+	epmem_id_pool* master_replacement_pool;
 	epmem_id_pool::iterator pool_p;
 	std::map<wme *, epmem_id_reservation *>::iterator r_p;
 	epmem_id_reservation *new_id_reservation;
@@ -2087,7 +2102,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 	epmem_wme_list::iterator w_p2;
 	bool good_recurse = false;
 
-	// pre-assign unknown identifier-valued WMEs with known children (prevents ordering issues with unknown children)
+	// find WME ID for WMEs whose value is an identifier and has a known epmem id (prevents ordering issues with unknown children)
 	for ( w_p=w_b; w_p!=w_e; w_p++ )
 	{
 		if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
@@ -2124,7 +2139,15 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					{
 						if ( pool_p->first == (*w_p)->value->id.epmem_id )
 						{
-							new_id_reservation->my_id = pool_p->second;
+							// I'm not sure under what circumstance pool_p->second would be NULL here
+							// but just in case, we treat it as though it's not actually here
+							// this will drop to case 2 below, where the value is known but not the WME
+							// and it will fail there, since the entry has been erased
+							// eventually, a new WME id will be given at the final catch all
+							if ( pool_p->second )
+							{
+								new_id_reservation->my_id = pool_p->second;
+							}
 							(*my_id_repo)->erase( pool_p );
 							break;
 						}
@@ -2151,6 +2174,8 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			continue;
 		}
 
+		master_replacement_pool = NULL;
+
 		if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 		{
 			(*w_p)->epmem_valid = my_agent->epmem_validation;
@@ -2159,6 +2184,8 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			my_hash = NIL;
 			my_id_repo2 = NIL;
 
+			// if the value already has an epmem_id, the WME ID would have already been assigned above (ie. the epmem_id of the VALUE is KNOWN APRIORI [sic])
+			// however, it's also possible that the value is known but no WME ID is given (eg. (<s> ^foo <a> ^bar <a>)); this is case 2
 			value_known_apriori = ( ( (*w_p)->value->id.epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->value->id.epmem_valid == my_agent->epmem_validation ) );
 
 			// if long-term identifier as value, special processing (we may need to promote, we don't add to/take from any pools)
@@ -2304,38 +2331,78 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						my_hash = epmem_temporal_hash( my_agent, (*w_p)->attr );
 					}
 
-					// try to find node
+					// try to find node from the correct pool (case 3a)
 					my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ my_hash ];
 					if ( (*my_id_repo) )
 					{
 						// if something leftover, try to use it
 						if ( !(*my_id_repo)->empty() )
 						{
-							pool_p = (*my_id_repo)->begin();
-
-							do
+							for (pool_p = (*my_id_repo)->begin(); pool_p != (*my_id_repo)->end(); pool_p++)
 							{
 								if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
 								{
-									(*w_p)->epmem_id = pool_p->second;
+									// pool_p->second could be NULL
+									// if pool_p->second is NULL, again we only use the value ID
+									// and let the catch all below to the rest
+									if ( pool_p->second )
+									{
+										(*w_p)->epmem_id = pool_p->second;
+									}
 									(*w_p)->value->id.epmem_id = pool_p->first;
 									(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
 									(*my_id_repo)->erase( pool_p );
 									(*my_agent->epmem_id_replacement)[ (*w_p)->epmem_id ] = (*my_id_repo);
-
-									pool_p = (*my_id_repo)->end();
+									break;
 								}
-								else
-								{
-									pool_p++;
-								}
-							} while ( pool_p != (*my_id_repo)->end() );
+							}
 						}
 					}
 					else
 					{
 						// add repository
 						(*my_id_repo) = new epmem_id_pool;
+					}
+
+					// if we couldn't find an assignment directly
+					if ( ( (*w_p)->value->id.epmem_id == EPMEM_NODEID_BAD ) || ( (*w_p)->value->id.epmem_valid != my_agent->epmem_validation ) )
+					{
+						// find parent's pool, then go through the pool graph to find appropriate pool to use
+						parent_repo = (parent_id == EPMEM_NODEID_ROOT ? NULL : (*my_agent->epmem_id_replacement)[parent_id]);
+						nephew_repo = (*(*my_agent->epmem_pool_graph)[ parent_repo ])[my_hash];
+						if ( nephew_repo )
+						{
+							// make sure the parent's pool is not in fact the pool we looked through above
+							// if something leftover, try to use it
+							if ( ( nephew_repo != (*my_id_repo) ) && !parent_repo->empty() )
+							{
+								for (pool_p = nephew_repo->begin(); pool_p != nephew_repo->end(); pool_p++)
+								{
+									if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
+									{
+										// case 3b: can use niece/nephew id
+										// note that this pool is guaranteed to be the wrong pool
+										// (since if it was the right one we would have found something in the above branch)
+
+										// assign the epmem_id
+										// don't erase the id from the pool; ref counts will still prevent it from being taken
+										(*w_p)->value->id.epmem_id = pool_p->first;
+										(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
+										// mark for later replacement
+										master_replacement_pool = nephew_repo;
+										break;
+									}
+								}
+							}
+						}
+						else
+						{
+							// if the parent's pool does not exist, we've never see a WME in this context before
+							unrecognized_wmes.insert( std::make_pair( (*w_p)->id, (*w_p)->attr ) );
+
+							// since this the first time we have a WME in this context, put it in the pool map
+							(*(*my_agent->epmem_pool_graph)[ parent_repo ])[ my_hash ] = (*my_id_repo);
+						}
 					}
 
 					// keep the address for later (used if w->epmem_id was not assgined)
@@ -2346,7 +2413,8 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			// add wme if no success above
 			if ( (*w_p)->epmem_id == EPMEM_NODEID_BAD )
 			{
-				// can't use value_known_apriori, since value may have been assigned (lti, id repository via case 3)
+				// if we don't know the value's id (case 3c)
+				// can't use value_known_apriori, since value may have been assigned (via lti or id repository)
 				if ( ( (*w_p)->value->id.epmem_id == EPMEM_NODEID_BAD ) || ( (*w_p)->value->id.epmem_valid != my_agent->epmem_validation ) )
 				{
 					// update next id
@@ -2355,7 +2423,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					my_agent->epmem_stats->next_id->set_value( (*w_p)->value->id.epmem_id + 1 );
 					epmem_set_variable( my_agent, var_next_id, (*w_p)->value->id.epmem_id + 1 );
 
-					// add repository
+					// add repository for possible future children
 					(*my_agent->epmem_id_repository)[ (*w_p)->value->id.epmem_id ] = new epmem_hashed_id_pool;
 
 					// add ref set
@@ -2377,7 +2445,16 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 
 				if ( !(*w_p)->value->id.smem_lti )
 				{
+					// replace the epmem_id and wme id in the right place
 					(*my_agent->epmem_id_replacement)[ (*w_p)->epmem_id ] = my_id_repo2;
+					// allow for future reuse of substructure identifiers
+					(*my_agent->epmem_pool_graph)[ my_id_repo2 ] = new epmem_attr_pool;
+					// if id is entirely new (ie. not from nephew pool), mark to be added to nephew pool when done
+					// this allows future reuse of this identifier
+					if ( master_replacement_pool )
+					{
+						(*my_agent->epmem_id_master_replacement)[ (*w_p)->epmem_id ] = master_replacement_pool;
+					}
 				}
 
 				// new nodes definitely start
@@ -2540,11 +2617,21 @@ void epmem_new_episode( agent *my_agent )
 		xml_generate_warning( my_agent, buf );
 	}
 
+	// remove current recognition information if it exists
+	{
+		for ( epmem_wme_list::iterator recog_iter = my_agent->epmem_wme_unrecognized->begin(); recog_iter != my_agent->epmem_wme_unrecognized->end(); recog_iter++ )
+		{
+			soar_module::remove_module_wme( my_agent, *recog_iter );
+		}
+		my_agent->epmem_wme_unrecognized->clear();
+	}
+
 	// perform storage
 	{
 		// seen nodes (non-identifiers) and edges (identifiers)
 		std::queue<epmem_node_id> epmem_node;
 		std::queue<epmem_node_id> epmem_edge;
+		std::set< std::pair< Symbol*, Symbol* > > unrecognized_wmes;
 
 		// walk appropriate levels
 		{
@@ -2593,7 +2680,7 @@ void epmem_new_episode( agent *my_agent )
 					wmes = wmes_p->second;
 					if ( !wmes->empty() )
 					{
-						_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge );
+						_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge, unrecognized_wmes );
 					}
 				}
 			}
@@ -2750,6 +2837,15 @@ void epmem_new_episode( agent *my_agent )
 				symbol_remove_ref( my_agent, (*p_it) );
 			}
 			my_agent->epmem_promotions->clear();
+		}
+
+		// update recognition information on top state
+		// all substates link to the same recognition structure root, so we only need to update it once
+		{
+			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
+			{
+				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter).second, (*recog_iter).first ) );
+			}
 		}
 
 		// add the time id to the times table

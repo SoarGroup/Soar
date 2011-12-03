@@ -342,6 +342,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.epmem_header = NIL;
   sym->id.epmem_cmd_header = NIL;
   sym->id.epmem_result_header = NIL;
+  sym->id.epmem_metamem_header = NIL;
   sym->id.epmem_id = EPMEM_NODEID_BAD;
   sym->id.epmem_valid = NIL;
   sym->id.epmem_time_wme = NIL;
@@ -739,6 +740,8 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_sym_current = make_sym_constant( thisAgent, "current" );
   thisAgent->epmem_sym_yes = make_sym_constant( thisAgent, "yes" );
   thisAgent->epmem_sym_no = make_sym_constant( thisAgent, "no" );
+  thisAgent->epmem_sym_metamem = make_sym_constant( thisAgent, "metamem" );
+  thisAgent->epmem_sym_unrecognized = make_sym_constant( thisAgent, "unrecognized" );
 
 
   thisAgent->smem_sym = make_sym_constant( thisAgent, "smem" );

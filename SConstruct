@@ -134,7 +134,7 @@ AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nar
 AddOption('--build-warnings', action='store', type='choice', choices=['none','all','error'], dest='build-warnings', default='error', nargs=1, metavar='WARN_LEVEL',
 	help='Set warning level when building. Must be one of none, all, error (default).')
 
-AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='none', nargs=1, metavar='LEVEL',
+AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='full', nargs=1, metavar='LEVEL',
 	help='Set optimization level. Must be one of none, partial, full (default).')
 
 AddOption('--platform', action='store', type='choice', choices=['32','64'], dest='platform', default=m64_default, nargs=1, metavar='PLATFORM',

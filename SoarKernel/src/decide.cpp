@@ -1460,6 +1460,16 @@ Symbol *create_new_impasse (agent* thisAgent, Bool isa_goal, Symbol *object, Sym
 	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_cmd, id->id.epmem_cmd_header );	
 	id->id.epmem_result_header = make_new_identifier( thisAgent, 'R', level );
 	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_result, id->id.epmem_result_header );
+	id->id.epmem_metamem_header = make_new_identifier( thisAgent, 'M', level );
+	soar_module::add_module_wme( thisAgent, id->id.epmem_header, thisAgent->epmem_sym_metamem, id->id.epmem_metamem_header );
+	// if it's the top goal, create a new unrecognized symbol
+	// all states then link to that same symbol
+  	if ( level == TOP_GOAL_LEVEL )
+	{
+		thisAgent->epmem_unrecognized_header = make_new_identifier( thisAgent, 'U', level );
+	}
+	assert( thisAgent->epmem_unrecognized_header );
+	soar_module::add_module_wme( thisAgent, id->id.epmem_metamem_header, thisAgent->epmem_sym_unrecognized, thisAgent->epmem_unrecognized_header );
 
 	{
 	  int64_t my_time = static_cast<int64_t>( thisAgent->epmem_stats->time->get_value() );
@@ -2204,8 +2214,14 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 
   goal->id.epmem_info->epmem_wmes->~epmem_wme_stack();
   free_with_pool( &( thisAgent->epmem_wmes_pool ), goal->id.epmem_info->epmem_wmes );
-  symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );  
+  symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );
   symbol_remove_ref( thisAgent, goal->id.epmem_result_header );
+  // only remove unrecognized header if the top state is going
+  if ( goal == thisAgent->top_goal )
+  {
+  	symbol_remove_ref( thisAgent, thisAgent->epmem_unrecognized_header );
+  }
+  symbol_remove_ref( thisAgent, goal->id.epmem_metamem_header );
   symbol_remove_ref( thisAgent, goal->id.epmem_header );
   free_with_pool( &( thisAgent->epmem_info_pool ), goal->id.epmem_info );
 

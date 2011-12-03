@@ -312,6 +312,8 @@ typedef struct agent_struct {
   Symbol            * epmem_sym;
   Symbol            * epmem_sym_cmd;
   Symbol            * epmem_sym_result;
+  Symbol            * epmem_sym_metamem;
+  Symbol            * epmem_sym_unrecognized;
 
   Symbol            * epmem_sym_retrieved;
   Symbol            * epmem_sym_status;
@@ -906,12 +908,17 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   epmem_parent_id_pool *epmem_id_repository;
   epmem_return_id_pool *epmem_id_replacement;
+  epmem_return_id_pool *epmem_id_master_replacement;
   epmem_id_ref_counter *epmem_id_ref_counts;
   epmem_symbol_stack *epmem_id_removes;
 
   epmem_wme_addition_map* epmem_wme_adds;
   epmem_wme_removal_map* epmem_wme_removes;
   epmem_symbol_set* epmem_promotions;
+
+  Symbol* epmem_unrecognized_header;
+  epmem_wme_list* epmem_wme_unrecognized;
+  epmem_pool_map* epmem_pool_graph;
 
   epmem_rit_state epmem_rit_state_graph[2];
 
