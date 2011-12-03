@@ -21,6 +21,7 @@
 #include <list>
 #include <functional>
 #include <assert.h>
+#include <cmath>
 
 #include "misc.h"
 #include "symtab.h"
@@ -1125,10 +1126,17 @@ namespace soar_module
 		{
 			return ( ( current == 0 )?( N - 1 ):( current - 1 ) );
 		}
-
+		
+	private:
+		typedef std::map< const T*, object_history > object_history_map;
+		typedef std::set< object_history* > history_set;
+		typedef std::set< time_step > time_set;
+		typedef std::map< time_step, history_set > forgetting_map;
+		
+	protected:
 		const object_history* get_history( const T* obj )
 		{			
-			object_history_map::iterator p = object_histories.find( obj );
+			typename object_history_map::iterator p = object_histories.find( obj );
 			if ( p != object_histories.end() )
 			{
 				return &( p->second );
@@ -1154,7 +1162,7 @@ namespace soar_module
 
 		virtual void _init() = 0;
 		virtual void _down() = 0;
-
+		
 	public:
 		object_memory(): initialized( false )
 		{
@@ -1194,14 +1202,14 @@ namespace soar_module
 			object_history* h = NULL;
 			bool return_val = false;
 			
-			object_history_map::iterator p = object_histories.find( obj );
+			typename object_history_map::iterator p = object_histories.find( obj );
 			if ( p != object_histories.end() )
 			{
 				h = &( p->second );
 			}
 			else
 			{
-				std::pair< object_history_map::iterator, bool > ip = object_histories.insert( std::make_pair< const T*, object_history >( obj, object_history( obj ) ) );
+				std::pair< typename object_history_map::iterator, bool > ip = object_histories.insert( std::make_pair< const T*, object_history >( obj, object_history( obj ) ) );
 				assert( ip.second );
 
 				h = &( ip.first->second );
@@ -1217,7 +1225,7 @@ namespace soar_module
 
 		void remove_object( const T* obj )
 		{
-			object_history_map::iterator p = object_histories.find( obj );
+			typename object_history_map::iterator p = object_histories.find( obj );
 			if ( p != object_histories.end() )
 			{
 				touched_histories.erase( &( p->second ) );
@@ -1228,7 +1236,7 @@ namespace soar_module
 
 		void process_buffered_references()
 		{
-			history_set::iterator h_p;
+			typename history_set::iterator h_p;
 			object_history* h;
 
 			// add to history for changed histories
@@ -1291,13 +1299,13 @@ namespace soar_module
 			
 			if ( !forgetting_pq.empty() )
 			{
-				forgetting_map::iterator pq_p = forgetting_pq.begin();
+				typename forgetting_map::iterator pq_p = forgetting_pq.begin();
 
 				// check if we even have to do anything this time step
 				if ( pq_p->first == step_count )
 				{
-					history_set::iterator d_p=pq_p->second.begin();
-					history_set::iterator current_p;
+					typename history_set::iterator d_p=pq_p->second.begin();
+					typename history_set::iterator current_p;
 
 					while ( d_p != pq_p->second.end() )
 					{
@@ -1357,7 +1365,7 @@ namespace soar_module
 		{
 			if ( h->decay_step )
 			{
-				forgetting_map::iterator f_p = forgetting_pq.find( h->decay_step );
+				typename forgetting_map::iterator f_p = forgetting_pq.find( h->decay_step );
 				if ( f_p != forgetting_pq.end() )
 				{
 					f_p->second.erase( h );
@@ -1381,16 +1389,9 @@ namespace soar_module
 
 		time_step step_count;
 
-		typedef std::map< const T*, object_history > object_history_map;
 		object_history_map object_histories;
-
-		typedef std::set< object_history* > history_set;
 		history_set touched_histories;
-
-		typedef std::set< time_step > time_set;
 		time_set touched_times;
-
-		typedef std::map< time_step, history_set > forgetting_map;
 		forgetting_map forgetting_pq;
 
 		object_set forgotten;
@@ -1408,6 +1409,21 @@ namespace soar_module
 	template <class T, int N, unsigned int R>
 	class bla_object_memory : public object_memory<T,N>
 	{
+	protected:
+		// helps avoid verbose types below
+		typedef typename object_memory<T, N>::time_step time_step;
+		typedef typename object_memory<T, N>::object_reference object_reference;
+		typedef typename object_memory<T, N>::object_history object_history;
+		
+	private:
+		double activation_none;
+		double activation_low;
+		double time_sum_none;
+		
+		bool use_petrov;
+		double decay_rate;
+		double decay_thresh;
+		uint64_t pow_cache_bound;
 
 	public:
 		bla_object_memory(): activation_none( 1.0 ), activation_low( -1000000000 ), time_sum_none( 2.71828182845905 ), use_petrov( true ), decay_rate( -0.5 ), decay_thresh( -2.0 ), pow_cache_bound( 10 )
@@ -1417,7 +1433,7 @@ namespace soar_module
 		// return: was the setting accepted?
 		bool set_petrov( bool new_petrov )
 		{
-			if ( !is_initialized() )
+			if ( !this->is_initialized() )
 			{
 				use_petrov = new_petrov;
 				return true;
@@ -1430,7 +1446,7 @@ namespace soar_module
 		// return: was the value accepted (0, 1)
 		bool set_decay_rate( double new_decay_rate )
 		{
-			if ( ( new_decay_rate > 0 ) && ( new_decay_rate < 1 ) && !is_initialized() )
+			if ( ( new_decay_rate > 0 ) && ( new_decay_rate < 1 ) && !this->is_initialized() )
 			{
 				decay_rate = -new_decay_rate;
 				return true;
@@ -1442,7 +1458,7 @@ namespace soar_module
 		// return: was the setting accepted?
 		bool set_decay_thresh( double new_decay_thresh )
 		{
-			if ( !is_initialized() )
+			if ( !this->is_initialized() )
 			{
 				decay_thresh = new_decay_thresh;
 				return true;
@@ -1455,7 +1471,7 @@ namespace soar_module
 		// return: was the setting accepted?
 		bool set_pow_cache_bound( uint64_t new_pow_cache_bound )
 		{
-			if ( ( new_pow_cache_bound > 0 ) && !is_initialized() )
+			if ( ( new_pow_cache_bound > 0 ) && !this->is_initialized() )
 			{
 				pow_cache_bound = new_pow_cache_bound;
 				return true;
@@ -1466,7 +1482,7 @@ namespace soar_module
 
 		double get_object_activation( T* obj, bool log_result )
 		{
-			return compute_history_activation( get_history( obj ), get_current_time(), log_result );
+			return compute_history_activation( get_history( obj ), this->get_current_time(), log_result );
 		}
 
 	protected:
@@ -1537,7 +1553,7 @@ namespace soar_module
 
 				while ( counter )
 				{
-					p = history_prev( p );
+					p = this->history_prev( p );
 
 					t_diff = ( return_val - h->reference_history[ p ].t_step );
 
@@ -1649,7 +1665,7 @@ namespace soar_module
 
 					while ( counter )
 					{
-						p = history_prev( p );
+						p = this->history_prev( p );
 
 						t_diff = ( t - h->reference_history[ p ].t_step );
 						assert( t_diff > 0 );
@@ -1697,15 +1713,6 @@ namespace soar_module
 			
 			return return_val;
 		}
-
-		double activation_none;
-		double activation_low;
-		double time_sum_none;
-
-		bool use_petrov;
-		double decay_rate;
-		double decay_thresh;
-		uint64_t pow_cache_bound;
 
 		double decay_thresh_exp;
 
