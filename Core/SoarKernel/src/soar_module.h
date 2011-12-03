@@ -1042,6 +1042,679 @@ namespace soar_module
 
 #endif
 
+	///////////////////////////////////////////////////////////////////////////
+	// Object Store Management
+	//
+	// Model:
+	// 1) Store consists of a set of "objects"
+	// 2) Time proceeds forward in discrete "steps"
+	// 3) Objects decay according to arbitrary decay function
+	// 4) Object references may occur multiple times within each step
+	//
+	// Implementation:
+	// A) Templated object store (internally maintains pointers to type T)
+	// B) Bounded history (template parameter N)
+	// C) Subclasses implement decay
+	///////////////////////////////////////////////////////////////////////////
+
+	template <class T, int N>
+	class object_memory
+	{
+	public:
+		typedef uint64_t time_step;
+		typedef uint64_t object_reference;
+
+		typedef std::set< const T* > object_set;
+
+	protected:
+		typedef struct object_time_reference_struct
+		{
+			object_reference num_references;
+			time_step t_step;
+		} object_time_reference;
+
+		typedef struct object_history_struct
+		{
+			object_time_reference reference_history[ N ];
+			unsigned int next_p;
+			unsigned int history_ct;
+
+			object_reference history_references;
+			object_reference total_references;
+			time_step first_reference;
+
+			time_step decay_step;
+
+			object_reference buffered_references;
+
+			//
+
+			const T* this_object;
+
+			//
+
+			object_history_struct( const T* obj )
+			{
+				this_object = obj;
+
+				buffered_references = 0;
+
+				decay_step = 0;
+
+				history_references = 0;
+				total_references = 0;
+				first_reference = 0;
+
+				next_p = 0;
+				history_ct = 0;
+				for ( int i=0; i<N; i++ )
+				{
+					reference_history[ i ].num_references = 0;
+					reference_history[ i ].t_step = 0;
+				}
+			}
+
+		} object_history;
+
+		unsigned int history_next( unsigned int current )
+		{
+			return ( ( current == ( N - 1 ) )?( 0 ):( current + 1 ) );
+		}
+
+		unsigned int history_prev( unsigned int current )
+		{
+			return ( ( current == 0 )?( N - 1 ):( current - 1 ) );
+		}
+
+		const object_history* get_history( const T* obj )
+		{			
+			object_history_map::iterator p = object_histories.find( obj );
+			if ( p != object_histories.end() )
+			{
+				return &( p->second );
+			}
+			else
+			{
+				return NULL;
+			}
+		}
+
+		time_step get_current_time()
+		{
+			return step_count;
+		}
+
+		bool is_initialized()
+		{
+			return initialized;
+		}
+
+		virtual time_step estimate_forgetting_time( const object_history* h, time_step t, bool fresh_reference ) = 0;
+		virtual bool should_forget( const object_history* h, time_step t ) = 0;
+
+		virtual void _init() = 0;
+		virtual void _down() = 0;
+
+	public:
+		object_memory(): initialized( false )
+		{
+		}
+
+		void initialize()
+		{
+			if ( !initialized )
+			{
+				step_count = 1;
+
+				_init();
+				
+				initialized = true;
+			}
+		}
+
+		void teardown()
+		{
+			if ( initialized )
+			{				
+				touched_histories.clear();
+				touched_times.clear();
+				forgetting_pq.clear();
+				forgotten.clear();
+				object_histories.clear();
+
+				_down();
+				
+				initialized = false;
+			}
+		}
+
+		// return: was this a new object?
+		bool reference_object( const T* obj, object_reference num )
+		{
+			object_history* h = NULL;
+			bool return_val = false;
+			
+			object_history_map::iterator p = object_histories.find( obj );
+			if ( p != object_histories.end() )
+			{
+				h = &( p->second );
+			}
+			else
+			{
+				std::pair< object_history_map::iterator, bool > ip = object_histories.insert( std::make_pair< const T*, object_history >( obj, object_history( obj ) ) );
+				assert( ip.second );
+
+				h = &( ip.first->second );
+
+				return_val = true;
+			}
+
+			h->buffered_references += num;
+			touched_histories.insert( h );
+
+			return return_val;
+		}
+
+		void remove_object( const T* obj )
+		{
+			object_history_map::iterator p = object_histories.find( obj );
+			if ( p != object_histories.end() )
+			{
+				touched_histories.erase( &( p->second ) );
+				remove_from_pq( &( p->second ) );
+				object_histories.erase( p );
+			}
+		}
+
+		void process_buffered_references()
+		{
+			history_set::iterator h_p;
+			object_history* h;
+
+			// add to history for changed histories
+			for ( h_p=touched_histories.begin(); h_p!=touched_histories.end(); h_p++ )
+			{
+				h = *h_p;
+
+				// update number of references in the current history
+				// (has to come before history overwrite)
+				h->history_references += ( h->buffered_references - h->reference_history[ h->next_p ].num_references );
+
+				// set history
+				h->reference_history[ h->next_p ].t_step = step_count;
+				h->reference_history[ h->next_p ].num_references = h->buffered_references;
+
+				// keep track of first reference
+				if ( h->total_references == 0 )
+				{
+					h->first_reference = step_count;
+				}
+
+				// update counters
+				if ( h->history_ct < N )
+				{
+					h->history_ct++;
+				}
+				h->next_p = history_next( h->next_p );
+				h->total_references += h->buffered_references;
+
+				// reset buffer counter
+				h->buffered_references = 0;
+
+				// update p-queue
+				if ( h->decay_step != 0 )
+				{
+					move_in_pq( h, estimate_forgetting_time( h, step_count, true ) );
+				}
+				else
+				{
+					add_to_pq( h, estimate_forgetting_time( h, step_count, true ) );
+				}
+			}
+
+			touched_histories.clear();
+		}
+
+		typename object_set::iterator forgotten_begin()
+		{
+			return forgotten.begin();
+		}
+
+		typename object_set::iterator forgotten_end()
+		{
+			return forgotten.end();
+		}
+
+		void forget()
+		{
+			forgotten.clear();
+			
+			if ( !forgetting_pq.empty() )
+			{
+				forgetting_map::iterator pq_p = forgetting_pq.begin();
+
+				// check if we even have to do anything this time step
+				if ( pq_p->first == step_count )
+				{
+					history_set::iterator d_p=pq_p->second.begin();
+					history_set::iterator current_p;
+
+					while ( d_p != pq_p->second.end() )
+					{
+						current_p = d_p++;
+
+						if ( should_forget( *current_p, step_count ) )
+						{
+							forgotten.insert( (*current_p)->this_object );
+							remove_from_pq( *current_p );
+						}
+						else
+						{
+							move_in_pq( *current_p, estimate_forgetting_time( *current_p, step_count, false ) );
+						}
+					}
+
+					// clean up set
+					touched_times.insert( pq_p->first );
+					pq_p->second.clear();
+				}
+
+				// clean up touched time sets
+				for ( time_set::iterator t_p=touched_times.begin(); t_p!=touched_times.end(); t_p++ )
+				{
+					pq_p = forgetting_pq.find( *t_p );
+					if ( ( pq_p != forgetting_pq.end() ) && pq_p->second.empty() )
+					{
+						forgetting_pq.erase( pq_p );
+					}
+				}
+
+				touched_times.clear();
+			}
+		}
+
+		void time_forward()
+		{
+			step_count++;
+		}
+
+		void time_back()
+		{
+			step_count--;
+		}
+
+	private:
+
+		void add_to_pq( object_history* h, time_step t )
+		{
+			assert( h->decay_step == 0 );
+			
+			h->decay_step = t;
+			forgetting_pq[ t ].insert( h );
+		}
+
+		void remove_from_pq( object_history* h )
+		{
+			if ( h->decay_step )
+			{
+				forgetting_map::iterator f_p = forgetting_pq.find( h->decay_step );
+				if ( f_p != forgetting_pq.end() )
+				{
+					f_p->second.erase( h );
+					touched_times.insert( h->decay_step );
+				}
+
+				h->decay_step = 0;
+			}
+		}
+
+		void move_in_pq( object_history* h, time_step new_t )
+		{
+			if ( h->decay_step != new_t )
+			{
+				remove_from_pq( h );
+				add_to_pq( h, new_t );
+			}
+		}
+
+		bool initialized;
+
+		time_step step_count;
+
+		typedef std::map< const T*, object_history > object_history_map;
+		object_history_map object_histories;
+
+		typedef std::set< object_history* > history_set;
+		history_set touched_histories;
+
+		typedef std::set< time_step > time_set;
+		time_set touched_times;
+
+		typedef std::map< time_step, history_set > forgetting_map;
+		forgetting_map forgetting_pq;
+
+		object_set forgotten;
+	};
+
+	///////////////////////////////////////////////////////////////////////////
+	// Base-Level Activation (BLA) Object Store Management
+	//
+	// Notes:
+	// - Approximation of decay time depends upon an estimate of
+	//   max reference/time step (template parameter R)
+	// - Smallest activation is bounded by activation_low constant
+	///////////////////////////////////////////////////////////////////////////
+
+	template <class T, int N, unsigned int R>
+	class bla_object_memory : public object_memory<T,N>
+	{
+
+	public:
+		bla_object_memory(): activation_none( 1.0 ), activation_low( -1000000000 ), time_sum_none( 2.71828182845905 ), use_petrov( true ), decay_rate( -0.5 ), decay_thresh( -2.0 ), pow_cache_bound( 10 )
+		{
+		}
+
+		// return: was the setting accepted?
+		bool set_petrov( bool new_petrov )
+		{
+			if ( !is_initialized() )
+			{
+				use_petrov = new_petrov;
+				return true;
+			}
+
+			return false;
+		}
+
+		// takes positive, stores negative
+		// return: was the value accepted (0, 1)
+		bool set_decay_rate( double new_decay_rate )
+		{
+			if ( ( new_decay_rate > 0 ) && ( new_decay_rate < 1 ) && !is_initialized() )
+			{
+				decay_rate = -new_decay_rate;
+				return true;
+			}
+
+			return false;
+		}
+
+		// return: was the setting accepted?
+		bool set_decay_thresh( double new_decay_thresh )
+		{
+			if ( !is_initialized() )
+			{
+				decay_thresh = new_decay_thresh;
+				return true;
+			}
+
+			return false;
+		}
+
+		// input: cache size in megabytes (0, inf)
+		// return: was the setting accepted?
+		bool set_pow_cache_bound( uint64_t new_pow_cache_bound )
+		{
+			if ( ( new_pow_cache_bound > 0 ) && !is_initialized() )
+			{
+				pow_cache_bound = new_pow_cache_bound;
+				return true;
+			}
+
+			return false;
+		}
+
+		double get_object_activation( T* obj, bool log_result )
+		{
+			return compute_history_activation( get_history( obj ), get_current_time(), log_result );
+		}
+
+	protected:
+		void _init()
+		{
+			// Pre-compute the integer powers of the decay exponent in order to avoid
+			// repeated calls to pow() at runtime
+			{
+				// determine cache size
+				{
+					// computes how many powers to compute
+					// basic idea: solve for the time that would just fall below the decay threshold, given decay rate and assumption of max references/time step
+					// t = e^( ( thresh - ln( max_refs ) ) / -decay_rate )
+					double cache_full = static_cast<double>( exp( ( decay_thresh - log( static_cast<double>( R ) ) ) / decay_rate ) );
+
+					// we bound this by the max-pow-cache parameter to control the space vs. time tradeoff the cache supports
+					// max-pow-cache is in MB, so do the conversion:
+					// MB * 1024 bytes/KB * 1024 KB/MB
+					double cache_bound_unit = ( static_cast<unsigned int>( pow_cache_bound * 1024 * 1024 ) / static_cast<unsigned int>( sizeof( double ) ) );
+
+					pow_cache_size = static_cast< unsigned int >( ceil( ( cache_full > cache_bound_unit )?( cache_bound_unit ):( cache_full ) ) );
+				}
+
+				pow_cache = new double[ pow_cache_size ];
+
+				pow_cache[0] = 0.0;
+				for( unsigned int i=1; i<pow_cache_size; i++ )
+				{
+					pow_cache[ i ] = pow( static_cast<double>( i ), decay_rate );
+				}
+			}
+
+			// calculate the pre-log'd forgetting threshold, to avoid most
+			// calls to log
+			decay_thresh_exp = exp( decay_thresh );
+
+			// approximation cache
+			{
+				approx_cache[0] = 0;
+				for ( int i=1; i<R; i++ )
+				{
+					approx_cache[i] = static_cast< time_step >( ceil( exp( static_cast<double>( decay_thresh - log( static_cast<double>(i) ) ) / static_cast<double>( decay_rate ) ) ) );
+				}
+			}
+		}
+
+		void _down()
+		{
+			// release power array memory
+			delete[] pow_cache;
+		}
+
+		time_step estimate_forgetting_time( const object_history* h, time_step t, bool fresh_reference )
+		{
+			time_step return_val = t;
+
+			// if new reference, we can cheaply under-estimate decay time
+			// by treating all reference time steps independently
+			// see AAAI FS: (Derbinsky & Laird 2011)
+			if ( fresh_reference )
+			{
+				time_step to_add = 0;
+
+				unsigned int p = h->next_p;
+				unsigned int counter = h->history_ct;
+				time_step t_diff = 0;
+				object_reference approx_ref;
+
+				while ( counter )
+				{
+					p = history_prev( p );
+
+					t_diff = ( return_val - h->reference_history[ p ].t_step );
+
+					approx_ref = ( ( h->reference_history[ p ].num_references < R )?( h->reference_history[ p ].num_references ):( R-1 ) );
+					if ( approx_cache[ approx_ref ] > t_diff )
+					{
+						to_add += ( approx_cache[ approx_ref ] - t_diff );
+					}
+
+					counter--;
+				}
+
+				return_val += to_add;
+			}
+
+			// if approximation wasn't useful, or we used it previously and are now
+			// beyond the underestimate, use binary parameter search to exactly
+			// compute the time of forgetting
+			if ( return_val == t )
+			{
+				time_step to_add = 1;
+
+				if ( !should_forget( h, ( return_val + to_add ) ) )
+				{					
+					// find absolute upper bound
+					do
+					{
+						to_add *= 2;
+					} while ( !should_forget( h, ( return_val + to_add ) ) );
+
+					// vanilla binary search within range: (upper/2, upper)
+					time_step upper_bound = to_add;
+					time_step lower_bound, mid;
+					if ( to_add < 4 )
+					{
+						lower_bound = upper_bound;
+					}
+					else
+					{
+						lower_bound = ( to_add / 2 );
+					}
+
+					while ( lower_bound != upper_bound )
+					{
+						mid = ( ( lower_bound + upper_bound ) / 2 );
+
+						if ( should_forget( h, ( return_val + mid ) ) )
+						{
+							upper_bound = mid;
+
+							if ( upper_bound - lower_bound <= 1 )
+							{
+								lower_bound = mid;
+							}
+						}
+						else
+						{
+							lower_bound = mid;
+
+							if ( upper_bound - lower_bound <= 1 )
+							{
+								lower_bound = upper_bound;
+							}
+						}
+					}
+
+					to_add = upper_bound;
+				}
+
+				return_val += to_add;
+			}
+			
+			return return_val;
+		}
+
+		bool should_forget( const object_history* h, time_step t )
+		{
+			return ( compute_history_activation( h, t, false ) < decay_thresh_exp );
+		}
+
+	private:	
+		double _pow( time_step t_diff )
+		{
+			if ( t_diff < pow_cache_size )
+			{
+				return pow_cache[ t_diff ];
+			}
+			else
+			{
+				return pow( static_cast<double>( t_diff ), decay_rate );
+			}
+		}
+
+		double compute_history_activation( const object_history* h, time_step t, bool log_result )
+		{
+			double return_val = ( ( log_result )?( activation_none ):( time_sum_none ) );
+
+			if ( h && h->history_ct )
+			{
+				return_val = 0.0;
+				
+				// sum history
+				{
+					unsigned int p = h->next_p;
+					unsigned int counter = h->history_ct;
+					time_step t_diff = 0;
+
+					//
+
+					while ( counter )
+					{
+						p = history_prev( p );
+
+						t_diff = ( t - h->reference_history[ p ].t_step );
+						assert( t_diff > 0 );
+
+						return_val += ( h->reference_history[ p ].num_references * _pow( t_diff ) );
+						
+						counter--;
+					}
+
+					// tail approximation for a bounded history, see (Petrov 2006)
+					if ( use_petrov )
+					{
+						// if ( n > k )
+						if ( h->total_references > h->history_references )
+						{
+							// ( n - k ) * ( tn^(1-d) - tk^(1-d) )
+							// -----------------------------------
+							// ( 1 - d ) * ( tn - tk )
+
+							// decay_rate is negated (for nice printing)
+							double d_inv = ( 1 + decay_rate );
+							
+							return_val += ( ( ( h->total_references - h->history_references ) * ( pow( static_cast<double>( t - h->first_reference ), d_inv ) - pow( static_cast<double>( t_diff ), d_inv ) ) ) / 
+											( d_inv * ( ( t - h->first_reference ) - t_diff ) ) );
+						}
+					}
+				}
+
+				if ( log_result )
+				{
+					if ( return_val > 0.0 )
+					{
+						return_val = log( return_val );
+						if ( return_val < activation_low )
+						{
+							return_val = activation_low;
+						}
+					}
+					else
+					{
+						return_val = activation_low;
+					}
+				}
+			}
+			
+			return return_val;
+		}
+
+		double activation_none;
+		double activation_low;
+		double time_sum_none;
+
+		bool use_petrov;
+		double decay_rate;
+		double decay_thresh;
+		uint64_t pow_cache_bound;
+
+		double decay_thresh_exp;
+
+		unsigned int pow_cache_size;
+		double* pow_cache;
+
+		time_step approx_cache[ R ];
+	};
+
 }
 
 #endif
