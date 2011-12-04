@@ -96,6 +96,25 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	// meta
 	meta = new soar_module::boolean_param( "meta", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
 	add( meta );
+
+	// apoptosis
+	apoptosis = new rl_apoptosis_param( "apoptosis", apoptosis_none, new soar_module::f_predicate<apoptosis_choices>(), my_agent );
+	apoptosis->add_mapping( apoptosis_none, "none" );
+	apoptosis->add_mapping( apoptosis_chunks, "chunks" );
+	apoptosis->add_mapping( apoptosis_rl, "rl-chunks" );
+	add( apoptosis );
+
+	// apoptosis-decay
+	apoptosis_decay = new soar_module::decimal_param( "apoptosis-decay", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new rl_apoptosis_predicate<double>( my_agent ) );
+	add( apoptosis_decay );
+
+	// apoptosis-thresh
+	apoptosis_thresh = new rl_apoptosis_thresh_param( "apoptosis-thresh", -2.0, new soar_module::gt_predicate<double>( 0, false ), new rl_apoptosis_predicate<double>( my_agent ) );
+	add( apoptosis_thresh );
+
+	// ngf-thresh
+	ngf_thresh = new soar_module::integer_param( "ngf-thresh", 10, new soar_module::gt_predicate<int64_t>( 0, true ), new rl_apoptosis_predicate<int64_t>( my_agent ) );
+	add( ngf_thresh );
 };
 
 //
@@ -116,6 +135,46 @@ void rl_learning_param::set_value( soar_module::boolean new_value )
 
 	value = new_value;
 }
+
+//
+
+rl_apoptosis_param::rl_apoptosis_param( const char *new_name, rl_param_container::apoptosis_choices new_value, soar_module::predicate<rl_param_container::apoptosis_choices> *new_prot_pred, agent *new_agent ): soar_module::constant_param<rl_param_container::apoptosis_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+
+void rl_apoptosis_param::set_value( rl_param_container::apoptosis_choices new_value )
+{
+	if ( value != new_value )
+	{
+		// from off to on (doesn't matter which)
+		if ( value == rl_param_container::apoptosis_none )
+		{
+			my_agent->rl_prods->set_decay_rate( my_agent->rl_params->apoptosis_decay->get_value() );
+			my_agent->rl_prods->set_decay_thresh( my_agent->rl_params->apoptosis_thresh->get_value() );
+			my_agent->rl_prods->initialize();
+		}
+		// from on to off
+		else if ( new_value == rl_param_container::apoptosis_none )
+		{
+			my_agent->rl_prods->teardown();
+		}
+
+		value = new_value;
+	}
+}
+
+//
+
+rl_apoptosis_thresh_param::rl_apoptosis_thresh_param( const char* new_name, double new_value, soar_module::predicate<double>* new_val_pred, soar_module::predicate<double>* new_prot_pred ): soar_module::decimal_param( new_name, new_value, new_val_pred, new_prot_pred ) {}
+
+void rl_apoptosis_thresh_param::set_value( double new_value ) { value = -new_value; }
+
+//
+
+template <typename T>
+rl_apoptosis_predicate<T>::rl_apoptosis_predicate( agent *new_agent ): soar_module::agent_predicate<T>( new_agent ) {}
+
+template <typename T>
+bool rl_apoptosis_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none ); }
+
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////

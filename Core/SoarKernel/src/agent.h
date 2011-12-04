@@ -851,6 +851,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // reinforcement learning
   rl_param_container *rl_params;
   rl_stat_container *rl_stats;
+  rl_production_memory *rl_prods;
 
   int rl_template_count;
   bool rl_first_switch;

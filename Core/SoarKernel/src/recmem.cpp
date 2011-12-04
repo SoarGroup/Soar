@@ -679,6 +679,19 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 		if ( prod->type != TEMPLATE_PRODUCTION_TYPE )
 		{
 			pref = execute_action (thisAgent, a, tok, w);
+
+			if ( prod->type == CHUNK_PRODUCTION_TYPE )
+			{
+				rl_param_container::apoptosis_choices apoptosis = thisAgent->rl_params->apoptosis->get_value();
+				if ( ( apoptosis == rl_param_container::apoptosis_chunks ) ||
+					 ( ( apoptosis == rl_param_container::apoptosis_rl ) && ( prod->rl_rule ) ) )
+				{
+					if ( !prod->rl_rule || ( static_cast<int64_t>( prod->rl_update_count ) < thisAgent->rl_params->ngf_thresh->get_value() ) )
+					{
+						thisAgent->rl_prods->reference_object( prod, 1 );
+					}
+				}
+			}
 		}
 		else
 		{
