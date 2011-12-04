@@ -106,6 +106,20 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
+		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "apoptosis: ", agnt->rl_params->apoptosis->get_string() ) );
+
+		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "apoptosis-decay: ", agnt->rl_params->apoptosis_decay->get_string() ) );
+
+		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "apoptosis-thresh: ", agnt->rl_params->apoptosis_thresh->get_string() ) );
+
+		  CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "ngf-thresh: ", agnt->rl_params->ngf_thresh->get_string() ) );
+
+		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
+
         return true;
     }
     else if ( pOp == 'g' )
