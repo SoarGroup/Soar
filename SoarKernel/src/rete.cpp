@@ -1657,7 +1657,7 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 				p = my_agent->epmem_id_master_replacement->find( w->epmem_id );
 				if ( p != my_agent->epmem_id_master_replacement->end() )
 				{
-					(*p->second).push_front( std::make_pair( w->value->id.epmem_id, NULL ) );
+					(*p->second).push_front( std::make_pair( w->value->id.epmem_id, EPMEM_NODEID_BAD ) );
 					my_agent->epmem_id_master_replacement->erase( p );
 				}
 			}

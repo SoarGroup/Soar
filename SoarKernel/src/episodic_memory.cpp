@@ -2144,7 +2144,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 							// this will drop to case 2 below, where the value is known but not the WME
 							// and it will fail there, since the entry has been erased
 							// eventually, a new WME id will be given at the final catch all
-							if ( pool_p->second )
+							if ( pool_p->second != EPMEM_NODEID_BAD )
 							{
 								new_id_reservation->my_id = pool_p->second;
 							}
@@ -2345,7 +2345,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 									// pool_p->second could be NULL
 									// if pool_p->second is NULL, again we only use the value ID
 									// and let the catch all below to the rest
-									if ( pool_p->second )
+									if ( pool_p->second != EPMEM_NODEID_BAD )
 									{
 										(*w_p)->epmem_id = pool_p->second;
 									}
