@@ -1675,7 +1675,7 @@ void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sig
 	  thisAgent->rl_prods->remove_object( prod );
 
   // Remove RL-related pointers to this production (unnecessary if rule never fired).
-  if ( prod->rl_rule && prod->firing_count ) 
+  if ( prod->rl_rule ) 
 	  rl_remove_refs_for_prod( thisAgent, prod ); 
 
   thisAgent->num_productions_of_type[prod->type]--;
