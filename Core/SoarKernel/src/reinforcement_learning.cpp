@@ -113,7 +113,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	add( apoptosis_thresh );
 
 	// ngf-thresh
-	ngf_thresh = new soar_module::integer_param( "ngf-thresh", 10, new soar_module::gt_predicate<int64_t>( 0, true ), new rl_apoptosis_predicate<int64_t>( my_agent ) );
+	ngf_thresh = new soar_module::integer_param( "ngf-thresh", 1, new soar_module::gt_predicate<int64_t>( 0, true ), new rl_apoptosis_predicate<int64_t>( my_agent ) );
 	add( ngf_thresh );
 };
 

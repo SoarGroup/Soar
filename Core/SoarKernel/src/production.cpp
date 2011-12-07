@@ -1671,12 +1671,13 @@ void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sig
   if (prod->trace_firings) remove_pwatch (thisAgent, prod);
   remove_from_dll (thisAgent->all_productions_of_type[prod->type], prod, next, prev);
 
+  // Remove reference from apoptosis object store
   if ( ( prod->type == CHUNK_PRODUCTION_TYPE ) && ( thisAgent->rl_params ) && ( thisAgent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none ) )
-	  thisAgent->rl_prods->remove_object( prod );
+    thisAgent->rl_prods->remove_object( prod );
 
-  // Remove RL-related pointers to this production (unnecessary if rule never fired).
+  // Remove RL-related pointers to this production
   if ( prod->rl_rule ) 
-	  rl_remove_refs_for_prod( thisAgent, prod ); 
+    rl_remove_refs_for_prod( thisAgent, prod ); 
 
   thisAgent->num_productions_of_type[prod->type]--;
   if (print_sharp_sign) print (thisAgent, "#");
