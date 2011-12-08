@@ -111,29 +111,34 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	// apoptosis-thresh
 	apoptosis_thresh = new rl_apoptosis_thresh_param( "apoptosis-thresh", -2.0, new soar_module::gt_predicate<double>( 0, false ), new rl_apoptosis_predicate<double>( my_agent ) );
 	add( apoptosis_thresh );
-
-	// ngf-thresh
-	ngf_thresh = new soar_module::integer_param( "ngf-thresh", 1, new soar_module::gt_predicate<int64_t>( 0, true ), new rl_apoptosis_predicate<int64_t>( my_agent ) );
-	add( ngf_thresh );
 };
 
 //
+
+void rl_reset_data( agent* );
 
 rl_learning_param::rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 void rl_learning_param::set_value( soar_module::boolean new_value )
 {
-	if ( ( new_value == soar_module::on ) && ( my_agent->rl_first_switch ) )
+	if ( new_value != value )
 	{
-		my_agent->rl_first_switch = false;
-		exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
+		if ( ( new_value == soar_module::on ) && ( my_agent->rl_first_switch ) )
+		{
+			my_agent->rl_first_switch = false;
+			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
 
-		const char *msg = "Exploration Mode changed to epsilon-greedy";
-		print( my_agent, const_cast<char *>( msg ) );
-   		xml_generate_message( my_agent, const_cast<char *>( msg ) );
+			const char *msg = "Exploration Mode changed to epsilon-greedy";
+			print( my_agent, const_cast<char *>( msg ) );
+   			xml_generate_message( my_agent, const_cast<char *>( msg ) );
+		}
+		else if ( new_value == soar_module::off )
+		{
+			rl_reset_data( my_agent );
+		}
+
+		value = new_value;
 	}
-
-	value = new_value;
 }
 
 //
@@ -208,6 +213,45 @@ bool rl_enabled( agent *my_agent )
 	return ( my_agent->rl_params->learning->get_value() == soar_module::on );
 }
 
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+inline void rl_add_ref( Symbol* goal, production* prod )
+{
+	goal->id.rl_info->prev_op_rl_rules->push_back( prod );
+	prod->rl_ref_count++;
+}
+
+inline void rl_remove_ref( Symbol* goal, production* prod )
+{
+	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	
+	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
+	{
+		if ( *p == prod )
+		{
+			prod->rl_ref_count--;
+		}
+	}
+
+	rules->remove( prod );
+}
+
+void rl_clear_refs( Symbol* goal )
+{
+	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	
+	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
+	{
+		(*p)->rl_ref_count--;
+	}
+
+	rules->clear();
+}
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
 // resets rl data structures
 void rl_reset_data( agent *my_agent )
 {
@@ -217,7 +261,7 @@ void rl_reset_data( agent *my_agent )
 		rl_data *data = goal->id.rl_info;
 
 		data->eligibility_traces->clear();
-		data->prev_op_rl_rules->clear();
+		rl_clear_refs( goal );
 
 		data->previous_q = 0;
 		data->reward = 0;
@@ -235,7 +279,7 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 	for ( Symbol* state = my_agent->top_state; state; state = state->id.lower_goal )
 	{
 		state->id.rl_info->eligibility_traces->erase( prod );
-		state->id.rl_info->prev_op_rl_rules->remove( prod );
+		rl_remove_ref( state, prod );
 	}
 }
 
@@ -725,10 +769,10 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		{			
 			if ( ( just_fired == 0 ) && !data->prev_op_rl_rules->empty() )
 			{
-				data->prev_op_rl_rules->clear();					
+				rl_clear_refs( goal );
 			}
 			
-			data->prev_op_rl_rules->push_back( pref->inst->prod );				
+			rl_add_ref( goal, pref->inst->prod );
 			just_fired++;			
 		}
 	}
@@ -753,7 +797,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		{
 			if ( !data->prev_op_rl_rules->empty() )
 			{
-				data->prev_op_rl_rules->clear();
+				rl_clear_refs( goal );
 			}			
 			
 			data->previous_q = cand->numeric_value;
@@ -837,22 +881,19 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				rl_rule_list::iterator p;
 				
 				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
-				{					
-					if ( (*p) != NIL )
+				{
+					sum_old_ecr += (*p)->rl_ecr;
+					sum_old_efr += (*p)->rl_efr;
+					
+					iter = data->eligibility_traces->find( (*p) );
+					
+					if ( iter != data->eligibility_traces->end() ) 
 					{
-						sum_old_ecr += (*p)->rl_ecr;
-						sum_old_efr += (*p)->rl_efr;
-						
-						iter = data->eligibility_traces->find( (*p) );
-						
-						if ( iter != data->eligibility_traces->end() ) 
-						{
-							iter->second += trace_increment;
-						}
-						else 
-						{
-							(*data->eligibility_traces)[ (*p) ] = trace_increment;
-						}
+						iter->second += trace_increment;
+					}
+					else 
+					{
+						(*data->eligibility_traces)[ (*p) ] = trace_increment;
 					}
 				}
 			}

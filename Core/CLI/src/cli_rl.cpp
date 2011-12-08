@@ -115,9 +115,6 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "apoptosis-thresh: ", agnt->rl_params->apoptosis_thresh->get_string() ) );
 
-		  CLI_DoRL_print( *this, m_RawOutput, m_Result,
-            CLI_DoRL_generate_output( "ngf-thresh: ", agnt->rl_params->ngf_thresh->get_string() ) );
-
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
         return true;

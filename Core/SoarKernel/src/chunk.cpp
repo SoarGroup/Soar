@@ -1343,17 +1343,6 @@ void chunk_instantiation (agent* thisAgent, instantiation *inst, bool dont_varia
 	if (!thisAgent->max_chunks_reached)
 		chunk_instantiation (thisAgent, chunk_inst, dont_variablize, custom_inst_list);
 
-	// if a chunk and wasn't excised above, possibly submit to apoptosis
-	if ( ( prod_type == CHUNK_PRODUCTION_TYPE ) && ( prod->p_node ) )
-	{
-		rl_param_container::apoptosis_choices apoptosis = thisAgent->rl_params->apoptosis->get_value();
-				
-		if ( ( apoptosis == rl_param_container::apoptosis_chunks ) || ( ( apoptosis == rl_param_container::apoptosis_rl ) && ( prod->rl_rule ) ) )
-		{
-			thisAgent->rl_prods->reference_object( prod, 1 );
-		}
-	}
-
 #ifndef NO_TIMING_STUFF
 #ifdef DETAILED_TIMING_STATS
 	local_timer.stop();
