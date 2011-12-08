@@ -235,15 +235,7 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 	for ( Symbol* state = my_agent->top_state; state; state = state->id.lower_goal )
 	{
 		state->id.rl_info->eligibility_traces->erase( prod );
-		
-		rl_rule_list::iterator p;
-		for ( p=state->id.rl_info->prev_op_rl_rules->begin(); p!=state->id.rl_info->prev_op_rl_rules->end(); p++ )
-		{
-			if ( (*p) == prod )
-			{
-				(*p) = NIL;
-			}
-		}
+		state->id.rl_info->prev_op_rl_rules->remove( prod );
 	}
 }
 
