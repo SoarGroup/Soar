@@ -970,15 +970,18 @@ void do_one_top_level_phase (agent* thisAgent)
 		  rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
 		  if ( rl_apoptosis != rl_param_container::apoptosis_none )
 		  {
-			  int64_t ngf_thresh = thisAgent->rl_params->ngf_thresh->get_value();
-			  
 			  thisAgent->rl_prods->process_buffered_references();
 			  thisAgent->rl_prods->forget();
 			  thisAgent->rl_prods->time_forward();
 
 			  for ( rl_production_memory::object_set::iterator p=thisAgent->rl_prods->forgotten_begin(); p!=thisAgent->rl_prods->forgotten_end(); p++ )
 			  {
-				  if ( !(*p)->rl_rule || ( static_cast<int64_t>( (*p)->rl_update_count ) < ngf_thresh ) )
+				  // conditions:
+				  // - no matched instantiations AND
+				  // - if RL...
+				  //   - no update count
+				  //   - not in some state's prev_op_rl_rules list
+				  if ( ( (*p)->instantiations == NIL ) && ( !(*p)->rl_rule || ( ( static_cast<int64_t>( (*p)->rl_update_count ) == 0 ) && ( (*p)->rl_ref_count == 0 ) ) ) )
 				  {
 					  excise_production( thisAgent, const_cast< production* >( *p ), FALSE );
 				  }
