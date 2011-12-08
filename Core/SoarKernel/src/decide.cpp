@@ -2150,6 +2150,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   {
 	  rl_tabulate_reward_value_for_goal( thisAgent, goal );
 	  rl_perform_update( thisAgent, 0, true, goal, false ); // this update only sees reward - there is no next state
+	  rl_clear_refs( goal );
   }
 
   /* --- disconnect this goal from the goal stack --- */

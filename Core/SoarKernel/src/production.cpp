@@ -1626,8 +1626,9 @@ production *make_production (agent* thisAgent,
   p->interrupt = FALSE;
   
   // Soar-RL stuff
-  p->rl_update_count = 0;
   p->rl_rule = false;
+  p->rl_update_count = 0;
+  p->rl_ref_count = 0;
   p->rl_ecr = 0.0;
   p->rl_efr = 0.0;
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  

@@ -70,7 +70,6 @@ class rl_param_container: public soar_module::param_container
 		rl_apoptosis_param *apoptosis;
 		soar_module::decimal_param *apoptosis_decay;
 		rl_apoptosis_thresh_param *apoptosis_thresh;
-		soar_module::integer_param *ngf_thresh;
 
 		rl_param_container( agent *new_agent );
 };
@@ -163,14 +162,12 @@ typedef std::set< rl_symbol_map > rl_symbol_map_set;
 typedef soar_module::bla_object_memory< production, 10, 50 > rl_production_memory;
 
 //////////////////////////////////////////////////////////
-// Parameter Maintenance
+// Maintenance
 //////////////////////////////////////////////////////////
 
-// reinitialize Soar-RL data structures
-extern void rl_reset_data( agent *my_agent );
-
-// remove Soar-RL references to a production
+// remove Soar-RL references to productions
 extern void rl_remove_refs_for_prod( agent *my_agent, production *prod );
+extern void rl_clear_refs( Symbol* goal );
 
 //////////////////////////////////////////////////////////
 // Parameter Get/Set/Validate
