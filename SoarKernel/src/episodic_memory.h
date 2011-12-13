@@ -443,8 +443,9 @@ typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
 typedef std::pair<epmem_node_id, epmem_node_id> epmem_id_pair;
 typedef std::list<epmem_id_pair> epmem_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
-typedef std::map<epmem_node_id, epmem_id_pool*> epmem_attr_pool;
-typedef std::map<epmem_id_pool*, epmem_attr_pool*> epmem_pool_map;
+typedef std::map<epmem_node_id, epmem_node_id> epmem_id_disjoint_set;
+typedef std::map<epmem_hash_id, epmem_node_id> epmem_hash_id_map;
+typedef std::map<epmem_node_id, epmem_hash_id_map*> epmem_elders;
 
 typedef struct epmem_id_reservation_struct
 {

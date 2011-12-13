@@ -908,7 +908,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   epmem_parent_id_pool *epmem_id_repository;
   epmem_return_id_pool *epmem_id_replacement;
-  epmem_return_id_pool *epmem_id_master_replacement;
   epmem_id_ref_counter *epmem_id_ref_counts;
   epmem_symbol_stack *epmem_id_removes;
 
@@ -918,7 +917,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   Symbol* epmem_unrecognized_header;
   epmem_wme_list* epmem_wme_unrecognized;
-  epmem_pool_map* epmem_pool_graph;
+  epmem_return_id_pool *epmem_id_master_replacement;
+  epmem_id_disjoint_set* epmem_id_siblings;
+  epmem_elders *epmem_wm_tree;
 
   epmem_rit_state epmem_rit_state_graph[2];
 

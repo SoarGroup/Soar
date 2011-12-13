@@ -846,6 +846,8 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_sym_current ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_yes ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_no ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_metamem ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_unrecognized ) );
 
   release_helper( thisAgent, &( thisAgent->smem_sym ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_cmd ) );
