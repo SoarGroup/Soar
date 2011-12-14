@@ -132,9 +132,6 @@
     <ClInclude Include="..\shared\misc.h">
       <Filter>Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\shared\pcreposix.h">
-      <Filter>Shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\shared\portability.h">
       <Filter>Shared</Filter>
     </ClInclude>

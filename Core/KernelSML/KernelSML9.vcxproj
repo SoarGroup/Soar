@@ -533,11 +533,6 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\pcre\pcre9.vcxproj">
-      <Project>{6b0ae9f9-575c-4230-875a-3996bf2ac1e6}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\KernelHeaders.h" />
