@@ -1,0 +1,49 @@
+sp {splinter-box-intersection
+   (state <s> ^superstate nil
+              ^svs <svs>)
+   (<svs> ^command <cmd>
+          ^spatial-scene <scn>)
+   (<scn> ^child.id splinter
+          ^child.id box1)
+-->
+   (<cmd> ^extract <e>)
+   (<e> ^type intersect ^a <a> ^b <b>)
+   (<a> ^type node ^name splinter)
+   (<b> ^type node ^name box1)}
+
+sp {splinter-behind-box
+   (state <s> ^superstate nil
+              ^svs <svs>)
+   (<svs> ^command <cmd>
+          ^spatial-scene <scn>)
+   (<scn> ^child.id splinter
+          ^child.id box1
+          ^child.id target1)
+-->
+   (<cmd> ^extract <e>)
+   (<e> ^type behind ^a <a> ^b <b> ^c <c>)
+   (<a> ^type node ^name box1)
+   (<b> ^type node ^name target1)
+   (<c> ^type node ^name splinter)}
+
+sp {box-between-splinter-target
+   (state <s> ^superstate nil
+              ^svs <svs>)
+   (<svs> ^command <cmd>
+          ^spatial-scene <scn>)
+   (<scn> ^child.id splinter
+          ^child.id box1
+          ^child.id target1)
+-->
+   (<cmd> ^extract <e>)
+   (<e> ^type between ^a <a> ^b <b> ^c <c>)
+   (<a> ^type node ^name splinter)
+   (<b> ^type node ^name box1)
+   (<c> ^type node ^name target1)}
+   
+sp {elab-literal
+   (state <s> ^superstate nil
+              ^svs.command.extract <ec>)
+   (<ec> ^type <type> ^result.literal <l>)
+-->
+   (<s> ^<type> <l>)}

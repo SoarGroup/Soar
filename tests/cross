@@ -1,0 +1,16 @@
+FILE=$1
+NTEST=$2
+shift 2
+PROG=$*
+
+TRAIN=`mktemp`
+TEST=`mktemp`
+
+shuf < $FILE | awk '
+	BEGIN { n='$NTEST'; train="'$TRAIN'"; test="'$TEST'" }
+	NR <= n { print $0 >> test }
+	NR > n  { print $0 >> train }'
+
+$PROG $TRAIN $TEST
+
+rm -f $TRAIN $TEST

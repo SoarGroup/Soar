@@ -1,0 +1,45 @@
+#!/bin/sh
+
+root=../../../../out
+export LD_LIBRARY_PATH=$root/lib:$HOME/local/lib:$LD_LIBRARY_PATH
+soar=$root/bin/cli
+agent=agent/targets.soar
+
+run_env() {
+	while [ ! -S env ]
+	do
+		sleep 1
+	done
+	socat unix-connect:env exec:'python targets.py'
+}
+
+run_remote() {
+	while [ ! -p ctrl ]
+	do
+		sleep 1
+	done
+	python remote.py
+}
+
+while test -n "$1"
+do
+	case "$1" in
+	-g)
+		debug=1
+		;;
+	esac
+	shift
+done
+
+run_env &
+run_remote &
+
+if test "$debug" == "1"
+then
+	gdb --args $soar $agent
+else
+	$soar $agent
+fi
+
+kill `ps | grep python | awk '{print $1}'`
+rm -f env ctrl

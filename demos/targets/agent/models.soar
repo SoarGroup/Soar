@@ -1,0 +1,37 @@
+sp {create-em-models
+   (state <s> ^superstate nil
+              ^svs.command <c>)
+-->
+   (<c> ^create-model <c1-x> <c1-y> <cur-x> <cur-y>)
+   (<c1-x> ^name c1-x ^type em)
+   (<c1-y> ^name c1-y ^type em)
+   (<cur-x> ^name cur-x ^type em)
+   (<cur-y> ^name cur-y ^type em)}
+
+sp {assign-em-models
+   (state <s> ^superstate nil
+              ^svs.command <c>)
+   (<c> ^create-model <c1-x>
+        ^create-model <c1-y>
+        ^create-model <cur-x>
+        ^create-model <cur-y>)
+   (<c1-x> ^name c1-x ^status success)
+   (<c1-y> ^name c1-y ^status success)
+   (<cur-x> ^name cur-x ^status success)
+   (<cur-y> ^name cur-y ^status success)
+-->
+   (<c> ^assign-model <ac1-x> <ac1-y> <acur-x> <acur-y>)
+   (<ac1-x> ^name c1-x
+            ^inputs all
+            ^outputs .c1:px <o-c1-x>)
+   (<ac1-y> ^name c1-y
+            ^inputs all
+            ^outputs .c1:py <o-c1-y>)
+   (<acur-x> ^name cur-x
+             ^inputs all
+             ^outputs .cur:px <o-cur-x>)
+   (<acur-y> ^name cur-y
+             ^inputs all
+             ^outputs .cur:py <o-cur-y>)
+}
+   

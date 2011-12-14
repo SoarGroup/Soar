@@ -1,0 +1,44 @@
+#include "filter_table.h"
+
+const filter_table& get_filter_table() {
+	static filter_table inst;
+	return inst;
+}
+
+filter_table_entry intersect_fill_entry();
+filter_table_entry distance_fill_entry();
+filter_table_entry bbox_fill_entry();
+filter_table_entry bbox_int_fill_entry();
+filter_table_entry bbox_contains_fill_entry();
+filter_table_entry ontop_fill_entry();
+filter_table_entry between_fill_entry();
+filter_table_entry behind_fill_entry();
+filter_table_entry north_of_fill_entry();
+filter_table_entry south_of_fill_entry();
+filter_table_entry east_of_fill_entry();
+filter_table_entry west_of_fill_entry();
+filter_table_entry horizontally_aligned_fill_entry();
+filter_table_entry vertically_aligned_fill_entry();
+filter_table_entry node_fill_entry();
+filter_table_entry all_nodes_fill_entry();
+filter_table_entry node_centroid_fill_entry();
+
+filter_table::filter_table() {
+	add(intersect_fill_entry());
+	add(distance_fill_entry());
+	add(bbox_fill_entry());
+	add(bbox_int_fill_entry());
+	add(bbox_contains_fill_entry());
+	add(ontop_fill_entry());
+	add(between_fill_entry());
+	add(behind_fill_entry());
+	add(north_of_fill_entry());
+	add(south_of_fill_entry());
+	add(east_of_fill_entry());
+	add(west_of_fill_entry());
+	add(horizontally_aligned_fill_entry());
+	add(vertically_aligned_fill_entry());
+	add(node_fill_entry());
+	add(all_nodes_fill_entry());
+	add(node_centroid_fill_entry());
+}

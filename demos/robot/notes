@@ -1,0 +1,135 @@
+As a reminder, code from the simulation:
+
+inline double calc_rps(double rps, double input_volts) {
+	double volts_emf = rps * emf_constant;
+	double amps = (input_volts - volts_emf) / winding_resistance;
+	double torque0 = amps * torque_constant;
+	double torque_drag = rps * drag_constant;
+	double torque_net = torque0 - torque_drag;
+	double acceleration = torque_net / inertia;
+	return rps + (acceleration * dt);
+}
+
+inline void splinter_update(double lvolt, double rvolt, double &lrps, double &rrps, 
+                     vec3 &pos, vec3 &vel, vec3 &rot, vec3 &rotrate)
+{
+	lrps = calc_rps(lrps, lvolt * 12);
+	rrps = calc_rps(rrps, rvolt * 12);
+	double dleft  = dt * lrps * wheel_diameter;
+	double dright = dt * rrps * wheel_diameter;
+	
+	quaternion orient(rot);
+	vel = orient.rotate(vec3((dleft + dright) / 2, 0, 0));
+	rotrate.z = (dright - dleft) / baseline; rotrate.x = 0; rotrate.y = 0;
+	pos = pos + vel;
+	rot = (orient * quaternion(rotrate)).to_rpy();
+}
+
+some derivations:
+
+let A = 12 * dt * torque_constant / (inertia * winding_resistance) = 0.209454545
+    B = 1 - (dt * torque_constant * emf_constant + drag_constant * dt * winding_resistance) / (inertia * winding_resistance) = 0.933090909
+    C = (dt * wheel_diameter) / baseline = 0.01142857
+    
+[lr]rps' = [lr]volt * A + [lr]rps * B
+         = [lr]volt * 0.209454545 + [lr]rps * 0.933090909
+-> X[6,6] = 0.933090909, X[6,14] = 0.209454545, X[7,7] = 0.933090909, X[7,15] = 0.209454545
+         
+so [lr]rps is linear wrt input voltage and previous RPS.
+
+rrz' = rrps' * (dt * wheel_diameter) / baseline - lrps' * (dt * wheel_diameter) / baseline
+     = rrps' * C + lrps' * -C
+     = rvolt * A * C + rrps * B * C + lvolt * A * -C + lrps * B * -C
+     = rvolt * 0.002393766 + rrps * 0.010663896 + lvolt * -0.002393766 + lrps * -0.010663896
+-> X[10,6] = -0.010663896, X[10,7] = 0.010663896, X[10,14] = -0.002393766, X[10,15] = 0.002393766
+
+so rotation rate is linear wrt input voltage and previous RPS also.
+
+Next rotation is almost exactly previous rotation + next rotation rate
+
+rz' = rz + rrz'
+    = rz + rvolt * A * C + rrps * B * C - lvolt * A * C - lrps * B * C
+    = rz + rvolt * 0.002393766 + rrps * 0.010663896 + lvolt * -0.002393766 + lrps * -0.010663896
+-> X[5,5] = 1.0, X[5,6] = -0.010663896, X[5,7] = 0.010663896, X[5,14] = -0.002393766, X[5,15] = 0.002393766
+
+so rotation is linear wrt previous rotation, input voltage, and previous RPS.
+
+Velocity is nonlinear wrt previous rotation and next [lr]rps. The
+function looks like a saddle, so it should be accurate to approximate
+locally with linear functions.
+
+Position is linear with respect to next velocity and prev position, hence nonlinear.
+
+Some learning data:
+
+NNBRS = 10, NTRAIN = 1000
+
+8.06618377e-04 7.59525374e-04 0 0 0 1.63507166e+00 2.17831600e-03 2.17925052e-03 0 0 5.69380223e-07 8.61774027e-05 3.27832694e-05 0
+
+-> For some reason rotation rate prediction is very accurate even with
+few neighbors and training examples.
+
+NNBRS = 50, NTRAIN = 1000
+
+1.09917510e-06 1.30910950e-06 0 0 0 1.46853573e-01 7.10234339e-12 7.14484004e-12 0 0 7.80853866e-16 1.09912819e-06 1.30908875e-06 0
+
+-> Increasing NNBRS from 10 to 50 results in significantly better
+performance all around.
+
+NNBRS = 100, NTRAIN = 1000
+
+1.07976438e-06 1.27197365e-06 0 0 0 1.42536540e-01 6.37171466e-12 6.38845147e-12 0 0 7.03409184e-16 1.07974371e-06 1.27193455e-06 0
+
+-> Increasing NNBRS after a certain point (50 -> 100 here) has little
+impact on performance.
+
+NNBRS = 100, NTRAIN = 10000
+
+2.78186849e-07 6.14356665e-07 0 0 0 1.33931240e-01 5.97458989e-12 6.00656113e-12 0 0 6.63847372e-16 2.78169828e-07 6.14338608e-07 0
+
+-> Increasing training size improves position and velocity
+predictions, but not rotation.  It's weird that velocity can be
+predicted so accurately, considering it's determined by rotation and
+voltage inputs in a non-linear way.
+
+NNBRS = 100, NTRAIN = 100000
+
+9.78012720e-08 2.41952240e-07 0 0 0 1.24169740e-01 5.78759708e-12 5.77149027e-12 0 0 6.37116000e-16 9.78009220e-08 2.41944704e-07 0
+
+-> This data point backs up previous assessment.
+
+
+Here's learning data based on error normalized by actual change, i.e. 
+
+abs((y - p) / (y - x)) 
+
+where p = prediction, x = prev val, y = post val
+
+NNBRS = 50, NTRAIN = 1000
+
+7.15385523e+00 5.01997629e+00 0, 0 0 9.14483650e+00, 6.45841246e-04, 1.30458755e-04, 0 0 4.31114156e-07, 1.07051774e-02 9.35205670e-03 0
+
+-> It's clear from this data that yaw rotation is the main problem,
+followed by x and y positions.  All other dimensions are quite
+accurately predicted.
+
+-> It makes no sense that position is not accurately predicted,
+considering it's just a linear combination of previous position and
+next velocity, which is accurately predicted.  I guess the same can be
+said of rotation, which is just previous rotation + next rotation
+rate.
+
+NNBRS = 50, NTRAIN = 10000
+
+3.04240868e+00 2.58998522e+00 0, 0 0 2.78797403e+03, 1.20113074e-04, 1.19460508e-04, 0 0 3.93148124e-07, 6.24757827e-03 8.42772054e-03 0
+
+-> Why is there a spike in the rotation prediction?  It goes away in
+the next batch with more training examples.
+
+NNBRS = 50, NTRAIN = 100000
+
+1.63407310e+00 2.08105031e+00 0, 0 0 6.68449312e+00, 9.56211328e-05, 1.46941840e-04, 0 0 2.86579990e-07, 6.73836284e-03 3.89540153e-03 0
+
+NNBRS = 50, NTRAIN = 1000000
+
+6.97261171e-01 3.07550627e+00 0, 0 0 1.52763620e+01, 9.07403384e-05, 8.08695243e-05, 0 0 1.69371367e-07, 1.86904526e-03 1.44591611e-03 0

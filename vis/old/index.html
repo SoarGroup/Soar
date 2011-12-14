@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Canvas Experiment</title>
+        <style type="text/css">
+            * {font-style:normal; font-weight:normal; margin:0; padding:0; text-decoration:none;}
+            body {background-color:#EEEEEC; color:#2E3436; font-family:Arial, Helvetica, Verdana, sans-serif; vertical-align:top;}
+            #canvas {border:1px solid black; margin:auto;}
+            #source {height:600px; width:400px;}
+        </style>
+        
+		<script language="JavaScript" src="http_request.js"></script>
+		<script language="JavaScript" src="lib3d.js"></script>
+    </head>
+    <body>
+        <canvas id="canvas" width="800" height="600">
+        <p>Fallback text where the canvas should be</p>
+        </canvas>
+        <script type="text/javascript">			
+            createInteractiveViewport("canvas", function(viewport) { drawDodec(viewport); })
+        </script>
+    </body>
+</html>
