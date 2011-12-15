@@ -641,6 +641,7 @@
     <CustomBuildStep Include="src\xml.h" />
     <ClInclude Include="..\shared\Export.h" />
     <ClInclude Include="..\shared\misc.h" />
+    <ClInclude Include="..\shared\pcreposix.h" />
     <ClInclude Include="..\shared\portability.h" />
     <ClInclude Include="..\shared\portability_posix.h" />
     <ClInclude Include="..\shared\portability_windows.h" />
