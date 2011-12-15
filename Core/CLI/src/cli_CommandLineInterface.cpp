@@ -5,7 +5,6 @@
 
 #include <assert.h>
 
-#include <regex>
 #include <iostream>
 #include <fstream>
 
@@ -473,9 +472,20 @@ void CommandLineInterface::OnKernelEvent(int eventID, AgentSML*, void* pCallData
                 // Transform if varprint, see print command
                 std::string message(msg);
 
-				// A little hack to make identifiers appear in sourceable form
-                std::basic_regex<char> comp("([A-Z][0-9]+)");
-				message = std::regex_replace(message, comp, std::string("<$1>"));
+                regex_t comp;
+                regcomp(&comp, "[A-Z][0-9]+", REG_EXTENDED);
+
+                regmatch_t match;
+                memset(&match, 0, sizeof(regmatch_t));
+
+                while (regexec(&comp, message.substr(match.rm_eo, message.size() - match.rm_eo).c_str(), 1, &match, 0) == 0) 
+                {
+                    message.insert(match.rm_so, "<");
+                    message.insert(match.rm_eo + 1, ">");
+                    match.rm_eo += 2;
+                }  
+
+                regfree(&comp);
 
                 // Simply append to message result
                 if (m_TrapPrintEvents) 
