@@ -192,14 +192,11 @@ ID5Tree::ID5Tree(const vector<instance> &insts)
 	for (int i = 0; i < nattrs; ++i) {
 		attrs_here.push_back(i);
 	}
-	dbgid = dbgc++;
 }
 
 ID5Tree::ID5Tree(const vector<instance> &insts, const vector<int> &attrs) 
 : insts(insts), attrs_here(attrs), split_attr(-1), cat(90909)
-{
-	dbgid = dbgc++;
-}
+{ }
 
 void ID5Tree::expand() {
 	assert(left.get() == NULL && right.get() == NULL && split_attr != -1 && attrs_here.size() > 0);
@@ -359,6 +356,7 @@ void ID5Tree::update_counts(int i) {
 	}
 }
 
+
 /*
  Update counts after the category of instance i changes from old to its
  current value. Assumes that counts were correct before the change.
@@ -367,19 +365,20 @@ void ID5Tree::update_category(int i, category old) {
 	assert(find(insts_here.begin(), insts_here.end(), i) != insts_here.end());
 	assert(is_unique(attrs_here));
 	
+	int cat = insts[i].cat;
 	--ttl_counts[old];
-	++ttl_counts[insts[i].cat];
+	++ttl_counts[cat];
 	vector<int>::iterator j;
 	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 		val_counts &c = av_counts[*j];
 		if (insts[i].attrs[*j]) {
 			--c.true_counts[old];
 			assert(c.true_counts[old] >= 0);
-			++c.true_counts[insts[i].cat];
+			++c.true_counts[cat];
 		} else {
 			--c.false_counts[old];
 			assert(c.false_counts[old] >= 0);
-			++c.false_counts[insts[i].cat];
+			++c.false_counts[cat];
 		}
 	}
 	
@@ -390,6 +389,8 @@ void ID5Tree::update_category(int i, category old) {
 			right->update_category(i, old);
 		}
 	}
+	
+	//assert(validate_counts());
 }
 
 /*
@@ -440,6 +441,98 @@ void ID5Tree::update_counts_from_children() {
 			ccounts.false_counts[k->first] += k->second;
 		}
 	}
+}
+
+bool ID5Tree::validate_counts() {
+	vector<int>::iterator i, j;
+	map<category, int>::iterator k;
+	map<int, val_counts> ref_av_counts;
+	map<category, int> ref_ttl_counts;
+	
+	/* clear all zero count entries */
+	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
+		val_counts &counts = av_counts[*j];
+		
+		k = counts.true_counts.begin();
+		while (k != counts.true_counts.end()) {
+			if (k->second == 0) {
+				counts.true_counts.erase(k++);
+			} else {
+				++k;
+			}
+		}
+		k = counts.false_counts.begin();
+		while (k != counts.false_counts.end()) {
+			if (k->second == 0) {
+				counts.false_counts.erase(k++);
+			} else {
+				++k;
+			}
+		}
+	}
+	
+	for (i = insts_here.begin(); i != insts_here.end(); ++i) {
+		const instance &inst = insts[*i];
+		++ref_ttl_counts[inst.cat];
+		for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
+			val_counts &c = ref_av_counts[*j];
+			if (inst.attrs[*j]) {
+				++c.ttl_true;
+				++c.true_counts[inst.cat];
+			} else {
+				++c.ttl_false;
+				++c.false_counts[inst.cat];
+			}
+		}
+	}
+	
+	for (k = ttl_counts.begin(); k != ttl_counts.end(); ) {
+		if (k->second == 0) {
+			ttl_counts.erase(k++);
+		} else {
+			++k;
+		}
+	}
+	
+	assert(ref_ttl_counts == ttl_counts);
+	assert(ref_av_counts == av_counts);
+	
+	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
+		val_counts &counts = av_counts[*j];
+		int ttl_true = 0, ttl_false = 0;
+		
+		for (k = counts.true_counts.begin(); k != counts.true_counts.end(); ++k) {
+			assert (k->second + counts.false_counts[k->first] == ttl_counts[k->first]);
+			ttl_true += k->second;
+		}
+		for (k = counts.false_counts.begin(); k != counts.false_counts.end(); ++k) {
+			ttl_false += k->second;
+		}
+		assert (counts.ttl_true == ttl_true && counts.ttl_false == ttl_false);
+	}
+	if (!expanded()) {
+		return true;
+	}
+	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
+		if (*j == split_attr) {
+			continue;
+		}
+		val_counts &counts = av_counts[*j];
+		val_counts &lcounts = left->av_counts[*j];
+		val_counts &rcounts = right->av_counts[*j];
+		
+		for (k = counts.true_counts.begin(); k != counts.true_counts.end(); ++k) {
+			if (k->second != lcounts.true_counts[k->first] + rcounts.true_counts[k->first]) {
+				return false;
+			}
+		}
+		for (k = counts.false_counts.begin(); k != counts.false_counts.end(); ++k) {
+			if (k->second != lcounts.false_counts[k->first] + rcounts.false_counts[k->first]) {
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 /*

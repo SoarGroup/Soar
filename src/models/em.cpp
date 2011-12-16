@@ -27,6 +27,7 @@ const double ERRORTHRESH = 0.000000000001;
 
 const int INIT_NDATA = 1000;
 const int INIT_NMODELS = 10;
+const bool TEST_ELIGIBILITY = false;
 
 int dbgcount = 0;
 
@@ -96,11 +97,17 @@ void EM::resize() {
 	}
 	if (nm > Py_z.n_rows || nd > Py_z.n_cols) {
 		Py_z.resize(nm, nd);
-		eligible.resize(nm, nd);
+		if (TEST_ELIGIBILITY) {
+			eligible.resize(nm, nd);
+		}
 	}
 }
 
 void EM::update_eligibility() {
+	if (!TEST_ELIGIBILITY) {
+		return;
+	}
+	
 	eligible.fill(1);
 	for (int i = 0; i < ndata; ++i) {
 		rowvec x = xdata.row(i);
@@ -132,10 +139,15 @@ void EM::update_Py_z(int i, set<int> &check) {
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
 		double prev = Py_z(i, *j), now;
 		category c = dtree_insts[*j].cat;
-		if (eligible(i, *j) == 0) {
+		if (TEST_ELIGIBILITY && eligible(i, *j) == 0) {
 			now = 0.;
 		} else {
-			double w = 1.0 / accu(eligible.submat(0, *j, nmodels - 1, *j));
+			double w;
+			if (TEST_ELIGIBILITY) {
+				w = 1.0 / accu(eligible.submat(0, *j, nmodels - 1, *j));
+			} else {
+				w = 1.0 / nmodels;
+			}
 			double d = gausspdf(ydata(*j), models[i]->predict(xdata.row(*j)));
 			now = (1.0 - epsilon) * w * d;
 		}
@@ -156,7 +168,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 void EM::update_MAP(const set<int> &points) {
 	set<int>::iterator j;
 	for (j = points.begin(); j != points.end(); ++j) {
-		int prev = dtree_insts[*j].cat, now;
+		category prev = dtree_insts[*j].cat, now;
 		if (nmodels == 0) {
 			now = -1;
 		} else {
@@ -302,7 +314,7 @@ bool EM::unify_or_add_model() {
 				delete models[i];
 				models[i] = nmodel;
 				mark_model_stale(i);
-				cerr << "UNIFIED" << endl;
+				cerr << "UNIFIED " << i << endl;
 				DATAVIS() << "END" << endl;
 				return true;
 			}
@@ -393,7 +405,9 @@ bool EM::remove_models() {
 			if (j > i) {
 				models[i] = models[j];
 				Py_z.row(i) = Py_z.row(j);
-				eligible.row(i) = eligible.row(j);
+				if (TEST_ELIGIBILITY) {
+					eligible.row(i) = eligible.row(j);
+				}
 			}
 			i++;
 		} else {
@@ -404,7 +418,12 @@ bool EM::remove_models() {
 	}
 	for (int j = 0; j < ndata; ++j) {
 		if (dtree_insts[j].cat >= 0) {
-			dtree_insts[j].cat = index_map(dtree_insts[j].cat);
+			category old = dtree_insts[j].cat;
+			dtree_insts[j].cat = index_map(old);
+			if (dtree_insts[j].cat != old) {
+				DATAVIS() << "'num removed' INC" << endl;
+				dtree->update_category(j, old);
+			}
 		}
 	}
 	

@@ -64,6 +64,7 @@ private:
 	bool attrs_all_same() const;
 	bool expanded() const;
 	bool empty() const;
+	bool validate_counts();
 	void output_rec(const std::string &prefix, const std::vector<std::string> &attr_names) const;
 	
 	/*
@@ -81,6 +82,11 @@ private:
 			    ttl_false == c.ttl_false &&
 			    true_counts == c.true_counts &&
 			    false_counts == c.false_counts);
+		}
+		
+		val_counts() {
+			ttl_true = 0;
+			ttl_false = 0;
 		}
 	};
 	
