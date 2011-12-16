@@ -11,6 +11,8 @@ using namespace arma;
 
 const double INF = numeric_limits<double>::infinity();
 const double RLAMBDA = 0.0000001;
+const double REFIT_ABS_THRESH = 1e-5;
+const double REFIT_MUL_THRESH = 1.0001;
 
 void lsqr(const mat &X, const mat &Y, const vec &w, const rowvec &x, rowvec &yout) {
 	mat X1 = X;
@@ -148,6 +150,7 @@ void RPLSModel::add_example(int i) {
 	if (find(members.begin(), members.end(), i) != members.end()) {
 		return;
 	}
+	
 	members.push_back(i);
 	DATAVIS() << "'training set' '";
 	copy(members.begin(), members.end(), ostream_iterator<int>(DATAVIS(), " "));
@@ -173,13 +176,15 @@ void RPLSModel::add_example(int i) {
 		double e = pow(predict(xdata.row(i)) - ydata(i), 2);
 		/*
 		 Only refit the model if the average error increases
-		 after adding the data point.
+		 significantly after adding the data point.
 		*/
-		if ((error + e) / members.size() > error / (members.size() - 1)) {
+		double olderror = error / (members.size() - 1);
+		double newerror = (error + e) / members.size();
+		if (newerror > REFIT_ABS_THRESH && newerror > REFIT_MUL_THRESH * olderror) {
 			refit = true;
 		}
 		error += e;
-		DATAVIS() << "'avg error' " << error / members.size() << endl;
+		DATAVIS() << "'avg error' " << newerror << endl;
 	} else {
 		DATAVIS() << "constval " << constval << endl;
 	}
@@ -243,7 +248,7 @@ void RPLSModel::refresh_error() {
 
 bool RPLSModel::fit() {
 	if (!refit || isconst) {
-		return true;
+		return false;
 	}
 	
 	Rcpp::NumericMatrix x(members.size(), xdata.n_cols);
@@ -306,16 +311,16 @@ bool RPLSModel::predict(const Rcpp::NumericMatrix &x, vec &result) {
 
 bool RPLSModel::predict(const mat &x, vec &result) {
 	result.resize(x.n_rows);
-	if (refit && !fit()) {
-		return false;
+	if (refit) {
+		fit();
 	}
 	return predict(to_rmat(x), result);
 }
 
 double RPLSModel::predict(const rowvec &x) {
 	vec res(1);
-	if (refit && !fit()) {
-		return numeric_limits<double>::signaling_NaN();
+	if (refit) {
+		fit();
 	}
 	if (!predict(to_rmat(x), res)) {
 		return numeric_limits<double>::signaling_NaN();

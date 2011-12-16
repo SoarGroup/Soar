@@ -23,7 +23,9 @@ const double INF = numeric_limits<double>::infinity();
 const double SQRT2PI = 2.5066282746310002;
 const double PNOISE = 0.0001;
 const double STD = 0.001;
-const double ERRORTHRESH = 0.000000000001;
+const double UNIFY_ABS_THRESH = 1e-5;
+const double UNIFY_MUL_THRESH = 1.00001;
+const int SEL_NOISE_MAX_TRIES = 10;
 
 const int INIT_NDATA = 1000;
 const int INIT_NMODELS = 10;
@@ -135,6 +137,7 @@ void EM::update_eligibility() {
 */
 void EM::update_Py_z(int i, set<int> &check) {
 	set<int>::iterator j;
+	
 	DATAVIS() << "BEGIN Py_z" << endl;
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
 		double prev = Py_z(i, *j), now;
@@ -148,7 +151,9 @@ void EM::update_Py_z(int i, set<int> &check) {
 			} else {
 				w = 1.0 / nmodels;
 			}
-			double d = gausspdf(ydata(*j), models[i]->predict(xdata.row(*j)));
+			double p = models[i]->predict(xdata.row(*j));
+			assert(!isnan(p));
+			double d = gausspdf(ydata(*j), p);
 			now = (1.0 - epsilon) * w * d;
 		}
 		if ((c == i && now < prev) ||
@@ -249,10 +254,20 @@ void EM::estep() {
 	*/
 
 	set<int> check;
+	
+	timer t;
+	t.start();
+	int nstale = 0;
 	for (int i = 0; i < nmodels; ++i) {
+		nstale += stale_points[i].size();
 		update_Py_z(i, check);
 	}
+	DATAVIS() << "'num stale' " << nstale << endl;
+	DATAVIS() << "'Py_z update' %+" << t.stop() << endl;
+	
+	t.start();
 	update_MAP(check);
+	DATAVIS() << "'MAP update' %+" << t.stop() << endl;
 }
 
 bool EM::mstep() {
@@ -288,7 +303,7 @@ bool EM::unify_or_add_model() {
 		return false;
 	}
 	
-	for (int n = 0; n < 10; ++n) {
+	for (int n = 0; n < SEL_NOISE_MAX_TRIES; ++n) {
 		const rowvec &seed = xdata.row(noise_data[rand() % nnoise]);
 		vec dists(nnoise);
 		for (int i = 0; i < nnoise; ++i) {
@@ -308,17 +323,20 @@ bool EM::unify_or_add_model() {
 				nmodel->add_example(noise_data[close(j)]);
 			}
 			nmodel->fit();
-			if ((models[i]->get_error() == 0.0 && nmodel->get_error() < 1e-5) ||
-			    (models[i]->get_error() > 0.0 && nmodel->get_error() / models[i]->get_error() < 1.01))
+			DATAVIS() << "END" << endl;
+			
+			double curr_error = models[i]->get_error();
+			double uni_error = nmodel->get_error();
+			
+			if (uni_error < UNIFY_ABS_THRESH ||
+			    curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error)
 			{
 				delete models[i];
 				models[i] = nmodel;
 				mark_model_stale(i);
 				cerr << "UNIFIED " << i << endl;
-				DATAVIS() << "END" << endl;
 				return true;
 			}
-			DATAVIS() << "END" << endl;
 		}
 		
 		RPLSModel *m = new RPLSModel(xdata, ydata);
@@ -421,7 +439,7 @@ bool EM::remove_models() {
 			category old = dtree_insts[j].cat;
 			dtree_insts[j].cat = index_map(old);
 			if (dtree_insts[j].cat != old) {
-				DATAVIS() << "'num removed' INC" << endl;
+				DATAVIS() << "'num removed' %+1" << endl;
 				dtree->update_category(j, old);
 			}
 		}
@@ -434,8 +452,16 @@ bool EM::remove_models() {
 }
 
 bool EM::step() {
+	timer t;
+	t.start();
 	estep();
-	return mstep();
+	DATAVIS() << "'E-step time' %+" << t.stop() << endl;
+	
+	t.start();
+	bool changed = mstep();
+	DATAVIS() << "'M-step time' %+" << t.stop() << endl;
+	
+	return changed;
 }
 
 void EM::run(int maxiters) {

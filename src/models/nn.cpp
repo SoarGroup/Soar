@@ -5,10 +5,8 @@
 
 using namespace std;
 
-namespace {
-	inline bool possibly_better(double d, int k, const di_queue &nn) {
-		return nn.size() < k || (nn.size() > 0 && d < nn.top().first);
-	}
+inline bool possibly_better(double d, int k, const di_queue &nn) {
+	return nn.size() < k || (nn.size() > 0 && d < nn.top().first);
 }
 
 brute_nn::brute_nn(std::vector<floatvec> *points) : points(points) {}
