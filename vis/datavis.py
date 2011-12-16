@@ -108,6 +108,22 @@ class TreeItem:
 	def get_parent(self):
 		return self.parent
 	
+	def increment(self):
+		self.history.append(self.val)
+		try:
+			intval = int(self.val)
+			self.val = str(intval + 1)
+		except ValueError:
+			self.val = "1"
+			
+	def decrement(self):
+		self.history.append(self.val)
+		try:
+			intval = int(self.val)
+			self.val = str(intval - 1)
+		except ValueError:
+			self.val = "-1"
+	
 class TreeModel(QAbstractItemModel):
 
 	def __init__(self):
@@ -141,6 +157,7 @@ class TreeModel(QAbstractItemModel):
 		assert(item is not self.root)
 		itemrow = item.get_row()
 		ind = self.createIndex(itemrow, 0, item)
+		indend = self.createIndex(itemrow, 2, item)
 		assert(ind.isValid())
 		
 		if val == 'CLEAR':
@@ -159,10 +176,15 @@ class TreeModel(QAbstractItemModel):
 			for k in self.items.keys():
 				if k[:len(key)] == key:
 					self.items.pop(k)
+		elif val == 'INC':
+			item.increment()
+			self.dataChanged.emit(ind, indend)
+		elif val == 'DEC':
+			item.decrement()
+			self.dataChanged.emit(ind, indend)
 		elif val != None:
 			item.set_value(val)
-			ind2 = self.createIndex(itemrow, 2, item)
-			self.dataChanged.emit(ind, ind2)
+			self.dataChanged.emit(ind, indend)
 	
 	
 	def parse_line(self, line):

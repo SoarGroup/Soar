@@ -5,6 +5,13 @@ export LD_LIBRARY_PATH=$root/lib:$HOME/local/lib:$LD_LIBRARY_PATH
 soar=$root/bin/cli
 agent=agent/targets.soar
 
+export SVS_DATA_PIPE=/tmp/datavis
+#export SVS_DISPLAY_PIPE=/tmp/dispfifo
+
+
+# kill all old jobs first
+ps | awk '$4 == "run" && $1 != '"$$"' { system("kill " $1) }'
+
 run_env() {
 	while [ ! -S env ]
 	do
@@ -19,6 +26,7 @@ run_remote() {
 		sleep 1
 	done
 	python remote.py
+	#cat remote.log >>ctrl
 }
 
 while test -n "$1"

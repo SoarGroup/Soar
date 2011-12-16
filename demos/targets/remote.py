@@ -6,6 +6,7 @@ while not os.path.exists('ctrl'):
 	time.sleep(0.5)
 
 pipe = open('ctrl', 'w')
+log = open('remote.log', 'w')
 
 def handle_input(evt):
 	global pipe
@@ -23,6 +24,8 @@ def handle_input(evt):
 
 	pipe.write('{} {}\n'.format(*vals))
 	pipe.flush()
+	log.write('{} {}\n'.format(*vals))
+	log.flush()
 	
 win = tk.Tk()
 lbl = tk.Label(win, text = 'REMOTE', height = 20, width = 50)
