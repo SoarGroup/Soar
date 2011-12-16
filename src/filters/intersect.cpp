@@ -60,9 +60,10 @@ public:
 	}
 	
 	~intersect_filter() {
+		delete cworld;
 		delete dispatcher;
 		delete broadphase;
-		delete cworld;
+		delete config;
 		delete drawer;
 	}
 	
