@@ -39,9 +39,15 @@ string getnamespace() {
 
 ofstream& DATAVIS() {
 	static bool first = true;
-	static ofstream f("/tmp/datavis");
+	static const char *path = getenv("SVS_DATA_PIPE");
+	static ofstream f;
 	if (first) {
-		f << "CLEAR" << endl;
+		if (path == NULL || access(path, W_OK) < 0) {
+			f.open("/dev/null");
+		} else {
+			f.open(path);
+			f << "CLEAR" << endl;
+		}
 		first = false;
 	}
 	return f;

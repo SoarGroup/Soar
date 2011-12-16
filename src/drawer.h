@@ -9,6 +9,7 @@ class drawer {
 public:
 	static int POS, ROT, SCALE, COLOR, VERTS;
 	static std::ofstream fifo;
+	static bool fifo_open;
 	
 	drawer(const std::string &sname);
 	~drawer();

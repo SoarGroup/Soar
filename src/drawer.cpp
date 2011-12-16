@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 #include "drawer.h"
 
 using namespace std;
@@ -9,11 +10,19 @@ int drawer::SCALE = 1 << 3;
 int drawer::COLOR = 1 << 4;
 int drawer::VERTS = 1 << 5;
 
-ofstream drawer::fifo("/tmp/dispfifo");
+bool drawer::fifo_open = false;
+ofstream drawer::fifo;
 
 drawer::drawer(const string &sname) 
 : scene_name(sname), scl(1., 1., 1.), color(0., 1., 0.)
-{}
+{
+	if (!fifo_open) {
+		char *path = getenv("SVS_DISPLAY_PIPE");
+		if (path != NULL && access(path, W_OK) == 0) {
+			fifo.open(path);
+		}
+	}
+}
 
 drawer::~drawer() {
 	// fifo.close();
@@ -61,6 +70,8 @@ void drawer::reset_properties() {
 }
 
 void drawer::add(const string &name) {
+	if (!fifo_open) return;
+	
 	fifo << scene_name << " u " << name << " world v ";
 	copy(verts.begin(), verts.end(), ostream_iterator<vec3>(fifo, " "));
 	fifo << " p " << pos << " r " << rot << " s " << scl << endl;
@@ -79,6 +90,8 @@ void drawer::add(sgnode *n) {
 }
 
 void drawer::del(const string &name) {
+	if (!fifo_open) return;
+	
 	fifo << scene_name << " d " << name << endl;
 	fifo << scene_name << " d " << name << "_label" << endl;
 	fifo.flush();
@@ -89,6 +102,8 @@ void drawer::del(sgnode *n) {
 }
 
 void drawer::change(const string &name, int props) {
+	if (!fifo_open) return;
+	
 	fifo << scene_name << " u " << name;
 	if (props & VERTS) {
 		fifo << " v ";
