@@ -94,8 +94,8 @@ class TreeItem:
 		self.history.append(self.val)
 		self.val = val
 	
-	def add_child(self, name, val):
-		i = TreeItem(self, name, val)
+	def add_child(self, name):
+		i = TreeItem(self, name, None)
 		self.children.append(i)
 		return i
 	
@@ -108,21 +108,18 @@ class TreeItem:
 	def get_parent(self):
 		return self.parent
 	
-	def increment(self):
+	def increment(self, amount):
 		self.history.append(self.val)
-		try:
-			intval = int(self.val)
-			self.val = str(intval + 1)
-		except ValueError:
-			self.val = "1"
+		if self.val == None:
+			self.val = amount
+		else:
+			if type(self.val) != float:
+				try:
+					self.val = float(self.val)
+				except ValueError:
+					self.val = 0.0
 			
-	def decrement(self):
-		self.history.append(self.val)
-		try:
-			intval = int(self.val)
-			self.val = str(intval - 1)
-		except ValueError:
-			self.val = "-1"
+			self.val += amount
 	
 class TreeModel(QAbstractItemModel):
 
@@ -147,7 +144,7 @@ class TreeModel(QAbstractItemModel):
 			
 			row = pitem.num_children()
 			self.beginInsertRows(pind, row, row)
-			item = pitem.add_child(key[-1], val)
+			item = pitem.add_child(key[-1])
 			self.endInsertRows()
 			self.items[key] = item
 		
@@ -160,32 +157,30 @@ class TreeModel(QAbstractItemModel):
 		indend = self.createIndex(itemrow, 2, item)
 		assert(ind.isValid())
 		
-		if val == 'CLEAR':
-			self.beginRemoveRows(ind, 0, self.rowCount(ind))
-			item.clear()
-			for k in self.items.keys():
-				if k != key and k[:len(key)] == key:
-					self.items.pop(k)
-			self.endRemoveRows()
-		elif val == 'DELETE':
-			pitem = item.get_parent()
-			pind = self.createIndex(itemrow, 0, pitem)
-			self.beginRemoveRows(pind, itemrow, itemrow)
-			pitem.remove_child(item.get_row())
-			self.endRemoveRows()
-			for k in self.items.keys():
-				if k[:len(key)] == key:
-					self.items.pop(k)
-		elif val == 'INC':
-			item.increment()
-			self.dataChanged.emit(ind, indend)
-		elif val == 'DEC':
-			item.decrement()
-			self.dataChanged.emit(ind, indend)
-		elif val != None:
+		if not val.startswith('%'):
 			item.set_value(val)
 			self.dataChanged.emit(ind, indend)
-	
+		else:
+			cmd = val[1:]
+			if cmd.startswith('+') or cmd.startswith('-'):
+				item.increment(float(cmd))
+				self.dataChanged.emit(ind, indend)
+			elif cmd == 'CLEAR':
+				self.beginRemoveRows(ind, 0, self.rowCount(ind))
+				item.clear()
+				for k in self.items.keys():
+					if k != key and k[:len(key)] == key:
+						self.items.pop(k)
+				self.endRemoveRows()
+			elif cmd == 'DELETE':
+				pitem = item.get_parent()
+				pind = self.createIndex(itemrow, 0, pitem)
+				self.beginRemoveRows(pind, itemrow, itemrow)
+				pitem.remove_child(item.get_row())
+				self.endRemoveRows()
+				for k in self.items.keys():
+					if k[:len(key)] == key:
+						self.items.pop(k)
 	
 	def parse_line(self, line):
 		fields = split_with_quotes(line)
