@@ -14,10 +14,15 @@ sp {elab-em-atoms-intersect
    (<a> ^type node ^name <aname>)
    (<b> ^type node ^name <bname>)}
 
+sp {init-atoms
+   (state <s> ^superstate nil)
+-->
+   (<s> ^atoms <a>)}
+
 # link a result literal from an extract command to the state  
 sp {elab-literal
-   (state <s> ^superstate nil
+   (state <s> ^atoms <a>
               ^svs.command.extract <ec>)
    (<ec> ^type <type> ^result.literal <l>)
 -->
-   (<s> ^<type> <l>)}
+   (<a> ^<type> <l>)}

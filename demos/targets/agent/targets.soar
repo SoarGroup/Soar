@@ -1,6 +1,7 @@
 source extract.soar
 source models.soar
 source control.soar
+source epmem.soar
 
 sp {init
    (state <s> ^superstate nil)
