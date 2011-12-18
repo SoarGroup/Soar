@@ -45,7 +45,7 @@ filter* make_ontop_filter(scene *scn, filter_input *input) {
 
 filter_table_entry ontop_fill_entry() {
 	filter_table_entry e;
-	e.name = "ontop";
+	e.name = "on-top";
 	e.parameters.push_back("top");
 	e.parameters.push_back("bottom");
 	e.create = &make_ontop_filter;
