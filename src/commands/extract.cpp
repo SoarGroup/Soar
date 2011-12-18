@@ -30,8 +30,6 @@ public:
 				delete fltr;
 			}
 			
-			string neg;
-			negated = (get_str_param("negate", neg) && (neg == "t" || neg == "true" || neg == "1"));
 			fltr = parse_filter_spec(state->get_svs()->get_soar_interface(), root, state->get_scene());
 			if (!fltr) {
 				set_status("incorrect filter syntax");
@@ -106,29 +104,25 @@ public:
 			set_status("extract filter must have boolean results");
 			return;
 		}
-		/*
-		 list the parameters if result is (true and not negated) or (false and negated)
-		*/
-		if (val == negated) {
-			if (map_pop(res2wme, result, w)) {
-				si->remove_wme(w);
-			}
-			return;
+
+		if (map_pop(res2wme, result, w)) {
+			si->remove_wme(w);
 		}
+
 		if (!fltr->get_result_params(result, params)) {
 			assert(false);
-		}
-		
-		if (map_get(res2wme, result, w)) {
-			return;
 		}
 		
 		if (res_root == NULL) {
 			sym_wme_pair p;
 			p = si->make_id_wme(root, "result");
 			res_root = p.first;
+			pos_root = si->make_id_wme(res_root, "positive").first;
+			neg_root = si->make_id_wme(res_root, "negative").first;
 		}
-		sw = si->make_id_wme(res_root, "literal");
+		Symbol *r = val ? pos_root : neg_root;
+
+		sw = si->make_id_wme(r, "atom");
 		for (i = params->begin(); i != params->end(); ++i) {
 			si->make_wme(sw.first, i->first, i->second->get_string());
 		}
@@ -146,12 +140,13 @@ public:
 private:
 	Symbol         *root;
 	Symbol         *res_root;
+	Symbol         *pos_root;  // identifier for positive atoms
+	Symbol         *neg_root;  // identifier for negative atoms
 	svs_state      *state;
 	soar_interface *si;
 	filter         *fltr;
 	filter_result  *res;
 	bool            first;
-	bool            negated;
 	
 	std::map<filter_val*, wme*> res2wme;
 };
