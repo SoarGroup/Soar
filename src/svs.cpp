@@ -216,7 +216,7 @@ void svs_state::update_models() {
 	
 	scn->get_property_names(curr_pnames);
 	for (i = outspec.begin(); i != outspec.end(); ++i) {
-		curr_pnames.push_back(i->name);
+		curr_pnames.push_back(string("output:") + i->name);
 	}
 	scn->get_properties(curr_pvals);
 	get_output(out);
