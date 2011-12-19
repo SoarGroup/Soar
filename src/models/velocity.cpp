@@ -16,12 +16,9 @@ public:
 			return false;
 		}
 
-		cout << "PREDICTION";
 		for (int i = 0; i < dims; ++i) {
 			y[i] = x[i] + x[i + dims];
-			cout << " " << y[i];
 		}
-		cout << endl;
 		return true;
 	}
 	
