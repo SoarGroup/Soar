@@ -46,7 +46,23 @@ bool predict_traj(multi_model *mdl, const floatvec &initstate, const std::list<f
 
 class objective {
 public:
-	virtual float evaluate(scene &scn) const = 0;
+	objective() : negated(false) {}
+	
+	float evaluate(scene &scn) const {
+		if (negated) {
+			return -1 * eval(scn);
+		}
+		return eval(scn);
+	}
+	
+	void set_negated(bool n) {
+		negated = n;
+	}
+
+	virtual float eval(scene &scn) const = 0;
+	
+private:
+	bool negated;
 };
 
 /* Squared Euclidean distance between centroids of two objects */
@@ -55,7 +71,7 @@ public:
 	euclidean_obj(const string &obj1, const string &obj2)
 	: obj1(obj1), obj2(obj2) {}
 	
-	float evaluate(scene &scn) const {
+	float eval(scene &scn) const {
 		sgnode *n1, *n2;
 		ptlist p1, p2;
 		::vec3 c1, c2;
@@ -87,7 +103,7 @@ public:
 	behind_obj(const string &a, const string &b, const string &c)
 	: a(a), b(b), c(c) {}
 	
-	float evaluate(scene &scn) const {
+	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
 		ptlist pa, pb, pc;
 		
@@ -127,7 +143,7 @@ public:
 	collinear_obj(const string &a, const string &b, const string &c)
 	: a(a), b(b), c(c) {}
 	
-	float evaluate(scene &scn) const {
+	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
 		ptlist pa, pb, pc;
 		
@@ -169,7 +185,7 @@ public:
 	align_facing_objective(const string &a, const string &b, const string &c)
 	: a(a), b(b), c(c) {}
 	
-	float evaluate(scene &scn) const {
+	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
 		ptlist pb, pc;
 		
@@ -247,6 +263,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 		wme_list::iterator i;
 		string name, attr, val;
 		map<string, string> params;
+		objective *obj;
 		
 		for (i = param_wmes.begin(); i != param_wmes.end(); ++i) {
 			if (si->get_val(si->get_wme_attr(*i), attr) &&
@@ -258,6 +275,12 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 		if (!map_get(params, string("name"), name)) {
 			break;
 		}
+		
+		string negated;
+		if (!map_get(params, string("negated"), negated)) {
+			negated = "f";
+		}
+		
 		if (name == "euclidean") {
 			string a, b;
 			if (!map_get(params, string("a"), a) ||
@@ -265,7 +288,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			{
 				break;
 			}
-			m->add(new euclidean_obj(a, b));
+			obj = new euclidean_obj(a, b);
 		} else if (name == "behind") {
 			string a, b, c;
 			if (!map_get(params, string("a"), a) ||
@@ -274,7 +297,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			{
 				break;
 			}
-			m->add(new behind_obj(a, b, c));
+			obj = new behind_obj(a, b, c);
 		} else if (name == "collinear") {
 			string a, b, c;
 			if (!map_get(params, string("a"), a) ||
@@ -283,7 +306,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			{
 				break;
 			}
-			m->add(new collinear_obj(a, b, c));
+			obj = new collinear_obj(a, b, c);
 		} else if (name == "align_facing") {
 			string a, b, c;
 			if (!map_get(params, string("a"), a) ||
@@ -292,10 +315,15 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			{
 				break;
 			}
-			m->add(new align_facing_objective(a, b, c));
+			obj = new align_facing_objective(a, b, c);
 		} else {
 			cerr << "skipping unknown objective " << name << endl;
 		}
+		
+		if (negated == "t" || negated == "1") {
+			obj->set_negated(true);
+		}
+		m->add(obj);
 		
 		wme *next_wme;
 		if (!si->find_child_wme(root, "next", next_wme)) {
