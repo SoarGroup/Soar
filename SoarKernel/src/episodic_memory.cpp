@@ -903,7 +903,7 @@ epmem_wme_list *epmem_get_augs_of_id( Symbol * id, tc_number tc )
 	return return_val;
 }
 
-inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, bool meta )
+inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes )
 {
 	if ( my_list.empty() )
 	{
@@ -922,12 +922,12 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 			insert_at_head_of_dll( state->id.preferences_from_goal, pref, all_of_goal_next, all_of_goal_prev );
 			pref->on_goal_list = true;
 
-			if ( meta )
+			if ( epmem_wmes )
 			{
 				// if this is a meta wme, then it is completely local
 				// to the state and thus we will manually remove it
 				// (via preference removal) when the time comes
-				state->id.epmem_info->epmem_wmes->push_back( pref );
+				epmem_wmes->push_back( pref );
 			}
 		}
 		else
@@ -937,7 +937,7 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 		}
 	}
 
-	if ( !meta )
+	if ( !epmem_wmes )
 	{
 		// otherwise, we submit the fake instantiation to backtracing
 		// such as to potentially produce justifications that can follow
@@ -985,8 +985,8 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 
 inline void epmem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes )
 {
-	_epmem_process_buffered_wme_list( my_agent, state, cue_wmes, meta_wmes, true );
-	_epmem_process_buffered_wme_list( my_agent, state, cue_wmes, retrieval_wmes, false );
+	_epmem_process_buffered_wme_list( my_agent, state, cue_wmes, meta_wmes, state->id.epmem_info->epmem_wmes );
+	_epmem_process_buffered_wme_list( my_agent, state, cue_wmes, retrieval_wmes, NULL );
 }
 
 inline void epmem_buffer_add_wme( soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
@@ -1419,7 +1419,6 @@ void epmem_close( agent *my_agent )
 				delete (*it).second;
 			}
 			my_agent->epmem_wm_tree->clear();
-			my_agent->epmem_wme_unrecognized->clear();
 
 			my_agent->epmem_wme_adds->clear();
 			my_agent->epmem_wme_removes->clear();
@@ -1498,6 +1497,7 @@ void epmem_reset( agent *my_agent, Symbol *state )
 		// this will be called after prefs from goal are already removed,
 		// so just clear out result stack
 		data->epmem_wmes->clear();
+		data->epmem_storage_wmes->clear();
 
 		state = state->id.lower_goal;
 	}
@@ -2671,11 +2671,18 @@ void epmem_new_episode( agent *my_agent )
 
 	// remove current recognition information if it exists
 	{
-		for ( epmem_wme_list::iterator recog_iter = my_agent->epmem_wme_unrecognized->begin(); recog_iter != my_agent->epmem_wme_unrecognized->end(); recog_iter++ )
+		// copied from epmem_clear_result
+		preference* pref;
+		epmem_wme_stack* wme_stack= my_agent->top_goal->id.epmem_info->epmem_storage_wmes;
+		while ( !wme_stack->empty() )
 		{
-			soar_module::remove_module_wme( my_agent, *recog_iter );
+			pref = wme_stack->back();
+			wme_stack->pop_back();
+			if ( pref->in_tm )
+			{
+				remove_preference_from_tm( my_agent, pref );
+			}
 		}
-		my_agent->epmem_wme_unrecognized->clear();
 	}
 
 	// perform storage
@@ -2891,15 +2898,6 @@ void epmem_new_episode( agent *my_agent )
 			my_agent->epmem_promotions->clear();
 		}
 
-		// update recognition information on top state
-		// all substates link to the same recognition structure root, so we only need to update it once
-		{
-			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
-			{
-				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter).second, (*recog_iter).first ) );
-			}
-		}
-
 		// add the time id to the times table
 		my_agent->epmem_stmts_graph->add_time->bind_int( 1, time_counter );
 		my_agent->epmem_stmts_graph->add_time->execute( soar_module::op_reinit );
@@ -2924,6 +2922,33 @@ void epmem_new_episode( agent *my_agent )
 			}
 
 			symbol_remove_ref( my_agent, my_time_sym );
+		}
+
+		// update recognition information on top state
+		// all substates link to the same recognition structure root, so we only need to update it once
+		// use the top-state epmem.present-id as the condition for the justification
+		{
+			soar_module::symbol_triple_list unrecognized_triples;
+			soar_module::wme_set conditions;
+			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
+			{
+				epmem_buffer_add_wme(unrecognized_triples, my_agent->epmem_unrecognized_header, (*recog_iter).second, (*recog_iter).first );
+			}
+			if (!unrecognized_triples.empty()) {
+				Symbol* state = my_agent->top_goal;
+				conditions.insert(state->id.epmem_time_wme);
+
+				_epmem_process_buffered_wme_list( my_agent, state, conditions, unrecognized_triples, state->id.epmem_info->epmem_storage_wmes );
+				for (soar_module::symbol_triple_list::iterator tripit = unrecognized_triples.begin(); tripit != unrecognized_triples.end(); tripit++ )
+				{
+					symbol_remove_ref( my_agent, (*tripit)->id );
+					symbol_remove_ref( my_agent, (*tripit)->attr );
+					symbol_remove_ref( my_agent, (*tripit)->value );
+
+					delete (*tripit);
+				}
+				unrecognized_triples.clear();
+			}
 		}
 
 		// clear add/remove maps
@@ -4233,7 +4258,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			root_pedge->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
 			root_pedge->sql->prepare();
 			root_pedge->sql->bind_int(1, LLONG_MAX);
-			root_pedge->sql->execute();
+			root_pedge->sql->execute( soar_module::op_reinit );
 			root_pedge->time = LLONG_MAX;
 			pedge_pq.push(root_pedge);
 			pedge_caches[EPMEM_RIT_STATE_EDGE][triple] = root_pedge;
@@ -4256,7 +4281,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			root_interval->sql = my_agent->epmem_stmts_graph->pool_dummy->request();
 			root_interval->sql->prepare();
 			root_interval->sql->bind_int(1, before);
-			root_interval->sql->execute();
+			root_interval->sql->execute( soar_module::op_reinit );
 			root_interval->time = before;
 			interval_pq.push(root_interval);
 			interval_cleanup.insert(root_interval);

@@ -2214,6 +2214,8 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 
   goal->id.epmem_info->epmem_wmes->~epmem_wme_stack();
   free_with_pool( &( thisAgent->epmem_wmes_pool ), goal->id.epmem_info->epmem_wmes );
+  goal->id.epmem_info->epmem_storage_wmes->~epmem_wme_stack();
+  free_with_pool( &( thisAgent->epmem_wmes_pool ), goal->id.epmem_info->epmem_storage_wmes );
   symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );
   symbol_remove_ref( thisAgent, goal->id.epmem_result_header );
   // only remove unrecognized header if the top state is going
@@ -2339,10 +2341,13 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.epmem_info->last_cmd_count = 0;
   id->id.epmem_info->last_memory = EPMEM_MEMID_NONE;
   allocate_with_pool( thisAgent, &( thisAgent->epmem_wmes_pool ), &( id->id.epmem_info->epmem_wmes ) );
+  allocate_with_pool( thisAgent, &( thisAgent->epmem_wmes_pool ), &( id->id.epmem_info->epmem_storage_wmes ) );
 #ifdef USE_MEM_POOL_ALLOCATORS
   id->id.epmem_info->epmem_wmes = new ( id->id.epmem_info->epmem_wmes ) epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
+  id->id.epmem_info->epmem_storage_wmes = new ( id->id.epmem_info->epmem_wmes ) epmem_wme_stack( soar_module::soar_memory_pool_allocator< preference* >( thisAgent ) );
 #else
   id->id.epmem_info->epmem_wmes = new ( id->id.epmem_info->epmem_wmes ) epmem_wme_stack();
+  id->id.epmem_info->epmem_storage_wmes = new ( id->id.epmem_info->epmem_wmes ) epmem_wme_stack();
 #endif
 
   allocate_with_pool( thisAgent, &( thisAgent->smem_info_pool ), &( id->id.smem_info ) );

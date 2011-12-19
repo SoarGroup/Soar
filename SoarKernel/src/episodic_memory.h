@@ -434,6 +434,7 @@ typedef struct epmem_data_struct
 	epmem_time_id last_memory;								// last retrieved memory
 
 	epmem_wme_stack* epmem_wmes;							// preferences generated in last epmem
+	epmem_wme_stack* epmem_storage_wmes;					// preferences generated in last epmem storage
 } epmem_data;
 
 // lookup tables to facilitate shared identifiers
