@@ -186,19 +186,11 @@ public:
 	
 private:
 	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes) {
-		std::vector<std::string> fields;
 		std::vector<std::string>::const_iterator i;
-		int index;
 
 		for (i = props.begin(); i != props.end(); ++i) {
-			index = -1;
-			for (int j = 0; j < prop_vec.size(); ++j) {
-				if (prop_vec[j] == *i) {
-					index = j;
-					break;
-				}
-			}
-			if (index < 0) {
+			int index = find(prop_vec.begin(), prop_vec.end(), *i) - prop_vec.begin();
+			if (index == prop_vec.size()) {
 				std::cerr << "PROPERTY NOT FOUND " << *i << std::endl;
 				return false;
 			}

@@ -12,7 +12,7 @@
 typedef tc_number tc_num;
 
 typedef std::pair<Symbol*, wme*> sym_wme_pair;
-typedef std::list<wme*> wme_list;
+typedef std::vector<wme*> wme_list;
 
 
 class soar_interface {
