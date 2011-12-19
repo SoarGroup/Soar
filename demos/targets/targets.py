@@ -27,6 +27,9 @@ def intersects(amin, amax, bmin, bmax):
 		if not overlap(amin[i], amax[i], bmin[i], bmax[i]):
 			return False
 	return True
+
+def dist(p1, p2):
+	return sum((x1 - x2) ** 2 for x1, x2 in zip(p1, p2))
 	
 class Cube:
 	def __init__(self, name, canvas, h = 1.0, w = 1.0, d = 1.0):
@@ -90,6 +93,8 @@ class World1:
 		self.cursor.print_sgel()
 		for c in self.cubes:
 			c.print_sgel()
+		print('***')
+		sys.stdout.flush()
 	
 	def input(self, locked, d):
 		if locked:
@@ -121,23 +126,20 @@ class World2:
 			cubemin = c.min()
 			cubemax = c.max()
 			if intersects(cursormin, cursormax, cubemin, cubemax):
-				p = [0, 0, 0]     # penetration
-				mi = None         # axis of minimum penetration
-				
+				# There are six possible positions for the cube that resolve the collision,
+				# 2 for each dimension. Move it to the closest one.
+				positions = []
 				for i in range(3):
-					if d[i] > 0:
-						p[i] = max(cursormax[i] - cubemin[i], 0)
-					elif d[i] < 0:
-						p[i] = min(cursormin[i] - cubemax[i], 0)
-					else:
-						continue
-
-					if mi == None or abs(p[i]) > abs(p[mi]):
-						mi = i
+					p1 = c.pos[:]; p2 = c.pos[:]
+					p1[i] = self.cursor.pos[i] - self.cursor.dims[i] / 2 - c.dims[i] / 2
+					p2[i] = self.cursor.pos[i] + self.cursor.dims[i] / 2 + c.dims[i] / 2
+					positions.append(p1)
+					positions.append(p2)
 				
-				cd = [0, 0, 0]    # displacement for cube
-				cd[mi] = p[mi]
-				c.move(cd)
+				dists = [ dist(c.pos, p) for p in positions ]
+				closest = min(zip(dists, positions))[1]
+				dpos = [x1 - x2 for x1, x2 in zip(closest, c.pos)]
+				c.move(dpos)
 				assert not intersects(cursormin, cursormax, c.min(), c.max())
 		
 		self.print_sgel()
