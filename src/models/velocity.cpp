@@ -9,16 +9,19 @@ using namespace std;
 
 class velocity_model : public model {
 public:
-	velocity_model() { }
+	velocity_model(int dims) : dims(dims) {}
 
 	bool predict(const floatvec &x, floatvec &y) {
-		if (x.size() != 6 || y.size() != 3) {
+		if (x.size() != dims * 2 || y.size() != dims) {
 			return false;
 		}
 
-		for (int i = 0; i < 3; ++i) {
-			y[i] = x[i] + x[i + 3];
+		cout << "PREDICTION";
+		for (int i = 0; i < dims; ++i) {
+			y[i] = x[i] + x[i + dims];
+			cout << " " << y[i];
 		}
+		cout << endl;
 		return true;
 	}
 	
@@ -27,14 +30,29 @@ public:
 	}
 	
 	int get_input_size() const {
-		return 6; // px py pz vx vy vz 
+		return dims * 2;  // current + velocity in each dimension
 	}
 	
 	int get_output_size() const {
-		return 3; // px py pz
+		return dims;
 	}
+	
+private:
+	int dims;
 };
 
 model *_make_velocity_model_(soar_interface *si, Symbol *root) {
-	return new velocity_model();
+	long dims = 1;
+	wme_list children;
+	wme_list::iterator i;
+	si->get_child_wmes(root, children);
+	for (i = children.begin(); i != children.end(); ++i) {
+		string attr;
+		if (si->get_val(si->get_wme_attr(*i), attr) && attr == "dims") {
+			if (si->get_val(si->get_wme_val(*i), dims)) {
+				break;
+			}
+		}
+	}
+	return new velocity_model(dims);
 }
