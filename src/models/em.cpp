@@ -464,16 +464,16 @@ bool EM::step() {
 	return changed;
 }
 
-void EM::run(int maxiters) {
+bool EM::run(int maxiters) {
+	bool changed = false;
 	for (int i = 0; i < maxiters; ++i) {
 		if (!step()) {
-			bool changed = false;
-			changed |= remove_models();
-			changed |= unify_or_add_model();
-			if (!changed) {
-				return;
+			if (!remove_models() && !unify_or_add_model()) {
+				// reached quiescence
+				return changed;
 			}
 		}
+		changed = true;
 	}
 	cerr << "Reached max iterations without quiescence" << endl;
 	cerr << "Noise Data X" << endl;
@@ -488,6 +488,7 @@ void EM::run(int maxiters) {
 			cerr << ydata(i) << endl;
 		}
 	}
+	return changed;
 }
 
 double EM::error() {

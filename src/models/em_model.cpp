@@ -5,11 +5,17 @@
 
 using namespace std;
 
+const int MAXITERS = 50;
+
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root)
-	: si(si), root(root), result(NULL), resultwme(NULL), em(NULL)
-	{ }
+	: si(si), root(root), em(NULL), revisions(0)
+	{
+		result_id = si->make_id_wme(root, "result").first;
+		tests_id = si->make_id_wme(result_id, "tests").first;
+		revisions_wme = si->make_wme(result_id, "revisions", revisions);
+	}
 
 	~EM_model() {
 		delete em;
@@ -57,8 +63,12 @@ public:
 			}
 		}
 		em->add_data(x, y[0]);
-		em->run(50);
-		update_tested_atoms();
+		if (em->run(MAXITERS)) {
+			si->remove_wme(revisions_wme);
+			revisions_wme = si->make_wme(result_id, "revisions", ++revisions);
+			DATAVIS() << "revisions " << revisions << endl;
+			update_tested_atoms();
+		}
 	}
 	
 	void update_tested_atoms() {
@@ -92,12 +102,7 @@ public:
 		vector<string> &params = pred_params[pred];
 		assert(params.size() == all_atoms[i].size() - 1);
 		
-		if (result == NULL) {
-			sym_wme_pair p = si->make_id_wme(root, "result");
-			result = p.first;
-			resultwme = p.second;
-		}
-		sym_wme_pair p = si->make_id_wme(result, pred);
+		sym_wme_pair p = si->make_id_wme(tests_id, pred);
 		for (int j = 0; j < params.size(); ++j) {
 			si->make_wme(p.first, params[j], all_atoms[i][j + 1]);
 		}
@@ -106,13 +111,13 @@ public:
 	
 private:
 	soar_interface *si;
-	Symbol *root, *result;
-	wme *resultwme;
+	Symbol *root, *result_id, *tests_id;
+	wme *revisions_wme;
+	int revisions;
 	EM *em;
 	vector<vector<string> > all_atoms;
 	vector<string> atom_names;
 	map<string, vector<string> > pred_params;
-	
 	map<int, wme*> atom_wmes;
 };
 

@@ -26,7 +26,7 @@ public:
 	bool unify_or_add_model();
 	bool remove_models();
 	bool step();
-	void run(int maxiters);
+	bool run(int maxiters);
 	bool predict(const floatvec &x, float &y);
 	double error();
 	
