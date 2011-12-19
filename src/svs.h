@@ -143,6 +143,7 @@ public:
 private:
 	void make_common_syms();
 	void del_common_syms();
+	bool env_input(svs_state *s);
 	
 	soar_interface*          si;
 	common_syms              cs;

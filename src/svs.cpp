@@ -253,7 +253,7 @@ bool svs_state::get_output(floatvec &out) const {
 }
 
 svs::svs(agent *a)
-: envsock('s', getnamespace() + "env", true)
+: envsock('s', getnamespace() + "env", true, true)
 {
 	si = new soar_interface(a);
 	make_common_syms();
@@ -270,12 +270,12 @@ void svs::state_creation_callback(Symbol *state) {
 	
 	if (state_stack.empty()) {
 		s = new svs_state(this, state, si, &cs);
+		assert(env_input(s));
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
 	
 	state_stack.push_back(s);
-	
 }
 
 void svs::state_deletion_callback(Symbol *state) {
@@ -287,10 +287,20 @@ void svs::state_deletion_callback(Symbol *state) {
 	delete s;
 }
 
+bool svs::env_input(svs_state *s) {
+	string sgel;
+	
+	if (!envsock.receive(sgel)) {
+		return false;
+	}
+	s->get_scene()->parse_sgel(sgel);
+	return true;
+}
+
 void svs::pre_env_callback() {
 	vector<svs_state*>::iterator i;
 	string sgel;
-	bool validout, validin;
+	bool validout;
 	svs_state *topstate = state_stack.front();
 	
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
@@ -311,14 +321,8 @@ void svs::pre_env_callback() {
 		ss << (*outspec)[i].name << " " << out[i] << endl;
 	}
 	validout = envsock.send(ss.str());
-	
-	if (!envsock.receive(sgel)) {
-		validin = false;
-	} else {
-		validin = true;
-		topstate->get_scene()->parse_sgel(sgel);
-	}
-	if (validout && validin) {
+	assert(env_input(topstate));
+	if (validout) {
 		topstate->update_models();
 	}
 }
