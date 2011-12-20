@@ -405,7 +405,7 @@ compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
 libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
 if compEnv['STATIC_LINKED']:
 	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
-compEnv.Append(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
+compEnv.Prepend(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
 Export('compEnv')
 
 # Add TestCLI to components (it uses compEnv which wasn't exported earlier):

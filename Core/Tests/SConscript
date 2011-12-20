@@ -22,7 +22,7 @@ else:
 	else:
 		libadd.append('cppunit-linux')
 libpath = Split('$PREFIX/lib lib') 
-clone.Append(LIBS = libadd, LIBPATH = libpath)
+clone.Prepend(LIBS = libadd, LIBPATH = libpath)
 
 Tests = clone.Program('Tests', Glob('src/*.cpp'))
 
