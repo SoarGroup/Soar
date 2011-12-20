@@ -138,7 +138,7 @@ void EM::update_eligibility() {
 void EM::update_Py_z(int i, set<int> &check) {
 	set<int>::iterator j;
 	
-	DATAVIS() << "BEGIN Py_z" << endl;
+	DATAVIS("BEGIN Py_z" << endl)
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
 		double prev = Py_z(i, *j), now;
 		category c = dtree_insts[*j].cat;
@@ -163,9 +163,9 @@ void EM::update_Py_z(int i, set<int> &check) {
 			check.insert(*j);
 		}
 		Py_z(i, *j) = now;
-		DATAVIS() << "'" << i << ", " << *j << "' " << Py_z(i, *j) << endl;
+		DATAVIS("'" << i << ", " << *j << "' " << Py_z(i, *j) << endl)
 	}
-	DATAVIS() << "END" << endl;
+	DATAVIS("END" << endl)
 	stale_points[i].clear();
 }
 
@@ -191,18 +191,18 @@ void EM::update_MAP(const set<int> &points) {
 			}
 			if (now != -1) {
 				stale_models.insert(now);
-				DATAVIS() << "BEGIN 'model " << now << "'" << endl;
+				DATAVIS("BEGIN 'model " << now << "'" << endl)
 				models[now]->add_example(*j);
-				DATAVIS() << "END" << endl;
+				DATAVIS("END" << endl)
 			}
 		}
 	}
 	
-	DATAVIS() << "BEGIN MAP" << endl;
+	DATAVIS("BEGIN MAP" << endl)
 	for (int j = 0; j < ndata; ++j) {
-		DATAVIS() << j << " " << dtree_insts[j].cat << endl;
+		DATAVIS(j << " " << dtree_insts[j].cat << endl)
 	}
-	DATAVIS() << "END" << endl;
+	DATAVIS("END" << endl)
 	/*
 	 Do the update after all categories have been changed to save
 	 on thrashing.
@@ -218,7 +218,7 @@ void EM::add_data(const floatvec &x, double y) {
 		assert(xdata.n_cols == x.size());
 	}
 	++ndata;
-	DATAVIS() << "ndata " << ndata << endl;
+	DATAVIS("ndata " << ndata << endl)
 	resize();
 	
 	for (int i = 0; i < xdim; ++i) {
@@ -262,12 +262,12 @@ void EM::estep() {
 		nstale += stale_points[i].size();
 		update_Py_z(i, check);
 	}
-	DATAVIS() << "'num stale' " << nstale << endl;
-	DATAVIS() << "'Py_z update' %+" << t.stop() << endl;
+	DATAVIS("'num stale' " << nstale << endl)
+	DATAVIS("'Py_z update' %+" << t.stop() << endl)
 	
 	t.start();
 	update_MAP(check);
-	DATAVIS() << "'MAP update' %+" << t.stop() << endl;
+	DATAVIS("'MAP update' %+" << t.stop() << endl)
 }
 
 bool EM::mstep() {
@@ -275,12 +275,12 @@ bool EM::mstep() {
 	set<int>::iterator i;
 	for (i = stale_models.begin(); i != stale_models.end(); ++i) {
 		RPLSModel *m = models[*i];
-		DATAVIS() << "BEGIN 'model " << *i << "'" << endl;
+		DATAVIS("BEGIN 'model " << *i << "'" << endl)
 		if (m->fit()) {
 			changed = true;
 			stale_points[*i].insert(m->get_members().begin(), m->get_members().end());
 		}
-		DATAVIS() << "END" << endl;
+		DATAVIS("END" << endl)
 	}
 	stale_models.clear();
 	return changed;
@@ -294,9 +294,11 @@ bool EM::unify_or_add_model() {
 		}
 	}
 
-	DATAVIS() << "noise '";
-	copy(noise_data.begin(), noise_data.end(), ostream_iterator<int>(DATAVIS(), " "));
-	DATAVIS() << "'" << endl;
+	DATAVIS("noise '")
+	for (int i = 0; i < noise_data.size(); ++i) {
+		DATAVIS(noise_data[i] << " ")
+	}
+	DATAVIS("'" << endl)
 	
 	int nnoise = noise_data.size();
 	if (nnoise < K) {
@@ -317,13 +319,13 @@ bool EM::unify_or_add_model() {
 		 add the noise to that model instead of creating a new one.
 		*/
 		for (int i = 0; i < nmodels; ++i) {
-			DATAVIS() << "BEGIN 'extended model " << i << "'" << endl;
+			DATAVIS("BEGIN 'extended model " << i << "'" << endl)
 			RPLSModel *nmodel = new RPLSModel(*models[i]);
 			for (int j = 0; j < K; ++j) {
 				nmodel->add_example(noise_data[close(j)]);
 			}
 			nmodel->fit();
-			DATAVIS() << "END" << endl;
+			DATAVIS("END" << endl)
 			
 			double curr_error = models[i]->get_error();
 			double uni_error = nmodel->get_error();
@@ -341,7 +343,7 @@ bool EM::unify_or_add_model() {
 		
 		RPLSModel *m = new RPLSModel(xdata, ydata);
 		
-		DATAVIS() << "BEGIN 'potential model'" << endl;
+		DATAVIS("BEGIN 'potential model'" << endl)
 		for (int i = 0; i < K; ++i) {
 			int j = noise_data[close(i)];
 			m->add_example(j);
@@ -355,7 +357,7 @@ bool EM::unify_or_add_model() {
 				break;
 			}
 		}
-		DATAVIS() << "END" << endl;
+		DATAVIS("END" << endl)
 		
 		if (good_model) {
 			DBG << "Adding new linear model" << endl;
@@ -393,9 +395,9 @@ bool EM::predict(const floatvec &x, float &y) {
 	if (mdl == -1) {
 		return false;
 	}
-	DATAVIS() << "BEGIN 'model " << mdl << "'" << endl;
+	DATAVIS("BEGIN 'model " << mdl << "'" << endl)
 	y = models[mdl]->predict(v);
-	DATAVIS() << "END" << endl;
+	DATAVIS("END" << endl)
 	return true;
 }
 
@@ -439,7 +441,7 @@ bool EM::remove_models() {
 			category old = dtree_insts[j].cat;
 			dtree_insts[j].cat = index_map(old);
 			if (dtree_insts[j].cat != old) {
-				DATAVIS() << "'num removed' %+1" << endl;
+				DATAVIS("'num removed' %+1" << endl)
 				dtree->update_category(j, old);
 			}
 		}
@@ -455,11 +457,11 @@ bool EM::step() {
 	timer t;
 	t.start();
 	estep();
-	DATAVIS() << "'E-step time' %+" << t.stop() << endl;
+	DATAVIS("'E-step time' %+" << t.stop() << endl)
 	
 	t.start();
 	bool changed = mstep();
-	DATAVIS() << "'M-step time' %+" << t.stop() << endl;
+	DATAVIS("'M-step time' %+" << t.stop() << endl)
 	
 	return changed;
 }

@@ -66,7 +66,7 @@ public:
 		if (em->run(MAXITERS)) {
 			si->remove_wme(revisions_wme);
 			revisions_wme = si->make_wme(result_id, "revisions", ++revisions);
-			DATAVIS() << "revisions " << revisions << endl;
+			DATAVIS("revisions " << revisions << endl)
 			update_tested_atoms();
 		}
 	}
@@ -75,7 +75,7 @@ public:
 		vector<int> all_splits;
 		vector<int>::const_iterator i;
 		em->dtree->get_all_splits(all_splits);
-		DATAVIS() << "'tree size' " << em->dtree->size() << endl;
+		DATAVIS("'tree size' " << em->dtree->size() << endl)
 		for(i = all_splits.begin(); i != all_splits.end(); ++i) {
 			if (atom_wmes.find(*i) == atom_wmes.end()) {
 				make_atom_wme(*i);

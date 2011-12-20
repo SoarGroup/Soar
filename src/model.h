@@ -59,7 +59,7 @@ public:
 		int j;
 		for (i = active_models.begin(); i != active_models.end(); ++i) {
 			model_config *cfg = *i;
-			DATAVIS() << "BEGIN '" << cfg->name << "'" << std::endl;
+			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
 			floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
 			floatvec yp(cfg->ally ? y.size() : cfg->yinds.size());
 			if (!cfg->mdl->predict(xp, yp)) {
@@ -70,7 +70,7 @@ public:
 			} else {
 				y.set_indices(cfg->yinds, yp);
 			}
-			DATAVIS() << "END" << std::endl;
+			DATAVIS("END" << std::endl)
 		}
 		return true;
 	}
@@ -88,9 +88,9 @@ public:
 				continue;
 			}
 			*/
-			DATAVIS() << "BEGIN '" << cfg->name << "'" << std::endl;
+			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
 			cfg->mdl->learn(scn, xp, yp, dt);
-			DATAVIS() << "END" << std::endl;
+			DATAVIS("END" << std::endl)
 		}
 	}
 	
@@ -99,18 +99,18 @@ public:
 		std::list<model_config*>::iterator i;
 		for (i = active_models.begin(); i != active_models.end(); ++i) {
 			model_config *cfg = *i;
-			DATAVIS() << "BEGIN '" << cfg->name << "'" << std::endl;
+			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
 			floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
 			floatvec yp = cfg->ally ? y : y.slice(cfg->yinds);
 			float d = cfg->mdl->test(xp, yp);
 			if (d < 0.) {
-				DATAVIS() << "'pred error' 'no prediction'" << std::endl;
+				DATAVIS("'pred error' 'no prediction'" << std::endl)
 				s = -1.;
 			} else if (s >= 0.) {
-				DATAVIS() << "'pred error' " << d << std::endl;
+				DATAVIS("'pred error' " << d << std::endl)
 				s += d;
 			}
-			DATAVIS() << "END" << std::endl;
+			DATAVIS("END" << std::endl)
 		}
 		if (s >= 0.) {
 			return s / active_models.size();

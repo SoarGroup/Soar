@@ -37,7 +37,7 @@ string getnamespace() {
 	return ns;
 }
 
-ofstream& DATAVIS() {
+ofstream& get_datavis() {
 	static bool first = true;
 	static const char *path = getenv("SVS_DATA_PIPE");
 	static ofstream f;

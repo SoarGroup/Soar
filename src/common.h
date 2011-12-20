@@ -19,7 +19,13 @@ void split(const std::string &s, const std::string &delim, std::vector<std::stri
 std::string getnamespace();
 
 /* I need all my files to have access to a single ofstream */
-std::ofstream& DATAVIS();
+std::ofstream& get_datavis();
+
+#if 0
+#define DATAVIS(x) get_datavis() << x;
+#else
+#define DATAVIS(x)
+#endif
 
 class timer {
 public:

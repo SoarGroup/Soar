@@ -152,9 +152,11 @@ void RPLSModel::add_example(int i) {
 	}
 	
 	members.push_back(i);
-	DATAVIS() << "'training set' '";
-	copy(members.begin(), members.end(), ostream_iterator<int>(DATAVIS(), " "));
-	DATAVIS() << "'" << endl;
+	DATAVIS("'training set' '")
+	for (int j = 0; j < members.size(); ++j) {
+		DATAVIS(members[j] << " ")
+	}
+	DATAVIS("'" << endl)
 	
 	if (members.size() == 1) {
 		xtotals = xdata.row(i);
@@ -171,7 +173,7 @@ void RPLSModel::add_example(int i) {
 		isconst = false;
 	}
 	
-	DATAVIS() << "isconst " << isconst << endl;
+	DATAVIS("isconst " << isconst << endl)
 	if (!isconst) {
 		double e = pow(predict(xdata.row(i)) - ydata(i), 2);
 		/*
@@ -184,17 +186,19 @@ void RPLSModel::add_example(int i) {
 			refit = true;
 		}
 		error += e;
-		DATAVIS() << "'avg error' " << newerror << endl;
+		DATAVIS("'avg error' " << newerror << endl)
 	} else {
-		DATAVIS() << "constval " << constval << endl;
+		DATAVIS("constval " << constval << endl)
 	}
 }
 
 void RPLSModel::del_example(int i) {
 	members.erase(remove(members.begin(), members.end(), i), members.end());
-	DATAVIS() << "'training set' '";
-	copy(members.begin(), members.end(), ostream_iterator<int>(DATAVIS(), " "));
-	DATAVIS() << "'" << endl;
+	DATAVIS("'training set' '")
+	for (int j = 0; j < members.size(); ++j) {
+		DATAVIS(members[j] << " ")
+	}
+	DATAVIS("'" << endl)
 	
 	
 	if (members.size() == 0) {
@@ -224,7 +228,7 @@ void RPLSModel::del_example(int i) {
 			refresh_error();
 		}
 	}
-	DATAVIS() << "isconst " << isconst << endl;
+	DATAVIS("isconst " << isconst << endl)
 }
 
 void RPLSModel::refresh_error() {
@@ -243,7 +247,7 @@ void RPLSModel::refresh_error() {
 			error += pow(ydata(members[i]) - predictions(i), 2);
 		}
 	}
-	DATAVIS() << "'avg error' " << error / members.size() << endl;
+	DATAVIS("'avg error' " << error / members.size() << endl)
 }
 
 bool RPLSModel::fit() {
@@ -299,12 +303,12 @@ bool RPLSModel::predict(const Rcpp::NumericMatrix &x, vec &result) {
 			result(i) = ans(i);
 		}
 		if (valid) {
-			DATAVIS() << "ncomp " << ncomp << endl;
+			DATAVIS("ncomp " << ncomp << endl)
 			break;
 		}
 	}
 	if (!valid) {
-		DATAVIS() << "ncomp -1" << endl;
+		DATAVIS("ncomp -1" << endl)
 	}
 	return valid;
 }
