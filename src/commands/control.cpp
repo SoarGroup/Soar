@@ -276,9 +276,9 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			break;
 		}
 		
-		string negated;
-		if (!map_get(params, string("negated"), negated)) {
-			negated = "f";
+		string sign;
+		if (!map_get(params, string("sign"), sign)) {
+			sign = "positive";
 		}
 		
 		if (name == "euclidean") {
@@ -320,7 +320,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			cerr << "skipping unknown objective " << name << endl;
 		}
 		
-		if (negated == "t" || negated == "1") {
+		if (sign == "negative") {
 			obj->set_negated(true);
 		}
 		m->add(obj);
