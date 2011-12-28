@@ -72,11 +72,10 @@ public:
 	}
 	
 	void update_tested_atoms() {
-		vector<int> all_splits;
+		vector<int> a;
 		vector<int>::const_iterator i;
-		em->dtree->get_all_splits(all_splits);
-		DATAVIS("'tree size' " << em->dtree->size() << endl)
-		for(i = all_splits.begin(); i != all_splits.end(); ++i) {
+		em->get_tested_atoms(a);
+		for(i = a.begin(); i != a.end(); ++i) {
 			if (atom_wmes.find(*i) == atom_wmes.end()) {
 				make_atom_wme(*i);
 			}
@@ -84,7 +83,7 @@ public:
 		
 		map<int, wme*>::iterator j = atom_wmes.begin();
 		while (j != atom_wmes.end()) {
-			if (find(all_splits.begin(), all_splits.end(), j->first) == all_splits.end()) {
+			if (find(a.begin(), a.end(), j->first) == a.end()) {
 				si->remove_wme(j->second);
 				atom_wmes.erase(j++);
 			} else {

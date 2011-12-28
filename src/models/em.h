@@ -31,7 +31,9 @@ public:
 	double error();
 	
 	void mark_model_stale(int i);
-public:
+	void get_tested_atoms(std::vector<int> &atoms) const;
+	
+private:
 	std::vector<RPLSModel*> models;
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;

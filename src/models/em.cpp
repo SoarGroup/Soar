@@ -511,3 +511,7 @@ double EM::error() {
 	}
 	return error;
 }
+
+void EM::get_tested_atoms(vector<int> &atoms) const {
+	dtree->get_all_splits(atoms);
+}
