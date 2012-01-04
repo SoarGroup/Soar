@@ -38,13 +38,17 @@ public:
 		return center;
 	}
 	
+	void save(std::ostream &os) const;
+	
+	// this has to be called right after the object is constructed
+	void load(std::istream &is);
+	
 private:
 	void print_loadings();
 	bool predict(const Rcpp::NumericMatrix &x, arma::vec &result);
 	void refresh_error();
 	
 	std::vector<int> members;
-	RPLSModel *pls;
 	double constval, error;
 	const arma::mat &xdata;
 	const arma::vec &ydata;

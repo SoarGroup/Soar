@@ -111,6 +111,11 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 }
 
 svs_state::~svs_state() {
+	map<wme*, command*>::iterator i;
+	for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
+		delete i->second;
+	}
+	
 	delete scn; // results in root being deleted also
 	delete mmdl;
 }
@@ -226,7 +231,7 @@ void svs_state::update_models() {
 		floatvec x(prev_pvals);
 		x.extend(out);
 		mmdl->test(x, curr_pvals);
-		mmdl->learn(scn, x, curr_pvals, dt);
+		mmdl->learn(x, curr_pvals, dt);
 	} else {
 		mmdl->set_property_vector(curr_pnames);
 	}
@@ -260,6 +265,10 @@ svs::svs(agent *a)
 }
 
 svs::~svs() {
+	vector<svs_state*>::iterator i;
+	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
+		delete *i;
+	}
 	del_common_syms();
 	delete si;
 }

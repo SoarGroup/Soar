@@ -9,14 +9,18 @@
 typedef std::vector<bool> attr_vec;
 typedef int category;
 
-struct instance {
+class DTreeInst {
+public:
 	attr_vec attrs;
 	category cat;
+	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
 };
 
 class ID3Tree {
 public:
-	ID3Tree(const std::vector<instance> &insts);
+	ID3Tree(const std::vector<DTreeInst> &insts);
 	category classify(const attr_vec &attribs) const;
 	void output(const std::vector<std::string> &attrib_names) const;
 	
@@ -25,8 +29,8 @@ private:
 	//typedef std::unique_ptr<ID3Tree> ID3ptr;
 	
 	ID3Tree();
-	int choose_attrib(const std::vector<instance> &insts, const std::vector<int> &attrs);
-	void learn_rec(const std::vector<instance> &insts, const std::vector<int> &attrs);
+	int choose_attrib(const std::vector<DTreeInst> &insts, const std::vector<int> &attrs);
+	void learn_rec(const std::vector<DTreeInst> &insts, const std::vector<int> &attrs);
 	void output_rec(const std::string &prefix, const std::vector<std::string> &attrib_names) const;
 	
 	int split_attr;
@@ -37,7 +41,7 @@ private:
 
 class ID5Tree {
 public:
-	ID5Tree(const std::vector<instance> &insts);
+	ID5Tree(const std::vector<DTreeInst> &insts);
 	void update_tree(int i);
 	void update_category(int i, category old);
 	category classify(const attr_vec &attrs) const;
@@ -45,11 +49,14 @@ public:
 	int size() const;
 	void get_all_splits(std::vector<int> &splits) const;
 	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
+	
 private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
 	typedef std::auto_ptr<ID5Tree> ID5ptr;
 	
-	ID5Tree(const std::vector<instance> &insts, const std::vector<int> &attrs);
+	ID5Tree(const std::vector<DTreeInst> &insts, const std::vector<int> &attrs);
 	void expand();
 	void shrink();
 	void remove_empty();
@@ -93,14 +100,13 @@ private:
 	std::map<int, val_counts> av_counts;  // class counts for every attribute and every value
 	std::map<category, int> ttl_counts;
 	std::map<int, double> gains;
-	const std::vector<instance> &insts;
+	const std::vector<DTreeInst> &insts;
 	std::vector<int> insts_here;
 	std::vector<int> attrs_here;
 	category cat;
 	int split_attr;
 	ID5ptr left;
 	ID5ptr right;
-	int dbgid;
 };
 
 

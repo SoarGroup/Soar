@@ -37,7 +37,17 @@ bool is_unique(const vector<T> &v) {
 	return t.size() == v.size();
 }
 
-ID3Tree::ID3Tree(const vector<instance> &insts)
+void DTreeInst::save(ostream &os) const {
+	os << cat << endl;
+	save_vector(attrs, os);
+}
+
+void DTreeInst::load(istream &is) {
+	is >> cat;
+	load_vector(attrs, is);
+}
+
+ID3Tree::ID3Tree(const vector<DTreeInst> &insts)
 : split_attr(-1)
 {
 	vector<int> attrs;
@@ -65,7 +75,7 @@ ID3Tree::ID3Tree()
 : split_attr(-1), cat(90909) // debug val
 { }
 
-int ID3Tree::choose_attrib(const vector<instance> &insts, const vector<int> &attrs) {
+int ID3Tree::choose_attrib(const vector<DTreeInst> &insts, const vector<int> &attrs) {
 	int highattrib = -1, ninsts = insts.size();
 	double highgain, curr_ent;
 	map<category, int> ttl_counts;
@@ -99,7 +109,7 @@ int ID3Tree::choose_attrib(const vector<instance> &insts, const vector<int> &att
 	return highattrib;
 }
 
-void ID3Tree::learn_rec(const vector<instance> &insts, const vector<int> &attrs) {
+void ID3Tree::learn_rec(const vector<DTreeInst> &insts, const vector<int> &attrs) {
 	assert(insts.size() > 0);
 	
 	cat = insts[0].cat;
@@ -140,7 +150,7 @@ void ID3Tree::learn_rec(const vector<instance> &insts, const vector<int> &attrs)
 	
 	split_attr = choose_attrib(insts, attrs);
 	vector<attr_vec> lattrs, rattrs;
-	vector<instance> linsts, rinsts;
+	vector<DTreeInst> linsts, rinsts;
 	for (int i = 0; i < insts.size(); ++i) {
 		if (insts[i].attrs[split_attr]) {
 			linsts.push_back(insts[i]);
@@ -183,7 +193,7 @@ void ID3Tree::output_rec(const string &prefix, const vector<string> &attrib_name
  a reference to it, so it can grow after the tree is created. The
  insts_here variable indexes into this list.
 */
-ID5Tree::ID5Tree(const vector<instance> &insts) 
+ID5Tree::ID5Tree(const vector<DTreeInst> &insts) 
 : insts(insts), split_attr(-1), cat(90909)
 {
 	assert(insts.size() > 0);
@@ -194,7 +204,7 @@ ID5Tree::ID5Tree(const vector<instance> &insts)
 	}
 }
 
-ID5Tree::ID5Tree(const vector<instance> &insts, const vector<int> &attrs) 
+ID5Tree::ID5Tree(const vector<DTreeInst> &insts, const vector<int> &attrs) 
 : insts(insts), attrs_here(attrs), split_attr(-1), cat(90909)
 { }
 
@@ -318,9 +328,6 @@ void ID5Tree::pull_up_repair() {
 	update_counts_from_children();
 }
 
-/*
- This is just for debugging and should never be necessary.
-*/
 void ID5Tree::update_all_counts() {
 	ttl_counts.clear();
 	av_counts.clear();
@@ -402,8 +409,8 @@ void ID5Tree::update_counts_from_children() {
 	ttl_counts.clear();
 	av_counts.clear();
 	
-	left->update_all_counts();
-	right->update_all_counts();
+	//left->update_all_counts();
+	//right->update_all_counts();
 	map<category, int>::iterator i;
 	for (i = left->ttl_counts.begin(); i != left->ttl_counts.end(); ++i) {
 		ttl_counts[i->first] += i->second;
@@ -472,7 +479,7 @@ bool ID5Tree::validate_counts() {
 	}
 	
 	for (i = insts_here.begin(); i != insts_here.end(); ++i) {
-		const instance &inst = insts[*i];
+		const DTreeInst &inst = insts[*i];
 		++ref_ttl_counts[inst.cat];
 		for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 			val_counts &c = ref_av_counts[*j];
@@ -648,4 +655,31 @@ void ID5Tree::get_all_splits(vector<int> &splits) const {
 	splits.push_back(split_attr);
 	left->get_all_splits(splits);
 	right->get_all_splits(splits);
+}
+
+void ID5Tree::save(ostream &os) const {
+	save_vector(insts_here, os);
+	save_vector(attrs_here, os);
+	os << split_attr << endl;
+	if (split_attr >= 0) {
+		left->save(os);
+		right->save(os);
+	} else {
+		os << cat << endl;
+	}
+}
+
+void ID5Tree::load(istream &is) {
+	load_vector(insts_here, is);
+	load_vector(attrs_here, is);
+	is >> split_attr;
+	if (split_attr > 0) {
+		left.reset(new ID5Tree(insts));
+		left->load(is);
+		right.reset(new ID5Tree(insts));
+		right->load(is);
+	} else {
+		is >> cat;
+	}
+	update_all_counts();
 }

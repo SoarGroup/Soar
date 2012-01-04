@@ -13,12 +13,15 @@
 
 class model {
 public:
+	virtual ~model() {}
 	virtual bool predict(const floatvec &x, floatvec &y) = 0;
 	virtual std::string get_type() const = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
 	
-	virtual void learn(scene *scn, const floatvec &x, const floatvec &y, float dt) {}
+	virtual void learn(const floatvec &x, const floatvec &y, float dt) {}
+	virtual void save() const {}
+	virtual void load() {}
 	
 	virtual float test(const floatvec &x, const floatvec &y) {
 		floatvec py(y.size());
@@ -49,6 +52,7 @@ public:
 	
 	~multi_model() {
 		std::list<model_config*>::iterator i;
+		std::cout << "MODELS: " << active_models.size() << std::endl;
 		for (i = active_models.begin(); i != active_models.end(); ++i) {
 			delete *i;
 		}
@@ -60,9 +64,14 @@ public:
 		for (i = active_models.begin(); i != active_models.end(); ++i) {
 			model_config *cfg = *i;
 			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
-			floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
 			floatvec yp(cfg->ally ? y.size() : cfg->yinds.size());
-			if (!cfg->mdl->predict(xp, yp)) {
+			bool success;
+			if (cfg->allx) {
+				success = cfg->mdl->predict(x, yp);
+			} else {
+				success = cfg->mdl->predict(x.slice(cfg->xinds), yp);
+			}
+			if (!success) {
 				return false;
 			}
 			if (cfg->ally) {
@@ -75,7 +84,7 @@ public:
 		return true;
 	}
 	
-	void learn(scene *scn, const floatvec &x, const floatvec &y, float dt) {
+	void learn(const floatvec &x, const floatvec &y, float dt) {
 		std::list<model_config*>::iterator i;
 		int j;
 		for (i = active_models.begin(); i != active_models.end(); ++i) {
@@ -89,7 +98,7 @@ public:
 			}
 			*/
 			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
-			cfg->mdl->learn(scn, xp, yp, dt);
+			cfg->mdl->learn(xp, yp, dt);
 			DATAVIS("END" << std::endl)
 		}
 	}

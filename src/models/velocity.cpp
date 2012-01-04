@@ -38,7 +38,7 @@ private:
 	int dims;
 };
 
-model *_make_velocity_model_(soar_interface *si, Symbol *root) {
+model *_make_velocity_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
 	long dims = 1;
 	wme_list children;
 	wme_list::iterator i;

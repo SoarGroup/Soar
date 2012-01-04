@@ -1,4 +1,6 @@
 #include <vector>
+#include <sstream>
+#include <fstream>
 #include "model.h"
 #include "em.h"
 #include "filter_table.h"
@@ -9,17 +11,50 @@ const int MAXITERS = 50;
 
 class EM_model : public model {
 public:
-	EM_model(soar_interface *si, Symbol *root)
-	: si(si), root(root), em(NULL), revisions(0)
+	EM_model(soar_interface *si, Symbol *root, scene *scn, const string &name)
+	: si(si), root(root), revisions(0)
 	{
 		result_id = si->make_id_wme(root, "result").first;
 		tests_id = si->make_id_wme(result_id, "tests").first;
 		revisions_wme = si->make_wme(result_id, "revisions", revisions);
+		em = new EM(scn);
+		
+		stringstream ss;
+		ss << "/tmp/" << name << ".em";
+		savepath = ss.str();
+		
+		ifstream is(savepath.c_str());
+		if (is.is_open()) {
+			DATAVIS("BEGIN " << name << endl)
+			em->load(is);
+			cout << "LOADED MODEL" << endl;
+			DATAVIS("END" << endl)
+		}
+		
+		const filter_table &t = get_filter_table();
+		t.get_all_atoms(scn, all_atoms);
+		vector<vector<string> >::const_iterator i;
+		for (i = all_atoms.begin(); i != all_atoms.end(); ++i) {
+			stringstream ss;
+			copy(i->begin(), i->end(), ostream_iterator<string>(ss, "_"));
+			atom_names.push_back(ss.str());
+		}
+		
+		vector<string> preds;
+		t.get_predicates(preds);
+		vector<string>::const_iterator j;
+		for (j = preds.begin(); j != preds.end(); ++j) {
+			vector<string> params;
+			t.get_params(*j, params);
+			pred_params[*j] = params;
+		}
 	}
 
 	~EM_model() {
+		ofstream os(savepath.c_str());
+		em->save(os);
+		os.close();
 		delete em;
-		
 	}
 	
 	bool predict(const floatvec &x, floatvec &y) {
@@ -41,27 +76,7 @@ public:
 		return 1;
 	}
 
-	void learn(scene *scn, const floatvec &x, const floatvec &y, float dt) {
-		if (!em) {
-			const filter_table &t = get_filter_table();
-			em = new EM(0.001, scn);
-			t.get_all_atoms(scn, all_atoms);
-			vector<vector<string> >::const_iterator i;
-			for (i = all_atoms.begin(); i != all_atoms.end(); ++i) {
-				stringstream ss;
-				copy(i->begin(), i->end(), ostream_iterator<string>(ss, "_"));
-				atom_names.push_back(ss.str());
-			}
-			
-			vector<string> preds;
-			t.get_predicates(preds);
-			vector<string>::const_iterator j;
-			for (j = preds.begin(); j != preds.end(); ++j) {
-				vector<string> params;
-				t.get_params(*j, params);
-				pred_params[*j] = params;
-			}
-		}
+	void learn(const floatvec &x, const floatvec &y, float dt) {
 		em->add_data(x, y[0]);
 		if (em->run(MAXITERS)) {
 			si->remove_wme(revisions_wme);
@@ -118,8 +133,10 @@ private:
 	vector<string> atom_names;
 	map<string, vector<string> > pred_params;
 	map<int, wme*> atom_wmes;
+	
+	string savepath;
 };
 
-model *_make_em_model_(soar_interface *si, Symbol *root) {
-	return new EM_model(si, root);
+model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
+	return new EM_model(si, root, scn, name);
 }

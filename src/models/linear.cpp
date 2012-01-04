@@ -114,17 +114,6 @@ RPLSModel::RPLSModel(const mat &xdata, const vec &ydata)
 		R->parseEvalQ("suppressMessages(library('pls'))");
 	}
 	
-	/*
-	cout << "Making PLS model " << count << " with data" << endl;
-	for (int i = 0; i < X.n_rows; ++i) {
-		for (int j = 0; j < X.n_cols; ++j) {
-			cout << X(i, j) << " ";
-		}
-		cout << y(i) << endl;
-	}
-	cout << "-----------------------------" << endl;
-	*/
-	
 	stringstream ss;
 	ss << "plsobj" << count++;
 	plsobj = ss.str();
@@ -342,4 +331,20 @@ void RPLSModel::print_loadings() {
 		}
 		cout << endl;
 	}
+}
+
+
+void RPLSModel::save(ostream &os) const {
+	save_vector(members, os);
+}
+
+void RPLSModel::load(istream &is) {
+	int n, x;
+	is >> n;
+	members.reserve(n);
+	for (int i = 0; i < n; ++i) {
+		is >> x;
+		add_example(x);
+	}
+	fit();
 }

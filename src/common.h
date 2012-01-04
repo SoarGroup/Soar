@@ -21,7 +21,7 @@ std::string getnamespace();
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
 
-#if 0
+#if 1
 #define DATAVIS(x) get_datavis() << x;
 #else
 #define DATAVIS(x)
@@ -581,5 +581,29 @@ private:
 };
 
 std::ostream& operator<<(std::ostream &os, const bbox &b);
+
+template <class T>
+void save_vector(const std::vector<T> &v, std::ostream &os) {
+	os << v.size() << std::endl;
+	std::copy(v.begin(), v.end(), std::ostream_iterator<T>(os, " "));
+	os << std::endl;
+}
+
+template <class T>
+void load_vector(std::vector<T> &v, std::istream &is) {
+	int n = 0;
+	T x;
+	if (!(is >> n)) {
+		assert(false);
+	}
+	v.clear();
+	v.reserve(n);
+	for (int i = 0; i < n; ++i) {
+		if (!(is >> x)) {
+			assert(false);
+		}
+		v.push_back(x);
+	}
+}
 
 #endif

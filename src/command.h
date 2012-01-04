@@ -25,6 +25,8 @@ public:
 	
 	Symbol *get_root() { return root; }
 	
+	svs_state *get_state() { return state; }
+	
 private:
 	svs_state      *state;
 	soar_interface *si;

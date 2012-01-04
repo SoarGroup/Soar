@@ -12,7 +12,7 @@ class scene;
 
 class EM {
 public:
-	EM(double epsilon, scene *scn);
+	EM(scene *scn);
 	~EM();
 	
 	void resize();
@@ -33,11 +33,13 @@ public:
 	void mark_model_stale(int i);
 	void get_tested_atoms(std::vector<int> &atoms) const;
 	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
+	
 private:
 	std::vector<RPLSModel*> models;
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;
-	double epsilon, Pnoise;
 	
 	arma::mat  xdata;       // ndata x xdim
 	arma::vec  ydata;       // ndata x 1
@@ -48,9 +50,9 @@ private:
 	 This will be read directly by the decision tree learner as the
 	 category labels.
 	*/
-	std::vector<instance> dtree_insts;
+	std::vector<DTreeInst> dtree_insts;
 	
-	int ndata, nmodels, K, xdim;
+	int ndata, nmodels, xdim;
 	
 	scene *scn, *scncopy;
 	ID5Tree *dtree;

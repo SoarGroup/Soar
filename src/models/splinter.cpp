@@ -34,6 +34,6 @@ public:
 	}
 };
 
-model *_make_splinter_model_(soar_interface *si, Symbol *root) {
+model *_make_splinter_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
 	return new splinter_model();
 }

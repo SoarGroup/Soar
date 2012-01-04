@@ -30,6 +30,6 @@ private:
 	splinterenv env;
 };
 
-model *_make_splinterenv_model_(soar_interface *si, Symbol *root) {
+model *_make_splinterenv_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
 	return new splinterenv_model();
 }

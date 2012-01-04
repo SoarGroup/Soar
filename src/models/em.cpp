@@ -22,13 +22,15 @@ using namespace arma;
 const double INF = numeric_limits<double>::infinity();
 const double SQRT2PI = 2.5066282746310002;
 const double PNOISE = 0.0001;
+const double EPSILON = 0.001;
 const double STD = 0.001;
 const double UNIFY_ABS_THRESH = 1e-5;
 const double UNIFY_MUL_THRESH = 1.00001;
 const int SEL_NOISE_MAX_TRIES = 10;
+const int K = 5;
 
-const int INIT_NDATA = 1000;
-const int INIT_NMODELS = 10;
+const int INIT_NDATA = 1;
+const int INIT_NMODELS = 1;
 const bool TEST_ELIGIBILITY = false;
 
 int dbgcount = 0;
@@ -77,11 +79,10 @@ double randgauss(double mean, double std) {
 }
 
 
-EM::EM(double epsilon, scene *scn)
-: K(5), epsilon(epsilon), Pnoise(PNOISE), xdim(0), scn(scn), scncopy(scn->copy()), dtree(NULL), ndata(0), nmodels(0),
+EM::EM(scene *scn)
+: xdim(0), scn(scn), scncopy(scn->copy()), dtree(NULL), ndata(0), nmodels(0),
   Py_z(INIT_NMODELS, INIT_NDATA), eligible(INIT_NMODELS, INIT_NDATA), ydata(INIT_NDATA)
-{
-}
+{}
 
 EM::~EM() {
 	delete dtree;
@@ -154,10 +155,10 @@ void EM::update_Py_z(int i, set<int> &check) {
 			double p = models[i]->predict(xdata.row(*j));
 			assert(!isnan(p));
 			double d = gausspdf(ydata(*j), p);
-			now = (1.0 - epsilon) * w * d;
+			now = (1.0 - EPSILON) * w * d;
 		}
 		if ((c == i && now < prev) ||
-		    (c != i && ((c == -1 && now > Pnoise) ||
+		    (c != i && ((c == -1 && now > PNOISE) ||
 		                (c != -1 && now > Py_z(c, *j)))))
 		{
 			check.insert(*j);
@@ -178,7 +179,7 @@ void EM::update_MAP(const set<int> &points) {
 			now = -1;
 		} else {
 			now = argmax_col(Py_z, nmodels, *j);
-			if (Py_z(now, *j) < Pnoise) {
+			if (Py_z(now, *j) < PNOISE) {
 				now = -1;
 			}
 		}
@@ -226,8 +227,8 @@ void EM::add_data(const floatvec &x, double y) {
 	}
 	ydata(ndata - 1) = y;
 	
-	dtree_insts.push_back(instance());
-	instance &inst = dtree_insts.back();
+	dtree_insts.push_back(DTreeInst());
+	DTreeInst &inst = dtree_insts.back();
 	inst.cat = -1;
 	inst.attrs = scn->get_atom_vals();
 	if (!dtree) {
@@ -384,6 +385,10 @@ void EM::mark_model_stale(int i) {
 }
 
 bool EM::predict(const floatvec &x, float &y) {
+	if (dtree == NULL || ndata == 0) {
+		return false;
+	}
+	
 	rowvec v(x.size());
 	for (int i = 0; i < x.size(); ++i) {
 		v(i) = x[i];
@@ -514,4 +519,59 @@ double EM::error() {
 
 void EM::get_tested_atoms(vector<int> &atoms) const {
 	dtree->get_all_splits(atoms);
+}
+
+void EM::save(ostream &os) const {
+	os << ndata << " " << nmodels << " " << xdim << endl;
+	xdata.save(os, arma_ascii);
+	ydata.save(os, arma_ascii);
+	Py_z.save(os, arma_ascii);
+	if (TEST_ELIGIBILITY) {
+		eligible.save(os, arma_ascii);
+	}
+	
+	std::vector<DTreeInst>::const_iterator i;
+	os << dtree_insts.size() << endl;
+	for (i = dtree_insts.begin(); i != dtree_insts.end(); ++i) {
+		i->save(os);
+	}
+	
+	std::vector<RPLSModel*>::const_iterator j;
+	os << models.size() << endl;
+	for (j = models.begin(); j != models.end(); ++j) {
+		(**j).save(os);
+	}
+	
+	dtree->save(os);
+}
+
+void EM::load(istream &is) {
+	int ninsts;
+	
+	is >> ndata >> nmodels >> xdim;
+	
+	xdata.load(is, arma_ascii);
+	ydata.load(is, arma_ascii);
+	Py_z.load(is, arma_ascii);
+	if (TEST_ELIGIBILITY) {
+		eligible.load(is, arma_ascii);
+	}
+	
+	is >> ninsts;
+	for (int i = 0; i < ninsts; ++i) {
+		dtree_insts.push_back(DTreeInst());
+		dtree_insts.back().load(is);
+	}
+	
+	is >> nmodels;
+	for (int i = 0; i < nmodels; ++i) {
+		DATAVIS("BEGIN 'model " << i << "'" << endl)
+		RPLSModel *m = new RPLSModel(xdata, ydata);
+		m->load(is);
+		models.push_back(m);
+		DATAVIS("END" << endl)
+	}
+	
+	dtree = new ID5Tree(dtree_insts);
+	dtree->load(is);
 }

@@ -5,16 +5,16 @@
 
 using namespace std;
 
-model *_make_null_model_(soar_interface *si, Symbol* root);
-model *_make_velocity_model_(soar_interface *si, Symbol *root);
-model *_make_lwr_model_(soar_interface *si, Symbol *root);
-model *_make_splinter_model_(soar_interface *si, Symbol *root);
-model *_make_splinterenv_model_(soar_interface *si, Symbol *root);
-model *_make_em_model_(soar_interface *si, Symbol *root);
+model *_make_null_model_(soar_interface *si, Symbol* root, scene *scn, const string &name);
+model *_make_velocity_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
+model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
+model *_make_splinter_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
+model *_make_splinterenv_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
+model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
 
 struct model_constructor_table_entry {
 	const char *type;
-	model* (*func)(soar_interface*, Symbol*);
+	model* (*func)(soar_interface*, Symbol*, scene*, const string&);
 };
 
 static model_constructor_table_entry constructor_table[] = {
@@ -26,7 +26,7 @@ static model_constructor_table_entry constructor_table[] = {
 	{ "em",          _make_em_model_},
 };
 
-model *parse_model_struct(soar_interface *si, Symbol *root, string &name) {
+model *parse_model_struct(soar_interface *si, Symbol *root, string &name, scene *scn) {
 	wme *type_wme, *name_wme;
 	string type;
 	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
@@ -45,7 +45,7 @@ model *parse_model_struct(soar_interface *si, Symbol *root, string &name) {
 	
 	for (int i = 0; i < table_size; ++i) {
 		if (type == constructor_table[i].type) {
-			return constructor_table[i].func(si, root);
+			return constructor_table[i].func(si, root, scn, name);
 		}
 	}
 	return NULL;
@@ -54,9 +54,13 @@ model *parse_model_struct(soar_interface *si, Symbol *root, string &name) {
 class create_model_command : public command {
 public:
 	create_model_command(svs_state *state, Symbol *root)
-	 : command(state, root), root(root), mmdl(state->get_model()), broken(false)
+	 : command(state, root), root(root), m(NULL), mmdl(state->get_model()), broken(false)
 	{
 		si = state->get_svs()->get_soar_interface();
+	}
+	
+	~create_model_command() {
+		delete m;
 	}
 	
 	string description() {
@@ -64,13 +68,18 @@ public:
 	}
 	
 	bool update() {
+		cout << "MODEL COMMAND UPDATE" << endl;
 		string name;
 		
 		if (!changed() && !broken) {
 			return true;
 		}
 		
-		model *m = parse_model_struct(si, root, name);
+		if (m != NULL) {
+			delete m;
+		}
+		m = parse_model_struct(si, root, name, get_state()->get_scene());
+		cout << "PARSED" << endl;
 		if (m == NULL) {
 			set_status("invalid syntax");
 			broken = true;
@@ -88,6 +97,7 @@ public:
 private:
 	soar_interface *si;
 	Symbol         *root;
+	model          *m;
 	multi_model    *mmdl;
 	bool            broken;
 };

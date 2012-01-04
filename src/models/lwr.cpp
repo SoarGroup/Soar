@@ -259,7 +259,7 @@ bool lwr::load_file(const char *file) {
 	return true;
 }
 
-model *_make_lwr_model_(soar_interface *si, Symbol *root) {
+model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
 	Symbol *input_root = NULL, *output_root = NULL, *attr;
 	wme_list children;
 	wme_list::iterator i;

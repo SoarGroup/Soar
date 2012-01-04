@@ -15,6 +15,6 @@ public:
 	int get_output_size() const { return 0; }
 };
 
-model *_make_null_model_(soar_interface *si, Symbol* root) {
+model *_make_null_model_(soar_interface *si, Symbol* root, scene *scn, const string &name) {
 	return new null_model();
 }
