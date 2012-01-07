@@ -861,12 +861,9 @@ private:
 	*/
 	class step_incr {
 	public:
-		step_incr(output_spec *outspec, floatvec *traj, int divisions, int start) 
-		: outspec(outspec), traj(traj), start(start), divisions(divisions), inc(outspec->size())
+		step_incr(output_spec *outspec, floatvec *traj, int start) 
+		: outspec(outspec), traj(traj), start(start), inc(outspec->size())
 		{
-			for (int i = 0; i < outspec->size(); ++i) {
-				inc[i] = ((*outspec)[i].max - (*outspec)[i].min) / divisions;
-			}
 			reset();
 		}
 	
@@ -878,7 +875,7 @@ private:
 		
 		bool next() {
 			for (int i = 0; i < outspec->size(); ++i) {
-				(*traj)[start + i] += inc[i];
+				(*traj)[start + i] += (*outspec)[i].incr;
 				if ((*traj)[start + i] <= (*outspec)[i].max) {
 					return true;
 				} else {
@@ -908,7 +905,7 @@ private:
 			int stepsize = outspec->size();
 			traj.resize(len * stepsize);
 			for (int i = 0; i < len; i++) {
-				steps.push_back(step_incr(outspec, &traj, 3, i * stepsize));
+				steps.push_back(step_incr(outspec, &traj, i * stepsize));
 			}
 			reset();
 		}

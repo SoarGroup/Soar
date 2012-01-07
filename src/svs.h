@@ -55,13 +55,15 @@ public:
 class svs;
 
 /*
- Description of a single output dimension.
+ A single output dimension is described by a name and minimum, maximum,
+ default, and increment values.
 */
 struct output_dim_spec {
 	std::string name;
 	float min;
 	float max;
 	float def;
+	float incr;
 };
 
 typedef std::vector<output_dim_spec> output_spec;
