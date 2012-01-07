@@ -14,8 +14,6 @@
 #include "scene.h"
 #include "filter_table.h"
 
-#define DBG cerr
-
 using namespace std;
 using namespace arma;
 
@@ -249,7 +247,6 @@ void EM::estep() {
 	}
 	set<int>::iterator i = stale_models.begin();
 	advance(i, rand() % stale_models.size());
-	DBG << "estep: updating model " << *i << endl;
 	update_Py_z(*i);
 	stale_models.erase(i);
 	*/
@@ -275,7 +272,7 @@ bool EM::mstep() {
 	bool changed = false;
 	set<int>::iterator i;
 	for (i = stale_models.begin(); i != stale_models.end(); ++i) {
-		RPLSModel *m = models[*i];
+		LRModel *m = models[*i];
 		DATAVIS("BEGIN 'model " << *i << "'" << endl)
 		if (m->fit()) {
 			changed = true;
@@ -321,7 +318,7 @@ bool EM::unify_or_add_model() {
 		*/
 		for (int i = 0; i < nmodels; ++i) {
 			DATAVIS("BEGIN 'extended model " << i << "'" << endl)
-			RPLSModel *nmodel = new RPLSModel(*models[i]);
+			LRModel *nmodel = models[i]->copy();
 			for (int j = 0; j < K; ++j) {
 				nmodel->add_example(noise_data[close(j)]);
 			}
@@ -342,7 +339,7 @@ bool EM::unify_or_add_model() {
 			}
 		}
 		
-		RPLSModel *m = new RPLSModel(xdata, ydata);
+		LRModel *m = new PCRModel(xdata, ydata);
 		
 		DATAVIS("BEGIN 'potential model'" << endl)
 		for (int i = 0; i < K; ++i) {
@@ -361,8 +358,6 @@ bool EM::unify_or_add_model() {
 		DATAVIS("END" << endl)
 		
 		if (good_model) {
-			DBG << "Adding new linear model" << endl;
-
 			models.push_back(m);
 			mark_model_stale(nmodels);
 			++nmodels;
@@ -385,6 +380,7 @@ void EM::mark_model_stale(int i) {
 }
 
 bool EM::predict(const floatvec &x, float &y) {
+	//timer t("EM PREDICT TIME");
 	if (dtree == NULL || ndata == 0) {
 		return false;
 	}
@@ -536,7 +532,7 @@ void EM::save(ostream &os) const {
 		i->save(os);
 	}
 	
-	std::vector<RPLSModel*>::const_iterator j;
+	std::vector<LRModel*>::const_iterator j;
 	os << models.size() << endl;
 	for (j = models.begin(); j != models.end(); ++j) {
 		(**j).save(os);
@@ -566,7 +562,7 @@ void EM::load(istream &is) {
 	is >> nmodels;
 	for (int i = 0; i < nmodels; ++i) {
 		DATAVIS("BEGIN 'model " << i << "'" << endl)
-		RPLSModel *m = new RPLSModel(xdata, ydata);
+		LRModel *m = new PCRModel(xdata, ydata);
 		m->load(is);
 		models.push_back(m);
 		DATAVIS("END" << endl)

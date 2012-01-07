@@ -37,7 +37,7 @@ public:
 	void load(std::istream &is);
 	
 private:
-	std::vector<RPLSModel*> models;
+	std::vector<LRModel*> models;
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;
 	

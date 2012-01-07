@@ -82,60 +82,18 @@ void remove_static(mat &X, mat &Xout, vector<int> &dynamic) {
 	}
 }
 
-static RInside *R = NULL;
-int RPLSModel::count = 0;
+LRModel::LRModel(const mat &xdata, const vec &ydata) 
+: xdata(xdata), ydata(ydata), constval(0.0), isconst(true), error(INF), refit(true)
+{}
 
-Rcpp::NumericMatrix to_rmat(const mat &m) {
-	Rcpp::NumericMatrix rm(m.n_rows, m.n_cols);
-	for (int i = 0; i < m.n_rows; ++i) {
-		for (int j = 0; j < m.n_cols; ++j) {
-			rm(i, j) = m(i, j);
-		}
-	}
-	return rm;
-}
-
-Rcpp::NumericMatrix to_rmat(const rowvec &v) {
-	Rcpp::NumericMatrix rm(1, v.n_elem);
-	for (int i = 0; i < v.n_elem; ++i) {
-		rm(0, i) = v(i);
-	}
-	return rm;
-}
-
-RPLSModel::RPLSModel(const mat &xdata, const vec &ydata) 
-: constval(0.0), isconst(true), error(INF), refit(true),
-  xdata(xdata), ydata(ydata)
-{
-	if (R == NULL) {
-		R = new RInside(0, NULL);
-		srand(1); // because RInside constructor calls srand with current time
-		R->parseEvalQ("set.seed(0)");
-		R->parseEvalQ("suppressMessages(library('pls'))");
-	}
-	
-	stringstream ss;
-	ss << "plsobj" << count++;
-	plsobj = ss.str();
-}
-
-RPLSModel::RPLSModel(const RPLSModel &m)
+LRModel::LRModel(const LRModel &m)
 : xdata(m.xdata), ydata(m.ydata), constval(m.constval), members(m.members), isconst(m.isconst),
-  xtotals(m.xtotals), center(m.center),
-  error(INF), refit(true)
-{
-	stringstream ss;
-	ss << "plsobj" << count++;
-	plsobj = ss.str();
-}
+  xtotals(m.xtotals), center(m.center), error(INF), refit(true)
+{}
 
-RPLSModel::~RPLSModel() {
-	stringstream ss;
-	ss << "rm(" << plsobj << ")";
-	R->parseEvalQ(ss.str());
-}
+LRModel::~LRModel() { }
 
-void RPLSModel::add_example(int i) {
+void LRModel::add_example(int i) {
 	if (find(members.begin(), members.end(), i) != members.end()) {
 		return;
 	}
@@ -181,7 +139,7 @@ void RPLSModel::add_example(int i) {
 	}
 }
 
-void RPLSModel::del_example(int i) {
+void LRModel::del_example(int i) {
 	members.erase(remove(members.begin(), members.end(), i), members.end());
 	DATAVIS("'training set' '")
 	for (int j = 0; j < members.size(); ++j) {
@@ -220,15 +178,18 @@ void RPLSModel::del_example(int i) {
 	DATAVIS("isconst " << isconst << endl)
 }
 
-void RPLSModel::refresh_error() {
-	Rcpp::NumericMatrix x(members.size(), xdata.n_cols);
-	for (int i = 0; i < members.size(); ++i) {
-		for (int j = 0; j < xdata.n_cols; ++j) {
-			x(i, j) = xdata(members[i], j);
-		}
+void LRModel::refresh_error() {
+	if (xdata.n_rows == 0) {
+		error = INF;
 	}
+	
+	mat X(members.size(), xdata.n_cols);
+	for (int i = 0; i < members.size(); ++i) {
+		X.row(i) = xdata.row(members[i]);
+	}
+	
 	vec predictions(members.size());
-	if (!predict(x, predictions)) {
+	if (!predict(X, predictions)) {
 		error = INF;
 	} else {
 		error = 0.;
@@ -239,18 +200,173 @@ void RPLSModel::refresh_error() {
 	DATAVIS("'avg error' " << error / members.size() << endl)
 }
 
-bool RPLSModel::fit() {
-	if (!refit || isconst) {
-		return false;
+void LRModel::save(ostream &os) const {
+	save_vector(members, os);
+}
+
+void LRModel::load(istream &is) {
+	int n, x;
+	is >> n;
+	members.reserve(n);
+	for (int i = 0; i < n; ++i) {
+		is >> x;
+		add_example(x);
+	}
+	fit();
+}
+
+void LRModel::fill_data(mat &X, vec &y) const {
+	if (members.empty()) {
+		return;
+	}
+	X.set_size(members.size(), xdata.n_cols);
+	y.set_size(members.size(), 1);
+	
+	for (int i = 0; i < members.size(); ++i) {
+		X.row(i) = xdata.row(members[i]);
+		y(i) = ydata(members[i]);
+	}
+}
+
+PCRModel::PCRModel(const mat &xdata, const vec &ydata) 
+: LRModel(xdata, ydata)
+{
+	ncomp = 2;  // temporary
+}
+
+PCRModel::PCRModel(const PCRModel &m)
+: LRModel(m), V(m.V), C(m.C), ncomp(m.ncomp), means(m.means), stdevs(m.stdevs)
+{}
+
+void PCRModel::fit_me() {
+	mat X, U, Z, V1;
+	vec y, s;
+	
+	fill_data(X, y);
+	
+	// center X
+	means = mean(X);
+	stdevs = stddev(X);
+	
+	/*
+	 If any columns are uniform, then standard deviation will be
+	 zero and cause division by zero. These columns will be zeroed
+	 out after subtracting their mean anyway, so just set their
+	 divisors to 0.
+	*/
+	for (int i = 0; i < X.n_cols; ++i) {
+		if (stdevs(i) == 0.0) {
+			stdevs(i) = 1.0;
+		}
 	}
 	
-	Rcpp::NumericMatrix x(members.size(), xdata.n_cols);
-	Rcpp::NumericVector y(members.size());
-	for (int i = 0; i < members.size(); ++i) {
-		for (int j = 0; j < xdata.n_cols; ++j) {
-			x(i, j) = xdata(members[i], j);
+	for (int i = 0; i < X.n_rows; ++i) {
+		X.row(i) -= means;
+		X.row(i) /= stdevs;
+	}
+	
+	if (!svd(U, s, V1, X)) {
+		assert(false);
+	}
+	V = V1;
+	
+	//cout << "U" << endl << U << endl;
+	//cout << "V" << endl << V << endl;
+	//cout << "s" << endl << s << endl;
+	
+	Z = ones<mat>(X.n_rows, ncomp + 1);
+	Z.cols(0, ncomp - 1) = X * V.cols(0, ncomp - 1);
+	
+	//cout << "Z" << endl << Z << endl;
+	
+	mat temp = solve(Z, y);
+	C = temp.col(0);
+	//cout << "C" << endl << C << endl;
+}
+
+double PCRModel::predict_me(const rowvec &x) {
+	rowvec xc = (x - means) / stdevs;
+	rowvec z = ones<rowvec>(1, ncomp+1);
+	
+	for (int i = 0; i < ncomp; ++i) {
+		z(i) = dot(xc, V.col(i));
+	}
+	//cout << "z" << endl << z << endl;
+	return dot(z, C);
+}
+
+bool PCRModel::predict_me(const mat &X, vec &result) {
+	mat Xc(X.n_rows, X.n_cols);
+	
+	for (int i = 0; i < X.n_rows; ++i) {
+		Xc.row(i) = (X.row(i) - means) / stdevs;
+	}
+	
+	mat Z = ones<mat>(X.n_rows, ncomp + 1);
+	Z.cols(0, ncomp - 1) = Xc * V.cols(0, ncomp - 1);
+	result = Z * C;
+	return true;
+}
+
+static RInside *R = NULL;
+int PLSModel::count = 0;
+
+Rcpp::NumericMatrix to_rmat(const mat &m) {
+	Rcpp::NumericMatrix rm(m.n_rows, m.n_cols);
+	for (int i = 0; i < m.n_rows; ++i) {
+		for (int j = 0; j < m.n_cols; ++j) {
+			rm(i, j) = m(i, j);
 		}
-		y(i) = ydata(members[i]);
+	}
+	return rm;
+}
+
+Rcpp::NumericMatrix to_rmat(const rowvec &v) {
+	Rcpp::NumericMatrix rm(1, v.n_elem);
+	for (int i = 0; i < v.n_elem; ++i) {
+		rm(0, i) = v(i);
+	}
+	return rm;
+}
+
+PLSModel::PLSModel(const mat &xdata, const vec &ydata) 
+: LRModel(xdata, ydata)
+{
+	if (R == NULL) {
+		R = new RInside(0, NULL);
+		srand(1); // because RInside constructor calls srand with current time
+		R->parseEvalQ("set.seed(0)");
+		R->parseEvalQ("suppressMessages(library('pls'))");
+	}
+	
+	stringstream ss;
+	ss << "plsobj" << count++;
+	plsobj = ss.str();
+}
+
+PLSModel::PLSModel(const PLSModel &m)
+: LRModel(m)
+{
+	stringstream ss;
+	ss << "plsobj" << count++;
+	plsobj = ss.str();
+}
+
+PLSModel::~PLSModel() {
+	stringstream ss;
+	ss << "rm(" << plsobj << ")";
+	R->parseEvalQ(ss.str());
+}
+
+void PLSModel::fit_me() {
+	const vector<int> &mems = get_members();
+	Rcpp::NumericMatrix x(mems.size(), xdata.n_cols);
+	Rcpp::NumericVector y(mems.size());
+	for (int i = 0; i < mems.size(); ++i) {
+		for (int j = 0; j < xdata.n_cols; ++j) {
+			x(i, j) = xdata(mems[i], j);
+		}
+		y(i) = ydata(mems[i]);
 	}
 	(*R)["X"] = x;
 	(*R)["y"] = y;
@@ -258,18 +374,9 @@ bool RPLSModel::fit() {
 	stringstream ss;
 	ss << plsobj << "<-plsr(y ~ X, data=traindata)";
 	R->parseEvalQ(ss.str());
-
-	refresh_error();
-	refit = false;
-	return true;
 }
 
-bool RPLSModel::predict(const Rcpp::NumericMatrix &x, vec &result) {
-	if (isconst) {
-		result.fill(constval);
-		return true;
-	}
-	
+bool PLSModel::predict_meat(const Rcpp::NumericMatrix &x, vec &result) {
 	(*R)["X"] = x;
 	R->parseEvalQ("testdata <- data.frame(X = I(X))");
 	
@@ -302,26 +409,19 @@ bool RPLSModel::predict(const Rcpp::NumericMatrix &x, vec &result) {
 	return valid;
 }
 
-bool RPLSModel::predict(const mat &x, vec &result) {
-	result.resize(x.n_rows);
-	if (refit) {
-		fit();
-	}
-	return predict(to_rmat(x), result);
+bool PLSModel::predict_me(const mat &x, vec &result) {
+	return predict_meat(to_rmat(x), result);
 }
 
-double RPLSModel::predict(const rowvec &x) {
+double PLSModel::predict_me(const rowvec &x) {
 	vec res(1);
-	if (refit) {
-		fit();
-	}
-	if (!predict(to_rmat(x), res)) {
+	if (!predict_meat(to_rmat(x), res)) {
 		return numeric_limits<double>::signaling_NaN();
 	}
 	return res(0);
 }
 
-void RPLSModel::print_loadings() {
+void PLSModel::print_loadings() {
 	stringstream ss;
 	ss << "loadings(" << plsobj << ")";
 	Rcpp::NumericMatrix loadings = R->parseEval(ss.str());
@@ -334,17 +434,3 @@ void RPLSModel::print_loadings() {
 }
 
 
-void RPLSModel::save(ostream &os) const {
-	save_vector(members, os);
-}
-
-void RPLSModel::load(istream &is) {
-	int n, x;
-	is >> n;
-	members.reserve(n);
-	for (int i = 0; i < n; ++i) {
-		is >> x;
-		add_example(x);
-	}
-	fit();
-}
