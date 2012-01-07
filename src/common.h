@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+#include <iostream>
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
@@ -21,7 +22,7 @@ std::string getnamespace();
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
 
-#if 1
+#if 0
 #define DATAVIS(x) get_datavis() << x;
 #else
 #define DATAVIS(x)
@@ -29,8 +30,18 @@ std::ofstream& get_datavis();
 
 class timer {
 public:
-	timer() {}
+	timer() : name("") {}
+
+	timer(const std::string &name) : name(name) {
+		gettimeofday(&t1, NULL);
+	}
 	
+	~timer() {
+		if (!name.empty()) {
+			std::cerr << "TIMER " << name << ": " << stop() << std::endl;
+		}
+	}
+
 	void start() {
 		gettimeofday(&t1, NULL);
 	}
@@ -42,6 +53,8 @@ public:
 		return t3.tv_sec + t3.tv_usec / 1000000.0;
 	}
 	
+private:
+	std::string name;
 	timeval t1;
 };
 
