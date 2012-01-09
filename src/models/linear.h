@@ -8,7 +8,7 @@
 
 void lsqr(const arma::mat &X, const arma::mat &Y, const arma::vec &w, const arma::rowvec &x, arma::rowvec &yout);
 void ridge(const arma::mat &X, const arma::mat &Y, const arma::vec &w, const arma::rowvec &x, arma::rowvec &yout);
-void remove_static(arma::mat &X, arma::mat &Xout, std::vector<int> &dynamic);
+void remove_static(const arma::mat &X, arma::mat &Xout, std::vector<int> &nonstatic);
 
 class LRModel {
 public:
@@ -16,7 +16,7 @@ public:
 	LRModel(const LRModel &m);
 	virtual ~LRModel();
 	
-	void add_example(int i);
+	void add_example(int i, bool update_refit);
 	void del_example(int i);
 	
 	int size() {
@@ -36,28 +36,29 @@ public:
 	}
 	
 	double predict(const arma::rowvec &x) {
-		if (refit) {
-			fit();
-		}
 		if (isconst) {
 			return constval;
+		}
+		if (refit) {
+			fit();
 		}
 		return predict_me(x);
 	}
 	
 	bool predict(const arma::mat &X, arma::vec &result) {
+		result.set_size(X.n_rows);
+		if (isconst) {
+			result.fill(constval);
+			return true;
+		}
 		if (refit) {
 			fit();
 		}
-		if (isconst) {
-			return constval;
-		}
-		result.resize(X.n_rows);
 		return predict_me(X, result);
 	}
 	
 	bool fit() { 
-		if (!refit || isconst) {
+		if (isconst) {
 			return false;
 		}
 		fit_me();
@@ -105,9 +106,8 @@ public:
 	}
 	
 private:
-	arma::mat V;
-	arma::vec C;
-	int ncomp;
+	arma::vec beta;
+	double intercept;
 	arma::rowvec means, stdevs;
 };
 

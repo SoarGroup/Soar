@@ -11,8 +11,82 @@ using namespace arma;
 
 const double INF = numeric_limits<double>::infinity();
 const double RLAMBDA = 0.0000001;
+
+/*
+ A local model does not need to be refit to data if its prediction error
+ is lower than this value.
+*/
 const double REFIT_ABS_THRESH = 1e-5;
+
+/*
+ A local model does not need to be refit to data if its prediction error
+ increases by less than this factor with a new data point.
+*/
 const double REFIT_MUL_THRESH = 1.0001;
+
+/*
+ When solving linear systems, columns whose min and max values are within
+ this factor of each other are removed.
+*/
+const double SAME_THRESH = 1 + 1e-10;
+
+/*
+ When solving linear systems, elements whose absolute value is smaller
+ than this are zeroed.
+*/
+const double ZERO_THRESH = 1e-15;
+
+/*
+ Output a matrix composed only of those columns in the input matrix with
+ significantly different values, meaning the maximum absolute value of
+ the column is greater than SAME_THRESH times the minimum absolute value.
+*/
+void remove_static(const mat &X, mat &Xout, vector<int> &nonstatic_cols) {
+	for (int i = 0; i < X.n_cols; ++i) {
+		vec c = abs(X.col(i));
+		if (max(c) > min(c) * SAME_THRESH) {
+			nonstatic_cols.push_back(i);
+		}
+	}
+	Xout.reshape(X.n_rows, nonstatic_cols.size());
+	for (int i = 0; i < nonstatic_cols.size(); ++i) {
+		Xout.col(i) = X.col(nonstatic_cols[i]);
+	}
+}
+
+/*
+ Performs standard linear regression with arma::solve, but cleans up input
+ data first to avoid instability. This consists of:
+ 
+ 1. Setting elements whose absolute values are smaller than ZERO_THRESH to 0
+ 2. collapsing all columns whose elements are identical into a single constant column.
+*/
+bool solve2(const mat &X, const vec &y, vec &coefs, double &intercept) {
+	mat X1 = X, X2, C;
+	vector<int> nonstatic;
+	
+	for (int i = 0; i < X.n_rows; ++i) {
+		for (int j = 0; j < X.n_cols; ++j) {
+			if (abs(X1(i, j)) < ZERO_THRESH) {
+				X1(i, j) = 0.0;
+			}
+		}
+	}
+	
+	remove_static(X1, X2, nonstatic);
+	X2.insert_cols(X2.n_cols, ones<vec>(X2.n_rows, 1));
+	if (!solve(C, X2, y)) {
+		return false;
+	}
+	
+	coefs.set_size(X.n_cols, 1);
+	coefs.fill(0.0);
+	for (int i = 0; i < nonstatic.size(); ++i) {
+		coefs(nonstatic[i]) = C(i, 0);
+	}
+	intercept = C(C.n_rows - 1, 0);
+	return true;
+}
 
 void lsqr(const mat &X, const mat &Y, const vec &w, const rowvec &x, rowvec &yout) {
 	mat X1 = X;
@@ -64,23 +138,6 @@ void ridge(const mat &X, const mat &Y, const vec &w, const rowvec &x, rowvec &yo
 	yout = (x - mean(X, 0)) * C + mean(Y, 0);
 }
 
-/* Output a matrix composed only of those columns in the input
-   matrix with different values.
-*/
-void remove_static(mat &X, mat &Xout, vector<int> &dynamic) {
-	for (int c = 0; c < X.n_cols; ++c) {
-		for (int r = 1; r < X.n_rows; ++r) {
-			if (X(r, c) != X(0, c)) {
-				dynamic.push_back(c);
-				break;
-			}
-		}
-	}
-	Xout.reshape(X.n_rows, dynamic.size());
-	for (int i = 0; i < dynamic.size(); ++i) {
-		Xout.col(i) = X.col(dynamic[i]);
-	}
-}
 
 LRModel::LRModel(const mat &xdata, const vec &ydata) 
 : xdata(xdata), ydata(ydata), constval(0.0), isconst(true), error(INF), refit(true)
@@ -93,7 +150,7 @@ LRModel::LRModel(const LRModel &m)
 
 LRModel::~LRModel() { }
 
-void LRModel::add_example(int i) {
+void LRModel::add_example(int i, bool update_refit) {
 	if (find(members.begin(), members.end(), i) != members.end()) {
 		return;
 	}
@@ -111,6 +168,9 @@ void LRModel::add_example(int i) {
 		isconst = true;
 		constval = ydata(i);
 		error = 0.0;
+		if (update_refit) {
+			refit = false;
+		}
 		return;
 	}
 	
@@ -118,24 +178,29 @@ void LRModel::add_example(int i) {
 	center = xtotals / members.size();
 	if (isconst && ydata(i) != constval) {
 		isconst = false;
+		if (update_refit) {
+			refit = true;
+		}
 	}
 	
 	DATAVIS("isconst " << isconst << endl)
-	if (!isconst) {
+	if (isconst) {
+		DATAVIS("constval " << constval << endl)
+	} else if (update_refit) {
 		double e = pow(predict(xdata.row(i)) - ydata(i), 2);
-		/*
-		 Only refit the model if the average error increases
-		 significantly after adding the data point.
-		*/
-		double olderror = error / (members.size() - 1);
-		double newerror = (error + e) / members.size();
-		if (newerror > REFIT_ABS_THRESH && newerror > REFIT_MUL_THRESH * olderror) {
-			refit = true;
+		if (!refit) {
+			/*
+			 Only refit the model if the average error increases
+			 significantly after adding the data point.
+			*/
+			double olderror = error / (members.size() - 1);
+			double newerror = (error + e) / members.size();
+			if (newerror > REFIT_ABS_THRESH && newerror > REFIT_MUL_THRESH * olderror) {
+				refit = true;
+			}
 		}
 		error += e;
-		DATAVIS("'avg error' " << newerror << endl)
-	} else {
-		DATAVIS("constval " << constval << endl)
+		DATAVIS("'avg error' " << error / members.size() << endl)
 	}
 }
 
@@ -210,7 +275,7 @@ void LRModel::load(istream &is) {
 	members.reserve(n);
 	for (int i = 0; i < n; ++i) {
 		is >> x;
-		add_example(x);
+		add_example(x, false);
 	}
 	fit();
 }
@@ -229,18 +294,18 @@ void LRModel::fill_data(mat &X, vec &y) const {
 }
 
 PCRModel::PCRModel(const mat &xdata, const vec &ydata) 
-: LRModel(xdata, ydata)
-{
-	ncomp = 2;  // temporary
-}
+: LRModel(xdata, ydata), intercept(0.0)
+{}
 
 PCRModel::PCRModel(const PCRModel &m)
-: LRModel(m), V(m.V), C(m.C), ncomp(m.ncomp), means(m.means), stdevs(m.stdevs)
+: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means), stdevs(m.stdevs)
 {}
 
 void PCRModel::fit_me() {
-	mat X, U, Z, V1;
-	vec y, s;
+	DATAVIS("BEGIN PCR" << endl)
+	DATAVIS("'num fits' %+1" << endl)
+	mat X, loadings, scores;
+	vec y, variances;
 	
 	fill_data(X, y);
 	
@@ -265,34 +330,31 @@ void PCRModel::fit_me() {
 		X.row(i) /= stdevs;
 	}
 	
-	if (!svd(U, s, V1, X)) {
+	if (!princomp(loadings, scores, variances, X)) {
 		assert(false);
 	}
-	V = V1;
 	
-	//cout << "U" << endl << U << endl;
-	//cout << "V" << endl << V << endl;
-	//cout << "s" << endl << s << endl;
+	/*
+	 This is a hack. In the future determine ncomp by cross validation.
+	*/
+	int ncomp;
+	for (ncomp = 1; ncomp < variances.n_elem; ++ncomp) {
+		if (variances(ncomp) < 0.1) {
+			break;
+		}
+	}
+	DATAVIS("ncomp " << ncomp << endl)
 	
-	Z = ones<mat>(X.n_rows, ncomp + 1);
-	Z.cols(0, ncomp - 1) = X * V.cols(0, ncomp - 1);
-	
-	//cout << "Z" << endl << Z << endl;
-	
-	mat temp = solve(Z, y);
-	C = temp.col(0);
-	//cout << "C" << endl << C << endl;
+	loadings.resize(loadings.n_rows, ncomp);
+	scores.resize(scores.n_rows, ncomp);
+	vec coefs;
+	solve2(scores, y, coefs, intercept);
+	beta = loadings * coefs;
+	DATAVIS("END" << endl)
 }
 
 double PCRModel::predict_me(const rowvec &x) {
-	rowvec xc = (x - means) / stdevs;
-	rowvec z = ones<rowvec>(1, ncomp+1);
-	
-	for (int i = 0; i < ncomp; ++i) {
-		z(i) = dot(xc, V.col(i));
-	}
-	//cout << "z" << endl << z << endl;
-	return dot(z, C);
+	return dot((x - means) / stdevs, beta) + intercept;
 }
 
 bool PCRModel::predict_me(const mat &X, vec &result) {
@@ -302,9 +364,11 @@ bool PCRModel::predict_me(const mat &X, vec &result) {
 		Xc.row(i) = (X.row(i) - means) / stdevs;
 	}
 	
-	mat Z = ones<mat>(X.n_rows, ncomp + 1);
-	Z.cols(0, ncomp - 1) = Xc * V.cols(0, ncomp - 1);
-	result = Z * C;
+	result = Xc * beta;
+	vec::iterator i;
+	for (i = result.begin(); i != result.end(); ++i) {
+		*i += intercept;
+	}
 	return true;
 }
 

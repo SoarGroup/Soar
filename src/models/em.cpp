@@ -31,7 +31,7 @@ const int INIT_NDATA = 1;
 const int INIT_NMODELS = 1;
 const bool TEST_ELIGIBILITY = false;
 
-int dbgcount = 0;
+typedef PCRModel LinearModel;
 
 double gausspdf(double x, double mean) {
 	return (1. / STD * SQRT2PI) * exp(-((x - mean) * (x - mean) / (2 * STD * STD)));
@@ -191,7 +191,7 @@ void EM::update_MAP(const set<int> &points) {
 			if (now != -1) {
 				stale_models.insert(now);
 				DATAVIS("BEGIN 'model " << now << "'" << endl)
-				models[now]->add_example(*j);
+				models[now]->add_example(*j, true);
 				DATAVIS("END" << endl)
 			}
 		}
@@ -285,6 +285,10 @@ bool EM::mstep() {
 }
 
 bool EM::unify_or_add_model() {
+	if (ndata < K) {
+		return false;
+	}
+	
 	vector<int> noise_data;
 	for (int i = 0; i < ndata; ++i) {
 		if (dtree_insts[i].cat == -1) {
@@ -298,18 +302,29 @@ bool EM::unify_or_add_model() {
 	}
 	DATAVIS("'" << endl)
 	
-	int nnoise = noise_data.size();
-	if (nnoise < K) {
+	if (noise_data.size() < K) {
 		return false;
 	}
 	
 	for (int n = 0; n < SEL_NOISE_MAX_TRIES; ++n) {
-		const rowvec &seed = xdata.row(noise_data[rand() % nnoise]);
-		vec dists(nnoise);
-		for (int i = 0; i < nnoise; ++i) {
-			dists(i) = distsq(xdata.row(noise_data[i]), seed);
+		vector<int> train;
+		if (noise_data.size() > K) {
+			/*
+			 Choose a random noise point, then choose the
+			 K closest noise points as training data.
+			*/
+			const rowvec &seed = xdata.row(noise_data[rand() % noise_data.size()]);
+			vec dists(noise_data.size());
+			for (int i = 0; i < noise_data.size(); ++i) {
+				dists(i) = distsq(xdata.row(noise_data[i]), seed);
+			}
+			uvec close = sort_index(dists);
+			for (int i = 0; i < K; ++i) {
+				train.push_back(noise_data[close(i)]);
+			}
+		} else {
+			train = noise_data;
 		}
-		uvec close = sort_index(dists);
 		
 		/*
 		 Try to add noise data to each current model and refit. If the
@@ -319,8 +334,8 @@ bool EM::unify_or_add_model() {
 		for (int i = 0; i < nmodels; ++i) {
 			DATAVIS("BEGIN 'extended model " << i << "'" << endl)
 			LRModel *nmodel = models[i]->copy();
-			for (int j = 0; j < K; ++j) {
-				nmodel->add_example(noise_data[close(j)]);
+			for (int j = 0; j < train.size(); ++j) {
+				nmodel->add_example(train[j], false);
 			}
 			nmodel->fit();
 			DATAVIS("END" << endl)
@@ -339,18 +354,17 @@ bool EM::unify_or_add_model() {
 			}
 		}
 		
-		LRModel *m = new PCRModel(xdata, ydata);
+		LRModel *m = new LinearModel(xdata, ydata);
 		
 		DATAVIS("BEGIN 'potential model'" << endl)
-		for (int i = 0; i < K; ++i) {
-			int j = noise_data[close(i)];
-			m->add_example(j);
+		for (int i = 0; i < train.size(); ++i) {
+			m->add_example(train[i], false);
 		}
 		m->fit();
 		bool good_model = true;
-		for (int i = 0; i < K; ++i) {
-			int j = noise_data[close(i)];
-			if (gausspdf(ydata(j), m->predict(xdata.row(j))) < PNOISE) {
+		for (int i = 0; i < train.size(); ++i) {
+			double p = gausspdf(ydata(train[i]), m->predict(xdata.row(train[i])));
+			if (p < PNOISE) {
 				good_model = false;
 				break;
 			}
@@ -562,7 +576,7 @@ void EM::load(istream &is) {
 	is >> nmodels;
 	for (int i = 0; i < nmodels; ++i) {
 		DATAVIS("BEGIN 'model " << i << "'" << endl)
-		LRModel *m = new PCRModel(xdata, ydata);
+		LRModel *m = new LinearModel(xdata, ydata);
 		m->load(is);
 		models.push_back(m);
 		DATAVIS("END" << endl)
