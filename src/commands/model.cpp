@@ -68,7 +68,6 @@ public:
 	}
 	
 	bool update() {
-		cout << "MODEL COMMAND UPDATE" << endl;
 		string name;
 		
 		if (!changed() && !broken) {
@@ -79,7 +78,6 @@ public:
 			delete m;
 		}
 		m = parse_model_struct(si, root, name, get_state()->get_scene());
-		cout << "PARSED" << endl;
 		if (m == NULL) {
 			set_status("invalid syntax");
 			broken = true;
