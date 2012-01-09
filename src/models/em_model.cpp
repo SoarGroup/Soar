@@ -20,7 +20,7 @@ public:
 		em = new EM(scn);
 		
 		stringstream ss;
-		ss << "/tmp/" << name << ".em";
+		ss << "models/" << name << ".em";
 		savepath = ss.str();
 		
 		ifstream is(savepath.c_str());
