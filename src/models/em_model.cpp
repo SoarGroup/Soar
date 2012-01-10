@@ -19,18 +19,6 @@ public:
 		revisions_wme = si->make_wme(result_id, "revisions", revisions);
 		em = new EM(scn);
 		
-		stringstream ss;
-		ss << "models/" << name << ".em";
-		savepath = ss.str();
-		
-		ifstream is(savepath.c_str());
-		if (is.is_open()) {
-			DATAVIS("BEGIN " << name << endl)
-			em->load(is);
-			cout << "LOADED MODEL" << endl;
-			DATAVIS("END" << endl)
-		}
-		
 		const filter_table &t = get_filter_table();
 		t.get_all_atoms(scn, all_atoms);
 		vector<vector<string> >::const_iterator i;
@@ -47,6 +35,19 @@ public:
 			vector<string> params;
 			t.get_params(*j, params);
 			pred_params[*j] = params;
+		}
+		
+		stringstream ss;
+		ss << "models/" << name << ".em";
+		savepath = ss.str();
+		
+		ifstream is(savepath.c_str());
+		if (is.is_open()) {
+			DATAVIS("BEGIN " << name << endl)
+			em->load(is);
+			update_tested_atoms();
+			cout << "LOADED MODEL" << endl;
+			DATAVIS("END" << endl)
 		}
 	}
 
