@@ -1,5 +1,6 @@
 from __future__ import print_function
 import sys, os
+import random
 import fcntl
 import Tkinter as tk
 
@@ -22,12 +23,6 @@ def cube_verts(h, w, d):
 def overlap(a1, a2, b1, b2):
 	return a1 <= b1 < a2 or b1 <= a1 < b2
 
-def intersects(amin, amax, bmin, bmax):
-	for i in range(3):
-		if not overlap(amin[i], amax[i], bmin[i], bmax[i]):
-			return False
-	return True
-
 def dist(p1, p2):
 	return sum((x1 - x2) ** 2 for x1, x2 in zip(p1, p2))
 	
@@ -39,7 +34,6 @@ class Cube:
 		self.verts = cube_verts(h, w, d)
 		self.dims = (h, w, d)
 		self.pos = [0.0, 0.0, 0.0]
-		self.draw()
 		self.dirty = True
 	
 	def draw(self):
@@ -68,12 +62,16 @@ class Cube:
 	def move(self, offsets):
 		for i in range(3):
 			self.pos[i] += offsets[i]
-		self.update_canvas()
+		self.dirty = True
+	
+	def move_to(self, pos):
+		self.pos = pos
 		self.dirty = True
 
 	def update_canvas(self):
-		self.canvas.delete(self.rid)
-		self.canvas.delete(self.tid)
+		if hasattr(self, 'rid'):
+			self.canvas.delete(self.rid)
+			self.canvas.delete(self.tid)
 		self.draw()
 	
 	def min(self):
@@ -81,6 +79,16 @@ class Cube:
 	
 	def max(self):
 		return [ self.pos[i] + self.dims[i] / 2 for i in range(3) ]
+		
+	def intersects(self, b):
+		amin = self.min()
+		amax = self.max()
+		bmin = b.min()
+		bmax = b.max()
+		for i in range(3):
+			if not overlap(amin[i], amax[i], bmin[i], bmax[i]):
+				return False
+		return True
 		
 # This world requires the agent to "lock" a cube to the cursor to move it. No collisions occur.
 class World1:
@@ -120,12 +128,9 @@ class World2:
 	
 	def input(self, locked, d):
 		self.cursor.move(d)
-		cursormin = self.cursor.min()
-		cursormax = self.cursor.max()
+		self.cursor.update_canvas()
 		for c in self.cubes:
-			cubemin = c.min()
-			cubemax = c.max()
-			if intersects(cursormin, cursormax, cubemin, cubemax):
+			if self.cursor.intersects(c):
 				# There are six possible positions for the cube that resolve the collision,
 				# 2 for each dimension. Move it to the closest one.
 				positions = []
@@ -140,7 +145,8 @@ class World2:
 				closest = min(zip(dists, positions))[1]
 				dpos = [x1 - x2 for x1, x2 in zip(closest, c.pos)]
 				c.move(dpos)
-				assert not intersects(cursormin, cursormax, c.min(), c.max())
+				c.update_canvas()
+				assert not self.cursor.intersects(c)
 		
 		self.print_sgel()
 	
@@ -194,16 +200,87 @@ class Input:
 			
 			if valid:
 				self.world.input(False, d)
+
+# Argument list has the following format:
+#
+# [random seed] [num cubes] [touching which cube] [touching which side]
+
+def make_world(canvas, args):
+	minpos = 0
+	maxpos = 200
+	
+	cubesize = 30
+	
+	if len(args) < 2:
+		random.seed(1)
+		ncubes = 2
+	else:
+		random.seed(int(args[0]))
+		ncubes = int(args[1])
+	
+	while True:
+		cubes = []
+		
+		while len(cubes) < ncubes:
+			if len(cubes) == 0:
+				name = 'cur'
+			else:
+				name = 'c{}'.format(len(cubes))
+			
+			x = random.randint(minpos, maxpos)
+			y = random.randint(minpos, maxpos)
+			c = Cube(name, canvas, cubesize, cubesize, cubesize)
+			c.move_to([x, y, 0])
+			
+			bad = False
+			for c1 in cubes:
+				if c.intersects(c1):
+					bad = True
+					break
+			
+			if not bad:
+				cubes.append(c)
+		
+		if len(args) < 4:
+			return cubes
+		else:
+			cur = cubes[0]
+			tc = cubes[int(args[2])]
+			if args[3] == 'l':
+				x = tc.min()[0] - (cubesize / 2)
+				y = random.randint(tc.min()[1], tc.max()[1])
+			elif args[3] == 'r':
+				x = tc.max()[0] + (cubesize / 2)
+				y = random.randint(tc.min()[1], tc.max()[1])
+			elif args[3] == 't':
+				x = random.randint(tc.min()[0], tc.max()[0])
+				y = tc.min()[1] - (cubesize / 2)
+			elif args[3] == 'b':
+				x = random.randint(tc.min()[0], tc.max()[0])
+				y = tc.max()[1] + (cubesize / 2)
+			
+			cur.move_to([x, y, 0])
+			
+			# check for intersections
+			
+			bad = False
+			for c in cubes[1:]:
+				if cur.intersects(c):
+					bad = True
+					break
+			
+			if not bad:
+				return cubes
 			
 if __name__ == '__main__':
 	win = tk.Tk()
 	canvas = tk.Canvas(win)
 	canvas.pack(fill = tk.BOTH, expand = 1)
 	
-	cursor = Cube("cur", canvas, 20, 20, 20)
-	c1 = Cube("c1", canvas, 30, 30, 30)
-	c1.move([30, 0, 0])
-	w = World2(cursor, [c1])
+	cubes = make_world(canvas, sys.argv[1:])
+	for c in cubes:
+		c.update_canvas()
+	w = World2(cubes[0], cubes[1:])
 	input = Input(w)
 	
 	canvas.focus_set()

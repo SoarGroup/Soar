@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -m # for job control
+
 root=../../../../out
 export LD_LIBRARY_PATH=$root/lib:$HOME/local/lib:$LD_LIBRARY_PATH
 soar=$root/bin/cli
@@ -8,25 +10,48 @@ agent=agent/targets.soar
 export SVS_DATA_PIPE=/tmp/datavis
 #export SVS_DISPLAY_PIPE=/tmp/dispfifo
 
-
 # kill all old jobs first
 ps | awk '$4 == "run" && $1 != '"$$"' { system("kill " $1) }'
+rm -f env ctrl
 
 run_env() {
 	while [ ! -S env ]
 	do
-		sleep 1
+		sleep 0.5
 	done
-	socat unix-connect:env exec:'python targets.py'
+	socat unix-connect:env exec:"python targets.py $*"
 }
 
 run_remote() {
+	if [ -z "$1" ]
+	then
+		return
+	fi
+	
 	while [ ! -p ctrl ]
 	do
-		sleep 1
+		sleep 0.5
 	done
-	python remote.py
-	#cat remote.log >>ctrl
+	
+	case "$1" in
+	log)
+		cat remote.log >ctrl
+		return
+		;;
+	gui)
+		python remote.py
+		return
+		;;
+	fixed)
+		for i in `seq $2`
+		do
+			echo "$3 $4"
+		done >ctrl
+		;;
+	*)
+		echo "unknown remote argument $1" >&2
+		exit 1
+	esac
 }
 
 while test -n "$1"
@@ -35,19 +60,46 @@ do
 	-g)
 		debug=1
 		;;
+	-r)
+		remote_args="$2"
+		shift
+		;;
+	-e)
+		env_args="$2"
+		shift
+		;;
+	-m)
+		agent=agent/manual.soar
+		;;
+	*)
+		break
+		;;
 	esac
 	shift
 done
 
-run_env &
-run_remote &
+run_env $env_args &
+envpid=$!
+run_remote $remote_args &
+remotepid=$!
 
 if test "$debug" == "1"
 then
-	gdb --args $soar $agent
+	gdb --args $soar $agent "$@"
 else
-	$soar $agent
+	$soar -s $agent "$@"
+	#echo "$!" > soar.pid
+	#fg
+	#ltrace -c $soar $agent 2>soar.trace
 fi
 
-kill `ps | grep python | awk '{print $1}'`
+kill $envpid
+kill $remotepid
+
+pyprocs=`ps | awk '$4 == "python" {print $1}'`
+if [ -n "$pyprocs" ]
+then
+	kill $pyprocs
+fi
+
 rm -f env ctrl
