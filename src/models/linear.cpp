@@ -37,6 +37,12 @@ const double SAME_THRESH = 1 + 1e-10;
 const double ZERO_THRESH = 1e-15;
 
 /*
+ In PCR, discard any components with variance lower than this value. This
+ is a hack; in the future cross validation should be used.
+*/
+const double VARIANCE_THRESH = 1e-3;
+
+/*
  Output a matrix composed only of those columns in the input matrix with
  significantly different values, meaning the maximum absolute value of
  the column is greater than SAME_THRESH times the minimum absolute value.
@@ -293,6 +299,38 @@ void LRModel::fill_data(mat &X, vec &y) const {
 	}
 }
 
+double LRModel::predict(const rowvec &x) {
+	if (isconst) {
+		return constval;
+	}
+	if (refit) {
+		fit();
+	}
+	return predict_me(x);
+}
+
+bool LRModel::predict(const arma::mat &X, arma::vec &result) {
+	result.set_size(X.n_rows);
+	if (isconst) {
+		result.fill(constval);
+		return true;
+	}
+	if (refit) {
+		fit();
+	}
+	return predict_me(X, result);
+}
+
+bool LRModel::fit() {
+	if (isconst) {
+		return false;
+	}
+	fit_me();
+	refit = false;
+	refresh_error();
+	return true;
+}
+
 PCRModel::PCRModel(const mat &xdata, const vec &ydata) 
 : LRModel(xdata, ydata), intercept(0.0)
 {}
@@ -334,12 +372,9 @@ void PCRModel::fit_me() {
 		assert(false);
 	}
 	
-	/*
-	 This is a hack. In the future determine ncomp by cross validation.
-	*/
 	int ncomp;
 	for (ncomp = 1; ncomp < variances.n_elem; ++ncomp) {
-		if (variances(ncomp) < 0.1) {
+		if (variances(ncomp) < VARIANCE_THRESH) {
 			break;
 		}
 	}

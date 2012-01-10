@@ -274,7 +274,7 @@ bool EM::mstep() {
 	for (i = stale_models.begin(); i != stale_models.end(); ++i) {
 		LRModel *m = models[*i];
 		DATAVIS("BEGIN 'model " << *i << "'" << endl)
-		if (m->fit()) {
+		if (m->needs_refit() && m->fit()) {
 			changed = true;
 			stale_points[*i].insert(m->get_members().begin(), m->get_members().end());
 		}

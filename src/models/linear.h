@@ -16,9 +16,6 @@ public:
 	LRModel(const LRModel &m);
 	virtual ~LRModel();
 	
-	void add_example(int i, bool update_refit);
-	void del_example(int i);
-	
 	int size() {
 		return members.size();
 	}
@@ -35,38 +32,15 @@ public:
 		return center;
 	}
 	
-	double predict(const arma::rowvec &x) {
-		if (isconst) {
-			return constval;
-		}
-		if (refit) {
-			fit();
-		}
-		return predict_me(x);
+	bool needs_refit() const {
+		return refit;
 	}
 	
-	bool predict(const arma::mat &X, arma::vec &result) {
-		result.set_size(X.n_rows);
-		if (isconst) {
-			result.fill(constval);
-			return true;
-		}
-		if (refit) {
-			fit();
-		}
-		return predict_me(X, result);
-	}
-	
-	bool fit() { 
-		if (isconst) {
-			return false;
-		}
-		fit_me();
-		refit = false;
-		refresh_error();
-		return true;
-	}
-	
+	void add_example(int i, bool update_refit);
+	void del_example(int i);
+	double predict(const arma::rowvec &x);
+	bool predict(const arma::mat &X, arma::vec &result);
+	bool fit();
 	void fill_data(arma::mat &X, arma::vec &y) const;
 	void save(std::ostream &os) const;
 	// this has to be called right after the object is constructed
