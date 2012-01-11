@@ -69,6 +69,9 @@ class Cube:
 		self.dirty = True
 
 	def update_canvas(self):
+		if self.canvas == None:
+			return
+		
 		if hasattr(self, 'rid'):
 			self.canvas.delete(self.rid)
 			self.canvas.delete(self.tid)
@@ -155,24 +158,13 @@ class Input:
 		self.world = world
 		self.readbuf = ""
 	
-	def handle_gui(self, evt):
-		locked = evt.state & 0x0004
-		if evt.keysym == 'Left':
-			self.world.input(locked, (-DELTA, 0., 0.))
-		elif evt.keysym == 'Right':
-			self.world.input(locked, (DELTA, 0., 0.))
-		elif evt.keysym == 'Up':
-			self.world.input(locked, (0., -DELTA, 0.))
-		elif evt.keysym == 'Down':
-			self.world.input(locked, (0., DELTA, 0.))
-		else:
-			return
-		
-	def handle_stdin(self, f, m):
+	def gui_input(self, f, m):
 		input = sys.stdin.read()
 		if input == '':
 			sys.exit(0)
-		
+		self.proc_input(input)
+	
+	def proc_input(self, input):
 		self.readbuf += input
 		cmd, sep, rest = self.readbuf.partition('\n***\n')
 		if sep == '':
@@ -205,7 +197,7 @@ class Input:
 #
 # [random seed] [num cubes] [touching which cube] [touching which side]
 
-def make_world(canvas, args):
+def make_cubes(canvas, args):
 	minpos = 0
 	maxpos = 200
 	
@@ -273,25 +265,35 @@ def make_world(canvas, args):
 				return cubes
 			
 if __name__ == '__main__':
-	win = tk.Tk()
-	canvas = tk.Canvas(win)
-	canvas.pack(fill = tk.BOTH, expand = 1)
+	if len(sys.argv) > 1 and sys.argv[1] == '-h':
+		headless = True
+		cubes = make_cubes(None, sys.argv[2:])
+	else:
+		headless = False
+		win = tk.Tk()
+		canvas = tk.Canvas(win)
+		canvas.pack(fill = tk.BOTH, expand = 1)
+		canvas.focus_set()
 	
-	cubes = make_world(canvas, sys.argv[1:])
-	for c in cubes:
-		c.update_canvas()
+		cubes = make_cubes(canvas, sys.argv[1:])
+		for c in cubes:
+			c.update_canvas()
+	
 	w = World2(cubes[0], cubes[1:])
 	input = Input(w)
 	
-	canvas.focus_set()
-	# If we send output directly, then Soar can't learn over it
-	#canvas.bind('<Key>', input.handle_gui)
+	if headless:
+		while True:
+			line = sys.stdin.readline()
+			if len(line) == 0:
+				sys.exit(0)
+			input.proc_input(line)
+	else:
+		# set stdin to non-blocking read
+		fd = sys.stdin.fileno()
+		fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+		fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
 	
-	# set stdin to non-blocking read
-	fd = sys.stdin.fileno()
-	fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-	fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-	
-	win.tk.createfilehandler(sys.stdin, tk.READABLE, input.handle_stdin)
-	tk.mainloop()
+		win.tk.createfilehandler(sys.stdin, tk.READABLE, input.gui_input)
+		tk.mainloop()
 	

@@ -19,7 +19,7 @@ run_env() {
 	do
 		sleep 0.5
 	done
-	socat unix-connect:env exec:"python targets.py $*"
+	socat unix-connect:env system:"python targets.py $*"
 }
 
 run_remote() {
@@ -108,8 +108,8 @@ case "$debug" in
 	soarexit=$?
 esac
 
-kill $envpid
-kill $remotepid
+#kill $envpid
+#kill $remotepid
 
 pyprocs=`ps | awk '$4 == "python" {print $1}'`
 if [ -n "$pyprocs" ]
