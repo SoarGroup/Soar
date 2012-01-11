@@ -673,7 +673,7 @@ void ID5Tree::load(istream &is) {
 	load_vector(insts_here, is);
 	load_vector(attrs_here, is);
 	is >> split_attr;
-	if (split_attr > 0) {
+	if (split_attr >= 0) {
 		left.reset(new ID5Tree(insts));
 		left->load(is);
 		right.reset(new ID5Tree(insts));
