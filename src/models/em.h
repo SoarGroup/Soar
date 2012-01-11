@@ -36,6 +36,8 @@ public:
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
 	
+	void print_tree(std::ostream &os) const;
+	
 private:
 	std::vector<LRModel*> models;
 	std::set<int> stale_models;

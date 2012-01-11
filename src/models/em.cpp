@@ -585,3 +585,13 @@ void EM::load(istream &is) {
 	dtree = new ID5Tree(dtree_insts);
 	dtree->load(is);
 }
+
+void print_tree(std::ostream &os) const {
+	if (dtree) {
+		os << "digraph g {" << endl;
+		dtree->print_graphviz(os);
+		os << "}" << endl;
+	} else {
+		os << "empty" << std::endl;
+	}
+}

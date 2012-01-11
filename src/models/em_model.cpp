@@ -50,6 +50,12 @@ public:
 			update_tested_atoms();
 			cout << "LOADED MODEL" << endl;
 			DATAVIS("END" << endl)
+			
+			stringstream treepathss;
+			treepathss << "trees/" << name << ".dot";
+			string treepath = treepathss.str();
+			ofstream f(treepath.c_str());
+			em->print_tree(f);
 		}
 	}
 

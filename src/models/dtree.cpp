@@ -683,3 +683,21 @@ void ID5Tree::load(istream &is) {
 	}
 	update_all_counts();
 }
+
+void ID5Tree::print_graphviz(ostream &os) const {
+	stringstream lss;
+	if (split_attr >= 0) {
+		lss << split_attr;
+	} else {
+		lss << cat;
+	}
+	
+	os << (int) this << " [label=\"" << lss.str() << "\"]" << endl;
+	
+	if (split_attr >= 0) {
+		os << (int) this << " -> " << (int) left.get() << " [label=\"0\"];" << endl;
+		left->print_graphviz(os);
+		os << (int) this << " -> " << (int) right.get() << " [label=\"1\"];" << endl;
+		right->print_graphviz(os);
+	}
+}

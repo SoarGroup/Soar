@@ -52,6 +52,7 @@ public:
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
 	
+	void print_graphviz(std::ostream &os) const;
 private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
 	typedef std::auto_ptr<ID5Tree> ID5ptr;
@@ -97,7 +98,8 @@ private:
 		}
 	};
 	
-	std::map<int, val_counts> av_counts;  // class counts for every attribute and every value
+	// class counts for every attribute and every value
+	std::map<int, val_counts> av_counts;
 	std::map<category, int> ttl_counts;
 	std::map<int, double> gains;
 	const std::vector<DTreeInst> &insts;
