@@ -133,11 +133,11 @@ public:
 		
 		vec w = sqrt(pow(d, -3));
 		
-		/* Any neighbor whose weight is infinity is close
-		   enough to provide an exact solution.  If any
-		   exist, take their average as the solution.  If we
-		   don't do this the solve() will fail due to infinite
-		   values in Z and V.
+		/*
+		 Any neighbor whose weight is infinity is close enough
+		 to provide an exact solution.	If any exist, take their
+		 average as the solution.  If we don't do this the solve()
+		 will fail due to infinite values in Z and V.
 		*/
 		rowvec closeavg = zeros<rowvec>(ysize);
 		int nclose = 0;
@@ -196,26 +196,21 @@ public:
 	}
 	
 	void load(istream &is) {
-		string line;
+		int nexamples;
+		if (!(is >> xsize >> ysize >> nexamples)) {
+			assert(false);
+		}
+		
 		floatvec x(xsize), y(ysize);
-		int linenum = 0;
-		size_t p;
-		while (getline(is, line)) {
-			++linenum;
-			if ((p = line.find('#')) != string::npos) {
-				line.erase(p);
-			}
-			if (line.find_first_not_of(" \t\n") == string::npos) {
-				continue;
-			}
-			stringstream ss(line);
-			for(int i = 0; i < xsize; ++i) {
-				if (!(ss >> x[i])) {
+		
+		for (int i = 0; i < nexamples; ++i) {
+			for(int j = 0; j < xsize; ++j) {
+				if (!(is >> x[j])) {
 					assert(false);
 				}
 			}
-			for(int i = 0; i < ysize; ++i) {
-				if (!(ss >> y[i])) {
+			for(int j = 0; j < ysize; ++j) {
+				if (!(is >> y[j])) {
 					assert(false);
 				}
 			}
@@ -226,6 +221,7 @@ public:
 	
 	void save(ostream &os) const {
 		vector<pair<floatvec, floatvec> >::const_iterator i;
+		os << xsize << " " << ysize << " " << examples.size() << endl;
 		for (i = examples.begin(); i != examples.end(); ++i) {
 			for (int j = 0; j < xsize; ++j) {
 				os << i->first[j] << " ";
