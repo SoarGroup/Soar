@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <vector>
 #include <sstream>
 #include <fstream>
@@ -52,9 +53,12 @@ public:
 	}
 
 	~EM_model() {
-		ofstream os(savepath.c_str());
-		em->save(os);
-		os.close();
+		char *save = getenv("SVS_SAVE_MODELS");
+		if (save != NULL && string(save) == "1") {
+			ofstream os(savepath.c_str());
+			em->save(os);
+			os.close();
+		}
 		delete em;
 	}
 	
