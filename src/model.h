@@ -2,6 +2,7 @@
 #define MODEL_H
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <map>
 #include <vector>
@@ -35,6 +36,7 @@ public:
 	
 private:
 	std::string name, type, path;
+	std::ofstream predlog;
 };
 
 /*
@@ -89,7 +91,6 @@ private:
 	std::list<model_config*>      active_models;
 	std::map<std::string, model*> model_db;
 	std::vector<std::string>      prop_vec;
-	bool logerror;
 };
 
 #endif

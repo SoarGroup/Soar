@@ -7,20 +7,33 @@
 
 using namespace std;
 
+const char *MODEL_DIR = "models";
+const char *PREDICTION_DIR = "predictions";
+
 model::model(const std::string &name, const std::string &type) 
 : name(name), type(type)
 {
 	stringstream ss;
-	ss << "models/" << name << "." << type;
+	ss << MODEL_DIR << "/" << name << "." << type;
 	path = ss.str();
+	
+	char *v = getenv("SVS_LOG_PREDICTION_ERRORS");
+	if (v != NULL && string(v) == "1") {
+		ss.str("");
+		ss << PREDICTION_DIR << "/" << name << "." << type;
+		string p = ss.str();
+		predlog.open(p.c_str(), ios_base::app);
+	}
 }
 
 void model::finish() {
 	char *v = getenv("SVS_SAVE_MODELS");
 	if (v != NULL && string(v) == "1") {
 		ofstream os(path.c_str());
-		save(os);
-		os.close();
+		if (os.is_open()) {
+			save(os);
+			os.close();
+		}
 	}
 }
 
@@ -33,19 +46,20 @@ void model::init() {
 
 float model::test(const floatvec &x, const floatvec &y) {
 	floatvec py(y.size());
+	float error;
 	if (!predict(x, py)) {
-		return numeric_limits<double>::signaling_NaN();
+		error = numeric_limits<double>::signaling_NaN();
 	} else {
-		return py.dist(y);
+		error = py.dist(y);
 	}
+	
+	if (predlog.is_open()) {
+		predlog << error << endl;
+	}
+	return error;
 }
 
 multi_model::multi_model() {
-	logerror = false;
-	char *logerrorvar = getenv("SVS_LOG_PREDICTION_ERRORS");
-	if (logerrorvar != NULL && string(logerrorvar) == "1") {
-		logerror = true;
-	}
 }
 
 multi_model::~multi_model() {
@@ -91,13 +105,6 @@ void multi_model::learn(const floatvec &x, const floatvec &y, float dt) {
 		floatvec yp = cfg->ally ? y : y.slice(cfg->yinds);
 		float error = cfg->mdl->test(xp, yp);
 		
-		if (logerror) {
-			stringstream ss;
-			ss << "predictions/" << cfg->name;
-			string path = ss.str();
-			ofstream errlog(path.c_str(), ios_base::app);
-			errlog << error << endl;
-		}
 		
 		/*
 		if (error >= 0. && error < 1.0e-8) {
