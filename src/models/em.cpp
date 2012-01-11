@@ -586,7 +586,7 @@ void EM::load(istream &is) {
 	dtree->load(is);
 }
 
-void print_tree(std::ostream &os) const {
+void EM::print_tree(std::ostream &os) const {
 	if (dtree) {
 		os << "digraph g {" << endl;
 		dtree->print_graphviz(os);

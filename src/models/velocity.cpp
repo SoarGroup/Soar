@@ -10,8 +10,14 @@ using namespace std;
 
 class velocity_model : public model {
 public:
-	velocity_model(int dims) : dims(dims) {}
+	velocity_model(const string &name, int dims)
+	: model(name, "vel"), dims(dims) 
+	{}
 
+	~velocity_model() {
+		finish();
+	}
+	
 	bool predict(const floatvec &x, floatvec &y) {
 		if (x.size() != dims * 2 || y.size() != dims) {
 			return false;
@@ -21,10 +27,6 @@ public:
 			y[i] = x[i] + x[i + dims];
 		}
 		return true;
-	}
-	
-	std::string get_type() const {
-		return "velocity";
 	}
 	
 	int get_input_size() const {
@@ -52,5 +54,5 @@ model *_make_velocity_model_(soar_interface *si, Symbol *root, scene *scn, const
 			}
 		}
 	}
-	return new velocity_model(dims);
+	return new velocity_model(name, dims);
 }

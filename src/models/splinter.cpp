@@ -9,7 +9,11 @@ using namespace std;
 
 class splinter_model : public model {
 public:
-	splinter_model() {}
+	splinter_model(const string &name) : model(name, "splinter") { init(); }
+	
+	~splinter_model() {
+		finish();
+	}
 	
     bool predict(const floatvec &x, floatvec &y) {
 		if (x.size() != 10 || y.size() != 8) {
@@ -23,10 +27,6 @@ public:
     	return true;
 	}
 	
-	string get_type() const {
-		return "splinter";
-	}
-
 	int get_input_size() const {
 		return 10; // px py vx vy rz rtz lrps rrps lvolts rvolts 
 	}
@@ -37,5 +37,5 @@ public:
 };
 
 model *_make_splinter_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
-	return new splinter_model();
+	return new splinter_model(name);
 }

@@ -14,7 +14,7 @@ const int MAXITERS = 50;
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, scene *scn, const string &name)
-	: si(si), root(root), revisions(0)
+	: model(name, "em"), si(si), root(root), revisions(0)
 	{
 		result_id = si->make_id_wme(root, "result").first;
 		tests_id = si->make_id_wme(result_id, "tests").first;
@@ -39,33 +39,11 @@ public:
 			pred_params[*j] = params;
 		}
 		
-		stringstream ss;
-		ss << "models/" << name << ".em";
-		savepath = ss.str();
-		
-		ifstream is(savepath.c_str());
-		if (is.is_open()) {
-			DATAVIS("BEGIN " << name << endl)
-			em->load(is);
-			update_tested_atoms();
-			cout << "LOADED MODEL" << endl;
-			DATAVIS("END" << endl)
-			
-			stringstream treepathss;
-			treepathss << "trees/" << name << ".dot";
-			string treepath = treepathss.str();
-			ofstream f(treepath.c_str());
-			em->print_tree(f);
-		}
+		init();
 	}
 
 	~EM_model() {
-		char *save = getenv("SVS_SAVE_MODELS");
-		if (save != NULL && string(save) == "1") {
-			ofstream os(savepath.c_str());
-			em->save(os);
-			os.close();
-		}
+		finish();
 		delete em;
 	}
 	
@@ -74,10 +52,6 @@ public:
 			return false;
 		}
 		return em->predict(x, y[0]);
-	}
-	
-	string get_type() const {
-		return string("EM");
 	}
 	
 	int get_input_size() const {
@@ -133,6 +107,24 @@ public:
 			si->make_wme(p.first, params[j], all_atoms[i][j + 1]);
 		}
 		atom_wmes[i] = p.second;
+	}
+	
+	void save(ostream &os) const {
+		em->save(os);
+	}
+	
+	void load(istream &is) {
+		DATAVIS("BEGIN " << get_name() << endl)
+		em->load(is);
+		update_tested_atoms();
+		cout << "LOADED MODEL" << endl;
+		DATAVIS("END" << endl)
+		
+		stringstream treepathss;
+		treepathss << "trees/" << get_name() << ".dot";
+		string treepath = treepathss.str();
+		ofstream f(treepath.c_str());
+		em->print_tree(f);
 	}
 	
 private:

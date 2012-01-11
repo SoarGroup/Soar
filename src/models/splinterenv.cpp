@@ -12,12 +12,13 @@ using namespace std;
 
 class splinterenv_model : public model {
 public:
-	bool predict(const floatvec &x, floatvec &y) {
-		return env.predict(x, y);
+	splinterenv_model(const string &name) : model(name, "splinterenv") {
+		init();
 	}
 	
-	string get_type() const {
-		return string("splinterenv");
+	~splinterenv_model() { finish(); }
+	bool predict(const floatvec &x, floatvec &y) {
+		return env.predict(x, y);
 	}
 	
 	int get_input_size() const {
@@ -33,5 +34,5 @@ private:
 };
 
 model *_make_splinterenv_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
-	return new splinterenv_model();
+	return new splinterenv_model(name);
 }

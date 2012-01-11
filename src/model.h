@@ -10,17 +10,31 @@
 
 class model {
 public:
+	model(const std::string &name, const std::string &type);
 	virtual ~model() {}
+	
+	void init();
+	void finish();
+	float test(const floatvec &x, const floatvec &y);
+	
+	std::string get_name() const {
+		return name;
+	}
+	
+	std::string get_type() const {
+		return type;
+	}
+	
 	virtual bool predict(const floatvec &x, floatvec &y) = 0;
-	virtual std::string get_type() const = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
 	
 	virtual void learn(const floatvec &x, const floatvec &y, float dt) {}
-	virtual void save() const {}
-	virtual void load() {}
+	virtual void save(std::ostream &os) const {}
+	virtual void load(std::istream &is) {}
 	
-	virtual float test(const floatvec &x, const floatvec &y);
+private:
+	std::string name, type, path;
 };
 
 /*

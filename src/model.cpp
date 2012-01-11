@@ -7,6 +7,30 @@
 
 using namespace std;
 
+model::model(const std::string &name, const std::string &type) 
+: name(name), type(type)
+{
+	stringstream ss;
+	ss << "models/" << name << "." << type;
+	path = ss.str();
+}
+
+void model::finish() {
+	char *v = getenv("SVS_SAVE_MODELS");
+	if (v != NULL && string(v) == "1") {
+		ofstream os(path.c_str());
+		save(os);
+		os.close();
+	}
+}
+
+void model::init() {
+	ifstream is(path.c_str());
+	if (is.is_open()) {
+		load(is);
+	}
+}
+
 float model::test(const floatvec &x, const floatvec &y) {
 	floatvec py(y.size());
 	if (!predict(x, py)) {
