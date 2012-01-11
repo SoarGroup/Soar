@@ -5,6 +5,8 @@
 #include <iostream>
 #include "splinterenv.h"
 #include "model.h"
+#include "soar_interface.h"
+#include "scene.h"
 
 using namespace std;
 

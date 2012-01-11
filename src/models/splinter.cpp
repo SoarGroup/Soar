@@ -2,6 +2,8 @@
 #include <string>
 #include "model.h"
 #include "splinter.h"
+#include "soar_interface.h"
+#include "scene.h"
 
 using namespace std;
 

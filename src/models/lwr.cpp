@@ -10,6 +10,7 @@
 #include "nn.h"
 #include "common.h"
 #include "linear.h"
+#include "soar_interface.h"
 
 using namespace std;
 using namespace arma;

@@ -4,6 +4,7 @@
 #include <fstream>
 #include "model.h"
 #include "em.h"
+#include "soar_interface.h"
 #include "filter_table.h"
 
 using namespace std;

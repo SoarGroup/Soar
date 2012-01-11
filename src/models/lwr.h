@@ -5,6 +5,7 @@
 #include <fstream>
 #include "model.h"
 #include "common.h"
+#include "scene.h"
 #include "nn.h"
 
 class lwr : public model {

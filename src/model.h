@@ -2,13 +2,10 @@
 #define MODEL_H
 
 #include <iostream>
-#include <algorithm>
-#include <iterator>
 #include <string>
 #include <map>
 #include <vector>
-#include "scene.h"
-#include "soar_interface.h"
+#include <list>
 #include "common.h"
 
 class model {
@@ -23,14 +20,7 @@ public:
 	virtual void save() const {}
 	virtual void load() {}
 	
-	virtual float test(const floatvec &x, const floatvec &y) {
-		floatvec py(y.size());
-		if (!predict(x, py)) {
-			return -1.0;
-		} else {
-			return py.dist(y);
-		}
-	}
+	virtual float test(const floatvec &x, const floatvec &y);
 };
 
 /*
@@ -46,144 +36,19 @@ public:
 */
 class multi_model {
 public:
-	typedef std::map<std::string, std::string> slot_prop_map;
+	multi_model();
+	~multi_model();
+	
+	bool predict(const floatvec &x, floatvec &y);
+	void learn(const floatvec &x, const floatvec &y, float dt);
+	float test(const floatvec &x, const floatvec &y);
+	
+	std::string assign_model (
+		const std::string &name, 
+		const std::vector<std::string> &inputs, bool all_inputs,
+		const std::vector<std::string> &outputs, bool all_outputs );
 
-	multi_model() {}
-	
-	~multi_model() {
-		std::list<model_config*>::iterator i;
-		std::cout << "MODELS: " << active_models.size() << std::endl;
-		for (i = active_models.begin(); i != active_models.end(); ++i) {
-			delete *i;
-		}
-	}
-	
-	bool predict(const floatvec &x, floatvec &y) {
-		std::list<model_config*>::const_iterator i;
-		int j;
-		for (i = active_models.begin(); i != active_models.end(); ++i) {
-			model_config *cfg = *i;
-			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
-			floatvec yp(cfg->ally ? y.size() : cfg->yinds.size());
-			bool success;
-			if (cfg->allx) {
-				success = cfg->mdl->predict(x, yp);
-			} else {
-				success = cfg->mdl->predict(x.slice(cfg->xinds), yp);
-			}
-			if (!success) {
-				return false;
-			}
-			if (cfg->ally) {
-				y = yp;
-			} else {
-				y.set_indices(cfg->yinds, yp);
-			}
-			DATAVIS("END" << std::endl)
-		}
-		return true;
-	}
-	
-	void learn(const floatvec &x, const floatvec &y, float dt) {
-		std::list<model_config*>::iterator i;
-		int j;
-		for (i = active_models.begin(); i != active_models.end(); ++i) {
-			model_config *cfg = *i;
-			floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
-			floatvec yp = cfg->ally ? y : y.slice(cfg->yinds);
-			/*
-			float error = cfg->mdl->test(xp, yp);
-			if (error >= 0. && error < 1.0e-8) {
-				continue;
-			}
-			*/
-			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
-			cfg->mdl->learn(xp, yp, dt);
-			DATAVIS("END" << std::endl)
-		}
-	}
-	
-	float test(const floatvec &x, const floatvec &y) {
-		float s = 0.0;
-		std::list<model_config*>::iterator i;
-		for (i = active_models.begin(); i != active_models.end(); ++i) {
-			model_config *cfg = *i;
-			DATAVIS("BEGIN '" << cfg->name << "'" << std::endl)
-			floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
-			floatvec yp = cfg->ally ? y : y.slice(cfg->yinds);
-			float d = cfg->mdl->test(xp, yp);
-			if (d < 0.) {
-				DATAVIS("'pred error' 'no prediction'" << std::endl)
-				s = -1.;
-			} else if (s >= 0.) {
-				DATAVIS("'pred error' " << d << std::endl)
-				s += d;
-			}
-			DATAVIS("END" << std::endl)
-		}
-		if (s >= 0.) {
-			return s / active_models.size();
-		}
-		return -1.;
-	}
-	
-	std::string assign_model(const std::string &name, 
-	                         const std::vector<std::string> &inputs, bool all_inputs,
-	                         const std::vector<std::string> &outputs, bool all_outputs) 
-	{
-		model *m;
-		model_config *cfg;
-		if (!map_get(model_db, name, m)) {
-			return "no model";
-		}
-		
-		cfg = new model_config();
-		cfg->name = name;
-		cfg->mdl = m;
-		cfg->allx = all_inputs;
-		cfg->ally = all_outputs;
-		
-		if (all_inputs) {
-			if (m->get_input_size() >= 0 && m->get_input_size() != prop_vec.size()) {
-				return "size mismatch";
-			}
-		} else {
-			if (m->get_input_size() >= 0 && m->get_input_size() != inputs.size()) {
-				return "size mismatch";
-			}
-			cfg->xprops = inputs;
-			if (!find_indexes(inputs, cfg->xinds)) {
-				delete cfg;
-				return "property not found";
-			}
-		}
-		if (all_outputs) {
-			if (m->get_output_size() >= 0 && m->get_output_size() != prop_vec.size()) {
-				return "size mismatch";
-			}
-		} else {
-			if (m->get_output_size() >= 0 && m->get_output_size() != outputs.size()) {
-				return "size mismatch";
-			}
-			cfg->yprops = outputs;
-			if (!find_indexes(outputs, cfg->yinds)) {
-				delete cfg;
-				return "property not found";
-			}
-		}
-		active_models.push_back(cfg);
-		return "";
-	}
-
-	void unassign_model(const std::string &name) {
-		std::list<model_config*>::iterator i;
-		for (i = active_models.begin(); i != active_models.end(); ++i) {
-			if ((**i).name == name) {
-				active_models.erase(i);
-				return;
-			}
-		}
-	}
+	void unassign_model(const std::string &name);
 	
 	void add_model(const std::string &name, model *m) {
 		model_db[name] = m;
@@ -194,19 +59,7 @@ public:
 	}
 	
 private:
-	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes) {
-		std::vector<std::string>::const_iterator i;
-
-		for (i = props.begin(); i != props.end(); ++i) {
-			int index = find(prop_vec.begin(), prop_vec.end(), *i) - prop_vec.begin();
-			if (index == prop_vec.size()) {
-				std::cerr << "PROPERTY NOT FOUND " << *i << std::endl;
-				return false;
-			}
-			indexes.push_back(index);
-		}
-		return true;
-	}
+	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);
 
 	struct model_config {
 		std::string name;
@@ -222,6 +75,7 @@ private:
 	std::list<model_config*>      active_models;
 	std::map<std::string, model*> model_db;
 	std::vector<std::string>      prop_vec;
+	bool logerror;
 };
 
 #endif
