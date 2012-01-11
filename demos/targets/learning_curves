@@ -1,0 +1,48 @@
+#!/bin/sh
+
+TRAIN_CHUNK=10
+NTRAIN=50
+NTEST=5
+
+WD="data/exp-`date +"%d:%H:%M:%S"`"
+mkdir $WD
+
+TRAIN_SCEN="$WD/train_scen"
+TEST_SCEN="$WD/test_scen"
+
+./gen_scenarios 3 10 1 | head -n $NTRAIN >$TRAIN_SCEN
+./gen_scenarios 3 2 2 | head -n $NTEST >$TEST_SCEN
+
+rm -f models/*
+
+train_block=0
+
+while [ "$((train_block * TRAIN_CHUNK + 1< NTRAIN))" -eq 1 ]
+do
+	blockdir="$WD/block$train_block"
+	mkdir $blockdir
+	
+	train_start=$((train_block * TRAIN_CHUNK + 1))
+	train_stop=$((train_start + TRAIN_CHUNK - 1))
+	echo "training on scenarios $train_start - $train_stop"
+	
+	sed -n -e "${train_start},${train_stop}p" $TRAIN_SCEN | ./run_scenarios train
+	
+	rm -f predictions/*
+	./run_scenarios test <$TEST_SCEN
+	
+	means=''
+	# aggregate statistics
+	for f in predictions/*
+	do
+		m=`tb mean <$f`
+		echo $f $m
+		means="$means $m"
+	done
+	echo "$means" >> $WD/prediction_means
+	
+	cp -r predictions $blockdir
+	cp -r models $blockdir
+	
+	train_block=$((train_block+1))
+done
