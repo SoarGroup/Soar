@@ -60,6 +60,9 @@ do
 	-g)
 		debug=1
 		;;
+	-gg)
+		debug=2
+		;;
 	-r)
 		remote_args="$2"
 		shift
@@ -83,15 +86,27 @@ envpid=$!
 run_remote $remote_args &
 remotepid=$!
 
-if test "$debug" == "1"
-then
-	gdb --args $soar $agent "$@"
-else
+case "$debug" in
+1)
+	gdb --args $soar -s $agent "$@"
+	;;
+2)
+	gdb -ex run -ex quit --args $soar -s $agent "$@" | tee stdout.log
+	if grep -q 'exited normally' stdout.log
+	then
+		soarexit=0
+	else
+		soarexit=1
+	fi
+	rm stdout.log
+	;;
+*)
 	$soar -s $agent "$@"
 	#echo "$!" > soar.pid
 	#fg
 	#ltrace -c $soar $agent 2>soar.trace
-fi
+	soarexit=$?
+esac
 
 kill $envpid
 kill $remotepid
@@ -103,3 +118,8 @@ then
 fi
 
 rm -f env ctrl
+
+if [ "$soarexit" -ne 0 ]
+then
+	exit 1
+fi
