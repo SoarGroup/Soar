@@ -94,10 +94,6 @@ public:
 	}
 
 	void make_atom_wme(int i) {
-		cout << "Making atom wme ";
-		copy(all_atoms[i].begin(), all_atoms[i].end(), ostream_iterator<string>(cout, " "));
-		cout << endl;
-		
 		string pred = all_atoms[i][0];
 		vector<string> &params = pred_params[pred];
 		assert(params.size() == all_atoms[i].size() - 1);
@@ -117,7 +113,6 @@ public:
 		DATAVIS("BEGIN " << get_name() << endl)
 		em->load(is);
 		update_tested_atoms();
-		cout << "LOADED MODEL" << endl;
 		DATAVIS("END" << endl)
 		
 		stringstream treepathss;

@@ -54,7 +54,7 @@ float model::test(const floatvec &x, const floatvec &y) {
 	}
 	
 	if (predlog.is_open()) {
-		predlog << error << endl;
+		predlog << y << " ; " << py << " ; " << error << endl;
 	}
 	return error;
 }
@@ -64,7 +64,6 @@ multi_model::multi_model() {
 
 multi_model::~multi_model() {
 	list<model_config*>::iterator i;
-	cout << "MODELS: " << active_models.size() << endl;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		delete *i;
 	}
