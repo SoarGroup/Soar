@@ -551,8 +551,6 @@ void EM::save(ostream &os) const {
 	for (j = models.begin(); j != models.end(); ++j) {
 		(**j).save(os);
 	}
-	
-	dtree->save(os);
 }
 
 void EM::load(istream &is) {
@@ -583,7 +581,9 @@ void EM::load(istream &is) {
 	}
 	
 	dtree = new ID5Tree(dtree_insts);
-	dtree->load(is);
+	for (int i = 0; i < ninsts; ++i) {
+		dtree->update_tree(i);
+	}
 }
 
 void EM::print_tree(std::ostream &os) const {

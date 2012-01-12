@@ -48,11 +48,8 @@ public:
 	void output(const std::vector<std::string> &attr_names) const;
 	int size() const;
 	void get_all_splits(std::vector<int> &splits) const;
-	
-	void save(std::ostream &os) const;
-	void load(std::istream &is);
-	
 	void print_graphviz(std::ostream &os) const;
+
 private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
 	typedef std::auto_ptr<ID5Tree> ID5ptr;

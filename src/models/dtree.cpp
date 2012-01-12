@@ -7,7 +7,6 @@
 #include "common.h"
 
 using namespace std;
-int dbgc = 0;
 
 double entropy(const map<category, int> &counts, int total) {
 	double ent = 0.;
@@ -655,33 +654,6 @@ void ID5Tree::get_all_splits(vector<int> &splits) const {
 	splits.push_back(split_attr);
 	left->get_all_splits(splits);
 	right->get_all_splits(splits);
-}
-
-void ID5Tree::save(ostream &os) const {
-	save_vector(insts_here, os);
-	save_vector(attrs_here, os);
-	os << split_attr << endl;
-	if (split_attr >= 0) {
-		left->save(os);
-		right->save(os);
-	} else {
-		os << cat << endl;
-	}
-}
-
-void ID5Tree::load(istream &is) {
-	load_vector(insts_here, is);
-	load_vector(attrs_here, is);
-	is >> split_attr;
-	if (split_attr >= 0) {
-		left.reset(new ID5Tree(insts));
-		left->load(is);
-		right.reset(new ID5Tree(insts));
-		right->load(is);
-	} else {
-		is >> cat;
-	}
-	update_all_counts();
 }
 
 void ID5Tree::print_graphviz(ostream &os) const {
