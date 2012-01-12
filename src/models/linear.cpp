@@ -37,10 +37,11 @@ const double SAME_THRESH = 1 + 1e-10;
 const double ZERO_THRESH = 1e-15;
 
 /*
- In PCR, discard any components with variance lower than this value. This
- is a hack; in the future cross validation should be used.
+ These two constants determine cutoffs for the number of components to
+ use in PCR.
 */
-const double VARIANCE_THRESH = 1e-3;
+const double ERROR_SHRINK_THRESH = 1 - 1e-3;
+const double ABS_ERROR_THRESH = 1e-10;
 
 /*
  Output a matrix composed only of those columns in the input matrix with
@@ -372,19 +373,20 @@ void PCRModel::fit_me() {
 		assert(false);
 	}
 	
-	int ncomp;
-	for (ncomp = 1; ncomp < variances.n_elem; ++ncomp) {
-		if (variances(ncomp) < VARIANCE_THRESH) {
+	double error = INF;
+	for (int ncomp = 1; ncomp < scores.n_cols; ++ncomp) {
+		vec coefs;
+		solve2(scores.cols(0, ncomp - 1), y, coefs, intercept);
+		beta = loadings.cols(0, ncomp - 1) * coefs;
+		double newerror = sqrt(accu(pow((X * beta + intercept) - y, 2)) / X.n_rows);
+		
+		if (newerror < ABS_ERROR_THRESH || newerror / error > ERROR_SHRINK_THRESH) {
 			break;
 		}
+		
+		error = newerror;
 	}
-	DATAVIS("ncomp " << ncomp << endl)
 	
-	loadings.resize(loadings.n_rows, ncomp);
-	scores.resize(scores.n_rows, ncomp);
-	vec coefs;
-	solve2(scores, y, coefs, intercept);
-	beta = loadings * coefs;
 	DATAVIS("END" << endl)
 }
 
@@ -399,11 +401,7 @@ bool PCRModel::predict_me(const mat &X, vec &result) {
 		Xc.row(i) = (X.row(i) - means) / stdevs;
 	}
 	
-	result = Xc * beta;
-	vec::iterator i;
-	for (i = result.begin(); i != result.end(); ++i) {
-		*i += intercept;
-	}
+	result = Xc * beta + intercept;
 	return true;
 }
 
