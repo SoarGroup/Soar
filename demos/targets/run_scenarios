@@ -16,17 +16,29 @@ test)
 	unset SVS_SAVE_MODELS
 	;;
 esac
-	
 
 iter=0
-while read line
+OIFS="$IFS"
+IFS='
+'
+
+for line in `cat $2`
 do
+	IFS="$OIFS"
 	echo iteration $iter
 	iter=$((iter+1))
+	echo "$line"
 	eval "$line"
 	exitcode=$?
 	if [ $exitcode -ne 0 ]
 	then
+		# try to drop into a debug session
+		if ! echo "$line" | grep -q -- -g
+		then
+			line=`echo "$line" | sed 's/run/run -g/'`
+			echo Debugging with "$line"
+			eval "$line"
+		fi
 		echo failed with $exitcode >&2
 		exit $exitcode
 	fi

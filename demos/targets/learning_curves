@@ -1,16 +1,17 @@
 #!/bin/sh
 
-TRAIN_CHUNK=10
 NTRAIN=50
-NTEST=5
+NTEST=10
+TRAIN_CHUNK=10
 
-WD="data/exp-`date +"%d:%H:%M:%S"`"
+WD="data/lc-`date +"%d:%H:%M:%S"`"
 mkdir $WD
 
 TRAIN_SCEN="$WD/train_scen"
 TEST_SCEN="$WD/test_scen"
+RESULTS="$WD/results"
 
-./gen_scenarios 3 10 1 | head -n $NTRAIN >$TRAIN_SCEN
+./gen_scenarios 3 10 1 2 3 | head -n $NTRAIN >$TRAIN_SCEN
 ./gen_scenarios 3 2 2 | head -n $NTEST >$TEST_SCEN
 
 rm -f models/*
@@ -26,23 +27,34 @@ do
 	train_stop=$((train_start + TRAIN_CHUNK - 1))
 	echo "training on scenarios $train_start - $train_stop"
 	
-	sed -n -e "${train_start},${train_stop}p" $TRAIN_SCEN | ./run_scenarios train
+	sed -n -e "${train_start},${train_stop}p" $TRAIN_SCEN > train_batch
+	./run_scenarios train train_batch || exit 1
 	
 	rm -f predictions/*
-	./run_scenarios test <$TEST_SCEN
+	./run_scenarios test $TEST_SCEN || exit 1
 	
 	means=''
+	names=''
 	# aggregate statistics
 	for f in predictions/*
 	do
-		m=`tb mean <$f`
-		echo $f $m
+		n=`basename $f`
+		n=${n%.*}
+		m=`awk '{print $NF}' $f | tb mean`
+		names="$names $n"
 		means="$means $m"
+		echo $n $m
 	done
-	echo "$means" >> $WD/prediction_means
+	if [ ! -f "$RESULTS" ]
+	then
+		echo "$names" > "$RESULTS"
+	fi
+	echo "$means" >> "$RESULTS"
 	
 	cp -r predictions $blockdir
 	cp -r models $blockdir
+	cp -r trees $blockdir
 	
 	train_block=$((train_block+1))
-done
+done | tee $WD/log
+
