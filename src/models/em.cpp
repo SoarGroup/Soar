@@ -581,9 +581,11 @@ void EM::load(istream &is) {
 	}
 	
 	dtree = new ID5Tree(dtree_insts);
-	for (int i = 0; i < ninsts; ++i) {
-		dtree->update_tree(i);
+	vector<int> insts;
+	for (int i = 0; i < dtree_insts.size(); ++i) {
+		insts.push_back(i);
 	}
+	dtree->batch_update(insts);
 }
 
 void EM::print_tree(std::ostream &os) const {

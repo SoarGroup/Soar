@@ -209,7 +209,7 @@ ID5Tree::ID5Tree(const vector<DTreeInst> &insts, const vector<int> &attrs)
 
 void ID5Tree::expand() {
 	assert(left.get() == NULL && right.get() == NULL && split_attr != -1 && attrs_here.size() > 0);
-	vector<int> attrs;
+	vector<int> attrs, linsts, rinsts;
 	remove_copy(attrs_here.begin(), attrs_here.end(), back_inserter(attrs), split_attr);
 	assert(attrs.size() == attrs_here.size() - 1);
 
@@ -218,11 +218,13 @@ void ID5Tree::expand() {
 	vector<int>::const_iterator i;
 	for (i = insts_here.begin(); i != insts_here.end(); ++i) {
 		if (insts[*i].attrs[split_attr]) {
-			left->update_tree(*i);
+			linsts.push_back(*i);
 		} else {
-			right->update_tree(*i);
+			rinsts.push_back(*i);
 		}
 	}
+	left->batch_update(linsts);
+	right->batch_update(rinsts);
 }
 
 void ID5Tree::update_tree(int i) {
@@ -563,15 +565,18 @@ int ID5Tree::choose_split() {
  Update the entropy gain expected from splitting on each attribute.
 */
 void ID5Tree::update_gains() {
+	int ninsts = insts_here.size();
 	//update_all_counts();
 	gains.clear();
-	double curr_ent = entropy(ttl_counts, insts_here.size());
+	double curr_ent = entropy(ttl_counts, ninsts);
 	vector<int>::const_iterator i;
 	for (i = attrs_here.begin(); i != attrs_here.end(); ++i) {
 		val_counts &c = av_counts[*i];
-		double true_ent = entropy(c.true_counts, c.ttl_true) * ((double) c.ttl_true) / insts_here.size();
-		double false_ent = entropy(c.false_counts, c.ttl_false) * ((double) c.ttl_false) / insts_here.size();
-		gains[*i] = curr_ent - (true_ent + false_ent);
+		double ptrue = c.ttl_true / (double) ninsts;
+		double pfalse = c.ttl_false / (double) ninsts;
+		double true_ent = entropy(c.true_counts, c.ttl_true);
+		double false_ent = entropy(c.false_counts, c.ttl_false);
+		gains[*i] = curr_ent - (ptrue * true_ent + pfalse * false_ent);
 	}
 }
 
@@ -667,9 +672,31 @@ void ID5Tree::print_graphviz(ostream &os) const {
 	os << (int) this << " [label=\"" << lss.str() << "\"]" << endl;
 	
 	if (split_attr >= 0) {
-		os << (int) this << " -> " << (int) left.get() << " [label=\"0\"];" << endl;
+		os << (int) this << " -> " << (int) left.get() << " [label=\"1\"];" << endl;
 		left->print_graphviz(os);
-		os << (int) this << " -> " << (int) right.get() << " [label=\"1\"];" << endl;
+		os << (int) this << " -> " << (int) right.get() << " [label=\"0\"];" << endl;
 		right->print_graphviz(os);
+	}
+}
+
+void ID5Tree::batch_update(const vector<int> &new_insts) {
+	insts_here = new_insts;
+	if (insts_here.empty()) {
+		return;
+	}
+	update_all_counts();
+	
+	if (cats_all_same()) {
+		cat = insts[insts_here[0]].cat;
+	} else if (attrs_here.size() == 0 || attrs_all_same()) {
+		map<category, int>::const_iterator i;
+		for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
+			if (ttl_counts[cat] < i->second) {
+				cat = i->first;
+			}
+		}
+	} else {
+		split_attr = choose_split();
+		expand();
 	}
 }
