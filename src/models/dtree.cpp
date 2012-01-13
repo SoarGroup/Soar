@@ -14,7 +14,7 @@ double entropy(const map<category, int> &counts, int total) {
 	for (i = counts.begin(); i != counts.end(); ++i) {
 		if (i->second > 0) {
 			double p = ((double) i->second) / total;
-			ent += -p * log2(p);
+			ent -= p * log2(p);
 		}
 	}
 	return ent;
@@ -242,16 +242,15 @@ void ID5Tree::update_tree(int i) {
 		cat = insts[insts_here[0]].cat;
 		shrink();
 	} else if (attrs_here.size() == 0 || attrs_all_same()) {
-		map<category, int>::const_iterator i;
-		for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
-			if (ttl_counts[cat] < i->second) {
-				cat = i->first;
-			}
-		}
+		cat = best_cat();
 		shrink();
 	} else {
 		int best_split = choose_split();
-		if (!expanded()) {
+		if (best_split == -1) {
+			split_attr = best_split;
+			cat = best_cat();
+			shrink();
+		} else if (!expanded()) {
 			split_attr = best_split;
 			expand();
 		} else {
@@ -549,11 +548,11 @@ bool ID5Tree::validate_counts() {
 */
 int ID5Tree::choose_split() {
 	update_gains();
-	double highgain;
+	double highgain = 0.0;
 	int attr = -1;
 	vector<int>::const_iterator i;
 	for (i = attrs_here.begin(); i != attrs_here.end(); ++i) {
-		if (attr == -1 || gains[*i] > highgain) {
+		if (gains[*i] > highgain) {
 			attr = *i;
 			highgain = gains[*i];
 		}
@@ -681,22 +680,32 @@ void ID5Tree::print_graphviz(ostream &os) const {
 
 void ID5Tree::batch_update(const vector<int> &new_insts) {
 	insts_here = new_insts;
+	update_all_counts();
 	if (insts_here.empty()) {
 		return;
 	}
-	update_all_counts();
 	
 	if (cats_all_same()) {
 		cat = insts[insts_here[0]].cat;
 	} else if (attrs_here.size() == 0 || attrs_all_same()) {
-		map<category, int>::const_iterator i;
-		for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
-			if (ttl_counts[cat] < i->second) {
-				cat = i->first;
-			}
-		}
+		cat = best_cat();
 	} else {
 		split_attr = choose_split();
-		expand();
+		if (split_attr == -1) {
+			cat = best_cat();
+		} else {
+			expand();
+		}
 	}
+}
+
+category ID5Tree::best_cat() {
+	int c = -1;
+	map<category, int>::const_iterator i;
+	for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
+		if (c == -1 || ttl_counts[c] < i->second) {
+			c = i->first;
+		}
+	}
+	return c;
 }

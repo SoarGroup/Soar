@@ -50,7 +50,8 @@ public:
 	int size() const;
 	void get_all_splits(std::vector<int> &splits) const;
 	void print_graphviz(std::ostream &os) const;
-	
+	category best_cat();
+
 private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
 	typedef std::auto_ptr<ID5Tree> ID5ptr;
