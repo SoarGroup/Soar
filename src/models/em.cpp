@@ -395,7 +395,7 @@ void EM::mark_model_stale(int i) {
 
 bool EM::predict(const floatvec &x, float &y) {
 	//timer t("EM PREDICT TIME");
-	if (dtree == NULL || ndata == 0) {
+	if (ndata == 0) {
 		return false;
 	}
 	
@@ -403,10 +403,7 @@ bool EM::predict(const floatvec &x, float &y) {
 	for (int i = 0; i < x.size(); ++i) {
 		v(i) = x[i];
 	}
-	scncopy->set_properties(x);
-	attr_vec attrs = scncopy->get_atom_vals();
-
-	int mdl = dtree->classify(attrs);
+	int mdl = classify(x);
 	if (mdl == -1) {
 		return false;
 	}
@@ -596,4 +593,30 @@ void EM::print_tree(std::ostream &os) const {
 	} else {
 		os << "empty" << std::endl;
 	}
+}
+
+int EM::classify(const floatvec &x) {
+	if (dtree == NULL) {
+		return -1;
+	}
+	scncopy->set_properties(x);
+	attr_vec attrs = scncopy->get_atom_vals();
+	return dtree->classify(attrs);
+}
+
+void EM::test_classify(const floatvec &x, double y, int &best, int &predicted, double &besterror) {
+	best = -1;
+	
+	rowvec v(x.size());
+	for (int i = 0; i < x.size(); ++i) {
+		v(i) = x[i];
+	}
+	for (int i = 0; i < nmodels; ++i) {
+		double error = fabs(models[i]->predict(v) - y);
+		if (best == -1 || error < besterror) {
+			best = i;
+			besterror = error;
+		}
+	}
+	predicted = classify(x);
 }

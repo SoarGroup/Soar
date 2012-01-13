@@ -29,6 +29,7 @@ public:
 	bool run(int maxiters);
 	bool predict(const floatvec &x, float &y);
 	double error();
+	int get_nmodels() const { return nmodels; }
 	
 	void mark_model_stale(int i);
 	void get_tested_atoms(std::vector<int> &atoms) const;
@@ -37,8 +38,11 @@ public:
 	void load(std::istream &is);
 	
 	void print_tree(std::ostream &os) const;
+	void test_classify(const floatvec &x, double y, int &best, int &predicted, double &besterror);
 	
 private:
+	int classify(const floatvec &x);
+	
 	std::vector<LRModel*> models;
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;

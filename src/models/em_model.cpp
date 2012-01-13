@@ -48,9 +48,6 @@ public:
 	}
 	
 	bool predict(const floatvec &x, floatvec &y) {
-		if (!em) {
-			return false;
-		}
 		return em->predict(x, y[0]);
 	}
 	
@@ -120,6 +117,27 @@ public:
 		string treepath = treepathss.str();
 		ofstream f(treepath.c_str());
 		em->print_tree(f);
+	}
+	
+	/*
+	 In addition to just calculating prediction error, I also want
+	 to check whether the decision tree classification was correct.
+	*/
+	float test(const floatvec &x, const floatvec &y) {
+		char *v = getenv("SVS_LOG_PREDICTION_ERRORS");
+		if (v != NULL && string(v) == "1") {
+			int best, predicted;
+			double besterror;
+			em->test_classify(x, y[0], best, predicted, besterror);
+			
+			stringstream ss;
+			ss << "predictions/" << get_name() << ".classify";
+			string path(ss.str());
+			ofstream out(path.c_str(), ios_base::app);
+			out << em->get_nmodels() << " " << (best == predicted) << " " << best << " " << predicted << " " << besterror << endl;
+		}
+		
+		return model::test(x, y);
 	}
 	
 private:

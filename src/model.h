@@ -16,7 +16,6 @@ public:
 	
 	void init();
 	void finish();
-	float test(const floatvec &x, const floatvec &y);
 	
 	std::string get_name() const {
 		return name;
@@ -30,6 +29,7 @@ public:
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
 	
+	virtual float test(const floatvec &x, const floatvec &y);
 	virtual void learn(const floatvec &x, const floatvec &y, float dt) {}
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
