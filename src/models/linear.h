@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include <armadillo>
-#include <Rcpp.h>
 
 void lsqr(const arma::mat &X, const arma::mat &Y, const arma::vec &w, const arma::rowvec &x, arma::rowvec &yout);
 void ridge(const arma::mat &X, const arma::mat &Y, const arma::vec &w, const arma::rowvec &x, arma::rowvec &yout);
@@ -83,28 +82,6 @@ private:
 	arma::vec beta;
 	double intercept;
 	arma::rowvec means, stdevs;
-};
-
-class PLSModel : public LRModel {
-public:
-	PLSModel(const arma::mat &xdata, const arma::vec &ydata);
-	PLSModel(const PLSModel &m);
-	~PLSModel();
-	
-	void fit_me();
-	double predict_me(const arma::rowvec &x);
-	bool predict_me(const arma::mat &x, arma::vec &result);
-	
-	LRModel* copy() const {
-		return new PLSModel(*this);
-	}
-	
-private:
-	void print_loadings();
-	bool predict_meat(const Rcpp::NumericMatrix &x, arma::vec &result);
-	
-	static int count;
-	std::string plsobj;
 };
 
 #endif
