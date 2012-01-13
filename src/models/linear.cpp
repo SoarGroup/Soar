@@ -37,10 +37,8 @@ const double SAME_THRESH = 1 + 1e-10;
 const double ZERO_THRESH = 1e-15;
 
 /*
- These two constants determine cutoffs for the number of components to
- use in PCR.
+ Determines cutoff for the number of components to use in PCR.
 */
-const double ERROR_SHRINK_THRESH = 1 - 1e-3;
 const double ABS_ERROR_THRESH = 1e-10;
 
 /*
@@ -380,7 +378,7 @@ void PCRModel::fit_me() {
 		beta = loadings.cols(0, ncomp - 1) * coefs;
 		double newerror = sqrt(accu(pow((X * beta + intercept) - y, 2)) / X.n_rows);
 		
-		if (newerror < ABS_ERROR_THRESH || newerror / error > ERROR_SHRINK_THRESH) {
+		if (newerror < ABS_ERROR_THRESH) {
 			break;
 		}
 		
