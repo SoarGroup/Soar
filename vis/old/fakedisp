@@ -1,4 +1,0 @@
-while true
-do
-	cat /tmp/dispfifo
-done

@@ -1,8 +1,0 @@
-#include "../sgnode.h" 
-#include "../scene.h"
-#include "../drawer.h"
-#include "../common.h"
-#include "../filter.h"
-#include "../linalg.h"
-#include "../bullet_support.h"
-#include "../models/dtree.h"
