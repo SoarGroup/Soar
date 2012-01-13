@@ -54,7 +54,7 @@ float model::test(const floatvec &x, const floatvec &y) {
 	}
 	
 	if (predlog.is_open()) {
-		predlog << y << " ; " << py << " ; " << error << endl;
+		predlog << x << " ; " << y << " ; " << py << " ; " << error << endl;
 	}
 	return error;
 }
