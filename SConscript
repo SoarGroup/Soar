@@ -7,21 +7,23 @@ import itertools as itl
 
 Import('env')
 clone = env.Clone()
-clone.Prepend(CPPPATH = Split('src src/filters src/models #SoarKernel/src'))
+clone.Prepend(CPPPATH = Split('src src/filters src/models src/algorithms #SoarKernel/src'))
 
 src = list(itl.chain(*[Glob(p) for p in ('src/*.cpp', 
                                          'src/filters/*.cpp', 
                                          'src/commands/*.cpp', 
-                                         'src/models/*.cpp')]))
+                                         'src/models/*.cpp',
+                                         'src/algorithms/*.cpp')]))
 
 # I want to build nn.cpp separately using some unsafe flags
-src = filter(lambda x: not x.path.endswith('nn.cpp'), src)
+#src = filter(lambda x: not x.path.endswith('nn.cpp'), src)
 #if not any('filter_factory.cpp' in str(f) for f in src):
 #	src.append('#SVS/src/filter_factory.cpp')
 
 #Command('#SVS/src/filter_factory.cpp', Glob('src/filters/*.cpp'), './gen_filter_factory', chdir='SVS')
 
-nnobj = clone.Object('src/models/nn.cpp', CPPFLAGS = '-O3 -ffast-math -ftree-vectorizer-verbose=2 -march=native')
-svs = clone.StaticLibrary('svs', src + [nnobj])
+#nnobj = clone.Object('src/algorithms/nn.cpp', CPPFLAGS = '-O3 -ffast-math -ftree-vectorizer-verbose=2 -march=native')
+#svs = clone.Library('svs', src + [nnobj])
+svs = clone.Library('svs', src)
 env.Install('$PREFIX/lib', svs)
 
