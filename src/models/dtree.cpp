@@ -665,15 +665,20 @@ void ID5Tree::print_graphviz(ostream &os) const {
 	if (split_attr >= 0) {
 		lss << split_attr;
 	} else {
-		lss << cat;
+		lss << cat << " (";
+		map<category, int>::const_iterator i;
+		for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
+			lss << i->first << ":" << i->second << ", ";
+		}
+		lss << ")";
 	}
 	
-	os << (int) this << " [label=\"" << lss.str() << "\"]" << endl;
+	os << (intptr_t) this << " [label=\"" << lss.str() << "\"]" << endl;
 	
 	if (split_attr >= 0) {
-		os << (int) this << " -> " << (int) left.get() << " [label=\"1\"];" << endl;
+		os << (intptr_t) this << " -> " << (intptr_t) left.get() << " [label=\"1\"];" << endl;
 		left->print_graphviz(os);
-		os << (int) this << " -> " << (int) right.get() << " [label=\"0\"];" << endl;
+		os << (intptr_t) this << " -> " << (intptr_t) right.get() << " [label=\"0\"];" << endl;
 		right->print_graphviz(os);
 	}
 }
