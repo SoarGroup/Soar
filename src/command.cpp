@@ -31,24 +31,35 @@ void cleanstring(string &s) {
 
 command::command(svs_state *state, Symbol *cmd_root)
 : state(state), si(state->get_svs()->get_soar_interface()), root(cmd_root), 
-  subtree_size(0), max_time_tag(0), status_wme(NULL)
+  subtree_size(0), prev_max_time(-1), status_wme(NULL), first(true)
 {}
 
 command::~command() {}
 
 bool command::changed() {
+	int size, max_time;
+	parse_substructure(size, max_time);
+	if (first || size != subtree_size || max_time > prev_max_time) {
+		first = false;
+		subtree_size = size;
+		prev_max_time = max_time;
+		return true;
+	}
+	return false;
+}
+
+void command::parse_substructure(int &size, int &max_time) {
 	tc_num tc;
-	bool changed;
 	stack< Symbol *> to_process;
 	wme_list childs;
 	wme_list::iterator i;
 	Symbol *parent, *v;
-	int new_subtree_size = 0, tt;
+	int tt;
 	string attr;
 
 	tc = si->new_tc_num();
-	changed = false;
-	
+	size = 0;
+	max_time = -1;
 	to_process.push(root);
 	while (!to_process.empty()) {
 		parent = to_process.top();
@@ -66,11 +77,10 @@ bool command::changed() {
 			}
 			v = si->get_wme_val(*i);
 			tt = si->get_timetag(*i);
-			new_subtree_size++;
+			size++;
 			
-			if (tt > max_time_tag) {
-				changed = true;
-				max_time_tag = tt;
+			if (tt > max_time) {
+				max_time = tt;
 			}
 
 			if (si->is_identifier(v) && si->get_tc_num(v) != tc) {
@@ -79,13 +89,6 @@ bool command::changed() {
 			}
 		}
 	}
-
-	if (new_subtree_size != subtree_size) {
-		changed = true;
-		subtree_size = new_subtree_size;
-	}
-
-	return changed;
 }
 
 bool command::get_str_param(const string &name, string &val) {

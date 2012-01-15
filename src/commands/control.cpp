@@ -1104,7 +1104,7 @@ class manual_control_command : public command {
 public:
 	
 	manual_control_command(svs_state *state, Symbol *root) 
-	: command(state, root), state(state), outspec(state->get_output_spec()), root(root)
+	: command(state, root), state(state), outspec(state->get_output_spec()), root(root), using_constants(false)
 	{
 		si = state->get_svs()->get_soar_interface();
 		output.resize(outspec->size());

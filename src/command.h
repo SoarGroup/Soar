@@ -28,12 +28,15 @@ public:
 	svs_state *get_state() { return state; }
 	
 private:
+	void parse_substructure(int &size, int &max_time);
+	
 	svs_state      *state;
 	soar_interface *si;
 	Symbol         *root;
 	wme            *status_wme;
 	int             subtree_size;
-	int             max_time_tag;
+	int             prev_max_time;
+	bool            first;
 };
 
 command *make_command(svs_state *state, wme *w);
