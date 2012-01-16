@@ -7,6 +7,8 @@
 
 void lsqr(const arma::mat &X, const arma::mat &Y, const arma::vec &w, const arma::rowvec &x, arma::rowvec &yout);
 void ridge(const arma::mat &X, const arma::mat &Y, const arma::vec &w, const arma::rowvec &x, arma::rowvec &yout);
+double pcr(const arma::mat &X, const arma::mat &Y, const arma::rowvec &x);
+
 void remove_static(const arma::mat &X, arma::mat &Xout, std::vector<int> &nonstatic);
 
 class LRModel {

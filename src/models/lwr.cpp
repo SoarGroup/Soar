@@ -88,13 +88,13 @@ public:
 	}
 	
 	
-	bool predict(const floatvec &x, floatvec &y) {
+	bool predict2(const floatvec &x, floatvec &y) {
 		mat X, Y, Xd, Yd;
 		rowvec xd, yd;
 		vec d;
 		vector<int> xdi, ydi;
 		di_queue neighbors;
-		timer tall, tnn, tslv;
+		timer tall, tnn;
 		int i, j, k;
 	
 		tall.start();
@@ -188,6 +188,78 @@ public:
 		}
 		
 		//cout << "ALL: " << tall.stop() << endl;
+		return true;
+	}
+	
+	bool predict(const floatvec &x, floatvec &y) {
+		mat X, Y;
+		vec d;
+		di_queue neighbors;
+		timer tall, tnn;
+		int i, j, k;
+	
+		tall.start();
+		k = examples.size() > nnbrs ? nnbrs : examples.size();
+		if (k == 0) {
+			return false;
+		}
+		
+		if (!normalized) {
+			normalize();
+			normalized = true;
+		}
+		
+		floatvec xn((x - xmin) / xrange);
+		
+		tnn.start();
+		nn->query(xn, k, neighbors);
+		//cout << "NN:  " << tnn.stop() << endl;
+		
+		X.reshape(k, xsize);
+		Y.reshape(k, ysize);
+		d.reshape(k, 1);
+		for(i = 0; i < k; ++i) {
+			d(i) = neighbors.top().first;
+			int ind = neighbors.top().second;
+			neighbors.pop();
+			floatvec &tx = examples[ind].first;
+			floatvec &ty = examples[ind].second;
+			for(j = 0; j < xsize; ++j) {
+				X(i, j) = tx[j];
+			}
+			for(j = 0; j < ysize; ++j) {
+				Y(i, j) = ty[j];
+			}
+		}
+		
+		vec w = sqrt(pow(d, -3));
+		
+		/*
+		 Any neighbor whose weight is infinity is close enough
+		 to provide an exact solution.	If any exist, take their
+		 average as the solution.  If we don't do this the solve()
+		 will fail due to infinite values in Z and V.
+		*/
+		rowvec closeavg = zeros<rowvec>(ysize);
+		int nclose = 0;
+		for (i = 0; i < w.n_elem; ++i) {
+			if (w(i) == INF) {
+				closeavg += Y.row(i);
+				++nclose;
+			}
+		}
+		if (nclose > 0) {
+			for(i = 0; i < closeavg.n_elem; ++i) {
+				y[i] = closeavg(i) / nclose;
+			}
+			return true;
+		}
+
+		rowvec xv(x.size());
+		for (i = 0; i < xv.n_cols; ++i) {
+			xv(i) = x[i];
+		}
+		y[0] = pcr(X, Y, xv);
 		return true;
 	}
 	

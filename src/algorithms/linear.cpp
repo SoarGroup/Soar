@@ -400,3 +400,14 @@ bool PCRModel::predict_me(const mat &X, vec &result) {
 	result = Xc * beta + intercept;
 	return true;
 }
+
+double pcr(const mat &X, const mat &Y, const rowvec &x) {
+	vec y = Y.col(0);
+	PCRModel m(X, y);
+	for (int i = 0; i < X.n_rows; ++i) {
+		m.add_example(i, false);
+	}
+	m.fit();
+	return m.predict(x);
+}
+
