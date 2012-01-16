@@ -1,8 +1,10 @@
 #!/bin/sh
 
-NTRAIN=50
-NTEST=10
-TRAIN_CHUNK=10
+NTRAIN=1000
+NTEST=50
+TRAIN_CHUNK=1000
+TRAIN_SEEDS="1 2 3"
+TEST_SEEDS="4 5 6"
 
 WD="data/lc-`date +"%d:%H:%M:%S"`"
 mkdir $WD
@@ -11,21 +13,33 @@ TRAIN_SCEN="$WD/train_scen"
 TEST_SCEN="$WD/test_scen"
 RESULTS="$WD/results"
 
-./gen_scenarios 3 10 1 2 3 | head -n $NTRAIN >$TRAIN_SCEN
-./gen_scenarios 3 2 2 | head -n $NTEST >$TEST_SCEN
+./gen_scenarios2 2 10 $TRAIN_SEEDS | head -n $NTRAIN >$TRAIN_SCEN
+./gen_scenarios2 2 2 $TEST_SEEDS | head -n $NTEST >$TEST_SCEN
+NTRAIN=`wc -l<"$TRAIN_SCEN"`
+NTEST=`wc -l<"$TEST_SCEN"`
 
 rm -f models/*
 
 train_block=0
 
-while [ "$((train_block * TRAIN_CHUNK + 1< NTRAIN))" -eq 1 ]
+while true
 do
+	train_start=$((train_block * TRAIN_CHUNK + 1))
+	if [ $train_start -gt $NTRAIN ]
+	then
+		break
+	fi
+
+	train_stop=$(((train_block + 1) * TRAIN_CHUNK))
+	if [ $train_stop -gt $NTRAIN ]
+	then
+		train_stop=$NTRAIN
+	fi
+	
+	echo "training on scenarios $train_start - $train_stop"
+
 	blockdir="$WD/block$train_block"
 	mkdir $blockdir
-	
-	train_start=$((train_block * TRAIN_CHUNK + 1))
-	train_stop=$((train_start + TRAIN_CHUNK - 1))
-	echo "training on scenarios $train_start - $train_stop"
 	
 	sed -n -e "${train_start},${train_stop}p" $TRAIN_SCEN > train_batch
 	./run_scenarios train train_batch || exit 1
@@ -36,8 +50,12 @@ do
 	means=''
 	names=''
 	# aggregate statistics
-	for f in predictions/*
+	for f in predictions/*.{em,lwr}
 	do
+		if [ ! -f "$f" ]
+		then
+			continue
+		fi
 		n=`basename $f`
 		n=${n%.*}
 		m=`awk '{print $NF}' $f | tb mean`

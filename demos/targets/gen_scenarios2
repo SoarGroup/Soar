@@ -1,0 +1,39 @@
+#!/bin/sh
+
+ncubes=$1
+nsteps=$2
+shift; shift
+seeds="$*"
+
+for touching in `seq $((ncubes-1))`
+do
+	for side in l r t b
+	do
+		case $side in
+		l) direction="1  0" ;;
+		r) direction="-1 0" ;;
+		t) direction="0 1" ;;
+		b) direction="0 -1" ;;
+		esac
+		
+		for s in $seeds
+		do
+			env_args="$s $ncubes $touching $side"
+			remote_args="fixed $nsteps $direction"
+		
+			echo "./run -m -r '$remote_args' -e '$env_args' 'run $((nsteps+2))'"
+		done
+	done
+	
+done
+
+for direction in "1 0" "-1 0" "0 1" "0 -1"
+do
+	for s in $seeds
+	do
+		env_args="$s $ncubes"
+		remote_args="fixed $nsteps $direction"
+	
+		echo "./run -m -r '$remote_args' -e '$env_args' 'run $((nsteps+2))'"
+	done
+done
