@@ -102,10 +102,9 @@ void multi_model::learn(const floatvec &x, const floatvec &y, float dt) {
 		model_config *cfg = *i;
 		floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
 		floatvec yp = cfg->ally ? y : y.slice(cfg->yinds);
-		float error = cfg->mdl->test(xp, yp);
-		
 		
 		/*
+		float error = cfg->mdl->test(xp, yp);
 		if (error >= 0. && error < 1.0e-8) {
 			continue;
 		}
