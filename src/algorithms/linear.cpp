@@ -40,6 +40,17 @@ const double ZERO_THRESH = 1e-15;
 const double ABS_ERROR_THRESH = 1e-10;
 
 /*
+ Maximum number of times Leave One Out cross-validation will run for a
+ single PCR fitting
+*/
+const int LOO_NTEST = 30;
+
+/*
+ In PCR, don't use a beta vector with a norm larger than this.
+*/
+const double MAX_BETA_NORM = 1.0e3;
+
+/*
  Output a matrix composed only of those columns in the input matrix with
  significantly different values, meaning the maximum absolute value of
  the column is greater than SAME_THRESH times the minimum absolute value.
@@ -141,6 +152,103 @@ void ridge(const mat &X, const mat &Y, const vec &w, const rowvec &x, rowvec &yo
 	yout = (x - mean(X, 0)) * C + mean(Y, 0);
 }
 
+void pcr_fit(const mat &X, const vec &y, int ncomp, vector<vec> &betas, vector<double> &intercepts) {
+	mat loadings, scores;
+	vec variances, b, coefs;
+	double inter;
+	
+	betas.clear();
+	intercepts.clear();
+	if (!princomp(loadings, scores, variances, X)) {
+		assert(false);
+	}
+	if (ncomp > 0) {
+		solve2(scores.cols(0, ncomp - 1), y, coefs, inter);
+		b = loadings.cols(0, ncomp - 1) * coefs;
+		betas.push_back(b);
+		intercepts.push_back(inter);
+		return;
+	}
+	for (int n = 0; n < scores.n_cols; ++n) {
+		solve2(scores.cols(0, n), y, coefs, inter);
+		b = loadings.cols(0, n) * coefs;
+		betas.push_back(b);
+		intercepts.push_back(inter);
+	}
+}
+
+/*
+ Use Leave-one-out cross validation to determine number of components
+ to use. This seems to choose numbers that are too low.
+*/
+void cross_validate(const mat &X, const vec &y, vec &beta, double &intercept) {
+	int ndata = X.n_rows, maxcomps = X.n_cols;
+	
+	mat X1(ndata - 1, X.n_cols);
+	vec y1(ndata - 1), errors = zeros<vec>(maxcomps, 1);
+	vector<vec> betas;
+	vector<double> intercepts;
+	vector<int> leave_out;
+	int ntest = min(LOO_NTEST, ndata);
+	
+	leave_out.reserve(ndata);
+	for (int i = 0; i < ndata; ++i) {
+		leave_out.push_back(i);
+	}
+	random_shuffle(leave_out.begin(), leave_out.end());
+	
+	for (int i = 0; i < ntest; ++i) {
+		int n = leave_out[i];
+		if (n > 0) {
+			X1.rows(0, n - 1) = X.rows(0, n - 1);
+			y1.rows(0, n - 1) = y.rows(0, n - 1);
+		}
+		if (n < ndata - 1) {
+			X1.rows(n, ndata - 2) = X.rows(n + 1, ndata - 1);
+			y1.rows(n, ndata - 2) = y.rows(n + 1, ndata - 1);
+		}
+		pcr_fit(X1, y1, -1, betas, intercepts);
+		for (int j = 0; j < maxcomps; ++j) {
+			errors(j) += abs(dot(X.row(n), betas[j]) + intercepts[j] - y(n));
+		}
+	}
+	int best = -1;
+	for (int i = 0; i < maxcomps; ++i) {
+		if (best == -1 || errors(best) > errors(i)) {
+			best = i;
+		}
+	}
+	pcr_fit(X, y, best, betas, intercepts);
+	beta = betas[0];
+	intercept = intercepts[0];
+}
+
+/*
+ Choose the number of components to minimize prediction error for
+ the training instances. Also prevent the beta vector from blowing up
+ too much.
+*/
+void min_train_error(const mat &X, const vec &y, vec &beta, double &intercept) {
+	double error = INF;
+	vector<vec> betas;
+	vector<double> intercepts;
+	
+	for (int ncomp = 1; ncomp < X.n_cols; ++ncomp) {
+		pcr_fit(X, y, ncomp, betas, intercepts);
+		if (norm(betas[0], 1) > MAX_BETA_NORM) {
+			return;
+		}
+		beta = betas[0];
+		intercept = intercepts[0];
+		double newerror = sqrt(accu(pow((X * beta + intercept) - y, 2)) / X.n_rows);
+		
+		if (newerror < ABS_ERROR_THRESH) {
+			break;
+		}
+		
+		error = newerror;
+	}
+}
 
 LRModel::LRModel(const mat &xdata, const vec &ydata) 
 : xdata(xdata), ydata(ydata), constval(0.0), isconst(true), error(INF), refit(true)
@@ -269,11 +377,13 @@ void LRModel::refresh_error() {
 }
 
 void LRModel::save(ostream &os) const {
+	os << isconst << " " << constval << endl;
 	save_vector(members, os);
 }
 
 void LRModel::load(istream &is) {
 	int n, x;
+	is >> isconst >> constval;
 	is >> n;
 	members.reserve(n);
 	for (int i = 0; i < n; ++i) {
@@ -365,26 +475,10 @@ void PCRModel::fit_me() {
 		X.row(i) /= stdevs;
 	}
 	
-	if (!princomp(loadings, scores, variances, X)) {
-		assert(false);
-	}
-	
-	double error = INF;
-	for (int ncomp = 1; ncomp < scores.n_cols; ++ncomp) {
-		vec coefs;
-		solve2(scores.cols(0, ncomp - 1), y, coefs, intercept);
-		beta = loadings.cols(0, ncomp - 1) * coefs;
-		double newerror = sqrt(accu(pow((X * beta + intercept) - y, 2)) / X.n_rows);
-		
-		if (newerror < ABS_ERROR_THRESH) {
-			break;
-		}
-		
-		error = newerror;
-	}
-	
+	min_train_error(X, y, beta, intercept);
 	DATAVIS("END" << endl)
 }
+
 
 double PCRModel::predict_me(const rowvec &x) {
 	return dot((x - means) / stdevs, beta) + intercept;
