@@ -2357,7 +2357,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 								{
 									// pool_p->second could be NULL
 									// if pool_p->second is NULL, again we only use the value ID
-									// and let the catch all below to the rest
+									// and let the catch all below do the rest
 									if ( pool_p->second != EPMEM_NODEID_BAD )
 									{
 										(*w_p)->epmem_id = pool_p->second;
@@ -4646,15 +4646,17 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					symbol_remove_ref(my_agent, mapping);
 
 					for (epmem_literal_node_pair_map::iterator iter = best_bindings.begin(); iter != best_bindings.end(); iter++) {
-						// create the node
-						temp_sym = make_new_identifier(my_agent, 'N', level);
-						epmem_buffer_add_wme(meta_wmes, mapping, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
-						symbol_remove_ref(my_agent, temp_sym);
-						// point to the cue identifier
-						epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_cue, (*iter).first->value_sym);
-						// save the mapping point for the episode
-						node_map_map[(*iter).second.second] = temp_sym;
-						node_mem_map[(*iter).second.second] = NULL;
+						if ((*iter).first->value_is_id) {
+							// create the node
+							temp_sym = make_new_identifier(my_agent, 'N', level);
+							epmem_buffer_add_wme(meta_wmes, mapping, my_agent->epmem_sym_graph_match_mapping_node, temp_sym);
+							symbol_remove_ref(my_agent, temp_sym);
+							// point to the cue identifier
+							epmem_buffer_add_wme(meta_wmes, temp_sym, my_agent->epmem_sym_graph_match_mapping_cue, (*iter).first->value_sym);
+							// save the mapping point for the episode
+							node_map_map[(*iter).second.second] = temp_sym;
+							node_mem_map[(*iter).second.second] = NULL;
+						}
 					}
 				}
 			}
