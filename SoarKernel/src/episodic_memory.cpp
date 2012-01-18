@@ -2426,14 +2426,13 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set();
 #endif
 
-						if ( child_root_repo != my_id_repo2 )
+
+						// if there is a master pool, but we didn't get the value from there
+						// the value needs to be placed there when done
+						// when this wme is done, it's value needs to be added to the child_root_repo as well
+						if ( child_root_repo && child_root_repo != my_id_repo2 )
 						{
-							// when this wme is done, it's value needs to be added to the child_root_repo as well
 							should_replace_master = true;
-							if ( !child_root_repo)
-							{
-								child_root_repo = my_id_repo2;
-							}
 						}
 					}
 				}
