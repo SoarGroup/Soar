@@ -43,10 +43,13 @@ run_remote() {
 		return
 		;;
 	fixed)
-		for i in `seq $2`
-		do
-			echo "$3 $4"
-		done >ctrl
+		awk -v "nsteps=$2" -v "seed=$3" -v "x=$4" -v "y=$5" '
+			BEGIN {
+				srand(seed)
+				for (i = 0; i < nsteps; ++i) {
+					printf("%.3f %.3f\n", x + rand() / 10, y + rand() / 10)
+				}
+			}' >ctrl
 		;;
 	*)
 		echo "unknown remote argument $1" >&2

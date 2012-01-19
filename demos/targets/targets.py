@@ -149,7 +149,7 @@ class World2:
 				dpos = [x1 - x2 for x1, x2 in zip(closest, c.pos)]
 				c.move(dpos)
 				c.update_canvas()
-				assert not self.cursor.intersects(c)
+				#assert not self.cursor.intersects(c)
 		
 		self.print_sgel()
 	
