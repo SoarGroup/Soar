@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <fstream>
 
 class filter;
 class filter_input;
@@ -72,6 +73,7 @@ public:
 	 and the rest are the node names used as arguments.
 	*/
 	void get_all_atoms(scene *scn, std::vector<std::vector<std::string> > &atoms) const {
+		std::ofstream out("/tmp/atom_names");
 		std::map<std::string, filter_table_entry>::const_iterator i;
 		for(i = t.begin(); i != t.end(); ++i) {
 			const filter_table_entry &e = i->second;
@@ -82,6 +84,8 @@ public:
 				for (j = args.begin(); j != args.end(); ++j) {
 					j->insert(j->begin(), e.name);
 					atoms.push_back(*j);
+					std::copy(j->begin(), j->end(), std::ostream_iterator<std::string>(out, " "));
+					out << std::endl;
 				}
 			}
 		}

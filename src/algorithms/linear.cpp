@@ -1,55 +1,13 @@
-#include <assert.h>
+#include <cmath>
+#include <cassert>
 #include <vector>
 #include <armadillo>
 #include "linear.h"
 #include "common.h"
+#include "params.h"
 
 using namespace std;
 using namespace arma;
-
-const double INF = numeric_limits<double>::infinity();
-//const double NAN = numeric_limits<double>::signaling_NaN();
-const double RLAMBDA = 0.0000001;
-
-/*
- A local model does not need to be refit to data if its prediction error
- is lower than this value.
-*/
-const double REFIT_ABS_THRESH = 1e-5;
-
-/*
- A local model does not need to be refit to data if its prediction error
- increases by less than this factor with a new data point.
-*/
-const double REFIT_MUL_THRESH = 1.0001;
-
-/*
- When solving linear systems, columns whose min and max values are within
- this factor of each other are removed.
-*/
-const double SAME_THRESH = 1 + 1e-10;
-
-/*
- When solving linear systems, elements whose absolute value is smaller
- than this are zeroed.
-*/
-const double ZERO_THRESH = 1e-15;
-
-/*
- Determines cutoff for the number of components to use in PCR.
-*/
-const double ABS_ERROR_THRESH = 1e-10;
-
-/*
- Maximum number of times Leave One Out cross-validation will run for a
- single PCR fitting
-*/
-const int LOO_NTEST = 30;
-
-/*
- In PCR, don't use a beta vector with a norm larger than this.
-*/
-const double MAX_BETA_NORM = 1.0e3;
 
 /*
  Output a matrix composed only of those columns in the input matrix with
@@ -141,7 +99,7 @@ void ridge(const mat &X, const mat &Y, const vec &w, const rowvec &x, rowvec &yo
 	mat A = Zt * Zcenter;
 	double lambda = RLAMBDA;
 	for (i = 0; i < A.n_cols; ++i) {
-		double inc = nextafter(A(i, i), INF) - A(i, i);
+		double inc = nextafter(A(i, i), INFINITY) - A(i, i);
 		lambda = max(lambda, inc);
 	}
 	for (i = 0; i < A.n_cols; ++i) {
@@ -230,7 +188,7 @@ void cross_validate(const mat &X, const vec &y, vec &beta, double &intercept) {
  too much.
 */
 void min_train_error(const mat &X, const vec &y, vec &beta, double &intercept) {
-	double error = INF;
+	double error = INFINITY;
 	vector<vec> betas;
 	vector<double> intercepts;
 	
@@ -243,7 +201,7 @@ void min_train_error(const mat &X, const vec &y, vec &beta, double &intercept) {
 		intercept = intercepts[i];
 		double newerror = sqrt(accu(pow((X * beta + intercept) - y, 2)) / X.n_rows);
 		
-		if (newerror < ABS_ERROR_THRESH) {
+		if (newerror < MODEL_ERROR_THRESH) {
 			break;
 		}
 		
@@ -252,12 +210,12 @@ void min_train_error(const mat &X, const vec &y, vec &beta, double &intercept) {
 }
 
 LRModel::LRModel(const mat &xdata, const vec &ydata) 
-: xdata(xdata), ydata(ydata), constval(0.0), isconst(true), error(INF), refit(true)
+: xdata(xdata), ydata(ydata), constval(0.0), isconst(true), error(INFINITY), refit(true)
 {}
 
 LRModel::LRModel(const LRModel &m)
 : xdata(m.xdata), ydata(m.ydata), constval(m.constval), members(m.members), isconst(m.isconst),
-  xtotals(m.xtotals), center(m.center), error(INF), refit(true)
+  xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true)
 {}
 
 LRModel::~LRModel() { }
@@ -307,7 +265,7 @@ void LRModel::add_example(int i, bool update_refit) {
 			*/
 			double olderror = error / (members.size() - 1);
 			double newerror = (error + e) / members.size();
-			if (newerror > REFIT_ABS_THRESH && newerror > REFIT_MUL_THRESH * olderror) {
+			if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror) {
 				refit = true;
 			}
 		}
@@ -364,23 +322,22 @@ void LRModel::del_example(int i) {
 
 void LRModel::update_error() {
 	if (xdata.n_rows == 0) {
-		error = INF;
+		error = INFINITY;
 	} else if (isconst) {
 		error = 0.0;
 	} else {
 		mat X(members.size(), xdata.n_cols);
+		vec y(members.size()), predictions(members.size());
 		for (int i = 0; i < members.size(); ++i) {
 			X.row(i) = xdata.row(members[i]);
+			y(i) = ydata(members[i]);
 		}
 		
-		vec predictions(members.size());
 		if (!predict_me(X, predictions)) {
-			error = INF;
+			error = INFINITY;
 		} else {
-			error = 0.;
-			for (int i = 0; i < members.size(); ++i) {
-				error += pow(ydata(members[i]) - predictions(i), 2);
-			}
+			vec errors = pow(y - predictions, 2);
+			error = accu(errors);
 		}
 	}
 	DATAVIS("'avg error' " << error / members.size() << endl)

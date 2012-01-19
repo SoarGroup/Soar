@@ -13,18 +13,10 @@
 #include "dtree.h"
 #include "scene.h"
 #include "filter_table.h"
+#include "params.h"
 
 using namespace std;
 using namespace arma;
-
-const double INF = numeric_limits<double>::infinity();
-const double PNOISE = 0.0001;
-const double EPSILON = 0.001;
-const double STD = 0.001;
-const double MODEL_ERROR_THRESH = 1e-8;
-const double UNIFY_MUL_THRESH = 1.00001;
-const int SEL_NOISE_MAX_TRIES = 10;
-const int K = 10;
 
 const int INIT_NDATA = 1;
 const int INIT_NMODELS = 1;
@@ -147,7 +139,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 			}
 			double p = models[i]->predict(xdata.row(*j));
 			assert(!isnan(p));
-			double d = gausspdf(ydata(*j), p, STD);
+			double d = gausspdf(ydata(*j), p, MODEL_STD);
 			now = (1.0 - EPSILON) * w * d;
 		}
 		if ((c == i && now < prev) ||
@@ -303,8 +295,8 @@ bool EM::unify_or_add_model() {
 	
 	for (int n = 0; n < SEL_NOISE_MAX_TRIES; ++n) {
 		auto_ptr<LRModel> m(new LinearModel(xdata, ydata));
-		int start = rand() % (noise_data.size() - 3);
-		for (int i = 0; i < 3; ++i) {
+		int start = rand() % (noise_data.size() - MODEL_INIT_N);
+		for (int i = 0; i < MODEL_INIT_N; ++i) {
 			m->add_example(noise_data[start + i], false);
 		}
 		m->fit();
@@ -314,14 +306,13 @@ bool EM::unify_or_add_model() {
 		}
 		
 		for (int i = 0; i < noise_data.size(); ++i) {
-			if (i < start || i >= start + 3) {
-				m->add_example(noise_data[i], true);
-				if (m->needs_refit()) {
-					m->fit();
-				}
-				double e = m->get_train_error();
-				if (e > MODEL_ERROR_THRESH) {
-					m->del_example(noise_data[i]);
+			if (i < start || i >= start + MODEL_INIT_N) {
+				double e = pow(m->predict(xdata.row(noise_data[i])) - ydata(noise_data[i]), 2);
+				if (e < MODEL_ADD_THRESH) {
+					m->add_example(noise_data[i], true);
+					if (m->needs_refit()) {
+						m->fit();
+					}
 				}
 			}
 		}
