@@ -1,0 +1,104 @@
+# Universal format for atoms:
+#
+# (<parent> ^{predicate name} <p>)
+# (<p> ^{param1} {obj1}
+#      ^{param2} {obj2})
+
+
+sp {propose*change-predicate*positive
+   (state <s> ^task-state t
+              ^model-ready t  # temporary
+              ^svs.command <cmd>
+              ^curr-state.positive <pos>
+              ^cant-change <cc>)
+   (<pos> ^<pred> <p>)
+   (<cmd> -^seek)
+  -(<cc> ^<pred> <p>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name change-predicate
+        ^predicate <pred>
+        ^params <p>
+        ^sign negative)}
+
+sp {propose*change-predicate*negative
+   (state <s> ^task-state t
+              ^svs.command <cmd>
+              ^model-ready t  # temporary
+              ^curr-state.negative <neg>
+              ^cant-change <cc>)
+   (<neg> ^<pred> <p>)
+   (<cmd> -^seek)
+  -(<cc> ^<pred> <p>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name change-predicate
+        ^predicate <pred>
+        ^params <p>
+        ^sign positive)}
+
+sp {propose*remove-failed-seek
+   (state <s> ^svs.command.seek <sk>)
+   (<sk> ^to-change <tc>
+         ^status <> success)
+   (<tc> ^predicate <pred>
+         ^params <params>)
+-->
+   (<s> ^operator <o> + !)
+   (<o> ^name remove-failed-seek
+        ^command <sk>)}
+
+sp {apply*remove-failed-seek*remove
+   (state <s> ^operator <o>
+              ^svs.command <cmd>)
+   (<o> ^name remove-failed-seek
+        ^command <sk>)
+   (<cmd> ^seek <sk>)
+-->
+   (<cmd> ^seek <sk> -)}
+
+sp {apply*remove-failed-seek*record-cant-change
+   (state <s> ^operator <o>
+              ^cant-change <cc>)
+   (<o> ^name remove-failed-seek
+        ^command <sk>)
+   (<sk> ^to-change <tc>)
+   (<tc> ^predicate <pred>
+         ^params <params>)
+-->
+   (<cc> ^<pred> <params>)}
+
+sp {propose*remove-successful-seek*2-param
+   (state <s> ^curr-state.<sign>.<pred> <p1>
+              ^svs.command.seek <sk>)
+   (<p1> ^<param1> <v1>
+         ^{<param2> > <param1>} <v2>
+        -^{<param3> > <param2>})
+   (<sk> ^to-change <tc>)
+   (<tc> ^sign <sign>
+         ^predicate <pred>
+         ^params <p2>)
+   (<p2> ^<param1> <v1>
+         ^<param2> <v2>)
+-->
+   (<s> ^operator <o> +)
+   (<o> ^name remove-seek
+        ^command <sk>)}
+
+sp {apply*remove-successful-seek
+   (state <s> ^operator <o>
+              ^svs.command <cmd>)
+   (<o> ^name remove-seek
+        ^command <sk>)
+   (<cmd> ^seek <sk>)
+-->
+   (<cmd> ^seek <sk> -)}
+
+sp {apply*remove-successful-seek*cant-change
+   (state <s> ^operator <o>
+              ^cant-change <cc>)
+   (<o> ^name remove-seek
+        ^command <sk>)
+   (<cc> ^<pred> <p>)
+-->
+   (<cc> ^<pred> <p> -)}

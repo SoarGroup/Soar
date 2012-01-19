@@ -1,23 +1,30 @@
-source extract.soar
+#source extract.soar
 source models.soar
+#source epmem.soar
+source goal.soar
 source control.soar
-source epmem.soar
+source search.soar
+source temp.soar
+
+waitsnc -e
 
 sp {init
    (state <s> ^superstate nil)
 -->
-   (<s> ^time 0 ^auto-control f)}
+   (<s> ^time 0
+        ^task-state t
+        ^auto-control f
+        ^cant-change <cc>)}
 
-sp {propose*count-time
-   (state <s> ^superstate nil ^time <t>)
+sp {goal
+   (state <s> ^superstate nil)
 -->
-   (<s> ^operator <o> +)
-   (<o> ^name count-time)}
+   (<s> ^goal-state <gs>)
+   (<gs> ^positive <p> ^negative <n>)
+   (<p> ^intersect <i>)
+   (<i> ^a c1 ^b c2)}
 
-sp {apply*count-time
-   (state <s> ^superstate nil
-              ^time <t>
-              ^operator.name count-time)
+sp {model-ready
+   (state <s> ^svs.command.assign-model.status success)
 -->
-   (<s> ^time <t> - (+ <t> 1))}
-
+   (<s> ^model-ready t)}

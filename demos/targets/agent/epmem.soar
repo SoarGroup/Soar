@@ -1,8 +1,3 @@
 epmem --set learning on
-epmem --set trigger none
-
-sp {record-epmem
-   (state <s> ^atoms.<predicate> <a>)
--->
-   (write (crlf) |Recording Episode| (crlf))
-   (cmd epemem --set force on)}
+epmem --set trigger dc
+epmem --set path epmem.sqlite3

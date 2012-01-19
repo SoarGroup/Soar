@@ -1,0 +1,21 @@
+source models.soar
+
+waitsnc -e
+
+sp {output
+   (state <s> ^superstate nil
+              ^svs.command <c>)
+-->
+   (<c> ^output <out>)
+   (<out> ^dx <l> ^dy <r>)
+   (<l> ^min -1.0 ^max 1.0 ^default 0.0)
+   (<r> ^min -1.0 ^max 1.0 ^default 0.0)}
+
+sp {manual
+   (state <s> ^superstate nil 
+              ^svs.command <c>)
+   (<c> ^output <out>)
+   (<out> ^dx <l> ^dy <r> ^status success)
+-->
+   (<c> ^manual_control <mc>)
+}

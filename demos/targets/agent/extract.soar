@@ -1,28 +1,6 @@
-sp {elab-em-atoms-intersect
-   (state <s> ^svs.command <cmd>)
-   (<cmd> ^create-model <cm>)
-   (<cm> ^type em ^result <r>)
-   (<r> ^intersect <p>)
-   (<p> ^a <aname> ^b <bname>)
- -{(<cmd> ^create-model <cm2>)
-   (<cm2> ^type em ^result <r2>)
-   (<r2> ^intersect { <p2> < <p> })
-   (<p2> ^a <aname> ^b <bname>)}
--->
-   (<cmd> ^extract <e>)
-   (<e> ^type intersect ^a <a> ^b <b>)
-   (<a> ^type node ^name <aname>)
-   (<b> ^type node ^name <bname>)}
+source em-extract.soar
 
 sp {init-atoms
    (state <s> ^superstate nil)
 -->
-   (<s> ^atoms <a>)}
-
-# link a result literal from an extract command to the state  
-sp {elab-literal
-   (state <s> ^atoms <a>
-              ^svs.command.extract <ec>)
-   (<ec> ^type <type> ^result.literal <l>)
--->
-   (<a> ^<type> <l>)}
+   (<s> ^curr-state <a>)}

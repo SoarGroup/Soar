@@ -1,0 +1,38 @@
+# rules used for testing
+
+sp {extract-cursor-c1-intersect
+   (state <s> ^task-state t
+              ^svs <svs>)
+   (<svs> ^spatial-scene <scn>
+          ^command <cmd>)
+   (<scn> ^child.id cur ^child.id c1)
+-->
+   (<cmd> ^extract <e>)
+   (<e> ^type intersect ^a <a> ^b <b>)
+   (<a> ^type node ^name cur)
+   (<b> ^type node ^name c1)}
+
+# create a temporary model while we're not doing any learning
+#sp {create-cursor-model
+#   (state <s> ^svs <svs>)
+#   (<svs> ^spatial-scene <scn> ^command <cmd>)
+#   (<scn> ^child.id cur)
+#-->
+#   (<cmd> ^create-model <m>)
+#   (<m> ^name m1 ^type velocity ^dims 2)}
+#
+#sp {assign-cursor-model
+#   (state <s> ^svs.command <cmd>)
+#   (<cmd> ^create-model <cm>)
+#   (<cm> ^name m1 ^status success)
+#-->
+#   (<cmd> ^assign-model <am>)
+#   (<am> ^name m1
+#         ^inputs.cur:px.cur:py.output:dx.output:dy <x1>
+#         ^outputs.cur:px.cur:py <x2>)}
+
+sp {change-predicate*indifferent
+   (state <s> ^operator <o> +)
+   (<o> ^name change-predicate)
+-->
+   (<s> ^operator <o> =)}
