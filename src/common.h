@@ -22,7 +22,7 @@ std::string getnamespace();
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
 
-#if 0
+#if 1
 #define DATAVIS(x) get_datavis() << x;
 #else
 #define DATAVIS(x)
@@ -617,6 +617,11 @@ void load_vector(std::vector<T> &v, std::istream &is) {
 		}
 		v.push_back(x);
 	}
+}
+
+inline double gausspdf(double x, double mean, double std) {
+	const double SQRT2PI = 2.5066282746310002;
+	return (1. / std * SQRT2PI) * exp(-((x - mean) * (x - mean) / (2 * std * std)));
 }
 
 #endif

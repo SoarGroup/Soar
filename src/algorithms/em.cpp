@@ -18,24 +18,19 @@ using namespace std;
 using namespace arma;
 
 const double INF = numeric_limits<double>::infinity();
-const double SQRT2PI = 2.5066282746310002;
 const double PNOISE = 0.0001;
 const double EPSILON = 0.001;
 const double STD = 0.001;
-const double UNIFY_ABS_THRESH = 1e-5;
+const double MODEL_ERROR_THRESH = 1e-8;
 const double UNIFY_MUL_THRESH = 1.00001;
 const int SEL_NOISE_MAX_TRIES = 10;
-const int K = 5;
+const int K = 10;
 
 const int INIT_NDATA = 1;
 const int INIT_NMODELS = 1;
 const bool TEST_ELIGIBILITY = false;
 
 typedef PCRModel LinearModel;
-
-double gausspdf(double x, double mean) {
-	return (1. / STD * SQRT2PI) * exp(-((x - mean) * (x - mean) / (2 * STD * STD)));
-}
 
 void argmax_cols(const mat &m, ivec &max, int nrows, int ncols) {
 	max.subvec(0, ncols - 1).fill(-1);
@@ -152,7 +147,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 			}
 			double p = models[i]->predict(xdata.row(*j));
 			assert(!isnan(p));
-			double d = gausspdf(ydata(*j), p);
+			double d = gausspdf(ydata(*j), p, STD);
 			now = (1.0 - EPSILON) * w * d;
 		}
 		if ((c == i && now < prev) ||
@@ -307,23 +302,32 @@ bool EM::unify_or_add_model() {
 	}
 	
 	for (int n = 0; n < SEL_NOISE_MAX_TRIES; ++n) {
-		vector<int> train;
-		if (noise_data.size() > K) {
-			/*
-			 Choose a random noise point, then choose the
-			 K closest noise points as training data.
-			*/
-			const rowvec &seed = xdata.row(noise_data[rand() % noise_data.size()]);
-			vec dists(noise_data.size());
-			for (int i = 0; i < noise_data.size(); ++i) {
-				dists(i) = distsq(xdata.row(noise_data[i]), seed);
+		auto_ptr<LRModel> m(new LinearModel(xdata, ydata));
+		int start = rand() % (noise_data.size() - 3);
+		for (int i = 0; i < 3; ++i) {
+			m->add_example(noise_data[start + i], false);
+		}
+		m->fit();
+		
+		if (m->get_train_error() > MODEL_ERROR_THRESH) {
+			continue;
+		}
+		
+		for (int i = 0; i < noise_data.size(); ++i) {
+			if (i < start || i >= start + 3) {
+				m->add_example(noise_data[i], true);
+				if (m->needs_refit()) {
+					m->fit();
+				}
+				double e = m->get_train_error();
+				if (e > MODEL_ERROR_THRESH) {
+					m->del_example(noise_data[i]);
+				}
 			}
-			uvec close = sort_index(dists);
-			for (int i = 0; i < K; ++i) {
-				train.push_back(noise_data[close(i)]);
-			}
-		} else {
-			train = noise_data;
+		}
+		
+		if (m->size() < K) {
+			continue;
 		}
 		
 		/*
@@ -333,55 +337,31 @@ bool EM::unify_or_add_model() {
 		*/
 		for (int i = 0; i < nmodels; ++i) {
 			DATAVIS("BEGIN 'extended model " << i << "'" << endl)
-			LRModel *nmodel = models[i]->copy();
-			for (int j = 0; j < train.size(); ++j) {
-				nmodel->add_example(train[j], false);
-			}
-			nmodel->fit();
+			auto_ptr<LRModel> unified(models[i]->copy());
+			unified->add_examples(m->get_members());
+			unified->fit();
 			DATAVIS("END" << endl)
 			
-			double curr_error = models[i]->get_error();
-			double uni_error = nmodel->get_error();
+			double curr_error = models[i]->get_train_error();
+			double uni_error = unified->get_train_error();
 			
-			if (uni_error < UNIFY_ABS_THRESH ||
+			if (uni_error < MODEL_ERROR_THRESH ||
 			    curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error)
 			{
 				delete models[i];
-				models[i] = nmodel;
+				models[i] = unified.release();
 				mark_model_stale(i);
 				cerr << "UNIFIED " << i << endl;
 				return true;
 			}
 		}
 		
-		LRModel *m = new LinearModel(xdata, ydata);
-		
-		DATAVIS("BEGIN 'potential model'" << endl)
-		for (int i = 0; i < train.size(); ++i) {
-			m->add_example(train[i], false);
-		}
-		m->fit();
-		bool good_model = true;
-		for (int i = 0; i < train.size(); ++i) {
-			double p = gausspdf(ydata(train[i]), m->predict(xdata.row(train[i])));
-			if (p < PNOISE) {
-				good_model = false;
-				break;
-			}
-		}
-		DATAVIS("END" << endl)
-		
-		if (good_model) {
-			models.push_back(m);
-			mark_model_stale(nmodels);
-			++nmodels;
-			resize();
-			return true;
-		} else {
-			delete m;
-		}
+		models.push_back(m.release());
+		mark_model_stale(nmodels);
+		++nmodels;
+		resize();
+		return true;
 	}
-
 	return false;
 }
 

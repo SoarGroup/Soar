@@ -8,6 +8,7 @@ using namespace std;
 using namespace arma;
 
 const double INF = numeric_limits<double>::infinity();
+//const double NAN = numeric_limits<double>::signaling_NaN();
 const double RLAMBDA = 0.0000001;
 
 /*
@@ -233,13 +234,13 @@ void min_train_error(const mat &X, const vec &y, vec &beta, double &intercept) {
 	vector<vec> betas;
 	vector<double> intercepts;
 	
-	for (int ncomp = 1; ncomp < X.n_cols; ++ncomp) {
-		pcr_fit(X, y, ncomp, betas, intercepts);
-		if (norm(betas[0], 1) > MAX_BETA_NORM) {
+	pcr_fit(X, y, -1, betas, intercepts);
+	for (int i = 0; i < betas.size(); ++i) {
+		if (norm(betas[i], 1) > MAX_BETA_NORM) {
 			return;
 		}
-		beta = betas[0];
-		intercept = intercepts[0];
+		beta = betas[i];
+		intercept = intercepts[i];
 		double newerror = sqrt(accu(pow((X * beta + intercept) - y, 2)) / X.n_rows);
 		
 		if (newerror < ABS_ERROR_THRESH) {
@@ -298,7 +299,7 @@ void LRModel::add_example(int i, bool update_refit) {
 	if (isconst) {
 		DATAVIS("constval " << constval << endl)
 	} else if (update_refit) {
-		double e = pow(predict(xdata.row(i)) - ydata(i), 2);
+		double e = pow(predict_me(xdata.row(i)) - ydata(i), 2);
 		if (!refit) {
 			/*
 			 Only refit the model if the average error increases
@@ -312,6 +313,13 @@ void LRModel::add_example(int i, bool update_refit) {
 		}
 		error += e;
 		DATAVIS("'avg error' " << error / members.size() << endl)
+	}
+}
+
+void LRModel::add_examples(const vector<int> &inds) {
+	vector<int>::const_iterator i;
+	for (i = inds.begin(); i != inds.end(); ++i) {
+		add_example(*i, false);
 	}
 }
 
@@ -348,29 +356,31 @@ void LRModel::del_example(int i) {
 		if (isconst) {
 			error = 0.0;
 		} else {
-			refresh_error();
+			update_error();
 		}
 	}
 	DATAVIS("isconst " << isconst << endl)
 }
 
-void LRModel::refresh_error() {
+void LRModel::update_error() {
 	if (xdata.n_rows == 0) {
 		error = INF;
-	}
-	
-	mat X(members.size(), xdata.n_cols);
-	for (int i = 0; i < members.size(); ++i) {
-		X.row(i) = xdata.row(members[i]);
-	}
-	
-	vec predictions(members.size());
-	if (!predict(X, predictions)) {
-		error = INF;
+	} else if (isconst) {
+		error = 0.0;
 	} else {
-		error = 0.;
+		mat X(members.size(), xdata.n_cols);
 		for (int i = 0; i < members.size(); ++i) {
-			error += pow(ydata(members[i]) - predictions(i), 2);
+			X.row(i) = xdata.row(members[i]);
+		}
+		
+		vec predictions(members.size());
+		if (!predict_me(X, predictions)) {
+			error = INF;
+		} else {
+			error = 0.;
+			for (int i = 0; i < members.size(); ++i) {
+				error += pow(ydata(members[i]) - predictions(i), 2);
+			}
 		}
 	}
 	DATAVIS("'avg error' " << error / members.size() << endl)
@@ -429,12 +439,11 @@ bool LRModel::predict(const arma::mat &X, arma::vec &result) {
 }
 
 bool LRModel::fit() {
-	if (isconst) {
-		return false;
+	if (!isconst) {
+		fit_me();
 	}
-	fit_me();
+	update_error();
 	refit = false;
-	refresh_error();
 	return true;
 }
 
@@ -481,10 +490,16 @@ void PCRModel::fit_me() {
 
 
 double PCRModel::predict_me(const rowvec &x) {
+	if (beta.n_elem == 0) {
+		return NAN;
+	}
 	return dot((x - means) / stdevs, beta) + intercept;
 }
 
 bool PCRModel::predict_me(const mat &X, vec &result) {
+	if (beta.n_elem == 0) {
+		return false;
+	}
 	mat Xc(X.n_rows, X.n_cols);
 	
 	for (int i = 0; i < X.n_rows; ++i) {

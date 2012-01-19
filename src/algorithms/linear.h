@@ -25,7 +25,7 @@ public:
 		return members;
 	}
 	
-	double get_error() {
+	double get_train_error() {
 		return error;
 	}
 	
@@ -37,7 +37,12 @@ public:
 		return refit;
 	}
 	
+	bool is_const() const {
+		return isconst;
+	}
+	
 	void add_example(int i, bool update_refit);
+	void add_examples(const std::vector<int> &inds);
 	void del_example(int i);
 	double predict(const arma::rowvec &x);
 	bool predict(const arma::mat &X, arma::vec &result);
@@ -57,7 +62,7 @@ protected:
 	const arma::vec &ydata;
 	
 private:
-	void refresh_error();
+	void update_error();
 	
 	std::vector<int> members;
 	double constval, error;
