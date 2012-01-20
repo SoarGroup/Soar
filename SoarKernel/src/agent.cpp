@@ -422,6 +422,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->smem_params = new smem_param_container( newAgent );
   newAgent->smem_stats = new smem_stat_container( newAgent );  
   newAgent->smem_timers = new smem_timer_container( newAgent );
+  newAgent->smem_wme_unrecognized = new smem_wme_list();
 
   newAgent->smem_db = new soar_module::sqlite_database();
 
@@ -521,6 +522,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->smem_params;
   delete delete_agent->smem_stats;
   delete delete_agent->smem_timers;
+  delete delete_agent->smem_wme_unrecognized;
 
   delete delete_agent->smem_db;
 

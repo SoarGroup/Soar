@@ -253,6 +253,7 @@ typedef struct identifier_struct {
   union symbol_union *smem_header;
   union symbol_union *smem_cmd_header;
   union symbol_union *smem_result_header;
+  union symbol_union *smem_metamem_header;
   struct smem_data_struct *smem_info;		// various SMem information
 
 

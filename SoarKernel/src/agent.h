@@ -347,6 +347,8 @@ typedef struct agent_struct {
   Symbol            * smem_sym;
   Symbol            * smem_sym_cmd;
   Symbol            * smem_sym_result;
+  Symbol            * smem_sym_metamem;
+  Symbol            * smem_sym_unrecognized;
 
   Symbol			* smem_sym_retrieved;
   Symbol			* smem_sym_status;
@@ -941,6 +943,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 
   smem_pooled_symbol_set* smem_changed_ids;
   bool smem_ignore_changes;
+
+  Symbol* smem_unrecognized_header;
+  smem_wme_list* smem_wme_unrecognized;
 
   // dynamic memory pools
   std::map< size_t, memory_pool* >* dyn_memory_pools;

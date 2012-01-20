@@ -350,6 +350,7 @@ Symbol *make_new_identifier (agent* thisAgent, char name_letter, goal_stack_leve
   sym->id.smem_header = NIL;
   sym->id.smem_cmd_header = NIL;
   sym->id.smem_result_header = NIL;
+  sym->id.smem_metamem_header = NIL;
   sym->id.smem_lti = NIL;
   sym->id.smem_time_id = EPMEM_MEMID_NONE;
   sym->id.smem_valid = NIL;
@@ -711,6 +712,8 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_sym = make_sym_constant( thisAgent, "epmem" );
   thisAgent->epmem_sym_cmd = make_sym_constant( thisAgent, "command" );
   thisAgent->epmem_sym_result = make_sym_constant( thisAgent, "result" );
+  thisAgent->epmem_sym_metamem = make_sym_constant( thisAgent, "metamem" );
+  thisAgent->epmem_sym_unrecognized = make_sym_constant( thisAgent, "unrecognized" );
 
   thisAgent->epmem_sym_retrieved = make_sym_constant( thisAgent, "retrieved" );
   thisAgent->epmem_sym_status = make_sym_constant( thisAgent, "status" );
@@ -740,13 +743,13 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_sym_current = make_sym_constant( thisAgent, "current" );
   thisAgent->epmem_sym_yes = make_sym_constant( thisAgent, "yes" );
   thisAgent->epmem_sym_no = make_sym_constant( thisAgent, "no" );
-  thisAgent->epmem_sym_metamem = make_sym_constant( thisAgent, "metamem" );
-  thisAgent->epmem_sym_unrecognized = make_sym_constant( thisAgent, "unrecognized" );
 
 
   thisAgent->smem_sym = make_sym_constant( thisAgent, "smem" );
   thisAgent->smem_sym_cmd = make_sym_constant( thisAgent, "command" );
   thisAgent->smem_sym_result = make_sym_constant( thisAgent, "result" );
+  thisAgent->smem_sym_metamem = make_sym_constant( thisAgent, "metamem" );
+  thisAgent->smem_sym_unrecognized = make_sym_constant( thisAgent, "unrecognized" );
 
   thisAgent->smem_sym_retrieved = make_sym_constant( thisAgent, "retrieved" );
   thisAgent->smem_sym_status = make_sym_constant( thisAgent, "status" );
@@ -817,6 +820,8 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_sym ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_cmd ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_result ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_metamem ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_unrecognized ) );
 
   release_helper( thisAgent, &( thisAgent->epmem_sym_retrieved ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_status ) );
@@ -846,12 +851,12 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_sym_current ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_yes ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_no ) );
-  release_helper( thisAgent, &( thisAgent->epmem_sym_metamem ) );
-  release_helper( thisAgent, &( thisAgent->epmem_sym_unrecognized ) );
 
   release_helper( thisAgent, &( thisAgent->smem_sym ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_cmd ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_result ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_metamem ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_unrecognized ) );
 
   release_helper( thisAgent, &( thisAgent->smem_sym_retrieved ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_status ) );

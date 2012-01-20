@@ -2684,13 +2684,22 @@ void epmem_new_episode( agent *my_agent )
 		xml_generate_warning( my_agent, buf );
 	}
 
-	// remove current recognition information if it exists
+	// remove epmem recognition information if it exists
 	{
 		for ( epmem_wme_list::iterator recog_iter = my_agent->epmem_wme_unrecognized->begin(); recog_iter != my_agent->epmem_wme_unrecognized->end(); recog_iter++ )
  		{
 			soar_module::remove_module_wme( my_agent, *recog_iter );
  		}
 		my_agent->epmem_wme_unrecognized->clear();
+	}
+
+	// remove smem recognition information if it exists
+	{
+		for ( smem_wme_list::iterator recog_iter = my_agent->smem_wme_unrecognized->begin(); recog_iter != my_agent->smem_wme_unrecognized->end(); recog_iter++ )
+ 		{
+			soar_module::remove_module_wme( my_agent, *recog_iter );
+ 		}
+		my_agent->smem_wme_unrecognized->clear();
 	}
 
 	// perform storage
@@ -2932,13 +2941,60 @@ void epmem_new_episode( agent *my_agent )
 			symbol_remove_ref( my_agent, my_time_sym );
 		}
 
-		// update recognition information on top state
+		// update epmem recognition information on top state
 		// all substates link to the same recognition structure root, so we only need to update it once
 		{
 			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{
 				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter).second, (*recog_iter).first ) );
 			}
+		}
+
+		// update smem recognition information on top state
+		{
+#ifdef USE_MEM_POOL_ALLOCATORS
+			smem_pooled_symbol_set* processed_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
+			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
+#else
+			smem_pooled_symbol_set* processed_attrs = new smem_pooled_symbol_set();
+			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set();
+#endif
+			// collect all attributes of newly added wmes
+			for (epmem_wme_addition_map::iterator iter = my_agent->epmem_wme_adds->begin(); iter != my_agent->epmem_wme_adds->end(); iter++) {
+				epmem_pooled_wme_set* pooled_wmes = (*iter).second;
+				for (epmem_pooled_wme_set::iterator iter2 = pooled_wmes->begin(); iter2 != pooled_wmes->end(); iter2++) {
+					// search smem for symbol hash (copied from smem_temporal_hash_str)
+					bool recognized = false;
+					Symbol* parent = (*iter2)->id;
+					Symbol* attr = (*iter2)->attr;
+					if (!processed_attrs->count(attr)) {
+						processed_attrs->insert(attr);
+						my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
+						if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
+						{
+							// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it)
+							// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
+							smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
+							my_agent->smem_stmts->ct_attr_check->bind_int( 1, hash );
+							if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) == soar_module::row )
+							{
+								// if a counter is found, it is in smem, and therefore should be recognized
+								recognized = true;
+							}
+						}
+						my_agent->smem_stmts->hash_get_str->reinitialize();
+						if (!recognized) {
+							unrecognized_attrs->insert(attr);
+						}
+					}
+				}
+			}
+			for (smem_pooled_symbol_set::iterator iter = unrecognized_attrs->begin(); iter != unrecognized_attrs->end(); iter++ )
+			{
+				my_agent->smem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->smem_unrecognized_header, *iter, make_new_identifier( my_agent, 'U', TOP_GOAL_LEVEL ) ) );
+			}
+			delete processed_attrs;
+			delete unrecognized_attrs;
 		}
 
 		// clear add/remove maps
@@ -2957,6 +3013,22 @@ void epmem_new_episode( agent *my_agent )
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->epmem_timers->storage->stop();
 	////////////////////////////////////////////////////////////////////////////
+
+	/*
+	std::cout << "digraph {" << std::endl;
+	std::cout << "// disjoint set" << std::endl;
+	for (epmem_id_disjoint_set::iterator iter = my_agent->epmem_id_siblings->begin(); iter != my_agent->epmem_id_siblings->end(); iter++) {
+		std::cout << (*iter).first << "->" << (*iter).second << " [color=\"blue\"]" << std::endl;
+	}
+	std::cout << "// wmtree" << std::endl;
+	for (epmem_elders::iterator iter = my_agent->epmem_wm_tree->begin(); iter != my_agent->epmem_wm_tree->end(); iter++) {
+		for (epmem_hash_id_map::iterator iter2 = (*iter).second->begin(); iter2 != (*iter).second->end(); iter2++) {
+			std::cout << (*iter).first << "->" << (*iter2).second << " [label=\"" << (*iter2).first << "\"]" << std::endl;
+		}
+	}
+	std::cout << "}" << std::endl;
+	*/
+
 }
 
 //////////////////////////////////////////////////////////
