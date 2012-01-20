@@ -1,5 +1,15 @@
 #!/bin/sh
 
+mail_error() {
+	f="$(mktemp).tar.gz"
+	tar c models | gzip > $f
+	mail -s "run_scenarios error" -a "$f" "josephzxu@gmail.com" <<- EOF
+	offending command was
+	$1
+	EOF
+	rm "$f"
+}
+
 if [ -z "$1" ]
 then
 	echo choose either train or test >&2
@@ -35,6 +45,7 @@ do
 		# try to drop into a debug session
 		if ! echo "$line" | grep -q -- -g
 		then
+			mail_error "$line"
 			line=`echo "$line" | sed 's/run/run -g/'`
 			echo Debugging with "$line"
 			eval "$line"
