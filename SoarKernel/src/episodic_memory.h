@@ -434,7 +434,6 @@ typedef struct epmem_data_struct
 	epmem_time_id last_memory;								// last retrieved memory
 
 	epmem_wme_stack* epmem_wmes;							// preferences generated in last epmem
-	epmem_wme_stack* epmem_storage_wmes;					// preferences generated in last epmem storage
 } epmem_data;
 
 // lookup tables to facilitate shared identifiers
@@ -546,7 +545,7 @@ typedef std::deque<epmem_node_id> epmem_node_deque;
 typedef std::map<Symbol*, int> epmem_symbol_int_map;
 typedef std::map<epmem_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_literal_node_pair, int> epmem_literal_node_pair_int_map;
-typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
+typedef std::map<Symbol*, epmem_node_id> epmem_symbol_node_map;
 typedef std::map<epmem_node_id, int> epmem_node_int_map;
 typedef std::map<epmem_symbol_literal_pair, int> epmem_symbol_literal_pair_int_map;
 typedef std::map<epmem_symbol_node_pair, int> epmem_symbol_node_pair_int_map;

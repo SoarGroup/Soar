@@ -1419,6 +1419,7 @@ void epmem_close( agent *my_agent )
 				delete (*it).second;
 			}
 			my_agent->epmem_wm_tree->clear();
+			my_agent->epmem_wme_unrecognized->clear();
 
 			my_agent->epmem_wme_adds->clear();
 			my_agent->epmem_wme_removes->clear();
@@ -1497,7 +1498,6 @@ void epmem_reset( agent *my_agent, Symbol *state )
 		// this will be called after prefs from goal are already removed,
 		// so just clear out result stack
 		data->epmem_wmes->clear();
-		data->epmem_storage_wmes->clear();
 
 		state = state->id.lower_goal;
 	}
@@ -2442,46 +2442,62 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				// update the wm tree
 				// mark as unrecognized if the tree has never been here
 				{
-					epmem_hash_id_map::iterator child_root_it = (*my_agent->epmem_wm_tree)[ parent_root ]->find(my_hash);
-					if ( child_root_it != (*my_agent->epmem_wm_tree)[ parent_root ]->end() )
+					epmem_node_id child_root = (*w_p)->value->id.epmem_id;
+					if ( my_agent->epmem_id_siblings->count( child_root ) )
 					{
-						// do path compression on the disjoinst forest
-						epmem_node_id child_root;
-						if ( (*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] )
+						std::set<epmem_node_id> id_stack;
+						epmem_node_id last_id = child_root;
+						child_root = (*my_agent->epmem_id_siblings)[ last_id ];
+						while ( child_root != last_id )
 						{
-							std::set<epmem_node_id> id_stack;
-							epmem_node_id last_id = (*w_p)->value->id.epmem_id;
-							child_root = (*my_agent->epmem_id_siblings)[last_id];
-							while ( child_root != last_id )
-							{
-								last_id = child_root;
-								child_root = (*my_agent->epmem_id_siblings)[last_id];
-								id_stack.insert(child_root);
-							}
-							for ( std::set<epmem_node_id>::iterator it = id_stack.begin(); it != id_stack.end(); it++ )
-							{
-								(*my_agent->epmem_id_siblings)[ *it ] = child_root;
-							}
-							// if it's a join and both parents have already existed before, subjugate one branch under the other
-							// always make the new id root point to the old one (since the old one is probably shallower)
-							if ( child_root != child_root_it->second )
-							{
-								(*my_agent->epmem_id_siblings)[ child_root_it->second ] = child_root;
-								child_root_it->second = child_root;
-							}
-							// TODO could do more to prune epmem_wm_tree
+							last_id = child_root;
+							child_root = (*my_agent->epmem_id_siblings)[ last_id ];
+							id_stack.insert(child_root);
 						}
-						else
+						for ( std::set<epmem_node_id>::iterator it = id_stack.begin(); it != id_stack.end(); it++ )
 						{
-							child_root = child_root_it->second;
+							(*my_agent->epmem_id_siblings)[ *it ] = child_root;
 						}
-						(*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] = child_root;
 					}
 					else
 					{
-						(*(*my_agent->epmem_wm_tree)[ parent_root ])[ my_hash ] = (*w_p)->value->id.epmem_id;
-						(*my_agent->epmem_wm_tree)[ (*w_p)->value->id.epmem_id ] = new epmem_hash_id_map;
-						(*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] = (*w_p)->value->id.epmem_id;
+							(*my_agent->epmem_id_siblings)[ child_root ] = child_root;
+					}
+					epmem_hash_id_map::iterator child_root_it = (*my_agent->epmem_wm_tree)[ parent_root ]->find(my_hash);
+					if ( child_root_it != (*my_agent->epmem_wm_tree)[ parent_root ]->end() )
+					{
+						epmem_node_id leaf_root = (*child_root_it).second;
+						if ( my_agent->epmem_id_siblings->count( leaf_root ) )
+						{
+							std::set<epmem_node_id> id_stack;
+							epmem_node_id last_id = leaf_root;
+							leaf_root = (*my_agent->epmem_id_siblings)[ last_id ];
+							while ( leaf_root != last_id )
+							{
+								last_id = leaf_root;
+								leaf_root = (*my_agent->epmem_id_siblings)[ last_id ];
+								id_stack.insert( leaf_root );
+							}
+							for ( std::set<epmem_node_id>::iterator it = id_stack.begin(); it != id_stack.end(); it++ )
+							{
+								(*my_agent->epmem_id_siblings)[ *it ] = leaf_root;
+							}
+						}
+						// if it's a join and both parents have already existed before, subjugate one branch under the other
+						if ( child_root != leaf_root )
+						{
+							(*my_agent->epmem_id_siblings)[ child_root ] = leaf_root;
+						}
+						// TODO could do more to prune epmem_wm_tree
+					}
+					else
+					{
+						(*(*my_agent->epmem_wm_tree)[ parent_root ])[ my_hash ] = child_root;
+						if ( ! my_agent->epmem_wm_tree->count( (*w_p)->value->id.epmem_id ) )
+						{
+							(*my_agent->epmem_wm_tree)[ (*w_p)->value->id.epmem_id ] = new epmem_hash_id_map;
+						}
+						(*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] = child_root;
 
 						// we've never see a WME in this context before
 						unrecognized_wmes.insert( std::make_pair( (*w_p)->id, (*w_p)->attr ) );
@@ -2670,18 +2686,11 @@ void epmem_new_episode( agent *my_agent )
 
 	// remove current recognition information if it exists
 	{
-		// copied from epmem_clear_result
-		preference* pref;
-		epmem_wme_stack* wme_stack= my_agent->top_goal->id.epmem_info->epmem_storage_wmes;
-		while ( !wme_stack->empty() )
-		{
-			pref = wme_stack->back();
-			wme_stack->pop_back();
-			if ( pref->in_tm )
-			{
-				remove_preference_from_tm( my_agent, pref );
-			}
-		}
+		for ( epmem_wme_list::iterator recog_iter = my_agent->epmem_wme_unrecognized->begin(); recog_iter != my_agent->epmem_wme_unrecognized->end(); recog_iter++ )
+ 		{
+			soar_module::remove_module_wme( my_agent, *recog_iter );
+ 		}
+		my_agent->epmem_wme_unrecognized->clear();
 	}
 
 	// perform storage
@@ -2925,28 +2934,10 @@ void epmem_new_episode( agent *my_agent )
 
 		// update recognition information on top state
 		// all substates link to the same recognition structure root, so we only need to update it once
-		// use the top-state epmem.present-id as the condition for the justification
 		{
-			soar_module::symbol_triple_list unrecognized_triples;
-			soar_module::wme_set conditions;
 			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{
-				epmem_buffer_add_wme(unrecognized_triples, my_agent->epmem_unrecognized_header, (*recog_iter).second, (*recog_iter).first );
-			}
-			if (!unrecognized_triples.empty()) {
-				Symbol* state = my_agent->top_goal;
-				conditions.insert(state->id.epmem_time_wme);
-
-				_epmem_process_buffered_wme_list( my_agent, state, conditions, unrecognized_triples, state->id.epmem_info->epmem_storage_wmes );
-				for (soar_module::symbol_triple_list::iterator tripit = unrecognized_triples.begin(); tripit != unrecognized_triples.end(); tripit++ )
-				{
-					symbol_remove_ref( my_agent, (*tripit)->id );
-					symbol_remove_ref( my_agent, (*tripit)->attr );
-					symbol_remove_ref( my_agent, (*tripit)->value );
-
-					delete (*tripit);
-				}
-				unrecognized_triples.clear();
+				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter).second, (*recog_iter).first ) );
 			}
 		}
 
@@ -3977,7 +3968,7 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 	return false;
 }
 
-bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_deque::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_symbol_map bound_nodes[], agent* my_agent, int depth = 0) {
+bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_deque::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_symbol_node_map bound_nodes[], agent* my_agent, int depth = 0) {
 	if (dnf_iter == iter_end) {
 		return true;
 	}
@@ -4027,8 +4018,8 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			continue;
 		}
 		// if the node has already been bound, make sure it's bound to the same thing
-		epmem_node_symbol_map::iterator binder = bound_nodes[literal->value_is_id].find(q1);
-		if (binder != bound_nodes[literal->value_is_id].end() && (*binder).second != literal->value_sym) {
+		epmem_symbol_node_map::iterator binder = bound_nodes[literal->value_is_id].find(literal->value_sym);
+		if (binder != bound_nodes[literal->value_is_id].end() && (*binder).second != q1) {
 			failed_children.insert(q1);
 			continue;
 		}
@@ -4067,7 +4058,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 		}
 		// temporarily modify the bindings and bound nodes
 		bindings[literal] = std::make_pair(q0, q1);
-		bound_nodes[literal->value_is_id][q1] = literal->value_sym;
+		bound_nodes[literal->value_is_id][literal->value_sym] = q1;
 		// recurse on the rest of the list
 		bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes, my_agent, depth + 1);
 		// if the rest of the list matched, we've succeeded
@@ -4076,7 +4067,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			return true;
 		} else {
 			bindings.erase(literal);
-			bound_nodes[literal->value_is_id].erase(q1);
+			bound_nodes[literal->value_is_id].erase(literal->value_sym);
 		}
 	}
 	// this means we've tried everything and this whole exercise was a waste of time
@@ -4563,7 +4554,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							epmem_literal_deque::iterator begin = gm_ordering.begin();
 							epmem_literal_deque::iterator end = gm_ordering.end();
 							best_bindings.clear();
-							epmem_node_symbol_map bound_nodes[2];
+							epmem_symbol_node_map bound_nodes[2];
 							if (JUSTIN_DEBUG >= 1) {
 								std::cout << "	GRAPH MATCH" << std::endl;
 								epmem_print_state(literal_cache, pedge_caches, uedge_caches);
