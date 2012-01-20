@@ -277,31 +277,7 @@ public:
 */
 class concat_filter_input : public filter_input {
 public:
-	void combine(const input_table &inputs) {
-		input_table::const_iterator i;
-		for (i = inputs.begin(); i != inputs.end(); ++i) {
-			filter_result::iter j;
-			filter_param_set *p;
-			filter_result *r = i->res;
-
-			for (j = r->added_begin(); j != r->added_end(); ++j) {
-				p = new filter_param_set();
-				(*p)[i->name] = *j;
-				val2params[*j] = p;
-				add(p);
-			}
-			for (j = r->removed_begin(); j != r->removed_end(); ++j) {
-				if (!map_pop(val2params, *j, p)) {
-					assert(false);
-				}
-				remove(p);
-			}
-			for (j = r->changed_begin(); j != r->changed_end(); ++j) {
-				p = val2params[*j];
-				change(p);
-			}
-		}
-	}
+	void combine(const input_table &inputs);
 
 private:
 	std::map<filter_val*, filter_param_set*> val2params;
@@ -312,133 +288,14 @@ private:
 */
 class product_filter_input : public filter_input {
 public:
-	void combine(const input_table &inputs) {
-		input_table::const_iterator i;
-		for (i = inputs.begin(); i != inputs.end(); ++i) {
-			filter_result::iter j;
-			val2param_map::iterator k;
-			param_set_list::iterator l;
-			filter_result *r = i->res;
-			
-			for (j = r->removed_begin(); j != r->removed_end(); ++j) {
-				k = val2params.find(*j);
-				assert(k != val2params.end());
-				for (l = k->second.begin(); l != k->second.end(); ++l) {
-					remove(*l);
-					erase_param_set(*l);
-				}
-			}
-			for (j = r->changed_begin(); j != r->changed_end(); ++j) {
-				k = val2params.find(*j);
-				assert(k != val2params.end());
-				for (l = k->second.begin(); l != k->second.end(); ++l) {
-					change(*l);
-				}
-			}
-		}
-		gen_new_combinations(inputs);
-	}
+	void combine(const input_table &inputs);
 	
 private:
+	void gen_new_combinations(const input_table &inputs);
+	void erase_param_set(filter_param_set *s);
+	
 	typedef std::list<filter_param_set*> param_set_list;
 	typedef std::map<filter_val*, param_set_list > val2param_map;
-	
-	class product_gen {
-	public:
-		product_gen(const std::vector<filter_result::iter> &begin, const std::vector<filter_result::iter> &end)
-		: begin(begin), curr(begin), end(end), i(0), first(true) {}
-		
-		bool next() {
-			if (first) {
-				for (int i = 0; i < begin.size(); ++i) {
-					if (begin[i] == end[i]) {
-						return false;
-					}
-				}
-				first = false;
-				return true;
-			}
-			
-			while (true) {
-				if (++curr[i] == end[i]) {
-					if (i == curr.size() - 1) {
-						return false;
-					}
-					curr[i] = begin[i];
-				} else {
-					return true;
-				}
-				if (++i >= curr.size()) {
-					i = 0;
-				}
-			}
-		}
-		
-		std::vector<filter_result::iter> curr;
-
-	private:
-		std::vector<filter_result::iter> begin;
-		std::vector<filter_result::iter> end;
-		int i;
-		bool first;
-	};
-	
-	/*
-	 Generate all combinations of results that involve at least
-	 one new result.  Do this by iterating over the result lists.
-	 For the i^th result list, take the cartesian product of the
-	 old results from lists 0..(i-1), the new results of list i,
-	 and both old and new results from lists (i+1)..n.  This will
-	 avoid generating duplicates.  I'm assuming that new results
-	 are at the end of each result list.
-	*/
-	void gen_new_combinations(const input_table &inputs) {
-		std::vector<filter_result::iter> begin, added_begin, end;
-		std::vector<std::string> names;
-		int i, j, k;
-		input_table::const_iterator ti;
-		for (ti = inputs.begin(); ti != inputs.end(); ++ti) {
-			names.push_back(ti->name);
-			begin.push_back(ti->res->curr_begin());
-			end.push_back(ti->res->curr_end());
-			added_begin.push_back(ti->res->added_begin());
-		}
-		for (i = 0; i < begin.size(); ++i) {
-			std::vector<filter_result::iter> tbegin, tend;
-			for (j = 0; j < begin.size(); ++j) {
-				if (j < i) {
-					tbegin.push_back(begin[j]);
-					tend.push_back(added_begin[j]); // same as end of old results
-				} else if (j == i) {
-					tbegin.push_back(added_begin[j]);
-					tend.push_back(end[j]);
-				} else {
-					tbegin.push_back(begin[j]);
-					tend.push_back(end[j]);
-				}
-			}
-			product_gen gen(tbegin, tend);
-			while (gen.next()) {
-				std::vector<filter_result::iter>::const_iterator ci;
-				std::vector<std::string>::const_iterator ni;
-				filter_param_set *p = new filter_param_set();
-				for (ci = gen.curr.begin(), ni = names.begin(); ci != gen.curr.end(); ++ci, ++ni) {
-					(*p)[*ni] = **ci;
-					val2params[**ci].push_back(p);
-				}
-				add(p);
-			}
-		}
-	}
-	
-	void erase_param_set(filter_param_set *s) {
-		filter_param_set::const_iterator i;
-		for (i = s->begin(); i != s->end(); ++i) {
-			param_set_list &l = val2params[i->second];
-			l.erase(std::find(l.begin(), l.end(), s));
-		}
-	}
-	
 	val2param_map val2params;
 };
 
@@ -559,38 +416,6 @@ private:
 	std::string errmsg;
 	std::map<filter_val*, filter_param_set*> result2params;
 };
-
-inline filter_input::~filter_input() {
-	input_table::iterator i;
-	for (i = input_info.begin(); i != input_info.end(); ++i) {
-		delete i->f;
-	}
-}
-
-inline bool filter_input::update() {
-	input_table::iterator i;
-	for (i = input_info.begin(); i != input_info.end(); ++i) {
-		if (!i->f->update()) {
-			return false;
-		}
-	}
-
-	combine(input_info);
-
-	for (i = input_info.begin(); i != input_info.end(); ++i) {
-		i->res->clear_changes();
-	}
-	
-	return true;
-}
-
-inline void filter_input::add_param(std::string name, filter *f) {
-	param_info i;
-	i.name = name;
-	i.f = f;
-	i.res = f->get_result();
-	input_info.push_back(i);
-}
 
 /*
  This type of filter assumes a one-to-one mapping of results to input
