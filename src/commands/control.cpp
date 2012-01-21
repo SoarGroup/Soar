@@ -891,7 +891,7 @@ public:
 			}
 			
 			cout << "BEST VAL " << bestval << endl;
-			if (currval < bestval) {
+			if (currval <= bestval) {
 				cached_traj.clear();
 			} else {
 				cached_state = beststate;
