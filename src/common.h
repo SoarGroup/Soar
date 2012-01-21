@@ -22,7 +22,7 @@ std::string getnamespace();
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
 
-#if 1
+#if 0
 #define DATAVIS(x) get_datavis() << x;
 #else
 #define DATAVIS(x)
@@ -584,6 +584,20 @@ public:
 	void get_vals(vec3 &minv, vec3 &maxv) const
 	{
 		minv = min; maxv = max;
+	}
+	
+	bool operator==(const bbox &b) const {
+		return min == b.min && max == b.max;
+	}
+	
+	bool operator!=(const bbox &b) const {
+		return min != b.min || max != b.max;
+	}
+	
+	bbox &operator=(const bbox &b) {
+		min = b.min;
+		max = b.max;
+		return *this;
 	}
 	
 	friend std::ostream& operator<<(std::ostream &os, const bbox &b);

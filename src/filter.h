@@ -418,6 +418,25 @@ private:
 };
 
 /*
+ This is a hack. I need an equality comparison that always returns false
+ for pointers, because some pointers (currently only sgnode*) are wrapped
+ in filter_val_c and used as the result of filters (currently only node
+ filter). When those filters are updated, the object being pointed to
+ may change, but the filter result remains the same pointer. In these
+ cases we still want the result to be treated as changed and any filters
+ that consume such results to be updated.
+*/
+template<class T>
+bool special_equals(const T &a, const T &b) {
+	return a == b;
+}
+
+template<class T>
+bool special_equals(T *a, T *b) {
+	return false;
+}
+
+/*
  This type of filter assumes a one-to-one mapping of results to input
  parameter sets. It's also assumed that each result is only dependent
  on one parameter set. This is in contrast to filters that perform some
@@ -494,14 +513,17 @@ public:
 
 private:
 	bool update_one(filter_param_set *params) {
-		T val;
+		T old_val, new_val;
 		filter_val_c<T> *fv = io_map[params];
-		get_filter_val<T>(fv, val);
-		if (!compute(params, val, false)) {
+		get_filter_val<T>(fv, old_val);
+		new_val = old_val;
+		if (!compute(params, new_val, false)) {
 			return false;
 		}
-		set_filter_val<T>(fv, val);
-		change_result(fv);
+		if (!special_equals(old_val, new_val)) {
+			set_filter_val<T>(fv, new_val);
+			change_result(fv);
+		}
 		return true;
 	}
 	
