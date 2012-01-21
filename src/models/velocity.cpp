@@ -43,16 +43,6 @@ private:
 
 model *_make_velocity_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
 	long dims = 1;
-	wme_list children;
-	wme_list::iterator i;
-	si->get_child_wmes(root, children);
-	for (i = children.begin(); i != children.end(); ++i) {
-		string attr;
-		if (si->get_val(si->get_wme_attr(*i), attr) && attr == "dims") {
-			if (si->get_val(si->get_wme_val(*i), dims)) {
-				break;
-			}
-		}
-	}
+	si->get_const_attr(root, "dims", dims);
 	return new velocity_model(name, dims);
 }

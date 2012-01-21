@@ -51,6 +51,9 @@ public:
 	bool         get_val(Symbol *sym, float &v);
 	bool         get_val(Symbol *sym, double &v);
 	
+	template<class T>
+	bool         get_const_attr(Symbol *id, const std::string &attr, T &val);
+	
 	Symbol      *get_wme_attr(wme *w);
 	Symbol      *get_wme_val(wme *w);
 
@@ -201,6 +204,15 @@ inline int soar_interface::get_timetag(wme *w) {
 
 inline Symbol *soar_interface::get_parent_state(Symbol *id) {
 	return id->id.higher_goal;
+}
+
+template<class T>
+bool soar_interface::get_const_attr(Symbol *id, const std::string &attr, T &val) {
+	wme *w;
+	if (!find_child_wme(id, attr, w)) {
+		return false;
+	}
+	return get_val(get_wme_val(w), val);
 }
 
 #endif
