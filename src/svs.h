@@ -102,6 +102,7 @@ public:
 private:
 	void init();
 	void collect_cmds(Symbol* id, std::set<wme*>& all_cmds);
+	void set_default_output();
 
 	svs            *svsp;
 	int             level;

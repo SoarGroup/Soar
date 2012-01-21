@@ -167,6 +167,9 @@ void svs_state::update_scene_num() {
 
 void svs_state::update_cmd_results(bool early) {
 	cmd_iter i;
+	if (early) {
+		set_default_output();
+	}
 	for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
 		if (i->second->early() == early) {
 			i->second->update();
@@ -242,6 +245,13 @@ void svs_state::update_models() {
 void svs_state::set_output(const floatvec &out) {
 	assert(out.size() == outspec.size());
 	next_out = out;
+}
+
+void svs_state::set_default_output() {
+	next_out.resize(outspec.size());
+	for (int i = 0; i < outspec.size(); ++i) {
+		next_out[i] = outspec[i].def;
+	}
 }
 
 bool svs_state::get_output(floatvec &out) const {
