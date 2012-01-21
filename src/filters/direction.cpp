@@ -12,7 +12,7 @@ using namespace std;
 Calculates whether a bounding box is located to the left (-1), aligned
 (0), or right (1) of another bounding box along the specified axis.
 */
-bool direction(sgnode *a, sgnode *b, char axis, int comp) {
+bool direction(sgnode *a, sgnode *b, int axis, int comp) {
 	int i, dir[3];
 	vec3 amin, amax, bmin, bmax;
 	ptlist pa, pb;
@@ -38,22 +38,14 @@ bool direction(sgnode *a, sgnode *b, char axis, int comp) {
 		}
 	}
 
-	switch (axis) {
-		case 'x':
-			return comp == dir[0];
-		case 'y':
-			return comp == dir[1];
-		case 'z':
-			return comp == dir[2];
-		default:
-			assert(false);
-	}
+	assert(0 <= axis && axis < 3);
+	return comp == dir[axis];
 }
 
 /*
 Standalone versions for use with model learning.
 */
-bool standalone (scene *scn, const vector<string> &args, char axis, int comp) {
+bool standalone (scene *scn, const vector<string> &args, int axis, int comp) {
 	sgnode *a = scn->get_node(args[0]), *b = scn->get_node(args[1]);
 	
 	assert(a != NULL && b != NULL);
@@ -62,27 +54,27 @@ bool standalone (scene *scn, const vector<string> &args, char axis, int comp) {
 }
 
 bool standalone_north_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 'y', 1);
+	return standalone(scn, args, 1, 1);
 }
 
 bool standalone_south_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 'y', -1);
+	return standalone(scn, args, 1, -1);
 }
 
 bool standalone_east_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 'x', 1);
+	return standalone(scn, args, 0, 1);
 }
 
 bool standalone_west_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 'x', -1);
+	return standalone(scn, args, 0, -1);
 }
 
 bool standalone_vertically_aligned(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 'x', 0);
+	return standalone(scn, args, 0, 0);
 }
 
 bool standalone_horizontally_aligned(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 'y', 0);
+	return standalone(scn, args, 1, 0);
 }
 
 /*
@@ -91,7 +83,7 @@ Filter version
 
 class direction_filter : public map_filter<bool> {
 public:
-	direction_filter(filter_input *input, char axis, int comp)
+	direction_filter(filter_input *input, int axis, int comp)
 	: map_filter<bool>(input), axis(axis), comp(comp) {}
 	
 	bool compute(filter_param_set *p, bool &res, bool adding) {
@@ -109,32 +101,31 @@ public:
 	}
 	
 private:
-	char axis;
-	int comp;
+	int axis, comp;
 };
 
 filter *make_north_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 'y', 1);
+	return new direction_filter(input, 1, 1);
 }
 
 filter *make_south_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 'y', -1);
+	return new direction_filter(input, 1, -1);
 }
 
 filter *make_east_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 'x', 1);
+	return new direction_filter(input, 0, 1);
 }
 
 filter *make_west_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 'x', -1);
+	return new direction_filter(input, 0, -1);
 }
 
 filter *make_vertically_aligned(scene *scn, filter_input *input) {
-	return new direction_filter(input, 'x', 0);
+	return new direction_filter(input, 0, 0);
 }
 
 filter *make_horizontally_aligned(scene *scn, filter_input *input) {
-	return new direction_filter(input, 'y', 0);
+	return new direction_filter(input, 1, 0);
 }
 
 filter_table_entry north_of_fill_entry() {
