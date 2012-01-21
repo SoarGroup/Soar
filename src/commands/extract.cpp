@@ -53,6 +53,7 @@ public:
 			} else {
 				update_results();
 			}
+			res->clear_changes();
 			set_status("success");
 		}
 		return true;
