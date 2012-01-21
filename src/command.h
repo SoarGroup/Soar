@@ -1,6 +1,7 @@
 #ifndef CMD_WATCHER_H
 #define CMD_WATCHER_H
 
+#include <string>
 #include "soar_interface.h"
 #include "filter.h"
 
@@ -34,6 +35,7 @@ private:
 	soar_interface *si;
 	Symbol         *root;
 	wme            *status_wme;
+	std::string     curr_status;
 	int             subtree_size;
 	int             prev_max_time;
 	bool            first;

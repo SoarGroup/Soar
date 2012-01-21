@@ -112,10 +112,14 @@ bool command::get_str_param(const string &name, string &val) {
 }
 
 void command::set_status(const string &s) {
+	if (curr_status == s) {
+		return;
+	}
 	if (status_wme) {
 		si->remove_wme(status_wme);
 	}
 	status_wme = si->make_wme(root, "status", s);
+	curr_status = s;
 }
 
 command *_make_extract_command_(svs_state *state, Symbol *root);
