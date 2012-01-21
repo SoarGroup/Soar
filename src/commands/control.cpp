@@ -23,7 +23,6 @@ const double ECOEF = 2.0;
 const double CCOEF = 0.5;
 const double SCOEF = 0.5;
 const int MAXITERS = 50;
-const double INF = numeric_limits<double>::infinity();
 
 bool predict_traj(multi_model *mdl, const floatvec &initstate, const std::list<floatvec> &traj, floatvec &finalstate) {
 	finalstate = initstate;
@@ -79,7 +78,7 @@ public:
 		if (!(n1 = scn.get_node(obj1)) ||
 		    !(n2 = scn.get_node(obj2)))
 		{
-			return INF;
+			return INFINITY;
 		}
 		
 		n1->get_world_points(p1);
@@ -92,6 +91,71 @@ public:
 	
 private:
 	string obj1, obj2;
+};
+
+class axis_diff_obj : public objective {
+public:
+	axis_diff_obj(const string &obj1, const string &obj2, int axis)
+	: obj1(obj1), obj2(obj2), axis(axis)
+	{
+		assert(0 <= axis && axis < 3);
+	}
+	
+	float eval(scene &scn) const {
+		sgnode *n1, *n2;
+		ptlist p1, p2;
+		::vec3 c1, c2;
+		
+		if (!(n1 = scn.get_node(obj1)) ||
+		    !(n2 = scn.get_node(obj2)))
+		{
+			return INFINITY;
+		}
+		
+		n1->get_world_points(p1);
+		n2->get_world_points(p2);
+		c1 = calc_centroid(p1);
+		c2 = calc_centroid(p2);
+
+		return c1[axis] - c2[axis];
+	}
+	
+private:
+	string obj1, obj2;
+	int axis;
+};
+
+class abs_axis_diff_obj : public objective {
+public:
+	abs_axis_diff_obj(const string &obj1, const string &obj2, int axis)
+	: obj1(obj1), obj2(obj2), axis(axis)
+	{
+		assert(0 <= axis && axis < 3);
+	}
+	
+	float eval(scene &scn) const {
+		sgnode *n1, *n2;
+		ptlist p1, p2;
+		::vec3 c1, c2;
+		
+		if (!(n1 = scn.get_node(obj1)) ||
+		    !(n2 = scn.get_node(obj2)))
+		{
+			return INFINITY;
+		}
+		
+		n1->get_world_points(p1);
+		n2->get_world_points(p2);
+		c1 = calc_centroid(p1);
+		c2 = calc_centroid(p2);
+		
+		float v = abs(c1[axis] - c2[axis]);
+		return v;
+	}
+	
+private:
+	string obj1, obj2;
+	int axis;
 };
 
 /*
@@ -111,7 +175,7 @@ public:
 		    !(nb = scn.get_node(b)) ||
 		    !(nc = scn.get_node(c)))
 		{
-			return INF;
+			return INFINITY;
 		}
 		
 		na->get_world_points(pa);
@@ -151,7 +215,7 @@ public:
 		    !(nb = scn.get_node(b)) ||
 		    !(nc = scn.get_node(c)))
 		{
-			return INF;
+			return INFINITY;
 		}
 		
 		na->get_world_points(pa);
@@ -193,7 +257,7 @@ public:
 		    !(nb = scn.get_node(b)) ||
 		    !(nc = scn.get_node(c)))
 		{
-			return INF;
+			return INFINITY;
 		}
 		
 		transform3 rot('r', na->get_trans('r'));
@@ -257,62 +321,76 @@ private:
 */
 multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 	multi_objective *m = new multi_objective();
-	wme_list param_wmes;
-	
-	while (root && si->is_identifier(root) && si->get_child_wmes(root, param_wmes)) {
-		wme_list::iterator i;
-		string name, attr, val;
-		map<string, string> params;
+	while (root && si->is_identifier(root)) {
 		objective *obj;
+		string name, sign;
 		
-		for (i = param_wmes.begin(); i != param_wmes.end(); ++i) {
-			if (si->get_val(si->get_wme_attr(*i), attr) &&
-			    si->get_val(si->get_wme_val(*i), val))
-			{
-				params[attr] = val;
-			}
-		}
-		if (!map_get(params, string("name"), name)) {
+		if (!si->get_const_attr(root, "name", name)) {
 			break;
 		}
 		
-		string sign;
-		if (!map_get(params, string("sign"), sign)) {
+		if (!si->get_const_attr(root, "sign", sign)) {
 			sign = "positive";
 		}
 		
 		if (name == "euclidean") {
 			string a, b;
-			if (!map_get(params, string("a"), a) ||
-			    !map_get(params, string("b"), b))
+			if (!si->get_const_attr(root, "a", a) ||
+			    !si->get_const_attr(root, "b", b))
 			{
+				cerr << "Warning: incorrect parameters on euclidean objective, skipping" << endl;
 				break;
 			}
 			obj = new euclidean_obj(a, b);
+		} else if (name == "axis_diff") {
+			string a, b;
+			long axis;
+			if (!si->get_const_attr(root, "a", a) ||
+			    !si->get_const_attr(root, "b", b) ||
+			    !si->get_const_attr(root, "axis", axis))
+			{
+				cerr << "Warning: incorrect parameters on axis_diff objective, skipping" << endl;
+				break;
+			}
+			obj = new axis_diff_obj(a, b, axis);
+		} else if (name == "abs_axis_diff") {
+			string a, b;
+			long axis;
+			if (!si->get_const_attr(root, "a", a) ||
+			    !si->get_const_attr(root, "b", b) ||
+			    !si->get_const_attr(root, "axis", axis))
+			{
+				cerr << "Warning: incorrect parameters on abs_axis_diff objective, skipping" << endl;
+				break;
+			}
+			obj = new abs_axis_diff_obj(a, b, axis);
 		} else if (name == "behind") {
 			string a, b, c;
-			if (!map_get(params, string("a"), a) ||
-			    !map_get(params, string("b"), b) ||
-			    !map_get(params, string("c"), c))
+			if (!si->get_const_attr(root, "a", a) ||
+			    !si->get_const_attr(root, "b", b) ||
+			    !si->get_const_attr(root, "c", c))
 			{
+				cerr << "Warning: incorrect parameters on behind objective, skipping" << endl;
 				break;
 			}
 			obj = new behind_obj(a, b, c);
 		} else if (name == "collinear") {
 			string a, b, c;
-			if (!map_get(params, string("a"), a) ||
-			    !map_get(params, string("b"), b) ||
-			    !map_get(params, string("c"), c))
+			if (!si->get_const_attr(root, "a", a) ||
+			    !si->get_const_attr(root, "b", b) ||
+			    !si->get_const_attr(root, "c", c))
 			{
+				cerr << "Warning: incorrect parameters on collinear objective, skipping" << endl;
 				break;
 			}
 			obj = new collinear_obj(a, b, c);
 		} else if (name == "align_facing") {
 			string a, b, c;
-			if (!map_get(params, string("a"), a) ||
-			    !map_get(params, string("b"), b) ||
-			    !map_get(params, string("c"), c))
+			if (!si->get_const_attr(root, "a", a) ||
+			    !si->get_const_attr(root, "b", b) ||
+			    !si->get_const_attr(root, "c", c))
 			{
+				cerr << "Warning: incorrect parameters on align_facing objective, skipping" << endl;
 				break;
 			}
 			obj = new align_facing_objective(a, b, c);
