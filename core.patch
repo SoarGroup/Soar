@@ -1,0 +1,220 @@
+Index: KernelSML/src/KernelHeaders.h
+===================================================================
+--- KernelSML/src/KernelHeaders.h	(revision 13027)
++++ KernelSML/src/KernelHeaders.h	(working copy)
+@@ -29,3 +29,4 @@
+ #include "symtab.h"
+ #include "io_soar.h"
+ #include "wmem.h"
++#include "svs.h"
+Index: KernelSML/SConscript
+===================================================================
+--- KernelSML/SConscript	(revision 13027)
++++ KernelSML/SConscript	(working copy)
+@@ -5,10 +5,10 @@
+ Import('env')
+ clone = env.Clone()
+ 
+-clone.Prepend(CPPPATH = Split('src #SoarKernel/src #CLI/src #ElementXML/src #ConnectionSML/src'))
++clone.Prepend(CPPPATH = Split('src #SoarKernel/src #CLI/src #ElementXML/src #ConnectionSML/src #SVS/src'))
+ 
+ if not env['STATIC_LINKED']:
+-	clone.Append(LIBS = Split('ElementXML CommandLineInterface ConnectionSML SoarKernel sqlite3'))
++	clone.Append(LIBS = Split('ElementXML CommandLineInterface ConnectionSML SoarKernel sqlite3 svs'))
+ 	clone.Append(LIBPATH = ['$PREFIX/lib'])
+ 
+ if env['SCU']:
+@@ -24,8 +24,3 @@
+ 
+ env.Install('$PREFIX/lib', SoarKernelSML)
+ 
+-# Install resources
+-Import('InstallDir')
+-InstallDir(SoarKernelSML, '$PREFIX/share/soar/Demos', '#Demos')
+-InstallDir(SoarKernelSML, '$PREFIX/share/soar/Documentation', '#Documentation')
+-
+Index: CLI/SConscript
+===================================================================
+--- CLI/SConscript	(revision 13027)
++++ CLI/SConscript	(working copy)
+@@ -5,7 +5,7 @@
+ Import('env')
+ clone = env.Clone()
+ 
+-clone.Prepend(CPPPATH = Split('src #SoarKernel/src #ElementXML/src #ConnectionSML/src #KernelSML/src'))
++clone.Prepend(CPPPATH = Split('src #SoarKernel/src #ElementXML/src #ConnectionSML/src #KernelSML/src #SVS/src'))
+ 
+ if env['SCU']:
+ 	CommandLineInterface = clone.Library('CommandLineInterface', 'CommandLineInterface.cxx')
+Index: SConstruct
+===================================================================
+--- SConstruct	(revision 13027)
++++ SConstruct	(working copy)
+@@ -178,9 +178,10 @@
+ 	PREFIX = os.path.realpath(GetOption('prefix')),
+ 	STATIC_LINKED = GetOption('static'),
+ 	SOAR_VERSION = SOAR_VERSION,
+-	CPPFLAGS = ['-DSCONS'],
+-	CPPPATH = ['#shared'],
++	CPPFLAGS = ['-DSCONS', '-Wfatal-errors', '-Wreturn-type'], #, '-std=c++0x'],
++	CPPPATH = ['#shared', '/home/jzxu/local/include', '/usr/include/bullet' ],
+ 	LINKFLAGS = [],
++	LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'),
+ 	)
+ #################
+ 
+@@ -365,6 +366,7 @@
+ #################
+ # Build core modules
+ subdirs= [ 
++	'SVS',
+ 	'SoarKernel',
+ 	'ConnectionSML',
+ 	'ElementXML',
+@@ -374,7 +376,7 @@
+ 	]
+ 
+ if GetOption('ios') == 'none':
+-	subdirs.append('Tests')
++	#subdirs.append('Tests')
+ 
+ 	if 'Python' in components:
+ 		subdirs.append('ClientSMLSWIG/Python')
+@@ -402,9 +404,9 @@
+ # Special environment
+ compEnv = env.Clone()
+ compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
+-libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
++libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'armadillo', 'BulletCollision', 'LinearMath' ]
+ if compEnv['STATIC_LINKED']:
+-	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
++        libadd.extend(['SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3', 'svs'])
+ compEnv.Append(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
+ Export('compEnv')
+ 
+Index: SoarKernel/src/agent.cpp
+===================================================================
+--- SoarKernel/src/agent.cpp	(revision 13027)
++++ SoarKernel/src/agent.cpp	(working copy)
+@@ -52,6 +52,7 @@
+ #include "wma.h"
+ #include "episodic_memory.h"
+ #include "semantic_memory.h"
++#include "svs.h"
+ 
+ 
+ /* ================================================================== */
+@@ -131,6 +132,8 @@
+ 
+   reset_statistics (thisAgent);
+ 
++  thisAgent->svs_instance = new svs(thisAgent);
++
+   /* RDF: For gSKI */
+   init_agent_memory(thisAgent);
+   /* END */
+@@ -491,6 +494,8 @@
+ 
+   delete delete_agent->smem_db;
+ 
++  delete delete_agent->svs_instance;
++
+   // cleanup statistics db
+   stats_close( delete_agent );
+   delete delete_agent->stats_db;
+Index: SoarKernel/src/init_soar.cpp
+===================================================================
+--- SoarKernel/src/init_soar.cpp	(revision 13027)
++++ SoarKernel/src/init_soar.cpp	(working copy)
+@@ -42,8 +42,8 @@
+ #include "wma.h"
+ #include "episodic_memory.h"
+ #include "semantic_memory.h"
++#include "svs.h"
+ 
+-
+ #define INIT_FILE       "init.soar"
+ 
+ /* REW: begin 08.20.97   these defined in consistency.c  */
+@@ -601,6 +601,8 @@
+ 		  BEFORE_INPUT_PHASE_CALLBACK,
+ 		  reinterpret_cast<soar_call_data>(INPUT_PHASE));
+ 
++	  thisAgent->svs_instance->post_env_callback();
++
+       do_input_cycle(thisAgent);
+ 
+ 	  thisAgent->run_phase_count++ ;
+@@ -919,6 +921,8 @@
+ 			 BEFORE_OUTPUT_PHASE_CALLBACK,
+ 			 reinterpret_cast<soar_call_data>(OUTPUT_PHASE) );
+  
++	  thisAgent->svs_instance->pre_env_callback();
++
+ 	  /** KJC June 05:  moved output function timers into do_output_cycle ***/
+ 
+ 	  do_output_cycle(thisAgent);
+Index: SoarKernel/src/agent.h
+===================================================================
+--- SoarKernel/src/agent.h	(revision 13027)
++++ SoarKernel/src/agent.h	(working copy)
+@@ -135,6 +135,7 @@
+ typedef char * test;
+ 
+ class stats_statement_container;
++class svs;
+ 
+ typedef struct agent_struct {
+   /* After v8.6.1, all conditional compilations were removed
+@@ -945,6 +946,7 @@
+   // Soar execution will be interrupted when this substate level is removed
+   goal_stack_level substate_break_level;
+ 
++  svs *svs_instance;
+ } agent;
+ /*************** end of agent struct *****/
+ 
+Index: SoarKernel/src/decide.cpp
+===================================================================
+--- SoarKernel/src/decide.cpp	(revision 13027)
++++ SoarKernel/src/decide.cpp	(working copy)
+@@ -61,6 +61,7 @@
+ 
+ #include "episodic_memory.h"
+ #include "semantic_memory.h"
++#include "svs.h"
+ 
+ #include "assert.h"
+ 
+@@ -2262,7 +2263,8 @@
+   symbol_remove_ref( thisAgent, goal->id.smem_header );
+   free_with_pool( &( thisAgent->smem_info_pool ), goal->id.smem_info );
+ 
+-
++  thisAgent->svs_instance->state_deletion_callback(goal);
++  
+   /* REW: BUG
+    * Tentative assertions can exist for removed goals.  However, it looks
+    * like the removal forces a tentative retraction, which then leads to
+@@ -2391,6 +2393,8 @@
+   soar_invoke_callbacks(thisAgent, 
+                        CREATE_NEW_CONTEXT_CALLBACK, 
+                        static_cast<soar_call_data>(id) );
++  
++  thisAgent->svs_instance->state_creation_callback(id);
+ }
+ 
+ /* ------------------------------------------------------------------
+Index: SoarKernel/SConscript
+===================================================================
+--- SoarKernel/SConscript	(revision 13027)
++++ SoarKernel/SConscript	(working copy)
+@@ -6,7 +6,7 @@
+ clone = env.Clone()
+ 
+ clone.Append(CPPFLAGS = ['-fno-strict-aliasing'])
+-clone.Prepend(CPPPATH = Split('src #ElementXML/src'))
++clone.Prepend(CPPPATH = Split('src #ElementXML/src #SVS/src'))
+ 
+ sqlclone = clone.Clone()
+ sqlclone.Append(CPPFLAGS = ['-w'])
