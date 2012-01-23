@@ -4,14 +4,22 @@
 # (<p> ^{param1} {obj1}
 #      ^{param2} {obj2})
 
+sp {init-cant-change
+   (state <s> ^superstate nil)
+-->
+   (<s> ^cant-change <cc>)}
+
+sp {model-ready
+   (state <s> ^svs.command.assign-model.status success)
+-->
+   (<s> ^model-ready t)}
 
 sp {propose*change-predicate*positive
    (state <s> ^task-state t
               ^model-ready t  # temporary
               ^svs.command <cmd>
-              ^curr-state.positive <pos>
+              ^curr-state.<sign>.<pred> <p>
               ^cant-change <cc>)
-   (<pos> ^<pred> <p>)
    (<cmd> -^seek)
   -(<cc> ^<pred> <p>)
 -->
@@ -19,23 +27,7 @@ sp {propose*change-predicate*positive
    (<o> ^name change-predicate
         ^predicate <pred>
         ^params <p>
-        ^sign negative)}
-
-sp {propose*change-predicate*negative
-   (state <s> ^task-state t
-              ^svs.command <cmd>
-              ^model-ready t  # temporary
-              ^curr-state.negative <neg>
-              ^cant-change <cc>)
-   (<neg> ^<pred> <p>)
-   (<cmd> -^seek)
-  -(<cc> ^<pred> <p>)
--->
-   (<s> ^operator <o> +)
-   (<o> ^name change-predicate
-        ^predicate <pred>
-        ^params <p>
-        ^sign positive)}
+        ^sign <sign>)}
 
 sp {propose*remove-failed-seek
    (state <s> ^svs.command.seek <sk>)
@@ -69,17 +61,18 @@ sp {apply*remove-failed-seek*record-cant-change
    (<cc> ^<pred> <params>)}
 
 sp {propose*remove-successful-seek*2-param
-   (state <s> ^curr-state.<sign>.<pred> <p1>
+   (state <s> ^curr-state <cs>
               ^svs.command.seek <sk>)
-   (<p1> ^<param1> <v1>
-         ^{<param2> > <param1>} <v2>
-        -^{<param3> > <param2>})
    (<sk> ^to-change <tc>)
    (<tc> ^sign <sign>
          ^predicate <pred>
-         ^params <p2>)
+         ^params <p1>)
+   (<p1> ^<param1> <v1>
+         ^{<param2> > <param1>} <v2>
+        -^{<param3> > <param2>})
+ -{(<cs> ^<sign>.<pred> <p2>)
    (<p2> ^<param1> <v1>
-         ^<param2> <v2>)
+         ^<param2> <v2>)}
 -->
    (<s> ^operator <o> +)
    (<o> ^name remove-seek

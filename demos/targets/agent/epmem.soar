@@ -1,3 +1,0 @@
-epmem --set learning on
-epmem --set trigger dc
-epmem --set path epmem.sqlite3

@@ -1,34 +1,8 @@
-sp {init*curr-state
-   (state <s> ^task-state t)
--->
-   (<s> ^curr-state <cs>)
-   (<cs> ^positive <p> ^negative <n>)}
-
-# link a result atom from an extract command to the state
-sp {elab*atom
-   (state <s> ^curr-state.<sign> <cp>
-              ^svs.command.extract <e>)
-   (<e> ^type <pred> ^result.<sign>.atom <a>)
--->
-   (<cp> ^<pred> <a>)}
-
 sp {init-unachieved-goal-predicates
    (state <s> ^task-state t)
 -->
    (<s> ^unachieved-goals <g>)
    (<g> ^positive <p> ^negative <n>)}
-
-sp {mark-unachieved-goal-predicate*1-param
-   (state <s> ^goal-state.<pos-or-neg> <gs>
-              ^curr-state.<pos-or-neg> <cs>
-              ^unachieved-goals.<pos-or-neg> <up>)
-   (<gs> ^<pred> <gp>)
-   (<gp> ^<param1> <val1>
-        -^{<param2> > <param1>})
- -{(<cs> ^<pred> <cp>)
-   (<cp> ^<param1> <val1>)}
--->
-   (<up> ^<pred> <gp>)}
 
 sp {mark-unachieved-goal-predicate*2-params
    (state <s> ^goal-state.<sign> <gs>

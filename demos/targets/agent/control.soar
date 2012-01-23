@@ -1,43 +1,150 @@
-sp {define-output
-   (state <s> ^superstate nil
-              ^svs.command <c>)
--->
-   (<c> ^output <out>)
-   (<out> ^dx <l> ^dy <r>)
-   (<l> ^min -1.0 ^max 1.0 ^default 0.0 ^increment 1)
-   (<r> ^min -1.0 ^max 1.0 ^default 0.0 ^increment 1)}
-
-sp {apply*change-predicate*intersect
+sp {apply*change-predicate
    (state <s> ^operator <o>
-              ^svs.command <cmd>)
+              ^svs.command <cmd>
+              ^negations.<sign> <nsign>)
    (<o> ^name change-predicate
-        ^predicate intersect
+        ^predicate <pred>
         ^params <p>
         ^sign <sign>)
-   (<p> ^a <a> ^b <b>)
 -->
    (<cmd> ^seek <sk>)
-   (<sk> ^type tree
+   (<sk> ^type naive
          ^depth 1
-         ^objective <obj>
          ^to-change <c>)
-   (<c> ^predicate intersect
+   (<c> ^predicate <pred>
         ^params <p>
-        ^sign <sign>)
-   (<obj> ^name euclidean
-          ^sign <sign>
-          ^a <a>
-          ^b <b>)}
+        ^sign <sign>)}
 
-sp {propose*wait-for-seek
-   (state <s> ^svs.command.seek.status success
+sp {propose*wait-for-seek*2-param
+   (state <s> ^curr-state <cs>
+              ^svs.command.seek <sk>
               ^time <t>)
+   (<sk> ^status success
+         ^to-change <tc>)
+   (<tc> ^sign <sign>
+         ^predicate <pred>
+         ^params <p1>)
+   (<p1> ^<param1> <v1>
+         ^{<param2> > <param1>} <v2>
+        -^{<param3> > <param2>})
+   (<cs> ^<sign>.<pred> <p2>)
+   (<p2> ^<param1> <v1>
+         ^<param2> <v2>)
 -->
    (<s> ^operator <o> +)
    (<o> ^name wait)}
 
 sp {apply*wait-for-seek
    (state <s> ^time <t>
-              ^operator.name count-time)
+              ^operator.name wait)
 -->
    (<s> ^time <t> - (+ <t> 1))}
+
+sp {elab*intersect-obj
+   (state <s> ^svs.command.seek <sk>
+              ^negations.<sign> <nsign>)
+   (<sk> ^to-change <c>)
+   (<c> ^predicate intersect
+        ^params <p>
+        ^sign <sign>)
+   (<p> ^a <a> ^b <b>)
+-->
+   (<sk> ^objective <obj>)
+   (<obj> ^name euclidean
+          ^sign <nsign>
+          ^a <a>
+          ^b <b>)}
+
+sp {elab*horizontally-aligned-obj
+   (state <s> ^svs.command.seek <sk>
+              ^negations.<sign> <nsign>)
+   (<sk> ^to-change <c>)
+   (<c> ^predicate horizontally-aligned
+        ^params <p>
+        ^sign <sign>)
+   (<p> ^a <a> ^b <b>)
+-->
+   (<sk> ^objective <obj>)
+   (<obj> ^name abs_axis_diff
+          ^sign <nsign>
+          ^a <a>
+          ^b <b>
+          ^axis 1)}
+
+sp {elab*vertically-aligned-obj
+   (state <s> ^svs.command.seek <sk>
+              ^negations.<sign> <nsign>)
+   (<sk> ^to-change <c>)
+   (<c> ^predicate vertically-aligned
+        ^params <p>
+        ^sign <sign>)
+   (<p> ^a <a> ^b <b>)
+-->
+   (<sk> ^objective <obj>)
+   (<obj> ^name abs_axis_diff
+          ^sign <nsign>
+          ^a <a>
+          ^b <b>
+          ^axis 0)}
+
+sp {elab*north-of-obj
+   (state <s> ^svs.command.seek <sk>
+              ^negations.<sign> <nsign>)
+   (<sk> ^to-change <c>)
+   (<c> ^predicate north-of
+        ^params <p>
+        ^sign <sign>)
+   (<p> ^a <a> ^b <b>)
+-->
+   (<sk> ^objective <obj>)
+   (<obj> ^name axis_diff
+          ^sign <nsign>
+          ^a <a>
+          ^b <b>
+          ^axis 1)}
+
+sp {elab*south-of-obj
+   (state <s> ^svs.command.seek <sk>)
+   (<sk> ^to-change <c>)
+   (<c> ^predicate south-of
+        ^params <p>
+        ^sign <sign>)
+   (<p> ^a <a> ^b <b>)
+-->
+   (<sk> ^objective <obj>)
+   (<obj> ^name axis_diff
+          ^sign <sign>
+          ^a <a>
+          ^b <b>
+          ^axis 1)}
+
+sp {elab*east-of-obj
+   (state <s> ^svs.command.seek <sk>)
+   (<sk> ^to-change <c>)
+   (<c> ^predicate east-of
+        ^params <p>
+        ^sign <sign>)
+   (<p> ^a <a> ^b <b>)
+-->
+   (<sk> ^objective <obj>)
+   (<obj> ^name axis_diff
+          ^sign <sign>
+          ^a <a>
+          ^b <b>
+          ^axis 0)}
+
+sp {elab*west-of-obj
+   (state <s> ^svs.command.seek <sk>
+              ^negations.<sign> <nsign>)
+   (<sk> ^to-change <c>)
+   (<c> ^predicate west-of
+        ^params <p>
+        ^sign <sign>)
+   (<p> ^a <a> ^b <b>)
+-->
+   (<sk> ^objective <obj>)
+   (<obj> ^name axis_diff
+          ^sign <nsign>
+          ^a <a>
+          ^b <b>
+          ^axis 0)}

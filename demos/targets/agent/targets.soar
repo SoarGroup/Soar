@@ -1,30 +1,15 @@
-#source extract.soar
-source models.soar
-#source epmem.soar
-source goal.soar
-source control.soar
-source search.soar
 source temp.soar
-
-waitsnc -e
 
 sp {init
    (state <s> ^superstate nil)
 -->
-   (<s> ^time 0
-        ^task-state t
-        ^auto-control f
-        ^cant-change <cc>)}
+   (<s> ^time 0 ^task-state t)}
 
-sp {goal
-   (state <s> ^superstate nil)
+sp {define-output
+   (state <s> ^superstate nil
+              ^svs.command <c>)
 -->
-   (<s> ^goal-state <gs>)
-   (<gs> ^positive <p> ^negative <n>)
-   (<p> ^intersect <i>)
-   (<i> ^a c1 ^b c2)}
-
-sp {model-ready
-   (state <s> ^svs.command.assign-model.status success)
--->
-   (<s> ^model-ready t)}
+   (<c> ^output <out>)
+   (<out> ^dx <l> ^dy <r>)
+   (<l> ^min -1.0 ^max 1.0 ^default 0.0 ^increment 0.2)
+   (<r> ^min -1.0 ^max 1.0 ^default 0.0 ^increment 0.2)}

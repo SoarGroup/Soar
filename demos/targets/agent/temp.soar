@@ -30,9 +30,3 @@ sp {extract-cursor-c1-intersect
 #   (<am> ^name m1
 #         ^inputs.cur:px.cur:py.output:dx.output:dy <x1>
 #         ^outputs.cur:px.cur:py <x2>)}
-
-sp {change-predicate*indifferent
-   (state <s> ^operator <o> +)
-   (<o> ^name change-predicate)
--->
-   (<s> ^operator <o> =)}
