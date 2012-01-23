@@ -63,6 +63,25 @@ double randgauss(double mean, double std) {
 	return mean + std * (x1 * w);
 }
 
+// HACKS BEGIN
+void add_move_dir_preds(const floatvec &x, attr_vec &v) {
+	bool east = false, west = false, north = false, south = false;
+	if (x[x.size() - 2] > 0) {
+		east = true;
+	} else if (x[x.size() - 2] < 0) {
+		west = true;
+	}
+	if (x[x.size() - 1] > 0) {
+		south = true;
+	} else if (x[x.size() - 1] < 0) {
+		north = true;
+	}
+	v.push_back(east);
+	v.push_back(west);
+	v.push_back(north);
+	v.push_back(south);
+}
+// HACKS END
 
 EM::EM(scene *scn)
 : xdim(0), scn(scn), scncopy(scn->copy()), dtree(NULL), ndata(0), nmodels(0),
@@ -216,6 +235,7 @@ void EM::add_data(const floatvec &x, double y) {
 	DTreeInst &inst = dtree_insts.back();
 	inst.cat = -1;
 	inst.attrs = scn->get_atom_vals();
+	add_move_dir_preds(x, inst.attrs);
 	if (!dtree) {
 		dtree = new ID5Tree(dtree_insts);
 	}
@@ -572,6 +592,7 @@ int EM::classify(const floatvec &x) {
 	}
 	scncopy->set_properties(x);
 	attr_vec attrs = scncopy->get_atom_vals();
+	add_move_dir_preds(x, attrs);
 	return dtree->classify(attrs);
 }
 
