@@ -3,11 +3,14 @@
 set -m # for job control
 
 root=../../../../out
-export LD_LIBRARY_PATH=$root/lib:$HOME/local/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$root/lib:$LD_LIBRARY_PATH
 soar=$root/bin/cli
-agent=agent/targets.soar
 
-export SVS_DATA_PIPE=/tmp/datavis
+remote_args=gui
+env_args="1 3"               # default seed = 1 and 3 blocks not touching
+agent=agent/planner.soar
+
+#export SVS_DATA_PIPE=/tmp/datavis
 #export SVS_DISPLAY_PIPE=/tmp/dispfifo
 
 # kill all old jobs first
@@ -74,8 +77,9 @@ do
 		env_args="$2"
 		shift
 		;;
-	-m)
-		agent=agent/manual.soar
+	-s)
+		agent="$2"
+		shift
 		;;
 	*)
 		break
@@ -111,9 +115,6 @@ case "$debug" in
 	soarexit=$?
 esac
 
-#kill $envpid
-#kill $remotepid
-
 pyprocs=`ps | awk '$4 == "python" {print $1}'`
 if [ -n "$pyprocs" ]
 then
@@ -124,5 +125,7 @@ rm -f env ctrl
 
 if [ "$soarexit" -ne 0 ]
 then
+	kill $envpid
+	kill $remotepid
 	exit 1
 fi

@@ -2,7 +2,6 @@ from __future__ import print_function
 import sys, os
 import random
 import fcntl
-import Tkinter as tk
 
 DELTA = 1
 
@@ -27,24 +26,16 @@ def dist(p1, p2):
 	return sum((x1 - x2) ** 2 for x1, x2 in zip(p1, p2))
 	
 class Cube:
-	def __init__(self, name, canvas, h = 1.0, w = 1.0, d = 1.0):
+	def __init__(self, name, canvas, h = 1.0, w = 1.0, d = 1.0, solid=True):
 		self.name = name
 		self.canvas = canvas
 		self.added = False;
 		self.verts = cube_verts(h, w, d)
 		self.dims = (h, w, d)
 		self.pos = [0.0, 0.0, 0.0]
+		self.solid = solid
 		self.dirty = True
 	
-	def draw(self):
-		w2 = self.dims[0] / 2
-		h2 = self.dims[1] / 2
-		bbox = (self.pos[0] - w2, self.pos[1] - h2, self.pos[0] + w2, self.pos[1] + h2)
-		self.rid = self.canvas.create_rectangle(bbox)
-		tx = self.pos[0]
-		ty = self.pos[1]
-		self.tid = self.canvas.create_text(tx, ty, text = self.name, justify = tk.CENTER)
-		
 	def print_sgel(self):
 		if not self.dirty:
 			return
@@ -68,6 +59,15 @@ class Cube:
 		self.pos = pos
 		self.dirty = True
 
+	def draw(self):
+		w2 = self.dims[0] / 2
+		h2 = self.dims[1] / 2
+		bbox = (self.pos[0] - w2, self.pos[1] - h2, self.pos[0] + w2, self.pos[1] + h2)
+		self.rid = self.canvas.create_rectangle(bbox)
+		tx = self.pos[0]
+		ty = self.pos[1]
+		self.tid = self.canvas.create_text(tx, ty, text = self.name, justify = tk.CENTER)
+		
 	def update_canvas(self):
 		if self.canvas == None:
 			return
@@ -133,7 +133,7 @@ class World2:
 		self.cursor.move(d)
 		self.cursor.update_canvas()
 		for c in self.cubes:
-			if self.cursor.intersects(c):
+			if c.solid and self.cursor.intersects(c):
 				# There are six possible positions for the cube that resolve the collision,
 				# 2 for each dimension. Move it to the closest one.
 				positions = []
@@ -199,55 +199,66 @@ class Input:
 
 def make_cubes(canvas, args):
 	minpos = 0
-	maxpos = 200
+	maxpos = 300
 	
 	cubesize = 30
+	rseed = 1
+	ncubes = 2
+	ntargets = 0
+	touching = -1
+	side = 'x'
 	
-	if len(args) < 2:
-		random.seed(1)
-		ncubes = 2
-	else:
-		random.seed(int(args[0]))
+	try:
+		rseed = int(args[0])
 		ncubes = int(args[1])
+		ntargets = int(args[2])
+		touching = int(args[3])
+		side = args[4]
+	except IndexError:
+		pass
+	
+	random.seed(rseed)
 	
 	while True:
 		cubes = []
-		
-		while len(cubes) < ncubes:
+		for i in range(ncubes + ntargets):
 			if len(cubes) == 0:
 				name = 'cur'
 			else:
 				name = 'c{}'.format(len(cubes))
 			
-			x = random.randint(minpos, maxpos)
-			y = random.randint(minpos, maxpos)
-			c = Cube(name, canvas, cubesize, cubesize, cubesize)
-			c.move_to([x, y, 0])
+			if len(cubes) < ncubes:
+				c = Cube(name, canvas, cubesize, cubesize, cubesize, True)
+			else:
+				c = Cube(name, canvas, cubesize, cubesize, cubesize, False)
+				
+			bad = True
+			while bad:
+				x = random.randint(minpos, maxpos)
+				y = random.randint(minpos, maxpos)
+				c.move_to([x, y, 0])
 			
-			bad = False
-			for c1 in cubes:
-				if c.intersects(c1):
-					bad = True
-					break
+				bad = False
+				for c1 in cubes:
+					if c.intersects(c1):
+						bad = True
+						break
 			
-			if not bad:
-				cubes.append(c)
+			cubes.append(c)
 		
-		if len(args) < 4:
-			return cubes
-		else:
+		if touching >= 1 and side in 'lrtb':
 			cur = cubes[0]
-			tc = cubes[int(args[2])]
-			if args[3] == 'l':
+			tc = cubes[touching]
+			if side == 'l':
 				x = tc.min()[0] - (cubesize / 2)
 				y = random.randint(tc.min()[1], tc.max()[1])
-			elif args[3] == 'r':
+			elif side == 'r':
 				x = tc.max()[0] + (cubesize / 2)
 				y = random.randint(tc.min()[1], tc.max()[1])
-			elif args[3] == 't':
+			elif side == 't':
 				x = random.randint(tc.min()[0], tc.max()[0])
 				y = tc.min()[1] - (cubesize / 2)
-			elif args[3] == 'b':
+			elif side == 'b':
 				x = random.randint(tc.min()[0], tc.max()[0])
 				y = tc.max()[1] + (cubesize / 2)
 			
@@ -263,6 +274,8 @@ def make_cubes(canvas, args):
 			
 			if not bad:
 				return cubes
+		else:
+			return cubes
 			
 if __name__ == '__main__':
 	if len(sys.argv) > 1 and sys.argv[1] == '-h':
@@ -270,6 +283,7 @@ if __name__ == '__main__':
 		cubes = make_cubes(None, sys.argv[2:])
 	else:
 		headless = False
+		import Tkinter as tk
 		win = tk.Tk()
 		canvas = tk.Canvas(win)
 		canvas.pack(fill = tk.BOTH, expand = 1)
