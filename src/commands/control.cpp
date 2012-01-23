@@ -920,7 +920,7 @@ public:
 			if (!evaluator.evaluate(incr.traj, val, finalstate)) {
 				return false;
 			}
-			if (!found || val < bestval) {
+			if (!found || val < bestval || (val == bestval && incr.traj.magnitude() < besttraj.magnitude())) {
 				found = true;
 				besttraj = incr.traj;
 				bestval = val;
