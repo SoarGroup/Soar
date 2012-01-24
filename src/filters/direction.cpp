@@ -54,11 +54,11 @@ bool standalone (scene *scn, const vector<string> &args, int axis, int comp) {
 }
 
 bool standalone_north_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 1, 1);
+	return standalone(scn, args, 1, -1);
 }
 
 bool standalone_south_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 1, -1);
+	return standalone(scn, args, 1, 1);
 }
 
 bool standalone_east_of(scene *scn, const vector<string> &args) {
@@ -105,11 +105,11 @@ private:
 };
 
 filter *make_north_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 1, 1);
+	return new direction_filter(input, 1, -1);
 }
 
 filter *make_south_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 1, -1);
+	return new direction_filter(input, 1, 1);
 }
 
 filter *make_east_of(scene *scn, filter_input *input) {
