@@ -22,7 +22,7 @@ std::string getnamespace();
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
 
-#if 0
+#if 1
 #define DATAVIS(x) get_datavis() << x;
 #else
 #define DATAVIS(x)
@@ -533,7 +533,7 @@ public:
 	bbox() {}
 	
 	/* bounding box around single point */
-	bbox(vec3 &v) {
+	bbox(const vec3 &v) {
 		min = v;
 		max = v;
 	}
@@ -546,6 +546,8 @@ public:
 			include(pts[i]);
 		}
 	}
+	
+	bbox(const vec3 &min, const vec3 &max) : min(min), max(max) {}
 	
 	void include(vec3 &v) {
 		for(int d = 0; d < 3; ++d) {

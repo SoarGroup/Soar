@@ -10,6 +10,7 @@ model *_make_velocity_model_(soar_interface *si, Symbol *root, scene *scn, const
 model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
 model *_make_splinter_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
 model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
+model *_make_targets_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
 
 struct model_constructor_table_entry {
 	const char *type;
@@ -22,6 +23,7 @@ static model_constructor_table_entry constructor_table[] = {
 	{ "lwr",         _make_lwr_model_},
 	{ "splinter",    _make_splinter_model_},
 	{ "em",          _make_em_model_},
+	{ "targets",     _make_targets_model_},
 };
 
 model *parse_model_struct(soar_interface *si, Symbol *root, string &name, scene *scn) {
@@ -116,7 +118,7 @@ public:
 	}
 	
 	bool early() {
-		return false;
+		return true;
 	}
 	
 	bool update() {
