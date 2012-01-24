@@ -57,7 +57,15 @@ public:
 
 	~EM_model() {
 		finish();
-		delete em;
+		
+		if (em) {
+			stringstream treepathss;
+			treepathss << "trees/" << get_name() << ".dot";
+			string treepath = treepathss.str();
+			ofstream f(treepath.c_str());
+			em->print_tree(f);
+			delete em;
+		}
 	}
 	
 	bool predict(const floatvec &x, floatvec &y) {
@@ -124,12 +132,6 @@ public:
 		em->load(is);
 		update_tested_atoms();
 		DATAVIS("END" << endl)
-		
-		stringstream treepathss;
-		treepathss << "trees/" << get_name() << ".dot";
-		string treepath = treepathss.str();
-		ofstream f(treepath.c_str());
-		em->print_tree(f);
 	}
 	
 	/*
