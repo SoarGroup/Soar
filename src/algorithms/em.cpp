@@ -231,11 +231,14 @@ void EM::add_data(const floatvec &x, double y) {
 	}
 	ydata(ndata - 1) = y;
 	
-	dtree_insts.push_back(DTreeInst());
-	DTreeInst &inst = dtree_insts.back();
+	DTreeInst inst;
 	inst.cat = -1;
-	inst.attrs = scn->get_atom_vals();
+	
+	scncopy->set_properties(x);
+	inst.attrs = scncopy->get_atom_vals();
 	add_move_dir_preds(x, inst.attrs);
+	dtree_insts.push_back(inst);
+
 	if (!dtree) {
 		dtree = new ID5Tree(dtree_insts);
 	}
