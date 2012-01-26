@@ -24,18 +24,6 @@ public:
 		const filter_table &t = get_filter_table();
 		t.get_all_atoms(scn, all_atoms);
 		
-		// HACKS BEGIN
-		vector<string> east, west, north, south;
-		east.push_back("east");
-		west.push_back("west");
-		north.push_back("north");
-		south.push_back("south");
-		all_atoms.push_back(east);
-		all_atoms.push_back(west);
-		all_atoms.push_back(north);
-		all_atoms.push_back(south);
-		// HACKS END
-		
 		vector<vector<string> >::const_iterator i;
 		for (i = all_atoms.begin(); i != all_atoms.end(); ++i) {
 			stringstream ss;
