@@ -3,7 +3,7 @@ sp {create-em-models
    (state <s> ^superstate nil
               ^svs <svs>)
    (<svs> ^spatial-scene <scn> ^command <c>)
-   (<scn> ^child.id {<id> <> world})
+   (<scn> ^child.id {<id> << cur c1 c2 c3 c4 c5 c6 >>})
 -->
    (<c> ^create-model <mx> <my>)
    (<mx> ^name (concat <id> |:px|) ^type em)
@@ -13,7 +13,7 @@ sp {create-em-models
 #   (state <s> ^superstate nil
 #              ^svs <svs>)
 #   (<svs> ^spatial-scene <scn> ^command <c>)
-#   (<scn> ^child.id {<id> <> world})
+#   (<scn> ^child.id {<id> << cur c1 c2 c3 c4 c5 c6 >>})
 #-->
 #   (<c> ^create-model <mx> <my>)
 #   (<mx> ^name (concat <id> |:px|) ^type lwr ^num-neighbors 50)

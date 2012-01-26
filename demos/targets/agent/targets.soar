@@ -1,5 +1,3 @@
-source temp.soar
-
 sp {init
    (state <s> ^superstate nil)
 -->

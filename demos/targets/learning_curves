@@ -2,19 +2,19 @@
 
 NTRAIN=100
 NTEST=50
-TRAIN_CHUNK=10
+TRAIN_CHUNK=20
 TRAIN_SEEDS="1 2 3 4 5 6 7 8 9 10"
 TEST_SEEDS="101 102 103 104 105 106 107 108 109 110"
 
-WD="data/lc-`date +"%d:%H:%M:%S"`"
-mkdir $WD
+WD="data/$1/lc-`date +"%d:%H:%M:%S"`"
+mkdir -p $WD
 
 TRAIN_SCEN="$WD/train_scen"
 TEST_SCEN="$WD/test_scen"
 RESULTS="$WD/results"
 
-./gen_scenarios2 2 11 $TRAIN_SEEDS | shuf | head -n $NTRAIN >$TRAIN_SCEN
-./gen_scenarios2 2 2 $TEST_SEEDS | shuf | head -n $NTEST >$TEST_SCEN
+./gen_scenarios1 2 3 10 $TRAIN_SEEDS | shuf | head -n $NTRAIN >$TRAIN_SCEN
+./gen_scenarios1 2 3 1 $TEST_SEEDS | shuf | head -n $NTEST >$TEST_SCEN
 
 NTRAIN=`wc -l<"$TRAIN_SCEN"`
 NTEST=`wc -l<"$TEST_SCEN"`
@@ -60,7 +60,7 @@ do
 		fi
 		n=`basename $f`
 		n=${n%.*}
-		m=`awk '{print $NF}' $f | tb mean`
+		m=`awk '{print $NF}' $f | grep -v nan | tb mean`
 		names="$names $n"
 		means="$means $m"
 		echo $n $m

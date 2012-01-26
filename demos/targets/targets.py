@@ -4,6 +4,10 @@ import random
 import fcntl
 
 DELTA = 1
+MINPOS = 0
+MAXPOS = 200
+CUBESIZE = 30
+HALFCUBE = CUBESIZE / 2
 
 def cube_verts(h, w, d):
 	h2 = h / 2
@@ -24,9 +28,12 @@ def overlap(a1, a2, b1, b2):
 
 def dist(p1, p2):
 	return sum((x1 - x2) ** 2 for x1, x2 in zip(p1, p2))
-	
+
+def check_bounds(a, b):
+	return MINPOS <= a <= b <= MAXPOS
+
 class Cube:
-	def __init__(self, name, canvas, h = 1.0, w = 1.0, d = 1.0, solid=True):
+	def __init__(self, name, canvas, solid=True, h = CUBESIZE, w = CUBESIZE, d = CUBESIZE):
 		self.name = name
 		self.canvas = canvas
 		self.added = False;
@@ -166,10 +173,12 @@ class Input:
 	
 	def proc_input(self, input):
 		self.readbuf += input
-		cmd, sep, rest = self.readbuf.partition('\n***\n')
-		if sep == '':
-			self.readbuf = cmd
-		else:
+		while True:
+			cmd, sep, rest = self.readbuf.partition('\n***\n')
+			if sep == '':
+				self.readbuf = cmd
+				return
+			
 			self.readbuf = rest
 			d = [0, 0, 0]
 			valid = False
@@ -195,47 +204,41 @@ class Input:
 
 # Argument list has the following format:
 #
-# [random seed] [num cubes] [touching which cube] [touching which side]
+# [num cubes] [num targets] [touching which cube] [touching which side]
 
-def make_cubes(canvas, args):
-	minpos = 0
-	maxpos = 300
-	
-	cubesize = 30
-	rseed = 1
+def experiment1_layout(canvas, args):
 	ncubes = 2
 	ntargets = 0
 	touching = -1
 	side = 'x'
 	
 	try:
-		rseed = int(args[0])
-		ncubes = int(args[1])
-		ntargets = int(args[2])
-		touching = int(args[3])
-		side = args[4]
+		ncubes = int(args[0])
+		ntargets = int(args[1])
+		touching = int(args[2])
+		side = args[3]
 	except IndexError:
 		pass
-	
-	random.seed(rseed)
 	
 	while True:
 		cubes = []
 		for i in range(ncubes + ntargets):
-			if len(cubes) == 0:
+			if i == 0:
 				name = 'cur'
+			elif len(cubes) < ncubes:
+				name = 'c{}'.format(i)
 			else:
-				name = 'c{}'.format(len(cubes))
+				name = 't{}'.format(i)
 			
-			if len(cubes) < ncubes:
-				c = Cube(name, canvas, cubesize, cubesize, cubesize, True)
+			if i < ncubes:
+				c = Cube(name, canvas, True)
 			else:
-				c = Cube(name, canvas, cubesize, cubesize, cubesize, False)
+				c = Cube(name, canvas, False)
 				
 			bad = True
 			while bad:
-				x = random.randint(minpos, maxpos)
-				y = random.randint(minpos, maxpos)
+				x = random.randint(MINPOS, MAXPOS)
+				y = random.randint(MINPOS, MAXPOS)
 				c.move_to([x, y, 0])
 			
 				bad = False
@@ -250,17 +253,17 @@ def make_cubes(canvas, args):
 			cur = cubes[0]
 			tc = cubes[touching]
 			if side == 'l':
-				x = tc.min()[0] - (cubesize / 2)
+				x = tc.min()[0] - HALFCUBE
 				y = random.randint(tc.min()[1], tc.max()[1])
 			elif side == 'r':
-				x = tc.max()[0] + (cubesize / 2)
+				x = tc.max()[0] + HALFCUBE
 				y = random.randint(tc.min()[1], tc.max()[1])
 			elif side == 't':
 				x = random.randint(tc.min()[0], tc.max()[0])
-				y = tc.min()[1] - (cubesize / 2)
+				y = tc.min()[1] - HALFCUBE
 			elif side == 'b':
 				x = random.randint(tc.min()[0], tc.max()[0])
-				y = tc.max()[1] + (cubesize / 2)
+				y = tc.max()[1] + HALFCUBE
 			
 			cur.move_to([x, y, 0])
 			
@@ -276,20 +279,128 @@ def make_cubes(canvas, args):
 				return cubes
 		else:
 			return cubes
+
+def experiment2_layout(canvas, args):
+	ntargets = 1
+	cur_c1_xrel = 'e'
+	cur_c1_yrel = 'n'
+	c1_t1_xrel = 'e'
+	c1_t1_yrel = 'n'
+	
+	try:
+		ntargets = int(args[0])
+		cur_c1_xrel = args[1]
+		cur_c1_yrel = args[2]
+		c1_t1_xrel = args[3]
+		c1_t1_yrel = args[4]
+	except IndexError:
+		pass
+	
+	while True:
+		cur = Cube('cur', canvas, True)
+		c1 = Cube('c1', canvas, True)
+		t1 = Cube('t1', canvas, False)
+		cubes = [cur, c1, t1]
+		
+		curx = random.randint(MINPOS, MAXPOS)
+		cury = random.randint(MINPOS, MAXPOS)
+		cur.move_to([curx, cury, 0])
+		#print('cur - {} {}'.format(curx, cury), file=sys.stderr)
+		
+		c1_xbounds = [MINPOS, MAXPOS]
+		c1_ybounds = [MINPOS, MAXPOS]
+		if cur_c1_xrel == 'e':
+			c1_xbounds[0] = curx + CUBESIZE
+		elif cur_c1_xrel == 'w':
+			c1_xbounds[1] = curx - CUBESIZE
 			
-if __name__ == '__main__':
-	if len(sys.argv) > 1 and sys.argv[1] == '-h':
-		headless = True
-		cubes = make_cubes(None, sys.argv[2:])
+		if cur_c1_yrel == 'n':
+			c1_ybounds[1] = cury - CUBESIZE
+		elif cur_c1_yrel == 's':
+			c1_ybounds[0] = cury + CUBESIZE
+		
+		if not check_bounds(*c1_xbounds) or not check_bounds(*c1_ybounds):
+			continue
+		
+		c1x = random.randint(*c1_xbounds)
+		c1y = random.randint(*c1_ybounds)
+		c1.move_to([c1x, c1y, 0])
+		#print('c1 - {} {}'.format(c1x, c1y), file=sys.stderr)
+
+		t1_ybounds = [MINPOS, MAXPOS]
+		t1_xbounds = [MINPOS, MAXPOS]
+		if c1_t1_xrel == 'e':
+			t1_xbounds[0] = c1x + CUBESIZE
+		elif c1_t1_xrel == 'w':
+			t1_xbounds[1] = c1x - CUBESIZE
+		
+		if c1_t1_yrel == 'n':
+			t1_ybounds[1] = c1y - CUBESIZE
+		elif c1_t1_yrel == 's':
+			t1_ybounds[0] = c1y + CUBESIZE
+		
+		if not check_bounds(*t1_xbounds) or not check_bounds(*t1_ybounds):
+			continue
+		
+		t1x = random.randint(*t1_xbounds)
+		t1y = random.randint(*t1_ybounds)
+		t1.move_to([t1x, t1y, 0])
+		#print('t1 - {} {}'.format(t1x, t1y), file=sys.stderr)
+		break
+		
+	for i in range(ntargets - 1):
+		c = Cube('t{}'.format(i+2), canvas, False)
+			
+		bad = True
+		while bad:
+			x = random.randint(MINPOS, MAXPOS)
+			y = random.randint(MINPOS, MAXPOS)
+			c.move_to([x, y, 0])
+		
+			bad = False
+			for c1 in cubes:
+				if c.intersects(c1):
+					bad = True
+					break
+		
+		cubes.append(c)
+	
+	return cubes
+
+def layout(n, canvas, args):
+	if n == 1:
+		return experiment1_layout(canvas, args)
 	else:
-		headless = False
+		return experiment2_layout(canvas, args)
+	
+if __name__ == '__main__':
+	random.seed(1)
+	headless = False
+	experiment = 1
+	
+	args = sys.argv[1:]
+	if len(args) > 0 and args[0] == '-h':
+		headless = True
+		args.pop(0)
+	
+	if len(args) < 2:
+		print('usage: {} [-h] experiment rand_seed [...]'.format(sys.argv[0]))
+		sys.exit(1)
+	
+	experiment = int(args[0])
+	random.seed(args[1])
+	args = args[2:]
+	
+	if headless:
+		cubes = layout(experiment, None, args)
+	else:
 		import Tkinter as tk
 		win = tk.Tk()
 		canvas = tk.Canvas(win)
 		canvas.pack(fill = tk.BOTH, expand = 1)
 		canvas.focus_set()
 	
-		cubes = make_cubes(canvas, sys.argv[1:])
+		cubes = layout(experiment, canvas, args)
 		for c in cubes:
 			c.update_canvas()
 	

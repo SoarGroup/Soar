@@ -22,7 +22,7 @@ std::string getnamespace();
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
 
-#if 1
+#if 0
 #define DATAVIS(x) get_datavis() << x;
 #else
 #define DATAVIS(x)

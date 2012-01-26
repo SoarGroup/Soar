@@ -1,25 +1,17 @@
 #!/bin/sh
 
-agent=agent/learner.soar 
+agent=agent/planner.soar 
 
-ncubes=$1
-ntargets=$2
-nsteps=$3
-shift; shift; shift
+ntargets=$1
+shift
 seeds="$*"
 
-for touching in `seq $((ncubes+ntargets-1))`
-do
-	for side in l r t b
-	do
-		for direction in "1 0" "-1 0" "0 1" "0 -1"
-		do
-			for s in $seeds
-			do
-				env_args="-h $s $ncubes $ntargets $touching $side"
-				remote_args="fixed $nsteps $s $direction"
-			
-				echo "./run -s $agent -r '$remote_args' -e '$env_args' 'run $((nsteps+2))'"
+for c1x in e w; do
+	for c1y in n s; do
+		for t1x in e w; do
+			for t1y in n s; do
+				env_args="-h 2 $s $ntargets $c1x $c1y $t1x $t1y"
+				echo "./run -s $agent -e '$env_args' run"
 			done
 		done
 	done
@@ -29,9 +21,6 @@ for direction in "1 0" "-1 0" "0 1" "0 -1"
 do
 	for s in $seeds
 	do
-		env_args="-h $s $ncubes $ntargets"
-		remote_args="fixed $nsteps $s $direction"
 	
-		echo "./run -s $agent -r '$remote_args' -e '$env_args' 'run $((nsteps+2))'"
 	done
 done

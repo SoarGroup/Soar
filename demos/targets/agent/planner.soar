@@ -1,18 +1,21 @@
 source plan-common.soar
 source search.soar
 source epmem-decide.soar
-source models.soar
+#source models.soar
 source control.soar
 
 epmem --set trigger none
 
-sp {goal
-   (state <s> ^superstate nil)
+sp {goal-achieved
+   (state <s> ^superstate nil
+              ^curr-state.positive <pos>)
+   (<pos> ^horizontally-aligned <h>
+          ^vertically-aligned <v>)
+   (<h> ^a c1 ^b t1)
+   (<v> ^a c1 ^b t1)
 -->
-   (<s> ^goal-state <gs>)
-   (<gs> ^positive <p> ^negative <n>)
-   (<p> ^intersect <i>)
-   (<i> ^a c1 ^b c2)}
+   (write (crlf) GOALACHIEVED (crlf))
+   (halt)}
 
 sp {elab*negation
    (state <s> ^superstate nil)
@@ -21,24 +24,23 @@ sp {elab*negation
    (<n> ^positive negative
         ^negative positive)}
 
-#sp {create-velocity-model
-#   (state <s> ^superstate nil 
-#              ^svs <svs>)
-#   (<svs> ^spatial-scene <scn> ^command <cmd>)
-#   (<scn> ^child.id cur)
-#-->
-#   (<cmd> ^create-model <m>)
-#   (<m> ^name cur-model 
-#        ^type velocity 
-#        ^dims 2)}
-#
-#sp {assign-velocity-model
-#   (state <s> ^superstate nil
-#              ^svs.command <c>)
-#   (<c> ^create-model <m>)
-#   (<m> ^name cur-model ^status success)
-#-->
-#   (<c> ^assign-model <a>)
-#   (<a> ^name cur-model
-#        ^inputs .cur:px .cur:py .output:dx .output:dy <x1>
-#        ^outputs .cur:px .cur:py <x2>)}
+sp {create-velocity-model
+   (state <s> ^superstate nil 
+              ^svs <svs>)
+   (<svs> ^spatial-scene <scn> ^command <cmd>)
+   (<scn> ^child.id cur)
+-->
+   (<cmd> ^create-model <m>)
+   (<m> ^name cur-c1-model
+        ^type targets)}
+
+sp {assign-velocity-model
+   (state <s> ^superstate nil
+              ^svs.command <c>)
+   (<c> ^create-model <m>)
+   (<m> ^name cur-c1-model ^status success)
+-->
+   (<c> ^assign-model <a>)
+   (<a> ^name cur-c1-model
+        ^inputs .cur:px .cur:py .c1:px .c1:py .output:dx .output:dy <x1>
+        ^outputs .cur:px .cur:py .c1:px .c1:py <x2>)}

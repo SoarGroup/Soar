@@ -112,4 +112,4 @@ sp {epmem-decide*choose*2
    (<p2> ^<param1> <v1>
          ^<param2> <v2>)
 -->
-   (<ss> ^operator <o> >)}
+   (<ss> ^operator <o> > =)}

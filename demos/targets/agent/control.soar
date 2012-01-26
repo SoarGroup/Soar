@@ -13,7 +13,8 @@ sp {apply*change-predicate
          ^to-change <c>)
    (<c> ^predicate <pred>
         ^params <p>
-        ^sign <sign>)}
+        ^sign <sign>)
+   (write (crlf) |STEPSTEP| (crlf))}
 
 sp {propose*wait-for-seek*2-param
    (state <s> ^curr-state <cs>

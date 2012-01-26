@@ -1,5 +1,4 @@
 source targets.soar
-source extract.soar
 
 epmem --set learning on
 epmem --set path plan.sqlite3
@@ -37,3 +36,28 @@ sp {elab*atom
 #        ^<param2> <n2>)
 #   (<n1> ^type node ^name <id1>)
 #   (<n2> ^type node ^name <id2>)}
+
+sp {extract-goal
+   (state <s> ^superstate nil
+              ^svs.command <cmd>
+              ^goal-state.<sign>.<pred> <p>)
+   (<p> ^<param1> <v1>
+        ^{<param2> > <param1>} <v2>
+       -^{<param3> > <param2>})
+-->
+   (<cmd> ^extract <e>)
+   (<e> ^type <pred>
+        ^<param1> <n1>
+        ^<param2> <n2>)
+   (<n1> ^type node ^name <v1>)
+   (<n2> ^type node ^name <v2>)}
+
+sp {goal
+   (state <s> ^superstate nil)
+-->
+   (<s> ^goal-state <gs>)
+   (<gs> ^positive <p> ^negative <n>)
+   (<p> ^horizontally-aligned <h>
+        ^vertically-aligned <v>)
+   (<h> ^a c1 ^b t1)
+   (<v> ^a c1 ^b t1)}
