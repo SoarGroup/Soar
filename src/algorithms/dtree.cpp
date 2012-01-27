@@ -36,155 +36,14 @@ bool is_unique(const vector<T> &v) {
 	return t.size() == v.size();
 }
 
-void DTreeInst::save(ostream &os) const {
+void ClassifierInst::save(ostream &os) const {
 	os << cat << endl;
 	save_vector(attrs, os);
 }
 
-void DTreeInst::load(istream &is) {
+void ClassifierInst::load(istream &is) {
 	is >> cat;
 	load_vector(attrs, is);
-}
-
-ID3Tree::ID3Tree(const vector<DTreeInst> &insts)
-: split_attr(-1)
-{
-	vector<int> attrs;
-	for (int i = 0; i < insts[0].attrs.size(); ++i) {
-		attrs.push_back(i);
-	}
-	learn_rec(insts, attrs);
-}
-
-int ID3Tree::classify(const attr_vec &attrs) const {
-	if (split_attr < 0) {
-		return cat;
-	}
-	if (attrs[split_attr]) {
-		return left->classify(attrs);
-	}
-	return right->classify(attrs);
-}
-
-void ID3Tree::output(const vector<string> &attr_names) const {
-	output_rec("", attr_names);
-}
-
-ID3Tree::ID3Tree()
-: split_attr(-1), cat(90909) // debug val
-{ }
-
-int ID3Tree::choose_attrib(const vector<DTreeInst> &insts, const vector<int> &attrs) {
-	int highattrib = -1, ninsts = insts.size();
-	double highgain, curr_ent;
-	map<category, int> ttl_counts;
-	for (int j = 0; j < ninsts; ++j) {
-		++ttl_counts[insts[j].cat];
-	}
-	curr_ent = entropy(ttl_counts, ninsts);
-	
-	std::vector<int>::const_iterator i;
-	for (i = attrs.begin(); i != attrs.end(); ++i) {
-		map<category, int> true_counts, false_counts;
-		int ttl_true = 0, ttl_false = 0;
-		for (int j = 0; j < ninsts; ++j) {
-			if (insts[j].attrs[*i]) {
-				++true_counts[insts[j].cat];
-				++ttl_true;
-			} else {
-				++false_counts[insts[j].cat];
-				++ttl_false;
-			}
-		}
-		
-		double true_ent = entropy(true_counts, ninsts) * ((double) ttl_true) / ninsts;
-		double false_ent = entropy(false_counts, ninsts) * ((double) ttl_false) / ninsts;
-		double gain = curr_ent - (true_ent + false_ent);
-		if (highattrib == -1 || gain > highgain) {
-			highattrib = *i;
-			highgain = gain;
-		}
-	}
-	return highattrib;
-}
-
-void ID3Tree::learn_rec(const vector<DTreeInst> &insts, const vector<int> &attrs) {
-	assert(insts.size() > 0);
-	
-	cat = insts[0].cat;
-	bool same_cat = true;
-	for (int i = 0; i < insts.size(); ++i) {
-		if (cat != insts[i].cat) {
-			same_cat = false;
-			break;
-		}
-	}
-	if (same_cat) {
-		return;
-	}
-	
-	bool same_attrs = true;
-	for (int i = 0; i < insts.size(); ++i) {
-		if (insts[i].attrs != insts[0].attrs) {
-			same_attrs = false;
-			break;
-		}
-	}
-	
-	if (attrs.size() == 0 || same_attrs) {
-		map<category, int> counts;
-		for (int i = 0; i < insts.size(); ++i) {
-			int c = insts[i].cat;
-			if (counts.find(c) == counts.end()) {
-				counts[c] = 1;
-			} else {
-				++counts[c];
-			}
-			if ((counts.size() == 1) || (counts[cat] < counts[c])) {
-				cat = c;
-			}
-		}
-		return;
-	}
-	
-	split_attr = choose_attrib(insts, attrs);
-	vector<attr_vec> lattrs, rattrs;
-	vector<DTreeInst> linsts, rinsts;
-	for (int i = 0; i < insts.size(); ++i) {
-		if (insts[i].attrs[split_attr]) {
-			linsts.push_back(insts[i]);
-		} else {
-			rinsts.push_back(insts[i]);
-		}
-	}
-	
-	vector<int> child_attrs(attrs);
-	child_attrs.erase(child_attrs.begin() + split_attr);
-	if (lattrs.size() > 0) {
-		left.reset(new ID3Tree());
-		left->learn_rec(linsts, child_attrs);
-	} else {
-		left.reset();
-	}
-	
-	if (rattrs.size() > 0) {
-		right.reset(new ID3Tree());
-		right->learn_rec(rinsts, child_attrs);
-	} else {
-		right.reset();
-	}
-}
-
-void ID3Tree::output_rec(const string &prefix, const vector<string> &attrib_names) const {
-	if (split_attr < 0) {
-		cout << prefix << " : " << cat << endl;
-	} else {
-		stringstream lss, rss;
-		lss << prefix << " " << attrib_names[split_attr] << ":t";
-		rss << prefix << " " << attrib_names[split_attr] << ":f";
-		left->output_rec(lss.str(), attrib_names);
-		right->output_rec(rss.str(), attrib_names);
-	}
 }
 
 /*
@@ -192,7 +51,7 @@ void ID3Tree::output_rec(const string &prefix, const vector<string> &attrib_name
  a reference to it, so it can grow after the tree is created. The
  insts_here variable indexes into this list.
 */
-ID5Tree::ID5Tree(const vector<DTreeInst> &insts) 
+ID5Tree::ID5Tree(const vector<ClassifierInst> &insts) 
 : insts(insts), split_attr(-1), cat(90909)
 {
 	assert(insts.size() > 0);
@@ -203,7 +62,7 @@ ID5Tree::ID5Tree(const vector<DTreeInst> &insts)
 	}
 }
 
-ID5Tree::ID5Tree(const vector<DTreeInst> &insts, const vector<int> &attrs) 
+ID5Tree::ID5Tree(const vector<ClassifierInst> &insts, const vector<int> &attrs) 
 : insts(insts), attrs_here(attrs), split_attr(-1), cat(90909)
 { }
 
@@ -479,7 +338,7 @@ bool ID5Tree::validate_counts() {
 	}
 	
 	for (i = insts_here.begin(); i != insts_here.end(); ++i) {
-		const DTreeInst &inst = insts[*i];
+		const ClassifierInst &inst = insts[*i];
 		++ref_ttl_counts[inst.cat];
 		for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 			val_counts &c = ref_av_counts[*j];

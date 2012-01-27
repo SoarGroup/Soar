@@ -6,9 +6,21 @@
 #include <armadillo>
 #include "linear.h"
 #include "common.h"
-#include "dtree.h"
 
 class scene;
+class ID5Tree;
+
+typedef std::vector<bool> attr_vec;
+typedef int category;
+
+class ClassifierInst {
+public:
+	attr_vec attrs;
+	category cat;
+	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
+};
 
 class EM {
 public:
@@ -56,7 +68,7 @@ private:
 	 This will be read directly by the decision tree learner as the
 	 category labels.
 	*/
-	std::vector<DTreeInst> dtree_insts;
+	std::vector<ClassifierInst> class_insts;
 	
 	int ndata, nmodels, xdim;
 	

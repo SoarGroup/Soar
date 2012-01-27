@@ -126,7 +126,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 	DATAVIS("BEGIN Py_z" << endl)
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
 		double prev = Py_z(i, *j), now;
-		category c = dtree_insts[*j].cat;
+		category c = class_insts[*j].cat;
 		if (TEST_ELIGIBILITY && eligible(i, *j) == 0) {
 			now = 0.;
 		} else {
@@ -158,7 +158,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 void EM::update_MAP(const set<int> &points) {
 	set<int>::iterator j;
 	for (j = points.begin(); j != points.end(); ++j) {
-		category prev = dtree_insts[*j].cat, now;
+		category prev = class_insts[*j].cat, now;
 		if (nmodels == 0) {
 			now = -1;
 		} else {
@@ -168,7 +168,7 @@ void EM::update_MAP(const set<int> &points) {
 			}
 		}
 		if (now != prev) {
-			dtree_insts[*j].cat = now;
+			class_insts[*j].cat = now;
 			dtree->update_category(*j, prev);
 			if (prev != -1) {
 				stale_models.insert(prev);
@@ -185,7 +185,7 @@ void EM::update_MAP(const set<int> &points) {
 	
 	DATAVIS("BEGIN MAP" << endl)
 	for (int j = 0; j < ndata; ++j) {
-		DATAVIS(j << " " << dtree_insts[j].cat << endl)
+		DATAVIS(j << " " << class_insts[j].cat << endl)
 	}
 	DATAVIS("END" << endl)
 	/*
@@ -211,17 +211,17 @@ void EM::add_data(const floatvec &x, double y) {
 	}
 	ydata(ndata - 1) = y;
 	
-	DTreeInst inst;
+	ClassifierInst inst;
 	inst.cat = -1;
 	
 	scncopy->set_properties(x);
 	inst.attrs = scncopy->get_atom_vals();
-	dtree_insts.push_back(inst);
+	class_insts.push_back(inst);
 
 	if (!dtree) {
-		dtree = new ID5Tree(dtree_insts);
+		dtree = new ID5Tree(class_insts);
 	}
-	dtree->update_tree(dtree_insts.size() - 1);
+	dtree->update_tree(class_insts.size() - 1);
 	
 	for (int i = 0; i < nmodels; ++i) {
 		stale_points[i].insert(ndata - 1);
@@ -280,7 +280,7 @@ bool EM::unify_or_add_model() {
 	
 	vector<int> noise_data;
 	for (int i = 0; i < ndata; ++i) {
-		if (dtree_insts[i].cat == -1) {
+		if (class_insts[i].cat == -1) {
 			noise_data.push_back(i);
 		}
 	}
@@ -422,10 +422,10 @@ bool EM::remove_models() {
 		}
 	}
 	for (int j = 0; j < ndata; ++j) {
-		if (dtree_insts[j].cat >= 0) {
-			category old = dtree_insts[j].cat;
-			dtree_insts[j].cat = index_map(old);
-			if (dtree_insts[j].cat != old) {
+		if (class_insts[j].cat >= 0) {
+			category old = class_insts[j].cat;
+			class_insts[j].cat = index_map(old);
+			if (class_insts[j].cat != old) {
 				DATAVIS("'num removed' %+1" << endl)
 				dtree->update_category(j, old);
 			}
@@ -465,13 +465,13 @@ bool EM::run(int maxiters) {
 	cerr << "Reached max iterations without quiescence" << endl;
 	cerr << "Noise Data X" << endl;
 	for (int i = 0; i < ndata; ++i) {
-		if (dtree_insts[i].cat == -1) {
+		if (class_insts[i].cat == -1) {
 			cerr << xdata.row(i);
 		}
 	}
 	cerr << "Noise Data Y" << endl;
 	for (int i = 0; i < ndata; ++i) {
-		if (dtree_insts[i].cat == -1) {
+		if (class_insts[i].cat == -1) {
 			cerr << ydata(i) << endl;
 		}
 	}
@@ -510,9 +510,9 @@ void EM::save(ostream &os) const {
 		eligible.save(os, arma_ascii);
 	}
 	
-	std::vector<DTreeInst>::const_iterator i;
-	os << dtree_insts.size() << endl;
-	for (i = dtree_insts.begin(); i != dtree_insts.end(); ++i) {
+	std::vector<ClassifierInst>::const_iterator i;
+	os << class_insts.size() << endl;
+	for (i = class_insts.begin(); i != class_insts.end(); ++i) {
 		i->save(os);
 	}
 	
@@ -537,8 +537,8 @@ void EM::load(istream &is) {
 	
 	is >> ninsts;
 	for (int i = 0; i < ninsts; ++i) {
-		dtree_insts.push_back(DTreeInst());
-		dtree_insts.back().load(is);
+		class_insts.push_back(ClassifierInst());
+		class_insts.back().load(is);
 	}
 	
 	is >> nmodels;
@@ -550,9 +550,9 @@ void EM::load(istream &is) {
 		DATAVIS("END" << endl)
 	}
 	
-	dtree = new ID5Tree(dtree_insts);
+	dtree = new ID5Tree(class_insts);
 	vector<int> insts;
-	for (int i = 0; i < dtree_insts.size(); ++i) {
+	for (int i = 0; i < class_insts.size(); ++i) {
 		insts.push_back(i);
 	}
 	dtree->batch_update(insts);

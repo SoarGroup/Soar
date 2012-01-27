@@ -5,43 +5,11 @@
 #include <map>
 #include <string>
 #include <memory>
-
-typedef std::vector<bool> attr_vec;
-typedef int category;
-
-class DTreeInst {
-public:
-	attr_vec attrs;
-	category cat;
-	
-	void save(std::ostream &os) const;
-	void load(std::istream &is);
-};
-
-class ID3Tree {
-public:
-	ID3Tree(const std::vector<DTreeInst> &insts);
-	category classify(const attr_vec &attribs) const;
-	void output(const std::vector<std::string> &attrib_names) const;
-	
-private:
-	typedef std::auto_ptr<ID3Tree> ID3ptr;
-	//typedef std::unique_ptr<ID3Tree> ID3ptr;
-	
-	ID3Tree();
-	int choose_attrib(const std::vector<DTreeInst> &insts, const std::vector<int> &attrs);
-	void learn_rec(const std::vector<DTreeInst> &insts, const std::vector<int> &attrs);
-	void output_rec(const std::string &prefix, const std::vector<std::string> &attrib_names) const;
-	
-	int split_attr;
-	category cat;
-	ID3ptr left;
-	ID3ptr right;
-};
+#include "em.h"
 
 class ID5Tree {
 public:
-	ID5Tree(const std::vector<DTreeInst> &insts);
+	ID5Tree(const std::vector<ClassifierInst> &insts);
 	void update_tree(int i);
 	void batch_update(const std::vector<int> &new_insts);
 	void update_category(int i, category old);
@@ -56,7 +24,7 @@ private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
 	typedef std::auto_ptr<ID5Tree> ID5ptr;
 	
-	ID5Tree(const std::vector<DTreeInst> &insts, const std::vector<int> &attrs);
+	ID5Tree(const std::vector<ClassifierInst> &insts, const std::vector<int> &attrs);
 	void expand();
 	void shrink();
 	void remove_empty();
@@ -101,7 +69,7 @@ private:
 	std::map<int, val_counts> av_counts;
 	std::map<category, int> ttl_counts;
 	std::map<int, double> gains;
-	const std::vector<DTreeInst> &insts;
+	const std::vector<ClassifierInst> &insts;
 	std::vector<int> insts_here;
 	std::vector<int> attrs_here;
 	category cat;
