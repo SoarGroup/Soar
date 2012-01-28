@@ -333,6 +333,19 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
             AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
+        temp = "recognition: ";
+        temp2 = agnt->smem_params->recog->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+        }
+
 		//
 
         if ( m_RawOutput )

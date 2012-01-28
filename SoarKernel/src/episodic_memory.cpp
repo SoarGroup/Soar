@@ -206,6 +206,12 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	merge->add_mapping( merge_none, "none" );
 	merge->add_mapping( merge_add, "add" );
 	add( merge );
+
+	// recog
+	recog = new soar_module::constant_param<recog_choices>( "recognition", recog_off, new soar_module::f_predicate<recog_choices>() );
+	recog->add_mapping( recog_on, "on" );
+	recog->add_mapping( recog_off, "off" );	
+	add( recog );
 }
 
 //
@@ -2499,8 +2505,15 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						}
 						(*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] = child_root;
 
-						// we've never see a WME in this context before
-						unrecognized_wmes.insert( std::make_pair( (*w_p)->id, (*w_p)->attr ) );
+						// if recognition is on and we've never see a WME in this context before
+						if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
+						{
+							unrecognized_wmes.insert( std::make_pair( (*w_p)->id, (*w_p)->attr ) );
+						}
+						/*
+						std::cout << "parent_root: " << parent_root << std::endl;
+						std::cout << "unrecognized: " << parent_id << " " << my_hash << " " << (*w_p)->attr->sc.name << " " << (*w_p)->value->id.epmem_id << std::endl;
+						*/
 					}
 				}
 
@@ -2943,6 +2956,7 @@ void epmem_new_episode( agent *my_agent )
 
 		// update epmem recognition information on top state
 		// all substates link to the same recognition structure root, so we only need to update it once
+		if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
 		{
 			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{
@@ -2951,6 +2965,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// update smem recognition information on top state
+		if ( my_agent->smem_params->recog->get_value() == smem_param_container::recog_on )
 		{
 #ifdef USE_MEM_POOL_ALLOCATORS
 			smem_pooled_symbol_set* processed_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
