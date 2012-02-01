@@ -10,6 +10,13 @@ using namespace std;
 const char *MODEL_DIR = "models";
 const char *PREDICTION_DIR = "predictions";
 
+void slice(const evec &source, evec &target, const vector<int> &indexes) {
+	target.resize(indexes.size());
+	for (int i = 0; i < indexes.size(); ++i) {
+		target(i) = source(indexes[i]);
+	}
+}
+
 model::model(const std::string &name, const std::string &type) 
 : name(name), type(type)
 {
@@ -44,13 +51,13 @@ void model::init() {
 	}
 }
 
-float model::test(const floatvec &x, const floatvec &y) {
-	floatvec py(y.size());
+float model::test(const evec &x, const evec &y) {
+	evec py(y.size());
 	float error;
 	if (!predict(x, py)) {
 		error = numeric_limits<double>::signaling_NaN();
 	} else {
-		error = py.dist(y);
+		error = (py - y).norm();
 	}
 	
 	if (predlog.is_open()) {
@@ -69,18 +76,19 @@ multi_model::~multi_model() {
 	}
 }
 
-bool multi_model::predict(const floatvec &x, floatvec &y) {
+bool multi_model::predict(const evec &x, evec &y) {
 	list<model_config*>::const_iterator i;
-	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
-		floatvec yp(cfg->ally ? y.size() : cfg->yinds.size());
+		evec yp(cfg->ally ? y.size() : cfg->yinds.size());
 		bool success;
 		if (cfg->allx) {
 			success = cfg->mdl->predict(x, yp);
 		} else {
-			success = cfg->mdl->predict(x.slice(cfg->xinds), yp);
+			evec x1;
+			slice(x, x1,  cfg->xinds);
+			success = cfg->mdl->predict(x1, yp);
 		}
 		if (!success) {
 			return false;
@@ -88,41 +96,54 @@ bool multi_model::predict(const floatvec &x, floatvec &y) {
 		if (cfg->ally) {
 			y = yp;
 		} else {
-			y.set_indices(cfg->yinds, yp);
+			for (int j = 0; j < cfg->yinds.size(); ++j) {
+				y[cfg->yinds[j]] = yp[j];
+			}
 		}
 		DATAVIS("END" << endl)
 	}
 	return true;
 }
 
-void multi_model::learn(const floatvec &x, const floatvec &y, float dt) {
+void multi_model::learn(const evec &x, const evec &y, float dt) {
 	list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
-		floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
-		floatvec yp = cfg->ally ? y : y.slice(cfg->yinds);
-		
-		/*
-		float error = cfg->mdl->test(xp, yp);
-		if (error >= 0. && error < 1.0e-8) {
-			continue;
+		evec xp, yp;
+		if (cfg->allx) {
+			xp = x;
+		} else {
+			slice(x, xp, cfg->xinds);
 		}
-		*/
+		if (cfg->ally) {
+			yp = y;
+		} else {
+			slice(y, yp, cfg->yinds);
+		}
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
 		cfg->mdl->learn(xp, yp, dt);
 		DATAVIS("END" << endl)
 	}
 }
 
-float multi_model::test(const floatvec &x, const floatvec &y) {
+float multi_model::test(const evec &x, const evec &y) {
 	float s = 0.0;
 	list<model_config*>::iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
-		floatvec xp = cfg->allx ? x : x.slice(cfg->xinds);
-		floatvec yp = cfg->ally ? y : y.slice(cfg->yinds);
+		evec xp, yp;
+		if (cfg->allx) {
+			xp = x;
+		} else {
+			slice(x, xp, cfg->xinds);
+		}
+		if (cfg->ally) {
+			yp = y;
+		} else {
+			slice(y, yp, cfg->yinds);
+		}
 		float d = cfg->mdl->test(xp, yp);
 		if (d < 0.) {
 			DATAVIS("'pred error' 'no prediction'" << endl)

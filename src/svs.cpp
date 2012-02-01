@@ -214,7 +214,7 @@ void svs_state::clear_scene() {
 void svs_state::update_models() {
 	vector<string> curr_pnames, out_names;
 	output_spec::const_iterator i;
-	floatvec curr_pvals, out;
+	evec curr_pvals, out;
 	double dt;
 	
 	if (level > 0) {
@@ -231,8 +231,8 @@ void svs_state::update_models() {
 	dt = scn->get_dt();
 	
 	if (prev_pnames == curr_pnames) {
-		floatvec x(prev_pvals);
-		x.extend(out);
+		evec x(prev_pvals.size() + out.size());
+		x << prev_pvals, out;
 		mmdl->test(x, curr_pvals);
 		mmdl->learn(x, curr_pvals, dt);
 	} else {
@@ -242,7 +242,7 @@ void svs_state::update_models() {
 	prev_pvals = curr_pvals;
 }
 
-void svs_state::set_output(const floatvec &out) {
+void svs_state::set_output(const evec &out) {
 	assert(out.size() == outspec.size());
 	next_out = out;
 }
@@ -254,7 +254,7 @@ void svs_state::set_default_output() {
 	}
 }
 
-bool svs_state::get_output(floatvec &out) const {
+bool svs_state::get_output(evec &out) const {
 	if (next_out.size() != outspec.size()) {
 		out.resize(outspec.size());
 		for (int i = 0; i < outspec.size(); ++i) {
@@ -331,7 +331,7 @@ void svs::pre_env_callback() {
 	
 	/* environment IO */
 	output_spec *outspec = topstate->get_output_spec();
-	floatvec out;
+	evec out;
 	topstate->get_output(out);
 	
 	assert(outspec->size() == out.size());

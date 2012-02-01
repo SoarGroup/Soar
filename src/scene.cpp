@@ -376,7 +376,7 @@ void scene::get_property_names(vector<string> &names) const {
 	}
 }
 
-void scene::get_properties(floatvec &vals) const {
+void scene::get_properties(evec &vals) const {
 	node_map::const_iterator i;
 	property_map::const_iterator j;
 	int k1, k2, l = 0;
@@ -453,7 +453,7 @@ bool scene::set_property(const string &obj, const string &prop, float val) {
 	return true;
 }
 
-bool scene::set_properties(const floatvec &vals) {
+bool scene::set_properties(const evec &vals) {
 	node_map::iterator i;
 	property_map::iterator j;
 	int k1, k2, l = 0;

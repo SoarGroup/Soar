@@ -72,4 +72,12 @@
 */
 #define UNIFY_MUL_THRESH 1.00001
 
+/*
+ In the controller, if the new prediction for the final state of a cached
+ trajectory differs at least this much from the original prediction,
+ then discard the cached trajectory, because it was computed using an
+ outdated model.
+*/
+#define STATE_DIFF_THRESH 0.001
+
 #endif

@@ -56,7 +56,7 @@ public:
 		}
 	}
 	
-	bool predict(const floatvec &x, floatvec &y) {
+	bool predict(const evec &x, evec &y) {
 		return em->predict(x, y[0]);
 	}
 	
@@ -68,7 +68,7 @@ public:
 		return 1;
 	}
 
-	void learn(const floatvec &x, const floatvec &y, float dt) {
+	void learn(const evec &x, const evec &y, float dt) {
 		em->add_data(x, y[0]);
 		if (em->run(MAXITERS)) {
 			si->remove_wme(revisions_wme);
@@ -126,7 +126,7 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether the decision tree classification was correct.
 	*/
-	float test(const floatvec &x, const floatvec &y) {
+	float test(const evec &x, const evec &y) {
 		char *v = getenv("SVS_LOG_PREDICTION_ERRORS");
 		if (v != NULL && string(v) == "1") {
 			int best, predicted;

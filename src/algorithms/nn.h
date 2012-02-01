@@ -10,36 +10,36 @@ typedef std::priority_queue<di_pair> di_queue;
 
 class nearest_neighbor {
 public:
-	virtual void query(const floatvec &q, int k, di_queue &nn) = 0;
+	virtual void query(const evec &q, int k, di_queue &nn) = 0;
 };
 
 class brute_nn : public nearest_neighbor {
 public:
-	brute_nn(std::vector<floatvec> *points);
-	void query(const floatvec &q, int k, di_queue &nn);
+	brute_nn(std::vector<evec> *points);
+	void query(const evec &q, int k, di_queue &nn);
 	
 private:
-	std::vector<floatvec> *points;
+	std::vector<evec> *points;
 };
 
 class balltree : public nearest_neighbor {
 public:
-	balltree(int ndim, int leafsize, std::vector<floatvec> *pts, const std::vector<int> &inds);
+	balltree(int ndim, int leafsize, std::vector<evec> *pts, const std::vector<int> &inds);
 	~balltree();
 	
-	void query(const floatvec &q, int k, di_queue &nn);
+	void query(const evec &q, int k, di_queue &nn);
 	
 private:
-	void distsq_to(const floatvec &q, floatvec &dout);
+	void distsq_to(const evec &q, evec &dout);
 	void update_ball();
 	void split();
-	void linear_scan(const floatvec &q, int k, di_queue &nn);
+	void linear_scan(const evec &q, int k, di_queue &nn);
 	
 	balltree *left, *right, *parent;
-	floatvec center;
+	evec center;
 	double radius;
 	std::vector<int> inds;
-	std::vector<floatvec> *pts;
+	std::vector<evec> *pts;
 	int ndim;
 	int leafsize;
 	

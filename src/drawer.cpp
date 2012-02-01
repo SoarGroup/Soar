@@ -13,16 +13,8 @@ int drawer::VERTS = 1 << 5;
 bool drawer::fifo_open = false;
 ofstream drawer::fifo;
 
-void write_vec3(std::ostream &os, const vec3 &v) {
-	os << v[0] << " " << v[1] << " " << v[2];
-}
-
 void write_ptlist(std::ostream &os, const ptlist &l) {
-	ptlist::const_iterator i;
-	for (i = l.begin(); i != l.end(); ++i) {
-		write_vec3(os, *i);
-		os << " ";
-	}
+	copy(l.begin(), l.end(), ostream_iterator<vec3>(os, " "));
 }
 
 drawer::drawer(const string &sname) 

@@ -53,10 +53,10 @@ ofstream& get_datavis() {
 	return f;
 }
 
-ostream &operator<<(ostream &os, const floatvec &v) {
-	copy(v.mem, v.mem + v.sz, ostream_iterator<float>(os, " "));
-	return os;
-}
+//ostream &operator<<(ostream &os, const floatvec &v) {
+//	copy(v.mem, v.mem + v.sz, ostream_iterator<float>(os, " "));
+//	return os;
+//}
 
 ostream &operator<<(ostream &os, const namedvec &v) {
 	string name;
@@ -112,7 +112,7 @@ float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	return max - min;
 }
 
-void histogram(const floatvec &vals, int nbins) {
+void histogram(const evec &vals, int nbins) {
 	assert(nbins > 0);
 	float min = vals[0], max = vals[0], binsize, hashes_per;
 	int i, b, maxcount = 0;

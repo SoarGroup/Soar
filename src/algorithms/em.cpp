@@ -195,7 +195,7 @@ void EM::update_MAP(const set<int> &points) {
 	dtree->update_tree(-1);
 }
 
-void EM::add_data(const floatvec &x, double y) {
+void EM::add_data(const evec &x, double y) {
 	if (xdim == 0) {
 		xdim = x.size();
 		xdata = zeros<mat>(INIT_NDATA, xdim);
@@ -366,7 +366,7 @@ void EM::mark_model_stale(int i) {
 	}
 }
 
-bool EM::predict(const floatvec &x, float &y) {
+bool EM::predict(const evec &x, float &y) {
 	//timer t("EM PREDICT TIME");
 	if (ndata == 0) {
 		return false;
@@ -484,7 +484,7 @@ double EM::error() {
 	}
 	double error = 0.;
 	for (int i = 0; i < ndata; ++i) {
-		floatvec x(xdim);
+		evec x(xdim);
 		float y;
 		for (int j = 0; j < xdim; ++j) {
 			x[j] = xdata(i, j);
@@ -568,7 +568,7 @@ void EM::print_tree(std::ostream &os) const {
 	}
 }
 
-int EM::classify(const floatvec &x) {
+int EM::classify(const evec &x) {
 	if (dtree == NULL) {
 		return -1;
 	}
@@ -577,7 +577,7 @@ int EM::classify(const floatvec &x) {
 	return dtree->classify(attrs);
 }
 
-void EM::test_classify(const floatvec &x, double y, int &best, int &predicted, double &besterror) {
+void EM::test_classify(const evec &x, double y, int &best, int &predicted, double &besterror) {
 	best = -1;
 	
 	rowvec v(x.size());

@@ -32,14 +32,14 @@ public:
 	void update_eligibility();
 	void update_Py_z(int i, std::set<int> &check);
 	void update_MAP(const std::set<int> &pts);
-	void add_data(const floatvec &x, double y);
+	void add_data(const evec &x, double y);
 	void estep();
 	bool mstep();
 	bool unify_or_add_model();
 	bool remove_models();
 	bool step();
 	bool run(int maxiters);
-	bool predict(const floatvec &x, float &y);
+	bool predict(const evec &x, float &y);
 	double error();
 	int get_nmodels() const { return nmodels; }
 	
@@ -50,10 +50,10 @@ public:
 	void load(std::istream &is);
 	
 	void print_tree(std::ostream &os) const;
-	void test_classify(const floatvec &x, double y, int &best, int &predicted, double &besterror);
+	void test_classify(const evec &x, double y, int &best, int &predicted, double &besterror);
 	
 private:
-	int classify(const floatvec &x);
+	int classify(const evec &x);
 	
 	std::vector<LRModel*> models;
 	std::set<int> stale_models;
