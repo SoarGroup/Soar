@@ -86,7 +86,7 @@ public:
 		c1 = calc_centroid(p1);
 		c2 = calc_centroid(p2);
 
-		return c1.dist(c2);
+		return (c1 - c2).norm();
 	}
 	
 private:
@@ -184,7 +184,8 @@ public:
 		
 		vec3 ca = calc_centroid(pa);
 		vec3 cb = calc_centroid(pb);
-		vec3 u = (cb - ca).unit();
+		vec3 u = cb - ca;
+		u.normalize();
 		
 		float d = dir_separation(pa, pc, u);
 		if (d < 0.) {
@@ -266,7 +267,8 @@ public:
 		nb->get_world_points(pb);
 		nc->get_world_points(pc);
 		
-		vec3 desired = (calc_centroid(pc) - calc_centroid(pb)).unit();
+		vec3 desired = calc_centroid(pc) - calc_centroid(pb);
+		desired.normalize();
 		
 		/*
 		 Return the negative cosine between the two

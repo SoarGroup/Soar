@@ -125,7 +125,7 @@ void scene::clear() {
 	}
 }
 
-bool parse_n_floats(vector<string> &f, int &start, int n, float *x) {
+bool parse_vec3(vector<string> &f, int &start, int n, vec3 &v) {
 	stringstream ss;
 	if (start + n > f.size()) {
 		start = f.size();
@@ -133,7 +133,7 @@ bool parse_n_floats(vector<string> &f, int &start, int n, float *x) {
 	}
 	for (int i = 0; i < n; ++start, ++i) {
 		ss << f[start] << endl;
-		if (!(ss >> x[i])) {  // conversion failure
+		if (!(ss >> v[i])) {  // conversion failure
 			return false;
 		}
 	}
@@ -150,7 +150,7 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts) {
 	verts.clear();
 	while (start < f.size()) {
 		i = start;
-		if (!parse_n_floats(f, start, 3, v.a)) {
+		if (!parse_vec3(f, start, 3, v)) {
 			return (i == start);  // end of list
 		}
 		verts.push_back(v);
@@ -168,7 +168,7 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 		}
 		type = f[start][0];
 		start++;
-		if (!parse_n_floats(f, start, 3, t.a)) {
+		if (!parse_vec3(f, start, 3, t)) {
 			return false;
 		}
 		switch (type) {
@@ -192,7 +192,7 @@ int scene::parse_add(vector<string> &f) {
 	ptlist verts;
 	int p;
 	sgnode *n, *par;
-	vec3 pos, rot, scale(1., 1., 1.);
+	vec3 pos = vec3::Zero(), rot = vec3::Zero(), scale = vec3::Constant(1.0);
 
 	if (f.size() < 2) {
 		return f.size();

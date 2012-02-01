@@ -530,7 +530,10 @@ void histogram(const floatvec &vals, int nbins);
 
 class bbox {
 public:
-	bbox() {}
+	bbox() {
+		min.setZero();
+		max.setZero();
+	}
 	
 	/* bounding box around single point */
 	bbox(const vec3 &v) {

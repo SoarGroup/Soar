@@ -7,161 +7,10 @@
 #include <ostream>
 #include <iterator>
 #include <vector>
+#include <Eigen/Dense>
 
-class vec3 {
-public:
-	float a[3];
-	
-	vec3() { memset(a, 0, 3 * sizeof(float)); }
-	vec3(const vec3 &v) { memcpy(a, v.a, sizeof(float) * 3); }
-	vec3(float v[]) { memcpy(a, v, sizeof(float) * 3); }
-	vec3(float x, float y, float z) { a[0] = x; a[1] = y; a[2] = z; }
-
-	void zero() {
-		memset(a, 0, 3 * sizeof(float));
-	}
-	
-	float operator[](int i) const {
-		assert(0 <= i && i < 3);
-		return a[i];	
-	}
-	
-	float &operator[](int i) {
-		assert(0 <= i && i < 3);
-		return a[i];	
-	}
-	
-	bool operator==(const vec3 &v) const {
-		return memcmp(a, v.a, sizeof(float) * 3) == 0;
-	}
-	
-	bool operator!=(const vec3 &v) const {
-		return memcmp(a, v.a, sizeof(float) * 3) != 0;
-	}
-	
-	bool operator<(const vec3 &v) const {
-		for (int i = 0; i < 3; ++i) {
-			if (a[i] != v.a[i]) {
-				return a[i] < v.a[i];
-			}
-		}
-		return false;
-	}
-	
-	void operator=(const vec3 &v) {
-		memcpy(a, v.a, sizeof(float) * 3);
-	}
-	
-	vec3 operator+(const vec3 &v) const {
-		vec3 result;
-		for (int i = 0; i < 3; ++i) {
-			result.a[i] = a[i] + v.a[i];
-		}
-		return result;
-	}
-	
-	vec3 operator-(const vec3 &v) const {
-		vec3 result;
-		for (int i = 0; i < 3; ++i) {
-			result.a[i] = a[i] - v.a[i];
-		}
-		return result;
-	}
-	
-	vec3 operator*(float s) const {
-		return vec3(s * a[0], s * a[1], s * a[2]);
-	}
-	
-	void operator+=(const vec3 &v) {
-		for (int i = 0; i < 3; ++i) {
-			a[i] += v.a[i];
-		}
-	}
-	
-	void operator/=(float d) {
-		for (int i = 0; i < 3; ++i) {
-			a[i] /= d;
-		}
-	}
-	
-	float dist2(const vec3 &v) const {
-		float w[3], sum = 0.;
-		int i;
-		for (i = 0; i < 3; ++i) {
-			w[i] = (a[i] - v.a[i]) * (a[i] - v.a[i]);
-		}
-		for (i = 0; i < 3; ++i) {
-			sum += w[i];
-		}
-		return sum;
-	}
-	
-	float dist(const vec3 &v) const {
-		return sqrt(dist2(v));
-	}
-	
-	float dot(const vec3 &v) const {
-		float s = 0.0;
-		for(int i = 0; i < 3; ++i) {
-			s += a[i] * v.a[i];
-		}
-		return s;
-	}
-	
-	float mag2() const {
-		return dot(*this);
-	}
-	
-	float mag() const {
-		return sqrt(mag2());
-	}
-	
-	vec3 unit() const {
-		float m = mag();
-		if (m == 0) {
-			return *this;
-		}
-		return vec3(a[0] / m, a[1] / m, a[2] / m);
-	}
-	
-	vec3 cross(const vec3 &v) {
-		float x = a[1] * v.a[2] - a[2] * v.a[1];
-		float y = a[2] * v.a[0] - a[0] * v.a[2];
-		float z = a[0] * v.a[1] - a[1] * v.a[0];
-		return vec3(x, y, z);
-	}
-	
-	vec3 project(const vec3 &u) const {
-		float m = u.mag2();
-		if (m == 0.) {
-			return vec3();
-		}
-		return u * (dot(u) / m);
-	}
-	
-	/*
-	 Distance between this vector and the line going through a and b.
-	 See http://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
-	*/
-	float line_dist(const vec3 &a, const vec3 &b) const {
-		vec3 ba = b - a;
-		float d1 = ba.cross(a-*this).mag2();
-		float d2 = ba.mag2();
-		return sqrt(d1 / d2);
-	}
-};
-
+typedef Eigen::Vector3f vec3;
 typedef std::vector<vec3> ptlist;
-
-inline std::ostream &operator<<(std::ostream &os, const vec3 &v) {
-	os << v.a[0] << " " << v.a[1] << " " << v.a[2];
-	return os;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const ptlist &lst) {
-	std::copy(lst.begin(), lst.end(), std::ostream_iterator<vec3>(os, "\n"));
-	return os;
-}
 
 class quaternion {
 public:
@@ -181,9 +30,9 @@ public:
 	
 	/* from april.jmat.LinAlg.rollPitchYawToQuat */
 	quaternion(const vec3 &rpy) {
-		float halfroll = rpy.a[0] / 2;
-		float halfpitch = rpy.a[1] / 2;
-		float halfyaw = rpy.a[2] / 2;
+		float halfroll = rpy[0] / 2;
+		float halfpitch = rpy[1] / 2;
+		float halfyaw = rpy[2] / 2;
 	
 		float sin_r2 = sin( halfroll );
 		float sin_p2 = sin( halfpitch );
@@ -212,9 +61,9 @@ public:
 		t9  =  a[2] * a[3];
 		t10 = -a[3] * a[3];
 	
-		return vec3(2*((t8+t10)*v.a[0] + (t6-t4)*v.a[1]  + (t3+t7)*v.a[2]) + v.a[0],
-		            2*((t4+t6)*v.a[0]  + (t5+t10)*v.a[1] + (t9-t2)*v.a[2]) + v.a[1],
-		            2*((t7-t3)*v.a[0]  + (t2+t9)*v.a[1]  + (t5+t8)*v.a[2]) + v.a[2]);
+		return vec3(2*((t8+t10)*v[0] + (t6-t4)*v[1]  + (t3+t7)*v[2]) + v[0],
+		            2*((t4+t6)*v[0]  + (t5+t10)*v[1] + (t9-t2)*v[2]) + v[1],
+		            2*((t7-t3)*v[0]  + (t2+t9)*v[1]  + (t5+t8)*v[2]) + v[2]);
 	}
 	
 	/* from april.jmat.LinAlg.quatToRollPitchYaw */
@@ -231,21 +80,29 @@ public:
 	/* from april.jmat.LinAlg.quatMultiply */
 	quaternion operator*(const quaternion &q) const {
 		quaternion r;
-		r.a[0] = a[0]*q.a[0] - a[1]*q.a[1] - a[2]*q.a[2] - a[3]*q.a[3];
-		r.a[1] = a[0]*q.a[1] + a[1]*q.a[0] + a[2]*q.a[3] - a[3]*q.a[2];
-		r.a[2] = a[0]*q.a[2] - a[1]*q.a[3] + a[2]*q.a[0] + a[3]*q.a[1];
-		r.a[3] = a[0]*q.a[3] + a[1]*q.a[2] - a[2]*q.a[1] + a[3]*q.a[0];
+		r[0] = a[0]*q[0] - a[1]*q[1] - a[2]*q[2] - a[3]*q[3];
+		r[1] = a[0]*q[1] + a[1]*q[0] + a[2]*q[3] - a[3]*q[2];
+		r[2] = a[0]*q[2] - a[1]*q[3] + a[2]*q[0] + a[3]*q[1];
+		r[3] = a[0]*q[3] + a[1]*q[2] - a[2]*q[1] + a[3]*q[0];
 		return r;
 	}
 	
 	/* from april.jmat.LinAlg.quatMultiply */
 	void operator*=(const quaternion &q) {
 		float t[4];
-		t[0] = a[0]*q.a[0] - a[1]*q.a[1] - a[2]*q.a[2] - a[3]*q.a[3];
-		t[1] = a[0]*q.a[1] + a[1]*q.a[0] + a[2]*q.a[3] - a[3]*q.a[2];
-		t[2] = a[0]*q.a[2] - a[1]*q.a[3] + a[2]*q.a[0] + a[3]*q.a[1];
-		t[3] = a[0]*q.a[3] + a[1]*q.a[2] - a[2]*q.a[1] + a[3]*q.a[0];
+		t[0] = a[0]*q[0] - a[1]*q[1] - a[2]*q[2] - a[3]*q[3];
+		t[1] = a[0]*q[1] + a[1]*q[0] + a[2]*q[3] - a[3]*q[2];
+		t[2] = a[0]*q[2] - a[1]*q[3] + a[2]*q[0] + a[3]*q[1];
+		t[3] = a[0]*q[3] + a[1]*q[2] - a[2]*q[1] + a[3]*q[0];
 		memcpy(a, t, 4 * sizeof(float));
+	}
+	
+	float& operator[](int i) {
+		return a[i];
+	}
+	
+	float operator[](int i) const {
+		return a[i];
 	}
 };
 

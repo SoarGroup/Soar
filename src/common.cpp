@@ -72,17 +72,21 @@ ostream &operator<<(ostream &os, const namedvec &v) {
 vec3 calc_centroid(const ptlist &pts) {
 	ptlist::const_iterator i;
 	int d;
-	vec3 c;
+	vec3 c = vec3::Zero();
 	
 	for (i = pts.begin(); i != pts.end(); ++i) {
-		for (d = 0; d < 3; ++d) {
-			c[d] += (*i)[d];
-		}
+		c += *i;
 	}
-	for (d = 0; d < 3; ++d) {
-		c[d] /= pts.size();
+
+	return c / pts.size();
+}
+
+vec3 project(const vec3 &v, const vec3 &u) {
+	float m = u.squaredNorm();
+	if (m == 0.) {
+		return vec3::Zero();
 	}
-	return c;
+	return u * (v.dot(u) / m);
 }
 
 float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
@@ -91,14 +95,14 @@ float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	vec3 p;
 	float x, min = numeric_limits<float>::max(), max = -numeric_limits<float>::max();
 	for (i = a.begin(); i != a.end(); ++i) {
-		p = i->project(u);
+		p = project(*i, u);
 		x = p[0] / u[0];
 		if (x < min) {
 			min = x;
 		}
 	}
 	for (i = b.begin(); i != b.end(); ++i) {
-		p = i->project(u);
+		p = project(*i, u);
 		x = p[0] / u[0];
 		if (x > max) {
 			max = x;

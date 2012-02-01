@@ -29,13 +29,13 @@ public:
 			name = ss.str();
 		}
 		if (!get_filter_param(NULL, params, "pos", pos)) {
-			pos = vec3(0., 0., 0.);
+			pos = vec3::Zero();
 		}
 		if (!get_filter_param(NULL, params, "rot", rot)) {
-			rot = vec3(0., 0., 0.);
+			rot = vec3::Zero();
 		}
 		if (!get_filter_param(NULL, params, "scale", scale)) {
-			scale = vec3(1., 1., 1.);
+			scale = vec3::Constant(1.0);
 		}
 		
 		if (!get_filter_param(NULL, params, "points", pts)) {

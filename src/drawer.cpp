@@ -13,6 +13,18 @@ int drawer::VERTS = 1 << 5;
 bool drawer::fifo_open = false;
 ofstream drawer::fifo;
 
+void write_vec3(std::ostream &os, const vec3 &v) {
+	os << v[0] << " " << v[1] << " " << v[2];
+}
+
+void write_ptlist(std::ostream &os, const ptlist &l) {
+	ptlist::const_iterator i;
+	for (i = l.begin(); i != l.end(); ++i) {
+		write_vec3(os, *i);
+		os << " ";
+	}
+}
+
 drawer::drawer(const string &sname) 
 : scene_name(sname), scl(1., 1., 1.), color(0., 1., 0.)
 {
@@ -63,19 +75,18 @@ void drawer::set_vertices(sgnode *n) {
 }
 
 void drawer::reset_properties() {
-	pos.zero();
-	rot.zero();
-	scl = vec3(1., 1., 1.);
-	color = vec3(0., 1., 0.);
+	pos << 0, 0, 0;
+	rot << 0, 0, 0;
+	scl << 1, 1, 1;
+	color << 0, 1, 0;
 }
 
 void drawer::add(const string &name) {
 	if (!fifo_open) return;
 	
 	fifo << scene_name << " u " << name << " world v ";
-	copy(verts.begin(), verts.end(), ostream_iterator<vec3>(fifo, " "));
+	write_ptlist(fifo, verts);
 	fifo << " p " << pos << " r " << rot << " s " << scl << endl;
-	//fifo << scene_name << " t " << name << "_label " << pos << " " << name << endl;
 	fifo.flush();
 }
 
@@ -107,7 +118,7 @@ void drawer::change(const string &name, int props) {
 	fifo << scene_name << " u " << name;
 	if (props & VERTS) {
 		fifo << " v ";
-		copy(verts.begin(), verts.end(), ostream_iterator<vec3>(fifo, " "));
+		write_ptlist(fifo, verts);
 	}
 	if (props & POS) {
 		fifo << " p " << pos;

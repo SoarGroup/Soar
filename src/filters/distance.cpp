@@ -1,6 +1,7 @@
 #include "filter.h"
 #include "filter_table.h"
 #include "scene.h"
+#include "common.h"
 
 using namespace std;
 
@@ -23,19 +24,8 @@ public:
 		ac = calc_centroid(apts);
 		bc = calc_centroid(bpts);
 		
-		v = ac.dist(bc);
+		v = (ac - bc).norm();
 		return true;
-	}
-	
-private:
-	vec3 calc_centroid(const ptlist &pts) {
-		vec3 c;
-		ptlist::const_iterator i;
-		for (i = pts.begin(); i != pts.end(); ++i) {
-			c += *i;
-		}
-		c /= pts.size();
-		return c;
 	}
 };
 
