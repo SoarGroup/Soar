@@ -208,10 +208,14 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( merge );
 
 	// recog
-	recog = new soar_module::constant_param<recog_choices>( "recognition", recog_off, new soar_module::f_predicate<recog_choices>() );
+	recog = new soar_module::constant_param<recog_choices>( "recog", recog_off, new soar_module::f_predicate<recog_choices>() );
 	recog->add_mapping( recog_on, "on" );
 	recog->add_mapping( recog_off, "off" );	
 	add( recog );
+
+	// recog_merge_depth
+	recog_merge_depth = new soar_module::integer_param( "recog-merge-depth", 10000, new soar_module::gt_predicate<int64_t>( 0, true ), new soar_module::f_predicate<int64_t>() );
+	add( recog_merge_depth );
 }
 
 //
@@ -1418,7 +1422,6 @@ void epmem_close( agent *my_agent )
 			}
 			my_agent->epmem_id_ref_counts->clear();
 
-			my_agent->epmem_id_master_replacement->clear();
 			my_agent->epmem_id_siblings->clear();
 			for ( epmem_elders::iterator it = my_agent->epmem_wm_tree->begin(); it != my_agent->epmem_wm_tree->end(); it++ )
 			{
@@ -2057,6 +2060,25 @@ epmem_hash_id epmem_temporal_hash( agent *my_agent, Symbol *sym, bool add_on_fai
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
+void epmem_print_recog_state(epmem_elders* wm_tree, epmem_id_disjoint_set* disjoint_set) {
+	std::cout << "digraph {" << std::endl;
+	std::cout << "" << std::endl;
+	std::cout << "// WMG" << std::endl;
+	for (epmem_elders::iterator it = wm_tree->begin(); it != wm_tree->end(); it++) {
+		epmem_hash_id_map* map = (*it).second;
+		for (epmem_hash_id_map::iterator it2 = map->begin(); it2 != map->end(); it2++) {
+			std::cout << "	" << (*it).first << " -> " << (*it2).second << " [label=\"" << (*it2).first << "\"]" << std::endl;
+		}
+	}
+	std::cout << "" << std::endl;
+	std::cout << "// DS" << std::endl;
+	for (epmem_id_disjoint_set::iterator it = disjoint_set->begin(); it != disjoint_set->end(); it++) {
+		std::cout << "	" << (*it).first << " -> " << (*it).second << " [color=\"#a0a0a0\"]" << std::endl;
+	}
+	std::cout << "" << std::endl;
+	std::cout << "}" << std::endl;
+}
+
 void epmem_schedule_promotion( agent* my_agent, Symbol* id )
 {
 	if ( my_agent->epmem_db->get_status() == soar_module::connected )
@@ -2079,13 +2101,120 @@ inline void _epmem_promote_id( agent* my_agent, Symbol* id, epmem_time_id t )
 	my_agent->epmem_stmts_graph->promote_id->execute( soar_module::op_reinit );
 }
 
+inline epmem_node_id _epmem_find_recog_set(epmem_id_disjoint_set* disjoint_set, epmem_node_id start)
+{
+	std::set<epmem_node_id> visited;
+	if ( disjoint_set->count( start ) ) {
+		epmem_node_id last_node = start;
+		start = (*disjoint_set)[last_node];
+		while ( start != last_node )
+		{
+			visited.insert(start);
+			last_node = start;
+			start = (*disjoint_set)[last_node];
+		}
+		for ( std::set<epmem_node_id>::iterator it = visited.begin(); it != visited.end(); it++ )
+		{
+			(*disjoint_set)[ *it ] = start;
+		}
+	}
+	return start;
+}
+
+void _epmem_merge_wm_trees(epmem_elders* wm_tree, epmem_id_disjoint_set* disjoint_set, epmem_node_id left, epmem_node_id right, int max_depth)
+{
+	// this function assumes that left and right are the representatives of their respective sets
+	assert((*disjoint_set)[left] == left);
+	assert((*disjoint_set)[right] == right);
+
+	epmem_node_id new_root = left;
+	epmem_node_id old_root = right;
+	if ( left == right ){
+		// if they are already the same set, return
+		return;
+	} else if ( left > right ) {
+		// force the lower-numbered node to be the representative
+		new_root = right;
+		old_root = left;
+	}
+	// join the sets first; this prevents weird loops later on
+	(*disjoint_set)[old_root] = new_root;
+
+	// the new_root should always have a tree, even if it's empty
+	assert(wm_tree->count(new_root));
+
+	// if the old_root doesn't have a tree, it's already merged with something
+	if (!wm_tree->count(old_root)) {
+		return;
+	}
+
+	// determine whether copying needs to take place
+	int num_old_children = (*wm_tree)[old_root]->size();
+	int num_new_children = (*wm_tree)[new_root]->size();
+	if (num_old_children == 0) {
+		// no need to copy anything; delete src
+		(*wm_tree)[old_root]->clear();
+		delete (*wm_tree)[old_root];
+		wm_tree->erase(old_root);
+	} else if (num_new_children == 0) {
+		// no need to copy anything; point dest to src and delete dest
+		(*wm_tree)[new_root]->clear();
+		delete (*wm_tree)[new_root];
+		(*wm_tree)[new_root] = (*wm_tree)[old_root];
+		wm_tree->erase(old_root);
+	} else {
+		// pick src and dest based on the size
+		epmem_node_id src;
+		epmem_node_id dest;
+		if ( num_old_children > num_new_children ) {
+			src = new_root;
+			dest = old_root;
+		} else {
+			src = old_root;
+			dest = new_root;
+		}
+		epmem_hash_id_map* src_map = (*wm_tree)[src];
+		epmem_hash_id_map* dest_map = (*wm_tree)[dest];
+
+		// go over all children of src; if any child is shared with dest, merge them
+		for (epmem_hash_id_map::iterator src_it = src_map->begin(); src_it != src_map->end(); src_it++) {
+
+			epmem_hash_id attr = (*src_it).first;
+
+			// find the root of the src child
+			epmem_node_id src_child_root = _epmem_find_recog_set(disjoint_set, (*src_it).second);
+			assert(wm_tree->count(src_child_root) == 0);
+
+			epmem_hash_id_map::iterator dest_it = dest_map->find(attr);
+			if (dest_it == (*wm_tree)[dest]->end()) {
+				// insert the children into dest
+				(*dest_map)[attr] = src_child_root;
+			} else {
+				// merge the two branches
+				epmem_node_id dest_child_root = _epmem_find_recog_set(disjoint_set, (*dest_it).second);
+
+				if (max_depth > 0) {
+					_epmem_merge_wm_trees(wm_tree, disjoint_set, src_child_root, dest_child_root, max_depth-1);
+				}
+			}
+		}
+
+		// clear and delete src_map
+		src_map->clear();
+		delete src_map;
+		// point new_root to the updated map if necessary
+		if (new_root == src) {
+			(*wm_tree)[new_root] = dest_map;
+		}
+		// src will never be linked to in wm_tree again; remove it
+		wm_tree->erase(old_root);
+	}
+}
+
 // three cases for sharing ids amongst identifiers in two passes:
 // 1. value known in phase one (try reservation)
 // 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
-// 3. value unknown in phase one/two, which can be further divided into:
-// 3a. can reuse a pooled ID from before
-// 3b. can reuse ID of a niece/nephew (have value id, but still need new WME id)
-// 3c. needs both a value id and a WME id
+// 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
 inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_syms, std::queue< epmem_node_id >& parent_ids, tc_number tc, epmem_pooled_wme_set::iterator w_b, epmem_pooled_wme_set::iterator w_e, epmem_node_id parent_id, epmem_time_id time_counter,
 		std::map< wme*, epmem_id_reservation* >& id_reservations, std::set< Symbol* >& new_identifiers, std::queue< epmem_node_id >& epmem_node, std::queue< epmem_node_id >& epmem_edge , std::set< std::pair< Symbol*, Symbol* > >& unrecognized_wmes )
 {
@@ -2109,25 +2238,12 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 	epmem_wme_list::iterator w_p2;
 	bool good_recurse = false;
 
-	// id siblings
-	epmem_node_id parent_root;
+	// find the parent root (if recognition is on)
+	epmem_node_id parent_root = EPMEM_NODEID_BAD;
+	if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
 	{
-		// find the parent root and do path compression on the disjoinst forest
-		std::set<epmem_node_id> id_stack;
-		epmem_node_id last_id = parent_id;
-		parent_root = (*my_agent->epmem_id_siblings)[last_id];
-		while ( parent_root != last_id )
-		{
-			id_stack.insert(parent_root);
-			last_id = parent_root;
-			parent_root = (*my_agent->epmem_id_siblings)[last_id];
-		}
-		for ( std::set<epmem_node_id>::iterator it = id_stack.begin(); it != id_stack.end(); it++ )
-		{
-			(*my_agent->epmem_id_siblings)[ *it ] = parent_root;
-		}
+		parent_root = _epmem_find_recog_set(my_agent->epmem_id_siblings, parent_id);
 	}
-	epmem_id_pool* child_root_repo;
 
 	// find WME ID for WMEs whose value is an identifier and has a known epmem id (prevents ordering issues with unknown children)
 	for ( w_p=w_b; w_p!=w_e; w_p++ )
@@ -2164,10 +2280,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				{
 					if ( pool_p->first == (*w_p)->value->id.epmem_id )
 					{
-						if ( pool_p->second != EPMEM_NODEID_BAD )
-						{
-							new_id_reservation->my_id = pool_p->second;
-						}
+						new_id_reservation->my_id = pool_p->second;
 						(*my_id_repo)->erase( pool_p );
 						break;
 					}
@@ -2192,8 +2305,6 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 		{
 			continue;
 		}
-
-		bool should_replace_master = false;
 
 		if ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE )
 		{
@@ -2334,7 +2445,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						my_id_repo2 = (*my_id_repo);
 					}
 				}
-				// case 3
+				// case 3a
 				else
 				{
 					// UNKNOWN identifier
@@ -2350,7 +2461,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						my_hash = epmem_temporal_hash( my_agent, (*w_p)->attr );
 					}
 
-					// try to find node from the correct pool (case 3a)
+					// try to find node
 					my_id_repo =& (*(*my_agent->epmem_id_repository)[ parent_id ])[ my_hash ];
 					if ( (*my_id_repo) )
 					{
@@ -2361,13 +2472,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 							{
 								if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
 								{
-									// pool_p->second could be NULL
-									// if pool_p->second is NULL, again we only use the value ID
-									// and let the catch all below do the rest
-									if ( pool_p->second != EPMEM_NODEID_BAD )
-									{
-										(*w_p)->epmem_id = pool_p->second;
-									}
+									(*w_p)->epmem_id = pool_p->second;
 									(*w_p)->value->id.epmem_id = pool_p->first;
 									(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
 									(*my_id_repo)->erase( pool_p );
@@ -2391,113 +2496,50 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			// add wme if no success above
 			if ( (*w_p)->epmem_id == EPMEM_NODEID_BAD )
 			{
-				// find the master pool for this path
-				child_root_repo = (*(*my_agent->epmem_id_repository)[ parent_root ])[ my_hash ];
-
 				// can't use value_known_apriori, since value may have been assigned (via lti or id repository)
 				if ( ( (*w_p)->value->id.epmem_id == EPMEM_NODEID_BAD ) || ( (*w_p)->value->id.epmem_valid != my_agent->epmem_validation ) )
 				{
-					// first try to find an unused value from the master replacement pool, if it exists
-					if ( child_root_repo && child_root_repo != my_id_repo2 )
-					{
-						for ( pool_p = child_root_repo->begin(); pool_p != child_root_repo->end(); pool_p++ )
-						{
-							if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
-							{
-								// since this is not the right pool for this <parent, attr>, we don't use the WME id
-								// we don't need to erase the entry either; ref counts will protect against double usage
-								(*w_p)->value->id.epmem_id = pool_p->first;
-								(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
-								break;
-							}
-						}
-					}
+					// update next id
+					(*w_p)->value->id.epmem_id = my_agent->epmem_stats->next_id->get_value();
+					(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
+					my_agent->epmem_stats->next_id->set_value( (*w_p)->value->id.epmem_id + 1 );
+					epmem_set_variable( my_agent, var_next_id, (*w_p)->value->id.epmem_id + 1 );
 
-					// if we couldn't find an id from the master pool, we need to assign a new one
-					if ( ( (*w_p)->value->id.epmem_id == EPMEM_NODEID_BAD ) || ( (*w_p)->value->id.epmem_valid != my_agent->epmem_validation ) )
-					{
-						// update next id
-						(*w_p)->value->id.epmem_id = my_agent->epmem_stats->next_id->get_value();
-						(*w_p)->value->id.epmem_valid = my_agent->epmem_validation;
-						my_agent->epmem_stats->next_id->set_value( (*w_p)->value->id.epmem_id + 1 );
-						epmem_set_variable( my_agent, var_next_id, (*w_p)->value->id.epmem_id + 1 );
+					// add repository for possible future children
+					(*my_agent->epmem_id_repository)[ (*w_p)->value->id.epmem_id ] = new epmem_hashed_id_pool;
 
-						// add repository for possible future children
-						(*my_agent->epmem_id_repository)[ (*w_p)->value->id.epmem_id ] = new epmem_hashed_id_pool;
-
-						// add ref set
+					// add ref set
 #ifdef USE_MEM_POOL_ALLOCATORS
-						(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+					(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
 #else
-						(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set();
+					(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set();
 #endif
-
-
-						// if there is a master pool, but we didn't get the value from there
-						// the value needs to be placed there when done
-						// when this wme is done, it's value needs to be added to the child_root_repo as well
-						if ( child_root_repo && child_root_repo != my_id_repo2 )
-						{
-							should_replace_master = true;
-						}
-					}
 				}
 
 				// maintain the recognition structures
-				// link this id to it's root
-				// update the wm tree
-				// mark as unrecognized if the tree has never been here
+				if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
 				{
-					epmem_node_id child_root = (*w_p)->value->id.epmem_id;
-					if ( my_agent->epmem_id_siblings->count( child_root ) )
-					{
-						std::set<epmem_node_id> id_stack;
-						epmem_node_id last_id = child_root;
-						child_root = (*my_agent->epmem_id_siblings)[ last_id ];
-						while ( child_root != last_id )
-						{
-							last_id = child_root;
-							child_root = (*my_agent->epmem_id_siblings)[ last_id ];
-							id_stack.insert(child_root);
-						}
-						for ( std::set<epmem_node_id>::iterator it = id_stack.begin(); it != id_stack.end(); it++ )
-						{
-							(*my_agent->epmem_id_siblings)[ *it ] = child_root;
-						}
+					epmem_node_id child_root = _epmem_find_recog_set(my_agent->epmem_id_siblings, (*w_p)->value->id.epmem_id);
+					if (child_root == (*w_p)->value->id.epmem_id) {
+						(*my_agent->epmem_id_siblings)[child_root] = child_root;
 					}
-					else
+
+					epmem_hash_id_map::iterator leaf_root_it = (*my_agent->epmem_wm_tree)[ parent_root ]->find(my_hash);
+					if ( leaf_root_it != (*my_agent->epmem_wm_tree)[ parent_root ]->end() )
 					{
-							(*my_agent->epmem_id_siblings)[ child_root ] = child_root;
-					}
-					epmem_hash_id_map::iterator child_root_it = (*my_agent->epmem_wm_tree)[ parent_root ]->find(my_hash);
-					if ( child_root_it != (*my_agent->epmem_wm_tree)[ parent_root ]->end() )
-					{
-						epmem_node_id leaf_root = (*child_root_it).second;
-						if ( my_agent->epmem_id_siblings->count( leaf_root ) )
-						{
-							std::set<epmem_node_id> id_stack;
-							epmem_node_id last_id = leaf_root;
-							leaf_root = (*my_agent->epmem_id_siblings)[ last_id ];
-							while ( leaf_root != last_id )
-							{
-								last_id = leaf_root;
-								leaf_root = (*my_agent->epmem_id_siblings)[ last_id ];
-								id_stack.insert( leaf_root );
-							}
-							for ( std::set<epmem_node_id>::iterator it = id_stack.begin(); it != id_stack.end(); it++ )
-							{
-								(*my_agent->epmem_id_siblings)[ *it ] = leaf_root;
-							}
-						}
-						// if it's a join and both parents have already existed before, subjugate one branch under the other
+						// this path already exists in the wm_tree, we need to reconcile it with the new value
+						// do path compression on the tree to make sure it's actually the set's representative
+						epmem_node_id leaf_root = _epmem_find_recog_set(my_agent->epmem_id_siblings, (*leaf_root_it).second);
+
+						// the new value and the tree value are in different disjoint sets, we need to recursively merge the trees
 						if ( child_root != leaf_root )
 						{
-							(*my_agent->epmem_id_siblings)[ child_root ] = leaf_root;
+							_epmem_merge_wm_trees(my_agent->epmem_wm_tree, my_agent->epmem_id_siblings, child_root, leaf_root, my_agent->epmem_params->recog_merge_depth->get_value());
 						}
-						// TODO could do more to prune epmem_wm_tree
 					}
 					else
 					{
+						// we've never seen a WME in this context before
 						(*(*my_agent->epmem_wm_tree)[ parent_root ])[ my_hash ] = child_root;
 						if ( ! my_agent->epmem_wm_tree->count( (*w_p)->value->id.epmem_id ) )
 						{
@@ -2505,15 +2547,8 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						}
 						(*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] = child_root;
 
-						// if recognition is on and we've never see a WME in this context before
-						if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
-						{
-							unrecognized_wmes.insert( std::make_pair( (*w_p)->id, (*w_p)->attr ) );
-						}
-						/*
-						std::cout << "parent_root: " << parent_root << std::endl;
-						std::cout << "unrecognized: " << parent_id << " " << my_hash << " " << (*w_p)->attr->sc.name << " " << (*w_p)->value->id.epmem_id << std::endl;
-						*/
+						// cache the WME to be inserted into working memory
+						unrecognized_wmes.insert( std::make_pair( (*w_p)->id, (*w_p)->attr ) );
 					}
 				}
 
@@ -2530,11 +2565,6 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				{
 					// replace the epmem_id and wme id in the right place
 					(*my_agent->epmem_id_replacement)[ (*w_p)->epmem_id ] = my_id_repo2;
-					// if the id needs to be put it the master pool, mark it for later
-					if ( should_replace_master )
-					{
-						(*my_agent->epmem_id_master_replacement)[ (*w_p)->epmem_id ] = child_root_repo;
-					}
 				}
 
 				// new nodes definitely start
@@ -3028,21 +3058,6 @@ void epmem_new_episode( agent *my_agent )
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->epmem_timers->storage->stop();
 	////////////////////////////////////////////////////////////////////////////
-
-	/*
-	std::cout << "digraph {" << std::endl;
-	std::cout << "// disjoint set" << std::endl;
-	for (epmem_id_disjoint_set::iterator iter = my_agent->epmem_id_siblings->begin(); iter != my_agent->epmem_id_siblings->end(); iter++) {
-		std::cout << (*iter).first << "->" << (*iter).second << " [color=\"blue\"]" << std::endl;
-	}
-	std::cout << "// wmtree" << std::endl;
-	for (epmem_elders::iterator iter = my_agent->epmem_wm_tree->begin(); iter != my_agent->epmem_wm_tree->end(); iter++) {
-		for (epmem_hash_id_map::iterator iter2 = (*iter).second->begin(); iter2 != (*iter).second->end(); iter2++) {
-			std::cout << (*iter).first << "->" << (*iter2).second << " [label=\"" << (*iter2).first << "\"]" << std::endl;
-		}
-	}
-	std::cout << "}" << std::endl;
-	*/
 
 }
 
@@ -3621,7 +3636,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 
 #define JUSTIN_DEBUG 0
 
-void epmem_print_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
+void epmem_print_retrieval_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
 	//std::map<epmem_node_id, std::string> tsh;
 	std::cout << std::endl;
 	std::cout << "digraph {" << std::endl;
@@ -4365,7 +4380,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		}
 
 		if (JUSTIN_DEBUG >= 1) {
-			epmem_print_state(literal_cache, pedge_caches, uedge_caches);
+			epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
 		}
 
 #ifdef EPMEM_EXPERIMENT
@@ -4606,7 +4621,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				}
 
 				if (JUSTIN_DEBUG >= 2) {
-					epmem_print_state(literal_cache, pedge_caches, uedge_caches);
+					epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
 				}
 
 				if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
@@ -4644,7 +4659,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							epmem_symbol_node_map bound_nodes[2];
 							if (JUSTIN_DEBUG >= 1) {
 								std::cout << "	GRAPH MATCH" << std::endl;
-								epmem_print_state(literal_cache, pedge_caches, uedge_caches);
+								epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
 							}
 							my_agent->epmem_timers->query_graph_match->start();
 							graph_matched = epmem_graph_match(begin, end, best_bindings, bound_nodes, my_agent, 2);

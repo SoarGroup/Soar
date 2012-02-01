@@ -391,7 +391,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->epmem_id_repository = new epmem_parent_id_pool( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, epmem_hashed_id_pool* > >( newAgent ) );
   newAgent->epmem_id_replacement = new epmem_return_id_pool( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, epmem_id_pool* > >( newAgent ) );
-  newAgent->epmem_id_master_replacement = new epmem_return_id_pool( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, epmem_id_pool* > >( newAgent ) );
   newAgent->epmem_id_ref_counts = new epmem_id_ref_counter( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, epmem_wme_set* > >( newAgent ) );
 
   newAgent->epmem_wme_adds = new epmem_wme_addition_map( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, epmem_pooled_wme_set* > >( newAgent ) );
@@ -405,7 +404,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   newAgent->epmem_id_repository = new epmem_parent_id_pool();
   newAgent->epmem_id_replacement = new epmem_return_id_pool();
-  newAgent->epmem_id_master_replacement = new epmem_return_id_pool();
   newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
 
   newAgent->epmem_wme_adds = new epmem_wme_addition_map();
@@ -502,7 +500,6 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_edge_maxes;
   delete delete_agent->epmem_id_repository;
   delete delete_agent->epmem_id_replacement;
-  delete delete_agent->epmem_id_master_replacement;
   delete delete_agent->epmem_id_ref_counts;
   delete delete_agent->epmem_id_removes;
   delete delete_agent->epmem_wme_unrecognized;

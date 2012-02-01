@@ -349,8 +349,21 @@ bool CommandLineInterface::DoEpMem( const char pOp, const std::string* pAttr, co
 			AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, "" );
         }
 
-        temp = "recognition: ";
+        temp = "recog: ";
         temp2 = agnt->epmem_params->recog->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+        }
+
+        temp = "recog-merge-depth: ";
+        temp2 = agnt->epmem_params->recog_merge_depth->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )
