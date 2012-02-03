@@ -94,15 +94,36 @@ void printcb(smlPrintEventId id, void *d, Agent *a, char const *m) {
 	cout << strip(m, "\n", "\n\t ") << endl;
 }
 
-void execcmd(string c) {
-	string out = agent->ExecuteCommandLine(c.c_str());
+void execcmd(const string &c) {
+	bool isident = false;
+	string out;
+	
+	if (c == "exit") {
+		agent->ExecuteCommandLine("halt");
+		exit(0);
+	}
+	if (isupper(c[1])) {
+		isident = true;
+		for (int i = 1; i < c.size(); ++i) {
+			if (!isdigit(c[i])) {
+				isident = false;
+			}
+		}
+	}
+	if (isident) {
+		string pc("print ");
+		pc += c;
+		out = agent->ExecuteCommandLine(pc.c_str());
+	} else {
+		out = agent->ExecuteCommandLine(c.c_str());
+	}
 	if (out.size() > 0) {
 		cout << strip(out, "\n", "\n\t ") << endl;
 	}
 }
 
 void repl() {
-	string cmd;
+	string cmd, last;
 	
 	while (cin) {
 		cout << endl << "% ";
@@ -113,10 +134,14 @@ void repl() {
 		if (!cin) {
 			return;
 		}
-		if (!cmd.empty()) {
+		if (cmd.empty() && !last.empty()) {
+			execcmd(last);
+		} else {
+			last = cmd;
 			execcmd(cmd);
 		}
 	}
+	cout << endl;
 }
 
 void sighandler(int sig) {
@@ -173,36 +198,52 @@ string log_handler(smlRhsEventId id, void *userdata, Agent *agent, char const *f
 
 int main(int argc, char *argv[]) {
 	int i, port = 12121;
-	bool newthread = false, parse_error = false;
+	bool newthread = false, parse_error = false, interactive = true;
 	const char *agentname = "soar";
 	vector<string> sources;
+	vector<string> cmds;
 	vector<string>::iterator j;
 
 	for (i = 1; i < argc; ++i) {
-		if (strcmp(argv[i], "-h") == 0) {
+		string a(argv[i]);
+		if (a == "-h") {
 			parse_error = true;
 			break;
-		} else if (strcmp(argv[i], "-t") == 0) {
+		} else if (a == "-t") {
 			newthread = true;
-		} else if (strcmp(argv[i], "-n") == 0) {
+		} else if (a == "-n") {
 			if (i + 1 >= argc) {
 				parse_error = true;
 				break;
 			}
 			agentname = argv[++i];
-		} else if (strcmp(argv[i], "-p") == 0) {
+		} else if (a == "-p") {
 			if (i + 1 >= argc || !(stringstream(argv[++i]) >> port)) {
 				parse_error = true;
 				break;
 			}
+		} else if (a == "-s") {
+			if (i + 1 >= argc) {
+				parse_error = true;
+				break;
+			}
+			sources.push_back(argv[++i]);
+		} else if (!a.empty() && a[0] == '-') {
+			parse_error = true;
+			break;
 		} else {
-			sources.push_back(argv[i]);
+			break;
 		}
 	}
 
 	if (parse_error) {
-		cout << "usage: " << argv[0] << " [-o] [-n <agent name>] [-p <port>] <sources ...>" << endl;
+		cout << "usage: " << argv[0] << " [-o] [-n <agent name>] [-p <port>] [-s <source>] <commands> ..." << endl;
 		return 1;
+	}
+
+	for (; i < argc; ++i) {
+		cmds.push_back(argv[i]);
+		interactive = false;
 	}
 
 	if (newthread) {
@@ -225,7 +266,15 @@ int main(int argc, char *argv[]) {
 	for (j = sources.begin(); j != sources.end(); ++j) {
 		execcmd("source " + *j);
 	}
+	
+	for (j = cmds.begin(); j != cmds.end(); ++j) {
+		execcmd(*j);
+	}
 
-	repl();
+	if (interactive) {
+		repl();
+	}
+	kernel->Shutdown();
+	delete kernel;
 	return 0;
 }
