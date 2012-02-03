@@ -426,12 +426,17 @@ bool reinitialize_soar (agent* thisAgent) {
 	bool wma_was_enabled = wma_enabled( thisAgent );
 	thisAgent->wma_params->activation->set_value( soar_module::off );
 
+	rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
+	thisAgent->rl_params->apoptosis->set_value( rl_param_container::apoptosis_none );
+
 	clear_goal_stack (thisAgent);
 
 	if ( wma_was_enabled )
 	{
 		thisAgent->wma_params->activation->set_value( soar_module::on );
 	}
+
+	thisAgent->rl_params->apoptosis->set_value( rl_apoptosis );
 
 	thisAgent->rl_stats->reset();
 	thisAgent->wma_stats->reset();
@@ -966,7 +971,30 @@ void do_one_top_level_phase (agent* thisAgent)
 	  ///////////////////////////////////////////////////////////////////
 	  assert( thisAgent->wma_d_cycle_count == thisAgent->d_cycle_count );
 	  ///////////////////////////////////////////////////////////////////
+	  
+	  // RL apoptosis
+	  {
+		  rl_param_container::apoptosis_choices rl_apoptosis = thisAgent->rl_params->apoptosis->get_value();
+		  if ( rl_apoptosis != rl_param_container::apoptosis_none )
+		  {
+			  thisAgent->rl_prods->process_buffered_references();
+			  thisAgent->rl_prods->forget();
+			  thisAgent->rl_prods->time_forward();
 
+			  for ( rl_production_memory::object_set::iterator p=thisAgent->rl_prods->forgotten_begin(); p!=thisAgent->rl_prods->forgotten_end(); p++ )
+			  {
+				  // conditions:
+				  // - no matched instantiations AND
+				  // - if RL...
+				  //   - no update count
+				  //   - not in some state's prev_op_rl_rules list
+				  if ( ( (*p)->instantiations == NIL ) && ( !(*p)->rl_rule || ( ( static_cast<int64_t>( (*p)->rl_update_count ) == 0 ) && ( (*p)->rl_ref_count == 0 ) ) ) )
+				  {
+					  excise_production( thisAgent, const_cast< production* >( *p ), FALSE );
+				  }
+			  }
+		  }
+	  }
 
 	  // Count the outputs the agent generates (or times reaching max-nil-outputs without sending output)
 	  if (thisAgent->output_link_changed || ((++(thisAgent->run_last_output_count)) >= static_cast<uint64_t>(thisAgent->sysparams[MAX_NIL_OUTPUT_CYCLES_SYSPARAM])))

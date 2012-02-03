@@ -36,16 +36,28 @@
 //////////////////////////////////////////////////////////
 
 class rl_learning_param;
+class rl_apoptosis_param;
+class rl_apoptosis_thresh_param;
 
 class rl_param_container: public soar_module::param_container
 {
 	public:
 		enum learning_choices { sarsa, q };
+        
+        // How the learning rate cools over time.
+        // normal_decay: default, same learning rate for each rule
+        // exponential_decay: rate = rate / # updates for this rule
+        // logarithmic_decay: rate = rate / log(# updates for this rule)
+        // Miller, 11/14/2011
+        enum decay_choices { normal_decay, exponential_decay, logarithmic_decay };
+
+		enum apoptosis_choices { apoptosis_none, apoptosis_chunks, apoptosis_rl };
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
 		soar_module::decimal_param *learning_rate;
 		soar_module::constant_param<learning_choices> *learning_policy;
+		soar_module::constant_param<decay_choices> *decay_mode;
 		soar_module::decimal_param *et_decay_rate;
 		soar_module::decimal_param *et_tolerance;
 		soar_module::boolean_param *temporal_extension;
@@ -53,6 +65,11 @@ class rl_param_container: public soar_module::param_container
 		soar_module::boolean_param *temporal_discount;
 
 		soar_module::boolean_param *chunk_stop;
+		soar_module::boolean_param *meta;
+
+		rl_apoptosis_param *apoptosis;
+		soar_module::decimal_param *apoptosis_decay;
+		rl_apoptosis_thresh_param *apoptosis_thresh;
 
 		rl_param_container( agent *new_agent );
 };
@@ -65,6 +82,31 @@ class rl_learning_param: public soar_module::boolean_param
 	public:
 		rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent );
 		void set_value( soar_module::boolean new_value );
+};
+
+class rl_apoptosis_param: public soar_module::constant_param< rl_param_container::apoptosis_choices >
+{
+	protected:
+		agent* my_agent;
+
+	public:
+		rl_apoptosis_param( const char *new_name, rl_param_container::apoptosis_choices new_value, soar_module::predicate<rl_param_container::apoptosis_choices> *new_prot_pred, agent *new_agent );
+		void set_value( rl_param_container::apoptosis_choices new_value );
+};
+
+class rl_apoptosis_thresh_param: public soar_module::decimal_param
+{
+	public:
+		rl_apoptosis_thresh_param( const char *new_name, double new_value, soar_module::predicate<double> *new_val_pred, soar_module::predicate<double> *new_prot_pred );
+		void set_value( double new_value );
+};
+
+template <typename T>
+class rl_apoptosis_predicate: public soar_module::agent_predicate<T>
+{
+	public:
+		rl_apoptosis_predicate( agent *new_agent );
+		bool operator() ( T val );
 };
 
 
@@ -116,15 +158,16 @@ typedef struct rl_data_struct {
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
 typedef std::set< rl_symbol_map > rl_symbol_map_set;
 
+// used to manage apoptosis
+typedef soar_module::bla_object_memory< production, 10, 50 > rl_production_memory;
+
 //////////////////////////////////////////////////////////
-// Parameter Maintenance
+// Maintenance
 //////////////////////////////////////////////////////////
 
-// reinitialize Soar-RL data structures
-extern void rl_reset_data( agent *my_agent );
-
-// remove Soar-RL references to a production
+// remove Soar-RL references to productions
 extern void rl_remove_refs_for_prod( agent *my_agent, production *prod );
+extern void rl_clear_refs( Symbol* goal );
 
 //////////////////////////////////////////////////////////
 // Parameter Get/Set/Validate
@@ -142,6 +185,9 @@ extern bool rl_valid_template( production *prod );
 
 // validate rl rule
 extern bool rl_valid_rule( production *prod );
+
+// sets rl meta-data from a production documentation string
+extern void rl_rule_meta( agent* my_agent, production* prod );
 
 // template instantiation
 extern int rl_get_template_id( const char *prod_name );

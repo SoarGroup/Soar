@@ -62,6 +62,13 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	learning_policy->add_mapping( q, "q-learning" );
 	add( learning_policy );
 
+    // decay-mode
+    decay_mode = new soar_module::constant_param<decay_choices>( "decay-mode", normal_decay, new soar_module::f_predicate<decay_choices>() );
+    decay_mode->add_mapping( normal_decay, "normal" );
+    decay_mode->add_mapping( exponential_decay, "exp" );
+    decay_mode->add_mapping( logarithmic_decay, "log" );
+    add( decay_mode );
+
 	// eligibility-trace-decay-rate
 	et_decay_rate = new soar_module::decimal_param( "eligibility-trace-decay-rate", 0, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( et_decay_rate );
@@ -85,26 +92,94 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	// chunk-stop
 	chunk_stop = new soar_module::boolean_param( "chunk-stop", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
 	add( chunk_stop );
+
+	// meta
+	meta = new soar_module::boolean_param( "meta", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+	add( meta );
+
+	// apoptosis
+	apoptosis = new rl_apoptosis_param( "apoptosis", apoptosis_none, new soar_module::f_predicate<apoptosis_choices>(), my_agent );
+	apoptosis->add_mapping( apoptosis_none, "none" );
+	apoptosis->add_mapping( apoptosis_chunks, "chunks" );
+	apoptosis->add_mapping( apoptosis_rl, "rl-chunks" );
+	add( apoptosis );
+
+	// apoptosis-decay
+	apoptosis_decay = new soar_module::decimal_param( "apoptosis-decay", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new rl_apoptosis_predicate<double>( my_agent ) );
+	add( apoptosis_decay );
+
+	// apoptosis-thresh
+	apoptosis_thresh = new rl_apoptosis_thresh_param( "apoptosis-thresh", -2.0, new soar_module::gt_predicate<double>( 0, false ), new rl_apoptosis_predicate<double>( my_agent ) );
+	add( apoptosis_thresh );
 };
 
 //
+
+void rl_reset_data( agent* );
 
 rl_learning_param::rl_learning_param( const char *new_name, soar_module::boolean new_value, soar_module::predicate<soar_module::boolean> *new_prot_pred, agent *new_agent ): soar_module::boolean_param( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
 
 void rl_learning_param::set_value( soar_module::boolean new_value )
 {
-	if ( ( new_value == soar_module::on ) && ( my_agent->rl_first_switch ) )
+	if ( new_value != value )
 	{
-		my_agent->rl_first_switch = false;
-		exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
+		if ( ( new_value == soar_module::on ) && ( my_agent->rl_first_switch ) )
+		{
+			my_agent->rl_first_switch = false;
+			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
 
-		const char *msg = "Exploration Mode changed to epsilon-greedy";
-		print( my_agent, const_cast<char *>( msg ) );
-   		xml_generate_message( my_agent, const_cast<char *>( msg ) );
+			const char *msg = "Exploration Mode changed to epsilon-greedy";
+			print( my_agent, const_cast<char *>( msg ) );
+   			xml_generate_message( my_agent, const_cast<char *>( msg ) );
+		}
+		else if ( new_value == soar_module::off )
+		{
+			rl_reset_data( my_agent );
+		}
+
+		value = new_value;
 	}
-
-	value = new_value;
 }
+
+//
+
+rl_apoptosis_param::rl_apoptosis_param( const char *new_name, rl_param_container::apoptosis_choices new_value, soar_module::predicate<rl_param_container::apoptosis_choices> *new_prot_pred, agent *new_agent ): soar_module::constant_param<rl_param_container::apoptosis_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+
+void rl_apoptosis_param::set_value( rl_param_container::apoptosis_choices new_value )
+{
+	if ( value != new_value )
+	{
+		// from off to on (doesn't matter which)
+		if ( value == rl_param_container::apoptosis_none )
+		{
+			my_agent->rl_prods->set_decay_rate( my_agent->rl_params->apoptosis_decay->get_value() );
+			my_agent->rl_prods->set_decay_thresh( my_agent->rl_params->apoptosis_thresh->get_value() );
+			my_agent->rl_prods->initialize();
+		}
+		// from on to off
+		else if ( new_value == rl_param_container::apoptosis_none )
+		{
+			my_agent->rl_prods->teardown();
+		}
+
+		value = new_value;
+	}
+}
+
+//
+
+rl_apoptosis_thresh_param::rl_apoptosis_thresh_param( const char* new_name, double new_value, soar_module::predicate<double>* new_val_pred, soar_module::predicate<double>* new_prot_pred ): soar_module::decimal_param( new_name, new_value, new_val_pred, new_prot_pred ) {}
+
+void rl_apoptosis_thresh_param::set_value( double new_value ) { value = -new_value; }
+
+//
+
+template <typename T>
+rl_apoptosis_predicate<T>::rl_apoptosis_predicate( agent *new_agent ): soar_module::agent_predicate<T>( new_agent ) {}
+
+template <typename T>
+bool rl_apoptosis_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none ); }
+
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -138,6 +213,45 @@ bool rl_enabled( agent *my_agent )
 	return ( my_agent->rl_params->learning->get_value() == soar_module::on );
 }
 
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
+inline void rl_add_ref( Symbol* goal, production* prod )
+{
+	goal->id.rl_info->prev_op_rl_rules->push_back( prod );
+	prod->rl_ref_count++;
+}
+
+inline void rl_remove_ref( Symbol* goal, production* prod )
+{
+	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	
+	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
+	{
+		if ( *p == prod )
+		{
+			prod->rl_ref_count--;
+		}
+	}
+
+	rules->remove( prod );
+}
+
+void rl_clear_refs( Symbol* goal )
+{
+	rl_rule_list* rules = goal->id.rl_info->prev_op_rl_rules;
+	
+	for ( rl_rule_list::iterator p=rules->begin(); p!=rules->end(); p++ )
+	{
+		(*p)->rl_ref_count--;
+	}
+
+	rules->clear();
+}
+
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+
 // resets rl data structures
 void rl_reset_data( agent *my_agent )
 {
@@ -147,7 +261,7 @@ void rl_reset_data( agent *my_agent )
 		rl_data *data = goal->id.rl_info;
 
 		data->eligibility_traces->clear();
-		data->prev_op_rl_rules->clear();
+		rl_clear_refs( goal );
 
 		data->previous_q = 0;
 		data->reward = 0;
@@ -165,15 +279,7 @@ void rl_remove_refs_for_prod( agent *my_agent, production *prod )
 	for ( Symbol* state = my_agent->top_state; state; state = state->id.lower_goal )
 	{
 		state->id.rl_info->eligibility_traces->erase( prod );
-		
-		rl_rule_list::iterator p;
-		for ( p=state->id.rl_info->prev_op_rl_rules->begin(); p!=state->id.rl_info->prev_op_rl_rules->end(); p++ )
-		{
-			if ( (*p) == prod )
-			{
-				(*p) = NIL;
-			}
-		}
+		rl_remove_ref( state, prod );
 	}
 }
 
@@ -225,6 +331,27 @@ bool rl_valid_rule( production *prod )
 	}
 
 	return ( numeric_pref && ( num_actions == 1 ) );
+}
+
+// sets rl meta-data from a production documentation string
+void rl_rule_meta( agent* my_agent, production* prod )
+{
+	if ( prod->documentation && ( my_agent->rl_params->meta->get_value() == soar_module::on ) )
+	{
+		std::string doc( prod->documentation );
+		std::string search( "rlupdates=" );
+
+		if ( doc.length() > search.length() )
+		{
+			if ( doc.substr( 0, search.length() ).compare( search ) == 0 )
+			{
+				uint64_t val;
+				from_string( val, doc.substr( search.length() ) );
+
+				prod->rl_update_count = static_cast< double >( val );
+			}
+		}
+	}
 }
 
 
@@ -642,10 +769,10 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		{			
 			if ( ( just_fired == 0 ) && !data->prev_op_rl_rules->empty() )
 			{
-				data->prev_op_rl_rules->clear();					
+				rl_clear_refs( goal );
 			}
 			
-			data->prev_op_rl_rules->push_back( pref->inst->prod );				
+			rl_add_ref( goal, pref->inst->prod );
 			just_fired++;			
 		}
 	}
@@ -670,7 +797,7 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 		{
 			if ( !data->prev_op_rl_rules->empty() )
 			{
-				data->prev_op_rl_rules->clear();
+				rl_clear_refs( goal );
 			}			
 			
 			data->previous_q = cand->numeric_value;
@@ -754,22 +881,19 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				rl_rule_list::iterator p;
 				
 				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
-				{					
-					if ( (*p) != NIL )
+				{
+					sum_old_ecr += (*p)->rl_ecr;
+					sum_old_efr += (*p)->rl_efr;
+					
+					iter = data->eligibility_traces->find( (*p) );
+					
+					if ( iter != data->eligibility_traces->end() ) 
 					{
-						sum_old_ecr += (*p)->rl_ecr;
-						sum_old_efr += (*p)->rl_efr;
-						
-						iter = data->eligibility_traces->find( (*p) );
-						
-						if ( iter != data->eligibility_traces->end() ) 
-						{
-							iter->second += trace_increment;
-						}
-						else 
-						{
-							(*data->eligibility_traces)[ (*p) ] = trace_increment;
-						}
+						iter->second += trace_increment;
+					}
+					else 
+					{
+						(*data->eligibility_traces)[ (*p) ] = trace_increment;
 					}
 				}
 			}
@@ -787,15 +911,32 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					// get old vals
 					old_ecr = prod->rl_ecr;
 					old_efr = prod->rl_efr;
-					
-					// calculate updates
-					delta_ecr = ( alpha * iter->second * ( data->reward - sum_old_ecr ) );
-					
-					if ( update_efr )
-					{
-						delta_efr = ( alpha * iter->second * ( ( discount * op_value ) - sum_old_efr ) );
-					}
-					else
+
+                    // Adjust alpha based on decay policy
+                    // Miller 11/14/2011
+                    double adjusted_alpha;
+                    switch (my_agent->rl_params->decay_mode->get_value())
+                    {
+                        case rl_param_container::exponential_decay:
+                            adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
+                            break;
+                        case rl_param_container::logarithmic_decay:
+                            adjusted_alpha = 1.0 / (log(prod->rl_update_count + 1.0) + 1.0);
+                            break;
+                        case rl_param_container::normal_decay:
+                        default:
+                            adjusted_alpha = alpha;
+                            break;
+                    }
+
+                    // calculate updates
+                    delta_ecr = ( adjusted_alpha * iter->second * ( data->reward - sum_old_ecr ) );
+
+                    if ( update_efr )
+                    {
+                        delta_efr = ( adjusted_alpha * iter->second * ( ( discount * op_value ) - sum_old_efr ) );
+                    }
+                    else
 					{
 						delta_efr = 0.0;
 					}					
@@ -824,6 +965,22 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					prod->rl_update_count += 1;
 					prod->rl_ecr = new_ecr;
 					prod->rl_efr = new_efr;
+
+					// change documentation
+					if ( my_agent->rl_params->meta->get_value() == soar_module::on )
+					{
+						if ( prod->documentation )
+						{
+							free_memory_block_for_string( my_agent, prod->documentation );
+						}
+
+						std::string rlupdates( "rlupdates=" );
+						std::string val;
+						to_string( static_cast< uint64_t >( prod->rl_update_count ), val );
+						rlupdates.append( val );
+
+						prod->documentation = make_memory_block_for_string( my_agent, rlupdates.c_str() );
+					}
 
 					// Change value of preferences generated by current instantiations of this rule
 					if ( prod->instantiations )

@@ -1626,8 +1626,9 @@ production *make_production (agent* thisAgent,
   p->interrupt = FALSE;
   
   // Soar-RL stuff
-  p->rl_update_count = 0;
   p->rl_rule = false;
+  p->rl_update_count = 0;
+  p->rl_ref_count = 0;
   p->rl_ecr = 0.0;
   p->rl_efr = 0.0;
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
@@ -1671,9 +1672,13 @@ void excise_production (agent* thisAgent, production *prod, Bool print_sharp_sig
   if (prod->trace_firings) remove_pwatch (thisAgent, prod);
   remove_from_dll (thisAgent->all_productions_of_type[prod->type], prod, next, prev);
 
-  // Remove RL-related pointers to this production (unnecessary if rule never fired).
-  if ( prod->rl_rule && prod->firing_count ) 
-	  rl_remove_refs_for_prod( thisAgent, prod ); 
+  // Remove reference from apoptosis object store
+  if ( ( prod->type == CHUNK_PRODUCTION_TYPE ) && ( thisAgent->rl_params ) && ( thisAgent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none ) )
+    thisAgent->rl_prods->remove_object( prod );
+
+  // Remove RL-related pointers to this production
+  if ( prod->rl_rule ) 
+    rl_remove_refs_for_prod( thisAgent, prod ); 
 
   thisAgent->num_productions_of_type[prod->type]--;
   if (print_sharp_sign) print (thisAgent, "#");

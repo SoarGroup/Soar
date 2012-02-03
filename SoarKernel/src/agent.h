@@ -273,6 +273,7 @@ typedef struct agent_struct {
   Symbol            * impasse_symbol;
   Symbol            * io_symbol;
   Symbol            * item_symbol;
+  Symbol            * non_numeric_symbol;
   Symbol            * multiple_symbol;
   Symbol            * name_symbol;
   Symbol            * nil_symbol;
@@ -298,6 +299,7 @@ typedef struct agent_struct {
   Symbol            * wait_symbol;   /* REW:  10.24.97 */
 
   Symbol            * item_count_symbol; // SBW 5/07
+  Symbol            * non_numeric_count_symbol; // NLD 11/11
 
 
   /* RPM 9/06 begin */
@@ -862,6 +864,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   // reinforcement learning
   rl_param_container *rl_params;
   rl_stat_container *rl_stats;
+  rl_production_memory *rl_prods;
 
   int rl_template_count;
   bool rl_first_switch;

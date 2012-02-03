@@ -809,7 +809,7 @@ epmem_graph_statement_container::epmem_graph_statement_container( agent *new_age
 					"SELECT ? AS end FROM edge_now e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC",
 					"SELECT e.start AS end FROM edge_point e WHERE e.id=? AND e.start<=? ORDER BY e.start DESC"
 				}
-			}
+			},
 		};
 
 		for ( j=EPMEM_RIT_STATE_NODE; j<=EPMEM_RIT_STATE_EDGE; j++ )
@@ -1422,14 +1422,6 @@ void epmem_close( agent *my_agent )
 			}
 			my_agent->epmem_id_ref_counts->clear();
 
-			my_agent->epmem_id_siblings->clear();
-			for ( epmem_elders::iterator it = my_agent->epmem_wm_tree->begin(); it != my_agent->epmem_wm_tree->end(); it++ )
-			{
-				delete (*it).second;
-			}
-			my_agent->epmem_wm_tree->clear();
-			my_agent->epmem_wme_unrecognized->clear();
-
 			my_agent->epmem_wme_adds->clear();
 			my_agent->epmem_wme_removes->clear();
 
@@ -1438,6 +1430,14 @@ void epmem_close( agent *my_agent )
 				symbol_remove_ref( my_agent, (*p_it) );
 			}
 			my_agent->epmem_promotions->clear();
+
+			my_agent->epmem_id_siblings->clear();
+			for ( epmem_elders::iterator it = my_agent->epmem_wm_tree->begin(); it != my_agent->epmem_wm_tree->end(); it++ )
+			{
+				delete (*it).second;
+			}
+			my_agent->epmem_wm_tree->clear();
+			my_agent->epmem_wme_unrecognized->clear();
 		}
 
 		// close the database
@@ -1689,7 +1689,9 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 				epmem_wme_set* wms_temp = new epmem_wme_set();
 #endif
 
-				wms_temp->insert( NULL );
+				// voigtjr: Cast to wme* is necessary for compilation in VS10
+				// Without it, it picks insert(int) instead of insert(wme*) and does not compile.
+				wms_temp->insert( static_cast<wme*>(NULL) );
 
 				(*my_agent->epmem_id_ref_counts)[ EPMEM_NODEID_ROOT ] = wms_temp;
 			}
@@ -3058,7 +3060,6 @@ void epmem_new_episode( agent *my_agent )
 	////////////////////////////////////////////////////////////////////////////
 	my_agent->epmem_timers->storage->stop();
 	////////////////////////////////////////////////////////////////////////////
-
 }
 
 //////////////////////////////////////////////////////////

@@ -1093,9 +1093,29 @@ void retract_instantiation (agent* thisAgent, instantiation *inst) {
    * only thing supporting this justification is the instantiation, hence
    * it has already been excised, and doing it again is wrong.
    */
-  if (inst->prod->type==JUSTIFICATION_PRODUCTION_TYPE &&
-      inst->prod->reference_count > 1)
-    excise_production (thisAgent, inst->prod, FALSE);
+  production* prod = inst->prod;
+  if ( prod->type==JUSTIFICATION_PRODUCTION_TYPE && prod->reference_count > 1 )
+  {
+    excise_production (thisAgent, prod, FALSE);
+  }
+  else if ( prod->type == CHUNK_PRODUCTION_TYPE )
+  {
+    rl_param_container::apoptosis_choices apoptosis = thisAgent->rl_params->apoptosis->get_value();
+
+	// we care about production history of chunks if...
+	// - we are dealing with a non-RL rule and all chunks are subject to apoptosis OR
+	// - we are dealing with an RL rule that...
+	//   - has not been updated by RL AND
+	//   - is not in line to be updated by RL
+	if ( apoptosis != rl_param_container::apoptosis_none )
+	{
+	  if ( ( !prod->rl_rule && ( apoptosis == rl_param_container::apoptosis_chunks ) ) ||
+		   (  prod->rl_rule && ( static_cast<int64_t>( prod->rl_update_count ) == 0 ) && ( prod->rl_ref_count == 0 ) ) )
+      {
+        thisAgent->rl_prods->reference_object( prod, 1 );
+      }
+	}
+  }
   
   /* --- mark as no longer in MS, and possibly deallocate  --- */
   inst->in_ms = FALSE;

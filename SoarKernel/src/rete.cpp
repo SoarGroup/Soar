@@ -7521,6 +7521,11 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 	  if ( prod->rl_rule )
 	  {
 	    prod->rl_efr = get_number_from_symbol( rhs_value_to_symbol( prod->action_list->referent ) );
+
+		if ( prod->documentation )
+		{
+		  rl_rule_meta( thisAgent, prod );
+		}
 	  }
 	}
 	prod->rl_template_conds = NIL;

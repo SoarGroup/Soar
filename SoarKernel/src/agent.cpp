@@ -330,7 +330,8 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   // rl initialization
   newAgent->rl_params = new rl_param_container( newAgent );
-  newAgent->rl_stats = new rl_stat_container( newAgent ); 
+  newAgent->rl_stats = new rl_stat_container( newAgent );
+  newAgent->rl_prods = new rl_production_memory();
 
   rl_initialize_template_tracking( newAgent );
 
@@ -467,8 +468,11 @@ void destroy_soar_agent (agent * delete_agent)
 	  delete delete_agent->exploration_params[ i ];
 
   // cleanup Soar-RL
+  delete_agent->rl_params->apoptosis->set_value( rl_param_container::apoptosis_none );
+  delete delete_agent->rl_prods;
   delete delete_agent->rl_params;
   delete delete_agent->rl_stats;
+  delete_agent->rl_params = NULL; // apoptosis needs to know this for excise_all_productions below
 
   // cleanup select
   select_init( delete_agent );

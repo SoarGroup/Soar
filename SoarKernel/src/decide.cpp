@@ -1674,76 +1674,121 @@ void remove_fake_preference_for_goal_item (agent* thisAgent, preference *pref) {
    impasse.  It takes the identifier of the goal/impasse, and a list
    of preferences (linked via the "next_candidate" field) for the new
    set of items that should be there.
+
+   NLD 11/11: using this same basic framework to maintain a parallel
+   list for those candidates that do not have numeric preferences.
 ------------------------------------------------------------------ */
 
-void update_impasse_items (agent* thisAgent, Symbol *id, preference *items) {
+void update_impasse_items (agent* thisAgent, Symbol *id, preference *items) 
+{
+  enum item_types { regular, numeric };
+	
   wme *w, *next_w;
   preference *cand;
   preference *bt_pref;
-  unsigned int item_count = count_candidates(items); // SBW 5/07
+  unsigned int item_count;
+  Symbol* loop_sym = NULL;
+  Symbol* loop_count_sym = NULL;
+  Symbol* count_sym = NULL;
 
-  /* --- reset flags on existing items to "NOTHING" --- */
-  for (w=id->id.impasse_wmes; w!=NIL; w=w->next)
-    if (w->attr==thisAgent->item_symbol)
-      w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+  for ( int it=regular; it<=numeric; it++ )
+  {
+    if ( it == regular )
+	{
+	  loop_sym = thisAgent->item_symbol;
+	  loop_count_sym = thisAgent->item_count_symbol;
+	}
+	else
+	{
+	  loop_sym = thisAgent->non_numeric_symbol;
+	  loop_count_sym = thisAgent->non_numeric_count_symbol;
+	}
 
-  /* --- mark set of desired items as "CANDIDATEs" --- */
-  for (cand=items; cand!=NIL; cand=cand->next_candidate)
-    cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+	// reset flags on existing items to NOTHING
+	for ( w=id->id.impasse_wmes; w!=NIL; w=w->next )
+      if ( w->attr == loop_sym )
+        w->value->common.decider_flag = NOTHING_DECIDER_FLAG;
 
-  /* --- for each existing item:  if it's supposed to be there still, then
-     mark it "ALREADY_EXISTING"; otherwise remove it --- */
-  w = id->id.impasse_wmes;
-  while (w) {
-    next_w = w->next;
-    if (w->attr==thisAgent->item_symbol) {
-      if (w->value->common.decider_flag==CANDIDATE_DECIDER_FLAG) {
-        w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
-        w->value->common.a.decider_wme = w; /* so we can update the pref later */
-      } else {
-        remove_from_dll (id->id.impasse_wmes, w, next, prev);
-        if (id->id.isa_goal)
-          remove_fake_preference_for_goal_item (thisAgent, w->preference);
-        remove_wme_from_wm (thisAgent, w);
+	// reset flags on all items as CANDIDATEs
+    for ( cand=items; cand!=NIL; cand=cand->next_candidate )
+      cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+
+	// if numeric, block out candidates with numeric
+	if ( ( it == numeric ) && items )
+	{
+	  for ( cand=items->slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; cand; cand=cand->next )
+		cand->value->common.decider_flag = NOTHING_DECIDER_FLAG;
+	}
+
+	// count up candidates (used for count WME)
+	item_count = 0;
+	for ( cand=items; cand!=NIL; cand=cand->next_candidate )
+	  if ( cand->value->common.decider_flag == CANDIDATE_DECIDER_FLAG )
+	    item_count++;
+
+	// for each existing item: if supposed to be there, ALREADY EXISTING; otherwise remove
+	w = id->id.impasse_wmes;
+	while ( w ) 
+	{
+      next_w = w->next;
+	  if ( w->attr == loop_sym ) 
+	  {
+		if ( w->value->common.decider_flag==CANDIDATE_DECIDER_FLAG ) 
+		{
+          w->value->common.decider_flag = ALREADY_EXISTING_WME_DECIDER_FLAG;
+          w->value->common.a.decider_wme = w; // so we can update the pref later
+		} 
+		else
+		{
+		  remove_from_dll( id->id.impasse_wmes, w, next, prev );
+		  
+		  if ( id->id.isa_goal )
+		    remove_fake_preference_for_goal_item( thisAgent, w->preference );
+		  
+		  remove_wme_from_wm( thisAgent, w );
+		}
+	  }
+	  else if ( w->attr == loop_count_sym ) 
+	  {
+		remove_from_dll( id->id.impasse_wmes, w, next, prev );
+        remove_wme_from_wm( thisAgent, w );
       }
+
+      w = next_w;
     }
 
-    // SBW 5/07
-    // remove item-count WME if it exists
-    else if (w->attr==thisAgent->item_count_symbol) {
-      remove_from_dll (id->id.impasse_wmes, w, next, prev);
-      symbol_remove_ref (thisAgent, w->value); // remove the reference to the integer constant
-      remove_wme_from_wm (thisAgent, w);
-    }
+	// for each desired item: if doesn't ALREADY_EXIST, add it
+	for ( cand=items; cand!=NIL; cand=cand->next_candidate ) 
+	{
+	  // takes care of numerics
+      if ( cand->value->common.decider_flag == NOTHING_DECIDER_FLAG )
+		continue;
+	  
+	  if (id->id.isa_goal)
+        bt_pref = make_fake_preference_for_goal_item( thisAgent, id, cand );
+	  else
+		bt_pref = cand;
 
-    w = next_w;
+	  if ( cand->value->common.decider_flag == ALREADY_EXISTING_WME_DECIDER_FLAG ) 
+	  {
+		if ( id->id.isa_goal ) 
+		  remove_fake_preference_for_goal_item( thisAgent, cand->value->common.a.decider_wme->preference );
+		
+		cand->value->common.a.decider_wme->preference = bt_pref;
+	  } 
+	  else
+	  {
+		add_impasse_wme( thisAgent, id, loop_sym, cand->value, bt_pref );
+	  }
+	}
+
+	if ( item_count > 0 ) 
+	{
+      count_sym = make_int_constant( thisAgent, static_cast< int64_t >( item_count ) );
+	  add_impasse_wme( thisAgent, id, loop_count_sym, count_sym, NIL );
+	  symbol_remove_ref( thisAgent, count_sym );
+	}
   }
-
-  /* --- for each desired item:  if it doesn't ALREADY_EXIST, add it --- */
-  for (cand=items; cand!=NIL; cand=cand->next_candidate) {
-    if (id->id.isa_goal)
-      bt_pref = make_fake_preference_for_goal_item (thisAgent, id, cand);
-    else
-      bt_pref = cand;
-    if (cand->value->common.decider_flag==ALREADY_EXISTING_WME_DECIDER_FLAG) {
-      if (id->id.isa_goal) remove_fake_preference_for_goal_item
-        (thisAgent, cand->value->common.a.decider_wme->preference);
-      cand->value->common.a.decider_wme->preference = bt_pref;
-    } else {
-      add_impasse_wme (thisAgent, id, thisAgent->item_symbol, cand->value, bt_pref);
-    }
-  }
-
-  // SBW 5/07
-  // update the item-count WME
-  // detect relevant impasses by having more than one item
-  if (item_count > 0) {
-    add_impasse_wme (thisAgent, id, thisAgent->item_count_symbol, 
-                     make_int_constant(thisAgent, item_count), NIL);
-  }
-  // TODO does the int constant get its reference removed when the impasse goes
-  // away?
-
 }
 
 /* ------------------------------------------------------------------
@@ -2125,6 +2170,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   {
 	  rl_tabulate_reward_value_for_goal( thisAgent, goal );
 	  rl_perform_update( thisAgent, 0, true, goal, false ); // this update only sees reward - there is no next state
+	  rl_clear_refs( goal );
   }
 
   /* --- disconnect this goal from the goal stack --- */
@@ -3483,24 +3529,4 @@ void create_gds_for_goal( agent* thisAgent, Symbol *goal){
    #ifdef DEBUG_GDS
      print_with_symbols(thisAgent, "\nCreated GDS for goal [%y].\n", gds->goal);
    #endif
-}
-
-unsigned int count_candidates(preference * candidates)
-{
-    unsigned int numCandidates = 0;
-    preference *cand = 0;
-
-    /*
-       Count up the number of candidates
-       REW: 2003-01-06
-       I'm assuming that all of the candidates have unary or 
-       unary+value (binary) indifferent preferences at this point.
-       So we loop over the candidates list and count the number of
-       elements in the list.
-     */
-
-    for (cand = candidates; cand != NIL; cand = cand->next_candidate)
-        numCandidates++;
-
-    return numCandidates;
 }
