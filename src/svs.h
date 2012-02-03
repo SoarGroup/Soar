@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <memory>
 #include "ipcsocket.h"
 #include "soar_interface.h"
 #include "sgnode.h"
@@ -138,20 +139,30 @@ public:
 	
 	void state_creation_callback(Symbol *goal);
 	void state_deletion_callback(Symbol *goal);
-	void pre_env_callback();
-	void post_env_callback();
+	void output_callback();
+	void input_callback();
 
 	soar_interface *get_soar_interface() { return si; }
 
+	void set_input(const std::string &in) {
+		env_input = in;
+	}
+	
+	std::string get_output() const {
+		return env_output;
+	}
+	
 private:
 	void make_common_syms();
 	void del_common_syms();
-	bool env_input(svs_state *s);
+	void proc_input(svs_state *s);
 	
 	soar_interface*          si;
 	common_syms              cs;
 	std::vector<svs_state*>  state_stack;
-	ipcsocket                envsock;
+	std::auto_ptr<ipcsocket> envsock;
+	std::string              env_input;
+	std::string              env_output;
 };
 
 #endif
