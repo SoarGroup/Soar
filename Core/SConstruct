@@ -8,6 +8,10 @@ import platform
 import socket
 import subprocess
 import re
+import fnmatch
+
+HEADER_DIRS = [
+]
 
 def execute(cmd):
 	try:
@@ -92,6 +96,25 @@ def CheckSWIG():
 				
 	print 'cannot determine swig version'
 	Exit(1)
+
+# Install all files under source directory to target directory, keeping
+# subdirectory structure and ignoring hidden files
+def InstallDir(env, tgt, src, globstring="*"):
+	target = env.GetBuildPath(tgt)
+	source = env.GetBuildPath(src)
+	env.Clean('$PREFIX', target)
+	for dir, _, files in os.walk(source):
+		if fnmatch.fnmatch(dir, '*/.*'):
+			continue
+		
+		# targetsub is the target directory plus the relative sub directory
+		relative = dir[len(source)+1:]
+		targetsub = os.path.join(target, relative)
+		
+		for f in fnmatch.filter(files, globstring):
+			if not f.startswith('.'):
+				p = os.path.join(dir, f)
+				Install(targetsub, p)
 	
 SOAR_VERSION = "9.3.1"
 
@@ -179,7 +202,16 @@ env = Environment(
 	STATIC_LINKED = GetOption('static'),
 	SOAR_VERSION = SOAR_VERSION,
 	CPPFLAGS = ['-DSCONS'],
-	CPPPATH = ['#shared'],
+	CPPPATH = [
+		'#shared',
+		'#SoarKernel/src',
+		'#ElementXML/src',
+		'#KernelSML/src',
+		'#ConnectionSML/src',
+		'#ClientSML/src',
+		'#Tests/src',
+		'#CLI/src',
+	],
 	LINKFLAGS = [],
 	)
 #################
@@ -282,41 +314,7 @@ env.Default(env['PREFIX'])
 env.Default('.')
 
 Export('env')
-# TODO: rmdir PREFIX/share/soar on clean
-#################
-
-
 Export('javaRunAnt')
-#################
-
-
-#################
-# InstallDir
-# For recursion in to resource directories without grabbing .svn folders
-# because Glob/InstallAs fails at life.
-#
-# Returns list of nodes for passage to Install
-def InstallDir(comp, target, source, globstring="*"):
-	targetdir = env.Dir(target)
-	env.Clean(comp, targetdir)
-	sourcedir = env.Dir(source)
-	for root, dirs, files in os.walk(str(sourcedir)):
-		if ".svn" in dirs:
-			dirs.remove(".svn")
-	
-		# targetsub is the target directory plus the relative sub directory
-		relative = root[len(str(sourcedir))+1:]
-		targetsub = os.path.join(str(targetdir), relative)
-
-		# sourceglob is all files in sub directory
-		sourceglob = os.path.join(root, globstring)
-
-		env.Install(targetsub, env.Glob(sourceglob))
-		for f in env.Glob(sourceglob, strings = True):
-			(head, tail) = os.path.split(f)
-			env.Clean(comp, os.path.join(targetsub, tail))
-Export('InstallDir')
-#################
 
 
 #################
@@ -401,7 +399,7 @@ for d in subdirs:
 # Components
 # Special environment
 compEnv = env.Clone()
-compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
+#compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
 libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
 if compEnv['STATIC_LINKED']:
 	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
@@ -420,3 +418,11 @@ if GetOption('ios') == 'none':
 			SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 #################
 
+# Install resources
+for d in ['#ElementXML/src', '#ConnectionSML/src', '#ClientSML/src', '#shared']:
+	InstallDir(env, '$PREFIX/include', d, '*.h*')
+
+env.Clean('$PREFIX', '$PREFIX/share')
+InstallDir(env, '$PREFIX/share/soar/Demos', '#Demos')
+InstallDir(env, '$PREFIX/share/soar/Documentation', '#Documentation')
+InstallDir(env, '$PREFIX/share/soar/Tests', '#Tests/Agents')
