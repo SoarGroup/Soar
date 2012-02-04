@@ -3,18 +3,10 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 Import('env')
-clone = env.Clone()
-
-clone.Prepend(CPPPATH = Split('src #ElementXML/src'))
 
 if env['SCU']:
-	ConnectionSML = clone.Library('ConnectionSML', 'ConnectionSML.cxx')
+	ConnectionSML = env.Library('ConnectionSML', 'ConnectionSML.cxx')
 else:
-	ConnectionSML = clone.Library('ConnectionSML', Glob('src/*.cpp'))
+	ConnectionSML = env.Library('ConnectionSML', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', ConnectionSML)
-
-# Install includes
-Import('InstallDir')
-InstallDir(ConnectionSML, '$PREFIX/include', '#ConnectionSML/src', '*.h')
-

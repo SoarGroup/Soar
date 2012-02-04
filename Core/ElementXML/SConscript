@@ -19,8 +19,3 @@ else:
 		ElementXML = clone.SharedLibrary('ElementXML', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', ElementXML)
-
-# Install includes
-Import('InstallDir')
-InstallDir(ElementXML, '$PREFIX/include', '#ElementXML/src', '*.h')
-
