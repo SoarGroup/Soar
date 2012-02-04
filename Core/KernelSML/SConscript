@@ -5,8 +5,6 @@
 Import('env')
 clone = env.Clone()
 
-clone.Prepend(CPPPATH = Split('src #SoarKernel/src #CLI/src #ElementXML/src #ConnectionSML/src'))
-
 if not env['STATIC_LINKED']:
 	clone.Append(LIBS = Split('ElementXML CommandLineInterface ConnectionSML SoarKernel sqlite3'))
 	clone.Append(LIBPATH = ['$PREFIX/lib'])
@@ -23,9 +21,3 @@ else:
 		SoarKernelSML = clone.SharedLibrary('SoarKernelSML', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', SoarKernelSML)
-
-# Install resources
-Import('InstallDir')
-InstallDir(SoarKernelSML, '$PREFIX/share/soar/Demos', '#Demos')
-InstallDir(SoarKernelSML, '$PREFIX/share/soar/Documentation', '#Documentation')
-

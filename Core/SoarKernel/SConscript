@@ -6,7 +6,6 @@ Import('env')
 clone = env.Clone()
 
 clone.Append(CPPFLAGS = ['-fno-strict-aliasing'])
-clone.Prepend(CPPPATH = Split('src #ElementXML/src'))
 
 sqlclone = clone.Clone()
 sqlclone.Append(CPPFLAGS = ['-w'])
@@ -25,8 +24,3 @@ else:
 
 env.Install('$PREFIX/lib', SoarKernel)
 env.Install('$PREFIX/lib', SQLite)
-
-# Install resources
-Import('InstallDir')
-InstallDir(SoarKernel, '$PREFIX/include', '#shared')
-

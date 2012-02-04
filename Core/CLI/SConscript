@@ -3,14 +3,11 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 Import('env')
-clone = env.Clone()
-
-clone.Prepend(CPPPATH = Split('src #SoarKernel/src #ElementXML/src #ConnectionSML/src #KernelSML/src'))
 
 if env['SCU']:
-	CommandLineInterface = clone.Library('CommandLineInterface', 'CommandLineInterface.cxx')
+	CommandLineInterface = env.Library('CommandLineInterface', 'CommandLineInterface.cxx')
 else:
-	CommandLineInterface = clone.Library('CommandLineInterface', Glob('src/*.cpp'))
+	CommandLineInterface = env.Library('CommandLineInterface', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', CommandLineInterface)
 

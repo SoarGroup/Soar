@@ -7,8 +7,6 @@ import sys
 Import('env')
 clone = env.Clone()
 
-clone.Prepend(CPPPATH = Split('src #ClientSML/src #KernelSML/src #CLI/src #SoarKernel/src #ElementXML/src #ConnectionSML/src'))
-
 libadd = Split('ClientSML ConnectionSML ElementXML SoarKernelSML SoarKernel CommandLineInterface sqlite3')
 
 if sys.platform == "darwin":
@@ -27,8 +25,3 @@ clone.Prepend(LIBS = libadd, LIBPATH = libpath)
 Tests = clone.Program('Tests', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/bin', Tests)
-
-# Install resources
-Import('InstallDir')
-InstallDir(Tests, '$PREFIX/share/soar/Tests', '#Tests/Agents')
-

@@ -3,18 +3,10 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 Import('env')
-clone = env.Clone()
-
-clone.Prepend(CPPPATH = Split('src #ElementXML/src #ConnectionSML/src'))
 
 if env['SCU']:
-	ClientSML = clone.Library('ClientSML', 'ClientSML.cxx')
+	ClientSML = env.Library('ClientSML', 'ClientSML.cxx')
 else:
-	ClientSML = clone.Library('ClientSML', Glob('src/*.cpp'))
+	ClientSML = env.Library('ClientSML', Glob('src/*.cpp'))
 
 env.Install('$PREFIX/lib', ClientSML)
-
-# Install includes
-Import('InstallDir')
-InstallDir(ClientSML, '$PREFIX/include', '#ClientSML/src', '*.h')
-
