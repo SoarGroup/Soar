@@ -17,7 +17,8 @@
 
 #include "linalg.h"
 
-typedef Eigen::RowVectorXd evec;
+typedef Eigen::RowVectorXd rvec;
+typedef Eigen::VectorXd cvec;
 typedef Eigen::MatrixXd mat;
 typedef Eigen::MatrixXi imat;
 
@@ -173,7 +174,7 @@ public:
 		ind2name.clear();
 	}
 	
-	evec vals;
+	rvec vals;
 	
 private:
 	std::map<std::string, int> name2ind;
@@ -198,7 +199,7 @@ vec3 calc_centroid(const ptlist &pts);
 */
 float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
 
-void histogram(const evec &vals, int nbins);
+void histogram(const rvec &vals, int nbins);
 
 class bbox {
 public:
@@ -312,18 +313,20 @@ void load_vector(std::vector<T> &v, std::istream &is) {
 
 void save_mat(std::ostream &os, const mat &m);
 void load_mat(std::istream &is, mat &m);
-void save_mat(std::ostream &os, const imat &m);
-void load_mat(std::istream &is, imat &m);
-void save_vec(std::ostream &os, const evec &v);
-void load_vec(std::istream &is, evec &v);
+void save_imat(std::ostream &os, const imat &m);
+void load_imat(std::istream &is, imat &m);
+void save_rvec(std::ostream &os, const rvec &v);
+void load_rvec(std::istream &is, rvec &v);
+void save_cvec(std::ostream &os, const cvec &v);
+void load_cvec(std::istream &is, cvec &v);
 
 inline double gausspdf(double x, double mean, double std) {
 	const double SQRT2PI = 2.5066282746310002;
 	return (1. / std * SQRT2PI) * exp(-((x - mean) * (x - mean) / (2 * std * std)));
 }
 
-inline void randomize_vec(evec &v, const evec &min, const evec &max) {
-	v = min.array() + (evec::Random(v.size()).array() * (max - min).array());
+inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
+	v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
 }
 
 

@@ -5,15 +5,15 @@
 #include <string>
 #include "common.h"
 
-void lsqr(const mat &X, const mat &Y, const evec &w, const evec &x, evec &yout);
-void ridge(const mat &X, const mat &Y, const evec &w, const evec &x, evec &yout);
-double pcr(const mat &X, const mat &Y, const evec &x);
+void lsqr(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout);
+void ridge(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout);
+void pcr(const mat &X, const mat &Y, const rvec &x, rvec &y);
 
 void remove_static(const mat &X, mat &Xout, std::vector<int> &nonstatic);
 
 class LRModel {
 public:
-	LRModel(const mat &xdata, const evec &ydata);
+	LRModel(const mat &xdata, const mat &ydata);
 	LRModel(const LRModel &m);
 	virtual ~LRModel();
 	
@@ -29,7 +29,7 @@ public:
 		return error;
 	}
 	
-	const evec& get_center() const {
+	const rvec& get_center() const {
 		return center;
 	}
 	
@@ -44,50 +44,51 @@ public:
 	void add_example(int i, bool update_refit);
 	void add_examples(const std::vector<int> &inds);
 	void del_example(int i);
-	double predict(const evec &x);
-	bool predict(const mat &X, evec &result);
+	bool predict(const rvec &x, rvec &y);
+	bool predict(const mat &X, mat &Y);
 	bool fit();
-	void fill_data(mat &X, evec &y) const;
+	void fill_data(mat &X, mat &Y) const;
 	void save(std::ostream &os) const;
 	// this has to be called right after the object is constructed
 	void load(std::istream &is);
 	
 	virtual LRModel* copy() const = 0;
 	virtual void fit_me() = 0;
-	virtual double predict_me(const evec &x) = 0;
-	virtual bool predict_me(const mat &X, evec &result) = 0;
+	virtual bool predict_me(const rvec &x, rvec &y) = 0;
+	virtual bool predict_me(const mat &X, mat &Y) = 0;
 
 protected:
 	const mat &xdata;
-	const evec &ydata;
+	const mat &ydata;
 	
 private:
 	void update_error();
 	
 	std::vector<int> members;
-	double constval, error;
+	double error;
 	bool isconst, refit;
-	evec xtotals, center;
+	rvec xtotals, center, constvals;
 	
 };
 
 class PCRModel : public LRModel {
 public:
-	PCRModel(const mat &xdata, const evec &ydata);
+	PCRModel(const mat &xdata, const mat &ydata);
 	PCRModel(const PCRModel &m);
 	~PCRModel() {}
 	
 	void fit_me();
-	double predict_me(const evec &x);
-	bool predict_me(const mat &X, evec &result);
+	bool predict_me(const rvec &x, rvec &y);
+	bool predict_me(const mat &X, mat &Y);
 	
 	LRModel* copy() const {
 		return new PCRModel(*this);
 	}
 	
 private:
-	evec beta, means;
-	double intercept;
+	mat beta;
+	rvec means;
+	rvec intercept;
 };
 
 #endif

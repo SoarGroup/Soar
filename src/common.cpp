@@ -112,7 +112,7 @@ float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	return max - min;
 }
 
-void histogram(const evec &vals, int nbins) {
+void histogram(const rvec &vals, int nbins) {
 	assert(nbins > 0);
 	float min = vals[0], max = vals[0], binsize, hashes_per;
 	int i, b, maxcount = 0;
@@ -185,12 +185,12 @@ void load_mat(std::istream &is, mat &m) {
 	assert(token == "end_mat");
 }
 
-void save_mat(std::ostream &os, const imat &m) {
+void save_imat(std::ostream &os, const imat &m) {
 	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
 	os << m << endl << "end_mat" << endl;
 }
 
-void load_mat(std::istream &is, imat &m) {
+void load_imat(std::istream &is, imat &m) {
 	string token;
 	char *endptr;
 	int nrows, ncols;
@@ -217,13 +217,13 @@ void load_mat(std::istream &is, imat &m) {
 	assert(token == "end_mat");
 }
 
-void save_vec(std::ostream &os, const evec &v) {
+void save_rvec(std::ostream &os, const rvec &v) {
 	os << "begin_vec " << v.size() << endl;
 	os << v << endl;
 	os << "end_vec" << endl;
 }
 
-void load_vec(std::istream &is, evec &v) {
+void load_rvec(std::istream &is, rvec &v) {
 	string token;
 	char *endptr;
 	int n;
@@ -243,4 +243,14 @@ void load_vec(std::istream &is, evec &v) {
 	}
 	is >> token;
 	assert(token == "end_vec");
+}
+
+void save_cvec(std::ostream &os, const cvec &v) {
+	save_rvec(os, v.transpose());
+}
+
+void load_cvec(std::istream &is, cvec &v) {
+	rvec v1;
+	load_rvec(is, v1);
+	v = v1.transpose();
 }

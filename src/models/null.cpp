@@ -13,7 +13,7 @@ public:
 		finish();
 	}
 	
-	bool predict(const evec &x, evec &y) { return true; }
+	bool predict(const rvec &x, rvec &y) { return true; }
 	int get_input_size() const { return 0; }
 	int get_output_size() const { return 0; }
 };

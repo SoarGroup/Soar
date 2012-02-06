@@ -15,7 +15,7 @@ public:
 		finish();
 	}
 	
-    bool predict(const evec &x, evec &y) {
+    bool predict(const rvec &x, rvec &y) {
 		if (x.size() != 10 || y.size() != 8) {
 			return false;
 		}

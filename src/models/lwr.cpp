@@ -15,7 +15,7 @@
 using namespace std;
 using namespace Eigen;
 
-evec norm_vec(const evec &v, const evec &min, const evec &range) {
+rvec norm_vec(const rvec &v, const rvec &min, const rvec &range) {
 	return ((v.array() - min.array()) / range.array()).matrix();
 }
 
@@ -41,7 +41,7 @@ public:
 		}
 	}
 	
-	void learn(const evec &x, const evec &y, float dt) {
+	void learn(const rvec &x, const rvec &y, float dt) {
 		if (xsize < 0) {
 			xsize = x.size();
 			ysize = y.size();
@@ -88,9 +88,9 @@ public:
 		}
 	}
 	
-	bool predict(const evec &x, evec &y) {
+	bool predict(const rvec &x, rvec &y) {
 		mat X, Y;
-		evec d;
+		rvec d;
 		di_queue neighbors;
 		timer tall, tnn;
 		int i, j, k;
@@ -106,7 +106,7 @@ public:
 			normalized = true;
 		}
 		
-		evec xn = norm_vec(x, xmin, xrange);
+		rvec xn = norm_vec(x, xmin, xrange);
 		
 		tnn.start();
 		nn->query(xn, k, neighbors);
@@ -119,8 +119,8 @@ public:
 			d(i) = neighbors.top().first;
 			int ind = neighbors.top().second;
 			neighbors.pop();
-			evec &tx = examples[ind].first;
-			evec &ty = examples[ind].second;
+			rvec &tx = examples[ind].first;
+			rvec &ty = examples[ind].second;
 			for(j = 0; j < xsize; ++j) {
 				X(i, j) = tx[j];
 			}
@@ -129,7 +129,7 @@ public:
 			}
 		}
 		
-		evec w = d.array().pow(-3).sqrt();
+		rvec w = d.array().pow(-3).sqrt();
 		
 		/*
 		 Any neighbor whose weight is infinity is close enough
@@ -137,7 +137,7 @@ public:
 		 average as the solution.  If we don't do this the solve()
 		 will fail due to infinite values in Z and V.
 		*/
-		evec closeavg = evec::Zero(ysize);
+		rvec closeavg = rvec::Zero(ysize);
 		int nclose = 0;
 		for (i = 0; i < w.size(); ++i) {
 			if (w(i) == INFINITY) {
@@ -152,11 +152,7 @@ public:
 			return true;
 		}
 
-		evec xv(x.size());
-		for (i = 0; i < x.size(); ++i) {
-			xv(i) = x[i];
-		}
-		y[0] = pcr(X, Y, xv);
+		pcr(X, Y, x, y);
 		return true;
 	}
 	
@@ -170,7 +166,7 @@ public:
 			assert(false);
 		}
 		
-		evec x(xsize), y(ysize);
+		rvec x(xsize), y(ysize);
 		
 		for (int i = 0; i < nexamples; ++i) {
 			for(int j = 0; j < xsize; ++j) {
@@ -189,7 +185,7 @@ public:
 	}
 	
 	void save(ostream &os) const {
-		vector<pair<evec, evec> >::const_iterator i;
+		vector<pair<rvec, rvec> >::const_iterator i;
 		os << xsize << " " << ysize << " " << examples.size() << endl;
 		for (i = examples.begin(); i != examples.end(); ++i) {
 			for (int j = 0; j < xsize; ++j) {
@@ -212,7 +208,7 @@ public:
 	
 private:
 	void normalize() {
-		vector<pair<evec, evec> >::iterator i;
+		vector<pair<rvec, rvec> >::iterator i;
 		
 		xrange = xmax - xmin;
 		// can't have division by 0
@@ -229,9 +225,9 @@ private:
 	}
 	
 	int xsize, ysize, nnbrs;
-	std::vector<std::pair<evec, evec> > examples;
-	std::vector<evec> xnorm;
-	evec xmin, xmax, xrange;
+	std::vector<std::pair<rvec, rvec> > examples;
+	std::vector<rvec> xnorm;
+	rvec xmin, xmax, xrange;
 	bool normalized;
 	nearest_neighbor *nn;
 	std::ofstream *log;

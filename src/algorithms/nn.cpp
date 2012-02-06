@@ -9,9 +9,9 @@ inline bool possibly_better(double d, int k, const di_queue &nn) {
 	return nn.size() < k || (nn.size() > 0 && d < nn.top().first);
 }
 
-brute_nn::brute_nn(std::vector<evec> *points) : points(points) {}
+brute_nn::brute_nn(std::vector<rvec> *points) : points(points) {}
 
-void brute_nn::query(const evec &q, int k, di_queue &nn) {
+void brute_nn::query(const rvec &q, int k, di_queue &nn) {
 	for (int i = 0; i < points->size(); ++i) {
 		double d = (q - points->at(i)).squaredNorm();
 		if (possibly_better(d, k, nn)) {
@@ -24,7 +24,7 @@ void brute_nn::query(const evec &q, int k, di_queue &nn) {
 }
 
 
-balltree::balltree(int ndim, int leafsize, vector<evec> *pts, const vector<int> &inds)
+balltree::balltree(int ndim, int leafsize, vector<rvec> *pts, const vector<int> &inds)
 : ndim(ndim), leafsize(leafsize), pts(pts), inds(inds), left(NULL), right(NULL), parent(NULL), pruned(0)
 {
 	if (this->inds.size() == 0) {
@@ -44,7 +44,7 @@ balltree::~balltree() {
 	delete right;
 }
 
-void balltree::distsq_to(const evec &q, evec &dout) {
+void balltree::distsq_to(const rvec &q, rvec &dout) {
 	vector<int>::const_iterator i;
 	for (int i = 0; i < inds.size(); ++i) {
 		dout[i] = (q - (*pts)[inds[i]]).squaredNorm();
@@ -53,14 +53,14 @@ void balltree::distsq_to(const evec &q, evec &dout) {
 
 void balltree::update_ball() {
 	if (left != NULL) {
-		evec dir = (left->center - right->center).normalized();
-		evec p1 = left->center + dir * left->radius;
-		evec p2 = right->center - dir * right->radius;
+		rvec dir = (left->center - right->center).normalized();
+		rvec p1 = left->center + dir * left->radius;
+		rvec p2 = right->center - dir * right->radius;
 		center = (p1 + p2) / 2.0;
 		radius = (center - p1).norm();
 	} else {
 		vector<int>::const_iterator i;
-		evec dists(inds.size());
+		rvec dists(inds.size());
 		int furthest;
 		center.setZero();
 		for (i = inds.begin(); i != inds.end(); ++i) {
@@ -73,7 +73,7 @@ void balltree::update_ball() {
 }
 
 void balltree::split() {
-	evec dc(inds.size()), dl(inds.size()), dr(inds.size());
+	rvec dc(inds.size()), dl(inds.size()), dr(inds.size());
 	vector<int> linds, rinds;
 	int i, li, ri;
 	
@@ -99,7 +99,7 @@ void balltree::split() {
 	update_ball();
 }
 
-void balltree::linear_scan(const evec &q, int k, di_queue &nn) {
+void balltree::linear_scan(const rvec &q, int k, di_queue &nn) {
 	vector<int>::const_iterator i;
 	double d;
 	for (i = inds.begin(); i != inds.end(); ++i) {
@@ -113,7 +113,7 @@ void balltree::linear_scan(const evec &q, int k, di_queue &nn) {
 	}
 }
 
-void balltree::query(const evec &q, int k, di_queue &nn) {
+void balltree::query(const rvec &q, int k, di_queue &nn) {
 	double dmin = pow(max((center - q).norm() - radius, 0.0), 2);
 	if (nn.size() >= k && dmin >= nn.top().first) {
 		pruned += inds.size();

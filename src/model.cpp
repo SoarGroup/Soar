@@ -10,7 +10,7 @@ using namespace std;
 const char *MODEL_DIR = "models";
 const char *PREDICTION_DIR = "predictions";
 
-void slice(const evec &source, evec &target, const vector<int> &indexes) {
+void slice(const rvec &source, rvec &target, const vector<int> &indexes) {
 	target.resize(indexes.size());
 	for (int i = 0; i < indexes.size(); ++i) {
 		target(i) = source(indexes[i]);
@@ -51,8 +51,8 @@ void model::init() {
 	}
 }
 
-float model::test(const evec &x, const evec &y) {
-	evec py(y.size());
+float model::test(const rvec &x, const rvec &y) {
+	rvec py(y.size());
 	float error;
 	if (!predict(x, py)) {
 		error = numeric_limits<double>::signaling_NaN();
@@ -76,17 +76,17 @@ multi_model::~multi_model() {
 	}
 }
 
-bool multi_model::predict(const evec &x, evec &y) {
+bool multi_model::predict(const rvec &x, rvec &y) {
 	list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
-		evec yp(cfg->ally ? y.size() : cfg->yinds.size());
+		rvec yp(cfg->ally ? y.size() : cfg->yinds.size());
 		bool success;
 		if (cfg->allx) {
 			success = cfg->mdl->predict(x, yp);
 		} else {
-			evec x1;
+			rvec x1;
 			slice(x, x1,  cfg->xinds);
 			success = cfg->mdl->predict(x1, yp);
 		}
@@ -105,12 +105,12 @@ bool multi_model::predict(const evec &x, evec &y) {
 	return true;
 }
 
-void multi_model::learn(const evec &x, const evec &y, float dt) {
+void multi_model::learn(const rvec &x, const rvec &y, float dt) {
 	list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
-		evec xp, yp;
+		rvec xp, yp;
 		if (cfg->allx) {
 			xp = x;
 		} else {
@@ -127,13 +127,13 @@ void multi_model::learn(const evec &x, const evec &y, float dt) {
 	}
 }
 
-float multi_model::test(const evec &x, const evec &y) {
+float multi_model::test(const rvec &x, const rvec &y) {
 	float s = 0.0;
 	list<model_config*>::iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
-		evec xp, yp;
+		rvec xp, yp;
 		if (cfg->allx) {
 			xp = x;
 		} else {

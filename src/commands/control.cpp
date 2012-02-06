@@ -25,14 +25,14 @@ const double CCOEF = 0.5;
 const double SCOEF = 0.5;
 const int MAXITERS = 50;
 
-bool predict_traj(multi_model *mdl, const evec &initstate, const std::list<evec> &traj, evec &finalstate) {
+bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, rvec &finalstate) {
 	finalstate = initstate;
 	if (traj.size() == 0) {
 		return true;
 	}
 	
-	std::list<evec>::const_iterator i;
-	evec x(initstate.size() + traj.front().size());
+	std::list<rvec>::const_iterator i;
+	rvec x(initstate.size() + traj.front().size());
 	
 	for (i = traj.begin(); i != traj.end(); ++i) {
 		x << finalstate, *i;
@@ -298,7 +298,7 @@ public:
 		objs.push_back(o);
 	}
 	
-	void evaluate(scene &scn, evec &val) const {
+	void evaluate(scene &scn, rvec &val) const {
 		val.resize(objs.size());
 		for (int i = 0; i < objs.size(); ++i) {
 			val[i] = objs[i]->evaluate(scn);
@@ -428,7 +428,7 @@ public:
 		scn->get_properties(initvals);
 	}
 	
-	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const evec &initvals)
+	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const rvec &initvals)
 	: mdl(m), stepsize(stepsize), obj(obj), numcalls(0), totaltime(0.), initvals(initvals)
 	{
 		scn = tmp.copy();
@@ -438,16 +438,16 @@ public:
 		delete scn;
 	}
 	
-	void set_init(const evec &v) {
+	void set_init(const rvec &v) {
 		initvals = v;
 	}
 	
-	bool evaluate(const evec &traj, evec &value, evec &finalstate) {
+	bool evaluate(const rvec &traj, rvec &value, rvec &finalstate) {
 		timer tm;
 		tm.start();
 		
 		if (traj.size() > 0) {
-			evec x(initvals.size() + stepsize), y = initvals;
+			rvec x(initvals.size() + stepsize), y = initvals;
 			for (int i = 0; i < traj.size(); i += stepsize) {
 				x << y, traj.segment(i, stepsize);
 				if (!mdl->predict(x, y)) {
@@ -479,12 +479,12 @@ private:
 	multi_objective  *obj;
 	int               stepsize;  // dimensionality of output
 	scene            *scn;       // copy of initial scene to be modified after prediction
-	evec              initvals;  // flattened values of initial scene
+	rvec              initvals;  // flattened values of initial scene
 	int               numcalls;
 	double            totaltime;
 };
 
-void constrain(evec &v, const evec &min, const evec &max) {
+void constrain(rvec &v, const rvec &min, const rvec &max) {
 	for (int i = 0; i < v.size(); ++i) {
 		if (v[i] < min[i]) {
 			v[i] = min[i];
@@ -494,7 +494,7 @@ void constrain(evec &v, const evec &min, const evec &max) {
 	}
 }
 
-int lexical_compare(const evec &v1, const evec &v2) {
+int lexical_compare(const rvec &v1, const rvec &v2) {
 	assert(v1.size() == v2.size());
 	for (int i = 0; i < v1.size(); ++i) {
 		if (v1[i] < v2[i]) {
@@ -506,7 +506,7 @@ int lexical_compare(const evec &v1, const evec &v2) {
 	return 0;
 }
 
-void argmin(const vector<evec> &v, int &worst, int &nextworst, int &best) {
+void argmin(const vector<rvec> &v, int &worst, int &nextworst, int &best) {
 	worst = 0; nextworst = 0; best = 0;
 	for (int i = 1; i < v.size(); ++i) {
 		if (lexical_compare(v[i], v[worst]) > 0) {
@@ -520,18 +520,18 @@ void argmin(const vector<evec> &v, int &worst, int &nextworst, int &best) {
 	}
 }
 
-bool nelder_mead_constrained(const evec &min, const evec &max, traj_eval &ev, evec &best, evec &bestval, evec &beststate) {
+bool nelder_mead_constrained(const rvec &min, const rvec &max, traj_eval &ev, rvec &best, rvec &bestval, rvec &beststate) {
 	int ndim = min.size(), i, wi, ni, bi;
-	vector<evec> eval(ndim+1), final(ndim+1);
-	evec reval, eeval, ceval, rstate, estate, cstate;
+	vector<rvec> eval(ndim+1), final(ndim+1);
+	rvec reval, eeval, ceval, rstate, estate, cstate;
 	
-	evec range = max - min;
-	vector<evec> simplex;
-	evec centroid(ndim), dir(ndim), reflect(ndim), expand(ndim), 
+	rvec range = max - min;
+	vector<rvec> simplex;
+	rvec centroid(ndim), dir(ndim), reflect(ndim), expand(ndim), 
 	     contract(ndim), worst(ndim);
 	
 	/* random initialization */
-	evec rtmp(ndim);
+	rvec rtmp(ndim);
 	for (i = 0; i < ndim + 1; ++i) {
 		randomize_vec(rtmp, min, max);
 		rtmp.setRandom();
@@ -549,7 +549,7 @@ bool nelder_mead_constrained(const evec &min, const evec &max, traj_eval &ev, ev
 		best = simplex[bi];
 		bestval = eval[bi];
 		beststate = final[bi];
-		evec sum(ndim);
+		rvec sum(ndim);
 		
 		/*
 		 This used to be
@@ -644,7 +644,7 @@ public:
 			ci.range[i] = ci.max[i] - ci.min[i];
 		}
 		
-		evec initstate;
+		rvec initstate;
 		scn->get_properties(initstate);
 		bestnode = new node(initstate, &ci);
 		leafs.push_back(bestnode);
@@ -705,7 +705,7 @@ public:
 		return false;
 	}
 	
-	void search(int iterations, std::list<evec> &besttraj, evec &bestval, evec &beststate) {
+	void search(int iterations, std::list<rvec> &besttraj, rvec &bestval, rvec &beststate) {
 		for (int i = 0; i < iterations; ++i) {
 			if (expand()) {
 				break;
@@ -720,7 +720,7 @@ public:
 		cout << "AVG BF " << avg_bf << endl;
 		
 		/*
-		evec lengths(leafs.size());
+		rvec lengths(leafs.size());
 		std::list<node*>::iterator i;
 		for (i = leafs.begin(), j = 0; i != leafs.end(); ++i, ++j) {
 			lengths[j] = (**i).depth;
@@ -735,18 +735,18 @@ private:
 		multi_model *mdl;
 		scene *scn;
 		output_spec *outspec;
-		evec min, max, range;
+		rvec min, max, range;
 	};
 	
 	class node {
 	public:
-		std::list<evec> traj;
-		evec value;
-		evec state;
+		std::list<rvec> traj;
+		rvec value;
+		rvec state;
 		common_info *ci;
 		bool triedseek;
 		
-		node(const evec &state, common_info *ci)
+		node(const rvec &state, common_info *ci)
 		: state(state), ci(ci), triedseek(false)
 		{
 			ci->scn->set_properties(state);
@@ -764,7 +764,7 @@ private:
 		*/
 		int seek(int maxsteps) {
 			cout << "SEEK" << endl;
-			evec step(ci->outspec->size()), newval, newstate;
+			rvec step(ci->outspec->size()), newval, newstate;
 			int steps;
 			traj_eval eval(ci->outspec->size(), ci->mdl, ci->obj, *ci->scn);
 			for (steps = 0; steps < maxsteps; ++steps) {
@@ -784,11 +784,11 @@ private:
 		
 		int random_step(int maxsteps) {
 			cout << "RANDOM" << endl;
-			evec step(ci->outspec->size()), newval;
+			rvec step(ci->outspec->size()), newval;
 			randomize_vec(step, ci->min, ci->max);
 			int numsteps = rand() % maxsteps + 1;
 			
-			evec x(state.size() + step.size());
+			rvec x(state.size() + step.size());
 			for (int i = 0; i < numsteps; ++i) {
 				traj.push_back(step);
 				x << state, step;
@@ -862,14 +862,14 @@ public:
 		}
 	}
 
-	int seek(scene *scn, evec &bestout) {
-		evec currval;
+	int seek(scene *scn, rvec &bestout) {
+		rvec currval;
 		obj->evaluate(*scn, currval);
 		cout << "CURR VAL " << currval << endl;
 		
 		if (cached_traj.size() > 0) {
 			// verify that cached trajectory is still valid, given current model
-			evec currstate, finalstate;
+			rvec currstate, finalstate;
 			scn->get_properties(currstate);
 			if (lexical_compare(currval, cached_value) < 0 ||
 			    !predict_traj(mmdl, currstate, cached_traj, finalstate) ||
@@ -881,13 +881,13 @@ public:
 		
 		if (cached_traj.size() == 0) {
 			// generate a new trajectory
-			evec bestval, beststate;
+			rvec bestval, beststate;
 			bool result;
 			if (type == "tree") {
 				tree_search t(scn, mmdl, obj, outspec, 0.5);
 				t.search(depth, cached_traj, bestval, beststate);
 			} else {
-				evec besttraj;
+				rvec besttraj;
 				traj_eval evaluator(stepsize, mmdl, obj, *scn);
 				if (type == "simplex") {
 					result = nelder_mead_constrained(min, max, evaluator, besttraj, bestval, beststate);
@@ -924,8 +924,8 @@ public:
 		return 2;
 	}
 	
-	bool naive_seek(traj_eval &evaluator, evec &besttraj, evec &bestval, evec &beststate) {
-		evec val, finalstate;
+	bool naive_seek(traj_eval &evaluator, rvec &besttraj, rvec &bestval, rvec &beststate) {
+		rvec val, finalstate;
 		bool found = false;
 		
 		incr.reset();
@@ -955,7 +955,7 @@ private:
 	*/
 	class step_incr {
 	public:
-		step_incr(output_spec *outspec, evec *traj, int start) 
+		step_incr(output_spec *outspec, rvec *traj, int start) 
 		: outspec(outspec), traj(traj), start(start), inc(outspec->size())
 		{
 			reset();
@@ -982,8 +982,8 @@ private:
 	private:
 		output_spec *outspec;
 		int start, divisions;
-		evec *traj;
-		evec inc;
+		rvec *traj;
+		rvec inc;
 	};
 	
 	/*
@@ -1022,7 +1022,7 @@ private:
 			return false;
 		}
 		
-		evec traj;
+		rvec traj;
 	
 	private:
 		vector<step_incr> steps;
@@ -1032,14 +1032,14 @@ private:
 	multi_model     *mmdl;
 	multi_objective *obj;
 	output_spec     *outspec;
-	evec             min, max;   // for Nelder-Mead
+	rvec             min, max;   // for Nelder-Mead
 	int              depth;
 	int              stepsize;
 	string           type;
 	traj_incr        incr;
-	std::list<evec>  cached_traj;
-	evec             cached_state;
-	evec             cached_value;
+	std::list<rvec>  cached_traj;
+	rvec             cached_state;
+	rvec             cached_value;
 };
 
 class seek_command : public command {
@@ -1061,7 +1061,7 @@ public:
 	}
 	
 	bool update() {
-		evec out;
+		rvec out;
 		
 		if (changed()) {
 			broken = !parse_cmd();
@@ -1185,7 +1185,7 @@ public:
 	
 private:
 	svs_state *state;
-	evec out, min, max;
+	rvec out, min, max;
 };
 
 command *_make_random_control_command_(svs_state *state, Symbol *root) {
@@ -1272,7 +1272,7 @@ private:
 	}
 	
 	bool using_constants;
-	evec output;
+	rvec output;
 	output_spec *outspec;
 	svs_state *state;
 	ifstream pipe;

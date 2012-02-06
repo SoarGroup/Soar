@@ -95,8 +95,8 @@ public:
 	output_spec *get_output_spec() { return &outspec; }
 	void set_output_spec(const output_spec &s) { outspec = s; }
 	
-	void set_output(const evec &out);
-	bool get_output(evec &out) const;
+	void set_output(const rvec &out);
+	bool get_output(rvec &out) const;
 	
 	void update_models();
 
@@ -126,10 +126,10 @@ private:
 	std::map<wme*, command*> curr_cmds;
 	
 	std::vector<std::string> prev_pnames;
-	evec                     prev_pvals;
+	rvec                     prev_pvals;
 	multi_model              *mmdl;
 	output_spec              outspec;
-	evec                     next_out;
+	rvec                     next_out;
 };
 
 class svs {

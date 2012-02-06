@@ -40,7 +40,7 @@ double randgauss(double mean, double std) {
 
 EM::EM(scene *scn)
 : xdim(0), scn(scn), scncopy(scn->copy()), dtree(NULL), ndata(0), nmodels(0),
-  Py_z(INIT_NMODELS, INIT_NDATA), eligible(INIT_NMODELS, INIT_NDATA), ydata(INIT_NDATA)
+  Py_z(INIT_NMODELS, INIT_NDATA), eligible(INIT_NMODELS, INIT_NDATA), ydata(INIT_NDATA, 1)
 {}
 
 EM::~EM() {
@@ -55,7 +55,7 @@ void EM::resize() {
 	
 	if (nd > xdata.rows()) {
 		xdata.conservativeResize(nd, xdim);
-		ydata.conservativeResize(nd);
+		ydata.conservativeResize(nd, 1);
 	}
 	if (nm > Py_z.rows() || nd > Py_z.cols()) {
 		Py_z.conservativeResize(nm, nd);
@@ -72,12 +72,12 @@ void EM::update_eligibility() {
 	
 	eligible.fill(1);
 	for (int i = 0; i < ndata; ++i) {
-		evec x = xdata.row(i);
+		rvec x = xdata.row(i);
 		for (int j = 0; j < nmodels; ++j) {
-			const evec &c2 = models[j]->get_center();
-			evec d = x - c2;
+			const rvec &c2 = models[j]->get_center();
+			rvec d = x - c2;
 			for (int k = 0; k < nmodels; ++k) {
-				const evec &c1 = models[k]->get_center();
+				const rvec &c1 = models[k]->get_center();
 				if (j != k && d.dot(c1 - c2) < 0) {
 					eligible(k, i) = 0;
 					break;
@@ -97,6 +97,7 @@ void EM::update_eligibility() {
 */
 void EM::update_Py_z(int i, set<int> &check) {
 	set<int>::iterator j;
+	rvec py;
 	
 	DATAVIS("BEGIN Py_z" << endl)
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
@@ -111,9 +112,10 @@ void EM::update_Py_z(int i, set<int> &check) {
 			} else {
 				w = 1.0 / nmodels;
 			}
-			double p = models[i]->predict(xdata.row(*j));
-			assert(!isnan(p));
-			double d = gausspdf(ydata(*j), p, MODEL_STD);
+			if (!models[i]->predict(xdata.row(*j), py)) {
+				assert(false);
+			}
+			double d = gausspdf(ydata(*j, 0), py(0), MODEL_STD);
 			now = (1.0 - EPSILON) * w * d;
 		}
 		if ((c == i && now < prev) ||
@@ -170,7 +172,7 @@ void EM::update_MAP(const set<int> &points) {
 	dtree->update_tree(-1);
 }
 
-void EM::add_data(const evec &x, double y) {
+void EM::add_data(const rvec &x, double y) {
 	if (xdim == 0) {
 		xdim = x.size();
 		xdata = mat::Zero(INIT_NDATA, xdim);
@@ -184,7 +186,7 @@ void EM::add_data(const evec &x, double y) {
 	for (int i = 0; i < xdim; ++i) {
 		xdata(ndata - 1, i) = x[i];
 	}
-	ydata(ndata - 1) = y;
+	ydata(ndata - 1, 0) = y;
 	
 	ClassifierInst inst;
 	inst.cat = -1;
@@ -284,8 +286,10 @@ bool EM::unify_or_add_model() {
 		
 		for (int i = 0; i < noise_data.size(); ++i) {
 			if (i < start || i >= start + MODEL_INIT_N) {
-				double e = pow(m->predict(xdata.row(noise_data[i])) - ydata(noise_data[i]), 2);
-				if (e < MODEL_ADD_THRESH) {
+				rvec py;
+				if (m->predict(xdata.row(noise_data[i]), py) &&
+				    pow(py[0] - ydata(noise_data[i], 0), 2) < MODEL_ADD_THRESH)
+				{
 					m->add_example(noise_data[i], true);
 					if (m->needs_refit()) {
 						m->fit();
@@ -341,22 +345,22 @@ void EM::mark_model_stale(int i) {
 	}
 }
 
-bool EM::predict(const evec &x, double &y) {
+bool EM::predict(const rvec &x, double &y) {
 	//timer t("EM PREDICT TIME");
 	if (ndata == 0) {
 		return false;
 	}
 	
-	evec v(x.size());
-	for (int i = 0; i < x.size(); ++i) {
-		v(i) = x[i];
-	}
 	int mdl = classify(x);
 	if (mdl == -1) {
 		return false;
 	}
 	DATAVIS("BEGIN 'model " << mdl << "'" << endl)
-	y = models[mdl]->predict(v);
+	rvec py;
+	if (!models[mdl]->predict(x, py)) {
+		assert(false);
+	}
+	y = py(0);
 	DATAVIS("END" << endl)
 	return true;
 }
@@ -447,7 +451,7 @@ bool EM::run(int maxiters) {
 	cerr << "Noise Data Y" << endl;
 	for (int i = 0; i < ndata; ++i) {
 		if (class_insts[i].cat == -1) {
-			cerr << ydata(i) << endl;
+			cerr << ydata(i, 0) << endl;
 		}
 	}
 	return changed;
@@ -459,7 +463,7 @@ double EM::error() {
 	}
 	double error = 0.;
 	for (int i = 0; i < ndata; ++i) {
-		evec x(xdim);
+		rvec x(xdim);
 		double y;
 		for (int j = 0; j < xdim; ++j) {
 			x[j] = xdata(i, j);
@@ -467,7 +471,7 @@ double EM::error() {
 		if (!predict(x, y)) {
 			return -1.0;
 		}
-		error += std::pow(ydata(i) - y, 2);
+		error += std::pow(ydata(i, 0) - y, 2);
 	}
 	return error;
 }
@@ -479,10 +483,10 @@ void EM::get_tested_atoms(vector<int> &atoms) const {
 void EM::save(ostream &os) const {
 	os << ndata << " " << nmodels << " " << xdim << endl;
 	save_mat(os, xdata);
-	save_vec(os, ydata);
+	save_mat(os, ydata);
 	save_mat(os, Py_z);
 	if (TEST_ELIGIBILITY) {
-		save_mat(os, eligible);
+		save_imat(os, eligible);
 	}
 	
 	std::vector<ClassifierInst>::const_iterator i;
@@ -504,10 +508,10 @@ void EM::load(istream &is) {
 	is >> ndata >> nmodels >> xdim;
 	
 	load_mat(is, xdata);
-	load_vec(is, ydata);
+	load_mat(is, ydata);
 	load_mat(is, Py_z);
 	if (TEST_ELIGIBILITY) {
-		load_mat(is, eligible);
+		load_imat(is, eligible);
 	}
 	
 	is >> ninsts;
@@ -543,7 +547,7 @@ void EM::print_tree(std::ostream &os) const {
 	}
 }
 
-int EM::classify(const evec &x) {
+int EM::classify(const rvec &x) {
 	if (dtree == NULL) {
 		return -1;
 	}
@@ -552,11 +556,14 @@ int EM::classify(const evec &x) {
 	return dtree->classify(attrs);
 }
 
-void EM::test_classify(const evec &x, double y, int &best, int &predicted, double &besterror) {
+void EM::test_classify(const rvec &x, double y, int &best, int &predicted, double &besterror) {
 	best = -1;
-	
+	rvec py;
 	for (int i = 0; i < nmodels; ++i) {
-		double error = fabs(models[i]->predict(x) - y);
+		if (!models[i]->predict(x, py)) {
+			continue;
+		}
+		double error = fabs(py(0) - y);
 		if (best == -1 || error < besterror) {
 			best = i;
 			besterror = error;
