@@ -268,8 +268,10 @@ bool svs_state::get_output(evec &out) const {
 }
 
 svs::svs(agent *a)
-: envsock('s', getnamespace() + "env", true, true)
 {
+	if (false) {
+		envsock.reset(new ipcsocket('s', getnamespace() + "env", true, true));
+	}
 	si = new soar_interface(a);
 	make_common_syms();
 }
@@ -289,7 +291,6 @@ void svs::state_creation_callback(Symbol *state) {
 	
 	if (state_stack.empty()) {
 		s = new svs_state(this, state, si, &cs);
-		assert(env_input(s));
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
@@ -298,7 +299,6 @@ void svs::state_creation_callback(Symbol *state) {
 }
 
 void svs::state_deletion_callback(Symbol *state) {
-	string resp;
 	svs_state *s;
 	s = state_stack.back();
 	assert(state == s->get_state());
@@ -306,20 +306,19 @@ void svs::state_deletion_callback(Symbol *state) {
 	delete s;
 }
 
-bool svs::env_input(svs_state *s) {
-	string sgel;
-	
-	if (!envsock.receive(sgel)) {
-		return false;
+void svs::proc_input(svs_state *s) {
+	if (envsock.get()) {
+		if (!envsock->receive(env_input)) {
+			assert(false);
+		}
 	}
-	s->get_scene()->parse_sgel(sgel);
-	return true;
+	s->get_scene()->parse_sgel(env_input);
+	env_input.clear();
 }
 
-void svs::pre_env_callback() {
+void svs::output_callback() {
 	vector<svs_state*>::iterator i;
 	string sgel;
-	bool validout;
 	svs_state *topstate = state_stack.front();
 	
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
@@ -335,20 +334,24 @@ void svs::pre_env_callback() {
 	topstate->get_output(out);
 	
 	assert(outspec->size() == out.size());
+	
 	stringstream ss;
 	for (int i = 0; i < outspec->size(); ++i) {
 		ss << (*outspec)[i].name << " " << out[i] << endl;
 	}
-	validout = envsock.send(ss.str());
-	assert(env_input(topstate));
-	if (validout) {
-		topstate->update_models();
+	if (envsock.get()) {
+		envsock->send(ss.str());
+	} else {
+		env_output = ss.str();
 	}
+	
 }
 
-
-void svs::post_env_callback() {
-	string resp;
+void svs::input_callback() {
+	svs_state *topstate = state_stack.front();
+	proc_input(topstate);
+	topstate->update_models();
+	
 	vector<svs_state*>::iterator i;
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
@@ -371,4 +374,3 @@ void svs::del_common_syms() {
 	si->del_sym(cs.child);
 	si->del_sym(cs.result);
 }
-
