@@ -3,7 +3,6 @@
 
 #include <set>
 #include <vector>
-#include <armadillo>
 #include "linear.h"
 #include "common.h"
 
@@ -39,7 +38,7 @@ public:
 	bool remove_models();
 	bool step();
 	bool run(int maxiters);
-	bool predict(const evec &x, float &y);
+	bool predict(const evec &x, double &y);
 	double error();
 	int get_nmodels() const { return nmodels; }
 	
@@ -59,10 +58,10 @@ private:
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;
 	
-	arma::mat  xdata;       // ndata x xdim
-	arma::vec  ydata;       // ndata x 1
-	arma::mat  Py_z;        // nmodels x ndata
-	arma::imat eligible;    // nmodels x ndata
+	mat  xdata;       // ndata x xdim
+	evec ydata;       // ndata
+	mat  Py_z;        // nmodels x ndata
+	imat eligible;    // nmodels x ndata
 	
 	/*
 	 This will be read directly by the decision tree learner as the

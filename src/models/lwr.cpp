@@ -1,11 +1,10 @@
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 #include <iterator>
-#include <armadillo>
 #include "nn.h"
 #include "common.h"
 #include "linear.h"
@@ -14,7 +13,7 @@
 #include "model.h"
 
 using namespace std;
-using namespace arma;
+using namespace Eigen;
 
 evec norm_vec(const evec &v, const evec &min, const evec &range) {
 	return ((v.array() - min.array()) / range.array()).matrix();
@@ -91,7 +90,7 @@ public:
 	
 	bool predict(const evec &x, evec &y) {
 		mat X, Y;
-		vec d;
+		evec d;
 		di_queue neighbors;
 		timer tall, tnn;
 		int i, j, k;
@@ -113,9 +112,9 @@ public:
 		nn->query(xn, k, neighbors);
 		//cout << "NN:  " << tnn.stop() << endl;
 		
-		X.reshape(k, xsize);
-		Y.reshape(k, ysize);
-		d.reshape(k, 1);
+		X.resize(k, xsize);
+		Y.resize(k, ysize);
+		d.resize(k, 1);
 		for(i = 0; i < k; ++i) {
 			d(i) = neighbors.top().first;
 			int ind = neighbors.top().second;
@@ -130,7 +129,7 @@ public:
 			}
 		}
 		
-		vec w = sqrt(pow(d, -3));
+		evec w = d.array().pow(-3).sqrt();
 		
 		/*
 		 Any neighbor whose weight is infinity is close enough
@@ -138,23 +137,23 @@ public:
 		 average as the solution.  If we don't do this the solve()
 		 will fail due to infinite values in Z and V.
 		*/
-		rowvec closeavg = zeros<rowvec>(ysize);
+		evec closeavg = evec::Zero(ysize);
 		int nclose = 0;
-		for (i = 0; i < w.n_elem; ++i) {
+		for (i = 0; i < w.size(); ++i) {
 			if (w(i) == INFINITY) {
 				closeavg += Y.row(i);
 				++nclose;
 			}
 		}
 		if (nclose > 0) {
-			for(i = 0; i < closeavg.n_elem; ++i) {
+			for(i = 0; i < closeavg.size(); ++i) {
 				y[i] = closeavg(i) / nclose;
 			}
 			return true;
 		}
 
-		rowvec xv(x.size());
-		for (i = 0; i < xv.n_cols; ++i) {
+		evec xv(x.size());
+		for (i = 0; i < x.size(); ++i) {
 			xv(i) = x[i];
 		}
 		y[0] = pcr(X, Y, xv);

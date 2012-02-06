@@ -152,3 +152,95 @@ ostream& operator<<(ostream &os, const bbox &b) {
 	os << b.min[0] << " " << b.min[1] << " " << b.min[2] << " " << b.max[0] << " " << b.max[1] << " " << b.max[2];
 	return os;
 }
+
+void save_mat(std::ostream &os, const mat &m) {
+	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
+	os << m << endl << "end_mat" << endl;
+}
+
+void load_mat(std::istream &is, mat &m) {
+	string token;
+	char *endptr;
+	int nrows, ncols;
+	double x;
+	is >> token;
+	assert(token == "begin_mat");
+	is >> token;
+	nrows = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	is >> token;
+	ncols = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	
+	m.resize(nrows, ncols);
+	for (int i = 0; i < nrows; ++i) {
+		for (int j = 0; j < ncols; ++j) {
+			is >> token;
+			x = strtod(token.c_str(), &endptr);
+			assert(endptr[0] == '\0');
+			m(i, j) = x;
+		}
+	}
+	is >> token;
+	assert(token == "end_mat");
+}
+
+void save_mat(std::ostream &os, const imat &m) {
+	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
+	os << m << endl << "end_mat" << endl;
+}
+
+void load_mat(std::istream &is, imat &m) {
+	string token;
+	char *endptr;
+	int nrows, ncols;
+	int x;
+	is >> token;
+	assert(token == "begin_mat");
+	is >> token;
+	nrows = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	is >> token;
+	ncols = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	
+	m.resize(nrows, ncols);
+	for (int i = 0; i < nrows; ++i) {
+		for (int j = 0; j < ncols; ++j) {
+			is >> token;
+			x = strtol(token.c_str(), &endptr, 10);
+			assert(endptr[0] == '\0');
+			m(i, j) = x;
+		}
+	}
+	is >> token;
+	assert(token == "end_mat");
+}
+
+void save_vec(std::ostream &os, const evec &v) {
+	os << "begin_vec " << v.size() << endl;
+	os << v << endl;
+	os << "end_vec" << endl;
+}
+
+void load_vec(std::istream &is, evec &v) {
+	string token;
+	char *endptr;
+	int n;
+	double x;
+	is >> token;
+	assert(token == "begin_vec");
+	is >> token;
+	n = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	
+	v.resize(n);
+	for (int i = 0; i < n; ++i) {
+		is >> token;
+		x = strtod(token.c_str(), &endptr);
+		assert(endptr[0] == '\0');
+		v(i) = x;
+	}
+	is >> token;
+	assert(token == "end_vec");
+}

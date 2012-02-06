@@ -1,8 +1,8 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <cassert>
 #include "dtree.h"
 #include "common.h"
 

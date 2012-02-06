@@ -17,6 +17,10 @@
 
 #include "linalg.h"
 
+typedef Eigen::RowVectorXd evec;
+typedef Eigen::MatrixXd mat;
+typedef Eigen::MatrixXi imat;
+
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 std::string getnamespace();
 
@@ -80,7 +84,6 @@ inline bool map_pop(std::map<A, B> &m, const A &key, B &val) {
 	return true;
 }
 
-typedef Eigen::RowVectorXf evec;
 
 class namedvec {
 public:
@@ -307,13 +310,21 @@ void load_vector(std::vector<T> &v, std::istream &is) {
 	}
 }
 
+void save_mat(std::ostream &os, const mat &m);
+void load_mat(std::istream &is, mat &m);
+void save_mat(std::ostream &os, const imat &m);
+void load_mat(std::istream &is, imat &m);
+void save_vec(std::ostream &os, const evec &v);
+void load_vec(std::istream &is, evec &v);
+
 inline double gausspdf(double x, double mean, double std) {
 	const double SQRT2PI = 2.5066282746310002;
 	return (1. / std * SQRT2PI) * exp(-((x - mean) * (x - mean) / (2 * std * std)));
 }
 
 inline void randomize_vec(evec &v, const evec &min, const evec &max) {
-	v = (min.array() + (Eigen::ArrayXf::Random(v.size()) * (max - min).array())).matrix();
+	v = min.array() + (evec::Random(v.size()).array() * (max - min).array());
 }
+
 
 #endif

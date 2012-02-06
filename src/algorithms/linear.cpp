@@ -1,13 +1,20 @@
 #include <cmath>
 #include <cassert>
 #include <vector>
-#include <armadillo>
 #include "linear.h"
 #include "common.h"
 #include "params.h"
 
 using namespace std;
-using namespace arma;
+using namespace Eigen;
+
+void pca(const mat &X, mat &comps, mat &signals, evec &variances) {
+	mat Y = (X.rowwise() - X.colwise().mean());
+	JacobiSVD<mat> svd = Y.jacobiSvd(Eigen::ComputeFullV);
+	variances = (svd.singularValues() / sqrt(X.rows() - 1)).array().pow(2);
+	comps = svd.matrixV();
+	signals = Y * comps;
+}
 
 /*
  Output a matrix composed only of those columns in the input matrix with
@@ -15,124 +22,102 @@ using namespace arma;
  the column is greater than SAME_THRESH times the minimum absolute value.
 */
 void remove_static(const mat &X, mat &Xout, vector<int> &nonstatic_cols) {
-	for (int i = 0; i < X.n_cols; ++i) {
-		vec c = abs(X.col(i));
-		if (max(c) > min(c) * SAME_THRESH) {
+	for (int i = 0; i < X.cols(); ++i) {
+		evec c = X.col(i).array().abs();
+		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
 			nonstatic_cols.push_back(i);
 		}
 	}
-	Xout.reshape(X.n_rows, nonstatic_cols.size());
+	assert(Xout.rows() == X.rows() && Xout.cols() >= nonstatic_cols.size());
 	for (int i = 0; i < nonstatic_cols.size(); ++i) {
 		Xout.col(i) = X.col(nonstatic_cols[i]);
 	}
 }
 
+bool solve(const mat &X, const mat &Y, mat &C) {
+	C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
+	return true;
+}
+
 /*
- Performs standard linear regression with arma::solve, but cleans up input
+ Performs standard linear regression with solve, but cleans up input
  data first to avoid instability. This consists of:
  
  1. Setting elements whose absolute values are smaller than ZERO_THRESH to 0
  2. collapsing all columns whose elements are identical into a single constant column.
 */
-bool solve2(const mat &X, const vec &y, vec &coefs, double &intercept) {
-	mat X1 = X, X2, C;
-	vector<int> nonstatic;
-	
-	for (int i = 0; i < X.n_rows; ++i) {
-		for (int j = 0; j < X.n_cols; ++j) {
+bool solve2(const mat &X, const mat &Y, mat &coefs, evec &intercept) {
+    mat X1 = X, X2 = mat::Constant(X.rows(), X.cols() + 1, 1), C;
+    vector<int> nonstatic;
+
+	for (int i = 0; i < X.rows(); ++i) {
+		for (int j = 0; j < X.cols(); ++j) {
 			if (abs(X1(i, j)) < ZERO_THRESH) {
 				X1(i, j) = 0.0;
 			}
 		}
 	}
-	
-	remove_static(X1, X2, nonstatic);
-	X2.insert_cols(X2.n_cols, ones<vec>(X2.n_rows, 1));
-	if (!solve(C, X2, y)) {
-		return false;
-	}
-	
-	coefs.set_size(X.n_cols, 1);
-	coefs.fill(0.0);
-	for (int i = 0; i < nonstatic.size(); ++i) {
-		coefs(nonstatic[i]) = C(i, 0);
-	}
-	intercept = C(C.n_rows - 1, 0);
-	return true;
+
+    remove_static(X1, X2, nonstatic);
+    X2.resize(X2.rows(), nonstatic.size() + 1);
+    if (!solve(X2, Y, C)) {
+        return false;
+    }
+
+    coefs = mat::Zero(X.cols(), C.cols());
+    for (int i = 0; i < nonstatic.size(); ++i) {
+        coefs.row(nonstatic[i]) = C.row(i);
+    }
+    intercept = C.bottomRows(1);
+    return true;
 }
 
-void lsqr(const mat &X, const mat &Y, const vec &w, const rowvec &x, rowvec &yout) {
-	mat X1 = X;
-	X1.insert_cols(X.n_cols, ones<vec>(X.n_rows));
-	mat W = diagmat(w);
-	mat Z = W * X1;
-	mat V = W * Y;
-	mat C = solve(Z, V);
-	if (C.n_elem == 0) {
-		// solve failed
-		w.print("w:");
-		Z.print("Z:");
-		V.print("V:");
-		assert(false);
-	}
-	rowvec x1 = ones<rowvec>(1, x.n_cols + 1);
-	x1.subvec(0, x.n_cols - 1) = x;
-	yout = x1 * C;
+void lsqr(const mat &X, const mat &Y, const evec &w, const evec &x, evec &yout) {
+	mat W = mat::Zero(w.size(), w.size());
+	W.diagonal() = w;
+	mat Z = W * X, V = W * Y, C;
+	evec intercept;
+	solve2(Z, V, C, intercept);
+	yout = x * C + intercept;
 }
 
-void ridge(const mat &X, const mat &Y, const vec &w, const rowvec &x, rowvec &yout) {
+void ridge(const mat &X, const mat &Y, const evec &w, const evec &x, evec &yout) {
 	int i;
-	mat W = diagmat(w);
+	mat W = mat::Zero(w.size(), w.size());
+	W.diagonal() = w;
 	mat Z = W * X;
 	mat V = W * Y;
-	rowvec Zmean = mean(Z, 0);
-	mat Zcenter = Z;
-	for (i = 0; i < Z.n_rows; ++i) {
-		Zcenter.row(i) -= Zmean;
-	}
-	rowvec Vmean = mean(V, 0);
-	mat Vcenter = V;
-	for (i = 0; i < Z.n_rows; ++i) {
-		Vcenter.row(i) -= Vmean;
-	}
-	mat Zt = trans(Zcenter);
-	mat A = Zt * Zcenter;
+	mat Zcenter = Z.rowwise() - Z.colwise().mean();
+	mat Vcenter = V.rowwise() - V.colwise().mean();
+	mat A = Zcenter.transpose() * Zcenter;
 	double lambda = RLAMBDA;
-	for (i = 0; i < A.n_cols; ++i) {
+	for (i = 0; i < A.cols(); ++i) {
 		double inc = nextafter(A(i, i), INFINITY) - A(i, i);
 		lambda = max(lambda, inc);
 	}
-	for (i = 0; i < A.n_cols; ++i) {
-		A(i, i) += lambda;
-	}
-	mat B = Zt * Vcenter;
-	mat C = solve(A, B);
-	assert(C.n_elem != 0);
-	yout = (x - mean(X, 0)) * C + mean(Y, 0);
+	A.diagonal().array() += lambda;
+	mat B = Z.transpose() * Vcenter, C;
+	solve(A, B, C);
+	yout = (x - X.colwise().mean()) * C + Y.colwise().mean();
 }
 
-void pcr_fit(const mat &X, const vec &y, int ncomp, vector<vec> &betas, vector<double> &intercepts) {
-	mat loadings, scores;
-	vec variances, b, coefs;
-	double inter;
+void pcr_fit(const mat &X, const evec &y, int ncomp, vector<evec> &betas, vector<double> &intercepts) {
+	mat components, projected, coefs;
+	evec variances, inter;
 	
 	betas.clear();
 	intercepts.clear();
-	if (!princomp(loadings, scores, variances, X)) {
-		assert(false);
-	}
+	pca(X, components, projected, variances);
 	if (ncomp > 0) {
-		solve2(scores.cols(0, ncomp - 1), y, coefs, inter);
-		b = loadings.cols(0, ncomp - 1) * coefs;
-		betas.push_back(b);
-		intercepts.push_back(inter);
+		solve2(projected.leftCols(ncomp), y, coefs, inter);
+		betas.push_back(components.leftCols(ncomp) * coefs);
+		intercepts.push_back(inter(0));
 		return;
 	}
-	for (int n = 0; n < scores.n_cols; ++n) {
-		solve2(scores.cols(0, n), y, coefs, inter);
-		b = loadings.cols(0, n) * coefs;
-		betas.push_back(b);
-		intercepts.push_back(inter);
+	for (int n = 1; n < projected.cols(); ++n) {
+		solve2(projected.leftCols(n), y, coefs, inter);
+		betas.push_back(components.leftCols(n) * coefs);
+		intercepts.push_back(inter(0));
 	}
 }
 
@@ -140,12 +125,12 @@ void pcr_fit(const mat &X, const vec &y, int ncomp, vector<vec> &betas, vector<d
  Use Leave-one-out cross validation to determine number of components
  to use. This seems to choose numbers that are too low.
 */
-void cross_validate(const mat &X, const vec &y, vec &beta, double &intercept) {
-	int ndata = X.n_rows, maxcomps = X.n_cols;
+void cross_validate(const mat &X, const evec &y, evec &beta, double &intercept) {
+	int ndata = X.rows(), maxcomps = X.cols();
 	
-	mat X1(ndata - 1, X.n_cols);
-	vec y1(ndata - 1), errors = zeros<vec>(maxcomps, 1);
-	vector<vec> betas;
+	mat X1(ndata - 1, X.cols());
+	evec y1(ndata - 1), errors = evec::Zero(maxcomps);
+	vector<evec> betas;
 	vector<double> intercepts;
 	vector<int> leave_out;
 	int ntest = min(LOO_NTEST, ndata);
@@ -159,16 +144,16 @@ void cross_validate(const mat &X, const vec &y, vec &beta, double &intercept) {
 	for (int i = 0; i < ntest; ++i) {
 		int n = leave_out[i];
 		if (n > 0) {
-			X1.rows(0, n - 1) = X.rows(0, n - 1);
-			y1.rows(0, n - 1) = y.rows(0, n - 1);
+			X1.topRows(n) = X.topRows(n);
+			y1.head(n) = y.head(n);
 		}
 		if (n < ndata - 1) {
-			X1.rows(n, ndata - 2) = X.rows(n + 1, ndata - 1);
-			y1.rows(n, ndata - 2) = y.rows(n + 1, ndata - 1);
+			X1.bottomRows(ndata - n - 1) = X.bottomRows(ndata - n - 1);
+			y1.tail(ndata - n - 1) = y.tail(ndata - n - 1);
 		}
 		pcr_fit(X1, y1, -1, betas, intercepts);
 		for (int j = 0; j < maxcomps; ++j) {
-			errors(j) += abs(dot(X.row(n), betas[j]) + intercepts[j] - y(n));
+			errors(j) += abs(X.row(n).dot(betas[j]) + intercepts[j] - y(n));
 		}
 	}
 	int best = -1;
@@ -187,19 +172,19 @@ void cross_validate(const mat &X, const vec &y, vec &beta, double &intercept) {
  the training instances. Also prevent the beta vector from blowing up
  too much.
 */
-void min_train_error(const mat &X, const vec &y, vec &beta, double &intercept) {
+void min_train_error(const mat &X, const evec &y, evec &beta, double &intercept) {
 	double error = INFINITY;
-	vector<vec> betas;
+	vector<evec> betas;
 	vector<double> intercepts;
 	
 	pcr_fit(X, y, -1, betas, intercepts);
 	for (int i = 0; i < betas.size(); ++i) {
-		if (norm(betas[i], 1) > MAX_BETA_NORM) {
+		if (betas[i].norm() > MAX_BETA_NORM) {
 			return;
 		}
 		beta = betas[i];
 		intercept = intercepts[i];
-		double newerror = sqrt(accu(pow((X * beta + intercept) - y, 2)) / X.n_rows);
+		double newerror = sqrt(((X * beta).array() + intercept - y.array()).matrix().squaredNorm() / X.rows());
 		
 		if (newerror < MODEL_ERROR_THRESH) {
 			break;
@@ -209,7 +194,7 @@ void min_train_error(const mat &X, const vec &y, vec &beta, double &intercept) {
 	}
 }
 
-LRModel::LRModel(const mat &xdata, const vec &ydata) 
+LRModel::LRModel(const mat &xdata, const evec &ydata) 
 : xdata(xdata), ydata(ydata), constval(0.0), isconst(true), error(INFINITY), refit(true)
 {}
 
@@ -321,13 +306,13 @@ void LRModel::del_example(int i) {
 }
 
 void LRModel::update_error() {
-	if (xdata.n_rows == 0) {
+	if (xdata.rows() == 0) {
 		error = INFINITY;
 	} else if (isconst) {
 		error = 0.0;
 	} else {
-		mat X(members.size(), xdata.n_cols);
-		vec y(members.size()), predictions(members.size());
+		mat X(members.size(), xdata.cols());
+		evec y(members.size()), predictions(members.size());
 		for (int i = 0; i < members.size(); ++i) {
 			X.row(i) = xdata.row(members[i]);
 			y(i) = ydata(members[i]);
@@ -336,8 +321,7 @@ void LRModel::update_error() {
 		if (!predict_me(X, predictions)) {
 			error = INFINITY;
 		} else {
-			vec errors = pow(y - predictions, 2);
-			error = accu(errors);
+			error = (y - predictions).squaredNorm();
 		}
 	}
 	DATAVIS("'avg error' " << error / members.size() << endl)
@@ -360,12 +344,12 @@ void LRModel::load(istream &is) {
 	fit();
 }
 
-void LRModel::fill_data(mat &X, vec &y) const {
+void LRModel::fill_data(mat &X, evec &y) const {
 	if (members.empty()) {
 		return;
 	}
-	X.set_size(members.size(), xdata.n_cols);
-	y.set_size(members.size(), 1);
+	X.resize(members.size(), xdata.cols());
+	y.resize(members.size());
 	
 	for (int i = 0; i < members.size(); ++i) {
 		X.row(i) = xdata.row(members[i]);
@@ -373,7 +357,7 @@ void LRModel::fill_data(mat &X, vec &y) const {
 	}
 }
 
-double LRModel::predict(const rowvec &x) {
+double LRModel::predict(const evec &x) {
 	if (isconst) {
 		return constval;
 	}
@@ -383,8 +367,8 @@ double LRModel::predict(const rowvec &x) {
 	return predict_me(x);
 }
 
-bool LRModel::predict(const arma::mat &X, arma::vec &result) {
-	result.set_size(X.n_rows);
+bool LRModel::predict(const mat &X, evec &result) {
+	result.resize(X.rows());
 	if (isconst) {
 		result.fill(constval);
 		return true;
@@ -404,73 +388,48 @@ bool LRModel::fit() {
 	return true;
 }
 
-PCRModel::PCRModel(const mat &xdata, const vec &ydata) 
+PCRModel::PCRModel(const mat &xdata, const evec &ydata) 
 : LRModel(xdata, ydata), intercept(0.0)
 {}
 
 PCRModel::PCRModel(const PCRModel &m)
-: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means), stdevs(m.stdevs)
+: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means)
 {}
 
 void PCRModel::fit_me() {
 	DATAVIS("BEGIN PCR" << endl)
 	DATAVIS("'num fits' %+1" << endl)
-	mat X, loadings, scores;
-	vec y, variances;
+	mat X;
+	evec y, variances;
 	
 	fill_data(X, y);
-	
-	// center X
-	means = mean(X);
-	stdevs = stddev(X);
-	
-	/*
-	 If any columns are uniform, then standard deviation will be
-	 zero and cause division by zero. These columns will be zeroed
-	 out after subtracting their mean anyway, so just set their
-	 divisors to 0.
-	*/
-	for (int i = 0; i < X.n_cols; ++i) {
-		if (stdevs(i) == 0.0) {
-			stdevs(i) = 1.0;
-		}
-	}
-	
-	for (int i = 0; i < X.n_rows; ++i) {
-		X.row(i) -= means;
-		X.row(i) /= stdevs;
-	}
-	
+	means = X.colwise().mean();
+	X.rowwise() -= means;
+
 	min_train_error(X, y, beta, intercept);
 	DATAVIS("END" << endl)
 }
 
 
-double PCRModel::predict_me(const rowvec &x) {
-	if (beta.n_elem == 0) {
+double PCRModel::predict_me(const evec &x) {
+	if (beta.size() == 0) {
 		return NAN;
 	}
-	return dot((x - means) / stdevs, beta) + intercept;
+	return (x - means).dot(beta) + intercept;
 }
 
-bool PCRModel::predict_me(const mat &X, vec &result) {
-	if (beta.n_elem == 0) {
+bool PCRModel::predict_me(const mat &X, evec &result) {
+	if (beta.size() == 0) {
 		return false;
 	}
-	mat Xc(X.n_rows, X.n_cols);
-	
-	for (int i = 0; i < X.n_rows; ++i) {
-		Xc.row(i) = (X.row(i) - means) / stdevs;
-	}
-	
-	result = Xc * beta + intercept;
+	result = ((X.rowwise() - means) * beta.transpose()).array() + intercept;
 	return true;
 }
 
-double pcr(const mat &X, const mat &Y, const rowvec &x) {
-	vec y = Y.col(0);
+double pcr(const mat &X, const mat &Y, const evec &x) {
+	evec y = Y.col(0);
 	PCRModel m(X, y);
-	for (int i = 0; i < X.n_rows; ++i) {
+	for (int i = 0; i < X.rows(); ++i) {
 		m.add_example(i, false);
 	}
 	m.fit();

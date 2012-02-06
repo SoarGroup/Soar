@@ -1,12 +1,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
+#include <cmath>
 #include <vector>
 #include <list>
 #include <map>
 #include <set>
 #include <limits>
-#include <armadillo>
+#include <Eigen/Dense>
 #include "linear.h"
 #include "em.h"
 #include "common.h"
@@ -16,39 +17,13 @@
 #include "params.h"
 
 using namespace std;
-using namespace arma;
+using namespace Eigen;
 
 const int INIT_NDATA = 1;
 const int INIT_NMODELS = 1;
 const bool TEST_ELIGIBILITY = false;
 
 typedef PCRModel LinearModel;
-
-void argmax_cols(const mat &m, ivec &max, int nrows, int ncols) {
-	max.subvec(0, ncols - 1).fill(-1);
-	for (int j = 0; j < ncols; ++j) {
-		for (int i = 0; i < nrows; ++i) {
-			if (max(j) < 0 || m(max(j), j) < m(i, j)) {
-				max(j) = i;
-			}
-		}
-	}
-}
-
-/* Return the row with the max value in column "col" of matrix "m" */
-int argmax_col(const mat &m, int nrows, int col) {
-	int mi = 0;
-	for (int i = 1; i < nrows; ++i) {
-		if (m(mi, col) < m(i, col)) {
-			mi = i;
-		}
-	}
-	return mi;
-}
-
-double distsq(const rowvec &a, const rowvec &b) {
-	return accu(pow(a - b, 2));
-}
 
 /* Box-Muller method */
 double randgauss(double mean, double std) {
@@ -75,17 +50,17 @@ EM::~EM() {
 
 /* double storage size if we run out */
 void EM::resize() {
-	int nd = ndata > xdata.n_rows ? ndata * 2 : xdata.n_rows;
-	int nm = nmodels > Py_z.n_rows ? nmodels * 2 : Py_z.n_rows;
+	int nd = ndata > xdata.rows() ? ndata * 2 : xdata.rows();
+	int nm = nmodels > Py_z.rows() ? nmodels * 2 : Py_z.rows();
 	
-	if (nd > xdata.n_rows) {
-		xdata.resize(nd, xdim);
-		ydata.resize(nd);
+	if (nd > xdata.rows()) {
+		xdata.conservativeResize(nd, xdim);
+		ydata.conservativeResize(nd);
 	}
-	if (nm > Py_z.n_rows || nd > Py_z.n_cols) {
-		Py_z.resize(nm, nd);
+	if (nm > Py_z.rows() || nd > Py_z.cols()) {
+		Py_z.conservativeResize(nm, nd);
 		if (TEST_ELIGIBILITY) {
-			eligible.resize(nm, nd);
+			eligible.conservativeResize(nm, nd);
 		}
 	}
 }
@@ -97,13 +72,13 @@ void EM::update_eligibility() {
 	
 	eligible.fill(1);
 	for (int i = 0; i < ndata; ++i) {
-		rowvec x = xdata.row(i);
+		evec x = xdata.row(i);
 		for (int j = 0; j < nmodels; ++j) {
-			const rowvec &c2 = models[j]->get_center();
-			rowvec d = x - c2;
+			const evec &c2 = models[j]->get_center();
+			evec d = x - c2;
 			for (int k = 0; k < nmodels; ++k) {
-				const rowvec &c1 = models[k]->get_center();
-				if (j != k && dot(d, c1 - c2) < 0) {
+				const evec &c1 = models[k]->get_center();
+				if (j != k && d.dot(c1 - c2) < 0) {
 					eligible(k, i) = 0;
 					break;
 				}
@@ -132,7 +107,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 		} else {
 			double w;
 			if (TEST_ELIGIBILITY) {
-				w = 1.0 / accu(eligible.submat(0, *j, nmodels - 1, *j));
+				w = 1.0 / eligible.col(*j).head(nmodels - 1).sum();
 			} else {
 				w = 1.0 / nmodels;
 			}
@@ -162,7 +137,7 @@ void EM::update_MAP(const set<int> &points) {
 		if (nmodels == 0) {
 			now = -1;
 		} else {
-			now = argmax_col(Py_z, nmodels, *j);
+			Py_z.topLeftCorner(nmodels, ndata).col(*j).maxCoeff(&now);
 			if (Py_z(now, *j) < PNOISE) {
 				now = -1;
 			}
@@ -198,9 +173,9 @@ void EM::update_MAP(const set<int> &points) {
 void EM::add_data(const evec &x, double y) {
 	if (xdim == 0) {
 		xdim = x.size();
-		xdata = zeros<mat>(INIT_NDATA, xdim);
+		xdata = mat::Zero(INIT_NDATA, xdim);
 	} else {
-		assert(xdata.n_cols == x.size());
+		assert(xdata.cols() == x.size());
 	}
 	++ndata;
 	DATAVIS("ndata " << ndata << endl)
@@ -366,13 +341,13 @@ void EM::mark_model_stale(int i) {
 	}
 }
 
-bool EM::predict(const evec &x, float &y) {
+bool EM::predict(const evec &x, double &y) {
 	//timer t("EM PREDICT TIME");
 	if (ndata == 0) {
 		return false;
 	}
 	
-	rowvec v(x.size());
+	evec v(x.size());
 	for (int i = 0; i < x.size(); ++i) {
 		v(i) = x[i];
 	}
@@ -402,11 +377,11 @@ bool EM::remove_models() {
 	 of vectors. index_map associates old j's to new i's.
 	*/
 	bool removed = false;
-	ivec index_map(nmodels);
+	vector<int> index_map(nmodels);
 	int i = 0;
 	for (int j = 0; j < nmodels; ++j) {
 		if (models[j]->size() > 2) {
-			index_map(j) = i;
+			index_map[j] = i;
 			if (j > i) {
 				models[i] = models[j];
 				Py_z.row(i) = Py_z.row(j);
@@ -416,7 +391,7 @@ bool EM::remove_models() {
 			}
 			i++;
 		} else {
-			index_map(j) = -1;
+			index_map[j] = -1;
 			delete models[j];
 			removed = true;
 		}
@@ -424,7 +399,7 @@ bool EM::remove_models() {
 	for (int j = 0; j < ndata; ++j) {
 		if (class_insts[j].cat >= 0) {
 			category old = class_insts[j].cat;
-			class_insts[j].cat = index_map(old);
+			class_insts[j].cat = index_map[old];
 			if (class_insts[j].cat != old) {
 				DATAVIS("'num removed' %+1" << endl)
 				dtree->update_category(j, old);
@@ -485,14 +460,14 @@ double EM::error() {
 	double error = 0.;
 	for (int i = 0; i < ndata; ++i) {
 		evec x(xdim);
-		float y;
+		double y;
 		for (int j = 0; j < xdim; ++j) {
 			x[j] = xdata(i, j);
 		}
 		if (!predict(x, y)) {
 			return -1.0;
 		}
-		error += ::pow(ydata(i) - y, 2);
+		error += std::pow(ydata(i) - y, 2);
 	}
 	return error;
 }
@@ -503,11 +478,11 @@ void EM::get_tested_atoms(vector<int> &atoms) const {
 
 void EM::save(ostream &os) const {
 	os << ndata << " " << nmodels << " " << xdim << endl;
-	xdata.save(os, arma_ascii);
-	ydata.save(os, arma_ascii);
-	Py_z.save(os, arma_ascii);
+	save_mat(os, xdata);
+	save_vec(os, ydata);
+	save_mat(os, Py_z);
 	if (TEST_ELIGIBILITY) {
-		eligible.save(os, arma_ascii);
+		save_mat(os, eligible);
 	}
 	
 	std::vector<ClassifierInst>::const_iterator i;
@@ -528,11 +503,11 @@ void EM::load(istream &is) {
 	
 	is >> ndata >> nmodels >> xdim;
 	
-	xdata.load(is, arma_ascii);
-	ydata.load(is, arma_ascii);
-	Py_z.load(is, arma_ascii);
+	load_mat(is, xdata);
+	load_vec(is, ydata);
+	load_mat(is, Py_z);
 	if (TEST_ELIGIBILITY) {
-		eligible.load(is, arma_ascii);
+		load_mat(is, eligible);
 	}
 	
 	is >> ninsts;
@@ -580,12 +555,8 @@ int EM::classify(const evec &x) {
 void EM::test_classify(const evec &x, double y, int &best, int &predicted, double &besterror) {
 	best = -1;
 	
-	rowvec v(x.size());
-	for (int i = 0; i < x.size(); ++i) {
-		v(i) = x[i];
-	}
 	for (int i = 0; i < nmodels; ++i) {
-		double error = fabs(models[i]->predict(v) - y);
+		double error = fabs(models[i]->predict(x) - y);
 		if (best == -1 || error < besterror) {
 			best = i;
 			besterror = error;

@@ -2,8 +2,8 @@
 #define LINALG_H
 
 #include <string.h>
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <cassert>
 #include <ostream>
 #include <iterator>
 #include <vector>
