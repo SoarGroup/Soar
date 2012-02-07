@@ -268,17 +268,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->lexeme.id_letter = 'A';
   newAgent->lexeme.id_number = 0;
 
-  /* Initializing all the timer structures */
-#ifndef NO_TIMING_STUFF
-  newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-  newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-  newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-#ifdef DETAILED_TIMING_STATS
-  newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-#endif
-  reset_timers(newAgent);
-#endif
-
   reset_max_stats(newAgent);
 
   newAgent->real_time_tracker = 0;
@@ -317,6 +306,18 @@ agent * create_soar_agent (char * agent_name) {                                 
   // This was moved here so that system parameters could
   // be set before the agent was initialized.
   init_sysparams (newAgent);
+
+  /* Initializing all the timer structures */
+  // Timers must be initialized after sysparams
+#ifndef NO_TIMING_STUFF
+  newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#ifdef DETAILED_TIMING_STATS
+  newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#endif
+  reset_timers(newAgent);
+#endif
 
   // dynamic memory pools (should come before consumers of dynamic pools)
   newAgent->dyn_memory_pools = new std::map< size_t, memory_pool* >();
@@ -375,24 +376,18 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stmts_common = NULL;  
   newAgent->epmem_stmts_graph = NULL;
   
-  
   newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
   newAgent->epmem_node_maxes = new std::vector<bool>();
 
   newAgent->epmem_edge_mins = new std::vector<epmem_time_id>();
   newAgent->epmem_edge_maxes = new std::vector<bool>();
-
-  newAgent->epmem_wme_unrecognized = new epmem_wme_list();
-  newAgent->epmem_id_siblings = new epmem_id_disjoint_set();
-  newAgent->epmem_wm_tree = new epmem_elders();
+  newAgent->epmem_id_repository = new epmem_parent_id_pool();
+  newAgent->epmem_id_replacement = new epmem_return_id_pool();
+  newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
 
 #ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->epmem_node_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
   newAgent->epmem_edge_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
-
-  newAgent->epmem_id_repository = new epmem_parent_id_pool( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, epmem_hashed_id_pool* > >( newAgent ) );
-  newAgent->epmem_id_replacement = new epmem_return_id_pool( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, epmem_id_pool* > >( newAgent ) );
-  newAgent->epmem_id_ref_counts = new epmem_id_ref_counter( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, epmem_wme_set* > >( newAgent ) );
 
   newAgent->epmem_wme_adds = new epmem_wme_addition_map( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< std::pair< Symbol*, epmem_pooled_wme_set* > >( newAgent ) );
   newAgent->epmem_wme_removes = new epmem_wme_removal_map( std::less< uint64_t >(), soar_module::soar_memory_pool_allocator< std::pair< uint64_t, epmem_pooled_wme_set* > >( newAgent ) );
@@ -403,16 +398,16 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_node_removals = new epmem_id_removal_map();
   newAgent->epmem_edge_removals = new epmem_id_removal_map();
 
-  newAgent->epmem_id_repository = new epmem_parent_id_pool();
-  newAgent->epmem_id_replacement = new epmem_return_id_pool();
-  newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
-
   newAgent->epmem_wme_adds = new epmem_wme_addition_map();
   newAgent->epmem_wme_removes = new epmem_wme_removal_map();
   newAgent->epmem_promotions = new epmem_symbol_set();
 
   newAgent->epmem_id_removes = new epmem_symbol_stack();
 #endif
+
+  newAgent->epmem_wme_unrecognized = new epmem_wme_list();
+  newAgent->epmem_id_siblings = new epmem_id_disjoint_set();
+  newAgent->epmem_wm_tree = new epmem_elders();
 
   newAgent->epmem_validation = 0;
   newAgent->epmem_first_switch = true;

@@ -2776,9 +2776,14 @@ void epmem_new_episode( agent *my_agent )
 			{
 				if ( !id_p->second->empty() )
 				{
-					id_p->first->id.tc_num = tc;
-					parent_syms.push( id_p->first );
-					parent_ids.push( id_p->first->id.epmem_id );
+					// make sure the WME is valid
+					// it can be invalid a child WME was added, but then the parent was removed, setting the epmem_id to EPMEM_NODEID_BAD
+					if (id_p->first->id.epmem_id != EPMEM_NODEID_BAD) {
+						id_p->first->id.tc_num = tc;
+						parent_syms.push( id_p->first );
+						parent_ids.push( id_p->first->id.epmem_id );
+					}
+
 				}
 			}
 
