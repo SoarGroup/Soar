@@ -46,12 +46,10 @@ clean:
 public-checkout:
 	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Core
 	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Java
-	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Python
 
 checkout:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Core
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Java
-	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Python
 
 public-checkout-core:
 	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Core
@@ -106,6 +104,12 @@ public-checkout-soartextio:
 
 checkout-soartextio:
 	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/SoarTextIO
+
+public-checkout-python:
+	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Python
+
+checkout-python:
+	svn checkout https://soar.googlecode.com/svn/trunk/SoarSuite/Python
 
 public-checkout-tcl:
 	svn checkout http://soar.googlecode.com/svn/trunk/SoarSuite/Tcl
