@@ -68,14 +68,14 @@ public:
 	}
 	
 	bool update_results() {
-		filter_input::iter i;
+		const filter_input *input = get_input();
 		result_table_t::iterator j;
 		filter_val *av, *bv;
-		sgnode *an, *bn;
 		
-		for (i = added_input_begin(); i != added_input_end(); ++i) {
-			if (!map_get<string, filter_val*>(**i, "a", av) ||
-			    !map_get<string, filter_val*>(**i, "b", bv) )
+		for (int i = input->first_added(); i < input->num_current(); ++i) {
+			const filter_param_set *params = input->get_current(i);
+			if (!map_get<string, filter_val*>(*params, "a", av) ||
+			    !map_get<string, filter_val*>(*params, "b", bv) )
 			{
 				set_error("missing parameter(s)");
 				return false;
@@ -84,13 +84,14 @@ public:
 			rp.oldval = false;
 			rp.newval = false;
 			rp.fval = new filter_val_c<bool>(false);
-			add_result(rp.fval, *i);
+			add_result(rp.fval, params);
 			add_node(av);
 			add_node(bv);
 		}
-		for (i = removed_input_begin(); i != removed_input_end(); ++i) {
-			if (!map_get<string, filter_val*>(**i, "a", av) ||
-			    !map_get<string, filter_val*>(**i, "b", bv))
+		for (int i = 0; i < input->num_removed(); ++i) {
+			const filter_param_set *params = input->get_removed(i);
+			if (!map_get<string, filter_val*>(*params, "a", av) ||
+			    !map_get<string, filter_val*>(*params, "b", bv))
 			{
 				set_error("missing parameter(s)");
 				return false;
@@ -103,9 +104,10 @@ public:
 			del_node(av);
 			del_node(bv);
 		}
-		for (i = changed_input_begin(); i != changed_input_end(); ++i) {
-			if (!map_get<string, filter_val*>(**i, "a", av) ||
-			    !map_get<string, filter_val*>(**i, "b", bv))
+		for (int i = 0; i < input->num_changed(); ++i) {
+			const filter_param_set *params = input->get_changed(i);
+			if (!map_get<string, filter_val*>(*params, "a", av) ||
+			    !map_get<string, filter_val*>(*params, "b", bv))
 			{
 				set_error("missing parameter(s)");
 				return false;

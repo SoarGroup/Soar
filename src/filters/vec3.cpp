@@ -6,7 +6,7 @@ class vec3_filter : public map_filter<vec3> {
 public:
 	vec3_filter(filter_input *input) : map_filter<vec3>(input) {}
 
-	bool compute(filter_param_set *params, vec3 &v, bool adding) {
+	bool compute(const filter_param_set *params, vec3 &v, bool adding) {
 		if (!get_filter_param(this, params, "x", v.a[0]) ||
 		    !get_filter_param(this, params, "y", v.a[1]) ||
 		    !get_filter_param(this, params, "z", v.a[2]))

@@ -530,7 +530,10 @@ void histogram(const floatvec &vals, int nbins);
 
 class bbox {
 public:
-	bbox() {}
+	bbox() {
+		min.zero();
+		max.zero();
+	}
 	
 	/* bounding box around single point */
 	bbox(const vec3 &v) {
@@ -539,11 +542,16 @@ public:
 	}
 	
 	bbox(ptlist &pts) {
-		min = pts[0];
-		max = pts[0];
+		if (pts.size() == 0) {
+			min.zero();
+			max.zero();
+		} else {
+			min = pts[0];
+			max = pts[0];
 		
-		for(int i = 1; i < pts.size(); ++i) {
-			include(pts[i]);
+			for(int i = 1; i < pts.size(); ++i) {
+				include(pts[i]);
+			}
 		}
 	}
 	

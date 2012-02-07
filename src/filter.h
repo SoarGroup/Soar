@@ -105,37 +105,32 @@ inline bool set_filter_val (filter_val *fv, const T &v) {
 template<class T>
 class change_tracking_list {
 public:
-	typedef typename std::list<T*>::const_iterator iter;
-	
-	change_tracking_list() {
-		m_added_begin = current.begin();
-	}
+	change_tracking_list() : m_added_begin(0) {}
 	
 	~change_tracking_list() {
-		iter i;
-		for (i = current.begin(); i != current.end(); ++i) {
-			delete *i;
+		for (int i = 0; i < current.size(); ++i) {
+			delete current[i];
 		}
 		clear_removed();
 	}
 	
 	void add(T* v) {
 		current.push_back(v);
-		if (m_added_begin == current.end()) {
-			m_added_begin--;
-		}
 	}
 	
 	void remove(T* v) {
-		typename std::list<T*>::iterator i;
-		if ((i = find(current.begin(), current.end(), v)) != current.end()) {
-			if (i == m_added_begin) {
-				m_added_begin++;
+		for (int i = 0; i < current.size(); ++i) {
+			if (current[i] == v) {
+				current.erase(current.begin() + i);
+				if (i == m_added_begin) {
+					++m_added_begin;
+				}
+				changed.erase(find(changed.begin(), changed.end(), v), changed.end());
+				removed.push_back(v);
+				return;
 			}
-			current.erase(i);
 		}
-		changed.remove(v);
-		removed.push_back(v);
+		assert(false);
 	}
 	
 	void change(T *v) {
@@ -143,7 +138,7 @@ public:
 	}
 	
 	void clear_changes() {
-		m_added_begin = current.end();
+		m_added_begin = current.size();
 		changed.clear();
 		clear_removed();
 	}
@@ -153,71 +148,72 @@ public:
 	 makes everything a new addition.
 	*/
 	void reset() {
-		clear_removed();
 		changed.clear();
-		m_added_begin = current.begin();
+		clear_removed();
+		m_added_begin = 0;
 	}
 	
 	void clear() {
 		current.clear();
-		clear_removed();
 		changed.clear();
-		m_added_begin = current.begin();
+		clear_removed();
+		m_added_begin = 0;
 	}
 		
-	int size() const {
+	int num_current() const {
 		return current.size();
 	}
 	
-	iter curr_begin() const {
-		return current.begin();
+	int num_changed() const {
+		return changed.size();
 	}
 	
-	iter curr_end() const {
-		return current.end();
+	int num_removed() const {
+		return removed.size();
 	}
 	
-	iter added_begin() const {
+	T* get_current(int i) {
+		return current[i];
+	}
+	
+	const T* get_current(int i) const {
+		return current[i];
+	}
+	
+	T* get_changed(int i) {
+		return changed[i];
+	}
+	
+	const T* get_changed(int i) const {
+		return changed[i];
+	}
+	
+	T* get_removed(int i) {
+		return removed[i];
+	}
+	
+	const T* get_removed(int i) const {
+		return removed[i];
+	}
+
+	int first_added() const {
 		return m_added_begin;
-	}
-	
-	iter added_end() const {
-		return current.end();
-	}
-	
-	iter removed_begin() const {
-		return removed.begin();
-	}
-	
-	iter removed_end() const {
-		return removed.end();
-	}
-	
-	iter changed_begin() const {
-		return changed.begin();
-	}
-	
-	iter changed_end() const {
-		return changed.end();
 	}
 	
 private:
 	void clear_removed() {
-		for (iter i = removed.begin(); i != removed.end(); ++i) {
-			delete *i;
+		for (int i = 0; i < removed.size(); ++i) {
+			delete removed[i];
 		}
 		removed.clear();
 	}
 	
-	std::list<T*> current;
-	std::list<T*> removed;
-	std::list<T*> changed;
+	std::vector<T*> current;
+	std::vector<T*> removed;
+	std::vector<T*> changed;
 	
-	/*
-	 Keeps track of the iterator pointing at the first new element
-	 in the current list.
-	*/
-	iter m_added_begin;
+	// Index of the first new element in the current list
+	int m_added_begin;
 };
 
 class filter;
@@ -345,12 +341,12 @@ public:
 		errmsg.clear();
 	}
 	
-	void add_result(filter_val *v, filter_param_set *p) {
+	void add_result(filter_val *v, const filter_param_set *p) {
 		result.add(v);
 		result2params[v] = p;
 	}
 	
-	bool get_result_params(filter_val *v, filter_param_set *&p) {
+	bool get_result_params(filter_val *v, const filter_param_set *&p) {
 		return map_get(result2params, v, p);
 	}
 	
@@ -384,37 +380,17 @@ public:
 		return true;
 	}
 	
-	filter_input::iter added_input_begin() const {
-		return input->added_begin();
+	const filter_input *get_input() const {
+		return input;
 	}
-	
-	filter_input::iter added_input_end() const {
-		return input->added_end();
-	}
-	
-	filter_input::iter removed_input_begin() const {
-		return input->removed_begin();
-	}
-	
-	filter_input::iter removed_input_end() const {
-		return input->removed_end();
-	}
-	
-	filter_input::iter changed_input_begin() const {
-		return input->changed_begin();
-	}
-	
-	filter_input::iter changed_input_end() const {
-		return input->changed_end();
-	}
-	
+
 private:
 	virtual bool update_results() = 0;
 	
 	filter_input *input;
 	filter_result result;
 	std::string errmsg;
-	std::map<filter_val*, filter_param_set*> result2params;
+	std::map<filter_val*, const filter_param_set*> result2params;
 };
 
 /*
@@ -456,7 +432,7 @@ public:
 	 the new result when the function terminates. An error is signaled
 	 by returning false.
 	*/
-	virtual bool compute(filter_param_set *params, T &res, bool adding) = 0;
+	virtual bool compute(const filter_param_set *params, T &res, bool adding) = 0;
 	
 	/*
 	 Some derived classes might allocate memory associated with each
@@ -472,31 +448,32 @@ public:
 	 such a function should explicitly mark a result as needing to be
 	 recomputed even when its associated parameter set doesn't change.
 	*/
-	void mark_stale(filter_param_set *s) {
+	void mark_stale(const filter_param_set *s) {
 		stale.push_back(s);
 	}
 
 	bool update_results() {
-		filter_input::iter i;
-		std::vector<filter_param_set*>::iterator j;
+		const filter_input* input = get_input();
+		std::vector<const filter_param_set*>::iterator j;
 		
-		for (i = added_input_begin(); i != added_input_end(); ++i) {
+		for (int i = input->first_added(); i < input->num_current(); ++i) {
 			T val;
-			if (!compute(*i, val, true)) {
+			if (!compute(input->get_current(i), val, true)) {
 				return false;
 			}
 			filter_val_c<T> *fv = new filter_val_c<T>(val);
-			add_result(fv, *i);
-			io_map[*i] = fv;
+			add_result(fv, input->get_current(i));
+			io_map[input->get_current(i)] = fv;
 		}
-		for (i = removed_input_begin(); i != removed_input_end(); ++i) {
-			filter_val_c<T>* r = io_map[*i];
-			result_removed(r->get_value());
-			remove_result(r);
-			io_map.erase(*i);
+		for (int i = 0; i < input->num_removed(); ++i) {
+			typename io_map_t::iterator r = io_map.find(input->get_removed(i));
+			assert(r != io_map.end());
+			result_removed(r->second->get_value());
+			remove_result(r->second);
+			io_map.erase(r);
 		}
-		for (i = changed_input_begin(); i != changed_input_end(); ++i) {
-			if (!update_one(*i)) {
+		for (int i = 0; i < input->num_changed(); ++i) {
+			if (!update_one(input->get_changed(i))) {
 				return false;
 			}
 		}
@@ -512,7 +489,7 @@ public:
 	void reset() {}
 
 private:
-	bool update_one(filter_param_set *params) {
+	bool update_one(const filter_param_set *params) {
 		T old_val, new_val;
 		filter_val_c<T> *fv = io_map[params];
 		get_filter_val<T>(fv, old_val);
@@ -527,8 +504,9 @@ private:
 		return true;
 	}
 	
-	std::map<filter_param_set*, filter_val_c<T>*> io_map;
-	std::vector<filter_param_set*> stale;
+	typedef std::map<const filter_param_set*, filter_val_c<T>*> io_map_t;
+	io_map_t io_map;
+	std::vector<const filter_param_set*> stale;
 };
 
 /*
@@ -560,7 +538,7 @@ private:
 };
 
 template <typename T>
-inline bool get_filter_param(filter *f, filter_param_set *params, const std::string &name, T &val) {
+inline bool get_filter_param(filter *f, const filter_param_set *params, const std::string &name, T &val) {
 	filter_val *fv;
 	std::stringstream ss;
 	if (!map_get(*params, name, fv)) {

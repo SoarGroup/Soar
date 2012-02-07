@@ -10,8 +10,8 @@ class between_filter : public map_filter<bool> {
 public:
 	between_filter(filter_input *input) : map_filter<bool>(input) {}
 	
-	bool compute(filter_param_set *params, bool &result, bool adding) {
-		sgnode *na, *nb, *nc;
+	bool compute(const filter_param_set *params, bool &result, bool adding) {
+		const sgnode *na, *nb, *nc;
 		ptlist pa, pb, pc;
 		
 		if (!get_filter_param(this, params, "a", na) ||
@@ -42,8 +42,8 @@ class behind_filter : public map_filter<bool> {
 public:
 	behind_filter(filter_input *input) : map_filter<bool>(input) {}
 	
-	bool compute(filter_param_set *params, bool &result, bool adding) {
-		sgnode *na, *nb, *nc;
+	bool compute(const filter_param_set *params, bool &result, bool adding) {
+		const sgnode *na, *nb, *nc;
 		ptlist pa, pb, pc;
 		
 		if (!get_filter_param(this, params, "a", na) ||

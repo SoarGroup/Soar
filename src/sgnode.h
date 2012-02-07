@@ -45,9 +45,9 @@ public:
 	 const, but are not because they might have to run some lazily
 	 deferred updates.
 	*/
-	void        get_local_points(ptlist &result);
+	void        get_local_points(ptlist &result) const;
 	void        set_local_points(const ptlist &pts);
-	void        get_world_points(ptlist &result);
+	void        get_world_points(ptlist &result) const;
 	
 	void        listen(sgnode_listener *o);
 	void        unlisten(sgnode_listener *o);

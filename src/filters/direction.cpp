@@ -12,7 +12,7 @@ using namespace std;
 Calculates whether a bounding box is located to the left (-1), aligned
 (0), or right (1) of another bounding box along the specified axis.
 */
-bool direction(sgnode *a, sgnode *b, int axis, int comp) {
+bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	int i, dir[3];
 	vec3 amin, amax, bmin, bmax;
 	ptlist pa, pb;
@@ -86,8 +86,8 @@ public:
 	direction_filter(filter_input *input, int axis, int comp)
 	: map_filter<bool>(input), axis(axis), comp(comp) {}
 	
-	bool compute(filter_param_set *p, bool &res, bool adding) {
-		sgnode *a, *b;
+	bool compute(const filter_param_set *p, bool &res, bool adding) {
+		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, p, "a", a)) {
 			return false;

@@ -17,13 +17,13 @@ public:
 	node_filter(scene *scn, filter_input *input) : map_filter<sgnode*>(input), scn(scn) {}
 	
 	~node_filter() {
-		map<sgnode*, filter_param_set*>::iterator i;
+		map<sgnode*, const filter_param_set*>::iterator i;
 		for (i = node2param.begin(); i != node2param.end(); ++i) {
 			i->first->unlisten(this);
 		}
 	}
 	
-	bool compute(filter_param_set *params, sgnode *&n, bool adding) {
+	bool compute(const filter_param_set *params, sgnode *&n, bool adding) {
 		string name;
 		if (!adding) {
 			sgnode *old = n;
@@ -48,7 +48,7 @@ public:
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added) {
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::POINTS_CHANGED) {
-			filter_param_set *s;
+			const filter_param_set *s;
 			if (!map_get(node2param, n, s)) {
 				assert(false);
 			}
@@ -58,7 +58,7 @@ public:
 
 private:
 	scene *scn;
-	map<sgnode*, filter_param_set*> node2param;
+	map<sgnode*, const filter_param_set*> node2param;
 };
 
 /* Return all nodes from the scene */
@@ -130,8 +130,8 @@ class node_centroid_filter : public map_filter<vec3> {
 public:
 	node_centroid_filter(filter_input *input) : map_filter<vec3>(input) {}
 	
-	bool compute(filter_param_set *params, vec3 &v, bool adding) {
-		sgnode *n;
+	bool compute(const filter_param_set *params, vec3 &v, bool adding) {
+		const sgnode *n;
 		ptlist pts;
 		
 		if (!get_filter_param(this, params, "node", n)) {

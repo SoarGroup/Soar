@@ -6,7 +6,7 @@
 
 using namespace std;
 
-bool ontop(sgnode *tn, sgnode *bn) {
+bool ontop(const sgnode *tn, const sgnode *bn) {
 	ptlist tp, bp;
 	vec3 tmin, tmax, bmin, bmax;
 	
@@ -27,8 +27,8 @@ class ontop_filter : public map_filter<bool> {
 public:
 	ontop_filter(filter_input *input) : map_filter<bool>(input) {}
 
-	bool compute(filter_param_set *params, bool &result, bool adding) {
-		sgnode *tn, *bn;
+	bool compute(const filter_param_set *params, bool &result, bool adding) {
+		const sgnode *tn, *bn;
 		if (!get_filter_param(this, params, "top", tn) || 
 		    !get_filter_param(this, params, "bottom", tn))
 		{

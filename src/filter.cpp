@@ -9,24 +9,23 @@ using namespace std;
 void concat_filter_input::combine(const input_table &inputs) {
 	input_table::const_iterator i;
 	for (i = inputs.begin(); i != inputs.end(); ++i) {
-		filter_result::iter j;
 		filter_param_set *p;
 		filter_result *r = i->res;
 
-		for (j = r->added_begin(); j != r->added_end(); ++j) {
+		for (int j = r->first_added(); j < r->num_current(); ++j) {
 			p = new filter_param_set();
-			(*p)[i->name] = *j;
-			val2params[*j] = p;
+			(*p)[i->name] = r->get_current(j);
+			val2params[r->get_current(j)] = p;
 			add(p);
 		}
-		for (j = r->removed_begin(); j != r->removed_end(); ++j) {
-			if (!map_pop(val2params, *j, p)) {
+		for (int j = 0; j < r->num_removed(); ++j) {
+			if (!map_pop(val2params, r->get_removed(j), p)) {
 				assert(false);
 			}
 			remove(p);
 		}
-		for (j = r->changed_begin(); j != r->changed_end(); ++j) {
-			p = val2params[*j];
+		for (int j = 0; j < r->num_changed(); ++j) {
+			p = val2params[r->get_changed(j)];
 			change(p);
 		}
 	}
@@ -35,21 +34,20 @@ void concat_filter_input::combine(const input_table &inputs) {
 void product_filter_input::combine(const input_table &inputs) {
 	input_table::const_iterator i;
 	for (i = inputs.begin(); i != inputs.end(); ++i) {
-		filter_result::iter j;
 		val2param_map::iterator k;
 		param_set_list::iterator l;
 		filter_result *r = i->res;
 		
-		for (j = r->removed_begin(); j != r->removed_end(); ++j) {
-			k = val2params.find(*j);
+		for (int j = 0; j < r->num_removed(); ++j) {
+			k = val2params.find(r->get_removed(j));
 			assert(k != val2params.end());
 			for (l = k->second.begin(); l != k->second.end(); ++l) {
 				remove(*l);
 				erase_param_set(*l);
 			}
 		}
-		for (j = r->changed_begin(); j != r->changed_end(); ++j) {
-			k = val2params.find(*j);
+		for (int j = 0; j < r->num_changed(); ++j) {
+			k = val2params.find(r->get_changed(j));
 			assert(k != val2params.end());
 			for (l = k->second.begin(); l != k->second.end(); ++l) {
 				change(*l);
@@ -61,7 +59,7 @@ void product_filter_input::combine(const input_table &inputs) {
 
 class product_gen {
 public:
-	product_gen(const vector<filter_result::iter> &begin, const vector<filter_result::iter> &end)
+	product_gen(const vector<int> &begin, const vector<int> &end)
 	: begin(begin), curr(begin), end(end), i(0), first(true) {}
 	
 	bool next() {
@@ -90,11 +88,11 @@ public:
 		}
 	}
 	
-	vector<filter_result::iter> curr;
+	vector<int> curr;
 
 private:
-	vector<filter_result::iter> begin;
-	vector<filter_result::iter> end;
+	vector<int> begin;
+	vector<int> end;
 	int i;
 	bool first;
 };
@@ -108,38 +106,27 @@ private:
  that new results are at the end of each result list.
 */
 void product_filter_input::gen_new_combinations(const input_table &inputs) {
-	vector<filter_result::iter> begin, added_begin, end;
-	vector<string> names;
-	int i, j, k;
-	input_table::const_iterator ti;
-	for (ti = inputs.begin(); ti != inputs.end(); ++ti) {
-		names.push_back(ti->name);
-		begin.push_back(ti->res->curr_begin());
-		end.push_back(ti->res->curr_end());
-		added_begin.push_back(ti->res->added_begin());
-	}
-	for (i = 0; i < begin.size(); ++i) {
-		vector<filter_result::iter> tbegin, tend;
-		for (j = 0; j < begin.size(); ++j) {
+	for (int i = 0; i < inputs.size(); ++i) {
+		vector<int> begin, end;
+		for (int j = 0; j < inputs.size(); ++j) {
 			if (j < i) {
-				tbegin.push_back(begin[j]);
-				tend.push_back(added_begin[j]); // same as end of old results
+				begin.push_back(0);
+				end.push_back(inputs[j].res->first_added()); // same as end of old results
 			} else if (j == i) {
-				tbegin.push_back(added_begin[j]);
-				tend.push_back(end[j]);
+				begin.push_back(inputs[j].res->first_added());
+				end.push_back(inputs[j].res->num_current());
 			} else {
-				tbegin.push_back(begin[j]);
-				tend.push_back(end[j]);
+				begin.push_back(0);
+				end.push_back(inputs[j].res->num_current());
 			}
 		}
-		product_gen gen(tbegin, tend);
+		product_gen gen(begin, end);
 		while (gen.next()) {
-			vector<filter_result::iter>::const_iterator ci;
-			vector<string>::const_iterator ni;
 			filter_param_set *p = new filter_param_set();
-			for (ci = gen.curr.begin(), ni = names.begin(); ci != gen.curr.end(); ++ci, ++ni) {
-				(*p)[*ni] = **ci;
-				val2params[**ci].push_back(p);
+			for (int j = 0; j < inputs.size(); ++j) {
+				filter_val *v = inputs[j].res->get_current(gen.curr[j]);
+				(*p)[inputs[j].name] = v;
+				val2params[v].push_back(p);
 			}
 			add(p);
 		}

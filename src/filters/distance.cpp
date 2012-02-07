@@ -8,8 +8,8 @@ class distance_filter : public map_filter<float> {
 public:
 	distance_filter(filter_input *input) : map_filter<float>(input) {}
 
-	bool compute(filter_param_set *params, float &v, bool adding) {
-		sgnode *a, *b;
+	bool compute(const filter_param_set *params, float &v, bool adding) {
+		const sgnode *a, *b;
 		vec3 ac, bc;
 		ptlist apts, bpts;
 		

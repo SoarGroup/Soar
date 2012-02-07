@@ -7,8 +7,8 @@ class bbox_filter : public map_filter<bbox> {
 public:
 	bbox_filter(filter_input *input) : map_filter<bbox>(input) {}
 	
-	bool compute(filter_param_set *params, bbox &b, bool adding) {
-		sgnode *n;
+	bool compute(const filter_param_set *params, bbox &b, bool adding) {
+		const sgnode *n;
 		ptlist pts;
 		
 		if (!get_filter_param(this , params, "node", n)) {
@@ -28,7 +28,7 @@ class bbox_binary_filter : public map_filter<bool> {
 public:
 	bbox_binary_filter(filter_input *input, char type) : map_filter<bool>(input), type(type) {}
 	
-	bool compute(filter_param_set *params, bool &res, bool adding) {
+	bool compute(const filter_param_set *params, bool &res, bool adding) {
 		filter_val *av, *bv;
 		bbox a, b;
 		

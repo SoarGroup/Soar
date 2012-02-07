@@ -16,7 +16,7 @@ class gen_filter : public map_filter<sgnode*> {
 public:
 	gen_filter(filter_input *input) : map_filter<sgnode*>(input) {}
 
-	bool compute(filter_param_set *params, sgnode *&res, bool adding) {
+	bool compute(const filter_param_set *params, sgnode *&res, bool adding) {
 		string name;
 		vec3 pos, rot, scale, singlept;
 		filter_val *ptsval;
