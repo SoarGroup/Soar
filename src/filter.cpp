@@ -57,46 +57,6 @@ void product_filter_input::combine(const input_table &inputs) {
 	gen_new_combinations(inputs);
 }
 
-class product_gen {
-public:
-	product_gen(const vector<int> &begin, const vector<int> &end)
-	: begin(begin), curr(begin), end(end), i(0), first(true) {}
-	
-	bool next() {
-		if (first) {
-			for (int i = 0; i < begin.size(); ++i) {
-				if (begin[i] == end[i]) {
-					return false;
-				}
-			}
-			first = false;
-			return true;
-		}
-		
-		while (true) {
-			if (++curr[i] == end[i]) {
-				if (i == curr.size() - 1) {
-					return false;
-				}
-				curr[i] = begin[i];
-			} else {
-				return true;
-			}
-			if (++i >= curr.size()) {
-				i = 0;
-			}
-		}
-	}
-	
-	vector<int> curr;
-
-private:
-	vector<int> begin;
-	vector<int> end;
-	int i;
-	bool first;
-};
-
 /*
  Generate all combinations of results that involve at least one new
  result.  Do this by iterating over the result lists.  For the i^th
@@ -108,6 +68,7 @@ private:
 void product_filter_input::gen_new_combinations(const input_table &inputs) {
 	for (int i = 0; i < inputs.size(); ++i) {
 		vector<int> begin, end;
+		bool empty = false;
 		for (int j = 0; j < inputs.size(); ++j) {
 			if (j < i) {
 				begin.push_back(0);
@@ -119,16 +80,31 @@ void product_filter_input::gen_new_combinations(const input_table &inputs) {
 				begin.push_back(0);
 				end.push_back(inputs[j].res->num_current());
 			}
+			if (begin.back() == end.back()) {
+				empty = true;
+				break;
+			}
 		}
-		product_gen gen(begin, end);
-		while (gen.next()) {
+		if (empty) {
+			continue;
+		}
+		vector<int> curr = begin;
+		while (true) {
 			filter_param_set *p = new filter_param_set();
 			for (int j = 0; j < inputs.size(); ++j) {
-				filter_val *v = inputs[j].res->get_current(gen.curr[j]);
+				filter_val *v = inputs[j].res->get_current(curr[j]);
 				(*p)[inputs[j].name] = v;
 				val2params[v].push_back(p);
 			}
 			add(p);
+			
+			int i = 0;
+			for (; i < curr.size() && ++curr[i] == end[i]; ++i) {
+				curr[i] = begin[i];
+			}
+			if (i == curr.size()) {
+				return;
+			}
 		}
 	}
 }

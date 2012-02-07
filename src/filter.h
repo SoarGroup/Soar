@@ -39,14 +39,14 @@ private:
 };
 
 template <>
-class filter_val_c <sgnode*> : public filter_val {
+class filter_val_c <const sgnode*> : public filter_val {
 public:
-	filter_val_c(sgnode *v) : v(v) {}
+	filter_val_c(const sgnode *v) : v(v) {}
 	std::string get_string() { return v->get_name(); }
-	sgnode *get_value() { return v; }
-	void set_value(sgnode *n) { v = n; }
+	const sgnode *get_value() { return v; }
+	void set_value(const sgnode *n) { v = n; }
 private:
-	sgnode *v;
+	const sgnode *v;
 };
 
 /*
