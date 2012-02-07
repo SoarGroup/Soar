@@ -62,30 +62,27 @@ public:
 	bool early() { return false; }
 	
 	void reset_results() {
-		filter_result::iter i;
-		
 		clear_results();
-		for (i = res->curr_begin(); i != res->curr_end(); ++i) {
-			handle_result(*i);
+		for (int i = 0; i < res->num_current(); ++i) {
+			handle_result(res->get_current(i));
 		}
 		res->clear_changes();
 	}
 	
 	void update_results() {
-		filter_result::iter i;
 		wme *w;
 		
-		for (i = res->added_begin(); i != res->added_end(); ++i) {
-			handle_result(*i);
+		for (int i = res->first_added(); i < res->num_current(); ++i) {
+			handle_result(res->get_current(i));
 		}
-		for (i = res->removed_begin(); i != res->removed_end(); ++i) {
-			if (!map_pop(res2wme, *i, w)) {
+		for (int i = 0; i < res->num_removed(); ++i) {
+			if (!map_pop(res2wme, res->get_removed(i), w)) {
 				assert(false);
 			}
 			si->remove_wme(w);
 		}
-		for (i = res->changed_begin(); i != res->changed_end(); ++i) {
-			handle_result(*i);
+		for (int i = 0; i < res->num_changed(); ++i) {
+			handle_result(res->get_changed(i));
 		}
 	}
 	
@@ -95,7 +92,7 @@ public:
 	 a new wme.
 	*/
 	void handle_result(filter_val *result) {
-		filter_param_set *params;
+		const filter_param_set *params;
 		sym_wme_pair sw;
 		filter_param_set::const_iterator i;
 		bool val;

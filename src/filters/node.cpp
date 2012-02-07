@@ -12,43 +12,47 @@ using namespace std;
  This filter takes a "name" parameter and outputs a pointer to the node
  with that name in the scene graph.
 */
-class node_filter : public map_filter<sgnode*>, public sgnode_listener {
+class node_filter : public map_filter<const sgnode*>, public sgnode_listener {
 public:
-	node_filter(scene *scn, filter_input *input) : map_filter<sgnode*>(input), scn(scn) {}
+	node_filter(scene *scn, filter_input *input) : map_filter<const sgnode*>(input), scn(scn) {}
 	
 	~node_filter() {
-		map<sgnode*, filter_param_set*>::iterator i;
+		map<sgnode*, const filter_param_set*>::iterator i;
 		for (i = node2param.begin(); i != node2param.end(); ++i) {
 			i->first->unlisten(this);
 		}
 	}
 	
-	bool compute(filter_param_set *params, sgnode *&n, bool adding) {
+	bool compute(const filter_param_set *params, const sgnode *&n, bool adding) {
+		sgnode *n1;
 		string name;
 		if (!adding) {
-			sgnode *old = n;
-			old->unlisten(this);
-			node2param.erase(old);
+			n1 = const_cast<sgnode*>(n);
+			map<sgnode*, const filter_param_set*>::iterator i = node2param.find(n1);
+			assert(i != node2param.end());
+			i->first->unlisten(this);
+			node2param.erase(i);
 		}
 		
 		if (!get_filter_param(this, params, "name", name)) {
 			return false;
 		}
-		if ((n = scn->get_node(name)) == NULL) {
+		if ((n1 = scn->get_node(name)) == NULL) {
 			stringstream ss;
 			ss << "no node called \"" << name << "\"";
 			set_error(ss.str());
 			return false;
 		}
 		
-		n->listen(this);
-		node2param[n] = params;
+		n1->listen(this);
+		node2param[n1] = params;
+		n = n1;
 		return true;
 	}
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added) {
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::POINTS_CHANGED) {
-			filter_param_set *s;
+			const filter_param_set *s;
 			if (!map_get(node2param, n, s)) {
 				assert(false);
 			}
@@ -58,7 +62,7 @@ public:
 
 private:
 	scene *scn;
-	map<sgnode*, filter_param_set*> node2param;
+	map<sgnode*, const filter_param_set*> node2param;
 };
 
 /* Return all nodes from the scene */
@@ -114,7 +118,7 @@ public:
 private:
 	filter_val *add_node(sgnode *n) {
 		n->listen(this);
-		filter_val *r = new filter_val_c<sgnode*>(n);
+		filter_val *r = new filter_val_c<const sgnode*>(n);
 		results[n] = r;
 		add_result(r, NULL);
 		return r;
@@ -130,8 +134,8 @@ class node_centroid_filter : public map_filter<vec3> {
 public:
 	node_centroid_filter(filter_input *input) : map_filter<vec3>(input) {}
 	
-	bool compute(filter_param_set *params, vec3 &v, bool adding) {
-		sgnode *n;
+	bool compute(const filter_param_set *params, vec3 &v, bool adding) {
+		const sgnode *n;
 		ptlist pts;
 		
 		if (!get_filter_param(this, params, "node", n)) {

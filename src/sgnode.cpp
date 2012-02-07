@@ -153,8 +153,8 @@ void sgnode::get_trans(vec3 &p, vec3 &r, vec3 &s) const {
 	s = scale;
 }
 
-void sgnode::get_local_points(ptlist &result) {
-	update_points();
+void sgnode::get_local_points(ptlist &result) const {
+	const_cast<sgnode*>(this)->update_points();
 	result = points;
 }
 
@@ -165,9 +165,9 @@ void sgnode::set_local_points(const ptlist &pts) {
 	}
 }
 
-void sgnode::get_world_points(ptlist &result) {
-	update_points();
-	update_transform();
+void sgnode::get_world_points(ptlist &result) const {
+	const_cast<sgnode*>(this)->update_points();
+	const_cast<sgnode*>(this)->update_transform();
 	result.clear();
 	result.reserve(points.size());
 	transform(points.begin(), points.end(), back_inserter(result), wtransform);

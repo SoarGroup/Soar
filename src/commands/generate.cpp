@@ -57,7 +57,6 @@ public:
 
 private:
 	bool proc_changes() {
-		filter_result::iter i;
 		filter_result *res;
 		
 		if (!gen_filter->update()) {
@@ -65,13 +64,13 @@ private:
 			return false;
 		}
 		res = gen_filter->get_result();
-		for (i = res->added_begin(); i != res->added_end(); ++i) {
-			if (!add_node(*i)) {
+		for (int i = res->first_added(); i < res->num_current(); ++i) {
+			if (!add_node(res->get_current(i))) {
 				return false;
 			}
 		}
-		for (i = res->removed_begin(); i != res->removed_end(); ++i) {
-			if (!del_node(*i)) {
+		for (int i = 0; i < res->num_removed(); ++i) {
+			if (!del_node(res->get_removed(i))) {
 				return false;
 			}
 		}

@@ -46,11 +46,11 @@ public:
 				set_status(fltr->get_error());
 				return false;
 			}
-			if (res->size() == 0) {
+			if (res->num_current() == 0) {
 				set_status("no results");
 				return false;
 			}
-			if (!get_filter_val(*res->curr_begin(), val)) {
+			if (!get_filter_val(res->get_current(0), val)) {
 				set_status("result not of type float");
 				return false;
 			}

@@ -215,11 +215,16 @@ public:
 	}
 	
 	bbox(ptlist &pts) {
-		min = pts[0];
-		max = pts[0];
+		if (pts.size() == 0) {
+			min.setZero();
+			max.setZero();
+		} else {
+			min = pts[0];
+			max = pts[0];
 		
-		for(int i = 1; i < pts.size(); ++i) {
-			include(pts[i]);
+			for(int i = 1; i < pts.size(); ++i) {
+				include(pts[i]);
+			}
 		}
 	}
 	

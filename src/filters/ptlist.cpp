@@ -17,8 +17,8 @@ public:
 		}
 	}
 	
-	bool compute(filter_param_set *params, ptlist *&res, bool adding) {
-		sgnode *n;
+	bool compute(const filter_param_set *params, ptlist *&res, bool adding) {
+		const sgnode *n;
 		if (!get_filter_param(this, params, "node", n)) {
 			return false;
 		}
@@ -67,8 +67,8 @@ public:
 		}
 	}
 	
-	bool compute(filter_param_set *params, ptlist *&res, bool adding) {
-		filter_param_set::iterator i;
+	bool compute(const filter_param_set *params, ptlist *&res, bool adding) {
+	filter_param_set::const_iterator i;
 		
 		if (adding) {
 			res = new ptlist();
