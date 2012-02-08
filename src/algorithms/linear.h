@@ -88,7 +88,7 @@ public:
 private:
 	arma::vec beta;
 	double intercept;
-	arma::rowvec means, stdevs;
+	arma::rowvec means;
 };
 
 #endif

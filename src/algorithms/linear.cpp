@@ -409,7 +409,7 @@ PCRModel::PCRModel(const mat &xdata, const vec &ydata)
 {}
 
 PCRModel::PCRModel(const PCRModel &m)
-: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means), stdevs(m.stdevs)
+: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means)
 {}
 
 void PCRModel::fit_me() {
@@ -422,23 +422,8 @@ void PCRModel::fit_me() {
 	
 	// center X
 	means = mean(X);
-	stdevs = stddev(X);
-	
-	/*
-	 If any columns are uniform, then standard deviation will be
-	 zero and cause division by zero. These columns will be zeroed
-	 out after subtracting their mean anyway, so just set their
-	 divisors to 0.
-	*/
-	for (int i = 0; i < X.n_cols; ++i) {
-		if (stdevs(i) == 0.0) {
-			stdevs(i) = 1.0;
-		}
-	}
-	
 	for (int i = 0; i < X.n_rows; ++i) {
 		X.row(i) -= means;
-		X.row(i) /= stdevs;
 	}
 	
 	min_train_error(X, y, beta, intercept);
@@ -450,7 +435,7 @@ double PCRModel::predict_me(const rowvec &x) {
 	if (beta.n_elem == 0) {
 		return NAN;
 	}
-	return dot((x - means) / stdevs, beta) + intercept;
+	return dot(x - means, beta) + intercept;
 }
 
 bool PCRModel::predict_me(const mat &X, vec &result) {
@@ -460,7 +445,7 @@ bool PCRModel::predict_me(const mat &X, vec &result) {
 	mat Xc(X.n_rows, X.n_cols);
 	
 	for (int i = 0; i < X.n_rows; ++i) {
-		Xc.row(i) = (X.row(i) - means) / stdevs;
+		Xc.row(i) = X.row(i) - means;
 	}
 	
 	result = Xc * beta + intercept;
