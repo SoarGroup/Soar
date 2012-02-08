@@ -24,8 +24,7 @@ model::model(const std::string &name, const std::string &type)
 	ss << MODEL_DIR << "/" << name << "." << type;
 	path = ss.str();
 	
-	char *v = getenv("SVS_LOG_PREDICTION_ERRORS");
-	if (v != NULL && string(v) == "1") {
+	if (!get_option("log_predictions").empty()) {
 		ss.str("");
 		ss << PREDICTION_DIR << "/" << name << "." << type;
 		string p = ss.str();
@@ -34,8 +33,7 @@ model::model(const std::string &name, const std::string &type)
 }
 
 void model::finish() {
-	char *v = getenv("SVS_SAVE_MODELS");
-	if (v != NULL && string(v) == "1") {
+	if (!get_option("save_models").empty()) {
 		ofstream os(path.c_str());
 		if (os.is_open()) {
 			save(os);

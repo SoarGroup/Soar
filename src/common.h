@@ -23,7 +23,6 @@ typedef Eigen::MatrixXd mat;
 typedef Eigen::MatrixXi imat;
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
-std::string getnamespace();
 
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
@@ -334,5 +333,6 @@ inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
 	v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
 }
 
+std::string get_option(const std::string &key);
 
 #endif

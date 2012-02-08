@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include "drawer.h"
+#include "common.h"
 
 using namespace std;
 
@@ -21,9 +22,10 @@ drawer::drawer(const string &sname)
 : scene_name(sname), scl(1., 1., 1.), color(0., 1., 0.)
 {
 	if (!fifo_open) {
-		char *path = getenv("SVS_DISPLAY_PIPE");
-		if (path != NULL && access(path, W_OK) == 0) {
-			fifo.open(path);
+		string path = get_option("display");
+		if (!path.empty() && access(path.c_str(), W_OK) == 0) {
+			fifo.open(path.c_str());
+			fifo_open = true;
 		}
 	}
 }

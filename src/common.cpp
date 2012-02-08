@@ -24,28 +24,15 @@ void split(const string &s, const string &delim, vector<string> &fields) {
 	}
 }
 
-string getnamespace() {
-	char *s;
-	if ((s = getenv("SVSNAMESPACE")) == NULL) {
-		return "";
-	}
-	
-	string ns(s);
-	if (ns.size() > 0 && *ns.rbegin() != '/') {
-		ns.push_back('/');
-	}
-	return ns;
-}
-
 ofstream& get_datavis() {
 	static bool first = true;
-	static const char *path = getenv("SVS_DATA_PIPE");
 	static ofstream f;
 	if (first) {
-		if (path == NULL || access(path, W_OK) < 0) {
+		string path = get_option("datavis");
+		if (path.empty() || access(path.c_str(), W_OK) < 0) {
 			f.open("/dev/null");
 		} else {
-			f.open(path);
+			f.open(path.c_str());
 			f << "CLEAR" << endl;
 		}
 		first = false;
@@ -253,4 +240,28 @@ void load_cvec(std::istream &is, cvec &v) {
 	rvec v1;
 	load_rvec(is, v1);
 	v = v1.transpose();
+}
+
+string get_option(const string &key) {
+	static map<string, string> options;
+	static bool first = true;
+	
+	if (first) {
+		char *s;
+		if ((s = getenv("SVS_OPTS")) != NULL) {
+			string optstr(s);
+			vector<string> fields;
+			split(optstr, ",", fields);
+			for (int i = 0; i < fields.size(); ++i) {
+				size_t p = fields[i].find_first_of(':');
+				if (p == string::npos) {
+					options[fields[i]] = "-";
+				} else {
+					options[fields[i].substr(0, p)] = fields[i].substr(p+1);
+				}
+			}
+		}
+		first = false;
+	}
+	return options[key];
 }

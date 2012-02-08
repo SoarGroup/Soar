@@ -127,8 +127,7 @@ public:
 	 to check whether the decision tree classification was correct.
 	*/
 	float test(const rvec &x, const rvec &y) {
-		char *v = getenv("SVS_LOG_PREDICTION_ERRORS");
-		if (v != NULL && string(v) == "1") {
+		if (!get_option("log_predictions").empty()) {
 			int best, predicted;
 			double besterror;
 			em->test_classify(x, y(0), best, predicted, besterror);

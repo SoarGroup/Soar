@@ -269,8 +269,9 @@ bool svs_state::get_output(rvec &out) const {
 
 svs::svs(agent *a)
 {
-	if (true) {
-		envsock.reset(new ipcsocket('s', getnamespace() + "env", true, true));
+	string env_path = get_option("env");
+	if (!env_path.empty()) {
+		envsock.reset(new ipcsocket('s', env_path, true, true));
 	}
 	si = new soar_interface(a);
 	make_common_syms();
