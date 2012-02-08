@@ -198,7 +198,7 @@
 			IntermediateDirectory="..\..\build\$(ProjectName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
+			CharacterSet="0"
 			ManagedExtensions="0"
 			WholeProgramOptimization="1"
 			>
@@ -226,7 +226,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="src;..\..\out\include"
+				AdditionalIncludeDirectories="src;C:\new_build_structure\Core\pcre;C:\new_build_structure\Core\CLI\src;C:\new_build_structure\Core\shared;C:\new_build_structure\Core\SoarKernel\src;C:\new_build_structure\Core\KernelSML\src;C:\new_build_structure\Core\ElementXML\src;C:\new_build_structure\Core\ConnectionSML\src;C:\new_build_structure\Core\ClientSML\src"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
@@ -249,12 +249,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ClientSML.lib ConnectionSML.lib ElementXML.lib"
+				AdditionalDependencies="soar.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\out\lib"
-				GenerateDebugInformation="true"
-				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
+				GenerateDebugInformation="false"
+				ProgramDatabaseFile=""
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				RandomizedBaseAddress="1"
