@@ -183,9 +183,7 @@ void EM::add_data(const rvec &x, double y) {
 	DATAVIS("ndata " << ndata << endl)
 	resize();
 	
-	for (int i = 0; i < xdim; ++i) {
-		xdata(ndata - 1, i) = x[i];
-	}
+	xdata.row(ndata - 1) = x;
 	ydata(ndata - 1, 0) = y;
 	
 	ClassifierInst inst;

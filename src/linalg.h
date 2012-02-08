@@ -9,7 +9,7 @@
 #include <vector>
 #include <Eigen/Dense>
 
-typedef Eigen::RowVector3f vec3;
+typedef Eigen::RowVector3d vec3;
 typedef std::vector<vec3> ptlist;
 
 class quaternion {

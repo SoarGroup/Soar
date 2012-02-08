@@ -379,20 +379,17 @@ void scene::get_property_names(vector<string> &names) const {
 void scene::get_properties(rvec &vals) const {
 	node_map::const_iterator i;
 	property_map::const_iterator j;
-	int k1, k2, l = 0;
-	const char *types = "prs";
-	vec3 trans;
+	int k = 0;
 	
 	vals.resize(get_dof());
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		for (k1 = 0; k1 < 3; ++k1) {
-			trans = i->second.node->get_trans(types[k1]);
-			for (k2 = 0; k2 < 3; ++k2) {
-				vals[l++] = trans[k2];
-			}
+		for (const char *t = "prs"; *t != '\0'; ++t) {
+			vec3 trans = i->second.node->get_trans(*t);
+			vals.segment(k, 3) = trans;
+			k += 3;
 		}
 		for (j = i->second.props.begin(); j != i->second.props.end(); ++j) {
-			vals[l++] = j->second;
+			vals[k++] = j->second;
 		}
 	}
 }

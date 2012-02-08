@@ -11,7 +11,7 @@ using namespace Eigen;
 /* Assume that X is already centered */
 void pca(const mat &X, mat &comps, mat &signals, cvec &variances) {
 	JacobiSVD<mat> svd = X.jacobiSvd(Eigen::ComputeFullV);
-	variances = (svd.singularValues() / sqrt(X.rows() - 1)).array().pow(2);
+	variances = (svd.singularValues() / sqrt(X.rows() - 1)).array().square();
 	comps = svd.matrixV();
 	signals = X * comps;
 }

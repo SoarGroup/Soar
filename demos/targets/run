@@ -4,7 +4,7 @@ set -m # for job control
 
 root=../../../../out
 export LD_LIBRARY_PATH=$root/lib:$LD_LIBRARY_PATH
-soar=$root/bin/cli
+soar=$root/cli
 
 remote_args=""
 env_args="1 3"               # default seed = 1 and 3 blocks not touching
