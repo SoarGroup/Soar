@@ -233,11 +233,11 @@ void FullTests::createSoar()
 		if ( m_Options.test( USE_CLIENT_THREAD ) )
 		{
 			bool optimized = m_Options.test( FULLY_OPTIMIZED );
-			m_pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), optimized, 0 );
+			m_pKernel = sml::Kernel::CreateKernelInCurrentThread(optimized, 0 );
 		}
 		else
 		{
-			m_pKernel = sml::Kernel::CreateKernelInNewThread( sml::Kernel::GetDefaultLibraryName(), 0 );
+			m_pKernel = sml::Kernel::CreateKernelInNewThread( 0 );
 		}
 	}
 

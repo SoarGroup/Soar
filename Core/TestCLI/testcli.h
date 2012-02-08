@@ -145,7 +145,7 @@ public:
      */
     bool initialize()
     {
-        kernel = sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true, sml::Kernel::kUseAnyPort);
+        kernel = sml::Kernel::CreateKernelInCurrentThread(true, sml::Kernel::kUseAnyPort);
         if(!kernel || kernel->HadError()) 
         {
             std::cerr << "Error creating kernel";

@@ -42,8 +42,8 @@ SimpleListener::SimpleListener( int life )
 int SimpleListener::run()
 {
 	// Create the kernel instance
-	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::GetDefaultLibraryName(), false, sml::Kernel::kUseAnyPort) :
-											  sml::Kernel::CreateKernelInNewThread(sml::Kernel::GetDefaultLibraryName(), sml::Kernel::kUseAnyPort) ;
+	sml::Kernel* pKernel = useCurrentThread ? sml::Kernel::CreateKernelInCurrentThread(false, sml::Kernel::kUseAnyPort) :
+											  sml::Kernel::CreateKernelInNewThread(sml::Kernel::kUseAnyPort) ;
 
 	if ( pKernel->HadError() )
 	{

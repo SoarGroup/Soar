@@ -247,9 +247,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (newthread) {
-		kernel = Kernel::CreateKernelInNewThread(Kernel::kDefaultLibraryName, port);
+		kernel = Kernel::CreateKernelInNewThread(port);
 	} else {
-		kernel = Kernel::CreateKernelInCurrentThread(Kernel::kDefaultLibraryName, true, port);
+		kernel = Kernel::CreateKernelInCurrentThread(true, port);
 	}
 
 	kernel->AddRhsFunction("exit", exit_handler, NULL);

@@ -7,7 +7,7 @@ import sys
 Import('env')
 clone = env.Clone()
 
-libadd = Split('ClientSML ConnectionSML ElementXML SoarKernelSML SoarKernel CommandLineInterface sqlite3')
+libadd = ['soar']
 
 if sys.platform == "darwin":
 	if GetOption('platform') == '64':
@@ -19,8 +19,8 @@ else:
 		libadd.append('cppunit-linux-64')
 	else:
 		libadd.append('cppunit-linux')
-libpath = Split('$PREFIX/lib lib') 
-clone.Prepend(LIBS = libadd, LIBPATH = libpath)
+
+clone.Prepend(LIBS = libadd, LIBPATH = ['$PREFIX/lib', 'lib'])
 
 Tests = clone.Program('Tests', Glob('src/*.cpp'))
 

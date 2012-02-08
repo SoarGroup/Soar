@@ -200,7 +200,7 @@ int main() {
 		//
 		// set up Soar
         //
-		Kernel* kernel = Kernel::CreateKernelInNewThread("SoarKernelSML");
+		Kernel* kernel = Kernel::CreateKernelInNewThread();
 		Agent* agent = kernel->CreateAgent("Soar1");
 
 		RegisterForEvents(kernel, agent, dataList);

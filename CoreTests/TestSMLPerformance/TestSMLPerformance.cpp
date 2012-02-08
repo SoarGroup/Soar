@@ -193,7 +193,7 @@ void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* 
 }
 
 void RunTest1(int numAgents, int numWmes, int numCycles) {
-	Kernel* kernel = Kernel::CreateKernelInNewThread("SoarKernelSML");
+	Kernel* kernel = Kernel::CreateKernelInNewThread();
 	if(kernel->HadError()) {
 		cout << "Error: " << kernel->GetLastErrorDescription() << endl;
 	}
@@ -226,7 +226,7 @@ void RunTest1(int numAgents, int numWmes, int numCycles) {
 }
 
 void RunTest2(int numAgents, int numWmes, int numCycles) {
-	Kernel* kernel = Kernel::CreateKernelInNewThread("SoarKernelSML");
+	Kernel* kernel = Kernel::CreateKernelInNewThread();
 	if(kernel->HadError()) {
 		cout << "Error: " << kernel->GetLastErrorDescription() << endl;
 	}

@@ -191,13 +191,20 @@ AddOption('--static', action='store_true', dest='static', default=False,
 AddOption('--ios', action='store', type='choice', choices=['none','simulator','armv6','armv7'], dest='ios', default='none', nargs=1, metavar='IOS',
 		  help='Sets up for iOS compilation')
 
+
+build_dir = GetOption('build-dir')
+VariantDir(build_dir, '.', duplicate=0)
+
+def pref_build_dir(p):
+	return os.path.join(build_dir, p)
+
 #################
 # Create the environment using the options
 env = Environment(
 	ENV = {'PATH' : os.environ['PATH']},
 	CXX = GetOption('cxx'),
 	SCU = GetOption('scu'), 
-	BUILD_DIR = GetOption('build-dir'),
+	BUILD_DIR = build_dir,
 	PREFIX = os.path.realpath(GetOption('prefix')),
 	STATIC_LINKED = GetOption('static'),
 	SOAR_VERSION = SOAR_VERSION,
@@ -228,25 +235,18 @@ conf = Configure(env)
 if gcc[0] > 3:
 	lastCPPFLAGS = env['CPPFLAGS']
 	env.Append(CPPFLAGS = ['-fvisibility=hidden'])
-	if conf.TryCompile("char foo;", '.c'):
+	#if conf.TryCompile("char foo;", '.c'):
+	if False:
 		env['VISHIDDEN'] = True # needed by swig
 	else:
 		env['VISHIDDEN'] = False
 		env.Replace(CPPFLAGS = lastCPPFLAGS)
 
-# check for required libraries
-if not conf.CheckLib('dl'):
-	print 'cannot locate libdl'
-	Exit(1)
+for lib in ['dl', 'm', 'pthread']:
+	if not conf.CheckLib(lib):
+		print 'cannot locate lib%s' % lib
+		Exit(1)
 	
-if not conf.CheckLib('m'):
-	print 'cannot locate libm'
-	Exit(1)
-
-if not conf.CheckLib('pthread'):
-	print 'cannot locate libpthread'
-	Exit(1)
-		
 # Check for optional libraries
 env['HAS_TCL_LIB'] = conf.CheckLib('tcl8.4')
 #################
@@ -316,6 +316,26 @@ env.Default('.')
 Export('env')
 Export('javaRunAnt')
 
+libsoar_src = {
+#   Component          SCU source                         Non-SCU source
+	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
+	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
+	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
+	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
+	'ConnectionSML' : ('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')),
+	'ElementXML'    : ('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),
+	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
+}
+
+src = []
+for name, s in libsoar_src.items():
+	if env['SCU']:
+		src.append(pref_build_dir(s[0]))
+	else:
+		src.extend([pref_build_dir(f) for f in s[1]])
+
+libsoar = env.SharedLibrary(pref_build_dir('soar'), src)
+env.Install('$PREFIX/lib', libsoar)
 
 #################
 # Auto detect components
@@ -362,14 +382,7 @@ if swig:
 
 #################
 # Build core modules
-subdirs= [ 
-	'SoarKernel',
-	'ConnectionSML',
-	'ElementXML',
-	'CLI',
-	'ClientSML',
-	'KernelSML',
-	]
+subdirs= []
 
 if GetOption('ios') == 'none':
 	subdirs.append('Tests')
@@ -392,7 +405,6 @@ print "Installing targets to prefix directory ", env['PREFIX']
 
 for d in subdirs:
 	script = '#%s/SConscript' %d
-	print "Processing", script + "..."
 	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
 #################
@@ -400,10 +412,7 @@ for d in subdirs:
 # Special environment
 compEnv = env.Clone()
 #compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
-libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
-if compEnv['STATIC_LINKED']:
-	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
-compEnv.Prepend(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
+compEnv.Prepend(LIBS = 'soar', LIBPATH = ['$PREFIX/lib'])
 Export('compEnv')
 
 # Add TestCLI to components (it uses compEnv which wasn't exported earlier):
@@ -414,7 +423,6 @@ if GetOption('ios') == 'none':
 	for d in components:
 		script = '../%s/SConscript' % d
 		if os.path.exists(script):
-			print "Processing", script + "..."
 			SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 #################
 

@@ -23,7 +23,6 @@
 #include "sml_Events.h"
 #include "sml_RunScheduler.h"
 #include "sml_EmbeddedConnection.h"
-#include "KernelSMLDirect.h"
 
 #include "thread_Lock.h"
 #include "thread_Thread.h"
@@ -773,108 +772,15 @@ void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts ) {
 	PrintDebugFormat("%s", str.c_str()) ;
 }
 
-
-/////////////////////////////////////////////////////////////////
-// KernelSMLDirect methods.
-// 
-// These provide a higher speed access to a few methods that we
-// need for I/O with an embedded connection.
-// These just give us a way to optimize performance on the most
-// time critical part of the interface.
-/////////////////////////////////////////////////////////////////
-
-/*************************************************************
-* @brief	Add a wme.
-* @param input		True if adding to input link.  False if adding to output link
-* @param parent		NULL if adding to the root, otherwise the identifier (WMObject) we're adding to.
-* @param pAttribute The attribute name to use
-* @param value		The value to use
-*************************************************************/
-EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
-{
-	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
-	assert(pAgentSML);
-
-	pAgentSML->BufferedAddStringInputWME( pId, pAttribute, pValue, clientTimetag );
-}
-
-EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
-{
-	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
-	assert(pAgentSML);
-
-	pAgentSML->BufferedAddIntInputWME( pId, pAttribute, value, clientTimetag );
-}
-
-EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
-{
-	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
-	assert(pAgentSML);
-
-	pAgentSML->BufferedAddDoubleInputWME( pId, pAttribute, value, clientTimetag );
-}
-
-/*************************************************************
-* @brief	Remove a wme.  This function also releases the IWme*
-*			making it no longer valid.
-* @param wm			The working memory object (either input or output)
-* @param wme		The wme we're removing
-*************************************************************/
-EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, int64_t clientTimetag)
-{
-	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
-	assert(pAgentSML);
-
-	pAgentSML->BufferedRemoveInputWME( clientTimetag );
-}
-
-/*************************************************************
-* @brief	Creates a new identifier (parent ^attribute <new-id>).
-* @param wm			The working memory object (either input or output)
-* @param parent		The identifier (WMObject) we're adding to.
-* @param pAttribute	The attribute to add
-*************************************************************/
-EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
-{
-	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
-	assert(pAgentSML);
-
-	pAgentSML->BufferedAddIdInputWME( pId, pAttribute, pValueId, clientTimetag );
-}
-
-KernelSML* adaptToKernelSML(Connection_Receiver_Handle hConnection) 
-{	
-	EmbeddedConnection* pConnection = reinterpret_cast<EmbeddedConnection*>(hConnection) ;
-	assert(pConnection);
-	if (!pConnection) return 0;
-	
-	KernelSML* pKernelSML = reinterpret_cast<KernelSML*>(pConnection->GetUserData());
-	assert(pKernelSML);
-	return pKernelSML;
-}
-
-EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(Connection_Receiver_Handle hConnection, char const* pAgentName) 
-{
-	KernelSML* pKernelSML = adaptToKernelSML(hConnection);
-	if (!pKernelSML) return 0;
-
-	AgentSML* pAgentSML = pKernelSML->GetAgentSML( pAgentName );
-
-	return reinterpret_cast<Direct_AgentSML_Handle>(pAgentSML);
-}
-
 // A fully direct run would be a call straight to gSKI but supporting that is too dangerous
 // due to the extra events and control logic surrounding the SML RunScheduler.
 // So we compromise with a call directly to that scheduler, boosting performance over the standard "run" path
 // which goes through the command line processor.
-EXPORT void sml_DirectRun(Connection_Receiver_Handle hConnection, char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count)
+void KernelSML::DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count)
 {
-	KernelSML* pKernelSML = adaptToKernelSML(hConnection);
-	if (!pKernelSML) return;
-
 	smlRunStepSize interleaveSize = static_cast<smlRunStepSize>(interleaveSizeIn);
 
-	RunScheduler* pScheduler = pKernelSML->GetRunScheduler() ;
+	RunScheduler* pScheduler = GetRunScheduler() ;
 	smlRunFlags runFlags = sml_NONE ;
 
 	// Decide on the type of run.
@@ -885,7 +791,7 @@ EXPORT void sml_DirectRun(Connection_Receiver_Handle hConnection, char const* pA
 
 	if (pAgentName)
 	{
-		AgentSML* pAgentSML = pKernelSML->GetAgentSML( pAgentName );
+		AgentSML* pAgentSML = GetAgentSML( pAgentName );
 		if (!pAgentSML)
 			return ;
 
@@ -910,4 +816,3 @@ EXPORT void sml_DirectRun(Connection_Receiver_Handle hConnection, char const* pA
 	pScheduler->RunScheduledAgents(forever, runType, count, runFlags, smlRunStepSize(interleaveSize), synchronizeAtStart) ;
 	return ;
 }
-
