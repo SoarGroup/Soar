@@ -25,12 +25,12 @@ public:
 		return type;
 	}
 	
-	virtual bool predict(const floatvec &x, floatvec &y) = 0;
+	virtual bool predict(const rvec &x, rvec &y) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
 	
-	virtual float test(const floatvec &x, const floatvec &y);
-	virtual void learn(const floatvec &x, const floatvec &y, float dt) {}
+	virtual float test(const rvec &x, const rvec &y);
+	virtual void learn(const rvec &x, const rvec &y, float dt) {}
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
 	
@@ -55,9 +55,9 @@ public:
 	multi_model();
 	~multi_model();
 	
-	bool predict(const floatvec &x, floatvec &y);
-	void learn(const floatvec &x, const floatvec &y, float dt);
-	float test(const floatvec &x, const floatvec &y);
+	bool predict(const rvec &x, rvec &y);
+	void learn(const rvec &x, const rvec &y, float dt);
+	float test(const rvec &x, const rvec &y);
 	
 	std::string assign_model (
 		const std::string &name, 

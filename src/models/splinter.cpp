@@ -15,7 +15,7 @@ public:
 		finish();
 	}
 	
-    bool predict(const floatvec &x, floatvec &y) {
+	bool predict(const rvec &x, rvec &y) {
 		if (x.size() != 10 || y.size() != 8) {
 			return false;
 		}
@@ -24,7 +24,7 @@ public:
 		splinter_update(px, py, vx, vy, rz, rtz, lrps, rrps, lvolt, rvolt);
 
 		y[0] = px; y[1] = py; y[2] = vx; y[3] = vy; y[4] = rz; y[5] = rtz; y[6] = lrps; y[7] = rrps;
-    	return true;
+		return true;
 	}
 	
 	int get_input_size() const {

@@ -20,7 +20,7 @@ public:
 		finish();
 	}
 	
-	bool predict(const floatvec &x, floatvec &y) {
+	bool predict(const rvec &x, rvec &y) {
 		y[0] = x[0] + x[4];
 		y[1] = x[1] + x[5];
 		y[2] = x[2];
@@ -41,8 +41,8 @@ public:
 				vec3 p2(p0);
 				p1[i] = y[i] - CUBESIZE;
 				p2[i] = y[i] + CUBESIZE;
-				float d1 = p1.dist(p0);
-				float d2 = p2.dist(p0);
+				float d1 = (p1 - p2).norm();
+				float d2 = (p2 - p2).norm();
 				
 				if (bestdist < 0 || d1 < bestdist) {
 					bestpos = p1;

@@ -18,14 +18,13 @@ fi
 
 case "$1" in
 train)
-	export SVS_SAVE_MODELS=1
-	unset SVS_LOG_PREDICTION_ERRORS
+	SVS_OPTS+=,save_models
 	;;
 test)
-	export SVS_LOG_PREDICTION_ERRORS=1
-	unset SVS_SAVE_MODELS
+	SVS_OPTS+=,log_predictions
 	;;
 esac
+export SVS_OPTS
 
 iter=0
 OIFS="$IFS"

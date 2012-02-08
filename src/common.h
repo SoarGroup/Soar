@@ -13,16 +13,21 @@
 #include <ostream>
 #include <fstream>
 #include <map>
+#include <Eigen/Dense>
 
 #include "linalg.h"
 
+typedef Eigen::RowVectorXd rvec;
+typedef Eigen::VectorXd cvec;
+typedef Eigen::MatrixXd mat;
+typedef Eigen::MatrixXi imat;
+
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
-std::string getnamespace();
 
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
 
-#if 0
+#if 1
 #define DATAVIS(x) get_datavis() << x;
 #else
 #define DATAVIS(x)
@@ -79,339 +84,6 @@ inline bool map_pop(std::map<A, B> &m, const A &key, B &val) {
 	return true;
 }
 
-class floatvec {
-public:
-	floatvec() : sz(0), mem(NULL) {}
-	
-	floatvec(const floatvec &v) : sz(v.sz) { 
-		mem = (float *) malloc(sz * sizeof(float));
-		memcpy(mem, v.mem, sizeof(float) * sz);
-	}
-	
-	floatvec(int sz) : sz(sz) {
-		mem = (float *) malloc(sz * sizeof(float));
-		zero();
-	}
-	
-	floatvec(float *data, int sz) : sz(sz) {
-		mem = (float *) malloc(sz * sizeof(float));
-		memcpy(mem, data, sizeof(float) * sz);
-	}
-	
-	floatvec(const std::vector<float> &v) {
-		sz = v.size();
-		mem = (float *) malloc(sz * sizeof(float));
-		std::copy(v.begin(), v.end(), mem);
-	}
-	
-	~floatvec() {
-		free(mem);
-	}
-
-	int size() const {
-		return sz;
-	}
-
-	int argmax() const {
-		int max = 0;
-		for(int i = 1; i < sz; i++) {
-			if (mem[i] > mem[max]) {
-				max = i;
-			}
-		}
-		return max;
-	}
-	
-	int max() const {
-		return mem[argmax()];
-	}
-
-	/* The working array is necessary to allow the operations to be
-	 * vectorized. It must be at least as large as the floatvec.
-	 * Auto-vectorization by g++ v4.2+ gives a 4x speed-up with 4 byte
-	 * floats on intel processors with sse2+. Without auto-vectorization
-	 * this at least shouldn't hurt performance. */
-	float distsq(const floatvec &v, float * __restrict__ work) const {
-		//assert(sz == v.sz);
-		int i;
-		float s = 0.;
-		for(i = 0; i < sz; ++i) {
-			work[i] = (mem[i] - v.mem[i]) * (mem[i] - v.mem[i]);
-		}
-		for(i = 0; i < sz; ++i) {
-			s += work[i];
-		}
-		return s;
-	}
-	
-	/* This version isn't vectorizable */
-	float distsq(const floatvec &v) const {
-		//assert(sz == v.sz);
-		float s = 0.;
-		for(int i = 0; i < sz; ++i) {
-			s += (mem[i] - v.mem[i]) * (mem[i] - v.mem[i]);
-		}
-		return s;
-	}
-	
-	float dist(const floatvec &v, float *work) const {
-		return sqrt(distsq(v, work));
-	}
-
-	float dist(const floatvec &v) const {
-		return sqrt(distsq(v));
-	}
-	
-	void zero() {
-		memset(mem, 0, sz * sizeof(float));
-	}
-	
-	void replace(float v1, float v2) {
-		for (int i = 0; i < sz; ++i) {
-			if (mem[i] == v1) {
-				mem[i] = v2;
-			}
-		}
-	}
-
-	void set_indices(const std::vector<int> &inds, const floatvec &v) {
-		assert(v.size() == inds.size());
-		for (int i = 0; i < inds.size(); ++i) {
-			assert(0 <= inds[i] && inds[i] < sz);
-			mem[inds[i]] = v[i];
-		}
-	}
-	
-	void graft(int pos, const floatvec &v) {
-		assert(pos + v.size() <= size());
-		memcpy(mem + pos, v.mem, v.sz * sizeof(float));
-	}
-	
-	void resize(int size) {
-		sz = size;
-		mem = (float*) realloc(mem, sz * sizeof(float));
-	}
-	
-	void extend(const floatvec &v) {
-		int oldsz = sz;
-		resize(sz + v.sz);
-		memcpy(mem + oldsz, v.mem, v.sz * sizeof(float));
-	}
-	
-	void randomize(const floatvec &min, const floatvec &max) {
-		assert(sz == min.sz && sz == max.sz);
-		for (int i = 0; i < sz; ++i) {
-			mem[i] = min[i] + (((float) rand()) / RAND_MAX) * (max[i] - min[i]);
-		}
-	}
-	
-	float sum() const {
-		float s = 0.0;
-		for (int i = 0; i < sz; ++i) {
-			s += mem[i];
-		}
-		return s;
-	}
-	
-	float magnitude() const {
-		float m = 0.;
-		for (int i = 0; i < sz; ++i) {
-			m += mem[i] * mem[i];
-		}
-		return sqrt(m);
-	}
-	
-	floatvec unit() const {
-		floatvec c(sz);
-		float m = magnitude();
-		for (int i = 0; i < sz; ++i) {
-			c[i] = mem[i] / m;
-		}
-		return c;
-	}
-	
-	float &operator[](int i) {
-		assert(i >= 0 && i < sz);
-		return mem[i];
-	}
-	
-	float operator[](int i) const {
-		assert(i >= 0 && i < sz);
-		return mem[i];
-	}
-	
-	floatvec slice(int i, int j) const {
-		assert(0 <= i && i <= j && j <= sz);
-		floatvec s(j - i);
-		memcpy(s.mem, &mem[i], (j - i) * sizeof(float));
-		return s;
-	}
-	
-	floatvec slice(const std::vector<int> &inds) const {
-		floatvec s(inds.size());
-		for (int i = 0; i < inds.size(); ++i) {
-			assert(0 <= inds[i] && inds[i] < sz);
-			s[i] = mem[inds[i]];
-		}
-		return s;
-	}
-
-	void operator=(const floatvec &v) {
-		if (sz != v.sz) {
-			sz = v.sz;
-			mem = (float*) realloc(mem, sizeof(float) * sz);
-		}
-		memcpy(mem, v.mem, sz * sizeof(float));
-	}
-	
-	void operator=(const std::vector<float> &v) {
-		if (sz != v.size()) {
-			sz = v.size();
-			free(mem);
-			mem = (float*) malloc(sizeof(float) * sz);
-		}
-		std::copy(v.begin(), v.end(), mem);
-	}
-	
-	floatvec operator+(const floatvec &v) const {
-		floatvec c(sz);
-		for(int i = 0; i < sz; ++i) {
-			c.mem[i] = mem[i] + v.mem[i];
-		}
-		return c;
-	}
-	
-	void operator+=(const floatvec &v) {
-		assert(sz == v.sz);
-		for(int i = 0; i < sz; ++i) {
-			mem[i] += v.mem[i];
-		}
-	}
-	
-	floatvec operator-(const floatvec &v) const {
-		floatvec c(sz);
-		for(int i = 0; i < sz; ++i) {
-			c.mem[i] = mem[i] - v.mem[i];
-		}
-		return c;
-	}
-	
-	void operator-=(const floatvec &v) {
-		//assert(sz == v.sz);
-		for(int i = 0; i < sz; ++i) {
-			mem[i] -= v.mem[i];
-		}
-	}
-	
-	floatvec operator*(float v) const {
-		floatvec c(sz);
-		for(int i = 0; i < sz; ++i) {
-			c.mem[i] = mem[i] * v;
-		}
-		return c;
-	}
-	
-	floatvec operator*(const floatvec &v) const {
-		floatvec c(sz);
-		for(int i = 0; i < sz; ++i) {
-			c.mem[i] = mem[i] * v.mem[i];
-		}
-		return c;
-	}
-	
-	void operator*=(const floatvec &v) {
-		//assert(sz == v.sz);
-		for(int i = 0; i < sz; ++i) {
-			mem[i] *= v.mem[i];
-		}
-	}
-	
-	
-	void operator*=(float v) {
-		for(int i = 0; i < sz; ++i) {
-			mem[i] *= v;
-		}
-	}
-	
-	floatvec operator/(const floatvec &v) const {
-		floatvec c(sz);
-		for(int i = 0; i < sz; ++i) {
-			c.mem[i] = mem[i] / v.mem[i];
-		}
-		return c;
-	}
-	
-	floatvec operator/(float v) const {
-		floatvec c(sz);
-		for(int i = 0; i < sz; ++i) {
-			c.mem[i] = mem[i] / v;
-		}
-		return c;
-	}
-	
-	void operator/=(const floatvec &v) {
-		//assert(sz == v.sz);
-		for(int i = 0; i < sz; ++i) {
-			mem[i] /= v.mem[i];
-		}
-	}
-	
-	void operator/=(float v) {
-		for(int i = 0; i < sz; ++i) {
-			mem[i] /= v;
-		}
-	}
-	
-	bool operator==(const floatvec &v) const {
-		if (sz != v.sz) {
-			return false;
-		}
-		for (int i = 0; i < sz; ++i) {
-			if (mem[i] != v.mem[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	bool operator<(const floatvec &v) const {
-		for (int i = 0; i < sz; ++i) {
-			if (i >= v.sz) {
-				// all common values equal, v is shorter
-				return false;
-			}
-			if (mem[i] < v.mem[i]) {
-				return true;
-			} else if (mem[i] > v.mem[i]) {
-				return false;
-			}
-		}
-		if (v.sz > sz) {
-			// all common values equal, v is longer
-			return true;
-		}
-		// vectors are identical
-		return false;
-	}
-	
-	bool operator<=(const floatvec &v) const {
-		return operator==(v) || operator<(v);
-	}
-	
-	bool operator>(const floatvec &v) const {
-		return !operator<=(v);
-	}
-	
-	bool operator>=(const floatvec &v) const {
-		return !operator<(v);
-	}
-	
-	friend std::ostream &operator<<(std::ostream &os, const floatvec &v);
-	
-private:
-	float *mem;
-	int sz;
-};
 
 class namedvec {
 public:
@@ -501,7 +173,7 @@ public:
 		ind2name.clear();
 	}
 	
-	floatvec vals;
+	rvec vals;
 	
 private:
 	std::map<std::string, int> name2ind;
@@ -526,13 +198,13 @@ vec3 calc_centroid(const ptlist &pts);
 */
 float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
 
-void histogram(const floatvec &vals, int nbins);
+void histogram(const rvec &vals, int nbins);
 
 class bbox {
 public:
 	bbox() {
-		min.zero();
-		max.zero();
+		min.setZero();
+		max.setZero();
 	}
 	
 	/* bounding box around single point */
@@ -543,8 +215,8 @@ public:
 	
 	bbox(ptlist &pts) {
 		if (pts.size() == 0) {
-			min.zero();
-			max.zero();
+			min.setZero();
+			max.setZero();
 		} else {
 			min = pts[0];
 			max = pts[0];
@@ -643,9 +315,24 @@ void load_vector(std::vector<T> &v, std::istream &is) {
 	}
 }
 
+void save_mat(std::ostream &os, const mat &m);
+void load_mat(std::istream &is, mat &m);
+void save_imat(std::ostream &os, const imat &m);
+void load_imat(std::istream &is, imat &m);
+void save_rvec(std::ostream &os, const rvec &v);
+void load_rvec(std::istream &is, rvec &v);
+void save_cvec(std::ostream &os, const cvec &v);
+void load_cvec(std::istream &is, cvec &v);
+
 inline double gausspdf(double x, double mean, double std) {
 	const double SQRT2PI = 2.5066282746310002;
 	return (1. / std * SQRT2PI) * exp(-((x - mean) * (x - mean) / (2 * std * std)));
 }
+
+inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
+	v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
+}
+
+std::string get_option(const std::string &key);
 
 #endif

@@ -1,11 +1,10 @@
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 #include <iterator>
-#include <armadillo>
 #include "nn.h"
 #include "common.h"
 #include "linear.h"
@@ -14,9 +13,11 @@
 #include "model.h"
 
 using namespace std;
-using namespace arma;
+using namespace Eigen;
 
-const double INF = numeric_limits<double>::infinity();
+rvec norm_vec(const rvec &v, const rvec &min, const rvec &range) {
+	return ((v.array() - min.array()) / range.array()).matrix();
+}
 
 class lwr : public model {
 public:
@@ -40,7 +41,7 @@ public:
 		}
 	}
 	
-	void learn(const floatvec &x, const floatvec &y, float dt) {
+	void learn(const rvec &x, const rvec &y, float dt) {
 		if (xsize < 0) {
 			xsize = x.size();
 			ysize = y.size();
@@ -68,7 +69,7 @@ public:
 		if (examples.size() == 1) {
 			xmin = x;
 			xmax = x;
-			xrange.zero();
+			xrange.setZero();
 		} else {
 			for (int i = 0; i < xsize; ++i) {
 				if (x[i] < xmin[i]) {
@@ -83,117 +84,13 @@ public:
 		
 		if (normalized) {
 			// otherwise just wait for renormalization
-			xnorm.push_back((x - xmin) / xrange);
+			xnorm.push_back(norm_vec(x, xmin, xrange));
 		}
 	}
 	
-	
-	bool predict2(const floatvec &x, floatvec &y) {
-		mat X, Y, Xd, Yd;
-		rowvec xd, yd;
-		vec d;
-		vector<int> xdi, ydi;
-		di_queue neighbors;
-		timer tall, tnn;
-		int i, j, k;
-	
-		tall.start();
-		k = examples.size() > nnbrs ? nnbrs : examples.size();
-		if (k == 0) {
-			return false;
-		}
-		
-		if (!normalized) {
-			normalize();
-			normalized = true;
-		}
-		
-		floatvec xn((x - xmin) / xrange);
-		
-		tnn.start();
-		nn->query(xn, k, neighbors);
-		//cout << "NN:  " << tnn.stop() << endl;
-		
-		X.reshape(k, xsize);
-		Y.reshape(k, ysize);
-		d.reshape(k, 1);
-		for(i = 0; i < k; ++i) {
-			d(i) = neighbors.top().first;
-			int ind = neighbors.top().second;
-			neighbors.pop();
-			floatvec &tx = examples[ind].first;
-			floatvec &ty = examples[ind].second;
-			for(j = 0; j < xsize; ++j) {
-				X(i, j) = tx[j];
-			}
-			for(j = 0; j < ysize; ++j) {
-				Y(i, j) = ty[j];
-			}
-		}
-		
-		vec w = sqrt(pow(d, -3));
-		
-		/*
-		 Any neighbor whose weight is infinity is close enough
-		 to provide an exact solution.	If any exist, take their
-		 average as the solution.  If we don't do this the solve()
-		 will fail due to infinite values in Z and V.
-		*/
-		rowvec closeavg = zeros<rowvec>(ysize);
-		int nclose = 0;
-		for (i = 0; i < w.n_elem; ++i) {
-			if (w(i) == INF) {
-				closeavg += Y.row(i);
-				++nclose;
-			}
-		}
-		if (nclose > 0) {
-			for(i = 0; i < closeavg.n_elem; ++i) {
-				y[i] = closeavg(i) / nclose;
-			}
-			return true;
-		}
-		
-		remove_static(X, Xd, xdi);
-		remove_static(Y, Yd, ydi);
-		
-		if (ydi.size() == 0) {
-			// all neighbors are identical, use first as prediction
-			for (i = 0; i < ysize; ++i) {
-				y[i] = Y(0, i);
-			}
-			return true;
-		}
-		
-		if (X.n_rows < xdi.size()) {
-			// would result in underconstrained system
-			return false;
-		}
-		
-		xd = ones<rowvec>(1, xdi.size());
-		for (i = 0; i < xdi.size(); ++i) {
-			xd(i) = x[xdi[i]];
-		}
-		
-		ridge(Xd, Yd, w, xd, yd);
-		
-		/* final answer is first (actually any will do) row of
-		   Y with dynamic columns changed
-		*/
-		for (i = 0; i < ysize; ++i) {
-			y[i] = Y(0, i);
-		}
-		for (i = 0; i < ydi.size(); ++i) {
-			y[ydi[i]] = yd(i);
-		}
-		
-		//cout << "ALL: " << tall.stop() << endl;
-		return true;
-	}
-	
-	bool predict(const floatvec &x, floatvec &y) {
+	bool predict(const rvec &x, rvec &y) {
 		mat X, Y;
-		vec d;
+		rvec d;
 		di_queue neighbors;
 		timer tall, tnn;
 		int i, j, k;
@@ -209,21 +106,21 @@ public:
 			normalized = true;
 		}
 		
-		floatvec xn((x - xmin) / xrange);
+		rvec xn = norm_vec(x, xmin, xrange);
 		
 		tnn.start();
 		nn->query(xn, k, neighbors);
 		//cout << "NN:  " << tnn.stop() << endl;
 		
-		X.reshape(k, xsize);
-		Y.reshape(k, ysize);
-		d.reshape(k, 1);
+		X.resize(k, xsize);
+		Y.resize(k, ysize);
+		d.resize(k, 1);
 		for(i = 0; i < k; ++i) {
 			d(i) = neighbors.top().first;
 			int ind = neighbors.top().second;
 			neighbors.pop();
-			floatvec &tx = examples[ind].first;
-			floatvec &ty = examples[ind].second;
+			rvec &tx = examples[ind].first;
+			rvec &ty = examples[ind].second;
 			for(j = 0; j < xsize; ++j) {
 				X(i, j) = tx[j];
 			}
@@ -232,7 +129,7 @@ public:
 			}
 		}
 		
-		vec w = sqrt(pow(d, -3));
+		rvec w = d.array().pow(-3).sqrt();
 		
 		/*
 		 Any neighbor whose weight is infinity is close enough
@@ -240,26 +137,22 @@ public:
 		 average as the solution.  If we don't do this the solve()
 		 will fail due to infinite values in Z and V.
 		*/
-		rowvec closeavg = zeros<rowvec>(ysize);
+		rvec closeavg = rvec::Zero(ysize);
 		int nclose = 0;
-		for (i = 0; i < w.n_elem; ++i) {
-			if (w(i) == INF) {
+		for (i = 0; i < w.size(); ++i) {
+			if (w(i) == INFINITY) {
 				closeavg += Y.row(i);
 				++nclose;
 			}
 		}
 		if (nclose > 0) {
-			for(i = 0; i < closeavg.n_elem; ++i) {
+			for(i = 0; i < closeavg.size(); ++i) {
 				y[i] = closeavg(i) / nclose;
 			}
 			return true;
 		}
 
-		rowvec xv(x.size());
-		for (i = 0; i < xv.n_cols; ++i) {
-			xv(i) = x[i];
-		}
-		y[0] = pcr(X, Y, xv);
+		pcr(X, Y, x, y);
 		return true;
 	}
 	
@@ -273,7 +166,7 @@ public:
 			assert(false);
 		}
 		
-		floatvec x(xsize), y(ysize);
+		rvec x(xsize), y(ysize);
 		
 		for (int i = 0; i < nexamples; ++i) {
 			for(int j = 0; j < xsize; ++j) {
@@ -292,7 +185,7 @@ public:
 	}
 	
 	void save(ostream &os) const {
-		vector<pair<floatvec, floatvec> >::const_iterator i;
+		vector<pair<rvec, rvec> >::const_iterator i;
 		os << xsize << " " << ysize << " " << examples.size() << endl;
 		for (i = examples.begin(); i != examples.end(); ++i) {
 			for (int j = 0; j < xsize; ++j) {
@@ -315,24 +208,26 @@ public:
 	
 private:
 	void normalize() {
-		vector<pair<floatvec, floatvec> >::iterator i;
+		vector<pair<rvec, rvec> >::iterator i;
 		
-		xrange = xmax;
-		xrange -= xmin;
-		xrange.replace(0.0, 1.0);  // can't have division by 0
+		xrange = xmax - xmin;
+		// can't have division by 0
+		for (int i = 0; i < xrange.size(); ++i) {
+			if (xrange[i] == 0.0) {
+				xrange[i] = 1.0;
+			}
+		}
 		xnorm.clear();
 		xnorm.reserve(examples.size());
 		for (i = examples.begin(); i != examples.end(); ++i) {
-			xnorm.push_back(i->first);
-			xnorm.back() -= xmin;
-			xnorm.back() /= xrange;
+			xnorm.push_back(norm_vec(i->first, xmin, xrange));
 		}
 	}
 	
 	int xsize, ysize, nnbrs;
-	std::vector<std::pair<floatvec, floatvec> > examples;
-	std::vector<floatvec> xnorm;
-	floatvec xmin, xmax, xrange;
+	std::vector<std::pair<rvec, rvec> > examples;
+	std::vector<rvec> xnorm;
+	rvec xmin, xmax, xrange;
 	bool normalized;
 	nearest_neighbor *nn;
 	std::ofstream *log;

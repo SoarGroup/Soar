@@ -24,28 +24,15 @@ void split(const string &s, const string &delim, vector<string> &fields) {
 	}
 }
 
-string getnamespace() {
-	char *s;
-	if ((s = getenv("SVSNAMESPACE")) == NULL) {
-		return "";
-	}
-	
-	string ns(s);
-	if (ns.size() > 0 && *ns.rbegin() != '/') {
-		ns.push_back('/');
-	}
-	return ns;
-}
-
 ofstream& get_datavis() {
 	static bool first = true;
-	static const char *path = getenv("SVS_DATA_PIPE");
 	static ofstream f;
 	if (first) {
-		if (path == NULL || access(path, W_OK) < 0) {
+		string path = get_option("datavis");
+		if (path.empty() || access(path.c_str(), W_OK) < 0) {
 			f.open("/dev/null");
 		} else {
-			f.open(path);
+			f.open(path.c_str());
 			f << "CLEAR" << endl;
 		}
 		first = false;
@@ -53,10 +40,10 @@ ofstream& get_datavis() {
 	return f;
 }
 
-ostream &operator<<(ostream &os, const floatvec &v) {
-	copy(v.mem, v.mem + v.sz, ostream_iterator<float>(os, " "));
-	return os;
-}
+//ostream &operator<<(ostream &os, const floatvec &v) {
+//	copy(v.mem, v.mem + v.sz, ostream_iterator<float>(os, " "));
+//	return os;
+//}
 
 ostream &operator<<(ostream &os, const namedvec &v) {
 	string name;
@@ -72,17 +59,21 @@ ostream &operator<<(ostream &os, const namedvec &v) {
 vec3 calc_centroid(const ptlist &pts) {
 	ptlist::const_iterator i;
 	int d;
-	vec3 c;
+	vec3 c = vec3::Zero();
 	
 	for (i = pts.begin(); i != pts.end(); ++i) {
-		for (d = 0; d < 3; ++d) {
-			c[d] += (*i)[d];
-		}
+		c += *i;
 	}
-	for (d = 0; d < 3; ++d) {
-		c[d] /= pts.size();
+
+	return c / pts.size();
+}
+
+vec3 project(const vec3 &v, const vec3 &u) {
+	float m = u.squaredNorm();
+	if (m == 0.) {
+		return vec3::Zero();
 	}
-	return c;
+	return u * (v.dot(u) / m);
 }
 
 float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
@@ -91,14 +82,14 @@ float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	vec3 p;
 	float x, min = numeric_limits<float>::max(), max = -numeric_limits<float>::max();
 	for (i = a.begin(); i != a.end(); ++i) {
-		p = i->project(u);
+		p = project(*i, u);
 		x = p[0] / u[0];
 		if (x < min) {
 			min = x;
 		}
 	}
 	for (i = b.begin(); i != b.end(); ++i) {
-		p = i->project(u);
+		p = project(*i, u);
 		x = p[0] / u[0];
 		if (x > max) {
 			max = x;
@@ -108,7 +99,7 @@ float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	return max - min;
 }
 
-void histogram(const floatvec &vals, int nbins) {
+void histogram(const rvec &vals, int nbins) {
 	assert(nbins > 0);
 	float min = vals[0], max = vals[0], binsize, hashes_per;
 	int i, b, maxcount = 0;
@@ -147,4 +138,130 @@ void histogram(const floatvec &vals, int nbins) {
 ostream& operator<<(ostream &os, const bbox &b) {
 	os << b.min[0] << " " << b.min[1] << " " << b.min[2] << " " << b.max[0] << " " << b.max[1] << " " << b.max[2];
 	return os;
+}
+
+void save_mat(std::ostream &os, const mat &m) {
+	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
+	os << m << endl << "end_mat" << endl;
+}
+
+void load_mat(std::istream &is, mat &m) {
+	string token;
+	char *endptr;
+	int nrows, ncols;
+	double x;
+	is >> token;
+	assert(token == "begin_mat");
+	is >> token;
+	nrows = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	is >> token;
+	ncols = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	
+	m.resize(nrows, ncols);
+	for (int i = 0; i < nrows; ++i) {
+		for (int j = 0; j < ncols; ++j) {
+			is >> token;
+			x = strtod(token.c_str(), &endptr);
+			assert(endptr[0] == '\0');
+			m(i, j) = x;
+		}
+	}
+	is >> token;
+	assert(token == "end_mat");
+}
+
+void save_imat(std::ostream &os, const imat &m) {
+	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
+	os << m << endl << "end_mat" << endl;
+}
+
+void load_imat(std::istream &is, imat &m) {
+	string token;
+	char *endptr;
+	int nrows, ncols;
+	int x;
+	is >> token;
+	assert(token == "begin_mat");
+	is >> token;
+	nrows = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	is >> token;
+	ncols = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	
+	m.resize(nrows, ncols);
+	for (int i = 0; i < nrows; ++i) {
+		for (int j = 0; j < ncols; ++j) {
+			is >> token;
+			x = strtol(token.c_str(), &endptr, 10);
+			assert(endptr[0] == '\0');
+			m(i, j) = x;
+		}
+	}
+	is >> token;
+	assert(token == "end_mat");
+}
+
+void save_rvec(std::ostream &os, const rvec &v) {
+	os << "begin_vec " << v.size() << endl;
+	os << v << endl;
+	os << "end_vec" << endl;
+}
+
+void load_rvec(std::istream &is, rvec &v) {
+	string token;
+	char *endptr;
+	int n;
+	double x;
+	is >> token;
+	assert(token == "begin_vec");
+	is >> token;
+	n = strtol(token.c_str(), &endptr, 10);
+	assert(endptr[0] == '\0');
+	
+	v.resize(n);
+	for (int i = 0; i < n; ++i) {
+		is >> token;
+		x = strtod(token.c_str(), &endptr);
+		assert(endptr[0] == '\0');
+		v(i) = x;
+	}
+	is >> token;
+	assert(token == "end_vec");
+}
+
+void save_cvec(std::ostream &os, const cvec &v) {
+	save_rvec(os, v.transpose());
+}
+
+void load_cvec(std::istream &is, cvec &v) {
+	rvec v1;
+	load_rvec(is, v1);
+	v = v1.transpose();
+}
+
+string get_option(const string &key) {
+	static map<string, string> options;
+	static bool first = true;
+	
+	if (first) {
+		char *s;
+		if ((s = getenv("SVS_OPTS")) != NULL) {
+			string optstr(s);
+			vector<string> fields;
+			split(optstr, ",", fields);
+			for (int i = 0; i < fields.size(); ++i) {
+				size_t p = fields[i].find_first_of(':');
+				if (p == string::npos) {
+					options[fields[i]] = "-";
+				} else {
+					options[fields[i].substr(0, p)] = fields[i].substr(p+1);
+				}
+			}
+		}
+		first = false;
+	}
+	return options[key];
 }

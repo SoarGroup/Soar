@@ -125,7 +125,7 @@ void scene::clear() {
 	}
 }
 
-bool parse_n_floats(vector<string> &f, int &start, int n, float *x) {
+bool parse_vec3(vector<string> &f, int &start, int n, vec3 &v) {
 	stringstream ss;
 	if (start + n > f.size()) {
 		start = f.size();
@@ -133,7 +133,7 @@ bool parse_n_floats(vector<string> &f, int &start, int n, float *x) {
 	}
 	for (int i = 0; i < n; ++start, ++i) {
 		ss << f[start] << endl;
-		if (!(ss >> x[i])) {  // conversion failure
+		if (!(ss >> v[i])) {  // conversion failure
 			return false;
 		}
 	}
@@ -150,7 +150,7 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts) {
 	verts.clear();
 	while (start < f.size()) {
 		i = start;
-		if (!parse_n_floats(f, start, 3, v.a)) {
+		if (!parse_vec3(f, start, 3, v)) {
 			return (i == start);  // end of list
 		}
 		verts.push_back(v);
@@ -168,7 +168,7 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 		}
 		type = f[start][0];
 		start++;
-		if (!parse_n_floats(f, start, 3, t.a)) {
+		if (!parse_vec3(f, start, 3, t)) {
 			return false;
 		}
 		switch (type) {
@@ -192,7 +192,7 @@ int scene::parse_add(vector<string> &f) {
 	ptlist verts;
 	int p;
 	sgnode *n, *par;
-	vec3 pos, rot, scale(1., 1., 1.);
+	vec3 pos = vec3::Zero(), rot = vec3::Zero(), scale = vec3::Constant(1.0);
 
 	if (f.size() < 2) {
 		return f.size();
@@ -376,23 +376,20 @@ void scene::get_property_names(vector<string> &names) const {
 	}
 }
 
-void scene::get_properties(floatvec &vals) const {
+void scene::get_properties(rvec &vals) const {
 	node_map::const_iterator i;
 	property_map::const_iterator j;
-	int k1, k2, l = 0;
-	const char *types = "prs";
-	vec3 trans;
+	int k = 0;
 	
 	vals.resize(get_dof());
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		for (k1 = 0; k1 < 3; ++k1) {
-			trans = i->second.node->get_trans(types[k1]);
-			for (k2 = 0; k2 < 3; ++k2) {
-				vals[l++] = trans[k2];
-			}
+		for (const char *t = "prs"; *t != '\0'; ++t) {
+			vec3 trans = i->second.node->get_trans(*t);
+			vals.segment(k, 3) = trans;
+			k += 3;
 		}
 		for (j = i->second.props.begin(); j != i->second.props.end(); ++j) {
-			vals[l++] = j->second;
+			vals[k++] = j->second;
 		}
 	}
 }
@@ -453,7 +450,7 @@ bool scene::set_property(const string &obj, const string &prop, float val) {
 	return true;
 }
 
-bool scene::set_properties(const floatvec &vals) {
+bool scene::set_properties(const rvec &vals) {
 	node_map::iterator i;
 	property_map::iterator j;
 	int k1, k2, l = 0;

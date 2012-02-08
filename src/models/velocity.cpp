@@ -18,7 +18,7 @@ public:
 		finish();
 	}
 	
-	bool predict(const floatvec &x, floatvec &y) {
+	bool predict(const rvec &x, rvec &y) {
 		if (x.size() != dims * 2 || y.size() != dims) {
 			return false;
 		}

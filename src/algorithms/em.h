@@ -3,7 +3,6 @@
 
 #include <set>
 #include <vector>
-#include <armadillo>
 #include "linear.h"
 #include "common.h"
 
@@ -32,14 +31,14 @@ public:
 	void update_eligibility();
 	void update_Py_z(int i, std::set<int> &check);
 	void update_MAP(const std::set<int> &pts);
-	void add_data(const floatvec &x, double y);
+	void add_data(const rvec &x, double y);
 	void estep();
 	bool mstep();
 	bool unify_or_add_model();
 	bool remove_models();
 	bool step();
 	bool run(int maxiters);
-	bool predict(const floatvec &x, float &y);
+	bool predict(const rvec &x, double &y);
 	double error();
 	int get_nmodels() const { return nmodels; }
 	
@@ -50,19 +49,19 @@ public:
 	void load(std::istream &is);
 	
 	void print_tree(std::ostream &os) const;
-	void test_classify(const floatvec &x, double y, int &best, int &predicted, double &besterror);
+	void test_classify(const rvec &x, double y, int &best, int &predicted, double &besterror);
 	
 private:
-	int classify(const floatvec &x);
+	int classify(const rvec &x);
 	
 	std::vector<LRModel*> models;
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;
 	
-	arma::mat  xdata;       // ndata x xdim
-	arma::vec  ydata;       // ndata x 1
-	arma::mat  Py_z;        // nmodels x ndata
-	arma::imat eligible;    // nmodels x ndata
+	mat  xdata;       // ndata x xdim
+	mat  ydata;       // ndata x 1
+	mat  Py_z;        // nmodels x ndata
+	imat eligible;    // nmodels x ndata
 	
 	/*
 	 This will be read directly by the decision tree learner as the

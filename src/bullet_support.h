@@ -27,7 +27,7 @@ private:
 };
 
 inline btVector3 to_btvec(const vec3 &v) {
-	return btVector3(v.a[0], v.a[1], v.a[2]);
+	return btVector3(v[0], v[1], v[2]);
 }
 
 inline vec3 from_btvec(const btVector3 &v) {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include "drawer.h"
+#include "common.h"
 
 using namespace std;
 
@@ -13,13 +14,18 @@ int drawer::VERTS = 1 << 5;
 bool drawer::fifo_open = false;
 ofstream drawer::fifo;
 
+void write_ptlist(std::ostream &os, const ptlist &l) {
+	copy(l.begin(), l.end(), ostream_iterator<vec3>(os, " "));
+}
+
 drawer::drawer(const string &sname) 
 : scene_name(sname), scl(1., 1., 1.), color(0., 1., 0.)
 {
 	if (!fifo_open) {
-		char *path = getenv("SVS_DISPLAY_PIPE");
-		if (path != NULL && access(path, W_OK) == 0) {
-			fifo.open(path);
+		string path = get_option("display");
+		if (!path.empty() && access(path.c_str(), W_OK) == 0) {
+			fifo.open(path.c_str());
+			fifo_open = true;
 		}
 	}
 }
@@ -63,19 +69,18 @@ void drawer::set_vertices(sgnode *n) {
 }
 
 void drawer::reset_properties() {
-	pos.zero();
-	rot.zero();
-	scl = vec3(1., 1., 1.);
-	color = vec3(0., 1., 0.);
+	pos << 0, 0, 0;
+	rot << 0, 0, 0;
+	scl << 1, 1, 1;
+	color << 0, 1, 0;
 }
 
 void drawer::add(const string &name) {
 	if (!fifo_open) return;
 	
 	fifo << scene_name << " u " << name << " world v ";
-	copy(verts.begin(), verts.end(), ostream_iterator<vec3>(fifo, " "));
+	write_ptlist(fifo, verts);
 	fifo << " p " << pos << " r " << rot << " s " << scl << endl;
-	//fifo << scene_name << " t " << name << "_label " << pos << " " << name << endl;
 	fifo.flush();
 }
 
@@ -107,7 +112,7 @@ void drawer::change(const string &name, int props) {
 	fifo << scene_name << " u " << name;
 	if (props & VERTS) {
 		fifo << " v ";
-		copy(verts.begin(), verts.end(), ostream_iterator<vec3>(fifo, " "));
+		write_ptlist(fifo, verts);
 	}
 	if (props & POS) {
 		fifo << " p " << pos;

@@ -33,11 +33,11 @@ public:
 	void clear();
 
 	void get_property_names(std::vector<std::string> &names) const;
-	void get_properties(floatvec &vals) const;
+	void get_properties(rvec &vals) const;
 	bool get_property(const std::string &obj, const std::string &prop, float &val) const;
 	bool add_property(const std::string &obj, const std::string &prop, float val);
 	bool set_property(const std::string &obj, const std::string &prop, float val);
-	bool set_properties(const floatvec &vals);
+	bool set_properties(const rvec &vals);
 	bool remove_property(const std::string &obj, const std::string &prop);
 	
 	float get_dt() const;
@@ -56,9 +56,9 @@ private:
 	int  parse_add(std::vector<std::string> &f);
 	int  parse_del(std::vector<std::string> &f);
 	int  parse_change(std::vector<std::string> &f);
-    int  parse_property(std::vector<std::string> &f);
-    int  parse_dt(std::vector<std::string> &f);
-    
+	int  parse_property(std::vector<std::string> &f);
+	int  parse_dt(std::vector<std::string> &f);
+
 	void dump_sgel_rec(std::ostream &os, const std::string &name, const std::string &parent);
 	
 	typedef std::map<std::string, float> property_map;
