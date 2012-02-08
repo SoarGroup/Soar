@@ -56,9 +56,9 @@ private:
 	int  parse_add(std::vector<std::string> &f);
 	int  parse_del(std::vector<std::string> &f);
 	int  parse_change(std::vector<std::string> &f);
-    int  parse_property(std::vector<std::string> &f);
-    int  parse_dt(std::vector<std::string> &f);
-    
+	int  parse_property(std::vector<std::string> &f);
+	int  parse_dt(std::vector<std::string> &f);
+
 	void dump_sgel_rec(std::ostream &os, const std::string &name, const std::string &parent);
 	
 	typedef std::map<std::string, float> property_map;

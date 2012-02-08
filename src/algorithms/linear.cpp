@@ -9,11 +9,9 @@ using namespace std;
 using namespace Eigen;
 
 /* Assume that X is already centered */
-void pca(const mat &X, mat &comps, mat &signals, cvec &variances) {
+void pca(const mat &X, mat &comps) {
 	JacobiSVD<mat> svd = X.jacobiSvd(Eigen::ComputeFullV);
-	variances = (svd.singularValues() / sqrt(X.rows() - 1)).array().square();
 	comps = svd.matrixV();
-	signals = X * comps;
 }
 
 /*
@@ -47,8 +45,8 @@ bool solve(const mat &X, const mat &Y, mat &C) {
  2. collapsing all columns whose elements are identical into a single constant column.
 */
 bool solve2(const mat &X, const mat &Y, mat &coefs, rvec &intercept) {
-    mat X1 = X, X2 = mat::Constant(X.rows(), X.cols() + 1, 1), C;
-    vector<int> nonstatic;
+	mat X1 = X, X2(X.rows(), X.cols() + 1), C;
+	vector<int> nonstatic;
 
 	for (int i = 0; i < X.rows(); ++i) {
 		for (int j = 0; j < X.cols(); ++j) {
@@ -58,18 +56,21 @@ bool solve2(const mat &X, const mat &Y, mat &coefs, rvec &intercept) {
 		}
 	}
 
-    remove_static(X1, X2, nonstatic);
-    X2.resize(X2.rows(), nonstatic.size() + 1);
-    if (!solve(X2, Y, C)) {
-        return false;
-    }
+	remove_static(X1, X2, nonstatic);
+	X2.resize(X2.rows(), nonstatic.size() + 1);
+	X2.rightCols(1).setConstant(1.0);
+	if (!solve(X2, Y, C)) {
+		return false;
+	}
 
-    coefs = mat::Zero(X.cols(), C.cols());
-    for (int i = 0; i < nonstatic.size(); ++i) {
-        coefs.row(nonstatic[i]) = C.row(i);
-    }
-    intercept = C.bottomRows(1);
-    return true;
+	coefs = mat::Zero(X.cols(), C.cols());
+	for (int i = 0; i < nonstatic.size(); ++i) {
+		coefs.row(nonstatic[i]) = C.row(i);
+	}
+	intercept = C.bottomRows(1);
+
+	//cout << "error: " << (((X * coefs).rowwise() + intercept) - Y).array().square().sum() << endl;
+	return true;
 }
 
 void lsqr(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout) {
@@ -103,18 +104,19 @@ void ridge(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout)
 
 void pcr_fit(const mat &X, const mat &Y, int ncomp, vector<mat> &betas, vector<rvec> &intercepts) {
 	mat components, projected, coefs;
-	cvec variances;
 	rvec inter;
 	
 	betas.clear();
 	intercepts.clear();
-	pca(X, components, projected, variances);
+	pca(X, components);
 	if (ncomp > 0) {
-		solve2(projected.leftCols(ncomp), Y, coefs, inter);
+		solve2(X * components.leftCols(ncomp), Y, coefs, inter);
 		betas.push_back(components.leftCols(ncomp) * coefs);
 		intercepts.push_back(inter);
 		return;
 	}
+	
+	projected = X * components;
 	for (int n = 1; n < projected.cols(); ++n) {
 		solve2(projected.leftCols(n), Y, coefs, inter);
 		betas.push_back(components.leftCols(n) * coefs);
@@ -177,21 +179,29 @@ void cross_validate(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
 void min_train_error(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
 	vector<mat> betas;
 	vector<rvec> intercepts;
-	int i;
+	double minerror;
+	int besti = -1;
 	
 	pcr_fit(X, Y, -1, betas, intercepts);
-	for (i = 0; i < betas.size(); ++i) {
+	for (int i = 0; i < betas.size(); ++i) {
 		if (betas[i].squaredNorm() > MAX_BETA_NORM) {
 			break;
 		}
 		double error = ((X * betas[i]).rowwise() + intercepts[i] - Y).squaredNorm();
 		
 		if (error < MODEL_ERROR_THRESH) {
-			break;
+			beta = betas[i];
+			intercept = intercepts[i];
+			return;
+		}
+		
+		if (besti < 0 || error < minerror) {
+			besti = i;
+			minerror = error;
 		}
 	}
-	beta = betas[max(0, i - 1)];
-	intercept = intercepts[max(0, i - 1)];
+	beta = betas[besti];
+	intercept = intercepts[besti];
 }
 
 void pcr(const mat &X, const mat &Y, const rvec &x, rvec &y) {
@@ -415,7 +425,6 @@ void PCRModel::fit_me() {
 	DATAVIS("BEGIN PCR" << endl)
 	DATAVIS("'num fits' %+1" << endl)
 	mat X, Y;
-	cvec variances;
 	
 	fill_data(X, Y);
 	means = X.colwise().mean();
