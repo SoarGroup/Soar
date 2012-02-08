@@ -13,7 +13,7 @@
 #include <ostream>
 #include <fstream>
 #include <map>
-#include <Eigen/Dense>
+#include <Eigen>
 
 #include "linalg.h"
 

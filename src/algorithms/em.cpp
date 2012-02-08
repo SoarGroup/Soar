@@ -7,7 +7,6 @@
 #include <map>
 #include <set>
 #include <limits>
-#include <Eigen/Dense>
 #include "linear.h"
 #include "em.h"
 #include "common.h"
