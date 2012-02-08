@@ -96,8 +96,7 @@ if env['VISHIDDEN']:
 	clone['CPPFLAGS'].remove('-fvisibility=hidden')
 	clone.Append(CPPFLAGS = ['-fvisibility=default'])
 clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
-clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML'))
-clone.Append(LIBPATH = ['$PREFIX/lib'])
+clone.Append(LIBS = 'soar', LIBPATH = ['$PREFIX/lib'])
 #################
 
 # Some of the dependencies:

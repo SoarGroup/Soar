@@ -142,7 +142,7 @@ void MiscTest::setUp()
 {
     pKernel = 0;
     pAgent = 0;
-    pKernel = sml::Kernel::CreateKernelInNewThread( "SoarKernelSML" ) ;
+    pKernel = sml::Kernel::CreateKernelInNewThread() ;
     CPPUNIT_ASSERT( pKernel != NULL );
     CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
 
@@ -432,7 +432,7 @@ void MiscTest::testRHSRand()
 
 void MiscTest::testMultipleKernels()
 {
-    sml::Kernel* pKernel2 = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultLibraryName, sml::Kernel::kDefaultSMLPort - 1);
+    sml::Kernel* pKernel2 = sml::Kernel::CreateKernelInNewThread(sml::Kernel::kDefaultSMLPort - 1);
     CPPUNIT_ASSERT( pKernel2 != NULL );
     CPPUNIT_ASSERT_MESSAGE( pKernel2->GetLastErrorDescription(), !pKernel2->HadError() );
 

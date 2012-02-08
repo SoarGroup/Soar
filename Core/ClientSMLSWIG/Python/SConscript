@@ -35,8 +35,7 @@ clone.Prepend(CPPPATH = distutils.sysconfig.get_python_inc())
 if os.name == 'posix':
 	clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 
-clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML'))
-clone.Append(LIBPATH = ['$PREFIX/lib'])
+clone.Append(LIBS = 'soar', LIBPATH = ['$PREFIX/lib'])
 
 if sys.platform == 'darwin':
 	clone.Replace(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))

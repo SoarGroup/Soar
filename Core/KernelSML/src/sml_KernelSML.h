@@ -386,6 +386,7 @@ public:
 	static std::string	Wme2String(wme* pWME, bool refCounts);
 	static void			PrintDebugWme(char const* pMsg, wme* pWME, bool refCounts = false);
 	static void			PrintDebugSymbol(Symbol* pSymbol, bool refCounts = false);
+	void                DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count);
 
 protected:
 	KernelSML(int portToListenOn);

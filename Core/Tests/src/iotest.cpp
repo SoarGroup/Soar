@@ -108,11 +108,11 @@ void IOTest::createKernelAndAgents( const KernelBitset& options, int port )
 		CPPUNIT_ASSERT( !remote );
 		if ( options.test( USE_CLIENT_THREAD ) )
 		{
-			pKernel = sml::Kernel::CreateKernelInCurrentThread( sml::Kernel::GetDefaultLibraryName(), options.test( FULLY_OPTIMIZED ), sml::Kernel::GetDefaultPort());
+			pKernel = sml::Kernel::CreateKernelInCurrentThread(options.test( FULLY_OPTIMIZED ), sml::Kernel::GetDefaultPort());
 		}
 		else
 		{
-			pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML", sml::Kernel::GetDefaultPort());
+			pKernel = sml::Kernel::CreateKernelInNewThread(sml::Kernel::GetDefaultPort());
 		}
 	}
 	else

@@ -25,7 +25,7 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
 TOH_Game::TOH_Game(const std::string &agent_productions,
                    sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
-           sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true)),
+           sml::Kernel::CreateKernelInCurrentThread(true)),
   m_agent(m_kernel, "TOH")
 {
   const int num_towers = 3;

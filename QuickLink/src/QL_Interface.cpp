@@ -53,7 +53,7 @@ void QL_Interface::create_new_kernel(int port)
 {
 	prepare_for_new_connection();
 
-	m_pKernel = Kernel::CreateKernelInNewThread("SoarKernelSML", port);
+	m_pKernel = Kernel::CreateKernelInNewThread(port);
 
 	if(m_pKernel->HadError())
 	{

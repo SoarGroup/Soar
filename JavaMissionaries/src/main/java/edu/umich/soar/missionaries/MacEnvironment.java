@@ -54,7 +54,7 @@ public class MacEnvironment implements Runnable, Kernel.SystemEventInterface, Ke
      * Creates the representation of the environment and links it to Soar.
      */
     public MacEnvironment() {
-        kernel = Kernel.CreateKernelInNewThread("SoarKernelSML");
+        kernel = Kernel.CreateKernelInNewThread();
         if (kernel.HadError()) {
             System.out.println("Error creating kernel: "
                     + kernel.GetLastErrorDescription());

@@ -97,7 +97,7 @@ public class DatabaseEvalRead {
 			final Kernel kernel;
 			final Agent agent;
 			{
-				kernel = Kernel.CreateKernelInCurrentThread(Kernel.GetDefaultLibraryName(),true,0);
+				kernel = Kernel.CreateKernelInCurrentThread(true,0);
 				
 				System.err.println(" qna");
 				{
