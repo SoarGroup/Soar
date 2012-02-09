@@ -8,9 +8,10 @@
 #include <iterator>
 #include <vector>
 #include <Eigen/Dense>
+#include <Eigen/StdVector>
 
 typedef Eigen::RowVector3d vec3;
-typedef std::vector<vec3> ptlist;
+typedef std::vector<vec3, Eigen::aligned_allocator<vec3> > ptlist;
 
 class quaternion {
 public:
