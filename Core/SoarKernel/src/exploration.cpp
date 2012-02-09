@@ -579,6 +579,106 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 }
 
 /***************************************************************************
+ * Function     : exploration_probability_according_to_policy, bazald
+ **************************************************************************/
+double exploration_probability_according_to_policy( agent *my_agent, slot *s, preference *candidates, preference *selection )
+{ 
+  const int exploration_policy = exploration_get_policy(my_agent);
+
+  // get preference values for each candidate
+  // see soar_ecPrintPreferences
+  for(preference *cand = candidates; cand; cand = cand->next_candidate)
+    exploration_compute_value_of_candidate(my_agent, cand, s);
+
+  switch(exploration_policy)
+  {
+    case USER_SELECT_FIRST:
+      return candidates == selection ? 1.0f : 0.0f;
+
+    case USER_SELECT_LAST:
+      return selection->next_candidate ? 0.0f: 1.0f;
+
+    case USER_SELECT_RANDOM:
+    {
+      unsigned int cand_count = 0;
+      for(const preference * cand = candidates; cand; cand = cand->next_candidate)
+        ++cand_count;
+      return 1.0 / cand_count;
+    }
+
+    case USER_SELECT_SOFTMAX:
+    {
+      unsigned int cand_count = 0;
+      double total_probability = 0.0;
+      for(const preference *cand = candidates; cand; cand = cand->next_candidate) {
+        ++cand_count;
+        if(cand->numeric_value > 0)
+          total_probability += cand->numeric_value;
+      }
+
+      if(total_probability > 0) {
+        if(selection->numeric_value > 0)
+          return selection->numeric_value / total_probability;
+        else
+          return 0.0;
+      }
+      else
+        return 1.0 / cand_count;
+    }
+
+    case USER_SELECT_E_GREEDY:
+    {
+      const double epsilon = exploration_get_parameter_value(my_agent, EXPLORATION_PARAM_EPSILON);
+
+      double top_value = candidates->numeric_value;
+      unsigned int top_count = 0;
+      unsigned int cand_count = 0;
+      for(const preference * cand = candidates; cand; cand = cand->next_candidate) {
+        ++cand_count;
+        if(cand->numeric_value > top_value) {
+          top_value = cand->numeric_value;
+          top_count = 1;
+        }
+        else if(cand->numeric_value == top_value)
+          ++top_count;
+      }
+
+      double retval = epsilon / cand_count;
+      if(selection->numeric_value == top_value)
+        retval += (1.0 - epsilon) / top_count;
+      return retval;
+    }
+
+    case USER_SELECT_BOLTZMANN:
+    {
+      const double t = exploration_get_parameter_value(my_agent, EXPLORATION_PARAM_TEMPERATURE);
+
+      double maxq = candidates->numeric_value;
+      for(preference *cand = candidates->next_candidate; cand; cand = cand->next_candidate) {
+        if(maxq < cand->numeric_value)
+          maxq = cand->numeric_value;
+      }
+
+      double exptotal = 0.0;
+      double expselection = 0.0;
+      for(preference *cand = candidates; cand; cand = cand->next_candidate) {
+        // equivalent to exp((cand->numeric_value / t) - (maxq / t)) but safer against overflow
+        double v = exp((cand->numeric_value - maxq) / t);
+        exptotal += v;
+        if(cand == selection)
+          expselection = v;
+      }
+
+      return expselection / exptotal;
+    }
+
+    default:
+      abort();
+      return 0.0;
+  }
+}
+
+/***************************************************************************
  * Function     : exploration_randomly_select
  **************************************************************************/
 preference *exploration_randomly_select( preference *candidates )
