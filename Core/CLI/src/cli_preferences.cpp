@@ -265,27 +265,10 @@ int soar_ecPrintPreferences(agent* soarAgent, char *szId, char *szAttr, bool obj
 		{
 			print(soarAgent, "\nselection probabilities:\n");
 
-			// some of this following code is redundant with code in exploration.cpp
-			// see exploration_choose_according_to_policy
-			// see exploration_compute_value_of_candidate
-			// see exploration_probabilistically_select
-			int count = 0;
-			double total_probability = 0;
-			// add up positive numeric values, count candidates
-			for (p = cand; p; p = p->next_candidate) 
-			{
-				exploration_compute_value_of_candidate(soarAgent, p, s);
-				++count;
-				if ( p->numeric_value > 0 )
-					total_probability += p->numeric_value;
-			}
-			assert (count != 0);
-			for (p = cand; p; p = p->next_candidate) 
-			{
-				// if total probability is zero, fall back to random
-				double prob = total_probability > 0.0 ? p->numeric_value / total_probability : 1.0 / count;
-				print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
-			}
+      for (p = cand; p; p = p->next_candidate) {
+        double prob = exploration_probability_according_to_policy(soarAgent, s, cand, p);
+        print_preference_and_source(soarAgent, p, print_prod, wtt, &prob);
+      }
 		}
 	}
 
