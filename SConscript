@@ -7,7 +7,7 @@ import itertools as itl
 
 Import('env')
 clone = env.Clone()
-clone.Prepend(CPPPATH = Split('src src/filters src/models src/algorithms Eigen #SoarKernel/src'))
+clone.Prepend(CPPPATH = Split('src src/filters src/models src/algorithms eigen #SoarKernel/src'))
 
 src = list(itl.chain(*[Glob(p) for p in ('src/*.cpp', 
                                          'src/filters/*.cpp', 

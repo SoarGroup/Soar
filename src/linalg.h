@@ -7,7 +7,7 @@
 #include <ostream>
 #include <iterator>
 #include <vector>
-#include <Eigen>
+#include <Eigen/Dense>
 
 typedef Eigen::RowVector3d vec3;
 typedef std::vector<vec3> ptlist;
