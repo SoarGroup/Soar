@@ -36,8 +36,9 @@
 #ifdef EPMEM_EXPERIMENT
 
 uint64_t epmem_episodes_searched = 0;
+uint64_t epmem_dc_interval_inserts = 0;
+uint64_t epmem_dc_interval_removes = 0;
 uint64_t epmem_dc_wme_adds = 0;
-uint64_t epmem_dc_wme_removes = 0;
 std::ofstream* epmem_exp_output = NULL;
 
 enum epmem_exp_states
@@ -1375,6 +1376,11 @@ void epmem_close( agent *my_agent )
 		epmem_exp_output->close();
 		delete epmem_exp_output;
 		epmem_exp_output = NULL;
+
+		if ( epmem_exp_timer )
+		{
+			delete epmem_exp_timer;
+		}
 	}
 #endif
 }
@@ -1604,7 +1610,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 #else
 				epmem_wme_set* wms_temp = new epmem_wme_set();
 #endif
-				
+
 				// voigtjr: Cast to wme* is necessary for compilation in VS10
 				// Without it, it picks insert(int) instead of insert(wme*) and does not compile.
 				wms_temp->insert( static_cast<wme*>(NULL) );
@@ -2466,7 +2472,7 @@ void epmem_new_episode( agent *my_agent )
 			epmem_node_id *temp_node;
 
 #ifdef EPMEM_EXPERIMENT
-			epmem_dc_wme_adds = epmem_node.size() + epmem_edge.size();
+			epmem_dc_interval_inserts = epmem_node.size() + epmem_edge.size();
 #endif
 
 			// nodes
@@ -2511,7 +2517,7 @@ void epmem_new_episode( agent *my_agent )
 			epmem_time_id range_end;
 
 #ifdef EPMEM_EXPERIMENT
-			epmem_dc_wme_removes = 0;
+			epmem_dc_interval_removes = 0;
 #endif
 
 			// nodes
@@ -2521,7 +2527,7 @@ void epmem_new_episode( agent *my_agent )
 				if ( r->second )
 				{
 #ifdef EPMEM_EXPERIMENT
-					epmem_dc_wme_removes++;
+					epmem_dc_interval_removes++;
 #endif
 
 					// remove NOW entry
@@ -2560,7 +2566,7 @@ void epmem_new_episode( agent *my_agent )
 				if ( r->second )
 				{
 #ifdef EPMEM_EXPERIMENT
-					epmem_dc_wme_removes++;
+					epmem_dc_interval_removes++;
 #endif
 
 					// remove NOW entry
@@ -5947,10 +5953,10 @@ void inline _epmem_exp( agent* my_agent )
 	//            ^output |filename|
 	//            ^format << csv speedy >>
 	//            ^features <fs>
-	//               <fs> ^|key| |value|
+	//               <fs> ^|key| |value| # note: value must be a string, not int or float; wrap it in pipes (eg. |0|)
 	//            ^commands <cmds>
 	//               <cmds> ^|label| <cmd>
-	
+
 	if ( !epmem_exp_timer )
 	{
 		epmem_exp_timer = new soar_module::timer( "exp", my_agent, soar_module::timer::zero, new soar_module::predicate<soar_module::timer::timer_level>(), false );
@@ -5960,6 +5966,7 @@ void inline _epmem_exp( agent* my_agent )
 
 	epmem_exp_timer->reset();
 	epmem_exp_timer->start();
+	epmem_dc_wme_adds = -1;
 	bool new_episode = epmem_consider_new_episode( my_agent );
 	epmem_exp_timer->stop();
 	c1 = epmem_exp_timer->value();
@@ -6074,13 +6081,19 @@ void inline _epmem_exp( agent* my_agent )
 									epmem_exp_state[ exp_state_wm_removes ] = static_cast< int64_t >( my_agent->wme_removal_count );
 								}
 
-								// dc wme add/removes
+								// dc interval add/removes
+								{
+									to_string( epmem_dc_interval_inserts, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcintervalinserts", temp_str ) );
+
+									to_string( epmem_dc_interval_removes, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcintervalremoves", temp_str ) );
+								}
+
+								// dc wme adds
 								{
 									to_string( epmem_dc_wme_adds, temp_str );
-									output_contents.push_back( std::make_pair< std::string, std::string >( "dcadds", temp_str ) );
-
-									to_string( epmem_dc_wme_removes, temp_str );
-									output_contents.push_back( std::make_pair< std::string, std::string >( "dcremoves", temp_str ) );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcwmeadds", temp_str ) );
 								}
 
 								// sqlite memory
