@@ -23,7 +23,7 @@ class Soar_Kernel {
 
 public:
   /// Create a kernel; sml::Kernel::CreateRemoteConnection() can be useful for debugging
-  inline Soar_Kernel(sml::Kernel * const &new_kernel = sml::Kernel::CreateKernelInCurrentThread(sml::Kernel::kDefaultLibraryName, true));
+  inline Soar_Kernel(sml::Kernel * const &new_kernel = sml::Kernel::CreateKernelInCurrentThread(true));
   inline ~Soar_Kernel();
 
   const sml::Kernel & operator*() const          {return *m_kernel_ptr;}

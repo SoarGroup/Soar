@@ -31,19 +31,6 @@
 extern "C" {
 #endif
 
-// Function types, so we can more easily load the methods dynamically.
-// (The value being defined is the function pointer *DirectXXXFunction)
-typedef void (*DirectAddWMEStringFunction)(Direct_AgentSML_Handle, char const*, char const*, char const*, int64_t) ; // agent, id, attr, val, timetag
-typedef void (*DirectAddWMEIntFunction)(Direct_AgentSML_Handle, char const*, char const*, int64_t, int64_t) ; // agent, id, attr, val, timetag
-typedef void (*DirectAddWMEDoubleFunction)(Direct_AgentSML_Handle, char const*, char const*, double, int64_t) ; // agent, id, attr, val, timetag
-typedef void (*DirectRemoveWMEFunction)(Direct_AgentSML_Handle, int64_t) ; // agent, timetag
-
-typedef void (*DirectAddIDFunction)(Direct_AgentSML_Handle, char const*, char const*, char const*, int64_t) ; // agent, id, attr, value_id, timetag
-
-typedef Direct_AgentSML_Handle (*DirectGetAgentSMLHandleFunction)(Connection_Receiver_Handle, char const*) ; // agent name
-
-typedef void (*DirectRunFunction)(Connection_Receiver_Handle hConnection, char const*, bool, int, int, uint64_t) ;
-
 /*************************************************************
 * @brief	Add a wme.
 * @param wm			The working memory object (either input or output)

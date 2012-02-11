@@ -763,7 +763,7 @@ SoarTextIO::loadMem()
 void
 SoarTextIO::ResetConnect()
 {
-	pKernel = sml::Kernel::CreateKernelInNewThread("SoarKernelSML");
+	pKernel = sml::Kernel::CreateKernelInNewThread();
 	if (pKernel->HadError())
 	{
 		cout << pKernel->GetLastErrorDescription() << endl;

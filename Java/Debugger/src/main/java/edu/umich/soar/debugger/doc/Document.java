@@ -545,23 +545,6 @@ public class Document implements Kernel.AgentEventInterface,
         }
 
         MainFrame frame = getFirstFrame();
-        String kernelSML = "SoarKernelSML";
-
-        if (frame != null)
-        {
-            // Look up the name of the DLL to use if the user has set it (via a
-            // dialog)
-            String path = frame.getAppStringProperty("Kernel.Location");
-
-            if (path != null && path.length() > 0)
-            {
-                // Adopt this as the DLL to load
-                kernelSML = path;
-                System.out
-                        .println("Loading Soar from user specified location: "
-                                + kernelSML);
-            }
-        }
 
         // Create the kernel
         // We're use "InNewThread" so environments can remotely connect to the
@@ -569,7 +552,7 @@ public class Document implements Kernel.AgentEventInterface,
         // inside us if they wish (and without us having to do work to support
         // that by calling
         // GetIncomingCommands() and pumping for incoming events).
-        m_Kernel = Kernel.CreateKernelInNewThread(kernelSML, portToListenOn);
+        m_Kernel = Kernel.CreateKernelInNewThread(portToListenOn);
 
         // This is a local kernel
         m_IsRemote = false;
@@ -577,9 +560,7 @@ public class Document implements Kernel.AgentEventInterface,
         if (m_Kernel.HadError())
         {
             // Get the error and then kill off this kernel instance
-            String errorMsg = "Tried to load Soar kernel from " + kernelSML
-                    + "\n\nError message: "
-                    + m_Kernel.GetLastErrorDescription();
+            String errorMsg = "Tried to load Soar kernel: " + m_Kernel.GetLastErrorDescription();
             m_Kernel.delete();
             m_Kernel = null;
 

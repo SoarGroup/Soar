@@ -193,7 +193,7 @@ void MultiAgentTest::testTenAgents()
 
 void MultiAgentTest::doTest()
 {
-	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread( "SoarKernelSML" );
+	sml::Kernel* pKernel = sml::Kernel::CreateKernelInNewThread();
 	CPPUNIT_ASSERT_MESSAGE( pKernel->GetLastErrorDescription(), !pKernel->HadError() );
 
 	// We'll require commits, just so we're testing that path

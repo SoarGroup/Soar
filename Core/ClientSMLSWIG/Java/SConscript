@@ -91,12 +91,11 @@ if not ConfigureJNI():
 	Exit(1)
 
 # Modify environment for compilation
-clone.Prepend(CPPPATH = Split('#ClientSML/src #ElementXML/src #ConnectionSML/src'))
 if env['VISHIDDEN']:
 	clone['CPPFLAGS'].remove('-fvisibility=hidden')
 	clone.Append(CPPFLAGS = ['-fvisibility=default'])
 clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
-clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML'))
+clone.Append(LIBS = Split('SoarClient SoarKernel'))
 clone.Append(LIBPATH = ['$PREFIX/lib'])
 #################
 

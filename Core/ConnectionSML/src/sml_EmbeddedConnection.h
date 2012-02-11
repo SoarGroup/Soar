@@ -54,21 +54,6 @@ protected:
 	ProcessMessageFunction				m_pProcessMessageFunction ;
 	CreateEmbeddedConnectionFunction	m_pCreateEmbeddedFunction ;
 
-#ifdef KERNEL_SML_DIRECT
-	// These are shortcut methods we can use if this is an embedded connection
-	// to optimize I/O performance.
-	DirectAddWMEStringFunction			m_pDirectAddWMEStringFunction ;
-	DirectAddWMEIntFunction				m_pDirectAddWMEIntFunction ;
-	DirectAddWMEDoubleFunction			m_pDirectAddWMEDoubleFunction ;
-	DirectRemoveWMEFunction				m_pDirectRemoveWMEFunction ;
-
-	DirectAddIDFunction					m_pDirectAddIDFunction ;
-
-	DirectGetAgentSMLHandleFunction		m_pDirectGetAgentSMLHandleFunction;
-
-	DirectRunFunction					m_pDirectRunFunction ;
-#endif
-
 	/** We need to cache the responses to calls **/
 	soarxml::ElementXML* m_pLastResponse ;
 
@@ -78,7 +63,7 @@ public:
 
 	// Link two embedded connections together
 	virtual void AttachConnectionInternal(Connection_Receiver_Handle hConnection, ProcessMessageFunction pProcessMessage) ;
-	virtual bool AttachConnection(char const* pLibraryName, bool optimized, int portToListenOn) ;
+	virtual bool AttachConnection(bool optimized, int portToListenOn) ;
 	virtual void ClearConnectionHandle() { m_hConnection = NULL ; }
 
 	virtual void CloseConnection() ;
@@ -98,34 +83,34 @@ public:
 	// the speed when doing I/O over an embedded connection (where speed is most critical)
 	void DirectAddWME_String(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
 	{
-		m_pDirectAddWMEStringFunction(pAgentSML, pId, pAttribute, pValue, clientTimetag) ;
+		sml_DirectAddWME_String(pAgentSML, pId, pAttribute, pValue, clientTimetag) ;
 	}
 	void DirectAddWME_Int(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
 	{
-		m_pDirectAddWMEIntFunction(pAgentSML, pId, pAttribute, value, clientTimetag) ;
+		sml_DirectAddWME_Int(pAgentSML, pId, pAttribute, value, clientTimetag) ;
 	}
 	void DirectAddWME_Double(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
 	{
-		m_pDirectAddWMEDoubleFunction(pAgentSML, pId, pAttribute, value, clientTimetag) ;
+		sml_DirectAddWME_Double(pAgentSML, pId, pAttribute, value, clientTimetag) ;
 	}
 	void DirectRemoveWME(Direct_AgentSML_Handle pAgentSML, int64_t clientTimetag)
 	{
-		m_pDirectRemoveWMEFunction(pAgentSML, clientTimetag) ;
+		sml_DirectRemoveWME(pAgentSML, clientTimetag) ;
 	}
 
 	void DirectAddID(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
 	{
-		m_pDirectAddIDFunction(pAgentSML, pId, pAttribute, pValueId, clientTimetag) ;
+		sml_DirectAddID(pAgentSML, pId, pAttribute, pValueId, clientTimetag) ;
 	}
 
 	Direct_AgentSML_Handle DirectGetAgentSMLHandle(char const* pAgentName)
 	{
-		return m_pDirectGetAgentSMLHandleFunction(m_hConnection, pAgentName) ;
+		return sml_DirectGetAgentSMLHandle(m_hConnection, pAgentName) ;
 	}
 
 	void DirectRun(char const* pAgentName, bool forever, int stepSize, int interleaveSize, uint64_t count)
 	{
-		m_pDirectRunFunction(m_hConnection, pAgentName, forever, stepSize, interleaveSize, count) ;
+		sml_DirectRun(m_hConnection, pAgentName, forever, stepSize, interleaveSize, count) ;
 	}
 
 #endif

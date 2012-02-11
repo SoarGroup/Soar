@@ -43,7 +43,7 @@ static EmbeddedConnection* GetConnectionFromHandle(Connection_Receiver_Handle hC
 	return reinterpret_cast<EmbeddedConnection*>(hConnection) ;
 }
 
-EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pProcessMessage, int connectionType, int portToListenOn)
+Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender_Handle hSenderConnection, ProcessMessageFunction pProcessMessage, int connectionType, int portToListenOn)
 {
 	bool synch = (connectionType == SML_SYNCH_CONNECTION) ;
 
@@ -83,7 +83,7 @@ EXPORT Connection_Receiver_Handle sml_CreateEmbeddedConnection(Connection_Sender
 	return reinterpret_cast<Connection_Receiver_Handle>(pConnection) ;
 }
 
-EXPORT ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiverConnection, ElementXML_Handle hIncomingMsg, int action)
+ElementXML_Handle sml_ProcessMessage(Connection_Receiver_Handle hReceiverConnection, ElementXML_Handle hIncomingMsg, int action)
 {
 	EmbeddedConnection* pConnection = GetConnectionFromHandle(hReceiverConnection) ;
 
