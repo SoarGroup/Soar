@@ -790,7 +790,7 @@ void KernelSML::PrintDebugSymbol(Symbol* pSymbol, bool refCounts ) {
 * @param pAttribute The attribute name to use
 * @param value		The value to use
 *************************************************************/
-EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
+void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -798,7 +798,7 @@ EXPORT void sml_DirectAddWME_String(Direct_AgentSML_Handle pAgentSMLIn, char con
 	pAgentSML->BufferedAddStringInputWME( pId, pAttribute, pValue, clientTimetag );
 }
 
-EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
+void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -806,7 +806,7 @@ EXPORT void sml_DirectAddWME_Int(Direct_AgentSML_Handle pAgentSMLIn, char const*
 	pAgentSML->BufferedAddIntInputWME( pId, pAttribute, value, clientTimetag );
 }
 
-EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
+void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -820,7 +820,7 @@ EXPORT void sml_DirectAddWME_Double(Direct_AgentSML_Handle pAgentSMLIn, char con
 * @param wm			The working memory object (either input or output)
 * @param wme		The wme we're removing
 *************************************************************/
-EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, int64_t clientTimetag)
+void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -834,7 +834,7 @@ EXPORT void sml_DirectRemoveWME(Direct_AgentSML_Handle pAgentSMLIn, int64_t clie
 * @param parent		The identifier (WMObject) we're adding to.
 * @param pAttribute	The attribute to add
 *************************************************************/
-EXPORT void sml_DirectAddID(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
+void sml_DirectAddID(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
 {
 	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
 	assert(pAgentSML);
@@ -853,7 +853,7 @@ KernelSML* adaptToKernelSML(Connection_Receiver_Handle hConnection)
 	return pKernelSML;
 }
 
-EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(Connection_Receiver_Handle hConnection, char const* pAgentName) 
+Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(Connection_Receiver_Handle hConnection, char const* pAgentName) 
 {
 	KernelSML* pKernelSML = adaptToKernelSML(hConnection);
 	if (!pKernelSML) return 0;
@@ -867,7 +867,7 @@ EXPORT Direct_AgentSML_Handle sml_DirectGetAgentSMLHandle(Connection_Receiver_Ha
 // due to the extra events and control logic surrounding the SML RunScheduler.
 // So we compromise with a call directly to that scheduler, boosting performance over the standard "run" path
 // which goes through the command line processor.
-EXPORT void sml_DirectRun(Connection_Receiver_Handle hConnection, char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count)
+void sml_DirectRun(Connection_Receiver_Handle hConnection, char const* pAgentName, bool forever, int stepSize, int interleaveSizeIn, int count)
 {
 	KernelSML* pKernelSML = adaptToKernelSML(hConnection);
 	if (!pKernelSML) return;

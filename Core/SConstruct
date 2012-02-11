@@ -10,9 +10,6 @@ import subprocess
 import re
 import fnmatch
 
-HEADER_DIRS = [
-]
-
 def execute(cmd):
 	try:
 		p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -191,6 +188,12 @@ AddOption('--static', action='store_true', dest='static', default=False,
 AddOption('--ios', action='store', type='choice', choices=['none','simulator','armv6','armv7'], dest='ios', default='none', nargs=1, metavar='IOS',
 		  help='Sets up for iOS compilation')
 
+bdir = GetOption('build-dir')
+VariantDir(bdir, '.', duplicate=0)
+
+def build_dir(p):
+	return os.path.join(bdir, p)
+	
 #################
 # Create the environment using the options
 env = Environment(
@@ -316,6 +319,35 @@ env.Default('.')
 Export('env')
 Export('javaRunAnt')
 
+srcs = {
+#   Component          SCU source                         Non-SCU source
+	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
+	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
+	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
+	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
+	'ConnectionSML' : ('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')),
+	'ElementXML'    : ('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),
+	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
+}
+
+client_comps = 'ClientSML ConnectionSML'.split()
+kernel_comps = 'SoarKernel sqlite KernelSML ElementXML ConnectionSML CLI'.split()
+
+if env['SCU']:
+	clientsrc = [ srcs[c][0] for c in client_comps ]
+	kernelsrc = [ srcs[c][0] for c in kernel_comps ]
+	allsrc = [ srcs[c][0] for c in kernel_comps + client_comps ]
+else:
+	clientsrc = list(itl.chain(*[ srcs[c][1] for c in client_comps ]))
+	kernelsrc = list(itl.chain(*[ srcs[c][1] for c in kernel_comps ]))
+	allsrc = list(itl.chain(*[ srcs[c][1] for c in kernel_comps + client_comps ]))
+
+clientlib = env.Library(build_dir('SoarClient'), clientsrc)
+kernellib = env.SharedLibrary(build_dir('SoarKernel'), kernelsrc)
+staticlib = env.Library(build_dir('Soar'), allsrc)
+env.Install('$PREFIX/lib', clientlib)
+env.Install('$PREFIX/lib', kernellib)
+env.Install('$PREFIX/lib', staticlib)
 
 #################
 # Auto detect components
@@ -362,14 +394,7 @@ if swig:
 
 #################
 # Build core modules
-subdirs= [ 
-	'SoarKernel',
-	'ConnectionSML',
-	'ElementXML',
-	'CLI',
-	'ClientSML',
-	'KernelSML',
-	]
+subdirs= [ ]
 
 if GetOption('ios') == 'none':
 	subdirs.append('Tests')
@@ -400,9 +425,9 @@ for d in subdirs:
 # Special environment
 compEnv = env.Clone()
 #compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
-libadd = ['ClientSML', 'ConnectionSML', 'ElementXML',]
-if compEnv['STATIC_LINKED']:
-	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
+libadd = ['SoarClient', 'SoarKernel']
+#if compEnv['STATIC_LINKED']:
+#	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
 compEnv.Prepend(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
 Export('compEnv')
 

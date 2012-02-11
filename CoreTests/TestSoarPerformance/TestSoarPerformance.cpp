@@ -94,7 +94,7 @@ void Test1(int numTrials, StatsTracker* pSt, vector<string>* commands) {
 	for(int i = 0; i < numTrials; i++) {
 		cout << endl << "***** Trial " << (i+1) << " of " << numTrials << " Begin *****" << endl;
 
-		Kernel* kernel = Kernel::CreateKernelInNewThread("SoarKernelSML");
+		Kernel* kernel = Kernel::CreateKernelInNewThread();
 		Agent* agent = kernel->CreateAgent("Soar1");
 		
 		agent->RegisterForPrintEvent(smlEVENT_PRINT, MyPrintEventHandler, NULL);
