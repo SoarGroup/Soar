@@ -36,8 +36,9 @@
 #ifdef EPMEM_EXPERIMENT
 
 uint64_t epmem_episodes_searched = 0;
+uint64_t epmem_dc_interval_inserts = 0;
+uint64_t epmem_dc_interval_removes = 0;
 uint64_t epmem_dc_wme_adds = 0;
-uint64_t epmem_dc_wme_removes = 0;
 std::ofstream* epmem_exp_output = NULL;
 
 enum epmem_exp_states
@@ -2776,6 +2777,9 @@ void epmem_new_episode( agent *my_agent )
 			{
 				if ( !id_p->second->empty() )
 				{
+#ifdef EPMEM_EXPERIMENT
+					epmem_dc_wme_adds += id_p->second->size();
+#endif
 					// make sure the WME is valid
 					// it can be invalid a child WME was added, but then the parent was removed, setting the epmem_id to EPMEM_NODEID_BAD
 					if (id_p->first->id.epmem_id != EPMEM_NODEID_BAD) {
@@ -2817,7 +2821,7 @@ void epmem_new_episode( agent *my_agent )
 			epmem_node_id *temp_node;
 
 #ifdef EPMEM_EXPERIMENT
-			epmem_dc_wme_adds = epmem_node.size() + epmem_edge.size();
+			epmem_dc_interval_inserts = epmem_node.size() + epmem_edge.size();
 #endif
 
 			// nodes
@@ -2866,7 +2870,7 @@ void epmem_new_episode( agent *my_agent )
 			epmem_time_id range_end;
 
 #ifdef EPMEM_EXPERIMENT
-			epmem_dc_wme_removes = 0;
+			epmem_dc_interval_removes = 0;
 #endif
 
 			// nodes
@@ -2876,7 +2880,7 @@ void epmem_new_episode( agent *my_agent )
 				if ( r->second )
 				{
 #ifdef EPMEM_EXPERIMENT
-					epmem_dc_wme_removes++;
+					epmem_dc_interval_removes++;
 #endif
 
 					// remove NOW entry
@@ -2915,7 +2919,7 @@ void epmem_new_episode( agent *my_agent )
 				if ( r->second )
 				{
 #ifdef EPMEM_EXPERIMENT
-					epmem_dc_wme_removes++;
+					epmem_dc_interval_removes++;
 #endif
 
 					// remove NOW entry
@@ -5825,6 +5829,7 @@ void inline _epmem_exp( agent* my_agent )
 
 	epmem_exp_timer->reset();
 	epmem_exp_timer->start();
+	epmem_dc_wme_adds = 0;
 	bool new_episode = epmem_consider_new_episode( my_agent );
 	epmem_exp_timer->stop();
 	c1 = epmem_exp_timer->value();
@@ -5939,13 +5944,19 @@ void inline _epmem_exp( agent* my_agent )
 									epmem_exp_state[ exp_state_wm_removes ] = static_cast< int64_t >( my_agent->wme_removal_count );
 								}
 
-								// dc wme add/removes
+								// dc interval add/removes
+								{
+									to_string( epmem_dc_interval_inserts, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcintervalinserts", temp_str ) );
+
+									to_string( epmem_dc_interval_removes, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcintervalremoves", temp_str ) );
+								}
+
+								// dc wme adds
 								{
 									to_string( epmem_dc_wme_adds, temp_str );
-									output_contents.push_back( std::make_pair< std::string, std::string >( "dcadds", temp_str ) );
-
-									to_string( epmem_dc_wme_removes, temp_str );
-									output_contents.push_back( std::make_pair< std::string, std::string >( "dcremoves", temp_str ) );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcwmeadds", temp_str ) );
 								}
 
 								// sqlite memory
