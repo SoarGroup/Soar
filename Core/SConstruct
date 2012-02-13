@@ -87,12 +87,12 @@ def CheckSWIG():
 			minver = (1, 3, 31)
 			if ver < minver:
 				print 'swig version 1.3.31 or higher is required'
-				Exit(1)
+				return False
 			else:
-				return
+				return True
 				
 	print 'cannot determine swig version'
-	Exit(1)
+	return False
 
 # Install all files under source directory to target directory, keeping
 # subdirectory structure and ignoring hidden files
@@ -114,6 +114,7 @@ def InstallDir(env, tgt, src, globstring="*"):
 				Install(targetsub, p)
 	
 SOAR_VERSION = "9.3.1"
+VS_CFLAGS = '/EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'.split()
 
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
@@ -122,20 +123,27 @@ SOAR_VERSION = "9.3.1"
 # platform.architecture: ('64bit', 'ELF'), ('32bit', 'ELF'), ('32bit', ''), ('32bit', '')
 print socket.gethostname(), os.name, sys.platform, platform.machine(), platform.architecture()
 
-if os.name not in ['posix', ]:
+if os.name not in ['posix', 'nt']:
 	print "Unsupported os.name:", os.name
 	Exit(1)
-if sys.platform not in ['linux2', 'darwin']:
+if sys.platform not in ['linux2', 'darwin', 'win32']:
 	print "Unsupported sys.platform:", sys.platform
 	Exit(1)
-if platform.machine() not in ['x86_64', 'i686', 'i386', ]:
+if platform.machine() not in ['x86_64', 'AMD64', 'i686', 'i386', ]:
 	print "Unsupported platform.machine:", platform.machine()
+
+# check for required libraries
+if os.name == 'posix':
+	for lib in ['dl', 'm', 'pthread']:
+		if not conf.CheckLib(lib):
+			print 'cannot locate lib%s' % lib
+			Exit(1)
 
 #################
 # Option defaults 
 
 m64_default = '32'
-if platform.machine() == 'x86_64' or (sys.platform == 'darwin' and Mac_m64_Capable()):
+if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Mac_m64_Capable()):
 	m64_default = '64'
 
 default_prefix = os.path.join('..','out')
@@ -151,36 +159,24 @@ if os.environ.has_key('SOAR_BUILD'):
 AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nargs=1, metavar='COMPILER',
 	help='Replace \'g++\' as the C++ compiler.')
 
-AddOption('--build-warnings', action='store', type='choice', choices=['none','all','error'], dest='build-warnings', default='error', nargs=1, metavar='WARN_LEVEL',
-	help='Set warning level when building. Must be one of none, all, error (default).')
+AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1,
+	help='Compiler flags')
 
-AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='full', nargs=1, metavar='LEVEL',
-	help='Set optimization level. Must be one of none, partial, full (default).')
+AddOption('--lnflags', action='store', type='string', dest='lnflags', nargs=1,
+	help='Linker flags')
 
 AddOption('--platform', action='store', type='choice', choices=['32','64'], dest='platform', default=m64_default, nargs=1, metavar='PLATFORM',
 	help='Target platform. Must be one of 32, 64. Default is detected system architecture.')
 
-AddOption('--build-verbose', action='store_true', dest='build-verbose', default=False,
-	help='Build with verbose compiler output.')
-
-AddOption('--preprocessor', action='store_true', dest='preprocessor', default=False,
-	help='Only run preprocessor.')
-
-AddOption('--gprof', action='store_true', dest='gprof', default=False,
-	help='Add gprof symbols for profiling.')
-
 AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
-
+	
 # TODO: does this do the same thing as install-sandbox?
 AddOption('--prefix', action='store', type='string', dest='prefix', default=default_prefix, nargs=1, metavar='DIR',
 	help='Directory to install binaries. Defaults to "../out" (relative to SConstruct file).')
 
 AddOption('--build-dir', action='store', type='string', dest='build-dir', default=default_build, nargs=1, metavar='DIR',
 	help='Directory to store intermediate (object) files.')
-
-AddOption('--no-debug-symbols', action='store_false', dest='debug-symbols', default=True,
-	help='Don\'t add debugging symbols to binaries.')
 
 AddOption('--static', action='store_true', dest='static', default=False,
 	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl/PHP interfaces)')
@@ -193,20 +189,17 @@ VariantDir(bdir, '.', duplicate=0)
 
 def build_dir(p):
 	return os.path.join(bdir, p)
-	
-#################
-# Create the environment using the options
+
 env = Environment(
-	ENV = {'PATH' : os.environ['PATH']},
-	CXX = GetOption('cxx'),
+	ENV = {'PATH' : os.environ['PATH'], 'TMP' : os.environ['TMP']},
 	SCU = GetOption('scu'), 
-	BUILD_DIR = GetOption('build-dir'),
+	BUILD_DIR = bdir,
 	PREFIX = os.path.realpath(GetOption('prefix')),
 	STATIC_LINKED = GetOption('static'),
 	SOAR_VERSION = SOAR_VERSION,
-	CPPFLAGS = ['-DSCONS'],
 	CPPPATH = [
 		'#shared',
+		'#pcre',
 		'#SoarKernel/src',
 		'#ElementXML/src',
 		'#KernelSML/src',
@@ -215,86 +208,64 @@ env = Environment(
 		'#Tests/src',
 		'#CLI/src',
 	],
-	LINKFLAGS = [],
-	)
-#################
+)
 
-gcc = gcc_version(env['CXX'])
-Export('gcc')
-#################
+if env['CXX'].endswith('g++'):
+	compiler = 'g++'
+elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('cl')):
+	compiler = 'cl'
+else:
+	compiler = os.path.split(env['CXX'])[1]
 
-
-#################
-# Special configuration section
-conf = Configure(env)
-# check if the compiler supports -fvisibility=hidden (GCC >= 4)
-if gcc[0] > 3:
-	lastCPPFLAGS = env['CPPFLAGS']
-	env.Append(CPPFLAGS = ['-fvisibility=hidden'])
-	if conf.TryCompile("char foo;", '.c'):
-		env['VISHIDDEN'] = True # needed by swig
+if compiler == 'g++':
+	if GetOption('cflags') == None:
+		cflags = '-O2 -Werror'.split()
 	else:
-		env['VISHIDDEN'] = False
-		env.Replace(CPPFLAGS = lastCPPFLAGS)
-
-# check for required libraries
-if not conf.CheckLib('dl'):
-	print 'cannot locate libdl'
-	Exit(1)
+		cflags = GetOption('cflags').split()
 	
-if not conf.CheckLib('m'):
-	print 'cannot locate libm'
-	Exit(1)
+	gcc_ver = gcc_version(env['CXX'])
+	# check if the compiler supports -fvisibility=hidden (GCC >= 4)
+	if gcc_ver[0] > 3:
+		temp_env = env.Clone()
+		temp_env.Replace(CPPFLAGS = ['-fvisibility=hidden'])
+		if Configure(temp_env).TryCompile("char foo;", '.c'):
+			cflags.append('-fvisibility=hidden')
+			cflags.append('-DGCC_HASCLASSVISIBILITY')
+			env['VISHIDDEN'] = True # needed by swig
+		else:
+			env['VISHIDDEN'] = False
+	
+	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
+	if sys.platform == 'darwin':
+		cflags.append('-DSCONS_DARWIN')
 
-if not conf.CheckLib('pthread'):
-	print 'cannot locate libpthread'
-	Exit(1)
-		
-# Check for optional libraries
-env['HAS_TCL_LIB'] = conf.CheckLib('tcl8.4')
-#################
-
-
-#################
-# CPPFLAGS, LINKFLAGS
-# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
-if sys.platform == "darwin":
-	env.Append(CPPFLAGS = ['-DSCONS_DARWIN'])
-
-if env['STATIC_LINKED']:
-	env.Append(CPPFLAGS = ['-DSTATIC_LINKED']);
-
-# configure misc command line options
-if GetOption('debug-symbols'):
-	env.Append(CPPFLAGS = ['-g3'])
-
-if GetOption('build-warnings') == 'all':
-	env.Append(CPPFLAGS = ['-Wall'])
-elif GetOption('build-warnings') == 'error':
-	env.Append(CPPFLAGS = ['-Werror'])
-
-if GetOption('optimization') == 'partial':
-	env.Append(CPPFLAGS = ['-O2'])
-elif GetOption('optimization') == 'full':
-	env.Append(CPPFLAGS = ['-O3'])
-
-if GetOption('preprocessor'):
-	env.Append(CPPFLAGS = ['-E'])
-
-if GetOption('build-verbose'):
-	env.Append(CPPFLAGS = ['-v'])
-	env.Append(LINKFLAGS = ['-v'])
+	static_macro = ['-DSTATIC_LINKED']
+	shared_macro = []
+elif compiler == 'cl':
+	if GetOption('cflags') == None:
+		cflags = VS_CFLAGS + ['/O2']
+	else:
+		cflags = VS_CFLAGS + GetOption('cflags').split()
+	
+	static_macro = ['/D', 'STATIC_LINKED']
+	shared_macro = ['/D', '_USRDLL']
+	
+	env.Append(LIBS='advapi32')  # for GetUserName
+	
+lnflags = GetOption('lnflags') or ""
+env.Replace(CPPFLAGS=cflags, LINKFLAGS=(GetOption('lnflags') or "").split())
 
 if GetOption('ios') == 'none':
-	if GetOption('platform') == '64':
-		env.Append(CPPFLAGS = Split('-m64 -fPIC'))
-		env.Append(LINKFLAGS = ['-m64'])
-	elif gcc[0] > 4 or gcc[0] > 3 and gcc[1] > 1 and sys.platform not in [ 'darwin', ]:
-		env.Append(CPPFLAGS = Split('-m32 -march=native'))
-		env.Append(LINKFLAGS = Split('-m32 -march=native'))
-	else:
-		env.Append(CPPFLAGS = ['-m32'])
-		env.Append(LINKFLAGS = ['-m32'])
+	if compiler == 'g++':
+		if GetOption('platform') == '64':
+			env.Append(CPPFLAGS = Split('-m64 -fPIC'))
+			env.Append(LINKFLAGS = ['-m64'])
+		elif gcc_ver[0] > 4 or gcc_ver[0] > 3 and gcc_ver[1] > 1 and sys.platform not in [ 'darwin', ]:
+			env.Append(CPPFLAGS = Split('-m32 -march=native'))
+			env.Append(LINKFLAGS = Split('-m32 -march=native'))
+		else:
+			env.Append(CPPFLAGS = ['-m32'])
+			env.Append(LINKFLAGS = ['-m32'])
 elif GetOption('ios') == 'simulator':
 	env.Append(CPPFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk'))
 	env.Append(LINKFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk'))
@@ -305,11 +276,6 @@ else:
 	env.Append(CPPFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
 	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
 
-if GetOption('gprof'):
-	env.Append(CPPFLAGS = ['-pg'])
-	env.Append(LINKFLAGS = ['-pg'])
-#################
-
 
 #################
 # Misc and export
@@ -318,6 +284,11 @@ env.Default('.')
 
 Export('env')
 Export('javaRunAnt')
+
+if env['SCU']:
+	scu = 0
+else:
+	scu = 1
 
 srcs = {
 #   Component          SCU source                         Non-SCU source
@@ -328,97 +299,66 @@ srcs = {
 	'ConnectionSML' : ('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')),
 	'ElementXML'    : ('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),
 	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
+	'pcre'          : ('pcre/pcre.cxx',                   Glob('pcre/*.c')),
 }
 
 client_comps = 'ClientSML ConnectionSML'.split()
 kernel_comps = 'SoarKernel sqlite KernelSML ElementXML ConnectionSML CLI'.split()
 
-if env['SCU']:
-	clientsrc = [ srcs[c][0] for c in client_comps ]
-	kernelsrc = [ srcs[c][0] for c in kernel_comps ]
-	allsrc = [ srcs[c][0] for c in kernel_comps + client_comps ]
-else:
-	clientsrc = list(itl.chain(*[ srcs[c][1] for c in client_comps ]))
-	kernelsrc = list(itl.chain(*[ srcs[c][1] for c in kernel_comps ]))
-	allsrc = list(itl.chain(*[ srcs[c][1] for c in kernel_comps + client_comps ]))
+if compiler == 'cl':
+	client_comps.append('pcre')
+	kernel_comps.append('pcre')
 
-clientlib = env.Library(build_dir('SoarClient'), clientsrc)
-kernellib = env.SharedLibrary(build_dir('SoarKernel'), kernelsrc)
-staticlib = env.Library(build_dir('Soar'), allsrc)
-env.Install('$PREFIX/lib', clientlib)
-env.Install('$PREFIX/lib', kernellib)
-env.Install('$PREFIX/lib', staticlib)
+client_objs = [ env.Object(build_dir('client-%s' % c), srcs[c][scu]) for c in client_comps ]
+client_lib = env.Library(build_dir('SoarClient'), client_objs, LIBS=['advapi32'])
+
+shared_env = env.Clone()
+shared_env.Append(CPPFLAGS = shared_macro)
+kernel_objs = [ shared_env.Object(build_dir('kernel-%s' % c), srcs[c][scu]) for c in kernel_comps ]
+kernel_lib = shared_env.SharedLibrary(build_dir('SoarKernel'), kernel_objs, LIBS=['advapi32'])
+
+static_env = env.Clone()
+static_env.Append(CPPFLAGS=static_macro)
+static_objs = [ static_env.Object(build_dir('static-%s' % c), srcs[c][scu]) for c in srcs ]
+static_lib = static_env.Library(build_dir('Soar'), static_objs)
+
+env.Install('$PREFIX/lib', client_lib)
+env.Install('$PREFIX/lib', kernel_lib)
+env.Install('$PREFIX/lib', static_lib)
+
+Default(client_lib, kernel_lib)
+env.Alias('static', static_lib)
 
 #################
 # Auto detect components
 components = []
-print 'Detected components:',
-for root, dirs, files in os.walk('..'):
-	if root != '..':
-		del dirs[:]
-	if root.startswith('../Core/') or root.startswith(env['PREFIX']) or root.startswith(env['BUILD_DIR']):
-		continue;
-	if 'SConscript' in files:
-		component = root[3:]
-		components.append(component)
-		print component,
-print
+#print 'Detected components:',
+#for root, dirs, files in os.walk('..'):
+#	if root != '..':
+#		del dirs[:]
+#	if root.startswith('../Core/') or root.startswith(env['PREFIX']) or root.startswith(env['BUILD_DIR']):
+#		continue;
+#	if 'SConscript' in files:
+#		component = root[3:]
+#		components.append(component)
+#		print component,
+#print
 
-if 'Tcl' in components:
-	if not env['HAS_TCL_LIB']:
-		print "* Removing Tcl from components (can't find tcl8.4 lib)"
-		components.remove('Tcl')
-
-# SWIG: build if any of (Java/Python/Tcl/PHP) are enabled
-swig = False
-for x in ['Java', 'Python', 'Tcl', 'PHP']:
-	if x in components:
-		if env['STATIC_LINKED']:
-			components.remove(x)
-			print "Removing component", x, " (static linking)"
-		else:
-			swig = True;
-			print "Enabling SWIG."
-			break
-
-# As of 4/2009, python binaries available on mac are not x86_64 and
-# therefore cannot load x86_64 targeted libraries. Verbosely warn.
-if sys.platform == 'darwin':
-	if GetOption('platform') == '64':
-		if 'Python' in components:
-			print "* Warning: 64-bit python binaries may not be available on your system."
-			print "* You may need to rebuild with m64=no to use Python Soar bindings."
-
-if swig:
-	CheckSWIG()
-
-#################
-# Build core modules
 subdirs= [ ]
+if CheckSWIG():
+	Default('ClientSMLSWIG/Python', 'ClientSMLSWIG/Java', 'ClientSMLSWIG/Tcl', 'ClientSMLSWIG/PHP')
 
 if GetOption('ios') == 'none':
-	subdirs.append('Tests')
-
-	if 'Python' in components:
-		subdirs.append('ClientSMLSWIG/Python')
-
-	if 'Java' in components:
-		subdirs.append('ClientSMLSWIG/Java')
-
-	if 'Tcl' in components:
-		subdirs.append('ClientSMLSWIG/Tcl')
-
-	if 'PHP' in components:
-		subdirs.append('ClientSMLSWIG/PHP')
+	Default('Tests')
 
 # Build/Output Directory
 print "Building intermediates to directory ", env['BUILD_DIR']
 print "Installing targets to prefix directory ", env['PREFIX']
 
-for d in subdirs:
-	script = '#%s/SConscript' %d
-	print "Processing", script + "..."
-	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
+#for d in subdirs:
+#	script = '#%s/SConscript' %d
+#	print "Processing", script + "..."
+#	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
 
 #################
 # Components
@@ -451,3 +391,4 @@ env.Clean('$PREFIX', '$PREFIX/share')
 InstallDir(env, '$PREFIX/share/soar/Demos', '#Demos')
 InstallDir(env, '$PREFIX/share/soar/Documentation', '#Documentation')
 InstallDir(env, '$PREFIX/share/soar/Tests', '#Tests/Agents')
+env.Alias('install', ['$PREFIX/share', '$PREFIX/include'])
