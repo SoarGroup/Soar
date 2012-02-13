@@ -209,14 +209,14 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( merge );
 
 	// recog
-	recog = new soar_module::constant_param<recog_choices>( "recog", recog_off, new soar_module::f_predicate<recog_choices>() );
-	recog->add_mapping( recog_on, "on" );
-	recog->add_mapping( recog_off, "off" );	
-	add( recog );
+	recognition = new soar_module::constant_param<recog_choices>( "recognition", recog_off, new soar_module::f_predicate<recog_choices>() );
+	recognition->add_mapping( recog_on, "on" );
+	recognition->add_mapping( recog_off, "off" );	
+	add( recognition );
 
 	// recog_merge_depth
-	recog_merge_depth = new soar_module::integer_param( "recog-merge-depth", 10000, new soar_module::gt_predicate<int64_t>( 0, true ), new soar_module::f_predicate<int64_t>() );
-	add( recog_merge_depth );
+	recognition_merge_depth = new soar_module::integer_param( "recognition-merge-depth", 10000, new soar_module::gt_predicate<int64_t>( 0, true ), new soar_module::f_predicate<int64_t>() );
+	add( recognition_merge_depth );
 }
 
 //
@@ -2243,7 +2243,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 
 	// find the parent root (if recognition is on)
 	epmem_node_id parent_root = EPMEM_NODEID_BAD;
-	if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
+	if ( my_agent->epmem_params->recognition->get_value() == epmem_param_container::recog_on )
 	{
 		parent_root = _epmem_find_recog_set(my_agent->epmem_id_siblings, parent_id);
 	}
@@ -2520,7 +2520,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				}
 
 				// maintain the recognition structures
-				if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
+				if ( my_agent->epmem_params->recognition->get_value() == epmem_param_container::recog_on )
 				{
 					epmem_node_id child_root = _epmem_find_recog_set(my_agent->epmem_id_siblings, (*w_p)->value->id.epmem_id);
 					if (child_root == (*w_p)->value->id.epmem_id) {
@@ -2537,7 +2537,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						// the new value and the tree value are in different disjoint sets, we need to recursively merge the trees
 						if ( child_root != leaf_root )
 						{
-							_epmem_merge_wm_trees(my_agent->epmem_wm_tree, my_agent->epmem_id_siblings, child_root, leaf_root, my_agent->epmem_params->recog_merge_depth->get_value());
+							_epmem_merge_wm_trees(my_agent->epmem_wm_tree, my_agent->epmem_id_siblings, child_root, leaf_root, my_agent->epmem_params->recognition_merge_depth->get_value());
 						}
 					}
 					else
@@ -2997,7 +2997,7 @@ void epmem_new_episode( agent *my_agent )
 
 		// update epmem recognition information on top state
 		// all substates link to the same recognition structure root, so we only need to update it once
-		if ( my_agent->epmem_params->recog->get_value() == epmem_param_container::recog_on )
+		if ( my_agent->epmem_params->recognition->get_value() == epmem_param_container::recog_on )
 		{
 			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{

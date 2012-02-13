@@ -140,8 +140,8 @@ class epmem_param_container: public soar_module::param_container
 		// experimental
 		soar_module::constant_param<gm_ordering_choices>* gm_ordering;
 		soar_module::constant_param<merge_choices>* merge;
-		soar_module::constant_param<recog_choices>* recog;
-		soar_module::integer_param* recog_merge_depth;
+		soar_module::constant_param<recog_choices>* recognition;
+		soar_module::integer_param* recognition_merge_depth;
 
 		epmem_param_container( agent *new_agent );
 };
