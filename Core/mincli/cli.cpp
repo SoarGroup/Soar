@@ -174,7 +174,7 @@ string log_handler(smlRhsEventId id, void *userdata, Agent *agent, char const *f
 			break;
 		}
 	}
-	while (isblank(c = ss.get()));  // ignore leading whitespace
+	while ((c = ss.get()) == ' ' || c == '	');  // ignore leading whitespace
 	ss.putback(c);
 	
 	if (iscmd) {

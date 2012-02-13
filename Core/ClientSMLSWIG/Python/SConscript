@@ -9,6 +9,11 @@ import SCons.Script
 
 Import('env')
 clone = env.Clone()
+# As of 4/2009, python binaries available on mac are not x86_64 and
+# therefore cannot load x86_64 targeted libraries. Verbosely warn.
+if sys.platform == 'darwin' and GetOption('platform') == '64':
+	print "* Warning: 64-bit python binaries may not be available on your system."
+	print "* You may need to rebuild with m64=no to use Python Soar bindings."
 
 # Targets, sources, other constants
 pythonsml_wrap = env.File('#ClientSMLSWIG/Python/Python_sml_ClientInterface_wrap.cpp')
