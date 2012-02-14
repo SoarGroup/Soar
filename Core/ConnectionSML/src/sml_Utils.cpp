@@ -17,7 +17,7 @@
 // Description	  : Sleep for the specified seconds and milliseconds
 //
 /////////////////////////////////////////////////////////////////////
-void SOAR_DLL sml::Sleep(int secs, int msecs)
+void sml::Sleep(int secs, int msecs)
 {
 	assert(msecs < 1000 && "Specified milliseconds too large; use seconds argument to specify part of time >= 1000 milliseconds");
 #ifdef _WIN32
@@ -46,7 +46,7 @@ void SOAR_DLL sml::Sleep(int secs, int msecs)
 // Description	  : Get the text of the most recent system error
 //
 /////////////////////////////////////////////////////////////////////
-void SOAR_DLL sml::ReportSystemErrorMessage()
+void sml::ReportSystemErrorMessage()
 {
 	int error = ERROR_NUMBER ;
 
@@ -86,7 +86,7 @@ void SOAR_DLL sml::ReportSystemErrorMessage()
 static FILE* pTraceFile = 0 ;
 
 // Defined below
-void SOAR_DLL PrintDebugSimple(char const* pStr) ;
+void PrintDebugSimple(char const* pStr) ;
 
 #ifdef DEBUG_CALLS
 
@@ -122,7 +122,7 @@ int CTDebugEnterMethod::GetCurrentNestLevel()
 
 // Note: This may be Windows specific way of handling
 // variable args--there are other methods.
-void SOAR_DLL sml::PrintDebugFormat(char const* pFormat, ...)
+void sml::PrintDebugFormat(char const* pFormat, ...)
 {
 	va_list args;
 	va_start(args, pFormat);
@@ -160,7 +160,7 @@ void sml::PrintDebug(char const* pStr)
 }
 
 #ifdef _WIN32
-void SOAR_DLL sml::PrintDebugMethod(char const* pMethodName, char const* pStr)
+void sml::PrintDebugMethod(char const* pMethodName, char const* pStr)
 {
 	// We want PrintDebug to be able to output to the test
 	// application as well as the debug stream.
@@ -200,7 +200,7 @@ void SOAR_DLL sml::PrintDebugMethod(char const* pMethodName, char const* pStr)
 	OutputDebugString("\n") ;
 }
 
-void SOAR_DLL PrintDebugSimple(char const* pStr)
+void PrintDebugSimple(char const* pStr)
 {
 #ifdef _DEBUG
 	if (!pTraceFile)

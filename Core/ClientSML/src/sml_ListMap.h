@@ -22,6 +22,7 @@
 #include <map>
 #include <list>
 #include <algorithm>	// To get std::find
+#include "Export.h"
 
 namespace sml {
 

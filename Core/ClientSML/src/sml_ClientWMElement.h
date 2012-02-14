@@ -13,6 +13,7 @@
 #define SML_WORKING_MEMORY_ELEMENT_H
 
 #include <string>
+#include "Export.h"
 
 #include "sml_ClientDirect.h"
 
@@ -28,7 +29,7 @@ class WorkingMemory ;
 class RemoveDelta ;
 class WMDelta ;
 
-class SOAR_DLL WMElement
+class EXPORT WMElement
 {
 	// Making most methods protected, so users don't use them directly by accident.
 	// But allow working memory to work with them directly.

@@ -14,6 +14,7 @@
 #include "sml_ClientWMElement.h"
 
 #include <string>
+#include "Export.h"
 
 namespace sml {
 
@@ -29,7 +30,7 @@ class Identifier ;
 // IsOutputLinkAdd) to check if the WMEs you have were
 // removed during the last decision cycle. Dereferencing
 // a removed WME causes a segmentation fault.
-class SOAR_DLL StringElement : public WMElement
+class EXPORT StringElement : public WMElement
 {
 	// Allow working memory to create these objects directly (user must use agent class to do this)
 	friend class WorkingMemory ;

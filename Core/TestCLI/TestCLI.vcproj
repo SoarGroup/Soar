@@ -227,7 +227,7 @@
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="src;..\CLI\src;..\ClientSML\src;..\ConnectionSML\src;..\KernelSML\src;..\ElementXML\src;..\SoarKernel\src;..\shared"
-				PreprocessorDefinitions="SOAR_DLL=__declspec(dllimport);WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"

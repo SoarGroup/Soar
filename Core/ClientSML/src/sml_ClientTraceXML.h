@@ -13,10 +13,11 @@
 #define SML_CLIENT_TRACE_XML_H
 
 #include "sml_ClientXML.h"
+#include "Export.h"
 
 namespace sml {
 
-class SOAR_DLL ClientTraceXML : public ClientXML
+class EXPORT ClientTraceXML : public ClientXML
 {
 public:
 	// These methods provide access to specific attributes and tags without

@@ -11,10 +11,12 @@
 #ifndef SML_NAMESH
 #define SML_NAMESH
 
+#include "Export.h"
+
 namespace sml
 {
 
-class SOAR_DLL sml_Names
+class EXPORT sml_Names
 {
 public:
 	// <sml> tag identifiers
