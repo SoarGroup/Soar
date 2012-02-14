@@ -51,7 +51,7 @@ class OSSpecificMutex ;
 // This is safer than exposing the "Lock" and "Unlock" methods which is
 // dangerous because it's east to forget to Unlock (or to have an exception or
 // other unexcepted exit out of a function) causing a deadlock.
-class Mutex
+class SOAR_DLL Mutex
 {
 	friend class Lock ;
 	friend class ConditionalLock ;

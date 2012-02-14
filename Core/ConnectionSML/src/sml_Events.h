@@ -305,7 +305,7 @@ enum smlStopLocationFlags
 /////////////////////////////////////////////////////////////////
 
 // This class is used to convert to and from the string form of these IDs
-class Events
+class SOAR_DLL Events
 {
 protected:
 	// We keep two maps, one for each direction

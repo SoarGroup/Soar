@@ -6,10 +6,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestCLI", "TestCLI\TestCLI.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "Tests\Tests.vcproj", "{DBEC0FA9-01A1-4E5A-9B3A-8AFC7A7EBFCF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E0CE93A-58E9-4A0B-B425-104FCE2D5161} = {4E0CE93A-58E9-4A0B-B425-104FCE2D5161}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLJava", "ClientSMLSWIG\Java\ClientSMLJava9.vcproj", "{F8B197A4-FC27-4B02-9B08-CD5B16899AAB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E0CE93A-58E9-4A0B-B425-104FCE2D5161} = {4E0CE93A-58E9-4A0B-B425-104FCE2D5161}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientSMLPython", "ClientSMLSWIG\Python\ClientSMLPython9.vcproj", "{E03209E8-6CF9-4460-B570-A28F3BFBB402}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4E0CE93A-58E9-4A0B-B425-104FCE2D5161} = {4E0CE93A-58E9-4A0B-B425-104FCE2D5161}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "soar", "soar.vcproj", "{4E0CE93A-58E9-4A0B-B425-104FCE2D5161}"
 EndProject

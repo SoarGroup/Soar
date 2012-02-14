@@ -45,7 +45,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="src;..\CLI\src;..\ClientSML\src;..\ConnectionSML\src;..\KernelSML\src;..\ElementXML\src;..\SoarKernel\src;..\shared"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="SOAR_DLL=__declspec(dllimport);WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -65,9 +65,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lib\cppunitd_dllvs9.lib"
+				AdditionalDependencies="soar.lib lib\cppunitd_dllvs9.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\..\out\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"
@@ -211,7 +212,7 @@
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="src;..\CLI\src;..\ClientSML\src;..\ConnectionSML\src;..\KernelSML\src;..\ElementXML\src;..\SoarKernel\src;..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="SOAR_DLL=__declspec(dllimport);WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -231,9 +232,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="lib\cppunit_dllvs9.lib"
+				AdditionalDependencies="soar.lib lib\cppunit_dllvs9.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\out\lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"
 				SubSystem="1"

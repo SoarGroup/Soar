@@ -60,7 +60,7 @@ namespace soarxml
 	* @brief The ElementXML class represents an element in an XML stream.
 	*		 Through its children, it can represent an entire XML document.
 	*************************************************************/
-	class ElementXML
+	class SOAR_DLL ElementXML
 	{
 		// Let Connection have access to Fast methods (which are protected because they take care to use correctly).
 		friend class sml::Connection ;

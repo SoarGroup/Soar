@@ -17,7 +17,7 @@
 
 namespace soar_thread {
 
-class Event
+class SOAR_DLL Event
 {
 protected:
 	// OS specific implementation

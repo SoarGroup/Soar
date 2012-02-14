@@ -16,7 +16,7 @@ namespace sml {
 // Actual error codes are in sml_Errors.h
 typedef int ErrorCode ;
 
-class ClientErrors
+class SOAR_DLL ClientErrors
 {
 protected:
 	ErrorCode			m_LastError ;

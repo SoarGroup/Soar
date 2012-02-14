@@ -29,7 +29,7 @@ class Identifier ;
 // IsOutputLinkAdd) to check if the WMEs you have were
 // removed during the last decision cycle. Dereferencing
 // a removed WME causes a segmentation fault.
-class StringElement : public WMElement
+class SOAR_DLL StringElement : public WMElement
 {
 	// Allow working memory to create these objects directly (user must use agent class to do this)
 	friend class WorkingMemory ;
