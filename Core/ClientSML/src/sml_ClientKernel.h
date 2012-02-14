@@ -142,7 +142,7 @@ public:
 	char const* GetAgentStatus() const	{ return m_AgentStatus.c_str() ; }
 } ;
 
-class Kernel : public ClientErrors
+class SOAR_DLL Kernel : public ClientErrors
 {
 	// Allow the agent to call to get the connection from the kernel.
 	friend class Agent ;

@@ -18,7 +18,7 @@
 
 namespace soar_thread {
 
-class Thread
+class SOAR_DLL Thread
 {
 protected:
 	volatile bool	m_QuitNow ;

@@ -5,26 +5,26 @@
 static MTRand gSoarRand;
 
 // real number in [0,1]
-double SoarRand()
+SOAR_DLL double SoarRand()
 { return gSoarRand.rand(); }
 
 // real number in [0,n]
-double SoarRand(const double& max)
+SOAR_DLL double SoarRand(const double& max)
 { return gSoarRand.rand(max); }
 
 // integer in [0,2^32-1]
-uint32_t SoarRandInt()
+SOAR_DLL uint32_t SoarRandInt()
 { return gSoarRand.randInt(); }
 
 // integer in [0,n] for n < 2^32
-uint32_t SoarRandInt(const uint32_t& max)
+SOAR_DLL uint32_t SoarRandInt(const uint32_t& max)
 { return gSoarRand.randInt(max); }
 
 
 // automatically seed with a value based on the time or /dev/urandom
-void SoarSeedRNG()
+SOAR_DLL void SoarSeedRNG()
 { gSoarRand.seed(); }
 
 // seed with a provided value
-void SoarSeedRNG(const uint32_t seed)
+SOAR_DLL void SoarSeedRNG(const uint32_t seed)
 { gSoarRand.seed(seed); }

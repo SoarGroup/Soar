@@ -16,7 +16,7 @@
 
 namespace sml {
 
-class ClientTraceXML : public ClientXML
+class SOAR_DLL ClientTraceXML : public ClientXML
 {
 public:
 	// These methods provide access to specific attributes and tags without

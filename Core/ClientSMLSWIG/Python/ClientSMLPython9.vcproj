@@ -50,7 +50,7 @@
 				InlineFunctionExpansion="0"
 				OmitFramePointers="false"
 				AdditionalIncludeDirectories="&quot;$(PYTHON_HOME)\include&quot;;..\..\ClientSML\src;..\..\ElementXML\src;..\..\ConnectionSML\src;..\..\shared"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="SOAR_DLL=__declspec(dllimport);WIN32;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -73,10 +73,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python26_d.lib"
+				AdditionalDependencies="soar.lib"
 				OutputFile="$(OutDir)\_Python_sml_ClientInterface_d.pyd"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
+				AdditionalLibraryDirectories="..\..\..\out\lib;&quot;$(PYTHON_HOME)\libs&quot;"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
@@ -236,7 +236,7 @@
 				EnableFiberSafeOptimizations="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;$(PYTHON_HOME)\include&quot;;..\..\ClientSML\src;..\..\ElementXML\src;..\..\ConnectionSML\src;..\..\shared"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="SOAR_DLL=__declspec(dllimport);WIN32;NDEBUG;_CRT_SECURE_NO_DEPRECATE"
 				StringPooling="true"
 				MinimalRebuild="false"
 				RuntimeLibrary="2"
@@ -258,10 +258,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="python26.lib"
+				AdditionalDependencies="soar.lib"
 				OutputFile="$(OutDir)\_Python_sml_ClientInterface.pyd"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(PYTHON_HOME)\libs&quot;"
+				AdditionalLibraryDirectories="..\..\..\out\lib;&quot;$(PYTHON_HOME)\libs&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="build\$(PlatformName)\$(ConfigurationName)\$(TargetName).pdb"
 				SubSystem="2"
@@ -432,7 +432,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo PYTHON_HOME: %PYTHON_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -python -modern -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir . &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo PYTHON_HOME: %PYTHON_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -python -modern -DSOAR_DLL=__declspec(dllimport) -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir . &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>
@@ -452,7 +452,7 @@
 				>
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo PYTHON_HOME: %PYTHON_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -python -modern -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir . &quot;$(InputPath)&quot;&#x0D;&#x0A;"
+					CommandLine="echo In order to function correctly, please ensure the following environment variables are correctly set:&#x0D;&#x0A;echo PYTHON_HOME: %PYTHON_HOME%&#x0D;&#x0A;echo SWIG_HOME: %SWIG_HOME%&#x0D;&#x0A;echo on&#x0D;&#x0A;&quot;$(SWIG_HOME)\swig.exe&quot; -Wall -c++ -python -modern -DSOAR_DLL=__declspec(dllimport) -I../../shared -I../../ClientSML/src -I../../ElementXML/src -I../../ConnectionSML/src -outdir . &quot;$(InputPath)&quot;&#x0D;&#x0A;"
 					AdditionalDependencies="$(SolutionDir)\SoarLibrary\lib\ClientSML.lib;$(SolutionDir)\SoarLibrary\lib\ConnectionSML.lib;$(TargetDir)\ElementXML.dll"
 					Outputs="$(InputName)_wrap.cxx"
 				/>

@@ -28,7 +28,7 @@ namespace sml {
 class AnalyzeXML ;
 class ClientKernel ;
 
-class ClientAnalyzedXML
+class SOAR_DLL ClientAnalyzedXML
 {
 	// Allow access to getAnalyzeXML method
 	friend class Kernel ;

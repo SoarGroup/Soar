@@ -28,7 +28,7 @@ class WorkingMemory ;
 class RemoveDelta ;
 class WMDelta ;
 
-class WMElement
+class SOAR_DLL WMElement
 {
 	// Making most methods protected, so users don't use them directly by accident.
 	// But allow working memory to work with them directly.

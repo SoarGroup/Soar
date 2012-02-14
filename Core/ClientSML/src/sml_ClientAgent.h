@@ -122,7 +122,7 @@ public:
 	}
 } ;
 
-class Agent : public ClientErrors
+class SOAR_DLL Agent : public ClientErrors
 {
 	// By using a lot of friends we can keep methods from being exposed
 	// to the client and yet allow access between our internal classes.

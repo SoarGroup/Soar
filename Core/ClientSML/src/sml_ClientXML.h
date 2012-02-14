@@ -27,7 +27,7 @@ namespace sml {
 class Agent ;
 class ClientTraceXML ;
 
-class ClientXML
+class SOAR_DLL ClientXML
 {
 	friend class Agent ;
 

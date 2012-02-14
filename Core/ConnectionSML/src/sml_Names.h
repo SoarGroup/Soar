@@ -14,7 +14,7 @@
 namespace sml
 {
 
-class sml_Names
+class SOAR_DLL sml_Names
 {
 public:
 	// <sml> tag identifiers

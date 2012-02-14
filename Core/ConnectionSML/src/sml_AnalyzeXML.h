@@ -30,7 +30,7 @@ namespace soarxml
 
 namespace sml {
 
-class AnalyzeXML
+class SOAR_DLL AnalyzeXML
 {
 protected:
 	ElementXML_Handle m_hRootObject ;// The message being analyzed
