@@ -6,157 +6,87 @@ import os
 import SCons.Script
 import sys
 
-Import('env')
-
-# clone is for making the shared library
-clone = env.Clone()
-	
-# ConfigureJNI and tolen from http://www.scons.org/wiki/JavaNativeInterface
-# Modified from its original format
-def walkDirs(path):
-    """helper function to get a list of all subdirectories"""
-    def addDirs(pathlist, dirname, names):
-        """internal function to pass to os.path.walk"""
-        for n in names:
-            f = os.path.join(dirname, n)
-            if os.path.isdir(f):
-                pathlist.append(f)
-    pathlist = [path]
-    os.path.walk(path, addDirs, pathlist)
-    return pathlist
-
+# adapted from http://www.scons.org/wiki/JavaNativeInterface
 def ConfigureJNI():
-    """Configure the given environment for compiling Java Native Interface
-       c or c++ language files."""
+	base = os.environ.get('JAVA_HOME')
+	if not base:
+		if sys.platform == 'darwin':
+			# Apple's OS X has its own special java base directory
+			base = '/System/Library/Frameworks/JavaVM.framework'
 
-    # first look for a shell variable called JAVA_HOME
-    java_base = os.environ.get('JAVA_HOME')
-    if not java_base:
-        if sys.platform == 'darwin':
-            # Apple's OS X has its own special java base directory
-            java_base = '/System/Library/Frameworks/JavaVM.framework'
-        else:
-            # Search for the java compiler
-            print "JAVA_HOME environment variable is not set. Searching for java... ",
-            jcdir = os.path.dirname(env.WhereIs('javac'))
-            if not jcdir:
-                print "not found."
-                return 0
-            # assuming the compiler found is in some directory like
-            # /usr/jdkX.X/bin/javac, java's home directory is /usr/jdkX.X
-            java_base = os.path.join(jcdir, "..")
-            print "found:", java_base
+		else:
+			# Search for the java compiler
+			jcdir = os.path.dirname(env.WhereIs('javac'))
+			if not jcdir:
+				return None
+			# assuming the compiler found is in some directory like
+			# /usr/jdkX.X/bin/javac, java's home directory is /usr/jdkX.X
+			base = os.path.split(jcdir)[0]
 
-    if sys.platform == 'darwin':
-        # Apple does not use Sun's naming convention
-        java_headers = [os.path.join(java_base, 'Headers')]
-        java_libs = [os.path.join(java_base, 'Libraries')]
-    else:
-        # windows and linux
-        java_headers = [os.path.join(java_base, 'include')]
-        java_libs = [os.path.join(java_base, 'lib')]
-        # Sun's windows and linux JDKs keep system-specific header
-        # files in a sub-directory of include
-        if java_base == '/usr' or java_base == '/usr/local':
-            # too many possible subdirectories. Just use defaults
-            java_headers.append(os.path.join(java_headers[0], 'win32'))
-            java_headers.append(os.path.join(java_headers[0], 'linux'))
-            java_headers.append(os.path.join(java_headers[0], 'solaris'))
-        else:
-            # add all subdirs of 'include'. The system specific headers
-            # should be in there somewhere
-            java_headers = walkDirs(java_headers[0])
+	if sys.platform == 'darwin':
+		headers = [os.path.join(base, 'Headers')]
+		libs = [os.path.join(base, 'Libraries')]
+	else:
+		headers = [os.path.join(base, 'include')]
+		libs = [os.path.join(base, 'lib')]
+		if sys.platform == 'win32':
+			headers.append(os.path.join(base, 'include', 'win32'))
+		elif sys.platform.startswith('linux'):
+			headers.append(os.path.join(base, 'include', 'linux'))
+		else:
+			return None
+	
+	return (headers, libs)
 
-    # add Java's include and lib directory to the environment
-    clone.Append(CPPPATH = java_headers)
-    clone.Append(LIBPATH = java_libs)
-    return 1
-
-def JavaSources(dir):
-        sources = list()
-        for root, dirs, files in os.walk(dir):
-                for f in files:
-                        sources.append(os.path.join(root, f))
-                if '.svn' in dirs:
-                        dirs.remove('.svn')
-        return sources
-
-# This sets up the jni include files
-if not ConfigureJNI():
+config = ConfigureJNI()
+if config == None:
 	print "Could not configure Java. If you know where java is on your system,"
 	print "set environment variable JAVA_HOME to point to the directory containing"
 	print "the Java include, bin, and lib directories."
-	print "You may disable java, see help (scons -h)"
-	print "Java Native Interface is required... Exiting"
-	Exit(1)
+	Return()
 
-# Modify environment for compilation
-clone.Prepend(CPPPATH = Split('#ClientSML/src #ElementXML/src #ConnectionSML/src'))
-if env['VISHIDDEN']:
-	clone['CPPFLAGS'].remove('-fvisibility=hidden')
-	clone.Append(CPPFLAGS = ['-fvisibility=default'])
-clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
-clone.Append(LIBS = 'soar', LIBPATH = ['$PREFIX/lib'])
-#################
+Import('env')
+lib_install_dir = os.path.join(env['PREFIX'], 'lib')
+clone = env.Clone()	
+clone.Append(
+	LIBS = ['Soar'],
+	CPPPATH = config[0],
+	LIBPATH = config[1] + [lib_install_dir]
+)
 
-# Some of the dependencies:
-# sml.jar
-#   src/sml/*.java
-#     Java_sml_ClientInterface_wrap.cpp
-#       mkdir src/sml
-#       Java_sml_ClientInterface.i
-#   libJava_sml_ClientInterface.so
-#     Java_sml_ClientInterface_wrap.cpp
-#       mkdir src/sml
-#       Java_sml_ClientInterface.i
+if clone['CXX'] == 'g++':
+	if clone['VISHIDDEN']:
+		clone['CPPFLAGS'].remove('-fvisibility=hidden')
+		clone.Append(CPPFLAGS = ['-fvisibility=default'])
+	clone.Append(CPPFLAGS = '-Wno-unused -fno-strict-aliasing'.split())
 
-# Define targets and sources
-javasml_i = env.File('#ClientSMLSWIG/Java/Java_sml_ClientInterface.i')
-javasml_wrap = env.File('#ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp')
-javasource = env.File('#ClientSMLSWIG/Java/src/sml/sml.java')
+if sys.platform == 'darwin':
+	clone.Append(SHLINKFLAGS = ' -framework JavaVM')
+	clone.Replace(SHLIBSUFFIX = '.jnilib')
 
-def determine_shlib_target():
-	# Things a bit different on Mac
-	if sys.platform == 'darwin':
-		clone.Append(SHLINKFLAGS = ' -framework JavaVM')
-		return 'libJava_sml_ClientInterface.jnilib'
-	return 'Java_sml_ClientInterface'
-javasml_shlib = determine_shlib_target()
+name = 'Java_sml_ClientInterface'
+interface = clone.File(name + '.i')
+wrapper = clone.File(name + '_wrap.cpp')
+srcdir = clone.Dir('src')
+smldir = srcdir.Dir('sml')
+source = smldir.File('sml.java')
+classdir = clone.Dir('classes')
+jar = clone.File('sml.jar')
 
-javajar = env.File('$PREFIX/share/java/sml.jar')
-javabuild = env.File('#ClientSMLSWIG/Java/build.xml')
+incs = ' '.join('-I%s' % GetBuildPath(d) for d in clone['CPPPATH'])
+swig_cmd = 'swig %s -o %s -c++ -java -Wall -package sml -outdir %s %s' % (incs, wrapper, smldir, interface)
 
 # Custom scanner for internal dependencies:
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 clone.Append(SCANNERS = [ SWIGScanner ])
 
-# Make src/sml dir and wrap
-clone.Command(javasml_wrap, javasml_i, [ 
-	Delete('ClientSMLSWIG/Java/src', must_exist = False),
-	Mkdir('ClientSMLSWIG/Java/src'),
-	Mkdir('ClientSMLSWIG/Java/src/sml'),
-	'swig -o ClientSMLSWIG/Java/Java_sml_ClientInterface_wrap.cpp -c++ -java -Wall -package sml -IClientSML/src -IElementXML/src -IConnectionSML/src -outdir ClientSMLSWIG/Java/src/sml ClientSMLSWIG/Java/Java_sml_ClientInterface.i'])
+clone.Command([wrapper, source], interface, swig_cmd, chdir=clone.Dir('.'))
+clone.Clean(wrapper, [srcdir, classdir])
+shlib = clone.SharedLibrary(name, wrapper)
+clone.Java(classdir, srcdir)
+clone['JARCHDIR'] = classdir
+smljar = clone.Jar(jar, classdir)
 
-# Side effect: previous command produces src/*.java files (the SML Java interface)
-clone.SideEffect(javasource, javasml_wrap)
-
-# Create shared library
-shlib = clone.SharedLibrary(javasml_shlib, javasml_wrap)
-env.Install('$PREFIX/lib', shlib)
-
-# Note build.xml dependency
-env.Depends(javajar, javabuild)
-
-# Create jar
-env.Command(javajar, javasource,
-	'ant -Dsoarbuild=$BUILD_DIR/ClientSMLSWIG/Java/build -Dsoarprefix=$PREFIX -q', 
-	chdir='ClientSMLSWIG/Java')
-
-# Clean java stuff
-if GetOption('clean'):
-	for x in BUILD_TARGETS:
-		targetpath = os.path.realpath(str(x))
-		if str(javajar).startswith(targetpath):
-			homedir = env.Dir('#ClientSMLSWIG/Java')
-			env.Execute('ant -Dsoarbuild=$BUILD_DIR/ClientSMLSWIG/Java/build -Dsoarprefix=$PREFIX -q clean', chdir=homedir)
-
+lib_install = clone.Install(lib_install_dir, shlib)
+jar_install = clone.Install(lib_install_dir, smljar)
+env.Alias('sml_java', [lib_install, jar_install])

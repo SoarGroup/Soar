@@ -1,4 +1,3 @@
-//#include "src/ElementXMLdll.cpp"
 #include "src/ElementXMLInterface.cpp"
 #include "src/ElementXMLImpl.cpp"
 #include "src/ParseXML.cpp"
