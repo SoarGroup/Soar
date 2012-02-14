@@ -16,6 +16,7 @@
 #define SML_CLIENT_XML_H
 
 #include <string>
+#include "Export.h"
 
 namespace soarxml
 {
@@ -27,7 +28,7 @@ namespace sml {
 class Agent ;
 class ClientTraceXML ;
 
-class SOAR_DLL ClientXML
+class EXPORT ClientXML
 {
 	friend class Agent ;
 

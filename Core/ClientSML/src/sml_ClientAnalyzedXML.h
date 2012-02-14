@@ -17,6 +17,7 @@
 #define SML_CLIENT_ANALYZED_XML_H
 
 #include <string>
+#include "Export.h"
 
 namespace soarxml
 {
@@ -28,7 +29,7 @@ namespace sml {
 class AnalyzeXML ;
 class ClientKernel ;
 
-class SOAR_DLL ClientAnalyzedXML
+class EXPORT ClientAnalyzedXML
 {
 	// Allow access to getAnalyzeXML method
 	friend class Kernel ;

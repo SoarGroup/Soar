@@ -22,6 +22,7 @@
 
 #include "sml_ArgMap.h"
 #include "ElementXMLHandle.h"
+#include "Export.h"
 
 namespace soarxml
 {
@@ -30,7 +31,7 @@ namespace soarxml
 
 namespace sml {
 
-class SOAR_DLL AnalyzeXML
+class EXPORT AnalyzeXML
 {
 protected:
 	ElementXML_Handle m_hRootObject ;// The message being analyzed

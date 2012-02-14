@@ -26,6 +26,7 @@
 #include "sml_OutputDeltaList.h"
 #include "sml_ClientDirect.h" // SML_DIRECT defined here
 #include "sml_Events.h"
+#include "Export.h"
 
 #include <list>
 #include <map>
@@ -47,7 +48,7 @@ class Identifier ;
 class IdentifierSymbol ;
 class AnalyzeXML ;
 
-class WorkingMemory
+class EXPORT WorkingMemory
 {
 	friend class Identifier;
 

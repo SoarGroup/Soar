@@ -40,6 +40,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include "Export.h"
 
 namespace soarxml
 {
@@ -81,7 +82,7 @@ typedef xmlAttributeMap::const_iterator									xmlAttributeMapConstIter ;
 * @brief The ElementXMLImpl class represents an element in an XML stream.
 *		 Through its children, it can represent an entire XML document.
 *************************************************************/
-class ElementXMLImpl
+class EXPORT ElementXMLImpl
 {
 	// Let MessageGenerator have access to Fast methods (which are protected because they take care to use correctly).
 	friend class MessageGenerator ;

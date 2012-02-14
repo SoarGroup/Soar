@@ -15,6 +15,7 @@
 #include "sml_ClientErrors.h"
 #include "sml_ListMap.h"
 #include "sml_ClientEvents.h"
+#include "Export.h"
 
 #include <string>
 #include <map>
@@ -122,7 +123,7 @@ public:
 	}
 } ;
 
-class SOAR_DLL Agent : public ClientErrors
+class EXPORT Agent : public ClientErrors
 {
 	// By using a lot of friends we can keep methods from being exposed
 	// to the client and yet allow access between our internal classes.

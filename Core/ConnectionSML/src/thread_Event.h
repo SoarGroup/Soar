@@ -14,10 +14,11 @@
 #define THREAD_EVENT_H
 
 #include "thread_OSspecific.h"
+#include "Export.h"
 
 namespace soar_thread {
 
-class SOAR_DLL Event
+class EXPORT Event
 {
 protected:
 	// OS specific implementation
