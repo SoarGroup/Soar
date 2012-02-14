@@ -7,7 +7,7 @@ import sys
 Import('env')
 clone = env.Clone()
 
-libadd = ['soar']
+libadd = ['Soar']
 
 if sys.platform == "darwin":
 	if GetOption('platform') == '64':
