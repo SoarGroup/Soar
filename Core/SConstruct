@@ -2,6 +2,15 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 
+SOAR_VERSION = "9.3.1"
+
+# required and default optional flags when using VC++ compiler
+VS_REQ_CFLAGS = '/EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'
+VS_DEF_CFLAGS = '/O2 /W2'
+
+# default compiler flags when using g++
+GCC_DEF_CFLAGS = '-O2 -Werror'
+
 import os
 import sys
 import platform
@@ -9,6 +18,8 @@ import socket
 import subprocess
 import re
 import fnmatch
+
+join = os.path.join
 
 def execute(cmd):
 	try:
@@ -54,13 +65,13 @@ def javaRunAnt(theComponent, theTargets, theSources):
 	if type(theSources) == str:
 		theSources = [theSources]
 	for s in theSources:
-		for root, dirs, files in os.walk(os.path.join(str(theDir), s)):
+		for root, dirs, files in os.walk(join(str(theDir), s)):
 			if ".svn" in dirs:
 				dirs.remove(".svn")
 			for f in files:
-				javaSources.append(env.File(os.path.join(root, f)))
+				javaSources.append(env.File(join(root, f)))
 
-	javaSources.append(env.File(os.path.join(str(theDir), "build.xml")))
+	javaSources.append(env.File(join(str(theDir), "build.xml")))
 
 	ver = env['SOAR_VERSION']
 	jarTargets = []
@@ -77,8 +88,6 @@ def javaRunAnt(theComponent, theTargets, theSources):
 		env.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + env['SOAR_VERSION'], chdir = theDir)
 	return ret
 	
-#################
-# Verify swig if enabled
 def CheckSWIG():
 	for f in execute(['swig', '-version']).split():
 		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
@@ -97,24 +106,25 @@ def CheckSWIG():
 # Install all files under source directory to target directory, keeping
 # subdirectory structure and ignoring hidden files
 def InstallDir(env, tgt, src, globstring="*"):
-	target = env.GetBuildPath(tgt)
-	source = env.GetBuildPath(src)
-	env.Clean('$PREFIX', target)
-	for dir, _, files in os.walk(source):
+	targets = []
+	tgtdir = env.GetBuildPath(tgt)
+	srcdir = env.GetBuildPath(src)
+	for dir, _, files in os.walk(srcdir):
 		if fnmatch.fnmatch(dir, '*/.*'):
 			continue
 		
-		# targetsub is the target directory plus the relative sub directory
-		relative = dir[len(source)+1:]
-		targetsub = os.path.join(target, relative)
+		# tgtsub is the target directory plus the relative sub directory
+		relative = dir[len(srcdir)+1:]
+		tgtsub = join(tgtdir, relative)
 		
 		for f in fnmatch.filter(files, globstring):
 			if not f.startswith('.'):
-				p = os.path.join(dir, f)
-				Install(targetsub, p)
+				p = join(dir, f)
+				Install(tgtsub, p)
+				targets.append(join(tgtsub, p))
 	
-SOAR_VERSION = "9.3.1"
-VS_CFLAGS = '/EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'.split()
+	return targets
+	
 
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
@@ -146,11 +156,11 @@ m64_default = '32'
 if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Mac_m64_Capable()):
 	m64_default = '64'
 
-default_prefix = os.path.join('..','out')
+default_prefix = join('..','out')
 if os.environ.has_key('SOAR_HOME'):
 	default_prefix = os.environ['SOAR_HOME']
 
-default_build = os.path.realpath(os.path.join('..','build'))
+default_build = os.path.realpath(join('..','build'))
 if os.environ.has_key('SOAR_BUILD'):
 	default_build = os.environ['SOAR_BUILD']
 
@@ -178,24 +188,20 @@ AddOption('--prefix', action='store', type='string', dest='prefix', default=defa
 AddOption('--build-dir', action='store', type='string', dest='build-dir', default=default_build, nargs=1, metavar='DIR',
 	help='Directory to store intermediate (object) files.')
 
-AddOption('--static', action='store_true', dest='static', default=False,
-	help='Use static linking (cannot use SWIG/Java/Python/CSharp/Tcl/PHP interfaces)')
-
 AddOption('--ios', action='store', type='choice', choices=['none','simulator','armv6','armv7'], dest='ios', default='none', nargs=1, metavar='IOS',
-		  help='Sets up for iOS compilation')
+	help='Sets up for iOS compilation')
 
 bdir = GetOption('build-dir')
 VariantDir(bdir, '.', duplicate=0)
 
 def build_dir(p):
-	return os.path.join(bdir, p)
+	return join(bdir, p)
 
 env = Environment(
 	ENV = {'PATH' : os.environ['PATH'], 'TMP' : os.environ['TMP']},
 	SCU = GetOption('scu'), 
 	BUILD_DIR = bdir,
 	PREFIX = os.path.realpath(GetOption('prefix')),
-	STATIC_LINKED = GetOption('static'),
 	SOAR_VERSION = SOAR_VERSION,
 	CPPPATH = [
 		'#shared',
@@ -208,6 +214,7 @@ env = Environment(
 		'#Tests/src',
 		'#CLI/src',
 	],
+	VISHIDDEN = False,   # needed by swig
 )
 
 if env['CXX'].endswith('g++'):
@@ -219,9 +226,9 @@ else:
 
 if compiler == 'g++':
 	if GetOption('cflags') == None:
-		cflags = '-O2 -Werror'.split()
+		cflags = GCC_DEF_CFLAGS
 	else:
-		cflags = GetOption('cflags').split()
+		cflags = GetOption('cflags')
 	
 	gcc_ver = gcc_version(env['CXX'])
 	# check if the compiler supports -fvisibility=hidden (GCC >= 4)
@@ -229,31 +236,27 @@ if compiler == 'g++':
 		temp_env = env.Clone()
 		temp_env.Replace(CPPFLAGS = ['-fvisibility=hidden'])
 		if Configure(temp_env).TryCompile("char foo;", '.c'):
-			cflags.append('-fvisibility=hidden')
-			cflags.append('-DGCC_HASCLASSVISIBILITY')
-			env['VISHIDDEN'] = True # needed by swig
-		else:
-			env['VISHIDDEN'] = False
+			cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
+			env['VISHIDDEN'] = True
 	
 	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 	if sys.platform == 'darwin':
-		cflags.append('-DSCONS_DARWIN')
+		cflags += ' -DSCONS_DARWIN'
 
 	static_macro = ['-DSTATIC_LINKED']
 	shared_macro = []
 elif compiler == 'cl':
 	if GetOption('cflags') == None:
-		cflags = VS_CFLAGS + ['/O2']
+		cflags = VS_REQ_CFLAGS + ' ' + VS_DEF_CFLAGS
 	else:
-		cflags = VS_CFLAGS + GetOption('cflags').split()
+		cflags = VS_REQ_CFLAGS + ' ' + GetOption('cflags')
 	
 	static_macro = ['/D', 'STATIC_LINKED']
 	shared_macro = ['/D', '_USRDLL']
 	
 	env.Append(LIBS='advapi32')  # for GetUserName
 	
-lnflags = GetOption('lnflags') or ""
-env.Replace(CPPFLAGS=cflags, LINKFLAGS=(GetOption('lnflags') or "").split())
+env.Replace(CPPFLAGS=cflags.split(), LINKFLAGS=(GetOption('lnflags') or "").split())
 
 if GetOption('ios') == 'none':
 	if compiler == 'g++':
@@ -275,12 +278,6 @@ else:
 	env['CXX'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-g++-4.2'
 	env.Append(CPPFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
 	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
-
-
-#################
-# Misc and export
-env.Default(env['PREFIX'])
-env.Default('.')
 
 Export('env')
 Export('javaRunAnt')
@@ -322,12 +319,12 @@ static_env.Append(CPPFLAGS=static_macro)
 static_objs = [ static_env.Object(build_dir('static-%s' % c), srcs[c][scu]) for c in srcs ]
 static_lib = static_env.Library(build_dir('Soar'), static_objs)
 
-env.Install('$PREFIX/lib', client_lib)
-env.Install('$PREFIX/lib', kernel_lib)
-env.Install('$PREFIX/lib', static_lib)
+install_client_lib = env.Install('$PREFIX/lib', client_lib)
+install_kernel_lib = env.Install('$PREFIX/lib', kernel_lib)
+install_static_lib = env.Install('$PREFIX/lib', static_lib)
 
-Default(client_lib, kernel_lib)
-env.Alias('static', static_lib)
+env.Alias('kernel', [install_client_lib, install_kernel_lib])
+env.Alias('static_kernel', install_static_lib)
 
 #################
 # Auto detect components
@@ -344,21 +341,15 @@ components = []
 #		print component,
 #print
 
-subdirs= [ ]
-if CheckSWIG():
-	Default('ClientSMLSWIG/Python', 'ClientSMLSWIG/Java', 'ClientSMLSWIG/Tcl', 'ClientSMLSWIG/PHP')
-
-if GetOption('ios') == 'none':
-	Default('Tests')
+subdirs= [ join('ClientSMLSWIG', d) for d in 'Python Java Tcl PHP CSharp'.split() ]
 
 # Build/Output Directory
 print "Building intermediates to directory ", env['BUILD_DIR']
 print "Installing targets to prefix directory ", env['PREFIX']
 
-#for d in subdirs:
-#	script = '#%s/SConscript' %d
-#	print "Processing", script + "..."
-#	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
+for d in subdirs:
+	script = join('#' + d, 'SConscript')
+	SConscript(script, variant_dir=build_dir(d), duplicate=0)
 
 #################
 # Components
@@ -375,20 +366,26 @@ Export('compEnv')
 components.insert(0, 'Core/TestCLI')
 components.insert(0, 'Core/mincli')
 
-if GetOption('ios') == 'none':
-	for d in components:
-		script = '../%s/SConscript' % d
-		if os.path.exists(script):
-			print "Processing", script + "..."
-			SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), duplicate=0)
-#################
+for d in components:
+	script = '../%s/SConscript' % d
+	if os.path.exists(script):
+		print "Processing", script + "..."
+		SConscript(script, variant_dir=build_dir(d), duplicate=0)
 
-# Install resources
+# Resources
 for d in ['#ElementXML/src', '#ConnectionSML/src', '#ClientSML/src', '#shared']:
 	InstallDir(env, '$PREFIX/include', d, '*.h*')
 
-env.Clean('$PREFIX', '$PREFIX/share')
 InstallDir(env, '$PREFIX/share/soar/Demos', '#Demos')
 InstallDir(env, '$PREFIX/share/soar/Documentation', '#Documentation')
 InstallDir(env, '$PREFIX/share/soar/Tests', '#Tests/Agents')
-env.Alias('install', ['$PREFIX/share', '$PREFIX/include'])
+resources = env.Alias('resources', [join('$PREFIX', d) for d in ['share', 'include']])
+env.Clean('resources', resources)
+
+# Set default targets
+if GetOption('ios') == 'none':
+	Default('kernel')
+	#if CheckSWIG():
+	#	Default('ClientSMLSWIG/Python', 'ClientSMLSWIG/Java', 'ClientSMLSWIG/Tcl', 'ClientSMLSWIG/PHP')
+else:
+	Default('static_kernel')
