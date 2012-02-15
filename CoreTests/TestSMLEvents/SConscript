@@ -2,7 +2,7 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-Import('compEnv')
-TestSMLEvents = compEnv.Program('TestSMLEvents', Glob('*.cpp'))
-compEnv.Install('$PREFIX/bin', TestSMLEvents)
+Import('env')
+TestSMLEvents = env.Program('TestSMLEvents', Glob('*.cpp'))
+env.Alias('TestSMLEvents', env.Install('$OUT_DIR', TestSMLEvents))
 

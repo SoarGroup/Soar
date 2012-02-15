@@ -1,3 +1,0 @@
-#!/usr/bin/python
-Import('compEnv')
-compEnv.Alias('cli', compEnv.Install('$PREFIX/bin', compEnv.Program('cli', 'cli.cpp')))

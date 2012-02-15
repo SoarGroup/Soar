@@ -1,7 +1,0 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
-Import('compEnv')
-TestCLI = compEnv.Program('TestCLI', Glob('*.cpp'))
-compEnv.Alias('TestCLI', compEnv.Install('$PREFIX/bin', TestCLI))

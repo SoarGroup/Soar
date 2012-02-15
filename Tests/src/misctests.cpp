@@ -160,10 +160,7 @@ void MiscTest::tearDown()
 
 void MiscTest::testInstiationDeallocationStackOverflow()
 {
-    std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Tests/count-and-die.soar";
-
-    pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+    pAgent->LoadProductions( "test_agents/count-and-die.soar", true ) ;
     CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
 
     pAgent->ExecuteCommandLine("w 0");
@@ -196,10 +193,7 @@ void MiscTest::test_clog()
 
 void MiscTest::test_gp()
 {
-    std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Tests/testgp.soar";
-
-    pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+    pAgent->LoadProductions( "test_agents/testgp.soar", true ) ;
     CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
 
     pAgent->ExecuteCommandLine("gp {gp*test10 (state <s> ^operator <o> + ^someflag [ <var> true false ] ^<< [ a1 a2 a3 a4 a5] [a6 a7 a8 a9 a10] >> << [v1 v2 v3] [v4 v5 v6] [v7 v8 v9 v10] >>) (<o> ^name foo ^att [ val1 1.3 |another val| |\\|another val\\|| ] ^[ att1 att2 att3 att4 att5] [val1 val2 val3 val4 <var>]) --> (<s> ^[<var> att] <var>) }");
@@ -421,10 +415,7 @@ void MiscTest::testRHSRand()
 {
     pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
 
-    std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Tests/testRHSRand.soar";
-
-    pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+    pAgent->LoadProductions( "test_agents/testRHSRand.soar", true ) ;
     CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult() );
 
     pAgent->RunSelf(5000);
@@ -448,10 +439,7 @@ void MiscTest::testMultipleKernels()
 
 void MiscTest::testSmemArithmetic()
 {
-    std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Demos/arithmetic/arithmetic.soar";
-
-    pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+    pAgent->LoadProductions( "Demos/arithmetic/arithmetic.soar", true ) ;
     CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult() );
 
     pAgent->ExecuteCommandLine("watch 0");
@@ -467,7 +455,7 @@ void MiscTest::testSmemArithmetic()
 bool MiscTest::loadDemo(std::string demo)
 {
     std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Demos/" << demo;
+    productionsPath << "Demos/" << demo;
     return pAgent->LoadProductions(productionsPath.str().c_str());
 }
 
@@ -608,10 +596,7 @@ void MiscTest::testSoarRand()
 
 void MiscTest::testPreferenceDeallocation()
 {
-    std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Tests/testPreferenceDeallocation.soar";
-
-    pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+    pAgent->LoadProductions( "test_agents/testPreferenceDeallocation.soar", true ) ;
     CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
 
     pAgent->ExecuteCommandLine("run 10");

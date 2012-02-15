@@ -85,13 +85,9 @@ if not CheckForSWTJar():
 	print "swt.jar required for Soar Java debugger... Exiting"
 	Exit(1)
 
-# Use helper function, see SConstruct: def javaRunAnt
-Import('javaRunAnt')
-javaRunAnt('Java', 
-	['soar-smljava','soar-debugger','soar-visualsoar'], 
-	['SMLJava/src','Debugger/src','VisualSoar/src'])
+Import('env', 'javaRunAnt')
 
-
-Import('env')
-env.Install('$PREFIX/share/java', jarpath)
+env.Alias('java', [
+	javaRunAnt('Java',  ['soar-smljava','soar-debugger','soar-visualsoar'], ['SMLJava/src','Debugger/src','VisualSoar/src']),
+	env.Install('$OUT_DIR/java', jarpath)])
 

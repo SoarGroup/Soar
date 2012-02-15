@@ -46,12 +46,11 @@ if config == None:
 	Return()
 
 Import('env')
-lib_install_dir = os.path.join(env['PREFIX'], 'lib')
+lib_install_dir = env['OUT_DIR']
 clone = env.Clone()	
 clone.Append(
-	LIBS = ['Soar'],
 	CPPPATH = config[0],
-	LIBPATH = config[1] + [lib_install_dir]
+	LIBPATH = config[1],
 )
 
 if clone['CXX'] == 'g++':
@@ -108,5 +107,5 @@ clone['JARCHDIR'] = classdir
 smljar = clone.Jar(jar, classdir)
 
 lib_install = clone.Install(lib_install_dir, shlib)
-jar_install = clone.Install(lib_install_dir, smljar)
+jar_install = clone.Install(os.path.join(lib_install_dir, 'java'), smljar)
 env.Alias('sml_java', [lib_install, jar_install])

@@ -9,10 +9,7 @@
 	<property name="lib" location="lib" />
 	<property name="doc" location="doc" />
 
-	<property name="soarprefix" location="../../out" />
-	<property name="soarprefix.java" location="${soarprefix}/share/java" />
-	<property name="soarprefix.lib" location="${soarprefix}/lib" />
-	<property name="soarprefix.bin" location="${soarprefix}/bin" />
+	<property name="soarprefix.java" location="${soarprefix}/java" />
 
 	<property name="target" location="target" />
 	<property name="target.classes" location="${target}/classes" />
@@ -37,7 +34,7 @@
 	</target>
 
 	<target name="init-copylib" depends="init-haslib" if="haslib">
-		<copy todir="${soarprefix.lib}">
+		<copy todir="${soarprefix}">
 			<fileset dir="${lib}">
 				<include name="*.so" />
 				<include name="*.dylib" />
