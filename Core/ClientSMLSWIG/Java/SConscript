@@ -69,20 +69,40 @@ interface = clone.File(name + '.i')
 wrapper = clone.File(name + '_wrap.cpp')
 srcdir = clone.Dir('src')
 smldir = srcdir.Dir('sml')
-source = smldir.File('sml.java')
 classdir = clone.Dir('classes')
 jar = clone.File('sml.jar')
 
 incs = ' '.join('-I%s' % GetBuildPath(d) for d in clone['CPPPATH'])
-swig_cmd = 'swig %s -o %s -c++ -java -Wall -package sml -outdir %s %s' % (incs, wrapper, smldir, interface)
+swig_cmd = 'swig %s -o %s -c++ -java -Wall -package sml -outdir %s %s' % (incs, wrapper.abspath, smldir.abspath, interface)
 
 # Custom scanner for internal dependencies:
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 clone.Append(SCANNERS = [ SWIGScanner ])
 
-clone.Command([wrapper, source], interface, swig_cmd, chdir=clone.Dir('.'))
-clone.Clean(wrapper, [srcdir, classdir])
+# The Execute(..) wrapper will execute commands immediately after they are
+# parsed. Need to execute swig command immediately because it generates a
+# large number of .java sources that the Java builder later in this script
+# will scan for.
+update_swig = False
+test_source = smldir.File('sml.java').abspath
+if not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
+	update_swig = True
+else:
+	gentime = min(os.path.getmtime(wrapper.abspath), os.path.getmtime(test_source))
+	root = clone.Dir('#ClientSML/src').abspath
+	for f in os.listdir(root):
+		if os.path.getmtime(os.path.join(root, f)) > gentime:
+			update_swig = True
+			break
+
+if update_swig:
+	Execute(Mkdir(smldir.path))
+	Execute(swig_cmd)
+
+clone.Clean(jar, [wrapper, srcdir, classdir])
+clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
 shlib = clone.SharedLibrary(name, wrapper)
+
 clone.Java(classdir, srcdir)
 clone['JARCHDIR'] = classdir
 smljar = clone.Jar(jar, classdir)
