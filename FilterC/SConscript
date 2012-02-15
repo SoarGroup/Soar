@@ -2,7 +2,7 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-Import('compEnv')
-FilterC = compEnv.Program('FilterC', Glob('*.cpp'))
-compEnv.Install('$PREFIX/bin', FilterC)
+Import('env')
+FilterC = env.Program('FilterC', Glob('*.cpp'))
+env.Install('$OUT_DIR', FilterC)
 

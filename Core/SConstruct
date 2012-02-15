@@ -54,14 +54,10 @@ def Mac_m64_Capable():
 # theTargets: target jar name (or list of names) with -version.extension removed, makes .jar and .src.jar
 # theSources: source folder (or list of folders) relative to component folder (such as 'src')
 def javaRunAnt(theComponent, theTargets, theSources):
-	if env['STATIC_LINKED']:
-		print "Skipping Java component", theComponent
-		return
-
 	theDir = env.Dir('#../%s/' % theComponent)
 
-	sharejava = env['PREFIX'] + '/share/java'
-	javaSources = [sharejava + '/sml.jar']
+	javadir = os.path.join(env['OUT_DIR'], 'java')
+	javaSources = [os.path.join(javadir, 'sml.jar')]
 	if type(theSources) == str:
 		theSources = [theSources]
 	for s in theSources:
@@ -78,14 +74,14 @@ def javaRunAnt(theComponent, theTargets, theSources):
 	if type(theTargets) == str:
 		theTargets = [theTargets]
 	for i in theTargets:
-		targetRoot = sharejava + '/' + i + '-' + ver
+		targetRoot = os.path.join(javadir, i + '-' + ver)
 		jarTargets.append(targetRoot + '.jar')
 		jarTargets.append(targetRoot + '.src.jar')
 
-	ret = env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$PREFIX -Dversion=%s' % ver, chdir = theDir)
+	ret = env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$OUT_DIR -Dversion=' + ver, chdir = theDir)
 
 	if GetOption('clean'):
-		env.Execute('ant -q -Dsoarprefix=$PREFIX clean -Dversion=' + env['SOAR_VERSION'], chdir = theDir)
+		env.Execute('ant -q -Dsoarprefix=$OUT_DIR clean -Dversion=' + ver, chdir = theDir)
 	return ret
 	
 def CheckSWIG():
@@ -120,11 +116,12 @@ def InstallDir(env, tgt, src, globstring="*"):
 		for f in fnmatch.filter(files, globstring):
 			if not f.startswith('.'):
 				p = join(dir, f)
-				Install(tgtsub, p)
-				targets.append(join(tgtsub, p))
+				targets.extend(Install(tgtsub, p))
 	
 	return targets
-	
+
+Export('javaRunAnt', 'InstallDir')
+
 
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
@@ -150,24 +147,17 @@ m64_default = '32'
 if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Mac_m64_Capable()):
 	m64_default = '64'
 
-default_prefix = join('..','out')
-if os.environ.has_key('SOAR_HOME'):
-	default_prefix = os.environ['SOAR_HOME']
-
-default_build = os.path.realpath(join('..','build'))
-if os.environ.has_key('SOAR_BUILD'):
-	default_build = os.environ['SOAR_BUILD']
+default_out = os.environ.get('SOAR_HOME', join('..','out'))
+default_build = os.environ.get('SOAR_BUILD', join('..','build'))
 
 ################
 # Command line options
 AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nargs=1, metavar='COMPILER',
 	help='Replace \'g++\' as the C++ compiler.')
 
-AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1,
-	help='Compiler flags')
+AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, help='Compiler flags')
 
-AddOption('--lnflags', action='store', type='string', dest='lnflags', nargs=1,
-	help='Linker flags')
+AddOption('--lnflags', action='store', type='string', dest='lnflags', nargs=1, help='Linker flags')
 
 AddOption('--platform', action='store', type='choice', choices=['32','64'], dest='platform', default=m64_default, nargs=1, metavar='PLATFORM',
 	help='Target platform. Must be one of 32, 64. Default is detected system architecture.')
@@ -176,11 +166,13 @@ AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
 	
 # TODO: does this do the same thing as install-sandbox?
-AddOption('--prefix', action='store', type='string', dest='prefix', default=default_prefix, nargs=1, metavar='DIR',
+AddOption('--out-dir', action='store', type='string', dest='outdir', default=default_out, nargs=1, metavar='DIR',
 	help='Directory to install binaries. Defaults to "../out" (relative to SConstruct file).')
 
 AddOption('--build-dir', action='store', type='string', dest='build-dir', default=default_build, nargs=1, metavar='DIR',
 	help='Directory to store intermediate (object) files.')
+
+AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
 AddOption('--ios', action='store', type='choice', choices=['none','simulator','armv6','armv7'], dest='ios', default='none', nargs=1, metavar='IOS',
 	help='Sets up for iOS compilation')
@@ -197,7 +189,7 @@ env = Environment(
 		'TMP' : os.environ.get('TMP','')},
 	SCU = GetOption('scu'), 
 	BUILD_DIR = bdir,
-	PREFIX = os.path.realpath(GetOption('prefix')),
+	OUT_DIR = os.path.realpath(GetOption('outdir')),
 	SOAR_VERSION = SOAR_VERSION,
 	CPPPATH = [
 		'#shared',
@@ -211,6 +203,9 @@ env = Environment(
 	],
 	VISHIDDEN = False,   # needed by swig
 )
+
+print "Building intermediates to ", env['BUILD_DIR']
+print "Installing targets to ", env['OUT_DIR']
 
 config = Configure(env)
 
@@ -282,7 +277,6 @@ else:
 	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
 
 Export('env')
-Export('javaRunAnt')
 
 if env['SCU']:
 	scu = 0
@@ -303,75 +297,40 @@ srcs = {
 if compiler == 'cl':
 	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
 
-shared_env = env.Clone()
-shared_env.Append(CPPFLAGS = shared_macro)
-shared_objs = [ shared_env.SharedObject(build_dir(c), srcs[c][scu]) for c in srcs ]
-shared_lib = shared_env.SharedLibrary(build_dir('Soar'), shared_objs)
+kernel_env = env.Clone()
+if GetOption('static'):
+	kernel_env.Append(CPPFLAGS=static_macro)
+	soarlib = kernel_env.Library(build_dir('Soar'), [srcs[c][scu] for c in srcs])
+else:
+	kernel_env.Append(CPPFLAGS = shared_macro)
+	soarlib = kernel_env.SharedLibrary(build_dir('Soar'), [srcs[c][scu] for c in srcs])
 
-#static_env = env.Clone()
-#static_env.Append(CPPFLAGS=static_macro)
-#static_objs = [ static_env.Object(build_dir('static-%s' % c), srcs[c][scu]) for c in srcs ]
-#static_lib = static_env.Library(build_dir('Soar'), static_objs)
+env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
+env.Append( LIBS = ['Soar'], LIBPATH = [os.path.realpath(GetOption('outdir'))])
 
-install_shared_lib = env.Install('$PREFIX/lib', shared_lib)
-#install_static_lib = env.Install('$PREFIX/lib', static_lib)
+for x in 'Python Java Tcl PHP CSharp'.split():
+	d = join('#ClientSMLSWIG', x)
+	SConscript(join(d, 'SConscript'), variant_dir=build_dir(d), duplicate=0)
 
-env.Alias('shared_kernel', install_shared_lib)
-#env.Alias('static_kernel', install_static_lib)
-
-components = ['../Java']
-#print 'Detected components:',
-#for root, dirs, files in os.walk('..'):
-#	if root != '..':
-#		del dirs[:]
-#	if root.startswith('../Core/') or root.startswith(env['PREFIX']) or root.startswith(env['BUILD_DIR']):
-#		continue;
-#	if 'SConscript' in files:
-#		component = root[3:]
-#		components.append(component)
-#		print component,
-#print
-
-subdirs= [ join('ClientSMLSWIG', d) for d in 'Python Java Tcl PHP CSharp'.split() ]
-
-# Build/Output Directory
-print "Building intermediates to directory ", env['BUILD_DIR']
-print "Installing targets to prefix directory ", env['PREFIX']
-
-for d in subdirs:
-	script = join('#' + d, 'SConscript')
-	SConscript(script, variant_dir=build_dir(d), duplicate=0)
-
-#################
-# Components
-# Special environment
-compEnv = env.Clone()
-compEnv.Prepend(LIBS = 'Soar', LIBPATH = ['$PREFIX/lib'])
-Export('compEnv')
-
-# Add TestCLI to components (it uses compEnv which wasn't exported earlier):
-components.insert(0, 'Core/TestCLI')
-components.insert(0, 'Core/mincli')
-
-for d in components:
-	script = '../%s/SConscript' % d
+print 'Detected components:',
+for d in os.listdir('..'):
+	script = os.path.join('..', d, 'SConscript')
 	if os.path.exists(script):
-		print "Processing", script + "..."
 		SConscript(script, variant_dir=build_dir(d), duplicate=0)
+		print d,
+print
 
 # Resources
 for d in ['#ElementXML/src', '#ConnectionSML/src', '#ClientSML/src', '#shared']:
-	InstallDir(env, '$PREFIX/include', d, '*.h*')
+	InstallDir(env, '$OUT_DIR/include', d, '*.h*')
 
-InstallDir(env, '$PREFIX/share/soar/Demos', '#Demos')
-InstallDir(env, '$PREFIX/share/soar/Documentation', '#Documentation')
-InstallDir(env, '$PREFIX/share/soar/Tests', '#Tests/Agents')
-resources = env.Alias('resources', [join('$PREFIX', d) for d in ['share', 'include']])
+env.Alias('demos', InstallDir(env, '$OUT_DIR/Demos', '#Demos'))
+resources = env.Alias('resources', [join('$OUT_DIR', d) for d in ['demos', 'agents', 'include']])
 env.Clean('resources', resources)
 
 # Set default targets
-Default('shared_kernel')
+Default('kernel')
 if GetOption('ios') == 'none':
-	Default('cli', 'Tests')
+	Default('cli', 'TestCLI')
 	if CheckSWIG():
 		Default('sml_python', 'sml_java')

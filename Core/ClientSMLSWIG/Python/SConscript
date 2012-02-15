@@ -9,7 +9,7 @@ import SCons.Script
 Import('env')
 clone = env.Clone()
 
-lib_install_dir = os.path.join(clone['PREFIX'], 'lib')
+lib_install_dir = clone['OUT_DIR']
 inc_path = sysconfig.get_python_inc()
 if os.name == 'nt':
 	lib_path = os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs')
@@ -18,11 +18,8 @@ else:
 	lib_path = sysconfig.get_config_vars('LIBP')[0]
 	pylib = sysconfig.get_config_vars('LIBRARY')[0]
 
-clone.Append(
-	CPPPATH = inc_path, 
-	LIBPATH = [lib_path, lib_install_dir],
-	LIBS = ['Soar', pylib],
-)
+clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
+
 if os.name == 'posix':
 	clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 

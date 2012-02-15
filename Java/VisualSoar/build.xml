@@ -6,10 +6,10 @@
 	<import file="../SMLJava/build-common.xml" />
 
 	<target name="alias-jar" depends="jar">
-		<jar destfile="${soarprefix.bin}/VisualSoar.jar">
+		<jar destfile="${soarprefix}/VisualSoar.jar">
 			<manifest>
 				<attribute name="Main-Class" value="${jar.main.class}" />
-				<attribute name="Class-Path" value="../share/java/${jar.name}" />
+				<attribute name="Class-Path" value="java/${jar.name}" />
 			</manifest>
 		</jar>
 	</target>

@@ -4,12 +4,10 @@
 #
 import os
 
-Import('compEnv')
+Import('env')
 
-TOHSML = compEnv.Program('TOHSML', Glob('*.cpp'))
-compEnv.Install('$PREFIX/bin', TOHSML)
-
-# Install resources
-compEnv.Install('$PREFIX/share/soar/Demos', 'towers-of-hanoi-SML.soar')
-compEnv.Clean(TOHSML, os.path.join('$PREFIX/share/soar/Demos', 'towers-of-hanoi-SML.soar'))
-
+install = []
+TOHSML = env.Program('TOHSML', Glob('*.cpp'))
+install.append(env.Install('$OUT_DIR', TOHSML))
+install.append(env.Install('$OUT_DIR/Demos', 'towers-of-hanoi-SML.soar'))
+env.Alias('TOHSML', install)

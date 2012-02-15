@@ -141,9 +141,6 @@ void KernelSML::InitializeLibraryLocation()
 
     // This chops off the dll part to get just the path (/path/to/out/bin)
 	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.rfind('/'));
-
-	// This takes the parent directory to get (/path/to/out)
-	m_LibraryDirectory = m_LibraryDirectory.substr(0, m_LibraryDirectory.rfind('/'));
 	m_LibraryDirectory.push_back('/');
 }
 

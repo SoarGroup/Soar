@@ -5,12 +5,9 @@
 # The presence of this file triggers the build for the PHP SWIG interface.
 # (copied from Python)
 
-Import('compEnv')
-compEnv.Install('$PREFIX/bin', 'soar_php_cli.php')
-compEnv.Install('$PREFIX/lib', 'test_rl.inc.php')
-compEnv.Install('$PREFIX/bin', 'test_rl_unit.php')
-compEnv.Install('$PREFIX/bin', 'test_rl_left_right.php')
+Import('env')
+env.Install('$OUT_DIR', ['soar_php_cli.php', 'test_rl.inc.php', 'test_rl_unit.php', 'test_rl_left_right.php'])
 
-compEnv.Install('$PREFIX/share/soar/Demos/web-learning', 'web-learning/index.php')
-compEnv.Install('$PREFIX/share/soar/Demos/web-learning', 'web-learning/readme.txt')
-compEnv.Install('$PREFIX/share/soar/Demos/web-learning', 'web-learning/agent.soar')
+env.Install('$OUT_DIR/Demos/web-learning', 'web-learning/index.php')
+env.Install('$OUT_DIR/Demos/web-learning', 'web-learning/readme.txt')
+env.Install('$OUT_DIR/Demos/web-learning', 'web-learning/agent.soar')

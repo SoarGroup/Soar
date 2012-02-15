@@ -374,7 +374,7 @@ int FullTests::spawnListener(const std::string& lib)
 	{
 		// child
 		std::stringstream cmdString;
-		cmdString << lib << "bin/Tests";
+		cmdString << lib << "Tests";
 		execlp(cmdString.str().c_str(), "Tests", "--listener", static_cast< char* >( 0 ));
 		// does not return on success
 		CPPUNIT_ASSERT_MESSAGE( "execlp failed", false );
@@ -426,10 +426,7 @@ void FullTests::cleanUpListener()
 
 void FullTests::loadProductions( const char* productions )
 {
-	std::stringstream productionsPath;
-	productionsPath << m_pKernel->GetLibraryLocation() << productions;
-
-	m_pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
+	m_pAgent->LoadProductions( productions, true ) ;
 	CPPUNIT_ASSERT_MESSAGE( "loadProductions", m_pAgent->GetLastCommandLineResult() );
 }
 
@@ -442,7 +439,7 @@ TEST_DEFINITION( testInit )
 TEST_DEFINITION( testProductions )
 {
 	// Load and test productions
-	loadProductions( "share/soar/Tests/testsml.soar" );
+	loadProductions( "test_agents/testsml.soar" );
 
 	CPPUNIT_ASSERT( m_pAgent->IsProductionLoaded( "apply*move" ) );
 	CPPUNIT_ASSERT( !m_pAgent->IsProductionLoaded( "made*up*name" ) );
@@ -455,7 +452,7 @@ TEST_DEFINITION( testProductions )
 	CPPUNIT_ASSERT( excisedCount > 0 );
 
 	excisedCount = 0;
-	loadProductions( "share/soar/Tests/testsml.soar" );
+	loadProductions( "test_agents/testsml.soar" );
 	CPPUNIT_ASSERT( excisedCount == 0 );
 
 	CPPUNIT_ASSERT( m_pAgent->UnregisterForProductionEvent( prodCall ) );
@@ -463,7 +460,7 @@ TEST_DEFINITION( testProductions )
 
 TEST_DEFINITION( testRHSHandler )
 {
-	loadProductions( "share/soar/Tests/testsml.soar" );
+	loadProductions( "test_agents/testsml.soar" );
 
 	bool rhsFunctionHandlerReceived( false );
 
@@ -686,7 +683,7 @@ TEST_DEFINITION( testAgent )
 {
 	//m_pKernel->SetTraceCommunications( true );
 	m_pAgent->SetOutputLinkChangeTracking(true);
-	loadProductions( "share/soar/Tests/testsml.soar" );
+	loadProductions( "test_agents/testsml.soar" );
 
 	// Test that we get a callback after the decision cycle runs
 	// We'll pass in an "int" and use it to count decisions (just as an example of passing user data around)
@@ -978,7 +975,7 @@ TEST_DEFINITION( testAgent )
 TEST_DEFINITION( testSimpleCopy )
 {
 	m_pAgent->SetOutputLinkChangeTracking(true);
-	loadProductions( "share/soar/Tests/testcopy.soar" );
+	loadProductions( "test_agents/testcopy.soar" );
 
 /* Input structure for the test
 (S1 ^io I1)
@@ -1121,9 +1118,7 @@ TEST_DEFINITION( testSimpleCopy )
 
 TEST_DEFINITION( testSimpleReteNetLoader )
 {
-	std::string path = std::string(m_pKernel->GetLibraryLocation()) + "share/soar/Tests/test.soarx" ;
-	std::string command = std::string("rete-net -l \"") + path + "\"";  
-	std::string result = m_pAgent->ExecuteCommandLine(command.c_str()) ;
+	std::string result = m_pAgent->ExecuteCommandLine("rete-net -l \"test_agents/test.soarx\"") ;
 	CPPUNIT_ASSERT( m_pAgent->GetLastCommandLineResult() );
 
 	// Get the latest id from the input link
@@ -1135,9 +1130,7 @@ TEST_DEFINITION( testSimpleReteNetLoader )
 
 TEST_DEFINITION( test64BitReteNet )
 {
-	std::string path = std::string(m_pKernel->GetLibraryLocation()) + "share/soar/Tests/test64.soarx" ;
-	std::string command = std::string("rete-net -l \"") + path + "\""; 
-	std::string result = m_pAgent->ExecuteCommandLine(command.c_str()) ;
+	std::string result = m_pAgent->ExecuteCommandLine("rete-net -l \"test_agents/test64.soarx\"") ;
 	CPPUNIT_ASSERT( m_pAgent->GetLastCommandLineResult() );
 
 	// Get the latest id from the input link
@@ -1149,7 +1142,7 @@ TEST_DEFINITION( test64BitReteNet )
 
 TEST_DEFINITION( testOSupportCopyDestroy )
 {
-	loadProductions( "share/soar/Tests/testOSupportCopyDestroy.soar" );
+	loadProductions( "test_agents/testOSupportCopyDestroy.soar" );
 
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
@@ -1179,7 +1172,7 @@ TEST_DEFINITION( testOSupportCopyDestroy )
 
 TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 {
-	loadProductions( "share/soar/Tests/testOSupportCopyDestroy.soar" );
+	loadProductions( "test_agents/testOSupportCopyDestroy.soar" );
 
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
@@ -1211,7 +1204,7 @@ TEST_DEFINITION( testOSupportCopyDestroyCircularParent )
 
 TEST_DEFINITION( testOSupportCopyDestroyCircular )
 {
-	loadProductions( "share/soar/Tests/testOSupportCopyDestroy.soar" );
+	loadProductions( "test_agents/testOSupportCopyDestroy.soar" );
 
 	sml::Identifier* pInputLink = m_pAgent->GetInputLink();
 	CPPUNIT_ASSERT( pInputLink );
@@ -1345,7 +1338,7 @@ TEST_DEFINITION( testEventOrdering )
 TEST_DEFINITION( testStatusCompleteDuplication )
 {
 	// Load and test productions
-	loadProductions( "share/soar/Tests/teststatuscomplete.soar" );
+	loadProductions( "test_agents/teststatuscomplete.soar" );
 
 	// step
 	m_pAgent->RunSelf(1);
@@ -1385,7 +1378,7 @@ TEST_DEFINITION( testStatusCompleteDuplication )
 
 TEST_DEFINITION( testStopSoarVsInterrupt )
 {
-	loadProductions( "share/soar/Tests/teststopsoar.soar" );
+	loadProductions( "test_agents/teststopsoar.soar" );
 
 	m_pAgent->ExecuteCommandLine("run -o 3");
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
@@ -1411,7 +1404,7 @@ TEST_DEFINITION( testStopSoarVsInterrupt )
 	m_pAgent->ExecuteCommandLine("ex -a"); // side effect: init-soar
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
 
-	loadProductions( "share/soar/Tests/testinterrupt.soar" );
+	loadProductions( "test_agents/testinterrupt.soar" );
 
 	m_pAgent->ExecuteCommandLine("run -o 3");
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
@@ -1475,7 +1468,7 @@ TEST_DEFINITION( testFindAttrPipes )
 
 TEST_DEFINITION( testTemplateVariableNameBug )
 {
-	loadProductions( "share/soar/Tests/test1121.soar" );
+	loadProductions( "test_agents/test1121.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 	sml::ClientAnalyzedXML response;
 	m_pAgent->ExecuteCommandLineXML("stats", &response);
@@ -1486,7 +1479,7 @@ TEST_DEFINITION( testTemplateVariableNameBug )
 
 TEST_DEFINITION( testNegatedConjunctiveChunkLoopBug510 )
 {
-	loadProductions( "share/soar/Tests/testNegatedConjunctiveChunkLoopBug510.soar" );
+	loadProductions( "test_agents/testNegatedConjunctiveChunkLoopBug510.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 	sml::ClientAnalyzedXML response;
 	m_pAgent->ExecuteCommandLineXML("stats", &response);
@@ -1496,13 +1489,13 @@ TEST_DEFINITION( testNegatedConjunctiveChunkLoopBug510 )
 
 TEST_DEFINITION( testGDSBug1144 )
 {
-	loadProductions( "share/soar/Tests/testGDSBug1144.soar" );
+	loadProductions( "test_agents/testGDSBug1144.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
 
 TEST_DEFINITION( testGDSBug1011 )
 {
-	loadProductions( "share/soar/Tests/testGDSBug1011.soar" );
+	loadProductions( "test_agents/testGDSBug1011.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 	sml::ClientAnalyzedXML response;
 	m_pAgent->ExecuteCommandLineXML("stats", &response);
@@ -1513,7 +1506,7 @@ TEST_DEFINITION( testGDSBug1011 )
 
 TEST_DEFINITION( testLearn )
 {
-	loadProductions( "share/soar/Tests/testLearn.soar" );
+	loadProductions( "test_agents/testLearn.soar" );
 	m_pAgent->ExecuteCommandLine("learn --except");
 	m_pKernel->RunAllAgentsForever();
 	{
@@ -1623,14 +1616,14 @@ TEST_DEFINITION( testLearn )
 TEST_DEFINITION( testPreferenceSemantics )
 {
 	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
-	loadProductions( "share/soar/Tests/pref-semantics-test.soar" );
+	loadProductions( "test_agents/pref-semantics-test.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
 
 TEST_DEFINITION( testMatchTimeInterrupt )
 {
 	m_pKernel->AddRhsFunction( "test-failure", Handlers::MyRhsFunctionFailureHandler, 0 ) ; 
-	loadProductions( "share/soar/Tests/testMatchTimeInterrupt.soar" );
+	loadProductions( "test_agents/testMatchTimeInterrupt.soar" );
 	m_pAgent->ExecuteCommandLine("run");
 }
 TEST_DEFINITION( testNegatedConjunctiveTestReorder )
@@ -1671,7 +1664,7 @@ TEST_DEFINITION( testNegatedConjunctiveTestUnbound )
 
 TEST_DEFINITION( testCommandToFile )
 {
-	loadProductions( "share/soar/Demos/water-jug/water-jug-rl.soar" );
+	loadProductions( "Demos/water-jug/water-jug-rl.soar" );
 	m_pKernel->RunAllAgentsForever();
 	m_pAgent->ExecuteCommandLine("command-to-file testCommandToFile-output.soar print --rl --full");
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
