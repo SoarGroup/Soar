@@ -2,23 +2,26 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import distutils.sysconfig
+import distutils.sysconfig as sysconfig
 import os, sys
 import SCons.Script
 
 Import('env')
 clone = env.Clone()
 
-python_home = os.path.split(distutils.sysconfig.get_python_inc())[0]
-python_inc = os.path.join(python_home, 'include')
-python_lib = os.path.join(python_home, 'libs')
 lib_install_dir = os.path.join(clone['PREFIX'], 'lib')
+inc_path = sysconfig.get_python_inc()
+if os.name == 'nt':
+	lib_path = os.path.join(sysconfig.get_config_vars('BINDIR'), 'libs')
+	pylib = 'python' + sysconfig.get_config_vars('VERSION')
+else:
+	lib_path = sysconfig.get_config_vars('LIBP')
+	pylib = sysconfig.get_config_vars('LIBRARY')
 
 clone.Append(
-	CPPPATH = python_inc, 
-	LIBPATH = [python_lib, lib_install_dir],
-	LIBS = 'Soar python27'.split(),
-	SHLIBPREFIX = '_',
+	CPPPATH = inc_path, 
+	LIBPATH = [lib_path, lib_install_dir],
+	LIBS = ['Soar', pylib],
 )
 if os.name == 'posix':
 	clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
@@ -38,14 +41,14 @@ wrapper = env.File(name + '_wrap.cpp')
 source = env.File(name + '.py')
 
 incs = ' '.join('-I%s' % GetBuildPath(d) for d in env['CPPPATH'])
-swig_cmdline = 'swig %s -o %s -c++ -python -Wall %s' % (incs, wrapper, interface)
+swig_cmdline = 'swig %s -o %s -c++ -python -Wall %s' % (incs, wrapper.abspath, interface)
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 clone.Append(SCANNERS=[SWIGScanner])
 
 clone.Command([wrapper, source], interface, swig_cmdline)
-shlib = clone.SharedLibrary(name, wrapper) 
+shlib = clone.SharedLibrary(name, wrapper, SHLIBPREFIX = '_') 
 install_source = env.Install(lib_install_dir, source)
 install_lib = env.Install(lib_install_dir, shlib)
 

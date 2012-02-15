@@ -142,12 +142,6 @@ if sys.platform not in ['linux2', 'darwin', 'win32']:
 if platform.machine() not in ['x86_64', 'AMD64', 'i686', 'i386', ]:
 	print "Unsupported platform.machine:", platform.machine()
 
-# check for required libraries
-if os.name == 'posix':
-	for lib in ['dl', 'm', 'pthread']:
-		if not conf.CheckLib(lib):
-			print 'cannot locate lib%s' % lib
-			Exit(1)
 
 #################
 # Option defaults 
@@ -198,7 +192,9 @@ def build_dir(p):
 	return join(bdir, p)
 
 env = Environment(
-	ENV = {'PATH' : os.environ['PATH'], 'TMP' : os.environ['TMP']},
+	ENV = {
+		'PATH' : os.environ.get('PATH', ''), 
+		'TMP' : os.environ.get('TMP','')},
 	SCU = GetOption('scu'), 
 	BUILD_DIR = bdir,
 	PREFIX = os.path.realpath(GetOption('prefix')),
@@ -217,6 +213,15 @@ env = Environment(
 	VISHIDDEN = False,   # needed by swig
 )
 
+config = Configure(env)
+
+# check for required libraries
+if os.name == 'posix':
+	for lib in ['dl', 'm', 'pthread']:
+		if not config.CheckLib(lib):
+			print 'cannot locate lib%s' % lib
+			Exit(1)
+
 if env['CXX'].endswith('g++'):
 	compiler = 'g++'
 elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('cl')):
@@ -233,9 +238,8 @@ if compiler == 'g++':
 	gcc_ver = gcc_version(env['CXX'])
 	# check if the compiler supports -fvisibility=hidden (GCC >= 4)
 	if gcc_ver[0] > 3:
-		temp_env = env.Clone()
-		temp_env.Replace(CPPFLAGS = ['-fvisibility=hidden'])
-		if Configure(temp_env).TryCompile("char foo;", '.c'):
+		env.Append(CPPFLAGS='-fvisibility=hidden')
+		if config.TryCompile('', '.cpp'):
 			cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
 			env['VISHIDDEN'] = True
 	
