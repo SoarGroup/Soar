@@ -4,5 +4,4 @@
 #
 Import('compEnv')
 TestCLI = compEnv.Program('TestCLI', Glob('*.cpp'))
-compEnv.Install('$PREFIX/bin', TestCLI)
-
+compEnv.Alias('TestCLI', compEnv.Install('$PREFIX/bin', TestCLI))

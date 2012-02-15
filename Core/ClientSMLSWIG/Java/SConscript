@@ -96,8 +96,8 @@ else:
 			break
 
 if update_swig:
-	Execute(Mkdir(smldir.path))
-	Execute(swig_cmd)
+	clone.Execute(Mkdir(smldir.abspath))
+	clone.Execute(swig_cmd)
 
 clone.Clean(jar, [wrapper, srcdir, classdir])
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
