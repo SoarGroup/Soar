@@ -24,4 +24,4 @@ clone.Prepend(LIBS = libadd, LIBPATH = ['$PREFIX/lib', 'lib'])
 
 Tests = clone.Program('Tests', Glob('src/*.cpp'))
 
-env.Install('$PREFIX/bin', Tests)
+env.Alias('Tests', env.Install('$PREFIX/bin', Tests))

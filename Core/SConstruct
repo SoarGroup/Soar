@@ -207,7 +207,6 @@ env = Environment(
 		'#KernelSML/src',
 		'#ConnectionSML/src',
 		'#ClientSML/src',
-		'#Tests/src',
 		'#CLI/src',
 	],
 	VISHIDDEN = False,   # needed by swig
@@ -320,7 +319,7 @@ install_shared_lib = env.Install('$PREFIX/lib', shared_lib)
 env.Alias('shared_kernel', install_shared_lib)
 #env.Alias('static_kernel', install_static_lib)
 
-components = []
+components = ['../Java']
 #print 'Detected components:',
 #for root, dirs, files in os.walk('..'):
 #	if root != '..':
@@ -347,11 +346,7 @@ for d in subdirs:
 # Components
 # Special environment
 compEnv = env.Clone()
-#compEnv.Prepend(CPPPATH = ['$PREFIX/include'])
-libadd = ['SoarClient', 'SoarKernel']
-#if compEnv['STATIC_LINKED']:
-#	libadd = ['ClientSML', 'ConnectionSML', 'ElementXML', 'SoarKernelSML', 'SoarKernel', 'CommandLineInterface', 'sqlite3']
-compEnv.Prepend(LIBS = libadd, LIBPATH = ['$PREFIX/lib'])
+compEnv.Prepend(LIBS = 'Soar', LIBPATH = ['$PREFIX/lib'])
 Export('compEnv')
 
 # Add TestCLI to components (it uses compEnv which wasn't exported earlier):
@@ -362,8 +357,7 @@ for d in components:
 	script = '../%s/SConscript' % d
 	if os.path.exists(script):
 		print "Processing", script + "..."
-		SConscript(script)
-		#SConscript(script, variant_dir=build_dir(d), duplicate=0)
+		SConscript(script, variant_dir=build_dir(d), duplicate=0)
 
 # Resources
 for d in ['#ElementXML/src', '#ConnectionSML/src', '#ClientSML/src', '#shared']:
@@ -378,5 +372,6 @@ env.Clean('resources', resources)
 # Set default targets
 Default('shared_kernel')
 if GetOption('ios') == 'none':
+	Default('cli', 'Tests')
 	if CheckSWIG():
 		Default('sml_python', 'sml_java')

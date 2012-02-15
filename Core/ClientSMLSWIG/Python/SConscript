@@ -12,11 +12,11 @@ clone = env.Clone()
 lib_install_dir = os.path.join(clone['PREFIX'], 'lib')
 inc_path = sysconfig.get_python_inc()
 if os.name == 'nt':
-	lib_path = os.path.join(sysconfig.get_config_vars('BINDIR'), 'libs')
-	pylib = 'python' + sysconfig.get_config_vars('VERSION')
+	lib_path = os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs')
+	pylib = 'python' + sysconfig.get_config_vars('VERSION')[0]
 else:
-	lib_path = sysconfig.get_config_vars('LIBP')
-	pylib = sysconfig.get_config_vars('LIBRARY')
+	lib_path = sysconfig.get_config_vars('LIBP')[0]
+	pylib = sysconfig.get_config_vars('LIBRARY')[0]
 
 clone.Append(
 	CPPPATH = inc_path, 
