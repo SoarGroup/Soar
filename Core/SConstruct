@@ -157,7 +157,7 @@ AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nar
 AddOption('--build-warnings', action='store', type='choice', choices=['none','all','error'], dest='build-warnings', default='error', nargs=1, metavar='WARN_LEVEL',
 	help='Set warning level when building. Must be one of none, all, error (default).')
 
-AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='full', nargs=1, metavar='LEVEL',
+AddOption('--optimization', action='store', type='choice', choices=['none','partial','full'], dest='optimization', default='none', nargs=1, metavar='LEVEL',
 	help='Set optimization level. Must be one of none, partial, full (default).')
 
 AddOption('--platform', action='store', type='choice', choices=['32','64'], dest='platform', default=m64_default, nargs=1, metavar='PLATFORM',
@@ -169,10 +169,10 @@ AddOption('--build-verbose', action='store_true', dest='build-verbose', default=
 AddOption('--preprocessor', action='store_true', dest='preprocessor', default=False,
 	help='Only run preprocessor.')
 
-AddOption('--gprof', action='store_true', dest='gprof', default=False,
+AddOption('--gprof', action='store_true', dest='gprof', default=True,
 	help='Add gprof symbols for profiling.')
 
-AddOption('--no-scu', action='store_false', dest='scu', default=True,
+AddOption('--no-scu', action='store_false', dest='scu', default=False,
 	help='Don\'t build using single compilation units.')
 
 # TODO: does this do the same thing as install-sandbox?
@@ -316,6 +316,8 @@ env.Default('.')
 Export('env')
 Export('javaRunAnt')
 
+Decider('timestamp-match')
+SetOption('implicit_cache', 1)
 
 #################
 # Auto detect components

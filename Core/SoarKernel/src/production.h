@@ -119,6 +119,9 @@ typedef struct production_struct {
 
   double rl_ecr;				// expected current reward (discounted reward)
   double rl_efr;				// expected future reward (discounted next state)
+  double rl_mean2; ///< bazald
+  double rl_sample_variance; ///< bazald
+  uint64_t rl_variance_nonincrease_count; ///< bazald
   
   condition* rl_template_conds;
   rl_symbol_map_set* rl_template_instantiations;

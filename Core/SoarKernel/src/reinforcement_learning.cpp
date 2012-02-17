@@ -32,6 +32,8 @@
 #include "utilities.h"
 #include "recmem.h"
 
+#include <iostream> ///< bazald
+
 extern Symbol *instantiate_rhs_value (agent* thisAgent, rhs_value rv, goal_stack_level new_id_level, char new_id_letter, struct token_struct *tok, wme *w);
 extern void variablize_symbol (agent* thisAgent, Symbol **sym);
 extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
@@ -600,6 +602,9 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 
 				new_production->rl_ecr = 0.0;
 				new_production->rl_efr = init_value;
+        new_production->rl_mean2 = 0.0; ///< bazald
+        new_production->rl_sample_variance = 0.0; ///< bazald
+        new_production->rl_variance_nonincrease_count = 0.0; ///< bazald
 			}
 
 			// attempt to add to rete, remove if duplicate
@@ -897,6 +902,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					}
 				}
 			}
+      const double sum_old_combined = sum_old_ecr + sum_old_efr; ///< bazald
 			
 			// For each prod with a trace, perform update
 			{
@@ -911,21 +917,26 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					// get old vals
 					old_ecr = prod->rl_ecr;
 					old_efr = prod->rl_efr;
+          const double old_combined = old_ecr + old_efr; ///< bazald
 
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
                     double adjusted_alpha;
+                    double adjusted_alpha_pp;
                     switch (my_agent->rl_params->decay_mode->get_value())
                     {
                         case rl_param_container::exponential_decay:
                             adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
+                            adjusted_alpha_pp = 1.0 / (prod->rl_update_count + 2.0);
                             break;
                         case rl_param_container::logarithmic_decay:
                             adjusted_alpha = 1.0 / (log(prod->rl_update_count + 1.0) + 1.0);
+                            adjusted_alpha_pp = 1.0 / (log(prod->rl_update_count + 2.0) + 1.0);
                             break;
                         case rl_param_container::normal_decay:
                         default:
                             adjusted_alpha = alpha;
+                            adjusted_alpha_pp = 1.0 / ((1.0 / alpha) + 1.0);
                             break;
                     }
 
@@ -940,12 +951,13 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					{
 						delta_efr = 0.0;
 					}					
+					const double delta_combined = delta_ecr + delta_efr; ///< bazald
 
 					// calculate new vals
 					new_ecr = ( old_ecr + delta_ecr );
 					new_efr = ( old_efr + delta_efr );
 					new_combined = ( new_ecr + new_efr );
-					
+
 					// print as necessary
 					if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) 
 					{
@@ -965,6 +977,41 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					prod->rl_update_count += 1;
 					prod->rl_ecr = new_ecr;
 					prod->rl_efr = new_efr;
+
+          { /// bazald
+            // def online_variance(data): Thanks to Welford, Knuth's Art of Computer Programming
+            //     n = 0
+            //     mean = 0
+            //     M2 = 0
+            //  
+            //     for x in data:
+            //         n = n + 1
+            //         delta = x - mean
+            //         mean = mean + delta/n
+            //         if n > 1:
+            //             M2 = M2 + delta*(x - mean)
+            //  
+            //     variance_n = M2/n
+            //     variance = M2/(n - 1)
+            //     return (variance, variance_n)
+
+            const double old_mean2 = prod->rl_mean2;
+            const double old_sample_variance = prod->rl_sample_variance;
+
+            if(prod->rl_update_count > 1) {
+              const double x = data->reward + (update_efr ? discount * op_value : 0.0);
+              const double delta = x - old_combined;
+              prod->rl_mean2 += adjusted_alpha * iter->second * delta * (x - new_combined);
+              prod->rl_sample_variance = prod->rl_mean2 / (prod->rl_update_count + 1);
+
+              if(prod->rl_sample_variance > old_sample_variance)
+                prod->rl_variance_nonincrease_count = 0;
+              else
+                ++prod->rl_variance_nonincrease_count;
+            }
+
+            std::cerr << " V   " << prod->name->sc.name << " = " << prod->rl_sample_variance << '|' << prod->rl_variance_nonincrease_count << " from (" << prod->rl_update_count << ", " << old_combined << ", " << new_combined << ", " << old_sample_variance << ')' << std::endl;
+          }
 
 					// change documentation
 					if ( my_agent->rl_params->meta->get_value() == soar_module::on )

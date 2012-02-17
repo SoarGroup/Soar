@@ -1631,6 +1631,9 @@ production *make_production (agent* thisAgent,
   p->rl_ref_count = 0;
   p->rl_ecr = 0.0;
   p->rl_efr = 0.0;
+  p->rl_mean2 = 0.0; ///< bazald
+  p->rl_sample_variance = 0.0; ///< bazald
+  p->rl_variance_nonincrease_count = 0.0; ///< bazald
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
   {
     p->rl_rule = rl_valid_rule( p );
