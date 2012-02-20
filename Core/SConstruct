@@ -309,7 +309,7 @@ env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
 env.Append( LIBS = ['Soar'], LIBPATH = [os.path.realpath(GetOption('outdir'))])
 
 for x in 'Python Java Tcl PHP CSharp'.split():
-	d = join('#ClientSMLSWIG', x)
+	d = join('ClientSMLSWIG', x)
 	SConscript(join(d, 'SConscript'), variant_dir=build_dir(d), duplicate=0)
 
 print 'Detected components:',
