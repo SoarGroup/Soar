@@ -14,26 +14,12 @@ swt_jars = {
 	('linux2', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', '1eb148aedd135754ed179782cfefd700'),
 	('darwin', 32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', 'a3251234739ab7aa887dd8a3f5b9340b'),
 	('darwin', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', '5e49b61aae40258ed2883cee659bcba4'),
-	('nt',     32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar', '0a38b18ff43cd7eabd28ca58372d9111'),
-	('nt',     64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar', '17bb62dff558d55a6a012eb81931bd64'),
+	('win32',  32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar', '0a38b18ff43cd7eabd28ca58372d9111'),
+	('win32',  64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar', '17bb62dff558d55a6a012eb81931bd64'),
 }
 
 def CheckJarmd5(jarpath):
-	# open the swt.jar file
-	try:
-		f = file(jarpath)
-	except:
-		return False
-
-	# compute digest
-	m = hashlib.md5()
-	while True:
-		d = f.read(8096)
-		if not d:
-			break
-		m.update(d)
-
-	return m.hexdigest() == swt_jars[(sys.platform, int(GetOption('platform')))][1]
+	return hashlib.md5(open(jarpath, 'rb').read()).hexdigest() == swt_jars[(sys.platform, int(GetOption('platform')))][1]
 
 jarpath = os.path.join('SMLJava', 'lib', 'swt.jar')
 def CheckForSWTJar():
