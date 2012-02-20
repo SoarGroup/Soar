@@ -333,4 +333,4 @@ Default('kernel')
 if GetOption('ios') == 'none':
 	Default('cli', 'TestCLI')
 	if CheckSWIG():
-		Default('sml_python', 'sml_java')
+		Default('sml_python', 'sml_java', 'java')
