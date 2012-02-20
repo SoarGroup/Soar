@@ -4,78 +4,61 @@
 #
 import os
 import sys
-import string
-import re
-import shutil
 import urllib
 import hashlib
-import subprocess
 
-# swt.jar 3.5 digests
-OSX_DIGEST = 'a3251234739ab7aa887dd8a3f5b9340b'
-OSX64_DIGEST = '5e49b61aae40258ed2883cee659bcba4'
-GTK_DIGEST = '12306068dbc3477f883bd7835a687cb5'
-GTK64_DIGEST = '1eb148aedd135754ed179782cfefd700'
+Import('env', 'javaRunAnt')
+
+swt_jars = {
+	('linux2', 32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', '12306068dbc3477f883bd7835a687cb5'),
+	('linux2', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', '1eb148aedd135754ed179782cfefd700'),
+	('darwin', 32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', 'a3251234739ab7aa887dd8a3f5b9340b'),
+	('darwin', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', '5e49b61aae40258ed2883cee659bcba4'),
+	('nt',     32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar', '0a38b18ff43cd7eabd28ca58372d9111'),
+	('nt',     64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar', '17bb62dff558d55a6a012eb81931bd64'),
+}
 
 def CheckJarmd5(jarpath):
-        # open the swt.jar file
-        try:
-                f = file(jarpath)
-        except:
-                return False
+	# open the swt.jar file
+	try:
+		f = file(jarpath)
+	except:
+		return False
 
-        # compute digest
-        m = hashlib.md5()
-        while True:
-            d = f.read(8096)
-            if not d:
-                break
-            m.update(d)
+	# compute digest
+	m = hashlib.md5()
+	while True:
+		d = f.read(8096)
+		if not d:
+			break
+		m.update(d)
 
-        if sys.platform == 'darwin':
-                if GetOption('platform') == '64':
-                        return OSX64_DIGEST == m.hexdigest()
-                else:
-                        return OSX_DIGEST == m.hexdigest()
-        else:
-                if GetOption('platform') == '64':
-                        return GTK64_DIGEST == m.hexdigest()
-                else:
-                        return GTK_DIGEST == m.hexdigest()
+	return m.hexdigest() == swt_jars[(sys.platform, int(GetOption('platform')))][1]
 
 jarpath = os.path.join('SMLJava', 'lib', 'swt.jar')
 def CheckForSWTJar():
-        if os.path.exists(jarpath):
-                if CheckJarmd5(jarpath):
-                        return True
-                else:
-                        print "md5 of swt.jar failed, removing old jar."
-                        os.remove(jarpath)
+	if os.path.exists(jarpath):
+		if CheckJarmd5(jarpath):
+			return True
+		else:
+			print "md5 of swt.jar failed, removing old jar."
+			os.remove(jarpath)
 
-        try:
-                if sys.platform == 'darwin':
-                        if GetOption('platform') == '64':
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', jarpath)
-                        else:
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', jarpath)
-                else:
-                        if GetOption('platform') == '64':
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', jarpath)
-                        else:
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', jarpath)
-        except IOError:
-                print "Error downloading %s: IOError" % jarpath
-                return False
-        except ContentTooShortError:
-                print "Error downloading %s: IOError" % jarpath
-                return False
+	try:
+		url = swt_jars[(sys.platform, int(GetOption('platform')))][0]
+		urllib.urlretrieve(url, jarpath)
+	except IOError:
+		print "Error downloading to %s: IOError" % jarpath
+		return False
+	except urllib.ContentTooShortError:
+		print "Error downloading %s: IOError" % url
+		return False
 
-        if not CheckJarmd5(jarpath):
-                print "Error downloading %s, md5 failed again." % jarpath
-                return False
+	if not CheckJarmd5(jarpath):
+		print "Error downloading %s, md5 failed again." % url
+		return False
 
-        print "Successfully downloaded", jarpath
-        return True
+	return True
 
 # This checks for the swt.jar and attempts to download it if it doesn't exist
 if not CheckForSWTJar():
@@ -85,7 +68,6 @@ if not CheckForSWTJar():
 	print "swt.jar required for Soar Java debugger... Exiting"
 	Exit(1)
 
-Import('env', 'javaRunAnt')
 
 env.Alias('java', [
 	javaRunAnt('Java',  ['soar-smljava','soar-debugger','soar-visualsoar'], ['SMLJava/src','Debugger/src','VisualSoar/src']),
