@@ -1,6 +1,0 @@
-This directory contains an CORBA 2.0 grammar for IDL.  Build it in the
-usual manner and try it out.
-
-	javacc IDL.jj
-	javac *.java
-	java IDLParser <idlfile>

@@ -1,3 +1,0 @@
-pushd eater-default
-source eater-default_source.soar
-popd

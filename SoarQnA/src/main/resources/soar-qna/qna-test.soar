@@ -1,3 +1,0 @@
-pushd qna-test
-source qna-test_source.soar
-popd
