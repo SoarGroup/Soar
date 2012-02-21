@@ -88,7 +88,7 @@ if not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
 	update_swig = True
 else:
 	gentime = min(os.path.getmtime(wrapper.abspath), os.path.getmtime(test_source))
-	root = clone.Dir('#ClientSML/src').abspath
+	root = clone.Dir('#Core/ClientSML/src').abspath
 	for f in os.listdir(root):
 		if os.path.getmtime(os.path.join(root, f)) > gentime:
 			update_swig = True

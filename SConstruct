@@ -5,11 +5,11 @@
 SOAR_VERSION = "9.3.1"
 
 # required and default optional flags when using VC++ compiler
-VS_REQ_CFLAGS = '/EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'
-VS_DEF_CFLAGS = '/O2 /W2'
+VS_REQ_CFLAGS = ' /EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'
+VS_DEF_CFLAGS = ' /O2 /W2'
 
 # default compiler flags when using g++
-GCC_DEF_CFLAGS = '-O2 -Werror'
+GCC_DEF_CFLAGS = ' -O2 -Werror'
 
 import os
 import sys
@@ -54,7 +54,7 @@ def Mac_m64_Capable():
 # theTargets: target jar name (or list of names) with -version.extension removed, makes .jar and .src.jar
 # theSources: source folder (or list of folders) relative to component folder (such as 'src')
 def javaRunAnt(theComponent, theTargets, theSources):
-	theDir = env.Dir('#../%s/' % theComponent)
+	theDir = env.Dir('#%s' % theComponent)
 
 	javadir = os.path.join(env['OUT_DIR'], 'java')
 	javaSources = [os.path.join(javadir, 'sml.jar')]
@@ -140,18 +140,14 @@ if platform.machine() not in ['x86_64', 'AMD64', 'i686', 'i386', ]:
 	print "Unsupported platform.machine:", platform.machine()
 
 
-#################
-# Option defaults 
-
-m64_default = '32'
-if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Mac_m64_Capable()):
-	m64_default = '64'
-
-default_out = os.environ.get('SOAR_HOME', join('..','out'))
-default_build = os.environ.get('SOAR_BUILD', join('..','build'))
-
-################
 # Command line options
+defarch = '32'
+if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Mac_m64_Capable()):
+	defarch = '64'
+
+default_out = os.environ.get('SOAR_HOME', 'out')
+default_build = os.environ.get('SOAR_BUILD', 'build')
+
 AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nargs=1, metavar='COMPILER',
 	help='Replace \'g++\' as the C++ compiler.')
 
@@ -159,13 +155,14 @@ AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, hel
 
 AddOption('--lnflags', action='store', type='string', dest='lnflags', nargs=1, help='Linker flags')
 
-AddOption('--platform', action='store', type='choice', choices=['32','64'], dest='platform', default=m64_default, nargs=1, metavar='PLATFORM',
-	help='Target platform. Must be one of 32, 64. Default is detected system architecture.')
+AddOption('--no-default-flags', action='store_false', dest='defflags', default=True, help="Don't pass any default flags to the compiler or linker")
+
+AddOption('--arch', action='store', type='choice', choices=['32','64'], dest='platform', default=defarch, nargs=1, metavar='PLATFORM',
+	help='Target architecture. Must be one of 32, 64. Default is detected system architecture.')
 
 AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
 	
-# TODO: does this do the same thing as install-sandbox?
 AddOption('--out-dir', action='store', type='string', dest='outdir', default=default_out, nargs=1, metavar='DIR',
 	help='Directory to install binaries. Defaults to "../out" (relative to SConstruct file).')
 
@@ -173,9 +170,6 @@ AddOption('--build-dir', action='store', type='string', dest='build-dir', defaul
 	help='Directory to store intermediate (object) files.')
 
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
-
-AddOption('--ios', action='store', type='choice', choices=['none','simulator','armv6','armv7'], dest='ios', default='none', nargs=1, metavar='IOS',
-	help='Sets up for iOS compilation')
 
 bdir = GetOption('build-dir')
 VariantDir(bdir, '.', duplicate=0)
@@ -192,16 +186,18 @@ env = Environment(
 	OUT_DIR = os.path.realpath(GetOption('outdir')),
 	SOAR_VERSION = SOAR_VERSION,
 	CPPPATH = [
-		'#shared',
-		'#pcre',
-		'#SoarKernel/src',
-		'#ElementXML/src',
-		'#KernelSML/src',
-		'#ConnectionSML/src',
-		'#ClientSML/src',
-		'#CLI/src',
+		'#Core/shared',
+		'#Core/pcre',
+		'#Core/SoarKernel/src',
+		'#Core/ElementXML/src',
+		'#Core/KernelSML/src',
+		'#Core/ConnectionSML/src',
+		'#Core/ClientSML/src',
+		'#Core/CLI/src',
 	],
 	VISHIDDEN = False,   # needed by swig
+	LIBS = ['Soar'],
+	LIBPATH = [os.path.realpath(GetOption('outdir'))],
 )
 
 print "Building intermediates to ", env['BUILD_DIR']
@@ -223,114 +219,50 @@ elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('c
 else:
 	compiler = os.path.split(env['CXX'])[1]
 
+Export('compiler')
+
+cflags = ''
 if compiler == 'g++':
-	if GetOption('cflags') == None:
-		cflags = GCC_DEF_CFLAGS
-	else:
-		cflags = GetOption('cflags')
-	
-	gcc_ver = gcc_version(env['CXX'])
-	# check if the compiler supports -fvisibility=hidden (GCC >= 4)
-	if gcc_ver[0] > 3:
-		env.Append(CPPFLAGS='-fvisibility=hidden')
-		if config.TryCompile('', '.cpp'):
-			cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
-			env['VISHIDDEN'] = True
-	
 	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 	if sys.platform == 'darwin':
 		cflags += ' -DSCONS_DARWIN'
-
-	static_macro = ['-DSTATIC_LINKED']
-	shared_macro = []
-elif compiler == 'cl':
-	if GetOption('cflags') == None:
-		cflags = VS_REQ_CFLAGS + ' ' + VS_DEF_CFLAGS
-	else:
-		cflags = VS_REQ_CFLAGS + ' ' + GetOption('cflags')
 	
-	static_macro = ['/D', 'STATIC_LINKED']
-	shared_macro = ['/D', '_USRDLL']
+	if GetOption('defflags'):
+		if GetOption('cflags') == None:
+			cflags += GCC_DEF_CFLAGS
+		
+		gcc_ver = gcc_version(env['CXX'])
+		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
+		if gcc_ver[0] > 3:
+			env.Append(CPPFLAGS='-fvisibility=hidden')
+			if config.TryCompile('', '.cpp'):
+				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
+				env['VISHIDDEN'] = True
+		
+		cflags += ' -march=native -m%s' % GetOption('platform')
+	elif GetOption('cflags') != None:
+		cflags += ' ' + GetOption('cflags')
+	
+elif compiler == 'cl':
 	env.Append(LIBS='advapi32')  # for GetUserName
+	cflags = VS_REQ_CFLAGS
+	if GetOption('defflags') and GetOption('cflags') == None:
+		cflags += VS_DEF_CFLAGS
+	elif GetOption('cflags') != None:
+		cflags += ' ' + GetOption('cflags')
 	
 env.Replace(CPPFLAGS=cflags.split(), LINKFLAGS=(GetOption('lnflags') or "").split())
 
-if GetOption('ios') == 'none':
-	if compiler == 'g++':
-		if GetOption('platform') == '64':
-			env.Append(CPPFLAGS = Split('-m64 -fPIC'))
-			env.Append(LINKFLAGS = ['-m64'])
-		elif gcc_ver[0] > 4 or gcc_ver[0] > 3 and gcc_ver[1] > 1 and sys.platform not in [ 'darwin', ]:
-			env.Append(CPPFLAGS = Split('-m32 -march=native'))
-			env.Append(LINKFLAGS = Split('-m32 -march=native'))
-		else:
-			env.Append(CPPFLAGS = ['-m32'])
-			env.Append(LINKFLAGS = ['-m32'])
-elif GetOption('ios') == 'simulator':
-	env.Append(CPPFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk'))
-	env.Append(LINKFLAGS = Split('-m32 -arch i386 -isysroot /Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.0.sdk'))
-else:
-	env.Append(CPPFLAGS = ['-DIPHONE_SDK', '-D__LLP64__']); # (the last is for STLSOFT)
-	env['CC'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-gcc-4.2'
-	env['CXX'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/llvm-g++-4.2'
-	env.Append(CPPFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
-	env.Append(LINKFLAGS = Split('-arch ' + GetOption('ios') + ' -isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS5.0.sdk'))
-
 Export('env')
 
-if env['SCU']:
-	scu = 0
-else:
-	scu = 1
+SConscript('#Core/Sconscript', variant_dir=build_dir('Core'), duplicate=0)
 
-srcs = {
-#   Component          SCU source                         Non-SCU source
-	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
-	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
-	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
-	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
-	'ConnectionSML' : ('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')),
-	'ElementXML'    : ('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),
-	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
-}
-
-if compiler == 'cl':
-	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
-
-kernel_env = env.Clone()
-if GetOption('static'):
-	kernel_env.Append(CPPFLAGS=static_macro)
-	soarlib = kernel_env.Library(build_dir('Soar'), [srcs[c][scu] for c in srcs])
-else:
-	kernel_env.Append(CPPFLAGS = shared_macro)
-	soarlib = kernel_env.SharedLibrary(build_dir('Soar'), [srcs[c][scu] for c in srcs])
-
-env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
-env.Append( LIBS = ['Soar'], LIBPATH = [os.path.realpath(GetOption('outdir'))])
-
-for x in 'Python Java Tcl PHP CSharp'.split():
-	d = join('ClientSMLSWIG', x)
-	SConscript(join(d, 'SConscript'), variant_dir=build_dir(d), duplicate=0)
-
-print 'Detected components:',
-for d in os.listdir('..'):
-	script = os.path.join('..', d, 'SConscript')
+for d in os.listdir('.'):
+	script = join(d, 'SConscript')
 	if os.path.exists(script):
 		SConscript(script, variant_dir=build_dir(d), duplicate=0)
-		print d,
-print
-
-# Resources
-for d in ['#ElementXML/src', '#ConnectionSML/src', '#ClientSML/src', '#shared']:
-	InstallDir(env, '$OUT_DIR/include', d, '*.h*')
-
-env.Alias('demos', InstallDir(env, '$OUT_DIR/Demos', '#Demos'))
-resources = env.Alias('resources', [join('$OUT_DIR', d) for d in ['demos', 'agents', 'include']])
-env.Clean('resources', resources)
 
 # Set default targets
-Default('kernel')
-if GetOption('ios') == 'none':
-	Default('cli', 'TestCLI')
-	if CheckSWIG():
-		Default('sml_python', 'sml_java', 'java')
+Default('kernel', 'cli', 'TestCLI')
+if CheckSWIG():
+	Default('sml_python', 'sml_java', 'java')

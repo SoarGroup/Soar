@@ -5,7 +5,7 @@
 import os
 Import('env')
 
-subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibraryLib', 'TestExternalLibrary']
+subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary']
 
 for d in subdirs:
 	script = '../CoreTests/%s/SConscript' % d
