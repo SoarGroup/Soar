@@ -1,9 +1,0 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
-Import('compEnv')
-
-RlCli = compEnv.Program('rlcli', Glob('*.cpp'))
-compEnv.Install('$PREFIX/bin', RlCli)
-

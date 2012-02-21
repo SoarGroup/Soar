@@ -1,4 +1,0 @@
-source elaborations.soar
-source float-check.soar
-source float-init.soar
-source float-query.soar

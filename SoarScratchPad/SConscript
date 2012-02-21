@@ -1,9 +1,0 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
-Import('compEnv')
-
-SoarScratchPad = compEnv.Program('soarscratchpad', Glob('*.cpp'))
-compEnv.Install('$PREFIX/bin', SoarScratchPad)
-
