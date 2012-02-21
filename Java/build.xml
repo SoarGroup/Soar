@@ -4,21 +4,18 @@
 		<ant dir="SMLJava" />
 		<ant dir="DebuggerAPI" />
 		<ant dir="Debugger" />
-		<ant dir="VisualSoar" />
 	</target>
 
 	<target name="doc">
 		<ant dir="SMLJava" target="doc" />
 		<ant dir="DebuggerAPI" target="doc" />
 		<ant dir="Debugger" target="doc" />
-		<ant dir="VisualSoar" target="doc" />
 	</target>
 
 	<target name="clean">
 		<ant dir="SMLJava" target="clean" />
 		<ant dir="DebuggerAPI" target="clean" />
 		<ant dir="Debugger" target="clean" />
-		<ant dir="VisualSoar" target="clean" />
 	</target>
 </project>
 

@@ -56,6 +56,6 @@ if not CheckForSWTJar():
 
 
 env.Alias('java', [
-	javaRunAnt('Java',  ['soar-smljava','soar-debugger','soar-visualsoar'], ['SMLJava/src','Debugger/src','VisualSoar/src']),
+	javaRunAnt('Java',  ['soar-smljava','soar-debugger'], ['SMLJava/src','Debugger/src']),
 	env.Install('$OUT_DIR/java', jarpath)])
 
