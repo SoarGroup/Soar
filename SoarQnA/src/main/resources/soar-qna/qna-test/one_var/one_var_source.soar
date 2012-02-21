@@ -1,4 +1,0 @@
-source elaborations.soar
-source one_var-check.soar
-source one_var-init.soar
-source one_var-query.soar

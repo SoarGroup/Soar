@@ -1,9 +1,0 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
-Import('env')
-
-RlCli = env.Program('rlcli', Glob('*.cpp'))
-env.Alias('RlCli', env.Install('$OUT_DIR', RlCli))
-

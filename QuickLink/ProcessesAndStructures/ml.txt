@@ -1,3 +1,0 @@
-add IL ^foo /F
-add F ^bar /B
-add B ^foo /F

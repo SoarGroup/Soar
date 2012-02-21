@@ -1,8 +1,0 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
-Import('env')
-QuickLink = env.Program('QuickLink', Glob('src/*.cpp'))
-env.Alias('QuickLink', env.Install('$OUT_DIR', QuickLink))
-
