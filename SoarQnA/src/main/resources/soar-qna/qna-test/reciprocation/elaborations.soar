@@ -1,6 +1,0 @@
-sp {reciprocation*elaborate*outcome
-   (state <s> ^name reciprocation
-              ^superstate.io.output-link.qna-query.result.features.result <r>)
--->
-   (<s> ^outcome (float (int (+ <r> 0.1))))
-}

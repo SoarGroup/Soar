@@ -1,8 +1,0 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
-Import('env')
-SoarTextIO = env.Program('SoarTextIO', Glob('src/*.cpp'))
-env.Alias('SoarTextIO', env.Install('$OUT_DIR', SoarTextIO))
-

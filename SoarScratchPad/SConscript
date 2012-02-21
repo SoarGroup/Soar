@@ -1,9 +1,0 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
-Import('env')
-
-SoarScratchPad = env.Program('soarscratchpad', Glob('*.cpp'))
-env.Alias('SoarScratchPad', env.Install('$OUT_DIR', SoarScratchPad))
-

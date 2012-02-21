@@ -1,3 +1,0 @@
-pushd counter
-source counter_source.soar
-popd

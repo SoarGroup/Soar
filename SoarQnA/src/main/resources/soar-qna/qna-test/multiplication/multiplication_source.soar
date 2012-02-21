@@ -1,4 +1,0 @@
-source elaborations.soar
-source multiplication-check.soar
-source multiplication-init.soar
-source multiplication-query.soar
