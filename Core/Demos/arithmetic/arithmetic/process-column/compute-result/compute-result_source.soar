@@ -1,4 +1,0 @@
-source elaborations.soar
-source add-ten.soar
-source borrow.soar
-source compute-result.soar

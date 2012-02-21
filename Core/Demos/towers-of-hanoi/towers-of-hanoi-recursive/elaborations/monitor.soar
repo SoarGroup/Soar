@@ -1,9 +1,0 @@
-sp {tower-of-hanoi*monitor*operator-execution*move-disk
-    (state <s> ^operator <o>)
-    (<o> ^name move-disk
-         ^disk.size <size>
-         ^to.name <to-name>)
-    -->
-    (write (crlf) 
-           | Goal Move Disk:| <size>
-           | to peg | <to-name>)}
