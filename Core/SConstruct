@@ -426,5 +426,5 @@ for d in ['#ElementXML/src', '#ConnectionSML/src', '#ClientSML/src', '#shared']:
 
 env.Clean('$PREFIX', '$PREFIX/share')
 InstallDir(env, '$PREFIX/share/soar/Demos', '#Demos')
-InstallDir(env, '$PREFIX/share/soar/Documentation', '#Documentation')
+#InstallDir(env, '$PREFIX/share/soar/Documentation', '#Documentation')
 InstallDir(env, '$PREFIX/share/soar/Tests', '#Tests/Agents')
