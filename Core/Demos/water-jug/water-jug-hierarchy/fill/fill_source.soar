@@ -1,4 +1,0 @@
-source elaborations.soar
-source fill-jug.soar
-source pick-up.soar
-source put-down.soar

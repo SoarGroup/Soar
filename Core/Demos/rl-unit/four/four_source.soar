@@ -1,8 +1,0 @@
-source elaborations.soar
-source four-four.soar
-source four-one.soar
-source four-three.soar
-pushd four-three
-source four-three_source.soar
-popd
-source four-two.soar

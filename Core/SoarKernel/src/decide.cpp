@@ -917,8 +917,8 @@ byte consider_impasse_instead_of_rl(const preference * const &candidates, prefer
 
             if(prod2->rl_variance_nonincrease_count < 3)
               all_gte_3 = false;
-            else
-              consider_tie = true;
+//             else
+//               consider_tie = true;
           }
         }
       }

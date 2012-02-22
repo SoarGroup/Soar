@@ -1,9 +1,0 @@
-sp {three*propose*three-one
-   (state <s> ^name three
-             -^phase)
--->
-   (<s> ^operator <op> + =)
-   (<op> ^name three-one
-         ^rl alpha)
-}
-
