@@ -1,5 +1,0 @@
-source elaborations.soar
-source State_No-Change.soar
-pushd State_No-Change
-source State_No-Change_source.soar
-popd

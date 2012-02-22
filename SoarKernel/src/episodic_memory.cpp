@@ -5816,7 +5816,7 @@ void inline _epmem_exp( agent* my_agent )
 	//            ^output |filename|
 	//            ^format << csv speedy >>
 	//            ^features <fs>
-	//               <fs> ^|key| |value|
+	//               <fs> ^|key| |value| # note: value must be a string, not int or float; wrap it in pipes (eg. |0|)
 	//            ^commands <cmds>
 	//               <cmds> ^|label| <cmd>
 

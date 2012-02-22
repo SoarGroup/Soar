@@ -1,3 +1,0 @@
-pushd kb
-source kb_source.soar
-popd

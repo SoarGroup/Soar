@@ -1,9 +1,0 @@
-##
-# When a direction is chosen, halt
-##
-sp {elaborate*done
-   (state <s> ^name left-right
-              ^location {<> start})
--->
-   (halt)
-}
