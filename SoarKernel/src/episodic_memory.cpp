@@ -38,7 +38,6 @@
 uint64_t epmem_episodes_searched = 0;
 uint64_t epmem_dc_interval_inserts = 0;
 uint64_t epmem_dc_interval_removes = 0;
-uint64_t epmem_dc_wme_adds = 0;
 std::ofstream* epmem_exp_output = NULL;
 
 enum epmem_exp_states
@@ -208,13 +207,13 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	merge->add_mapping( merge_add, "add" );
 	add( merge );
 
-	// recog
+	// recognition
 	recognition = new soar_module::constant_param<recog_choices>( "recognition", recog_off, new soar_module::f_predicate<recog_choices>() );
 	recognition->add_mapping( recog_on, "on" );
 	recognition->add_mapping( recog_off, "off" );	
 	add( recognition );
 
-	// recog_merge_depth
+	// recognition_merge_depth
 	recognition_merge_depth = new soar_module::integer_param( "recognition-merge-depth", 10000, new soar_module::gt_predicate<int64_t>( 0, true ), new soar_module::f_predicate<int64_t>() );
 	add( recognition_merge_depth );
 }
@@ -1409,12 +1408,6 @@ void epmem_close( agent *my_agent )
 				delete p->second;
 			}
 
-			for ( epmem_wme_addition_map::iterator it=my_agent->epmem_wme_adds->begin(); it!=my_agent->epmem_wme_adds->end(); it++ )
-			{
-				it->second->~epmem_pooled_wme_set();
-				free_with_pool( &( my_agent->epmem_add_set_pool ), it->second );
-			}
-
 			my_agent->epmem_id_repository->clear();
 			my_agent->epmem_id_replacement->clear();
 			for ( epmem_id_ref_counter::iterator rf_it=my_agent->epmem_id_ref_counts->begin(); rf_it!=my_agent->epmem_id_ref_counts->end(); rf_it++ )
@@ -1424,7 +1417,6 @@ void epmem_close( agent *my_agent )
 			my_agent->epmem_id_ref_counts->clear();
 
 			my_agent->epmem_wme_adds->clear();
-			my_agent->epmem_wme_removes->clear();
 
 			for ( epmem_symbol_set::iterator p_it=my_agent->epmem_promotions->begin(); p_it!=my_agent->epmem_promotions->end(); p_it++ )
 			{
@@ -1913,30 +1905,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 			// which catches up to what would have been incremental encoding
 			// to this point
 			{
-				epmem_pooled_wme_set* add_set = NULL;
-
-				epmem_wme_list* wmes = epmem_get_augs_of_id( my_agent->top_state, get_new_tc_number( my_agent ) );
-				epmem_wme_list::iterator w_p;
-
-				if ( !wmes->empty() )
-				{
-					allocate_with_pool( my_agent, &( my_agent->epmem_add_set_pool ), &( add_set ) );
-#ifdef USE_MEM_POOL_ALLOCATORS
-					add_set = new (add_set) epmem_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
-#else
-					add_set = new (add_set) epmem_pooled_wme_set();
-#endif
-
-					for ( w_p=wmes->begin(); w_p!=wmes->end(); w_p++ )
-					{
-						add_set->insert( (*w_p) );
-						(*my_agent->epmem_wme_removes)[ (*w_p)->timetag ] = add_set;
-					}
-
-					(*my_agent->epmem_wme_adds)[ my_agent->top_state ] = add_set;
-				}
-
-				delete wmes;
+				my_agent->epmem_wme_adds->insert( my_agent->top_state );
 			}
 		}
 
@@ -2218,10 +2187,10 @@ void _epmem_merge_wm_trees(epmem_elders* wm_tree, epmem_id_disjoint_set* disjoin
 // 1. value known in phase one (try reservation)
 // 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
 // 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
-inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_syms, std::queue< epmem_node_id >& parent_ids, tc_number tc, epmem_pooled_wme_set::iterator w_b, epmem_pooled_wme_set::iterator w_e, epmem_node_id parent_id, epmem_time_id time_counter,
+inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_syms, std::queue< epmem_node_id >& parent_ids, tc_number tc, epmem_wme_list::iterator w_b, epmem_wme_list::iterator w_e, epmem_node_id parent_id, epmem_time_id time_counter,
 		std::map< wme*, epmem_id_reservation* >& id_reservations, std::set< Symbol* >& new_identifiers, std::queue< epmem_node_id >& epmem_node, std::queue< epmem_node_id >& epmem_edge , std::set< std::pair< Symbol*, Symbol* > >& unrecognized_wmes )
 {
-	epmem_pooled_wme_set::iterator w_p;
+	epmem_wme_list::iterator w_p;
 	bool value_known_apriori = false;
 
 	// temporal hash
@@ -2236,7 +2205,6 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 	epmem_id_reservation *new_id_reservation;
 
 	// identifier recursion
-	epmem_pooled_wme_set* add_set = NULL;
 	epmem_wme_list* wmes = NULL;
 	epmem_wme_list::iterator w_p2;
 	bool good_recurse = false;
@@ -2251,6 +2219,12 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 	// find WME ID for WMEs whose value is an identifier and has a known epmem id (prevents ordering issues with unknown children)
 	for ( w_p=w_b; w_p!=w_e; w_p++ )
 	{
+		// skip over WMEs already in the system
+		if ( ( (*w_p)->epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->epmem_valid == my_agent->epmem_validation ) )
+		{
+			continue;
+		}
+
 		if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 				( ( (*w_p)->value->id.epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->value->id.epmem_valid == my_agent->epmem_validation ) ) &&
 				( !(*w_p)->value->id.smem_lti ) )
@@ -2303,6 +2277,12 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 
 	for ( w_p=w_b; w_p!=w_e; w_p++ )
 	{
+		// skip over WMEs already in the system
+		if ( ( (*w_p)->epmem_id != EPMEM_NODEID_BAD ) && ( (*w_p)->epmem_valid == my_agent->epmem_validation ) )
+		{
+			continue;
+		}
+
 		// prevent exclusions from being recorded
 		if ( my_agent->epmem_params->exclusions->in_set( (*w_p)->attr ) )
 		{
@@ -2598,46 +2578,11 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->insert( (*w_p) );
 			}
 
-			// continue to augmentations?
+			// if the value has not been iterated over, continue to augmentations
 			if ( (*w_p)->value->id.tc_num != tc )
 			{
-				good_recurse = false;
-
-				if ( value_known_apriori )
-				{
-					(*w_p)->value->id.tc_num = tc;
-					good_recurse = true;
-				}
-				else
-				{
-					wmes = epmem_get_augs_of_id( (*w_p)->value, tc );
-
-					if ( !wmes->empty() )
-					{
-						allocate_with_pool( my_agent, &( my_agent->epmem_add_set_pool ), &( add_set ) );
-#ifdef USE_MEM_POOL_ALLOCATORS
-						add_set = new (add_set) epmem_pooled_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
-#else
-						add_set = new (add_set) epmem_pooled_wme_set();
-#endif
-
-						for ( w_p2=wmes->begin(); w_p2!=wmes->end(); w_p2++ )
-						{
-							add_set->insert( (*w_p2) );
-						}
-
-						(*my_agent->epmem_wme_adds)[ (*w_p)->value ] = add_set;
-						good_recurse = true;
-					}
-
-					delete wmes;
-				}
-
-				if ( good_recurse )
-				{
-					parent_syms.push( (*w_p)->value );
-					parent_ids.push( (*w_p)->value->id.epmem_id );
-				}
+				parent_syms.push( (*w_p)->value );
+				parent_ids.push( (*w_p)->value->id.epmem_id );
 			}
 		}
 		else
@@ -2761,9 +2706,7 @@ void epmem_new_episode( agent *my_agent )
 			tc_number tc = get_new_tc_number( my_agent );
 
 			// children of the current identifier
-			epmem_pooled_wme_set* wmes = NULL;
-			epmem_wme_addition_map::iterator wmes_p;
-			epmem_wme_list::iterator w_p;
+			epmem_wme_list* wmes = NULL;
 
 			// breadth first search state
 			std::queue< Symbol* > parent_syms;
@@ -2771,46 +2714,30 @@ void epmem_new_episode( agent *my_agent )
 			std::queue< epmem_node_id > parent_ids;
 			epmem_node_id parent_id;
 
-			// initialize queue with known levels:
-			// any keys were known, but may have had their augmentations removed
-			for ( epmem_wme_addition_map::iterator id_p=my_agent->epmem_wme_adds->begin(); id_p!=my_agent->epmem_wme_adds->end(); id_p++ )
-			{
-				if ( !id_p->second->empty() )
-				{
-#ifdef EPMEM_EXPERIMENT
-					epmem_dc_wme_adds += id_p->second->size();
-#endif
-					// make sure the WME is valid
-					// it can be invalid a child WME was added, but then the parent was removed, setting the epmem_id to EPMEM_NODEID_BAD
-					if (id_p->first->id.epmem_id != EPMEM_NODEID_BAD) {
-						id_p->first->id.tc_num = tc;
-						parent_syms.push( id_p->first );
-						parent_ids.push( id_p->first->id.epmem_id );
-					}
-
-				}
-			}
-
 			// cross-level information
 			std::map< wme*, epmem_id_reservation* > id_reservations;
 			std::set< Symbol* > new_identifiers;
 
-			while ( !parent_syms.empty() )
+			// start with new WMEs attached to known identifiers
+			for ( epmem_symbol_set::iterator id_p = my_agent->epmem_wme_adds->begin(); id_p != my_agent->epmem_wme_adds->end(); id_p++ )
 			{
-				parent_sym = parent_syms.front();
-				parent_syms.pop();
-
-				parent_id = parent_ids.front();
-				parent_ids.pop();
-
-				// get augmentations
-				wmes_p = my_agent->epmem_wme_adds->find( parent_sym );
-				if ( wmes_p != my_agent->epmem_wme_adds->end() )
-				{
-					wmes = wmes_p->second;
-					if ( !wmes->empty() )
+				// make sure the WME is valid
+				// it can be invalid if a child WME was added, but then the parent was removed, setting the epmem_id to EPMEM_NODEID_BAD
+				if ((*id_p)->id.epmem_id != EPMEM_NODEID_BAD) {
+					parent_syms.push( (*id_p) );
+					parent_ids.push( (*id_p)->id.epmem_id );
+					while ( !parent_syms.empty() )
 					{
-						_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge, unrecognized_wmes );
+						parent_sym = parent_syms.front();
+						parent_syms.pop();
+						parent_id = parent_ids.front();
+						parent_ids.pop();
+						wmes = epmem_get_augs_of_id( parent_sym, tc );
+						if ( ! wmes->empty() )
+						{
+							_epmem_store_level( my_agent, parent_syms, parent_ids, tc, wmes->begin(), wmes->end(), parent_id, time_counter, id_reservations, new_identifiers, epmem_node, epmem_edge, unrecognized_wmes );
+						}
+						delete wmes;
 					}
 				}
 			}
@@ -3008,6 +2935,7 @@ void epmem_new_episode( agent *my_agent )
 		// update smem recognition information on top state
 		if ( my_agent->smem_params->recog->get_value() == smem_param_container::recog_on )
 		{
+			/*(
 #ifdef USE_MEM_POOL_ALLOCATORS
 			smem_pooled_symbol_set* processed_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
 			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
@@ -3016,7 +2944,7 @@ void epmem_new_episode( agent *my_agent )
 			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set();
 #endif
 			// collect all attributes of newly added wmes
-			for (epmem_wme_addition_map::iterator iter = my_agent->epmem_wme_adds->begin(); iter != my_agent->epmem_wme_adds->end(); iter++) {
+			for (epmem_symbol_set::iterator iter = my_agent->epmem_wme_adds->begin(); iter != my_agent->epmem_wme_adds->end(); iter++) {
 				epmem_pooled_wme_set* pooled_wmes = (*iter).second;
 				for (epmem_pooled_wme_set::iterator iter2 = pooled_wmes->begin(); iter2 != pooled_wmes->end(); iter2++) {
 					// search smem for symbol hash (copied from smem_temporal_hash_str)
@@ -3051,18 +2979,12 @@ void epmem_new_episode( agent *my_agent )
 			}
 			delete processed_attrs;
 			delete unrecognized_attrs;
+			*/
 		}
 
 		// clear add/remove maps
 		{
-			for ( epmem_wme_addition_map::iterator it=my_agent->epmem_wme_adds->begin(); it!=my_agent->epmem_wme_adds->end(); it++ )
-			{
-				it->second->~epmem_pooled_wme_set();
-				free_with_pool( &( my_agent->epmem_add_set_pool ), it->second );
-			}
 			my_agent->epmem_wme_adds->clear();
-
-			my_agent->epmem_wme_removes->clear();
 		}
 	}
 
@@ -5829,7 +5751,6 @@ void inline _epmem_exp( agent* my_agent )
 
 	epmem_exp_timer->reset();
 	epmem_exp_timer->start();
-	epmem_dc_wme_adds = 0;
 	bool new_episode = epmem_consider_new_episode( my_agent );
 	epmem_exp_timer->stop();
 	c1 = epmem_exp_timer->value();
@@ -5951,12 +5872,6 @@ void inline _epmem_exp( agent* my_agent )
 
 									to_string( epmem_dc_interval_removes, temp_str );
 									output_contents.push_back( std::make_pair< std::string, std::string >( "dcintervalremoves", temp_str ) );
-								}
-
-								// dc wme adds
-								{
-									to_string( epmem_dc_wme_adds, temp_str );
-									output_contents.push_back( std::make_pair< std::string, std::string >( "dcwmeadds", temp_str ) );
 								}
 
 								// sqlite memory

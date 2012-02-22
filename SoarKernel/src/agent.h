@@ -223,7 +223,6 @@ typedef struct agent_struct {
 
   memory_pool		  epmem_wmes_pool;
   memory_pool		  epmem_info_pool;
-  memory_pool		  epmem_add_set_pool;
   memory_pool		  smem_wmes_pool;
   memory_pool		  smem_info_pool;
 
@@ -916,8 +915,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_id_ref_counter *epmem_id_ref_counts;
   epmem_symbol_stack *epmem_id_removes;
 
-  epmem_wme_addition_map* epmem_wme_adds;
-  epmem_wme_removal_map* epmem_wme_removes;
+  epmem_symbol_set* epmem_wme_adds;
   epmem_symbol_set* epmem_promotions;
 
   Symbol* epmem_unrecognized_header;

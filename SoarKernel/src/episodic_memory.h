@@ -449,6 +449,7 @@ typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
 
+// types/structures for recognition
 typedef std::map<epmem_node_id, epmem_node_id> epmem_id_disjoint_set;
 typedef std::map<epmem_hash_id, epmem_node_id> epmem_hash_id_map;
 typedef std::map<epmem_node_id, epmem_hash_id_map*> epmem_elders;
@@ -459,9 +460,6 @@ typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > >
 
 // types/structures to facilitate incremental storage
 typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > > > epmem_id_removal_map;
-typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > epmem_pooled_wme_set;
-typedef std::map< Symbol*, epmem_pooled_wme_set*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< std::pair< Symbol*, epmem_pooled_wme_set* > > > epmem_wme_addition_map;
-typedef std::map< uint64_t, epmem_pooled_wme_set*, std::less< uint64_t >, soar_module::soar_memory_pool_allocator< std::pair< uint64_t, epmem_pooled_wme_set* > > > epmem_wme_removal_map;
 typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_set;
 
 #else
@@ -470,9 +468,6 @@ typedef std::list< Symbol* > epmem_symbol_stack;
 
 // types/structures to facilitate incremental storage
 typedef std::map<epmem_node_id, bool> epmem_id_removal_map;
-typedef std::set< wme* > epmem_pooled_wme_set;
-typedef std::map< Symbol*, epmem_pooled_wme_set* > epmem_wme_addition_map;
-typedef std::map< uint64_t, epmem_pooled_wme_set* > epmem_wme_removal_map;
 typedef std::set< Symbol* > epmem_symbol_set;
 #endif
 typedef std::map<epmem_node_id, epmem_wme_set*> epmem_id_ref_counter;
