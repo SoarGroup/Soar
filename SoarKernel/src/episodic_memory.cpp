@@ -2935,56 +2935,44 @@ void epmem_new_episode( agent *my_agent )
 		// update smem recognition information on top state
 		if ( my_agent->smem_params->recog->get_value() == smem_param_container::recog_on )
 		{
-			/*(
 #ifdef USE_MEM_POOL_ALLOCATORS
-			smem_pooled_symbol_set* processed_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
 			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
 #else
-			smem_pooled_symbol_set* processed_attrs = new smem_pooled_symbol_set();
 			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set();
 #endif
-			// collect all attributes of newly added wmes
-			for (epmem_symbol_set::iterator iter = my_agent->epmem_wme_adds->begin(); iter != my_agent->epmem_wme_adds->end(); iter++) {
-				epmem_pooled_wme_set* pooled_wmes = (*iter).second;
-				for (epmem_pooled_wme_set::iterator iter2 = pooled_wmes->begin(); iter2 != pooled_wmes->end(); iter2++) {
-					// search smem for symbol hash (copied from smem_temporal_hash_str)
-					bool recognized = false;
-					Symbol* parent = (*iter2)->id;
-					Symbol* attr = (*iter2)->attr;
-					if (!processed_attrs->count(attr)) {
-						processed_attrs->insert(attr);
-						my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
-						if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
-						{
-							// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it)
-							// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
-							smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
-							my_agent->smem_stmts->ct_attr_check->bind_int( 1, hash );
-							if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) == soar_module::row )
-							{
-								// if a counter is found, it is in smem, and therefore should be recognized
-								recognized = true;
-							}
-						}
-						my_agent->smem_stmts->hash_get_str->reinitialize();
-						if (!recognized) {
-							unrecognized_attrs->insert(attr);
-						}
+			// check all attributes of newly added wmes
+			for (smem_pooled_symbol_set::iterator iter = my_agent->smem_attr_adds->begin(); iter != my_agent->smem_attr_adds->end(); iter++) {
+				bool recognized = false;
+				Symbol* attr = (*iter);
+				my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
+				if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
+				{
+					// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it)
+					// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
+					smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
+					my_agent->smem_stmts->ct_attr_check->bind_int( 1, hash );
+					if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) == soar_module::row )
+					{
+						// if a counter is found, it is in smem, and therefore should be recognized
+						recognized = true;
 					}
+				}
+				my_agent->smem_stmts->hash_get_str->reinitialize();
+				if (!recognized) {
+					unrecognized_attrs->insert(attr);
 				}
 			}
 			for (smem_pooled_symbol_set::iterator iter = unrecognized_attrs->begin(); iter != unrecognized_attrs->end(); iter++ )
 			{
 				my_agent->smem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->smem_unrecognized_header, *iter, make_new_identifier( my_agent, 'U', TOP_GOAL_LEVEL ) ) );
 			}
-			delete processed_attrs;
 			delete unrecognized_attrs;
-			*/
 		}
 
 		// clear add/remove maps
 		{
 			my_agent->epmem_wme_adds->clear();
+			my_agent->smem_attr_adds->clear();
 		}
 	}
 

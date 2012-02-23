@@ -1606,9 +1606,11 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
 	  // if known id
 	  if ( ( w->id->id.epmem_id != EPMEM_NODEID_BAD ) && ( w->id->id.epmem_valid == thisAgent->epmem_validation ) )
       {
-	    // add to add map
+	    // add to add set
 		thisAgent->epmem_wme_adds->insert( w->id );
 	  }
+	  // add to smem recognition set
+	  thisAgent->smem_attr_adds->insert( w->attr );
     }
   }
 

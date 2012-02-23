@@ -944,6 +944,7 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   smem_pooled_symbol_set* smem_changed_ids;
   bool smem_ignore_changes;
 
+  smem_pooled_symbol_set* smem_attr_adds;
   Symbol* smem_unrecognized_header;
   smem_wme_list* smem_wme_unrecognized;
 

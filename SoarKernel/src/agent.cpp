@@ -422,8 +422,10 @@ agent * create_soar_agent (char * agent_name) {                                 
 
 #ifdef USE_MEM_POOL_ALLOCATORS
   newAgent->smem_changed_ids = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
+  newAgent->smem_attr_adds = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
 #else
   newAgent->smem_changed_ids = new smem_pooled_symbol_set();
+  newAgent->smem_attr_adds = new smem_pooled_symbol_set();
 #endif
   newAgent->smem_ignore_changes = false;
 
@@ -514,6 +516,7 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->smem_params;
   delete delete_agent->smem_stats;
   delete delete_agent->smem_timers;
+  delete delete_agent->smem_attr_adds;
   delete delete_agent->smem_wme_unrecognized;
 
   delete delete_agent->smem_db;
