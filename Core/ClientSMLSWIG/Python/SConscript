@@ -45,7 +45,11 @@ SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ 
 clone.Append(SCANNERS=[SWIGScanner])
 
 clone.Command([wrapper, source], interface, swig_cmdline)
-shlib = clone.SharedLibrary(name, wrapper, SHLIBPREFIX = '_') 
+if os.name == 'nt':
+	# the [:1] at the end throws away the .exp and .lib files that are generated
+	shlib = clone.SharedLibrary(name, wrapper, SHLIBPREFIX = '_', SHLIBSUFFIX = '.pyd')[:1]
+else:
+	shlib = clone.SharedLibrary(name, wrapper, SHLIBPREFIX = '_') 
 install_source = env.Install(lib_install_dir, source)
 install_lib = env.Install(lib_install_dir, shlib)
 

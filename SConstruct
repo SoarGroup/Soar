@@ -255,8 +255,6 @@ env.Replace(CPPFLAGS=cflags.split(), LINKFLAGS=(GetOption('lnflags') or "").spli
 
 Export('env')
 
-SConscript('#Core/Sconscript', variant_dir=build_dir('Core'), duplicate=0)
-
 for d in os.listdir('.'):
 	script = join(d, 'SConscript')
 	if os.path.exists(script):
