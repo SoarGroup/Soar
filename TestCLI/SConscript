@@ -3,5 +3,6 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 Import('env')
-TestCLI = env.Program('TestCLI', Glob('*.cpp'))
-env.Alias('TestCLI', env.Install('$OUT_DIR', TestCLI))
+TestCLI = env.Program('TestCLI', ['testcli.cpp'])
+mincli = env.Program('cli', 'mincli.cpp')
+env.Alias('cli', env.Install('$OUT_DIR', [TestCLI, mincli]))

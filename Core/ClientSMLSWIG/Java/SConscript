@@ -84,7 +84,9 @@ clone.Append(SCANNERS = [ SWIGScanner ])
 # will scan for.
 update_swig = False
 test_source = smldir.File('sml.java').abspath
-if not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
+if env.GetOption('clean'):
+	pass
+elif not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
 	update_swig = True
 else:
 	gentime = min(os.path.getmtime(wrapper.abspath), os.path.getmtime(test_source))
