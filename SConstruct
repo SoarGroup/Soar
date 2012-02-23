@@ -206,13 +206,13 @@ if compiler == 'g++':
 		if GetOption('cflags') == None:
 			cflags += GCC_DEF_CFLAGS
 		
-#		gcc_ver = gcc_version(env['CXX'])
-#		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
-#		if gcc_ver[0] > 3:
-#			env.Append(CPPFLAGS='-fvisibility=hidden')
-#			if config.TryCompile('', '.cpp'):
-#				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
-#				env['VISHIDDEN'] = True
+		gcc_ver = gcc_version(env['CXX'])
+		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
+		if gcc_ver[0] > 3:
+			env.Append(CPPFLAGS='-fvisibility=hidden')
+			if config.TryCompile('', '.cpp'):
+				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
+				env['VISHIDDEN'] = True
 		
 		cflags += ' -march=native -m%s' % GetOption('platform')
 	elif GetOption('cflags') != None:
