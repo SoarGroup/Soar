@@ -122,7 +122,6 @@ def InstallDir(env, tgt, src, globstring="*"):
 
 Export('javaRunAnt', 'InstallDir')
 
-
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
 # sys.platform:          linux2,           linux2,           darwin,        darwin,
@@ -171,46 +170,22 @@ AddOption('--build-dir', action='store', type='string', dest='build-dir', defaul
 
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
-bdir = GetOption('build-dir')
-VariantDir(bdir, '.', duplicate=0)
-
-def build_dir(p):
-	return join(bdir, p)
-
 env = Environment(
 	ENV = {
 		'PATH' : os.environ.get('PATH', ''), 
-		'TMP' : os.environ.get('TMP','')},
+		'TMP' : os.environ.get('TMP','')
+	},
 	SCU = GetOption('scu'), 
-	BUILD_DIR = bdir,
+	BUILD_DIR = GetOption('build-dir'),
 	OUT_DIR = os.path.realpath(GetOption('outdir')),
 	SOAR_VERSION = SOAR_VERSION,
-	CPPPATH = [
-		'#Core/shared',
-		'#Core/pcre',
-		'#Core/SoarKernel/src',
-		'#Core/ElementXML/src',
-		'#Core/KernelSML/src',
-		'#Core/ConnectionSML/src',
-		'#Core/ClientSML/src',
-		'#Core/CLI/src',
-	],
 	VISHIDDEN = False,   # needed by swig
-	LIBS = ['Soar'],
-	LIBPATH = [os.path.realpath(GetOption('outdir'))],
 )
 
 print "Building intermediates to ", env['BUILD_DIR']
 print "Installing targets to ", env['OUT_DIR']
 
 config = Configure(env)
-
-# check for required libraries
-if os.name == 'posix':
-	for lib in ['dl', 'm', 'pthread']:
-		if not config.CheckLib(lib):
-			print 'cannot locate lib%s' % lib
-			Exit(1)
 
 if env['CXX'].endswith('g++'):
 	compiler = 'g++'
@@ -231,13 +206,13 @@ if compiler == 'g++':
 		if GetOption('cflags') == None:
 			cflags += GCC_DEF_CFLAGS
 		
-		gcc_ver = gcc_version(env['CXX'])
-		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
-		if gcc_ver[0] > 3:
-			env.Append(CPPFLAGS='-fvisibility=hidden')
-			if config.TryCompile('', '.cpp'):
-				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
-				env['VISHIDDEN'] = True
+#		gcc_ver = gcc_version(env['CXX'])
+#		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
+#		if gcc_ver[0] > 3:
+#			env.Append(CPPFLAGS='-fvisibility=hidden')
+#			if config.TryCompile('', '.cpp'):
+#				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
+#				env['VISHIDDEN'] = True
 		
 		cflags += ' -march=native -m%s' % GetOption('platform')
 	elif GetOption('cflags') != None:
@@ -251,16 +226,36 @@ elif compiler == 'cl':
 	elif GetOption('cflags') != None:
 		cflags += ' ' + GetOption('cflags')
 	
-env.Replace(CPPFLAGS=cflags.split(), LINKFLAGS=(GetOption('lnflags') or "").split())
+env.Replace(
+	CPPFLAGS=cflags.split(), 
+	LINKFLAGS=(GetOption('lnflags') or "").split(),
+	CPPPATH = [
+		'#Core/shared',
+		'#Core/pcre',
+		'#Core/SoarKernel/src',
+		'#Core/ElementXML/src',
+		'#Core/KernelSML/src',
+		'#Core/ConnectionSML/src',
+		'#Core/ClientSML/src',
+		'#Core/CLI/src',
+	],
+	LIBS = ['Soar'],
+	LIBPATH = [os.path.realpath(GetOption('outdir'))],
+)
 
 Export('env')
 
 for d in os.listdir('.'):
 	script = join(d, 'SConscript')
 	if os.path.exists(script):
-		SConscript(script, variant_dir=build_dir(d), duplicate=0)
+		SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
+if COMMAND_LINE_TARGETS == ['list']:
+	from SCons.Node.Alias import default_ans
+	print '\n'.join(sorted(default_ans.keys()))
+	Exit()
+	
 # Set default targets
 Default('kernel', 'cli', 'TestCLI')
-if CheckSWIG():
-	Default('sml_python', 'sml_java', 'java')
+#if CheckSWIG():
+#	Default('sml_python', 'sml_java', 'java')

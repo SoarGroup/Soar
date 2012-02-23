@@ -1,10 +1,14 @@
 import sys, os
 
-join = os.path.join
-
 Import('env', 'compiler', 'InstallDir')
 kernel_env = env.Clone()
-kernel_env['LIBS'].remove('Soar')
+
+if os.name == 'posix':
+	libs = ['dl', 'pthread', 'm']
+elif os.name == 'nt':
+	libs = ['advapi32']
+
+kernel_env.Replace(LIBS = libs)
 
 if compiler == 'g++':
 	static_macro = ['-DSTATIC_LINKED']
@@ -41,9 +45,8 @@ else:
 
 env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
 
-for x in 'Python Java Tcl PHP CSharp'.split():
-	d = join('ClientSMLSWIG', x)
-	SConscript(join(d, 'SConscript'))
+for x in 'Python Java Tcl PHP'.split():
+	SConscript(os.path.join('ClientSMLSWIG', x, 'SConscript'))
 
 # headers
 headers = []

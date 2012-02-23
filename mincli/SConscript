@@ -1,3 +1,0 @@
-#!/usr/bin/python
-Import('env')
-env.Alias('cli', env.Install('$OUT_DIR', env.Program('cli', 'cli.cpp')))
