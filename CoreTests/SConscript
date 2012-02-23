@@ -8,7 +8,6 @@ Import('env')
 subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary']
 
 for d in subdirs:
-	script = '../CoreTests/%s/SConscript' % d
-	print "Processing", script + "..."
-	SConscript(script, variant_dir=os.path.join(env['BUILD_DIR'], d), dupicate=0)
+	script = os.path.join(d, 'SConscript')
+	SConscript(script)
 

@@ -100,7 +100,7 @@ if update_swig:
 
 clone.Clean(jar, [wrapper, srcdir, classdir])
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
-shlib = clone.SharedLibrary(name, wrapper)
+shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files
 
 clone.Java(classdir, srcdir)
 clone['JARCHDIR'] = classdir
