@@ -163,10 +163,8 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	add( mirroring );
 
 	// recog
-	recog = new soar_module::constant_param<recog_choices>( "recognition", recog_off, new soar_module::f_predicate<recog_choices>() );
-	recog->add_mapping( recog_on, "on" );
-	recog->add_mapping( recog_off, "off" );	
-	add( recog );
+	recognition = new soar_module::integer_param( "recognition", 0, new soar_module::btw_predicate<int64_t>( 0, 2, true ), new soar_module::f_predicate<int64_t>() );
+	add( recognition );
 }
 
 //

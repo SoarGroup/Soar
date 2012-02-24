@@ -334,7 +334,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
 
         temp = "recognition: ";
-        temp2 = agnt->smem_params->recog->get_string();
+        temp2 = agnt->smem_params->recognition->get_string();
         temp += temp2;
         delete temp2;
         if ( m_RawOutput )

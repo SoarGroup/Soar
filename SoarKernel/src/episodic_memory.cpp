@@ -208,9 +208,7 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	add( merge );
 
 	// recognition
-	recognition = new soar_module::constant_param<recog_choices>( "recognition", recog_off, new soar_module::f_predicate<recog_choices>() );
-	recognition->add_mapping( recog_on, "on" );
-	recognition->add_mapping( recog_off, "off" );	
+	recognition = new soar_module::integer_param( "recognition", 0, new soar_module::btw_predicate<int64_t>( 0, 2, true ), new soar_module::f_predicate<int64_t>() );
 	add( recognition );
 
 	// recognition_merge_depth
@@ -2211,7 +2209,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 
 	// find the parent root (if recognition is on)
 	epmem_node_id parent_root = EPMEM_NODEID_BAD;
-	if ( my_agent->epmem_params->recognition->get_value() == epmem_param_container::recog_on )
+	if ( my_agent->epmem_params->recognition->get_value() >= 1 )
 	{
 		parent_root = _epmem_find_recog_set(my_agent->epmem_id_siblings, parent_id);
 	}
@@ -2500,7 +2498,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				}
 
 				// maintain the recognition structures
-				if ( my_agent->epmem_params->recognition->get_value() == epmem_param_container::recog_on )
+				if ( my_agent->epmem_params->recognition->get_value() >= 1 )
 				{
 					epmem_node_id child_root = _epmem_find_recog_set(my_agent->epmem_id_siblings, (*w_p)->value->id.epmem_id);
 					if (child_root == (*w_p)->value->id.epmem_id) {
@@ -2924,7 +2922,7 @@ void epmem_new_episode( agent *my_agent )
 
 		// update epmem recognition information on top state
 		// all substates link to the same recognition structure root, so we only need to update it once
-		if ( my_agent->epmem_params->recognition->get_value() == epmem_param_container::recog_on )
+		if ( my_agent->epmem_params->recognition->get_value() >= 2 )
 		{
 			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{
@@ -2933,7 +2931,7 @@ void epmem_new_episode( agent *my_agent )
 		}
 
 		// update smem recognition information on top state
-		if ( my_agent->smem_params->recog->get_value() == smem_param_container::recog_on )
+		if ( my_agent->smem_params->recognition->get_value() >= 1 )
 		{
 #ifdef USE_MEM_POOL_ALLOCATORS
 			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
@@ -2962,9 +2960,12 @@ void epmem_new_episode( agent *my_agent )
 					unrecognized_attrs->insert(attr);
 				}
 			}
-			for (smem_pooled_symbol_set::iterator iter = unrecognized_attrs->begin(); iter != unrecognized_attrs->end(); iter++ )
+			if ( my_agent->smem_params->recognition->get_value() >= 2 )
 			{
-				my_agent->smem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->smem_unrecognized_header, *iter, make_new_identifier( my_agent, 'U', TOP_GOAL_LEVEL ) ) );
+				for (smem_pooled_symbol_set::iterator iter = unrecognized_attrs->begin(); iter != unrecognized_attrs->end(); iter++ )
+				{
+					my_agent->smem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->smem_unrecognized_header, *iter, make_new_identifier( my_agent, 'U', TOP_GOAL_LEVEL ) ) );
+				}
 			}
 			delete unrecognized_attrs;
 		}

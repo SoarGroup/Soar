@@ -77,8 +77,7 @@ class smem_param_container: public soar_module::param_container
 
 		soar_module::boolean_param* mirroring;
 
-		enum recog_choices { recog_on, recog_off };
-		soar_module::constant_param<recog_choices> *recog;
+		soar_module::integer_param* recognition;
 
 		smem_param_container( agent *new_agent );
 };
