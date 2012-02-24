@@ -1671,7 +1671,7 @@ TEST_DEFINITION( testNegatedConjunctiveTestUnbound )
 
 TEST_DEFINITION( testCommandToFile )
 {
-	loadProductions( "share/soar/Demos/water-jug/water-jug-rl.soar" );
+	loadProductions( "../Agents/water-jug/water-jug-rl.soar" );
 	m_pKernel->RunAllAgentsForever();
 	m_pAgent->ExecuteCommandLine("command-to-file testCommandToFile-output.soar print --rl --full");
 	CPPUNIT_ASSERT(m_pAgent->GetLastCommandLineResult());
