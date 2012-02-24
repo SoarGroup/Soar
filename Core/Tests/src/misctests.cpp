@@ -449,7 +449,7 @@ void MiscTest::testMultipleKernels()
 void MiscTest::testSmemArithmetic()
 {
     std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Demos/arithmetic/arithmetic.soar";
+    productionsPath << pKernel->GetLibraryLocation() << "../Agents/arithmetic/arithmetic.soar";
 
     pAgent->LoadProductions( productionsPath.str().c_str(), true ) ;
     CPPUNIT_ASSERT_MESSAGE( pAgent->GetLastErrorDescription(), pAgent->GetLastCommandLineResult() );
@@ -467,7 +467,7 @@ void MiscTest::testSmemArithmetic()
 bool MiscTest::loadDemo(std::string demo)
 {
     std::stringstream productionsPath;
-    productionsPath << pKernel->GetLibraryLocation() << "share/soar/Demos/" << demo;
+    productionsPath << pKernel->GetLibraryLocation() << "../Agents/" << demo;
     return pAgent->LoadProductions(productionsPath.str().c_str());
 }
 
