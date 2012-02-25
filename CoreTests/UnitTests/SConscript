@@ -4,7 +4,7 @@
 #
 import sys
 
-Import('env', 'InstallDir')
+Import('env')
 clone = env.Clone()
 
 libadd = ['Soar']
@@ -21,5 +21,5 @@ else:
 		libadd.append('cppunit-linux')
 
 clone.Prepend(LIBS = libadd, LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
-Tests = clone.Program('Tests', Glob('src/*.cpp'))
-env.Alias('Tests', [env.Install('$OUT_DIR', Tests)] + InstallDir(env, '$OUT_DIR/test_agents', 'Agents'))
+t = env.Install('$OUT_DIR', clone.Program('UnitTests', Glob('src/*.cpp')))
+Return('t')

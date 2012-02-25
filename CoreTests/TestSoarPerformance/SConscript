@@ -3,6 +3,5 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 Import('env')
-TestSoarPerformance = env.Program('TestSoarPerformance', Glob('*.cpp'))
-env.Alias('TestSoarPerformance', env.Install('$OUT_DIR', TestSoarPerformance))
-
+t = env.Install('$OUT_DIR', env.Program('TestSoarPerformance', Glob('*.cpp')))
+Return('t')

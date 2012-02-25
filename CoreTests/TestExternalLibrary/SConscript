@@ -4,6 +4,7 @@
 #
 Import('env')
 
-TestExternalLibraryLib = env.SharedLibrary('TestExternalLibraryLib', 'lib.cpp')
-TestExternalLibrary = env.Program('TestExternalLibrary', 'TestExternalLibrary.cpp')
-env.Alias('TestExternalLibrary', env.Install('$OUT_DIR', [TestExternalLibrary, TestExternalLibraryLib]))
+lib = env.SharedLibrary('TestExternalLibraryLib', 'lib.cpp')
+prog = env.Program('TestExternalLibrary', 'TestExternalLibrary.cpp')
+t = env.Install('$OUT_DIR', [prog, lib])
+Return('t')

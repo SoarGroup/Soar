@@ -3,12 +3,14 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 import os
-Import('env')
+Import('env', 'InstallDir')
 
-tests = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
+subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
 
-for d in tests:
+tests = []
+for d in subdirs:
 	script = os.path.join(d, 'SConscript')
-	SConscript(script)
+	tests.append(SConscript(script))
 
-env.Alias('Tests', tests)
+agents = InstallDir(env, '$OUT_DIR/test_agents', 'Agents')
+env.Alias('Tests', tests + agents)
