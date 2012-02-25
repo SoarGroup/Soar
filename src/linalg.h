@@ -7,11 +7,20 @@
 #include <ostream>
 #include <iterator>
 #include <vector>
+
+/*
+ By default Eigen will try to align all fixed size vectors to 128-bit
+ boundaries to enable SIMD instructions on hardware such as SSE. However,
+ this requires that you modify every class that has such vectors as
+ members so that they are correctly allocated. This seems like more
+ trouble than it's worth at the moment, so I'm disabling it.
+*/
+#define EIGEN_DONT_ALIGN
 #include <Eigen/Dense>
 #include <Eigen/StdVector>
 
 typedef Eigen::RowVector3d vec3;
-typedef std::vector<vec3, Eigen::aligned_allocator<vec3> > ptlist;
+typedef std::vector<vec3> ptlist;
 
 class quaternion {
 public:
