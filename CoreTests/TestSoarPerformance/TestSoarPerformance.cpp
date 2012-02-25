@@ -9,6 +9,8 @@
 #include "sml_Client.h"
 #include "sml_Connection.h"
 
+const char *source_path = "test_agents/TestSoarPerformance.soar";
+
 using namespace std;
 using namespace sml;
 
@@ -77,8 +79,6 @@ public:
 	}
 };
 
-const string SOAR_HOME = "SOAR_HOME";
-
 void MyPrintEventHandler(smlPrintEventId id, void* pUserData, Agent* pAgent, char const* pMessage) {
 	cout << pMessage << endl;
 }
@@ -89,7 +89,7 @@ void PrintTest1Description(int numTrials) {
 	cout << "This is repeated " << numTrials << " times to measure average performance." << endl;
 	cout << "Importantly, since the kernel is destroyed between each run, memory needs to be reallocated each time." << endl;
 }
-void Test1(int numTrials, StatsTracker* pSt, vector<string>* commands) {
+void Test1(int numTrials, StatsTracker* pSt, const vector<string> &commands) {
 
 	for(int i = 0; i < numTrials; i++) {
 		cout << endl << "***** Trial " << (i+1) << " of " << numTrials << " Begin *****" << endl;
@@ -101,14 +101,8 @@ void Test1(int numTrials, StatsTracker* pSt, vector<string>* commands) {
 
 		agent->SetOutputLinkChangeTracking(false);
 
-		for(vector<string>::iterator itr = commands->begin(); itr != commands->end(); itr++) {
-			string command = *itr;
-			size_t pos = command.find(SOAR_HOME);
-			if (pos != std::string::npos) {
-				command.replace(pos, SOAR_HOME.length(), kernel->GetLibraryLocation());
-			}
-
-			agent->ExecuteCommandLine(command.c_str());
+		for(int j = 0; j < commands.size(); ++j) {
+			agent->ExecuteCommandLine(commands[j].c_str());
 		}
 
 		ClientAnalyzedXML response;
@@ -145,7 +139,9 @@ int main() {
 
 		StatsTracker stTest1_learnoff, stTest1_learnon;
 		vector<string> commands;
-		commands.push_back("source \"" + SOAR_HOME + "share/soar/Tests/TestSoarPerformance.soar\"");
+		string srccmd = "source ";
+		srccmd += source_path;
+		commands.push_back(srccmd.c_str());
 		commands.push_back("watch 0");
 		
 		int numTrials = 3;
@@ -157,10 +153,10 @@ int main() {
 		//cin.get();
 
 		cout << endl << "***** Running suite with learning off *****" << endl;
-		Test1(numTrials, &stTest1_learnoff, &commands);
+		Test1(numTrials, &stTest1_learnoff, commands);
 		commands.push_back("learn --on");
 		cout << endl << "***** Running suite with learning on *****" << endl;
-		Test1(numTrials, &stTest1_learnon, &commands);
+		Test1(numTrials, &stTest1_learnon, commands);
 
 		//PrintTest1Description(numTrials);
 
