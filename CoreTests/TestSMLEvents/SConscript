@@ -3,6 +3,5 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 Import('env')
-TestSMLEvents = env.Program('TestSMLEvents', Glob('*.cpp'))
-env.Alias('TestSMLEvents', env.Install('$OUT_DIR', TestSMLEvents))
-
+t = env.Install('$OUT_DIR', env.Program('TestSMLEvents', Glob('*.cpp')))
+Return('t')

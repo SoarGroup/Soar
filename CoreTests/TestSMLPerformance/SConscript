@@ -3,6 +3,5 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 Import('env')
-TestSMLPerformance = env.Program('TestSMLPerformance', Glob('*.cpp'))
-env.Alias('TestSMLPerformance', env.Install('$OUT_DIR', TestSMLPerformance))
-
+t = env.Install('$OUT_DIR', env.Program('TestSMLPerformance', Glob('*.cpp')))
+Return('t')
