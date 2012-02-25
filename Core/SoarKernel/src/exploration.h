@@ -141,6 +141,9 @@ extern bool exploration_set_reduction_rate( agent *my_agent, const int parameter
 // selects a candidate based upon the current exploration mode
 extern preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, preference *candidates );
 
+// calculate the probability of a selection given the current exploration mode
+extern double exploration_probability_according_to_policy( agent *my_agent, slot *s, preference *candidates, preference *selection );
+
 // selects a candidate in a random fashion
 extern preference *exploration_randomly_select( preference *candidates );
 
