@@ -1,3 +1,0 @@
-pushd left-right
-source left-right_source.soar
-popd

@@ -1,5 +1,0 @@
-sp {elaborate*top-state*name
-  (state <s> ^superstate nil)
--->
-  (<s> ^name towers-of-hanoi)
-}

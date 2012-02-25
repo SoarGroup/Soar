@@ -1,4 +1,0 @@
-source _all.soar
-source reward.soar
-source rl.soar
-source top-state.soar

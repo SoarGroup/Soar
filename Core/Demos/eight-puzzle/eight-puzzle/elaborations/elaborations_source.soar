@@ -1,4 +1,0 @@
-source goal-test.soar
-source monitor.soar
-source search-control.soar
-source top-state.soar
