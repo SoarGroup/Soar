@@ -36,8 +36,9 @@
 #ifdef EPMEM_EXPERIMENT
 
 uint64_t epmem_episodes_searched = 0;
+uint64_t epmem_dc_interval_inserts = 0;
+uint64_t epmem_dc_interval_removes = 0;
 uint64_t epmem_dc_wme_adds = 0;
-uint64_t epmem_dc_wme_removes = 0;
 std::ofstream* epmem_exp_output = NULL;
 
 enum epmem_exp_states
@@ -1375,6 +1376,11 @@ void epmem_close( agent *my_agent )
 		epmem_exp_output->close();
 		delete epmem_exp_output;
 		epmem_exp_output = NULL;
+
+		if ( epmem_exp_timer )
+		{
+			delete epmem_exp_timer;
+		}
 	}
 #endif
 }
@@ -1604,7 +1610,7 @@ void epmem_init_db( agent *my_agent, bool readonly = false )
 #else
 				epmem_wme_set* wms_temp = new epmem_wme_set();
 #endif
-				
+
 				// voigtjr: Cast to wme* is necessary for compilation in VS10
 				// Without it, it picks insert(int) instead of insert(wme*) and does not compile.
 				wms_temp->insert( static_cast<wme*>(NULL) );
@@ -2271,7 +2277,11 @@ void epmem_new_episode( agent *my_agent )
 
 											do
 											{
-												if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
+												// the ref set for this epmem_id may not be there if the pools were regenerated from a previous DB
+												// a non-existant ref set is the equivalent of a ref count of 0 (ie. an empty ref set)
+												// so we allow the identifier from the pool to be used
+												if ( ( my_agent->epmem_id_ref_counts->count(pool_p->first) == 0 ) ||
+														( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() ) )
 												{
 													(*w_p)->epmem_id = pool_p->second;
 													(*w_p)->value->id.epmem_id = pool_p->first;
@@ -2353,11 +2363,20 @@ void epmem_new_episode( agent *my_agent )
 							}
 
 							// at this point we have successfully added a new wme
-							// whose value was an identifier.  IF the identifier was
+							// whose value was an identifier.  If the identifier was
 							// unknown at the beginning of this episode, then we need
 							// to update its ref count for each WME added.
 							if ( new_identifiers.find( (*w_p)->value ) != new_identifiers.end() )
 							{
+								// because we could have bypassed the ref set before, we need to create it here
+								if ( my_agent->epmem_id_ref_counts->count( (*w_p)->value->id.epmem_id ) == 0 )
+								{
+#ifdef USE_MEM_POOL_ALLOCATORS
+									(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+#else
+									(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set;
+#endif
+								}
 								(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->insert( (*w_p) );
 							}
 						}
@@ -2453,7 +2472,7 @@ void epmem_new_episode( agent *my_agent )
 			epmem_node_id *temp_node;
 
 #ifdef EPMEM_EXPERIMENT
-			epmem_dc_wme_adds = epmem_node.size() + epmem_edge.size();
+			epmem_dc_interval_inserts = epmem_node.size() + epmem_edge.size();
 #endif
 
 			// nodes
@@ -2498,7 +2517,7 @@ void epmem_new_episode( agent *my_agent )
 			epmem_time_id range_end;
 
 #ifdef EPMEM_EXPERIMENT
-			epmem_dc_wme_removes = 0;
+			epmem_dc_interval_removes = 0;
 #endif
 
 			// nodes
@@ -2508,7 +2527,7 @@ void epmem_new_episode( agent *my_agent )
 				if ( r->second )
 				{
 #ifdef EPMEM_EXPERIMENT
-					epmem_dc_wme_removes++;
+					epmem_dc_interval_removes++;
 #endif
 
 					// remove NOW entry
@@ -2547,7 +2566,7 @@ void epmem_new_episode( agent *my_agent )
 				if ( r->second )
 				{
 #ifdef EPMEM_EXPERIMENT
-					epmem_dc_wme_removes++;
+					epmem_dc_interval_removes++;
 #endif
 
 					// remove NOW entry
@@ -5934,10 +5953,10 @@ void inline _epmem_exp( agent* my_agent )
 	//            ^output |filename|
 	//            ^format << csv speedy >>
 	//            ^features <fs>
-	//               <fs> ^|key| |value|
+	//               <fs> ^|key| |value| # note: value must be a string, not int or float; wrap it in pipes (eg. |0|)
 	//            ^commands <cmds>
 	//               <cmds> ^|label| <cmd>
-	
+
 	if ( !epmem_exp_timer )
 	{
 		epmem_exp_timer = new soar_module::timer( "exp", my_agent, soar_module::timer::zero, new soar_module::predicate<soar_module::timer::timer_level>(), false );
@@ -5947,6 +5966,7 @@ void inline _epmem_exp( agent* my_agent )
 
 	epmem_exp_timer->reset();
 	epmem_exp_timer->start();
+	epmem_dc_wme_adds = -1;
 	bool new_episode = epmem_consider_new_episode( my_agent );
 	epmem_exp_timer->stop();
 	c1 = epmem_exp_timer->value();
@@ -6061,13 +6081,19 @@ void inline _epmem_exp( agent* my_agent )
 									epmem_exp_state[ exp_state_wm_removes ] = static_cast< int64_t >( my_agent->wme_removal_count );
 								}
 
-								// dc wme add/removes
+								// dc interval add/removes
+								{
+									to_string( epmem_dc_interval_inserts, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcintervalinserts", temp_str ) );
+
+									to_string( epmem_dc_interval_removes, temp_str );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcintervalremoves", temp_str ) );
+								}
+
+								// dc wme adds
 								{
 									to_string( epmem_dc_wme_adds, temp_str );
-									output_contents.push_back( std::make_pair< std::string, std::string >( "dcadds", temp_str ) );
-
-									to_string( epmem_dc_wme_removes, temp_str );
-									output_contents.push_back( std::make_pair< std::string, std::string >( "dcremoves", temp_str ) );
+									output_contents.push_back( std::make_pair< std::string, std::string >( "dcwmeadds", temp_str ) );
 								}
 
 								// sqlite memory
