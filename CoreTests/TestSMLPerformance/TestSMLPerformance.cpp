@@ -27,6 +27,8 @@
 using namespace sml;
 using namespace std;
 
+const char *source_path = "test_agents/TestSMLPerformance.soar";
+
 void UpdateAgent(smlRunEventId id, void* pUserData, Agent* pAgent, smlPhase phase);
 void PrintCallbackHandler(sml::smlPrintEventId id, void* pUserData, sml::Agent* pAgent, char const* pMessage);
 
@@ -49,11 +51,7 @@ public:
 		if(!strcmp(name,"0")) {
 			agent->RegisterForPrintEvent(sml::smlEVENT_PRINT, PrintCallbackHandler, 0);
 		}
-		
-		std::stringstream productionsPath;
-		productionsPath << kernel->GetLibraryLocation() << "share/soar/Tests/TestSMLPerformance.soar";
-        	agent->LoadProductions( productionsPath.str().c_str() );
-
+		agent->LoadProductions(source_path);
 		agent->ExecuteCommandLine("watch 0");
 
 		// Create wmes

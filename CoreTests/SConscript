@@ -5,9 +5,10 @@
 import os
 Import('env')
 
-subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary']
+tests = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
 
-for d in subdirs:
+for d in tests:
 	script = os.path.join(d, 'SConscript')
 	SConscript(script)
 
+env.Alias('Tests', tests)
