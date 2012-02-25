@@ -75,6 +75,7 @@ public:
 	void get_all_atoms(scene *scn, std::vector<std::vector<std::string> > &atoms) const {
 		std::ofstream out("/tmp/atom_names");
 		std::map<std::string, filter_table_entry>::const_iterator i;
+		int r = 0;
 		for(i = t.begin(); i != t.end(); ++i) {
 			const filter_table_entry &e = i->second;
 			if (e.possible_args != NULL && e.calc != NULL) {
@@ -84,6 +85,7 @@ public:
 				for (j = args.begin(); j != args.end(); ++j) {
 					j->insert(j->begin(), e.name);
 					atoms.push_back(*j);
+					out << r++ << " ";
 					std::copy(j->begin(), j->end(), std::ostream_iterator<std::string>(out, " "));
 					out << std::endl;
 				}

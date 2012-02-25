@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cassert>
+#include <cstdio>
 #include "dtree.h"
 #include "common.h"
 
@@ -45,6 +46,105 @@ void ClassifierInst::load(istream &is) {
 	is >> cat;
 	load_vector(attrs, is);
 }
+
+vector<double> chi2thresh;
+
+void fill_chi2thresh() {
+	double pv;
+	char *end;
+	string pval = get_option("chi2_pvalue");
+	
+	if (pval.empty()) {
+		pv = 0.1;
+	} else {
+		pv = strtod(pval.c_str(), &end);
+		assert(end != pval.c_str());
+	}
+	
+	// Use scipy to calculate threshold values of the chi2 CDF
+	stringstream ss;
+	ss << "python -c 'from scipy.stats import chi2" << endl;
+	ss << "for i in range(10): print chi2.ppf(" << pv << ", i+1)'" << endl;
+	FILE *input = popen(ss.str().c_str(), "r");
+	assert(input != NULL);
+	
+	char c;
+	vector<char> buf;
+	int i = 0;
+	while (fread(&c, 1, 1, input) > 0) {
+		if (!isspace(c)) {
+			buf.push_back(c);
+		} else if (buf.size() > 0) {
+			double x = strtod(&buf[0], &end);
+			assert(end != &buf[0]);
+			chi2thresh.push_back(x);
+			buf.clear();
+		}
+	}
+	pclose(input);
+}
+
+class chi2test {
+public:
+	chi2test() : ttl(0) {
+		if (chi2thresh.size() == 0) {
+			fill_chi2thresh();
+		}
+	}
+	
+	void add(int rlabel, int clabel) {
+		int i, j;
+		for (i = 0; i < row_labels.size() && row_labels[i] != rlabel; ++i) ;
+		if (i == row_labels.size()) {
+			row_labels.push_back(rlabel);
+			row_ttls.push_back(0);
+		}
+		for (j = 0; j < col_labels.size() && col_labels[j] != clabel; ++j) ;
+		if (j == col_labels.size()) {
+			col_labels.push_back(clabel);
+			col_ttls.push_back(0);
+		}
+		
+		int oldrows = counts.rows(), oldcols = counts.cols();
+		counts.conservativeResize(row_labels.size(), col_labels.size());
+		for (int k = oldrows; k < counts.rows(); ++k) {
+			counts.row(k).setConstant(0.0);
+		}
+		for (int k = oldcols; k < counts.cols(); ++k) {
+			counts.col(k).setConstant(0.0);
+		}
+		
+		counts(i, j) += 1.0;
+		++row_ttls[i];
+		++col_ttls[j];
+		++ttl;
+	}
+	
+	double score() const {
+		mat expected(row_labels.size(), col_labels.size());
+		for (int i = 0; i < row_labels.size(); ++i) {
+			double rp = row_ttls[i] / (double) ttl;
+			for (int j = 0; j < col_labels.size(); ++j) {
+				expected(i, j) = col_ttls[j] * rp;
+			}
+		}
+		double s = ((counts - expected).array().square() / expected.array()).sum();
+		return s;
+	}
+	
+	// Returns true if data is likely to be dependent
+	bool test() const {
+		int df = (row_ttls.size() - 1) * (col_ttls.size() - 1);
+		assert(df < chi2thresh.size());
+		return score() > chi2thresh[df];
+	}
+	
+private:
+	vector<int> row_labels, col_labels;
+	vector<int> row_ttls, col_ttls;
+	int ttl;
+	mat counts;
+};
 
 /*
  insts is the list of all instances. The tree will only maintain
@@ -106,7 +206,7 @@ void ID5Tree::update_tree(int i) {
 	} else {
 		int best_split = choose_split();
 		if (best_split == -1) {
-			split_attr = best_split;
+			split_attr = -1;
 			cat = best_cat();
 			shrink();
 		} else if (!expanded()) {
@@ -572,4 +672,25 @@ category ID5Tree::best_cat() {
 		}
 	}
 	return c;
+}
+
+void ID5Tree::prune() {
+	chi2test chi;
+	if (!expanded()) {
+		return;
+	}
+	
+	for (int i = 0; i < left->insts_here.size(); ++i) {
+		chi.add(0, insts[left->insts_here[i]].cat);
+	}
+	for (int i = 0; i < right->insts_here.size(); ++i) {
+		chi.add(1, insts[right->insts_here[i]].cat);
+	}
+	if (!chi.test()) {
+		cat = best_cat();
+		shrink();
+	} else {
+		left->prune();
+		right->prune();
+	}
 }

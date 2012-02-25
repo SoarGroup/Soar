@@ -169,6 +169,7 @@ void EM::update_MAP(const set<int> &points) {
 	 on thrashing.
 	*/
 	dtree->update_tree(-1);
+	dtree->prune();
 }
 
 void EM::add_data(const rvec &x, double y) {
@@ -196,6 +197,7 @@ void EM::add_data(const rvec &x, double y) {
 		dtree = new ID5Tree(class_insts);
 	}
 	dtree->update_tree(class_insts.size() - 1);
+	dtree->prune();
 	
 	for (int i = 0; i < nmodels; ++i) {
 		stale_points[i].insert(ndata - 1);
@@ -411,6 +413,7 @@ bool EM::remove_models() {
 	nmodels = i;
 	resize();
 	models.erase(models.begin() + nmodels, models.end());
+	dtree->prune();
 	return removed;
 }
 
@@ -532,6 +535,7 @@ void EM::load(istream &is) {
 		insts.push_back(i);
 	}
 	dtree->batch_update(insts);
+	dtree->prune();
 }
 
 void EM::print_tree(std::ostream &os) const {

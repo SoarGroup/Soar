@@ -19,6 +19,7 @@ public:
 	void get_all_splits(std::vector<int> &splits) const;
 	void print_graphviz(std::ostream &os) const;
 	category best_cat();
+	void prune();
 
 private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
