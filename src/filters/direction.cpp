@@ -45,36 +45,36 @@ bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 /*
 Standalone versions for use with model learning.
 */
-bool standalone (scene *scn, const vector<string> &args, int axis, int comp) {
-	sgnode *a = scn->get_node(args[0]), *b = scn->get_node(args[1]);
+bool dir(scene *scn, const vector<string> &args, int axis, int comp) {
+	const sgnode *a = scn->get_node(args[0]), *b = scn->get_node(args[1]);
 	
 	assert(a != NULL && b != NULL);
 	
 	return direction(a, b, axis, comp);
 }
 
-bool standalone_north_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 1, -1);
+bool north_of(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 1, -1);
 }
 
-bool standalone_south_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 1, 1);
+bool south_of(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 1, 1);
 }
 
-bool standalone_east_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 0, 1);
+bool east_of(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 0, 1);
 }
 
-bool standalone_west_of(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 0, -1);
+bool west_of(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 0, -1);
 }
 
-bool standalone_vertically_aligned(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 0, 0);
+bool vertically_aligned(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 0, 0);
 }
 
-bool standalone_horizontally_aligned(scene *scn, const vector<string> &args) {
-	return standalone(scn, args, 1, 0);
+bool horizontally_aligned(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 1, 0);
 }
 
 /*
@@ -134,7 +134,7 @@ filter_table_entry north_of_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_north_of;
-	e.calc = &standalone_north_of;
+	e.calc = &north_of;
 	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
@@ -145,7 +145,7 @@ filter_table_entry south_of_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_south_of;
-	e.calc = &standalone_south_of;
+	e.calc = &south_of;
 	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
@@ -156,7 +156,7 @@ filter_table_entry east_of_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_east_of;
-	e.calc = &standalone_east_of;
+	e.calc = &east_of;
 	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
@@ -167,7 +167,7 @@ filter_table_entry west_of_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_west_of;
-	e.calc = &standalone_west_of;
+	e.calc = &west_of;
 	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }
@@ -178,7 +178,7 @@ filter_table_entry horizontally_aligned_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_horizontally_aligned;
-	e.calc = &standalone_horizontally_aligned;
+	e.calc = &horizontally_aligned;
 	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
@@ -189,7 +189,7 @@ filter_table_entry vertically_aligned_fill_entry() {
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_vertically_aligned;
-	e.calc = &standalone_vertically_aligned;
+	e.calc = &vertically_aligned;
 	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }

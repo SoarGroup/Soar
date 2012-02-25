@@ -6,31 +6,20 @@
 
 using namespace std;
 
-class between_filter : public map_filter<bool> {
-public:
-	between_filter(filter_input *input) : map_filter<bool>(input) {}
-	
-	bool compute(const filter_param_set *params, bool &result, bool adding) {
-		const sgnode *na, *nb, *nc;
-		ptlist pa, pb, pc;
+/*
+ Return true if and only if the convex hull containing the points between
+ a and c intersects the convex hull of b
+*/
+bool between(const sgnode *a, const sgnode *b, const sgnode *c) {
+	ptlist pa, pb, pc;
+	a->get_world_points(pa);
+	b->get_world_points(pb);
+	c->get_world_points(pc);
 		
-		if (!get_filter_param(this, params, "a", na) ||
-		    !get_filter_param(this, params, "b", nb) ||
-		    !get_filter_param(this, params, "c", nc))
-		{
-			return false;
-		}
+	copy(pa.begin(), pa.end(), back_inserter(pc));
 		
-		na->get_world_points(pa);
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
-		
-		copy(pa.begin(), pa.end(), back_inserter(pc));
-		
-		result = (hull_distance(pb, pc) < 0);
-		return true;
-	}
-};
+	return (hull_distance(pb, pc) < 0);
+}
 
 /*
  Given 3 objects a, b, and c, returns whether all points in c are behind
@@ -38,30 +27,52 @@ public:
  a to the centroid of b. The parameter dir should be positive if an in
  front query is desired, and negative if a behind query is desired.
 */
+bool behind(const sgnode *a, const sgnode *b, const sgnode *c) {
+	ptlist pa, pb, pc;
+	a->get_world_points(pa);
+	b->get_world_points(pb);
+	c->get_world_points(pc);
+	
+	vec3 ca = calc_centroid(pa);
+	vec3 cb = calc_centroid(pb);
+	vec3 u = cb - ca;
+	
+	return (dir_separation(pa, pc, u) <= 0);
+}
+
+class between_filter : public map_filter<bool> {
+public:
+	between_filter(filter_input *input) : map_filter<bool>(input) {}
+	
+	bool compute(const filter_param_set *params, bool &result, bool adding) {
+		const sgnode *a, *b, *c;
+		
+		if (!get_filter_param(this, params, "a", a) ||
+		    !get_filter_param(this, params, "b", b) ||
+		    !get_filter_param(this, params, "c", c))
+		{
+			return false;
+		}
+		result = between(a, b, c);
+		return true;
+	}
+};
+
 class behind_filter : public map_filter<bool> {
 public:
 	behind_filter(filter_input *input) : map_filter<bool>(input) {}
 	
 	bool compute(const filter_param_set *params, bool &result, bool adding) {
-		const sgnode *na, *nb, *nc;
-		ptlist pa, pb, pc;
+		const sgnode *a, *b, *c;
 		
-		if (!get_filter_param(this, params, "a", na) ||
-		    !get_filter_param(this, params, "b", nb) ||
-		    !get_filter_param(this, params, "c", nc))
+		if (!get_filter_param(this, params, "a", a) ||
+		    !get_filter_param(this, params, "b", b) ||
+		    !get_filter_param(this, params, "c", c))
 		{
 			return false;
 		}
 		
-		na->get_world_points(pa);
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
-		
-		vec3 ca = calc_centroid(pa);
-		vec3 cb = calc_centroid(pb);
-		vec3 u = cb - ca;
-		
-		result = (dir_separation(pa, pc, u) <= 0);
+		result = behind(a, b, c);
 		return true;
 	}
 };
@@ -74,6 +85,22 @@ filter* make_behind_filter(scene *scn, filter_input *input) {
 	return new behind_filter(input);
 }
 
+bool calc_between(scene *scn, const vector<string> &args) {
+	const sgnode *a, *b, *c;
+	a = scn->get_node(args[0]);
+	b = scn->get_node(args[1]);
+	c = scn->get_node(args[2]);
+	return between(a, b, c);
+}
+
+bool calc_behind(scene *scn, const vector<string> &args) {
+	const sgnode *a, *b, *c;
+	a = scn->get_node(args[0]);
+	b = scn->get_node(args[1]);
+	c = scn->get_node(args[2]);
+	return behind(a, b, c);
+}
+	
 filter_table_entry between_fill_entry() {
 	filter_table_entry e;
 	e.name = "between";
@@ -81,7 +108,11 @@ filter_table_entry between_fill_entry() {
 	e.parameters.push_back("b");
 	e.parameters.push_back("c");
 	e.create = &make_between_filter;
-	e.calc = NULL;
+	if (!get_option("order3").empty()) {
+		e.calc = &calc_between;
+	} else {
+		e.calc = NULL;
+	}
 	e.possible_args = &all_node_triples_ordered_no_repeat;
 	return e;
 }
@@ -93,7 +124,11 @@ filter_table_entry behind_fill_entry() {
 	e.parameters.push_back("b");
 	e.parameters.push_back("c");
 	e.create = &make_behind_filter;
-	e.calc = NULL;
+	if (!get_option("order3").empty()) {
+		e.calc = &calc_behind;
+	} else {
+		e.calc = NULL;
+	}
 	e.possible_args = &all_node_triples_ordered_no_repeat;
 	return e;
 }
