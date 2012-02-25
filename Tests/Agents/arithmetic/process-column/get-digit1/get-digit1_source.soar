@@ -1,0 +1,3 @@
+source elaborations.soar
+source compute-result.soar
+source write-digit1.soar
