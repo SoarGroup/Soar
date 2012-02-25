@@ -1609,8 +1609,6 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
 	    // add to add set
 		thisAgent->epmem_wme_adds->insert( w->id );
 	  }
-	  // add to smem recognition set
-	  thisAgent->smem_attr_adds->insert( w->attr );
     }
   }
 

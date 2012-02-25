@@ -1429,6 +1429,7 @@ void epmem_close( agent *my_agent )
 			}
 			my_agent->epmem_wm_tree->clear();
 			my_agent->epmem_wme_unrecognized->clear();
+			my_agent->smem_wme_unrecognized->clear();
 		}
 
 		// close the database
@@ -2565,6 +2566,8 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					(*my_agent->epmem_edge_maxes)[ (*w_p)->epmem_id - 1 ] = false;
 				}
 			}
+
+			my_agent->smem_attr_adds->insert( (*w_p)->attr );
 
 			// at this point we have successfully added a new wme
 			// whose value is an identifier.  IF the value was
