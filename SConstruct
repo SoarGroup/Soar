@@ -196,7 +196,7 @@ else:
 
 Export('compiler')
 
-cflags = ''
+cflags = GetOption('cflags') or ''
 if compiler == 'g++':
 	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 	if sys.platform == 'darwin':
@@ -215,16 +215,12 @@ if compiler == 'g++':
 				env['VISHIDDEN'] = True
 		
 		cflags += ' -march=native -m%s' % GetOption('platform')
-	elif GetOption('cflags') != None:
-		cflags += ' ' + GetOption('cflags')
 	
 elif compiler == 'cl':
 	env.Append(LIBS='advapi32')  # for GetUserName
 	cflags = VS_REQ_CFLAGS
 	if GetOption('defflags') and GetOption('cflags') == None:
 		cflags += VS_DEF_CFLAGS
-	elif GetOption('cflags') != None:
-		cflags += ' ' + GetOption('cflags')
 	
 env.Replace(
 	CPPFLAGS=cflags.split(), 
