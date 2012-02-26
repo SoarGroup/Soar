@@ -3,7 +3,7 @@
 set -m # for job control
 
 root=../../../../out
-export LD_LIBRARY_PATH=$root/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$root:$LD_LIBRARY_PATH
 soar=$root/cli
 
 remote_args=""
@@ -12,6 +12,8 @@ env_args="1 3"               # default seed = 1 and 3 blocks not touching
 SVS_OPTS+=',env:env'
 #SVS_OPTS+=,datavis:/tmp/datavis
 #SVS_OPTS+=,display:/tmp/dispfifo
+#SVS_OPTS+=',order3'
+SVS_OPTS+=',chi2_pvalue:.99'
 export SVS_OPTS
 
 # kill all old jobs first

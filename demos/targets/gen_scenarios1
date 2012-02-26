@@ -22,29 +22,6 @@ do
 				echo "./run -s $agent -r '$remote_args' -e '$env_args' 'run $((nsteps+2))'"
 			done
 		done
-		
-#		case $side in
-#		l)
-#			direction="1 0"
-#			;;
-#		r)
-#			direction="-1 0"
-#			;;
-#		t)
-#			direction="0 1"
-#			;;
-#		b)
-#			direction="0 -1"
-#			;;
-#		esac
-#		
-#		for s in 1 2 3 4 5 6 7 8 9 10
-#		do
-#			env_args="-h 1 $s $ncubes $ntargets $touching $side"
-#			remote_args="fixed $nsteps $s $direction"
-#			
-#			echo "./run -s $agent -r '$remote_args' -e '$env_args' 'run 3'"
-#		done
 	done
 done
 
