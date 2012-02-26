@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 NTRAIN=100
 NTEST=50
@@ -13,8 +13,13 @@ TRAIN_SCEN="$WD/train_scen"
 TEST_SCEN="$WD/test_scen"
 RESULTS="$WD/results"
 
-./gen_scenarios1 2 3 10 $TRAIN_SEEDS | shuf | head -n $NTRAIN >$TRAIN_SCEN
-./gen_scenarios1 2 3 1 $TEST_SEEDS | shuf | head -n $NTEST >$TEST_SCEN
+# deterministic shuffle
+dshuf() {
+	shuf --random-source=<(awk -v s=${1:-1} 'BEGIN { srand(s); while (1) { print rand() } }')
+}
+
+./gen_scenarios1 2 1 10 $TRAIN_SEEDS | dshuf 1 | head -n $NTRAIN >$TRAIN_SCEN
+./gen_scenarios1 2 1 1 $TEST_SEEDS | dshuf 2 | head -n $NTEST >$TEST_SCEN
 
 NTRAIN=`wc -l<"$TRAIN_SCEN"`
 NTEST=`wc -l<"$TEST_SCEN"`
@@ -45,6 +50,9 @@ do
 	mkdir $blockdir
 	sed -n -e "${train_start},${train_stop}p" $TRAIN_SCEN > train_batch
 	./run_scenarios train train_batch || exit 1
+	cp /tmp/atom_names $WD
+	cp -r models $blockdir
+	cp -r trees $blockdir
 	
 	rm -f predictions/*
 	./run_scenarios test $TEST_SCEN || exit 1
@@ -72,8 +80,6 @@ do
 	echo "$means" >> "$RESULTS"
 	
 	cp -r predictions $blockdir
-	cp -r models $blockdir
-	cp -r trees $blockdir
 	
 	train_block=$((train_block+1))
 done | tee $WD/log
