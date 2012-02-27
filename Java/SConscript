@@ -30,6 +30,10 @@ except OSError:
 	
 java_env['JAVAVERSION'] = '.'.join(ver_str.split('.')[:2])
 java_env['SML'] = env.File(os.path.join(env['OUT_DIR'], 'java', 'sml.jar'))
+if os.name == 'nt':
+	java_env['SEP'] = ';'
+else:
+	java_env['SEP'] = ':'
 
 Export('java_env', 'AddResources')
 

@@ -66,7 +66,7 @@ clone.Precious(swt)
 libs1 = [clone.File(j) for j in depjars]
 libs2 = [swt, java_env['SML'], api_jar]
 
-cp = ':'.join([l.srcnode().abspath for l in libs1] + \
+cp = clone['SEP'].join([l.srcnode().abspath for l in libs1] + \
               [l.abspath for l in libs2])
 
 clone['JAVACLASSPATH'] = cp
