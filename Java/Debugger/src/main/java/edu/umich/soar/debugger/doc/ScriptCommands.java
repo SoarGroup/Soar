@@ -61,14 +61,6 @@ public class ScriptCommands
 
         String first = tokens[0];
 
-        // Load a demo: "demo <folder-relative-to-m_DemoPath> <demo.soar>"
-        if (first.equals("demo"))
-        {
-            m_Frame.loadDemo(new java.io.File(tokens[1], tokens[2]),
-                    echoCommand);
-            return null;
-        }
-
         if (first.equals("loadsource"))
         {
             m_Frame.loadSource();

@@ -62,7 +62,6 @@ import edu.umich.soar.debugger.manager.MainWindow;
 import edu.umich.soar.debugger.menu.AgentMenu;
 import edu.umich.soar.debugger.menu.CommandsMenu;
 import edu.umich.soar.debugger.menu.DebugLevelMenu;
-import edu.umich.soar.debugger.menu.DemoMenu;
 import edu.umich.soar.debugger.menu.FileMenu;
 import edu.umich.soar.debugger.menu.HelpMenu;
 import edu.umich.soar.debugger.menu.KernelMenu;
@@ -102,8 +101,7 @@ public class MainFrame
 
     private static final String kNoAgent = "<no agent>";
 
-    private static final String kWindowLayoutFile = "SoarDebuggerWindows"
-            + Document.m_SoarProperties.getVersion() + ".dlf";
+    private static final String kWindowLayoutFile = "SoarDebuggerWindows.dlf";
 
     private Composite m_Parent = null;
 
@@ -120,8 +118,6 @@ public class MainFrame
     private KernelMenu m_KernelMenu = null;
 
     private AgentMenu m_AgentMenu = null;
-
-    private DemoMenu m_DemoMenu = null;
 
     // private CommandsMenu m_CommandsMenu = null;
     // private DebugLevelMenu m_DebugLevelMenu = null;
@@ -701,16 +697,12 @@ public class MainFrame
 
     public void useDefaultLayout()
     {
-        getMainWindow().useDefaultLayout(
-                "default-layout-" + Document.m_SoarProperties.getVersion()
-                        + ".dlf");
+        getMainWindow().useDefaultLayout("default-layout.dlf");
     }
 
     public void useDefaultTextLayout()
     {
-        getMainWindow().useDefaultLayout(
-                "default-text-" + Document.m_SoarProperties.getVersion()
-                        + ".dlf");
+        getMainWindow().useDefaultLayout("default-text.dlf");
     }
 
     /***************************************************************************
@@ -830,7 +822,6 @@ public class MainFrame
                 "&Commands");
         /* m_DebugLevelMenu = */DebugLevelMenu.createMenu(this, getDocument(),
                 "&Debug Level");
-        m_DemoMenu = DemoMenu.createMenu(this, getDocument(), "De&mos");
         /* m_LayoutMenu = */LayoutMenu.createMenu(this, getDocument(),
                 "&Layout");
         m_AgentMenu = AgentMenu.createMenu(this, getDocument(), "&Agents");
@@ -847,11 +838,7 @@ public class MainFrame
         loaded = loaded || loadUserLayoutFile();
 
         // Install default layout files
-        install(new String[] {
-                "default-layout-" + Document.m_SoarProperties.getVersion()
-                        + ".dlf",
-                "default-text-" + Document.m_SoarProperties.getVersion()
-                        + ".dlf" });
+        install(new String[] { "default-layout.dlf", "default-text.dlf" });
 
         // If that failed, load the default layout
         if (!loaded)
@@ -1038,21 +1025,6 @@ public class MainFrame
     public int getHeight()
     {
         return m_MainWindow.getHeight();
-    }
-
-    /**
-     * Load the productions for a specific demo. Filename should be
-     * folder/demo.soar -- the path to the demos folder is stored in m_DemoMenu
-     * itself
-     */
-    public void loadDemo(File file, boolean echoCommand)
-    {
-        this.m_DemoMenu.loadDemo(file, echoCommand);
-    }
-
-    public String getLibraryLocation()
-    {
-        return this.m_DemoMenu.getLibraryLocation();
     }
 
     /**

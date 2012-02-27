@@ -47,43 +47,6 @@ def gcc_version(cc):
 def Mac_m64_Capable():
 	return execute('sysctl -n hw.optional.x86_64'.split()).strip() == '1'
 
-#################
-# Fun Java Stuff
-# TODO: Clean doesn't work quite right with jars
-# theComponent: the top level folder name, just as JavaTOH
-# theTargets: target jar name (or list of names) with -version.extension removed, makes .jar and .src.jar
-# theSources: source folder (or list of folders) relative to component folder (such as 'src')
-def javaRunAnt(theComponent, theTargets, theSources):
-	theDir = env.Dir('#%s' % theComponent)
-
-	javadir = os.path.join(env['OUT_DIR'], 'java')
-	javaSources = [os.path.join(javadir, 'sml.jar')]
-	if type(theSources) == str:
-		theSources = [theSources]
-	for s in theSources:
-		for root, dirs, files in os.walk(join(str(theDir), s)):
-			if ".svn" in dirs:
-				dirs.remove(".svn")
-			for f in files:
-				javaSources.append(env.File(join(root, f)))
-
-	javaSources.append(env.File(join(str(theDir), "build.xml")))
-
-	ver = env['SOAR_VERSION']
-	jarTargets = []
-	if type(theTargets) == str:
-		theTargets = [theTargets]
-	for i in theTargets:
-		targetRoot = os.path.join(javadir, i + '-' + ver)
-		jarTargets.append(targetRoot + '.jar')
-		jarTargets.append(targetRoot + '.src.jar')
-
-	ret = env.Command(jarTargets, javaSources, 'ant -q -Dsoarprefix=$OUT_DIR -Dversion=' + ver, chdir = theDir)
-
-	if GetOption('clean'):
-		env.Execute('ant -q -Dsoarprefix=$OUT_DIR clean -Dversion=' + ver, chdir = theDir)
-	return ret
-	
 def CheckSWIG():
 	for f in execute(['swig', '-version']).split():
 		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
@@ -120,7 +83,7 @@ def InstallDir(env, tgt, src, globstring="*"):
 	
 	return targets
 
-Export('javaRunAnt', 'InstallDir')
+Export('InstallDir')
 
 # host:                  winter,           seagull,          macsoar,       fugu,
 # os.name:               posix,            posix,            posix,         posix,
@@ -252,6 +215,6 @@ if COMMAND_LINE_TARGETS == ['list']:
 	Exit()
 	
 # Set default targets
-Default('kernel', 'cli', 'TestCLI')
-#if CheckSWIG():
-#	Default('sml_python', 'sml_java', 'java')
+Default('kernel', 'cli')
+if CheckSWIG():
+	Default('sml_python', 'sml_java', 'debugger')

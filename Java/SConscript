@@ -1,61 +1,37 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
 import os
 import sys
-import urllib
-import hashlib
+import subprocess as sub
 
-Import('env', 'javaRunAnt')
+# scons Jar builder isn't flexible enough to add resources from different
+# directories, so first make a jar with all the class files, then create
+# a copy of it and insert resource files. I have to make a copy because
+# scons doesn't like to have files it generated modified. This function
+# adds all files and directories under directory source[1] to the jar
+# source[0], creating a new jar target[0]. 
+def AddResources(target, source, env):
+	src_jar = source[0].abspath
+	tgt_jar = target[0].abspath
+	Execute(Copy(tgt_jar, src_jar))
+	resource_dir = source[1].srcnode().abspath
+	files = ' '.join('-C %s %s' % (resource_dir, f) for f in os.listdir(resource_dir))
+	cmd = 'jar uf %s %s' % (tgt_jar, files)
+	return os.system(cmd)
 
-swt_jars = {
-	('linux2', 32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', '12306068dbc3477f883bd7835a687cb5'),
-	('linux2', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', '1eb148aedd135754ed179782cfefd700'),
-	('darwin', 32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', 'a3251234739ab7aa887dd8a3f5b9340b'),
-	('darwin', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', '5e49b61aae40258ed2883cee659bcba4'),
-	('win32',  32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar', '0a38b18ff43cd7eabd28ca58372d9111'),
-	('win32',  64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar', '17bb62dff558d55a6a012eb81931bd64'),
-}
+Import('env')
+java_env = env.Clone()
 
-def CheckJarmd5(jarpath):
-	return hashlib.md5(open(jarpath, 'rb').read()).hexdigest() == swt_jars[(sys.platform, int(GetOption('platform')))][1]
-
-jarpath = os.path.join('SMLJava', 'lib', 'swt.jar')
-def CheckForSWTJar():
-	if os.path.exists(jarpath):
-		if CheckJarmd5(jarpath):
-			return True
-		else:
-			print "md5 of swt.jar failed, removing old jar."
-			os.remove(jarpath)
-
-	try:
-		url = swt_jars[(sys.platform, int(GetOption('platform')))][0]
-		urllib.urlretrieve(url, jarpath)
-	except IOError:
-		print "Error downloading to %s: IOError" % jarpath
-		return False
-	except urllib.ContentTooShortError:
-		print "Error downloading %s: IOError" % url
-		return False
-
-	if not CheckJarmd5(jarpath):
-		print "Error downloading %s, md5 failed again." % url
-		return False
-
-	return True
-
-# This checks for the swt.jar and attempts to download it if it doesn't exist
-if not CheckForSWTJar():
-	print "Could not find swt.jar. You can obtain the jar here:"
-	print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
-	print "Place swt.jar in SoarLibrary/bin"
-	print "swt.jar required for Soar Java debugger... Exiting"
+try:
+	p = sub.Popen(['java', '-version'], stderr = sub.PIPE)
+	ver_str = p.stderr.readline().split()[-1].strip('"')
+	p.wait()
+except OSError:
+	print >>sys.stderr, 'Error running java'
 	Exit(1)
+	
+java_env['JAVAVERSION'] = '.'.join(ver_str.split('.')[:2])
+java_env['SML'] = env.File(os.path.join(env['OUT_DIR'], 'java', 'sml.jar'))
 
+Export('java_env', 'AddResources')
 
-env.Alias('java', [
-	javaRunAnt('Java',  ['soar-smljava','soar-debugger'], ['SMLJava/src','Debugger/src']),
-	env.Install('$OUT_DIR/java', jarpath)])
-
+for d in ['Debugger', 'DebuggerAPI', 'SMLJava']:
+	SConscript(os.path.join(d, 'SConscript'))

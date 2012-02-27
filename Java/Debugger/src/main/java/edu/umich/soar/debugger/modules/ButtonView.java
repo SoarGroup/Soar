@@ -78,12 +78,6 @@ public class ButtonView extends AbstractFixedView
         addButton("Print <s>", "print <s>");
         addButton("Print <ts>", "print <ts>");
         addButton("Print <o>", "print <o>");
-
-        // This button uses an internally scripted command to drive the debugger
-        // itself to load a demo
-        addButton("Towers of Hanoi", null,
-                "demo towers-of-hanoi towers-of-hanoi.soar");
-        addButton("Water Jug", null, "demo water-jug water-jug-look-ahead.soar");
     }
 
     /********************************************************************************************
