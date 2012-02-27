@@ -34,6 +34,7 @@ def CheckForSWTJar(target, source, env):
 	success = True
 	try:
 		url = swt_jars[(sys.platform, int(GetOption('platform')))][0]
+		print 'Downloading SWT from %s' % url
 		urllib.urlretrieve(url, path)
 	except IOError:
 		print "Error downloading to %s: IOError" % path
@@ -50,12 +51,14 @@ def CheckForSWTJar(target, source, env):
 Import('java_env', 'AddResources')
 
 jar_name = 'soar-debugger-%s.jar' % java_env['SOAR_VERSION']
+shortcut_name = 'SoarJavaDebugger.jar'
 
 swt = java_env.File('$OUT_DIR/java/swt.jar')
 api_jar = java_env.File('$OUT_DIR/java/soar-debugger-api-%s.jar' % java_env['SOAR_VERSION'])
 
 clone = java_env.Clone()
 clone.Command(swt, [], CheckForSWTJar)
+clone.Precious(swt)
 
 # Due to VariantDir weirdness, I have to distinguish between the libraries
 # that can be found in their original directories and libraries that can
@@ -68,21 +71,25 @@ cp = ':'.join([l.srcnode().abspath for l in libs1] + \
 
 clone['JAVACLASSPATH'] = cp
 
-classes = clone.Java(target = 'classes', source='src/main/java')
+classes = clone.Java(target = 'classes', source='src')
 clone.Depends(classes, libs1 + libs2)
 
 temp = clone.Jar(
 	target   = 'temp.jar', 
-	source   = ['classes', 'MANIFEST.MF'], 
+	source   = ['classes', 'manifest1'], 
 	JARCHDIR = clone.Dir('classes')
 )
 
 jar = clone.Command(
 	target = jar_name,
-	source = [temp, clone.Dir('src/main/resources')],
+	source = [temp, clone.Dir('resources')],
 	action = AddResources
 )
 
-install = clone.Install('$OUT_DIR/java', jar + libs1)
+shortcut_jar = clone.Jar(target = shortcut_name, source = 'manifest2')
+clone.Depends(shortcut_jar, jar)
 
-clone.Alias('debugger', install)
+install = clone.Install('$OUT_DIR/java', jar + libs1)
+install_shortcut = clone.Install('$OUT_DIR', shortcut_jar)
+
+clone.Alias('debugger', install + install_shortcut)
