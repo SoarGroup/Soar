@@ -1,0 +1,26 @@
+import os
+import sys
+
+Import('java_env', 'AddResources')
+
+clone = java_env.Clone()
+deps = [clone['SML']]
+clone['JAVACLASSPATH'] = clone['SML'].abspath
+jar_name = 'soar-smljava-%s.jar' % clone['SOAR_VERSION']
+
+classes = clone.Java(target = 'classes', source = 'src/main/java')
+clone.Depends(classes, clone['SML'])
+temp = clone.Jar(
+	target   = 'temp.jar', 
+	source   = ['classes', 'MANIFEST.MF'], 
+	JARCHDIR = clone.Dir('classes')
+)
+
+jar = clone.Command(
+	target = jar_name,
+	source = [temp, clone.Dir('resources')],
+	action = AddResources
+)
+
+install = clone.Install('$OUT_DIR/java', jar)
+clone.Alias('java_sml_misc', install)

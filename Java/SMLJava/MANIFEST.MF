@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Title: soar-smljava 9.3.1
+Vendor: University of Michigan
+Version: 9.3.1
+Copyright: (c) The Regents of the University of Michigan, 2010
+Main-Class: edu.umich.soar.TestJavaSML
+Class-Path: . sml.jar
+
