@@ -61,14 +61,6 @@ public class HelpMenu
         }
     };
 
-    private AbstractAction m_Manual = new AbstractAction("Soar Manual")
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            local("/share/soar/Documentation/SoarManual.pdf");
-        }
-    };
-
     /** Create this menu */
     public static HelpMenu createMenu(MainFrame frame, Document doc,
             String title)
@@ -90,10 +82,6 @@ public class HelpMenu
         menu.add(m_Wiki);
         menu.add(m_CLI);
         menu.addSeparator();
-
-        menu.add(m_Manual);
-        menu.addSeparator();
-
         menu.add(m_About);
 
         return menu;
@@ -160,39 +148,6 @@ public class HelpMenu
         catch (Exception e)
         {
             m_Frame.ShowMessageBox("Error launching URL " + url, e
-                    .getLocalizedMessage());
-        }
-    }
-
-    private void local(String relativeUrl)
-    {
-        String path = m_Frame.getLibraryLocation();
-
-        if (path == null || path == "")
-        {
-            m_Frame.ShowMessageBox("Error launching URL " + relativeUrl,
-                    "Can't find Soar library location");
-            return;
-        }
-
-        try
-        {
-            File file = new File(path, relativeUrl);
-
-            if (!file.exists())
-            {
-                m_Frame.ShowMessageBox("Could not find this file", file
-                        .toString());
-                return;
-            }
-
-            URL url = file.toURI().toURL();
-            String urlString = url.toString();
-            open(urlString);
-        }
-        catch (Exception e)
-        {
-            m_Frame.ShowMessageBox("Error launching URL " + relativeUrl, e
                     .getLocalizedMessage());
         }
     }

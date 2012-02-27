@@ -1,8 +1,0 @@
-<project name="soar-debugger-api" default="build" basedir=".">
-
-	<property name="manifest.classpath" value="commons-logging-1.1.1.jar log4j-1.2.15.jar" />
-	<import file="../SMLJava/build-common.xml" />
-	<target name="build" depends="jar" />
-
-</project>
-

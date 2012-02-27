@@ -102,7 +102,7 @@ if update_swig:
 
 clone.Clean(jar, [wrapper, srcdir, classdir])
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
-shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files
+shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files in Windows
 
 clone.Java(classdir, srcdir)
 clone['JARCHDIR'] = classdir
@@ -110,4 +110,5 @@ smljar = clone.Jar(jar, classdir)
 
 lib_install = clone.Install(lib_install_dir, shlib)
 jar_install = clone.Install(os.path.join(lib_install_dir, 'java'), smljar)
-env.Alias('sml_java', [lib_install, jar_install])
+env.Depends(jar_install, lib_install)
+env.Alias('sml_java', jar_install)
