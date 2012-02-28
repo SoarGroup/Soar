@@ -149,7 +149,7 @@ extern int get_node_count_statistic (agent* thisAgent, char * node_type_name,
 				     char * column_name, 
 				     uint64_t * result);
 
-extern Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64);
+extern Bool save_rete_net (agent* thisAgent, FILE *dest_file, uint8_t version);
 extern Bool load_rete_net (agent* thisAgent, FILE *source_file);
 
 #ifdef __cplusplus

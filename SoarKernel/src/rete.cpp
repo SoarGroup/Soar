@@ -6481,12 +6481,17 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
    when we reload the net, the whole NCC subnetwork and CN/CNP stuff gets
    reloaded and reconstructed *before* any nodes underneath the CN node.
 
-   File format (version 3):
+   Three different versions of ReteNet files are in use (2012-02-28):
+   version 3: 32-bit, no metadata in Rete (see alpha memory section)
+   version 4: 64-bit, no metadata in Rete (see alpha memory section)
+   version 5: 64-bit, metadata in Rete (see alpha memory section)
+
+   File format:
      [Note: all 16-bit or 32-bit words are written LSB first]
 
      magic number sequence: "SoarCompactReteNet\n"
      1 byte: 0 (null termination for the above string)
-     1 byte: format version number (current version is version 3)
+     1 byte: format version number
 
      4 bytes: number of sym_constants
      4 bytes: number of variables
@@ -6502,7 +6507,7 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
          12 bytes: indices of the symbols in the id, attr, and value fields
                    (0 if the field has no symbol in it)
          1 byte: 0-->normal, 1-->acceptable preference test
-         1 byte: 0-->normal, 1-->metadata test
+         1 byte: 0-->normal, 1-->metadata test (only present if version >= 5)
 
      4 bytes: number of children of the root node
      node records for each child of the root node
@@ -6540,7 +6545,8 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
 ********************************************************************** */
 
 FILE *rete_fs_file;  /* File handle we're using -- "fs" for "fast-save" */
-Bool rete_net_64; // used by reteload_eight_bytes, retesave_eight_bytes, BADBAD global, fix with rete_fs_file above
+// used by reteload_eight_bytes, retesave_eight_bytes, BADBAD global, fix with rete_fs_file above
+int format_version_num;
 
 /* ----------------------------------------------------------------------
                 Save/Load Bytes, Short and Long Integers
@@ -6588,7 +6594,7 @@ uint32_t reteload_four_bytes (FILE* f) {
 }
 
 void retesave_eight_bytes (uint64_t w, FILE* f) {
-  if (!rete_net_64) {
+  if (format_version_num < 4) {
     retesave_four_bytes(static_cast<uint32_t>(w), f);
     return;
   }
@@ -6603,7 +6609,7 @@ void retesave_eight_bytes (uint64_t w, FILE* f) {
 }
 
 uint64_t reteload_eight_bytes (FILE* f) {
-  if (!rete_net_64) 
+  if (format_version_num < 4) 
     return reteload_four_bytes(f);
 
   uint64_t i;
@@ -6789,7 +6795,7 @@ void reteload_free_symbol_table (agent* thisAgent) {
            12 bytes: indices of the symbols in the id, attr, and value fields
                      (0 if the field has no symbol in it)
            1 byte: 0-->normal, 1-->acceptable preference test
-           1 byte: 0-->normal, 1-->metadata test
+           1 byte: 0-->normal, 1-->metadata test (only present if version >= 5)
 
    To reload alpha memories, we read the records and make new AM's, and
    also create an array (reteload_am_table) that maps from the 
@@ -6810,7 +6816,9 @@ Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, void* us
   retesave_eight_bytes (am->attr ? am->attr->common.a.retesave_symindex : 0,f);
   retesave_eight_bytes (am->value ? am->value->common.a.retesave_symindex : 0,f);
   retesave_one_byte (static_cast<byte>(am->acceptable ? 1 : 0),f);
-  retesave_one_byte (static_cast<byte>(am->metadata ? 1 : 0),f);
+  if (format_version_num >= 5) {
+    retesave_one_byte (static_cast<byte>(am->metadata ? 1 : 0),f);
+  }
   return FALSE;
 }
 
@@ -6839,7 +6847,10 @@ void reteload_alpha_memories (agent* thisAgent, FILE* f) {
     attr = reteload_symbol_from_index(thisAgent,f);
     value = reteload_symbol_from_index(thisAgent,f);
     acceptable = reteload_one_byte(f) ? TRUE : FALSE;
-    metadata = reteload_one_byte(f) ? TRUE : FALSE;
+	metadata = FALSE;
+	if (format_version_num >= 5) {
+   	  metadata = reteload_one_byte(f) ? TRUE : FALSE;
+	}
     *(thisAgent->reteload_am_table+i) = find_or_make_alpha_mem (thisAgent,id,attr,value,acceptable,metadata);
   }
 }
@@ -7566,19 +7577,36 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
   Save_rete_net() and load_rete_net() save and load everything to and 
   from the given (already open) files.  They return TRUE if successful, 
   FALSE if any error occurred.
+
+  valid_format_version() checks whether the version saving to/loading
+  from is understandable by this code
 ---------------------------------------------------------------------- */
 
-Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64) {
+Bool valid_format_version(uint8_t version) {
+	if (3 <= version && version <= 5) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+Bool save_rete_net (agent* thisAgent, FILE *dest_file, uint8_t version) {
 
   /* --- make sure there are no justifications present --- */
   if (thisAgent->all_productions_of_type[JUSTIFICATION_PRODUCTION_TYPE]) {
     print (thisAgent, "Internal error: save_rete_net() with justifications present.\n");
     return FALSE;
   }
+
+  /* --- make sure the version to be used is supported --- */
+  if (!valid_format_version(version)) {
+    print (thisAgent, "Internal error: save_rete_net() with unsupported format version.\n");
+    return FALSE;
+  }
+  // format_version_num is a global used in rete*_eight_bytes and rete*_alpha_memories
+  format_version_num = version;
   
   rete_fs_file = dest_file;
-  rete_net_64 = use_rete_net_64;
-  uint8_t version = use_rete_net_64 ? 4 : 3;
 
   retesave_string ("SoarCompactReteNet\n",dest_file);
   retesave_one_byte (version,dest_file);  /* format version number */
@@ -7589,7 +7617,6 @@ Bool save_rete_net (agent* thisAgent, FILE *dest_file, Bool use_rete_net_64) {
 }
 
 Bool load_rete_net (agent* thisAgent, FILE *source_file) {
-  int format_version_num;
   uint64_t i, count;
 
   /* RDF: 20020814 RDF Cleaning up the agent working memory and production
@@ -7619,18 +7646,9 @@ Bool load_rete_net (agent* thisAgent, FILE *source_file) {
     print (thisAgent, "This file isn't a Soar fastsave file.\n");
     return FALSE;
   }
+  // format_version_num is a global used in rete*_eight_bytes and rete*_alpha_memories
   format_version_num = reteload_one_byte(source_file);
-  switch(format_version_num)
-  {
-    case 3:
-      // Since there's already a global, I'm putting the 32- or 64-bit switch out there globally
-      rete_net_64 = FALSE; // used by reteload_eight_bytes
-      break;
-    case 4:
-      // Since there's already a global, I'm putting the 32- or 64-bit switch out there globally
-      rete_net_64 = TRUE; // used by reteload_eight_bytes
-      break;
-    default:
+  if (!valid_format_version(format_version_num)) {
       print (thisAgent, "This file is in a format (version %d) I don't understand.\n", format_version_num);
       return FALSE;
   }

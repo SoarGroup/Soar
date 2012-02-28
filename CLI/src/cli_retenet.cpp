@@ -32,7 +32,7 @@ bool CommandLineInterface::DoReteNet(bool save, std::string filename) {
             return SetError( "Open file failed." );
         }
 
-        if ( ! save_rete_net( agnt, file, TRUE ) )
+        if ( ! save_rete_net( agnt, file, 5 ) )
         {
             // TODO: additional error information
             return SetError( "Rete save operation failed." );
