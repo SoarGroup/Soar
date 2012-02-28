@@ -207,7 +207,7 @@ void substitute_for_placeholders_in_action_list (agent* thisAgent, action *a) {
    <id_test> ::= <test>
    <attr_value_tests> ::= [-] ^ <attr_test> [.<attr_test>]* <value_test>*
    <attr_test> ::= <test>
-   <value_test> ::= <test> [+] | <conds_for_one_id> [+]
+   <value_test> ::= <test> | <conds_for_one_id> [+] [metadata_flag]*
 
    <test> ::= <conjunctive_test> | <simple_test>
    <conjunctive_test> ::= { <simple_test>+ }
@@ -231,7 +231,7 @@ const char *help_on_lhs_grammar[] = {
 "   <id_test> ::= <test>",
 "   <attr_value_tests> ::= [-] ^ <attr_test> [.<attr_test>]* <value_test>*",
 "   <attr_test> ::= <test>",
-"   <value_test> ::= <test> [+] | <conds_for_one_id> [+]",
+"   <value_test> ::= <test> | <conds_for_one_id> [+] [metadata_flag]*",
 "",
 "   <test> ::= <conjunctive_test> | <simple_test>",
 "   <conjunctive_test> ::= { <simple_test>+ }",
@@ -621,7 +621,7 @@ condition *negate_condition_list (agent* thisAgent, condition *conds) {
 /* -----------------------------------------------------------------
                         Parse Value Test Star
                       
-   <value_test> ::= <test> [+] | <conds_for_one_id> [+]
+   <value_test> ::= <test> | <conds_for_one_id> [+] [metadata_flag]*
 
    (This routine parses <value_test>*, given as input the id_test and
    attr_test already read.)
@@ -634,7 +634,7 @@ condition *parse_conds_for_one_id (agent* thisAgent,
 condition *parse_value_test_star (agent* thisAgent, char first_letter) {
   condition *c, *last_c, *first_c, *new_conds;
   test value_test;
-  Bool acceptable;
+  Bool acceptable, metadata, recognized;
 
   if ((thisAgent->lexeme.type==MINUS_LEXEME) ||
       (thisAgent->lexeme.type==UP_ARROW_LEXEME) ||
@@ -647,6 +647,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = make_placeholder_test (thisAgent, first_letter);
     c->test_for_acceptable_preference = FALSE;
+    c->test_for_metadata = FALSE;
     return c;
   }
 
@@ -675,6 +676,27 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     /* --- check for acceptable preference indicator --- */
     acceptable = FALSE;
     if (thisAgent->lexeme.type==PLUS_LEXEME) { acceptable = TRUE; get_lexeme(thisAgent); }
+	metadata = FALSE;
+	recognized = FALSE;
+	while (TRUE) {
+		if (thisAgent->lexeme.type != SYM_CONSTANT_LEXEME) {
+			break;
+		}
+		if (!strcmp(thisAgent->lexeme.string,":recognized")) {
+	      metadata = TRUE;
+		  recognized = TRUE;
+		  get_lexeme(thisAgent);
+		  continue;
+		}
+		if (!strcmp(thisAgent->lexeme.string,":unrecognized")) {
+	      metadata = TRUE;
+		  recognized = FALSE;
+		  get_lexeme(thisAgent);
+		  continue;
+		}
+    	break;
+	}
+
     /* --- build condition using the new value test --- */
     allocate_with_pool (thisAgent, &thisAgent->condition_pool,  &c);
     insert_at_head_of_dll (new_conds, c, next, prev);
@@ -683,6 +705,8 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = value_test;
     c->test_for_acceptable_preference = acceptable;
+    c->test_for_metadata = metadata;
+	c->recognized = recognized;
     /* --- add new conditions to the end of the list --- */
     if (last_c) last_c->next = new_conds; else first_c = new_conds;
     new_conds->prev = last_c;
@@ -750,6 +774,7 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     id_test_to_use = make_placeholder_test (thisAgent, first_letter_from_test(attr_test));
     c->data.tests.value_test = id_test_to_use;
     c->test_for_acceptable_preference = FALSE;
+    c->test_for_metadata = FALSE;
     /* --- update id and attr tests for the next path element --- */
     attr_test = parse_test (thisAgent);
     if (!attr_test) {
@@ -899,6 +924,7 @@ condition *parse_tail_of_conds_for_one_id (agent* thisAgent) {
     c->data.tests.attr_test = make_placeholder_test (thisAgent, 'a');
     c->data.tests.value_test = make_placeholder_test (thisAgent, 'v');
     c->test_for_acceptable_preference = FALSE;
+    c->test_for_metadata = FALSE;
     return c;
   }
 

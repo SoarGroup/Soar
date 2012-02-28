@@ -552,6 +552,8 @@ typedef struct condition_struct {
   byte type;
   Bool already_in_tc;                 /* used only by cond_is_in_tc stuff */
   Bool test_for_acceptable_preference;   /* for pos, neg cond's only */
+  Bool test_for_metadata;                /* for pos, neg cond's only */
+  Bool recognized;                       /* TODO JUSTIN should be expanded to a structure with more metadata */
   struct condition_struct *next, *prev;
   union condition_main_data_union {
     three_field_tests tests;             /* for pos, neg cond's only */
