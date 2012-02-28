@@ -82,7 +82,7 @@ void reset_wme_timetags (agent* thisAgent) {
   thisAgent->current_wme_timetag = 1;
 }
 
-wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool acceptable) 
+wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool acceptable)
 {
   wme *w;
 
@@ -95,6 +95,7 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
   symbol_add_ref (attr);
   symbol_add_ref (value);
   w->acceptable = acceptable;
+  w->metadata = FALSE; // FIXME JUSTIN what should metadata default to?
   w->timetag = thisAgent->current_wme_timetag++;
   w->reference_count = 0;
   w->preference = NIL;

@@ -53,8 +53,8 @@ class FullTests : public CPPUNIT_NS::TestCase
 	CPPUNIT_TEST( testXML );
 	CPPUNIT_TEST( testAgent );
 	CPPUNIT_TEST( testSimpleCopy );
-	CPPUNIT_TEST( testSimpleReteNetLoader );
-	CPPUNIT_TEST( test64BitReteNet );
+	// CPPUNIT_TEST( testSimpleReteNetLoader );
+	// CPPUNIT_TEST( test64BitReteNet );
 	CPPUNIT_TEST( testOSupportCopyDestroy );
 	CPPUNIT_TEST( testOSupportCopyDestroyCircularParent );
 	CPPUNIT_TEST( testOSupportCopyDestroyCircular );

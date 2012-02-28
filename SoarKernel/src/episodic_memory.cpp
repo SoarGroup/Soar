@@ -4149,7 +4149,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 	epmem_interval_set interval_cleanup = epmem_interval_set();
 #endif
 
-	// TODO additional indices
+	// TODO JUSTIN additional indices
 
 	// variables needed for building the DNF
 	epmem_literal* root_literal;
@@ -4343,7 +4343,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 						}
 					}
 				}
-				// TODO what I want to do here is, if there is no children which leads to a leaf, retract everything
+				// TODO JUSTIN what I want to do here is, if there is no children which leads to a leaf, retract everything
 				// I'm not sure how to properly test for this though
 
 				// look for uedge with triple; if none exist, create one
@@ -4527,7 +4527,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							interval_cleanup.erase(interval);
 							free_with_pool(&(my_agent->epmem_interval_pool), interval);
 						} else {
-							// TODO retract intervals
+							// TODO JUSTIN retract intervals
 						}
 					}
 				}

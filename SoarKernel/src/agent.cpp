@@ -589,7 +589,7 @@ void destroy_soar_agent (agent * delete_agent)
   }
 
   /* Releasing memory allocated in init_rete */
-  for (int i=0; i<16; i++) {
+  for (int i=0; i<32; i++) {
 	  free_hash_table(delete_agent, delete_agent->alpha_hash_tables[i]);
   }
 

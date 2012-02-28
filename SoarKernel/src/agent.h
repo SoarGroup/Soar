@@ -195,7 +195,7 @@ typedef struct agent_struct {
   /* Hash tables for alpha memories, and for entries in left & right memories */
   void              * left_ht;
   void              * right_ht;
-  hash_table        *(alpha_hash_tables[16]);
+  hash_table        *(alpha_hash_tables[32]);
   
   /* Number of WMEs, and list of WMEs, the Rete has been told about */
   uint64_t            num_wmes_in_rete;
