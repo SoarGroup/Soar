@@ -6,6 +6,5 @@
 
 Import('compEnv')
 compEnv.Install('$PREFIX/bin', 'PythonCLI.py')
-compEnv.Install('$PREFIX/bin', 'SoarObfuscator.py')
 compEnv.Install('$PREFIX/bin', 'TestPythonSML.py')
 
