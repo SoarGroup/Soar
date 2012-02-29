@@ -95,7 +95,7 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool a
   symbol_add_ref (attr);
   symbol_add_ref (value);
   w->acceptable = acceptable;
-  w->metadata = FALSE; // FIXME JUSTIN what should metadata default to?
+  w->metadata = '\0';
   w->timetag = thisAgent->current_wme_timetag++;
   w->reference_count = 0;
   w->preference = NIL;

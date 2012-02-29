@@ -518,6 +518,10 @@ enum ComplexTextTypes {
 #define NEGATIVE_CONDITION 1
 #define CONJUNCTIVE_NEGATION_CONDITION 2
 
+/* --- bitmasks for metadata --- */
+#define METADATA_EPMEM_RECOGNITION 1
+#define METADATA_SMEM_RECOGNITION 2
+
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct {
   wme * wme_;               /* the actual wme that was matched */
@@ -552,8 +556,8 @@ typedef struct condition_struct {
   byte type;
   Bool already_in_tc;                 /* used only by cond_is_in_tc stuff */
   Bool test_for_acceptable_preference;   /* for pos, neg cond's only */
-  Bool test_for_metadata;                /* for pos, neg cond's only */
-  Bool recognized;                       /* TODO JUSTIN should be expanded to a structure with more metadata */
+  char metadata_tests;                /* for pos, neg cond's only; which metadata values to care about */
+  char metadata_values;               /* for pos, neg cond's only; the desired values of metadata */
   struct condition_struct *next, *prev;
   union condition_main_data_union {
     three_field_tests tests;             /* for pos, neg cond's only */

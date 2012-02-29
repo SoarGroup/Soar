@@ -134,8 +134,8 @@ typedef struct wme_struct {
   Symbol *id;
   Symbol *attr;
   Symbol *value;
+  char metadata;                            /* used as a bit array */
   Bool acceptable;
-  Bool metadata;
   uint64_t timetag;
   uint64_t reference_count;
   struct wme_struct *rete_next, *rete_prev; /* used for dll of wmes in rete */

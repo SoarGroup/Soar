@@ -190,8 +190,9 @@ typedef struct alpha_mem_struct {
   Symbol *id;                  /* constants tested by this alpha mem */
   Symbol *attr;                /* (NIL if this alpha mem ignores that field) */
   Symbol *value;
+  char metadata_tests;        /* does it test for metadata? */
+  char metadata_values;       /* the desired values for metadata */
   Bool acceptable;             /* does it test for acceptable pref? */
-  Bool metadata;               /* does it test for metadata? */
   uint32_t am_id;            /* id for hashing */
   uint64_t reference_count;  /* number of beta nodes using this mem */
   uint64_t retesave_amindex;
@@ -1363,7 +1364,11 @@ inline Bool wme_matches_alpha_mem(wme * w, alpha_mem * am)
     ((am->attr==NIL) || (am->attr==w->attr)) &&
     ((am->value==NIL) || (am->value==w->value)) &&
     (am->acceptable==w->acceptable) &&
-    (am->metadata==w->metadata);
+	((am->metadata_tests==NIL) || (am->metadata_tests&w->metadata==am->metadata_values));
+  // note for the metadata: metadata_tests serves as a bitmask for the WMEs metadata
+  // the masked values are then compared against the desired data in the alpha memory
+  // only if the two match up is the WME considered a match
+
 }
 
 /* --- Returns hash value for the given id/attr/value symbols --- */
@@ -1396,11 +1401,11 @@ uint32_t hash_alpha_mem (void *item, short num_bits) {
                                      ((acceptable) ? 8 : 0) ]*/
 inline hash_table * table_for_tests(agent* thisAgent, 
                                     Symbol * id, Symbol * attr, Symbol * value, 
-                                    Bool acceptable, Bool metadata)
+									char metadata_tests, Bool acceptable)
 {
   return thisAgent->alpha_hash_tables [ (id ? 1 : 0) + (attr ? 2 : 0) +
     (value ? 4 : 0) +
-	(metadata ? 8 : 0) +
+	(metadata_tests ? 8 : 0) +
     (acceptable ? 16 : 0) ];
 }
 
@@ -1453,18 +1458,18 @@ void remove_wme_from_alpha_mem (agent* thisAgent, right_mem *rm) {
 
 /* --- Looks for an existing alpha mem, returns it or NIL if not found --- */
 alpha_mem *find_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
-                           Symbol *value, Bool acceptable, Bool metadata) {
+                           Symbol *value, char metadata_tests, char metadata_values, Bool acceptable) {
   hash_table *ht;
   alpha_mem *am;
   uint32_t hash_value;
 
-  ht = table_for_tests (thisAgent, id, attr, value, acceptable, metadata);
+  ht = table_for_tests (thisAgent, id, attr, value, metadata_tests, acceptable);
   hash_value = alpha_hash_value (id, attr, value, ht->log2size);
 
   for (am = reinterpret_cast<alpha_mem *>(*(ht->buckets+hash_value)); am!=NIL;
        am=am->next_in_hash_table)
     if ((am->id==id) && (am->attr==attr) &&
-        (am->value==value) && (am->acceptable==acceptable) && (am->metadata==metadata))
+        (am->value==value) && (am->metadata_tests==metadata_tests) && (am->metadata_values==metadata_values) && (am->acceptable==acceptable))
       return am;
   return NIL;
 }
@@ -1472,14 +1477,15 @@ alpha_mem *find_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
 /* --- Find and share existing alpha memory, or create new one.  Adjusts
    the reference count on the alpha memory accordingly. --- */
 alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
-                                   Symbol *value, Bool acceptable, Bool metadata) {
+                                   Symbol *value, char metadata_tests,
+								   char metadata_values, Bool acceptable) {
   hash_table *ht;
   alpha_mem *am, *more_general_am;
   wme *w;
   right_mem *rm;
 
   /* --- look for an existing alpha mem --- */
-  am = find_alpha_mem (thisAgent, id, attr, value, acceptable, metadata);
+  am = find_alpha_mem (thisAgent, id, attr, value, metadata_tests, metadata_values, acceptable);
   if (am) {
     am->reference_count++;
     return am;
@@ -1499,17 +1505,18 @@ alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
   am->value = value;
   if (value) symbol_add_ref (value);
   am->acceptable = acceptable;
-  am->metadata = metadata;
+  am->metadata_tests = metadata_tests;
+  am->metadata_values = metadata_values;
   am->am_id = get_next_alpha_mem_id(thisAgent);
-  ht = table_for_tests (thisAgent, id, attr, value, acceptable, metadata);
+  ht = table_for_tests (thisAgent, id, attr, value, metadata_tests, acceptable);
   add_to_hash_table (thisAgent, ht, am);
   
   /* --- fill new mem with any existing matching WME's --- */
   more_general_am = NIL;
   if (id)
-    more_general_am = find_alpha_mem (thisAgent, NIL, attr, value, acceptable, metadata);
+    more_general_am = find_alpha_mem (thisAgent, NIL, attr, value, metadata_tests, metadata_values, acceptable);
   if (!more_general_am && value)
-    more_general_am = find_alpha_mem (thisAgent, NIL, attr, NIL, acceptable, metadata);
+    more_general_am = find_alpha_mem (thisAgent, NIL, attr, NIL, metadata_tests, metadata_values, acceptable);
   if (more_general_am) {
     /* --- fill new mem using the existing more general one --- */
     for (rm=more_general_am->right_mems; rm!=NIL; rm=rm->next_in_am)
@@ -1848,7 +1855,7 @@ void remove_ref_to_alpha_mem (agent* thisAgent, alpha_mem *am) {
   am->reference_count--;
   if (am->reference_count!=0) return;
   /* --- remove from hash table, and deallocate the alpha_mem --- */
-  ht = table_for_tests (thisAgent, am->id, am->attr, am->value, am->acceptable, am->metadata);
+  ht = table_for_tests (thisAgent, am->id, am->attr, am->value, am->metadata_tests, am->acceptable);
   remove_from_hash_table (thisAgent, ht, am);
   if (am->id) symbol_remove_ref (thisAgent, am->id);
   if (am->attr) symbol_remove_ref (thisAgent, am->attr);
@@ -3296,7 +3303,7 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
 
   /* --- Get alpha memory --- */
   am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value,
-                     cond->test_for_acceptable_preference, FALSE); // FIXME JUSTIN
+                     '\0', '\0', cond->test_for_acceptable_preference); // FIXME JUSTIN
 
   /* --- Algorithm for adding node:
           1.  look for matching mem node; if found then
@@ -3423,7 +3430,7 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
 
   /* --- Get alpha memory --- */
   am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value,
-                     cond->test_for_acceptable_preference, FALSE); // FIXME JUSTIN
+                     '\0', '\0', cond->test_for_acceptable_preference); // FIXME JUSTIN
 
   /* --- determine desired node type --- */
   node_type = hash_this_node ? NEGATIVE_BNODE : UNHASHED_NEGATIVE_BNODE;
@@ -6507,7 +6514,8 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
          12 bytes: indices of the symbols in the id, attr, and value fields
                    (0 if the field has no symbol in it)
          1 byte: 0-->normal, 1-->acceptable preference test
-         1 byte: 0-->normal, 1-->metadata test (only present if version >= 5)
+         1 byte: 0-->normal, 1-->metadata_tests (only present if version >= 5)
+         1 byte: 0-->normal, 1-->metadata_values (only present if version >= 5)
 
      4 bytes: number of children of the root node
      node records for each child of the root node
@@ -6795,7 +6803,8 @@ void reteload_free_symbol_table (agent* thisAgent) {
            12 bytes: indices of the symbols in the id, attr, and value fields
                      (0 if the field has no symbol in it)
            1 byte: 0-->normal, 1-->acceptable preference test
-           1 byte: 0-->normal, 1-->metadata test (only present if version >= 5)
+           1 byte: 0-->normal, 1-->metadata_tests (only present if version >= 5)
+           1 byte: 0-->normal, 1-->metadata_values (only present if version >= 5)
 
    To reload alpha memories, we read the records and make new AM's, and
    also create an array (reteload_am_table) that maps from the 
@@ -6817,7 +6826,8 @@ Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, void* us
   retesave_eight_bytes (am->value ? am->value->common.a.retesave_symindex : 0,f);
   retesave_one_byte (static_cast<byte>(am->acceptable ? 1 : 0),f);
   if (format_version_num >= 5) {
-    retesave_one_byte (static_cast<byte>(am->metadata ? 1 : 0),f);
+    retesave_one_byte (static_cast<byte>(am->metadata_tests ? 1 : 0),f);
+    retesave_one_byte (static_cast<byte>(am->metadata_values ? 1 : 0),f);
   }
   return FALSE;
 }
@@ -6837,7 +6847,8 @@ void retesave_alpha_memories (agent* thisAgent, FILE* f) {
 void reteload_alpha_memories (agent* thisAgent, FILE* f) {
   uint64_t i;
   Symbol *id, *attr, *value;
-  Bool acceptable, metadata;
+  char metadata_tests, metadata_values;
+  Bool acceptable;
 
   thisAgent->reteload_num_ams = reteload_eight_bytes(f);
   thisAgent->reteload_am_table = (alpha_mem **)
@@ -6847,11 +6858,13 @@ void reteload_alpha_memories (agent* thisAgent, FILE* f) {
     attr = reteload_symbol_from_index(thisAgent,f);
     value = reteload_symbol_from_index(thisAgent,f);
     acceptable = reteload_one_byte(f) ? TRUE : FALSE;
-	metadata = FALSE;
+	metadata_tests = 0;
+	metadata_values = 0;
 	if (format_version_num >= 5) {
-   	  metadata = reteload_one_byte(f) ? TRUE : FALSE;
+   	  metadata_tests = reteload_one_byte(f);
+   	  metadata_values = reteload_one_byte(f);
 	}
-    *(thisAgent->reteload_am_table+i) = find_or_make_alpha_mem (thisAgent,id,attr,value,acceptable,metadata);
+    *(thisAgent->reteload_am_table+i) = find_or_make_alpha_mem (thisAgent,id,attr,value,metadata_tests,metadata_values,acceptable);
   }
 }
 

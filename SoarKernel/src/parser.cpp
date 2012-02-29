@@ -634,7 +634,8 @@ condition *parse_conds_for_one_id (agent* thisAgent,
 condition *parse_value_test_star (agent* thisAgent, char first_letter) {
   condition *c, *last_c, *first_c, *new_conds;
   test value_test;
-  Bool acceptable, metadata, recognized;
+  char metadata_tests, metadata_values;
+  Bool acceptable;
 
   if ((thisAgent->lexeme.type==MINUS_LEXEME) ||
       (thisAgent->lexeme.type==UP_ARROW_LEXEME) ||
@@ -647,7 +648,8 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = make_placeholder_test (thisAgent, first_letter);
     c->test_for_acceptable_preference = FALSE;
-    c->test_for_metadata = FALSE;
+    c->metadata_tests = '\0';
+    c->metadata_values = '\0';
     return c;
   }
 
@@ -676,21 +678,33 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     /* --- check for acceptable preference indicator --- */
     acceptable = FALSE;
     if (thisAgent->lexeme.type==PLUS_LEXEME) { acceptable = TRUE; get_lexeme(thisAgent); }
-	metadata = FALSE;
-	recognized = FALSE;
+	metadata_tests = '\0';
+	metadata_values = '\0';
 	while (TRUE) {
 		if (thisAgent->lexeme.type != SYM_CONSTANT_LEXEME) {
 			break;
 		}
-		if (!strcmp(thisAgent->lexeme.string,":recognized")) {
-	      metadata = TRUE;
-		  recognized = TRUE;
+		if (!strcmp(thisAgent->lexeme.string,":epmem-recognized")) {
+	      metadata_tests |= METADATA_EPMEM_RECOGNITION;
+	      metadata_values |= METADATA_EPMEM_RECOGNITION;
 		  get_lexeme(thisAgent);
 		  continue;
 		}
-		if (!strcmp(thisAgent->lexeme.string,":unrecognized")) {
-	      metadata = TRUE;
-		  recognized = FALSE;
+		if (!strcmp(thisAgent->lexeme.string,":epmem-unrecognized")) {
+	      metadata_tests |= METADATA_EPMEM_RECOGNITION;
+	      metadata_values &= ~METADATA_EPMEM_RECOGNITION;
+		  get_lexeme(thisAgent);
+		  continue;
+		}
+		if (!strcmp(thisAgent->lexeme.string,":smem-recognized")) {
+	      metadata_tests |= METADATA_SMEM_RECOGNITION;
+	      metadata_values |= METADATA_SMEM_RECOGNITION;
+		  get_lexeme(thisAgent);
+		  continue;
+		}
+		if (!strcmp(thisAgent->lexeme.string,":smem-unrecognized")) {
+	      metadata_tests |= METADATA_SMEM_RECOGNITION;
+	      metadata_values &= ~METADATA_SMEM_RECOGNITION;
 		  get_lexeme(thisAgent);
 		  continue;
 		}
@@ -705,8 +719,8 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = value_test;
     c->test_for_acceptable_preference = acceptable;
-    c->test_for_metadata = metadata;
-	c->recognized = recognized;
+    c->metadata_tests = metadata_tests;
+    c->metadata_values = metadata_values;
     /* --- add new conditions to the end of the list --- */
     if (last_c) last_c->next = new_conds; else first_c = new_conds;
     new_conds->prev = last_c;
@@ -774,7 +788,8 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     id_test_to_use = make_placeholder_test (thisAgent, first_letter_from_test(attr_test));
     c->data.tests.value_test = id_test_to_use;
     c->test_for_acceptable_preference = FALSE;
-    c->test_for_metadata = FALSE;
+    c->metadata_tests = '\0';
+    c->metadata_values = '\0';
     /* --- update id and attr tests for the next path element --- */
     attr_test = parse_test (thisAgent);
     if (!attr_test) {
@@ -924,7 +939,8 @@ condition *parse_tail_of_conds_for_one_id (agent* thisAgent) {
     c->data.tests.attr_test = make_placeholder_test (thisAgent, 'a');
     c->data.tests.value_test = make_placeholder_test (thisAgent, 'v');
     c->test_for_acceptable_preference = FALSE;
-    c->test_for_metadata = FALSE;
+    c->metadata_tests = '\0';
+    c->metadata_values = '\0';
     return c;
   }
 
