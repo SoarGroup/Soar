@@ -218,7 +218,7 @@ void svs_state::update_models() {
 	double dt;
 	
 	if (level > 0) {
-		/* No legitimate information to learn from in imagined states */
+		/* No legitimate information to learn from imagined states */
 		return;
 	}
 	
@@ -232,7 +232,11 @@ void svs_state::update_models() {
 	
 	if (prev_pnames == curr_pnames) {
 		rvec x(prev_pvals.size() + out.size());
-		x << prev_pvals, out;
+		if (out.size() > 0) {      // work-around for eigen bug when out.size() == 0
+			x << prev_pvals, out;
+		} else {
+			x = prev_pvals;
+		}
 		mmdl->test(x, curr_pvals);
 		mmdl->learn(x, curr_pvals, dt);
 	} else {
