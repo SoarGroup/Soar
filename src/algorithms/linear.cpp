@@ -264,20 +264,22 @@ void LRModel::add_example(int i, bool update_refit) {
 		rvec py;
 		if (!predict_me(xdata.row(i), py)) {
 			refit = true;
-		}
-		double e = pow(py(0) - ydata(i), 2);
-		if (!refit) {
-			/*
-			 Only refit the model if the average error increases
-			 significantly after adding the data point.
-			*/
-			double olderror = error / (members.size() - 1);
-			double newerror = (error + e) / members.size();
-			if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror) {
-				refit = true;
+			error = INFINITY;
+		} else {
+			double e = pow(py(0) - ydata(i), 2);
+			if (!refit) {
+				/*
+				 Only refit the model if the average error increases
+				 significantly after adding the data point.
+				*/
+				double olderror = error / (members.size() - 1);
+				double newerror = (error + e) / members.size();
+				if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror) {
+					refit = true;
+				}
 			}
+			error += e;
 		}
-		error += e;
 		DATAVIS("'avg error' " << error / members.size() << endl)
 	}
 }
