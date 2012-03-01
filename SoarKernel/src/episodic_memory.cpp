@@ -2930,7 +2930,9 @@ void epmem_new_episode( agent *my_agent )
 			for ( epmem_wme_list::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{
 				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter)->attr, (*recog_iter)->id ) );
+				remove_wme_from_rete(my_agent, (*recog_iter));
 				(*recog_iter)->metadata |= METADATA_EPMEM_RECOGNITION;
+				add_wme_to_rete(my_agent, (*recog_iter));
 			}
 		}
 
@@ -2940,13 +2942,13 @@ void epmem_new_episode( agent *my_agent )
 			std::map<Symbol*, bool> attr_recognized;
 			// check all attributes of newly added wmes
 			for (smem_wme_list::iterator iter = my_agent->smem_wme_adds->begin(); iter != my_agent->smem_wme_adds->end(); iter++) {
+				bool recognized = false;
 				Symbol* attr = (*iter)->attr;
 				std::map<Symbol*, bool>::iterator attr_iter = attr_recognized.find(attr);
 				if (attr_iter != attr_recognized.end()) {
-					if (!(*attr_iter).second && (my_agent->smem_params->recognition->get_value() >= 2)) {
-						remove_wme_from_rete(my_agent, (*iter));
-						(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
-						add_wme_to_rete(my_agent, (*iter));
+					if ((*attr_iter).second)
+					{
+						recognized = true;
 					}
 				} else {
 					my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
@@ -2959,19 +2961,19 @@ void epmem_new_episode( agent *my_agent )
 						if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) == soar_module::row )
 						{
 							// if a counter is found, it is in smem, and therefore should be recognized
-							attr_recognized[(*iter)->attr] = true;
-						}
-						else
-						{
-							attr_recognized[(*iter)->attr] = false;
-							if (my_agent->smem_params->recognition->get_value() >= 2) {
-								remove_wme_from_rete(my_agent, (*iter));
-								(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
-								add_wme_to_rete(my_agent, (*iter));
-							}
+							recognized = true;
 						}
 					}
-					my_agent->smem_stmts->hash_get_str->reinitialize();
+				}
+				my_agent->smem_stmts->hash_get_str->reinitialize();
+				attr_recognized[attr] = recognized;
+				if (!recognized)
+				{
+					if (my_agent->smem_params->recognition->get_value() >= 2) {
+						remove_wme_from_rete(my_agent, (*iter));
+						(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
+						add_wme_to_rete(my_agent, (*iter));
+					}
 				}
 			}
 			if ( my_agent->smem_params->recognition->get_value() >= 2 )

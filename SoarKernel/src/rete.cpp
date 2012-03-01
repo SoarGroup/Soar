@@ -874,7 +874,7 @@ void adjust_sharing_factors_from_here_to_top (rete_node *node, int delta) {
 #else
 
 /* Since these do nothing, I will not convert them to inline functions
-   for the time being. -ajc (5/6/02 */
+   for the time being. -ajc (5/6/02) */
 #define init_sharing_stats_for_new_node(node) {}
 #define set_sharing_factor(node,sf) {}
 #define adjust_sharing_factors_from_here_to_top(node,delta) {}
@@ -1364,7 +1364,7 @@ inline Bool wme_matches_alpha_mem(wme * w, alpha_mem * am)
     ((am->attr==NIL) || (am->attr==w->attr)) &&
     ((am->value==NIL) || (am->value==w->value)) &&
     (am->acceptable==w->acceptable) &&
-	((am->metadata_tests==NIL) || (am->metadata_tests&w->metadata==am->metadata_values));
+	((am->metadata_tests==NIL) || static_cast<unsigned int>(am->metadata_tests&w->metadata)==static_cast<unsigned int>(am->metadata_values));
   // note for the metadata: metadata_tests serves as a bitmask for the WMEs metadata
   // the masked values are then compared against the desired data in the alpha memory
   // only if the two match up is the WME considered a match
@@ -1551,6 +1551,7 @@ void add_wme_to_aht (agent* thisAgent, hash_table *ht, uint32_t hash_value, wme 
         (*(right_addition_routines[node->node_type]))(thisAgent,node,w);
       }
 	  /* only one possible alpha memory per table could match */
+	  /* except for metadata, which could have more */
 	  if (!am->metadata_tests) {
       	return;
 	  }
