@@ -16,7 +16,6 @@ import org.eclipse.swt.widgets.Menu;
 
 import sml.Agent;
 import edu.umich.soar.debugger.MainFrame;
-import edu.umich.soar.debugger.dialogs.KernelLocationDialog;
 import edu.umich.soar.debugger.dialogs.RemoteDialog;
 import edu.umich.soar.debugger.doc.Document;
 
@@ -68,15 +67,6 @@ public class KernelMenu
         }
     };
 
-    private AbstractAction m_KernelLocation = new AbstractAction(
-            "Set the &path to the Kernel...")
-    {
-        public void actionPerformed(ActionEvent e)
-        {
-            setKernelLocation();
-        }
-    };
-
     /** Create this menu */
     public static KernelMenu createMenu(MainFrame frame, Document doc,
             String title)
@@ -99,8 +89,6 @@ public class KernelMenu
         menu.addSeparator();
         menu.add(m_StartKernel);
         menu.add(m_StopKernel);
-        menu.addSeparator();
-        menu.add(m_KernelLocation);
 
         updateMenu();
 
@@ -120,14 +108,6 @@ public class KernelMenu
                 .isRemote()));
         m_RemoteDisconnect.setEnabled(m_Document.isConnected()
                 && m_Document.isRemote());
-    }
-
-    public void setKernelLocation()
-    {
-        // This dialog set the "Kernel.Location" app property, which is then
-        // read when we load a new kernel.
-        KernelLocationDialog.showDialog(m_Frame,
-                "Set the path to the Soar kernel");
     }
 
     private void startKernelPerformed(ActionEvent e)

@@ -92,7 +92,6 @@ EXPORT CommandLineInterface::CommandLineInterface()
     m_Parser.AddCommand(new cli::RunCommand(*this));
     m_Parser.AddCommand(new cli::SaveBacktracesCommand(*this));
     m_Parser.AddCommand(new cli::SelectCommand(*this));
-    m_Parser.AddCommand(new cli::SetLibraryLocationCommand(*this));
     m_Parser.AddCommand(new cli::SetStopPhaseCommand(*this));
     m_Parser.AddCommand(new cli::SMemCommand(*this));
     m_Parser.AddCommand(new cli::SoarNewsCommand(*this));
