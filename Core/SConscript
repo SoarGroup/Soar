@@ -51,6 +51,6 @@ for x in 'Python Java Tcl PHP'.split():
 # headers
 headers = []
 for d in ['ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:
-	headers.extend(InstallDir(env, '$OUT_DIR/include', d, '*.h*'))
+	headers.extend(InstallDir(env, '$OUT_DIR/include', env.Dir(d).srcnode().abspath, '*.h*'))
 
 env.Alias('headers', headers)
