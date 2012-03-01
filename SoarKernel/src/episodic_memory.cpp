@@ -2187,7 +2187,7 @@ void _epmem_merge_wm_trees(epmem_elders* wm_tree, epmem_id_disjoint_set* disjoin
 // 2. value unknown in phase one, but known at phase two (try assignment adhering to constraint)
 // 3. value unknown in phase one/two (if anything is left, unconstrained assignment)
 inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_syms, std::queue< epmem_node_id >& parent_ids, tc_number tc, epmem_wme_list::iterator w_b, epmem_wme_list::iterator w_e, epmem_node_id parent_id, epmem_time_id time_counter,
-		std::map< wme*, epmem_id_reservation* >& id_reservations, std::set< Symbol* >& new_identifiers, std::queue< epmem_node_id >& epmem_node, std::queue< epmem_node_id >& epmem_edge , std::set< std::pair< Symbol*, Symbol* > >& unrecognized_wmes )
+		std::map< wme*, epmem_id_reservation* >& id_reservations, std::set< Symbol* >& new_identifiers, std::queue< epmem_node_id >& epmem_node, std::queue< epmem_node_id >& epmem_edge , epmem_wme_list& unrecognized_wmes )
 {
 	epmem_wme_list::iterator w_p;
 	bool value_known_apriori = false;
@@ -2530,7 +2530,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						(*my_agent->epmem_id_siblings)[ (*w_p)->value->id.epmem_id ] = child_root;
 
 						// cache the WME to be inserted into working memory
-						unrecognized_wmes.insert( std::make_pair( (*w_p)->id, (*w_p)->attr ) );
+						unrecognized_wmes.push_back( (*w_p) );
 					}
 				}
 
@@ -2567,7 +2567,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				}
 			}
 
-			my_agent->smem_attr_adds->insert( (*w_p)->attr );
+			my_agent->smem_wme_adds->push_back( (*w_p) );
 
 			// at this point we have successfully added a new wme
 			// whose value is an identifier.  IF the value was
@@ -2699,7 +2699,7 @@ void epmem_new_episode( agent *my_agent )
 		// seen nodes (non-identifiers) and edges (identifiers)
 		std::queue<epmem_node_id> epmem_node;
 		std::queue<epmem_node_id> epmem_edge;
-		std::set< std::pair< Symbol*, Symbol* > > unrecognized_wmes;
+		epmem_wme_list unrecognized_wmes;
 
 		// walk appropriate levels
 		{
@@ -2927,56 +2927,69 @@ void epmem_new_episode( agent *my_agent )
 		// all substates link to the same recognition structure root, so we only need to update it once
 		if ( my_agent->epmem_params->recognition->get_value() >= 2 )
 		{
-			for ( std::set<std::pair<Symbol*,Symbol*> >::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
+			for ( epmem_wme_list::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{
-				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter).second, (*recog_iter).first ) );
+				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter)->attr, (*recog_iter)->id ) );
+				(*recog_iter)->metadata |= METADATA_EPMEM_RECOGNITION;
 			}
 		}
 
 		// update smem recognition information on top state
 		if ( my_agent->smem_params->recognition->get_value() >= 1 )
 		{
-#ifdef USE_MEM_POOL_ALLOCATORS
-			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( my_agent ) );
-#else
-			smem_pooled_symbol_set* unrecognized_attrs = new smem_pooled_symbol_set();
-#endif
+			std::map<Symbol*, bool> attr_recognized;
 			// check all attributes of newly added wmes
-			for (smem_pooled_symbol_set::iterator iter = my_agent->smem_attr_adds->begin(); iter != my_agent->smem_attr_adds->end(); iter++) {
-				bool recognized = false;
-				Symbol* attr = (*iter);
-				my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
-				if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
-				{
-					// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it)
-					// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
-					smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
-					my_agent->smem_stmts->ct_attr_check->bind_int( 1, hash );
-					if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) == soar_module::row )
-					{
-						// if a counter is found, it is in smem, and therefore should be recognized
-						recognized = true;
+			for (smem_wme_list::iterator iter = my_agent->smem_wme_adds->begin(); iter != my_agent->smem_wme_adds->end(); iter++) {
+				Symbol* attr = (*iter)->attr;
+				std::map<Symbol*, bool>::iterator attr_iter = attr_recognized.find(attr);
+				if (attr_iter != attr_recognized.end()) {
+					if (!(*attr_iter).second && (my_agent->smem_params->recognition->get_value() >= 2)) {
+						remove_wme_from_rete(my_agent, (*iter));
+						(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
+						add_wme_to_rete(my_agent, (*iter));
 					}
-				}
-				my_agent->smem_stmts->hash_get_str->reinitialize();
-				if (!recognized) {
-					unrecognized_attrs->insert(attr);
+				} else {
+					my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
+					if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
+					{
+						// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it)
+						// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
+						smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
+						my_agent->smem_stmts->ct_attr_check->bind_int( 1, hash );
+						if ( my_agent->smem_stmts->ct_attr_check->execute( soar_module::op_reinit ) == soar_module::row )
+						{
+							// if a counter is found, it is in smem, and therefore should be recognized
+							attr_recognized[(*iter)->attr] = true;
+						}
+						else
+						{
+							attr_recognized[(*iter)->attr] = false;
+							if (my_agent->smem_params->recognition->get_value() >= 2) {
+								remove_wme_from_rete(my_agent, (*iter));
+								(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
+								add_wme_to_rete(my_agent, (*iter));
+							}
+						}
+					}
+					my_agent->smem_stmts->hash_get_str->reinitialize();
 				}
 			}
 			if ( my_agent->smem_params->recognition->get_value() >= 2 )
 			{
-				for (smem_pooled_symbol_set::iterator iter = unrecognized_attrs->begin(); iter != unrecognized_attrs->end(); iter++ )
+				for (std::map<Symbol*,bool>::iterator iter = attr_recognized.begin(); iter != attr_recognized.end(); iter++ )
 				{
-					my_agent->smem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->smem_unrecognized_header, *iter, make_new_identifier( my_agent, 'U', TOP_GOAL_LEVEL ) ) );
+					if (!(*iter).second)
+					{
+						my_agent->smem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->smem_unrecognized_header, (*iter).first, make_new_identifier( my_agent, 'U', TOP_GOAL_LEVEL ) ) );
+					}
 				}
 			}
-			delete unrecognized_attrs;
 		}
 
 		// clear add/remove maps
 		{
 			my_agent->epmem_wme_adds->clear();
-			my_agent->smem_attr_adds->clear();
+			my_agent->smem_wme_adds->clear();
 		}
 	}
 
