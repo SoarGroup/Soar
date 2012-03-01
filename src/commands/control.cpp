@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/file.h>
 #include <unistd.h>
 
 #include <cmath>
@@ -1192,22 +1193,19 @@ command *_make_random_control_command_(svs_state *state, Symbol *root) {
 	return new random_control_command(state, root);
 }
 
-const char *PIPE_PATH = "ctrl";
-
 class manual_control_command : public command {
 public:
 	
 	manual_control_command(svs_state *state, Symbol *root) 
-	: command(state, root), state(state), outspec(state->get_output_spec()), root(root), using_constants(false)
+	: command(state, root), state(state), outspec(state->get_output_spec()), root(root), mode('r')
 	{
 		si = state->get_svs()->get_soar_interface();
 		output.resize(outspec->size());
 	}
 	
 	~manual_control_command() {
-		if (pipe.is_open()) {
-			pipe.close();
-			unlink(PIPE_PATH);
+		if (log_file.is_open()) {
+			log_file.close();
 		}
 	}
 	
@@ -1215,38 +1213,92 @@ public:
 		return string("manual control");
 	}
 	
+	void read_ctrl_file() {
+		output.setConstant(0);
+		FILE *f = fopen(remote_path.c_str(), "r");
+		if (!f) {
+			return;
+		}
+		int fd = fileno(f);
+		flock(fd, LOCK_EX);
+		double x;
+		int i = 0;
+		while (fread(&x, sizeof(x), 1, f) > 0) {
+			output(i++) = x;
+		}
+		flock(fd, LOCK_UN);
+		fclose(f);
+	}
+	
+	void read_log() {
+		string line;
+		vector<string> fields;
+		if (!log_file.is_open()) {
+			log_file.open(log_path.c_str(), ios::in);
+		}
+		if (!getline(log_file, line)) {
+			return;
+		}
+		split(line, " \t", fields);
+		if (fields.size() != output.size()) {
+			cerr << "incorrect number of output fields in log" << endl;
+			assert(false);
+		}
+		for (int i = 0; i < fields.size(); ++i) {
+			char *end;
+			double x = strtod(fields[i].c_str(), &end);
+			if (*end != '\0') {
+				cerr << "log file contains non-numeric field" << endl;
+				assert(false);
+			}
+			output(i) = x;
+		}
+	}
+	
+	void write_log() {
+		if (!log_file.is_open()) {
+			log_file.open(log_path.c_str(), ios::out);
+		}
+		for (int i = 0; i < output.size(); ++i) {
+			log_file << output(i) << " ";
+		}
+		log_file << endl;
+	}
+	
 	bool update() {
 		if (changed()) {
-			parse_constants();
+			configure();
 		}
 		
-		if (!using_constants) {
-			if (!pipe.is_open()) {
-				unlink(PIPE_PATH);
-				mkfifo(PIPE_PATH, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
-				pipe.open(PIPE_PATH);
-			}
-			for (int i = 0; i < outspec->size(); ++i) {
-				if (!(pipe >> output[i])) {
-					cerr << "manual control pipe read error" << endl;
-					exit(1);
-				}
-			}
+		switch (mode) {
+			case 'r':
+				read_ctrl_file();
+				break;
+			case 'l':
+				read_log();
+				break;
+			case 'c':
+				break;
 		}
 		state->set_output(output);
 		set_status("success");
+		if (log_output) {
+			write_log();
+		}
 		return true;
 	}
 	
 	bool early() { return true; }
 	
 private:
-	void parse_constants() {
+
+	void configure() {
 		wme_list children;
 		wme_list::iterator i;
 		si->get_child_wmes(root, children);
 		
-		using_constants = false;
+		mode = 'r';
+		log_output = false;
 		bool first = true;
 		for (i = children.begin(); i != children.end(); ++i) {
 			string name;
@@ -1254,28 +1306,44 @@ private:
 			if (!si->get_val(si->get_wme_attr(*i), name)) {
 				continue;
 			}
-			if (!si->get_val(si->get_wme_val(*i), val)) {
-				continue;
-			}
-			for (int j = 0; j < outspec->size(); ++j) {
-				if ((*outspec)[j].name == name) {
-					using_constants = true;
-					if (first) {
-						output.setZero();
-						first = false;
+			if (name == "log") {
+				if (children.size() == 1) {
+					mode = 'l';
+				} else {
+					log_output = true;
+				}
+				if (!si->get_val(si->get_wme_val(*i), log_path)) {
+					assert(false);
+				}
+			} else if (name == "remote") {
+				mode = 'r';
+				if (!si->get_val(si->get_wme_val(*i), remote_path)) {
+					assert(false);
+				}
+			} else if (si->get_val(si->get_wme_val(*i), val)) {
+				for (int j = 0; j < outspec->size(); ++j) {
+					mode = 'c';
+					if ((*outspec)[j].name == name) {
+						if (first) {
+							output.setZero();
+							first = false;
+						}
+						output(j) = val;
+						break;
 					}
-					output[j] = val;
-					break;
 				}
 			}
 		}
 	}
 	
-	bool using_constants;
+	char mode;
+	bool log_output;
+	string log_path, remote_path;
+	fstream log_file;
+	
 	rvec output;
 	output_spec *outspec;
 	svs_state *state;
-	ifstream pipe;
 	Symbol *root;
 	soar_interface *si;
 };
