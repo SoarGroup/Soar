@@ -638,6 +638,25 @@ void print_condition_list (agent* thisAgent, condition *conds,
                   strncpy (ch, " +", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
                   while (*ch) ch++;
                }
+				if (c->metadata_tests)
+				{
+					if (c->metadata_tests & METADATA_EPMEM_RECOGNITION) {
+						if (c->metadata_values & METADATA_EPMEM_RECOGNITION) {
+							strncpy (ch, " :epmem-unrecognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+						} else {
+							strncpy (ch, " :epmem-recognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+						}
+						while (*ch) ch++;
+					}
+					if (c->metadata_tests & METADATA_SMEM_RECOGNITION) {
+						if (c->metadata_values & METADATA_SMEM_RECOGNITION) {
+							strncpy (ch, " :smem-unrecognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+						} else {
+							strncpy (ch, " :smem-recognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+						}
+						while (*ch) ch++;
+					}
+				}
             }
             *ch = 0;
             if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE) 
@@ -1011,6 +1030,10 @@ void print_wme (agent* thisAgent, wme *w) {
   }
   
   if (w->acceptable) print_string (thisAgent, " +");
+
+  print(thisAgent, (w->metadata & METADATA_EPMEM_RECOGNITION ? " :epmem-unrecognized" : " :epmem-recognized"));
+  print(thisAgent, (w->metadata & METADATA_SMEM_RECOGNITION ? " :smem-unrecognized" : " :smem-recognized"));
+
   print_string (thisAgent, ")");
   print (thisAgent, "\n");
 

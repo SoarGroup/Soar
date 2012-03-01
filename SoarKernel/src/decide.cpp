@@ -1650,6 +1650,8 @@ preference *make_fake_preference_for_goal_item (agent* thisAgent,
   cond->data.tests.attr_test = make_equality_test (ap_wme->attr);
   cond->data.tests.value_test = make_equality_test (ap_wme->value);
   cond->test_for_acceptable_preference = TRUE;
+  cond->metadata_tests = '\0';
+  cond->metadata_values = '\0';
   cond->bt.wme_ = ap_wme;
   #ifdef DO_TOP_LEVEL_REF_CTS
   wme_add_ref (ap_wme);

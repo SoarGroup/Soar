@@ -808,6 +808,8 @@ condition *copy_condition (agent* thisAgent,
     New->data.tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
     New->data.tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
     New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
+    New->metadata_tests = cond->metadata_tests;
+    New->metadata_values = cond->metadata_values;
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
     copy_condition_list (thisAgent, cond->data.ncc.top, &(New->data.ncc.top),

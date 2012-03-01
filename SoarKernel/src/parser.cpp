@@ -686,25 +686,25 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
 		}
 		if (!strcmp(thisAgent->lexeme.string,":epmem-recognized")) {
 	      metadata_tests |= METADATA_EPMEM_RECOGNITION;
-	      metadata_values |= METADATA_EPMEM_RECOGNITION;
+	      metadata_values &= ~METADATA_EPMEM_RECOGNITION;
 		  get_lexeme(thisAgent);
 		  continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":epmem-unrecognized")) {
 	      metadata_tests |= METADATA_EPMEM_RECOGNITION;
-	      metadata_values &= ~METADATA_EPMEM_RECOGNITION;
+	      metadata_values |= METADATA_EPMEM_RECOGNITION;
 		  get_lexeme(thisAgent);
 		  continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":smem-recognized")) {
 	      metadata_tests |= METADATA_SMEM_RECOGNITION;
-	      metadata_values |= METADATA_SMEM_RECOGNITION;
+	      metadata_values &= ~METADATA_SMEM_RECOGNITION;
 		  get_lexeme(thisAgent);
 		  continue;
 		}
 		if (!strcmp(thisAgent->lexeme.string,":smem-unrecognized")) {
 	      metadata_tests |= METADATA_SMEM_RECOGNITION;
-	      metadata_values &= ~METADATA_SMEM_RECOGNITION;
+	      metadata_values |= METADATA_SMEM_RECOGNITION;
 		  get_lexeme(thisAgent);
 		  continue;
 		}

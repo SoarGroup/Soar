@@ -140,6 +140,8 @@ namespace soar_module
 				cond->data.tests.attr_test = make_equality_test( (*c_it)->attr );
 				cond->data.tests.value_test = make_equality_test( (*c_it)->value );
 				cond->test_for_acceptable_preference = (*c_it)->acceptable;
+				cond->test_for_acceptable_preference = 0xff;
+				cond->test_for_acceptable_preference = (*c_it)->metadata;
 				cond->bt.wme_ = (*c_it);
 
 				#ifndef DO_TOP_LEVEL_REF_CTS

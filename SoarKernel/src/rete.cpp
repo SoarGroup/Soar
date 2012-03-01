@@ -1550,7 +1550,10 @@ void add_wme_to_aht (agent* thisAgent, hash_table *ht, uint32_t hash_value, wme 
         next = node->b.posneg.next_from_alpha_mem;
         (*(right_addition_routines[node->node_type]))(thisAgent,node,w);
       }
-      return; /* only one possible alpha memory per table could match */
+	  /* only one possible alpha memory per table could match */
+	  if (!am->metadata_tests) {
+      	return;
+	  }
     } 
     am = am->next_in_hash_table;
   }
@@ -3303,7 +3306,7 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
 
   /* --- Get alpha memory --- */
   am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value,
-                     '\0', '\0', cond->test_for_acceptable_preference); // FIXME JUSTIN
+                     cond->metadata_tests, cond->metadata_values, cond->test_for_acceptable_preference);
 
   /* --- Algorithm for adding node:
           1.  look for matching mem node; if found then
@@ -3430,7 +3433,7 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
 
   /* --- Get alpha memory --- */
   am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value,
-                     '\0', '\0', cond->test_for_acceptable_preference); // FIXME JUSTIN
+                     cond->metadata_tests, cond->metadata_values, cond->test_for_acceptable_preference);
 
   /* --- determine desired node type --- */
   node_type = hash_this_node ? NEGATIVE_BNODE : UNHASHED_NEGATIVE_BNODE;
@@ -4370,6 +4373,8 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.attr_test = make_equality_test (w->attr);
       cond->data.tests.value_test = make_equality_test (w->value);
       cond->test_for_acceptable_preference = w->acceptable;
+	  cond->metadata_tests = 0xff;
+	  cond->metadata_values = w->metadata;
       cond->bt.wme_ = w;
       if (node->b.posneg.other_tests) /* don't bother if there are no tests*/
         collect_nots (thisAgent, node->b.posneg.other_tests, w, cond, 
@@ -4380,6 +4385,8 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.attr_test = make_blank_or_equality_test (am->attr);
       cond->data.tests.value_test = make_blank_or_equality_test (am->value);
       cond->test_for_acceptable_preference = am->acceptable;
+	  cond->metadata_tests = am->metadata_tests;
+	  cond->metadata_values = am->metadata_values;
       
       if (nvn) {
         add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
