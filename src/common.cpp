@@ -10,7 +10,6 @@ using namespace std;
 
 void split(const string &s, const string &delim, vector<string> &fields) {
 	int start, end = 0;
-	fields.clear();
 	while (end < s.size()) {
 		start = s.find_first_not_of(delim, end);
 		if (start == string::npos) {

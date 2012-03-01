@@ -312,13 +312,17 @@ void svs::state_deletion_callback(Symbol *state) {
 }
 
 void svs::proc_input(svs_state *s) {
+	std::string in;
 	if (envsock.get()) {
-		if (!envsock->receive(env_input)) {
+		if (!envsock->receive(in)) {
 			assert(false);
 		}
+		split(in, "\n", env_inputs);
 	}
-	s->get_scene()->parse_sgel(env_input);
-	env_input.clear();
+	for (int i = 0; i < env_inputs.size(); ++i) {
+		s->get_scene()->parse_sgel(env_inputs[i]);
+	}
+	env_inputs.clear();
 }
 
 void svs::output_callback() {
@@ -349,7 +353,6 @@ void svs::output_callback() {
 	} else {
 		env_output = ss.str();
 	}
-	
 }
 
 void svs::input_callback() {
@@ -378,4 +381,17 @@ void svs::del_common_syms() {
 	si->del_sym(cs.scene);
 	si->del_sym(cs.child);
 	si->del_sym(cs.result);
+}
+
+/*
+ This is a naive implementation. If this method is called concurrently
+ with proc_input, the env_inputs vector will probably become
+ inconsistent. This eventually needs to be replaced by a thread-safe FIFO.
+*/
+void svs::add_input(const string &in) {
+	split(in, "\n", env_inputs);
+}
+
+string svs::get_output() const {
+	return env_output;
 }

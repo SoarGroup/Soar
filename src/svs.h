@@ -141,16 +141,10 @@ public:
 	void state_deletion_callback(Symbol *goal);
 	void output_callback();
 	void input_callback();
+	void add_input(const std::string &in);
+	std::string get_output() const;
 
 	soar_interface *get_soar_interface() { return si; }
-
-	void set_input(const std::string &in) {
-		env_input = in;
-	}
-	
-	std::string get_output() const {
-		return env_output;
-	}
 	
 private:
 	void make_common_syms();
@@ -161,7 +155,7 @@ private:
 	common_syms              cs;
 	std::vector<svs_state*>  state_stack;
 	std::auto_ptr<ipcsocket> envsock;
-	std::string              env_input;
+	std::vector<std::string> env_inputs;
 	std::string              env_output;
 };
 
