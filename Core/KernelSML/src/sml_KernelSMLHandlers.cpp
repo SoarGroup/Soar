@@ -67,7 +67,6 @@ void KernelSML::BuildCommandMap()
 	m_CommandMap[sml_Names::kCommand_GetInitialTimeTag] = &sml::KernelSML::HandleGetInitialTimeTag ;
 	m_CommandMap[sml_Names::kCommand_ConvertIdentifier] = &sml::KernelSML::HandleConvertIdentifier;
 	m_CommandMap[sml_Names::kCommand_GetListenerPort]	= &sml::KernelSML::HandleGetListenerPort;
-	m_CommandMap[sml_Names::kCommand_GetLibraryLocation]= &sml::KernelSML::HandleGetLibraryLocation;
 }
 
 /*************************************************************
@@ -928,9 +927,3 @@ bool KernelSML::HandleGetListenerPort(AgentSML* /*pAgentSML*/, char const* /*pCo
 {
 	return this->ReturnIntResult(pConnection, pResponse, this->GetListenerPort());
 }
-
-bool KernelSML::HandleGetLibraryLocation(AgentSML* /*pAgentSML*/, char const* /*pCommandName*/, Connection* pConnection, AnalyzeXML* /*pIncoming*/, soarxml::ElementXML* pResponse)
-{
-	return this->ReturnResult(pConnection, pResponse, this->GetLibraryLocation() ) ;
-}
-

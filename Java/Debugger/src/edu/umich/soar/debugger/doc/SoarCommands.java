@@ -175,16 +175,6 @@ public class SoarCommands
         return "init-soar";
     }
 
-    public String setLibraryLocationCommand(String arg)
-    {
-        return "set-library-location \"" + arg + "\"";
-    }
-
-    public String getLibraryLocationCommand()
-    {
-        return "set-library-location";
-    } // No args => get value
-
     public String getLoadReteCommand(String arg)
     {
         return "rete-net --load \"" + arg + "\"";

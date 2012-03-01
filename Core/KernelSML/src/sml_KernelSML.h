@@ -133,18 +133,7 @@ protected:
 	int				m_InterruptCheckRate;
 	smlPhase		m_StopPoint ;
 
-	// The library location is the parent of the executable or dll, depending on the system. Helps
-	// some programs find the share folder for resources should they need them.
-	// Note that when running Java applications, the location of the Jar should be used because 
-	// this might get the parent directory of the Java executable, which will probably be wrong.
-	std::string		m_LibraryDirectory;
-	void			InitializeLibraryLocation();
-
 public:
-
-	const char* GetLibraryLocation();		// Hopefully parent of bin, lib, share
-	void SetLibraryLocation(const std::string& location);
-
 	void SetStopPoint(bool forever, smlRunStepSize runStepSize, smlPhase m_StopBeforePhase);
 	smlPhase GetStopPoint() { return m_StopPoint; }
 
@@ -458,7 +447,6 @@ protected:
 	bool HandleGetInitialTimeTag(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 	bool HandleConvertIdentifier(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 	bool HandleGetListenerPort(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
-	bool HandleGetLibraryLocation(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;
 
 	// Note: Register and unregister are both sent to this one handler
 	bool HandleRegisterForEvent(AgentSML* pAgentSML, char const* pCommandName, Connection* pConnection, AnalyzeXML* pIncoming, soarxml::ElementXML* pResponse) ;

@@ -53,7 +53,6 @@
 #include "src/cli_run.cpp"
 #include "src/cli_savebacktraces.cpp"
 #include "src/cli_select.cpp"
-#include "src/cli_setlibrarylocation.cpp"
 #include "src/cli_setstopphase.cpp"
 #include "src/cli_smem.cpp"
 #include "src/cli_soarnews.cpp"

@@ -837,9 +837,12 @@ public:
 
 	/*************************************************************
 	* @brief This method spawns a debugger to connect to this agent.
-	*        Java must be in the path.
+	*        Java must be in the path. If jarpath is NULL, the
+	*        function will search for SoarJavaDebugger.jar first in
+	*        the current directory, then in $SOAR_HOME. Returns
+	*        false if the jar is not found or process spawning fails.  
 	*************************************************************/
-	bool SpawnDebugger(int port, const char* pLibraryLocation = 0);
+	bool SpawnDebugger(int port = -1, const char* jarpath = 0);
 
 	/*************************************************************
 	* @brief Kills the previously spawned debugger.

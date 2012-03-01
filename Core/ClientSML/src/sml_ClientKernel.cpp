@@ -1464,25 +1464,6 @@ bool Kernel::GetLastCommandLineResult()
 }
 
 /*************************************************************
-* @brief Get the current value of the "set-library-location" path variable.
-*
-* This points to the location where the kernelSML library was loaded
-* (unless it has been changed since the load).
-*************************************************************/
-std::string Kernel::GetLibraryLocation()
-{
-	AnalyzeXML response;
-	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetLibraryLocation))
-	{
-		return response.GetResultString();
-	}
-	else
-	{
-		return "" ;
-	}
-}
-
-/*************************************************************
 * @brief If this is an embedded connection using "synchronous execution"
 *		 then we need to call this periodically to look for commands
 *		 coming in from remote sockets.
