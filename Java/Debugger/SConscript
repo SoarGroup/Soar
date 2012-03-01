@@ -47,6 +47,7 @@ def CheckForSWTJar(target, source, env):
 		print "Could not find swt.jar. You can obtain the jar here:"
 		print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
 		print "Place swt.jar in Java/lib"
+		Exit(1)
 
 Import('java_env', 'AddResources')
 

@@ -5,6 +5,9 @@
 import os
 import SCons.Script
 import sys
+import itertools
+
+chain = itertools.chain.from_iterable
 
 # adapted from http://www.scons.org/wiki/JavaNativeInterface
 def ConfigureJNI():
@@ -38,6 +41,12 @@ def ConfigureJNI():
 	
 	return (headers, libs)
 
+def get_headers(d):
+	return chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d))
+
+def latest_mtime(dirs):
+	return max(os.path.getmtime(f) for f in chain(get_headers(d) for d in dirs))
+	
 config = ConfigureJNI()
 if config == None:
 	print "Could not configure Java. If you know where java is on your system,"
@@ -74,27 +83,20 @@ jar = clone.File('sml.jar')
 incs = ' '.join('-I%s' % GetBuildPath(d) for d in clone['CPPPATH'])
 swig_cmd = 'swig %s -o %s -c++ -java -Wall -package sml -outdir %s %s' % (incs, wrapper.abspath, smldir.abspath, interface)
 
-# Custom scanner for internal dependencies:
-SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
-clone.Append(SCANNERS = [ SWIGScanner ])
-
 # The Execute(..) wrapper will execute commands immediately after they are
 # parsed. Need to execute swig command immediately because it generates a
 # large number of .java sources that the Java builder later in this script
 # will scan for.
 update_swig = False
 test_source = smldir.File('sml.java').abspath
-if env.GetOption('clean'):
+if env.GetOption('clean') or env.WhereIs('swig') == None:
 	pass
 elif not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
 	update_swig = True
 else:
 	gentime = min(os.path.getmtime(wrapper.abspath), os.path.getmtime(test_source))
-	root = clone.Dir('#Core/ClientSML/src').abspath
-	for f in os.listdir(root):
-		if os.path.getmtime(os.path.join(root, f)) > gentime:
-			update_swig = True
-			break
+	t = latest_mtime([clone.Dir(os.path.join('#Core', d, 'src')).abspath for d in 'ClientSML ConnectionSML ElementXML'.split()])
+	update_swig = (t > gentime)
 
 if update_swig:
 	clone.Execute(Mkdir(smldir.abspath))
