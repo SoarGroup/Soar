@@ -1293,8 +1293,8 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		p = h;
 	}
 	
-	if (port == -1) 
-		port = getpid();
+	if (port == -1)
+		port = m_Kernel->GetListenerPort();
 
 	if (m_pDPI) 
 		return false;
