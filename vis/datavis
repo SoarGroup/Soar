@@ -6,4 +6,4 @@ mkfifo $fifo
 while [ -p $fifo ]
 do
 	cat $fifo
-done | ./datavis.py
+done | ./datatree.py
