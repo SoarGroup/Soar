@@ -63,13 +63,13 @@ bool solve2(const mat &X, const mat &Y, mat &coefs, rvec &intercept) {
 		return false;
 	}
 
-	coefs = mat::Zero(X.cols(), C.cols());
+	coefs.resize(X.cols(), C.cols());
+	coefs.setConstant(0);
 	for (int i = 0; i < nonstatic.size(); ++i) {
 		coefs.row(nonstatic[i]) = C.row(i);
 	}
 	intercept = C.bottomRows(1);
 
-	//cout << "error: " << (((X * coefs).rowwise() + intercept) - Y).array().square().sum() << endl;
 	return true;
 }
 
@@ -102,29 +102,6 @@ void ridge(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout)
 	yout = (x - X.colwise().mean()) * C + Y.colwise().mean();
 }
 
-void pcr_fit(const mat &X, const mat &Y, int ncomp, vector<mat> &betas, vector<rvec> &intercepts) {
-	mat components, projected, coefs;
-	rvec inter;
-	
-	betas.clear();
-	intercepts.clear();
-	pca(X, components);
-	if (ncomp > 0) {
-		solve2(X * components.leftCols(ncomp), Y, coefs, inter);
-		betas.push_back(components.leftCols(ncomp) * coefs);
-		intercepts.push_back(inter);
-		return;
-	}
-	
-	projected = X * components;
-	for (int n = 1; n < projected.cols(); ++n) {
-		solve2(projected.leftCols(n), Y, coefs, inter);
-		betas.push_back(components.leftCols(n) * coefs);
-		intercepts.push_back(inter);
-	}
-}
-
-
 /*
  Use Leave-one-out cross validation to determine number of components
  to use. This seems to choose numbers that are too low.
@@ -138,6 +115,10 @@ void cross_validate(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
 	vector<rvec> intercepts;
 	vector<int> leave_out;
 	int ntest = min(LOO_NTEST, ndata);
+	
+	mat components, projected, coefs, b;
+	rvec inter;
+	pca(X, components);
 	
 	leave_out.reserve(ndata);
 	for (int i = 0; i < ndata; ++i) {
@@ -155,9 +136,11 @@ void cross_validate(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
 			X1.bottomRows(ndata - n - 1) = X.bottomRows(ndata - n - 1);
 			Y1.bottomRows(ndata - n - 1) = Y.bottomRows(ndata - n - 1);
 		}
-		pcr_fit(X1, Y1, -1, betas, intercepts);
+		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			errors(j) += (X.row(n) * betas[j] + intercepts[j] - Y.row(n)).array().abs().sum();
+			solve2(projected.leftCols(j), Y1, coefs, inter);
+			b = components.leftCols(i) * coefs;
+			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
 	}
 	int best = -1;
@@ -166,9 +149,10 @@ void cross_validate(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
 			best = i;
 		}
 	}
-	pcr_fit(X, Y, best, betas, intercepts);
-	beta = betas[0];
-	intercept = intercepts[0];
+	projected = X * components;
+	solve2(projected.leftCols(best), Y, coefs, inter);
+	beta = components.leftCols(best) * coefs;
+	intercept = inter;
 }
 
 /*
@@ -180,28 +164,33 @@ void min_train_error(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
 	vector<mat> betas;
 	vector<rvec> intercepts;
 	double minerror;
-	int besti = -1;
+	int bestn = -1;
+	mat components, projected, coefs, b;
+	rvec inter;
 	
-	pcr_fit(X, Y, -1, betas, intercepts);
-	for (int i = 0; i < betas.size(); ++i) {
-		if (betas[i].squaredNorm() > MAX_BETA_NORM) {
+	pca(X, components);
+	projected = X * components;
+	for (int i = 0; i < projected.cols(); ++i) {
+		solve2(projected.leftCols(i), Y, coefs, inter);
+		b = components.leftCols(i) * coefs;
+		
+		if (b.squaredNorm() > MAX_BETA_NORM) {
 			break;
 		}
-		double error = ((X * betas[i]).rowwise() + intercepts[i] - Y).squaredNorm();
+		double error = ((X * b).rowwise() + inter - Y).squaredNorm();
 		
 		if (error < MODEL_ERROR_THRESH) {
-			beta = betas[i];
-			intercept = intercepts[i];
+			beta = b;
+			intercept = inter;
 			return;
 		}
 		
-		if (besti < 0 || error < minerror) {
-			besti = i;
+		if (bestn < 0 || error < minerror) {
+			beta = b;
+			intercept = inter;
 			minerror = error;
 		}
 	}
-	beta = betas[besti];
-	intercept = intercepts[besti];
 }
 
 void pcr(const mat &X, const mat &Y, const rvec &x, rvec &y) {
