@@ -189,11 +189,14 @@ env.Replace(
 )
 
 if os.name == 'posix':
-	env.Append(CPPPATH = os.environ.get('CPATH', '').split(':'))
+	if 'CPATH' in os.environ:
+		env.Append(CPPPATH = os.environ.get('CPATH').split(':'))
 	if sys.platform == 'darwin':
-		env.Append(LIBPATH = os.environ.get('DYLD_LIBRARY_PATH', '').split(':'))
+		lib_path_var = 'DYLD_LIBRARY_PATH'
 	else:
-		env.Append(LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'))
+		lib_path_var = 'LD_LIBRARY_PATH'
+	if lib_path_var in os.environ:
+		env.Append(LIBPATH = os.environ.get(lib_path_var).split(':'))
 
 Export('env')
 
