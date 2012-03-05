@@ -241,6 +241,11 @@ void svs_state::update_models() {
 		mmdl->learn(x, curr_pvals, dt);
 	} else {
 		mmdl->set_property_vector(curr_pnames);
+		DATAVIS("properties '")
+		for (int j = 0; j < curr_pnames.size(); ++j) {
+			DATAVIS(curr_pnames[j] << " ")
+		}
+		DATAVIS("' " << endl)
 	}
 	prev_pnames = curr_pnames;
 	prev_pvals = curr_pvals;
@@ -269,6 +274,18 @@ bool svs_state::get_output(rvec &out) const {
 		out = next_out;
 		return true;
 	}
+}
+
+bool svs_state::cli_inspect(int first_arg, const vector<string> &args, string &out) const {
+	if (first_arg >= args.size()) {
+		out = "specify something to inspect";
+		return false;
+	}
+	if (args[first_arg] == "models") {
+		return mmdl->cli_inspect(first_arg + 1, args, out);
+	}
+	out = "no such element";
+	return false;
 }
 
 svs::svs(agent *a)
@@ -394,4 +411,20 @@ void svs::add_input(const string &in) {
 
 string svs::get_output() const {
 	return env_output;
+}
+
+bool svs::do_cli_command(const vector<string> &args, string &output) const {
+	if (args.size() < 2) {
+		output = "specify a state";
+		return false;
+	}
+	char *end;
+	long level = strtol(args[1].c_str(), &end, 10);
+	if (*end != '\0') {
+		return state_stack[0]->cli_inspect(1, args, output);
+	} else if (level < 0 || level >= state_stack.size()) {
+		output = "invalid level";
+		return false;
+	}
+	return state_stack[level]->cli_inspect(2, args, output);
 }

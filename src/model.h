@@ -34,6 +34,11 @@ public:
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
 	
+	virtual bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const {
+		out = "no inspectable properties";
+		return true;
+	};
+
 private:
 	std::string name, type, path;
 	std::ofstream predlog;
@@ -74,6 +79,8 @@ public:
 		prop_vec = props;
 	}
 	
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const;
+
 private:
 	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);
 

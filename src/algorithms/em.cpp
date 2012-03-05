@@ -572,3 +572,12 @@ void EM::test_classify(const rvec &x, double y, int &best, int &predicted, doubl
 	}
 	predicted = classify(x);
 }
+
+bool EM::cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const {
+	stringstream ss;
+
+	ss << "num models: " << nmodels << endl;
+	out = ss.str();
+	return true;
+}
+

@@ -230,3 +230,23 @@ bool multi_model::find_indexes(const vector<string> &props, vector<int> &indexes
 	}
 	return true;
 }
+
+bool multi_model::cli_inspect(int first_arg, const vector<string> &args, string &out) const {
+	stringstream ss;
+	map<string, model*>::const_iterator i;
+	if (first_arg >= args.size()) {
+		ss << "Current models:" << endl;
+		for (i = model_db.begin(); i != model_db.end(); ++i) {
+			ss << i->first << endl;
+		}
+		out = ss.str();
+		return true;
+	}
+	i = model_db.find(args[first_arg]);
+	if (i == model_db.end()) {
+		out = "no such model";
+		return false;
+	}
+	return i->second->cli_inspect(first_arg + 1, args, out);
+}
+

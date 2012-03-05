@@ -99,6 +99,8 @@ public:
 	bool get_output(rvec &out) const;
 	
 	void update_models();
+	
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const;
 
 private:
 	void init();
@@ -145,6 +147,8 @@ public:
 	std::string get_output() const;
 
 	soar_interface *get_soar_interface() { return si; }
+	
+	bool do_cli_command(const std::vector<std::string> &args, std::string &output) const;
 	
 private:
 	void make_common_syms();
