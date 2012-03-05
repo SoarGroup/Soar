@@ -18,6 +18,7 @@ import socket
 import subprocess
 import re
 import fnmatch
+from SCons.Node.Alias import default_ans
 
 join = os.path.join
 
@@ -46,21 +47,6 @@ def gcc_version(cc):
 
 def Mac_m64_Capable():
 	return execute('sysctl -n hw.optional.x86_64'.split()).strip() == '1'
-
-def CheckSWIG():
-	for f in execute(['swig', '-version']).split():
-		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
-		if m:
-			ver = tuple(int(n) for n in m.groups())
-			minver = (1, 3, 31)
-			if ver < minver:
-				print 'swig version 1.3.31 or higher is required'
-				return False
-			else:
-				return True
-				
-	print 'cannot determine swig version'
-	return False
 
 # Install all files under source directory to target directory, keeping
 # subdirectory structure and ignoring hidden files
@@ -145,8 +131,8 @@ env = Environment(
 	VISHIDDEN = False,   # needed by swig
 )
 
-print "Building intermediates to ", env['BUILD_DIR']
-print "Installing targets to ", env['OUT_DIR']
+print "Building intermediates to", env['BUILD_DIR']
+print "Installing targets to", env['OUT_DIR']
 
 config = Configure(env)
 
@@ -202,6 +188,13 @@ env.Replace(
 	LIBPATH = [os.path.realpath(GetOption('outdir'))],
 )
 
+if os.name == 'posix':
+	env.Append(CPPPATH = os.environ.get('CPATH', '').split(':'))
+	if sys.platform == 'darwin':
+		env.Append(LIBPATH = os.environ.get('DYLD_LIBRARY_PATH', '').split(':'))
+	else:
+		env.Append(LIBPATH = os.environ.get('LD_LIBRARY_PATH', '').split(':'))
+
 Export('env')
 
 for d in os.listdir('.'):
@@ -209,12 +202,16 @@ for d in os.listdir('.'):
 	if os.path.exists(script):
 		SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
+all_aliases = default_ans.keys()
+
 if COMMAND_LINE_TARGETS == ['list']:
-	from SCons.Node.Alias import default_ans
-	print '\n'.join(sorted(default_ans.keys()))
+	print '\n'.join(sorted(all_aliases))
 	Exit()
 	
 # Set default targets
-Default('kernel', 'cli')
-if CheckSWIG():
-	Default('sml_python', 'sml_java', 'debugger')
+for a in 'kernel cli sml_python sml_java'.split():
+	if a in all_aliases:
+		Default(a)
+
+if 'sml_java' in all_aliases:
+	Default('debugger')

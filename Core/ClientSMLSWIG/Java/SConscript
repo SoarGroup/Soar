@@ -89,7 +89,7 @@ swig_cmd = 'swig %s -o %s -c++ -java -Wall -package sml -outdir %s %s' % (incs, 
 # will scan for.
 update_swig = False
 test_source = smldir.File('sml.java').abspath
-if env.GetOption('clean') or env.WhereIs('swig') == None:
+if env.GetOption('clean'):
 	pass
 elif not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
 	update_swig = True
