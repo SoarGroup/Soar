@@ -177,7 +177,7 @@ if compiler == 'g++':
 				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
 				env['VISHIDDEN'] = True
 		
-		cflags += ' -march=native -m%s' % GetOption('platform')
+		cflags += ' -mtune=native -m%s' % GetOption('platform')
 	
 elif compiler == 'cl':
 	env.Append(LIBS='advapi32')  # for GetUserName
