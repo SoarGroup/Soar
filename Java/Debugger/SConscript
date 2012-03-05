@@ -11,12 +11,12 @@ depjars = [
 ]
 
 swt_jars = {
-	('linux2', 32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', '12306068dbc3477f883bd7835a687cb5'),
-	('linux2', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', '1eb148aedd135754ed179782cfefd700'),
-	('darwin', 32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', 'a3251234739ab7aa887dd8a3f5b9340b'),
-	('darwin', 64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', '5e49b61aae40258ed2883cee659bcba4'),
-	('win32',  32) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar', '0a38b18ff43cd7eabd28ca58372d9111'),
-	('win32',  64) : ('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar', '17bb62dff558d55a6a012eb81931bd64'),
+	('linux2', 32) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', '12306068dbc3477f883bd7835a687cb5'),
+	('linux2', 64) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', '1eb148aedd135754ed179782cfefd700'),
+	('darwin', 32) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', 'a3251234739ab7aa887dd8a3f5b9340b'),
+	('darwin', 64) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', '5e49b61aae40258ed2883cee659bcba4'),
+	('win32',  32) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar', '0a38b18ff43cd7eabd28ca58372d9111'),
+	('win32',  64) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar', '17bb62dff558d55a6a012eb81931bd64'),
 }
 
 def CheckJarmd5(p):
@@ -45,7 +45,7 @@ def CheckForSWTJar(target, source, env):
 	
 	if not success or not CheckJarmd5(path):
 		print "Could not find swt.jar. You can obtain the jar here:"
-		print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
+		print "\thttp://eecs.umich.edu/~soar/sitemaker/misc/jars"
 		print "Place swt.jar in Java/lib"
 		Exit(1)
 
