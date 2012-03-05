@@ -202,7 +202,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
 		if ( m_RawOutput )
@@ -243,9 +243,9 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
-		
+
 		temp = "cache-size: ";
         temp2 = agnt->smem_params->cache_size->get_string();
         temp += temp2;
@@ -256,7 +256,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
         temp = "optimization: ";
@@ -269,7 +269,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
         temp = "timers: ";
@@ -343,7 +343,20 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         }
         else
         {
-            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );			
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
+        }
+
+        temp = "recognition-representation: ";
+        temp2 = agnt->smem_params->recognition_representation->get_string();
+        temp += temp2;
+        delete temp2;
+        if ( m_RawOutput )
+        {
+            m_Result << temp << "\n";
+        }
+        else
+        {
+            AppendArgTagFast( sml_Names::kParamValue, sml_Names::kTypeString, temp.c_str() );
         }
 
 		//
@@ -407,7 +420,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
     }
     else if ( pOp == 'i' )
     {
-        // Because of LTIs, re-initializing requires all other memories to be reinitialized.		
+        // Because of LTIs, re-initializing requires all other memories to be reinitialized.
 
         // epmem - close before working/production memories to get re-init benefits
         DoEpMem( 'c' );
@@ -415,7 +428,7 @@ bool CommandLineInterface::DoSMem( const char pOp, const std::string* pAttr, con
         // smem - close before working/production memories to prevent id counter mess-ups
         smem_close( agnt );
 
-        // production memory (automatic init-soar clears working memory as a result)		
+        // production memory (automatic init-soar clears working memory as a result)
         ExciseBitset options(0);
 		options.set( EXCISE_ALL, true );
         DoExcise( options, 0 );

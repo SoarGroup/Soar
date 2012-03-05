@@ -211,6 +211,12 @@ epmem_param_container::epmem_param_container( agent *new_agent ): soar_module::p
 	recognition = new soar_module::integer_param( "recognition", 0, new soar_module::btw_predicate<int64_t>( 0, 2, true ), new soar_module::f_predicate<int64_t>() );
 	add( recognition );
 
+	// recognition reprensetation
+	recognition_representation = new soar_module::constant_param<representation_choices>( "recognition-representation", recog_rete, new soar_module::f_predicate<representation_choices>() );
+	recognition_representation->add_mapping( recog_rete, "rete" );
+	recognition_representation->add_mapping( recog_wm, "wm" );
+	add( recognition_representation );
+
 	// recognition_merge_depth
 	recognition_merge_depth = new soar_module::integer_param( "recognition-merge-depth", 10000, new soar_module::gt_predicate<int64_t>( 0, true ), new soar_module::f_predicate<int64_t>() );
 	add( recognition_merge_depth );
@@ -2929,10 +2935,16 @@ void epmem_new_episode( agent *my_agent )
 		{
 			for ( epmem_wme_list::iterator recog_iter = unrecognized_wmes.begin(); recog_iter != unrecognized_wmes.end(); recog_iter++)
 			{
-				my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter)->attr, (*recog_iter)->id ) );
-				remove_wme_from_rete(my_agent, (*recog_iter));
-				(*recog_iter)->metadata |= METADATA_EPMEM_RECOGNITION;
-				add_wme_to_rete(my_agent, (*recog_iter));
+				if ( my_agent->epmem_params->recognition_representation->get_value() == epmem_param_container::recog_wm )
+				{
+					my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter)->attr, (*recog_iter)->id ) );
+				}
+				else
+				{
+					remove_wme_from_rete(my_agent, (*recog_iter));
+					(*recog_iter)->metadata |= METADATA_EPMEM_RECOGNITION;
+					add_wme_to_rete(my_agent, (*recog_iter));
+				}
 			}
 		}
 
@@ -2969,14 +2981,15 @@ void epmem_new_episode( agent *my_agent )
 				attr_recognized[attr] = recognized;
 				if (!recognized)
 				{
-					if (my_agent->smem_params->recognition->get_value() >= 2) {
+					if ((my_agent->smem_params->recognition->get_value() >= 2) && (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_rete))
+					{
 						remove_wme_from_rete(my_agent, (*iter));
 						(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
 						add_wme_to_rete(my_agent, (*iter));
 					}
 				}
 			}
-			if ( my_agent->smem_params->recognition->get_value() >= 2 )
+			if ((my_agent->smem_params->recognition->get_value() >= 2) && (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm))
 			{
 				for (std::map<Symbol*,bool>::iterator iter = attr_recognized.begin(); iter != attr_recognized.end(); iter++ )
 				{

@@ -52,6 +52,8 @@ class smem_param_container: public soar_module::param_container
 		enum merge_choices { merge_none, merge_add };
 		enum act_choices { act_recency, act_frequency, act_base };
 
+		enum representation_choices { recog_rete, recog_wm };
+
 		soar_module::boolean_param *learning;
 		soar_module::constant_param<db_choices> *database;
 		smem_path_param *path;
@@ -78,6 +80,7 @@ class smem_param_container: public soar_module::param_container
 		soar_module::boolean_param* mirroring;
 
 		soar_module::integer_param* recognition;
+		soar_module::constant_param<representation_choices>* recognition_representation;
 
 		smem_param_container( agent *new_agent );
 };

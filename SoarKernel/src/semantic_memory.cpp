@@ -162,9 +162,15 @@ smem_param_container::smem_param_container( agent *new_agent ): soar_module::par
 	mirroring = new soar_module::boolean_param( "mirroring", soar_module::off, new smem_db_predicate< soar_module::boolean >( my_agent ) );
 	add( mirroring );
 
-	// recog
+	// recognition
 	recognition = new soar_module::integer_param( "recognition", 0, new soar_module::btw_predicate<int64_t>( 0, 2, true ), new soar_module::f_predicate<int64_t>() );
 	add( recognition );
+
+	// recognition reprensetation
+	recognition_representation = new soar_module::constant_param<representation_choices>( "recognition-representation", recog_rete, new soar_module::f_predicate<representation_choices>() );
+	recognition_representation->add_mapping( recog_rete, "rete" );
+	recognition_representation->add_mapping( recog_wm, "wm" );
+	add( recognition_representation );
 }
 
 //
