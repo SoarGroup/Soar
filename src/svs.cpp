@@ -283,6 +283,25 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, string &o
 	}
 	if (args[first_arg] == "models") {
 		return mmdl->cli_inspect(first_arg + 1, args, out);
+	} else if (args[first_arg] == "props") {
+		stringstream ss;
+		vector<string> p;
+		rvec v;
+		scn->get_property_names(p);
+		scn->get_properties(v);
+		int w = 0;
+		for (int i = 0; i < p.size(); ++i) {
+			if (w < p[i].size()) {
+				w = p[i].size();
+			}
+		}
+		ss << left;
+		for (int i = 0; i < p.size(); ++i) {
+			ss.width(w + 1);
+			ss << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
+		}
+		out = ss.str();
+		return true;
 	}
 	out = "no such element";
 	return false;

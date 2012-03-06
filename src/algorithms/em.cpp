@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <limits>
+#include <iomanip>
 #include "linear.h"
 #include "em.h"
 #include "common.h"
@@ -576,8 +577,37 @@ void EM::test_classify(const rvec &x, double y, int &best, int &predicted, doubl
 bool EM::cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const {
 	stringstream ss;
 
-	ss << "num models: " << nmodels << endl;
-	out = ss.str();
-	return true;
+	if (first_arg >= args.size()) {
+		ss << "EM model learner" << endl;
+		ss << "nmodels: " << nmodels << endl;
+		ss << "ndata:   " << ndata << endl;
+		out = ss.str();
+		return true;
+	} else if (args[first_arg] == "ptable") {
+		ss << setw(10);
+		for (int i = 0; i < ndata; ++i) {
+			for (int j = 0; j < nmodels; ++j) {
+				ss << Py_z(j, i);
+			}
+			ss << endl;
+		}
+		out = ss.str();
+		return true;
+	} else if (args[first_arg] == "linear") {
+		if (first_arg + 1 >= args.size()) {
+			out = "specify a model number";
+			return false;
+		}
+		char *end;
+		int n = strtol(args[first_arg + 1].c_str(), &end, 10);
+		if (*end != '\0' || n < 0 || n >= nmodels) {
+			out = "invalid model number";
+			return false;
+		}
+		return models[n]->cli_inspect(out);
+	}
+	
+	out = "no such property";
+	return false;
 }
 

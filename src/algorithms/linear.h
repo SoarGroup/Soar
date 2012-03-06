@@ -56,6 +56,7 @@ public:
 	virtual void fit_me() = 0;
 	virtual bool predict_me(const rvec &x, rvec &y) = 0;
 	virtual bool predict_me(const mat &X, mat &Y) = 0;
+	virtual bool cli_inspect(std::string &out) const;
 
 protected:
 	const mat &xdata;
@@ -85,10 +86,14 @@ public:
 		return new PCRModel(*this);
 	}
 	
+	bool cli_inspect(std::string &out) const;
+	
 private:
 	mat beta;
 	rvec means;
 	rvec intercept;
+	int nfits;
+	double fit_time;
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cassert>
 #include <vector>
+#include <sstream>
 #include "linear.h"
 #include "common.h"
 #include "params.h"
@@ -69,7 +70,6 @@ bool solve2(const mat &X, const mat &Y, mat &coefs, rvec &intercept) {
 		coefs.row(nonstatic[i]) = C.row(i);
 	}
 	intercept = C.bottomRows(1);
-
 	return true;
 }
 
@@ -282,12 +282,6 @@ void LRModel::add_examples(const vector<int> &inds) {
 
 void LRModel::del_example(int i) {
 	members.erase(remove(members.begin(), members.end(), i), members.end());
-	DATAVIS("'training set' '")
-	for (int j = 0; j < members.size(); ++j) {
-		DATAVIS(members[j] << " ")
-	}
-	DATAVIS("'" << endl)
-	
 	
 	if (members.size() == 0) {
 		// handling of this case is questionable, make it better later
@@ -316,7 +310,6 @@ void LRModel::del_example(int i) {
 			update_error();
 		}
 	}
-	DATAVIS("isconst " << isconst << endl)
 }
 
 void LRModel::update_error() {
@@ -337,7 +330,6 @@ void LRModel::update_error() {
 			error = (Y - P).squaredNorm();
 		}
 	}
-	DATAVIS("'avg error' " << error / members.size() << endl)
 }
 
 void LRModel::save(ostream &os) const {
@@ -404,17 +396,28 @@ bool LRModel::fit() {
 	return true;
 }
 
+bool LRModel::cli_inspect(string &out) const {
+	stringstream ss;
+	ss << "members:";
+	for (int i = 0; i < members.size(); ++i) {
+		ss << " " << members[i];
+	}
+	ss << endl << "error:     " << error << endl;
+	out = ss.str();
+}
+
 PCRModel::PCRModel(const mat &xdata, const mat &ydata) 
-: LRModel(xdata, ydata), intercept(rvec::Zero(ydata.cols()))
+: LRModel(xdata, ydata), intercept(rvec::Zero(ydata.cols())), nfits(0), fit_time(0.0)
 {}
 
 PCRModel::PCRModel(const PCRModel &m)
-: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means)
+: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means), nfits(0), fit_time(0.0)
 {}
 
 void PCRModel::fit_me() {
-	DATAVIS("BEGIN PCR" << endl)
-	DATAVIS("'num fits' %+1" << endl)
+	timer t;
+	t.start();
+	
 	mat X, Y;
 	
 	fill_data(X, Y);
@@ -422,7 +425,8 @@ void PCRModel::fit_me() {
 	X.rowwise() -= means;
 
 	min_train_error(X, Y, beta, intercept);
-	DATAVIS("END" << endl)
+	++nfits;
+	fit_time += t.stop();
 }
 
 bool PCRModel::predict_me(const rvec &x, rvec &y) {
@@ -442,3 +446,17 @@ bool PCRModel::predict_me(const mat &X, mat &Y) {
 	return true;
 }
 
+bool PCRModel::cli_inspect(string &out) const {
+	LRModel::cli_inspect(out);
+	
+	stringstream ss;
+	ss << "num fits:  " << nfits << endl;
+	ss << "fit time:  " << fit_time << endl;
+	ss << "intercept: " << intercept << endl;
+	ss << "beta:" << endl;
+	for (int i = 0; i < beta.size(); ++i) {
+		ss << "\t" << beta(i) << endl;
+	}
+	out += ss.str();
+	return true;
+}
