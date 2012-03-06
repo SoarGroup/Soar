@@ -170,6 +170,8 @@ elif compiler == 'cl':
 	cflags = VS_REQ_CFLAGS
 	if GetOption('defflags') and GetOption('cflags') == None:
 		cflags += VS_DEF_CFLAGS
+	else:
+		cflags += ' ' + GetOption('cflags')
 	
 env.Replace(
 	CPPFLAGS=cflags.split(), 
