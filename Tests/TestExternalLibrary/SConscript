@@ -4,7 +4,7 @@
 #
 Import('env')
 
-lib = env.SharedLibrary('TestExternalLibraryLib', 'lib.cpp')
+lib = env.SharedLibrary('TestExternalLibraryLib', 'lib.cpp')[0]   # for MSVC, only need the .dll, not .lib or .exp
 prog = env.Program('TestExternalLibrary', 'TestExternalLibrary.cpp')
 t = env.Install('$OUT_DIR', [prog, lib])
 Return('t')

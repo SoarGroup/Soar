@@ -129,7 +129,7 @@ protected:
 	void destroySoar();
 	void runAllTestTypes();
 	void runTest();
-	int spawnListener(const std::string& lib);
+	int spawnListener();
 	void cleanUpListener();
 
 	void loadProductions( const char* productions );
@@ -219,13 +219,7 @@ void FullTests::createSoar()
 
 	if ( m_Options.test( REMOTE ) )
 	{
-		m_pKernel = sml::Kernel::CreateKernelInCurrentThread();
-		CPPUNIT_ASSERT( m_pKernel != NULL );
-		std::string lib( m_pKernel->GetLibraryLocation() );
-		m_pKernel->Shutdown();
-		delete m_pKernel;
-		m_pKernel = NULL;
-		int targetPid = spawnListener(lib);
+		int targetPid = spawnListener();
 		m_pKernel = sml::Kernel::CreateRemoteConnection( true, 0, targetPid );
 	}
 	else
@@ -332,7 +326,7 @@ void FullTests::destroySoar()
 	}
 }
 
-int FullTests::spawnListener(const std::string& lib)
+int FullTests::spawnListener()
 {
 	// Spawning a new process is radically different on windows vs linux.
 	// Instead of writing an abstraction layer, I'm just going to put platform-
@@ -350,8 +344,8 @@ int FullTests::spawnListener(const std::string& lib)
 
    // Start the child process. 
    BOOL success = CreateProcess( 
-      L"Tests.exe",
-      L"Tests.exe --listener", // Command line
+      "UnitTests.exe",
+      "UnitTests.exe --listener", // Command line
       NULL,           // Process handle not inheritable
       NULL,           // Thread handle not inheritable
       FALSE,          // Set handle inheritance to FALSE
@@ -374,8 +368,7 @@ int FullTests::spawnListener(const std::string& lib)
 	{
 		// child
 		std::stringstream cmdString;
-		cmdString << lib << "Tests";
-		execlp(cmdString.str().c_str(), "Tests", "--listener", static_cast< char* >( 0 ));
+		execlp("UnitTests", "UnitTests", "--listener", static_cast< char* >( 0 ));
 		// does not return on success
 		CPPUNIT_ASSERT_MESSAGE( "execlp failed", false );
 		g_NoRemote = true;

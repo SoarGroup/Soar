@@ -7,19 +7,15 @@ import sys
 Import('env')
 clone = env.Clone()
 
-libadd = ['Soar']
+libs = {
+	('darwin', '32') : 'cppunit-osx',
+	('darwin', '64') : 'cppunit-osx-64',
+	('linux2', '32') : 'cppunit-linux',
+	('linux2', '64') : 'cppunit-linux-64',
+	('win32',  '32') : 'cppunit_dllvs9',
+	('win32',  '64') : 'cppunit64_dllvs9'
+}
 
-if sys.platform == "darwin":
-	if GetOption('platform') == '64':
-		libadd.append('cppunit-osx-64')
-	else:
-		libadd.append('cppunit-osx')
-else:
-	if GetOption('platform') == '64':
-		libadd.append('cppunit-linux-64')
-	else:
-		libadd.append('cppunit-linux')
-
-clone.Prepend(LIBS = libadd, LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
+clone.Prepend(LIBS = libs[(sys.platform, GetOption('platform'))], LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
 t = env.Install('$OUT_DIR', clone.Program('UnitTests', Glob('src/*.cpp')))
 Return('t')
