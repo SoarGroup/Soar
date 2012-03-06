@@ -81,7 +81,7 @@ classdir = clone.Dir('classes')
 jar = clone.File('sml.jar')
 
 incs = ' '.join('-I%s' % GetBuildPath(d) for d in clone['CPPPATH'])
-swig_cmd = 'swig %s -o %s -c++ -java -Wall -package sml -outdir %s %s' % (incs, wrapper.abspath, smldir.abspath, interface)
+swig_cmd = 'swig "%s" -o "%s" -c++ -java -Wall -package sml -outdir "%s" "%s"' % (incs, wrapper.abspath, smldir.abspath, interface)
 
 # The Execute(..) wrapper will execute commands immediately after they are
 # parsed. Need to execute swig command immediately because it generates a
