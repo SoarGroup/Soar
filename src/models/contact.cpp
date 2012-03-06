@@ -107,7 +107,7 @@ public:
 		return ysz;
 	}
 	
-	bool cli_inspect(int first_arg, const vector<string> &args, string &out) const {
+	bool cli_inspect_drv(int first_arg, const vector<string> &args, string &out) const {
 		stringstream ss;
 		model_tbl::const_iterator i;
 		for (i = models.begin(); i != models.end(); ++i) {

@@ -16,6 +16,7 @@ public:
 	
 	void init();
 	void finish();
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const;
 	
 	std::string get_name() const {
 		return name;
@@ -34,12 +35,10 @@ public:
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
 	
-	virtual bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const {
-		out = "no inspectable properties";
-		return true;
-	};
+	virtual bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::string &out) const {};
 
 private:
+	rvec last_pred, last_ref;
 	std::string name, type, path;
 	std::ofstream predlog;
 };

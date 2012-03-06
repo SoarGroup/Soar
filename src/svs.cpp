@@ -302,6 +302,13 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, string &o
 		}
 		out = ss.str();
 		return true;
+	} else if (args[first_arg] == "out") {
+		stringstream ss;
+		for (int i = 0; i < outspec.size(); ++i) {
+			ss << outspec[i].name << " "  << next_out[i] << endl;
+		}
+		out = ss.str();
+		return true;
 	}
 	out = "no such element";
 	return false;

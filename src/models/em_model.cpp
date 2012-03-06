@@ -142,7 +142,7 @@ public:
 		return model::test(x, y);
 	}
 	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const {
+	bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::string &out) const {
 		return em->cli_inspect(first_arg, args, out);
 	}
 	

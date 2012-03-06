@@ -61,7 +61,22 @@ float model::test(const rvec &x, const rvec &y) {
 	if (predlog.is_open()) {
 		predlog << x << " ; " << y << " ; " << py << " ; " << error << endl;
 	}
+	
+	last_pred = py;
+	last_ref = y;
 	return error;
+}
+
+bool model::cli_inspect(int first_arg, const vector<string> &args, string &out) const {
+	if (first_arg < args.size() && args[first_arg] == "error") {
+		stringstream ss;
+		ss << "last predicted: " << last_pred << endl;
+		ss << "last reference: " << last_ref << endl;
+		ss << "squared error:  " << (last_pred - last_ref).squaredNorm() << endl;
+		out = ss.str();
+		return true;
+	}
+	return cli_inspect_drv(first_arg, args, out);
 }
 
 multi_model::multi_model() {
