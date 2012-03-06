@@ -28,7 +28,13 @@ except OSError:
 	print >>sys.stderr, 'Error running java'
 	Exit(1)
 	
-java_env['JAVAVERSION'] = '.'.join(ver_str.split('.')[:2])
+ver = '.'.join(ver_str.split('.')[:2])
+if ver == '1.7':
+	# scons 2.0.1 claims that jdk 1.7 is not supported, but tricking it into
+	# thinking it's 1.6 seems to work fine
+	ver = '1.6'
+java_env['JAVAVERSION'] = ver
+
 java_env['SML'] = env.File(os.path.join(env['OUT_DIR'], 'java', 'sml.jar'))
 if os.name == 'nt':
 	java_env['SEP'] = ';'

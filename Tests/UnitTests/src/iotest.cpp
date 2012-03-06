@@ -388,7 +388,7 @@ void IOTest::testOutputLeak1()
 	sml::Agent* pAgent = pKernel->GetAgent( "IOTest" ) ;
 	CPPUNIT_ASSERT( pAgent != 0 );
 
-	pAgent->LoadProductions( "Agents/testoutputleak.soar" ) ;
+	pAgent->LoadProductions( "test_agents/testoutputleak.soar" ) ;
 	CPPUNIT_ASSERT_MESSAGE( "loadProductions", pAgent->GetLastCommandLineResult() );
 
 	/*sml::Identifier* pOutputLink = */pAgent->GetOutputLink();

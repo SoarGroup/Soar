@@ -224,7 +224,7 @@ void MultiAgentTest::doTest()
 
 		std::stringstream path;
 		// TODO: use boost filesystem
-		CPPUNIT_ASSERT( pAgent->LoadProductions( "Agents/testmulti.soar" ) );
+		CPPUNIT_ASSERT( pAgent->LoadProductions( "test_agents/testmulti.soar" ) );
 		createInput( pAgent, 0 );
 
 		// Collect the trace output from the run
