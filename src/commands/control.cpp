@@ -1213,43 +1213,58 @@ public:
 		return string("manual control");
 	}
 	
-	void read_ctrl_file() {
+	/*
+	 This method interprets the control file as a fixed-size binary
+	 array of doubles.
+	*/
+	void read_array(string &error) {
 		output.setConstant(0);
 		FILE *f = fopen(remote_path.c_str(), "r");
 		if (!f) {
+			error = "failed to open file";
+			fclose(f);
 			return;
 		}
 		int fd = fileno(f);
 		flock(fd, LOCK_EX);
 		double x;
 		int i = 0;
-		while (fread(&x, sizeof(x), 1, f) > 0) {
+		while (fread(&x, sizeof(x), 1, f) > 0 && i < output.size()) {
 			output(i++) = x;
 		}
 		flock(fd, LOCK_UN);
 		fclose(f);
+		if (i != output.size()) {
+			error = "incorrect number of output fields";
+		}
 	}
 	
-	void read_log() {
+	/*
+	 This method interprets the control file as a stream of text,
+	 where each line has a number of fields representing the values
+	 of the outputs.
+	*/
+	void read_stream(string &error) {
 		string line;
 		vector<string> fields;
-		if (!log_file.is_open()) {
-			log_file.open(log_path.c_str(), ios::in);
+		if (!stream_file.is_open()) {
+			stream_file.open(remote_path.c_str(), ios::in);
 		}
-		if (!getline(log_file, line)) {
+		if (!getline(stream_file, line)) {
+			error = "eof";
 			return;
 		}
 		split(line, " \t", fields);
 		if (fields.size() != output.size()) {
-			cerr << "incorrect number of output fields in log" << endl;
-			assert(false);
+			error = "incorrect number of output fields";
+			return;
 		}
 		for (int i = 0; i < fields.size(); ++i) {
 			char *end;
 			double x = strtod(fields[i].c_str(), &end);
 			if (*end != '\0') {
-				cerr << "log file contains non-numeric field" << endl;
-				assert(false);
+				error = "non-numeric field encountered";
+				return;
 			}
 			output(i) = x;
 		}
@@ -1270,15 +1285,20 @@ public:
 			configure();
 		}
 		
+		string error;
 		switch (mode) {
-			case 'r':
-				read_ctrl_file();
+			case 'a':
+				read_array(error);
 				break;
-			case 'l':
-				read_log();
+			case 's':
+				read_stream(error);
 				break;
 			case 'c':
 				break;
+		}
+		if (!error.empty()) {
+			set_status(error);
+			return false;
 		}
 		state->set_output(output);
 		set_status("success");
@@ -1297,7 +1317,7 @@ private:
 		wme_list::iterator i;
 		si->get_child_wmes(root, children);
 		
-		mode = 'r';
+		mode = 's';
 		log_output = false;
 		bool first = true;
 		for (i = children.begin(); i != children.end(); ++i) {
@@ -1307,16 +1327,17 @@ private:
 				continue;
 			}
 			if (name == "log") {
-				if (children.size() == 1) {
-					mode = 'l';
-				} else {
-					log_output = true;
-				}
+				log_output = true;
 				if (!si->get_val(si->get_wme_val(*i), log_path)) {
 					assert(false);
 				}
-			} else if (name == "remote") {
-				mode = 'r';
+			} else if (name == "array") {
+				mode = 'a';
+				if (!si->get_val(si->get_wme_val(*i), remote_path)) {
+					assert(false);
+				}
+			} else if (name == "stream") {
+				mode = 's';
 				if (!si->get_val(si->get_wme_val(*i), remote_path)) {
 					assert(false);
 				}
@@ -1339,7 +1360,7 @@ private:
 	char mode;
 	bool log_output;
 	string log_path, remote_path;
-	fstream log_file;
+	fstream log_file, stream_file;
 	
 	rvec output;
 	output_spec *outspec;

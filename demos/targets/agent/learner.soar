@@ -9,5 +9,5 @@ sp {manual-control
    (<c> ^output <out>)
    (<out> ^dx <l> ^dy <r> ^status success)
 -->
-   (<c> ^manual_control <mc>)
+   (<c> ^manual_control.stream |ctrl|)
 }
