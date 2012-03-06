@@ -37,8 +37,8 @@ interface = env.File(name + '.i')
 wrapper = env.File(name + '_wrap.cpp')
 source = env.File(name + '.py')
 
-incs = ' '.join('-I%s' % GetBuildPath(d) for d in env['CPPPATH'])
-swig_cmdline = 'swig "%s" -o "%s" -c++ -python -Wall "%s"' % (incs, wrapper.abspath, interface)
+incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in env['CPPPATH'])
+swig_cmdline = 'swig %s -o "%s" -c++ -python -Wall "%s"' % (incs, wrapper.abspath, interface)
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
