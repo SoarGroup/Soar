@@ -89,6 +89,7 @@ class DataTree:
 		elif fields[0] == 'CLEAR':
 			# clear the entire tree
 			self.tree.set_children('')
+			self.hist = {}
 		else:
 			if len(fields) == 1:
 				self.proc_item(self.context + tuple(fields), None)
@@ -136,8 +137,13 @@ class DataTree:
 				h.append(newval)
 			elif cmd == 'CLEAR':
 				self.tree.set_children(name)
+				for n in self.hist.keys():
+					if n.startswith(name):
+						self.hist.pop(n)
+						
 			elif cmd == 'DELETE':
 				self.tree.delete(name)
+				self.hist.pop(name)
 	
 	def show_menu(self, e):
 		self.menu_target = self.tree.identify_row(e.y)
