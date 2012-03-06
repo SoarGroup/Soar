@@ -632,15 +632,6 @@ TEST_DEFINITION( testWMEs )
 TEST_DEFINITION( testXML )
 {
 	// Test calling CommandLineXML.
-	sml::ClientAnalyzedXML xml ;
-	CPPUNIT_ASSERT( m_pKernel->ExecuteCommandLineXML( "set-library-location", NULL, &xml ) );
-	
-	std::string path( xml.GetArgString( sml::sml_Names::kParamDirectory ) );
-
-	// Check that we got some string back
-	CPPUNIT_ASSERT( path.length() >= 3 );
-
-	// 2nd Test calling CommandLineXML.
 	sml::ClientAnalyzedXML xml2 ;
 	CPPUNIT_ASSERT( m_pKernel->ExecuteCommandLineXML( "print -i --depth 3 s1", m_pAgent->GetAgentName(), &xml2 ) );
 	
