@@ -11,6 +11,7 @@ model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const stri
 model *_make_splinter_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
 model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
 model *_make_targets_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
+model *_make_contact_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
 
 struct model_constructor_table_entry {
 	const char *type;
@@ -24,6 +25,7 @@ static model_constructor_table_entry constructor_table[] = {
 	{ "splinter",    _make_splinter_model_},
 	{ "em",          _make_em_model_},
 	{ "targets",     _make_targets_model_},
+	{ "contact",     _make_contact_model_},
 };
 
 model *parse_model_struct(soar_interface *si, Symbol *root, string &name, scene *scn) {
