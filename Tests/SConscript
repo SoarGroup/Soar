@@ -13,4 +13,4 @@ for d in subdirs:
 	tests.append(SConscript(script))
 
 agents = InstallDir(env, '$OUT_DIR/test_agents', 'Agents')
-env.Alias('Tests', tests + agents)
+env.Alias('tests', tests + agents)
