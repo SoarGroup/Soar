@@ -124,6 +124,8 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
+AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Disable compiler optimizations and insert debugging symbols')
+
 env = Environment(
 	ENV = {
 		'PATH' : os.environ.get('PATH', ''), 
@@ -150,40 +152,52 @@ else:
 
 Export('compiler')
 
-cflags = ''
-lnflags = ''
+cflags = []
+lnflags = []
 if compiler == 'g++':
 	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 	if sys.platform == 'darwin':
-		cflags += ' -DSCONS_DARWIN'
+		cflags.append('-DSCONS_DARWIN')
 	
 	if GetOption('defflags'):
-		cflags += GCC_DEF_CFLAGS
+		cflags.extend(GCC_DEF_CFLAGS.split())
 		
 		gcc_ver = gcc_version(env['CXX'])
 		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
 		if gcc_ver[0] > 3:
 			env.Append(CPPFLAGS='-fvisibility=hidden')
 			if config.TryCompile('', '.cpp'):
-				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
+				cflags.append('-fvisibility=hidden')
+				cflags.append('-DGCC_HASCLASSVISIBILITY')
 				env['VISHIDDEN'] = True
 		
-		cflags += ' -m%s' % GetOption('platform')
-		lnflags += GCC_DEF_LNFLAGS
-		lnflags += ' -Xlinker -rpath="%s"' % os.path.abspath(GetOption('outdir'))
+		cflags.append('-m%s' % GetOption('platform'))
+		lnflags.extend(GCC_DEF_LNFLAGS.split())
+		lnflags.extend(['-Xlinker', '-rpath="%s"' % os.path.abspath(GetOption('outdir'))])
+	
+		if GetOption('dbg'):
+			cflags = filter(lambda x: not x.startswith('-O'), cflags)
+			cflags.append('-g')
+
 elif compiler == 'cl':
 	env.Append(LIBS='advapi32')  # for GetUserName
-	cflags += VS_REQ_CFLAGS
+	cflags.extend(VS_REQ_CFLAGS.split())
 	if GetOption('defflags'):
-		cflags += VS_DEF_CFLAGS
-		lnflags += VS_DEF_LNFLAGS
+		cflags.extend(VS_DEF_CFLAGS.split())
+		lnflags.extend(VS_DEF_LNFLAGS.split())
+	
+		if GetOption('dbg'):
+			cflags = filter(lambda x: not x.startswith('/O'), cflags)
+			cflags.append('/Z7')
+			lnflags.append('/DEBUG')
+			
 
-cflags += ' ' + (GetOption('cflags') or '')
-lnflags += ' ' + (GetOption('lnflags') or '')
+cflags.extend((GetOption('cflags') or '').split())
+lnflags.extend((GetOption('lnflags') or '').split())
 	
 env.Replace(
-	CPPFLAGS = cflags.split(), 
-	LINKFLAGS = lnflags.split(),
+	CPPFLAGS = cflags, 
+	LINKFLAGS = lnflags,
 	CPPPATH = [
 		'#Core/shared',
 		'#Core/pcre',
