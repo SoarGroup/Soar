@@ -122,8 +122,8 @@ extern byte add_production_to_rete (agent* thisAgent, production *p, condition *
                                     Bool warn_on_duplicates, Bool ignore_rhs = false);
 extern void excise_production_from_rete (agent* thisAgent, production *p);
 
-extern void add_wme_to_rete (agent* thisAgent, wme *w);
-extern void remove_wme_from_rete (agent* thisAgent, wme *w);
+extern void add_wme_to_rete (agent* thisAgent, wme *w, bool deal_with_epmem_ids=true);
+extern void remove_wme_from_rete (agent* thisAgent, wme *w, bool deal_with_epmem_ids=true);
 
 extern void p_node_to_conditions_and_nots (agent* thisAgent, 
                                            struct rete_node_struct *p_node,

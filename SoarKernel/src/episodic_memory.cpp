@@ -2941,9 +2941,9 @@ void epmem_new_episode( agent *my_agent )
 				}
 				else
 				{
-					remove_wme_from_rete(my_agent, (*recog_iter));
+					remove_wme_from_rete(my_agent, (*recog_iter), false);
 					(*recog_iter)->metadata |= METADATA_EPMEM_RECOGNITION;
-					add_wme_to_rete(my_agent, (*recog_iter));
+					add_wme_to_rete(my_agent, (*recog_iter), false);
 				}
 			}
 		}
@@ -2966,7 +2966,7 @@ void epmem_new_episode( agent *my_agent )
 					my_agent->smem_stmts->hash_get_str->bind_text( 1, static_cast<const char *>( attr->sc.name ) );
 					if ( my_agent->smem_stmts->hash_get_str->execute() == soar_module::row )
 					{
-						// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it)
+						// if the symbol is hashed, check that it is an attribute (that is, there's a counter for it; value constants don't have counters)
 						// HACK HACK HACK since this is specialized for WSD, we don't need to check for arbitrary constant values
 						smem_hash_id hash = static_cast<smem_hash_id>( my_agent->smem_stmts->hash_get_str->column_int( 0 ) );
 						my_agent->smem_stmts->ct_attr_check->bind_int( 1, hash );
@@ -2983,12 +2983,13 @@ void epmem_new_episode( agent *my_agent )
 				{
 					if ((my_agent->smem_params->recognition->get_value() >= 2) && (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_rete))
 					{
-						remove_wme_from_rete(my_agent, (*iter));
+						remove_wme_from_rete(my_agent, (*iter), false);
 						(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
-						add_wme_to_rete(my_agent, (*iter));
+						add_wme_to_rete(my_agent, (*iter), false);
 					}
 				}
 			}
+
 			if ((my_agent->smem_params->recognition->get_value() >= 2) && (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm))
 			{
 				for (std::map<Symbol*,bool>::iterator iter = attr_recognized.begin(); iter != attr_recognized.end(); iter++ )
