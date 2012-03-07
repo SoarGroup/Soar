@@ -2,8 +2,8 @@
 setlocal
 
 REM try to find python.exe in PATH
-set temp="%PATH:;=";"%"
-for %%i in (%temp%) do (
+set tempxx="%PATH:;=";"%"
+for %%i in (%tempxx%) do (
 	if exist %%i\python.exe (
 		set python=%%i\python.exe
 		goto :found
