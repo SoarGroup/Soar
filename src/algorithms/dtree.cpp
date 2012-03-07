@@ -642,6 +642,23 @@ void ID5Tree::print_graphviz(ostream &os) const {
 	}
 }
 
+void ID5Tree::print(const string &prefix, ostream &os) const {
+	if (!expanded()) {
+		os << " " << cat << " (";
+		map<category, int>::const_iterator i;
+		for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
+			os << i->first << ":" << i->second << " ";
+		}
+		os << ")";
+	} else {
+		string newpref = prefix + "|   ";
+		os << endl << prefix << split_attr << " = 1:";
+		left->print(newpref, os);
+		os << endl << prefix << split_attr << " = 0:";
+		right->print(newpref, os);
+	}
+}
+
 void ID5Tree::batch_update(const vector<int> &new_insts) {
 	insts_here = new_insts;
 	update_all_counts();

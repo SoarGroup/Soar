@@ -107,17 +107,16 @@ public:
 		return ysz;
 	}
 	
-	bool cli_inspect_drv(int first_arg, const vector<string> &args, string &out) const {
-		stringstream ss;
+	bool cli_inspect_drv(int first_arg, const vector<string> &args, ostream &os) const {
 		model_tbl::const_iterator i;
 		for (i = models.begin(); i != models.end(); ++i) {
 			vector<bool>::const_iterator j;
 			for (j = i->first.begin(); j != i->first.end(); ++j) {
-				ss << *j;
+				os << *j;
 			}
-			ss << " " << i->second->size() << endl;
+			os << " " << i->second->size() << endl;
 		}
-		out = ss.str();
+		return true;
 	}
 
 private:

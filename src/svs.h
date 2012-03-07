@@ -100,7 +100,7 @@ public:
 	
 	void update_models();
 	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const;
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 
 private:
 	void init();

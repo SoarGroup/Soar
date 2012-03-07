@@ -396,14 +396,13 @@ bool LRModel::fit() {
 	return true;
 }
 
-bool LRModel::cli_inspect(string &out) const {
-	stringstream ss;
-	ss << "members:";
+bool LRModel::cli_inspect(ostream &os) const {
+	os << "members:";
 	for (int i = 0; i < members.size(); ++i) {
-		ss << " " << members[i];
+		os << " " << members[i];
 	}
-	ss << endl << "error:     " << error << endl;
-	out = ss.str();
+	os << endl << "error:     " << error << endl;
+	return true;
 }
 
 PCRModel::PCRModel(const mat &xdata, const mat &ydata) 
@@ -446,17 +445,15 @@ bool PCRModel::predict_me(const mat &X, mat &Y) {
 	return true;
 }
 
-bool PCRModel::cli_inspect(string &out) const {
-	LRModel::cli_inspect(out);
+bool PCRModel::cli_inspect(ostream &os) const {
+	LRModel::cli_inspect(os);
 	
-	stringstream ss;
-	ss << "num fits:  " << nfits << endl;
-	ss << "fit time:  " << fit_time << endl;
-	ss << "intercept: " << intercept << endl;
-	ss << "beta:" << endl;
+	os << "num fits:  " << nfits << endl;
+	os << "fit time:  " << fit_time << endl;
+	os << "intercept: " << intercept << endl;
+	os << "beta:" << endl;
 	for (int i = 0; i < beta.size(); ++i) {
-		ss << "\t" << beta(i) << endl;
+		os << "\t" << beta(i) << endl;
 	}
-	out += ss.str();
 	return true;
 }

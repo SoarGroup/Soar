@@ -574,40 +574,45 @@ void EM::test_classify(const rvec &x, double y, int &best, int &predicted, doubl
 	predicted = classify(x);
 }
 
-bool EM::cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const {
+bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	stringstream ss;
 
 	if (first_arg >= args.size()) {
-		ss << "EM model learner" << endl;
-		ss << "nmodels: " << nmodels << endl;
-		ss << "ndata:   " << ndata << endl;
-		out = ss.str();
+		os << "EM model learner" << endl;
+		os << "nmodels: " << nmodels << endl;
+		os << "ndata:   " << ndata << endl;
 		return true;
 	} else if (args[first_arg] == "ptable") {
-		ss << setw(10);
+		os << setw(10);
 		for (int i = 0; i < ndata; ++i) {
 			for (int j = 0; j < nmodels; ++j) {
-				ss << Py_z(j, i);
+				os << Py_z(j, i);
 			}
-			ss << endl;
+			os << endl;
 		}
-		out = ss.str();
 		return true;
 	} else if (args[first_arg] == "linear") {
 		if (first_arg + 1 >= args.size()) {
-			out = "specify a model number";
+			os << "specify a model number" << endl;
 			return false;
 		}
 		char *end;
 		int n = strtol(args[first_arg + 1].c_str(), &end, 10);
 		if (*end != '\0' || n < 0 || n >= nmodels) {
-			out = "invalid model number";
+			os << "invalid model number" << endl;
 			return false;
 		}
-		return models[n]->cli_inspect(out);
+		return models[n]->cli_inspect(os);
+	} else if (args[first_arg] == "tree") {
+		if (dtree == NULL) {
+			os << "NULL" << endl;
+		} else {
+			dtree->print("", os);
+		}
+		return true;
 	}
 	
-	out = "no such property";
+	os << "no such property" << endl;
 	return false;
 }
 

@@ -18,6 +18,8 @@ public:
 	int size() const;
 	void get_all_splits(std::vector<int> &splits) const;
 	void print_graphviz(std::ostream &os) const;
+	void print(const std::string &prefix, std::ostream &os) const;
+	
 	category best_cat();
 	void prune();
 

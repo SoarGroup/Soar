@@ -16,7 +16,7 @@ public:
 	
 	void init();
 	void finish();
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const;
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
 	std::string get_name() const {
 		return name;
@@ -35,7 +35,9 @@ public:
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
 	
-	virtual bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::string &out) const {};
+	virtual bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::ostream &os) const {
+		return false;
+	};
 
 private:
 	rvec last_pred, last_ref;
@@ -78,7 +80,7 @@ public:
 		prop_vec = props;
 	}
 	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const;
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 
 private:
 	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);

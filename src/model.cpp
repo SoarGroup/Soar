@@ -67,16 +67,14 @@ float model::test(const rvec &x, const rvec &y) {
 	return error;
 }
 
-bool model::cli_inspect(int first_arg, const vector<string> &args, string &out) const {
+bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg < args.size() && args[first_arg] == "error") {
-		stringstream ss;
-		ss << "last predicted: " << last_pred << endl;
-		ss << "last reference: " << last_ref << endl;
-		ss << "squared error:  " << (last_pred - last_ref).squaredNorm() << endl;
-		out = ss.str();
+		os << "last predicted: " << last_pred << endl;
+		os << "last reference: " << last_ref << endl;
+		os << "squared error:  " << (last_pred - last_ref).squaredNorm() << endl;
 		return true;
 	}
-	return cli_inspect_drv(first_arg, args, out);
+	return cli_inspect_drv(first_arg, args, os);
 }
 
 multi_model::multi_model() {
@@ -246,22 +244,20 @@ bool multi_model::find_indexes(const vector<string> &props, vector<int> &indexes
 	return true;
 }
 
-bool multi_model::cli_inspect(int first_arg, const vector<string> &args, string &out) const {
-	stringstream ss;
+bool multi_model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	map<string, model*>::const_iterator i;
 	if (first_arg >= args.size()) {
-		ss << "Current models:" << endl;
+		os << "Current models:" << endl;
 		for (i = model_db.begin(); i != model_db.end(); ++i) {
-			ss << i->first << endl;
+			os << i->first << endl;
 		}
-		out = ss.str();
 		return true;
 	}
 	i = model_db.find(args[first_arg]);
 	if (i == model_db.end()) {
-		out = "no such model";
+		os << "no such model" << endl;
 		return false;
 	}
-	return i->second->cli_inspect(first_arg + 1, args, out);
+	return i->second->cli_inspect(first_arg + 1, args, os);
 }
 

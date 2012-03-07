@@ -56,7 +56,7 @@ public:
 	virtual void fit_me() = 0;
 	virtual bool predict_me(const rvec &x, rvec &y) = 0;
 	virtual bool predict_me(const mat &X, mat &Y) = 0;
-	virtual bool cli_inspect(std::string &out) const;
+	virtual bool cli_inspect(std::ostream &os) const;
 
 protected:
 	const mat &xdata;
@@ -86,7 +86,7 @@ public:
 		return new PCRModel(*this);
 	}
 	
-	bool cli_inspect(std::string &out) const;
+	bool cli_inspect(std::ostream &os) const;
 	
 private:
 	mat beta;

@@ -142,8 +142,8 @@ public:
 		return model::test(x, y);
 	}
 	
-	bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::string &out) const {
-		return em->cli_inspect(first_arg, args, out);
+	bool cli_inspect_drv(int first_arg, const vector<string> &args, ostream &os) const {
+		return em->cli_inspect(first_arg, args, os);
 	}
 	
 private:

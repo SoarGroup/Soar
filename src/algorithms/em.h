@@ -51,7 +51,7 @@ public:
 	void print_tree(std::ostream &os) const;
 	void test_classify(const rvec &x, double y, int &best, int &predicted, double &besterror);
 	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::string &out) const;
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
 private:
 	int classify(const rvec &x);

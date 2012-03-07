@@ -276,15 +276,14 @@ bool svs_state::get_output(rvec &out) const {
 	}
 }
 
-bool svs_state::cli_inspect(int first_arg, const vector<string> &args, string &out) const {
+bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
-		out = "specify something to inspect";
+		os << "specify something to inspect" << endl;
 		return false;
 	}
 	if (args[first_arg] == "models") {
-		return mmdl->cli_inspect(first_arg + 1, args, out);
+		return mmdl->cli_inspect(first_arg + 1, args, os);
 	} else if (args[first_arg] == "props") {
-		stringstream ss;
 		vector<string> p;
 		rvec v;
 		scn->get_property_names(p);
@@ -295,22 +294,19 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, string &o
 				w = p[i].size();
 			}
 		}
-		ss << left;
+		os << left;
 		for (int i = 0; i < p.size(); ++i) {
-			ss.width(w + 1);
-			ss << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
+			os.width(w + 1);
+			os << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
 		}
-		out = ss.str();
 		return true;
 	} else if (args[first_arg] == "out") {
-		stringstream ss;
 		for (int i = 0; i < outspec.size(); ++i) {
-			ss << outspec[i].name << " "  << next_out[i] << endl;
+			os << outspec[i].name << " "  << next_out[i] << endl;
 		}
-		out = ss.str();
 		return true;
 	}
-	out = "no such element";
+	os << "no such element" << endl;
 	return false;
 }
 
@@ -446,11 +442,17 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 	}
 	char *end;
 	long level = strtol(args[1].c_str(), &end, 10);
+	stringstream ss;
+	bool ret;
 	if (*end != '\0') {
-		return state_stack[0]->cli_inspect(1, args, output);
+		ret = state_stack[0]->cli_inspect(1, args, ss);
+		output = ss.str();
+		return ret;
 	} else if (level < 0 || level >= state_stack.size()) {
 		output = "invalid level";
 		return false;
 	}
-	return state_stack[level]->cli_inspect(2, args, output);
+	ret = state_stack[level]->cli_inspect(2, args, ss);
+	output = ss.str();
+	return ret;
 }
