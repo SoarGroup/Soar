@@ -7,9 +7,16 @@ SOAR_VERSION = "9.3.1"
 # required and default optional flags when using VC++ compiler
 VS_REQ_CFLAGS = ' /EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'
 VS_DEF_CFLAGS = ' /O2 /W2'
+VS_DEF_LNFLAGS = ''
 
 # default compiler flags when using g++
-GCC_DEF_CFLAGS = ' -O2 -Werror'
+GCC_DEF_CFLAGS = ' -O2 -Werror -mtune=native'
+GCC_DEF_LNFLAGS = ''
+
+DEF_OUT = 'out'
+DEF_BUILD = 'build'
+
+DEF_TARGETS = 'kernel cli sml_python sml_java debugger'.split()
 
 import os
 import sys
@@ -93,8 +100,6 @@ defarch = '32'
 if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Mac_m64_Capable()):
 	defarch = '64'
 
-default_out = os.environ.get('SOAR_HOME', 'out')
-default_build = os.environ.get('SOAR_BUILD', 'build')
 
 AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nargs=1, metavar='COMPILER',
 	help='Replace \'g++\' as the C++ compiler.')
@@ -111,11 +116,11 @@ AddOption('--arch', action='store', type='choice', choices=['32','64'], dest='pl
 AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
 	
-AddOption('--out-dir', action='store', type='string', dest='outdir', default=default_out, nargs=1, metavar='DIR',
-	help='Directory to install binaries. Defaults to "../out" (relative to SConstruct file).')
+AddOption('--out', action='store', type='string', dest='outdir', default=DEF_OUT, nargs=1, metavar='DIR',
+	help='Directory to install binaries. Defaults to "out".')
 
-AddOption('--build-dir', action='store', type='string', dest='build-dir', default=default_build, nargs=1, metavar='DIR',
-	help='Directory to store intermediate (object) files.')
+AddOption('--build', action='store', type='string', dest='build-dir', default=DEF_BUILD, nargs=1, metavar='DIR',
+	help='Directory to store intermediate (object) files. Defaults to "build".')
 
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
@@ -145,15 +150,15 @@ else:
 
 Export('compiler')
 
-cflags = GetOption('cflags') or ''
+cflags = ''
+lnflags = ''
 if compiler == 'g++':
 	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 	if sys.platform == 'darwin':
 		cflags += ' -DSCONS_DARWIN'
 	
 	if GetOption('defflags'):
-		if GetOption('cflags') == None:
-			cflags += GCC_DEF_CFLAGS
+		cflags += GCC_DEF_CFLAGS
 		
 		gcc_ver = gcc_version(env['CXX'])
 		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
@@ -163,19 +168,22 @@ if compiler == 'g++':
 				cflags += ' -fvisibility=hidden -DGCC_HASCLASSVISIBILITY'
 				env['VISHIDDEN'] = True
 		
-		cflags += ' -mtune=native -m%s' % GetOption('platform')
-	
+		cflags += ' -m%s' % GetOption('platform')
+		lnflags += GCC_DEF_LNFLAGS
+		lnflags += ' -Xlinker -rpath="%s"' % os.path.abspath(GetOption('outdir'))
 elif compiler == 'cl':
 	env.Append(LIBS='advapi32')  # for GetUserName
-	cflags = VS_REQ_CFLAGS
-	if GetOption('defflags') and GetOption('cflags') == None:
+	cflags += VS_REQ_CFLAGS
+	if GetOption('defflags'):
 		cflags += VS_DEF_CFLAGS
-	else:
-		cflags += ' ' + GetOption('cflags')
+		lnflags += VS_DEF_LNFLAGS
+
+cflags += ' ' + (GetOption('cflags') or '')
+lnflags += ' ' + (GetOption('lnflags') or '')
 	
 env.Replace(
-	CPPFLAGS=cflags.split(), 
-	LINKFLAGS=(GetOption('lnflags') or "").split(),
+	CPPFLAGS = cflags.split(), 
+	LINKFLAGS = lnflags.split(),
 	CPPPATH = [
 		'#Core/shared',
 		'#Core/pcre',
@@ -214,9 +222,6 @@ if COMMAND_LINE_TARGETS == ['list']:
 	Exit()
 	
 # Set default targets
-for a in 'kernel cli sml_python sml_java'.split():
+for a in DEF_TARGETS:
 	if a in all_aliases:
 		Default(a)
-
-if 'sml_java' in all_aliases:
-	Default('debugger')
