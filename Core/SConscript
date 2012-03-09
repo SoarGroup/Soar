@@ -26,10 +26,11 @@ elif os.name == 'nt':
 
 kernel_env.Replace(LIBS = libs)
 
+shared_macro = []
+static_macro = []
 if compiler == 'g++':
 	static_macro = ['-DSTATIC_LINKED']
-	shared_macro = []
-elif compiler == 'cl':
+elif compiler == 'msvc':
 	static_macro = ['/D', 'STATIC_LINKED']
 	shared_macro = ['/D', '_USRDLL']
 
@@ -49,7 +50,7 @@ srcs = {
 	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
 }
 
-if env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('cl')):
+if compiler == 'msvc':
 	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
 
 if GetOption('static'):
