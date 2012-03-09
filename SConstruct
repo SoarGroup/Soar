@@ -126,7 +126,10 @@ AddOption('--static', action='store_true', dest='static', default=False, help='U
 
 AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Disable compiler optimizations and insert debugging symbols')
 
+AddOption('--verbose', action='store_true', dest='verbose', default = False, help='Output full compiler commands')
+
 env = Environment(
+	CXX = GetOption('cxx'),
 	ENV = {
 		'PATH' : os.environ.get('PATH', ''), 
 		'TMP' : os.environ.get('TMP','')
@@ -143,10 +146,10 @@ print "Installing targets to", env['OUT_DIR']
 
 config = Configure(env)
 
-if env['CXX'].endswith('g++'):
+if 'g++' in env['CXX']:
 	compiler = 'g++'
 elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('cl')):
-	compiler = 'cl'
+	compiler = 'msvc'
 else:
 	compiler = os.path.split(env['CXX'])[1]
 
@@ -179,7 +182,7 @@ if compiler == 'g++':
 			cflags = filter(lambda x: not x.startswith('-O'), cflags)
 			cflags.append('-g')
 
-elif compiler == 'cl':
+elif compiler == 'msvc':
 	env.Append(LIBS='advapi32')  # for GetUserName
 	cflags.extend(VS_REQ_CFLAGS.split())
 	if GetOption('defflags'):
@@ -222,6 +225,12 @@ if os.name == 'posix':
 	if lib_path_var in os.environ:
 		env.Append(LIBPATH = os.environ.get(lib_path_var).split(':'))
 
+if not GetOption('verbose'):
+	for x in 'CC SHCC CXX SHCXX LINK SHLINK JAR'.split():
+		env[x + 'COMSTR'] = 'Making $TARGET'
+
+	env['JAVACCOMSTR'] = 'Making $TARGET and others'
+	
 Export('env')
 
 for d in os.listdir('.'):
