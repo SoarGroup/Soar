@@ -1,6 +1,12 @@
 @echo off
 setlocal
 
+REM source environment variables
+if exist user-env.bat (
+  echo Sourcing local environment variables from user-env.bat
+  call user-env.bat
+)
+
 REM try to find python.exe in PATH
 set tempxx="%PATH:;=";"%"
 for %%i in (%tempxx%) do (
