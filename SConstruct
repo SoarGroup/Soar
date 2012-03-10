@@ -101,7 +101,7 @@ if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Ma
 	defarch = '64'
 
 
-AddOption('--cxx', action='store', type='string', dest='cxx', default='g++', nargs=1, metavar='COMPILER',
+AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='COMPILER',
 	help='Replace \'g++\' as the C++ compiler.')
 
 AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, help='Compiler flags')
@@ -129,7 +129,6 @@ AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Disable
 AddOption('--verbose', action='store_true', dest='verbose', default = False, help='Output full compiler commands')
 
 env = Environment(
-	CXX = GetOption('cxx'),
 	ENV = {
 		'PATH' : os.environ.get('PATH', ''), 
 		'TMP' : os.environ.get('TMP','')
@@ -140,6 +139,9 @@ env = Environment(
 	SOAR_VERSION = SOAR_VERSION,
 	VISHIDDEN = False,   # needed by swig
 )
+
+if GetOption('cxx') != None:
+	env.Replace(CXX = GetOption('cxx'))
 
 print "Building intermediates to", env['BUILD_DIR']
 print "Installing targets to", env['OUT_DIR']
