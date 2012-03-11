@@ -7480,7 +7480,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 	prod->rl_efr = 0.0;
   prod->rl_mean2 = 0.0; ///< bazald
   prod->rl_sample_variance = 0.0; ///< bazald
-  prod->rl_variance_nonincrease_count = 0.0; ///< bazald
+  prod->rl_tolerable_variance = 0.001; ///< bazald
 	if ( ( prod->type != JUSTIFICATION_PRODUCTION_TYPE ) && ( prod->type != TEMPLATE_PRODUCTION_TYPE ) )
 	{
 	  prod->rl_rule = rl_valid_rule( prod );

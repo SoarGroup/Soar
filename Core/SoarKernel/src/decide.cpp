@@ -15,7 +15,7 @@
  *
  *  This file contains the decider as well as routine for managing
  *  slots, and the garbage collection of disconnected WMEs.
- * =======================================================================
+ * ==============================getcwd=========================================
  */
 
 
@@ -893,15 +893,25 @@ void do_buffered_link_changes (agent* thisAgent) {
 ************************************************************************** */
 
 /// bazald
-byte consider_impasse_instead_of_rl(const preference * const &candidates, preference * const &selected, const bool &nullify_next_candidate) {
+void add_numeric_tie_wme(agent* thisAgent, preference *p) {
+//   Symbol * const variance_c = make_sym_constant(thisAgent, "variance");
+//   Symbol * const variance_f = make_sym_constant(thisAgent, "over-threshold");
+//   wme * const w = make_wme(thisAgent, p->value, variance_c, variance_f, FALSE);
+//   insert_at_head_of_dll(p->value->id.impasse_wmes, w, next, prev);
+//   w->preference = p;
+//   add_wme_to_wm(thisAgent, w);
+}
+
+/// bazald
+byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) {
   int num_candidates = 0;
   for(const preference * cand = candidates; cand; cand = cand->next_candidate)
     ++num_candidates;
   std::cerr << "Number of candidates = " << num_candidates << std::endl;
 
-  bool consider_tie = false;
-  bool all_gte_3 = true;
-  for(const preference * cand = candidates; cand; cand = cand->next_candidate) {
+  preference * intolerable_variance_head = 0;
+  preference * intolerable_variance_tail = 0;
+  for(preference * cand = candidates; cand; cand = cand->next_candidate) {
     if(cand->inst && cand->inst->prod) {
       const production * const &prod = cand->inst->prod;
       std::cerr << (cand == selected ? " * " : "   ") << prod->name->sc.name;
@@ -910,27 +920,41 @@ byte consider_impasse_instead_of_rl(const preference * const &candidates, prefer
       std::cerr << " fired " << prod->firing_count << " times." << std::endl;
 
       if(cand->rl_contribution) {
+        bool all_intolerable_variance = true;
+
         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
           const production * const &prod2 = pref->inst->prod;
           if(cand->value == pref->value && prod2->rl_rule) {
-            std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance decreased " << prod2->rl_variance_nonincrease_count << " times." << std::endl;
+            std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_sample_variance << '/' << prod2->rl_tolerable_variance << std::endl;
 
-            if(prod2->rl_variance_nonincrease_count < 3)
-              all_gte_3 = false;
-//             else
-//               consider_tie = true;
+            if(prod2->rl_sample_variance <= prod2->rl_tolerable_variance)
+              all_intolerable_variance = false;
           }
+        }
+
+        if(all_intolerable_variance) {
+          if(intolerable_variance_tail)
+            intolerable_variance_tail->next_candidate = cand;
+          else
+            intolerable_variance_head = cand;
+          intolerable_variance_tail = cand;
+          add_numeric_tie_wme(thisAgent, cand);
         }
       }
     }
   }
 
-  if(nullify_next_candidate)
-    selected->next_candidate = 0;
+  if(intolerable_variance_tail) {
+    intolerable_variance_tail->next_candidate = 0;
+    selected = intolerable_variance_head;
+    return TIE_IMPASSE_TYPE;
+  }
+  else {
+    if(nullify_next_candidate)
+      selected->next_candidate = 0;
 
-  return consider_tie && all_gte_3 ? TIE_IMPASSE_TYPE : NONE_IMPASSE_TYPE;
-
-//   return NONE_IMPASSE_TYPE;
+    return NONE_IMPASSE_TYPE;
+  }
 }
 
 byte require_preference_semantics (agent *thisAgent, slot *s, preference **result_candidates, bool consistency) {
@@ -1392,7 +1416,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 		else
 			*result_candidates = candidates;
 
-		return consider_impasse_instead_of_rl(candidates, *result_candidates, !consistency); ///< bazald NONE_IMPASSE_TYPE
+		return consider_impasse_instead_of_rl(thisAgent, candidates, *result_candidates, !consistency); ///< bazald NONE_IMPASSE_TYPE
 	}
 
 	/* --- items not all indifferent; for context slots this gives a tie --- */

@@ -604,7 +604,7 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 				new_production->rl_efr = init_value;
         new_production->rl_mean2 = 0.0; ///< bazald
         new_production->rl_sample_variance = 0.0; ///< bazald
-        new_production->rl_variance_nonincrease_count = 0.0; ///< bazald
+        new_production->rl_tolerable_variance = 0.001; ///< bazald
 			}
 
 			// attempt to add to rete, remove if duplicate
@@ -1003,14 +1003,9 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
               const double delta = x - old_combined;
               prod->rl_mean2 += adjusted_alpha * iter->second * delta * (x - new_combined);
               prod->rl_sample_variance = prod->rl_mean2 / (prod->rl_update_count + 1);
-
-              if(prod->rl_sample_variance > old_sample_variance)
-                prod->rl_variance_nonincrease_count = 0;
-              else
-                ++prod->rl_variance_nonincrease_count;
             }
 
-            std::cerr << " V   " << prod->name->sc.name << " = " << prod->rl_sample_variance << '|' << prod->rl_variance_nonincrease_count << " from (" << prod->rl_update_count << ", " << old_combined << ", " << new_combined << ", " << old_sample_variance << ')' << std::endl;
+//             std::cerr << " V   " << prod->name->sc.name << " = " << prod->rl_sample_variance << '|' << prod->rl_variance_nonincrease_count << " from (" << prod->rl_update_count << ", " << old_combined << ", " << new_combined << ", " << old_sample_variance << ')' << std::endl;
           }
 
 					// change documentation
