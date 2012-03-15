@@ -3,21 +3,35 @@ setlocal EnableDelayedExpansion
 
 if not exist user-env.bat (
 	call :findexe python.exe
-	if not "!retval!"=="fail" set PYTHON_HOME=!retval!
+	if not "!retval!"=="fail" (
+		set PYTHON_HOME=!retval!
+		echo python.exe found
+	)
 	
 	call :findexe javac.exe
-	if not "!retval!"=="fail" set JAVA_HOME=!retval:\bin=!
+	if not "!retval!"=="fail" (
+		set JAVA_HOME=!retval:\bin=!
+		echo javac.exe found
+	)
 	
 	call :findexe swig.exe
-	if not "!retval!"=="fail" set SWIG_HOME=!retval!
+	if not "!retval!"=="fail" (
+		set SWIG_HOME=!retval!
+		echo swig.exe found
+	)
 	
 	echo set PYTHON_HOME=!PYTHON_HOME!>>user-env.bat
 	echo set JAVA_HOME=!JAVA_HOME!>>user-env.bat
 	echo set SWIG_HOME=!SWIG_HOME!>>user-env.bat
+	echo user-env.bat created. I will read directories from there next time.
 ) else (
 	echo Reading local environment variables from user-env.bat
 	call user-env.bat
 )
+
+echo PYTHON_HOME=%PYTHON_HOME%
+echo JAVA_HOME=%JAVA_HOME%
+echo SWIG_HOME=%SWIG_HOME%
 
 if not exist %PYTHON_HOME%\python.exe (
 	echo cannot locate python executable
@@ -25,7 +39,7 @@ if not exist %PYTHON_HOME%\python.exe (
 )
 
 set PATH=%PYTHON_HOME%;%JAVA_HOME%\bin;%SWIG_HOME%;%PATH%
-%PYTHON_HOME%\python.exe scons\scons.py %*
+%PYTHON_HOME%\python.exe scons\scons.py -Q %*
 exit /B
 
 rem a "function" that tries to find an executable
@@ -42,20 +56,27 @@ rem a "function" that tries to find an executable
 	if "%~1"=="python.exe" (
 		call :findpython
 		if not "!retval!"=="fail" goto :EOF
+	) else if "%~1"=="javac.exe" (
+		call :findjava
+		if not "!retval!"=="fail" goto :EOF
 	)
 	
 	call :askuser %~1
 goto :EOF
 
-rem Search for python. If python.exe not in PATH, search registry for installation directory.
-rem In the case of multiple installations, the highest version number will be used
+rem Search for python in registry
 :findpython
 	set retval=fail
-	for /F %%i in ('reg query HKLM\SOFTWARE\Python\PythonCore') do set pyver=%%i
-	if not X%pyver%==X (
-		for /F "tokens=3" %%i in ('reg query %pyver%\InstallPath /ve') do (
-			if exist %%i\python.exe set retval=%%i
-		)
+	for /F "tokens=1,2,*" %%i in ('reg query HKLM\SOFTWARE\Python\PythonCore /s') do (
+		if exist %%k\python.exe set retval=%%k
+	)
+goto :EOF
+
+rem Search for java in registry
+:findjava
+	set retval=fail
+	for /F "tokens=1,2,*" %%i in ('reg query "HKLM\SOFTWARE\JavaSoft\Java Development Kit" /s') do (
+		if exist %%k\bin\javac.exe set retval=%%k\bin
 	)
 goto :EOF
 
