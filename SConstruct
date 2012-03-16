@@ -227,18 +227,28 @@ if os.name == 'posix':
 	if lib_path_var in os.environ:
 		env.Append(LIBPATH = os.environ.get(lib_path_var).split(':'))
 
+# Setting *COMSTR will replace long commands with a short message "Making <something>"
 if not GetOption('verbose'):
 	for x in 'CC SHCC CXX SHCXX LINK SHLINK JAR'.split():
 		env[x + 'COMSTR'] = 'Making $TARGET'
 
 	env['JAVACCOMSTR'] = 'Making $TARGET and others'
-	
-Export('env')
+
+msvs_projs = []
+Export('env', 'msvs_projs')
 
 for d in os.listdir('.'):
 	script = join(d, 'SConscript')
 	if os.path.exists(script):
 		SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
+
+msvs_solution = env.MSVSSolution(
+	target = 'soar' + env['MSVSSOLUTIONSUFFIX'],
+	projects = msvs_projs,
+	variant = 'Debug',
+)
+
+env.Alias('msvs', [msvs_solution] + msvs_projs)
 
 all_aliases = default_ans.keys()
 

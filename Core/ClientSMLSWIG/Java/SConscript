@@ -82,13 +82,15 @@ jar = clone.File('sml.jar')
 
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in clone['CPPPATH'])
 swig_cmd = 'swig %s -o "%s" -c++ -java -Wall -package sml -outdir "%s" "%s"' % (incs, wrapper.abspath, smldir.abspath, interface)
+if not GetOption('verbose'):
+	swig_cmd = '@' + swig_cmd
 
 # The Execute(..) wrapper will execute commands immediately after they are
 # parsed. Need to execute swig command immediately because it generates a
 # large number of .java sources that the Java builder later in this script
 # will scan for.
 update_swig = False
-test_source = smldir.File('sml.java').abspath
+test_source = clone.File('sml/sml.java').abspath
 if env.GetOption('clean'):
 	pass
 elif not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
