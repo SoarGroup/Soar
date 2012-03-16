@@ -10,7 +10,7 @@ subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestEx
 tests = []
 for d in subdirs:
 	script = os.path.join(d, 'SConscript')
-	tests.append(SConscript(script))
+	tests.extend(SConscript(script))
 
 agents = InstallDir(env, '$OUT_DIR/test_agents', 'Agents')
 env.Alias('tests', tests + agents)
