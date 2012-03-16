@@ -130,8 +130,9 @@ AddOption('--verbose', action='store_true', dest='verbose', default = False, hel
 
 env = Environment(
 	ENV = {
-		'PATH' : os.environ.get('PATH', ''), 
-		'TMP' : os.environ.get('TMP','')
+		'PATH'  : os.environ.get('PATH', ''), 
+		'TMP'   : os.environ.get('TMP',''),
+		'CPATH' : os.environ.get('CPATH', ''),
 	},
 	SCU = GetOption('scu'), 
 	BUILD_DIR = GetOption('build-dir'),
@@ -159,6 +160,7 @@ Export('compiler')
 
 cflags = []
 lnflags = []
+libs = ['Soar', 'LinearMath', 'BulletCollision']
 if compiler == 'g++':
 	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 	if sys.platform == 'darwin':
@@ -183,9 +185,10 @@ if compiler == 'g++':
 		if GetOption('dbg'):
 			cflags = filter(lambda x: not x.startswith('-O'), cflags)
 			cflags.append('-g')
+	
+	libs += [ 'dl', 'pthread' ]
 
 elif compiler == 'msvc':
-	env.Append(LIBS='advapi32')  # for GetUserName
 	cflags.extend(VS_REQ_CFLAGS.split())
 	if GetOption('defflags'):
 		cflags.extend(VS_DEF_CFLAGS.split())
@@ -195,6 +198,8 @@ elif compiler == 'msvc':
 			cflags = filter(lambda x: not x.startswith('/O'), cflags)
 			cflags.append('/Z7')
 			lnflags.append('/DEBUG')
+	
+	libs += ['advapi32']    # for GetUserName
 			
 
 cflags.extend((GetOption('cflags') or '').split())
@@ -213,7 +218,7 @@ env.Replace(
 		'#Core/ClientSML/src',
 		'#Core/CLI/src',
 	],
-	LIBS = ['Soar'],
+	LIBS = libs,
 	LIBPATH = [os.path.realpath(GetOption('outdir'))],
 )
 
