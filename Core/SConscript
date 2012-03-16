@@ -17,7 +17,7 @@ def CheckSWIG(env):
 	print 'swig version 1.3.31 or higher is required'
 	return False
 
-Import('env', 'compiler', 'InstallDir', 'msvs_projs')
+Import('env', 'compiler', 'InstallDir')
 kernel_env = env.Clone()
 
 if os.name == 'posix':
@@ -76,12 +76,14 @@ else:
 	for x in 'Python Java Tcl PHP'.split():
 		SConscript(os.path.join('ClientSMLSWIG', x, 'SConscript'))
 
-vcproj = kernel_env.MSVSProject(
-	target = '#core' + env['MSVSPROJECTSUFFIX'],
-	srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
-	buildtarget = soarlib[:1],
-	variant = ['Debug'],
-	auto_build_solution = 0,
-)
-
-msvs_projs.append(vcproj)
+if 'MSVSProject' in kernel_env['BUILDERS']:
+	vcproj = kernel_env.MSVSProject(
+		target = '#core' + env['MSVSPROJECTSUFFIX'],
+		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
+		buildtarget = soarlib[:1],
+		variant = ['Debug'],
+		auto_build_solution = 0,
+	)
+	
+	Import('msvs_projs')
+	msvs_projs.append(vcproj)
