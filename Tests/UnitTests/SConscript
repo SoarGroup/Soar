@@ -4,7 +4,7 @@
 #
 import os, sys
 
-Import('env', 'msvs_projs')
+Import('env')
 clone = env.Clone()
 
 libs = {
@@ -22,13 +22,15 @@ clone.Prepend(LIBS = lib, LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
 src = Glob('src/*.cpp')
 t = env.Install('$OUT_DIR', [clone.Program('UnitTests', src), libfile])
 
-proj = env.MSVSProject(
-	target = '#unittests' + env['MSVSPROJECTSUFFIX'],
-	srcs = [ str(s) for s in src ],
-	buildtarget = t,
-	variant = ['Debug'],
-	auto_build_solution = 0,
-)
+if 'MSVSProject' in env['BUILDERS']:
+	proj = env.MSVSProject(
+		target = '#unittests' + env['MSVSPROJECTSUFFIX'],
+		srcs = [ str(s) for s in src ],
+		buildtarget = t,
+		variant = ['Debug'],
+		auto_build_solution = 0,
+	)
+	Import('msvs_projs')
+	msvs_projs.append(proj)
 
-msvs_projs.append(proj)
 Return('t')

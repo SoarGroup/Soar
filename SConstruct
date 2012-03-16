@@ -234,21 +234,25 @@ if not GetOption('verbose'):
 
 	env['JAVACCOMSTR'] = 'Making $TARGET and others'
 
-msvs_projs = []
-Export('env', 'msvs_projs')
+Export('env')
+
+if 'MSVSSolution' in env['BUILDERS']:
+	msvs_projs = []
+	Export('msvs_projs')
 
 for d in os.listdir('.'):
 	script = join(d, 'SConscript')
 	if os.path.exists(script):
 		SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
-msvs_solution = env.MSVSSolution(
-	target = 'soar' + env['MSVSSOLUTIONSUFFIX'],
-	projects = msvs_projs,
-	variant = 'Debug',
-)
 
-env.Alias('msvs', [msvs_solution] + msvs_projs)
+if 'MSVSSolution' in env['BUILDERS']:
+	msvs_solution = env.MSVSSolution(
+		target = 'soar' + env['MSVSSOLUTIONSUFFIX'],
+		projects = msvs_projs,
+		variant = 'Debug',
+	)
+	env.Alias('msvs', [msvs_solution] + msvs_projs)
 
 all_aliases = default_ans.keys()
 
