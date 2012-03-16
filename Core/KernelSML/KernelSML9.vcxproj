@@ -215,10 +215,10 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -252,10 +252,10 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -296,10 +296,10 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -340,10 +340,10 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug SCU|Win32'">
@@ -377,10 +377,10 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug SCU|x64'">
@@ -414,10 +414,10 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release SCU|Win32'">
@@ -458,10 +458,10 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release SCU|x64'">
@@ -502,10 +502,10 @@ xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>Copy resources to bin</Message>
-      <Command>xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Demos "..\..\out\share\soar\Demos"
-xcopy /Y /S  /EXCLUDE:..\xcopy-exclude.txt /I ..\Documentation "..\..\out\share\soar\Documentation"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
