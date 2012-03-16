@@ -20,6 +20,9 @@ def AddResources(target, source, env):
 Import('env')
 java_env = env.Clone()
 
+if not java_env.WhereIs('java'):
+	Return()
+
 try:
 	p = sub.Popen(['java', '-version'], stderr = sub.PIPE)
 	ver_str = p.stderr.readline().split()[-1].strip('"')

@@ -38,13 +38,15 @@ wrapper = env.File(name + '_wrap.cpp')
 source = env.File(name + '.py')
 
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in env['CPPPATH'])
-swig_cmdline = 'swig %s -o "%s" -c++ -python -Wall "%s"' % (incs, wrapper.abspath, interface)
+swig_cmd = 'swig %s -o "%s" -c++ -python -Wall "%s"' % (incs, wrapper.abspath, interface)
+if not GetOption('verbose'):
+	swig_cmd = '@' + swig_cmd
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 clone.Append(SCANNERS=[SWIGScanner])
 
-clone.Command([wrapper, source], interface, swig_cmdline)
+clone.Command([wrapper, source], interface, swig_cmd)
 if os.name == 'nt':
 	# the [:1] at the end throws away the .exp and .lib files that are generated
 	shlib = clone.SharedLibrary(name, wrapper, SHLIBPREFIX = '_', SHLIBSUFFIX = '.pyd')[:1]

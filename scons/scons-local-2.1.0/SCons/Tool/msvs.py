@@ -151,7 +151,7 @@ def getExecScriptMain(env, xml=None):
         exec_script_main = "from os.path import join; import sys; sys.path = [ r'%s' ] + sys.path; import SCons.Script; SCons.Script.main()" % scons_home
     else:
         version = SCons.__version__
-        exec_script_main = "from os.path import join; import sys; sys.path = [ join(sys.prefix, 'Lib', 'site-packages', 'scons-%(version)s'), join(sys.prefix, 'scons-%(version)s'), join(sys.prefix, 'Lib', 'site-packages', 'scons'), join(sys.prefix, 'scons') ] + sys.path; import SCons.Script; SCons.Script.main()" % locals()
+        exec_script_main = "from os.path import join; import sys; sys.path.append('scons/scons-local-2.1.0'); import SCons.Script; SCons.Script.main()" % locals()
     if xml:
         exec_script_main = xmlify(exec_script_main)
     return exec_script_main
@@ -1162,12 +1162,6 @@ class _GenerateV10DSP(_DSPGenerator):
                         
             self.file.write('\t</ItemGroup>\n')
             self.filters_file.write('\t</ItemGroup>\n')
-                
-        # add the SConscript file outside of the groups
-        self.file.write('\t<ItemGroup>\n'
-                        '\t\t<None Include="%s" />\n'
-                        #'\t\t<None Include="SConstruct" />\n'
-                        '\t</ItemGroup>\n' % str(self.sconscript))
 
     def Parse(self):
         print "_GenerateV10DSP.Parse()"

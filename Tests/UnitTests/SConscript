@@ -2,9 +2,9 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import sys
+import os, sys
 
-Import('env')
+Import('env', 'msvs_projs')
 clone = env.Clone()
 
 libs = {
@@ -16,6 +16,19 @@ libs = {
 	('win32',  '64') : 'cppunit64_dllvs9'
 }
 
-clone.Prepend(LIBS = libs[(sys.platform, GetOption('platform'))], LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
-t = env.Install('$OUT_DIR', clone.Program('UnitTests', Glob('src/*.cpp')))
+lib = libs[(sys.platform, GetOption('platform'))]
+libfile = env.File(os.path.join('lib', env['SHLIBPREFIX'] + lib + env['SHLIBSUFFIX']))
+clone.Prepend(LIBS = lib, LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
+src = Glob('src/*.cpp')
+t = env.Install('$OUT_DIR', [clone.Program('UnitTests', src), libfile])
+
+proj = env.MSVSProject(
+	target = '#unittests' + env['MSVSPROJECTSUFFIX'],
+	srcs = [ str(s) for s in src ],
+	buildtarget = t,
+	variant = ['Debug'],
+	auto_build_solution = 0,
+)
+
+msvs_projs.append(proj)
 Return('t')

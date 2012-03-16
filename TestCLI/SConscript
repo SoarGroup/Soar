@@ -2,7 +2,25 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-Import('env')
-TestCLI = env.Program('TestCLI', ['testcli.cpp'])
-mincli = env.Program('cli', 'mincli.cpp')
-env.Alias('cli', env.Install('$OUT_DIR', [TestCLI, mincli]))
+Import('env', 'msvs_projs')
+testcli = env.Install('$OUT_DIR', env.Program('TestCLI', ['testcli.cpp']))
+mincli = env.Install('$OUT_DIR', env.Program('cli', 'mincli.cpp'))
+env.Alias('cli', [testcli, mincli])
+
+mincli_proj = env.MSVSProject(
+	target = '#mincli' + env['MSVSPROJECTSUFFIX'],
+	srcs = [env.File('mincli.cpp').srcnode().path],
+	buildtarget = mincli,
+	variant = ['Debug'],
+	auto_build_solution = 0,
+)
+
+testcli_proj = env.MSVSProject(
+	target = '#testcli' + env['MSVSPROJECTSUFFIX'],
+	srcs = [env.File('testcli.cpp').srcnode().path],
+	buildtarget = testcli,
+	variant = ['Debug'],
+	auto_build_solution = 0,
+)
+
+msvs_projs.extend([mincli_proj, testcli_proj])
