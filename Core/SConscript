@@ -59,9 +59,9 @@ if GetOption('static'):
 	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
 else:
 	kernel_env.Append(CPPFLAGS = shared_macro)
-	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])
+	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])[:2]
 
-env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
+lib_install = env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
 
 # headers
 headers = []
@@ -80,7 +80,7 @@ if 'MSVSProject' in kernel_env['BUILDERS']:
 	vcproj = kernel_env.MSVSProject(
 		target = '#core' + env['MSVSPROJECTSUFFIX'],
 		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
-		buildtarget = soarlib[:1],
+		buildtarget = lib_install,
 		variant = ['Debug'],
 		auto_build_solution = 0,
 	)
