@@ -254,6 +254,7 @@ if 'MSVSSolution' in env['BUILDERS']:
 	)
 	env.Alias('msvs', [msvs_solution] + msvs_projs)
 
+env.Alias('all', default_ans.keys())
 all_aliases = default_ans.keys()
 
 if COMMAND_LINE_TARGETS == ['list']:

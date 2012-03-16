@@ -17,11 +17,13 @@ libs = {
 }
 
 lib = libs[(sys.platform, GetOption('platform'))]
-libfile = env.File(os.path.join('lib', env['SHLIBPREFIX'] + lib + env['SHLIBSUFFIX']))
 clone.Prepend(LIBS = lib, LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
 src = Glob('src/*.cpp')
 t = env.Install('$OUT_DIR', clone.Program('UnitTests', src))
-env.Depends(t, env.Install('$OUT_DIR', libfile))
+
+if sys.platform == 'win32':
+	libfile = env.File('lib/%s.dll' % lib).srcnode()
+	env.Depends(t, env.Install('$OUT_DIR', libfile))
 
 if 'MSVSProject' in env['BUILDERS']:
 	proj = env.MSVSProject(
