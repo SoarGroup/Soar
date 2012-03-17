@@ -91,6 +91,9 @@ public:
 	void RemoveChild(WMElement* pWME) ;
 
 	void DebugString(std::string& result);
+
+private:
+	std::list<WMElement*>::iterator FindChildByTimeTag(long long timeTag);
 } ;
 
 //
