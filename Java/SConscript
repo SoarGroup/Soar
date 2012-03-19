@@ -1,97 +1,50 @@
-#!/usr/bin/python
-# Project: Soar <http://soar.googlecode.com>
-# Author: Jonathan Voigt <voigtjr@gmail.com>
-#
 import os
 import sys
-import string
-import re
-import shutil
-import urllib
-import hashlib
-import subprocess
+import subprocess as sub
 
-# swt.jar 3.5 digests
-OSX_DIGEST = 'a3251234739ab7aa887dd8a3f5b9340b'
-OSX64_DIGEST = '5e49b61aae40258ed2883cee659bcba4'
-GTK_DIGEST = '12306068dbc3477f883bd7835a687cb5'
-GTK64_DIGEST = '1eb148aedd135754ed179782cfefd700'
-
-def CheckJarmd5(jarpath):
-        # open the swt.jar file
-        try:
-                f = file(jarpath)
-        except:
-                return False
-
-        # compute digest
-        m = hashlib.md5()
-        while True:
-            d = f.read(8096)
-            if not d:
-                break
-            m.update(d)
-
-        if sys.platform == 'darwin':
-                if GetOption('platform') == '64':
-                        return OSX64_DIGEST == m.hexdigest()
-                else:
-                        return OSX_DIGEST == m.hexdigest()
-        else:
-                if GetOption('platform') == '64':
-                        return GTK64_DIGEST == m.hexdigest()
-                else:
-                        return GTK_DIGEST == m.hexdigest()
-
-jarpath = os.path.join('SMLJava', 'lib', 'swt.jar')
-def CheckForSWTJar():
-        if os.path.exists(jarpath):
-                if CheckJarmd5(jarpath):
-                        return True
-                else:
-                        print "md5 of swt.jar failed, removing old jar."
-                        os.remove(jarpath)
-
-        try:
-                if sys.platform == 'darwin':
-                        if GetOption('platform') == '64':
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', jarpath)
-                        else:
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/osx/swt.jar', jarpath)
-                else:
-                        if GetOption('platform') == '64':
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', jarpath)
-                        else:
-                                urllib.urlretrieve('http://ai.eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', jarpath)
-        except IOError:
-                print "Error downloading %s: IOError" % jarpath
-                return False
-        except ContentTooShortError:
-                print "Error downloading %s: IOError" % jarpath
-                return False
-
-        if not CheckJarmd5(jarpath):
-                print "Error downloading %s, md5 failed again." % jarpath
-                return False
-
-        print "Successfully downloaded", jarpath
-        return True
-
-# This checks for the swt.jar and attempts to download it if it doesn't exist
-if not CheckForSWTJar():
-	print "Could not find swt.jar. You can obtain the jar here:"
-	print "\thttp://ai.eecs.umich.edu/~soar/sitemaker/misc/jars"
-	print "Place swt.jar in SoarLibrary/bin"
-	print "swt.jar required for Soar Java debugger... Exiting"
-	Exit(1)
-
-# Use helper function, see SConstruct: def javaRunAnt
-Import('javaRunAnt')
-javaRunAnt('Java', 
-	['soar-smljava','soar-debugger','soar-visualsoar'], 
-	['SMLJava/src','Debugger/src','VisualSoar/src'])
-
+# scons Jar builder isn't flexible enough to add resources from different
+# directories, so first make a jar with all the class files, then create
+# a copy of it and insert resource files. I have to make a copy because
+# scons doesn't like to have files it generated modified. This function
+# adds all files and directories under directory source[1] to the jar
+# source[0], creating a new jar target[0]. 
+def AddResources(target, source, env):
+	src_jar = source[0].abspath
+	tgt_jar = target[0].abspath
+	Execute(Copy(tgt_jar, src_jar))
+	resource_dir = source[1].srcnode().abspath
+	files = ' '.join('-C %s %s' % (resource_dir, f) for f in os.listdir(resource_dir))
+	cmd = 'jar uf %s %s' % (tgt_jar, files)
+	return os.system(cmd)
 
 Import('env')
-env.Install('$PREFIX/share/java', jarpath)
+java_env = env.Clone()
 
+if not java_env.WhereIs('java'):
+	Return()
+
+try:
+	p = sub.Popen(['java', '-version'], stderr = sub.PIPE)
+	ver_str = p.stderr.readline().split()[-1].strip('"')
+	p.wait()
+except OSError:
+	print >>sys.stderr, 'Error running java'
+	Exit(1)
+	
+ver = '.'.join(ver_str.split('.')[:2])
+if ver == '1.7':
+	# scons 2.0.1 claims that jdk 1.7 is not supported, but tricking it into
+	# thinking it's 1.6 seems to work fine
+	ver = '1.6'
+java_env['JAVAVERSION'] = ver
+
+java_env['SML'] = env.File(os.path.join(env['OUT_DIR'], 'java', 'sml.jar'))
+if os.name == 'nt':
+	java_env['SEP'] = ';'
+else:
+	java_env['SEP'] = ':'
+
+Export('java_env', 'AddResources')
+
+for d in ['Debugger', 'DebuggerAPI', 'SMLJava']:
+	SConscript(os.path.join(d, 'SConscript'))

@@ -61,13 +61,24 @@ void IdentifierSymbol::DeleteAllChildren()
 	m_Children.clear() ;
 }
 
+std::list<WMElement*>::iterator IdentifierSymbol::FindChildByTimeTag(long long timeTag)
+{
+	for (std::list<WMElement*>::iterator i = m_Children.begin(); i != m_Children.end() ; ++i)
+	{
+		if ((**i).GetTimeTag() == timeTag) {
+			return i;
+		}
+	}
+	return m_Children.end();
+}
+
 void IdentifierSymbol::AddChild(WMElement* pWME)
 {
 	// Record that we're changing the list of children in case the
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
 
-	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
+	Identifier::ChildrenIter iter = FindChildByTimeTag(pWME->GetTimeTag());
 	if ( iter == m_Children.end() )
 	{
 		//std::cout << "AddChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;
@@ -81,7 +92,7 @@ void IdentifierSymbol::AddChild(WMElement* pWME)
 
 WMElement* IdentifierSymbol::GetChildByTimeTag(long long timeTag)
 {
-	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinderTimeTag( timeTag ) );
+	Identifier::ChildrenIter iter = FindChildByTimeTag(timeTag);
 	if ( iter != m_Children.end() )
 	{
 		return *iter;
@@ -106,7 +117,7 @@ void IdentifierSymbol::RemoveChild(WMElement* pWME)
 	// client would like to know that this identifier was changed in some fashion.
 	SetAreChildrenModified(true) ;
 
-	Identifier::ChildrenIter iter = std::find_if( m_Children.begin(), m_Children.end(), WMEFinder( pWME ) );
+	Identifier::ChildrenIter iter = FindChildByTimeTag(pWME->GetTimeTag());
 	if ( iter != m_Children.end() )
 	{
 		//std::cout << "RemoveChild: " << pWME->GetIdentifierName() << ", " << pWME->GetAttribute() << ", " << pWME->GetValueAsString() << " (" << pWME->GetTimeTag() << ")" << " (" << pWME << ")" << std::endl;

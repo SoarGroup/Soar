@@ -16,12 +16,13 @@
 #include <vector>
 #include "sml_ClientIdentifier.h"
 #include "sml_ClientWMElement.h"
+#include "Export.h"
 
 namespace sml {
 
 class WMElement ;
 
-class WMDelta
+class EXPORT WMDelta
 {
 public:
 	enum ChangeType { kAdded = 1, kRemoved } ;
@@ -51,7 +52,7 @@ public:
 	WMElement* getWME()		   { return m_pWME ; }
 } ;
 
-class OutputDeltaList
+class EXPORT OutputDeltaList
 {
 protected:
 	std::vector<WMDelta*>		m_DeltaList ;

@@ -1,0 +1,31 @@
+sp {process-column*propose*get-digit1
+   (state <s> ^name process-column
+             -^digit1)
+-->
+   (<s> ^operator <op> + =)
+   (<op> ^name get-digit1)
+}
+
+sp {process-column*apply*get-digit1
+   (state <s> ^operator.name get-digit1
+              ^current-column <cc>)
+   (<cc> ^digit1 <a>
+        -^new-digit1
+        -^carry-borrow 1)
+-->
+   (<s> ^digit1 <a>)
+}
+
+## If there has been a borrow
+sp {process-column*apply*get-digit1-new 
+   (state <s> ^operator.name get-digit1
+              ^current-column <cc>)
+   (<cc> ^digit1 
+         ^new-digit1 <a>
+        -^carry-borrow 1)
+-->
+   (<s> ^digit1 <a>)
+}
+
+
+

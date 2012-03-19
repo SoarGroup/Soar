@@ -1,0 +1,16 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+#
+import os
+Import('env', 'InstallDir')
+
+subdirs = ['TestSMLEvents', 'TestSMLPerformance', 'TestSoarPerformance', 'TestExternalLibrary', 'UnitTests']
+
+tests = []
+for d in subdirs:
+	script = os.path.join(d, 'SConscript')
+	tests.extend(SConscript(script))
+
+agents = InstallDir(env, '$OUT_DIR/test_agents', 'Agents')
+env.Alias('tests', tests + agents)

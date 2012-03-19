@@ -11,10 +11,12 @@
 #ifndef SML_NAMESH
 #define SML_NAMESH
 
+#include "Export.h"
+
 namespace sml
 {
 
-class sml_Names
+class EXPORT sml_Names
 {
 public:
 	// <sml> tag identifiers
@@ -435,7 +437,6 @@ public:
 	static char const* const kCommand_OutputInit ;
 	static char const* const kCommand_ConvertIdentifier ;
 	static char const* const kCommand_GetListenerPort ;
-	static char const* const kCommand_GetLibraryLocation ;
 
 	// Command line interface
 	static char const* const kCommand_CommandLine ;

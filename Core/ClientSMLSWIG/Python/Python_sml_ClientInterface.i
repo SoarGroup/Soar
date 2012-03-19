@@ -1,5 +1,8 @@
 %module Python_sml_ClientInterface
 
+// handle windows calling convention, __declspec(dllimport), correctly
+%include <windows.i>
+
 %{
 	// helps quell warnings
 	#ifndef unused

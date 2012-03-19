@@ -38,6 +38,8 @@
 #ifndef THREAD_LOCK_H
 #define THREAD_LOCK_H
 
+#include "Export.h"
+
 namespace soar_thread {
 
 // Forward declarations
@@ -51,7 +53,7 @@ class OSSpecificMutex ;
 // This is safer than exposing the "Lock" and "Unlock" methods which is
 // dangerous because it's east to forget to Unlock (or to have an exception or
 // other unexcepted exit out of a function) causing a deadlock.
-class Mutex
+class EXPORT Mutex
 {
 	friend class Lock ;
 	friend class ConditionalLock ;

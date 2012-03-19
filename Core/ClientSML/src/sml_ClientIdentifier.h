@@ -23,6 +23,7 @@
 #include <list>
 #include <set>
 #include <iostream>
+#include "Export.h"
 
 namespace sml {
 
@@ -32,7 +33,7 @@ class Identifier ;
 
 // Two identifiers (two wmes) can have the same value because this is a graph not a tree
 // so we need to represent that separately.
-class IdentifierSymbol
+class EXPORT IdentifierSymbol
 {
 	friend class Identifier ;			// Provide direct access to children.
 
@@ -90,6 +91,9 @@ public:
 	void RemoveChild(WMElement* pWME) ;
 
 	void DebugString(std::string& result);
+
+private:
+	std::list<WMElement*>::iterator FindChildByTimeTag(long long timeTag);
 } ;
 
 //
@@ -101,7 +105,7 @@ public:
 // IsOutputLinkAdd) to check if the WMEs you have were
 // removed during the last decision cycle. Dereferencing
 // a removed WME causes a segmentation fault.
-class Identifier : public WMElement
+class EXPORT Identifier : public WMElement
 {
 	// Make the members all protected, so users dont' access them by accident.
 	// Instead, only open them up to the working memory class to use.
@@ -248,6 +252,12 @@ protected:
 
 	// Send over to the kernel again
 	virtual void Refresh() ;
+
+private:
+	// NOT IMPLEMENTED
+	Identifier( const Identifier & rhs );
+	Identifier& operator=(const Identifier& rhs);
+
 };
 
 }	// namespace

@@ -1,0 +1,96 @@
+import os
+import sys
+import urllib
+import hashlib
+
+depjars = [
+	'lib/jcommon-1.0.10.jar',
+	'lib/jfreechart-1.0.6.jar',
+	'lib/jfreechart-1.0.6-swt.jar',
+	'lib/swtgraphics2d.jar',
+]
+
+swt_jars = {
+	('linux2', 32) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/gtk32/swt.jar', '12306068dbc3477f883bd7835a687cb5'),
+	('linux2', 64) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/gtk64/swt.jar', '1eb148aedd135754ed179782cfefd700'),
+	('darwin', 32) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/osx32/swt.jar', 'a3251234739ab7aa887dd8a3f5b9340b'),
+	('darwin', 64) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/osx64/swt.jar', '5e49b61aae40258ed2883cee659bcba4'),
+	('win32',  32) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/win32/swt.jar', '0a38b18ff43cd7eabd28ca58372d9111'),
+	('win32',  64) : ('http://eecs.umich.edu/~soar/sitemaker/misc/jars/win64/swt.jar', '17bb62dff558d55a6a012eb81931bd64'),
+}
+
+def CheckJarmd5(p):
+	return hashlib.md5(open(p, 'rb').read()).hexdigest() == swt_jars[(sys.platform, int(GetOption('platform')))][1]
+
+def CheckForSWTJar(target, source, env):
+	path = target[0].abspath
+	if os.path.exists(path):
+		if CheckJarmd5(path):
+			return
+		else:
+			print "md5 of swt.jar failed, removing old jar."
+			os.remove(path)
+
+	success = True
+	try:
+		url = swt_jars[(sys.platform, int(GetOption('platform')))][0]
+		print 'Downloading SWT from %s' % url
+		urllib.urlretrieve(url, path)
+	except IOError:
+		print "Error downloading to %s: IOError" % path
+		success = False
+	except urllib.ContentTooShortError:
+		print "Error downloading %s: IOError" % url
+		success = False
+	
+	if not success or not CheckJarmd5(path):
+		print "Could not find swt.jar. You can obtain the jar here:"
+		print "\thttp://eecs.umich.edu/~soar/sitemaker/misc/jars"
+		print "Place swt.jar in Java/lib"
+		Exit(1)
+
+Import('java_env', 'AddResources')
+
+jar_name = 'soar-debugger-%s.jar' % java_env['SOAR_VERSION']
+shortcut_name = 'SoarJavaDebugger.jar'
+
+swt = java_env.File('$OUT_DIR/java/swt.jar')
+api_jar = java_env.File('$OUT_DIR/java/soar-debugger-api-%s.jar' % java_env['SOAR_VERSION'])
+
+clone = java_env.Clone()
+clone.Command(swt, [], CheckForSWTJar)
+clone.Precious(swt)
+
+# Due to VariantDir weirdness, I have to distinguish between the libraries
+# that can be found in their original directories and libraries that can
+# be found in the build and output directories. Hence libs1 and libs2.
+libs1 = [clone.File(j) for j in depjars]
+libs2 = [swt, java_env['SML'], api_jar]
+
+cp = clone['SEP'].join([l.srcnode().abspath for l in libs1] + \
+              [l.abspath for l in libs2])
+
+clone['JAVACLASSPATH'] = cp
+
+classes = clone.Java(target = 'classes', source='src')
+clone.Depends(classes, libs1 + libs2)
+
+temp = clone.Jar(
+	target   = 'temp.jar', 
+	source   = ['classes', 'manifest1'], 
+	JARCHDIR = clone.Dir('classes')
+)
+
+jar = clone.Command(
+	target = jar_name,
+	source = [temp, clone.Dir('resources')],
+	action = AddResources
+)
+
+shortcut_jar = clone.Jar(target = shortcut_name, source = 'manifest2')
+clone.Depends(shortcut_jar, jar)
+
+install = clone.Install('$OUT_DIR/java', jar + libs1)
+install_shortcut = clone.Install('$OUT_DIR', shortcut_jar)
+
+clone.Alias('debugger', install + install_shortcut)
