@@ -38,7 +38,7 @@ wrapper = env.File(name + '_wrap.cpp')
 source = env.File(name + '.py')
 
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in env['CPPPATH'])
-swig_cmd = 'swig %s -o "%s" -c++ -python -Wall "%s"' % (incs, wrapper.abspath, interface)
+swig_cmd = 'swig %s -o "%s" -c++ -python -threads -Wall "%s"' % (incs, wrapper.abspath, interface)
 if not GetOption('verbose'):
 	swig_cmd = '@' + swig_cmd
 
