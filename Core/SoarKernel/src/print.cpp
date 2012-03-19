@@ -1198,13 +1198,13 @@ void print_phase (agent* thisAgent, const char * s, bool end_of_phase)
 
 ===========================
 */
-Bool wme_filter_component_match(Symbol * /*filterComponent*/, Symbol * /*wmeComponent*/) {
-//  if ((filterComponent->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
-//      (!strcmp(filterComponent->sc.name,"*"))) 
-//    return TRUE;
-//  else
-//    return(filterComponent == wmeComponent);
-   return TRUE;
+Bool wme_filter_component_match(Symbol * filterComponent, Symbol * wmeComponent) {
+  if ((filterComponent->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE) &&
+      (!strcmp(filterComponent->sc.name,"*"))) 
+    return TRUE;
+
+  return(filterComponent == wmeComponent);
+
 }
 
 /*
@@ -1212,22 +1212,20 @@ Bool wme_filter_component_match(Symbol * /*filterComponent*/, Symbol * /*wmeComp
 
 ===========================
 */
-Bool passes_wme_filtering(agent* /*thisAgent*/, wme * /*w*/, Bool /*isAdd*/) {
-//  cons *c;
-//  wme_filter *wf;
-//
-//  /*  print ("testing wme for filtering: ");  print_wme(w); */
-//  
-//  if (!thisAgent->wme_filter_list)
-//    return TRUE; /* no filters defined -> everything passes */
-//  for (c=thisAgent->wme_filter_list; c!=NIL; c=c->rest) {
-//    wf = (wme_filter *) c->first;
-//    /*     print_with_symbols(thisAgent, "  trying filter: %y ^%y %y\n",wf->id,wf->attr,wf->value); */
-//    if (   ((isAdd && wf->adds) || ((!isAdd) && wf->removes))
-//        && wme_filter_component_match(wf->id,w->id)
-//        && wme_filter_component_match(wf->attr,w->attr)
-//        && wme_filter_component_match(wf->value,w->value))
-//      return TRUE;
-//  }
+Bool passes_wme_filtering(agent* thisAgent, wme * w, Bool isAdd) {
+  cons *c;
+  wme_filter *wf;
+
+  /*  print ("testing wme for filtering: ");  print_wme(w); */
+  
+  for (c=thisAgent->wme_filter_list; c!=NIL; c=c->rest) {
+    wf = (wme_filter *) c->first;
+    /*     print_with_symbols(thisAgent, "  trying filter: %y ^%y %y\n",wf->id,wf->attr,wf->value); */
+    if (   ((isAdd && wf->adds) || ((!isAdd) && wf->removes)) &&
+        (!wme_filter_component_match(wf->id,w->id)
+        || !wme_filter_component_match(wf->attr,w->attr)
+        || !wme_filter_component_match(wf->value,w->value)))
+      return FALSE;
+  }
   return TRUE; /* no defined filters match -> w passes */
 }
