@@ -13,6 +13,7 @@
 #define SML_WORKING_MEMORY_ELEMENT_H
 
 #include <string>
+#include "Export.h"
 
 #include "sml_ClientDirect.h"
 
@@ -28,7 +29,7 @@ class WorkingMemory ;
 class RemoveDelta ;
 class WMDelta ;
 
-class WMElement
+class EXPORT WMElement
 {
 	// Making most methods protected, so users don't use them directly by accident.
 	// But allow working memory to work with them directly.
@@ -165,37 +166,6 @@ private:
 	WMElement( const WMElement & rhs );
 	WMElement& operator=(const WMElement& rhs);
 
-};
-
-
-struct WMEFinder
-{
-	WMEFinder( const WMElement* wme )
-	: wme( wme )
-	{
-	}
-
-	bool operator()( const WMElement* wme2 ) const
-	{
-		return wme->GetTimeTag() == wme2->GetTimeTag();
-	}
-
-	const WMElement* wme;
-};
-
-struct WMEFinderTimeTag
-{
-	WMEFinderTimeTag( long long timeTag )
-	: timeTag( timeTag )
-	{
-	}
-
-	bool operator()( const WMElement* wme ) const
-	{
-		return timeTag == wme->GetTimeTag();
-	}
-
-	long long timeTag;
 };
 
 }	// namespace

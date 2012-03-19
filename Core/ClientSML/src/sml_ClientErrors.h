@@ -10,13 +10,14 @@
 #define SML_CLIENT_ERRORS_H
 
 #include <string>
+#include "Export.h"
 
 namespace sml {
 
 // Actual error codes are in sml_Errors.h
 typedef int ErrorCode ;
 
-class ClientErrors
+class EXPORT ClientErrors
 {
 protected:
 	ErrorCode			m_LastError ;

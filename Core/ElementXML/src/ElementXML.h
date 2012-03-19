@@ -2,6 +2,7 @@
 #define SOARXML_ELEMENTXML_H
 
 #include <cstring>
+#include "Export.h"
 
 /////////////////////////////////////////////////////////////////
 // ElementXML class
@@ -60,7 +61,7 @@ namespace soarxml
 	* @brief The ElementXML class represents an element in an XML stream.
 	*		 Through its children, it can represent an entire XML document.
 	*************************************************************/
-	class ElementXML
+	class EXPORT ElementXML
 	{
 		// Let Connection have access to Fast methods (which are protected because they take care to use correctly).
 		friend class sml::Connection ;

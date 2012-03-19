@@ -8,6 +8,8 @@ import os
 import SCons.Script
 
 Import('env')
+Return()
+	
 clone = env.Clone()
 
 # Targets, sources, other constants
@@ -23,15 +25,13 @@ env.Command(phpsml_wrap, phpsml_i, swig_cmdline)
 env.SideEffect([phpsml_php,phpsml_wrap_h], phpsml_wrap)
 
 # Prepare environment to build shared library
-clone.Prepend(CPPPATH = Split('#ClientSML/src #ElementXML/src #ConnectionSML/src'))
-
 clone.Append(CXXFLAGS = '`php-config --includes`')
 clone.Append(CPPFLAGS = ['-w'])
 
 if os.name == 'posix':
 	clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
 
-clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML'))
+clone.Append(LIBS = Split('SoarClient SoarKernel'))
 clone.Append(LIBPATH = ['$PREFIX/lib'])
 
 if sys.platform == 'darwin':

@@ -11,6 +11,8 @@
 //
 /////////////////////////////////////////////////////////////////
 
+#include "Export.h"
+
 namespace sml {
 
 // Silences unreferenced formal parameter warning
@@ -33,7 +35,7 @@ namespace sml {
 // Description	  : Sleep for the specified seconds and milliseconds
 //
 /////////////////////////////////////////////////////////////////////
-void Sleep(int secs, int msecs);
+void EXPORT Sleep(int secs, int msecs);
 
 /////////////////////////////////////////////////////////////////////
 // Function name  : ReportSystemErrorMessage
@@ -43,7 +45,7 @@ void Sleep(int secs, int msecs);
 // Description	  : Get the text of the most recent system error
 //
 /////////////////////////////////////////////////////////////////////
-void ReportSystemErrorMessage();
+void EXPORT ReportSystemErrorMessage();
 
 /////////////////////////////////////////////////////////////////
 // Debug stuff
@@ -59,9 +61,9 @@ void ReportSystemErrorMessage();
 // Have to comment this in before we can turn on dump of method entry and exit (currently used in socket code)
 //#define DEBUG_CALLS
 
-void PrintDebugMethod(char const* pMethodName, char const* pStr) ;
-void PrintDebug(char const* pStr) ;
-void PrintDebugFormat(char const* pFormat, ...) ;
+void EXPORT PrintDebugMethod(char const* pMethodName, char const* pStr) ;
+void EXPORT PrintDebug(char const* pStr) ;
+void EXPORT PrintDebugFormat(char const* pFormat, ...) ;
 
 #ifdef DEBUG_CALLS
 
@@ -69,7 +71,7 @@ void PrintDebugFormat(char const* pFormat, ...) ;
 typedef std::vector<char const*> StackTrace ;
 #define CTDEBUG_ENTER_METHOD(methodName) CTDebugEnterMethod myEnterMethod3PNY(methodName)
 
-class CTDebugEnterMethod
+class EXPORT CTDebugEnterMethod
 {
 public:
 	// Constructor which is called when you enter a method

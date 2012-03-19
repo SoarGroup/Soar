@@ -86,6 +86,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
+#include "Export.h"
 
 class MTRand {
 // Data
@@ -409,22 +410,22 @@ inline std::istream& operator>>( std::istream& is, MTRand& mtrand )
 }
 
 // real number in [0,1]
-double SoarRand();
+EXPORT double SoarRand();
 
 // real number in [0,n]
-double SoarRand(const double& max);
+EXPORT double SoarRand(const double& max);
 
 // integer in [0,2^32-1]
-uint32_t SoarRandInt();
+EXPORT uint32_t SoarRandInt();
 
 // integer in [0,n] for n < 2^32
-uint32_t SoarRandInt(const uint32_t& max);
+EXPORT uint32_t SoarRandInt(const uint32_t& max);
 
 // automatically seed with a value based on the time or /dev/urandom
-void SoarSeedRNG();
+EXPORT void SoarSeedRNG();
 
 // seed with a provided value
-void SoarSeedRNG(const uint32_t seed);
+EXPORT void SoarSeedRNG(const uint32_t seed);
 
 #endif  // SOAR_RAND_H
 

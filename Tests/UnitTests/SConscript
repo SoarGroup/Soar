@@ -1,0 +1,39 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+#
+import os, sys
+
+Import('env')
+clone = env.Clone()
+
+libs = {
+	('darwin', '32') : 'cppunit-osx',
+	('darwin', '64') : 'cppunit-osx-64',
+	('linux2', '32') : 'cppunit-linux',
+	('linux2', '64') : 'cppunit-linux-64',
+	('win32',  '32') : 'cppunit_dllvs9',
+	('win32',  '64') : 'cppunit64_dllvs9'
+}
+
+lib = libs[(sys.platform, GetOption('platform'))]
+clone.Prepend(LIBS = lib, LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
+src = Glob('src/*.cpp')
+t = env.Install('$OUT_DIR', clone.Program('UnitTests', src))
+
+if sys.platform == 'win32':
+	libfile = env.File('lib/%s.dll' % lib).srcnode()
+	env.Depends(t, env.Install('$OUT_DIR', libfile))
+
+if 'MSVSProject' in env['BUILDERS']:
+	proj = env.MSVSProject(
+		target = '#unittests' + env['MSVSPROJECTSUFFIX'],
+		srcs = [ str(s) for s in src ],
+		buildtarget = t,
+		variant = ['Debug'],
+		auto_build_solution = 0,
+	)
+	Import('msvs_projs')
+	msvs_projs.append(proj)
+
+Return('t')

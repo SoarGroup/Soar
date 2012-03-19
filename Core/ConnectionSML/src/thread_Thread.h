@@ -15,10 +15,11 @@
 #define THREAD_THREAD_H
 
 #include "thread_Event.h"
+#include "Export.h"
 
 namespace soar_thread {
 
-class Thread
+class EXPORT Thread
 {
 protected:
 	volatile bool	m_QuitNow ;

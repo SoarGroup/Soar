@@ -114,8 +114,6 @@ Connection::~Connection()
 * @brief Creates a connection to a receiver that is embedded
 *        within the same process.
 *
-* @param pLibraryName	The name of the library to load, without an extension (e.g. "SoarKernelSML").  Case-sensitive (to support Linux).
-*						This library will be dynamically loaded and connected to.
 * @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
 *						kernel to check for incoming messages on remote sockets.
 *						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
@@ -128,7 +126,7 @@ Connection::~Connection()
 * @param pError			Pass in a pointer to an int and receive back an error code if there is a problem.
 * @returns An EmbeddedConnection instance.
 *************************************************************/
-Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn, ErrorCode* pError)
+Connection* Connection::CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn, ErrorCode* pError)
 {
 	// Set an initial error code and then replace it if something goes wrong.
 	if (pError) *pError = Error::kNoError ;
@@ -138,7 +136,7 @@ Connection* Connection::CreateEmbeddedConnection(char const* pLibraryName, bool 
 									EmbeddedConnectionSynch::CreateEmbeddedConnectionSynch() :
 									EmbeddedConnectionAsynch::CreateEmbeddedConnectionAsynch() ;
 
-	pConnection->AttachConnection(pLibraryName, optimized, portToListenOn) ;
+	pConnection->AttachConnection(optimized, portToListenOn) ;
 
 	// Report any errors
 	if (pError) *pError = pConnection->GetLastError() ;

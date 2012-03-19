@@ -24,9 +24,10 @@
 #include "sml_ClientDirect.h"
 #include "sml_EmbeddedConnection.h"	// For access to direct methods
 
-#include <iostream>     
-#include <sstream>     
+#include <iostream>
+#include <sstream>
 #include <iomanip>
+#include <fstream>
 
 #include <cassert>
 #include <string>
@@ -39,6 +40,8 @@
 
 using namespace sml;
 using namespace soarxml;
+
+const char *DEBUGGER_NAME = "SoarJavaDebugger.jar";
 
 namespace sml
 {
@@ -1260,12 +1263,38 @@ bool Agent::SynchronizeOutputLink()
 	return GetWM()->SynchronizeOutputLink() ;
 }
 
-bool Agent::SpawnDebugger(int port, const char* pLibraryLocation)
-{
-	std::string libraryLocation = pLibraryLocation == 0 ? this->m_Kernel->GetLibraryLocation() : pLibraryLocation;
+bool exists(const char *path) {
+	return std::ifstream(path).is_open();
+}
 
-	if (port == -1) 
-		port = getpid();
+bool Agent::SpawnDebugger(int port, const char* jarpath)
+{
+	std::string p;
+	if (jarpath) {
+		if (!exists(jarpath)) {
+			return false;
+		}
+		p = jarpath;
+	} else if (exists(DEBUGGER_NAME)) {
+		p = DEBUGGER_NAME;
+	} else {
+		char *e = getenv("SOAR_HOME");
+		if (!e) {
+			return false;
+		}
+		std::string h(e);
+		if (h.find_last_of("/\\") != h.size() - 1) {
+			h += '/';
+		}
+		h += DEBUGGER_NAME;
+		if (!exists(h.c_str())) {
+			return false;
+		}
+		p = h;
+	}
+	
+	if (port == -1)
+		port = m_Kernel->GetListenerPort();
 
 	if (m_pDPI) 
 		return false;
@@ -1278,9 +1307,7 @@ bool Agent::SpawnDebugger(int port, const char* pLibraryLocation)
 
 	// Start the child process. 
 	std::stringstream commandLine;
-	commandLine << "javaw.exe -jar \"" << libraryLocation 
-		<< "bin\\SoarJavaDebugger.jar\" -remote -port "
-		<< port << " -agent \"" << this->GetAgentName() << "\"";
+	commandLine << "javaw.exe -jar \"" << p << "\" -remote -port " << port << " -agent \"" << this->GetAgentName() << "\"";
 
 	BOOL ret = CreateProcess(
 		0,
@@ -1315,17 +1342,14 @@ bool Agent::SpawnDebugger(int port, const char* pLibraryLocation)
 	if ( m_pDPI->debuggerPid == 0 ) 
 	{
 		// child
-		std::stringstream jarstring;
-		jarstring << libraryLocation << "bin/SoarJavaDebugger.jar";
-
 		std::string portstring;
 		to_string(port, portstring);
 
 #ifdef SCONS_DARWIN
-		execlp("java", "java", "-XstartOnFirstThread", "-jar", jarstring.str().c_str(), "-remote", 
+		execlp("java", "java", "-XstartOnFirstThread", "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #else
-		execlp("java", "java", "-jar", jarstring.str().c_str(), "-remote", 
+		execlp("java", "java", "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #endif
 		// does not return on success

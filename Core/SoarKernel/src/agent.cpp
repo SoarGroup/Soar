@@ -262,6 +262,17 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->lexeme.id_letter = 'A';
   newAgent->lexeme.id_number = 0;
 
+  /* Initializing all the timer structures */
+#ifndef NO_TIMING_STUFF
+  newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#ifdef DETAILED_TIMING_STATS
+  newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#endif
+  reset_timers(newAgent);
+#endif
+
   reset_max_stats(newAgent);
 
   newAgent->real_time_tracker = 0;
@@ -300,18 +311,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   // This was moved here so that system parameters could
   // be set before the agent was initialized.
   init_sysparams (newAgent);
-
-  /* Initializing all the timer structures */
-  // timers require sysparams to be set first
-#ifndef NO_TIMING_STUFF
-  newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-  newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-  newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-#ifdef DETAILED_TIMING_STATS
-  newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-#endif
-  reset_timers(newAgent);
-#endif
 
   // dynamic memory pools (should come before consumers of dynamic pools)
   newAgent->dyn_memory_pools = new std::map< size_t, memory_pool* >();

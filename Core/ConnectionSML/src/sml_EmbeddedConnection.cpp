@@ -18,6 +18,9 @@
 #include "ElementXML.h"
 #include "sml_MessageSML.h"
 #include "thread_Thread.h"
+#include "sml_KernelSML.h"
+#include "sml_AgentSML.h"
+#include "EmbeddedSMLInterface.h"
 
 #include <string>
 #include <iostream>
@@ -26,41 +29,12 @@
 using namespace sml ;
 using namespace soarxml ;
 
-#ifdef SCONS // scons has detected a posix environment
-#  ifdef STATIC_LINKED
-#    define LINUX_STATIC
-#  else
-#    define LINUX_SHARED
-#  endif
-#endif
-
-#ifdef _WIN32
-#  ifdef STATIC_LINKED
-#    define WINDOWS_STATIC
-#  else
-#    define WINDOWS_SHARED
-#  endif
-#endif
-
-namespace sml
-{
-	struct LibraryHandle
-	{
-#ifdef WINDOWS_SHARED
-		HMODULE hLibrary;
-#elif defined(LINUX_SHARED) 
-		void* hLibrary;
-#endif
-	};
-}
-
 EmbeddedConnection::EmbeddedConnection()
 {
 	m_pLastResponse = new ElementXML() ;
 	m_hConnection   = NULL ;
-	m_pProcessMessageFunction = NULL ;
-	m_pCreateEmbeddedFunction = NULL ;
-	m_pLH = 0;
+	m_pKernelSML    = NULL ;
+	m_pProcessMessageFunction = &sml_ProcessMessage ;
 }
 
 EmbeddedConnection::~EmbeddedConnection()
@@ -163,151 +137,19 @@ ElementXML_Handle LocalProcessMessage(Connection_Receiver_Handle hReceiverConnec
 }
 
 /*************************************************************
-* @brief Loads a library and creates an embedded connection to it.
-*
-*		 The library at a minimum needs to export 2 methods:
-*		 sml_CreateEmbeddedConnection (for initialization) and
-*		 sml_ProcessMessage (for sending messages)
-*
-*		 If KERNEL_SML_DIRECT is defined we also see if the
-*		 the library exports a series of "Direct" methods.  These
-*		 allow us to short circuit the message passing and call directly
-*		 into gSKI for maximum performance on some I/O calls.
-*
-*		 If the library doesn't export these functions
-*		 or if the caller doesn't pass "true" for optimized
-*		 or if this is an asychronous (out of thread) connection
-*		 then the "m_bIsDirectConnection" will be false and we'll
-*		 just fall back on our normal message passing model.
-*		 To date, it's not clear there's much value in supporting these
-*		 direct methods, but they do allow a client that is really
-*		 time critical to use SML with almost no performance hit over
-*		 using gSKI directly.
+* @brief Create an embedded connection to a kernel
 *************************************************************/
-bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimized, int portToListenOn)
+bool EmbeddedConnection::AttachConnection(bool optimized, int portToListenOn)
 {
 	ClearError() ;
-
-	// Make a copy of the library name so we can work on it.
-	std::string libraryName = pLibraryName ;
-
-	// We shouldn't be passed something with an extension
-	// but if we are, we'll try to strip the extension to be helpful
-	size_t pos = libraryName.find_last_of('.') ;
-	if (pos != std::string::npos)
-	{
-		libraryName.erase(pos) ;
+	if (optimized && !IsAsynchronous()) {
+		m_bIsDirectConnection = true ;
 	}
-
-	if (m_pLH)
-	{
-		PrintDebugFormat("****Error: %s", "AttachConnection called twice");
-		return false;
-	}
-	m_pLH = new LibraryHandle();
-
-#ifdef WINDOWS_SHARED
-	// The windows shared library
-	libraryName = libraryName + ".dll";
 	
-	// Now load the library itself.
-	m_pLH->hLibrary = 0;
-	m_pLH->hLibrary = LoadLibrary(libraryName.c_str()) ;
-
-#elif defined(LINUX_SHARED) 
-
-
-
-	std::string newLibraryName = "lib" + libraryName;
-#ifdef SCONS_DARWIN
-	newLibraryName.append(".dylib");
-#else
-	newLibraryName.append(".so");
-#endif
-	m_pLH->hLibrary = 0;
-	m_pLH->hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
-#endif
-
-#if defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
-	if (!m_pLH->hLibrary)
-	{
-		SetError(Error::kLibraryNotFound) ;
-      
-      char* message;
-#ifdef WINDOWS_SHARED
-      int error = GetLastError() ;
-
-      FormatMessage(
-         FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-         0,
-         error,
-         0,
-         (char*) &message,
-         0, 0 );
-
-      message = strerror(error);
-
-      PrintDebugFormat("****Error: %s", message);
-
-      LocalFree(message);
-
-#elif defined(LINUX_SHARED)
-      message = dlerror();
-      PrintDebugFormat("Error: %s", message);
-      //BUGBUG? does message need to be released?
-
-#endif
-      
-		return false ;
-	}
-
-	// Get the functions that a DLL must export to support an embedded connection.
-	m_pProcessMessageFunction = Dangerous_Pointer_Cast<ProcessMessageFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_ProcessMessage")) ;
-	m_pCreateEmbeddedFunction = Dangerous_Pointer_Cast<CreateEmbeddedConnectionFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_CreateEmbeddedConnection")) ;
-
-#ifdef KERNEL_SML_DIRECT
-	m_pDirectAddWMEStringFunction =		Dangerous_Pointer_Cast<DirectAddWMEStringFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_String")) ;
-	m_pDirectAddWMEIntFunction =		Dangerous_Pointer_Cast<DirectAddWMEIntFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Int")) ;
-	m_pDirectAddWMEDoubleFunction =		Dangerous_Pointer_Cast<DirectAddWMEDoubleFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddWME_Double")) ;
-	m_pDirectRemoveWMEFunction =		Dangerous_Pointer_Cast<DirectRemoveWMEFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectRemoveWME")) ;
-
-	m_pDirectAddIDFunction =			Dangerous_Pointer_Cast<DirectAddIDFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectAddID")) ;
-
-	m_pDirectGetAgentSMLHandleFunction = Dangerous_Pointer_Cast<DirectGetAgentSMLHandleFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectGetAgentSMLHandle")) ;
-
-	m_pDirectRunFunction =			    Dangerous_Pointer_Cast<DirectRunFunction>::from(GetProcAddress(m_pLH->hLibrary, "sml_DirectRun")) ;
-	
-	// Check that we got the list of functions and if so enable the direct connection
-	if (m_pDirectAddWMEStringFunction && m_pDirectAddWMEIntFunction && m_pDirectAddWMEDoubleFunction &&
-		m_pDirectRemoveWMEFunction    && m_pDirectAddIDFunction     && m_pDirectRunFunction)
-	{
-		// We only enable direct connections if we found all of the methods, this is a synchronous connection (i.e. we execute
-		// on the client's thread) and the client says it's ok to use these optimizations.
-		if (optimized && !IsAsynchronous())
-			m_bIsDirectConnection = true ;
-	}
-#endif
-
-	// See if we got the functions
-	if (!m_pProcessMessageFunction || !m_pCreateEmbeddedFunction)
-	{
-		SetError(Error::kFunctionsNotFound) ;
-		return false ;
-	}
-
-#else // defined(LINUX_SHARED) || defined(WINDOWS_SHARED)
-	// If we're not in Windows and we can't dynamically load methods we'll just get
-	// by with the two we really need.  This just means we can't get maximum optimization on
-	// this particular platform.
-	m_pProcessMessageFunction = &sml_ProcessMessage;
-	m_pCreateEmbeddedFunction = &sml_CreateEmbeddedConnection;
-
-#endif // not (defined(LINUX_SHARED) || defined(WINDOWS_SHARED))
-
 	// We only use the creation function once to create a connection object (which we'll pass back
 	// with each call).
 	int connectionType = this->IsAsynchronous() ? SML_ASYNCH_CONNECTION : SML_SYNCH_CONNECTION ;
-	m_hConnection = m_pCreateEmbeddedFunction( Dangerous_Pointer_Cast<Connection_Sender_Handle>::from(this), LocalProcessMessage, connectionType, portToListenOn) ;
+	m_hConnection = sml_CreateEmbeddedConnection( Dangerous_Pointer_Cast<Connection_Sender_Handle>::from(this), LocalProcessMessage, connectionType, portToListenOn) ;
 
 	if (!m_hConnection)
 	{
@@ -315,8 +157,7 @@ bool EmbeddedConnection::AttachConnection(char const* pLibraryName, bool optimiz
 		return false ;
 	}
 
-	// When we reach here we have a connection object (m_hConnection) back from KernelSML and
-	// we have the function (m_pProcessMessageFunction) that we'll use to communicate with that library.
+	m_pKernelSML = reinterpret_cast<KernelSML*>(reinterpret_cast<EmbeddedConnection*>(m_hConnection)->GetUserData());
 	return true ;
 }
 
@@ -359,17 +200,6 @@ void EmbeddedConnection::CloseConnection()
 	}
 	
 	m_hConnection = NULL ;
-
-	if (m_pLH)
-	{
-#ifdef WINDOWS_SHARED
-		FreeLibrary(m_pLH->hLibrary);
-#elif defined(LINUX_SHARED) 
-		dlclose(m_pLH->hLibrary);
-#endif
-		delete m_pLH;
-		m_pLH = 0;
-	}
 }
 
 /*************************************************************
@@ -387,4 +217,55 @@ void EmbeddedConnection::SetTraceCommunications(bool state)
 		// Tell the kernel to turn tracing on or off
 		m_pProcessMessageFunction(m_hConnection, 0, state ? SML_MESSAGE_ACTION_TRACE_ON : SML_MESSAGE_ACTION_TRACE_OFF) ;
 	}
+}
+
+void EmbeddedConnection::DirectAddWME_String
+(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValue, int64_t clientTimetag)
+{
+	AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
+	assert(a);
+	a->BufferedAddStringInputWME( pId, pAttribute, pValue, clientTimetag );
+}
+void EmbeddedConnection::DirectAddWME_Int
+(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, int64_t value, int64_t clientTimetag)
+{
+	AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
+	assert(a);
+	a->BufferedAddIntInputWME( pId, pAttribute, value, clientTimetag );
+}
+void EmbeddedConnection::DirectAddWME_Double
+(Direct_AgentSML_Handle pAgentSMLIn, char const* pId, char const* pAttribute, double value, int64_t clientTimetag)
+{
+	AgentSML* pAgentSML = reinterpret_cast<AgentSML*>(pAgentSMLIn);
+	assert(pAgentSML);
+
+	pAgentSML->BufferedAddDoubleInputWME( pId, pAttribute, value, clientTimetag );
+}
+void EmbeddedConnection::DirectRemoveWME
+(Direct_AgentSML_Handle pAgentSML, int64_t clientTimetag)
+{
+	AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
+	assert(a);
+	a->BufferedRemoveInputWME( clientTimetag );
+}
+
+void EmbeddedConnection::DirectAddID
+(Direct_AgentSML_Handle pAgentSML, char const* pId, char const* pAttribute, char const* pValueId, int64_t clientTimetag)
+{
+	AgentSML* a = reinterpret_cast<AgentSML*>(pAgentSML);
+	assert(a);
+	a->BufferedAddIdInputWME( pId, pAttribute, pValueId, clientTimetag );
+}
+
+Direct_AgentSML_Handle EmbeddedConnection::DirectGetAgentSMLHandle
+(char const* pAgentName)
+{
+	AgentSML* a = m_pKernelSML->GetAgentSML( pAgentName );
+	return reinterpret_cast<Direct_AgentSML_Handle>(a);
+}
+
+void EmbeddedConnection::DirectRun
+(char const* pAgentName, bool forever, int stepSize, int interleaveSize, uint64_t count)
+{
+	m_pKernelSML->DirectRun(pAgentName, forever, stepSize, interleaveSize, count) ;
 }

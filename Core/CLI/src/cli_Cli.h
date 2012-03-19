@@ -528,12 +528,6 @@ namespace cli
         virtual bool DoSelect(const std::string* pOp = 0) = 0;
 
         /**
-         * @brief set-library-location command
-         * @param pLocation String of new location, pass null for query.
-         */
-        virtual bool DoSetLibraryLocation(std::string* pLocation = 0) = 0;
-
-        /**
          * @brief set-stop-phase command
          * @param setPhase
          * @param before
