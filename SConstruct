@@ -160,7 +160,7 @@ Export('compiler')
 
 cflags = []
 lnflags = []
-libs = ['Soar', 'LinearMath', 'BulletCollision']
+libs = ['Soar']
 if compiler == 'g++':
 	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
 	if sys.platform == 'darwin':
