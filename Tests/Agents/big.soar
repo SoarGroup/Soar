@@ -10942,3 +10942,13 @@ sp {apply*move
    (write (crlf) |Moved: | <dir>)
 }
 rl --set learning on
+
+# the following 3 commands test the fix for issues 95 and 102
+sp {literals_test
+   (state <s> ^superstate nil) # }}}}
+-->
+   (<s> ^literal |##}}}}}{{##|)}
+
+w 0 # blah blah blah
+
+# should be empty
