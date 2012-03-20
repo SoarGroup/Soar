@@ -396,10 +396,23 @@ void TokenizerTest::testTokenizer34()
         "               ])\n"
         "-->\n"
         "   (<s> ^operator <o> = 15)\n";
+    const char* body_nocomments =
+        "gp*test3\n"
+        "   (state <s> ^operator <o> +\n"
+        "              ^someflag [ true false ])\n"
+        "   (<o> ^name foo\n"
+        "        ^att [\n"
+        "               val1 \n"
+        "               1.3  \n"
+        "               |another val[]][[[]]]][|  \n"
+        "               |\\|another val\\||  \n"
+        "               ])\n"
+        "-->\n"
+        "   (<s> ^operator <o> = 15)\n";
     std::string rule("gp {");
     rule.append(body);
     rule.append("}");
-    CallData cd(rule.c_str(), 2, "gp", body);
+    CallData cd(rule.c_str(), 2, "gp", body_nocomments);
     evaluate(cd); 
 }
 
@@ -416,10 +429,21 @@ void TokenizerTest::testTokenizer35()
         "-->\n"
         "   (<s> ^operator <o> +)\n"
         "   (<o> ^name toggle-to-b)\n";
+    const char* body_nocomments =
+        "add*propose*toggle-to-b\n"
+        "   (state <s> ^superstate.operator.name add\n"
+        "              ^tss <tss>\n"
+        "             \n"
+        "              ^superstate.toggle a)\n"
+        "            \n"
+        "   (<tss> -^sum)\n"
+        "-->\n"
+        "   (<s> ^operator <o> +)\n"
+        "   (<o> ^name toggle-to-b)\n";
     std::string rule("sp {");
     rule.append(body);
     rule.append("}");
-    CallData cd(rule.c_str(), 2, "sp", body);
+    CallData cd(rule.c_str(), 2, "sp", body_nocomments);
     evaluate(cd); 
 }
 void TokenizerTest::testTokenizer36()

@@ -184,14 +184,15 @@ namespace soar
     };
 
     /**
-     * Essentially implements a simple Tcl parser. 
+     * Essentially implements a simple Tcl parser, with some exceptions.
      *
      * Takes a string and farily efficiently converts it in to a series of
      * callbacks with arguments separated in to a vector of strings (what Tcl
      * refers to as "words").
      *
      * Here are the rules, copied from the Tcl language summary (man tcl), with
-     * modifications [in square brackets] as they apply to this parser:
+     * modifications [in square brackets] as they apply to this parser. The only 
+     * deviations appear in rules 5 and 9.
      * 
      * [1] A Tcl script is a string containing one or more commands. Semi-colons
      * and newlines are command separators unless quoted as described below.  Close
@@ -229,6 +230,9 @@ namespace soar
      * The word will consist of exactly the characters between the outer braces,
      * not including the braces themselves.
      *
+     * Soar addendum: due to the use of pipes as quotes, braces that appear between
+     * pipes when embedded in braces are considered literals.
+     *
      * [6] [Square brackets are not special in this parser. No command
      * substitution.]
      *
@@ -265,11 +269,28 @@ namespace soar
      * Backslash substitution is not performed on words enclosed in braces, except
      * for backslash-newline as described above.
      *
-     * [9] If a hash character (#) appears at a point where Tcl is expecting the
-     * first character of the first word of a command, then the hash character and
-     * the characters that follow it, up through the next newline, are treated as a
-     * comment and ignored. The comment character only has significance when it
-     * appears at the beginning of a command.
+     * [9] Tcl considers # to begin comments only when they are at the
+     * beginning of a command. Adhering to this rule makes for unintuitive
+     * Soar production syntax. For example, the first closing brace in
+     * the follow rule looks commented out, but really isn't because
+     * the # is treated as a literal by the CLI:
+     * 
+     *   sp {rule
+     *      (state <s> ^superstate nil)
+     *   -->
+     *      (<s> ^foo bar)
+     *     #(<s> ^bar baz)}
+     *   }
+     * 
+     * Another gotcha is with commands:
+     *
+     *   indifferent-selection -g # for RL
+     *
+     * In Soar, a # anywhere begins a comment, with 3 exceptions:
+     *   1. When escaped with a \
+     *   2. Between double quotes ("") that are not embedded in brace quotes
+     *   3. Between pipes (||) that are embedded in brace quotes
+     * 
      * 
      * [10] [Talks about details regarding substitution and generally does not
      * apply to this parser.]
@@ -408,6 +429,10 @@ namespace soar
             {
             case ';':
                 break;
+                
+            case '#':
+                skip_to_end_of_line();
+                break;
 
             case '"':
                 argv.push_back(word);
@@ -436,7 +461,6 @@ namespace soar
             do
             {
                 char c = current.get();
-                bool semi = false;
                 switch (c)
                 {
                 case '\\':
@@ -446,16 +470,16 @@ namespace soar
                     break;
 
                 case ';':
-                    semi = true;
-                    break;
+                    return;
+                
+                case '#':
+                    skip_to_end_of_line();
+                    return;
 
                 default:
                     current.increment();
                     break;
                 }
-
-                if (semi)
-                    return;
 
                 argv.back().push_back(c);
             }
@@ -586,47 +610,44 @@ namespace soar
         {
             current.increment(); // consume brace;
             int depth = 1;
+            bool literal = false;
             while (depth)
             {
-                bool increment = true;
-                switch (current.get())
-                {
-                case 0:
+                char c = current.get();
+                if (c == 0) {
                     error = "unexpected eof, unmatched opening brace";
                     current.invalidate();
                     return;
-
-                case '\\':
+                }
+                current.increment();
+                if (c == '\\') {
                     // special case for backslash-newline substitution
-                    current.increment();
                     if (current.get() == '\n')
                     {
-                        skip_whitespace();
-                        increment = false;
                         argv.back().push_back(' ');
-                        break;
-                    }
-
-                    // current is escaped but no substitution
-                    argv.back().push_back('\\');
-                    argv.back().push_back(current.get());
-                    break;
-
-                case '}':
-                    depth -= 1;
-                    if (depth) // consume only the final closing brace
+                        skip_whitespace();
+                    } else {
+                        // current is escaped but no substitution
+                        argv.back().push_back('\\');
                         argv.back().push_back(current.get());
-                    break;
-
-                case '{':
-                    depth += 1;
-                    // falls through
-                default:
-                    argv.back().push_back(current.get());
-                    break;
+                        current.increment();
+                    }
+                } else if (c == '#' && !literal) {
+                    skip_to_end_of_line();
+                } else {
+                    if (!literal) {
+                        if (c == '{') {
+                            ++depth;
+                        } else if (c == '}') {
+                            if (--depth == 0)  // don't include final }
+                                return;
+                        }
+                    }
+                    argv.back().push_back(c);
                 }
-                if (increment)
-                    current.increment();
+                if (c == '|') {
+                    literal = !literal;
+                }
             }
         }
 
