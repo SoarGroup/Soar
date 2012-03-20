@@ -335,9 +335,6 @@ agent * create_soar_agent (char * agent_name) {                                 
 
   rl_initialize_template_tracking( newAgent );
 
-  newAgent->rl_first_switch = true;
-
-
   // select initialization
   newAgent->select = new select_info;
   select_init( newAgent );

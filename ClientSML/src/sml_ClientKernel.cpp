@@ -38,8 +38,6 @@
 using namespace sml ;
 using namespace soarxml;
 
-char const* const Kernel::kDefaultLibraryName = "SoarKernelSML" ;
-
 Kernel::Kernel(Connection* pConnection)
 {
 	m_Connection     = pConnection ;
@@ -655,14 +653,14 @@ void Kernel::ReceivedRhsEvent(smlRhsEventId id, AnalyzeXML* pIncoming, ElementXM
 	GetConnection()->AddSimpleResultToSMLResponse(pResponse, result.c_str()) ;
 }
 
-Kernel* Kernel::CreateKernelInCurrentThread(char const* pLibraryName, bool optimized, int portToListenOn)
+Kernel* Kernel::CreateKernelInCurrentThread(bool optimized, int portToListenOn)
 {
-	return CreateEmbeddedConnection(pLibraryName, true, optimized, portToListenOn) ;
+	return CreateEmbeddedConnection(true, optimized, portToListenOn) ;
 }
 
-Kernel* Kernel::CreateKernelInNewThread(char const* pLibraryName, int portToListenOn)
+Kernel* Kernel::CreateKernelInNewThread(int portToListenOn)
 {
-	return CreateEmbeddedConnection(pLibraryName, false, false, portToListenOn) ;
+	return CreateEmbeddedConnection(false, false, portToListenOn) ;
 }
 
 /*************************************************************
@@ -670,8 +668,6 @@ Kernel* Kernel::CreateKernelInNewThread(char const* pLibraryName, int portToList
 *        within the same process as the caller.
 *		 (This method is protected - clients should use the two methods above that are more explicitly named).
 *
-* @param pLibraryName	The name of the library to load, without an extension (e.g. "SoarKernelSML").  Case-sensitive (to support Linux).
-*						This library will be dynamically loaded and connected to.
 * @param ClientThread	If true, Soar will run in the client's thread and the client must periodically call over to the
 *						kernel to check for incoming messages on remote sockets.
 *						If false, Soar will run in a thread within the kernel and that thread will check the incoming sockets itself.
@@ -684,10 +680,10 @@ Kernel* Kernel::CreateKernelInNewThread(char const* pLibraryName, int portToList
 * @returns A new kernel object which is used to communicate with the kernel.
 *		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 *************************************************************/
-Kernel* Kernel::CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn)
+Kernel* Kernel::CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn)
 {
 	ErrorCode errorCode = 0 ;
-	Connection* pConnection = Connection::CreateEmbeddedConnection(pLibraryName, clientThread, optimized, portToListenOn, &errorCode) ;
+	Connection* pConnection = Connection::CreateEmbeddedConnection(clientThread, optimized, portToListenOn, &errorCode) ;
 
 	// Even if pConnection is NULL, we still build a kernel object, so we have
 	// a clean way to pass the error code back to the caller.
@@ -1465,25 +1461,6 @@ bool Kernel::SuppressSystemStop(bool state)
 bool Kernel::GetLastCommandLineResult()
 {
 	return m_CommandLineSucceeded ;
-}
-
-/*************************************************************
-* @brief Get the current value of the "set-library-location" path variable.
-*
-* This points to the location where the kernelSML library was loaded
-* (unless it has been changed since the load).
-*************************************************************/
-std::string Kernel::GetLibraryLocation()
-{
-	AnalyzeXML response;
-	if (GetConnection()->SendAgentCommand(&response, sml_Names::kCommand_GetLibraryLocation))
-	{
-		return response.GetResultString();
-	}
-	else
-	{
-		return "" ;
-	}
 }
 
 /*************************************************************

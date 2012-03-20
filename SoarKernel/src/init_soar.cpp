@@ -43,9 +43,6 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 
-
-#define INIT_FILE       "init.soar"
-
 /* REW: begin 08.20.97   these defined in consistency.c  */
 extern void determine_highest_active_production_level_in_stack_propose(agent* thisAgent);
 extern void determine_highest_active_production_level_in_stack_apply(agent* thisAgent);
@@ -1473,46 +1470,6 @@ Bool old_print_prompt_flag;
 
   thisAgent->print_prompt_flag = old_print_prompt_flag;
 }
-
-
-//void load_init_file (Kernel* thisKernel, agent* thisAgent) {
-//#define LOAD_INIT_FILE_BUFFER_SIZE 1000
-//  char filename[LOAD_INIT_FILE_BUFFER_SIZE];   /* AGR 536 */
-//  char *home_directory;
-//  FILE *initfile;
-//
-//  strncpy (filename, INIT_FILE, LOAD_INIT_FILE_BUFFER_SIZE);
-//  initfile = fopen (filename, "r");
-//  if (!initfile) {
-//    home_directory = getenv ("HOME");
-//    if (home_directory) {
-//      strncpy (filename, home_directory, LOAD_INIT_FILE_BUFFER_SIZE);
-//      filename[LOAD_INIT_FILE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-//      strncat (filename, "/",LOAD_INIT_FILE_BUFFER_SIZE - strlen(filename));
-//      filename[LOAD_INIT_FILE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-//      strncat (filename, INIT_FILE, LOAD_INIT_FILE_BUFFER_SIZE - strlen(filename));
-//      filename[LOAD_INIT_FILE_BUFFER_SIZE - 1] = 0; /* ensure null termination */
-//      initfile = fopen (filename, "r");
-//    }
-//  }
-//
-//  print_startup_banner(thisAgent);
-//
-//  if (initfile) {
-//    print (thisAgent, "\nLoading %s\n",filename);
-//    load_file (thisKernel, thisAgent, filename, initfile);
-//    fclose (initfile);
-//  }
-//}
-//
-//int terminate_soar (agent* thisAgent)
-//{
-//  /* Shouldn't we free *all* agents here? */
-//  free((void *) thisAgent);
-//
-//  exit_soar(thisAgent);  
-//  return 0; /* unreachable, but without it, gcc -Wall warns here */
-//}
 
 /*
   RDF: 20020706 Added this for the gSKI project. This makes it so that

@@ -16,6 +16,7 @@
 #include <list>
 #include <string>
 #include <algorithm>	// To get std::find
+#include "Export.h"
 
 namespace sml {
 
@@ -26,6 +27,7 @@ typedef T	DataType ;
 
 // Used to store a map from a name to an object
 // The name should be owned by the object being stored (so we only delete the object, never the name)
+
 
 typedef std::map<std::string, DataType>		InternalMap ;
 //typedef typename std::map<std::string, T>::iterator			InternalMapIter ;

@@ -14,13 +14,14 @@
 #define SML_DELTA_LIST_H
 
 #include <vector>
+#include "Export.h"
 
 namespace sml {
 
 class WMElement ;
 class TagWme ;
 
-class DeltaList
+class EXPORT DeltaList
 {
 protected:
 	std::vector<TagWme*>		m_DeltaList ;

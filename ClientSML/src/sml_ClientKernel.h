@@ -142,7 +142,7 @@ public:
 	char const* GetAgentStatus() const	{ return m_AgentStatus.c_str() ; }
 } ;
 
-class Kernel : public ClientErrors
+class EXPORT Kernel : public ClientErrors
 {
 	// Allow the agent to call to get the connection from the kernel.
 	friend class Agent ;
@@ -155,7 +155,6 @@ public:
 		kSuppressListener = 0,
 		kUseAnyPort = -1,
 	} ;
-	static char const* const kDefaultLibraryName ;
 
 protected:
 	long long		m_TimeTagCounter ;	// Used to generate time tags (we do them in the kernel not the agent, so ids are unique for all agents)
@@ -298,8 +297,6 @@ public:
 	*		 (It's simpler because there's no need to call CheckForIncomingCommands() periodically as this happens in a separate
 	*		  thread running inside the kernel and incoming events are handled by another thread in the client).
 	*
-	* @param pLibraryName	The name of the library to load, without an extension (e.g. "SoarKernelSML").  Case-sensitive (to support Linux).
-	*						This library will be dynamically loaded and connected to.
 	* @param Optimized		If this is a current thread connection, we can short-circuit parts of the messaging system for sending input and
 	*						running Soar.  If this flag is true we use those short cuts.  If you're trying to debug the SML libraries
 	*						you may wish to disable this option (so everything goes through the standard paths).  Not available if running in a new thread.
@@ -313,8 +310,8 @@ public:
 	* @returns A new kernel object which is used to communicate with the kernel.
 	*		   If an error occurs a Kernel object is still returned.  Call "HadError()" and "GetLastErrorDescription()" on it.
 	*************************************************************/
-	static Kernel* CreateKernelInCurrentThread(char const* pLibraryName = kDefaultLibraryName, bool optimized = false, int portToListenOn = kDefaultSMLPort) ;
-	static Kernel* CreateKernelInNewThread(char const* pLibraryName = kDefaultLibraryName, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateKernelInCurrentThread(bool optimized = false, int portToListenOn = kDefaultSMLPort) ;
+	static Kernel* CreateKernelInNewThread(int portToListenOn = kDefaultSMLPort) ;
 
 	int GetListenerPort();
 
@@ -342,11 +339,6 @@ public:
 	* @brief Returns the default port we use for remote connections.
 	*************************************************************/
 	static int GetDefaultPort() { return kDefaultSMLPort ; }
-
-	/*************************************************************
-	* @brief Returns the default library name ("SoarKernelSML").
-	*************************************************************/
-	static char const* GetDefaultLibraryName() { return kDefaultLibraryName ; }
 
 	/*************************************************************
 	* @brief If auto commit is set to false then after making any changes
@@ -887,19 +879,6 @@ public:
 	bool	UnregisterForStringEvent(int callbackID) ;
 
 	/*************************************************************
-	* @brief Get the current value of the "set-library-location" path variable.
-	*        Returned path includes trailing separator character.
-	*
-	* This points to the location where the kernelSML library was loaded
-	* (unless it has been changed since the load).
-	*
-	* The latest folder structure has "SoarLibrary"
-	* with a "bin" subfolder that contains the actual kernel DLL that we load.
-	* This function returns the parent "SoarLibrary" folder.
-	*************************************************************/
-	std::string GetLibraryLocation() ;
-
-	/*************************************************************
 	* @brief The Soar kernel version is based on sending a request
 	*		 to the kernel asking for its version and returning the
 	*		 result.
@@ -966,7 +945,7 @@ protected:
 	* @brief The workhorse function to create an embedded connection.
 	*		 The public methods hide a few of these parameters.
 	*************************************************************/
-	static Kernel* CreateEmbeddedConnection(char const* pLibraryName, bool clientThread, bool optimized, int portToListenOn) ;
+	static Kernel* CreateEmbeddedConnection(bool clientThread, bool optimized, int portToListenOn) ;
 
 };
 

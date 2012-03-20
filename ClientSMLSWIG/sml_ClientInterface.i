@@ -5,6 +5,9 @@
 //
 %include std_string.i
 
+// handle windows calling convention, __declspec(dllimport), correctly
+%include <windows.i>
+
 //
 // These functions need to be renamed because they only differ by a const type, which isn't enough to distinguish them
 //

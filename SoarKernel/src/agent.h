@@ -588,6 +588,8 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   double max_dc_smem_time_sec;                  // Holds maximum amount smem time
   double total_dc_smem_time_sec;                // Holds last amount smem time, used to calculate delta
   uint64_t max_dc_smem_time_cycle;              // Holds what cycle max_dc_smem_time_sec was acheived
+  
+  soar_timer_accumulator callback_timers[NUMBER_OF_CALLBACKS];
 
   /* accumulated cpu time spent in various parts of the system */
   /* only used if DETAILED_TIMING_STATS is #def'd in kernel.h */
@@ -600,9 +602,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
 #endif // DETAILED_TIMING_STATS
   /* REW: end 28.07.96 */
 #endif // NO_TIMING_STUFF
-
-   // This could probably go in the not NO_TIMING_STUFF block
-   std::map<SOAR_CALLBACK_TYPE, soar_timer_accumulator> callback_timers;
 
    /* RMJ */
    /* Keep track of real time steps for constant real-time per decision */
@@ -866,7 +865,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   rl_production_memory *rl_prods;
 
   int rl_template_count;
-  bool rl_first_switch;
 
   // select
   select_info *select;

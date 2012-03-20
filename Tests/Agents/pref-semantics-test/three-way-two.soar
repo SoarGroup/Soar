@@ -1,9 +1,0 @@
-# A < B, A < C, B < C, C < B
-
-sp {pref-semantics-test*propose*three-way-two
-   (state <s> ^name pref-semantics-test
-             -^three-way-two)
--->
-   (<s> ^operator <op> + =)
-   (<op> ^name three-way-two)
-}
