@@ -4,6 +4,9 @@
 // generate proper Java enums (this means we require Java 1.5 or later)
 %include "enums.swg"
 
+// handle windows calling convention, __declspec(dllimport), correctly
+%include <windows.i>
+
 %javaconst(1); // strongly recommended by SWIG manual section 19.3.5.1
 // the previous line causes problems for some enum values, so we have to set them manually here
 // the problem only affects those enums whose values are "calculated" based on other values

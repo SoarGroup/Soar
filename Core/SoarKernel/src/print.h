@@ -64,6 +64,14 @@ typedef struct condition_struct condition;
 typedef struct instantiation_struct instantiation;
 typedef union symbol_union Symbol;
 
+typedef struct wme_filter_struct {
+    Symbol *id;
+    Symbol *attr;
+    Symbol *value;
+    bool adds;
+    bool removes;
+} wme_filter;
+
 extern void start_log_file (agent* thisAgent, char *filename, Bool append);
 extern void stop_log_file (agent* thisAgent);
 extern void print_string_to_log_file_only (agent* thisAgent, char *string);

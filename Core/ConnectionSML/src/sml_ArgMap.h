@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "ElementXMLHandle.h"
+#include "Export.h"
 
 namespace soarxml
 {
@@ -43,7 +44,7 @@ typedef std::vector<ElementXML_Handle>	xmlArgList ;
 typedef xmlArgList::iterator			xmlArgListIter ;
 typedef xmlArgList::const_iterator		xmlArgListConstIter ;
 
-class ArgMap
+class EXPORT ArgMap
 {
 protected:
 	xmlArgMap	m_ArgMap ;		// From argument name to <arg>

@@ -417,8 +417,7 @@ public class TestJavaSML
         // that (for this part we'll use the default port)
         System.out.println("############ Listener Test ############");
 
-        m_Kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML", false,
-                Kernel.GetDefaultPort());
+        m_Kernel = Kernel.CreateKernelInCurrentThread(false, Kernel.GetDefaultPort());
         // m_Kernel.SetTraceCommunications(true) ;
 
         for (int i = 0; i < 200; i++)
@@ -477,8 +476,7 @@ public class TestJavaSML
                 System.out.println("############ Current Thread ############");
 
                 // Initialize the kernel
-                m_Kernel = Kernel.CreateKernelInCurrentThread("SoarKernelSML",
-                        false, 12345);
+                m_Kernel = Kernel.CreateKernelInCurrentThread(false, 12345);
 
                 Test();
 
@@ -486,8 +484,7 @@ public class TestJavaSML
                 // different thread
                 System.out.println("############ New Thread ############");
 
-                m_Kernel = Kernel.CreateKernelInNewThread("SoarKernelSML",
-                        13131);
+                m_Kernel = Kernel.CreateKernelInNewThread(13131);
 
                 Test();
             }

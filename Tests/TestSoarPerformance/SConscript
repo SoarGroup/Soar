@@ -1,0 +1,7 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+#
+Import('env')
+t = env.Install('$OUT_DIR', env.Program('TestSoarPerformance', Glob('*.cpp')))
+Return('t')

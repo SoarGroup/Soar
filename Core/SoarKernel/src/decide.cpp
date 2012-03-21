@@ -2012,7 +2012,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 					} /* end if no GDS yet for goal... */
 
 					/* Loop over all the preferences for this WME:
-					*   If the instantiation that lead to the preference has not 
+					*   If the instantiation that led to the preference has not 
 					*         been already explored; OR
 					*   If the instantiation is not an subgoal instantiation
 					*          for a chunk instantiation we are already exploring

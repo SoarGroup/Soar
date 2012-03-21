@@ -84,7 +84,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	add( temporal_extension );
 
 	// hrl-discount
-	hrl_discount = new soar_module::boolean_param( "hrl-discount", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
+	hrl_discount = new soar_module::boolean_param( "hrl-discount", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
 	add( hrl_discount );
 
 	// temporal-discount
@@ -92,7 +92,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	add( temporal_discount );
 
 	// chunk-stop
-	chunk_stop = new soar_module::boolean_param( "chunk-stop", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+	chunk_stop = new soar_module::boolean_param( "chunk-stop", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( chunk_stop );
 
 	// meta
@@ -125,16 +125,7 @@ void rl_learning_param::set_value( soar_module::boolean new_value )
 {
 	if ( new_value != value )
 	{
-		if ( ( new_value == soar_module::on ) && ( my_agent->rl_first_switch ) )
-		{
-			my_agent->rl_first_switch = false;
-			exploration_set_policy( my_agent, USER_SELECT_E_GREEDY );
-
-			const char *msg = "Exploration Mode changed to epsilon-greedy";
-			print( my_agent, const_cast<char *>( msg ) );
-   			xml_generate_message( my_agent, const_cast<char *>( msg ) );
-		}
-		else if ( new_value == soar_module::off )
+		if ( new_value == soar_module::off )
 		{
 			rl_reset_data( my_agent );
 		}

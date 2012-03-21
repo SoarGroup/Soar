@@ -31,13 +31,6 @@
 using namespace cli;
 using namespace sml;
 
-typedef struct wme_filter_struct {
-    Symbol *id;
-    Symbol *attr;
-    Symbol *value;
-    bool adds;
-    bool removes;
-} wme_filter;
 
 int RemoveWme(agent* thisAgent, wme* pWme)
 {

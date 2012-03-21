@@ -2896,33 +2896,6 @@ namespace cli
         SelectCommand& operator=(const SelectCommand&);
     };
 
-    class SetLibraryLocationCommand : public cli::ParserCommand
-    {
-    public:
-        SetLibraryLocationCommand(cli::Cli& cli) : cli(cli), ParserCommand() {}
-        virtual ~SetLibraryLocationCommand() {}
-        virtual const char* GetString() const { return "set-library-location"; }
-        virtual const char* GetSyntax() const 
-        {
-            return "Syntax: set-library-location [directory]";
-        }
-
-        virtual bool Parse(std::vector< std::string >&argv)
-        {
-            if (argv.size() > 2) 
-                return cli.SetError("Expected a path, please enclose in quotes if there are spaces in the path.");
-
-            if (argv.size() == 2)
-                return cli.DoSetLibraryLocation(&(argv[1]));
-            return cli.DoSetLibraryLocation();
-        }
-
-    private:
-        cli::Cli& cli;
-
-        SetLibraryLocationCommand& operator=(const SetLibraryLocationCommand&);
-    };
-
     class SetStopPhaseCommand : public cli::ParserCommand
     {
     public:

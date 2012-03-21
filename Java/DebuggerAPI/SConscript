@@ -1,0 +1,20 @@
+import os
+import sys
+
+Import('java_env')
+
+api_env = java_env.Clone()
+api_deps = [api_env['SML']]
+api_env['JAVACLASSPATH'] = api_env['SML'].abspath
+
+classes = api_env.Java(target = 'classes', source = 'src')
+api_env.Depends(classes, api_env['SML'])
+
+jar_name = 'soar-debugger-api-%s.jar' % java_env['SOAR_VERSION']
+jar = api_env.Jar(
+	target   = jar_name, 
+	source   = ['classes', 'MANIFEST.MF'], 
+	JARCHDIR = api_env.Dir('classes')
+)
+install = api_env.Install('$OUT_DIR/java', jar)
+api_env.Alias('debugger_api', install)

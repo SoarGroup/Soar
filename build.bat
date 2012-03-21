@@ -1,49 +1,97 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 
-call soar-vars.bat %1
-
-if not defined ANT_HOME goto fail
-if not defined JAVA_HOME goto fail
-if not defined PYTHON_HOME goto fail
-if not defined SWIG_HOME goto fail
-
-call "%VS90COMNTOOLS%\vsvars32.bat"
-
-if "%PROCESSOR_ARCHITECTURE%"=="AMD64" goto x64
-
-set CONFSUB="Release|Win32"
-if "%2" == "noscu" (
-	set CONFIGURATION="Release|Win32"
+if not exist user-env.bat (
+	call :findexe python.exe
+	if not "!retval!"=="fail" (
+		set PYTHON_HOME=!retval!
+		echo python.exe found
+	)
+	
+	call :findexe javac.exe
+	if not "!retval!"=="fail" (
+		set JAVA_HOME=!retval:\bin=!
+		echo javac.exe found
+	)
+	
+	call :findexe swig.exe
+	if not "!retval!"=="fail" (
+		set SWIG_HOME=!retval!
+		echo swig.exe found
+	)
+	
+	echo set PYTHON_HOME=!PYTHON_HOME!>>user-env.bat
+	echo set JAVA_HOME=!JAVA_HOME!>>user-env.bat
+	echo set SWIG_HOME=!SWIG_HOME!>>user-env.bat
+	echo user-env.bat created. I will read directories from there next time.
 ) else (
-	set CONFIGURATION="Release SCU|Win32"
+	echo Reading local environment variables from user-env.bat
+	call user-env.bat
 )
 
-goto buildit
+echo PYTHON_HOME=%PYTHON_HOME%
+echo JAVA_HOME=%JAVA_HOME%
+echo SWIG_HOME=%SWIG_HOME%
 
-:x64
-
-set CONFSUB="Release|x64"
-if "%2" == "noscu" (
-	set CONFIGURATION="Release|x64"
-) else (
-	set CONFIGURATION="Release SCU|x64"
+if not exist %PYTHON_HOME%\python.exe (
+	echo cannot locate python executable
+	exit /B
 )
 
-:buildit
+set PATH=%PYTHON_HOME%;%JAVA_HOME%\bin;%SWIG_HOME%;%PATH%
+%PYTHON_HOME%\python.exe scons\scons.py -Q %*
+exit /B
 
-devenv /%TARGET% %CONFIGURATION% Core\Core.sln
-
-for /f "tokens=* delims= " %%a in ('dir/b/ad') do @(
-	for /f "tokens=* delims= " %%b in ('dir/b %%a\*.sln 2^>nul') do (
-		if not %%b == Core.sln (
-			devenv /%TARGET% %CONFSUB% %%a\%%b
+rem a "function" that tries to find an executable
+:findexe
+	set retval=fail
+	set tempxx="%PATH:;=";"%"
+	for %%i in (%tempxx%) do (
+		if exist "%%i\%~1" (
+			set retval=%%~i
+			goto :EOF
 		)
 	)
-)
+	
+	if "%~1"=="python.exe" (
+		call :findpython
+		if not "!retval!"=="fail" goto :EOF
+	) else if "%~1"=="javac.exe" (
+		call :findjava
+		if not "!retval!"=="fail" goto :EOF
+	)
+	
+	call :askuser %~1
+goto :EOF
 
-call build-java.bat %1
+rem Search for python in registry
+:findpython
+	set retval=fail
+	for /F "tokens=1,2,*" %%i in ('reg query HKLM\SOFTWARE\Python\PythonCore /s') do (
+		if exist %%k\python.exe set retval=%%k
+	)
+goto :EOF
 
-endlocal
-exit /b 0
+rem Search for java in registry
+:findjava
+	set retval=fail
+	for /F "tokens=1,2,*" %%i in ('reg query "HKLM\SOFTWARE\JavaSoft\Java Development Kit" /s') do (
+		if exist %%k\bin\javac.exe set retval=%%k\bin
+	)
+goto :EOF
 
+:askuser
+	:whilebegin
+	set tempdir=
+	set /P tempdir=Enter directory that contains %~1, or nothing to ignore it:
+	
+	if "%tempdir%"=="" (
+		set retval=fail
+		goto :EOF
+	)
+	if not exist "%tempdir%\%~1" (
+		echo it's not there
+		goto :whilebegin
+	)
+	set retval=%tempdir%
+goto :EOF

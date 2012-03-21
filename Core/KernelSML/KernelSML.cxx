@@ -1,4 +1,3 @@
-#include "src/KernelSMLdll.cpp"
 #include "src/KernelSMLInterface.cpp"
 #include "src/sml_AgentListener.cpp"
 #include "src/sml_AgentOutputFlusher.cpp"

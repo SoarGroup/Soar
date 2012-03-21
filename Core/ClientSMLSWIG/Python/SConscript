@@ -2,51 +2,57 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import distutils.sysconfig
-import sys
-import os
+import distutils.sysconfig as sysconfig
+import os, sys
 import SCons.Script
 
 Import('env')
 clone = env.Clone()
 
-# Targets, sources, other constants
-pythonsml_wrap = env.File('#ClientSMLSWIG/Python/Python_sml_ClientInterface_wrap.cpp')
-pythonsml_i = env.File('#ClientSMLSWIG/Python/Python_sml_ClientInterface.i')
-pythonsml_py = env.File('#ClientSMLSWIG/Python/Python_sml_ClientInterface.py')
-swig_cmdline = 'swig -o ClientSMLSWIG/Python/Python_sml_ClientInterface_wrap.cpp -c++ -python -Wall -IClientSML/src -IElementXML/src -IConnectionSML/src ClientSMLSWIG/Python/Python_sml_ClientInterface.i'
-pythonsml_shlib = 'Python_sml_ClientInterface'
+lib_install_dir = clone['OUT_DIR']
+inc_path = sysconfig.get_python_inc()
+if os.name == 'nt':
+	lib_path = os.path.join(sysconfig.get_config_vars('BINDIR')[0], 'libs')
+	pylib = 'python' + sysconfig.get_config_vars('VERSION')[0]
+else:
+	lib_path = sysconfig.get_config_vars('LIBP')[0]
+	pylib = sysconfig.get_config_vars('LIBRARY')[0]
+
+clone.Append(CPPPATH = inc_path, LIBPATH = lib_path, LIBS = pylib)
+
+if os.name == 'posix':
+	clone.Append(CPPFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
+
+if sys.platform == 'darwin':
+	clone.Replace(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
+	clone.Replace(SHLIBSUFFIX = ['.so'])
+	# As of 4/2009, python binaries available on mac are not x86_64 and
+	# therefore cannot load x86_64 targeted libraries. Verbosely warn.
+	if GetOption('platform') == '64':
+		print "* Warning: 64-bit python binaries may not be available on your system."
+		print "* You may need to rebuild with m64=no to use Python Soar bindings."
+
+name = 'Python_sml_ClientInterface'
+interface = env.File(name + '.i')
+wrapper = env.File(name + '_wrap.cpp')
+source = env.File(name + '.py')
+
+incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in env['CPPPATH'])
+swig_cmd = 'swig %s -o "%s" -c++ -python -threads -Wall "%s"' % (incs, wrapper.abspath, interface)
+if not GetOption('verbose'):
+	swig_cmd = '@' + swig_cmd
 
 # Scanner for dependencies in .i files
 SWIGScanner = SCons.Scanner.ClassicCPP("SWIGScan",".i","CPPPATH",'^[ \t]*[%,#][ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")')
 clone.Append(SCANNERS=[SWIGScanner])
 
-# Create the wrap cpp and python file
-env.Command(pythonsml_wrap, pythonsml_i, swig_cmdline)
-env.SideEffect(pythonsml_py, pythonsml_wrap)
+clone.Command([wrapper, source], interface, swig_cmd)
+if os.name == 'nt':
+	# the [:1] at the end throws away the .exp and .lib files that are generated
+	shlib = clone.SharedLibrary(name, wrapper, SHLIBPREFIX = '_', SHLIBSUFFIX = '.pyd')[:1]
+else:
+	shlib = clone.SharedLibrary(name, wrapper, SHLIBPREFIX = '_') 
+install_source = env.Install(lib_install_dir, source)
+install_lib = env.Install(lib_install_dir, shlib)
 
-# Install python file to lib
-env.Install('$PREFIX/lib', pythonsml_py)
-
-# Prepare environment to build shared library
-clone.Prepend(CPPPATH = Split('#ClientSML/src #ElementXML/src #ConnectionSML/src'))
-clone.Prepend(CPPPATH = distutils.sysconfig.get_python_inc())
-
-if os.name == 'posix':
-	clone.Append(CXXFLAGS = Split('-Wno-unused -fno-strict-aliasing'))
-
-clone.Append(LIBS = Split('ClientSML ConnectionSML ElementXML'))
-clone.Append(LIBPATH = ['$PREFIX/lib'])
-
-if sys.platform == 'darwin':
-	clone.Replace(SHLINKFLAGS = Split('$LINKFLAGS -bundle -flat_namespace -undefined suppress'))
-	clone.Replace(SHLIBSUFFIX = ['.so'])
-
-clone.Append(CPPFLAGS = ['-w'])
-
-shlib = clone.SharedLibrary(pythonsml_shlib, pythonsml_wrap) 
-
-# libPython_sml_ClientInterface.so is not the correct naming convention for python dynamic code
-# it must be named, in this case, _Python_sml_ClientInterface.so
-env.InstallAs('$PREFIX/lib/_Python_sml_ClientInterface.so', shlib)
-
+env.Alias('sml_python', [install_source, install_lib])

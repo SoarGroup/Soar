@@ -1,0 +1,94 @@
+import sys, os
+import subprocess as sub
+import itertools as itl
+
+def CheckSWIG(env):
+	if not env.WhereIs('swig'):
+		return False
+	
+	p = sub.Popen('swig -version'.split(), stdout=sub.PIPE)
+	out = p.communicate()[0].split()
+	p.wait()
+	
+	version = tuple(int(x) for x in out[2].split('.'))
+	if version >= (1, 3, 31):
+		return True
+	
+	print 'swig version 1.3.31 or higher is required'
+	return False
+
+Import('env', 'compiler', 'InstallDir')
+kernel_env = env.Clone()
+
+if os.name == 'posix':
+	libs = ['dl', 'pthread', 'm']
+elif os.name == 'nt':
+	libs = ['advapi32']
+
+kernel_env.Replace(LIBS = libs, LIBPATH=[])
+
+if sys.platform == 'darwin':
+	install_name = os.path.join(env['OUT_DIR'], env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
+	kernel_env.Append(LINKFLAGS = ['-install_name', install_name])
+	
+shared_macro = []
+static_macro = []
+if compiler == 'g++':
+	static_macro = ['-DSTATIC_LINKED']
+elif compiler == 'msvc':
+	static_macro = ['/D', 'STATIC_LINKED']
+	shared_macro = ['/D', '_USRDLL']
+
+if env['SCU']:
+	scu = 0
+else:
+	scu = 1
+
+srcs = {
+#   Component          SCU source                         Non-SCU source
+#	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
+	'SoarKernel'    : (Glob('SoarKernel/src/*.cpp'),      Glob('SoarKernel/src/*.cpp')),
+	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
+	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
+	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
+	'ConnectionSML' : ('ConnectionSML/ConnectionSML.cxx', Glob('ConnectionSML/src/*.cpp')),
+	'ElementXML'    : ('ElementXML/ElementXML.cxx',       Glob('ElementXML/src/*.cpp')),
+	'CLI'           : ('CLI/CommandLineInterface.cxx',    Glob('CLI/src/*.cpp')),
+}
+
+if compiler == 'msvc':
+	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
+
+if GetOption('static'):
+	kernel_env.Append(CPPFLAGS=static_macro)
+	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
+else:
+	kernel_env.Append(CPPFLAGS = shared_macro)
+	soarlib = kernel_env.SharedLibrary('Soar', [srcs[c][scu] for c in srcs])[:2]
+
+lib_install = env.Alias('kernel', env.Install('$OUT_DIR', soarlib))
+
+# headers
+headers = []
+for d in ['ElementXML/src', 'ConnectionSML/src', 'ClientSML/src', 'shared']:
+	headers.extend(InstallDir(env, '$OUT_DIR/include', env.Dir(d).srcnode().abspath, '*.h*'))
+
+env.Alias('headers', headers)
+
+if not CheckSWIG(env):
+	print 'swig not found, will not attempt to build wrappers'
+else:
+	for x in 'Python Java Tcl PHP'.split():
+		SConscript(os.path.join('ClientSMLSWIG', x, 'SConscript'))
+
+if 'MSVSProject' in kernel_env['BUILDERS']:
+	vcproj = kernel_env.MSVSProject(
+		target = '#core' + env['MSVSPROJECTSUFFIX'],
+		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
+		buildtarget = lib_install,
+		variant = ['Debug'],
+		auto_build_solution = 0,
+	)
+	
+	Import('msvs_projs')
+	msvs_projs.append(vcproj)
