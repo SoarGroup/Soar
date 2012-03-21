@@ -894,9 +894,7 @@ void do_buffered_link_changes (agent* thisAgent) {
 
 /// bazald
 void add_numeric_tie_wme(agent* thisAgent, preference *p) {
-//   Symbol * const variance_c = make_sym_constant(thisAgent, "variance");
-//   Symbol * const variance_f = make_sym_constant(thisAgent, "over-threshold");
-//   wme * const w = make_wme(thisAgent, p->value, variance_c, variance_f, FALSE);
+//   wme * const w = make_wme(thisAgent, p->value, thisAgent->rl_variance_constant, thisAgent->rl_over_threshold_constant, FALSE);
 //   insert_at_head_of_dll(p->value->id.impasse_wmes, w, next, prev);
 //   w->preference = p;
 //   add_wme_to_wm(thisAgent, w);
@@ -904,28 +902,33 @@ void add_numeric_tie_wme(agent* thisAgent, preference *p) {
 
 /// bazald
 byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) {
+//   static uint64_t my_id = 0xFFFFFFFFFFFFFFFF;
+//   ++my_id;
+
   int num_candidates = 0;
   for(const preference * cand = candidates; cand; cand = cand->next_candidate)
     ++num_candidates;
-  std::cerr << "Number of candidates = " << num_candidates << std::endl;
+//   std::cerr << "Number of candidates = " << num_candidates << std::endl;
 
   preference * intolerable_variance_head = 0;
   preference * intolerable_variance_tail = 0;
   for(preference * cand = candidates; cand; cand = cand->next_candidate) {
     if(cand->inst && cand->inst->prod) {
       const production * const &prod = cand->inst->prod;
-      std::cerr << (cand == selected ? " * " : "   ") << prod->name->sc.name;
-      if(cand->rl_contribution)
-        std::cerr << " = " << cand->numeric_value << '[' << int(cand->type) << ']';
-      std::cerr << " fired " << prod->firing_count << " times." << std::endl;
+//       std::cerr << (cand == selected ? " * " : "   ") << prod->name->sc.name;
+//       if(cand->rl_contribution)
+//         std::cerr << " = " << cand->numeric_value << '[' << int(cand->type) << ']';
+//       std::cerr << " fired " << prod->firing_count << " times." << std::endl;
 
       if(cand->rl_contribution) {
         bool all_intolerable_variance = true;
+//         float total_q;
 
         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
           const production * const &prod2 = pref->inst->prod;
           if(cand->value == pref->value && prod2->rl_rule) {
-            std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_sample_variance << '/' << prod2->rl_tolerable_variance << std::endl;
+//             std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_sample_variance << '/' << prod2->rl_tolerable_variance << std::endl;
+//             total_q += prod2->rl_ecr + prod2->rl_efr;
 
             if(prod2->rl_sample_variance <= prod2->rl_tolerable_variance)
               all_intolerable_variance = false;
@@ -933,6 +936,8 @@ byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candid
         }
 
         if(all_intolerable_variance) {
+//           std::cerr << "     (" << my_id << ")\t" << cand->value->id.name_letter << cand->value->id.name_number << ':' << prod->name->sc.name << " = " << total_q << std::endl;
+
           if(intolerable_variance_tail)
             intolerable_variance_tail->next_candidate = cand;
           else

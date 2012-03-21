@@ -3,7 +3,7 @@
 scons
 
 cp out/java/sml.jar ../AgentDevelopmentTools/VisualSoar/lib/
-cd ../AgentDevelopmentTools/VisualSoar
+pushd ../AgentDevelopmentTools/VisualSoar
 ant
-cd ../../SoarSuite
-cp ../AgentDevelopmentTools/VisualSoar/java/soar-visualsoar-snapshot.jar out/VisualSoar.jar
+cp java/soar-visualsoar-snapshot.jar ../../SoarSuite/out/VisualSoar.jar
+popd

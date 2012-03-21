@@ -347,9 +347,12 @@ typedef struct agent_struct {
 
   Symbol			* smem_sym_retrieve;
   Symbol			* smem_sym_query;
-  Symbol			* smem_sym_prohibit;
-  Symbol			* smem_sym_store;
+  Symbol      * smem_sym_prohibit;
+  Symbol      * smem_sym_store;
 
+  /// bazald
+  Symbol      * rl_variance_constant;
+  Symbol      * rl_over_threshold_constant;
 
   /* ----------------------- Symbol table stuff -------------------------- */
 

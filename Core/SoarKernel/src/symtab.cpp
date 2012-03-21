@@ -756,6 +756,9 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->smem_sym_query = make_sym_constant( thisAgent, "query" );
   thisAgent->smem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
   thisAgent->smem_sym_store = make_sym_constant( thisAgent, "store" );
+
+  thisAgent->rl_variance_constant = make_sym_constant( thisAgent, "variance" );
+  thisAgent->rl_over_threshold_constant = make_sym_constant( thisAgent, "over-threshold" );
 }
 
 void release_helper(agent* thisAgent, Symbol** sym) {
@@ -860,4 +863,7 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->smem_sym_query ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_prohibit ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_store ) );
+
+  release_helper( thisAgent, &( thisAgent->rl_variance_constant ) );
+  release_helper( thisAgent, &( thisAgent->rl_over_threshold_constant ) );
 }

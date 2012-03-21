@@ -19,6 +19,7 @@
 
 #include "agent.h"
 #include "gdatastructs.h"
+#include "instantiations.h"
 #include "utilities.h"
 #include "print.h"
 #include "tempmem.h"
@@ -116,8 +117,74 @@ void print_preference_and_source (agent* agnt, preference *pref,
         print (agnt, " %c", preference_type_indicator (agnt, pref->type));
     }
     if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
+    if (selection_probability) {
+      char dest[MAX_LEXEME_LENGTH*2+10]; /* from agent.h */
+      SNPRINTF(dest, sizeof(dest), "%#.16g", pref->numeric_value);
+      dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
+      { /* --- strip off trailing zeros --- */
+        char *start_of_exponent;
+        char *end_of_mantissa;
+        start_of_exponent = dest;
+        while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
+          start_of_exponent++;
+        end_of_mantissa = start_of_exponent - 1;
+        while (*end_of_mantissa == '0') end_of_mantissa--;
+        end_of_mantissa++;
+        while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
+        *end_of_mantissa = 0;
+      }
+      print (agnt, " =%s", dest);
+
+      float min_variance = -1.0f;
+      float tolerable_variance = -1.0f;
+      for(preference *p = pref->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next) {
+        const production * const &prod2 = p->inst->prod;
+        if(pref->value == p->value && prod2->rl_rule) {
+          if(prod2->rl_sample_variance <= prod2->rl_tolerable_variance &&
+             (prod2->rl_sample_variance < min_variance || min_variance < 0.0f)
+          ) {
+            min_variance = prod2->rl_sample_variance;
+            tolerable_variance = prod2->rl_tolerable_variance;
+          }
+        }
+      }
+      if(min_variance >= 0.0f) {
+        SNPRINTF(dest, sizeof(dest), "%#.16g", min_variance);
+        dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
+        { /* --- strip off trailing zeros --- */
+          char *start_of_exponent;
+          char *end_of_mantissa;
+          start_of_exponent = dest;
+          while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
+            start_of_exponent++;
+          end_of_mantissa = start_of_exponent - 1;
+          while (*end_of_mantissa == '0') end_of_mantissa--;
+          end_of_mantissa++;
+          while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
+          *end_of_mantissa = 0;
+        }
+        print (agnt, "|%s", dest);
+
+        SNPRINTF(dest, sizeof(dest), "%#.16g", tolerable_variance);
+        dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
+        { /* --- strip off trailing zeros --- */
+          char *start_of_exponent;
+          char *end_of_mantissa;
+          start_of_exponent = dest;
+          while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
+            start_of_exponent++;
+          end_of_mantissa = start_of_exponent - 1;
+          while (*end_of_mantissa == '0') end_of_mantissa--;
+          end_of_mantissa++;
+          while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
+          *end_of_mantissa = 0;
+        }
+        print (agnt, "/%s", dest);
+      }
+    }
     if (pref->o_supported) print (agnt, " :O "); else print (agnt, " :I ");
-    if (selection_probability) print (agnt, "(%.1f%%)", (*selection_probability) * 100.0);
+    if (selection_probability)
+      print (agnt, "(%.1f%%)", (*selection_probability) * 100.0);
     print (agnt, "\n");
     if (print_source) {
         print (agnt, "    From ");
