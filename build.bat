@@ -40,6 +40,13 @@ if not exist %PYTHON_HOME%\python.exe (
 
 set PATH=%PYTHON_HOME%;%JAVA_HOME%\bin;%SWIG_HOME%;%PATH%
 %PYTHON_HOME%\python.exe scons\scons.py -Q %*
+
+copy out\java\sml.jar ..\AgentDevelopmentTools\VisualSoar\lib\
+pushd ..\AgentDevelopmentTools\VisualSoar
+copy java\soar-visualsoar-snapshot.jar ..\..\SoarSuite\out\VisualSoar.jar
+ant
+popd
+
 exit /B
 
 rem a "function" that tries to find an executable
