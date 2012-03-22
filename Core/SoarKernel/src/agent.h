@@ -351,7 +351,6 @@ typedef struct agent_struct {
   Symbol      * smem_sym_store;
 
   /// bazald
-  Symbol      * rl_variance_constant;
   Symbol      * rl_over_threshold_constant;
 
   /* ----------------------- Symbol table stuff -------------------------- */

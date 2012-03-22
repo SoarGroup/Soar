@@ -66,6 +66,8 @@
 
 #include <list>
 
+#include "soar_interface.h"
+
 using namespace soar_TraceNames;
 
 #ifdef USE_MEM_POOL_ALLOCATORS
@@ -893,14 +895,6 @@ void do_buffered_link_changes (agent* thisAgent) {
 ************************************************************************** */
 
 /// bazald
-void add_numeric_tie_wme(agent* thisAgent, preference *p) {
-//   wme * const w = make_wme(thisAgent, p->value, thisAgent->rl_variance_constant, thisAgent->rl_over_threshold_constant, FALSE);
-//   insert_at_head_of_dll(p->value->id.impasse_wmes, w, next, prev);
-//   w->preference = p;
-//   add_wme_to_wm(thisAgent, w);
-}
-
-/// bazald
 byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) {
 //   static uint64_t my_id = 0xFFFFFFFFFFFFFFFF;
 //   ++my_id;
@@ -921,7 +915,7 @@ byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candid
 //       std::cerr << " fired " << prod->firing_count << " times." << std::endl;
 
       if(cand->rl_contribution) {
-        bool all_intolerable_variance = true;
+        cand->rl_intolerable_variance = true;
 //         float total_q;
 
         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
@@ -931,11 +925,11 @@ byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candid
 //             total_q += prod2->rl_ecr + prod2->rl_efr;
 
             if(prod2->rl_sample_variance <= prod2->rl_tolerable_variance)
-              all_intolerable_variance = false;
+              cand->rl_intolerable_variance = false;
           }
         }
 
-        if(all_intolerable_variance) {
+        if(cand->rl_intolerable_variance) {
 //           std::cerr << "     (" << my_id << ")\t" << cand->value->id.name_letter << cand->value->id.name_number << ':' << prod->name->sc.name << " = " << total_q << std::endl;
 
           if(intolerable_variance_tail)
@@ -943,7 +937,6 @@ byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candid
           else
             intolerable_variance_head = cand;
           intolerable_variance_tail = cand;
-          add_numeric_tie_wme(thisAgent, cand);
         }
       }
     }
@@ -1233,6 +1226,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			}
 			for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
 				cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
+        cand->rl_intolerable_variance = false; ///< bazald
 			}
 			for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
 				j = p->value;
@@ -1798,11 +1792,18 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
 		  remove_wme_from_wm( thisAgent, w );
 		}
 	  }
-	  else if ( w->attr == loop_count_sym ) 
-	  {
-		remove_from_dll( id->id.impasse_wmes, w, next, prev );
+    else if ( w->attr == loop_count_sym ) 
+    {
+    remove_from_dll( id->id.impasse_wmes, w, next, prev );
         remove_wme_from_wm( thisAgent, w );
       }
+    /// bazald
+    else if(w->attr == thisAgent->rl_over_threshold_constant &&
+            !soar_interface(thisAgent).has_sym(id->id.impasse_wmes, "item", w->value)
+    ) {
+      remove_from_dll(id->id.impasse_wmes, w, next, prev);
+      remove_wme_from_wm(thisAgent, w);
+    }
 
       w = next_w;
     }
@@ -1829,6 +1830,10 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
 	  else
 	  {
 		add_impasse_wme( thisAgent, id, loop_sym, cand->value, bt_pref );
+
+      /// bazald
+      if(cand->rl_intolerable_variance)
+        add_impasse_wme(thisAgent, id, thisAgent->rl_over_threshold_constant, cand->value, bt_pref);
 	  }
 	}
 

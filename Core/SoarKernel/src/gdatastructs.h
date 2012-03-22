@@ -237,6 +237,8 @@ typedef struct preference_struct {
 
   wma_pooled_wme_set* wma_o_set;
 
+  bool rl_intolerable_variance; ///< bazald
+
 } preference;
 
 /* Decl'd in prefmem.cpp and needed in decide.cpp */
