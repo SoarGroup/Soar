@@ -182,7 +182,7 @@ if compiler == 'g++':
 		lnflags.extend(GCC_DEF_LNFLAGS.split())
 		if sys.platform == 'linux2':
 			# -rpath only works in Linux. For OSX, use -install_name (specified in Core/SConscript)
-			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', os.path.abspath(GetOption('outdir'))])
+			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', env.Literal(r'$ORIGIN')])
 	
 		if GetOption('dbg'):
 			cflags = filter(lambda x: not x.startswith('-O'), cflags)
