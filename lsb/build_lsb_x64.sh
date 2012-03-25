@@ -1,11 +1,17 @@
 #!/bin/bash
 
+DIR_TAIL=$(echo $(pwd) | sed 's/.*\///')
+if [ "$DIR_TAIL" == "lsb" ]
+then
+  cd ..
+fi
+
 mkdir -p out
 
 scons \
-  --cxx=x86_64-ccache-lsbc++-4.4.sh \
+  --cxx=$(pwd)/lsb/x86_64-ccache-lsb-g++-4.4.sh \
   --lnflags="--lsb-shared-libs=python2.7 --lsb-shared-libpath=out" \
-  --pretend-cxx=g++ \
+  --arch=64 \
   all
 
 cp out/java/sml.jar ../AgentDevelopmentTools/VisualSoar/lib/

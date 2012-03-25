@@ -1,6 +1,6 @@
 #!/bin/bash
 
-scons
+scons all
 
 cp out/java/sml.jar ../AgentDevelopmentTools/VisualSoar/lib/
 pushd ../AgentDevelopmentTools/VisualSoar
