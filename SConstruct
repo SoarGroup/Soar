@@ -236,7 +236,7 @@ if os.name == 'posix':
 
 # Setting *COMSTR will replace long commands with a short message "Making <something>"
 if not GetOption('verbose'):
-	for x in 'CC SHCC CXX SHCXX LINK SHLINK JAR'.split():
+	for x in 'CC SHCC CXX SHCXX LINK SHLINK JAR SWIG'.split():
 		env[x + 'COMSTR'] = 'Making $TARGET'
 
 	env['JAVACCOMSTR'] = 'Making $TARGET and others'
