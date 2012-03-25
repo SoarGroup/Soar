@@ -1263,19 +1263,25 @@ bool Agent::SynchronizeOutputLink()
 	return GetWM()->SynchronizeOutputLink() ;
 }
 
-bool exists(const char *path) {
-	return std::ifstream(path).is_open();
+// Test if a path exists and is not a directory. The path exists if
+// it can be opened for reading. The path is not a directory if path +
+// "/." cannot be opened for reading.
+bool isfile(const char *path)
+{
+	std::string d = path;
+	d += "/.";
+	return std::ifstream(path).is_open() && !std::ifstream(d.c_str()).is_open();
 }
 
 bool Agent::SpawnDebugger(int port, const char* jarpath)
 {
 	std::string p;
 	if (jarpath) {
-		if (!exists(jarpath)) {
+		if (!isfile(jarpath)) {
 			return false;
 		}
 		p = jarpath;
-	} else if (exists(DEBUGGER_NAME)) {
+	} else if (isfile(DEBUGGER_NAME)) {
 		p = DEBUGGER_NAME;
 	} else {
 		char *e = getenv("SOAR_HOME");
@@ -1287,7 +1293,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 			h += '/';
 		}
 		h += DEBUGGER_NAME;
-		if (!exists(h.c_str())) {
+		if (!isfile(h.c_str())) {
 			return false;
 		}
 		p = h;

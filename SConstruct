@@ -10,7 +10,7 @@ VS_DEF_CFLAGS = ' /O2 /W2'
 VS_DEF_LNFLAGS = ''
 
 # default compiler flags when using g++
-GCC_DEF_CFLAGS = ' -O2 -Werror -mtune=native'
+GCC_DEF_CFLAGS = ' -O2 -mtune=generic'
 GCC_DEF_LNFLAGS = ''
 
 DEF_OUT = 'out'
@@ -102,7 +102,10 @@ if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Ma
 
 
 AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='COMPILER',
-	help='Replace \'g++\' as the C++ compiler.')
+  help='Replace \'g++\' as the C++ compiler.')
+
+AddOption('--pretend-cxx', action='store', type='string', dest='pretend_cxx', nargs=1,
+  help='Pretend that you\'re using a different compiler as the C++ compiler.')
 
 AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, help='Compiler flags')
 
@@ -142,19 +145,24 @@ env = Environment(
 )
 
 if GetOption('cxx') != None:
-	env.Replace(CXX = GetOption('cxx'))
+  env.Replace(CXX = GetOption('cxx'))
+
+if GetOption('pretend_cxx') != None:
+  env.Replace(PRETEND_CXX = GetOption('pretend_cxx'))
+else:
+  env.Replace(PRETEND_CXX = env['CXX'])
 
 print "Building intermediates to", env['BUILD_DIR']
 print "Installing targets to", env['OUT_DIR']
 
 config = Configure(env)
 
-if 'g++' in env['CXX']:
+if 'g++' in env['PRETEND_CXX']:
 	compiler = 'g++'
-elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('cl')):
+elif env['PRETEND_CXX'].endswith('cl') or (env['PRETEND_CXX'] == '$CC' and env['CC'].endswith('cl')):
 	compiler = 'msvc'
 else:
-	compiler = os.path.split(env['CXX'])[1]
+	compiler = os.path.split(env['PRETEND_CXX'])[1]
 
 Export('compiler')
 
@@ -182,7 +190,8 @@ if compiler == 'g++':
 		lnflags.extend(GCC_DEF_LNFLAGS.split())
 		if sys.platform == 'linux2':
 			# -rpath only works in Linux. For OSX, use -install_name (specified in Core/SConscript)
-			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', os.path.abspath(GetOption('outdir'))])
+			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', env.Literal(r'$ORIGIN'),
+                      '-Xlinker', '--hash-style=both'])
 	
 		if GetOption('dbg'):
 			cflags = filter(lambda x: not x.startswith('-O'), cflags)

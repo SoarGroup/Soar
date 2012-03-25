@@ -134,7 +134,7 @@ public:
 	LinuxMutex()			
 	{ 
 		pthread_mutexattr_init(&mutexattr);
-#if defined(__APPLE__) && defined(__MACH__)
+#if (defined(__APPLE__) && defined(__MACH__)) || (__LSB_VERSION__ >= 12)
 		pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
 #else
 		pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE_NP);

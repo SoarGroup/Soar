@@ -410,6 +410,12 @@ void FullTests::cleanUpListener()
 		}
 		else if ( WIFSTOPPED( status ) )
 		{
+#ifndef WIFCONTINUED
+#define __W_CONTINUED 0xffff
+#define __WIFCONTINUED(status) ((status) == __W_CONTINUED)
+#define __WAIT_INT(status) (*(__const int *) &(status))
+#define WIFCONTINUED(status) __WIFCONTINUED(__WAIT_INT(status))
+#endif
 			CPPUNIT_ASSERT_MESSAGE( "listener continued", WIFCONTINUED( status ) );
 			CPPUNIT_ASSERT_MESSAGE( "listener died: unknown", false );
 		}
