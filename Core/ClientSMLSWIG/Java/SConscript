@@ -62,7 +62,8 @@ clone.Append(
 	LIBPATH = config[1],
 )
 
-if clone['PRETEND_CXX'] == 'g++':
+Import('compiler')
+if compiler == 'g++':
 	if clone['VISHIDDEN']:
 		clone['CPPFLAGS'].remove('-fvisibility=hidden')
 		clone.Append(CPPFLAGS = ['-fvisibility=default'])
