@@ -10,7 +10,7 @@ VS_DEF_CFLAGS = ' /O2 /W2'
 VS_DEF_LNFLAGS = ''
 
 # default compiler flags when using g++
-GCC_DEF_CFLAGS = ' -O2 -Werror -mtune=native'
+GCC_DEF_CFLAGS = ' -Wreturn-type -O2 -mtune=generic'
 GCC_DEF_LNFLAGS = ''
 
 DEF_OUT = 'out'
@@ -101,8 +101,11 @@ if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Ma
 	defarch = '64'
 
 
+AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER',
+	help='Use argument as the C compiler.')
+	
 AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='COMPILER',
-	help='Replace \'g++\' as the C++ compiler.')
+	help='Use argument as the C++ compiler.')
 
 AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, help='Compiler flags')
 
@@ -129,11 +132,7 @@ AddOption('--dbg', action='store_true', dest='dbg', default=False, help='Disable
 AddOption('--verbose', action='store_true', dest='verbose', default = False, help='Output full compiler commands')
 
 env = Environment(
-	ENV = {
-		'PATH'  : os.environ.get('PATH', ''), 
-		'TMP'   : os.environ.get('TMP',''),
-		'CPATH' : os.environ.get('CPATH', ''),
-	},
+	ENV = os.environ.copy(),
 	SCU = GetOption('scu'), 
 	BUILD_DIR = GetOption('build-dir'),
 	OUT_DIR = os.path.realpath(GetOption('outdir')),
@@ -141,6 +140,8 @@ env = Environment(
 	VISHIDDEN = False,   # needed by swig
 )
 
+if GetOption('cc') != None:
+	env.Replace(CC = GetOption('cc'))
 if GetOption('cxx') != None:
 	env.Replace(CXX = GetOption('cxx'))
 

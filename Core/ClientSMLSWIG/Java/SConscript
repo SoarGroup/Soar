@@ -54,7 +54,7 @@ if config == None:
 	print "the Java include, bin, and lib directories."
 	Return()
 
-Import('env')
+Import('env', 'compiler')
 lib_install_dir = env['OUT_DIR']
 clone = env.Clone()	
 clone.Append(
@@ -62,7 +62,7 @@ clone.Append(
 	LIBPATH = config[1],
 )
 
-if clone['CXX'] == 'g++':
+if compiler == 'g++':
 	if clone['VISHIDDEN']:
 		clone['CPPFLAGS'].remove('-fvisibility=hidden')
 		clone.Append(CPPFLAGS = ['-fvisibility=default'])
