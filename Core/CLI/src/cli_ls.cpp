@@ -61,6 +61,9 @@ bool CommandLineInterface::DoLS() {
     errno = 0;
     while ((entry = readdir(directoryPointer)) != 0) {
         m_Result << '\n';
+#ifndef DT_DIR
+#define DT_DIR 4
+#endif
         PrintFilename(entry->d_name, entry->d_type == DT_DIR);
     }
 
