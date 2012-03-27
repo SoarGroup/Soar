@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 Main-Class: edu.umich.soar.debugger.Application
-Class-Path: java/soar-debugger-9.3.1.jar
+Class-Path: java/soar-debugger.jar
 

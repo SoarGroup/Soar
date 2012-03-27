@@ -6,7 +6,7 @@ Import('java_env', 'AddResources')
 clone = java_env.Clone()
 deps = [clone['SML']]
 clone['JAVACLASSPATH'] = clone['SML'].abspath
-jar_name = 'soar-smljava-%s.jar' % clone['SOAR_VERSION']
+jar_name = 'soar-smljava.jar'
 
 classes = clone.Java(target = 'classes', source = 'src/main/java')
 clone.Depends(classes, clone['SML'])
