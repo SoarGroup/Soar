@@ -10,7 +10,7 @@ import itertools
 chain = itertools.chain.from_iterable
 
 # adapted from http://www.scons.org/wiki/JavaNativeInterface
-def ConfigureJNI():
+def ConfigureJNI(env):
 	base = os.environ.get('JAVA_HOME')
 	if not base:
 		if sys.platform == 'darwin':
@@ -19,7 +19,7 @@ def ConfigureJNI():
 
 		else:
 			# Search for the java compiler
-			jcdir = os.path.dirname(env.WhereIs('javac'))
+			jcdir = os.path.dirname(os.path.realpath(env.WhereIs('javac')))
 			if not jcdir:
 				return None
 			# assuming the compiler found is in some directory like
@@ -46,15 +46,15 @@ def get_headers(d):
 
 def latest_mtime(dirs):
 	return max(os.path.getmtime(f) for f in chain(get_headers(d) for d in dirs))
-	
-config = ConfigureJNI()
+
+Import('env', 'compiler')
+config = ConfigureJNI(env)
 if config == None:
 	print "Could not configure Java. If you know where java is on your system,"
 	print "set environment variable JAVA_HOME to point to the directory containing"
 	print "the Java include, bin, and lib directories."
 	Return()
 
-Import('env', 'compiler')
 lib_install_dir = env['OUT_DIR']
 clone = env.Clone()	
 clone.Append(
