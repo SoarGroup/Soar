@@ -51,11 +51,11 @@ def CheckForSWTJar(target, source, env):
 
 Import('java_env', 'AddResources')
 
-jar_name = 'soar-debugger-%s.jar' % java_env['SOAR_VERSION']
+jar_name = 'soar-debugger.jar'
 shortcut_name = 'SoarJavaDebugger.jar'
 
 swt = java_env.File('$OUT_DIR/java/swt.jar')
-api_jar = java_env.File('$OUT_DIR/java/soar-debugger-api-%s.jar' % java_env['SOAR_VERSION'])
+api_jar = java_env.File('$OUT_DIR/java/soar-debugger-api.jar')
 
 clone = java_env.Clone()
 clone.Command(swt, [], CheckForSWTJar)

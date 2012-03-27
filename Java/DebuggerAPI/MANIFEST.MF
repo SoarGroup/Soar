@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Title: soar-debugger-api 9.3.1
+Title: soar-debugger-api
 Vendor: University of Michigan
 Copyright: (c) The Regents of the University of Michigan, 2010
 Class-Path: . commons-logging-1.1.1.jar log4j-1.2.15.jar
