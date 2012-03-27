@@ -32,7 +32,6 @@ scons \
 	--cc="$CCACHE $CCACHE_CC" \
 	--cxx="$CCACHE $CCACHE_CXX" \
 	--lnflags="--lsb-shared-libpath=out -Wl,--hash-style=both" \
-	--verbose \
 	cli debugger debugger_api headers java_sml_misc kernel sml_java tests
 
 $LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/cli
