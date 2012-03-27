@@ -98,6 +98,7 @@
 
 #if (__GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 2 || (__GNUC_MINOR__ == 2)))) && (!defined(__i386__) && !defined(__i486__) && !defined(__i586__) && !defined(__i686__))
 // requires GCC>=4.2.0
+// additionally fails at link time on i386/i486/i586/i686
 static inline long atomic_inc( volatile long  *v )
 {
       return __sync_add_and_fetch(v, 1);

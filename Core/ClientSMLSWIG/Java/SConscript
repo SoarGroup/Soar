@@ -54,7 +54,7 @@ if config == None:
 	print "the Java include, bin, and lib directories."
 	Return()
 
-Import('env')
+Import('env', 'compiler')
 lib_install_dir = env['OUT_DIR']
 clone = env.Clone()	
 clone.Append(
@@ -62,7 +62,6 @@ clone.Append(
 	LIBPATH = config[1],
 )
 
-Import('compiler')
 if compiler == 'g++':
 	if clone['VISHIDDEN']:
 		clone['CPPFLAGS'].remove('-fvisibility=hidden')
@@ -91,7 +90,7 @@ if not GetOption('verbose'):
 # large number of .java sources that the Java builder later in this script
 # will scan for.
 update_swig = False
-test_source = clone.File('sml/sml.java').abspath
+test_source = smldir.File('sml.java').abspath
 if env.GetOption('clean'):
 	pass
 elif not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):

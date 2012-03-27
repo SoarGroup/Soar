@@ -10,7 +10,7 @@ VS_DEF_CFLAGS = ' /O2 /W2'
 VS_DEF_LNFLAGS = ''
 
 # default compiler flags when using g++
-GCC_DEF_CFLAGS = ' -O2 -mtune=generic'
+GCC_DEF_CFLAGS = ' -Wreturn-type -O2 -mtune=generic'
 GCC_DEF_LNFLAGS = ''
 
 DEF_OUT = 'out'
@@ -101,11 +101,11 @@ if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Ma
 	defarch = '64'
 
 
+AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER',
+	help='Use argument as the C compiler.')
+	
 AddOption('--cxx', action='store', type='string', dest='cxx', nargs=1, metavar='COMPILER',
-  help='Replace \'g++\' as the C++ compiler.')
-
-AddOption('--pretend-cxx', action='store', type='string', dest='pretend_cxx', nargs=1,
-  help='Pretend that you\'re using a different compiler as the C++ compiler.')
+	help='Use argument as the C++ compiler.')
 
 AddOption('--cflags', action='store', type='string', dest='cflags', nargs=1, help='Compiler flags')
 
@@ -132,11 +132,7 @@ AddOption('--no-dbg', action='store_false', dest='dbg', default=True, help='Enab
 AddOption('--verbose', action='store_true', dest='verbose', default = False, help='Output full compiler commands')
 
 env = Environment(
-	ENV = {
-		'PATH'  : os.environ.get('PATH', ''), 
-		'TMP'   : os.environ.get('TMP',''),
-		'CPATH' : os.environ.get('CPATH', ''),
-	},
+	ENV = os.environ.copy(),
 	SCU = GetOption('scu'), 
 	BUILD_DIR = GetOption('build-dir'),
 	OUT_DIR = os.path.realpath(GetOption('outdir')),
@@ -144,25 +140,22 @@ env = Environment(
 	VISHIDDEN = False,   # needed by swig
 )
 
+if GetOption('cc') != None:
+	env.Replace(CC = GetOption('cc'))
 if GetOption('cxx') != None:
-  env.Replace(CXX = GetOption('cxx'))
-
-if GetOption('pretend_cxx') != None:
-  env.Replace(PRETEND_CXX = GetOption('pretend_cxx'))
-else:
-  env.Replace(PRETEND_CXX = env['CXX'])
+	env.Replace(CXX = GetOption('cxx'))
 
 print "Building intermediates to", env['BUILD_DIR']
 print "Installing targets to", env['OUT_DIR']
 
 config = Configure(env)
 
-if 'g++' in env['PRETEND_CXX']:
+if 'g++' in env['CXX']:
 	compiler = 'g++'
-elif env['PRETEND_CXX'].endswith('cl') or (env['PRETEND_CXX'] == '$CC' and env['CC'].endswith('cl')):
+elif env['CXX'].endswith('cl') or (env['CXX'] == '$CC' and env['CC'].endswith('cl')):
 	compiler = 'msvc'
 else:
-	compiler = os.path.split(env['PRETEND_CXX'])[1]
+	compiler = os.path.split(env['CXX'])[1]
 
 Export('compiler')
 
@@ -190,8 +183,7 @@ if compiler == 'g++':
 		lnflags.extend(GCC_DEF_LNFLAGS.split())
 		if sys.platform == 'linux2':
 			# -rpath only works in Linux. For OSX, use -install_name (specified in Core/SConscript)
-			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', env.Literal(r'$ORIGIN'),
-                      '-Xlinker', '--hash-style=both'])
+			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', env.Literal(r'$ORIGIN')])
 	
 		if GetOption('dbg'):
 			cflags = filter(lambda x: not x.startswith('-O'), cflags)
@@ -245,7 +237,7 @@ if os.name == 'posix':
 
 # Setting *COMSTR will replace long commands with a short message "Making <something>"
 if not GetOption('verbose'):
-	for x in 'CC SHCC CXX SHCXX LINK SHLINK JAR'.split():
+	for x in 'CC SHCC CXX SHCXX LINK SHLINK JAR SWIG'.split():
 		env[x + 'COMSTR'] = 'Making $TARGET'
 
 	env['JAVACCOMSTR'] = 'Making $TARGET and others'
