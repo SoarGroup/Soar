@@ -2,7 +2,7 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 
-SOAR_VERSION = "9.3.1"
+SOAR_VERSION = "9.3.2"
 
 # required and default optional flags when using VC++ compiler
 VS_REQ_CFLAGS = ' /EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'
