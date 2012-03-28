@@ -335,6 +335,8 @@ int main() {
 	_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
 #endif // _DEBUG
 
+	set_working_directory_to_executable_path();
+
 	{ // create local scope to allow for local memory cleanup before we check at end
 		int numAgents = 4;
 		int numWmes = 25;

@@ -100,4 +100,9 @@ static inline long atomic_dec( volatile long *v )
 
 #endif // _MSC_VER
 
+static inline int set_working_directory_to_executable_path()
+{
+       return 0;
+}
+
 #endif // PORTABILITY_WINDOWS_H
