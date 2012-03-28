@@ -29,8 +29,8 @@ export CCACHE_COMPILERCHECK="$CCACHE_CC -v"
 mkdir -p out
 
 scons \
-	--cc="$CCACHE $CCACHE_CC" \
-	--cxx="$CCACHE $CCACHE_CXX" \
+	--cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
+	--cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
 	--lnflags="--lsb-shared-libpath=out -Wl,--hash-style=both" \
 	cli debugger debugger_api headers java_sml_misc kernel sml_java tests
 
