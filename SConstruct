@@ -44,7 +44,7 @@ def execute(cmd):
 		return out
 	
 def gcc_version(cc):
-	for f in execute([cc, '--version']).split():
+	for f in execute(cc.split() + ['--version']).split():
 		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
 		if m:
 			return tuple(int(n) for n in m.groups())
