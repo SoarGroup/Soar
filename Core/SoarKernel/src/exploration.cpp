@@ -509,10 +509,7 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 
 	const rl_param_container::learning_choices my_learning_policy = my_rl_enabled ? my_agent->rl_params->learning_policy->get_value() : rl_param_container::q;
 
-	// get preference values for each candidate
-	// see soar_ecPrintPreferences
-	for ( preference *cand = candidates; cand; cand = cand->next_candidate )
-		exploration_compute_value_of_candidate( my_agent, cand, s );
+  exploration_compute_value_of_candidates(my_agent, candidates, s); ///< bazald
 
 	double top_value = candidates->numeric_value;
 	bool top_rl = candidates->rl_contribution;
@@ -584,11 +581,6 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 double exploration_probability_according_to_policy( agent *my_agent, slot *s, preference *candidates, preference *selection )
 { 
   const int exploration_policy = exploration_get_policy(my_agent);
-
-  // get preference values for each candidate
-  // see soar_ecPrintPreferences
-  for(preference *cand = candidates; cand; cand = cand->next_candidate)
-    exploration_compute_value_of_candidate(my_agent, cand, s);
 
   switch(exploration_policy)
   {
@@ -919,4 +911,12 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 	// accomodate average mode
 	if ( my_agent->numeric_indifferent_mode == NUMERIC_INDIFFERENT_MODE_AVG )
 		cand->numeric_value = cand->numeric_value / cand->total_preferences_for_candidate;
+}
+
+void exploration_compute_value_of_candidates(agent *my_agent, preference *candidates, slot *s) ///< bazald
+{
+  // get preference values for each candidate
+  // see soar_ecPrintPreferences
+  for(preference *cand = candidates; cand; cand = cand->next_candidate)
+    exploration_compute_value_of_candidate(my_agent, cand, s);
 }

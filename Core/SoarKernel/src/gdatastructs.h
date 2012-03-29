@@ -325,6 +325,7 @@ typedef struct slot_struct {
 
   wma_sym_reference_map* wma_val_references;
 
+  double rl_influence; ///< bazald
 } slot;
 
 /* -------------------------------------------------------------------

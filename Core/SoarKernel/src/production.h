@@ -122,6 +122,11 @@ typedef struct production_struct {
   double rl_mean2; ///< bazald
   double rl_sample_variance; ///< bazald
   double rl_tolerable_variance; ///< bazald
+  double rl_sample_influence_cycle; ///< bazald: last updated
+  double rl_sample_influence_updates; ///< bazald: number of updates
+  double rl_sample_influence_p; ///< bazald: average probability of action selection [0,1]
+  double rl_sample_influence_rest; ///< bazald: approaches lambda^(cycles) * p * (1 + rest)
+  double rl_sample_influence_input; ///< bazald: discounted influence leading to action
   
   condition* rl_template_conds;
   rl_symbol_map_set* rl_template_instantiations;

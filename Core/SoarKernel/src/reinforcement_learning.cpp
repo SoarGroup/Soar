@@ -969,7 +969,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 					prod->rl_ecr = new_ecr;
 					prod->rl_efr = new_efr;
 
-          { /// bazald
+          { /// bazald: Variance calculation
             // def online_variance(data): Thanks to Welford, Knuth's Art of Computer Programming
             //     n = 0
             //     mean = 0

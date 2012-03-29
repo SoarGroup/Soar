@@ -37,6 +37,8 @@ int main( int argc, char** argv )
 	SetConsoleCtrlHandler( handle_ctrlc, TRUE );
 #endif // _WIN32
 
+	set_working_directory_to_executable_path();
+
 	for (int index = 1; index < argc; ++index) {
 		std::string argument(argv[index]);
 		if (argument == "--listener") {

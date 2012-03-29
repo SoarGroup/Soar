@@ -162,5 +162,8 @@ extern preference *exploration_get_highest_q_value_pref( preference *candidates 
 // computes total contribution for a candidate from each preference, as well as number of contributions
 extern void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value = 0 );
 
+// computes total contribution for each candidate from each preference, as well as number of contributions
+extern void exploration_compute_value_of_candidates(agent *my_agent, preference *candidates, slot *s); ///< bazald
+
 #endif
 

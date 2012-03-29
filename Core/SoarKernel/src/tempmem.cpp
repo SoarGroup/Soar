@@ -113,6 +113,8 @@ slot *make_slot (agent* thisAgent, Symbol *id, Symbol *attr)
 
    s->wma_val_references = NIL;
 
+   s->rl_influence; ///< bazald
+
    return s;  
 }
 

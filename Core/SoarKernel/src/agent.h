@@ -350,8 +350,7 @@ typedef struct agent_struct {
   Symbol      * smem_sym_prohibit;
   Symbol      * smem_sym_store;
 
-  /// bazald
-  Symbol      * rl_over_threshold_constant;
+  Symbol      * rl_over_threshold_constant; ///< bazald
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
@@ -445,6 +444,7 @@ typedef struct agent_struct {
   uint64_t            max_dc_production_firing_count_cycle;  /* cycle of max_dc_production_firing_count_value */
   uint64_t            d_cycle_last_output;    /* last time agent produced output */  //KJC 11.17.05
   uint64_t            decision_phases_count;  /* can differ from d_cycle_count.  want for stats */
+  uint64_t            total_decision_phases_count; ///< bazald: does not reset after the first init
   //?? uint64_t            out_cycle_count;       /* # of output phases have gen'd output */
   //?? uint64_t            phase_count;       /* # of phases run so far */
   /* DJP 2/22/07: These counts are based around the counts that the run command understands and are intended to capture the same semantics as run expects.

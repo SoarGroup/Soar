@@ -135,6 +135,7 @@ void init_soar_agent(agent* thisAgent) {
   init_agent_memory(thisAgent);
   /* END */
 
+  thisAgent->total_decision_phases_count = 0; ///< bazald
 }
 
 agent * create_soar_agent (char * agent_name) {                                          /* loop index */

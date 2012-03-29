@@ -1096,6 +1096,7 @@ void do_one_top_level_phase (agent* thisAgent)
       #endif
 
 	  thisAgent->decision_phases_count++;  /* counts decisions, not cycles, for more accurate stats */
+	  ++thisAgent->total_decision_phases_count; ///< bazald
 
       /* AGR REW1 begin */
 	  if (!thisAgent->input_period) 

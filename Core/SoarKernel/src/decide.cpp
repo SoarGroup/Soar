@@ -894,8 +894,54 @@ void do_buffered_link_changes (agent* thisAgent) {
    require preference for the slot.
 ************************************************************************** */
 
-/// bazald
-byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) {
+void update_influence(agent* const &thisAgent, slot* const &slot, preference * const &candidates, preference * &selected) ///< bazald
+{
+  const double prob = exploration_probability_according_to_policy(thisAgent, slot, candidates, selected);
+
+  if(selected->inst && selected->inst->prod) {
+    const production * const &prod = selected->inst->prod;
+
+    if(selected->rl_contribution) {
+      selected->rl_intolerable_variance = true;
+
+      double split = 0.0;
+      for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+        const production * const &prod2 = pref->inst->prod;
+        if(selected->value == pref->value && prod2->rl_rule) {
+          ++split;
+        }
+      }
+
+      const double lambda = thisAgent->rl_params->discount_rate->get_value();
+      double sum_influence = 0.0;
+      for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+        production * const &prod2 = pref->inst->prod;
+        if(selected->value == pref->value && prod2->rl_rule) {
+          const double cycles = thisAgent->total_decision_phases_count - prod2->rl_sample_influence_cycle;
+          const double next_updates = prod2->rl_sample_influence_updates + 1.0 / split;
+          const double alpha = 1.0 - prod2->rl_sample_influence_updates / next_updates;
+
+          prod2->rl_sample_influence_cycle = thisAgent->total_decision_phases_count;
+          prod2->rl_sample_influence_updates = next_updates;
+          prod2->rl_sample_influence_p += alpha * (prob / split - prod2->rl_sample_influence_p);
+          prod2->rl_sample_influence_rest = alpha * prob / split * (pow(lambda, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
+          prod2->rl_sample_influence_input = slot->rl_influence;
+
+          sum_influence += prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest;
+
+          std::cerr << "  " << prod2->name->sc.name << " = " << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << std::endl;
+        }
+      }
+
+      slot->rl_influence = sum_influence + lambda * slot->rl_influence;
+
+      std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
+    }
+  }
+}
+
+byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) ///< bazald
+{
 //   static uint64_t my_id = 0xFFFFFFFFFFFFFFFF;
 //   ++my_id;
 
@@ -923,8 +969,9 @@ byte consider_impasse_instead_of_rl(agent* thisAgent, preference * const &candid
           if(cand->value == pref->value && prod2->rl_rule) {
 //             std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_sample_variance << '/' << prod2->rl_tolerable_variance << std::endl;
 //             total_q += prod2->rl_ecr + prod2->rl_efr;
+            std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_sample_variance << " [" << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " * " << prod2->rl_sample_variance << ']' << std::endl;
 
-            if(prod2->rl_sample_variance <= prod2->rl_tolerable_variance)
+            if((prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_sample_variance <= prod2->rl_tolerable_variance)
               cand->rl_intolerable_variance = false;
           }
         }
@@ -1415,6 +1462,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 		else
 			*result_candidates = candidates;
 
+    update_influence(thisAgent, s, candidates, *result_candidates); ///< bazald
+
 		return consider_impasse_instead_of_rl(thisAgent, candidates, *result_candidates, !consistency); ///< bazald NONE_IMPASSE_TYPE
 	}
 
@@ -1797,7 +1846,7 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
     remove_from_dll( id->id.impasse_wmes, w, next, prev );
         remove_wme_from_wm( thisAgent, w );
       }
-    /// bazald
+    /// bazald: remove variance-over-threshold
     else if(w->attr == thisAgent->rl_over_threshold_constant &&
             !soar_interface(thisAgent).has_sym(id->id.impasse_wmes, "item", w->value)
     ) {
@@ -1831,7 +1880,7 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
 	  {
 		add_impasse_wme( thisAgent, id, loop_sym, cand->value, bt_pref );
 
-      /// bazald
+      /// bazald: add variance-over-threshold
       if(cand->rl_intolerable_variance)
         add_impasse_wme(thisAgent, id, thisAgent->rl_over_threshold_constant, cand->value, bt_pref);
 	  }

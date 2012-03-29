@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <strings.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
@@ -112,6 +113,37 @@ static inline long atomic_dec( volatile long *v )
 #define HAVE_ATOMICS 1
 
 #endif // GCC<4.2.0
+
+static inline int set_working_directory_to_executable_path()
+{
+      char application_path[FILENAME_MAX];
+      int length;
+
+#ifdef SCONS_DARWIN
+      uint32_t size = sizeof(application_path);
+      length = _NSGetExecutablePath(application_path, &size) ? -1 : int(strlen(application_path));
+#else
+      length = readlink("/proc/self/exe", application_path, FILENAME_MAX);
+#endif
+
+      for(; length != -1; --length) {
+            if(application_path[length] == '/') {
+                  application_path[length] = '\0';
+                  break;
+            }
+      }
+
+      if(length == -1) {
+            fprintf(stderr, "Detecting working directory failed.\n");
+            return -1;
+      }
+
+      int rv = chdir(application_path);
+      if(rv)
+            fprintf(stderr, "Failed to set working directory.\n");
+
+      return rv;
+}
 
 #endif // PORTABILITY_POSIX_H
 
