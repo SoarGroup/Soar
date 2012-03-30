@@ -35,6 +35,8 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
 #endif // !_WIN32
 
@@ -1263,14 +1265,16 @@ bool Agent::SynchronizeOutputLink()
 	return GetWM()->SynchronizeOutputLink() ;
 }
 
-// Test if a path exists and is not a directory. The path exists if
-// it can be opened for reading. The path is not a directory if path +
-// "/." cannot be opened for reading.
+// Test if a path exists and is not a directory.
 bool isfile(const char *path)
 {
-	std::string d = path;
-	d += "/.";
-	return std::ifstream(path).is_open() && !std::ifstream(d.c_str()).is_open();
+#ifdef _WIN32
+	DWORD a = GetFileAttributes(path);
+	return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
+#else
+	struct stat st;
+	return (stat(path, &st) == 0 && !S_ISDIR(st.st_mode));
+#endif
 }
 
 bool Agent::SpawnDebugger(int port, const char* jarpath)

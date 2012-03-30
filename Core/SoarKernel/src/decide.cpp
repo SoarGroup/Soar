@@ -912,7 +912,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         }
       }
 
-      const double lambda = thisAgent->rl_params->discount_rate->get_value();
+      const double gamma = thisAgent->rl_params->discount_rate->get_value();
       double sum_influence = 0.0;
       for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
         production * const &prod2 = pref->inst->prod;
@@ -924,7 +924,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
           prod2->rl_sample_influence_cycle = thisAgent->total_decision_phases_count;
           prod2->rl_sample_influence_updates = next_updates;
           prod2->rl_sample_influence_p += alpha * (prob / split - prod2->rl_sample_influence_p);
-          prod2->rl_sample_influence_rest = alpha * prob / split * (pow(lambda, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
+          prod2->rl_sample_influence_rest = alpha * prob / split * (pow(gamma, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
           prod2->rl_sample_influence_input = slot->rl_influence;
 
           sum_influence += prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest;
@@ -933,7 +933,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         }
       }
 
-      slot->rl_influence = sum_influence + lambda * slot->rl_influence;
+      slot->rl_influence = sum_influence + gamma * slot->rl_influence;
 
       std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
     }
