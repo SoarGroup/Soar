@@ -879,9 +879,10 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 			// Update trace for just fired prods
 			double sum_old_ecr = 0.0;
 			double sum_old_efr = 0.0;
+      const double num_rules = double(data->prev_op_rl_rules->size()); ///< bazald
 			if ( !data->prev_op_rl_rules->empty() )
 			{
-				double trace_increment = ( 1.0 / static_cast<double>( data->prev_op_rl_rules->size() ) );
+				const double trace_increment = 1.0 / num_rules; ///< bazald
 				rl_rule_list::iterator p;
 				
 				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
@@ -920,6 +921,8 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
                 rl_total_variance_next += prod2->rl_total_variance;
               }
             }
+
+            rl_total_variance_next /= num_rules;
           }
         }
 
@@ -1018,7 +1021,9 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               prod->rl_mean2 += adjusted_alpha * iter->second * delta * (x - new_combined);
               prod->rl_sample_variance = prod->rl_mean2 / (prod->rl_update_count + 1);
 
-              prod->rl_partial_variance += adjusted_alpha * iter->second * (rl_total_variance_next - prod->rl_total_variance);
+              assert(adjusted_alpha * iter->second <= 1.0);
+
+              prod->rl_partial_variance += adjusted_alpha * iter->second * (discount * rl_total_variance_next - prod->rl_partial_variance);
               rl_total_variance += prod->rl_sample_variance + prod->rl_partial_variance;
             }
 
