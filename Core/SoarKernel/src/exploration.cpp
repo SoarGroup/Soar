@@ -511,17 +511,19 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 
   exploration_compute_value_of_candidates(my_agent, candidates, s); ///< bazald
 
-	double top_value = candidates->numeric_value;
+	preference * top_candidate = candidates; ///< bazald
+	double top_value = top_candidate->numeric_value; ///< bazald
 	bool top_rl = candidates->rl_contribution;
 
 	// should find highest valued candidate in q-learning
 	if ( my_rl_enabled && my_learning_policy == rl_param_container::q )
 	{
-		for ( const preference * cand = candidates; cand; cand = cand->next_candidate )
+		for ( preference * cand = candidates; cand; cand = cand->next_candidate ) ///< bazald
 		{
 			if ( cand->numeric_value > top_value )
 			{
-				top_value = cand->numeric_value;
+				top_candidate = cand; ///< bazald
+				top_value = cand->numeric_value; ///< bazald
 				top_rl = cand->rl_contribution;
 			}
 		}
@@ -561,11 +563,11 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 
 		if ( my_learning_policy == rl_param_container::sarsa )
 		{
-			rl_perform_update( my_agent, return_val->numeric_value, return_val->rl_contribution, s->id );
+			rl_perform_update( my_agent, return_val, return_val->rl_contribution, s->id ); ///< bazald
 		}
 		else if ( my_learning_policy == rl_param_container::q )
 		{
-			rl_perform_update( my_agent, top_value, top_rl, s->id );
+			rl_perform_update( my_agent, top_candidate, top_rl, s->id ); ///< bazald
 
 			if ( return_val->numeric_value != top_value )
 				rl_watkins_clear( my_agent, s->id );

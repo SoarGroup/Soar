@@ -595,7 +595,14 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 				new_production->rl_efr = init_value;
         new_production->rl_mean2 = 0.0; ///< bazald
         new_production->rl_sample_variance = 0.0; ///< bazald
-        new_production->rl_tolerable_variance = 0.001; ///< bazald
+        new_production->rl_partial_variance = 0.0; ///< bazald
+        new_production->rl_total_variance = 0.0; ///< bazald
+        new_production->rl_tolerable_variance = 0.03; ///< bazald
+        new_production->rl_sample_influence_cycle = 0; ///< bazald
+        new_production->rl_sample_influence_updates = 0; ///< bazald
+        new_production->rl_sample_influence_p = 0; ///< bazald
+        new_production->rl_sample_influence_rest = 0; ///< bazald
+        new_production->rl_sample_influence_input = 0; ///< bazald
 			}
 
 			// attempt to add to rete, remove if duplicate
@@ -809,8 +816,9 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 }
 
 // performs the rl update at a state
-void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr )
+void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *goal, bool update_efr ) ///< bazald
 {
+  double op_value = cand ? cand->numeric_value : 0.0;
 	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
 
 	if ( !using_gaps || op_rl )
@@ -900,7 +908,22 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				double old_ecr, old_efr;
 				double delta_ecr, delta_efr;
 				double new_combined, new_ecr, new_efr;
-				
+
+        double rl_total_variance_next = 0.0; ///< bazald
+        if(cand && cand->inst && cand->inst->prod) ///< bazald
+        {
+          if(cand->rl_contribution) {
+            for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+              const production * const &prod2 = pref->inst->prod;
+              if(cand->value == pref->value && prod2->rl_rule) {
+                std::cerr << "     " << prod2->name->sc.name << " provides " << prod2->rl_total_variance << " to rl_total_variance_next" << std::endl;
+                rl_total_variance_next += prod2->rl_total_variance;
+              }
+            }
+          }
+        }
+
+        double rl_total_variance = 0.0; ///< bazald
 				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
 				{	
 					production *prod = iter->first;
@@ -994,6 +1017,9 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
               const double delta = x - old_combined;
               prod->rl_mean2 += adjusted_alpha * iter->second * delta * (x - new_combined);
               prod->rl_sample_variance = prod->rl_mean2 / (prod->rl_update_count + 1);
+
+              prod->rl_partial_variance += adjusted_alpha * iter->second * (rl_total_variance_next - prod->rl_total_variance);
+              rl_total_variance += prod->rl_sample_variance + prod->rl_partial_variance;
             }
 
 //             std::cerr << " V   " << prod->name->sc.name << " = " << prod->rl_sample_variance << '|' << prod->rl_variance_nonincrease_count << " from (" << prod->rl_update_count << ", " << old_combined << ", " << new_combined << ", " << old_sample_variance << ')' << std::endl;
@@ -1028,6 +1054,31 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 						}
 					}	
 				}
+
+        for(iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++) ///< bazald
+        { 
+          production *prod = iter->first;
+
+          // Adjust alpha based on decay policy
+          // Miller 11/14/2011
+          double adjusted_alpha;
+          switch (my_agent->rl_params->decay_mode->get_value())
+          {
+              case rl_param_container::exponential_decay:
+                  adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
+                  break;
+              case rl_param_container::logarithmic_decay:
+                  adjusted_alpha = 1.0 / (log(prod->rl_update_count + 1.0) + 1.0);
+                  break;
+              case rl_param_container::normal_decay:
+              default:
+                  adjusted_alpha = alpha;
+                  break;
+          }
+
+          prod->rl_total_variance += adjusted_alpha * iter->second * (rl_total_variance - prod->rl_total_variance);
+          std::cerr << "     " << prod->name->sc.name << " takes " << prod->rl_total_variance << " from rl_total_variance" << std::endl;
+        }
 			}
 		}
 

@@ -239,7 +239,7 @@ extern void rl_tabulate_reward_values( agent *my_agent );
 extern void rl_store_data( agent *my_agent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
-extern void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *goal, bool update_efr = true );
+extern void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *goal, bool update_efr = true ); ///< bazald
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear( agent *my_agent, Symbol *goal );

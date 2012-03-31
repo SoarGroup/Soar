@@ -920,12 +920,21 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
           const double cycles = thisAgent->total_decision_phases_count - prod2->rl_sample_influence_cycle;
           const double next_updates = prod2->rl_sample_influence_updates + 1.0 / split;
           const double alpha = 1.0 - prod2->rl_sample_influence_updates / next_updates;
+          assert(0.0 < alpha);
+          assert(alpha <= 1.0);
+          assert(prob > 0.0);
+          assert(split >= prob);
 
           prod2->rl_sample_influence_cycle = thisAgent->total_decision_phases_count;
           prod2->rl_sample_influence_updates = next_updates;
-          prod2->rl_sample_influence_p += alpha * (prob / split - prod2->rl_sample_influence_p);
-          prod2->rl_sample_influence_rest = alpha * prob / split * (pow(gamma, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
+          std::cerr << "  " << prod2->rl_sample_influence_p << " += " << alpha << " * (" << prob << " / " << split << " * 0.5 - " << prod2->rl_sample_influence_p << ");" << std::endl;
+          prod2->rl_sample_influence_p += alpha * (prob * 0.5 - prod2->rl_sample_influence_p); ///< 0.5 is a magic number, allowing a discount rate <= 0.5 to be stable
+          assert(prod2->rl_sample_influence_p <= 0.5);
+          prod2->rl_sample_influence_rest = alpha * prob * (pow(gamma, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
+          assert(prod2->rl_sample_influence_rest <= 0.5);
           prod2->rl_sample_influence_input = slot->rl_influence;
+
+          assert(prod2->rl_sample_influence_rest == prod2->rl_sample_influence_rest); ///< !isnan
 
           sum_influence += prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest;
 
@@ -933,7 +942,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         }
       }
 
-      slot->rl_influence = sum_influence + gamma * slot->rl_influence;
+      slot->rl_influence = sum_influence / split + gamma * slot->rl_influence;
 
       std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
     }
@@ -964,15 +973,40 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         cand->rl_intolerable_variance = true;
 //         float total_q;
 
+        double split = 0.0;
+        double total_influence_squared = 0.0;
+        double total_variance_squared = 0.0;
         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
           const production * const &prod2 = pref->inst->prod;
           if(cand->value == pref->value && prod2->rl_rule) {
-//             std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_sample_variance << '/' << prod2->rl_tolerable_variance << std::endl;
-//             total_q += prod2->rl_ecr + prod2->rl_efr;
-            std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_sample_variance << " [" << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " * " << prod2->rl_sample_variance << ']' << std::endl;
+            ++split;
+            total_influence_squared += prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest;
+            total_variance_squared += prod2->rl_total_variance;
+          }
+        }
 
-            if((prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_sample_variance <= prod2->rl_tolerable_variance)
+        const double average_influence = total_influence_squared / (split * split);
+        const double total_variance = total_variance_squared / split;
+
+        std::cerr << "    average influence = " << average_influence << std::endl;
+        std::cerr << "    total variance = " << total_variance << std::endl;
+
+        for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+          const production * const &prod2 = pref->inst->prod;
+          if(cand->value == pref->value && prod2->rl_rule) {
+//             std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_total_variance << '/' << prod2->rl_tolerable_variance << std::endl;
+//             total_q += prod2->rl_ecr + prod2->rl_efr;
+            std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_total_variance << " [" << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " * " << prod2->rl_total_variance << ']' << std::endl;
+
+            const double exponentiated = pow(prod2->rl_total_variance / split, 1.0 - (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split);
+
+            std::cerr << "     " << prod2->rl_total_variance / split << '^' << 1.0 - (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split << " = " << exponentiated << std::endl;
+
+            if(exponentiated <= prod2->rl_tolerable_variance ||
+               exponentiated <= total_variance / split)
+            {
               cand->rl_intolerable_variance = false;
+            }
           }
         }
 
@@ -1034,7 +1068,7 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   {
 	  rl_tabulate_reward_values( thisAgent );
 	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-	  rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+	  rl_perform_update( thisAgent, candidates, candidates->rl_contribution, s->id ); ///< bazald
   }
 
   return NONE_IMPASSE_TYPE;
@@ -1070,7 +1104,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 				{
 					rl_tabulate_reward_values( thisAgent );
 					exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
-					rl_perform_update( thisAgent, force_result->numeric_value, force_result->rl_contribution, s->id );
+					rl_perform_update( thisAgent, force_result, force_result->rl_contribution, s->id ); ///< bazald
 				}
 
 				return NONE_IMPASSE_TYPE;
@@ -1119,7 +1153,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			// perform update here for just one candidate
 			rl_tabulate_reward_values( thisAgent );
 			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+			rl_perform_update( thisAgent, candidates, candidates->rl_contribution, s->id ); ///< bazald
 		}
 
 		return NONE_IMPASSE_TYPE;
@@ -1402,7 +1436,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			// perform update here for just one candidate
 			rl_tabulate_reward_values( thisAgent );
 			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates->numeric_value, candidates->rl_contribution, s->id );
+			rl_perform_update( thisAgent, candidates, candidates->rl_contribution, s->id ); ///< bazald
 		}
 
 		return NONE_IMPASSE_TYPE;

@@ -1633,7 +1633,9 @@ production *make_production (agent* thisAgent,
   p->rl_efr = 0.0;
   p->rl_mean2 = 0.0; ///< bazald
   p->rl_sample_variance = 0.0; ///< bazald
-  p->rl_tolerable_variance = 0.001; ///< bazald
+  p->rl_partial_variance = 0.0; ///< bazald
+  p->rl_total_variance = 0.0; ///< bazald
+  p->rl_tolerable_variance = 0.03; ///< bazald
   p->rl_sample_influence_cycle = 0; ///< bazald
   p->rl_sample_influence_updates = 0; ///< bazald
   p->rl_sample_influence_p = 0; ///< bazald
