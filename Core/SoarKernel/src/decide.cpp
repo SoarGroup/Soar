@@ -64,6 +64,7 @@
 
 #include "assert.h"
 
+#include <cfloat> ///< bazald
 #include <list>
 
 #include "soar_interface.h"
@@ -955,8 +956,20 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //   ++my_id;
 
   int num_candidates = 0;
-  for(const preference * cand = candidates; cand; cand = cand->next_candidate)
+  double max_q_value = DBL_MIN;
+  for(const preference * cand = candidates; cand; cand = cand->next_candidate) {
     ++num_candidates;
+
+    double q_value = 0.0;
+    for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+      const production * const &prod2 = pref->inst->prod;
+      if(cand->value == pref->value && prod2->rl_rule) {
+        q_value += prod2->rl_ecr + prod2->rl_efr;
+      }
+    }
+    if(q_value > max_q_value)
+      max_q_value = q_value;
+  }
 //   std::cerr << "Number of candidates = " << num_candidates << std::endl;
 
   preference * intolerable_variance_head = 0;
@@ -976,20 +989,31 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         double split = 0.0;
         double total_influence_squared = 0.0;
         double total_variance_squared = 0.0;
+        double q_value = 0.0;
         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
           const production * const &prod2 = pref->inst->prod;
           if(cand->value == pref->value && prod2->rl_rule) {
             ++split;
             total_influence_squared += prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest;
             total_variance_squared += prod2->rl_total_variance;
+            q_value += prod2->rl_ecr + prod2->rl_efr;
           }
         }
 
-        const double average_influence = total_influence_squared / (split * split);
+        const double total_influence = total_influence_squared / split;
         const double total_variance = total_variance_squared / split;
+        const double average_influence = total_influence / split;
+        const double average_variance = total_variance / split;
+        const double suboptimality = max_q_value - q_value;
 
-        std::cerr << "    average influence = " << average_influence << std::endl;
+        std::cerr << "    total influence = " << total_influence << std::endl;
         std::cerr << "    total variance = " << total_variance << std::endl;
+        std::cerr << "    average influence = " << average_influence << std::endl;
+        std::cerr << "    average variance = " << average_variance << std::endl;
+        std::cerr << "    suboptimality = " << suboptimality << std::endl;
+
+        const double one_minus_total_influence = 1.0 - total_influence;
+        const double inflated_total_influence = 1.0 / one_minus_total_influence;
 
         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
           const production * const &prod2 = pref->inst->prod;
@@ -998,12 +1022,16 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //             total_q += prod2->rl_ecr + prod2->rl_efr;
             std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_total_variance << " [" << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " * " << prod2->rl_total_variance << ']' << std::endl;
 
-            const double exponentiated = pow(prod2->rl_total_variance / split, 1.0 - (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split);
+            const double one_minus_infuence = 1.0 - (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split;
+            const double inflated_influence = 1.0 / std::max(0.01, one_minus_infuence);
+            const double inflated_variance = prod2->rl_total_variance / split * inflated_influence;
 
-            std::cerr << "     " << prod2->rl_total_variance / split << '^' << 1.0 - (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split << " = " << exponentiated << std::endl;
+            std::cerr << "     one_minus_infuence = " << one_minus_infuence << " = 1.0 - " << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " / " << split << std::endl;
+            std::cerr << "     inflated_influence = " << inflated_influence << " = 1.0 / " << std::max(0.01, one_minus_infuence) << std::endl;
+            std::cerr << "     inflated_variance = " << inflated_variance << " = " << prod2->rl_total_variance / split << " * " << inflated_influence << std::endl;
 
-            if(exponentiated <= prod2->rl_tolerable_variance ||
-               exponentiated <= total_variance / split)
+            if(suboptimality < 0.001 ||
+               inflated_variance < suboptimality)
             {
               cand->rl_intolerable_variance = false;
             }
