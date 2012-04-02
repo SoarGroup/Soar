@@ -11,15 +11,16 @@ class ID5Tree {
 public:
 	ID5Tree(const std::vector<ClassifierInst> &insts);
 	void update_tree(int i);
-	void batch_update(const std::vector<int> &new_insts);
 	void update_category(int i, category old);
+	void batch_update();
 	category classify(const attr_vec &attrs) const;
 	void output(const std::vector<std::string> &attr_names) const;
 	int size() const;
 	void get_all_splits(std::vector<int> &splits) const;
 	void print_graphviz(std::ostream &os) const;
 	void print(const std::string &prefix, std::ostream &os) const;
-	
+	bool cli_inspect(int nid, std::ostream &os) const;
+
 	category best_cat();
 	void prune();
 
@@ -44,6 +45,7 @@ private:
 	bool empty() const;
 	bool validate_counts();
 	void output_rec(const std::string &prefix, const std::vector<std::string> &attr_names) const;
+	void batch_update(const std::vector<int> &new_insts);
 	
 	/*
 	 Instance category counts for each possible value of an attribute

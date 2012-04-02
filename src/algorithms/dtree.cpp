@@ -684,6 +684,10 @@ bool ID5Tree::cli_inspect(int nid, ostream &os) const {
 
 void ID5Tree::batch_update(const vector<int> &new_insts) {
 	insts_here = new_insts;
+	batch_update();
+}
+
+void ID5Tree::batch_update() {
 	update_all_counts();
 	if (insts_here.empty()) {
 		return;
