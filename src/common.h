@@ -28,7 +28,7 @@
 
 typedef Eigen::RowVectorXd rvec;
 typedef Eigen::VectorXd cvec;
-typedef Eigen::MatrixXd mat;
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> mat;
 typedef Eigen::MatrixXi imat;
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
