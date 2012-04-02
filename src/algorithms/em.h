@@ -5,21 +5,9 @@
 #include <vector>
 #include "linear.h"
 #include "common.h"
+#include "classify.h"
 
 class scene;
-class ID5Tree;
-
-typedef std::vector<bool> attr_vec;
-typedef int category;
-
-class ClassifierInst {
-public:
-	attr_vec attrs;
-	category cat;
-	
-	void save(std::ostream &os) const;
-	void load(std::istream &is);
-};
 
 class EM {
 public:
@@ -43,38 +31,30 @@ public:
 	int get_nmodels() const { return nmodels; }
 	
 	void mark_model_stale(int i);
-	void get_tested_atoms(std::vector<int> &atoms) const;
 	
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
 	
-	void print_tree(std::ostream &os) const;
 	void test_classify(const rvec &x, double y, int &best, int &predicted, double &besterror);
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
-private:
-	int classify(const rvec &x);
+	const classifier &get_classifier() const { return clsfr; }
 	
+private:
 	std::vector<LRModel*> models;
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;
+	std::vector<category> map_class;
 	
 	mat  xdata;       // ndata x xdim
 	mat  ydata;       // ndata x 1
 	mat  Py_z;        // nmodels x ndata
 	imat eligible;    // nmodels x ndata
 	
-	/*
-	 This will be read directly by the decision tree learner as the
-	 category labels.
-	*/
-	std::vector<ClassifierInst> class_insts;
-	
 	int ndata, nmodels, xdim;
 	
-	scene *scn, *scncopy;
-	ID5Tree *dtree;
+	classifier clsfr;
 };
 
 

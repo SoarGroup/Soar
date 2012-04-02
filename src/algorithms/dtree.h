@@ -5,13 +5,13 @@
 #include <map>
 #include <string>
 #include <memory>
-#include "em.h"
+#include "classify.h"
 
 class ID5Tree {
 public:
-	ID5Tree(const std::vector<ClassifierInst> &insts);
+	ID5Tree(const std::vector<classifier_inst> &insts, int nattrs);
 	void update_tree(int i);
-	void update_category(int i, category old);
+	void update_counts_change(int i, category old);
 	void batch_update();
 	category classify(const attr_vec &attrs) const;
 	void output(const std::vector<std::string> &attr_names) const;
@@ -28,14 +28,14 @@ private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
 	typedef std::auto_ptr<ID5Tree> ID5ptr;
 	
-	ID5Tree(const std::vector<ClassifierInst> &insts, const std::vector<int> &attrs);
+	ID5Tree(const std::vector<classifier_inst> &insts, const std::vector<int> &attrs);
 	void expand();
 	void shrink();
 	void remove_empty();
 	void pull_up(int i);
 	void pull_up_repair();
-	void update_counts(int i);
-	void update_all_counts();
+	void update_counts_new(int i);
+	void reset_counts();
 	void update_counts_from_children();
 	int choose_split();
 	void update_gains();
@@ -75,7 +75,7 @@ private:
 	std::map<int, val_counts> av_counts;
 	std::map<category, int> ttl_counts;
 	std::map<int, double> gains;
-	const std::vector<ClassifierInst> &insts;
+	const std::vector<classifier_inst> &insts;
 	std::vector<int> insts_here;
 	std::vector<int> attrs_here;
 	category cat;

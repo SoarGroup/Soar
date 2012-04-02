@@ -37,16 +37,6 @@ bool is_unique(const vector<T> &v) {
 	return t.size() == v.size();
 }
 
-void ClassifierInst::save(ostream &os) const {
-	os << cat << endl;
-	save_vector(attrs, os);
-}
-
-void ClassifierInst::load(istream &is) {
-	is >> cat;
-	load_vector(attrs, is);
-}
-
 vector<double> chi2thresh;
 
 void fill_chi2thresh() {
@@ -153,7 +143,7 @@ int node_id_counter = 0;
  a reference to it, so it can grow after the tree is created. The
  insts_here variable indexes into this list.
 */
-ID5Tree::ID5Tree(const vector<ClassifierInst> &insts, int nattrs) 
+ID5Tree::ID5Tree(const vector<classifier_inst> &insts, int nattrs) 
 : id(node_id_counter++), insts(insts), split_attr(-1), cat(90909)
 {
 	for (int i = 0; i < nattrs; ++i) {
@@ -161,7 +151,7 @@ ID5Tree::ID5Tree(const vector<ClassifierInst> &insts, int nattrs)
 	}
 }
 
-ID5Tree::ID5Tree(const vector<ClassifierInst> &insts, const vector<int> &attrs) 
+ID5Tree::ID5Tree(const vector<classifier_inst> &insts, const vector<int> &attrs) 
 : id(node_id_counter++), insts(insts), attrs_here(attrs), split_attr(-1), cat(90909)
 { }
 
@@ -193,7 +183,7 @@ void ID5Tree::update_tree(int i) {
 	if (i >= 0) {
 		assert(find(insts_here.begin(), insts_here.end(), i) == insts_here.end());
 		insts_here.push_back(i);
-		update_counts(i);
+		update_counts_new(i);
 	}
 	
 	if (cats_all_same()) {
@@ -286,7 +276,7 @@ void ID5Tree::pull_up_repair() {
 	update_counts_from_children();
 }
 
-void ID5Tree::update_all_counts() {
+void ID5Tree::reset_counts() {
 	ttl_counts.clear();
 	av_counts.clear();
 	vector<int>::iterator i;
@@ -299,14 +289,14 @@ void ID5Tree::update_all_counts() {
 		av_counts[*i];
 	}
 	for (i = insts_here.begin(); i != insts_here.end(); ++i) {
-		update_counts(*i);
+		update_counts_new(*i);
 	}
 }
 
 /*
  Update counts after adding instance i.
 */
-void ID5Tree::update_counts(int i) {
+void ID5Tree::update_counts_new(int i) {
 	++ttl_counts[insts[i].cat];
 	vector<int>::iterator j;
 	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
@@ -326,32 +316,31 @@ void ID5Tree::update_counts(int i) {
  Update counts after the category of instance i changes from old to its
  current value. Assumes that counts were correct before the change.
 */
-void ID5Tree::update_category(int i, category old) {
+void ID5Tree::update_counts_change(int i, category old) {
 	assert(find(insts_here.begin(), insts_here.end(), i) != insts_here.end());
 	assert(is_unique(attrs_here));
 	
-	int cat = insts[i].cat;
 	--ttl_counts[old];
-	++ttl_counts[cat];
+	++ttl_counts[insts[i].cat];
 	vector<int>::iterator j;
 	for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 		val_counts &c = av_counts[*j];
 		if (insts[i].attrs[*j]) {
 			--c.true_counts[old];
 			assert(c.true_counts[old] >= 0);
-			++c.true_counts[cat];
+			++c.true_counts[insts[i].cat];
 		} else {
 			--c.false_counts[old];
 			assert(c.false_counts[old] >= 0);
-			++c.false_counts[cat];
+			++c.false_counts[insts[i].cat];
 		}
 	}
 	
 	if (expanded()) {
 		if (insts[i].attrs[split_attr]) {
-			left->update_category(i, old);
+			left->update_counts_change(i, old);
 		} else {
-			right->update_category(i, old);
+			right->update_counts_change(i, old);
 		}
 	}
 	
@@ -367,8 +356,6 @@ void ID5Tree::update_counts_from_children() {
 	ttl_counts.clear();
 	av_counts.clear();
 	
-	//left->update_all_counts();
-	//right->update_all_counts();
 	map<category, int>::iterator i;
 	for (i = left->ttl_counts.begin(); i != left->ttl_counts.end(); ++i) {
 		ttl_counts[i->first] += i->second;
@@ -437,7 +424,7 @@ bool ID5Tree::validate_counts() {
 	}
 	
 	for (i = insts_here.begin(); i != insts_here.end(); ++i) {
-		const ClassifierInst &inst = insts[*i];
+		const classifier_inst &inst = insts[*i];
 		++ref_ttl_counts[inst.cat];
 		for (j = attrs_here.begin(); j != attrs_here.end(); ++j) {
 			val_counts &c = ref_av_counts[*j];
@@ -523,7 +510,6 @@ int ID5Tree::choose_split() {
 */
 void ID5Tree::update_gains() {
 	int ninsts = insts_here.size();
-	//update_all_counts();
 	gains.clear();
 	double curr_ent = entropy(ttl_counts, ninsts);
 	vector<int>::const_iterator i;
@@ -684,15 +670,10 @@ bool ID5Tree::cli_inspect(int nid, ostream &os) const {
 
 void ID5Tree::batch_update(const vector<int> &new_insts) {
 	insts_here = new_insts;
-	batch_update();
-}
-
-void ID5Tree::batch_update() {
-	update_all_counts();
+	reset_counts();
 	if (insts_here.empty()) {
 		return;
 	}
-	
 	if (cats_all_same()) {
 		cat = insts[insts_here[0]].cat;
 	} else if (attrs_here.size() == 0 || attrs_all_same()) {
@@ -705,6 +686,14 @@ void ID5Tree::batch_update() {
 			expand();
 		}
 	}
+}
+
+void ID5Tree::batch_update() {
+	vector<int> all_insts;
+	for (int i = 0; i < insts.size(); ++i) {
+		all_insts.push_back(i);
+	}
+	batch_update(all_insts);
 }
 
 category ID5Tree::best_cat() {

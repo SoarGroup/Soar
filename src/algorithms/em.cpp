@@ -8,10 +8,11 @@
 #include <set>
 #include <limits>
 #include <iomanip>
+#include <memory>
 #include "linear.h"
 #include "em.h"
 #include "common.h"
-#include "dtree.h"
+#include "classify.h"
 #include "scene.h"
 #include "filter_table.h"
 #include "params.h"
@@ -39,13 +40,11 @@ double randgauss(double mean, double std) {
 }
 
 EM::EM(scene *scn)
-: xdim(0), scn(scn), scncopy(scn->copy()), dtree(NULL), ndata(0), nmodels(0),
+: xdim(0), clsfr(xdata, ydata, scn), ndata(0), nmodels(0),
   Py_z(INIT_NMODELS, INIT_NDATA), eligible(INIT_NMODELS, INIT_NDATA), ydata(INIT_NDATA, 1)
 {}
 
 EM::~EM() {
-	delete dtree;
-	delete scncopy;
 }
 
 /* double storage size if we run out */
@@ -102,7 +101,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 	DATAVIS("BEGIN Py_z" << endl)
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
 		double prev = Py_z(i, *j), now;
-		category c = class_insts[*j].cat;
+		category c = map_class[*j];
 		if (TEST_ELIGIBILITY && eligible(i, *j) == 0) {
 			now = 0.;
 		} else {
@@ -135,7 +134,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 void EM::update_MAP(const set<int> &points) {
 	set<int>::iterator j;
 	for (j = points.begin(); j != points.end(); ++j) {
-		category prev = class_insts[*j].cat, now;
+		category prev = map_class[*j], now;
 		if (nmodels == 0) {
 			now = -1;
 		} else {
@@ -145,8 +144,8 @@ void EM::update_MAP(const set<int> &points) {
 			}
 		}
 		if (now != prev) {
-			class_insts[*j].cat = now;
-			dtree->update_category(*j, prev);
+			map_class[*j] = now;
+			clsfr.change_cat(*j, now);
 			if (prev != -1) {
 				stale_models.insert(prev);
 				models[prev]->del_example(*j);
@@ -160,17 +159,11 @@ void EM::update_MAP(const set<int> &points) {
 		}
 	}
 	
-	DATAVIS("BEGIN MAP" << endl)
-	for (int j = 0; j < ndata; ++j) {
-		DATAVIS(j << " " << class_insts[j].cat << endl)
-	}
-	DATAVIS("END" << endl)
 	/*
 	 Do the update after all categories have been changed to save
 	 on thrashing.
 	*/
-	dtree->update_tree(-1);
-	dtree->prune();
+	clsfr.update();
 }
 
 void EM::add_data(const rvec &x, double y) {
@@ -186,20 +179,8 @@ void EM::add_data(const rvec &x, double y) {
 	
 	xdata.row(ndata - 1) = x;
 	ydata(ndata - 1, 0) = y;
-	
-	ClassifierInst inst;
-	inst.cat = -1;
-	
-	scncopy->set_properties(x);
-	inst.attrs = scncopy->get_atom_vals();
-	class_insts.push_back(inst);
-
-	if (!dtree) {
-		dtree = new ID5Tree(class_insts);
-	}
-	dtree->update_tree(class_insts.size() - 1);
-	dtree->prune();
-	
+	map_class.push_back(-1);
+	clsfr.add(-1);
 	for (int i = 0; i < nmodels; ++i) {
 		stale_points[i].insert(ndata - 1);
 	}
@@ -257,7 +238,7 @@ bool EM::unify_or_add_model() {
 	
 	vector<int> noise_data;
 	for (int i = 0; i < ndata; ++i) {
-		if (class_insts[i].cat == -1) {
+		if (map_class[i] == -1) {
 			noise_data.push_back(i);
 		}
 	}
@@ -351,7 +332,7 @@ bool EM::predict(const rvec &x, double &y) {
 		return false;
 	}
 	
-	int mdl = classify(x);
+	int mdl = clsfr.classify(x);
 	if (mdl == -1) {
 		return false;
 	}
@@ -401,12 +382,12 @@ bool EM::remove_models() {
 		}
 	}
 	for (int j = 0; j < ndata; ++j) {
-		if (class_insts[j].cat >= 0) {
-			category old = class_insts[j].cat;
-			class_insts[j].cat = index_map[old];
-			if (class_insts[j].cat != old) {
+		if (map_class[j] >= 0) {
+			category old = map_class[j];
+			map_class[j] = index_map[old];
+			if (map_class[j] != old) {
+				clsfr.change_cat(j, map_class[j]);
 				DATAVIS("'num removed' %+1" << endl)
-				dtree->update_category(j, old);
 			}
 		}
 	}
@@ -414,7 +395,7 @@ bool EM::remove_models() {
 	nmodels = i;
 	resize();
 	models.erase(models.begin() + nmodels, models.end());
-	dtree->prune();
+	clsfr.update();
 	return removed;
 }
 
@@ -443,18 +424,6 @@ bool EM::run(int maxiters) {
 		changed = true;
 	}
 	cerr << "Reached max iterations without quiescence" << endl;
-	cerr << "Noise Data X" << endl;
-	for (int i = 0; i < ndata; ++i) {
-		if (class_insts[i].cat == -1) {
-			cerr << xdata.row(i);
-		}
-	}
-	cerr << "Noise Data Y" << endl;
-	for (int i = 0; i < ndata; ++i) {
-		if (class_insts[i].cat == -1) {
-			cerr << ydata(i, 0) << endl;
-		}
-	}
 	return changed;
 }
 
@@ -477,10 +446,6 @@ double EM::error() {
 	return error;
 }
 
-void EM::get_tested_atoms(vector<int> &atoms) const {
-	dtree->get_all_splits(atoms);
-}
-
 void EM::save(ostream &os) const {
 	os << ndata << " " << nmodels << " " << xdim << endl;
 	save_mat(os, xdata);
@@ -489,12 +454,7 @@ void EM::save(ostream &os) const {
 	if (TEST_ELIGIBILITY) {
 		save_imat(os, eligible);
 	}
-	
-	std::vector<ClassifierInst>::const_iterator i;
-	os << class_insts.size() << endl;
-	for (i = class_insts.begin(); i != class_insts.end(); ++i) {
-		i->save(os);
-	}
+	save_vector(map_class, os);
 	
 	std::vector<LRModel*>::const_iterator j;
 	os << models.size() << endl;
@@ -514,12 +474,7 @@ void EM::load(istream &is) {
 	if (TEST_ELIGIBILITY) {
 		load_imat(is, eligible);
 	}
-	
-	is >> ninsts;
-	for (int i = 0; i < ninsts; ++i) {
-		class_insts.push_back(ClassifierInst());
-		class_insts.back().load(is);
-	}
+	load_vector(map_class, is);
 	
 	is >> nmodels;
 	for (int i = 0; i < nmodels; ++i) {
@@ -530,33 +485,9 @@ void EM::load(istream &is) {
 		DATAVIS("END" << endl)
 	}
 	
-	dtree = new ID5Tree(class_insts);
-	vector<int> insts;
-	for (int i = 0; i < class_insts.size(); ++i) {
-		insts.push_back(i);
-	}
-	dtree->batch_update(insts);
-	dtree->prune();
+	clsfr.batch_update(map_class);
 }
 
-void EM::print_tree(std::ostream &os) const {
-	if (dtree) {
-		os << "digraph g {" << endl;
-		dtree->print_graphviz(os);
-		os << "}" << endl;
-	} else {
-		os << "empty" << std::endl;
-	}
-}
-
-int EM::classify(const rvec &x) {
-	if (dtree == NULL) {
-		return -1;
-	}
-	scncopy->set_properties(x);
-	attr_vec attrs = scncopy->get_atom_vals();
-	return dtree->classify(attrs);
-}
 
 void EM::test_classify(const rvec &x, double y, int &best, int &predicted, double &besterror) {
 	best = -1;
@@ -571,7 +502,7 @@ void EM::test_classify(const rvec &x, double y, int &best, int &predicted, doubl
 			besterror = error;
 		}
 	}
-	predicted = classify(x);
+	predicted = clsfr.classify(x);
 }
 
 bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
@@ -581,6 +512,7 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		os << "EM model learner" << endl;
 		os << "nmodels: " << nmodels << endl;
 		os << "ndata:   " << ndata << endl;
+		os << endl << "subelements: function ptable train classifier" << endl;
 		return true;
 	} else if (args[first_arg] == "ptable") {
 		os << setw(10);
@@ -591,9 +523,9 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 			os << endl;
 		}
 		return true;
-	} else if (args[first_arg] == "linear") {
+	} else if (args[first_arg] == "function") {
 		if (first_arg + 1 >= args.size()) {
-			os << "specify a model number" << endl;
+			os << "Specify a function number (0 - " << nmodels - 1 << ")" << endl;
 			return false;
 		}
 		char *end;
@@ -602,14 +534,20 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 			os << "invalid model number" << endl;
 			return false;
 		}
-		return models[n]->cli_inspect(os);
-	} else if (args[first_arg] == "tree") {
-		if (dtree == NULL) {
-			os << "NULL" << endl;
-		} else {
-			dtree->print("", os);
+		return models[n]->cli_inspect(first_arg + 2, args, os);
+	} else if (args[first_arg] == "train") {
+		for (int i = 0; i < ndata; ++i) {
+			for (int j = 0; j < xdata.cols(); ++j) {
+				os << xdata(i, j) << " ";
+			}
+			for (int j = 0; j < ydata.cols(); ++j) {
+				os << ydata(i, j) << " ";
+			}
+			os << endl;
 		}
 		return true;
+	} else if (args[first_arg] == "classifier") {
+		return clsfr.cli_inspect(first_arg + 1, args, os);
 	}
 	
 	os << "no such property" << endl;

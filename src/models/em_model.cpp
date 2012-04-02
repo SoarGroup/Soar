@@ -45,15 +45,6 @@ public:
 
 	~EM_model() {
 		finish();
-		
-		if (em) {
-			stringstream treepathss;
-			treepathss << "trees/" << get_name() << ".dot";
-			string treepath = treepathss.str();
-			ofstream f(treepath.c_str());
-			em->print_tree(f);
-			delete em;
-		}
 	}
 	
 	bool predict(const rvec &x, rvec &y) {
@@ -81,7 +72,7 @@ public:
 	void update_tested_atoms() {
 		vector<int> a;
 		vector<int>::const_iterator i;
-		em->get_tested_atoms(a);
+		em->get_classifier().get_tested_atoms(a);
 		for(i = a.begin(); i != a.end(); ++i) {
 			if (atom_wmes.find(*i) == atom_wmes.end()) {
 				make_atom_wme(*i);
