@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include "lwr.h"
+#include "nn.h"
 #include "linear.h"
 
 using namespace std;
@@ -11,9 +12,7 @@ rvec norm_vec(const rvec &v, const rvec &min, const rvec &range) {
 
 LWR::LWR(int nnbrs)
 : nnbrs(nnbrs), xsz(-1), ysz(-1), normalized(false)
-{
-	nn = new brute_nn(&xnorm);
-}
+{}
 
 void LWR::learn(const rvec &x, const rvec &y) {
 	if (xsz < 0) {
@@ -49,13 +48,10 @@ void LWR::learn(const rvec &x, const rvec &y) {
 
 bool LWR::predict(const rvec &x, rvec &y) {
 	mat X, Y;
-	rvec d;
-	di_queue neighbors;
 	timer tall, tnn;
-	int i, j, k;
 
 	tall.start();
-	k = examples.size() > nnbrs ? nnbrs : examples.size();
+	int k = examples.size() > nnbrs ? nnbrs : examples.size();
 	if (k == 0) {
 		return false;
 	}
@@ -68,24 +64,16 @@ bool LWR::predict(const rvec &x, rvec &y) {
 	rvec xn = norm_vec(x, xmin, xrange);
 	
 	tnn.start();
-	nn->query(xn, k, neighbors);
+	vector<int> inds;
+	rvec d(k);
+	brute_nearest_neighbor(xnorm, xn, k, inds, d);
 	//cout << "NN:  " << tnn.stop() << endl;
 	
 	X.resize(k, xsz);
 	Y.resize(k, ysz);
-	d.resize(k);
-	for(i = 0; i < k; ++i) {
-		d(i) = neighbors.top().first;
-		int ind = neighbors.top().second;
-		neighbors.pop();
-		rvec &tx = examples[ind].first;
-		rvec &ty = examples[ind].second;
-		for(j = 0; j < xsz; ++j) {
-			X(i, j) = tx[j];
-		}
-		for(j = 0; j < ysz; ++j) {
-			Y(i, j) = ty[j];
-		}
+	for(int i = 0; i < k; ++i) {
+		X.row(i) = examples[inds[i]].first;
+		Y.row(i) = examples[inds[i]].second;
 	}
 	
 	rvec w = d.array().pow(-3).sqrt();
@@ -98,14 +86,14 @@ bool LWR::predict(const rvec &x, rvec &y) {
 	*/
 	rvec closeavg = rvec::Zero(ysz);
 	int nclose = 0;
-	for (i = 0; i < w.size(); ++i) {
+	for (int i = 0; i < w.size(); ++i) {
 		if (w(i) == INFINITY) {
 			closeavg += Y.row(i);
 			++nclose;
 		}
 	}
 	if (nclose > 0) {
-		for(i = 0; i < closeavg.size(); ++i) {
+		for(int i = 0; i < closeavg.size(); ++i) {
 			y[i] = closeavg(i) / nclose;
 		}
 		return true;

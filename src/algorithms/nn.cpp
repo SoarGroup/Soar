@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <iostream>
 #include <algorithm>
+#include <queue>
 #include "nn.h"
 
 using namespace std;
@@ -9,11 +10,20 @@ inline bool possibly_better(double d, int k, const di_queue &nn) {
 	return nn.size() < k || (nn.size() > 0 && d < nn.top().first);
 }
 
-brute_nn::brute_nn(std::vector<rvec> *points) : points(points) {}
+void di_queue_to_vec(di_queue &q, vector<int> &indexes, rvec &dists) {
+	indexes.reserve(q.size());
+	dists.resize(q.size());
+	for (int i = 0; i < dists.size(); ++i) {
+		dists(i) = q.top().first;
+		indexes.push_back(q.top().second);
+		q.pop();
+	}
+}
 
-void brute_nn::query(const rvec &q, int k, di_queue &nn) {
-	for (int i = 0; i < points->size(); ++i) {
-		double d = (q - points->at(i)).squaredNorm();
+void brute_nearest_neighbor(const mat &data, const rvec &q, int k, vector<int> &indexes, rvec &dists) {
+	di_queue nn;
+	for (int i = 0; i < data.rows(); ++i) {
+		double d = (q - data.row(i)).squaredNorm();
 		if (possibly_better(d, k, nn)) {
 			nn.push(std::make_pair(d, i));
 			if (nn.size() > k) {
@@ -21,6 +31,21 @@ void brute_nn::query(const rvec &q, int k, di_queue &nn) {
 			}
 		}
 	}
+	di_queue_to_vec(nn, indexes, dists);
+}
+
+void brute_nearest_neighbor(const vector<rvec> &data, const rvec &q, int k, vector<int> &indexes, rvec &dists) {
+	di_queue nn;
+	for (int i = 0; i < data.size(); ++i) {
+		double d = (q - data[i]).squaredNorm();
+		if (possibly_better(d, k, nn)) {
+			nn.push(std::make_pair(d, i));
+			if (nn.size() > k) {
+				nn.pop();
+			}
+		}
+	}
+	di_queue_to_vec(nn, indexes, dists);
 }
 
 

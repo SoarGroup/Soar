@@ -1,28 +1,18 @@
 #ifndef NN_H
 #define NN_H
 
-#include <queue>
 #include <vector>
+#include <queue>
+#include <utility>
 #include "common.h"
 
 typedef std::pair<double, int> di_pair;
 typedef std::priority_queue<di_pair> di_queue;
 
-class nearest_neighbor {
-public:
-	virtual void query(const rvec &q, int k, di_queue &nn) = 0;
-};
+void brute_nearest_neighbor(const std::vector<rvec> &data, const rvec &q, int k, std::vector<int> &indexes, rvec &dists);
+void brute_nearest_neighbor(const mat &data, const rvec &q, int k, std::vector<int> &indexes, rvec &dists);
 
-class brute_nn : public nearest_neighbor {
-public:
-	brute_nn(std::vector<rvec> *points);
-	void query(const rvec &q, int k, di_queue &nn);
-	
-private:
-	std::vector<rvec> *points;
-};
-
-class balltree : public nearest_neighbor {
+class balltree {
 public:
 	balltree(int ndim, int leafsize, std::vector<rvec> *pts, const std::vector<int> &inds);
 	~balltree();

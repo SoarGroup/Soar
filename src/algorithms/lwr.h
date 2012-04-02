@@ -2,7 +2,6 @@
 #define LWR_H
 
 #include <iostream>
-#include "nn.h"
 #include "common.h"
 
 class LWR {
@@ -26,7 +25,6 @@ private:
 	std::vector<rvec> xnorm;
 	rvec xmin, xmax, xrange;
 	bool normalized;
-	nearest_neighbor *nn;
 };
 
 #endif
