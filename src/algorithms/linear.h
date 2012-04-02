@@ -51,14 +51,16 @@ public:
 	void save(std::ostream &os) const;
 	// this has to be called right after the object is constructed
 	void load(std::istream &is);
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
 	virtual LRModel* copy() const = 0;
-	virtual void fit_me() = 0;
-	virtual bool predict_me(const rvec &x, rvec &y) = 0;
-	virtual bool predict_me(const mat &X, mat &Y) = 0;
-	virtual bool cli_inspect(std::ostream &os) const;
+	virtual void fit_drv() = 0;
+	virtual bool predict_drv(const rvec &x, rvec &y) = 0;
+	virtual bool predict_drv(const mat &X, mat &Y) = 0;
 
 protected:
+	virtual bool cli_inspect_drv(std::ostream &os) const = 0;
+	
 	const mat &xdata;
 	const mat &ydata;
 	
@@ -78,15 +80,15 @@ public:
 	PCRModel(const PCRModel &m);
 	~PCRModel() {}
 	
-	void fit_me();
-	bool predict_me(const rvec &x, rvec &y);
-	bool predict_me(const mat &X, mat &Y);
+	void fit_drv();
+	bool predict_drv(const rvec &x, rvec &y);
+	bool predict_drv(const mat &X, mat &Y);
 	
 	LRModel* copy() const {
 		return new PCRModel(*this);
 	}
 	
-	bool cli_inspect(std::ostream &os) const;
+	bool cli_inspect_drv(std::ostream &os) const;
 	
 private:
 	mat beta;

@@ -219,11 +219,12 @@ void LRModel::add_example(int i, bool update_refit) {
 	}
 	
 	members.push_back(i);
-	DATAVIS("'training set' '")
-	for (int j = 0; j < members.size(); ++j) {
-		DATAVIS(members[j] << " ")
+	DATAVIS("'newest member' " << i << endl)
+	DATAVIS("'newest data' '")
+	for (int j = 0; j < xdata.cols(); ++j) {
+		DATAVIS(xdata(i, j) << " ")
 	}
-	DATAVIS("'" << endl)
+	DATAVIS(ydata(i, 0) << "'" << endl)
 	
 	if (members.size() == 1) {
 		xtotals = xdata.row(i);
@@ -251,7 +252,7 @@ void LRModel::add_example(int i, bool update_refit) {
 		DATAVIS("constvals " << constvals << endl)
 	} else if (update_refit) {
 		rvec py;
-		if (!predict_me(xdata.row(i), py)) {
+		if (!predict_drv(xdata.row(i), py)) {
 			refit = true;
 			error = INFINITY;
 		} else {
@@ -324,7 +325,7 @@ void LRModel::update_error() {
 			Y.row(i) = ydata.row(members[i]);
 		}
 		
-		if (!predict_me(X, P)) {
+		if (!predict_drv(X, P)) {
 			error = INFINITY;
 		} else {
 			error = (Y - P).squaredNorm();
@@ -372,7 +373,7 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 	if (refit) {
 		fit();
 	}
-	return predict_me(x, y);
+	return predict_drv(x, y);
 }
 
 bool LRModel::predict(const mat &X, mat &Y) {
@@ -384,25 +385,40 @@ bool LRModel::predict(const mat &X, mat &Y) {
 	if (refit) {
 		fit();
 	}
-	return predict_me(X, Y);
+	return predict_drv(X, Y);
 }
 
 bool LRModel::fit() {
 	if (!isconst) {
-		fit_me();
+		fit_drv();
 	}
 	update_error();
 	refit = false;
 	return true;
 }
 
-bool LRModel::cli_inspect(ostream &os) const {
-	os << "members:";
-	for (int i = 0; i < members.size(); ++i) {
-		os << " " << members[i];
+bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
+	if (first_arg >= args.size()) {
+		os << "members (" << members.size() << "):";
+		for (int i = 0; i < members.size(); ++i) {
+			os << " " << members[i];
+		}
+		os << endl << "error:     " << error << endl;
+		return cli_inspect_drv(os);
+	} else if (args[first_arg] == "train") {
+		for (int i = 0; i < members.size(); ++i) {
+			for (int j = 0; j < xdata.cols(); ++j) {
+				os << xdata(members[i], j) << " ";
+			}
+			for (int j = 0; j < ydata.cols(); ++j) {
+				os << ydata(members[i], j) << " ";
+			}
+			os << endl;
+		}
+		return true;
 	}
-	os << endl << "error:     " << error << endl;
-	return true;
+	os << "unrecognized argument" << endl;
+	return false;
 }
 
 PCRModel::PCRModel(const mat &xdata, const mat &ydata) 
@@ -413,7 +429,7 @@ PCRModel::PCRModel(const PCRModel &m)
 : LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means), nfits(0), fit_time(0.0)
 {}
 
-void PCRModel::fit_me() {
+void PCRModel::fit_drv() {
 	timer t;
 	t.start();
 	
@@ -428,7 +444,7 @@ void PCRModel::fit_me() {
 	fit_time += t.stop();
 }
 
-bool PCRModel::predict_me(const rvec &x, rvec &y) {
+bool PCRModel::predict_drv(const rvec &x, rvec &y) {
 	if (beta.size() == 0) {
 		return false;
 	}
@@ -436,7 +452,7 @@ bool PCRModel::predict_me(const rvec &x, rvec &y) {
 	return true;
 }
 
-bool PCRModel::predict_me(const mat &X, mat &Y) {
+bool PCRModel::predict_drv(const mat &X, mat &Y) {
 	if (beta.size() == 0) {
 		return false;
 	}
@@ -445,9 +461,7 @@ bool PCRModel::predict_me(const mat &X, mat &Y) {
 	return true;
 }
 
-bool PCRModel::cli_inspect(ostream &os) const {
-	LRModel::cli_inspect(os);
-	
+bool PCRModel::cli_inspect_drv(ostream &os) const {
 	os << "num fits:  " << nfits << endl;
 	os << "fit time:  " << fit_time << endl;
 	os << "intercept: " << intercept << endl;
