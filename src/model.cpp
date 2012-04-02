@@ -67,12 +67,44 @@ float model::test(const rvec &x, const rvec &y) {
 	return error;
 }
 
-bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
-	if (first_arg < args.size() && args[first_arg] == "error") {
-		os << "last predicted: " << last_pred << endl;
-		os << "last reference: " << last_ref << endl;
-		os << "squared error:  " << (last_pred - last_ref).squaredNorm() << endl;
-		return true;
+bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
+	if (first_arg < args.size()) {
+		if (args[first_arg] == "error") {
+			os << "last predicted: " << last_pred << endl;
+			os << "last reference: " << last_ref << endl;
+			os << "squared error:  " << (last_pred - last_ref).squaredNorm() << endl;
+			return true;
+		} else if (args[first_arg] == "save") {
+			if (first_arg + 1 >= args.size()) {
+				os << "need a file name" << endl;
+				return false;
+			}
+			string path = args[first_arg + 1];
+			ofstream f(path.c_str());
+			if (!f.is_open()) {
+				os << "cannot open file " << path << " for writing" << endl;
+				return false;
+			}
+			save(f);
+			f.close();
+			os << "saved to " << path << endl;
+			return true;
+		} else if (args[first_arg] == "load") {
+			if (first_arg + 1 >= args.size()) {
+				os << "need a file name" << endl;
+				return false;
+			}
+			string path = args[first_arg + 1];
+			ifstream f(path.c_str());
+			if (!f.is_open()) {
+				os << "cannot open file " << path << " for reading" << endl;
+				return false;
+			}
+			load(f);
+			f.close();
+			os << "loadded from " << path << endl;
+			return true;
+		}
 	}
 	return cli_inspect_drv(first_arg, args, os);
 }

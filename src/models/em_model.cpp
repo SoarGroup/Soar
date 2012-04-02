@@ -133,7 +133,7 @@ public:
 		return model::test(x, y);
 	}
 	
-	bool cli_inspect_drv(int first_arg, const vector<string> &args, ostream &os) const {
+	bool cli_inspect_drv(int first_arg, const vector<string> &args, ostream &os) {
 		return em->cli_inspect(first_arg, args, os);
 	}
 	

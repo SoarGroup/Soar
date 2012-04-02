@@ -16,7 +16,7 @@ public:
 	
 	void init();
 	void finish();
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 	
 	std::string get_name() const {
 		return name;
@@ -35,7 +35,7 @@ public:
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
 	
-	virtual bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::ostream &os) const {
+	virtual bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::ostream &os) {
 		return false;
 	};
 
