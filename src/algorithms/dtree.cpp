@@ -146,24 +146,23 @@ private:
 	mat counts;
 };
 
+int node_id_counter = 0;
+
 /*
  insts is the list of all instances. The tree will only maintain
  a reference to it, so it can grow after the tree is created. The
  insts_here variable indexes into this list.
 */
-ID5Tree::ID5Tree(const vector<ClassifierInst> &insts) 
-: insts(insts), split_attr(-1), cat(90909)
+ID5Tree::ID5Tree(const vector<ClassifierInst> &insts, int nattrs) 
+: id(node_id_counter++), insts(insts), split_attr(-1), cat(90909)
 {
-	assert(insts.size() > 0);
-	int nattrs = insts[0].attrs.size();
-	attrs_here.reserve(nattrs);
 	for (int i = 0; i < nattrs; ++i) {
 		attrs_here.push_back(i);
 	}
 }
 
 ID5Tree::ID5Tree(const vector<ClassifierInst> &insts, const vector<int> &attrs) 
-: insts(insts), attrs_here(attrs), split_attr(-1), cat(90909)
+: id(node_id_counter++), insts(insts), attrs_here(attrs), split_attr(-1), cat(90909)
 { }
 
 void ID5Tree::expand() {
@@ -644,19 +643,43 @@ void ID5Tree::print_graphviz(ostream &os) const {
 
 void ID5Tree::print(const string &prefix, ostream &os) const {
 	if (!expanded()) {
-		os << " " << cat << " (";
+		os << " " << "N" << id << " [" << cat << " (";
 		map<category, int>::const_iterator i;
 		for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
 			os << i->first << ":" << i->second << " ";
 		}
-		os << ")";
+		os << ") ]";
 	} else {
 		string newpref = prefix + "|   ";
+		os << endl << prefix << "N" << id;
 		os << endl << prefix << split_attr << " = 1:";
 		left->print(newpref, os);
 		os << endl << prefix << split_attr << " = 0:";
 		right->print(newpref, os);
 	}
+}
+
+bool ID5Tree::cli_inspect(int nid, ostream &os) const {
+	if (id == nid) {
+		map<category, int>::const_iterator i;
+		for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
+			os << "class " << i->first << endl;
+			for (int j = 0; j < insts_here.size(); ++j) {
+				if (insts[insts_here[j]].cat == i->first) {
+					os << insts_here[j] << ' ';
+				}
+			}
+			os << endl;
+		}
+		return true;
+	}
+	if (!expanded()) {
+		return false;
+	}
+	if (left->cli_inspect(nid, os)) {
+		return true;
+	}
+	return right->cli_inspect(nid, os);
 }
 
 void ID5Tree::batch_update(const vector<int> &new_insts) {

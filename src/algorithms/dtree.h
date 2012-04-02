@@ -68,6 +68,7 @@ private:
 		}
 	};
 	
+	int id;
 	// class counts for every attribute and every value
 	std::map<int, val_counts> av_counts;
 	std::map<category, int> ttl_counts;
