@@ -305,6 +305,21 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 			os << outspec[i].name << " "  << next_out[i] << endl;
 		}
 		return true;
+	} else if (args[first_arg] == "atoms") {
+		vector<vector<string> > atoms;
+		get_filter_table().get_all_atoms(scn, atoms);
+		for (int i = 0; i < atoms.size(); ++i) {
+			if (atoms[i].size() == 1) {
+				os << atoms[i][0] << "()" << endl;
+			} else {
+				os << atoms[i][0] << "(";
+				for (int j = 1; j < atoms[i].size() - 1; ++j) {
+					os << atoms[i][j] << ", ";
+				}
+				os << atoms[i][atoms[i].size()-1] << ")" << endl;
+			}
+		}
+		return true;
 	}
 	os << "no such element" << endl;
 	return false;

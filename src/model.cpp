@@ -102,7 +102,7 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 			}
 			load(f);
 			f.close();
-			os << "loadded from " << path << endl;
+			os << "loaded from " << path << endl;
 			return true;
 		}
 	}

@@ -515,10 +515,9 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		os << endl << "subelements: function ptable train classifier" << endl;
 		return true;
 	} else if (args[first_arg] == "ptable") {
-		os << setw(10);
 		for (int i = 0; i < ndata; ++i) {
 			for (int j = 0; j < nmodels; ++j) {
-				os << Py_z(j, i);
+				os << Py_z(j, i) << "\t";
 			}
 			os << endl;
 		}

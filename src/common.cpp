@@ -29,8 +29,10 @@ ofstream& get_datavis() {
 	if (first) {
 		string path = get_option("datavis");
 		if (path.empty() || access(path.c_str(), W_OK) < 0) {
+			cout << "Datavis output to /dev/null" << endl;
 			f.open("/dev/null");
 		} else {
+			cout << "Datavis output to " << path << endl;
 			f.open(path.c_str());
 			f << "CLEAR" << endl;
 		}
