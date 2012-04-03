@@ -595,6 +595,16 @@ int ID5Tree::classify(const attr_vec &attrs) const {
 	return right->classify(attrs);
 }
 
+const ID5Tree *ID5Tree::get_matched_node(const attr_vec &attrs) const {
+	if (!expanded()) {
+		return this;
+	}
+	if (attrs[split_attr]) {
+		return left->get_matched_node(attrs);
+	}
+	return right->get_matched_node(attrs);
+}
+
 void ID5Tree::get_all_splits(vector<int> &splits) const {
 	if (split_attr < 0) {
 		return;
@@ -727,3 +737,8 @@ void ID5Tree::prune() {
 		right->prune();
 	}
 }
+
+void ID5Tree::get_instances(vector<int> &i) const {
+	i = insts_here;
+}
+

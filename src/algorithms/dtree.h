@@ -21,8 +21,12 @@ public:
 	void print(const std::string &prefix, std::ostream &os) const;
 	bool cli_inspect(int nid, std::ostream &os) const;
 
-	category best_cat();
 	void prune();
+	
+	// Return node that best matches attribute vector
+	const ID5Tree *get_matched_node(const attr_vec &attrs) const;
+	
+	void get_instances(std::vector<int> &i) const;
 
 private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;
@@ -46,6 +50,7 @@ private:
 	bool validate_counts();
 	void output_rec(const std::string &prefix, const std::vector<std::string> &attr_names) const;
 	void batch_update(const std::vector<int> &new_insts);
+	category best_cat();
 	
 	/*
 	 Instance category counts for each possible value of an attribute

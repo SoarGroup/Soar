@@ -5,8 +5,46 @@
 #include "dtree.h"
 #include "scene.h"
 #include "filter_table.h"
+#include "lda.h"
 
 using namespace std;
+
+void get_nonuniform_cols(const mat &data, vector<int> &cols) {
+	for (int j = 0; j < data.cols(); ++j) {
+		for (int i = 1; i < data.rows(); ++i) {
+			if (data(i, j) != data(0, j)) {
+				cols.push_back(j);
+				break;
+			}
+		}
+	}
+}
+
+void clean_data(const mat &data, mat &cleaned, vector<int> &nonuniform_cols) {
+	get_nonuniform_cols(data, nonuniform_cols);
+	cleaned.resize(data.rows(), nonuniform_cols.size());
+	for (int i = 0; i < nonuniform_cols.size(); ++i) {
+		cleaned.col(i) = data.col(nonuniform_cols[i]);
+	}
+	mat rand_offsets = mat::Random(cleaned.rows(), cleaned.cols()) / 10000;
+	cleaned += rand_offsets;
+}
+
+int largest_class(const vector<int> &membership) {
+	map<int, int> counts;
+	for (int i = 0; i < membership.size(); ++i) {
+		++counts[membership[i]];
+	}
+	map<int, int>::iterator i;
+	int largest_count = -1;
+	int largest = -1;
+	for (i = counts.begin(); i != counts.end(); ++i) {
+		if (largest_count < i->second) {
+			largest = i->first;
+		}
+	}
+	return largest;
+}
 
 void classifier_inst::save(ostream &os) const {
 	os << cat << endl;
@@ -51,7 +89,50 @@ void classifier::change_cat(int i, int new_cat) {
 int classifier::classify(const rvec &x) {
 	scn->set_properties(x);
 	attr_vec a = scn->get_atom_vals();
-	return tree->classify(a);
+	
+	vector<int> matched_insts;
+	tree->get_matched_node(a)->get_instances(matched_insts);
+	if (matched_insts.size() == 0) {
+		return -1;
+	}
+	mat Xm(matched_insts.size(), X.cols());
+	vector<category> c(matched_insts.size());
+	bool uniform = true;
+	for (int i = 0; i < matched_insts.size(); ++i) {
+		Xm.row(i) = X.row(matched_insts[i]);
+		c[i] = insts[matched_insts[i]].cat;
+		if (c[i] != c[0]) {
+			uniform = false;
+		}
+	}
+	
+	if (uniform) {
+		return c[0];
+	}
+	
+	mat cleaned;
+	vector<int> nonuniform_cols;
+	clean_data(Xm, cleaned, nonuniform_cols);
+	
+	if (c.size() > 0 && cleaned.cols() == 0) {
+		cerr << "Degenerate case, no useful classification data." << endl;
+		return largest_class(c);
+	}
+	
+	LDA_NN_Classifier lda(cleaned, c);
+	
+	int result;
+	if (nonuniform_cols.size() != x.size()) {
+		rvec x1(nonuniform_cols.size());
+		for (int i = 0; i < nonuniform_cols.size(); ++i) {
+			x1(i) = x(nonuniform_cols[i]);
+		}
+		result = lda.classify(x1);
+	} else {
+		result = lda.classify(x);
+	}
+	
+	return result;
 }
 
 void classifier::batch_update(const vector<category> &classes) {
