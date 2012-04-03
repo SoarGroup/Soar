@@ -1,110 +1,145 @@
-QUICK START
-===========
+=============================
+SoarSuite readme.txt Overview
+=============================
+(1) Windows Build Instructions
+(2) Linux Build Instructions
+(3) Mac OSX Build Instructions
+(4) Building Individual Subcomponents
+(5) SCons Script Documentation
+(6) How Library Search Paths Work
 
-At a minimum, you need to have Python version 2.x and a standard c++
-compiler such as g++ or Visual C++. You probably also want a version of
-the Java Development Kit and SWIG if you want to use the Java debugger.
+==========================
+Windows Build Instructions
+==========================
 
-For Linux/Mac OSX:
+32-bit and 64-bit Windows platforms are supported for Windows XP, Vista, and 7.
+Other versions of 32-bit windows might work but are not officially supported.
+--------------------------
+Install the Prerequisities
+--------------------------
+ - Microsoft Visual Studio 2008
+   - You must have either Microsoft Visual Studio 2008 or the free Microsoft Visual C++ 2008 Express Edition (http://www.microsoft.com/visualstudio/en-us/products/2008-editions/express).  (Note that the free Express Edition does not include a 64-bit compiler.)
+   - Warning: If you are on a 64-bit machine, make sure to explicitly choose to install the the 64-bit compiler!  It is not installed by default!
+ - Java SE 6 JDK
+   - The latest Java SE 6 JDK is available from http://java.sun.com/javase/downloads/index.jsp.  Make sure to download the 64-bit version, if you are on a 64-bit machine.
+ - SWIG
+   - SWIG acts as a bridge between the Soar C++ libraries and the various other languages, like Java, Tcl, Python, Perl. Since nearly everyone will need the Soar debugger, which is written in Java, this component is required.
+   - You can download it from http://www.swig.org/download.html and extract it anywhere, such as your home folder or `C:\` or `C:\Program Files`
+ - Python
+   - Soar uses the SCons build system, which requires Python. Python version 2.7.2 is recommended, but anything from 2.5 onward should work. The Python 3.x series WILL NOT WORK.  You can download Python 2.7.2 from http://www.python.org/download/releases/2.7.2/
+     - If you are planning on a debug build including Python, you will need Python debug libraries (http://www.eecs.umich.edu/~soar/sitemaker/misc/python). Save the correct one for your architecture in `Python26\libs`.
 
-Start a shell, cd into the SoarSuite directory, and type
-
-  python scons/scons.py all
-
-For Windows:
-
+----------
+Build Soar
+----------
 Start cmd.exe, cd into the SoarSuite directory, and type
 
   build all
 
-Soar will be built into the "out" subdirectory.
+The batch file will ask you for the paths to SWIG and Python before building your script.  You no longer have to specify those paths in environment variables.
 
+For more detailed information about the Scons script, see the SCons script documentation section below. See the FAQ for common solutions to errors.
 
+---------------------------------
+Visual Studio Solution Generation
+---------------------------------
+SCons can generate Visual Studio project and solution files that allow users to more easily modify and debug the kernel source code.  When performing 'build all', these files will also be generated.  You can also manually generate these files by typing
 
-Prerequisites
-=============
+  scons msvs
 
-C++ Compiler
-------------
-On Linux and Mac OSX, the standard C++ compiler is currently g++. We
-try to keep Soar compatible with all versions from 4.2 to the latest
-stable release.
+Note that the generated projects are not stand-alone, they still call SCons under the hood to build targets.
 
-On Linux, g++ is probably available from your distro's package manager. In
-Ubuntu, you can install the package "build-essential" to get it as well
-as other common build tools.
+========================
+Linux Build Instructions
+========================
 
-On OSX, g++ comes with Xcode, which you can get from
+The only officially supported Linux distribution right now is Ubuntu (http://www.ubuntu.com/), though Soar should work on almost any distribution so long as things are configured correctly.
 
-https://developer.apple.com/technologies/tools/
+-------------------------
+Install the Prerequisites
+-------------------------
+ - Install the following required packages:
+   - openjdk-6-jdk (you can also use Sun's Java JDK)
+   - swig
+   - build-essential
+   - python-all-dev
+   - To get the above items, you can use your favorite package manager, such as `apt-get`.  For example:
 
-On Windows, Visual C++ is the standard compiler. Soar should work with
-both Visual Studio Professional and Express.
+sudo apt-get install openjdk-6-jdk swig build-essential python-all-dev
 
-Note: If you are on a 64-bit machine, and using Visual Studio Pro,
-please make sure to install the 64-bit compiler as it is not installed
-by default. The Express Edition does not have a 64-bit compiler at all.
+ - Python: Soar uses the SCons build system (scons.org), which requires Python. This should already be installed on Linux.  Just make sure you're running an appropriate version: 2.7.2 is recommended, but anything from 2.5 onward should work. The Python 3.x series WILL NOT WORK.  To check your version, type python --version
 
+----------
+Build Soar
+----------
+Go into the SoarSuite folder and run: 
 
-Python
-------
-Soar uses the SCons build system (scons.org), which requires
-Python. Python version 2.7.2 is recommended, but anything from 2.5
-onward should work. The Python 3.x series WILL NOT WORK.
+python scons/scons.py all
 
-Linux and Mac OSX users will likely have Python already. Please check
-the version number by running
+All of your resulting binaries will be in the /out folder.  
 
-  python --version
+For more detailed information about the Scons script, see the SCons script documentation section below. See the FAQ for common solutions to errors.
 
-Windows users can download setup files from python.org/download. As long
-as you use the official installer, you don't need to set any environment
-variables for the builder to find your python install.
+---------------------------------
+Set Up Your Environment Variables
+---------------------------------
+While you don't need any environment variables to build Soar, you may need a few set when running or developing for Soar.  To make these changes permanent, edit the `.bashrc` file in your home diretory and put them at the bottom.
 
+Soar binaries are, by default, installed to a prefix `SoarSuite/out`.  Java-based Soar application may need to be able to load relevant dynamic libraries on the fly, so you need to make sure that it can find the libraries it needs. Java will look `LD_LIBRARY_PATH`, so you can use that to tell it where to look.
 
-Java Development Kit
---------------------
-Unless you don't want to use the Java debugger and don't write
-environments in Java, you'll probably want to have a java compiler
-(javac). We've successfully used the Sun (now Oracle) JDK versions 1.5 -
-1.7, as well as OpenJDK.
+# The exact path here will depend on your system settings.
+export LD_LIBRARY_PATH=/home/$USER/soar/SoarSuite/out/
 
-On Linux, either openjdk or sunjdk is probably available from your
-distro's package manager. On Ubuntu, you can install the package
-"openjdk-7-jdk".
+Certain functions in the kernel may also use the SOAR_HOME environment variable to find binaries.  For example, SpawnDebugger uses it to find the SoarDebugger.jar.
 
-On Mac OSX, 
+# The exact path here will depend on your system settings.
+export SOAR_HOME=/home/$USER/soar/SoarSuite/out/
 
-On Windows, you can download the Sun JDK from 
+For more detailed information about library search paths, see our wiki page on [BuildLibrarySearchPaths how library search paths work].
 
-http://www.oracle.com/technetwork/java/javase/downloads/index.html
+===========================
+Mac OS X Build Instructions
+===========================
 
-As with Python, if you use the official installer, you don't need to
-set any special environment variables.
+-------------------------
+Install the Prerequisites
+-------------------------
+ - Java Developers Package:  10.6 is the only one we support. You can find this at http://connect.apple.com/ under Java downloads.  You do not have to pay for a developers account.  There's a link at the bottom that will let you register for free resources.
+   - Note: If you get an error with "jni.h", visit the http://discussions.apple.com/thread.jspa?threadID=2630649&tstart=0 to see how to resolve it.
+ - XCode: XCode is the Mac OS development environment under which you'll build Soar.  It is free with the latest version of MacOS.  If you don't already have it, you can download it http://developer.apple.com/tools/xcode/.
+ - Python: Soar uses the SCons build system (scons.org), which requires Python. This should already be installed on OSX.  Just make sure you're running an appropriate version.  2.7.2 is recommended, but anything from 2.5 onward should work. The Python 3.x series WILL NOT WORK.  To check your version, type python --version
+  
+----------
+Build Soar
+----------
+Go into the SoarSuite folder and run: 
 
+scons all
 
-SWIG
-----
-We use SWIG (swig.org) to automatically generate Java and Python
-interfaces for SML. You'll need SWIG to build the Java debugger, as well
-as write SML environments in Java and Python.
+All of your resulting binaries will be in the /out folder.  
 
-On Linux, you can probably get swig from your distro's package manager. On
-Ubuntu, install the package "swig".
+For more detailed information about the Scons script, see the SCons script documentation section below. See the FAQ for common solutions to errors.
 
-On Mac OSX, 
+----------------------------
+Set Up Environment Variables
+----------------------------
+While you don't need any environment variables to build Soar, you may need a few set when running or developing for Soar.  To make these changes permanent, edit the `.bashrc` file in your home diretory and put them at the bottom.
 
-On Windows, you can get a prebuilt executable archive from
+Soar binaries are, by default, installed to a prefix `SoarSuite/out`.  Java-based Soar application may need to be able to load relevant dynamic libraries on the fly, so you need to make sure that it can find the libraries it needs. Java will look `DYLD_LIBRARY_PATH`, so you can use that to tell it where to look.
 
-http://www.swig.org/download.html
+# The exact path here will depend on your system settings.
+export DYLD_LIBRARY_PATH=/home/$USER/soar/SoarSuite/out/
 
-Just unzip the archive to any directory. When you build Soar, the builder
-will ask you for the path to this directory.
+Certain functions in the kernel may also use the SOAR_HOME environment variable to find binaries.  For example, SpawnDebugger uses it to find the SoarDebugger.jar.
 
+# The exact path here will depend on your system settings.
+export SOAR_HOME=/home/$USER/soar/SoarSuite/out/
 
+For more detailed information about library search paths, see our wiki page on [BuildLibrarySearchPaths how library search paths work].
 
-Build Process Overview
-======================
+==============================
+Building Individual Subcomponents
+==============================
 
 The Soar suite has several individually buildable targets:
 
@@ -160,10 +195,9 @@ on their language choice, the SML C++ headers, Java SWIG wrapper, or
 Python SWIG wrapper. The test and command line interface programs are
 mainly for internal development.
 
-
-
-Running SCons
-=============
+==========================
+SCons Script Documentation
+==========================
 
 Soar uses single SCons build process for Windows, Linux, and Mac
 OSX. SCons tries to be (too) smart and uses the appropriate compilers,
@@ -194,11 +228,9 @@ For the rest of this document we'll be showing example build commands
 using the "scons <options>" form. Please substitute the appropriate
 command for "scons".
 
-
-
+-------------
 Build Targets
-=============
-
+-------------
 The builder can be directed to compile any number of targets,
 corresponding to the list given above. To see a list of available
 targets, type
@@ -226,11 +258,9 @@ can be passed to the builder together. For example:
 If no targets are specified, the default targets that will be built are
 kernel, sml_java, sml_python, debugger.
 
-
-
+------------------
 Output Directories
-==================
-
+------------------
 By default, the built libraries and executables will be placed into the
 "out" subdirectory under SoarSuite, and intermediates such as .o files
 will be placed in the "build" subdirectory. You can change these using
@@ -243,10 +273,9 @@ To delete all the files you just built, type
 
   scons -c all
 
-
-
+-----------
 Build Flags
-===========
+-----------
 
 You can modify building behavior by passing in a number of flags in the
 form '--<flagname>'. To see the list of available flags, type
@@ -261,24 +290,9 @@ makes scons print out the full commands it uses to build each file. This
 is useful if the build doesn't succeed and you want to figure out what
 is happening under the hood.
 
-
-
-Visual Studio Solution Generation
-=================================
-
-SCons can generate Visual Studio project and solution files that allow
-users to more easily modify and debug the kernel source code. You can
-generate these files by typing
-
-  scons msvs
-
-Unfortunately, the generated projects are not stand-alone, they still
-call SCons under the hood to build targets.
-
-
-
-Library Search Paths
-====================
+=============================
+How Library Search Paths Work
+=============================
 
 This section is not about building Soar, but running the executables that
 you've built. Because the Soar libraries are not installed to standard
@@ -308,7 +322,7 @@ The rest of this section contains explanations of what's going on under
 the hood of every operating system so that you'll have some insight
 should you run into issues.
 
-
+-----
 Linux
 -----
 In Linux, the GNU linker provides an -rpath flag that hard codes
@@ -321,7 +335,7 @@ libraries to different relative directories, you should be able to just
 run the executables without doing anything special. If you are having
 problems, you should manually set LD_LIBRARY_PATH.
 
-
+--------
 Mac OS X
 --------
 Dynamic libraries on OS X have the concept of install_name. Basically,
@@ -350,7 +364,7 @@ then on will look for the library using the absolute path, which should
 not fail unless you move the library or rebuild it. Please consult the
 system man page for that command for further information.
 
-
+-------
 Windows
 -------
 Windows searches the executable's directory for needed libraries by
@@ -363,7 +377,7 @@ order, see
 
 http://msdn.microsoft.com/en-us/library/windows/desktop/ms682586%28v=vs.85%29.aspx
 
-
+----
 Java
 ----
 The Java virtual machine has two sets of search paths: the class path and
@@ -398,6 +412,7 @@ acknowledge the changes. See this page for more information:
 
 http://stackoverflow.com/questions/5419039/is-djava-library-path-equivalent-to-system-setpropertyjava-library-path
 
+------
 Python
 ------
 Like with Java, SWIG also generates a Python wrapper, called
@@ -412,4 +427,3 @@ example:
 import sys
 sys.path.append('/directory/of/your/Soar/library')
 import Python_sml_ClientInterface as sml
-
