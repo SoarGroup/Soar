@@ -926,7 +926,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
           assert(prob > 0.0);
           assert(split >= prob);
 
-          prod2->rl_sample_influence_cycle = thisAgent->total_decision_phases_count;
+          prod2->rl_sample_influence_cycle = double(thisAgent->total_decision_phases_count);
           prod2->rl_sample_influence_updates = next_updates;
           std::cerr << "  " << prod2->rl_sample_influence_p << " += " << alpha << " * (" << prob << " / " << split << " * 0.5 - " << prod2->rl_sample_influence_p << ");" << std::endl;
           prod2->rl_sample_influence_p += alpha * (prob * 0.5 - prod2->rl_sample_influence_p); ///< 0.5 is a magic number, allowing a discount rate <= 0.5 to be stable
@@ -1023,11 +1023,11 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
             std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_total_variance << " [" << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " * " << prod2->rl_total_variance << ']' << std::endl;
 
             const double one_minus_infuence = 1.0 - (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split;
-            const double inflated_influence = 1.0 / std::max(0.01, one_minus_infuence);
+            const double inflated_influence = 1.0 / max(0.01, one_minus_infuence);
             const double inflated_variance = prod2->rl_total_variance / split * inflated_influence;
 
             std::cerr << "     one_minus_infuence = " << one_minus_infuence << " = 1.0 - " << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " / " << split << std::endl;
-            std::cerr << "     inflated_influence = " << inflated_influence << " = 1.0 / " << std::max(0.01, one_minus_infuence) << std::endl;
+            std::cerr << "     inflated_influence = " << inflated_influence << " = 1.0 / " << max(0.01, one_minus_infuence) << std::endl;
             std::cerr << "     inflated_variance = " << inflated_variance << " = " << prod2->rl_total_variance / split << " * " << inflated_influence << std::endl;
 
             if(suboptimality < 0.001 ||
