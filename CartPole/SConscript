@@ -1,0 +1,9 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+#
+
+Import('env')
+
+CartPole = env.Install('$OUT_DIR', env.Program('CartPole', 'CartPole.cpp'))
+env.Alias('cartpole', CartPole)
