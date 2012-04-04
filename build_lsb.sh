@@ -32,14 +32,16 @@ scons \
 	--cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
 	--cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
 	--lnflags="--lsb-shared-libpath=out -Wl,--hash-style=both" \
-	cli debugger debugger_api headers java_sml_misc kernel sml_java tests
+	cli debugger debugger_api headers java_sml_misc kernel sml_java tests tohsml cartpole
 
+#$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/CartPole
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/cli
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/TestCLI
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/TestExternalLibrary
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/TestSMLEvents
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/TestSMLPerformance
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/TestSoarPerformance
+#$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/TOHSML
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/UnitTests
 
 cp out/java/sml.jar ../AgentDevelopmentTools/VisualSoar/lib/
