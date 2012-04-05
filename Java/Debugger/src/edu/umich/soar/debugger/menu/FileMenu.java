@@ -201,8 +201,8 @@ public class FileMenu
     public void loadSource()
     {
         String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(),
-                new String[] { "*.soar" },
-                new String[] { "Soar source file (*.soar)" }, m_Frame
+                new String[] { "*.soar","*.*" },
+                new String[] { "Soar source file (*.soar)", "All files (*.*)" }, m_Frame
                         .getAppProperties(), "SourceSave", "SourceLoad");
 
         if (filename != null)
@@ -219,8 +219,8 @@ public class FileMenu
         String filename = SaveLoad
                 .LoadFileDialog(
                         m_Frame.getWindow(),
-                        new String[] { "*.soarx" },
-                        new String[] { "Soar production memory (rete) file (*.soarx)" },
+                        new String[] { "*.soarx","*.*" },
+                        new String[] { "Soar production memory (rete) file (*.soarx)", "All files (*.*)" },
                         m_Frame.getAppProperties(), "SourceSave", "SourceLoad");
 
         if (filename != null)
@@ -307,8 +307,8 @@ public class FileMenu
     public void loadPerformed(ActionEvent e)
     {
         String filename = SaveLoad.LoadFileDialog(m_Frame.getWindow(),
-                new String[] { "*.dlf" },
-                new String[] { "Debugger Layout file (*.dlf)" }, m_Frame
+                new String[] { "*.dlf","*.*" },
+                new String[] { "Debugger Layout file (*.dlf)", "All files (*.*)" }, m_Frame
                         .getAppProperties(), "SaveFile", "LoadFile");
 
         if (filename != null)
