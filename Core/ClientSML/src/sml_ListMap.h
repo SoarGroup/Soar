@@ -204,7 +204,7 @@ public:
 		ValueList* pList = getList(key) ;
 
 		if (pList)
-			pList.clear() ;
+			pList->clear() ;
 	}
 
 	// Get the number of items in a specific list
