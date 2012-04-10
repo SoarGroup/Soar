@@ -16,7 +16,7 @@
 
 class Stats_Tracker;
 
-#define CARTPOLE_AGENT_PRODUCTIONS "test_agents/test-towers-of-hanoi-SML.soar"
+#define CARTPOLE_AGENT_PRODUCTIONS "test_agents/cartpole-random-SML.soar"
 
 /* The CartPole object is a complete instance of Towers of Hanoi.
  * It is responsible for creating the Kernel, Agent, Towers, Disks, ...
@@ -44,14 +44,19 @@ public:
 
   inline void run();
   inline void step();
+
   bool is_finished() const;
+  bool is_success() const;
+
+  void reinit();
 
 private:
-  void update(sml::Kernel &kernel);
+  void update();
 
   Soar_Kernel m_kernel;
   Soar_Agent m_agent;
 
+  sml::StringElement * m_state;
   sml::IntElement * m_step;
   sml::FloatElement * m_x;
   sml::FloatElement * m_x_dot;

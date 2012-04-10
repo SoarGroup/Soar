@@ -90,7 +90,7 @@ Soar_Agent::~Soar_Agent() {
 }
 
 void Soar_Agent::LoadProductions(const std::string &productions) {
-  // Load the TOH productions
+  // Load the productions
   if(!m_agent_ptr->LoadProductions(productions.c_str())) {
     std::cerr << "Soar_Agent::LoadProductions(" << productions << ")->Failed" << std::endl;
     abort();

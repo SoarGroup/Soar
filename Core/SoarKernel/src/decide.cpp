@@ -71,6 +71,10 @@
 
 using namespace soar_TraceNames;
 
+#ifndef max
+using std::max;
+#endif
+
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > symbol_list;
 #else
@@ -898,6 +902,8 @@ void do_buffered_link_changes (agent* thisAgent) {
 void update_influence(agent* const &thisAgent, slot* const &slot, preference * const &candidates, preference * &selected) ///< bazald
 {
   const double prob = exploration_probability_according_to_policy(thisAgent, slot, candidates, selected);
+  std::cerr << "Probability of selection is " << prob << std::endl;
+  assert(prob > 0.0);
 
   if(selected->inst && selected->inst->prod) {
     const production * const &prod = selected->inst->prod;
@@ -912,6 +918,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
           ++split;
         }
       }
+      assert(split >= prob);
 
       const double gamma = thisAgent->rl_params->discount_rate->get_value();
       double sum_influence = 0.0;
@@ -923,8 +930,6 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
           const double alpha = 1.0 - prod2->rl_sample_influence_updates / next_updates;
           assert(0.0 < alpha);
           assert(alpha <= 1.0);
-          assert(prob > 0.0);
-          assert(split >= prob);
 
           prod2->rl_sample_influence_cycle = double(thisAgent->total_decision_phases_count);
           prod2->rl_sample_influence_updates = next_updates;

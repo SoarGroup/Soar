@@ -152,18 +152,53 @@ int main(int argc, char ** argv) {
 
   if(remote)
     CartPole::remote_trials(3, ip_address, port);
-  else
-    CartPole::run_trials(3);
+  else {
+    // CartPole::run_trials(3);
+
+    CartPole game;
+
+    for(int episode = 0; episode != 1000; ++episode) {
+      game.run();
+
+      if(game.is_success()) {
+        std::cout << "Success in episode " << episode + 1 << std::endl;
+        break;
+      }
+
+      game.reinit();
+    }
+  }
 
   return 0;
 }
 
 bool CartPole::is_finished() const {
-  return m_step->GetValue() > 10000 ||
-    get_box(m_x->GetValue(), m_x_dot->GetValue(), m_theta->GetValue(), m_theta_dot->GetValue()) < 0;
+  return strcmp("non-terminal", m_state->GetValue());
 }
 
-void CartPole::update(sml::Kernel &/*kernel*/) {
+bool CartPole::is_success() const {
+  return m_step->GetValue() > 10000;
+}
+
+void CartPole::reinit() {
+  m_agent->DestroyWME(m_theta_dot);
+  m_agent->DestroyWME(m_theta);
+  m_agent->DestroyWME(m_x_dot);
+  m_agent->DestroyWME(m_x);
+  m_agent->DestroyWME(m_step);
+  m_agent->DestroyWME(m_state);
+
+  m_agent->InitSoar();
+
+  m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
+  m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
+  m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", 0.0f);
+  m_x_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x-dot", 0.0f);
+  m_theta = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta", 0.0f);
+  m_theta_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta-dot", 0.0f);
+}
+
+void CartPole::update() {
   // Go through all the commands we've received (if any) since we last ran Soar.
   const int num_commands = m_agent->GetNumberCommands();
 
@@ -178,30 +213,40 @@ void CartPole::update(sml::Kernel &/*kernel*/) {
       else if(!strcmp("left", direction_name) ||
               !strcmp("right", direction_name))
       {
-        // Change the state of the world and generate new input
-        const int step = m_step->GetValue() + 1;
-        float x, x_dot, theta, theta_dot;
-        cart_pole(direction_name[0] == 'r', &x, &x_dot, &theta, &theta_dot);
+        if(is_finished()) {
+          std::cout << "terminal" << std::endl;
+        }
+        else {
+          // Change the state of the world and generate new input
+          const int step = m_step->GetValue() + 1;
+          float x = m_x->GetValue();
+          float x_dot = m_x_dot->GetValue();
+          float theta = m_theta->GetValue();
+          float theta_dot = m_theta_dot->GetValue();
+          cart_pole(direction_name[0] == 'r', &x, &x_dot, &theta, &theta_dot);
 
-        m_agent->DestroyWME(m_step);
-        m_step = 0;
-        m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", step);
-        m_agent->DestroyWME(m_x);
-        m_x = 0;
-        m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
-        m_agent->DestroyWME(m_x_dot);
-        m_x_dot = 0;
-        m_x_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x-dot", x_dot);
-        m_agent->DestroyWME(m_theta);
-        m_theta = 0;
-        m_theta = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta", theta);
-        m_agent->DestroyWME(m_theta_dot);
-        m_theta_dot = 0;
-        m_theta_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta-dot", theta_dot);
+          if(step > 10000 ||
+             get_box(m_x->GetValue(), m_x_dot->GetValue(), m_theta->GetValue(), m_theta_dot->GetValue()) < 0)
+          {
+            m_agent->DestroyWME(m_state);
+            m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "terminal");
+          }
+          m_agent->DestroyWME(m_step);
+          m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", step);
+          m_agent->DestroyWME(m_x);
+          m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
+          m_agent->DestroyWME(m_x_dot);
+          m_x_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x-dot", x_dot);
+          m_agent->DestroyWME(m_theta);
+          m_theta = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta", theta);
+          m_agent->DestroyWME(m_theta_dot);
+          m_theta_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta-dot", theta_dot);
 
-        std::cout << "step " << step << " (" << direction_name << ") = ["
-                  << x << ',' << x_dot << ',' << theta << ',' << theta_dot << ']'
-                  << std::endl;
+          if(is_finished())
+            std::cout << "step " << step << " (" << direction_name << ") = ["
+                      << x << ',' << x_dot << ',' << theta << ',' << theta_dot << ']'
+                      << std::endl;
+        }
       }
       else
         abort();

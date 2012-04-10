@@ -15,27 +15,29 @@
 #include "Stats_Tracker.inl"
 #include <cstring>
 
-void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags /*run_flags*/) {
+void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* /*kernel_ptr*/, sml::smlRunFlags /*run_flags*/) {
   assert(user_data_ptr);
-  static_cast<CartPole *>(user_data_ptr)->update(*kernel_ptr);
+  static_cast<CartPole *>(user_data_ptr)->update();
 }
 
 CartPole::CartPole(const std::string &agent_productions,
                    sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
            sml::Kernel::CreateKernelInCurrentThread(true)),
-  m_agent(m_kernel, "TOH"),
+  m_agent(m_kernel, "CartPole"),
+  m_state(0),
+  m_step(0),
   m_x(0),
   m_x_dot(0),
   m_theta(0),
-  m_theta_dot(0),
-  m_step(0)
+  m_theta_dot(0)
 {
   m_agent.LoadProductions(agent_productions);
 
   m_kernel->RegisterForUpdateEvent(sml::smlEVENT_AFTER_ALL_OUTPUT_PHASES, toh_update_event_handler, this);
   m_agent->ExecuteCommandLine("watch 0");
 
+  m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
   m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", 0.0f);
   m_x_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x-dot", 0.0f);
@@ -52,6 +54,7 @@ CartPole::~CartPole() {
   m_agent->DestroyWME(m_x_dot);
   m_agent->DestroyWME(m_x);
   m_agent->DestroyWME(m_step);
+  m_agent->DestroyWME(m_state);
 }
 
 void CartPole::run_trials(const int &num_trials) {
