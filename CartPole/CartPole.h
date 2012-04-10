@@ -38,9 +38,12 @@ public:
                   sml::Kernel * const kernel = 0);
   inline ~CartPole();
 
-  static inline void run_trials(const int &num_trials);
+  static inline void run_trials(const int &num_trials,
+                                const std::string &agent_productions = CARTPOLE_AGENT_PRODUCTIONS);
   static inline void remote_trials(const int &num_trials,
-                                   const std::string &ip_address, const int &port);
+                                   const std::string &ip_address,
+                                   const int &port,
+                                   const std::string &agent_productions = CARTPOLE_AGENT_PRODUCTIONS);
 
   inline void run();
   inline void step();
@@ -48,7 +51,7 @@ public:
   bool is_finished() const;
   bool is_success() const;
 
-  void reinit();
+  void reinit(const bool &init_soar);
 
 private:
   void update();

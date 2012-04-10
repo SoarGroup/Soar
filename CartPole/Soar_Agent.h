@@ -59,7 +59,8 @@ private:
 
 Soar_Agent::Soar_Agent(sml::Kernel &kernel, const std::string &name)
   // Create an arbitrarily named Soar agent
-  : m_agent_ptr(kernel.CreateAgent(name.c_str())),
+  : m_agent_ptr(name.empty() ? kernel.GetAgentByIndex(0)
+                             : kernel.CreateAgent(name.c_str())),
   m_kernel_ptr(&kernel)
 {
   // Check that nothing went wrong

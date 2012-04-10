@@ -24,7 +24,7 @@ CartPole::CartPole(const std::string &agent_productions,
                    sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
            sml::Kernel::CreateKernelInCurrentThread(true)),
-  m_agent(m_kernel, "CartPole"),
+  m_agent(m_kernel, kernel ? "" : "CartPole"),
   m_state(0),
   m_step(0),
   m_x(0),
@@ -57,37 +57,31 @@ CartPole::~CartPole() {
   m_agent->DestroyWME(m_state);
 }
 
-void CartPole::run_trials(const int &num_trials) {
+void CartPole::run_trials(const int &num_trials,
+                          const std::string &agent_productions) {
   std::cout << "Running the C++ CartPole SML (Local)" << std::endl;
 
   Stats_Tracker stats_tracker;
   for(int i = 0; i < num_trials; ++i) {
-    CartPole game;
+    CartPole game(agent_productions);
     stats_tracker.time_run(game.m_agent, i, num_trials);
   }
 }
 
 void CartPole::remote_trials(const int &num_trials,
                              const std::string &ip_address,
-                             const int &port) {
+                             const int &port,
+                             const std::string &agent_productions) {
   std::cout << "Running the C++ CartPole SML (Remote)" << std::endl;
 
   Stats_Tracker stats_tracker;
   for(int i = 0; i < num_trials; ++i) {
-    CartPole game(CARTPOLE_AGENT_PRODUCTIONS,
+    CartPole game(agent_productions,
                   sml::Kernel::CreateRemoteConnection(true,
                                                       ip_address.empty() ? 0 : ip_address.c_str(),
                                                       port,
                                                       false));
-    //stats_tracker.time_run(game.m_agent, i, num_trials);
-
-    while(!game.is_finished()) {
-#ifdef WIN32
-      Sleep(100);
-#else
-      usleep(100000);
-#endif
-    }
+    stats_tracker.time_run(game.m_agent, i, num_trials);
   }
 }
 

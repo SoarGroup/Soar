@@ -52,6 +52,23 @@ void cart_pole(int action, float *x, float *x_dot, float *theta, float *theta_do
 
 int get_box(float x, float x_dot, float theta, float theta_dot);
 
+inline bool arg_help(char ** &arg)
+{
+  if(strcmp(*arg, "--help"))
+    return false;
+
+  std::cout << "Options:" << std::endl
+            << "  --help               prints this help" << std::endl
+            << "  --remote [ip[:port]] to use a remote Soar kernel" << std::endl
+            << "  --ip                 to specify an IP address    (implies remote Soar kernel)" << std::endl
+            << "  --port               to specify a port address (implies remote Soar kernel)" << std::endl
+            << "  --rules filename     to specify non-default rules" << std::endl;
+
+  exit(0);
+
+  return true;
+}
+
 inline bool arg_remote(bool &remote,
                        std::string &ip_address,
                        int &port,
@@ -66,21 +83,20 @@ inline bool arg_remote(bool &remote,
   if(arg + 1 == arg_end)
     return true;
 
+  if(arg[1][1] && arg[1][0] == '-' && arg[1][1] == '-')
+    return true;
+
   ++arg;
 
-  if(strcmp(*arg, "--ip") &&
-     strcmp(*arg, "--port"))
-  {
-    const std::string ip_port = *arg;
-    const size_t colon = ip_port.find(':');
+  const std::string ip_port = *arg;
+  const size_t colon = ip_port.find(':');
 
   if(colon != std::string::npos) {
-      ip_address = ip_port.substr(0, colon);
+    ip_address = ip_port.substr(0, colon);
     from_string(port, *arg + (colon + 1));
-    }
-    else
-      ip_address = ip_port;
   }
+  else
+    ip_address = ip_port;
 
   return true;
 }
@@ -125,6 +141,23 @@ inline bool arg_port(bool &remote,
   return true;
 }
 
+inline bool arg_rules(std::string &rules,
+                      char ** &arg,
+                      char ** const &arg_end)
+{
+  if(strcmp(*arg, "--rules"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--rules' requires an argument'";
+    exit(2);
+  }
+
+  rules = *arg;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -133,29 +166,57 @@ int main(int argc, char ** argv) {
 #endif
 #endif
 
-  set_working_directory_to_executable_path();
-
   // Defaults
   bool remote = false;
   std::string ip_address;
   int port = sml::Kernel::kDefaultSMLPort;
+  std::string rules = CARTPOLE_AGENT_PRODUCTIONS;
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
-    if(!arg_remote(remote, ip_address, port, arg, arg_end) &&
-       !arg_ip    (remote, ip_address,       arg, arg_end) &&
-       !arg_port  (remote,             port, arg, arg_end))
+    if(!arg_help  (                                 arg         ) &&
+       !arg_remote(remote, ip_address, port,        arg, arg_end) &&
+       !arg_ip    (remote, ip_address,              arg, arg_end) &&
+       !arg_port  (remote,             port,        arg, arg_end) &&
+       !arg_rules (                          rules, arg, arg_end))
     {
       std::cerr << "Unrecognized argument: " << *arg;
       exit(1);
     }
   }
 
-  if(remote)
-    CartPole::remote_trials(3, ip_address, port);
+  if(rules == CARTPOLE_AGENT_PRODUCTIONS)
+    set_working_directory_to_executable_path();
+
+  if(remote) {
+//     CartPole::remote_trials(3, ip_address, port, rules);
+
+    CartPole game(rules,
+                  sml::Kernel::CreateRemoteConnection(true,
+                                                      ip_address.empty() ? 0 : ip_address.c_str(),
+                                                      port,
+                                                      false));
+
+    for(int episode = 0; episode != 1000; ++episode) {
+      while(!game.is_finished()) {
+  #ifdef WIN32
+        Sleep(100);
+  #else
+        usleep(100000);
+  #endif
+      }
+
+      if(game.is_success()) {
+        std::cout << "Success in episode " << episode + 1 << std::endl;
+        break;
+      }
+
+      game.reinit(false);
+    }
+  }
   else {
     // CartPole::run_trials(3);
 
-    CartPole game;
+    CartPole game(rules);
 
     for(int episode = 0; episode != 1000; ++episode) {
       game.run();
@@ -165,7 +226,7 @@ int main(int argc, char ** argv) {
         break;
       }
 
-      game.reinit();
+      game.reinit(true);
     }
   }
 
@@ -173,22 +234,23 @@ int main(int argc, char ** argv) {
 }
 
 bool CartPole::is_finished() const {
-  return strcmp("non-terminal", m_state->GetValue());
+  return m_state && strcmp("non-terminal", m_state->GetValue());
 }
 
 bool CartPole::is_success() const {
-  return m_step->GetValue() > 10000;
+  return m_step && m_step->GetValue() > 10000;
 }
 
-void CartPole::reinit() {
-  m_agent->DestroyWME(m_theta_dot);
-  m_agent->DestroyWME(m_theta);
-  m_agent->DestroyWME(m_x_dot);
-  m_agent->DestroyWME(m_x);
-  m_agent->DestroyWME(m_step);
-  m_agent->DestroyWME(m_state);
+void CartPole::reinit(const bool &init_soar) {
+  m_agent->DestroyWME(m_theta_dot); m_theta_dot = 0;
+  m_agent->DestroyWME(m_theta);     m_theta = 0;
+  m_agent->DestroyWME(m_x_dot);     m_x_dot = 0;
+  m_agent->DestroyWME(m_x);         m_x = 0;
+  m_agent->DestroyWME(m_step);      m_step = 0;
+  m_agent->DestroyWME(m_state);     m_state = 0;
 
-  m_agent->InitSoar();
+  if(init_soar)
+    m_agent->InitSoar();
 
   m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
   m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
@@ -196,6 +258,9 @@ void CartPole::reinit() {
   m_x_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x-dot", 0.0f);
   m_theta = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta", 0.0f);
   m_theta_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta-dot", 0.0f);
+
+  if(!m_agent->Commit())
+    abort();
 }
 
 void CartPole::update() {
