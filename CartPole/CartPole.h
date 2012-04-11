@@ -52,6 +52,7 @@ public:
   bool is_success() const;
 
   void reinit(const bool &init_soar);
+  bool SpawnDebugger();
 
 private:
   void update();

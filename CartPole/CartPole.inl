@@ -23,7 +23,7 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
 CartPole::CartPole(const std::string &agent_productions,
                    sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
-           sml::Kernel::CreateKernelInCurrentThread(true)),
+           sml::Kernel::CreateKernelInNewThread(true)),
   m_agent(m_kernel, kernel ? "" : "CartPole"),
   m_state(0),
   m_step(0),

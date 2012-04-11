@@ -1355,12 +1355,20 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		std::string portstring;
 		to_string(port, portstring);
 
+    std::string java_library_path = "-Djava.library.path=" + p;
+    for(int i = java_library_path.size() - 1; i != -1; --i) {
+      if(java_library_path[i] == '/') {
+        java_library_path.resize(i);
+        break;
+      }
+    }
+
 #ifdef SCONS_DARWIN
-		execlp("java", "java", "-XstartOnFirstThread", "-jar", p.c_str(), "-remote", 
+		execlp("java", "java", "-XstartOnFirstThread", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #else
-		execlp("java", "java", "-jar", p.c_str(), "-remote", 
-			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
+		execlp("java", "java", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
+			"-port", portstring.c_str(), "-agent", this->GetAgentName(), 0 );
 #endif
 		// does not return on success
 

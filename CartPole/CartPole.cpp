@@ -190,11 +190,15 @@ int main(int argc, char ** argv) {
   if(remote) {
 //     CartPole::remote_trials(3, ip_address, port, rules);
 
-    CartPole game(rules,
-                  sml::Kernel::CreateRemoteConnection(true,
-                                                      ip_address.empty() ? 0 : ip_address.c_str(),
-                                                      port,
-                                                      false));
+//     CartPole game(rules,
+//                   sml::Kernel::CreateRemoteConnection(true,
+//                                                       ip_address.empty() ? 0 : ip_address.c_str(),
+//                                                       port,
+//                                                       false));
+
+    CartPole game(rules);
+
+    game.SpawnDebugger();
 
     for(int episode = 0; episode != 1000; ++episode) {
       while(!game.is_finished()) {
@@ -261,6 +265,10 @@ void CartPole::reinit(const bool &init_soar) {
 
   if(!m_agent->Commit())
     abort();
+}
+
+bool CartPole::SpawnDebugger() {
+  return m_agent->SpawnDebugger(-1, "/home/bazald/Documents/Work/soar-group/SoarSuite/out/SoarJavaDebugger.jar");
 }
 
 void CartPole::update() {
