@@ -299,7 +299,7 @@ void CartPole::update() {
           cart_pole(direction_name[0] == 'r', &x, &x_dot, &theta, &theta_dot);
 
           if(step > 10000 ||
-             get_box(m_x->GetValue(), m_x_dot->GetValue(), m_theta->GetValue(), m_theta_dot->GetValue()) < 0)
+             get_box(x, x_dot, theta, theta_dot) < 0)
           {
             m_agent->DestroyWME(m_state);
             m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "terminal");
