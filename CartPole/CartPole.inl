@@ -55,6 +55,9 @@ CartPole::~CartPole() {
   m_agent->DestroyWME(m_x);
   m_agent->DestroyWME(m_step);
   m_agent->DestroyWME(m_state);
+
+  if(!m_agent->Commit())
+    abort();
 }
 
 void CartPole::run_trials(const int &num_trials,
