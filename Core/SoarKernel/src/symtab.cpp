@@ -740,6 +740,9 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->epmem_sym_before = make_sym_constant( thisAgent, "before" );
   thisAgent->epmem_sym_after = make_sym_constant( thisAgent, "after" );
   thisAgent->epmem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
+  thisAgent->epmem_sym_current = make_sym_constant( thisAgent, "current" );
+  thisAgent->epmem_sym_yes = make_sym_constant( thisAgent, "yes" );
+  thisAgent->epmem_sym_no = make_sym_constant( thisAgent, "no" );
 
 
   thisAgent->smem_sym = make_sym_constant( thisAgent, "smem" );
@@ -845,6 +848,9 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->epmem_sym_before ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_after ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_prohibit ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_current ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_yes ) );
+  release_helper( thisAgent, &( thisAgent->epmem_sym_no ) );
 
   release_helper( thisAgent, &( thisAgent->smem_sym ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_cmd ) );

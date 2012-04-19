@@ -225,6 +225,11 @@ typedef struct agent_struct {
   memory_pool		  epmem_info_pool;
   memory_pool		  smem_wmes_pool;
   memory_pool		  smem_info_pool;
+
+  memory_pool		  epmem_literal_pool;
+  memory_pool		  epmem_pedge_pool;
+  memory_pool		  epmem_uedge_pool;
+  memory_pool		  epmem_interval_pool;
   
   /* Dummy nodes and tokens */
   struct rete_node_struct * dummy_top_node;
@@ -334,6 +339,9 @@ typedef struct agent_struct {
   Symbol			* epmem_sym_before;
   Symbol			* epmem_sym_after;
   Symbol			* epmem_sym_prohibit;
+  Symbol			* epmem_sym_current;
+  Symbol			* epmem_sym_yes;
+  Symbol			* epmem_sym_no;
 
   Symbol            * smem_sym;
   Symbol            * smem_sym_cmd;
@@ -888,11 +896,11 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_graph_statement_container *epmem_stmts_graph;
   
 
-  std::map<epmem_node_id, bool> *epmem_node_removals;
+  epmem_id_removal_map *epmem_node_removals;
   std::vector<epmem_time_id> *epmem_node_mins;
   std::vector<bool> *epmem_node_maxes;
 
-  std::map<epmem_node_id, bool> *epmem_edge_removals;
+  epmem_id_removal_map *epmem_edge_removals;
   std::vector<epmem_time_id> *epmem_edge_mins;
   std::vector<bool> *epmem_edge_maxes;
 
@@ -900,6 +908,9 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_return_id_pool *epmem_id_replacement;
   epmem_id_ref_counter *epmem_id_ref_counts;
   epmem_symbol_stack *epmem_id_removes;
+
+  epmem_symbol_set* epmem_wme_adds;
+  epmem_symbol_set* epmem_promotions;
 
   epmem_rit_state epmem_rit_state_graph[2];
 
