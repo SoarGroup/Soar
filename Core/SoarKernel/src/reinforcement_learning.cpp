@@ -1081,7 +1081,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
                   break;
           }
 
-          prod->rl_total_variance += adjusted_alpha * iter->second * (rl_total_variance - prod->rl_total_variance);
+          prod->rl_total_variance += adjusted_alpha * iter->second * (rl_total_variance / num_rules - prod->rl_total_variance);
           std::cerr << "     " << prod->name->sc.name << " takes " << prod->rl_total_variance << " from rl_total_variance" << std::endl;
         }
 			}
@@ -1098,3 +1098,4 @@ void rl_watkins_clear( agent * /*my_agent*/, Symbol *goal )
 {
 	goal->id.rl_info->eligibility_traces->clear();
 }
+
