@@ -104,6 +104,12 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "meta: ", agnt->rl_params->meta->get_string() ) );
 
+         CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "meta-learning-rate: ", agnt->rl_params->meta_learning_rate->get_string() ) );
+
+         CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "update-log-path: ", agnt->rl_params->update_log_path->get_string() ) );
+
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result,
