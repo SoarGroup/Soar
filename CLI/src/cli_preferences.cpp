@@ -116,6 +116,24 @@ void print_preference_and_source (agent* agnt, preference *pref,
         print (agnt, " %c", preference_type_indicator (agnt, pref->type));
     }
     if (preference_is_binary(pref->type)) print_object_trace (agnt, pref->referent);
+    if (selection_probability) {
+      char dest[MAX_LEXEME_LENGTH*2+10]; /* from agent.h */
+      SNPRINTF(dest, sizeof(dest), "%#.16g", pref->numeric_value);
+      dest[sizeof(dest) - 1] = '\0'; /* ensure null termination */
+      { /* --- strip off trailing zeros --- */
+        char *start_of_exponent;
+        char *end_of_mantissa;
+        start_of_exponent = dest;
+        while ((*start_of_exponent != 0) && (*start_of_exponent != 'e'))
+          start_of_exponent++;
+        end_of_mantissa = start_of_exponent - 1;
+        while (*end_of_mantissa == '0') end_of_mantissa--;
+        end_of_mantissa++;
+        while (*start_of_exponent) *end_of_mantissa++ = *start_of_exponent++;
+        *end_of_mantissa = 0;
+      }
+      print (agnt, " =%s", dest);
+    }
     if (pref->o_supported) print (agnt, " :O "); else print (agnt, " :I ");
     if (selection_probability) print (agnt, "(%.1f%%)", (*selection_probability) * 100.0);
     print (agnt, "\n");

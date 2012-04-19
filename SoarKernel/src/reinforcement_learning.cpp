@@ -37,16 +37,36 @@ extern void variablize_symbol (agent* thisAgent, Symbol **sym);
 extern void variablize_nots_and_insert_into_conditions (agent* thisAgent, not_struct *nots, condition *conds);
 extern void variablize_condition_list (agent* thisAgent, condition *cond);
 
-
 /////////////////////////////////////////////////////
 // Parameters
 /////////////////////////////////////////////////////
 
+const std::vector<std::pair<std::string, param_accessor<double> *> > &rl_param_container::get_documentation_params() {
+    static std::vector<std::pair<std::string, param_accessor<double> *> > documentation_params;
+    static bool initted = false;
+    if (!initted) {
+        initted = true;
+        // Is it okay to use new here, because this is a static variable anyway,
+        // so it's not going to happen more than once and shouldn't ever be cleaned up?
+        documentation_params.push_back(std::make_pair("rl-updates", new rl_updates_accessor()));
+        documentation_params.push_back(std::make_pair("delta-bar-delta-h", new rl_dbd_h_accessor()));
+    }
+    return documentation_params;
+}
+
 rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_container( new_agent )
 {
-	// learning
-	learning = new rl_learning_param( "learning", soar_module::off, new soar_module::f_predicate<soar_module::boolean>(), new_agent );
-	add( learning );
+    // learning
+    learning = new rl_learning_param( "learning", soar_module::off, new soar_module::f_predicate<soar_module::boolean>(), new_agent );
+    add( learning );
+
+    // meta-learning-rate
+    meta_learning_rate = new soar_module::decimal_param( "meta-learning-rate", 0.1, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
+    add( meta_learning_rate );
+
+    // update-log-path
+    update_log_path = new soar_module::string_param( "update-log-path", "", new soar_module::predicate<const char *>(), new soar_module::f_predicate<const char *>() );
+    add( update_log_path );
 
 	// discount-rate
 	discount_rate = new soar_module::decimal_param( "discount-rate", 0.9, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
@@ -67,6 +87,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
     decay_mode->add_mapping( normal_decay, "normal" );
     decay_mode->add_mapping( exponential_decay, "exp" );
     decay_mode->add_mapping( logarithmic_decay, "log" );
+    decay_mode->add_mapping( delta_bar_delta_decay, "delta-bar-delta" );
     add( decay_mode );
 
 	// eligibility-trace-decay-rate
@@ -330,6 +351,25 @@ void rl_rule_meta( agent* my_agent, production* prod )
 	if ( prod->documentation && ( my_agent->rl_params->meta->get_value() == soar_module::on ) )
 	{
 		std::string doc( prod->documentation );
+
+        const std::vector<std::pair<std::string, param_accessor<double> *> > &documentation_params = my_agent->rl_params->get_documentation_params();
+        for (std::vector<std::pair<std::string, param_accessor<double> *> >::const_iterator doc_params_it = documentation_params.begin();
+                doc_params_it != documentation_params.end(); ++doc_params_it) {
+            const std::string &param_name = doc_params_it->first;
+            param_accessor<double> *accessor = doc_params_it->second;
+            std::stringstream param_name_ss;
+            param_name_ss << param_name << "=";
+            std::string search_term = param_name_ss.str();
+            size_t begin_index = doc.find(search_term);
+            if (begin_index == std::string::npos) continue;
+            begin_index += search_term.size();
+            size_t end_index = doc.find(";", begin_index);
+            if (end_index == std::string::npos) continue;
+            std::string param_value_str = doc.substr(begin_index, end_index);
+            accessor->set_param(prod, param_value_str);
+        }
+
+        /*
 		std::string search( "rlupdates=" );
 
 		if ( doc.length() > search.length() )
@@ -342,6 +382,7 @@ void rl_rule_meta( agent* my_agent, production* prod )
 				prod->rl_update_count = static_cast< double >( val );
 			}
 		}
+        */
 	}
 }
 
@@ -819,6 +860,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 			double lambda = my_agent->rl_params->et_decay_rate->get_value();
 			double gamma = my_agent->rl_params->discount_rate->get_value();
 			double tolerance = my_agent->rl_params->et_tolerance->get_value();
+            double theta = my_agent->rl_params->meta_learning_rate->get_value();
 
 			// if temporal_discount is off, don't discount for gaps
 			unsigned int effective_age = data->hrl_age + 1;
@@ -894,6 +936,7 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 				double old_ecr, old_efr;
 				double delta_ecr, delta_efr;
 				double new_combined, new_ecr, new_efr;
+                double delta_t = (data->reward + discount * op_value) - (sum_old_ecr + sum_old_efr);
 				
 				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
 				{	
@@ -914,6 +957,17 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
                         case rl_param_container::logarithmic_decay:
                             adjusted_alpha = 1.0 / (log(prod->rl_update_count + 1.0) + 1.0);
                             break;
+                        case rl_param_container::delta_bar_delta_decay:
+                            {
+                                // Note that in this case, x_i = 1.0 for all productions that are being updated.
+                                // Those values have been included here for consistency with the algorithm as described in the delta bar delta paper.
+                                prod->rl_delta_bar_delta_beta = prod->rl_delta_bar_delta_beta + theta * delta_t * 1.0 * prod->rl_delta_bar_delta_h;
+                                adjusted_alpha = exp(prod->rl_delta_bar_delta_beta);
+                                double decay_term = 1.0 - adjusted_alpha * 1.0 * 1.0;
+                                if (decay_term < 0.0) decay_term = 0.0;
+                                prod->rl_delta_bar_delta_h = prod->rl_delta_bar_delta_h * decay_term + adjusted_alpha * delta_t * 1.0;
+                                break;
+                            }
                         case rl_param_container::normal_decay:
                         default:
                             adjusted_alpha = alpha;
@@ -948,29 +1002,46 @@ void rl_perform_update( agent *my_agent, double op_value, bool op_rl, Symbol *go
 						std::string temp_str( ss.str() );						
 						print( my_agent, "%s\n", temp_str.c_str() );
 						xml_generate_message( my_agent, temp_str.c_str() );
-					}
 
-					// Change value of rule
-					symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
-					prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
-					prod->rl_update_count += 1;
-					prod->rl_ecr = new_ecr;
-					prod->rl_efr = new_efr;
+                        // Log update to file if the log file has been set
+                        std::string log_path = my_agent->rl_params->update_log_path->get_value();
+                        if (!log_path.empty()) {
+                            std::ofstream file(log_path.c_str(), std::ios_base::app);
+                            file << ss.str() << std::endl;
+                            file.close();
+                        }
+                    }
 
-					// change documentation
-					if ( my_agent->rl_params->meta->get_value() == soar_module::on )
-					{
-						if ( prod->documentation )
-						{
-							free_memory_block_for_string( my_agent, prod->documentation );
-						}
+                    // Change value of rule
+                    symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
+                    prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
+                    prod->rl_update_count += 1;
+                    prod->rl_ecr = new_ecr;
+                    prod->rl_efr = new_efr;
 
+                    // change documentation
+                    if ( my_agent->rl_params->meta->get_value() == soar_module::on )
+                    {
+                        if ( prod->documentation )
+                        {
+                            free_memory_block_for_string( my_agent, prod->documentation );
+                        }
+                        std::stringstream doc_ss;
+                        const std::vector<std::pair<std::string, param_accessor<double> *> > &documentation_params = my_agent->rl_params->get_documentation_params();
+                        for (std::vector<std::pair<std::string, param_accessor<double> *> >::const_iterator doc_params_it = documentation_params.begin();
+                                doc_params_it != documentation_params.end(); ++doc_params_it) {
+                            doc_ss << doc_params_it->first << "=" << doc_params_it->second->get_param(prod) << ";";
+                        }
+                        prod->documentation = make_memory_block_for_string(my_agent, doc_ss.str().c_str());
+
+                        /*
 						std::string rlupdates( "rlupdates=" );
 						std::string val;
 						to_string( static_cast< uint64_t >( prod->rl_update_count ), val );
 						rlupdates.append( val );
 
 						prod->documentation = make_memory_block_for_string( my_agent, rlupdates.c_str() );
+                        */
 					}
 
 					// Change value of preferences generated by current instantiations of this rule

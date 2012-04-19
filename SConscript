@@ -28,7 +28,7 @@ elif os.name == 'nt':
 kernel_env.Replace(LIBS = libs, LIBPATH=[])
 
 if sys.platform == 'darwin':
-	install_name = os.path.join(env['OUT_DIR'], env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
+	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
 	kernel_env.Append(LINKFLAGS = ['-install_name', install_name])
 	
 shared_macro = []

@@ -16,6 +16,7 @@
 #include <map>
 #include <string>
 #include <list>
+#include <vector>
 
 #include "soar_module.h"
 
@@ -39,6 +40,37 @@ class rl_learning_param;
 class rl_apoptosis_param;
 class rl_apoptosis_thresh_param;
 
+template <typename T>
+class param_accessor {
+    public:
+        virtual void set_param(production * const prod, T value) const = 0;
+        virtual T get_param(const production * const prod) const = 0;
+        void set_param(production * const prod, std::string value_str) const {
+            T value;
+            std::istringstream iss(value_str);
+            iss >> value;
+            set_param(prod, value);
+        }
+};
+
+class rl_updates_accessor : public param_accessor<double> {
+    virtual void set_param(production * const prod, double value) const {
+        prod->rl_update_count = value;
+    }
+    virtual double get_param(const production * const prod) const {
+        return prod->rl_update_count;
+    }
+};
+
+class rl_dbd_h_accessor : public param_accessor<double> {
+    virtual void set_param(production * const prod, double value) const {
+        prod->rl_delta_bar_delta_h = value;
+    }
+    virtual double get_param(const production * const prod) const {
+        return prod->rl_delta_bar_delta_h;
+    }
+};
+
 class rl_param_container: public soar_module::param_container
 {
 	public:
@@ -49,13 +81,14 @@ class rl_param_container: public soar_module::param_container
         // exponential_decay: rate = rate / # updates for this rule
         // logarithmic_decay: rate = rate / log(# updates for this rule)
         // Miller, 11/14/2011
-        enum decay_choices { normal_decay, exponential_decay, logarithmic_decay };
+        enum decay_choices { normal_decay, exponential_decay, logarithmic_decay, delta_bar_delta_decay };
 
 		enum apoptosis_choices { apoptosis_none, apoptosis_chunks, apoptosis_rl };
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
 		soar_module::decimal_param *learning_rate;
+        soar_module::decimal_param *meta_learning_rate; // For delta bar delta
 		soar_module::constant_param<learning_choices> *learning_policy;
 		soar_module::constant_param<decay_choices> *decay_mode;
 		soar_module::decimal_param *et_decay_rate;
@@ -65,13 +98,17 @@ class rl_param_container: public soar_module::param_container
 		soar_module::boolean_param *temporal_discount;
 
 		soar_module::boolean_param *chunk_stop;
-		soar_module::boolean_param *meta;
+		soar_module::boolean_param *meta; // Whether doc strings are used for storing metadata.
+        soar_module::string_param *update_log_path; // If non-null and size > 0, log all RL updates to this file.
 
 		rl_apoptosis_param *apoptosis;
 		soar_module::decimal_param *apoptosis_decay;
 		rl_apoptosis_thresh_param *apoptosis_thresh;
 
 		rl_param_container( agent *new_agent );
+
+        // For writing parameters to a rule's documentation string.
+        static const std::vector<std::pair<std::string, param_accessor<double> * > > &get_documentation_params();
 };
 
 class rl_learning_param: public soar_module::boolean_param
@@ -108,7 +145,6 @@ class rl_apoptosis_predicate: public soar_module::agent_predicate<T>
 		rl_apoptosis_predicate( agent *new_agent );
 		bool operator() ( T val );
 };
-
 
 //////////////////////////////////////////////////////////
 // RL Statistics

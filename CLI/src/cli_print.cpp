@@ -86,6 +86,11 @@ void do_print_for_production (agent* thisAgent, production *prod, bool intern, b
 
         if ( prod->rl_rule )
         {
+            // Do extra logging if this agent is in delta bar delta mode.
+            if (thisAgent->rl_params->decay_mode->get_value() == rl_param_container::delta_bar_delta_decay) {
+                print_with_symbols( thisAgent, " %y", make_float_constant( thisAgent, prod->rl_delta_bar_delta_beta ) );
+                print_with_symbols( thisAgent, " %y", make_float_constant( thisAgent, prod->rl_delta_bar_delta_h ) );
+            }
             print_with_symbols( thisAgent, " %y", make_float_constant( thisAgent, prod->rl_update_count ) );
             print_with_symbols( thisAgent, " %y", rhs_value_to_symbol( prod->action_list->referent ) );
         }

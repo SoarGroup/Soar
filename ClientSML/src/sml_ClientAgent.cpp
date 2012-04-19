@@ -35,6 +35,8 @@
 #ifndef _WIN32
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
 #endif // !_WIN32
 
@@ -1263,19 +1265,27 @@ bool Agent::SynchronizeOutputLink()
 	return GetWM()->SynchronizeOutputLink() ;
 }
 
-bool exists(const char *path) {
-	return std::ifstream(path).is_open();
+// Test if a path exists and is not a directory.
+bool isfile(const char *path)
+{
+#ifdef _WIN32
+	DWORD a = GetFileAttributes(path);
+	return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
+#else
+	struct stat st;
+	return (stat(path, &st) == 0 && !S_ISDIR(st.st_mode));
+#endif
 }
 
 bool Agent::SpawnDebugger(int port, const char* jarpath)
 {
 	std::string p;
 	if (jarpath) {
-		if (!exists(jarpath)) {
+		if (!isfile(jarpath)) {
 			return false;
 		}
 		p = jarpath;
-	} else if (exists(DEBUGGER_NAME)) {
+	} else if (isfile(DEBUGGER_NAME)) {
 		p = DEBUGGER_NAME;
 	} else {
 		char *e = getenv("SOAR_HOME");
@@ -1287,7 +1297,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 			h += '/';
 		}
 		h += DEBUGGER_NAME;
-		if (!exists(h.c_str())) {
+		if (!isfile(h.c_str())) {
 			return false;
 		}
 		p = h;

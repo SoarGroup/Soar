@@ -18,6 +18,7 @@
 #include <conio.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <stdio.h>
 
 // this is in shared/msvc
 #include "msvc/stdint.h" // ISO C9x  compliant stdint.h for Microsoft Visual Studio
@@ -99,5 +100,29 @@ static inline long atomic_dec( volatile long *v )
 #define HAVE_ATOMICS 1
 
 #endif // _MSC_VER
+
+static inline int set_working_directory_to_executable_path()
+{
+      char application_path[MAX_PATH];
+      unsigned int length = GetModuleFileName(0, application_path, MAX_PATH);
+
+      for(; length != 0; --length) {
+            if(application_path[length] == '\\') {
+                  application_path[length] = '\0';
+                  break;
+            }
+      }
+
+      if(!length) {
+           fprintf(stderr, "Detecting working directory failed.\n");
+           return -1;
+      }
+
+      length = SetCurrentDirectory(application_path);
+      if(!length)
+            fprintf(stderr, "Failed to set working directory.\n");
+
+      return 0;
+}
 
 #endif // PORTABILITY_WINDOWS_H
