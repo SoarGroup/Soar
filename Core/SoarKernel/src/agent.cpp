@@ -101,6 +101,11 @@ void init_soar_agent(agent* thisAgent) {
   init_memory_pool( thisAgent, &( thisAgent->smem_wmes_pool ), sizeof( smem_wme_stack ), "smem_wmes" );
   init_memory_pool( thisAgent, &( thisAgent->smem_info_pool ), sizeof( smem_data ), "smem_id_data" );
 
+  init_memory_pool( thisAgent, &( thisAgent->epmem_literal_pool ), sizeof( epmem_literal), "epmem_literals" );
+  init_memory_pool( thisAgent, &( thisAgent->epmem_pedge_pool ), sizeof( epmem_pedge ), "epmem_pedges" );
+  init_memory_pool( thisAgent, &( thisAgent->epmem_uedge_pool ), sizeof( epmem_uedge ), "epmem_uedges" );
+  init_memory_pool( thisAgent, &( thisAgent->epmem_interval_pool ), sizeof( epmem_interval ), "epmem_intervals" );
+
   thisAgent->epmem_params->exclusions->set_value( "epmem" );
   thisAgent->epmem_params->exclusions->set_value( "smem" );
 
@@ -262,17 +267,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->lexeme.id_letter = 'A';
   newAgent->lexeme.id_number = 0;
 
-  /* Initializing all the timer structures */
-#ifndef NO_TIMING_STUFF
-  newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-  newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-  newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-#ifdef DETAILED_TIMING_STATS
-  newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
-#endif
-  reset_timers(newAgent);
-#endif
-
   reset_max_stats(newAgent);
 
   newAgent->real_time_tracker = 0;
@@ -311,6 +305,18 @@ agent * create_soar_agent (char * agent_name) {                                 
   // This was moved here so that system parameters could
   // be set before the agent was initialized.
   init_sysparams (newAgent);
+
+  /* Initializing all the timer structures */
+  // Timers must be initialized after sysparams
+#ifndef NO_TIMING_STUFF
+  newAgent->timers_cpu.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_kernel.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+  newAgent->timers_phase.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#ifdef DETAILED_TIMING_STATS
+  newAgent->timers_gds.set_enabled(&(newAgent->sysparams[TIMERS_ENABLED]));
+#endif
+  reset_timers(newAgent);
+#endif
 
   // dynamic memory pools (should come before consumers of dynamic pools)
   newAgent->dyn_memory_pools = new std::map< size_t, memory_pool* >();
@@ -366,21 +372,30 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_stmts_common = NULL;  
   newAgent->epmem_stmts_graph = NULL;
   
-  newAgent->epmem_node_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_node_mins = new std::vector<epmem_time_id>();
   newAgent->epmem_node_maxes = new std::vector<bool>();
 
-  newAgent->epmem_edge_removals = new std::map<epmem_node_id, bool>();
   newAgent->epmem_edge_mins = new std::vector<epmem_time_id>();
   newAgent->epmem_edge_maxes = new std::vector<bool>();
-
   newAgent->epmem_id_repository = new epmem_parent_id_pool();
   newAgent->epmem_id_replacement = new epmem_return_id_pool();
   newAgent->epmem_id_ref_counts = new epmem_id_ref_counter();
 
 #ifdef USE_MEM_POOL_ALLOCATORS
+  newAgent->epmem_node_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
+  newAgent->epmem_edge_removals = new epmem_id_removal_map( std::less< epmem_node_id >(), soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > >( newAgent ) );
+
+  newAgent->epmem_wme_adds = new epmem_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
+  newAgent->epmem_promotions = new epmem_symbol_set( std::less< Symbol* >(), soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
+
   newAgent->epmem_id_removes = new epmem_symbol_stack( soar_module::soar_memory_pool_allocator< Symbol* >( newAgent ) );
 #else
+  newAgent->epmem_node_removals = new epmem_id_removal_map();
+  newAgent->epmem_edge_removals = new epmem_id_removal_map();
+
+  newAgent->epmem_wme_adds = new epmem_symbol_set();
+  newAgent->epmem_promotions = new epmem_symbol_set();
+
   newAgent->epmem_id_removes = new epmem_symbol_stack();
 #endif
 
@@ -475,6 +490,9 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_id_replacement;
   delete delete_agent->epmem_id_ref_counts;
   delete delete_agent->epmem_id_removes;
+
+  delete delete_agent->epmem_wme_adds;
+  delete delete_agent->epmem_promotions;
 
   delete delete_agent->epmem_db;
 
