@@ -7474,6 +7474,9 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     thisAgent->num_productions_of_type[prod->type]++;
 
 	// Soar-RL stuff
+    prod->rl_update_count = 0.0;
+    prod->rl_delta_bar_delta_beta = -3.0;
+    prod->rl_delta_bar_delta_h = 0.0;
 	prod->rl_update_count = 0;
 	prod->rl_rule = false;
 	prod->rl_ecr = 0.0;
