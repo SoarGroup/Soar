@@ -3,11 +3,9 @@
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
 import os
-import SCons.Script
 import sys
 import itertools
-
-chain = itertools.chain.from_iterable
+import SCons.Script
 
 # adapted from http://www.scons.org/wiki/JavaNativeInterface
 def ConfigureJNI(env):
@@ -42,10 +40,8 @@ def ConfigureJNI(env):
 	return (headers, libs)
 
 def get_headers(d):
-	return chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d))
-
-def latest_mtime(dirs):
-	return max(os.path.getmtime(f) for f in chain(get_headers(d) for d in dirs))
+	chain = itertools.chain.from_iterable
+	return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
 
 Import('env', 'compiler')
 config = ConfigureJNI(env)
@@ -55,7 +51,6 @@ if config == None:
 	print "the Java include, bin, and lib directories."
 	Return()
 
-lib_install_dir = env['OUT_DIR']
 clone = env.Clone()	
 clone.Append(
 	CPPPATH = config[0],
@@ -79,40 +74,40 @@ srcdir = clone.Dir('src')
 smldir = srcdir.Dir('sml')
 classdir = clone.Dir('classes')
 jar = clone.File('sml.jar')
+java_target = 'sml_java'
+fake_java_target = '#fake_java_target'
 
+# This builder will insert extra dependencies during the COMPILATION stage
+# adapted from http://scons.org/wiki/DynamicSourceGenerator
+def late_java_builder(target, source, env):
+	if not os.path.isdir(srcdir.abspath):
+		print 'source directory does not exist'
+		sys.exit(1)
+	
+	clone.Java(classdir, srcdir)
+	clone['JARCHDIR'] = classdir
+	smljar = clone.Jar(jar, classdir)
+	env.Depends(smljar, fake_java_target)
+	install = env.Install(os.path.join(env['OUT_DIR'], 'java'), smljar)
+	Alias(java_target, install)
+
+clone.Append(BUILDERS = {'LateJavaBuilder' : Builder(action=late_java_builder)})
+
+headers = []
+for d in 'ClientSML ConnectionSML ElementXML'.split():
+	headers += get_headers(env.Dir(os.path.join('#Core', d, 'src')).abspath)
+
+swig_deps = [interface] + headers
 incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in clone['CPPPATH'])
 swig_cmd = 'swig %s -o "%s" -c++ -java -Wall -package sml -outdir "%s" "%s"' % (incs, wrapper.abspath, smldir.abspath, interface)
 if not GetOption('verbose'):
 	swig_cmd = '@' + swig_cmd
-
-# The Execute(..) wrapper will execute commands immediately after they are
-# parsed. Need to execute swig command immediately because it generates a
-# large number of .java sources that the Java builder later in this script
-# will scan for.
-update_swig = False
-test_source = smldir.File('sml.java').abspath
-if env.GetOption('clean'):
-	pass
-elif not os.path.exists(wrapper.abspath) or not os.path.exists(test_source):
-	update_swig = True
-else:
-	gentime = min(os.path.getmtime(wrapper.abspath), os.path.getmtime(test_source))
-	t = latest_mtime([clone.Dir(os.path.join('#Core', d, 'src')).abspath for d in 'ClientSML ConnectionSML ElementXML'.split()])
-	update_swig = (t > gentime)
-
-if update_swig:
-	clone.Execute(Mkdir(smldir.abspath))
-	clone.Execute(swig_cmd)
+clone.Command(wrapper, swig_deps, [Mkdir(smldir), swig_cmd])
 
 clone.Clean(jar, [wrapper, srcdir, classdir])
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
 shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files in Windows
+env.Alias('sml_java', clone.Install(env['OUT_DIR'], shlib))
 
-clone.Java(classdir, srcdir)
-clone['JARCHDIR'] = classdir
-smljar = clone.Jar(jar, classdir)
-
-lib_install = clone.Install(lib_install_dir, shlib)
-jar_install = clone.Install(os.path.join(lib_install_dir, 'java'), smljar)
-env.Depends(jar_install, lib_install)
-env.Alias('sml_java', jar_install)
+env.Depends(shlib, clone.LateJavaBuilder(fake_java_target, None))
+clone.Clean(wrapper, [srcdir, classdir, jar])
