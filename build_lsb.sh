@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$LSB_HOME"=="" ]; then
+if [ "$LSB_HOME" == "" ]; then
 	LSB_HOME=/opt/lsb
 fi
 
@@ -10,7 +10,7 @@ if [ -x $(which ccache) ]; then
 fi
 
 LSBCC_LIB_PREFIX=$LSB_HOME/lib-
-if [ $(uname -m)=="x86_64" ]; then
+if [ $(uname -m) == "x86_64" ]; then
 	LSBCC_LIB_PREFIX=$LSB_HOME/lib64-
 fi
 
