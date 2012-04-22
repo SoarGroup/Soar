@@ -5134,7 +5134,10 @@ void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, 
 				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
 						( ( path == 0 ) || ( path == 3 ) ) )
 				{
-					before = (*w_p)->value->ic.value;
+					if ( ( before == EPMEM_MEMID_NONE ) || ( (*w_p)->value->ic.value < before ) )
+					{
+						before = (*w_p)->value->ic.value;
+					}
 					path = 3;
 				}
 				else
@@ -5147,7 +5150,10 @@ void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, 
 				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
 						( ( path == 0 ) || ( path == 3 ) ) )
 				{
-					after = (*w_p)->value->ic.value;
+					if ( after < (*w_p)->value->ic.value )
+					{
+						after = (*w_p)->value->ic.value;
+					}
 					path = 3;
 				}
 				else
