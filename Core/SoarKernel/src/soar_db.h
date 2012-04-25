@@ -581,6 +581,7 @@ namespace soar_module
 
 			void release( pooled_sqlite_statement* stmt )
 			{
+				stmt->reinitialize();
 				statements->push_front( stmt );
 			}
 
@@ -603,9 +604,6 @@ namespace soar_module
 
 					// assign timer
 					return_val->set_timer( query_timer );
-
-					// ready to use
-					return_val->reinitialize();
 				}
 
 				return return_val;

@@ -872,7 +872,7 @@ void adjust_sharing_factors_from_here_to_top (rete_node *node, int delta) {
 #else
 
 /* Since these do nothing, I will not convert them to inline functions
-   for the time being. -ajc (5/6/02 */
+   for the time being. -ajc (5/6/02) */
 #define init_sharing_stats_for_new_node(node) {}
 #define set_sharing_factor(node,sf) {}
 #define adjust_sharing_factors_from_here_to_top(node,delta) {}
@@ -1593,14 +1593,23 @@ void add_wme_to_rete (agent* thisAgent, wme *w) {
   {
 	if ( thisAgent->epmem_db->get_status() == soar_module::connected )
 	{
+      // if identifier-valued and short-term, known value
       if ( ( w->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
 	       ( w->value->id.epmem_id != EPMEM_NODEID_BAD ) &&
 		   ( w->value->id.epmem_valid == thisAgent->epmem_validation ) &&
 		   ( !w->value->id.smem_lti ) )
       {
+	    // add id ref count
 	    (*thisAgent->epmem_id_ref_counts)[ w->value->id.epmem_id ]->insert( w );
       }
-	}
+
+	  // if known id
+	  if ( ( w->id->id.epmem_id != EPMEM_NODEID_BAD ) && ( w->id->id.epmem_valid == thisAgent->epmem_validation ) )
+      {
+		// add to add set
+		thisAgent->epmem_wme_adds->insert( w->id );
+	  }
+    }
   }
 
   if ( ( w->id->id.smem_lti ) && ( !thisAgent->smem_ignore_changes ) && smem_enabled( thisAgent ) && ( thisAgent->smem_params->mirroring->get_value() == soar_module::on ) )
@@ -1631,7 +1640,7 @@ inline void _epmem_remove_wme( agent* my_agent, wme* w )
 			if ( !lti )
 			{
 				epmem_return_id_pool::iterator p = my_agent->epmem_id_replacement->find( w->epmem_id );
-				(*p->second)[ w->value->id.epmem_id ] = w->epmem_id;
+				(*p->second).push_front( std::make_pair( w->value->id.epmem_id, w->epmem_id ) );
 				my_agent->epmem_id_replacement->erase( p );
 			}
 		}
@@ -1994,7 +2003,7 @@ rete_node *nearest_ancestor_with_same_am (rete_node *node, alpha_mem *am) {
 -------------------------------------------------------------------- */
 
 rete_node *make_new_mem_node (agent* thisAgent, 
-                                                          rete_node *parent, byte node_type,
+                              rete_node *parent, byte node_type,
                               var_location left_hash_loc) {
   rete_node *node;
 
@@ -2027,7 +2036,7 @@ rete_node *make_new_mem_node (agent* thisAgent,
 -------------------------------------------------------------------- */
 
 rete_node *make_new_positive_node (agent* thisAgent, 
-                                                                   rete_node *parent_mem, byte node_type,
+                                   rete_node *parent_mem, byte node_type,
                                    alpha_mem *am, rete_test *rt,
                                    Bool prefer_left_unlinking) {
   rete_node *node;
@@ -2197,7 +2206,7 @@ rete_node *merge_into_mp_node (agent* thisAgent, rete_node *mem_node) {
 -------------------------------------------------------------------- */
 
 rete_node *make_new_mp_node (agent* thisAgent, 
-                                                         rete_node *parent, byte node_type,
+                             rete_node *parent, byte node_type,
                              var_location left_hash_loc, alpha_mem *am,
                              rete_test *rt, Bool prefer_left_unlinking) {
   rete_node *mem_node, *pos_node;
@@ -2223,7 +2232,7 @@ rete_node *make_new_mp_node (agent* thisAgent,
 -------------------------------------------------------------------- */
 
 rete_node *make_new_negative_node (agent* thisAgent, 
-                                                                   rete_node *parent, byte node_type,
+                                   rete_node *parent, byte node_type,
                                    var_location left_hash_loc,
                                    alpha_mem *am, rete_test *rt) {
   rete_node *node;
@@ -2261,7 +2270,7 @@ rete_node *make_new_negative_node (agent* thisAgent,
 -------------------------------------------------------------------- */
 
 rete_node *make_new_cn_node (agent* thisAgent, 
-                                                         rete_node *parent,
+                             rete_node *parent,
                              rete_node *bottom_of_subconditions) {
   rete_node *node, *partner, *ncc_subconditions_top_node;
 
@@ -2317,7 +2326,7 @@ rete_node *make_new_cn_node (agent* thisAgent,
 -------------------------------------------------------------------- */
 
 rete_node *make_new_production_node (agent* thisAgent, 
-                                                                         rete_node *parent, production *new_prod) {
+                                     rete_node *parent, production *new_prod) {
   rete_node *p_node;
 
   allocate_with_pool (thisAgent, &thisAgent->rete_node_pool, &p_node);
@@ -2545,7 +2554,7 @@ Bool find_var_location (Symbol *var, rete_node_level current_depth,
 ------------------------------------------------------------------- */
 
 void bind_variables_in_test (agent* thisAgent, 
-                                                         test t,
+                             test t,
                              rete_node_level depth,
                              byte field_num,
                              Bool dense,
@@ -2568,7 +2577,7 @@ void bind_variables_in_test (agent* thisAgent,
   if (ct->type==CONJUNCTIVE_TEST)
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       bind_variables_in_test (thisAgent, static_cast<char *>(c->first), 
-                                                          depth, field_num, dense, varlist);
+                              depth, field_num, dense, varlist);
 }
 
 /* -------------------------------------------------------------------
@@ -2668,7 +2677,7 @@ typedef struct node_varnames_struct {
 } node_varnames;
 
 varnames *add_var_to_varnames (agent* thisAgent, Symbol *var, 
-                                                           varnames *old_varnames) {
+                               varnames *old_varnames) {
   cons *c1, *c2;
 
   symbol_add_ref (var);
@@ -2705,7 +2714,7 @@ void deallocate_varnames (agent* thisAgent, varnames *vn) {
 }
 
 void deallocate_node_varnames (agent* thisAgent, 
-                                                           rete_node *node, rete_node *cutoff,
+                               rete_node *node, rete_node *cutoff,
                                node_varnames *nvn) {
   node_varnames *temp;
 
@@ -2738,7 +2747,7 @@ void deallocate_node_varnames (agent* thisAgent,
 ------------------------------------------------------------------- */
 
 varnames *add_unbound_varnames_in_test (agent* thisAgent, test t, 
-                                                                                varnames *starting_vn) {
+                                        varnames *starting_vn) {
   cons *c;
   Symbol *referent;
   complex_test *ct;
@@ -2757,13 +2766,13 @@ varnames *add_unbound_varnames_in_test (agent* thisAgent, test t,
   if (ct->type==CONJUNCTIVE_TEST) {
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest)
       starting_vn = add_unbound_varnames_in_test (thisAgent, static_cast<char *>(c->first), 
-                                                                                                  starting_vn);
+                                                  starting_vn);
   }
   return starting_vn;
 }
 
 node_varnames *make_nvn_for_posneg_cond (agent* thisAgent, 
-                                                                                 condition *cond,
+                                         condition *cond,
                                          node_varnames *parent_nvn) {
   node_varnames *New;
   list *vars_bound;
@@ -2794,7 +2803,7 @@ node_varnames *make_nvn_for_posneg_cond (agent* thisAgent,
 }  
 
 node_varnames *get_nvn_for_condition_list (agent* thisAgent, 
-                                                                                   condition *cond_list,
+                                           condition *cond_list,
                                            node_varnames *parent_nvn) {
   node_varnames *New = 0;
   condition *cond;
@@ -3084,7 +3093,7 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
   case CONJUNCTIVE_TEST:
     for (c=ct->data.conjunct_list; c!=NIL; c=c->rest) {
       add_rete_tests_for_test (thisAgent, static_cast<char *>(c->first), 
-                                                           current_depth, field_num, rt, alpha_constant);
+                               current_depth, field_num, rt, alpha_constant);
     }
     return;
 
@@ -3191,7 +3200,7 @@ Bool rete_test_lists_are_identical (agent* thisAgent, rete_test *rt1, rete_test 
 ------------------------------------------------------------------------ */
 
 Bool extract_rete_test_to_hash_with (agent* thisAgent, 
-                                                                         rete_test **rt,
+                                     rete_test **rt,
                                      var_location *dest_hash_loc) {
   rete_test *prev, *current;
  
@@ -3224,7 +3233,7 @@ Bool extract_rete_test_to_hash_with (agent* thisAgent,
 ------------------------------------------------------------------------ */
 
 rete_node *make_node_for_positive_cond (agent* thisAgent, 
-                                                                                condition *cond,
+                                        condition *cond,
                                         rete_node_level current_depth,
                                         rete_node *parent) {
   byte pos_node_type, mem_node_type, mp_node_type;
@@ -3351,7 +3360,7 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
 ------------------------------------------------------------------------ */
                                           
 rete_node *make_node_for_negative_cond (agent* thisAgent, 
-                                                                                condition *cond,
+                                        condition *cond,
                                         rete_node_level current_depth,
                                         rete_node *parent) {
   byte node_type;
@@ -3436,7 +3445,7 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
 ------------------------------------------------------------------------ */
 
 void build_network_for_condition_list (agent* thisAgent, 
-                                                                           condition *cond_list,
+                                       condition *cond_list,
                                        rete_node_level depth_of_first_cond,
                                        rete_node *parent,
                                        rete_node **dest_bottom_node,
@@ -3645,8 +3654,8 @@ void fixup_rhs_value_variable_references (agent* thisAgent, rhs_value *rv,
     for (c=rhs_value_to_funcall_list(*rv)->rest; c!=NIL; c=c->rest)
       fixup_rhs_value_variable_references (thisAgent, reinterpret_cast<rhs_value *>(&(c->first)),
                                            bottom_depth, rhs_unbound_vars_for_new_prod, 
-                                                                                   num_rhs_unbound_vars_for_new_prod, 
-                                                                                   rhs_unbound_vars_tc);
+                                           num_rhs_unbound_vars_for_new_prod, 
+                                           rhs_unbound_vars_tc);
   } 
 }
 
@@ -4015,7 +4024,7 @@ void add_gensymmed_equality_test (agent* thisAgent, test *t, char first_letter) 
 ---------------------------------------------------------------------- */
 
 Symbol *var_bound_in_reconstructed_conds (agent* thisAgent, 
-                                                                                  condition *cond, /* current cond */
+                                          condition *cond, /* current cond */
                                           byte where_field_num,
                                           rete_node_level where_levels_up) {
   test t;
@@ -4059,7 +4068,7 @@ Symbol *var_bound_in_reconstructed_conds (agent* thisAgent,
 ---------------------------------------------------------------------- */
 
 void add_rete_test_list_to_tests (agent* thisAgent, 
-                                                                  condition *cond, /* current cond */
+                                  condition *cond, /* current cond */
                                   rete_test *rt) {
   Symbol *referent;
   test New;
@@ -4245,7 +4254,7 @@ void add_varnames_to_test (agent* thisAgent, varnames *vn, test *t) {
 ---------------------------------------------------------------------- */
 
 void add_hash_info_to_id_test (agent* thisAgent, 
-                                                           condition *cond,
+                               condition *cond,
                                byte field_num,
                                rete_node_level levels_up) {
   Symbol *temp;
@@ -4276,7 +4285,7 @@ void add_hash_info_to_id_test (agent* thisAgent,
 /* NOTE: clean this procedure up somehow? */
 
 void rete_node_to_conditions (agent* thisAgent, 
-                                                          rete_node *node,
+                              rete_node *node,
                               node_varnames *nvn,
                               rete_node *cutoff,
                               token *tok,
@@ -4284,7 +4293,7 @@ void rete_node_to_conditions (agent* thisAgent,
                               condition *conds_for_cutoff_and_up,
                               condition **dest_top_cond,
                               condition **dest_bottom_cond, 
-                                                          not_struct * & nots_found_in_production) {
+                              not_struct * & nots_found_in_production) {
   condition *cond;
   alpha_mem *am;
     
@@ -4301,7 +4310,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              tok ? tok->w : NIL,
                              conds_for_cutoff_and_up,
                              dest_top_cond, &(cond->prev), 
-                                                         nots_found_in_production);
+                             nots_found_in_production);
     cond->prev->next = cond;
   }
   cond->next = NIL;
@@ -4317,7 +4326,7 @@ void rete_node_to_conditions (agent* thisAgent,
                              cond->prev,
                              &(cond->data.ncc.top),
                              &(cond->data.ncc.bottom), 
-                                                         nots_found_in_production);
+                             nots_found_in_production);
     cond->data.ncc.top->prev = NIL;
   } else {
     if (bnode_is_positive(node->node_type))
@@ -4446,8 +4455,8 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
     for (c=fl->rest; c!=NIL; c=c->rest) {
       allocate_cons (thisAgent, &new_c);
       new_c->first = copy_rhs_value_and_substitute_varnames (thisAgent, 
-                                                                                                                         static_cast<char *>(c->first),
-                                                                     cond, first_letter);
+                                                             static_cast<char *>(c->first),
+                                                             cond, first_letter);
       prev_new_c->rest = new_c;
       prev_new_c = new_c;
     }
@@ -4460,7 +4469,7 @@ rhs_value copy_rhs_value_and_substitute_varnames (agent* thisAgent,
 }
 
 action *copy_action_list_and_substitute_varnames (agent* thisAgent, 
-                                                                                                  action *actions,
+                                                  action *actions,
                                                   condition *cond) {
   action *old, *New, *prev, *first;
   char first_letter;
@@ -4513,7 +4522,7 @@ action *copy_action_list_and_substitute_varnames (agent* thisAgent,
 ----------------------------------------------------------------------- */
 
 void p_node_to_conditions_and_nots (agent* thisAgent, 
-                                                                        rete_node *p_node,
+                                    rete_node *p_node,
                                     token *tok,
                                     wme *w,
                                     condition **dest_top_cond,
@@ -4945,7 +4954,7 @@ void rete_error_right (agent* thisAgent, rete_node *node, wme * /*w*/) {
 }
 
 void beta_memory_node_left_addition (agent* thisAgent, rete_node *node, 
-                                                                         token *tok, wme *w) {
+                                     token *tok, wme *w) {
   uint32_t hv;
   Symbol *referent;
   rete_node *child, *next;
@@ -4985,7 +4994,7 @@ void beta_memory_node_left_addition (agent* thisAgent, rete_node *node,
 }   
 
 void unhashed_beta_memory_node_left_addition (agent* thisAgent, 
-                                                                                          rete_node *node, token *tok,
+                                              rete_node *node, token *tok,
                                               wme *w) {
   uint32_t hv;
   rete_node *child, *next;
@@ -5012,7 +5021,7 @@ void unhashed_beta_memory_node_left_addition (agent* thisAgent,
 }
 
 void positive_node_left_addition (agent* thisAgent, 
-                                                                  rete_node *node, token *New,
+                                  rete_node *node, token *New,
                                   Symbol *hash_referent) {
   uint32_t right_hv;
   right_mem *rm;
@@ -5165,7 +5174,7 @@ void mp_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
 
 
 void unhashed_mp_node_left_addition (agent* thisAgent, rete_node *node, 
-                                                                         token *tok, wme *w) {
+                                     token *tok, wme *w) {
   uint32_t hv;
   rete_node *child;
   token *New;
@@ -5379,7 +5388,7 @@ void unhashed_mp_node_right_addition (agent* thisAgent, rete_node *node, wme *w)
 ************************************************************************ */
 
 void negative_node_left_addition (agent* thisAgent, rete_node *node, 
-                                                                  token *tok, wme *w) {
+                                  token *tok, wme *w) {
   uint32_t hv, right_hv;
   Symbol *referent;
   right_mem *rm;
@@ -5453,7 +5462,7 @@ void negative_node_left_addition (agent* thisAgent, rete_node *node,
 }
 
 void unhashed_negative_node_left_addition (agent* thisAgent, rete_node *node, 
-                                                                                   token *tok, wme *w) {
+                                           token *tok, wme *w) {
   uint32_t hv;
   rete_test *rt;
   Bool failed_a_test;
@@ -5626,7 +5635,7 @@ void cn_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *
 }
 
 void cn_partner_node_left_addition (agent* thisAgent, rete_node *node, 
-                                                                        token *tok, wme *w) {
+                                    token *tok, wme *w) {
   rete_node *partner, *temp;
   uint32_t hv;
   token *left, *negrm_tok;
@@ -7474,6 +7483,9 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
     thisAgent->num_productions_of_type[prod->type]++;
 
 	// Soar-RL stuff
+    prod->rl_update_count = 0.0;
+    prod->rl_delta_bar_delta_beta = -3.0;
+    prod->rl_delta_bar_delta_h = 0.0;
 	prod->rl_update_count = 0;
 	prod->rl_rule = false;
 	prod->rl_ecr = 0.0;
@@ -8012,7 +8024,7 @@ int64_t ppmi_aux (agent* thisAgent,   /* current agent */
 }
 
 void print_partial_match_information (agent* thisAgent, rete_node *p_node, 
-                                                                          wme_trace_type wtt) {
+                                      wme_trace_type wtt) {
   condition *top_cond, *bottom_cond;
   int64_t n;
   token *tokens, *t;

@@ -961,20 +961,50 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //   ++my_id;
 
   int num_candidates = 0;
+  double max_influence = DBL_MIN;
+  double max_variance = DBL_MIN;
   double max_q_value = DBL_MIN;
+  double second_influence = DBL_MIN;
+  double second_variance = DBL_MIN;
+  double second_q_value = DBL_MIN;
   for(const preference * cand = candidates; cand; cand = cand->next_candidate) {
     ++num_candidates;
 
+    double split = 0.0;
+    double influence = 0.0;
+    double variance = 0.0;
     double q_value = 0.0;
     for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
       const production * const &prod2 = pref->inst->prod;
       if(cand->value == pref->value && prod2->rl_rule) {
+        ++split;
+        influence += prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest;
+        variance += prod2->rl_total_variance;
         q_value += prod2->rl_ecr + prod2->rl_efr;
       }
     }
-    if(q_value > max_q_value)
-      max_q_value = q_value;
+
+    if(q_value > second_q_value) {
+      influence /= split;
+      variance /= split;
+
+      if(q_value > max_q_value) {
+        second_influence = max_influence;
+        second_variance = max_variance;
+        second_q_value = max_q_value;
+        max_influence = influence;
+        max_variance = variance;
+        max_q_value = q_value;
+      }
+      else {
+        second_influence = influence;
+        second_variance = variance;
+        second_q_value = q_value;
+      }
+    }
   }
+  const double inflated_max_variance = max_variance / max(0.01, 1.0 - max_influence);
+  const double inflated_second_variance = second_variance / max(0.01, 1.0 - second_influence);
 //   std::cerr << "Number of candidates = " << num_candidates << std::endl;
 
   preference * intolerable_variance_head = 0;
@@ -1005,39 +1035,42 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
           }
         }
 
-        const double total_influence = total_influence_squared / split;
-        const double total_variance = total_variance_squared / split;
-        const double average_influence = total_influence / split;
-        const double average_variance = total_variance / split;
+//         const double total_influence = total_influence_squared / split;
+//         const double total_variance = total_variance_squared / split;
+//         const double average_influence = total_influence / split;
+//         const double average_variance = total_variance / split;
         const double suboptimality = max_q_value - q_value;
+        const double superoptimality = q_value - second_q_value;
 
-        std::cerr << "    total influence = " << total_influence << std::endl;
-        std::cerr << "    total variance = " << total_variance << std::endl;
-        std::cerr << "    average influence = " << average_influence << std::endl;
-        std::cerr << "    average variance = " << average_variance << std::endl;
+//         std::cerr << "    total influence = " << total_influence << std::endl;
+//         std::cerr << "    total variance = " << total_variance << std::endl;
+//         std::cerr << "    average influence = " << average_influence << std::endl;
+//         std::cerr << "    average variance = " << average_variance << std::endl;
         std::cerr << "    suboptimality = " << suboptimality << std::endl;
+        std::cerr << "    superoptimality = " << superoptimality << std::endl;
 
-        const double one_minus_total_influence = 1.0 - total_influence;
-        const double inflated_total_influence = 1.0 / one_minus_total_influence;
+//         const double one_minus_total_influence = 1.0 - total_influence;
+//         const double inflated_total_influence = 1.0 / one_minus_total_influence;
 
         for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
           const production * const &prod2 = pref->inst->prod;
           if(cand->value == pref->value && prod2->rl_rule) {
 //             std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_total_variance << '/' << prod2->rl_tolerable_variance << std::endl;
 //             total_q += prod2->rl_ecr + prod2->rl_efr;
-            std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_total_variance << " [" << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " * " << prod2->rl_total_variance << ']' << std::endl;
+//             std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) * prod2->rl_total_variance << " [" << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " * " << prod2->rl_total_variance << ']' << std::endl;
 
-            const double one_minus_infuence = 1.0 - (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split;
-            const double inflated_influence = 1.0 / max(0.01, one_minus_infuence);
-            const double inflated_variance = prod2->rl_total_variance / split * inflated_influence;
+            const double influence = (prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest) / split;
+            const double variance = prod2->rl_total_variance / split;
+            const double inflated_variance = variance / max(0.01, 1.0 - influence);
 
-            std::cerr << "     one_minus_infuence = " << one_minus_infuence << " = 1.0 - " << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << " / " << split << std::endl;
-            std::cerr << "     inflated_influence = " << inflated_influence << " = 1.0 / " << max(0.01, one_minus_infuence) << std::endl;
-            std::cerr << "     inflated_variance = " << inflated_variance << " = " << prod2->rl_total_variance / split << " * " << inflated_influence << std::endl;
+            std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
 
-            if(suboptimality < 0.001 ||
-               inflated_variance < suboptimality)
-            {
+            if((suboptimality < 0.001 ||
+                inflated_variance + max_variance < suboptimality)
+//               &&
+//                (superoptimality <= 0.0 ||
+//                 inflated_variance + second_variance > superoptimality)
+            ) {
               cand->rl_intolerable_variance = false;
             }
           }
@@ -2441,7 +2474,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
 
   goal->id.epmem_info->epmem_wmes->~epmem_wme_stack();
   free_with_pool( &( thisAgent->epmem_wmes_pool ), goal->id.epmem_info->epmem_wmes );
-  symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );  
+  symbol_remove_ref( thisAgent, goal->id.epmem_cmd_header );
   symbol_remove_ref( thisAgent, goal->id.epmem_result_header );
   symbol_remove_ref( thisAgent, goal->id.epmem_header );
   free_with_pool( &( thisAgent->epmem_info_pool ), goal->id.epmem_info );

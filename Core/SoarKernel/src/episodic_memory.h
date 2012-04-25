@@ -268,19 +268,20 @@ class epmem_timer_container: public soar_module::timer_container
 		soar_module::timer *ncb_node_rit;
 
 		soar_module::timer *query_dnf;
+		soar_module::timer *query_walk;
+		soar_module::timer *query_walk_edge;
+		soar_module::timer *query_walk_interval;
 		soar_module::timer *query_graph_match;
-		soar_module::timer *query_pos_start_ep;
-		soar_module::timer *query_pos_start_now;
-		soar_module::timer *query_pos_start_point;
-		soar_module::timer *query_pos_end_ep;
-		soar_module::timer *query_pos_end_now;
-		soar_module::timer *query_pos_end_point;
-		soar_module::timer *query_neg_start_ep;
-		soar_module::timer *query_neg_start_now;
-		soar_module::timer *query_neg_start_point;
-		soar_module::timer *query_neg_end_ep;
-		soar_module::timer *query_neg_end_now;
-		soar_module::timer *query_neg_end_point;
+		soar_module::timer *query_result;
+		soar_module::timer *query_cleanup;
+
+		soar_module::timer *query_sql_edge;
+		soar_module::timer *query_sql_start_ep;
+		soar_module::timer *query_sql_start_now;
+		soar_module::timer *query_sql_start_point;
+		soar_module::timer *query_sql_end_ep;
+		soar_module::timer *query_sql_end_now;
+		soar_module::timer *query_sql_end_point;
 
 		epmem_timer_container( agent *my_agent );
 };
@@ -367,9 +368,14 @@ class epmem_graph_statement_container: public soar_module::sqlite_statement_cont
 
 		//
 
-		soar_module::sqlite_statement_pool *pool_range_lti_start;
-		soar_module::sqlite_statement_pool *pool_range_queries[2][2][3];
-		soar_module::sqlite_statement_pool *pool_range_lti_queries[2][3];
+		soar_module::sqlite_statement *update_edge_unique_last;
+
+		//
+
+		soar_module::sqlite_statement_pool *pool_find_edge_queries[2][2];
+		soar_module::sqlite_statement_pool *pool_find_interval_queries[2][2][3];
+		soar_module::sqlite_statement_pool *pool_find_lti_queries[2][3];
+		soar_module::sqlite_statement_pool *pool_dummy;
 
 		//
 		
@@ -430,58 +436,12 @@ typedef struct epmem_data_struct
 	epmem_wme_stack* epmem_wmes;							// preferences generated in last epmem
 } epmem_data;
 
-
-//////////////////////////////////////////////////////////
-// Mode "one" Types (i.e. Working Memory Tree)
-//////////////////////////////////////////////////////////
-
-// represents a leaf wme
-typedef struct epmem_leaf_node_struct
-{
-	double leaf_weight;						// wma value
-	epmem_node_id leaf_id;					// node id
-} epmem_leaf_node;
-
-// maintains state within sqlite b-trees
-typedef struct epmem_range_query_struct
-{
-	soar_module::sqlite_statement *stmt;	// query
-	epmem_time_id val;						// current b-tree leaf value
-
-	double weight;							// wma value
-	int64_t ct;								// cardinality w.r.t. positive/negative query
-} epmem_range_query;
-
-// functor to maintain a priority cue of b-tree pointers
-// based upon their current value
-struct epmem_compare_range_queries
-{
-	bool operator() ( const epmem_range_query *a, const epmem_range_query *b ) const
-	{
-		return ( a->val < b->val );
-	}
-};
-typedef std::priority_queue<epmem_range_query *, std::vector<epmem_range_query *>, epmem_compare_range_queries> epmem_range_query_list;
-
-
-//////////////////////////////////////////////////////////
-// Mode "three" Types (i.e. Working Memory Graph)
-//////////////////////////////////////////////////////////
-
-// see below
-typedef struct epmem_shared_literal_struct epmem_shared_literal;
-typedef struct epmem_shared_literal_pair_struct epmem_shared_literal_pair;
-typedef std::vector<epmem_shared_literal *> epmem_shared_literal_list;
-typedef std::vector<epmem_shared_literal_pair *> epmem_shared_literal_pair_list;
-typedef std::list<epmem_shared_literal_list::size_type> epmem_shared_wme_index;
-typedef std::vector<wme *> epmem_shared_wme_list;
-
 // lookup tables to facilitate shared identifiers
 typedef std::map<epmem_node_id, Symbol *> epmem_id_mapping;
-typedef std::map<epmem_node_id, epmem_shared_literal *> epmem_literal_mapping;
 
 // types/structures to facilitate re-use of identifiers
-typedef std::map<epmem_node_id, epmem_node_id> epmem_id_pool;
+typedef std::pair<epmem_node_id, epmem_node_id> epmem_id_pair;
+typedef std::list<epmem_id_pair> epmem_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_hashed_id_pool;
 typedef std::map<epmem_node_id, epmem_hashed_id_pool *> epmem_parent_id_pool;
 typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
@@ -489,11 +449,20 @@ typedef std::map<epmem_node_id, epmem_id_pool *> epmem_return_id_pool;
 #ifdef USE_MEM_POOL_ALLOCATORS
 typedef std::set< wme*, std::less< wme* >, soar_module::soar_memory_pool_allocator< wme* > > epmem_wme_set;
 typedef std::list< Symbol*, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_stack;
+
+// types/structures to facilitate incremental storage
+typedef std::map< epmem_node_id, bool, std::less< epmem_node_id >, soar_module::soar_memory_pool_allocator< std::pair< epmem_node_id, bool > > > epmem_id_removal_map;
+typedef std::set< Symbol*, std::less< Symbol* >, soar_module::soar_memory_pool_allocator< Symbol* > > epmem_symbol_set;
+
 #else
 typedef std::set< wme* > epmem_wme_set;
 typedef std::list< Symbol* > epmem_symbol_stack;
+
+// types/structures to facilitate incremental storage
+typedef std::map<epmem_node_id, bool> epmem_id_removal_map;
+typedef std::set< Symbol* > epmem_symbol_set;
 #endif
-typedef std::map< epmem_node_id, epmem_wme_set* > epmem_id_ref_counter;
+typedef std::map<epmem_node_id, epmem_wme_set*> epmem_id_ref_counter;
 
 typedef struct epmem_id_reservation_struct
 {
@@ -517,134 +486,6 @@ typedef struct epmem_edge_struct
 
 } epmem_edge;
 
-// represents cached children of an identifier in working memory
-typedef struct epmem_wme_cache_element_struct
-{
-	epmem_wme_list *wmes;						// child wmes	
-	epmem_wme_list *parents;					// number of parents
-
-	epmem_literal_mapping *lits;				// child literals
-} epmem_wme_cache_element;
-
-// represents state of a leaf wme
-// at a particular episode
-typedef struct epmem_shared_match_struct
-{
-	double value_weight;						// wma value
-	int64_t value_ct;								// cardinality w.r.t. positive/negative query
-
-	uint64_t ct;							// number of contributing literals that are "on"
-} epmem_shared_match;
-
-// represents a set of literals grouped by cue wme
-typedef std::map< epmem_node_id, epmem_shared_literal_pair * > epmem_shared_literal_map;
-typedef std::map< wme *, epmem_shared_literal_map * > epmem_shared_literal_group;
-
-//
-// structures necessary to maintain bookkeeping information
-// about incoming WMEs for identifiers in the DNF
-//
-
-typedef std::set< epmem_node_id > epmem_shared_literal_set;
-typedef struct epmem_shared_incoming_id_book_struct
-{	
-	epmem_wme_list* outgoing;
-	epmem_shared_literal_set* satisfactory;
-} epmem_shared_incoming_id_book;
-typedef std::map< Symbol*, epmem_shared_incoming_id_book* > epmem_shared_incoming_ids_book; 
-
-typedef std::map< wme*, uint64_t > epmem_shared_incoming_wme_counter_map;
-typedef struct epmem_shared_incoming_identity_counter_struct
-{
-	uint64_t ct;
-	epmem_shared_incoming_wme_counter_map* cts;
-} epmem_shared_incoming_identity_counter;
-typedef std::map< Symbol*, epmem_shared_incoming_identity_counter* > epmem_shared_incoming_wme_map;
-typedef std::map< epmem_node_id, epmem_shared_incoming_wme_map* > epmem_shared_incoming_book_map;
-
-typedef struct epmem_shared_incoming_book_struct
-{
-	
-	// aggregatation
-	epmem_shared_incoming_ids_book *parents;
-
-	// mapping
-	epmem_shared_incoming_book_map* book;
-
-} epmem_shared_incoming_book;
-
-//
-// structures necessary to represent constraints during graph-match
-//
-
-typedef std::map< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_map;
-typedef std::pair< wme*, epmem_shared_literal_pair_list* > epmem_shared_literal_pair_pair;
-typedef std::vector< epmem_shared_literal_pair_pair > epmem_shared_literal_pair_pair_vector;
-
-typedef std::map< Symbol*, epmem_node_id > epmem_gm_assignment_map;
-typedef std::map< Symbol*, epmem_shared_literal_set > epmem_gm_sym_constraints;
-
-//
-
-
-// represents state of one historical
-// identity of a cue wme at a particular
-// episode
-struct epmem_shared_literal_struct
-{
-	epmem_node_id shared_id;					// shared q1, if identifier
-	Symbol* shared_sym;							// identifier symbol, if literal represents an identifier
-
-	uint64_t ct;							// number of contributing literals that are "on"
-	uint64_t max;							// number of contributing literals that *need* to be on	
-
-	epmem_shared_incoming_book* incoming;		// bookkeeping to support correct distribution of incoming edges
-	
-	bool wme_kids;								// does the cue wme have children (indicative of leaf wme status)
-	epmem_shared_literal_group *children;		// grouped child literals, if not leaf wme
-
-	epmem_shared_match *match;					// associated match, if leaf wme	
-};
-
-// pair in the sense of (debug info, actual literal)
-struct epmem_shared_literal_pair_struct
-{
-	// debug
-	epmem_node_id unique_id;
-	epmem_node_id q0;
-	epmem_node_id q1;
-
-	struct wme_struct *wme;
-
-	// literal
-	epmem_shared_literal *lit;
-
-	// parent literal
-	epmem_shared_literal *parent_lit;
-};
-
-// maintains state within sqlite b-trees
-typedef struct epmem_shared_query_struct
-{
-	soar_module::pooled_sqlite_statement *stmt;		// associated query
-	epmem_time_id val;								// current b-tree leaf value
-
-	epmem_node_id unique_id;						// id searched by this statement
-
-	epmem_shared_literal_pair_list *triggers;		// literals to update when stepping this b-tree
-} epmem_shared_query;
-
-// functor to maintain a priority cue of b-tree pointers
-// based upon their current value
-struct epmem_compare_shared_queries
-{
-	bool operator() ( const epmem_shared_query *a, const epmem_shared_query *b ) const
-	{
-		return ( a->val < b->val );
-	}
-};
-typedef std::priority_queue<epmem_shared_query *, std::vector<epmem_shared_query *>, epmem_compare_shared_queries> epmem_shared_query_list;
-
 //////////////////////////////////////////////////////////
 // Parameter Functions (see cpp for comments)
 //////////////////////////////////////////////////////////
@@ -661,11 +502,139 @@ extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
 extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
-extern void epmem_go( agent *my_agent );
+extern void epmem_go( agent *my_agent, bool allow_store = true );
 extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err );
+extern void epmem_schedule_promotion( agent* my_agent, Symbol* id );
 
 // visualization
 extern void epmem_visualize_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
 extern void epmem_print_episode( agent* my_agent, epmem_time_id memory_id, std::string* buf );
+
+//////////////////////////////////////////////////////////
+// Episodic Memory Search
+//////////////////////////////////////////////////////////
+
+// defined below
+typedef struct epmem_triple_struct epmem_triple;
+typedef struct epmem_literal_struct epmem_literal;
+typedef struct epmem_pedge_struct epmem_pedge;
+typedef struct epmem_uedge_struct epmem_uedge;
+typedef struct epmem_interval_struct epmem_interval;
+
+// pairs
+typedef struct std::pair<Symbol*, epmem_literal*> epmem_symbol_literal_pair;
+typedef struct std::pair<Symbol*, epmem_node_id> epmem_symbol_node_pair;
+typedef struct std::pair<epmem_literal*, epmem_node_id> epmem_literal_node_pair;
+typedef struct std::pair<epmem_node_id, epmem_node_id> epmem_node_pair;
+
+// collection classes
+typedef std::deque<epmem_literal*> epmem_literal_deque;
+typedef std::deque<epmem_node_id> epmem_node_deque;
+typedef std::map<Symbol*, int> epmem_symbol_int_map;
+typedef std::map<epmem_literal*, epmem_node_pair> epmem_literal_node_pair_map;
+typedef std::map<epmem_literal_node_pair, int> epmem_literal_node_pair_int_map;
+typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
+typedef std::map<epmem_node_id, int> epmem_node_int_map;
+typedef std::map<epmem_symbol_literal_pair, int> epmem_symbol_literal_pair_int_map;
+typedef std::map<epmem_symbol_node_pair, int> epmem_symbol_node_pair_int_map;
+typedef std::map<epmem_triple, epmem_pedge*> epmem_triple_pedge_map;
+typedef std::map<wme*, epmem_literal*> epmem_wme_literal_map;
+typedef std::set<epmem_literal*> epmem_literal_set;
+typedef std::set<epmem_pedge*> epmem_pedge_set;
+
+#ifdef USE_MEM_POOL_ALLOCATORS
+typedef std::map<epmem_triple, epmem_uedge*, std::less<epmem_triple>, soar_module::soar_memory_pool_allocator<std::pair<const epmem_triple, epmem_uedge*> > > epmem_triple_uedge_map;
+typedef std::set<epmem_interval*, std::less<epmem_interval*>, soar_module::soar_memory_pool_allocator<epmem_interval*> > epmem_interval_set;
+typedef std::set<epmem_node_id, std::less<epmem_node_id>, soar_module::soar_memory_pool_allocator<epmem_node_id> > epmem_node_set;
+typedef std::set<epmem_node_pair, std::less<epmem_node_pair>, soar_module::soar_memory_pool_allocator<epmem_node_pair> > epmem_node_pair_set;
+#else
+typedef std::map<epmem_triple, epmem_uedge*> epmem_triple_uedge_map;
+typedef std::set<epmem_interval*> epmem_interval_set;
+typedef std::set<epmem_node_id> epmem_node_set;
+typedef std::set<epmem_node_pair> epmem_node_pair_set;
+#endif
+
+// structs
+struct epmem_triple_struct {
+	epmem_node_id q0;
+	epmem_node_id w;
+	epmem_node_id q1;
+	bool operator<(const epmem_triple& other) const {
+		if (q0 != other.q0) {
+			return (q0 < other.q0);
+		} else if (w != other.w) {
+			return (w < other.w);
+		} else {
+			return (q1 < other.q1);
+		}
+	}
+};
+
+struct epmem_literal_struct {
+	Symbol* id_sym;
+	Symbol* value_sym;
+	int is_neg_q;
+	int value_is_id;
+	bool is_leaf;
+	bool is_current;
+	epmem_node_id w;
+	epmem_node_id q1;
+	double weight;
+	epmem_literal_set parents;
+	epmem_literal_set children;
+	epmem_node_pair_set matches;
+	epmem_node_int_map values;
+};
+
+struct epmem_pedge_struct {
+	epmem_triple triple;
+	int value_is_id;
+	bool has_noncurrent;
+	epmem_literal_set literals;
+	soar_module::pooled_sqlite_statement* sql;
+	epmem_time_id time;
+};
+
+struct epmem_uedge_struct {
+	epmem_triple triple;
+	int value_is_id;
+	bool has_noncurrent;
+	int activation_count;
+	epmem_pedge_set pedges;
+	int intervals;
+	bool activated;
+};
+
+struct epmem_interval_struct {
+	epmem_uedge* uedge;
+	int is_end_point;
+	soar_module::pooled_sqlite_statement* sql;
+	epmem_time_id time;
+};
+
+// priority queues and comparison functions
+struct epmem_pedge_comparator {
+	bool operator()(const epmem_pedge *a, const epmem_pedge *b) const {
+		if (a->time != b->time) {
+			return (a->time < b->time);
+		} else {
+			return (a < b);
+		}
+	}
+};
+typedef std::priority_queue<epmem_pedge*, std::vector<epmem_pedge*>, epmem_pedge_comparator> epmem_pedge_pq;
+struct epmem_interval_comparator {
+	bool operator()(const epmem_interval *a, const epmem_interval *b) const {
+		if (a->time != b->time) {
+			return (a->time < b->time);
+		} else if (a->is_end_point == b->is_end_point) {
+			return (a < b);
+		} else {
+			// arbitrarily put starts before ends
+			return (a->is_end_point == EPMEM_RANGE_START);
+		}
+	}
+};
+typedef std::priority_queue<epmem_interval*, std::vector<epmem_interval*>, epmem_interval_comparator> epmem_interval_pq;
 
 #endif

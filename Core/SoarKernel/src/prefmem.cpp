@@ -89,7 +89,7 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
   p->rl_intolerable_variance = false; ///< bazald
 
 #ifdef DEBUG_PREFS
-  print (thisAgent, "\nAllocating preference at 0x%8x: ", static_cast<uintptr_t>(p));
+  print (thisAgent, "\nAllocating preference at 0x%8x: ", reinterpret_cast<uintptr_t>(p));
   print_preference (thisAgent, p);
 #endif
 
@@ -106,7 +106,7 @@ preference *make_preference (agent* thisAgent, byte type, Symbol *id, Symbol *at
 void deallocate_preference (agent* thisAgent, preference *pref) {
 
 #ifdef DEBUG_PREFS  
-  print (thisAgent, "\nDeallocating preference at 0x%8x: ",static_cast<uintptr_t>(pref));
+  print (thisAgent, "\nDeallocating preference at 0x%8x: ",reinterpret_cast<uintptr_t>(pref));
   print_preference (thisAgent, pref);
   if (pref->reference_count != 0) {   /* --- sanity check --- */
     char msg[BUFFER_MSG_SIZE];
@@ -214,7 +214,7 @@ Bool remove_preference_from_clones (agent* thisAgent, preference *pref) {
 bool add_preference_to_tm (agent* thisAgent, preference *pref) 
 {
 #ifdef DEBUG_PREFS
-   print (thisAgent, "\nAdd preference at 0x%8x:  ",static_cast<uintptr_t>(pref));
+   print (thisAgent, "\nAdd preference at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
    print_preference (thisAgent, pref);
 #endif
    
@@ -363,7 +363,7 @@ void remove_preference_from_tm (agent* thisAgent, preference *pref) {
   s = pref->slot;
 
 #ifdef DEBUG_PREFS
-  print (thisAgent, "\nRemove preference at 0x%8x:  ",static_cast<uintptr_t>(pref));
+  print (thisAgent, "\nRemove preference at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
   print_preference (thisAgent, pref);
 #endif
 
@@ -415,7 +415,7 @@ void process_o_rejects_and_deallocate_them (agent* thisAgent, preference *o_reje
                                    a clone of some other pref we're about to
                                    remove */
 #ifdef DEBUG_PREFS
-  print (thisAgent, "\nO-reject posted at 0x%8x:  ",static_cast<uintptr_t>(pref));
+  print (thisAgent, "\nO-reject posted at 0x%8x:  ",reinterpret_cast<uintptr_t>(pref));
   print_preference (thisAgent, pref);
 #endif
   }

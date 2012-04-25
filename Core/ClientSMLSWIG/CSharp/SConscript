@@ -1,0 +1,61 @@
+#!/usr/bin/python
+# Project: Soar <http://soar.googlecode.com>
+# Author: Jonathan Voigt <voigtjr@gmail.com>
+#
+import os
+import sys
+import itertools
+
+def get_headers(d):
+	chain = itertools.chain.from_iterable
+	return list(chain([os.path.join(p, x) for x in f if x.endswith('.h')] for p, d, f in os.walk(d)))
+
+Import("env", "compiler")
+if env.WhereIs('csc') == None:
+	print 'C# compiler not found, not building C# SML wrappers'
+	Return()
+
+clone = env.Clone()
+
+lib_install_dir = env['OUT_DIR']
+name = 'CSharp_sml_ClientInterface'
+interface = clone.File(name + '.i')
+wrapper = clone.File(name + '_wrap.cpp')
+srcdir = clone.Dir('src').abspath
+assembly = clone.File('sml_csharp.dll').abspath
+sml_csharp_target = 'sml_csharp'
+fake_target = '#fake-csharp-target'
+
+# This builder will insert extra dependencies during the COMPILATION stage
+# adapted from http://scons.org/wiki/DynamicSourceGenerator
+def late_csharp_builder(target, source, env):
+	if not os.path.isdir(srcdir):
+		print 'source directory does not exist'
+		sys.exit(1)
+	
+	cs_srcs = [ os.path.join(srcdir, f) for f in os.listdir(srcdir) ]
+	a = env.Command(env.File(assembly), cs_srcs, 'csc /target:library /out:%s %s\*.cs' % (assembly, srcdir))
+	env.Depends(a, fake_target)
+	install = env.Install(env['OUT_DIR'], a)
+	Alias(sml_csharp_target, install)
+
+clone.Append(BUILDERS = {'LateCSharpBuilder' : Builder(action=late_csharp_builder)})
+
+incs = ' '.join('-I"%s"' % GetBuildPath(d) for d in env['CPPPATH'])
+swig_cmd = 'swig %s -o "$TARGET" -c++ -csharp -Wall -namespace sml -dllimport %s -outdir "%s" "$SOURCE"' % (incs, name, srcdir)
+if not GetOption('verbose'):
+	swig_cmd = '@' + swig_cmd
+
+headers = []
+for d in 'ClientSML ConnectionSML ElementXML'.split():
+	headers += get_headers(env.Dir(os.path.join('#Core', d, 'src')).abspath)
+
+swig_deps = [interface] + list(headers)
+clone.Command(wrapper, swig_deps, [Mkdir(srcdir), swig_cmd])
+
+clone.Command('CSharpCallbackByHand.h', clone.File('CSharpCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
+shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files in Windows
+env.Alias(sml_csharp_target, clone.Install(clone['OUT_DIR'], shlib))
+
+env.Depends(shlib, clone.LateCSharpBuilder(fake_target, None))
+clone.Clean(wrapper, [srcdir, assembly])

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$LSB_HOME"=="" ]; then
+if [ "$LSB_HOME" == "" ]; then
 	LSB_HOME=/opt/lsb
 fi
 
@@ -10,13 +10,13 @@ if [ -x $(which ccache) ]; then
 fi
 
 LSBCC_LIB_PREFIX=$LSB_HOME/lib-
-if [ $(uname -m)=="x86_64" ]; then
+if [ $(uname -m) == "x86_64" ]; then
 	LSBCC_LIB_PREFIX=$LSB_HOME/lib64-
 fi
 
 export LSBCC_LIB_PREFIX
-export LSBCC=gcc-4.4
-export LSBCXX=g++-4.4
+export LSBCC=gcc-4.6
+export LSBCXX=g++-4.6
 export LSBCC_LSBVERSION=4.0
 export LSBCC_LIBS=$LSBCC_LIB_PREFIX$LSBCC_LSBVERSION
 export CCACHE

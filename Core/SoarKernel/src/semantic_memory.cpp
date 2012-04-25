@@ -1467,6 +1467,7 @@ inline smem_lti_id smem_lti_soar_add( agent *my_agent, Symbol *id )
 
 			id->id.smem_time_id = my_agent->epmem_stats->time->get_value();
 			id->id.smem_valid = my_agent->epmem_validation;
+			epmem_schedule_promotion( my_agent, id );
 		}
 	}
 
@@ -1715,6 +1716,7 @@ void smem_store_chunk( agent *my_agent, smem_lti_id parent_id, smem_slot_map *ch
 
 							(*v)->val_lti.val_value->soar_id->id.smem_time_id = my_agent->epmem_stats->time->get_value();
 							(*v)->val_lti.val_value->soar_id->id.smem_valid = my_agent->epmem_validation;
+							epmem_schedule_promotion( my_agent, (*v)->val_lti.val_value->soar_id );
 						}
 					}
 
@@ -3241,6 +3243,7 @@ bool smem_parse_chunks( agent *my_agent, const char *chunks_str, std::string **e
 
 									id_parent->id.smem_time_id = my_agent->epmem_stats->time->get_value();
 									id_parent->id.smem_valid = my_agent->epmem_validation;
+									epmem_schedule_promotion( my_agent, id_parent );
 								}
 							}
 						}

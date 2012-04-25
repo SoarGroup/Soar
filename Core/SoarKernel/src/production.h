@@ -117,6 +117,10 @@ typedef struct production_struct {
   double rl_update_count;		/* number of (potentially fractional) updates to this rule */
   unsigned int rl_ref_count;    /* number of states referencing this rule in prev_op_rl_rules list */
 
+  // Per-input memory parameters for delta bar delta algorithm
+  double rl_delta_bar_delta_beta;
+  double rl_delta_bar_delta_h;
+
   double rl_ecr;				// expected current reward (discounted reward)
   double rl_efr;				// expected future reward (discounted next state)
   double rl_mean2; ///< bazald

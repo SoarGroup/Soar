@@ -1626,6 +1626,9 @@ production *make_production (agent* thisAgent,
   p->interrupt = FALSE;
   
   // Soar-RL stuff
+  p->rl_update_count = 0.0;
+  p->rl_delta_bar_delta_beta = -3.0;
+  p->rl_delta_bar_delta_h = 0.0;
   p->rl_rule = false;
   p->rl_update_count = 0;
   p->rl_ref_count = 0;
