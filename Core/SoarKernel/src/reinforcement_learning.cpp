@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
+#include <fstream>
 #include <sstream>
 
 #include "agent.h"

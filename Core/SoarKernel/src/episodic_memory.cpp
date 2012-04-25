@@ -17,6 +17,7 @@
 #include <cmath>
 #include <algorithm>
 #include <iterator>
+#include <iostream>
 #include <fstream>
 #include <set>
 #include <climits>
@@ -5849,7 +5850,7 @@ void inline _epmem_exp( agent* my_agent )
  * Notes		: The kernel calls this function to implement Soar-EpMem:
  * 				  consider new storage and respond to any commands
  **************************************************************************/
-void epmem_go( agent *my_agent, bool allow_store=true )
+void epmem_go( agent *my_agent, bool allow_store )
 {
 
 	my_agent->epmem_timers->total->start();

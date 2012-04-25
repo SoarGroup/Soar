@@ -502,7 +502,7 @@ extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
 extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
-extern void epmem_go( agent *my_agent, bool allow_store );
+extern void epmem_go( agent *my_agent, bool allow_store = true );
 extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 extern void epmem_schedule_promotion( agent* my_agent, Symbol* id );
 
