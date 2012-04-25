@@ -48,6 +48,8 @@ def gcc_version(cc):
 		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
 		if m:
 			return tuple(int(n) for n in m.groups())
+		if f == 'clang':
+			return [42,42,42]
 	
 	print 'cannot identify compiler version'
 	Exit(1)
@@ -142,8 +144,12 @@ env = Environment(
 
 if GetOption('cc') != None:
 	env.Replace(CC = GetOption('cc'))
+elif sys.platform == 'darwin':
+	env.Replace(CC = 'clang')
 if GetOption('cxx') != None:
 	env.Replace(CXX = GetOption('cxx'))
+elif sys.platform == 'darwin':
+	env.Replace(CXX = 'clang++')
 
 print "Building intermediates to", env['BUILD_DIR']
 print "Installing targets to", env['OUT_DIR']
