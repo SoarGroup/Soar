@@ -2849,7 +2849,7 @@ inline Symbol *smem_parse_constant_attr( agent *my_agent, struct lexeme_info *le
 {
 	Symbol *return_val = NIL;
 
-	if ( ( (*lexeme).type == SYM_CONSTANT_LEXEME ) )
+	if ( (*lexeme).type == SYM_CONSTANT_LEXEME )
 	{
 		return_val = make_sym_constant( my_agent, static_cast<const char *>( (*lexeme).string ) );
 	}
