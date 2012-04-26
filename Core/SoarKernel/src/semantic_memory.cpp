@@ -2992,19 +2992,19 @@ bool smem_parse_chunk( agent *my_agent, smem_str_to_chunk_map *chunks, smem_chun
 						{
 							// value by type
 							chunk_value = NIL;
-							if ( ( my_agent->lexeme.type == SYM_CONSTANT_LEXEME ) )
+							if ( my_agent->lexeme.type == SYM_CONSTANT_LEXEME )
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
 								chunk_value->val_const.val_value = make_sym_constant( my_agent, static_cast<const char *>( my_agent->lexeme.string ) );
 							}
-							else if ( ( my_agent->lexeme.type == INT_CONSTANT_LEXEME ) )
+							else if ( my_agent->lexeme.type == INT_CONSTANT_LEXEME )
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
 								chunk_value->val_const.val_value = make_int_constant( my_agent, my_agent->lexeme.int_val );
 							}
-							else if ( ( my_agent->lexeme.type == FLOAT_CONSTANT_LEXEME ) )
+							else if ( my_agent->lexeme.type == FLOAT_CONSTANT_LEXEME )
 							{
 								chunk_value = new smem_chunk_value;
 								chunk_value->val_const.val_type = value_const_t;
