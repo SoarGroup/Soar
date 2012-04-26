@@ -2,6 +2,7 @@ import os
 import sys
 import urllib
 import hashlib
+import platform
 
 depjars = [
 	'lib/jcommon-1.0.10.jar',
@@ -20,7 +21,7 @@ swt_jars = {
 }
 
 def CheckJarmd5(p):
-	return hashlib.md5(open(p, 'rb').read()).hexdigest() == swt_jars[(sys.platform, int(GetOption('platform')))][1]
+	return hashlib.md5(open(p, 'rb').read()).hexdigest() == swt_jars[(sys.platform, 64 if '64' in platform.machine() else 32)][1]
 
 def CheckForSWTJar(target, source, env):
 	path = target[0].abspath
@@ -33,7 +34,7 @@ def CheckForSWTJar(target, source, env):
 
 	success = True
 	try:
-		url = swt_jars[(sys.platform, int(GetOption('platform')))][0]
+		url = swt_jars[(sys.platform, 64 if '64' in platform.machine() else 32)][0]
 		print 'Downloading SWT from %s' % url
 		urllib.urlretrieve(url, path)
 	except IOError:
