@@ -277,8 +277,8 @@ bool svs_state::get_output(rvec &out) const {
 }
 
 bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
-	if (first_arg >= args.size()) {
-		os << "specify something to inspect" << endl;
+	if (first_arg >= args.size() || args[first_arg] == "help") {
+		os << "available queries: atoms models out " << endl;
 		return false;
 	}
 	if (args[first_arg] == "models") {
@@ -301,27 +301,23 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		return true;
 	} else if (args[first_arg] == "out") {
-		for (int i = 0; i < outspec.size(); ++i) {
-			os << outspec[i].name << " "  << next_out[i] << endl;
-		}
-		return true;
-	} else if (args[first_arg] == "atoms") {
-		vector<vector<string> > atoms;
-		get_filter_table().get_all_atoms(scn, atoms);
-		for (int i = 0; i < atoms.size(); ++i) {
-			if (atoms[i].size() == 1) {
-				os << atoms[i][0] << "()" << endl;
-			} else {
-				os << atoms[i][0] << "(";
-				for (int j = 1; j < atoms[i].size() - 1; ++j) {
-					os << atoms[i][j] << ", ";
-				}
-				os << atoms[i][atoms[i].size()-1] << ")" << endl;
+		if (next_out.size() == 0) {
+			os << "no output" << endl;
+		} else {
+			for (int i = 0; i < outspec.size(); ++i) {
+				os << outspec[i].name << " "  << next_out(i) << endl;
 			}
 		}
 		return true;
+	} else if (args[first_arg] == "atoms") {
+		vector<string> atoms;
+		get_filter_table().get_all_atoms(scn, atoms);
+		for (int i = 0; i < atoms.size(); ++i) {
+			os << atoms[i] << endl;
+		}
+		return true;
 	}
-	os << "no such element" << endl;
+	os << "no such query" << endl;
 	return false;
 }
 
@@ -452,7 +448,9 @@ string svs::get_output() const {
 
 bool svs::do_cli_command(const vector<string> &args, string &output) const {
 	if (args.size() < 2) {
-		output = "specify a state";
+		stringstream ss;
+		ss << "specify a state level [0 - " << state_stack.size() - 1 << "]";
+		output = ss.str();
 		return false;
 	}
 	char *end;
