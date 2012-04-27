@@ -119,18 +119,30 @@ public:
 	}
 	
 	void remove(T* v) {
+		bool found = false;
 		for (int i = 0; i < current.size(); ++i) {
 			if (current[i] == v) {
-				current.erase(current.begin() + i);
-				if (i == m_added_begin) {
-					++m_added_begin;
+				for (int j = i + 1; j < current.size(); ++j) {
+					current[j - 1] = current[j];
 				}
-				changed.erase(find(changed.begin(), changed.end(), v), changed.end());
-				removed.push_back(v);
-				return;
+				current.pop_back();
+				if (i < m_added_begin) {
+					--m_added_begin;
+				}
+				found = true;
+				break;
 			}
 		}
-		assert(false);
+		assert(found);
+		for (int i = 0; i < changed.size(); ++i) {
+			if (changed[i] == v) {
+				for (int j = i + 1; j < changed.size(); ++j) {
+					changed[j - 1] = changed[j];
+				}
+				changed.pop_back();
+			}
+		}
+		removed.push_back(v);
 	}
 	
 	void change(T *v) {

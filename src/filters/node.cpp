@@ -104,6 +104,7 @@ public:
 					assert(false);
 				}
 				remove_result(r);
+				results.erase(n);
 				break;
 			case sgnode::TRANSFORM_CHANGED:
 			case sgnode::POINTS_CHANGED:

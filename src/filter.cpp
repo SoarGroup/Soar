@@ -41,7 +41,8 @@ void product_filter_input::combine(const input_table &inputs) {
 		for (int j = 0; j < r->num_removed(); ++j) {
 			k = val2params.find(r->get_removed(j));
 			assert(k != val2params.end());
-			for (l = k->second.begin(); l != k->second.end(); ++l) {
+			param_set_list temp = k->second;
+			for (l = temp.begin(); l != temp.end(); ++l) {
 				remove(*l);
 				erase_param_set(*l);
 			}
