@@ -13,23 +13,8 @@
 #include <ostream>
 #include <fstream>
 #include <map>
-
-/*
- By default Eigen will try to align all fixed size vectors to 128-bit
- boundaries to enable SIMD instructions on hardware such as SSE. However,
- this requires that you modify every class that has such vectors as
- members so that they are correctly allocated. This seems like more
- trouble than it's worth at the moment, so I'm disabling it.
-*/
-#define EIGEN_DONT_ALIGN
-#include <Eigen/Dense>
-
 #include "linalg.h"
 
-typedef Eigen::RowVectorXd rvec;
-typedef Eigen::VectorXd cvec;
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> mat;
-typedef Eigen::MatrixXi imat;
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 
@@ -321,15 +306,6 @@ void load_vector(std::vector<T> &v, std::istream &is) {
 		v.push_back(x);
 	}
 }
-
-void save_mat(std::ostream &os, const mat &m);
-void load_mat(std::istream &is, mat &m);
-void save_imat(std::ostream &os, const imat &m);
-void load_imat(std::istream &is, imat &m);
-void save_rvec(std::ostream &os, const rvec &v);
-void load_rvec(std::istream &is, rvec &v);
-void save_cvec(std::ostream &os, const cvec &v);
-void load_cvec(std::istream &is, cvec &v);
 
 inline double gausspdf(double x, double mean, double std) {
 	const double SQRT2PI = 2.5066282746310002;

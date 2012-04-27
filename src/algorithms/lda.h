@@ -6,7 +6,7 @@
 
 class LDA_NN_Classifier {
 public:
-	LDA_NN_Classifier(const mat &data, const std::vector<int> &membership);
+	LDA_NN_Classifier(const_mat_view data, const std::vector<int> &membership);
 	int classify(const rvec &x) const;
 	
 	const mat &getW() const {

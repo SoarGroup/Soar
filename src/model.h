@@ -8,6 +8,7 @@
 #include <vector>
 #include <list>
 #include "common.h"
+#include "mat.h"
 
 class model {
 public:

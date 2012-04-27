@@ -10,7 +10,7 @@ using namespace std;
 using namespace Eigen;
 
 /* Assume that X is already centered */
-void pca(const mat &X, mat &comps) {
+void pca(const_mat_view X, mat &comps) {
 	JacobiSVD<mat> svd = X.jacobiSvd(Eigen::ComputeFullV);
 	comps = svd.matrixV();
 }
@@ -20,7 +20,7 @@ void pca(const mat &X, mat &comps) {
  significantly different values, meaning the maximum absolute value of
  the column is greater than SAME_THRESH times the minimum absolute value.
 */
-void remove_static(const mat &X, mat &Xout, vector<int> &nonstatic_cols) {
+void remove_static(const_mat_view X, mat &Xout, vector<int> &nonstatic_cols) {
 	for (int i = 0; i < X.cols(); ++i) {
 		cvec c = X.col(i).array().abs();
 		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
@@ -33,7 +33,7 @@ void remove_static(const mat &X, mat &Xout, vector<int> &nonstatic_cols) {
 	}
 }
 
-bool solve(const mat &X, const mat &Y, mat &C) {
+bool solve(const_mat_view X, const_mat_view Y, mat &C) {
 	C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
 	return true;
 }
@@ -45,7 +45,7 @@ bool solve(const mat &X, const mat &Y, mat &C) {
  1. Setting elements whose absolute values are smaller than ZERO_THRESH to 0
  2. collapsing all columns whose elements are identical into a single constant column.
 */
-bool solve2(const mat &X, const mat &Y, mat &coefs, rvec &intercept) {
+bool solve2(const_mat_view X, const_mat_view Y, mat &coefs, rvec &intercept) {
 	mat X1 = X, X2(X.rows(), X.cols() + 1), C;
 	vector<int> nonstatic;
 
@@ -73,7 +73,7 @@ bool solve2(const mat &X, const mat &Y, mat &coefs, rvec &intercept) {
 	return true;
 }
 
-void lsqr(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout) {
+void lsqr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout) {
 	mat W = mat::Zero(w.size(), w.size());
 	W.diagonal() = w;
 	mat Z = W * X, V = W * Y, C;
@@ -82,7 +82,7 @@ void lsqr(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout) 
 	yout = x * C + intercepts;
 }
 
-void ridge(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout) {
+void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout) {
 	int i;
 	mat W = mat::Zero(w.size(), w.size());
 	W.diagonal() = w;
@@ -106,7 +106,7 @@ void ridge(const mat &X, const mat &Y, const cvec &w, const rvec &x, rvec &yout)
  Use Leave-one-out cross validation to determine number of components
  to use. This seems to choose numbers that are too low.
 */
-void cross_validate(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
+void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &intercept) {
 	int ndata = X.rows(), maxcomps = X.cols();
 	
 	mat X1(ndata - 1, X.cols()), Y1(ndata - 1, Y.cols());
@@ -160,7 +160,7 @@ void cross_validate(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
  the training instances. Also prevent the beta vector from blowing up
  too much.
 */
-void min_train_error(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
+void min_train_error(const_mat_view X, const_mat_view Y, mat &beta, rvec &intercept) {
 	vector<mat> betas;
 	vector<rvec> intercepts;
 	double minerror;
@@ -193,7 +193,7 @@ void min_train_error(const mat &X, const mat &Y, mat &beta, rvec &intercept) {
 	}
 }
 
-void pcr(const mat &X, const mat &Y, const rvec &x, rvec &y) {
+void pcr(const_mat_view X, const_mat_view Y, const rvec &x, rvec &y) {
 	mat beta, X1;
 	rvec intercept;
 	rvec m = X.colwise().mean();
@@ -376,7 +376,7 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 	return predict_drv(x, y);
 }
 
-bool LRModel::predict(const mat &X, mat &Y) {
+bool LRModel::predict(const_mat_view x, mat &y) {
 	if (isconst) {
 		Y.resize(X.rows(), constvals.size());
 		Y.rowwise() = constvals;
@@ -452,7 +452,7 @@ bool PCRModel::predict_drv(const rvec &x, rvec &y) {
 	return true;
 }
 
-bool PCRModel::predict_drv(const mat &X, mat &Y) {
+bool PCRModel::predict_drv(const_mat_view X, mat &Y) {
 	if (beta.size() == 0) {
 		return false;
 	}

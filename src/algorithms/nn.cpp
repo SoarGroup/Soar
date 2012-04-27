@@ -20,7 +20,7 @@ void di_queue_to_vec(di_queue &q, vector<int> &indexes, rvec &dists) {
 	}
 }
 
-void brute_nearest_neighbor(const mat &data, const rvec &q, int k, vector<int> &indexes, rvec &dists) {
+void brute_nearest_neighbor(const_mat_view data, const rvec &q, int k, vector<int> &indexes, rvec &dists) {
 	di_queue nn;
 	for (int i = 0; i < data.rows(); ++i) {
 		double d = (q - data.row(i)).squaredNorm();

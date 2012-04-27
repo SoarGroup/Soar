@@ -10,7 +10,7 @@ typedef std::pair<double, int> di_pair;
 typedef std::priority_queue<di_pair> di_queue;
 
 void brute_nearest_neighbor(const std::vector<rvec> &data, const rvec &q, int k, std::vector<int> &indexes, rvec &dists);
-void brute_nearest_neighbor(const mat &data, const rvec &q, int k, std::vector<int> &indexes, rvec &dists);
+void brute_nearest_neighbor(const_mat_view data, const rvec &q, int k, std::vector<int> &indexes, rvec &dists);
 
 class balltree {
 public:
