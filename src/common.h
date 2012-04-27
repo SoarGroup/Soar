@@ -6,7 +6,7 @@
 #include <cmath>
 #include <cassert>
 #include <cstring>
-#include <sys/time.h>
+#include <ctime>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -47,7 +47,7 @@ public:
 	timer() : name("") {}
 
 	timer(const std::string &name) : name(name) {
-		gettimeofday(&t1, NULL);
+		t1 = clock();
 	}
 	
 	~timer() {
@@ -57,19 +57,17 @@ public:
 	}
 
 	void start() {
-		gettimeofday(&t1, NULL);
+		t1 = clock();
 	}
 	
 	double stop() {
-		timeval t2, t3;
-		gettimeofday(&t2, NULL);
-		timersub(&t2, &t1, &t3);
-		return t3.tv_sec + t3.tv_usec / 1000000.0;
+		clock_t t2 = clock();
+		return (t2 - t1) / (double) CLOCKS_PER_SEC;
 	}
 	
 private:
 	std::string name;
-	timeval t1;
+	clock_t t1;
 };
 
 template <typename A, typename B>
