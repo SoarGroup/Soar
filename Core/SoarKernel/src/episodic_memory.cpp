@@ -4302,10 +4302,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				// * and the new score is higher than the best score
 				// then save the current time as the best one
 				if (current_episode > next_episode && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (do_graph_match && current_score == best_score && !best_graph_matched))) {
+					bool new_king = false;
 					if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
 						best_episode = current_episode;
 						best_score = current_score;
 						best_cardinality = current_cardinality;
+						new_king = true;
 					}
 					// we should graph match if the option is set and all leaf literals are satisfied
 					if (current_cardinality == perfect_cardinality) {
@@ -4330,9 +4332,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							best_episode = current_episode;
 							best_graph_matched = true;
 							current_episode = EPMEM_MEMID_NONE;
+							new_king = true;
 						}
 					}
-					if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
+					if (new_king && my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
 						char buf[256];
 						SNPRINTF(buf, 254, "NEW KING (perfect, graph-match): (%s, %s)\n", (current_cardinality == perfect_cardinality ? "true" : "false"), (best_graph_matched ? "true" : "false"));
 						print(my_agent, buf);
