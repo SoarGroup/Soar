@@ -54,11 +54,11 @@ bool dir(scene *scn, const vector<string> &args, int axis, int comp) {
 }
 
 bool north_of(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 1, -1);
+	return dir(scn, args, 1, 1);
 }
 
 bool south_of(scene *scn, const vector<string> &args) {
-	return dir(scn, args, 1, 1);
+	return dir(scn, args, 1, -1);
 }
 
 bool east_of(scene *scn, const vector<string> &args) {
@@ -76,6 +76,20 @@ bool vertically_aligned(scene *scn, const vector<string> &args) {
 bool horizontally_aligned(scene *scn, const vector<string> &args) {
 	return dir(scn, args, 1, 0);
 }
+
+bool planar_aligned(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 2, 0);
+}
+
+bool above(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 2, 1);
+}
+
+bool below(scene *scn, const vector<string> &args) {
+	return dir(scn, args, 2, -1);
+}
+
+
 
 /*
 Filter version
@@ -105,11 +119,11 @@ private:
 };
 
 filter *make_north_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 1, -1);
+	return new direction_filter(input, 1, 1);
 }
 
 filter *make_south_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 1, 1);
+	return new direction_filter(input, 1, -1);
 }
 
 filter *make_east_of(scene *scn, filter_input *input) {
@@ -127,6 +141,19 @@ filter *make_vertically_aligned(scene *scn, filter_input *input) {
 filter *make_horizontally_aligned(scene *scn, filter_input *input) {
 	return new direction_filter(input, 1, 0);
 }
+
+filter *make_planar_aligned(scene *scn, filter_input *input) {
+	return new direction_filter(input, 2, 0);
+}
+
+filter *make_above(scene *scn, filter_input *input) {
+	return new direction_filter(input, 2, 1);
+}
+
+filter *make_below(scene *scn, filter_input *input) {
+	return new direction_filter(input, 2, -1);
+}
+
 
 filter_table_entry north_of_fill_entry() {
 	filter_table_entry e;
@@ -193,3 +220,37 @@ filter_table_entry vertically_aligned_fill_entry() {
 	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
+
+filter_table_entry planar_aligned_fill_entry() {
+	filter_table_entry e;
+	e.name = "planar-aligned";
+	e.parameters.push_back("a");
+	e.parameters.push_back("b");
+	e.create = &make_planar_aligned;
+	e.calc = &planar_aligned;
+	e.possible_args = &all_node_pairs_unordered_no_repeat;
+	return e;
+}
+
+filter_table_entry above_fill_entry() {
+	filter_table_entry e;
+	e.name = "above";
+	e.parameters.push_back("a");
+	e.parameters.push_back("b");
+	e.create = &make_above;
+	e.calc = &above;
+	e.possible_args = &all_node_pairs_ordered_no_repeat;
+	return e;
+}
+
+filter_table_entry below_fill_entry() {
+	filter_table_entry e;
+	e.name = "below";
+	e.parameters.push_back("a");
+	e.parameters.push_back("b");
+	e.create = &make_below;
+	e.calc = &below;
+	e.possible_args = &all_node_pairs_ordered_no_repeat;
+	return e;
+}
+
