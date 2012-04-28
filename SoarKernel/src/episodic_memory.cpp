@@ -17,6 +17,7 @@
 #include <cmath>
 #include <algorithm>
 #include <iterator>
+#include <iostream>
 #include <fstream>
 #include <set>
 #include <climits>
@@ -4023,7 +4024,7 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 	return false;
 }
 
-bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_deque::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_symbol_node_map bound_nodes[], agent* my_agent, int depth = 0) {
+bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_deque::iterator& iter_end, epmem_literal_node_pair_map& bindings, epmem_node_symbol_map bound_nodes[], agent* my_agent, int depth = 0) {
 	if (dnf_iter == iter_end) {
 		return true;
 	}
@@ -4073,8 +4074,8 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			continue;
 		}
 		// if the node has already been bound, make sure it's bound to the same thing
-		epmem_symbol_node_map::iterator binder = bound_nodes[literal->value_is_id].find(literal->value_sym);
-		if (binder != bound_nodes[literal->value_is_id].end() && (*binder).second != q1) {
+		epmem_node_symbol_map::iterator binder = bound_nodes[literal->value_is_id].find(q1);
+		if (binder != bound_nodes[literal->value_is_id].end() && (*binder).second != literal->value_sym) {
 			failed_children.insert(q1);
 			continue;
 		}
@@ -4113,7 +4114,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 		}
 		// temporarily modify the bindings and bound nodes
 		bindings[literal] = std::make_pair(q0, q1);
-		bound_nodes[literal->value_is_id][literal->value_sym] = q1;
+		bound_nodes[literal->value_is_id][q1] = literal->value_sym;
 		// recurse on the rest of the list
 		bool list_satisfied = epmem_graph_match(next_iter, iter_end, bindings, bound_nodes, my_agent, depth + 1);
 		// if the rest of the list matched, we've succeeded
@@ -4122,7 +4123,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			return true;
 		} else {
 			bindings.erase(literal);
-			bound_nodes[literal->value_is_id].erase(literal->value_sym);
+			bound_nodes[literal->value_is_id].erase(q1);
 		}
 	}
 	// this means we've tried everything and this whole exercise was a waste of time
@@ -4594,10 +4595,12 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				// * and the new score is higher than the best score
 				// then save the current time as the best one
 				if (current_episode > next_episode && changed_score && (best_episode == EPMEM_MEMID_NONE || current_score > best_score || (do_graph_match && current_score == best_score && !best_graph_matched))) {
+					bool new_king = false;
 					if (best_episode == EPMEM_MEMID_NONE || current_score > best_score) {
 						best_episode = current_episode;
 						best_score = current_score;
 						best_cardinality = current_cardinality;
+						new_king = true;
 					}
 					// we should graph match if the option is set and all leaf literals are satisfied
 					if (current_cardinality == perfect_cardinality) {
@@ -4609,7 +4612,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							epmem_literal_deque::iterator begin = gm_ordering.begin();
 							epmem_literal_deque::iterator end = gm_ordering.end();
 							best_bindings.clear();
-							epmem_symbol_node_map bound_nodes[2];
+							epmem_node_symbol_map bound_nodes[2];
 							if (JUSTIN_DEBUG >= 1) {
 								std::cout << "	GRAPH MATCH" << std::endl;
 								epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
@@ -4622,9 +4625,10 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							best_episode = current_episode;
 							best_graph_matched = true;
 							current_episode = EPMEM_MEMID_NONE;
+							new_king = true;
 						}
 					}
-					if (my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
+					if (new_king && my_agent->sysparams[TRACE_EPMEM_SYSPARAM]) {
 						char buf[256];
 						SNPRINTF(buf, 254, "NEW KING (perfect, graph-match): (%s, %s)\n", (current_cardinality == perfect_cardinality ? "true" : "false"), (best_graph_matched ? "true" : "false"));
 						print(my_agent, buf);
@@ -5427,7 +5431,10 @@ void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, 
 				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
 						( ( path == 0 ) || ( path == 3 ) ) )
 				{
-					before = (*w_p)->value->ic.value;
+					if ( ( before == EPMEM_MEMID_NONE ) || ( (*w_p)->value->ic.value < before ) )
+					{
+						before = (*w_p)->value->ic.value;
+					}
 					path = 3;
 				}
 				else
@@ -5440,7 +5447,10 @@ void inline _epmem_respond_to_cmd_parse( agent* my_agent, epmem_wme_list* cmds, 
 				if ( ( (*w_p)->value->ic.common_symbol_info.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) &&
 						( ( path == 0 ) || ( path == 3 ) ) )
 				{
-					after = (*w_p)->value->ic.value;
+					if ( after < (*w_p)->value->ic.value )
+					{
+						after = (*w_p)->value->ic.value;
+					}
 					path = 3;
 				}
 				else
@@ -6129,7 +6139,7 @@ void inline _epmem_exp( agent* my_agent )
  * Notes		: The kernel calls this function to implement Soar-EpMem:
  * 				  consider new storage and respond to any commands
  **************************************************************************/
-void epmem_go( agent *my_agent, bool allow_store=true )
+void epmem_go( agent *my_agent, bool allow_store )
 {
 
 	my_agent->epmem_timers->total->start();

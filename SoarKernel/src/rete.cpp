@@ -6325,7 +6325,7 @@ void p_node_left_removal (agent* thisAgent, rete_node *node, token *tok, wme *w)
 
 	/* REW: begin 09.15.96 */
 
-	if ((thisAgent->soar_verbose_flag == TRUE)) {
+	if (thisAgent->soar_verbose_flag == TRUE) {
 			print_with_symbols (thisAgent, "\n%y: ",node->b.p.prod->name);
 			char buf[256];
 			SNPRINTF(buf, 254, "%s: ", symbol_to_string(thisAgent, node->b.p.prod->name, true, 0, 0));

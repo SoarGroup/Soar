@@ -961,11 +961,13 @@ namespace soar_module
 			// std::string temp_other( typeid( _other ).name() );
 		}
 
-		pointer allocate( size_type n, const void* = 0 )
+		pointer allocate( size_type
+#ifndef NDEBUG
+			n
+#endif
+			, const void* = 0 )
 		{
-			size_type test = n;
-			test; // prevents release-mode warning, since assert is compiled out
-			assert( test == 1 );
+			assert( n == 1 );
 			
 			if ( !mem_pool )
 			{
@@ -978,11 +980,13 @@ namespace soar_module
 			return t;
 		}
 
-		void deallocate( void* p, size_type n )
+		void deallocate( void* p, size_type 
+#ifndef NDEBUG
+			n
+#endif
+			)
 		{
-			size_type test = n;
-			test; // prevents release-mode warning, since assert is compiled out
-			assert( test == 1 );
+			assert( n == 1 );
 
 			// not sure if this is correct...
 			// it only comes up if an object uses another object's
@@ -1006,7 +1010,6 @@ namespace soar_module
 
 		void destroy( pointer p )
 		{
-			p; // prevents warning
 			p->~T();
 		}
 

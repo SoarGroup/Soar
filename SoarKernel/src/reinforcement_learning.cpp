@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
+#include <fstream>
 #include <sstream>
 
 #include "agent.h"
@@ -309,7 +310,7 @@ bool rl_valid_template( production *prod )
 	for ( action *a = prod->action_list; a; a = a->next ) 
 	{
 		num_actions++;
-		if ( ( a->type == MAKE_ACTION ) )
+		if ( a->type == MAKE_ACTION )
 		{
 			if ( a->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE )
 			{
@@ -335,7 +336,7 @@ bool rl_valid_rule( production *prod )
 	for ( action *a = prod->action_list; a; a = a->next ) 
 	{
 		num_actions++;
-		if ( ( a->type == MAKE_ACTION ) )
+		if ( a->type == MAKE_ACTION )
 		{
 			if ( a->preference_type == NUMERIC_INDIFFERENT_PREFERENCE_TYPE )
 				numeric_pref = true;

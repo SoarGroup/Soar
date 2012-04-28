@@ -511,7 +511,7 @@ extern void epmem_reset( agent *my_agent, Symbol *state = NULL );
 extern void epmem_close( agent *my_agent );
 
 // perform epmem actions
-extern void epmem_go( agent *my_agent, bool allow_store );
+extern void epmem_go( agent *my_agent, bool allow_store = true );
 extern bool epmem_backup_db( agent* my_agent, const char* file_name, std::string *err );
 extern void epmem_schedule_promotion( agent* my_agent, Symbol* id );
 
@@ -542,7 +542,7 @@ typedef std::deque<epmem_node_id> epmem_node_deque;
 typedef std::map<Symbol*, int> epmem_symbol_int_map;
 typedef std::map<epmem_literal*, epmem_node_pair> epmem_literal_node_pair_map;
 typedef std::map<epmem_literal_node_pair, int> epmem_literal_node_pair_int_map;
-typedef std::map<Symbol*, epmem_node_id> epmem_symbol_node_map;
+typedef std::map<epmem_node_id, Symbol*> epmem_node_symbol_map;
 typedef std::map<epmem_node_id, int> epmem_node_int_map;
 typedef std::map<epmem_symbol_literal_pair, int> epmem_symbol_literal_pair_int_map;
 typedef std::map<epmem_symbol_node_pair, int> epmem_symbol_node_pair_int_map;
