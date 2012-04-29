@@ -65,7 +65,6 @@ if compiler == 'g++':
 
 if sys.platform == 'darwin':
 	clone.Append(SHLINKFLAGS = ' -framework JavaVM')
-	clone.Replace(SHLIBSUFFIX = '.jnilib')
 
 name = 'Java_sml_ClientInterface'
 interface = clone.File(name + '.i')
@@ -106,6 +105,9 @@ clone.Command(wrapper, swig_deps, [Mkdir(smldir), swig_cmd])
 
 clone.Clean(jar, [wrapper, srcdir, classdir])
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
+if sys.platform == 'darwin':
+	# have to call it Java_sml_ClientInterface.jnilib instead of the usual .dylib
+	name += '.jnilib'
 shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files in Windows
 env.Alias('sml_java', clone.Install(env['OUT_DIR'], shlib))
 
