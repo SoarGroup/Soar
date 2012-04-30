@@ -103,13 +103,16 @@ if not GetOption('verbose'):
 	swig_cmd = '@' + swig_cmd
 clone.Command(wrapper, swig_deps, [Mkdir(smldir), swig_cmd])
 
-clone.Clean(jar, [wrapper, srcdir, classdir])
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
 if sys.platform == 'darwin':
 	# have to call it Java_sml_ClientInterface.jnilib instead of the usual .dylib
 	name += '.jnilib'
 shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files in Windows
-env.Alias('sml_java', clone.Install(env['OUT_DIR'], shlib))
+lib_install = clone.Install(env['OUT_DIR'], shlib)
 
-env.Depends(shlib, clone.LateJavaBuilder(fake_java_target, None))
-clone.Clean(wrapper, [srcdir, classdir, jar])
+clone.Depends(jar, [wrapper, fake_java_target])
+clone.LateJavaBuilder(fake_java_target, None)
+jar_install = clone.Install(os.path.join(env['OUT_DIR'], 'java'), jar)
+clone.Clean(jar, [wrapper, srcdir, classdir])
+
+env.Alias('sml_java', [lib_install, jar_install])
