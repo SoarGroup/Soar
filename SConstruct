@@ -100,7 +100,7 @@ AddOption('--verbose', action='store_true', dest='verbose', default = False, hel
 
 env = Environment(
 	ENV = os.environ.copy(),
-	SCU = GetOption('scu'), 
+	SCU = GetOption('scu'),
 	BUILD_DIR = GetOption('build-dir'),
 	OUT_DIR = os.path.realpath(GetOption('outdir')),
 	SOAR_VERSION = SOAR_VERSION,
@@ -178,7 +178,7 @@ cflags.extend((GetOption('cflags') or '').split())
 lnflags.extend((GetOption('lnflags') or '').split())
 	
 env.Replace(
-	CPPFLAGS = cflags, 
+	CPPFLAGS = cflags,
 	LINKFLAGS = lnflags,
 	CPPPATH = [
 		'#Core/shared',
@@ -218,9 +218,10 @@ if 'MSVSSolution' in env['BUILDERS']:
 	Export('msvs_projs')
 
 for d in os.listdir('.'):
-	script = join(d, 'SConscript')
-	if os.path.exists(script):
-		SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
+	if not d.startswith('.'):
+		script = join(d, 'SConscript')
+		if os.path.exists(script):
+			SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
 
 if 'MSVSSolution' in env['BUILDERS']:
