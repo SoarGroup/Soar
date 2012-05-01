@@ -2,21 +2,21 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-import os, sys
+import os, sys, platform
 
 Import('env')
 clone = env.Clone()
 
 libs = {
-	('darwin', '32') : 'cppunit-osx',
-	('darwin', '64') : 'cppunit-osx-64',
-	('linux2', '32') : 'cppunit-linux',
-	('linux2', '64') : 'cppunit-linux-64',
-	('win32',  '32') : 'cppunit_dllvs9',
-	('win32',  '64') : 'cppunit64_dllvs9'
+	('darwin', 32) : 'cppunit-osx',
+	('darwin', 64) : 'cppunit-osx-64',
+	('linux2', 32) : 'cppunit-linux',
+	('linux2', 64) : 'cppunit-linux-64',
+	('win32',  32) : 'cppunit_dllvs9',
+	('win32',  64) : 'cppunit64_dllvs9'
 }
 
-lib = libs[(sys.platform, GetOption('platform'))]
+lib = libs[(sys.platform, 64 if '64' in platform.machine() else 32)]
 clone.Prepend(LIBS = lib, LIBPATH = ['lib'], CPPPATH = env.Dir('src').srcnode())
 src = Glob('src/*.cpp')
 t = env.Install('$OUT_DIR', clone.Program('UnitTests', src))

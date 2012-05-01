@@ -4,15 +4,6 @@
 
 SOAR_VERSION = "9.3.2"
 
-# required and default optional flags when using VC++ compiler
-VS_REQ_CFLAGS = ' /EHsc /D _CRT_SECURE_NO_DEPRECATE /D _WIN32'
-VS_DEF_CFLAGS = ' /O2 /W2'
-VS_DEF_LNFLAGS = ''
-
-# default compiler flags when using g++
-GCC_DEF_CFLAGS = ' -Wreturn-type -O2 -mtune=generic'
-GCC_DEF_LNFLAGS = ''
-
 DEF_OUT = 'out'
 DEF_BUILD = 'build'
 
@@ -48,6 +39,8 @@ def gcc_version(cc):
 		m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', f)
 		if m:
 			return tuple(int(n) for n in m.groups())
+		if f == 'clang':
+			return [42,42,42]
 	
 	print 'cannot identify compiler version'
 	Exit(1)
@@ -78,29 +71,6 @@ def InstallDir(env, tgt, src, globstring="*"):
 
 Export('InstallDir')
 
-# host:                  winter,           seagull,          macsoar,       fugu,
-# os.name:               posix,            posix,            posix,         posix,
-# sys.platform:          linux2,           linux2,           darwin,        darwin,
-# platform.machine:      x86_64,           i686,             i386,          Power Macintosh,
-# platform.architecture: ('64bit', 'ELF'), ('32bit', 'ELF'), ('32bit', ''), ('32bit', '')
-print socket.gethostname(), os.name, sys.platform, platform.machine(), platform.architecture()
-
-if os.name not in ['posix', 'nt']:
-	print "Unsupported os.name:", os.name
-	Exit(1)
-if sys.platform not in ['linux2', 'darwin', 'win32']:
-	print "Unsupported sys.platform:", sys.platform
-	Exit(1)
-if platform.machine() not in ['x86_64', 'AMD64', 'i686', 'i386', ]:
-	print "Unsupported platform.machine:", platform.machine()
-
-
-# Command line options
-defarch = '32'
-if platform.machine() in ['x86_64', 'AMD64'] or (sys.platform == 'darwin' and Mac_m64_Capable()):
-	defarch = '64'
-
-
 AddOption('--cc', action='store', type='string', dest='cc', nargs=1, metavar='COMPILER',
 	help='Use argument as the C compiler.')
 	
@@ -113,9 +83,6 @@ AddOption('--lnflags', action='store', type='string', dest='lnflags', nargs=1, h
 
 AddOption('--no-default-flags', action='store_false', dest='defflags', default=True, help="Don't pass any default flags to the compiler or linker")
 
-AddOption('--arch', action='store', type='choice', choices=['32','64'], dest='platform', default=defarch, nargs=1, metavar='PLATFORM',
-	help='Target architecture. Must be one of 32, 64. Default is detected system architecture.')
-
 AddOption('--no-scu', action='store_false', dest='scu', default=True,
 	help='Don\'t build using single compilation units.')
 	
@@ -127,7 +94,7 @@ AddOption('--build', action='store', type='string', dest='build-dir', default=DE
 
 AddOption('--static', action='store_true', dest='static', default=False, help='Use static linking')
 
-AddOption('--no-dbg', action='store_false', dest='dbg', default=True, help='Enable compiler optimizations and remove debugging symbols')
+AddOption('--opt', action='store_true', dest='opt', default=False, help='Enable compiler optimizations, remove debugging symbols and assertions')
 
 AddOption('--verbose', action='store_true', dest='verbose', default = False, help='Output full compiler commands')
 
@@ -142,8 +109,12 @@ env = Environment(
 
 if GetOption('cc') != None:
 	env.Replace(CC = GetOption('cc'))
+elif sys.platform == 'darwin':
+	env.Replace(CC = 'clang')
 if GetOption('cxx') != None:
 	env.Replace(CXX = GetOption('cxx'))
+elif sys.platform == 'darwin':
+	env.Replace(CXX = 'clang++')
 
 print "Building intermediates to", env['BUILD_DIR']
 print "Installing targets to", env['OUT_DIR']
@@ -168,7 +139,12 @@ if compiler == 'g++':
 		cflags.append('-DSCONS_DARWIN')
 	
 	if GetOption('defflags'):
-		cflags.extend(GCC_DEF_CFLAGS.split())
+		cflags = ['-Wreturn-type']
+		
+		if GetOption('opt'):
+			cflags.extend(['-O2', '-DNDEBUG'])
+		else:
+			cflags.extend(['-g'])
 		
 		gcc_ver = gcc_version(env['CXX'])
 		# check if the compiler supports -fvisibility=hidden (GCC >= 4)
@@ -179,28 +155,21 @@ if compiler == 'g++':
 				cflags.append('-DGCC_HASCLASSVISIBILITY')
 				env['VISHIDDEN'] = True
 		
-		cflags.append('-m%s' % GetOption('platform'))
-		lnflags.extend(GCC_DEF_LNFLAGS.split())
 		if sys.platform == 'linux2':
 			# -rpath only works in Linux. For OSX, use -install_name (specified in Core/SConscript)
 			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', env.Literal(r'$ORIGIN')])
 	
-		if GetOption('dbg'):
-			cflags = filter(lambda x: not x.startswith('-O'), cflags)
-			cflags.append('-g')
-	
-	libs += [ 'dl', 'pthread' ]
+	libs += [ 'pthread' ]
 
 elif compiler == 'msvc':
-	cflags.extend(VS_REQ_CFLAGS.split())
-	if GetOption('defflags'):
-		cflags.extend(VS_DEF_CFLAGS.split())
-		lnflags.extend(VS_DEF_LNFLAGS.split())
+	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2']
 	
-		if GetOption('dbg'):
-			cflags = filter(lambda x: not x.startswith('/O'), cflags)
-			cflags.append('/Z7')
-			lnflags.append('/DEBUG')
+	if GetOption('defflags'):
+		if GetOption('opt'):
+			cflags.extend(' /O2 /D NDEBUG'.split())
+		else:
+			cflags.extend(' /Z7 /DEBUG'.split())
+			lnflags.extend(['/DEBUG'])
 	
 	libs += ['advapi32']    # for GetUserName
 			

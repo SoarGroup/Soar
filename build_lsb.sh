@@ -5,7 +5,7 @@ if [ "$LSB_HOME" == "" ]; then
 fi
 
 CCACHE=""
-if [ -x $(which ccache) ]; then
+if [ "$(which ccache)" != "" ]; then
 	CCACHE=ccache
 fi
 
