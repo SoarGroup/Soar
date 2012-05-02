@@ -187,6 +187,8 @@ void EM::add_data(const rvec &x, double y) {
 }
 
 void EM::estep() {
+	timer_set::function_timer t(timers, "e-step");
+	
 	update_eligibility();
 	/*
 	if (stale_models.empty()) {
@@ -200,22 +202,18 @@ void EM::estep() {
 
 	set<int> check;
 	
-	timer t;
-	t.start();
 	int nstale = 0;
 	for (int i = 0; i < nmodels; ++i) {
 		nstale += stale_points[i].size();
 		update_Py_z(i, check);
 	}
-	DATAVIS("'num stale' " << nstale << endl)
-	DATAVIS("'Py_z update' %+" << t.stop() << endl)
 	
-	t.start();
 	update_MAP(check);
-	DATAVIS("'MAP update' %+" << t.stop() << endl)
 }
 
 bool EM::mstep() {
+	timer_set::function_timer t(timers, "m-step");
+	
 	bool changed = false;
 	set<int>::iterator i;
 	for (i = stale_models.begin(); i != stale_models.end(); ++i) {
@@ -547,6 +545,9 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		return true;
 	} else if (args[first_arg] == "classifier") {
 		return clsfr.cli_inspect(first_arg + 1, args, os);
+	} else if (args[first_arg] == "timing") {
+		timers.report(os);
+		return true;
 	}
 	
 	os << "no such property" << endl;

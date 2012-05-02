@@ -72,6 +72,7 @@ private:
 	bool isconst, refit;
 	rvec xtotals, center, constvals;
 	
+	timer_set timers;
 };
 
 class PCRModel : public LRModel {

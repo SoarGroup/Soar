@@ -377,6 +377,8 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 }
 
 bool LRModel::predict(const_mat_view x, mat &y) {
+	timer_set::function_timer t(timers, "predict");
+	
 	if (isconst) {
 		Y.resize(X.rows(), constvals.size());
 		Y.rowwise() = constvals;
@@ -389,6 +391,7 @@ bool LRModel::predict(const_mat_view x, mat &y) {
 }
 
 bool LRModel::fit() {
+	timer_set::function_timer t(timers, "fit");
 	if (!isconst) {
 		fit_drv();
 	}
@@ -405,6 +408,8 @@ bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os
 		}
 		os << endl << "error:     " << error << endl;
 		return cli_inspect_drv(os);
+	} else if (args[first_arg] == "timing") {
+		timers.report(os);
 	} else if (args[first_arg] == "train") {
 		for (int i = 0; i < members.size(); ++i) {
 			for (int j = 0; j < xdata.cols(); ++j) {

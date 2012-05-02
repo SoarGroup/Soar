@@ -132,6 +132,8 @@ private:
 	multi_model              *mmdl;
 	output_spec              outspec;
 	rvec                     next_out;
+	
+	timer_set timers;
 };
 
 class svs {
@@ -161,6 +163,8 @@ private:
 	std::auto_ptr<ipcsocket> envsock;
 	std::vector<std::string> env_inputs;
 	std::string              env_output;
+	
+	timer_set timers;
 };
 
 #endif

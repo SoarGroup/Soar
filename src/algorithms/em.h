@@ -55,6 +55,8 @@ private:
 	int ndata, nmodels, xdim;
 	
 	classifier clsfr;
+	
+	timer_set timers;
 };
 
 

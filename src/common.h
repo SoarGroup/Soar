@@ -55,6 +55,53 @@ private:
 	clock_t t1;
 };
 
+class timer_set {
+public:
+	/*
+	 Create an instance of this class at the beginning of a
+	 function. The timer will stop regardless of how the function
+	 returns.
+	*/
+	class function_timer {
+	public:
+		function_timer(timer_set &t, const std::string &name) : t(t), name(name) { t.start(name); }
+		~function_timer() { t.stop(name); }
+		
+	private:
+		std::string name;
+		timer_set &t;
+	};
+	
+	timer_set() : longest_name(0) {}
+	
+#ifdef NDEBUG
+	inline void start(const std::string &name) {}
+	inline double stop(const std::string &name) { return 0; }
+	void report(std::ostream &os) const { os << "timing disabled" << std::endl; }
+#else
+	void start(const std::string &name);
+	double stop(const std::string &name);
+	void report(std::ostream &os) const;
+#endif
+	
+private:
+	struct timer_data {
+		timer_data() : start(0), cycles(0), mean(0), min(INFINITY), max(0), m2(0) {}
+		
+		clock_t start;
+		int cycles;
+		double mean;
+		double min;
+		double max;
+		double m2;
+	};
+	
+	typedef std::map<std::string, timer_data> time_table;
+	time_table times;
+	
+	int longest_name;
+};
+
 template <typename A, typename B>
 inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {
 	typename std::map<A, B>::const_iterator i = m.find(key);

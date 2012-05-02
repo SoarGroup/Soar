@@ -212,6 +212,7 @@ void svs_state::clear_scene() {
 }
 
 void svs_state::update_models() {
+	timer_set::function_timer t(timers, "model");
 	vector<string> curr_pnames, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
@@ -316,6 +317,9 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 			os << atoms[i] << endl;
 		}
 		return true;
+	} else if (args[first_arg] == "timing") {
+		timers.report(os);
+		return true;
 	}
 	os << "no such query" << endl;
 	return false;
@@ -376,6 +380,8 @@ void svs::proc_input(svs_state *s) {
 }
 
 void svs::output_callback() {
+	timer_set::function_timer t(timers, "output");
+	
 	vector<svs_state*>::iterator i;
 	string sgel;
 	svs_state *topstate = state_stack.front();
@@ -406,6 +412,8 @@ void svs::output_callback() {
 }
 
 void svs::input_callback() {
+	timer_set::function_timer t(timers, "input");
+	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
 	topstate->update_models();
@@ -447,20 +455,24 @@ string svs::get_output() const {
 }
 
 bool svs::do_cli_command(const vector<string> &args, string &output) const {
+	stringstream ss;
 	if (args.size() < 2) {
-		stringstream ss;
 		ss << "specify a state level [0 - " << state_stack.size() - 1 << "]";
 		output = ss.str();
 		return false;
 	}
 	char *end;
 	long level = strtol(args[1].c_str(), &end, 10);
-	stringstream ss;
 	bool ret;
 	if (*end != '\0') {
-		ret = state_stack[0]->cli_inspect(1, args, ss);
-		output = ss.str();
-		return ret;
+		if (args[1] == "timing") {
+			timers.report(ss);
+			output = ss.str();
+			return true;
+		} else {
+			output = "no such query";
+			return false;
+		}
 	} else if (level < 0 || level >= state_stack.size()) {
 		output = "invalid level";
 		return false;
