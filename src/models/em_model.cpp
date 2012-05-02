@@ -22,14 +22,7 @@ public:
 		em = new EM(scn);
 		
 		const filter_table &t = get_filter_table();
-		t.get_all_atoms(scn, all_atoms);
-		
-		vector<vector<string> >::const_iterator i;
-		for (i = all_atoms.begin(); i != all_atoms.end(); ++i) {
-			stringstream ss;
-			copy(i->begin(), i->end(), ostream_iterator<string>(ss, "_"));
-			atom_names.push_back(ss.str());
-		}
+		t.get_all_atoms(scn, atoms);
 		
 		vector<string> preds;
 		t.get_predicates(preds);
@@ -91,13 +84,15 @@ public:
 	}
 
 	void make_atom_wme(int i) {
-		string pred = all_atoms[i][0];
+		vector<string> parts;
+		split(atoms[i], "(),", parts);
+		string pred = parts[0];
 		vector<string> &params = pred_params[pred];
-		assert(params.size() == all_atoms[i].size() - 1);
+		assert(params.size() == parts.size() - 1);
 		
 		sym_wme_pair p = si->make_id_wme(tests_id, pred);
 		for (int j = 0; j < params.size(); ++j) {
-			si->make_wme(p.first, params[j], all_atoms[i][j + 1]);
+			si->make_wme(p.first, params[j], parts[j + 1]);
 		}
 		atom_wmes[i] = p.second;
 	}
@@ -143,8 +138,7 @@ private:
 	wme *revisions_wme;
 	int revisions;
 	EM *em;
-	vector<vector<string> > all_atoms;
-	vector<string> atom_names;
+	vector<string> atoms;
 	map<string, vector<string> > pred_params;
 	map<int, wme*> atom_wmes;
 	

@@ -376,7 +376,7 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 	return predict_drv(x, y);
 }
 
-bool LRModel::predict(const_mat_view x, mat &y) {
+bool LRModel::predict(const_mat_view X, mat &Y) {
 	timer_set::function_timer t(timers, "predict");
 	
 	if (isconst) {

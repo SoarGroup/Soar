@@ -59,7 +59,7 @@ void classifier_inst::load(istream &is) {
 classifier::classifier(const mat &X, const mat &Y, scene *scn) 
 : X(X), Y(Y), ndata(0), scn(scn->copy())
 {
-	vector<vector<string> > atoms;
+	vector<string> atoms;
 	get_filter_table().get_all_atoms(scn, atoms);
 	tree = new ID5Tree(insts, atoms.size());
 }
