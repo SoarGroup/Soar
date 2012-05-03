@@ -23,7 +23,6 @@ void update_transforms(sgnode *n, btCollisionObject *cobj) {
 }
 
 collision_detector::collision_detector() {
-	cout << "COLLISION" << endl;
 	config = new btDefaultCollisionConfiguration();
 	dispatcher = new btCollisionDispatcher(config);
 	//broadphase = new btSimpleBroadphase();

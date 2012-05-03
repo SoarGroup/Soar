@@ -500,7 +500,6 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			child->listen(this);
 			nodes[child->get_name()].node = child;
 			if (!child->is_group()) {
-				cout << "adding " << child->get_name() << " to collision" << endl;
 				cdetect.add_node(child);
 			}
 			if (display && !child->is_group()) {
