@@ -52,7 +52,7 @@ public:
 		return 1;
 	}
 
-	void learn(const rvec &x, const rvec &y, float dt) {
+	void learn(const rvec &x, const rvec &y) {
 		em->add_data(x, y(0));
 		if (em->run(MAXITERS)) {
 			si->remove_wme(revisions_wme);

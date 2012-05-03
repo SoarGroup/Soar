@@ -216,7 +216,6 @@ void svs_state::update_models() {
 	vector<string> curr_pnames, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
-	double dt;
 	
 	if (level > 0) {
 		/* No legitimate information to learn from imagined states */
@@ -229,7 +228,6 @@ void svs_state::update_models() {
 	}
 	scn->get_properties(curr_pvals);
 	get_output(out);
-	dt = scn->get_dt();
 	
 	if (prev_pnames == curr_pnames) {
 		rvec x(prev_pvals.size() + out.size());
@@ -239,7 +237,7 @@ void svs_state::update_models() {
 			x = prev_pvals;
 		}
 		mmdl->test(x, curr_pvals);
-		mmdl->learn(x, curr_pvals, dt);
+		mmdl->learn(x, curr_pvals);
 	} else {
 		mmdl->set_property_vector(curr_pnames);
 		DATAVIS("properties '")

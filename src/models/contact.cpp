@@ -34,7 +34,7 @@ public:
 		}
 	}
 	
-	void learn(const rvec &x, const rvec &y, float dt) {
+	void learn(const rvec &x, const rvec &y) {
 		if (xsz == -1 && ysz == -1) {
 			xsz = x.size();
 			ysz = y.size();

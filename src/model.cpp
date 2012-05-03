@@ -148,7 +148,7 @@ bool multi_model::predict(const rvec &x, rvec &y) {
 	return true;
 }
 
-void multi_model::learn(const rvec &x, const rvec &y, float dt) {
+void multi_model::learn(const rvec &x, const rvec &y) {
 	list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
@@ -165,7 +165,7 @@ void multi_model::learn(const rvec &x, const rvec &y, float dt) {
 			slice(y, yp, cfg->yinds);
 		}
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
-		cfg->mdl->learn(xp, yp, dt);
+		cfg->mdl->learn(xp, yp);
 		DATAVIS("END" << endl)
 	}
 }

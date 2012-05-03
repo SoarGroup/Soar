@@ -41,8 +41,6 @@ public:
 	bool set_properties(const rvec &vals);
 	bool remove_property(const std::string &obj, const std::string &prop);
 	
-	float get_dt() const;
-	
 	void parse_sgel(const std::string &s);
 	void dump_sgel(std::ostream &os);
 	
@@ -58,7 +56,6 @@ private:
 	int  parse_del(std::vector<std::string> &f);
 	int  parse_change(std::vector<std::string> &f);
 	int  parse_property(std::vector<std::string> &f);
-	int  parse_dt(std::vector<std::string> &f);
 
 	void dump_sgel_rec(std::ostream &os, const std::string &name, const std::string &parent);
 	
@@ -77,7 +74,6 @@ private:
 	node_map     nodes;
 	bool         display;
 	drawer       draw;
-	float        dt;          // time passed since last update (as reported by environment)
 	
 	std::vector<bool> atomvals;
 	bool dirty;

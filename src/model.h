@@ -32,7 +32,7 @@ public:
 	virtual int get_output_size() const = 0;
 	
 	virtual float test(const rvec &x, const rvec &y);
-	virtual void learn(const rvec &x, const rvec &y, float dt) {}
+	virtual void learn(const rvec &x, const rvec &y) {}
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
 	
@@ -63,7 +63,7 @@ public:
 	~multi_model();
 	
 	bool predict(const rvec &x, rvec &y);
-	void learn(const rvec &x, const rvec &y, float dt);
+	void learn(const rvec &x, const rvec &y);
 	float test(const rvec &x, const rvec &y);
 	
 	std::string assign_model (

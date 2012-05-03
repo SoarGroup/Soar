@@ -40,7 +40,7 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 }
 
 scene::scene(const string &name, const string &rootname, bool display) 
-: name(name), rootname(rootname), dt(1.0), display(display), draw(name), dirty(true)
+: name(name), rootname(rootname), display(display), draw(name), dirty(true)
 {
 	root = new sgnode(rootname);
 	nodes[rootname].node = root;
@@ -273,18 +273,6 @@ int scene::parse_property(vector<string> &f) {
 	return -1;
 }
 
-int scene::parse_dt(vector<string> &f) {
-	if (f.size() != 1) {
-		return f.size();
-	}
-	stringstream ss(f[0]);
-	
-	if (!(ss >> dt)) {
-		return 1;
-	}
-	return -1;
-}
-
 void scene::parse_sgel(const string &s) {
 	vector<string> lines, fields;
 	vector<string>::iterator i;
@@ -318,9 +306,6 @@ void scene::parse_sgel(const string &s) {
 				break;
 			case 'p':
 				errfield = parse_property(fields);
-				break;
-			case 't':
-				errfield = parse_dt(fields);
 				break;
 			default:
 				cerr << "expecting a|d|c|p|t at beginning of line '" << *i << "'" << endl;
@@ -496,10 +481,6 @@ bool scene::remove_property(const std::string &obj, const std::string &prop) {
 
 int scene::num_nodes() const {
 	return nodes.size();
-}
-
-float scene::get_dt() const {
-	return dt;
 }
 
 int scene::get_dof() const {
