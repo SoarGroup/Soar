@@ -69,6 +69,9 @@ scene *scene::copy() const {
 	for(i = all_nodes.begin(); i != all_nodes.end(); ++i) {
 		copy->nodes[(**i).get_name()].node = *i;
 		(**i).listen(copy);
+		if (!(**i).is_group()) {
+			copy->cdetect.add_node(*i);
+		}
 	}
 	
 	return copy;
@@ -515,23 +518,36 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			child = n->get_child(added_child);
 			child->listen(this);
 			nodes[child->get_name()].node = child;
+			if (!child->is_group()) {
+				cout << "adding " << child->get_name() << " to collision" << endl;
+				cdetect.add_node(child);
+			}
 			if (display && !child->is_group()) {
 				draw.add(child);
 			}
 			break;
 		case sgnode::DELETED:
+			if (!n->is_group()) {
+				cdetect.del_node(n);
+			}
 			nodes.erase(n->get_name());
 			if (display && !n->is_group()) {
 				draw.del(n);
 			}
 			break;
 		case sgnode::POINTS_CHANGED:
+			if (!n->is_group()) {
+				cdetect.update_points(n);
+			}
 			if (display && !n->is_group()) {
 				draw.set_vertices(n);
 				draw.change(n->get_name(), drawer::VERTS);
 			}
 			break;
 		case sgnode::TRANSFORM_CHANGED:
+			if (!n->is_group()) {
+				cdetect.update_transform(n);
+			}
 			if (display && !n->is_group()) {
 				draw.set_transforms(n);
 				draw.change(n->get_name(), drawer::POS | drawer::ROT | drawer::SCALE);

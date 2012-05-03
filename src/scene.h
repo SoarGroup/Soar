@@ -8,6 +8,7 @@
 #include "common.h"
 #include "drawer.h"
 #include "filter_table.h"
+#include "collision.h"
 
 class filter;
 class filter_input;
@@ -80,6 +81,8 @@ private:
 	
 	std::vector<bool> atomvals;
 	bool dirty;
+	
+	collision_detector cdetect;
 };
 
 /* Functions to generate common argument sets */

@@ -59,15 +59,6 @@ void bullet_debug_drawer::reset() {
 	counter = 0;
 }
 
-btConvexHullShape *ptlist_to_hullshape(const ptlist &pts) {
-	btConvexHullShape *s = new btConvexHullShape();
-	for (int i = 0; i < pts.size(); ++i) {
-		s->addPoint(btVector3(pts[i][0], pts[i][1], pts[i][2]));
-	}
-	s->setMargin(0.0001);
-	return s;
-}
-
 float hull_distance(const ptlist &a, const ptlist &b) {
 	btConvexHullShape *ahull = ptlist_to_hullshape(a);
 	btConvexHullShape *bhull = ptlist_to_hullshape(b);
