@@ -87,6 +87,7 @@ class rl_param_container: public soar_module::param_container
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
+    soar_module::decimal_param *influence_discount_rate; ///< bazald
 		soar_module::decimal_param *learning_rate;
         soar_module::decimal_param *meta_learning_rate; // For delta bar delta
 		soar_module::constant_param<learning_choices> *learning_policy;

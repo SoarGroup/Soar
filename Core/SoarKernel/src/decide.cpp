@@ -920,7 +920,8 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
       }
       assert(split >= prob);
 
-      const double gamma = thisAgent->rl_params->discount_rate->get_value();
+      const double idr = thisAgent->rl_params->influence_discount_rate->get_value();
+      const double imax = 1.0 - idr;
       double sum_influence = 0.0;
       for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
         production * const &prod2 = pref->inst->prod;
@@ -933,11 +934,11 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
           prod2->rl_sample_influence_cycle = double(thisAgent->total_decision_phases_count);
           prod2->rl_sample_influence_updates = next_updates;
-          std::cerr << "  " << prod2->rl_sample_influence_p << " += " << alpha << " * (" << prob << " / " << split << " * 0.5 - " << prod2->rl_sample_influence_p << ");" << std::endl;
-          prod2->rl_sample_influence_p += alpha * (prob * 0.5 - prod2->rl_sample_influence_p); ///< 0.5 is a magic number, allowing a discount rate <= 0.5 to be stable
-          assert(prod2->rl_sample_influence_p <= 0.5);
-          prod2->rl_sample_influence_rest = alpha * prob * (pow(gamma, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
-          assert(prod2->rl_sample_influence_rest <= 0.5);
+          std::cerr << "  " << prod2->rl_sample_influence_p << " += " << alpha << " * (" << prob << " / " << split << " * imax - " << prod2->rl_sample_influence_p << ");" << std::endl;
+          prod2->rl_sample_influence_p += alpha * (prob * imax - prod2->rl_sample_influence_p);
+          assert(prod2->rl_sample_influence_p <= imax);
+          prod2->rl_sample_influence_rest = alpha * prob * (pow(idr, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
+          assert(prod2->rl_sample_influence_rest <= 1.0 - imax);
           prod2->rl_sample_influence_input = slot->rl_influence;
 
           assert(prod2->rl_sample_influence_rest == prod2->rl_sample_influence_rest); ///< !isnan
@@ -948,7 +949,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         }
       }
 
-      slot->rl_influence = sum_influence / split + gamma * slot->rl_influence;
+      slot->rl_influence = sum_influence / split + idr * slot->rl_influence;
 
       std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
     }
@@ -1066,6 +1067,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
             std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
 
             if((suboptimality < 0.001 ||
+                inflated_variance < 0.001 || /// must fall below threshold after splitting, or operator-no-change will result
                 inflated_variance + max_variance < suboptimality)
 //               &&
 //                (superoptimality <= 0.0 ||

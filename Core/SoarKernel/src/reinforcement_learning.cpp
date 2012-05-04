@@ -75,6 +75,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	discount_rate = new soar_module::decimal_param( "discount-rate", 0.9, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( discount_rate );
 
+  // influence discount-rate
+  influence_discount_rate = new soar_module::decimal_param( "influence-discount-rate", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() ); ///< bazald
+  add( influence_discount_rate );
+
 	// learning-rate
 	learning_rate = new soar_module::decimal_param( "learning-rate", 0.3, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() );
 	add( learning_rate );
