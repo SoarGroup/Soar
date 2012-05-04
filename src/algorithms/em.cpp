@@ -42,7 +42,10 @@ double randgauss(double mean, double std) {
 EM::EM(scene *scn)
 : xdim(0), clsfr(xdata, ydata, scn), ndata(0), nmodels(0),
   Py_z(INIT_NMODELS, INIT_NDATA), eligible(INIT_NMODELS, INIT_NDATA), ydata(INIT_NDATA, 1)
-{}
+{
+	timers.add("e_step");
+	timers.add("m_step");
+}
 
 EM::~EM() {
 }
@@ -187,7 +190,7 @@ void EM::add_data(const rvec &x, double y) {
 }
 
 void EM::estep() {
-	timer_set::function_timer t(timers, "e-step");
+	function_timer t(timers.get(E_STEP_T));
 	
 	update_eligibility();
 	/*
@@ -212,7 +215,7 @@ void EM::estep() {
 }
 
 bool EM::mstep() {
-	timer_set::function_timer t(timers, "m-step");
+	function_timer t(timers.get(M_STEP_T));
 	
 	bool changed = false;
 	set<int>::iterator i;
@@ -398,16 +401,8 @@ bool EM::remove_models() {
 }
 
 bool EM::step() {
-	timer t;
-	t.start();
 	estep();
-	DATAVIS("'E-step time' %+" << t.stop() << endl)
-	
-	t.start();
-	bool changed = mstep();
-	DATAVIS("'M-step time' %+" << t.stop() << endl)
-	
-	return changed;
+	return mstep();
 }
 
 bool EM::run(int maxiters) {

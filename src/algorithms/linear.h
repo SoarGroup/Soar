@@ -72,6 +72,7 @@ private:
 	bool isconst, refit;
 	rvec xtotals, center, constvals;
 	
+	enum Timers {PREDICT_T, FIT_T};
 	timer_set timers;
 };
 
@@ -95,8 +96,6 @@ private:
 	mat beta;
 	rvec means;
 	rvec intercept;
-	int nfits;
-	double fit_time;
 };
 
 #endif

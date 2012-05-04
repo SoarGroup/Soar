@@ -69,7 +69,7 @@ public:
 		return string("create model");
 	}
 	
-	bool update() {
+	bool update_drv() {
 		string name;
 		
 		if (!changed() && !broken) {
@@ -123,7 +123,7 @@ public:
 		return true;
 	}
 	
-	bool update() {
+	bool update_drv() {
 		int i;
 		wme *w;
 		vector<string> inputs;

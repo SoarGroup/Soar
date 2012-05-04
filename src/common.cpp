@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string>
 #include <vector>
 #include <limits>
@@ -165,39 +166,15 @@ string get_option(const string &key) {
 	return options[key];
 }
 
-#ifndef NDEBUG
-void timer_set::start(const string &name) {
-	times[name].start = clock();
-	if (name.size() > longest_name) {
-		longest_name = name.size();
-	}
-}
-
-double timer_set::stop(const string &name) {
-	clock_t t = clock();
-	time_table::iterator i = times.find(name);
-	assert(i != times.end());
-	timer_data &d = i->second;
-	double elapsed = (t - d.start) / (double) CLOCKS_PER_SEC;
-	
-	if (elapsed < d.min) {
-		d.min = elapsed;
-	}
-	if (elapsed > d.max) {
-		d.max = elapsed;
-	}
-	
-  		// see http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm
-	d.cycles++;
-	double delta = elapsed - d.mean;
-	d.mean += delta / d.cycles;
-	d.m2 += delta * (elapsed - d.mean);
-	
-	return elapsed;
-}
-
 void timer_set::report(ostream &os) const {
-	time_table::const_iterator i;
+	vector<timer>::const_iterator i;
+	int longest_name = 5;   // "total"
+	for (i = timers.begin(); i != timers.end(); ++i) {
+		if (longest_name < i->name.size()) {
+			longest_name = i->name.size();
+		}
+	}
+	
 	// header
 	os << left << setw(longest_name + 2) << "label" << right;
 	os << setw(13) << "cycles";
@@ -205,20 +182,31 @@ void timer_set::report(ostream &os) const {
 	os << setw(13) << "mean";
 	os << setw(13) << "stdev";
 	os << setw(13) << "min";
-	os << setw(13) << "max" << endl;
+	os << setw(13) << "max";
+	os << setw(13) << "last" << endl;
 	
-	for (i = times.begin(); i != times.end(); ++i) {
-		const timer_data &d = i->second;
-		double total = d.mean * d.cycles;
-		double stdev = sqrt(d.m2 / d.cycles);
+	int ttl_cycles = 0;
+	double ttl_total = 0.0;
+	for (i = timers.begin(); i != timers.end(); ++i) {
+		double total = i->mean * i->cycles;
+		double stdev = sqrt(i->m2 / i->cycles);
 		
-		os << setw(longest_name + 2) << left << i->first << right;
-		os << " " << setw(12) << d.cycles;
+		os << setw(longest_name + 2) << left << i->name << right;
+		os << " " << setw(12) << i->cycles;
 		os << " " << setw(12) << total;
-		os << " " << setw(12) << d.mean;
+		os << " " << setw(12) << i->mean;
 		os << " " << setw(12) << stdev;
-		os << " " << setw(12) << d.min;
-		os << " " << setw(12) << d.max << endl;
+		os << " " << setw(12) << i->min;
+		os << " " << setw(12) << i->max;
+		os << " " << setw(12) << i->last << endl;
+		
+		ttl_cycles += i->cycles;
+		ttl_total += total;
 	}
+	
+	os << endl;
+	os << setw(longest_name + 2) << left << "total" << right;
+	os << " " << setw(12) << ttl_cycles;
+	os << " " << setw(12) << ttl_total;
+	os << " " << setw(12) << ttl_total / ttl_cycles << endl;
 }
-#endif

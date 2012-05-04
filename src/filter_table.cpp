@@ -47,4 +47,9 @@ filter_table::filter_table() {
 	add(node_fill_entry());
 	add(all_nodes_fill_entry());
 	add(node_centroid_fill_entry());
+	
+	std::map<std::string, filter_table_entry>::const_iterator i;
+	for (i = t.begin(); i != t.end(); ++i) {
+		timers.add(i->first);
+	}
 }

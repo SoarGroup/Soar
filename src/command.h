@@ -10,8 +10,13 @@ class svs_state;
 class command {
 public:
 	virtual std::string description() = 0;
-	virtual bool update() = 0;
+	virtual bool update_drv() = 0;
 	virtual bool early() = 0;
+	
+	bool update() {
+		function_timer t(timers.get(UPDATE_T));
+		return update_drv();
+	}
 	
 	command(svs_state *state, Symbol *root);
 	virtual ~command();
@@ -28,6 +33,10 @@ public:
 	
 	svs_state *get_state() { return state; }
 	
+	void cli_inspect(std::ostream &os) const {
+		timers.report(os);
+	}
+	
 private:
 	void parse_substructure(int &size, int &max_time);
 	
@@ -39,6 +48,9 @@ private:
 	int             subtree_size;
 	int             prev_max_time;
 	bool            first;
+	
+	enum Timers { UPDATE_T };
+	timer_set       timers;
 };
 
 command *make_command(svs_state *state, wme *w);

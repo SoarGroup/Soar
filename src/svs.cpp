@@ -99,6 +99,7 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *
 {
 	assert (si->is_top_state(state));
 	init();
+	timers.add("model");
 }
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
@@ -108,6 +109,7 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 {
 	assert (si->get_parent_state(state) == parent->state);
 	init();
+	timers.add("model");
 }
 
 svs_state::~svs_state() {
@@ -212,7 +214,7 @@ void svs_state::clear_scene() {
 }
 
 void svs_state::update_models() {
-	timer_set::function_timer t(timers, "model");
+	function_timer t(timers.get(MODEL_T));
 	vector<string> curr_pnames, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
@@ -318,7 +320,26 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
 		return true;
+	} else if (args[first_arg] == "command") {
+		if (first_arg == args.size() - 1) {
+			os << "specify a command id" << endl;
+			return false;
+		}
+		map<wme*, command*>::const_iterator i;
+		for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
+			string id;
+			if (!si->get_name(si->get_wme_val(i->first), id)) {
+				assert(false);
+			}
+			if (id == args[first_arg+1]) {
+				i->second->cli_inspect(os);
+				return true;
+			}
+		}
+		os << "no such command" << endl;
+		return false;
 	}
+	
 	os << "no such query" << endl;
 	return false;
 }
@@ -331,6 +352,9 @@ svs::svs(agent *a)
 	}
 	si = new soar_interface(a);
 	make_common_syms();
+	timers.add("input");
+	timers.add("output");
+	timers.add("calc_atoms");
 }
 
 svs::~svs() {
@@ -378,7 +402,7 @@ void svs::proc_input(svs_state *s) {
 }
 
 void svs::output_callback() {
-	timer_set::function_timer t(timers, "output");
+	function_timer t(timers.get(OUTPUT_T));
 	
 	vector<svs_state*>::iterator i;
 	string sgel;
@@ -410,7 +434,7 @@ void svs::output_callback() {
 }
 
 void svs::input_callback() {
-	timer_set::function_timer t(timers, "input");
+	function_timer t(timers.get(INPUT_T));
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
@@ -420,6 +444,10 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
+	
+	timers.start(CALC_ATOMS_T);
+	topstate->get_scene()->get_atom_vals();
+	timers.stop(CALC_ATOMS_T);
 }
 
 void svs::make_common_syms() {
@@ -465,6 +493,10 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 	if (*end != '\0') {
 		if (args[1] == "timing") {
 			timers.report(ss);
+			output = ss.str();
+			return true;
+		} else if (args[1] == "filters") {
+			get_filter_table().get_timers().report(ss);
 			output = ss.str();
 			return true;
 		} else {

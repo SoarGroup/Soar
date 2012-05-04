@@ -28,7 +28,7 @@ public:
 		return string("property");
 	}
 	
-	bool update() {
+	bool update_drv() {
 		float val;
 		if (changed()) {
 			if (fltr) {

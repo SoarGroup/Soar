@@ -27,79 +27,91 @@ std::ofstream& get_datavis();
 #define DATAVIS(x)
 #endif
 
+class timer_set;
+
 class timer {
 public:
-	timer() : name("") {}
-
-	timer(const std::string &name) : name(name) {
+	timer(const std::string &name) 
+	: name(name), t1(0), cycles(0), last(0), mean(0), min(INFINITY), max(0), m2(0)
+	{}
+	
+#ifdef NO_SVS_TIMING
+	inline void start() {}
+	inline double stop() { return 0.0; }
+#else
+	inline void start() {
 		t1 = clock();
 	}
 	
-	~timer() {
-		if (!name.empty()) {
-			std::cerr << "TIMER " << name << ": " << stop() << std::endl;
-		}
+	inline double stop() {
+		double elapsed = (clock() - t1) / (double) CLOCKS_PER_SEC;
+		last = elapsed;
+		
+		min = std::min(min, elapsed);
+		max = std::max(max, elapsed);
+		
+	  	// see http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm
+		cycles++;
+		double delta = elapsed - mean;
+		mean += delta / cycles;
+		m2 += delta * (elapsed - mean);
+		
+		return elapsed;
 	}
-
-	void start() {
-		t1 = clock();
-	}
-	
-	double stop() {
-		clock_t t2 = clock();
-		return (t2 - t1) / (double) CLOCKS_PER_SEC;
-	}
+#endif
 	
 private:
 	std::string name;
+	
 	clock_t t1;
+	int cycles;
+	double last;
+	double mean;
+	double min;
+	double max;
+	double m2;
+	
+	friend class timer_set;
+};
+
+/*
+ Create an instance of this class at the beginning of a
+ function. The timer will stop regardless of how the function
+ returns.
+*/
+class function_timer {
+public:
+	function_timer(timer &t) : t(t) { t.start(); }
+	~function_timer() { t.stop(); }
+	
+private:
+	timer &t;
 };
 
 class timer_set {
 public:
-	/*
-	 Create an instance of this class at the beginning of a
-	 function. The timer will stop regardless of how the function
-	 returns.
-	*/
-	class function_timer {
-	public:
-		function_timer(timer_set &t, const std::string &name) : t(t), name(name) { t.start(name); }
-		~function_timer() { t.stop(name); }
-		
-	private:
-		std::string name;
-		timer_set &t;
-	};
+	timer_set() {}
 	
-	timer_set() : longest_name(0) {}
+	void add(const std::string &name) {
+		timers.push_back(timer(name));
+	}
 	
-#ifdef NDEBUG
-	inline void start(const std::string &name) {}
-	inline double stop(const std::string &name) { return 0; }
-	void report(std::ostream &os) const { os << "timing disabled" << std::endl; }
-#else
-	void start(const std::string &name);
-	double stop(const std::string &name);
+	timer &get(int i) {
+		return timers[i];
+	}
+	
+	void start(int i) {
+		timers[i].start();
+	}
+	
+	double stop(int i) {
+		return timers[i].stop();
+	}
+	
 	void report(std::ostream &os) const;
-#endif
 	
 private:
-	struct timer_data {
-		timer_data() : start(0), cycles(0), mean(0), min(INFINITY), max(0), m2(0) {}
-		
-		clock_t start;
-		int cycles;
-		double mean;
-		double min;
-		double max;
-		double m2;
-	};
-	
-	typedef std::map<std::string, timer_data> time_table;
-	time_table times;
-	
-	int longest_name;
+	std::vector<timer> timers;
 };
 
 template <typename A, typename B>

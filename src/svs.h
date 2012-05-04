@@ -133,6 +133,7 @@ private:
 	output_spec              outspec;
 	rvec                     next_out;
 	
+	enum Timers { MODEL_T };
 	timer_set timers;
 };
 
@@ -163,6 +164,8 @@ private:
 	std::auto_ptr<ipcsocket> envsock;
 	std::vector<std::string> env_inputs;
 	std::string              env_output;
+	
+	enum Timers { INPUT_T, OUTPUT_T, CALC_ATOMS_T };
 	
 	timer_set timers;
 };

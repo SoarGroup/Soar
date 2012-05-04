@@ -16,7 +16,7 @@ public:
 	void update_points(sgnode *n);
 	void update(std::vector<std::pair<sgnode*, sgnode*> > &collisions);
 	
-	timer_set timers;
+	const timer_set &get_timers() const { return timers; }
 	
 private:
 	btCollisionConfiguration *config;
@@ -26,6 +26,9 @@ private:
 	bullet_debug_drawer      *drawer;
 	
 	std::map<sgnode*, btCollisionObject*> object_map;
+	
+	enum Timers {ADD_NODE_T, DEL_NODE_T, UPDATE_TRANSFORM_T, UPDATE_POINTS_T, UPDATE_T, COLLISION_T};
+	timer_set timers;
 };
 
 #endif

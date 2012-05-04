@@ -32,7 +32,9 @@ void cleanstring(string &s) {
 command::command(svs_state *state, Symbol *cmd_root)
 : state(state), si(state->get_svs()->get_soar_interface()), root(cmd_root), 
   subtree_size(0), prev_max_time(-1), status_wme(NULL), first(true)
-{}
+{
+	timers.add("update");
+}
 
 command::~command() {}
 

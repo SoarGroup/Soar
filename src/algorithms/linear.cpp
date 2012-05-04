@@ -209,7 +209,10 @@ LRModel::LRModel(const mat &xdata, const mat &ydata)
 LRModel::LRModel(const LRModel &m)
 : xdata(m.xdata), ydata(m.ydata), constvals(m.constvals), members(m.members), isconst(m.isconst),
   xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true)
-{}
+{
+	timers.add("predict");
+	timers.add("fit");
+}
 
 LRModel::~LRModel() { }
 
@@ -377,7 +380,7 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 }
 
 bool LRModel::predict(const_mat_view X, mat &Y) {
-	timer_set::function_timer t(timers, "predict");
+	function_timer t(timers.get(PREDICT_T));
 	
 	if (isconst) {
 		Y.resize(X.rows(), constvals.size());
@@ -391,7 +394,8 @@ bool LRModel::predict(const_mat_view X, mat &Y) {
 }
 
 bool LRModel::fit() {
-	timer_set::function_timer t(timers, "fit");
+	function_timer t(timers.get(FIT_T));
+	
 	if (!isconst) {
 		fit_drv();
 	}
@@ -427,17 +431,14 @@ bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os
 }
 
 PCRModel::PCRModel(const mat &xdata, const mat &ydata) 
-: LRModel(xdata, ydata), intercept(rvec::Zero(ydata.cols())), nfits(0), fit_time(0.0)
+: LRModel(xdata, ydata), intercept(rvec::Zero(ydata.cols()))
 {}
 
 PCRModel::PCRModel(const PCRModel &m)
-: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means), nfits(0), fit_time(0.0)
+: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means)
 {}
 
 void PCRModel::fit_drv() {
-	timer t;
-	t.start();
-	
 	mat X, Y;
 	
 	fill_data(X, Y);
@@ -445,8 +446,6 @@ void PCRModel::fit_drv() {
 	X.rowwise() -= means;
 
 	min_train_error(X, Y, beta, intercept);
-	++nfits;
-	fit_time += t.stop();
 }
 
 bool PCRModel::predict_drv(const rvec &x, rvec &y) {
@@ -467,8 +466,6 @@ bool PCRModel::predict_drv(const_mat_view X, mat &Y) {
 }
 
 bool PCRModel::cli_inspect_drv(ostream &os) const {
-	os << "num fits:  " << nfits << endl;
-	os << "fit time:  " << fit_time << endl;
 	os << "intercept: " << intercept << endl;
 	os << "beta:" << endl;
 	for (int i = 0; i < beta.size(); ++i) {

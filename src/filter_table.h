@@ -9,6 +9,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include "common.h"
 
 class filter;
 class filter_input;
@@ -99,7 +100,8 @@ public:
 	*/
 	void calc_all_atoms(scene *scn, std::vector<bool> &results) const {
 		std::map<std::string, filter_table_entry>::const_iterator i;
-		for(i = t.begin(); i != t.end(); ++i) {
+		int ii = 0;
+		for(i = t.begin(); i != t.end(); ++i, ++ii) {
 			const filter_table_entry &e = i->second;
 			if (e.possible_args != NULL && e.calc != NULL) {
 				std::vector<std::vector<std::string> > args;
@@ -107,10 +109,16 @@ public:
 				
 				(*e.possible_args)(scn, args);
 				for(j = args.begin(); j != args.end(); ++j) {
+					timers.start(ii);
 					results.push_back((*e.calc)(scn, *j));
+					timers.stop(ii);
 				}
 			}
 		}
+	}
+	
+	const timer_set &get_timers() const {
+		return timers;
 	}
 	
 private:
@@ -122,6 +130,8 @@ private:
 	}
 	
 	std::map<std::string, filter_table_entry> t;
+	
+	mutable timer_set timers;
 };
 
 /* Get the singleton instance */
