@@ -113,7 +113,12 @@ public:
 		res = direction(a, b, axis, comp);
 		return true;
 	}
-	
+	virtual int getAxis() {
+		return axis;
+	}
+	virtual int getComp() {
+		return comp;
+	}
 private:
 	int axis, comp;
 };

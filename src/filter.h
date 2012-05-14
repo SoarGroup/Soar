@@ -395,6 +395,16 @@ public:
 	const filter_input *get_input() const {
 		return input;
 	}
+//TODO slightly less ugly hack
+	virtual int getAxis()
+	{
+	    return -3;
+	}
+	
+	virtual int getComp()
+	{
+	    return -3;
+	}
 
 private:
 	virtual bool update_results() = 0;
