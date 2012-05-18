@@ -1,23 +1,18 @@
-#include <cstdio>
+#include <cstdlib>
 #include <cassert>
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <string>
 #include <vector>
 #include <map>
-#include <iterator>
-#include <memory>
 
 #include <osg/Node>
 #include <osg/Group>
 #include <osg/Geode>
 #include <osg/Geometry>
 #include <osg/PolygonMode>
-#include <osgViewer/Viewer>
 #include <osg/PositionAttitudeTransform>
-#include <osgGA/TrackballManipulator>
 #include <osgText/Font>
 #include <osgText/Text>
 
@@ -26,32 +21,46 @@
 using namespace std;
 using namespace osg;
 
-void qhull(const vector<Vec3> &pts, vector<vector<int> > &facets) {
+const char *FONT = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf";
+
+/*
+ Execute qhull to calculate the convex hull of pts.
+*/
+int qhull(const vector<Vec3> &pts, vector<vector<int> > &facets) {
+	char *end;
+	
 	FILE *p = popen("qhull i >/tmp/qhull", "w");
-	fprintf(p, "3\n%d\n", pts.size());
-	for (auto i = pts.begin(); i != pts.end(); ++i) {
-		fprintf(p, "%f %f %f\n", (*i)[0], (*i)[1], (*i)[2]);
+	fprintf(p, "3\n%ld\n", pts.size());
+	for (int i = 0; i < pts.size(); ++i) {
+		fprintf(p, "%f %f %f\n", pts[i][0], pts[i][1], pts[i][2]);
 	}
-	if (pclose(p) != 0) {
-		cerr << "error executing qhull" << endl;
-		exit(1);
+	int ret = pclose(p);
+	if (ret != 0) {
+		return ret;
 	}
 	
 	ifstream output("/tmp/qhull");
 	string line;
 	getline(output, line);
-	int nfacets;
-	stringstream(line) >> nfacets;
+	int nfacets = strtol(line.c_str(), &end, 10);
+	if (*end != '\0') {
+		return 1;
+	}
 	while (getline(output, line)) {
-		stringstream ss(line);
+		const char *start = line.c_str();
 		vector<int> facet;
-		int x;
-		while (ss >> x) {
+		while (true) {
+			int x = strtol(start, &end, 10);
+			if (end == start) {
+				break;
+			}
 			facet.push_back(x);
+			start = end;
 		}
 		facets.push_back(facet);
 	}
 	assert (facets.size() == nfacets);
+	return 0;
 }
 
 Quat to_quaternion(const Vec3 &rpy) {
@@ -89,71 +98,9 @@ void split(const string &s, const string &delim, vector<string> &fields) {
 	}
 }
 
-bool parse_vec3(vector<string> &f, int &start, Vec3 &x) {
-	stringstream ss;
-	if (start + 3 > f.size()) {
-		start = f.size();
-		return false;
-	}
-	for (int i = 0; i < 3; ++start, ++i) {
-		ss << f[start] << endl;
-		if (!(ss >> x[i])) {  // conversion failure
-			return false;
-		}
-	}
-	return true;
-}
 
-bool parse_verts(vector<string> &f, int &start, vector<Vec3> &verts) {
-	int i;
-	if (start >= f.size() || f[start] != "v") {
-		return true;
-	}
-	start++;
-	verts.clear();
-	while (start < f.size()) {
-		i = start;
-		Vec3 v;
-		if (!parse_vec3(f, start, v)) {
-			return (i == start);  // end of list
-		}
-		verts.push_back(v);
-	}
-	return true;
-}
-
-bool parse_transforms(vector<string> &f, int &start, PositionAttitudeTransform &trans) {	
-	Vec3 t;
-	char type;
-	
-	while (start < f.size()) {
-		if (f[start] != "p" && f[start] != "r" && f[start] != "s") {
-			return true;
-		}
-		type = f[start][0];
-		start++;
-		if (!parse_vec3(f, start, t)) {
-			return false;
-		}
-		switch (type) {
-			case 'p':
-				trans.setPosition(t);
-				break;
-			case 'r':
-				trans.setAttitude(to_quaternion(t));
-				break;
-			case 's':
-				trans.setScale(t);
-				break;
-			default:
-				assert(false);
-		}
-	}
-	return true;
-}
-
-node::node(const string &name) 
-: name(name), trans(new PositionAttitudeTransform()), group(new Group)
+node::node(const string &name, const string &parent) 
+: name(name), parent(parent), trans(new PositionAttitudeTransform()), group(new Group)
 {
 	if (name != "world") {
 		create_label();
@@ -161,8 +108,8 @@ node::node(const string &name)
 	trans->addChild(group);
 }
 
-node::node(const string &name, const vector<Vec3> &verts)
-: name(name), trans(new PositionAttitudeTransform())
+node::node(const string &name, const string &parent, const vector<Vec3> &verts)
+: name(name), parent(parent), trans(new PositionAttitudeTransform())
 {
 	create_label();
 	if (verts.size() == 0) {
@@ -181,16 +128,19 @@ node::node(const string &name, const vector<Vec3> &verts)
 void node::create_label() {
 	ref_ptr<osgText::Text> txt = new osgText::Text;
 	txt->setText(name);
+	txt->setFont(FONT);
 	txt->setAxisAlignment(osgText::Text::SCREEN);
-	txt->setColor(Vec4(0.f, 0.f, 0.f, 1.f));
+	txt->setColor(Vec4(1.f, 0.f, 0.f, 1.f));
     txt->setCharacterSizeMode(osgText::Text::SCREEN_COORDS);
-    txt->setCharacterSize(30);
+    txt->setCharacterSize(24);
     
 	label = new Geode;
 	ref_ptr<StateSet> ss = label->getOrCreateStateSet();
 	ss->setMode(GL_DEPTH_TEST, StateAttribute::OFF);
-       		ss->setRenderingHint( StateSet::TRANSPARENT_BIN );
+	/*
+	ss->setRenderingHint( StateSet::TRANSPARENT_BIN );
 	ss->setRenderBinDetails(11, "RenderBin");
+	*/
 	label->addDrawable(txt);
 	trans->addChild(label);
 }
@@ -218,14 +168,17 @@ void node::set_vertices(const vector<Vec3> &verts) {
 		g->addPrimitiveSet(new DrawArrays(GL_TRIANGLES, 0, 3));
 	} else {
 		vector<vector<int> > facets;
+		if (qhull(verts, facets) != 0) {
+			cerr << "error executing qhull" << endl;
+			exit(1);
+		}
 		ref_ptr<DrawElementsUInt> triangles = new DrawElementsUInt(GL_TRIANGLES);
 		ref_ptr<DrawElementsUInt> quads = new DrawElementsUInt(GL_QUADS);
-		qhull(verts, facets);
-		for (auto i = facets.begin(); i != facets.end(); ++i) {
-			if (i->size() == 3) {
-				copy(i->begin(), i->end(), back_inserter(*triangles));
-			} else if (i->size() == 4) {
-				copy(i->begin(), i->end(), back_inserter(*quads));
+		for (int i = 0; i < facets.size(); ++i) {
+			if (facets[i].size() == 3) {
+				copy(facets[i].begin(), facets[i].end(), back_inserter(*triangles));
+			} else if (facets[i].size() == 4) {
+				copy(facets[i].begin(), facets[i].end(), back_inserter(*quads));
 			} else {
 				assert(false);
 			}
@@ -247,44 +200,124 @@ bool node::is_group() {
 }
 
 scene::scene() {
-	nodes["world"].reset(new node("world"));
-	ref_ptr<PositionAttitudeTransform> r = nodes["world"]->trans;
+	node *w = new node("world", "");
+	nodes["world"] = w;
+	ref_ptr<PositionAttitudeTransform> r = w->trans;
 	r->getOrCreateStateSet()->setMode(GL_LIGHTING, StateAttribute::OFF);
 }
 
-int scene::parse_update(vector<string> &f) {
-	vector<Vec3> verts;
-	int p;
+bool parse_vec3(vector<string> &f, int &p, Vec3 &x) {
+	if (p + 3 > f.size()) {
+		p = f.size();
+		return false;
+	}
+	for (int i = 0; i < 3; ++i) {
+		char *end;
+		x[i] = strtod(f[p + i].c_str(), &end);
+		if (*end != '\0') {
+			p += i;
+			return false;
+		}
+	}
+	p += 3;
+	return true;
+}
 
+bool parse_verts(vector<string> &f, int &p, vector<Vec3> &verts) {
+	if (p >= f.size() || f[p] != "v") {
+		return true;
+	}
+	++p;
+	while (p < f.size()) {
+		Vec3 v;
+		int old = p;
+		if (!parse_vec3(f, p, v)) {
+			if (p > old) {
+				return false;
+			}
+			break;
+		}
+		verts.push_back(v);
+	}
+	return true;
+}
+
+bool parse_transforms(vector<string> &f, int &p, PositionAttitudeTransform &trans) {	
+	Vec3 t;
+	char type;
+	
+	while (p < f.size()) {
+		if (f[p].size() != 1 || f[p].find_first_of("prs") != 0) {
+			return true;
+		}
+		type = f[p++][0];
+		if (!parse_vec3(f, p, t)) {
+			return false;
+		}
+		switch (type) {
+			case 'p':
+				trans.setPosition(t);
+				break;
+			case 'r':
+				trans.setAttitude(to_quaternion(t));
+				break;
+			case 's':
+				trans.setScale(t);
+				break;
+			default:
+				assert(false);
+		}
+	}
+	return true;
+}
+
+// f[0] is node name, f[1] is parent name
+int scene::parse_add(vector<string> &f) {
 	if (f.size() < 2) {
 		return f.size();
 	}
 	
-	auto i = nodes.find(f[0]);
-	if (i == nodes.end()) {
-		if (nodes.find(f[1]) == nodes.end() || !nodes[f[1]]->is_group()) {  // f[1] is parent name
-			return 1;
-		}
-		p = 2;
-	} else {
-		p = 1;
+	if (nodes.find(f[0]) != nodes.end()) {
+		return 0;
+	}
+	if (nodes.find(f[1]) == nodes.end() || !nodes[f[1]]->is_group()) {
+		return 1;
 	}
 	
+	int p = 2;
+	vector<Vec3> verts;
 	if (!parse_verts(f, p, verts)) {
 		return p;
 	}
+
+	node *n = new node(f[0], f[1], verts);
+	if (!parse_transforms(f, p, *(n->trans))) {
+		delete n;
+		return p;
+	}
+	nodes[f[0]] = n;
+	nodes[f[1]]->add_child(*n);
+	return -1;
+}
+
+int scene::parse_change(vector<string> &f) {
+	if (f.size() < 2) {
+		return f.size();
+	}
 	
-	node *n;
-	if (i == nodes.end()) {
-		n = new node(f[0], verts);
-		nodes[f[0]].reset(n);
-		nodes[f[1]]->add_child(*n);
-		parents[f[0]] = f[1];
-	} else {
-		n = i->second.get();
-		if (!verts.empty() && !n->is_group()) {
-			n->set_vertices(verts);
-		}
+	if (nodes.find(f[0]) == nodes.end()) {
+		return 0;
+	}
+	
+	node *n = nodes[f[0]];
+
+	int p = 1;
+	vector<Vec3> verts;
+	if (!parse_verts(f, p, verts)) {
+		return p;
+	}
+	if (!verts.empty() && !n->is_group()) {
+		n->set_vertices(verts);
 	}
 	
 	if (!parse_transforms(f, p, *(n->trans))) {
@@ -298,12 +331,29 @@ int scene::parse_del(vector<string> &f) {
 	if (f.size() != 1) {
 		return f.size();
 	}
-	auto i = nodes.find(f[0]);
-	auto j = parents.find(f[0]);
-	if (i == nodes.end() || j == parents.end()) {
+	if (nodes.find(f[0]) == nodes.end()) {
 		return 0;
 	}
-	nodes[j->second]->remove_child(*(i->second));
+
+	node *n = nodes[f[0]];
+	nodes[n->parent]->remove_child(*n);
+	
+	// remove n and all offspring from nodes map
+	vector<string> offspring;
+	offspring.push_back(f[0]);
+	for (int i = 0; i < offspring.size(); ++i) {
+		delete nodes[offspring[i]];
+		nodes.erase(offspring[i]);
+		// look for children
+		map<string, node*>::iterator j;
+		for (j = nodes.begin(); j != nodes.end(); ++j) {
+			if (j->second->parent == offspring[i]) {
+				offspring.push_back(j->first);
+			}
+		}
+		
+	}
+	
 	return -1;
 }
 
@@ -317,8 +367,8 @@ void scene::update(const string &s) {
 	if (fields.size() == 0) {
 		return;
 	}
-	if (fields[0].size() != 1) {
-		cerr << "expecting u or d at beginning of line '" << s << "'" << endl;
+	if (fields[0].size() != 1 || fields[0].find_first_of("acd") != 0) {
+		cerr << "expecting a, c, or d at beginning of line '" << s << "'" << endl;
 		return;
 	}
 	
@@ -326,14 +376,17 @@ void scene::update(const string &s) {
 	fields.erase(fields.begin());
 	
 	switch(cmd) {
-		case 'u':
-			errfield = parse_update(fields);
+		case 'a':
+			errfield = parse_add(fields);
+			break;
+		case 'c':
+			errfield = parse_change(fields);
 			break;
 		case 'd':
 			errfield = parse_del(fields);
 			break;
 		default:
-			cerr << "expecting u or d at beginning of line '" << s << "'" << endl;
+			return;
 	}
 	
 	if (errfield >= 0) {

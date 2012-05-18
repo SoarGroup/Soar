@@ -1,0 +1,6 @@
+env = Environment(
+	LIBS = 'pthread glut osg osgViewer osgDB osgUtil osgGA osgText OpenThreads osgFX'.split(),
+	CPPFLAGS = '-g',
+)
+
+env.Program('viewer', ['viewer.cpp', 'scene.cpp'])
