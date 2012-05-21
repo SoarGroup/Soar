@@ -8,6 +8,15 @@
 #include <pthread.h>
 #include <GL/glut.h>
 
+#include <cstdio>
+#include <cstdlib>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#include <unistd.h>
+
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 #include <osgGA/TrackballManipulator>
@@ -15,6 +24,98 @@
 #include "scene.h"
 
 using namespace std;
+
+const int BUFFERSIZE = 10240;
+class sock {
+public:
+	sock(int port) {
+		struct sockaddr_in addr, remote;
+		int listenfd;
+		
+		bzero((char *) &addr, sizeof(addr));
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(port);
+		if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+			perror("socket");
+			exit(1);
+		}
+		if (bind(listenfd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
+			perror("socket");
+			exit(1);
+		}
+		if (::listen(listenfd, 1) == -1) {
+			perror("socket");
+			exit(1);
+		}
+
+		socklen_t len = sizeof(struct sockaddr_in);
+		if ((fd = ::accept(listenfd, (struct sockaddr *) &remote, &len)) == -1) {
+			perror("socket");
+			exit(1);
+		}
+		close(listenfd);
+	}
+
+	sock(const char *path) {
+		socklen_t len;
+		struct sockaddr_un addr, remote;
+		int listenfd;
+		
+		bzero((char *) &addr, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		strcpy(addr.sun_path, path);
+		len = strlen(addr.sun_path) + sizeof(addr.sun_family);
+		
+		if ((listenfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+			perror("socket");
+			exit(1);
+		}
+		
+		unlink(addr.sun_path);
+		if (bind(listenfd, (struct sockaddr *) &addr, len) == -1) {
+			perror("socket");
+			exit(1);
+		}
+	
+		if (::listen(listenfd, 1) == -1) {
+			perror("socket");
+			exit(1);
+		}
+
+		len = sizeof(struct sockaddr_un);
+		if ((fd = ::accept(listenfd, (struct sockaddr *) &remote, &len)) == -1) {
+			perror("socket");
+			exit(1);
+		}
+		close(listenfd);
+	}
+	
+	~sock() {
+		close(fd);
+	}
+	
+	bool recv_line(string &line) {
+		char buf[BUFFERSIZE+1];
+		
+		while(true) {
+			size_t i = recvbuf.find('\n'), n;
+			if (i != string::npos) {
+				line = recvbuf.substr(0, i);
+				recvbuf = recvbuf.substr(i + 1);
+				return true;
+			}
+			if ((n = recv(fd, buf, BUFFERSIZE, 0)) <= 0) {
+				return false;
+			}
+			buf[n] = '\0';
+			recvbuf += buf;
+		}
+	}
+	
+private:
+	string recvbuf;
+	int fd;
+};
 
 class scene_manager {
 public:
@@ -136,6 +237,7 @@ private:
 	string input;
 };
 
+sock *sck;
 vector<string> read_buf;
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 bool finished = false;
@@ -146,7 +248,17 @@ scene_manager *scn_mgr;
 
 void *read_stdin(void *ptr) {
 	string line;
-	while (getline(cin, line)) {
+	while (true) {
+		if (sck != NULL) {
+			if (!sck->recv_line(line)) {
+				break;
+			}
+		} else {
+			if (!getline(cin, line)) {
+				break;
+			}
+		}
+		
 		if (line.find_first_not_of("\t\n ") != string::npos) {
 			pthread_mutex_lock(&mut);
 			read_buf.push_back(line);
@@ -264,7 +376,62 @@ int create_menu() {
 	return scene_menu_id;
 }
 
+/*
+ This program can accept input in one of three ways:
+ 1. standard input
+ 2. TCP socket using a port
+ 3. TCP socket using a file (AKA unix domain socket)
+ 
+ #3 is the default method, but the user can change this with command
+ line options that we parse here.
+*/
+void parse_conn_args(int argc, char *argv[]) {
+	int port = -1;
+	const char *sock_path = "/tmp/viewer";
+	
+	for (int i = 1; i < argc; ++i) {
+		if (strcmp("-s", argv[i]) == 0) {
+			port = -1;
+			sock_path = NULL;
+			break;
+		} else if (strcmp("-p", argv[i]) == 0) {
+			// open a port
+			if (i >= argc - 1) {
+				cerr << "specify a port" << endl;
+				exit(1);
+			}
+			
+			char *end;
+			port = strtol(argv[++i], &end, 10);
+			if (*end != '\0') {
+				cerr << "invalid port number" << endl;
+				exit(1);
+			}
+			break;
+		} else if (strcmp("-f", argv[i]) == 0) {
+			// create a socket file
+			if (i >= argc - 1) {
+				cerr << "specify a file" << endl;
+				exit(1);
+			}
+			sock_path = argv[++i];
+			break;
+		}
+	}
+	
+	if (port >= 0) {
+		sck = new sock(port);
+	} else if (sock_path != NULL) {
+		sck = new sock(sock_path);
+	} else {
+		// will use stdin
+		sck = NULL;
+	}
+}
+
 int main( int argc, char **argv ) {
+	parse_conn_args(argc, argv);
+	
 	glutInit(&argc, argv);
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_ALPHA );
 	glutInitWindowPosition( 100, 100 );
