@@ -15,24 +15,30 @@ public:
 	osg::ref_ptr<osg::Group> group;
 	osg::ref_ptr<osg::Geode> leaf;
 	osg::ref_ptr<osg::Geode> label;
+	osg::ref_ptr<osg::Group> axes;
 	osg::ref_ptr<osgFX::Scribe> scribe;
 	std::string name;
 	std::string parent;
 	
 	node(const std::string &name, const std::string &parent);	
 	node(const std::string &name, const std::string &parent, const std::vector<osg::Vec3> &verts);
-	void create_label();
 	void add_child(node &n);
 	void remove_child(node &n);
 	void set_vertices(const std::vector<osg::Vec3> &verts);
 	bool is_group();
+	void toggle_axes();
+	
+private:
+	void create_label();
+	void create_axes();
 };
 
 class scene {
 public:
 	scene();
 	osg::Group *get_root();
-	void update(const std::string &s);
+	void update(const std::vector<std::string> &fields);
+	void toggle_axes();
 	
 private:
 	int parse_add(std::vector<std::string> &f);

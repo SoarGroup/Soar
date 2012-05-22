@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <errno.h>
 #include <unistd.h>
 
@@ -26,11 +26,28 @@
 using namespace std;
 
 const int BUFFERSIZE = 10240;
+const char *DEFAULT_PATH = "/tmp/viewer";
+
+void split(const string &s, const string &delim, vector<string> &fields) {
+	int start, end = 0;
+	fields.clear();
+	while (end < s.size()) {
+		start = s.find_first_not_of(delim, end);
+		if (start == string::npos) {
+			return;
+		}
+		end = s.find_first_of(delim, start);
+		if (end == string::npos) {
+			end = s.size();
+		}
+		fields.push_back(s.substr(start, end - start));
+	}
+}
+
 class sock {
 public:
 	sock(int port) {
-		struct sockaddr_in addr, remote;
-		int listenfd;
+		struct sockaddr_in addr;
 		
 		bzero((char *) &addr, sizeof(addr));
 		addr.sin_family = AF_INET;
@@ -47,51 +64,45 @@ public:
 			perror("socket");
 			exit(1);
 		}
-
-		socklen_t len = sizeof(struct sockaddr_in);
-		if ((fd = ::accept(listenfd, (struct sockaddr *) &remote, &len)) == -1) {
-			perror("socket");
-			exit(1);
-		}
-		close(listenfd);
+		len = sizeof(struct sockaddr_in);
 	}
-
+	
 	sock(const char *path) {
 		socklen_t len;
-		struct sockaddr_un addr, remote;
-		int listenfd;
+		struct sockaddr_un addr;
 		
 		bzero((char *) &addr, sizeof(addr));
 		addr.sun_family = AF_UNIX;
 		strcpy(addr.sun_path, path);
-		len = strlen(addr.sun_path) + sizeof(addr.sun_family);
 		
+		unlink(addr.sun_path);
 		if ((listenfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 			perror("socket");
 			exit(1);
 		}
-		
-		unlink(addr.sun_path);
-		if (bind(listenfd, (struct sockaddr *) &addr, len) == -1) {
+		socklen_t l = sizeof(addr.sun_family) + strlen(addr.sun_path) + 1;
+		if (bind(listenfd, (struct sockaddr *) &addr, l) == -1) {
 			perror("socket");
 			exit(1);
 		}
-	
 		if (::listen(listenfd, 1) == -1) {
 			perror("socket");
 			exit(1);
 		}
-
 		len = sizeof(struct sockaddr_un);
-		if ((fd = ::accept(listenfd, (struct sockaddr *) &remote, &len)) == -1) {
-			perror("socket");
-			exit(1);
-		}
-		close(listenfd);
 	}
 	
 	~sock() {
 		close(fd);
+	}
+	
+	bool listen() {
+		struct sockaddr_in remote;
+		if ((fd = ::accept(listenfd, (struct sockaddr *) &remote, &len)) == -1) {
+			perror("socket");
+			return false;
+		}
+		return true;
 	}
 	
 	bool recv_line(string &line) {
@@ -114,7 +125,8 @@ public:
 	
 private:
 	string recvbuf;
-	int fd;
+	int listenfd, fd;
+	socklen_t len;
 };
 
 class scene_manager {
@@ -198,32 +210,48 @@ public:
 	}
 	
 	void parse(const string &line) {
-		string whitespace = " \t\n";
-		int e1 = line.find_first_of(whitespace);
-		int b2 = line.find_first_not_of(whitespace, e1 + 1);
-		int e2 = line.find_first_of(whitespace, e2 + 1);
+		vector<string> fields;
+		split(line, " \t\n", fields);
 		
-		string f1 = line.substr(0, e1), f2 = line.substr(b2, e2 - b2);
-		if (f2 == "delete") {
-			del_scene(f1);
+		if (fields.empty()) {
+			return;
+		}
+		
+		if (fields[0] == "clear") {
+			clear();
+		}
+		
+		if (fields[1] == "delete") {
+			del_scene(fields[0]);
 		}
 		
 		int i;
 		for (i = 0; i < scenes.size(); ++i) {
-			if (scenes[i].first == f1) {
+			if (scenes[i].first == fields[0]) {
 				break;
 			}
 		}
 		if (i == scenes.size()) {
-			add_scene(f1);
+			add_scene(fields[0]);
 		}
-		scenes[i].second->update(line.substr(b2));
-		//viewer->frame();
+		
+		for (int j = 1; j < fields.size(); ++j) {
+			fields[j - 1] = fields[j];
+		}
+		fields.resize(fields.size() - 1);
+		
+		scenes[i].second->update(fields);
 	}
 	
 	void clear() {
 		while (scenes.size() > 0) {
 			del_scene(scenes.size() - 1);
+		}
+	}
+	
+	void toggle_axes() {
+		for (int i = 0; i < scenes.size(); ++i) {
+			scenes[i].second->toggle_axes();
 		}
 	}
 	
@@ -248,21 +276,30 @@ scene_manager *scn_mgr;
 
 void *read_stdin(void *ptr) {
 	string line;
-	while (true) {
-		if (sck != NULL) {
-			if (!sck->recv_line(line)) {
-				break;
-			}
-		} else {
-			if (!getline(cin, line)) {
-				break;
-			}
-		}
-		
+	while (getline(cin, line)) {
 		if (line.find_first_not_of("\t\n ") != string::npos) {
 			pthread_mutex_lock(&mut);
 			read_buf.push_back(line);
 			pthread_mutex_unlock(&mut);
+		}
+	}
+	finished = true;
+}
+
+void *read_socket(void *ptr) {
+	string line;
+	
+	if (!sck) {
+		finished = true;
+		return NULL;
+	}
+	while (sck->listen()) {
+		while (sck->recv_line(line)) {
+			if (line.find_first_not_of("\t\n ") != string::npos) {
+				pthread_mutex_lock(&mut);
+				read_buf.push_back(line);
+				pthread_mutex_unlock(&mut);
+			}
 		}
 	}
 	finished = true;
@@ -330,6 +367,7 @@ void keyboard( unsigned char key, int /*x*/, int /*y*/ )
 enum MenuID {
 	MENU_RESET,
 	MENU_WIREFRAME,
+	MENU_AXES,
 	MENU_QUIT,
 	MENU_END,
 };
@@ -342,6 +380,7 @@ struct MenuDef {
 MenuDef menu_definition[] = {
 	{ MENU_RESET,     "reset camera" },
 	{ MENU_WIREFRAME, "toggle wireframe" },
+	{ MENU_AXES,      "toggle axes" },
 	{ MENU_QUIT,      "quit" },
 	{ MENU_END,       NULL},
 };
@@ -351,14 +390,17 @@ void top_menu_callback(int value) {
 	case MENU_RESET:
 		viewer->home();
 		break;
+	case MENU_AXES:
+		scn_mgr->toggle_axes();
+		break;
 	case MENU_QUIT:
 		glutDestroyWindow(glutGetWindow());
+		exit(0);
 		break;
 	}
 }
 
 void scene_menu_callback(int value) {
-	cout << "scene menu: " << value << endl;
 	scn_mgr->set_scene(value);
 }
 
@@ -387,7 +429,7 @@ int create_menu() {
 */
 void parse_conn_args(int argc, char *argv[]) {
 	int port = -1;
-	const char *sock_path = "/tmp/viewer";
+	const char *sock_path = DEFAULT_PATH;
 	
 	for (int i = 1; i < argc; ++i) {
 		if (strcmp("-s", argv[i]) == 0) {
@@ -455,7 +497,11 @@ int main( int argc, char **argv ) {
 	scn_mgr = new scene_manager(viewer, scene_menu_id);
 	
 	pthread_t read_thread;
-	pthread_create( &read_thread, NULL, &read_stdin, NULL);
+	if (!sck) {
+		pthread_create( &read_thread, NULL, &read_stdin, NULL);
+	} else {
+		pthread_create( &read_thread, NULL, &read_socket, NULL);
+	}
 
 	glutMainLoop();
 

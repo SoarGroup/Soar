@@ -13,6 +13,9 @@
 #include <osg/Geometry>
 #include <osg/PolygonMode>
 #include <osg/PositionAttitudeTransform>
+#include <osg/ShapeDrawable>
+#include <osg/Shape>
+#include <osg/Material>
 #include <osgText/Font>
 #include <osgText/Text>
 
@@ -22,7 +25,9 @@ using namespace std;
 using namespace osg;
 
 const char *FONT = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf";
-
+const double AXIS_RADIUS = 0.005;
+const double AXIS_LEN = 1.0;
+ 
 /*
  Execute qhull to calculate the convex hull of pts.
 */
@@ -82,23 +87,6 @@ Quat to_quaternion(const Vec3 &rpy) {
 	            cos_r2 * cos_p2 * cos_y2 + sin_r2 * sin_p2 * sin_y2);
 }
 
-void split(const string &s, const string &delim, vector<string> &fields) {
-	int start, end = 0;
-	fields.clear();
-	while (end < s.size()) {
-		start = s.find_first_not_of(delim, end);
-		if (start == string::npos) {
-			return;
-		}
-		end = s.find_first_of(delim, start);
-		if (end == string::npos) {
-			end = s.size();
-		}
-		fields.push_back(s.substr(start, end - start));
-	}
-}
-
-
 node::node(const string &name, const string &parent) 
 : name(name), parent(parent), trans(new PositionAttitudeTransform()), group(new Group)
 {
@@ -112,6 +100,7 @@ node::node(const string &name, const string &parent, const vector<Vec3> &verts)
 : name(name), parent(parent), trans(new PositionAttitudeTransform())
 {
 	create_label();
+	create_axes();
 	if (verts.size() == 0) {
 		group = new Group;
 		trans->addChild(group);
@@ -123,6 +112,36 @@ node::node(const string &name, const string &parent, const vector<Vec3> &verts)
 		scribe->setWireframeColor(Vec4(0.0, 0.0, 0.0, 1.0));
 		trans->addChild(scribe);
 	}
+}
+
+void node::create_axes() {
+	axes = new Group;
+	for (int i = 0; i < 3; ++i) {
+		ref_ptr<Geode> g = new Geode;
+		ref_ptr<Material> m = new Material;
+		ref_ptr<Cylinder> c;
+		
+		switch (i) {
+		case 0:
+			c = new Cylinder(Vec3(0.5, 0, 0), AXIS_RADIUS, AXIS_LEN);
+			c->setRotation(Quat(PI / 2, Vec3(0, 1, 0)));
+			m->setDiffuse( Material::FRONT, Vec4(1, 0, 0, 1));
+			break;
+		case 1:
+			c = new Cylinder(Vec3(0, 0.5, 0), AXIS_RADIUS, AXIS_LEN);
+			c->setRotation(Quat(PI / 2, Vec3(1, 0, 0)));
+			m->setDiffuse( Material::FRONT, Vec4(0, 1, 0, 1));
+			break;
+		case 2:
+			c = new Cylinder(Vec3(0, 0, 0.5), AXIS_RADIUS, AXIS_LEN);
+			m->setDiffuse( Material::FRONT, Vec4(0, 0, 1, 1));
+			break;
+		}
+		g->addDrawable(new ShapeDrawable(c));
+		g->getOrCreateStateSet()->setAttribute(m, StateAttribute::ON | StateAttribute::OVERRIDE);
+		axes->addChild(g);
+	}
+	trans->addChild(axes);
 }
 
 void node::create_label() {
@@ -199,11 +218,17 @@ bool node::is_group() {
 	return group.valid();
 }
 
+void node::toggle_axes() {
+	if (axes) {
+		axes->setNodeMask(~axes->getNodeMask());
+	}
+}
+
 scene::scene() {
 	node *w = new node("world", "");
 	nodes["world"] = w;
 	ref_ptr<PositionAttitudeTransform> r = w->trans;
-	r->getOrCreateStateSet()->setMode(GL_LIGHTING, StateAttribute::OFF);
+	//r->getOrCreateStateSet()->setMode(GL_LIGHTING, StateAttribute::OFF);
 }
 
 bool parse_vec3(vector<string> &f, int &p, Vec3 &x) {
@@ -357,43 +382,50 @@ int scene::parse_del(vector<string> &f) {
 	return -1;
 }
 
-void scene::update(const string &s) {
-	vector<string> fields;
+void scene::update(const vector<string> &fields) {
 	char cmd;
 	int errfield;
-	
-	split(s, " \t\n", fields);
 	
 	if (fields.size() == 0) {
 		return;
 	}
 	if (fields[0].size() != 1 || fields[0].find_first_of("acd") != 0) {
-		cerr << "expecting a, c, or d at beginning of line '" << s << "'" << endl;
+		cerr << "known commands are a, c, or d" << endl;
 		return;
 	}
 	
 	cmd = fields[0][0];
-	fields.erase(fields.begin());
+	vector<string> rest;
+	for (int i = 1; i < fields.size(); ++i) {
+		rest.push_back(fields[i]);
+	}
 	
 	switch(cmd) {
 		case 'a':
-			errfield = parse_add(fields);
+			errfield = parse_add(rest);
 			break;
 		case 'c':
-			errfield = parse_change(fields);
+			errfield = parse_change(rest);
 			break;
 		case 'd':
-			errfield = parse_del(fields);
+			errfield = parse_del(rest);
 			break;
 		default:
 			return;
 	}
 	
 	if (errfield >= 0) {
-		cerr << "error in field " << errfield + 1 << " of line '" << s << "' " << endl;
+		cerr << "error in field " << errfield + 1 << endl;
 	}
 }
 
 Group* scene::get_root() {
 	return nodes["world"]->trans.get();
+}
+
+void scene::toggle_axes() {
+	node_table::iterator i;
+	for (i = nodes.begin(); i != nodes.end(); ++i) {
+		i->second->toggle_axes();
+	}
 }
