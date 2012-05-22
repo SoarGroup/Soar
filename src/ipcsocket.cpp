@@ -19,29 +19,35 @@ using namespace std;
 const char TERMSTRING[] = "\n***\n";
 const int BUFFERSIZE = 10240;
 
-ipcsocket::ipcsocket(char role, string socketfile, bool recvfirst, bool blocklisten) 
-: recvbuf(), recvfirst(recvfirst), role(role)
-{
+ipcsocket::ipcsocket() : conn(false) {}
+
+ipcsocket::~ipcsocket() {
+	if (conn) {
+		disconnect();
+	}
+	close(listenfd);
+}
+
+bool ipcsocket::accept(const string &socketfile, bool blocklisten) {
 	socklen_t len;
-	struct sockaddr_un addr;
+	struct sockaddr_un addr, remote;
 	
-	bzero((char *) &addr, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strcpy(addr.sun_path, socketfile.c_str());
-	len = strlen(addr.sun_path) + sizeof(addr.sun_family);
-	
-	if (role == 's') {
+	if (listenfd < 0) {
+		bzero((char *) &addr, sizeof(addr));
+		addr.sun_family = AF_UNIX;
+		strcpy(addr.sun_path, socketfile.c_str());
+		len = strlen(addr.sun_path) + sizeof(addr.sun_family);
+		
+		unlink(addr.sun_path);
+		
 		if ((listenfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
 			perror("ipcsocket::ipcsocket");
 			exit(1);
 		}
-		
-		unlink(addr.sun_path);
 		if (bind(listenfd, (struct sockaddr *) &addr, len) == -1) {
 			perror("ipcsocket::ipcsocket");
 			exit(1);
 		}
-	
 		if (::listen(listenfd, 1) == -1) {
 			perror("ipcsocket::ipcsocket");
 			exit(1);
@@ -49,35 +55,8 @@ ipcsocket::ipcsocket(char role, string socketfile, bool recvfirst, bool blocklis
 		if (!blocklisten) {
 			fcntl(listenfd, F_SETFL, O_NONBLOCK);
 		}
-		connected = false;
-	} else {
-		if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-			perror("ipcsocket::ipcsocket");
-			exit(1);
-		}
-		
-		while (connect(fd, (struct sockaddr *) &addr, len) == -1) {
-			sleep(1);
-		}
-		connected = true;
 	}
-}
-
-ipcsocket::~ipcsocket() {
-	if (connected) {
-		disconnect();
-	}
-	close(listenfd);
-}
-
-bool ipcsocket::accept() {
-	socklen_t len;
-	struct sockaddr_un remote;
-	list<ipc_listener*>::iterator i;
 	
-	if (role != 's') {
-		return false;
-	}
 	len = sizeof(struct sockaddr_un);
 	if ((fd = ::accept(listenfd, (struct sockaddr *) &remote, &len)) == -1) {
 		if (errno != EAGAIN && errno != EWOULDBLOCK) {
@@ -86,28 +65,41 @@ bool ipcsocket::accept() {
 		}
 		return false;
 	}
-	connected = true;
+	conn = true;
+	return true;
+}
+
+bool ipcsocket::connect(const string &path) {
+	socklen_t len;
+	struct sockaddr_un addr;
 	
-	for (i = listeners.begin(); i != listeners.end(); ++i) {
-		(**i).ipc_connect(this);
+	bzero((char *) &addr, sizeof(addr));
+	addr.sun_family = AF_UNIX;
+	strcpy(addr.sun_path, path.c_str());
+	len = strlen(addr.sun_path) + sizeof(addr.sun_family) + 1;
+	
+	if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+		perror("ipcsocket::ipcsocket");
+		exit(1);
 	}
+		
+	if (::connect(fd, (struct sockaddr *) &addr, len) == -1) {
+		return false;
+	}
+
+	conn = true;
 	return true;
 }
 
 void ipcsocket::disconnect() {
-	list<ipc_listener*>::iterator i;
-	
 	close(fd);
-	connected = false;
-	for (i = listeners.begin(); i != listeners.end(); ++i) {
-		(**i).ipc_disconnect(this);
-	}
+	conn = false;
 }
 
 bool ipcsocket::send(const string &s) {
 	int n;
 	
-	if (!connected && (recvfirst || !accept())) return false;
+	if (!conn) return false;
 	string t = s + TERMSTRING;
 	
 	while (t.size() > 0) {
@@ -123,11 +115,30 @@ bool ipcsocket::send(const string &s) {
 	return true;
 }
 
+bool ipcsocket::send_line(const string &line) {
+	int n;
+	
+	if (!conn) return false;
+	const char *p = line.c_str();
+	
+	while (*p) {
+		if ((n = ::send(fd, p, strlen(p), 0)) <= 0) {
+			if (errno != EINTR) {
+				disconnect();
+				return false;
+			}
+		} else {
+			p += n;
+		}
+	}
+	return true;
+}
+
 bool ipcsocket::receive(string &msg) {
 	char buf[BUFFERSIZE+1];
 	size_t p, n;
 	
-	if (!connected && (!recvfirst || !accept())) return false;
+	if (!conn) return false;
 	
 	while(true) {
 		if (recvbuf.find(TERMSTRING+1) == 0) { // +1 to skip initial \n
@@ -152,12 +163,4 @@ bool ipcsocket::receive(string &msg) {
 			recvbuf += buf;
 		}
 	}
-}
-
-void ipcsocket::listen(ipc_listener *l) {
-	listeners.push_back(l);
-}
-
-void ipcsocket::unlisten(ipc_listener *l) {
-	listeners.remove(l);
 }

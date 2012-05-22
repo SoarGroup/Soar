@@ -39,8 +39,8 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 	return true;
 }
 
-scene::scene(const string &name, const string &rootname, bool display) 
-: name(name), rootname(rootname), display(display), draw(name), dirty(true)
+scene::scene(const string &name, const string &rootname, drawer *d) 
+: name(name), rootname(rootname), draw(d), dirty(true)
 {
 	root = new sgnode(rootname);
 	nodes[rootname].node = root;
@@ -52,7 +52,7 @@ scene::~scene() {
 }
 
 scene *scene::copy() const {
-	scene *copy = new scene(name, rootname, false);  // don't display copies
+	scene *copy = new scene(name, rootname, NULL);  // don't display copies
 	string name;
 	std::list<sgnode*> all_nodes;
 	std::list<sgnode*>::const_iterator i;
@@ -321,15 +321,14 @@ void scene::parse_sgel(const string &s) {
 
 void scene::draw_all(const string &prefix, float r, float g, float b) {
 	node_map::const_iterator i;
-	draw.set_color(r, g, b);
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
 		sgnode *n = i->second.node;
 		if (n->is_group()) {
 			continue;
 		}
-		draw.set_transforms(n);
-		draw.set_vertices(n);
-		draw.add(prefix + n->get_name());
+		draw->set_transforms(n);
+		draw->set_vertices(n);
+		draw->add(name, prefix + n->get_name());
 	}
 }
 
@@ -340,7 +339,7 @@ void scene::undraw_all(const string &prefix) {
 		if (n->is_group()) {
 			continue;
 		}
-		draw.del(prefix + n->get_name());
+		draw->del(name, prefix + n->get_name());
 	}
 }
 
@@ -502,8 +501,8 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			if (!child->is_group()) {
 				cdetect.add_node(child);
 			}
-			if (display && !child->is_group()) {
-				draw.add(child);
+			if (draw && !child->is_group()) {
+				draw->add(name, child);
 			}
 			break;
 		case sgnode::DELETED:
@@ -511,26 +510,26 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 				cdetect.del_node(n);
 			}
 			nodes.erase(n->get_name());
-			if (display && !n->is_group()) {
-				draw.del(n);
+			if (draw && !n->is_group()) {
+				draw->del(name, n);
 			}
 			break;
 		case sgnode::POINTS_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_points(n);
 			}
-			if (display && !n->is_group()) {
-				draw.set_vertices(n);
-				draw.change(n->get_name(), drawer::VERTS);
+			if (draw && !n->is_group()) {
+				draw->set_vertices(n);
+				draw->change(name, n->get_name(), drawer::VERTS);
 			}
 			break;
 		case sgnode::TRANSFORM_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_transform(n);
 			}
-			if (display && !n->is_group()) {
-				draw.set_transforms(n);
-				draw.change(n->get_name(), drawer::POS | drawer::ROT | drawer::SCALE);
+			if (draw && !n->is_group()) {
+				draw->set_transforms(n);
+				draw->change(name, n->get_name(), drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			break;
 	}

@@ -9,7 +9,6 @@
 #include "svs.h"
 #include "scene.h"
 #include "soar_interface.h"
-#include "ipcsocket.h"
 
 using namespace std;
 

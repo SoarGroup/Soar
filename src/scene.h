@@ -15,7 +15,7 @@ class filter_input;
 
 class scene : public sgnode_listener {
 public:
-	scene(const std::string &name, const std::string &rootname, bool display);
+	scene(const std::string &name, const std::string &rootname, drawer *d);
 	~scene();
 	
 	scene *copy() const;
@@ -72,8 +72,7 @@ private:
 	std::string  rootname;
 	sgnode      *root;
 	node_map     nodes;
-	bool         display;
-	drawer       draw;
+	drawer      *draw;
 	
 	std::vector<bool> atomvals;
 	bool dirty;

@@ -129,7 +129,7 @@ void svs_state::init() {
 	svs_link = si->make_id_wme(state, cs->svs).first;
 	cmd_link = si->make_id_wme(svs_link, cs->cmd).first;
 	scene_link = si->make_id_wme(svs_link, cs->scene).first;
-	scn = new scene(name, "world", true);
+	scn = new scene(name, "world", svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	if (!parent) {
 		ltm_link = si->make_id_wme(svs_link, cs->ltm).first;
@@ -348,7 +348,7 @@ svs::svs(agent *a)
 {
 	string env_path = get_option("env");
 	if (!env_path.empty()) {
-		envsock.reset(new ipcsocket('s', env_path, true, true));
+		envsock.accept(env_path, true);
 	}
 	si = new soar_interface(a);
 	make_common_syms();
@@ -389,8 +389,8 @@ void svs::state_deletion_callback(Symbol *state) {
 
 void svs::proc_input(svs_state *s) {
 	std::string in;
-	if (envsock.get()) {
-		if (!envsock->receive(in)) {
+	if (envsock.connected()) {
+		if (!envsock.receive(in)) {
 			assert(false);
 		}
 		split(in, "\n", env_inputs);
@@ -426,8 +426,8 @@ void svs::output_callback() {
 	for (int i = 0; i < outspec->size(); ++i) {
 		ss << (*outspec)[i].name << " " << out[i] << endl;
 	}
-	if (envsock.get()) {
-		envsock->send(ss.str());
+	if (envsock.connected()) {
+		envsock.send(ss.str());
 	} else {
 		env_output = ss.str();
 	}

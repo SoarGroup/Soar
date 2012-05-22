@@ -4,11 +4,11 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <memory>
 #include "ipcsocket.h"
 #include "soar_interface.h"
 #include "sgnode.h"
 #include "common.h"
+#include "drawer.h"
 
 class command;
 class scene;
@@ -153,17 +153,20 @@ public:
 	
 	bool do_cli_command(const std::vector<std::string> &args, std::string &output) const;
 	
+	drawer *get_drawer() { return &draw; }
+	
 private:
 	void make_common_syms();
 	void del_common_syms();
 	void proc_input(svs_state *s);
 	
-	soar_interface*          si;
-	common_syms              cs;
-	std::vector<svs_state*>  state_stack;
-	std::auto_ptr<ipcsocket> envsock;
-	std::vector<std::string> env_inputs;
-	std::string              env_output;
+	soar_interface*           si;
+	common_syms               cs;
+	std::vector<svs_state*>   state_stack;
+	ipcsocket                 envsock;
+	std::vector<std::string>  env_inputs;
+	std::string               env_output;
+	drawer                    draw;
 	
 	enum Timers { INPUT_T, OUTPUT_T, CALC_ATOMS_T };
 	
