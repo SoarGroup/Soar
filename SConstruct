@@ -156,8 +156,10 @@ if compiler == 'g++':
 				env['VISHIDDEN'] = True
 		
 		if sys.platform == 'linux2':
-			# -rpath only works in Linux. For OSX, use -install_name (specified in Core/SConscript)
-			lnflags.extend(['-Xlinker', '-rpath', '-Xlinker', env.Literal(r'$ORIGIN')])
+			lnflags.append(env.Literal(r'-Wl,-rpath,$ORIGIN'))
+		elif 'freebsd' in sys.platform:
+			lnflags.append(env.Literal(r'-Wl,-z,origin,-rpath,$ORIGIN'))
+		# For OSX, use -install_name (specified in Core/SConscript)
 	
 	libs += [ 'pthread' ]
 
