@@ -15,7 +15,7 @@ class filter_input;
 
 class scene : public sgnode_listener {
 public:
-	scene(const std::string &name, const std::string &rootname, drawer *d);
+	scene(const std::string &name, drawer *d);
 	~scene();
 	
 	scene *copy() const;

@@ -356,6 +356,9 @@ int scene::parse_del(vector<string> &f) {
 	if (f.size() != 1) {
 		return f.size();
 	}
+	if (f[0] == "world") {
+		return 0;
+	}
 	if (nodes.find(f[0]) == nodes.end()) {
 		return 0;
 	}

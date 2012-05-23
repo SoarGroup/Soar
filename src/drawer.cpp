@@ -61,7 +61,6 @@ void drawer::add(const string &scn, const string &name) {
 	if (!sock.connected()) {
 		return;
 	}
-	
 	stringstream ss;
 	ss << scn << " a " << name << " world v ";
 	write_ptlist(ss, verts);

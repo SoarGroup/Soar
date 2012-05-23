@@ -39,11 +39,11 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 	return true;
 }
 
-scene::scene(const string &name, const string &rootname, drawer *d) 
-: name(name), rootname(rootname), draw(d), dirty(true)
+scene::scene(const string &name, drawer *d) 
+: name(name), draw(d), dirty(true)
 {
-	root = new sgnode(rootname);
-	nodes[rootname].node = root;
+	root = new sgnode("world");
+	nodes["world"].node = root;
 	root->listen(this);
 }
 
@@ -52,7 +52,7 @@ scene::~scene() {
 }
 
 scene *scene::copy() const {
-	scene *copy = new scene(name, rootname, NULL);  // don't display copies
+	scene *copy = new scene(name, NULL);  // don't display copies
 	string name;
 	std::list<sgnode*> all_nodes;
 	std::list<sgnode*>::const_iterator i;
@@ -501,7 +501,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			if (!child->is_group()) {
 				cdetect.add_node(child);
 			}
-			if (draw && !child->is_group()) {
+			if (draw) {
 				draw->add(name, child);
 			}
 			break;
@@ -510,24 +510,24 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 				cdetect.del_node(n);
 			}
 			nodes.erase(n->get_name());
-			if (draw && !n->is_group()) {
+			if (draw && n->get_name() != "world") {
 				draw->del(name, n);
 			}
 			break;
 		case sgnode::POINTS_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_points(n);
-			}
-			if (draw && !n->is_group()) {
-				draw->set_vertices(n);
-				draw->change(name, n->get_name(), drawer::VERTS);
+				if (draw) {
+					draw->set_vertices(n);
+					draw->change(name, n->get_name(), drawer::VERTS);
+				}
 			}
 			break;
 		case sgnode::TRANSFORM_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_transform(n);
 			}
-			if (draw && !n->is_group()) {
+			if (draw) {
 				draw->set_transforms(n);
 				draw->change(name, n->get_name(), drawer::POS | drawer::ROT | drawer::SCALE);
 			}
@@ -537,7 +537,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 }
 
 void scene::dump_sgel(ostream &os) {
-	dump_sgel_rec(os, rootname, "");
+	dump_sgel_rec(os, "world", "");
 }
 
 void scene::dump_sgel_rec(ostream &os, const string &name, const string &parent) {
@@ -547,7 +547,7 @@ void scene::dump_sgel_rec(ostream &os, const string &name, const string &parent)
 	const node_info &info = nodes[name];
 	sgnode *n = info.node;
 	const property_map &m = info.props;
-	if (name != rootname) {
+	if (name != "world") {
 		os << "a " << name << " " << parent << " ";
 		if (!n->is_group()) {
 			ptlist verts;
