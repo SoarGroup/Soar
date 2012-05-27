@@ -2136,7 +2136,108 @@ inline soar_module::sqlite_statement* smem_setup_web_crawl(agent* my_agent, smem
 	return q;
 }
 
-smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, smem_lti_set *prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full )
+inline bool _smem_process_cue_wme( agent* my_agent, wme* w, bool pos_cue, smem_prioritized_weighted_cue& weighted_pq )
+{
+	bool good_wme = true;
+	smem_weighted_cue_element *new_cue_element;
+	
+	smem_hash_id attr_hash;
+	smem_hash_id value_hash;
+	smem_lti_id value_lti;
+	smem_cue_element_type element_type;
+	
+	soar_module::sqlite_statement *q = NULL;
+	
+	{
+		// we only have to do hard work if
+		attr_hash = smem_temporal_hash( my_agent, w->attr, false );
+		if ( attr_hash != NIL )
+		{
+			if ( smem_symbol_is_constant( w->value ) )
+			{
+				value_lti = NIL;
+				value_hash = smem_temporal_hash( my_agent, w->value, false );
+				
+				if ( value_hash != NIL )
+				{
+					q = my_agent->smem_stmts->ct_const_get;
+					q->bind_int( 1, attr_hash );
+					q->bind_int( 2, value_hash );
+					
+					element_type = value_const_t;
+				}
+				else
+				{
+					if ( pos_cue )
+					{
+						good_wme = false;
+					}
+				}
+			}
+			else
+			{
+				value_lti = w->value->id.smem_lti;
+				value_hash = NIL;
+				
+				if ( value_lti == NIL )
+				{
+					q = my_agent->smem_stmts->ct_attr_get;
+					q->bind_int( 1, attr_hash );
+					
+					element_type = attr_t;
+				}
+				else
+				{
+					q = my_agent->smem_stmts->ct_lti_get;
+					q->bind_int( 1, attr_hash );
+					q->bind_int( 2, value_lti );
+					
+					element_type = value_lti_t;
+				}
+			}
+			
+			if ( good_wme )
+			{
+				if ( q->execute() == soar_module::row )
+				{
+					new_cue_element = new smem_weighted_cue_element;
+					
+					new_cue_element->weight = q->column_int( 0 );
+					new_cue_element->attr_hash = attr_hash;
+					new_cue_element->value_hash = value_hash;
+					new_cue_element->value_lti = value_lti;
+					new_cue_element->cue_element = w;
+					
+					new_cue_element->element_type = element_type;
+					new_cue_element->pos_element = pos_cue;
+					
+					weighted_pq.push( new_cue_element );
+					new_cue_element = NULL;
+				}
+				else
+				{
+					if ( pos_cue )
+					{
+						good_wme = false;
+					}
+				}
+				
+				q->reinitialize();
+			}
+		}
+		else
+		{
+			if ( pos_cue )
+			{
+				good_wme = false;
+			}
+		}
+	}
+	
+	return good_wme;
+}
+
+smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, Symbol *negquery, smem_lti_set *prohibit, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes, smem_query_levels query_level = qry_full )
 {	
 	smem_weighted_cue_list weighted_cue;	
 	bool good_cue = true;
@@ -2152,100 +2253,44 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 	// prepare query stats
 	{
 		smem_prioritized_weighted_cue weighted_pq;
-		smem_weighted_cue_element *new_cue_element;
-		
-		smem_wme_list *cue = smem_get_direct_augs_of_id( query );
-		smem_wme_list::iterator cue_p;
 
-		smem_hash_id attr_hash;
-		smem_hash_id value_hash;
-		smem_lti_id value_lti;
-		smem_cue_element_type element_type = attr_t;
-
-		wme *w;
-
-		for ( cue_p=cue->begin(); cue_p!=cue->end(); cue_p++ )
+		// positive cue - always
 		{
-			w = (*cue_p);
-
-			cue_wmes.insert( w );
-
-			if ( good_cue )
+			smem_wme_list *cue = smem_get_direct_augs_of_id( query );
+			if ( cue->empty() )
 			{
-				// we only have to do hard work if
-				attr_hash = smem_temporal_hash( my_agent, w->attr, false );
-				if ( attr_hash != NIL )
+				good_cue = false;
+			}
+			
+			for ( smem_wme_list::iterator cue_p=cue->begin(); cue_p!=cue->end(); cue_p++ )
+			{
+				cue_wmes.insert( (*cue_p) );
+
+				if ( good_cue )
 				{
-					if ( smem_symbol_is_constant( w->value ) )
-					{
-						value_lti = NIL;
-						value_hash = smem_temporal_hash( my_agent, w->value, false );
-
-						if ( value_hash != NIL )
-						{
-							q = my_agent->smem_stmts->ct_const_get;
-							q->bind_int( 1, attr_hash );
-							q->bind_int( 2, value_hash );
-
-							element_type = value_const_t;
-						}
-						else
-						{
-							good_cue = false;
-						}
-					}
-					else
-					{
-						value_lti = w->value->id.smem_lti;
-						value_hash = NIL;
-
-						if ( value_lti == NIL )
-						{
-							q = my_agent->smem_stmts->ct_attr_get;
-							q->bind_int( 1, attr_hash );
-
-							element_type = attr_t;
-						}
-						else
-						{
-							q = my_agent->smem_stmts->ct_lti_get;
-							q->bind_int( 1, attr_hash );
-							q->bind_int( 2, value_lti );
-
-							element_type = value_lti_t;
-						}
-					}
-
-					if ( good_cue )
-					{
-						if ( q->execute() == soar_module::row )
-						{
-							new_cue_element = new smem_weighted_cue_element;
-
-							new_cue_element->weight = q->column_int( 0 );
-							new_cue_element->attr_hash = attr_hash;
-							new_cue_element->value_hash = value_hash;
-							new_cue_element->value_lti = value_lti;
-							new_cue_element->cue_element = w;
-
-							new_cue_element->element_type = element_type;
-
-							weighted_pq.push( new_cue_element );
-							new_cue_element = NULL;
-						}
-						else
-						{
-							good_cue = false;
-						}
-
-						q->reinitialize();
-					}
-				}
-				else
-				{
-					good_cue = false;
+					good_cue = _smem_process_cue_wme( my_agent, (*cue_p), true, weighted_pq );
 				}
 			}
+			
+			delete cue;
+		}
+		
+		// negative cue - if present
+		if ( negquery )
+		{
+			smem_wme_list *cue = smem_get_direct_augs_of_id( negquery );
+			
+			for ( smem_wme_list::iterator cue_p=cue->begin(); cue_p!=cue->end(); cue_p++ )
+			{
+				cue_wmes.insert( (*cue_p) );
+				
+				if ( good_cue )
+				{
+					good_cue = _smem_process_cue_wme( my_agent, (*cue_p), false, weighted_pq );
+				}
+			}
+			
+			delete cue;
 		}
 
 		// if valid cue, transfer priority queue to list
@@ -2266,18 +2311,22 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 				weighted_pq.pop();
 			}
 		}
-
-		// clean cue irrespective of validity
-		delete cue;
 	}
 
 	// only search if the cue was valid
 	if ( good_cue && !weighted_cue.empty() )
 	{
-		smem_weighted_cue_list::iterator first_element = weighted_cue.begin();
+		// by definition, the first positive-cue element dictates the candidate set
+		smem_weighted_cue_list::iterator cand_set;
 		smem_weighted_cue_list::iterator next_element;
-		smem_weighted_cue_list::iterator second_element = first_element;		
-		second_element++;
+		for ( next_element=weighted_cue.begin(); next_element!=weighted_cue.end(); next_element++ )
+		{
+			if ( (*next_element)->pos_element )
+			{
+				cand_set = next_element;
+				break;
+			}
+		}
 
 		soar_module::sqlite_statement *q2 = NULL;
 		smem_lti_set::iterator prohibit_p;
@@ -2292,7 +2341,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 			// confirmation walk
 			if ( my_agent->smem_params->base_update->get_value() == smem_param_container::bupt_naive )
 			{
-				q = smem_setup_web_crawl( my_agent, (*first_element) );
+				q = smem_setup_web_crawl( my_agent, (*cand_set) );
 
 				// queue up distinct lti's to update
 				// - set because queries could contain wilds
@@ -2314,7 +2363,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 		}
 		
 		// setup first query, which is sorted on activation already
-		q = smem_setup_web_crawl( my_agent, (*first_element) );
+		q = smem_setup_web_crawl( my_agent, (*cand_set) );
 
 		// this becomes the minimal set to walk (till match or fail)
 		if ( q->execute() == soar_module::row )
@@ -2322,6 +2371,7 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 			smem_prioritized_activated_lti_queue plentiful_parents;
 			bool more_rows = true;
 			bool use_db = false;
+			bool has_feature = false;
 
 			while ( more_rows && ( q->column_double( 1 ) == static_cast<double>( SMEM_ACT_MAX ) ) )
 			{
@@ -2370,8 +2420,14 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 				{
 					good_cand = true;
 
-					for ( next_element=second_element; ( ( good_cand ) && ( next_element!=weighted_cue.end() ) ); next_element++ )
+					for ( next_element=weighted_cue.begin(); next_element!=weighted_cue.end(); next_element++ )
 					{
+						// don't need to check the generating list
+						if ( (*next_element) == (*cand_set) )
+						{
+							continue;
+						}
+						
 						if ( (*next_element)->element_type == attr_t )
 						{
 							// parent=? AND attr=?
@@ -2394,7 +2450,12 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 						q2->bind_int( 1, cand );
 						q2->bind_int( 2, (*next_element)->attr_hash );
 
-						good_cand = ( q2->execute( soar_module::op_reinit ) == soar_module::row );
+						has_feature = ( q2->execute( soar_module::op_reinit ) == soar_module::row );
+						good_cand = ( ( (*next_element)->pos_element )?( has_feature ):( !has_feature ) );
+						if ( !good_cand )
+						{
+							break;
+						}
 					}
 
 					if ( good_cand )
@@ -2421,6 +2482,10 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 		{
 			// success!
 			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, query );
+			if ( negquery )
+			{
+				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_success, negquery );
+			}
 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->smem_timers->query->stop();
@@ -2431,6 +2496,10 @@ smem_lti_id smem_process_query( agent *my_agent, Symbol *state, Symbol *query, s
 		else
 		{
 			smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, query );
+			if ( negquery )
+			{
+				smem_buffer_add_wme( meta_wmes, state->id.smem_result_header, my_agent->smem_sym_failure, negquery );
+			}
 
 			////////////////////////////////////////////////////////////////////////////
 			my_agent->smem_timers->query->stop();
@@ -3319,6 +3388,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 	soar_module::wme_set cue_wmes;
 
 	Symbol *query;
+	Symbol *negquery;
 	Symbol *retrieve;
 	smem_sym_list prohibit;
 	smem_sym_list store;
@@ -3435,6 +3505,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 			// initialize command vars
 			retrieve = NIL;
 			query = NIL;
+			negquery = NIL;
 			store.clear();
 			prohibit.clear();
 			path = blank_slate;
@@ -3468,6 +3539,21 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 
 						{
 							query = (*w_p)->value;
+							path = cmd_query;
+						}
+						else
+						{
+							path = cmd_bad;
+						}
+					}
+					else if ( (*w_p)->attr == my_agent->smem_sym_negquery )
+					{
+						if ( ( (*w_p)->value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE ) &&
+							 ( ( path == blank_slate ) || ( path == cmd_query ) ) &&
+							 ( negquery == NIL ) )
+							
+						{
+							negquery = (*w_p)->value;
 							path = cmd_query;
 						}
 						else
@@ -3562,7 +3648,7 @@ void smem_respond_to_cmd( agent *my_agent, bool store_only )
 						prohibit_lti.insert( (*sym_p)->id.smem_lti );
 					}
 
-					smem_process_query( my_agent, state, query, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
+					smem_process_query( my_agent, state, query, negquery, &( prohibit_lti ), cue_wmes, meta_wmes, retrieval_wmes );
 
 					// add one to the cbr stat
 					my_agent->smem_stats->cbr->set_value( my_agent->smem_stats->cbr->get_value() + 1 );

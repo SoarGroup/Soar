@@ -757,6 +757,7 @@ void create_predefined_symbols (agent* thisAgent) {
 
   thisAgent->smem_sym_retrieve = make_sym_constant( thisAgent, "retrieve" );
   thisAgent->smem_sym_query = make_sym_constant( thisAgent, "query" );
+  thisAgent->smem_sym_negquery = make_sym_constant( thisAgent, "neg-query" );
   thisAgent->smem_sym_prohibit = make_sym_constant( thisAgent, "prohibit" );
   thisAgent->smem_sym_store = make_sym_constant( thisAgent, "store" );
 }
@@ -864,6 +865,7 @@ void release_predefined_symbols(agent* thisAgent) {
 
   release_helper( thisAgent, &( thisAgent->smem_sym_retrieve ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_query ) );
+  release_helper( thisAgent, &( thisAgent->smem_sym_negquery ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_prohibit ) );
   release_helper( thisAgent, &( thisAgent->smem_sym_store ) );
 }
