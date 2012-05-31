@@ -15,10 +15,12 @@ public:
     }
 	
     ~project_command() {
+/*
 	if (a != NULL)
 	    delete a;
 	if (b != NULL)
 	    delete b;
+*/
 	if (!fltrs.empty()) {
 	    fltrs.clear();
 	}
@@ -113,13 +115,13 @@ public:
 	    else if (axes[i] == 1)
 	    {
 		// width of both objects + 10% positive
-		double dist = (vec_dist(bc, bmax) + vec_dist(ac, amax))*1.3;
+		double dist = (vec_dist(bc, bmax) + vec_dist(ac, amax));
 		pos[i] = bc[i] + dist;
 	    }
 	    else if (axes[i] == -1)
 	    {
 		// width of both objects + 10% negative
-		double dist = (vec_dist(bc, bmax) + vec_dist(ac, amax))*1.3;
+		double dist = (vec_dist(bc, bmax) + vec_dist(ac, amax));
 		pos[i] = bc[i] - dist;
 	    }
 	}

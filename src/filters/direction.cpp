@@ -162,7 +162,7 @@ filter *make_below(scene *scn, filter_input *input) {
 
 filter_table_entry north_of_fill_entry() {
 	filter_table_entry e;
-	e.name = "north-of";
+	e.name = "y-greater-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_north_of;
@@ -173,7 +173,7 @@ filter_table_entry north_of_fill_entry() {
 
 filter_table_entry south_of_fill_entry() {
 	filter_table_entry e;
-	e.name = "south-of";
+	e.name = "y-less-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_south_of;
@@ -184,7 +184,7 @@ filter_table_entry south_of_fill_entry() {
 
 filter_table_entry east_of_fill_entry() {
 	filter_table_entry e;
-	e.name = "east-of";
+	e.name = "x-greater-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_east_of;
@@ -195,7 +195,7 @@ filter_table_entry east_of_fill_entry() {
 
 filter_table_entry west_of_fill_entry() {
 	filter_table_entry e;
-	e.name = "west-of";
+	e.name = "x-less-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_west_of;
@@ -206,7 +206,7 @@ filter_table_entry west_of_fill_entry() {
 
 filter_table_entry horizontally_aligned_fill_entry() {
 	filter_table_entry e;
-	e.name = "horizontally-aligned";
+	e.name = "y-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_horizontally_aligned;
@@ -217,7 +217,7 @@ filter_table_entry horizontally_aligned_fill_entry() {
 
 filter_table_entry vertically_aligned_fill_entry() {
 	filter_table_entry e;
-	e.name = "vertically-aligned";
+	e.name = "x-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_vertically_aligned;
@@ -228,7 +228,7 @@ filter_table_entry vertically_aligned_fill_entry() {
 
 filter_table_entry planar_aligned_fill_entry() {
 	filter_table_entry e;
-	e.name = "planar-aligned";
+	e.name = "z-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_planar_aligned;
@@ -239,7 +239,7 @@ filter_table_entry planar_aligned_fill_entry() {
 
 filter_table_entry above_fill_entry() {
 	filter_table_entry e;
-	e.name = "above";
+	e.name = "z-greater-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_above;
@@ -250,7 +250,7 @@ filter_table_entry above_fill_entry() {
 
 filter_table_entry below_fill_entry() {
 	filter_table_entry e;
-	e.name = "below";
+	e.name = "z-less-than";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.create = &make_below;
