@@ -39,6 +39,7 @@ public:
 	osg::Group *get_root();
 	void update(const std::vector<std::string> &fields);
 	void toggle_axes();
+	void update_grid(double cx, double cy, double cfar);
 	
 private:
 	int parse_add(std::vector<std::string> &f);
@@ -48,6 +49,7 @@ private:
 	typedef std::map<std::string, node*> node_table;
 	
 	node_table nodes;
+	osg::ref_ptr<osg::Geode> grid;
 };
 
 #endif

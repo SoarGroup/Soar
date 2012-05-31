@@ -133,7 +133,13 @@ class scene_manager {
 public:
 	scene_manager(osg::ref_ptr<osgViewer::Viewer> &v, int scene_menu_id) 
 	: viewer(v), scene_menu_id(scene_menu_id), current(-1)
-	{}
+	{
+		osgViewer::ViewerBase::Cameras cs;
+		viewer->getCameras(cs);
+		assert(!cs.empty());
+		cam = cs[0];
+		assert(cam.valid());
+	}
 	
 	~scene_manager() {
 		for (int i = 0; i < scenes.size(); ++i) {
@@ -255,8 +261,24 @@ public:
 		}
 	}
 	
+	void update_grid() {
+		osg::Vec3f eye, center, up;
+		float dist;
+		
+		if (current >= 0) {
+			cam->getViewMatrixAsLookAt(eye, center, up, dist);
+			scenes[current].second->update_grid(eye[0], eye[1], 100);
+		}
+	}
+	
+	void frame() {
+		//update_grid();
+		viewer->frame();
+	}
+		
 private:
 	osg::ref_ptr<osgViewer::Viewer> viewer;
+	osg::ref_ptr<osg::Camera> cam;
 	vector<pair<string, scene*> > scenes;
 
 	int current;
@@ -316,9 +338,7 @@ void display(void) {
 	read_buf.clear();
 	pthread_mutex_unlock(&mut);
 	
-	if (viewer.valid()) {
-		viewer->frame();
-	}
+	scn_mgr->frame();
 	glutSwapBuffers();
 	glutPostRedisplay();
 	

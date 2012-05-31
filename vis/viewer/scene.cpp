@@ -27,7 +27,8 @@ using namespace osg;
 const char *FONT = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf";
 const double AXIS_RADIUS = 0.005;
 const double AXIS_LEN = 1.0;
- 
+const double GRIDSIZE = 1.0;
+
 /*
  Execute qhull to calculate the convex hull of pts.
 */
@@ -229,6 +230,41 @@ scene::scene() {
 	nodes["world"] = w;
 	ref_ptr<PositionAttitudeTransform> r = w->trans;
 	//r->getOrCreateStateSet()->setMode(GL_LIGHTING, StateAttribute::OFF);
+	
+	grid = new Geode;
+	ref_ptr<StateSet> ss = grid->getOrCreateStateSet();
+	ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+
+	w->group->addChild(grid);
+	update_grid(0.0, 0.0, 100.0);
+}
+
+void scene::update_grid(double cx, double cy, double cfar) {
+	double xmin = ((int) ((cx - cfar) / GRIDSIZE) - 1) * GRIDSIZE;
+	double xmax = ((int) ((cx + cfar) / GRIDSIZE) + 1) * GRIDSIZE;
+	double ymin = ((int) ((cy - cfar) / GRIDSIZE) - 1) * GRIDSIZE;
+	double ymax = ((int) ((cy + cfar) / GRIDSIZE) + 1) * GRIDSIZE;
+	
+	ref_ptr<Vec3Array> verts = new Vec3Array;
+	for(double x = xmin; x <= xmax; x += GRIDSIZE) {
+		verts->push_back(Vec3(x, ymin, 0.0));
+		verts->push_back(Vec3(x, ymax, 0.0));
+	}
+	for(double y = ymin; y <= ymax; y += GRIDSIZE) {
+		verts->push_back(Vec3(xmin, y, 0.0));
+		verts->push_back(Vec3(xmax, y, 0.0));
+	}
+	
+	ref_ptr<Geometry> g = new Geometry;
+	g->setVertexArray(verts);
+	g->addPrimitiveSet(new DrawArrays(GL_LINES, 0, verts->size()));
+	ref_ptr<Vec4Array> colors = new Vec4Array;
+	colors->push_back(Vec4(0.5, 0.5, 0.5, 1.0));
+	g->setColorArray(colors);
+	g->setColorBinding(Geometry::BIND_OVERALL);
+	
+	grid->removeDrawable(0);
+	grid->addDrawable(g);
 }
 
 bool parse_vec3(vector<string> &f, int &p, Vec3 &x) {
