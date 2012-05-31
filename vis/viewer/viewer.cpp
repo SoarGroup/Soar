@@ -24,6 +24,7 @@
 #include "scene.h"
 
 using namespace std;
+using namespace osg;
 
 const int BUFFERSIZE = 10240;
 const char *DEFAULT_PATH = "/tmp/viewer";
@@ -131,7 +132,7 @@ private:
 
 class scene_manager {
 public:
-	scene_manager(osg::ref_ptr<osgViewer::Viewer> &v, int scene_menu_id) 
+	scene_manager(ref_ptr<osgViewer::Viewer> &v, int scene_menu_id) 
 	: viewer(v), scene_menu_id(scene_menu_id), current(-1)
 	{
 		osgViewer::ViewerBase::Cameras cs;
@@ -268,7 +269,7 @@ public:
 	}
 	
 	void update_grid() {
-		osg::Vec3f eye, center, up;
+		Vec3f eye, center, up;
 		float dist;
 		
 		if (current >= 0) {
@@ -283,8 +284,8 @@ public:
 	}
 		
 private:
-	osg::ref_ptr<osgViewer::Viewer> viewer;
-	osg::ref_ptr<osg::Camera> cam;
+	ref_ptr<osgViewer::Viewer> viewer;
+	ref_ptr<Camera> cam;
 	vector<pair<string, scene*> > scenes;
 
 	int current;
@@ -298,8 +299,8 @@ vector<string> read_buf;
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 bool finished = false;
 
-osg::ref_ptr<osgViewer::Viewer> viewer;
-osg::observer_ptr<osgViewer::GraphicsWindow> window;
+ref_ptr<osgViewer::Viewer> viewer;
+observer_ptr<osgViewer::GraphicsWindow> window;
 scene_manager *scn_mgr;
 
 void *read_stdin(void *ptr) {
@@ -519,7 +520,9 @@ int main( int argc, char **argv ) {
 	
 	viewer = new osgViewer::Viewer;
 	window = viewer->setUpViewerAsEmbeddedInWindow(0, 0, 800, 600);
-	viewer->setCameraManipulator(new osgGA::TrackballManipulator());
+	ref_ptr<osgGA::TrackballManipulator> trackball = new osgGA::TrackballManipulator();
+	trackball->setHomePosition(Vec3(0,0,20), Vec3(0,0,0), Vec3(0,1,0));
+	viewer->setCameraManipulator(trackball);
 	viewer->setThreadingModel(osgViewer::Viewer::SingleThreaded);
 	viewer->addEventHandler(new osgViewer::StatsHandler);
 	viewer->realize();
