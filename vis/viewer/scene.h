@@ -20,13 +20,16 @@ public:
 	std::string name;
 	std::string parent;
 	
-	node(const std::string &name, const std::string &parent);	
-	node(const std::string &name, const std::string &parent, const std::vector<osg::Vec3> &verts);
+	node(const std::string &name, const std::string &parent);
+	void make_polyhedron(const std::vector<osg::Vec3> &verts);
+	void make_sphere(double radius);
+	void make_group();
+	
 	void add_child(node &n);
 	void remove_child(node &n);
-	void set_vertices(const std::vector<osg::Vec3> &verts);
 	bool is_group();
 	void toggle_axes();
+	void toggle_wireframe();
 	
 private:
 	void create_label();
@@ -39,12 +42,13 @@ public:
 	osg::Group *get_root();
 	void update(const std::vector<std::string> &fields);
 	void toggle_axes();
+	void toggle_wireframe();
 	void update_grid(double cx, double cy, double cfar);
 	
 private:
-	int parse_add(std::vector<std::string> &f);
-	int parse_change(std::vector<std::string> &f);
-	int parse_del(std::vector<std::string> &f);
+	int parse_add(std::vector<std::string> &f, std::string &error);
+	int parse_change(std::vector<std::string> &f, std::string &error);
+	int parse_del(std::vector<std::string> &f, std::string &error);
 	
 	typedef std::map<std::string, node*> node_table;
 	

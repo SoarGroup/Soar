@@ -261,6 +261,12 @@ public:
 		}
 	}
 	
+	void toggle_wireframe() {
+		for (int i = 0; i < scenes.size(); ++i) {
+			scenes[i].second->toggle_wireframe();
+		}
+	}
+	
 	void update_grid() {
 		osg::Vec3f eye, center, up;
 		float dist;
@@ -415,6 +421,9 @@ void top_menu_callback(int value) {
 		break;
 	case MENU_AXES:
 		scn_mgr->toggle_axes();
+		break;
+	case MENU_WIREFRAME:
+		scn_mgr->toggle_wireframe();
 		break;
 	case MENU_QUIT:
 		glutDestroyWindow(glutGetWindow());

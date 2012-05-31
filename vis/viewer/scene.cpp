@@ -27,7 +27,7 @@ using namespace osg;
 const char *FONT = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf";
 const double AXIS_RADIUS = 0.005;
 const double AXIS_LEN = 1.0;
-const double GRIDSIZE = 1.0;
+const double GRIDSIZE = 10;
 
 /*
  Execute qhull to calculate the convex hull of pts.
@@ -89,30 +89,73 @@ Quat to_quaternion(const Vec3 &rpy) {
 }
 
 node::node(const string &name, const string &parent) 
-: name(name), parent(parent), trans(new PositionAttitudeTransform()), group(new Group)
+: name(name), parent(parent), trans(new PositionAttitudeTransform()), 
+  group(new Group), scribe(new osgFX::Scribe), leaf(new Geode)
 {
-	if (name != "world") {
-		create_label();
-	}
 	trans->addChild(group);
-}
-
-node::node(const string &name, const string &parent, const vector<Vec3> &verts)
-: name(name), parent(parent), trans(new PositionAttitudeTransform())
-{
 	create_label();
 	create_axes();
-	if (verts.size() == 0) {
-		group = new Group;
-		trans->addChild(group);
+	scribe->addChild(leaf);
+	scribe->setWireframeColor(Vec4(0.0, 0.0, 0.0, 1.0));
+}
+
+void node::make_polyhedron(const vector<Vec3> &verts) {
+	ref_ptr<Geometry> g = new Geometry;
+	ref_ptr<Vec3Array> v = new Vec3Array;
+	copy(verts.begin(), verts.end(), back_inserter(*v));
+	g->setVertexArray(v);
+	
+	if (verts.size() == 1) {
+		g->addPrimitiveSet(new DrawArrays(GL_POINTS, 0, 1));
+	} else if (verts.size() == 2) {
+		g->addPrimitiveSet(new DrawArrays(GL_LINES, 0, 2));
+	} else if (verts.size() == 3) {
+		g->addPrimitiveSet(new DrawArrays(GL_TRIANGLES, 0, 3));
 	} else {
-		leaf = new Geode;
-		set_vertices(verts);
-		scribe = new osgFX::Scribe;
-		scribe->addChild(leaf);
-		scribe->setWireframeColor(Vec4(0.0, 0.0, 0.0, 1.0));
-		trans->addChild(scribe);
+		vector<vector<int> > facets;
+		if (qhull(verts, facets) != 0) {
+			cerr << "error executing qhull" << endl;
+			exit(1);
+		}
+		ref_ptr<DrawElementsUInt> triangles = new DrawElementsUInt(GL_TRIANGLES);
+		ref_ptr<DrawElementsUInt> quads = new DrawElementsUInt(GL_QUADS);
+		for (int i = 0; i < facets.size(); ++i) {
+			if (facets[i].size() == 3) {
+				copy(facets[i].begin(), facets[i].end(), back_inserter(*triangles));
+			} else if (facets[i].size() == 4) {
+				copy(facets[i].begin(), facets[i].end(), back_inserter(*quads));
+			} else {
+				assert(false);
+			}
+		}
+		
+		if (!triangles->empty()) {
+			g->addPrimitiveSet(triangles);
+		}
+		if (!quads->empty()) {
+			g->addPrimitiveSet(quads);
+		}
 	}
+	if (leaf->getNumDrawables() == 1) {
+		leaf->setDrawable(0, g);
+	} else {
+		leaf->addDrawable(g);
+	}
+	trans->setChild(0, scribe);
+}
+
+void node::make_sphere(double radius) {
+	ShapeDrawable* d = new ShapeDrawable(new Sphere( Vec3(0,0,0), radius));
+	if (leaf->getNumDrawables() == 1) {
+		leaf->setDrawable(0, d);
+	} else {
+		leaf->addDrawable(d);
+	}
+	trans->setChild(0, scribe);
+}
+
+void node::make_group() {
+	trans->setChild(0, group);
 }
 
 void node::create_axes() {
@@ -166,7 +209,6 @@ void node::create_label() {
 }
 
 void node::add_child(node &n) {
-	assert(group.valid());
 	group->addChild(n.trans);
 }
 
@@ -174,49 +216,8 @@ void node::remove_child(node &n) {
 	group->removeChild(n.trans.get());
 }
 
-void node::set_vertices(const vector<Vec3> &verts) {
-	ref_ptr<Geometry> g = new Geometry;
-	ref_ptr<Vec3Array> v = new Vec3Array;
-	copy(verts.begin(), verts.end(), back_inserter(*v));
-	g->setVertexArray(v);
-	
-	if (verts.size() == 1) {
-		g->addPrimitiveSet(new DrawArrays(GL_POINTS, 0, 1));
-	} else if (verts.size() == 2) {
-		g->addPrimitiveSet(new DrawArrays(GL_LINES, 0, 2));
-	} else if (verts.size() == 3) {
-		g->addPrimitiveSet(new DrawArrays(GL_TRIANGLES, 0, 3));
-	} else {
-		vector<vector<int> > facets;
-		if (qhull(verts, facets) != 0) {
-			cerr << "error executing qhull" << endl;
-			exit(1);
-		}
-		ref_ptr<DrawElementsUInt> triangles = new DrawElementsUInt(GL_TRIANGLES);
-		ref_ptr<DrawElementsUInt> quads = new DrawElementsUInt(GL_QUADS);
-		for (int i = 0; i < facets.size(); ++i) {
-			if (facets[i].size() == 3) {
-				copy(facets[i].begin(), facets[i].end(), back_inserter(*triangles));
-			} else if (facets[i].size() == 4) {
-				copy(facets[i].begin(), facets[i].end(), back_inserter(*quads));
-			} else {
-				assert(false);
-			}
-		}
-		
-		if (!triangles->empty()) {
-			g->addPrimitiveSet(triangles);
-		}
-		if (!quads->empty()) {
-			g->addPrimitiveSet(quads);
-		}
-	}
-	leaf->removeDrawable(0);
-	leaf->addDrawable(g);
-}
-
 bool node::is_group() {
-	return group.valid();
+	return trans->getChild(0) == group;
 }
 
 void node::toggle_axes() {
@@ -225,8 +226,13 @@ void node::toggle_axes() {
 	}
 }
 
+void node::toggle_wireframe() {
+	scribe->setEnabled(!scribe->getEnabled());
+}
+
 scene::scene() {
 	node *w = new node("world", "");
+	assert(w->is_group());
 	nodes["world"] = w;
 	ref_ptr<PositionAttitudeTransform> r = w->trans;
 	//r->getOrCreateStateSet()->setMode(GL_LIGHTING, StateAttribute::OFF);
@@ -285,10 +291,6 @@ bool parse_vec3(vector<string> &f, int &p, Vec3 &x) {
 }
 
 bool parse_verts(vector<string> &f, int &p, vector<Vec3> &verts) {
-	if (p >= f.size() || f[p] != "v") {
-		return true;
-	}
-	++p;
 	while (p < f.size()) {
 		Vec3 v;
 		int old = p;
@@ -303,56 +305,83 @@ bool parse_verts(vector<string> &f, int &p, vector<Vec3> &verts) {
 	return true;
 }
 
-bool parse_transforms(vector<string> &f, int &p, PositionAttitudeTransform &trans) {	
-	Vec3 t;
-	char type;
+bool parse_mods(vector<string> &f, int &p, node *n, string &error) {
+	Vec3 v3;
+	char t;
+	char *end;
+	double radius;
+	vector<Vec3> verts;
 	
 	while (p < f.size()) {
-		if (f[p].size() != 1 || f[p].find_first_of("prs") != 0) {
-			return true;
-		}
-		type = f[p++][0];
-		if (!parse_vec3(f, p, t)) {
+		t = f[p++][0];
+		switch (t) {
+		case 'p':
+		case 'r':
+		case 's':
+			if (!parse_vec3(f, p, v3)) {
+				error = "expecting three numbers after ";
+				error += t;
+				return false;
+			}
+			if (t == 'p') {
+				n->trans->setPosition(v3);
+			} else if (t == 'r') {
+				n->trans->setAttitude(to_quaternion(v3));
+			} else {
+				n->trans->setScale(v3);
+			}
+			break;
+		
+		case 'b':
+			if (p >= f.size()) {
+				error = "expecting a radius after b";
+				return false;
+			}
+			radius = strtod(f[p++].c_str(), &end);
+			if (*end != '\0') {
+				error = "expecting a radius after b";
+				return false;
+			}
+			n->make_sphere(radius);
+			break;
+		
+		case 'v':
+			if (!parse_verts(f, p, verts)) {
+				error = "expecting N numbers after v, divisible by 3";
+				return false;
+			}
+			n->make_polyhedron(verts);
+			break;
+			
+		default:
+			error = "unknown attribute ";
+			error += t;
 			return false;
-		}
-		switch (type) {
-			case 'p':
-				trans.setPosition(t);
-				break;
-			case 'r':
-				trans.setAttitude(to_quaternion(t));
-				break;
-			case 's':
-				trans.setScale(t);
-				break;
-			default:
-				assert(false);
 		}
 	}
 	return true;
 }
 
 // f[0] is node name, f[1] is parent name
-int scene::parse_add(vector<string> &f) {
+int scene::parse_add(vector<string> &f, string &error) {
 	if (f.size() < 2) {
+		error = "expecting <node name> <parent name>";
 		return f.size();
 	}
 	
 	if (nodes.find(f[0]) != nodes.end()) {
+		error = "node already exists";
 		return 0;
 	}
 	if (nodes.find(f[1]) == nodes.end() || !nodes[f[1]]->is_group()) {
+		error = "parent not found or not a group";
 		return 1;
 	}
 	
+	node *n = new node(f[0], f[1]);
+	
 	int p = 2;
-	vector<Vec3> verts;
-	if (!parse_verts(f, p, verts)) {
-		return p;
-	}
-
-	node *n = new node(f[0], f[1], verts);
-	if (!parse_transforms(f, p, *(n->trans))) {
+	if (!parse_mods(f, p, n, error)) {
 		delete n;
 		return p;
 	}
@@ -361,41 +390,36 @@ int scene::parse_add(vector<string> &f) {
 	return -1;
 }
 
-int scene::parse_change(vector<string> &f) {
-	if (f.size() < 2) {
+int scene::parse_change(vector<string> &f, string &error) {
+	if (f.size() < 1) {
+		error = "expecting <node name>";
 		return f.size();
 	}
 	
 	if (nodes.find(f[0]) == nodes.end()) {
+		error = "node not found";
 		return 0;
 	}
 	
 	node *n = nodes[f[0]];
-
 	int p = 1;
-	vector<Vec3> verts;
-	if (!parse_verts(f, p, verts)) {
+	if (!parse_mods(f, p, n, error)) {
 		return p;
 	}
-	if (!verts.empty() && !n->is_group()) {
-		n->set_vertices(verts);
-	}
-	
-	if (!parse_transforms(f, p, *(n->trans))) {
-		return p;
-	}
-	
 	return -1;
 }
 
-int scene::parse_del(vector<string> &f) {
+int scene::parse_del(vector<string> &f, string &error) {
 	if (f.size() != 1) {
+		error = "expecting <node name>";
 		return f.size();
 	}
 	if (f[0] == "world") {
+		error = "cannot delete world node";
 		return 0;
 	}
 	if (nodes.find(f[0]) == nodes.end()) {
+		error = "node not found";
 		return 0;
 	}
 
@@ -438,23 +462,24 @@ void scene::update(const vector<string> &fields) {
 	for (int i = 1; i < fields.size(); ++i) {
 		rest.push_back(fields[i]);
 	}
-	
+	string error;
 	switch(cmd) {
 		case 'a':
-			errfield = parse_add(rest);
+			errfield = parse_add(rest, error);
 			break;
 		case 'c':
-			errfield = parse_change(rest);
+			errfield = parse_change(rest, error);
 			break;
 		case 'd':
-			errfield = parse_del(rest);
+			errfield = parse_del(rest, error);
 			break;
 		default:
 			return;
 	}
 	
 	if (errfield >= 0) {
-		cerr << "error in field " << errfield + 1 << endl;
+		cerr << "error in field " << errfield + 2 << endl;
+		cerr << error << endl;
 	}
 }
 
@@ -466,5 +491,12 @@ void scene::toggle_axes() {
 	node_table::iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
 		i->second->toggle_axes();
+	}
+}
+
+void scene::toggle_wireframe() {
+	node_table::iterator i;
+	for (i = nodes.begin(); i != nodes.end(); ++i) {
+		i->second->toggle_wireframe();
 	}
 }
