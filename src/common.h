@@ -6,30 +6,15 @@
 #include <cmath>
 #include <cassert>
 #include <cstring>
-#include <sys/time.h>
+#include <ctime>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <ostream>
 #include <fstream>
 #include <map>
-
-/*
- By default Eigen will try to align all fixed size vectors to 128-bit
- boundaries to enable SIMD instructions on hardware such as SSE. However,
- this requires that you modify every class that has such vectors as
- members so that they are correctly allocated. This seems like more
- trouble than it's worth at the moment, so I'm disabling it.
-*/
-#define EIGEN_DONT_ALIGN
-#include <Eigen/Dense>
-
 #include "linalg.h"
 
-typedef Eigen::RowVectorXd rvec;
-typedef Eigen::VectorXd cvec;
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> mat;
-typedef Eigen::MatrixXi imat;
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 
@@ -42,34 +27,91 @@ std::ofstream& get_datavis();
 #define DATAVIS(x)
 #endif
 
+class timer_set;
+
 class timer {
 public:
-	timer() : name("") {}
-
-	timer(const std::string &name) : name(name) {
-		gettimeofday(&t1, NULL);
+	timer(const std::string &name) 
+	: name(name), t1(0), cycles(0), last(0), mean(0), min(INFINITY), max(0), m2(0)
+	{}
+	
+#ifdef NO_SVS_TIMING
+	inline void start() {}
+	inline double stop() { return 0.0; }
+#else
+	inline void start() {
+		t1 = clock();
 	}
 	
-	~timer() {
-		if (!name.empty()) {
-			std::cerr << "TIMER " << name << ": " << stop() << std::endl;
-		}
+	inline double stop() {
+		double elapsed = (clock() - t1) / (double) CLOCKS_PER_SEC;
+		last = elapsed;
+		
+		min = std::min(min, elapsed);
+		max = std::max(max, elapsed);
+		
+	  	// see http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm
+		cycles++;
+		double delta = elapsed - mean;
+		mean += delta / cycles;
+		m2 += delta * (elapsed - mean);
+		
+		return elapsed;
 	}
-
-	void start() {
-		gettimeofday(&t1, NULL);
-	}
-	
-	double stop() {
-		timeval t2, t3;
-		gettimeofday(&t2, NULL);
-		timersub(&t2, &t1, &t3);
-		return t3.tv_sec + t3.tv_usec / 1000000.0;
-	}
+#endif
 	
 private:
 	std::string name;
-	timeval t1;
+	
+	clock_t t1;
+	int cycles;
+	double last;
+	double mean;
+	double min;
+	double max;
+	double m2;
+	
+	friend class timer_set;
+};
+
+/*
+ Create an instance of this class at the beginning of a
+ function. The timer will stop regardless of how the function
+ returns.
+*/
+class function_timer {
+public:
+	function_timer(timer &t) : t(t) { t.start(); }
+	~function_timer() { t.stop(); }
+	
+private:
+	timer &t;
+};
+
+class timer_set {
+public:
+	timer_set() {}
+	
+	void add(const std::string &name) {
+		timers.push_back(timer(name));
+	}
+	
+	timer &get(int i) {
+		return timers[i];
+	}
+	
+	void start(int i) {
+		timers[i].start();
+	}
+	
+	double stop(int i) {
+		return timers[i].stop();
+	}
+	
+	void report(std::ostream &os) const;
+	
+private:
+	std::vector<timer> timers;
 };
 
 template <typename A, typename B>
@@ -323,15 +365,6 @@ void load_vector(std::vector<T> &v, std::istream &is) {
 		v.push_back(x);
 	}
 }
-
-void save_mat(std::ostream &os, const mat &m);
-void load_mat(std::istream &is, mat &m);
-void save_imat(std::ostream &os, const imat &m);
-void load_imat(std::istream &is, imat &m);
-void save_rvec(std::ostream &os, const rvec &v);
-void load_rvec(std::istream &is, rvec &v);
-void save_cvec(std::ostream &os, const cvec &v);
-void load_cvec(std::istream &is, cvec &v);
 
 inline double gausspdf(double x, double mean, double std) {
 	const double SQRT2PI = 2.5066282746310002;

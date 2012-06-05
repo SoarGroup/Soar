@@ -7,11 +7,11 @@
 using namespace std;
 using namespace Eigen;
 
-bool hasnan(const mat &m) {
+bool hasnan(const_mat_view m) {
 	return (m.array() != m.array()).any();
 }
 
-LDA_NN_Classifier::LDA_NN_Classifier(const mat &data, const vector<int> &membership)
+LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &membership)
 : membership(membership)
 {
 	int d = data.cols();

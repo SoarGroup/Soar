@@ -99,6 +99,7 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *
 {
 	assert (si->is_top_state(state));
 	init();
+	timers.add("model");
 }
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
@@ -108,6 +109,7 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 {
 	assert (si->get_parent_state(state) == parent->state);
 	init();
+	timers.add("model");
 }
 
 svs_state::~svs_state() {
@@ -127,7 +129,7 @@ void svs_state::init() {
 	svs_link = si->make_id_wme(state, cs->svs).first;
 	cmd_link = si->make_id_wme(svs_link, cs->cmd).first;
 	scene_link = si->make_id_wme(svs_link, cs->scene).first;
-	scn = new scene(name, "world", true);
+	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	if (!parent) {
 		ltm_link = si->make_id_wme(svs_link, cs->ltm).first;
@@ -212,10 +214,10 @@ void svs_state::clear_scene() {
 }
 
 void svs_state::update_models() {
+	function_timer t(timers.get(MODEL_T));
 	vector<string> curr_pnames, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
-	double dt;
 	
 	if (level > 0) {
 		/* No legitimate information to learn from imagined states */
@@ -228,7 +230,6 @@ void svs_state::update_models() {
 	}
 	scn->get_properties(curr_pvals);
 	get_output(out);
-	dt = scn->get_dt();
 	
 	if (prev_pnames == curr_pnames) {
 		rvec x(prev_pvals.size() + out.size());
@@ -238,7 +239,7 @@ void svs_state::update_models() {
 			x = prev_pvals;
 		}
 		mmdl->test(x, curr_pvals);
-		mmdl->learn(x, curr_pvals, dt);
+		mmdl->learn(x, curr_pvals);
 	} else {
 		mmdl->set_property_vector(curr_pnames);
 		DATAVIS("properties '")
@@ -277,8 +278,8 @@ bool svs_state::get_output(rvec &out) const {
 }
 
 bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
-	if (first_arg >= args.size()) {
-		os << "specify something to inspect" << endl;
+	if (first_arg >= args.size() || args[first_arg] == "help") {
+		os << "available queries: atoms models out " << endl;
 		return false;
 	}
 	if (args[first_arg] == "models") {
@@ -301,27 +302,45 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		return true;
 	} else if (args[first_arg] == "out") {
-		for (int i = 0; i < outspec.size(); ++i) {
-			os << outspec[i].name << " "  << next_out[i] << endl;
-		}
-		return true;
-	} else if (args[first_arg] == "atoms") {
-		vector<vector<string> > atoms;
-		get_filter_table().get_all_atoms(scn, atoms);
-		for (int i = 0; i < atoms.size(); ++i) {
-			if (atoms[i].size() == 1) {
-				os << atoms[i][0] << "()" << endl;
-			} else {
-				os << atoms[i][0] << "(";
-				for (int j = 1; j < atoms[i].size() - 1; ++j) {
-					os << atoms[i][j] << ", ";
-				}
-				os << atoms[i][atoms[i].size()-1] << ")" << endl;
+		if (next_out.size() == 0) {
+			os << "no output" << endl;
+		} else {
+			for (int i = 0; i < outspec.size(); ++i) {
+				os << outspec[i].name << " "  << next_out(i) << endl;
 			}
 		}
 		return true;
+	} else if (args[first_arg] == "atoms") {
+		vector<string> atoms;
+		get_filter_table().get_all_atoms(scn, atoms);
+		for (int i = 0; i < atoms.size(); ++i) {
+			os << atoms[i] << endl;
+		}
+		return true;
+	} else if (args[first_arg] == "timing") {
+		timers.report(os);
+		return true;
+	} else if (args[first_arg] == "command") {
+		if (first_arg == args.size() - 1) {
+			os << "specify a command id" << endl;
+			return false;
+		}
+		map<wme*, command*>::const_iterator i;
+		for (i = curr_cmds.begin(); i != curr_cmds.end(); ++i) {
+			string id;
+			if (!si->get_name(si->get_wme_val(i->first), id)) {
+				assert(false);
+			}
+			if (id == args[first_arg+1]) {
+				i->second->cli_inspect(os);
+				return true;
+			}
+		}
+		os << "no such command" << endl;
+		return false;
 	}
-	os << "no such element" << endl;
+	
+	os << "no such query" << endl;
 	return false;
 }
 
@@ -329,10 +348,13 @@ svs::svs(agent *a)
 {
 	string env_path = get_option("env");
 	if (!env_path.empty()) {
-		envsock.reset(new ipcsocket('s', env_path, true, true));
+		envsock.accept(env_path, true);
 	}
 	si = new soar_interface(a);
 	make_common_syms();
+	timers.add("input");
+	timers.add("output");
+	timers.add("calc_atoms");
 }
 
 svs::~svs() {
@@ -367,8 +389,8 @@ void svs::state_deletion_callback(Symbol *state) {
 
 void svs::proc_input(svs_state *s) {
 	std::string in;
-	if (envsock.get()) {
-		if (!envsock->receive(in)) {
+	if (envsock.connected()) {
+		if (!envsock.receive(in)) {
 			assert(false);
 		}
 		split(in, "\n", env_inputs);
@@ -380,6 +402,8 @@ void svs::proc_input(svs_state *s) {
 }
 
 void svs::output_callback() {
+	function_timer t(timers.get(OUTPUT_T));
+	
 	vector<svs_state*>::iterator i;
 	string sgel;
 	svs_state *topstate = state_stack.front();
@@ -402,14 +426,16 @@ void svs::output_callback() {
 	for (int i = 0; i < outspec->size(); ++i) {
 		ss << (*outspec)[i].name << " " << out[i] << endl;
 	}
-	if (envsock.get()) {
-		envsock->send(ss.str());
+	if (envsock.connected()) {
+		envsock.send(ss.str());
 	} else {
 		env_output = ss.str();
 	}
 }
 
 void svs::input_callback() {
+	function_timer t(timers.get(INPUT_T));
+	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
 	topstate->update_models();
@@ -418,6 +444,10 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
+	
+	timers.start(CALC_ATOMS_T);
+	topstate->get_scene()->get_atom_vals();
+	timers.stop(CALC_ATOMS_T);
 }
 
 void svs::make_common_syms() {
@@ -451,18 +481,28 @@ string svs::get_output() const {
 }
 
 bool svs::do_cli_command(const vector<string> &args, string &output) const {
+	stringstream ss;
 	if (args.size() < 2) {
-		output = "specify a state";
+		ss << "specify a state level [0 - " << state_stack.size() - 1 << "]";
+		output = ss.str();
 		return false;
 	}
 	char *end;
 	long level = strtol(args[1].c_str(), &end, 10);
-	stringstream ss;
 	bool ret;
 	if (*end != '\0') {
-		ret = state_stack[0]->cli_inspect(1, args, ss);
-		output = ss.str();
-		return ret;
+		if (args[1] == "timing") {
+			timers.report(ss);
+			output = ss.str();
+			return true;
+		} else if (args[1] == "filters") {
+			get_filter_table().get_timers().report(ss);
+			output = ss.str();
+			return true;
+		} else {
+			output = "no such query";
+			return false;
+		}
 	} else if (level < 0 || level >= state_stack.size()) {
 		output = "invalid level";
 		return false;

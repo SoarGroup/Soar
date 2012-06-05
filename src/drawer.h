@@ -1,17 +1,21 @@
 #ifndef DRAWER_H
 #define DRAWER_H
 
-#include <fstream>
 #include <string>
 #include "sgnode.h"
+#include "ipcsocket.h"
 
 class drawer {
 public:
-	static int POS, ROT, SCALE, COLOR, VERTS;
-	static std::ofstream fifo;
-	static bool fifo_open;
+	enum change_type { 
+		POS   = 1, 
+		ROT   = 1 << 2, 
+		SCALE = 1 << 3, 
+		COLOR = 1 << 4, 
+		VERTS = 1 << 5,
+	};
 	
-	drawer(const std::string &sname);
+	drawer();
 	~drawer();
 	
 	void set_pos(const vec3 &p);
@@ -22,16 +26,17 @@ public:
 	void set_vertices(const ptlist &v);
 	void set_vertices(sgnode *n);
 	void reset_properties();
-	void add(const std::string &name);
-	void add(sgnode *n);
-	void del(const std::string &name);
-	void del(sgnode *n);
-	void change(const std::string &name, int props);
+	void add(const std::string &scn, const std::string &name);
+	void add(const std::string &scn, sgnode *n);
+	void del(const std::string &scn, const std::string &name);
+	void del(const std::string &scn, sgnode *n);
+	void change(const std::string &scn, const std::string &name, int props);
 	
 private:
 	std::string scene_name;
 	vec3 pos, rot, scl, color;
 	ptlist verts;
+	ipcsocket sock;
 };
 
 #endif

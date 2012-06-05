@@ -4,32 +4,25 @@
 #include <string>
 #include <list>
 
-class ipcsocket;
-
-class ipc_listener {
-public:
-	virtual void ipc_connect(ipcsocket *sock) = 0;
-	virtual void ipc_disconnect(ipcsocket *sock) = 0;
-};
-
 class ipcsocket {
 public:
-	ipcsocket(char role, std::string socketfile, bool recvfirst, bool blocklisten=false);
+	ipcsocket();
 	~ipcsocket();
 	
 	bool send(const std::string &s);
+	bool send_line(const std::string &line);
 	bool receive(std::string &msg);
 	
-	void listen(ipc_listener *l);
-	void unlisten(ipc_listener *l);
+	bool accept(const std::string &path, bool blocklisten=false);
+	bool connect(const std::string &path);
 	
-private:
-	bool accept();
+	bool connected() const { return conn; }
 	void disconnect();
 	
+private:
 	std::string recvbuf;
 	int listenfd, fd;
-	bool connected;
+	bool conn;
 	
 	/*
 	 Is the incoming connection expecting to perform a send (hence
@@ -38,8 +31,6 @@ private:
 	*/
 	bool recvfirst;
 	
-	std::list<ipc_listener*> listeners;
-	char role;
 };
 
 #endif

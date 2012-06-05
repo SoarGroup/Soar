@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void get_nonuniform_cols(const mat &data, vector<int> &cols) {
+void get_nonuniform_cols(const_mat_view data, vector<int> &cols) {
 	for (int j = 0; j < data.cols(); ++j) {
 		for (int i = 1; i < data.rows(); ++i) {
 			if (data(i, j) != data(0, j)) {
@@ -20,7 +20,7 @@ void get_nonuniform_cols(const mat &data, vector<int> &cols) {
 	}
 }
 
-void clean_data(const mat &data, mat &cleaned, vector<int> &nonuniform_cols) {
+void clean_data(const_mat_view data, mat &cleaned, vector<int> &nonuniform_cols) {
 	get_nonuniform_cols(data, nonuniform_cols);
 	cleaned.resize(data.rows(), nonuniform_cols.size());
 	for (int i = 0; i < nonuniform_cols.size(); ++i) {
@@ -59,7 +59,7 @@ void classifier_inst::load(istream &is) {
 classifier::classifier(const mat &X, const mat &Y, scene *scn) 
 : X(X), Y(Y), ndata(0), scn(scn->copy())
 {
-	vector<vector<string> > atoms;
+	vector<string> atoms;
 	get_filter_table().get_all_atoms(scn, atoms);
 	tree = new ID5Tree(insts, atoms.size());
 }

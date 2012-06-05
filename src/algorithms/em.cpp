@@ -42,7 +42,10 @@ double randgauss(double mean, double std) {
 EM::EM(scene *scn)
 : xdim(0), clsfr(xdata, ydata, scn), ndata(0), nmodels(0),
   Py_z(INIT_NMODELS, INIT_NDATA), eligible(INIT_NMODELS, INIT_NDATA), ydata(INIT_NDATA, 1)
-{}
+{
+	timers.add("e_step");
+	timers.add("m_step");
+}
 
 EM::~EM() {
 }
@@ -187,6 +190,8 @@ void EM::add_data(const rvec &x, double y) {
 }
 
 void EM::estep() {
+	function_timer t(timers.get(E_STEP_T));
+	
 	update_eligibility();
 	/*
 	if (stale_models.empty()) {
@@ -200,22 +205,18 @@ void EM::estep() {
 
 	set<int> check;
 	
-	timer t;
-	t.start();
 	int nstale = 0;
 	for (int i = 0; i < nmodels; ++i) {
 		nstale += stale_points[i].size();
 		update_Py_z(i, check);
 	}
-	DATAVIS("'num stale' " << nstale << endl)
-	DATAVIS("'Py_z update' %+" << t.stop() << endl)
 	
-	t.start();
 	update_MAP(check);
-	DATAVIS("'MAP update' %+" << t.stop() << endl)
 }
 
 bool EM::mstep() {
+	function_timer t(timers.get(M_STEP_T));
+	
 	bool changed = false;
 	set<int>::iterator i;
 	for (i = stale_models.begin(); i != stale_models.end(); ++i) {
@@ -400,16 +401,8 @@ bool EM::remove_models() {
 }
 
 bool EM::step() {
-	timer t;
-	t.start();
 	estep();
-	DATAVIS("'E-step time' %+" << t.stop() << endl)
-	
-	t.start();
-	bool changed = mstep();
-	DATAVIS("'M-step time' %+" << t.stop() << endl)
-	
-	return changed;
+	return mstep();
 }
 
 bool EM::run(int maxiters) {
@@ -547,6 +540,9 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		return true;
 	} else if (args[first_arg] == "classifier") {
 		return clsfr.cli_inspect(first_arg + 1, args, os);
+	} else if (args[first_arg] == "timing") {
+		timers.report(os);
+		return true;
 	}
 	
 	os << "no such property" << endl;

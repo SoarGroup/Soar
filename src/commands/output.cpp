@@ -36,7 +36,7 @@ public:
 		si = state->get_svs()->get_soar_interface();
 	}
 	
-	bool update() {
+	bool update_drv() {
 		if (!changed()) {
 			return true;
 		}

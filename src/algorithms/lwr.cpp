@@ -48,9 +48,7 @@ void LWR::learn(const rvec &x, const rvec &y) {
 
 bool LWR::predict(const rvec &x, rvec &y) {
 	mat X, Y;
-	timer tall, tnn;
 
-	tall.start();
 	int k = examples.size() > nnbrs ? nnbrs : examples.size();
 	if (k == 0) {
 		return false;
@@ -63,11 +61,9 @@ bool LWR::predict(const rvec &x, rvec &y) {
 	
 	rvec xn = norm_vec(x, xmin, xrange);
 	
-	tnn.start();
 	vector<int> inds;
 	rvec d(k);
 	brute_nearest_neighbor(xnorm, xn, k, inds, d);
-	//cout << "NN:  " << tnn.stop() << endl;
 	
 	X.resize(k, xsz);
 	Y.resize(k, ysz);

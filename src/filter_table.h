@@ -8,6 +8,8 @@
 #include <map>
 #include <string>
 #include <fstream>
+#include <sstream>
+#include "common.h"
 
 class filter;
 class filter_input;
@@ -72,22 +74,21 @@ public:
 	 list of strings. The first string is the name of the predicate,
 	 and the rest are the node names used as arguments.
 	*/
-	void get_all_atoms(scene *scn, std::vector<std::vector<std::string> > &atoms) const {
-		std::ofstream out("/tmp/atom_names");
+	void get_all_atoms(scene *scn, std::vector<std::string> &atoms) const {
 		std::map<std::string, filter_table_entry>::const_iterator i;
-		int r = 0;
 		for(i = t.begin(); i != t.end(); ++i) {
 			const filter_table_entry &e = i->second;
 			if (e.possible_args != NULL && e.calc != NULL) {
 				std::vector<std::vector<std::string> > args;
-				std::vector<std::vector<std::string> >::iterator j;
 				(*e.possible_args)(scn, args);
-				for (j = args.begin(); j != args.end(); ++j) {
-					j->insert(j->begin(), e.name);
-					atoms.push_back(*j);
-					out << r++ << " ";
-					std::copy(j->begin(), j->end(), std::ostream_iterator<std::string>(out, " "));
-					out << std::endl;
+				for (int j = 0; j < args.size(); ++j) {
+					std::stringstream ss;
+					ss << e.name << "(";
+					for (int k = 0; k < args[j].size() - 1; ++k) {
+						ss << args[j][k] << ",";
+					}
+					ss << args[j][args[j].size() - 1] << ")";
+					atoms.push_back(ss.str());
 				}
 			}
 		}
@@ -99,7 +100,8 @@ public:
 	*/
 	void calc_all_atoms(scene *scn, std::vector<bool> &results) const {
 		std::map<std::string, filter_table_entry>::const_iterator i;
-		for(i = t.begin(); i != t.end(); ++i) {
+		int ii = 0;
+		for(i = t.begin(); i != t.end(); ++i, ++ii) {
 			const filter_table_entry &e = i->second;
 			if (e.possible_args != NULL && e.calc != NULL) {
 				std::vector<std::vector<std::string> > args;
@@ -107,10 +109,16 @@ public:
 				
 				(*e.possible_args)(scn, args);
 				for(j = args.begin(); j != args.end(); ++j) {
+					timers.start(ii);
 					results.push_back((*e.calc)(scn, *j));
+					timers.stop(ii);
 				}
 			}
 		}
+	}
+	
+	const timer_set &get_timers() const {
+		return timers;
 	}
 	
 private:
@@ -122,6 +130,8 @@ private:
 	}
 	
 	std::map<std::string, filter_table_entry> t;
+	
+	mutable timer_set timers;
 };
 
 /* Get the singleton instance */

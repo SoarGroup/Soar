@@ -55,6 +55,9 @@ private:
 	int ndata, nmodels, xdim;
 	
 	classifier clsfr;
+	
+	enum Timers { E_STEP_T, M_STEP_T };
+	timer_set timers;
 };
 
 

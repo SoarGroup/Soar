@@ -423,16 +423,18 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 class traj_eval {
 public:
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &init)
-	: mdl(m), stepsize(stepsize), obj(obj), numcalls(0), totaltime(0.)
+	: mdl(m), stepsize(stepsize), obj(obj)
 	{
 		scn = init.copy();
 		scn->get_properties(initvals);
+		timers.add("evaluate");
 	}
 	
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const rvec &initvals)
-	: mdl(m), stepsize(stepsize), obj(obj), numcalls(0), totaltime(0.), initvals(initvals)
+	: mdl(m), stepsize(stepsize), obj(obj), initvals(initvals)
 	{
 		scn = tmp.copy();
+		timers.add("evaluate");
 	}
 
 	~traj_eval() {
@@ -444,8 +446,7 @@ public:
 	}
 	
 	bool evaluate(const rvec &traj, rvec &value, rvec &finalstate) {
-		timer tm;
-		tm.start();
+		function_timer t(timers.get(EVALUATE_T));
 		
 		if (traj.size() > 0) {
 			rvec x(initvals.size() + stepsize), y = initvals;
@@ -463,17 +464,8 @@ public:
 		scn->set_properties(finalstate);
 		obj->evaluate(*scn, value);
 		
-		totaltime += tm.stop();
-		numcalls++;
 		return true;
 	}
-	
-	void print_stats() const {
-		cout << "ncall: " << numcalls << endl;
-		cout << "ttime: " << totaltime << endl;
-		cout << "atime: " << totaltime / numcalls << endl;
-	}
-	
 	
 private:
 	multi_model      *mdl;
@@ -481,8 +473,9 @@ private:
 	int               stepsize;  // dimensionality of output
 	scene            *scn;       // copy of initial scene to be modified after prediction
 	rvec              initvals;  // flattened values of initial scene
-	int               numcalls;
-	double            totaltime;
+	
+	enum Timers { EVALUATE_T };
+	timer_set timers;
 };
 
 void constrain(rvec &v, const rvec &min, const rvec &max) {
@@ -895,7 +888,6 @@ public:
 				} else {
 					result = naive_seek(evaluator, besttraj, bestval, beststate);
 				}
-				evaluator.print_stats();
 				if (!result) {
 					return 0;
 				}
@@ -1061,7 +1053,7 @@ public:
 		return string("control");
 	}
 	
-	bool update() {
+	bool update_drv() {
 		rvec out;
 		
 		if (changed()) {
@@ -1071,8 +1063,6 @@ public:
 			return false;
 		}
 		
-		timer t1;
-		t1.start();
 		int result = ctrl->seek(state->get_scene(), out);
 		switch (result) {
 			case 0:
@@ -1088,7 +1078,6 @@ public:
 				//update_step();
 				break;
 		}
-		cout << "SEEK " << t1.stop() << endl;
 		return true;
 	}
 	
@@ -1163,7 +1152,7 @@ public:
 		return string("random control");
 	}
 	
-	bool update() {
+	bool update_drv() {
 		if (changed()) {
 			wme *outputs_wme;
 			output_spec *outspec = state->get_output_spec();
@@ -1280,7 +1269,7 @@ public:
 		log_file << endl;
 	}
 	
-	bool update() {
+	bool update_drv() {
 		if (changed()) {
 			configure();
 		}

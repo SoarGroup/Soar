@@ -19,7 +19,7 @@ public:
 		finish();
 	}
 	
-	void learn(const rvec &x, const rvec &y, float dt) {
+	void learn(const rvec &x, const rvec &y) {
 		lwr.learn(x, y);
 	}
 	

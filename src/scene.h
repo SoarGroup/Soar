@@ -8,13 +8,14 @@
 #include "common.h"
 #include "drawer.h"
 #include "filter_table.h"
+#include "collision.h"
 
 class filter;
 class filter_input;
 
 class scene : public sgnode_listener {
 public:
-	scene(const std::string &name, const std::string &rootname, bool display);
+	scene(const std::string &name, drawer *d);
 	~scene();
 	
 	scene *copy() const;
@@ -40,8 +41,6 @@ public:
 	bool set_properties(const rvec &vals);
 	bool remove_property(const std::string &obj, const std::string &prop);
 	
-	float get_dt() const;
-	
 	void parse_sgel(const std::string &s);
 	void dump_sgel(std::ostream &os);
 	
@@ -57,7 +56,6 @@ private:
 	int  parse_del(std::vector<std::string> &f);
 	int  parse_change(std::vector<std::string> &f);
 	int  parse_property(std::vector<std::string> &f);
-	int  parse_dt(std::vector<std::string> &f);
 
 	void dump_sgel_rec(std::ostream &os, const std::string &name, const std::string &parent);
 	
@@ -74,12 +72,12 @@ private:
 	std::string  rootname;
 	sgnode      *root;
 	node_map     nodes;
-	bool         display;
-	drawer       draw;
-	float        dt;          // time passed since last update (as reported by environment)
+	drawer      *draw;
 	
 	std::vector<bool> atomvals;
 	bool dirty;
+	
+	collision_detector cdetect;
 };
 
 /* Functions to generate common argument sets */

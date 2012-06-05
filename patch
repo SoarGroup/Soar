@@ -2,20 +2,32 @@ Index: Core/SConscript
 ===================================================================
 --- Core/SConscript	(revision 13333)
 +++ Core/SConscript	(working copy)
-@@ -25,7 +25,11 @@
+@@ -1,4 +1,4 @@
+-import sys, os
++import sys, os, platform
+ import subprocess as sub
+ import itertools as itl
+ 
+@@ -25,8 +25,17 @@
  elif os.name == 'nt':
  	libs = ['advapi32']
  
 -kernel_env.Replace(LIBS = libs, LIBPATH=[])
++if '64' in platform.machine():
++	bullet_lib = '#Core/SVS/bullet/lib64'
++else:
++	bullet_lib = '#Core/SVS/bullet/lib32'
+ 
 +kernel_env.Replace(
 +	LIBS = libs, 
-+	LIBPATH = ['#Core/SVS/bullet/lib'],
++	LIBPATH = [bullet_lib],
 +	LINKFLAGS = ['-Wl,--whole-archive','-lLinearMath','-lBulletCollision','-Wl,--no-whole-archive'],
 +)
- 
++
  if sys.platform == 'darwin':
- 	install_name = os.path.join('@executable_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
-@@ -58,6 +62,10 @@
+ 	install_name = os.path.join('@loader_path', env['LIBPREFIX'] + 'Soar' + env['SHLIBSUFFIX'])
+ 	kernel_env.Append(LINKFLAGS = ['-install_name', install_name])
+@@ -58,6 +67,10 @@
  if compiler == 'msvc':
  	srcs['pcre'] = ('pcre/pcre.cxx', Glob('pcre/*.c'))
  

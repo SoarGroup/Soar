@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string>
 #include <vector>
 #include <limits>
@@ -141,108 +142,6 @@ ostream& operator<<(ostream &os, const bbox &b) {
 	return os;
 }
 
-void save_mat(std::ostream &os, const mat &m) {
-	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
-	os << m << endl << "end_mat" << endl;
-}
-
-void load_mat(std::istream &is, mat &m) {
-	string token;
-	char *endptr;
-	int nrows, ncols;
-	double x;
-	is >> token;
-	assert(token == "begin_mat");
-	is >> token;
-	nrows = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
-	is >> token;
-	ncols = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
-	
-	m.resize(nrows, ncols);
-	for (int i = 0; i < nrows; ++i) {
-		for (int j = 0; j < ncols; ++j) {
-			is >> token;
-			x = strtod(token.c_str(), &endptr);
-			assert(endptr[0] == '\0');
-			m(i, j) = x;
-		}
-	}
-	is >> token;
-	assert(token == "end_mat");
-}
-
-void save_imat(std::ostream &os, const imat &m) {
-	os << "begin_mat " << m.rows() << " " << m.cols() << endl;
-	os << m << endl << "end_mat" << endl;
-}
-
-void load_imat(std::istream &is, imat &m) {
-	string token;
-	char *endptr;
-	int nrows, ncols;
-	int x;
-	is >> token;
-	assert(token == "begin_mat");
-	is >> token;
-	nrows = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
-	is >> token;
-	ncols = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
-	
-	m.resize(nrows, ncols);
-	for (int i = 0; i < nrows; ++i) {
-		for (int j = 0; j < ncols; ++j) {
-			is >> token;
-			x = strtol(token.c_str(), &endptr, 10);
-			assert(endptr[0] == '\0');
-			m(i, j) = x;
-		}
-	}
-	is >> token;
-	assert(token == "end_mat");
-}
-
-void save_rvec(std::ostream &os, const rvec &v) {
-	os << "begin_vec " << v.size() << endl;
-	os << v << endl;
-	os << "end_vec" << endl;
-}
-
-void load_rvec(std::istream &is, rvec &v) {
-	string token;
-	char *endptr;
-	int n;
-	double x;
-	is >> token;
-	assert(token == "begin_vec");
-	is >> token;
-	n = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
-	
-	v.resize(n);
-	for (int i = 0; i < n; ++i) {
-		is >> token;
-		x = strtod(token.c_str(), &endptr);
-		assert(endptr[0] == '\0');
-		v(i) = x;
-	}
-	is >> token;
-	assert(token == "end_vec");
-}
-
-void save_cvec(std::ostream &os, const cvec &v) {
-	save_rvec(os, v.transpose());
-}
-
-void load_cvec(std::istream &is, cvec &v) {
-	rvec v1;
-	load_rvec(is, v1);
-	v = v1.transpose();
-}
-
 string get_option(const string &key) {
 	static map<string, string> options;
 	static bool first = true;
@@ -265,4 +164,49 @@ string get_option(const string &key) {
 		first = false;
 	}
 	return options[key];
+}
+
+void timer_set::report(ostream &os) const {
+	vector<timer>::const_iterator i;
+	int longest_name = 5;   // "total"
+	for (i = timers.begin(); i != timers.end(); ++i) {
+		if (longest_name < i->name.size()) {
+			longest_name = i->name.size();
+		}
+	}
+	
+	// header
+	os << left << setw(longest_name + 2) << "label" << right;
+	os << setw(13) << "cycles";
+	os << setw(13) << "total";
+	os << setw(13) << "mean";
+	os << setw(13) << "stdev";
+	os << setw(13) << "min";
+	os << setw(13) << "max";
+	os << setw(13) << "last" << endl;
+	
+	int ttl_cycles = 0;
+	double ttl_total = 0.0;
+	for (i = timers.begin(); i != timers.end(); ++i) {
+		double total = i->mean * i->cycles;
+		double stdev = sqrt(i->m2 / i->cycles);
+		
+		os << setw(longest_name + 2) << left << i->name << right;
+		os << " " << setw(12) << i->cycles;
+		os << " " << setw(12) << total;
+		os << " " << setw(12) << i->mean;
+		os << " " << setw(12) << stdev;
+		os << " " << setw(12) << i->min;
+		os << " " << setw(12) << i->max;
+		os << " " << setw(12) << i->last << endl;
+		
+		ttl_cycles += i->cycles;
+		ttl_total += total;
+	}
+	
+	os << endl;
+	os << setw(longest_name + 2) << left << "total" << right;
+	os << " " << setw(12) << ttl_cycles;
+	os << " " << setw(12) << ttl_total;
+	os << " " << setw(12) << ttl_total / ttl_cycles << endl;
 }
