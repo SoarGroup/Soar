@@ -17,9 +17,10 @@ def ConfigureJNI(env):
 
 		else:
 			# Search for the java compiler
-			jcdir = os.path.dirname(os.path.realpath(env.WhereIs('javac')))
-			if not jcdir:
+			p = env.WhereIs('javac')
+			if not p:
 				return None
+			jcdir = os.path.dirname(os.path.realpath(p))
 			# assuming the compiler found is in some directory like
 			# /usr/jdkX.X/bin/javac, java's home directory is /usr/jdkX.X
 			base = os.path.split(jcdir)[0]
