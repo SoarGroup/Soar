@@ -326,7 +326,6 @@ void *read_socket(void *ptr) {
 		cerr << "connect" << endl;
 		while (sck->recv_line(line)) {
 			if (line.find_first_not_of("\t\n ") != string::npos) {
-				cerr << line << endl;
 				pthread_mutex_lock(&mut);
 				read_buf.push_back(line);
 				pthread_mutex_unlock(&mut);
