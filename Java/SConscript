@@ -20,7 +20,7 @@ def AddResources(target, source, env):
 Import('env')
 java_env = env.Clone()
 
-if not java_env.WhereIs('java'):
+if not java_env.WhereIs('java') or not java_env.WhereIs('swig'):
 	Return()
 
 try:
