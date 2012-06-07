@@ -10,6 +10,7 @@ class sgnode;
 class collision_detector {
 public:
 	collision_detector();
+	~collision_detector();
 	void add_node(sgnode *n);
 	void del_node(sgnode *n);
 	void update_transform(sgnode *n);
@@ -19,6 +20,8 @@ public:
 	const timer_set &get_timers() const { return timers; }
 	
 private:
+	void init();
+	
 	btCollisionConfiguration *config;
 	btCollisionDispatcher    *dispatcher;
 	btBroadphaseInterface    *broadphase;
