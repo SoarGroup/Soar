@@ -28,10 +28,7 @@ public:
 		string name;
 		if (!adding) {
 			n1 = const_cast<sgnode*>(n);
-			map<sgnode*, const filter_param_set*>::iterator i = node2param.find(n1);
-			assert(i != node2param.end());
-			i->first->unlisten(this);
-			node2param.erase(i);
+			del_node(n1);
 		}
 		
 		if (!get_filter_param(this, params, "name", name)) {
@@ -50,6 +47,14 @@ public:
 		return true;
 	}
 	
+	void del_node(sgnode *n) {
+		map<sgnode*, const filter_param_set*>::iterator i = node2param.find(n);
+		if (i != node2param.end()) {
+			i->first->unlisten(this);
+			node2param.erase(i);
+		}
+	}
+	
 	void node_update(sgnode *n, sgnode::change_type t, int added) {
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::POINTS_CHANGED) {
 			const filter_param_set *s;
@@ -57,6 +62,9 @@ public:
 				assert(false);
 			}
 			mark_stale(s);
+			if (t == sgnode::DELETED) {
+				del_node(n);
+			}
 		}
 	}
 
