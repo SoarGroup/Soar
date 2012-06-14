@@ -230,6 +230,23 @@ void node::toggle_wireframe() {
 	scribe->setEnabled(!scribe->getEnabled());
 }
 
+void node::toggle_fill() {
+	if (!leaf.valid()) {
+		return;
+	}
+	StateSet *ss = leaf->getOrCreateStateSet();
+	PolygonMode *polymode = dynamic_cast<PolygonMode*>(ss->getAttribute(StateAttribute::POLYGONMODE));
+	if (!polymode) {
+		polymode = new PolygonMode;
+		ss->setAttribute(polymode);
+	}
+	if (polymode->getMode(PolygonMode::FRONT_AND_BACK) == PolygonMode::FILL) {
+		polymode->setMode(PolygonMode::FRONT_AND_BACK, PolygonMode::LINE);
+	} else {
+		polymode->setMode(PolygonMode::FRONT_AND_BACK, PolygonMode::FILL);
+	}
+}
+
 scene::scene() {
 	node *w = new node("world", "");
 	assert(w->is_group());
@@ -498,5 +515,12 @@ void scene::toggle_wireframe() {
 	node_table::iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
 		i->second->toggle_wireframe();
+	}
+}
+
+void scene::toggle_fill() {
+	node_table::iterator i;
+	for (i = nodes.begin(); i != nodes.end(); ++i) {
+		i->second->toggle_fill();
 	}
 }

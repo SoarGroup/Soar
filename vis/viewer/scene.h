@@ -30,6 +30,7 @@ public:
 	bool is_group();
 	void toggle_axes();
 	void toggle_wireframe();
+	void toggle_fill();
 	
 private:
 	void create_label();
@@ -43,6 +44,7 @@ public:
 	void update(const std::vector<std::string> &fields);
 	void toggle_axes();
 	void toggle_wireframe();
+	void toggle_fill();
 	void update_grid(double cx, double cy, double cfar);
 	
 private:

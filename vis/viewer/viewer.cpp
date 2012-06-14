@@ -268,6 +268,12 @@ public:
 		}
 	}
 	
+	void toggle_fill() {
+		for (int i = 0; i < scenes.size(); ++i) {
+			scenes[i].second->toggle_fill();
+		}
+	}
+	
 	void update_grid() {
 		Vec3f eye, center, up;
 		float dist;
@@ -397,6 +403,7 @@ enum MenuID {
 	MENU_RESET,
 	MENU_WIREFRAME,
 	MENU_AXES,
+	MENU_FILL,
 	MENU_QUIT,
 	MENU_END,
 };
@@ -410,6 +417,7 @@ MenuDef menu_definition[] = {
 	{ MENU_RESET,     "reset camera" },
 	{ MENU_WIREFRAME, "toggle wireframe" },
 	{ MENU_AXES,      "toggle axes" },
+	{ MENU_FILL,      "toggle fill" },
 	{ MENU_QUIT,      "quit" },
 	{ MENU_END,       NULL},
 };
@@ -424,6 +432,9 @@ void top_menu_callback(int value) {
 		break;
 	case MENU_WIREFRAME:
 		scn_mgr->toggle_wireframe();
+		break;
+	case MENU_FILL:
+		scn_mgr->toggle_fill();
 		break;
 	case MENU_QUIT:
 		glutDestroyWindow(glutGetWindow());
