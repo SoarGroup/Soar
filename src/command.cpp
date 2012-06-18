@@ -131,7 +131,6 @@ command *_make_property_command_(svs_state *state, Symbol *root);
 command *_make_seek_command_(svs_state *state, Symbol *root);
 command *_make_random_control_command_(svs_state *state, Symbol *root);
 command *_make_manual_control_command_(svs_state *state, Symbol *root);
-command *_make_output_command_(svs_state *state, Symbol *root);
 
 command* make_command(svs_state *state, wme *w) {
 	string name;
@@ -162,8 +161,6 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_assign_model_command_(state, id);
 	} else if (name == "property") {
 		return _make_property_command_(state, id);
-	} else if (name == "output") {
-		return _make_output_command_(state, id);
 	}
 	return NULL;
 }

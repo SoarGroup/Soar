@@ -98,12 +98,14 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *
   ltm_link(NULL)
 {
 	assert (si->is_top_state(state));
+	outspec = svsp->get_output_spec();
 	init();
 	timers.add("model");
 }
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
-: parent(parent), state(state), svsp(parent->svsp), si(parent->si), cs(parent->cs),
+: parent(parent), state(state), svsp(parent->svsp), si(parent->si),
+  cs(parent->cs), outspec(parent->outspec),
   level(parent->level+1), scene_num(-1),
   scene_num_wme(NULL), scn(NULL), scene_link(NULL), ltm_link(NULL)
 {
@@ -225,7 +227,7 @@ void svs_state::update_models() {
 	}
 	
 	scn->get_property_names(curr_pnames);
-	for (i = outspec.begin(); i != outspec.end(); ++i) {
+	for (i = outspec->begin(); i != outspec->end(); ++i) {
 		curr_pnames.push_back(string("output:") + i->name);
 	}
 	scn->get_properties(curr_pvals);
@@ -253,22 +255,22 @@ void svs_state::update_models() {
 }
 
 void svs_state::set_output(const rvec &out) {
-	assert(out.size() == outspec.size());
+	assert(out.size() == outspec->size());
 	next_out = out;
 }
 
 void svs_state::set_default_output() {
-	next_out.resize(outspec.size());
-	for (int i = 0; i < outspec.size(); ++i) {
-		next_out[i] = outspec[i].def;
+	next_out.resize(outspec->size());
+	for (int i = 0; i < outspec->size(); ++i) {
+		next_out[i] = (*outspec)[i].def;
 	}
 }
 
 bool svs_state::get_output(rvec &out) const {
-	if (next_out.size() != outspec.size()) {
-		out.resize(outspec.size());
-		for (int i = 0; i < outspec.size(); ++i) {
-			out[i] = outspec[i].def;
+	if (next_out.size() != outspec->size()) {
+		out.resize(outspec->size());
+		for (int i = 0; i < outspec->size(); ++i) {
+			out[i] = (*outspec)[i].def;
 		}
 		return false;
 	} else {
@@ -305,8 +307,8 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		if (next_out.size() == 0) {
 			os << "no output" << endl;
 		} else {
-			for (int i = 0; i < outspec.size(); ++i) {
-				os << outspec[i].name << " "  << next_out(i) << endl;
+			for (int i = 0; i < next_out.size(); ++i) {
+				os << (*outspec)[i].name << " "  << next_out(i) << endl;
 			}
 		}
 		return true;
@@ -396,7 +398,12 @@ void svs::proc_input(svs_state *s) {
 		split(in, "\n", env_inputs);
 	}
 	for (int i = 0; i < env_inputs.size(); ++i) {
-		s->get_scene()->parse_sgel(env_inputs[i]);
+		strip(env_inputs[i], " \t");
+		if (env_inputs[i][0] == 'o') {
+			parse_output_spec(env_inputs[i]);
+		} else {
+			s->get_scene()->parse_sgel(env_inputs[i]);
+		}
 	}
 	env_inputs.clear();
 }
@@ -416,15 +423,14 @@ void svs::output_callback() {
 	}
 	
 	/* environment IO */
-	output_spec *outspec = topstate->get_output_spec();
 	rvec out;
 	topstate->get_output(out);
 	
-	assert(outspec->size() == out.size());
+	assert(outspec.size() == out.size());
 	
 	stringstream ss;
-	for (int i = 0; i < outspec->size(); ++i) {
-		ss << (*outspec)[i].name << " " << out[i] << endl;
+	for (int i = 0; i < outspec.size(); ++i) {
+		ss << outspec[i].name << " " << out[i] << endl;
 	}
 	if (envsock.connected()) {
 		envsock.send(ss.str());
@@ -510,4 +516,35 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 	ret = state_stack[level]->cli_inspect(2, args, ss);
 	output = ss.str();
 	return ret;
+}
+
+bool svs::parse_output_spec(const string &s) {
+	vector<string> fields;
+	vector<double> vals(4);
+	output_dim_spec sp;
+	char *end;
+	
+	split(s, " \t\n", fields);
+	assert(fields[0] == "o");
+	if ((fields.size() - 1) % 5 != 0) {
+		return false;
+	}
+	
+	output_spec new_spec;
+	for (int i = 1; i < fields.size(); i += 5) {
+		sp.name = fields[i];
+		for (int j = 0; j < 4; ++j) {
+			vals[j] = strtod(fields[i + j + 1].c_str(), &end);
+			if (*end != '\0') {
+				return false;
+			}
+		}
+		sp.min = vals[0];
+		sp.max = vals[1];
+		sp.def = vals[2];
+		sp.incr = vals[3];
+		new_spec.push_back(sp);
+	}
+	outspec = new_spec;
+	return true;
 }

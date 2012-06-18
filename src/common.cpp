@@ -24,6 +24,16 @@ void split(const string &s, const string &delim, vector<string> &fields) {
 	}
 }
 
+void strip(string &s, const string &whitespace) {
+	size_t begin = s.find_first_not_of(whitespace);
+	if (begin == string::npos) {
+		s.clear();
+		return;
+	}
+	size_t end = s.find_last_not_of(whitespace);
+	s = s.substr(begin, end - begin);
+}
+
 ofstream& get_datavis() {
 	static bool first = true;
 	static ofstream f;

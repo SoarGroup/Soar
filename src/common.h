@@ -17,6 +17,7 @@
 
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
+void strip(std::string &s, const std::string &whitespace);
 
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
@@ -372,7 +373,11 @@ inline double gausspdf(double x, double mean, double std) {
 }
 
 inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
-	v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
+	//v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
+	// apparently rvec::Random will generate numbers outside of [0, 1]
+	for (int i = 0; i < v.size(); ++i) {
+		v(i) = min(i) + (rand() / (double) RAND_MAX) * (max(i) - min(i));
+	}
 }
 
 std::string get_option(const std::string &key);

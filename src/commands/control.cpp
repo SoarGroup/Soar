@@ -622,7 +622,7 @@ bool nelder_mead_constrained(const rvec &min, const rvec &max, traj_eval &ev, rv
 
 class tree_search {
 public:
-	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, output_spec *outspec, float thresh)
+	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, const output_spec *outspec, float thresh)
 	: outspec(outspec), thresh(thresh)
 	{
 		ci.scn = scn->copy();
@@ -728,7 +728,7 @@ private:
 		multi_objective *obj;
 		multi_model *mdl;
 		scene *scn;
-		output_spec *outspec;
+		const output_spec *outspec;
 		rvec min, max, range;
 	};
 	
@@ -832,7 +832,7 @@ private:
 	std::list<node*> leafs;
 	std::list<node*> nonleafs;
 	common_info ci;
-	output_spec *outspec;
+	const output_spec *outspec;
 	int num_nodes;
 	float total_depth, avg_depth, avg_bf, thresh;
 	node *bestnode;
@@ -840,7 +840,7 @@ private:
 
 class controller {
 public:
-	controller(multi_model *mmdl, multi_objective *obj, output_spec *outspec, int depth, string type)
+	controller(multi_model *mmdl, multi_objective *obj, const output_spec *outspec, int depth, string type)
 	: mmdl(mmdl), obj(obj), outspec(outspec), depth(depth), type(type), incr(depth, outspec)
 	{
 		int i, j;
@@ -948,7 +948,7 @@ private:
 	*/
 	class step_incr {
 	public:
-		step_incr(output_spec *outspec, rvec *traj, int start) 
+		step_incr(const output_spec *outspec, rvec *traj, int start) 
 		: outspec(outspec), traj(traj), start(start), inc(outspec->size())
 		{
 			reset();
@@ -973,7 +973,7 @@ private:
 		}
 		
 	private:
-		output_spec *outspec;
+		const output_spec *outspec;
 		int start, divisions;
 		rvec *traj;
 		rvec inc;
@@ -986,7 +986,7 @@ private:
 	public:
 		traj_incr() : len(0) {}
 		
-		traj_incr(int len, output_spec *outspec)
+		traj_incr(int len, const output_spec *outspec)
 		: len(len)
 		{
 			int stepsize = outspec->size();
@@ -1024,7 +1024,7 @@ private:
 	
 	multi_model     *mmdl;
 	multi_objective *obj;
-	output_spec     *outspec;
+	const output_spec *outspec;
 	rvec             min, max;   // for Nelder-Mead
 	int              depth;
 	int              stepsize;
@@ -1153,16 +1153,13 @@ public:
 	}
 	
 	bool update_drv() {
-		if (changed()) {
-			wme *outputs_wme;
-			output_spec *outspec = state->get_output_spec();
-			out.resize(outspec->size());
-			min.resize(outspec->size());
-			max.resize(outspec->size());
-			for (int i = 0; i < outspec->size(); ++i) {
-				min[i] = (*outspec)[i].min;
-				max[i] = (*outspec)[i].max;
-			}
+		const output_spec *outspec = state->get_output_spec();
+		out.resize(outspec->size());
+		min.resize(outspec->size());
+		max.resize(outspec->size());
+		for (int i = 0; i < outspec->size(); ++i) {
+			min[i] = (*outspec)[i].min;
+			max[i] = (*outspec)[i].max;
 		}
 		
 		randomize_vec(out, min, max);
@@ -1352,7 +1349,7 @@ private:
 	fstream log_file, stream_file;
 	
 	rvec output;
-	output_spec *outspec;
+	const output_spec *outspec;
 	svs_state *state;
 	Symbol *root;
 	soar_interface *si;

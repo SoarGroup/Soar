@@ -61,10 +61,10 @@ class svs;
 */
 struct output_dim_spec {
 	std::string name;
-	float min;
-	float max;
-	float def;
-	float incr;
+	double min;
+	double max;
+	double def;
+	double incr;
 };
 
 typedef std::vector<output_dim_spec> output_spec;
@@ -92,11 +92,9 @@ public:
 	svs           *get_svs()             { return svsp;      }
 	multi_model   *get_model()           { return mmdl;      }
 	
-	output_spec *get_output_spec() { return &outspec; }
-	void set_output_spec(const output_spec &s) { outspec = s; }
-	
 	void set_output(const rvec &out);
 	bool get_output(rvec &out) const;
+	const output_spec *get_output_spec() const { return outspec; }
 	
 	void update_models();
 	
@@ -130,8 +128,8 @@ private:
 	std::vector<std::string> prev_pnames;
 	rvec                     prev_pvals;
 	multi_model              *mmdl;
-	output_spec              outspec;
 	rvec                     next_out;
+	const output_spec       *outspec;
 	
 	enum Timers { MODEL_T };
 	timer_set timers;
@@ -154,12 +152,14 @@ public:
 	bool do_cli_command(const std::vector<std::string> &args, std::string &output) const;
 	
 	drawer *get_drawer() { return &draw; }
+	const output_spec *get_output_spec() { return &outspec; }
 	
 private:
 	void make_common_syms();
 	void del_common_syms();
 	void proc_input(svs_state *s);
-	
+	bool parse_output_spec(const std::string &s);
+
 	soar_interface*           si;
 	common_syms               cs;
 	std::vector<svs_state*>   state_stack;
@@ -167,6 +167,7 @@ private:
 	std::vector<std::string>  env_inputs;
 	std::string               env_output;
 	drawer                    draw;
+	output_spec               outspec;
 	
 	enum Timers { INPUT_T, OUTPUT_T, CALC_ATOMS_T };
 	
