@@ -51,6 +51,9 @@ public:
 	
 	const std::vector<bool>& get_atom_vals();
 	
+	bool intersects(const std::string &a, const std::string &b);
+	bool intersects(const sgnode *a, const sgnode *b);
+	
 private:
 	int  parse_add(std::vector<std::string> &f);
 	int  parse_del(std::vector<std::string> &f);

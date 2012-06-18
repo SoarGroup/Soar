@@ -580,6 +580,22 @@ const vector<bool>& scene::get_atom_vals() {
 	return atomvals;
 }
 
+bool scene::intersects(const string &a, const string &b) {
+	sgnode *na = get_node(a), *nb = get_node(b);
+	if (!na || !nb) {
+		return false;
+	}
+	return intersects(na, nb);
+}
+
+bool scene::intersects(const sgnode *a, const sgnode *b) {
+	if (a == b) {
+		return true;
+	}
+	const collision_table &c = cdetect.get_collisions();
+	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
+}
+
 void all_nodes(scene *scn, vector<vector<string> > &argset) {
 	vector<sgnode*> nodes;
 	vector<sgnode*>::const_iterator i;
