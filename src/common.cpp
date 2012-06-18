@@ -30,7 +30,7 @@ void strip(string &s, const string &whitespace) {
 		s.clear();
 		return;
 	}
-	size_t end = s.find_last_not_of(whitespace);
+	size_t end = s.find_last_not_of(whitespace) + 1;
 	s = s.substr(begin, end - begin);
 }
 
