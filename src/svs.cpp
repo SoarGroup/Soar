@@ -400,7 +400,10 @@ void svs::proc_input(svs_state *s) {
 	for (int i = 0; i < env_inputs.size(); ++i) {
 		strip(env_inputs[i], " \t");
 		if (env_inputs[i][0] == 'o') {
-			parse_output_spec(env_inputs[i]);
+			int err = parse_output_spec(env_inputs[i]);
+			if (err >= 0) {
+				cerr << "error in output description at field " << err << endl;
+			}
 		} else {
 			s->get_scene()->parse_sgel(env_inputs[i]);
 		}
@@ -518,7 +521,7 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 	return ret;
 }
 
-bool svs::parse_output_spec(const string &s) {
+int svs::parse_output_spec(const string &s) {
 	vector<string> fields;
 	vector<double> vals(4);
 	output_dim_spec sp;
@@ -527,7 +530,7 @@ bool svs::parse_output_spec(const string &s) {
 	split(s, " \t\n", fields);
 	assert(fields[0] == "o");
 	if ((fields.size() - 1) % 5 != 0) {
-		return false;
+		return fields.size();
 	}
 	
 	output_spec new_spec;
@@ -536,7 +539,7 @@ bool svs::parse_output_spec(const string &s) {
 		for (int j = 0; j < 4; ++j) {
 			vals[j] = strtod(fields[i + j + 1].c_str(), &end);
 			if (*end != '\0') {
-				return false;
+				return i + j + 1;
 			}
 		}
 		sp.min = vals[0];
@@ -546,5 +549,5 @@ bool svs::parse_output_spec(const string &s) {
 		new_spec.push_back(sp);
 	}
 	outspec = new_spec;
-	return true;
+	return -1;
 }

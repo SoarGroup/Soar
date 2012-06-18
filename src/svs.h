@@ -158,7 +158,7 @@ private:
 	void make_common_syms();
 	void del_common_syms();
 	void proc_input(svs_state *s);
-	bool parse_output_spec(const std::string &s);
+	int  parse_output_spec(const std::string &s);
 
 	soar_interface*           si;
 	common_syms               cs;
