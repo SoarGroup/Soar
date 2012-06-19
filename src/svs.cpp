@@ -26,8 +26,7 @@ void print_tree(sgnode *n) {
 			print_tree(n->get_child(i));
 		}
 	} else {
-		ptlist pts;
-		n->get_world_points(pts);
+		const ptlist &pts = n->get_world_points();
 		copy(pts.begin(), pts.end(), ostream_iterator<vec3>(cout, ", "));
 		cout << endl;
 	}

@@ -9,13 +9,11 @@ public:
 	
 	bool compute(const filter_param_set *params, bbox &b, bool adding) {
 		const sgnode *n;
-		ptlist pts;
 		
 		if (!get_filter_param(this , params, "node", n)) {
 			return false;
 		}
-		n->get_world_points(pts);
-		b = bbox(pts);
+		b = bbox(n->get_world_points());
 		return true;
 	}
 };

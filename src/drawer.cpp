@@ -46,9 +46,7 @@ void drawer::set_vertices(const ptlist &v) {
 }
 
 void drawer::set_vertices(sgnode *n) {
-	ptlist pts;
-	n->get_local_points(pts);
-	verts = pts;
+	verts = n->get_local_points();
 }
 
 void drawer::reset_properties() {
@@ -69,12 +67,10 @@ void drawer::add(const string &scn, const string &name) {
 }
 
 void drawer::add(const string &scn, sgnode *n) {
-	ptlist pts;
-	n->get_local_points(pts);
 	set_pos(n->get_trans('p'));
 	set_rot(n->get_trans('r'));
 	set_scale(n->get_trans('s'));
-	set_vertices(pts);
+	set_vertices(n->get_local_points());
 	add(scn, n->get_name());
 }
 

@@ -153,9 +153,11 @@ void sgnode::get_trans(vec3 &p, vec3 &r, vec3 &s) const {
 	s = scale;
 }
 
-void sgnode::get_local_points(ptlist &result) const {
-	const_cast<sgnode*>(this)->update_points();
-	result = points;
+const ptlist &sgnode::get_local_points() const {
+	if (pdirty) {
+		const_cast<sgnode*>(this)->update_points();
+	}
+	return points;
 }
 
 void sgnode::set_local_points(const ptlist &pts) {
@@ -165,12 +167,16 @@ void sgnode::set_local_points(const ptlist &pts) {
 	}
 }
 
-void sgnode::get_world_points(ptlist &result) const {
-	const_cast<sgnode*>(this)->update_points();
-	const_cast<sgnode*>(this)->update_transform();
-	result.clear();
-	result.reserve(points.size());
-	transform(points.begin(), points.end(), back_inserter(result), wtransform);
+const ptlist &sgnode::get_world_points() const {
+	if (pdirty || tdirty) {
+		sgnode *nonconst = const_cast<sgnode*>(this);
+		nonconst->update_points();
+		nonconst->update_transform();
+		nonconst->world_points.clear();
+		nonconst->world_points.reserve(points.size());
+		transform(points.begin(), points.end(), back_inserter(nonconst->world_points), wtransform);
+	}
+	return world_points;
 }
 
 void sgnode::detach_child(sgnode *c) {

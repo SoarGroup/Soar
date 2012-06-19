@@ -11,10 +11,9 @@ using namespace std;
  a and c intersects the convex hull of b
 */
 bool between(const sgnode *a, const sgnode *b, const sgnode *c) {
-	ptlist pa, pb, pc;
-	a->get_world_points(pa);
-	b->get_world_points(pb);
-	c->get_world_points(pc);
+	const ptlist &pa = a->get_world_points();
+	const ptlist &pb = b->get_world_points();
+	ptlist pc = c->get_world_points();
 		
 	copy(pa.begin(), pa.end(), back_inserter(pc));
 		
@@ -28,10 +27,9 @@ bool between(const sgnode *a, const sgnode *b, const sgnode *c) {
  front query is desired, and negative if a behind query is desired.
 */
 bool behind(const sgnode *a, const sgnode *b, const sgnode *c) {
-	ptlist pa, pb, pc;
-	a->get_world_points(pa);
-	b->get_world_points(pb);
-	c->get_world_points(pc);
+	const ptlist &pa = a->get_world_points();
+	const ptlist &pb = b->get_world_points();
+	const ptlist &pc = c->get_world_points();
 	
 	vec3 ca = calc_centroid(pa);
 	vec3 cb = calc_centroid(pb);

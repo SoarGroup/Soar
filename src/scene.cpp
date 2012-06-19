@@ -550,8 +550,7 @@ void scene::dump_sgel_rec(ostream &os, const string &name, const string &parent)
 	if (name != "world") {
 		os << "a " << name << " " << parent << " ";
 		if (!n->is_group()) {
-			ptlist verts;
-			n->get_local_points(verts);
+			const ptlist &verts = n->get_local_points();
 			ptlist::const_iterator j;
 			os << "v ";
 			for (j = verts.begin(); j != verts.end(); ++j) {

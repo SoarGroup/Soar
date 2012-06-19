@@ -73,7 +73,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *n1, *n2;
-		ptlist p1, p2;
 		::vec3 c1, c2;
 		
 		if (!(n1 = scn.get_node(obj1)) ||
@@ -82,8 +81,8 @@ public:
 			return INFINITY;
 		}
 		
-		n1->get_world_points(p1);
-		n2->get_world_points(p2);
+		const ptlist &p1 = n1->get_world_points();
+		const ptlist &p2 = n2->get_world_points();
 		c1 = calc_centroid(p1);
 		c2 = calc_centroid(p2);
 
@@ -104,7 +103,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *n1, *n2;
-		ptlist p1, p2;
 		::vec3 c1, c2;
 		
 		if (!(n1 = scn.get_node(obj1)) ||
@@ -113,8 +111,8 @@ public:
 			return INFINITY;
 		}
 		
-		n1->get_world_points(p1);
-		n2->get_world_points(p2);
+		const ptlist &p1 = n1->get_world_points();
+		const ptlist &p2 = n2->get_world_points();
 		c1 = calc_centroid(p1);
 		c2 = calc_centroid(p2);
 
@@ -136,7 +134,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *n1, *n2;
-		ptlist p1, p2;
 		::vec3 c1, c2;
 		
 		if (!(n1 = scn.get_node(obj1)) ||
@@ -145,8 +142,8 @@ public:
 			return INFINITY;
 		}
 		
-		n1->get_world_points(p1);
-		n2->get_world_points(p2);
+		const ptlist &p1 = n1->get_world_points();
+		const ptlist &p2 = n2->get_world_points();
 		c1 = calc_centroid(p1);
 		c2 = calc_centroid(p2);
 		
@@ -170,7 +167,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
-		ptlist pa, pb, pc;
 		
 		if (!(na = scn.get_node(a)) ||
 		    !(nb = scn.get_node(b)) ||
@@ -179,9 +175,9 @@ public:
 			return INFINITY;
 		}
 		
-		na->get_world_points(pa);
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
+		const ptlist &pa = na->get_world_points();
+		const ptlist &pb = nb->get_world_points();
+		const ptlist &pc = nc->get_world_points();
 		
 		vec3 ca = calc_centroid(pa);
 		vec3 cb = calc_centroid(pb);
@@ -211,7 +207,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
-		ptlist pa, pb, pc;
 		
 		if (!(na = scn.get_node(a)) ||
 		    !(nb = scn.get_node(b)) ||
@@ -220,9 +215,9 @@ public:
 			return INFINITY;
 		}
 		
-		na->get_world_points(pa);
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
+		const ptlist &pa = na->get_world_points();
+		const ptlist &pb = nb->get_world_points();
+		ptlist pc = nc->get_world_points();
 		
 		copy(pa.begin(), pa.end(), back_inserter(pc));
 		float d = hull_distance(pb, pc);
@@ -253,7 +248,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
-		ptlist pb, pc;
 		
 		if (!(na = scn.get_node(a)) ||
 		    !(nb = scn.get_node(b)) ||
@@ -265,8 +259,8 @@ public:
 		transform3 rot('r', na->get_trans('r'));
 		vec3 facing = rot(vec3(1, 0, 0));
 		
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
+		const ptlist &pb = nb->get_world_points();
+		const ptlist &pc = nc->get_world_points();
 		
 		vec3 desired = calc_centroid(pc) - calc_centroid(pb);
 		desired.normalize();

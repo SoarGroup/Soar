@@ -7,12 +7,9 @@
 using namespace std;
 
 bool ontop(const sgnode *tn, const sgnode *bn) {
-	ptlist tp, bp;
 	vec3 tmin, tmax, bmin, bmax;
 	
-	tn->get_world_points(tp);
-	bn->get_world_points(bp);
-	bbox tb(tp), bb(bp);
+	bbox tb(tn->get_world_points()), bb(bn->get_world_points());
 	tb.get_vals(bmin, bmax);
 	bb.get_vals(tmin, tmax);
 	return tb.intersects(bb) && tmin[2] == bmax[2];

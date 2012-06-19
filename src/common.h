@@ -265,7 +265,7 @@ public:
 		max = v;
 	}
 	
-	bbox(ptlist &pts) {
+	bbox(const ptlist &pts) {
 		if (pts.size() == 0) {
 			min.setZero();
 			max.setZero();
@@ -281,21 +281,21 @@ public:
 	
 	bbox(const vec3 &min, const vec3 &max) : min(min), max(max) {}
 	
-	void include(vec3 &v) {
+	void include(const vec3 &v) {
 		for(int d = 0; d < 3; ++d) {
 			if (v[d] < min[d]) { min[d] = v[d]; }
 			if (v[d] > max[d]) { max[d] = v[d]; }
 		}
 	}
 	
-	void include(ptlist &pts) {
-		ptlist::iterator i;
+	void include(const ptlist &pts) {
+		ptlist::const_iterator i;
 		for(i = pts.begin(); i != pts.end(); ++i) {
 			include(*i);
 		}
 	}
 	
-	bool intersects(bbox &b) const {
+	bool intersects(const bbox &b) const {
 		int d;
 		for (d = 0; d < 3; ++d) {
 			if (max[d] < b.min[d] || min[d] > b.max[d]) {
@@ -305,7 +305,7 @@ public:
 		return true;
 	}
 	
-	bool contains(bbox &b) const {
+	bool contains(const bbox &b) const {
 		int d;
 		for (d = 0; d < 3; ++d) {
 			if (max[d] < b.max[d] || min[d] > b.min[d]) {

@@ -145,14 +145,12 @@ public:
 	
 	bool compute(const filter_param_set *params, vec3 &v, bool adding) {
 		const sgnode *n;
-		ptlist pts;
 		
 		if (!get_filter_param(this, params, "node", n)) {
 			return false;
 		}
 		
-		n->get_world_points(pts);
-		v = calc_centroid(pts);
+		v = calc_centroid(n->get_world_points());
 		return true;
 	}
 };

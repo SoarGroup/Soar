@@ -15,12 +15,8 @@ Calculates whether a bounding box is located to the left (-1), aligned
 bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	int i, dir[3];
 	vec3 amin, amax, bmin, bmax;
-	ptlist pa, pb;
-	
-	a->get_world_points(pa);
-	b->get_world_points(pb);
-	
-	bbox ba(pa), bb(pb);
+
+	bbox ba(a->get_world_points()), bb(b->get_world_points());
 	ba.get_vals(amin, amax);
 	bb.get_vals(bmin, bmax);
 	

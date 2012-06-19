@@ -40,14 +40,9 @@ public:
 	vec3        get_trans(char type) const;
 	void        get_trans(vec3 &p, vec3 &r, vec3 &s) const;
 	
-	/*
-	 get_local_points and get_world_points intuitively should be
-	 const, but are not because they might have to run some lazily
-	 deferred updates.
-	*/
-	void        get_local_points(ptlist &result) const;
-	void        set_local_points(const ptlist &pts);
-	void        get_world_points(ptlist &result) const;
+	const ptlist &get_local_points() const;
+	const ptlist &get_world_points() const;
+	void set_local_points(const ptlist &pts);
 	
 	void        listen(sgnode_listener *o);
 	void        unlisten(sgnode_listener *o);
@@ -63,6 +58,7 @@ private:
 	std::string          name;
 	sgnode*              parent;
 	ptlist               points;
+	ptlist               world_points;
 	std::vector<sgnode*> children;
 	bool                 isgroup;
 	vec3                 pos;

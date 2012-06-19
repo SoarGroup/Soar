@@ -30,9 +30,9 @@ public:
 		res->clear();
 		
 		if (local) {
-			n->get_local_points(*res);
+			*res = n->get_local_points();
 		} else {
-			n->get_world_points(*res);
+			*res = n->get_world_points();
 		}
 		
 		return true;

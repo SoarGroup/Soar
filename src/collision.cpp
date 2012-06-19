@@ -56,11 +56,9 @@ void collision_detector::add_node(sgnode *n) {
 		init();
 	}
 	
-	ptlist points;
-	n->get_local_points(points);
 	btCollisionObject *cobj = new btCollisionObject();
 	cobj->setUserPointer(static_cast<void*>(n));
-	cobj->setCollisionShape(ptlist_to_hullshape(points));
+	cobj->setCollisionShape(ptlist_to_hullshape(n->get_local_points()));
 	update_transforms(n, cobj);
 	cworld->addCollisionObject(cobj);
 	object_map[n] = cobj;
@@ -92,10 +90,8 @@ void collision_detector::update_points(sgnode *n) {
 	
 	assert(object_map.find(n) != object_map.end());
 	btCollisionObject *cobj = object_map[n];
-	ptlist points;
-	n->get_local_points(points);
 	delete cobj->getCollisionShape();
-	cobj->setCollisionShape(ptlist_to_hullshape(points));
+	cobj->setCollisionShape(ptlist_to_hullshape(n->get_local_points()));
 	dirty = true;
 }
 
