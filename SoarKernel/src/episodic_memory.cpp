@@ -3588,7 +3588,7 @@ epmem_time_id epmem_previous_episode( agent *my_agent, epmem_time_id memory_id )
 // Justin's Stuff
 //////////////////////////////////////////////////////////
 
-#define JUSTIN_DEBUG 0
+#define QUERY_DEBUG 0
 
 void epmem_print_retrieval_state(epmem_wme_literal_map& literals, epmem_triple_pedge_map pedge_caches[], epmem_triple_uedge_map uedge_caches[]) {
 	//std::map<epmem_node_id, std::string> tsh;
@@ -3817,7 +3817,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 	// select the query
 	epmem_triple triple = {parent, literal->w, literal->q1};
 	int is_edge = literal->value_is_id;
-	if (JUSTIN_DEBUG >= 1) {
+	if (QUERY_DEBUG >= 1) {
 		std::cout << "		RECURSING ON " << parent << " " << literal << std::endl;
 	}
 	// if the unique edge does not exist, create a new unique edge query
@@ -3887,7 +3887,7 @@ bool epmem_register_pedges(epmem_node_id parent, epmem_literal* literal, epmem_p
 
 bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_node_id child, double& current_score, long int& current_cardinality, epmem_symbol_node_pair_int_map& symbol_node_count, epmem_triple_uedge_map uedge_caches[], epmem_symbol_int_map& symbol_num_incoming) {
 	epmem_symbol_node_pair_int_map::iterator match_iter;
-	if (JUSTIN_DEBUG >= 1) {
+	if (QUERY_DEBUG >= 1) {
 		std::cout << "		RECURSING ON " << parent << " " << child << " " << literal << std::endl;
 	}
 	// check if the ancestors of this literal are satisfied
@@ -3912,7 +3912,7 @@ bool epmem_satisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem_n
 				if (literal->matches.size() == 1) {
 					current_score += literal->weight;
 					current_cardinality += (literal->is_neg_q ? -1 : 1);
-					if (JUSTIN_DEBUG >= 1) {
+					if (QUERY_DEBUG >= 1) {
 						std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
 					}
 					return true;
@@ -3969,7 +3969,7 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 	if (literal->matches.size() == 0) {
 		return false;
 	}
-	if (JUSTIN_DEBUG >= 1) {
+	if (QUERY_DEBUG >= 1) {
 		std::cout << "		RECURSING ON " << parent << " " << child << " " << literal << std::endl;
 	}
 	// we only need things if this parent-child pair is matching the literal
@@ -3985,7 +3985,7 @@ bool epmem_unsatisfy_literal(epmem_literal* literal, epmem_node_id parent, epmem
 				if (literal->matches.size() == 0) {
 					current_score -= literal->weight;
 					current_cardinality -= (literal->is_neg_q ? -1 : 1);
-					if (JUSTIN_DEBUG >= 1) {
+					if (QUERY_DEBUG >= 1) {
 						std::cout << "			NEW SCORE: " << current_score << ", " << current_cardinality << std::endl;
 					}
 					return true;
@@ -4048,7 +4048,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 		if (failed_parents.count(q0)) {
 			continue;
 		}
-		if (JUSTIN_DEBUG >= 2) {
+		if (QUERY_DEBUG >= 2) {
 			for (int i = 0; i < depth; i++) {
 				std::cout << "\t";
 			}
@@ -4064,7 +4064,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			}
 		}
 		if (!relations_okay) {
-			if (JUSTIN_DEBUG >= 2) {
+			if (QUERY_DEBUG >= 2) {
 				for (int i = 0; i < depth; i++) {
 					std::cout << "\t";
 				}
@@ -4079,7 +4079,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			failed_children.insert(q1);
 			continue;
 		}
-		if (JUSTIN_DEBUG >= 2) {
+		if (QUERY_DEBUG >= 2) {
 			for (int i = 0; i < depth; i++) {
 				std::cout << "\t";
 			}
@@ -4097,7 +4097,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			}
 		}
 		if (!relations_okay) {
-			if (JUSTIN_DEBUG >= 2) {
+			if (QUERY_DEBUG >= 2) {
 				for (int i = 0; i < depth; i++) {
 					std::cout << "\t";
 				}
@@ -4106,7 +4106,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 			failed_children.insert(q1);
 			continue;
 		}
-		if (JUSTIN_DEBUG >= 2) {
+		if (QUERY_DEBUG >= 2) {
 			for (int i = 0; i < depth; i++) {
 				std::cout << "\t";
 			}
@@ -4128,7 +4128,7 @@ bool epmem_graph_match(epmem_literal_deque::iterator& dnf_iter, epmem_literal_de
 	}
 	// this means we've tried everything and this whole exercise was a waste of time
 	// EPIC FAIL
-	if (JUSTIN_DEBUG >= 2) {
+	if (QUERY_DEBUG >= 2) {
 		for (int i = 0; i < depth; i++) {
 			std::cout << "\t";
 		}
@@ -4150,7 +4150,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 		return;
 	}
 
-	if (JUSTIN_DEBUG >= 1) {
+	if (QUERY_DEBUG >= 1) {
 		std::cout << std::endl << "==========================" << std::endl << std::endl;
 	}
 
@@ -4333,7 +4333,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			interval_cleanup.insert(root_interval);
 		}
 
-		if (JUSTIN_DEBUG >= 1) {
+		if (QUERY_DEBUG >= 1) {
 			epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
 		}
 
@@ -4359,7 +4359,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 				epmem_triple triple = pedge->triple;
 				triple.q1 = pedge->sql->column_int(1);
 
-				if (JUSTIN_DEBUG >= 1) {
+				if (QUERY_DEBUG >= 1) {
 					std::cout << "	EDGE " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
 				}
 
@@ -4511,7 +4511,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			// process all intervals before the next edge arrives
 			my_agent->epmem_timers->query_walk_interval->start();
 			while (interval_pq.size() && interval_pq.top()->time > next_edge && current_episode > after) {
-				if (JUSTIN_DEBUG >= 1) {
+				if (QUERY_DEBUG >= 1) {
 					std::cout << "EPISODE " << current_episode << std::endl;
 				}
 				// process all interval endpoints at this time step
@@ -4520,7 +4520,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					interval_pq.pop();
 					epmem_uedge* uedge = interval->uedge;
 					epmem_triple triple = uedge->triple;
-					if (JUSTIN_DEBUG >= 1) {
+					if (QUERY_DEBUG >= 1) {
 						std::cout << "	INTERVAL (" << (interval->is_end_point ? "end" : "start") << "): " << triple.q0 << "-" << triple.w << "-" << triple.q1 << std::endl;
 					}
 					if (interval->is_end_point) {
@@ -4574,7 +4574,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					prohibits.pop_back();
 				}
 
-				if (JUSTIN_DEBUG >= 2) {
+				if (QUERY_DEBUG >= 2) {
 					epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
 				}
 
@@ -4613,7 +4613,7 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 							epmem_literal_deque::iterator end = gm_ordering.end();
 							best_bindings.clear();
 							epmem_node_symbol_map bound_nodes[2];
-							if (JUSTIN_DEBUG >= 1) {
+							if (QUERY_DEBUG >= 1) {
 								std::cout << "	GRAPH MATCH" << std::endl;
 								epmem_print_retrieval_state(literal_cache, pedge_caches, uedge_caches);
 							}

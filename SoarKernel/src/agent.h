@@ -359,6 +359,7 @@ typedef struct agent_struct {
 
   Symbol			* smem_sym_retrieve;
   Symbol			* smem_sym_query;
+  Symbol			* smem_sym_negquery;
   Symbol			* smem_sym_prohibit;
   Symbol			* smem_sym_store;
 

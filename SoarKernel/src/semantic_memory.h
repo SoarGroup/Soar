@@ -373,6 +373,7 @@ typedef struct smem_weighted_cue_element_struct
 	smem_lti_id value_lti;
 
 	smem_cue_element_type element_type;
+	bool pos_element;
 
 } smem_weighted_cue_element;
 

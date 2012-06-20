@@ -17,9 +17,10 @@ def ConfigureJNI(env):
 
 		else:
 			# Search for the java compiler
-			jcdir = os.path.dirname(os.path.realpath(env.WhereIs('javac')))
-			if not jcdir:
+			p = env.WhereIs('javac')
+			if not p:
 				return None
+			jcdir = os.path.dirname(os.path.realpath(p))
 			# assuming the compiler found is in some directory like
 			# /usr/jdkX.X/bin/javac, java's home directory is /usr/jdkX.X
 			base = os.path.split(jcdir)[0]
@@ -65,7 +66,6 @@ if compiler == 'g++':
 
 if sys.platform == 'darwin':
 	clone.Append(SHLINKFLAGS = ' -framework JavaVM')
-	clone.Replace(SHLIBSUFFIX = '.jnilib')
 
 name = 'Java_sml_ClientInterface'
 interface = clone.File(name + '.i')
@@ -104,10 +104,16 @@ if not GetOption('verbose'):
 	swig_cmd = '@' + swig_cmd
 clone.Command(wrapper, swig_deps, [Mkdir(smldir), swig_cmd])
 
-clone.Clean(jar, [wrapper, srcdir, classdir])
 clone.Command('JavaCallbackByHand.h', clone.File('JavaCallbackByHand.h').srcnode(), Copy("$TARGET", "$SOURCE"))
+if sys.platform == 'darwin':
+	# have to call it Java_sml_ClientInterface.jnilib instead of the usual .dylib
+	name += '.jnilib'
 shlib = clone.SharedLibrary(name, wrapper)[:1]  # [:1] to throw away .exp and .lib files in Windows
-env.Alias('sml_java', clone.Install(env['OUT_DIR'], shlib))
+lib_install = clone.Install(env['OUT_DIR'], shlib)
 
-env.Depends(shlib, clone.LateJavaBuilder(fake_java_target, None))
-clone.Clean(wrapper, [srcdir, classdir, jar])
+clone.Depends(jar, [wrapper, fake_java_target])
+clone.LateJavaBuilder(fake_java_target, None)
+jar_install = clone.Install(os.path.join(env['OUT_DIR'], 'java'), jar)
+clone.Clean(jar, [wrapper, srcdir, classdir])
+
+env.Alias('sml_java', [lib_install, jar_install])

@@ -21,7 +21,9 @@ Import('env', 'compiler', 'InstallDir')
 kernel_env = env.Clone()
 
 if os.name == 'posix':
-	libs = ['dl', 'pthread', 'm']
+	libs = ['pthread', 'm']
+	if 'freebsd' not in sys.platform:
+		libs.append('dl')
 elif os.name == 'nt':
 	libs = ['advapi32']
 
