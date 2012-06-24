@@ -10,8 +10,8 @@ bool ontop(const sgnode *tn, const sgnode *bn) {
 	vec3 tmin, tmax, bmin, bmax;
 	
 	bbox tb(tn->get_world_points()), bb(bn->get_world_points());
-	tb.get_vals(bmin, bmax);
-	bb.get_vals(tmin, tmax);
+	tb.get_vals(tmin, tmax);
+	bb.get_vals(bmin, bmax);
 	return tb.intersects(bb) && tmin[2] == bmax[2];
 }
 
@@ -27,7 +27,7 @@ public:
 	bool compute(const filter_param_set *params, bool &result, bool adding) {
 		const sgnode *tn, *bn;
 		if (!get_filter_param(this, params, "top", tn) || 
-		    !get_filter_param(this, params, "bottom", tn))
+		    !get_filter_param(this, params, "bottom", bn))
 		{
 			return false;
 		}
