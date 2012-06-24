@@ -452,10 +452,6 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
-	
-	timers.start(CALC_ATOMS_T);
-	topstate->get_scene()->get_atom_vals();
-	timers.stop(CALC_ATOMS_T);
 }
 
 void svs::make_common_syms() {

@@ -169,7 +169,7 @@ private:
 	drawer                    draw;
 	output_spec               outspec;
 	
-	enum Timers { INPUT_T, OUTPUT_T, CALC_ATOMS_T };
+	enum Timers { INPUT_T, OUTPUT_T };
 	
 	timer_set timers;
 };
