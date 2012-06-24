@@ -902,7 +902,7 @@ void do_buffered_link_changes (agent* thisAgent) {
 void update_influence(agent* const &thisAgent, slot* const &slot, preference * const &candidates, preference * &selected) ///< bazald
 {
   const double prob = exploration_probability_according_to_policy(thisAgent, slot, candidates, selected);
-  std::cerr << "Probability of selection is " << prob << std::endl;
+//   std::cerr << "Probability of selection is " << prob << std::endl;
   assert(prob > 0.0);
 
   if(selected->inst && selected->inst->prod) {
@@ -934,7 +934,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
           prod2->rl_sample_influence_cycle = double(thisAgent->total_decision_phases_count);
           prod2->rl_sample_influence_updates = next_updates;
-          std::cerr << "  " << prod2->rl_sample_influence_p << " += " << alpha << " * (" << prob << " / " << split << " * imax - " << prod2->rl_sample_influence_p << ");" << std::endl;
+//           std::cerr << "  " << prod2->rl_sample_influence_p << " += " << alpha << " * (" << prob << " / " << split << " * imax - " << prod2->rl_sample_influence_p << ");" << std::endl;
           prod2->rl_sample_influence_p += alpha * (prob * imax - prod2->rl_sample_influence_p);
           assert(prod2->rl_sample_influence_p <= imax);
           prod2->rl_sample_influence_rest = alpha * prob * (pow(idr, cycles) * prod2->rl_sample_influence_input - prod2->rl_sample_influence_rest);
@@ -945,13 +945,13 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
           sum_influence += prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest;
 
-          std::cerr << "  " << prod2->name->sc.name << " = " << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << std::endl;
+//           std::cerr << "  " << prod2->name->sc.name << " = " << prod2->rl_sample_influence_p + prod2->rl_sample_influence_rest << std::endl;
         }
       }
 
       slot->rl_influence = sum_influence / split + idr * slot->rl_influence;
 
-      std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
+//       std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
     }
   }
 }
@@ -1047,8 +1047,8 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //         std::cerr << "    total variance = " << total_variance << std::endl;
 //         std::cerr << "    average influence = " << average_influence << std::endl;
 //         std::cerr << "    average variance = " << average_variance << std::endl;
-        std::cerr << "    suboptimality = " << suboptimality << std::endl;
-        std::cerr << "    superoptimality = " << superoptimality << std::endl;
+//         std::cerr << "    suboptimality = " << suboptimality << std::endl;
+//         std::cerr << "    superoptimality = " << superoptimality << std::endl;
 
 //         const double one_minus_total_influence = 1.0 - total_influence;
 //         const double inflated_total_influence = 1.0 / one_minus_total_influence;
@@ -1064,7 +1064,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
             const double variance = prod2->rl_total_variance / split;
             const double inflated_variance = variance / max(0.01, 1.0 - influence);
 
-            std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
+//             std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
 
             if((suboptimality < 0.001 ||
                 inflated_variance < 0.001 || ///< must fall below threshold after splitting, or operator-no-change will result

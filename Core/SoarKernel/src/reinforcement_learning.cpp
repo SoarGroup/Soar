@@ -965,7 +965,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
             for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
               const production * const &prod2 = pref->inst->prod;
               if(cand->value == pref->value && prod2->rl_rule) {
-                std::cerr << "     " << prod2->name->sc.name << " provides " << prod2->rl_total_variance << " to rl_total_variance_next" << std::endl;
+//                 std::cerr << "     " << prod2->name->sc.name << " provides " << prod2->rl_total_variance << " to rl_total_variance_next" << std::endl;
                 rl_total_variance_next += prod2->rl_total_variance;
               }
             }
@@ -1159,7 +1159,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
           }
 
           prod->rl_total_variance += adjusted_alpha * iter->second * (rl_total_variance / num_rules - prod->rl_total_variance);
-          std::cerr << "     " << prod->name->sc.name << " takes " << prod->rl_total_variance << " from rl_total_variance" << std::endl;
+//           std::cerr << "     " << prod->name->sc.name << " takes " << prod->rl_total_variance << " from rl_total_variance" << std::endl;
         }
 			}
 		}
