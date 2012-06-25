@@ -347,10 +347,6 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 
 svs::svs(agent *a)
 {
-	string env_path = get_option("env");
-	if (!env_path.empty()) {
-		envsock.accept(env_path, true);
-	}
 	si = new soar_interface(a);
 	make_common_syms();
 	timers.add("input");
@@ -389,13 +385,6 @@ void svs::state_deletion_callback(Symbol *state) {
 }
 
 void svs::proc_input(svs_state *s) {
-	std::string in;
-	if (envsock.connected()) {
-		if (!envsock.receive(in)) {
-			assert(false);
-		}
-		split(in, "\n", env_inputs);
-	}
 	for (int i = 0; i < env_inputs.size(); ++i) {
 		strip(env_inputs[i], " \t");
 		if (env_inputs[i][0] == 'o') {
@@ -434,11 +423,7 @@ void svs::output_callback() {
 	for (int i = 0; i < outspec.size(); ++i) {
 		ss << outspec[i].name << " " << out[i] << endl;
 	}
-	if (envsock.connected()) {
-		envsock.send(ss.str());
-	} else {
-		env_output = ss.str();
-	}
+	env_output = ss.str();
 }
 
 void svs::input_callback() {

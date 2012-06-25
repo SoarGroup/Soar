@@ -4,7 +4,6 @@
 #include <vector>
 #include <map>
 #include <set>
-#include "ipcsocket.h"
 #include "soar_interface.h"
 #include "sgnode.h"
 #include "common.h"
@@ -163,7 +162,6 @@ private:
 	soar_interface*           si;
 	common_syms               cs;
 	std::vector<svs_state*>   state_stack;
-	ipcsocket                 envsock;
 	std::vector<std::string>  env_inputs;
 	std::string               env_output;
 	drawer                    draw;
