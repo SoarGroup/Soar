@@ -1,5 +1,7 @@
-The Spatial Visual System (SVS) is a module of the [Soar cognitive
-architecture](http://sitemaker.umich.edu/soar/home).
+The Spatial Visual System (SVS) is a module of the Soar cognitive
+architecture. See
+
+http://sitemaker.umich.edu/soar/home
 
 Usage
 =====
@@ -7,12 +9,14 @@ SVS is meant to be used as a component of Soar. In order to compile
 Soar with SVS, first clone this repo into the directory
 SoarSuite/Core/SVS. Next, you need to patch some kernel code to put an
 svs instance in the agent. If you're on Windows, you may need to
-obtain the "patch" program. You can get it
-[here](http://gnuwin32.sourceforge.net/packages/patch.htm).
+obtain the "patch" program. You can get it at
 
-After you have patch, run this command from the SoarSuite top directory:
+http://gnuwin32.sourceforge.net/packages/patch.htm
 
-`patch -p0 < Core/SVS/patch`
+After you have patch, run this command from the SoarSuite top
+directory:
+
+patch -p0 < Core/SVS/patch
 
 If you're not in Linux, see below about compiling Bullet Physics,
 which is a dependency of SVS. After that, you should be able to
@@ -24,12 +28,14 @@ SVS uses code from the Bullet Physics library to do collision
 detection. 32 and 64 bit precompiled libraries for Linux are included
 in the repo, so if you're on Linux, you don't need to install Bullet
 separately. If you're on Mac OS X or Windows, you need to compile
-Bullet yourself. You can download the source code
-[here](http://code.google.com/p/bullet/downloads/list).
+Bullet yourself. You can download the source code at
+
+http://code.google.com/p/bullet/downloads/list
 
 Bullet uses cmake for cross platform compilation. Please install cmake
-if you don't have it already. Get it
-[here](http://www.cmake.org/cmake/resources/software.html).
+if you don't have it already. Get it at
+
+http://www.cmake.org/cmake/resources/software.html
 
 After obtaining cmake and the Bullet source, follow these steps:
 
@@ -39,7 +45,8 @@ After obtaining cmake and the Bullet source, follow these steps:
 
 3. Run this command:
 
-   `cmake -DCMAKE_INSTALL_PREFIX=<install dir> -DBUILD_DEMOS=off -DBUILD_EXTRAS=off -DINSTALL_LIBS=on -DBUILD_SHARED_LIBS=on`
+   cmake -DCMAKE_INSTALL_PREFIX=<install dir> -DBUILD_DEMOS=off \
+         -DBUILD_EXTRAS=off -DINSTALL_LIBS=on -DBUILD_SHARED_LIBS=on
 
    where <install dir> is any directory you want to install the
    compiled code to.
@@ -51,7 +58,7 @@ After obtaining cmake and the Bullet source, follow these steps:
    sure the compiler can find the libraries by adding the location to
    the appropriate environment variable:
    
-   * In *nix, use `LD_LIBRARY_PATH`
-   * In Mac OS X, use `DYLD_LIBRARY_PATH`
-   * In Windows, use `PATH`
+   * In *nix, use LD_LIBRARY_PATH
+   * In Mac OS X, use DYLD_LIBRARY_PATH
+   * In Windows, use PATH
 
