@@ -20,26 +20,17 @@ using namespace std;
 
 typedef map<wme*,command*>::iterator cmd_iter;
 
-void print_tree(sgnode *n) {
-	if (n->is_group()) {
-		for(int i = 0; i < n->num_children(); ++i) {
-			print_tree(n->get_child(i));
-		}
-	} else {
-		const ptlist &pts = n->get_world_points();
-		copy(pts.begin(), pts.end(), ostream_iterator<vec3>(cout, ", "));
-		cout << endl;
-	}
-}
-
 sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node) 
 : soarint(si), id(ident), parent(parent), node(node)
 {
-	int i;
 	node->listen(this);
 	name_wme = soarint->make_wme(id, "id", node->get_name());
-	for (i = 0; i < node->num_children(); ++i) {
-		add_child(node->get_child(i));
+	
+	if (node->is_group()) {
+		group_node *g = node->as_group();
+		for (int i = 0; i < g->num_children(); ++i) {
+			add_child(g->get_child(i));
+		}
 	}
 }
 
@@ -63,9 +54,11 @@ sgwme::~sgwme() {
 }
 
 void sgwme::node_update(sgnode *n, sgnode::change_type t, int added_child) {
+	group_node *g;
 	switch (t) {
 		case sgnode::CHILD_ADDED:
-			add_child(node->get_child(added_child));
+			g = node->as_group();
+			add_child(g->get_child(added_child));
 			break;
 		case sgnode::DELETED:
 			node = NULL;

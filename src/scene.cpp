@@ -42,7 +42,7 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 scene::scene(const string &name, drawer *d) 
 : name(name), draw(d), dirty(true)
 {
-	root = new sgnode("world");
+	root = new group_node("world");
 	nodes["world"].node = root;
 	root->listen(this);
 }
@@ -54,10 +54,10 @@ scene::~scene() {
 scene *scene::copy() const {
 	scene *copy = new scene(name, NULL);  // don't display copies
 	string name;
-	std::list<sgnode*> all_nodes;
-	std::list<sgnode*>::const_iterator i;
+	std::vector<sgnode*> all_nodes;
+	std::vector<sgnode*>::const_iterator i;
 	
-	copy->root = root->copy();
+	copy->root = root->copy()->as_group();
 	copy->root->walk(all_nodes);
 	
 	/*
@@ -77,12 +77,20 @@ scene *scene::copy() const {
 	return copy;
 }
 
-sgnode* scene::get_node(const string &name) {
+sgnode *scene::get_node(const string &name) {
 	node_map::const_iterator i;
 	if ((i = nodes.find(name)) == nodes.end()) {
 		return NULL;
 	}
 	return i->second.node;
+}
+
+group_node *scene::get_group(const string &name) {
+	sgnode *n = get_node(name);
+	if (n) {
+		return n->as_group();
+	}
+	return NULL;
 }
 
 sgnode const *scene::get_node(const string &name) const {
@@ -103,7 +111,7 @@ void scene::get_all_nodes(vector<sgnode*> &n) {
 }
 
 bool scene::add_node(const string &name, sgnode *n) {
-	sgnode *par = get_node(name);
+	group_node *par = get_group(name);
 	if (!par) {
 		return false;
 	}
@@ -194,7 +202,8 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 int scene::parse_add(vector<string> &f) {
 	ptlist verts;
 	int p;
-	sgnode *n, *par;
+	sgnode *n;
+	group_node *par;
 	vec3 pos = vec3::Zero(), rot = vec3::Zero(), scale = vec3::Constant(1.0);
 
 	if (f.size() < 2) {
@@ -203,8 +212,8 @@ int scene::parse_add(vector<string> &f) {
 	if (get_node(f[0])) {
 		return 0;  // already exists
 	}
-	par = get_node(f[1]);
-	if (!par || !par->is_group()) {
+	par = get_group(f[1]);
+	if (!par) {
 		return 1;
 	}
 	p = 2;
@@ -216,9 +225,9 @@ int scene::parse_add(vector<string> &f) {
 	}
 	
 	if (verts.size() == 0) {
-		n = new sgnode(f[0]);
+		n = new group_node(f[0]);
 	} else {
-		n = new sgnode(f[0], verts);
+		n = new convex_node(f[0], verts);
 	}
 	n->set_trans(pos, rot, scale);
 	par->attach_child(n);
@@ -316,30 +325,6 @@ void scene::parse_sgel(const string &s) {
 			cerr << "error in field " << errfield + 1 << " of line '" << *i << "' " << endl;
 			exit(1);
 		}
-	}
-}
-
-void scene::draw_all(const string &prefix, float r, float g, float b) {
-	node_map::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		sgnode *n = i->second.node;
-		if (n->is_group()) {
-			continue;
-		}
-		draw->set_transforms(n);
-		draw->set_vertices(n);
-		draw->add(name, prefix + n->get_name());
-	}
-}
-
-void scene::undraw_all(const string &prefix) {
-	node_map::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		sgnode *n = i->second.node;
-		if (n->is_group()) {
-			continue;
-		}
-		draw->del(name, prefix + n->get_name());
 	}
 }
 
@@ -493,9 +478,11 @@ int scene::get_dof() const {
 
 void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	sgnode *child;
+	group_node *g;
 	switch (t) {
 		case sgnode::CHILD_ADDED:
-			child = n->get_child(added_child);
+			g = n->as_group();
+			child = g->get_child(added_child);
 			child->listen(this);
 			nodes[child->get_name()].node = child;
 			if (!child->is_group()) {
@@ -514,12 +501,11 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 				draw->del(name, n);
 			}
 			break;
-		case sgnode::POINTS_CHANGED:
+		case sgnode::SHAPE_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_points(n);
 				if (draw) {
-					draw->set_vertices(n);
-					draw->change(name, n->get_name(), drawer::VERTS);
+					draw->change(name, n, drawer::SHAPE);
 				}
 			}
 			break;
@@ -528,8 +514,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 				cdetect.update_transform(n);
 			}
 			if (draw) {
-				draw->set_transforms(n);
-				draw->change(name, n->get_name(), drawer::POS | drawer::ROT | drawer::SCALE);
+				draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			break;
 	}
@@ -537,36 +522,29 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 }
 
 void scene::dump_sgel(ostream &os) {
-	dump_sgel_rec(os, "world", "");
-}
-
-void scene::dump_sgel_rec(ostream &os, const string &name, const string &parent) {
-	property_map::const_iterator i;
+	vector<sgnode*> all_nodes;
+	root->walk(all_nodes);
 	
-	assert(nodes.find(name) != nodes.end());
-	const node_info &info = nodes[name];
-	sgnode *n = info.node;
-	const property_map &m = info.props;
-	if (name != "world") {
-		os << "a " << name << " " << parent << " ";
-		if (!n->is_group()) {
-			const ptlist &verts = n->get_local_points();
-			ptlist::const_iterator j;
-			os << "v ";
-			for (j = verts.begin(); j != verts.end(); ++j) {
-				os << *j << " ";
-			}
+	for (int i = 0; i < all_nodes.size(); ++i) {
+		sgnode *n = all_nodes[i];
+		if (n->get_name() == "world") {
+			continue;
 		}
-		os << "p " << n->get_trans('p') << " ";
-		os << "r " << n->get_trans('r') << " ";
-		os << "s " << n->get_trans('s') << endl;
-	}
-	for (i = info.props.begin(); i != info.props.end(); ++i) {
-		os << "p " << name << " " << i->first << " " << i->second << endl;
-	}
-	
-	for (int j = 0; j < n->num_children(); ++j) {
-		dump_sgel_rec(os, n->get_child(j)->get_name(), name);
+		assert(nodes.find(n->get_name()) != nodes.end());
+		const node_info &info = nodes[name];
+		const property_map &m = info.props;
+		string shape_sgel;
+		n->get_shape_sgel(shape_sgel);
+		os << "a " << n->get_name() << " " << n->get_parent()->get_name() << " "
+		   << shape_sgel << " "
+		   << "p " << n->get_trans('p') << " "
+		   << "r " << n->get_trans('r') << " "
+		   << "s " << n->get_trans('s') << endl;
+
+		property_map::const_iterator j;
+		for (j = info.props.begin(); j != info.props.end(); ++j) {
+			os << "p " << n->get_name() << " " << j->first << " " << j->second << endl;
+		}
 	}
 }
 

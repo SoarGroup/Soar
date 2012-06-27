@@ -13,6 +13,17 @@ btConvexHullShape *ptlist_to_hullshape(const ptlist &pts) {
 	return s;
 }
 
+btCollisionShape *get_node_shape(const sgnode *n) {
+	btCollisionShape *shape;
+	const convex_node *cn = dynamic_cast<const convex_node*>(n);
+	if (cn) {
+		shape = ptlist_to_hullshape(cn->get_local_points());
+	} else {
+		assert(false);
+	}
+	return shape;
+}
+
 void update_transforms(sgnode *n, btCollisionObject *cobj) {
 	vec3 rpy = n->get_trans('r');
 	btQuaternion q;
@@ -58,7 +69,7 @@ void collision_detector::add_node(sgnode *n) {
 	
 	btCollisionObject *cobj = new btCollisionObject();
 	cobj->setUserPointer(static_cast<void*>(n));
-	cobj->setCollisionShape(ptlist_to_hullshape(n->get_local_points()));
+	cobj->setCollisionShape(get_node_shape(n));
 	update_transforms(n, cobj);
 	cworld->addCollisionObject(cobj);
 	object_map[n] = cobj;
@@ -91,7 +102,7 @@ void collision_detector::update_points(sgnode *n) {
 	assert(object_map.find(n) != object_map.end());
 	btCollisionObject *cobj = object_map[n];
 	delete cobj->getCollisionShape();
-	cobj->setCollisionShape(ptlist_to_hullshape(n->get_local_points()));
+	cobj->setCollisionShape(get_node_shape(n));
 	dirty = true;
 }
 

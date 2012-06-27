@@ -16,9 +16,8 @@ bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	int i, dir[3];
 	vec3 amin, amax, bmin, bmax;
 
-	bbox ba(a->get_world_points()), bb(b->get_world_points());
-	ba.get_vals(amin, amax);
-	bb.get_vals(bmin, bmax);
+	a->get_bounds().get_vals(amin, amax);
+	b->get_bounds().get_vals(bmin, bmax);
 	
 	/*
 	 dir[i] = [-1, 0, 1] if a is [less than, overlapping,

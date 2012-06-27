@@ -7,14 +7,15 @@
 using namespace std;
 
 /*
- Return true if and only if the convex hull containing the points between
- a and c intersects the convex hull of b
+ Return true if and only if the convex hull containing the bounding
+ boxes of a and c intersects the bounding box of b
 */
 bool between(const sgnode *a, const sgnode *b, const sgnode *c) {
-	const ptlist &pa = a->get_world_points();
-	const ptlist &pb = b->get_world_points();
-	ptlist pc = c->get_world_points();
-		
+	ptlist pa, pb, pc;
+	a->get_bounds().get_points(pa);
+	b->get_bounds().get_points(pb);
+	c->get_bounds().get_points(pc);
+	
 	copy(pa.begin(), pa.end(), back_inserter(pc));
 		
 	return (hull_distance(pb, pc) < 0);
@@ -27,13 +28,11 @@ bool between(const sgnode *a, const sgnode *b, const sgnode *c) {
  front query is desired, and negative if a behind query is desired.
 */
 bool behind(const sgnode *a, const sgnode *b, const sgnode *c) {
-	const ptlist &pa = a->get_world_points();
-	const ptlist &pb = b->get_world_points();
-	const ptlist &pc = c->get_world_points();
+	ptlist pa, pc;
+	a->get_bounds().get_points(pa);
+	c->get_bounds().get_points(pc);
 	
-	vec3 ca = calc_centroid(pa);
-	vec3 cb = calc_centroid(pb);
-	vec3 u = cb - ca;
+	vec3 u = b->get_centroid() - a->get_centroid();
 	
 	return (dir_separation(pa, pc, u) <= 0);
 }

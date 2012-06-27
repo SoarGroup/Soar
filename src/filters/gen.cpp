@@ -43,7 +43,7 @@ public:
 				pts = new ptlist();
 				dealloc_pts = true;
 				pts->push_back(singlept);
-				res = new sgnode(name, *pts);
+				res = new convex_node(name, *pts);
 			}
 		}
 		
@@ -52,13 +52,16 @@ public:
 				delete res;
 			}
 			if (pts) {
-				res = new sgnode(name, *pts);
+				res = new convex_node(name, *pts);
 			} else {
-				res = new sgnode(name);
+				res = new group_node(name);
 			}
 		} else {
 			if (pts) {
-				res->set_local_points(*pts);
+				// this is a hack, need to generalize to arbitrary shapes
+				convex_node *cn = dynamic_cast<convex_node*>(res);
+				assert(cn);
+				cn->set_local_points(*pts);
 			}
 		}
 		

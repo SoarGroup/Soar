@@ -11,17 +11,14 @@ public:
 
 	bool compute(const filter_param_set *params, float &v, bool adding) {
 		const sgnode *a, *b;
-		vec3 ac, bc;
 		
 		if (!get_filter_param(this, params, "a", a) ||
 		    !get_filter_param(this, params, "b", b))
 		{
 			return false;
 		}
-		ac = calc_centroid(a->get_world_points());
-		bc = calc_centroid(b->get_world_points());
 		
-		v = (ac - bc).norm();
+		v = (a->get_centroid() - b->get_centroid()).norm();
 		return true;
 	}
 };

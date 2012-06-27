@@ -56,7 +56,7 @@ public:
 	}
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added) {
-		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::POINTS_CHANGED) {
+		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
 			const filter_param_set *s;
 			if (!map_get(node2param, n, s)) {
 				assert(false);
@@ -103,9 +103,11 @@ public:
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added_child) {
 		filter_val *r;
+		group_node *g;
 		switch (t) {
 			case sgnode::CHILD_ADDED:
-				add_node(n->get_child(added_child));
+				g = n->as_group();
+				add_node(g->get_child(added_child));
 				break;
 			case sgnode::DELETED:
 				if (!map_get(results, n, r)) {
@@ -115,7 +117,7 @@ public:
 				results.erase(n);
 				break;
 			case sgnode::TRANSFORM_CHANGED:
-			case sgnode::POINTS_CHANGED:
+			case sgnode::SHAPE_CHANGED:
 				if (!map_get(results, n, r)) {
 					assert(false);
 				}
@@ -150,7 +152,7 @@ public:
 			return false;
 		}
 		
-		v = calc_centroid(n->get_world_points());
+		v = n->get_centroid();
 		return true;
 	}
 };

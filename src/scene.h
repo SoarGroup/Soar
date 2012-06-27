@@ -20,9 +20,10 @@ public:
 	
 	scene *copy() const;
 	
-	sgnode *get_root() { return root; }
+	group_node *get_root() { return root; }
 	sgnode *get_node(const std::string &name);
 	sgnode const* get_node(const std::string &name) const;
+	group_node *get_group(const std::string &name);
 	
 	// nodes will be in alphabetical name order
 	void get_all_nodes(std::vector<sgnode*> &nodes);
@@ -46,9 +47,6 @@ public:
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added_child);
 	
-	void draw_all(const std::string &prefix, float r, float g, float b);
-	void undraw_all(const std::string &prefix);
-	
 	const std::vector<bool>& get_atom_vals();
 	
 	bool intersects(const std::string &a, const std::string &b);
@@ -60,8 +58,6 @@ private:
 	int  parse_change(std::vector<std::string> &f);
 	int  parse_property(std::vector<std::string> &f);
 
-	void dump_sgel_rec(std::ostream &os, const std::string &name, const std::string &parent);
-	
 	typedef std::map<std::string, float> property_map;
 	
 	struct node_info {
@@ -73,7 +69,7 @@ private:
 
 	std::string  name;
 	std::string  rootname;
-	sgnode      *root;
+	group_node  *root;
 	node_map     nodes;
 	drawer      *draw;
 	

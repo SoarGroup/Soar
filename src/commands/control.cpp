@@ -81,11 +81,8 @@ public:
 			return INFINITY;
 		}
 		
-		const ptlist &p1 = n1->get_world_points();
-		const ptlist &p2 = n2->get_world_points();
-		c1 = calc_centroid(p1);
-		c2 = calc_centroid(p2);
-
+		c1 = n1->get_centroid();
+		c2 = n2->get_centroid();
 		return (c1 - c2).norm();
 	}
 	
@@ -111,11 +108,8 @@ public:
 			return INFINITY;
 		}
 		
-		const ptlist &p1 = n1->get_world_points();
-		const ptlist &p2 = n2->get_world_points();
-		c1 = calc_centroid(p1);
-		c2 = calc_centroid(p2);
-
+		c1 = n1->get_centroid();
+		c2 = n2->get_centroid();
 		return c1[axis] - c2[axis];
 	}
 	
@@ -142,11 +136,8 @@ public:
 			return INFINITY;
 		}
 		
-		const ptlist &p1 = n1->get_world_points();
-		const ptlist &p2 = n2->get_world_points();
-		c1 = calc_centroid(p1);
-		c2 = calc_centroid(p2);
-		
+		c1 = n1->get_centroid();
+		c2 = n2->get_centroid();
 		float v = abs(c1[axis] - c2[axis]);
 		return v;
 	}
@@ -175,12 +166,11 @@ public:
 			return INFINITY;
 		}
 		
-		const ptlist &pa = na->get_world_points();
-		const ptlist &pb = nb->get_world_points();
-		const ptlist &pc = nc->get_world_points();
-		
-		vec3 ca = calc_centroid(pa);
-		vec3 cb = calc_centroid(pb);
+		ptlist pa, pc;
+		na->get_bounds().get_points(pa);
+		nc->get_bounds().get_points(pc);
+		vec3 ca = na->get_centroid();
+		vec3 cb = nb->get_centroid();
 		vec3 u = cb - ca;
 		u.normalize();
 		
@@ -215,9 +205,10 @@ public:
 			return INFINITY;
 		}
 		
-		const ptlist &pa = na->get_world_points();
-		const ptlist &pb = nb->get_world_points();
-		ptlist pc = nc->get_world_points();
+		ptlist pa, pb, pc;
+		na->get_bounds().get_points(pa);
+		nb->get_bounds().get_points(pb);
+		nc->get_bounds().get_points(pc);
 		
 		copy(pa.begin(), pa.end(), back_inserter(pc));
 		float d = hull_distance(pb, pc);
@@ -225,8 +216,8 @@ public:
 			d = 0.;
 		}
 		/*
-		vec3 ca = calc_centroid(pa);
-		vec3 cb = calc_centroid(pb);
+		vec3 ca = na->get_centroid();
+		vec3 cb = nb->get_centroid();
 		vec3 cc = calc_centroid(pc);
 		
 		float d = cc.line_dist(ca, cb);
@@ -259,10 +250,7 @@ public:
 		transform3 rot('r', na->get_trans('r'));
 		vec3 facing = rot(vec3(1, 0, 0));
 		
-		const ptlist &pb = nb->get_world_points();
-		const ptlist &pc = nc->get_world_points();
-		
-		vec3 desired = calc_centroid(pc) - calc_centroid(pb);
+		vec3 desired = nc->get_centroid() - nb->get_centroid();
 		desired.normalize();
 		
 		/*
@@ -786,11 +774,6 @@ private:
 			}
 			ci->scn->set_properties(state);
 			ci->obj->evaluate(*ci->scn, value);
-			/*
-			stringstream ss;
-			ss << this;
-			ci->scn->draw_all(ss.str(), 0.0, 0.0, 1.0);
-			*/
 			return true;
 		}
 		
@@ -896,9 +879,6 @@ public:
 			} else {
 				cached_state = beststate;
 				cached_value = bestval;
-				scene *copy = scn->copy();
-				copy->set_properties(cached_state);
-				copy->draw_all("predict_", 1., 0., 0.);
 			}
 		}
 		

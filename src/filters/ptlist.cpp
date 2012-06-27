@@ -22,6 +22,10 @@ public:
 		if (!get_filter_param(this, params, "node", n)) {
 			return false;
 		}
+		const convex_node *cn = dynamic_cast<const convex_node*>(n);
+		if (!cn) {
+			return false;
+		}
 		
 		if (adding) {
 			res = new ptlist();
@@ -30,9 +34,9 @@ public:
 		res->clear();
 		
 		if (local) {
-			*res = n->get_local_points();
+			*res = cn->get_local_points();
 		} else {
-			*res = n->get_world_points();
+			*res = cn->get_world_points();
 		}
 		
 		return true;

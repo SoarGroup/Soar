@@ -295,6 +295,11 @@ public:
 		}
 	}
 	
+	void include(const bbox &b) {
+		include(b.min);
+		include(b.max);
+	}
+	
 	bool intersects(const bbox &b) const {
 		int d;
 		for (d = 0; d < 3; ++d) {
@@ -332,6 +337,26 @@ public:
 		min = b.min;
 		max = b.max;
 		return *this;
+	}
+	
+	void reset() {
+		min.setZero();
+		max.setZero();
+	}
+	
+	vec3 get_centroid() const {
+		return (max + min) / 2.0;
+	}
+	
+	void get_points(ptlist &p) const {
+		p.push_back(vec3(min[0], min[1], min[2]));
+		p.push_back(vec3(min[0], min[1], max[2]));
+		p.push_back(vec3(min[0], max[1], min[2]));
+		p.push_back(vec3(min[0], max[1], max[2]));
+		p.push_back(vec3(max[0], min[1], min[2]));
+		p.push_back(vec3(max[0], min[1], max[2]));
+		p.push_back(vec3(max[0], max[1], min[2]));
+		p.push_back(vec3(max[0], max[1], max[2]));
 	}
 	
 	friend std::ostream& operator<<(std::ostream &os, const bbox &b);

@@ -13,7 +13,7 @@ public:
 		if (!get_filter_param(this , params, "node", n)) {
 			return false;
 		}
-		b = bbox(n->get_world_points());
+		b = n->get_bounds();
 		return true;
 	}
 };
