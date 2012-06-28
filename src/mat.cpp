@@ -169,3 +169,38 @@ void load_cvec(istream &is, cvec &v) {
 	load_rvec(is, v1);
 	v = v1.transpose();
 }
+
+ostream& output_rvec(ostream &os, const rvec &v, const string &sep) {
+	int n = v.size();
+	if (n == 0) return os;
+	
+	for (int i = 0; i < n - 1; ++i) {
+		os << v(i) << sep;
+	}
+	os << v(n - 1);
+	return os;
+}
+
+ostream& output_cvec(ostream &os, const cvec &v, const string &sep) {
+	int n = v.size();
+	if (n == 0) return os;
+	
+	for (int i = 0; i < n - 1; ++i) {
+		os << v(i) << sep;
+	}
+	os << v(n - 1);
+	return os;
+}
+
+ostream& output_mat(ostream &os, const_mat_view m) {
+	int r = m.rows(), c = m.cols();
+	if (r == 0 || c == 0) return os;
+	
+	for (int i = 0; i < r; ++i) {
+		for (int j = 0; j < c - 1; ++j) {
+			os << m(i, j) << " ";
+		}
+		os << m(i, c - 1) << endl;
+	}
+	return os;
+}

@@ -114,4 +114,8 @@ void load_rvec(std::istream &is, rvec &v);
 void save_cvec(std::ostream &os, const cvec &v);
 void load_cvec(std::istream &is, cvec &v);
 
+std::ostream& output_rvec(std::ostream &os, const rvec &v, const std::string &sep = " ");
+std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &sep = " ");
+std::ostream& output_mat(std::ostream &os, const const_mat_view m);
+
 #endif
