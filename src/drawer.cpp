@@ -23,6 +23,9 @@ drawer::drawer() {
 		path = "/tmp/viewer";
 	}
 	sock.connect(path);
+	if (sock.connected()) {
+		sock.send("clear\n");
+	}
 }
 
 drawer::~drawer() {
@@ -42,7 +45,7 @@ void drawer::add(const string &scn, const sgnode *n) {
 	   << " r " << n->get_trans('r')
 	   << " s " << n->get_trans('s') << endl;
 	
-	sock.send_line(ss.str());
+	sock.send(ss.str());
 }
 
 void drawer::del(const string &scn, const sgnode *n) {
@@ -52,7 +55,7 @@ void drawer::del(const string &scn, const sgnode *n) {
 	
 	stringstream ss;
 	ss << scn << " d " << n->get_name() << endl;
-	sock.send_line(ss.str());
+	sock.send(ss.str());
 }
 
 void drawer::change(const string &scn, const sgnode *n, int props) {
@@ -75,5 +78,5 @@ void drawer::change(const string &scn, const sgnode *n, int props) {
 		ss << " s " << n->get_trans('s');
 	}
 	ss << endl;
-	sock.send_line(ss.str());
+	sock.send(ss.str());
 }
