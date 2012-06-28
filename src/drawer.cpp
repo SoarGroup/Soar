@@ -34,9 +34,11 @@ void drawer::add(const string &scn, const sgnode *n) {
 		return;
 	}
 	stringstream ss;
-	ss << scn << " a " << n->get_name() << " " << n->get_parent()->get_name() << " ";
-	write_shape_string(n, ss);
-	ss << " p " << n->get_trans('p')
+	string shape_str;
+	n->get_shape_sgel(shape_str);
+	
+	ss << scn << " a " << n->get_name() << " " << n->get_parent()->get_name() << " " << shape_str
+	   << " p " << n->get_trans('p')
 	   << " r " << n->get_trans('r')
 	   << " s " << n->get_trans('s') << endl;
 	

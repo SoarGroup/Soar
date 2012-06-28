@@ -407,4 +407,6 @@ inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
 
 std::string get_option(const std::string &key);
 
+double parse_double(const std::string &s, bool &error);
+
 #endif

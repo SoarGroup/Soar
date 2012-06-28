@@ -220,3 +220,14 @@ void timer_set::report(ostream &os) const {
 	os << " " << setw(12) << ttl_total;
 	os << " " << setw(12) << ttl_total / ttl_cycles << endl;
 }
+
+double parse_double(const string &s, bool &error) {
+	char *end;
+	double d = strtod(s.c_str(), &end);
+	if (*end != '\0') {
+		error = true;
+		return 0.0;
+	}
+	error = false;
+	return d;
+}

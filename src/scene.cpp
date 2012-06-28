@@ -152,15 +152,10 @@ bool parse_vec3(vector<string> &f, int &start, int n, vec3 &v) {
 }
 
 bool parse_verts(vector<string> &f, int &start, ptlist &verts) {
-	vec3 v;
-	int i;
-	if (start >= f.size() || f[start] != "v") {
-		return true;
-	}
-	start++;
 	verts.clear();
 	while (start < f.size()) {
-		i = start;
+		vec3 v;
+		int i = start;
 		if (!parse_vec3(f, start, 3, v)) {
 			return (i == start);  // end of list
 		}
@@ -200,7 +195,6 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 }
 
 int scene::parse_add(vector<string> &f) {
-	ptlist verts;
 	int p;
 	sgnode *n;
 	group_node *par;
@@ -216,19 +210,34 @@ int scene::parse_add(vector<string> &f) {
 	if (!par) {
 		return 1;
 	}
-	p = 2;
-	if (!parse_verts(f, p, verts)) {
-		return p;
+	
+	if (f.size() >= 3 && f[2] == "v") {
+		p = 3;
+		ptlist verts;
+		if (!parse_verts(f, p, verts)) {
+			return p;
+		}
+		n = new convex_node(f[0], verts);
+	} else if (f.size() >= 3 && f[2] == "b") {
+		if (f.size() < 4) {
+			return 4;
+		}
+		bool error;
+		double radius = parse_double(f[3], error);
+		if (error) {
+			return 4;
+		}
+		n = new ball_node(f[0], radius);
+		p = 4;
+	} else {
+		n = new group_node(f[0]);
+		p = 2;
 	}
+	
 	if (!parse_transforms(f, p, pos, rot, scale)) {
 		return p;
 	}
 	
-	if (verts.size() == 0) {
-		n = new group_node(f[0]);
-	} else {
-		n = new convex_node(f[0], verts);
-	}
 	n->set_trans(pos, rot, scale);
 	par->attach_child(n);
 	return -1;

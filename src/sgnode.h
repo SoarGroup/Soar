@@ -117,7 +117,15 @@ private:
 	std::vector<sgnode*> children;
 };
 
-class convex_node : public sgnode {
+class geometry_node : public sgnode {
+public:
+	geometry_node(const std::string &name) : sgnode(name) {}
+	virtual ~geometry_node() {}
+	void walk(std::vector<sgnode*> &result) { result.push_back(this); }
+	bool is_group() const { return false; }
+};
+
+class convex_node : public geometry_node {
 public:
 	convex_node(const std::string &name, const ptlist &points);
 	
@@ -125,10 +133,7 @@ public:
 	const ptlist &get_world_points() const;
 	void set_local_points(const ptlist &pts);
 	void get_shape_sgel(std::string &s) const;
-	void walk(std::vector<sgnode*> &result);
 	sgnode *copy() const;
-	
-	bool is_group() const { return false; }
 	
 private:
 	void update_shape();
@@ -137,6 +142,22 @@ private:
 	ptlist world_points;
 	bool   dirty;
 
+};
+
+class ball_node : public geometry_node {
+public:
+	ball_node(const std::string &name, double radius);
+	void get_shape_sgel(std::string &s) const;
+	sgnode *copy() const;
+	
+	double get_radius() const {
+		return radius;
+	}
+	
+private:
+	void update_shape();
+	
+	double radius;
 };
 
 class sgnode_listener {

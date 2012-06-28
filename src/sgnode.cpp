@@ -254,7 +254,7 @@ void group_node::set_transform_dirty_derived() {
 }
 
 convex_node::convex_node(const string &name, const ptlist &points)
-: sgnode(name), points(points), dirty(true)
+: geometry_node(name), points(points), dirty(true)
 {}
 
 sgnode *convex_node::copy() const {
@@ -299,6 +299,34 @@ void convex_node::get_shape_sgel(string &s) const {
 	s = ss.str();
 }
 
-void convex_node::walk(vector<sgnode*> &result) {
-	result.push_back(this);
+ball_node::ball_node(const string &name, double radius)
+: geometry_node(name), radius(radius)
+{}
+
+void ball_node::get_shape_sgel(string &s) const {
+	stringstream ss;
+	ss << "b " << radius;
+	s = ss.str();
+}
+
+sgnode *ball_node::copy() const {
+	ball_node *c = new ball_node(get_name(), radius);
+	c->copy_trans(this);
+	return c;
+}
+
+/*
+ This will overestimate the bounding box right now.
+*/
+void ball_node::update_shape() {
+	transform3 t = get_world_trans();
+	bbox bb(t(vec3(-radius,-radius,-radius)));
+	bb.include(t(vec3(-radius,-radius, radius)));
+	bb.include(t(vec3(-radius, radius,-radius)));
+	bb.include(t(vec3(-radius, radius, radius)));
+	bb.include(t(vec3( radius,-radius,-radius)));
+	bb.include(t(vec3( radius,-radius, radius)));
+	bb.include(t(vec3( radius, radius,-radius)));
+	bb.include(t(vec3( radius, radius, radius)));
+	set_bounds(bb);
 }

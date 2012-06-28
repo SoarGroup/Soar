@@ -18,10 +18,19 @@ btCollisionShape *get_node_shape(const sgnode *n) {
 	const convex_node *cn = dynamic_cast<const convex_node*>(n);
 	if (cn) {
 		shape = ptlist_to_hullshape(cn->get_local_points());
-	} else {
-		assert(false);
+		return shape;
 	}
-	return shape;
+	const ball_node *bn = dynamic_cast<const ball_node*>(n);
+	if (bn) {
+		shape = new btSphereShape(bn->get_radius());
+		return shape;
+	}
+	/*
+	 If this is a group node, should make a compound shape in the
+	 future.
+	*/
+	assert(false);
+	return NULL;
 }
 
 void update_transforms(sgnode *n, btCollisionObject *cobj) {
