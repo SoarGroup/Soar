@@ -255,7 +255,7 @@ void LRModel::add_example(int i, bool update_refit) {
 		DATAVIS("constvals " << constvals << endl)
 	} else if (update_refit) {
 		rvec py;
-		if (!predict_drv(xdata.row(i), py)) {
+		if (!predict_sub(xdata.row(i), py)) {
 			refit = true;
 			error = INFINITY;
 		} else {
@@ -328,7 +328,7 @@ void LRModel::update_error() {
 			Y.row(i) = ydata.row(members[i]);
 		}
 		
-		if (!predict_drv(X, P)) {
+		if (!predict_sub(X, P)) {
 			error = INFINITY;
 		} else {
 			error = (Y - P).squaredNorm();
@@ -376,7 +376,7 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 	if (refit) {
 		fit();
 	}
-	return predict_drv(x, y);
+	return predict_sub(x, y);
 }
 
 bool LRModel::predict(const_mat_view X, mat &Y) {
@@ -390,14 +390,14 @@ bool LRModel::predict(const_mat_view X, mat &Y) {
 	if (refit) {
 		fit();
 	}
-	return predict_drv(X, Y);
+	return predict_sub(X, Y);
 }
 
 bool LRModel::fit() {
 	function_timer t(timers.get(FIT_T));
 	
 	if (!isconst) {
-		fit_drv();
+		fit_sub();
 	}
 	update_error();
 	refit = false;
@@ -411,7 +411,7 @@ bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os
 			os << " " << members[i];
 		}
 		os << endl << "error:     " << error << endl;
-		return cli_inspect_drv(os);
+		return cli_inspect_sub(os);
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
 	} else if (args[first_arg] == "train") {
@@ -438,7 +438,7 @@ PCRModel::PCRModel(const PCRModel &m)
 : LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means)
 {}
 
-void PCRModel::fit_drv() {
+void PCRModel::fit_sub() {
 	mat X, Y;
 	
 	fill_data(X, Y);
@@ -448,7 +448,7 @@ void PCRModel::fit_drv() {
 	min_train_error(X, Y, beta, intercept);
 }
 
-bool PCRModel::predict_drv(const rvec &x, rvec &y) {
+bool PCRModel::predict_sub(const rvec &x, rvec &y) {
 	if (beta.size() == 0) {
 		return false;
 	}
@@ -456,7 +456,7 @@ bool PCRModel::predict_drv(const rvec &x, rvec &y) {
 	return true;
 }
 
-bool PCRModel::predict_drv(const_mat_view X, mat &Y) {
+bool PCRModel::predict_sub(const_mat_view X, mat &Y) {
 	if (beta.size() == 0) {
 		return false;
 	}
@@ -465,7 +465,7 @@ bool PCRModel::predict_drv(const_mat_view X, mat &Y) {
 	return true;
 }
 
-bool PCRModel::cli_inspect_drv(ostream &os) const {
+bool PCRModel::cli_inspect_sub(ostream &os) const {
 	os << "intercept: " << intercept << endl;
 	os << "beta:" << endl;
 	for (int i = 0; i < beta.size(); ++i) {

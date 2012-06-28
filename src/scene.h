@@ -18,7 +18,7 @@ public:
 	scene(const std::string &name, drawer *d);
 	~scene();
 	
-	scene *copy() const;
+	scene *clone() const;
 	
 	group_node *get_root() { return root; }
 	sgnode *get_node(const std::string &name);

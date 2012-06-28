@@ -80,7 +80,7 @@ void sgnode::set_transform_dirty() {
 	if (parent) {
 		parent->set_shape_dirty();
 	}
-	set_transform_dirty_derived();
+	set_transform_dirty_sub();
 	send_update(sgnode::TRANSFORM_CHANGED);
 }
 
@@ -125,14 +125,6 @@ void sgnode::unlisten(sgnode_listener *o) {
 	listeners.remove(o);
 }
 
-void sgnode::get_shape_sgel(string &s) const {}
-
-void sgnode::copy_trans(const sgnode *n) {
-	pos = n->pos;
-	rot = n->rot;
-	scale = n->scale;
-}
-
 const bbox &sgnode::get_bounds() const {
 	if (shape_dirty) {
 		const_cast<sgnode*>(this)->update_shape();
@@ -172,6 +164,12 @@ const group_node *sgnode::as_group() const {
 	return g;
 }
 
+sgnode *sgnode::clone() const {
+	sgnode *c = clone_sub();
+	c->set_trans(pos, rot, scale);
+	return c;
+}
+
 group_node::~group_node() {
 	childiter i;
 	for (i = children.begin(); i != children.end(); ++i) {
@@ -180,13 +178,11 @@ group_node::~group_node() {
 	}
 }
 
-sgnode* group_node::copy() const {
+sgnode* group_node::clone_sub() const {
 	group_node *c = new group_node(get_name());
-	c->copy_trans(this);
-	
 	const_childiter i;
 	for(i = children.begin(); i != children.end(); ++i) {
-		c->attach_child((**i).copy());
+		c->attach_child((**i).clone());
 	}
 	return c;
 }
@@ -247,7 +243,7 @@ void group_node::detach_child(sgnode *c) {
 	}
 }
 
-void group_node::set_transform_dirty_derived() {
+void group_node::set_transform_dirty_sub() {
 	for (childiter i = children.begin(); i != children.end(); ++i) {
 		(**i).set_transform_dirty();
 	}
@@ -257,10 +253,8 @@ convex_node::convex_node(const string &name, const ptlist &points)
 : geometry_node(name), points(points), dirty(true)
 {}
 
-sgnode *convex_node::copy() const {
-	convex_node *c = new convex_node(get_name(), points);
-	c->copy_trans(this);
-	return c;
+sgnode *convex_node::clone_sub() const {
+	return new convex_node(get_name(), points);
 }
 
 void convex_node::update_shape() {
@@ -309,10 +303,8 @@ void ball_node::get_shape_sgel(string &s) const {
 	s = ss.str();
 }
 
-sgnode *ball_node::copy() const {
-	ball_node *c = new ball_node(get_name(), radius);
-	c->copy_trans(this);
-	return c;
+sgnode *ball_node::clone_sub() const {
+	return new ball_node(get_name(), radius);
 }
 
 /*

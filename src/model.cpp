@@ -106,7 +106,7 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 			return true;
 		}
 	}
-	return cli_inspect_drv(first_arg, args, os);
+	return cli_inspect_sub(first_arg, args, os);
 }
 
 multi_model::multi_model() {

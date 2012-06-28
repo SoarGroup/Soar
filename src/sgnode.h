@@ -26,7 +26,7 @@ public:
 	virtual ~sgnode();
 	
 	/* copied node doesn't inherit listeners */
-	virtual sgnode* copy() const = 0;
+	virtual sgnode* clone() const;
 
 	const std::string &get_name() const {
 		return name;
@@ -51,7 +51,6 @@ public:
 	void set_trans(const vec3 &p, const vec3 &r, const vec3 &s);
 	vec3 get_trans(char type) const;
 	void get_trans(vec3 &p, vec3 &r, vec3 &s) const;
-	void copy_trans(const sgnode *n);
 	
 	void set_shape_dirty();
 	void listen(sgnode_listener *o);
@@ -67,7 +66,8 @@ protected:
 	const transform3 &get_world_trans() const;
 	void set_bounds(const bbox &b);
 	virtual void update_shape() = 0;
-	virtual void set_transform_dirty_derived() {}
+	virtual sgnode *clone_sub() const = 0;
+	virtual void set_transform_dirty_sub() {}
 	
 private:
 	void set_transform_dirty();
@@ -94,7 +94,6 @@ public:
 	group_node(std::string name) : sgnode(name) {}
 	~group_node();
 	
-	sgnode* copy() const;
 	sgnode* get_child(int i);
 	const sgnode *get_child(int i) const;
 	bool attach_child(sgnode *c);
@@ -112,7 +111,8 @@ public:
 	
 private:
 	void update_shape();
-	void set_transform_dirty_derived();
+	void set_transform_dirty_sub();
+	sgnode* clone_sub() const;
 	
 	std::vector<sgnode*> children;
 };
@@ -133,10 +133,10 @@ public:
 	const ptlist &get_world_points() const;
 	void set_local_points(const ptlist &pts);
 	void get_shape_sgel(std::string &s) const;
-	sgnode *copy() const;
 	
 private:
 	void update_shape();
+	sgnode *clone_sub() const;
 	
 	ptlist points;
 	ptlist world_points;
@@ -148,7 +148,6 @@ class ball_node : public geometry_node {
 public:
 	ball_node(const std::string &name, double radius);
 	void get_shape_sgel(std::string &s) const;
-	sgnode *copy() const;
 	
 	double get_radius() const {
 		return radius;
@@ -156,6 +155,7 @@ public:
 	
 private:
 	void update_shape();
+	sgnode *clone_sub() const;
 	
 	double radius;
 };

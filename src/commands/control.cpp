@@ -407,7 +407,7 @@ public:
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &init)
 	: mdl(m), stepsize(stepsize), obj(obj)
 	{
-		scn = init.copy();
+		scn = init.clone();
 		scn->get_properties(initvals);
 		timers.add("evaluate");
 	}
@@ -415,7 +415,7 @@ public:
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const rvec &initvals)
 	: mdl(m), stepsize(stepsize), obj(obj), initvals(initvals)
 	{
-		scn = tmp.copy();
+		scn = tmp.clone();
 		timers.add("evaluate");
 	}
 
@@ -607,7 +607,7 @@ public:
 	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, const output_spec *outspec, float thresh)
 	: outspec(outspec), thresh(thresh)
 	{
-		ci.scn = scn->copy();
+		ci.scn = scn->clone();
 		ci.obj = obj;
 		ci.mdl = mdl;
 		ci.outspec = outspec;
@@ -1027,7 +1027,7 @@ public:
 		return string("control");
 	}
 	
-	bool update_drv() {
+	bool update_sub() {
 		rvec out;
 		
 		if (changed()) {
@@ -1126,7 +1126,7 @@ public:
 		return string("random control");
 	}
 	
-	bool update_drv() {
+	bool update_sub() {
 		const output_spec *outspec = state->get_output_spec();
 		out.resize(outspec->size());
 		min.resize(outspec->size());
@@ -1240,7 +1240,7 @@ public:
 		log_file << endl;
 	}
 	
-	bool update_drv() {
+	bool update_sub() {
 		if (changed()) {
 			configure();
 		}

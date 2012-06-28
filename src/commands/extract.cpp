@@ -23,7 +23,7 @@ public:
 		return string("extract");
 	}
 	
-	bool update_drv() {
+	bool update_sub() {
 		if (changed()) {
 			clear_results();
 			if (fltr) {

@@ -22,7 +22,7 @@ public:
 		return string("generate");
 	}
 	
-	bool update_drv() {
+	bool update_sub() {
 		wme *parent_wme, *gen_wme;
 		sgnode *gen_node;
 		

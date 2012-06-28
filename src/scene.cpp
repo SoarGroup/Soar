@@ -51,30 +51,30 @@ scene::~scene() {
 	delete root;
 }
 
-scene *scene::copy() const {
-	scene *copy = new scene(name, NULL);  // don't display copies
+scene *scene::clone() const {
+	scene *c = new scene(name, NULL);  // don't display copies
 	string name;
 	std::vector<sgnode*> all_nodes;
 	std::vector<sgnode*>::const_iterator i;
 	
-	copy->root = root->copy()->as_group();
-	copy->root->walk(all_nodes);
+	c->root = root->clone()->as_group();
+	c->root->walk(all_nodes);
 	
 	/*
 	 Make a deep copy of the nodes table, which will result in
 	 a table with pointers to other's nodes, then go through and
 	 change to point to our nodes.
 	*/
-	copy->nodes = nodes;
+	c->nodes = nodes;
 	for(i = all_nodes.begin(); i != all_nodes.end(); ++i) {
-		copy->nodes[(**i).get_name()].node = *i;
-		(**i).listen(copy);
+		c->nodes[(**i).get_name()].node = *i;
+		(**i).listen(c);
 		if (!(**i).is_group()) {
-			copy->cdetect.add_node(*i);
+			c->cdetect.add_node(*i);
 		}
 	}
 	
-	return copy;
+	return c;
 }
 
 sgnode *scene::get_node(const string &name) {
