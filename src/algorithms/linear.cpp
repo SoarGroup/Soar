@@ -204,7 +204,10 @@ void pcr(const_mat_view X, const_mat_view Y, const rvec &x, rvec &y) {
 
 LRModel::LRModel(const mat &xdata, const mat &ydata) 
 : xdata(xdata), ydata(ydata), constvals(rvec::Zero(ydata.cols())), isconst(true), error(INFINITY), refit(true)
-{}
+{
+	timers.add("predict");
+	timers.add("fit");
+}
 
 LRModel::LRModel(const LRModel &m)
 : xdata(m.xdata), ydata(m.ydata), constvals(m.constvals), members(m.members), isconst(m.isconst),
