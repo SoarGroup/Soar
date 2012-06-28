@@ -469,10 +469,8 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 		output = ss.str();
 		return false;
 	}
-	char *end;
-	long level = strtol(args[1].c_str(), &end, 10);
-	bool ret;
-	if (*end != '\0') {
+	int level;
+	if (!parse_int(args[1], level)) {
 		if (args[1] == "timing") {
 			timers.report(ss);
 			output = ss.str();
@@ -481,15 +479,14 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 			get_filter_table().get_timers().report(ss);
 			output = ss.str();
 			return true;
-		} else {
-			output = "no such query";
-			return false;
 		}
+		output = "no such query";
+		return false;
 	} else if (level < 0 || level >= state_stack.size()) {
 		output = "invalid level";
 		return false;
 	}
-	ret = state_stack[level]->cli_inspect(2, args, ss);
+	bool ret = state_stack[level]->cli_inspect(2, args, ss);
 	output = ss.str();
 	return ret;
 }
@@ -510,8 +507,7 @@ int svs::parse_output_spec(const string &s) {
 	for (int i = 1; i < fields.size(); i += 5) {
 		sp.name = fields[i];
 		for (int j = 0; j < 4; ++j) {
-			vals[j] = strtod(fields[i + j + 1].c_str(), &end);
-			if (*end != '\0') {
+			if (!parse_double(fields[i + j + 1], vals[j])) {
 				return i + j + 1;
 			}
 		}

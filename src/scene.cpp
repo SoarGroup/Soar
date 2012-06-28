@@ -222,9 +222,8 @@ int scene::parse_add(vector<string> &f) {
 		if (f.size() < 4) {
 			return 4;
 		}
-		bool error;
-		double radius = parse_double(f[3], error);
-		if (error) {
+		double radius;
+		if (!parse_double(f[3], radius)) {
 			return 4;
 		}
 		n = new ball_node(f[0], radius);

@@ -221,13 +221,28 @@ void timer_set::report(ostream &os) const {
 	os << " " << setw(12) << ttl_total / ttl_cycles << endl;
 }
 
-double parse_double(const string &s, bool &error) {
-	char *end;
-	double d = strtod(s.c_str(), &end);
-	if (*end != '\0') {
-		error = true;
-		return 0.0;
+bool parse_double(const string &s, double &v) {
+	if (s.empty()) {
+		return false;
 	}
-	error = false;
-	return d;
+	
+	char *end;
+	v = strtod(s.c_str(), &end);
+	if (*end != '\0') {
+		return false;
+	}
+	return true;
+}
+
+bool parse_int(const string &s, int &v) {
+	if (s.empty()) {
+		return false;
+	}
+	
+	char *end;
+	v = strtol(s.c_str(), &end, 10);
+	if (*end != '\0') {
+		return false;
+	}
+	return true;
 }

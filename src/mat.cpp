@@ -1,5 +1,6 @@
 #include <iostream>
 #include "mat.h"
+#include "common.h"
 
 using namespace std;
 dyn_mat::dyn_mat() : buf(0, 0), r(0), c(0) {}
@@ -88,25 +89,20 @@ void save_mat(ostream &os, const_mat_view m) {
 
 void load_mat(istream &is, mat &m) {
 	string token;
-	char *endptr;
 	int nrows, ncols;
-	double x;
+	
 	is >> token;
 	assert(token == "begin_mat");
 	is >> token;
-	nrows = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
+	if (!parse_int(token, nrows)) assert(false);
 	is >> token;
-	ncols = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
+	if (!parse_int(token, ncols)) assert(false);
 	
 	m.resize(nrows, ncols);
 	for (int i = 0; i < nrows; ++i) {
 		for (int j = 0; j < ncols; ++j) {
 			is >> token;
-			x = strtod(token.c_str(), &endptr);
-			assert(endptr[0] == '\0');
-			m(i, j) = x;
+			if (!parse_double(token, m(i, j))) assert(false);
 		}
 	}
 	is >> token;
@@ -120,25 +116,20 @@ void save_imat(ostream &os, const imat &m) {
 
 void load_imat(istream &is, imat &m) {
 	string token;
-	char *endptr;
 	int nrows, ncols;
-	int x;
+	
 	is >> token;
 	assert(token == "begin_mat");
 	is >> token;
-	nrows = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
+	if (!parse_int(token, nrows)) assert(false);
 	is >> token;
-	ncols = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
+	if (!parse_int(token, ncols)) assert(false);
 	
 	m.resize(nrows, ncols);
 	for (int i = 0; i < nrows; ++i) {
 		for (int j = 0; j < ncols; ++j) {
 			is >> token;
-			x = strtol(token.c_str(), &endptr, 10);
-			assert(endptr[0] == '\0');
-			m(i, j) = x;
+			if (!parse_int(token, m(i, j))) assert(false);
 		}
 	}
 	is >> token;
@@ -153,21 +144,17 @@ void save_rvec(ostream &os, const rvec &v) {
 
 void load_rvec(istream &is, rvec &v) {
 	string token;
-	char *endptr;
 	int n;
-	double x;
+	
 	is >> token;
 	assert(token == "begin_vec");
 	is >> token;
-	n = strtol(token.c_str(), &endptr, 10);
-	assert(endptr[0] == '\0');
+	if (!parse_int(token, n)) assert(false);
 	
 	v.resize(n);
 	for (int i = 0; i < n; ++i) {
 		is >> token;
-		x = strtod(token.c_str(), &endptr);
-		assert(endptr[0] == '\0');
-		v(i) = x;
+		if (!parse_double(token, v(i))) assert(false);
 	}
 	is >> token;
 	assert(token == "end_vec");

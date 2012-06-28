@@ -1220,13 +1220,10 @@ public:
 			return;
 		}
 		for (int i = 0; i < fields.size(); ++i) {
-			char *end;
-			double x = strtod(fields[i].c_str(), &end);
-			if (*end != '\0') {
+			if (!parse_double(fields[i], output(i))) {
 				error = "non-numeric field encountered";
 				return;
 			}
-			output(i) = x;
 		}
 	}
 	

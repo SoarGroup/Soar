@@ -257,14 +257,10 @@ public:
 	
 	void fill_chi2thresh() {
 		double pv;
-		char *end;
 		string pval = get_option("chi2_pvalue");
 		
-		if (pval.empty()) {
+		if (pval.empty() || !parse_double(pval, pv)) {
 			pv = 0.1;
-		} else {
-			pv = strtod(pval.c_str(), &end);
-			assert(end != pval.c_str());
 		}
 		
 		chi2 c;

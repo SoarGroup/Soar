@@ -181,9 +181,8 @@ bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream 
 			tree->print("", os);
 			return true;
 		}
-		char *end;
-		int id = strtol(args[first_arg + 1].c_str(), &end, 10);
-		if (*end != '\0') {
+		int id;
+		if (!parse_int(args[first_arg + 1], id)) {
 			os << "specify a node number" << endl;
 			return false;
 		}

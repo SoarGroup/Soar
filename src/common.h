@@ -15,9 +15,13 @@
 #include <map>
 #include "linalg.h"
 
-
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 void strip(std::string &s, const std::string &whitespace);
+
+bool parse_double(const std::string &s, double &v);
+bool parse_int   (const std::string &s, int &v);
+
+std::string get_option(const std::string &key);
 
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
@@ -404,9 +408,5 @@ inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
 		v(i) = min(i) + (rand() / (double) RAND_MAX) * (max(i) - min(i));
 	}
 }
-
-std::string get_option(const std::string &key);
-
-double parse_double(const std::string &s, bool &error);
 
 #endif
