@@ -68,18 +68,6 @@ ostream &operator<<(ostream &os, const namedvec &v) {
 	return os;
 }
 
-vec3 calc_centroid(const ptlist &pts) {
-	ptlist::const_iterator i;
-	int d;
-	vec3 c = vec3::Zero();
-	
-	for (i = pts.begin(); i != pts.end(); ++i) {
-		c += *i;
-	}
-
-	return c / pts.size();
-}
-
 vec3 project(const vec3 &v, const vec3 &u) {
 	float m = u.squaredNorm();
 	if (m == 0.) {
