@@ -323,7 +323,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			if (!si->get_const_attr(root, "a", a) ||
 			    !si->get_const_attr(root, "b", b))
 			{
-				cerr << "Warning: incorrect parameters on euclidean objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on euclidean objective, skipping" << endl;
 				break;
 			}
 			obj = new euclidean_obj(a, b);
@@ -334,7 +334,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "axis", axis))
 			{
-				cerr << "Warning: incorrect parameters on axis_diff objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on axis_diff objective, skipping" << endl;
 				break;
 			}
 			obj = new axis_diff_obj(a, b, axis);
@@ -345,7 +345,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "axis", axis))
 			{
-				cerr << "Warning: incorrect parameters on abs_axis_diff objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on abs_axis_diff objective, skipping" << endl;
 				break;
 			}
 			obj = new abs_axis_diff_obj(a, b, axis);
@@ -355,7 +355,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				cerr << "Warning: incorrect parameters on behind objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on behind objective, skipping" << endl;
 				break;
 			}
 			obj = new behind_obj(a, b, c);
@@ -365,7 +365,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				cerr << "Warning: incorrect parameters on collinear objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on collinear objective, skipping" << endl;
 				break;
 			}
 			obj = new collinear_obj(a, b, c);
@@ -375,12 +375,12 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				cerr << "Warning: incorrect parameters on align_facing objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on align_facing objective, skipping" << endl;
 				break;
 			}
 			obj = new align_facing_objective(a, b, c);
 		} else {
-			cerr << "skipping unknown objective " << name << endl;
+			LOG(CTRLDBG) << "skipping unknown objective " << name << endl;
 		}
 		
 		if (sign == "negative") {
@@ -691,9 +691,9 @@ public:
 		besttraj = bestnode->traj;
 		beststate = bestnode->state;
 		bestval = bestnode->value;
-		cout << "BEST TRAJ LENGTH " << bestnode->traj.size() << endl;
-		cout << "AVG DEPTH " << avg_depth << endl;
-		cout << "AVG BF " << avg_bf << endl;
+		LOG(CTRLDBG) << "BEST TRAJ LENGTH " << bestnode->traj.size() << endl;
+		LOG(CTRLDBG) << "AVG DEPTH " << avg_depth << endl;
+		LOG(CTRLDBG) << "AVG BF " << avg_bf << endl;
 		
 		/*
 		rvec lengths(leafs.size());

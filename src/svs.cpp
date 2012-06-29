@@ -451,21 +451,66 @@ string svs::get_output() const {
 bool svs::do_cli_command(const vector<string> &args, string &output) const {
 	stringstream ss;
 	if (args.size() < 2) {
-		ss << "specify a state level [0 - " << state_stack.size() - 1 << "]";
+		ss << "subqueries are timing filters log, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
 		output = ss.str();
 		return false;
 	}
-	int level;
-	if (!parse_int(args[1], level)) {
-		if (args[1] == "timing") {
-			timers.report(ss);
-			output = ss.str();
-			return true;
-		} else if (args[1] == "filters") {
-			get_filter_table().get_timers().report(ss);
+	if (args[1] == "timing") {
+		timers.report(ss);
+		output = ss.str();
+		return true;
+	} else if (args[1] == "filters") {
+		get_filter_table().get_timers().report(ss);
+		output = ss.str();
+		return true;
+	} else if (args[1] == "log") {
+		if (args.size() < 3) {
+			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+				ss << log_type_names[i] << (LOG.is_on(static_cast<log_type>(i)) ? " on" : " off") << endl;
+			}
 			output = ss.str();
 			return true;
 		}
+		if (args[2] == "on") {
+			if (args.size() < 4) {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					LOG.turn_on(static_cast<log_type>(i));
+				}
+				return true;
+			} else {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					if (args[3] == log_type_names[i]) {
+						LOG.turn_on(static_cast<log_type>(i));
+						return true;
+					}
+				}
+				output = "no such log\n";
+				return false;
+			}
+		} else if (args[2] == "off") {
+			if (args.size() < 4) {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					LOG.turn_off(static_cast<log_type>(i));
+				}
+				return true;
+			} else {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					if (args[3] == log_type_names[i]) {
+						LOG.turn_off(static_cast<log_type>(i));
+						return true;
+					}
+				}
+				output = "no such log\n";
+				return false;
+			}
+		} else {
+			output = "expecting on/off\n";
+			return false;
+		}
+	}
+	
+	int level;
+	if (!parse_int(args[1], level)) {
 		output = "no such query";
 		return false;
 	} else if (level < 0 || level >= state_stack.size()) {

@@ -296,7 +296,7 @@ void scene::parse_sgel(const string &s) {
 	char cmd;
 	int errfield;
 	
-	//cerr << "received sgel" << endl << "---------" << endl << s << endl << "---------" << endl;
+	LOG(SGEL) << "received sgel" << endl << "---------" << endl << s << endl << "---------" << endl;
 	split(s, "\n", lines);
 	for (i = lines.begin(); i != lines.end(); ++i) {
 		split(*i, " \t", fields);

@@ -268,7 +268,7 @@ bool multi_model::find_indexes(const vector<string> &props, vector<int> &indexes
 	for (i = props.begin(); i != props.end(); ++i) {
 		int index = find(prop_vec.begin(), prop_vec.end(), *i) - prop_vec.begin();
 		if (index == prop_vec.size()) {
-			cerr << "PROPERTY NOT FOUND " << *i << endl;
+			LOG(WARN) << "PROPERTY NOT FOUND " << *i << endl;
 			return false;
 		}
 		indexes.push_back(index);

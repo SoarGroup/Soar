@@ -246,3 +246,13 @@ bool parse_int(const string &s, int &v) {
 	}
 	return true;
 }
+
+logger LOG;
+
+const char *log_type_names[NUM_LOG_TYPES] = {
+	"WARN",
+	"ERROR",
+	"CTRLDBG",
+	"EMDBG",
+	"SGEL"
+};

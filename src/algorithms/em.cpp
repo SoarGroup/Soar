@@ -299,7 +299,7 @@ bool EM::unify_or_add_model() {
 				delete models[i];
 				models[i] = unified.release();
 				mark_model_stale(i);
-				cerr << "UNIFIED " << i << endl;
+				LOG(EMDBG) << "UNIFIED " << i << endl;
 				return true;
 			}
 		}
@@ -410,7 +410,7 @@ bool EM::run(int maxiters) {
 		}
 		changed = true;
 	}
-	cerr << "Reached max iterations without quiescence" << endl;
+	LOG(EMDBG) << "Reached max iterations without quiescence" << endl;
 	return changed;
 }
 

@@ -409,4 +409,70 @@ inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
 	}
 }
 
+enum log_type {
+	WARN,
+	ERROR,
+	CTRLDBG,
+	EMDBG,
+	SGEL,
+	NUM_LOG_TYPES,
+};
+
+// Don't forget to update this in common.cpp when you add new log types
+extern const char* log_type_names[NUM_LOG_TYPES];
+
+class logger {
+public:
+	logger() : is_null(false) {
+		on.resize(NUM_LOG_TYPES, false);
+	}
+	
+	void turn_on(log_type t) {
+		on[t] = true;
+	}
+	
+	void turn_off(log_type t) {
+		on[t] = false;
+	}
+	
+	bool is_on(log_type t) {
+		return on[t];
+	}
+
+	logger &operator()(log_type t) {
+		static logger null_logger(true);
+		
+		if (is_null) {
+			return *this;
+		}
+		if (on[t]) {
+			return *this;
+		}
+		return null_logger;
+	}
+	
+	template<class T>
+	logger &operator<<(const T& v) {
+		if (!is_null) {
+			std::cout << v;
+		}
+		return *this;
+	}
+	
+	logger& operator<<(std::ostream& (*pf)(std::ostream&)) {
+		if (!is_null) {
+			pf(std::cout);
+		}
+		return *this;
+	}
+	
+private:
+	logger(bool is_null) : is_null(is_null) {}
+
+	bool is_null;
+	std::vector<bool> on;
+};
+
+extern logger LOG;
+
 #endif
