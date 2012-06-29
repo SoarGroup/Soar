@@ -1,0 +1,52 @@
+# test intersect
+a box1 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
+a box2 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
+a box3 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
+a pt1 world v 0 0 0 p .5 .5 .5
+a line1 world v 0 0 0 10 0 0 p -5 .5 .5
+c box2 p .5 .5 .5
+c box3 p 10 10 10
+
+pos intersect a box1 b box1
+pos intersect a box1 b box2
+neg intersect a box1 b box3
+neg intersect a box2 b box3
+pos intersect a pt1 b box1
+pos intersect a pt1 b box2
+neg intersect a pt1 b box3
+pos intersect a line1 b box1
+neg intersect a line1 b box3
+
+test
+
+# test ontop & above
+c box2 p 0 0 1
+c box3 p 0 0 2
+
+pos on-top top box2 bottom box1
+neg on-top top box1 bottom box2
+pos on-top top box3 bottom box2
+neg on-top top box2 bottom box2
+neg on-top top box3 bottom box1
+pos above a box2 b box1
+neg above a box1 b box2
+pos above a box3 b box1
+pos above a box3 b box2
+
+test
+
+# test ball intersections
+c box1 p 0 0 0
+a ball1 world b 1
+a ball2 world b 2 p -1 -1 -1
+a ball3 world b 2 p 2.2 2.2 2.2
+
+pos intersect a ball1 b box1
+pos intersect a ball2 b box1
+neg intersect a ball3 b box1
+
+pos compare a 0.1 b 1 compare c:lt
+neg compare a -.1 b 2.0 compare c:gt
+pos compare a 3 b 3.0 compare c:eq
+
+#repl
