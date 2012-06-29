@@ -21,6 +21,13 @@ struct filter_table_entry {
 	filter* (*create)(scene*, filter_input*);
 	bool    (*calc)(scene*, const std::vector<std::string> &);
 	void    (*possible_args)(scene*, std::vector<std::vector<std::string> > &);
+	
+	filter_table_entry() {
+		name = "";
+		create = NULL;
+		calc = NULL;
+		possible_args = NULL;
+	}
 };
 
 class filter_table {
