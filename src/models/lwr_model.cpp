@@ -59,7 +59,7 @@ model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const stri
 	
 	si->find_child_wme(root, "num-neighbors", nnbrs_wme);
 	if (nnbrs_wme && !si->get_val(si->get_wme_val(nnbrs_wme), nnbrs)) {
-		cerr << "WARNING: attribute num-neighbors does not have integer value, using default 50 neighbors" << endl;
+		LOG(WARN) << "WARNING: attribute num-neighbors does not have integer value, using default 50 neighbors" << endl;
 	}
 	return new lwr_model(nnbrs, name);
 }

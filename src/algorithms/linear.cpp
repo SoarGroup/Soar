@@ -471,8 +471,6 @@ bool PCRModel::predict_sub(const_mat_view X, mat &Y) {
 bool PCRModel::cli_inspect_sub(ostream &os) const {
 	os << "intercept: " << intercept << endl;
 	os << "beta:" << endl;
-	for (int i = 0; i < beta.size(); ++i) {
-		os << "\t" << beta(i) << endl;
-	}
+	output_mat(os, beta);
 	return true;
 }

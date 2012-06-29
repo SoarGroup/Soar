@@ -115,7 +115,7 @@ int classifier::classify(const rvec &x) {
 	clean_data(Xm, cleaned, nonuniform_cols);
 	
 	if (c.size() > 0 && cleaned.cols() == 0) {
-		cerr << "Degenerate case, no useful classification data." << endl;
+		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
 		return largest_class(c);
 	}
 	
