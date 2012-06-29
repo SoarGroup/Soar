@@ -131,20 +131,6 @@ void svs_state::init() {
 	mmdl = new multi_model();
 }
 
-void svs_state::update(const string &msg) {
-	size_t p = msg.find_first_of('\n');
-	int n;
-	
-	if (sscanf(msg.c_str(), "%d", &n) != 1) {
-		perror("svs_state::update");
-		cerr << msg << endl;
-		exit(1);
-	}
-	scene_num = n;
-	update_scene_num();
-	scn->parse_sgel(msg.substr(p+1));
-}
-
 void svs_state::update_scene_num() {
 	long curr;
 	if (scene_num_wme) {

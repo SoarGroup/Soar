@@ -243,12 +243,6 @@ bool EM::unify_or_add_model() {
 			noise_data.push_back(i);
 		}
 	}
-
-	DATAVIS("noise '")
-	for (int i = 0; i < noise_data.size(); ++i) {
-		DATAVIS(noise_data[i] << " ")
-	}
-	DATAVIS("'" << endl)
 	
 	if (noise_data.size() < K) {
 		return false;

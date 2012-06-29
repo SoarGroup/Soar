@@ -78,7 +78,6 @@ public:
 
 	~svs_state();
 	
-	void           update(const std::string &msg);
 	void           process_cmds();
 	void           update_cmd_results(bool early);
 	void           update_scene_num();
