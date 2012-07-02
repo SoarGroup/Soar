@@ -7,11 +7,12 @@
 
 using namespace std;
 
-class intersect_filter : public map_filter<bool> {
+class intersect_filter : public typed_map_filter<bool> {
 public:
-	intersect_filter(filter_input *input, scene *scn) : map_filter<bool>(input), scn(scn) {}
+	intersect_filter(filter_input *input, scene *scn) : typed_map_filter<bool>(input), scn(scn) {}
 	
-	bool compute(const filter_param_set *p, bool &res, bool adding) {
+	bool compute(const filter_param_set *p, bool adding, bool &res, bool &changed) {
+		bool newres;
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, p, "a", a)) {
@@ -21,7 +22,9 @@ public:
 			return false;
 		}
 		
-		res = scn->intersects(a, b);
+		newres = scn->intersects(a, b);
+		changed = (res != newres);
+		res = newres;
 		return true;
 	}
 

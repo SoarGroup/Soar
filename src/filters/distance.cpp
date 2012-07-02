@@ -5,11 +5,12 @@
 
 using namespace std;
 
-class distance_filter : public map_filter<float> {
+class distance_filter : public typed_map_filter<float> {
 public:
-	distance_filter(filter_input *input) : map_filter<float>(input) {}
+	distance_filter(filter_input *input) : typed_map_filter<float>(input) {}
 
-	bool compute(const filter_param_set *params, float &v, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, float &res, bool &changed) {
+		float newres;
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, params, "a", a) ||
@@ -18,7 +19,8 @@ public:
 			return false;
 		}
 		
-		v = (a->get_centroid() - b->get_centroid()).norm();
+		newres = (a->get_centroid() - b->get_centroid()).norm();
+		changed = (newres != res);
 		return true;
 	}
 };

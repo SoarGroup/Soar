@@ -12,11 +12,11 @@ int gen_counter = 0;
  whenever a node is deleted all its children are also deleted, which
  may break the caching that's going on in the map_filter class.
 */
-class gen_filter : public map_filter<sgnode*> {
+class gen_filter : public typed_map_filter<sgnode*> {
 public:
-	gen_filter(filter_input *input) : map_filter<sgnode*>(input) {}
+	gen_filter(filter_input *input) : typed_map_filter<sgnode*>(input) {}
 
-	bool compute(const filter_param_set *params, sgnode *&res, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, sgnode *&res, bool &changed) {
 		string name;
 		vec3 pos, rot, scale, singlept;
 		filter_val *ptsval;
@@ -70,6 +70,7 @@ public:
 		}
 		
 		res->set_trans(pos, rot, scale);
+		changed = true;
 		return true;
 	}
 };

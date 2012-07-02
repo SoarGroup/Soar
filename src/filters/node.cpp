@@ -12,9 +12,9 @@ using namespace std;
  This filter takes a "name" parameter and outputs a pointer to the node
  with that name in the scene graph.
 */
-class node_filter : public map_filter<const sgnode*>, public sgnode_listener {
+class node_filter : public typed_map_filter<const sgnode*>, public sgnode_listener {
 public:
-	node_filter(scene *scn, filter_input *input) : map_filter<const sgnode*>(input), scn(scn) {}
+	node_filter(scene *scn, filter_input *input) : typed_map_filter<const sgnode*>(input), scn(scn) {}
 	
 	~node_filter() {
 		map<sgnode*, const filter_param_set*>::iterator i;
@@ -23,27 +23,28 @@ public:
 		}
 	}
 	
-	bool compute(const filter_param_set *params, const sgnode *&n, bool adding) {
-		sgnode *n1;
+	bool compute(const filter_param_set *params, bool adding, const sgnode *&res, bool &changed) {
+		sgnode *newres;
 		string name;
-		if (!adding) {
-			n1 = const_cast<sgnode*>(n);
-			del_node(n1);
-		}
 		
 		if (!get_filter_param(this, params, "name", name)) {
+			set_error("expecting parameter name");
 			return false;
 		}
-		if ((n1 = scn->get_node(name)) == NULL) {
+		if ((newres = scn->get_node(name)) == NULL) {
 			stringstream ss;
 			ss << "no node called \"" << name << "\"";
 			set_error(ss.str());
 			return false;
 		}
 		
-		n1->listen(this);
-		node2param[n1] = params;
-		n = n1;
+		changed = (newres != res);
+		if (!adding && changed) {
+			del_node(const_cast<sgnode*>(res));
+			node2param[newres] = params;
+			newres->listen(this);
+		}
+		res = newres;
 		return true;
 	}
 	
@@ -141,18 +142,20 @@ private:
 	map<sgnode*, filter_val*> results;
 };
 
-class node_centroid_filter : public map_filter<vec3> {
+class node_centroid_filter : public typed_map_filter<vec3> {
 public:
-	node_centroid_filter(filter_input *input) : map_filter<vec3>(input) {}
+	node_centroid_filter(filter_input *input) : typed_map_filter<vec3>(input) {}
 	
-	bool compute(const filter_param_set *params, vec3 &v, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, vec3 &res, bool &changed) {
 		const sgnode *n;
 		
 		if (!get_filter_param(this, params, "node", n)) {
 			return false;
 		}
 		
-		v = n->get_centroid();
+		vec3 newres = n->get_centroid();
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 };

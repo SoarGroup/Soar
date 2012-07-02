@@ -5,13 +5,14 @@
 
 using namespace std;
 
-class compare_filter : public map_filter<bool> {
+class compare_filter : public typed_map_filter<bool> {
 public:
-	compare_filter(filter_input *input) : map_filter<bool>(input) {}
+	compare_filter(filter_input *input) : typed_map_filter<bool>(input) {}
 	
-	bool compute(const filter_param_set *params, bool &result, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		float a, b;
 		string comp;
+		bool newres;
 		
 		if (!get_filter_param(this, params, "a", a) ||
 		    !get_filter_param(this, params, "b", b) ||
@@ -20,18 +21,20 @@ public:
 			return false;
 		}
 		if (comp == "gt") {
-			result = (a > b);
+			newres = (a > b);
 		} else if (comp == "gte") {
-			result = (a >= b);
+			newres = (a >= b);
 		} else if (comp == "lt") {
-			result = (a < b);
+			newres = (a < b);
 		} else if (comp == "lte") {
-			result = (a <= b);
+			newres = (a <= b);
 		} else if (comp == "eq") {
-			result = (a == b);
+			newres = (a == b);
 		} else {
 			return false;
 		}
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 };

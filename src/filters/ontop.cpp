@@ -21,18 +21,20 @@ bool standalone(scene *scn, const vector<string> &args) {
 	return ontop(tn, bn);
 }
 
-class ontop_filter : public map_filter<bool> {
+class ontop_filter : public typed_map_filter<bool> {
 public:
-	ontop_filter(filter_input *input) : map_filter<bool>(input) {}
+	ontop_filter(filter_input *input) : typed_map_filter<bool>(input) {}
 
-	bool compute(const filter_param_set *params, bool &result, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *tn, *bn;
 		if (!get_filter_param(this, params, "top", tn) || 
 		    !get_filter_param(this, params, "bottom", bn))
 		{
 			return false;
 		}
-		result = ontop(tn, bn);
+		bool newres = ontop(tn, bn);
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 };

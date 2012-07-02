@@ -90,12 +90,12 @@ bool below(scene *scn, const vector<string> &args) {
 Filter version
 */
 
-class direction_filter : public map_filter<bool> {
+class direction_filter : public typed_map_filter<bool> {
 public:
 	direction_filter(filter_input *input, int axis, int comp)
-	: map_filter<bool>(input), axis(axis), comp(comp) {}
+	: typed_map_filter<bool>(input), axis(axis), comp(comp) {}
 	
-	bool compute(const filter_param_set *p, bool &res, bool adding) {
+	bool compute(const filter_param_set *p, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, p, "a", a)) {
@@ -105,7 +105,9 @@ public:
 			return false;
 		}
 		
-		res = direction(a, b, axis, comp);
+		bool newres = direction(a, b, axis, comp);
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 	

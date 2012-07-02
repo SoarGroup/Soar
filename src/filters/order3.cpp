@@ -37,11 +37,11 @@ bool behind(const sgnode *a, const sgnode *b, const sgnode *c) {
 	return (dir_separation(pa, pc, u) <= 0);
 }
 
-class between_filter : public map_filter<bool> {
+class between_filter : public typed_map_filter<bool> {
 public:
-	between_filter(filter_input *input) : map_filter<bool>(input) {}
+	between_filter(filter_input *input) : typed_map_filter<bool>(input) {}
 	
-	bool compute(const filter_param_set *params, bool &result, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
 		
 		if (!get_filter_param(this, params, "a", a) ||
@@ -50,16 +50,18 @@ public:
 		{
 			return false;
 		}
-		result = between(a, b, c);
+		bool newres = between(a, b, c);
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 };
 
-class behind_filter : public map_filter<bool> {
+class behind_filter : public typed_map_filter<bool> {
 public:
-	behind_filter(filter_input *input) : map_filter<bool>(input) {}
+	behind_filter(filter_input *input) : typed_map_filter<bool>(input) {}
 	
-	bool compute(const filter_param_set *params, bool &result, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
 		
 		if (!get_filter_param(this, params, "a", a) ||
@@ -69,7 +71,9 @@ public:
 			return false;
 		}
 		
-		result = behind(a, b, c);
+		bool newres = behind(a, b, c);
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 };
