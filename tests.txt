@@ -1,3 +1,55 @@
+# This is a sample configuration for the test_svs program. test_svs is intended
+# to be a kind of unit test framework for verifying the correctness of filter
+# implementations. It allows the user to easily set up a scene in SVS and check
+# if filters applied to that scene will generate the expected results.
+#
+# This file has a line-oriented syntax. Each line can be one of the following:
+#
+# * An SGEL command 
+# * A test specification 
+# * One of the following single words: init, test, repl
+#
+# Run test_svs as follows:
+#
+# ./test_svs <test config>
+#
+# test_svs creates a Soar agent and then reads each line in the configuration
+# sequentially.  If the line is an SGEL command, it is sent to the SVS of the
+# test agent. 
+#
+# If the line is a test specification, it is translated into a production that
+# puts an extract command on the SVS link. 
+#
+# If the line is "init", the agent is reinitialized and all existing
+# productions are excised. This also means that the SVS scene is cleared.
+#
+# If the line is "test", the agent runs for two decision cycles. This allows it
+# to process all queued SGEL inputs and extract commands. Special productions
+# in the agent will check the result of each extract command and report it to
+# stdout as either success, failure, or syntax error. Existing test productions
+# are then excised, but the agent is not reinitialized. Note that if the end of
+# the file is reached and there are untested productions, an implicit test is
+# executed.
+#
+# If the line is "repl", test_svs will enter a simple command line interface
+# similar to TestCLI so that the user can inspect productions and working
+# memory. Exit the REPL by sending Ctrl-D. test_svs will then continue
+# processing the rest of the configuration file.
+#
+# Test specifications have the following syntax:
+#
+# [pos|neg] <filter name> <param name> <value> <param name> <value> ...
+#
+# [pos|neg] specifies the expected outcome of the filter. <value> is either: A
+# node name, a numeric or string constant, or a recursive filter specification.
+# Constants have to begin with "c:" so that they can be distinguished from node
+# names. Recursive filters are surrounded by parentheses, as in 
+#
+#   "(<filter name> <param name> <value> ...)"
+#
+# This file can contain comments prepended with '#'. Long lines can be
+# continued by ending the line with a backslash (\).
+
 # test intersect
 a box1 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
 a box2 world v 0 0 0 0 0 1 0 1 0 0 1 1 1 0 0 1 0 1 1 1 0 1 1 1
@@ -45,6 +97,6 @@ pos intersect a ball1 b box1
 pos intersect a ball2 b box1
 neg intersect a ball3 b box1
 
-pos compare a 0.1 b 1 compare c:lt
-neg compare a -.1 b 2.0 compare c:gt
-pos compare a 3 b 3.0 compare c:eq
+pos compare a c:0.1 b c:1   compare c:lt
+neg compare a c:-.1 b c:2.0 compare c:gt
+pos compare a c:3   b c:3.0 compare c:eq

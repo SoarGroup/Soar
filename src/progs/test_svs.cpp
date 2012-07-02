@@ -174,13 +174,7 @@ bool parse_filter(const vector<string> &fields, stringstream &ss) {
 			}
 			//rest << ") ";
 		} else {
-			int intval;
-			double dblval;
-			if (parse_int(v, intval)) {
-				ss << intval << " ";
-			} else if (parse_double(v, dblval)) {
-				ss << dblval << " ";
-			} else if (v.substr(0, 2) == "c:") {
+			if (v.substr(0, 2) == "c:") {
 				ss << v.substr(2) << " ";
 			} else {  // it's a node
 				ss << "<a" << var_count << "> ";
@@ -233,9 +227,18 @@ void repl(Agent *a) {
 	a->UnregisterForPrintEvent(callback_id);
 }
 
+void print_usage(const char *prog) {
+	cerr << "SVS filter unit testing program" << endl << endl
+	     << "usage: " << prog << " [-v] [-h] [config]" << endl << endl
+		 << "If [config] is specified, read configuration from that file." << endl
+		 << "Otherwise read configuration from stdin." << endl
+		 << "-v enables printing of input lines and generated test rules" << endl
+		 << "-h prints this help text" << endl;
+	exit(0);
+}
+
 int main(int argc, char *argv[]) {
-	int total = 0;
-	bool needs_test = false;
+	bool needs_test = false, verbose = false;
 	
 	Kernel *k = Kernel::CreateKernelInCurrentThread();
 	k->AddRhsFunction ("count", rhs_count, NULL);
@@ -246,12 +249,22 @@ int main(int argc, char *argv[]) {
 	a->ExecuteCommandLine("waitsnc -e");
 	
 	string line, line_in;
-	istream *input;
-	if (argc < 2) {
-		input = &cin;
-	} else {
-		input = new ifstream(argv[1]);
+	istream *input = &cin;
+	for (int i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "-v") == 0) {
+			verbose = true;
+		} else if (strcmp(argv[i], "-h") == 0) {
+			print_usage(argv[0]);
+		} else {
+			ifstream *f = new ifstream(argv[i]);
+			if (!f->is_open()) {
+				cerr << "invalid config file " << argv[i] << endl;
+				exit(1);
+			}
+			input = f;
+		}
 	}
+
 	while (getline(*input, line_in)) {
 		bool cont = false;
 		line_in = strip(line_in, " \t", " \t");
@@ -265,6 +278,9 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 		
+		if (verbose) {
+			cout << "INPUT: " << line << endl;
+		}
 		if (line == "test") {
 			a->ExecuteCommandLine("run 2");
 			a->ExecuteCommandLine("excise -u");
@@ -283,9 +299,10 @@ int main(int argc, char *argv[]) {
 				fields.erase(fields.begin());
 				test_info.tests[test_count] = line;
 				string rule = make_rule(test_count++, positive, fields);
-				cout << rule << endl;
+				if (verbose) {
+					cout << "RULE: " << rule << endl;
+				}
 				a->ExecuteCommandLine(rule.c_str());
-				++total;
 				needs_test = true;
 			} else {
 				a->SendSVSInput(line);
@@ -300,11 +317,11 @@ int main(int argc, char *argv[]) {
 	cout << test_info.success << " success, " 
 	     << test_info.failure << " failure, " 
 	     << test_info.syntax  << " syntax, " 
-	     << total << " total"<< endl;
+	     << test_count << " total"<< endl;
 	
 	int sum = test_info.success + test_info.failure + test_info.syntax;
-	if (sum != total) {
-		cout << "Warning: " << total - sum << " test rules did not fire" << endl;
+	if (sum != test_count) {
+		cout << "Warning: " << test_count - sum << " test rules did not fire" << endl;
 	}
 	
 	return test_info.failure + test_info.syntax;
