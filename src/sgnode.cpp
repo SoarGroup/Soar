@@ -9,8 +9,8 @@ using namespace std;
 typedef vector<sgnode*>::iterator childiter;
 typedef vector<sgnode*>::const_iterator const_childiter;
 
-sgnode::sgnode(std::string name) 
-: name(name), parent(NULL), trans_dirty(true), shape_dirty(true),
+sgnode::sgnode(std::string name, bool group)
+: name(name), parent(NULL), group(group), trans_dirty(true), shape_dirty(true),
   pos(0.0, 0.0, 0.0), rot(0.0, 0.0, 0.0), scale(1.0, 1.0, 1.0)
 {}
 

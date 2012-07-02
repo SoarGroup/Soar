@@ -22,7 +22,7 @@ public:
 		SHAPE_CHANGED
 	};
 	
-	sgnode(std::string name);
+	sgnode(std::string name, bool group);
 	virtual ~sgnode();
 	
 	/* copied node doesn't inherit listeners */
@@ -43,6 +43,10 @@ public:
 	const group_node* get_parent() const {
 		return parent;
 	}
+	
+	bool is_group() const {
+		return group;
+	}
 
 	group_node *as_group();
 	const group_node *as_group() const;
@@ -58,7 +62,6 @@ public:
 	const bbox &get_bounds() const;
 	const vec3 &get_centroid() const;
 
-	virtual bool is_group() const = 0;
 	virtual void get_shape_sgel(std::string &s) const = 0;
 	virtual void walk(std::vector<sgnode*> &result) = 0;
 	
@@ -76,6 +79,7 @@ private:
 	
 	std::string name;
 	group_node* parent;
+	bool        group;
 	vec3        pos;
 	vec3        rot;
 	vec3        scale;
@@ -91,7 +95,7 @@ private:
 
 class group_node : public sgnode {
 public:
-	group_node(std::string name) : sgnode(name) {}
+	group_node(std::string name) : sgnode(name, true) {}
 	~group_node();
 	
 	sgnode* get_child(int i);
@@ -104,8 +108,6 @@ public:
 		return children.size();
 	}
 
-	bool is_group() const { return true; }
-	
 	// group nodes have no shape
 	void get_shape_sgel(std::string &s) const {}
 	
@@ -119,10 +121,9 @@ private:
 
 class geometry_node : public sgnode {
 public:
-	geometry_node(const std::string &name) : sgnode(name) {}
+	geometry_node(const std::string &name) : sgnode(name, false) {}
 	virtual ~geometry_node() {}
 	void walk(std::vector<sgnode*> &result) { result.push_back(this); }
-	bool is_group() const { return false; }
 };
 
 class convex_node : public geometry_node {
