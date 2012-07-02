@@ -94,6 +94,7 @@ class rl_param_container: public soar_module::param_container
 		soar_module::constant_param<decay_choices> *decay_mode;
 		soar_module::decimal_param *et_decay_rate;
 		soar_module::decimal_param *et_tolerance;
+    soar_module::boolean_param *rl_impasse; ///< bazald
 		soar_module::boolean_param *temporal_extension;
 		soar_module::boolean_param *hrl_discount;
 		soar_module::boolean_param *temporal_discount;

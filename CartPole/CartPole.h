@@ -53,6 +53,8 @@ public:
 
   void reinit(const bool &init_soar);
   bool SpawnDebugger();
+  void srand(const int &seed);
+  void ExecuteCommandLine(const std::string &command);
 
 private:
   void update();

@@ -23,7 +23,7 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
 CartPole::CartPole(const std::string &agent_productions,
                    sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
-           sml::Kernel::CreateKernelInNewThread(true)),
+           sml::Kernel::CreateKernelInCurrentThread(true)),
   m_agent(m_kernel, kernel ? "" : "CartPole"),
   m_state(0),
   m_step(0),
@@ -91,7 +91,8 @@ void CartPole::remote_trials(const int &num_trials,
 void CartPole::run() {
   //// Version 1
   const std::string result = m_agent->RunSelfForever();
-  std::cout << result << std::endl;
+  if(result != "DirectRun completed")
+    std::cout << result << std::endl;
 
   //// Version 2
   //const std::string result = m_agent->ExecuteCommandLine("time run");

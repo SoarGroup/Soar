@@ -1,7 +1,7 @@
 rl --set learning on
 rl --set learning-policy sarsa
-rl --set learning-rate 0.5
-rl --set discount-rate 0.5
+rl --set learning-rate 0.1
+rl --set discount-rate 0.9
 #rl --set eligibility-trace-decay-rate 0.1
 #rl --set eligibility-trace-tolerance 0.000001
 
@@ -47,14 +47,15 @@ gp {cartpole*propose*move
          ^index-theta-dot <theta-dot>)
 }
 
-gp {cartpole*reinforce*move
+sp {cartpole*reinforce*move
+    :template
     (state <s> ^operator <o> +)
     (<o> ^name move
-         ^direction [left right]
-         ^index-x [0 1 2]
-         ^index-x-dot [0 1 2]
-         ^index-theta [0 1 2 3 4 5]
-         ^index-theta-dot [0 1 2])
+         ^direction <dir>
+         ^index-x <x>
+         ^index-x-dot <x-dot>
+         ^index-theta <theta>
+         ^index-theta-dot <theta-dot>)
 -->
     (<s> ^operator <o> = 0)
 }

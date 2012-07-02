@@ -105,6 +105,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	et_tolerance = new soar_module::decimal_param( "eligibility-trace-tolerance", 0.001, new soar_module::gt_predicate<double>( 0, false ), new soar_module::f_predicate<double>() );
 	add( et_tolerance );
 
+  // rl-impasse
+  rl_impasse = new soar_module::boolean_param( "rl-impasse", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+  add( rl_impasse );
+  
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
 	add( temporal_extension );

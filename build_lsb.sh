@@ -32,6 +32,7 @@ scons \
 	--cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
 	--cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
 	--lnflags="--lsb-shared-libpath=out -Wl,--hash-style=both" \
+	--opt \
 	cli debugger debugger_api headers java_sml_misc kernel sml_java tests tohsml cartpole
 
 #$LSB_HOME/bin/lsbappchk --no-journal --missing-symbols --lsb-version=4.0 --shared-libpath=out out/CartPole

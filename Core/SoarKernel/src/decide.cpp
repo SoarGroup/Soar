@@ -958,6 +958,13 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
 byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) ///< bazald
 {
+  if(!thisAgent->rl_params->rl_impasse->get_value()) {
+    if(nullify_next_candidate)
+      selected->next_candidate = 0;
+
+    return NONE_IMPASSE_TYPE;
+  }
+  
 //   static uint64_t my_id = 0xFFFFFFFFFFFFFFFF;
 //   ++my_id;
 

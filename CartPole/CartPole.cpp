@@ -47,6 +47,7 @@
 #include "CartPole.inl"
 
 #include <iostream>
+#include <sstream>
 
 void cart_pole(int action, float *x, float *x_dot, float *theta, float *theta_dot);
 
@@ -60,9 +61,12 @@ inline bool arg_help(char ** &arg)
   std::cout << "Options:" << std::endl
             << "  --help               prints this help" << std::endl
             << "  --remote [ip[:port]] to use a remote Soar kernel" << std::endl
-            << "  --ip                 to specify an IP address    (implies remote Soar kernel)" << std::endl
+            << "  --ip                 to specify an IP address (implies remote Soar kernel)" << std::endl
             << "  --port               to specify a port address (implies remote Soar kernel)" << std::endl
-            << "  --rules filename     to specify non-default rules" << std::endl;
+            << "  --episodes count     to specify the maximum number of episodes [1000]" << std::endl
+            << "  --seed seed          to specify the random seed" << std::endl
+            << "  --rules filename     to specify non-default rules" << std::endl
+            << "  --rl-rules-out       to specify where to output the RL-rules when finished" << std::endl;
 
   exit(0);
 
@@ -158,6 +162,57 @@ inline bool arg_rules(std::string &rules,
   return true;
 }
 
+inline bool arg_episodes(int &episodes,
+                         char ** &arg,
+                         char ** const &arg_end)
+{
+  if(strcmp(*arg, "--episodes"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--episodes' requires an argument'";
+    exit(2);
+  }
+
+  episodes = atoi(*arg);
+
+  return true;
+}
+
+inline bool arg_seed(int &seed,
+                     char ** &arg,
+                     char ** const &arg_end)
+{
+  if(strcmp(*arg, "--seed"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--seed' requires an argument'";
+    exit(2);
+  }
+
+  seed = atoi(*arg);
+
+  return true;
+}
+
+inline bool arg_rl_rules_out(std::string &rl_rules,
+                             char ** &arg,
+                             char ** const &arg_end)
+{
+  if(strcmp(*arg, "--rl-rules-out"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--rl-rules-out' requires an argument'";
+    exit(2);
+  }
+
+  rl_rules = *arg;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -171,18 +226,26 @@ int main(int argc, char ** argv) {
   std::string ip_address;
   int port = sml::Kernel::kDefaultSMLPort;
   std::string rules = CARTPOLE_AGENT_PRODUCTIONS;
+  int episodes = 1000;
+  int seed = int(time(0));
+  std::string rl_rules_out = "cartpole-rl.soar";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
-    if(!arg_help  (                                 arg         ) &&
-       !arg_remote(remote, ip_address, port,        arg, arg_end) &&
-       !arg_ip    (remote, ip_address,              arg, arg_end) &&
-       !arg_port  (remote,             port,        arg, arg_end) &&
-       !arg_rules (                          rules, arg, arg_end))
+    if(!arg_help         (                                                               arg         ) &&
+       !arg_remote       (remote, ip_address, port,                                      arg, arg_end) &&
+       !arg_ip           (remote, ip_address,                                            arg, arg_end) &&
+       !arg_port         (remote,             port,                                      arg, arg_end) &&
+       !arg_rules        (                          rules,                               arg, arg_end) &&
+       !arg_episodes     (                                 episodes,                     arg, arg_end) &&
+       !arg_seed         (                                           seed,               arg, arg_end) &&
+       !arg_rl_rules_out (                                                 rl_rules_out, arg, arg_end))
     {
       std::cerr << "Unrecognized argument: " << *arg;
       exit(1);
     }
   }
+
+  std::cout << "SEED " << seed << std::endl;
 
   if(rules == CARTPOLE_AGENT_PRODUCTIONS)
     set_working_directory_to_executable_path();
@@ -197,10 +260,10 @@ int main(int argc, char ** argv) {
 //                                                       false));
 
     CartPole game(rules);
-
+    game.srand(seed);
     game.SpawnDebugger();
 
-    for(int episode = 0; episode != 1000; ++episode) {
+    for(int episode = 0; episode != episodes; ++episode) {
       while(!game.is_finished()) {
   #ifdef WIN32
         Sleep(100);
@@ -209,31 +272,46 @@ int main(int argc, char ** argv) {
   #endif
       }
 
-      if(game.is_success()) {
-        std::cout << "Success in episode " << episode + 1 << std::endl;
-        break;
-      }
+//       if(game.is_success()) {
+//         std::cout << "Success in episode " << episode + 1 << std::endl;
+//         break;
+//       }
+
+      if(!(episode % 50))
+        std::cerr << "\nEp " << episode << ' ';
+      std::cerr << (game.is_success() ? 'S' : '.');
 
       game.reinit(false);
     }
+  
+    game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
   }
   else {
     // CartPole::run_trials(3);
 
     CartPole game(rules);
+    game.srand(seed);
 
-    for(int episode = 0; episode != 1000; ++episode) {
+    for(int episode = 0; episode != episodes; ++episode) {
       game.run();
 
-      if(game.is_success()) {
-        std::cout << "Success in episode " << episode + 1 << std::endl;
-        break;
-      }
+//       if(game.is_success()) {
+//         std::cout << "Success in episode " << episode + 1 << std::endl;
+//         break;
+//       }
+
+      if(!(episode % 50))
+        std::cerr << "\nEp " << episode << ' ';
+      std::cerr << (game.is_success() ? 'S' : '.');
 
       game.reinit(true);
     }
+  
+    game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
   }
 
+  std::cerr << std::endl;
+  
   return 0;
 }
 
@@ -278,6 +356,16 @@ void CartPole::reinit(const bool &init_soar) {
 
 bool CartPole::SpawnDebugger() {
   return m_agent->SpawnDebugger(-1, "/home/bazald/Documents/Work/soar-group/SoarSuite/out/SoarJavaDebugger.jar");
+}
+
+void CartPole::srand(const int &seed) {
+  std::ostringstream oss;
+  oss << "srand " << seed;
+  ExecuteCommandLine(oss.str());
+}
+
+void CartPole::ExecuteCommandLine(const std::string &command) {
+  m_agent->ExecuteCommandLine(command.c_str());
 }
 
 void CartPole::update() {
@@ -330,10 +418,17 @@ void CartPole::update() {
           m_theta->Update(theta);
           m_theta_dot->Update(theta_dot);
 
-          if(is_finished())
-            std::cout << "step " << step << " (" << direction_name << ") = ["
-                      << x << ',' << x_dot << ',' << theta << ',' << theta_dot << ']'
+          if(is_finished()) {
+            static int episode = 0;
+            std::cout << "EPISODE " << ++episode
+                      << " STEP " << step
+                      << " DIR " << (direction_name[0] == 'r' ? 1 : 0)
+                      << " X " << x
+                      << " X-DOT " << x_dot
+                      << " THETA " << theta
+                      << " THETA-DOT " << theta_dot
                       << std::endl;
+          }
         }
       }
       else
