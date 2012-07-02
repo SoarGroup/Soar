@@ -26,6 +26,7 @@ filter_table_entry node_fill_entry();
 filter_table_entry all_nodes_fill_entry();
 filter_table_entry node_centroid_fill_entry();
 filter_table_entry compare_fill_entry();
+filter_table_entry absval_fill_entry();
 
 filter_table::filter_table() {
 	add(intersect_fill_entry());
@@ -49,6 +50,7 @@ filter_table::filter_table() {
 	add(all_nodes_fill_entry());
 	add(node_centroid_fill_entry());
 	add(compare_fill_entry());
+	add(absval_fill_entry());
 	
 	std::map<std::string, filter_table_entry>::const_iterator i;
 	for (i = t.begin(); i != t.end(); ++i) {
