@@ -203,7 +203,8 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 		}
 	}
 	
-	if (itype == "concat") {
+	// The combine type check is a bit of a hack
+	if (itype == "concat" || ftype == "combine") {
 		input = new concat_filter_input();
 	} else if (params.size() == 0) {
 		input = new null_filter_input();
@@ -234,7 +235,11 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 	}
 	
 	if (!fail) {
-		f = get_filter_table().make_filter(ftype, scn, input);
+		if (ftype == "combine") {
+			f = new passthru_filter(input);
+		} else {
+			f = get_filter_table().make_filter(ftype, scn, input);
+		}
 	}
 	
 	if (fail || ftype == "" || f == NULL) {
