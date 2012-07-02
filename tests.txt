@@ -48,5 +48,3 @@ neg intersect a ball3 b box1
 pos compare a 0.1 b 1 compare c:lt
 neg compare a -.1 b 2.0 compare c:gt
 pos compare a 3 b 3.0 compare c:eq
-
-#repl

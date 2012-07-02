@@ -10,46 +10,69 @@
 using namespace std;
 using namespace sml;
 
+int var_count = 0;
+int test_count = 0;
+
 const char *failure_rule =
 "sp {failure "
 ":default "
 "   (state <s> ^superstate nil ^svs.command.extract <e> ^extract-info <i>) "
-"   (<i> ^cmd <e> ^name <name> ^expected <posneg>) "
+"   (<i> ^cmd <e> ^count <c> ^expected <posneg>) "
 "   (<e> ^status success ^result <res>) "
 "   (<res> ^{<negpos> <> <posneg>}.atom <a>) "
 "--> "
-"   (exec print |failure | <name> |, expected | <posneg> (crlf)) "
-"   (exec count failure)}";
+"   (exec count <c> | failure|)}";
 
 const char *success_rule =
 "sp {success "
 ":default "
 "   (state <s> ^superstate nil ^svs.command.extract <e> ^extract-info <i>) "
-"   (<i> ^cmd <e> ^name <name> ^expected <posneg>) "
+"   (<i> ^cmd <e> ^count <c> ^expected <posneg>) "
 "   (<e> ^status success ^result <res>) "
 "   (<res> ^<posneg>.atom <a>) "
 "--> "
-"   (exec print |success | <name> (crlf)) "
-"   (exec count success)}";
+"   (exec count <c> | success|)}";
 
 const char *syntax_rule =
 "sp {syntax "
 ":default "
 "   (state <s> ^superstate nil ^svs.command.extract <e> ^extract-info <i>) "
-"   (<i> ^cmd <e> ^name <name>) "
+"   (<i> ^cmd <e> ^count <c>) "
 "   (<e> ^status {<stat> <> success}) "
 "--> "
-"   (exec print |syntax  | <name> |, | <stat> (crlf)) "
-"   (exec count syntax)}";
+"   (exec count <c> | syntax|)}";
 
-void split(const string &s, const string &delim, vector<string> &fields) {
+size_t get_close_paren(const string &s, size_t start) {
+	int depth = 1;
+	size_t i = start;
+	while (i != string::npos) {
+		i = s.find_first_of("()", i + 1);
+		if (i == string::npos) {
+			return string::npos;
+		} else if (s[i] == '(') {
+			++depth;
+		} else if (s[i] == ')') {
+			if (--depth == 0) {
+				return ((i + 1 >= s.size()) ? string::npos : (i + 1));
+			}
+		}
+	}
+	return string::npos;
+}
+
+void split(const string &s, vector<string> &fields) {
+	const char *delims = " \t";
 	int start, end = 0;
 	while (end < s.size()) {
-		start = s.find_first_not_of(delim, end);
+		start = s.find_first_not_of(delims, end);
 		if (start == string::npos) {
 			return;
 		}
-		end = s.find_first_of(delim, start);
+		if (s[start] == '(') {
+			end = get_close_paren(s, start);
+		} else {
+			end = s.find_first_of(delims, start);
+		}
 		if (end == string::npos) {
 			end = s.size();
 		}
@@ -83,27 +106,40 @@ bool parse_int(const string &s, int &v) {
 	return true;
 }
 
-struct result_counts {
+struct test_info_struct {
 	int success;
 	int failure;
 	int syntax;
+	map<int, string> tests;
+	
+	test_info_struct() {
+		success = 0;
+		failure = 0;
+		syntax = 0;
+	}
 };
 
-string rhs_count(smlRhsEventId id, void *data, Agent *agnt, char const *func, char const *arg) {
-	result_counts *c = reinterpret_cast<result_counts*>(data);
-	if (strcmp(arg, "success") == 0) {
-		++c->success;
-	} else if (strcmp(arg, "failure") == 0) {
-		++c->failure;
-	} else {
-		++c->syntax;
-	}
-	return "";
-}
+test_info_struct test_info;
 
-string rhs_print(smlRhsEventId id, void *data, Agent *agnt, char const *func, char const *arg) {
-	cout << arg;
-	cout.flush();
+string rhs_count(smlRhsEventId id, void *data, Agent *agnt, char const *func, char const *arg) {
+	vector<string> fields;
+	int count;
+	
+	split(arg, fields);
+	if (!parse_int(fields[0], count)) {
+		assert(false);
+	}
+	
+	if (fields[1] == "success") {
+		++test_info.success;
+		cout << "success " << test_info.tests[count] << endl;
+	} else if (fields[1] == "failure") {
+		++test_info.failure;
+		cout << "failure " << test_info.tests[count] << endl;
+	} else {
+		++test_info.syntax;
+		cout << "syntax  " << test_info.tests[count] << endl;
+	}
 	return "";
 }
 
@@ -117,45 +153,62 @@ string strip(const string &s, const string &lc, const string &rc) {
 	return s.substr(b, e - b + 1);
 }
 
-string make_rule(const string &filter, const vector<string> &arg_names, const vector<string> &arg_vals, bool positive) {
-	static int test_count = 0;
-	stringstream ss, ss1;
-
-	ss << filter << "(";
-	for (int i = 0; i < arg_names.size(); ++i) {
-		ss << arg_names[i] << ":" << arg_vals[i];
-		if (i < arg_names.size() - 1) {
-			ss << ",";
+bool parse_filter(const vector<string> &fields, stringstream &ss) {
+	stringstream rest;
+	
+	if (fields.size() < 1 || (fields.size() - 1) % 2 != 0) {
+		return false;
+	}
+	ss << "(<a" << var_count++ << "> ^type " << fields[0];
+	
+	for (int i = 1; i < fields.size(); i += 2) {
+		string v = fields[i+1];
+		ss << " ^" << fields[i] << " ";
+		if (v[0] == '(') {
+			ss << "<a" << var_count << "> ";
+			//rest << "(";
+			vector<string> subfields;
+			split(v.substr(1, v.size() - 2), subfields);
+			if (!parse_filter(subfields, rest)) {
+				return false;
+			}
+			//rest << ") ";
+		} else {
+			int intval;
+			double dblval;
+			if (parse_int(v, intval)) {
+				ss << intval << " ";
+			} else if (parse_double(v, dblval)) {
+				ss << dblval << " ";
+			} else if (v.substr(0, 2) == "c:") {
+				ss << v.substr(2) << " ";
+			} else {  // it's a node
+				ss << "<a" << var_count << "> ";
+				rest << "(<a" << var_count++ << "> ^type node ^name " << v << ") ";
+			}
 		}
 	}
-	ss << ")";
-	string name = ss.str();
+	ss << ")" << endl;
+	ss << rest.str() << endl;
+	return true;
+}
+
+string make_rule(int test_count, bool positive, const vector<string> &fields) {
+	stringstream ss, ss1;
 
 	ss.str("");
-	ss << "sp {add-extract" << test_count++ << endl
+	ss << "sp {add-extract*" << test_count << endl
 	   << "(state <s> ^superstate nil ^svs.command <c>)" << endl
 	   << "-->" << endl
 	   << "(<s> ^extract-info <i>)"
-	   << "(<i> ^cmd <e> ^name |" << name << "| ^expected " << (positive ? "positive" : "negative") << ")"
-	   << "(<c> ^extract <e>)"
-	   << "(<e> ^type " << filter;
+	   << "(<i> ^cmd <a" << var_count << "> ^count " << test_count << " ^expected " << (positive ? "positive" : "negative") << ")"
+	   << "(<c> ^extract <a" << var_count << ">)" << endl;
 	
-	for (int i = 0; i < arg_names.size(); ++i) {
-		ss << " ^" << arg_names[i] << " ";
-		int iv;
-		double dv;
-		if (parse_int(arg_vals[i], iv)) {
-			ss << iv;
-		} else if (parse_double(arg_vals[i], dv)) {
-			ss << dv;
-		} else if (arg_vals[i].substr(0, 2) == "c:") {
-			ss << arg_vals[i].substr(2); // constant string
-		} else {
-			ss << "<a" << i << ">";
-			ss1 << "(<a" << i << "> ^type node ^name " << arg_vals[i] << ")" << endl;
-		}
+	if (!parse_filter(fields, ss)) {
+		cerr << "error" << endl;
+		exit(1);
 	}
-	ss << ")" << endl << ss1.str() << "}";
+	ss << "}";
 	return ss.str();
 }
 
@@ -183,31 +236,34 @@ void repl(Agent *a) {
 int main(int argc, char *argv[]) {
 	int total = 0;
 	bool needs_test = false;
-	result_counts counts = {0, 0, 0};
 	
 	Kernel *k = Kernel::CreateKernelInCurrentThread();
-	k->AddRhsFunction ("count", rhs_count, &counts);
-	k->AddRhsFunction ("print", rhs_print, NULL);
+	k->AddRhsFunction ("count", rhs_count, NULL);
 	Agent *a = k->CreateAgent("arst");
 	a->ExecuteCommandLine(failure_rule);
 	a->ExecuteCommandLine(success_rule);
 	a->ExecuteCommandLine(syntax_rule);
 	a->ExecuteCommandLine("waitsnc -e");
 	
-	string line;
+	string line, line_in;
 	istream *input;
 	if (argc < 2) {
 		input = &cin;
 	} else {
 		input = new ifstream(argv[1]);
 	}
-	while (getline(*input, line)) {
-		line = line.substr(0, line.find_first_of('#'));
-		line = strip(line, " \t", " \t");
-		if (line.empty()) {
+	while (getline(*input, line_in)) {
+		bool cont = false;
+		line_in = strip(line_in, " \t", " \t");
+		if (line_in.size() > 0 && line_in[line_in.size() - 1] == '\\') {
+			cont = true;
+			line_in.erase(line_in.size() - 1);
+		}
+		line_in = line_in.substr(0, line_in.find_first_of('#'));
+		line += line_in;
+		if (cont || line.empty()) {
 			continue;
 		}
-
 		
 		if (line == "test") {
 			a->ExecuteCommandLine("run 2");
@@ -221,41 +277,36 @@ int main(int argc, char *argv[]) {
 			repl(a);
 		} else {
 			vector<string> fields;
-			split(line, " \t", fields);
+			split(line, fields);
 			if (fields[0] == "pos" || fields[0] == "neg") {
-				if (fields.size() < 2 || fields.size () % 2 != 0) {
-					cerr << "error in line '" << line << "'" << endl;
-					return 1;
-				}
-				string filter = fields[1];
-				vector<string> names, vals;
-				for (int i = 2; i < fields.size(); i += 2) {
-					names.push_back(fields[i]);
-					vals.push_back(fields[i + 1]);
-				}
-				string rule = make_rule(filter, names, vals, fields[0] == "pos");
+				bool positive = (fields[0] == "pos");
+				fields.erase(fields.begin());
+				test_info.tests[test_count] = line;
+				string rule = make_rule(test_count++, positive, fields);
+				cout << rule << endl;
 				a->ExecuteCommandLine(rule.c_str());
 				++total;
+				needs_test = true;
 			} else {
 				a->SendSVSInput(line);
 			}
-			needs_test = true;
 		}
+		line.clear();
 	}
 	if (needs_test) {
 		a->ExecuteCommandLine("run 2");
 	}
 	
-	cout << counts.success << " success, " 
-	     << counts.failure << " failure, " 
-	     << counts.syntax << " syntax, " 
+	cout << test_info.success << " success, " 
+	     << test_info.failure << " failure, " 
+	     << test_info.syntax  << " syntax, " 
 	     << total << " total"<< endl;
 	
-	int sum = counts.success + counts.failure + counts.syntax;
+	int sum = test_info.success + test_info.failure + test_info.syntax;
 	if (sum != total) {
 		cout << "Warning: " << total - sum << " test rules did not fire" << endl;
 	}
 	
-	return counts.failure + counts.syntax;
+	return test_info.failure + test_info.syntax;
 }
 
