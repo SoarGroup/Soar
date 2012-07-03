@@ -1355,7 +1355,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		std::string portstring;
 		to_string(port, portstring);
 
-#ifdef SCONS_DARWIN
+#if (defined(__APPLE__) && defined(__MACH__))
 		execlp("java", "java", "-XstartOnFirstThread", "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #else
