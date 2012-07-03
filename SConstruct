@@ -134,12 +134,8 @@ cflags = []
 lnflags = []
 libs = ['Soar']
 if compiler == 'g++':
-	# We need to know if we're on darwin because malloc.h doesn't exist, functions are in stdlib.h
-	if sys.platform == 'darwin':
-		cflags.append('-DSCONS_DARWIN')
-	
 	if GetOption('defflags'):
-		cflags = ['-Wreturn-type']
+		cflags.append('-Wreturn-type')
 		
 		if GetOption('opt'):
 			cflags.extend(['-O2', '-DNDEBUG'])

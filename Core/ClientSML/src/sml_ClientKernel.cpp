@@ -2279,11 +2279,11 @@ std::string Kernel::LoadExternalLibrary(const char *pLibraryCommand) {
 
 #else
         std::string newLibraryName = "lib" + libraryName;
-#ifdef SCONS_DARWIN
+#if (defined(__APPLE__) && defined(__MACH__))
         newLibraryName.append(".dylib");
 #else
         newLibraryName.append(".so");
-#endif // !SCONS_DARWIN
+#endif
         void* hLibrary = 0;
         hLibrary = dlopen(newLibraryName.c_str(), RTLD_LAZY);
 #endif // !_WIN32
