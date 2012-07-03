@@ -35,6 +35,7 @@ public:
    * CartPole will take care of the deletion of the given kernel if one is provided.
    */
   inline CartPole(const std::string &agent_productions = CARTPOLE_AGENT_PRODUCTIONS,
+                  const bool &remote = false,
                   sml::Kernel * const kernel = 0);
   inline ~CartPole();
 
@@ -51,7 +52,10 @@ public:
   bool is_finished() const;
   bool is_success() const;
 
-  void reinit(const bool &init_soar);
+  void set_sp(const int &episode, const float &x_div, const float &x_dot_div, const float &theta_div, const float &theta_dot_div);
+  void do_sp(const int &episode);
+    
+  void reinit(const bool &init_soar, const int &after_episode);
   bool SpawnDebugger();
   void srand(const int &seed);
   void ExecuteCommandLine(const std::string &command);
@@ -68,6 +72,12 @@ private:
   sml::FloatElement * m_x_dot;
   sml::FloatElement * m_theta;
   sml::FloatElement * m_theta_dot;
+  
+  int m_sp_episode;
+  float m_sp_x_div;
+  float m_sp_x_dot_div;
+  float m_sp_theta_div;
+  float m_sp_theta_dot_div;
 };
 
 #endif

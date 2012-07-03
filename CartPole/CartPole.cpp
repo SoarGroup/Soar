@@ -59,14 +59,15 @@ inline bool arg_help(char ** &arg)
     return false;
 
   std::cout << "Options:" << std::endl
-            << "  --help               prints this help" << std::endl
-            << "  --remote [ip[:port]] to use a remote Soar kernel" << std::endl
-            << "  --ip                 to specify an IP address (implies remote Soar kernel)" << std::endl
-            << "  --port               to specify a port address (implies remote Soar kernel)" << std::endl
-            << "  --episodes count     to specify the maximum number of episodes [1000]" << std::endl
-            << "  --seed seed          to specify the random seed" << std::endl
-            << "  --rules filename     to specify non-default rules" << std::endl
-            << "  --rl-rules-out       to specify where to output the RL-rules when finished" << std::endl;
+            << "  --help                  prints this help" << std::endl
+            << "  --remote [ip[:port]]    to use a remote Soar kernel" << std::endl
+            << "  --ip                    to specify an IP address (implies remote Soar kernel)" << std::endl
+            << "  --port                  to specify a port address (implies remote Soar kernel)" << std::endl
+            << "  --episodes count        to specify the maximum number of episodes [1000]" << std::endl
+            << "  --seed seed             to specify the random seed" << std::endl
+            << "  --rules filename        to specify non-default rules" << std::endl
+            << "  --rl-rules-out          to specify where to output the RL-rules when finished" << std::endl
+            << "  --sp-special ep x xd t td  to specify what RL breakdown to add, and when" << std::endl;
 
   exit(0);
 
@@ -213,6 +214,55 @@ inline bool arg_rl_rules_out(std::string &rl_rules,
   return true;
 }
 
+inline bool arg_sp_special(int &episode,
+                           float &x_div,
+                           float &x_dot_div,
+                           float &theta_div,
+                           float &theta_dot_div,
+                           char ** &arg,
+                           char ** const &arg_end)
+{
+  if(strcmp(*arg, "--sp-special"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    exit(2);
+  }
+
+  episode = atoi(*arg);
+
+  if(++arg == arg_end) {
+    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    exit(2);
+  }
+  
+  x_div = atof(*arg);
+
+  if(++arg == arg_end) {
+    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    exit(2);
+  }
+  
+  x_dot_div = atof(*arg);
+
+  if(++arg == arg_end) {
+    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    exit(2);
+  }
+  
+  theta_div = atof(*arg);
+
+  if(++arg == arg_end) {
+    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    exit(2);
+  }
+  
+  theta_dot_div = atof(*arg);
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -229,16 +279,22 @@ int main(int argc, char ** argv) {
   int episodes = 1000;
   int seed = int(time(0));
   std::string rl_rules_out = "cartpole-rl.soar";
+  int episode = -1;
+  float x_div = 1.0f;
+  float x_dot_div = 1.0f;
+  float theta_div = 1.0f;
+  float theta_dot_div = 1.0f;
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
-    if(!arg_help         (                                                               arg         ) &&
-       !arg_remote       (remote, ip_address, port,                                      arg, arg_end) &&
-       !arg_ip           (remote, ip_address,                                            arg, arg_end) &&
-       !arg_port         (remote,             port,                                      arg, arg_end) &&
-       !arg_rules        (                          rules,                               arg, arg_end) &&
-       !arg_episodes     (                                 episodes,                     arg, arg_end) &&
-       !arg_seed         (                                           seed,               arg, arg_end) &&
-       !arg_rl_rules_out (                                                 rl_rules_out, arg, arg_end))
+    if(!arg_help         (                                        arg         ) &&
+       !arg_remote       (remote, ip_address, port,               arg, arg_end) &&
+       !arg_ip           (remote, ip_address,                     arg, arg_end) &&
+       !arg_port         (remote,             port,               arg, arg_end) &&
+       !arg_rules        (                          rules,        arg, arg_end) &&
+       !arg_episodes     (                          episodes,     arg, arg_end) &&
+       !arg_seed         (                          seed,         arg, arg_end) &&
+       !arg_rl_rules_out (                          rl_rules_out, arg, arg_end) &&
+       !arg_sp_special   (episode, x_div, x_dot_div, theta_div, theta_dot_div, arg, arg_end))
     {
       std::cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -259,11 +315,14 @@ int main(int argc, char ** argv) {
 //                                                       port,
 //                                                       false));
 
-    CartPole game(rules);
+    CartPole game(rules, true);
+    game.set_sp(episode, x_div, x_dot_div, theta_div, theta_dot_div);
     game.srand(seed);
     game.SpawnDebugger();
 
     for(int episode = 0; episode != episodes; ++episode) {
+      game.do_sp(episode);
+      
       while(!game.is_finished()) {
   #ifdef WIN32
         Sleep(100);
@@ -281,7 +340,7 @@ int main(int argc, char ** argv) {
         std::cerr << "\nEp " << episode << ' ';
       std::cerr << (game.is_success() ? 'S' : '.');
 
-      game.reinit(false);
+      game.reinit(false, episode);
     }
   
     game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
@@ -289,10 +348,13 @@ int main(int argc, char ** argv) {
   else {
     // CartPole::run_trials(3);
 
-    CartPole game(rules);
+    CartPole game(rules, false);
+    game.set_sp(episode, x_div, x_dot_div, theta_div, theta_dot_div);
     game.srand(seed);
 
     for(int episode = 0; episode != episodes; ++episode) {
+      game.do_sp(episode);
+
       game.run();
 
 //       if(game.is_success()) {
@@ -304,7 +366,7 @@ int main(int argc, char ** argv) {
         std::cerr << "\nEp " << episode << ' ';
       std::cerr << (game.is_success() ? 'S' : '.');
 
-      game.reinit(true);
+      game.reinit(true, episode);
     }
   
     game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
@@ -323,7 +385,29 @@ bool CartPole::is_success() const {
   return m_step && m_step->GetValue() > 10000;
 }
 
-void CartPole::reinit(const bool &init_soar) {
+void CartPole::set_sp(const int &episode, const float &x_div, const float &x_dot_div, const float &theta_div, const float &theta_dot_div) {
+  m_sp_episode = episode;
+  m_sp_x_div = x_div;
+  m_sp_x_dot_div = x_dot_div;
+  m_sp_theta_div = theta_div;
+  m_sp_theta_dot_div = theta_dot_div;
+}
+
+void CartPole::do_sp(const int &episode) {
+  if(episode == m_sp_episode) {
+    std::ostringstream oss;
+    oss << "sp {elaborate*additional*cartpole (state <s> ^superstate nil ^name cartpole) --> (<s> ^div-x (/ 10 " << m_sp_x_div
+        << ") ^div-x-dot (/ 1 " << m_sp_x_dot_div
+        << ") ^div-theta (/ 3.1415926 " << m_sp_theta_div
+        << ") ^div-theta-dot (/ 3.141526 " << m_sp_theta_dot_div << "))}";
+    ExecuteCommandLine(oss.str());
+
+    if(!m_agent->Commit())
+      abort();
+  }
+}
+
+void CartPole::reinit(const bool &init_soar, const int &after_episode) {
   m_agent->DestroyWME(m_theta_dot);
   m_theta_dot = 0;
   m_agent->DestroyWME(m_theta);

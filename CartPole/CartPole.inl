@@ -21,8 +21,10 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
 }
 
 CartPole::CartPole(const std::string &agent_productions,
+                   const bool &remote,
                    sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
+           remote ? sml::Kernel::CreateKernelInNewThread() :
            sml::Kernel::CreateKernelInCurrentThread(true)),
   m_agent(m_kernel, kernel ? "" : "CartPole"),
   m_state(0),
@@ -30,7 +32,12 @@ CartPole::CartPole(const std::string &agent_productions,
   m_x(0),
   m_x_dot(0),
   m_theta(0),
-  m_theta_dot(0)
+  m_theta_dot(0),
+  m_sp_episode(-1),
+  m_sp_x_div(1),
+  m_sp_x_dot_div(1),
+  m_sp_theta_div(1),
+  m_sp_theta_dot_div(1)
 {
   m_agent.LoadProductions(agent_productions);
 

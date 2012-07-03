@@ -21,101 +21,116 @@ sp {apply*initialize*cartpole
     (state <s> ^operator.name cartpole)
 -->
     (<s> ^name cartpole
-         ^div-x (/ 10 8)
-         ^div-x-dot (/ 1 0.5)
-         ^div-theta (/ 3.1415926 16)
-         ^div-theta-dot (/ 3.141526 2))
+         ^div <d>)
+    (<d> ^name default
+         ^x (/ 10 8)
+         ^x-dot (/ 1 0.5)
+         ^theta (/ 3.1415926 16)
+         ^theta-dot (/ 3.141526 2))
 }
+#sp {elaborate*additional*cartpole
+#    (state <s> ^superstate nil
+#               ^name cartpole)
+#-->
+#    (<s> ^name cartpole
+#         ^div <d>)
+#    (<d> ^x (/ 10 8)
+#         ^x-dot (/ 1 0.5)
+#         ^theta (/ 3.1415926 16)
+#         ^theta-dot (/ 3.141526 2))
+#}
 
 sp {cartpole*elaborate*index*x*gt
     (state <s> ^name cartpole
                ^io.input-link.x {<val> >= 0}
-               ^div-x <div>)
+               ^div <d>)
+    (<d> ^x <div>)
 -->
-    (<s> ^index-x (int (/ <val> <div>)))
+    (<d> ^index-x (int (/ <val> <div>)))
 }
 sp {cartpole*elaborate*index*x*lt
     (state <s> ^name cartpole
                ^io.input-link.x {<val> < 0}
-               ^div-x <div>)
+               ^div <d>)
+    (<d> ^x <div>)
 -->
-    (<s> ^index-x (int (- (/ <val> <div>) 1)))
+    (<d> ^index-x (int (- (/ <val> <div>) 1)))
 }
 
 sp {cartpole*elaborate*index*x-dot*gt
     (state <s> ^name cartpole
                ^io.input-link.x-dot {<val> >= 0}
-               ^div-x-dot <div>)
+               ^div <d>)
+    (<d> ^x-dot <div>)
 -->
-    (<s> ^index-x-dot (int (/ <val> <div>)))
+    (<d> ^index-x-dot (int (/ <val> <div>)))
 }
 sp {cartpole*elaborate*index*x-dot*lt
     (state <s> ^name cartpole
                ^io.input-link.x-dot {<val> < 0}
-               ^div-x-dot <div>)
+               ^div <d>)
+    (<d> ^x-dot <div>)
 -->
-    (<s> ^index-x-dot (int (- (/ <val> <div>) 1)))
+    (<d> ^index-x-dot (int (- (/ <val> <div>) 1)))
 }
 
 sp {cartpole*elaborate*index*theta*gt
     (state <s> ^name cartpole
                ^io.input-link.theta {<val> >= 0}
-               ^div-theta <div>)
+               ^div <d>)
+    (<d> ^x-dot <div>)
 -->
-    (<s> ^index-theta (int (/ <val> <div>)))
+    (<d> ^index-x-dot (int (/ <val> <div>)))
 }
 sp {cartpole*elaborate*index*theta*lt
     (state <s> ^name cartpole
                ^io.input-link.theta {<val> < 0}
-               ^div-theta <div>)
+               ^div <d>)
+    (<d> ^x-dot <div>)
 -->
-    (<s> ^index-theta (int (- (/ <val> <div>) 1)))
+    (<d> ^index-x-dot (int (- (/ <val> <div>) 1)))
 }
 
 sp {cartpole*elaborate*index*theta-dot*gt
     (state <s> ^name cartpole
                ^io.input-link.theta-dot {<val> >= 0}
-               ^div-theta-dot <div>)
+               ^div <d>)
+    (<d> ^theta-dot <div>)
 -->
-    (<s> ^index-theta-dot (int (/ <val> <div>)))
+    (<d> ^index-theta-dot (int (/ <val> <div>)))
 }
 sp {cartpole*elaborate*index*theta-dot*lt
     (state <s> ^name cartpole
                ^io.input-link.theta-dot {<val> < 0}
-               ^div-theta-dot <div>)
+               ^div <d>)
+    (<d> ^theta-dot <div>)
 -->
-    (<s> ^index-theta-dot (int (- (/ <val> <div>) 1)))
+    (<d> ^index-theta-dot (int (- (/ <val> <div>) 1)))
 }
 
 gp {cartpole*propose*move
     (state <s> ^name cartpole
-               ^io.input-link <il>
-               ^index-x <x>
-               ^index-x-dot <x-dot>
-               ^index-theta <theta>
-               ^index-theta-dot <theta-dot>)
+               ^io.input-link <il>)
     (<il> ^step <c>)
 -->
     (<s> ^operator <o> +)
     (<o> ^name move
          ^step <c>
-         ^direction [left right]
-         ^index-x <x>
-         ^index-x-dot <x-dot>
-         ^index-theta <theta>
-         ^index-theta-dot <theta-dot>)
+         ^direction [left right])
 }
 
 sp {cartpole*reinforce*move
     :template
     (state <s> ^name cartpole
+               ^div <d>
                ^operator <o> +)
-    (<o> ^name move
-         ^direction <dir>
+    (<d> ^name <name>
          ^index-x <x>
          ^index-x-dot <x-dot>
          ^index-theta <theta>
          ^index-theta-dot <theta-dot>)
+    (<o> ^name move
+         ^direction <dir>)
 -->
     (<s> ^operator <o> = 0)
 }

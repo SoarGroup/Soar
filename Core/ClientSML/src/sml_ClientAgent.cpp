@@ -1367,6 +1367,8 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		execlp("java", "java", "-XstartOnFirstThread", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #else
+    std::cerr << "Debugger spawn: " << "java" << "(java," << java_library_path.c_str() << ",-jar," << p.c_str() << ",-remote,"
+              << "-port," << portstring.c_str() << ",-agent," << this->GetAgentName() << ',' << 0 << ')' << std::endl;
 		execlp("java", "java", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), 0 );
 #endif
