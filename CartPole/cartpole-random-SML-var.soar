@@ -78,17 +78,17 @@ sp {cartpole*elaborate*index*theta*gt
     (state <s> ^name cartpole
                ^io.input-link.theta {<val> >= 0}
                ^div <d>)
-    (<d> ^x-dot <div>)
+    (<d> ^theta <div>)
 -->
-    (<d> ^index-x-dot (int (/ <val> <div>)))
+    (<d> ^index-theta (int (/ <val> <div>)))
 }
 sp {cartpole*elaborate*index*theta*lt
     (state <s> ^name cartpole
                ^io.input-link.theta {<val> < 0}
                ^div <d>)
-    (<d> ^x-dot <div>)
+    (<d> ^theta <div>)
 -->
-    (<d> ^index-x-dot (int (- (/ <val> <div>) 1)))
+    (<d> ^index-theta (int (- (/ <val> <div>) 1)))
 }
 
 sp {cartpole*elaborate*index*theta-dot*gt
