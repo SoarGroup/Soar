@@ -107,6 +107,9 @@ def main():
       else:
         smith.append(int(line.split(' ', 4)[3]))
     f.close()
+    
+    directory=''
+    title='Cart Pole (seed ' + str(seed) + ')'
   else:
     files = []
     for filename in sys.argv[1:]:
@@ -141,6 +144,9 @@ def main():
     
     for f in files:
       f.close()
+    
+    directory=re.search('(^.*[^/]+)/+[^/]*$', sys.argv[1]).group(1) #sys.argv[1].rsplit('/', 1)[0]
+    title='Cart Pole (' + directory + ')'
   
   fig = plt.figure()
   fig.canvas.set_window_title('Cart Pole')
@@ -162,10 +168,10 @@ def main():
       i += 1
       x.append(i)
     
-    pylab.plot(x, smith['avg'], label="Average", color='brown', linestyle='solid')
     pylab.plot(x, smith['max'], label="Maximum", color='blue', linestyle='solid')
-    pylab.plot(x, smith['med'], label="Median", color='blue', linestyle='solid')
+    #pylab.plot(x, smith['med'], label="Median", color='blue', linestyle='solid')
     pylab.plot(x, smith['min'], label="Minimum", color='blue', linestyle='solid')
+    pylab.plot(x, smith['avg'], label="Average", color='brown', linestyle='solid')
   
   pylab.legend(loc=1, handlelength=4.2, numpoints=2)
   
@@ -173,7 +179,8 @@ def main():
   
   pylab.xlabel('Episode Number', fontsize=8)
   pylab.ylabel('Number of Steps', fontsize=8)
-  pylab.title('Blocks World with Tie Impasses for RL-Rules', fontsize=10)
+  pylab.title(title, fontsize=10)
+  pylab.ylim(ymax=10000, ymin=0)
   
   fig.axes[0].xaxis.set_major_formatter(CommaFormatter())
   fig.axes[0].yaxis.set_major_formatter(CommaFormatter())
@@ -188,8 +195,20 @@ def main():
   #print last_xlabel.get_text()
   #print last_xlabel
   
-  pylab.savefig('cartpole.eps')
-  plt.show()
+  if len(sys.argv) == 1:
+    pylab.savefig('cartpole.eps')
+    pylab.savefig('cartpole.png')
+    plt.show()
+  else:
+    splitd = directory.rsplit('/', 1)
+    
+    if not os.path.exists(splitd[0] + '/eps'):
+      os.makedirs(splitd[0] + '/eps')
+    pylab.savefig(splitd[0] + '/eps/' + splitd[1] + '.eps')
+    
+    if not os.path.exists(splitd[0] + '/png'):
+      os.makedirs(splitd[0] + '/png')
+    pylab.savefig(splitd[0] + '/png/' + splitd[1] + '.png', dpi=1200)
 
 if __name__ == "__main__":
   main()

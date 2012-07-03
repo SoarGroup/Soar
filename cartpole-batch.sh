@@ -70,6 +70,8 @@ experiments () {
 
       RUN=$(($RUN + 1))
     done
+
+    ./cartpole.py $DIR/*.out
   done
 }
 
