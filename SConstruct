@@ -192,15 +192,17 @@ env.Replace(
 	LIBPATH = [os.path.realpath(GetOption('outdir'))],
 )
 
-if os.name == 'posix':
-	if 'CPATH' in os.environ:
-		env.Append(CPPPATH = os.environ.get('CPATH').split(':'))
-	if sys.platform == 'darwin':
-		lib_path_var = 'DYLD_LIBRARY_PATH'
-	else:
-		lib_path_var = 'LD_LIBRARY_PATH'
-	if lib_path_var in os.environ:
-		env.Append(LIBPATH = os.environ.get(lib_path_var).split(':'))
+if sys.platform == 'win32':
+	sys_lib_path = filter(None, os.environ.get('PATH', '').split(';'))
+	sys_inc_path = filter(None, os.environ.get('INCLUDE', '').split(';'))
+elif sys.platform == 'darwin':
+	sys_lib_path = filter(None, os.environ.get('DYLD_LIBRARY_PATH', '').split(':'))
+	sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
+else:
+	sys_lib_path = filter(None, os.environ.get('LD_LIBRARY_PATH', '').split(':'))
+	sys_inc_path = filter(None, os.environ.get('CPATH', '').split(':'))
+
+env.Append(CPPPATH = sys_inc_path, LIBPATH = sys_lib_path)
 
 # Setting *COMSTR will replace long commands with a short message "Making <something>"
 if not GetOption('verbose'):
