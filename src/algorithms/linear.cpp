@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <cmath>
 #include <cassert>
 #include <vector>
@@ -409,23 +410,25 @@ bool LRModel::fit() {
 
 bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
-		os << "members (" << members.size() << "):";
-		for (int i = 0; i < members.size(); ++i) {
-			os << " " << members[i];
+		os << "members:  " << members.size() << endl;
+		os << "error:    " << error << endl;
+		bool success;
+		if (isconst) {
+			os << "constant: ";
+			output_rvec(os, constvals) << endl;
+		} else if (!cli_inspect_sub(os)) {
+			return false;
 		}
-		os << endl << "error:     " << error << endl;
-		return cli_inspect_sub(os);
+		os << "subqueries: timing train" << endl;
+		return true;
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
+		return true;
 	} else if (args[first_arg] == "train") {
 		for (int i = 0; i < members.size(); ++i) {
-			for (int j = 0; j < xdata.cols(); ++j) {
-				os << xdata(members[i], j) << " ";
-			}
-			for (int j = 0; j < ydata.cols(); ++j) {
-				os << ydata(members[i], j) << " ";
-			}
-			os << endl;
+			os << setw(4) << members[i] << " | ";
+			output_rvec(os, xdata.row(members[i])) << " ";
+			output_rvec(os, ydata.row(members[i])) << endl;
 		}
 		return true;
 	}

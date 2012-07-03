@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include "classify.h"
 #include "common.h"
@@ -44,6 +45,14 @@ int largest_class(const vector<int> &membership) {
 		}
 	}
 	return largest;
+}
+
+ostream &operator<<(ostream &os, const classifier_inst &inst) {
+	for (int i = 0; i < inst.attrs.size(); ++i) {
+		os << (inst.attrs[i] ? 1 : 0) << ' ';
+	}
+	os << inst.cat;
+	return os;
 }
 
 void classifier_inst::save(ostream &os) const {
@@ -168,7 +177,7 @@ void classifier::print_tree(ostream &os) const {
 
 bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
-		os << "specify an argument" << endl;
+		os << "subqueries are: tree train" << endl;
 		return false;
 	}
 	
@@ -187,6 +196,10 @@ bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream 
 			return false;
 		}
 		return tree->cli_inspect(id, os);
+	} else if (args[first_arg] == "train") {
+		for (int i = 0; i < insts.size(); ++i) {
+			os << setw(4) << i << " " << insts[i] << endl;
+		}
 	}
 	return false;
 }

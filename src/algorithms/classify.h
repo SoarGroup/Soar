@@ -1,6 +1,7 @@
 #ifndef CLASSIFY_H
 #define CLASSIFY_H
 
+#include <iostream>
 #include <vector>
 #include "common.h"
 
@@ -18,6 +19,8 @@ public:
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
 };
+
+std::ostream &operator<<(std::ostream &os, const classifier_inst &inst);
 
 class classifier {
 public:

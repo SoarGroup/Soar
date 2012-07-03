@@ -294,7 +294,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		vector<string> atoms;
 		get_filter_table().get_all_atoms(scn, atoms);
 		for (int i = 0; i < atoms.size(); ++i) {
-			os << atoms[i] << endl;
+			os << setw(3) << i << " " << atoms[i] << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "timing") {
