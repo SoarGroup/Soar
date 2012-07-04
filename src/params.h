@@ -80,4 +80,10 @@
 */
 #define STATE_DIFF_THRESH 0.001
 
+/*
+ Number of initial rows to give dynamic matrices that hold model
+ training data.
+*/
+#define INIT_NDATA 1000
+
 #endif

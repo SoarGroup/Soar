@@ -27,9 +27,8 @@ public:
 	classifier(const dyn_mat &X, const dyn_mat &Y, scene *scn);
 	~classifier();
 	
-	void add(int cat);
-	void change_cat(int i, int new_cat);
-	void update();
+	void new_data();
+	void update(const std::vector<category> &cats);
 	void batch_update(const std::vector<category> &classes);
 	int classify(const rvec &x);
 	

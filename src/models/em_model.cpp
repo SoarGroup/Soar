@@ -4,8 +4,10 @@
 #include <fstream>
 #include "model.h"
 #include "em.h"
+#include "classify.h"
 #include "soar_interface.h"
 #include "filter_table.h"
+#include "params.h"
 
 using namespace std;
 
@@ -14,12 +16,12 @@ const int MAXITERS = 50;
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, scene *scn, const string &name)
-	: model(name, "em"), si(si), root(root), revisions(0)
+	: model(name, "em"), si(si), root(root), revisions(0), ydata(0, 1, INIT_NDATA, 1)
 	{
 		result_id = si->make_id_wme(root, "result").first;
 		tests_id = si->make_id_wme(result_id, "tests").first;
 		revisions_wme = si->make_wme(result_id, "revisions", revisions);
-		em = new EM(scn);
+		em = new EM(xdata, ydata);
 		
 		const filter_table &t = get_filter_table();
 		t.get_all_atoms(scn, atoms);
@@ -32,16 +34,22 @@ public:
 			t.get_params(*j, params);
 			pred_params[*j] = params;
 		}
-		
+		clsfr = new classifier(xdata, ydata, scn);
 		init();
 	}
 
 	~EM_model() {
+		delete em;
+		delete clsfr;
 		finish();
 	}
 	
 	bool predict(const rvec &x, rvec &y) {
-		return em->predict(x, y(0));
+		int mode = clsfr->classify(x);
+		if (mode < 0) {
+			return false;
+		}
+		return em->predict(mode, x, y(0));
 	}
 	
 	int get_input_size() const {
@@ -53,19 +61,29 @@ public:
 	}
 
 	void learn(const rvec &x, const rvec &y) {
-		em->add_data(x, y(0));
+		if (xdata.rows() == 0) {
+			xdata.resize(0, x.size());
+		}
+		assert(xdata.cols() == x.size() && y.size() == 1);
+		xdata.append_row(x);
+		ydata.append_row();
+		ydata(ydata.rows() - 1, 0) = y(0);
+		
+		em->new_data();
 		if (em->run(MAXITERS)) {
 			si->remove_wme(revisions_wme);
 			revisions_wme = si->make_wme(result_id, "revisions", ++revisions);
-			DATAVIS("revisions " << revisions << endl)
 			update_tested_atoms();
 		}
+		
+		clsfr->new_data();
+		clsfr->update(em->get_map_modes());
 	}
 	
 	void update_tested_atoms() {
 		vector<int> a;
 		vector<int>::const_iterator i;
-		em->get_classifier().get_tested_atoms(a);
+		clsfr->get_tested_atoms(a);
 		for(i = a.begin(); i != a.end(); ++i) {
 			if (atom_wmes.find(*i) == atom_wmes.end()) {
 				make_atom_wme(*i);
@@ -98,14 +116,17 @@ public:
 	}
 	
 	void save(ostream &os) const {
+		xdata.save(os);
+		ydata.save(os);
 		em->save(os);
 	}
 	
 	void load(istream &is) {
-		DATAVIS("BEGIN " << get_name() << endl)
+		xdata.load(is);
+		ydata.load(is);
 		em->load(is);
 		update_tested_atoms();
-		DATAVIS("END" << endl)
+		clsfr->batch_update(em->get_map_modes());
 	}
 	
 	/*
@@ -116,7 +137,8 @@ public:
 		if (!get_option("log_predictions").empty()) {
 			int best, predicted;
 			double besterror;
-			em->test_classify(x, y(0), best, predicted, besterror);
+			best = em->best_mode(x, y(0), besterror);
+			predicted = clsfr->classify(x);
 			
 			stringstream ss;
 			ss << "predictions/" << get_name() << ".classify";
@@ -129,15 +151,53 @@ public:
 	}
 	
 	bool cli_inspect_sub(int first_arg, const vector<string> &args, ostream &os) {
-		return em->cli_inspect(first_arg, args, os);
+		if (first_arg >= args.size()) {
+			os << "EM model learner" << endl;
+			os << endl << "subqueries: train classifier em" << endl;
+			return true;
+		} else if (args[first_arg] == "train") {
+			const vector<category> &modes = em->get_map_modes();
+			int ndata = xdata.rows();
+			int start = 0, end = ndata - 1;
+			if (first_arg + 1 < args.size()) {
+				if (!parse_int(args[first_arg + 1], start) || start < 0 || start >= ndata - 1) {
+					os << "invalid data range" << endl;
+					return false;
+				}
+			}
+			if (first_arg + 2 < args.size()) {
+				if (!parse_int(args[first_arg + 2], end) || end < start || end >= ndata - 1) {
+					os << "invalid data range" << endl;
+					return false;
+				}
+			}
+			
+			os << "   N  CLS | DATA" << endl;  // header
+			for (int i = start; i <= end; ++i) {
+				os << setw(4) << i << "  " << setw(3) << modes[i] << " | ";
+				output_rvec(os, xdata.row(i)) << " ";
+				output_rvec(os, ydata.row(i)) << endl;
+			}
+			return true;
+		} else if (args[first_arg] == "classifier") {
+			return clsfr->cli_inspect(first_arg + 1, args, os);
+		} else if (args[first_arg] == "em") {
+			return em->cli_inspect(first_arg + 1, args, os);
+		}
+		return false;
 	}
 	
 private:
+	dyn_mat xdata;
+	dyn_mat ydata;
+	
+	EM *em;
+	classifier *clsfr;
+	
 	soar_interface *si;
 	Symbol *root, *result_id, *tests_id;
 	wme *revisions_wme;
 	int revisions;
-	EM *em;
 	vector<string> atoms;
 	map<string, vector<string> > pred_params;
 	map<int, wme*> atom_wmes;

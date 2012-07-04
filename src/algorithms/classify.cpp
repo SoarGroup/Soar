@@ -77,22 +77,16 @@ classifier::~classifier() {
 	delete scn;
 }
 
-void classifier::add(int cat) {
+void classifier::new_data() {
 	++ndata;
 	assert(ndata == insts.size() + 1);
 	scn->set_properties(X.row(ndata - 1));
 	classifier_inst i;
 	i.attrs = scn->get_atom_vals();
-	i.cat = cat;
+	i.cat = -1;
 	insts.push_back(i);
 	tree->update_tree(ndata - 1);
 	tree->prune();
-}
-
-void classifier::change_cat(int i, int new_cat) {
-	int old = insts[i].cat;
-	insts[i].cat = new_cat;
-	tree->update_counts_change(i, old);
 }
 
 int classifier::classify(const rvec &x) {
@@ -204,7 +198,16 @@ bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream 
 	return false;
 }
 
-void classifier::update() {
+void classifier::update(const vector<category> &cats) {
+	assert(cats.size() == insts.size());
+	
+	for (int i = 0; i < cats.size(); ++i) {
+		if (insts[i].cat != cats[i]) {
+			category old = insts[i].cat;
+			insts[i].cat = cats[i];
+			tree->update_counts_change(i, old);
+		}
+	}
 	tree->update_tree(-1);
 	tree->prune();
 }
