@@ -37,7 +37,11 @@ if you don't have it already. Get it at
 
 http://www.cmake.org/cmake/resources/software.html
 
-After obtaining cmake and the Bullet source, follow these steps:
+If you're on Windows, please refer to this page to compile the library:
+
+http://bulletphysics.org/mediawiki-1.5.8/index.php/Creating_a_project_from_scratch
+
+If you're on *nix or OS X, follow these steps:
 
 1. Expand the source archive to some directory, say bullet_source.
 
@@ -51,8 +55,7 @@ After obtaining cmake and the Bullet source, follow these steps:
    where <install dir> is any directory you want to install the
    compiled code to.
 
-4. In *nix and Mac OS X, run "make install". In Windows, open the
-   generated Visual Studio solution, and build in release mode.
+4. Run "make install"
 
 5. If you installed the libraries to a non-standard location, make
    sure the compiler can find the libraries by adding the location to
@@ -60,5 +63,4 @@ After obtaining cmake and the Bullet source, follow these steps:
    
    * In *nix, use LD_LIBRARY_PATH
    * In Mac OS X, use DYLD_LIBRARY_PATH
-   * In Windows, use PATH
 
