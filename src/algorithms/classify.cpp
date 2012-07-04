@@ -65,7 +65,7 @@ void classifier_inst::load(istream &is) {
 	load_vector(attrs, is);
 }
 
-classifier::classifier(const mat &X, const mat &Y, scene *scn) 
+classifier::classifier(const dyn_mat &X, const dyn_mat &Y, scene *scn) 
 : X(X), Y(Y), ndata(0), scn(scn->clone())
 {
 	vector<string> atoms;

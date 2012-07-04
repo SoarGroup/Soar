@@ -41,7 +41,9 @@ double randgauss(double mean, double std) {
 
 EM::EM(scene *scn)
 : xdim(0), clsfr(xdata, ydata, scn), ndata(0), nmodels(0),
-  Py_z(INIT_NMODELS, INIT_NDATA), eligible(INIT_NMODELS, INIT_NDATA), ydata(INIT_NDATA, 1)
+  Py_z(0, 0, INIT_NMODELS, INIT_NDATA), 
+  eligible(0, 0, INIT_NMODELS, INIT_NDATA), 
+  ydata(0, 1, INIT_NDATA, 1)
 {
 	timers.add("e_step");
 	timers.add("m_step");
@@ -50,29 +52,12 @@ EM::EM(scene *scn)
 EM::~EM() {
 }
 
-/* double storage size if we run out */
-void EM::resize() {
-	int nd = ndata > xdata.rows() ? ndata * 2 : xdata.rows();
-	int nm = nmodels > Py_z.rows() ? nmodels * 2 : Py_z.rows();
-	
-	if (nd > xdata.rows()) {
-		xdata.conservativeResize(nd, xdim);
-		ydata.conservativeResize(nd, 1);
-	}
-	if (nm > Py_z.rows() || nd > Py_z.cols()) {
-		Py_z.conservativeResize(nm, nd);
-		if (TEST_ELIGIBILITY) {
-			eligible.conservativeResize(nm, nd);
-		}
-	}
-}
-
 void EM::update_eligibility() {
 	if (!TEST_ELIGIBILITY) {
 		return;
 	}
 	
-	eligible.fill(1);
+	eligible.get().fill(1);
 	for (int i = 0; i < ndata; ++i) {
 		rvec x = xdata.row(i);
 		for (int j = 0; j < nmodels; ++j) {
@@ -101,7 +86,6 @@ void EM::update_Py_z(int i, set<int> &check) {
 	set<int>::iterator j;
 	rvec py;
 	
-	DATAVIS("BEGIN Py_z" << endl)
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
 		double prev = Py_z(i, *j), now;
 		category c = map_class[*j];
@@ -127,9 +111,7 @@ void EM::update_Py_z(int i, set<int> &check) {
 			check.insert(*j);
 		}
 		Py_z(i, *j) = now;
-		DATAVIS("'" << i << ", " << *j << "' " << Py_z(i, *j) << endl)
 	}
-	DATAVIS("END" << endl)
 	stale_points[i].clear();
 }
 
@@ -141,7 +123,7 @@ void EM::update_MAP(const set<int> &points) {
 		if (nmodels == 0) {
 			now = -1;
 		} else {
-			Py_z.topLeftCorner(nmodels, ndata).col(*j).maxCoeff(&now);
+			Py_z.get().topLeftCorner(nmodels, ndata).col(*j).maxCoeff(&now);
 			if (Py_z(now, *j) < PNOISE) {
 				now = -1;
 			}
@@ -172,16 +154,19 @@ void EM::update_MAP(const set<int> &points) {
 void EM::add_data(const rvec &x, double y) {
 	if (xdim == 0) {
 		xdim = x.size();
-		xdata = mat::Zero(INIT_NDATA, xdim);
-	} else {
-		assert(xdata.cols() == x.size());
+		xdata.resize(0, xdim);
 	}
-	++ndata;
-	DATAVIS("ndata " << ndata << endl)
-	resize();
+	assert(xdata.cols() == x.size());
 	
-	xdata.row(ndata - 1) = x;
+	++ndata;
+	
+	xdata.append_row(x);
+	ydata.append_row();
 	ydata(ndata - 1, 0) = y;
+	Py_z.append_col();
+	if (TEST_ELIGIBILITY) {
+		eligible.append_col();
+	}
 	map_class.push_back(-1);
 	clsfr.add(-1);
 	for (int i = 0; i < nmodels; ++i) {
@@ -307,7 +292,10 @@ bool EM::unify_or_add_model() {
 		models.push_back(m.release());
 		mark_model_stale(nmodels);
 		++nmodels;
-		resize();
+		Py_z.append_row();
+		if (TEST_ELIGIBILITY) {
+			eligible.append_row();
+		}
 		return true;
 	}
 	return false;
@@ -388,7 +376,10 @@ bool EM::remove_models() {
 	}
 	
 	nmodels = i;
-	resize();
+	Py_z.resize(nmodels, ndata);
+	if (TEST_ELIGIBILITY) {
+		eligible.resize(nmodels, ndata);
+	}
 	models.erase(models.begin() + nmodels, models.end());
 	clsfr.update();
 	return removed;
@@ -435,11 +426,11 @@ double EM::error() {
 
 void EM::save(ostream &os) const {
 	os << ndata << " " << nmodels << " " << xdim << endl;
-	save_mat(os, xdata);
-	save_mat(os, ydata);
-	save_mat(os, Py_z);
+	xdata.save(os);
+	ydata.save(os);
+	Py_z.save(os);
 	if (TEST_ELIGIBILITY) {
-		save_imat(os, eligible);
+		eligible.save(os);
 	}
 	save_vector(map_class, os);
 	
@@ -455,11 +446,11 @@ void EM::load(istream &is) {
 	
 	is >> ndata >> nmodels >> xdim;
 	
-	load_mat(is, xdata);
-	load_mat(is, ydata);
-	load_mat(is, Py_z);
+	xdata.load(is);
+	ydata.load(is);
+	Py_z.load(is);
 	if (TEST_ELIGIBILITY) {
-		load_imat(is, eligible);
+		eligible.load(is);
 	}
 	load_vector(map_class, is);
 	

@@ -24,7 +24,7 @@ std::ostream &operator<<(std::ostream &os, const classifier_inst &inst);
 
 class classifier {
 public:
-	classifier(const mat &X, const mat &Y, scene *scn);
+	classifier(const dyn_mat &X, const dyn_mat &Y, scene *scn);
 	~classifier();
 	
 	void add(int cat);
@@ -39,8 +39,8 @@ public:
 	
 private:
 	int ndata;
-	const mat &X;
-	const mat &Y;
+	const dyn_mat &X;
+	const dyn_mat &Y;
 	std::vector<classifier_inst> insts;
 	
 	scene *scn;

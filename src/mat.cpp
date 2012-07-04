@@ -26,24 +26,34 @@ void dyn_mat::resize(int nrows, int ncols) {
 	}
 }
 
-void dyn_mat::append_row(const rvec &row) {
-	assert(row.size() == c);
+void dyn_mat::append_row() {
 	if (r >= buf.rows()) {
 		buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
 	}
-	buf.block(r++, 0, 1, c) = row;
+	++r;
 }
 
-void dyn_mat::insert_row(int i, const rvec &row) {
+void dyn_mat::append_row(const rvec &row) {
 	assert(row.size() == c);
+	append_row();
+	buf.block(r - 1, 0, 1, c) = row;
+}
+
+void dyn_mat::insert_row(int i) {
+	assert(0 <= i && i <= r);
 	if (r >= buf.rows()) {
 		buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
 	}
 	for (int j = r; j > i; --j) {
 		buf.block(j, 0, 1, c) = buf.block(j - 1, 0, 1, c);
 	}
-	buf.block(i, 0, 1, c) = row;
 	++r;
+}
+
+void dyn_mat::insert_row(int i, const rvec &row) {
+	assert(row.size() == c);
+	insert_row(i);
+	buf.block(i, 0, 1, c) = row;
 }
 
 void dyn_mat::remove_row(int i) {
@@ -54,24 +64,34 @@ void dyn_mat::remove_row(int i) {
 	--r;
 }
 
-void dyn_mat::append_col(const cvec &col) {
-	assert(col.size() == r);
+void dyn_mat::append_col() {
 	if (c >= buf.cols()) {
 		buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
 	}
-	buf.block(0, c++, r, 1) = col;
+	++c;
 }
 
-void dyn_mat::insert_col(int i, const cvec &col) {
+void dyn_mat::append_col(const cvec &col) {
 	assert(col.size() == r);
+	append_col();
+	buf.block(0, c - 1, r, 1) = col;
+}
+
+void dyn_mat::insert_col(int i) {
+	assert(0 <= i && i <= c);
 	if (c >= buf.cols()) {
 		buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
 	}
 	for (int j = c; j > i; --j) {
 		buf.block(0, j, r, 1) = buf.block(0, j - 1, r, 1);
 	}
-	buf.block(0, i, r, 1) = col;
 	++c;
+}
+
+void dyn_mat::insert_col(int i, const cvec &col) {
+	assert(col.size() == r);
+	insert_col(i);
+	buf.block(0, i, r, 1) = col;
 }
 
 void dyn_mat::remove_col(int i) {
@@ -80,6 +100,16 @@ void dyn_mat::remove_col(int i) {
 		buf.block(0, j - 1, r, 1) = buf.block(0, j, r, 1);
 	}
 	--c;
+}
+
+void dyn_mat::save(ostream &os) const {
+	save_mat(os, buf.topLeftCorner(r, c));
+}
+
+void dyn_mat::load(istream &is) {
+	load_mat(is, buf);
+	r = buf.rows();
+	c = buf.cols();
 }
 
 void save_mat(ostream &os, const_mat_view m) {

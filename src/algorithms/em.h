@@ -14,8 +14,6 @@ public:
 	EM(scene *scn);
 	~EM();
 	
-	void resize();
-	
 	void update_eligibility();
 	void update_Py_z(int i, std::set<int> &check);
 	void update_MAP(const std::set<int> &pts);
@@ -47,10 +45,10 @@ private:
 	std::map<int, std::set<int> > stale_points;
 	std::vector<category> map_class;
 	
-	mat  xdata;       // ndata x xdim
-	mat  ydata;       // ndata x 1
-	mat  Py_z;        // nmodels x ndata
-	imat eligible;    // nmodels x ndata
+	dyn_mat xdata;       // ndata x xdim
+	dyn_mat ydata;       // ndata x 1
+	dyn_mat Py_z;        // nmodels x ndata
+	dyn_mat eligible;    // nmodels x ndata
 	
 	int ndata, nmodels, xdim;
 	

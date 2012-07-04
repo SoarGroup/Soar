@@ -77,12 +77,49 @@ public:
 	dyn_mat(const dyn_mat &other);
 	
 	void resize(int nrows, int ncols);
+	void append_row();
 	void append_row(const rvec &row);
+	void insert_row(int i);
 	void insert_row(int i, const rvec &row);
 	void remove_row(int i);
+	void append_col();
 	void append_col(const cvec &col);
+	void insert_col(int i);
 	void insert_col(int i, const cvec &col);
 	void remove_col(int i);
+	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
+	
+	double &operator()(int i, int j) {
+		assert(0 <= i && i < r && 0 <= j && j < c);
+		return buf(i, j);
+	}
+	
+	double operator()(int i, int j) const {
+		assert(0 <= i && i < r && 0 <= j && j < c);
+		return buf(i, j);
+	}
+	
+	mat::RowXpr row(int i) {
+		assert(0 <= i && i < r);
+		return buf.row(i);
+	}
+	
+	mat::ConstRowXpr row(int i) const {
+		assert(0 <= i && i < r);
+		return buf.row(i);
+	}
+	
+	mat::ColXpr col(int j) {
+		assert(0 <= j && j < c);
+		return buf.col(j);
+	}
+	
+	mat::ConstColXpr col(int j) const {
+		assert(0 <= j && j < c);
+		return buf.col(j);
+	}
 	
 	inline mat_view get() {
 		return mat_view(buf, r, c);

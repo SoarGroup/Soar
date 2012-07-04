@@ -13,7 +13,7 @@ void remove_static(const_mat_view X, mat &Xout, std::vector<int> &nonstatic);
 
 class LRModel {
 public:
-	LRModel(const mat &xdata, const mat &ydata);
+	LRModel(const dyn_mat &xdata, const dyn_mat &ydata);
 	LRModel(const LRModel &m);
 	virtual ~LRModel();
 	
@@ -61,8 +61,8 @@ public:
 protected:
 	virtual bool cli_inspect_sub(std::ostream &os) const = 0;
 	
-	const mat &xdata;
-	const mat &ydata;
+	const dyn_mat &xdata;
+	const dyn_mat &ydata;
 	
 private:
 	void update_error();
@@ -78,7 +78,7 @@ private:
 
 class PCRModel : public LRModel {
 public:
-	PCRModel(const mat &xdata, const mat &ydata);
+	PCRModel(const dyn_mat &xdata, const dyn_mat &ydata);
 	PCRModel(const PCRModel &m);
 	~PCRModel() {}
 	

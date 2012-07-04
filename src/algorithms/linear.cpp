@@ -203,7 +203,7 @@ void pcr(const_mat_view X, const_mat_view Y, const rvec &x, rvec &y) {
 	y = (x - m) * beta + intercept;
 }
 
-LRModel::LRModel(const mat &xdata, const mat &ydata) 
+LRModel::LRModel(const dyn_mat &xdata, const dyn_mat &ydata) 
 : xdata(xdata), ydata(ydata), constvals(rvec::Zero(ydata.cols())), isconst(true), error(INFINITY), refit(true)
 {
 	timers.add("predict");
@@ -226,13 +226,6 @@ void LRModel::add_example(int i, bool update_refit) {
 	}
 	
 	members.push_back(i);
-	DATAVIS("'newest member' " << i << endl)
-	DATAVIS("'newest data' '")
-	for (int j = 0; j < xdata.cols(); ++j) {
-		DATAVIS(xdata(i, j) << " ")
-	}
-	DATAVIS(ydata(i, 0) << "'" << endl)
-	
 	if (members.size() == 1) {
 		xtotals = xdata.row(i);
 		center = xtotals;
@@ -263,7 +256,7 @@ void LRModel::add_example(int i, bool update_refit) {
 			refit = true;
 			error = INFINITY;
 		} else {
-			double e = pow(py(0) - ydata(i), 2);
+			double e = pow(py(0) - ydata(i, 0), 2);
 			if (!refit) {
 				/*
 				 Only refit the model if the average error increases
@@ -436,7 +429,7 @@ bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os
 	return false;
 }
 
-PCRModel::PCRModel(const mat &xdata, const mat &ydata) 
+PCRModel::PCRModel(const dyn_mat &xdata, const dyn_mat &ydata) 
 : LRModel(xdata, ydata), intercept(rvec::Zero(ydata.cols()))
 {}
 
