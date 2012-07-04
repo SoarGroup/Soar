@@ -224,12 +224,12 @@ typedef struct right_mem_struct {
 
 inline Bool test_is_constant_relational_test(byte x)
 {
-  return (((x) & 0xF0)==0x00);
+  return (((x) & 0xF0)==CONSTANT_RELATIONAL_RETE_TEST);
 }
 
 inline Bool test_is_variable_relational_test(byte x)
 {
-  return (((x) & 0xF0)==0x10);
+  return (((x) & 0xF0)==VARIABLE_RELATIONAL_RETE_TEST);
 }
 
 /* --- for the last two (i.e., the relational tests), we add in one of
@@ -251,7 +251,8 @@ inline byte kind_of_relational_test(byte x)
 
 inline Bool test_is_not_equal_test(byte x)
 {
-  return (((x)==0x01) || ((x)==0x11));
+  return (((x)==(CONSTANT_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST))
+		  || ((x)==(VARIABLE_RELATIONAL_RETE_TEST + RELATIONAL_NOT_EQUAL_RETE_TEST)));
 }
 
 /* --- tells where to find a variable --- */
