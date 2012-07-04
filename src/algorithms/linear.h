@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "common.h"
+#include "timer.h"
 
 void lsqr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
 void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);

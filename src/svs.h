@@ -8,6 +8,7 @@
 #include "sgnode.h"
 #include "common.h"
 #include "drawer.h"
+#include "timer.h"
 
 class command;
 class scene;

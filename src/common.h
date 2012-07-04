@@ -6,7 +6,6 @@
 #include <cmath>
 #include <cassert>
 #include <cstring>
-#include <ctime>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -31,93 +30,6 @@ std::ofstream& get_datavis();
 #else
 #define DATAVIS(x)
 #endif
-
-class timer_set;
-
-class timer {
-public:
-	timer(const std::string &name) 
-	: name(name), t1(0), cycles(0), last(0), mean(0), min(INFINITY), max(0), m2(0)
-	{}
-	
-#ifdef NO_SVS_TIMING
-	inline void start() {}
-	inline double stop() { return 0.0; }
-#else
-	inline void start() {
-		t1 = clock();
-	}
-	
-	inline double stop() {
-		double elapsed = (clock() - t1) / (double) CLOCKS_PER_SEC;
-		last = elapsed;
-		
-		min = std::min(min, elapsed);
-		max = std::max(max, elapsed);
-		
-	  	// see http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm
-		cycles++;
-		double delta = elapsed - mean;
-		mean += delta / cycles;
-		m2 += delta * (elapsed - mean);
-		
-		return elapsed;
-	}
-#endif
-	
-private:
-	std::string name;
-	
-	clock_t t1;
-	int cycles;
-	double last;
-	double mean;
-	double min;
-	double max;
-	double m2;
-	
-	friend class timer_set;
-};
-
-/*
- Create an instance of this class at the beginning of a
- function. The timer will stop regardless of how the function
- returns.
-*/
-class function_timer {
-public:
-	function_timer(timer &t) : t(t) { t.start(); }
-	~function_timer() { t.stop(); }
-	
-private:
-	timer &t;
-};
-
-class timer_set {
-public:
-	timer_set() {}
-	
-	void add(const std::string &name) {
-		timers.push_back(timer(name));
-	}
-	
-	timer &get(int i) {
-		return timers[i];
-	}
-	
-	void start(int i) {
-		timers[i].start();
-	}
-	
-	double stop(int i) {
-		return timers[i].stop();
-	}
-	
-	void report(std::ostream &os) const;
-	
-private:
-	std::vector<timer> timers;
-};
 
 template <typename A, typename B>
 inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {

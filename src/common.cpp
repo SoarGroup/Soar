@@ -164,51 +164,6 @@ string get_option(const string &key) {
 	return options[key];
 }
 
-void timer_set::report(ostream &os) const {
-	vector<timer>::const_iterator i;
-	int longest_name = 5;   // "total"
-	for (i = timers.begin(); i != timers.end(); ++i) {
-		if (longest_name < i->name.size()) {
-			longest_name = i->name.size();
-		}
-	}
-	
-	// header
-	os << left << setw(longest_name + 2) << "label" << right;
-	os << setw(13) << "cycles";
-	os << setw(13) << "total";
-	os << setw(13) << "mean";
-	os << setw(13) << "stdev";
-	os << setw(13) << "min";
-	os << setw(13) << "max";
-	os << setw(13) << "last" << endl;
-	
-	int ttl_cycles = 0;
-	double ttl_total = 0.0;
-	for (i = timers.begin(); i != timers.end(); ++i) {
-		double total = i->mean * i->cycles;
-		double stdev = sqrt(i->m2 / i->cycles);
-		
-		os << setw(longest_name + 2) << left << i->name << right;
-		os << " " << setw(12) << i->cycles;
-		os << " " << setw(12) << total;
-		os << " " << setw(12) << i->mean;
-		os << " " << setw(12) << stdev;
-		os << " " << setw(12) << i->min;
-		os << " " << setw(12) << i->max;
-		os << " " << setw(12) << i->last << endl;
-		
-		ttl_cycles += i->cycles;
-		ttl_total += total;
-	}
-	
-	os << endl;
-	os << setw(longest_name + 2) << left << "total" << right;
-	os << " " << setw(12) << ttl_cycles;
-	os << " " << setw(12) << ttl_total;
-	os << " " << setw(12) << ttl_total / ttl_cycles << endl;
-}
-
 bool parse_double(const string &s, double &v) {
 	if (s.empty()) {
 		return false;

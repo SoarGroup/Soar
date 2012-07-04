@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include "common.h"
+#include "timer.h"
 
 class filter;
 class filter_input;

@@ -328,8 +328,8 @@ svs::svs(agent *a)
 {
 	si = new soar_interface(a);
 	make_common_syms();
-	timers.add("input");
-	timers.add("output");
+	timers.add("input", true);
+	timers.add("output", true);
 	timers.add("calc_atoms");
 }
 
