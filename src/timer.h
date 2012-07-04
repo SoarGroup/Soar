@@ -1,16 +1,17 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <ctime>
 #include <vector>
 #include <cmath>
+#include "portability.h"
+#include "misc.h"
 
 class timer_set;
 
 class timer {
 public:
 	timer(const std::string &name, bool basic) 
-	: name(name), basic(basic), t1(0), count(0), total(0), last(0), mn(0), min(INFINITY), max(0), m2(0)
+	: name(name), basic(basic), count(0), total(0), last(0), mn(0), min(INFINITY), max(0), m2(0)
 	{}
 	
 #ifdef NO_SVS_TIMING
@@ -18,11 +19,13 @@ public:
 	inline double stop() { return 0.0; }
 #else
 	inline void start() {
-		t1 = clock();
+		t.start();
 	}
 	
 	inline double stop() {
-		double elapsed = (clock() - t1) / (double) CLOCKS_PER_SEC;
+		t.stop();
+		
+		double elapsed = t.get_usec() / 1000.0; 
 		last = elapsed;
 		total += elapsed;
 		count++;
@@ -42,10 +45,11 @@ public:
 #endif
 	
 private:
+	soar_wallclock_timer t;
+	
 	std::string name;
 	bool basic;
 	
-	clock_t t1;
 	int count;
 	double total;
 	double last;
@@ -75,26 +79,32 @@ class timer_set {
 public:
 	timer_set() {}
 	
+	~timer_set() {
+		for (int i = 0; i < timers.size(); ++i) {
+			delete timers[i];
+		}
+	}
+	
 	void add(const std::string &name, bool basic = false) {
-		timers.push_back(timer(name, basic));
+		timers.push_back(new timer(name, basic));
 	}
 	
 	timer &get(int i) {
-		return timers[i];
+		return *timers[i];
 	}
 	
 	void start(int i) {
-		timers[i].start();
+		timers[i]->start();
 	}
 	
 	double stop(int i) {
-		return timers[i].stop();
+		return timers[i]->stop();
 	}
 	
 	void report(std::ostream &os) const;
 	
 private:
-	std::vector<timer> timers;
+	std::vector<timer*> timers;
 };
 
 #endif
