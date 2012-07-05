@@ -294,7 +294,7 @@ bool EM::unify_or_add_model() {
 			double uni_error = unified->get_train_error();
 			
 			if (uni_error < MODEL_ERROR_THRESH ||
-			    curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error)
+			    (curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error))
 			{
 				delete models[i];
 				models[i] = unified.release();

@@ -1,6 +1,18 @@
+Index: Tests/UnitTests/src/cliparsertest.h
+===================================================================
+--- Tests/UnitTests/src/cliparsertest.h	(revision 13480)
++++ Tests/UnitTests/src/cliparsertest.h	(working copy)
+@@ -84,6 +84,7 @@
+     virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting) { return false; }
+     virtual bool DoWatchWMEs(const eWatchWMEsMode mode, WatchWMEsTypeBitset type, const std::string* pIdString = 0, const std::string* pAttributeString = 0, const std::string* pValueString = 0) { return false; }
+     virtual bool DoWMA( const char pOp = 0, const std::string *pAttr = 0, const std::string *pVal = 0 ) { return false; }
++    virtual bool DoSVS( const std::vector<std::string> &args) { return false; }
+ };
+ 
+ class CliEcho : public CliAdapter
 Index: Core/SoarKernel/src/agent.cpp
 ===================================================================
---- Core/SoarKernel/src/agent.cpp	(revision 13469)
+--- Core/SoarKernel/src/agent.cpp	(revision 13480)
 +++ Core/SoarKernel/src/agent.cpp	(working copy)
 @@ -52,6 +52,7 @@
  #include "wma.h"
@@ -30,7 +42,7 @@ Index: Core/SoarKernel/src/agent.cpp
    delete delete_agent->stats_db;
 Index: Core/SoarKernel/src/decide.cpp
 ===================================================================
---- Core/SoarKernel/src/decide.cpp	(revision 13469)
+--- Core/SoarKernel/src/decide.cpp	(revision 13480)
 +++ Core/SoarKernel/src/decide.cpp	(working copy)
 @@ -61,6 +61,7 @@
  
@@ -61,7 +73,7 @@ Index: Core/SoarKernel/src/decide.cpp
  /* ------------------------------------------------------------------
 Index: Core/SoarKernel/src/init_soar.cpp
 ===================================================================
---- Core/SoarKernel/src/init_soar.cpp	(revision 13469)
+--- Core/SoarKernel/src/init_soar.cpp	(revision 13480)
 +++ Core/SoarKernel/src/init_soar.cpp	(working copy)
 @@ -42,6 +42,7 @@
  #include "wma.h"
@@ -91,7 +103,7 @@ Index: Core/SoarKernel/src/init_soar.cpp
  	  do_output_cycle(thisAgent);
 Index: Core/SoarKernel/src/agent.h
 ===================================================================
---- Core/SoarKernel/src/agent.h	(revision 13469)
+--- Core/SoarKernel/src/agent.h	(revision 13480)
 +++ Core/SoarKernel/src/agent.h	(working copy)
 @@ -135,6 +135,7 @@
  typedef char * test;
@@ -111,7 +123,7 @@ Index: Core/SoarKernel/src/agent.h
  
 Index: Core/CLI/src/cli_CommandLineInterface.cpp
 ===================================================================
---- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 13469)
+--- Core/CLI/src/cli_CommandLineInterface.cpp	(revision 13480)
 +++ Core/CLI/src/cli_CommandLineInterface.cpp	(working copy)
 @@ -110,6 +110,7 @@
      m_Parser.AddCommand(new cli::WatchCommand(*this));
@@ -149,7 +161,7 @@ Index: Core/CLI/src/cli_svs.cpp
 +}
 Index: Core/CLI/src/cli_CommandLineInterface.h
 ===================================================================
---- Core/CLI/src/cli_CommandLineInterface.h	(revision 13469)
+--- Core/CLI/src/cli_CommandLineInterface.h	(revision 13480)
 +++ Core/CLI/src/cli_CommandLineInterface.h	(working copy)
 @@ -182,6 +182,7 @@
          virtual bool DoWatch(const WatchBitset& options, const WatchBitset& settings, const int wmeSetting, const int learnSetting);
@@ -161,7 +173,7 @@ Index: Core/CLI/src/cli_CommandLineInterface.h
          bool IsLogOpen();
 Index: Core/CLI/src/cli_Cli.h
 ===================================================================
---- Core/CLI/src/cli_Cli.h	(revision 13469)
+--- Core/CLI/src/cli_Cli.h	(revision 13480)
 +++ Core/CLI/src/cli_Cli.h	(working copy)
 @@ -479,6 +479,8 @@
           * @param pVal the value to set, pass 0 (null) only if no pOp (all config), get, or stats
@@ -174,7 +186,7 @@ Index: Core/CLI/src/cli_Cli.h
          {
 Index: Core/CLI/src/cli_Commands.h
 ===================================================================
---- Core/CLI/src/cli_Commands.h	(revision 13469)
+--- Core/CLI/src/cli_Commands.h	(revision 13480)
 +++ Core/CLI/src/cli_Commands.h	(working copy)
 @@ -4348,7 +4348,27 @@
  
@@ -206,7 +218,7 @@ Index: Core/CLI/src/cli_Commands.h
  #endif // CLI_COMMANDS_H
 Index: Core/CLI/CommandLineInterface.cxx
 ===================================================================
---- Core/CLI/CommandLineInterface.cxx	(revision 13469)
+--- Core/CLI/CommandLineInterface.cxx	(revision 13480)
 +++ Core/CLI/CommandLineInterface.cxx	(working copy)
 @@ -72,3 +72,4 @@
  #include "src/cli_watchwmes.cpp"
@@ -215,7 +227,7 @@ Index: Core/CLI/CommandLineInterface.cxx
 +#include "src/cli_svs.cpp"
 Index: Core/SConscript
 ===================================================================
---- Core/SConscript	(revision 13469)
+--- Core/SConscript	(revision 13480)
 +++ Core/SConscript	(working copy)
 @@ -1,4 +1,4 @@
 -import sys, os
@@ -251,14 +263,14 @@ Index: Core/SConscript
  
 +svs_src, svs_inc = SConscript('SVS/SConscript')
 +srcs['svs'] = (svs_src, svs_src)
-+kernel_env.Append(CPPPATH = svs_inc)
++kernel_env.Prepend(CPPPATH = svs_inc)
 +
  if GetOption('static'):
  	kernel_env.Append(CPPFLAGS=static_macro)
  	soarlib = kernel_env.Library('Soar', [srcs[c][scu] for c in srcs])
 Index: Core/ClientSML/src/sml_ClientAgent.h
 ===================================================================
---- Core/ClientSML/src/sml_ClientAgent.h	(revision 13469)
+--- Core/ClientSML/src/sml_ClientAgent.h	(revision 13480)
 +++ Core/ClientSML/src/sml_ClientAgent.h	(working copy)
 @@ -790,6 +790,9 @@
  	*************************************************************/
@@ -272,7 +284,7 @@ Index: Core/ClientSML/src/sml_ClientAgent.h
  	*
 Index: Core/ClientSML/src/sml_ClientKernel.h
 ===================================================================
---- Core/ClientSML/src/sml_ClientKernel.h	(revision 13469)
+--- Core/ClientSML/src/sml_ClientKernel.h	(revision 13480)
 +++ Core/ClientSML/src/sml_ClientKernel.h	(working copy)
 @@ -947,6 +947,8 @@
  	*************************************************************/
@@ -285,7 +297,7 @@ Index: Core/ClientSML/src/sml_ClientKernel.h
  }//closes namespace
 Index: Core/ClientSML/src/sml_ClientAgent.cpp
 ===================================================================
---- Core/ClientSML/src/sml_ClientAgent.cpp	(revision 13469)
+--- Core/ClientSML/src/sml_ClientAgent.cpp	(revision 13480)
 +++ Core/ClientSML/src/sml_ClientAgent.cpp	(working copy)
 @@ -1422,3 +1422,11 @@
  	}
@@ -301,7 +313,7 @@ Index: Core/ClientSML/src/sml_ClientAgent.cpp
 +}
 Index: Core/ClientSML/src/sml_ClientKernel.cpp
 ===================================================================
---- Core/ClientSML/src/sml_ClientKernel.cpp	(revision 13469)
+--- Core/ClientSML/src/sml_ClientKernel.cpp	(revision 13480)
 +++ Core/ClientSML/src/sml_ClientKernel.cpp	(working copy)
 @@ -2335,3 +2335,18 @@
  
@@ -324,7 +336,7 @@ Index: Core/ClientSML/src/sml_ClientKernel.cpp
 +}
 Index: Core/ConnectionSML/src/sml_Names.cpp
 ===================================================================
---- Core/ConnectionSML/src/sml_Names.cpp	(revision 13469)
+--- Core/ConnectionSML/src/sml_Names.cpp	(revision 13480)
 +++ Core/ConnectionSML/src/sml_Names.cpp	(working copy)
 @@ -450,3 +450,6 @@
  
@@ -335,7 +347,7 @@ Index: Core/ConnectionSML/src/sml_Names.cpp
 +char const* const sml_Names::kCommand_SVSOutput  = "svs_output";
 Index: Core/ConnectionSML/src/sml_Names.h
 ===================================================================
---- Core/ConnectionSML/src/sml_Names.h	(revision 13469)
+--- Core/ConnectionSML/src/sml_Names.h	(revision 13480)
 +++ Core/ConnectionSML/src/sml_Names.h	(working copy)
 @@ -440,6 +440,9 @@
  
@@ -349,7 +361,7 @@ Index: Core/ConnectionSML/src/sml_Names.h
  }
 Index: Core/KernelSML/src/sml_KernelSML.h
 ===================================================================
---- Core/KernelSML/src/sml_KernelSML.h	(revision 13469)
+--- Core/KernelSML/src/sml_KernelSML.h	(revision 13480)
 +++ Core/KernelSML/src/sml_KernelSML.h	(working copy)
 @@ -451,6 +451,10 @@
  	// Note: Register and unregister are both sent to this one handler
@@ -364,7 +376,7 @@ Index: Core/KernelSML/src/sml_KernelSML.h
  }
 Index: Core/KernelSML/src/sml_KernelSMLHandlers.cpp
 ===================================================================
---- Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(revision 13469)
+--- Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(revision 13480)
 +++ Core/KernelSML/src/sml_KernelSMLHandlers.cpp	(working copy)
 @@ -34,6 +34,7 @@
  #include <stdlib.h>
@@ -408,7 +420,7 @@ Index: Core/KernelSML/src/sml_KernelSMLHandlers.cpp
 +
 Index: Core/KernelSML/src/KernelHeaders.h
 ===================================================================
---- Core/KernelSML/src/KernelHeaders.h	(revision 13469)
+--- Core/KernelSML/src/KernelHeaders.h	(revision 13480)
 +++ Core/KernelSML/src/KernelHeaders.h	(working copy)
 @@ -29,3 +29,4 @@
  #include "symtab.h"

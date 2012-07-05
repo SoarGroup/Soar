@@ -64,6 +64,8 @@ void sgwme::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			node = NULL;
 			delete this;
 			break;
+		default:
+			break;
 	};
 }
 
