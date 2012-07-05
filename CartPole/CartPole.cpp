@@ -396,10 +396,11 @@ void CartPole::set_sp(const int &episode, const float &x_div, const float &x_dot
 void CartPole::do_sp(const int &episode) {
   if(episode == m_sp_episode) {
     std::ostringstream oss;
-    oss << "sp {elaborate*additional*cartpole (state <s> ^superstate nil ^name cartpole) --> (<s> ^div-x (/ 10 " << m_sp_x_div
-        << ") ^div-x-dot (/ 1 " << m_sp_x_dot_div
-        << ") ^div-theta (/ 3.1415926 " << m_sp_theta_div
-        << ") ^div-theta-dot (/ 3.141526 " << m_sp_theta_dot_div << "))}";
+    oss << "sp {elaborate*additional*cartpole (state <s> ^superstate nil ^name cartpole) --> (<s> ^div <d>) (<d> ^name additional ^x (/ 10 " << m_sp_x_div
+        << ") ^x-dot (/ 1 " << m_sp_x_dot_div
+        << ") ^theta (/ 3.1415926 " << m_sp_theta_div
+        << ") ^theta-dot (/ 3.141526 " << m_sp_theta_dot_div << "))}";
+    std::cerr << oss.str() << std::endl;
     ExecuteCommandLine(oss.str());
 
     if(!m_agent->Commit())

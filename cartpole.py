@@ -23,6 +23,8 @@ if os.name is 'posix':
   pylab.rcParams.update(params)
   rc('font',**{'family':'serif','serif':['Times']})
 
+pylab.rcParams['path.simplify'] = True
+
 import sys, getopt, random, time, datetime
 import numpy as np
 import matplotlib
@@ -146,7 +148,7 @@ def main():
       f.close()
     
     directory=re.search('(^.*[^/]+)/+[^/]*$', sys.argv[1]).group(1) #sys.argv[1].rsplit('/', 1)[0]
-    title='Cart Pole (' + directory + ')'
+    title='Cart Pole (' + directory.replace('_', '\_') + ')'
   
   fig = plt.figure()
   fig.canvas.set_window_title('Cart Pole')

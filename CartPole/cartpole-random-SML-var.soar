@@ -32,9 +32,9 @@ sp {apply*initialize*cartpole
 #    (state <s> ^superstate nil
 #               ^name cartpole)
 #-->
-#    (<s> ^name cartpole
-#         ^div <d>)
-#    (<d> ^x (/ 10 8)
+#    (<s> ^div <d>)
+#    (<d> ^name additional
+#         ^x (/ 10 8)
 #         ^x-dot (/ 1 0.5)
 #         ^theta (/ 3.1415926 16)
 #         ^theta-dot (/ 3.141526 2))
