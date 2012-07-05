@@ -4262,11 +4262,6 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 			my_agent->epmem_timers->query_dnf->stop();
 		}
 
-		// sort the literals if the order is undefined
-		if (gm_order == epmem_param_container::gm_order_undefined) {
-			std::sort(gm_ordering.begin(), gm_ordering.end());
-		}
-
 		// calculate the highest possible score and cardinality score
 		double perfect_score = 0;
 		int perfect_cardinality = 0;
@@ -4606,7 +4601,9 @@ void epmem_process_query(agent *my_agent, Symbol *state, Symbol *pos_query, Symb
 					if (current_cardinality == perfect_cardinality) {
 						bool graph_matched = false;
 						if (do_graph_match) {
-							if (gm_order == epmem_param_container::gm_order_mcv) {
+							if (gm_order == epmem_param_container::gm_order_undefined) {
+								std::sort(gm_ordering.begin(), gm_ordering.end());
+							} else if (gm_order == epmem_param_container::gm_order_mcv) {
 								std::sort(gm_ordering.begin(), gm_ordering.end(), epmem_gm_mcv_comparator);
 							}
 							epmem_literal_deque::iterator begin = gm_ordering.begin();
