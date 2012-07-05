@@ -221,6 +221,7 @@ typedef struct right_mem_struct {
 #define DISJUNCTION_RETE_TEST         0x20
 #define ID_IS_GOAL_RETE_TEST          0x30
 #define ID_IS_IMPASSE_RETE_TEST       0x31
+#define METADATA_RETE_TEST            0x40
 //#define test_is_constant_relational_test(x) (((x) & 0xF0)==0x00)
 //#define test_is_variable_relational_test(x) (((x) & 0xF0)==0x10)
 
@@ -303,6 +304,7 @@ typedef struct rete_test_struct {
   union rete_test_data_union {
     var_location variable_referent;   /* for relational tests to a variable */
     Symbol *constant_referent;        /* for relational tests to a constant */
+    bit_values bitarray_referent;    /* for relational tests for bit arrays */
     list *disjunction_list;           /* list of symbols in disjunction test */
   } data;
   struct rete_test_struct *next; /* next in list of tests at the node */
@@ -4967,6 +4969,10 @@ Bool variable_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, 
   return (s1->common.symbol_type == s2->common.symbol_type);
 }
 
+Bool bitarray_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
+  return (static_cast<unsigned int>(w->metadata & rt->data.bitarray_referent.mask) ==
+		  static_cast<unsigned int>(rt->data.bitarray_referent.mask));
+}
 
 
 /* ************************************************************************
@@ -9189,7 +9195,8 @@ void init_rete (agent* thisAgent) {
   //for (i=0; i<256; i++) rete_test_routines[i] = error_rete_test_routine;
   rete_test_routines[DISJUNCTION_RETE_TEST] = disjunction_rete_test_routine;
   rete_test_routines[ID_IS_GOAL_RETE_TEST] = id_is_goal_rete_test_routine;
-  rete_test_routines[ID_IS_IMPASSE_RETE_TEST]= id_is_impasse_rete_test_routine;
+  rete_test_routines[ID_IS_IMPASSE_RETE_TEST] = id_is_impasse_rete_test_routine;
+  rete_test_routines[METADATA_RETE_TEST] = bitarray_equal_rete_test_routine;
   rete_test_routines[CONSTANT_RELATIONAL_RETE_TEST +
                      RELATIONAL_EQUAL_RETE_TEST] =
                        constant_equal_rete_test_routine;

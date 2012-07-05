@@ -485,6 +485,60 @@ test parse_test (agent* thisAgent) {
   return t;
 }
 
+test parse_metadata_test (agent* thisAgent) {
+  byte test_type;
+  char metadata_mask = '\0', metadata_value = '\0';
+  test t;
+  complex_test *ct;
+
+  if (thisAgent->lexeme.type==PLUS_LEXEME) {
+    metadata_mask |= METADATA_ACCEPTABLE;
+    metadata_value |= METADATA_ACCEPTABLE;
+    get_lexeme(thisAgent);
+  }
+  while (TRUE) {
+    if (thisAgent->lexeme.type != SYM_CONSTANT_LEXEME) {
+      break;
+    }
+    if (!strcmp(thisAgent->lexeme.string,":smem-recognized")) {
+      metadata_mask |= METADATA_SMEM_RECOGNITION;
+      metadata_value &= ~METADATA_SMEM_RECOGNITION;
+      get_lexeme(thisAgent);
+      continue;
+    }
+    if (!strcmp(thisAgent->lexeme.string,":smem-unrecognized")) {
+      metadata_mask |= METADATA_SMEM_RECOGNITION;
+      metadata_value |= METADATA_SMEM_RECOGNITION;
+      get_lexeme(thisAgent);
+      continue;
+    }
+    if (!strcmp(thisAgent->lexeme.string,":epmem-recognized")) {
+      metadata_mask |= METADATA_EPMEM_RECOGNITION;
+      metadata_value &= ~METADATA_EPMEM_RECOGNITION;
+      get_lexeme(thisAgent);
+      continue;
+    }
+    if (!strcmp(thisAgent->lexeme.string,":epmem-unrecognized")) {
+      metadata_mask |= METADATA_EPMEM_RECOGNITION;
+      metadata_value |= METADATA_EPMEM_RECOGNITION;
+      get_lexeme(thisAgent);
+      continue;
+    }
+    break;
+  }
+  
+  if (metadata_mask) {
+      allocate_with_pool (thisAgent, &thisAgent->complex_test_pool,  &ct);
+      ct->type = METADATA_TEST;
+      ct->data.metadata_referent.mask = metadata_mask;
+      ct->data.metadata_referent.value = metadata_value;
+      t = make_test_from_complex_test(ct);
+  	  return t;
+  }
+
+  return NIL;
+}
+
 /* =================================================================
                         Routines for Conditions
 
@@ -634,6 +688,7 @@ condition *parse_conds_for_one_id (agent* thisAgent,
 condition *parse_value_test_star (agent* thisAgent, char first_letter) {
   condition *c, *last_c, *first_c, *new_conds;
   test value_test;
+  test metadata_test;
   char metadata_tests, metadata_values;
   Bool acceptable;
 
@@ -647,6 +702,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = make_placeholder_test (thisAgent, first_letter);
+    c->data.tests.metadata_test = make_placeholder_test (thisAgent, first_letter);
     c->test_for_acceptable_preference = FALSE;
     c->metadata_tests = '\0';
     c->metadata_values = '\0';
@@ -675,41 +731,14 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
         add_new_test_to_test (thisAgent, &value_test,make_placeholder_test(thisAgent, first_letter));
       }
     }
-    /* --- check for acceptable preference indicator --- */
-    acceptable = FALSE;
-    if (thisAgent->lexeme.type==PLUS_LEXEME) { acceptable = TRUE; get_lexeme(thisAgent); }
-	metadata_tests = '\0';
-	metadata_values = '\0';
-	while (TRUE) {
-		if (thisAgent->lexeme.type != SYM_CONSTANT_LEXEME) {
-			break;
-		}
-		if (!strcmp(thisAgent->lexeme.string,":epmem-recognized")) {
-	      metadata_tests |= METADATA_EPMEM_RECOGNITION;
-	      metadata_values &= ~METADATA_EPMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
-		}
-		if (!strcmp(thisAgent->lexeme.string,":epmem-unrecognized")) {
-	      metadata_tests |= METADATA_EPMEM_RECOGNITION;
-	      metadata_values |= METADATA_EPMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
-		}
-		if (!strcmp(thisAgent->lexeme.string,":smem-recognized")) {
-	      metadata_tests |= METADATA_SMEM_RECOGNITION;
-	      metadata_values &= ~METADATA_SMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
-		}
-		if (!strcmp(thisAgent->lexeme.string,":smem-unrecognized")) {
-	      metadata_tests |= METADATA_SMEM_RECOGNITION;
-	      metadata_values |= METADATA_SMEM_RECOGNITION;
-		  get_lexeme(thisAgent);
-		  continue;
-		}
-    	break;
+
+	/* --- check for metadata tests, including acceptable preference --- */
+	metadata_test = parse_metadata_test(thisAgent);
+	if (metadata_test) {
+    	acceptable = complex_test_from_test(metadata_test)->data.metadata_referent.mask & complex_test_from_test(metadata_test)->data.metadata_referent.value;
 	}
+
+	// FIXME deallocate test if blank (test_is_blank)
 
     /* --- build condition using the new value test --- */
     allocate_with_pool (thisAgent, &thisAgent->condition_pool,  &c);
@@ -718,6 +747,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = value_test;
+    c->data.tests.metadata_test = metadata_test;
     c->test_for_acceptable_preference = acceptable;
     c->metadata_tests = metadata_tests;
     c->metadata_values = metadata_values;

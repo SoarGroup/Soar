@@ -431,10 +431,16 @@ inline complex_test * complex_test_from_test(test t)
 
 #endif /* USE_MACROS */
 
+typedef struct bit_values_struct {
+  char mask;
+  char value;
+} bit_values;
+
 typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
   union test_info_union {
     Symbol *referent;         /* for relational tests */
+	bit_values metadata_referent;
     ::list *disjunction_list;   /* for disjunction tests */
     ::list *conjunct_list;      /* for conjunctive tests */
   } data;
@@ -452,6 +458,7 @@ typedef struct complex_test_struct {
 //#define CONJUNCTIVE_TEST 8       /* item must pass each of a list of tests */
 //#define GOAL_ID_TEST 9           /* item must be a goal identifier */
 //#define IMPASSE_ID_TEST 10       /* item must be an impasse identifier */
+//#define METADATA_TEST 11         /* item must have specified metadata values */
 enum ComplexTextTypes {
          NOT_EQUAL_TEST = 1,         /* various relational tests */
          LESS_TEST = 2,
@@ -462,10 +469,11 @@ enum ComplexTextTypes {
          DISJUNCTION_TEST = 7,       /* item must be one of a list of constants */
          CONJUNCTIVE_TEST = 8,       /* item must pass each of a list of tests */
          GOAL_ID_TEST = 9,           /* item must be a goal identifier */
-         IMPASSE_ID_TEST = 10       /* item must be an impasse identifier */
+         IMPASSE_ID_TEST = 10,       /* item must be an impasse identifier */
+		 METADATA_TEST = 11,         /* item must have specified metadata values */
 };
 
-#define NUM_TEST_TYPES 10
+#define NUM_TEST_TYPES 11
 
 //
 // Symbol types.
@@ -519,8 +527,9 @@ enum ComplexTextTypes {
 #define CONJUNCTIVE_NEGATION_CONDITION 2
 
 /* --- bitmasks for metadata --- */
-#define METADATA_EPMEM_RECOGNITION 1
+#define METADATA_ACCEPTABLE 1
 #define METADATA_SMEM_RECOGNITION 2
+#define METADATA_EPMEM_RECOGNITION 4
 
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct {
@@ -539,11 +548,12 @@ typedef struct reorder_info_struct {
 } reorder_info;
 
 /* --- info on positive and negative conditions only --- */
-typedef struct three_field_tests_struct {
+typedef struct four_field_tests_struct {
   test id_test;
   test attr_test;
   test value_test;
-} three_field_tests;
+  test metadata_test;
+} four_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */
 typedef struct ncc_info_struct {
@@ -560,7 +570,7 @@ typedef struct condition_struct {
   char metadata_values;               /* for pos, neg cond's only; the desired values of metadata */
   struct condition_struct *next, *prev;
   union condition_main_data_union {
-    three_field_tests tests;             /* for pos, neg cond's only */
+    four_field_tests tests;             /* for pos, neg cond's only */
     ncc_info ncc;                        /* for ncc's only */
   } data;
   bt_info bt;  /* for top-level positive cond's: used for BT and by the rete */

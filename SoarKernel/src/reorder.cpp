@@ -328,6 +328,7 @@ byte reverse_direction_of_relational_test (agent* thisAgent, byte type) {
     case LESS_OR_EQUAL_TEST: return GREATER_OR_EQUAL_TEST;
     case GREATER_OR_EQUAL_TEST: return LESS_OR_EQUAL_TEST;
     case SAME_TYPE_TEST: return SAME_TYPE_TEST;
+    case METADATA_TEST: return METADATA_TEST;
     default:
       { char msg[BUFFER_MSG_SIZE];
       strncpy (msg,
