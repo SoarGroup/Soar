@@ -1,7 +1,6 @@
-/* CartPole.h
+/* PuddleWorld.h
  *
  * Author : Mitchell Keith Bloch, Soar Group at U-M
- * Date   : June/July 2008
  *
  * The actual Towers of Hanoi game object that runs the show.
  */
@@ -16,30 +15,30 @@
 
 class Stats_Tracker;
 
-#define CARTPOLE_AGENT_PRODUCTIONS "test_agents/cartpole-random-SML.soar"
+#define PUDDLEWORLD_AGENT_PRODUCTIONS "test_agents/puddle-world.soar"
 
-class CartPole {
+class PuddleWorld {
   /// Disabled (No Implementation)
-  CartPole(const CartPole &);
-  CartPole & operator=(const CartPole &);
+  PuddleWorld(const PuddleWorld &);
+  PuddleWorld & operator=(const PuddleWorld &);
 
   friend inline void toh_update_event_handler(sml::smlUpdateEventId, void *user_data_ptr, sml::Kernel* kernel_ptr, sml::smlRunFlags);
 
 public:
-  /* CartPole will create the default 'Soar_Kernel()' if a kernel is not provided.
-   * CartPole will take care of the deletion of the given kernel if one is provided.
+  /* PuddleWorld will create the default 'Soar_Kernel()' if a kernel is not provided.
+   * PuddleWorld will take care of the deletion of the given kernel if one is provided.
    */
-  inline CartPole(const std::string &agent_productions = CARTPOLE_AGENT_PRODUCTIONS,
+  inline PuddleWorld(const std::string &agent_productions = PUDDLEWORLD_AGENT_PRODUCTIONS,
                   const bool &remote = false,
                   sml::Kernel * const kernel = 0);
-  inline ~CartPole();
+  inline ~PuddleWorld();
 
   static inline void run_trials(const int &num_trials,
-                                const std::string &agent_productions = CARTPOLE_AGENT_PRODUCTIONS);
+                                const std::string &agent_productions = PUDDLEWORLD_AGENT_PRODUCTIONS);
   static inline void remote_trials(const int &num_trials,
                                    const std::string &ip_address,
                                    const int &port,
-                                   const std::string &agent_productions = CARTPOLE_AGENT_PRODUCTIONS);
+                                   const std::string &agent_productions = PUDDLEWORLD_AGENT_PRODUCTIONS);
 
   inline void run();
   inline void step();
@@ -47,7 +46,7 @@ public:
   bool is_finished() const;
   bool is_success() const;
 
-  void set_sp(const int &episode, const float &x_div, const float &x_dot_div, const float &theta_div, const float &theta_dot_div);
+  void set_sp(const int &episode, const float &x_div, const float &y_div);
   void do_sp(const int &episode);
     
   void reinit(const bool &init_soar, const int &after_episode);
@@ -63,26 +62,13 @@ private:
 
   sml::StringElement * m_state;
   sml::IntElement * m_step;
+  sml::FloatElement * m_reward;
   sml::FloatElement * m_x;
-  sml::FloatElement * m_x_dot;
-  sml::FloatElement * m_theta;
-  sml::FloatElement * m_theta_dot;
-
-  /// Observed
-  float m_min_x;
-  float m_min_x_dot;
-  float m_min_theta;
-  float m_min_theta_dot;
-  float m_max_x;
-  float m_max_x_dot;
-  float m_max_theta;
-  float m_max_theta_dot;
+  sml::FloatElement * m_y;
   
   int m_sp_episode;
   float m_sp_x_div;
-  float m_sp_x_dot_div;
-  float m_sp_theta_div;
-  float m_sp_theta_dot_div;
+  float m_sp_y_div;
 };
 
 #endif

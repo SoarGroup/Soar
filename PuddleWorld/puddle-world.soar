@@ -1,0 +1,145 @@
+rl --set learning on
+rl --set learning-policy q-learning
+rl --set learning-rate 0.1
+rl --set discount-rate 0.9
+#rl --set eligibility-trace-decay-rate 0.1
+#rl --set eligibility-trace-tolerance 0.000001
+
+indifferent-selection --boltzmann
+indifferent-selection --temperature 0.01
+#indifferent-selection --auto-reduce on
+#indifferent-selection --reduction-rate temperature exponential 0.9999
+
+sp {propose*initialize*puddleworld
+    (state <s> ^superstate nil)
+   -{(<s> ^name puddleworld)}
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name puddleworld)
+}
+sp {apply*initialize*puddleworld
+    (state <s> ^operator.name puddleworld)
+-->
+    (<s> ^name puddleworld
+         ^div <d>)
+    (<d> ^name default
+         ^x (/ 18.001 5)
+         ^y (/ 18.001 5))
+}
+#sp {elaborate*additional*puddleworld
+#    (state <s> ^superstate nil
+#               ^name puddleworld)
+#-->
+#    (<s> ^div <d>)
+#    (<d> ^name additional
+#         ^x (/ 10 8)
+#         ^y (/ 1 0.5))
+#}
+
+sp {puddleworld*elaborate*index*x*gt
+    (state <s> ^name puddleworld
+               ^io.input-link.x {<val> >= 0}
+               ^div <d>)
+    (<d> ^x <div>)
+-->
+    (<d> ^index-x (int (/ <val> <div>)))
+}
+sp {puddleworld*elaborate*index*x*lt
+    (state <s> ^name puddleworld
+               ^io.input-link.x {<val> < 0}
+               ^div <d>)
+    (<d> ^x <div>)
+-->
+    (<d> ^index-x (int (- (/ <val> <div>) 1)))
+}
+
+sp {puddleworld*elaborate*index*y*gt
+    (state <s> ^name puddleworld
+               ^io.input-link.y {<val> >= 0}
+               ^div <d>)
+    (<d> ^y <div>)
+-->
+    (<d> ^index-y (int (/ <val> <div>)))
+}
+sp {puddleworld*elaborate*index*y*lt
+    (state <s> ^name puddleworld
+               ^io.input-link.y {<val> < 0}
+               ^div <d>)
+    (<d> ^y <div>)
+-->
+    (<d> ^index-y (int (- (/ <val> <div>) 1)))
+}
+
+gp {puddleworld*propose*move
+    (state <s> ^name puddleworld
+               ^io.input-link <il>)
+    (<il> ^step <c>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name move
+         ^step <c>
+         ^direction [north south east west])
+}
+
+sp {puddleworld*reinforce*move
+    :template
+    (state <s> ^name puddleworld
+               ^div <d>
+               ^operator <o> +)
+    (<d> ^name <name>
+         ^index-x <x>
+         ^index-y <y>)
+    (<o> ^name move
+         ^direction <dir>)
+-->
+    (<s> ^operator <o> = 0)
+}
+
+sp {puddleworld*apply*move
+    (state <s> ^name puddleworld
+               ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name move
+         ^step <c>
+         ^direction <d>)
+-->
+    (<ol> ^move <m>)
+    (<m> ^step <c>
+         ^direction <d>)
+}
+
+sp {puddleworld*remove*old-move
+    (state <s> ^name puddleworld
+               ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name move
+         ^step <c>)
+    (<ol> ^move <m>)
+    (<m> ^step <> <c>)
+-->
+    (<ol> ^move <m> -)
+}
+
+sp {puddleworld*propose*halt
+    (state <s> ^name puddleworld
+               ^io.input-link.state terminal)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name halt)
+}
+
+sp {puddleworld*apply*halt
+    (state <s> ^name puddleworld
+               ^operator <o>)
+    (<o> ^name halt)
+-->
+    (halt)
+}
+
+sp {elaborate*reward
+    (state <s> ^name puddleworld
+               ^io.input-link.reward <r>
+               ^reward-link <rl>)
+-->
+    (<rl> ^reward.value <r>)
+}

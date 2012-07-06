@@ -5,5 +5,5 @@
 
 Import('env')
 
-CartPole = env.Install('$OUT_DIR', env.Program('CartPole', 'CartPole.cpp'))
-env.Alias('cartpole', CartPole + env.Install('$OUT_DIR/test_agents', 'cartpole-random-SML.soar'))
+PuddleWorld = env.Install('$OUT_DIR', env.Program('PuddleWorld', 'PuddleWorld.cpp'))
+env.Alias('puddleworld', PuddleWorld + env.Install('$OUT_DIR/test_agents', 'puddle-world.soar'))

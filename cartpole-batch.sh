@@ -108,7 +108,7 @@ experiments () {
               (<s> ^name cartpole
                   ^div <d>)
               (<d> ^name default
-                  ^x (/ 10 ${VALS[$(($2 * v + 0))]})
+                  ^x (/ 10 ${VALS[$(($2 * 2 * v + 0))]})
                   ^x-dot (/ 1 ${VALS[$(($2 * 4 * v + 1))]})
                   ^theta (/ 3.1415926 ${VALS[$(($2 * 4 * v + 2))]})
                   ^theta-dot (/ 3.141526 ${VALS[$(($2 * 4 * v + 3))]}))
