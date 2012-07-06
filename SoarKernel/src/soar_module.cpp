@@ -139,6 +139,7 @@ namespace soar_module
 				cond->data.tests.id_test = make_equality_test( (*c_it)->id );
 				cond->data.tests.attr_test = make_equality_test( (*c_it)->attr );
 				cond->data.tests.value_test = make_equality_test( (*c_it)->value );
+				// JUSTIN FIXME
 				cond->test_for_acceptable_preference = (*c_it)->acceptable;
 				cond->metadata_tests = 0xff;
 				cond->metadata_values = (*c_it)->metadata;
