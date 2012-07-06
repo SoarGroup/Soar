@@ -1649,7 +1649,7 @@ preference *make_fake_preference_for_goal_item (agent* thisAgent,
   cond->data.tests.id_test = make_equality_test (ap_wme->id);
   cond->data.tests.attr_test = make_equality_test (ap_wme->attr);
   cond->data.tests.value_test = make_equality_test (ap_wme->value);
-  // JUSTIN FIXME
+  cond->data.tests.metadata_test = NIL;
   cond->test_for_acceptable_preference = TRUE;
   cond->metadata_tests = '\0';
   cond->metadata_values = '\0';

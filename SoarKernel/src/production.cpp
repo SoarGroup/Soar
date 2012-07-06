@@ -287,6 +287,7 @@ void deallocate_test (agent* thisAgent, test t) {
   switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
+  case METADATA_TEST:
     break;
   case DISJUNCTION_TEST:
     deallocate_symbol_list_removing_references (thisAgent, ct->data.disjunction_list);
@@ -782,6 +783,7 @@ void deallocate_condition_list (agent* thisAgent,
       quickly_deallocate_test (thisAgent, c->data.tests.id_test);
       quickly_deallocate_test (thisAgent, c->data.tests.attr_test);
       quickly_deallocate_test (thisAgent, c->data.tests.value_test);
+	  quickly_deallocate_test (thisAgent, c->data.tests.metadata_test);
     }
     free_with_pool (&thisAgent->condition_pool, c);
   }
@@ -807,6 +809,7 @@ condition *copy_condition (agent* thisAgent,
     New->data.tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
     New->data.tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
     New->data.tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
+    New->data.tests.metadata_test = copy_test (thisAgent, cond->data.tests.metadata_test);
     New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
     New->metadata_tests = cond->metadata_tests;
     New->metadata_values = cond->metadata_values;

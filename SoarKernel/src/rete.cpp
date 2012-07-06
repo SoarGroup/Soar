@@ -304,7 +304,7 @@ typedef struct rete_test_struct {
   union rete_test_data_union {
     var_location variable_referent;   /* for relational tests to a variable */
     Symbol *constant_referent;        /* for relational tests to a constant */
-    bit_values bitarray_referent;    /* for relational tests for bit arrays */
+    bit_values metadata_referent;    /* for relational tests for bit arrays */
     list *disjunction_list;           /* list of symbols in disjunction test */
   } data;
   struct rete_test_struct *next; /* next in list of tests at the node */
@@ -3152,6 +3152,15 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
     new_rt->next = *rt;
     *rt = new_rt;
     return;
+
+  case METADATA_TEST:
+    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+    new_rt->type = METADATA_RETE_TEST;
+    new_rt->right_field_num = 3;
+    new_rt->data.metadata_referent = ct->data.metadata_referent;
+    new_rt->next = *rt;
+    *rt = new_rt;
+    return;
     
   default:
     { char msg[BUFFER_MSG_SIZE];
@@ -3199,6 +3208,11 @@ Bool single_rete_tests_are_identical (agent* thisAgent, rete_test *rt1, rete_tes
 
   if (rt1->type==ID_IS_GOAL_RETE_TEST) return TRUE;
   if (rt1->type==ID_IS_IMPASSE_RETE_TEST) return TRUE;
+
+  if (rt1->type==METADATA_RETE_TEST && rt2->type==METADATA_RETE_TEST) {
+    return ((rt1->data.metadata_referent.mask == rt2->data.metadata_referent.mask) &&
+		(rt1->data.metadata_referent.value == rt2->data.metadata_referent.value));
+  }
 
   if (rt1->type == DISJUNCTION_RETE_TEST) {
     c1 = rt1->data.disjunction_list;
@@ -3298,6 +3312,7 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
                           FALSE, &vars_bound_here);
   bind_variables_in_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
                           FALSE, &vars_bound_here);
+  // no need to bind variables for metadata test
 
   /* --- Get Rete tests, alpha constants, and hash location --- */
   add_rete_tests_for_test (thisAgent, cond->data.tests.id_test, current_depth, 0,
@@ -3307,6 +3322,8 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
                            &rt, &alpha_attr);
   add_rete_tests_for_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
                            &rt, &alpha_value);
+  add_rete_tests_for_test (thisAgent, cond->data.tests.metadata_test, current_depth, 3,
+                           &rt, NIL);
 
   /* --- Pop sparse variable bindings for this condition --- */
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars_bound_here);
@@ -3425,6 +3442,7 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
                           FALSE, &vars_bound_here);
   bind_variables_in_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
                           FALSE, &vars_bound_here);
+  // no need to bind variables for metadata test
 
   /* --- Get Rete tests, alpha constants, and hash location --- */
   add_rete_tests_for_test (thisAgent, cond->data.tests.id_test, current_depth, 0,
@@ -3434,6 +3452,8 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
                            &rt, &alpha_attr);
   add_rete_tests_for_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
                            &rt, &alpha_value);
+  add_rete_tests_for_test (thisAgent, cond->data.tests.metadata_test, current_depth, 3,
+                           &rt, NIL);
 
   /* --- Pop sparse variable bindings for this condition --- */
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars_bound_here);
@@ -4379,6 +4399,12 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.id_test = make_equality_test (w->id);
       cond->data.tests.attr_test = make_equality_test (w->attr);
       cond->data.tests.value_test = make_equality_test (w->value);
+	  complex_test *ct;
+	  allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
+	  ct->type = METADATA_TEST;
+	  ct->data.metadata_referent.mask = 0xff;
+	  ct->data.metadata_referent.value = w->metadata;
+	  cond->data.tests.metadata_test = make_test_from_complex_test(ct);
       cond->test_for_acceptable_preference = w->acceptable;
 	  cond->metadata_tests = 0xff;
 	  cond->metadata_values = w->metadata;
@@ -4391,6 +4417,12 @@ void rete_node_to_conditions (agent* thisAgent,
       cond->data.tests.id_test = make_blank_or_equality_test (am->id);
       cond->data.tests.attr_test = make_blank_or_equality_test (am->attr);
       cond->data.tests.value_test = make_blank_or_equality_test (am->value);
+	  complex_test *ct;
+	  allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
+	  ct->type = METADATA_TEST;
+	  ct->data.metadata_referent.mask = am->metadata_tests;
+	  ct->data.metadata_referent.value = am->metadata_values;
+	  cond->data.tests.metadata_test = make_test_from_complex_test(ct);
       cond->test_for_acceptable_preference = am->acceptable;
 	  cond->metadata_tests = am->metadata_tests;
 	  cond->metadata_values = am->metadata_values;
@@ -4970,8 +5002,8 @@ Bool variable_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, 
 }
 
 Bool bitarray_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
-  return (static_cast<unsigned int>(w->metadata & rt->data.bitarray_referent.mask) ==
-		  static_cast<unsigned int>(rt->data.bitarray_referent.mask));
+  return (static_cast<unsigned int>(w->metadata & rt->data.metadata_referent.mask) ==
+		  static_cast<unsigned int>(rt->data.metadata_referent.mask));
 }
 
 

@@ -139,7 +139,12 @@ namespace soar_module
 				cond->data.tests.id_test = make_equality_test( (*c_it)->id );
 				cond->data.tests.attr_test = make_equality_test( (*c_it)->attr );
 				cond->data.tests.value_test = make_equality_test( (*c_it)->value );
-				// JUSTIN FIXME
+				complex_test *ct;
+				allocate_with_pool (my_agent, &my_agent->complex_test_pool, &ct);
+				ct->type = METADATA_TEST;
+				ct->data.metadata_referent.mask = 0xff;
+				ct->data.metadata_referent.value = (*c_it)->metadata;
+				cond->data.tests.metadata_test = make_test_from_complex_test(ct);
 				cond->test_for_acceptable_preference = (*c_it)->acceptable;
 				cond->metadata_tests = 0xff;
 				cond->metadata_values = (*c_it)->metadata;

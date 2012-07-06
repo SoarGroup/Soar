@@ -703,7 +703,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = make_placeholder_test (thisAgent, first_letter);
-    c->data.tests.metadata_test = make_placeholder_test (thisAgent, first_letter);
+    c->data.tests.metadata_test = make_blank_test();
     c->test_for_acceptable_preference = FALSE;
     c->metadata_tests = '\0';
     c->metadata_values = '\0';
@@ -818,6 +818,7 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     c->data.tests.attr_test = attr_test;
     id_test_to_use = make_placeholder_test (thisAgent, first_letter_from_test(attr_test));
     c->data.tests.value_test = id_test_to_use;
+    c->data.tests.metadata_test = make_placeholder_test (thisAgent, 'm');
     c->test_for_acceptable_preference = FALSE;
     c->metadata_tests = '\0';
     c->metadata_values = '\0';
@@ -969,6 +970,7 @@ condition *parse_tail_of_conds_for_one_id (agent* thisAgent) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = make_placeholder_test (thisAgent, 'a');
     c->data.tests.value_test = make_placeholder_test (thisAgent, 'v');
+    c->data.tests.metadata_test = make_placeholder_test (thisAgent, 'm');
     c->test_for_acceptable_preference = FALSE;
     c->metadata_tests = '\0';
     c->metadata_values = '\0';
