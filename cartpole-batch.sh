@@ -4,8 +4,8 @@ if [ "$CORES" == "" ]; then
   CORES=1
 fi
 
-AGGREGATE=5
-EPISODES=3000
+AGGREGATE=1
+EPISODES=1000
 
 # declare -a VALS=(8 0.5 16 2 \
 #                 \
@@ -28,28 +28,43 @@ EPISODES=3000
 #                 \
 #                  16 1 32 4 \
 #                 )
-declare -a VALS=(8 0.5 16 4 \
-                 8 0.5 16 4 \
-                 8 0.5 16 4 \
-                 8 0.5 16 4 \
-                 8 0.5 16 4 \
-                 8 0.5 16 4 \
-                 8 0.5 16 4 \
-                 8 0.5 16 4)
-declare -a VALSP=(  -1 16 0.5 16 4 \
-                     0 16 0.5 16 4 \
-                   500 16 0.5 16 4 \
-                  1000 16 0.5 16 4 \
-                  1500 16 0.5 16 4 \
-                  2000 16 0.5 16 4 \
-                  2500 16 0.5 16 4 \
-                  3000 16 0.5 16 4)
+
+# declare -a VALS=(8 0.5 16 4 \
+#                  8 0.5 16 4 \
+#                  8 0.5 16 4 \
+#                  8 0.5 16 4 \
+#                  8 0.5 16 4 \
+#                  8 0.5 16 4 \
+#                  8 0.5 16 4 \
+#                  8 0.5 16 4)
+# declare -a VALSP=(  -1 16 0.5 16 4 \
+#                      0 16 0.5 16 4 \
+#                    500 16 0.5 16 4 \
+#                   1000 16 0.5 16 4 \
+#                   1500 16 0.5 16 4 \
+#                   2000 16 0.5 16 4 \
+#                   2500 16 0.5 16 4 \
+#                   3000 16 0.5 16 4)
+
+# x(3/9)
+declare -a VALS=(3 0.5 16 4 \
+                 3 1   16 4 \
+                 )
+declare -a VALSP=(-1 0 0 0 0 \
+                  -1 0 0 0 0 \
+                  -1 0 0 0 0 \
+                  -1 0 0 0 0 \
+                  -1 0 0 0 0 \
+                  -1 0 0 0 0 \
+                  -1 0 0 0 0 \
+                  -1 0 0 0 0 \
+                 )
 
 for i in $(seq 1 $AGGREGATE); do
   random[$i]=$RANDOM
 done
 
-random=(2698 5643 18028 29364 30519)
+# random=(2698 5643 18028 29364 30519)
 
 for v in $(seq 0 $((${#VALS[@]} / 4 - 1))); do
   BASE="experiment"
@@ -57,7 +72,7 @@ for v in $(seq 0 $((${#VALS[@]} / 4 - 1))); do
   SP="${VALSP[$((5 * v + 0))]}_${VALSP[$((5 * v + 1))]}-${VALSP[$((5 * v + 2))]}-${VALSP[$((5 * v + 3))]}-${VALSP[$((5 * v + 4))]}"
   DIR="$BASE/${START}_$SP"
   mkdir -p $DIR
-  rm -i $DIR/*
+#   rm -i $DIR/*
   DIRS[v]=$DIR
 done
 
@@ -105,7 +120,7 @@ experiments () {
 #     wait
 
     for r in ${random[@]}; do
-      experiment_sp $r $DIR $v &
+      experiment_sp $r $DIR $v #&
     done
     wait 
 
@@ -115,6 +130,6 @@ experiments () {
 
 for x in $(seq 0 $(($CORES - 1))); do
 #   echo experiments $((4 * x)) $((4 * $CORES))
-  experiments $x $CORES #&
+  experiments $x $CORES &
 done
 wait

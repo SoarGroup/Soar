@@ -1,0 +1,105 @@
+rl --set learning on
+rl --set learning-policy sarsa
+rl --set learning-rate 0.1
+rl --set discount-rate 0.9
+#rl --set eligibility-trace-decay-rate 0.1
+#rl --set eligibility-trace-tolerance 0.000001
+
+indifferent-selection --boltzmann
+indifferent-selection --temperature 0.05
+#indifferent-selection --auto-reduce on
+#indifferent-selection --reduction-rate temperature exponential 0.9999
+
+sp {cartpole*elaborate*index*x0 (state <s> ^io.input-link.x < -0.8)-->(<s> ^index-x 0)}
+sp {cartpole*elaborate*index*x1 (state <s> ^io.input-link.x { >= -0.8 < 0.8 })-->(<s> ^index-x 1)}
+sp {cartpole*elaborate*index*x2 (state <s> ^io.input-link.x >= 0.8)-->(<s> ^index-x 2)}
+
+sp {cartpole*elaborate*index*x-dot0 (state <s> ^io.input-link.x-dot < -0.5)-->(<s> ^index-x-dot 0)}
+sp {cartpole*elaborate*index*x-dot1 (state <s> ^io.input-link.x-dot { >= -0.5 < 0.5 })-->(<s> ^index-x-dot 1)}
+sp {cartpole*elaborate*index*x-dot2 (state <s> ^io.input-link.x-dot >= 0.5)-->(<s> ^index-x-dot 2)}
+
+sp {cartpole*elaborate*index*theta0 (state <s> ^io.input-link.theta < -0.1047192)-->(<s> ^index-theta 0)}
+sp {cartpole*elaborate*index*theta1 (state <s> ^io.input-link.theta { >= -0.1047192 < -0.0174532 })-->(<s> ^index-theta 1)}
+sp {cartpole*elaborate*index*theta2 (state <s> ^io.input-link.theta { >= -0.0174532 < 0 })-->(<s> ^index-theta 2)}
+sp {cartpole*elaborate*index*theta3 (state <s> ^io.input-link.theta { >= 0 < 0.0174532 })-->(<s> ^index-theta 3)}
+sp {cartpole*elaborate*index*theta4 (state <s> ^io.input-link.theta { >= 0.0174532 < 0.1047192 })-->(<s> ^index-theta 4)}
+sp {cartpole*elaborate*index*theta5 (state <s> ^io.input-link.theta >= 0.1047192)-->(<s> ^index-theta 5)}
+
+sp {cartpole*elaborate*index*theta-dot0 (state <s> ^io.input-link.theta-dot < -0.87266)-->(<s> ^index-theta-dot 0)}
+sp {cartpole*elaborate*index*theta-dot1 (state <s> ^io.input-link.theta-dot { >= -0.87266 < 0.87266 })-->(<s> ^index-theta-dot 1)}
+sp {cartpole*elaborate*index*theta-dot2 (state <s> ^io.input-link.theta-dot >= 0.87266)-->(<s> ^index-theta-dot 2)}
+
+gp {cartpole*propose*move
+    (state <s> ^io.input-link <il>
+               ^index-x <x>
+               ^index-x-dot <x-dot>
+               ^index-theta <theta>
+               ^index-theta-dot <theta-dot>)
+    (<il> ^step <c>)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name move
+         ^step <c>
+         ^direction [left right]
+         ^index-x <x>
+         ^index-x-dot <x-dot>
+         ^index-theta <theta>
+         ^index-theta-dot <theta-dot>)
+}
+
+sp {cartpole*reinforce*move
+    :template
+    (state <s> ^operator <o> +)
+    (<o> ^name move
+         ^direction <dir>
+         ^index-x <x>
+         ^index-x-dot <x-dot>
+         ^index-theta <theta>
+         ^index-theta-dot <theta-dot>)
+-->
+    (<s> ^operator <o> = 0)
+}
+
+sp {cartpole*apply*move
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name move
+         ^step <c>
+         ^direction <d>)
+-->
+    (<ol> ^move <m>)
+    (<m> ^step <c>
+         ^direction <d>)
+}
+
+sp {cartpole*remove*old-move
+    (state <s> ^operator <o>
+               ^io.output-link <ol>)
+    (<o> ^name move
+         ^step <c>)
+    (<ol> ^move <m>)
+    (<m> ^step <> <c>)
+-->
+    (<ol> ^move <m> -)
+}
+
+sp {cartpole*propose*halt
+    (state <s> ^io.input-link.state terminal)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name halt)
+}
+
+sp {cartpole*apply*halt
+    (state <s> ^operator <o>)
+    (<o> ^name halt)
+-->
+    (halt)
+}
+
+sp {elaborate*reward
+    (state <s> ^io.input-link.state terminal
+               ^reward-link <rl>)
+-->
+    (<rl> ^reward.value -1)
+}
