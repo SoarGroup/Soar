@@ -27,9 +27,9 @@
 #include <regex.h>
 #include <limits.h>
 
-#ifdef SCONS_DARWIN
+#if (defined(__APPLE__) && defined(__MACH__))
 #include <mach-o/dyld.h>
-#endif // SCONS_DARWIN
+#endif
 
 /* this needs to be defined */
 #ifndef MAXPATHLEN
@@ -119,7 +119,7 @@ static inline int set_working_directory_to_executable_path()
       char application_path[FILENAME_MAX];
       int length;
 
-#ifdef SCONS_DARWIN
+#if (defined(__APPLE__) && defined(__MACH__))
       uint32_t size = sizeof(application_path);
       length = _NSGetExecutablePath(application_path, &size) ? -1 : int(strlen(application_path));
 #else
