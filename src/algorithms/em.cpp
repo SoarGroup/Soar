@@ -43,6 +43,7 @@ EM::EM(const dyn_mat &xdata, const dyn_mat &ydata)
 {
 	timers.add("e_step");
 	timers.add("m_step");
+	timers.add("new");
 }
 
 EM::~EM() {
@@ -127,11 +128,15 @@ void EM::update_MAP(const set<int> &points) {
 		}
 		if (now != prev) {
 			map_mode[*j] = now;
-			if (prev != -1) {
+			if (prev == -1) {
+				noise_inds.erase(*j);
+			} else {
 				stale_models.insert(prev);
 				models[prev]->del_example(*j);
 			}
-			if (now != -1) {
+			if (now == -1) {
+				noise_inds.insert(*j);
+			} else {
 				stale_models.insert(now);
 				models[now]->add_example(*j, true);
 			}
@@ -146,6 +151,7 @@ void EM::new_data() {
 		eligible.append_col();
 	}
 	map_mode.push_back(-1);
+	noise_inds.insert(ndata - 1);
 	for (int i = 0; i < nmodels; ++i) {
 		stale_points[i].insert(ndata - 1);
 	}
@@ -192,27 +198,54 @@ bool EM::mstep() {
 	return changed;
 }
 
-bool EM::unify_or_add_model() {
-	if (ndata < K) {
-		return false;
-	}
+bool EM::find_new_mode_inds(vector<int> &mode_inds) const {
+	// matrices containing only the unique rows of xdata and ydata
+	dyn_mat unique_x(0, xdata.cols()), unique_y(0, 1);
 	
-	vector<int> noise_data;
-	for (int i = 0; i < ndata; ++i) {
-		if (map_mode[i] == -1) {
-			noise_data.push_back(i);
+	// Y value -> vector of indexes into total data
+	map<double, vector<int> > const_noise;
+	
+	// index into unique data -> vector of indexes into total data
+	vector<vector<int> > unique_map;
+
+	set<int>::const_iterator ni;
+	for (ni = noise_inds.begin(); ni != noise_inds.end(); ++ni) {
+		int i = *ni;
+		vector<int> &const_inds = const_noise[ydata(i, 0)];
+		const_inds.push_back(i);
+		if (const_inds.size() >= K) {
+			LOG(EMDBG) << "found constant model in noise" << endl;
+			mode_inds = const_inds;
+			return true;
+		}
+		
+		bool new_unique = true;
+		for (int j = 0; j < unique_x.rows(); ++j) {
+			if (xdata.row(i) == unique_x.row(j) &&
+			    ydata.row(i) == unique_y.row(j))
+			{
+				unique_map[j].push_back(i);
+				new_unique = false;
+				break;
+			}
+		}
+		if (new_unique) {
+			unique_x.append_row(xdata.row(i));
+			unique_y.append_row(ydata.row(i));
+			unique_map.resize(unique_map.size() + 1);
+			unique_map.back().push_back(i);
 		}
 	}
 	
-	if (noise_data.size() < K) {
+	if (unique_x.rows() < K) {
 		return false;
 	}
-	
+
 	for (int n = 0; n < SEL_NOISE_MAX_TRIES; ++n) {
-		auto_ptr<LRModel> m(new LinearModel(xdata, ydata));
-		int start = rand() % (noise_data.size() - MODEL_INIT_N);
+		auto_ptr<LinearModel> m(new LinearModel(unique_x, unique_y));
+		int start = rand() % (unique_x.rows() - MODEL_INIT_N);
 		for (int i = 0; i < MODEL_INIT_N; ++i) {
-			m->add_example(noise_data[start + i], false);
+			m->add_example(start + i, false);
 		}
 		m->fit();
 		
@@ -220,13 +253,13 @@ bool EM::unify_or_add_model() {
 			continue;
 		}
 		
-		for (int i = 0; i < noise_data.size(); ++i) {
+		for (int i = 0; i < unique_x.rows(); ++i) {
 			if (i < start || i >= start + MODEL_INIT_N) {
 				rvec py;
-				if (m->predict(xdata.row(noise_data[i]), py) &&
-				    pow(py[0] - ydata(noise_data[i], 0), 2) < MODEL_ADD_THRESH)
+				if (m->predict(unique_x.row(i), py) &&
+					pow(py[0] - unique_y(i, 0), 2) < MODEL_ADD_THRESH)
 				{
-					m->add_example(noise_data[i], true);
+					m->add_example(i, true);
 					if (m->needs_refit()) {
 						m->fit();
 					}
@@ -234,44 +267,73 @@ bool EM::unify_or_add_model() {
 			}
 		}
 		
-		if (m->size() < K) {
-			continue;
-		}
-		
-		/*
-		 Try to add noise data to each current model and refit. If the
-		 resulting model is just as accurate as the original, then just
-		 add the noise to that model instead of creating a new one.
-		*/
-		for (int i = 0; i < nmodels; ++i) {
-			auto_ptr<LRModel> unified(models[i]->copy());
-			unified->add_examples(m->get_members());
-			unified->fit();
-			
-			double curr_error = models[i]->get_train_error();
-			double uni_error = unified->get_train_error();
-			
-			if (uni_error < MODEL_ERROR_THRESH ||
-			    (curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error))
-			{
-				delete models[i];
-				models[i] = unified.release();
-				mark_model_stale(i);
-				LOG(EMDBG) << "UNIFIED " << i << endl;
-				return true;
+		if (m->size() >= K) {
+			const vector<int> &unique_mems = m->get_members();
+			for (int i = 0; i < unique_mems.size(); ++i) {
+				const vector<int> &real_inds = unique_map[unique_mems[i]];
+				copy(real_inds.begin(), real_inds.end(), back_inserter(mode_inds));
 			}
+			return true;
 		}
-		
-		models.push_back(m.release());
-		mark_model_stale(nmodels);
-		++nmodels;
-		Py_z.append_row();
-		if (TEST_ELIGIBILITY) {
-			eligible.append_row();
-		}
-		return true;
 	}
+
 	return false;
+}
+
+bool EM::unify_or_add_model() {
+	function_timer t(timers.get(NEW_T));
+
+	if (noise_inds == old_noise_inds) {
+		return false;
+	}
+	old_noise_inds = noise_inds;
+	if (noise_inds.size() < K) {
+		return false;
+	}
+	
+	vector<int> inds;
+	if (!find_new_mode_inds(inds)) {
+		return false;
+	}
+	
+	LRModel *m = new LinearModel(xdata, ydata);
+	m->add_examples(inds);
+	m->fit();
+	
+	/*
+	 Try to add noise data to each current model and refit. If the
+	 resulting model is just as accurate as the original, then just
+	 add the noise to that model instead of creating a new one.
+	*/
+	for (int i = 0; i < nmodels; ++i) {
+		LRModel *unified(models[i]->copy());
+		unified->add_examples(m->get_members());
+		unified->fit();
+		
+		double curr_error = models[i]->get_train_error();
+		double uni_error = unified->get_train_error();
+		
+		if (uni_error < MODEL_ERROR_THRESH ||
+			(curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error))
+		{
+			delete models[i];
+			delete m;
+			models[i] = unified;
+			mark_model_stale(i);
+			LOG(EMDBG) << "UNIFIED " << i << endl;
+			return true;
+		}
+		delete unified;
+	}
+	
+	models.push_back(m);
+	mark_model_stale(nmodels);
+	++nmodels;
+	Py_z.append_row();
+	if (TEST_ELIGIBILITY) {
+		eligible.append_row();
+	}
+	return true;
 }
 
 void EM::mark_model_stale(int i) {
@@ -442,10 +504,9 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		timers.report(os);
 		return true;
 	} else if (args[first_arg] == "noise") {
-		for (int i = 0; i < map_mode.size(); ++i) {
-			if (map_mode[i] == -1) {
-				os << i << " ";
-			}
+		set<int>::const_iterator i;
+		for (i = noise_inds.begin(); i != noise_inds.end(); ++i) {
+			os << *i << " ";
 		}
 		os << endl;
 		return true;

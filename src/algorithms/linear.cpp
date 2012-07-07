@@ -74,13 +74,11 @@ bool solve2(const_mat_view X, const_mat_view Y, mat &coefs, rvec &intercept) {
 	return true;
 }
 
-void lsqr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout) {
+void weight_least_squares(const_mat_view X, const_mat_view Y, const cvec &w, mat &C, rvec &intercepts) {
 	mat W = mat::Zero(w.size(), w.size());
 	W.diagonal() = w;
-	mat Z = W * X, V = W * Y, C;
-	rvec intercepts;
+	mat Z = W * X, V = W * Y;
 	solve2(Z, V, C, intercepts);
-	yout = x * C + intercepts;
 }
 
 void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout) {

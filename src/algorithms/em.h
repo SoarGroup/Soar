@@ -41,6 +41,7 @@ private:
 	void update_MAP(const std::set<int> &pts);
 	bool remove_models();
 	void mark_model_stale(int i);
+	bool find_new_mode_inds(std::vector<int> &inds) const;
 	
 	const dyn_mat &xdata;
 	const dyn_mat &ydata;
@@ -52,9 +53,12 @@ private:
 	std::map<int, std::set<int> > stale_points;
 	std::vector<int> map_mode;
 	
+	std::set<int> old_noise_inds;
+	std::set<int> noise_inds;
+	
 	int ndata, nmodels;
 	
-	enum Timers { E_STEP_T, M_STEP_T };
+	enum Timers { E_STEP_T, M_STEP_T, NEW_T };
 	timer_set timers;
 };
 

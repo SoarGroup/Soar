@@ -6,7 +6,7 @@
 #include "common.h"
 #include "timer.h"
 
-void lsqr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
+void weight_least_squares(const_mat_view X, const_mat_view Y, const cvec &w, mat &C, rvec &intercepts);
 void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
 void pcr(const_mat_view X, const_mat_view Y, const rvec &x, rvec &y);
 
