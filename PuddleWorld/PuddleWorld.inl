@@ -13,6 +13,7 @@
 #include "Soar_Kernel.h"
 #include "Stats_Tracker.inl"
 #include <cstring>
+#include <cmath>
 
 void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr, sml::Kernel* /*kernel_ptr*/, sml::smlRunFlags /*run_flags*/) {
   assert(user_data_ptr);
@@ -43,8 +44,14 @@ PuddleWorld::PuddleWorld(const std::string &agent_productions,
   m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
   m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
   m_reward = m_agent->CreateFloatWME(m_agent->GetInputLink(), "reward", 0.0f);
-  m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", 0.0f);
-  m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", 0.0f);
+
+  float x, y;
+  do {
+    x = float(rand()) / RAND_MAX;
+    y = float(rand()) / RAND_MAX;
+  } while(fabs(1.0f - x) + fabs(y) < 0.1f);
+  m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
+  m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);
 
   if(!m_agent->Commit())
     abort();

@@ -363,7 +363,7 @@ bool PuddleWorld::is_finished() const {
 }
 
 bool PuddleWorld::is_success() const {
-  return fabs(18.0f - m_x->GetValue()) + fabs(m_y->GetValue()) < 2.0f;
+  return fabs(1.0f - m_x->GetValue()) + fabs(m_y->GetValue()) < 0.1f;
 }
 
 void PuddleWorld::set_sp(const int &episode, const float &x_div, const float &y_div) {
@@ -375,8 +375,8 @@ void PuddleWorld::set_sp(const int &episode, const float &x_div, const float &y_
 void PuddleWorld::do_sp(const int &episode) {
   if(episode == m_sp_episode) {
     std::ostringstream oss;
-    oss << "sp {elaborate*additional*puddleworld (state <s> ^superstate nil ^name puddleworld) --> (<s> ^div <d>) (<d> ^name additional ^x (/ 18.001 " << m_sp_x_div
-        << ") ^y (/ 18.001 " << m_sp_y_div
+    oss << "sp {elaborate*additional*puddleworld (state <s> ^superstate nil ^name puddleworld) --> (<s> ^div <d>) (<d> ^name additional ^x (/ 1.001 " << m_sp_x_div
+        << ") ^y (/ 1.001 " << m_sp_y_div
         << "))}";
     std::cerr << oss.str() << std::endl;
     ExecuteCommandLine(oss.str());
@@ -407,8 +407,14 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
   m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
   m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
   m_reward = m_agent->CreateFloatWME(m_agent->GetInputLink(), "reward", 0.0f);
-  m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", 0.0f);
-  m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", 0.0f);
+
+  float x, y;
+  do {
+    x = float(rand()) / RAND_MAX;
+    y = float(rand()) / RAND_MAX;
+  } while(fabs(1.0f - x) + fabs(y) < 0.1f);
+  m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
+  m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);
 
   if(!m_agent->Commit())
     abort();
@@ -455,32 +461,58 @@ void PuddleWorld::update() {
           float y = m_y->GetValue();
 
           {
-            const float shift = 0.1f * rand() / RAND_MAX - 0.05f;
+            const float shift = 0.02f * rand() / RAND_MAX - 0.01f; ///< Should really be Gaussian, stddev = 0.01f
 
             switch(direction_name[0]) {
-              case 'n': y -= 1 + shift; break;
-              case 's': y += 1 + shift; break;
-              case 'e': x += 1 + shift; break;
-              case 'w': x -= 1 + shift; break;
+              case 'n': y -= 0.05f + shift; break;
+              case 's': y += 0.05f + shift; break;
+              case 'e': x += 0.05f + shift; break;
+              case 'w': x -= 0.05f + shift; break;
               default: abort(); break;
             }
 
             if(x < 0.0f)
               x = 0.0f;
-            else if(x > 18.0f)
-              x = 18.0f;
+            else if(x > 1.0f)
+              x = 1.0f;
             if(y < 0.0f)
               y = 0.0f;
-            else if(y > 18.0f)
-              y = 18.0f;
+            else if(y > 1.0f)
+              y = 1.0f;
           }
 
-          if(fabs(18.0f - x) + fabs(y) < 2.0f) {
+          if(fabs(1.0f - x) + fabs(y) < 0.1f) {
             m_state->Update("terminal");
             m_reward->Update(0.0f);
           }
-          else
-            m_reward->Update(-1.0f);
+          else {
+            float dist_puddle[2];
+
+            /// (.1, .25) to (.45, .25), radius 0.1
+            if(x < 0.1f)
+              dist_puddle[0] = sqrt(pow(x - 0.1f, 2) + pow(y - 0.25f, 2));
+            else if(x < 0.45f)
+              dist_puddle[0] = fabs(y - 0.25f);
+            else
+              dist_puddle[0] = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
+            dist_puddle[0] = 0.1f - dist_puddle[0];
+
+            /// (.45, .2) to (.45, .6), radius 0.1
+            if(y < 0.2f)
+              dist_puddle[1] = sqrt(pow(x - 0.45f, 2) + pow(y - 0.2f, 2));
+            else if(y < 0.6f)
+              dist_puddle[1] = fabs(x - 0.45f);
+            else
+              dist_puddle[1] = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
+            dist_puddle[1] = 0.1f - dist_puddle[1];
+            
+            const float dist = std::max(dist_puddle[0], dist_puddle[1]);
+            if(dist > 0.0f)
+              m_reward->Update(-400.0f * dist);
+            else
+              m_reward->Update(-1.0f);
+          }
+
           m_step->Update(step);
           m_x->Update(x);
           m_y->Update(y);

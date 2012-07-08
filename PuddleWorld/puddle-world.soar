@@ -23,8 +23,8 @@ sp {apply*initialize*puddleworld
     (<s> ^name puddleworld
          ^div <d>)
     (<d> ^name default
-         ^x (/ 18.001 5)
-         ^y (/ 18.001 5))
+         ^x (/ 1.001 8)
+         ^y (/ 1.001 8))
 }
 #sp {elaborate*additional*puddleworld
 #    (state <s> ^superstate nil
