@@ -508,7 +508,7 @@ void PuddleWorld::update() {
             
             const float dist = std::max(dist_puddle[0], dist_puddle[1]);
             if(dist > 0.0f)
-              m_reward->Update(-400.0f * dist);
+              m_reward->Update(-1.0f - 400.0f * dist);
             else
               m_reward->Update(-1.0f);
           }

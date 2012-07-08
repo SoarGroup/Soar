@@ -101,7 +101,7 @@ experiments () {
 #     echo $DIR
 #     continue
 
-    cp ./CartPole/cartpole-random-SML-var.soar $DIR/in.soar
+    cp CartPole/cartpole-random-SML-var.soar $DIR/in.soar
     echo "sp {apply*initialize*cartpole
               (state <s> ^operator.name cartpole)
           -->

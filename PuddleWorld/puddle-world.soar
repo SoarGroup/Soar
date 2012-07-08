@@ -6,7 +6,7 @@ rl --set discount-rate 0.9
 #rl --set eligibility-trace-tolerance 0.000001
 
 indifferent-selection --boltzmann
-indifferent-selection --temperature 0.01
+indifferent-selection --temperature 0.5
 #indifferent-selection --auto-reduce on
 #indifferent-selection --reduction-rate temperature exponential 0.9999
 
@@ -23,8 +23,8 @@ sp {apply*initialize*puddleworld
     (<s> ^name puddleworld
          ^div <d>)
     (<d> ^name default
-         ^x (/ 1.001 8)
-         ^y (/ 1.001 8))
+         ^x (/ 1.001 10)
+         ^y (/ 1.001 10))
 }
 #sp {elaborate*additional*puddleworld
 #    (state <s> ^superstate nil

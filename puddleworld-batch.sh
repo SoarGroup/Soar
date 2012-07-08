@@ -4,13 +4,15 @@ if [ "$CORES" == "" ]; then
   CORES=1
 fi
 
-AGGREGATE=3
-EPISODES=1000
+AGGREGATE=10
+EPISODES=3000
 
 declare -a VALS=( \
-                 5 5
+                 10 10
+                 20 20
                  )
 declare -a VALSP=( \
+                  -1 0 0
                   -1 0 0
                  )
 
@@ -49,7 +51,7 @@ experiments () {
 #     echo $DIR
 #     continue
 
-    cp ./PuddleWorld/puddle-world.soar $DIR/in.soar
+    cp PuddleWorld/puddle-world.soar $DIR/in.soar
     echo "sp {apply*initialize*puddleworld
               (state <s> ^operator.name puddleworld)
           -->
