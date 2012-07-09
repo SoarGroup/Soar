@@ -43,7 +43,30 @@
 using namespace sml;
 using namespace soarxml;
 
-const char *DEBUGGER_NAME = "SoarJavaDebugger.jar";
+#define DEBUGGER_NAME "SoarJavaDebugger.jar"
+std::string g_debugger_name = DEBUGGER_NAME;
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+#include <link.h>
+
+static int debugger_name_callback(struct dl_phdr_info *info, size_t size, void */*data*/) {
+  const int length = strlen(info->dlpi_name);
+  if(length < 10 || strcmp("libSoar.so", info->dlpi_name + length - 10))
+    return 0;
+  
+  std::string dlpi_name = info->dlpi_name;
+  const int slash = dlpi_name.find_last_of("/\\");
+  
+  if(slash == std::string::npos)
+    g_debugger_name = DEBUGGER_NAME;
+  else
+    g_debugger_name = dlpi_name.substr(0, slash + 1) + DEBUGGER_NAME;
+  
+  return 1;
+}
+#endif
+
+#undef DEBUGGER_NAME
 
 namespace sml
 {
@@ -1285,9 +1308,15 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 			return false;
 		}
 		p = jarpath;
-	} else if (isfile(DEBUGGER_NAME)) {
-		p = DEBUGGER_NAME;
+	} else if (isfile(g_debugger_name.c_str())) {
+		p = g_debugger_name;
 	} else {
+#if !defined(_WIN32) && !defined(__APPLE__)
+    if(dl_iterate_phdr(debugger_name_callback, 0))
+      p = g_debugger_name;
+    else
+      return false;
+#else
 		char *e = getenv("SOAR_HOME");
 		if (!e) {
 			return false;
@@ -1296,11 +1325,12 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		if (h.find_last_of("/\\") != h.size() - 1) {
 			h += '/';
 		}
-		h += DEBUGGER_NAME;
+		h += g_debugger_name;
 		if (!isfile(h.c_str())) {
 			return false;
 		}
 		p = h;
+#endif
 	}
 	
 	if (port == -1)
@@ -1356,19 +1386,19 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 		to_string(port, portstring);
 
     std::string java_library_path = "-Djava.library.path=" + p;
-    for(int i = java_library_path.size() - 1; i != -1; --i) {
-      if(java_library_path[i] == '/') {
-        java_library_path.resize(i);
-        break;
-      }
-    }
+    const int java_library_path_slash = java_library_path.find_last_of("/\\");
+    if(java_library_path_slash != std::string::npos)
+      java_library_path.resize(java_library_path_slash);
 
 #if (defined(__APPLE__) && defined(__MACH__))
 		execlp("java", "java", "-XstartOnFirstThread", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
 #else
-    std::cerr << "Debugger spawn: " << "java" << "(java," << java_library_path.c_str() << ",-jar," << p.c_str() << ",-remote,"
-              << "-port," << portstring.c_str() << ",-agent," << this->GetAgentName() << ',' << 0 << ')' << std::endl;
+    /// BEGIN mysterious fix to "Debugger spawn failed: Bad address"
+    std::string s = java_library_path.c_str();
+    s += p.c_str();
+    s += portstring.c_str();
+    /// END mysterious fix
 		execlp("java", "java", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
 			"-port", portstring.c_str(), "-agent", this->GetAgentName(), 0 );
 #endif

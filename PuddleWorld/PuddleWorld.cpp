@@ -363,7 +363,7 @@ bool PuddleWorld::is_finished() const {
 }
 
 bool PuddleWorld::is_success() const {
-  return fabs(1.0f - m_x->GetValue()) + fabs(m_y->GetValue()) < 0.1f;
+  return m_x->GetValue() >= 0.95f && m_y->GetValue() <= 0.05f;
 }
 
 void PuddleWorld::set_sp(const int &episode, const float &x_div, const float &y_div) {
@@ -412,7 +412,7 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
   do {
     x = float(rand()) / RAND_MAX;
     y = float(rand()) / RAND_MAX;
-  } while(fabs(1.0f - x) + fabs(y) < 0.1f);
+  } while(x >= 0.95f && y <= 0.05f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
   m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);
 
@@ -421,7 +421,7 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
 }
 
 bool PuddleWorld::SpawnDebugger() {
-  return m_agent->SpawnDebugger(-1, "/home/bazald/Documents/Work/soar-group/SoarSuite/out/SoarJavaDebugger.jar");
+  return m_agent->SpawnDebugger();
 }
 
 void PuddleWorld::srand(const int &seed) {
@@ -481,36 +481,34 @@ void PuddleWorld::update() {
               y = 1.0f;
           }
 
-          if(fabs(1.0f - x) + fabs(y) < 0.1f) {
+          if(x >= 0.95f && y <= 0.05f) {
             m_state->Update("terminal");
             m_reward->Update(0.0f);
           }
           else {
-            float dist_puddle[2];
+            float reward = -1.0f;
+            float dist;
 
             /// (.1, .25) to (.45, .25), radius 0.1
             if(x < 0.1f)
-              dist_puddle[0] = sqrt(pow(x - 0.1f, 2) + pow(y - 0.25f, 2));
+              dist = sqrt(pow(x - 0.1f, 2) + pow(y - 0.25f, 2));
             else if(x < 0.45f)
-              dist_puddle[0] = fabs(y - 0.25f);
+              dist = fabs(y - 0.25f);
             else
-              dist_puddle[0] = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
-            dist_puddle[0] = 0.1f - dist_puddle[0];
+              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
+            dist = 0.1f - dist;
+            reward += -400.0f * std::max(0.0f, 0.1f - dist);
 
             /// (.45, .2) to (.45, .6), radius 0.1
             if(y < 0.2f)
-              dist_puddle[1] = sqrt(pow(x - 0.45f, 2) + pow(y - 0.2f, 2));
+              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.2f, 2));
             else if(y < 0.6f)
-              dist_puddle[1] = fabs(x - 0.45f);
+              dist = fabs(x - 0.45f);
             else
-              dist_puddle[1] = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
-            dist_puddle[1] = 0.1f - dist_puddle[1];
-            
-            const float dist = std::max(dist_puddle[0], dist_puddle[1]);
-            if(dist > 0.0f)
-              m_reward->Update(-1.0f - 400.0f * dist);
-            else
-              m_reward->Update(-1.0f);
+              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
+            reward += -400.0f * std::max(0.0f, 0.1f - dist);
+
+            m_reward->Update(reward);
           }
 
           m_step->Update(step);

@@ -49,7 +49,7 @@ PuddleWorld::PuddleWorld(const std::string &agent_productions,
   do {
     x = float(rand()) / RAND_MAX;
     y = float(rand()) / RAND_MAX;
-  } while(fabs(1.0f - x) + fabs(y) < 0.1f);
+  } while(x >= 0.95f && y <= 0.05f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
   m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);
 
