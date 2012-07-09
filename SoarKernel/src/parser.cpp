@@ -94,6 +94,16 @@ test make_placeholder_test (agent* thisAgent, char first_letter) {
   return make_equality_test_without_adding_reference (new_var);
 }
 
+test make_metadata_test (agent* thisAgent, char metadata_mask, char metadata_value) {
+  complex_test *ct;
+  allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
+  ct->type = METADATA_TEST;
+  ct->data.metadata_referent.mask = metadata_mask;
+  ct->data.metadata_referent.value = metadata_value;
+  test t = make_test_from_complex_test(ct);
+  return t;
+}
+
 /* -----------------------------------------------------------------
             Substituting Real Variables for Placeholders
    
@@ -486,11 +496,10 @@ test parse_test (agent* thisAgent) {
 }
 
 test parse_metadata_test (agent* thisAgent) {
-	char metadata_mask = '\0';
+	char metadata_mask = '\0' & METADATA_ACCEPTABLE;
 	char metadata_value = '\0';
 	Bool error = FALSE;
     if (thisAgent->lexeme.type == PLUS_LEXEME) {
-		metadata_mask |= METADATA_ACCEPTABLE;
 		metadata_value |= METADATA_ACCEPTABLE;
 		get_lexeme(thisAgent);
 	}
@@ -530,13 +539,7 @@ test parse_metadata_test (agent* thisAgent) {
 		print_location_of_most_recent_lexeme(thisAgent);
 		return NIL;
 	}
-	complex_test *ct;
-	allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-	ct->type = METADATA_TEST;
-	ct->data.metadata_referent.mask = metadata_mask;
-	ct->data.metadata_referent.value = metadata_value;
-	test t = make_test_from_complex_test(ct);
-	return t;
+	return make_metadata_test(thisAgent, metadata_mask, metadata_value);
 }
 
 /* =================================================================
@@ -689,8 +692,6 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
   condition *c, *last_c, *first_c, *new_conds;
   test value_test;
   test metadata_test;
-  char metadata_tests = '\0';
-  char metadata_values = '\0';
   Bool acceptable;
 
   if ((thisAgent->lexeme.type==MINUS_LEXEME) ||
@@ -703,10 +704,7 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = make_placeholder_test (thisAgent, first_letter);
-    c->data.tests.metadata_test = make_blank_test();
-    c->test_for_acceptable_preference = FALSE;
-    c->metadata_tests = '\0';
-    c->metadata_values = '\0';
+    c->data.tests.metadata_test = make_metadata_test(thisAgent, METADATA_ACCEPABLE, '\0');
     return c;
   }
 
@@ -749,9 +747,6 @@ condition *parse_value_test_star (agent* thisAgent, char first_letter) {
     c->data.tests.attr_test = NIL;
     c->data.tests.value_test = value_test;
     c->data.tests.metadata_test = metadata_test;
-    c->test_for_acceptable_preference = acceptable;
-    c->metadata_tests = metadata_tests;
-    c->metadata_values = metadata_values;
     /* --- add new conditions to the end of the list --- */
     if (last_c) last_c->next = new_conds; else first_c = new_conds;
     new_conds->prev = last_c;
@@ -818,10 +813,7 @@ condition *parse_attr_value_tests (agent* thisAgent) {
     c->data.tests.attr_test = attr_test;
     id_test_to_use = make_placeholder_test (thisAgent, first_letter_from_test(attr_test));
     c->data.tests.value_test = id_test_to_use;
-    c->data.tests.metadata_test = make_placeholder_test (thisAgent, 'm');
-    c->test_for_acceptable_preference = FALSE;
-    c->metadata_tests = '\0';
-    c->metadata_values = '\0';
+    c->data.tests.metadata_test = make_metadata_test(thisAgent, METADATA_ACCEPABLE, '\0');
     /* --- update id and attr tests for the next path element --- */
     attr_test = parse_test (thisAgent);
     if (!attr_test) {
@@ -970,10 +962,7 @@ condition *parse_tail_of_conds_for_one_id (agent* thisAgent) {
     c->data.tests.id_test = NIL;
     c->data.tests.attr_test = make_placeholder_test (thisAgent, 'a');
     c->data.tests.value_test = make_placeholder_test (thisAgent, 'v');
-    c->data.tests.metadata_test = make_placeholder_test (thisAgent, 'm');
-    c->test_for_acceptable_preference = FALSE;
-    c->metadata_tests = '\0';
-    c->metadata_values = '\0';
+    c->data.tests.metadata_test = make_metadata_test(thisAgent, METADATA_ACCEPABLE, '\0');
     return c;
   }
 

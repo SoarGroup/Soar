@@ -505,12 +505,10 @@ enum ComplexTextTypes {
       next, prev:  used for a doubly-linked list of all conditions on the
         LHS, or all subconditions of an NCC.
 
-      data.tests.id_test, data.tests.attr_test, data.tests.value_test:
-        for positive and negative conditions, these are the three wme
+      data.tests.id_test, data.tests.attr_test, data.tests.value_test,
+      data.tests.metadata_test:
+        for positive and negative conditions, these are the four wme
         field tests for the condition.
-
-      test_for_acceptable_preference:  for positive and negative conditions,
-        this is TRUE iff the condition tests for acceptable preference wmes.
 
       data.ncc.top, data.ncc.bottom:  for NCC's, these point to the top and
         bottom of the subconditions likned list.
@@ -565,9 +563,6 @@ typedef struct ncc_info_struct {
 typedef struct condition_struct {
   byte type;
   Bool already_in_tc;                 /* used only by cond_is_in_tc stuff */
-  Bool test_for_acceptable_preference;   /* for pos, neg cond's only */
-  char metadata_tests;                /* for pos, neg cond's only; which metadata values to care about */
-  char metadata_values;               /* for pos, neg cond's only; the desired values of metadata */
   struct condition_struct *next, *prev;
   union condition_main_data_union {
     four_field_tests tests;             /* for pos, neg cond's only */

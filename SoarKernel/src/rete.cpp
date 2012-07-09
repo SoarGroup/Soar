@@ -1403,13 +1403,10 @@ uint32_t hash_alpha_mem (void *item, short num_bits) {
                                      ((value) ? 4 : 0) + \
                                      ((acceptable) ? 8 : 0) ]*/
 inline hash_table * table_for_tests(agent* thisAgent, 
-                                    Symbol * id, Symbol * attr, Symbol * value, 
-									char metadata_tests, Bool acceptable)
+                                    Symbol * id, Symbol * attr, Symbol * value)
 {
   return thisAgent->alpha_hash_tables [ (id ? 1 : 0) + (attr ? 2 : 0) +
-    (value ? 4 : 0) +
-	(metadata_tests ? 8 : 0) +
-    (acceptable ? 16 : 0) ];
+    (value ? 4 : 0) ];
 }
 
 //#define get_next_alpha_mem_id() (thisAgent->alpha_mem_id_counter++)
@@ -1460,19 +1457,17 @@ void remove_wme_from_alpha_mem (agent* thisAgent, right_mem *rm) {
 }
 
 /* --- Looks for an existing alpha mem, returns it or NIL if not found --- */
-alpha_mem *find_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
-                           Symbol *value, char metadata_tests, char metadata_values, Bool acceptable) {
+alpha_mem *find_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value) {
   hash_table *ht;
   alpha_mem *am;
   uint32_t hash_value;
 
-  ht = table_for_tests (thisAgent, id, attr, value, metadata_tests, acceptable);
+  ht = table_for_tests (thisAgent, id, attr, value);
   hash_value = alpha_hash_value (id, attr, value, ht->log2size);
 
   for (am = reinterpret_cast<alpha_mem *>(*(ht->buckets+hash_value)); am!=NIL;
        am=am->next_in_hash_table)
-    if ((am->id==id) && (am->attr==attr) &&
-        (am->value==value) && (am->metadata_tests==metadata_tests) && (am->metadata_values==metadata_values) && (am->acceptable==acceptable))
+    if ((am->id==id) && (am->attr==attr) && (am->value==value))
       return am;
   return NIL;
 }
@@ -1488,7 +1483,7 @@ alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
   right_mem *rm;
 
   /* --- look for an existing alpha mem --- */
-  am = find_alpha_mem (thisAgent, id, attr, value, metadata_tests, metadata_values, acceptable);
+  am = find_alpha_mem (thisAgent, id, attr, value);
   if (am) {
     am->reference_count++;
     return am;
@@ -1511,15 +1506,15 @@ alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
   am->metadata_tests = metadata_tests;
   am->metadata_values = metadata_values;
   am->am_id = get_next_alpha_mem_id(thisAgent);
-  ht = table_for_tests (thisAgent, id, attr, value, metadata_tests, acceptable);
+  ht = table_for_tests (thisAgent, id, attr, value);
   add_to_hash_table (thisAgent, ht, am);
   
   /* --- fill new mem with any existing matching WME's --- */
   more_general_am = NIL;
   if (id)
-    more_general_am = find_alpha_mem (thisAgent, NIL, attr, value, metadata_tests, metadata_values, acceptable);
+    more_general_am = find_alpha_mem (thisAgent, NIL, attr, value);
   if (!more_general_am && value)
-    more_general_am = find_alpha_mem (thisAgent, NIL, attr, NIL, metadata_tests, metadata_values, acceptable);
+    more_general_am = find_alpha_mem (thisAgent, NIL, attr, NIL);
   if (more_general_am) {
     /* --- fill new mem using the existing more general one --- */
     for (rm=more_general_am->right_mems; rm!=NIL; rm=rm->next_in_am)
@@ -1572,7 +1567,7 @@ inline uint32_t xor_op(uint32_t i, uint32_t a, uint32_t v)
 
 /* --- Adds a WME to the Rete. --- */
 void add_wme_to_rete (agent* thisAgent, wme *w, bool deal_with_epmem_ids) {
-  uint32_t hi, ha, hv;
+  uint32_t hi, ha, hv, hm;
 
   /* --- add w to all_wmes_in_rete --- */
   insert_at_head_of_dll (thisAgent->all_wmes_in_rete, w, rete_next, rete_prev);
@@ -1586,44 +1581,16 @@ void add_wme_to_rete (agent* thisAgent, wme *w, bool deal_with_epmem_ids) {
   hi = w->id->common.hash_id;
   ha = w->attr->common.hash_id;
   hv = w->value->common.hash_id;
+  hm = static_cast<uint32_t>(w->metadata);
 
-  if (w->acceptable) {
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[16], xor_op( 0, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[17], xor_op(hi, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[18], xor_op( 0,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[19], xor_op(hi,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[20], xor_op( 0, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[21], xor_op(hi, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[22], xor_op( 0,ha,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[23], xor_op(hi,ha,hv), w);
-	// additional tables for metadata (these tables actually check metadata)
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[24], xor_op( 0, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[25], xor_op(hi, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[26], xor_op( 0,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[27], xor_op(hi,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[28], xor_op( 0, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[29], xor_op(hi, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[30], xor_op( 0,ha,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[31], xor_op(hi,ha,hv), w);
-  } else {
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[0],  xor_op( 0, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[1],  xor_op(hi, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[2],  xor_op( 0,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[3],  xor_op(hi,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[4],  xor_op( 0, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[5],  xor_op(hi, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[6],  xor_op( 0,ha,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7],  xor_op(hi,ha,hv), w);
-	// additional tables for metadata (these tables actually check metadata)
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[8],  xor_op( 0, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[9],  xor_op(hi, 0, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[10], xor_op( 0,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[11], xor_op(hi,ha, 0), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[12], xor_op( 0, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[13], xor_op(hi, 0,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[14], xor_op( 0,ha,hv), w);
-    add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[15], xor_op(hi,ha,hv), w);
-  }
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[0], xor_op( 0, 0, 0), w);
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[1], xor_op(hi, 0, 0), w);
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[2], xor_op( 0,ha, 0), w);
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[3], xor_op(hi,ha, 0), w);
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[4], xor_op( 0, 0,hv), w);
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[5], xor_op(hi, 0,hv), w);
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[6], xor_op( 0,ha,hv), w);
+  add_wme_to_aht (thisAgent, thisAgent->alpha_hash_tables[7], xor_op(hi,ha,hv), w);
 
   if (deal_with_epmem_ids) {
 
@@ -1865,7 +1832,7 @@ void remove_ref_to_alpha_mem (agent* thisAgent, alpha_mem *am) {
   am->reference_count--;
   if (am->reference_count!=0) return;
   /* --- remove from hash table, and deallocate the alpha_mem --- */
-  ht = table_for_tests (thisAgent, am->id, am->attr, am->value, am->metadata_tests, am->acceptable);
+  ht = table_for_tests (thisAgent, am->id, am->attr, am->value);
   remove_from_hash_table (thisAgent, ht, am);
   if (am->id) symbol_remove_ref (thisAgent, am->id);
   if (am->attr) symbol_remove_ref (thisAgent, am->attr);
@@ -3329,8 +3296,7 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars_bound_here);
 
   /* --- Get alpha memory --- */
-  am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value,
-                     cond->metadata_tests, cond->metadata_values, cond->test_for_acceptable_preference);
+  am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value);
 
   /* --- Algorithm for adding node:
           1.  look for matching mem node; if found then
@@ -3373,7 +3339,7 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
       remove_ref_to_alpha_mem (thisAgent, am);
       return node;
     } else {       /* --- No match was found, so create a new node --- */
-      node = make_new_positive_node (thisAgent, mem_node, pos_node_type, am ,rt, FALSE);
+      node = make_new_positive_node (thisAgent, mem_node, pos_node_type, am, rt, FALSE);
       return node;
     }
   }
@@ -3459,8 +3425,7 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars_bound_here);
 
   /* --- Get alpha memory --- */
-  am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value,
-                     cond->metadata_tests, cond->metadata_values, cond->test_for_acceptable_preference);
+  am = find_or_make_alpha_mem (thisAgent, alpha_id, alpha_attr, alpha_value);
 
   /* --- determine desired node type --- */
   node_type = hash_this_node ? NEGATIVE_BNODE : UNHASHED_NEGATIVE_BNODE;
@@ -4394,38 +4359,22 @@ void rete_node_to_conditions (agent* thisAgent,
     else
       cond->type = NEGATIVE_CONDITION;
     
+    am = node->b.posneg.alpha_mem_;
     if (w && (cond->type==POSITIVE_CONDITION)) {
       /* --- make simple tests and collect nots --- */
       cond->data.tests.id_test = make_equality_test (w->id);
       cond->data.tests.attr_test = make_equality_test (w->attr);
       cond->data.tests.value_test = make_equality_test (w->value);
-	  complex_test *ct;
-	  allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-	  ct->type = METADATA_TEST;
-	  ct->data.metadata_referent.mask = 0xff;
-	  ct->data.metadata_referent.value = w->metadata;
-	  cond->data.tests.metadata_test = make_test_from_complex_test(ct);
-      cond->test_for_acceptable_preference = w->acceptable;
-	  cond->metadata_tests = 0xff;
-	  cond->metadata_values = w->metadata;
+	  cond->data.tests.metadata_test = make_metadata_test(thisAgent, 0xff, w->metadata);
       cond->bt.wme_ = w;
       if (node->b.posneg.other_tests) /* don't bother if there are no tests*/
         collect_nots (thisAgent, node->b.posneg.other_tests, w, cond, 
                               nots_found_in_production);
     } else {
-      am = node->b.posneg.alpha_mem_;
       cond->data.tests.id_test = make_blank_or_equality_test (am->id);
       cond->data.tests.attr_test = make_blank_or_equality_test (am->attr);
       cond->data.tests.value_test = make_blank_or_equality_test (am->value);
-	  complex_test *ct;
-	  allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &ct);
-	  ct->type = METADATA_TEST;
-	  ct->data.metadata_referent.mask = am->metadata_tests;
-	  ct->data.metadata_referent.value = am->metadata_values;
-	  cond->data.tests.metadata_test = make_test_from_complex_test(ct);
-      cond->test_for_acceptable_preference = am->acceptable;
-	  cond->metadata_tests = am->metadata_tests;
-	  cond->metadata_values = am->metadata_values;
+	  cond->data.tests.metadata_test = make_metadata_test(thisAgent, am->metadata_mask, am->metadata_value);
       
       if (nvn) {
         add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
@@ -8634,10 +8583,13 @@ void xml_condition_list (agent* thisAgent, condition *conds,
                *(ch++) = ' ';
                test_to_string (thisAgent, c->data.tests.value_test, ch, XML_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
 			   while (*ch) ch++;
+			   /*
+			   // JUSTIN FIXME metadata serialization
                if (c->test_for_acceptable_preference) 
                {
                   strncpy (ch, " +", XML_CONDITION_LIST_TEMP_SIZE - (ch - temp)); while (*ch) ch++;
                }
+			   */
             }
             *ch = 0;
             if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE) 
