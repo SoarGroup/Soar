@@ -5,7 +5,7 @@ if [ "$CORES" == "" ]; then
 fi
 
 AGGREGATE=10
-EPISODES=3000
+EPISODES=10000
 
 declare -a VALS=( \
                  10 10
@@ -20,7 +20,8 @@ for i in $(seq 1 $AGGREGATE); do
   random[$i]=$RANDOM
 done
 
-# random=(2698 5643 18028 29364 30519)
+echo ${random[@]} > experiment/random
+#random=($(cat experiment/random))
 
 for v in $(seq 0 $((${#VALS[@]} / 2 - 1))); do
   BASE="experiment"
@@ -28,7 +29,7 @@ for v in $(seq 0 $((${#VALS[@]} / 2 - 1))); do
   SP="${VALSP[$((3 * v + 0))]}_${VALSP[$((3 * v + 1))]}-${VALSP[$((3 * v + 2))]}"
   DIR="$BASE/${START}_$SP"
   mkdir -p $DIR
-#   rm -i $DIR/*
+  rm -i $DIR/*
   DIRS[v]=$DIR
 done
 
@@ -58,8 +59,8 @@ experiments () {
               (<s> ^name puddleworld
                   ^div <d>)
               (<d> ^name default
-                  ^x (/ 18.001 ${VALS[$(($2 * 2 * v + 0))]})
-                  ^y (/ 18.001 ${VALS[$(($2 * 2 * v + 1))]}))
+                  ^x (/ 1.001 ${VALS[$(($2 * 2 * v + 0))]})
+                  ^y (/ 1.001 ${VALS[$(($2 * 2 * v + 1))]}))
           }" >> $DIR/in.soar
 
 #     for r in ${random[@]}; do
