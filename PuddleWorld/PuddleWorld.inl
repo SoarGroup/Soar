@@ -99,12 +99,15 @@ void PuddleWorld::remote_trials(const int &num_trials,
 void PuddleWorld::run() {
   //// Version 1
   const std::string result = m_agent->RunSelfForever();
-  if(result != "DirectRun completed")
-    std::cout << result << std::endl;
+  if(result != "DirectRun completed" &&
+     result != "\nAn agent halted during the run.")
+  {
+    std::cerr << result << std::endl;
+  }
 
   //// Version 2
   //const std::string result = m_agent->ExecuteCommandLine("time run");
-  //std::cout << result << std::endl;
+  //std::cerr << result << std::endl;
 
   //// Version 3
   //stats_tracker.time_run(m_agent);

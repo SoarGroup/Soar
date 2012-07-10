@@ -50,10 +50,12 @@ public:
   void do_sp(const int &episode);
     
   void reinit(const bool &init_soar, const int &after_episode);
-  bool SpawnDebugger();
   void srand(const int &seed);
   void ExecuteCommandLine(const std::string &command);
 
+  bool SpawnDebugger();
+  bool debugging();
+  
 private:
   void update();
 

@@ -285,73 +285,54 @@ int main(int argc, char ** argv) {
   if(rules == PUDDLEWORLD_AGENT_PRODUCTIONS)
     set_working_directory_to_executable_path();
 
+  PuddleWorld game(rules, remote);
+  game.set_sp(episode, x_div, y_div);
+  srand(seed);
+  game.srand(seed);
+
+  bool force_debugging = false;
   if(remote) {
-//     PuddleWorld::remote_trials(3, ip_address, port, rules);
-
-//     PuddleWorld game(rules,
-//                   sml::Kernel::CreateRemoteConnection(true,
-//                                                       ip_address.empty() ? 0 : ip_address.c_str(),
-//                                                       port,
-//                                                       false));
-
-    PuddleWorld game(rules, true);
-    game.set_sp(episode, x_div, y_div);
-    srand(seed);
-    game.srand(seed);
     game.SpawnDebugger();
+    force_debugging = true;
+  }
 
-    for(int episode = 0; episode != episodes; ++episode) {
-      game.do_sp(episode);
-      
-      while(!game.is_finished()) {
-  #ifdef WIN32
+  for(int episode = 0; episode != episodes; ++episode) {
+    game.do_sp(episode);
+
+    do {
+      if(game.debugging()) {
+#ifdef WIN32
         Sleep(100);
-  #else
+#else
         usleep(100000);
-  #endif
+#endif
+        
+        force_debugging = false;
       }
+      else if(force_debugging) {
+#ifdef WIN32
+        Sleep(100);
+#else
+        usleep(100000);
+#endif
+      }
+      else
+        game.run();
+    }while(!game.is_finished());
 
 //       if(game.is_success()) {
 //         std::cout << "Success in episode " << episode + 1 << std::endl;
 //         break;
 //       }
 
-      if(!(episode % 50))
-        std::cerr << "\nEp " << episode << ' ';
-      std::cerr << (game.is_success() ? 'S' : '.');
+    if(!(episode % 50))
+      std::cerr << "\nEp " << episode << ' ';
+    std::cerr << (game.is_success() ? 'S' : '.');
 
-      game.reinit(false, episode);
-    }
-  
-    game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
+    game.reinit(true, episode);
   }
-  else {
-    // PuddleWorld::run_trials(3);
 
-    PuddleWorld game(rules, false);
-    game.set_sp(episode, x_div, y_div);
-    srand(seed);
-    game.srand(seed);
-
-    for(int episode = 0; episode != episodes; ++episode) {
-      game.do_sp(episode);
-
-      game.run();
-
-//       if(game.is_success()) {
-//         std::cout << "Success in episode " << episode + 1 << std::endl;
-//         break;
-//       }
-
-      if(!(episode % 50))
-        std::cerr << "\nEp " << episode << ' ';
-      std::cerr << (game.is_success() ? 'S' : '.');
-
-      game.reinit(true, episode);
-    }
-
-    game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
-  }
+  game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
 
   std::cerr << std::endl;
   
@@ -420,10 +401,6 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
     abort();
 }
 
-bool PuddleWorld::SpawnDebugger() {
-  return m_agent->SpawnDebugger();
-}
-
 void PuddleWorld::srand(const int &seed) {
   std::ostringstream oss;
   oss << "srand " << seed;
@@ -432,6 +409,15 @@ void PuddleWorld::srand(const int &seed) {
 
 void PuddleWorld::ExecuteCommandLine(const std::string &command) {
   m_agent->ExecuteCommandLine(command.c_str());
+}
+
+bool PuddleWorld::SpawnDebugger() {
+  return m_agent->SpawnDebugger();
+}
+
+bool PuddleWorld::debugging() {
+  m_kernel->GetAllConnectionInfo();
+  return m_kernel->GetNumberConnections() > 1;
 }
 
 void PuddleWorld::update() {
@@ -496,7 +482,6 @@ void PuddleWorld::update() {
               dist = fabs(y - 0.25f);
             else
               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
-            dist = 0.1f - dist;
             reward += -400.0f * std::max(0.0f, 0.1f - dist);
 
             /// (.45, .2) to (.45, .6), radius 0.1
