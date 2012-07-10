@@ -190,9 +190,6 @@ typedef struct alpha_mem_struct {
   Symbol *id;                  /* constants tested by this alpha mem */
   Symbol *attr;                /* (NIL if this alpha mem ignores that field) */
   Symbol *value;
-  char metadata_tests;        /* does it test for metadata? */
-  char metadata_values;       /* the desired values for metadata */
-  Bool acceptable;             /* does it test for acceptable pref? */
   uint32_t am_id;            /* id for hashing */
   uint64_t reference_count;  /* number of beta nodes using this mem */
   uint64_t retesave_amindex;
@@ -304,7 +301,7 @@ typedef struct rete_test_struct {
   union rete_test_data_union {
     var_location variable_referent;   /* for relational tests to a variable */
     Symbol *constant_referent;        /* for relational tests to a constant */
-    bit_values metadata_referent;    /* for relational tests for bit arrays */
+    metadata_pair metadata_referent;    /* for relational tests for bit arrays */
     list *disjunction_list;           /* list of symbols in disjunction test */
   } data;
   struct rete_test_struct *next; /* next in list of tests at the node */
@@ -1365,12 +1362,7 @@ inline Bool wme_matches_alpha_mem(wme * w, alpha_mem * am)
 {
   return ((am->id==NIL) || (am->id==w->id)) &&
     ((am->attr==NIL) || (am->attr==w->attr)) &&
-    ((am->value==NIL) || (am->value==w->value)) &&
-    (am->acceptable==w->acceptable) &&
-	((am->metadata_tests==NIL) || static_cast<unsigned int>(am->metadata_tests&w->metadata)==static_cast<unsigned int>(am->metadata_values));
-  // note for the metadata: metadata_tests serves as a bitmask for the WMEs metadata
-  // the masked values are then compared against the desired data in the alpha memory
-  // only if the two match up is the WME considered a match
+    ((am->value==NIL) || (am->value==w->value));
 
 }
 
@@ -1475,8 +1467,7 @@ alpha_mem *find_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *v
 /* --- Find and share existing alpha memory, or create new one.  Adjusts
    the reference count on the alpha memory accordingly. --- */
 alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
-                                   Symbol *value, char metadata_tests,
-								   char metadata_values, Bool acceptable) {
+                                   Symbol *value) {
   hash_table *ht;
   alpha_mem *am, *more_general_am;
   wme *w;
@@ -1502,9 +1493,6 @@ alpha_mem *find_or_make_alpha_mem (agent* thisAgent, Symbol *id, Symbol *attr,
   if (attr) symbol_add_ref (attr);
   am->value = value;
   if (value) symbol_add_ref (value);
-  am->acceptable = acceptable;
-  am->metadata_tests = metadata_tests;
-  am->metadata_values = metadata_values;
   am->am_id = get_next_alpha_mem_id(thisAgent);
   ht = table_for_tests (thisAgent, id, attr, value);
   add_to_hash_table (thisAgent, ht, am);
@@ -1548,11 +1536,7 @@ void add_wme_to_aht (agent* thisAgent, hash_table *ht, uint32_t hash_value, wme 
         next = node->b.posneg.next_from_alpha_mem;
         (*(right_addition_routines[node->node_type]))(thisAgent,node,w);
       }
-	  /* only one possible alpha memory per table could match */
-	  /* except for metadata, which could have more */
-	  if (!am->metadata_tests) {
-      	return;
-	  }
+      return; /* only one possible alpha memory per table could match */
     } 
     am = am->next_in_hash_table;
   }
@@ -3119,15 +3103,6 @@ void add_rete_tests_for_test (agent* thisAgent, test t,
     new_rt->next = *rt;
     *rt = new_rt;
     return;
-
-  case METADATA_TEST:
-    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
-    new_rt->type = METADATA_RETE_TEST;
-    new_rt->right_field_num = 3;
-    new_rt->data.metadata_referent = ct->data.metadata_referent;
-    new_rt->next = *rt;
-    *rt = new_rt;
-    return;
     
   default:
     { char msg[BUFFER_MSG_SIZE];
@@ -3289,8 +3264,16 @@ rete_node *make_node_for_positive_cond (agent* thisAgent,
                            &rt, &alpha_attr);
   add_rete_tests_for_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
                            &rt, &alpha_value);
-  add_rete_tests_for_test (thisAgent, cond->data.tests.metadata_test, current_depth, 3,
-                           &rt, NIL);
+  // we handle the metadata test specially, since it's not in test form in the condition
+  {
+    rete_test *new_rt;
+    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+    new_rt->type = METADATA_RETE_TEST;
+    new_rt->right_field_num = 3;
+    new_rt->data.metadata_referent = cond->metadata_test;
+    new_rt->next = rt;
+    rt = new_rt;
+  }
 
   /* --- Pop sparse variable bindings for this condition --- */
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars_bound_here);
@@ -3418,8 +3401,16 @@ rete_node *make_node_for_negative_cond (agent* thisAgent,
                            &rt, &alpha_attr);
   add_rete_tests_for_test (thisAgent, cond->data.tests.value_test, current_depth, 2,
                            &rt, &alpha_value);
-  add_rete_tests_for_test (thisAgent, cond->data.tests.metadata_test, current_depth, 3,
-                           &rt, NIL);
+  // we handle the metadata test specially, since it's not in test form in the condition
+  {
+    rete_test *new_rt;
+    allocate_with_pool (thisAgent, &thisAgent->rete_test_pool, &new_rt);
+    new_rt->type = METADATA_RETE_TEST;
+    new_rt->right_field_num = 3;
+    new_rt->data.metadata_referent = cond->metadata_test;
+    new_rt->next = rt;
+    rt = new_rt;
+  }
 
   /* --- Pop sparse variable bindings for this condition --- */
   pop_bindings_and_deallocate_list_of_variables (thisAgent, vars_bound_here);
@@ -4359,22 +4350,24 @@ void rete_node_to_conditions (agent* thisAgent,
     else
       cond->type = NEGATIVE_CONDITION;
     
-    am = node->b.posneg.alpha_mem_;
     if (w && (cond->type==POSITIVE_CONDITION)) {
       /* --- make simple tests and collect nots --- */
       cond->data.tests.id_test = make_equality_test (w->id);
       cond->data.tests.attr_test = make_equality_test (w->attr);
       cond->data.tests.value_test = make_equality_test (w->value);
-	  cond->data.tests.metadata_test = make_metadata_test(thisAgent, 0xff, w->metadata);
+	  cond->metadata_test.mask = 0xff;
+	  cond->metadata_test.value = w->metadata;
       cond->bt.wme_ = w;
       if (node->b.posneg.other_tests) /* don't bother if there are no tests*/
         collect_nots (thisAgent, node->b.posneg.other_tests, w, cond, 
                               nots_found_in_production);
     } else {
+      am = node->b.posneg.alpha_mem_;
       cond->data.tests.id_test = make_blank_or_equality_test (am->id);
       cond->data.tests.attr_test = make_blank_or_equality_test (am->attr);
       cond->data.tests.value_test = make_blank_or_equality_test (am->value);
-	  cond->data.tests.metadata_test = make_metadata_test(thisAgent, am->metadata_mask, am->metadata_value);
+	  cond->metadata_test.mask = '\0';
+	  cond->metadata_test.value = '\0';
       
       if (nvn) {
         add_varnames_to_test (thisAgent, nvn->data.fields.id_varnames,
@@ -6513,8 +6506,6 @@ void remove_token_and_subtree (agent* thisAgent, token *root) {
          12 bytes: indices of the symbols in the id, attr, and value fields
                    (0 if the field has no symbol in it)
          1 byte: 0-->normal, 1-->acceptable preference test
-         1 byte: 0-->normal, 1-->metadata_tests (only present if version >= 5)
-         1 byte: 0-->normal, 1-->metadata_values (only present if version >= 5)
 
      4 bytes: number of children of the root node
      node records for each child of the root node
@@ -6802,8 +6793,6 @@ void reteload_free_symbol_table (agent* thisAgent) {
            12 bytes: indices of the symbols in the id, attr, and value fields
                      (0 if the field has no symbol in it)
            1 byte: 0-->normal, 1-->acceptable preference test
-           1 byte: 0-->normal, 1-->metadata_tests (only present if version >= 5)
-           1 byte: 0-->normal, 1-->metadata_values (only present if version >= 5)
 
    To reload alpha memories, we read the records and make new AM's, and
    also create an array (reteload_am_table) that maps from the 
@@ -6823,11 +6812,6 @@ Bool retesave_alpha_mem_and_assign_index (agent* thisAgent, void *item, void* us
   retesave_eight_bytes (am->id ? am->id->common.a.retesave_symindex : 0,f);
   retesave_eight_bytes (am->attr ? am->attr->common.a.retesave_symindex : 0,f);
   retesave_eight_bytes (am->value ? am->value->common.a.retesave_symindex : 0,f);
-  retesave_one_byte (static_cast<byte>(am->acceptable ? 1 : 0),f);
-  if (format_version_num >= 5) {
-    retesave_one_byte (static_cast<byte>(am->metadata_tests ? 1 : 0),f);
-    retesave_one_byte (static_cast<byte>(am->metadata_values ? 1 : 0),f);
-  }
   return FALSE;
 }
 
@@ -6846,7 +6830,6 @@ void retesave_alpha_memories (agent* thisAgent, FILE* f) {
 void reteload_alpha_memories (agent* thisAgent, FILE* f) {
   uint64_t i;
   Symbol *id, *attr, *value;
-  char metadata_tests, metadata_values;
   Bool acceptable;
 
   thisAgent->reteload_num_ams = reteload_eight_bytes(f);
@@ -6857,13 +6840,7 @@ void reteload_alpha_memories (agent* thisAgent, FILE* f) {
     attr = reteload_symbol_from_index(thisAgent,f);
     value = reteload_symbol_from_index(thisAgent,f);
     acceptable = reteload_one_byte(f) ? TRUE : FALSE;
-	metadata_tests = 0;
-	metadata_values = 0;
-	if (format_version_num >= 5) {
-   	  metadata_tests = reteload_one_byte(f);
-   	  metadata_values = reteload_one_byte(f);
-	}
-    *(thisAgent->reteload_am_table+i) = find_or_make_alpha_mem (thisAgent,id,attr,value,metadata_tests,metadata_values,acceptable);
+    *(thisAgent->reteload_am_table+i) = find_or_make_alpha_mem (thisAgent,id,attr,value);
   }
 }
 

@@ -290,6 +290,7 @@ void print_binding_list (agent* agnt, list *bindings)
 }
 
 bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *c2, list **bindings) {
+	char c1_acceptable, c2_acceptable;
     if (c1->type != c2->type) return FALSE;
     switch (c1->type) 
     {
@@ -305,7 +306,7 @@ bool conditions_are_equal_with_bindings (agent* agnt, condition *c1, condition *
         if (! tests_are_equal_with_bindings (agnt, c1->data.tests.value_test,
             c2->data.tests.value_test,bindings))
             return FALSE;
-        if (c1->test_for_acceptable_preference != c2->test_for_acceptable_preference)
+		if ((c1->metadata_test.mask & c1->metadata_test.value) != (c2->metadata_test.mask & c2->metadata_test.value))
             return FALSE;
         return TRUE;
 

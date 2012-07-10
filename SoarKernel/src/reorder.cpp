@@ -753,7 +753,7 @@ int64_t cost_of_adding_condition (agent* thisAgent,
 
     if (! symbol_is_constant_or_marked_variable
           (referent_of_equality_test(cond->data.tests.value_test),tc)){
-      if (cond->test_for_acceptable_preference)
+      if (cond->metadata_test.value & METADATA_ACCEPTABLE)
         result = result * BF_FOR_ACCEPTABLE_PREFS;
       else
         result = result * BF_FOR_VALUES;
@@ -773,7 +773,7 @@ int64_t cost_of_adding_condition (agent* thisAgent,
       result =  BF_FOR_ATTRIBUTES;
     if (! test_covered_by_bound_vars (cond->data.tests.value_test, tc,
                                       root_vars_not_bound_yet)) {
-      if (cond->test_for_acceptable_preference)
+      if (cond->metadata_test.value & METADATA_ACCEPTABLE)
         result = result * BF_FOR_ACCEPTABLE_PREFS;
       else
         result = result * BF_FOR_VALUES;

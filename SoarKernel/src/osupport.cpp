@@ -733,7 +733,7 @@ Symbol *find_thing_off_goal (agent* thisAgent, condition *lhs,
     if (c->type != POSITIVE_CONDITION) continue;
     if (test_is_for_symbol (c->data.tests.id_test, goal) != YES) continue;
     if (test_is_for_symbol (c->data.tests.attr_test, attr) != YES) continue;
-    if (c->test_for_acceptable_preference) continue;
+    if (c->metadata_test.value & METADATA_ACCEPTABLE) continue;
     tc = get_new_tc_number(thisAgent);
     vars = NIL;
     add_bound_variables_in_test (thisAgent, c->data.tests.value_test, tc, &vars);

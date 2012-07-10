@@ -431,16 +431,15 @@ inline complex_test * complex_test_from_test(test t)
 
 #endif /* USE_MACROS */
 
-typedef struct bit_values_struct {
+typedef struct metadata_pair_struct {
   char mask;
   char value;
-} bit_values;
+} metadata_pair;
 
 typedef struct complex_test_struct {
   byte type;                  /* see definitions below */
   union test_info_union {
     Symbol *referent;         /* for relational tests */
-	bit_values metadata_referent;
     ::list *disjunction_list;   /* for disjunction tests */
     ::list *conjunct_list;      /* for conjunctive tests */
   } data;
@@ -546,12 +545,11 @@ typedef struct reorder_info_struct {
 } reorder_info;
 
 /* --- info on positive and negative conditions only --- */
-typedef struct four_field_tests_struct {
+typedef struct three_field_tests_struct {
   test id_test;
   test attr_test;
   test value_test;
-  test metadata_test;
-} four_field_tests;
+} three_field_tests;
 
 /* --- info on negated conjunctive conditions only --- */
 typedef struct ncc_info_struct {
@@ -563,9 +561,10 @@ typedef struct ncc_info_struct {
 typedef struct condition_struct {
   byte type;
   Bool already_in_tc;                 /* used only by cond_is_in_tc stuff */
+  metadata_pair metadata_test;
   struct condition_struct *next, *prev;
   union condition_main_data_union {
-    four_field_tests tests;             /* for pos, neg cond's only */
+    three_field_tests tests;             /* for pos, neg cond's only */
     ncc_info ncc;                        /* for ncc's only */
   } data;
   bt_info bt;  /* for top-level positive cond's: used for BT and by the rete */

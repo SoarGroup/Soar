@@ -287,7 +287,6 @@ void deallocate_test (agent* thisAgent, test t) {
   switch (ct->type) {
   case GOAL_ID_TEST:
   case IMPASSE_ID_TEST:
-  case METADATA_TEST:
     break;
   case DISJUNCTION_TEST:
     deallocate_symbol_list_removing_references (thisAgent, ct->data.disjunction_list);
@@ -783,7 +782,6 @@ void deallocate_condition_list (agent* thisAgent,
       quickly_deallocate_test (thisAgent, c->data.tests.id_test);
       quickly_deallocate_test (thisAgent, c->data.tests.attr_test);
       quickly_deallocate_test (thisAgent, c->data.tests.value_test);
-	  quickly_deallocate_test (thisAgent, c->data.tests.metadata_test);
     }
     free_with_pool (&thisAgent->condition_pool, c);
   }
@@ -809,10 +807,7 @@ condition *copy_condition (agent* thisAgent,
     New->data.tests.id_test = copy_test (thisAgent, cond->data.tests.id_test);
     New->data.tests.attr_test = copy_test (thisAgent, cond->data.tests.attr_test);
     New->data.tests.value_test = copy_test (thisAgent, cond->data.tests.value_test);
-    New->data.tests.metadata_test = copy_test (thisAgent, cond->data.tests.metadata_test);
-    New->test_for_acceptable_preference = cond->test_for_acceptable_preference;
-    New->metadata_tests = cond->metadata_tests;
-    New->metadata_values = cond->metadata_values;
+	New->metadata_test = cond->metadata_test;
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
     copy_condition_list (thisAgent, cond->data.ncc.top, &(New->data.ncc.top),
@@ -865,8 +860,8 @@ Bool conditions_are_equal (condition *c1, condition *c2) {
     if (! tests_are_equal (c1->data.tests.value_test,
                            c2->data.tests.value_test, neg))
       return FALSE;
-    if (c1->test_for_acceptable_preference !=
-        c2->test_for_acceptable_preference)
+    if ((c1->metadata_test.mask != c2->metadata_test.mask) ||
+    		(c1->metadata_test.value != c2->metadata_test.value))
       return FALSE;
     return TRUE;
     
@@ -897,7 +892,9 @@ uint32_t hash_condition (agent* thisAgent,
     result ^= hash_test (thisAgent, cond->data.tests.attr_test);
     result = (result << 24) | (result >>  8);
     result ^= hash_test (thisAgent, cond->data.tests.value_test);
-    if (cond->test_for_acceptable_preference) result++;
+	// JL (2012-07-10) I'm definitely making this up 
+    result = (result << 24) | (result >>  8);
+	result ^= (static_cast<uint32_t>(cond->metadata_test.mask) << 16) | (static_cast<uint32_t>(cond->metadata_test.value) << 8);
     break;
   case NEGATIVE_CONDITION:
     result = 1267818;
@@ -906,7 +903,9 @@ uint32_t hash_condition (agent* thisAgent,
     result ^= hash_test (thisAgent, cond->data.tests.attr_test);
     result = (result << 24) | (result >>  8);
     result ^= hash_test (thisAgent, cond->data.tests.value_test);
-    if (cond->test_for_acceptable_preference) result++;
+	// JL (2012-07-10) I'm definitely making this up 
+    result = (result << 24) | (result >>  8);
+	result ^= (static_cast<uint32_t>(cond->metadata_test.mask) << 16) | (static_cast<uint32_t>(cond->metadata_test.value) << 8);
     break;
   case CONJUNCTIVE_NEGATION_CONDITION:
     result = 82348149;

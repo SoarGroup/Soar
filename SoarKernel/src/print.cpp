@@ -633,38 +633,27 @@ void print_condition_list (agent* thisAgent, condition *conds,
                *(ch++) = ' ';
                test_to_string (thisAgent, c->data.tests.value_test, ch, PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
                while (*ch) ch++;
-               if (c->test_for_acceptable_preference) 
+               if (c->metadata_test.value & METADATA_ACCEPTABLE) 
                {
                   strncpy (ch, " +", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
                   while (*ch) ch++;
                }
-				if (c->metadata_tests)
-				{
-					if (c->metadata_tests & METADATA_ACCEPTABLE) {
-						if (c->metadata_values & METADATA_ACCEPTABLE) {
-							strncpy (ch, " :acceptable", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-						} else {
-							strncpy (ch, " :unacceptable", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-						}
-						while (*ch) ch++;
-					}
-					if (c->metadata_tests & METADATA_SMEM_RECOGNITION) {
-						if (c->metadata_values & METADATA_SMEM_RECOGNITION) {
-							strncpy (ch, " :smem-unrecognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-						} else {
-							strncpy (ch, " :smem-recognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-						}
-						while (*ch) ch++;
-					}
-					if (c->metadata_tests & METADATA_EPMEM_RECOGNITION) {
-						if (c->metadata_values & METADATA_EPMEM_RECOGNITION) {
-							strncpy (ch, " :epmem-unrecognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-						} else {
-							strncpy (ch, " :epmem-recognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
-						}
-						while (*ch) ch++;
-					}
-				}
+               if (c->metadata_test.mask & METADATA_SMEM_RECOGNITION) {
+                   if (c->metadata_test.value & METADATA_SMEM_RECOGNITION) {
+                       strncpy (ch, " :smem-unrecognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+                   } else {
+                       strncpy (ch, " :smem-recognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+                   }
+                   while (*ch) ch++;
+               }
+               if (c->metadata_test.mask & METADATA_EPMEM_RECOGNITION) {
+                   if (c->metadata_test.value & METADATA_EPMEM_RECOGNITION) {
+                       strncpy (ch, " :epmem-unrecognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+                   } else {
+                       strncpy (ch, " :epmem-recognized", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+                   }
+                   while (*ch) ch++;
+               }
             }
             *ch = 0;
             if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE) 
