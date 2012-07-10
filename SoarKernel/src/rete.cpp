@@ -5975,7 +5975,7 @@ void p_node_left_addition (agent* thisAgent, rete_node *node, token *tok, wme *w
 									}
 								}
 							} else {
-								if ((temp_tok->w->attr == thisAgent->operator_symbol) && (temp_tok->w->acceptable == FALSE) && (temp_tok->w->id == lowest_goal_wme->id)) {
+								if ((temp_tok->w->attr == thisAgent->operator_symbol) && (!(temp_tok->w->metadata & METADATA_ACCEPTABLE)) && (temp_tok->w->id == lowest_goal_wme->id)) {
 									if ((thisAgent->o_support_calculation_type == 3) || (thisAgent->o_support_calculation_type == 4)) {
 										/* iff RHS has only operator elaborations 
 										then it's IE_PROD, otherwise PE_PROD, so

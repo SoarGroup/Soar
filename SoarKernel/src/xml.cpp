@@ -240,7 +240,7 @@ void xml_object( agent* pAgent, wme* pWME, bool printTimetag ) {
 	xml_att_val( pAgent, kWME_Value, pWME->value );
 	xml_att_val( pAgent, kWME_ValueType, symbol_to_typeString( pAgent, pWME->value ) );
 
-	if ( pWME->acceptable ) 
+	if ( pWME->metadata & METADATA_ACCEPTABLE ) 
 	{
 		xml_att_val( pAgent, kWMEPreference, "+" );
 	}

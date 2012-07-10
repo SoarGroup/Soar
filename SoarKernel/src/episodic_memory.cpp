@@ -2246,7 +2246,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			new_id_reservation->my_id = EPMEM_NODEID_BAD;
 			new_id_reservation->my_pool = NULL;
 
-			if ( (*w_p)->acceptable )
+			if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
 			{
 				new_id_reservation->my_hash = EPMEM_HASH_ACCEPTABLE;
 			}
@@ -2348,7 +2348,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 				// if failure, drop below and use standard channels
 				{
 					// get temporal hash
-					if ( (*w_p)->acceptable )
+					if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
 					{
 						my_hash = EPMEM_HASH_ACCEPTABLE;
 					}
@@ -2397,7 +2397,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					else
 					{
 						// get temporal hash
-						if ( (*w_p)->acceptable )
+						if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
 						{
 							my_hash = EPMEM_HASH_ACCEPTABLE;
 						}
@@ -2441,7 +2441,7 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 					new_identifiers.insert( (*w_p)->value );
 
 					// get temporal hash
-					if ( (*w_p)->acceptable )
+					if ( (*w_p)->metadata & METADATA_ACCEPTABLE )
 					{
 						my_hash = EPMEM_HASH_ACCEPTABLE;
 					}

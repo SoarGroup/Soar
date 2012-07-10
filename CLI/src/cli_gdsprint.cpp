@@ -45,7 +45,7 @@ bool CommandLineInterface::DoGDSPrint() {
             }
             print (agnt, "(%lu: ", w->timetag);
             print_with_symbols (agnt, "%y ^%y %y", w->id, w->attr, w->value);
-            if (w->acceptable) 
+            if (w->metadata & METADATA_ACCEPTABLE) 
             {
                 print_string (agnt, " +");
             }
@@ -64,7 +64,7 @@ bool CommandLineInterface::DoGDSPrint() {
             {
                 print (agnt, "                (%lu: ", w->timetag);
                 print_with_symbols (agnt, "%y ^%y %y", w->id, w->attr, w->value);
-                if (w->acceptable) 
+                if (w->metadata & METADATA_ACCEPTABLE) 
                 {
                     print_string (agnt, " +");
                 }

@@ -640,7 +640,7 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 		// impasse wmes
 		for ( w=id->id.impasse_wmes; w!=NIL; w=w->next )
 		{
-			if ( !w->acceptable )
+			if ( !(w->metadata & METADATA_ACCEPTABLE) )
 			{
 				return_val->push_back( w );
 			}
@@ -657,7 +657,7 @@ smem_wme_list *smem_get_direct_augs_of_id( Symbol * id, tc_number tc = NIL )
 		{
 			for ( w=s->wmes; w!=NIL; w=w->next )
 			{
-				if ( !w->acceptable )
+				if ( !(w->metadata & METADATA_ACCEPTABLE) )
 				{
 					return_val->push_back( w );
 				}

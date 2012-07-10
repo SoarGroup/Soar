@@ -367,7 +367,7 @@ void calculate_support_for_instantiation_preferences (agent* thisAgent, instanti
 
 						else {
 							if ((w->attr == thisAgent->operator_symbol) &&
-								(w->acceptable == FALSE) &&
+								(!(w->metadata & METADATA_ACCEPTABLE)) &&
 								(w->id == lowest_goal_wme->id)) {
 									if (thisAgent->o_support_calculation_type == 3 || thisAgent->o_support_calculation_type == 4) {
 

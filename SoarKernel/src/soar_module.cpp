@@ -30,7 +30,7 @@
 #include "soar_TraceNames.h"
 #include "wma.h"
 
-wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, Bool acceptable);
+wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, char metadata);
 typedef struct agent_struct agent;
 
 namespace soar_module
