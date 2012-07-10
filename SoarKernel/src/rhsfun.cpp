@@ -627,7 +627,7 @@ void recursive_wme_copy(agent* thisAgent,
    if ( !made_new_attr_symbol ) symbol_add_ref(new_attr);
    if ( !made_new_value_symbol) symbol_add_ref(new_value);
 
-   glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, true);
+   glbDeepCopyWMEs = make_wme(thisAgent, new_id, new_attr, new_value, TRUE);
    glbDeepCopyWMEs->next = oldGlobalWme;
                         
 }

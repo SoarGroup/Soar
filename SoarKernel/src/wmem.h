@@ -54,7 +54,7 @@ typedef uint64_t epmem_hash_id;
 typedef uint64_t epmem_time_id;
 
 extern void reset_wme_timetags (agent* thisAgent);
-extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value,Bool acceptable);
+extern wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, char metadata);
 extern void add_wme_to_wm (agent* thisAgent, wme *w);
 extern void remove_wme_from_wm (agent* thisAgent, wme *w);
 extern void remove_wme_list_from_wm (agent* thisAgent, wme *w, bool updateWmeMap = false);

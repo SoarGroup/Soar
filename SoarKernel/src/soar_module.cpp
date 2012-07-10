@@ -48,7 +48,7 @@ namespace soar_module
 	wme *add_module_wme( agent *my_agent, Symbol *id, Symbol *attr, Symbol *value )
 	{
 		slot *my_slot = make_slot( my_agent, id, attr );
-		wme *w = make_wme( my_agent, id, attr, value, false );
+		wme *w = make_wme( my_agent, id, attr, value, FALSE);
 
 		insert_at_head_of_dll( my_slot->wmes, w, next, prev );
 		add_wme_to_wm( my_agent, w );

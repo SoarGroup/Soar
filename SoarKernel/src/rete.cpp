@@ -4101,6 +4101,8 @@ void add_rete_test_list_to_tests (agent* thisAgent,
       allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
       New = make_test_from_complex_test(new_ct);
       new_ct->type = IMPASSE_ID_TEST;
+	} else if (rt->type==METADATA_RETE_TEST) {
+	  cond->metadata_test = rt->data.metadata_referent;
     } else if (rt->type==DISJUNCTION_RETE_TEST) {
       allocate_with_pool (thisAgent, &thisAgent->complex_test_pool, &new_ct);
       New = make_test_from_complex_test(new_ct);
@@ -4167,7 +4169,7 @@ void add_rete_test_list_to_tests (agent* thisAgent,
       add_new_test_to_test (thisAgent, &(cond->data.tests.id_test), New);
     else if (rt->right_field_num==2)
       add_new_test_to_test (thisAgent, &(cond->data.tests.value_test), New);
-    else
+    else if (rt->right_field_num==1)
       add_new_test_to_test (thisAgent, &(cond->data.tests.attr_test), New);
   }
 }
@@ -4563,7 +4565,7 @@ void p_node_to_conditions_and_nots (agent* thisAgent,
                            thisAgent->dummy_top_node,
                            tok, w, NIL,
                            dest_top_cond, dest_bottom_cond, 
-                                                   nots_found_in_production);
+                           nots_found_in_production);
   if (tok) *dest_nots = nots_found_in_production;
   nots_found_in_production = NIL; /* just for safety */
   if (dest_rhs) 
@@ -4945,7 +4947,7 @@ Bool variable_same_type_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, 
 
 Bool bitarray_equal_rete_test_routine (agent* /*thisAgent*/, rete_test *rt, token * /*left*/, wme *w) {
   return (static_cast<unsigned int>(w->metadata & rt->data.metadata_referent.mask) ==
-		  static_cast<unsigned int>(rt->data.metadata_referent.mask));
+		  static_cast<unsigned int>(rt->data.metadata_referent.value));
 }
 
 
