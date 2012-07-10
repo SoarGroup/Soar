@@ -1371,6 +1371,49 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 	return true;
 
 #else // _WIN32
+  // child
+  std::string portstring;
+  to_string(port, portstring);
+
+  std::string java_library_path = "-Djava.library.path=" + p;
+  const int java_library_path_slash = java_library_path.find_last_of("/\\");
+  if(java_library_path_slash != std::string::npos)
+    java_library_path.resize(java_library_path_slash);
+  
+  char buf[32768];
+  char * buf_ptr = buf;
+  char * bufv[32];
+  int bufc = 0;
+  
+#define ARG(cstr) \
+    if(bufc == sizeof(bufv) / sizeof(char *)) \
+      abort(); \
+    bufv[bufc++] = buf_ptr; \
+    if(strlen(cstr) + 1 > sizeof(buf) - (buf_ptr - buf)) \
+      abort(); \
+    strcpy(buf_ptr, cstr); \
+    buf_ptr += strlen(cstr) + 1;
+  
+  ARG("java");
+#if (defined(__APPLE__) && defined(__MACH__))
+  ARG("-XstartOnFirstThread");
+#endif
+  ARG(java_library_path.c_str());
+  ARG("-jar");
+  ARG(p.c_str());
+  ARG("-remote");
+  ARG("-port");
+  ARG(portstring.c_str());
+  ARG("-agent");
+  ARG(this->GetAgentName());
+  
+  bufv[bufc] = 0;
+  
+//   for(int i = 0; i != bufc; ++i)
+//     std::cerr << "arg(" << i << ") = '" << bufv[i] << "'\n";
+  
+#undef ARG
+  
 	m_pDPI->debuggerPid = fork();
 	if ( m_pDPI->debuggerPid < 0 ) 
 	{ 
@@ -1381,27 +1424,7 @@ bool Agent::SpawnDebugger(int port, const char* jarpath)
 
 	if ( m_pDPI->debuggerPid == 0 ) 
 	{
-		// child
-		std::string portstring;
-		to_string(port, portstring);
-
-    std::string java_library_path = "-Djava.library.path=" + p;
-    const int java_library_path_slash = java_library_path.find_last_of("/\\");
-    if(java_library_path_slash != std::string::npos)
-      java_library_path.resize(java_library_path_slash);
-
-#if (defined(__APPLE__) && defined(__MACH__))
-		execlp("java", "java", "-XstartOnFirstThread", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
-			"-port", portstring.c_str(), "-agent", this->GetAgentName(), NULL );
-#else
-    /// BEGIN mysterious fix to "Debugger spawn failed: Bad address"
-    std::string s = java_library_path.c_str();
-    s += p.c_str();
-    s += portstring.c_str();
-    /// END mysterious fix
-		execlp("java", "java", java_library_path.c_str(), "-jar", p.c_str(), "-remote", 
-			"-port", portstring.c_str(), "-agent", this->GetAgentName(), 0 );
-#endif
+		execvp("java", bufv);
 		// does not return on success
 
 		std::cerr << "Debugger spawn failed: " << strerror(errno) << std::endl;
