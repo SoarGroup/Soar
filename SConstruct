@@ -164,9 +164,9 @@ elif compiler == 'msvc':
 	
 	if GetOption('defflags'):
 		if GetOption('opt'):
-			cflags.extend(' /O2 /D NDEBUG'.split())
+			cflags.extend(' /MD /O2 /D NDEBUG'.split())
 		else:
-			cflags.extend(' /Z7 /DEBUG'.split())
+			cflags.extend(' /MDd /Z7 /DEBUG'.split())
 			lnflags.extend(['/DEBUG'])
 	
 	libs += ['advapi32']    # for GetUserName
