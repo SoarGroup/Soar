@@ -34,6 +34,17 @@ void strip(string &s, const string &whitespace) {
 	s = s.substr(begin, end - begin);
 }
 
+void sample(int n, int low, int high, bool replace, vector<int> &s) {
+	int range = high - low;
+	while (s.size() < n) {
+		int r = low + (rand() % range);
+		if (!replace && find(s.begin(), s.end(), r) != s.end()) {
+			continue;
+		}
+		s.push_back(r);
+	}
+}
+
 ofstream& get_datavis() {
 	static bool first = true;
 	static ofstream f;

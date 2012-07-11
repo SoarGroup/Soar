@@ -20,6 +20,8 @@ void strip(std::string &s, const std::string &whitespace);
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 
+void sample(int n, int low, int high, bool replace, std::vector<int> &s);
+
 std::string get_option(const std::string &key);
 
 /* I need all my files to have access to a single ofstream */

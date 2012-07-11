@@ -95,7 +95,7 @@ bool LWR::predict(const rvec &x, rvec &y) {
 		return true;
 	}
 
-	pcr(X, Y, x, y);
+	wpcr(X, Y, w, x, y);
 	return true;
 }
 

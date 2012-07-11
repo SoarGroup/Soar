@@ -234,3 +234,14 @@ ostream& output_mat(ostream &os, const_mat_view m) {
 	}
 	return os;
 }
+
+bool is_normal(const_mat_view m) {
+	for (int i = 0; i < m.rows(); ++i) {
+		for (int j = 0; j < m.cols(); ++j) {
+			if (isnan(m(i, j)) || isinf(m(i, j))) {
+				return false;
+			}
+		}
+	}
+	return true;
+}

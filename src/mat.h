@@ -55,6 +55,8 @@ public:
 class const_mat_view : public const_mat_map {
 public:
 	const_mat_view(const mat &m)               : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
+	const_mat_view(const rvec &v)              : const_mat_map(v.data(), 1, v.size(), mat_stride(1, 1)) {}
+	const_mat_view(const cvec &v)              : const_mat_map(v.data(), v.size(), 1, mat_stride(1, 1)) {}
 	const_mat_view(const mat &m, int r, int c) : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
 	const_mat_view(const mat_block &b)         : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const mat_iblock &b)        : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
@@ -154,5 +156,7 @@ void load_cvec(std::istream &is, cvec &v);
 std::ostream& output_rvec(std::ostream &os, const rvec &v, const std::string &sep = " ");
 std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &sep = " ");
 std::ostream& output_mat(std::ostream &os, const const_mat_view m);
+
+bool is_normal(const_mat_view m);
 
 #endif

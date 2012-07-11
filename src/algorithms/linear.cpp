@@ -16,69 +16,79 @@ void pca(const_mat_view X, mat &comps) {
 	comps = svd.matrixV();
 }
 
-/*
- Output a matrix composed only of those columns in the input matrix with
- significantly different values, meaning the maximum absolute value of
- the column is greater than SAME_THRESH times the minimum absolute value.
-*/
-void remove_static(const_mat_view X, mat &Xout, vector<int> &nonstatic_cols) {
-	for (int i = 0; i < X.cols(); ++i) {
+void find_nonstatic_cols(const_mat_view X, int ncols, vector<int> &nonstatic_cols) {
+	for (int i = 0; i < ncols; ++i) {
 		cvec c = X.col(i).array().abs();
 		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
 			nonstatic_cols.push_back(i);
 		}
 	}
-	assert(Xout.rows() == X.rows() && Xout.cols() >= nonstatic_cols.size());
+}
+
+/*
+ Output a matrix composed only of those columns in the input matrix with
+ significantly different values, meaning the maximum absolute value of
+ the column is greater than SAME_THRESH times the minimum absolute value.
+*/
+void remove_static(mat &X, int ncols, vector<int> &nonstatic_cols) {
+	find_nonstatic_cols(X, ncols, nonstatic_cols);
 	for (int i = 0; i < nonstatic_cols.size(); ++i) {
-		Xout.col(i) = X.col(nonstatic_cols[i]);
+		assert(nonstatic_cols[i] >= i);
+		if (nonstatic_cols[i] > i) {
+			X.col(i) = X.col(nonstatic_cols[i]);
+		}
 	}
 }
 
 bool solve(const_mat_view X, const_mat_view Y, mat &C) {
 	C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
-	return true;
+	return is_normal(C);
 }
 
 /*
- Performs standard linear regression with solve, but cleans up input
- data first to avoid instability. This consists of:
+ Clean up input data to avoid instability, then perform weighted least
+ squares regression. Cleaning consists of:
  
  1. Setting elements whose absolute values are smaller than ZERO_THRESH to 0
  2. collapsing all columns whose elements are identical into a single constant column.
 */
-bool solve2(const_mat_view X, const_mat_view Y, mat &coefs, rvec &intercept) {
-	mat X1 = X, X2(X.rows(), X.cols() + 1), C;
+bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
+	mat X1(X.rows(), X.cols() + 1), Y1, C;
 	vector<int> nonstatic;
 
 	for (int i = 0; i < X.rows(); ++i) {
 		for (int j = 0; j < X.cols(); ++j) {
-			if (abs(X1(i, j)) < ZERO_THRESH) {
+			if (fabs(X(i, j)) < ZERO_THRESH) {
 				X1(i, j) = 0.0;
+			} else {
+				X1(i, j) = X(i, j);
 			}
 		}
 	}
 
-	remove_static(X1, X2, nonstatic);
-	X2.resize(X2.rows(), nonstatic.size() + 1);
-	X2.rightCols(1).setConstant(1.0);
-	if (!solve(X2, Y, C)) {
+	remove_static(X1, X.cols(), nonstatic);
+	X1.conservativeResize(X.rows(), nonstatic.size() + 1);
+	X1.rightCols(1).setConstant(1.0);
+	
+	if (w.size() == X.rows()) {
+		cvec w2 = w.array().sqrt();
+		X1.array().colwise() *= w2.array();
+		Y1 = Y.array().colwise() * w2.array();
+	} else {
+		Y1 = Y;
+	}
+	
+	if (!solve(X1, Y1, C)) {
 		return false;
 	}
 
-	coefs.resize(X.cols(), C.cols());
+	coefs.resize(X.cols(), Y.cols());
 	coefs.setConstant(0);
 	for (int i = 0; i < nonstatic.size(); ++i) {
 		coefs.row(nonstatic[i]) = C.row(i);
 	}
 	intercept = C.bottomRows(1);
 	return true;
-}
-
-void weight_least_squares(const_mat_view X, const_mat_view Y, const cvec &w, mat &C, rvec &intercepts) {
-	mat W = mat::Zero(w.size(), w.size());
-	W.diagonal() = w;
-	mat Z = W * X, V = W * Y;
-	solve2(Z, V, C, intercepts);
 }
 
 void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout) {
@@ -105,7 +115,7 @@ void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rve
  Use Leave-one-out cross validation to determine number of components
  to use. This seems to choose numbers that are too low.
 */
-void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &intercept) {
+void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
 	int ndata = X.rows(), maxcomps = X.cols();
 	
 	mat X1(ndata - 1, X.cols()), Y1(ndata - 1, Y.cols());
@@ -137,7 +147,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &interce
 		}
 		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			solve2(projected.leftCols(j), Y1, coefs, inter);
+			solve2(projected.leftCols(j), Y1, w, coefs, inter);
 			b = components.leftCols(i) * coefs;
 			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
@@ -149,7 +159,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &interce
 		}
 	}
 	projected = X * components;
-	solve2(projected.leftCols(best), Y, coefs, inter);
+	solve2(projected.leftCols(best), Y, cvec(), coefs, inter);
 	beta = components.leftCols(best) * coefs;
 	intercept = inter;
 }
@@ -159,7 +169,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &interce
  the training instances. Also prevent the beta vector from blowing up
  too much.
 */
-void min_train_error(const_mat_view X, const_mat_view Y, mat &beta, rvec &intercept) {
+void min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
 	vector<mat> betas;
 	vector<rvec> intercepts;
 	double minerror;
@@ -170,7 +180,7 @@ void min_train_error(const_mat_view X, const_mat_view Y, mat &beta, rvec &interc
 	pca(X, components);
 	projected = X * components;
 	for (int i = 0; i < projected.cols(); ++i) {
-		solve2(projected.leftCols(i), Y, coefs, inter);
+		solve2(projected.leftCols(i), Y, w, coefs, inter);
 		b = components.leftCols(i) * coefs;
 		
 		if (b.squaredNorm() > MAX_BETA_NORM) {
@@ -192,12 +202,12 @@ void min_train_error(const_mat_view X, const_mat_view Y, mat &beta, rvec &interc
 	}
 }
 
-void pcr(const_mat_view X, const_mat_view Y, const rvec &x, rvec &y) {
+void wpcr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &y) {
 	mat beta, X1;
 	rvec intercept;
 	rvec m = X.colwise().mean();
 	X1 = X.rowwise() - m;
-	min_train_error(X1, Y, beta, intercept);
+	min_train_error(X1, Y, w, beta, intercept);
 	y = (x - m) * beta + intercept;
 }
 
@@ -442,7 +452,7 @@ void PCRModel::fit_sub() {
 	means = X.colwise().mean();
 	X.rowwise() -= means;
 
-	min_train_error(X, Y, beta, intercept);
+	min_train_error(X, Y, cvec(), beta, intercept);
 }
 
 bool PCRModel::predict_sub(const rvec &x, rvec &y) {

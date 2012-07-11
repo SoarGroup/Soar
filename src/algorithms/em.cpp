@@ -36,6 +36,104 @@ double randgauss(double mean, double std) {
 	return mean + std * (x1 * w);
 }
 
+void kernel1(const cvec &d, cvec &w) {
+	w.resize(d.size());
+	for (int i = 0; i < d.size(); ++i) {
+		w(i) = exp(-d(i));
+	}
+}
+
+void kernel2(const cvec &d, cvec &w, double p) {
+	w.resize(d.size());
+	for (int i = 0; i < d.size(); ++i) {
+		if (d(i) == 0.0) {
+			w(i) = 10000.0;
+		} else {
+			w(i) = min(10000.0, 1.0 / (pow(d(i), p)));
+		}
+	}
+}
+
+/*
+ Try to find a set of at least n points that fits a single linear
+ function well. The algorithm is:
+ 
+ 1. If input X has m non-static columns, assume it has rank = m + 1.
+ 2. Randomly choose 'rank' data points as the seed members for the
+    linear function. Fit the function to the seed members.
+ 3. Compute the residuals of the function for all data points. Compute
+    a weight vector based on the residuals and a kernel.
+ 4. Refit the linear function biased based on the weight vector.
+    Repeat until convergence or the function fits at least n data points.
+ 5. If the process converged without fitting n data points, repeat
+    from 2.
+*/
+bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int maxiters, vector<int> &points) {
+	int ndata = X.rows();
+	cvec residuals(ndata), old_res(ndata);
+	cvec w(ndata);
+	for (int iter1 = 0; iter1 < maxiters; ++iter1) {
+		w.setConstant(0.0);
+		
+		/*
+		vector<int> nonstatic, init_members;
+		find_nonstatic_cols(X, X.cols(), nonstatic);
+		int rank = nonstatic.size() + 1;
+		sample(rank, 0, ndata, false, init_members);
+		for (int i = 0; i < init_members.size(); ++i) {
+			w(init_members[i]) = 1.0;
+		}
+		*/
+		for (int i = 0; i < w.size(); i += 2) {
+			w(i) = 1.0;
+		}
+		
+		mat C;
+		rvec intercepts;
+		for (int iter2 = 0; iter2 < maxiters; ++iter2) {
+			LOG(EMDBG) << "MINI_EM " << iter1 << " " << iter2 << endl;
+			LOG(EMDBG) << "w = ";
+			for (int i = 0; i < w.size(); ++i) {
+				LOG(EMDBG) << w(i) << " ";
+			}
+			LOG(EMDBG) << endl;
+			
+			if (!solve2(X, Y, w, C, intercepts)) {
+				break;
+			}
+			
+			LOG(EMDBG) << "c = ";
+			for (int i = 0; i < C.rows(); ++i) {
+				LOG(EMDBG) << C(i, 0) << " ";
+			}
+			LOG(EMDBG) << endl;
+			
+			old_res = residuals;
+			residuals = (Y - ((X * C).rowwise() + intercepts)).rowwise().squaredNorm();
+			points.clear();
+			for (int i = 0; i < residuals.size(); ++i) {
+				if (residuals(i) < fit_thresh) {
+					points.push_back(i);
+				}
+			}
+			if (points.size() > n) {
+				LOG(EMDBG) << "residuals" << endl;
+				for (int i = 0; i < residuals.size(); ++i) {
+					LOG(EMDBG) << residuals(i) << " ";
+				}
+				LOG(EMDBG) << endl;
+				return true;
+			}
+			
+			if (residuals == old_res) {
+				break;
+			}
+			kernel2(residuals, w, 3.0);
+		}
+	}
+	return false;
+}
+
 EM::EM(const dyn_mat &xdata, const dyn_mat &ydata)
 : xdata(xdata), ydata(ydata), ndata(0), nmodels(0),
   Py_z(0, 0, INIT_NMODELS, INIT_NDATA), 
@@ -240,6 +338,15 @@ bool EM::find_new_mode_inds(vector<int> &mode_inds) const {
 	if (unique_x.rows() < K) {
 		return false;
 	}
+	
+	vector<int> seed;
+	if (mini_em(unique_x.get(), unique_y.get(), K, MODEL_ERROR_THRESH, 10, seed)) {
+		for (int i = 0; i < seed.size(); ++i) {
+			const vector<int> &real_inds = unique_map[seed[i]];
+			copy(real_inds.begin(), real_inds.end(), back_inserter(mode_inds));
+		}
+		return true;
+	}
 
 	for (int n = 0; n < SEL_NOISE_MAX_TRIES; ++n) {
 		auto_ptr<LinearModel> m(new LinearModel(unique_x, unique_y));
@@ -276,6 +383,7 @@ bool EM::find_new_mode_inds(vector<int> &mode_inds) const {
 			return true;
 		}
 	}
+	
 
 	return false;
 }
