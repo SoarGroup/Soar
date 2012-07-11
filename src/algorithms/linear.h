@@ -10,9 +10,6 @@ void ridge (const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rv
 void wpcr  (const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
 bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 
-void remove_static(mat &X, int cols, std::vector<int> &nonstatic);
-void find_nonstatic_cols(const_mat_view X, int ncols, std::vector<int> &nonstatic_cols);
-
 class LRModel {
 public:
 	LRModel(const dyn_mat &xdata, const dyn_mat &ydata);

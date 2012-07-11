@@ -42,11 +42,12 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &mem
 	
 	/*
 	 Degenerate case: fewer nonuniform dimensions in source
-	 data than there are classes. Don't try to project.
+	 data than there are classes. Don't try to project. This then
+	 becomes an ordinary NN classifier.
 	*/
 	if (d < C - 1) {
-		W.resize(d, d);
-		W.setConstant(1);
+		W = mat::Identity(d, d);
+		projected = data;
 		return;
 	}
 	

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "mat.h"
 #include "common.h"
+#include "params.h"
 
 using namespace std;
 dyn_mat::dyn_mat() : buf(0, 0), r(0), c(0) {}
@@ -244,4 +245,74 @@ bool is_normal(const_mat_view m) {
 		}
 	}
 	return true;
+}
+
+void get_nonstatic_cols(const_mat_view X, int ncols, vector<int> &nonstatic_cols) {
+	for (int i = 0; i < ncols; ++i) {
+		cvec c = X.col(i).array().abs();
+		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
+			nonstatic_cols.push_back(i);
+		}
+	}
+}
+
+void del_static_cols(mat_view X, int ncols, vector<int> &nonstatic_cols) {
+	get_nonstatic_cols(X, ncols, nonstatic_cols);
+	pick_cols(X, nonstatic_cols);
+}
+
+void pick_cols(const_mat_view X, const vector<int> &cols, mat &result) {
+	result.resize(X.rows(), cols.size());
+	for (int i = 0; i < cols.size(); ++i) {
+		result.col(i) = X.col(cols[i]);
+	}
+}
+
+void pick_rows(const_mat_view X, const vector<int> &rows, mat &result) {
+	result.resize(rows.size(), X.cols());
+	for(int i = 0; i < rows.size(); ++i) {
+		result.row(i) = X.row(rows[i]);
+	}
+}
+
+void pick_cols(mat_view X, const vector<int> &cols) {
+	assert(X.cols() >= cols.size());
+	bool need_copy = false;
+	for (int i = 0; i < cols.size(); ++i) {
+		if (cols[i] < i) {
+			need_copy = true;
+			break;
+		}
+	}
+	if (need_copy) {
+		mat c = X;
+		for (int i = 0; i < cols.size(); ++i) {
+			X.col(i) = c.col(cols[i]);
+		}
+	} else {
+		for (int i = 0; i < cols.size(); ++i) {
+			X.col(i) = X.col(cols[i]);
+		}
+	}
+}
+
+void pick_rows(mat_view X, const vector<int> &rows) {
+	assert(X.rows() >= rows.size());
+	bool need_copy = false;
+	for (int i = 0; i < rows.size(); ++i) {
+		if (rows[i] < i) {
+			need_copy = true;
+			break;
+		}
+	}
+	if (need_copy) {
+		mat c = X;
+		for (int i = 0; i < rows.size(); ++i) {
+			X.row(i) = c.row(rows[i]);
+		}
+	} else {
+		for (int i = 0; i < rows.size(); ++i) {
+			X.row(i) = X.row(rows[i]);
+		}
+	}
 }

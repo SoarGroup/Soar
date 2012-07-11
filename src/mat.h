@@ -159,4 +159,22 @@ std::ostream& output_mat(std::ostream &os, const const_mat_view m);
 
 bool is_normal(const_mat_view m);
 
+/*
+ Return indices of columns that have significantly different values,
+ meaning the maximum absolute value of the column is greater than
+ SAME_THRESH times the minimum absolute value.
+*
+void get_nonstatic_cols(const_mat_view X, int ncols, std::vector<int> &nonstatic_cols);
+
+/*
+ Remove the static columns from the first 'cols' columns of X. This
+ will not resize the matrix.
+*/
+void del_static_cols(mat_view X, int cols, std::vector<int> &nonstatic);
+
+void pick_cols(const_mat_view X, const std::vector<int> &cols, mat &result);
+void pick_rows(const_mat_view X, const std::vector<int> &rows, mat &result);
+void pick_cols(mat_view X, const std::vector<int> &cols);
+void pick_cols(mat_view X, const std::vector<int> &rows);
+
 #endif

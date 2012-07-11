@@ -7,28 +7,15 @@
 #include "scene.h"
 #include "filter_table.h"
 #include "lda.h"
+#include "mat.h"
 
 using namespace std;
 
-void get_nonuniform_cols(const_mat_view data, vector<int> &cols) {
-	for (int j = 0; j < data.cols(); ++j) {
-		for (int i = 1; i < data.rows(); ++i) {
-			if (data(i, j) != data(0, j)) {
-				cols.push_back(j);
-				break;
-			}
-		}
-	}
-}
-
-void clean_data(const_mat_view data, mat &cleaned, vector<int> &nonuniform_cols) {
-	get_nonuniform_cols(data, nonuniform_cols);
-	cleaned.resize(data.rows(), nonuniform_cols.size());
-	for (int i = 0; i < nonuniform_cols.size(); ++i) {
-		cleaned.col(i) = data.col(nonuniform_cols[i]);
-	}
-	mat rand_offsets = mat::Random(cleaned.rows(), cleaned.cols()) / 10000;
-	cleaned += rand_offsets;
+void clean_data(mat &data, vector<int> &nonstatic_cols) {
+	del_static_cols(data, data.cols(), nonstatic_cols);
+	data.conservativeResize(data.rows(), nonstatic_cols.size());
+	mat rand_offsets = mat::Random(data.rows(), data.cols()) / 10000;
+	data += rand_offsets;
 }
 
 int largest_class(const vector<int> &membership) {
@@ -98,11 +85,9 @@ int classifier::classify(const rvec &x) {
 	if (matched_insts.size() == 0) {
 		return -1;
 	}
-	mat Xm(matched_insts.size(), X.cols());
 	vector<category> c(matched_insts.size());
 	bool uniform = true;
 	for (int i = 0; i < matched_insts.size(); ++i) {
-		Xm.row(i) = X.row(matched_insts[i]);
 		c[i] = insts[matched_insts[i]].cat;
 		if (c[i] != c[0]) {
 			uniform = false;
@@ -113,25 +98,27 @@ int classifier::classify(const rvec &x) {
 		return c[0];
 	}
 	
-	mat cleaned;
-	vector<int> nonuniform_cols;
-	clean_data(Xm, cleaned, nonuniform_cols);
+	mat Xm;
+	vector<int> nonstatic_cols;
+	pick_rows(X.get(), matched_insts, Xm);
+	clean_data(Xm, nonstatic_cols);
 	
-	if (c.size() > 0 && cleaned.cols() == 0) {
+	if (c.size() > 0 && Xm.cols() == 0) {
 		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
 		return largest_class(c);
 	}
 	
-	LDA_NN_Classifier lda(cleaned, c);
+	LDA_NN_Classifier lda(Xm, c);
 	
 	int result;
-	if (nonuniform_cols.size() != x.size()) {
-		rvec x1(nonuniform_cols.size());
-		for (int i = 0; i < nonuniform_cols.size(); ++i) {
-			x1(i) = x(nonuniform_cols[i]);
+	if (nonstatic_cols.size() < x.size()) {
+		rvec x1(nonstatic_cols.size());
+		for (int i = 0; i < nonstatic_cols.size(); ++i) {
+			x1(i) = x(nonstatic_cols[i]);
 		}
 		result = lda.classify(x1);
 	} else {
+		assert(nonstatic_cols.size() == x.size());
 		result = lda.classify(x);
 	}
 	

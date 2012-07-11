@@ -16,30 +16,6 @@ void pca(const_mat_view X, mat &comps) {
 	comps = svd.matrixV();
 }
 
-void find_nonstatic_cols(const_mat_view X, int ncols, vector<int> &nonstatic_cols) {
-	for (int i = 0; i < ncols; ++i) {
-		cvec c = X.col(i).array().abs();
-		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
-			nonstatic_cols.push_back(i);
-		}
-	}
-}
-
-/*
- Output a matrix composed only of those columns in the input matrix with
- significantly different values, meaning the maximum absolute value of
- the column is greater than SAME_THRESH times the minimum absolute value.
-*/
-void remove_static(mat &X, int ncols, vector<int> &nonstatic_cols) {
-	find_nonstatic_cols(X, ncols, nonstatic_cols);
-	for (int i = 0; i < nonstatic_cols.size(); ++i) {
-		assert(nonstatic_cols[i] >= i);
-		if (nonstatic_cols[i] > i) {
-			X.col(i) = X.col(nonstatic_cols[i]);
-		}
-	}
-}
-
 bool solve(const_mat_view X, const_mat_view Y, mat &C) {
 	C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
 	return is_normal(C);
@@ -66,7 +42,7 @@ bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec 
 		}
 	}
 
-	remove_static(X1, X.cols(), nonstatic);
+	del_static_cols(X1, X.cols(), nonstatic);
 	X1.conservativeResize(X.rows(), nonstatic.size() + 1);
 	X1.rightCols(1).setConstant(1.0);
 	
