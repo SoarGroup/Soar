@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import argparse, glob, os, random, shutil, subprocess, sys, time
+import argparse, glob, os, random, shutil, subprocess, sys, thread, time
 import pp
 
 g_dir = 'experiment'
@@ -49,7 +49,7 @@ if len(seeds) != args.runs:
   for seed in seeds:
     f.write(str(seed) + '\n')
   f.close()
-print seeds
+print str(seeds) + '\n'
 
 
 class Experiment:
@@ -60,6 +60,7 @@ class Experiment:
     self.rl_rules_out = rl_rules_out
     self.output = output
     
+    self.ep_tuple = ep_tuple
     self.div_x = ep_tuple[0]
     self.div_y = ep_tuple[1]
     self.sp_episode = ep_tuple[2]
@@ -85,8 +86,9 @@ class Experiment:
   def run(self):
     args = self.get_args()
     f = open(self.output, 'w')
-    subprocess.call(args, stdout=f)
+    subprocess.call(args, stderr=subprocess.PIPE, stdout=f)
     f.close()
+    return self
 
 
 dirs = []
@@ -118,15 +120,46 @@ for ep_tuple in g_ep_tuples:
     experiments.append(experiment)
 
 
+class Progress:
+  def __init__(self, experiments):
+    self.lock = thread.allocate_lock()
+    
+    self.count = {}
+    self.finished = {}
+    for experiment in experiments:
+      try:
+        self.count[experiment.ep_tuple] += 1
+      except KeyError:
+        self.count[experiment.ep_tuple] = 1
+      self.finished[experiment.ep_tuple] = 0
+
+  def just_finished(self, experiment):
+    self.lock.acquire()
+    self.finished[experiment.ep_tuple] += 1
+    self.lock.release()
+
+  def all_finished(self, ep_tuple):
+    self.lock.acquire()
+    num = self.count[ep_tuple]
+    fin = self.finished[ep_tuple]
+    self.lock.release()
+    return fin is num
+
 job_server = pp.Server(args.jobs)
+progress = Progress(experiments)
 start_time = time.time()
-jobs = [(job_server.submit(Experiment.run, (experiment,), (), ('subprocess',))) for experiment in experiments]
-for job in jobs:
-  job()
-print '\nTime elapsed: ', time.time() - start_time, 'seconds\n'
-job_server.print_stats()
+jobs = [(job_server.submit(Experiment.run, (experiment,), (), ('subprocess', 'thread',), callback=progress.just_finished, group=experiment.ep_tuple)) for experiment in experiments]
 
-
-for dir in dirs:
+for ep_tuple, dir in zip(g_ep_tuples, dirs):
+  while True:
+    job_server.print_stats()
+    if progress.all_finished(ep_tuple):
+      break
+    else:
+      time.sleep(5)
+  job_server.wait(ep_tuple)
   args = [g_plotter] + glob.glob(dir + '/*.out')
-  subprocess.call(args)
+  print 'Plotting data for ' + str(ep_tuple) + '\n'
+  subprocess.call(args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+
+print 'Total time elapsed: ', time.time() - start_time, 'seconds'
