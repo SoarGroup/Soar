@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <sstream>
 
 #include <osg/Node>
 #include <osg/Group>
@@ -29,41 +30,58 @@ const double AXIS_RADIUS = 0.005;
 const double AXIS_LEN = 1.0;
 const double GRIDSIZE = 10;
 
+bool parse_ints(const string &line, vector<int> &n) {
+	istringstream ss(line);
+	string f;
+	char *end;
+	while (ss >> f) {
+		int x = strtol(f.c_str(), &end, 10);
+		if (*end != '\0') {
+			return false;
+		}
+		n.push_back(x);
+	}
+	return true;
+}
+
 /*
  Execute qhull to calculate the convex hull of pts.
 */
 int qhull(const vector<Vec3> &pts, vector<vector<int> > &facets) {
-	char *end;
+	vector<int> nums;
+	string qhull_out = "/tmp/qhull";
+	string qhull_cmd = "qhull i >" + qhull_out;
 	
-	FILE *p = popen("qhull i >/tmp/qhull", "w");
+	FILE *p = popen(qhull_cmd.c_str(), "w");
+	if (!p) {
+		perror("qhull");
+		exit(1);
+	}
 	fprintf(p, "3\n%ld\n", pts.size());
 	for (int i = 0; i < pts.size(); ++i) {
 		fprintf(p, "%f %f %f\n", pts[i][0], pts[i][1], pts[i][2]);
 	}
 	int ret = pclose(p);
 	if (ret != 0) {
-		return ret;
+		cerr << "qhull returned with non-zero status (" << ret << ")" << endl;
+		exit(1);
 	}
 	
 	ifstream output("/tmp/qhull");
 	string line;
-	getline(output, line);
-	int nfacets = strtol(line.c_str(), &end, 10);
-	if (*end != '\0') {
-		return 1;
+	if (!getline(output, line) || !parse_ints(line, nums) || nums.size() != 1) {
+		cerr << "unexpected qhull output, check " << qhull_out << endl;
+		exit(1);
 	}
+	int nfacets = nums[0];
+
 	while (getline(output, line)) {
-		const char *start = line.c_str();
-		vector<int> facet;
-		while (true) {
-			int x = strtol(start, &end, 10);
-			if (end == start) {
-				break;
-			}
-			facet.push_back(x);
-			start = end;
+		nums.clear();
+		if (!parse_ints(line, nums)) {
+			cerr << "unexpected qhull output, check " << qhull_out << endl;
+			exit(1);
 		}
-		facets.push_back(facet);
+		facets.push_back(nums);
 	}
 	assert (facets.size() == nfacets);
 	return 0;
