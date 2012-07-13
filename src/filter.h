@@ -125,23 +125,52 @@ inline bool get_filter_val (const filter_val *fv, T &v) {
 }
 
 /*
- Specialization for floats to allow getting int values as well
+ Specialization for floats to allow getting floats, doubles, and ints
 */
 template <>
 inline bool get_filter_val<float>(const filter_val *fv, float &v) {
+	const filter_val_c<double> *dfv;
 	const filter_val_c<float> *ffv;
 	const filter_val_c<int> *ifv;
 	
-	if (!(ffv = dynamic_cast<const filter_val_c<float>*>(fv))) {
-		if (!(ifv = dynamic_cast<const filter_val_c<int>*>(fv))) {
-			return false;
-		} else {
-			v = ifv->get_value();
-		}
-	} else {
-		v = ffv->get_value();
+	if (dfv = dynamic_cast<const filter_val_c<double>*>(fv)) {
+		v = dfv->get_value();
+		return true;
 	}
-	return true;
+	if (ffv = dynamic_cast<const filter_val_c<float>*>(fv)) {
+		v = ffv->get_value();
+		return true;
+	}
+	
+	if (ifv = dynamic_cast<const filter_val_c<int>*>(fv)) {
+		v = ifv->get_value();
+		return true;
+	}
+	
+	return false;
+}
+
+template <>
+inline bool get_filter_val<double>(const filter_val *fv, double &v) {
+	const filter_val_c<double> *dfv;
+	const filter_val_c<float> *ffv;
+	const filter_val_c<int> *ifv;
+	
+	if (dfv = dynamic_cast<const filter_val_c<double>*>(fv)) {
+		v = dfv->get_value();
+		return true;
+	}
+	if (ffv = dynamic_cast<const filter_val_c<float>*>(fv)) {
+		v = ffv->get_value();
+		return true;
+	}
+	
+	if (ifv = dynamic_cast<const filter_val_c<int>*>(fv)) {
+		v = ifv->get_value();
+		return true;
+	}
+	
+	return false;
 }
 
 template <class T>
