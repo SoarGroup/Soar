@@ -322,3 +322,8 @@ void ball_node::update_shape() {
 	bb.include(t(vec3( radius, radius, radius)));
 	set_bounds(bb);
 }
+
+void ball_node::set_radius(double r) {
+	radius = r;
+	set_shape_dirty();
+}

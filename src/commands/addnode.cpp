@@ -6,27 +6,27 @@
 
 using namespace std;
 
-class generate_command : public command {
+class add_node_command : public command, public sgnode_listener {
 public:
-	generate_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), scn(state->get_scene()), gen_filter(NULL)
+	add_node_command(svs_state *state, Symbol *root)
+	: command(state, root), root(root), scn(state->get_scene()), node_filter(NULL), parent(NULL)
 	{
 		si = state->get_svs()->get_soar_interface();
 	}
 	
-	~generate_command() {
+	~add_node_command() {
 		reset();
 	}
 	
 	string description() {
-		return string("generate");
+		return string("add-node");
 	}
 	
 	bool update_sub() {
 		wme *parent_wme, *gen_wme;
-		sgnode *gen_node;
+		bool c = changed();
 		
-		if (changed()) {
+		if (!parent || c) {
 			reset();
 			if (!si->find_child_wme(root, "parent", parent_wme) ||
 			    !si->find_child_wme(root, "node", gen_wme))
@@ -34,16 +34,30 @@ public:
 				set_status("missing parameters");
 				return false;
 			}
-			if (!si->get_val(si->get_wme_val(parent_wme), parent)) {
+			
+			string pname;
+			if (!si->get_val(si->get_wme_val(parent_wme), pname)) {
 				set_status("parent name must be a string");
 				return false;
 			}
-			if ((gen_filter = parse_filter_spec(si, si->get_wme_val(gen_wme), scn)) == NULL) {
-				set_status("incorrect gen filter syntax");
+			if (!parent || parent->get_name() != pname) {
+				if (parent) {
+					parent->unlisten(this);
+				}
+				
+				if (!(parent = scn->get_node(pname))) {
+					set_status("parent node doesn't exist");
+					return false;
+				}
+				parent->listen(this);
+			}
+			
+			if ((node_filter = parse_filter_spec(si, si->get_wme_val(gen_wme), scn)) == NULL) {
+				set_status("incorrect node filter syntax");
 				return false;
 			}
 		}
-		if (gen_filter) {
+		if (node_filter) {
 			if (!proc_changes()) {
 				return false;
 			}
@@ -54,16 +68,22 @@ public:
 	}
 	
 	bool early() { return false; }
+	
+	void node_update(sgnode *n, sgnode::change_type t, int added_child) {
+		if (t == sgnode::DELETED) {
+			parent = NULL;
+		}
+	}
 
 private:
 	bool proc_changes() {
 		filter_result *res;
 		
-		if (!gen_filter->update()) {
-			set_status(gen_filter->get_error());
+		if (!node_filter->update()) {
+			set_status(node_filter->get_error());
 			return false;
 		}
-		res = gen_filter->get_result();
+		res = node_filter->get_result();
 		for (int i = res->first_added(); i < res->num_current(); ++i) {
 			if (!add_node(res->get_current(i))) {
 				return false;
@@ -85,12 +105,11 @@ private:
 			set_status("filter result must be a node");
 			return false;
 		}
-		if (!scn->add_node(parent, n)) {
+		if (!scn->add_node(parent->get_name(), n)) {
 			ss << "error adding node " << n->get_name() << " to scene";
 			set_status(ss.str());
 			return false;
 		}
-		nodes.push_back(n->get_name());
 		return true;
 	}
 	
@@ -106,30 +125,28 @@ private:
 			set_status(ss.str());
 			return false;
 		}
-		nodes.erase(find(nodes.begin(), nodes.end(), n->get_name()));
 		return true;
 	}
 	
 	void reset() {
-		std::list<string>::iterator i;
-		if (gen_filter) {
-			delete gen_filter;
+		if (parent) {
+			parent->unlisten(this);
 		}
+		parent = NULL;
 		
-		for (i = nodes.begin(); i != nodes.end(); ++i) {
-			scn->del_node(*i);
+		if (node_filter) {
+			delete node_filter;
+			node_filter = NULL;
 		}
 	}
 	
 	scene             *scn;
 	Symbol            *root;
 	soar_interface    *si;
-	string             parent;
-	
-	filter            *gen_filter;
-	std::list<string>  nodes;
+	sgnode            *parent;
+	filter            *node_filter;
 };
 
-command *_make_generate_command_(svs_state *state, Symbol *root) {
-	return new generate_command(state, root);
+command *_make_add_node_command_(svs_state *state, Symbol *root) {
+	return new add_node_command(state, root);
 }
