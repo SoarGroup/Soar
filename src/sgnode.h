@@ -154,6 +154,8 @@ public:
 		return radius;
 	}
 	
+	void set_radius(double r);
+	
 private:
 	void update_shape();
 	sgnode *clone_sub() const;
