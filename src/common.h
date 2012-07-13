@@ -42,6 +42,24 @@ inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {
 }
 
 template <typename A, typename B>
+inline const B *map_get(const std::map<A, B> &m, const A &key) {
+	typename std::map<A, B>::const_iterator i = m.find(key);
+	if (i == m.end()) {
+		return NULL;
+	}
+	return &i->second;
+}
+
+template <typename A, typename B>
+inline B *map_get(std::map<A, B> &m, const A &key) {
+	typename std::map<A, B>::iterator i = m.find(key);
+	if (i == m.end()) {
+		return NULL;
+	}
+	return &i->second;
+}
+
+template <typename A, typename B>
 inline bool map_pop(std::map<A, B> &m, const A &key, B &val) {
 	typename std::map<A, B>::iterator i = m.find(key);
 	if (i == m.end()) {

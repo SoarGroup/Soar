@@ -60,7 +60,8 @@ public:
 	void listen(sgnode_listener *o);
 	void unlisten(sgnode_listener *o);
 	const bbox &get_bounds() const;
-	const vec3 &get_centroid() const;
+	vec3 get_centroid() const;
+	vec3 get_world_centroid() const;
 
 	virtual void get_shape_sgel(std::string &s) const = 0;
 	virtual void walk(std::vector<sgnode*> &result) = 0;

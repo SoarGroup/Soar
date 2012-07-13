@@ -19,8 +19,10 @@ public:
 			return false;
 		}
 		
-		newres = (a->get_centroid() - b->get_centroid()).norm();
-		changed = (newres != res);
+		newres = (a->get_world_centroid() - b->get_world_centroid()).norm();
+		if (changed = (newres != res)) {
+			res = newres;
+		}
 		return true;
 	}
 };
