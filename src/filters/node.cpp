@@ -25,15 +25,15 @@ public:
 	
 	bool compute(const filter_param_set *params, bool adding, const sgnode *&res, bool &changed) {
 		sgnode *newres;
-		string name;
+		string id;
 		
-		if (!get_filter_param(this, params, "name", name)) {
-			set_error("expecting parameter name");
+		if (!get_filter_param(this, params, "id", id)) {
+			set_error("expecting parameter id");
 			return false;
 		}
-		if ((newres = scn->get_node(name)) == NULL) {
+		if ((newres = scn->get_node(id)) == NULL) {
 			stringstream ss;
-			ss << "no node called \"" << name << "\"";
+			ss << "no node with id \"" << id << "\"";
 			set_error(ss.str());
 			return false;
 		}
@@ -330,10 +330,8 @@ filter* _make_gen_node_filter_(scene *scn, filter_input *input) {
 filter_table_entry node_fill_entry() {
 	filter_table_entry e;
 	e.name = "node";
-	e.parameters.push_back("name");
+	e.parameters.push_back("id");
 	e.create = &make_node_filter;
-	e.calc = NULL;
-	e.possible_args = NULL;
 	return e;
 }
 
@@ -341,18 +339,14 @@ filter_table_entry all_nodes_fill_entry() {
 	filter_table_entry e;
 	e.name = "all_nodes";
 	e.create = &make_all_nodes_filter;
-	e.calc = NULL;
-	e.possible_args = NULL;
 	return e;
 }
 
 filter_table_entry node_centroid_fill_entry() {
 	filter_table_entry e;
 	e.name = "node_centroid";
-	e.parameters.push_back("name");
+	e.parameters.push_back("node");
 	e.create = &make_node_centroid_filter;
-	e.calc = NULL;
-	e.possible_args = NULL;
 	return e;
 }
 

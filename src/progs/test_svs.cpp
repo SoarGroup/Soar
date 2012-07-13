@@ -178,7 +178,7 @@ bool parse_filter(const vector<string> &fields, stringstream &ss) {
 				ss << v.substr(2) << " ";
 			} else {  // it's a node
 				ss << "<a" << var_count << "> ";
-				rest << "(<a" << var_count++ << "> ^type node ^name " << v << ") ";
+				rest << "(<a" << var_count++ << "> ^type node ^id " << v << ") ";
 			}
 		}
 	}
