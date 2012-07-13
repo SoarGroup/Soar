@@ -556,8 +556,8 @@ public:
 		for (int i = 0; i < input->num_removed(); ++i) {
 			io_map_t::iterator r = io_map.find(input->get_removed(i));
 			assert(r != io_map.end());
-			result_removed(r->second);
 			remove_result(r->second);
+			result_removed(r->second);
 			io_map.erase(r);
 		}
 		for (int i = 0; i < input->num_changed(); ++i) {

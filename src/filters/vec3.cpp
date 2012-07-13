@@ -24,22 +24,9 @@ filter *_make_vec3_filter_(scene *scn, filter_input *input) {
 	return new vec3_filter(input);
 }
 
-class origin_filter : public filter {
-public:
-	origin_filter() : added(false) {}
-	
-	bool update_results() {
-		if (!added) {
-			add_result(new filter_val_c<vec3>(vec3()), NULL);
-			added = true;
-		}
-		return true;
-	}
-	
-private:
-	bool added;
-};
-
-filter *_make_origin_filter_(scene *scn, filter_input *input) {
-	return new origin_filter();
+filter_table_entry vec3_fill_entry() {
+	filter_table_entry e;
+	e.name = "vec3";
+	e.create = &_make_vec3_filter_;
+	return e;
 }
