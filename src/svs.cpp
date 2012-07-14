@@ -70,7 +70,6 @@ void sgwme::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 }
 
 void sgwme::add_child(sgnode *c) {
-	sym_wme_pair cid_wme;
 	char letter;
 	string cname = c->get_name();
 	sgwme *child;
@@ -80,10 +79,10 @@ void sgwme::add_child(sgnode *c) {
 	} else {
 		letter = cname[0];
 	}
-	cid_wme = soarint->make_id_wme(id, "child");
+	wme *cid_wme = soarint->make_id_wme(id, "child");
 	
-	child = new sgwme(soarint, cid_wme.first, this, c);
-	childs[child] = cid_wme.second;
+	child = new sgwme(soarint, soarint->get_wme_val(cid_wme), this, c);
+	childs[child] = cid_wme;
 }
 
 svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *syms)
@@ -122,13 +121,13 @@ void svs_state::init() {
 	string name;
 	
 	si->get_name(state, name);
-	svs_link = si->make_id_wme(state, cs->svs).first;
-	cmd_link = si->make_id_wme(svs_link, cs->cmd).first;
-	scene_link = si->make_id_wme(svs_link, cs->scene).first;
+	svs_link = si->get_wme_val(si->make_id_wme(state, cs->svs));
+	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs->cmd));
+	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	if (!parent) {
-		ltm_link = si->make_id_wme(svs_link, cs->ltm).first;
+		ltm_link = si->get_wme_val(si->make_id_wme(svs_link, cs->ltm));
 	}
 	mmdl = new multi_model();
 }

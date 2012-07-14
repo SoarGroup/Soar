@@ -18,21 +18,17 @@ soar_interface::~soar_interface() {
 }
 
 
-sym_wme_pair soar_interface::make_id_wme(Symbol *id, const string &attr) {
-	sym_wme_pair p;
+wme *soar_interface::make_id_wme(Symbol *id, const string &attr) {
 	Symbol *attrsym = make_sym_constant(agnt, attr.c_str());
 	Symbol *valsym = make_new_identifier(agnt, attr[0], id->id.level);
 	wme* w = soar_module::add_module_wme(agnt, id, attrsym, valsym);
 	symbol_remove_ref(agnt, attrsym);
 	symbol_remove_ref(agnt, valsym);
-	p.first = valsym;
-	p.second = w;
-	return p;
+	return w;
 }
 
-sym_wme_pair soar_interface::make_id_wme(Symbol *id, Symbol *attr) {
+wme *soar_interface::make_id_wme(Symbol *id, Symbol *attr) {
 	char n;
-	sym_wme_pair p;
 	Symbol *val;
 	
 	if (attr->common.symbol_type != SYM_CONSTANT_SYMBOL_TYPE || 
@@ -46,9 +42,7 @@ sym_wme_pair soar_interface::make_id_wme(Symbol *id, Symbol *attr) {
 	val = make_new_identifier(agnt, n, id->id.level);
 	wme* w = soar_module::add_module_wme(agnt, id, attr, val);
 	symbol_remove_ref(agnt, val);
-	p.first = val;
-	p.second = w;
-	return p;
+	return w;
 }
 
 void soar_interface::remove_wme(wme *w) {
@@ -111,3 +105,18 @@ void soar_interface::read_list(Symbol *id, vector<string> &words) {
 		}
 	}
 }
+
+wme *soar_interface::make_wme(Symbol *id, Symbol *attr, Symbol *val) {
+	wme* w = soar_module::add_module_wme(agnt, id, attr, val);
+	symbol_remove_ref(agnt, val);
+	return w;
+}
+
+wme *soar_interface::make_wme(Symbol *id, const std::string &attr, Symbol *val) {
+	wme* w;
+	Symbol *attrsym = make_sym(attr);
+	w = make_wme(id, attrsym, val);
+	symbol_remove_ref(agnt, attrsym);
+	return w;
+}
+

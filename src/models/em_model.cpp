@@ -16,8 +16,8 @@ public:
 	EM_model(soar_interface *si, Symbol *root, scene *scn, const string &name)
 	: model(name, "em"), si(si), root(root), revisions(0)
 	{
-		result_id = si->make_id_wme(root, "result").first;
-		tests_id = si->make_id_wme(result_id, "tests").first;
+		result_id = si->get_wme_val(si->make_id_wme(root, "result"));
+		tests_id = si->get_wme_val(si->make_id_wme(result_id, "tests"));
 		revisions_wme = si->make_wme(result_id, "revisions", revisions);
 		em = new EM(scn);
 		
@@ -90,11 +90,12 @@ public:
 		vector<string> &params = pred_params[pred];
 		assert(params.size() == parts.size() - 1);
 		
-		sym_wme_pair p = si->make_id_wme(tests_id, pred);
+		wme *w = si->make_id_wme(tests_id, pred);
+		Symbol *id = si->get_wme_val(w);
 		for (int j = 0; j < params.size(); ++j) {
-			si->make_wme(p.first, params[j], parts[j + 1]);
+			si->make_wme(id, params[j], parts[j + 1]);
 		}
-		atom_wmes[i] = p.second;
+		atom_wmes[i] = w;
 	}
 	
 	void save(ostream &os) const {

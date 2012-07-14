@@ -52,11 +52,6 @@ ofstream& get_datavis() {
 	return f;
 }
 
-//ostream &operator<<(ostream &os, const floatvec &v) {
-//	copy(v.mem, v.mem + v.sz, ostream_iterator<float>(os, " "));
-//	return os;
-//}
-
 ostream &operator<<(ostream &os, const namedvec &v) {
 	string name;
 	for (int i = 0; i < v.size(); ++i) {

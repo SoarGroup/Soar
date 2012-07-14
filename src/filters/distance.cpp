@@ -34,10 +34,6 @@ filter *make_distance_filter(scene *scn, filter_input *input) {
 filter_table_entry distance_fill_entry() {
 	filter_table_entry e;
 	e.name = "distance";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
 	e.create = &make_distance_filter;
-	e.calc = NULL;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
