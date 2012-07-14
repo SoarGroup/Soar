@@ -184,6 +184,14 @@ inline bool set_filter_val (filter_val *fv, const T &v) {
 	return true;
 }
 
+template<class T>
+class ctlist_listener {
+public:
+	virtual void handle_ctlist_add(const T *e) {}
+	virtual void handle_ctlist_remove(const T *e) {}
+	virtual void handle_ctlist_change(const T *e) {}
+};
+
 /*
  A list that keeps track of changes made to it, so that users can respond
  to only the things that changed. Both the filter result list and filter
@@ -205,6 +213,9 @@ public:
 	
 	void add(T* v) {
 		current.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_add(v);
+		}
 	}
 	
 	void remove(T* v) {
@@ -232,10 +243,16 @@ public:
 			}
 		}
 		removed.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_remove(v);
+		}
 	}
 	
 	void change(T *v) {
 		changed.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_change(v);
+		}
 	}
 	
 	void clear_changes() {
@@ -301,6 +318,18 @@ public:
 		return m_added_begin;
 	}
 	
+	void listen(ctlist_listener<T> *l) {
+		listeners.push_back(l);
+	}
+	
+	void unlisten(ctlist_listener<T> *l) {
+		typename std::vector<ctlist_listener<T>*>::iterator i;
+		i = std::find(listeners.begin(), listeners.end(), l);
+		if (i != listeners.end()) {
+			listeners.erase(i);
+		}
+	}
+	
 private:
 	void clear_removed() {
 		for (int i = 0; i < removed.size(); ++i) {
@@ -315,6 +344,8 @@ private:
 	
 	// Index of the first new element in the current list
 	int m_added_begin;
+	
+	std::vector<ctlist_listener<T>*> listeners;
 };
 
 class filter;
@@ -361,6 +392,8 @@ public:
 private:
 	input_table input_info;
 };
+
+typedef ctlist_listener<filter_param_set> filter_input_listener;
 
 class null_filter_input : public filter_input {
 public:
@@ -483,6 +516,14 @@ public:
 	
 	const filter_input *get_input() const {
 		return input;
+	}
+	
+	void listen_for_input(filter_input_listener *l) {
+		input->listen(l);
+	}
+	
+	void unlisten_for_input(filter_input_listener *l) {
+		input->unlisten(l);
 	}
 
 private:

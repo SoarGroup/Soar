@@ -55,6 +55,7 @@ public:
 	template<class T>
 	bool         get_const_attr(Symbol *id, const std::string &attr, T &val);
 	
+	Symbol      *get_wme_id(wme *w);
 	Symbol      *get_wme_attr(wme *w);
 	Symbol      *get_wme_val(wme *w);
 
@@ -172,6 +173,10 @@ inline bool soar_interface::get_val(Symbol *sym, double &v) {
 		return true;
 	}
 	return false;
+}
+
+inline Symbol *soar_interface::get_wme_id(wme *w) {
+	return w->id;
 }
 
 inline Symbol *soar_interface::get_wme_attr(wme *w) {
