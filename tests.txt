@@ -38,14 +38,22 @@
 #
 # Test specifications have the following syntax:
 #
-# [pos|neg] <filter name> <param name> <value> <param name> <value> ...
+# want <value test> <param test> <filter name> <arg name> <arg value> ...
 #
-# [pos|neg] specifies the expected outcome of the filter. <value> is either: A
-# node name, a numeric or string constant, or a recursive filter specification.
-# Constants have to begin with "c:" so that they can be distinguished from node
-# names. Recursive filters are surrounded by parentheses, as in 
+# <value test> specifies the expected outcome of the filter. <param test>
+# specifies the expected parameter set chosen by the filter, for use with
+# many-to-one filters such as "closest". It should have the form
 #
-#   "(<filter name> <param name> <value> ...)"
+#   (<arg name> <arg value> ...)
+#
+# The parentheses are required. Either test can be "*" for don't care.
+#
+# <arg value> is either: A node name, a numeric or string constant, or a
+# recursive filter specification.  Constants have to begin with "c:" so that
+# they can be distinguished from node names. Recursive filters are surrounded
+# by parentheses, as in 
+#
+#   "(<filter name> <arg name> <arg value> ...)"
 #
 # This file can contain comments prepended with '#'. Long lines can be
 # continued by ending the line with a backslash (\).
@@ -59,15 +67,15 @@ a line1 world v 0 0 0 10 0 0 p -5 .5 .5
 c box2 p .5 .5 .5
 c box3 p 10 10 10
 
-pos intersect a box1 b box1
-pos intersect a box1 b box2
-neg intersect a box1 b box3
-neg intersect a box2 b box3
-pos intersect a pt1 b box1
-pos intersect a pt1 b box2
-neg intersect a pt1 b box3
-pos intersect a line1 b box1
-neg intersect a line1 b box3
+want t * intersect a box1 b box1
+want t * intersect a box1 b box2
+want f * intersect a box1 b box3
+want f * intersect a box2 b box3
+want t * intersect a pt1 b box1
+want t * intersect a pt1 b box2
+want f * intersect a pt1 b box3
+want t * intersect a line1 b box1
+want f * intersect a line1 b box3
 
 test
 
@@ -75,15 +83,15 @@ test
 c box2 p 0 0 1
 c box3 p 0 0 2
 
-pos on-top top box2 bottom box1
-neg on-top top box1 bottom box2
-pos on-top top box3 bottom box2
-neg on-top top box2 bottom box2
-neg on-top top box3 bottom box1
-pos above a box2 b box1
-neg above a box1 b box2
-pos above a box3 b box1
-pos above a box3 b box2
+want t * on-top top box2 bottom box1
+want f * on-top top box1 bottom box2
+want t * on-top top box3 bottom box2
+want f * on-top top box2 bottom box2
+want f * on-top top box3 bottom box1
+want t * above a box2 b box1
+want f * above a box1 b box2
+want t * above a box3 b box1
+want t * above a box3 b box2
 
 test
 
@@ -93,10 +101,20 @@ a ball1 world b 1
 a ball2 world b 2 p -1 -1 -1
 a ball3 world b 2 p 2.2 2.2 2.2
 
-pos intersect a ball1 b box1
-pos intersect a ball2 b box1
-neg intersect a ball3 b box1
+want t * intersect a ball1 b box1
+want t * intersect a ball2 b box1
+want f * intersect a ball3 b box1
 
-pos compare a c:0.1 b c:1   compare c:lt
-neg compare a c:-.1 b c:2.0 compare c:gt
-pos compare a c:3   b c:3.0 compare c:eq
+want t * compare a c:0.1 b c:1   compare c:lt
+want f * compare a c:-.1 b c:2.0 compare c:gt
+want t * compare a c:3   b c:3.0 compare c:eq
+
+
+# test closest
+init
+a b1 world
+a b2 world p 1.5 0 0
+a b3 world p 2 0 0
+
+want * (a b1 b b2) closest a b1 b (combine n1 b2 n2 b3)
+want * (a b2 b b3) closest a b2 b (combine n1 b1 n2 b3)
