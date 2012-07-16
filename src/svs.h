@@ -148,7 +148,12 @@ public:
 
 	soar_interface *get_soar_interface() { return si; }
 	
-	bool do_cli_command(const std::vector<std::string> &args, std::string &output) const;
+	bool do_cli_command(const std::vector<std::string> &args, std::string &output) {
+		std::stringstream ss;
+		bool success = do_command(args, ss);
+		output = ss.str();
+		return success;
+	}
 	
 	drawer *get_drawer() { return &draw; }
 	const output_spec *get_output_spec() { return &outspec; }
@@ -158,6 +163,7 @@ private:
 	void del_common_syms();
 	void proc_input(svs_state *s);
 	int  parse_output_spec(const std::string &s);
+	bool do_command(const std::vector<std::string> &args, std::stringstream &out);
 
 	soar_interface*           si;
 	common_syms               cs;
@@ -166,6 +172,7 @@ private:
 	std::string               env_output;
 	drawer                    draw;
 	output_spec               outspec;
+	bool                      learn_models;
 	
 	enum Timers { INPUT_T, OUTPUT_T };
 	
