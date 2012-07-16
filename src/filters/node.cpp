@@ -85,6 +85,9 @@ public:
 				mark_stale(*i);
 			}
 			info->changed = true;
+			if (t == sgnode::DELETED) {
+				nodes.erase(n);
+			}
 		}
 	}
 
