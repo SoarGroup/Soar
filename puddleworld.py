@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, re
+import hashlib, os, re
 import pylab
 from matplotlib import rc
 from pylab import arange,pi,sin,cos,sqrt
@@ -62,6 +62,17 @@ class CommaFormatter(ScalarFormatter):
     s = len(arg) - 3
     return self.recurse(arg[:s]) + ',' + arg[s:]
 
+class Handle:
+  def __init__(self, f, filename, seed):
+    self.f = f
+    self.filename = filename
+    self.seed = seed
+
+class Handles:
+  def __init__(self):
+    self.handles = []
+    self.smith = {}
+
 def main():
   if len(sys.argv) == 1:
     f = open('puddleworld-rl.soar', 'r')
@@ -105,48 +116,64 @@ def main():
       if not line or line == '':
         break
       else:
-        smith.append(int(line.split(' ', 4)[3]))
+        smith.append(float(line.split(' ', 6)[5]))
     f.close()
     
     directory=''
     title='Puddle World (seed ' + str(seed) + ')'
   else:
-    files = []
+    files = {}
     for filename in sys.argv[1:]:
       f = open(filename, 'r')
       seed = int(f.readline().split(' ', 1)[1])
-      files.append(f)
+      
+      directory=re.search('(^.*[^/]+)/+[^/]*$', filename).group(1) #filename.rsplit('/', 1)[0]
+      try:
+        files[directory].handles.append(Handle(f, filename, seed))
+      except KeyError:
+        files[directory] = Handles()
+        files[directory].handles.append(Handle(f, filename, seed))
     
-    smith = {}
-    smith['avg'] = []
-    smith['min'] = []
-    smith['max'] = []
-    smith['med'] = []
-    done = False
-    while not done:
-      vals = []
-      for f in files:
-        line = f.readline()
-        if not line or line == '':
-          done = True
-          break
-        else:
-          vals.append(int(line.split(' ', 4)[3]))
-      if not done:
-        vals = sorted(vals)
-        smith['avg'].append(sum(vals) / len(vals))
-        smith['min'].append(vals[0])
-        smith['max'].append(vals[len(vals) - 1])
-        if len(vals) % 2 == 1:
-          smith['med'].append(vals[int(len(vals) / 2)])
-        else:
-          smith['med'].append((vals[int(len(vals) / 2)] + vals[int(len(vals) / 2 + 1)]) / 2)
+    for group in files:
+      files[group].smith['avg'] = []
+      files[group].smith['min'] = []
+      files[group].smith['max'] = []
+      files[group].smith['med'] = []
+      done = False
+      while not done:
+        vals = []
+        for handle in files[group].handles:
+          line = handle.f.readline()
+          if not line or line == '':
+            done = True
+            break
+          else:
+            vals.append(float(line.split(' ', 6)[5]))
+        if not done:
+          vals = sorted(vals)
+          files[group].smith['avg'].append(sum(vals) / len(vals))
+          files[group].smith['min'].append(vals[0])
+          files[group].smith['max'].append(vals[len(vals) - 1])
+          if len(vals) % 2 == 1:
+            files[group].smith['med'].append(vals[int(len(vals) / 2)])
+          else:
+            files[group].smith['med'].append((vals[len(vals) / 2 - 1] + vals[len(vals) / 2]) / 2)
+      
+      for handle in files[group].handles:
+        handle.f.close()
     
-    for f in files:
-      f.close()
-    
-    directory=re.search('(^.*[^/]+)/+[^/]*$', sys.argv[1]).group(1) #sys.argv[1].rsplit('/', 1)[0]
-    title='Puddle World (' + directory.replace('_', '\_') + ')'
+    if len(files) == 1:
+      title='Puddle World (' + group.rsplit('/',1)[1].replace('_', '\_') + ')'
+      smith = files[group].smith
+      mode = 'single experiment evaluation'
+    else:
+      title='Puddle World (' + group.rsplit('/',1)[0].replace('_', '\_') + ')'
+      
+      smith = {}
+      for group in files:
+        smith[group.rsplit('/',1)[1].replace('_', '\_')] = files[group].smith['avg']
+      
+      mode = 'multiple experiment evaluation'
   
   fig = plt.figure()
   fig.canvas.set_window_title('Puddle World')
@@ -160,27 +187,41 @@ def main():
       i += 1
       x.append(i)
     
+    for i in range(1, len(smith)):
+      smith[i] = 0.95 * smith[i - 1] + 0.05 * smith[i];
+    
     pylab.plot(x, smith, label="Values", color='blue', linestyle='solid')
   else:
     x = []
     i = 0
-    for s in smith['avg']:
+    r = 0
+    for agent in smith:
+      r = len(smith[agent])
+    for s in range(0,r):
       i += 1
       x.append(i)
     
-    pylab.plot(x, smith['max'], label="Maximum", color='blue', linestyle='solid')
-    #pylab.plot(x, smith['med'], label="Median", color='blue', linestyle='solid')
-    pylab.plot(x, smith['min'], label="Minimum", color='blue', linestyle='solid')
-    pylab.plot(x, smith['avg'], label="Average", color='brown', linestyle='solid')
+    for a in smith:
+      for i in range(1, len(smith[a])):
+        smith[a][i] = 0.95 * smith[a][i - 1] + 0.05 * smith[a][i];
+    
+    if mode == 'single experiment evaluation':
+      pylab.plot(x, smith['max'], label="Maximum", color='green', linestyle='solid')
+      #pylab.plot(x, smith['med'], label="Median", color='brown', linestyle='solid')
+      pylab.plot(x, smith['min'], label="Minimum", color='teal', linestyle='solid')
+      pylab.plot(x, smith['avg'], label="Average", color='blue', linestyle='solid')
+    else:
+      for agent in smith:
+        pylab.plot(x, smith[agent], label=agent, linestyle='solid')
   
-  pylab.legend(loc=1, handlelength=4.2, numpoints=2)
+  pylab.legend(loc=4, handlelength=4.2, numpoints=2)
   
   pylab.grid(True)
   
   pylab.xlabel('Episode Number', fontsize=8)
   pylab.ylabel('Number of Steps', fontsize=8)
   pylab.title(title, fontsize=10)
-  pylab.ylim(ymax=2000, ymin=0)
+  pylab.ylim(ymin=-2000, ymax=0)
   
   fig.axes[0].xaxis.set_major_formatter(CommaFormatter())
   fig.axes[0].yaxis.set_major_formatter(CommaFormatter())
@@ -202,13 +243,21 @@ def main():
   else:
     splitd = directory.rsplit('/', 1)
     
+    if mode == 'single experiment evaluation':
+      filename = splitd[1]
+    else:
+      m = hashlib.md5()
+      for agent in smith:
+        m.update(agent)
+      filename = str(m.hexdigest())
+    
     if not os.path.exists(splitd[0] + '/eps'):
       os.makedirs(splitd[0] + '/eps')
-    pylab.savefig(splitd[0] + '/eps/' + splitd[1] + '.eps')
+    pylab.savefig(splitd[0] + '/eps/' + filename + '.eps')
     
     if not os.path.exists(splitd[0] + '/png'):
       os.makedirs(splitd[0] + '/png')
-    pylab.savefig(splitd[0] + '/png/' + splitd[1] + '.png', dpi=1200)
+    pylab.savefig(splitd[0] + '/png/' + filename + '.png', dpi=1200)
 
 if __name__ == "__main__":
   main()

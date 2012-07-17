@@ -13,6 +13,12 @@ g_ep_tuples.append((10, 10, -1, 0, 0))
 g_ep_tuples.append((10, 20, -1, 0, 0))
 g_ep_tuples.append((20, 10, -1, 0, 0))
 g_ep_tuples.append((20, 20, -1, 0, 0))
+g_ep_tuples.append((10, 10, 0, 20, 10))
+g_ep_tuples.append((10, 10, 0, 10, 20))
+g_ep_tuples.append((10, 10, 0, 20, 20))
+g_ep_tuples.append((10, 10, 500, 20, 10))
+g_ep_tuples.append((10, 10, 500, 10, 20))
+g_ep_tuples.append((10, 10, 500, 20, 20))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')

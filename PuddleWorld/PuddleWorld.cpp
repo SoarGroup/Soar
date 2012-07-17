@@ -384,6 +384,8 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
 
   if(init_soar)
     m_agent->InitSoar();
+  
+  m_reward_total = 0.0f;
 
   m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
   m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
@@ -467,12 +469,12 @@ void PuddleWorld::update() {
               y = 1.0f;
           }
 
+          float reward = -1.0f;
           if(x >= 0.95f && y <= 0.05f) {
             m_state->Update("terminal");
-            m_reward->Update(0.0f);
+            m_reward->Update(reward = 0.0f);
           }
           else {
-            float reward = -1.0f;
             float dist;
 
             /// (.1, .25) to (.45, .25), radius 0.1
@@ -500,10 +502,13 @@ void PuddleWorld::update() {
           m_x->Update(x);
           m_y->Update(y);
 
+          m_reward_total += reward;
+
           if(is_finished()) {
             static int episode = 0;
             std::cout << "EPISODE " << ++episode
                       << " STEP " << step
+                      << " REWARD " << m_reward_total
                       << " DIR " << (direction_name[0] == 'r' ? 1 : 0)
                       << " X " << x
                       << " Y " << y

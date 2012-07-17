@@ -62,12 +62,14 @@ private:
   Soar_Kernel m_kernel;
   Soar_Agent m_agent;
 
+  float m_reward_total;
+
   sml::StringElement * m_state;
   sml::IntElement * m_step;
   sml::FloatElement * m_reward;
   sml::FloatElement * m_x;
   sml::FloatElement * m_y;
-  
+
   int m_sp_episode;
   float m_sp_x_div;
   float m_sp_y_div;

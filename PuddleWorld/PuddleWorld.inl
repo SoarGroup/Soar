@@ -27,6 +27,7 @@ PuddleWorld::PuddleWorld(const std::string &agent_productions,
            remote ? sml::Kernel::CreateKernelInNewThread() :
            sml::Kernel::CreateKernelInCurrentThread(true)),
   m_agent(m_kernel, kernel ? "" : "PuddleWorld"),
+  m_reward_total(0.0f),
   m_state(0),
   m_step(0),
   m_reward(0),
