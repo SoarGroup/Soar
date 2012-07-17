@@ -9,18 +9,12 @@ using namespace std;
 class project_command : public command {
 public:
     project_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), state(state), a(NULL), b(NULL), res_root(NULL), first(true)
+	: command(state, root), root(root), state(state), a(NULL), b(NULL), res_root(NULL), avg({-1.0,-1.0,-1.0}), first(true)
     {
 	si = state->get_svs()->get_soar_interface();
     }
 	
     ~project_command() {
-/*
-	if (a != NULL)
-	    delete a;
-	if (b != NULL)
-	    delete b;
-*/
 	if (!fltrs.empty()) {
 	    fltrs.clear();
 	}
@@ -66,6 +60,11 @@ public:
 	    std::cout << "CANNOT FIND A OR B" << std::endl;
 	    set_status("a,b incorrect filter syntax");
 	}
+	if (avg[0] < 0 || avg[1] < 0 || avg[2] < 0)
+	{
+	    std::cout << "CANNOT FIND avg axes" << std::endl;
+	    set_status("z y z avg incorrect filter syntax");
+	}    
 	if (first)
 	{
 	    first =false;
@@ -81,16 +80,28 @@ public:
     {
 	std::list<filter*>::iterator i;
 	int axis, comp;
-	int axes[3] = {-10, -10, -10};
+	int axes[3][3] = {{-10, -10, -10},
+			  {-10, -10, -10},
+			  {-10, -10, -10}};
+
+	srand(time(NULL));
 	for (i = fltrs.begin(); i != fltrs.end(); ++i) {
 	    filter *f = (filter *) *i;
 	    axis = f->getAxis();
 	    comp = f->getComp();
 	    if (axis >= 0 && comp > -3)
 	    {
-		axes[axis] = comp;
+		if (axes[axis][2] > -10)
+		    std::cout << "ERROR TOO MANY RELATIONS" << std::endl;
+		if (axes[axis][1] > -10)
+		    axes[axis][2] = comp;
+		else if (axes[axis][0] > -10)
+		    axes[axis][1] = comp;
+		else
+		    axes[axis][0] = comp;
 	    }
 	}
+	
 	vec3 amin, amax, bmin, bmax, ac, bc;
 	ptlist pa, pb;
 	
@@ -106,26 +117,27 @@ public:
 	double pos[3];
 	for (int i = 0; i < 3; i++)
 	{
-	    //unspecified along axes or aligned
-	    if (axes[i] == -10 || axes[i] == 0)
+	    int direction;
+	    int top = 0;
+	    double dist;
+	    for (int j = 0; j < 3; j++)
 	    {
-		//as default use the b's center location
-		pos[i] = bc[i];
+		if (axes[i][j] > -10)
+		    top++;
 	    }
-	    else if (axes[i] == 1)
-	    {
-		// width of both objects + 10% positive
-		double dist = (vec_dist(bc, bmax) + vec_dist(ac, amax));
-		pos[i] = bc[i] + dist;
-	    }
-	    else if (axes[i] == -1)
-	    {
-		// width of both objects + 10% negative
-		double dist = (vec_dist(bc, bmax) + vec_dist(ac, amax));
-		pos[i] = bc[i] - dist;
-	    }
+	    if (top == 0)
+		std::cout << "No filters for AXIS " << i << std::endl;
+	    
+	    direction = axes[i][rand() % top];
+	    dist = avg[i] * (double) direction;
+	    
+	    std::cout << "Axis: " << i << std::endl;
+	    std::cout << "avg: " << avg[i] << " dist: " << dist << " arad: " << amax[i] - ac[i]
+		      << " brad: " << bmax[i] - bc[i] << std::endl;
+	    
+	    pos[i] = bc[i] + dist + 
+		(bmax[i] - bc[i] + amax[i] - ac[i]) * (double) direction;
 	}
-	
 	if (res_root == NULL) {
 	    sym_wme_pair p;
 	    p = si->make_id_wme(root, "result");
@@ -241,25 +253,54 @@ public:
     
     bool get_filter_types(soar_interface *si, Symbol *root, 
 			  std::list<string> &tlist) {
-	wme_list children;
 	wme_list::iterator i;
-	Symbol* cval;
-	string pname, ftype;
 	bool pass = false;
-		
+	wme_list children, children2;
+	wme_list::iterator j;
+	string pname, pname2, ftype;
+	Symbol* cval;
+	Symbol* cval2;
+	long intval;
+	
 	si->get_child_wmes(root, children);
 	for (i = children.begin(); i != children.end(); ++i) {
 	    if (!si->get_val(si->get_wme_attr(*i), pname)) {
 		continue;
 	    }
-	    cval = si->get_wme_val(*i);
-	    if (pname == "type") {
-		if (!si->get_val(cval, ftype)) {
-		    continue;
+	    int axis;
+	    double dval, average;
+	    if ((pname.compare("rel") == 0))
+	    {
+		cval = si->get_wme_val(*i);
+		si->get_child_wmes(cval, children2);
+		for (j = children2.begin(); j != children2.end(); ++j) {
+		    if (!si->get_val(si->get_wme_attr(*j), pname2)) {
+			continue;
+		    }
+		    cval2 = si->get_wme_val(*j);
+		    if (pname2.compare("axis") == 0) {
+			if (!si->get_val(cval2, intval)) {
+			    continue;
+			}
+			axis = (int) intval;
+		    }
+		    else if (pname2.compare("avg") == 0) {
+			if (!si->get_val(cval2, dval)) {
+			    continue;
+			}
+			average = dval;
+		    }
+		    else if (pname2.compare("type") == 0) {
+			if (!si->get_val(cval2, ftype)) {
+			    continue;
+			}
+			pass = true;
+			tlist.push_back(ftype);
+		    }
 		}
-		pass = true;
-		tlist.push_back(ftype);
+		avg[axis] = average;
 	    }
+
 	}
 	return pass;
     }
@@ -273,12 +314,13 @@ private:
     Symbol         *res_root;
     svs_state      *state;
     soar_interface *si;
-    //filter         *fltr;
+    
     std::list<filter*>   fltrs;
-    //filter_result  *res;
+    
     bool            first;
     sgnode *a;
     sgnode *b;
+    double avg[3];
     //std::map<filter_val*, wme*> res2wme;
 };
 
