@@ -22,7 +22,7 @@ public:
 	return string("extract_distance");
     }
 	
-    bool update_drv() {
+    bool update_sub() {
 	
 	if (first) {
 	    if (a != NULL || b != NULL)
@@ -53,25 +53,34 @@ public:
     
     void update_distance_result()
     {
+	
 	vec3 amin, amax, bmin, bmax, ac, bc;
 	ptlist pa, pb;
 	wme_list::iterator i;
 	double dist;
+	wme_list children;
+/*
 	a->get_world_points(pa);
 	b->get_world_points(pb);
-	wme_list children;
+	
 	bbox ba(pa), bb(pb);
 	ba.get_vals(amin, amax);
 	bb.get_vals(bmin, bmax);
 	ac = calc_centroid(pa);
 	bc = calc_centroid(pb);
+	*/
+	ac = a->get_world_centroid();
+	bc = b->get_world_centroid();
+	bbox ba = a->get_bounds();
+	bbox bb = b->get_bounds();
+	ba.get_vals(amin, amax);
+	bb.get_vals(bmin, bmax);
 	
-	/*
 	std::cout << "A: " << ac[0] << " " << ac[1] << " " << ac[2] << " " 
 		  << std::endl;
 	std::cout << "B: " << bc[0] << " " << bc[1] << " " << bc[2] << " " 
 		  << std::endl;
-	*/
+	
 	if (amax[axis] <= bmin[axis])
 	{
 	    dist = abs(amax[axis] - bmin[axis]);
@@ -91,10 +100,15 @@ public:
 	    std::cout << "ERROR bad case!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 	    dist = 0.0;
 	}
+	/*
 	if (res_root == NULL) {
 	    sym_wme_pair p;
 	    p = si->make_id_wme(root, "result");
 	    res_root = p.first;
+	}
+	*/
+	if (!res_root) {
+	    res_root = si->get_wme_val(si->make_id_wme(root, "result"));
 	}
 	si->get_child_wmes(res_root, children);
 	for (i = children.begin(); i != children.end(); ++i) {
@@ -104,6 +118,7 @@ public:
 	    si->remove_wme(*i);
 	}
 	si->make_wme(res_root, "distance", dist);//vec_dist(ac,bc));
+	
     }
     
     double vec_dist(vec3 i, vec3 j)

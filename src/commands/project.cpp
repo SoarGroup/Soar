@@ -24,7 +24,7 @@ public:
 	return string("projection");
     }
 	
-    bool update_drv() {
+    bool update_sub() {
 	
 	if (first) {
 	    if (!fltrs.empty()) {
@@ -104,7 +104,7 @@ public:
 	
 	vec3 amin, amax, bmin, bmax, ac, bc;
 	ptlist pa, pb;
-	
+	/*
 	a->get_world_points(pa);
 	b->get_world_points(pb);
 	
@@ -113,7 +113,14 @@ public:
 	bb.get_vals(bmin, bmax);
 	ac = calc_centroid(pa);
 	bc = calc_centroid(pb);
-	    
+	*/
+	ac = a->get_centroid();
+	bc = b->get_centroid();
+	bbox ba = a->get_bounds();
+	bbox bb = b->get_bounds();
+	ba.get_vals(amin, amax);
+	bb.get_vals(bmin, bmax);
+	
 	double pos[3];
 	for (int i = 0; i < 3; i++)
 	{
@@ -138,12 +145,16 @@ public:
 	    pos[i] = bc[i] + dist + 
 		(bmax[i] - bc[i] + amax[i] - ac[i]) * (double) direction;
 	}
+/*
 	if (res_root == NULL) {
 	    sym_wme_pair p;
 	    p = si->make_id_wme(root, "result");
 	    res_root = p.first;
 	}
-	
+*/
+	if (!res_root) {
+	    res_root = si->get_wme_val(si->make_id_wme(root, "result"));
+	}
 	si->make_wme(res_root, "x", pos[0]);
 	si->make_wme(res_root, "y", pos[1]);
 	si->make_wme(res_root, "z", pos[2]);
