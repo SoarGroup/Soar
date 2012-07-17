@@ -11,9 +11,7 @@
 
 typedef tc_number tc_num;
 
-typedef std::pair<Symbol*, wme*> sym_wme_pair;
 typedef std::vector<wme*> wme_list;
-
 
 class soar_interface {
 public:
@@ -25,8 +23,11 @@ public:
 	Symbol      *make_sym(double val);
 	void         del_sym(Symbol *s);
 	
-	sym_wme_pair make_id_wme(Symbol *id, const std::string &attr);
-	sym_wme_pair make_id_wme(Symbol *id, Symbol *attr);
+	wme         *make_id_wme(Symbol *id, const std::string &attr);
+	wme         *make_id_wme(Symbol *id, Symbol *attr);
+	
+	wme         *make_wme(Symbol *id, Symbol *attr, Symbol *val);
+	wme         *make_wme(Symbol *id, const std::string &attr, Symbol *val);
 	
 	template<class T>
 	wme         *make_wme(Symbol *id, const std::string &attr, const T &val);
@@ -54,6 +55,7 @@ public:
 	template<class T>
 	bool         get_const_attr(Symbol *id, const std::string &attr, T &val);
 	
+	Symbol      *get_wme_id(wme *w);
 	Symbol      *get_wme_attr(wme *w);
 	Symbol      *get_wme_val(wme *w);
 
@@ -90,19 +92,14 @@ inline void soar_interface::del_sym(Symbol *s) {
 
 template<class T>
 wme *soar_interface::make_wme(Symbol *id, const std::string &attr, const T &val) {
-	wme* w;
-	Symbol *attrsym = make_sym(attr);
-	w = make_wme(id, attrsym, val);
-	symbol_remove_ref(agnt, attrsym);
-	return w;
+	Symbol *valsym = make_sym(val);
+	return make_wme(id, attr, valsym);
 }
 
 template<class T>
 wme *soar_interface::make_wme(Symbol *id, Symbol *attr, const T &val) {
 	Symbol *valsym = make_sym(val);
-	wme* w = soar_module::add_module_wme(agnt, id, attr, valsym);
-	symbol_remove_ref(agnt, valsym);
-	return w;
+	return make_wme(id, attr, valsym);
 }
 
 inline bool soar_interface::is_identifier(Symbol *sym) {
@@ -176,6 +173,10 @@ inline bool soar_interface::get_val(Symbol *sym, double &v) {
 		return true;
 	}
 	return false;
+}
+
+inline Symbol *soar_interface::get_wme_id(wme *w) {
+	return w->id;
 }
 
 inline Symbol *soar_interface::get_wme_attr(wme *w) {

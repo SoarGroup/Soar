@@ -17,61 +17,88 @@ public:
 	node_filter(scene *scn, filter_input *input) : typed_map_filter<const sgnode*>(input), scn(scn) {}
 	
 	~node_filter() {
-		map<sgnode*, const filter_param_set*>::iterator i;
-		for (i = node2param.begin(); i != node2param.end(); ++i) {
+		map<sgnode*, node_info>::iterator i;
+		for (i = nodes.begin(); i != nodes.end(); ++i) {
 			i->first->unlisten(this);
 		}
 	}
 	
 	bool compute(const filter_param_set *params, bool adding, const sgnode *&res, bool &changed) {
 		sgnode *newres;
-		string name;
+		string id;
 		
-		if (!get_filter_param(this, params, "name", name)) {
-			set_error("expecting parameter name");
+		if (!get_filter_param(this, params, "id", id)) {
+			set_error("expecting parameter id");
 			return false;
 		}
-		if ((newres = scn->get_node(name)) == NULL) {
+		if ((newres = scn->get_node(id)) == NULL) {
 			stringstream ss;
-			ss << "no node called \"" << name << "\"";
+			ss << "no node with id \"" << id << "\"";
 			set_error(ss.str());
 			return false;
 		}
 		
-		changed = (newres != res);
-		if (!adding && changed) {
-			del_node(const_cast<sgnode*>(res));
-			node2param[newres] = params;
-			newres->listen(this);
+		if (newres != res) {
+			add_entry(newres, params);
+			if (!adding) {
+				del_entry(const_cast<sgnode*>(res), params);
+			}
+			res = newres;
+			changed = true;
+		} else {
+			// report whether the node itself changed since the last time
+			node_info *info = map_get(nodes, const_cast<sgnode*>(res));
+			assert(info);
+			changed = info->changed;
+			info->changed = false;
 		}
-		res = newres;
 		return true;
 	}
 	
-	void del_node(sgnode *n) {
-		map<sgnode*, const filter_param_set*>::iterator i = node2param.find(n);
-		if (i != node2param.end()) {
+	void add_entry(sgnode *n, const filter_param_set *params) {
+		map<sgnode*, node_info>::iterator i = nodes.find(n);
+		if (i == nodes.end()) {
+			n->listen(this);
+		}
+		nodes[n].params.push_back(params);
+	}
+	
+	void del_entry(sgnode *n, const filter_param_set *params) {
+		map<sgnode*, node_info>::iterator i = nodes.find(n);
+		assert(i != nodes.end());
+		list<const filter_param_set*> &p = i->second.params;
+		list<const filter_param_set*>::iterator j = find(p.begin(), p.end(), params);
+		assert(j != p.end());
+		p.erase(j);
+		if (p.empty()) {
 			i->first->unlisten(this);
-			node2param.erase(i);
+			nodes.erase(i);
 		}
 	}
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added) {
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
-			const filter_param_set *s;
-			if (!map_get(node2param, n, s)) {
-				assert(false);
+			node_info *info = map_get(nodes, n);
+			assert(info);
+			list<const filter_param_set*>::const_iterator i;
+			for (i = info->params.begin(); i != info->params.end(); ++i) {
+				mark_stale(*i);
 			}
-			mark_stale(s);
+			info->changed = true;
 			if (t == sgnode::DELETED) {
-				del_node(n);
+				nodes.erase(n);
 			}
 		}
 	}
 
 private:
+	struct node_info {
+		list<const filter_param_set*> params;
+		bool changed;
+	};
+	
 	scene *scn;
-	map<sgnode*, const filter_param_set*> node2param;
+	map<sgnode*, node_info> nodes;
 };
 
 /* Return all nodes from the scene */
@@ -330,10 +357,8 @@ filter* _make_gen_node_filter_(scene *scn, filter_input *input) {
 filter_table_entry node_fill_entry() {
 	filter_table_entry e;
 	e.name = "node";
-	e.parameters.push_back("name");
+	e.parameters.push_back("id");
 	e.create = &make_node_filter;
-	e.calc = NULL;
-	e.possible_args = NULL;
 	return e;
 }
 
@@ -341,18 +366,14 @@ filter_table_entry all_nodes_fill_entry() {
 	filter_table_entry e;
 	e.name = "all_nodes";
 	e.create = &make_all_nodes_filter;
-	e.calc = NULL;
-	e.possible_args = NULL;
 	return e;
 }
 
 filter_table_entry node_centroid_fill_entry() {
 	filter_table_entry e;
 	e.name = "node_centroid";
-	e.parameters.push_back("name");
+	e.parameters.push_back("node");
 	e.create = &make_node_centroid_filter;
-	e.calc = NULL;
-	e.possible_args = NULL;
 	return e;
 }
 

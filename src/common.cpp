@@ -63,22 +63,6 @@ ofstream& get_datavis() {
 	return f;
 }
 
-//ostream &operator<<(ostream &os, const floatvec &v) {
-//	copy(v.mem, v.mem + v.sz, ostream_iterator<float>(os, " "));
-//	return os;
-//}
-
-ostream &operator<<(ostream &os, const namedvec &v) {
-	string name;
-	for (int i = 0; i < v.size(); ++i) {
-		if (!v.get_name(i, name)) {
-			assert(false);
-		}
-		os << name << " " << v.vals[i] << endl;
-	}
-	return os;
-}
-
 vec3 project(const vec3 &v, const vec3 &u) {
 	float m = u.squaredNorm();
 	if (m == 0.) {

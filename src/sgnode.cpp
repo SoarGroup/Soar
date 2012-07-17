@@ -126,14 +126,14 @@ void sgnode::unlisten(sgnode_listener *o) {
 }
 
 const bbox &sgnode::get_bounds() const {
-	if (shape_dirty) {
+	if (shape_dirty || trans_dirty) {
 		const_cast<sgnode*>(this)->update_shape();
 	}
 	return bounds;
 }
 
-const vec3 &sgnode::get_centroid() const {
-	if (shape_dirty) {
+vec3 sgnode::get_centroid() const {
+	if (shape_dirty || trans_dirty) {
 		const_cast<sgnode*>(this)->update_shape();
 	}
 	return centroid;
@@ -221,7 +221,8 @@ bool group_node::attach_child(sgnode *c) {
 
 void group_node::update_shape() {
 	if (children.empty()) {
-		set_bounds(bbox());
+		vec3 c = get_world_trans()(vec3(0.0,0.0,0.0));
+		set_bounds(bbox(c));
 		return;
 	}
 	
@@ -259,6 +260,10 @@ sgnode *convex_node::clone_sub() const {
 
 void convex_node::update_shape() {
 	set_bounds(bbox(get_world_points()));
+}
+
+void convex_node::set_transform_dirty_sub() {
+	dirty = true;
 }
 
 const ptlist &convex_node::get_local_points() const {

@@ -60,7 +60,7 @@ public:
 	void listen(sgnode_listener *o);
 	void unlisten(sgnode_listener *o);
 	const bbox &get_bounds() const;
-	const vec3 &get_centroid() const;
+	vec3 get_centroid() const;
 
 	virtual void get_shape_sgel(std::string &s) const = 0;
 	virtual void walk(std::vector<sgnode*> &result) = 0;
@@ -134,6 +134,7 @@ public:
 	const ptlist &get_world_points() const;
 	void set_local_points(const ptlist &pts);
 	void get_shape_sgel(std::string &s) const;
+	void set_transform_dirty_sub();
 	
 private:
 	void update_shape();

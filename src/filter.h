@@ -184,6 +184,14 @@ inline bool set_filter_val (filter_val *fv, const T &v) {
 	return true;
 }
 
+template<class T>
+class ctlist_listener {
+public:
+	virtual void handle_ctlist_add(const T *e) {}
+	virtual void handle_ctlist_remove(const T *e) {}
+	virtual void handle_ctlist_change(const T *e) {}
+};
+
 /*
  A list that keeps track of changes made to it, so that users can respond
  to only the things that changed. Both the filter result list and filter
@@ -205,16 +213,17 @@ public:
 	
 	void add(T* v) {
 		current.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_add(v);
+		}
 	}
 	
-	void remove(T* v) {
+	void remove(const T* v) {
 		bool found = false;
 		for (int i = 0; i < current.size(); ++i) {
 			if (current[i] == v) {
-				for (int j = i + 1; j < current.size(); ++j) {
-					current[j - 1] = current[j];
-				}
-				current.pop_back();
+				removed.push_back(current[i]);
+				current.erase(current.begin() + i);
 				if (i < m_added_begin) {
 					--m_added_begin;
 				}
@@ -225,17 +234,30 @@ public:
 		assert(found);
 		for (int i = 0; i < changed.size(); ++i) {
 			if (changed[i] == v) {
-				for (int j = i + 1; j < changed.size(); ++j) {
-					changed[j - 1] = changed[j];
-				}
-				changed.pop_back();
+				changed.erase(changed.begin() + i);
+				break;
 			}
 		}
-		removed.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_remove(v);
+		}
 	}
 	
 	void change(T *v) {
 		changed.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_change(v);
+		}
+	}
+	
+	void change(const T *v) {
+		for(int i = 0; i < current.size(); ++i) {
+			if (current[i] == v) {
+				change(current[i]);
+				return;
+			}
+		}
+		assert(false);
 	}
 	
 	void clear_changes() {
@@ -301,6 +323,18 @@ public:
 		return m_added_begin;
 	}
 	
+	void listen(ctlist_listener<T> *l) {
+		listeners.push_back(l);
+	}
+	
+	void unlisten(ctlist_listener<T> *l) {
+		typename std::vector<ctlist_listener<T>*>::iterator i;
+		i = std::find(listeners.begin(), listeners.end(), l);
+		if (i != listeners.end()) {
+			listeners.erase(i);
+		}
+	}
+	
 private:
 	void clear_removed() {
 		for (int i = 0; i < removed.size(); ++i) {
@@ -315,6 +349,8 @@ private:
 	
 	// Index of the first new element in the current list
 	int m_added_begin;
+	
+	std::vector<ctlist_listener<T>*> listeners;
 };
 
 class filter;
@@ -361,6 +397,8 @@ public:
 private:
 	input_table input_info;
 };
+
+typedef ctlist_listener<filter_param_set> filter_input_listener;
 
 class null_filter_input : public filter_input {
 public:
@@ -447,8 +485,10 @@ public:
 		result2params[v] = p;
 	}
 	
-	bool get_result_params(filter_val *v, const filter_param_set *&p) {
-		return map_get(result2params, v, p);
+	void get_result_params(filter_val *v, const filter_param_set *&p) {
+		if (!map_get(result2params, v, p)) {
+			p = NULL;
+		}
 	}
 	
 	void remove_result(filter_val *v) {
@@ -483,6 +523,18 @@ public:
 	
 	const filter_input *get_input() const {
 		return input;
+	}
+	
+	void listen_for_input(filter_input_listener *l) {
+		input->listen(l);
+	}
+	
+	void unlisten_for_input(filter_input_listener *l) {
+		input->unlisten(l);
+	}
+
+	void mark_stale(const filter_param_set *s) {
+		input->change(s);
 	}
 
 private:
@@ -529,17 +581,6 @@ public:
 	*/
 	virtual void result_removed(const filter_val *res) { }
 	
-	/*
-	 Sometimes the function that maps from parameter set to result
-	 is conditioned on things other than the parameter set, such as
-	 the state of the scene graph. A derived class that implements
-	 such a function should explicitly mark a result as needing to be
-	 recomputed even when its associated parameter set doesn't change.
-	*/
-	void mark_stale(const filter_param_set *s) {
-		stale.push_back(s);
-	}
-
 	bool update_results() {
 		const filter_input* input = get_input();
 		std::vector<const filter_param_set*>::iterator j;
@@ -635,6 +676,131 @@ private:
 		assert(success);
 		result_removed(val);
 	}
+};
+
+/*
+ This type of filter processes all inputs and produces a single
+ result. 
+*/
+template<typename T>
+class reduce_filter : public filter {
+public:
+	reduce_filter(filter_input *input) : filter(input), result(NULL) {}
+	virtual ~reduce_filter() {}
+	
+	bool update_results() {
+		T new_val = value;
+		const filter_input *input = get_input();
+		for (int i = input->first_added(); i < input->num_current(); ++i) {
+			if (!input_added(input->get_current(i), new_val)) {
+				return false;
+			}
+		}
+		for (int i = 0; i < input->num_changed(); ++i) {
+			if (!input_changed(input->get_changed(i), new_val)) {
+				return false;
+			}
+		}
+		for (int i = 0; i < input->num_removed(); ++i) {
+			if (!input_removed(input->get_removed(i), new_val)) {
+				return false;
+			}
+		}
+		
+		if (!result && input->num_current() > 0) {
+			result = new filter_val_c<T>(new_val);
+			add_result(result, NULL);
+		} else if (result && input->num_current() == 0) {
+			remove_result(result);
+			result = NULL;
+		} else if (result && value != new_val) {
+			bool success = set_filter_val(result, new_val);
+			assert(success);
+			change_result(result);
+		}
+		value = new_val;
+		return true;
+	}
+	
+private:
+	virtual bool input_added(const filter_param_set *params, T &res) = 0;
+	virtual bool input_changed(const filter_param_set *params, T &res) = 0;
+	virtual bool input_removed(const filter_param_set *params, T &res) = 0;
+	
+	filter_val_c<T> *result;
+	T value;
+};
+
+class rank_filter : public filter {
+public:
+	rank_filter(filter_input *input) : filter(input), result(NULL), old(NULL) {}
+
+	virtual bool rank(const filter_param_set *params, double &r) = 0;
+
+private:
+	bool update_results() {
+		const filter_input *input = get_input();
+		double r;
+		const filter_param_set *p;
+		for (int i = input->first_added(); i < input->num_current(); ++i) {
+			p = input->get_current(i);
+			if (!rank(p, r)) {
+				return false;
+			}
+			elems.push_back(make_pair(r, p));
+		}
+		for (int i = 0; i < input->num_changed(); ++i) {
+			p = input->get_changed(i);
+			if (!rank(p, r)) {
+				return false;
+			}
+			bool found = false;
+			for (int j = 0; j < elems.size(); ++j) {
+				if (elems[j].second == p) {
+					elems[j].first = r;
+					found = true;
+					break;
+				}
+			}
+			assert(found);
+		}
+		for (int i = 0; i < input->num_removed(); ++i) {
+			p = input->get_removed(i);
+			bool found = false;
+			for (int j = 0; j < elems.size(); ++j) {
+				if (elems[j].second == p) {
+					elems.erase(elems.begin() + j);
+					found = true;
+					break;
+				}
+			}
+			assert(found);
+		}
+
+		if (!elems.empty()) {
+			std::pair<double, const filter_param_set *> m = *std::max_element(elems.begin(), elems.end());
+			if (m.second != old) {
+				if (result) {
+					remove_result(result);
+				}
+				result = new filter_val_c<double>(m.first);
+				add_result(result, m.second);
+				old = m.second;
+			} else {
+				assert(result);
+				set_filter_val(result, m.first);
+				change_result(result);
+			}
+		} else if (result) {
+			remove_result(result);
+			result = NULL;
+		}
+		return true;
+	}
+
+	std::vector<std::pair<double, const filter_param_set*> > elems;
+	filter_val *result;
+	const filter_param_set *old;
 };
 
 /*

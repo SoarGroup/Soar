@@ -70,7 +70,6 @@ void sgwme::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 }
 
 void sgwme::add_child(sgnode *c) {
-	sym_wme_pair cid_wme;
 	char letter;
 	string cname = c->get_name();
 	sgwme *child;
@@ -80,10 +79,10 @@ void sgwme::add_child(sgnode *c) {
 	} else {
 		letter = cname[0];
 	}
-	cid_wme = soarint->make_id_wme(id, "child");
+	wme *cid_wme = soarint->make_id_wme(id, "child");
 	
-	child = new sgwme(soarint, cid_wme.first, this, c);
-	childs[child] = cid_wme.second;
+	child = new sgwme(soarint, soarint->get_wme_val(cid_wme), this, c);
+	childs[child] = cid_wme;
 }
 
 svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *syms)
@@ -122,13 +121,13 @@ void svs_state::init() {
 	string name;
 	
 	si->get_name(state, name);
-	svs_link = si->make_id_wme(state, cs->svs).first;
-	cmd_link = si->make_id_wme(svs_link, cs->cmd).first;
-	scene_link = si->make_id_wme(svs_link, cs->scene).first;
+	svs_link = si->get_wme_val(si->make_id_wme(state, cs->svs));
+	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs->cmd));
+	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	if (!parent) {
-		ltm_link = si->make_id_wme(svs_link, cs->ltm).first;
+		ltm_link = si->get_wme_val(si->make_id_wme(svs_link, cs->ltm));
 	}
 	mmdl = new multi_model();
 }
@@ -327,6 +326,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 }
 
 svs::svs(agent *a)
+: learn_models(false)
 {
 	si = new soar_interface(a);
 	make_common_syms();
@@ -412,7 +412,9 @@ void svs::input_callback() {
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
-	topstate->update_models();
+	if (learn_models) {
+		topstate->update_models();
+	}
 	
 	vector<svs_state*>::iterator i;
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
@@ -450,27 +452,22 @@ string svs::get_output() const {
 	return env_output;
 }
 
-bool svs::do_cli_command(const vector<string> &args, string &output) const {
-	stringstream ss;
+bool svs::do_command(const vector<string> &args, stringstream &out) {
 	if (args.size() < 2) {
-		ss << "subqueries are timing filters log, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
-		output = ss.str();
+		out << "subqueries are timing filters log, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
 		return false;
 	}
 	if (args[1] == "timing") {
-		timers.report(ss);
-		output = ss.str();
+		timers.report(out);
 		return true;
 	} else if (args[1] == "filters") {
-		get_filter_table().get_timers().report(ss);
-		output = ss.str();
+		get_filter_table().get_timers().report(out);
 		return true;
 	} else if (args[1] == "log") {
 		if (args.size() < 3) {
 			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
-				ss << log_type_names[i] << (LOG.is_on(static_cast<log_type>(i)) ? " on" : " off") << endl;
+				out << log_type_names[i] << (LOG.is_on(static_cast<log_type>(i)) ? " on" : " off") << endl;
 			}
-			output = ss.str();
 			return true;
 		}
 		if (args[2] == "on") {
@@ -486,7 +483,7 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 						return true;
 					}
 				}
-				output = "no such log\n";
+				out << "no such log" << endl;
 				return false;
 			}
 		} else if (args[2] == "off") {
@@ -502,26 +499,38 @@ bool svs::do_cli_command(const vector<string> &args, string &output) const {
 						return true;
 					}
 				}
-				output = "no such log\n";
+				out << "no such log" << endl;
 				return false;
 			}
 		} else {
-			output = "expecting on/off\n";
+			out << "expecting on/off" << endl;
 			return false;
 		}
+	} else if (args[1] == "learn") {
+		if (args.size() < 3) {
+			out << (learn_models ? "on" : "off") << endl;
+			return true;
+		}
+		if (args[2] == "on") {
+			learn_models = true;
+		} else if (args[2] == "off") {
+			learn_models = false;
+		} else {
+			out << "expecting on/off" << endl;
+			return false;
+		}
+		return true;
 	}
 	
 	int level;
 	if (!parse_int(args[1], level)) {
-		output = "no such query";
+		out << "no such query" << endl;
 		return false;
 	} else if (level < 0 || level >= state_stack.size()) {
-		output = "invalid level";
+		out << "invalid level" << endl;
 		return false;
 	}
-	bool ret = state_stack[level]->cli_inspect(2, args, ss);
-	output = ss.str();
-	return ret;
+	return state_stack[level]->cli_inspect(2, args, out);
 }
 
 int svs::parse_output_spec(const string &s) {

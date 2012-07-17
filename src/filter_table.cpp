@@ -29,6 +29,8 @@ filter_table_entry compare_fill_entry();
 filter_table_entry absval_fill_entry();
 filter_table_entry gen_node_fill_entry();
 filter_table_entry vec3_fill_entry();
+filter_table_entry max_fill_entry();
+filter_table_entry closest_fill_entry();
 
 filter_table::filter_table() {
 	add(intersect_fill_entry());
@@ -55,6 +57,8 @@ filter_table::filter_table() {
 	add(absval_fill_entry());
 	add(gen_node_fill_entry());
 	add(vec3_fill_entry());
+	add(max_fill_entry());
+	add(closest_fill_entry());
 	
 	std::map<std::string, filter_table_entry>::const_iterator i;
 	for (i = t.begin(); i != t.end(); ++i) {

@@ -2,10 +2,11 @@
 #include "command.h"
 #include "filter.h"
 #include "svs.h"
+#include "soar_interface.h"
 
 using namespace std;
 
-class extract_command : public command {
+class extract_command : public command, public filter_input_listener {
 public:
 	extract_command(svs_state *state, Symbol *root)
 	: command(state, root), root(root), state(state), fltr(NULL), res(NULL), res_root(NULL), first(true)
@@ -24,6 +25,10 @@ public:
 	}
 	
 	bool update_sub() {
+		if (!res_root) {
+			res_root = si->get_wme_val(si->make_id_wme(root, "result"));
+		}
+		
 		if (changed()) {
 			clear_results();
 			if (fltr) {
@@ -36,23 +41,18 @@ public:
 				return false;
 			}
 			res = fltr->get_result();
-			first = true;
+			fltr->listen_for_input(this);
 		}
 		
 		if (fltr) {
 			fltr->update();
-				
+			
 			if (fltr->is_error()) {
 				set_status(fltr->get_error());
 				clear_results();
 				return false;
 			}
-			if (first) {
-				reset_results();
-				first = false;
-			} else {
-				update_results();
-			}
+			update_results();
 			res->clear_changes();
 			set_status("success");
 		}
@@ -76,66 +76,92 @@ public:
 			handle_result(res->get_current(i));
 		}
 		for (int i = 0; i < res->num_removed(); ++i) {
-			if (!map_pop(res2wme, res->get_removed(i), w)) {
+			filter_val *fv = res->get_removed(i);
+			record r;
+			if (!map_pop(records, fv, r)) {
 				assert(false);
 			}
-			si->remove_wme(w);
+			si->remove_wme(r.rec_wme);
 		}
 		for (int i = 0; i < res->num_changed(); ++i) {
 			handle_result(res->get_changed(i));
 		}
 	}
 	
-	/*
-	 If the result is false and there's a wme for it, remove the
-	 wme. If the result is true and there's no wme for it, create
-	 a new wme.
-	*/
-	void handle_result(filter_val *result) {
-		const filter_param_set *params;
-		sym_wme_pair sw;
-		filter_param_set::const_iterator i;
-		bool val;
-		wme *w;
-		
-		if (!get_filter_val(result, val)) {
-			set_status("extract filter must have boolean results");
-			return;
-		}
-
-		if (map_pop(res2wme, result, w)) {
-			si->remove_wme(w);
-		}
-
-		if (!fltr->get_result_params(result, params)) {
-			assert(false);
-		}
-		
-		if (res_root == NULL) {
-			sym_wme_pair p;
-			p = si->make_id_wme(root, "result");
-			res_root = p.first;
-			pos_root = si->make_id_wme(res_root, "positive").first;
-			neg_root = si->make_id_wme(res_root, "negative").first;
-		}
-		Symbol *r = val ? pos_root : neg_root;
-
-		sw = si->make_id_wme(r, "atom");
-		for (i = params->begin(); i != params->end(); ++i) {
-			si->make_wme(sw.first, i->first, i->second->get_string());
-		}
-		res2wme[result] = sw.second;
-	}
-	
 	void clear_results() {
-		std::map<filter_val*, wme*>::iterator i;
-		for (i = res2wme.begin(); i != res2wme.end(); ++i) {
-			si->remove_wme(i->second);
+		record_map::iterator i;
+		for (i = records.begin(); i != records.end(); ++i) {
+			si->remove_wme(i->second.rec_wme);
 		}
-		res2wme.clear();
+		records.clear();
 	}
 	
 private:
+	Symbol *make_filter_val_sym(filter_val *v) {
+		int iv;
+		double fv;
+		bool bv;
+		
+		if (get_filter_val(v, iv)) {
+			return si->make_sym(iv);
+		}
+		if (get_filter_val(v, fv)) {
+			return si->make_sym(fv);
+		}
+		if (get_filter_val(v, bv)) {
+			return si->make_sym(bv ? "t" : "f");
+		}
+		return si->make_sym(v->get_string());
+	}
+	
+	wme *make_value_wme(filter_val *v, Symbol *root) {
+		return si->make_wme(root, "value", make_filter_val_sym(v));
+	}
+	
+	wme *make_param_struct(const filter_param_set *params, Symbol *rec_root) {
+		wme *w = si->make_id_wme(rec_root, "params");
+		Symbol *id = si->get_wme_val(w);
+		
+		filter_param_set::const_iterator i;
+		for (i = params->begin(); i != params->end(); ++i) {
+			si->make_wme(id, i->first, make_filter_val_sym(i->second));
+		}
+		return w;
+	}
+	
+	void make_record(filter_val *result) {
+		record r;
+		r.rec_wme = si->make_id_wme(res_root, "record");
+		r.rec_id = si->get_wme_val(r.rec_wme);
+		r.val_wme = make_value_wme(result, r.rec_id);
+		fltr->get_result_params(result, r.params);
+		if (r.params) {
+			r.params_wme = make_param_struct(r.params, r.rec_id);
+		}
+		records[result] = r;
+	}
+	
+	void handle_result(filter_val *result) {
+		record *r;
+		if (r = map_get(records, result)) {
+			si->remove_wme(r->val_wme);
+			r->val_wme = make_value_wme(result, r->rec_id);
+		} else {
+			make_record(result);
+		}
+	}
+	
+	void handle_ctlist_change(const filter_param_set *p) {
+		record_map::iterator i;
+		for (i = records.begin(); i != records.end(); ++i) {
+			if (i->second.params == p) {
+				si->remove_wme(i->second.params_wme);
+				i->second.params_wme = make_param_struct(p, i->second.rec_id);
+				break;
+			}
+		}
+	}
+	
 	Symbol         *root;
 	Symbol         *res_root;
 	Symbol         *pos_root;  // identifier for positive atoms
@@ -146,7 +172,16 @@ private:
 	filter_result  *res;
 	bool            first;
 	
-	std::map<filter_val*, wme*> res2wme;
+	struct record {
+		const filter_param_set *params;
+		wme *rec_wme;
+		wme *val_wme;
+		wme *params_wme;
+		Symbol *rec_id;
+	};
+	
+	typedef map<filter_val*, record> record_map;
+	record_map records;
 };
 
 command *_make_extract_command_(svs_state *state, Symbol *root) {

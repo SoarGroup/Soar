@@ -20,7 +20,9 @@ public:
 		}
 		
 		newres = (a->get_centroid() - b->get_centroid()).norm();
-		changed = (newres != res);
+		if (changed = (newres != res)) {
+			res = newres;
+		}
 		return true;
 	}
 };
@@ -32,10 +34,35 @@ filter *make_distance_filter(scene *scn, filter_input *input) {
 filter_table_entry distance_fill_entry() {
 	filter_table_entry e;
 	e.name = "distance";
-	e.parameters.push_back("a");
-	e.parameters.push_back("b");
 	e.create = &make_distance_filter;
-	e.calc = NULL;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
+	return e;
+}
+
+class closest_filter : public rank_filter {
+public:
+	closest_filter(filter_input *input) : rank_filter(input) {}
+	
+	bool rank(const filter_param_set *params, double &rank) {
+		const sgnode *a, *b;
+		
+		if (!get_filter_param(this, params, "a", a) ||
+		    !get_filter_param(this, params, "b", b))
+		{
+			return false;
+		}
+		
+		rank = -(a->get_centroid() - b->get_centroid()).norm();
+		return true;
+	}
+};
+
+filter *make_closest_filter(scene *scn, filter_input *input) {
+	return new closest_filter(input);
+}
+
+filter_table_entry closest_fill_entry() {
+	filter_table_entry e;
+	e.name = "closest";
+	e.create = &make_closest_filter;
 	return e;
 }

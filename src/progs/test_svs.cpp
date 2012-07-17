@@ -13,34 +13,44 @@ using namespace sml;
 int var_count = 0;
 int test_count = 0;
 
-const char *failure_rule =
-"sp {failure "
+const char *rules[] = {
+"sp {failure-value "
 ":default "
 "   (state <s> ^superstate nil ^svs.command.extract <e> ^extract-info <i>) "
-"   (<i> ^cmd <e> ^count <c> ^expected <posneg>) "
+"   (<i> ^cmd <e> ^count <c> ^expected <val>) "
 "   (<e> ^status success ^result <res>) "
-"   (<res> ^{<negpos> <> <posneg>}.atom <a>) "
+" -{(<res> ^record <r>) "
+"   (<r> ^value <val>)} "
 "--> "
-"   (exec count <c> | failure|)}";
+"   (exec count <c> | failure|)}",
 
-const char *success_rule =
-"sp {success "
+"sp {failure-param "
 ":default "
 "   (state <s> ^superstate nil ^svs.command.extract <e> ^extract-info <i>) "
-"   (<i> ^cmd <e> ^count <c> ^expected <posneg>) "
+"   (<i> ^cmd <e> ^count <c> ^expected-params.<name> <val>) "
 "   (<e> ^status success ^result <res>) "
-"   (<res> ^<posneg>.atom <a>) "
+" -{(<res> ^record <r>) "
+"   (<r> ^params <p>) "
+"   (<p> ^<name> <val>)} "
 "--> "
-"   (exec count <c> | success|)}";
+"   (exec count <c> | failure|)}",
 
-const char *syntax_rule =
+"sp {executed "
+":default "
+"   (state <s> ^superstate nil ^extract-info <i>) "
+"   (<i> ^cmd.status success ^count <c>) "
+"--> "
+"   (exec count <c> | executed|)}",
+
 "sp {syntax "
 ":default "
 "   (state <s> ^superstate nil ^svs.command.extract <e> ^extract-info <i>) "
 "   (<i> ^cmd <e> ^count <c>) "
 "   (<e> ^status {<stat> <> success}) "
 "--> "
-"   (exec count <c> | syntax|)}";
+"   (exec count <c> | syntax|)}",
+
+NULL};
 
 size_t get_close_paren(const string &s, size_t start) {
 	int depth = 1;
@@ -107,13 +117,13 @@ bool parse_int(const string &s, int &v) {
 }
 
 struct test_info_struct {
-	int success;
+	int executed;
 	int failure;
 	int syntax;
 	map<int, string> tests;
 	
 	test_info_struct() {
-		success = 0;
+		executed = 0;
 		failure = 0;
 		syntax = 0;
 	}
@@ -130,9 +140,8 @@ string rhs_count(smlRhsEventId id, void *data, Agent *agnt, char const *func, ch
 		assert(false);
 	}
 	
-	if (fields[1] == "success") {
-		++test_info.success;
-		cout << "success " << test_info.tests[count] << endl;
+	if (fields[1] == "executed") {
+		++test_info.executed;
 	} else if (fields[1] == "failure") {
 		++test_info.failure;
 		cout << "failure " << test_info.tests[count] << endl;
@@ -178,7 +187,7 @@ bool parse_filter(const vector<string> &fields, stringstream &ss) {
 				ss << v.substr(2) << " ";
 			} else {  // it's a node
 				ss << "<a" << var_count << "> ";
-				rest << "(<a" << var_count++ << "> ^type node ^name " << v << ") ";
+				rest << "(<a" << var_count++ << "> ^type node ^id " << v << ") ";
 			}
 		}
 	}
@@ -187,7 +196,12 @@ bool parse_filter(const vector<string> &fields, stringstream &ss) {
 	return true;
 }
 
-string make_rule(int test_count, bool positive, const vector<string> &fields) {
+string make_rule(
+	int test_count,
+	const string &val,
+	const vector<pair<string,string> > &params,
+	const vector<string> &fields)
+{
 	stringstream ss, ss1;
 
 	ss.str("");
@@ -195,8 +209,19 @@ string make_rule(int test_count, bool positive, const vector<string> &fields) {
 	   << "(state <s> ^superstate nil ^svs.command <c>)" << endl
 	   << "-->" << endl
 	   << "(<s> ^extract-info <i>)"
-	   << "(<i> ^cmd <a" << var_count << "> ^count " << test_count << " ^expected " << (positive ? "positive" : "negative") << ")"
-	   << "(<c> ^extract <a" << var_count << ">)" << endl;
+	   << "(<i> ^cmd <a" << var_count << "> ^count " << test_count;
+	if (val != "*") {
+		ss << " ^expected " << val;
+	}
+	if (!params.empty()) {
+		ss << " ^expected-params <p>";
+	}
+	ss << ")" << endl;
+	for (int i = 0; i < params.size(); ++i) {
+		ss << "(<p> ^" << params[i].first << " " << params[i].second << ")" << endl;
+	}
+	
+	ss << "(<c> ^extract <a" << var_count << ">)" << endl;
 	
 	if (!parse_filter(fields, ss)) {
 		cerr << "error" << endl;
@@ -243,9 +268,11 @@ int main(int argc, char *argv[]) {
 	Kernel *k = Kernel::CreateKernelInCurrentThread();
 	k->AddRhsFunction ("count", rhs_count, NULL);
 	Agent *a = k->CreateAgent("arst");
-	a->ExecuteCommandLine(failure_rule);
-	a->ExecuteCommandLine(success_rule);
-	a->ExecuteCommandLine(syntax_rule);
+	
+	for (int i = 0; rules[i]; ++i) {
+		a->ExecuteCommandLine(rules[i]);
+	}
+	
 	a->ExecuteCommandLine("waitsnc -e");
 	
 	string line, line_in;
@@ -281,29 +308,51 @@ int main(int argc, char *argv[]) {
 		if (verbose) {
 			cout << "INPUT: " << line << endl;
 		}
-		if (line == "test") {
-			a->ExecuteCommandLine("run 2");
-			a->ExecuteCommandLine("excise -u");
-			needs_test = false;
-		} else if (line == "init") {
-			a->ExecuteCommandLine("init");
-			a->ExecuteCommandLine("excise -u");
-			needs_test = false;
-		} else if (line == "repl") {
+		
+		vector<string> fields;
+		split(line, fields);
+		
+		if (fields[0] == "want") {
+			string expected_val = fields[1];
+			vector<pair<string, string> > param_tests;
+			string ptstr = fields[2];
+			if (ptstr != "*") {
+				if (ptstr[0] != '(' || ptstr[ptstr.size()-1] != ')') {
+					cerr << "expecting * or (<param tests>) in field 3" << endl;
+					exit(1);
+				}
+				vector<string> param_fields;
+				split(ptstr.substr(1, ptstr.size() - 2), param_fields);
+				if (param_fields.size() % 2 != 0) {
+					cerr << "parameter test should have the form (<name> <value> <name> <value> ...)" << endl;
+					exit(1);
+				}
+				for (int i = 0; i < param_fields.size(); i += 2) {
+					param_tests.push_back(make_pair(param_fields[i], param_fields[i+1]));
+				}
+			}
+			fields.erase(fields.begin(), fields.begin() + 3);
+			test_info.tests[test_count] = line;
+			string rule = make_rule(test_count++, expected_val, param_tests, fields);
+			if (verbose) {
+				cout << "RULE: " << rule << endl;
+			}
+			a->ExecuteCommandLine(rule.c_str());
+			needs_test = true;
+		} else if (fields[0] == "repl") {
 			repl(a);
 		} else {
-			vector<string> fields;
-			split(line, fields);
-			if (fields[0] == "pos" || fields[0] == "neg") {
-				bool positive = (fields[0] == "pos");
-				fields.erase(fields.begin());
-				test_info.tests[test_count] = line;
-				string rule = make_rule(test_count++, positive, fields);
-				if (verbose) {
-					cout << "RULE: " << rule << endl;
-				}
-				a->ExecuteCommandLine(rule.c_str());
-				needs_test = true;
+			if (needs_test) {
+				a->ExecuteCommandLine("run 2");
+				a->ExecuteCommandLine("excise -u");
+				needs_test = false;
+			}
+			if (fields[0] == "test") {
+				a->ExecuteCommandLine("run 2");
+				a->ExecuteCommandLine("excise -u");
+				needs_test = false;
+			} else if (fields[0] == "init") {
+				a->ExecuteCommandLine("init");
 			} else {
 				a->SendSVSInput(line);
 			}
@@ -314,12 +363,12 @@ int main(int argc, char *argv[]) {
 		a->ExecuteCommandLine("run 2");
 	}
 	
-	cout << test_info.success << " success, " 
+	cout << test_info.executed - test_info.failure << " success, " 
 	     << test_info.failure << " failure, " 
 	     << test_info.syntax  << " syntax, " 
 	     << test_count << " total"<< endl;
 	
-	int sum = test_info.success + test_info.failure + test_info.syntax;
+	int sum = test_info.executed + test_info.syntax;
 	if (sum != test_count) {
 		cout << "Warning: " << test_count - sum << " test rules did not fire" << endl;
 	}
