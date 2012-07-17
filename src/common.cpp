@@ -24,6 +24,16 @@ void split(const string &s, const string &delim, vector<string> &fields) {
 	}
 }
 
+void strip(string &s, const string &whitespace) {
+	size_t begin = s.find_first_not_of(whitespace);
+	if (begin == string::npos) {
+		s.clear();
+		return;
+	}
+	size_t end = s.find_last_not_of(whitespace) + 1;
+	s = s.substr(begin, end - begin);
+}
+
 ofstream& get_datavis() {
 	static bool first = true;
 	static ofstream f;
@@ -42,11 +52,6 @@ ofstream& get_datavis() {
 	return f;
 }
 
-//ostream &operator<<(ostream &os, const floatvec &v) {
-//	copy(v.mem, v.mem + v.sz, ostream_iterator<float>(os, " "));
-//	return os;
-//}
-
 ostream &operator<<(ostream &os, const namedvec &v) {
 	string name;
 	for (int i = 0; i < v.size(); ++i) {
@@ -56,18 +61,6 @@ ostream &operator<<(ostream &os, const namedvec &v) {
 		os << name << " " << v.vals[i] << endl;
 	}
 	return os;
-}
-
-vec3 calc_centroid(const ptlist &pts) {
-	ptlist::const_iterator i;
-	int d;
-	vec3 c = vec3::Zero();
-	
-	for (i = pts.begin(); i != pts.end(); ++i) {
-		c += *i;
-	}
-
-	return c / pts.size();
 }
 
 vec3 project(const vec3 &v, const vec3 &u) {
@@ -166,47 +159,38 @@ string get_option(const string &key) {
 	return options[key];
 }
 
-void timer_set::report(ostream &os) const {
-	vector<timer>::const_iterator i;
-	int longest_name = 5;   // "total"
-	for (i = timers.begin(); i != timers.end(); ++i) {
-		if (longest_name < i->name.size()) {
-			longest_name = i->name.size();
-		}
+bool parse_double(const string &s, double &v) {
+	if (s.empty()) {
+		return false;
 	}
 	
-	// header
-	os << left << setw(longest_name + 2) << "label" << right;
-	os << setw(13) << "cycles";
-	os << setw(13) << "total";
-	os << setw(13) << "mean";
-	os << setw(13) << "stdev";
-	os << setw(13) << "min";
-	os << setw(13) << "max";
-	os << setw(13) << "last" << endl;
-	
-	int ttl_cycles = 0;
-	double ttl_total = 0.0;
-	for (i = timers.begin(); i != timers.end(); ++i) {
-		double total = i->mean * i->cycles;
-		double stdev = sqrt(i->m2 / i->cycles);
-		
-		os << setw(longest_name + 2) << left << i->name << right;
-		os << " " << setw(12) << i->cycles;
-		os << " " << setw(12) << total;
-		os << " " << setw(12) << i->mean;
-		os << " " << setw(12) << stdev;
-		os << " " << setw(12) << i->min;
-		os << " " << setw(12) << i->max;
-		os << " " << setw(12) << i->last << endl;
-		
-		ttl_cycles += i->cycles;
-		ttl_total += total;
+	char *end;
+	v = strtod(s.c_str(), &end);
+	if (*end != '\0') {
+		return false;
 	}
-	
-	os << endl;
-	os << setw(longest_name + 2) << left << "total" << right;
-	os << " " << setw(12) << ttl_cycles;
-	os << " " << setw(12) << ttl_total;
-	os << " " << setw(12) << ttl_total / ttl_cycles << endl;
+	return true;
 }
+
+bool parse_int(const string &s, int &v) {
+	if (s.empty()) {
+		return false;
+	}
+	
+	char *end;
+	v = strtol(s.c_str(), &end, 10);
+	if (*end != '\0') {
+		return false;
+	}
+	return true;
+}
+
+logger LOG;
+
+const char *log_type_names[NUM_LOG_TYPES] = {
+	"WARN",
+	"ERROR",
+	"CTRLDBG",
+	"EMDBG",
+	"SGEL"
+};

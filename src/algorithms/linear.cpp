@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <cmath>
 #include <cassert>
 #include <vector>
@@ -204,7 +205,10 @@ void pcr(const_mat_view X, const_mat_view Y, const rvec &x, rvec &y) {
 
 LRModel::LRModel(const mat &xdata, const mat &ydata) 
 : xdata(xdata), ydata(ydata), constvals(rvec::Zero(ydata.cols())), isconst(true), error(INFINITY), refit(true)
-{}
+{
+	timers.add("predict");
+	timers.add("fit");
+}
 
 LRModel::LRModel(const LRModel &m)
 : xdata(m.xdata), ydata(m.ydata), constvals(m.constvals), members(m.members), isconst(m.isconst),
@@ -255,7 +259,7 @@ void LRModel::add_example(int i, bool update_refit) {
 		DATAVIS("constvals " << constvals << endl)
 	} else if (update_refit) {
 		rvec py;
-		if (!predict_drv(xdata.row(i), py)) {
+		if (!predict_sub(xdata.row(i), py)) {
 			refit = true;
 			error = INFINITY;
 		} else {
@@ -328,7 +332,7 @@ void LRModel::update_error() {
 			Y.row(i) = ydata.row(members[i]);
 		}
 		
-		if (!predict_drv(X, P)) {
+		if (!predict_sub(X, P)) {
 			error = INFINITY;
 		} else {
 			error = (Y - P).squaredNorm();
@@ -376,7 +380,7 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 	if (refit) {
 		fit();
 	}
-	return predict_drv(x, y);
+	return predict_sub(x, y);
 }
 
 bool LRModel::predict(const_mat_view X, mat &Y) {
@@ -390,14 +394,14 @@ bool LRModel::predict(const_mat_view X, mat &Y) {
 	if (refit) {
 		fit();
 	}
-	return predict_drv(X, Y);
+	return predict_sub(X, Y);
 }
 
 bool LRModel::fit() {
 	function_timer t(timers.get(FIT_T));
 	
 	if (!isconst) {
-		fit_drv();
+		fit_sub();
 	}
 	update_error();
 	refit = false;
@@ -406,23 +410,25 @@ bool LRModel::fit() {
 
 bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
-		os << "members (" << members.size() << "):";
-		for (int i = 0; i < members.size(); ++i) {
-			os << " " << members[i];
+		os << "members:  " << members.size() << endl;
+		os << "error:    " << error << endl;
+		bool success;
+		if (isconst) {
+			os << "constant: ";
+			output_rvec(os, constvals) << endl;
+		} else if (!cli_inspect_sub(os)) {
+			return false;
 		}
-		os << endl << "error:     " << error << endl;
-		return cli_inspect_drv(os);
+		os << "subqueries: timing train" << endl;
+		return true;
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
+		return true;
 	} else if (args[first_arg] == "train") {
 		for (int i = 0; i < members.size(); ++i) {
-			for (int j = 0; j < xdata.cols(); ++j) {
-				os << xdata(members[i], j) << " ";
-			}
-			for (int j = 0; j < ydata.cols(); ++j) {
-				os << ydata(members[i], j) << " ";
-			}
-			os << endl;
+			os << setw(4) << members[i] << " | ";
+			output_rvec(os, xdata.row(members[i])) << " ";
+			output_rvec(os, ydata.row(members[i])) << endl;
 		}
 		return true;
 	}
@@ -438,7 +444,7 @@ PCRModel::PCRModel(const PCRModel &m)
 : LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means)
 {}
 
-void PCRModel::fit_drv() {
+void PCRModel::fit_sub() {
 	mat X, Y;
 	
 	fill_data(X, Y);
@@ -448,7 +454,7 @@ void PCRModel::fit_drv() {
 	min_train_error(X, Y, beta, intercept);
 }
 
-bool PCRModel::predict_drv(const rvec &x, rvec &y) {
+bool PCRModel::predict_sub(const rvec &x, rvec &y) {
 	if (beta.size() == 0) {
 		return false;
 	}
@@ -456,7 +462,7 @@ bool PCRModel::predict_drv(const rvec &x, rvec &y) {
 	return true;
 }
 
-bool PCRModel::predict_drv(const_mat_view X, mat &Y) {
+bool PCRModel::predict_sub(const_mat_view X, mat &Y) {
 	if (beta.size() == 0) {
 		return false;
 	}
@@ -465,11 +471,9 @@ bool PCRModel::predict_drv(const_mat_view X, mat &Y) {
 	return true;
 }
 
-bool PCRModel::cli_inspect_drv(ostream &os) const {
+bool PCRModel::cli_inspect_sub(ostream &os) const {
 	os << "intercept: " << intercept << endl;
 	os << "beta:" << endl;
-	for (int i = 0; i < beta.size(); ++i) {
-		os << "\t" << beta(i) << endl;
-	}
+	output_mat(os, beta);
 	return true;
 }

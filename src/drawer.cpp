@@ -5,114 +5,78 @@
 
 using namespace std;
 
-void write_ptlist(std::ostream &os, const ptlist &l) {
-	copy(l.begin(), l.end(), ostream_iterator<vec3>(os, " "));
+void write_shape_string(const sgnode *n, ostream &os) {
+	const convex_node *cn = dynamic_cast<const convex_node *>(n);
+	if (cn) {
+		const ptlist &pts = cn->get_local_points();
+		os << "v ";
+		for (int i = 0; i < pts.size(); ++i) {
+			os << pts[i] << " ";
+		}
+		return;
+	}
 }
 
-drawer::drawer() 
-: scl(1., 1., 1.)
-{
+drawer::drawer() {
 	string path = get_option("display");
 	if (path.empty()) {
 		path = "/tmp/viewer";
 	}
 	sock.connect(path);
+	if (sock.connected()) {
+		sock.send("clear\n");
+	}
 }
 
 drawer::~drawer() {
 	sock.disconnect();
 }
 
-void drawer::set_pos(const vec3 &p) {
-	pos = p;
-}
-
-void drawer::set_rot(const vec3 &r) {
-	rot = r;
-}
-
-void drawer::set_scale(const vec3 &s) {
-	scl = s;
-}
-
-void drawer::set_transforms(sgnode *n) {
-	set_pos(n->get_trans('p'));
-	set_rot(n->get_trans('r'));
-	set_scale(n->get_trans('s'));
-}
-
-void drawer::set_vertices(const ptlist &v) {
-	verts = v;
-}
-
-void drawer::set_vertices(sgnode *n) {
-	ptlist pts;
-	n->get_local_points(pts);
-	verts = pts;
-}
-
-void drawer::reset_properties() {
-	pos << 0, 0, 0;
-	rot << 0, 0, 0;
-	scl << 1, 1, 1;
-}
-
-void drawer::add(const string &scn, const string &name) {
+void drawer::add(const string &scn, const sgnode *n) {
 	if (!sock.connected()) {
 		return;
 	}
 	stringstream ss;
-	ss << scn << " a " << name << " world v ";
-	write_ptlist(ss, verts);
-	ss << " p " << pos << " r " << rot << " s " << scl << endl;
-	sock.send_line(ss.str());
+	string shape_str;
+	n->get_shape_sgel(shape_str);
+	
+	ss << scn << " a " << n->get_name() << " " << n->get_parent()->get_name() << " " << shape_str
+	   << " p " << n->get_trans('p')
+	   << " r " << n->get_trans('r')
+	   << " s " << n->get_trans('s') << endl;
+	
+	sock.send(ss.str());
 }
 
-void drawer::add(const string &scn, sgnode *n) {
-	ptlist pts;
-	n->get_local_points(pts);
-	set_pos(n->get_trans('p'));
-	set_rot(n->get_trans('r'));
-	set_scale(n->get_trans('s'));
-	set_vertices(pts);
-	add(scn, n->get_name());
-}
-
-void drawer::del(const string &scn, const string &name) {
+void drawer::del(const string &scn, const sgnode *n) {
 	if (!sock.connected()) {
 		return;
 	}
 	
 	stringstream ss;
-	ss << scn << " d " << name << endl;
-	sock.send_line(ss.str());
+	ss << scn << " d " << n->get_name() << endl;
+	sock.send(ss.str());
 }
 
-void drawer::del(const string &scn, sgnode *n) {
-	del(scn, n->get_name());
-}
-
-void drawer::change(const string &scn, const string &name, int props) {
+void drawer::change(const string &scn, const sgnode *n, int props) {
 	if (!sock.connected()) {
 		return;
 	}
 	
 	stringstream ss;
-	ss << scn << " c " << name;
-	if (props & VERTS) {
-		ss << " v ";
-		write_ptlist(ss, verts);
+	ss << scn << " c " << n->get_name() << " ";
+	if (props & SHAPE) {
+		write_shape_string(n, ss);
 	}
 	if (props & POS) {
-		ss << " p " << pos;
+		ss << " p " << n->get_trans('p');
 	}
 	if (props & ROT) {
-		ss << " r " << rot;
+		ss << " r " << n->get_trans('r');
 	}
 	if (props & SCALE) {
-		ss << " s " << scl;
+		ss << " s " << n->get_trans('s');
 	}
 	ss << endl;
-	sock.send_line(ss.str());
+	sock.send(ss.str());
 }
-

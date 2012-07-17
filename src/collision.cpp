@@ -13,6 +13,26 @@ btConvexHullShape *ptlist_to_hullshape(const ptlist &pts) {
 	return s;
 }
 
+btCollisionShape *get_node_shape(const sgnode *n) {
+	btCollisionShape *shape;
+	const convex_node *cn = dynamic_cast<const convex_node*>(n);
+	if (cn) {
+		shape = ptlist_to_hullshape(cn->get_local_points());
+		return shape;
+	}
+	const ball_node *bn = dynamic_cast<const ball_node*>(n);
+	if (bn) {
+		shape = new btSphereShape(bn->get_radius());
+		return shape;
+	}
+	/*
+	 If this is a group node, should make a compound shape in the
+	 future.
+	*/
+	assert(false);
+	return NULL;
+}
+
 void update_transforms(sgnode *n, btCollisionObject *cobj) {
 	vec3 rpy = n->get_trans('r');
 	btQuaternion q;
@@ -23,7 +43,7 @@ void update_transforms(sgnode *n, btCollisionObject *cobj) {
 }
 
 collision_detector::collision_detector()
-: config(NULL), dispatcher(NULL), broadphase(NULL), cworld(NULL)
+: config(NULL), dispatcher(NULL), broadphase(NULL), cworld(NULL), dirty(true)
 {
 	timers.add("add_node");
 	timers.add("del_node");
@@ -38,6 +58,7 @@ void collision_detector::init() {
 	dispatcher = new btCollisionDispatcher(config);
 	broadphase = new btDbvtBroadphase();
 	cworld = new btCollisionWorld(dispatcher, broadphase, config);
+	dirty = true;
 }
 
 collision_detector::~collision_detector() {
@@ -55,14 +76,13 @@ void collision_detector::add_node(sgnode *n) {
 		init();
 	}
 	
-	ptlist points;
-	n->get_local_points(points);
 	btCollisionObject *cobj = new btCollisionObject();
 	cobj->setUserPointer(static_cast<void*>(n));
-	cobj->setCollisionShape(ptlist_to_hullshape(points));
+	cobj->setCollisionShape(get_node_shape(n));
 	update_transforms(n, cobj);
 	cworld->addCollisionObject(cobj);
 	object_map[n] = cobj;
+	dirty = true;
 }
 
 void collision_detector::del_node(sgnode *n) {
@@ -73,6 +93,7 @@ void collision_detector::del_node(sgnode *n) {
 	delete cobj->getCollisionShape();
 	delete cobj;
 	object_map.erase(n);
+	dirty = true;
 }
 
 void collision_detector::update_transform(sgnode *n) {
@@ -81,6 +102,7 @@ void collision_detector::update_transform(sgnode *n) {
 	assert(object_map.find(n) != object_map.end());
 	btCollisionObject *cobj = object_map[n];
 	update_transforms(n, cobj);
+	dirty = true;
 }
 
 void collision_detector::update_points(sgnode *n) {
@@ -88,32 +110,36 @@ void collision_detector::update_points(sgnode *n) {
 	
 	assert(object_map.find(n) != object_map.end());
 	btCollisionObject *cobj = object_map[n];
-	ptlist points;
-	n->get_local_points(points);
 	delete cobj->getCollisionShape();
-	cobj->setCollisionShape(ptlist_to_hullshape(points));
+	cobj->setCollisionShape(get_node_shape(n));
+	dirty = true;
 }
 
-void collision_detector::update(vector<pair<sgnode*, sgnode*> > &collisions) {
+const collision_table &collision_detector::get_collisions() {
 	function_timer t(timers.get(UPDATE_T));
 	
-	if (!cworld) {
-		return;
-	}
-	timers.start(COLLISION_T);
-	cworld->performDiscreteCollisionDetection();
-	timers.stop(COLLISION_T);
-	int num_manifolds = dispatcher->getNumManifolds();
-	for (int i = 0; i < num_manifolds; ++i) {
-		btPersistentManifold *m = dispatcher->getManifoldByIndexInternal(i);
-		if (m->getNumContacts() > 0) {
-			btCollisionObject *a = static_cast<btCollisionObject*>(m->getBody0());
-			btCollisionObject *b = static_cast<btCollisionObject*>(m->getBody1());
-			sgnode *na = static_cast<sgnode*>(a->getUserPointer());
-			sgnode *nb = static_cast<sgnode*>(b->getUserPointer());
-			collisions.push_back(make_pair(na, nb));
+	if (dirty) {
+		results.clear();
+		if (!cworld) {
+			return results;
 		}
-		m->clearManifold();
+		timers.start(COLLISION_T);
+		cworld->performDiscreteCollisionDetection();
+		timers.stop(COLLISION_T);
+		int num_manifolds = dispatcher->getNumManifolds();
+		for (int i = 0; i < num_manifolds; ++i) {
+			btPersistentManifold *m = dispatcher->getManifoldByIndexInternal(i);
+			if (m->getNumContacts() > 0) {
+				btCollisionObject *a = static_cast<btCollisionObject*>(m->getBody0());
+				btCollisionObject *b = static_cast<btCollisionObject*>(m->getBody1());
+				sgnode *na = static_cast<sgnode*>(a->getUserPointer());
+				sgnode *nb = static_cast<sgnode*>(b->getUserPointer());
+				results.insert(make_pair(na, nb));
+			}
+			m->clearManifold();
+		}
+		dirty = false;
 	}
+	return results;
 }
 

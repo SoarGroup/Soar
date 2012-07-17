@@ -132,8 +132,8 @@ private:
 
 class scene_manager {
 public:
-	scene_manager(ref_ptr<osgViewer::Viewer> &v, int scene_menu_id) 
-	: viewer(v), scene_menu_id(scene_menu_id), current(-1)
+	scene_manager(ref_ptr<osgViewer::Viewer> &v, int scene_menu_id, bool debug) 
+	: viewer(v), scene_menu_id(scene_menu_id), current(-1), debug(debug)
 	{
 		osgViewer::ViewerBase::Cameras cs;
 		viewer->getCameras(cs);
@@ -224,12 +224,23 @@ public:
 			return;
 		}
 		
+		if (debug) {
+			cerr << "> " << line << endl;
+		}
+		
 		if (fields[0] == "clear") {
 			clear();
+			return;
+		}
+		
+		if (fields.size() < 2) {
+			cerr << "expecting \"clear\" or \"<scene> <delete|a|c|d>\"" << endl;
+			return;
 		}
 		
 		if (fields[1] == "delete") {
 			del_scene(fields[0]);
+			return;
 		}
 		
 		int i;
@@ -268,6 +279,12 @@ public:
 		}
 	}
 	
+	void toggle_fill() {
+		for (int i = 0; i < scenes.size(); ++i) {
+			scenes[i].second->toggle_fill();
+		}
+	}
+	
 	void update_grid() {
 		Vec3f eye, center, up;
 		float dist;
@@ -292,12 +309,14 @@ private:
 	int scene_menu_id;
 	
 	string input;
+	bool debug;
 };
 
 sock *sck;
 vector<string> read_buf;
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 bool finished = false;
+bool debug = false;
 
 ref_ptr<osgViewer::Viewer> viewer;
 observer_ptr<osgViewer::GraphicsWindow> window;
@@ -397,6 +416,7 @@ enum MenuID {
 	MENU_RESET,
 	MENU_WIREFRAME,
 	MENU_AXES,
+	MENU_FILL,
 	MENU_QUIT,
 	MENU_END,
 };
@@ -410,6 +430,7 @@ MenuDef menu_definition[] = {
 	{ MENU_RESET,     "reset camera" },
 	{ MENU_WIREFRAME, "toggle wireframe" },
 	{ MENU_AXES,      "toggle axes" },
+	{ MENU_FILL,      "toggle fill" },
 	{ MENU_QUIT,      "quit" },
 	{ MENU_END,       NULL},
 };
@@ -424,6 +445,9 @@ void top_menu_callback(int value) {
 		break;
 	case MENU_WIREFRAME:
 		scn_mgr->toggle_wireframe();
+		break;
+	case MENU_FILL:
+		scn_mgr->toggle_fill();
 		break;
 	case MENU_QUIT:
 		glutDestroyWindow(glutGetWindow());
@@ -459,7 +483,7 @@ int create_menu() {
  #3 is the default method, but the user can change this with command
  line options that we parse here.
 */
-void parse_conn_args(int argc, char *argv[]) {
+void parse_args(int argc, char *argv[]) {
 	int port = -1;
 	const char *sock_path = DEFAULT_PATH;
 	
@@ -467,7 +491,6 @@ void parse_conn_args(int argc, char *argv[]) {
 		if (strcmp("-s", argv[i]) == 0) {
 			port = -1;
 			sock_path = NULL;
-			break;
 		} else if (strcmp("-p", argv[i]) == 0) {
 			// open a port
 			if (i >= argc - 1) {
@@ -481,7 +504,6 @@ void parse_conn_args(int argc, char *argv[]) {
 				cerr << "invalid port number" << endl;
 				exit(1);
 			}
-			break;
 		} else if (strcmp("-f", argv[i]) == 0) {
 			// create a socket file
 			if (i >= argc - 1) {
@@ -489,7 +511,11 @@ void parse_conn_args(int argc, char *argv[]) {
 				exit(1);
 			}
 			sock_path = argv[++i];
-			break;
+		} else if (strcmp("-d", argv[i]) == 0) {
+			debug = true;
+		} else {
+			cerr << "unrecognized option " << argv[i] << endl;
+			exit(1);
 		}
 	}
 	
@@ -504,7 +530,7 @@ void parse_conn_args(int argc, char *argv[]) {
 }
 
 int main( int argc, char **argv ) {
-	parse_conn_args(argc, argv);
+	parse_args(argc, argv);
 	
 	glutInit(&argc, argv);
 	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH | GLUT_ALPHA );
@@ -528,7 +554,7 @@ int main( int argc, char **argv ) {
 	
 	int scene_menu_id = create_menu();
 	
-	scn_mgr = new scene_manager(viewer, scene_menu_id);
+	scn_mgr = new scene_manager(viewer, scene_menu_id, debug);
 	
 	pthread_t read_thread;
 	if (!sck) {

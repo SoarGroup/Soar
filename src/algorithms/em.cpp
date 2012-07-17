@@ -243,12 +243,6 @@ bool EM::unify_or_add_model() {
 			noise_data.push_back(i);
 		}
 	}
-
-	DATAVIS("noise '")
-	for (int i = 0; i < noise_data.size(); ++i) {
-		DATAVIS(noise_data[i] << " ")
-	}
-	DATAVIS("'" << endl)
 	
 	if (noise_data.size() < K) {
 		return false;
@@ -300,12 +294,12 @@ bool EM::unify_or_add_model() {
 			double uni_error = unified->get_train_error();
 			
 			if (uni_error < MODEL_ERROR_THRESH ||
-			    curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error)
+			    (curr_error > 0.0 && uni_error < UNIFY_MUL_THRESH * curr_error))
 			{
 				delete models[i];
 				models[i] = unified.release();
 				mark_model_stale(i);
-				cerr << "UNIFIED " << i << endl;
+				LOG(EMDBG) << "UNIFIED " << i << endl;
 				return true;
 			}
 		}
@@ -416,7 +410,7 @@ bool EM::run(int maxiters) {
 		}
 		changed = true;
 	}
-	cerr << "Reached max iterations without quiescence" << endl;
+	LOG(EMDBG) << "Reached max iterations without quiescence" << endl;
 	return changed;
 }
 
@@ -505,7 +499,7 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 		os << "EM model learner" << endl;
 		os << "nmodels: " << nmodels << endl;
 		os << "ndata:   " << ndata << endl;
-		os << endl << "subelements: function ptable train classifier" << endl;
+		os << endl << "subelements: function ptable train classifier timing noise" << endl;
 		return true;
 	} else if (args[first_arg] == "ptable") {
 		for (int i = 0; i < ndata; ++i) {
@@ -520,28 +514,46 @@ bool EM::cli_inspect(int first_arg, const vector<string> &args, ostream &os) con
 			os << "Specify a function number (0 - " << nmodels - 1 << ")" << endl;
 			return false;
 		}
-		char *end;
-		int n = strtol(args[first_arg + 1].c_str(), &end, 10);
-		if (*end != '\0' || n < 0 || n >= nmodels) {
+		int n;
+		if (!parse_int(args[first_arg+1], n) || n < 0 || n >= nmodels) {
 			os << "invalid model number" << endl;
 			return false;
 		}
 		return models[n]->cli_inspect(first_arg + 2, args, os);
 	} else if (args[first_arg] == "train") {
-		for (int i = 0; i < ndata; ++i) {
-			for (int j = 0; j < xdata.cols(); ++j) {
-				os << xdata(i, j) << " ";
+		int start = 0, end = ndata - 1;
+		if (first_arg + 1 < args.size()) {
+			if (!parse_int(args[first_arg + 1], start) || start < 0 || start >= ndata - 1) {
+				os << "invalid data range" << endl;
+				return false;
 			}
-			for (int j = 0; j < ydata.cols(); ++j) {
-				os << ydata(i, j) << " ";
+		}
+		if (first_arg + 2 < args.size()) {
+			if (!parse_int(args[first_arg + 2], end) || end < start || end >= ndata - 1) {
+				os << "invalid data range" << endl;
+				return false;
 			}
-			os << endl;
+		}
+		
+		os << "   N  CLS | DATA" << endl;  // header
+		for (int i = start; i <= end; ++i) {
+			os << setw(4) << i << "  " << setw(3) << map_class[i] << " | ";
+			output_rvec(os, xdata.row(i)) << " ";
+			output_rvec(os, ydata.row(i)) << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "classifier") {
 		return clsfr.cli_inspect(first_arg + 1, args, os);
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);
+		return true;
+	} else if (args[first_arg] == "noise") {
+		for (int i = 0; i < map_class.size(); ++i) {
+			if (map_class[i] == -1) {
+				os << i << " ";
+			}
+		}
+		os << endl;
 		return true;
 	}
 	

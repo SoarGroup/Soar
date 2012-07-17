@@ -18,22 +18,52 @@
 */
 class filter_val {
 public:
+	virtual ~filter_val() {}
 	virtual std::string get_string() = 0;
+	virtual filter_val *clone() const = 0;
+	virtual filter_val &operator=(const filter_val &rhs) = 0;
+	virtual bool operator==(const filter_val &rhs) const = 0;
 };
 
-template <class T>
+template <typename T>
 class filter_val_c : public filter_val {  // c for concrete
 public:
 	filter_val_c(const T &v) : v(v) {}
-	
+	virtual ~filter_val_c() {}
+
 	std::string get_string() {
 		std::stringstream ss;
 		ss << v;
 		return ss.str();
 	}
 	
-	T get_value() { return v; }
-	void set_value(const T &n) { v = n; }
+	filter_val *clone() const {
+		return new filter_val_c<T>(v);
+	}
+	
+	filter_val &operator=(const filter_val &rhs) {
+		const filter_val_c<T> *c = dynamic_cast<const filter_val_c<T>*>(&rhs);
+		assert(c);
+		v = c->v;
+		return *this;
+	}
+	
+	bool operator==(const filter_val &rhs) const {
+		const filter_val_c<T> *c = dynamic_cast<const filter_val_c<T>*>(&rhs);
+		if (!c) {
+			return false;
+		}
+		return v == c->v;
+	}
+	
+	T get_value() const {
+		return v;
+	}
+	
+	void set_value(const T &n) {
+		v = n;
+	}
+	
 private:
 	T v;
 };
@@ -42,9 +72,39 @@ template <>
 class filter_val_c <const sgnode*> : public filter_val {
 public:
 	filter_val_c(const sgnode *v) : v(v) {}
-	std::string get_string() { return v->get_name(); }
-	const sgnode *get_value() { return v; }
-	void set_value(const sgnode *n) { v = n; }
+	virtual ~filter_val_c() {}
+	
+	std::string get_string() {
+		return v->get_name();
+	}
+	
+	filter_val *clone() const {
+		return new filter_val_c<const sgnode *>(v);
+	}
+	
+	filter_val &operator=(const filter_val &rhs) {
+		const filter_val_c<const sgnode *> *c = dynamic_cast<const filter_val_c<const sgnode *>*>(&rhs);
+		assert(c);
+		v = c->v;
+		return *this;
+	}
+	
+	bool operator==(const filter_val &rhs) const {
+		const filter_val_c<const sgnode *> *c = dynamic_cast<const filter_val_c<const sgnode *>*>(&rhs);
+		if (!c) {
+			return false;
+		}
+		return v == c->v;
+	}
+	
+	const sgnode *get_value() const {
+		return v;
+	}
+	
+	void set_value(const sgnode *n) {
+		v = n;
+	}
+	
 private:
 	const sgnode *v;
 };
@@ -54,10 +114,10 @@ private:
  with error checking
  */
 template <class T>
-inline bool get_filter_val (filter_val *fv, T &v) {
-	filter_val_c<T> *cast;
+inline bool get_filter_val (const filter_val *fv, T &v) {
+	const filter_val_c<T> *cast;
 	
-	if (!(cast = dynamic_cast<filter_val_c<T>*>(fv))) {
+	if (!(cast = dynamic_cast<const filter_val_c<T>*>(fv))) {
 		return false;
 	}
 	v = cast->get_value();
@@ -65,23 +125,52 @@ inline bool get_filter_val (filter_val *fv, T &v) {
 }
 
 /*
- Specialization for floats to allow getting int values as well
+ Specialization for floats to allow getting floats, doubles, and ints
 */
 template <>
-inline bool get_filter_val<float>(filter_val *fv, float &v) {
-	filter_val_c<float> *ffv;
-	filter_val_c<int> *ifv;
+inline bool get_filter_val<float>(const filter_val *fv, float &v) {
+	const filter_val_c<double> *dfv;
+	const filter_val_c<float> *ffv;
+	const filter_val_c<int> *ifv;
 	
-	if (!(ffv = dynamic_cast<filter_val_c<float>*>(fv))) {
-		if (!(ifv = dynamic_cast<filter_val_c<int>*>(fv))) {
-			return false;
-		} else {
-			v = ifv->get_value();
-		}
-	} else {
-		v = ffv->get_value();
+	if (dfv = dynamic_cast<const filter_val_c<double>*>(fv)) {
+		v = dfv->get_value();
+		return true;
 	}
-	return true;
+	if (ffv = dynamic_cast<const filter_val_c<float>*>(fv)) {
+		v = ffv->get_value();
+		return true;
+	}
+	
+	if (ifv = dynamic_cast<const filter_val_c<int>*>(fv)) {
+		v = ifv->get_value();
+		return true;
+	}
+	
+	return false;
+}
+
+template <>
+inline bool get_filter_val<double>(const filter_val *fv, double &v) {
+	const filter_val_c<double> *dfv;
+	const filter_val_c<float> *ffv;
+	const filter_val_c<int> *ifv;
+	
+	if (dfv = dynamic_cast<const filter_val_c<double>*>(fv)) {
+		v = dfv->get_value();
+		return true;
+	}
+	if (ffv = dynamic_cast<const filter_val_c<float>*>(fv)) {
+		v = ffv->get_value();
+		return true;
+	}
+	
+	if (ifv = dynamic_cast<const filter_val_c<int>*>(fv)) {
+		v = ifv->get_value();
+		return true;
+	}
+	
+	return false;
 }
 
 template <class T>
@@ -94,6 +183,14 @@ inline bool set_filter_val (filter_val *fv, const T &v) {
 	cast->set_value(v);
 	return true;
 }
+
+template<class T>
+class ctlist_listener {
+public:
+	virtual void handle_ctlist_add(const T *e) {}
+	virtual void handle_ctlist_remove(const T *e) {}
+	virtual void handle_ctlist_change(const T *e) {}
+};
 
 /*
  A list that keeps track of changes made to it, so that users can respond
@@ -116,16 +213,17 @@ public:
 	
 	void add(T* v) {
 		current.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_add(v);
+		}
 	}
 	
-	void remove(T* v) {
+	void remove(const T* v) {
 		bool found = false;
 		for (int i = 0; i < current.size(); ++i) {
 			if (current[i] == v) {
-				for (int j = i + 1; j < current.size(); ++j) {
-					current[j - 1] = current[j];
-				}
-				current.pop_back();
+				removed.push_back(current[i]);
+				current.erase(current.begin() + i);
 				if (i < m_added_begin) {
 					--m_added_begin;
 				}
@@ -136,17 +234,30 @@ public:
 		assert(found);
 		for (int i = 0; i < changed.size(); ++i) {
 			if (changed[i] == v) {
-				for (int j = i + 1; j < changed.size(); ++j) {
-					changed[j - 1] = changed[j];
-				}
-				changed.pop_back();
+				changed.erase(changed.begin() + i);
+				break;
 			}
 		}
-		removed.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_remove(v);
+		}
 	}
 	
 	void change(T *v) {
 		changed.push_back(v);
+		for (int i = 0; i < listeners.size(); ++i) {
+			listeners[i]->handle_ctlist_change(v);
+		}
+	}
+	
+	void change(const T *v) {
+		for(int i = 0; i < current.size(); ++i) {
+			if (current[i] == v) {
+				change(current[i]);
+				return;
+			}
+		}
+		assert(false);
 	}
 	
 	void clear_changes() {
@@ -212,6 +323,18 @@ public:
 		return m_added_begin;
 	}
 	
+	void listen(ctlist_listener<T> *l) {
+		listeners.push_back(l);
+	}
+	
+	void unlisten(ctlist_listener<T> *l) {
+		typename std::vector<ctlist_listener<T>*>::iterator i;
+		i = std::find(listeners.begin(), listeners.end(), l);
+		if (i != listeners.end()) {
+			listeners.erase(i);
+		}
+	}
+	
 private:
 	void clear_removed() {
 		for (int i = 0; i < removed.size(); ++i) {
@@ -226,6 +349,8 @@ private:
 	
 	// Index of the first new element in the current list
 	int m_added_begin;
+	
+	std::vector<ctlist_listener<T>*> listeners;
 };
 
 class filter;
@@ -272,6 +397,8 @@ public:
 private:
 	input_table input_info;
 };
+
+typedef ctlist_listener<filter_param_set> filter_input_listener;
 
 class null_filter_input : public filter_input {
 public:
@@ -358,8 +485,10 @@ public:
 		result2params[v] = p;
 	}
 	
-	bool get_result_params(filter_val *v, const filter_param_set *&p) {
-		return map_get(result2params, v, p);
+	void get_result_params(filter_val *v, const filter_param_set *&p) {
+		if (!map_get(result2params, v, p)) {
+			p = NULL;
+		}
 	}
 	
 	void remove_result(filter_val *v) {
@@ -395,6 +524,7 @@ public:
 	const filter_input *get_input() const {
 		return input;
 	}
+
 //TODO slightly less ugly hack
 	virtual int getAxis()
 	{
@@ -404,6 +534,17 @@ public:
 	virtual int getComp()
 	{
 	    return -3;
+	}
+	void listen_for_input(filter_input_listener *l) {
+		input->listen(l);
+	}
+	
+	void unlisten_for_input(filter_input_listener *l) {
+		input->unlisten(l);
+	}
+
+	void mark_stale(const filter_param_set *s) {
+		input->change(s);
 	}
 
 private:
@@ -416,82 +557,58 @@ private:
 };
 
 /*
- This is a hack. I need an equality comparison that always returns false
- for pointers, because some pointers (currently only sgnode*) are wrapped
- in filter_val_c and used as the result of filters (currently only node
- filter). When those filters are updated, the object being pointed to
- may change, but the filter result remains the same pointer. In these
- cases we still want the result to be treated as changed and any filters
- that consume such results to be updated.
-*/
-template<class T>
-bool special_equals(const T &a, const T &b) {
-	return a == b;
-}
-
-template<class T>
-bool special_equals(T *a, T *b) {
-	return false;
-}
-
-/*
  This type of filter assumes a one-to-one mapping of results to input
  parameter sets. It's also assumed that each result is only dependent
  on one parameter set. This is in contrast to filters that perform some
  kind of quantification over its inputs; returning the closest object,
  for example.
 */
-template <class T>
 class map_filter : public filter {
 public:
 	map_filter(filter_input *input) : filter(input) {}
+	
+	/*
+	 All created filter_vals are owned by the result list and cleaned
+	 up there, so don't do it here.
+	*/
 	virtual ~map_filter() {}
 	
 	/*
-	 Compute the result from parameters. adding is true if this is
-	 a new parameter set. If not, res will be the old result when
-	 the function is called. In either case, res should be set to
-	 the new result when the function terminates. An error is signaled
-	 by returning false.
-	*/
-	virtual bool compute(const filter_param_set *params, T &res, bool adding) = 0;
+	 Compute the result from parameters. If called with a new
+	 parameter set, res will be NULL, and the implementation should
+	 set it to a new filter_val object (which will be owned by the
+	 result list). Otherwise, res will point to a valid filter_val and
+	 the implementation should change its value. If the value is
+	 actually changed, the changed output argument should be set to
+	 true. The implementation should return false if an error occurs.
+	 */
+	virtual bool compute(const filter_param_set *params, filter_val *&res, bool &changed) = 0;
 	
 	/*
 	 Some derived classes might allocate memory associated with each
 	 result. They should override this function so they know when
 	 to deallocate that memory.
 	*/
-	virtual void result_removed(const T &res) { }
+	virtual void result_removed(const filter_val *res) { }
 	
-	/*
-	 Sometimes the function that maps from parameter set to result
-	 is conditioned on things other than the parameter set, such as
-	 the state of the scene graph. A derived class that implements
-	 such a function should explicitly mark a result as needing to be
-	 recomputed even when its associated parameter set doesn't change.
-	*/
-	void mark_stale(const filter_param_set *s) {
-		stale.push_back(s);
-	}
-
 	bool update_results() {
 		const filter_input* input = get_input();
 		std::vector<const filter_param_set*>::iterator j;
 		
 		for (int i = input->first_added(); i < input->num_current(); ++i) {
-			T val;
-			if (!compute(input->get_current(i), val, true)) {
+			filter_val *v = NULL;
+			bool changed = false;
+			if (!compute(input->get_current(i), v, changed)) {
 				return false;
 			}
-			filter_val_c<T> *fv = new filter_val_c<T>(val);
-			add_result(fv, input->get_current(i));
-			io_map[input->get_current(i)] = fv;
+			add_result(v, input->get_current(i));
+			io_map[input->get_current(i)] = v;
 		}
 		for (int i = 0; i < input->num_removed(); ++i) {
-			typename io_map_t::iterator r = io_map.find(input->get_removed(i));
+			io_map_t::iterator r = io_map.find(input->get_removed(i));
 			assert(r != io_map.end());
-			result_removed(r->second->get_value());
 			remove_result(r->second);
+			result_removed(r->second);
 			io_map.erase(r);
 		}
 		for (int i = 0; i < input->num_changed(); ++i) {
@@ -512,23 +629,188 @@ public:
 
 private:
 	bool update_one(const filter_param_set *params) {
-		T old_val, new_val;
-		filter_val_c<T> *fv = io_map[params];
-		get_filter_val<T>(fv, old_val);
-		new_val = old_val;
-		if (!compute(params, new_val, false)) {
+		filter_val *v = io_map[params];
+		bool changed = false;
+		if (!compute(params, v, changed)) {
 			return false;
 		}
-		if (!special_equals(old_val, new_val)) {
-			set_filter_val<T>(fv, new_val);
-			change_result(fv);
+		if (changed) {
+			change_result(v);
 		}
 		return true;
 	}
 	
-	typedef std::map<const filter_param_set*, filter_val_c<T>*> io_map_t;
+	typedef std::map<const filter_param_set*, filter_val*> io_map_t;
 	io_map_t io_map;
 	std::vector<const filter_param_set*> stale;
+};
+
+/*
+ User-defined filters should derive from this class so that they don't
+ have to work with filter_val* directly. Assumes that the filter only
+ returns one type of result.
+*/
+template <class T>
+class typed_map_filter : public map_filter {
+public:
+	typed_map_filter(filter_input *input) : map_filter(input) {}
+	virtual ~typed_map_filter() {}
+	
+	virtual bool compute(const filter_param_set *params, bool adding, T &res, bool &changed) = 0;
+	virtual void result_removed(const T &res) { }
+	
+private:
+	bool compute(const filter_param_set *params, filter_val *&res, bool &changed) {
+		bool success;
+		T val;
+		if (res != NULL) {
+			success = get_filter_val(res, val);
+			assert(success);
+		}
+		success = compute(params, res == NULL, val, changed);
+		if (!success) {
+			return false;
+		}
+		if (!res) {
+			res = new filter_val_c<T>(val);
+		} else {
+			success = set_filter_val(res, val);
+			assert(success);
+		}
+		return true;
+	}
+	
+	void result_removed(const filter_val *res) {
+		T val;
+		bool success = get_filter_val(res, val);
+		assert(success);
+		result_removed(val);
+	}
+};
+
+/*
+ This type of filter processes all inputs and produces a single
+ result. 
+*/
+template<typename T>
+class reduce_filter : public filter {
+public:
+	reduce_filter(filter_input *input) : filter(input), result(NULL) {}
+	virtual ~reduce_filter() {}
+	
+	bool update_results() {
+		T new_val = value;
+		const filter_input *input = get_input();
+		for (int i = input->first_added(); i < input->num_current(); ++i) {
+			if (!input_added(input->get_current(i), new_val)) {
+				return false;
+			}
+		}
+		for (int i = 0; i < input->num_changed(); ++i) {
+			if (!input_changed(input->get_changed(i), new_val)) {
+				return false;
+			}
+		}
+		for (int i = 0; i < input->num_removed(); ++i) {
+			if (!input_removed(input->get_removed(i), new_val)) {
+				return false;
+			}
+		}
+		
+		if (!result && input->num_current() > 0) {
+			result = new filter_val_c<T>(new_val);
+			add_result(result, NULL);
+		} else if (result && input->num_current() == 0) {
+			remove_result(result);
+			result = NULL;
+		} else if (result && value != new_val) {
+			bool success = set_filter_val(result, new_val);
+			assert(success);
+			change_result(result);
+		}
+		value = new_val;
+		return true;
+	}
+	
+private:
+	virtual bool input_added(const filter_param_set *params, T &res) = 0;
+	virtual bool input_changed(const filter_param_set *params, T &res) = 0;
+	virtual bool input_removed(const filter_param_set *params, T &res) = 0;
+	
+	filter_val_c<T> *result;
+	T value;
+};
+
+class rank_filter : public filter {
+public:
+	rank_filter(filter_input *input) : filter(input), result(NULL), old(NULL) {}
+
+	virtual bool rank(const filter_param_set *params, double &r) = 0;
+
+private:
+	bool update_results() {
+		const filter_input *input = get_input();
+		double r;
+		const filter_param_set *p;
+		for (int i = input->first_added(); i < input->num_current(); ++i) {
+			p = input->get_current(i);
+			if (!rank(p, r)) {
+				return false;
+			}
+			elems.push_back(make_pair(r, p));
+		}
+		for (int i = 0; i < input->num_changed(); ++i) {
+			p = input->get_changed(i);
+			if (!rank(p, r)) {
+				return false;
+			}
+			bool found = false;
+			for (int j = 0; j < elems.size(); ++j) {
+				if (elems[j].second == p) {
+					elems[j].first = r;
+					found = true;
+					break;
+				}
+			}
+			assert(found);
+		}
+		for (int i = 0; i < input->num_removed(); ++i) {
+			p = input->get_removed(i);
+			bool found = false;
+			for (int j = 0; j < elems.size(); ++j) {
+				if (elems[j].second == p) {
+					elems.erase(elems.begin() + j);
+					found = true;
+					break;
+				}
+			}
+			assert(found);
+		}
+
+		if (!elems.empty()) {
+			std::pair<double, const filter_param_set *> m = *std::max_element(elems.begin(), elems.end());
+			if (m.second != old) {
+				if (result) {
+					remove_result(result);
+				}
+				result = new filter_val_c<double>(m.first);
+				add_result(result, m.second);
+				old = m.second;
+			} else {
+				assert(result);
+				set_filter_val(result, m.first);
+				change_result(result);
+			}
+		} else if (result) {
+			remove_result(result);
+			result = NULL;
+		}
+		return true;
+	}
+
+	std::vector<std::pair<double, const filter_param_set*> > elems;
+	filter_val *result;
+	const filter_param_set *old;
 };
 
 /*
@@ -557,6 +839,33 @@ public:
 private:
 	std::vector<T> v;
 	bool added;
+};
+
+/*
+ Passes an arbitrary element in each input parameter set to the result
+ list. This filter is intended to be used with concat_filter_input to
+ implement a "combine" filter that multiplexes an arbitrary number of
+ inputs into a single list.
+*/
+class passthru_filter : public map_filter {
+public:
+	passthru_filter(filter_input *input) : map_filter(input) {}
+	
+	bool compute(const filter_param_set *params, filter_val *&res, bool &changed) {
+		if (params->empty()) {
+			return false;
+		}
+		if (res == NULL) {
+			res = params->begin()->second->clone();
+			changed = true;
+		} else {
+			changed = (*res == *params->begin()->second);
+			if (changed) {
+				*res = *params->begin()->second;
+			}
+		}
+		return true;
+	}
 };
 
 template <typename T>

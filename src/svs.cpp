@@ -20,27 +20,17 @@ using namespace std;
 
 typedef map<wme*,command*>::iterator cmd_iter;
 
-void print_tree(sgnode *n) {
-	if (n->is_group()) {
-		for(int i = 0; i < n->num_children(); ++i) {
-			print_tree(n->get_child(i));
-		}
-	} else {
-		ptlist pts;
-		n->get_world_points(pts);
-		copy(pts.begin(), pts.end(), ostream_iterator<vec3>(cout, ", "));
-		cout << endl;
-	}
-}
-
 sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node) 
 : soarint(si), id(ident), parent(parent), node(node)
 {
-	int i;
 	node->listen(this);
 	name_wme = soarint->make_wme(id, "id", node->get_name());
-	for (i = 0; i < node->num_children(); ++i) {
-		add_child(node->get_child(i));
+	
+	if (node->is_group()) {
+		group_node *g = node->as_group();
+		for (int i = 0; i < g->num_children(); ++i) {
+			add_child(g->get_child(i));
+		}
 	}
 }
 
@@ -64,19 +54,22 @@ sgwme::~sgwme() {
 }
 
 void sgwme::node_update(sgnode *n, sgnode::change_type t, int added_child) {
+	group_node *g;
 	switch (t) {
 		case sgnode::CHILD_ADDED:
-			add_child(node->get_child(added_child));
+			g = node->as_group();
+			add_child(g->get_child(added_child));
 			break;
 		case sgnode::DELETED:
 			node = NULL;
 			delete this;
 			break;
+		default:
+			break;
 	};
 }
 
 void sgwme::add_child(sgnode *c) {
-	sym_wme_pair cid_wme;
 	char letter;
 	string cname = c->get_name();
 	sgwme *child;
@@ -86,10 +79,10 @@ void sgwme::add_child(sgnode *c) {
 	} else {
 		letter = cname[0];
 	}
-	cid_wme = soarint->make_id_wme(id, "child");
+	wme *cid_wme = soarint->make_id_wme(id, "child");
 	
-	child = new sgwme(soarint, cid_wme.first, this, c);
-	childs[child] = cid_wme.second;
+	child = new sgwme(soarint, soarint->get_wme_val(cid_wme), this, c);
+	childs[child] = cid_wme;
 }
 
 svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *syms)
@@ -98,12 +91,14 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *
   ltm_link(NULL)
 {
 	assert (si->is_top_state(state));
+	outspec = svsp->get_output_spec();
 	init();
 	timers.add("model");
 }
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
-: parent(parent), state(state), svsp(parent->svsp), si(parent->si), cs(parent->cs),
+: parent(parent), state(state), svsp(parent->svsp), si(parent->si),
+  cs(parent->cs), outspec(parent->outspec),
   level(parent->level+1), scene_num(-1),
   scene_num_wme(NULL), scn(NULL), scene_link(NULL), ltm_link(NULL)
 {
@@ -126,29 +121,15 @@ void svs_state::init() {
 	string name;
 	
 	si->get_name(state, name);
-	svs_link = si->make_id_wme(state, cs->svs).first;
-	cmd_link = si->make_id_wme(svs_link, cs->cmd).first;
-	scene_link = si->make_id_wme(svs_link, cs->scene).first;
+	svs_link = si->get_wme_val(si->make_id_wme(state, cs->svs));
+	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs->cmd));
+	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	if (!parent) {
-		ltm_link = si->make_id_wme(svs_link, cs->ltm).first;
+		ltm_link = si->get_wme_val(si->make_id_wme(svs_link, cs->ltm));
 	}
 	mmdl = new multi_model();
-}
-
-void svs_state::update(const string &msg) {
-	size_t p = msg.find_first_of('\n');
-	int n;
-	
-	if (sscanf(msg.c_str(), "%d", &n) != 1) {
-		perror("svs_state::update");
-		cerr << msg << endl;
-		exit(1);
-	}
-	scene_num = n;
-	update_scene_num();
-	scn->parse_sgel(msg.substr(p+1));
 }
 
 void svs_state::update_scene_num() {
@@ -225,7 +206,7 @@ void svs_state::update_models() {
 	}
 	
 	scn->get_property_names(curr_pnames);
-	for (i = outspec.begin(); i != outspec.end(); ++i) {
+	for (i = outspec->begin(); i != outspec->end(); ++i) {
 		curr_pnames.push_back(string("output:") + i->name);
 	}
 	scn->get_properties(curr_pvals);
@@ -253,22 +234,22 @@ void svs_state::update_models() {
 }
 
 void svs_state::set_output(const rvec &out) {
-	assert(out.size() == outspec.size());
+	assert(out.size() == outspec->size());
 	next_out = out;
 }
 
 void svs_state::set_default_output() {
-	next_out.resize(outspec.size());
-	for (int i = 0; i < outspec.size(); ++i) {
-		next_out[i] = outspec[i].def;
+	next_out.resize(outspec->size());
+	for (int i = 0; i < outspec->size(); ++i) {
+		next_out[i] = (*outspec)[i].def;
 	}
 }
 
 bool svs_state::get_output(rvec &out) const {
-	if (next_out.size() != outspec.size()) {
-		out.resize(outspec.size());
-		for (int i = 0; i < outspec.size(); ++i) {
-			out[i] = outspec[i].def;
+	if (next_out.size() != outspec->size()) {
+		out.resize(outspec->size());
+		for (int i = 0; i < outspec->size(); ++i) {
+			out[i] = (*outspec)[i].def;
 		}
 		return false;
 	} else {
@@ -305,8 +286,8 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		if (next_out.size() == 0) {
 			os << "no output" << endl;
 		} else {
-			for (int i = 0; i < outspec.size(); ++i) {
-				os << outspec[i].name << " "  << next_out(i) << endl;
+			for (int i = 0; i < next_out.size(); ++i) {
+				os << (*outspec)[i].name << " "  << next_out(i) << endl;
 			}
 		}
 		return true;
@@ -314,7 +295,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		vector<string> atoms;
 		get_filter_table().get_all_atoms(scn, atoms);
 		for (int i = 0; i < atoms.size(); ++i) {
-			os << atoms[i] << endl;
+			os << setw(3) << i << " " << atoms[i] << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "timing") {
@@ -345,15 +326,12 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 }
 
 svs::svs(agent *a)
+: learn_models(false)
 {
-	string env_path = get_option("env");
-	if (!env_path.empty()) {
-		envsock.accept(env_path, true);
-	}
 	si = new soar_interface(a);
 	make_common_syms();
-	timers.add("input");
-	timers.add("output");
+	timers.add("input", true);
+	timers.add("output", true);
 	timers.add("calc_atoms");
 }
 
@@ -388,15 +366,16 @@ void svs::state_deletion_callback(Symbol *state) {
 }
 
 void svs::proc_input(svs_state *s) {
-	std::string in;
-	if (envsock.connected()) {
-		if (!envsock.receive(in)) {
-			assert(false);
-		}
-		split(in, "\n", env_inputs);
-	}
 	for (int i = 0; i < env_inputs.size(); ++i) {
-		s->get_scene()->parse_sgel(env_inputs[i]);
+		strip(env_inputs[i], " \t");
+		if (env_inputs[i][0] == 'o') {
+			int err = parse_output_spec(env_inputs[i]);
+			if (err >= 0) {
+				cerr << "error in output description at field " << err << endl;
+			}
+		} else {
+			s->get_scene()->parse_sgel(env_inputs[i]);
+		}
 	}
 	env_inputs.clear();
 }
@@ -416,21 +395,16 @@ void svs::output_callback() {
 	}
 	
 	/* environment IO */
-	output_spec *outspec = topstate->get_output_spec();
 	rvec out;
 	topstate->get_output(out);
 	
-	assert(outspec->size() == out.size());
+	assert(outspec.size() == out.size());
 	
 	stringstream ss;
-	for (int i = 0; i < outspec->size(); ++i) {
-		ss << (*outspec)[i].name << " " << out[i] << endl;
+	for (int i = 0; i < outspec.size(); ++i) {
+		ss << outspec[i].name << " " << out[i] << endl;
 	}
-	if (envsock.connected()) {
-		envsock.send(ss.str());
-	} else {
-		env_output = ss.str();
-	}
+	env_output = ss.str();
 }
 
 void svs::input_callback() {
@@ -438,16 +412,14 @@ void svs::input_callback() {
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
-	topstate->update_models();
+	if (learn_models) {
+		topstate->update_models();
+	}
 	
 	vector<svs_state*>::iterator i;
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
-	
-	timers.start(CALC_ATOMS_T);
-	topstate->get_scene()->get_atom_vals();
-	timers.stop(CALC_ATOMS_T);
 }
 
 void svs::make_common_syms() {
@@ -480,34 +452,113 @@ string svs::get_output() const {
 	return env_output;
 }
 
-bool svs::do_cli_command(const vector<string> &args, string &output) const {
-	stringstream ss;
+bool svs::do_command(const vector<string> &args, stringstream &out) {
 	if (args.size() < 2) {
-		ss << "specify a state level [0 - " << state_stack.size() - 1 << "]";
-		output = ss.str();
+		out << "subqueries are timing filters log, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
 		return false;
 	}
-	char *end;
-	long level = strtol(args[1].c_str(), &end, 10);
-	bool ret;
-	if (*end != '\0') {
-		if (args[1] == "timing") {
-			timers.report(ss);
-			output = ss.str();
+	if (args[1] == "timing") {
+		timers.report(out);
+		return true;
+	} else if (args[1] == "filters") {
+		get_filter_table().get_timers().report(out);
+		return true;
+	} else if (args[1] == "log") {
+		if (args.size() < 3) {
+			for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+				out << log_type_names[i] << (LOG.is_on(static_cast<log_type>(i)) ? " on" : " off") << endl;
+			}
 			return true;
-		} else if (args[1] == "filters") {
-			get_filter_table().get_timers().report(ss);
-			output = ss.str();
-			return true;
+		}
+		if (args[2] == "on") {
+			if (args.size() < 4) {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					LOG.turn_on(static_cast<log_type>(i));
+				}
+				return true;
+			} else {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					if (args[3] == log_type_names[i]) {
+						LOG.turn_on(static_cast<log_type>(i));
+						return true;
+					}
+				}
+				out << "no such log" << endl;
+				return false;
+			}
+		} else if (args[2] == "off") {
+			if (args.size() < 4) {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					LOG.turn_off(static_cast<log_type>(i));
+				}
+				return true;
+			} else {
+				for (int i = 0; i < NUM_LOG_TYPES; ++i) {
+					if (args[3] == log_type_names[i]) {
+						LOG.turn_off(static_cast<log_type>(i));
+						return true;
+					}
+				}
+				out << "no such log" << endl;
+				return false;
+			}
 		} else {
-			output = "no such query";
+			out << "expecting on/off" << endl;
 			return false;
 		}
+	} else if (args[1] == "learn") {
+		if (args.size() < 3) {
+			out << (learn_models ? "on" : "off") << endl;
+			return true;
+		}
+		if (args[2] == "on") {
+			learn_models = true;
+		} else if (args[2] == "off") {
+			learn_models = false;
+		} else {
+			out << "expecting on/off" << endl;
+			return false;
+		}
+		return true;
+	}
+	
+	int level;
+	if (!parse_int(args[1], level)) {
+		out << "no such query" << endl;
+		return false;
 	} else if (level < 0 || level >= state_stack.size()) {
-		output = "invalid level";
+		out << "invalid level" << endl;
 		return false;
 	}
-	ret = state_stack[level]->cli_inspect(2, args, ss);
-	output = ss.str();
-	return ret;
+	return state_stack[level]->cli_inspect(2, args, out);
+}
+
+int svs::parse_output_spec(const string &s) {
+	vector<string> fields;
+	vector<double> vals(4);
+	output_dim_spec sp;
+	char *end;
+	
+	split(s, " \t\n", fields);
+	assert(fields[0] == "o");
+	if ((fields.size() - 1) % 5 != 0) {
+		return fields.size();
+	}
+	
+	output_spec new_spec;
+	for (int i = 1; i < fields.size(); i += 5) {
+		sp.name = fields[i];
+		for (int j = 0; j < 4; ++j) {
+			if (!parse_double(fields[i + j + 1], vals[j])) {
+				return i + j + 1;
+			}
+		}
+		sp.min = vals[0];
+		sp.max = vals[1];
+		sp.def = vals[2];
+		sp.incr = vals[3];
+		new_spec.push_back(sp);
+	}
+	outspec = new_spec;
+	return -1;
 }

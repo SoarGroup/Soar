@@ -35,8 +35,9 @@ public:
 	virtual void learn(const rvec &x, const rvec &y) {}
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
-	
-	virtual bool cli_inspect_drv(int first_arg, const std::vector<std::string> &args, std::ostream &os) {
+
+protected:
+	virtual bool cli_inspect_sub(int first_arg, const std::vector<std::string> &args, std::ostream &os) {
 		return false;
 	};
 

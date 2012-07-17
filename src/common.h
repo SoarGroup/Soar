@@ -6,7 +6,6 @@
 #include <cmath>
 #include <cassert>
 #include <cstring>
-#include <ctime>
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -15,8 +14,13 @@
 #include <map>
 #include "linalg.h"
 
-
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
+void strip(std::string &s, const std::string &whitespace);
+
+bool parse_double(const std::string &s, double &v);
+bool parse_int   (const std::string &s, int &v);
+
+std::string get_option(const std::string &key);
 
 /* I need all my files to have access to a single ofstream */
 std::ofstream& get_datavis();
@@ -27,93 +31,6 @@ std::ofstream& get_datavis();
 #define DATAVIS(x)
 #endif
 
-class timer_set;
-
-class timer {
-public:
-	timer(const std::string &name) 
-	: name(name), t1(0), cycles(0), last(0), mean(0), min(INFINITY), max(0), m2(0)
-	{}
-	
-#ifdef NO_SVS_TIMING
-	inline void start() {}
-	inline double stop() { return 0.0; }
-#else
-	inline void start() {
-		t1 = clock();
-	}
-	
-	inline double stop() {
-		double elapsed = (clock() - t1) / (double) CLOCKS_PER_SEC;
-		last = elapsed;
-		
-		min = std::min(min, elapsed);
-		max = std::max(max, elapsed);
-		
-	  	// see http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#On-line_algorithm
-		cycles++;
-		double delta = elapsed - mean;
-		mean += delta / cycles;
-		m2 += delta * (elapsed - mean);
-		
-		return elapsed;
-	}
-#endif
-	
-private:
-	std::string name;
-	
-	clock_t t1;
-	int cycles;
-	double last;
-	double mean;
-	double min;
-	double max;
-	double m2;
-	
-	friend class timer_set;
-};
-
-/*
- Create an instance of this class at the beginning of a
- function. The timer will stop regardless of how the function
- returns.
-*/
-class function_timer {
-public:
-	function_timer(timer &t) : t(t) { t.start(); }
-	~function_timer() { t.stop(); }
-	
-private:
-	timer &t;
-};
-
-class timer_set {
-public:
-	timer_set() {}
-	
-	void add(const std::string &name) {
-		timers.push_back(timer(name));
-	}
-	
-	timer &get(int i) {
-		return timers[i];
-	}
-	
-	void start(int i) {
-		timers[i].start();
-	}
-	
-	double stop(int i) {
-		return timers[i].stop();
-	}
-	
-	void report(std::ostream &os) const;
-	
-private:
-	std::vector<timer> timers;
-};
-
 template <typename A, typename B>
 inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {
 	typename std::map<A, B>::const_iterator i = m.find(key);
@@ -122,6 +39,24 @@ inline bool map_get(const std::map<A, B> &m, const A &key, B &val) {
 	}
 	val = i->second;
 	return true;
+}
+
+template <typename A, typename B>
+inline const B *map_get(const std::map<A, B> &m, const A &key) {
+	typename std::map<A, B>::const_iterator i = m.find(key);
+	if (i == m.end()) {
+		return NULL;
+	}
+	return &i->second;
+}
+
+template <typename A, typename B>
+inline B *map_get(std::map<A, B> &m, const A &key) {
+	typename std::map<A, B>::iterator i = m.find(key);
+	if (i == m.end()) {
+		return NULL;
+	}
+	return &i->second;
 }
 
 template <typename A, typename B>
@@ -233,8 +168,6 @@ private:
 
 std::ostream &operator<<(std::ostream &os, const namedvec &v);
 
-vec3 calc_centroid(const ptlist &pts);
-
 /*
  Calculate the maximum difference between points in two point clouds in
  the direction of u.
@@ -264,7 +197,7 @@ public:
 		max = v;
 	}
 	
-	bbox(ptlist &pts) {
+	bbox(const ptlist &pts) {
 		if (pts.size() == 0) {
 			min.setZero();
 			max.setZero();
@@ -280,21 +213,26 @@ public:
 	
 	bbox(const vec3 &min, const vec3 &max) : min(min), max(max) {}
 	
-	void include(vec3 &v) {
+	void include(const vec3 &v) {
 		for(int d = 0; d < 3; ++d) {
 			if (v[d] < min[d]) { min[d] = v[d]; }
 			if (v[d] > max[d]) { max[d] = v[d]; }
 		}
 	}
 	
-	void include(ptlist &pts) {
-		ptlist::iterator i;
+	void include(const ptlist &pts) {
+		ptlist::const_iterator i;
 		for(i = pts.begin(); i != pts.end(); ++i) {
 			include(*i);
 		}
 	}
 	
-	bool intersects(bbox &b) const {
+	void include(const bbox &b) {
+		include(b.min);
+		include(b.max);
+	}
+	
+	bool intersects(const bbox &b) const {
 		int d;
 		for (d = 0; d < 3; ++d) {
 			if (max[d] < b.min[d] || min[d] > b.max[d]) {
@@ -304,7 +242,7 @@ public:
 		return true;
 	}
 	
-	bool contains(bbox &b) const {
+	bool contains(const bbox &b) const {
 		int d;
 		for (d = 0; d < 3; ++d) {
 			if (max[d] < b.max[d] || min[d] > b.min[d]) {
@@ -331,6 +269,26 @@ public:
 		min = b.min;
 		max = b.max;
 		return *this;
+	}
+	
+	void reset() {
+		min.setZero();
+		max.setZero();
+	}
+	
+	vec3 get_centroid() const {
+		return (max + min) / 2.0;
+	}
+	
+	void get_points(ptlist &p) const {
+		p.push_back(vec3(min[0], min[1], min[2]));
+		p.push_back(vec3(min[0], min[1], max[2]));
+		p.push_back(vec3(min[0], max[1], min[2]));
+		p.push_back(vec3(min[0], max[1], max[2]));
+		p.push_back(vec3(max[0], min[1], min[2]));
+		p.push_back(vec3(max[0], min[1], max[2]));
+		p.push_back(vec3(max[0], max[1], min[2]));
+		p.push_back(vec3(max[0], max[1], max[2]));
 	}
 	
 	friend std::ostream& operator<<(std::ostream &os, const bbox &b);
@@ -372,9 +330,77 @@ inline double gausspdf(double x, double mean, double std) {
 }
 
 inline void randomize_vec(rvec &v, const rvec &min, const rvec &max) {
-	v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
+	//v = min.array() + (rvec::Random(v.size()).array() * (max - min).array());
+	// apparently rvec::Random will generate numbers outside of [0, 1]
+	for (int i = 0; i < v.size(); ++i) {
+		v(i) = min(i) + (rand() / (double) RAND_MAX) * (max(i) - min(i));
+	}
 }
 
-std::string get_option(const std::string &key);
+enum log_type {
+	WARN,
+	ERROR,
+	CTRLDBG,
+	EMDBG,
+	SGEL,
+	NUM_LOG_TYPES,
+};
+
+// Don't forget to update this in common.cpp when you add new log types
+extern const char* log_type_names[NUM_LOG_TYPES];
+
+class logger {
+public:
+	logger() : is_null(false) {
+		on.resize(NUM_LOG_TYPES, false);
+	}
+	
+	void turn_on(log_type t) {
+		on[t] = true;
+	}
+	
+	void turn_off(log_type t) {
+		on[t] = false;
+	}
+	
+	bool is_on(log_type t) {
+		return on[t];
+	}
+
+	logger &operator()(log_type t) {
+		static logger null_logger(true);
+		
+		if (is_null) {
+			return *this;
+		}
+		if (on[t]) {
+			return *this;
+		}
+		return null_logger;
+	}
+	
+	template<class T>
+	logger &operator<<(const T& v) {
+		if (!is_null) {
+			std::cout << v;
+		}
+		return *this;
+	}
+	
+	logger& operator<<(std::ostream& (*pf)(std::ostream&)) {
+		if (!is_null) {
+			pf(std::cout);
+		}
+		return *this;
+	}
+	
+private:
+	logger(bool is_null) : is_null(is_null) {}
+
+	bool is_null;
+	std::vector<bool> on;
+};
+
+extern logger LOG;
 
 #endif

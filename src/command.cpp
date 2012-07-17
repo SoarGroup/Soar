@@ -126,14 +126,13 @@ void command::set_status(const string &s) {
 command *_make_extract_command_(svs_state *state, Symbol *root);
 command *_make_extract_distance_command_(svs_state *state, Symbol *root);
 command *_make_project_command_(svs_state *state, Symbol *root);
-command *_make_generate_command_(svs_state *state, Symbol *root);
+command *_make_add_node_command_(svs_state *state, Symbol *root);
 command *_make_create_model_command_(svs_state *state, Symbol *root);
 command *_make_assign_model_command_(svs_state *state, Symbol *root);
 command *_make_property_command_(svs_state *state, Symbol *root);
 command *_make_seek_command_(svs_state *state, Symbol *root);
 command *_make_random_control_command_(svs_state *state, Symbol *root);
 command *_make_manual_control_command_(svs_state *state, Symbol *root);
-command *_make_output_command_(svs_state *state, Symbol *root);
 
 command* make_command(svs_state *state, wme *w) {
 	string name;
@@ -154,8 +153,8 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_extract_distance_command_(state, id);
 	} else if (name == "project") {
 		return _make_project_command_(state, id);
-	} else if (name == "generate") {
-		return _make_generate_command_(state, id);
+	} else if (name == "add_node") {
+		return _make_add_node_command_(state, id);
 	} else if (name == "seek") {
 		return _make_seek_command_(state, id);
 	} else if (name == "random_control") {
@@ -168,8 +167,6 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_assign_model_command_(state, id);
 	} else if (name == "property") {
 		return _make_property_command_(state, id);
-	} else if (name == "output") {
-		return _make_output_command_(state, id);
 	}
 	return NULL;
 }
@@ -212,7 +209,8 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 		}
 	}
 	
-	if (itype == "concat") {
+	// The combine type check is a bit of a hack
+	if (itype == "concat" || ftype == "combine") {
 		input = new concat_filter_input();
 	} else if (params.size() == 0) {
 		input = new null_filter_input();
@@ -243,7 +241,11 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 	}
 	
 	if (!fail) {
-		f = get_filter_table().make_filter(ftype, scn, input);
+		if (ftype == "combine") {
+			f = new passthru_filter(input);
+		} else {
+			f = get_filter_table().make_filter(ftype, scn, input);
+		}
 	}
 	
 	if (fail || ftype == "" || f == NULL) {

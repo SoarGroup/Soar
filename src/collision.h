@@ -2,10 +2,14 @@
 #define COLLISION_H
 
 #include <map>
+#include <set>
 #include <utility>
 #include "bullet_support.h"
+#include "timer.h"
 
 class sgnode;
+
+typedef std::set<std::pair<const sgnode*, const sgnode*> > collision_table;
 
 class collision_detector {
 public:
@@ -15,7 +19,7 @@ public:
 	void del_node(sgnode *n);
 	void update_transform(sgnode *n);
 	void update_points(sgnode *n);
-	void update(std::vector<std::pair<sgnode*, sgnode*> > &collisions);
+	const collision_table &get_collisions();
 	
 	const timer_set &get_timers() const { return timers; }
 	
@@ -29,6 +33,8 @@ private:
 	bullet_debug_drawer      *drawer;
 	
 	std::map<sgnode*, btCollisionObject*> object_map;
+	bool dirty;
+	collision_table results;
 	
 	enum Timers {ADD_NODE_T, DEL_NODE_T, UPDATE_TRANSFORM_T, UPDATE_POINTS_T, UPDATE_T, COLLISION_T};
 	timer_set timers;

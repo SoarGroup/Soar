@@ -3,19 +3,18 @@
 #include "common.h"
 
 /* bbox of a single node */
-class bbox_filter : public map_filter<bbox> {
+class bbox_filter : public typed_map_filter<bbox> {
 public:
-	bbox_filter(filter_input *input) : map_filter<bbox>(input) {}
+	bbox_filter(filter_input *input) : typed_map_filter<bbox>(input) {}
 	
-	bool compute(const filter_param_set *params, bbox &b, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bbox &res, bool &changed) {
 		const sgnode *n;
-		ptlist pts;
 		
 		if (!get_filter_param(this , params, "node", n)) {
 			return false;
 		}
-		n->get_world_points(pts);
-		b = bbox(pts);
+		changed = (res != n->get_bounds());
+		res = n->get_bounds();
 		return true;
 	}
 };
@@ -24,11 +23,11 @@ public:
  Handles all binary operations between bounding boxes. Currently this
  includes intersection and containment.
 */
-class bbox_binary_filter : public map_filter<bool> {
+class bbox_binary_filter : public typed_map_filter<bool> {
 public:
-	bbox_binary_filter(filter_input *input, char type) : map_filter<bool>(input), type(type) {}
+	bbox_binary_filter(filter_input *input, char type) : typed_map_filter<bool>(input), type(type) {}
 	
-	bool compute(const filter_param_set *params, bool &res, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		filter_val *av, *bv;
 		bbox a, b;
 		
@@ -39,16 +38,20 @@ public:
 			return false;
 		}
 		
+		bool newres;
 		switch (type) {
 			case 'i':
-				res = a.intersects(b);
-				return true;
+				newres = a.intersects(b);
+				break;
 			case 'c':
-				res = a.contains(b);
-				return true;
+				newres = a.contains(b);
+				break;
 			default:
 				assert(false);
 		}
+		changed = (newres != res);
+		res = newres;
+		return true;
 	}
 
 private:

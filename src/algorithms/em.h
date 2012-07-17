@@ -6,6 +6,7 @@
 #include "linear.h"
 #include "common.h"
 #include "classify.h"
+#include "timer.h"
 
 class scene;
 

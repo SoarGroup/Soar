@@ -15,14 +15,9 @@ Calculates whether a bounding box is located to the left (-1), aligned
 bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	int i, dir[3];
 	vec3 amin, amax, bmin, bmax;
-	ptlist pa, pb;
-	
-	a->get_world_points(pa);
-	b->get_world_points(pb);
-	
-	bbox ba(pa), bb(pb);
-	ba.get_vals(amin, amax);
-	bb.get_vals(bmin, bmax);
+
+	a->get_bounds().get_vals(amin, amax);
+	b->get_bounds().get_vals(bmin, bmax);
 	
 	/*
 	 dir[i] = [-1, 0, 1] if a is [less than, overlapping,
@@ -95,12 +90,12 @@ bool below(scene *scn, const vector<string> &args) {
 Filter version
 */
 
-class direction_filter : public map_filter<bool> {
+class direction_filter : public typed_map_filter<bool> {
 public:
 	direction_filter(filter_input *input, int axis, int comp)
-	: map_filter<bool>(input), axis(axis), comp(comp) {}
+	: typed_map_filter<bool>(input), axis(axis), comp(comp) {}
 	
-	bool compute(const filter_param_set *p, bool &res, bool adding) {
+	bool compute(const filter_param_set *p, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, p, "a", a)) {
@@ -110,7 +105,9 @@ public:
 			return false;
 		}
 		
-		res = direction(a, b, axis, comp);
+		bool newres = direction(a, b, axis, comp);
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 	virtual int getAxis() {

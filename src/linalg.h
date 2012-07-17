@@ -162,7 +162,7 @@ public:
 		}
 	}
 	
-	vec3 operator()(const vec3 &v) {
+	vec3 operator()(const vec3 &v) const {
 		vec3 r;
 		for (int i = 0; i < 3; ++i) {
 			r[i] = m[i][3];
@@ -173,7 +173,7 @@ public:
 		return r;
 	}
 	
-	transform3 operator*(const transform3 &t) {
+	transform3 operator*(const transform3 &t) const {
 		transform3 r;
 		r.m[0][0] = m[0][0]*t.m[0][0]+m[0][1]*t.m[1][0]+m[0][2]*t.m[2][0];
 		r.m[0][1] = m[0][0]*t.m[0][1]+m[0][1]*t.m[1][1]+m[0][2]*t.m[2][1];

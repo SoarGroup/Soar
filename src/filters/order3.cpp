@@ -7,15 +7,15 @@
 using namespace std;
 
 /*
- Return true if and only if the convex hull containing the points between
- a and c intersects the convex hull of b
+ Return true if and only if the convex hull containing the bounding
+ boxes of a and c intersects the bounding box of b
 */
 bool between(const sgnode *a, const sgnode *b, const sgnode *c) {
 	ptlist pa, pb, pc;
-	a->get_world_points(pa);
-	b->get_world_points(pb);
-	c->get_world_points(pc);
-		
+	a->get_bounds().get_points(pa);
+	b->get_bounds().get_points(pb);
+	c->get_bounds().get_points(pc);
+	
 	copy(pa.begin(), pa.end(), back_inserter(pc));
 		
 	return (hull_distance(pb, pc) < 0);
@@ -28,23 +28,20 @@ bool between(const sgnode *a, const sgnode *b, const sgnode *c) {
  front query is desired, and negative if a behind query is desired.
 */
 bool behind(const sgnode *a, const sgnode *b, const sgnode *c) {
-	ptlist pa, pb, pc;
-	a->get_world_points(pa);
-	b->get_world_points(pb);
-	c->get_world_points(pc);
+	ptlist pa, pc;
+	a->get_bounds().get_points(pa);
+	c->get_bounds().get_points(pc);
 	
-	vec3 ca = calc_centroid(pa);
-	vec3 cb = calc_centroid(pb);
-	vec3 u = cb - ca;
+	vec3 u = b->get_centroid() - a->get_centroid();
 	
 	return (dir_separation(pa, pc, u) <= 0);
 }
 
-class between_filter : public map_filter<bool> {
+class between_filter : public typed_map_filter<bool> {
 public:
-	between_filter(filter_input *input) : map_filter<bool>(input) {}
+	between_filter(filter_input *input) : typed_map_filter<bool>(input) {}
 	
-	bool compute(const filter_param_set *params, bool &result, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
 		
 		if (!get_filter_param(this, params, "a", a) ||
@@ -53,16 +50,18 @@ public:
 		{
 			return false;
 		}
-		result = between(a, b, c);
+		bool newres = between(a, b, c);
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 };
 
-class behind_filter : public map_filter<bool> {
+class behind_filter : public typed_map_filter<bool> {
 public:
-	behind_filter(filter_input *input) : map_filter<bool>(input) {}
+	behind_filter(filter_input *input) : typed_map_filter<bool>(input) {}
 	
-	bool compute(const filter_param_set *params, bool &result, bool adding) {
+	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
 		
 		if (!get_filter_param(this, params, "a", a) ||
@@ -72,7 +71,9 @@ public:
 			return false;
 		}
 		
-		result = behind(a, b, c);
+		bool newres = behind(a, b, c);
+		changed = (newres != res);
+		res = newres;
 		return true;
 	}
 };

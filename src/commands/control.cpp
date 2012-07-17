@@ -47,6 +47,7 @@ bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec>
 class objective {
 public:
 	objective() : negated(false) {}
+	virtual ~objective() {}
 	
 	float evaluate(scene &scn) const {
 		if (negated) {
@@ -73,7 +74,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *n1, *n2;
-		ptlist p1, p2;
 		::vec3 c1, c2;
 		
 		if (!(n1 = scn.get_node(obj1)) ||
@@ -82,11 +82,8 @@ public:
 			return INFINITY;
 		}
 		
-		n1->get_world_points(p1);
-		n2->get_world_points(p2);
-		c1 = calc_centroid(p1);
-		c2 = calc_centroid(p2);
-
+		c1 = n1->get_centroid();
+		c2 = n2->get_centroid();
 		return (c1 - c2).norm();
 	}
 	
@@ -104,7 +101,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *n1, *n2;
-		ptlist p1, p2;
 		::vec3 c1, c2;
 		
 		if (!(n1 = scn.get_node(obj1)) ||
@@ -113,11 +109,8 @@ public:
 			return INFINITY;
 		}
 		
-		n1->get_world_points(p1);
-		n2->get_world_points(p2);
-		c1 = calc_centroid(p1);
-		c2 = calc_centroid(p2);
-
+		c1 = n1->get_centroid();
+		c2 = n2->get_centroid();
 		return c1[axis] - c2[axis];
 	}
 	
@@ -136,7 +129,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *n1, *n2;
-		ptlist p1, p2;
 		::vec3 c1, c2;
 		
 		if (!(n1 = scn.get_node(obj1)) ||
@@ -145,11 +137,8 @@ public:
 			return INFINITY;
 		}
 		
-		n1->get_world_points(p1);
-		n2->get_world_points(p2);
-		c1 = calc_centroid(p1);
-		c2 = calc_centroid(p2);
-		
+		c1 = n1->get_centroid();
+		c2 = n2->get_centroid();
 		float v = abs(c1[axis] - c2[axis]);
 		return v;
 	}
@@ -170,7 +159,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
-		ptlist pa, pb, pc;
 		
 		if (!(na = scn.get_node(a)) ||
 		    !(nb = scn.get_node(b)) ||
@@ -179,12 +167,11 @@ public:
 			return INFINITY;
 		}
 		
-		na->get_world_points(pa);
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
-		
-		vec3 ca = calc_centroid(pa);
-		vec3 cb = calc_centroid(pb);
+		ptlist pa, pc;
+		na->get_bounds().get_points(pa);
+		nc->get_bounds().get_points(pc);
+		vec3 ca = na->get_centroid();
+		vec3 cb = nb->get_centroid();
 		vec3 u = cb - ca;
 		u.normalize();
 		
@@ -211,7 +198,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
-		ptlist pa, pb, pc;
 		
 		if (!(na = scn.get_node(a)) ||
 		    !(nb = scn.get_node(b)) ||
@@ -220,9 +206,10 @@ public:
 			return INFINITY;
 		}
 		
-		na->get_world_points(pa);
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
+		ptlist pa, pb, pc;
+		na->get_bounds().get_points(pa);
+		nb->get_bounds().get_points(pb);
+		nc->get_bounds().get_points(pc);
 		
 		copy(pa.begin(), pa.end(), back_inserter(pc));
 		float d = hull_distance(pb, pc);
@@ -230,8 +217,8 @@ public:
 			d = 0.;
 		}
 		/*
-		vec3 ca = calc_centroid(pa);
-		vec3 cb = calc_centroid(pb);
+		vec3 ca = na->get_centroid();
+		vec3 cb = nb->get_centroid();
 		vec3 cc = calc_centroid(pc);
 		
 		float d = cc.line_dist(ca, cb);
@@ -253,7 +240,6 @@ public:
 	
 	float eval(scene &scn) const {
 		sgnode *na, *nb, *nc;
-		ptlist pb, pc;
 		
 		if (!(na = scn.get_node(a)) ||
 		    !(nb = scn.get_node(b)) ||
@@ -265,10 +251,7 @@ public:
 		transform3 rot('r', na->get_trans('r'));
 		vec3 facing = rot(vec3(1, 0, 0));
 		
-		nb->get_world_points(pb);
-		nc->get_world_points(pc);
-		
-		vec3 desired = calc_centroid(pc) - calc_centroid(pb);
+		vec3 desired = nc->get_centroid() - nb->get_centroid();
 		desired.normalize();
 		
 		/*
@@ -341,7 +324,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			if (!si->get_const_attr(root, "a", a) ||
 			    !si->get_const_attr(root, "b", b))
 			{
-				cerr << "Warning: incorrect parameters on euclidean objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on euclidean objective, skipping" << endl;
 				break;
 			}
 			obj = new euclidean_obj(a, b);
@@ -352,7 +335,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "axis", axis))
 			{
-				cerr << "Warning: incorrect parameters on axis_diff objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on axis_diff objective, skipping" << endl;
 				break;
 			}
 			obj = new axis_diff_obj(a, b, axis);
@@ -363,7 +346,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "axis", axis))
 			{
-				cerr << "Warning: incorrect parameters on abs_axis_diff objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on abs_axis_diff objective, skipping" << endl;
 				break;
 			}
 			obj = new abs_axis_diff_obj(a, b, axis);
@@ -373,7 +356,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				cerr << "Warning: incorrect parameters on behind objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on behind objective, skipping" << endl;
 				break;
 			}
 			obj = new behind_obj(a, b, c);
@@ -383,7 +366,7 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				cerr << "Warning: incorrect parameters on collinear objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on collinear objective, skipping" << endl;
 				break;
 			}
 			obj = new collinear_obj(a, b, c);
@@ -393,12 +376,12 @@ multi_objective *parse_obj_struct(soar_interface *si, Symbol *root) {
 			    !si->get_const_attr(root, "b", b) ||
 			    !si->get_const_attr(root, "c", c))
 			{
-				cerr << "Warning: incorrect parameters on align_facing objective, skipping" << endl;
+				LOG(CTRLDBG) << "Warning: incorrect parameters on align_facing objective, skipping" << endl;
 				break;
 			}
 			obj = new align_facing_objective(a, b, c);
 		} else {
-			cerr << "skipping unknown objective " << name << endl;
+			LOG(CTRLDBG) << "skipping unknown objective " << name << endl;
 		}
 		
 		if (sign == "negative") {
@@ -425,7 +408,7 @@ public:
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &init)
 	: mdl(m), stepsize(stepsize), obj(obj)
 	{
-		scn = init.copy();
+		scn = init.clone();
 		scn->get_properties(initvals);
 		timers.add("evaluate");
 	}
@@ -433,7 +416,7 @@ public:
 	traj_eval(int stepsize, multi_model *m, multi_objective *obj, const scene &tmp, const rvec &initvals)
 	: mdl(m), stepsize(stepsize), obj(obj), initvals(initvals)
 	{
-		scn = tmp.copy();
+		scn = tmp.clone();
 		timers.add("evaluate");
 	}
 
@@ -622,10 +605,10 @@ bool nelder_mead_constrained(const rvec &min, const rvec &max, traj_eval &ev, rv
 
 class tree_search {
 public:
-	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, output_spec *outspec, float thresh)
+	tree_search(scene *scn, multi_model *mdl, multi_objective *obj, const output_spec *outspec, float thresh)
 	: outspec(outspec), thresh(thresh)
 	{
-		ci.scn = scn->copy();
+		ci.scn = scn->clone();
 		ci.obj = obj;
 		ci.mdl = mdl;
 		ci.outspec = outspec;
@@ -709,9 +692,9 @@ public:
 		besttraj = bestnode->traj;
 		beststate = bestnode->state;
 		bestval = bestnode->value;
-		cout << "BEST TRAJ LENGTH " << bestnode->traj.size() << endl;
-		cout << "AVG DEPTH " << avg_depth << endl;
-		cout << "AVG BF " << avg_bf << endl;
+		LOG(CTRLDBG) << "BEST TRAJ LENGTH " << bestnode->traj.size() << endl;
+		LOG(CTRLDBG) << "AVG DEPTH " << avg_depth << endl;
+		LOG(CTRLDBG) << "AVG BF " << avg_bf << endl;
 		
 		/*
 		rvec lengths(leafs.size());
@@ -728,7 +711,7 @@ private:
 		multi_objective *obj;
 		multi_model *mdl;
 		scene *scn;
-		output_spec *outspec;
+		const output_spec *outspec;
 		rvec min, max, range;
 	};
 	
@@ -792,11 +775,6 @@ private:
 			}
 			ci->scn->set_properties(state);
 			ci->obj->evaluate(*ci->scn, value);
-			/*
-			stringstream ss;
-			ss << this;
-			ci->scn->draw_all(ss.str(), 0.0, 0.0, 1.0);
-			*/
 			return true;
 		}
 		
@@ -832,7 +810,7 @@ private:
 	std::list<node*> leafs;
 	std::list<node*> nonleafs;
 	common_info ci;
-	output_spec *outspec;
+	const output_spec *outspec;
 	int num_nodes;
 	float total_depth, avg_depth, avg_bf, thresh;
 	node *bestnode;
@@ -840,7 +818,7 @@ private:
 
 class controller {
 public:
-	controller(multi_model *mmdl, multi_objective *obj, output_spec *outspec, int depth, string type)
+	controller(multi_model *mmdl, multi_objective *obj, const output_spec *outspec, int depth, string type)
 	: mmdl(mmdl), obj(obj), outspec(outspec), depth(depth), type(type), incr(depth, outspec)
 	{
 		int i, j;
@@ -902,9 +880,6 @@ public:
 			} else {
 				cached_state = beststate;
 				cached_value = bestval;
-				scene *copy = scn->copy();
-				copy->set_properties(cached_state);
-				copy->draw_all("predict_", 1., 0., 0.);
 			}
 		}
 		
@@ -948,7 +923,7 @@ private:
 	*/
 	class step_incr {
 	public:
-		step_incr(output_spec *outspec, rvec *traj, int start) 
+		step_incr(const output_spec *outspec, rvec *traj, int start) 
 		: outspec(outspec), traj(traj), start(start), inc(outspec->size())
 		{
 			reset();
@@ -973,7 +948,7 @@ private:
 		}
 		
 	private:
-		output_spec *outspec;
+		const output_spec *outspec;
 		int start, divisions;
 		rvec *traj;
 		rvec inc;
@@ -986,7 +961,7 @@ private:
 	public:
 		traj_incr() : len(0) {}
 		
-		traj_incr(int len, output_spec *outspec)
+		traj_incr(int len, const output_spec *outspec)
 		: len(len)
 		{
 			int stepsize = outspec->size();
@@ -1024,7 +999,7 @@ private:
 	
 	multi_model     *mmdl;
 	multi_objective *obj;
-	output_spec     *outspec;
+	const output_spec *outspec;
 	rvec             min, max;   // for Nelder-Mead
 	int              depth;
 	int              stepsize;
@@ -1053,7 +1028,7 @@ public:
 		return string("control");
 	}
 	
-	bool update_drv() {
+	bool update_sub() {
 		rvec out;
 		
 		if (changed()) {
@@ -1152,17 +1127,14 @@ public:
 		return string("random control");
 	}
 	
-	bool update_drv() {
-		if (changed()) {
-			wme *outputs_wme;
-			output_spec *outspec = state->get_output_spec();
-			out.resize(outspec->size());
-			min.resize(outspec->size());
-			max.resize(outspec->size());
-			for (int i = 0; i < outspec->size(); ++i) {
-				min[i] = (*outspec)[i].min;
-				max[i] = (*outspec)[i].max;
-			}
+	bool update_sub() {
+		const output_spec *outspec = state->get_output_spec();
+		out.resize(outspec->size());
+		min.resize(outspec->size());
+		max.resize(outspec->size());
+		for (int i = 0; i < outspec->size(); ++i) {
+			min[i] = (*outspec)[i].min;
+			max[i] = (*outspec)[i].max;
 		}
 		
 		randomize_vec(out, min, max);
@@ -1249,13 +1221,10 @@ public:
 			return;
 		}
 		for (int i = 0; i < fields.size(); ++i) {
-			char *end;
-			double x = strtod(fields[i].c_str(), &end);
-			if (*end != '\0') {
+			if (!parse_double(fields[i], output(i))) {
 				error = "non-numeric field encountered";
 				return;
 			}
-			output(i) = x;
 		}
 	}
 	
@@ -1269,7 +1238,7 @@ public:
 		log_file << endl;
 	}
 	
-	bool update_drv() {
+	bool update_sub() {
 		if (changed()) {
 			configure();
 		}
@@ -1352,7 +1321,7 @@ private:
 	fstream log_file, stream_file;
 	
 	rvec output;
-	output_spec *outspec;
+	const output_spec *outspec;
 	svs_state *state;
 	Symbol *root;
 	soar_interface *si;

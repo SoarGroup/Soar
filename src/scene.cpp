@@ -42,7 +42,7 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 scene::scene(const string &name, drawer *d) 
 : name(name), draw(d), dirty(true)
 {
-	root = new sgnode("world");
+	root = new group_node("world");
 	nodes["world"].node = root;
 	root->listen(this);
 }
@@ -51,38 +51,46 @@ scene::~scene() {
 	delete root;
 }
 
-scene *scene::copy() const {
-	scene *copy = new scene(name, NULL);  // don't display copies
+scene *scene::clone() const {
+	scene *c = new scene(name, NULL);  // don't display copies
 	string name;
-	std::list<sgnode*> all_nodes;
-	std::list<sgnode*>::const_iterator i;
+	std::vector<sgnode*> all_nodes;
+	std::vector<sgnode*>::const_iterator i;
 	
-	copy->root = root->copy();
-	copy->root->walk(all_nodes);
+	c->root = root->clone()->as_group();
+	c->root->walk(all_nodes);
 	
 	/*
 	 Make a deep copy of the nodes table, which will result in
 	 a table with pointers to other's nodes, then go through and
 	 change to point to our nodes.
 	*/
-	copy->nodes = nodes;
+	c->nodes = nodes;
 	for(i = all_nodes.begin(); i != all_nodes.end(); ++i) {
-		copy->nodes[(**i).get_name()].node = *i;
-		(**i).listen(copy);
+		c->nodes[(**i).get_name()].node = *i;
+		(**i).listen(c);
 		if (!(**i).is_group()) {
-			copy->cdetect.add_node(*i);
+			c->cdetect.add_node(*i);
 		}
 	}
 	
-	return copy;
+	return c;
 }
 
-sgnode* scene::get_node(const string &name) {
+sgnode *scene::get_node(const string &name) {
 	node_map::const_iterator i;
 	if ((i = nodes.find(name)) == nodes.end()) {
 		return NULL;
 	}
 	return i->second.node;
+}
+
+group_node *scene::get_group(const string &name) {
+	sgnode *n = get_node(name);
+	if (n) {
+		return n->as_group();
+	}
+	return NULL;
 }
 
 sgnode const *scene::get_node(const string &name) const {
@@ -103,7 +111,7 @@ void scene::get_all_nodes(vector<sgnode*> &n) {
 }
 
 bool scene::add_node(const string &name, sgnode *n) {
-	sgnode *par = get_node(name);
+	group_node *par = get_group(name);
 	if (!par) {
 		return false;
 	}
@@ -144,15 +152,10 @@ bool parse_vec3(vector<string> &f, int &start, int n, vec3 &v) {
 }
 
 bool parse_verts(vector<string> &f, int &start, ptlist &verts) {
-	vec3 v;
-	int i;
-	if (start >= f.size() || f[start] != "v") {
-		return true;
-	}
-	start++;
 	verts.clear();
 	while (start < f.size()) {
-		i = start;
+		vec3 v;
+		int i = start;
 		if (!parse_vec3(f, start, 3, v)) {
 			return (i == start);  // end of list
 		}
@@ -192,9 +195,9 @@ bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 
 }
 
 int scene::parse_add(vector<string> &f) {
-	ptlist verts;
 	int p;
-	sgnode *n, *par;
+	sgnode *n;
+	group_node *par;
 	vec3 pos = vec3::Zero(), rot = vec3::Zero(), scale = vec3::Constant(1.0);
 
 	if (f.size() < 2) {
@@ -203,23 +206,37 @@ int scene::parse_add(vector<string> &f) {
 	if (get_node(f[0])) {
 		return 0;  // already exists
 	}
-	par = get_node(f[1]);
-	if (!par || !par->is_group()) {
+	par = get_group(f[1]);
+	if (!par) {
 		return 1;
 	}
-	p = 2;
-	if (!parse_verts(f, p, verts)) {
-		return p;
+	
+	if (f.size() >= 3 && f[2] == "v") {
+		p = 3;
+		ptlist verts;
+		if (!parse_verts(f, p, verts)) {
+			return p;
+		}
+		n = new convex_node(f[0], verts);
+	} else if (f.size() >= 3 && f[2] == "b") {
+		if (f.size() < 4) {
+			return 4;
+		}
+		double radius;
+		if (!parse_double(f[3], radius)) {
+			return 4;
+		}
+		n = new ball_node(f[0], radius);
+		p = 4;
+	} else {
+		n = new group_node(f[0]);
+		p = 2;
 	}
+	
 	if (!parse_transforms(f, p, pos, rot, scale)) {
 		return p;
 	}
 	
-	if (verts.size() == 0) {
-		n = new sgnode(f[0]);
-	} else {
-		n = new sgnode(f[0], verts);
-	}
 	n->set_trans(pos, rot, scale);
 	par->attach_child(n);
 	return -1;
@@ -279,7 +296,7 @@ void scene::parse_sgel(const string &s) {
 	char cmd;
 	int errfield;
 	
-	//cerr << "received sgel" << endl << "---------" << endl << s << endl << "---------" << endl;
+	LOG(SGEL) << "received sgel" << endl << "---------" << endl << s << endl << "---------" << endl;
 	split(s, "\n", lines);
 	for (i = lines.begin(); i != lines.end(); ++i) {
 		split(*i, " \t", fields);
@@ -316,30 +333,6 @@ void scene::parse_sgel(const string &s) {
 			cerr << "error in field " << errfield + 1 << " of line '" << *i << "' " << endl;
 			exit(1);
 		}
-	}
-}
-
-void scene::draw_all(const string &prefix, float r, float g, float b) {
-	node_map::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		sgnode *n = i->second.node;
-		if (n->is_group()) {
-			continue;
-		}
-		draw->set_transforms(n);
-		draw->set_vertices(n);
-		draw->add(name, prefix + n->get_name());
-	}
-}
-
-void scene::undraw_all(const string &prefix) {
-	node_map::const_iterator i;
-	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		sgnode *n = i->second.node;
-		if (n->is_group()) {
-			continue;
-		}
-		draw->del(name, prefix + n->get_name());
 	}
 }
 
@@ -493,9 +486,11 @@ int scene::get_dof() const {
 
 void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	sgnode *child;
+	group_node *g;
 	switch (t) {
 		case sgnode::CHILD_ADDED:
-			child = n->get_child(added_child);
+			g = n->as_group();
+			child = g->get_child(added_child);
 			child->listen(this);
 			nodes[child->get_name()].node = child;
 			if (!child->is_group()) {
@@ -514,12 +509,11 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 				draw->del(name, n);
 			}
 			break;
-		case sgnode::POINTS_CHANGED:
+		case sgnode::SHAPE_CHANGED:
 			if (!n->is_group()) {
 				cdetect.update_points(n);
 				if (draw) {
-					draw->set_vertices(n);
-					draw->change(name, n->get_name(), drawer::VERTS);
+					draw->change(name, n, drawer::SHAPE);
 				}
 			}
 			break;
@@ -528,8 +522,7 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 				cdetect.update_transform(n);
 			}
 			if (draw) {
-				draw->set_transforms(n);
-				draw->change(name, n->get_name(), drawer::POS | drawer::ROT | drawer::SCALE);
+				draw->change(name, n, drawer::POS | drawer::ROT | drawer::SCALE);
 			}
 			break;
 	}
@@ -537,37 +530,29 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 }
 
 void scene::dump_sgel(ostream &os) {
-	dump_sgel_rec(os, "world", "");
-}
-
-void scene::dump_sgel_rec(ostream &os, const string &name, const string &parent) {
-	property_map::const_iterator i;
+	vector<sgnode*> all_nodes;
+	root->walk(all_nodes);
 	
-	assert(nodes.find(name) != nodes.end());
-	const node_info &info = nodes[name];
-	sgnode *n = info.node;
-	const property_map &m = info.props;
-	if (name != "world") {
-		os << "a " << name << " " << parent << " ";
-		if (!n->is_group()) {
-			ptlist verts;
-			n->get_local_points(verts);
-			ptlist::const_iterator j;
-			os << "v ";
-			for (j = verts.begin(); j != verts.end(); ++j) {
-				os << *j << " ";
-			}
+	for (int i = 0; i < all_nodes.size(); ++i) {
+		sgnode *n = all_nodes[i];
+		if (n->get_name() == "world") {
+			continue;
 		}
-		os << "p " << n->get_trans('p') << " ";
-		os << "r " << n->get_trans('r') << " ";
-		os << "s " << n->get_trans('s') << endl;
-	}
-	for (i = info.props.begin(); i != info.props.end(); ++i) {
-		os << "p " << name << " " << i->first << " " << i->second << endl;
-	}
-	
-	for (int j = 0; j < n->num_children(); ++j) {
-		dump_sgel_rec(os, n->get_child(j)->get_name(), name);
+		assert(nodes.find(n->get_name()) != nodes.end());
+		const node_info &info = nodes[name];
+		const property_map &m = info.props;
+		string shape_sgel;
+		n->get_shape_sgel(shape_sgel);
+		os << "a " << n->get_name() << " " << n->get_parent()->get_name() << " "
+		   << shape_sgel << " "
+		   << "p " << n->get_trans('p') << " "
+		   << "r " << n->get_trans('r') << " "
+		   << "s " << n->get_trans('s') << endl;
+
+		property_map::const_iterator j;
+		for (j = info.props.begin(); j != info.props.end(); ++j) {
+			os << "p " << n->get_name() << " " << j->first << " " << j->second << endl;
+		}
 	}
 }
 
@@ -578,6 +563,22 @@ const vector<bool>& scene::get_atom_vals() {
 		dirty = false;
 	}
 	return atomvals;
+}
+
+bool scene::intersects(const string &a, const string &b) {
+	sgnode *na = get_node(a), *nb = get_node(b);
+	if (!na || !nb) {
+		return false;
+	}
+	return intersects(na, nb);
+}
+
+bool scene::intersects(const sgnode *a, const sgnode *b) {
+	if (a == b) {
+		return true;
+	}
+	const collision_table &c = cdetect.get_collisions();
+	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
 }
 
 void all_nodes(scene *scn, vector<vector<string> > &argset) {

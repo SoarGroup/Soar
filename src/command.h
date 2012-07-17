@@ -4,18 +4,18 @@
 #include <string>
 #include "soar_interface.h"
 #include "filter.h"
+#include "timer.h"
 
 class svs_state;
 
 class command {
 public:
 	virtual std::string description() = 0;
-	virtual bool update_drv() = 0;
 	virtual bool early() = 0;
 	
 	bool update() {
 		function_timer t(timers.get(UPDATE_T));
-		return update_drv();
+		return update_sub();
 	}
 	
 	command(svs_state *state, Symbol *root);
@@ -36,6 +36,9 @@ public:
 	void cli_inspect(std::ostream &os) const {
 		timers.report(os);
 	}
+
+protected:
+	virtual bool update_sub() = 0;
 	
 private:
 	void parse_substructure(int &size, int &max_time);

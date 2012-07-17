@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include "classify.h"
 #include "common.h"
@@ -46,6 +47,14 @@ int largest_class(const vector<int> &membership) {
 	return largest;
 }
 
+ostream &operator<<(ostream &os, const classifier_inst &inst) {
+	for (int i = 0; i < inst.attrs.size(); ++i) {
+		os << (inst.attrs[i] ? 1 : 0) << ' ';
+	}
+	os << inst.cat;
+	return os;
+}
+
 void classifier_inst::save(ostream &os) const {
 	os << cat << endl;
 	save_vector(attrs, os);
@@ -57,7 +66,7 @@ void classifier_inst::load(istream &is) {
 }
 
 classifier::classifier(const mat &X, const mat &Y, scene *scn) 
-: X(X), Y(Y), ndata(0), scn(scn->copy())
+: X(X), Y(Y), ndata(0), scn(scn->clone())
 {
 	vector<string> atoms;
 	get_filter_table().get_all_atoms(scn, atoms);
@@ -115,7 +124,7 @@ int classifier::classify(const rvec &x) {
 	clean_data(Xm, cleaned, nonuniform_cols);
 	
 	if (c.size() > 0 && cleaned.cols() == 0) {
-		cerr << "Degenerate case, no useful classification data." << endl;
+		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
 		return largest_class(c);
 	}
 	
@@ -168,7 +177,7 @@ void classifier::print_tree(ostream &os) const {
 
 bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
-		os << "specify an argument" << endl;
+		os << "subqueries are: tree train" << endl;
 		return false;
 	}
 	
@@ -181,13 +190,16 @@ bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream 
 			tree->print("", os);
 			return true;
 		}
-		char *end;
-		int id = strtol(args[first_arg + 1].c_str(), &end, 10);
-		if (*end != '\0') {
+		int id;
+		if (!parse_int(args[first_arg + 1], id)) {
 			os << "specify a node number" << endl;
 			return false;
 		}
 		return tree->cli_inspect(id, os);
+	} else if (args[first_arg] == "train") {
+		for (int i = 0; i < insts.size(); ++i) {
+			os << setw(4) << i << " " << insts[i] << endl;
+		}
 	}
 	return false;
 }

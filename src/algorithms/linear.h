@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "common.h"
+#include "timer.h"
 
 void lsqr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
 void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
@@ -54,12 +55,12 @@ public:
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
 	virtual LRModel* copy() const = 0;
-	virtual void fit_drv() = 0;
-	virtual bool predict_drv(const rvec &x, rvec &y) = 0;
-	virtual bool predict_drv(const_mat_view X, mat &Y) = 0;
+	virtual void fit_sub() = 0;
+	virtual bool predict_sub(const rvec &x, rvec &y) = 0;
+	virtual bool predict_sub(const_mat_view X, mat &Y) = 0;
 
 protected:
-	virtual bool cli_inspect_drv(std::ostream &os) const = 0;
+	virtual bool cli_inspect_sub(std::ostream &os) const = 0;
 	
 	const mat &xdata;
 	const mat &ydata;
@@ -82,15 +83,15 @@ public:
 	PCRModel(const PCRModel &m);
 	~PCRModel() {}
 	
-	void fit_drv();
-	bool predict_drv(const rvec &x, rvec &y);
-	bool predict_drv(const_mat_view X, mat &Y);
+	void fit_sub();
+	bool predict_sub(const rvec &x, rvec &y);
+	bool predict_sub(const_mat_view X, mat &Y);
 	
 	LRModel* copy() const {
 		return new PCRModel(*this);
 	}
 	
-	bool cli_inspect_drv(std::ostream &os) const;
+	bool cli_inspect_sub(std::ostream &os) const;
 	
 private:
 	mat beta;
