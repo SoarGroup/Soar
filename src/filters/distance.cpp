@@ -19,7 +19,7 @@ public:
 			return false;
 		}
 		
-		newres = (a->get_world_centroid() - b->get_world_centroid()).norm();
+		newres = (a->get_centroid() - b->get_centroid()).norm();
 		if (changed = (newres != res)) {
 			res = newres;
 		}
@@ -51,7 +51,7 @@ public:
 			return false;
 		}
 		
-		rank = -(a->get_world_centroid() - b->get_world_centroid()).norm();
+		rank = -(a->get_centroid() - b->get_centroid()).norm();
 		return true;
 	}
 };
