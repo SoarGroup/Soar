@@ -308,49 +308,51 @@ int main(int argc, char *argv[]) {
 		if (verbose) {
 			cout << "INPUT: " << line << endl;
 		}
-		if (line == "test") {
-			a->ExecuteCommandLine("run 2");
-			a->ExecuteCommandLine("excise -u");
-			needs_test = false;
-		} else if (line == "init") {
-			if (needs_test) {
-				a->ExecuteCommandLine("run 2");
+		
+		vector<string> fields;
+		split(line, fields);
+		
+		if (fields[0] == "want") {
+			string expected_val = fields[1];
+			vector<pair<string, string> > param_tests;
+			string ptstr = fields[2];
+			if (ptstr != "*") {
+				if (ptstr[0] != '(' || ptstr[ptstr.size()-1] != ')') {
+					cerr << "expecting * or (<param tests>) in field 3" << endl;
+					exit(1);
+				}
+				vector<string> param_fields;
+				split(ptstr.substr(1, ptstr.size() - 2), param_fields);
+				if (param_fields.size() % 2 != 0) {
+					cerr << "parameter test should have the form (<name> <value> <name> <value> ...)" << endl;
+					exit(1);
+				}
+				for (int i = 0; i < param_fields.size(); i += 2) {
+					param_tests.push_back(make_pair(param_fields[i], param_fields[i+1]));
+				}
 			}
-			a->ExecuteCommandLine("excise -u");
-			a->ExecuteCommandLine("init");
-			needs_test = false;
-		} else if (line == "repl") {
+			fields.erase(fields.begin(), fields.begin() + 3);
+			test_info.tests[test_count] = line;
+			string rule = make_rule(test_count++, expected_val, param_tests, fields);
+			if (verbose) {
+				cout << "RULE: " << rule << endl;
+			}
+			a->ExecuteCommandLine(rule.c_str());
+			needs_test = true;
+		} else if (fields[0] == "repl") {
 			repl(a);
 		} else {
-			vector<string> fields;
-			split(line, fields);
-			if (fields[0] == "want") {
-				string expected_val = fields[1];
-				vector<pair<string, string> > param_tests;
-				string ptstr = fields[2];
-				if (ptstr != "*") {
-					if (ptstr[0] != '(' || ptstr[ptstr.size()-1] != ')') {
-						cerr << "expecting * or (<param tests>) in field 3" << endl;
-						exit(1);
-					}
-					vector<string> param_fields;
-					split(ptstr.substr(1, ptstr.size() - 2), param_fields);
-					if (param_fields.size() % 2 != 0) {
-						cerr << "parameter test should have the form (<name> <value> <name> <value> ...)" << endl;
-						exit(1);
-					}
-					for (int i = 0; i < param_fields.size(); i += 2) {
-						param_tests.push_back(make_pair(param_fields[i], param_fields[i+1]));
-					}
-				}
-				fields.erase(fields.begin(), fields.begin() + 3);
-				test_info.tests[test_count] = line;
-				string rule = make_rule(test_count++, expected_val, param_tests, fields);
-				if (verbose) {
-					cout << "RULE: " << rule << endl;
-				}
-				a->ExecuteCommandLine(rule.c_str());
-				needs_test = true;
+			if (needs_test) {
+				a->ExecuteCommandLine("run 2");
+				a->ExecuteCommandLine("excise -u");
+				needs_test = false;
+			}
+			if (fields[0] == "test") {
+				a->ExecuteCommandLine("run 2");
+				a->ExecuteCommandLine("excise -u");
+				needs_test = false;
+			} else if (fields[0] == "init") {
+				a->ExecuteCommandLine("init");
 			} else {
 				a->SendSVSInput(line);
 			}
