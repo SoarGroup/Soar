@@ -255,6 +255,11 @@ bool multi_model::find_indexes(const vector<string> &props, vector<int> &indexes
 }
 
 bool multi_model::report_error(int i, const vector<string> &args, ostream &os) const {
+	if (reference_vals.empty()) {
+		os << "no model error data" << endl;
+		return false;
+	}
+	
 	int dim = -1, start = 0, end = reference_vals.size();
 	if (i < args.size()) {
 		for (int j = 0; j < prop_vec.size(); ++j) {
@@ -274,13 +279,21 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	}
 	if (++i < args.size()) {
 		if (!parse_int(args[i], start)) {
-			os << "invalid start" << endl;
+			os << "require integer start time" << endl;
+			return false;
+		}
+		if (start < 0 || start >= reference_vals.size()) {
+			os << "start time must be in [0, " << reference_vals.size() - 1 << "]" << endl;
 			return false;
 		}
 	}
 	if (++i < args.size()) {
 		if (!parse_int(args[i], end)) {
-			os << "invalid end" << endl;
+			os << "require integer end time" << endl;
+			return false;
+		}
+		if (end <= start || end >= reference_vals.size()) {
+			os << "end time must be in [start time, " << reference_vals.size() - 1 << "]" << endl;
 			return false;
 		}
 	}
@@ -351,7 +364,7 @@ void multi_model::report_model_config(model_config* c, ostream &os) const {
 
 bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) const {
 	if (i >= args.size()) {
-		os << "available queries are: error" << endl;
+		os << "available subqueries are: assignment error" << endl;
 		return false;
 	}
 	if (args[i] == "assignment") {
