@@ -38,7 +38,6 @@ class common_syms {
 public:
 	common_syms() {
 		svs        = NULL;
-		ltm        = NULL;
 		scene      = NULL;
 		cmd        = NULL;
 		child      = NULL;
@@ -46,7 +45,6 @@ public:
 	}
 	
 	Symbol *svs;
-	Symbol *ltm;
 	Symbol *cmd;
 	Symbol *scene;
 	Symbol *child;
@@ -114,7 +112,6 @@ private:
 	
 	Symbol *state;
 	Symbol *svs_link;
-	Symbol *ltm_link;
 	Symbol *scene_link;
 	Symbol *cmd_link;
 

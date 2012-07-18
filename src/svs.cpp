@@ -87,8 +87,7 @@ void sgwme::add_child(sgnode *c) {
 
 svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *syms)
 : svsp(svsp), parent(NULL), state(state), si(si), cs(syms), level(0),
-  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL),
-  ltm_link(NULL)
+  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
@@ -100,7 +99,7 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
   cs(parent->cs), outspec(parent->outspec),
   level(parent->level+1), scene_num(-1),
-  scene_num_wme(NULL), scn(NULL), scene_link(NULL), ltm_link(NULL)
+  scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->get_parent_state(state) == parent->state);
 	init();
@@ -126,9 +125,6 @@ void svs_state::init() {
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
-	if (!parent) {
-		ltm_link = si->get_wme_val(si->make_id_wme(svs_link, cs->ltm));
-	}
 	mmdl = new multi_model();
 }
 
@@ -424,7 +420,6 @@ void svs::input_callback() {
 
 void svs::make_common_syms() {
 	cs.svs        = si->make_sym("svs");
-	cs.ltm        = si->make_sym("ltm");
 	cs.cmd        = si->make_sym("command");
 	cs.scene      = si->make_sym("spatial-scene");
 	cs.child      = si->make_sym("child");
@@ -432,7 +427,6 @@ void svs::make_common_syms() {
 }
 
 void svs::del_common_syms() {
-	si->del_sym(cs.ltm);
 	si->del_sym(cs.cmd);
 	si->del_sym(cs.scene);
 	si->del_sym(cs.child);
