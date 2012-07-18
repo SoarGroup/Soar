@@ -171,36 +171,15 @@ void multi_model::learn(const rvec &x, const rvec &y) {
 }
 
 float multi_model::test(const rvec &x, const rvec &y) {
-	float s = 0.0;
-	list<model_config*>::iterator i;
-	for (i = active_models.begin(); i != active_models.end(); ++i) {
-		model_config *cfg = *i;
-		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
-		rvec xp, yp;
-		if (cfg->allx) {
-			xp = x;
-		} else {
-			slice(x, xp, cfg->xinds);
-		}
-		if (cfg->ally) {
-			yp = y;
-		} else {
-			slice(y, yp, cfg->yinds);
-		}
-		float d = cfg->mdl->test(xp, yp);
-		if (d < 0.) {
-			DATAVIS("'pred error' 'no prediction'" << endl)
-			s = -1.;
-		} else if (s >= 0.) {
-			DATAVIS("'pred error' " << d << endl)
-			s += d;
-		}
-		DATAVIS("END" << endl)
+	rvec predicted(y.size());
+	predicted.setConstant(0.0);
+	reference_vals.push_back(y);
+	if (!predict(x, predicted)) {
+		predicted_vals.push_back(rvec());
+		return INFINITY;
 	}
-	if (s >= 0.) {
-		return s / active_models.size();
-	}
-	return -1.;
+	predicted_vals.push_back(predicted);
+	return (y - predicted).squaredNorm();
 }
 
 string multi_model::assign_model
@@ -276,20 +255,74 @@ bool multi_model::find_indexes(const vector<string> &props, vector<int> &indexes
 	return true;
 }
 
-bool multi_model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
-	map<string, model*>::const_iterator i;
-	if (first_arg >= args.size()) {
-		os << "Current models:" << endl;
-		for (i = model_db.begin(); i != model_db.end(); ++i) {
-			os << i->first << endl;
+bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) const {
+	int dim = -1, start = 0, end = reference_vals.size();
+	if (i < args.size()) {
+		for (int j = 0; j < prop_vec.size(); ++j) {
+			if (prop_vec[j] == args[i]) {
+				dim = j;
+				break;
+			}
 		}
-		return true;
-	}
-	i = model_db.find(args[first_arg]);
-	if (i == model_db.end()) {
-		os << "no such model" << endl;
+		if (dim < 0 && !parse_int(args[i++], dim)) {
+			os << "invalid dimension" << endl;
+			return false;
+		}
+		assert(dim >= 0);
+	} else {
+		os << "specify a dimension" << endl;
 		return false;
 	}
-	return i->second->cli_inspect(first_arg + 1, args, os);
+	if (++i < args.size()) {
+		if (!parse_int(args[i], start)) {
+			os << "invalid start" << endl;
+			return false;
+		}
+	}
+	if (++i < args.size()) {
+		if (!parse_int(args[i], end)) {
+			os << "invalid end" << endl;
+			return false;
+		}
+	}
+	
+	double mean, std, min, max;
+	error_stats_by_dim(dim, start, end, mean, std, min, max);
+	os << "mean " << mean << endl
+	   << "std  " << std << endl
+	   << "min  " << min << endl
+	   << "max  " << max << endl;
+	return true;
 }
 
+void multi_model::error_stats_by_dim(int dim, int start, int end, double &mean, double &std, double &min, double &max) const {
+	assert(dim >= 0 && start >= 0 && end <= reference_vals.size());
+	double total = 0.0;
+	min = INFINITY; 
+	max = 0.0;
+	std = 0.0;
+	vector<double> ds;
+	for (int i = start; i < end; ++i) {
+		if (dim >= predicted_vals[i].size()) {
+			total = INFINITY;
+			max = INFINITY;
+			continue;
+		}
+		double r = reference_vals[i](dim);
+		double p = predicted_vals[i](dim);
+		double d = fabs((r - p) / r);
+		ds.push_back(d);
+		total += d;
+		if (d < min) {
+			min = d;
+		}
+		if (d > max) {
+			max = d;
+		}
+	}
+	mean = total / ds.size();
+	for (int i = 0; i < ds.size(); ++i) {
+		std += pow(ds[i] - mean, 2);
+	}
+	std = sqrt(std / ds.size());
+}

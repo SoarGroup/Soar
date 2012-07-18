@@ -86,7 +86,8 @@ public:
 
 private:
 	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);
-
+	void error_stats_by_dim(int dim, int start, int end, double &mean, double &std, double &min, double &max) const;
+	
 	struct model_config {
 		std::string name;
 		std::vector<std::string> xprops;
@@ -101,6 +102,10 @@ private:
 	std::list<model_config*>      active_models;
 	std::map<std::string, model*> model_db;
 	std::vector<std::string>      prop_vec;
+	
+	// measuring prediction errors
+	std::vector<rvec> reference_vals;
+	std::vector<rvec> predicted_vals;
 };
 
 #endif
