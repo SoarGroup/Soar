@@ -325,7 +325,7 @@ svs::svs(agent *a)
 : learn_models(false)
 {
 	si = new soar_interface(a);
-	make_common_syms();
+	cs = new common_syms(si);
 	timers.add("input", true);
 	timers.add("output", true);
 	timers.add("calc_atoms");
@@ -336,7 +336,7 @@ svs::~svs() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		delete *i;
 	}
-	del_common_syms();
+	delete cs;
 	delete si;
 }
 
@@ -345,7 +345,7 @@ void svs::state_creation_callback(Symbol *state) {
 	svs_state *s;
 	
 	if (state_stack.empty()) {
-		s = new svs_state(this, state, si, &cs);
+		s = new svs_state(this, state, si, cs);
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
@@ -416,21 +416,6 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
-}
-
-void svs::make_common_syms() {
-	cs.svs        = si->make_sym("svs");
-	cs.cmd        = si->make_sym("command");
-	cs.scene      = si->make_sym("spatial-scene");
-	cs.child      = si->make_sym("child");
-	cs.result     = si->make_sym("result");
-}
-
-void svs::del_common_syms() {
-	si->del_sym(cs.cmd);
-	si->del_sym(cs.scene);
-	si->del_sym(cs.child);
-	si->del_sym(cs.result);
 }
 
 /*

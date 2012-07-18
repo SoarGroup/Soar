@@ -36,19 +36,24 @@ private:
 
 class common_syms {
 public:
-	common_syms() {
-		svs        = NULL;
-		scene      = NULL;
-		cmd        = NULL;
-		child      = NULL;
-		result     = NULL;
+	common_syms(soar_interface *si) : si(si) {
+		svs    = si->make_sym("svs");
+		cmd    = si->make_sym("command");
+		scene  = si->make_sym("spatial-scene");
+		child  = si->make_sym("child");
+		result = si->make_sym("result");
 	}
 	
-	Symbol *svs;
-	Symbol *cmd;
-	Symbol *scene;
-	Symbol *child;
-	Symbol *result;
+	~common_syms() {
+		si->del_sym(svs);
+		si->del_sym(cmd);
+		si->del_sym(scene);
+		si->del_sym(child);
+		si->del_sym(result);
+	}
+	
+	soar_interface *si;
+	Symbol *svs, *cmd, *scene, *child, *result;
 };
 
 class svs;
@@ -156,14 +161,12 @@ public:
 	const output_spec *get_output_spec() { return &outspec; }
 	
 private:
-	void make_common_syms();
-	void del_common_syms();
 	void proc_input(svs_state *s);
 	int  parse_output_spec(const std::string &s);
 	bool do_command(const std::vector<std::string> &args, std::stringstream &out);
 
-	soar_interface*           si;
-	common_syms               cs;
+	soar_interface           *si;
+	common_syms              *cs;
 	std::vector<svs_state*>   state_stack;
 	std::vector<std::string>  env_inputs;
 	std::string               env_output;
