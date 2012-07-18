@@ -53,7 +53,7 @@ private:
 
 model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
 	Symbol *attr;
-	wme *nnbrs_wme;
+	wme *nnbrs_wme = NULL;
 	long nnbrs = 50;
 	string attrstr;
 	
