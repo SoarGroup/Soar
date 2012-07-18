@@ -256,10 +256,10 @@ bool svs_state::get_output(rvec &out) const {
 
 bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size() || args[first_arg] == "help") {
-		os << "available queries: atoms models out " << endl;
+		os << "available subqueries: atoms prediction out timing command" << endl;
 		return false;
 	}
-	if (args[first_arg] == "models") {
+	if (args[first_arg] == "prediction") {
 		return mmdl->cli_inspect(first_arg + 1, args, os);
 	} else if (args[first_arg] == "props") {
 		vector<string> p;
