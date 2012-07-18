@@ -87,8 +87,7 @@ void sgwme::add_child(sgnode *c) {
 
 svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *syms)
 : svsp(svsp), parent(NULL), state(state), si(si), cs(syms), level(0),
-  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL),
-  ltm_link(NULL)
+  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
@@ -100,7 +99,7 @@ svs_state::svs_state(Symbol *state, svs_state *parent)
 : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
   cs(parent->cs), outspec(parent->outspec),
   level(parent->level+1), scene_num(-1),
-  scene_num_wme(NULL), scn(NULL), scene_link(NULL), ltm_link(NULL)
+  scene_num_wme(NULL), scn(NULL), scene_link(NULL)
 {
 	assert (si->get_parent_state(state) == parent->state);
 	init();
@@ -126,10 +125,7 @@ void svs_state::init() {
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
-	if (!parent) {
-		ltm_link = si->get_wme_val(si->make_id_wme(svs_link, cs->ltm));
-	}
-	mmdl = new multi_model();
+	mmdl = new multi_model(svsp->get_models());
 }
 
 void svs_state::update_scene_num() {
@@ -329,7 +325,7 @@ svs::svs(agent *a)
 : learn_models(false)
 {
 	si = new soar_interface(a);
-	make_common_syms();
+	cs = new common_syms(si);
 	timers.add("input", true);
 	timers.add("output", true);
 	timers.add("calc_atoms");
@@ -340,8 +336,12 @@ svs::~svs() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		delete *i;
 	}
-	del_common_syms();
+	delete cs;
 	delete si;
+	map<string, model*>::iterator j;
+	for (j = models.begin(); j != models.end(); ++j) {
+		delete j->second;
+	}
 }
 
 void svs::state_creation_callback(Symbol *state) {
@@ -349,7 +349,7 @@ void svs::state_creation_callback(Symbol *state) {
 	svs_state *s;
 	
 	if (state_stack.empty()) {
-		s = new svs_state(this, state, si, &cs);
+		s = new svs_state(this, state, si, cs);
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
@@ -422,23 +422,6 @@ void svs::input_callback() {
 	}
 }
 
-void svs::make_common_syms() {
-	cs.svs        = si->make_sym("svs");
-	cs.ltm        = si->make_sym("ltm");
-	cs.cmd        = si->make_sym("command");
-	cs.scene      = si->make_sym("spatial-scene");
-	cs.child      = si->make_sym("child");
-	cs.result     = si->make_sym("result");
-}
-
-void svs::del_common_syms() {
-	si->del_sym(cs.ltm);
-	si->del_sym(cs.cmd);
-	si->del_sym(cs.scene);
-	si->del_sym(cs.child);
-	si->del_sym(cs.result);
-}
-
 /*
  This is a naive implementation. If this method is called concurrently
  with proc_input, the env_inputs vector will probably become
@@ -454,7 +437,7 @@ string svs::get_output() const {
 
 bool svs::do_command(const vector<string> &args, stringstream &out) {
 	if (args.size() < 2) {
-		out << "subqueries are timing filters log, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
+		out << "subqueries are timing filters log model, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
 		return false;
 	}
 	if (args[1] == "timing") {
@@ -520,6 +503,19 @@ bool svs::do_command(const vector<string> &args, stringstream &out) {
 			return false;
 		}
 		return true;
+	} else if (args[1] == "model") {
+		map<string, model*>::const_iterator i;
+		if (args.size() > 2) {
+			if ((i = models.find(args[2])) == models.end()) {
+				out << "no such model" << endl;
+				return false;
+			}
+			return i->second->cli_inspect(3, args, out);
+		}
+		for (i = models.begin(); i != models.end(); ++i) {
+			out << i->first << "\t" << i->second->get_type() << endl;
+		}
+		return true;
 	}
 	
 	int level;
@@ -561,4 +557,12 @@ int svs::parse_output_spec(const string &s) {
 	}
 	outspec = new_spec;
 	return -1;
+}
+
+bool svs::add_model(const string &name, model *m) {
+	if (models.find(name) != models.end()) {
+		return false;
+	}
+	models[name] = m;
+	return true;
 }
