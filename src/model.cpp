@@ -109,8 +109,7 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 	return cli_inspect_sub(first_arg, args, os);
 }
 
-multi_model::multi_model() {
-}
+multi_model::multi_model(map<string, model*> *model_db) : model_db(model_db) {}
 
 multi_model::~multi_model() {
 	list<model_config*>::iterator i;
@@ -189,7 +188,7 @@ string multi_model::assign_model
 {
 	model *m;
 	model_config *cfg;
-	if (!map_get(model_db, name, m)) {
+	if (!map_get(*model_db, name, m)) {
 		return "no model";
 	}
 	
@@ -255,7 +254,7 @@ bool multi_model::find_indexes(const vector<string> &props, vector<int> &indexes
 	return true;
 }
 
-bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) const {
+bool multi_model::report_error(int i, const vector<string> &args, ostream &os) const {
 	int dim = -1, start = 0, end = reference_vals.size();
 	if (i < args.size()) {
 		for (int j = 0; j < prop_vec.size(); ++j) {
@@ -325,4 +324,45 @@ void multi_model::error_stats_by_dim(int dim, int start, int end, double &mean, 
 		std += pow(ds[i] - mean, 2);
 	}
 	std = sqrt(std / ds.size());
+}
+
+void multi_model::report_model_config(model_config* c, ostream &os) const {
+	const char *indent = "  ";
+	os << c->name << endl;
+	if (c->allx) {
+		os << indent << "xdims: all" << endl;
+	} else {
+		os << indent << "xdims: ";
+		for (int i = 0; i < c->xprops.size(); ++i) {
+			os << c->xprops[i] << " ";
+		}
+		os << endl;
+	}
+	if (c->ally) {
+		os << indent << "ydims: all" << endl;
+	} else {
+		os << indent << "ydims: ";
+		for (int i = 0; i < c->yprops.size(); ++i) {
+			os << c->yprops[i] << " ";
+		}
+		os << endl;
+	}
+}
+
+bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) const {
+	if (i >= args.size()) {
+		os << "available queries are: error" << endl;
+		return false;
+	}
+	if (args[i] == "assignment") {
+		list<model_config*>::const_iterator j;
+		for (j = active_models.begin(); j != active_models.end(); ++j) {
+			report_model_config(*j, os);
+		}
+		return true;
+	} else if (args[i] == "error") {
+		return report_error(++i, args, os);
+	}
+	os << "no such query" << endl;
+	return false;
 }

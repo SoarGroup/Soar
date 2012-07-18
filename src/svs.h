@@ -8,6 +8,7 @@
 #include "sgnode.h"
 #include "common.h"
 #include "drawer.h"
+#include "model.h"
 #include "timer.h"
 
 class command;
@@ -147,6 +148,8 @@ public:
 	void input_callback();
 	void add_input(const std::string &in);
 	std::string get_output() const;
+	bool add_model(const std::string &name, model *m);
+	std::map<std::string, model*> *get_models() { return &models; }
 
 	soar_interface *get_soar_interface() { return si; }
 	
@@ -173,6 +176,8 @@ private:
 	drawer                    draw;
 	output_spec               outspec;
 	bool                      learn_models;
+	
+	std::map<std::string, model*> models;
 	
 	enum Timers { INPUT_T, OUTPUT_T };
 	

@@ -125,7 +125,7 @@ void svs_state::init() {
 	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
-	mmdl = new multi_model();
+	mmdl = new multi_model(svsp->get_models());
 }
 
 void svs_state::update_scene_num() {
@@ -338,6 +338,10 @@ svs::~svs() {
 	}
 	delete cs;
 	delete si;
+	map<string, model*>::iterator j;
+	for (j = models.begin(); j != models.end(); ++j) {
+		delete j->second;
+	}
 }
 
 void svs::state_creation_callback(Symbol *state) {
@@ -433,7 +437,7 @@ string svs::get_output() const {
 
 bool svs::do_command(const vector<string> &args, stringstream &out) {
 	if (args.size() < 2) {
-		out << "subqueries are timing filters log, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
+		out << "subqueries are timing filters log model, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
 		return false;
 	}
 	if (args[1] == "timing") {
@@ -499,6 +503,19 @@ bool svs::do_command(const vector<string> &args, stringstream &out) {
 			return false;
 		}
 		return true;
+	} else if (args[1] == "model") {
+		map<string, model*>::const_iterator i;
+		if (args.size() > 2) {
+			if ((i = models.find(args[2])) == models.end()) {
+				out << "no such model" << endl;
+				return false;
+			}
+			return i->second->cli_inspect(3, args, out);
+		}
+		for (i = models.begin(); i != models.end(); ++i) {
+			out << i->first << "\t" << i->second->get_type() << endl;
+		}
+		return true;
 	}
 	
 	int level;
@@ -540,4 +557,12 @@ int svs::parse_output_spec(const string &s) {
 	}
 	outspec = new_spec;
 	return -1;
+}
+
+bool svs::add_model(const string &name, model *m) {
+	if (models.find(name) != models.end()) {
+		return false;
+	}
+	models[name] = m;
+	return true;
 }

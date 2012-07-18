@@ -60,7 +60,7 @@ private:
 */
 class multi_model {
 public:
-	multi_model();
+	multi_model(std::map<std::string, model*> *model_db);
 	~multi_model();
 	
 	bool predict(const rvec &x, rvec &y);
@@ -74,10 +74,6 @@ public:
 
 	void unassign_model(const std::string &name);
 	
-	void add_model(const std::string &name, model *m) {
-		model_db[name] = m;
-	}
-	
 	void set_property_vector(const std::vector<std::string> &props) {
 		prop_vec = props;
 	}
@@ -85,9 +81,6 @@ public:
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 
 private:
-	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);
-	void error_stats_by_dim(int dim, int start, int end, double &mean, double &std, double &min, double &max) const;
-	
 	struct model_config {
 		std::string name;
 		std::vector<std::string> xprops;
@@ -99,9 +92,14 @@ private:
 		model *mdl;
 	};
 	
-	std::list<model_config*>      active_models;
-	std::map<std::string, model*> model_db;
-	std::vector<std::string>      prop_vec;
+	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);
+	void error_stats_by_dim(int dim, int start, int end, double &mean, double &std, double &min, double &max) const;
+	void report_model_config(model_config* c, std::ostream &os) const;
+	bool report_error(int i, const std::vector<std::string> &args, std::ostream &os) const;
+	
+	std::list<model_config*>       active_models;
+	std::vector<std::string>       prop_vec;
+	std::map<std::string, model*> *model_db;
 	
 	// measuring prediction errors
 	std::vector<rvec> reference_vals;
