@@ -104,16 +104,7 @@ public:
 	
 	vec3 amin, amax, bmin, bmax, ac, bc;
 	ptlist pa, pb;
-	/*
-	a->get_world_points(pa);
-	b->get_world_points(pb);
 	
-	bbox ba(pa), bb(pb);
-	ba.get_vals(amin, amax);
-	bb.get_vals(bmin, bmax);
-	ac = calc_centroid(pa);
-	bc = calc_centroid(pb);
-	*/
 	ac = a->get_centroid();
 	bc = b->get_centroid();
 	bbox ba = a->get_bounds();
@@ -137,21 +128,11 @@ public:
 	    
 	    direction = axes[i][rand() % top];
 	    dist = avg[i] * (double) direction;
-	    
-	    std::cout << "Axis: " << i << std::endl;
-	    std::cout << "avg: " << avg[i] << " dist: " << dist << " arad: " << amax[i] - ac[i]
-		      << " brad: " << bmax[i] - bc[i] << std::endl;
-	    
+	    	    
 	    pos[i] = bc[i] + dist + 
 		(bmax[i] - bc[i] + amax[i] - ac[i]) * (double) direction;
 	}
-/*
-	if (res_root == NULL) {
-	    sym_wme_pair p;
-	    p = si->make_id_wme(root, "result");
-	    res_root = p.first;
-	}
-*/
+
 	if (!res_root) {
 	    res_root = si->get_wme_val(si->make_id_wme(root, "result"));
 	}
@@ -159,25 +140,7 @@ public:
 	si->make_wme(res_root, "y", pos[1]);
 	si->make_wme(res_root, "z", pos[2]);
     }
-    double vec_dist(vec3 i, vec3 j)
-    {
-	double distance = 0;
-	for (int c = 0; c < 3; c++)
-	{
-	    distance += pow(i[c] - j[c], 2);
-	}
-	return pow(distance, 0.5);
-    }
-    vec3 calc_centroid(const ptlist &pts) {
-	vec3 c;
-	ptlist::const_iterator i;
-	for (i = pts.begin(); i != pts.end(); ++i) {
-	    c += *i;
-	}
-		c /= pts.size();
-		return c;
-    }
-    
+        
     filter *parse_project_filter_spec(soar_interface *si, Symbol *root, 
 				      scene *scn, string ftype, 
 				      string parent_pname) {
@@ -325,14 +288,11 @@ private:
     Symbol         *res_root;
     svs_state      *state;
     soar_interface *si;
-    
     std::list<filter*>   fltrs;
-    
-    bool            first;
+    bool   first;
     sgnode *a;
     sgnode *b;
     double avg[3];
-    //std::map<filter_val*, wme*> res2wme;
 };
 
 command *_make_project_command_(svs_state *state, Symbol *root) {
