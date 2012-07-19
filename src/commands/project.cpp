@@ -9,8 +9,11 @@ using namespace std;
 class project_command : public command {
 public:
     project_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), state(state), a(NULL), b(NULL), res_root(NULL), avg({-1.0,-1.0,-1.0}), first(true)
+	: command(state, root), root(root), state(state), a(NULL), b(NULL), res_root(NULL), first(true)
     {
+	avg[0] = -1;
+	avg[1] = -1;
+	avg[2] = -1;
 	si = state->get_svs()->get_soar_interface();
     }
 	
