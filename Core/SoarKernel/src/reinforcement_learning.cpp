@@ -106,8 +106,12 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	add( et_tolerance );
 
   // rl-impasse
-  rl_impasse = new soar_module::boolean_param( "rl-impasse", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() );
+  rl_impasse = new soar_module::boolean_param( "rl-impasse", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() ); ///< bazald
   add( rl_impasse );
+
+  // fc-credit
+  fc_credit = new soar_module::boolean_param( "fc-credit", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() ); ///< bazald
+  add( fc_credit );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
@@ -926,14 +930,28 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					}
 				}
 			}
-			
+
+      const double num_rules = double(data->prev_op_rl_rules->size()); ///< bazald
+
+      std::map<production *, double> credit; ///< bazald
+      if(my_agent->rl_params->fc_credit->get_value()) {
+        double total_credit = 0.0f;
+        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
+          total_credit += (*rt)->firing_count;
+        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
+          credit[*rt] = (*rt)->firing_count / total_credit;
+      }
+      else {
+        const double value = 1.0 / num_rules;
+        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
+          credit[*rt] = value;
+      }
+      
 			// Update trace for just fired prods
 			double sum_old_ecr = 0.0;
 			double sum_old_efr = 0.0;
-      const double num_rules = double(data->prev_op_rl_rules->size()); ///< bazald
 			if ( !data->prev_op_rl_rules->empty() )
 			{
-				const double trace_increment = 1.0 / num_rules; ///< bazald
 				rl_rule_list::iterator p;
 				
 				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
@@ -945,11 +963,11 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					
 					if ( iter != data->eligibility_traces->end() ) 
 					{
-						iter->second += trace_increment;
+						iter->second += credit[*p]; ///< bazald
 					}
 					else 
 					{
-						(*data->eligibility_traces)[ (*p) ] = trace_increment;
+						(*data->eligibility_traces)[*p] = credit[*p]; ///< bazald
 					}
 				}
 			}
@@ -974,7 +992,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               }
             }
 
-            rl_total_variance_next /= num_rules;
+            rl_total_variance_next *= num_rules;
           }
         }
 

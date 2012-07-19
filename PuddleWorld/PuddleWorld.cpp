@@ -64,7 +64,7 @@ inline bool arg_help(char ** &arg)
             << "  --seed seed             to specify the random seed" << std::endl
             << "  --rules filename        to specify non-default rules" << std::endl
             << "  --rl-rules-out          to specify where to output the RL-rules when finished" << std::endl
-            << "  --sp-special ep x xd t td  to specify what RL breakdown to add, and when" << std::endl;
+            << "  --sp-special ep x y     to specify what RL breakdown to add, and when" << std::endl;
 
   exit(0);
 
