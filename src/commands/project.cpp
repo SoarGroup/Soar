@@ -57,13 +57,13 @@ public:
 	}
 	if (a == NULL || b == NULL)
 	{
-	    std::cout << "CANNOT FIND A OR B" << std::endl;
+	    std::cout << "Error: CANNOT FIND A OR B" << std::endl;
 	    set_status("a,b incorrect filter syntax");
 	}
 	if (avg[0] < 0 || avg[1] < 0 || avg[2] < 0)
 	{
-	    std::cout << "CANNOT FIND avg axes" << std::endl;
-	    set_status("z y z avg incorrect filter syntax");
+	    std::cout << "Error: CANNOT FIND avg axes" << std::endl;
+	    set_status("z,y,z avg incorrect filter syntax");
 	}    
 	if (first)
 	{
@@ -92,7 +92,7 @@ public:
 	    if (axis >= 0 && comp > -3)
 	    {
 		if (axes[axis][2] > -10)
-		    std::cout << "ERROR TOO MANY RELATIONS" << std::endl;
+		    std::cout << "Error: TOO MANY RELATIONS" << std::endl;
 		if (axes[axis][1] > -10)
 		    axes[axis][2] = comp;
 		else if (axes[axis][0] > -10)
@@ -111,28 +111,45 @@ public:
 	bbox bb = b->get_bounds();
 	ba.get_vals(amin, amax);
 	bb.get_vals(bmin, bmax);
-	
+	int direction[3];
 	double pos[3];
+	int top[3] = {0};
+	double dist;
 	for (int i = 0; i < 3; i++)
 	{
-	    int direction;
-	    int top = 0;
-	    double dist;
+	    //int direction;
+	    //int top = 0;
 	    for (int j = 0; j < 3; j++)
 	    {
 		if (axes[i][j] > -10)
-		    top++;
+		    top[i]++;
 	    }
-	    if (top == 0)
-		std::cout << "No filters for AXIS " << i << std::endl;
-	    
-	    direction = axes[i][rand() % top];
-	    dist = avg[i] * (double) direction;
+	    if (top[i] == 0)
+		std::cout << "Error: No filters for AXIS " << i << std::endl;
+	    direction[i] = axes[i][rand() % top[i]];
+	    dist = avg[i] * (double) direction[i];
 	    	    
 	    pos[i] = bc[i] + dist + 
-		(bmax[i] - bc[i] + amax[i] - ac[i]) * (double) direction;
+		(bmax[i] - bc[i] + amax[i] - ac[i]) * (double) direction[i];
 	}
-
+	while (!all_aligned && direction[0] == 0
+	    && direction[1] == 0 && direction[2] == 0)
+	{
+	    if (top[0] < 2 && top[1] < 2 && top[2] < 2)
+	    {
+		//ERROR all-aligned false, but only have aligned filters
+		std::cout << "Error: Alignment misrepresented in projection" 
+			  << std::endl;
+		break;
+	    }
+	    int i = rand() % 3;
+	    direction[i] = axes[i][rand() % top[i]];
+	    dist = avg[i] * (double) direction[i];
+	    	    
+	    pos[i] = bc[i] + dist + 
+		(bmax[i] - bc[i] + amax[i] - ac[i]) * (double) direction[i];
+	}
+	
 	if (!res_root) {
 	    res_root = si->get_wme_val(si->make_id_wme(root, "result"));
 	}
@@ -235,7 +252,7 @@ public:
 	Symbol* cval;
 	Symbol* cval2;
 	long intval;
-	
+	string sval; 
 	si->get_child_wmes(root, children);
 	for (i = children.begin(); i != children.end(); ++i) {
 	    if (!si->get_val(si->get_wme_attr(*i), pname)) {
@@ -243,7 +260,18 @@ public:
 	    }
 	    int axis;
 	    double dval, average;
-	    if ((pname.compare("rel") == 0))
+	    if ((pname.compare("aligned") == 0))
+	    {
+		cval = si->get_wme_val(*i);
+		if (!si->get_val(cval, sval)) {
+		    continue;
+		}
+		if (sval.compare("true") == 0)
+		    all_aligned = true;
+		else
+		    all_aligned = false;
+	    }
+	    else if ((pname.compare("rel") == 0))
 	    {
 		cval = si->get_wme_val(*i);
 		si->get_child_wmes(cval, children2);
@@ -292,6 +320,7 @@ private:
     bool   first;
     sgnode *a;
     sgnode *b;
+    bool all_aligned;
     double avg[3];
 };
 
