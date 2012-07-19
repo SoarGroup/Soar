@@ -296,8 +296,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		os << left;
 		for (int i = 0; i < p.size(); ++i) {
-			os.width(w + 1);
-			os << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
+			os << setw(4) << i << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "out") {

@@ -1,3 +1,5 @@
+#include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
@@ -260,21 +262,27 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 		return false;
 	}
 	
-	int dim = -1, start = 0, end = reference_vals.size();
-	if (i < args.size()) {
+	int dim = -1, start = 0, end = reference_vals.size() - 1;
+	bool list = false;
+	if (i >= args.size()) {
+		os << "specify a dimension" << endl;
+		return false;
+	}
+	if (args[i] == "list") {
+		list = true;
+		++i;
+	}
+	if (!parse_int(args[i], dim)) {
+		dim = -1;
 		for (int j = 0; j < prop_vec.size(); ++j) {
 			if (prop_vec[j] == args[i]) {
 				dim = j;
 				break;
 			}
 		}
-		if (dim < 0 && !parse_int(args[i++], dim)) {
-			os << "invalid dimension" << endl;
-			return false;
-		}
-		assert(dim >= 0);
-	} else {
-		os << "specify a dimension" << endl;
+	}
+	if (dim < 0) {
+		os << "invalid dimension" << endl;
 		return false;
 	}
 	if (++i < args.size()) {
@@ -298,12 +306,23 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 		}
 	}
 	
-	double mean, std, min, max;
-	error_stats_by_dim(dim, start, end, mean, std, min, max);
-	os << "mean " << mean << endl
-	   << "std  " << std << endl
-	   << "min  " << min << endl
-	   << "max  " << max << endl;
+	if (list) {
+		for (int j = start; j <= end; ++j) {
+			os << setw(4) << j << "\t";
+			if (dim >= reference_vals[j].size() || dim >= predicted_vals[j].size()) {
+				os << "NA\tNA" << endl;
+			} else {
+				os << reference_vals[j](dim) << "\t" << predicted_vals[j](dim) << endl;
+			}
+		}
+	} else {
+		double mean, std, min, max;
+		error_stats_by_dim(dim, start, end, mean, std, min, max);
+		os << "mean " << mean << endl
+		   << "std  " << std << endl
+		   << "min  " << min << endl
+		   << "max  " << max << endl;
+	}
 	return true;
 }
 
@@ -314,15 +333,13 @@ void multi_model::error_stats_by_dim(int dim, int start, int end, double &mean, 
 	max = 0.0;
 	std = 0.0;
 	vector<double> ds;
-	for (int i = start; i < end; ++i) {
-		if (dim >= predicted_vals[i].size()) {
-			total = INFINITY;
-			max = INFINITY;
+	for (int i = start; i <= end; ++i) {
+		if (dim >= reference_vals[i].size() || dim >= predicted_vals[i].size()) {
 			continue;
 		}
 		double r = reference_vals[i](dim);
 		double p = predicted_vals[i](dim);
-		double d = fabs((r - p) / r);
+		double d = fabs(r - p);
 		ds.push_back(d);
 		total += d;
 		if (d < min) {
