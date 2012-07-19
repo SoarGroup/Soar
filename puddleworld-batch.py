@@ -9,16 +9,22 @@ g_plotter = './puddleworld.py'
 g_rules = 'PuddleWorld/puddle-world.soar'
 
 g_ep_tuples = []
-g_ep_tuples.append((10, 10, -1, 0, 0))
-g_ep_tuples.append((10, 20, -1, 0, 0))
-g_ep_tuples.append((20, 10, -1, 0, 0))
-g_ep_tuples.append((20, 20, -1, 0, 0))
-g_ep_tuples.append((10, 10, 0, 20, 10))
-g_ep_tuples.append((10, 10, 0, 10, 20))
-g_ep_tuples.append((10, 10, 0, 20, 20))
-g_ep_tuples.append((10, 10, 500, 20, 10))
-g_ep_tuples.append((10, 10, 500, 10, 20))
-g_ep_tuples.append((10, 10, 500, 20, 20))
+g_ep_tuples.append((10, 10, -1, 0, 0, 0))
+g_ep_tuples.append((10, 20, -1, 0, 0, 0))
+g_ep_tuples.append((20, 10, -1, 0, 0, 0))
+g_ep_tuples.append((20, 20, -1, 0, 0, 0))
+g_ep_tuples.append((10, 10, 0, 20, 10, 0))
+g_ep_tuples.append((10, 10, 0, 10, 20, 0))
+g_ep_tuples.append((10, 10, 0, 20, 20, 0))
+g_ep_tuples.append((10, 10, 500, 20, 10, 0))
+g_ep_tuples.append((10, 10, 500, 10, 20, 0))
+g_ep_tuples.append((10, 10, 500, 20, 20, 0))
+g_ep_tuples.append((10, 10, 0, 20, 10, 1))
+g_ep_tuples.append((10, 10, 0, 10, 20, 1))
+g_ep_tuples.append((10, 10, 0, 20, 20, 1))
+g_ep_tuples.append((10, 10, 500, 20, 10, 1))
+g_ep_tuples.append((10, 10, 500, 10, 20, 1))
+g_ep_tuples.append((10, 10, 500, 20, 20, 1))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
@@ -72,14 +78,18 @@ class Experiment:
     self.sp_episode = ep_tuple[2]
     self.sp_div_x = ep_tuple[3]
     self.sp_div_y = ep_tuple[4]
+    self.fc_credit = ep_tuple[5]
   
   def get_args(self):
-    return ['out/PuddleWorld',
+    args = ['out/PuddleWorld',
             '--episodes', str(self.episodes),
             '--seed', str(self.seed),
             '--rules', str(self.rules),
             '--rl-rules-out', str(self.rl_rules_out),
             '--sp-special', str(self.sp_episode), str(self.sp_div_x), str(self.sp_div_y)]
+    if self.fc_credit != 0:
+      args.append('--fc-credit')
+    return args
   
   def print_args(self):
     args = self.get_args()
@@ -100,7 +110,7 @@ class Experiment:
 dirs = []
 experiments = []
 for ep_tuple in g_ep_tuples:
-  dir = g_dir + '/' + str(ep_tuple[0]) + '-' + str(ep_tuple[1]) + '_' + str(ep_tuple[2]) + '_' + str(ep_tuple[3]) + '-' + str(ep_tuple[4])
+  dir = g_dir + '/' + str(ep_tuple[0]) + '-' + str(ep_tuple[1]) + '_' + str(ep_tuple[2]) + '_' + str(ep_tuple[3]) + '-' + str(ep_tuple[4]) + '_' + str(ep_tuple[5])
   if not os.path.isdir(dir):
     os.mkdir(dir)
   dirs.append(dir)

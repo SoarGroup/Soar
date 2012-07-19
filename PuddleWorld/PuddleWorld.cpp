@@ -64,7 +64,8 @@ inline bool arg_help(char ** &arg)
             << "  --seed seed             to specify the random seed" << std::endl
             << "  --rules filename        to specify non-default rules" << std::endl
             << "  --rl-rules-out          to specify where to output the RL-rules when finished" << std::endl
-            << "  --sp-special ep x y     to specify what RL breakdown to add, and when" << std::endl;
+            << "  --sp-special ep x y     to specify what RL breakdown to add, and when" << std::endl
+            << "  --fc-credit             to turn firing-count based credit assignment" << std::endl;
 
   exit(0);
 
@@ -244,6 +245,18 @@ inline bool arg_sp_special(int &episode,
   return true;
 }
 
+inline bool arg_fc_credit(bool &on,
+                      char ** &arg,
+                      char ** const &arg_end)
+{
+  if(strcmp(*arg, "--fc-credit"))
+    return false;
+
+  on = true;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -263,6 +276,7 @@ int main(int argc, char ** argv) {
   int episode = -1;
   float x_div = 1.0f;
   float y_div = 1.0f;
+  bool fc_credit = false;
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                        arg         ) &&
@@ -273,7 +287,8 @@ int main(int argc, char ** argv) {
        !arg_episodes     (                          episodes,     arg, arg_end) &&
        !arg_seed         (                          seed,         arg, arg_end) &&
        !arg_rl_rules_out (                          rl_rules_out, arg, arg_end) &&
-       !arg_sp_special   (episode, x_div, y_div,                  arg, arg_end))
+       !arg_sp_special   (episode, x_div, y_div,                  arg, arg_end) &&
+       !arg_fc_credit    (                          fc_credit,    arg, arg_end))
     {
       std::cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -295,6 +310,9 @@ int main(int argc, char ** argv) {
     game.SpawnDebugger();
     force_debugging = true;
   }
+
+  if(fc_credit)
+    game.ExecuteCommandLine("rl --set fc-credit on");
 
   for(int episode = 0; episode != episodes; ++episode) {
     game.do_sp(episode);
