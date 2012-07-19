@@ -101,7 +101,7 @@ public:
 	
 	void update_models();
 	
-	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 
 private:
 	void init();
@@ -132,6 +132,8 @@ private:
 	multi_model              *mmdl;
 	rvec                     next_out;
 	const output_spec       *outspec;
+	bool learn_models;
+	bool test_models;
 	
 	enum Timers { MODEL_T };
 	timer_set timers;
@@ -175,7 +177,7 @@ private:
 	std::string               env_output;
 	drawer                    draw;
 	output_spec               outspec;
-	bool                      learn_models;
+	bool                      learn;
 	
 	std::map<std::string, model*> models;
 	

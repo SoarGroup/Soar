@@ -20,6 +20,22 @@ using namespace std;
 
 typedef map<wme*,command*>::iterator cmd_iter;
 
+bool handle_on_off(const vector<string> &args, int first, ostream &os, bool &var) {
+	if (first >= args.size() - 1) {
+		os << (var ? "on" : "off") << endl;
+	} else {
+		if (args[first + 1] == "on") {
+			var = true;
+		} else if (args[first + 1] == "off") {
+			var = false;
+		} else {
+			os << "expecting on/off" << endl;
+			return false;
+		}
+	}
+	return true;
+}
+
 sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node) 
 : soarint(si), id(ident), parent(parent), node(node)
 {
@@ -126,6 +142,8 @@ void svs_state::init() {
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	mmdl = new multi_model(svsp->get_models());
+	learn_models = false;
+	test_models = false;
 }
 
 void svs_state::update_scene_num() {
@@ -215,8 +233,12 @@ void svs_state::update_models() {
 		} else {
 			x = prev_pvals;
 		}
-		mmdl->test(x, curr_pvals);
-		mmdl->learn(x, curr_pvals);
+		if (test_models) {
+			mmdl->test(x, curr_pvals);
+		}
+		if (learn_models) {
+			mmdl->learn(x, curr_pvals);
+		}
 	} else {
 		mmdl->set_property_vector(curr_pnames);
 		DATAVIS("properties '")
@@ -254,7 +276,7 @@ bool svs_state::get_output(rvec &out) const {
 	}
 }
 
-bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
+bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
 	if (first_arg >= args.size() || args[first_arg] == "help") {
 		os << "available subqueries: atoms prediction out timing command" << endl;
 		return false;
@@ -315,6 +337,10 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		os << "no such command" << endl;
 		return false;
+	} else if (args[first_arg] == "learn_models") {
+		return handle_on_off(args, first_arg, os, learn_models);
+	} else if (args[first_arg] == "test_models") {
+		return handle_on_off(args, first_arg, os, test_models);
 	}
 	
 	os << "no such query" << endl;
@@ -322,7 +348,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 }
 
 svs::svs(agent *a)
-: learn_models(false)
+: learn(false)
 {
 	si = new soar_interface(a);
 	cs = new common_syms(si);
@@ -412,7 +438,7 @@ void svs::input_callback() {
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
-	if (learn_models) {
+	if (learn) {
 		topstate->update_models();
 	}
 	
@@ -490,19 +516,7 @@ bool svs::do_command(const vector<string> &args, stringstream &out) {
 			return false;
 		}
 	} else if (args[1] == "learn") {
-		if (args.size() < 3) {
-			out << (learn_models ? "on" : "off") << endl;
-			return true;
-		}
-		if (args[2] == "on") {
-			learn_models = true;
-		} else if (args[2] == "off") {
-			learn_models = false;
-		} else {
-			out << "expecting on/off" << endl;
-			return false;
-		}
-		return true;
+		return handle_on_off(args, 1, out, learn);
 	} else if (args[1] == "model") {
 		map<string, model*>::const_iterator i;
 		if (args.size() > 2) {
