@@ -114,14 +114,14 @@ bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) 
 multi_model::multi_model(map<string, model*> *model_db) : model_db(model_db) {}
 
 multi_model::~multi_model() {
-	list<model_config*>::iterator i;
+	std::list<model_config*>::iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		delete *i;
 	}
 }
 
 bool multi_model::predict(const rvec &x, rvec &y) {
-	list<model_config*>::const_iterator i;
+	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
@@ -150,7 +150,7 @@ bool multi_model::predict(const rvec &x, rvec &y) {
 }
 
 void multi_model::learn(const rvec &x, const rvec &y) {
-	list<model_config*>::iterator i;
+	std::list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
@@ -233,7 +233,7 @@ string multi_model::assign_model
 }
 
 void multi_model::unassign_model(const string &name) {
-	list<model_config*>::iterator i;
+	std::list<model_config*>::iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		if ((**i).name == name) {
 			active_models.erase(i);
@@ -385,7 +385,7 @@ bool multi_model::cli_inspect(int i, const vector<string> &args, ostream &os) co
 		return false;
 	}
 	if (args[i] == "assignment") {
-		list<model_config*>::const_iterator j;
+		std::list<model_config*>::const_iterator j;
 		for (j = active_models.begin(); j != active_models.end(); ++j) {
 			report_model_config(*j, os);
 		}

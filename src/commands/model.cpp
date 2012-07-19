@@ -26,18 +26,18 @@ static model_constructor_table_entry constructor_table[] = {
 	{ "targets",     _make_targets_model_},
 };
 
-model *parse_model_struct(soar_interface *si, Symbol *root, string &name, scene *scn) {
+model *parse_model_struct(soar_interface *si, Symbol *cmd, scene *scn) {
 	wme *type_wme, *name_wme;
-	string type;
+	string name, type;
 	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
 	
-	if (!si->find_child_wme(root, "type", type_wme) ||
+	if (!si->find_child_wme(cmd, "type", type_wme) ||
 		!si->get_val(si->get_wme_val(type_wme), type))
 	{
 		return NULL;
 	}
 	
-	if (!si->find_child_wme(root, "name", name_wme) ||
+	if (!si->find_child_wme(cmd, "name", name_wme) ||
 		!si->get_val(si->get_wme_val(name_wme), name))
 	{
 		return NULL;
@@ -45,7 +45,7 @@ model *parse_model_struct(soar_interface *si, Symbol *root, string &name, scene 
 	
 	for (int i = 0; i < table_size; ++i) {
 		if (type == constructor_table[i].type) {
-			return constructor_table[i].func(si, root, scn, name);
+			return constructor_table[i].func(si, cmd, scn, name);
 		}
 	}
 	return NULL;
@@ -70,13 +70,13 @@ public:
 			return !broken;
 		}
 		
-		model *m = parse_model_struct(si, root, name, get_state()->get_scene());
+		model *m = parse_model_struct(si, root, get_state()->get_scene());
 		if (!m) {
 			set_status("invalid syntax");
 			broken = true;
 			return false;
 		}
-		if (!svsp->add_model(name, m)) {
+		if (!svsp->add_model(m->get_name(), m)) {
 			set_status("nonunique name");
 			delete m;
 			broken = true;

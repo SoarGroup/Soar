@@ -9,6 +9,7 @@
 #include <list>
 #include "common.h"
 #include "mat.h"
+#include "soar_interface.h"
 
 class model {
 public:
@@ -35,7 +36,8 @@ public:
 	virtual void learn(const rvec &x, const rvec &y) {}
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
-
+	virtual void set_wm_root(Symbol *r) {}
+	
 protected:
 	virtual bool cli_inspect_sub(int first_arg, const std::vector<std::string> &args, std::ostream &os) {
 		return false;

@@ -8,6 +8,7 @@
 #include "soar_interface.h"
 #include "filter_table.h"
 #include "params.h"
+#include "scene.h"
 
 using namespace std;
 
@@ -16,11 +17,8 @@ const int MAXITERS = 50;
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, scene *scn, const string &name)
-	: model(name, "em"), si(si), root(root), revisions(0), ydata(0, 1, INIT_NDATA, 1)
+	: model(name, "em"), si(si), revisions(0), ydata(0, 1, INIT_NDATA, 1), wm_root(NULL)
 	{
-		result_id = si->get_wme_val(si->make_id_wme(root, "result"));
-		tests_id = si->get_wme_val(si->make_id_wme(result_id, "tests"));
-		revisions_wme = si->make_wme(result_id, "revisions", revisions);
 		em = new EM(xdata, ydata);
 		
 		const filter_table &t = get_filter_table();
@@ -71,9 +69,11 @@ public:
 		
 		em->new_data();
 		if (em->run(MAXITERS)) {
-			si->remove_wme(revisions_wme);
-			revisions_wme = si->make_wme(result_id, "revisions", ++revisions);
-			update_tested_atoms();
+			if (wm_root) {
+				si->remove_wme(revisions_wme);
+				revisions_wme = si->make_wme(wm_root, "revisions", ++revisions);
+				update_tested_atoms();
+			}
 		}
 		
 		clsfr->new_data();
@@ -126,7 +126,7 @@ public:
 		xdata.load(is);
 		ydata.load(is);
 		em->load(is);
-		update_tested_atoms();
+		//update_tested_atoms();
 		clsfr->batch_update(em->get_map_modes());
 	}
 	
@@ -188,6 +188,16 @@ public:
 		return false;
 	}
 	
+	void set_wm_root(Symbol *r) {
+		wm_root = r;
+		if (wm_root) {
+			revisions_wme = si->make_wme(wm_root, "revisions", revisions);
+			tests_id = si->get_wme_val(si->make_id_wme(wm_root, "tests"));
+			atom_wmes.clear();
+			update_tested_atoms();
+		}
+	}
+
 private:
 	dyn_mat xdata;
 	dyn_mat ydata;
@@ -196,14 +206,12 @@ private:
 	classifier *clsfr;
 	
 	soar_interface *si;
-	Symbol *root, *result_id, *tests_id;
+	Symbol *wm_root, *tests_id;
 	wme *revisions_wme;
 	int revisions;
 	vector<string> atoms;
 	map<string, vector<string> > pred_params;
 	map<int, wme*> atom_wmes;
-	
-	string savepath;
 };
 
 model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {

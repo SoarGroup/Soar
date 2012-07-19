@@ -43,6 +43,7 @@ public:
 		scene  = si->make_sym("spatial-scene");
 		child  = si->make_sym("child");
 		result = si->make_sym("result");
+		models = si->make_sym("models");
 	}
 	
 	~common_syms() {
@@ -51,10 +52,11 @@ public:
 		si->del_sym(scene);
 		si->del_sym(child);
 		si->del_sym(result);
+		si->del_sym(models);
 	}
 	
 	soar_interface *si;
-	Symbol *svs, *cmd, *scene, *child, *result;
+	Symbol *svs, *cmd, *scene, *child, *result, *models;
 };
 
 class svs;
@@ -120,6 +122,7 @@ private:
 	Symbol *svs_link;
 	Symbol *scene_link;
 	Symbol *cmd_link;
+	Symbol *model_link;
 
 	int scene_num;
 	wme *scene_num_wme;
@@ -164,6 +167,8 @@ public:
 	
 	drawer *get_drawer() { return &draw; }
 	const output_spec *get_output_spec() { return &outspec; }
+
+	void set_model_root(Symbol *root);
 	
 private:
 	void proc_input(svs_state *s);
@@ -178,6 +183,7 @@ private:
 	drawer                    draw;
 	output_spec               outspec;
 	bool                      learn;
+	Symbol                   *model_root;
 	
 	std::map<std::string, model*> models;
 	
