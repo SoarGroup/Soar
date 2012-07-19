@@ -918,7 +918,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   epmem_symbol_set* epmem_promotions;
 
   Symbol* epmem_unrecognized_header;
-  epmem_wme_list* epmem_wme_unrecognized;
   epmem_id_disjoint_set* epmem_id_siblings;
   epmem_elders *epmem_wm_tree;
 
@@ -944,7 +943,6 @@ kernel time and total_cpu_time greater than the derived total CPU time. REW */
   bool smem_ignore_changes;
 
   Symbol* smem_unrecognized_header;
-  smem_wme_list* smem_wme_unrecognized;
   smem_wme_list* smem_wme_adds;
 
   // dynamic memory pools

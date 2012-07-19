@@ -399,7 +399,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->epmem_id_removes = new epmem_symbol_stack();
 #endif
 
-  newAgent->epmem_wme_unrecognized = new epmem_wme_list();
   newAgent->epmem_id_siblings = new epmem_id_disjoint_set();
   newAgent->epmem_wm_tree = new epmem_elders();
 
@@ -410,7 +409,6 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->smem_params = new smem_param_container( newAgent );
   newAgent->smem_stats = new smem_stat_container( newAgent );  
   newAgent->smem_timers = new smem_timer_container( newAgent );
-  newAgent->smem_wme_unrecognized = new smem_wme_list();
 
   newAgent->smem_db = new soar_module::sqlite_database();
 
@@ -496,7 +494,6 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->epmem_id_replacement;
   delete delete_agent->epmem_id_ref_counts;
   delete delete_agent->epmem_id_removes;
-  delete delete_agent->epmem_wme_unrecognized;
   delete delete_agent->epmem_id_siblings;
   delete delete_agent->epmem_wm_tree;
 
@@ -513,7 +510,6 @@ void destroy_soar_agent (agent * delete_agent)
   delete delete_agent->smem_stats;
   delete delete_agent->smem_timers;
   delete delete_agent->smem_wme_adds;
-  delete delete_agent->smem_wme_unrecognized;
 
   delete delete_agent->smem_db;
 

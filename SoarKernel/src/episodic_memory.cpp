@@ -918,7 +918,7 @@ epmem_wme_list *epmem_get_augs_of_id( Symbol * id, tc_number tc )
 	return return_val;
 }
 
-inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes )
+inline void epmem_process_buffered_wme( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& my_list, epmem_wme_stack* epmem_wmes )
 {
 	if ( my_list.empty() )
 	{
@@ -996,12 +996,6 @@ inline void _epmem_process_buffered_wme_list( agent* my_agent, Symbol* state, so
 			}
 		}
 	}
-}
-
-inline void epmem_process_buffered_wmes( agent* my_agent, Symbol* state, soar_module::wme_set& cue_wmes, soar_module::symbol_triple_list& meta_wmes, soar_module::symbol_triple_list& retrieval_wmes )
-{
-	_epmem_process_buffered_wme_list( my_agent, state, cue_wmes, meta_wmes, state->id.epmem_info->epmem_wmes );
-	_epmem_process_buffered_wme_list( my_agent, state, cue_wmes, retrieval_wmes, NULL );
 }
 
 inline void epmem_buffer_add_wme( soar_module::symbol_triple_list& my_list, Symbol* id, Symbol* attr, Symbol* value )
@@ -1435,8 +1429,6 @@ void epmem_close( agent *my_agent )
 				delete (*it).second;
 			}
 			my_agent->epmem_wm_tree->clear();
-			my_agent->epmem_wme_unrecognized->clear();
-			my_agent->smem_wme_unrecognized->clear();
 		}
 
 		// close the database
@@ -2683,23 +2675,8 @@ void epmem_new_episode( agent *my_agent )
 		xml_generate_warning( my_agent, buf );
 	}
 
-	// remove epmem recognition information if it exists
-	{
-		for ( epmem_wme_list::iterator recog_iter = my_agent->epmem_wme_unrecognized->begin(); recog_iter != my_agent->epmem_wme_unrecognized->end(); recog_iter++ )
- 		{
-			soar_module::remove_module_wme( my_agent, *recog_iter );
- 		}
-		my_agent->epmem_wme_unrecognized->clear();
-	}
-
-	// remove smem recognition information if it exists
-	{
-		for ( smem_wme_list::iterator recog_iter = my_agent->smem_wme_unrecognized->begin(); recog_iter != my_agent->smem_wme_unrecognized->end(); recog_iter++ )
- 		{
-			soar_module::remove_module_wme( my_agent, *recog_iter );
- 		}
-		my_agent->smem_wme_unrecognized->clear();
-	}
+	std::map<wme*, soar_module::symbol_triple*> epmem_metadata_support_map;
+	std::map<wme*, soar_module::symbol_triple*> smem_metadata_support_map;
 
 	// perform storage
 	{
@@ -2938,7 +2915,11 @@ void epmem_new_episode( agent *my_agent )
 			{
 				if ( my_agent->epmem_params->recognition_representation->get_value() == epmem_param_container::recog_wm )
 				{
-					my_agent->epmem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->epmem_unrecognized_header, (*recog_iter)->attr, (*recog_iter)->id ) );
+					soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->epmem_unrecognized_header, (*recog_iter)->attr, (*recog_iter)->id);
+					epmem_metadata_support_map[*recog_iter] = st;
+					symbol_add_ref(st->id);
+					symbol_add_ref(st->attr);
+					symbol_add_ref(st->value);
 				}
 				else
 				{
@@ -2952,13 +2933,13 @@ void epmem_new_episode( agent *my_agent )
 		// update smem recognition information on top state
 		if ( my_agent->smem_params->recognition->get_value() >= 1 )
 		{
-			std::map<Symbol*, bool> attr_recognized;
+			std::map<Symbol*, bool> attr_cache;
 			// check all attributes of newly added wmes
 			for (smem_wme_list::iterator iter = my_agent->smem_wme_adds->begin(); iter != my_agent->smem_wme_adds->end(); iter++) {
 				bool recognized = false;
 				Symbol* attr = (*iter)->attr;
-				std::map<Symbol*, bool>::iterator attr_iter = attr_recognized.find(attr);
-				if (attr_iter != attr_recognized.end()) {
+				std::map<Symbol*, bool>::iterator attr_iter = attr_cache.find(attr);
+				if (attr_iter != attr_cache.end()) {
 					if ((*attr_iter).second)
 					{
 						recognized = true;
@@ -2979,32 +2960,66 @@ void epmem_new_episode( agent *my_agent )
 					}
 				}
 				my_agent->smem_stmts->hash_get_str->reinitialize();
-				attr_recognized[attr] = recognized;
-				if (!recognized)
-				{
-					if ((my_agent->smem_params->recognition->get_value() >= 2) && (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_rete))
-					{
-						remove_wme_from_rete(my_agent, (*iter), false);
-						(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
-						add_wme_to_rete(my_agent, (*iter), false);
-					}
-				}
-			}
-
-			if ((my_agent->smem_params->recognition->get_value() >= 2) && (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm))
-			{
-				for (std::map<Symbol*,bool>::iterator iter = attr_recognized.begin(); iter != attr_recognized.end(); iter++ )
-				{
-					if (!(*iter).second)
-					{
-						my_agent->smem_wme_unrecognized->push_front( soar_module::add_module_wme( my_agent, my_agent->smem_unrecognized_header, (*iter).first, make_new_identifier( my_agent, 'U', TOP_GOAL_LEVEL ) ) );
+				attr_cache[(*iter)->attr] = recognized;
+				if (my_agent->smem_params->recognition->get_value() >= 2) {
+					if (recognized) {
+						if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
+							soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->smem_unrecognized_header, (*iter)->attr, make_new_identifier(my_agent, 'U', TOP_GOAL_LEVEL));
+							smem_metadata_support_map[*iter] = st;
+							symbol_add_ref(st->id);
+							symbol_add_ref(st->attr);
+							symbol_add_ref(st->value);
+						}
+					} else {
+						if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_rete) {
+							remove_wme_from_rete(my_agent, (*iter), false);
+							(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
+							add_wme_to_rete(my_agent, (*iter), false);
+						}
 					}
 				}
 			}
 		}
 
+		// add recognition WMEs in batch
+		{
+			std::map<wme*, soar_module::symbol_triple*>::iterator iter;
+			soar_module::wme_set metadata_wmes;
+			soar_module::symbol_triple_list triple_list;
+			for (iter = epmem_metadata_support_map.begin(); iter != epmem_metadata_support_map.end(); iter++) {
+				metadata_wmes.clear();
+				triple_list.clear();
+				metadata_wmes.insert((*iter).first);
+				triple_list.push_back((*iter).second);
+				epmem_process_buffered_wme(my_agent, my_agent->top_goal, metadata_wmes, triple_list, NULL);
+			}
+			for (iter = smem_metadata_support_map.begin(); iter != smem_metadata_support_map.end(); iter++) {
+				metadata_wmes.clear();
+				triple_list.clear();
+				metadata_wmes.insert((*iter).first);
+				triple_list.push_back((*iter).second);
+				epmem_process_buffered_wme(my_agent, my_agent->top_goal, metadata_wmes, triple_list, NULL);
+			}
+		}
+
 		// clear add/remove maps
 		{
+			std::map<wme*, soar_module::symbol_triple*>::iterator iter;
+			for (iter = epmem_metadata_support_map.begin(); iter != epmem_metadata_support_map.end(); iter++) {
+				symbol_remove_ref( my_agent, (*iter).second->id );
+				symbol_remove_ref( my_agent, (*iter).second->attr );
+				symbol_remove_ref( my_agent, (*iter).second->value );
+				delete (*iter).second;
+			}
+			epmem_metadata_support_map.clear();
+			for (iter = smem_metadata_support_map.begin(); iter != smem_metadata_support_map.end(); iter++) {
+				symbol_remove_ref( my_agent, (*iter).second->id );
+				symbol_remove_ref( my_agent, (*iter).second->attr );
+				symbol_remove_ref( my_agent, (*iter).second->value );
+				delete (*iter).second;
+			}
+			smem_metadata_support_map.clear();
+
 			my_agent->epmem_wme_adds->clear();
 			my_agent->smem_wme_adds->clear();
 		}
@@ -5691,7 +5706,8 @@ void epmem_respond_to_cmd( agent *my_agent )
 			if ( !retrieval_wmes.empty() || !meta_wmes.empty() )
 			{
 				// process preference assertion en masse
-				epmem_process_buffered_wmes( my_agent, state, cue_wmes, meta_wmes, retrieval_wmes );
+				epmem_process_buffered_wme( my_agent, state, cue_wmes, meta_wmes, state->id.epmem_info->epmem_wmes );
+				epmem_process_buffered_wme( my_agent, state, cue_wmes, retrieval_wmes, NULL );
 
 				// clear cache
 				{
