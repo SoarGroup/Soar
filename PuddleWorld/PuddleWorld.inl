@@ -32,10 +32,7 @@ PuddleWorld::PuddleWorld(const std::string &agent_productions,
   m_step(0),
   m_reward(0),
   m_x(0),
-  m_y(0),
-  m_sp_episode(-1),
-  m_sp_x_div(1),
-  m_sp_y_div(1)
+  m_y(0)
 {
   m_agent.LoadProductions(agent_productions);
 

@@ -110,8 +110,12 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   add( rl_impasse );
 
   // fc-credit
-  fc_credit = new soar_module::boolean_param( "fc-credit", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() ); ///< bazald
-  add( fc_credit );
+  credit_assignment = new rl_credit_assignment_param( "credit-assignment", credit_even, new soar_module::f_predicate<credit_assignment_choices>(), my_agent );
+  credit_assignment->add_mapping( credit_even, "even" );
+  credit_assignment->add_mapping( credit_fc, "fc" );
+  credit_assignment->add_mapping( credit_rl, "rl" );
+  credit_assignment->add_mapping( credit_logrl, "log-rl" );
+  add( credit_assignment );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
@@ -174,23 +178,23 @@ rl_apoptosis_param::rl_apoptosis_param( const char *new_name, rl_param_container
 
 void rl_apoptosis_param::set_value( rl_param_container::apoptosis_choices new_value )
 {
-	if ( value != new_value )
-	{
-		// from off to on (doesn't matter which)
-		if ( value == rl_param_container::apoptosis_none )
-		{
-			my_agent->rl_prods->set_decay_rate( my_agent->rl_params->apoptosis_decay->get_value() );
-			my_agent->rl_prods->set_decay_thresh( my_agent->rl_params->apoptosis_thresh->get_value() );
-			my_agent->rl_prods->initialize();
-		}
-		// from on to off
-		else if ( new_value == rl_param_container::apoptosis_none )
-		{
-			my_agent->rl_prods->teardown();
-		}
+  if ( value != new_value )
+  {
+    // from off to on (doesn't matter which)
+    if ( value == rl_param_container::apoptosis_none )
+    {
+      my_agent->rl_prods->set_decay_rate( my_agent->rl_params->apoptosis_decay->get_value() );
+      my_agent->rl_prods->set_decay_thresh( my_agent->rl_params->apoptosis_thresh->get_value() );
+      my_agent->rl_prods->initialize();
+    }
+    // from on to off
+    else if ( new_value == rl_param_container::apoptosis_none )
+    {
+      my_agent->rl_prods->teardown();
+    }
 
-		value = new_value;
-	}
+    value = new_value;
+  }
 }
 
 //
@@ -206,6 +210,13 @@ rl_apoptosis_predicate<T>::rl_apoptosis_predicate( agent *new_agent ): soar_modu
 
 template <typename T>
 bool rl_apoptosis_predicate<T>::operator() ( T /*val*/ ) { return ( this->my_agent->rl_params->apoptosis->get_value() != rl_param_container::apoptosis_none ); }
+
+rl_credit_assignment_param::rl_credit_assignment_param( const char *new_name, rl_param_container::credit_assignment_choices new_value, soar_module::predicate<rl_param_container::credit_assignment_choices> *new_prot_pred, agent *new_agent ): soar_module::constant_param<rl_param_container::credit_assignment_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+
+void rl_credit_assignment_param::set_value( rl_param_container::credit_assignment_choices new_value )
+{
+  value = new_value;
+}
 
 
 /////////////////////////////////////////////////////
@@ -934,18 +945,34 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
       const double num_rules = double(data->prev_op_rl_rules->size()); ///< bazald
 
       std::map<production *, double> credit; ///< bazald
-      if(my_agent->rl_params->fc_credit->get_value()) {
+      if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
+        double total_credit = 0.0;
+        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
+          total_credit += 1.0 / (log((*rt)->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
+        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
+          credit[*rt] = (1.0 / (log((*rt)->rl_update_count + 1.0) + 1.0)) / total_credit;
+      }
+      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
+        double total_credit = 0.0;
+        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
+          total_credit += 1.0 / ((*rt)->rl_update_count + 1.0); ///< hasn't updated yet
+        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
+          credit[*rt] = (1.0 / ((*rt)->rl_update_count + 1.0)) / total_credit;
+      }
+      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
         double total_credit = 0.0f;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          total_credit += (*rt)->firing_count;
+          total_credit += (1.0 / (*rt)->firing_count); ///< has fired already
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          credit[*rt] = (*rt)->firing_count / total_credit;
+          credit[*rt] = (1.0 / (*rt)->firing_count) / total_credit;
       }
-      else {
+      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even){
         const double value = 1.0 / num_rules;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
           credit[*rt] = value;
       }
+      else
+        abort();
       
 			// Update trace for just fired prods
 			double sum_old_ecr = 0.0;

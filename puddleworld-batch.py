@@ -9,22 +9,48 @@ g_plotter = './puddleworld.py'
 g_rules = 'PuddleWorld/puddle-world.soar'
 
 g_ep_tuples = []
-g_ep_tuples.append((10, 10, -1, 0, 0, 0))
-g_ep_tuples.append((10, 20, -1, 0, 0, 0))
-g_ep_tuples.append((20, 10, -1, 0, 0, 0))
-g_ep_tuples.append((20, 20, -1, 0, 0, 0))
-g_ep_tuples.append((10, 10, 0, 20, 10, 0))
-g_ep_tuples.append((10, 10, 0, 10, 20, 0))
-g_ep_tuples.append((10, 10, 0, 20, 20, 0))
-g_ep_tuples.append((10, 10, 500, 20, 10, 0))
-g_ep_tuples.append((10, 10, 500, 10, 20, 0))
-g_ep_tuples.append((10, 10, 500, 20, 20, 0))
-g_ep_tuples.append((10, 10, 0, 20, 10, 1))
-g_ep_tuples.append((10, 10, 0, 10, 20, 1))
-g_ep_tuples.append((10, 10, 0, 20, 20, 1))
-g_ep_tuples.append((10, 10, 500, 20, 10, 1))
-g_ep_tuples.append((10, 10, 500, 10, 20, 1))
-g_ep_tuples.append((10, 10, 500, 20, 20, 1))
+
+#g_ep_tuples.append((10, 10, -1, 0, 0, 0))
+#g_ep_tuples.append((10, 20, -1, 0, 0, 0))
+#g_ep_tuples.append((20, 10, -1, 0, 0, 0))
+#g_ep_tuples.append((20, 20, -1, 0, 0, 0))
+#g_ep_tuples.append((10, 10, 0, 20, 10, 0))
+#g_ep_tuples.append((10, 10, 0, 10, 20, 0))
+#g_ep_tuples.append((10, 10, 0, 20, 20, 0))
+#g_ep_tuples.append((10, 10, 500, 20, 10, 0))
+#g_ep_tuples.append((10, 10, 500, 10, 20, 0))
+#g_ep_tuples.append((10, 10, 500, 20, 20, 0))
+#g_ep_tuples.append((10, 10, 0, 20, 10, 1))
+#g_ep_tuples.append((10, 10, 0, 10, 20, 1))
+#g_ep_tuples.append((10, 10, 0, 20, 20, 1))
+#g_ep_tuples.append((10, 10, 500, 20, 10, 1))
+#g_ep_tuples.append((10, 10, 500, 10, 20, 1))
+#g_ep_tuples.append((10, 10, 500, 20, 20, 1))
+
+#g_ep_tuples.append((5, 5, -1, 0, 0, 0))
+#g_ep_tuples.append((10, 10, -1, 0, 0, 0))
+#g_ep_tuples.append((20, 20, -1, 0, 0, 0))
+#g_ep_tuples.append((40, 40, -1, 0, 0, 0))
+
+g_ep_tuples.append((5, 5, 'even'))
+g_ep_tuples.append((5, 5, 'even', (0, 10, 10)))
+g_ep_tuples.append((5, 5, 'fc', (0, 10, 10)))
+g_ep_tuples.append((5, 5, 'rl', (0, 10, 10)))
+g_ep_tuples.append((5, 5, 'log-rl', (0, 10, 10)))
+g_ep_tuples.append((10, 10, 'even'))
+g_ep_tuples.append((10, 10, 'even', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'fc', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'rl', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'log-rl', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'even', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'fc', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'rl', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'log-rl', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'even', (0, 20, 20), (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'fc', (0, 20, 20), (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'rl', (0, 20, 20), (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'log-rl', (0, 20, 20), (0, 40, 40)))
+
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
@@ -75,10 +101,12 @@ class Experiment:
     self.ep_tuple = ep_tuple
     self.div_x = ep_tuple[0]
     self.div_y = ep_tuple[1]
-    self.sp_episode = ep_tuple[2]
-    self.sp_div_x = ep_tuple[3]
-    self.sp_div_y = ep_tuple[4]
-    self.fc_credit = ep_tuple[5]
+    self.credit = ep_tuple[2]
+    self.sp = []
+    for sp in ep_tuple[3:]:
+      if len(sp) != 3:
+        raise Exception("len(sp) != 3")
+      self.sp.append(sp)
   
   def get_args(self):
     args = ['out/PuddleWorld',
@@ -86,9 +114,9 @@ class Experiment:
             '--seed', str(self.seed),
             '--rules', str(self.rules),
             '--rl-rules-out', str(self.rl_rules_out),
-            '--sp-special', str(self.sp_episode), str(self.sp_div_x), str(self.sp_div_y)]
-    if self.fc_credit != 0:
-      args.append('--fc-credit')
+            '--credit-assignment', str(self.credit)]
+    for sp in self.sp:
+      args += ['--sp-special', str(sp[0]), str(sp[1]), str(sp[2])]
     return args
   
   def print_args(self):
@@ -110,7 +138,11 @@ class Experiment:
 dirs = []
 experiments = []
 for ep_tuple in g_ep_tuples:
-  dir = g_dir + '/' + str(ep_tuple[0]) + '-' + str(ep_tuple[1]) + '_' + str(ep_tuple[2]) + '_' + str(ep_tuple[3]) + '-' + str(ep_tuple[4]) + '_' + str(ep_tuple[5])
+  dir = g_dir + '/' + str(ep_tuple[0]) + '-' + str(ep_tuple[1]) + '_' + str(ep_tuple[2])
+  for i in range(3, len(ep_tuple)):
+    if len(ep_tuple[i]) != 3:
+      raise Exception("ep_tuple[i] != 3")
+    dir += '_' + str(ep_tuple[i][0]) + '-' + str(ep_tuple[i][1]) + '-' + str(ep_tuple[i][2])
   if not os.path.isdir(dir):
     os.mkdir(dir)
   dirs.append(dir)
@@ -134,7 +166,6 @@ for ep_tuple in g_ep_tuples:
     output = dir + '/puddleworld-' + str(seed) + '.out'
     experiment = Experiment(args.episodes, seed, rules, rl_rules_out, output, ep_tuple)
     experiments.append(experiment)
-
 
 class Progress:
   def __init__(self, experiments):

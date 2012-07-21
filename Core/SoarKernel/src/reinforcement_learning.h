@@ -39,6 +39,7 @@
 class rl_learning_param;
 class rl_apoptosis_param;
 class rl_apoptosis_thresh_param;
+class rl_credit_assignment_param;
 
 template <typename T>
 class param_accessor {
@@ -84,6 +85,7 @@ class rl_param_container: public soar_module::param_container
         enum decay_choices { normal_decay, exponential_decay, logarithmic_decay, delta_bar_delta_decay };
 
 		enum apoptosis_choices { apoptosis_none, apoptosis_chunks, apoptosis_rl };
+    enum credit_assignment_choices { credit_even, credit_fc, credit_rl, credit_logrl }; ///< bazald
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
@@ -95,7 +97,7 @@ class rl_param_container: public soar_module::param_container
 		soar_module::decimal_param *et_decay_rate;
 		soar_module::decimal_param *et_tolerance;
     soar_module::boolean_param *rl_impasse; ///< bazald
-    soar_module::boolean_param *fc_credit; ///< bazald
+    rl_credit_assignment_param *credit_assignment; ///< bazald
 		soar_module::boolean_param *temporal_extension;
 		soar_module::boolean_param *hrl_discount;
 		soar_module::boolean_param *temporal_discount;
@@ -147,6 +149,16 @@ class rl_apoptosis_predicate: public soar_module::agent_predicate<T>
 	public:
 		rl_apoptosis_predicate( agent *new_agent );
 		bool operator() ( T val );
+};
+
+class rl_credit_assignment_param: public soar_module::constant_param< rl_param_container::credit_assignment_choices > ///< bazald
+{
+  protected:
+    agent* my_agent;
+
+  public:
+    rl_credit_assignment_param( const char *new_name, rl_param_container::credit_assignment_choices new_value, soar_module::predicate<rl_param_container::credit_assignment_choices> *new_prot_pred, agent *new_agent );
+    void set_value( rl_param_container::credit_assignment_choices new_value );
 };
 
 //////////////////////////////////////////////////////////

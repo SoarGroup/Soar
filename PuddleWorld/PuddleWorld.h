@@ -46,8 +46,7 @@ public:
   bool is_finished() const;
   bool is_success() const;
 
-  void set_sp(const int &episode, const float &x_div, const float &y_div);
-  void do_sp(const int &episode);
+  void do_sp(const float &x_div, const float &y_div);
     
   void reinit(const bool &init_soar, const int &after_episode);
   void srand(const int &seed);
@@ -69,10 +68,6 @@ private:
   sml::FloatElement * m_reward;
   sml::FloatElement * m_x;
   sml::FloatElement * m_y;
-
-  int m_sp_episode;
-  float m_sp_x_div;
-  float m_sp_y_div;
 };
 
 #endif

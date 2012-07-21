@@ -50,22 +50,24 @@
 #include <sstream>
 #include <cmath>
 
+using namespace std;
+
 inline bool arg_help(char ** &arg)
 {
   if(strcmp(*arg, "--help"))
     return false;
 
-  std::cout << "Options:" << std::endl
-            << "  --help                  prints this help" << std::endl
-            << "  --remote [ip[:port]]    to use a remote Soar kernel" << std::endl
-            << "  --ip                    to specify an IP address (implies remote Soar kernel)" << std::endl
-            << "  --port                  to specify a port address (implies remote Soar kernel)" << std::endl
-            << "  --episodes count        to specify the maximum number of episodes [1000]" << std::endl
-            << "  --seed seed             to specify the random seed" << std::endl
-            << "  --rules filename        to specify non-default rules" << std::endl
-            << "  --rl-rules-out          to specify where to output the RL-rules when finished" << std::endl
-            << "  --sp-special ep x y     to specify what RL breakdown to add, and when" << std::endl
-            << "  --fc-credit             to turn firing-count based credit assignment" << std::endl;
+  cout << "Options:" << endl
+            << "  --help                  prints this help" << endl
+            << "  --remote [ip[:port]]    to use a remote Soar kernel" << endl
+            << "  --ip                    to specify an IP address (implies remote Soar kernel)" << endl
+            << "  --port                  to specify a port address (implies remote Soar kernel)" << endl
+            << "  --episodes count        to specify the maximum number of episodes [1000]" << endl
+            << "  --seed seed             to specify the random seed" << endl
+            << "  --rules filename        to specify non-default rules" << endl
+            << "  --rl-rules-out          to specify where to output the RL-rules when finished" << endl
+            << "  --sp-special ep x y     to specify what RL breakdown to add, and when" << endl
+            << "  --credit even/fc/rl     to specify credit assignment" << endl;
 
   exit(0);
 
@@ -73,7 +75,7 @@ inline bool arg_help(char ** &arg)
 }
 
 inline bool arg_remote(bool &remote,
-                       std::string &ip_address,
+                       string &ip_address,
                        int &port,
                        char ** &arg,
                        char ** const &arg_end)
@@ -91,10 +93,10 @@ inline bool arg_remote(bool &remote,
 
   ++arg;
 
-  const std::string ip_port = *arg;
+  const string ip_port = *arg;
   const size_t colon = ip_port.find(':');
 
-  if(colon != std::string::npos) {
+  if(colon != string::npos) {
     ip_address = ip_port.substr(0, colon);
     from_string(port, *arg + (colon + 1));
   }
@@ -105,7 +107,7 @@ inline bool arg_remote(bool &remote,
 }
 
 inline bool arg_ip(bool &remote,
-                   std::string &ip_address,
+                   string &ip_address,
                    char ** &arg,
                    char ** const &arg_end)
 {
@@ -115,7 +117,7 @@ inline bool arg_ip(bool &remote,
   remote = true;
 
   if(++arg == arg_end) {
-    std::cerr << "'--ip' requires an argument of the form 'xxx.xxx.xxx.xxx'";
+    cerr << "'--ip' requires an argument of the form 'xxx.xxx.xxx.xxx'";
     exit(2);
   }
 
@@ -135,7 +137,7 @@ inline bool arg_port(bool &remote,
   remote = true;
 
   if(++arg == arg_end) {
-    std::cerr << "'--port' requires an argument of the form 'xxxxx'";
+    cerr << "'--port' requires an argument of the form 'xxxxx'";
     exit(3);
   }
 
@@ -144,7 +146,7 @@ inline bool arg_port(bool &remote,
   return true;
 }
 
-inline bool arg_rules(std::string &rules,
+inline bool arg_rules(string &rules,
                       char ** &arg,
                       char ** const &arg_end)
 {
@@ -152,7 +154,7 @@ inline bool arg_rules(std::string &rules,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--rules' requires an argument'";
+    cerr << "'--rules' requires an argument'";
     exit(2);
   }
 
@@ -169,7 +171,7 @@ inline bool arg_episodes(int &episodes,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--episodes' requires an argument'";
+    cerr << "'--episodes' requires an argument'";
     exit(2);
   }
 
@@ -186,7 +188,7 @@ inline bool arg_seed(int &seed,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--seed' requires an argument'";
+    cerr << "'--seed' requires an argument'";
     exit(2);
   }
 
@@ -195,7 +197,7 @@ inline bool arg_seed(int &seed,
   return true;
 }
 
-inline bool arg_rl_rules_out(std::string &rl_rules,
+inline bool arg_rl_rules_out(string &rl_rules,
                              char ** &arg,
                              char ** const &arg_end)
 {
@@ -203,7 +205,7 @@ inline bool arg_rl_rules_out(std::string &rl_rules,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires an argument'";
+    cerr << "'--rl-rules-out' requires an argument'";
     exit(2);
   }
 
@@ -212,9 +214,7 @@ inline bool arg_rl_rules_out(std::string &rl_rules,
   return true;
 }
 
-inline bool arg_sp_special(int &episode,
-                           float &x_div,
-                           float &y_div,
+inline bool arg_sp_special(multimap<int, pair<float, float> > &sp,
                            char ** &arg,
                            char ** const &arg_end)
 {
@@ -222,37 +222,49 @@ inline bool arg_sp_special(int &episode,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 3 arguments'";
+    cerr << "'--rl-rules-out' requires 3 arguments'";
     exit(2);
   }
 
-  episode = atoi(*arg);
+  const int episode = atoi(*arg);
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 3 arguments'";
+    cerr << "'--rl-rules-out' requires 3 arguments'";
     exit(2);
   }
   
-  x_div = atof(*arg);
+  const float x_div = atof(*arg);
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 3 arguments'";
+    cerr << "'--rl-rules-out' requires 3 arguments'";
     exit(2);
   }
   
-  y_div = atof(*arg);
+  const float y_div = atof(*arg);
+
+  sp.insert(make_pair(episode, make_pair(x_div, y_div)));
 
   return true;
 }
 
-inline bool arg_fc_credit(bool &on,
-                      char ** &arg,
-                      char ** const &arg_end)
+inline bool arg_credit_assignment(string &value,
+                                  char ** &arg,
+                                  char ** const &arg_end)
 {
-  if(strcmp(*arg, "--fc-credit"))
+  if(strcmp(*arg, "--credit-assignment"))
     return false;
 
-  on = true;
+  if(++arg == arg_end) {
+    cerr << "'--credit-assignment' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "even") && strcmp(*arg, "fc") && strcmp(*arg, "rl") && strcmp(*arg, "log-rl")) {
+    cerr << "--credit-assignment takes 'even', 'fc', or 'rl'";
+    exit(3);
+  }
+
+  value = *arg;
 
   return true;
 }
@@ -267,41 +279,38 @@ int main(int argc, char ** argv) {
 
   // Defaults
   bool remote = false;
-  std::string ip_address;
+  string ip_address;
   int port = sml::Kernel::kDefaultSMLPort;
-  std::string rules = PUDDLEWORLD_AGENT_PRODUCTIONS;
+  string rules = PUDDLEWORLD_AGENT_PRODUCTIONS;
   int episodes = 1000;
   int seed = int(time(0));
-  std::string rl_rules_out = "puddleworld-rl.soar";
-  int episode = -1;
-  float x_div = 1.0f;
-  float y_div = 1.0f;
-  bool fc_credit = false;
+  string rl_rules_out = "puddleworld-rl.soar";
+  multimap<int, pair<float, float> > sp;
+  string credit_assignment = "even";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
-    if(!arg_help         (                                        arg         ) &&
-       !arg_remote       (remote, ip_address, port,               arg, arg_end) &&
-       !arg_ip           (remote, ip_address,                     arg, arg_end) &&
-       !arg_port         (remote,             port,               arg, arg_end) &&
-       !arg_rules        (                          rules,        arg, arg_end) &&
-       !arg_episodes     (                          episodes,     arg, arg_end) &&
-       !arg_seed         (                          seed,         arg, arg_end) &&
-       !arg_rl_rules_out (                          rl_rules_out, arg, arg_end) &&
-       !arg_sp_special   (episode, x_div, y_div,                  arg, arg_end) &&
-       !arg_fc_credit    (                          fc_credit,    arg, arg_end))
+    if(!arg_help         (                                             arg         ) &&
+       !arg_remote       (remote, ip_address, port,                    arg, arg_end) &&
+       !arg_ip           (remote, ip_address,                          arg, arg_end) &&
+       !arg_port         (remote,             port,                    arg, arg_end) &&
+       !arg_rules        (                          rules,             arg, arg_end) &&
+       !arg_episodes     (                          episodes,          arg, arg_end) &&
+       !arg_seed         (                          seed,              arg, arg_end) &&
+       !arg_rl_rules_out (                          rl_rules_out,      arg, arg_end) &&
+       !arg_sp_special   (                          sp,                arg, arg_end) &&
+       !arg_credit_assignment (                     credit_assignment, arg, arg_end))
     {
-      std::cerr << "Unrecognized argument: " << *arg;
+      cerr << "Unrecognized argument: " << *arg;
       exit(1);
     }
   }
 
-  std::cout << "SEED " << seed << std::endl;
+  cout << "SEED " << seed << endl;
 
   if(rules == PUDDLEWORLD_AGENT_PRODUCTIONS)
     set_working_directory_to_executable_path();
 
   PuddleWorld game(rules, remote);
-  game.set_sp(episode, x_div, y_div);
   srand(seed);
   game.srand(seed);
 
@@ -311,11 +320,17 @@ int main(int argc, char ** argv) {
     force_debugging = true;
   }
 
-  if(fc_credit)
-    game.ExecuteCommandLine("rl --set fc-credit on");
+  game.ExecuteCommandLine(("rl --set credit-assignment " + credit_assignment).c_str());
 
   for(int episode = 0; episode != episodes; ++episode) {
-    game.do_sp(episode);
+    for(std::pair<multimap<int, pair<float, float> >::const_iterator,
+                  multimap<int, pair<float, float> >::const_iterator>
+          st = sp.equal_range(episode);
+        st.first != st.second;
+        ++st.first)
+    {
+      game.do_sp(st.first->second.first, st.first->second.second);
+    }
 
     do {
       if(game.debugging()) {
@@ -339,20 +354,20 @@ int main(int argc, char ** argv) {
     }while(!game.is_finished());
 
 //       if(game.is_success()) {
-//         std::cout << "Success in episode " << episode + 1 << std::endl;
+//         cout << "Success in episode " << episode + 1 << endl;
 //         break;
 //       }
 
     if(!(episode % 50))
-      std::cerr << "\nEp " << episode << ' ';
-    std::cerr << (game.is_success() ? 'S' : '.');
+      cerr << "\nEp " << episode << ' ';
+    cerr << (game.is_success() ? 'S' : '.');
 
     game.reinit(true, episode);
   }
 
   game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
 
-  std::cerr << std::endl;
+  cerr << endl;
   
   return 0;
 }
@@ -365,24 +380,19 @@ bool PuddleWorld::is_success() const {
   return m_x->GetValue() >= 0.95f && m_y->GetValue() <= 0.05f;
 }
 
-void PuddleWorld::set_sp(const int &episode, const float &x_div, const float &y_div) {
-  m_sp_episode = episode;
-  m_sp_x_div = x_div;
-  m_sp_y_div = y_div;
-}
+void PuddleWorld::do_sp(const float &x_div, const float &y_div) {
+  static int i = 0;
+  
+  ostringstream oss;
+  oss << "sp {elaborate*additional*puddleworld*" << ++i
+      << " (state <s> ^superstate nil ^name puddleworld) --> (<s> ^div <d>) (<d> ^name additional ^x (/ 1.001 " << x_div
+      << ") ^y (/ 1.001 " << y_div
+      << "))}";
+  cerr << oss.str() << endl;
+  ExecuteCommandLine(oss.str());
 
-void PuddleWorld::do_sp(const int &episode) {
-  if(episode == m_sp_episode) {
-    std::ostringstream oss;
-    oss << "sp {elaborate*additional*puddleworld (state <s> ^superstate nil ^name puddleworld) --> (<s> ^div <d>) (<d> ^name additional ^x (/ 1.001 " << m_sp_x_div
-        << ") ^y (/ 1.001 " << m_sp_y_div
-        << "))}";
-    std::cerr << oss.str() << std::endl;
-    ExecuteCommandLine(oss.str());
-
-    if(!m_agent->Commit())
-      abort();
-  }
+  if(!m_agent->Commit())
+    abort();
 }
 
 void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
@@ -422,12 +432,12 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
 }
 
 void PuddleWorld::srand(const int &seed) {
-  std::ostringstream oss;
+  ostringstream oss;
   oss << "srand " << seed;
   ExecuteCommandLine(oss.str());
 }
 
-void PuddleWorld::ExecuteCommandLine(const std::string &command) {
+void PuddleWorld::ExecuteCommandLine(const string &command) {
   m_agent->ExecuteCommandLine(command.c_str());
 }
 
@@ -458,7 +468,7 @@ void PuddleWorld::update() {
               !strcmp("west", direction_name))
       {
         if(is_finished()) {
-          std::cout << "terminal" << std::endl;
+          cout << "terminal" << endl;
         }
         else {
           // Change the state of the world and generate new input
@@ -492,6 +502,11 @@ void PuddleWorld::update() {
             m_state->Update("terminal");
             m_reward->Update(reward = 0.0f);
           }
+          else if(step == 5000) {
+            /// HACK: Force eventual termination
+            m_state->Update("terminal");
+            m_reward->Update(reward = -10.0f);
+          }
           else {
             float dist;
 
@@ -502,7 +517,7 @@ void PuddleWorld::update() {
               dist = fabs(y - 0.25f);
             else
               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
-            reward += -400.0f * std::max(0.0f, 0.1f - dist);
+            reward += -400.0f * max(0.0f, 0.1f - dist);
 
             /// (.45, .2) to (.45, .6), radius 0.1
             if(y < 0.2f)
@@ -511,7 +526,7 @@ void PuddleWorld::update() {
               dist = fabs(x - 0.45f);
             else
               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
-            reward += -400.0f * std::max(0.0f, 0.1f - dist);
+            reward += -400.0f * max(0.0f, 0.1f - dist);
 
             m_reward->Update(reward);
           }
@@ -524,13 +539,13 @@ void PuddleWorld::update() {
 
           if(is_finished()) {
             static int episode = 0;
-            std::cout << "EPISODE " << ++episode
+            cout << "EPISODE " << ++episode
                       << " STEP " << step
                       << " REWARD " << m_reward_total
                       << " DIR " << (direction_name[0] == 'r' ? 1 : 0)
                       << " X " << x
                       << " Y " << y
-                      << std::endl;
+                      << endl;
           }
         }
       }
