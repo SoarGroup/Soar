@@ -319,10 +319,18 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		return true;
 	} else if (args[first_arg] == "atoms") {
-		vector<string> atoms;
-		get_filter_table().get_all_atoms(scn, atoms);
-		for (int i = 0; i < atoms.size(); ++i) {
-			os << setw(3) << i << " " << atoms[i] << endl;
+		vector<string> atom_names;
+		boolvec atom_vals;
+		get_filter_table().get_all_atoms(scn, atom_names);
+		get_filter_table().calc_all_atoms(scn, atom_vals);
+		assert(atom_names.size() == atom_vals.size());
+		
+		int longest = 0;
+		for (int i = 0; i < atom_names.size(); ++i) {
+			longest = std::max(static_cast<int>(atom_names[i].size()), longest);
+		}
+		for (int i = 0; i < atom_names.size(); ++i) {
+			os << setw(3) << i << " " << setw(longest) << left << atom_names[i] << " " << atom_vals[i] << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "timing") {

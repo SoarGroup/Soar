@@ -106,7 +106,7 @@ public:
 	 Calculate the value of every predicate with every possible set
 	 of arguments from the scene.
 	*/
-	void calc_all_atoms(scene *scn, std::vector<bool> &results) const {
+	void calc_all_atoms(scene *scn, boolvec &results) const {
 		std::map<std::string, filter_table_entry>::const_iterator i;
 		int ii = 0;
 		for(i = t.begin(); i != t.end(); ++i, ++ii) {

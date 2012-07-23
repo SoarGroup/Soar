@@ -158,7 +158,7 @@ bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream 
 		return tree->cli_inspect(id, os);
 	} else if (args[first_arg] == "train") {
 		for (int i = 0; i < insts.size(); ++i) {
-			os << setw(4) << i << " " << insts[i] << endl;
+			os << setw(4) << i << " " << insts[i];
 		}
 	}
 	return false;
