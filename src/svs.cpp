@@ -222,6 +222,7 @@ void svs_state::update_models() {
 	vector<string> curr_pnames, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
+	boolvec curr_atoms;
 	
 	if (level > 0) {
 		/* No legitimate information to learn from imagined states */
@@ -242,12 +243,11 @@ void svs_state::update_models() {
 		} else {
 			x = prev_pvals;
 		}
-		boolvec atoms = scn->get_atom_vals();
 		if (test_models) {
-			mmdl->test(x, curr_pvals, atoms);
+			mmdl->test(x, curr_pvals, prev_atoms);
 		}
 		if (learn_models) {
-			mmdl->learn(x, curr_pvals, atoms);
+			mmdl->learn(x, curr_pvals, prev_atoms);
 		}
 	} else {
 		mmdl->set_property_vector(curr_pnames);
@@ -259,6 +259,7 @@ void svs_state::update_models() {
 	}
 	prev_pnames = curr_pnames;
 	prev_pvals = curr_pvals;
+	prev_atoms = scn->get_atom_vals();
 }
 
 void svs_state::set_output(const rvec &out) {

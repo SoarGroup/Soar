@@ -132,6 +132,7 @@ private:
 	
 	std::vector<std::string> prev_pnames;
 	rvec                     prev_pvals;
+	boolvec                  prev_atoms;
 	multi_model              *mmdl;
 	rvec                     next_out;
 	const output_spec       *outspec;
