@@ -38,20 +38,11 @@ void model::init() {
 	}
 }
 
-float model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
-	rvec py(y.size());
-	float error;
-	if (!predict(x, py, atoms)) {
-		error = numeric_limits<double>::signaling_NaN();
-	} else {
-		error = (py - y).norm();
+bool model::test(const rvec &x, const rvec &y, const boolvec &atoms, rvec &prediction) {
+	if (!predict(x, prediction, atoms)) {
+		return false;
 	}
-	
-	if (predlog.is_open()) {
-		predlog << x << " ; " << y << " ; " << py << " ; " << error << endl;
-	}
-	
-	return error;
+	return true;
 }
 
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
@@ -104,16 +95,14 @@ bool multi_model::predict(const rvec &x, rvec &y, const boolvec &atoms) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
-		rvec yp(cfg->ally ? y.size() : cfg->yinds.size());
+		rvec xp, yp(cfg->ally ? y.size() : cfg->yinds.size());
 		bool success;
 		if (cfg->allx) {
-			success = cfg->mdl->predict(x, yp, atoms);
+			xp = x;
 		} else {
-			rvec x1;
-			slice(x, x1,  cfg->xinds);
-			success = cfg->mdl->predict(x1, yp, atoms);
+			slice(x, xp, cfg->xinds);
 		}
-		if (!success) {
+		if (!cfg->mdl->predict(xp, yp, atoms)) {
 			return false;
 		}
 		if (cfg->ally) {
@@ -147,16 +136,47 @@ void multi_model::learn(const rvec &x, const rvec &y, const boolvec &atoms) {
 	}
 }
 
-float multi_model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
+bool multi_model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
 	rvec predicted(y.size());
 	predicted.setConstant(0.0);
+	test_x.push_back(x);
+	test_y.push_back(y);
+	test_atoms.push_back(atoms);
 	reference_vals.push_back(y);
-	if (!predict(x, predicted, atoms)) {
+
+	bool failed = false;
+	std::list<model_config*>::const_iterator i;
+	for (i = active_models.begin(); i != active_models.end(); ++i) {
+		model_config *cfg = *i;
+		rvec xp, yp, p(cfg->ally ? y.size() : cfg->yinds.size());
+		bool success;
+		if (cfg->allx) {
+			xp = x;
+		} else {
+			slice(x, xp, cfg->xinds);
+		}
+		if (cfg->ally) {
+			yp = y;
+		} else {
+			slice(y, yp, cfg->yinds);
+		}
+		if (!cfg->mdl->test(xp, yp, atoms, p)) {
+			failed = true;
+			break;
+		}
+		if (cfg->ally) {
+			predicted = p;
+		} else {
+			dassign(p, predicted, cfg->yinds);
+		}
+	}
+
+	if (failed) {
 		predicted_vals.push_back(rvec());
-		return INFINITY;
+		return false;
 	}
 	predicted_vals.push_back(predicted);
-	return (y - predicted).squaredNorm();
+	return true;
 }
 
 string multi_model::assign_model
@@ -284,11 +304,17 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	
 	if (list) {
 		for (int j = start; j <= end; ++j) {
-			os << setw(4) << j << "\t";
+			os << setw(4) << j << " ";
 			if (dim >= reference_vals[j].size() || dim >= predicted_vals[j].size()) {
-				os << "NA\tNA" << endl;
+				os << "NA" << endl;
 			} else {
-				os << reference_vals[j](dim) << "\t" << predicted_vals[j](dim) << endl;
+				double error = fabs(reference_vals[j](dim) - predicted_vals[j](dim));
+				os << reference_vals[j](dim) << " ; " << predicted_vals[j](dim) << " ; " 
+				   << error << " ; " << test_x[j] << " ; ";
+				for (int k = 0; k < test_atoms[j].size(); ++k) {
+					os << test_atoms[j][k] << " ";
+				}
+				os << endl;
 			}
 		}
 	} else {

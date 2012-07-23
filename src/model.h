@@ -30,8 +30,7 @@ public:
 	virtual bool predict(const rvec &x, rvec &y, const boolvec &atoms) = 0;
 	virtual int get_input_size() const = 0;
 	virtual int get_output_size() const = 0;
-	
-	virtual float test(const rvec &x, const rvec &y, const boolvec &atoms);
+	virtual bool test(const rvec &x, const rvec &y, const boolvec &atoms, rvec &predicted);
 	virtual void learn(const rvec &x, const rvec &y, const boolvec &atoms) {}
 	virtual void save(std::ostream &os) const {}
 	virtual void load(std::istream &is) {}
@@ -62,7 +61,7 @@ public:
 	
 	bool predict(const rvec &x, rvec &y, const boolvec &atoms);
 	void learn(const rvec &x, const rvec &y, const boolvec &atoms);
-	float test(const rvec &x, const rvec &y, const boolvec &atoms);
+	bool test(const rvec &x, const rvec &y, const boolvec &atoms);
 	
 	std::string assign_model (
 		const std::string &name, 
@@ -101,6 +100,8 @@ private:
 	// measuring prediction errors
 	std::vector<rvec> reference_vals;
 	std::vector<rvec> predicted_vals;
+	std::vector<rvec> test_x, test_y;
+	std::vector<boolvec> test_atoms;
 };
 
 #endif

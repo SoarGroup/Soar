@@ -86,27 +86,22 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether the decision tree classification was correct.
 	*/
-	float test(const rvec &x, const rvec &y, const boolvec &atoms) {
-		if (!get_option("log_predictions").empty()) {
-			int best, predicted;
-			double besterror;
-			best = em->best_mode(x, y(0), besterror);
-			predicted = clsfr->classify(x, atoms);
-			
-			stringstream ss;
-			ss << "predictions/" << get_name() << ".classify";
-			string path(ss.str());
-			ofstream out(path.c_str(), ios_base::app);
-			out << em->get_nmodels() << " " << (best == predicted) << " " << best << " " << predicted << " " << besterror << endl;
-		}
+	bool test(const rvec &x, const rvec &y, const boolvec &atoms, rvec &prediction) {
+		int best, mode;
+		double best_error;
+		best = em->best_mode(x, y(0), best_error);
+		mode = clsfr->classify(x, atoms);
+		test_modes.push_back(mode);
+		test_best_modes.push_back(best);
+		test_best_errors.push_back(best_error);
 		
-		return model::test(x, y, atoms);
+		return model::test(x, y, atoms, prediction);
 	}
 	
 	bool cli_inspect_sub(int first_arg, const vector<string> &args, ostream &os) {
 		if (first_arg >= args.size()) {
 			os << "EM model learner" << endl;
-			os << endl << "subqueries: train classifier em" << endl;
+			os << endl << "subqueries: train classifier em error" << endl;
 			return true;
 		} else if (args[first_arg] == "train") {
 			const vector<category> &modes = em->get_map_modes();
@@ -136,6 +131,12 @@ public:
 			return clsfr->cli_inspect(first_arg + 1, args, os);
 		} else if (args[first_arg] == "em") {
 			return em->cli_inspect(first_arg + 1, args, os);
+		} else if (args[first_arg] == "error") {
+			assert(test_modes.size() == test_best_modes.size() && test_modes.size() == test_best_errors.size());
+			for (int i = 0; i < test_modes.size(); ++i) {
+				os << setw(4) << i << " " << test_modes[i] << " " << test_best_modes[i] << " "
+				   << test_best_errors[i] << endl;
+			}
 		}
 		return false;
 	}
@@ -160,6 +161,9 @@ private:
 	wme *revisions_wme;
 	int revisions;
 	map<string, vector<string> > pred_params;
+	
+	vector<int> test_modes, test_best_modes;
+	vector<double> test_best_errors;
 };
 
 model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
