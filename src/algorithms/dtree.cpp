@@ -933,3 +933,11 @@ void ID5Tree::get_instances(vector<int> &i) const {
 	i = insts_here;
 }
 
+void ID5Tree::get_categories(vector<int> &c) const {
+	map<category, int>::const_iterator i;
+	for (i = ttl_counts.begin(); i != ttl_counts.end(); ++i) {
+		if (i->second > 0) {
+			c.push_back(i->first);
+		}
+	}
+}

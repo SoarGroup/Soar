@@ -27,6 +27,7 @@ public:
 	const ID5Tree *get_matched_node(const boolvec &attrs) const;
 	
 	void get_instances(std::vector<int> &i) const;
+	void get_categories(std::vector<int> &c) const;
 
 private:
 	//typedef std::unique_ptr<ID5Tree> ID5ptr;

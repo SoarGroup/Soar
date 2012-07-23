@@ -389,15 +389,12 @@ bool EM::find_new_mode_inds(vector<int> &mode_inds) const {
 }
 
 bool EM::unify_or_add_model() {
-	function_timer t(timers.get(NEW_T));
+	if (noise_inds.size() < K || noise_inds == old_noise_inds) {
+		return false;
+	}
 
-	if (noise_inds == old_noise_inds) {
-		return false;
-	}
+	function_timer t(timers.get(NEW_T));
 	old_noise_inds = noise_inds;
-	if (noise_inds.size() < K) {
-		return false;
-	}
 	
 	vector<int> inds;
 	if (!find_new_mode_inds(inds)) {

@@ -81,7 +81,18 @@ void classifier::new_data(const boolvec &atoms) {
 
 int classifier::classify(const rvec &x, const boolvec &atoms) {
 	vector<int> matched_insts;
-	tree->get_matched_node(atoms)->get_instances(matched_insts);
+	vector<category> matched_cats;
+	const ID5Tree *matched_node = tree->get_matched_node(atoms);
+
+	matched_node->get_categories(matched_cats);
+	if (matched_cats.size() == 0) {
+		return -1;
+	}
+	if (matched_cats.size() == 1) {
+		return matched_cats[0];
+	}
+
+	matched_node->get_instances(matched_insts);
 	if (matched_insts.size() == 0) {
 		return -1;
 	}
