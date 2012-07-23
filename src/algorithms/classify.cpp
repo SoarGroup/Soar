@@ -38,50 +38,50 @@ ostream &operator<<(ostream &os, const classifier_inst &inst) {
 	for (int i = 0; i < inst.attrs.size(); ++i) {
 		os << (inst.attrs[i] ? 1 : 0) << ' ';
 	}
-	os << inst.cat;
+	os << " : " << inst.cat << endl;
 	return os;
 }
 
-void classifier_inst::save(ostream &os) const {
-	os << cat << endl;
-	save_vector(attrs, os);
+istream &operator>>(istream &is, classifier_inst &inst) {
+	string x;
+	inst.attrs.clear();
+	while (true) {
+		is >> x;
+		if (x == "0") {
+			inst.attrs.push_back(false);
+		} else if (x == "1") {
+			inst.attrs.push_back(true);
+		} else if (x == ":") {
+			is >> inst.cat;
+			break;
+		} else {
+			assert(false);
+		}
+	}
+	return is;
 }
 
-void classifier_inst::load(istream &is) {
-	is >> cat;
-	load_vector(attrs, is);
-}
+classifier::classifier(const dyn_mat &X, const dyn_mat &Y) 
+: X(X), Y(Y), ndata(0), tree(NULL)
+{}
 
-classifier::classifier(const dyn_mat &X, const dyn_mat &Y, scene *scn) 
-: X(X), Y(Y), ndata(0), scn(scn->clone())
-{
-	vector<string> atoms;
-	get_filter_table().get_all_atoms(scn, atoms);
-	tree = new ID5Tree(insts, atoms.size());
-}
-
-classifier::~classifier() {
-	delete scn;
-}
-
-void classifier::new_data() {
+void classifier::new_data(const boolvec &atoms) {
 	++ndata;
 	assert(ndata == insts.size() + 1);
-	scn->set_properties(X.row(ndata - 1));
 	classifier_inst i;
-	i.attrs = scn->get_atom_vals();
+	i.attrs = atoms;
 	i.cat = -1;
 	insts.push_back(i);
+	if (!tree) {
+		tree = new ID5Tree(insts, atoms.size());
+	}
 	tree->update_tree(ndata - 1);
 	tree->prune();
 }
 
-int classifier::classify(const rvec &x) {
-	scn->set_properties(x);
-	attr_vec a = scn->get_atom_vals();
-	
+int classifier::classify(const rvec &x, const boolvec &atoms) {
 	vector<int> matched_insts;
-	tree->get_matched_node(a)->get_instances(matched_insts);
+	tree->get_matched_node(atoms)->get_instances(matched_insts);
 	if (matched_insts.size() == 0) {
 		return -1;
 	}
@@ -123,27 +123,6 @@ int classifier::classify(const rvec &x) {
 	}
 	
 	return result;
-}
-
-void classifier::batch_update(const vector<category> &classes) {
-	if (tree) {
-		delete tree;
-	}
-	insts.clear();
-	insts.reserve(classes.size());
-	int nattrs;
-	for (int i = 0; i < classes.size(); ++i) {
-		scn->set_properties(X.row(i));
-		classifier_inst inst;
-		inst.attrs = scn->get_atom_vals();
-		inst.cat = classes[i];
-		insts.push_back(inst);
-		nattrs = inst.attrs.size();
-	}
-	ndata = insts.size();
-	tree = new ID5Tree(insts, nattrs);
-	tree->batch_update();
-	tree->prune();
 }
 
 void classifier::print_tree(ostream &os) const {
@@ -200,5 +179,26 @@ void classifier::update(const vector<category> &cats) {
 }
 
 void classifier::get_tested_atoms(vector<int> &atoms) const {
-	tree->get_all_splits(atoms);
+	if (tree) {
+		tree->get_all_splits(atoms);
+	}
+}
+
+void classifier::save(std::ostream &os) const {
+	save_vector(insts, os);
+}
+
+void classifier::load(std::istream &is) {
+	insts.clear();
+	load_vector(insts, is);
+	
+	if (tree) {
+		delete tree;
+	}
+	ndata = insts.size();
+	if (ndata > 0) {
+		tree = new ID5Tree(insts, insts[0].attrs.size());
+		tree->batch_update();
+		tree->prune();
+	}
 }

@@ -15,7 +15,7 @@ public:
 		finish();
 	}
 	
-	bool predict(const rvec &x, rvec &y) {
+	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
 		if (x.size() != 10 || y.size() != 8) {
 			return false;
 		}

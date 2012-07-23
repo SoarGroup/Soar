@@ -242,11 +242,12 @@ void svs_state::update_models() {
 		} else {
 			x = prev_pvals;
 		}
+		boolvec atoms = scn->get_atom_vals();
 		if (test_models) {
-			mmdl->test(x, curr_pvals);
+			mmdl->test(x, curr_pvals, atoms);
 		}
 		if (learn_models) {
-			mmdl->learn(x, curr_pvals);
+			mmdl->learn(x, curr_pvals, atoms);
 		}
 	} else {
 		mmdl->set_property_vector(curr_pnames);

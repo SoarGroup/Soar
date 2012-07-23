@@ -307,4 +307,6 @@ private:
 
 extern logger LOG;
 
+typedef std::vector<bool> boolvec;
+
 #endif

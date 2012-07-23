@@ -776,7 +776,7 @@ int ID5Tree::size() const {
 	return 1 + left->size() + right->size();
 }
 
-int ID5Tree::classify(const attr_vec &attrs) const {
+int ID5Tree::classify(const boolvec &attrs) const {
 	if (!expanded()) {
 		return cat;
 	}
@@ -786,7 +786,7 @@ int ID5Tree::classify(const attr_vec &attrs) const {
 	return right->classify(attrs);
 }
 
-const ID5Tree *ID5Tree::get_matched_node(const attr_vec &attrs) const {
+const ID5Tree *ID5Tree::get_matched_node(const boolvec &attrs) const {
 	if (!expanded()) {
 		return this;
 	}

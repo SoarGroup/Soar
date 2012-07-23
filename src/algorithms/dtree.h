@@ -13,7 +13,7 @@ public:
 	void update_tree(int i);
 	void update_counts_change(int i, category old);
 	void batch_update();
-	category classify(const attr_vec &attrs) const;
+	category classify(const boolvec &attrs) const;
 	void output(const std::vector<std::string> &attr_names) const;
 	int size() const;
 	void get_all_splits(std::vector<int> &splits) const;
@@ -24,7 +24,7 @@ public:
 	void prune();
 	
 	// Return node that best matches attribute vector
-	const ID5Tree *get_matched_node(const attr_vec &attrs) const;
+	const ID5Tree *get_matched_node(const boolvec &attrs) const;
 	
 	void get_instances(std::vector<int> &i) const;
 

@@ -51,10 +51,10 @@ void model::init() {
 	}
 }
 
-float model::test(const rvec &x, const rvec &y) {
+float model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
 	rvec py(y.size());
 	float error;
-	if (!predict(x, py)) {
+	if (!predict(x, py, atoms)) {
 		error = numeric_limits<double>::signaling_NaN();
 	} else {
 		error = (py - y).norm();
@@ -120,19 +120,18 @@ multi_model::~multi_model() {
 	}
 }
 
-bool multi_model::predict(const rvec &x, rvec &y) {
+bool multi_model::predict(const rvec &x, rvec &y, const boolvec &atoms) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
-		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
 		rvec yp(cfg->ally ? y.size() : cfg->yinds.size());
 		bool success;
 		if (cfg->allx) {
-			success = cfg->mdl->predict(x, yp);
+			success = cfg->mdl->predict(x, yp, atoms);
 		} else {
 			rvec x1;
 			slice(x, x1,  cfg->xinds);
-			success = cfg->mdl->predict(x1, yp);
+			success = cfg->mdl->predict(x1, yp, atoms);
 		}
 		if (!success) {
 			return false;
@@ -144,12 +143,11 @@ bool multi_model::predict(const rvec &x, rvec &y) {
 				y[cfg->yinds[j]] = yp[j];
 			}
 		}
-		DATAVIS("END" << endl)
 	}
 	return true;
 }
 
-void multi_model::learn(const rvec &x, const rvec &y) {
+void multi_model::learn(const rvec &x, const rvec &y, const boolvec &atoms) {
 	std::list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
@@ -166,16 +164,16 @@ void multi_model::learn(const rvec &x, const rvec &y) {
 			slice(y, yp, cfg->yinds);
 		}
 		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
-		cfg->mdl->learn(xp, yp);
+		cfg->mdl->learn(xp, yp, atoms);
 		DATAVIS("END" << endl)
 	}
 }
 
-float multi_model::test(const rvec &x, const rvec &y) {
+float multi_model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
 	rvec predicted(y.size());
 	predicted.setConstant(0.0);
 	reference_vals.push_back(y);
-	if (!predict(x, predicted)) {
+	if (!predict(x, predicted, atoms)) {
 		predicted_vals.push_back(rvec());
 		return INFINITY;
 	}
