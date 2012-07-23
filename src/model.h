@@ -89,7 +89,7 @@ private:
 	};
 	
 	bool find_indexes(const std::vector<std::string> &props, std::vector<int> &indexes);
-	void error_stats_by_dim(int dim, int start, int end, double &mean, double &std, double &min, double &max) const;
+	void error_stats_by_dim(int dim, int start, int end, double &mean, double &mode, double &std, double &min, double &max) const;
 	void report_model_config(model_config* c, std::ostream &os) const;
 	bool report_error(int i, const std::vector<std::string> &args, std::ostream &os) const;
 	

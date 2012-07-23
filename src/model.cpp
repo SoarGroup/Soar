@@ -318,17 +318,18 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 			}
 		}
 	} else {
-		double mean, std, min, max;
-		error_stats_by_dim(dim, start, end, mean, std, min, max);
+		double mean, mode, std, min, max;
+		error_stats_by_dim(dim, start, end, mean, mode, std, min, max);
 		os << "mean " << mean << endl
 		   << "std  " << std << endl
+		   << "mode " << mode << endl
 		   << "min  " << min << endl
 		   << "max  " << max << endl;
 	}
 	return true;
 }
 
-void multi_model::error_stats_by_dim(int dim, int start, int end, double &mean, double &std, double &min, double &max) const {
+void multi_model::error_stats_by_dim(int dim, int start, int end, double &mean, double &mode, double &std, double &min, double &max) const {
 	assert(dim >= 0 && start >= 0 && end <= reference_vals.size());
 	double total = 0.0;
 	min = INFINITY; 
@@ -356,6 +357,8 @@ void multi_model::error_stats_by_dim(int dim, int start, int end, double &mean, 
 		std += pow(ds[i] - mean, 2);
 	}
 	std = sqrt(std / ds.size());
+	sort(ds.begin(), ds.end());
+	mode = ds[ds.size() / 2];
 }
 
 void multi_model::report_model_config(model_config* c, ostream &os) const {
