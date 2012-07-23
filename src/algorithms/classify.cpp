@@ -63,9 +63,15 @@ istream &operator>>(istream &is, classifier_inst &inst) {
 
 classifier::classifier(const dyn_mat &X, const dyn_mat &Y) 
 : X(X), Y(Y), ndata(0), tree(NULL)
-{}
+{
+	timers.add("classify");
+	timers.add("LDA");
+	timers.add("update");
+}
 
 void classifier::new_data(const boolvec &atoms) {
+	function_timer t(timers.get(UPDATE_T));
+
 	++ndata;
 	assert(ndata == insts.size() + 1);
 	classifier_inst i;
@@ -80,6 +86,8 @@ void classifier::new_data(const boolvec &atoms) {
 }
 
 int classifier::classify(const rvec &x, const boolvec &atoms) {
+	function_timer t1(timers.get(CLASSIFY_T));
+
 	vector<int> matched_insts;
 	vector<category> matched_cats;
 	const ID5Tree *matched_node = tree->get_matched_node(atoms);
@@ -92,6 +100,7 @@ int classifier::classify(const rvec &x, const boolvec &atoms) {
 		return matched_cats[0];
 	}
 
+	function_timer t2(timers.get(LDA_T));
 	matched_node->get_instances(matched_insts);
 	if (matched_insts.size() == 0) {
 		return -1;
@@ -148,7 +157,7 @@ void classifier::print_tree(ostream &os) const {
 
 bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
-		os << "subqueries are: tree train" << endl;
+		os << "subqueries are: tree train timing" << endl;
 		return false;
 	}
 	
@@ -171,6 +180,10 @@ bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream 
 		for (int i = 0; i < insts.size(); ++i) {
 			os << setw(4) << i << " " << insts[i];
 		}
+		return true;
+	} else if (args[first_arg] == "timing") {
+		timers.report(os);
+		return true;
 	}
 	return false;
 }

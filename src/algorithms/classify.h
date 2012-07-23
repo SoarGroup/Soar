@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "common.h"
+#include "timer.h"
 
 class ID5Tree;
 class scene;
@@ -40,6 +41,10 @@ private:
 	const dyn_mat &Y;
 	std::vector<classifier_inst> insts;
 	ID5Tree *tree;
+
+	
+	enum Timers {CLASSIFY_T, LDA_T, UPDATE_T};
+	timer_set timers;
 };
 
 #endif
