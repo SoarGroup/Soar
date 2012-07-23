@@ -5,6 +5,8 @@
 #include <sys/un.h>
 #include <errno.h>
 #include <unistd.h>
+#include <string.h>
+#include <strings.h>
 
 #include <iostream>
 #include <sstream>
