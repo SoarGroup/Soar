@@ -13,10 +13,6 @@ public:
 	velocity_model(const string &name, int dims)
 	: model(name, "vel"), dims(dims) 
 	{}
-
-	~velocity_model() {
-		finish();
-	}
 	
 	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
 		if (x.size() != dims * 2 || y.size() != dims) {

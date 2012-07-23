@@ -19,30 +19,17 @@ void slice(const rvec &source, rvec &target, const vector<int> &indexes) {
 	}
 }
 
-model::model(const std::string &name, const std::string &type) 
-: name(name), type(type)
-{
-	stringstream ss;
-	ss << MODEL_DIR << "/" << name << "." << type;
-	path = ss.str();
-	
-	if (!get_option("log_predictions").empty()) {
-		ss.str("");
-		ss << PREDICTION_DIR << "/" << name << "." << type;
-		string p = ss.str();
-		predlog.open(p.c_str(), ios_base::app);
+void dassign(const rvec &source, rvec &target, const vector<int> &indexes) {
+	assert(source.size() == indexes.size());
+	for (int i = 0; i < indexes.size(); ++i) {
+		assert(0 <= indexes[i] && indexes[i] < target.size());
+		target[indexes[i]] = source[i];
 	}
 }
 
-void model::finish() {
-	if (!get_option("save_models").empty()) {
-		ofstream os(path.c_str());
-		if (os.is_open()) {
-			save(os);
-			os.close();
-		}
-	}
-}
+model::model(const std::string &name, const std::string &type) 
+: name(name), type(type)
+{}
 
 void model::init() {
 	ifstream is(path.c_str());
@@ -64,19 +51,12 @@ float model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
 		predlog << x << " ; " << y << " ; " << py << " ; " << error << endl;
 	}
 	
-	last_pred = py;
-	last_ref = y;
 	return error;
 }
 
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
 	if (first_arg < args.size()) {
-		if (args[first_arg] == "error") {
-			os << "last predicted: " << last_pred << endl;
-			os << "last reference: " << last_ref << endl;
-			os << "squared error:  " << (last_pred - last_ref).squaredNorm() << endl;
-			return true;
-		} else if (args[first_arg] == "save") {
+		if (args[first_arg] == "save") {
 			if (first_arg + 1 >= args.size()) {
 				os << "need a file name" << endl;
 				return false;
@@ -139,9 +119,7 @@ bool multi_model::predict(const rvec &x, rvec &y, const boolvec &atoms) {
 		if (cfg->ally) {
 			y = yp;
 		} else {
-			for (int j = 0; j < cfg->yinds.size(); ++j) {
-				y[cfg->yinds[j]] = yp[j];
-			}
+			dassign(yp, y, cfg->yinds);
 		}
 	}
 	return true;

@@ -15,10 +15,6 @@ public:
 		init();
 	}
 	
-	~lwr_model() {
-		finish();
-	}
-	
 	void learn(const rvec &x, const rvec &y, const boolvec &atoms) {
 		lwr.learn(x, y);
 	}

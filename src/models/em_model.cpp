@@ -29,7 +29,6 @@ public:
 	~EM_model() {
 		delete em;
 		delete clsfr;
-		finish();
 	}
 	
 	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {

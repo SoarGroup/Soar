@@ -17,7 +17,6 @@ public:
 	virtual ~model() {}
 	
 	void init();
-	void finish();
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os);
 	
 	std::string get_name() const {
@@ -44,7 +43,6 @@ protected:
 	};
 
 private:
-	rvec last_pred, last_ref;
 	std::string name, type, path;
 	std::ofstream predlog;
 };

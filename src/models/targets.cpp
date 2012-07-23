@@ -15,10 +15,6 @@ public:
 	targets_model(const string &name)
 	: model(name, "targets")
 	{}
-
-	~targets_model() {
-		finish();
-	}
 	
 	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
 		y[0] = x[0] + x[4];
