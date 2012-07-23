@@ -944,6 +944,11 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 
       const double num_rules = double(data->prev_op_rl_rules->size()); ///< bazald
 
+      /// Assign credit to different RL rules according to
+      ///   even: previously only method, still the default - simply split credit evenly between RL rules
+      ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
+      ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
+      ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
       std::map<production *, double> credit; ///< bazald
       if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
         double total_credit = 0.0;
@@ -960,7 +965,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
           credit[*rt] = (1.0 / ((*rt)->rl_update_count + 1.0)) / total_credit;
       }
       else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
-        double total_credit = 0.0f;
+        double total_credit = 0.0;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
           total_credit += (1.0 / (*rt)->firing_count); ///< has fired already
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
@@ -1011,15 +1016,8 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
         if(cand && cand->inst && cand->inst->prod) ///< bazald
         {
           if(cand->rl_contribution) {
-            for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
-              const production * const &prod2 = pref->inst->prod;
-              if(cand->value == pref->value && prod2->rl_rule) {
-//                 std::cerr << "     " << prod2->name->sc.name << " provides " << prod2->rl_total_variance << " to rl_total_variance_next" << std::endl;
-                rl_total_variance_next += prod2->rl_total_variance;
-              }
-            }
-
-            rl_total_variance_next *= num_rules;
+            const production * const &prod2 = pref->inst->prod;
+            rl_total_variance_next += prod2->rl_total_variance;
           }
         }
 
@@ -1133,10 +1131,8 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
             const double old_sample_variance = prod->rl_sample_variance;
 
             if(prod->rl_update_count > 1) {
-              const double x = data->reward + (update_efr ? discount * op_value : 0.0);
-              const double delta = x - old_combined;
-              prod->rl_mean2 += adjusted_alpha * iter->second * delta * (x - new_combined);
-              prod->rl_sample_variance = prod->rl_mean2 / (prod->rl_update_count + 1);
+              prod->rl_mean2 += adjusted_alpha * iter->second * delta_ecr * (data->reward - prod->rl_ecr);
+              prod->rl_sample_variance = prod->rl_mean2 / (prod->rl_update_count - 1);
 
               assert(adjusted_alpha * iter->second <= 1.0);
 
