@@ -1016,8 +1016,12 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
         if(cand && cand->inst && cand->inst->prod) ///< bazald
         {
           if(cand->rl_contribution) {
-            const production * const &prod2 = pref->inst->prod;
-            rl_total_variance_next += prod2->rl_total_variance;
+            for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+              const production * const &prod2 = pref->inst->prod;
+              if(cand->value == pref->value && prod2->rl_rule) {
+                rl_total_variance_next += prod2->rl_total_variance;
+              }
+            }
           }
         }
 
