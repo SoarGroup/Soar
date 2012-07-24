@@ -94,7 +94,7 @@ float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u) {
 	return max - min;
 }
 
-void histogram(const rvec &vals, int nbins) {
+ostream &histogram(const rvec &vals, int nbins, ostream &os) {
 	assert(nbins > 0);
 	float min = vals[0], max = vals[0], binsize, hashes_per;
 	int i, b, maxcount = 0;
@@ -109,8 +109,8 @@ void histogram(const rvec &vals, int nbins) {
 	}
 	binsize = (max - min) / (nbins - 1);
 	if (binsize == 0) {
-		cout << "All values identical (" << min << "), not drawing histogram" << endl;
-		return;
+		LOG(WARN) << "All values identical (" << min << "), not drawing histogram" << endl;
+		return os;
 	}
 	for (i = 0; i < vals.size(); ++i) {
 		b = (int) ((vals[i] - min) / binsize);
@@ -120,14 +120,26 @@ void histogram(const rvec &vals, int nbins) {
 			maxcount = counts[b];
 		}
 	}
-	hashes_per = 72.0 / maxcount;
-	streamsize p = cout.precision();
-	cout.precision(4);
+	hashes_per = 60.0 / maxcount;
+	streamsize p = os.precision();
+	os.precision(3);
+	ios::fmtflags f = os.flags();
+	os << scientific;
 	for (i = 0; i < nbins; ++i) {
-		cout << setfill(' ') << setw(5) << min + binsize * i << " - " << setw(5) << min + binsize * (i + 1) << "|";
-		cout << setfill('#') << setw((int) (hashes_per * counts[i])) << '/' << counts[i] << endl;
+		os << min + binsize * i << "|";
+		os << setfill('#') << setw((int) (hashes_per * counts[i])) << '/' << counts[i] << endl;
 	}
-	cout.precision(p);
+	os.precision(p);
+	os.flags(f);
+	return os;
+}
+
+ostream &histogram(const vector<double> &vals, int nbins, ostream &os) {
+	rvec v(vals.size());
+	for (int i = 0; i < vals.size(); ++i) {
+		v(i) = vals[i];
+	}
+	return histogram(v, nbins, os);
 }
 
 ostream& operator<<(ostream &os, const bbox &b) {

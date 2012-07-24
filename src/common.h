@@ -86,7 +86,8 @@ inline bool map_pop(std::map<A, B> &m, const A &key, B &val) {
 */
 float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
 
-void histogram(const rvec &vals, int nbins);
+std::ostream &histogram(const rvec &vals, int nbins, std::ostream &os);
+std::ostream &histogram(const std::vector<double> &vals, int nbins, std::ostream &os);
 
 class bbox {
 public:

@@ -257,13 +257,16 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	}
 	
 	int dim = -1, start = 0, end = reference_vals.size() - 1;
-	bool list = false;
+	bool list = false, histo = false;
 	if (i >= args.size()) {
 		os << "specify a dimension" << endl;
 		return false;
 	}
 	if (args[i] == "list") {
 		list = true;
+		++i;
+	} else if (args[i] == "histogram") {
+		histo = true;
 		++i;
 	}
 	if (!parse_int(args[i], dim)) {
@@ -315,6 +318,12 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 				os << endl;
 			}
 		}
+	} else if (histo) {
+		vector<double> errors;
+		for (int j = start; j <= end; ++j) {
+			errors.push_back(fabs(reference_vals[j](dim) - predicted_vals[j](dim)));
+		}
+		histogram(errors, 10, os) << endl;
 	} else {
 		double mean, mode, std, min, max;
 		error_stats_by_dim(dim, start, end, mean, mode, std, min, max);
