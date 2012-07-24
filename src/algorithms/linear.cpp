@@ -231,10 +231,7 @@ void LRModel::add_example(int i, bool update_refit) {
 		}
 	}
 	
-	DATAVIS("isconst " << isconst << endl)
-	if (isconst) {
-		DATAVIS("constvals " << constvals << endl)
-	} else if (update_refit) {
+	if (!isconst && update_refit) {
 		rvec py;
 		if (!predict_sub(xdata.row(i), py)) {
 			refit = true;
@@ -248,13 +245,14 @@ void LRModel::add_example(int i, bool update_refit) {
 				*/
 				double olderror = error / (members.size() - 1);
 				double newerror = (error + e) / members.size();
-				if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror) {
+				if (newerror > MODEL_ERROR_THRESH) {
+				//if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror) {
 					refit = true;
+					cout << "Needs refit, old = " << olderror << " new = " << newerror << endl;
 				}
 			}
 			error += e;
 		}
-		DATAVIS("'avg error' " << error / members.size() << endl)
 	}
 }
 

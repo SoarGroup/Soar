@@ -130,9 +130,7 @@ void multi_model::learn(const rvec &x, const rvec &y, const boolvec &atoms) {
 		} else {
 			slice(y, yp, cfg->yinds);
 		}
-		DATAVIS("BEGIN '" << cfg->name << "'" << endl)
 		cfg->mdl->learn(xp, yp, atoms);
-		DATAVIS("END" << endl)
 	}
 }
 
