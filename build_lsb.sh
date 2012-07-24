@@ -15,8 +15,8 @@ if [ $(uname -m) == "x86_64" ]; then
 fi
 
 export LSBCC_LIB_PREFIX
-export LSBCC=gcc-4.6
-export LSBCXX=g++-4.6
+export LSBCC=gcc-4.4
+export LSBCXX=g++-4.4
 export LSBCC_LSBVERSION=4.0
 export LSBCC_LIBS=$LSBCC_LIB_PREFIX$LSBCC_LSBVERSION
 export CCACHE
