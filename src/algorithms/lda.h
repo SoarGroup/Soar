@@ -6,7 +6,7 @@
 
 class LDA_NN_Classifier {
 public:
-	LDA_NN_Classifier(const_mat_view data, const std::vector<int> &membership);
+	LDA_NN_Classifier(const_mat_view data, const std::vector<int> &used_rows, const std::vector<int> &classes);
 	int classify(const rvec &x) const;
 	
 	const mat &getW() const {
@@ -17,11 +17,12 @@ public:
 		return J;
 	}
 	
-	
 private:
 	mat W, projected;
 	rvec J;
-	std::vector<int> membership;
+	std::vector<int> classes, used_cols;
+	bool degenerate;
+	int degenerate_class;
 };
 
 

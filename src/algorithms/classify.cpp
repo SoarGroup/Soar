@@ -11,29 +11,6 @@
 
 using namespace std;
 
-void clean_data(mat &data, vector<int> &nonstatic_cols) {
-	del_static_cols(data, data.cols(), nonstatic_cols);
-	data.conservativeResize(data.rows(), nonstatic_cols.size());
-	mat rand_offsets = mat::Random(data.rows(), data.cols()) / 10000;
-	data += rand_offsets;
-}
-
-int largest_class(const vector<int> &membership) {
-	map<int, int> counts;
-	for (int i = 0; i < membership.size(); ++i) {
-		++counts[membership[i]];
-	}
-	map<int, int>::iterator i;
-	int largest_count = -1;
-	int largest = -1;
-	for (i = counts.begin(); i != counts.end(); ++i) {
-		if (largest_count < i->second) {
-			largest = i->first;
-		}
-	}
-	return largest;
-}
-
 ostream &operator<<(ostream &os, const classifier_inst &inst) {
 	for (int i = 0; i < inst.attrs.size(); ++i) {
 		os << (inst.attrs[i] ? 1 : 0) << ' ';
@@ -100,49 +77,44 @@ int classifier::classify(const rvec &x, const boolvec &atoms) {
 		return matched_cats[0];
 	}
 
-	function_timer t2(timers.get(LDA_T));
 	matched_node->get_instances(matched_insts);
 	if (matched_insts.size() == 0) {
 		return -1;
 	}
 	vector<category> c(matched_insts.size());
-	bool uniform = true;
+	vector<int> signature(matched_insts.size() * 2);
 	for (int i = 0; i < matched_insts.size(); ++i) {
 		c[i] = insts[matched_insts[i]].cat;
-		if (c[i] != c[0]) {
-			uniform = false;
+		signature[i * 2] = matched_insts[i];
+		signature[i * 2 + 1] = c[i];
+	}
+	
+	LDA_NN_Classifier *lda;
+	lda_cache_type::iterator i = lda_cache.find(matched_node);
+	if (i != lda_cache.end()) {
+		if (i->second.first == signature) {
+			lda = i->second.second;
+		} else {
+			i->second.first = signature;
+			delete i->second.second;
+			function_timer t2(timers.get(LDA_T));
+			lda = new LDA_NN_Classifier(X.get(), matched_insts, c);
+			i->second.second = lda;
 		}
-	}
-	
-	if (uniform) {
-		return c[0];
-	}
-	
-	mat Xm;
-	vector<int> nonstatic_cols;
-	pick_rows(X.get(), matched_insts, Xm);
-	clean_data(Xm, nonstatic_cols);
-	
-	if (c.size() > 0 && Xm.cols() == 0) {
-		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
-		return largest_class(c);
-	}
-	
-	LDA_NN_Classifier lda(Xm, c);
-	
-	int result;
-	if (nonstatic_cols.size() < x.size()) {
-		rvec x1(nonstatic_cols.size());
-		for (int i = 0; i < nonstatic_cols.size(); ++i) {
-			x1(i) = x(nonstatic_cols[i]);
-		}
-		result = lda.classify(x1);
 	} else {
-		assert(nonstatic_cols.size() == x.size());
-		result = lda.classify(x);
+		function_timer t2(timers.get(LDA_T));
+		lda = new LDA_NN_Classifier(X.get(), matched_insts, c);
+		lda_cache[matched_node] = make_pair(signature, lda);
 	}
 	
-	return result;
+	return lda->classify(x);
+}
+
+classifier::~classifier() {
+	lda_cache_type::iterator i;
+	for (i = lda_cache.begin(); i != lda_cache.end(); ++i) {
+		delete i->second.second;
+	}
 }
 
 void classifier::print_tree(ostream &os) const {

@@ -11,19 +11,53 @@ bool hasnan(const_mat_view m) {
 	return (m.array() != m.array()).any();
 }
 
-LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &membership)
-: membership(membership)
+void clean_data(mat &data, vector<int> &nonstatic_cols) {
+	del_static_cols(data, data.cols(), nonstatic_cols);
+	data.conservativeResize(data.rows(), nonstatic_cols.size());
+	mat rand_offsets = mat::Random(data.rows(), data.cols()) / 10000;
+	data += rand_offsets;
+}
+
+int largest_class(const vector<int> &c) {
+	map<int, int> counts;
+	for (int i = 0; i < c.size(); ++i) {
+		++counts[c[i]];
+	}
+	map<int, int>::iterator i;
+	int largest_count = -1;
+	int largest = -1;
+	vector<int> used_cols;
+	for (i = counts.begin(); i != counts.end(); ++i) {
+		if (largest_count < i->second) {
+			largest = i->first;
+		}
+	}
+	return largest;
+}
+
+LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &used_rows, const vector<int> &classes)
+: classes(classes), degenerate(false), degenerate_class(9090909)
 {
-	int d = data.cols();
+	mat cleaned;
+	pick_rows(data, used_rows, cleaned);
+	clean_data(cleaned, used_cols);
+	
+	if (cleaned.cols() == 0) {
+		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
+		degenerate = true;
+		degenerate_class = largest_class(classes);
+		return;
+	}
+	int d = cleaned.cols();
 	vector<rvec> class_means;
-	vector<int> counts, cmem, classes;
+	vector<int> counts, cmem, norm_classes;
 	
 	// Remap classes to consecutive integers from 0
-	for (int i = 0; i < membership.size(); ++i) {
+	for (int i = 0; i < classes.size(); ++i) {
 		bool found = false;
-		for (int j = 0; j < classes.size(); ++j) {
-			if (classes[j] == membership[i]) {
-				class_means[j] += data.row(i);
+		for (int j = 0; j < norm_classes.size(); ++j) {
+			if (norm_classes[j] == classes[i]) {
+				class_means[j] += cleaned.row(i);
 				++counts[j];
 				cmem.push_back(j);
 				found = true;
@@ -31,14 +65,14 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &mem
 			}
 		}
 		if (!found) {
-			classes.push_back(membership[i]);
-			class_means.push_back(data.row(i));
+			norm_classes.push_back(classes[i]);
+			class_means.push_back(cleaned.row(i));
 			counts.push_back(1);
-			cmem.push_back(classes.size() - 1);
+			cmem.push_back(norm_classes.size() - 1);
 		}
 	}
 	
-	int C = classes.size();
+	int C = norm_classes.size();
 	
 	/*
 	 Degenerate case: fewer nonuniform dimensions in source
@@ -47,7 +81,7 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &mem
 	*/
 	if (d < C - 1) {
 		W = mat::Identity(d, d);
-		projected = data;
+		projected = cleaned;
 		return;
 	}
 	
@@ -56,12 +90,12 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &mem
 	}
 	
 	mat Sw = mat::Zero(d, d);
-	for (int i = 0; i < data.rows(); ++i) {
-		rvec x = data.row(i) - class_means[cmem[i]];
+	for (int i = 0; i < cleaned.rows(); ++i) {
+		rvec x = cleaned.row(i) - class_means[cmem[i]];
 		Sw += x.transpose() * x;
 	}
 	
-	rvec all_mean = data.colwise().mean();
+	rvec all_mean = cleaned.colwise().mean();
 	mat Sb = mat::Zero(d, d);
 	for (int i = 0; i < C; ++i) {
 		rvec x = class_means[i] - all_mean;
@@ -91,12 +125,24 @@ LDA_NN_Classifier::LDA_NN_Classifier(const_mat_view data, const vector<int> &mem
 		}
 		eigenvals(best) = complex<double>(-1, 0);
 	}
-	projected = data * W;
+	projected = cleaned * W;
 }
 
 int LDA_NN_Classifier::classify(const rvec &x) const {
-	rvec p = x * W;
+	if (degenerate) {
+		return degenerate_class;
+	}
+	rvec p;
+	if (used_cols.size() < x.size()) {
+		rvec x1(used_cols.size());
+		for (int i = 0; i < used_cols.size(); ++i) {
+			x1(i) = x(used_cols[i]);
+		}
+		p = x1 * W;
+	} else {
+		p = x * W;
+	}
 	int best;
 	(projected.rowwise() - p).rowwise().squaredNorm().minCoeff(&best);
-	return membership[best];
+	return classes[best];
 }

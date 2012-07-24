@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include "common.h"
+#include "lda.h"
 #include "timer.h"
 
 class ID5Tree;
@@ -23,6 +24,7 @@ std::istream &operator>>(std::istream &is, classifier_inst &inst);
 class classifier {
 public:
 	classifier(const dyn_mat &X, const dyn_mat &Y);
+	~classifier();
 	
 	void new_data(const boolvec &atoms);
 	void update(const std::vector<category> &cats);
@@ -36,12 +38,14 @@ public:
 	void load(std::istream &is);
 	
 private:
+	typedef std::map<const ID5Tree*, std::pair<std::vector<int>, LDA_NN_Classifier*> > lda_cache_type;
+
 	int ndata;
 	const dyn_mat &X;
 	const dyn_mat &Y;
 	std::vector<classifier_inst> insts;
 	ID5Tree *tree;
-
+	lda_cache_type lda_cache;
 	
 	enum Timers {CLASSIFY_T, LDA_T, UPDATE_T};
 	timer_set timers;
