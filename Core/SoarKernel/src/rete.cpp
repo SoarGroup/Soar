@@ -7492,15 +7492,13 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 	prod->rl_ecr = 0.0;
 	prod->rl_efr = 0.0;
   prod->rl_mean2 = 0.0; ///< bazald
-  prod->rl_sample_variance = 0.0; ///< bazald
-  prod->rl_partial_variance = 0.0; ///< bazald
-  prod->rl_total_variance = 0.0; ///< bazald
-  prod->rl_tolerable_variance = 0.002; ///< bazald
-  prod->rl_sample_influence_cycle = 0; ///< bazald
-  prod->rl_sample_influence_updates = 0; ///< bazald
-  prod->rl_sample_influence_p = 0; ///< bazald
-  prod->rl_sample_influence_rest = 0; ///< bazald
-  prod->rl_sample_influence_input = 0; ///< bazald
+  prod->rl_variance_tolerable = 0.002; ///< bazald
+  prod->rl_variance_0 = 0.0; ///< bazald
+  prod->rl_variance_rest = 0.0; ///< bazald
+  prod->rl_variance_total = 0.0; ///< bazald
+  prod->rl_influence_0 = 0.0; ///< bazald
+  prod->rl_influence_rest = 0.0; ///< bazald
+  prod->rl_influence_total = 0.0; ///< bazald
 	if ( ( prod->type != JUSTIFICATION_PRODUCTION_TYPE ) && ( prod->type != TEMPLATE_PRODUCTION_TYPE ) )
 	{
 	  prod->rl_rule = rl_valid_rule( prod );

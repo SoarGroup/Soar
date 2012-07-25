@@ -141,9 +141,9 @@ void print_preference_and_source (agent* agnt, preference *pref,
       for(preference *p = pref->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; p; p = p->next) {
         const production * const &prod2 = p->inst->prod;
         if(pref->value == p->value && prod2->rl_rule) {
-          if(prod2->rl_sample_variance < min_variance || min_variance < 0.0f) {
-            min_variance = prod2->rl_sample_variance;
-            tolerable_variance = prod2->rl_tolerable_variance;
+          if(prod2->rl_variance_total < min_variance || min_variance < 0.0f) {
+            min_variance = prod2->rl_variance_total;
+            tolerable_variance = prod2->rl_variance_tolerable;
           }
         }
       }

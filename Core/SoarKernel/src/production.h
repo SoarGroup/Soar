@@ -124,15 +124,13 @@ typedef struct production_struct {
   double rl_ecr;				// expected current reward (discounted reward)
   double rl_efr;				// expected future reward (discounted next state)
   double rl_mean2; ///< bazald
-  double rl_sample_variance; ///< bazald
-  double rl_partial_variance; ///< bazald
-  double rl_total_variance; ///< bazald
-  double rl_tolerable_variance; ///< bazald
-  double rl_sample_influence_cycle; ///< bazald: last updated
-  double rl_sample_influence_updates; ///< bazald: number of updates
-  double rl_sample_influence_p; ///< bazald: average probability of action selection [0,1]
-  double rl_sample_influence_rest; ///< bazald: approaches gamma^(cycles) * p * (1 + rest)
-  double rl_sample_influence_input; ///< bazald: discounted influence leading to action
+  double rl_variance_tolerable; ///< bazald
+  double rl_variance_0; ///< bazald
+  double rl_variance_rest; ///< bazald
+  double rl_variance_total; ///< bazald
+  double rl_influence_0; ///< bazald
+  double rl_influence_rest; ///< bazald
+  double rl_influence_total; ///< bazald
   
   condition* rl_template_conds;
   rl_symbol_map_set* rl_template_instantiations;

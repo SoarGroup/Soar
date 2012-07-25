@@ -659,9 +659,9 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 				new_production->rl_ecr = 0.0;
 				new_production->rl_efr = init_value;
         new_production->rl_mean2 = 0.0; ///< bazald
-        new_production->rl_sample_variance = 0.0; ///< bazald
-        new_production->rl_partial_variance = 0.0; ///< bazald
-        new_production->rl_total_variance = 0.0; ///< bazald
+        new_production->rl_variance_0 = 0.0; ///< bazald
+        new_production->rl_variance_rest = 0.0; ///< bazald
+        new_production->rl_variance_total = 0.0; ///< bazald
         new_production->rl_tolerable_variance = 0.002; ///< bazald
         new_production->rl_sample_influence_cycle = 0; ///< bazald
         new_production->rl_sample_influence_updates = 0; ///< bazald
@@ -942,14 +942,13 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 				}
 			}
 
-      const double num_rules = double(data->prev_op_rl_rules->size()); ///< bazald
-
       /// Assign credit to different RL rules according to
       ///   even: previously only method, still the default - simply split credit evenly between RL rules
       ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
       ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
       ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
       std::map<production *, double> credit; ///< bazald
+      const double num_rules = double(data->prev_op_rl_rules->size());
       if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
         double total_credit = 0.0;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
@@ -1012,14 +1011,14 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 				double new_combined, new_ecr, new_efr;
                 double delta_t = (data->reward + discount * op_value) - (sum_old_ecr + sum_old_efr);
 
-        double rl_total_variance_next = 0.0; ///< bazald
+        double rl_variance_total_next = 0.0; ///< bazald
         if(cand && cand->inst && cand->inst->prod) ///< bazald
         {
           if(cand->rl_contribution) {
             for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
               const production * const &prod2 = pref->inst->prod;
               if(cand->value == pref->value && prod2->rl_rule) {
-                rl_total_variance_next += prod2->rl_total_variance;
+                rl_variance_total_next += prod2->rl_variance_total;
               }
             }
           }
@@ -1131,19 +1130,19 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
             //     return (variance, variance_n)
 
             const double old_mean2 = prod->rl_mean2;
-            const double old_sample_variance = prod->rl_sample_variance;
+            const double old_sample_variance = prod->rl_variance_0;
 
             if(prod->rl_update_count > 1) {
               prod->rl_mean2 += adjusted_alpha * iter->second * delta_ecr * (data->reward - prod->rl_ecr);
-              prod->rl_sample_variance = prod->rl_mean2 / (prod->rl_update_count - 1);
+              prod->rl_variance_0 = prod->rl_mean2 / (prod->rl_update_count - 1);
 
               assert(adjusted_alpha * iter->second <= 1.0);
 
-              prod->rl_partial_variance += adjusted_alpha * iter->second * (discount * rl_total_variance_next - prod->rl_partial_variance);
-              prod->rl_total_variance = prod->rl_sample_variance + prod->rl_partial_variance;
+              prod->rl_variance_rest += adjusted_alpha * iter->second * (discount * rl_variance_total_next - prod->rl_variance_rest);
+              prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
-//             std::cerr << " V   " << prod->name->sc.name << " = " << prod->rl_sample_variance << '|' << prod->rl_variance_nonincrease_count << " from (" << prod->rl_update_count << ", " << old_combined << ", " << new_combined << ", " << old_sample_variance << ')' << std::endl;
+            std::cerr << "Variance of " << prod->name->sc.name << " = " << prod->rl_variance_total << std::endl;
           }
 
                     // change documentation
