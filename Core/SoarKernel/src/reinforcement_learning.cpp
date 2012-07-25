@@ -1025,7 +1025,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
           }
         }
 
-        double rl_total_variance = 0.0; ///< bazald
 				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
 				{	
 					production *prod = iter->first;
@@ -1141,7 +1140,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               assert(adjusted_alpha * iter->second <= 1.0);
 
               prod->rl_partial_variance += adjusted_alpha * iter->second * (discount * rl_total_variance_next - prod->rl_partial_variance);
-              rl_total_variance += prod->rl_sample_variance + prod->rl_partial_variance;
+              prod->rl_total_variance = prod->rl_sample_variance + prod->rl_partial_variance;
             }
 
 //             std::cerr << " V   " << prod->name->sc.name << " = " << prod->rl_sample_variance << '|' << prod->rl_variance_nonincrease_count << " from (" << prod->rl_update_count << ", " << old_combined << ", " << new_combined << ", " << old_sample_variance << ')' << std::endl;
@@ -1185,31 +1184,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 						}
 					}	
 				}
-
-        for(iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++) ///< bazald
-        { 
-          production *prod = iter->first;
-
-          // Adjust alpha based on decay policy
-          // Miller 11/14/2011
-          double adjusted_alpha;
-          switch (my_agent->rl_params->decay_mode->get_value())
-          {
-              case rl_param_container::exponential_decay:
-                  adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
-                  break;
-              case rl_param_container::logarithmic_decay:
-                  adjusted_alpha = 1.0 / (log(prod->rl_update_count + 1.0) + 1.0);
-                  break;
-              case rl_param_container::normal_decay:
-              default:
-                  adjusted_alpha = alpha;
-                  break;
-          }
-
-          prod->rl_total_variance += adjusted_alpha * iter->second * (rl_total_variance / num_rules - prod->rl_total_variance);
-//           std::cerr << "     " << prod->name->sc.name << " takes " << prod->rl_total_variance << " from rl_total_variance" << std::endl;
-        }
 			}
 		}
 
