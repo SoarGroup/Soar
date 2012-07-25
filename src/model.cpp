@@ -304,16 +304,31 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	}
 	
 	if (list) {
+		os << "num real pred error null norm" << endl;
 		for (int j = start; j <= end; ++j) {
 			os << setw(4) << j << " ";
 			if (dim >= reference_vals[j].size() || dim >= predicted_vals[j].size()) {
 				os << "NA" << endl;
 			} else {
-				double error = fabs(reference_vals[j](dim) - predicted_vals[j](dim));
-				os << reference_vals[j](dim) << " ; " << predicted_vals[j](dim) << " ; " 
-				   << error << " ; " << test_x[j] << " ; ";
-				for (int k = 0; k < test_atoms[j].size(); ++k) {
-					os << test_atoms[j][k] << " ";
+				double error, null_error, norm_error;
+				error = fabs(reference_vals[j](dim) - predicted_vals[j](dim));
+				if (j > 0 && (null_error = fabs(reference_vals[j-1](dim) - reference_vals[j](dim))) > 0) {
+					norm_error = error / null_error;
+				} else {
+					null_error = -1;
+					norm_error = -1;
+				}
+				os << reference_vals[j](dim) << " " << predicted_vals[j](dim) << " " 
+				   << error << " ";
+				if (null_error < 0) {
+					os << "NA ";
+				} else {
+					os << null_error << " ";
+				}
+				if (norm_error < 0) {
+					os << "NA";
+				} else {
+					os << norm_error;
 				}
 				os << endl;
 			}
