@@ -10,28 +10,7 @@ g_rules = 'PuddleWorld/puddle-world.soar'
 
 g_ep_tuples = []
 
-#g_ep_tuples.append((10, 10, -1, 0, 0, 0))
-#g_ep_tuples.append((10, 20, -1, 0, 0, 0))
-#g_ep_tuples.append((20, 10, -1, 0, 0, 0))
-#g_ep_tuples.append((20, 20, -1, 0, 0, 0))
-#g_ep_tuples.append((10, 10, 0, 20, 10, 0))
-#g_ep_tuples.append((10, 10, 0, 10, 20, 0))
-#g_ep_tuples.append((10, 10, 0, 20, 20, 0))
-#g_ep_tuples.append((10, 10, 500, 20, 10, 0))
-#g_ep_tuples.append((10, 10, 500, 10, 20, 0))
-#g_ep_tuples.append((10, 10, 500, 20, 20, 0))
-#g_ep_tuples.append((10, 10, 0, 20, 10, 1))
-#g_ep_tuples.append((10, 10, 0, 10, 20, 1))
-#g_ep_tuples.append((10, 10, 0, 20, 20, 1))
-#g_ep_tuples.append((10, 10, 500, 20, 10, 1))
-#g_ep_tuples.append((10, 10, 500, 10, 20, 1))
-#g_ep_tuples.append((10, 10, 500, 20, 20, 1))
-
-#g_ep_tuples.append((5, 5, -1, 0, 0, 0))
-#g_ep_tuples.append((10, 10, -1, 0, 0, 0))
-#g_ep_tuples.append((20, 20, -1, 0, 0, 0))
-#g_ep_tuples.append((40, 40, -1, 0, 0, 0))
-
+# ./puddleworld-batch.py -j 4 -r 30 -e 1600
 g_ep_tuples.append((5, 5, 'even'))
 g_ep_tuples.append((5, 5, 'even', (0, 10, 10)))
 g_ep_tuples.append((5, 5, 'fc', (0, 10, 10)))

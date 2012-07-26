@@ -982,7 +982,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
         sum_influence += prod2->rl_influence_total;
 
-        std::cerr << "Influence " << prod2->name->sc.name << " = " << prod2->rl_influence_total << std::endl;
+//         std::cerr << "Influence " << prod2->name->sc.name << " = " << prod2->rl_influence_total << std::endl;
       } DONE_INFLUENCE_PRODUCTIONS;
     }
   }
@@ -1086,7 +1086,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 
 //             std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
 
-          std::cerr << "Inflated variance " << prod2->name->sc.name << " = " << inflated_variance << " of " << prod2->rl_variance_tolerable << std::endl;
+//           std::cerr << "Inflated variance " << prod2->name->sc.name << " = " << inflated_variance << " of " << prod2->rl_variance_tolerable << std::endl;
 
           if((suboptimality < 0.001 ||
               inflated_variance < 0.001 || ///< must fall below threshold after splitting, or operator-no-change will result
@@ -1118,7 +1118,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
     intolerable_variance_tail->next_candidate = 0;
     selected = intolerable_variance_head;
 
-    std::cerr << "Numeric tie impasse" << std::endl;
+//     std::cerr << "Numeric tie impasse" << std::endl;
 
     return TIE_IMPASSE_TYPE;
   }
@@ -1126,7 +1126,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
     if(nullify_next_candidate)
       selected->next_candidate = 0;
 
-    std::cerr << "No tie impasse" << std::endl;
+//     std::cerr << "No tie impasse" << std::endl;
 
     return NONE_IMPASSE_TYPE;
   }
