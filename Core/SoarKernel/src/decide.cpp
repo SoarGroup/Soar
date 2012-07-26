@@ -899,23 +899,29 @@ void do_buffered_link_changes (agent* thisAgent) {
    require preference for the slot.
 ************************************************************************** */
 
+#define ITERATE_INFLUENCE_PRODUCTIONS(selected) \
+      for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) { \
+        production * const &prod2 = pref->inst->prod; \
+        if(selected->value == pref->value && prod2->rl_rule) {
+#define DONE_INFLUENCE_PRODUCTIONS }}
+
 void update_influence(agent* const &thisAgent, slot* const &slot, preference * const &candidates, preference * &selected) ///< bazald
 {
   const double prob = exploration_probability_according_to_policy(thisAgent, slot, candidates, selected);
 //   std::cerr << "Probability of selection is " << prob << std::endl;
   assert(prob > 0.0);
 
+  const double alpha = thisAgent->rl_params->learning_rate->get_value();
+  const double gamma = thisAgent->rl_params->discount_rate->get_value();
+  const double idr = thisAgent->rl_params->influence_discount_rate->get_value();
+
+  double sum_influence = 0.0;
+
   if(selected->inst && selected->inst->prod) {
     const production * const &prod = selected->inst->prod;
 
     if(selected->rl_contribution) {
       selected->rl_intolerable_variance = true;
-
-#define UPDATE_INFLUENCE_FOR \
-      for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) { \
-        production * const &prod2 = pref->inst->prod; \
-        if(selected->value == pref->value && prod2->rl_rule) {
-#define DONE_UPDATE_INFLUENCE }}
 
       /// Mirror code in reinforcement_learning.cpp::rl_perform_update
       /// Assign credit to different RL rules according to
@@ -924,73 +930,66 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
       ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
       ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
       std::map<production *, double> credit; ///< bazald
-      double num_rules = 0.0;
-      UPDATE_INFLUENCE_FOR {
-        ++num_rules;
-      } DONE_UPDATE_INFLUENCE;
       if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
         double total_credit = 0.0;
-        UPDATE_INFLUENCE_FOR {
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           total_credit += 1.0 / (log(prod2->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
-        } DONE_UPDATE_INFLUENCE;
-        UPDATE_INFLUENCE_FOR {
+        } DONE_INFLUENCE_PRODUCTIONS;
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           credit[prod2] = (1.0 / (log(prod2->rl_update_count + 1.0) + 1.0)) / total_credit;
-        } DONE_UPDATE_INFLUENCE;
+        } DONE_INFLUENCE_PRODUCTIONS;
       }
       else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
         double total_credit = 0.0;
-        UPDATE_INFLUENCE_FOR {
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           total_credit += 1.0 / (prod2->rl_update_count + 1.0); ///< hasn't updated yet
-        } DONE_UPDATE_INFLUENCE;
-        UPDATE_INFLUENCE_FOR {
+        } DONE_INFLUENCE_PRODUCTIONS;
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           credit[prod2] = (1.0 / (prod2->rl_update_count + 1.0)) / total_credit;
-        } DONE_UPDATE_INFLUENCE;
+        } DONE_INFLUENCE_PRODUCTIONS;
       }
       else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
         double total_credit = 0.0;
-        UPDATE_INFLUENCE_FOR {
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           total_credit += (1.0 / prod2->firing_count); ///< has fired already
-        } DONE_UPDATE_INFLUENCE;
-        UPDATE_INFLUENCE_FOR {
+        } DONE_INFLUENCE_PRODUCTIONS;
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           credit[prod2] = (1.0 / prod2->firing_count) / total_credit;
-        } DONE_UPDATE_INFLUENCE;
+        } DONE_INFLUENCE_PRODUCTIONS;
       }
-      else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even){
+      else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
+        double num_rules = 0.0;
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
+          ++num_rules;
+        } DONE_INFLUENCE_PRODUCTIONS;
         const double value = 1.0 / num_rules;
-        UPDATE_INFLUENCE_FOR {
+        ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           credit[prod2] = value;
-        } DONE_UPDATE_INFLUENCE;
+        } DONE_INFLUENCE_PRODUCTIONS;
       }
       else
         abort();
 
-      const double alpha = thisAgent->rl_params->learning_rate->get_value();
-      const double gamma = thisAgent->rl_params->influence_discount_rate->get_value();
-
-      double sum_influence = 0.0;
-
-      UPDATE_INFLUENCE_FOR {
-        prod2->rl_influence_0 += alpha * credit[prod2] * (prob * gamma - prod2->rl_influence_0);
-        assert(prod2->rl_influence_0 <= gamma);
-        prod2->rl_influence_rest = alpha * credit[prod2] * prob * (magic1 * slot->rl_influence - prod2->rl_influence_rest);
+      ITERATE_INFLUENCE_PRODUCTIONS(selected) {
+        prod2->rl_influence_0 += alpha * credit[prod2] * (idr * prob - prod2->rl_influence_0);
+        assert(prod2->rl_influence_0 <= 0.5);
+        prod2->rl_influence_rest = alpha * credit[prod2] * (idr * idr * prob * slot->rl_influence - prod2->rl_influence_rest);
         assert(prod2->rl_influence_rest == prod2->rl_influence_rest); ///< !isnan
-        assert(prod2->rl_influence_rest <= magic2);
-        prod2->rl_influence_total = prod2->rl_influence_0 + magic3 * prod2->rl_influence_rest;
+        assert(prod2->rl_influence_rest <= 1.0);
+        const double update_frequency = prod2->rl_update_count / thisAgent->total_decision_phases_count;
+        prod2->rl_influence_total = prod2->rl_influence_0 + update_frequency * prod2->rl_influence_rest;
         assert(prod2->rl_influence_total == prod2->rl_influence_total); ///< !isnan
 
         sum_influence += prod2->rl_influence_total;
 
         std::cerr << "Influence " << prod2->name->sc.name << " = " << prod2->rl_influence_total << std::endl;
-      } DONE_UPDATE_INFLUENCE;
-
-#undef UPDATE_INFLUENCE_FOR
-#undef DONE_UPDATE_INFLUENCE
-
-      slot->rl_influence = sum_influence + gamma * slot->rl_influence;
-
-//       std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
+      } DONE_INFLUENCE_PRODUCTIONS;
     }
   }
+
+  slot->rl_influence = sum_influence + gamma * slot->rl_influence;
+
+//       std::cerr << "  resultant influence = " << slot->rl_influence << std::endl;
 }
 
 byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) ///< bazald
@@ -1015,24 +1014,16 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
   for(const preference * cand = candidates; cand; cand = cand->next_candidate) {
     ++num_candidates;
 
-    double split = 0.0;
     double influence = 0.0;
     double variance = 0.0;
     double q_value = 0.0;
-    for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
-      const production * const &prod2 = pref->inst->prod;
-      if(cand->value == pref->value && prod2->rl_rule) {
-        ++split;
-        influence += prod2->rl_influence_total;
-        variance += prod2->rl_variance_total;
-        q_value += prod2->rl_ecr + prod2->rl_efr;
-      }
-    }
+    ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+      influence += prod2->rl_influence_total;
+      variance += prod2->rl_variance_total;
+      q_value += prod2->rl_ecr + prod2->rl_efr;
+    } DONE_INFLUENCE_PRODUCTIONS;
 
     if(q_value > second_q_value) {
-      influence /= split;
-      variance /= split;
-
       if(q_value > max_q_value) {
         second_influence = max_influence;
         second_variance = max_variance;
@@ -1066,63 +1057,49 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         cand->rl_intolerable_variance = true;
 //         float total_q;
 
-        double split = 0.0;
-        double total_influence_squared = 0.0;
-        double total_variance_squared = 0.0;
+        double total_influence = 0.0;
+        double total_variance = 0.0;
         double q_value = 0.0;
-        for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
-          const production * const &prod2 = pref->inst->prod;
-          if(cand->value == pref->value && prod2->rl_rule) {
-            ++split;
-            total_influence_squared += prod2->rl_influence_total;
-            total_variance_squared += prod2->rl_variance_total;
-            q_value += prod2->rl_ecr + prod2->rl_efr;
-          }
-        }
+        ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+          total_influence += prod2->rl_influence_total;
+          total_variance += prod2->rl_variance_total;
+          q_value += prod2->rl_ecr + prod2->rl_efr;
+        } DONE_INFLUENCE_PRODUCTIONS;
 
-//         const double total_influence = total_influence_squared / split;
-//         const double total_variance = total_variance_squared / split;
-//         const double average_influence = total_influence / split;
-//         const double average_variance = total_variance / split;
         const double suboptimality = max_q_value - q_value;
         const double superoptimality = q_value - second_q_value;
 
-//         std::cerr << "    total influence = " << total_influence << std::endl;
-//         std::cerr << "    total variance = " << total_variance << std::endl;
-//         std::cerr << "    average influence = " << average_influence << std::endl;
-//         std::cerr << "    average variance = " << average_variance << std::endl;
 //         std::cerr << "    suboptimality = " << suboptimality << std::endl;
 //         std::cerr << "    superoptimality = " << superoptimality << std::endl;
 
 //         const double one_minus_total_influence = 1.0 - total_influence;
 //         const double inflated_total_influence = 1.0 / one_minus_total_influence;
 
-        for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
-          const production * const &prod2 = pref->inst->prod;
-          if(cand->value == pref->value && prod2->rl_rule) {
+        ITERATE_INFLUENCE_PRODUCTIONS(cand) {
 //             std::cerr << "     " << prod2->name->sc.name << " = " << pref->numeric_value << '[' << int(pref->type) << ']' << '|' << prod2->rl_ecr + prod2->rl_efr << " reinforced " << prod2->rl_update_count << " times, variance = " << prod2->rl_variance_total << '/' << prod2->rl_tolerable_variance << std::endl;
 //             total_q += prod2->rl_ecr + prod2->rl_efr;
 //             std::cerr << "     " << prod2->name->sc.name << " = " << (prod2->rl_influence_total) * prod2->rl_variance_total << " [" << prod2->rl_influence_total << " * " << prod2->rl_variance_total << ']' << std::endl;
 
-            const double influence = (prod2->rl_influence_total) / split;
-            const double variance = prod2->rl_variance_total / split;
-            const double inflated_variance = variance / max(0.01, 1.0 - influence);
+          const double influence = prod2->rl_influence_total;
+          const double variance = prod2->rl_variance_total;
+          const double inflated_variance = influence * variance; // variance / max(0.01, 1.0 - influence);
 
 //             std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
 
-            if((suboptimality < 0.001 ||
-                inflated_variance < 0.001 || ///< must fall below threshold after splitting, or operator-no-change will result
+          std::cerr << "Inflated variance " << prod2->name->sc.name << " = " << inflated_variance << " of " << prod2->rl_variance_tolerable << std::endl;
+
+          if((suboptimality < 0.001 ||
+              inflated_variance < 0.001 || ///< must fall below threshold after splitting, or operator-no-change will result
 //                 inflated_variance + max_variance < suboptimality ||
-                inflated_variance < prod2->rl_variance_tolerable ///< Simpler test to get blocks world turning over again
-               )
+              inflated_variance < prod2->rl_variance_tolerable ///< Simpler test to get blocks world turning over again
+              )
 //               &&
 //                (superoptimality <= 0.0 ||
 //                 inflated_variance + second_variance > superoptimality)
-            ) {
-              cand->rl_intolerable_variance = false;
-            }
+          ) {
+            cand->rl_intolerable_variance = false;
           }
-        }
+        } DONE_INFLUENCE_PRODUCTIONS;
 
         if(cand->rl_intolerable_variance) {
 //           std::cerr << "     (" << my_id << ")\t" << cand->value->id.name_letter << cand->value->id.name_number << ':' << prod->name->sc.name << " = " << total_q << std::endl;
@@ -1140,15 +1117,23 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
   if(intolerable_variance_tail) {
     intolerable_variance_tail->next_candidate = 0;
     selected = intolerable_variance_head;
+
+    std::cerr << "Numeric tie impasse" << std::endl;
+
     return TIE_IMPASSE_TYPE;
   }
   else {
     if(nullify_next_candidate)
       selected->next_candidate = 0;
 
+    std::cerr << "No tie impasse" << std::endl;
+
     return NONE_IMPASSE_TYPE;
   }
 }
+
+#undef ITERATE_INFLUENCE_PRODUCTIONS
+#undef DONE_INFLUENCE_PRODUCTIONS
 
 byte require_preference_semantics (agent *thisAgent, slot *s, preference **result_candidates, bool consistency) {
   preference *p;

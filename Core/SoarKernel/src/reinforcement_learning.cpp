@@ -76,7 +76,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	add( discount_rate );
 
   // influence discount-rate
-  influence_discount_rate = new soar_module::decimal_param( "influence-discount-rate", 0.5, new soar_module::btw_predicate<double>( 0, 1, true ), new soar_module::f_predicate<double>() ); ///< bazald
+  influence_discount_rate = new soar_module::decimal_param( "influence-discount-rate", 0.5, new soar_module::btw_predicate<double>( 0, 0.5, true ), new soar_module::f_predicate<double>() ); ///< bazald
   add( influence_discount_rate );
 
 	// learning-rate
@@ -659,15 +659,13 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 				new_production->rl_ecr = 0.0;
 				new_production->rl_efr = init_value;
         new_production->rl_mean2 = 0.0; ///< bazald
+        new_production->rl_variance_tolerable = 0.002; ///< bazald
         new_production->rl_variance_0 = 0.0; ///< bazald
         new_production->rl_variance_rest = 0.0; ///< bazald
         new_production->rl_variance_total = 0.0; ///< bazald
-        new_production->rl_tolerable_variance = 0.002; ///< bazald
-        new_production->rl_sample_influence_cycle = 0; ///< bazald
-        new_production->rl_sample_influence_updates = 0; ///< bazald
-        new_production->rl_sample_influence_p = 0; ///< bazald
-        new_production->rl_sample_influence_rest = 0; ///< bazald
-        new_production->rl_sample_influence_input = 0; ///< bazald
+        new_production->rl_influence_0 = 0.0; ///< bazald
+        new_production->rl_influence_rest = 0.0; ///< bazald
+        new_production->rl_influence_total = 0.0; ///< bazald
 			}
 
 			// attempt to add to rete, remove if duplicate
@@ -948,7 +946,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
       ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
       ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
       std::map<production *, double> credit; ///< bazald
-      const double num_rules = double(data->prev_op_rl_rules->size());
       if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
         double total_credit = 0.0;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
@@ -970,7 +967,8 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
           credit[*rt] = (1.0 / (*rt)->firing_count) / total_credit;
       }
-      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even){
+      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
+        const double num_rules = double(data->prev_op_rl_rules->size());
         const double value = 1.0 / num_rules;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
           credit[*rt] = value;
