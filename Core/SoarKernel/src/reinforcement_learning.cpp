@@ -1140,7 +1140,9 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
-//             std::cerr << "Variance of " << prod->name->sc.name << " = " << prod->rl_variance_total << std::endl;
+//             std::cerr << "Variance / Value of " << prod->name->sc.name
+//                       << " = " << prod->rl_variance_total << " / " << prod->rl_ecr + prod->rl_efr
+//                       << " = " << prod->rl_variance_total / fabs(prod->rl_ecr + prod->rl_efr) << std::endl;
           }
 
                     // change documentation

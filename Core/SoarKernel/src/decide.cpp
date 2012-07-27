@@ -982,7 +982,9 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
         sum_influence += prod2->rl_influence_total;
 
-//         std::cerr << "Influence " << prod2->name->sc.name << " = " << prod2->rl_influence_total << std::endl;
+//         std::cerr << "Influence / Value " << prod2->name->sc.name
+//                   << " = " << prod2->rl_influence_total << " / " << prod2->rl_ecr + prod2->rl_efr
+//                   << " = " << prod2->rl_influence_total / fabs(prod2->rl_ecr + prod2->rl_efr) << std::endl;
       } DONE_INFLUENCE_PRODUCTIONS;
     }
   }
@@ -1595,7 +1597,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 		else
 			*result_candidates = candidates;
 
-    update_influence(thisAgent, s, candidates, *result_candidates); ///< bazald
+    if(!consistency)
+      update_influence(thisAgent, s, candidates, *result_candidates); ///< bazald
 
 		return consider_impasse_instead_of_rl(thisAgent, candidates, *result_candidates, !consistency); ///< bazald NONE_IMPASSE_TYPE
 	}
