@@ -382,10 +382,12 @@ bool PuddleWorld::is_success() const {
 
 void PuddleWorld::do_sp(const float &x_div, const float &y_div) {
   static int i = 0;
+  ++i;
   
   ostringstream oss;
-  oss << "sp {elaborate*additional*puddleworld*" << ++i
-      << " (state <s> ^superstate nil ^name puddleworld) --> (<s> ^div <d>) (<d> ^name additional ^x (/ 1.001 " << x_div
+  oss << "sp {elaborate*additional*puddleworld*" << i
+      << " (state <s> ^superstate nil ^name puddleworld) --> (<s> ^div <d>) (<d> ^name additional-" << i
+      << " ^x (/ 1.001 " << x_div
       << ") ^y (/ 1.001 " << y_div
       << "))}";
   cerr << oss.str() << endl;
