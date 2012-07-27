@@ -95,6 +95,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
     decay_mode->add_mapping( exponential_decay, "exp" );
     decay_mode->add_mapping( logarithmic_decay, "log" );
     decay_mode->add_mapping( delta_bar_delta_decay, "delta-bar-delta" );
+    decay_mode->add_mapping( adaptive_decay, "adaptive-decay" );
     add( decay_mode );
 
 	// eligibility-trace-decay-rate
@@ -1029,21 +1030,17 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					// get old vals
 					old_ecr = prod->rl_ecr;
 					old_efr = prod->rl_efr;
-          const double old_combined = old_ecr + old_efr; ///< bazald
 
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
                     double adjusted_alpha;
-                    double adjusted_alpha_pp; ///< bazald
                     switch (my_agent->rl_params->decay_mode->get_value())
                     {
                         case rl_param_container::exponential_decay:
                             adjusted_alpha = 1.0 / (prod->rl_update_count + 1.0);
-                            adjusted_alpha_pp = 1.0 / (prod->rl_update_count + 2.0); ///< bazald
                             break;
                         case rl_param_container::logarithmic_decay:
                             adjusted_alpha = 1.0 / (log(prod->rl_update_count + 1.0) + 1.0);
-                            adjusted_alpha_pp = 1.0 / (log(prod->rl_update_count + 2.0) + 1.0); ///< bazald
                             break;
                         case rl_param_container::delta_bar_delta_decay:
                             {
@@ -1051,7 +1048,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
                                 // Those values have been included here for consistency with the algorithm as described in the delta bar delta paper.
                                 prod->rl_delta_bar_delta_beta = prod->rl_delta_bar_delta_beta + theta * delta_t * 1.0 * prod->rl_delta_bar_delta_h;
                                 adjusted_alpha = exp(prod->rl_delta_bar_delta_beta);
-                                adjusted_alpha_pp = exp(prod->rl_delta_bar_delta_beta); ///< bazald TODO
                                 double decay_term = 1.0 - adjusted_alpha * 1.0 * 1.0;
                                 if (decay_term < 0.0) decay_term = 0.0;
                                 prod->rl_delta_bar_delta_h = prod->rl_delta_bar_delta_h * decay_term + adjusted_alpha * delta_t * 1.0;
@@ -1060,7 +1056,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
                         case rl_param_container::normal_decay:
                         default:
                             adjusted_alpha = alpha;
-                            adjusted_alpha_pp = 1.0 / ((1.0 / alpha) + 1.0); ///< bazald
                             break;
                     }
 
@@ -1075,7 +1070,14 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					{
 						delta_efr = 0.0;
 					}					
-					const double delta_combined = delta_ecr + delta_efr; ///< bazald
+
+          if(my_agent->rl_params->decay_mode->get_value() == rl_param_container::adaptive_decay) {///< bazald, See Adaptive Step-Size for Online Temporal Difference Learning (William Dabney and Andrew G. Barto)
+            const double new_adjusted_alpha = 1.0 / (delta_ecr + delta_efr);
+            if(new_adjusted_alpha < alpha) {
+              my_agent->rl_params->learning_rate->set_value(new_adjusted_alpha);
+              alpha = new_adjusted_alpha;
+            }
+          }
 
 					// calculate new vals
 					new_ecr = ( old_ecr + delta_ecr );
@@ -1140,9 +1142,9 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
-//             std::cerr << "Variance / Value of " << prod->name->sc.name
-//                       << " = " << prod->rl_variance_total << " / " << prod->rl_ecr + prod->rl_efr
-//                       << " = " << prod->rl_variance_total / fabs(prod->rl_ecr + prod->rl_efr) << std::endl;
+            std::cerr << "Influence * Variance / Value of " << prod->name->sc.name
+                      << " = " << prod->rl_influence_total << " * " << prod->rl_variance_total
+                      << " = " << prod->rl_influence_total      *      prod->rl_variance_total << std::endl;
           }
 
                     // change documentation

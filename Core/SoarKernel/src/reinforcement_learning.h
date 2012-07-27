@@ -82,7 +82,7 @@ class rl_param_container: public soar_module::param_container
         // exponential_decay: rate = rate / # updates for this rule
         // logarithmic_decay: rate = rate / log(# updates for this rule)
         // Miller, 11/14/2011
-        enum decay_choices { normal_decay, exponential_decay, logarithmic_decay, delta_bar_delta_decay };
+        enum decay_choices { normal_decay, exponential_decay, logarithmic_decay, delta_bar_delta_decay, adaptive_decay /** bazald **/ };
 
 		enum apoptosis_choices { apoptosis_none, apoptosis_chunks, apoptosis_rl };
     enum credit_assignment_choices { credit_even, credit_fc, credit_rl, credit_logrl }; ///< bazald
