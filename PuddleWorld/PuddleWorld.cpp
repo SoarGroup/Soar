@@ -58,16 +58,17 @@ inline bool arg_help(char ** &arg)
     return false;
 
   cout << "Options:" << endl
-            << "  --help                  prints this help" << endl
-            << "  --remote [ip[:port]]    to use a remote Soar kernel" << endl
-            << "  --ip                    to specify an IP address (implies remote Soar kernel)" << endl
-            << "  --port                  to specify a port address (implies remote Soar kernel)" << endl
-            << "  --episodes count        to specify the maximum number of episodes [1000]" << endl
-            << "  --seed seed             to specify the random seed" << endl
-            << "  --rules filename        to specify non-default rules" << endl
-            << "  --rl-rules-out          to specify where to output the RL-rules when finished" << endl
-            << "  --sp-special ep x y     to specify what RL breakdown to add, and when" << endl
-            << "  --credit even/fc/rl     to specify credit assignment" << endl;
+            << "  --help                   prints this help" << endl
+            << "  --remote [ip[:port]]     to use a remote Soar kernel" << endl
+            << "  --ip                     to specify an IP address (implies remote Soar kernel)" << endl
+            << "  --port                   to specify a port address (implies remote Soar kernel)" << endl
+            << "  --episodes count         to specify the maximum number of episodes [1000]" << endl
+            << "  --seed seed              to specify the random seed" << endl
+            << "  --rules filename         to specify non-default rules" << endl
+            << "  --rl-rules-out           to specify where to output the RL-rules when finished" << endl
+            << "  --sp-special ep x y      to specify what RL breakdown to add, and when" << endl
+            << "  --credit even/fc/rl      to specify credit assignment" << endl
+            << "  --alpha normal/adaptive  to specify credit assignment" << endl;
 
   exit(0);
 
@@ -269,6 +270,28 @@ inline bool arg_credit_assignment(string &value,
   return true;
 }
 
+inline bool arg_alpha(string &value,
+                      char ** &arg,
+                      char ** const &arg_end)
+{
+  if(strcmp(*arg, "--alpha"))
+    return false;
+
+  if(++arg == arg_end) {
+    cerr << "'--alpha' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "normal") && strcmp(*arg, "adaptive")) {
+    cerr << "--alpha takes 'normal' or 'adaptive'";
+    exit(3);
+  }
+
+  value = *arg;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -287,6 +310,7 @@ int main(int argc, char ** argv) {
   string rl_rules_out = "puddleworld-rl.soar";
   multimap<int, pair<float, float> > sp;
   string credit_assignment = "even";
+  string alpha = "normal";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -298,7 +322,8 @@ int main(int argc, char ** argv) {
        !arg_seed         (                          seed,              arg, arg_end) &&
        !arg_rl_rules_out (                          rl_rules_out,      arg, arg_end) &&
        !arg_sp_special   (                          sp,                arg, arg_end) &&
-       !arg_credit_assignment (                     credit_assignment, arg, arg_end))
+       !arg_credit_assignment (                     credit_assignment, arg, arg_end) &&
+       !arg_alpha        (                          alpha,             arg, arg_end))
     {
       cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -321,6 +346,7 @@ int main(int argc, char ** argv) {
   }
 
   game.ExecuteCommandLine(("rl --set credit-assignment " + credit_assignment).c_str());
+  game.ExecuteCommandLine(("rl --set decay-mode " + alpha).c_str());
 
   for(int episode = 0; episode != episodes; ++episode) {
     for(std::pair<multimap<int, pair<float, float> >::const_iterator,

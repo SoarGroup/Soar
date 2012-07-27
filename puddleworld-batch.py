@@ -11,24 +11,24 @@ g_rules = 'PuddleWorld/puddle-world.soar'
 g_ep_tuples = []
 
 # ./puddleworld-batch.py -j 4 -r 30 -e 1600
-g_ep_tuples.append((5, 5, 'even'))
-g_ep_tuples.append((5, 5, 'even', (0, 10, 10)))
-g_ep_tuples.append((5, 5, 'fc', (0, 10, 10)))
-g_ep_tuples.append((5, 5, 'rl', (0, 10, 10)))
-g_ep_tuples.append((5, 5, 'log-rl', (0, 10, 10)))
-g_ep_tuples.append((10, 10, 'even'))
-g_ep_tuples.append((10, 10, 'even', (0, 20, 20)))
-g_ep_tuples.append((10, 10, 'fc', (0, 20, 20)))
-g_ep_tuples.append((10, 10, 'rl', (0, 20, 20)))
-g_ep_tuples.append((10, 10, 'log-rl', (0, 20, 20)))
-g_ep_tuples.append((10, 10, 'even', (0, 40, 40)))
-g_ep_tuples.append((10, 10, 'fc', (0, 40, 40)))
-g_ep_tuples.append((10, 10, 'rl', (0, 40, 40)))
-g_ep_tuples.append((10, 10, 'log-rl', (0, 40, 40)))
-g_ep_tuples.append((10, 10, 'even', (0, 20, 20), (0, 40, 40)))
-g_ep_tuples.append((10, 10, 'fc', (0, 20, 20), (0, 40, 40)))
-g_ep_tuples.append((10, 10, 'rl', (0, 20, 20), (0, 40, 40)))
-g_ep_tuples.append((10, 10, 'log-rl', (0, 20, 20), (0, 40, 40)))
+g_ep_tuples.append((5, 5, 'even', 'normal'))
+g_ep_tuples.append((5, 5, 'even', 'normal', (0, 10, 10)))
+g_ep_tuples.append((5, 5, 'fc', 'normal', (0, 10, 10)))
+g_ep_tuples.append((5, 5, 'rl', 'normal', (0, 10, 10)))
+g_ep_tuples.append((5, 5, 'log-rl', 'normal', (0, 10, 10)))
+g_ep_tuples.append((10, 10, 'even', 'normal'))
+g_ep_tuples.append((10, 10, 'even', 'normal', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'fc', 'normal', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'rl', 'normal', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'log-rl', 'normal', (0, 20, 20)))
+g_ep_tuples.append((10, 10, 'even', 'normal', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'fc', 'normal', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'rl', 'normal', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'log-rl', 'normal', (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'even', 'normal', (0, 20, 20), (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'fc', 'normal', (0, 20, 20), (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'rl', 'normal', (0, 20, 20), (0, 40, 40)))
+g_ep_tuples.append((10, 10, 'log-rl', 'normal', (0, 20, 20), (0, 40, 40)))
 
 
 
@@ -81,8 +81,9 @@ class Experiment:
     self.div_x = ep_tuple[0]
     self.div_y = ep_tuple[1]
     self.credit = ep_tuple[2]
+    self.alpha = ep_tuple[3]
     self.sp = []
-    for sp in ep_tuple[3:]:
+    for sp in ep_tuple[4:]:
       if len(sp) != 3:
         raise Exception("len(sp) != 3")
       self.sp.append(sp)
@@ -93,7 +94,8 @@ class Experiment:
             '--seed', str(self.seed),
             '--rules', str(self.rules),
             '--rl-rules-out', str(self.rl_rules_out),
-            '--credit-assignment', str(self.credit)]
+            '--credit-assignment', str(self.credit),
+            '--alpha', str(self.alpha)]
     for sp in self.sp:
       args += ['--sp-special', str(sp[0]), str(sp[1]), str(sp[2])]
     return args
@@ -117,8 +119,8 @@ class Experiment:
 dirs = []
 experiments = []
 for ep_tuple in g_ep_tuples:
-  dir = g_dir + '/' + str(ep_tuple[0]) + '-' + str(ep_tuple[1]) + '_' + str(ep_tuple[2])
-  for i in range(3, len(ep_tuple)):
+  dir = g_dir + '/' + str(ep_tuple[0]) + '-' + str(ep_tuple[1]) + '_' + str(ep_tuple[2]) + '_' + str(ep_tuple[3])
+  for i in range(4, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
     dir += '_' + str(ep_tuple[i][0]) + '-' + str(ep_tuple[i][1]) + '-' + str(ep_tuple[i][2])

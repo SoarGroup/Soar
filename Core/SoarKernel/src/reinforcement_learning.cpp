@@ -95,7 +95,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
     decay_mode->add_mapping( exponential_decay, "exp" );
     decay_mode->add_mapping( logarithmic_decay, "log" );
     decay_mode->add_mapping( delta_bar_delta_decay, "delta-bar-delta" );
-    decay_mode->add_mapping( adaptive_decay, "adaptive-decay" );
+    decay_mode->add_mapping( adaptive_decay, "adaptive" );
     add( decay_mode );
 
 	// eligibility-trace-decay-rate
@@ -1072,10 +1072,13 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					}					
 
           if(my_agent->rl_params->decay_mode->get_value() == rl_param_container::adaptive_decay) {///< bazald, See Adaptive Step-Size for Online Temporal Difference Learning (William Dabney and Andrew G. Barto)
-            const double new_adjusted_alpha = 1.0 / (delta_ecr + delta_efr);
-            if(new_adjusted_alpha < alpha) {
-              my_agent->rl_params->learning_rate->set_value(new_adjusted_alpha);
-              alpha = new_adjusted_alpha;
+            const float denom = fabs(delta_ecr + delta_efr);
+            if(denom > 0.0) {
+              const double new_adjusted_alpha = 1.0 / denom;
+              if(new_adjusted_alpha < alpha) {
+                my_agent->rl_params->learning_rate->set_value(new_adjusted_alpha);
+                alpha = new_adjusted_alpha;
+              }
             }
           }
 
@@ -1142,9 +1145,9 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
-            std::cerr << "Influence * Variance / Value of " << prod->name->sc.name
-                      << " = " << prod->rl_influence_total << " * " << prod->rl_variance_total
-                      << " = " << prod->rl_influence_total      *      prod->rl_variance_total << std::endl;
+//             std::cerr << "Influence * Variance / Value of " << prod->name->sc.name
+//                       << " = " << prod->rl_influence_total << " * " << prod->rl_variance_total
+//                       << " = " << prod->rl_influence_total      *      prod->rl_variance_total << std::endl;
           }
 
                     // change documentation
