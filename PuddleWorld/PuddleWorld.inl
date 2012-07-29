@@ -20,14 +20,22 @@ void toh_update_event_handler(sml::smlUpdateEventId /*id*/, void *user_data_ptr,
   static_cast<PuddleWorld *>(user_data_ptr)->update();
 }
 
-PuddleWorld::PuddleWorld(const std::string &agent_productions,
-                   const bool &remote,
-                   sml::Kernel * const kernel)
+PuddleWorld::PuddleWorld(const float &initial_min_x,
+                         const float &initial_min_y,
+                         const float &initial_max_x,
+                         const float &initial_max_y,
+                         const std::string &agent_productions,
+                         const bool &remote,
+                         sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
            remote ? sml::Kernel::CreateKernelInNewThread() :
            sml::Kernel::CreateKernelInCurrentThread(true)),
   m_agent(m_kernel, kernel ? "" : "PuddleWorld"),
   m_reward_total(0.0f),
+  m_initial_min_x(initial_min_x),
+  m_initial_min_y(initial_min_y),
+  m_initial_max_x(initial_max_x),
+  m_initial_max_y(initial_max_y),
   m_state(0),
   m_step(0),
   m_reward(0),
@@ -45,8 +53,8 @@ PuddleWorld::PuddleWorld(const std::string &agent_productions,
 
   float x, y;
   do {
-    x = float(rand()) / RAND_MAX;
-    y = float(rand()) / RAND_MAX;
+    x = m_initial_min_x + float(rand()) / RAND_MAX * (m_initial_max_x - m_initial_min_x);
+    y = m_initial_min_y + float(rand()) / RAND_MAX * (m_initial_max_y - m_initial_min_y);
   } while(x >= 0.95f && y <= 0.05f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
   m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);
@@ -72,7 +80,7 @@ void PuddleWorld::run_trials(const int &num_trials,
 
   Stats_Tracker stats_tracker;
   for(int i = 0; i < num_trials; ++i) {
-    PuddleWorld game(agent_productions);
+    PuddleWorld game(0.0f, 0.0f, 1.0f, 1.0f, agent_productions);
     stats_tracker.time_run(game.m_agent, i, num_trials);
   }
 }
@@ -85,7 +93,7 @@ void PuddleWorld::remote_trials(const int &num_trials,
 
   Stats_Tracker stats_tracker;
   for(int i = 0; i < num_trials; ++i) {
-    PuddleWorld game(agent_productions,
+    PuddleWorld game(0.0f, 0.0f, 1.0f, 1.0f, agent_productions,
                   sml::Kernel::CreateRemoteConnection(true,
                                                       ip_address.empty() ? 0 : ip_address.c_str(),
                                                       port,

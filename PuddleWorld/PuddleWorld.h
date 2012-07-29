@@ -28,9 +28,13 @@ public:
   /* PuddleWorld will create the default 'Soar_Kernel()' if a kernel is not provided.
    * PuddleWorld will take care of the deletion of the given kernel if one is provided.
    */
-  inline PuddleWorld(const std::string &agent_productions = PUDDLEWORLD_AGENT_PRODUCTIONS,
-                  const bool &remote = false,
-                  sml::Kernel * const kernel = 0);
+  inline PuddleWorld(const float &initial_min_x,
+                     const float &initial_min_y,
+                     const float &initial_max_x,
+                     const float &initial_max_y,
+                     const std::string &agent_productions = PUDDLEWORLD_AGENT_PRODUCTIONS,
+                     const bool &remote = false,
+                     sml::Kernel * const kernel = 0);
   inline ~PuddleWorld();
 
   static inline void run_trials(const int &num_trials,
@@ -62,6 +66,10 @@ private:
   Soar_Agent m_agent;
 
   float m_reward_total;
+  float m_initial_min_x;
+  float m_initial_min_y;
+  float m_initial_max_x;
+  float m_initial_max_y;
 
   sml::StringElement * m_state;
   sml::IntElement * m_step;

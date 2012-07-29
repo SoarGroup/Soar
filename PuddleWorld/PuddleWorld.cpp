@@ -292,6 +292,47 @@ inline bool arg_alpha(string &value,
   return true;
 }
 
+inline bool arg_initial(float &initial_min_x,
+                        float &initial_min_y,
+                        float &initial_max_x,
+                        float &initial_max_y,
+                        char ** &arg,
+                        char ** const &arg_end)
+{
+  if(strcmp(*arg, "--initial"))
+    return false;
+
+  if(++arg == arg_end) {
+    cerr << "'--rl-rules-out' requires 4 arguments'";
+    exit(2);
+  }
+
+  initial_min_x = atof(*arg);
+
+  if(++arg == arg_end) {
+    cerr << "'--rl-rules-out' requires 4 arguments'";
+    exit(2);
+  }
+  
+  initial_min_y = atof(*arg);
+
+  if(++arg == arg_end) {
+    cerr << "'--rl-rules-out' requires 4 arguments'";
+    exit(2);
+  }
+  
+  initial_max_x = atof(*arg);
+
+  if(++arg == arg_end) {
+    cerr << "'--rl-rules-out' requires 4 arguments'";
+    exit(2);
+  }
+  
+  initial_max_y = atof(*arg);
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -311,6 +352,10 @@ int main(int argc, char ** argv) {
   multimap<int, pair<float, float> > sp;
   string credit_assignment = "even";
   string alpha = "normal";
+  float initial_min_x = 0.0f;
+  float initial_min_y = 0.0f;
+  float initial_max_x = 1.0f;
+  float initial_max_y = 1.0f;
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -323,7 +368,8 @@ int main(int argc, char ** argv) {
        !arg_rl_rules_out (                          rl_rules_out,      arg, arg_end) &&
        !arg_sp_special   (                          sp,                arg, arg_end) &&
        !arg_credit_assignment (                     credit_assignment, arg, arg_end) &&
-       !arg_alpha        (                          alpha,             arg, arg_end))
+       !arg_alpha        (                          alpha,             arg, arg_end) &&
+       !arg_initial      (initial_min_x, initial_min_y, initial_max_x, initial_max_y, arg, arg_end))
     {
       cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -335,7 +381,7 @@ int main(int argc, char ** argv) {
   if(rules == PUDDLEWORLD_AGENT_PRODUCTIONS)
     set_working_directory_to_executable_path();
 
-  PuddleWorld game(rules, remote);
+  PuddleWorld game(initial_min_x, initial_min_y, initial_max_x, initial_max_y, rules, remote);
   srand(seed);
   game.srand(seed);
 
@@ -449,8 +495,8 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
 
   float x, y;
   do {
-    x = float(rand()) / RAND_MAX;
-    y = float(rand()) / RAND_MAX;
+    x = m_initial_min_x + float(rand()) / RAND_MAX * (m_initial_max_x - m_initial_min_x);
+    y = m_initial_min_y + float(rand()) / RAND_MAX * (m_initial_max_y - m_initial_min_y);
   } while(x >= 0.95f && y <= 0.05f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
   m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);
