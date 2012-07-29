@@ -58,17 +58,22 @@ inline bool arg_help(char ** &arg)
     return false;
 
   cout << "Options:" << endl
-            << "  --help                   prints this help" << endl
-            << "  --remote [ip[:port]]     to use a remote Soar kernel" << endl
-            << "  --ip                     to specify an IP address (implies remote Soar kernel)" << endl
-            << "  --port                   to specify a port address (implies remote Soar kernel)" << endl
-            << "  --episodes count         to specify the maximum number of episodes [1000]" << endl
-            << "  --seed seed              to specify the random seed" << endl
-            << "  --rules filename         to specify non-default rules" << endl
-            << "  --rl-rules-out           to specify where to output the RL-rules when finished" << endl
-            << "  --sp-special ep x y      to specify what RL breakdown to add, and when" << endl
-            << "  --credit even/fc/rl      to specify credit assignment" << endl
-            << "  --alpha normal/adaptive  to specify credit assignment" << endl;
+            << "  --help                          prints this help" << endl
+            << "  --remote [ip[:port]]            to use a remote Soar kernel" << endl
+            << "  --ip                            to specify an IP address (implies remote" << endl
+            << "                                       Soar kernel)" << endl
+            << "  --port                          to specify a port address (implies remote" << endl
+            << "                                       Soar kernel)" << endl
+            << "  --episodes count                to specify the maximum number" << endl
+            << "                                       of episodes [1000]" << endl
+            << "  --seed seed                     to specify the random seed" << endl
+            << "  --rules filename                to specify non-default rules" << endl
+            << "  --rl-rules-out                  to specify where to output the RL-rules" << endl
+            << "                                       when finished" << endl
+            << "  --sp-special ep x y             to specify what RL breakdown to add, and when" << endl
+            << "  --credit-assignment even/fc/rl  to specify credit assignment" << endl
+            << "  --alpha normal/adaptive         to specify credit assignment" << endl
+            << "  --initial minx miny maxx maxy   to specify the starting location" << endl;
 
   exit(0);
 

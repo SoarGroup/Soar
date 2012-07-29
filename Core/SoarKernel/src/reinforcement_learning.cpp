@@ -1136,7 +1136,14 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
             const double old_sample_variance = prod->rl_variance_0;
 
             if(prod->rl_update_count > 1) {
-              prod->rl_mean2 += adjusted_alpha * iter->second * delta_ecr * (data->reward - prod->rl_ecr);
+              /** divide by credit[prod] in the end to prevent shrinking of estimated variance due to credit assignment
+               *
+               * (3-2)^2 + (3-4)^2 = 2, but...
+               * given 0.75 credit assignment
+               * (2.25-1.5)^2 + (2.25-3)^2 = 1.125
+               * which is 0.75^2 * 2.
+               */
+              prod->rl_mean2 += adjusted_alpha * iter->second * delta_ecr * (data->reward - prod->rl_ecr) / credit[prod];
               prod->rl_variance_0 = prod->rl_mean2 / (prod->rl_update_count - 1);
 
               assert(adjusted_alpha * iter->second <= 1.0);
@@ -1145,9 +1152,9 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
-//             std::cerr << "Influence * Variance / Value of " << prod->name->sc.name
-//                       << " = " << prod->rl_influence_total << " * " << prod->rl_variance_total
-//                       << " = " << prod->rl_influence_total      *      prod->rl_variance_total << std::endl;
+            std::cerr << "Variance / Credit of " << prod->name->sc.name << " = "
+                      << prod->rl_variance_total << " / " << credit[prod] << " = "
+                      << prod->rl_variance_total      /      credit[prod] << std::endl;
           }
 
                     // change documentation

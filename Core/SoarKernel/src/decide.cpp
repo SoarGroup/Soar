@@ -981,6 +981,10 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         assert(prod2->rl_influence_total == prod2->rl_influence_total); ///< !isnan
 
         sum_influence += prod2->rl_influence_total;
+
+        std::cerr << "Influence / Credit of " << prod2->name->sc.name << " = "
+                  << prod2->rl_influence_total << " / " << credit[prod2] << " = "
+                  << prod2->rl_influence_total      /      credit[prod2] << std::endl;
       } DONE_INFLUENCE_PRODUCTIONS;
     }
   }
