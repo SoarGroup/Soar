@@ -971,9 +971,9 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         abort();
 
       ITERATE_INFLUENCE_PRODUCTIONS(selected) {
-        prod2->rl_influence_0 += alpha * credit[prod2] * (idr * prob - prod2->rl_influence_0);
+        prod2->rl_influence_0 += alpha * (credit[prod2] * idr * prob - prod2->rl_influence_0);
         assert(prod2->rl_influence_0 <= 0.5);
-        prod2->rl_influence_rest = alpha * credit[prod2] * (idr * idr * prob * slot->rl_influence - prod2->rl_influence_rest);
+        prod2->rl_influence_rest = alpha * (credit[prod2] * idr * idr * prob * slot->rl_influence - prod2->rl_influence_rest);
         assert(prod2->rl_influence_rest == prod2->rl_influence_rest); ///< !isnan
         assert(prod2->rl_influence_rest <= 1.0);
         const double update_frequency = prod2->rl_update_count / thisAgent->total_decision_phases_count;
@@ -982,7 +982,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
         sum_influence += prod2->rl_influence_total;
 
-        std::cerr << "Influence / Credit of " << prod2->name->sc.name << " = "
+        std::cerr << "I / C of " << prod2->name->sc.name << " = "
                   << prod2->rl_influence_total << " / " << credit[prod2] << " = "
                   << prod2->rl_influence_total      /      credit[prod2] << std::endl;
       } DONE_INFLUENCE_PRODUCTIONS;
