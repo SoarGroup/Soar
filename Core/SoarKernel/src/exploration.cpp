@@ -868,6 +868,13 @@ preference *exploration_get_highest_q_value_pref( preference *candidates )
 /***************************************************************************
  * Function     : exploration_compute_value_of_candidate
  **************************************************************************/
+
+#define ITERATE_EXPLORATION_PRODUCTIONS(s) \
+      for ( preference *pref = s->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next) { \
+      if ( cand->value == pref->value && pref->inst->prod->rl_rule ) { \
+        production * const &prod2 = pref->inst->prod;
+#define DONE_EXPLORATION_PRODUCTIONS }}
+
 void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, slot *s, double default_value )
 {
 	if ( !cand )
@@ -878,20 +885,49 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 	cand->numeric_value = 0;
 	cand->rl_contribution = false;
 
+  /// bazald modifications begin
+  const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
+  double variance_value = DBL_MAX;
+  double variance_credit = 1.0;
+  if(variance_mod) {
+    ITERATE_EXPLORATION_PRODUCTIONS(s) {
+      if(prod2->rl_variance_total <= variance_value && prod2->rl_credit <= variance_credit) {
+        /// filter out rules of lower credit and higher variance
+        variance_value = prod2->rl_variance_total;
+        variance_credit = prod2->rl_credit;
+      }
+    } DONE_EXPLORATION_PRODUCTIONS;
+    double total_credit = 0.0;
+    ITERATE_EXPLORATION_PRODUCTIONS(s) {
+      if(prod2->rl_variance_total <= variance_value)
+        total_credit += prod2->rl_credit;
+    } DONE_EXPLORATION_PRODUCTIONS;
+    ITERATE_EXPLORATION_PRODUCTIONS(s) {
+      if(prod2->rl_variance_total <= variance_value)
+        prod2->rl_credit /= total_credit;
+    } DONE_EXPLORATION_PRODUCTIONS;
+  }
+
 	// all numeric indifferents
 	for ( preference *pref = s->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
 	{
 		if ( cand->value == pref->value )
 		{
 			cand->total_preferences_for_candidate += 1;
-			cand->numeric_value += get_number_from_symbol( pref->referent );
 
 			if ( pref->inst->prod->rl_rule )
 			{
 				cand->rl_contribution = true;
+        if(!variance_mod || pref->inst->prod->rl_variance_total <= variance_value) {
+          cand->numeric_value += get_number_from_symbol( pref->referent );
+//           std::cerr << pref->inst->prod->name->sc.name << " credited " << pref->inst->prod->rl_credit << " by " << cand->inst->prod->name->sc.name << std::endl; ///< bazald
+        }
 			}
+			else
+        cand->numeric_value += get_number_from_symbol( pref->referent );
 		}
 	}
+	/// bazald modifications end
 
 	// all binary indifferents
 	for ( preference *pref = s->preferences[ BINARY_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next )
@@ -915,10 +951,75 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 		cand->numeric_value = cand->numeric_value / cand->total_preferences_for_candidate;
 }
 
+#undef ITERATE_EXPLORATION_PRODUCTIONS
+#define ITERATE_EXPLORATION_PRODUCTIONS(selected) \
+      for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) { \
+        production * const &prod2 = pref->inst->prod; \
+        if(selected->value == pref->value && prod2->rl_rule) {
+
 void exploration_compute_value_of_candidates(agent *my_agent, preference *candidates, slot *s) ///< bazald
 {
+  for(preference *cand = candidates; cand; cand = cand->next_candidate) {
+    if(cand->inst && cand->inst->prod) {
+      const production * const &prod = cand->inst->prod;
+
+      /*if(cand->rl_contribution) not yet usable */ {
+        cand->rl_intolerable_variance = true;
+
+        /// Mirror code in reinforcement_learning.cpp::rl_perform_update
+        /// Assign credit to different RL rules according to
+        ///   even: previously only method, still the default - simply split credit evenly between RL rules
+        ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
+        ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
+        ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
+        if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
+          double total_credit = 0.0;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            total_credit += 1.0 / (log(prod2->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
+          } DONE_EXPLORATION_PRODUCTIONS;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            prod2->rl_credit = (1.0 / (log(prod2->rl_update_count + 1.0) + 1.0)) / total_credit;
+          } DONE_EXPLORATION_PRODUCTIONS;
+        }
+        else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
+          double total_credit = 0.0;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            total_credit += 1.0 / (prod2->rl_update_count + 1.0); ///< hasn't updated yet
+          } DONE_EXPLORATION_PRODUCTIONS;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            prod2->rl_credit = (1.0 / (prod2->rl_update_count + 1.0)) / total_credit;
+          } DONE_EXPLORATION_PRODUCTIONS;
+        }
+        else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
+          double total_credit = 0.0;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            total_credit += (1.0 / prod2->firing_count); ///< has fired already
+          } DONE_EXPLORATION_PRODUCTIONS;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            prod2->rl_credit = (1.0 / prod2->firing_count) / total_credit;
+          } DONE_EXPLORATION_PRODUCTIONS;
+        }
+        else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
+          double num_rules = 0.0;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            ++num_rules;
+          } DONE_EXPLORATION_PRODUCTIONS;
+          const double value = 1.0 / num_rules;
+          ITERATE_EXPLORATION_PRODUCTIONS(cand) {
+            prod2->rl_credit = value;
+          } DONE_EXPLORATION_PRODUCTIONS;
+        }
+        else
+          abort();
+      }
+    }
+  }
+
   // get preference values for each candidate
   // see soar_ecPrintPreferences
   for(preference *cand = candidates; cand; cand = cand->next_candidate)
     exploration_compute_value_of_candidate(my_agent, cand, s);
 }
+
+#undef ITERATE_EXPLORATION_PRODUCTIONS
+#undef DONE_EXPLORATION_PRODUCTIONS

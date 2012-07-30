@@ -73,7 +73,8 @@ inline bool arg_help(char ** &arg)
             << "  --sp-special ep x y             to specify what RL breakdown to add, and when" << endl
             << "  --credit-assignment even/fc/rl  to specify credit assignment" << endl
             << "  --alpha normal/adaptive         to specify credit assignment" << endl
-            << "  --initial minx miny maxx maxy   to specify the starting location" << endl;
+            << "  --initial minx miny maxx maxy   to specify the starting location" << endl
+            << "  --credit-modification none/variance  to specify any modification to credit" << endl;
 
   exit(0);
 
@@ -308,7 +309,7 @@ inline bool arg_initial(float &initial_min_x,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires 4 arguments'";
+    cerr << "'--initial' requires 4 arguments'";
     exit(2);
   }
 
@@ -338,6 +339,28 @@ inline bool arg_initial(float &initial_min_x,
   return true;
 }
 
+inline bool arg_credit_mod(string &credit_mod,
+                           char ** &arg,
+                           char ** const &arg_end)
+{
+  if(strcmp(*arg, "--credit-modification"))
+    return false;
+
+  if(++arg == arg_end) {
+    cerr << "'--credit-modification' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "none") && strcmp(*arg, "variance")) {
+    cerr << "--credit-modification takes 'none' or 'variance'";
+    exit(3);
+  }
+
+  credit_mod = *arg;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -361,6 +384,7 @@ int main(int argc, char ** argv) {
   float initial_min_y = 0.0f;
   float initial_max_x = 1.0f;
   float initial_max_y = 1.0f;
+  string credit_mod = "none";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -374,7 +398,8 @@ int main(int argc, char ** argv) {
        !arg_sp_special   (                          sp,                arg, arg_end) &&
        !arg_credit_assignment (                     credit_assignment, arg, arg_end) &&
        !arg_alpha        (                          alpha,             arg, arg_end) &&
-       !arg_initial      (initial_min_x, initial_min_y, initial_max_x, initial_max_y, arg, arg_end))
+       !arg_initial      (initial_min_x, initial_min_y, initial_max_x, initial_max_y, arg, arg_end) &&
+       !arg_credit_mod   (                          credit_mod,        arg, arg_end))
     {
       cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -398,6 +423,7 @@ int main(int argc, char ** argv) {
 
   game.ExecuteCommandLine(("rl --set credit-assignment " + credit_assignment).c_str());
   game.ExecuteCommandLine(("rl --set decay-mode " + alpha).c_str());
+  game.ExecuteCommandLine(("rl --set credit-modification " + credit_mod).c_str());
 
   for(int episode = 0; episode != episodes; ++episode) {
     for(std::pair<multimap<int, pair<float, float> >::const_iterator,

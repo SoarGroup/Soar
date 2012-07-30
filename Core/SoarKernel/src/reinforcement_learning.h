@@ -40,6 +40,7 @@ class rl_learning_param;
 class rl_apoptosis_param;
 class rl_apoptosis_thresh_param;
 class rl_credit_assignment_param;
+class rl_credit_modification_param;
 
 template <typename T>
 class param_accessor {
@@ -86,6 +87,7 @@ class rl_param_container: public soar_module::param_container
 
 		enum apoptosis_choices { apoptosis_none, apoptosis_chunks, apoptosis_rl };
     enum credit_assignment_choices { credit_even, credit_fc, credit_rl, credit_logrl }; ///< bazald
+    enum credit_modification_choices { credit_mod_none, credit_mod_variance }; ///< bazald
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
@@ -98,6 +100,7 @@ class rl_param_container: public soar_module::param_container
 		soar_module::decimal_param *et_tolerance;
     soar_module::boolean_param *rl_impasse; ///< bazald
     rl_credit_assignment_param *credit_assignment; ///< bazald
+    rl_credit_modification_param *credit_modification; ///< bazald
 		soar_module::boolean_param *temporal_extension;
 		soar_module::boolean_param *hrl_discount;
 		soar_module::boolean_param *temporal_discount;
@@ -159,6 +162,16 @@ class rl_credit_assignment_param: public soar_module::constant_param< rl_param_c
   public:
     rl_credit_assignment_param( const char *new_name, rl_param_container::credit_assignment_choices new_value, soar_module::predicate<rl_param_container::credit_assignment_choices> *new_prot_pred, agent *new_agent );
     void set_value( rl_param_container::credit_assignment_choices new_value );
+};
+
+class rl_credit_modification_param: public soar_module::constant_param< rl_param_container::credit_modification_choices > ///< bazald
+{
+  protected:
+    agent* my_agent;
+
+  public:
+    rl_credit_modification_param( const char *new_name, rl_param_container::credit_modification_choices new_value, soar_module::predicate<rl_param_container::credit_modification_choices> *new_prot_pred, agent *new_agent );
+    void set_value( rl_param_container::credit_modification_choices new_value );
 };
 
 //////////////////////////////////////////////////////////

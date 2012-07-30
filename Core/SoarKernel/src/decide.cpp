@@ -981,9 +981,9 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
 
         sum_influence += prod2->rl_influence_total;
 
-        std::cerr << "I / C of " << prod2->name->sc.name << " = "
-                  << prod2->rl_influence_total << " / " << prod2->rl_credit << " = "
-                  << prod2->rl_influence_total      /      prod2->rl_credit << std::endl;
+//         std::cerr << "I / C of " << prod2->name->sc.name << " = "
+//                   << prod2->rl_influence_total << " / " << prod2->rl_credit << " = "
+//                   << prod2->rl_influence_total      /      prod2->rl_credit << std::endl;
       } DONE_INFLUENCE_PRODUCTIONS;
     }
   }

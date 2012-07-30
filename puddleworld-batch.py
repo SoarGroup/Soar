@@ -30,14 +30,19 @@ g_ep_tuples = []
 #g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'rl', 'normal', (0, 20, 20), (0, 40, 40)))
 #g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'log-rl', 'normal', (0, 20, 20), (0, 40, 40)))
 
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'normal', (0, 10, 10)))
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'even', 'normal', (0, 40, 40)))
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'fc', 'normal', (0, 40, 40)))
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'rl', 'normal', (0, 40, 40)))
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'log-rl', 'normal', (0, 40, 40)))
+
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'none', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'none', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'none', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'variance', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'variance', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'variance', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'variance', 'normal', (0, 10, 10)))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
@@ -92,10 +97,11 @@ class Experiment:
     self.init_max_y = ep_tuple[0][3]
     self.div_x = ep_tuple[1][0]
     self.div_y = ep_tuple[1][1]
-    self.credit = ep_tuple[2]
-    self.alpha = ep_tuple[3]
+    self.credit_assignment = ep_tuple[2]
+    self.credit_modification = ep_tuple[3]
+    self.alpha = ep_tuple[4]
     self.sp = []
-    for sp in ep_tuple[4:]:
+    for sp in ep_tuple[5:]:
       if len(sp) != 3:
         raise Exception("len(sp) != 3")
       self.sp.append(sp)
@@ -107,7 +113,8 @@ class Experiment:
             '--rules', str(self.rules),
             '--rl-rules-out', str(self.rl_rules_out),
             '--initial', str(self.init_min_x), str(self.init_min_y), str(self.init_max_x), str(self.init_max_y),
-            '--credit-assignment', str(self.credit),
+            '--credit-assignment', str(self.credit_assignment),
+            '--credit-modification', str(self.credit_modification),
             '--alpha', str(self.alpha)]
     for sp in self.sp:
       args += ['--sp-special', str(sp[0]), str(sp[1]), str(sp[2])]
@@ -133,7 +140,7 @@ dirs = []
 experiments = []
 for ep_tuple in g_ep_tuples:
   dir = g_dir + '/' + str(ep_tuple[0][0]) + '-' + str(ep_tuple[0][1]) + '-' + str(ep_tuple[0][2]) + '-' + str(ep_tuple[0][3]) + '_' + str(ep_tuple[1][0]) + '-' + str(ep_tuple[1][1]) + '_' + str(ep_tuple[2]) + '_' + str(ep_tuple[3])
-  for i in range(4, len(ep_tuple)):
+  for i in range(5, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
     dir += '_' + str(ep_tuple[i][0]) + '-' + str(ep_tuple[i][1]) + '-' + str(ep_tuple[i][2])

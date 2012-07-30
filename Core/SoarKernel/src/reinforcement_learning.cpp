@@ -117,6 +117,12 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   credit_assignment->add_mapping( credit_rl, "rl" );
   credit_assignment->add_mapping( credit_logrl, "log-rl" );
   add( credit_assignment );
+
+  // fc-credit
+  credit_modification = new rl_credit_modification_param( "credit-modification", credit_mod_none, new soar_module::f_predicate<credit_modification_choices>(), my_agent );
+  credit_modification->add_mapping( credit_mod_none, "none" );
+  credit_modification->add_mapping( credit_mod_variance, "variance" );
+  add( credit_modification );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
@@ -219,6 +225,12 @@ void rl_credit_assignment_param::set_value( rl_param_container::credit_assignmen
   value = new_value;
 }
 
+rl_credit_modification_param::rl_credit_modification_param( const char *new_name, rl_param_container::credit_modification_choices new_value, soar_module::predicate<rl_param_container::credit_modification_choices> *new_prot_pred, agent *new_agent ): soar_module::constant_param<rl_param_container::credit_modification_choices>( new_name, new_value, new_prot_pred ), my_agent( new_agent ) {}
+
+void rl_credit_modification_param::set_value( rl_param_container::credit_modification_choices new_value )
+{
+  value = new_value;
+}
 
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -1152,13 +1164,13 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
-            std::cerr << "V / C of " << prod->name->sc.name << " = "
-                      << prod->rl_variance_total << " / " << prod->rl_credit << " = "
-                      << prod->rl_variance_total      /      prod->rl_credit << " | Q / C = "
-                      << prod->rl_ecr + prod->rl_efr << " / " << prod->rl_credit << " = "
-                      << prod->rl_ecr + prod->rl_efr      /      prod->rl_credit << " | M2 = "
-                      << prod->rl_mean2 << ", V_0 = " << prod->rl_variance_0 << ", V_rest = "
-                      << prod->rl_variance_rest << std::endl;
+//             std::cerr << "V / C of " << prod->name->sc.name << " = "
+//                       << prod->rl_variance_total << " / " << prod->rl_credit << " = "
+//                       << prod->rl_variance_total      /      prod->rl_credit << " | Q / C = "
+//                       << prod->rl_ecr + prod->rl_efr << " / " << prod->rl_credit << " = "
+//                       << prod->rl_ecr + prod->rl_efr      /      prod->rl_credit << " | M2 = "
+//                       << prod->rl_mean2 << ", V_0 = " << prod->rl_variance_0 << ", V_rest = "
+//                       << prod->rl_variance_rest << std::endl;
           }
 
                     // change documentation
