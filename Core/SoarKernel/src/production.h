@@ -123,6 +123,7 @@ typedef struct production_struct {
 
   double rl_ecr;				// expected current reward (discounted reward)
   double rl_efr;				// expected future reward (discounted next state)
+  double rl_credit; ///< bazald
   double rl_mean2; ///< bazald
   double rl_variance_tolerable; ///< bazald
   double rl_variance_0; ///< bazald

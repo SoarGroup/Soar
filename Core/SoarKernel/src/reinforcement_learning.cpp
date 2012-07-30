@@ -659,6 +659,7 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 
 				new_production->rl_ecr = 0.0;
 				new_production->rl_efr = init_value;
+        new_production->rl_credit = 0.0; ///< bazald
         new_production->rl_mean2 = 0.0; ///< bazald
         new_production->rl_variance_tolerable = 0.002; ///< bazald
         new_production->rl_variance_0 = 0.0; ///< bazald
@@ -946,33 +947,32 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
       ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
       ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
       ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
-      std::map<production *, double> credit; ///< bazald
       if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
         double total_credit = 0.0;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
           total_credit += 1.0 / (log((*rt)->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          credit[*rt] = (1.0 / (log((*rt)->rl_update_count + 1.0) + 1.0)) / total_credit;
+          (*rt)->rl_credit = (1.0 / (log((*rt)->rl_update_count + 1.0) + 1.0)) / total_credit;
       }
       else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
         double total_credit = 0.0;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
           total_credit += 1.0 / ((*rt)->rl_update_count + 1.0); ///< hasn't updated yet
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          credit[*rt] = (1.0 / ((*rt)->rl_update_count + 1.0)) / total_credit;
+          (*rt)->rl_credit = (1.0 / ((*rt)->rl_update_count + 1.0)) / total_credit;
       }
       else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
         double total_credit = 0.0;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
           total_credit += (1.0 / (*rt)->firing_count); ///< has fired already
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          credit[*rt] = (1.0 / (*rt)->firing_count) / total_credit;
+          (*rt)->rl_credit = (1.0 / (*rt)->firing_count) / total_credit;
       }
       else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
         const double num_rules = double(data->prev_op_rl_rules->size());
         const double value = 1.0 / num_rules;
         for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          credit[*rt] = value;
+          (*rt)->rl_credit = value;
       }
       else
         abort();
@@ -993,11 +993,11 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					
 					if ( iter != data->eligibility_traces->end() ) 
 					{
-						iter->second += credit[*p]; ///< bazald
+						iter->second += (*p)->rl_credit; ///< bazald
 					}
 					else 
 					{
-						(*data->eligibility_traces)[*p] = credit[*p]; ///< bazald
+						(*data->eligibility_traces)[*p] = (*p)->rl_credit; ///< bazald
 					}
 				}
 			}
@@ -1143,20 +1143,20 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
                * (2.25-1.5)^2 + (2.25-3)^2 = 1.125
                * which is 0.75^2 * 2.
                */
-              prod->rl_mean2 += adjusted_alpha * iter->second * delta_ecr * (data->reward - prod->rl_ecr) / credit[prod];
+              prod->rl_mean2 += adjusted_alpha * iter->second * delta_ecr * (data->reward - prod->rl_ecr) / prod->rl_credit;
               prod->rl_variance_0 = prod->rl_mean2 / (prod->rl_update_count - 1);
 
               assert(adjusted_alpha * iter->second <= 1.0);
 
-              prod->rl_variance_rest += adjusted_alpha * (credit[prod] * discount * rl_variance_total_next - prod->rl_variance_rest);
+              prod->rl_variance_rest += adjusted_alpha * (prod->rl_credit * discount * rl_variance_total_next - prod->rl_variance_rest);
               prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
             std::cerr << "V / C of " << prod->name->sc.name << " = "
-                      << prod->rl_variance_total << " / " << credit[prod] << " = "
-                      << prod->rl_variance_total      /      credit[prod] << " | Q / C = "
-                      << prod->rl_ecr + prod->rl_efr << " / " << credit[prod] << " = "
-                      << prod->rl_ecr + prod->rl_efr      /      credit[prod] << " | M2 = "
+                      << prod->rl_variance_total << " / " << prod->rl_credit << " = "
+                      << prod->rl_variance_total      /      prod->rl_credit << " | Q / C = "
+                      << prod->rl_ecr + prod->rl_efr << " / " << prod->rl_credit << " = "
+                      << prod->rl_ecr + prod->rl_efr      /      prod->rl_credit << " | M2 = "
                       << prod->rl_mean2 << ", V_0 = " << prod->rl_variance_0 << ", V_rest = "
                       << prod->rl_variance_rest << std::endl;
           }

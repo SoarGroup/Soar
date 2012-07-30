@@ -929,14 +929,13 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
       ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
       ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
       ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
-      std::map<production *, double> credit; ///< bazald
       if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
         double total_credit = 0.0;
         ITERATE_INFLUENCE_PRODUCTIONS(selected) {
           total_credit += 1.0 / (log(prod2->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
         } DONE_INFLUENCE_PRODUCTIONS;
         ITERATE_INFLUENCE_PRODUCTIONS(selected) {
-          credit[prod2] = (1.0 / (log(prod2->rl_update_count + 1.0) + 1.0)) / total_credit;
+          prod2->rl_credit = (1.0 / (log(prod2->rl_update_count + 1.0) + 1.0)) / total_credit;
         } DONE_INFLUENCE_PRODUCTIONS;
       }
       else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
@@ -945,7 +944,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
           total_credit += 1.0 / (prod2->rl_update_count + 1.0); ///< hasn't updated yet
         } DONE_INFLUENCE_PRODUCTIONS;
         ITERATE_INFLUENCE_PRODUCTIONS(selected) {
-          credit[prod2] = (1.0 / (prod2->rl_update_count + 1.0)) / total_credit;
+          prod2->rl_credit = (1.0 / (prod2->rl_update_count + 1.0)) / total_credit;
         } DONE_INFLUENCE_PRODUCTIONS;
       }
       else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
@@ -954,7 +953,7 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
           total_credit += (1.0 / prod2->firing_count); ///< has fired already
         } DONE_INFLUENCE_PRODUCTIONS;
         ITERATE_INFLUENCE_PRODUCTIONS(selected) {
-          credit[prod2] = (1.0 / prod2->firing_count) / total_credit;
+          prod2->rl_credit = (1.0 / prod2->firing_count) / total_credit;
         } DONE_INFLUENCE_PRODUCTIONS;
       }
       else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
@@ -964,16 +963,16 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         } DONE_INFLUENCE_PRODUCTIONS;
         const double value = 1.0 / num_rules;
         ITERATE_INFLUENCE_PRODUCTIONS(selected) {
-          credit[prod2] = value;
+          prod2->rl_credit = value;
         } DONE_INFLUENCE_PRODUCTIONS;
       }
       else
         abort();
 
       ITERATE_INFLUENCE_PRODUCTIONS(selected) {
-        prod2->rl_influence_0 += alpha * (credit[prod2] * idr * prob - prod2->rl_influence_0);
+        prod2->rl_influence_0 += alpha * (prod2->rl_credit * idr * prob - prod2->rl_influence_0);
         assert(prod2->rl_influence_0 <= 0.5);
-        prod2->rl_influence_rest = alpha * (credit[prod2] * idr * idr * prob * slot->rl_influence - prod2->rl_influence_rest);
+        prod2->rl_influence_rest = alpha * (prod2->rl_credit * idr * idr * prob * slot->rl_influence - prod2->rl_influence_rest);
         assert(prod2->rl_influence_rest == prod2->rl_influence_rest); ///< !isnan
         assert(prod2->rl_influence_rest <= 1.0);
         const double update_frequency = prod2->rl_update_count / thisAgent->total_decision_phases_count;
@@ -983,8 +982,8 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         sum_influence += prod2->rl_influence_total;
 
         std::cerr << "I / C of " << prod2->name->sc.name << " = "
-                  << prod2->rl_influence_total << " / " << credit[prod2] << " = "
-                  << prod2->rl_influence_total      /      credit[prod2] << std::endl;
+                  << prod2->rl_influence_total << " / " << prod2->rl_credit << " = "
+                  << prod2->rl_influence_total      /      prod2->rl_credit << std::endl;
       } DONE_INFLUENCE_PRODUCTIONS;
     }
   }
