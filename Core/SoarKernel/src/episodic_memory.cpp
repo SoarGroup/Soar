@@ -2297,7 +2297,12 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 						{
 							for (pool_p = (*my_id_repo)->begin(); pool_p != (*my_id_repo)->end(); pool_p++)
 							{
-								if ( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() )
+								// the ref set for this epmem_id may not be there if the pools were regenerated from a previous DB
+								// a non-existant ref set is the equivalent of a ref count of 0 (ie. an empty ref set)
+								// so we allow the identifier from the pool to be used
+								if ( ( my_agent->epmem_id_ref_counts->count(pool_p->first) == 0 ) ||
+										( (*my_agent->epmem_id_ref_counts)[ pool_p->first ]->empty() ) )
+
 								{
 									(*w_p)->epmem_id = pool_p->second;
 									(*w_p)->value->id.epmem_id = pool_p->first;
@@ -2377,12 +2382,21 @@ inline void _epmem_store_level( agent* my_agent, std::queue< Symbol* >& parent_s
 			}
 
 			// at this point we have successfully added a new wme
-			// whose value is an identifier.  IF the value was
+			// whose value is an identifier.  If the value was
 			// unknown at the beginning of this episode, then we need
 			// to update its ref count for each WME added (thereby catching
 			// up with ref counts that would have been accumulated via wme adds)
 			if ( new_identifiers.find( (*w_p)->value ) != new_identifiers.end() )
 			{
+				// because we could have bypassed the ref set before, we need to create it here
+				if ( my_agent->epmem_id_ref_counts->count( (*w_p)->value->id.epmem_id ) == 0 )
+				{
+#ifdef USE_MEM_POOL_ALLOCATORS
+					(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set( std::less< wme* >(), soar_module::soar_memory_pool_allocator< wme* >( my_agent ) );
+#else
+					(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ] = new epmem_wme_set;
+#endif
+				}
 				(*my_agent->epmem_id_ref_counts)[ (*w_p)->value->id.epmem_id ]->insert( (*w_p) );
 			}
 
