@@ -2976,16 +2976,14 @@ void epmem_new_episode( agent *my_agent )
 				my_agent->smem_stmts->hash_get_str->reinitialize();
 				attr_cache[(*iter)->attr] = recognized;
 				if (my_agent->smem_params->recognition->get_value() >= 2) {
-					if (recognized) {
+					if (!recognized) {
 						if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_wm) {
 							soar_module::symbol_triple* st = new soar_module::symbol_triple(my_agent->smem_unrecognized_header, (*iter)->attr, make_new_identifier(my_agent, 'U', TOP_GOAL_LEVEL));
 							smem_metadata_support_map[*iter] = st;
 							symbol_add_ref(st->id);
 							symbol_add_ref(st->attr);
 							symbol_add_ref(st->value);
-						}
-					} else {
-						if (my_agent->smem_params->recognition_representation->get_value() == smem_param_container::recog_rete) {
+						} else {
 							remove_wme_from_rete(my_agent, (*iter), false);
 							(*iter)->metadata |= METADATA_SMEM_RECOGNITION;
 							add_wme_to_rete(my_agent, (*iter), false);
