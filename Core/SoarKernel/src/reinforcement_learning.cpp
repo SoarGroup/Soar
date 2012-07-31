@@ -673,7 +673,7 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
 				new_production->rl_efr = init_value;
         new_production->rl_credit = 0.0; ///< bazald
         new_production->rl_mean2 = 0.0; ///< bazald
-        new_production->rl_variance_tolerable = 0.002; ///< bazald
+        new_production->rl_variance_tolerable = 0.0001; ///< bazald
         new_production->rl_variance_0 = 0.0; ///< bazald
         new_production->rl_variance_rest = 0.0; ///< bazald
         new_production->rl_variance_total = 0.0; ///< bazald

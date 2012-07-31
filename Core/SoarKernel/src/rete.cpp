@@ -7493,7 +7493,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
 	prod->rl_efr = 0.0;
   prod->rl_credit = 0.0; ///< bazald
   prod->rl_mean2 = 0.0; ///< bazald
-  prod->rl_variance_tolerable = 0.002; ///< bazald
+  prod->rl_variance_tolerable = 0.0001; ///< bazald
   prod->rl_variance_0 = 0.0; ///< bazald
   prod->rl_variance_rest = 0.0; ///< bazald
   prod->rl_variance_total = 0.0; ///< bazald

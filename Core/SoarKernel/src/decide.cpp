@@ -1087,10 +1087,10 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 
 //             std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
 
-//           std::cerr << "Inflated variance " << prod2->name->sc.name << " = " << inflated_variance << " of " << prod2->rl_variance_tolerable << std::endl;
+          std::cerr << "Inflated variance " << prod2->name->sc.name << " = " << inflated_variance << " of " << prod2->rl_variance_tolerable << std::endl;
 
-          if((suboptimality < 0.001 ||
-              inflated_variance < 0.001 || ///< must fall below threshold after splitting, or operator-no-change will result
+          if((suboptimality < 0.00001 ||
+              inflated_variance < 0.00001 || ///< must fall below threshold after splitting, or operator-no-change will result
 //                 inflated_variance + max_variance < suboptimality ||
               inflated_variance < prod2->rl_variance_tolerable ///< Simpler test to get blocks world turning over again
               )

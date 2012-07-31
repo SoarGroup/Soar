@@ -35,14 +35,14 @@ g_ep_tuples = []
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'rl', 'normal', (0, 40, 40)))
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'log-rl', 'normal', (0, 40, 40)))
 
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'none', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'none', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'none', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'variance', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'variance', 'normal', (0, 10, 10)))
 g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'variance', 'normal', (0, 10, 10)))
 g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'variance', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'variance', 'normal', (0, 10, 10)))
+g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'variance', 'normal', (0, 10, 10)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'none', 'normal', (0, 10, 10)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'none', 'normal', (0, 10, 10)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'none', 'normal', (0, 10, 10)))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')

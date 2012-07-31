@@ -887,25 +887,27 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 
   /// bazald modifications begin
   const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
-  double variance_value = DBL_MAX;
-  double variance_credit = 1.0;
+//   double variance_value = DBL_MAX;
+//   double variance_credit = 0.0;
   if(variance_mod) {
-    ITERATE_EXPLORATION_PRODUCTIONS(s) {
-      if(prod2->rl_variance_total <= variance_value && prod2->rl_credit <= variance_credit) {
-        /// filter out rules of lower credit and higher variance
-        variance_value = prod2->rl_variance_total;
-        variance_credit = prod2->rl_credit;
-      }
-    } DONE_EXPLORATION_PRODUCTIONS;
-    double total_credit = 0.0;
-    ITERATE_EXPLORATION_PRODUCTIONS(s) {
-      if(prod2->rl_variance_total <= variance_value)
-        total_credit += prod2->rl_credit;
-    } DONE_EXPLORATION_PRODUCTIONS;
-    ITERATE_EXPLORATION_PRODUCTIONS(s) {
-      if(prod2->rl_variance_total <= variance_value)
-        prod2->rl_credit /= total_credit;
-    } DONE_EXPLORATION_PRODUCTIONS;
+//     ITERATE_EXPLORATION_PRODUCTIONS(s) {
+//       if(prod2->rl_variance_total <= variance_value) {
+//         /// filter out rules of higher variance
+//         variance_value = prod2->rl_variance_total;
+//         variance_credit = prod2->rl_credit;
+//       }
+//     } DONE_EXPLORATION_PRODUCTIONS;
+//     double total_credit = 0.0;
+//     ITERATE_EXPLORATION_PRODUCTIONS(s) {
+//       if(prod2->rl_variance_total <= variance_value)
+//         total_credit += prod2->rl_credit;
+//     } DONE_EXPLORATION_PRODUCTIONS;
+//     ITERATE_EXPLORATION_PRODUCTIONS(s) {
+//       if(prod2->rl_variance_total <= variance_value)
+//         prod2->rl_credit = 1.0 / (1.0 - 0.1 * total_credit);
+//       else
+//         prod2->rl_credit = 1.0 / (1.0 + 0.1 * total_credit);
+//     } DONE_EXPLORATION_PRODUCTIONS;
   }
 
 	// all numeric indifferents
@@ -918,10 +920,11 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 			if ( pref->inst->prod->rl_rule )
 			{
 				cand->rl_contribution = true;
-        if(!variance_mod || pref->inst->prod->rl_variance_total <= variance_value) {
+        if(variance_mod)
+          cand->numeric_value += get_number_from_symbol( pref->referent ) * pref->inst->prod->rl_influence_total - pref->inst->prod->rl_variance_total;
+        else
           cand->numeric_value += get_number_from_symbol( pref->referent );
-//           std::cerr << pref->inst->prod->name->sc.name << " credited " << pref->inst->prod->rl_credit << " by " << cand->inst->prod->name->sc.name << std::endl; ///< bazald
-        }
+//         std::cerr << pref->inst->prod->name->sc.name << " credited " << pref->inst->prod->rl_credit << " by " << cand->inst->prod->name->sc.name << std::endl; ///< bazald
 			}
 			else
         cand->numeric_value += get_number_from_symbol( pref->referent );
