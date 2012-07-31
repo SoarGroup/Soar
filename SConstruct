@@ -160,7 +160,7 @@ if compiler == 'g++':
 	libs += [ 'pthread' ]
 
 elif compiler == 'msvc':
-	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2']
+	cflags = ['/EHsc', '/D', '_CRT_SECURE_NO_DEPRECATE', '/D', '_WIN32', '/W2', '/bigobj']
 	
 	if GetOption('defflags'):
 		if GetOption('opt'):
