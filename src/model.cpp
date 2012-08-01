@@ -258,16 +258,16 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	
 	int dim = -1, start = 0, end = reference_vals.size() - 1;
 	bool list = false, histo = false;
-	if (i >= args.size()) {
-		os << "specify a dimension" << endl;
-		return false;
-	}
 	if (args[i] == "list") {
 		list = true;
 		++i;
 	} else if (args[i] == "histogram") {
 		histo = true;
 		++i;
+	}
+	if (i >= args.size()) {
+		os << "specify a dimension" << endl;
+		return false;
 	}
 	if (!parse_int(args[i], dim)) {
 		dim = -1;
