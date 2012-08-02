@@ -40,7 +40,7 @@ sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node)
 : soarint(si), id(ident), parent(parent), node(node)
 {
 	node->listen(this);
-	name_wme = soarint->make_wme(id, "id", node->get_name());
+	name_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_name());
 	
 	if (node->is_group()) {
 		group_node *g = node->as_group();
@@ -101,8 +101,8 @@ void sgwme::add_child(sgnode *c) {
 	childs[child] = cid_wme;
 }
 
-svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *syms)
-: svsp(svsp), parent(NULL), state(state), si(si), cs(syms), level(0),
+svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
+: svsp(svsp), parent(NULL), state(state), si(si), level(0),
   scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL), model_link(NULL)
 {
 	assert (si->is_top_state(state));
@@ -113,8 +113,7 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
 : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
-  cs(parent->cs), outspec(parent->outspec),
-  level(parent->level+1), scene_num(-1),
+  outspec(parent->outspec), level(parent->level+1), scene_num(-1),
   scene_num_wme(NULL), scn(NULL), scene_link(NULL), model_link(NULL)
 {
 	assert (si->get_parent_state(state) == parent->state);
@@ -138,11 +137,12 @@ svs_state::~svs_state() {
 
 void svs_state::init() {
 	string name;
+	common_syms &cs = si->get_common_syms();
 	
 	si->get_name(state, name);
-	svs_link = si->get_wme_val(si->make_id_wme(state, cs->svs));
-	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs->cmd));
-	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
+	svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
+	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
+	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
 	mmdl = new multi_model(svsp->get_models());
@@ -150,7 +150,7 @@ void svs_state::init() {
 	test_models = false;
 	
 	if (!parent) {
-		model_link = si->get_wme_val(si->make_id_wme(svs_link, cs->models));
+		model_link = si->get_wme_val(si->make_id_wme(svs_link, cs.models));
 		svsp->set_model_root(model_link);
 	}
 }
@@ -369,7 +369,6 @@ svs::svs(agent *a)
 : learn(false), model_root(NULL)
 {
 	si = new soar_interface(a);
-	cs = new common_syms(si);
 	timers.add("input", true);
 	timers.add("output", true);
 	timers.add("calc_atoms");
@@ -380,7 +379,6 @@ svs::~svs() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		delete *i;
 	}
-	delete cs;
 	delete si;
 	map<string, model*>::iterator j;
 	for (j = models.begin(); j != models.end(); ++j) {
@@ -393,7 +391,7 @@ void svs::state_creation_callback(Symbol *state) {
 	svs_state *s;
 	
 	if (state_stack.empty()) {
-		s = new svs_state(this, state, si, cs);
+		s = new svs_state(this, state, si);
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
