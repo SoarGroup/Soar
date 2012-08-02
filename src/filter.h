@@ -243,17 +243,17 @@ public:
 		}
 	}
 	
-	void change(T *v) {
-		changed.push_back(v);
-		for (int i = 0; i < listeners.size(); ++i) {
-			listeners[i]->handle_ctlist_change(v);
-		}
-	}
-	
 	void change(const T *v) {
 		for(int i = 0; i < current.size(); ++i) {
 			if (current[i] == v) {
-				change(current[i]);
+				if (i < m_added_begin &&
+				    find(changed.begin(), changed.end(), current[i]) == changed.end())
+				{
+					changed.push_back(current[i]);
+					for (int i = 0; i < listeners.size(); ++i) {
+						listeners[i]->handle_ctlist_change(current[i]);
+					}
+				}
 				return;
 			}
 		}
