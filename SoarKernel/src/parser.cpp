@@ -522,6 +522,18 @@ metadata_pair parse_metadata_test (agent* thisAgent) {
 		  get_lexeme(thisAgent);
 		  continue;
 		}
+		if (!strcmp(thisAgent->lexeme.string,":is-lti")) {
+	      mr.mask |= METADATA_LTI;
+	      mr.value |= METADATA_LTI;
+		  get_lexeme(thisAgent);
+		  continue;
+		}
+		if (!strcmp(thisAgent->lexeme.string,":is-not-lti")) {
+	      mr.mask |= METADATA_LTI;
+	      mr.value &= ~METADATA_LTI;
+		  get_lexeme(thisAgent);
+		  continue;
+		}
 		error = TRUE;
     	break;
 	}

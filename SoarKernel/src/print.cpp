@@ -654,6 +654,14 @@ void print_condition_list (agent* thisAgent, condition *conds,
                    }
                    while (*ch) ch++;
                }
+               if (c->metadata_test.mask & METADATA_LTI) {
+                   if (c->metadata_test.value & METADATA_LTI) {
+                       strncpy (ch, " :is-lti", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+                   } else {
+                       strncpy (ch, " :is-not-lti", PRINT_CONDITION_LIST_TEMP_SIZE - (ch - temp)); 
+                   }
+                   while (*ch) ch++;
+               }
             }
             *ch = 0;
             if (thisAgent->printer_output_column + (ch - temp) >= COLUMNS_PER_LINE) 
