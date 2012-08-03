@@ -95,6 +95,9 @@ wme *make_wme (agent* thisAgent, Symbol *id, Symbol *attr, Symbol *value, char m
   symbol_add_ref (attr);
   symbol_add_ref (value);
   w->metadata = metadata;
+  if ((value->common.symbol_type == IDENTIFIER_SYMBOL_TYPE) && (value->id.smem_lti != NIL)) {
+	  w->metadata |= METADATA_LTI;
+  }
   w->timetag = thisAgent->current_wme_timetag++;
   w->reference_count = 0;
   w->preference = NIL;

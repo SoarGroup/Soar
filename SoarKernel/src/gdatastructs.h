@@ -527,6 +527,7 @@ enum ComplexTextTypes {
 #define METADATA_ACCEPTABLE 1
 #define METADATA_SMEM_RECOGNITION 2
 #define METADATA_EPMEM_RECOGNITION 4
+#define METADATA_LTI 8
 
 /* --- info on conditions used for backtracing (and by the rete) --- */
 typedef struct bt_info_struct {
