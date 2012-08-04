@@ -8,7 +8,9 @@ using namespace std;
 
 class node_ptlist_filter : public typed_map_filter<ptlist*> {
 public:
-	node_ptlist_filter(filter_input *input, bool local) : typed_map_filter<ptlist*>(input), local(local) {}
+	node_ptlist_filter(Symbol *root, soar_interface *si, filter_input *input, bool local)
+	: typed_map_filter<ptlist*>(root, si, input), local(local)
+	{}
 	
 	~node_ptlist_filter() {
 		std::list<ptlist*>::iterator i;
@@ -51,17 +53,19 @@ private:
 	std::list<ptlist*> lists;
 };
 
-filter* _make_local_filter_(scene *scn, filter_input *input) {
-	return new node_ptlist_filter(input, true);
+filter* _make_local_filter_(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new node_ptlist_filter(root, si, input, true);
 }
 
-filter* _make_world_filter_(scene *scn, filter_input *input) {
-	return new node_ptlist_filter(input, false);
+filter* _make_world_filter_(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new node_ptlist_filter(root, si, input, false);
 }
 
 class ptlist_filter : public typed_map_filter<ptlist*> {
 public:
-	ptlist_filter(filter_input *input) : typed_map_filter<ptlist*>(input) {}
+	ptlist_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_map_filter<ptlist*>(root, si, input)
+	{}
 	
 	~ptlist_filter() {
 		std::list<ptlist*>::iterator i;
@@ -77,7 +81,7 @@ public:
 		for(i = params->begin(); i != params->end(); ++i) {
 			vec3 v;
 			if (!get_filter_val(i->second, v)) {
-				set_error("all parameters must be vec3's");
+				set_status("all parameters must be vec3");
 				return false;
 			}
 			newres.push_back(v);
@@ -101,6 +105,6 @@ private:
 	std::list<ptlist*> lists;
 };
 
-filter* _make_ptlist_filter_(scene *scn, filter_input *input) {
-	return new ptlist_filter(input);
+filter* _make_ptlist_filter_(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new ptlist_filter(root, si, input);
 }

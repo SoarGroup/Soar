@@ -7,7 +7,9 @@ using namespace std;
 
 class compare_filter : public typed_map_filter<bool> {
 public:
-	compare_filter(filter_input *input) : typed_map_filter<bool>(input) {}
+	compare_filter(Symbol *root, soar_interface *si, filter_input *input) 
+	: typed_map_filter<bool>(root, si, input)
+	{}
 	
 	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		float a, b;
@@ -39,8 +41,8 @@ public:
 	}
 };
 
-filter *make_compare_filter(scene *scn, filter_input *input) {
-	return new compare_filter(input);
+filter *make_compare_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new compare_filter(root, si, input);
 }
 
 filter_table_entry compare_fill_entry() {

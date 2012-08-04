@@ -12,6 +12,7 @@
 #include "sgnode.h"
 #include "scene.h"
 #include "common.h"
+#include "soar_interface.h"
 
 /*
  Wrapper for all filter value types so we can cache them uniformly.
@@ -449,11 +450,9 @@ private:
 */
 class filter {
 public:
-	filter() {
-		input = new null_filter_input();
-	}
-	
-	filter(filter_input *in) : input(in) {
+	filter(Symbol *root, soar_interface *si, filter_input *in) 
+	: root(root), si(si), status_wme(NULL), input(in)
+	{
 		if (input == NULL) {
 			input = new null_filter_input();
 		}
@@ -463,21 +462,17 @@ public:
 		delete input;
 	}
 	
-	std::string get_error() {
-		return errmsg;
-	}
-	
-	bool is_error() {
-		return !errmsg.empty();
-	}
-	
-	void set_error(std::string msg) {
-		errmsg = msg;
-		result.clear();
-	}
-	
-	void clear_error() {
-		errmsg.clear();
+	void set_status(const std::string &msg) {
+		if (status == msg) {
+			return;
+		}
+		status = msg;
+		if (status_wme) {
+			si->remove_wme(status_wme);
+		}
+		if (root && si) {
+			status_wme = si->make_wme(root, si->get_common_syms().status, status);
+		}
 	}
 	
 	void add_result(filter_val *v, const filter_param_set *p) {
@@ -506,7 +501,7 @@ public:
 	
 	bool update() {
 		if (!input->update()) {
-			set_error("Errors in input");
+			set_status("Errors in input");
 			result.clear();
 			input->reset();
 			return false;
@@ -517,6 +512,7 @@ public:
 			input->reset();
 			return false;
 		}
+		set_status("success");
 		input->clear_changes();
 		return true;
 	}
@@ -542,7 +538,10 @@ private:
 	
 	filter_input *input;
 	filter_result result;
-	std::string errmsg;
+	std::string status;
+	soar_interface *si;
+	Symbol *root;
+	wme *status_wme;
 	std::map<filter_val*, const filter_param_set*> result2params;
 };
 
@@ -555,7 +554,7 @@ private:
 */
 class map_filter : public filter {
 public:
-	map_filter(filter_input *input) : filter(input) {}
+	map_filter(Symbol *root, soar_interface *si, filter_input *input) : filter(root, si, input) {}
 	
 	/*
 	 All created filter_vals are owned by the result list and cleaned
@@ -643,7 +642,10 @@ private:
 template <class T>
 class typed_map_filter : public map_filter {
 public:
-	typed_map_filter(filter_input *input) : map_filter(input) {}
+	typed_map_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: map_filter(root, si, input)
+	{}
+	
 	virtual ~typed_map_filter() {}
 	
 	virtual bool compute(const filter_param_set *params, bool adding, T &res, bool &changed) = 0;
@@ -685,7 +687,10 @@ private:
 template<typename T>
 class reduce_filter : public filter {
 public:
-	reduce_filter(filter_input *input) : filter(input), result(NULL) {}
+	reduce_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: filter(root, si, input), result(NULL)
+	{}
+	
 	virtual ~reduce_filter() {}
 	
 	bool update_results() {
@@ -733,7 +738,9 @@ private:
 
 class rank_filter : public filter {
 public:
-	rank_filter(filter_input *input) : filter(input), result(NULL), old(NULL) {}
+	rank_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: filter(root, si, input), result(NULL), old(NULL)
+	{}
 
 	virtual bool rank(const filter_param_set *params, double &r) = 0;
 
@@ -809,25 +816,18 @@ private:
 template <class T>
 class const_filter : public filter {
 public:
-	const_filter(const T &single) : added(false) {
-		v.push_back(single);
-	}
-	
-	const_filter(const std::vector<T> &v) : filter(NULL), v(v), added(false) {}
+	const_filter(const T &v) : filter(NULL, NULL, NULL), added(false), v(v) {}
 	
 	bool update_results() {
 		if (!added) {
-			typename std::vector<T>::const_iterator i;
-			for (i = v.begin(); i != v.end(); ++i) {
-				add_result(new filter_val_c<T>(*i), NULL);
-			}
+			add_result(new filter_val_c<T>(v), NULL);
 			added = true;
 		}
 		return true;
 	}
 		
 private:
-	std::vector<T> v;
+	T v;
 	bool added;
 };
 
@@ -839,7 +839,9 @@ private:
 */
 class passthru_filter : public map_filter {
 public:
-	passthru_filter(filter_input *input) : map_filter(input) {}
+	passthru_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: map_filter(root, si, input)
+	{}
 	
 	bool compute(const filter_param_set *params, filter_val *&res, bool &changed) {
 		if (params->empty()) {
@@ -865,14 +867,14 @@ inline bool get_filter_param(filter *f, const filter_param_set *params, const st
 	if (!map_get(*params, name, fv)) {
 		if (f) {
 			ss << "parameter \"" << name << "\" missing";
-			f->set_error(ss.str());
+			f->set_status(ss.str());
 		}
 		return false;
 	}
 	if (!get_filter_val(fv, val)) {
 		if (f) {
 			ss << "parameter \"" << name << "\" has wrong type";
-			f->set_error(ss.str());
+			f->set_status(ss.str());
 		}
 		return false;
 	}

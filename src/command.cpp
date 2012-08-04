@@ -68,13 +68,11 @@ void command::parse_substructure(int &size, int &max_time) {
 		
 		si->get_child_wmes(parent, childs);
 		for (i = childs.begin(); i != childs.end(); ++i) {
-			if (parent == root) {
-				if (si->get_val(si->get_wme_attr(*i), attr) && 
-				    (attr == "result" || attr == "status"))
-				{
-					/* result wmes are added by svs */
-					continue;
-				}
+			if (si->get_val(si->get_wme_attr(*i), attr) && 
+				(attr == "result" || attr == "status"))
+			{
+				/* result and status wmes are added by svs */
+				continue;
 			}
 			v = si->get_wme_val(*i);
 			tt = si->get_timetag(*i);
@@ -236,9 +234,9 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 	
 	if (!fail) {
 		if (ftype == "combine") {
-			f = new passthru_filter(input);
+			f = new passthru_filter(root, si, input);
 		} else {
-			f = get_filter_table().make_filter(ftype, scn, input);
+			f = get_filter_table().make_filter(ftype, root, si, scn, input);
 		}
 	}
 	

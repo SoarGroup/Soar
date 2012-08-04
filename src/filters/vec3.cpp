@@ -4,7 +4,9 @@ using namespace std;
 
 class vec3_filter : public typed_map_filter<vec3> {
 public:
-	vec3_filter(filter_input *input) : typed_map_filter<vec3>(input) {}
+	vec3_filter(Symbol *root, soar_interface *si, filter_input *input) 
+	: typed_map_filter<vec3>(root, si, input) 
+	{}
 
 	bool compute(const filter_param_set *params, bool adding, vec3 &res, bool &changed) {
 		vec3 newres;
@@ -20,8 +22,8 @@ public:
 	}
 };
 
-filter *_make_vec3_filter_(scene *scn, filter_input *input) {
-	return new vec3_filter(input);
+filter *_make_vec3_filter_(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new vec3_filter(root, si, input);
 }
 
 filter_table_entry vec3_fill_entry() {

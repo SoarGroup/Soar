@@ -23,7 +23,9 @@ bool standalone(scene *scn, const vector<string> &args) {
 
 class ontop_filter : public typed_map_filter<bool> {
 public:
-	ontop_filter(filter_input *input) : typed_map_filter<bool>(input) {}
+	ontop_filter(Symbol* root, soar_interface *si, filter_input *input) 
+	: typed_map_filter<bool>(root, si, input)
+	{}
 
 	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *tn, *bn;
@@ -39,8 +41,8 @@ public:
 	}
 };
 
-filter* make_ontop_filter(scene *scn, filter_input *input) {
-	return new ontop_filter(input);
+filter* make_ontop_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new ontop_filter(root, si, input);
 }
 
 filter_table_entry ontop_fill_entry() {

@@ -39,7 +39,8 @@ bool behind(const sgnode *a, const sgnode *b, const sgnode *c) {
 
 class between_filter : public typed_map_filter<bool> {
 public:
-	between_filter(filter_input *input) : typed_map_filter<bool>(input) {}
+	between_filter(Symbol *root, soar_interface *si, filter_input *input) 
+	: typed_map_filter<bool>(root, si, input) {}
 	
 	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
@@ -59,7 +60,9 @@ public:
 
 class behind_filter : public typed_map_filter<bool> {
 public:
-	behind_filter(filter_input *input) : typed_map_filter<bool>(input) {}
+	behind_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_map_filter<bool>(root, si, input)
+	{}
 	
 	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
@@ -78,12 +81,12 @@ public:
 	}
 };
 
-filter* make_between_filter(scene *scn, filter_input *input) {
-	return new between_filter(input);
+filter* make_between_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new between_filter(root, si, input);
 }
 
-filter* make_behind_filter(scene *scn, filter_input *input) {
-	return new behind_filter(input);
+filter* make_behind_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new behind_filter(root, si, input);
 }
 
 bool calc_between(scene *scn, const vector<string> &args) {

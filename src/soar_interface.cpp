@@ -18,6 +18,7 @@ common_syms::common_syms(soar_interface *si) : si(si) {
 	result = si->make_sym("result");
 	models = si->make_sym("models");
 	id     = si->make_sym("id");
+	status = si->make_sym("status");
 }
 
 common_syms::~common_syms() {
@@ -28,6 +29,7 @@ common_syms::~common_syms() {
 	si->del_sym(result);
 	si->del_sym(models);
 	si->del_sym(id);
+	si->del_sym(status);
 }
 
 soar_interface::soar_interface(agent *a)

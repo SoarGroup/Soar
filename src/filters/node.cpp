@@ -14,7 +14,9 @@ using namespace std;
 */
 class node_filter : public typed_map_filter<const sgnode*>, public sgnode_listener {
 public:
-	node_filter(scene *scn, filter_input *input) : typed_map_filter<const sgnode*>(input), scn(scn) {}
+	node_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input)
+	: typed_map_filter<const sgnode*>(root, si, input), scn(scn)
+	{}
 	
 	~node_filter() {
 		map<sgnode*, node_info>::iterator i;
@@ -28,13 +30,13 @@ public:
 		string id;
 		
 		if (!get_filter_param(this, params, "id", id)) {
-			set_error("expecting parameter id");
+			set_status("expecting parameter id");
 			return false;
 		}
 		if ((newres = scn->get_node(id)) == NULL) {
 			stringstream ss;
 			ss << "no node with id \"" << id << "\"";
-			set_error(ss.str());
+			set_status(ss.str());
 			return false;
 		}
 		
@@ -66,8 +68,8 @@ public:
 	void del_entry(sgnode *n, const filter_param_set *params) {
 		map<sgnode*, node_info>::iterator i = nodes.find(n);
 		assert(i != nodes.end());
-		list<const filter_param_set*> &p = i->second.params;
-		list<const filter_param_set*>::iterator j = find(p.begin(), p.end(), params);
+		std::list<const filter_param_set*> &p = i->second.params;
+		std::list<const filter_param_set*>::iterator j = find(p.begin(), p.end(), params);
 		assert(j != p.end());
 		p.erase(j);
 		if (p.empty()) {
@@ -80,7 +82,7 @@ public:
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
 			node_info *info = map_get(nodes, n);
 			assert(info);
-			list<const filter_param_set*>::const_iterator i;
+			std::list<const filter_param_set*>::const_iterator i;
 			for (i = info->params.begin(); i != info->params.end(); ++i) {
 				mark_stale(*i);
 			}
@@ -93,7 +95,7 @@ public:
 
 private:
 	struct node_info {
-		list<const filter_param_set*> params;
+		std::list<const filter_param_set*> params;
 		bool changed;
 	};
 	
@@ -104,7 +106,8 @@ private:
 /* Return all nodes from the scene */
 class all_nodes_filter : public filter, public sgnode_listener {
 public:
-	all_nodes_filter(scene *scn) : scn(scn), first(true) {}
+	all_nodes_filter(Symbol *root, soar_interface *si, scene *scn) 
+	: filter(root, si, NULL), scn(scn), first(true) {}
 	
 	~all_nodes_filter() {
 		map<sgnode*, filter_val*>::iterator i;
@@ -171,7 +174,9 @@ private:
 
 class node_centroid_filter : public typed_map_filter<vec3> {
 public:
-	node_centroid_filter(filter_input *input) : typed_map_filter<vec3>(input) {}
+	node_centroid_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_map_filter<vec3>(root, si, input)
+	{}
 	
 	bool compute(const filter_param_set *params, bool adding, vec3 &res, bool &changed) {
 		const sgnode *n;
@@ -209,10 +214,11 @@ public:
 */
 class gen_node_filter : public typed_map_filter<sgnode*>, public sgnode_listener {
 public:
-	gen_node_filter(filter_input *input) : typed_map_filter<sgnode*>(input) {}
+	gen_node_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_map_filter<sgnode*>(root, si, input) {}
 
 	~gen_node_filter() {
-		list<sgnode*>::iterator i;
+		std::list<sgnode*>::iterator i;
 		for (i = nodes.begin(); i != nodes.end(); ++i) {
 			(**i).unlisten(this);
 			delete *i;
@@ -234,7 +240,7 @@ public:
 		}
 		
 		if (adding && !get_filter_param(NULL, params, "id", id)) {
-			set_error("no id");
+			set_status("no id");
 			return false;
 		}
 		
@@ -244,7 +250,7 @@ public:
 			} else {
 				convex_node *c = dynamic_cast<convex_node*>(res);
 				if (!c) {
-					set_error("not a convex node");
+					set_status("not a convex node");
 					return false;
 				}
 				if (c->get_local_points() != *pts) {
@@ -260,7 +266,7 @@ public:
 			} else {
 				convex_node *c = dynamic_cast<convex_node*>(res);
 				if (!c) {
-					set_error("not a convex node");
+					set_status("not a convex node");
 					return false;
 				}
 				if (c->get_local_points() != l) {
@@ -274,7 +280,7 @@ public:
 			} else {
 				ball_node *b = dynamic_cast<ball_node*>(res);
 				if (!b) {
-					set_error("not a ball node");
+					set_status("not a ball node");
 					return false;
 				}
 				if (b->get_radius() != radius) {
@@ -329,29 +335,29 @@ public:
 	}
 	
 	void remove_node(const sgnode *n) {
-		list<sgnode*>::iterator i = find(nodes.begin(), nodes.end(), n);
+		std::list<sgnode*>::iterator i = find(nodes.begin(), nodes.end(), n);
 		assert(i != nodes.end());
 		(**i).unlisten(this);
 		nodes.erase(i);
 	}
 	
 private:
-	list<sgnode*> nodes;
+	std::list<sgnode*> nodes;
 };
 
-filter *make_node_filter(scene *scn, filter_input *input) {
-	return new node_filter(scn, input);
+filter *make_node_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new node_filter(root, si, scn, input);
 }
 
-filter *make_all_nodes_filter(scene *scn, filter_input *input) {
-	return new all_nodes_filter(scn);
+filter *make_all_nodes_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new all_nodes_filter(root, si, scn);
 }
 
-filter *make_node_centroid_filter(scene *scn, filter_input *input) {
-	return new node_centroid_filter(input);
+filter *make_node_centroid_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new node_centroid_filter(root, si, input);
 }
-filter* _make_gen_node_filter_(scene *scn, filter_input *input) {
-	return new gen_node_filter(input);
+filter* _make_gen_node_filter_(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new gen_node_filter(root, si, input);
 }
 
 filter_table_entry node_fill_entry() {

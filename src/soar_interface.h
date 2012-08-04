@@ -20,7 +20,7 @@ public:
 	common_syms(soar_interface *si);
 	~common_syms();
 	
-	Symbol *svs, *cmd, *scene, *child, *result, *models, *id;
+	Symbol *svs, *cmd, *scene, *child, *result, *models, *id, *status;
 
 private:
 	soar_interface *si;

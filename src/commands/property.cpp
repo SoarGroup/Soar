@@ -41,9 +41,8 @@ public:
 		}
 		
 		if (fltr) {
-			fltr->update();
-			if (fltr->is_error()) {
-				set_status(fltr->get_error());
+			if (!fltr->update()) {
+				set_status("filter error");
 				return false;
 			}
 			if (res->num_current() == 0) {

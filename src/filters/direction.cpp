@@ -92,8 +92,8 @@ Filter version
 
 class direction_filter : public typed_map_filter<bool> {
 public:
-	direction_filter(filter_input *input, int axis, int comp)
-	: typed_map_filter<bool>(input), axis(axis), comp(comp) {}
+	direction_filter(Symbol *root, soar_interface *si, filter_input *input, int axis, int comp)
+	: typed_map_filter<bool>(root, si, input), axis(axis), comp(comp) {}
 	
 	bool compute(const filter_param_set *p, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
@@ -115,40 +115,40 @@ private:
 	int axis, comp;
 };
 
-filter *make_north_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 1, 1);
+filter *make_north_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 1, 1);
 }
 
-filter *make_south_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 1, -1);
+filter *make_south_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 1, -1);
 }
 
-filter *make_east_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 0, 1);
+filter *make_east_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 0, 1);
 }
 
-filter *make_west_of(scene *scn, filter_input *input) {
-	return new direction_filter(input, 0, -1);
+filter *make_west_of(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 0, -1);
 }
 
-filter *make_vertically_aligned(scene *scn, filter_input *input) {
-	return new direction_filter(input, 0, 0);
+filter *make_vertically_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 0, 0);
 }
 
-filter *make_horizontally_aligned(scene *scn, filter_input *input) {
-	return new direction_filter(input, 1, 0);
+filter *make_horizontally_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 1, 0);
 }
 
-filter *make_planar_aligned(scene *scn, filter_input *input) {
-	return new direction_filter(input, 2, 0);
+filter *make_planar_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 2, 0);
 }
 
-filter *make_above(scene *scn, filter_input *input) {
-	return new direction_filter(input, 2, 1);
+filter *make_above(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 2, 1);
 }
 
-filter *make_below(scene *scn, filter_input *input) {
-	return new direction_filter(input, 2, -1);
+filter *make_below(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new direction_filter(root, si, input, 2, -1);
 }
 
 

@@ -45,16 +45,12 @@ public:
 		}
 		
 		if (fltr) {
-			fltr->update();
-			
-			if (fltr->is_error()) {
-				set_status(fltr->get_error());
+			if (!fltr->update()) {
 				clear_results();
 				return false;
 			}
 			update_results();
 			res->clear_changes();
-			set_status("success");
 		}
 		return true;
 	}

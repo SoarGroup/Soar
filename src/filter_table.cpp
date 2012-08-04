@@ -65,3 +65,12 @@ filter_table::filter_table() {
 		timers.add(i->first);
 	}
 }
+
+filter* filter_table::make_filter(const std::string &pred, Symbol *root, soar_interface *si, scene *scn, filter_input *input) const
+{
+	std::map<std::string, filter_table_entry>::const_iterator i = t.find(pred);
+	if (i == t.end() || i->second.create == NULL) {
+		return NULL;
+	}
+	return (*(i->second.create))(root, si, scn, input);
+}
