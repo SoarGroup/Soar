@@ -456,6 +456,9 @@ public:
 		if (input == NULL) {
 			input = new null_filter_input();
 		}
+		if (root && si) {
+			si->find_child_wme(root, "status", status_wme);
+		}
 	}
 	
 	virtual ~filter() {
