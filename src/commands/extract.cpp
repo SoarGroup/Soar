@@ -52,8 +52,8 @@ public:
 			}
 			update_results();
 			res->clear_changes();
+			first = false;
 		}
-		first = false;
 		return true;
 	}
 	
