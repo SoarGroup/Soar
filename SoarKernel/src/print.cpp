@@ -1036,8 +1036,9 @@ void print_wme (agent* thisAgent, wme *w) {
   
   if (w->metadata & METADATA_ACCEPTABLE) print_string (thisAgent, " +");
 
-  print(thisAgent, (w->metadata & METADATA_EPMEM_RECOGNITION ? " :epmem-unrecognized" : " :epmem-recognized"));
   print(thisAgent, (w->metadata & METADATA_SMEM_RECOGNITION ? " :smem-unrecognized" : " :smem-recognized"));
+  print(thisAgent, (w->metadata & METADATA_EPMEM_RECOGNITION ? " :epmem-unrecognized" : " :epmem-recognized"));
+  print(thisAgent, (w->metadata & METADATA_LTI ? " :is-lti" : " :is-not-lti"));
 
   print_string (thisAgent, ")");
   print (thisAgent, "\n");
