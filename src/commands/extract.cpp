@@ -8,8 +8,8 @@ using namespace std;
 
 class extract_command : public command, public filter_input_listener {
 public:
-	extract_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), state(state), fltr(NULL), res(NULL), res_root(NULL), first(true)
+	extract_command(svs_state *state, Symbol *root, bool once)
+	: command(state, root), root(root), state(state), fltr(NULL), res(NULL), res_root(NULL), first(true), once(once)
 	{
 		si = state->get_svs()->get_soar_interface();
 	}
@@ -42,9 +42,10 @@ public:
 			}
 			res = fltr->get_result();
 			fltr->listen_for_input(this);
+			first = true;
 		}
 		
-		if (fltr) {
+		if (fltr && (!once || first)) {
 			if (!fltr->update()) {
 				clear_results();
 				return false;
@@ -52,6 +53,7 @@ public:
 			update_results();
 			res->clear_changes();
 		}
+		first = false;
 		return true;
 	}
 	
@@ -166,7 +168,7 @@ private:
 	soar_interface *si;
 	filter         *fltr;
 	filter_result  *res;
-	bool            first;
+	bool            first, once;
 	
 	struct record {
 		const filter_param_set *params;
@@ -181,5 +183,10 @@ private:
 };
 
 command *_make_extract_command_(svs_state *state, Symbol *root) {
-	return new extract_command(state, root);
+	return new extract_command(state, root, false);
 }
+
+command *_make_extract_once_command_(svs_state *state, Symbol *root) {
+	return new extract_command(state, root, true);
+}
+
