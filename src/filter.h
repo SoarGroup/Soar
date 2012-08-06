@@ -366,7 +366,7 @@ typedef change_tracking_list<filter_val> filter_result;
  A filter parameter set represents one complete input into a filter. It's
  just a list of pairs <parameter name, value>.
 */
-typedef std::map<std::string, filter_val*> filter_param_set;
+typedef std::vector<std::pair<std::string, filter_val*> > filter_param_set;
 
 /*
  Each filter takes a number of input parameters. Each of those parameters
@@ -865,13 +865,18 @@ public:
 
 template <typename T>
 inline bool get_filter_param(filter *f, const filter_param_set *params, const std::string &name, T &val) {
-	filter_val *fv;
+	const filter_val *fv;
 	std::stringstream ss;
-	if (!map_get(*params, name, fv)) {
-		if (f) {
-			ss << "parameter \"" << name << "\" missing";
-			f->set_status(ss.str());
+	filter_param_set::const_iterator i;
+	bool found = false;
+	for (i = params->begin(); i != params->end(); ++i) {
+		if (i->first == name) {
+			fv = i->second;
+			found = true;
+			break;
 		}
+	}
+	if (!found) {
 		return false;
 	}
 	if (!get_filter_val(fv, val)) {

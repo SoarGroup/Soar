@@ -14,7 +14,7 @@ void concat_filter_input::combine(const input_table &inputs) {
 
 		for (int j = r->first_added(); j < r->num_current(); ++j) {
 			p = new filter_param_set();
-			(*p)[i->name] = r->get_current(j);
+			p->push_back(make_pair(i->name, r->get_current(j)));
 			val2params[r->get_current(j)] = p;
 			add(p);
 		}
@@ -92,9 +92,10 @@ void product_filter_input::gen_new_combinations(const input_table &inputs) {
 		vector<int> curr = begin;
 		while (true) {
 			filter_param_set *p = new filter_param_set();
+			p->reserve(inputs.size());
 			for (int j = 0; j < inputs.size(); ++j) {
 				filter_val *v = inputs[j].res->get_current(curr[j]);
-				(*p)[inputs[j].name] = v;
+				p->push_back(make_pair(inputs[j].name, v));
 				val2params[v].push_back(p);
 			}
 			add(p);
