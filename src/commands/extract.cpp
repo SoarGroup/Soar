@@ -112,19 +112,40 @@ private:
 		return si->make_sym(v->get_string());
 	}
 	
+	bool sym_reps_filter_val(Symbol *s, const filter_val *fv) {
+		long fiv, siv;
+		double ffv, sfv;
+		bool fbv;
+		string str;
+		if (get_filter_val(fv, fiv)) {
+			return (si->get_val(s, siv) && siv == fiv);
+		}
+		if (get_filter_val(fv, ffv)) {
+			return (si->get_val(s, sfv) && sfv == ffv);
+		}
+		if (get_filter_val(fv, fbv)) {
+			return (si->get_val(s, str) && ((fbv && str == "t") || (!fbv && str == "f")));
+		}
+		return (si->get_val(s, str) && str == fv->get_string());
+	}
+	
 	wme *make_value_wme(filter_val *v, Symbol *root) {
 		return si->make_wme(root, "value", make_filter_val_sym(v));
 	}
 	
-	wme *make_param_struct(const filter_params *params, Symbol *rec_root) {
-		wme *w = si->make_id_wme(rec_root, "params");
-		Symbol *id = si->get_wme_val(w);
-		
-		filter_params::const_iterator i;
-		for (i = params->begin(); i != params->end(); ++i) {
-			si->make_wme(id, i->first, make_filter_val_sym(i->second));
+	void update_param_struct(const filter_params *p, Symbol *pid) {
+		filter_params::const_iterator j;
+		for (j = p->begin(); j != p->end(); ++j) {
+			wme *pwme = NULL;
+			if (!si->find_child_wme(pid, j->first, pwme) ||
+			    !sym_reps_filter_val(si->get_wme_val(pwme), j->second))
+			{
+				if (pwme) {
+					si->remove_wme(pwme);
+				}
+				si->make_wme(pid, j->first, make_filter_val_sym(j->second));
+			}
 		}
-		return w;
 	}
 	
 	void make_record(filter_val *result) {
@@ -132,9 +153,10 @@ private:
 		r.rec_wme = si->make_id_wme(res_root, "record");
 		r.rec_id = si->get_wme_val(r.rec_wme);
 		r.val_wme = make_value_wme(result, r.rec_id);
+		r.params_wme = si->make_id_wme(r.rec_id, "params");
 		fltr->get_result_params(result, r.params);
 		if (r.params) {
-			r.params_wme = make_param_struct(r.params, r.rec_id);
+			update_param_struct(r.params, si->get_wme_val(r.params_wme));
 		}
 		records[result] = r;
 	}
@@ -153,11 +175,12 @@ private:
 		record_map::iterator i;
 		for (i = records.begin(); i != records.end(); ++i) {
 			if (i->second.params == p) {
-				si->remove_wme(i->second.params_wme);
-				i->second.params_wme = make_param_struct(p, i->second.rec_id);
-				break;
+				Symbol *pid = si->get_wme_val(i->second.params_wme);
+				update_param_struct(p, pid);
+				return;
 			}
 		}
+		assert(false);
 	}
 	
 	Symbol         *root;
