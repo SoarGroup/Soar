@@ -1,12 +1,13 @@
 rl --set learning on
+#rl --set learning-policy sarsa
 rl --set learning-policy q-learning
-rl --set learning-rate 0.3
+rl --set learning-rate 0.5
 rl --set discount-rate 0.9
 #rl --set eligibility-trace-decay-rate 0.1
 #rl --set eligibility-trace-tolerance 0.000001
 
 #indifferent-selection --boltzmann
-#indifferent-selection --temperature 1
+#indifferent-selection --temperature 0.1
 indifferent-selection --epsilon-greedy
 indifferent-selection --epsilon 0.1
 #indifferent-selection --auto-reduce on

@@ -1148,14 +1148,19 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
             const double old_sample_variance = prod->rl_variance_0;
 
             if(prod->rl_update_count > 1) {
-              /** divide by credit[prod] to prevent shrinking of estimated variance due to credit assignment
+              /** divide by prod->rl_credit to prevent shrinking of estimated variance due to credit assignment
                *
                * (3-2)^2 + (3-4)^2 = 2, but...
                * given 0.75 credit assignment
                * (2.25-1.5)^2 + (2.25-3)^2 = 1.125
                * which is 0.75^2 * 2.
                */
-              prod->rl_mean2 += adjusted_alpha * iter->second * delta_ecr * (data->reward - prod->rl_ecr) / prod->rl_credit;
+
+              const double delta = (new_ecr - old_ecr) / adjusted_alpha;
+              const double x = old_ecr + delta;
+              const double mdelta = (x - old_ecr) * (x - new_ecr);
+
+              prod->rl_mean2 += mdelta / prod->rl_credit;
               prod->rl_variance_0 = prod->rl_mean2 / (prod->rl_update_count - 1);
 
               assert(adjusted_alpha * iter->second <= 1.0);

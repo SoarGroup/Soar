@@ -35,14 +35,27 @@ g_ep_tuples = []
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'rl', 'normal', (0, 40, 40)))
 #g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'log-rl', 'normal', (0, 40, 40)))
 
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'variance', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'variance', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'variance', 'normal', (0, 10, 10)))
-g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'variance', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'log-rl', 'none', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'fc', 'none', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'even', 'none', 'normal', (0, 10, 10)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal'))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal'))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (100, 10, 10)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal', (400, 20, 20)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (100, 10, 10), (400, 20, 20)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal', (400, 20, 20), (800, 40, 40)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (100, 10, 10), (400, 20, 20), (800, 40, 40)))
+
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal'))
+
+
+g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal'))
+g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10), (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (200, 20, 20), (200, 40, 40)))
+g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (100, 20, 20), (100, 40, 40)))
+g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal'))
+g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (20, 20), 'rl', 'none', 'normal'))
+g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal', (100, 20, 20)))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
@@ -83,25 +96,26 @@ print str(seeds) + '\n'
 
 
 class Experiment:
-  def __init__(self, episodes, seed, rules, rl_rules_out, output, ep_tuple):
+  def __init__(self, episodes, seed, rules, rl_rules_out, stdout, stderr, ep_tuple):
     self.episodes = episodes
     self.seed = seed
     self.rules = rules
     self.rl_rules_out = rl_rules_out
-    self.output = output
+    self.stderr = stderr
+    self.stdout = stdout
     
     self.ep_tuple = ep_tuple
-    self.init_min_x = ep_tuple[0][0]
-    self.init_min_y = ep_tuple[0][1]
-    self.init_max_x = ep_tuple[0][2]
-    self.init_max_y = ep_tuple[0][3]
-    self.div_x = ep_tuple[1][0]
-    self.div_y = ep_tuple[1][1]
-    self.credit_assignment = ep_tuple[2]
-    self.credit_modification = ep_tuple[3]
-    self.alpha = ep_tuple[4]
+    self.init_min_x = ep_tuple[1][0]
+    self.init_min_y = ep_tuple[1][1]
+    self.init_max_x = ep_tuple[1][2]
+    self.init_max_y = ep_tuple[1][3]
+    self.div_x = ep_tuple[2][0]
+    self.div_y = ep_tuple[2][1]
+    self.credit_assignment = ep_tuple[3]
+    self.credit_modification = ep_tuple[4]
+    self.alpha = ep_tuple[5]
     self.sp = []
-    for sp in ep_tuple[5:]:
+    for sp in ep_tuple[6:]:
       if len(sp) != 3:
         raise Exception("len(sp) != 3")
       self.sp.append(sp)
@@ -125,22 +139,29 @@ class Experiment:
     cmd = ''
     for arg in args:
       cmd += arg + ' '
-    cmd += '> ' + self.output
+    cmd += '> ' + self.stdout
     print cmd
   
   def run(self):
     args = self.get_args()
-    f = open(self.output, 'w')
-    subprocess.call(args, stderr=subprocess.PIPE, stdout=f)
-    f.close()
+    f1 = open(self.stdout, 'w')
+    f2 = open(self.stderr, 'w')
+    subprocess.call(args, stderr=f2, stdout=f1)
+    f2.close()
+    f1.close()
     return self
 
 
 dirs = []
 experiments = []
 for ep_tuple in g_ep_tuples:
-  dir = g_dir + '/' + str(ep_tuple[0][0]) + '-' + str(ep_tuple[0][1]) + '-' + str(ep_tuple[0][2]) + '-' + str(ep_tuple[0][3]) + '_' + str(ep_tuple[1][0]) + '-' + str(ep_tuple[1][1]) + '_' + str(ep_tuple[2]) + '_' + str(ep_tuple[3])
-  for i in range(5, len(ep_tuple)):
+  dir = ep_tuple[0].split('/')
+  if len(dir) > 1:
+    dir = dir[len(dir) - 1]
+  else:
+    dir = ep_tuple[0]
+  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1])
+  for i in range(6, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
     dir += '_' + str(ep_tuple[i][0]) + '-' + str(ep_tuple[i][1]) + '-' + str(ep_tuple[i][2])
@@ -148,25 +169,33 @@ for ep_tuple in g_ep_tuples:
     os.mkdir(dir)
   dirs.append(dir)
   
-  rules = dir + '/in.soar'
-  shutil.copy(g_rules, rules)
-  f = open(rules, 'a')
-  f.write('sp {apply*initialize*puddleworld\n' +
-          '    (state <s> ^operator.name puddleworld)\n' +
-          '-->\n' +
-          '    (<s> ^name puddleworld\n' +
-          '        ^div <d>)\n' +
-          '    (<d> ^name default\n' +
-          '        ^x (/ 1.001 ' + str(ep_tuple[1][0]) + ')\n' +
-          '        ^y (/ 1.001 ' + str(ep_tuple[1][1]) + '))\n' +
-          '}\n');
-  f.close()
+  if ep_tuple[0] == g_rules:
+    rules = dir + '/in.soar'
+    shutil.copy(g_rules, rules)
+    f = open(rules, 'a')
+    f.write('sp {apply*initialize*puddleworld\n' +
+            '    (state <s> ^operator.name puddleworld)\n' +
+            '-->\n' +
+            '    (<s> ^name puddleworld\n' +
+            '        ^div <d>)\n' +
+            '    (<d> ^name default\n' +
+            '        ^x (/ 1.001 ' + str(ep_tuple[2][0]) + ')\n' +
+            '        ^y (/ 1.001 ' + str(ep_tuple[2][1]) + '))\n' +
+            '}\n');
+    f.close()
+  else:
+    rules = ep_tuple[0]
+    for sp in ep_tuple[6:]:
+      print 'Not allowed to --sp-special arbitrary rules.'
+      exit(1)
   
   for seed in seeds:
     rl_rules_out = dir + '/out-' + str(seed) + '.soar'
     output = dir + '/puddleworld-' + str(seed) + '.out'
-    experiment = Experiment(args.episodes, seed, rules, rl_rules_out, output, ep_tuple)
+    rl_rules_extra = dir + '/puddleworld-' + str(seed) + '.rl'
+    experiment = Experiment(args.episodes, seed, rules, rl_rules_out, output, rl_rules_extra, ep_tuple)
     experiments.append(experiment)
+    print experiment.get_args()
 
 class Progress:
   def __init__(self, experiments):

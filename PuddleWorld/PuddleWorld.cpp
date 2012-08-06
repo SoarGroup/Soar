@@ -461,9 +461,9 @@ int main(int argc, char ** argv) {
 //         break;
 //       }
 
-    if(!(episode % 50))
-      cerr << "\nEp " << episode << ' ';
-    cerr << (game.is_success() ? 'S' : '.');
+//     if(!(episode % 50))
+//       cerr << "\nEp " << episode << ' ';
+//     cerr << (game.is_success() ? 'S' : '.');
 
     game.reinit(true, episode);
   }
@@ -493,7 +493,7 @@ void PuddleWorld::do_sp(const float &x_div, const float &y_div) {
       << " ^x (/ 1.001 " << x_div
       << ") ^y (/ 1.001 " << y_div
       << "))}";
-  cerr << oss.str() << endl;
+//   cerr << oss.str() << endl;
   ExecuteCommandLine(oss.str());
 
   if(!m_agent->Commit())

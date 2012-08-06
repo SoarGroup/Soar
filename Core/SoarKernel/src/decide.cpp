@@ -1085,9 +1085,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
           const double variance = prod2->rl_variance_total;
           const double inflated_variance = influence * variance; // variance / max(0.01, 1.0 - influence);
 
-//             std::cerr << "     inflated_variance = " << inflated_variance << std::endl;
-
-          std::cerr << "Inflated variance " << prod2->name->sc.name << " = " << inflated_variance << " of " << prod2->rl_variance_tolerable << std::endl;
+//           std::cerr << "Inflated variance " << prod2->name->sc.name << " = " << inflated_variance << " of " << prod2->rl_variance_tolerable << std::endl;
 
           if((suboptimality < 0.00001 ||
               inflated_variance < 0.00001 || ///< must fall below threshold after splitting, or operator-no-change will result

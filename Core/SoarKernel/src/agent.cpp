@@ -53,6 +53,8 @@
 #include "episodic_memory.h"
 #include "semantic_memory.h"
 
+#include <iostream> ///< bazald
+
 
 /* ================================================================== */
 
@@ -436,6 +438,18 @@ agent * create_soar_agent (char * agent_name) {                                 
 */
 void destroy_soar_agent (agent * delete_agent)
 {
+  /// print out all numeric preferences: bazald
+  for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
+    for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
+      if(prod2->rl_rule && prod2->name && prod2->name->sc.name)
+        std::cerr << prod2->name->sc.name
+                  << " updates " << prod2->rl_update_count
+                  << " value " << prod2->rl_ecr + prod2->rl_efr
+                  << " variance " << prod2->rl_variance_total
+                  << " influence " << prod2->rl_influence_total << std::endl;
+    }
+  }
+  
   //print(delete_agent, "\nDestroying agent %s.\n", delete_agent->name);  /* AGR 532 */
 
 //#ifdef USE_X_DISPLAY

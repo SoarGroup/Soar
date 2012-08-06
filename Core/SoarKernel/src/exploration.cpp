@@ -889,7 +889,7 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
   const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
 //   double variance_value = DBL_MAX;
 //   double variance_credit = 0.0;
-  if(variance_mod) {
+//   if(variance_mod) {
 //     ITERATE_EXPLORATION_PRODUCTIONS(s) {
 //       if(prod2->rl_variance_total <= variance_value) {
 //         /// filter out rules of higher variance
@@ -908,7 +908,7 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 //       else
 //         prod2->rl_credit = 1.0 / (1.0 + 0.1 * total_credit);
 //     } DONE_EXPLORATION_PRODUCTIONS;
-  }
+//   }
 
 	// all numeric indifferents
 	for ( preference *pref = s->preferences[ NUMERIC_INDIFFERENT_PREFERENCE_TYPE ]; pref; pref = pref->next)
