@@ -9,7 +9,7 @@ public:
 	: typed_map_filter<bbox>(root, si, input)
 	{}
 	
-	bool compute(const filter_param_set *params, bool adding, bbox &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, bbox &res, bool &changed) {
 		const sgnode *n;
 		
 		if (!get_filter_param(this , params, "node", n)) {
@@ -31,7 +31,7 @@ public:
 	: typed_map_filter<bool>(root, si, input), type(type)
 	{}
 	
-	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, bool &res, bool &changed) {
 		filter_val *av, *bv;
 		bbox a, b;
 		

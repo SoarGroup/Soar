@@ -9,11 +9,11 @@ using namespace std;
 void concat_filter_input::combine(const input_table &inputs) {
 	input_table::const_iterator i;
 	for (i = inputs.begin(); i != inputs.end(); ++i) {
-		filter_param_set *p;
+		filter_params *p;
 		filter_result *r = i->res;
 
 		for (int j = r->first_added(); j < r->num_current(); ++j) {
-			p = new filter_param_set();
+			p = new filter_params();
 			p->push_back(make_pair(i->name, r->get_current(j)));
 			val2params[r->get_current(j)] = p;
 			add(p);
@@ -91,7 +91,7 @@ void product_filter_input::gen_new_combinations(const input_table &inputs) {
 		}
 		vector<int> curr = begin;
 		while (true) {
-			filter_param_set *p = new filter_param_set();
+			filter_params *p = new filter_params();
 			p->reserve(inputs.size());
 			for (int j = 0; j < inputs.size(); ++j) {
 				filter_val *v = inputs[j].res->get_current(curr[j]);
@@ -111,8 +111,8 @@ void product_filter_input::gen_new_combinations(const input_table &inputs) {
 	}
 }
 
-void product_filter_input::erase_param_set(filter_param_set *s) {
-	filter_param_set::const_iterator i;
+void product_filter_input::erase_param_set(filter_params *s) {
+	filter_params::const_iterator i;
 	for (i = s->begin(); i != s->end(); ++i) {
 		param_set_list &l = val2params[i->second];
 		l.erase(find(l.begin(), l.end(), s));

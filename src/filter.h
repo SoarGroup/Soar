@@ -366,7 +366,7 @@ typedef change_tracking_list<filter_val> filter_result;
  A filter parameter set represents one complete input into a filter. It's
  just a list of pairs <parameter name, value>.
 */
-typedef std::vector<std::pair<std::string, filter_val*> > filter_param_set;
+typedef std::vector<std::pair<std::string, filter_val*> > filter_params;
 
 /*
  Each filter takes a number of input parameters. Each of those parameters
@@ -378,7 +378,7 @@ typedef std::vector<std::pair<std::string, filter_val*> > filter_param_set;
  I'm assuming that this class owns the memory of the filters that are
  added to it.
 */
-class filter_input : public change_tracking_list<filter_param_set> {
+class filter_input : public change_tracking_list<filter_params> {
 public:
 	struct param_info {
 		std::string name;
@@ -399,7 +399,7 @@ private:
 	input_table input_info;
 };
 
-typedef ctlist_listener<filter_param_set> filter_input_listener;
+typedef ctlist_listener<filter_params> filter_input_listener;
 
 class null_filter_input : public filter_input {
 public:
@@ -416,7 +416,7 @@ public:
 	void combine(const input_table &inputs);
 
 private:
-	std::map<filter_val*, filter_param_set*> val2params;
+	std::map<filter_val*, filter_params*> val2params;
 };
 
 /*
@@ -428,9 +428,9 @@ public:
 	
 private:
 	void gen_new_combinations(const input_table &inputs);
-	void erase_param_set(filter_param_set *s);
+	void erase_param_set(filter_params *s);
 	
-	typedef std::list<filter_param_set*> param_set_list;
+	typedef std::list<filter_params*> param_set_list;
 	typedef std::map<filter_val*, param_set_list > val2param_map;
 	val2param_map val2params;
 };
@@ -478,12 +478,12 @@ public:
 		}
 	}
 	
-	void add_result(filter_val *v, const filter_param_set *p) {
+	void add_result(filter_val *v, const filter_params *p) {
 		result.add(v);
 		result2params[v] = p;
 	}
 	
-	void get_result_params(filter_val *v, const filter_param_set *&p) {
+	void get_result_params(filter_val *v, const filter_params *&p) {
 		if (!map_get(result2params, v, p)) {
 			p = NULL;
 		}
@@ -532,7 +532,7 @@ public:
 		input->unlisten(l);
 	}
 
-	void mark_stale(const filter_param_set *s) {
+	void mark_stale(const filter_params *s) {
 		input->change(s);
 	}
 
@@ -545,7 +545,7 @@ private:
 	soar_interface *si;
 	Symbol *root;
 	wme *status_wme;
-	std::map<filter_val*, const filter_param_set*> result2params;
+	std::map<filter_val*, const filter_params*> result2params;
 };
 
 /*
@@ -574,7 +574,7 @@ public:
 	 actually changed, the changed output argument should be set to
 	 true. The implementation should return false if an error occurs.
 	 */
-	virtual bool compute(const filter_param_set *params, filter_val *&res, bool &changed) = 0;
+	virtual bool compute(const filter_params *params, filter_val *&res, bool &changed) = 0;
 	
 	/*
 	 Some derived classes might allocate memory associated with each
@@ -585,7 +585,7 @@ public:
 	
 	bool update_results() {
 		const filter_input* input = get_input();
-		std::vector<const filter_param_set*>::iterator j;
+		std::vector<const filter_params*>::iterator j;
 		
 		for (int i = input->first_added(); i < input->num_current(); ++i) {
 			filter_val *v = NULL;
@@ -620,7 +620,7 @@ public:
 	void reset() {}
 
 private:
-	bool update_one(const filter_param_set *params) {
+	bool update_one(const filter_params *params) {
 		filter_val *v = io_map[params];
 		bool changed = false;
 		if (!compute(params, v, changed)) {
@@ -632,9 +632,9 @@ private:
 		return true;
 	}
 	
-	typedef std::map<const filter_param_set*, filter_val*> io_map_t;
+	typedef std::map<const filter_params*, filter_val*> io_map_t;
 	io_map_t io_map;
-	std::vector<const filter_param_set*> stale;
+	std::vector<const filter_params*> stale;
 };
 
 /*
@@ -651,11 +651,11 @@ public:
 	
 	virtual ~typed_map_filter() {}
 	
-	virtual bool compute(const filter_param_set *params, bool adding, T &res, bool &changed) = 0;
+	virtual bool compute(const filter_params *params, bool adding, T &res, bool &changed) = 0;
 	virtual void result_removed(const T &res) { }
 	
 private:
-	bool compute(const filter_param_set *params, filter_val *&res, bool &changed) {
+	bool compute(const filter_params *params, filter_val *&res, bool &changed) {
 		bool success;
 		T val;
 		if (res != NULL) {
@@ -731,9 +731,9 @@ public:
 	}
 	
 private:
-	virtual bool input_added(const filter_param_set *params, T &res) = 0;
-	virtual bool input_changed(const filter_param_set *params, T &res) = 0;
-	virtual bool input_removed(const filter_param_set *params, T &res) = 0;
+	virtual bool input_added(const filter_params *params, T &res) = 0;
+	virtual bool input_changed(const filter_params *params, T &res) = 0;
+	virtual bool input_removed(const filter_params *params, T &res) = 0;
 	
 	filter_val_c<T> *result;
 	T value;
@@ -745,13 +745,13 @@ public:
 	: filter(root, si, input), result(NULL), old(NULL)
 	{}
 
-	virtual bool rank(const filter_param_set *params, double &r) = 0;
+	virtual bool rank(const filter_params *params, double &r) = 0;
 
 private:
 	bool update_results() {
 		const filter_input *input = get_input();
 		double r;
-		const filter_param_set *p;
+		const filter_params *p;
 		for (int i = input->first_added(); i < input->num_current(); ++i) {
 			p = input->get_current(i);
 			if (!rank(p, r)) {
@@ -788,7 +788,7 @@ private:
 		}
 
 		if (!elems.empty()) {
-			std::pair<double, const filter_param_set *> m = *std::max_element(elems.begin(), elems.end());
+			std::pair<double, const filter_params *> m = *std::max_element(elems.begin(), elems.end());
 			if (m.second != old) {
 				if (result) {
 					remove_result(result);
@@ -808,9 +808,9 @@ private:
 		return true;
 	}
 
-	std::vector<std::pair<double, const filter_param_set*> > elems;
+	std::vector<std::pair<double, const filter_params*> > elems;
 	filter_val *result;
-	const filter_param_set *old;
+	const filter_params *old;
 };
 
 /*
@@ -846,7 +846,7 @@ public:
 	: map_filter(root, si, input)
 	{}
 	
-	bool compute(const filter_param_set *params, filter_val *&res, bool &changed) {
+	bool compute(const filter_params *params, filter_val *&res, bool &changed) {
 		if (params->empty()) {
 			return false;
 		}
@@ -864,10 +864,10 @@ public:
 };
 
 template <typename T>
-inline bool get_filter_param(filter *f, const filter_param_set *params, const std::string &name, T &val) {
+inline bool get_filter_param(filter *f, const filter_params *params, const std::string &name, T &val) {
 	const filter_val *fv;
 	std::stringstream ss;
-	filter_param_set::const_iterator i;
+	filter_params::const_iterator i;
 	bool found = false;
 	for (i = params->begin(); i != params->end(); ++i) {
 		if (i->first == name) {

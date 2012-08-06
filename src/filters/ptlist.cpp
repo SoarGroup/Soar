@@ -19,7 +19,7 @@ public:
 		}
 	}
 	
-	bool compute(const filter_param_set *params, bool adding, ptlist *&res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, ptlist *&res, bool &changed) {
 		const sgnode *n;
 		if (!get_filter_param(this, params, "node", n)) {
 			return false;
@@ -74,8 +74,8 @@ public:
 		}
 	}
 	
-	bool compute(const filter_param_set *params, bool adding, ptlist *&res, bool &changed) {
-		filter_param_set::const_iterator i;
+	bool compute(const filter_params *params, bool adding, ptlist *&res, bool &changed) {
+		filter_params::const_iterator i;
 		ptlist newres;
 		
 		for(i = params->begin(); i != params->end(); ++i) {

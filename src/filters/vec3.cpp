@@ -8,7 +8,7 @@ public:
 	: typed_map_filter<vec3>(root, si, input) 
 	{}
 
-	bool compute(const filter_param_set *params, bool adding, vec3 &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, vec3 &res, bool &changed) {
 		vec3 newres;
 		if (!get_filter_param(this, params, "x", newres[0]) ||
 		    !get_filter_param(this, params, "y", newres[1]) ||

@@ -25,7 +25,7 @@ public:
 		}
 	}
 	
-	bool compute(const filter_param_set *params, bool adding, const sgnode *&res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, const sgnode *&res, bool &changed) {
 		sgnode *newres;
 		string id;
 		
@@ -57,7 +57,7 @@ public:
 		return true;
 	}
 	
-	void add_entry(sgnode *n, const filter_param_set *params) {
+	void add_entry(sgnode *n, const filter_params *params) {
 		map<sgnode*, node_info>::iterator i = nodes.find(n);
 		if (i == nodes.end()) {
 			n->listen(this);
@@ -65,11 +65,11 @@ public:
 		nodes[n].params.push_back(params);
 	}
 	
-	void del_entry(sgnode *n, const filter_param_set *params) {
+	void del_entry(sgnode *n, const filter_params *params) {
 		map<sgnode*, node_info>::iterator i = nodes.find(n);
 		assert(i != nodes.end());
-		std::list<const filter_param_set*> &p = i->second.params;
-		std::list<const filter_param_set*>::iterator j = find(p.begin(), p.end(), params);
+		std::list<const filter_params*> &p = i->second.params;
+		std::list<const filter_params*>::iterator j = find(p.begin(), p.end(), params);
 		assert(j != p.end());
 		p.erase(j);
 		if (p.empty()) {
@@ -82,7 +82,7 @@ public:
 		if (t == sgnode::DELETED || t == sgnode::TRANSFORM_CHANGED || t == sgnode::SHAPE_CHANGED) {
 			node_info *info = map_get(nodes, n);
 			assert(info);
-			std::list<const filter_param_set*>::const_iterator i;
+			std::list<const filter_params*>::const_iterator i;
 			for (i = info->params.begin(); i != info->params.end(); ++i) {
 				mark_stale(*i);
 			}
@@ -95,7 +95,7 @@ public:
 
 private:
 	struct node_info {
-		std::list<const filter_param_set*> params;
+		std::list<const filter_params*> params;
 		bool changed;
 	};
 	
@@ -178,7 +178,7 @@ public:
 	: typed_map_filter<vec3>(root, si, input)
 	{}
 	
-	bool compute(const filter_param_set *params, bool adding, vec3 &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, vec3 &res, bool &changed) {
 		const sgnode *n;
 		
 		if (!get_filter_param(this, params, "node", n)) {
@@ -225,7 +225,7 @@ public:
 		}
 	}
 	
-	bool compute(const filter_param_set *params, bool adding, sgnode *&res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, sgnode *&res, bool &changed) {
 		string id;
 		vec3 pos, rot, scale, singlept;
 		ptlist *pts = NULL;

@@ -11,7 +11,7 @@ public:
 	: typed_map_filter<bool>(root, si, input)
 	{}
 	
-	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, bool &res, bool &changed) {
 		float a, b;
 		string comp;
 		bool newres;

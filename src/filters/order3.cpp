@@ -42,7 +42,7 @@ public:
 	between_filter(Symbol *root, soar_interface *si, filter_input *input) 
 	: typed_map_filter<bool>(root, si, input) {}
 	
-	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
 		
 		if (!get_filter_param(this, params, "a", a) ||
@@ -64,7 +64,7 @@ public:
 	: typed_map_filter<bool>(root, si, input)
 	{}
 	
-	bool compute(const filter_param_set *params, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b, *c;
 		
 		if (!get_filter_param(this, params, "a", a) ||

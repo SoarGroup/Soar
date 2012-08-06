@@ -95,7 +95,7 @@ public:
 	direction_filter(Symbol *root, soar_interface *si, filter_input *input, int axis, int comp)
 	: typed_map_filter<bool>(root, si, input), axis(axis), comp(comp) {}
 	
-	bool compute(const filter_param_set *p, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, p, "a", a)) {

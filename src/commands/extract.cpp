@@ -116,11 +116,11 @@ private:
 		return si->make_wme(root, "value", make_filter_val_sym(v));
 	}
 	
-	wme *make_param_struct(const filter_param_set *params, Symbol *rec_root) {
+	wme *make_param_struct(const filter_params *params, Symbol *rec_root) {
 		wme *w = si->make_id_wme(rec_root, "params");
 		Symbol *id = si->get_wme_val(w);
 		
-		filter_param_set::const_iterator i;
+		filter_params::const_iterator i;
 		for (i = params->begin(); i != params->end(); ++i) {
 			si->make_wme(id, i->first, make_filter_val_sym(i->second));
 		}
@@ -149,7 +149,7 @@ private:
 		}
 	}
 	
-	void handle_ctlist_change(const filter_param_set *p) {
+	void handle_ctlist_change(const filter_params *p) {
 		record_map::iterator i;
 		for (i = records.begin(); i != records.end(); ++i) {
 			if (i->second.params == p) {
@@ -171,7 +171,7 @@ private:
 	bool            first, once;
 	
 	struct record {
-		const filter_param_set *params;
+		const filter_params *params;
 		wme *rec_wme;
 		wme *val_wme;
 		wme *params_wme;

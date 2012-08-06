@@ -11,7 +11,7 @@ public:
 	: typed_map_filter<float>(root, si, input)
 	{}
 
-	bool compute(const filter_param_set *params, bool adding, float &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, float &res, bool &changed) {
 		float newres;
 		if (params->empty()) {
 			return false;

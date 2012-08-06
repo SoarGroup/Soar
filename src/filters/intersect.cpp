@@ -12,7 +12,7 @@ public:
 	intersect_filter(Symbol *root, soar_interface *si, filter_input *input, scene *scn)
 	: typed_map_filter<bool>(root, si, input), scn(scn) {}
 	
-	bool compute(const filter_param_set *p, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
 		bool newres;
 		const sgnode *a, *b;
 		

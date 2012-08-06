@@ -11,7 +11,7 @@ public:
 	: typed_map_filter<float>(root, si, input)
 	{}
 
-	bool compute(const filter_param_set *params, bool adding, float &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, float &res, bool &changed) {
 		float newres;
 		const sgnode *a, *b;
 		
@@ -46,7 +46,7 @@ public:
 	: rank_filter(root, si, input)
 	{}
 	
-	bool rank(const filter_param_set *params, double &rank) {
+	bool rank(const filter_params *params, double &rank) {
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, params, "a", a) ||
