@@ -235,7 +235,8 @@ public:
 	}
 	
 	if (!fail) {
-	    f = get_filter_table().make_filter(ftype, scn, input);
+	    //f = get_filter_table().make_filter(ftype, scn, input);
+	    f = get_filter_table().make_filter(ftype, root, si, scn, input);
 	}
 	
 	if (fail || ftype == "" || f == NULL) {

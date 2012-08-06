@@ -7,9 +7,10 @@ using namespace std;
 
 class distance_xyz_filter : public typed_map_filter<float> {
 public:
-    distance_xyz_filter(filter_input *input) : typed_map_filter<float>(input){}
+    distance_xyz_filter(Symbol *root, soar_interface *si, filter_input *input) 
+	: typed_map_filter<float>(root, si, input){}
     
-    bool compute(const filter_param_set *params, bool adding, float &res, 
+    bool compute(const filter_params *params, bool adding, float &res, 
 		 bool &changed) {
 	float newres;
 	const sgnode *a, *b;
@@ -60,8 +61,8 @@ public:
     }
 };
 
-filter *make_distance_xyz_filter(scene *scn, filter_input *input) {
-    return new distance_xyz_filter(input);
+filter *make_distance_xyz_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+    return new distance_xyz_filter(root, si, input);
 }
 
 filter_table_entry distance_xyz_fill_entry() {
