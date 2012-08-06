@@ -8,8 +8,8 @@ using namespace std;
 
 class extract_command : public command, public filter_input_listener {
 public:
-	extract_command(svs_state *state, Symbol *root)
-	: command(state, root), root(root), state(state), fltr(NULL), res(NULL), res_root(NULL), first(true)
+	extract_command(svs_state *state, Symbol *root, bool once)
+	: command(state, root), root(root), state(state), fltr(NULL), res(NULL), res_root(NULL), first(true), once(once)
 	{
 		si = state->get_svs()->get_soar_interface();
 	}
@@ -42,20 +42,18 @@ public:
 			}
 			res = fltr->get_result();
 			fltr->listen_for_input(this);
+			first = true;
 		}
 		
-		if (fltr) {
-			fltr->update();
-			
-			if (fltr->is_error()) {
-				set_status(fltr->get_error());
+		if (fltr && (!once || first)) {
+			if (!fltr->update()) {
 				clear_results();
 				return false;
 			}
 			update_results();
 			res->clear_changes();
-			set_status("success");
 		}
+		first = false;
 		return true;
 	}
 	
@@ -118,11 +116,11 @@ private:
 		return si->make_wme(root, "value", make_filter_val_sym(v));
 	}
 	
-	wme *make_param_struct(const filter_param_set *params, Symbol *rec_root) {
+	wme *make_param_struct(const filter_params *params, Symbol *rec_root) {
 		wme *w = si->make_id_wme(rec_root, "params");
 		Symbol *id = si->get_wme_val(w);
 		
-		filter_param_set::const_iterator i;
+		filter_params::const_iterator i;
 		for (i = params->begin(); i != params->end(); ++i) {
 			si->make_wme(id, i->first, make_filter_val_sym(i->second));
 		}
@@ -151,7 +149,7 @@ private:
 		}
 	}
 	
-	void handle_ctlist_change(const filter_param_set *p) {
+	void handle_ctlist_change(const filter_params *p) {
 		record_map::iterator i;
 		for (i = records.begin(); i != records.end(); ++i) {
 			if (i->second.params == p) {
@@ -170,10 +168,10 @@ private:
 	soar_interface *si;
 	filter         *fltr;
 	filter_result  *res;
-	bool            first;
+	bool            first, once;
 	
 	struct record {
-		const filter_param_set *params;
+		const filter_params *params;
 		wme *rec_wme;
 		wme *val_wme;
 		wme *params_wme;
@@ -185,5 +183,10 @@ private:
 };
 
 command *_make_extract_command_(svs_state *state, Symbol *root) {
-	return new extract_command(state, root);
+	return new extract_command(state, root, false);
 }
+
+command *_make_extract_once_command_(svs_state *state, Symbol *root) {
+	return new extract_command(state, root, true);
+}
+

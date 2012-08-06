@@ -80,7 +80,7 @@ private:
 		filter_result *res;
 		
 		if (!node_filter->update()) {
-			set_status(node_filter->get_error());
+			set_status("error");
 			return false;
 		}
 		res = node_filter->get_result();

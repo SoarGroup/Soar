@@ -5,59 +5,60 @@
 #include <vector>
 #include "linear.h"
 #include "common.h"
-#include "classify.h"
 #include "timer.h"
 
 class scene;
 
 class EM {
 public:
-	EM(scene *scn);
+	EM(const dyn_mat &xdata, const dyn_mat &ydata);
 	~EM();
 	
-	void resize();
-	
-	void update_eligibility();
-	void update_Py_z(int i, std::set<int> &check);
-	void update_MAP(const std::set<int> &pts);
-	void add_data(const rvec &x, double y);
+	void new_data();
 	void estep();
 	bool mstep();
 	bool unify_or_add_model();
-	bool remove_models();
 	bool step();
 	bool run(int maxiters);
-	bool predict(const rvec &x, double &y);
-	double error();
+	bool predict(int mode, const rvec &x, double &y);
 	int get_nmodels() const { return nmodels; }
-	
-	void mark_model_stale(int i);
 	
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
 	
-	void test_classify(const rvec &x, double y, int &best, int &predicted, double &besterror);
+	// Return the mode with the model that best fits (x, y)
+	int best_mode(const rvec &x, double y, double &besterror) const;
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
-	const classifier &get_classifier() const { return clsfr; }
+	const std::vector<int> get_map_modes() const {
+		return map_mode;
+	}
 	
 private:
+	void update_eligibility();
+	void update_Py_z(int i, std::set<int> &check);
+	void update_MAP(const std::set<int> &pts);
+	bool remove_models();
+	void mark_model_stale(int i);
+	bool find_new_mode_inds(std::vector<int> &inds) const;
+	
+	const dyn_mat &xdata;
+	const dyn_mat &ydata;
+	dyn_mat Py_z;          // nmodels x ndata
+	dyn_mat eligible;      // nmodels x ndata
+	
 	std::vector<LRModel*> models;
 	std::set<int> stale_models;
 	std::map<int, std::set<int> > stale_points;
-	std::vector<category> map_class;
+	std::vector<int> map_mode;
 	
-	mat  xdata;       // ndata x xdim
-	mat  ydata;       // ndata x 1
-	mat  Py_z;        // nmodels x ndata
-	imat eligible;    // nmodels x ndata
+	std::set<int> old_noise_inds;
+	std::set<int> noise_inds;
 	
-	int ndata, nmodels, xdim;
+	int ndata, nmodels;
 	
-	classifier clsfr;
-	
-	enum Timers { E_STEP_T, M_STEP_T };
+	enum Timers { E_STEP_T, M_STEP_T, NEW_T };
 	timer_set timers;
 };
 

@@ -20,11 +20,27 @@ using namespace std;
 
 typedef map<wme*,command*>::iterator cmd_iter;
 
+bool handle_on_off(const vector<string> &args, int first, ostream &os, bool &var) {
+	if (first >= args.size() - 1) {
+		os << (var ? "on" : "off") << endl;
+	} else {
+		if (args[first + 1] == "on") {
+			var = true;
+		} else if (args[first + 1] == "off") {
+			var = false;
+		} else {
+			os << "expecting on/off" << endl;
+			return false;
+		}
+	}
+	return true;
+}
+
 sgwme::sgwme(soar_interface *si, Symbol *ident, sgwme *parent, sgnode *node) 
 : soarint(si), id(ident), parent(parent), node(node)
 {
 	node->listen(this);
-	name_wme = soarint->make_wme(id, "id", node->get_name());
+	name_wme = soarint->make_wme(id, si->get_common_syms().id, node->get_name());
 	
 	if (node->is_group()) {
 		group_node *g = node->as_group();
@@ -85,10 +101,9 @@ void sgwme::add_child(sgnode *c) {
 	childs[child] = cid_wme;
 }
 
-svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *syms)
-: svsp(svsp), parent(NULL), state(state), si(si), cs(syms), level(0),
-  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL),
-  ltm_link(NULL)
+svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si)
+: svsp(svsp), parent(NULL), state(state), si(si), level(0),
+  scene_num(-1), scene_num_wme(NULL), scn(NULL), scene_link(NULL), model_link(NULL)
 {
 	assert (si->is_top_state(state));
 	outspec = svsp->get_output_spec();
@@ -98,9 +113,8 @@ svs_state::svs_state(svs *svsp, Symbol *state, soar_interface *si, common_syms *
 
 svs_state::svs_state(Symbol *state, svs_state *parent)
 : parent(parent), state(state), svsp(parent->svsp), si(parent->si),
-  cs(parent->cs), outspec(parent->outspec),
-  level(parent->level+1), scene_num(-1),
-  scene_num_wme(NULL), scn(NULL), scene_link(NULL), ltm_link(NULL)
+  outspec(parent->outspec), level(parent->level+1), scene_num(-1),
+  scene_num_wme(NULL), scn(NULL), scene_link(NULL), model_link(NULL)
 {
 	assert (si->get_parent_state(state) == parent->state);
 	init();
@@ -115,21 +129,30 @@ svs_state::~svs_state() {
 	
 	delete scn; // results in root being deleted also
 	delete mmdl;
+	
+	if (model_link) {
+		svsp->set_model_root(NULL);
+	}
 }
 
 void svs_state::init() {
 	string name;
+	common_syms &cs = si->get_common_syms();
 	
 	si->get_name(state, name);
-	svs_link = si->get_wme_val(si->make_id_wme(state, cs->svs));
-	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs->cmd));
-	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs->scene));
+	svs_link = si->get_wme_val(si->make_id_wme(state, cs.svs));
+	cmd_link = si->get_wme_val(si->make_id_wme(svs_link, cs.cmd));
+	scene_link = si->get_wme_val(si->make_id_wme(svs_link, cs.scene));
 	scn = new scene(name, svsp->get_drawer());
 	root = new sgwme(si, scene_link, (sgwme*) NULL, scn->get_root());
+	mmdl = new multi_model(svsp->get_models());
+	learn_models = false;
+	test_models = false;
+	
 	if (!parent) {
-		ltm_link = si->get_wme_val(si->make_id_wme(svs_link, cs->ltm));
+		model_link = si->get_wme_val(si->make_id_wme(svs_link, cs.models));
+		svsp->set_model_root(model_link);
 	}
-	mmdl = new multi_model();
 }
 
 void svs_state::update_scene_num() {
@@ -199,6 +222,7 @@ void svs_state::update_models() {
 	vector<string> curr_pnames, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
+	boolvec curr_atoms;
 	
 	if (level > 0) {
 		/* No legitimate information to learn from imagined states */
@@ -219,8 +243,12 @@ void svs_state::update_models() {
 		} else {
 			x = prev_pvals;
 		}
-		mmdl->test(x, curr_pvals);
-		mmdl->learn(x, curr_pvals);
+		if (test_models) {
+			mmdl->test(x, curr_pvals, prev_atoms);
+		}
+		if (learn_models) {
+			mmdl->learn(x, curr_pvals, prev_atoms);
+		}
 	} else {
 		mmdl->set_property_vector(curr_pnames);
 		DATAVIS("properties '")
@@ -231,6 +259,7 @@ void svs_state::update_models() {
 	}
 	prev_pnames = curr_pnames;
 	prev_pvals = curr_pvals;
+	prev_atoms = scn->get_atom_vals();
 }
 
 void svs_state::set_output(const rvec &out) {
@@ -258,12 +287,12 @@ bool svs_state::get_output(rvec &out) const {
 	}
 }
 
-bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
+bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
 	if (first_arg >= args.size() || args[first_arg] == "help") {
-		os << "available queries: atoms models out " << endl;
+		os << "available subqueries: atoms prediction out timing command" << endl;
 		return false;
 	}
-	if (args[first_arg] == "models") {
+	if (args[first_arg] == "prediction") {
 		return mmdl->cli_inspect(first_arg + 1, args, os);
 	} else if (args[first_arg] == "props") {
 		vector<string> p;
@@ -278,8 +307,7 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		os << left;
 		for (int i = 0; i < p.size(); ++i) {
-			os.width(w + 1);
-			os << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
+			os << setw(4) << i << setw(w + 1) << p[i] << setw(1) << v(i) << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "out") {
@@ -292,10 +320,18 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		return true;
 	} else if (args[first_arg] == "atoms") {
-		vector<string> atoms;
-		get_filter_table().get_all_atoms(scn, atoms);
-		for (int i = 0; i < atoms.size(); ++i) {
-			os << setw(3) << i << " " << atoms[i] << endl;
+		vector<string> atom_names;
+		boolvec atom_vals;
+		get_filter_table().get_all_atoms(scn, atom_names);
+		get_filter_table().calc_all_atoms(scn, atom_vals);
+		assert(atom_names.size() == atom_vals.size());
+		
+		int longest = 0;
+		for (int i = 0; i < atom_names.size(); ++i) {
+			longest = std::max(static_cast<int>(atom_names[i].size()), longest);
+		}
+		for (int i = 0; i < atom_names.size(); ++i) {
+			os << setw(3) << i << " " << setw(longest) << left << atom_names[i] << " " << atom_vals[i] << endl;
 		}
 		return true;
 	} else if (args[first_arg] == "timing") {
@@ -319,6 +355,10 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 		}
 		os << "no such command" << endl;
 		return false;
+	} else if (args[first_arg] == "learn_models") {
+		return handle_on_off(args, first_arg, os, learn_models);
+	} else if (args[first_arg] == "test_models") {
+		return handle_on_off(args, first_arg, os, test_models);
 	}
 	
 	os << "no such query" << endl;
@@ -326,10 +366,9 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 }
 
 svs::svs(agent *a)
-: learn_models(false)
+: learn(false), model_root(NULL)
 {
 	si = new soar_interface(a);
-	make_common_syms();
 	timers.add("input", true);
 	timers.add("output", true);
 	timers.add("calc_atoms");
@@ -340,8 +379,11 @@ svs::~svs() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		delete *i;
 	}
-	del_common_syms();
 	delete si;
+	map<string, model*>::iterator j;
+	for (j = models.begin(); j != models.end(); ++j) {
+		delete j->second;
+	}
 }
 
 void svs::state_creation_callback(Symbol *state) {
@@ -349,7 +391,7 @@ void svs::state_creation_callback(Symbol *state) {
 	svs_state *s;
 	
 	if (state_stack.empty()) {
-		s = new svs_state(this, state, si, &cs);
+		s = new svs_state(this, state, si);
 	} else {
 		s = new svs_state(state, state_stack.back());
 	}
@@ -412,7 +454,7 @@ void svs::input_callback() {
 	
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
-	if (learn_models) {
+	if (learn) {
 		topstate->update_models();
 	}
 	
@@ -420,23 +462,6 @@ void svs::input_callback() {
 	for (i = state_stack.begin(); i != state_stack.end(); ++i) {
 		(**i).update_cmd_results(false);
 	}
-}
-
-void svs::make_common_syms() {
-	cs.svs        = si->make_sym("svs");
-	cs.ltm        = si->make_sym("ltm");
-	cs.cmd        = si->make_sym("command");
-	cs.scene      = si->make_sym("spatial-scene");
-	cs.child      = si->make_sym("child");
-	cs.result     = si->make_sym("result");
-}
-
-void svs::del_common_syms() {
-	si->del_sym(cs.ltm);
-	si->del_sym(cs.cmd);
-	si->del_sym(cs.scene);
-	si->del_sym(cs.child);
-	si->del_sym(cs.result);
 }
 
 /*
@@ -454,7 +479,7 @@ string svs::get_output() const {
 
 bool svs::do_command(const vector<string> &args, stringstream &out) {
 	if (args.size() < 2) {
-		out << "subqueries are timing filters log, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
+		out << "subqueries are timing filters log model, or a state level to inspect state [0 - " << state_stack.size() - 1 << "]" << endl;
 		return false;
 	}
 	if (args[1] == "timing") {
@@ -507,17 +532,18 @@ bool svs::do_command(const vector<string> &args, stringstream &out) {
 			return false;
 		}
 	} else if (args[1] == "learn") {
-		if (args.size() < 3) {
-			out << (learn_models ? "on" : "off") << endl;
-			return true;
+		return handle_on_off(args, 1, out, learn);
+	} else if (args[1] == "model") {
+		map<string, model*>::const_iterator i;
+		if (args.size() > 2) {
+			if ((i = models.find(args[2])) == models.end()) {
+				out << "no such model" << endl;
+				return false;
+			}
+			return i->second->cli_inspect(3, args, out);
 		}
-		if (args[2] == "on") {
-			learn_models = true;
-		} else if (args[2] == "off") {
-			learn_models = false;
-		} else {
-			out << "expecting on/off" << endl;
-			return false;
+		for (i = models.begin(); i != models.end(); ++i) {
+			out << i->first << "\t" << i->second->get_type() << endl;
 		}
 		return true;
 	}
@@ -561,4 +587,28 @@ int svs::parse_output_spec(const string &s) {
 	}
 	outspec = new_spec;
 	return -1;
+}
+
+bool svs::add_model(const string &name, model *m) {
+	if (models.find(name) != models.end()) {
+		return false;
+	}
+	models[name] = m;
+	if (model_root) {
+		Symbol *id = si->get_wme_val(si->make_id_wme(model_root, m->get_name()));
+		m->set_wm_root(id);
+	}
+	return true;
+}
+
+void svs::set_model_root(Symbol *root) {
+	model_root = root;
+	if (model_root) {
+		std::map<std::string, model*>::iterator i;
+		for (i = models.begin(); i != models.end(); ++i) {
+			model *m = i->second;
+			Symbol *id = si->get_wme_val(si->make_id_wme(model_root, m->get_name()));
+			m->set_wm_root(id);
+		}
+	}
 }

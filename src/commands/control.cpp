@@ -26,7 +26,10 @@ const double CCOEF = 0.5;
 const double SCOEF = 0.5;
 const int MAXITERS = 50;
 
-bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, rvec &finalstate) {
+bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
+	boolvec atoms;
+	scene *scncopy = scn->clone();
+	
 	finalstate = initstate;
 	if (traj.size() == 0) {
 		return true;
@@ -37,10 +40,14 @@ bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec>
 	
 	for (i = traj.begin(); i != traj.end(); ++i) {
 		x << finalstate, *i;
-		if (!mdl->predict(x, finalstate)) {
+		scncopy->set_properties(finalstate);
+		atoms = scncopy->get_atom_vals();
+		if (!mdl->predict(x, finalstate, atoms)) {
+			delete scncopy;
 			return false;
 		}
 	}
+	delete scncopy;
 	return true;
 }
 
@@ -431,11 +438,15 @@ public:
 	bool evaluate(const rvec &traj, rvec &value, rvec &finalstate) {
 		function_timer t(timers.get(EVALUATE_T));
 		
+		boolvec atoms;
+		
 		if (traj.size() > 0) {
 			rvec x(initvals.size() + stepsize), y = initvals;
 			for (int i = 0; i < traj.size(); i += stepsize) {
+				scn->set_properties(y);
+				atoms = scn->get_atom_vals();
 				x << y, traj.segment(i, stepsize);
-				if (!mdl->predict(x, y)) {
+				if (!mdl->predict(x, y, atoms)) {
 					return false;
 				}
 			}
@@ -760,6 +771,7 @@ private:
 		}
 		
 		int random_step(int maxsteps) {
+			boolvec atoms;
 			cout << "RANDOM" << endl;
 			rvec step(ci->outspec->size()), newval;
 			randomize_vec(step, ci->min, ci->max);
@@ -769,7 +781,9 @@ private:
 			for (int i = 0; i < numsteps; ++i) {
 				traj.push_back(step);
 				x << state, step;
-				if (!ci->mdl->predict(x, state)) {
+				ci->scn->set_properties(state);;
+				atoms = ci->scn->get_atom_vals();
+				if (!ci->mdl->predict(x, state, atoms)) {
 					return false;
 				}
 			}
@@ -844,7 +858,7 @@ public:
 			rvec currstate, finalstate;
 			scn->get_properties(currstate);
 			if (lexical_compare(currval, cached_value) < 0 ||
-			    !predict_traj(mmdl, currstate, cached_traj, finalstate) ||
+			    !predict_traj(mmdl, currstate, cached_traj, scn, finalstate) ||
 			    (cached_state - finalstate).squaredNorm() > STATE_DIFF_THRESH)
 			{
 				cached_traj.clear();

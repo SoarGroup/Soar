@@ -20,6 +20,8 @@ void strip(std::string &s, const std::string &whitespace);
 bool parse_double(const std::string &s, double &v);
 bool parse_int   (const std::string &s, int &v);
 
+void sample(int n, int low, int high, bool replace, std::vector<int> &s);
+
 std::string get_option(const std::string &key);
 
 /* I need all my files to have access to a single ofstream */
@@ -70,104 +72,6 @@ inline bool map_pop(std::map<A, B> &m, const A &key, B &val) {
 	return true;
 }
 
-
-class namedvec {
-public:
-	namedvec() {}
-	
-	namedvec(const namedvec &v) 
-	: vals(v.vals), name2ind(v.name2ind), ind2name(v.ind2name)
-	{}
-	
-	namedvec(std::vector<std::string> &names) 
-	: vals(names.size())
-	{
-		for (int i = 0; i < names.size(); ++i) {
-			name2ind[names[i]] = i;
-			ind2name[i] = names[i];
-		}
-	}
-	
-	void set_name(int index, const std::string &name) {
-		name2ind[name] = index;
-		ind2name[index] = name;
-	}
-	
-	void set_names(const std::vector<std::string> &names) {
-		for (int i = 0; i < names.size(); ++i) {
-			name2ind[names[i]] = i;
-			ind2name[i] = names[i];
-		}
-	}
-	
-	void add_name(const std::string &name, float v) {
-		name2ind[name] = vals.size();
-		ind2name[vals.size()] = name;
-		vals.resize(vals.size() + 1);
-		vals[vals.size() - 1] = v;
-	}
-	
-	bool get_name(int index, std::string &name) const {
-		return map_get(ind2name, index, name);
-	}
-	
-	bool get_by_name(const std::string &name, float &val) const {
-		int index;
-		if (!map_get(name2ind, name, index)) {
-			return false;
-		}
-		val = vals[index];
-		return true;
-	}
-	
-	bool set_by_name(const std::string &name, float val) {
-		int index;
-		if (!map_get(name2ind, name, index)) {
-			return false;
-		}
-		vals[index] = val;
-		return true;
-	}
-	
-	bool congruent(const namedvec &v) {
-		return name2ind == v.name2ind;
-	}
-	
-	void operator=(const namedvec &v) {
-		vals = v.vals;
-		name2ind = v.name2ind;
-		ind2name = v.ind2name;
-	}
-	
-	int size() const {
-		return vals.size();
-	}
-	
-	void get_names(std::vector<std::string> &names) const {
-		std::map<int, std::string>::const_iterator i;
-		
-		names.clear();
-		names.reserve(ind2name.size());
-		for (i = ind2name.begin(); i != ind2name.end(); ++i) {
-			names.push_back(i->second);
-		}
-	}
-	
-	void clear() {
-		vals.resize(0);
-		name2ind.clear();
-		ind2name.clear();
-	}
-	
-	rvec vals;
-	
-private:
-	std::map<std::string, int> name2ind;
-	std::map<int, std::string> ind2name;
-};
-
-std::ostream &operator<<(std::ostream &os, const namedvec &v);
-
 /*
  Calculate the maximum difference between points in two point clouds in
  the direction of u.
@@ -182,7 +86,8 @@ std::ostream &operator<<(std::ostream &os, const namedvec &v);
 */
 float dir_separation(const ptlist &a, const ptlist &b, const vec3 &u);
 
-void histogram(const rvec &vals, int nbins);
+std::ostream &histogram(const rvec &vals, int nbins, std::ostream &os);
+std::ostream &histogram(const std::vector<double> &vals, int nbins, std::ostream &os);
 
 class bbox {
 public:
@@ -402,5 +307,7 @@ private:
 };
 
 extern logger LOG;
+
+typedef std::vector<bool> boolvec;
 
 #endif

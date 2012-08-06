@@ -7,162 +7,114 @@
 #include "scene.h"
 #include "filter_table.h"
 #include "lda.h"
+#include "mat.h"
 
 using namespace std;
-
-void get_nonuniform_cols(const_mat_view data, vector<int> &cols) {
-	for (int j = 0; j < data.cols(); ++j) {
-		for (int i = 1; i < data.rows(); ++i) {
-			if (data(i, j) != data(0, j)) {
-				cols.push_back(j);
-				break;
-			}
-		}
-	}
-}
-
-void clean_data(const_mat_view data, mat &cleaned, vector<int> &nonuniform_cols) {
-	get_nonuniform_cols(data, nonuniform_cols);
-	cleaned.resize(data.rows(), nonuniform_cols.size());
-	for (int i = 0; i < nonuniform_cols.size(); ++i) {
-		cleaned.col(i) = data.col(nonuniform_cols[i]);
-	}
-	mat rand_offsets = mat::Random(cleaned.rows(), cleaned.cols()) / 10000;
-	cleaned += rand_offsets;
-}
-
-int largest_class(const vector<int> &membership) {
-	map<int, int> counts;
-	for (int i = 0; i < membership.size(); ++i) {
-		++counts[membership[i]];
-	}
-	map<int, int>::iterator i;
-	int largest_count = -1;
-	int largest = -1;
-	for (i = counts.begin(); i != counts.end(); ++i) {
-		if (largest_count < i->second) {
-			largest = i->first;
-		}
-	}
-	return largest;
-}
 
 ostream &operator<<(ostream &os, const classifier_inst &inst) {
 	for (int i = 0; i < inst.attrs.size(); ++i) {
 		os << (inst.attrs[i] ? 1 : 0) << ' ';
 	}
-	os << inst.cat;
+	os << " : " << inst.cat << endl;
 	return os;
 }
 
-void classifier_inst::save(ostream &os) const {
-	os << cat << endl;
-	save_vector(attrs, os);
+istream &operator>>(istream &is, classifier_inst &inst) {
+	string x;
+	inst.attrs.clear();
+	while (true) {
+		is >> x;
+		if (x == "0") {
+			inst.attrs.push_back(false);
+		} else if (x == "1") {
+			inst.attrs.push_back(true);
+		} else if (x == ":") {
+			is >> inst.cat;
+			break;
+		} else {
+			assert(false);
+		}
+	}
+	return is;
 }
 
-void classifier_inst::load(istream &is) {
-	is >> cat;
-	load_vector(attrs, is);
-}
-
-classifier::classifier(const mat &X, const mat &Y, scene *scn) 
-: X(X), Y(Y), ndata(0), scn(scn->clone())
+classifier::classifier(const dyn_mat &X, const dyn_mat &Y) 
+: X(X), Y(Y), ndata(0), tree(NULL)
 {
-	vector<string> atoms;
-	get_filter_table().get_all_atoms(scn, atoms);
-	tree = new ID5Tree(insts, atoms.size());
+	timers.add("classify");
+	timers.add("LDA");
+	timers.add("update");
 }
 
-classifier::~classifier() {
-	delete scn;
-}
+void classifier::new_data(const boolvec &atoms) {
+	function_timer t(timers.get(UPDATE_T));
 
-void classifier::add(int cat) {
 	++ndata;
 	assert(ndata == insts.size() + 1);
-	scn->set_properties(X.row(ndata - 1));
 	classifier_inst i;
-	i.attrs = scn->get_atom_vals();
-	i.cat = cat;
+	i.attrs = atoms;
+	i.cat = -1;
 	insts.push_back(i);
+	if (!tree) {
+		tree = new ID5Tree(insts, atoms.size());
+	}
 	tree->update_tree(ndata - 1);
 	tree->prune();
 }
 
-void classifier::change_cat(int i, int new_cat) {
-	int old = insts[i].cat;
-	insts[i].cat = new_cat;
-	tree->update_counts_change(i, old);
-}
+int classifier::classify(const rvec &x, const boolvec &atoms) {
+	function_timer t1(timers.get(CLASSIFY_T));
 
-int classifier::classify(const rvec &x) {
-	scn->set_properties(x);
-	attr_vec a = scn->get_atom_vals();
-	
 	vector<int> matched_insts;
-	tree->get_matched_node(a)->get_instances(matched_insts);
+	vector<category> matched_cats;
+	const ID5Tree *matched_node = tree->get_matched_node(atoms);
+
+	matched_node->get_categories(matched_cats);
+	if (matched_cats.size() == 0) {
+		return -1;
+	}
+	if (matched_cats.size() == 1) {
+		return matched_cats[0];
+	}
+
+	matched_node->get_instances(matched_insts);
 	if (matched_insts.size() == 0) {
 		return -1;
 	}
-	mat Xm(matched_insts.size(), X.cols());
 	vector<category> c(matched_insts.size());
-	bool uniform = true;
+	vector<int> signature(matched_insts.size() * 2);
 	for (int i = 0; i < matched_insts.size(); ++i) {
-		Xm.row(i) = X.row(matched_insts[i]);
 		c[i] = insts[matched_insts[i]].cat;
-		if (c[i] != c[0]) {
-			uniform = false;
+		signature[i * 2] = matched_insts[i];
+		signature[i * 2 + 1] = c[i];
+	}
+	
+	LDA_NN_Classifier *lda;
+	lda_cache_type::iterator i = lda_cache.find(matched_node);
+	if (i != lda_cache.end()) {
+		if (i->second.first == signature) {
+			lda = i->second.second;
+		} else {
+			i->second.first = signature;
+			delete i->second.second;
+			function_timer t2(timers.get(LDA_T));
+			lda = new LDA_NN_Classifier(X.get(), matched_insts, c);
+			i->second.second = lda;
 		}
-	}
-	
-	if (uniform) {
-		return c[0];
-	}
-	
-	mat cleaned;
-	vector<int> nonuniform_cols;
-	clean_data(Xm, cleaned, nonuniform_cols);
-	
-	if (c.size() > 0 && cleaned.cols() == 0) {
-		LOG(WARN) << "Degenerate case, no useful classification data." << endl;
-		return largest_class(c);
-	}
-	
-	LDA_NN_Classifier lda(cleaned, c);
-	
-	int result;
-	if (nonuniform_cols.size() != x.size()) {
-		rvec x1(nonuniform_cols.size());
-		for (int i = 0; i < nonuniform_cols.size(); ++i) {
-			x1(i) = x(nonuniform_cols[i]);
-		}
-		result = lda.classify(x1);
 	} else {
-		result = lda.classify(x);
+		function_timer t2(timers.get(LDA_T));
+		lda = new LDA_NN_Classifier(X.get(), matched_insts, c);
+		lda_cache[matched_node] = make_pair(signature, lda);
 	}
 	
-	return result;
+	return lda->classify(x);
 }
 
-void classifier::batch_update(const vector<category> &classes) {
-	if (tree) {
-		delete tree;
+classifier::~classifier() {
+	lda_cache_type::iterator i;
+	for (i = lda_cache.begin(); i != lda_cache.end(); ++i) {
+		delete i->second.second;
 	}
-	insts.clear();
-	insts.reserve(classes.size());
-	int nattrs;
-	for (int i = 0; i < classes.size(); ++i) {
-		scn->set_properties(X.row(i));
-		classifier_inst inst;
-		inst.attrs = scn->get_atom_vals();
-		inst.cat = classes[i];
-		insts.push_back(inst);
-		nattrs = inst.attrs.size();
-	}
-	ndata = insts.size();
-	tree = new ID5Tree(insts, nattrs);
-	tree->batch_update();
-	tree->prune();
 }
 
 void classifier::print_tree(ostream &os) const {
@@ -177,7 +129,7 @@ void classifier::print_tree(ostream &os) const {
 
 bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
-		os << "subqueries are: tree train" << endl;
+		os << "subqueries are: tree train timing" << endl;
 		return false;
 	}
 	
@@ -198,17 +150,51 @@ bool classifier::cli_inspect(int first_arg, const vector<string> &args, ostream 
 		return tree->cli_inspect(id, os);
 	} else if (args[first_arg] == "train") {
 		for (int i = 0; i < insts.size(); ++i) {
-			os << setw(4) << i << " " << insts[i] << endl;
+			os << setw(4) << i << " " << insts[i];
 		}
+		return true;
+	} else if (args[first_arg] == "timing") {
+		timers.report(os);
+		return true;
 	}
 	return false;
 }
 
-void classifier::update() {
+void classifier::update(const vector<category> &cats) {
+	assert(cats.size() == insts.size());
+	
+	for (int i = 0; i < cats.size(); ++i) {
+		if (insts[i].cat != cats[i]) {
+			category old = insts[i].cat;
+			insts[i].cat = cats[i];
+			tree->update_counts_change(i, old);
+		}
+	}
 	tree->update_tree(-1);
 	tree->prune();
 }
 
 void classifier::get_tested_atoms(vector<int> &atoms) const {
-	tree->get_all_splits(atoms);
+	if (tree) {
+		tree->get_all_splits(atoms);
+	}
+}
+
+void classifier::save(std::ostream &os) const {
+	save_vector(insts, os);
+}
+
+void classifier::load(std::istream &is) {
+	insts.clear();
+	load_vector(insts, is);
+	
+	if (tree) {
+		delete tree;
+	}
+	ndata = insts.size();
+	if (ndata > 0) {
+		tree = new ID5Tree(insts, insts[0].attrs.size());
+		tree->batch_update();
+		tree->prune();
+	}
 }

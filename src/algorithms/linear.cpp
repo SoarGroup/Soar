@@ -16,71 +16,55 @@ void pca(const_mat_view X, mat &comps) {
 	comps = svd.matrixV();
 }
 
-/*
- Output a matrix composed only of those columns in the input matrix with
- significantly different values, meaning the maximum absolute value of
- the column is greater than SAME_THRESH times the minimum absolute value.
-*/
-void remove_static(const_mat_view X, mat &Xout, vector<int> &nonstatic_cols) {
-	for (int i = 0; i < X.cols(); ++i) {
-		cvec c = X.col(i).array().abs();
-		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
-			nonstatic_cols.push_back(i);
-		}
-	}
-	assert(Xout.rows() == X.rows() && Xout.cols() >= nonstatic_cols.size());
-	for (int i = 0; i < nonstatic_cols.size(); ++i) {
-		Xout.col(i) = X.col(nonstatic_cols[i]);
-	}
-}
-
 bool solve(const_mat_view X, const_mat_view Y, mat &C) {
 	C = X.jacobiSvd(ComputeThinU | ComputeThinV).solve(Y);
-	return true;
+	return is_normal(C);
 }
 
 /*
- Performs standard linear regression with solve, but cleans up input
- data first to avoid instability. This consists of:
+ Clean up input data to avoid instability, then perform weighted least
+ squares regression. Cleaning consists of:
  
  1. Setting elements whose absolute values are smaller than ZERO_THRESH to 0
  2. collapsing all columns whose elements are identical into a single constant column.
 */
-bool solve2(const_mat_view X, const_mat_view Y, mat &coefs, rvec &intercept) {
-	mat X1 = X, X2(X.rows(), X.cols() + 1), C;
+bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
+	mat X1(X.rows(), X.cols() + 1), Y1, C;
 	vector<int> nonstatic;
 
 	for (int i = 0; i < X.rows(); ++i) {
 		for (int j = 0; j < X.cols(); ++j) {
-			if (abs(X1(i, j)) < ZERO_THRESH) {
+			if (fabs(X(i, j)) < ZERO_THRESH) {
 				X1(i, j) = 0.0;
+			} else {
+				X1(i, j) = X(i, j);
 			}
 		}
 	}
 
-	remove_static(X1, X2, nonstatic);
-	X2.resize(X2.rows(), nonstatic.size() + 1);
-	X2.rightCols(1).setConstant(1.0);
-	if (!solve(X2, Y, C)) {
+	del_static_cols(X1, X.cols(), nonstatic);
+	X1.conservativeResize(X.rows(), nonstatic.size() + 1);
+	X1.rightCols(1).setConstant(1.0);
+	
+	if (w.size() == X.rows()) {
+		cvec w2 = w.array().sqrt();
+		X1.array().colwise() *= w2.array();
+		Y1 = Y.array().colwise() * w2.array();
+	} else {
+		Y1 = Y;
+	}
+	
+	if (!solve(X1, Y1, C)) {
 		return false;
 	}
 
-	coefs.resize(X.cols(), C.cols());
+	coefs.resize(X.cols(), Y.cols());
 	coefs.setConstant(0);
 	for (int i = 0; i < nonstatic.size(); ++i) {
 		coefs.row(nonstatic[i]) = C.row(i);
 	}
 	intercept = C.bottomRows(1);
 	return true;
-}
-
-void lsqr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout) {
-	mat W = mat::Zero(w.size(), w.size());
-	W.diagonal() = w;
-	mat Z = W * X, V = W * Y, C;
-	rvec intercepts;
-	solve2(Z, V, C, intercepts);
-	yout = x * C + intercepts;
 }
 
 void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout) {
@@ -107,7 +91,7 @@ void ridge(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rve
  Use Leave-one-out cross validation to determine number of components
  to use. This seems to choose numbers that are too low.
 */
-void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &intercept) {
+void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
 	int ndata = X.rows(), maxcomps = X.cols();
 	
 	mat X1(ndata - 1, X.cols()), Y1(ndata - 1, Y.cols());
@@ -139,7 +123,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &interce
 		}
 		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			solve2(projected.leftCols(j), Y1, coefs, inter);
+			solve2(projected.leftCols(j), Y1, w, coefs, inter);
 			b = components.leftCols(i) * coefs;
 			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
@@ -151,7 +135,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &interce
 		}
 	}
 	projected = X * components;
-	solve2(projected.leftCols(best), Y, coefs, inter);
+	solve2(projected.leftCols(best), Y, cvec(), coefs, inter);
 	beta = components.leftCols(best) * coefs;
 	intercept = inter;
 }
@@ -161,7 +145,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, mat &beta, rvec &interce
  the training instances. Also prevent the beta vector from blowing up
  too much.
 */
-void min_train_error(const_mat_view X, const_mat_view Y, mat &beta, rvec &intercept) {
+void min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
 	vector<mat> betas;
 	vector<rvec> intercepts;
 	double minerror;
@@ -172,7 +156,7 @@ void min_train_error(const_mat_view X, const_mat_view Y, mat &beta, rvec &interc
 	pca(X, components);
 	projected = X * components;
 	for (int i = 0; i < projected.cols(); ++i) {
-		solve2(projected.leftCols(i), Y, coefs, inter);
+		solve2(projected.leftCols(i), Y, w, coefs, inter);
 		b = components.leftCols(i) * coefs;
 		
 		if (b.squaredNorm() > MAX_BETA_NORM) {
@@ -194,16 +178,16 @@ void min_train_error(const_mat_view X, const_mat_view Y, mat &beta, rvec &interc
 	}
 }
 
-void pcr(const_mat_view X, const_mat_view Y, const rvec &x, rvec &y) {
+void wpcr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &y) {
 	mat beta, X1;
 	rvec intercept;
 	rvec m = X.colwise().mean();
 	X1 = X.rowwise() - m;
-	min_train_error(X1, Y, beta, intercept);
+	min_train_error(X1, Y, w, beta, intercept);
 	y = (x - m) * beta + intercept;
 }
 
-LRModel::LRModel(const mat &xdata, const mat &ydata) 
+LRModel::LRModel(const dyn_mat &xdata, const dyn_mat &ydata) 
 : xdata(xdata), ydata(ydata), constvals(rvec::Zero(ydata.cols())), isconst(true), error(INFINITY), refit(true)
 {
 	timers.add("predict");
@@ -226,13 +210,6 @@ void LRModel::add_example(int i, bool update_refit) {
 	}
 	
 	members.push_back(i);
-	DATAVIS("'newest member' " << i << endl)
-	DATAVIS("'newest data' '")
-	for (int j = 0; j < xdata.cols(); ++j) {
-		DATAVIS(xdata(i, j) << " ")
-	}
-	DATAVIS(ydata(i, 0) << "'" << endl)
-	
 	if (members.size() == 1) {
 		xtotals = xdata.row(i);
 		center = xtotals;
@@ -254,16 +231,13 @@ void LRModel::add_example(int i, bool update_refit) {
 		}
 	}
 	
-	DATAVIS("isconst " << isconst << endl)
-	if (isconst) {
-		DATAVIS("constvals " << constvals << endl)
-	} else if (update_refit) {
+	if (!isconst && update_refit) {
 		rvec py;
 		if (!predict_sub(xdata.row(i), py)) {
 			refit = true;
 			error = INFINITY;
 		} else {
-			double e = pow(py(0) - ydata(i), 2);
+			double e = pow(py(0) - ydata(i, 0), 2);
 			if (!refit) {
 				/*
 				 Only refit the model if the average error increases
@@ -271,13 +245,14 @@ void LRModel::add_example(int i, bool update_refit) {
 				*/
 				double olderror = error / (members.size() - 1);
 				double newerror = (error + e) / members.size();
-				if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror) {
+				if (newerror > MODEL_ERROR_THRESH) {
+				//if (newerror > MODEL_ERROR_THRESH || newerror > REFIT_MUL_THRESH * olderror) {
 					refit = true;
+					cout << "Needs refit, old = " << olderror << " new = " << newerror << endl;
 				}
 			}
 			error += e;
 		}
-		DATAVIS("'avg error' " << error / members.size() << endl)
 	}
 }
 
@@ -436,7 +411,7 @@ bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os
 	return false;
 }
 
-PCRModel::PCRModel(const mat &xdata, const mat &ydata) 
+PCRModel::PCRModel(const dyn_mat &xdata, const dyn_mat &ydata) 
 : LRModel(xdata, ydata), intercept(rvec::Zero(ydata.cols()))
 {}
 
@@ -451,7 +426,7 @@ void PCRModel::fit_sub() {
 	means = X.colwise().mean();
 	X.rowwise() -= means;
 
-	min_train_error(X, Y, beta, intercept);
+	min_train_error(X, Y, cvec(), beta, intercept);
 }
 
 bool PCRModel::predict_sub(const rvec &x, rvec &y) {
@@ -474,6 +449,9 @@ bool PCRModel::predict_sub(const_mat_view X, mat &Y) {
 bool PCRModel::cli_inspect_sub(ostream &os) const {
 	os << "intercept: " << intercept << endl;
 	os << "beta:" << endl;
-	output_mat(os, beta);
+	for (int i = 0; i < beta.rows(); ++i) {
+		os << setw(4) << i << " ";
+		output_rvec(os, beta.row(i)) << endl;
+	}
 	return true;
 }

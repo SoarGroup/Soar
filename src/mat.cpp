@@ -1,6 +1,7 @@
 #include <iostream>
 #include "mat.h"
 #include "common.h"
+#include "params.h"
 
 using namespace std;
 dyn_mat::dyn_mat() : buf(0, 0), r(0), c(0) {}
@@ -26,24 +27,34 @@ void dyn_mat::resize(int nrows, int ncols) {
 	}
 }
 
-void dyn_mat::append_row(const rvec &row) {
-	assert(row.size() == c);
+void dyn_mat::append_row() {
 	if (r >= buf.rows()) {
 		buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
 	}
-	buf.block(r++, 0, 1, c) = row;
+	++r;
 }
 
-void dyn_mat::insert_row(int i, const rvec &row) {
+void dyn_mat::append_row(const rvec &row) {
 	assert(row.size() == c);
+	append_row();
+	buf.block(r - 1, 0, 1, c) = row;
+}
+
+void dyn_mat::insert_row(int i) {
+	assert(0 <= i && i <= r);
 	if (r >= buf.rows()) {
 		buf.conservativeResize(r == 0 ? 1 : r * 2, Eigen::NoChange);
 	}
 	for (int j = r; j > i; --j) {
 		buf.block(j, 0, 1, c) = buf.block(j - 1, 0, 1, c);
 	}
-	buf.block(i, 0, 1, c) = row;
 	++r;
+}
+
+void dyn_mat::insert_row(int i, const rvec &row) {
+	assert(row.size() == c);
+	insert_row(i);
+	buf.block(i, 0, 1, c) = row;
 }
 
 void dyn_mat::remove_row(int i) {
@@ -54,24 +65,34 @@ void dyn_mat::remove_row(int i) {
 	--r;
 }
 
-void dyn_mat::append_col(const cvec &col) {
-	assert(col.size() == r);
+void dyn_mat::append_col() {
 	if (c >= buf.cols()) {
 		buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
 	}
-	buf.block(0, c++, r, 1) = col;
+	++c;
 }
 
-void dyn_mat::insert_col(int i, const cvec &col) {
+void dyn_mat::append_col(const cvec &col) {
 	assert(col.size() == r);
+	append_col();
+	buf.block(0, c - 1, r, 1) = col;
+}
+
+void dyn_mat::insert_col(int i) {
+	assert(0 <= i && i <= c);
 	if (c >= buf.cols()) {
 		buf.conservativeResize(Eigen::NoChange, c == 0 ? 1 : c * 2);
 	}
 	for (int j = c; j > i; --j) {
 		buf.block(0, j, r, 1) = buf.block(0, j - 1, r, 1);
 	}
-	buf.block(0, i, r, 1) = col;
 	++c;
+}
+
+void dyn_mat::insert_col(int i, const cvec &col) {
+	assert(col.size() == r);
+	insert_col(i);
+	buf.block(0, i, r, 1) = col;
 }
 
 void dyn_mat::remove_col(int i) {
@@ -80,6 +101,16 @@ void dyn_mat::remove_col(int i) {
 		buf.block(0, j - 1, r, 1) = buf.block(0, j, r, 1);
 	}
 	--c;
+}
+
+void dyn_mat::save(ostream &os) const {
+	save_mat(os, buf.topLeftCorner(r, c));
+}
+
+void dyn_mat::load(istream &is) {
+	load_mat(is, buf);
+	r = buf.rows();
+	c = buf.cols();
 }
 
 void save_mat(ostream &os, const_mat_view m) {
@@ -203,4 +234,85 @@ ostream& output_mat(ostream &os, const_mat_view m) {
 		os << m(i, c - 1) << endl;
 	}
 	return os;
+}
+
+bool is_normal(const_mat_view m) {
+	for (int i = 0; i < m.rows(); ++i) {
+		for (int j = 0; j < m.cols(); ++j) {
+			if (isnan(m(i, j)) || isinf(m(i, j))) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+void get_nonstatic_cols(const_mat_view X, int ncols, vector<int> &nonstatic_cols) {
+	for (int i = 0; i < ncols; ++i) {
+		cvec c = X.col(i).array().abs();
+		if (c.maxCoeff() > c.minCoeff() * SAME_THRESH) {
+			nonstatic_cols.push_back(i);
+		}
+	}
+}
+
+void del_static_cols(mat_view X, int ncols, vector<int> &nonstatic_cols) {
+	get_nonstatic_cols(X, ncols, nonstatic_cols);
+	pick_cols(X, nonstatic_cols);
+}
+
+void pick_cols(const_mat_view X, const vector<int> &cols, mat &result) {
+	result.resize(X.rows(), cols.size());
+	for (int i = 0; i < cols.size(); ++i) {
+		result.col(i) = X.col(cols[i]);
+	}
+}
+
+void pick_rows(const_mat_view X, const vector<int> &rows, mat &result) {
+	result.resize(rows.size(), X.cols());
+	for(int i = 0; i < rows.size(); ++i) {
+		result.row(i) = X.row(rows[i]);
+	}
+}
+
+void pick_cols(mat_view X, const vector<int> &cols) {
+	assert(X.cols() >= cols.size());
+	bool need_copy = false;
+	for (int i = 0; i < cols.size(); ++i) {
+		if (cols[i] < i) {
+			need_copy = true;
+			break;
+		}
+	}
+	if (need_copy) {
+		mat c = X;
+		for (int i = 0; i < cols.size(); ++i) {
+			X.col(i) = c.col(cols[i]);
+		}
+	} else {
+		for (int i = 0; i < cols.size(); ++i) {
+			X.col(i) = X.col(cols[i]);
+		}
+	}
+}
+
+void pick_rows(mat_view X, const vector<int> &rows) {
+	assert(X.rows() >= rows.size());
+	bool need_copy = false;
+	for (int i = 0; i < rows.size(); ++i) {
+		if (rows[i] < i) {
+			need_copy = true;
+			break;
+		}
+	}
+	if (need_copy) {
+		mat c = X;
+		for (int i = 0; i < rows.size(); ++i) {
+			X.row(i) = c.row(rows[i]);
+		}
+	} else {
+		for (int i = 0; i < rows.size(); ++i) {
+			X.row(i) = X.row(rows[i]);
+		}
+	}
 }

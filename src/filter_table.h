@@ -11,6 +11,7 @@
 #include <sstream>
 #include "common.h"
 #include "timer.h"
+#include "soar_interface.h"
 
 class filter;
 class filter_input;
@@ -19,7 +20,7 @@ class scene;
 struct filter_table_entry {
 	std::string name;
 	std::vector<std::string> parameters;
-	filter* (*create)(scene*, filter_input*);
+	filter* (*create)(Symbol*, soar_interface*, scene*, filter_input*);
 	bool    (*calc)(scene*, const std::vector<std::string> &);
 	void    (*possible_args)(scene*, std::vector<std::vector<std::string> > &);
 	
@@ -51,13 +52,7 @@ public:
 		return true;
 	}
 	
-	filter* make_filter(const std::string &pred, scene *scn, filter_input *input) const {
-		std::map<std::string, filter_table_entry>::const_iterator i = t.find(pred);
-		if (i == t.end() || i->second.create == NULL) {
-			return NULL;
-		}
-		return (*(i->second.create))(scn, input);
-	}
+	filter* make_filter(const std::string &pred, Symbol *root, soar_interface *si, scene *scn, filter_input *input) const;
 	
 	bool calc(const std::string &pred, scene *scn, const std::vector<std::string> &args, bool &res) const {
 		std::map<std::string, filter_table_entry>::const_iterator i = t.find(pred);
@@ -106,7 +101,7 @@ public:
 	 Calculate the value of every predicate with every possible set
 	 of arguments from the scene.
 	*/
-	void calc_all_atoms(scene *scn, std::vector<bool> &results) const {
+	void calc_all_atoms(scene *scn, boolvec &results) const {
 		std::map<std::string, filter_table_entry>::const_iterator i;
 		int ii = 0;
 		for(i = t.begin(); i != t.end(); ++i, ++ii) {

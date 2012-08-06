@@ -11,11 +11,7 @@ class splinter_model : public model {
 public:
 	splinter_model(const string &name) : model(name, "splinter") { init(); }
 	
-	~splinter_model() {
-		finish();
-	}
-	
-	bool predict(const rvec &x, rvec &y) {
+	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
 		if (x.size() != 10 || y.size() != 8) {
 			return false;
 		}

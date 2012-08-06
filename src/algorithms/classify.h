@@ -4,48 +4,51 @@
 #include <iostream>
 #include <vector>
 #include "common.h"
+#include "lda.h"
+#include "timer.h"
 
 class ID5Tree;
 class scene;
 
 typedef int category;
-typedef std::vector<bool> attr_vec;
 
 class classifier_inst {
 public:
-	attr_vec attrs;
+	boolvec attrs;
 	int cat;
-	
-	void save(std::ostream &os) const;
-	void load(std::istream &is);
 };
 
 std::ostream &operator<<(std::ostream &os, const classifier_inst &inst);
+std::istream &operator>>(std::istream &is, classifier_inst &inst);
 
 class classifier {
 public:
-	classifier(const mat &X, const mat &Y, scene *scn);
+	classifier(const dyn_mat &X, const dyn_mat &Y);
 	~classifier();
 	
-	void add(int cat);
-	void change_cat(int i, int new_cat);
-	void update();
-	void batch_update(const std::vector<category> &classes);
-	int classify(const rvec &x);
+	void new_data(const boolvec &atoms);
+	void update(const std::vector<category> &cats);
+	int classify(const rvec &x, const boolvec &atoms);
 	
 	void print_tree(std::ostream &os) const;
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	void get_tested_atoms(std::vector<int> &atoms) const;
 	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
+	
 private:
+	typedef std::map<const ID5Tree*, std::pair<std::vector<int>, LDA_NN_Classifier*> > lda_cache_type;
+
 	int ndata;
-	const mat &X;
-	const mat &Y;
+	const dyn_mat &X;
+	const dyn_mat &Y;
 	std::vector<classifier_inst> insts;
-	
-	scene *scn;
-	
 	ID5Tree *tree;
+	lda_cache_type lda_cache;
+	
+	enum Timers {CLASSIFY_T, LDA_T, UPDATE_T};
+	timer_set timers;
 };
 
 #endif

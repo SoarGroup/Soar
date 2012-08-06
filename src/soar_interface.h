@@ -13,6 +13,19 @@ typedef tc_number tc_num;
 
 typedef std::vector<wme*> wme_list;
 
+class soar_interface;
+
+class common_syms {
+public:
+	common_syms(soar_interface *si);
+	~common_syms();
+	
+	Symbol *svs, *cmd, *scene, *child, *result, *models, *id, *status;
+
+private:
+	soar_interface *si;
+};
+
 class soar_interface {
 public:
 	soar_interface(agent *a);
@@ -69,10 +82,13 @@ public:
 	
 	void         read_list(Symbol *id, std::vector<std::string> &words);
 	
+	common_syms &get_common_syms() { return cs; }
+	
 private:
-	agent*  agnt;
-
+	agent* agnt;
+	common_syms cs;
 };
+
 
 inline Symbol *soar_interface::make_sym(const std::string &val) {
 	return make_sym_constant(agnt, val.c_str());

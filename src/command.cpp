@@ -68,13 +68,11 @@ void command::parse_substructure(int &size, int &max_time) {
 		
 		si->get_child_wmes(parent, childs);
 		for (i = childs.begin(); i != childs.end(); ++i) {
-			if (parent == root) {
-				if (si->get_val(si->get_wme_attr(*i), attr) && 
-				    (attr == "result" || attr == "status"))
-				{
-					/* result wmes are added by svs */
-					continue;
-				}
+			if (si->get_val(si->get_wme_attr(*i), attr) && 
+				(attr == "result" || attr == "status"))
+			{
+				/* result and status wmes are added by svs */
+				continue;
 			}
 			v = si->get_wme_val(*i);
 			tt = si->get_timetag(*i);
@@ -125,6 +123,7 @@ void command::set_status(const string &s) {
 
 command *_make_extract_command_(svs_state *state, Symbol *root);
 command *_make_project_command_(svs_state *state, Symbol *root);
+command *_make_extract_once_command_(svs_state *state, Symbol *root);
 command *_make_add_node_command_(svs_state *state, Symbol *root);
 command *_make_create_model_command_(svs_state *state, Symbol *root);
 command *_make_assign_model_command_(svs_state *state, Symbol *root);
@@ -150,6 +149,8 @@ command* make_command(svs_state *state, wme *w) {
 		return _make_extract_command_(state, id);
 	} else if (name == "project") {
 		return _make_project_command_(state, id);
+	} else if (name == "extract_once") {
+		return _make_extract_once_command_(state, id);
 	} else if (name == "add_node") {
 		return _make_add_node_command_(state, id);
 	} else if (name == "seek") {
@@ -239,9 +240,9 @@ filter *parse_filter_spec(soar_interface *si, Symbol *root, scene *scn) {
 	
 	if (!fail) {
 		if (ftype == "combine") {
-			f = new passthru_filter(input);
+			f = new passthru_filter(root, si, input);
 		} else {
-			f = get_filter_table().make_filter(ftype, scn, input);
+			f = get_filter_table().make_filter(ftype, root, si, scn, input);
 		}
 	}
 	

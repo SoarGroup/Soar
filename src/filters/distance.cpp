@@ -7,9 +7,11 @@ using namespace std;
 
 class distance_filter : public typed_map_filter<float> {
 public:
-	distance_filter(filter_input *input) : typed_map_filter<float>(input) {}
+	distance_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: typed_map_filter<float>(root, si, input)
+	{}
 
-	bool compute(const filter_param_set *params, bool adding, float &res, bool &changed) {
+	bool compute(const filter_params *params, bool adding, float &res, bool &changed) {
 		float newres;
 		const sgnode *a, *b;
 		
@@ -27,8 +29,8 @@ public:
 	}
 };
 
-filter *make_distance_filter(scene *scn, filter_input *input) {
-	return new distance_filter(input);
+filter *make_distance_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new distance_filter(root, si, input);
 }
 
 filter_table_entry distance_fill_entry() {
@@ -40,9 +42,11 @@ filter_table_entry distance_fill_entry() {
 
 class closest_filter : public rank_filter {
 public:
-	closest_filter(filter_input *input) : rank_filter(input) {}
+	closest_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: rank_filter(root, si, input)
+	{}
 	
-	bool rank(const filter_param_set *params, double &rank) {
+	bool rank(const filter_params *params, double &rank) {
 		const sgnode *a, *b;
 		
 		if (!get_filter_param(this, params, "a", a) ||
@@ -56,8 +60,8 @@ public:
 	}
 };
 
-filter *make_closest_filter(scene *scn, filter_input *input) {
-	return new closest_filter(input);
+filter *make_closest_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new closest_filter(root, si, input);
 }
 
 filter_table_entry closest_fill_entry() {

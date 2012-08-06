@@ -6,7 +6,7 @@
 
 using namespace std;
 
-bool get_double(const filter_param_set *params, double &v) {
+bool get_double(const filter_params *params, double &v) {
 	if (params->empty()) {
 		return false;
 	}
@@ -19,10 +19,12 @@ bool get_double(const filter_param_set *params, double &v) {
 
 class max_filter : public reduce_filter<double> {
 public:
-	max_filter(filter_input *input) : reduce_filter<double>(input) {}
+	max_filter(Symbol *root, soar_interface *si, filter_input *input)
+	: reduce_filter<double>(root, si, input)
+	{}
 
 private:
-	bool input_added(const filter_param_set *params, double &res) {
+	bool input_added(const filter_params *params, double &res) {
 		double x;
 		if (!get_double(params, x)) {
 			return false;
@@ -33,7 +35,7 @@ private:
 		return true;
 	}
 
-	bool input_changed(const filter_param_set *params, double &res) {
+	bool input_changed(const filter_params *params, double &res) {
 		for (int i = 0; i < elems.size(); ++i) {
 			if (elems[i].second == params) {
 				if (!get_double(params, elems[i].first)) {
@@ -46,7 +48,7 @@ private:
 		assert(false);
 	}
 
-	bool input_removed(const filter_param_set *params, double &res) {
+	bool input_removed(const filter_params *params, double &res) {
 		for (int i = 0; i < elems.size(); ++i) {
 			if (elems[i].second == params) {
 				elems.erase(elems.begin() + i);
@@ -59,11 +61,11 @@ private:
 		assert(false);
 	}
 
-	vector<pair<double, const filter_param_set*> > elems;
+	vector<pair<double, const filter_params*> > elems;
 };
 
-filter *make_max_filter(scene *scn, filter_input *input) {
-	return new max_filter(input);
+filter *make_max_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new max_filter(root, si, input);
 }
 
 filter_table_entry max_fill_entry() {

@@ -15,15 +15,11 @@ public:
 		init();
 	}
 	
-	~lwr_model() {
-		finish();
-	}
-	
-	void learn(const rvec &x, const rvec &y) {
+	void learn(const rvec &x, const rvec &y, const boolvec &atoms) {
 		lwr.learn(x, y);
 	}
 	
-	bool predict(const rvec &x, rvec &y) {
+	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
 		return lwr.predict(x, y);
 	}
 	
@@ -53,7 +49,7 @@ private:
 
 model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
 	Symbol *attr;
-	wme *nnbrs_wme;
+	wme *nnbrs_wme = NULL;
 	long nnbrs = 50;
 	string attrstr;
 	

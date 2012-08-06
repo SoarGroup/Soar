@@ -55,6 +55,8 @@ public:
 class const_mat_view : public const_mat_map {
 public:
 	const_mat_view(const mat &m)               : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
+	const_mat_view(const rvec &v)              : const_mat_map(v.data(), 1, v.size(), mat_stride(1, 1)) {}
+	const_mat_view(const cvec &v)              : const_mat_map(v.data(), v.size(), 1, mat_stride(1, 1)) {}
 	const_mat_view(const mat &m, int r, int c) : const_mat_map(m.data(), r, c, mat_stride(m.rowStride(), 1)) {}
 	const_mat_view(const mat_block &b)         : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const mat_iblock &b)        : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
@@ -77,12 +79,49 @@ public:
 	dyn_mat(const dyn_mat &other);
 	
 	void resize(int nrows, int ncols);
+	void append_row();
 	void append_row(const rvec &row);
+	void insert_row(int i);
 	void insert_row(int i, const rvec &row);
 	void remove_row(int i);
+	void append_col();
 	void append_col(const cvec &col);
+	void insert_col(int i);
 	void insert_col(int i, const cvec &col);
 	void remove_col(int i);
+	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
+	
+	double &operator()(int i, int j) {
+		assert(0 <= i && i < r && 0 <= j && j < c);
+		return buf(i, j);
+	}
+	
+	double operator()(int i, int j) const {
+		assert(0 <= i && i < r && 0 <= j && j < c);
+		return buf(i, j);
+	}
+	
+	mat::RowXpr row(int i) {
+		assert(0 <= i && i < r);
+		return buf.row(i);
+	}
+	
+	mat::ConstRowXpr row(int i) const {
+		assert(0 <= i && i < r);
+		return buf.row(i);
+	}
+	
+	mat::ColXpr col(int j) {
+		assert(0 <= j && j < c);
+		return buf.col(j);
+	}
+	
+	mat::ConstColXpr col(int j) const {
+		assert(0 <= j && j < c);
+		return buf.col(j);
+	}
 	
 	inline mat_view get() {
 		return mat_view(buf, r, c);
@@ -117,5 +156,25 @@ void load_cvec(std::istream &is, cvec &v);
 std::ostream& output_rvec(std::ostream &os, const rvec &v, const std::string &sep = " ");
 std::ostream& output_cvec(std::ostream &os, const cvec &v, const std::string &sep = " ");
 std::ostream& output_mat(std::ostream &os, const const_mat_view m);
+
+bool is_normal(const_mat_view m);
+
+/*
+ Return indices of columns that have significantly different values,
+ meaning the maximum absolute value of the column is greater than
+ SAME_THRESH times the minimum absolute value.
+*
+void get_nonstatic_cols(const_mat_view X, int ncols, std::vector<int> &nonstatic_cols);
+
+/*
+ Remove the static columns from the first 'cols' columns of X. This
+ will not resize the matrix.
+*/
+void del_static_cols(mat_view X, int cols, std::vector<int> &nonstatic);
+
+void pick_cols(const_mat_view X, const std::vector<int> &cols, mat &result);
+void pick_rows(const_mat_view X, const std::vector<int> &rows, mat &result);
+void pick_cols(mat_view X, const std::vector<int> &cols);
+void pick_cols(mat_view X, const std::vector<int> &rows);
 
 #endif

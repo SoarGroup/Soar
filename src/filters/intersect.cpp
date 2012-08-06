@@ -9,9 +9,10 @@ using namespace std;
 
 class intersect_filter : public typed_map_filter<bool> {
 public:
-	intersect_filter(filter_input *input, scene *scn) : typed_map_filter<bool>(input), scn(scn) {}
+	intersect_filter(Symbol *root, soar_interface *si, filter_input *input, scene *scn)
+	: typed_map_filter<bool>(root, si, input), scn(scn) {}
 	
-	bool compute(const filter_param_set *p, bool adding, bool &res, bool &changed) {
+	bool compute(const filter_params *p, bool adding, bool &res, bool &changed) {
 		bool newres;
 		const sgnode *a, *b;
 		
@@ -33,8 +34,8 @@ private:
 
 };
 
-filter *make_intersect_filter(scene *scn, filter_input *input) {
-	return new intersect_filter(input, scn);
+filter *make_intersect_filter(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+	return new intersect_filter(root, si, input, scn);
 }
 
 bool standalone_intersect(scene *scn, const vector<string> &args) {
