@@ -27,6 +27,7 @@ public:
 	
 	// nodes will be in alphabetical name order
 	void get_all_nodes(std::vector<sgnode*> &nodes);
+	void get_all_nodes(std::vector<const sgnode*> &nodes);
 	int num_nodes() const;
 	int get_dof() const;
 	
@@ -78,12 +79,5 @@ private:
 	
 	collision_detector cdetect;
 };
-
-/* Functions to generate common argument sets */
-void all_nodes(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_pairs_unordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_pairs_ordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_triples_unordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
-void all_node_triples_ordered_no_repeat(scene *scn, std::vector<std::vector<std::string> > &argset);
 
 #endif

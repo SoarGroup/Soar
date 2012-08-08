@@ -16,9 +16,9 @@ bool ontop(const sgnode *tn, const sgnode *bn) {
 	return tb.intersects(bb) && tmin[2] == bmax[2];
 }
 
-bool standalone(scene *scn, const vector<string> &args) {
-	sgnode *tn = scn->get_node(args[0]), *bn = scn->get_node(args[1]);
-	return ontop(tn, bn);
+bool standalone(scene *scn, const vector<const sgnode*> &args) {
+	assert(args.size() == 2);
+	return ontop(args[0], args[1]);
 }
 
 class ontop_filter : public typed_map_filter<bool> {
@@ -50,8 +50,9 @@ filter_table_entry ontop_fill_entry() {
 	e.name = "on-top";
 	e.parameters.push_back("top");
 	e.parameters.push_back("bottom");
+	e.ordered = true;
+	e.allow_repeat = false;
 	e.create = &make_ontop_filter;
 	e.calc = &standalone;
-	e.possible_args = &all_node_pairs_ordered_no_repeat;
 	return e;
 }

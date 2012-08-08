@@ -38,7 +38,7 @@ filter *make_intersect_filter(Symbol *root, soar_interface *si, scene *scn, filt
 	return new intersect_filter(root, si, input, scn);
 }
 
-bool standalone_intersect(scene *scn, const vector<string> &args) {
+bool standalone_intersect(scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return scn->intersects(args[0], args[1]);
 }
@@ -48,8 +48,9 @@ filter_table_entry intersect_fill_entry() {
 	e.name = "intersect";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
+	e.ordered = false;
+	e.allow_repeat = false;
 	e.create = &make_intersect_filter;
 	e.calc = &standalone_intersect;
-	e.possible_args = &all_node_pairs_unordered_no_repeat;
 	return e;
 }
