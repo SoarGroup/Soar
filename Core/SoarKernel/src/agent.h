@@ -360,6 +360,10 @@ typedef struct agent_struct {
   Symbol			* smem_sym_store;
 
   Symbol      * rl_over_threshold_constant; ///< bazald
+  double      variance_update_count;
+  double      variance;
+  double      variance_mark2;
+  double      variance_variance;
 
   /* ----------------------- Symbol table stuff -------------------------- */
 

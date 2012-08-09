@@ -99,6 +99,7 @@ class rl_param_container: public soar_module::param_container
 		soar_module::decimal_param *et_decay_rate;
 		soar_module::decimal_param *et_tolerance;
     soar_module::boolean_param *rl_impasse; ///< bazald
+    soar_module::boolean_param *variance_bellman; ///< bazald
     rl_credit_assignment_param *credit_assignment; ///< bazald
     rl_credit_modification_param *credit_modification; ///< bazald
 		soar_module::boolean_param *temporal_extension;

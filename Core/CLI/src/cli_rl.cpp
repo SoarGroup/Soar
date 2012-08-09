@@ -132,6 +132,19 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
      CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "credit-modification: ", agnt->rl_params->credit_modification->get_string() ) );
 
+     CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "variance-bellman: ", agnt->rl_params->variance_bellman->get_string() ) );
+
+     CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
+
+     std::ostringstream ss;
+     ss << "agent's running variance: " << agnt->variance;
+     CLI_DoRL_print( *this, m_RawOutput, m_Result, const_cast<char *>(ss.str().c_str()) );
+
+     ss.str("");
+     ss << "agent's running second order variance: " << agnt->variance_variance;
+     CLI_DoRL_print( *this, m_RawOutput, m_Result, const_cast<char *>(ss.str().c_str()) );
+
      CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
         return true;

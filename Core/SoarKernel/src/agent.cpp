@@ -143,6 +143,11 @@ void init_soar_agent(agent* thisAgent) {
   /* END */
 
   thisAgent->total_decision_phases_count = 0; ///< bazald
+  
+  thisAgent->variance_update_count = 0.0; ///< bazald
+  thisAgent->variance = 0.0; ///< bazald
+  thisAgent->variance_mark2 = 0.0; ///< bazald
+  thisAgent->variance_variance = 0.0; ///< bazald
 }
 
 agent * create_soar_agent (char * agent_name) {                                          /* loop index */

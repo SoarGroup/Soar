@@ -886,7 +886,7 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 	cand->rl_contribution = false;
 
   /// bazald modifications begin
-  const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
+//   const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
 //   double variance_value = DBL_MAX;
 //   double variance_credit = 0.0;
 //   if(variance_mod) {
@@ -920,9 +920,9 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 			if ( pref->inst->prod->rl_rule )
 			{
 				cand->rl_contribution = true;
-        if(variance_mod)
-          cand->numeric_value += get_number_from_symbol( pref->referent ) * pref->inst->prod->rl_influence_total - pref->inst->prod->rl_variance_total;
-        else
+//         if(variance_mod)
+//           cand->numeric_value += get_number_from_symbol( pref->referent ) * pref->inst->prod->rl_influence_total - pref->inst->prod->rl_variance_total;
+//         else
           cand->numeric_value += get_number_from_symbol( pref->referent );
 //         std::cerr << pref->inst->prod->name->sc.name << " credited " << pref->inst->prod->rl_credit << " by " << cand->inst->prod->name->sc.name << std::endl; ///< bazald
 			}
@@ -962,14 +962,13 @@ void exploration_compute_value_of_candidate( agent *my_agent, preference *cand, 
 
 void exploration_compute_value_of_candidates(agent *my_agent, preference *candidates, slot *s) ///< bazald
 {
+  const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
+
   for(preference *cand = candidates; cand; cand = cand->next_candidate) {
     if(cand->inst && cand->inst->prod) {
       const production * const &prod = cand->inst->prod;
 
       /*if(cand->rl_contribution) not yet usable */ {
-        cand->rl_intolerable_variance = true;
-
-        /// Mirror code in reinforcement_learning.cpp::rl_perform_update
         /// Assign credit to different RL rules according to
         ///   even: previously only method, still the default - simply split credit evenly between RL rules
         ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
@@ -986,11 +985,41 @@ void exploration_compute_value_of_candidates(agent *my_agent, preference *candid
         }
         else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
           double total_credit = 0.0;
+
+          const double uc_limit = 10;
+          double total_uc_credit = 0.0;
+          double max_ulimit = 0.0;
+          double max_uc_count = 0.0;
           ITERATE_EXPLORATION_PRODUCTIONS(cand) {
-            total_credit += 1.0 / (prod2->rl_update_count + 1.0); ///< hasn't updated yet
+            const double uc = prod2->rl_update_count + 1.0;
+            const double credit = 1.0 / uc;
+
+            total_credit += credit;
+
+            if(variance_mod && uc < uc_limit) {
+              total_uc_credit += credit;
+
+              if(uc > max_ulimit) {
+                max_ulimit = uc;
+                max_uc_count = 1.0;
+              }
+              else if(uc == max_ulimit)
+                ++max_uc_count;
+            }
           } DONE_EXPLORATION_PRODUCTIONS;
+
           ITERATE_EXPLORATION_PRODUCTIONS(cand) {
-            prod2->rl_credit = (1.0 / (prod2->rl_update_count + 1.0)) / total_credit;
+            const double uc = prod2->rl_update_count + 1.0;
+
+            if(variance_mod && uc < uc_limit)
+              if(uc == max_ulimit)
+                prod2->rl_credit = total_uc_credit / max_uc_count;
+              else
+                prod2->rl_credit = 0.0;
+            else {
+              const double credit = 1.0 / uc;
+              prod2->rl_credit = credit / total_credit;
+            }
           } DONE_EXPLORATION_PRODUCTIONS;
         }
         else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {

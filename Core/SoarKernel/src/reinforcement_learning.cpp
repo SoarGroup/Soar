@@ -123,6 +123,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   credit_modification->add_mapping( credit_mod_none, "none" );
   credit_modification->add_mapping( credit_mod_variance, "variance" );
   add( credit_modification );
+
+  // rl-impasse
+  variance_bellman = new soar_module::boolean_param( "variance-bellman", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() ); ///< bazald
+  add( variance_bellman );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
@@ -954,41 +958,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 				}
 			}
 
-      /// Assign credit to different RL rules according to
-      ///   even: previously only method, still the default - simply split credit evenly between RL rules
-      ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
-      ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
-      ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
-      if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
-        double total_credit = 0.0;
-        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          total_credit += 1.0 / (log((*rt)->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
-        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          (*rt)->rl_credit = (1.0 / (log((*rt)->rl_update_count + 1.0) + 1.0)) / total_credit;
-      }
-      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
-        double total_credit = 0.0;
-        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          total_credit += 1.0 / ((*rt)->rl_update_count + 1.0); ///< hasn't updated yet
-        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          (*rt)->rl_credit = (1.0 / ((*rt)->rl_update_count + 1.0)) / total_credit;
-      }
-      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
-        double total_credit = 0.0;
-        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          total_credit += (1.0 / (*rt)->firing_count); ///< has fired already
-        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          (*rt)->rl_credit = (1.0 / (*rt)->firing_count) / total_credit;
-      }
-      else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
-        const double num_rules = double(data->prev_op_rl_rules->size());
-        const double value = 1.0 / num_rules;
-        for(rl_rule_list::iterator rt = data->prev_op_rl_rules->begin(), rend = data->prev_op_rl_rules->end(); rt != rend; ++rt)
-          (*rt)->rl_credit = value;
-      }
-      else
-        abort();
-      
 			// Update trace for just fired prods
 			double sum_old_ecr = 0.0;
 			double sum_old_efr = 0.0;
@@ -1035,6 +1004,9 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
           }
         }
 
+        bool rl_variance_updated = true; ///< bazald
+        double rl_variance_total_total = 0.0; ///< bazald
+
 				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
 				{	
 					production *prod = iter->first;
@@ -1042,6 +1014,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					// get old vals
 					old_ecr = prod->rl_ecr;
 					old_efr = prod->rl_efr;
+          const double old_combined = old_ecr + old_efr; ///< bazald
 
                     // Adjust alpha based on decay policy
                     // Miller 11/14/2011
@@ -1127,7 +1100,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
 
-          { /// bazald: Variance calculation
+          if(my_agent->rl_params->variance_bellman->get_value()) { /// bazald: Variance calculation
             // def online_variance(data): Thanks to Welford, Knuth's Art of Computer Programming
             //     n = 0
             //     mean = 0
@@ -1143,9 +1116,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
             //     variance_n = M2/n
             //     variance = M2/(n - 1)
             //     return (variance, variance_n)
-
-            const double old_mean2 = prod->rl_mean2;
-            const double old_sample_variance = prod->rl_variance_0;
 
             if(prod->rl_update_count > 1) {
               /** divide by prod->rl_credit to prevent shrinking of estimated variance due to credit assignment
@@ -1177,6 +1147,20 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 //                       << prod->rl_mean2 << ", V_0 = " << prod->rl_variance_0 << ", V_rest = "
 //                       << prod->rl_variance_rest << std::endl;
           }
+          else {
+            if(prod->rl_update_count > 1) {
+              const double delta = (new_combined - old_combined) / adjusted_alpha;
+              const double x = old_combined + delta;
+              const double mdelta = (x - old_combined) * (x - new_combined);
+
+              prod->rl_mean2 += mdelta / prod->rl_credit;
+              prod->rl_variance_total = prod->rl_mean2 / (prod->rl_update_count - 1);
+            }
+          }
+
+          if(prod->rl_update_count < 10) ///< bazald
+            rl_variance_updated = false;
+          rl_variance_total_total += prod->rl_variance_total; ///< bazald
 
                     // change documentation
                     if ( my_agent->rl_params->meta->get_value() == soar_module::on )
@@ -1216,6 +1200,19 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 						}
 					}	
 				}
+
+        if(rl_variance_updated) {
+          const double delta = alpha * (rl_variance_total_total - my_agent->variance);
+          const double old = my_agent->variance;
+          my_agent->variance += delta;
+
+          if(++my_agent->variance_update_count > 1) {
+            my_agent->variance_mark2 += (rl_variance_total_total - old) * (rl_variance_total_total - my_agent->variance);
+
+            my_agent->variance_variance = my_agent->variance_mark2 / (my_agent->variance_update_count - 1);
+          }
+        }
+
 			}
 		}
 

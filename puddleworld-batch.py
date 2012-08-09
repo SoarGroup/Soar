@@ -11,52 +11,73 @@ g_rules = 'PuddleWorld/puddle-world.soar'
 g_ep_tuples = []
 
 # ./puddleworld-batch.py -j 4 -r 30 -e 1600
-#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'even', 'normal'))
-#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'even', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'fc', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'rl', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'log-rl', 'normal', (0, 10, 10)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'normal'))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'normal', (0, 20, 20)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'fc', 'normal', (0, 20, 20)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'rl', 'normal', (0, 20, 20)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'log-rl', 'normal', (0, 20, 20)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'normal', (0, 40, 40)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'fc', 'normal', (0, 40, 40)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'rl', 'normal', (0, 40, 40)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'log-rl', 'normal', (0, 40, 40)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'normal', (0, 20, 20), (0, 40, 40)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'fc', 'normal', (0, 20, 20), (0, 40, 40)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'rl', 'normal', (0, 20, 20), (0, 40, 40)))
-#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'log-rl', 'normal', (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'even', 'bellman'))
+#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'even', 'bellman', (0, 10, 10)))
+#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'fc', 'bellman', (0, 10, 10)))
+#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'rl', 'bellman', (0, 10, 10)))
+#g_ep_tuples.append(((0, 0, 1, 1), (5, 5), 'log-rl', 'bellman', (0, 10, 10)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'bellman'))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'bellman', (0, 20, 20)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'fc', 'bellman', (0, 20, 20)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'rl', 'bellman', (0, 20, 20)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'log-rl', 'bellman', (0, 20, 20)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'bellman', (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'fc', 'bellman', (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'rl', 'bellman', (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'log-rl', 'bellman', (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'even', 'bellman', (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'fc', 'bellman', (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'rl', 'bellman', (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append(((0, 0, 1, 1), (10, 10), 'log-rl', 'bellman', (0, 20, 20), (0, 40, 40)))
 
-#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'even', 'normal', (0, 40, 40)))
-#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'fc', 'normal', (0, 40, 40)))
-#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'rl', 'normal', (0, 40, 40)))
-#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'log-rl', 'normal', (0, 40, 40)))
+#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'even', 'bellman', (0, 40, 40)))
+#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'fc', 'bellman', (0, 40, 40)))
+#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'rl', 'bellman', (0, 40, 40)))
+#g_ep_tuples.append(((0.15, .3, .35, .5), (10, 10), 'log-rl', 'bellman', (0, 40, 40)))
 
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal'))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal'))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (100, 10, 10)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal', (400, 20, 20)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (100, 10, 10), (400, 20, 20)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal', (400, 20, 20), (800, 40, 40)))
-#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (100, 10, 10), (400, 20, 20), (800, 40, 40)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (100, 10, 10)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman', (400, 20, 20)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (100, 10, 10), (400, 20, 20)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman', (400, 20, 20), (800, 40, 40)))
+#g_ep_tuples.append(((0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (100, 10, 10), (400, 20, 20), (800, 40, 40)))
 
-#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (0, 10, 10)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (0, 10, 10), (0, 20, 20), (0, 40, 40)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (200, 20, 20), (200, 40, 40)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (100, 20, 20), (100, 40, 40)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (20, 20), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman', (100, 20, 20)))
 
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (20, 20), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman', (0, 20, 20)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman', (100, 20, 20)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'variance', 'bellman', (0, 20, 20)))
 
-g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal'))
-g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10)))
-#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10)))
-#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40)))
-#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'normal', (0, 10, 10), (0, 20, 20), (0, 40, 40)))
-#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (200, 20, 20), (200, 40, 40)))
-g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'normal', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (100, 20, 20), (100, 40, 40)))
-g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal'))
-g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (20, 20), 'rl', 'none', 'normal'))
-g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'normal', (100, 20, 20)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (0, 10, 10)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (100, 10, 10)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'variance', 'bellman', (0, 10, 10)))
 
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40), (0, 80, 80)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'variance', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40), (0, 80, 80)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40), (0, 80, 80), (0, 160, 160)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40), (0, 80, 80), (0, 160, 160), (0, 320, 320)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40), (0, 80, 80), (0, 160, 160), (0, 320, 320), (0, 640, 640)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (1.25, 1.25), 'rl', 'none', 'bellman', (0, 2.5, 2.5), (0, 5, 5), (0, 10, 10), (0, 20, 20), (0, 40, 40), (0, 80, 80), (0, 160, 160), (0, 320, 320), (0, 1280, 1280)))
+
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (10, 10), 'rl', 'none', 'simple'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'simple'))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (0, 10, 10)))
+#g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'simple', (0, 10, 10)))
+
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'none', 'bellman'))
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
 parser.add_argument('-j', '--jobs', metavar='N', type=int,
@@ -113,7 +134,8 @@ class Experiment:
     self.div_y = ep_tuple[2][1]
     self.credit_assignment = ep_tuple[3]
     self.credit_modification = ep_tuple[4]
-    self.alpha = ep_tuple[5]
+    self.alpha = 'normal'
+    self.variance = ep_tuple[5]
     self.sp = []
     for sp in ep_tuple[6:]:
       if len(sp) != 3:
@@ -129,7 +151,8 @@ class Experiment:
             '--initial', str(self.init_min_x), str(self.init_min_y), str(self.init_max_x), str(self.init_max_y),
             '--credit-assignment', str(self.credit_assignment),
             '--credit-modification', str(self.credit_modification),
-            '--alpha', str(self.alpha)]
+            '--alpha', str(self.alpha),
+            '--variance', str(self.variance)]
     for sp in self.sp:
       args += ['--sp-special', str(sp[0]), str(sp[1]), str(sp[2])]
     return args
@@ -160,7 +183,7 @@ for ep_tuple in g_ep_tuples:
     dir = dir[len(dir) - 1]
   else:
     dir = ep_tuple[0]
-  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1])
+  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) + '_' + str(ep_tuple[5])
   for i in range(6, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
@@ -195,7 +218,11 @@ for ep_tuple in g_ep_tuples:
     rl_rules_extra = dir + '/puddleworld-' + str(seed) + '.rl'
     experiment = Experiment(args.episodes, seed, rules, rl_rules_out, output, rl_rules_extra, ep_tuple)
     experiments.append(experiment)
-    print experiment.get_args()
+    a = experiment.get_args()
+    s = a[0]
+    for ss in a[1:]:
+      s += ' ' + ss
+    print s
 
 class Progress:
   def __init__(self, experiments):
