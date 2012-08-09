@@ -462,24 +462,20 @@ int main(int argc, char ** argv) {
     }
 
     do {
-      if(game.debugging()) {
-#ifdef WIN32
-        Sleep(100);
-#else
-        usleep(100000);
-#endif
-        
+      if(force_debugging && game.debugging())
         force_debugging = false;
-      }
-      else if(force_debugging) {
+      if(force_debugging || game.debugging()) {
 #ifdef WIN32
         Sleep(100);
 #else
         usleep(100000);
 #endif
       }
-      else
+      else {
+        if(game.is_running())
+          game.StopSelf();
         game.run();
+      }
     }while(!game.is_finished());
 
 //       if(game.is_success()) {
@@ -579,6 +575,14 @@ bool PuddleWorld::SpawnDebugger() {
 bool PuddleWorld::debugging() {
   m_kernel->GetAllConnectionInfo();
   return m_kernel->GetNumberConnections() > 1;
+}
+
+bool PuddleWorld::is_running() {
+  return m_agent->GetRunState() == sml::sml_RUNSTATE_RUNNING;
+}
+
+bool PuddleWorld::StopSelf() {
+  return m_agent->StopSelf();
 }
 
 void PuddleWorld::update() {

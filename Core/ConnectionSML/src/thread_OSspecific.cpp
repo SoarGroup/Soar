@@ -222,8 +222,8 @@ public:
 	void TriggerEvent()				{ 
 		pthread_mutex_lock(&m_mutex); 
 		m_signaled = true; 
+    pthread_cond_signal(&m_cond); 
 		pthread_mutex_unlock(&m_mutex); 
-		pthread_cond_signal(&m_cond); 
 	}
 } ;
 

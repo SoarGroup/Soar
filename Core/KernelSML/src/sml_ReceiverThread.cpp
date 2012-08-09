@@ -70,6 +70,10 @@ void ReceiverThread::Run()
 			// Record the time of the last incoming message
 			last = clock() ;
 		}
+    else {
+      sml::Sleep(0, 10);
+      continue;
+    }
 
 		clock_t current = clock() ;
 
