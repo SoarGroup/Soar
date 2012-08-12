@@ -1011,24 +1011,48 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
       if(cand->rl_contribution) {
         cand->rl_intolerable_variance = true;
 
-        double total_influence = 0.0;
-        double total_variance = 0.0;
-        double q_value = 0.0;
-        ITERATE_INFLUENCE_PRODUCTIONS(cand) {
-          if(prod2->rl_update_count < 10 ||
-             prod2->rl_variance_total < 0.001
-          ) {
-            cand->rl_intolerable_variance = false;
-            break;
+        bool force_tie = false;
+//         std::cerr << cand->inst->prod->name->sc.name << std::endl;
+//         std::cerr << cand->id->id.name_letter << cand->id->id.name_number
+//                   << " ^" << cand->attr->sc.name
+//                   << " " << cand->value->id.name_letter << cand->value->id.name_number
+//                   << " is" << (cand->value->id.isa_operator ? "" : " not") << " an operator." << std::endl;
+        for(slot *s = cand->value->id.slots; s; s = s->next) {
+//           std::cerr << "  slot " << s << std::endl;
+          for(wme *w = s->wmes; w; w = w->next) {
+//             std::cerr << "  " << w->id->id.name_letter << w->id->id.name_number
+//                       << " ^" << w->attr->sc.name
+//                       << " " << int(w->value->common.symbol_type) << std::endl;
+            if(w->attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE &&
+               w->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE &&
+               !strcmp(w->attr->sc.name, "force-tie") &&
+               !strcmp(w->value->sc.name, "true"))
+            {
+              force_tie = true;
+            }
           }
+        }
 
-          total_influence += prod2->rl_influence_total;
-          total_variance += prod2->rl_variance_total;
-          q_value += prod2->rl_ecr + prod2->rl_efr;
-        } DONE_INFLUENCE_PRODUCTIONS;
+        if(!force_tie) {
+          double total_influence = 0.0;
+          double total_variance = 0.0;
+          double q_value = 0.0;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            if(prod2->rl_update_count < 10 ||
+              prod2->rl_variance_total < 0.001
+            ) {
+              cand->rl_intolerable_variance = false;
+              break;
+            }
 
-        if(total_variance < thisAgent->variance + 3.84 * thisAgent->variance_variance)
-          cand->rl_intolerable_variance = false;
+            total_influence += prod2->rl_influence_total;
+            total_variance += prod2->rl_variance_total;
+            q_value += prod2->rl_ecr + prod2->rl_efr;
+          } DONE_INFLUENCE_PRODUCTIONS;
+
+          if(total_variance < thisAgent->variance + 3.84 * thisAgent->variance_variance)
+            cand->rl_intolerable_variance = false;
+        }
 
         if(cand->rl_intolerable_variance) {
           if(intolerable_variance_tail)
