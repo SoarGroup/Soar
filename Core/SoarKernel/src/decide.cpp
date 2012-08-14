@@ -907,6 +907,93 @@ void do_buffered_link_changes (agent* thisAgent) {
 
 void update_influence(agent* const &thisAgent, slot* const &slot, preference * const &candidates, preference * &selected) ///< bazald
 {
+  const bool variance_mod = thisAgent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
+
+  for(preference *cand = candidates; cand; cand = cand->next_candidate) {
+    if(cand->inst && cand->inst->prod) {
+      const production * const &prod = cand->inst->prod;
+
+      /*if(cand->rl_contribution) not yet usable */ {
+        /// Assign credit to different RL rules according to
+        ///   even: previously only method, still the default - simply split credit evenly between RL rules
+        ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
+        ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
+        ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
+        if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
+          double total_credit = 0.0;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            total_credit += 1.0 / (log(prod2->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
+          } DONE_INFLUENCE_PRODUCTIONS;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            prod2->rl_credit = (1.0 / (log(prod2->rl_update_count + 1.0) + 1.0)) / total_credit;
+          } DONE_INFLUENCE_PRODUCTIONS;
+        }
+        else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
+          double total_credit = 0.0;
+
+          const double uc_limit = 10;
+          double total_uc_credit = 0.0;
+          double max_ulimit = 0.0;
+          double max_uc_count = 0.0;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            const double uc = prod2->rl_update_count + 1.0;
+            const double credit = 1.0 / uc;
+
+            total_credit += credit;
+
+            if(variance_mod && uc < uc_limit) {
+              total_uc_credit += credit;
+
+              if(uc > max_ulimit) {
+                max_ulimit = uc;
+                max_uc_count = 1.0;
+              }
+              else if(uc == max_ulimit)
+                ++max_uc_count;
+            }
+          } DONE_INFLUENCE_PRODUCTIONS;
+
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            const double uc = prod2->rl_update_count + 1.0;
+
+            if(variance_mod && uc < uc_limit)
+              if(uc == max_ulimit)
+                prod2->rl_credit = total_uc_credit / max_uc_count;
+              else
+                prod2->rl_credit = 0.0;
+            else {
+              const double credit = 1.0 / uc;
+              prod2->rl_credit = credit / total_credit;
+            }
+          } DONE_INFLUENCE_PRODUCTIONS;
+        }
+        else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
+          double total_credit = 0.0;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            total_credit += (1.0 / prod2->firing_count); ///< has fired already
+          } DONE_INFLUENCE_PRODUCTIONS;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            prod2->rl_credit = (1.0 / prod2->firing_count) / total_credit;
+          } DONE_INFLUENCE_PRODUCTIONS;
+        }
+        else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
+          double num_rules = 0.0;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            ++num_rules;
+          } DONE_INFLUENCE_PRODUCTIONS;
+          const double value = 1.0 / num_rules;
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            prod2->rl_credit = value;
+          } DONE_INFLUENCE_PRODUCTIONS;
+        }
+        else
+          abort();
+      }
+    }
+  }
+
+
+
   const double prob = exploration_probability_according_to_policy(thisAgent, slot, candidates, selected);
 //   std::cerr << "Probability of selection is " << prob << std::endl;
   assert(prob > 0.0);
@@ -1011,7 +1098,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
       if(cand->rl_contribution) {
         cand->rl_intolerable_variance = true;
 
-        bool force_tie = false;
+        int force_tie = 0;
 //         std::cerr << cand->inst->prod->name->sc.name << std::endl;
 //         std::cerr << cand->id->id.name_letter << cand->id->id.name_number
 //                   << " ^" << cand->attr->sc.name
@@ -1025,10 +1112,12 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //                       << " " << int(w->value->common.symbol_type) << std::endl;
             if(w->attr->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE &&
                w->value->common.symbol_type == SYM_CONSTANT_SYMBOL_TYPE &&
-               !strcmp(w->attr->sc.name, "force-tie") &&
-               !strcmp(w->value->sc.name, "true"))
+               !strcmp(w->attr->sc.name, "force-tie"))
             {
-              force_tie = true;
+              if(!strcmp(w->value->sc.name, "true"))
+                force_tie |= 1;
+              else if(!strcmp(w->value->sc.name, "false"))
+                force_tie |= 2;
             }
           }
         }
@@ -1053,6 +1142,12 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
           if(total_variance < thisAgent->variance + 3.84 * thisAgent->variance_variance)
             cand->rl_intolerable_variance = false;
         }
+        else if(force_tie == 1)
+          cand->rl_intolerable_variance = true;
+        else if(force_tie == 2)
+          cand->rl_intolerable_variance = false;
+        else
+          abort();
 
         if(cand->rl_intolerable_variance) {
           if(intolerable_variance_tail)

@@ -77,6 +77,7 @@ g_ep_tuples = []
 #g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'bellman', (0, 10, 10)))
 #g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'simple', (0, 10, 10)))
 
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'none', 'simple', (0, 1, 1), (0, 1, 1), (0, 1, 2), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 4, 8), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'none', 'bellman'))
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
