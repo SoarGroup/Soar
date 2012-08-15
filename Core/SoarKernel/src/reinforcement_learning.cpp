@@ -935,89 +935,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 
 
 
-      const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
-
-      {
-        /*if(cand->rl_contribution) not yet usable */ {
-          /// Assign credit to different RL rules according to
-          ///   even: previously only method, still the default - simply split credit evenly between RL rules
-          ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
-          ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
-          ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
-          if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
-            double total_credit = 0.0;
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              total_credit += 1.0 / (log((*prod2)->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
-            }
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              (*prod2)->rl_credit = (1.0 / (log((*prod2)->rl_update_count + 1.0) + 1.0)) / total_credit;
-            }
-          }
-          else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
-            double total_credit = 0.0;
-
-            const double uc_limit = 10;
-            double total_uc_credit = 0.0;
-            double max_ulimit = 0.0;
-            double max_uc_count = 0.0;
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              const double uc = (*prod2)->rl_update_count + 1.0;
-              const double credit = 1.0 / uc;
-
-              total_credit += credit;
-
-              if(variance_mod && uc < uc_limit) {
-                total_uc_credit += credit;
-
-                if(uc > max_ulimit) {
-                  max_ulimit = uc;
-                  max_uc_count = 1.0;
-                }
-                else if(uc == max_ulimit)
-                  ++max_uc_count;
-              }
-            }
-
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              const double uc = (*prod2)->rl_update_count + 1.0;
-
-              if(variance_mod && uc < uc_limit)
-                if(uc == max_ulimit)
-                  (*prod2)->rl_credit = total_uc_credit / max_uc_count;
-                else
-                  (*prod2)->rl_credit = 0.0;
-              else {
-                const double credit = 1.0 / uc;
-                (*prod2)->rl_credit = credit / total_credit;
-              }
-            }
-          }
-          else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
-            double total_credit = 0.0;
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              total_credit += (1.0 / (*prod2)->firing_count); ///< has fired already
-            }
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              (*prod2)->rl_credit = (1.0 / (*prod2)->firing_count) / total_credit;
-            }
-          }
-          else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
-            double num_rules = 0.0;
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              ++num_rules;
-            }
-            const double value = 1.0 / num_rules;
-            for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-              (*prod2)->rl_credit = value;
-            }
-          }
-          else
-            abort();
-        }
-      }
-
-
-
 			// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
 			if ( lambda == 0 )
 			{
@@ -1048,6 +965,92 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 			double sum_old_efr = 0.0;
 			if ( !data->prev_op_rl_rules->empty() )
 			{
+
+
+
+        const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
+
+        {
+          /*if(cand->rl_contribution) not yet usable */ {
+            /// Assign credit to different RL rules according to
+            ///   even: previously only method, still the default - simply split credit evenly between RL rules
+            ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
+            ///   rl: RL update counts - split by the inverse of how frequently each Q-value (RL rule) has been updated
+            ///   logrl: the same as 'rl', but the inverse of the log of the frequency -- should be sort of between rl and even
+            if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_logrl) {
+              double total_credit = 0.0;
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                total_credit += 1.0 / (log((*prod2)->rl_update_count + 1.0) + 1.0); ///< hasn't updated yet
+              }
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                (*prod2)->rl_credit = (1.0 / (log((*prod2)->rl_update_count + 1.0) + 1.0)) / total_credit;
+              }
+            }
+            else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
+              double total_credit = 0.0;
+
+              const double uc_limit = 10;
+              double total_uc_credit = 0.0;
+              double max_ulimit = 0.0;
+              double max_uc_count = 0.0;
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                const double uc = (*prod2)->rl_update_count + 1.0;
+                const double credit = 1.0 / uc;
+
+                total_credit += credit;
+
+                if(variance_mod && uc < uc_limit) {
+                  total_uc_credit += credit;
+
+                  if(uc > max_ulimit) {
+                    max_ulimit = uc;
+                    max_uc_count = 1.0;
+                  }
+                  else if(uc == max_ulimit)
+                    ++max_uc_count;
+                }
+              }
+
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                const double uc = (*prod2)->rl_update_count + 1.0;
+
+                if(variance_mod && uc < uc_limit)
+                  if(uc == max_ulimit)
+                    (*prod2)->rl_credit = total_uc_credit / max_uc_count;
+                  else
+                    (*prod2)->rl_credit = 0.0;
+                else {
+                  const double credit = 1.0 / uc;
+                  (*prod2)->rl_credit = credit / total_credit;
+                }
+              }
+            }
+            else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
+              double total_credit = 0.0;
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                total_credit += (1.0 / (*prod2)->firing_count); ///< has fired already
+              }
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                (*prod2)->rl_credit = (1.0 / (*prod2)->firing_count) / total_credit;
+              }
+            }
+            else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
+              double num_rules = 0.0;
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                ++num_rules;
+              }
+              const double value = 1.0 / num_rules;
+              for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
+                (*prod2)->rl_credit = value;
+              }
+            }
+            else
+              abort();
+          }
+        }
+
+
+
 				rl_rule_list::iterator p;
 				
 				for ( p=data->prev_op_rl_rules->begin(); p!=data->prev_op_rl_rules->end(); p++ )
@@ -1066,6 +1069,8 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 						(*data->eligibility_traces)[*p] = (*p)->rl_credit; ///< bazald
 					}
 				}
+
+        data->prev_op_rl_rules->clear(); ///< bazald
 			}
 
       const double sum_old_combined = sum_old_ecr + sum_old_efr; ///< bazald

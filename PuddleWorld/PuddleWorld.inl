@@ -26,10 +26,11 @@ PuddleWorld::PuddleWorld(const float &initial_min_x,
                          const float &initial_max_y,
                          const std::string &agent_productions,
                          const bool &remote,
+                         const int &port,
                          sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
-           remote ? sml::Kernel::CreateKernelInNewThread() :
-           sml::Kernel::CreateKernelInCurrentThread(true)),
+           remote ? sml::Kernel::CreateKernelInNewThread(port) :
+           sml::Kernel::CreateKernelInCurrentThread(true, port)),
   m_agent(m_kernel, kernel ? "" : "PuddleWorld"),
   m_reward_total(0.0f),
   m_initial_min_x(initial_min_x),

@@ -60,9 +60,7 @@ inline bool arg_help(char ** &arg)
   cout << "Options:" << endl
             << "  --help                          prints this help" << endl
             << "  --remote [ip[:port]]            to use a remote Soar kernel" << endl
-            << "  --ip                            to specify an IP address (implies remote" << endl
-            << "                                       Soar kernel)" << endl
-            << "  --port                          to specify a port address (implies remote" << endl
+            << "  --port                          to specify a port address (does not imply remote" << endl
             << "                                       Soar kernel)" << endl
             << "  --episodes count                to specify the maximum number" << endl
             << "                                       of episodes [1000]" << endl
@@ -83,7 +81,6 @@ inline bool arg_help(char ** &arg)
 }
 
 inline bool arg_remote(bool &remote,
-                       string &ip_address,
                        int &port,
                        char ** &arg,
                        char ** const &arg_end)
@@ -101,48 +98,17 @@ inline bool arg_remote(bool &remote,
 
   ++arg;
 
-  const string ip_port = *arg;
-  const size_t colon = ip_port.find(':');
-
-  if(colon != string::npos) {
-    ip_address = ip_port.substr(0, colon);
-    from_string(port, *arg + (colon + 1));
-  }
-  else
-    ip_address = ip_port;
+  from_string(port, *arg);
 
   return true;
 }
 
-inline bool arg_ip(bool &remote,
-                   string &ip_address,
-                   char ** &arg,
-                   char ** const &arg_end)
-{
-  if(strcmp(*arg, "--ip"))
-    return false;
-
-  remote = true;
-
-  if(++arg == arg_end) {
-    cerr << "'--ip' requires an argument of the form 'xxx.xxx.xxx.xxx'";
-    exit(2);
-  }
-
-  ip_address = *arg;
-
-  return true;
-}
-
-inline bool arg_port(bool &remote,
-                     int &port,
+inline bool arg_port(int &port,
                      char ** &arg,
                      char ** const &arg_end)
 {
   if(strcmp(*arg, "--port"))
     return false;
-
-  remote = true;
 
   if(++arg == arg_end) {
     cerr << "'--port' requires an argument of the form 'xxxxx'";
@@ -412,9 +378,8 @@ int main(int argc, char ** argv) {
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
-       !arg_remote       (remote, ip_address, port,                    arg, arg_end) &&
-       !arg_ip           (remote, ip_address,                          arg, arg_end) &&
-       !arg_port         (remote,             port,                    arg, arg_end) &&
+       !arg_remote       (remote,                   port,              arg, arg_end) &&
+       !arg_port         (                          port,              arg, arg_end) &&
        !arg_rules        (                          rules,             arg, arg_end) &&
        !arg_episodes     (                          episodes,          arg, arg_end) &&
        !arg_seed         (                          seed,              arg, arg_end) &&
@@ -436,7 +401,7 @@ int main(int argc, char ** argv) {
   if(rules == PUDDLEWORLD_AGENT_PRODUCTIONS)
     set_working_directory_to_executable_path();
 
-  PuddleWorld game(initial_min_x, initial_min_y, initial_max_x, initial_max_y, rules, remote);
+  PuddleWorld game(initial_min_x, initial_min_y, initial_max_x, initial_max_y, rules, remote, port);
   srand(seed);
   game.srand(seed);
 

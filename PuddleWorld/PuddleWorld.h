@@ -34,6 +34,7 @@ public:
                      const float &initial_max_y,
                      const std::string &agent_productions = PUDDLEWORLD_AGENT_PRODUCTIONS,
                      const bool &remote = false,
+                     const int &port = sml::Kernel::kDefaultSMLPort,
                      sml::Kernel * const kernel = 0);
   inline ~PuddleWorld();
 
