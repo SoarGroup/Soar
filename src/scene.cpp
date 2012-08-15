@@ -40,11 +40,12 @@ bool is_native_prop(const string &name, char &type, int &dim) {
 }
 
 scene::scene(const string &name, drawer *d) 
-: name(name), draw(d), dirty(true)
+: name(name), draw(d), dirty(true), nodes(1)
 {
 	root = new group_node("world");
-	nodes["world"].node = root;
+	nodes[0].node = root;
 	root->listen(this);
+	node_ids["world"] = 0;
 }
 
 scene::~scene() {
@@ -67,7 +68,7 @@ scene *scene::clone() const {
 	*/
 	c->nodes = nodes;
 	for(i = all_nodes.begin(); i != all_nodes.end(); ++i) {
-		c->nodes[(**i).get_name()].node = *i;
+		c->nodes[c->node_ids[(**i).get_name()]].node = *i;
 		(**i).listen(c);
 		if (!(**i).is_group()) {
 			c->cdetect.add_node(*i);
@@ -78,11 +79,19 @@ scene *scene::clone() const {
 }
 
 sgnode *scene::get_node(const string &name) {
-	node_map::const_iterator i;
-	if ((i = nodes.find(name)) == nodes.end()) {
+	int i;
+	if (!map_get(node_ids, name, i)) {
 		return NULL;
 	}
-	return i->second.node;
+	return nodes[i].node;
+}
+
+sgnode const *scene::get_node(const string &name) const {
+	int i;
+	if (!map_get(node_ids, name, i)) {
+		return NULL;
+	}
+	return nodes[i].node;
 }
 
 group_node *scene::get_group(const string &name) {
@@ -93,28 +102,20 @@ group_node *scene::get_group(const string &name) {
 	return NULL;
 }
 
-sgnode const *scene::get_node(const string &name) const {
-	node_map::const_iterator i;
-	if ((i = nodes.find(name)) == nodes.end()) {
-		return NULL;
-	}
-	return i->second.node;
-}
-
 void scene::get_all_nodes(vector<sgnode*> &n) {
-	node_map::const_iterator i;
+	node_vec::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		if (i->first != "world") {
-			n.push_back(i->second.node);
+		if (i->node->get_name() != "world") {
+			n.push_back(i->node);
 		}
 	}
 }
 
 void scene::get_all_nodes(vector<const sgnode*> &n) {
-	node_map::const_iterator i;
+	node_vec::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		if (i->first != "world") {
-			n.push_back(i->second.node);
+		if (i->node->get_name() != "world") {
+			n.push_back(i->node);
 		}
 	}
 }
@@ -130,11 +131,11 @@ bool scene::add_node(const string &name, sgnode *n) {
 }
 
 bool scene::del_node(const string &name) {
-	node_map::iterator i;
-	if ((i = nodes.find(name)) == nodes.end()) {
+	int i;
+	if (!map_get(node_ids, name, i)) {
 		return false;
 	}
-	delete i->second.node;
+	delete nodes[i].node;
 	/* rest is handled in node_update */
 	return true;
 }
@@ -282,7 +283,7 @@ int scene::parse_change(vector<string> &f) {
 }
 
 int scene::parse_property(vector<string> &f) {
-	node_map::iterator i;
+	int i;
 	if (f.size() != 3) {
 		return f.size();
 	}
@@ -292,10 +293,10 @@ int scene::parse_property(vector<string> &f) {
 	if (!(ss >> val)) {
 		return 2;
 	}
-	if ((i = nodes.find(f[0])) == nodes.end()) {
+	if (!map_get(node_ids, f[0], i)) {
 		return 0;
 	}
-	i->second.props[f[1]] = val;
+	nodes[i].props[f[1]] = val;
 	return -1;
 }
 
@@ -346,54 +347,62 @@ void scene::parse_sgel(const string &s) {
 }
 
 void scene::get_property_names(vector<string> &names) const {
-	node_map::const_iterator i;
+	node_vec::const_iterator i;
 	property_map::const_iterator j;
 	int k;
 	stringstream ss;
 	
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
+		if (!i->node) {
+			continue;
+		}
+		string name = i->node->get_name();
 		for (k = 0; k < NUM_NATIVE_PROPS; ++k) {
 			ss.str("");
-			ss << i->first << ":" << NATIVE_PROPS[k];
+			ss << name << ":" << NATIVE_PROPS[k];
 			names.push_back(ss.str());
 		}
-		for (j = i->second.props.begin(); j != i->second.props.end(); ++j) {
+		for (j = i->props.begin(); j != i->props.end(); ++j) {
 			ss.str("");
-			ss << i->first << ":" << j->first;
+			ss << name << ":" << j->first;
 			names.push_back(ss.str());
 		}
 	}
 }
 
 void scene::get_properties(rvec &vals) const {
-	node_map::const_iterator i;
+	node_vec::const_iterator i;
 	property_map::const_iterator j;
 	int k = 0;
 	
 	vals.resize(get_dof());
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
+		if (!i->node) {
+			continue;
+		}
 		for (const char *t = "prs"; *t != '\0'; ++t) {
-			vec3 trans = i->second.node->get_trans(*t);
+			vec3 trans = i->node->get_trans(*t);
 			vals.segment(k, 3) = trans;
 			k += 3;
 		}
-		for (j = i->second.props.begin(); j != i->second.props.end(); ++j) {
+		for (j = i->props.begin(); j != i->props.end(); ++j) {
 			vals[k++] = j->second;
 		}
 	}
 }
 
-bool scene::get_property(const string &obj, const string &prop, float &val) const {
-	node_map::const_iterator i;
+bool scene::get_property(const string &name, const string &prop, float &val) const {
+	int i;
 	property_map::const_iterator j;
 	char type; int d;
-	if ((i = nodes.find(obj)) == nodes.end()) {
+
+	if (!map_get(node_ids, name, i)) {
 		return false;
 	}
 	if (is_native_prop(prop, type, d)) {
-		val = i->second.node->get_trans(type)[d];
+		val = nodes[i].node->get_trans(type)[d];
 	} else {
-		if ((j = i->second.props.find(prop)) == i->second.props.end()) {
+		if ((j = nodes[i].props.find(prop)) == nodes[i].props.end()) {
 			return false;
 		}
 		val = j->second;
@@ -401,37 +410,37 @@ bool scene::get_property(const string &obj, const string &prop, float &val) cons
 	return true;
 }
 
-bool scene::add_property(const string &obj, const string &prop, float val) {
-	node_map::iterator i;
+bool scene::add_property(const string &name, const string &prop, float val) {
+	int i;
 	property_map::iterator j;
 	char type; int d;
-	if ((i = nodes.find(obj)) == nodes.end()) {
+	if (!map_get(node_ids, name, i)) {
 		return false;
 	}
 	if (is_native_prop(prop, type, d)) {
 		return false;
 	} else {
-		if ((j = i->second.props.find(prop)) != i->second.props.end()) {
+		if ((j = nodes[i].props.find(prop)) != nodes[i].props.end()) {
 			return false;
 		}
-		i->second.props[prop] = val;
+		nodes[i].props[prop] = val;
 	}
 	return true;
 }
 
 bool scene::set_property(const string &obj, const string &prop, float val) {
-	node_map::iterator i;
+	int i;
 	property_map::iterator j;
 	char type; int d;
-	if ((i = nodes.find(obj)) == nodes.end()) {
+	if (!map_get(node_ids, name, i)) {
 		return false;
 	}
 	if (is_native_prop(prop, type, d)) {
-		vec3 trans = i->second.node->get_trans(type);
+		vec3 trans = nodes[i].node->get_trans(type);
 		trans[d] = val;
-		i->second.node->set_trans(type, trans);
+		nodes[i].node->set_trans(type, trans);
 	} else {
-		if ((j = i->second.props.find(prop)) == i->second.props.end()) {
+		if ((j = nodes[i].props.find(prop)) == nodes[i].props.end()) {
 			return false;
 		}
 		j->second = val;
@@ -440,13 +449,16 @@ bool scene::set_property(const string &obj, const string &prop, float val) {
 }
 
 bool scene::set_properties(const rvec &vals) {
-	node_map::iterator i;
+	node_vec::iterator i;
 	property_map::iterator j;
 	int k1, k2, l = 0;
 	const char *types = "prs";
 	vec3 trans;
 	
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
+		if (!i->node) {
+			continue;
+		}
 		for (k1 = 0; k1 < 3; ++k1) {
 			for (k2 = 0; k2 < 3; ++k2) {
 				trans[k2] = vals[l++];
@@ -454,9 +466,9 @@ bool scene::set_properties(const rvec &vals) {
 					return false;
 				}
 			}
-			i->second.node->set_trans(types[k1], trans);
+			i->node->set_trans(types[k1], trans);
 		}
-		for (j = i->second.props.begin(); j != i->second.props.end(); ++j) {
+		for (j = i->props.begin(); j != i->props.end(); ++j) {
 			j->second = vals[l++];
 			if (l >= vals.size()) {
 				return false;
@@ -466,17 +478,17 @@ bool scene::set_properties(const rvec &vals) {
 	return true;
 }
 
-bool scene::remove_property(const std::string &obj, const std::string &prop) {
-	node_map::iterator i;
+bool scene::remove_property(const std::string &name, const std::string &prop) {
+	int i;
 	property_map::iterator j;
 	
-	if ((i = nodes.find(obj)) == nodes.end()) {
+	if (!map_get(node_ids, name, i)) {
 		return false;
 	}
-	if ((j = i->second.props.find(prop)) == i->second.props.end()) {
+	if ((j = nodes[i].props.find(prop)) == nodes[i].props.end()) {
 		return false;
 	}
-	i->second.props.erase(j);
+	nodes[i].props.erase(j);
 	return true;
 }
 
@@ -486,9 +498,11 @@ int scene::num_nodes() const {
 
 int scene::get_dof() const {
 	int dof = 0;
-	node_map::const_iterator i;
+	node_vec::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		dof += NUM_NATIVE_PROPS + i->second.props.size();
+		if (i->node) {
+			dof += NUM_NATIVE_PROPS + i->props.size();
+		}
 	}
 	return dof;
 }
@@ -496,12 +510,16 @@ int scene::get_dof() const {
 void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	sgnode *child;
 	group_node *g;
+	int i;
+	
 	switch (t) {
 		case sgnode::CHILD_ADDED:
 			g = n->as_group();
 			child = g->get_child(added_child);
 			child->listen(this);
-			nodes[child->get_name()].node = child;
+			node_ids[child->get_name()] = nodes.size();
+			nodes.push_back(node_info());
+			nodes.back().node = child;
 			if (!child->is_group()) {
 				cdetect.add_node(child);
 			}
@@ -513,7 +531,12 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			if (!n->is_group()) {
 				cdetect.del_node(n);
 			}
-			nodes.erase(n->get_name());
+			if (!map_get(node_ids, n->get_name(), i)) {
+				assert(false);
+			}
+			nodes[i].node = NULL;
+			nodes[i].props.clear();
+			node_ids.erase(n->get_name());
 			if (draw && n->get_name() != "world") {
 				draw->del(name, n);
 			}
@@ -536,33 +559,6 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 			break;
 	}
 	dirty = true;
-}
-
-void scene::dump_sgel(ostream &os) {
-	vector<sgnode*> all_nodes;
-	root->walk(all_nodes);
-	
-	for (int i = 0; i < all_nodes.size(); ++i) {
-		sgnode *n = all_nodes[i];
-		if (n->get_name() == "world") {
-			continue;
-		}
-		assert(nodes.find(n->get_name()) != nodes.end());
-		const node_info &info = nodes[name];
-		const property_map &m = info.props;
-		string shape_sgel;
-		n->get_shape_sgel(shape_sgel);
-		os << "a " << n->get_name() << " " << n->get_parent()->get_name() << " "
-		   << shape_sgel << " "
-		   << "p " << n->get_trans('p') << " "
-		   << "r " << n->get_trans('r') << " "
-		   << "s " << n->get_trans('s') << endl;
-
-		property_map::const_iterator j;
-		for (j = info.props.begin(); j != info.props.end(); ++j) {
-			os << "p " << n->get_name() << " " << j->first << " " << j->second << endl;
-		}
-	}
 }
 
 const vector<bool>& scene::get_atom_vals() {

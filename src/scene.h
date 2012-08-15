@@ -44,7 +44,6 @@ public:
 	bool remove_property(const std::string &obj, const std::string &prop);
 	
 	void parse_sgel(const std::string &s);
-	void dump_sgel(std::ostream &os);
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added_child);
 	
@@ -54,10 +53,10 @@ public:
 	bool intersects(const sgnode *a, const sgnode *b);
 	
 private:
-	int  parse_add(std::vector<std::string> &f);
-	int  parse_del(std::vector<std::string> &f);
-	int  parse_change(std::vector<std::string> &f);
-	int  parse_property(std::vector<std::string> &f);
+	int parse_add(std::vector<std::string> &f);
+	int parse_del(std::vector<std::string> &f);
+	int parse_change(std::vector<std::string> &f);
+	int parse_property(std::vector<std::string> &f);
 
 	typedef std::map<std::string, float> property_map;
 	
@@ -66,18 +65,20 @@ private:
 		property_map props;
 	};
 	
-	typedef std::map<std::string, node_info> node_map;
+	typedef std::vector<node_info> node_vec;
 
 	std::string  name;
 	std::string  rootname;
 	group_node  *root;
-	node_map     nodes;
+	node_vec     nodes;
 	drawer      *draw;
 	
 	std::vector<bool> atomvals;
 	bool dirty;
 	
 	collision_detector cdetect;
+
+	std::map<std::string, int> node_ids;
 };
 
 #endif
