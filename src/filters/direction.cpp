@@ -57,17 +57,17 @@ bool west_of(scene *scn, const vector<const sgnode*> &args) {
 	return direction(args[0], args[1], 0, -1);
 }
 
-bool vertically_aligned(scene *scn, const vector<const sgnode*> &args) {
+bool x_aligned(scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 0, 0);
 }
 
-bool horizontally_aligned(scene *scn, const vector<const sgnode*> &args) {
+bool y_aligned(scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 1, 0);
 }
 
-bool planar_aligned(scene *scn, const vector<const sgnode*> &args) {
+bool z_aligned(scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 2, 0);
 }
@@ -127,15 +127,15 @@ filter *make_west_of(Symbol *root, soar_interface *si, scene *scn, filter_input 
 	return new direction_filter(root, si, input, 0, -1);
 }
 
-filter *make_vertically_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_x_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 0, 0);
 }
 
-filter *make_horizontally_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_y_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 1, 0);
 }
 
-filter *make_planar_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
+filter *make_z_aligned(Symbol *root, soar_interface *si, scene *scn, filter_input *input) {
 	return new direction_filter(root, si, input, 2, 0);
 }
 
@@ -196,39 +196,39 @@ filter_table_entry west_of_fill_entry() {
 	return e;
 }
 
-filter_table_entry horizontally_aligned_fill_entry() {
+filter_table_entry x_aligned_fill_entry() {
 	filter_table_entry e;
-	e.name = "horizontally-aligned";
+	e.name = "x-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.ordered = false;
 	e.allow_repeat = false;
-	e.create = &make_horizontally_aligned;
-	e.calc = &horizontally_aligned;
+	e.create = &make_x_aligned;
+	e.calc = &x_aligned;
 	return e;
 }
 
-filter_table_entry vertically_aligned_fill_entry() {
+filter_table_entry y_aligned_fill_entry() {
 	filter_table_entry e;
-	e.name = "vertically-aligned";
+	e.name = "y-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.ordered = false;
 	e.allow_repeat = false;
-	e.create = &make_vertically_aligned;
-	e.calc = &vertically_aligned;
+	e.create = &make_y_aligned;
+	e.calc = &y_aligned;
 	return e;
 }
 
-filter_table_entry planar_aligned_fill_entry() {
+filter_table_entry z_aligned_fill_entry() {
 	filter_table_entry e;
-	e.name = "planar-aligned";
+	e.name = "z-aligned";
 	e.parameters.push_back("a");
 	e.parameters.push_back("b");
 	e.ordered = false;
 	e.allow_repeat = false;
-	e.create = &make_planar_aligned;
-	e.calc = &planar_aligned;
+	e.create = &make_z_aligned;
+	e.calc = &z_aligned;
 	return e;
 }
 
