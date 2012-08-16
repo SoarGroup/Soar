@@ -1038,15 +1038,13 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
  *        split with higher probability for higher variances
  */
 
-byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const &candidates, preference * &selected, const bool &nullify_next_candidate) ///< bazald
+byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const &candidates) ///< bazald
 {
-  if(!thisAgent->rl_params->rl_impasse->get_value()) {
-    if(nullify_next_candidate)
-      selected->next_candidate = 0;
-
+  if(!thisAgent->rl_params->rl_impasse->get_value())
     return NONE_IMPASSE_TYPE;
-  }
-  
+
+  byte impasse_type = NONE_IMPASSE_TYPE;
+
 //   static uint64_t my_id = 0xFFFFFFFFFFFFFFFF;
 //   ++my_id;
 
@@ -1089,14 +1087,12 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
   const double inflated_second_variance = second_variance / max(0.01, 1.0 - second_influence);
 //   std::cerr << "Number of candidates = " << num_candidates << std::endl;
 
-  preference * intolerable_variance_head = 0;
-  preference * intolerable_variance_tail = 0;
   for(preference * cand = candidates; cand; cand = cand->next_candidate) {
     if(cand->inst && cand->inst->prod) {
       const production * const &prod = cand->inst->prod;
 
-      if(cand->rl_contribution) {
-        cand->rl_intolerable_variance = true;
+      /*if(cand->rl_contribution)*/ {
+        cand->rl_intolerable_variance = false;
 
         int force_tie = 0;
 //         std::cerr << cand->inst->prod->name->sc.name << std::endl;
@@ -1123,6 +1119,8 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         }
 
         if(!force_tie) {
+          cand->rl_intolerable_variance = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE] != 0;
+
           double total_influence = 0.0;
           double total_variance = 0.0;
           double q_value = 0.0;
@@ -1139,7 +1137,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
             q_value += prod2->rl_ecr + prod2->rl_efr;
           } DONE_INFLUENCE_PRODUCTIONS;
 
-          if(total_variance < thisAgent->variance + 3.84 * thisAgent->variance_variance)
+          if(total_variance < thisAgent->variance + (1.281552 * 1.281552) * thisAgent->variance_variance)
             cand->rl_intolerable_variance = false;
         }
         else if(force_tie == 1)
@@ -1149,33 +1147,13 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         else
           abort();
 
-        if(cand->rl_intolerable_variance) {
-          if(intolerable_variance_tail)
-            intolerable_variance_tail->next_candidate = cand;
-          else
-            intolerable_variance_head = cand;
-          intolerable_variance_tail = cand;
-        }
+        if(cand->rl_intolerable_variance)
+          impasse_type = TIE_IMPASSE_TYPE;
       }
     }
   }
 
-  if(intolerable_variance_tail) {
-    intolerable_variance_tail->next_candidate = 0;
-    selected = intolerable_variance_head;
-
-//     std::cerr << "Numeric tie impasse" << std::endl;
-
-    return TIE_IMPASSE_TYPE;
-  }
-  else {
-    if(nullify_next_candidate)
-      selected->next_candidate = 0;
-
-//     std::cerr << "No tie impasse" << std::endl;
-
-    return NONE_IMPASSE_TYPE;
-  }
+  return impasse_type;
 }
 
 #undef ITERATE_INFLUENCE_PRODUCTIONS
@@ -1631,21 +1609,18 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 		if (not_all_indifferent) break;
 	} /* end of for cand loop */
 
-	if ( !not_all_indifferent ) 
-	{
-		if ( !consistency )
-		{
-			(*result_candidates) = exploration_choose_according_to_policy( thisAgent, s, candidates ); 
-/// bazald  			(*result_candidates)->next_candidate = NIL;
-		}
-		else
-			*result_candidates = candidates;
+  if ( !not_all_indifferent && consider_impasse_instead_of_rl(thisAgent, candidates) == NONE_IMPASSE_TYPE ) ///< bazald
+  {
+    if ( !consistency )
+    {
+      (*result_candidates) = exploration_choose_according_to_policy( thisAgent, s, candidates ); 
+      (*result_candidates)->next_candidate = NIL;
+    }
+    else
+      *result_candidates = candidates;
 
-    if(!consistency)
-      update_influence(thisAgent, s, candidates, *result_candidates); ///< bazald
-
-		return consider_impasse_instead_of_rl(thisAgent, candidates, *result_candidates, !consistency); ///< bazald NONE_IMPASSE_TYPE
-	}
+    return NONE_IMPASSE_TYPE;
+  }
 
 	/* --- items not all indifferent; for context slots this gives a tie --- */
 	if (s->isa_context_slot) {
@@ -2027,11 +2002,22 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
         remove_wme_from_wm( thisAgent, w );
       }
     /// bazald: remove variance-over-threshold
-    else if(w->attr == thisAgent->rl_over_threshold_constant &&
-            !soar_interface(thisAgent).has_sym(id->id.impasse_wmes, "item", w->value)
-    ) {
-      remove_from_dll(id->id.impasse_wmes, w, next, prev);
-      remove_wme_from_wm(thisAgent, w);
+    else if(w->attr == thisAgent->rl_over_threshold_constant)
+//             && !soar_interface(thisAgent).has_sym(id->id.impasse_wmes, "item", w->value)
+    {
+      for(cand = items; cand; cand = cand->next_candidate) {
+        if(cand->value == w->value) {
+          if(!cand->rl_intolerable_variance)
+            cand = 0;
+
+          break;
+        }
+      }
+
+      if(!cand) {
+        remove_from_dll(id->id.impasse_wmes, w, next, prev);
+        remove_wme_from_wm(thisAgent, w);
+      }
     }
 
       w = next_w;

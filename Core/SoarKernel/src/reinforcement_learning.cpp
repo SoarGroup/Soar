@@ -809,6 +809,8 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 			if (my_agent->rl_params->temporal_discount->get_value() == soar_module::on) {
 				effective_age += data->gap_age;
 			}
+      else ///< bazald
+        data->reward = 0;
 
 			data->reward += ( reward * pow( discount_rate, static_cast< double >( effective_age ) ) );
 		}
@@ -1069,8 +1071,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 						(*data->eligibility_traces)[*p] = (*p)->rl_credit; ///< bazald
 					}
 				}
-
-        data->prev_op_rl_rules->clear(); ///< bazald
 			}
 
       const double sum_old_combined = sum_old_ecr + sum_old_efr; ///< bazald
@@ -1097,6 +1097,11 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 
         bool rl_variance_updated = true; ///< bazald
         double rl_variance_total_total = 0.0; ///< bazald
+
+//         std::cerr << "alpha = " << alpha << std::endl;
+//         std::cerr << "discount = " << discount << std::endl;
+//         std::cerr << "data->reward = " << data->reward << std::endl;
+//         std::cerr << "op_value = " << op_value << std::endl;
 
 				for ( iter = data->eligibility_traces->begin(); iter != data->eligibility_traces->end(); iter++ )
 				{	
@@ -1162,7 +1167,10 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 					new_ecr = ( old_ecr + delta_ecr );
 					new_efr = ( old_efr + delta_efr );
 					new_combined = ( new_ecr + new_efr );
-					
+
+//           std::cerr << old_combined << " -> " << new_combined
+//                     << " or (" << old_ecr << " + " << old_efr << ") -> (" << new_ecr << " + " << new_efr << ')' << std::endl;
+
 					// print as necessary
 					if ( my_agent->sysparams[ TRACE_RL_SYSPARAM ] ) 
 					{
@@ -1230,13 +1238,13 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               prod->rl_variance_total = prod->rl_variance_0 + prod->rl_variance_rest;
             }
 
-//             std::cerr << "V / C of " << prod->name->sc.name << " = "
-//                       << prod->rl_variance_total << " / " << prod->rl_credit << " = "
-//                       << prod->rl_variance_total      /      prod->rl_credit << " | Q / C = "
-//                       << prod->rl_ecr + prod->rl_efr << " / " << prod->rl_credit << " = "
-//                       << prod->rl_ecr + prod->rl_efr      /      prod->rl_credit << " | M2 = "
-//                       << prod->rl_mean2 << ", V_0 = " << prod->rl_variance_0 << ", V_rest = "
-//                       << prod->rl_variance_rest << std::endl;
+// //             std::cerr << "V / C of " << prod->name->sc.name << " = "
+// //                       << prod->rl_variance_total << " / " << prod->rl_credit << " = "
+// //                       << prod->rl_variance_total      /      prod->rl_credit << " | Q / C = "
+// //                       << prod->rl_ecr + prod->rl_efr << " / " << prod->rl_credit << " = "
+// //                       << prod->rl_ecr + prod->rl_efr      /      prod->rl_credit << " | M2 = "
+// //                       << prod->rl_mean2 << ", V_0 = " << prod->rl_variance_0 << ", V_rest = "
+// //                       << prod->rl_variance_rest << std::endl;
           }
           else {
             if(prod->rl_update_count > 1) {
