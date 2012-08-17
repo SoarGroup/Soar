@@ -32,6 +32,7 @@ PuddleWorld::PuddleWorld(const float &initial_min_x,
            remote ? sml::Kernel::CreateKernelInNewThread(port) :
            sml::Kernel::CreateKernelInCurrentThread(true, port)),
   m_agent(m_kernel, kernel ? "" : "PuddleWorld"),
+  m_reward_counter(0),
   m_reward_total(0.0f),
   m_initial_min_x(initial_min_x),
   m_initial_min_y(initial_min_y),

@@ -522,6 +522,7 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
   if(init_soar)
     m_agent->InitSoar();
   
+  m_reward_counter = 0;
   m_reward_total = 0.0f;
 
   m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
@@ -571,6 +572,8 @@ void PuddleWorld::update() {
   // Go through all the commands we've received (if any) since we last ran Soar.
   const int num_commands = m_agent->GetNumberCommands();
 
+  float reward = 0.0f;
+
   for(int i = 0; i < num_commands; ++i) {
     sml::Identifier * const command_ptr = m_agent->GetCommand(i);
 
@@ -614,18 +617,19 @@ void PuddleWorld::update() {
               y = 1.0f;
           }
 
-          float reward = -1.0f;
           if(x >= 0.95f && y <= 0.05f) {
             m_state->Update("terminal");
-            m_reward->Update(reward = 0.0f);
           }
           else if(step == 5000) {
             /// HACK: Force eventual termination
             m_state->Update("terminal");
-            m_reward->Update(reward = -10.0f);
+
+            reward += -10.0f;
           }
           else {
             float dist;
+
+            reward += -1.0f;
 
             /// (.1, .25) to (.45, .25), radius 0.1
             if(x < 0.1f)
@@ -644,8 +648,6 @@ void PuddleWorld::update() {
             else
               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
             reward += -400.0f * max(0.0f, 0.1f - dist);
-
-            m_reward->Update(reward);
           }
 
           m_step->Update(step);
@@ -676,6 +678,14 @@ void PuddleWorld::update() {
     // Then mark the command as completed
     command_ptr->AddStatusComplete();
   }
+
+  if(num_commands || m_reward_counter == 1)
+    m_reward->Update(reward);
+
+  if(num_commands)
+    m_reward_counter = 0;
+  else if(m_reward_counter < 2)
+    ++m_reward_counter;
 
   if(!m_agent->Commit())
     abort();

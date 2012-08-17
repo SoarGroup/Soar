@@ -67,6 +67,7 @@ private:
 
   Soar_Kernel m_kernel;
   Soar_Agent m_agent;
+  int m_reward_counter;
 
   float m_reward_total;
   float m_initial_min_x;

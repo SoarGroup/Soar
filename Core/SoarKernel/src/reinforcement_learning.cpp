@@ -810,6 +810,7 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 							if ( ( x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE ) || ( x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE ) )
 							{
 								reward += get_number_from_symbol( x->value );
+//                 std::cerr << "accumulate reward " << get_number_from_symbol(x->value) << std::endl;
 							}
 						}
 					}
@@ -821,8 +822,8 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 			if (my_agent->rl_params->temporal_discount->get_value() == soar_module::on) {
 				effective_age += data->gap_age;
 			}
-      else ///< bazald
-        data->reward = 0;
+// 			else
+//         data->reward = 0.0; ///< bazald
 
 			data->reward += ( reward * pow( discount_rate, static_cast< double >( effective_age ) ) );
 		}
