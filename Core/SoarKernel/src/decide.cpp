@@ -931,40 +931,40 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
           double total_credit = 0.0;
 
-          const double uc_limit = 10;
-          double total_uc_credit = 0.0;
-          double max_ulimit = 0.0;
-          double max_uc_count = 0.0;
+//           const double uc_limit = 10;
+//           double total_uc_credit = 0.0;
+//           double max_ulimit = 0.0;
+//           double max_uc_count = 0.0;
           ITERATE_INFLUENCE_PRODUCTIONS(cand) {
             const double uc = prod2->rl_update_count + 1.0;
             const double credit = 1.0 / uc;
 
             total_credit += credit;
 
-            if(variance_mod && uc < uc_limit) {
-              total_uc_credit += credit;
-
-              if(uc > max_ulimit) {
-                max_ulimit = uc;
-                max_uc_count = 1.0;
-              }
-              else if(uc == max_ulimit)
-                ++max_uc_count;
-            }
+//             if(variance_mod && uc < uc_limit) {
+//               total_uc_credit += credit;
+// 
+//               if(uc > max_ulimit) {
+//                 max_ulimit = uc;
+//                 max_uc_count = 1.0;
+//               }
+//               else if(uc == max_ulimit)
+//                 ++max_uc_count;
+//             }
           } DONE_INFLUENCE_PRODUCTIONS;
 
           ITERATE_INFLUENCE_PRODUCTIONS(cand) {
             const double uc = prod2->rl_update_count + 1.0;
 
-            if(variance_mod && uc < uc_limit)
-              if(uc == max_ulimit)
-                prod2->rl_credit = total_uc_credit / max_uc_count;
-              else
-                prod2->rl_credit = 0.0;
-            else {
+//             if(variance_mod && uc < uc_limit)
+//               if(uc == max_ulimit)
+//                 prod2->rl_credit = total_uc_credit / max_uc_count;
+//               else
+//                 prod2->rl_credit = 0.0;
+//             else {
               const double credit = 1.0 / uc;
               prod2->rl_credit = credit / total_credit;
-            }
+//             }
           } DONE_INFLUENCE_PRODUCTIONS;
         }
         else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
@@ -1191,7 +1191,7 @@ byte require_preference_semantics (agent *thisAgent, slot *s, preference **resul
   {
 	  rl_tabulate_reward_values( thisAgent );
 	  exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-	  rl_perform_update( thisAgent, candidates, candidates->rl_contribution, s->id ); ///< bazald
+	  rl_perform_update( thisAgent, candidates, candidates, candidates->rl_contribution, s->id ); ///< bazald
   }
 
   return NONE_IMPASSE_TYPE;
@@ -1227,7 +1227,8 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 				{
 					rl_tabulate_reward_values( thisAgent );
 					exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
-					rl_perform_update( thisAgent, force_result, force_result->rl_contribution, s->id ); ///< bazald
+					rl_perform_update( thisAgent, force_result, force_result, force_result->rl_contribution, s->id ); ///< bazald
+          std::cerr << "Possibly bad list of candidates passed to rl_perform_update." << std::endl; ///< bazald
 				}
 
 				return NONE_IMPASSE_TYPE;
@@ -1276,7 +1277,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			// perform update here for just one candidate
 			rl_tabulate_reward_values( thisAgent );
 			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates, candidates->rl_contribution, s->id ); ///< bazald
+			rl_perform_update( thisAgent, candidates, candidates, candidates->rl_contribution, s->id ); ///< bazald
 		}
 
 		return NONE_IMPASSE_TYPE;
@@ -1559,7 +1560,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			// perform update here for just one candidate
 			rl_tabulate_reward_values( thisAgent );
 			exploration_compute_value_of_candidate( thisAgent, candidates, s, 0 );
-			rl_perform_update( thisAgent, candidates, candidates->rl_contribution, s->id ); ///< bazald
+			rl_perform_update( thisAgent, candidates, candidates, candidates->rl_contribution, s->id ); ///< bazald
 		}
 
 		return NONE_IMPASSE_TYPE;
@@ -2439,7 +2440,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
   if ( ( goal != thisAgent->top_goal ) && rl_enabled( thisAgent ) )
   {
 	  rl_tabulate_reward_value_for_goal( thisAgent, goal );
-	  rl_perform_update( thisAgent, 0, true, goal, false ); // this update only sees reward - there is no next state
+	  rl_perform_update( thisAgent, 0, 0, true, goal, false ); // this update only sees reward - there is no next state
 	  rl_clear_refs( goal );
   }
 
@@ -2531,6 +2532,7 @@ void remove_existing_context_and_descendents (agent* thisAgent, Symbol *goal) {
     }
   }
 
+  delete goal->id.rl_info->tsdt_trace; ///< bazald
   goal->id.rl_info->eligibility_traces->~rl_et_map();
   free_with_pool( &( thisAgent->rl_et_pool ),goal->id.rl_info->eligibility_traces  );
   goal->id.rl_info->prev_op_rl_rules->~rl_rule_list();
@@ -2652,6 +2654,7 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
 #else
   id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list();
 #endif
+  id->id.rl_info->tsdt_trace = new TSDT_Trace; ///< bazald
 
   allocate_with_pool( thisAgent, &( thisAgent->epmem_info_pool ), &( id->id.epmem_info ) );
   id->id.epmem_info->last_ol_time = 0;  

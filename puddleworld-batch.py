@@ -83,9 +83,12 @@ g_ep_tuples = []
 
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'none', 'simple', (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'none', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
-g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'none', 'simple'))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'none', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'none', 'simple'))
 
+
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'tsdt', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
 parser.add_argument('-j', '--jobs', metavar='N', type=int,
@@ -141,7 +144,7 @@ class Experiment:
     self.div_x = ep_tuple[2][0]
     self.div_y = ep_tuple[2][1]
     self.credit_assignment = ep_tuple[3]
-    self.credit_modification = ep_tuple[4]
+    self.trace = ep_tuple[4]
     self.alpha = 'normal'
     self.variance = ep_tuple[5]
     self.sp = []
@@ -159,9 +162,10 @@ class Experiment:
             '--rl-rules-out', str(self.rl_rules_out),
             '--initial', str(self.init_min_x), str(self.init_min_y), str(self.init_max_x), str(self.init_max_y),
             '--credit-assignment', str(self.credit_assignment),
-            '--credit-modification', str(self.credit_modification),
             '--alpha', str(self.alpha),
             '--variance', str(self.variance)]
+    if self.trace == 'tsdt':
+      args += ['--tsdt']
     for sp in self.sp:
       args += ['--sp-special', str(sp[0]), str(sp[1]), str(sp[2])]
     return args
@@ -192,7 +196,7 @@ for ep_tuple in g_ep_tuples:
     dir = dir[len(dir) - 1]
   else:
     dir = ep_tuple[0]
-  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) + '_' + str(ep_tuple[5])
+  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) + '_' + str(ep_tuple[4])
   for i in range(6, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")

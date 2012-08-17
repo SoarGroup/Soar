@@ -106,6 +106,16 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
 	et_tolerance = new soar_module::decimal_param( "eligibility-trace-tolerance", 0.001, new soar_module::gt_predicate<double>( 0, false ), new soar_module::f_predicate<double>() );
 	add( et_tolerance );
 
+  // trace
+  trace = new soar_module::constant_param<trace_choices>( "trace", trace_eligibility, new soar_module::f_predicate<trace_choices>() );
+  trace->add_mapping( trace_eligibility, "eligibility" );
+  trace->add_mapping( trace_tsdt, "tsdt" );
+  add( trace );
+
+  // tsdt-cutoff
+  tsdt_cutoff = new soar_module::integer_param( "tsdt-cutoff", 1, new soar_module::gt_predicate<int64_t>( 0, false ), new soar_module::f_predicate<int64_t>() );
+  add( tsdt_cutoff );
+
   // rl-impasse
   rl_impasse = new soar_module::boolean_param( "rl-impasse", soar_module::off, new soar_module::f_predicate<soar_module::boolean>() ); ///< bazald
   add( rl_impasse );
@@ -314,6 +324,8 @@ void rl_reset_data( agent *my_agent )
 	while( goal )
 	{
 		rl_data *data = goal->id.rl_info;
+
+    data->tsdt_trace->clear(); ///< bazald
 
 		data->eligibility_traces->clear();
 		rl_clear_refs( goal );
@@ -899,9 +911,9 @@ void rl_store_data( agent *my_agent, Symbol *goal, preference *cand )
 }
 
 // performs the rl update at a state
-void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *goal, bool update_efr ) ///< bazald
+void rl_perform_update( agent *my_agent, preference *selected, preference *candidates, bool op_rl, Symbol *goal, bool update_efr ) ///< bazald
 {
-  double op_value = cand ? cand->numeric_value : 0.0;
+  double op_value = selected ? selected->numeric_value : 0.0;
 	bool using_gaps = ( my_agent->rl_params->temporal_extension->get_value() == soar_module::on );
 
 	if ( !using_gaps || op_rl )
@@ -935,7 +947,26 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 				xml_generate_warning( my_agent, buf );
 			}			
 
+    /** Begin bazald's injection of TSDT **/
 
+    if(my_agent->rl_params->trace->get_value() == rl_param_container::trace_tsdt) {
+      data->eligibility_traces->clear();
+
+      if(update_efr) {
+        if(my_agent->rl_params->learning_policy->get_value() == rl_param_container::q)
+          data->tsdt_trace->insert(my_agent, *data->prev_op_rl_rules, data->reward, candidates);
+        else
+          data->tsdt_trace->insert(my_agent, *data->prev_op_rl_rules, data->reward, selected);
+      }
+      else
+          data->tsdt_trace->insert(my_agent, *data->prev_op_rl_rules, data->reward, 0);
+
+      data->tsdt_trace->update(my_agent);
+    }
+    else {
+      data->tsdt_trace->clear();
+
+      /** Mostly end bazald's injection of TSDT **/
 
 			// Iterate through eligibility_traces, decay traces. If less than TOLERANCE, remove from map.
 			if ( lambda == 0 )
@@ -973,7 +1004,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
         const bool variance_mod = my_agent->rl_params->credit_modification->get_value() == rl_param_container::credit_mod_variance;
 
         {
-          /*if(cand->rl_contribution) not yet usable */ {
+          /*if(selected->rl_contribution) not yet usable */ {
             /// Assign credit to different RL rules according to
             ///   even: previously only method, still the default - simply split credit evenly between RL rules
             ///   fc: firing counts - split by the inverse of how frequently each RL rule has fired
@@ -991,40 +1022,40 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
             else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
               double total_credit = 0.0;
 
-              const double uc_limit = 10;
-              double total_uc_credit = 0.0;
-              double max_ulimit = 0.0;
-              double max_uc_count = 0.0;
+//               const double uc_limit = 10;
+//               double total_uc_credit = 0.0;
+//               double max_ulimit = 0.0;
+//               double max_uc_count = 0.0;
               for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
                 const double uc = (*prod2)->rl_update_count + 1.0;
                 const double credit = 1.0 / uc;
 
                 total_credit += credit;
 
-                if(variance_mod && uc < uc_limit) {
-                  total_uc_credit += credit;
-
-                  if(uc > max_ulimit) {
-                    max_ulimit = uc;
-                    max_uc_count = 1.0;
-                  }
-                  else if(uc == max_ulimit)
-                    ++max_uc_count;
-                }
+//                 if(variance_mod && uc < uc_limit) {
+//                   total_uc_credit += credit;
+// 
+//                   if(uc > max_ulimit) {
+//                     max_ulimit = uc;
+//                     max_uc_count = 1.0;
+//                   }
+//                   else if(uc == max_ulimit)
+//                     ++max_uc_count;
+//                 }
               }
 
               for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
                 const double uc = (*prod2)->rl_update_count + 1.0;
 
-                if(variance_mod && uc < uc_limit)
-                  if(uc == max_ulimit)
-                    (*prod2)->rl_credit = total_uc_credit / max_uc_count;
-                  else
-                    (*prod2)->rl_credit = 0.0;
-                else {
+//                 if(variance_mod && uc < uc_limit)
+//                   if(uc == max_ulimit)
+//                     (*prod2)->rl_credit = total_uc_credit / max_uc_count;
+//                   else
+//                     (*prod2)->rl_credit = 0.0;
+//                 else {
                   const double credit = 1.0 / uc;
                   (*prod2)->rl_credit = credit / total_credit;
-                }
+//                 }
               }
             }
             else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
@@ -1050,8 +1081,6 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
               abort();
           }
         }
-
-
 
 				rl_rule_list::iterator p;
 				
@@ -1083,12 +1112,12 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
                 double delta_t = (data->reward + discount * op_value) - (sum_old_ecr + sum_old_efr);
 
         double rl_variance_total_next = 0.0; ///< bazald
-        if(cand && cand->inst && cand->inst->prod) ///< bazald
+        if(selected && selected->inst && selected->inst->prod) ///< bazald
         {
-          if(cand->rl_contribution) {
-            for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+          if(selected->rl_contribution) {
+            for(preference *pref = selected->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
               const production * const &prod2 = pref->inst->prod;
-              if(cand->value == pref->value && prod2->rl_rule) {
+              if(selected->value == pref->value && prod2->rl_rule) {
                 rl_variance_total_next += prod2->rl_variance_total;
               }
             }
@@ -1314,6 +1343,7 @@ void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *g
 
 			}
 		}
+  }
 
 		data->gap_age = 0;
 		data->hrl_age = 0;
@@ -1326,3 +1356,216 @@ void rl_watkins_clear( agent * /*my_agent*/, Symbol *goal )
 {
 	goal->id.rl_info->eligibility_traces->clear();
 }
+
+/** Begin bazald's TSDT **/
+
+TSDT::TSDT(const rl_rule_list &taken_,
+           const double &reward_)
+  : reward(reward_)
+{
+  for(rl_rule_list::const_iterator rrl = taken_.begin(), rrlend = taken_.end(); rrl != rrlend; ++rrl) {
+    taken.push_back(std::make_pair(*rrl, Value((*rrl)->rl_ecr, (*rrl)->rl_efr)));
+    (*rrl)->rl_update_count += 1;
+  }
+}
+
+TSDT::~TSDT() {}
+
+void TSDT::update(agent * const &my_agent) {
+  const double alpha = my_agent->rl_params->learning_rate->get_value();
+
+  update_credit();
+
+  update_efr(my_agent);
+
+  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl) {
+    const double delta_ecr = pdl->first->rl_credit * reward - pdl->first->rl_ecr;
+
+    pdl->first->rl_ecr += alpha * (delta_ecr - pdl->second.ecr);
+
+    pdl->second.ecr = pdl->first->rl_credit * reward - pdl->first->rl_ecr;
+  }
+}
+
+double TSDT::sum_Production_List(const Production_List &production_list) {
+  double sum = 0.0;
+
+  for(Production_List::const_iterator pl = production_list.begin(), plend = production_list.end(); pl != plend; ++pl)
+    sum += (*pl)->rl_ecr + (*pl)->rl_efr;
+
+  return sum;
+}
+
+void TSDT::update_credit() {
+  /// Assume Inverse-RL Credit Assignment
+  double total_credit = 0.0;
+  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl)
+    total_credit += 1.0 / pdl->first->rl_update_count;
+  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl)
+    pdl->first->rl_credit = (1.0 / pdl->first->rl_update_count) / total_credit;
+}
+
+void TSDT::update_efr(agent * const &my_agent) {
+  const double alpha = my_agent->rl_params->learning_rate->get_value();
+  const double discount = my_agent->rl_params->discount_rate->get_value();
+  const double efr = calculate_efr();
+
+  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl) {
+    const double delta_efr = pdl->first->rl_credit * discount * efr - pdl->first->rl_efr;
+
+    pdl->first->rl_efr += alpha * (delta_efr - pdl->second.efr);
+
+    pdl->second.efr = pdl->first->rl_credit * discount * efr - pdl->first->rl_efr;
+  }
+}
+
+TSDT_Terminal::TSDT_Terminal(const rl_rule_list &taken_,
+                             const double &reward_)
+  : TSDT(taken_, reward_)
+{
+}
+
+void TSDT_Terminal::update_efr(agent * const &my_agent) {
+}
+
+double TSDT_Terminal::calculate_efr() const {
+  return 0.0;
+}
+
+TSDT_Sarsa::TSDT_Sarsa(const rl_rule_list &taken_,
+                       const double &reward_,
+                       preference * const &selected_)
+  : TSDT(taken_, reward_),
+  selected(selected_, Production_List())
+{
+  if(selected_ && selected_->inst && selected_->inst->prod) {
+    for(preference *pref = selected_->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next)
+      if(selected_->value == pref->value && pref->inst->prod->rl_rule)
+        selected.second.push_back(pref->inst->prod);
+  }
+}
+
+double TSDT_Sarsa::calculate_efr() const {
+  return sum_Production_List(selected.second);
+}
+
+TSDT_Q::TSDT_Q(const rl_rule_list &taken_,
+               const double &reward_,
+               preference * const &candidates_)
+  : TSDT(taken_, reward_)
+{
+  for(preference * cand = candidates_; cand; cand = cand->next_candidate) {
+    if(cand && cand->inst && cand->inst->prod) {
+      candidates.push_back(Preference_Productions(cand, Production_List()));
+      Production_List &pl = candidates.rbegin()->second;
+
+      for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next)
+        if(cand->value == pref->value && pref->inst->prod->rl_rule)
+          pl.push_back(pref->inst->prod);
+    }
+  }
+}
+
+double TSDT_Q::calculate_efr() const {
+  double efr = 0.0;
+
+  Preference_Productions_List::const_iterator ppl = candidates.begin(), pplend = candidates.end();
+
+  if(ppl == pplend)
+    return 0.0;
+
+  double sum = sum_Production_List(ppl++->second);
+
+  while(ppl != pplend)
+    sum = std::max(sum, sum_Production_List(ppl++->second));
+
+  return sum;
+}
+
+TSDT_Trace::TSDT_Trace()
+  : length(0)
+{
+}
+
+TSDT_Trace::~TSDT_Trace() {
+  clear();
+}
+
+void TSDT_Trace::clear() {
+  for(Trace::iterator tt = trace.begin(), tend = trace.end(); tt != tend; ++tt)
+    delete *tt;
+  trace.clear();
+  length = 0;
+}
+
+void TSDT_Trace::insert(agent * const &my_agent,
+                        const rl_rule_list &taken_,
+                        const double &reward_,
+                        preference * const &pref)
+{
+  if(pref)
+    if(my_agent->rl_params->learning_policy->get_value() == rl_param_container::q)
+      trace.push_front(new TSDT_Q(taken_, reward_, pref));
+    else
+      trace.push_front(new TSDT_Sarsa(taken_, reward_, pref));
+  else
+    trace.push_front(new TSDT_Terminal(taken_, reward_));
+
+  ++length;
+
+  trim(my_agent);
+}
+
+void TSDT_Trace::update(agent * const &my_agent) {
+  trim(my_agent);
+
+  std::set<production *> productions;
+
+  for(Trace::iterator tt = trace.begin(), tend = trace.end(); tt != tend; ++tt) {
+    (*tt)->update(my_agent);
+
+    for(TSDT::Production_Delta_List::iterator pdl = (*tt)->taken.begin(), pdlend = (*tt)->taken.end(); pdl != pdlend; ++pdl)
+      productions.insert(pdl->first);
+  }
+
+  for(std::set<production *>::iterator pdl = productions.begin(), pdlend = productions.end(); pdl != pdlend; ++pdl) {
+    if(my_agent->sysparams[TRACE_RL_SYSPARAM]) {
+      std::ostringstream ss;            
+      ss << "RL update " << (*pdl)->name->sc.name << " = " << (*pdl)->rl_ecr + (*pdl)->rl_efr;
+
+      std::string temp_str( ss.str() );           
+      print( my_agent, "%s\n", temp_str.c_str() );
+      xml_generate_message( my_agent, temp_str.c_str() );
+
+      // Log update to file if the log file has been set
+      std::string log_path = my_agent->rl_params->update_log_path->get_value();
+      if (!log_path.empty()) {
+          std::ofstream file(log_path.c_str(), std::ios_base::app);
+          file << ss.str() << std::endl;
+          file.close();
+      }
+    }
+
+    symbol_remove_ref(my_agent, rhs_value_to_symbol((*pdl)->action_list->referent));
+    (*pdl)->action_list->referent = symbol_to_rhs_value(make_float_constant(my_agent, (*pdl)->rl_ecr + (*pdl)->rl_efr));
+
+    if((*pdl)->instantiations) {
+      for(instantiation *inst = (*pdl)->instantiations; inst; inst = inst->next) {
+        for(preference *pref = inst->preferences_generated; pref; pref = pref->inst_next) {
+          symbol_remove_ref(my_agent, pref->referent);
+          pref->referent = make_float_constant(my_agent, (*pdl)->rl_ecr + (*pdl)->rl_efr);
+        }
+      }
+    }
+  }
+}
+
+void TSDT_Trace::trim(agent * const &my_agent) {
+  while(length > my_agent->rl_params->tsdt_cutoff->get_value()) {
+    delete trace.back();
+    trace.pop_back();
+    --length;
+  }
+}
+
+/** End bazald's TSDT **/

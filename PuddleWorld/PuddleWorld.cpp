@@ -73,7 +73,8 @@ inline bool arg_help(char ** &arg)
             << "  --alpha normal/adaptive         to specify credit assignment" << endl
             << "  --initial minx miny maxx maxy   to specify the starting location" << endl
             << "  --credit-modification none/variance  to specify any modification to credit" << endl
-            << "  --variance bellman/simple       to specify the method of calculating variance" << endl;
+            << "  --variance bellman/simple       to specify the method of calculating variance" << endl
+            << "  --tsdt                          to turn on TSDT" << endl;
 
   exit(0);
 
@@ -350,6 +351,18 @@ inline bool arg_variance(string &credit_mod,
   return true;
 }
 
+inline bool arg_tsdt(bool &tsdt,
+                     char ** &arg,
+                     char ** const &arg_end)
+{
+  if(strcmp(*arg, "--tsdt"))
+    return false;
+
+  tsdt = true;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -375,6 +388,7 @@ int main(int argc, char ** argv) {
   float initial_max_y = 1.0f;
   string credit_mod = "none";
   string variance = "bellman";
+  bool tsdt = false;
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -389,7 +403,8 @@ int main(int argc, char ** argv) {
        !arg_alpha        (                          alpha,             arg, arg_end) &&
        !arg_initial      (initial_min_x, initial_min_y, initial_max_x, initial_max_y, arg, arg_end) &&
        !arg_credit_mod   (                          credit_mod,        arg, arg_end) &&
-       !arg_variance     (                          variance,          arg, arg_end))
+       !arg_variance     (                          variance,          arg, arg_end) &&
+       !arg_tsdt         (                          tsdt,              arg, arg_end))
     {
       cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -415,6 +430,8 @@ int main(int argc, char ** argv) {
   game.ExecuteCommandLine(("rl --set decay-mode " + alpha).c_str());
   game.ExecuteCommandLine(("rl --set credit-modification " + credit_mod).c_str());
   game.ExecuteCommandLine(("rl --set variance-bellman " + string(variance == "bellman" ? "on" : "off")).c_str());
+  if(tsdt)
+    game.ExecuteCommandLine("rl --set trace tsdt");
 
   for(int episode = 0; episode != episodes; ++episode) {
     for(std::pair<multimap<int, pair<float, float> >::const_iterator,

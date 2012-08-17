@@ -123,6 +123,14 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
 
 		 CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
 
+     /** Begin bazald's modifications **/
+
+     CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "trace: ", agnt->rl_params->trace->get_string() ) );
+
+     CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "tsdt-cutoff: ", agnt->rl_params->tsdt_cutoff->get_string() ) );
+
      CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "rl-impasse: ", agnt->rl_params->rl_impasse->get_string() ) );
 
@@ -146,6 +154,8 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
      CLI_DoRL_print( *this, m_RawOutput, m_Result, const_cast<char *>(ss.str().c_str()) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result, "" );
+
+     /** End bazald's modifications **/
 
         return true;
     }

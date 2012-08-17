@@ -563,11 +563,11 @@ preference *exploration_choose_according_to_policy( agent *my_agent, slot *s, pr
 
 		if ( my_learning_policy == rl_param_container::sarsa )
 		{
-			rl_perform_update( my_agent, return_val, return_val->rl_contribution, s->id ); ///< bazald
+			rl_perform_update( my_agent, return_val, candidates, return_val->rl_contribution, s->id ); ///< bazald
 		}
 		else if ( my_learning_policy == rl_param_container::q )
 		{
-			rl_perform_update( my_agent, top_candidate, top_rl, s->id ); ///< bazald
+			rl_perform_update( my_agent, top_candidate, candidates, top_rl, s->id ); ///< bazald
 
 			if ( return_val->numeric_value != top_value )
 				rl_watkins_clear( my_agent, s->id );
@@ -986,40 +986,40 @@ void exploration_compute_value_of_candidates(agent *my_agent, preference *candid
         else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_rl) {
           double total_credit = 0.0;
 
-          const double uc_limit = 10;
-          double total_uc_credit = 0.0;
-          double max_ulimit = 0.0;
-          double max_uc_count = 0.0;
+//           const double uc_limit = 10;
+//           double total_uc_credit = 0.0;
+//           double max_ulimit = 0.0;
+//           double max_uc_count = 0.0;
           ITERATE_EXPLORATION_PRODUCTIONS(cand) {
             const double uc = prod2->rl_update_count + 1.0;
             const double credit = 1.0 / uc;
 
             total_credit += credit;
 
-            if(variance_mod && uc < uc_limit) {
-              total_uc_credit += credit;
-
-              if(uc > max_ulimit) {
-                max_ulimit = uc;
-                max_uc_count = 1.0;
-              }
-              else if(uc == max_ulimit)
-                ++max_uc_count;
-            }
+//             if(variance_mod && uc < uc_limit) {
+//               total_uc_credit += credit;
+// 
+//               if(uc > max_ulimit) {
+//                 max_ulimit = uc;
+//                 max_uc_count = 1.0;
+//               }
+//               else if(uc == max_ulimit)
+//                 ++max_uc_count;
+//             }
           } DONE_EXPLORATION_PRODUCTIONS;
 
           ITERATE_EXPLORATION_PRODUCTIONS(cand) {
             const double uc = prod2->rl_update_count + 1.0;
 
-            if(variance_mod && uc < uc_limit)
-              if(uc == max_ulimit)
-                prod2->rl_credit = total_uc_credit / max_uc_count;
-              else
-                prod2->rl_credit = 0.0;
-            else {
+//             if(variance_mod && uc < uc_limit)
+//               if(uc == max_ulimit)
+//                 prod2->rl_credit = total_uc_credit / max_uc_count;
+//               else
+//                 prod2->rl_credit = 0.0;
+//             else {
               const double credit = 1.0 / uc;
               prod2->rl_credit = credit / total_credit;
-            }
+//             }
           } DONE_EXPLORATION_PRODUCTIONS;
         }
         else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {

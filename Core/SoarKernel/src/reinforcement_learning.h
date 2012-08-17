@@ -88,6 +88,7 @@ class rl_param_container: public soar_module::param_container
 		enum apoptosis_choices { apoptosis_none, apoptosis_chunks, apoptosis_rl };
     enum credit_assignment_choices { credit_even, credit_fc, credit_rl, credit_logrl }; ///< bazald
     enum credit_modification_choices { credit_mod_none, credit_mod_variance }; ///< bazald
+    enum trace_choices { trace_eligibility, trace_tsdt }; ///< bazald
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
@@ -98,6 +99,8 @@ class rl_param_container: public soar_module::param_container
 		soar_module::constant_param<decay_choices> *decay_mode;
 		soar_module::decimal_param *et_decay_rate;
 		soar_module::decimal_param *et_tolerance;
+    soar_module::constant_param<trace_choices> *trace; ///< bazald
+    soar_module::integer_param *tsdt_cutoff; ///< bazald
     soar_module::boolean_param *rl_impasse; ///< bazald
     soar_module::boolean_param *variance_bellman; ///< bazald
     rl_credit_assignment_param *credit_assignment; ///< bazald
@@ -208,6 +211,8 @@ typedef std::list< production*, soar_module::soar_memory_pool_allocator< product
 typedef std::list< production* > rl_rule_list;
 #endif
 
+class TSDT_Trace; ///< bazald
+
 // rl data associated with each state
 typedef struct rl_data_struct {
 	rl_et_map *eligibility_traces;			// traces associated with productions
@@ -218,6 +223,8 @@ typedef struct rl_data_struct {
 
 	unsigned int gap_age;					// the number of steps since a cycle containing rl rules
 	unsigned int hrl_age;					// the number of steps in a subgoal
+
+	TSDT_Trace *tsdt_trace; ///< bazald
 } rl_data;
 
 typedef std::map< Symbol*, Symbol* > rl_symbol_map;
@@ -304,9 +311,117 @@ extern void rl_tabulate_reward_values( agent *my_agent );
 extern void rl_store_data( agent *my_agent, Symbol *goal, preference *cand );
 
 // update the value of Soar-RL rules
-extern void rl_perform_update( agent *my_agent, preference *cand, bool op_rl, Symbol *goal, bool update_efr = true ); ///< bazald
+extern void rl_perform_update( agent *my_agent, preference *selected, preference *candidates, bool op_rl, Symbol *goal, bool update_efr = true ); ///< bazald
 
 // clears eligibility traces in accordance with watkins
 extern void rl_watkins_clear( agent *my_agent, Symbol *goal );
+
+/** Begin bazald's TSDT **/
+
+class TSDT_Trace;
+
+class TSDT {
+  friend class TSDT_Trace;
+
+  struct Value {
+    Value() : ecr(0.0), efr(0.0) {}
+    Value(const double &ecr_, const double &efr_) : ecr(ecr_), efr(efr_) {}
+
+    double ecr;
+    double efr;
+  };
+
+  typedef std::pair<production *, Value> Production_Delta;
+  typedef std::list<Production_Delta> Production_Delta_List;
+
+protected:
+  typedef std::list<production *> Production_List;
+  typedef std::pair<preference *, Production_List> Preference_Productions;
+
+public:
+  TSDT(const rl_rule_list &taken_,
+       const double &reward_);
+
+  virtual ~TSDT();
+
+  void update(agent * const &my_agent);
+
+protected:
+  static double sum_Production_List(const Production_List &production_list);
+
+private:
+  void update_credit();
+
+  virtual void update_efr(agent * const &my_agent);
+
+  virtual double calculate_efr() const = 0;
+
+  Production_Delta_List taken;
+
+  double reward;
+};
+
+class TSDT_Terminal : public TSDT {
+public:
+  TSDT_Terminal(const rl_rule_list &taken_,
+                const double &reward_);
+
+private:
+   void update_efr(agent * const &my_agent);
+
+  double calculate_efr() const;
+};
+
+class TSDT_Sarsa : public TSDT {
+public:
+  TSDT_Sarsa(const rl_rule_list &taken_,
+             const double &reward_,
+             preference * const &selected_);
+
+private:
+  double calculate_efr() const;
+
+  Preference_Productions selected;
+};
+
+class TSDT_Q : public TSDT {
+  typedef std::list<Preference_Productions> Preference_Productions_List;
+
+public:
+  TSDT_Q(const rl_rule_list &taken_,
+         const double &reward_,
+         preference * const &candidates_);
+
+private:
+  double calculate_efr() const;
+
+  Preference_Productions_List candidates;
+};
+
+class TSDT_Trace {
+  typedef std::list<TSDT *> Trace;
+
+public:
+  TSDT_Trace();
+  ~TSDT_Trace();
+
+  void clear();
+
+  void insert(agent * const &my_agent,
+              const rl_rule_list &taken_,
+              const double &reward_,
+              preference * const &pref);
+
+  void update(agent * const &my_agent);
+
+private:
+  void trim(agent * const &my_agent);
+
+  Trace trace;
+
+  int length;
+};
+
+/** End bazald's TSDT **/
 
 #endif
