@@ -113,7 +113,7 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   add( trace );
 
   // tsdt-cutoff
-  tsdt_cutoff = new soar_module::integer_param( "tsdt-cutoff", 1, new soar_module::gt_predicate<int64_t>( 0, false ), new soar_module::f_predicate<int64_t>() );
+  tsdt_cutoff = new soar_module::integer_param( "tsdt-cutoff", 20, new soar_module::gt_predicate<int64_t>( 0, false ), new soar_module::f_predicate<int64_t>() );
   add( tsdt_cutoff );
 
   // rl-impasse
@@ -939,7 +939,7 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
 
     if(data->terminal) {
       update_efr = true;
-      op_value += data->terminal_reward;
+      op_value = data->terminal_reward;
 
 //       std::cerr << "Terminal update: " << data->reward << " + " << op_value << std::endl;
     }
@@ -976,14 +976,16 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
     if(my_agent->rl_params->trace->get_value() == rl_param_container::trace_tsdt) {
       data->eligibility_traces->clear();
 
-      if(update_efr) {
+      if(data->terminal)
+        data->tsdt_trace->insert(my_agent, new TSDT_Terminal(*data->prev_op_rl_rules, data->reward, data->terminal_reward));
+      else if(update_efr) {
         if(my_agent->rl_params->learning_policy->get_value() == rl_param_container::q)
-          data->tsdt_trace->insert(my_agent, *data->prev_op_rl_rules, data->reward, candidates);
+          data->tsdt_trace->insert(my_agent, new TSDT_Q(*data->prev_op_rl_rules, data->reward, candidates));
         else
-          data->tsdt_trace->insert(my_agent, *data->prev_op_rl_rules, data->reward, selected);
+          data->tsdt_trace->insert(my_agent, new TSDT_Sarsa(*data->prev_op_rl_rules, data->reward, selected));
       }
       else
-          data->tsdt_trace->insert(my_agent, *data->prev_op_rl_rules, data->reward, 0);
+          data->tsdt_trace->insert(my_agent, new TSDT_Interrupted(*data->prev_op_rl_rules, data->reward));
 
       data->tsdt_trace->update(my_agent);
     }
@@ -1405,20 +1407,16 @@ void TSDT::update(agent * const &my_agent) {
   double old_ecr = 0.0;
   /// Reverse last update with old credit, Calculate old_ecr
   for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
-    pel->first->rl_ecr -= pel->second.prev_credit * alpha * delta.ecr;
+    pel->first->rl_ecr -= pel->second.prev_credit * delta.ecr;
     old_ecr += pel->first->rl_ecr;
 
     pel->second.prev_credit = pel->first->rl_credit; // Store new credit
   }
 
-  double new_ecr = 0.0;
   /// TSDT update
   delta.ecr = alpha * (reward - old_ecr);
-  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
     pel->first->rl_ecr += pel->first->rl_credit * delta.ecr;
-
-    new_ecr += pel->first->rl_ecr;
-  }
 }
 
 double TSDT::sum_Production_List(const Production_List &production_list) {
@@ -1447,18 +1445,14 @@ void TSDT::update_efr(agent * const &my_agent) {
   double old_efr = 0.0;
   /// Reverse last update with old credit, Calculate old rl_efr
   for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
-    pel->first->rl_efr -= pel->second.prev_credit * alpha * delta.efr;
+    pel->first->rl_efr -= pel->second.prev_credit * delta.efr;
     old_efr += pel->first->rl_efr;
   }
 
-  double new_efr = 0.0;
   /// TSDT update
   delta.efr = alpha * (discount * efr - old_efr);
-  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
     pel->first->rl_efr += pel->first->rl_credit * delta.efr;
-
-    new_efr += pel->first->rl_efr;
-  }
 }
 
 TSDT_Interrupted::TSDT_Interrupted(const rl_rule_list &taken_,
@@ -1472,6 +1466,18 @@ void TSDT_Interrupted::update_efr(agent * const &my_agent) {
 
 double TSDT_Interrupted::calculate_efr() const {
   return 0.0;
+}
+
+TSDT_Terminal::TSDT_Terminal(const rl_rule_list &taken_,
+                             const double &reward_,
+                             const double &terminal_)
+  : TSDT(taken_, reward_),
+  terminal(terminal_)
+{
+}
+
+double TSDT_Terminal::calculate_efr() const {
+  return terminal;
 }
 
 TSDT_Sarsa::TSDT_Sarsa(const rl_rule_list &taken_,
@@ -1553,17 +1559,9 @@ void TSDT_Trace::clear() {
 }
 
 void TSDT_Trace::insert(agent * const &my_agent,
-                        const rl_rule_list &taken_,
-                        const double &reward_,
-                        preference * const &pref)
+                        TSDT * given_TSDT)
 {
-  if(pref)
-    if(my_agent->rl_params->learning_policy->get_value() == rl_param_container::q)
-      trace.push_front(new TSDT_Q(taken_, reward_, pref));
-    else
-      trace.push_front(new TSDT_Sarsa(taken_, reward_, pref));
-  else
-    trace.push_front(new TSDT_Interrupted(taken_, reward_));
+  trace.push_front(given_TSDT);
 
   ++length;
 

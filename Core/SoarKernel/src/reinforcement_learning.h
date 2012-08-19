@@ -375,9 +375,21 @@ public:
                    const double &reward_);
 
 private:
-   void update_efr(agent * const &my_agent);
+  void update_efr(agent * const &my_agent);
 
   double calculate_efr() const;
+};
+
+class TSDT_Terminal : public TSDT {
+public:
+  TSDT_Terminal(const rl_rule_list &taken_,
+                const double &reward_,
+                const double &terminal_);
+
+private:
+  double calculate_efr() const;
+
+  double terminal;
 };
 
 class TSDT_Sarsa : public TSDT {
@@ -416,9 +428,7 @@ public:
   void clear();
 
   void insert(agent * const &my_agent,
-              const rl_rule_list &taken_,
-              const double &reward_,
-              preference * const &pref);
+              TSDT * given_TSDT);
 
   void update(agent * const &my_agent);
 
