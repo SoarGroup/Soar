@@ -333,10 +333,8 @@ class TSDT {
   };
 
   struct Entry {
-    Entry() : prev_next(0.0), prev_credit(0.0) {}
+    Entry() : prev_credit(0.0) {}
 
-    Value prev;
-    double prev_next;
     double prev_credit;
   };
 

@@ -1403,31 +1403,22 @@ void TSDT::update(agent * const &my_agent) {
   update_efr(my_agent);
 
   double old_ecr = 0.0;
-  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
+  /// Reverse last update with old credit, Calculate old_ecr
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
+    pel->first->rl_ecr -= pel->second.prev_credit * alpha * delta.ecr;
     old_ecr += pel->first->rl_ecr;
 
-  const double delta_ecr = reward - old_ecr;
-  const double delta2_ecr = alpha * (delta_ecr - delta.ecr);
+    pel->second.prev_credit = pel->first->rl_credit; // Store new credit
+  }
 
   double new_ecr = 0.0;
+  /// TSDT update
+  delta.ecr = alpha * (reward - old_ecr);
   for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
-    /// Rollback procedure
-//     pel->first->rl_ecr -= alpha * pel->second.prev_credit * (pel->second.prev_next - pel->second.prev.ecr);
-//     pel->first->rl_ecr += alpha * pel->first->rl_credit * (pel->second.prev_next - pel->second.prev.ecr);
-// 
-//     pel->second.prev.ecr = pel->first->rl_ecr;
-//     pel->second.prev_next = reward;
-//     pel->second.prev_credit = pel->first->rl_credit;
-
-    /// TSDT update
-
-    pel->first->rl_ecr += pel->first->rl_credit * delta2_ecr;
+    pel->first->rl_ecr += pel->first->rl_credit * delta.ecr;
 
     new_ecr += pel->first->rl_ecr;
   }
-
-  /// Store final delta for TSDT
-  delta.ecr = reward - new_ecr;
 }
 
 double TSDT::sum_Production_List(const Production_List &production_list) {
@@ -1454,31 +1445,20 @@ void TSDT::update_efr(agent * const &my_agent) {
   const double efr = calculate_efr();
 
   double old_efr = 0.0;
-  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
+  /// Reverse last update with old credit, Calculate old rl_efr
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
+    pel->first->rl_efr -= pel->second.prev_credit * alpha * delta.efr;
     old_efr += pel->first->rl_efr;
-
-  const double delta_efr = discount * efr - old_efr;
-  const double delta2_efr = alpha * (delta_efr - delta.efr);
+  }
 
   double new_efr = 0.0;
+  /// TSDT update
+  delta.efr = alpha * (discount * efr - old_efr);
   for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
-    /// Rollback procedure
-//     pel->first->rl_efr -= alpha * pel->second.prev_credit * (pel->second.prev_next - pel->second.prev.efr);
-//     pel->first->rl_efr += alpha * pel->first->rl_credit * (pel->second.prev_next - pel->second.prev.efr);
-// 
-//     pel->second.prev.efr = pel->first->rl_efr;
-//     pel->second.prev_next = efr;
-//     pel->second.prev_credit = pel->first->rl_credit;
-
-    /// TSDT update
-
-    pel->first->rl_efr += pel->first->rl_credit * delta2_efr;
+    pel->first->rl_efr += pel->first->rl_credit * delta.efr;
 
     new_efr += pel->first->rl_efr;
   }
-
-  /// Store final delta for TSDT
-  delta.efr = discount * efr - new_efr;
 }
 
 TSDT_Interrupted::TSDT_Interrupted(const rl_rule_list &taken_,
