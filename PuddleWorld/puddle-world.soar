@@ -146,3 +146,10 @@ sp {elaborate*reward
 -->
     (<rl> ^reward.value <r>)
 }
+sp {elaborate*terminal
+    (state <s> ^name puddleworld
+               ^io.input-link.terminal <t>
+               ^reward-link <rl>)
+-->
+    (<rl> ^reward.terminal <t>)
+}

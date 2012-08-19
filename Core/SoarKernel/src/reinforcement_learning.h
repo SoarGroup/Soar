@@ -220,6 +220,8 @@ typedef struct rl_data_struct {
 	
 	double previous_q;						// q-value of the previous state
 	double reward;							// accumulated discounted reward
+  bool terminal; ///< bazald: do terminal update
+  double terminal_reward; ///< bazald: accumulated terminal reward
 
 	unsigned int gap_age;					// the number of steps since a cycle containing rl rules
 	unsigned int hrl_age;					// the number of steps in a subgoal
@@ -325,14 +327,21 @@ class TSDT {
 
   struct Value {
     Value() : ecr(0.0), efr(0.0) {}
-    Value(const double &ecr_, const double &efr_) : ecr(ecr_), efr(efr_) {}
 
     double ecr;
     double efr;
   };
 
-  typedef std::pair<production *, Value> Production_Delta;
-  typedef std::list<Production_Delta> Production_Delta_List;
+  struct Entry {
+    Entry() : prev_next(0.0), prev_credit(0.0) {}
+
+    Value prev;
+    double prev_next;
+    double prev_credit;
+  };
+
+  typedef std::pair<production *, Entry> Production_Entry;
+  typedef std::list<Production_Entry> Production_Entry_List;
 
 protected:
   typedef std::list<production *> Production_List;
@@ -356,15 +365,16 @@ private:
 
   virtual double calculate_efr() const = 0;
 
-  Production_Delta_List taken;
+  Production_Entry_List taken;
 
+  Value delta;
   double reward;
 };
 
-class TSDT_Terminal : public TSDT {
+class TSDT_Interrupted : public TSDT {
 public:
-  TSDT_Terminal(const rl_rule_list &taken_,
-                const double &reward_);
+  TSDT_Interrupted(const rl_rule_list &taken_,
+                   const double &reward_);
 
 private:
    void update_efr(agent * const &my_agent);

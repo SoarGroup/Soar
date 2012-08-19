@@ -710,6 +710,7 @@ void create_predefined_symbols (agent* thisAgent) {
   thisAgent->rl_sym_reward_link = make_sym_constant( thisAgent, "reward-link" );
   thisAgent->rl_sym_reward = make_sym_constant( thisAgent, "reward" );
   thisAgent->rl_sym_value = make_sym_constant( thisAgent, "value" );
+  thisAgent->rl_sym_terminal = make_sym_constant( thisAgent, "terminal" );
 
   thisAgent->epmem_sym = make_sym_constant( thisAgent, "epmem" );
   thisAgent->epmem_sym_cmd = make_sym_constant( thisAgent, "command" );
@@ -821,6 +822,7 @@ void release_predefined_symbols(agent* thisAgent) {
   release_helper( thisAgent, &( thisAgent->rl_sym_reward_link ) );
   release_helper( thisAgent, &( thisAgent->rl_sym_reward ) );
   release_helper( thisAgent, &( thisAgent->rl_sym_value ) );
+  release_helper( thisAgent, &( thisAgent->rl_sym_terminal ) );
 
   release_helper( thisAgent, &( thisAgent->epmem_sym ) );
   release_helper( thisAgent, &( thisAgent->epmem_sym_cmd ) );

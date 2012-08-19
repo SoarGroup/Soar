@@ -1228,7 +1228,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 					rl_tabulate_reward_values( thisAgent );
 					exploration_compute_value_of_candidate( thisAgent, force_result, s, 0 );
 					rl_perform_update( thisAgent, force_result, force_result, force_result->rl_contribution, s->id ); ///< bazald
-          std::cerr << "Possibly bad list of candidates passed to rl_perform_update." << std::endl; ///< bazald
+//           std::cerr << "Possibly bad list of candidates passed to rl_perform_update." << std::endl; ///< bazald
 				}
 
 				return NONE_IMPASSE_TYPE;
@@ -2655,6 +2655,8 @@ void create_new_context (agent* thisAgent, Symbol *attr_of_impasse, byte impasse
   id->id.rl_info->prev_op_rl_rules = new ( id->id.rl_info->prev_op_rl_rules ) rl_rule_list();
 #endif
   id->id.rl_info->tsdt_trace = new TSDT_Trace; ///< bazald
+  id->id.rl_info->terminal_reward = 0.0; ///< bazald
+  id->id.rl_info->terminal = false; ///< bazald
 
   allocate_with_pool( thisAgent, &( thisAgent->epmem_info_pool ), &( id->id.epmem_info ) );
   id->id.epmem_info->last_ol_time = 0;  

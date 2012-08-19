@@ -309,6 +309,7 @@ typedef struct agent_struct {
   Symbol            * rl_sym_reward_link;
   Symbol            * rl_sym_reward;
   Symbol            * rl_sym_value;
+  Symbol            * rl_sym_terminal; ///< bazald
   
   Symbol            * epmem_sym;
   Symbol            * epmem_sym_cmd;

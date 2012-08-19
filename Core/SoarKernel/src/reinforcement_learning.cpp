@@ -326,6 +326,8 @@ void rl_reset_data( agent *my_agent )
 		rl_data *data = goal->id.rl_info;
 
     data->tsdt_trace->clear(); ///< bazald
+    data->terminal_reward = 0.0; ///< bazald
+    data->terminal = false; ///< bazald
 
 		data->eligibility_traces->clear();
 		rl_clear_refs( goal );
@@ -814,6 +816,20 @@ void rl_tabulate_reward_value_for_goal( agent *my_agent, Symbol *goal )
 							}
 						}
 					}
+
+          /// bazald: begin terminal update
+          t = find_slot( w->value, my_agent->rl_sym_terminal );
+          if(t) {
+            data->terminal = true;
+
+            for(x=t->wmes; x; x=x->next) {
+              if((x->value->common.symbol_type == FLOAT_CONSTANT_SYMBOL_TYPE) || (x->value->common.symbol_type == INT_CONSTANT_SYMBOL_TYPE)) {
+                data->terminal_reward += get_number_from_symbol(x->value);
+//                 std::cerr << "accumulate terminal reward " << get_number_from_symbol(x->value) << std::endl;
+              }
+            }
+          }
+          /// bazald: end terminal update
 				}
 			}
 			
@@ -920,7 +936,14 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
 	if ( !using_gaps || op_rl )
 	{		
 		rl_data *data = goal->id.rl_info;
-		
+
+    if(data->terminal) {
+      update_efr = true;
+      op_value += data->terminal_reward;
+
+//       std::cerr << "Terminal update: " << data->reward << " + " << op_value << std::endl;
+    }
+
 		if ( !data->prev_op_rl_rules->empty() )
 		{			
 			rl_et_map::iterator iter;			
@@ -1365,7 +1388,7 @@ TSDT::TSDT(const rl_rule_list &taken_,
   : reward(reward_)
 {
   for(rl_rule_list::const_iterator rrl = taken_.begin(), rrlend = taken_.end(); rrl != rrlend; ++rrl) {
-    taken.push_back(std::make_pair(*rrl, Value((*rrl)->rl_ecr, (*rrl)->rl_efr)));
+    taken.push_back(std::make_pair(*rrl, Entry()));
     (*rrl)->rl_update_count += 1;
   }
 }
@@ -1379,13 +1402,32 @@ void TSDT::update(agent * const &my_agent) {
 
   update_efr(my_agent);
 
-  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl) {
-    const double delta_ecr = pdl->first->rl_credit * reward - pdl->first->rl_ecr;
+  double old_ecr = 0.0;
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
+    old_ecr += pel->first->rl_ecr;
 
-    pdl->first->rl_ecr += alpha * (delta_ecr - pdl->second.ecr);
+  const double delta_ecr = reward - old_ecr;
+  const double delta2_ecr = alpha * (delta_ecr - delta.ecr);
 
-    pdl->second.ecr = pdl->first->rl_credit * reward - pdl->first->rl_ecr;
+  double new_ecr = 0.0;
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
+    /// Rollback procedure
+//     pel->first->rl_ecr -= alpha * pel->second.prev_credit * (pel->second.prev_next - pel->second.prev.ecr);
+//     pel->first->rl_ecr += alpha * pel->first->rl_credit * (pel->second.prev_next - pel->second.prev.ecr);
+// 
+//     pel->second.prev.ecr = pel->first->rl_ecr;
+//     pel->second.prev_next = reward;
+//     pel->second.prev_credit = pel->first->rl_credit;
+
+    /// TSDT update
+
+    pel->first->rl_ecr += pel->first->rl_credit * delta2_ecr;
+
+    new_ecr += pel->first->rl_ecr;
   }
+
+  /// Store final delta for TSDT
+  delta.ecr = reward - new_ecr;
 }
 
 double TSDT::sum_Production_List(const Production_List &production_list) {
@@ -1400,10 +1442,10 @@ double TSDT::sum_Production_List(const Production_List &production_list) {
 void TSDT::update_credit() {
   /// Assume Inverse-RL Credit Assignment
   double total_credit = 0.0;
-  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl)
-    total_credit += 1.0 / pdl->first->rl_update_count;
-  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl)
-    pdl->first->rl_credit = (1.0 / pdl->first->rl_update_count) / total_credit;
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
+    total_credit += pel->first->rl_credit = 1.0 / pel->first->rl_update_count;
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
+    pel->first->rl_credit = pel->first->rl_credit / total_credit;
 }
 
 void TSDT::update_efr(agent * const &my_agent) {
@@ -1411,25 +1453,44 @@ void TSDT::update_efr(agent * const &my_agent) {
   const double discount = my_agent->rl_params->discount_rate->get_value();
   const double efr = calculate_efr();
 
-  for(Production_Delta_List::iterator pdl = taken.begin(), pdlend = taken.end(); pdl != pdlend; ++pdl) {
-    const double delta_efr = pdl->first->rl_credit * discount * efr - pdl->first->rl_efr;
+  double old_efr = 0.0;
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
+    old_efr += pel->first->rl_efr;
 
-    pdl->first->rl_efr += alpha * (delta_efr - pdl->second.efr);
+  const double delta_efr = discount * efr - old_efr;
+  const double delta2_efr = alpha * (delta_efr - delta.efr);
 
-    pdl->second.efr = pdl->first->rl_credit * discount * efr - pdl->first->rl_efr;
+  double new_efr = 0.0;
+  for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
+    /// Rollback procedure
+//     pel->first->rl_efr -= alpha * pel->second.prev_credit * (pel->second.prev_next - pel->second.prev.efr);
+//     pel->first->rl_efr += alpha * pel->first->rl_credit * (pel->second.prev_next - pel->second.prev.efr);
+// 
+//     pel->second.prev.efr = pel->first->rl_efr;
+//     pel->second.prev_next = efr;
+//     pel->second.prev_credit = pel->first->rl_credit;
+
+    /// TSDT update
+
+    pel->first->rl_efr += pel->first->rl_credit * delta2_efr;
+
+    new_efr += pel->first->rl_efr;
   }
+
+  /// Store final delta for TSDT
+  delta.efr = discount * efr - new_efr;
 }
 
-TSDT_Terminal::TSDT_Terminal(const rl_rule_list &taken_,
-                             const double &reward_)
+TSDT_Interrupted::TSDT_Interrupted(const rl_rule_list &taken_,
+                                   const double &reward_)
   : TSDT(taken_, reward_)
 {
 }
 
-void TSDT_Terminal::update_efr(agent * const &my_agent) {
+void TSDT_Interrupted::update_efr(agent * const &my_agent) {
 }
 
-double TSDT_Terminal::calculate_efr() const {
+double TSDT_Interrupted::calculate_efr() const {
   return 0.0;
 }
 
@@ -1460,9 +1521,19 @@ TSDT_Q::TSDT_Q(const rl_rule_list &taken_,
       candidates.push_back(Preference_Productions(cand, Production_List()));
       Production_List &pl = candidates.rbegin()->second;
 
-      for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next)
-        if(cand->value == pref->value && pref->inst->prod->rl_rule)
+//       std::cerr << "Successor: " << cand->inst->prod->name->sc.name << std::endl;
+//       double value = 0.0;
+
+      for(preference *pref = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE]; pref; pref = pref->next) {
+        if(cand->value == pref->value && pref->inst->prod->rl_rule) {
           pl.push_back(pref->inst->prod);
+
+//           std::cerr << "             " << pref->inst->prod->name->sc.name << std::endl;
+//           value += pref->inst->prod->rl_ecr + pref->inst->prod->rl_efr;
+        }
+      }
+
+//       std::cerr << "           " << value << std::endl;
     }
   }
 }
@@ -1479,6 +1550,8 @@ double TSDT_Q::calculate_efr() const {
 
   while(ppl != pplend)
     sum = std::max(sum, sum_Production_List(ppl++->second));
+
+//   std::cerr << "sum: " << sum << std::endl;
 
   return sum;
 }
@@ -1510,7 +1583,7 @@ void TSDT_Trace::insert(agent * const &my_agent,
     else
       trace.push_front(new TSDT_Sarsa(taken_, reward_, pref));
   else
-    trace.push_front(new TSDT_Terminal(taken_, reward_));
+    trace.push_front(new TSDT_Interrupted(taken_, reward_));
 
   ++length;
 
@@ -1525,8 +1598,8 @@ void TSDT_Trace::update(agent * const &my_agent) {
   for(Trace::iterator tt = trace.begin(), tend = trace.end(); tt != tend; ++tt) {
     (*tt)->update(my_agent);
 
-    for(TSDT::Production_Delta_List::iterator pdl = (*tt)->taken.begin(), pdlend = (*tt)->taken.end(); pdl != pdlend; ++pdl)
-      productions.insert(pdl->first);
+    for(TSDT::Production_Entry_List::iterator pel = (*tt)->taken.begin(), pelend = (*tt)->taken.end(); pel != pelend; ++pel)
+      productions.insert(pel->first);
   }
 
   for(std::set<production *>::iterator pdl = productions.begin(), pdlend = productions.end(); pdl != pdlend; ++pdl) {
@@ -1550,12 +1623,10 @@ void TSDT_Trace::update(agent * const &my_agent) {
     symbol_remove_ref(my_agent, rhs_value_to_symbol((*pdl)->action_list->referent));
     (*pdl)->action_list->referent = symbol_to_rhs_value(make_float_constant(my_agent, (*pdl)->rl_ecr + (*pdl)->rl_efr));
 
-    if((*pdl)->instantiations) {
-      for(instantiation *inst = (*pdl)->instantiations; inst; inst = inst->next) {
-        for(preference *pref = inst->preferences_generated; pref; pref = pref->inst_next) {
-          symbol_remove_ref(my_agent, pref->referent);
-          pref->referent = make_float_constant(my_agent, (*pdl)->rl_ecr + (*pdl)->rl_efr);
-        }
+    for(instantiation *inst = (*pdl)->instantiations; inst; inst = inst->next) {
+      for(preference *pref = inst->preferences_generated; pref; pref = pref->inst_next) {
+        symbol_remove_ref(my_agent, pref->referent);
+        pref->referent = make_float_constant(my_agent, (*pdl)->rl_ecr + (*pdl)->rl_efr);
       }
     }
   }

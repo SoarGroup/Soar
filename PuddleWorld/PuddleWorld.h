@@ -78,6 +78,7 @@ private:
   sml::StringElement * m_state;
   sml::IntElement * m_step;
   sml::FloatElement * m_reward;
+  sml::FloatElement * m_terminal;
   sml::FloatElement * m_x;
   sml::FloatElement * m_y;
 };

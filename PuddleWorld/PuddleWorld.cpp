@@ -509,6 +509,8 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
   m_y = 0;
   m_agent->DestroyWME(m_x);
   m_x = 0;
+  m_agent->DestroyWME(m_terminal);
+  m_terminal = 0;
   m_agent->DestroyWME(m_reward);
   m_reward = 0;
   m_agent->DestroyWME(m_step);
@@ -619,14 +621,17 @@ void PuddleWorld::update() {
 
           if(x >= 0.95f && y <= 0.05f) {
             m_state->Update("terminal");
-          }
-          else if(step == 5000) {
-            /// HACK: Force eventual termination
-            m_state->Update("terminal");
-
-            reward += -10.0f;
+            if(!m_terminal) {
+              m_terminal = m_agent->CreateFloatWME(m_agent->GetInputLink(), "terminal", 0.0f);
+//               std::cerr << "PuddleWorld marked ^terminal " << 0.0f << std::endl;
+            }
           }
           else {
+            if(step == 5000) {
+              /// HACK: Force eventual termination
+              m_state->Update("terminal");
+            }
+
             float dist;
 
             reward += -1.0f;

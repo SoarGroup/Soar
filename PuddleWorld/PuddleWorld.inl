@@ -41,6 +41,7 @@ PuddleWorld::PuddleWorld(const float &initial_min_x,
   m_state(0),
   m_step(0),
   m_reward(0),
+  m_terminal(0),
   m_x(0),
   m_y(0)
 {
@@ -68,6 +69,8 @@ PuddleWorld::PuddleWorld(const float &initial_min_x,
 PuddleWorld::~PuddleWorld() {
   m_agent->DestroyWME(m_y);
   m_agent->DestroyWME(m_x);
+  if(m_terminal)
+    m_agent->DestroyWME(m_terminal);
   m_agent->DestroyWME(m_reward);
   m_agent->DestroyWME(m_step);
   m_agent->DestroyWME(m_state);
