@@ -222,60 +222,6 @@ tuple concat_tuples(const tuple &t1, const tuple &t2) {
 	return t3;
 }
 
-template<typename T>
-bool in(const T& x, const set<T> &s) {
-	return s.find(x) != s.end();
-}
-
-template<typename T>
-int intersect_sets(const set<T> &s1, const set<T> &s2, set<T> &out) {
-	int s = 0;
-	typename set<T>::const_iterator i = s1.begin(), j = s2.begin();
-	while (i != s1.end() && j != s2.end()) {
-		if (*i == *j) {
-			s++;
-			out.insert(*i);
-			++i;
-			++j;
-		} else if (*i < *j) {
-			++i;
-		} else {
-			++j;
-		}
-	}
-	return s;
-}
-
-template<typename T>
-void intersect_sets_inplace(set<T> &s1, const set<T> &s2) {
-	typename set<T>::const_iterator i = s1.begin(), j = s2.begin();
-	while (i != s1.end() && j != s2.end()) {
-		if (*i < *j) {
-			s1.erase(i++);
-		} else if (*i > *j) {
-			++j;
-		} else {
-			++i;
-			++j;
-		}
-	}
-	s1.erase(i, s1.end());
-}
-
-template<typename T>
-void subtract_set_inplace(set<T> &s1, const set<T> &s2) {
-	typename set<T>::const_iterator i = s1.begin(), j = s2.begin();
-	while (i != s1.end() && j != s2.end()) {
-		if (*i == *j) {
-			s1.erase(i++);
-			++j;
-		} else if (*i < *j) {
-			++i;
-		} else {
-			++j;
-		}
-	}
-}
 
 relation::relation() : sz(0), arty(0) {}
 relation::relation(int n) : sz(0), arty(n) {}
@@ -298,7 +244,7 @@ bool relation::test(const tuple &t) const {
 	if (i == tuples.end()) {
 		return false;
 	}
-	return in(t[0], i->second);
+	return in_set(t[0], i->second);
 }
 	
 void relation::slice(const index_vec &inds, relation &out) const {
@@ -502,6 +448,28 @@ void relation::add(int i, const tuple &t) {
 	sz -= s.size();
 	s.insert(i);
 	sz += s.size();
+}
+
+void relation::at_pos(int n, set<int> &elems) const {
+	assert(0 <= n && n < arty);
+	tuple_map::const_iterator i;
+	elems.clear();
+	if (n == 0) {
+		for (i = tuples.begin(); i != tuples.end(); ++i) {
+			union_sets_inplace(elems, i->second);
+		}
+	} else {
+		for (i = tuples.begin(); i != tuples.end(); ++i) {
+			elems.insert(i->first[n - 1]);
+		}
+	}
+}
+
+void relation::drop_first(set<tuple> &out) const {
+	tuple_map::const_iterator i;
+	for (i = tuples.begin(); i != tuples.end(); ++i) {
+		out.insert(i->first);
+	}
 }
 
 ostream &operator<<(ostream &os, const relation &r) {

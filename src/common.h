@@ -81,6 +81,69 @@ inline bool map_has(const std::map<A, B> &m, const A &key) {
 	return m.find(key) != m.end();
 }
 
+template<typename T>
+bool in_set(const T& x, const std::set<T> &s) {
+	return s.find(x) != s.end();
+}
+
+template<typename T>
+int intersect_sets(const std::set<T> &s1, const std::set<T> &s2, std::set<T> &out) {
+	int s = 0;
+	typename std::set<T>::const_iterator i = s1.begin(), j = s2.begin();
+	while (i != s1.end() && j != s2.end()) {
+		if (*i == *j) {
+			s++;
+			out.insert(*i);
+			++i;
+			++j;
+		} else if (*i < *j) {
+			++i;
+		} else {
+			++j;
+		}
+	}
+	return s;
+}
+
+template<typename T>
+void intersect_sets_inplace(std::set<T> &s1, const std::set<T> &s2) {
+	typename std::set<T>::const_iterator i = s1.begin(), j = s2.begin();
+	while (i != s1.end() && j != s2.end()) {
+		if (*i < *j) {
+			s1.erase(i++);
+		} else if (*i > *j) {
+			++j;
+		} else {
+			++i;
+			++j;
+		}
+	}
+	s1.erase(i, s1.end());
+}
+
+template<typename T>
+void subtract_set_inplace(std::set<T> &s1, const std::set<T> &s2) {
+	typename std::set<T>::const_iterator i = s1.begin(), j = s2.begin();
+	while (i != s1.end() && j != s2.end()) {
+		if (*i == *j) {
+			s1.erase(i++);
+			++j;
+		} else if (*i < *j) {
+			++i;
+		} else {
+			++j;
+		}
+	}
+}
+
+template<typename T>
+void union_sets_inplace(std::set<T> &s1, const std::set<T> &s2) {
+	typename std::set<T>::const_iterator i;
+	for (i = s2.begin(); i != s2.end(); ++i) {
+		s1.insert(*i);
+	}
+}
+
 /*
  Calculate the maximum difference between points in two point clouds in
  the direction of u.
@@ -234,6 +297,8 @@ public:
 	void count_expansion(const relation  &r, const index_vec &match1, const index_vec &match2, int &matched, int &new_size) const;
 	void filter(const index_vec &inds, const relation &r);
 	void subtract(const index_vec &inds, const relation &r);
+	void at_pos(int n, std::set<int> &elems) const;
+	void drop_first(std::set<tuple> &out) const;
 	
 	int size() const { return sz; }
 	int arity() const { return arty; }

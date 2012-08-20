@@ -30,7 +30,7 @@ private:
 	const relation_table &rels;
 };
 
-bool test_clause(const clause &c, const relation_table &t);
-bool test_clause_vec(const clause_vec &c, const relation_table &t);
+bool test_clause(const clause &c, const relation_table &rels, std::map<int, int> &assignments);
+bool test_clause_vec(const clause_vec &c, const relation_table &rels, std::map<int, int> &assignments);
 
 #endif

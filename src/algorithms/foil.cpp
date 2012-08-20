@@ -3,17 +3,156 @@
 
 using namespace std;
 
-bool test_clause(const clause &c, const relation_table &t) {
-	assert(false);
-	return false;
+
+class obj_assign_csp {
+public:
+	bool test_clause(const clause &c, const relation_table &rels, map<int, int> &out) {
+		search_state init;
+		
+		for (int i = 0; i < c.size(); ++i) {
+			for (int j = 0; j < c[i].second.size(); ++j) {
+				if (c[i].second[j] != 0) {
+					init.unassigned.insert(c[i].second[j] - 1);
+				}
+			}
+		}
+		init.domains.resize(init.unassigned.size());
+		var_pos.resize(init.unassigned.size());
+		init.constraints.resize(c.size());
+		
+		vector<bool> initted(init.unassigned.size(), false);
+		for (int i = 0; i < c.size(); ++i) {
+			const relation *r = map_get(rels, c[i].first);
+			if (!r) {
+				return false;
+			}
+			r->drop_first(init.constraints[i]);
+	
+			const tuple &vars = c[i].second;
+			for (int j = 1; j < vars.size(); ++j) {
+				int v = vars[j] - 1;
+				/*
+				 Initial domain of each variable is the
+				 intersection of all values at the
+				 corresponding positions of each predicate it
+				 appears in.
+				*/
+				set<int> &domain = init.domains[v], &cdomain = init.cdoms[make_pair(i, j - 1)];
+				r->at_pos(j, cdomain);
+				if (!initted[v]) {
+					domain = cdomain;
+					initted[v] = true;
+				} else {
+					intersect_sets_inplace(domain, cdomain);
+				}
+				
+				var_pos[v].insert(make_pair(i, j - 1));
+			}
+		}
+		if (!search(init)) {
+			return false;
+		}
+		out = solution;
+		return true;
+	}
+	
+private:
+	struct search_state {
+		vector<set<int>   >            domains;
+		vector<set<tuple> >            constraints;
+		map<pair<int, int>, set<int> > cdoms;
+		map<int, int>                  assignments;
+		set<int>                       unassigned;
+	};
+	
+	/*
+	 For each constraint c and position i that var is in, remove
+	 all tuples in c whose ith argument is not val.
+	*/
+	bool assign(int var, int val, search_state &s) {
+		s.assignments[var] = val;
+		s.unassigned.erase(var);
+		if (s.unassigned.empty()) {
+			return true;
+		}
+		
+		set<pair<int, int> >::const_iterator i;
+		for (i = var_pos[var].begin(); i != var_pos[var].end(); ++i) {
+			set<int> &cdom = s.cdoms[*i];
+			cdom.clear();
+			
+			set<tuple>::iterator j = s.constraints[i->first].begin();
+			while (j != s.constraints[i->first].end()) {
+				if ((*j)[i->second] != val) {
+					s.constraints[i->first].erase(j++);
+				} else {
+					cdom.insert((*j)[i->second]);
+					++j;
+				}
+			}
+		}
+		
+		/*
+		 Update each variable's domain to be consistent with
+		 all constraints.
+		*/
+		for (int i = 0; i < var_pos.size(); ++i) {
+			set<pair<int, int> >::const_iterator j;
+			for (j = var_pos[i].begin(); j != var_pos[i].end(); ++j) {
+				intersect_sets_inplace(s.domains[i], s.cdoms[*j]);
+				if (s.domains[i].empty()) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	bool search(search_state &s) {
+		if (s.unassigned.empty()) {
+			solution = s.assignments;
+			return true;
+		}
+		
+		// find MRV
+		int mrv = -1;
+		set<int>::const_iterator i;
+		for (i = s.unassigned.begin(); i != s.unassigned.end(); ++i) {
+			if (mrv < 0 || s.domains[*i].size() < s.domains[mrv].size()) {
+				mrv = *i;
+			}
+		}
+		
+		for (i = s.domains[mrv].begin(); i != s.domains[mrv].end(); ++i) {
+			search_state child = s;
+			if (assign(mrv, *i, child) && search(child)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	vector<set<pair<int, int> > > var_pos;
+	map<int, int> solution;
+};
+
+bool test_clause(const clause &c, const relation_table &rels, map<int, int> &assignments) {
+	obj_assign_csp csp;
+	return csp.test_clause(c, rels, assignments);
 }
 
-bool test_clause_vec(const clause_vec &c, const relation_table &t) {
+bool test_clause_vec(const clause_vec &c, const relation_table &rels, map<int, int> &assignments) {
 	for (int i = 0; i < c.size(); ++i) {
-		if (test_clause(c[i], t)) {
+		if (test_clause(c[i], rels, assignments)) {
+			cout << "found assignment" << endl;
+			map<int, int>::const_iterator j;
+			for (j = assignments.begin(); j != assignments.end(); ++j) {
+				cout << j->first << " -> " << j->second << endl;
+			}
 			return true;
 		}
 	}
+	cout << "failed finding assignment" << endl;
 	return false;
 }
 

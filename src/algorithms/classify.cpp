@@ -258,9 +258,10 @@ category rel_classifier::classify(const rvec &x, const relation_table &rels) con
 		return constant;
 	}
 
+	map<int, int> assign;
 	map<category, clause_vec>::const_iterator i;
 	for (i = cat_tbl.begin(); i != cat_tbl.end(); ++i) {
-		if (test_clause_vec(i->second, rels)) {
+		if (test_clause_vec(i->second, rels, assign)) {
 			return i->first;
 		}
 	}

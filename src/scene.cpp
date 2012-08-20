@@ -131,7 +131,7 @@ void scene::get_all_nodes(vector<const sgnode*> &n) {
 }
 
 void scene::get_all_node_indices(vector<int> &inds) const {
-	for (int i = 0; i < nodes.size(); ++i) {
+	for (int i = 1; i < nodes.size(); ++i) {  // don't include the world node
 		if (nodes[i].node) {
 			inds.push_back(i);
 		}
