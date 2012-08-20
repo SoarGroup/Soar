@@ -24,7 +24,7 @@ struct filter_table_entry {
 	bool ordered, allow_repeat;
 	
 	filter* (*create)(Symbol*, soar_interface*, scene*, filter_input*);
-	bool    (*calc)(scene*, const std::vector<const sgnode*> &);
+	bool    (*calc)(const scene*, const std::vector<const sgnode*> &);
 	
 	filter_table_entry() {
 		create = NULL;
@@ -63,11 +63,7 @@ public:
 	*/
 	void get_all_atoms(scene *scn, std::vector<std::string> &atoms) const;
 	
-	/*
-	 Calculate the value of every predicate with every possible set
-	 of arguments from the scene.
-	*/
-	void calc_all_atoms(scene *scn, boolvec &results) const;
+	void update_relations(const scene *scn, int time, relation_table &rt) const;
 	
 	const timer_set &get_timers() const {
 		return timers;

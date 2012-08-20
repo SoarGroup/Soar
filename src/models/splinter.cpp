@@ -3,7 +3,7 @@
 #include "model.h"
 #include "splinter.h"
 #include "soar_interface.h"
-#include "scene.h"
+#include "svs.h"
 
 using namespace std;
 
@@ -11,7 +11,7 @@ class splinter_model : public model {
 public:
 	splinter_model(const string &name) : model(name, "splinter") { init(); }
 	
-	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
+	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
 		if (x.size() != 10 || y.size() != 8) {
 			return false;
 		}
@@ -32,6 +32,6 @@ public:
 	}
 };
 
-model *_make_splinter_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
+model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
 	return new splinter_model(name);
 }

@@ -9,9 +9,6 @@
 
 using namespace std;
 
-const char *MODEL_DIR = "models";
-const char *PREDICTION_DIR = "predictions";
-
 void slice(const rvec &source, rvec &target, const vector<int> &indexes) {
 	target.resize(indexes.size());
 	for (int i = 0; i < indexes.size(); ++i) {
@@ -38,8 +35,8 @@ void model::init() {
 	}
 }
 
-bool model::test(const rvec &x, const rvec &y, const boolvec &atoms, rvec &prediction) {
-	if (!predict(x, prediction, atoms)) {
+bool model::test(const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
+	if (!predict(x, prediction, rels)) {
 		return false;
 	}
 	return true;
@@ -91,7 +88,7 @@ multi_model::~multi_model() {
 	}
 }
 
-bool multi_model::predict(const rvec &x, rvec &y, const boolvec &atoms) {
+bool multi_model::predict(const rvec &x, rvec &y, const relation_table &rels) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
@@ -102,7 +99,7 @@ bool multi_model::predict(const rvec &x, rvec &y, const boolvec &atoms) {
 		} else {
 			slice(x, xp, cfg->xinds);
 		}
-		if (!cfg->mdl->predict(xp, yp, atoms)) {
+		if (!cfg->mdl->predict(xp, yp, rels)) {
 			return false;
 		}
 		if (cfg->ally) {
@@ -114,7 +111,7 @@ bool multi_model::predict(const rvec &x, rvec &y, const boolvec &atoms) {
 	return true;
 }
 
-void multi_model::learn(const rvec &x, const rvec &y, const boolvec &atoms) {
+void multi_model::learn(const rvec &x, const rvec &y, int time) {
 	std::list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
@@ -130,16 +127,16 @@ void multi_model::learn(const rvec &x, const rvec &y, const boolvec &atoms) {
 		} else {
 			slice(y, yp, cfg->yinds);
 		}
-		cfg->mdl->learn(xp, yp, atoms);
+		cfg->mdl->learn(xp, yp, time);
 	}
 }
 
-bool multi_model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
+bool multi_model::test(const rvec &x, const rvec &y, const relation_table &rels) {
 	rvec predicted(y.size());
 	predicted.setConstant(0.0);
 	test_x.push_back(x);
 	test_y.push_back(y);
-	test_atoms.push_back(atoms);
+	test_rels.push_back(rels);
 	reference_vals.push_back(y);
 
 	bool failed = false;
@@ -158,7 +155,7 @@ bool multi_model::test(const rvec &x, const rvec &y, const boolvec &atoms) {
 		} else {
 			slice(y, yp, cfg->yinds);
 		}
-		if (!cfg->mdl->test(xp, yp, atoms, p)) {
+		if (!cfg->mdl->test(xp, yp, rels, p)) {
 			failed = true;
 			break;
 		}

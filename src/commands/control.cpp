@@ -41,8 +41,9 @@ bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec>
 	for (i = traj.begin(); i != traj.end(); ++i) {
 		x << finalstate, *i;
 		scncopy->set_properties(finalstate);
-		atoms = scncopy->get_atom_vals();
-		if (!mdl->predict(x, finalstate, atoms)) {
+		relation_table rels;
+		scncopy->calc_relations(rels);
+		if (!mdl->predict(x, finalstate, rels)) {
 			delete scncopy;
 			return false;
 		}
@@ -444,9 +445,10 @@ public:
 			rvec x(initvals.size() + stepsize), y = initvals;
 			for (int i = 0; i < traj.size(); i += stepsize) {
 				scn->set_properties(y);
-				atoms = scn->get_atom_vals();
+				relation_table rels;
+				scn->calc_relations(rels);
 				x << y, traj.segment(i, stepsize);
-				if (!mdl->predict(x, y, atoms)) {
+				if (!mdl->predict(x, y, rels)) {
 					return false;
 				}
 			}
@@ -781,9 +783,10 @@ private:
 			for (int i = 0; i < numsteps; ++i) {
 				traj.push_back(step);
 				x << state, step;
-				ci->scn->set_properties(state);;
-				atoms = ci->scn->get_atom_vals();
-				if (!ci->mdl->predict(x, state, atoms)) {
+				ci->scn->set_properties(state);
+				relation_table rels;
+				ci->scn->calc_relations(rels);
+				if (!ci->mdl->predict(x, state, rels)) {
 					return false;
 				}
 			}

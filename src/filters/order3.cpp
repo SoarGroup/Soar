@@ -89,12 +89,12 @@ filter* make_behind_filter(Symbol *root, soar_interface *si, scene *scn, filter_
 	return new behind_filter(root, si, input);
 }
 
-bool calc_between(scene *scn, const vector<const sgnode*> &args) {
+bool calc_between(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 3);
 	return between(args[0], args[1], args[2]);
 }
 
-bool calc_behind(scene *scn, const vector<const sgnode*> &args) {
+bool calc_behind(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 3);
 	return behind(args[0], args[1], args[2]);
 }

@@ -4,7 +4,7 @@
 #include <iterator>
 #include "model.h"
 #include "soar_interface.h"
-#include "scene.h"
+#include "svs.h"
 
 using namespace std;
 
@@ -14,7 +14,7 @@ public:
 	: model(name, "vel"), dims(dims) 
 	{}
 	
-	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
+	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
 		if (x.size() != dims * 2 || y.size() != dims) {
 			return false;
 		}
@@ -37,7 +37,7 @@ private:
 	int dims;
 };
 
-model *_make_velocity_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
+model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
 	long dims = 1;
 	si->get_const_attr(root, "dims", dims);
 	return new velocity_model(name, dims);

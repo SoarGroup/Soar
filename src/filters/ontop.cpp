@@ -16,7 +16,7 @@ bool ontop(const sgnode *tn, const sgnode *bn) {
 	return tb.intersects(bb) && tmin[2] == bmax[2];
 }
 
-bool standalone(scene *scn, const vector<const sgnode*> &args) {
+bool standalone(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return ontop(args[0], args[1]);
 }

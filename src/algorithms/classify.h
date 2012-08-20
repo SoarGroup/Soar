@@ -6,6 +6,7 @@
 #include "common.h"
 #include "lda.h"
 #include "timer.h"
+#include "foil.h"
 
 class ID5Tree;
 class scene;
@@ -49,6 +50,28 @@ private:
 	
 	enum Timers {CLASSIFY_T, LDA_T, UPDATE_T};
 	timer_set timers;
+};
+
+class rel_classifier {
+public:
+	rel_classifier(const dyn_mat &X, const dyn_mat &Y, const relation_table &rels);
+	
+	void new_data(int time);
+	void update(const std::vector<int> &cats);
+	category classify(const rvec &x, const relation_table &rels) const;
+	
+	void save(std::ostream &os) const;
+	void load(std::istream &is);
+	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
+	
+private:
+	const dyn_mat &X;
+	const dyn_mat &Y;
+	std::map<category, clause_vec> cat_tbl;
+	const relation_table &rel_tbl;
+	category constant;
+	bool is_constant;
+	std::vector<int> times;
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include <string>
 #include "model.h"
 #include "soar_interface.h"
-#include "scene.h"
+#include "svs.h"
 #include "common.h"
 #include "linalg.h"
 
@@ -16,7 +16,7 @@ public:
 	: model(name, "targets")
 	{}
 	
-	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
+	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
 		y[0] = x[0] + x[4];
 		y[1] = x[1] + x[5];
 		y[2] = x[2];
@@ -65,6 +65,6 @@ public:
 	}
 };
 
-model *_make_targets_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
+model *_make_targets_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
 	return new targets_model(name);
 }

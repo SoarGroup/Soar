@@ -37,47 +37,47 @@ bool direction(const sgnode *a, const sgnode *b, int axis, int comp) {
 	return comp == dir[axis];
 }
 
-bool north_of(scene *scn, const vector<const sgnode*> &args) {
+bool north_of(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 1, 1);
 }
 
-bool south_of(scene *scn, const vector<const sgnode*> &args) {
+bool south_of(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 1, -1);
 }
 
-bool east_of(scene *scn, const vector<const sgnode*> &args) {
+bool east_of(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 0, 1);
 }
 
-bool west_of(scene *scn, const vector<const sgnode*> &args) {
+bool west_of(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 0, -1);
 }
 
-bool x_aligned(scene *scn, const vector<const sgnode*> &args) {
+bool x_aligned(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 0, 0);
 }
 
-bool y_aligned(scene *scn, const vector<const sgnode*> &args) {
+bool y_aligned(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 1, 0);
 }
 
-bool z_aligned(scene *scn, const vector<const sgnode*> &args) {
+bool z_aligned(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 2, 0);
 }
 
-bool above(scene *scn, const vector<const sgnode*> &args) {
+bool above(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 2, 1);
 }
 
-bool below(scene *scn, const vector<const sgnode*> &args) {
+bool below(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return direction(args[0], args[1], 2, -1);
 }

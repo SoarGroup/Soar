@@ -8,11 +8,15 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <map>
+#include <set>
 #include <algorithm>
 #include <ostream>
 #include <fstream>
-#include <map>
 #include "linalg.h"
+
+typedef std::vector<int> tuple;
+typedef std::vector<int> index_vec;
 
 void split(const std::string &s, const std::string &delim, std::vector<std::string> &fields);
 void strip(std::string &s, const std::string &whitespace);
@@ -70,6 +74,11 @@ inline bool map_pop(std::map<A, B> &m, const A &key, B &val) {
 	val = i->second;
 	m.erase(i);
 	return true;
+}
+
+template<typename A, typename B>
+inline bool map_has(const std::map<A, B> &m, const A &key) {
+	return m.find(key) != m.end();
 }
 
 /*
@@ -204,6 +213,50 @@ private:
 };
 
 std::ostream& operator<<(std::ostream &os, const bbox &b);
+
+/*
+ A relation is essentially a list of all argument values for which some
+ predicate evaluates to true.
+*/
+class relation {
+public:
+	relation();
+	relation(int n);
+	relation(const relation &r);
+	relation(int n, const std::vector<tuple> &t);
+	
+	void init_single(const std::vector<int> &s);
+	void add(int i, const tuple &t);
+	bool test(const tuple &t) const;
+	void slice(const index_vec &inds, relation &out) const;
+	relation &operator=(const relation &r);
+	void expand(const relation  &r, const index_vec &match1, const index_vec &match2, const index_vec &extend);
+	void count_expansion(const relation  &r, const index_vec &match1, const index_vec &match2, int &matched, int &new_size) const;
+	void filter(const index_vec &inds, const relation &r);
+	void subtract(const index_vec &inds, const relation &r);
+	
+	int size() const { return sz; }
+	int arity() const { return arty; }
+	bool empty() const { return tuples.empty(); }
+	
+private:
+	typedef std::map<tuple, std::set<int> > tuple_map;
+
+	struct sliced_relation_tuple {
+		tuple match;
+		tuple extend;
+		const std::set<int> *lead;
+	}; 
+
+	int sz, arty;
+	tuple_map tuples;
+	
+	friend std::ostream &operator<<(std::ostream &os, const relation &r);
+};
+
+typedef std::map<std::string, relation> relation_table;
+std::ostream &operator<<(std::ostream &os, const relation &r);
+std::ostream &operator<<(std::ostream &os, const relation_table &t);
 
 template <class T>
 void save_vector(const std::vector<T> &v, std::ostream &os) {

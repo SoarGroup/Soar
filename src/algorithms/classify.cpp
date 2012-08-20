@@ -198,3 +198,110 @@ void classifier::load(std::istream &is) {
 		tree->prune();
 	}
 }
+
+rel_classifier::rel_classifier(const dyn_mat &X, const dyn_mat &Y, const relation_table &rels)
+: X(X), Y(Y), rel_tbl(rels), is_constant(true), constant(-1)
+{
+}
+
+void rel_classifier::new_data(int time) {
+	times.push_back(time);
+}
+
+/*
+ Very inefficient placeholder. Can cache pos/neg lists for each category.
+*/
+void rel_classifier::update(const vector<category> &cats) {
+	assert(cats.size() == times.size());
+	set<int> unique;
+	for (int i = 0; i < cats.size(); ++i) {
+		if (cats[i] != -1) {
+			unique.insert(cats[i]);
+		}
+	}
+
+	if (unique.size() < 2) {
+		if (unique.empty()) {
+			constant = -1;
+		} else {
+			constant = cats[0];
+		}
+		is_constant = true;
+		return;
+	}
+
+	is_constant = false;
+	set<int>::iterator i;
+	for (i = unique.begin(); i != unique.end(); ++i) {
+		vector<int> pos, neg;
+		for (int j = 0; j < cats.size(); ++j) {
+			if (cats[j] == *i) {
+				pos.push_back(times[j]);
+			} else {
+				neg.push_back(times[j]);
+			}
+		}
+		
+		if (!pos.empty()) {
+			FOIL foil(pos, neg, rel_tbl);
+			if (!foil.learn(cat_tbl[*i])) {
+				// add a numeric classifier
+			}
+		} else {
+			cat_tbl.erase(*i);
+		}
+	}
+}
+
+category rel_classifier::classify(const rvec &x, const relation_table &rels) const {
+	if (is_constant) {
+		return constant;
+	}
+
+	map<category, clause_vec>::const_iterator i;
+	for (i = cat_tbl.begin(); i != cat_tbl.end(); ++i) {
+		if (test_clause_vec(i->second, rels)) {
+			return i->first;
+		}
+	}
+	return -1;
+}
+
+void rel_classifier::save(ostream &os) const {
+	assert(false);
+}
+
+void rel_classifier::load(istream &is) {
+	assert(false);
+}
+
+ostream &operator<<(ostream &os, const literal &l) {
+	os << l.first << "(";
+	for (int i = 0; i < l.second.size() - 1; ++i) {
+		os << l.second[i] << ",";
+	}
+	os << l.second.back() << ")";
+	return os;
+}
+
+ostream &operator<<(ostream &os, const clause &c) {
+	for (int i = 0; i < c.size() - 1; ++i) {
+		os << c[i] << " & ";
+	}
+	os << c.back();
+	return os;
+}
+
+bool rel_classifier::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
+	map<category, clause_vec>::const_iterator i;
+	for (i = cat_tbl.begin(); i != cat_tbl.end(); ++i) {
+		os << setw(4) << i->first << ": ";
+		clause_vec::const_iterator j;
+		for (j = i->second.begin(); j != i->second.end(); ++j) {
+			os << *j << endl << "      ";
+		}
+		os << endl;
+	}
+	return true;
+}
+

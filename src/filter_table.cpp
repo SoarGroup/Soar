@@ -187,22 +187,32 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 	}
 }
 
-void filter_table::calc_all_atoms(scene *scn, boolvec &results) const {
-	vector<const sgnode*> all_nodes;
-	scn->get_all_nodes(all_nodes);
+void filter_table::update_relations(const scene *scn, int time, relation_table &rt) const {
+	vector<int> node_inds;
+	scn->get_all_node_indices(node_inds);
 	
 	map<string, filter_table_entry>::const_iterator i;
 	int ii = 0;
 	for(i = t.begin(); i != t.end(); ++i, ++ii) {
 		const filter_table_entry &e = i->second;
-		if (e.calc != NULL) {
+		if (e.calc != NULL && node_inds.size() >= e.parameters.size()) {
+			relation *r = map_get(rt, e.name);
+			if (!r) {
+				// +1 for the time argument
+				r = &(rt[e.name] = relation(e.parameters.size() + 1));
+			}
 			vector<const sgnode*> args;
-			combination_generator<const sgnode*> gen(all_nodes, e.parameters.size(), e.ordered, e.allow_repeat);
-			while (gen.next(args)) {
+			tuple inds;
+			combination_generator<int> gen(node_inds, e.parameters.size(), e.ordered, e.allow_repeat);
+			while (gen.next(inds)) {
+				scn->get_nodes(inds, args);
 				timers.start(ii);
-				results.push_back((*e.calc)(scn, args));
+				bool pos = (*e.calc)(scn, args);
 				timers.stop(ii);
-				args.clear();
+				if (pos) {
+					r->add(time, inds);
+				}
+				inds.clear();
 			}
 		}
 	}

@@ -23,11 +23,16 @@ public:
 	group_node *get_root() { return root; }
 	sgnode *get_node(const std::string &name);
 	sgnode const* get_node(const std::string &name) const;
+	sgnode *get_node(int i);
+	sgnode const* get_node(int i) const;
 	group_node *get_group(const std::string &name);
 	
 	// nodes will be in alphabetical name order
 	void get_all_nodes(std::vector<sgnode*> &nodes);
 	void get_all_nodes(std::vector<const sgnode*> &nodes);
+	void get_all_node_indices(std::vector<int> &inds) const;
+	void get_nodes(const std::vector<int> &inds, std::vector<const sgnode*> &n) const;
+
 	int num_nodes() const;
 	int get_dof() const;
 	
@@ -47,10 +52,9 @@ public:
 	
 	void node_update(sgnode *n, sgnode::change_type t, int added_child);
 	
-	const std::vector<bool>& get_atom_vals();
+	bool intersects(const sgnode *a, const sgnode *b) const;
 	
-	bool intersects(const std::string &a, const std::string &b);
-	bool intersects(const sgnode *a, const sgnode *b);
+	void calc_relations(relation_table &rels) const;
 	
 private:
 	int parse_add(std::vector<std::string> &f);

@@ -94,6 +94,16 @@ sgnode const *scene::get_node(const string &name) const {
 	return nodes[i].node;
 }
 
+sgnode *scene::get_node(int i) {
+	assert(0 <= i && i < nodes.size());
+	return nodes[i].node;
+}
+
+const sgnode *scene::get_node(int i) const {
+	assert(0 <= i && i < nodes.size());
+	return nodes[i].node;
+}
+
 group_node *scene::get_group(const string &name) {
 	sgnode *n = get_node(name);
 	if (n) {
@@ -117,6 +127,21 @@ void scene::get_all_nodes(vector<const sgnode*> &n) {
 		if (i->node->get_name() != "world") {
 			n.push_back(i->node);
 		}
+	}
+}
+
+void scene::get_all_node_indices(vector<int> &inds) const {
+	for (int i = 0; i < nodes.size(); ++i) {
+		if (nodes[i].node) {
+			inds.push_back(i);
+		}
+	}
+}
+
+void scene::get_nodes(const vector<int> &inds, vector<const sgnode*> &n) const {
+	n.resize(inds.size());
+	for (int i = 0; i < inds.size(); ++i) {
+		n[i] = nodes[inds[i]].node;
 	}
 }
 
@@ -493,7 +518,13 @@ bool scene::remove_property(const std::string &name, const std::string &prop) {
 }
 
 int scene::num_nodes() const {
-	return nodes.size();
+	int s = 0;
+	for (int i = 0; i < nodes.size(); ++i) {
+		if (nodes[i].node) {
+			s++;
+		}
+	}
+	return s;
 }
 
 int scene::get_dof() const {
@@ -561,27 +592,14 @@ void scene::node_update(sgnode *n, sgnode::change_type t, int added_child) {
 	dirty = true;
 }
 
-const vector<bool>& scene::get_atom_vals() {
-	if (dirty) {
-		atomvals.clear();
-		get_filter_table().calc_all_atoms(this, atomvals);
-		dirty = false;
-	}
-	return atomvals;
-}
-
-bool scene::intersects(const string &a, const string &b) {
-	sgnode *na = get_node(a), *nb = get_node(b);
-	if (!na || !nb) {
-		return false;
-	}
-	return intersects(na, nb);
-}
-
-bool scene::intersects(const sgnode *a, const sgnode *b) {
+bool scene::intersects(const sgnode *a, const sgnode *b) const {
 	if (a == b) {
 		return true;
 	}
-	const collision_table &c = cdetect.get_collisions();
+	const collision_table &c = const_cast<scene*>(this)->cdetect.get_collisions();
 	return c.find(make_pair(a, b)) != c.end() || c.find(make_pair(b, a)) != c.end();
+}
+
+void scene::calc_relations(relation_table &rels) const {
+	get_filter_table().update_relations(this, 0, rels);
 }

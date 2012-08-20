@@ -8,7 +8,7 @@
 #include "soar_interface.h"
 #include "filter_table.h"
 #include "params.h"
-#include "scene.h"
+#include "svs.h"
 
 using namespace std;
 
@@ -16,13 +16,11 @@ const int MAXITERS = 50;
 
 class EM_model : public model {
 public:
-	EM_model(soar_interface *si, Symbol *root, scene *scn, const string &name)
+	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
 	: model(name, "em"), si(si), revisions(0), ydata(0, 1, INIT_NDATA, 1), wm_root(NULL)
 	{
 		em = new EM(xdata, ydata);
-		
-		
-		clsfr = new classifier(xdata, ydata);
+		clsfr = new rel_classifier(xdata, ydata, state->get_svs()->get_rels());
 		init();
 	}
 
@@ -31,8 +29,8 @@ public:
 		delete clsfr;
 	}
 	
-	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
-		int mode = clsfr->classify(x, atoms);
+	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
+		int mode = clsfr->classify(x, rels);
 		if (mode < 0) {
 			return false;
 		}
@@ -47,7 +45,7 @@ public:
 		return 1;
 	}
 
-	void learn(const rvec &x, const rvec &y, const boolvec &atoms) {
+	void learn(const rvec &x, const rvec &y, int time) {
 		if (xdata.rows() == 0) {
 			xdata.resize(0, x.size());
 		}
@@ -64,7 +62,7 @@ public:
 			}
 		}
 		
-		clsfr->new_data(atoms);
+		clsfr->new_data(time);
 		clsfr->update(em->get_map_modes());
 	}
 	
@@ -86,16 +84,16 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether the decision tree classification was correct.
 	*/
-	bool test(const rvec &x, const rvec &y, const boolvec &atoms, rvec &prediction) {
+	bool test(const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
 		int best, mode;
 		double best_error;
 		best = em->best_mode(x, y(0), best_error);
-		mode = clsfr->classify(x, atoms);
+		mode = clsfr->classify(x, rels);
 		test_modes.push_back(mode);
 		test_best_modes.push_back(best);
 		test_best_errors.push_back(best_error);
 		
-		return model::test(x, y, atoms, prediction);
+		return model::test(x, y, rels, prediction);
 	}
 	
 	bool cli_inspect_sub(int first_arg, const vector<string> &args, ostream &os) {
@@ -154,7 +152,7 @@ private:
 	dyn_mat ydata;
 	
 	EM *em;
-	classifier *clsfr;
+	rel_classifier *clsfr;
 	
 	soar_interface *si;
 	Symbol *wm_root, *tests_id;
@@ -166,6 +164,6 @@ private:
 	vector<double> test_best_errors;
 };
 
-model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
-	return new EM_model(si, root, scn, name);
+model *_make_em_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
+	return new EM_model(si, root, state, name);
 }

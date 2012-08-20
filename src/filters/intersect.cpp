@@ -38,7 +38,7 @@ filter *make_intersect_filter(Symbol *root, soar_interface *si, scene *scn, filt
 	return new intersect_filter(root, si, input, scn);
 }
 
-bool standalone_intersect(scene *scn, const vector<const sgnode*> &args) {
+bool standalone_intersect(const scene *scn, const vector<const sgnode*> &args) {
 	assert(args.size() == 2);
 	return scn->intersects(args[0], args[1]);
 }

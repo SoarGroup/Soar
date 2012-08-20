@@ -1,7 +1,7 @@
 #include <iostream>
 #include "lwr.h"
 #include "soar_interface.h"
-#include "scene.h"
+#include "svs.h"
 #include "model.h"
 
 using namespace std;
@@ -19,7 +19,7 @@ public:
 		lwr.learn(x, y);
 	}
 	
-	bool predict(const rvec &x, rvec &y, const boolvec &atoms) {
+	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
 		return lwr.predict(x, y);
 	}
 	
@@ -47,7 +47,7 @@ private:
 	LWR lwr;
 };
 
-model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const string &name) {
+model *_make_lwr_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name) {
 	Symbol *attr;
 	wme *nnbrs_wme = NULL;
 	long nnbrs = 50;

@@ -5,16 +5,16 @@
 
 using namespace std;
 
-model *_make_null_model_(soar_interface *si, Symbol* root, scene *scn, const string &name);
-model *_make_velocity_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
-model *_make_lwr_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
-model *_make_splinter_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
-model *_make_em_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
-model *_make_targets_model_(soar_interface *si, Symbol *root, scene *scn, const string &name);
+model *_make_null_model_    (soar_interface *si, Symbol* root, svs_state *state, const string &name);
+model *_make_velocity_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_lwr_model_     (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_splinter_model_(soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_em_model_      (soar_interface *si, Symbol *root, svs_state *state, const string &name);
+model *_make_targets_model_ (soar_interface *si, Symbol *root, svs_state *state, const string &name);
 
 struct model_constructor_table_entry {
 	const char *type;
-	model* (*func)(soar_interface*, Symbol*, scene*, const string&);
+	model* (*func)(soar_interface*, Symbol*, svs_state*, const string&);
 };
 
 static model_constructor_table_entry constructor_table[] = {
@@ -26,7 +26,7 @@ static model_constructor_table_entry constructor_table[] = {
 	{ "targets",     _make_targets_model_},
 };
 
-model *parse_model_struct(soar_interface *si, Symbol *cmd, scene *scn) {
+model *parse_model_struct(soar_interface *si, Symbol *cmd, svs_state *state) {
 	wme *type_wme, *name_wme;
 	string name, type;
 	int table_size = sizeof(constructor_table) / sizeof(model_constructor_table_entry);
@@ -45,7 +45,7 @@ model *parse_model_struct(soar_interface *si, Symbol *cmd, scene *scn) {
 	
 	for (int i = 0; i < table_size; ++i) {
 		if (type == constructor_table[i].type) {
-			return constructor_table[i].func(si, cmd, scn, name);
+			return constructor_table[i].func(si, cmd, state, name);
 		}
 	}
 	return NULL;
@@ -70,7 +70,7 @@ public:
 			return !broken;
 		}
 		
-		model *m = parse_model_struct(si, root, get_state()->get_scene());
+		model *m = parse_model_struct(si, root, get_state());
 		if (!m) {
 			set_status("invalid syntax");
 			broken = true;
