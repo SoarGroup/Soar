@@ -88,22 +88,25 @@ void build_prohibits_list (agent* thisAgent, instantiation *inst) {
     cond->bt.prohibits = NIL;
     if (cond->type==POSITIVE_CONDITION && cond->bt.trace) {
       if (cond->bt.trace->slot) {
-        pref = cond->bt.trace->slot->preferences[PROHIBIT_PREFERENCE_TYPE];
-        while (pref) {
-          new_pref = NIL;
-          if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm) {
-            push (thisAgent, pref, cond->bt.prohibits);
-            preference_add_ref (pref);
-          } else {
-            new_pref = find_clone_for_level (pref, inst->match_goal_level);
-            if (new_pref) {
-              if (new_pref->in_tm) {
-                push (thisAgent, new_pref, cond->bt.prohibits);
-                preference_add_ref (new_pref);
+        int prefs_to_check[] = {PROHIBIT_PREFERENCE_TYPE, BEST_PREFERENCE_TYPE, BETTER_PREFERENCE_TYPE, WORSE_PREFERENCE_TYPE};
+        for (int i = 0; i < 4; ++i) {
+          pref = cond->bt.trace->slot->preferences[prefs_to_check[i]];
+          while (pref) {
+            new_pref = NIL;
+            if (pref->inst->match_goal_level == inst->match_goal_level && pref->in_tm) {
+              push (thisAgent, pref, cond->bt.prohibits);
+              preference_add_ref (pref);
+            } else {
+              new_pref = find_clone_for_level (pref, inst->match_goal_level);
+              if (new_pref) {
+                if (new_pref->in_tm) {
+                  push (thisAgent, new_pref, cond->bt.prohibits);
+                  preference_add_ref (new_pref);
+                }
               }
             }
+            pref = pref->next;
           }
-          pref = pref->next;
         }
       }
     }

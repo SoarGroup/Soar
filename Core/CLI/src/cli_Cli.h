@@ -218,6 +218,7 @@ namespace cli
             LEARN_ONLY,
             LEARN_ENABLE_THROUGH_LOCAL_NEGATIONS,
             LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS,
+            LEARN_THROUGH_EVALUATION_RULES,
             LEARN_NUM_OPTIONS, // must be last
         };
         typedef std::bitset<LEARN_NUM_OPTIONS> LearnBitset;

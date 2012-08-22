@@ -1293,6 +1293,7 @@ namespace cli
                 {'o', "only",        OPTARG_NONE},
                 {'n', "enable-through-local-negations", OPTARG_NONE},
                 {'N', "disable-through-local-negations", OPTARG_NONE},
+                {'p', "through-evaluation-rules", OPTARG_NONE},
                 {0, 0, OPTARG_NONE}
             };
 
@@ -1329,6 +1330,9 @@ namespace cli
                         break;
                     case 'N':
                         options.set(Cli::LEARN_DISABLE_THROUGH_LOCAL_NEGATIONS);
+                        break;
+                    case 'p':
+                        options.flip(Cli::LEARN_THROUGH_EVALUATION_RULES);
                         break;
                 }
             }

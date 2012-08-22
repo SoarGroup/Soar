@@ -1919,7 +1919,7 @@ void decide_non_context_slot (agent* thisAgent, slot *s)
 							* the chunk will be first on the GDS list.  This order
 							* appears to be always true, although I am not 100% certain
 							* (I think it occurs this way because the chunk is
-							* necessarily added to the instantiaton list after the
+							* necessarily added to the instantiation list after the
 							* original instantiation and lists get built such older items
 							* appear further from the head of the list) . If not true,
 							* then we need to keep track of any GDS's that get created
