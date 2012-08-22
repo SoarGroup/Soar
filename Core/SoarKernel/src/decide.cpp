@@ -1144,8 +1144,10 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
           cand->rl_intolerable_variance = true;
         else if(force_tie == 2)
           cand->rl_intolerable_variance = false;
-        else
+        else {
+          std::cerr << "Error: cannot specify both ^force-tie true and ^force-tie false" << std::endl;
           abort();
+        }
 
         if(cand->rl_intolerable_variance)
           impasse_type = TIE_IMPASSE_TYPE;

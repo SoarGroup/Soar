@@ -636,23 +636,37 @@ void PuddleWorld::update() {
 
             reward += -1.0f;
 
-            /// (.1, .25) to (.45, .25), radius 0.1
-            if(x < 0.1f)
-              dist = sqrt(pow(x - 0.1f, 2) + pow(y - 0.25f, 2));
-            else if(x < 0.45f)
-              dist = fabs(y - 0.25f);
-            else
-              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
+            /// Standard Puddle World
+//             /// (.1, .25) to (.45, .25), radius 0.1
+//             if(x < 0.1f)
+//               dist = sqrt(pow(x - 0.1f, 2) + pow(y - 0.25f, 2));
+//             else if(x < 0.45f)
+//               dist = fabs(y - 0.25f);
+//             else
+//               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
+//             reward += -400.0f * max(0.0f, 0.1f - dist);
+// 
+//             /// (.45, .2) to (.45, .6), radius 0.1
+//             if(y < 0.2f)
+//               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.2f, 2));
+//             else if(y < 0.6f)
+//               dist = fabs(x - 0.45f);
+//             else
+//               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
+//             reward += -400.0f * max(0.0f, 0.1f - dist);
+
+            /// Simple Puddle World
+            /// (.35, -0.1) to (.35, 1.1), radius 0.1
+            dist = fabs(x - 0.35f);
             reward += -400.0f * max(0.0f, 0.1f - dist);
 
-            /// (.45, .2) to (.45, .6), radius 0.1
-            if(y < 0.2f)
-              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.2f, 2));
-            else if(y < 0.6f)
-              dist = fabs(x - 0.45f);
-            else
-              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
-            reward += -400.0f * max(0.0f, 0.1f - dist);
+            /// Semi-Complex Puddle World
+            /// (.35, -0.1) to (.35, .55), radius 0.1
+//             if(y < 0.55f)
+//               dist = fabs(x - 0.35f);
+//             else
+//               dist = sqrt(pow(x - 0.35f, 2) + pow(y - 0.55f, 2));
+//             reward += -400.0f * max(0.0f, 0.1f - dist);
           }
 
           m_step->Update(step);

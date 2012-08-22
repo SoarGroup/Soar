@@ -181,5 +181,6 @@ sp {elaborate*reward
                ^io.input-link.state terminal
                ^reward-link <rl>)
 -->
-    (<rl> ^reward.value -1)
+    (<rl> ^reward.value -1
+          ^reward.terminal 0)
 }

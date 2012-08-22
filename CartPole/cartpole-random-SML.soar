@@ -1,12 +1,17 @@
 rl --set learning on
-rl --set learning-policy sarsa
-rl --set learning-rate 0.1
+rl --set learning-policy q-learning
+#rl --set learning-policy sarsa
+rl --set trace tsdt
+rl --set tsdt-cutoff 20
+rl --set learning-rate 0.05
 rl --set discount-rate 0.9
 #rl --set eligibility-trace-decay-rate 0.1
 #rl --set eligibility-trace-tolerance 0.000001
 
-indifferent-selection --boltzmann
-indifferent-selection --temperature 0.05
+indifferent-selection --epsilon-greedy
+indifferent-selection --epsilon 0.05
+#indifferent-selection --boltzmann
+#indifferent-selection --temperature 0.05
 #indifferent-selection --auto-reduce on
 #indifferent-selection --reduction-rate temperature exponential 0.9999
 
@@ -101,5 +106,6 @@ sp {elaborate*reward
     (state <s> ^io.input-link.state terminal
                ^reward-link <rl>)
 -->
-    (<rl> ^reward.value -1)
+    (<rl> ^reward.value -1
+          ^reward.terminal 0)
 }

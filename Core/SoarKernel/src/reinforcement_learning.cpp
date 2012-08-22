@@ -938,6 +938,7 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
 		rl_data *data = goal->id.rl_info;
 
     if(data->terminal) {
+//       assert(!selected && update_efr);
       update_efr = true;
       op_value = data->terminal_reward;
 
@@ -1312,7 +1313,7 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
             }
           }
 
-          if(prod->rl_update_count < 10) ///< bazald
+          if(prod->rl_update_count < 4) ///< bazald
             rl_variance_updated = false;
           rl_variance_total_total += prod->rl_variance_total; ///< bazald
 
@@ -1402,8 +1403,6 @@ void TSDT::update(agent * const &my_agent) {
 
   update_credit();
 
-  update_efr(my_agent);
-
   double old_ecr = 0.0;
   /// Reverse last update with old credit, Calculate old_ecr
   for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel) {
@@ -1417,6 +1416,8 @@ void TSDT::update(agent * const &my_agent) {
   delta.ecr = alpha * (reward - old_ecr);
   for(Production_Entry_List::iterator pel = taken.begin(), pelend = taken.end(); pel != pelend; ++pel)
     pel->first->rl_ecr += pel->first->rl_credit * delta.ecr;
+
+  update_efr(my_agent);
 }
 
 double TSDT::sum_Production_List(const Production_List &production_list) {
