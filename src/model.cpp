@@ -36,10 +36,7 @@ void model::init() {
 }
 
 bool model::test(const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
-	if (!predict(x, prediction, rels)) {
-		return false;
-	}
-	return true;
+	return predict(x, prediction, rels);
 }
 
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {

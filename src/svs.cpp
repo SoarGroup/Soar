@@ -252,11 +252,6 @@ void svs_state::update_models() {
 		}
 	} else {
 		mmdl->set_property_vector(curr_pnames);
-		DATAVIS("properties '")
-		for (int j = 0; j < curr_pnames.size(); ++j) {
-			DATAVIS(curr_pnames[j] << " ")
-		}
-		DATAVIS("' " << endl)
 	}
 	prev_pnames = curr_pnames;
 	prev_pvals = curr_pvals;

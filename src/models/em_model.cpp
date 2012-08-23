@@ -93,7 +93,10 @@ public:
 		test_best_modes.push_back(best);
 		test_best_errors.push_back(best_error);
 		
-		return model::test(x, y, rels, prediction);
+		if (mode < 0) {
+			return false;
+		}
+		return em->predict(mode, x, prediction(0));
 	}
 	
 	bool cli_inspect_sub(int first_arg, const vector<string> &args, ostream &os) {
