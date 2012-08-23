@@ -1,8 +1,8 @@
 rl --set learning on
 #rl --set learning-policy sarsa
 rl --set learning-policy q-learning
-rl --set learning-rate 0.1
-rl --set discount-rate 0.9
+rl --set learning-rate 0.2
+rl --set discount-rate 1.0
 #rl --set eligibility-trace-decay-rate 0.1
 #rl --set eligibility-trace-tolerance 0.000001
 

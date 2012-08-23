@@ -56,8 +56,13 @@ PuddleWorld::PuddleWorld(const float &initial_min_x,
 
   float x, y;
   do {
+    /// Normal
     x = m_initial_min_x + float(rand()) / RAND_MAX * (m_initial_max_x - m_initial_min_x);
     y = m_initial_min_y + float(rand()) / RAND_MAX * (m_initial_max_y - m_initial_min_y);
+
+//     /// Simplified, Deterministic
+//     x = int(float(rand()) / RAND_MAX * 20) * 0.05f;
+//     y = int(float(rand()) / RAND_MAX * 20) * 0.05f;
   } while(x >= 0.95f && y <= 0.05f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
   m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);

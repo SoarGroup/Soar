@@ -100,8 +100,7 @@ g_ep_tuples = []
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'bellman'))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'simple'))
 
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple'))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple', (9999, -1, -1)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
 g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
 
@@ -211,7 +210,7 @@ for ep_tuple in g_ep_tuples:
     dir = dir[len(dir) - 1]
   else:
     dir = ep_tuple[0]
-  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) + '_' + str(ep_tuple[5])
+  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) #+ '_' + str(ep_tuple[4]) + '_' + str(ep_tuple[5])
   for i in range(6, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")

@@ -533,8 +533,13 @@ void PuddleWorld::reinit(const bool &init_soar, const int &after_episode) {
 
   float x, y;
   do {
+    /// Normal
     x = m_initial_min_x + float(rand()) / RAND_MAX * (m_initial_max_x - m_initial_min_x);
     y = m_initial_min_y + float(rand()) / RAND_MAX * (m_initial_max_y - m_initial_min_y);
+
+    /// Simplified, Deterministic
+//     x = int(float(rand()) / RAND_MAX * 20) * 0.05f;
+//     y = int(float(rand()) / RAND_MAX * 20) * 0.05f;
   } while(x >= 0.95f && y <= 0.05f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", x);
   m_y = m_agent->CreateFloatWME(m_agent->GetInputLink(), "y", y);
@@ -600,6 +605,7 @@ void PuddleWorld::update() {
 
           {
             const float shift = 0.02f * rand() / RAND_MAX - 0.01f; ///< Should really be Gaussian, stddev = 0.01f
+//             const float shift = 0.0f; ///< Simplified, Deterministic
 
             switch(direction_name[0]) {
               case 'n': y -= 0.05f + shift; break;
@@ -655,18 +661,23 @@ void PuddleWorld::update() {
 //               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
 //             reward += -400.0f * max(0.0f, 0.1f - dist);
 
+//             /// Simplified Puddle World
+//             /// (.375, 0) to (.375, 1), radius 0.125
+// //             if(0.25f <= x && x < 0.5f)
+// //               reward += -10.0f;
+
             /// Simple Puddle World
-            /// (.35, -0.1) to (.35, 1.1), radius 0.1
-            dist = fabs(x - 0.35f);
-            reward += -400.0f * max(0.0f, 0.1f - dist);
+            /// (.35, 0) to (.35, 1), radius 0.1
+//             dist = fabs(x - 0.35f);
+//             reward += -400.0f * max(0.0f, 0.1f - dist);
 
             /// Semi-Complex Puddle World
-            /// (.35, -0.1) to (.35, .55), radius 0.1
-//             if(y < 0.55f)
-//               dist = fabs(x - 0.35f);
-//             else
-//               dist = sqrt(pow(x - 0.35f, 2) + pow(y - 0.55f, 2));
-//             reward += -400.0f * max(0.0f, 0.1f - dist);
+            /// (.35, 0) to (.35, .8275), radius 0.1
+            if(y < 0.8275f)
+              dist = fabs(x - 0.35f);
+            else
+              dist = sqrt(pow(x - 0.35f, 2) + pow(y - 0.8275f, 2));
+            reward += -400.0f * max(0.0f, 0.1f - dist);
           }
 
           m_step->Update(step);
