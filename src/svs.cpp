@@ -314,8 +314,8 @@ bool svs_state::cli_inspect(int first_arg, const vector<string> &args, ostream &
 			}
 		}
 		return true;
-	} else if (args[first_arg] == "atoms") {
-		assert(false);
+	} else if (args[first_arg] == "relations") {
+		scn->print_relations(os);
 		return true;
 	} else if (args[first_arg] == "timing") {
 		timers.report(os);

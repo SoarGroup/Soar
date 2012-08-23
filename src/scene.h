@@ -27,9 +27,8 @@ public:
 	sgnode const* get_node(int i) const;
 	group_node *get_group(const std::string &name);
 	
-	// nodes will be in alphabetical name order
 	void get_all_nodes(std::vector<sgnode*> &nodes);
-	void get_all_nodes(std::vector<const sgnode*> &nodes);
+	void get_all_nodes(std::vector<const sgnode*> &nodes) const;
 	void get_all_node_indices(std::vector<int> &inds) const;
 	void get_nodes(const std::vector<int> &inds, std::vector<const sgnode*> &n) const;
 
@@ -55,6 +54,7 @@ public:
 	bool intersects(const sgnode *a, const sgnode *b) const;
 	
 	void calc_relations(relation_table &rels) const;
+	void print_relations(std::ostream &os) const;
 	
 private:
 	int parse_add(std::vector<std::string> &f);

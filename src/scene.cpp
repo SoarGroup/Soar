@@ -115,16 +115,16 @@ group_node *scene::get_group(const string &name) {
 void scene::get_all_nodes(vector<sgnode*> &n) {
 	node_vec::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		if (i->node->get_name() != "world") {
+		if (i->node && i->node->get_name() != "world") {
 			n.push_back(i->node);
 		}
 	}
 }
 
-void scene::get_all_nodes(vector<const sgnode*> &n) {
+void scene::get_all_nodes(vector<const sgnode*> &n) const {
 	node_vec::const_iterator i;
 	for (i = nodes.begin(); i != nodes.end(); ++i) {
-		if (i->node->get_name() != "world") {
+		if (i->node && i->node->get_name() != "world") {
 			n.push_back(i->node);
 		}
 	}
@@ -602,4 +602,24 @@ bool scene::intersects(const sgnode *a, const sgnode *b) const {
 
 void scene::calc_relations(relation_table &rels) const {
 	get_filter_table().update_relations(this, 0, rels);
+}
+
+void scene::print_relations(ostream &os) const {
+	relation_table rels;
+	relation_table::const_iterator i;
+	get_filter_table().update_relations(this, 0, rels);
+	for (i = rels.begin(); i != rels.end(); ++i) {
+		set<tuple> args;
+		set<tuple>::iterator j;
+		i->second.drop_first(args);
+		for (j = args.begin(); j != args.end(); ++j) {
+			os << i->first << "(";
+			for (int k = 0; k < j->size() - 1; ++k) {
+				assert(nodes[(*j)[k]].node);
+				os << nodes[(*j)[k]].node->get_name() << ",";
+			}
+			assert(nodes[j->back()].node);
+			os << nodes[j->back()].node->get_name() << ")" << endl;
+		}
+	}
 }
