@@ -1025,10 +1025,10 @@ void exploration_compute_value_of_candidates(agent *my_agent, preference *candid
         else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
           double total_credit = 0.0;
           ITERATE_EXPLORATION_PRODUCTIONS(cand) {
-            total_credit += (1.0 / prod2->firing_count); ///< has fired already
+            total_credit += (1.0 / prod2->total_firing_count); ///< has fired already
           } DONE_EXPLORATION_PRODUCTIONS;
           ITERATE_EXPLORATION_PRODUCTIONS(cand) {
-            prod2->rl_credit = (1.0 / prod2->firing_count) / total_credit;
+            prod2->rl_credit = (1.0 / prod2->total_firing_count) / total_credit;
           } DONE_EXPLORATION_PRODUCTIONS;
         }
         else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {

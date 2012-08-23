@@ -970,10 +970,10 @@ void update_influence(agent* const &thisAgent, slot* const &slot, preference * c
         else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
           double total_credit = 0.0;
           ITERATE_INFLUENCE_PRODUCTIONS(cand) {
-            total_credit += (1.0 / prod2->firing_count); ///< has fired already
+            total_credit += (1.0 / prod2->total_firing_count); ///< has fired already
           } DONE_INFLUENCE_PRODUCTIONS;
           ITERATE_INFLUENCE_PRODUCTIONS(cand) {
-            prod2->rl_credit = (1.0 / prod2->firing_count) / total_credit;
+            prod2->rl_credit = (1.0 / prod2->total_firing_count) / total_credit;
           } DONE_INFLUENCE_PRODUCTIONS;
         }
         else if(thisAgent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {

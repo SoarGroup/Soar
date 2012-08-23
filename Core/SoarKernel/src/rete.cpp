@@ -7500,6 +7500,11 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
   prod->rl_influence_0 = 0.0; ///< bazald
   prod->rl_influence_rest = 0.0; ///< bazald
   prod->rl_influence_total = 0.0; ///< bazald
+  prod->total_firing_count = 0; ///< bazald
+  prod->init_fired_count = 0; ///< bazald
+  prod->init_fired_last = 0; ///< bazald
+  prod->init_updated_count = 0; ///< bazald
+  prod->init_updated_last = 0; ///< bazald
 	if ( ( prod->type != JUSTIFICATION_PRODUCTION_TYPE ) && ( prod->type != TEMPLATE_PRODUCTION_TYPE ) )
 	{
 	  prod->rl_rule = rl_valid_rule( prod );

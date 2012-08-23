@@ -198,6 +198,7 @@ agent * create_soar_agent (char * agent_name) {                                 
   newAgent->grounds_tc                         = 0;
   newAgent->highest_goal_whose_context_changed = NIL;
   newAgent->ids_with_unknown_level             = NIL;
+  newAgent->init_count                         = 1; ///< bazald
   newAgent->input_period                       = 0;     /* AGR REW1 */
   newAgent->input_cycle_flag                   = TRUE;  /* AGR REW1 */
   newAgent->justification_count                = 1;
@@ -443,18 +444,88 @@ agent * create_soar_agent (char * agent_name) {                                 
 */
 void destroy_soar_agent (agent * delete_agent)
 {
-  /// print out all numeric preferences: bazald
+  /** Begin bazald's output **/
+  double count = 0.0;
+  double avg_fperf = 0.0;
+  double var_fperf = 0.0;
+  double avg_uperu = 0.0;
+  double var_uperu = 0.0;
+  double avg_uperf = 0.0;
+  double var_uperf = 0.0;
   for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
     for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
-      if(prod2->rl_rule && prod2->name && prod2->name->sc.name)
+      if(prod2->rl_rule && prod2->name && prod2->name->sc.name) {
+        const double div = 1.0 / ++count;
+        const double fperf = prod2->total_firing_count / double(prod2->init_fired_count);
+        const double uperu = prod2->rl_update_count / double(prod2->init_updated_count);
+        const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
+
         std::cerr << prod2->name->sc.name
                   << " updates " << prod2->rl_update_count
                   << " value " << prod2->rl_ecr + prod2->rl_efr
+                  << " fired " << double(prod2->init_fired_count) / delete_agent->init_count
+                  << " updated " << double(prod2->init_updated_count) / delete_agent->init_count
+                  << " fperf " << fperf
+                  << " uperu " << uperu
+                  << " uperf " << uperf
                   << " variance " << prod2->rl_variance_total
                   << " influence " << prod2->rl_influence_total << std::endl;
+
+        avg_fperf = avg_fperf * (1 - div) + fperf * div;
+        avg_uperu = avg_uperu * (1 - div) + uperu * div;
+        avg_uperf = avg_uperf * (1 - div) + uperf * div;
+      }
+    }
+  }
+
+  ++count;
+  for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
+    for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
+      if(prod2->rl_rule && prod2->name && prod2->name->sc.name) {
+        const double fperf = prod2->total_firing_count / double(prod2->init_fired_count);
+        const double uperu = prod2->rl_update_count / double(prod2->init_updated_count);
+        const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
+
+        var_fperf += ((fperf - avg_fperf) * (fperf - avg_fperf)) / count;
+        var_uperu += ((uperu - avg_uperu) * (uperu - avg_uperu)) / count;
+        var_uperf += ((uperf - avg_uperf) * (uperf - avg_uperf)) / count;
+      }
+    }
+  }
+
+  std::cerr << "avg_fperf " << avg_fperf
+            << " stddev_fperf " << sqrt(var_fperf)
+            << " avg_uperu " << avg_uperu
+            << " stddev_uperu " << sqrt(var_uperu)
+            << " avg_uperf " << avg_uperf
+            << " stddev_uperf " << sqrt(var_uperf) << std::endl;
+
+  /// bazald: which are in top 20% of uperf?  0.84155 standard deviations?
+  const double threshold = avg_uperf + 0.84155 * sqrt(var_uperf);
+  std::cerr << "uperf threshold = " << avg_uperf << " + 0.84155 * sqrt(" << var_uperf << ") = " << threshold << std::endl;
+  
+  for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
+    for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
+      if(prod2->rl_rule && prod2->name && prod2->name->sc.name) {
+        const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
+
+        if(uperf > threshold) {
+          std::cerr << prod2->name->sc.name
+                    << " updates " << prod2->rl_update_count
+                    << " value " << prod2->rl_ecr + prod2->rl_efr
+                    << " fired " << double(prod2->init_fired_count) / delete_agent->init_count
+                    << " updated " << double(prod2->init_updated_count) / delete_agent->init_count
+                    << " uperf " << uperf
+                    << " variance " << prod2->rl_variance_total
+                    << " influence " << prod2->rl_influence_total << std::endl;
+        }
+
+      }
     }
   }
   
+  /** End bazald's output **/
+
   //print(delete_agent, "\nDestroying agent %s.\n", delete_agent->name);  /* AGR 532 */
 
 //#ifdef USE_X_DISPLAY

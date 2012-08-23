@@ -475,6 +475,8 @@ bool reinitialize_soar (agent* thisAgent) {
 	set_sysparam(thisAgent, TRACE_GDS_SYSPARAM,                      cur_TRACE_GDS_SYSPARAM);
 	/* kjh (CUSP-B4) end */
 
+  ++thisAgent->init_count; ///< bazald
+
 	soar_invoke_callbacks(thisAgent, 
 		AFTER_INIT_SOAR_CALLBACK,
 		0);

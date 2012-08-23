@@ -698,6 +698,11 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
         new_production->rl_influence_0 = 0.0; ///< bazald
         new_production->rl_influence_rest = 0.0; ///< bazald
         new_production->rl_influence_total = 0.0; ///< bazald
+        new_production->total_firing_count = 0; ///< bazald
+        new_production->init_fired_count = 0; ///< bazald
+        new_production->init_fired_last = 0; ///< bazald
+        new_production->init_updated_count = 0; ///< bazald
+        new_production->init_updated_last = 0; ///< bazald
 			}
 
 			// attempt to add to rete, remove if duplicate
@@ -1088,10 +1093,10 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
             else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_fc) {
               double total_credit = 0.0;
               for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-                total_credit += (1.0 / (*prod2)->firing_count); ///< has fired already
+                total_credit += (1.0 / (*prod2)->total_firing_count); ///< has fired already
               }
               for(rl_rule_list::iterator prod2 = data->prev_op_rl_rules->begin(); prod2 != data->prev_op_rl_rules->end(); ++prod2) {
-                (*prod2)->rl_credit = (1.0 / (*prod2)->firing_count) / total_credit;
+                (*prod2)->rl_credit = (1.0 / (*prod2)->total_firing_count) / total_credit;
               }
             }
             else if(my_agent->rl_params->credit_assignment->get_value() == rl_param_container::credit_even) {
@@ -1252,6 +1257,11 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
                     symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
                     prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
                     prod->rl_update_count += 1;
+                    if(prod->init_updated_last != my_agent->init_count) { ///< bazald
+                      ++prod->init_updated_count; ///< bazald
+//                       std::cerr << prod->name->sc.name << " updated for " << prod->init_updated_count << " episodes as of " << my_agent->init_count << std::endl;
+                    }
+                    prod->init_updated_last = my_agent->init_count; ///< bazald
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
 

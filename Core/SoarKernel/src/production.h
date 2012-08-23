@@ -132,6 +132,11 @@ typedef struct production_struct {
   double rl_influence_0; ///< bazald
   double rl_influence_rest; ///< bazald
   double rl_influence_total; ///< bazald
+  uint64_t total_firing_count; ///< bazald
+  uint64_t init_fired_count; ///< bazald
+  uint64_t init_fired_last; ///< bazald
+  uint64_t init_updated_count; ///< bazald
+  uint64_t init_updated_last; ///< bazald
   
   condition* rl_template_conds;
   rl_symbol_map_set* rl_template_instantiations;

@@ -452,6 +452,7 @@ typedef struct agent_struct {
       propose and apply phase */
   uint64_t            e_cycles_this_d_cycle;  /* # of EC's run this DC */
   uint64_t            num_existing_wmes;      /* current WM size */
+  uint64_t            init_count; ///< bazald: number of times Soar has been init'd
   uint64_t            production_firing_count;  /* # of prod. firings */
   uint64_t            start_dc_production_firing_count;  /* # of prod. firings this decision cycle */
   uint64_t            max_dc_production_firing_count_value;  /* max # of prod. firings per dc */
