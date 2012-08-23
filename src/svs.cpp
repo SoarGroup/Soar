@@ -438,7 +438,6 @@ void svs::input_callback() {
 	svs_state *topstate = state_stack.front();
 	proc_input(topstate);
 	get_filter_table().update_relations(topstate->get_scene(), time, rels);
-	
 	if (learn) {
 		topstate->update_models();
 	}

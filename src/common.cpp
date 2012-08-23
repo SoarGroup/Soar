@@ -453,7 +453,6 @@ void relation::add(int i, const tuple &t) {
 void relation::at_pos(int n, set<int> &elems) const {
 	assert(0 <= n && n < arty);
 	tuple_map::const_iterator i;
-	elems.clear();
 	if (n == 0) {
 		for (i = tuples.begin(); i != tuples.end(); ++i) {
 			union_sets_inplace(elems, i->second);
@@ -473,24 +472,20 @@ void relation::drop_first(set<tuple> &out) const {
 }
 
 ostream &operator<<(ostream &os, const relation &r) {
-	relation::tuple_map::const_iterator i;
-	set<int>::const_iterator j;
+	tuple t(r.arty);
 	set<tuple> sorted;
+	relation::tuple_map::const_iterator i;
 	for (i = r.tuples.begin(); i != r.tuples.end(); ++i) {
+		copy(i->first.begin(), i->first.end(), t.begin() + 1);
+		set<int>::const_iterator j;
 		for (j = i->second.begin(); j != i->second.end(); ++j) {
-			tuple t;
-			t.push_back(*j);
-			t.insert(t.end(), i->first.begin(), i->first.end());
+			t[0] = *j;
 			sorted.insert(t);
 		}
 	}
 	set<tuple>::iterator k;
 	for (k = sorted.begin(); k != sorted.end(); ++k) {
-		os << "(";
-		for (int l = 0; l < k->size() - 1; ++l) {
-			os << (*k)[l] << ",";
-		}
-		os << k->back() << ")" << endl;
+		join(os, *k, ",") << endl;
 	}
 	return os;
 }
@@ -502,4 +497,3 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 	}
 	return os;
 }
-

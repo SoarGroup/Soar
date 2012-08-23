@@ -214,6 +214,7 @@ void rel_classifier::new_data(int time) {
 void rel_classifier::update(const vector<category> &cats) {
 	assert(cats.size() == times.size());
 	set<int> unique;
+	categories = cats;
 	for (int i = 0; i < cats.size(); ++i) {
 		if (cats[i] != -1) {
 			unique.insert(cats[i]);
@@ -294,6 +295,16 @@ ostream &operator<<(ostream &os, const clause &c) {
 }
 
 bool rel_classifier::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
+	if (first_arg < args.size() && args[first_arg] == "foil") {
+		int cat;
+		if (first_arg + 1 >= args.size() || !parse_int(args[first_arg + 1], cat)) {
+			os << "specify a mode" << endl;
+			return false;
+		}
+		print_foil6_data(os, cat);
+		return true;
+	}
+	
 	map<category, clause_vec>::const_iterator i;
 	for (i = cat_tbl.begin(); i != cat_tbl.end(); ++i) {
 		os << setw(4) << i->first << ": ";
@@ -306,3 +317,40 @@ bool rel_classifier::cli_inspect(int first_arg, const vector<string> &args, ostr
 	return true;
 }
 
+void rel_classifier::print_foil6_data(ostream &os, int cat) const {
+	set<int> all_times, objs;
+	
+	relation_table::const_iterator i;
+	for (i = rel_tbl.begin(); i != rel_tbl.end(); ++i) {
+		set<int> s;
+		i->second.at_pos(0, all_times);
+		for (int j = 1; j < i->second.arity(); ++j) {
+			i->second.at_pos(j, objs);
+		}
+	}
+	
+	os << "O: ";
+	join(os, objs, ",") << "." << endl;
+	os << "T: ";
+	join(os, all_times, ",") << "." << endl << endl;
+	
+	for (i = rel_tbl.begin(); i != rel_tbl.end(); ++i) {
+		os << "*" << i->first << "(T";
+		for (int j = 1; j < i->second.arity(); ++j) {
+			os << ",O";
+		}
+		os << ") #";
+		for (int j = 1; j < i->second.arity(); ++j) {
+			os << "-";
+		}
+		os << endl << i->second << "." << endl;
+	}
+	
+	os << "positive(T) #" << endl;
+	for (int j = 0; j < categories.size(); ++j) {
+		if (categories[j] == cat) {
+			os << times[j] << endl;
+		}
+	}
+	os << "." << endl << endl;
+}

@@ -144,6 +144,20 @@ void union_sets_inplace(std::set<T> &s1, const std::set<T> &s2) {
 	}
 }
 
+template<typename C, typename D>
+std::ostream &join(std::ostream &os, const C& container, const D &delim) {
+	if (container.empty()) {
+		return os;
+	}
+	
+	typename C::const_iterator i = container.begin();
+	os << *i++;
+	while (i != container.end()) {
+		os << delim << *i++;
+	}
+	return os;
+}
+
 /*
  Calculate the maximum difference between points in two point clouds in
  the direction of u.

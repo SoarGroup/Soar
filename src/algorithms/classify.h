@@ -65,6 +65,8 @@ public:
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
 private:
+	void print_foil6_data(std::ostream &os, int cat) const;
+	
 	const dyn_mat &X;
 	const dyn_mat &Y;
 	std::map<category, clause_vec> cat_tbl;
@@ -72,6 +74,7 @@ private:
 	category constant;
 	bool is_constant;
 	std::vector<int> times;
+	std::vector<category> categories;
 };
 
 #endif
