@@ -703,6 +703,9 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
         new_production->init_fired_last = 0; ///< bazald
         new_production->init_updated_count = 0; ///< bazald
         new_production->init_updated_last = 0; ///< bazald
+        new_production->agent_uperf_contrib = false; ///< bazald
+        new_production->agent_uperf_contrib_prev = 0; ///< bazald
+        new_production->agent_uperf_contrib_mark2_prev = 0; ///< bazald
 			}
 
 			// attempt to add to rete, remove if duplicate
@@ -1380,7 +1383,31 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
 
 			}
 		}
-  }
+
+      for(rl_rule_list::iterator prod = data->prev_op_rl_rules->begin(); prod != data->prev_op_rl_rules->end(); ++prod) {
+        const double uperf_old = my_agent->uperf;
+
+        if(!(*prod)->agent_uperf_contrib) {
+          (*prod)->agent_uperf_contrib = true;
+          const double uperf_count_next = my_agent->uperf_count + 1;
+          my_agent->uperf *= my_agent->uperf_count / uperf_count_next;
+          my_agent->uperf_count = uperf_count_next;
+        }
+
+        const double local_uperf = double((*prod)->rl_update_count) / double((*prod)->init_fired_count);
+        my_agent->uperf += (local_uperf - (*prod)->agent_uperf_contrib_prev) / my_agent->uperf_count;
+        (*prod)->agent_uperf_contrib_prev = local_uperf;
+
+        const double mark2_contrib = (local_uperf - uperf_old) * (local_uperf - my_agent->uperf);
+        my_agent->uperf_mark2 += mark2_contrib - (*prod)->agent_uperf_contrib_mark2_prev;
+        (*prod)->agent_uperf_contrib_mark2_prev = mark2_contrib;
+
+        if(my_agent->uperf_count > 1) {
+          my_agent->uperf_variance = my_agent->uperf_mark2 / (my_agent->uperf_count - 1);
+          my_agent->uperf_stddev = sqrt(my_agent->uperf_variance);
+        }
+      }
+    }
 
 		data->gap_age = 0;
 		data->hrl_age = 0;

@@ -361,10 +361,16 @@ typedef struct agent_struct {
   Symbol			* smem_sym_store;
 
   Symbol      * rl_over_threshold_constant; ///< bazald
-  double      variance_update_count;
-  double      variance;
-  double      variance_mark2;
-  double      variance_variance;
+  double      variance_update_count; ///< bazald
+  double      variance; ///< bazald
+  double      variance_mark2; ///< bazald
+  double      variance_variance; ///< bazald
+
+  double      uperf; ///< bazald: average updates per (number of inits for which the production has fired)
+  double      uperf_count; ///< bazald: number of productions contributing to uperf
+  double      uperf_mark2; ///< bazald
+  double      uperf_variance; ///< bazald
+  double      uperf_stddev; ///< bazald
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
