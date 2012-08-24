@@ -213,15 +213,19 @@ bool FOIL::learn(clause_vec &clauses) {
 	t.push_back(0);
 	while (!pos.empty()) {
 		clause c;
+		bool dead = false;
 		if (!add_clause(c)) {
-			return false;
+			dead = true;
 		}
 		bool reduced = filter_pos_by_clause(c);
 		if (!reduced) {
 			// can't cover any more positive cases
-			return false;
+			dead = true;
 		}
 		clauses.push_back(c);
+		if (dead) {
+			return false;
+		}
 		relation pos_next;
 		pos.slice(t, pos_next);
 		pos = pos_next;
