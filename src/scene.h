@@ -57,10 +57,10 @@ public:
 	void print_relations(std::ostream &os) const;
 	
 private:
-	int parse_add(std::vector<std::string> &f);
-	int parse_del(std::vector<std::string> &f);
-	int parse_change(std::vector<std::string> &f);
-	int parse_property(std::vector<std::string> &f);
+	int parse_add(std::vector<std::string> &f, std::string &error);
+	int parse_del(std::vector<std::string> &f, std::string &error);
+	int parse_change(std::vector<std::string> &f, std::string &error);
+	int parse_property(std::vector<std::string> &f, std::string &error);
 
 	typedef std::map<std::string, float> property_map;
 	

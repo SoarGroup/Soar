@@ -171,27 +171,27 @@ void scene::clear() {
 	}
 }
 
-bool parse_vec3(vector<string> &f, int &start, int n, vec3 &v) {
-	stringstream ss;
-	if (start + n > f.size()) {
+bool parse_vec3(vector<string> &f, int &start, vec3 &v, string &error) {
+	if (start + 3 > f.size()) {
 		start = f.size();
+		error = "expecting a number";
 		return false;
 	}
-	for (int i = 0; i < n; ++start, ++i) {
-		ss << f[start] << endl;
-		if (!(ss >> v[i])) {  // conversion failure
+	for (int i = 0; i < 3; ++start, ++i) {
+		if (!parse_double(f[start], v[i])) {
+			error = "expecting a number";
 			return false;
 		}
 	}
 	return true;
 }
 
-bool parse_verts(vector<string> &f, int &start, ptlist &verts) {
+bool parse_verts(vector<string> &f, int &start, ptlist &verts, string &error) {
 	verts.clear();
 	while (start < f.size()) {
 		vec3 v;
 		int i = start;
-		if (!parse_vec3(f, start, 3, v)) {
+		if (!parse_vec3(f, start, v, error)) {
 			return (i == start);  // end of list
 		}
 		verts.push_back(v);
@@ -199,129 +199,144 @@ bool parse_verts(vector<string> &f, int &start, ptlist &verts) {
 	return true;
 }
 
-bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 &scale) {	
+bool parse_transforms(vector<string> &f, int &start, vec3 &pos, vec3 &rot, vec3 &scale, string &error) {	
 	vec3 t;
 	char type;
 	
-	while (start < f.size()) {
-		if (f[start] != "p" && f[start] != "r" && f[start] != "s") {
-			return true;
-		}
-		type = f[start][0];
-		start++;
-		if (!parse_vec3(f, start, 3, t)) {
-			return false;
-		}
-		switch (type) {
-			case 'p':
-				pos = t;
-				break;
-			case 'r':
-				rot = t;
-				break;
-			case 's':
-				scale = t;
-				break;
-			default:
-				assert(false);
-		}
+	if (f[start] != "p" && f[start] != "r" && f[start] != "s") {
+		error = "expecting p, r, or s";
+		return false;
+	}
+	type = f[start++][0];
+	if (!parse_vec3(f, start, t, error)) {
+		return false;
+	}
+	switch (type) {
+		case 'p':
+			pos = t;
+			break;
+		case 'r':
+			rot = t;
+			break;
+		case 's':
+			scale = t;
+			break;
+		default:
+			assert(false);
 	}
 	return true;
 }
 
-int scene::parse_add(vector<string> &f) {
-	int p;
-	sgnode *n;
-	group_node *par;
+int scene::parse_add(vector<string> &f, string &error) {
+	sgnode *n = NULL;
+	group_node *par = NULL;
 	vec3 pos = vec3::Zero(), rot = vec3::Zero(), scale = vec3::Constant(1.0);
 
 	if (f.size() < 2) {
 		return f.size();
 	}
 	if (get_node(f[0])) {
-		return 0;  // already exists
+		error = "node already exists";
+		return 0;
 	}
 	par = get_group(f[1]);
 	if (!par) {
+		error = "parent node does not exist";
 		return 1;
 	}
 	
-	if (f.size() >= 3 && f[2] == "v") {
-		p = 3;
-		ptlist verts;
-		if (!parse_verts(f, p, verts)) {
+	int p = 2;
+	while (p < f.size()) {
+		if (n != NULL && (f[p] == "v" || f[p] == "b")) {
+			error = "more than one geometry specified";
 			return p;
 		}
-		n = new convex_node(f[0], verts);
-	} else if (f.size() >= 3 && f[2] == "b") {
-		if (f.size() < 4) {
-			return 4;
+		if (f[p] == "v") {
+			ptlist verts;
+			if (!parse_verts(f, ++p, verts, error)) {
+				return p;
+			}
+			n = new convex_node(f[0], verts);
+		} else if (f[p] == "b") {
+			++p;
+			double radius;
+			if (p >= f.size() || !parse_double(f[p], radius)) {
+				error = "invalid radius";
+				return p;
+			}
+			n = new ball_node(f[0], radius);
+			++p;
+		} else if (!parse_transforms(f, p, pos, rot, scale, error)) {
+			return p;
 		}
-		double radius;
-		if (!parse_double(f[3], radius)) {
-			return 4;
-		}
-		n = new ball_node(f[0], radius);
-		p = 4;
-	} else {
+	}
+	
+	if (!n) {
 		n = new group_node(f[0]);
-		p = 2;
 	}
-	
-	if (!parse_transforms(f, p, pos, rot, scale)) {
-		return p;
-	}
-	
 	n->set_trans(pos, rot, scale);
 	par->attach_child(n);
 	return -1;
 }
 
-int scene::parse_del(vector<string> &f) {
-	if (f.size() != 1) {
+int scene::parse_del(vector<string> &f, string &error) {
+	if (f.size() < 1) {
+		error = "expecting node name";
 		return f.size();
 	}
 	if (!del_node(f[0])) {
+		error = "node does not exist";
 		return 0;
 	}
 	return -1;
 }
 
-int scene::parse_change(vector<string> &f) {
+int scene::parse_change(vector<string> &f, string &error) {
 	int p;
 	sgnode *n;
 	vec3 pos, rot, scale;
 
 	if (f.size() < 1) {
+		error = "expecting node name";
 		return f.size();
 	}
 	if (!(n = get_node(f[0]))) {
+		error = "node does not exist";
 		return 0;
 	}
 	n->get_trans(pos, rot, scale);
 	p = 1;
-	if (!parse_transforms(f, p, pos, rot, scale)) {
-		return p;
+	while (p < f.size()) {
+		if (!parse_transforms(f, p, pos, rot, scale, error)) {
+			return p;
+		}
 	}
 	n->set_trans(pos, rot, scale);
 	return -1;
 }
 
-int scene::parse_property(vector<string> &f) {
-	int i;
-	if (f.size() != 3) {
-		return f.size();
+int scene::parse_property(vector<string> &f, string &error) {
+	int i, p = 0;
+	if (p >= f.size()) {
+		error = "expecting node name";
+		return p;
 	}
-	stringstream ss(f[2]);
-	float val;
+	if (!map_get(node_ids, f[p++], i) || !nodes[i].node) {
+		error = "node does not exist";
+		return p;
+	}
+	if (p >= f.size()) {
+		error = "expecting property name";
+		return p;
+	}
+	string prop = f[p++];
 	
-	if (!(ss >> val)) {
-		return 2;
+	double val;
+	if (!parse_double(f[p], val)) {
+		error = "expecting a number";
+		return p;
 	}
-	if (!map_get(node_ids, f[0], i)) {
-		return 0;
-	}
-	nodes[i].props[f[1]] = val;
+	nodes[i].props[prop] = val;
 	return -1;
 }
 
@@ -330,6 +345,7 @@ void scene::parse_sgel(const string &s) {
 	vector<string>::iterator i;
 	char cmd;
 	int errfield;
+	string error;
 	
 	LOG(SGEL) << "received sgel" << endl << "---------" << endl << s << endl << "---------" << endl;
 	split(s, "\n", lines);
@@ -345,19 +361,20 @@ void scene::parse_sgel(const string &s) {
 		
 		cmd = fields[0][0];
 		fields.erase(fields.begin());
+		error = "unknown error";
 		
 		switch(cmd) {
 			case 'a':
-				errfield = parse_add(fields);
+				errfield = parse_add(fields, error);
 				break;
 			case 'd':
-				errfield = parse_del(fields);
+				errfield = parse_del(fields, error);
 				break;
 			case 'c':
-				errfield = parse_change(fields);
+				errfield = parse_change(fields, error);
 				break;
 			case 'p':
-				errfield = parse_property(fields);
+				errfield = parse_property(fields, error);
 				break;
 			default:
 				cerr << "expecting a|d|c|p|t at beginning of line '" << *i << "'" << endl;
@@ -365,7 +382,7 @@ void scene::parse_sgel(const string &s) {
 		}
 		
 		if (errfield >= 0) {
-			cerr << "error in field " << errfield + 1 << " of line '" << *i << "' " << endl;
+			cerr << "error in field " << errfield + 1 << " of line '" << *i << "': " << error << endl;
 			exit(1);
 		}
 	}
