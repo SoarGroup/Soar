@@ -78,30 +78,22 @@ g_ep_tuples = []
 #g_ep_tuples.append((g_rules, (0.15, .15, .45, .45), (5, 5), 'rl', 'none', 'simple', (0, 10, 10)))
 
 
-## baseline
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'simple'))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'tsdt', 'simple'))
+# baselines
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'simple'))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'simple', (0, 20, 20)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (20, 20), 'rl', 'eligibility', 'simple'))
 
-## too coarse
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
-## remove most general rules
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (2, 2), 'rl', 'eligibility', 'simple', (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple', (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+# approximation of forced splitting down to 16x16 a priori
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
-## Q-learning vs TSDT
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'tsdt', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
-
-## Splitting agent fixed at depth 10 (really 4-deep, to 16x16)
-#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'simple'))
-
-
-# Splitting agent 8-10 (really 4-deep, to 16x16)
-#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'bellman'))
+# splitting agent 2x2 on up
 g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'simple'))
 
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+# retest others
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'even', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'fc', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
@@ -210,7 +202,7 @@ for ep_tuple in g_ep_tuples:
     dir = dir[len(dir) - 1]
   else:
     dir = ep_tuple[0]
-  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) #+ '_' + str(ep_tuple[4]) + '_' + str(ep_tuple[5])
+  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) + '_' + str(ep_tuple[3]) #+ '_' + str(ep_tuple[4]) + '_' + str(ep_tuple[5])
   for i in range(6, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
