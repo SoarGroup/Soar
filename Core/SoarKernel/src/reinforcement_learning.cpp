@@ -1384,6 +1384,7 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
 			}
 		}
 
+      bool kill = false;
       for(rl_rule_list::iterator prod = data->prev_op_rl_rules->begin(); prod != data->prev_op_rl_rules->end(); ++prod) {
         const double uperf_old = my_agent->uperf;
 
@@ -1394,19 +1395,33 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
           my_agent->uperf_count = uperf_count_next;
         }
 
-        const double local_uperf = double((*prod)->rl_update_count) / double((*prod)->init_fired_count);
+        if(!(*prod)->init_fired_count) { ///< HACK
+          (*prod)->init_fired_count = 1;
+          (*prod)->init_fired_last = my_agent->init_count;
+        }
+
+        const double local_uperf = double((*prod)->rl_update_count) / double((*prod)->init_fired_count + 1.0);
+//         std::cerr << (*prod)->name->sc.name << "->init_fired_count = " << (*prod)->init_fired_count << std::endl;
+        if((*prod)->init_fired_count == 0)
+          kill = true;
         my_agent->uperf += (local_uperf - (*prod)->agent_uperf_contrib_prev) / my_agent->uperf_count;
         (*prod)->agent_uperf_contrib_prev = local_uperf;
+
+        assert(!(my_agent->uperf != my_agent->uperf)); ///< check validity
 
         const double mark2_contrib = (local_uperf - uperf_old) * (local_uperf - my_agent->uperf);
         my_agent->uperf_mark2 += mark2_contrib - (*prod)->agent_uperf_contrib_mark2_prev;
         (*prod)->agent_uperf_contrib_mark2_prev = mark2_contrib;
+
+        assert(!(my_agent->uperf_mark2 != my_agent->uperf_mark2)); ///< check validity
 
         if(my_agent->uperf_count > 1) {
           my_agent->uperf_variance = my_agent->uperf_mark2 / (my_agent->uperf_count - 1);
           my_agent->uperf_stddev = sqrt(my_agent->uperf_variance);
         }
       }
+      if(kill)
+        abort();
     }
 
 		data->gap_age = 0;

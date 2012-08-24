@@ -1048,43 +1048,43 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //   static uint64_t my_id = 0xFFFFFFFFFFFFFFFF;
 //   ++my_id;
 
-  int num_candidates = 0;
-  double max_influence = DBL_MIN;
-  double max_variance = DBL_MIN;
-  double max_q_value = DBL_MIN;
-  double second_influence = DBL_MIN;
-  double second_variance = DBL_MIN;
-  double second_q_value = DBL_MIN;
-  for(const preference * cand = candidates; cand; cand = cand->next_candidate) {
-    ++num_candidates;
-
-    double influence = 0.0;
-    double variance = 0.0;
-    double q_value = 0.0;
-    ITERATE_INFLUENCE_PRODUCTIONS(cand) {
-      influence += prod2->rl_influence_total;
-      variance += prod2->rl_variance_total;
-      q_value += prod2->rl_ecr + prod2->rl_efr;
-    } DONE_INFLUENCE_PRODUCTIONS;
-
-    if(q_value > second_q_value) {
-      if(q_value > max_q_value) {
-        second_influence = max_influence;
-        second_variance = max_variance;
-        second_q_value = max_q_value;
-        max_influence = influence;
-        max_variance = variance;
-        max_q_value = q_value;
-      }
-      else {
-        second_influence = influence;
-        second_variance = variance;
-        second_q_value = q_value;
-      }
-    }
-  }
-  const double inflated_max_variance = max_variance / max(0.01, 1.0 - max_influence);
-  const double inflated_second_variance = second_variance / max(0.01, 1.0 - second_influence);
+//   int num_candidates = 0;
+//   double max_influence = DBL_MIN;
+//   double max_variance = DBL_MIN;
+//   double max_q_value = DBL_MIN;
+//   double second_influence = DBL_MIN;
+//   double second_variance = DBL_MIN;
+//   double second_q_value = DBL_MIN;
+//   for(const preference * cand = candidates; cand; cand = cand->next_candidate) {
+//     ++num_candidates;
+// 
+//     double influence = 0.0;
+//     double variance = 0.0;
+//     double q_value = 0.0;
+//     ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+//       influence += prod2->rl_influence_total;
+//       variance += prod2->rl_variance_total;
+//       q_value += prod2->rl_ecr + prod2->rl_efr;
+//     } DONE_INFLUENCE_PRODUCTIONS;
+// 
+//     if(q_value > second_q_value) {
+//       if(q_value > max_q_value) {
+//         second_influence = max_influence;
+//         second_variance = max_variance;
+//         second_q_value = max_q_value;
+//         max_influence = influence;
+//         max_variance = variance;
+//         max_q_value = q_value;
+//       }
+//       else {
+//         second_influence = influence;
+//         second_variance = variance;
+//         second_q_value = q_value;
+//       }
+//     }
+//   }
+//   const double inflated_max_variance = max_variance / max(0.01, 1.0 - max_influence);
+//   const double inflated_second_variance = second_variance / max(0.01, 1.0 - second_influence);
 //   std::cerr << "Number of candidates = " << num_candidates << std::endl;
 
   for(preference * cand = candidates; cand; cand = cand->next_candidate) {
@@ -1121,24 +1121,52 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         if(!force_tie) {
           cand->rl_intolerable_variance = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE] != 0;
 
-          double total_influence = 0.0;
-          double total_variance = 0.0;
-          double q_value = 0.0;
+//           double total_influence = 0.0;
+//           double total_variance = 0.0;
+//           double q_value = 0.0;
+          uint64_t init_fired_count_min = UINT64_MAX;
+          double uperf_min = 0;
+          double uperf_max = 0;
           ITERATE_INFLUENCE_PRODUCTIONS(cand) {
-            if(prod2->rl_update_count < 10 ||
-              prod2->rl_variance_total < 0.001
-            ) {
-              cand->rl_intolerable_variance = false;
-              break;
-            }
+//             if(prod2->rl_update_count < 10 ||
+//               prod2->rl_variance_total < 0.001
+//             ) {
+//               cand->rl_intolerable_variance = false;
+//               break;
+//             }
+// 
+//             total_influence += prod2->rl_influence_total;
+//             total_variance += prod2->rl_variance_total;
+//             q_value += prod2->rl_ecr + prod2->rl_efr;
 
-            total_influence += prod2->rl_influence_total;
-            total_variance += prod2->rl_variance_total;
-            q_value += prod2->rl_ecr + prod2->rl_efr;
+            if(prod2->init_updated_count < 10)
+              cand->rl_intolerable_variance = false;
+            else {
+              if(prod2->init_fired_count < init_fired_count_min) {
+                init_fired_count_min = prod2->init_fired_count;
+                uperf_min = prod2->agent_uperf_contrib_prev;
+                uperf_max = prod2->agent_uperf_contrib_prev;
+              }
+              else if(prod2->init_fired_count == init_fired_count_min) {
+                if(prod2->agent_uperf_contrib_prev < uperf_min)
+                  uperf_min = prod2->agent_uperf_contrib_prev;
+                if(prod2->agent_uperf_contrib_prev > uperf_max)
+                  uperf_max = prod2->agent_uperf_contrib_prev;
+              }
+            }
           } DONE_INFLUENCE_PRODUCTIONS;
 
-          if(total_variance < thisAgent->variance + (1.281552 * 1.281552) * thisAgent->variance_variance)
+//           if(total_variance < thisAgent->variance + (1.281552 * 1.281552) * thisAgent->variance_variance)
+//             cand->rl_intolerable_variance = false;
+//           if(uperf_max < thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev)
+          if(uperf_max < thisAgent->uperf) {
             cand->rl_intolerable_variance = false;
+          }
+//           else if(cand->rl_intolerable_variance) {
+//             std::cerr << uperf_max << " > "
+//                       << thisAgent->uperf << " + 0.84155 * " << thisAgent->uperf_stddev << " ("
+//                       << thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev << ')' << std::endl;
+//           }
         }
         else if(force_tie == 1)
           cand->rl_intolerable_variance = true;

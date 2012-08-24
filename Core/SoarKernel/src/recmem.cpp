@@ -627,12 +627,14 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
 
 	thisAgent->production_being_fired = inst->prod;
 	prod->firing_count++;
-  prod->total_firing_count++; ///< bazald
+  ++prod->total_firing_count; ///< bazald
+//   if(prod->rl_rule)
+//     std::cerr << prod->name->sc.name << "->total_firing_count++" << std::endl;
   if(prod->init_fired_last != thisAgent->init_count) { ///< bazald
+    prod->init_fired_last = thisAgent->init_count; ///< bazald
     ++prod->init_fired_count; ///< bazald
 //     std::cerr << prod->name->sc.name << " fired for " << prod->init_fired_count << " inits as of " << thisAgent->init_count << std::endl;
   }
-  prod->init_fired_last = thisAgent->init_count; ///< bazald
 	thisAgent->production_firing_count++;
 
 	/* --- build the instantiated conditions, and bind LHS variables --- */
