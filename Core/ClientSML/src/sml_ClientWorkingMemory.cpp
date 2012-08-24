@@ -525,7 +525,12 @@ bool WorkingMemory::ReceivedOutput(AnalyzeXML* pIncoming, ElementXML* /*pRespons
 			int nWmes = m_OutputDeltaList.GetSize() ;
 			for (int i = 0 ; i < nWmes ; i++)
 			{
-				WMElement* pWme = m_OutputDeltaList.GetDeltaWME(i)->getWME() ;
+				WMDelta* pDelta = m_OutputDeltaList.GetDeltaWME(i);
+				
+				if ( pDelta->getChangeType() != WMDelta::kAdded )
+					continue; 
+				
+				WMElement* pWme = pDelta->getWME() ;
 
 				if (pWme->GetParent() == NULL || pWme->GetParent()->GetIdentifierSymbol() == NULL)
 					continue ;
