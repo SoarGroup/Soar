@@ -97,4 +97,24 @@ private:
 	rvec intercept;
 };
 
+class RRModel : public LRModel {
+public:
+	RRModel(const dyn_mat &xdata, const dyn_mat &ydata);
+	RRModel(const RRModel &m);
+	
+	void fit_sub();
+	bool predict_sub(const rvec &x, rvec &y);
+	bool predict_sub(const_mat_view X, mat &Y);
+	
+	LRModel *copy() const {
+		return new RRModel(*this);
+	}
+	
+	bool cli_inspect_sub(std::ostream &os) const;
+	
+private:
+	mat C;
+	rvec xmean, ymean;
+};
+
 #endif

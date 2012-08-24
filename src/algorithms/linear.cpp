@@ -455,3 +455,67 @@ bool PCRModel::cli_inspect_sub(ostream &os) const {
 	}
 	return true;
 }
+
+RRModel::RRModel(const dyn_mat &xdata, const dyn_mat &ydata) : LRModel(xdata, ydata) {}
+RRModel::RRModel(const RRModel &m) : LRModel(m), C(m.C), xmean(m.xmean), ymean(m.ymean) {}
+
+void RRModel::fit_sub() {
+	/*
+	 I'm not weighting instances right now, but if I did, this
+	 would be the code.
+	*/
+	//mat X, Y;
+	//fill_data(X, Y);
+	//W.diagonal() = w;
+	//mat Z = W * X;
+	//mat V = W * Y;
+
+	mat Z, V;
+	fill_data(Z, V);
+	
+	/*
+	 If you're weighting and Z != X and V != Y, then xmean and
+	 ymean need to be calculated for X and Y.
+	*/
+	xmean = Z.colwise().mean();
+	ymean = V.colwise().mean();
+	
+	mat Zcenter = Z.rowwise() - xmean;
+	mat Vcenter = V.rowwise() - ymean;
+	mat A = Zcenter.transpose() * Zcenter;
+	double lambda = RLAMBDA;
+	for (int i = 0; i < A.cols(); ++i) {
+		double inc = nextafter(A(i, i), INFINITY) - A(i, i);
+		lambda = max(lambda, inc);
+	}
+	A.diagonal().array() += lambda;
+	mat B = Z.transpose() * Vcenter;
+	if (!solve(A, B, C)) {
+		C.resize(0, 0);
+	}
+}
+
+bool RRModel::predict_sub(const rvec &x, rvec &y) {
+	if (C.size() == 0) {
+		return false;
+	}
+	assert(C.rows() == x.size());
+	y = (x - xmean) * C + ymean;
+	return true;
+}
+
+bool RRModel::predict_sub(const_mat_view X, mat &Y) {
+	if (C.size() == 0) {
+		return false;
+	}
+	assert(C.rows() == X.cols());
+	Y = ((X.rowwise() - xmean) * C).rowwise() + ymean;
+	return true;
+}
+
+bool RRModel::cli_inspect_sub(ostream &os) const {
+	os << "C:" << endl << C << endl;
+	os << "xmean:" << endl << xmean << endl;
+	os << "ymean:" << endl << ymean << endl;
+	return true;
+}

@@ -21,7 +21,8 @@ using namespace Eigen;
 const int INIT_NMODELS = 1;
 const bool TEST_ELIGIBILITY = false;
 
-typedef PCRModel LinearModel;
+//typedef PCRModel LinearModel;
+typedef RRModel LinearModel;
 
 /* Box-Muller method */
 double randgauss(double mean, double std) {
