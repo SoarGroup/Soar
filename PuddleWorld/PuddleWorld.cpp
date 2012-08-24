@@ -457,6 +457,11 @@ int main(int argc, char ** argv) {
         if(game.is_running())
           game.StopSelf();
         game.run();
+
+//         if(episode == 57) {
+//           game.SpawnDebugger();
+//           force_debugging = true;
+//         }
       }
     }while(!game.is_finished());
 
@@ -643,23 +648,23 @@ void PuddleWorld::update() {
             reward += -1.0f;
 
             /// Standard Puddle World
-//             /// (.1, .25) to (.45, .25), radius 0.1
-//             if(x < 0.1f)
-//               dist = sqrt(pow(x - 0.1f, 2) + pow(y - 0.25f, 2));
-//             else if(x < 0.45f)
-//               dist = fabs(y - 0.25f);
-//             else
-//               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
-//             reward += -400.0f * max(0.0f, 0.1f - dist);
-// 
-//             /// (.45, .2) to (.45, .6), radius 0.1
-//             if(y < 0.2f)
-//               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.2f, 2));
-//             else if(y < 0.6f)
-//               dist = fabs(x - 0.45f);
-//             else
-//               dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
-//             reward += -400.0f * max(0.0f, 0.1f - dist);
+            /// (.1, .25) to (.45, .25), radius 0.1
+            if(x < 0.1f)
+              dist = sqrt(pow(x - 0.1f, 2) + pow(y - 0.25f, 2));
+            else if(x < 0.45f)
+              dist = fabs(y - 0.25f);
+            else
+              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.25f, 2));
+            reward += -400.0f * max(0.0f, 0.1f - dist);
+
+            /// (.45, .2) to (.45, .6), radius 0.1
+            if(y < 0.2f)
+              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.2f, 2));
+            else if(y < 0.6f)
+              dist = fabs(x - 0.45f);
+            else
+              dist = sqrt(pow(x - 0.45f, 2) + pow(y - 0.6f, 2));
+            reward += -400.0f * max(0.0f, 0.1f - dist);
 
 //             /// Simplified Puddle World
 //             /// (.375, 0) to (.375, 1), radius 0.125
@@ -673,11 +678,11 @@ void PuddleWorld::update() {
 
             /// Semi-Complex Puddle World
             /// (.35, 0) to (.35, .8275), radius 0.1
-            if(y < 0.8275f)
-              dist = fabs(x - 0.35f);
-            else
-              dist = sqrt(pow(x - 0.35f, 2) + pow(y - 0.8275f, 2));
-            reward += -400.0f * max(0.0f, 0.1f - dist);
+//             if(y < 0.8275f)
+//               dist = fabs(x - 0.35f);
+//             else
+//               dist = sqrt(pow(x - 0.35f, 2) + pow(y - 0.8275f, 2));
+//             reward += -400.0f * max(0.0f, 0.1f - dist);
           }
 
           m_step->Update(step);

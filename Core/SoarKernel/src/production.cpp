@@ -1648,7 +1648,7 @@ production *make_production (agent* thisAgent,
   p->init_fired_last = 0; ///< bazald
   p->init_updated_count = 0; ///< bazald
   p->init_updated_last = 0; ///< bazald
-  p->agent_uperf_contrib = false; ///< bazald
+  p->agent_uperf_contrib = production::NOT_YET; ///< bazald
   p->agent_uperf_contrib_prev = 0; ///< bazald
   p->agent_uperf_contrib_mark2_prev = 0; ///< bazald
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  

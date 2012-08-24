@@ -29,8 +29,13 @@ PuddleWorld::PuddleWorld(const float &initial_min_x,
                          const int &port,
                          sml::Kernel * const kernel)
 : m_kernel(kernel ? kernel :
-           remote ? sml::Kernel::CreateKernelInNewThread(port) :
-           sml::Kernel::CreateKernelInCurrentThread(true, port)),
+#ifdef NDEBUG
+           remote ? sml::Kernel::CreateKernelInNewThread(port)
+                  : sml::Kernel::CreateKernelInCurrentThread(true, port)
+#else
+                    sml::Kernel::CreateKernelInNewThread(port)
+#endif
+          ),
   m_agent(m_kernel, kernel ? "" : "PuddleWorld"),
   m_reward_counter(0),
   m_reward_total(0.0f),

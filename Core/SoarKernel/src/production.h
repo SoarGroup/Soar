@@ -137,7 +137,8 @@ typedef struct production_struct {
   uint64_t init_fired_last; ///< bazald
   uint64_t init_updated_count; ///< bazald
   uint64_t init_updated_last; ///< bazald
-  bool agent_uperf_contrib; ///< bazald
+  enum Agent_UperF_Contrib {NOT_YET, YES, DISABLED}; ///< bazald
+  Agent_UperF_Contrib agent_uperf_contrib; ///< bazald
   double agent_uperf_contrib_prev; ///< bazald
   double agent_uperf_contrib_mark2_prev; ///< bazald
   

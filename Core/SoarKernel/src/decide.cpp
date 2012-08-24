@@ -1125,8 +1125,8 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //           double total_variance = 0.0;
 //           double q_value = 0.0;
           uint64_t init_fired_count_min = UINT64_MAX;
-          double uperf_min = 0;
-          double uperf_max = 0;
+          double uperf_min = -DBL_MAX;
+          double uperf_max = DBL_MAX;
           ITERATE_INFLUENCE_PRODUCTIONS(cand) {
 //             if(prod2->rl_update_count < 10 ||
 //               prod2->rl_variance_total < 0.001
@@ -1139,10 +1139,10 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //             total_variance += prod2->rl_variance_total;
 //             q_value += prod2->rl_ecr + prod2->rl_efr;
 
-            if(prod2->init_updated_count < 10)
-              cand->rl_intolerable_variance = false;
-            else {
-              if(prod2->init_fired_count < init_fired_count_min) {
+            if(prod2->agent_uperf_contrib != production::DISABLED) {
+              if(prod2->init_updated_count < 10)
+                cand->rl_intolerable_variance = false;
+              else if(prod2->init_fired_count < init_fired_count_min) {
                 init_fired_count_min = prod2->init_fired_count;
                 uperf_min = prod2->agent_uperf_contrib_prev;
                 uperf_max = prod2->agent_uperf_contrib_prev;
@@ -1158,11 +1158,11 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 
 //           if(total_variance < thisAgent->variance + (1.281552 * 1.281552) * thisAgent->variance_variance)
 //             cand->rl_intolerable_variance = false;
-//           if(uperf_max < thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev)
-          if(uperf_max < thisAgent->uperf) {
+          if(uperf_max < thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev) {
+//           if(uperf_max < thisAgent->uperf) {
             cand->rl_intolerable_variance = false;
           }
-//           else if(cand->rl_intolerable_variance) {
+//           else {
 //             std::cerr << uperf_max << " > "
 //                       << thisAgent->uperf << " + 0.84155 * " << thisAgent->uperf_stddev << " ("
 //                       << thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev << ')' << std::endl;
@@ -1177,8 +1177,42 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
           abort();
         }
 
-        if(cand->rl_intolerable_variance)
+        if(cand->rl_intolerable_variance) {
           impasse_type = TIE_IMPASSE_TYPE;
+
+//           std::cerr << cand->inst->prod->name->sc.name << " intolerable due to "
+//                     << (disabled ? " DISABLED " : " uperf ") << std::endl;
+
+          ITERATE_INFLUENCE_PRODUCTIONS(cand) {
+            if(prod2->agent_uperf_contrib == production::YES) {
+              /// Reverse the steps from reinforcement_learning.cpp
+
+              thisAgent->uperf -= prod2->agent_uperf_contrib_prev / thisAgent->uperf_count;
+              prod2->agent_uperf_contrib_prev = 0.0;
+              thisAgent->uperf_mark2 -= prod2->agent_uperf_contrib_mark2_prev;
+              prod2->agent_uperf_contrib_mark2_prev = 0.0;
+
+              const double uperf_count_next = thisAgent->uperf_count - 1;
+
+              if(uperf_count_next > 0) {
+                thisAgent->uperf_variance = thisAgent->uperf_mark2 / thisAgent->uperf_count;
+                thisAgent->uperf_stddev = sqrt(thisAgent->uperf_variance);
+
+                thisAgent->uperf *= thisAgent->uperf_count / (thisAgent->uperf_count + 1); ///< HACK: keeps things close for some reason :-/
+              }
+              else {
+                thisAgent->uperf_variance = 0.0;
+                thisAgent->uperf_stddev = 0.0;
+
+                thisAgent->uperf = 0.0;
+              }
+
+              thisAgent->uperf_count = uperf_count_next;
+            }
+
+            prod2->agent_uperf_contrib = production::DISABLED;
+          } DONE_INFLUENCE_PRODUCTIONS;
+        }
       }
     }
   }
@@ -1461,7 +1495,7 @@ byte run_preference_semantics (agent* thisAgent, slot *s, preference **result_ca
 			}
 			for (cand=candidates; cand!=NIL; cand=cand->next_candidate) {
 				cand->value->common.decider_flag = CANDIDATE_DECIDER_FLAG;
-        cand->rl_intolerable_variance = false; ///< bazald
+//         cand->rl_intolerable_variance = false; ///< bazald
 			}
 			for (p=s->preferences[BETTER_PREFERENCE_TYPE]; p!=NIL; p=p->next) {
 				j = p->value;
@@ -2005,6 +2039,8 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
 	  if ( cand->value->common.decider_flag == CANDIDATE_DECIDER_FLAG )
 	    item_count++;
 
+  std::set<preference *> cands_over_threshold; ///< bazald
+
 	// for each existing item: if supposed to be there, ALREADY EXISTING; otherwise remove
 	w = id->id.impasse_wmes;
 	while ( w ) 
@@ -2038,7 +2074,9 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
     {
       for(cand = items; cand; cand = cand->next_candidate) {
         if(cand->value == w->value) {
-          if(!cand->rl_intolerable_variance)
+          if(cand->rl_intolerable_variance)
+            cands_over_threshold.insert(cand);
+          else
             cand = 0;
 
           break;
@@ -2076,11 +2114,14 @@ void update_impasse_items (agent* thisAgent, Symbol *id, preference *items)
 	  else
 	  {
 		add_impasse_wme( thisAgent, id, loop_sym, cand->value, bt_pref );
-
-      /// bazald: add variance-over-threshold
-      if(cand->rl_intolerable_variance)
-        add_impasse_wme(thisAgent, id, thisAgent->rl_over_threshold_constant, cand->value, bt_pref);
 	  }
+
+    /// bazald: add variance-over-threshold
+    if(cand->rl_intolerable_variance &&
+       cands_over_threshold.find(cand) == cands_over_threshold.end()
+    ) {
+      add_impasse_wme(thisAgent, id, thisAgent->rl_over_threshold_constant, cand->value, bt_pref);
+    }
 	}
 
 	if ( item_count > 0 ) 

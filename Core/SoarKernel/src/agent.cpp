@@ -461,12 +461,12 @@ void destroy_soar_agent (agent * delete_agent)
   for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
     for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
       if(prod2->rl_rule && prod2->name && prod2->name->sc.name) {
-        const double div = 1.0 / ++count;
 //         const double fperf = prod2->total_firing_count / double(prod2->init_fired_count);
 //         const double uperu = prod2->rl_update_count / double(prod2->init_updated_count);
         const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
 
-        std::cerr << prod2->name->sc.name
+        std::cerr << (prod2->agent_uperf_contrib != production::DISABLED ? "ENABLED " : "        ")
+                  << prod2->name->sc.name
                   << " updates " << prod2->rl_update_count
                   << " value " << prod2->rl_ecr + prod2->rl_efr
                   << " fired " << double(prod2->init_fired_count) / delete_agent->init_count
@@ -477,9 +477,12 @@ void destroy_soar_agent (agent * delete_agent)
                   << " variance " << prod2->rl_variance_total
                   << " influence " << prod2->rl_influence_total << std::endl;
 
-//         avg_fperf = avg_fperf * (1 - div) + fperf * div;
-//         avg_uperu = avg_uperu * (1 - div) + uperu * div;
-        avg_uperf = avg_uperf * (1 - div) + uperf * div;
+        if(prod2->agent_uperf_contrib != production::DISABLED) {
+          const double div = 1.0 / ++count;
+  //         avg_fperf = avg_fperf * (1 - div) + fperf * div;
+  //         avg_uperu = avg_uperu * (1 - div) + uperu * div;
+          avg_uperf = avg_uperf * (1 - div) + uperf * div;
+        }
       }
     }
   }
@@ -487,7 +490,9 @@ void destroy_soar_agent (agent * delete_agent)
   ++count;
   for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
     for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
-      if(prod2->rl_rule && prod2->name && prod2->name->sc.name) {
+      if(prod2->rl_rule && prod2->name && prod2->name->sc.name &&
+         prod2->agent_uperf_contrib != production::DISABLED
+      ) {
 //         const double fperf = prod2->total_firing_count / double(prod2->init_fired_count);
 //         const double uperu = prod2->rl_update_count / double(prod2->init_updated_count);
         const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
@@ -512,11 +517,13 @@ void destroy_soar_agent (agent * delete_agent)
   const double threshold = avg_uperf + 0.84155 * sqrt(var_uperf);
   const double athreshold = delete_agent->uperf + 0.84155 * delete_agent->uperf_stddev;
   std::cerr << "uperf threshold = " << avg_uperf << " + 0.84155 * sqrt(" << var_uperf << ") = " << threshold << std::endl;
-  std::cerr << "~uperf threshold = " << delete_agent->uperf << " + 0.84155 * " << delete_agent->uperf_stddev << " = " << threshold << std::endl;
+  std::cerr << "~uperf threshold = " << delete_agent->uperf << " + 0.84155 * " << delete_agent->uperf_stddev << " = " << athreshold << std::endl;
   
   for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
     for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
-      if(prod2->rl_rule && prod2->name && prod2->name->sc.name) {
+      if(prod2->rl_rule && prod2->name && prod2->name->sc.name &&
+         prod2->agent_uperf_contrib != production::DISABLED
+      ) {
         const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
 
         if(uperf > threshold) {

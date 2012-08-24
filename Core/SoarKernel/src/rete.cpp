@@ -7505,7 +7505,7 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
   prod->init_fired_last = 0; ///< bazald
   prod->init_updated_count = 0; ///< bazald
   prod->init_updated_last = 0; ///< bazald
-  prod->agent_uperf_contrib = false; ///< bazald
+  prod->agent_uperf_contrib = production::NOT_YET; ///< bazald
   prod->agent_uperf_contrib_prev = 0; ///< bazald
   prod->agent_uperf_contrib_mark2_prev = 0; ///< bazald
 	if ( ( prod->type != JUSTIFICATION_PRODUCTION_TYPE ) && ( prod->type != TEMPLATE_PRODUCTION_TYPE ) )
