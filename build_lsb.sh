@@ -102,12 +102,24 @@ fi
 
 mkdir -p out
 
+JOBS=4
+TARGETS="cli debugger debugger_api headers java_sml_misc kernel sml_java tests tohsml cartpole puddleworld"
+
 scons \
+  --jobs=$JOBS \
+  --cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
+  --cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
+  --lnflags="$LDFLAGS --lsb-shared-libpath=out -Wl,--hash-style=both" \
+  --build=build_d --out=out_d \
+  $TARGETS
+
+scons \
+  --jobs=$JOBS \
   --cc="$CCACHE $CCACHE_CC --lsb-cc=$LSBCC" \
   --cxx="$CCACHE $CCACHE_CXX --lsb-cxx=$LSBCXX" \
   --lnflags="$LDFLAGS --lsb-shared-libpath=out -Wl,--hash-style=both" \
   --opt \
-  cli debugger debugger_api headers java_sml_misc kernel sml_java tests tohsml cartpole puddleworld
+  $TARGETS
 RV=$?
 if [ $RV -ne 0 ]; then
   exit $RV

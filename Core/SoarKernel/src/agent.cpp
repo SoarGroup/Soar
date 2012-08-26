@@ -455,6 +455,8 @@ agent * create_soar_agent (char * agent_name) {                                 
 void destroy_soar_agent (agent * delete_agent)
 {
   /** Begin bazald's output **/
+//   std::cerr << "Phase 1" << std::endl;
+
   double count = 0.0;
   double avg_fperf = 0.0;
   double var_fperf = 0.0;
@@ -499,6 +501,8 @@ void destroy_soar_agent (agent * delete_agent)
     }
   }
 
+//   std::cerr << "Phase 2" << std::endl;
+
   ++count;
   for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
     for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
@@ -531,6 +535,8 @@ void destroy_soar_agent (agent * delete_agent)
             << " stddev_uaperf " << sqrt(var_uaperf)
             << " ~stddev_uaperf " << delete_agent->uaperf_stddev << std::endl;
 
+//   std::cerr << "Phase 3" << std::endl;
+
   /// bazald: which are in top 20% of uperf?  0.84155 standard deviations?
   const double threshold = avg_uperf + 0.84155 * sqrt(var_uperf);
   const double athreshold = delete_agent->uperf + 0.84155 * delete_agent->uperf_stddev;
@@ -561,6 +567,8 @@ void destroy_soar_agent (agent * delete_agent)
     }
   }
 
+//   std::cerr << "Phase 4" << std::endl;
+
   const double uathreshold = avg_uaperf + 0.84155 * sqrt(var_uaperf);
   const double auathreshold = delete_agent->uaperf + 0.84155 * delete_agent->uaperf_stddev;
   std::cerr << "uaperf threshold = " << avg_uaperf << " + 0.84155 * sqrt(" << var_uaperf << ") = " << uathreshold << std::endl;
@@ -589,6 +597,8 @@ void destroy_soar_agent (agent * delete_agent)
     }
   }
   
+//   std::cerr << "Phases Complete" << std::endl;
+
   /** End bazald's output **/
 
   //print(delete_agent, "\nDestroying agent %s.\n", delete_agent->name);  /* AGR 532 */
