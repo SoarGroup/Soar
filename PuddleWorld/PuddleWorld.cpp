@@ -60,8 +60,8 @@ inline bool arg_help(char ** &arg)
   cout << "Options:" << endl
             << "  --help                          prints this help" << endl
             << "  --remote [ip[:port]]            to use a remote Soar kernel" << endl
-            << "  --port                          to specify a port address (does not imply remote" << endl
-            << "                                       Soar kernel)" << endl
+            << "  --port                          to specify a port address (does not imply" << endl
+            << "                                       remote Soar kernel)" << endl
             << "  --episodes count                to specify the maximum number" << endl
             << "                                       of episodes [1000]" << endl
             << "  --seed seed                     to specify the random seed" << endl
@@ -74,7 +74,9 @@ inline bool arg_help(char ** &arg)
             << "  --initial minx miny maxx maxy   to specify the starting location" << endl
             << "  --credit-modification none/variance  to specify any modification to credit" << endl
             << "  --variance bellman/simple       to specify the method of calculating variance" << endl
-            << "  --tsdt                          to turn on TSDT" << endl;
+            << "  --tsdt                          to turn on TSDT" << endl
+            << "  --refine uperf/td-error         to specify the how to determine when to" << endl
+            << "                                       refine Q(s,a)" << endl;
 
   exit(0);
 
@@ -363,6 +365,28 @@ inline bool arg_tsdt(bool &tsdt,
   return true;
 }
 
+inline bool arg_refine(string &refine,
+                       char ** &arg,
+                       char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine"))
+    return false;
+
+  if(++arg == arg_end) {
+    cerr << "'--refine' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "uperf") && strcmp(*arg, "td-error")) {
+    cerr << "--refine takes 'uperf' or 'td-error'";
+    exit(3);
+  }
+
+  refine = *arg;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -389,6 +413,7 @@ int main(int argc, char ** argv) {
   string credit_mod = "none";
   string variance = "bellman";
   bool tsdt = false;
+  string refine = "td-error";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -404,7 +429,8 @@ int main(int argc, char ** argv) {
        !arg_initial      (initial_min_x, initial_min_y, initial_max_x, initial_max_y, arg, arg_end) &&
        !arg_credit_mod   (                          credit_mod,        arg, arg_end) &&
        !arg_variance     (                          variance,          arg, arg_end) &&
-       !arg_tsdt         (                          tsdt,              arg, arg_end))
+       !arg_tsdt         (                          tsdt,              arg, arg_end) &&
+       !arg_refine       (                          refine,            arg, arg_end))
     {
       cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -432,6 +458,7 @@ int main(int argc, char ** argv) {
   game.ExecuteCommandLine(("rl --set variance-bellman " + string(variance == "bellman" ? "on" : "off")).c_str());
   if(tsdt)
     game.ExecuteCommandLine("rl --set trace tsdt");
+  game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
 
   for(int episode = 0; episode != episodes; ++episode) {
     for(std::pair<multimap<int, pair<float, float> >::const_iterator,

@@ -134,9 +134,15 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   credit_modification->add_mapping( credit_mod_variance, "variance" );
   add( credit_modification );
 
-  // rl-impasse
+  // variance-bellman
   variance_bellman = new soar_module::boolean_param( "variance-bellman", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() ); ///< bazald
   add( variance_bellman );
+
+  // refine
+  refine = new soar_module::constant_param<refine_choices>( "refine", refine_td_error, new soar_module::f_predicate<refine_choices>() );
+  refine->add_mapping( refine_uperf, "uperf" );
+  refine->add_mapping( refine_td_error, "td-error" );
+  add( refine );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
@@ -706,6 +712,9 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
         new_production->agent_uperf_contrib = production::NOT_YET; ///< bazald
         new_production->agent_uperf_contrib_prev = 0; ///< bazald
         new_production->agent_uperf_contrib_mark2_prev = 0; ///< bazald
+        new_production->rl_update_amount = 0.0; ///< bazald
+        new_production->agent_uaperf_contrib_prev = 0; ///< bazald
+        new_production->agent_uaperf_contrib_mark2_prev = 0; ///< bazald
 			}
 
 			// attempt to add to rete, remove if duplicate
@@ -1260,6 +1269,11 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
                     symbol_remove_ref( my_agent, rhs_value_to_symbol( prod->action_list->referent ) );
                     prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
                     prod->rl_update_count += 1;
+#define abs_is_broken(x) ((x) < 0.0 ? -(x) : (x))
+                    prod->rl_update_amount += abs_is_broken(data->reward + op_value - old_combined); ///< bazald
+//                     prod->rl_update_amount += abs_is_broken(delta_ecr + delta_efr); ///< bazald
+#undef abs_is_broken
+                    assert(new_ecr + new_efr == old_combined || prod->rl_update_amount > 0.0); ///< bazald
                     if(prod->init_updated_last != my_agent->init_count) { ///< bazald
                       ++prod->init_updated_count; ///< bazald
 //                       std::cerr << prod->name->sc.name << " updated for " << prod->init_updated_count << " episodes as of " << my_agent->init_count << std::endl;
@@ -1387,11 +1401,13 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
       bool kill = false;
       for(rl_rule_list::iterator prod = data->prev_op_rl_rules->begin(); prod != data->prev_op_rl_rules->end(); ++prod) {
         const double uperf_old = my_agent->uperf;
+        const double uaperf_old = my_agent->uaperf;
 
         if((*prod)->agent_uperf_contrib == production::NOT_YET) {
           (*prod)->agent_uperf_contrib = production::YES;
           const double uperf_count_next = my_agent->uperf_count + 1;
           my_agent->uperf *= my_agent->uperf_count / uperf_count_next;
+          my_agent->uaperf *= my_agent->uperf_count / uperf_count_next;
           my_agent->uperf_count = uperf_count_next;
         }
 
@@ -1402,23 +1418,33 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
 
         if((*prod)->agent_uperf_contrib != production::DISABLED) {
           const double local_uperf = double((*prod)->rl_update_count) / double((*prod)->init_fired_count + 1.0);
+          const double local_uaperf = (*prod)->rl_update_amount;// / double((*prod)->init_fired_count + 1.0);
 //           std::cerr << (*prod)->name->sc.name << "->init_fired_count = " << (*prod)->init_fired_count << std::endl;
 //           if((*prod)->init_fired_count == 0)
 //             kill = true;
           my_agent->uperf += (local_uperf - (*prod)->agent_uperf_contrib_prev) / my_agent->uperf_count;
+          my_agent->uaperf += (local_uaperf - (*prod)->agent_uaperf_contrib_prev) / my_agent->uperf_count;
           (*prod)->agent_uperf_contrib_prev = local_uperf;
+          (*prod)->agent_uaperf_contrib_prev = local_uaperf;
 
           assert(!(my_agent->uperf != my_agent->uperf)); ///< check validity
+          assert(!(my_agent->uaperf != my_agent->uaperf)); ///< check validity
 
           const double mark2_contrib = (local_uperf - uperf_old) * (local_uperf - my_agent->uperf);
+          const double mark2_contriba = (local_uaperf - uaperf_old) * (local_uaperf - my_agent->uaperf);
           my_agent->uperf_mark2 += mark2_contrib - (*prod)->agent_uperf_contrib_mark2_prev;
+          my_agent->uaperf_mark2 += mark2_contriba - (*prod)->agent_uaperf_contrib_mark2_prev;
           (*prod)->agent_uperf_contrib_mark2_prev = mark2_contrib;
+          (*prod)->agent_uaperf_contrib_mark2_prev = mark2_contriba;
 
           assert(!(my_agent->uperf_mark2 != my_agent->uperf_mark2)); ///< check validity
+          assert(!(my_agent->uaperf_mark2 != my_agent->uaperf_mark2)); ///< check validity
 
           if(my_agent->uperf_count > 1) {
             my_agent->uperf_variance = my_agent->uperf_mark2 / (my_agent->uperf_count - 1);
+            my_agent->uaperf_variance = my_agent->uaperf_mark2 / (my_agent->uperf_count - 1);
             my_agent->uperf_stddev = sqrt(my_agent->uperf_variance);
+            my_agent->uaperf_stddev = sqrt(my_agent->uaperf_variance);
           }
         }
       }

@@ -1119,6 +1119,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         }
 
         if(!force_tie) {
+          const rl_param_container::refine_choices refine = thisAgent->rl_params->refine->get_value();
           cand->rl_intolerable_variance = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE] != 0;
 
 //           double total_influence = 0.0;
@@ -1144,23 +1145,42 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
                 cand->rl_intolerable_variance = false;
               else if(prod2->init_fired_count < init_fired_count_min) {
                 init_fired_count_min = prod2->init_fired_count;
-                uperf_min = prod2->agent_uperf_contrib_prev;
-                uperf_max = prod2->agent_uperf_contrib_prev;
+
+                if(refine == rl_param_container::refine_td_error) {
+                  uperf_min = prod2->agent_uaperf_contrib_prev;
+                  uperf_max = prod2->agent_uaperf_contrib_prev;
+                }
+                else {
+                  uperf_min = prod2->agent_uperf_contrib_prev;
+                  uperf_max = prod2->agent_uperf_contrib_prev;
+                }
               }
               else if(prod2->init_fired_count == init_fired_count_min) {
-                if(prod2->agent_uperf_contrib_prev < uperf_min)
-                  uperf_min = prod2->agent_uperf_contrib_prev;
-                if(prod2->agent_uperf_contrib_prev > uperf_max)
-                  uperf_max = prod2->agent_uperf_contrib_prev;
+                if(refine == rl_param_container::refine_td_error) {
+                  if(prod2->agent_uaperf_contrib_prev < uperf_min)
+                    uperf_min = prod2->agent_uaperf_contrib_prev;
+                  if(prod2->agent_uaperf_contrib_prev > uperf_max)
+                    uperf_max = prod2->agent_uaperf_contrib_prev;
+                  }
+                else {
+                  if(prod2->agent_uperf_contrib_prev < uperf_min)
+                    uperf_min = prod2->agent_uperf_contrib_prev;
+                  if(prod2->agent_uperf_contrib_prev > uperf_max)
+                    uperf_max = prod2->agent_uperf_contrib_prev;
+                }
               }
             }
           } DONE_INFLUENCE_PRODUCTIONS;
 
 //           if(total_variance < thisAgent->variance + (1.281552 * 1.281552) * thisAgent->variance_variance)
 //             cand->rl_intolerable_variance = false;
-          if(uperf_max < thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev) {
-//           if(uperf_max < thisAgent->uperf) {
-            cand->rl_intolerable_variance = false;
+          if(refine == rl_param_container::refine_td_error) {
+            if(uperf_max < thisAgent->uaperf + 0.84155 * thisAgent->uaperf_stddev)
+              cand->rl_intolerable_variance = false;
+          }
+          else {
+            if(uperf_max < thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev)
+              cand->rl_intolerable_variance = false;
           }
 //           else {
 //             std::cerr << uperf_max << " > "
@@ -1188,23 +1208,33 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
               /// Reverse the steps from reinforcement_learning.cpp
 
               thisAgent->uperf -= prod2->agent_uperf_contrib_prev / thisAgent->uperf_count;
+              thisAgent->uaperf -= prod2->agent_uaperf_contrib_prev / thisAgent->uperf_count;
               prod2->agent_uperf_contrib_prev = 0.0;
+              prod2->agent_uaperf_contrib_prev = 0.0;
               thisAgent->uperf_mark2 -= prod2->agent_uperf_contrib_mark2_prev;
+              thisAgent->uaperf_mark2 -= prod2->agent_uaperf_contrib_mark2_prev;
               prod2->agent_uperf_contrib_mark2_prev = 0.0;
+              prod2->agent_uaperf_contrib_mark2_prev = 0.0;
 
               const double uperf_count_next = thisAgent->uperf_count - 1;
 
               if(uperf_count_next > 0) {
                 thisAgent->uperf_variance = thisAgent->uperf_mark2 / thisAgent->uperf_count;
+                thisAgent->uaperf_variance = thisAgent->uaperf_mark2 / thisAgent->uperf_count;
                 thisAgent->uperf_stddev = sqrt(thisAgent->uperf_variance);
+                thisAgent->uaperf_stddev = sqrt(thisAgent->uaperf_variance);
 
-                thisAgent->uperf *= thisAgent->uperf_count / (thisAgent->uperf_count + 1); ///< HACK: keeps things close for some reason :-/
+                thisAgent->uperf *= thisAgent->uperf_count / uperf_count_next;
+                thisAgent->uaperf *= thisAgent->uperf_count / uperf_count_next;
               }
               else {
                 thisAgent->uperf_variance = 0.0;
+                thisAgent->uaperf_variance = 0.0;
                 thisAgent->uperf_stddev = 0.0;
+                thisAgent->uaperf_stddev = 0.0;
 
                 thisAgent->uperf = 0.0;
+                thisAgent->uaperf = 0.0;
               }
 
               thisAgent->uperf_count = uperf_count_next;

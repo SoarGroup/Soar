@@ -141,6 +141,9 @@ typedef struct production_struct {
   Agent_UperF_Contrib agent_uperf_contrib; ///< bazald
   double agent_uperf_contrib_prev; ///< bazald
   double agent_uperf_contrib_mark2_prev; ///< bazald
+  double rl_update_amount; ///< bazald
+  double agent_uaperf_contrib_prev; ///< bazald
+  double agent_uaperf_contrib_mark2_prev; ///< bazald
   
   condition* rl_template_conds;
   rl_symbol_map_set* rl_template_instantiations;

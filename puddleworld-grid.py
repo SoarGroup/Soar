@@ -131,12 +131,12 @@ class Tree:
       return
     elif self.type == 'x':
       midpt = (x[0] + x[1]) / 2.0
-      axes.add_line(pylab.Line2D([midpt,midpt],y))
+      axes.add_line(pylab.Line2D([midpt,midpt], y, color='black'))
       self.first.plot(axes, (x[0], midpt), y, maxdepth - 1)
       self.second.plot(axes, (midpt, x[1]), y, maxdepth - 1)
     elif self.type == 'y':
       midpt = (y[0] + y[1]) / 2.0
-      axes.add_line(pylab.Line2D(x,[midpt,midpt]))
+      axes.add_line(pylab.Line2D(x, [midpt,midpt], color='black'))
       self.first.plot(axes, x, (y[0], midpt), maxdepth - 1)
       self.second.plot(axes, x, (midpt, y[1]), maxdepth - 1)
     else:
@@ -144,9 +144,15 @@ class Tree:
 
 def main():
   t = Tree()
+  tn = Tree()
+  ts = Tree()
+  te = Tree()
+  tw = Tree()
   #print t.to_str()
 
   f = open('puddleworld-rl.soar', 'r')
+  regd = re.compile('\^direction ([^ ]+)')
+  dir = ''
   reg = re.compile('\^id \|(.+)\|')
   regx = re.compile('in-bounds,x([01]+)\)')
   regy = re.compile('in-bounds,y([01]+)\)')
@@ -154,6 +160,9 @@ def main():
     line = f.readline()
     if not line:
       break
+    d = regd.search(line)
+    if not d == None:
+      dir = d.group(1)
     ex = reg.search(line)
     if not ex == None:
       id = ex.group(1)
@@ -172,6 +181,14 @@ def main():
       
       #print "x" + idx + ", y" + idy
       t.insert(idx, idy)
+      if dir == 'north':
+        tn.insert(idx, idy)
+      elif dir == 'south':
+        ts.insert(idx, idy)
+      elif dir == 'east':
+        te.insert(idx, idy)
+      elif dir == 'west':
+        tw.insert(idx, idy)
   f.close()
 
   #print t.to_str()
@@ -179,7 +196,22 @@ def main():
   #return
   
   directory=''
-  title='Puddle World' # (seed ' + str(seed) + ')'
+  title='Generated Value Function for Puddle World'
+  
+  
+  if len(sys.argv) == 2:
+    if sys.argv[1] == 'north':
+      t = tn
+      title += ' (North)'
+    elif sys.argv[1] == 'south':
+      t = ts
+      title += ' (South)'
+    elif sys.argv[1] == 'east':
+      t = te
+      title += ' (East)'
+    elif sys.argv[1] == 'west':
+      t = tw
+      title += ' (West)'
   
   
   fig = plt.figure()
@@ -187,7 +219,7 @@ def main():
   
   pylab.axes([0.125,0.15,0.8375,0.75])
   
-  
+    
   t.plot(fig.axes[0], (0, 1), (1, 0))
   
   
@@ -217,9 +249,13 @@ def main():
   ##print last_xlabel
   
   
-  pylab.savefig('puddleworld.eps')
-  pylab.savefig('puddleworld.png', dpi=1200)
-  plt.show()
+  if len(sys.argv) == 2:
+    pylab.savefig('puddle-world-' + sys.argv[1] + '.eps')
+    pylab.savefig('puddle-world-' + sys.argv[1] + '.png', dpi=1200)
+  else:
+    pylab.savefig('puddle-world.eps')
+    pylab.savefig('puddle-world.png', dpi=1200)
+    plt.show()
 
 if __name__ == "__main__":
   main()

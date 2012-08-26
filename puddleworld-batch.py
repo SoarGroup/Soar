@@ -87,7 +87,8 @@ g_ep_tuples = []
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
 ## splitting agent 2x2 on up
-#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'simple'))
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf'))
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error'))
 
 ## retest others
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'even', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
@@ -101,6 +102,13 @@ g_ep_tuples = []
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (5, 5), 'fc', 'eligibility', 'simple', (0, 10, 10)))
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (5, 5), 'rl', 'eligibility', 'simple', (0, 10, 10)))
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (5, 5), 'log-rl', 'eligibility', 'simple', (0, 10, 10)))
+
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple'))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (8, 8), 'rl', 'eligibility', 'simple'))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (16, 16), 'rl', 'eligibility', 'simple'))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple', (0, 8, 8)))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (8, 8), 'rl', 'eligibility', 'simple', (0, 16, 16)))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple', (0, 8, 8), (0, 16, 16)))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
@@ -159,7 +167,8 @@ class Experiment:
     self.credit_assignment = ep_tuple[3]
     self.trace = ep_tuple[4]
     self.alpha = 'normal'
-    self.variance = ep_tuple[5]
+    self.variance = 'simple'
+    self.refine = ep_tuple[5]
     self.sp = []
     for sp in ep_tuple[6:]:
       if len(sp) != 3:
@@ -176,7 +185,8 @@ class Experiment:
             '--initial', str(self.init_min_x), str(self.init_min_y), str(self.init_max_x), str(self.init_max_y),
             '--credit-assignment', str(self.credit_assignment),
             '--alpha', str(self.alpha),
-            '--variance', str(self.variance)]
+            '--variance', str(self.variance),
+            '--refine', str(self.refine)]
     if self.trace == 'tsdt':
       args += ['--tsdt']
     for sp in self.sp:
@@ -209,7 +219,10 @@ for ep_tuple in g_ep_tuples:
     dir = dir[len(dir) - 1]
   else:
     dir = ep_tuple[0]
-  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1]) + '_' + str(ep_tuple[3]) #+ '_' + str(ep_tuple[4]) + '_' + str(ep_tuple[5])
+  dir = g_dir + '/' + dir + '_' + str(ep_tuple[2][0]) + '-' + str(ep_tuple[2][1])
+  dir += '_' + str(ep_tuple[3])
+  #dir += '_' + str(ep_tuple[4])
+  dir += '_' + str(ep_tuple[5])
   for i in range(6, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")

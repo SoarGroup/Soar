@@ -135,6 +135,9 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
             CLI_DoRL_generate_output( "rl-impasse: ", agnt->rl_params->rl_impasse->get_string() ) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "refine: ", agnt->rl_params->refine->get_string() ) );
+
+     CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "credit-assignment: ", agnt->rl_params->credit_assignment->get_string() ) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result,

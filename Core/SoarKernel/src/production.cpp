@@ -1651,6 +1651,9 @@ production *make_production (agent* thisAgent,
   p->agent_uperf_contrib = production::NOT_YET; ///< bazald
   p->agent_uperf_contrib_prev = 0; ///< bazald
   p->agent_uperf_contrib_mark2_prev = 0; ///< bazald
+  p->rl_update_amount = 0.0; ///< bazald
+  p->agent_uaperf_contrib_prev = 0; ///< bazald
+  p->agent_uaperf_contrib_mark2_prev = 0; ///< bazald
   if ( ( type != JUSTIFICATION_PRODUCTION_TYPE ) && ( type != TEMPLATE_PRODUCTION_TYPE ) )  
   {
     p->rl_rule = rl_valid_rule( p );

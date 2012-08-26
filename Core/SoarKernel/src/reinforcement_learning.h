@@ -89,6 +89,7 @@ class rl_param_container: public soar_module::param_container
     enum credit_assignment_choices { credit_even, credit_fc, credit_rl, credit_logrl }; ///< bazald
     enum credit_modification_choices { credit_mod_none, credit_mod_variance }; ///< bazald
     enum trace_choices { trace_eligibility, trace_tsdt }; ///< bazald
+    enum refine_choices { refine_uperf, refine_td_error }; ///< bazald
 		
 		rl_learning_param *learning;
 		soar_module::decimal_param *discount_rate;
@@ -105,6 +106,7 @@ class rl_param_container: public soar_module::param_container
     soar_module::boolean_param *variance_bellman; ///< bazald
     rl_credit_assignment_param *credit_assignment; ///< bazald
     rl_credit_modification_param *credit_modification; ///< bazald
+    soar_module::constant_param<refine_choices> *refine; ///< bazald
 		soar_module::boolean_param *temporal_extension;
 		soar_module::boolean_param *hrl_discount;
 		soar_module::boolean_param *temporal_discount;

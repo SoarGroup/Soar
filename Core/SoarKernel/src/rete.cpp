@@ -7508,6 +7508,9 @@ void reteload_node_and_children (agent* thisAgent, rete_node *parent, FILE* f) {
   prod->agent_uperf_contrib = production::NOT_YET; ///< bazald
   prod->agent_uperf_contrib_prev = 0; ///< bazald
   prod->agent_uperf_contrib_mark2_prev = 0; ///< bazald
+  prod->rl_update_amount = 0.0; ///< bazald
+  prod->agent_uaperf_contrib_prev = 0; ///< bazald
+  prod->agent_uaperf_contrib_mark2_prev = 0; ///< bazald
 	if ( ( prod->type != JUSTIFICATION_PRODUCTION_TYPE ) && ( prod->type != TEMPLATE_PRODUCTION_TYPE ) )
 	{
 	  prod->rl_rule = rl_valid_rule( prod );

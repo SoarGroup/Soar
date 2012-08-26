@@ -154,6 +154,10 @@ void init_soar_agent(agent* thisAgent) {
   thisAgent->uperf_mark2 = 0.0; ///< bazald
   thisAgent->uperf_variance = 0.0; ///< bazald
   thisAgent->uperf_stddev = 0.0; ///< bazald
+  thisAgent->uaperf = 0.0; ///< bazald
+  thisAgent->uaperf_mark2 = 0.0; ///< bazald
+  thisAgent->uaperf_variance = 0.0; ///< bazald
+  thisAgent->uaperf_stddev = 0.0; ///< bazald
 }
 
 agent * create_soar_agent (char * agent_name) {                                          /* loop index */
@@ -458,12 +462,18 @@ void destroy_soar_agent (agent * delete_agent)
   double var_uperu = 0.0;
   double avg_uperf = 0.0;
   double var_uperf = 0.0;
+  double avg_uaperf = 0.0;
+  double var_uaperf = 0.0;
   for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
     for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
       if(prod2->rl_rule && prod2->name && prod2->name->sc.name) {
+        if(prod2->init_fired_count < 1)
+          prod2->init_fired_count = 1;
+
 //         const double fperf = prod2->total_firing_count / double(prod2->init_fired_count);
 //         const double uperu = prod2->rl_update_count / double(prod2->init_updated_count);
         const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
+        const double uaperf = prod2->rl_update_amount;// / double(prod2->init_fired_count);
 
         std::cerr << (prod2->agent_uperf_contrib != production::DISABLED ? "ENABLED " : "        ")
                   << prod2->name->sc.name
@@ -474,6 +484,7 @@ void destroy_soar_agent (agent * delete_agent)
 //                   << " fperf " << fperf
 //                   << " uperu " << uperu
                   << " uperf " << uperf
+                  << " uaperf " << uaperf
                   << " variance " << prod2->rl_variance_total
                   << " influence " << prod2->rl_influence_total << std::endl;
 
@@ -482,6 +493,7 @@ void destroy_soar_agent (agent * delete_agent)
   //         avg_fperf = avg_fperf * (1 - div) + fperf * div;
   //         avg_uperu = avg_uperu * (1 - div) + uperu * div;
           avg_uperf = avg_uperf * (1 - div) + uperf * div;
+          avg_uaperf = avg_uaperf * (1 - div) + uaperf * div;
         }
       }
     }
@@ -496,10 +508,12 @@ void destroy_soar_agent (agent * delete_agent)
 //         const double fperf = prod2->total_firing_count / double(prod2->init_fired_count);
 //         const double uperu = prod2->rl_update_count / double(prod2->init_updated_count);
         const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
+        const double uaperf = prod2->rl_update_amount;// / double(prod2->init_fired_count);
 
 //         var_fperf += ((fperf - avg_fperf) * (fperf - avg_fperf)) / count;
 //         var_uperu += ((uperu - avg_uperu) * (uperu - avg_uperu)) / count;
         var_uperf += ((uperf - avg_uperf) * (uperf - avg_uperf)) / count;
+        var_uaperf += ((uaperf - avg_uaperf) * (uaperf - avg_uaperf)) / count;
       }
     }
   }
@@ -510,8 +524,12 @@ void destroy_soar_agent (agent * delete_agent)
 //             << " stddev_uperu " << sqrt(var_uperu)
             << " avg_uperf " << avg_uperf
             << " ~avg_uperf " << delete_agent->uperf
+            << " avg_uaperf " << avg_uaperf
+            << " ~avg_uaperf " << delete_agent->uaperf
             << " stddev_uperf " << sqrt(var_uperf)
-            << " ~stddev_uperf " << delete_agent->uperf_stddev << std::endl;
+            << " ~stddev_uperf " << delete_agent->uperf_stddev
+            << " stddev_uaperf " << sqrt(var_uaperf)
+            << " ~stddev_uaperf " << delete_agent->uaperf_stddev << std::endl;
 
   /// bazald: which are in top 20% of uperf?  0.84155 standard deviations?
   const double threshold = avg_uperf + 0.84155 * sqrt(var_uperf);
@@ -525,18 +543,48 @@ void destroy_soar_agent (agent * delete_agent)
          prod2->agent_uperf_contrib != production::DISABLED
       ) {
         const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
+        const double uaperf = prod2->rl_update_amount;// / double(prod2->init_fired_count);
 
-        if(uperf > threshold) {
+        if(uperf > athreshold) {
           std::cerr << prod2->name->sc.name
                     << " updates " << prod2->rl_update_count
                     << " value " << prod2->rl_ecr + prod2->rl_efr
                     << " fired " << double(prod2->init_fired_count) / delete_agent->init_count
                     << " updated " << double(prod2->init_updated_count) / delete_agent->init_count
                     << " uperf " << uperf
+                    << " uaperf " << uaperf
                     << " variance " << prod2->rl_variance_total
                     << " influence " << prod2->rl_influence_total << std::endl;
         }
 
+      }
+    }
+  }
+
+  const double uathreshold = avg_uaperf + 0.84155 * sqrt(var_uaperf);
+  const double auathreshold = delete_agent->uaperf + 0.84155 * delete_agent->uaperf_stddev;
+  std::cerr << "uaperf threshold = " << avg_uaperf << " + 0.84155 * sqrt(" << var_uaperf << ") = " << uathreshold << std::endl;
+  std::cerr << "~uaperf threshold = " << delete_agent->uaperf << " + 0.84155 * " << delete_agent->uaperf_stddev << " = " << auathreshold << std::endl;
+  
+  for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
+    for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {
+      if(prod2->rl_rule && prod2->name && prod2->name->sc.name &&
+         prod2->agent_uperf_contrib != production::DISABLED
+      ) {
+        const double uperf = prod2->rl_update_count / double(prod2->init_fired_count);
+        const double uaperf = prod2->rl_update_amount;// / double(prod2->init_fired_count);
+
+        if(uaperf > auathreshold) {
+          std::cerr << prod2->name->sc.name
+                    << " updates " << prod2->rl_update_count
+                    << " value " << prod2->rl_ecr + prod2->rl_efr
+                    << " fired " << double(prod2->init_fired_count) / delete_agent->init_count
+                    << " updated " << double(prod2->init_updated_count) / delete_agent->init_count
+                    << " uperf " << uperf
+                    << " uaperf " << uaperf
+                    << " variance " << prod2->rl_variance_total
+                    << " influence " << prod2->rl_influence_total << std::endl;
+        }
       }
     }
   }

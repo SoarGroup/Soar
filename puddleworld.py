@@ -175,6 +175,11 @@ def main():
       
       mode = 'multiple experiment evaluation'
   
+  if title == 'Puddle World (puddle-world-overgeneral.soar\_0-0\_rl\_uperf)':
+    title = 'UPERF Performance in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
+  if title == 'Puddle World (puddle-world-overgeneral.soar\_0-0\_rl\_td-error)':
+    title = 'TD-Error Performance in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
+  
   fig = plt.figure()
   fig.canvas.set_window_title('Puddle World')
   
@@ -206,10 +211,13 @@ def main():
         smith[a][i] = 0.95 * smith[a][i - 1] + 0.05 * smith[a][i];
     
     if mode == 'single experiment evaluation':
-      pylab.plot(x, smith['max'], label="Maximum", color='green', linestyle='solid')
-      #pylab.plot(x, smith['med'], label="Median", color='brown', linestyle='solid')
-      pylab.plot(x, smith['min'], label="Minimum", color='teal', linestyle='solid')
-      pylab.plot(x, smith['avg'], label="Average", color='blue', linestyle='solid')
+      pylab.plot(x, smith['max'], label="Maximum", color='black', linestyle='dotted')
+      pylab.plot(x, smith['avg'], label="Average", color='black', linestyle='solid')
+      pylab.plot(x, smith['min'], label="Minimum", color='black', linestyle='dashed')
+      #pylab.plot(x, smith['max'], label="Maximum", color='green', linestyle='solid')
+      ##pylab.plot(x, smith['med'], label="Median", color='brown', linestyle='solid')
+      #pylab.plot(x, smith['min'], label="Minimum", color='teal', linestyle='solid')
+      #pylab.plot(x, smith['avg'], label="Average", color='blue', linestyle='solid')
     else:
       for agent in smith:
         pylab.plot(x, smith[agent], label=agent, linestyle='solid')
@@ -219,7 +227,7 @@ def main():
   pylab.grid(True)
   
   pylab.xlabel('Episode Number', fontsize=8)
-  pylab.ylabel('Number of Steps', fontsize=8)
+  pylab.ylabel('Reward (Simple Moving Average, n=20)', fontsize=8)
   pylab.title(title, fontsize=10)
   pylab.ylim(ymin=-500, ymax=0)
   
@@ -238,7 +246,7 @@ def main():
   
   if len(sys.argv) == 1:
     pylab.savefig('puddleworld.eps')
-    pylab.savefig('puddleworld.png')
+    pylab.savefig('puddleworld.png', dpi=1200)
     plt.show()
   else:
     splitd = directory.rsplit('/', 1)

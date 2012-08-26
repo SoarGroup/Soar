@@ -59,15 +59,24 @@ inline bool arg_help(char ** &arg)
     return false;
 
   std::cout << "Options:" << std::endl
-            << "  --help                  prints this help" << std::endl
-            << "  --remote [ip[:port]]    to use a remote Soar kernel" << std::endl
-            << "  --ip                    to specify an IP address (implies remote Soar kernel)" << std::endl
-            << "  --port                  to specify a port address (implies remote Soar kernel)" << std::endl
-            << "  --episodes count        to specify the maximum number of episodes [1000]" << std::endl
-            << "  --seed seed             to specify the random seed" << std::endl
-            << "  --rules filename        to specify non-default rules" << std::endl
-            << "  --rl-rules-out          to specify where to output the RL-rules when finished" << std::endl
-            << "  --sp-special ep x xd t td  to specify what RL breakdown to add, and when" << std::endl;
+            << "  --help                          prints this help" << std::endl
+            << "  --remote [ip[:port]]            to use a remote Soar kernel" << std::endl
+            << "  --port                          to specify a port address (does not imply" << std::endl
+            << "                                       remote Soar kernel)" << std::endl
+            << "  --episodes count                to specify the maximum number" << std::endl
+            << "                                       of episodes [1000]" << std::endl
+            << "  --seed seed                     to specify the random seed" << std::endl
+            << "  --rules filename                to specify non-default rules" << std::endl
+            << "  --rl-rules-out                  to specify where to output the RL-rules" << std::endl
+            << "                                       when finished" << std::endl
+            << "  --sp-special ep x xd t td       to specify what RL breakdown to add, and when" << std::endl
+            << "  --credit-assignment even/fc/rl  to specify credit assignment" << std::endl
+            << "  --alpha normal/adaptive         to specify credit assignment" << std::endl
+            << "  --credit-modification none/variance  to specify any modification to credit" << std::endl
+            << "  --variance bellman/simple       to specify the method of calculating variance" << std::endl
+            << "  --tsdt                          to turn on TSDT" << std::endl
+            << "  --refine uperf/td-error         to specify the how to determine when to" << std::endl
+            << "                                       refine Q(s,a)" << std::endl;
 
   exit(0);
 
@@ -263,6 +272,128 @@ inline bool arg_sp_special(int &episode,
   return true;
 }
 
+inline bool arg_credit_assignment(std::string &value,
+                                  char ** &arg,
+                                  char ** const &arg_end)
+{
+  if(strcmp(*arg, "--credit-assignment"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--credit-assignment' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "even") && strcmp(*arg, "fc") && strcmp(*arg, "rl") && strcmp(*arg, "log-rl")) {
+    std::cerr << "--credit-assignment takes 'even', 'fc', or 'rl'";
+    exit(3);
+  }
+
+  value = *arg;
+
+  return true;
+}
+
+inline bool arg_alpha(std::string &value,
+                      char ** &arg,
+                      char ** const &arg_end)
+{
+  if(strcmp(*arg, "--alpha"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--alpha' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "normal") && strcmp(*arg, "adaptive")) {
+    std::cerr << "--alpha takes 'normal' or 'adaptive'";
+    exit(3);
+  }
+
+  value = *arg;
+
+  return true;
+}
+
+inline bool arg_credit_mod(std::string &credit_mod,
+                           char ** &arg,
+                           char ** const &arg_end)
+{
+  if(strcmp(*arg, "--credit-modification"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--credit-modification' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "none") && strcmp(*arg, "variance")) {
+    std::cerr << "--credit-modification takes 'none' or 'variance'";
+    exit(3);
+  }
+
+  credit_mod = *arg;
+
+  return true;
+}
+
+inline bool arg_variance(std::string &credit_mod,
+                         char ** &arg,
+                         char ** const &arg_end)
+{
+  if(strcmp(*arg, "--variance"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--variance' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "bellman") && strcmp(*arg, "simple")) {
+    std::cerr << "--variance takes 'bellman' or 'simple'";
+    exit(3);
+  }
+
+  credit_mod = *arg;
+
+  return true;
+}
+
+inline bool arg_tsdt(bool &tsdt,
+                     char ** &arg,
+                     char ** const &arg_end)
+{
+  if(strcmp(*arg, "--tsdt"))
+    return false;
+
+  tsdt = true;
+
+  return true;
+}
+
+inline bool arg_refine(std::string &refine,
+                       char ** &arg,
+                       char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--refine' requires 1 arguments'";
+    exit(2);
+  }
+
+  if(strcmp(*arg, "uperf") && strcmp(*arg, "td-error")) {
+    std::cerr << "--refine takes 'uperf' or 'td-error'";
+    exit(3);
+  }
+
+  refine = *arg;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -284,17 +415,29 @@ int main(int argc, char ** argv) {
   float x_dot_div = 1.0f;
   float theta_div = 1.0f;
   float theta_dot_div = 1.0f;
+  std::string credit_assignment = "even";
+  std::string alpha = "normal";
+  std::string credit_mod = "none";
+  std::string variance = "bellman";
+  bool tsdt = false;
+  std::string refine = "td-error";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
-    if(!arg_help         (                                        arg         ) &&
-       !arg_remote       (remote, ip_address, port,               arg, arg_end) &&
-       !arg_ip           (remote, ip_address,                     arg, arg_end) &&
-       !arg_port         (remote,             port,               arg, arg_end) &&
-       !arg_rules        (                          rules,        arg, arg_end) &&
-       !arg_episodes     (                          episodes,     arg, arg_end) &&
-       !arg_seed         (                          seed,         arg, arg_end) &&
-       !arg_rl_rules_out (                          rl_rules_out, arg, arg_end) &&
-       !arg_sp_special   (episode, x_div, x_dot_div, theta_div, theta_dot_div, arg, arg_end))
+    if(!arg_help         (                                             arg         ) &&
+       !arg_remote       (remote, ip_address, port,                    arg, arg_end) &&
+       !arg_ip           (remote, ip_address,                          arg, arg_end) &&
+       !arg_port         (remote,             port,                    arg, arg_end) &&
+       !arg_rules        (                          rules,             arg, arg_end) &&
+       !arg_episodes     (                          episodes,          arg, arg_end) &&
+       !arg_seed         (                          seed,              arg, arg_end) &&
+       !arg_rl_rules_out (                          rl_rules_out,      arg, arg_end) &&
+       !arg_sp_special   (episode, x_div, x_dot_div, theta_div, theta_dot_div, arg, arg_end) &&
+       !arg_credit_assignment (                     credit_assignment, arg, arg_end) &&
+       !arg_alpha        (                          alpha,             arg, arg_end) &&
+       !arg_credit_mod   (                          credit_mod,        arg, arg_end) &&
+       !arg_variance     (                          variance,          arg, arg_end) &&
+       !arg_tsdt         (                          tsdt,              arg, arg_end) &&
+       !arg_refine       (                          refine,            arg, arg_end))
     {
       std::cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -319,6 +462,14 @@ int main(int argc, char ** argv) {
     game.set_sp(episode, x_div, x_dot_div, theta_div, theta_dot_div);
     game.srand(seed);
     game.SpawnDebugger();
+
+    game.ExecuteCommandLine(("rl --set credit-assignment " + credit_assignment).c_str());
+    game.ExecuteCommandLine(("rl --set decay-mode " + alpha).c_str());
+    game.ExecuteCommandLine(("rl --set credit-modification " + credit_mod).c_str());
+    game.ExecuteCommandLine(("rl --set variance-bellman " + std::string(variance == "bellman" ? "on" : "off")).c_str());
+    if(tsdt)
+      game.ExecuteCommandLine("rl --set trace tsdt");
+    game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
 
     for(int episode = 0; episode != episodes; ++episode) {
       game.do_sp(episode);
@@ -351,6 +502,14 @@ int main(int argc, char ** argv) {
     CartPole game(rules, false);
     game.set_sp(episode, x_div, x_dot_div, theta_div, theta_dot_div);
     game.srand(seed);
+
+    game.ExecuteCommandLine(("rl --set credit-assignment " + credit_assignment).c_str());
+    game.ExecuteCommandLine(("rl --set decay-mode " + alpha).c_str());
+    game.ExecuteCommandLine(("rl --set credit-modification " + credit_mod).c_str());
+    game.ExecuteCommandLine(("rl --set variance-bellman " + std::string(variance == "bellman" ? "on" : "off")).c_str());
+    if(tsdt)
+      game.ExecuteCommandLine("rl --set trace tsdt");
+    game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
 
     for(int episode = 0; episode != episodes; ++episode) {
       game.do_sp(episode);

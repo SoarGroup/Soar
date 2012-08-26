@@ -371,6 +371,10 @@ typedef struct agent_struct {
   double      uperf_mark2; ///< bazald
   double      uperf_variance; ///< bazald
   double      uperf_stddev; ///< bazald
+  double      uaperf; ///< bazald: average update amount per (number of inits for which the production has fired)
+  double      uaperf_mark2; ///< bazald
+  double      uaperf_variance; ///< bazald
+  double      uaperf_stddev; ///< bazald
 
   /* ----------------------- Symbol table stuff -------------------------- */
 
