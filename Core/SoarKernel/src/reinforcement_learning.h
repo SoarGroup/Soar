@@ -107,6 +107,7 @@ class rl_param_container: public soar_module::param_container
     rl_credit_assignment_param *credit_assignment; ///< bazald
     rl_credit_modification_param *credit_modification; ///< bazald
     soar_module::constant_param<refine_choices> *refine; ///< bazald
+    soar_module::decimal_param *refine_stddev; ///< bazald
 		soar_module::boolean_param *temporal_extension;
 		soar_module::boolean_param *hrl_discount;
 		soar_module::boolean_param *temporal_discount;

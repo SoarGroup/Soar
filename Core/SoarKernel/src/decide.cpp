@@ -1120,6 +1120,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 
         if(!force_tie) {
           const rl_param_container::refine_choices refine = thisAgent->rl_params->refine->get_value();
+          const double refine_stddev = thisAgent->rl_params->refine_stddev->get_value();
           cand->rl_intolerable_variance = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE] != 0;
 
 //           double total_influence = 0.0;
@@ -1175,17 +1176,17 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //           if(total_variance < thisAgent->variance + (1.281552 * 1.281552) * thisAgent->variance_variance)
 //             cand->rl_intolerable_variance = false;
           if(refine == rl_param_container::refine_td_error) {
-            if(uperf_max < thisAgent->uaperf + 0.84155 * thisAgent->uaperf_stddev)
+            if(uperf_max < thisAgent->uaperf + refine_stddev * thisAgent->uaperf_stddev)
               cand->rl_intolerable_variance = false;
           }
           else {
-            if(uperf_max < thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev)
+            if(uperf_max < thisAgent->uperf + refine_stddev * thisAgent->uperf_stddev)
               cand->rl_intolerable_variance = false;
           }
 //           else {
 //             std::cerr << uperf_max << " > "
-//                       << thisAgent->uperf << " + 0.84155 * " << thisAgent->uperf_stddev << " ("
-//                       << thisAgent->uperf + 0.84155 * thisAgent->uperf_stddev << ')' << std::endl;
+//                       << thisAgent->uperf << " + refine_stddev * " << thisAgent->uperf_stddev << " ("
+//                       << thisAgent->uperf + refine_stddev * thisAgent->uperf_stddev << ')' << std::endl;
 //           }
         }
         else if(force_tie == 1)

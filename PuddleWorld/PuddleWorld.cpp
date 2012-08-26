@@ -76,6 +76,7 @@ inline bool arg_help(char ** &arg)
             << "  --variance bellman/simple       to specify the method of calculating variance" << endl
             << "  --tsdt                          to turn on TSDT" << endl
             << "  --refine uperf/td-error         to specify the how to determine when to" << endl
+            << "  --refine-stddev #               to specify the threshold for refinement" << endl
             << "                                       refine Q(s,a)" << endl;
 
   exit(0);
@@ -114,7 +115,7 @@ inline bool arg_port(int &port,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--port' requires an argument of the form 'xxxxx'";
+    cerr << "'--port' requires an argument of the form 'xxxxx'" << std::endl;
     exit(3);
   }
 
@@ -131,7 +132,7 @@ inline bool arg_rules(string &rules,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--rules' requires an argument'";
+    cerr << "'--rules' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -148,7 +149,7 @@ inline bool arg_episodes(int &episodes,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--episodes' requires an argument'";
+    cerr << "'--episodes' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -165,7 +166,7 @@ inline bool arg_seed(int &seed,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--seed' requires an argument'";
+    cerr << "'--seed' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -182,7 +183,7 @@ inline bool arg_rl_rules_out(string &rl_rules,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires an argument'";
+    cerr << "'--rl-rules-out' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -199,21 +200,21 @@ inline bool arg_sp_special(multimap<int, pair<float, float> > &sp,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires 3 arguments'";
+    cerr << "'--rl-rules-out' requires 3 arguments'" << std::endl;
     exit(2);
   }
 
   const int episode = atoi(*arg);
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires 3 arguments'";
+    cerr << "'--rl-rules-out' requires 3 arguments'" << std::endl;
     exit(2);
   }
   
   const float x_div = atof(*arg);
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires 3 arguments'";
+    cerr << "'--rl-rules-out' requires 3 arguments'" << std::endl;
     exit(2);
   }
   
@@ -232,12 +233,12 @@ inline bool arg_credit_assignment(string &value,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--credit-assignment' requires 1 arguments'";
+    cerr << "'--credit-assignment' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "even") && strcmp(*arg, "fc") && strcmp(*arg, "rl") && strcmp(*arg, "log-rl")) {
-    cerr << "--credit-assignment takes 'even', 'fc', or 'rl'";
+    cerr << "--credit-assignment takes 'even', 'fc', or 'rl'" << std::endl;
     exit(3);
   }
 
@@ -254,12 +255,12 @@ inline bool arg_alpha(string &value,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--alpha' requires 1 arguments'";
+    cerr << "'--alpha' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "normal") && strcmp(*arg, "adaptive")) {
-    cerr << "--alpha takes 'normal' or 'adaptive'";
+    cerr << "--alpha takes 'normal' or 'adaptive'" << std::endl;
     exit(3);
   }
 
@@ -279,28 +280,28 @@ inline bool arg_initial(float &initial_min_x,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--initial' requires 4 arguments'";
+    cerr << "'--initial' requires 4 arguments'" << std::endl;
     exit(2);
   }
 
   initial_min_x = atof(*arg);
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires 4 arguments'";
+    cerr << "'--rl-rules-out' requires 4 arguments'" << std::endl;
     exit(2);
   }
   
   initial_min_y = atof(*arg);
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires 4 arguments'";
+    cerr << "'--rl-rules-out' requires 4 arguments'" << std::endl;
     exit(2);
   }
   
   initial_max_x = atof(*arg);
 
   if(++arg == arg_end) {
-    cerr << "'--rl-rules-out' requires 4 arguments'";
+    cerr << "'--rl-rules-out' requires 4 arguments'" << std::endl;
     exit(2);
   }
   
@@ -317,12 +318,12 @@ inline bool arg_credit_mod(string &credit_mod,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--credit-modification' requires 1 arguments'";
+    cerr << "'--credit-modification' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "none") && strcmp(*arg, "variance")) {
-    cerr << "--credit-modification takes 'none' or 'variance'";
+    cerr << "--credit-modification takes 'none' or 'variance'" << std::endl;
     exit(3);
   }
 
@@ -339,12 +340,12 @@ inline bool arg_variance(string &credit_mod,
     return false;
 
   if(++arg == arg_end) {
-    cerr << "'--variance' requires 1 arguments'";
+    cerr << "'--variance' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "bellman") && strcmp(*arg, "simple")) {
-    cerr << "--variance takes 'bellman' or 'simple'";
+    cerr << "--variance takes 'bellman' or 'simple'" << std::endl;
     exit(3);
   }
 
@@ -378,11 +379,28 @@ inline bool arg_refine(string &refine,
   }
 
   if(strcmp(*arg, "uperf") && strcmp(*arg, "td-error")) {
-    cerr << "--refine takes 'uperf' or 'td-error'";
+    cerr << "--refine takes 'uperf' or 'td-error'" << std::endl;
     exit(3);
   }
 
   refine = *arg;
+
+  return true;
+}
+
+inline bool arg_refine_stddev(string &refine_stddev,
+                              char ** &arg,
+                              char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine-stddev"))
+    return false;
+
+  if(++arg == arg_end) {
+    cerr << "'--refine-stddev' requires 1 arguments'" << std::endl;
+    exit(2);
+  }
+
+  refine_stddev = *arg;
 
   return true;
 }
@@ -414,6 +432,7 @@ int main(int argc, char ** argv) {
   string variance = "bellman";
   bool tsdt = false;
   string refine = "td-error";
+  string refine_stddev = "0.84155";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -430,7 +449,8 @@ int main(int argc, char ** argv) {
        !arg_credit_mod   (                          credit_mod,        arg, arg_end) &&
        !arg_variance     (                          variance,          arg, arg_end) &&
        !arg_tsdt         (                          tsdt,              arg, arg_end) &&
-       !arg_refine       (                          refine,            arg, arg_end))
+       !arg_refine       (                          refine,            arg, arg_end) &&
+       !arg_refine_stddev(                          refine_stddev,     arg, arg_end))
     {
       cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -459,6 +479,7 @@ int main(int argc, char ** argv) {
   if(tsdt)
     game.ExecuteCommandLine("rl --set trace tsdt");
   game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
+  game.ExecuteCommandLine(("rl --set refine-stddev " + refine_stddev).c_str());
 
   for(int episode = 0; episode != episodes; ++episode) {
     for(std::pair<multimap<int, pair<float, float> >::const_iterator,

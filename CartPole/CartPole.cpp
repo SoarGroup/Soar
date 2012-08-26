@@ -76,6 +76,7 @@ inline bool arg_help(char ** &arg)
             << "  --variance bellman/simple       to specify the method of calculating variance" << std::endl
             << "  --tsdt                          to turn on TSDT" << std::endl
             << "  --refine uperf/td-error         to specify the how to determine when to" << std::endl
+            << "  --refine-stddev #               to specify the threshold for refinement" << std::endl
             << "                                       refine Q(s,a)" << std::endl;
 
   exit(0);
@@ -126,7 +127,7 @@ inline bool arg_ip(bool &remote,
   remote = true;
 
   if(++arg == arg_end) {
-    std::cerr << "'--ip' requires an argument of the form 'xxx.xxx.xxx.xxx'";
+    std::cerr << "'--ip' requires an argument of the form 'xxx.xxx.xxx.xxx'" << std::endl;
     exit(2);
   }
 
@@ -146,7 +147,7 @@ inline bool arg_port(bool &remote,
   remote = true;
 
   if(++arg == arg_end) {
-    std::cerr << "'--port' requires an argument of the form 'xxxxx'";
+    std::cerr << "'--port' requires an argument of the form 'xxxxx'" << std::endl;
     exit(3);
   }
 
@@ -163,7 +164,7 @@ inline bool arg_rules(std::string &rules,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--rules' requires an argument'";
+    std::cerr << "'--rules' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -180,7 +181,7 @@ inline bool arg_episodes(int &episodes,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--episodes' requires an argument'";
+    std::cerr << "'--episodes' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -197,7 +198,7 @@ inline bool arg_seed(int &seed,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--seed' requires an argument'";
+    std::cerr << "'--seed' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -214,7 +215,7 @@ inline bool arg_rl_rules_out(std::string &rl_rules,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires an argument'";
+    std::cerr << "'--rl-rules-out' requires an argument'" << std::endl;
     exit(2);
   }
 
@@ -235,35 +236,35 @@ inline bool arg_sp_special(int &episode,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    std::cerr << "'--rl-rules-out' requires 5 arguments'" << std::endl;
     exit(2);
   }
 
   episode = atoi(*arg);
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    std::cerr << "'--rl-rules-out' requires 5 arguments'" << std::endl;
     exit(2);
   }
   
   x_div = atof(*arg);
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    std::cerr << "'--rl-rules-out' requires 5 arguments'" << std::endl;
     exit(2);
   }
   
   x_dot_div = atof(*arg);
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    std::cerr << "'--rl-rules-out' requires 5 arguments'" << std::endl;
     exit(2);
   }
   
   theta_div = atof(*arg);
 
   if(++arg == arg_end) {
-    std::cerr << "'--rl-rules-out' requires 5 arguments'";
+    std::cerr << "'--rl-rules-out' requires 5 arguments'" << std::endl;
     exit(2);
   }
   
@@ -280,12 +281,12 @@ inline bool arg_credit_assignment(std::string &value,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--credit-assignment' requires 1 arguments'";
+    std::cerr << "'--credit-assignment' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "even") && strcmp(*arg, "fc") && strcmp(*arg, "rl") && strcmp(*arg, "log-rl")) {
-    std::cerr << "--credit-assignment takes 'even', 'fc', or 'rl'";
+    std::cerr << "--credit-assignment takes 'even', 'fc', or 'rl'" << std::endl;
     exit(3);
   }
 
@@ -302,12 +303,12 @@ inline bool arg_alpha(std::string &value,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--alpha' requires 1 arguments'";
+    std::cerr << "'--alpha' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "normal") && strcmp(*arg, "adaptive")) {
-    std::cerr << "--alpha takes 'normal' or 'adaptive'";
+    std::cerr << "--alpha takes 'normal' or 'adaptive'" << std::endl;
     exit(3);
   }
 
@@ -324,12 +325,12 @@ inline bool arg_credit_mod(std::string &credit_mod,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--credit-modification' requires 1 arguments'";
+    std::cerr << "'--credit-modification' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "none") && strcmp(*arg, "variance")) {
-    std::cerr << "--credit-modification takes 'none' or 'variance'";
+    std::cerr << "--credit-modification takes 'none' or 'variance'" << std::endl;
     exit(3);
   }
 
@@ -346,12 +347,12 @@ inline bool arg_variance(std::string &credit_mod,
     return false;
 
   if(++arg == arg_end) {
-    std::cerr << "'--variance' requires 1 arguments'";
+    std::cerr << "'--variance' requires 1 arguments'" << std::endl;
     exit(2);
   }
 
   if(strcmp(*arg, "bellman") && strcmp(*arg, "simple")) {
-    std::cerr << "--variance takes 'bellman' or 'simple'";
+    std::cerr << "--variance takes 'bellman' or 'simple'" << std::endl;
     exit(3);
   }
 
@@ -385,11 +386,28 @@ inline bool arg_refine(std::string &refine,
   }
 
   if(strcmp(*arg, "uperf") && strcmp(*arg, "td-error")) {
-    std::cerr << "--refine takes 'uperf' or 'td-error'";
+    std::cerr << "--refine takes 'uperf' or 'td-error'" << std::endl;
     exit(3);
   }
 
   refine = *arg;
+
+  return true;
+}
+
+inline bool arg_refine_stddev(std::string &refine_stddev,
+                              char ** &arg,
+                              char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine-stddev"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--refine-stddev' requires 1 arguments'" << std::endl;
+    exit(2);
+  }
+
+  refine_stddev = *arg;
 
   return true;
 }
@@ -421,6 +439,7 @@ int main(int argc, char ** argv) {
   std::string variance = "bellman";
   bool tsdt = false;
   std::string refine = "td-error";
+  std::string refine_stddev = "0.84155";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -437,7 +456,8 @@ int main(int argc, char ** argv) {
        !arg_credit_mod   (                          credit_mod,        arg, arg_end) &&
        !arg_variance     (                          variance,          arg, arg_end) &&
        !arg_tsdt         (                          tsdt,              arg, arg_end) &&
-       !arg_refine       (                          refine,            arg, arg_end))
+       !arg_refine       (                          refine,            arg, arg_end) &&
+       !arg_refine_stddev(                          refine_stddev,     arg, arg_end))
     {
       std::cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -470,6 +490,7 @@ int main(int argc, char ** argv) {
     if(tsdt)
       game.ExecuteCommandLine("rl --set trace tsdt");
     game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
+    game.ExecuteCommandLine(("rl --set refine-stddev " + refine_stddev).c_str());
 
     for(int episode = 0; episode != episodes; ++episode) {
       game.do_sp(episode);
@@ -510,6 +531,7 @@ int main(int argc, char ** argv) {
     if(tsdt)
       game.ExecuteCommandLine("rl --set trace tsdt");
     game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
+    game.ExecuteCommandLine(("rl --set refine-stddev " + refine_stddev).c_str());
 
     for(int episode = 0; episode != episodes; ++episode) {
       game.do_sp(episode);

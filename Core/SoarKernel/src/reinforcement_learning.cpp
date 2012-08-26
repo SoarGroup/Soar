@@ -143,6 +143,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   refine->add_mapping( refine_uperf, "uperf" );
   refine->add_mapping( refine_td_error, "td-error" );
   add( refine );
+
+  // refine-stddev
+  refine_stddev = new soar_module::decimal_param( "refine-stddev", 0.84155, new soar_module::predicate<double>, new soar_module::f_predicate<double>() );
+  add( refine_stddev );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );

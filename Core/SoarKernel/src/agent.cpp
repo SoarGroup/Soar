@@ -569,10 +569,11 @@ void destroy_soar_agent (agent * delete_agent)
 
 //   std::cerr << "Phase 4" << std::endl;
 
-  const double uathreshold = avg_uaperf + 0.84155 * sqrt(var_uaperf);
-  const double auathreshold = delete_agent->uaperf + 0.84155 * delete_agent->uaperf_stddev;
-  std::cerr << "uaperf threshold = " << avg_uaperf << " + 0.84155 * sqrt(" << var_uaperf << ") = " << uathreshold << std::endl;
-  std::cerr << "~uaperf threshold = " << delete_agent->uaperf << " + 0.84155 * " << delete_agent->uaperf_stddev << " = " << auathreshold << std::endl;
+  const double refine_stddev = delete_agent->rl_params->refine_stddev->get_value();
+  const double uathreshold = avg_uaperf + refine_stddev * sqrt(var_uaperf);
+  const double auathreshold = delete_agent->uaperf + refine_stddev * delete_agent->uaperf_stddev;
+  std::cerr << "uaperf threshold = " << avg_uaperf << " + refine_stddev * sqrt(" << var_uaperf << ") = " << uathreshold << std::endl;
+  std::cerr << "~uaperf threshold = " << delete_agent->uaperf << " + refine_stddev * " << delete_agent->uaperf_stddev << " = " << auathreshold << std::endl;
   
   for(int i = 0; i != NUM_PRODUCTION_TYPES; ++i) {
     for(production *prod2 = delete_agent->all_productions_of_type[i]; prod2; prod2 = prod2->next) {

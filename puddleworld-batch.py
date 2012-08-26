@@ -86,9 +86,6 @@ g_ep_tuples = []
 ## approximation of forced splitting down to 16x16 a priori
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
-## splitting agent 2x2 on up
-g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf'))
-g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error'))
 
 ## retest others
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'even', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
@@ -109,6 +106,15 @@ g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple', (0, 8, 8)))
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (8, 8), 'rl', 'eligibility', 'simple', (0, 16, 16)))
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (4, 4), 'rl', 'eligibility', 'simple', (0, 8, 8), (0, 16, 16)))
+
+
+## splitting agent 2x2 on up
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.5))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 1))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.25))
 
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
@@ -169,8 +175,9 @@ class Experiment:
     self.alpha = 'normal'
     self.variance = 'simple'
     self.refine = ep_tuple[5]
+    self.refine_stddev = ep_tuple[6]
     self.sp = []
-    for sp in ep_tuple[6:]:
+    for sp in ep_tuple[7:]:
       if len(sp) != 3:
         raise Exception("len(sp) != 3")
       self.sp.append(sp)
@@ -186,7 +193,8 @@ class Experiment:
             '--credit-assignment', str(self.credit_assignment),
             '--alpha', str(self.alpha),
             '--variance', str(self.variance),
-            '--refine', str(self.refine)]
+            '--refine', str(self.refine),
+            '--refine-stddev', str(self.refine_stddev)]
     if self.trace == 'tsdt':
       args += ['--tsdt']
     for sp in self.sp:
@@ -223,7 +231,8 @@ for ep_tuple in g_ep_tuples:
   dir += '_' + str(ep_tuple[3])
   #dir += '_' + str(ep_tuple[4])
   dir += '_' + str(ep_tuple[5])
-  for i in range(6, len(ep_tuple)):
+  dir += '_' + str(ep_tuple[6])
+  for i in range(7, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
     dir += '_' + str(ep_tuple[i][0]) + '-' + str(ep_tuple[i][1]) + '-' + str(ep_tuple[i][2])
@@ -247,7 +256,7 @@ for ep_tuple in g_ep_tuples:
     f.close()
   else:
     rules = ep_tuple[0]
-    for sp in ep_tuple[6:]:
+    for sp in ep_tuple[7:]:
       print 'Not allowed to --sp-special arbitrary rules.'
       exit(1)
   
