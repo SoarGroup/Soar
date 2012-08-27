@@ -147,6 +147,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   // refine-stddev
   refine_stddev = new soar_module::decimal_param( "refine-stddev", 0.84155, new soar_module::predicate<double>, new soar_module::f_predicate<double>() );
   add( refine_stddev );
+
+  // refine-require-episodes
+  refine_require_episodes = new soar_module::integer_param( "refine-require-episodes", 10, new soar_module::gt_predicate<int64_t>( 0, false ), new soar_module::f_predicate<int64_t>() );
+  add( refine_require_episodes );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );

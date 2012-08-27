@@ -1121,6 +1121,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
         if(!force_tie) {
           const rl_param_container::refine_choices refine = thisAgent->rl_params->refine->get_value();
           const double refine_stddev = thisAgent->rl_params->refine_stddev->get_value();
+          const uint64_t refine_require_episodes = thisAgent->rl_params->refine_require_episodes->get_value();
           cand->rl_intolerable_variance = cand->inst->match_goal->id.operator_slot->preferences[NUMERIC_INDIFFERENT_PREFERENCE_TYPE] != 0;
 
 //           double total_influence = 0.0;
@@ -1142,7 +1143,7 @@ byte consider_impasse_instead_of_rl(agent* const &thisAgent, preference * const 
 //             q_value += prod2->rl_ecr + prod2->rl_efr;
 
             if(prod2->agent_uperf_contrib != production::DISABLED) {
-              if(prod2->init_updated_count < 10)
+              if(prod2->init_updated_count < refine_require_episodes)
                 cand->rl_intolerable_variance = false;
               else if(prod2->init_fired_count < init_fired_count_min) {
                 init_fired_count_min = prod2->init_fired_count;
