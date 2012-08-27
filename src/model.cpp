@@ -114,6 +114,7 @@ void multi_model::learn(const rvec &x, const rvec &y, int time) {
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
 		rvec xp, yp;
+		
 		if (cfg->allx) {
 			xp = x;
 		} else {
@@ -252,10 +253,10 @@ bool multi_model::report_error(int i, const vector<string> &args, ostream &os) c
 	
 	int dim = -1, start = 0, end = reference_vals.size() - 1;
 	bool list = false, histo = false;
-	if (args[i] == "list") {
+	if (i < args.size() && args[i] == "list") {
 		list = true;
 		++i;
-	} else if (args[i] == "histogram") {
+	} else if (i < args.size() && args[i] == "histogram") {
 		histo = true;
 		++i;
 	}
