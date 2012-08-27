@@ -188,7 +188,8 @@ void wpcr(const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec
 }
 
 LRModel::LRModel(const dyn_mat &xdata, const dyn_mat &ydata) 
-: xdata(xdata), ydata(ydata), constvals(rvec::Zero(ydata.cols())), isconst(true), error(INFINITY), refit(true)
+: xdata(xdata), ydata(ydata), constvals(rvec::Zero(ydata.cols())), isconst(true), 
+  error(INFINITY), refit(true), members_changed(false)
 {
 	timers.add("predict");
 	timers.add("fit");
@@ -196,7 +197,8 @@ LRModel::LRModel(const dyn_mat &xdata, const dyn_mat &ydata)
 
 LRModel::LRModel(const LRModel &m)
 : xdata(m.xdata), ydata(m.ydata), constvals(m.constvals), members(m.members), isconst(m.isconst),
-  xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true)
+  xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true),
+  xmdata(m.xmdata), ymdata(m.ymdata), members_changed(m.members_changed)
 {
 	timers.add("predict");
 	timers.add("fit");
@@ -210,6 +212,7 @@ void LRModel::add_example(int i, bool update_refit) {
 	}
 	
 	members.push_back(i);
+	members_changed = true;
 	if (members.size() == 1) {
 		xtotals = xdata.row(i);
 		center = xtotals;
@@ -265,6 +268,7 @@ void LRModel::add_examples(const vector<int> &inds) {
 
 void LRModel::del_example(int i) {
 	members.erase(remove(members.begin(), members.end(), i), members.end());
+	members_changed = true;
 	
 	if (members.size() == 0) {
 		// handling of this case is questionable, make it better later
@@ -334,19 +338,6 @@ void LRModel::load(istream &is) {
 	fit();
 }
 
-void LRModel::fill_data(mat &X, mat &Y) const {
-	if (members.empty()) {
-		return;
-	}
-	X.resize(members.size(), xdata.cols());
-	Y.resize(members.size(), ydata.cols());
-	
-	for (int i = 0; i < members.size(); ++i) {
-		X.row(i) = xdata.row(members[i]);
-		Y.row(i) = ydata.row(members[i]);
-	}
-}
-
 bool LRModel::predict(const rvec &x, rvec &y) {
 	if (isconst) {
 		y = constvals;
@@ -411,6 +402,30 @@ bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os
 	return false;
 }
 
+void LRModel::update_member_data() {
+	if (!members_changed) {
+		return;
+	}
+	
+	xmdata.resize(members.size(), xdata.cols());
+	ymdata.resize(members.size(), ydata.cols());
+	for (int i = 0; i < members.size(); ++i) {
+		xmdata.row(i) = xdata.row(members[i]);
+		ymdata.row(i) = ydata.row(members[i]);
+	}
+	members_changed = false;
+}
+
+const_mat_view LRModel::get_member_X() {
+	update_member_data();
+	return const_mat_view(xmdata);
+}
+
+const_mat_view LRModel::get_member_Y() {
+	update_member_data();
+	return const_mat_view(ymdata);
+}
+
 PCRModel::PCRModel(const dyn_mat &xdata, const dyn_mat &ydata) 
 : LRModel(xdata, ydata), intercept(rvec::Zero(ydata.cols()))
 {}
@@ -420,11 +435,11 @@ PCRModel::PCRModel(const PCRModel &m)
 {}
 
 void PCRModel::fit_sub() {
-	mat X, Y;
+	const_mat_view X(get_member_X());
+	const_mat_view Y(get_member_Y());
 	
-	fill_data(X, Y);
 	means = X.colwise().mean();
-	X.rowwise() -= means;
+	mat Xc = X.rowwise() - means;
 
 	min_train_error(X, Y, cvec(), beta, intercept);
 }
@@ -464,14 +479,12 @@ void RRModel::fit_sub() {
 	 I'm not weighting instances right now, but if I did, this
 	 would be the code.
 	*/
-	//mat X, Y;
-	//fill_data(X, Y);
 	//W.diagonal() = w;
-	//mat Z = W * X;
-	//mat V = W * Y;
+	//mat Z = W * get_member_X();
+	//mat V = W * get_member_Y();
 
-	mat Z, V;
-	fill_data(Z, V);
+	const_mat_view Z = get_member_X();
+	const_mat_view V = get_member_Y();
 	
 	/*
 	 If you're weighting and Z != X and V != Y, then xmean and

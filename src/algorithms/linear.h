@@ -46,29 +46,32 @@ public:
 	bool predict(const rvec &x, rvec &y);
 	bool predict(const_mat_view X, mat &Y);
 	bool fit();
-	void fill_data(mat &X, mat &Y) const;
 	void save(std::ostream &os) const;
 	// this has to be called right after the object is constructed
 	void load(std::istream &is);
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
+
+	const_mat_view get_member_X();
+	const_mat_view get_member_Y();
 	
 	virtual LRModel* copy() const = 0;
+
+private:
+	virtual bool cli_inspect_sub(std::ostream &os) const = 0;
 	virtual void fit_sub() = 0;
 	virtual bool predict_sub(const rvec &x, rvec &y) = 0;
 	virtual bool predict_sub(const_mat_view X, mat &Y) = 0;
 
-protected:
-	virtual bool cli_inspect_sub(std::ostream &os) const = 0;
+	void update_member_data();
+	void update_error();
 	
 	const dyn_mat &xdata;
 	const dyn_mat &ydata;
-	
-private:
-	void update_error();
-	
 	std::vector<int> members;
+	mat xmdata;
+	mat ymdata;
 	double error;
-	bool isconst, refit;
+	bool isconst, refit, members_changed;
 	rvec xtotals, center, constvals;
 	
 	enum Timers {PREDICT_T, FIT_T};
