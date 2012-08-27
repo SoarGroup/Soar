@@ -42,6 +42,7 @@ private:
 	bool remove_models();
 	void mark_model_stale(int i);
 	bool find_new_mode_inds(std::vector<int> &inds) const;
+	double calc_prob(int i, int j) const;
 	
 	const dyn_mat &xdata;
 	const dyn_mat &ydata;

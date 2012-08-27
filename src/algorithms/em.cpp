@@ -172,6 +172,24 @@ void EM::update_eligibility() {
 }
 
 /*
+ Calculate probability of data point j belonging to mode i
+*/
+double EM::calc_prob(int i, int j) const {
+	rvec py;
+	double w;
+	if (TEST_ELIGIBILITY) {
+		w = 1.0 / eligible.col(j).head(nmodels - 1).sum();
+	} else {
+		w = 1.0 / nmodels;
+	}
+	if (!models[i]->predict(xdata.row(j), py)) {
+		assert(false);
+	}
+	double d = gausspdf(ydata(j, 0), py(0), MODEL_STD);
+	return (1.0 - EPSILON) * w * d;
+}
+
+/*
  Update probability estimates for stale points for the i'th model. If
  for point j probability increases and i was not the MAP model or if
  probability decreases and i was the MAP model, then we mark j as a point
@@ -181,25 +199,13 @@ void EM::update_eligibility() {
 */
 void EM::update_Py_z(int i, set<int> &check) {
 	set<int>::iterator j;
-	rvec py;
-	
 	for (j = stale_points[i].begin(); j != stale_points[i].end(); ++j) {
 		double prev = Py_z(i, *j), now;
 		int m = map_mode[*j];
 		if (TEST_ELIGIBILITY && eligible(i, *j) == 0) {
 			now = 0.;
 		} else {
-			double w;
-			if (TEST_ELIGIBILITY) {
-				w = 1.0 / eligible.col(*j).head(nmodels - 1).sum();
-			} else {
-				w = 1.0 / nmodels;
-			}
-			if (!models[i]->predict(xdata.row(*j), py)) {
-				assert(false);
-			}
-			double d = gausspdf(ydata(*j, 0), py(0), MODEL_STD);
-			now = (1.0 - EPSILON) * w * d;
+			now = calc_prob(i, *j);
 		}
 		if ((m == i && now < prev) ||
 		    (m != i && ((m == -1 && now > PNOISE) ||
@@ -259,19 +265,8 @@ void EM::new_data() {
 void EM::estep() {
 	function_timer t(timers.get(E_STEP_T));
 	
-	update_eligibility();
-	/*
-	if (stale_models.empty()) {
-		return;
-	}
-	set<int>::iterator i = stale_models.begin();
-	advance(i, rand() % stale_models.size());
-	update_Py_z(*i);
-	stale_models.erase(i);
-	*/
-
 	set<int> check;
-	
+	update_eligibility();
 	int nstale = 0;
 	for (int i = 0; i < nmodels; ++i) {
 		nstale += stale_points[i].size();
