@@ -144,6 +144,12 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
             CLI_DoRL_generate_output( "refine-require-episodes: ", agnt->rl_params->refine_require_episodes->get_string() ) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "refine-decay-rate: ", agnt->rl_params->refine_decay_rate->get_string() ) );
+
+     CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "refine-cycles-between-episodes: ", agnt->rl_params->refine_cycles_between_episodes->get_string() ) );
+
+     CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "credit-assignment: ", agnt->rl_params->credit_assignment->get_string() ) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result,

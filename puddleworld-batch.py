@@ -116,6 +116,15 @@ g_ep_tuples = []
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.25))
 
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 10, 1.0))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 1.0))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 1, 1.0))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 10, 0.9))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 0.9))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 1, 0.9))
+
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 10, 1.0, 100))
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 1.0, 100))
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
 parser.add_argument('-j', '--jobs', metavar='N', type=int,
@@ -176,8 +185,11 @@ class Experiment:
     self.variance = 'simple'
     self.refine = ep_tuple[5]
     self.refine_stddev = ep_tuple[6]
+    self.refine_require_episodes = ep_tuple[7]
+    self.refine_decay_rate = ep_tuple[8]
+    self.refine_cycles_between_episodes = ep_tuple[9]
     self.sp = []
-    for sp in ep_tuple[7:]:
+    for sp in ep_tuple[10:]:
       if len(sp) != 3:
         raise Exception("len(sp) != 3")
       self.sp.append(sp)
@@ -194,7 +206,10 @@ class Experiment:
             '--alpha', str(self.alpha),
             '--variance', str(self.variance),
             '--refine', str(self.refine),
-            '--refine-stddev', str(self.refine_stddev)]
+            '--refine-stddev', str(self.refine_stddev),
+            '--refine-require-episodes', str(self.refine_require_episodes),
+            '--refine-decay-rate', str(self.refine_decay_rate),
+            '--refine-cycles-between-episodes', str(self.refine_cycles_between_episodes)]
     if self.trace == 'tsdt':
       args += ['--tsdt']
     for sp in self.sp:
@@ -232,7 +247,10 @@ for ep_tuple in g_ep_tuples:
   #dir += '_' + str(ep_tuple[4])
   dir += '_' + str(ep_tuple[5])
   dir += '_' + str(ep_tuple[6])
-  for i in range(7, len(ep_tuple)):
+  dir += '_' + str(ep_tuple[7])
+  dir += '_' + str(ep_tuple[8])
+  dir += '_' + str(ep_tuple[9])
+  for i in range(10, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
     dir += '_' + str(ep_tuple[i][0]) + '-' + str(ep_tuple[i][1]) + '-' + str(ep_tuple[i][2])
@@ -256,7 +274,7 @@ for ep_tuple in g_ep_tuples:
     f.close()
   else:
     rules = ep_tuple[0]
-    for sp in ep_tuple[7:]:
+    for sp in ep_tuple[10:]:
       print 'Not allowed to --sp-special arbitrary rules.'
       exit(1)
   

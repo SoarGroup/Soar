@@ -1644,6 +1644,8 @@ production *make_production (agent* thisAgent,
   p->rl_influence_rest = 0.0; ///< bazald
   p->rl_influence_total = 0.0; ///< bazald
   p->total_firing_count = 0; ///< bazald
+  p->total_fired_last = 0; ///< bazald
+  p->total_updated_last = 0; ///< bazald
   p->init_fired_count = 0; ///< bazald
   p->init_fired_last = 0; ///< bazald
   p->init_updated_count = 0; ///< bazald

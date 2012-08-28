@@ -151,6 +151,14 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   // refine-require-episodes
   refine_require_episodes = new soar_module::integer_param( "refine-require-episodes", 10, new soar_module::gt_predicate<int64_t>( 0, false ), new soar_module::f_predicate<int64_t>() );
   add( refine_require_episodes );
+
+  // refine-decay-rate
+  refine_decay_rate = new soar_module::decimal_param( "refine-decay-rate", 1.0, new soar_module::gt_predicate<double>( 0, true ), new soar_module::f_predicate<double>() );
+  add( refine_decay_rate );
+
+  // refine-cycles-between-episodes
+  refine_cycles_between_episodes = new soar_module::integer_param( "refine-cycles-between-episodes", 100, new soar_module::gt_predicate<int64_t>( -1, true ), new soar_module::f_predicate<int64_t>() );
+  add( refine_cycles_between_episodes );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
@@ -713,6 +721,8 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
         new_production->rl_influence_rest = 0.0; ///< bazald
         new_production->rl_influence_total = 0.0; ///< bazald
         new_production->total_firing_count = 0; ///< bazald
+        new_production->total_fired_last = 0; ///< bazald
+        new_production->total_updated_last = 0; ///< bazald
         new_production->init_fired_count = 0; ///< bazald
         new_production->init_fired_last = 0; ///< bazald
         new_production->init_updated_count = 0; ///< bazald
@@ -1278,15 +1288,25 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
                     prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
                     prod->rl_update_count += 1;
 #define abs_is_broken(x) ((x) < 0.0 ? -(x) : (x))
+                    prod->rl_update_amount *= my_agent->rl_params->refine_decay_rate->get_value(); ///< bazald
                     prod->rl_update_amount += abs_is_broken(data->reward + op_value - old_combined); ///< bazald
 //                     prod->rl_update_amount += abs_is_broken(delta_ecr + delta_efr); ///< bazald
 #undef abs_is_broken
                     assert(new_ecr + new_efr == old_combined || prod->rl_update_amount > 0.0); ///< bazald
-                    if(prod->init_updated_last != my_agent->init_count) { ///< bazald
+                    if(prod->init_updated_last == my_agent->init_count) { ///< bazald
+                      if(my_agent->rl_params->refine_cycles_between_episodes->get_value() != -1 &&
+                         my_agent->decision_phases_count - prod->total_updated_last >      ///< bazald
+                         my_agent->rl_params->refine_cycles_between_episodes->get_value()) ///< bazald
+                      {
+                        ++prod->init_updated_count; ///< bazald
+                      }
+                    }
+                    else {
+                      prod->init_updated_last = my_agent->init_count; ///< bazald
                       ++prod->init_updated_count; ///< bazald
 //                       std::cerr << prod->name->sc.name << " updated for " << prod->init_updated_count << " episodes as of " << my_agent->init_count << std::endl;
                     }
-                    prod->init_updated_last = my_agent->init_count; ///< bazald
+                    prod->total_updated_last = my_agent->decision_phases_count; ///< bazald
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
 

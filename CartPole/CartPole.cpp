@@ -77,7 +77,13 @@ inline bool arg_help(char ** &arg)
             << "  --tsdt                          to turn on TSDT" << std::endl
             << "  --refine uperf/td-error         to specify the how to determine when to" << std::endl
             << "  --refine-stddev #               to specify the threshold for refinement" << std::endl
-            << "                                       refine Q(s,a)" << std::endl;
+            << "                                       refine Q(s,a)" << std::endl
+            << "  --refine-require-episodes [1,)  to specify the delay before the refinement" << std::endl
+            << "                                       criterion comes into play" << std::endl
+            << "  --refine-decay-rate [0,1]       to specify the decay rate for td-error" << std::endl
+            << "                                       uperf is unaffected" << std::endl
+            << "  --refine-cycles-between-episodes [0,)  to specify the how many cycles" << std::endl
+            << "                                       simulate an episode break" << std::endl;;
 
   exit(0);
 
@@ -412,6 +418,57 @@ inline bool arg_refine_stddev(std::string &refine_stddev,
   return true;
 }
 
+inline bool arg_refine_require_episodes(std::string &refine_require_episodes,
+                                        char ** &arg,
+                                        char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine-require-episodes"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--refine-require_episodes' requires 1 arguments'" << std::endl;
+    exit(2);
+  }
+
+  refine_require_episodes = *arg;
+
+  return true;
+}
+
+inline bool arg_refine_decay_rate(std::string &refine_decay_rate,
+                                  char ** &arg,
+                                  char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine-decay-rate"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--refine-decay-rate' requires 1 arguments'" << std::endl;
+    exit(2);
+  }
+
+  refine_decay_rate = *arg;
+
+  return true;
+}
+
+inline bool arg_refine_cycles_between_episodes(std::string &refine_cycles_between_episodes,
+                                               char ** &arg,
+                                               char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine-cycles-between-episodes"))
+    return false;
+
+  if(++arg == arg_end) {
+    std::cerr << "'--refine-cycles-between-episodes' requires 1 arguments'" << std::endl;
+    exit(2);
+  }
+
+  refine_cycles_between_episodes = *arg;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -440,6 +497,9 @@ int main(int argc, char ** argv) {
   bool tsdt = false;
   std::string refine = "td-error";
   std::string refine_stddev = "0.84155";
+  std::string refine_require_episodes = "10";
+  std::string refine_decay_rate = "1.0";
+  std::string refine_cycles_between_episodes = "100";
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -457,7 +517,10 @@ int main(int argc, char ** argv) {
        !arg_variance     (                          variance,          arg, arg_end) &&
        !arg_tsdt         (                          tsdt,              arg, arg_end) &&
        !arg_refine       (                          refine,            arg, arg_end) &&
-       !arg_refine_stddev(                          refine_stddev,     arg, arg_end))
+       !arg_refine_stddev(                          refine_stddev,     arg, arg_end) &&
+       !arg_refine_require_episodes(          refine_require_episodes, arg, arg_end) &&
+       !arg_refine_decay_rate(                      refine_decay_rate, arg, arg_end) &&
+       !arg_refine_cycles_between_episodes(refine_cycles_between_episodes, arg, arg_end))
     {
       std::cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -491,6 +554,9 @@ int main(int argc, char ** argv) {
       game.ExecuteCommandLine("rl --set trace tsdt");
     game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
     game.ExecuteCommandLine(("rl --set refine-stddev " + refine_stddev).c_str());
+    game.ExecuteCommandLine(("rl --set refine-require-episodes " + refine_require_episodes).c_str());
+    game.ExecuteCommandLine(("rl --set refine-decay-rate " + refine_decay_rate).c_str());
+    game.ExecuteCommandLine(("rl --set refine-cycles-between-episodes " + refine_cycles_between_episodes).c_str());
 
     for(int episode = 0; episode != episodes; ++episode) {
       game.do_sp(episode);
@@ -532,6 +598,9 @@ int main(int argc, char ** argv) {
       game.ExecuteCommandLine("rl --set trace tsdt");
     game.ExecuteCommandLine(("rl --set refine " + refine).c_str());
     game.ExecuteCommandLine(("rl --set refine-stddev " + refine_stddev).c_str());
+    game.ExecuteCommandLine(("rl --set refine-require-episodes " + refine_require_episodes).c_str());
+    game.ExecuteCommandLine(("rl --set refine-decay-rate " + refine_decay_rate).c_str());
+    game.ExecuteCommandLine(("rl --set refine-cycles-between-episodes " + refine_cycles_between_episodes).c_str());
 
     for(int episode = 0; episode != episodes; ++episode) {
       game.do_sp(episode);
