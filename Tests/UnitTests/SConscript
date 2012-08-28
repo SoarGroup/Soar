@@ -4,7 +4,7 @@
 #
 import os, sys, platform
 
-Import('env')
+Import('env', 'g_msvs_variant')
 clone = env.Clone()
 
 libs = {
@@ -35,7 +35,7 @@ if 'MSVSProject' in env['BUILDERS']:
 		target = '#unittests' + env['MSVSPROJECTSUFFIX'],
 		srcs = [ str(s) for s in src ],
 		buildtarget = t,
-		variant = ['Debug'],
+		variant = g_msvs_variant,
 		auto_build_solution = 0,
 	)
 	Import('msvs_projs')

@@ -17,7 +17,7 @@ def CheckSWIG(env):
 	print 'swig version 1.3.31 or higher is required'
 	return False
 
-Import('env', 'compiler', 'InstallDir')
+Import('env', 'compiler', 'InstallDir', 'g_msvs_variant')
 kernel_env = env.Clone()
 
 if os.name == 'posix':
@@ -48,7 +48,8 @@ else:
 
 srcs = {
 #   Component          SCU source                         Non-SCU source
-	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
+#	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
+	'SoarKernel'    : (Glob('SoarKernel/src/*.cpp'),      Glob('SoarKernel/src/*.cpp')),
 	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
 	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
 	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
@@ -87,7 +88,7 @@ if 'MSVSProject' in kernel_env['BUILDERS']:
 		target = '#core' + env['MSVSPROJECTSUFFIX'],
 		srcs = list(itl.chain.from_iterable([[str(f) for f in s[1]] for s in srcs.values()])),
 		buildtarget = lib_install,
-		variant = ['Debug'],
+		variant = g_msvs_variant,
 		auto_build_solution = 0,
 	)
 	
