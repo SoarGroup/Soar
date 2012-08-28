@@ -2,7 +2,7 @@
 # Project: Soar <http://soar.googlecode.com>
 # Author: Jonathan Voigt <voigtjr@gmail.com>
 #
-Import('env')
+Import('env', 'g_msvs_variant')
 testcli = env.Install('$OUT_DIR', env.Program('TestCLI', ['testcli.cpp']))
 mincli = env.Install('$OUT_DIR', env.Program('cli', 'mincli.cpp'))
 env.Alias('cli', [testcli, mincli])
@@ -12,7 +12,7 @@ if 'MSVSProject' in env['BUILDERS']:
 		target = '#mincli' + env['MSVSPROJECTSUFFIX'],
 		srcs = [env.File('mincli.cpp').srcnode().path],
 		buildtarget = mincli,
-		variant = ['Debug'],
+		variant = g_msvs_variant,
 		auto_build_solution = 0,
 	)
 	
@@ -20,7 +20,7 @@ if 'MSVSProject' in env['BUILDERS']:
 		target = '#testcli' + env['MSVSPROJECTSUFFIX'],
 		srcs = [env.File('testcli.cpp').srcnode().path],
 		buildtarget = testcli,
-		variant = ['Debug'],
+		variant = g_msvs_variant,
 		auto_build_solution = 0,
 	)
 

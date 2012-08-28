@@ -213,9 +213,27 @@ if not GetOption('verbose'):
 
 Export('env')
 
+g_msvs_variant = 'Debug|Win32'
+
 if 'MSVSSolution' in env['BUILDERS']:
 	msvs_projs = []
 	Export('msvs_projs')
+	
+	cl = subprocess.Popen('cl.exe /?', stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
+	for line in cl.stdout:
+		if re.search('x64', line):
+			if GetOption('opt'):
+				g_msvs_variant = 'Release|x64'
+			else:
+				g_msvs_variant = 'Debug|x64'
+		else:
+			if GetOption('opt'):
+				g_msvs_variant = 'Release|Win32'
+			else:
+				g_msvs_variant = 'Debug|Win32'
+ 		break
+
+Export('g_msvs_variant')
 
 for d in os.listdir('.'):
 	if not d.startswith('.'):
@@ -223,13 +241,14 @@ for d in os.listdir('.'):
 		if os.path.exists(script):
 			SConscript(script, variant_dir=join(GetOption('build-dir'), d), duplicate=0)
 
-
 if 'MSVSSolution' in env['BUILDERS']:
+	
 	msvs_solution = env.MSVSSolution(
 		target = 'soar' + env['MSVSSOLUTIONSUFFIX'],
 		projects = msvs_projs,
-		variant = 'Debug',
+		variant = g_msvs_variant,
 	)
+	
 	env.Alias('msvs', [msvs_solution] + msvs_projs)
 
 env.Alias('all', default_ans.keys())
