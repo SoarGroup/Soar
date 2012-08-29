@@ -48,8 +48,7 @@ else:
 
 srcs = {
 #   Component          SCU source                         Non-SCU source
-#	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
-	'SoarKernel'    : (Glob('SoarKernel/src/*.cpp'),      Glob('SoarKernel/src/*.cpp')),
+	'SoarKernel'    : ('SoarKernel/SoarKernel.cxx',       Glob('SoarKernel/src/*.cpp')),
 	'sqlite'        : ('SoarKernel/sqlite/sqlite3.c',     ['SoarKernel/sqlite/sqlite3.c']),
 	'KernelSML'     : ('KernelSML/KernelSML.cxx',         Glob('KernelSML/src/*.cpp')),
 	'ClientSML'     : ('ClientSML/ClientSML.cxx',         Glob('ClientSML/src/*.cpp')),
