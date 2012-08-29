@@ -79,19 +79,19 @@ g_ep_tuples = []
 
 
 ## baselines
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'simple'))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'simple', (0, 20, 20)))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (20, 20), 'rl', 'eligibility', 'simple'))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (20, 20), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 20, 20)))
 
 ## approximation of forced splitting down to 16x16 a priori
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
 
 ## retest others
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'even', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'fc', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
-#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'even', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'fc', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
 
 ## requires learning rate 0.5 and discount rate 0.9
@@ -130,12 +130,15 @@ g_ep_tuples = []
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 1.0, 100))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 100))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 50))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'even', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'fc', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'log-rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.99, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.975, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.95, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.9, 20))
-g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.5, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.5, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 10))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 5))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 3))
