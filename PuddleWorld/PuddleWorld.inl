@@ -37,12 +37,15 @@ PuddleWorld::PuddleWorld(const float &initial_min_x,
 #endif
           ),
   m_agent(m_kernel, kernel ? "" : "PuddleWorld"),
+  m_episode_count(1),
+  m_step_count(0),
   m_reward_counter(0),
   m_reward_total(0.0f),
   m_initial_min_x(initial_min_x),
   m_initial_min_y(initial_min_y),
   m_initial_max_x(initial_max_x),
   m_initial_max_y(initial_max_y),
+  m_terminal_reward(0.0f),
   m_state(0),
   m_step(0),
   m_reward(0),
@@ -117,14 +120,15 @@ void PuddleWorld::remote_trials(const int &num_trials,
   }
 }
 
-void PuddleWorld::run() {
+void PuddleWorld::run(const int &step_count_) {
   //// Version 1
-  const std::string result = m_agent->RunSelfForever();
-  if(result != "DirectRun completed" &&
-     result != "\nAn agent halted during the run.")
-  {
-    std::cerr << result << std::endl;
-  }
+  const std::string result = step_count_ < 1 ? m_agent->RunSelfForever()
+                                             : m_agent->RunSelf(step_count_);
+//   if(result != "DirectRun completed" &&
+//      result != "\nAn agent halted during the run.")
+//   {
+//     std::cerr << result << std::endl;
+//   }
 
   //// Version 2
   //const std::string result = m_agent->ExecuteCommandLine("time run");

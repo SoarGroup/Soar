@@ -64,6 +64,8 @@ inline bool arg_help(char ** &arg)
             << "                                       remote Soar kernel)" << endl
             << "  --episodes count                to specify the maximum number" << endl
             << "                                       of episodes [1000]" << endl
+            << "  --steps count                   to specify the maximum number" << endl
+            << "                                       of steps [-1]" << endl
             << "  --seed seed                     to specify the random seed" << endl
             << "  --rules filename                to specify non-default rules" << endl
             << "  --rl-rules-out                  to specify where to output the RL-rules" << endl
@@ -160,6 +162,23 @@ inline bool arg_episodes(int &episodes,
   }
 
   episodes = atoi(*arg);
+
+  return true;
+}
+
+inline bool arg_steps(int &steps,
+                      char ** &arg,
+                      char ** const &arg_end)
+{
+  if(strcmp(*arg, "--steps"))
+    return false;
+
+  if(++arg == arg_end) {
+    cerr << "'--steps' requires an argument'" << std::endl;
+    exit(2);
+  }
+
+  steps = atoi(*arg);
 
   return true;
 }
@@ -476,6 +495,7 @@ int main(int argc, char ** argv) {
   int port = sml::Kernel::kDefaultSMLPort;
   string rules = PUDDLEWORLD_AGENT_PRODUCTIONS;
   int episodes = 1000;
+  int steps = -1;
   int seed = int(time(0));
   string rl_rules_out = "puddleworld-rl.soar";
   multimap<int, pair<float, float> > sp;
@@ -500,6 +520,7 @@ int main(int argc, char ** argv) {
        !arg_port         (                          port,              arg, arg_end) &&
        !arg_rules        (                          rules,             arg, arg_end) &&
        !arg_episodes     (                          episodes,          arg, arg_end) &&
+       !arg_steps        (                          steps,             arg, arg_end) &&
        !arg_seed         (                          seed,              arg, arg_end) &&
        !arg_rl_rules_out (                          rl_rules_out,      arg, arg_end) &&
        !arg_sp_special   (                          sp,                arg, arg_end) &&
@@ -570,12 +591,15 @@ int main(int argc, char ** argv) {
       else {
         if(game.is_running())
           game.StopSelf();
-        game.run();
+        game.run(steps - game.step_count());
 
 //         if(episode == 57) {
 //           game.SpawnDebugger();
 //           force_debugging = true;
 //         }
+
+        if(steps == game.step_count())
+          goto DONE;
       }
     }while(!game.is_finished());
 
@@ -590,6 +614,8 @@ int main(int argc, char ** argv) {
 
     game.reinit(true, episode);
   }
+
+DONE:
 
   game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
 
@@ -750,6 +776,8 @@ void PuddleWorld::update() {
               m_terminal = m_agent->CreateFloatWME(m_agent->GetInputLink(), "terminal", 0.0f);
 //               std::cerr << "PuddleWorld marked ^terminal " << 0.0f << std::endl;
             }
+
+            reward += m_terminal_reward;
           }
           else {
             if(step == 5000) {
@@ -805,15 +833,18 @@ void PuddleWorld::update() {
 
           m_reward_total += reward;
 
+          ++m_step_count;
+          cout << m_step_count << ' ' << m_episode_count << ' ' << step << ' ' << reward << endl;
+
           if(is_finished()) {
-            static int episode = 0;
-            cout << "EPISODE " << ++episode
-                      << " STEP " << step
-                      << " REWARD " << m_reward_total
-                      << " DIR " << (direction_name[0] == 'r' ? 1 : 0)
-                      << " X " << x
-                      << " Y " << y
-                      << endl;
+//             cout << "EPISODE " << m_episode_count
+//                       << " STEP " << step
+//                       << " REWARD " << m_reward_total
+//                       << " DIR " << (direction_name[0] == 'r' ? 1 : 0)
+//                       << " X " << x
+//                       << " Y " << y
+//                       << endl;
+            ++m_episode_count;
           }
         }
       }

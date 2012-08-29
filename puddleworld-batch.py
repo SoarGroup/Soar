@@ -123,8 +123,23 @@ g_ep_tuples = []
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 0.9))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 1, 0.9))
 
-g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 10, 1.0, 100))
-g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155, 10, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155, 3, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155, 2, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 10, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 50))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.99, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.975, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.95, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.9, 20))
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.5, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 10))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 5))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 3))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 1, 1.0, 100))
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
 parser.add_argument('-j', '--jobs', metavar='N', type=int,
@@ -133,9 +148,9 @@ parser.add_argument('-j', '--jobs', metavar='N', type=int,
 parser.add_argument('-r', '--runs', metavar='N', type=int,
                    action='store', default=1,
                    help='number of runs per experiment')
-parser.add_argument('-e', '--episodes', metavar='N', type=int,
-                   action='store', default=1600,
-                   help='number of episodes per run')
+parser.add_argument('-s', '--steps', metavar='N', type=int,
+                   action='store', default=50000,
+                   help='number of steps per run')
 
 args = parser.parse_args()
 
@@ -164,8 +179,9 @@ print str(seeds) + '\n'
 
 
 class Experiment:
-  def __init__(self, episodes, seed, rules, rl_rules_out, stdout, stderr, ep_tuple):
-    self.episodes = episodes
+  def __init__(self, steps, seed, rules, rl_rules_out, stdout, stderr, ep_tuple):
+    self.episodes = -1
+    self.steps = steps
     self.seed = seed
     self.rules = rules
     self.rl_rules_out = rl_rules_out
@@ -198,6 +214,7 @@ class Experiment:
     args = ['out/PuddleWorld',
             '--port', str(self.seed),
             '--episodes', str(self.episodes),
+            '--steps', str(self.steps),
             '--seed', str(self.seed),
             '--rules', str(self.rules),
             '--rl-rules-out', str(self.rl_rules_out),
@@ -282,7 +299,7 @@ for ep_tuple in g_ep_tuples:
     rl_rules_out = dir + '/out-' + str(seed) + '.soar'
     output = dir + '/puddleworld-' + str(seed) + '.out'
     rl_rules_extra = dir + '/puddleworld-' + str(seed) + '.rl'
-    experiment = Experiment(args.episodes, seed, rules, rl_rules_out, output, rl_rules_extra, ep_tuple)
+    experiment = Experiment(args.steps, seed, rules, rl_rules_out, output, rl_rules_extra, ep_tuple)
     experiments.append(experiment)
     a = experiment.get_args()
     s = a[0]

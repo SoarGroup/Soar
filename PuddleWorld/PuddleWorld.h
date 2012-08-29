@@ -45,8 +45,11 @@ public:
                                    const int &port,
                                    const std::string &agent_productions = PUDDLEWORLD_AGENT_PRODUCTIONS);
 
-  inline void run();
+  inline void run(const int &step_count_);
   inline void step();
+
+  int episode_count() const {return m_episode_count;}
+  int step_count() const {return m_step_count;}
 
   bool is_finished() const;
   bool is_success() const;
@@ -67,6 +70,8 @@ private:
 
   Soar_Kernel m_kernel;
   Soar_Agent m_agent;
+  int m_episode_count;
+  int m_step_count;
   int m_reward_counter;
 
   float m_reward_total;
@@ -74,6 +79,7 @@ private:
   float m_initial_min_y;
   float m_initial_max_x;
   float m_initial_max_y;
+  float m_terminal_reward;
 
   sml::StringElement * m_state;
   sml::IntElement * m_step;

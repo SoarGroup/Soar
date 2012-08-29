@@ -111,12 +111,15 @@ def main():
     f = open('puddleworld.out', 'r')
     seed = int(f.readline().split(' ', 1)[1])
     smith = []
+    cumulative_reward = 0
     while True:
       line = f.readline()
       if not line or line == '':
         break
       else:
-        smith.append(float(line.split(' ', 6)[5]))
+        split = line.split(' ')
+        cumulative_reward += float(split[3])
+        smith.append(cumulative_reward / int(split[1]))
     f.close()
     
     directory=''
@@ -134,12 +137,15 @@ def main():
         files[directory] = Handles()
         files[directory].handles.append(Handle(f, filename, seed))
     
+    cumulative_rewards = {}
     for group in files:
       files[group].smith['avg'] = []
       files[group].smith['min'] = []
       files[group].smith['max'] = []
       files[group].smith['med'] = []
       done = False
+      for handle in files[group].handles:
+        cumulative_rewards[handle] = 0
       while not done:
         vals = []
         for handle in files[group].handles:
@@ -148,7 +154,9 @@ def main():
             done = True
             break
           else:
-            vals.append(float(line.split(' ', 6)[5]))
+            split = line.split(' ')
+            cumulative_rewards[handle] += float(split[3])
+            vals.append(cumulative_rewards[handle] / int(split[1]))
         if not done:
           vals = sorted(vals)
           files[group].smith['avg'].append(sum(vals) / len(vals))
@@ -226,8 +234,8 @@ def main():
   
   pylab.grid(True)
   
-  pylab.xlabel('Episode Number', fontsize=8)
-  pylab.ylabel('Reward (Simple Moving Average, n=20)', fontsize=8)
+  pylab.xlabel('Step Number', fontsize=8)
+  pylab.ylabel('Reward / \# Episodes (Mvng Avg, n=20)', fontsize=8)
   pylab.title(title, fontsize=10)
   pylab.ylim(ymin=-500, ymax=0)
   
