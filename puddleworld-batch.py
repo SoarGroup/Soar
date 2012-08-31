@@ -79,19 +79,19 @@ g_ep_tuples = []
 
 
 ## baselines
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (20, 20), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 20, 20)))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (20, 20), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (10, 10), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 20, 20)))
 
 ## approximation of forced splitting down to 16x16 a priori
 #g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'simple', (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
 
 ## retest others
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'even', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'fc', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
-g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'even', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'fc', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
+#g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, (0, 1, 1), (0, 1, 1), (0, 2, 1), (0, 2, 2), (0, 4, 2), (0, 4, 4), (0, 8, 4), (0, 8, 8), (0, 16, 8), (0, 16, 16)))
 
 
 ## requires learning rate 0.5 and discount rate 0.9
@@ -126,6 +126,8 @@ g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'td-
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155, 10, 1.0, 100))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155, 3, 1.0, 100))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155, 2, 1.0, 100))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.84155, 2, 1.0, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'uperf', 0.5, 2, 1.0, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 10, 1.0, 100))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 1.0, 100))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 100))
@@ -133,6 +135,8 @@ g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'td-
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'even', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'fc', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 3, 1.0, 10))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 4, 1.0, 5))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'log-rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.99, 20))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.975, 20))
@@ -143,6 +147,13 @@ g_ep_tuples.append((g_rules, (0, 0, 1, 1), (1, 1), 'log-rl', 'eligibility', 'td-
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 5))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 3))
 #g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 1, 1.0, 100))
+
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, True))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 20, False))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 30, False))
+#g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 1.0, 40, False))
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.99, 20, True))
+g_ep_tuples.append(('../puddle-world/puddle-world-overgeneral.soar', (0, 0, 1, 1), (0, 0), 'rl', 'eligibility', 'td-error', 0.84155, 2, 0.975, 20, True))
 
 parser = argparse.ArgumentParser(description='Run PuddleWorld experiments.')
 parser.add_argument('-j', '--jobs', metavar='N', type=int,
@@ -207,8 +218,9 @@ class Experiment:
     self.refine_require_episodes = ep_tuple[7]
     self.refine_decay_rate = ep_tuple[8]
     self.refine_cycles_between_episodes = ep_tuple[9]
+    self.refine_reinhibit = ep_tuple[10]
     self.sp = []
-    for sp in ep_tuple[10:]:
+    for sp in ep_tuple[11:]:
       if len(sp) != 3:
         raise Exception("len(sp) != 3")
       self.sp.append(sp)
@@ -232,6 +244,8 @@ class Experiment:
             '--refine-cycles-between-episodes', str(self.refine_cycles_between_episodes)]
     if self.trace == 'tsdt':
       args += ['--tsdt']
+    if self.refine_reinhibit:
+      args += ['--refine-reinhibit']
     for sp in self.sp:
       args += ['--sp-special', str(sp[0]), str(sp[1]), str(sp[2])]
     return args
@@ -270,7 +284,8 @@ for ep_tuple in g_ep_tuples:
   dir += '_' + str(ep_tuple[7])
   dir += '_' + str(ep_tuple[8])
   dir += '_' + str(ep_tuple[9])
-  for i in range(10, len(ep_tuple)):
+  dir += '_' + str(ep_tuple[10])
+  for i in range(11, len(ep_tuple)):
     if len(ep_tuple[i]) != 3:
       raise Exception("ep_tuple[i] != 3")
     dir += '_' + str(ep_tuple[i][0]) + '-' + str(ep_tuple[i][1]) + '-' + str(ep_tuple[i][2])
@@ -294,7 +309,7 @@ for ep_tuple in g_ep_tuples:
     f.close()
   else:
     rules = ep_tuple[0]
-    for sp in ep_tuple[10:]:
+    for sp in ep_tuple[11:]:
       print 'Not allowed to --sp-special arbitrary rules.'
       exit(1)
   

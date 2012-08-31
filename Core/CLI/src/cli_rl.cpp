@@ -150,6 +150,9 @@ bool CommandLineInterface::DoRL( const char pOp, const std::string* pAttr, const
             CLI_DoRL_generate_output( "refine-cycles-between-episodes: ", agnt->rl_params->refine_cycles_between_episodes->get_string() ) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result,
+            CLI_DoRL_generate_output( "refine-reinhibit: ", agnt->rl_params->refine_reinhibit->get_string() ) );
+
+     CLI_DoRL_print( *this, m_RawOutput, m_Result,
             CLI_DoRL_generate_output( "credit-assignment: ", agnt->rl_params->credit_assignment->get_string() ) );
 
      CLI_DoRL_print( *this, m_RawOutput, m_Result,

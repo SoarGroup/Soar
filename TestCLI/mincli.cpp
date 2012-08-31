@@ -123,25 +123,28 @@ void execcmd(const string &c) {
 }
 
 void repl() {
-	string cmd, last;
-	
-	while (cin) {
-		cout << endl << "% ";
-		if (!readcmd(cmd)) {
-			cout << "?" << endl;
-			continue;
-		}
-		if (!cin) {
-			return;
-		}
-		if (cmd.empty() && !last.empty()) {
-			execcmd(last);
-		} else {
-			last = cmd;
-			execcmd(cmd);
-		}
-	}
-	cout << endl;
+  string cmd;
+
+  for(;;) {
+    cout << endl << "% ";
+
+    for(;;) {
+      if(!cin)
+        if(cin.eof())
+          return;
+        else
+          cin.clear();
+      
+      if(readcmd(cmd)) {
+        execcmd(cmd);
+        break;
+      }
+      
+      cout << "?" << endl;
+    } while(!cin);
+  }
+  
+  cout << endl;
 }
 
 void sighandler(int sig) {

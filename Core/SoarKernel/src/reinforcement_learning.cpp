@@ -159,6 +159,10 @@ rl_param_container::rl_param_container( agent *new_agent ): soar_module::param_c
   // refine-cycles-between-episodes
   refine_cycles_between_episodes = new soar_module::integer_param( "refine-cycles-between-episodes", 100, new soar_module::gt_predicate<int64_t>( -1, true ), new soar_module::f_predicate<int64_t>() );
   add( refine_cycles_between_episodes );
+
+  // chunk-stop
+  refine_reinhibit = new soar_module::boolean_param( "refine-reinhibit", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
+  add( refine_reinhibit );
   
 	// temporal-extension
 	temporal_extension = new soar_module::boolean_param( "temporal-extension", soar_module::on, new soar_module::f_predicate<soar_module::boolean>() );
@@ -731,6 +735,8 @@ void rl_get_template_constants( condition* p_conds, condition* i_conds, rl_symbo
         new_production->agent_uperf_contrib_prev = 0; ///< bazald
         new_production->agent_uperf_contrib_mark2_prev = 0; ///< bazald
         new_production->rl_update_amount = 0.0; ///< bazald
+        new_production->rl_update_num = 0.0; ///< bazald
+        new_production->rl_update_denom = 0.0; ///< bazald
         new_production->agent_uaperf_contrib_prev = 0; ///< bazald
         new_production->agent_uaperf_contrib_mark2_prev = 0; ///< bazald
 			}
@@ -1288,8 +1294,16 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
                     prod->action_list->referent = symbol_to_rhs_value( make_float_constant( my_agent, new_combined ) );
                     prod->rl_update_count += 1;
 #define abs_is_broken(x) ((x) < 0.0 ? -(x) : (x))
-                    prod->rl_update_amount *= my_agent->rl_params->refine_decay_rate->get_value(); ///< bazald
-                    prod->rl_update_amount += abs_is_broken(data->reward + op_value - old_combined); ///< bazald
+                    const double rdr = my_agent->rl_params->refine_decay_rate->get_value(); ///< bazald
+                    if(rdr == 1.0)
+                      prod->rl_update_amount += abs_is_broken(data->reward + op_value - old_combined); ///< bazald
+                    else {
+                      prod->rl_update_num *= rdr;
+                      prod->rl_update_num += abs_is_broken(data->reward + op_value - old_combined);
+                      prod->rl_update_denom *= rdr;
+                      prod->rl_update_denom += 1;
+                      prod->rl_update_amount = prod->rl_update_count * prod->rl_update_num / prod->rl_update_denom;
+                    }
 //                     prod->rl_update_amount += abs_is_broken(delta_ecr + delta_efr); ///< bazald
 #undef abs_is_broken
                     assert(new_ecr + new_efr == old_combined || prod->rl_update_amount > 0.0); ///< bazald
@@ -1298,15 +1312,20 @@ void rl_perform_update( agent *my_agent, preference *selected, preference *candi
                          my_agent->decision_phases_count - prod->total_updated_last >      ///< bazald
                          my_agent->rl_params->refine_cycles_between_episodes->get_value()) ///< bazald
                       {
+                        if(!my_agent->rl_params->refine_reinhibit->get_value())
+                          prod->total_updated_last = my_agent->decision_phases_count; ///< bazald
                         ++prod->init_updated_count; ///< bazald
                       }
                     }
                     else {
+                      if(!my_agent->rl_params->refine_reinhibit->get_value())
+                        prod->total_updated_last = my_agent->decision_phases_count; ///< bazald
                       prod->init_updated_last = my_agent->init_count; ///< bazald
                       ++prod->init_updated_count; ///< bazald
 //                       std::cerr << prod->name->sc.name << " updated for " << prod->init_updated_count << " episodes as of " << my_agent->init_count << std::endl;
                     }
-                    prod->total_updated_last = my_agent->decision_phases_count; ///< bazald
+                    if(my_agent->rl_params->refine_reinhibit->get_value())
+                      prod->total_updated_last = my_agent->decision_phases_count; ///< bazald
                     prod->rl_ecr = new_ecr;
                     prod->rl_efr = new_efr;
 

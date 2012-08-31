@@ -85,7 +85,9 @@ inline bool arg_help(char ** &arg)
             << "  --refine-decay-rate [0,1]       to specify the decay rate for td-error" << endl
             << "                                       uperf is unaffected" << endl
             << "  --refine-cycles-between-episodes [0,)  to specify the how many cycles" << endl
-            << "                                       simulate an episode break" << endl;
+            << "                                       simulate an episode break" << endl
+            << "  --refine-reinhibit              to specify that subsequent visits should" << endl
+            << "                                       reinhibit refinement" << endl;
 
   exit(0);
 
@@ -481,6 +483,18 @@ inline bool arg_refine_cycles_between_episodes(std::string &refine_cycles_betwee
   return true;
 }
 
+inline bool arg_refine_reinhibit(bool &refine_reinhibit,
+                                 char ** &arg,
+                                 char ** const &arg_end)
+{
+  if(strcmp(*arg, "--refine-reinhibit"))
+    return false;
+
+  refine_reinhibit = true;
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 #ifdef WIN32
 #ifdef _DEBUG
@@ -513,6 +527,7 @@ int main(int argc, char ** argv) {
   string refine_require_episodes = "10";
   string refine_decay_rate = "1.0";
   string refine_cycles_between_episodes = "100";
+  bool refine_reinhibit = false;
 
   for(char **arg = argv + 1, **arg_end = argv + argc; arg != arg_end; ++arg) {
     if(!arg_help         (                                             arg         ) &&
@@ -534,7 +549,8 @@ int main(int argc, char ** argv) {
        !arg_refine_stddev(                          refine_stddev,     arg, arg_end) &&
        !arg_refine_require_episodes(          refine_require_episodes, arg, arg_end) &&
        !arg_refine_decay_rate(                      refine_decay_rate, arg, arg_end) &&
-       !arg_refine_cycles_between_episodes(refine_cycles_between_episodes, arg, arg_end))
+       !arg_refine_cycles_between_episodes(refine_cycles_between_episodes, arg, arg_end) &&
+       !arg_refine_reinhibit(                       refine_reinhibit,  arg, arg_end))
     {
       cerr << "Unrecognized argument: " << *arg;
       exit(1);
@@ -567,6 +583,7 @@ int main(int argc, char ** argv) {
   game.ExecuteCommandLine(("rl --set refine-require-episodes " + refine_require_episodes).c_str());
   game.ExecuteCommandLine(("rl --set refine-decay-rate " + refine_decay_rate).c_str());
   game.ExecuteCommandLine(("rl --set refine-cycles-between-episodes " + refine_cycles_between_episodes).c_str());
+  game.ExecuteCommandLine(("rl --set refine-reinhibit " + string(refine_reinhibit ? "on" : "off")).c_str());
 
   for(int episode = 0; episode != episodes; ++episode) {
     for(std::pair<multimap<int, pair<float, float> >::const_iterator,

@@ -144,6 +144,8 @@ typedef struct production_struct {
   double agent_uperf_contrib_prev; ///< bazald
   double agent_uperf_contrib_mark2_prev; ///< bazald
   double rl_update_amount; ///< bazald
+  double rl_update_num; ///< bazald
+  double rl_update_denom; ///< bazald
   double agent_uaperf_contrib_prev; ///< bazald
   double agent_uaperf_contrib_mark2_prev; ///< bazald
   

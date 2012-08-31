@@ -635,15 +635,20 @@ void create_instantiation (agent* thisAgent, production *prod, struct token_stru
        thisAgent->decision_phases_count - prod->total_fired_last >        ///< bazald
        thisAgent->rl_params->refine_cycles_between_episodes->get_value()) ///< bazald
     {
+      if(!thisAgent->rl_params->refine_reinhibit->get_value())
+        prod->total_fired_last = thisAgent->decision_phases_count; ///< bazald
       ++prod->init_fired_count; ///< bazald
     }
   }
   else {
+    if(!thisAgent->rl_params->refine_reinhibit->get_value())
+      prod->total_fired_last = thisAgent->decision_phases_count; ///< bazald
     prod->init_fired_last = thisAgent->init_count; ///< bazald
     ++prod->init_fired_count; ///< bazald
 //     std::cerr << prod->name->sc.name << " fired for " << prod->init_fired_count << " inits as of " << thisAgent->init_count << std::endl;
   }
-  prod->total_fired_last = thisAgent->decision_phases_count; ///< bazald
+  if(thisAgent->rl_params->refine_reinhibit->get_value())
+    prod->total_fired_last = thisAgent->decision_phases_count; ///< bazald
 	thisAgent->production_firing_count++;
 
 	/* --- build the instantiated conditions, and bind LHS variables --- */

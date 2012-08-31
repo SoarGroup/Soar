@@ -111,6 +111,7 @@ class rl_param_container: public soar_module::param_container
     soar_module::integer_param *refine_require_episodes; ///< bazald
     soar_module::decimal_param *refine_decay_rate; ///< bazald
     soar_module::integer_param *refine_cycles_between_episodes; ///< bazald
+    soar_module::boolean_param *refine_reinhibit; ///< bazald
 		soar_module::boolean_param *temporal_extension;
 		soar_module::boolean_param *hrl_discount;
 		soar_module::boolean_param *temporal_discount;
