@@ -1,45 +1,72 @@
 #!/bin/bash
 
-SEED=$RANDOM
+TERMINAL=500
+OUTPUT=blocks-world
+mkdir -p $OUTPUT
 
-killall cli
+SEED=""
+for i in $(seq 0 9); do
+  SEED="$SEED $RANDOM"
+done
 
-rm -f fromcli tocli
+for seed in ${SEED[@]}; do
+  killall cli
 
-mkfifo tocli
-mkfifo fromcli
+  rm -f fromcli tocli
 
-out/cli <tocli >>fromcli 2>/dev/null &
+  mkfifo tocli
+  mkfifo fromcli
 
-echo "SEED $SEED"
-echo "srand $RAND" >>tocli
+  out/cli <tocli >>fromcli 2>/dev/null &
 
-echo "source ../blocks-world/blocks-world-overgeneral.soar" >>tocli
-echo "watch 0" >>tocli
+  echo "SEED $seed"
+  echo "srand $seed" >>tocli
 
-echo "init" >>tocli
-echo "run" >>tocli
+  echo "source ../blocks-world/blocks-world-overgeneral.soar" >>tocli
+  echo "watch 0" >>tocli
 
-COUNT=0
+  echo "init" >>tocli
+  echo "run" >>tocli
 
-rm blocks-world.out
+  STEP_COUNT=0
+  EPISODE_COUNT=0
+  FILE=$OUTPUT/blocks-world.$seed.out
 
-while read line; do
-  LINE="$line"
-  STEP=${LINE/*STEP /}
+  rm $FILE &> /dev/null
 
-  if [ "$LINE" != "$STEP" ]; then
-    echo "$STEP" >> blocks-world.out
-    COUNT=$(($COUNT+$STEP))
+  while read line; do
+    LINE="$line"
+    STEP=${LINE/*STEP /}
 
-    if [ $COUNT -lt 1000 ]; then
+    if [ "$LINE" != "$STEP" ]; then
+      EPISODE_COUNT=$(($EPISODE_COUNT+1))
+
+      COUNT=0
+      while [ $COUNT -ne $STEP ]; do
+        COUNT=$(($COUNT+1))
+        STEP_COUNT=$(($STEP_COUNT+1))
+        if [ $COUNT -ne $STEP ]; then
+          REWARD=-1
+        else
+          REWARD=0
+        fi
+
+        echo "$STEP_COUNT $EPISODE_COUNT $COUNT $REWARD" >> $FILE
+
+        if [ $STEP_COUNT -eq $TERMINAL ]; then
+          break
+        fi
+      done
+
+      if [ $STEP_COUNT -eq $TERMINAL ]; then
+        echo "exit"
+        break
+      fi
+
       echo "init"
       echo "run"
-    else
-      echo "exit"
-      break
     fi
-  fi
-done <> fromcli >>tocli
+  done <> fromcli >>tocli
+done
 
 rm -f fromcli tocli

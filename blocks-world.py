@@ -108,8 +108,8 @@ def main():
     print rang
     print str(count) + " / " + str(2 * (rang['x'][1] - rang['x'][0] + 1) * (rang['y'][1] - rang['y'][0] + 1)) + " Q-values"
     
-    f = open('puddleworld.out', 'r')
-    seed = int(f.readline().split(' ', 1)[1])
+    f = open('blocks-world.out', 'r')
+    #seed = int(f.readline().split(' ', 1)[1])
     smith = []
     cumulative_reward = 0
     while True:
@@ -128,7 +128,7 @@ def main():
     files = {}
     for filename in sys.argv[1:]:
       f = open(filename, 'r')
-      seed = int(f.readline().split(' ', 1)[1])
+      seed = 42
       
       directory=re.search('(^.*[^/]+)/+[^/]*$', filename).group(1) #filename.rsplit('/', 1)[0]
       try:
@@ -171,7 +171,7 @@ def main():
         handle.f.close()
     
     if len(files) == 1:
-      title='Puddle World (' + group.rsplit('/',1)[1].replace('_', '\_') + ')'
+      title='Blocks World (' + str(len(sys.argv) - 1) + ' Runs)'
       smith = files[group].smith
       mode = 'single experiment evaluation'
     else:
@@ -182,19 +182,6 @@ def main():
         smith[group.rsplit('/',1)[1].replace('_', '\_')] = files[group].smith['avg']
       
       mode = 'multiple experiment evaluation'
-  
-  #if title == 'Puddle World (puddle-world-overgeneral.soar\_0-0\_rl\_uperf)':
-    #title = 'UPERF Performance in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
-  #if title == 'Puddle World (puddle-world-overgeneral.soar\_0-0\_rl\_td-error)':
-    #title = 'TD-Error Performance in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
-  if title == 'Puddle World (puddle-world.soar\_1-1\_even\_td-error\_0.84155\_2\_1.0\_20\_True\_0-1-1\_0-1-1\_0-2-1\_0-2-2\_0-4-2\_0-4-4\_0-8-4\_0-8-8\_0-16-8\_0-16-16)':
-    title = 'Even Credit Assignment in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
-  if title == 'Puddle World (puddle-world.soar\_1-1\_fc\_td-error\_0.84155\_2\_1.0\_20\_True\_0-1-1\_0-1-1\_0-2-1\_0-2-2\_0-4-2\_0-4-4\_0-8-4\_0-8-8\_0-16-8\_0-16-16)':
-    title = '1/FC Credit Assignment in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
-  if title == 'Puddle World (puddle-world.soar\_1-1\_rl\_td-error\_0.84155\_2\_1.0\_20\_True\_0-1-1\_0-1-1\_0-2-1\_0-2-2\_0-4-2\_0-4-4\_0-8-4\_0-8-8\_0-16-8\_0-16-16)':
-    title = '1/RL Credit Assignment in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
-  if title == 'Puddle World (puddle-world.soar\_1-1\_log-rl\_td-error\_0.84155\_2\_1.0\_20\_True\_0-1-1\_0-1-1\_0-2-1\_0-2-2\_0-4-2\_0-4-4\_0-8-4\_0-8-8\_0-16-8\_0-16-16)':
-    title = '1/log(RL) Credit Assignment in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
   
   fig = plt.figure()
   fig.canvas.set_window_title('Puddle World')
@@ -245,7 +232,7 @@ def main():
   pylab.xlabel('Step Number', fontsize=8)
   pylab.ylabel('Reward / \# Episodes (Mvng Avg, n=20)', fontsize=8)
   pylab.title(title, fontsize=10)
-  pylab.ylim(ymin=-500, ymax=0)
+  pylab.ylim(ymin=-80, ymax=0)
   
   fig.axes[0].xaxis.set_major_formatter(CommaFormatter())
   fig.axes[0].yaxis.set_major_formatter(CommaFormatter())
@@ -268,7 +255,7 @@ def main():
     splitd = directory.rsplit('/', 1)
     
     if mode == 'single experiment evaluation':
-      filename = splitd[1]
+      filename = 'blocks-world'
     else:
       m = hashlib.md5()
       for agent in smith:
