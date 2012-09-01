@@ -185,8 +185,8 @@ def main():
   
   #if title == 'Puddle World (puddle-world-overgeneral.soar\_0-0\_rl\_uperf)':
     #title = 'UPERF Performance in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
-  #if title == 'Puddle World (puddle-world-overgeneral.soar\_0-0\_rl\_td-error)':
-    #title = 'TD-Error Performance in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
+  if title == 'Puddle World (puddle-world-overgeneral.soar\_0-0\_rl\_td-error\_0.84155\_2\_1.0\_20\_True)':
+    title = 'TD-Error Performance in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
   if title == 'Puddle World (puddle-world.soar\_1-1\_even\_td-error\_0.84155\_2\_1.0\_20\_True\_0-1-1\_0-1-1\_0-2-1\_0-2-2\_0-4-2\_0-4-4\_0-8-4\_0-8-8\_0-16-8\_0-16-16)':
     title = 'Even Credit Assignment in Puddle World (' + str(len(sys.argv) - 1) + ' Runs)'
   if title == 'Puddle World (puddle-world.soar\_1-1\_fc\_td-error\_0.84155\_2\_1.0\_20\_True\_0-1-1\_0-1-1\_0-2-1\_0-2-2\_0-4-2\_0-4-4\_0-8-4\_0-8-8\_0-16-8\_0-16-16)':
