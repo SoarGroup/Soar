@@ -69,20 +69,11 @@ filter_table::filter_table() {
 	}
 }
 
-filter* filter_table::make_filter(const std::string &pred, Symbol *root, soar_interface *si, scene *scn, filter_input *input) const
-{
-	std::map<std::string, filter_table_entry>::const_iterator i = t.find(pred);
-	if (i == t.end() || i->second.create == NULL) {
-		return NULL;
-	}
-	return (*(i->second.create))(root, si, scn, input);
-}
-
 template <typename T>
-class combination_generator {
+class single_combination_generator {
 public:
-	combination_generator(const std::vector<T> &elems, int n, bool ordered, bool allow_repeat)
-	: elems(elems), indices(n, 0), nelems(elems.size()), n(n), 
+	single_combination_generator(const std::vector<T> &elems, int n, bool ordered, bool allow_repeat)
+	: elems(elems), indices(n), nelems(elems.size()), n(n), 
 	  ordered(ordered), allow_repeat(allow_repeat), finished(false)
 	{
 		assert(n <= nelems);
@@ -100,6 +91,10 @@ public:
 	}
 
 	bool next(std::vector<T> &comb) {
+		if (nelems == 0 || n == 0) {
+			return false;
+		}
+		
 		comb.resize(n);
 		std::set<int> s;
 		while (!finished) {
@@ -158,6 +153,15 @@ private:
 	bool ordered, allow_repeat, finished;
 };
 
+filter* filter_table::make_filter(const std::string &pred, Symbol *root, soar_interface *si, scene *scn, filter_input *input) const
+{
+	std::map<std::string, filter_table_entry>::const_iterator i = t.find(pred);
+	if (i == t.end() || i->second.create == NULL) {
+		return NULL;
+	}
+	return (*(i->second.create))(root, si, scn, input);
+}
+
 void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 	vector<const sgnode*> all_nodes;
 	vector<string> all_node_names;
@@ -172,7 +176,7 @@ void filter_table::get_all_atoms(scene *scn, vector<string> &atoms) const {
 		const filter_table_entry &e = i->second;
 		if (e.calc != NULL) {
 			vector<string> args;
-			combination_generator<string> gen(all_node_names, e.parameters.size(), e.ordered, e.allow_repeat);
+			single_combination_generator<string> gen(all_node_names, e.parameters.size(), e.ordered, e.allow_repeat);
 			while (gen.next(args)) {
 				stringstream ss;
 				ss << e.name << "(";
@@ -203,7 +207,7 @@ void filter_table::update_relations(const scene *scn, int time, relation_table &
 			}
 			vector<const sgnode*> args;
 			tuple inds;
-			combination_generator<int> gen(node_inds, e.parameters.size(), e.ordered, e.allow_repeat);
+			single_combination_generator<int> gen(node_inds, e.parameters.size(), e.ordered, e.allow_repeat);
 			while (gen.next(inds)) {
 				scn->get_nodes(inds, args);
 				timers.start(ii);

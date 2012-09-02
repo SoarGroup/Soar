@@ -56,6 +56,7 @@ public:
 	void calc_relations(relation_table &rels) const;
 	void print_relations(std::ostream &os) const;
 	
+	void get_signature(propvec_sig &sig) const;
 private:
 	int parse_add(std::vector<std::string> &f, std::string &error);
 	int parse_del(std::vector<std::string> &f, std::string &error);

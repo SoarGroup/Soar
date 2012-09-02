@@ -6,7 +6,7 @@ using namespace std;
 
 class obj_assign_csp {
 public:
-	bool test_clause(const clause &c, const relation_table &rels, map<int, int> &out) {
+	bool test_clause(const clause &c, const relation_table &rels, vector<int> &out) {
 		search_state init;
 		
 		for (int i = 0; i < c.size(); ++i) {
@@ -52,7 +52,11 @@ public:
 		if (!search(init)) {
 			return false;
 		}
-		out = solution;
+		out.clear();
+		for (int i = 0; i < solution.size(); ++i) {
+			assert(solution.find(i) != solution.end());
+			out.push_back(solution[i]);
+		}
 		return true;
 	}
 	
@@ -136,18 +140,18 @@ private:
 	map<int, int> solution;
 };
 
-bool test_clause(const clause &c, const relation_table &rels, map<int, int> &assignments) {
+bool test_clause(const clause &c, const relation_table &rels, vector<int> &assignments) {
 	obj_assign_csp csp;
 	return csp.test_clause(c, rels, assignments);
 }
 
-bool test_clause_vec(const clause_vec &c, const relation_table &rels, map<int, int> &assignments) {
+bool test_clause_vec(const clause_vec &c, const relation_table &rels, vector<int> &assignments) {
 	for (int i = 0; i < c.size(); ++i) {
 		if (test_clause(c[i], rels, assignments)) {
 			cout << "found assignment" << endl;
 			map<int, int>::const_iterator j;
-			for (j = assignments.begin(); j != assignments.end(); ++j) {
-				cout << j->first << " -> " << j->second << endl;
+			for (int j = 0; j < assignments.size(); ++j) {
+				cout << j << " -> " << assignments[j] << endl;
 			}
 			return true;
 		}

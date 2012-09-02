@@ -106,7 +106,7 @@ private:
 	/* command changes per decision cycle */
 	std::map<wme*, command*> curr_cmds;
 	
-	std::vector<std::string> prev_pnames;
+	propvec_sig              prev_sig;
 	rvec                     prev_pvals;
 	boolvec                  prev_atoms;
 	multi_model              *mmdl;

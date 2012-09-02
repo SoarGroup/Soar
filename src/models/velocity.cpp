@@ -14,7 +14,7 @@ public:
 	: model(name, "vel"), dims(dims) 
 	{}
 	
-	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
+	bool predict(const propvec_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
 		if (x.size() != dims * 2 || y.size() != dims) {
 			return false;
 		}

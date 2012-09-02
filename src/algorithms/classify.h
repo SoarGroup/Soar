@@ -54,11 +54,11 @@ private:
 
 class rel_classifier {
 public:
-	rel_classifier(const dyn_mat &X, const dyn_mat &Y, const relation_table &rels);
+	rel_classifier(const std::vector<train_inst> &data, const relation_table &rels);
 	
 	void new_data(int time);
 	void update(const std::vector<int> &cats);
-	category classify(const rvec &x, const relation_table &rels) const;
+	category classify(const rvec &x, const relation_table &rels, std::vector<int> &assign) const;
 	
 	void save(std::ostream &os) const;
 	void load(std::istream &is);
@@ -67,8 +67,7 @@ public:
 private:
 	void print_foil6_data(std::ostream &os, int cat) const;
 	
-	const dyn_mat &X;
-	const dyn_mat &Y;
+	const std::vector<train_inst> &data;
 	std::map<category, clause_vec> cat_tbl;
 	const relation_table &rel_tbl;
 	category constant;

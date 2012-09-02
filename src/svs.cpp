@@ -219,7 +219,7 @@ void svs_state::clear_scene() {
 
 void svs_state::update_models() {
 	function_timer t(timers.get(MODEL_T));
-	vector<string> curr_pnames, out_names;
+	propvec_sig curr_sig, out_names;
 	output_spec::const_iterator i;
 	rvec curr_pvals, out;
 	
@@ -228,14 +228,17 @@ void svs_state::update_models() {
 		return;
 	}
 	
-	scn->get_property_names(curr_pnames);
-	for (i = outspec->begin(); i != outspec->end(); ++i) {
-		curr_pnames.push_back(string("output:") + i->name);
-	}
 	scn->get_properties(curr_pvals);
 	get_output(out);
+	scn->get_signature(curr_sig);
 	
-	if (prev_pnames == curr_pnames) {
+	// add an entry to the signature for the output
+	curr_sig.push_back(sig_entry());
+	curr_sig.back().type = -1;
+	curr_sig.back().length = out.size();
+	curr_sig.back().start = curr_pvals.size();
+	
+	if (prev_sig == curr_sig) {
 		rvec x(prev_pvals.size() + out.size());
 		if (out.size() > 0) {      // work-around for eigen bug when out.size() == 0
 			x << prev_pvals, out;
@@ -245,15 +248,20 @@ void svs_state::update_models() {
 		if (test_models) {
 			relation_table rels;
 			scn->calc_relations(rels);
-			mmdl->test(x, curr_pvals, rels);
+			mmdl->test(curr_sig, x, curr_pvals, rels);
 		}
 		if (learn_models) {
-			mmdl->learn(x, curr_pvals, svsp->get_time() - 1);
+			mmdl->learn(curr_sig, x, curr_pvals, svsp->get_time() - 1);
 		}
 	} else {
-		mmdl->set_property_vector(curr_pnames);
+		vector<string> pnames;
+		scn->get_property_names(pnames);
+		for (i = outspec->begin(); i != outspec->end(); ++i) {
+			pnames.push_back(string("output:") + i->name);
+		}
+		mmdl->set_property_vector(pnames);
 	}
-	prev_pnames = curr_pnames;
+	prev_sig = curr_sig;
 	prev_pvals = curr_pvals;
 }
 

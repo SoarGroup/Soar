@@ -640,3 +640,22 @@ void scene::print_relations(ostream &os) const {
 		}
 	}
 }
+
+void scene::get_signature(propvec_sig &sig) const {
+	int start = 0;
+	for (int i = 0; i < nodes.size(); ++i) {
+		if (!nodes[i].node) {
+			continue;
+		}
+		sig.push_back(sig_entry());
+		sig_entry &e = sig.back();
+		e.start = start;
+		e.length = NUM_NATIVE_PROPS + nodes[i].props.size();
+		if (i == 0) {
+			e.type = 0;
+		} else {
+			e.type = sig.back().length; // have to change this later
+		}
+		start += e.length;
+	}
+}

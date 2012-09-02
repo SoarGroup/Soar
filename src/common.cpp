@@ -497,3 +497,45 @@ ostream &operator<<(ostream &os, const relation_table &t) {
 	}
 	return os;
 }
+
+ostream &operator<<(ostream &os, const train_inst &inst) {
+	os << inst.x << " ; " << inst.y << " ; " << inst.time << " " << inst.sig_index;
+	return os;
+}
+
+void read_til_semi(istream &is, vector<double> &buf) {
+	string s;
+	while (true) {
+		double x;
+		is >> s;
+		if (s == ";") {
+			return;
+		}
+		if (!parse_double(s, x)) {
+			assert(false);
+		}
+		buf.push_back(x);
+	}
+}
+
+std::istream &operator>>(std::istream &is, train_inst &inst) {
+	vector<double> buf;
+	read_til_semi(is, buf);
+	inst.x.resize(buf.size());
+	for (int i = 0; i < buf.size(); ++i) {
+		inst.x(i) = buf[i];
+	}
+	buf.clear();
+	read_til_semi(is, buf);
+	inst.y.resize(buf.size());
+	for (int i = 0; i < buf.size(); ++i) {
+		inst.y(i) = buf[i];
+	}
+	
+	string time, sig;
+	is >> time >> sig;
+	if (!parse_int(time, inst.time) || !parse_int(sig, inst.sig_index)) {
+		assert(false);
+	}
+	return is;
+}

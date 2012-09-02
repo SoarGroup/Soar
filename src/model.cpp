@@ -35,8 +35,8 @@ void model::init() {
 	}
 }
 
-bool model::test(const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
-	return predict(x, prediction, rels);
+bool model::test(const propvec_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
+	return predict(sig, x, prediction, rels);
 }
 
 bool model::cli_inspect(int first_arg, const vector<string> &args, ostream &os) {
@@ -85,7 +85,7 @@ multi_model::~multi_model() {
 	}
 }
 
-bool multi_model::predict(const rvec &x, rvec &y, const relation_table &rels) {
+bool multi_model::predict(const propvec_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
 	std::list<model_config*>::const_iterator i;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
 		model_config *cfg = *i;
@@ -94,9 +94,10 @@ bool multi_model::predict(const rvec &x, rvec &y, const relation_table &rels) {
 		if (cfg->allx) {
 			xp = x;
 		} else {
+			assert(false); // don't know what to do with the signature when we have to slice
 			slice(x, xp, cfg->xinds);
 		}
-		if (!cfg->mdl->predict(xp, yp, rels)) {
+		if (!cfg->mdl->predict(sig, xp, yp, rels)) {
 			return false;
 		}
 		if (cfg->ally) {
@@ -108,7 +109,7 @@ bool multi_model::predict(const rvec &x, rvec &y, const relation_table &rels) {
 	return true;
 }
 
-void multi_model::learn(const rvec &x, const rvec &y, int time) {
+void multi_model::learn(const propvec_sig &sig, const rvec &x, const rvec &y, int time) {
 	std::list<model_config*>::iterator i;
 	int j;
 	for (i = active_models.begin(); i != active_models.end(); ++i) {
@@ -118,6 +119,7 @@ void multi_model::learn(const rvec &x, const rvec &y, int time) {
 		if (cfg->allx) {
 			xp = x;
 		} else {
+			assert(false); // don't know what to do with the signature when we have to slice
 			slice(x, xp, cfg->xinds);
 		}
 		if (cfg->ally) {
@@ -125,11 +127,11 @@ void multi_model::learn(const rvec &x, const rvec &y, int time) {
 		} else {
 			slice(y, yp, cfg->yinds);
 		}
-		cfg->mdl->learn(xp, yp, time);
+		cfg->mdl->learn(sig, xp, yp, time);
 	}
 }
 
-bool multi_model::test(const rvec &x, const rvec &y, const relation_table &rels) {
+bool multi_model::test(const propvec_sig &sig, const rvec &x, const rvec &y, const relation_table &rels) {
 	rvec predicted(y.size());
 	predicted.setConstant(0.0);
 	test_x.push_back(x);
@@ -146,6 +148,7 @@ bool multi_model::test(const rvec &x, const rvec &y, const relation_table &rels)
 		if (cfg->allx) {
 			xp = x;
 		} else {
+			assert(false); // don't know what to do with the signature when we have to slice
 			slice(x, xp, cfg->xinds);
 		}
 		if (cfg->ally) {
@@ -153,7 +156,7 @@ bool multi_model::test(const rvec &x, const rvec &y, const relation_table &rels)
 		} else {
 			slice(y, yp, cfg->yinds);
 		}
-		if (!cfg->mdl->test(xp, yp, rels, p)) {
+		if (!cfg->mdl->test(sig, xp, yp, rels, p)) {
 			failed = true;
 			break;
 		}

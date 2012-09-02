@@ -19,7 +19,7 @@ public:
 		lwr.learn(x, y);
 	}
 	
-	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
+	bool predict(const propvec_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
 		return lwr.predict(x, y);
 	}
 	

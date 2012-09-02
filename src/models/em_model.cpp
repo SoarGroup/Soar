@@ -17,10 +17,10 @@ const int MAXITERS = 50;
 class EM_model : public model {
 public:
 	EM_model(soar_interface *si, Symbol *root, svs_state *state, const string &name)
-	: model(name, "em"), si(si), revisions(0), ydata(0, 1, INIT_NDATA, 1), wm_root(NULL)
+	: model(name, "em"), si(si), revisions(0), wm_root(NULL)
 	{
-		em = new EM(xdata, ydata);
-		clsfr = new rel_classifier(xdata, ydata, state->get_svs()->get_rels());
+		em = new EM(data, sigs);
+		clsfr = new rel_classifier(data, state->get_svs()->get_rels());
 		init();
 	}
 
@@ -29,12 +29,23 @@ public:
 		delete clsfr;
 	}
 	
-	bool predict(const rvec &x, rvec &y, const relation_table &rels) {
-		int mode = clsfr->classify(x, rels);
+	bool predict(const propvec_sig &sig, const rvec &x, rvec &y, const relation_table &rels) {
+		vector<int> obj_map;
+		int mode = clsfr->classify(x, rels, obj_map);
 		if (mode < 0) {
 			return false;
 		}
-		return em->predict(mode, x, y(0));
+		
+		rvec xc(x.size());
+		int xsize = 0;
+		for (int i = 0; i < obj_map.size(); ++i) {
+			int n = sig[obj_map[i]].length;
+			xc.segment(xsize, n) = x.segment(sig[obj_map[i]].start, n);
+			xsize += n;
+		}
+		xc.conservativeResize(xsize);
+		
+		return em->predict(mode, xc, y(0));
 	}
 	
 	int get_input_size() const {
@@ -45,15 +56,28 @@ public:
 		return 1;
 	}
 
-	void learn(const rvec &x, const rvec &y, int time) {
-		if (xdata.rows() == 0) {
-			xdata.resize(0, x.size());
-		}
-		assert(xdata.cols() == x.size() && y.size() == 1);
-		xdata.append_row(x);
-		ydata.append_row();
-		ydata(ydata.rows() - 1, 0) = y(0);
+	void learn(const propvec_sig &sig, const rvec &x, const rvec &y, int time) {
+		assert(y.size() == 1);
 		
+		data.push_back(train_inst());
+		train_inst &d = data.back();
+		d.x = x;
+		d.y = y;
+		d.time = time;
+		d.sig_index = -1;
+		
+		for (int i = 0; i < sigs.size(); ++i) {
+			if (sigs[i] == sig) {
+				d.sig_index = i;
+				break;
+			}
+		}
+		
+		if (d.sig_index < 0) {
+			sigs.push_back(sig);
+			d.sig_index = sigs.size() - 1;
+		}
+
 		em->new_data();
 		if (em->run(MAXITERS)) {
 			if (wm_root) {
@@ -67,15 +91,13 @@ public:
 	}
 	
 	void save(ostream &os) const {
-		xdata.save(os);
-		ydata.save(os);
+		save_vector(data, os);
 		em->save(os);
 		clsfr->save(os);
 	}
 	
 	void load(istream &is) {
-		xdata.load(is);
-		ydata.load(is);
+		load_vector(data, is);
 		em->load(is);
 		clsfr->load(is);
 	}
@@ -84,11 +106,12 @@ public:
 	 In addition to just calculating prediction error, I also want
 	 to check whether the decision tree classification was correct.
 	*/
-	bool test(const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
+	bool test(propvec_sig &sig, const rvec &x, const rvec &y, const relation_table &rels, rvec &prediction) {
 		int best, mode;
 		double best_error;
-		best = em->best_mode(x, y(0), best_error);
-		mode = clsfr->classify(x, rels);
+		vector<int> assign;
+		best = em->best_mode(sig, x, y(0), best_error);
+		mode = clsfr->classify(x, rels, assign);
 		test_modes.push_back(mode);
 		test_best_modes.push_back(best);
 		test_best_errors.push_back(best_error);
@@ -106,7 +129,7 @@ public:
 			return true;
 		} else if (args[first_arg] == "train") {
 			const vector<category> &modes = em->get_map_modes();
-			int ndata = xdata.rows();
+			int ndata = data.size();
 			int start = 0, end = ndata - 1;
 			if (first_arg + 1 < args.size()) {
 				if (!parse_int(args[first_arg + 1], start) || start < 0 || start >= ndata - 1) {
@@ -124,8 +147,8 @@ public:
 			os << "   N  CLS | DATA" << endl;  // header
 			for (int i = start; i <= end; ++i) {
 				os << setw(4) << i << "  " << setw(3) << modes[i] << " | ";
-				output_rvec(os, xdata.row(i)) << " ";
-				output_rvec(os, ydata.row(i)) << endl;
+				output_rvec(os, data[i].x) << " ";
+				output_rvec(os, data[i].y) << endl;
 			}
 			return true;
 		} else if (args[first_arg] == "classifier") {
@@ -151,8 +174,8 @@ public:
 	}
 
 private:
-	dyn_mat xdata;
-	dyn_mat ydata;
+	vector<train_inst> data;
+	vector<propvec_sig> sigs;
 	
 	EM *em;
 	rel_classifier *clsfr;

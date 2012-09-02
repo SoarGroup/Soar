@@ -199,8 +199,8 @@ void classifier::load(std::istream &is) {
 	}
 }
 
-rel_classifier::rel_classifier(const dyn_mat &X, const dyn_mat &Y, const relation_table &rels)
-: X(X), Y(Y), rel_tbl(rels), is_constant(true), constant(-1)
+rel_classifier::rel_classifier(const vector<train_inst> &data, const relation_table &rels)
+: data(data), rel_tbl(rels), is_constant(true), constant(-1)
 {
 }
 
@@ -254,12 +254,11 @@ void rel_classifier::update(const vector<category> &cats) {
 	}
 }
 
-category rel_classifier::classify(const rvec &x, const relation_table &rels) const {
+category rel_classifier::classify(const rvec &x, const relation_table &rels, vector<int> &assign) const {
 	if (is_constant) {
 		return constant;
 	}
 
-	map<int, int> assign;
 	map<category, clause_vec>::const_iterator i;
 	for (i = cat_tbl.begin(); i != cat_tbl.end(); ++i) {
 		if (test_clause_vec(i->second, rels, assign)) {

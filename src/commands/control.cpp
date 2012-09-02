@@ -29,7 +29,9 @@ const int MAXITERS = 50;
 bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec> &traj, scene *scn, rvec &finalstate) {
 	boolvec atoms;
 	scene *scncopy = scn->clone();
+	propvec_sig sig;
 	
+	scncopy->get_signature(sig);
 	finalstate = initstate;
 	if (traj.size() == 0) {
 		return true;
@@ -40,10 +42,11 @@ bool predict_traj(multi_model *mdl, const rvec &initstate, const std::list<rvec>
 	
 	for (i = traj.begin(); i != traj.end(); ++i) {
 		x << finalstate, *i;
-		scncopy->set_properties(finalstate);
 		relation_table rels;
+		
+		scncopy->set_properties(finalstate);
 		scncopy->calc_relations(rels);
-		if (!mdl->predict(x, finalstate, rels)) {
+		if (!mdl->predict(sig, x, finalstate, rels)) {
 			delete scncopy;
 			return false;
 		}
@@ -440,6 +443,8 @@ public:
 		function_timer t(timers.get(EVALUATE_T));
 		
 		boolvec atoms;
+		propvec_sig sig;
+		scn->get_signature(sig);
 		
 		if (traj.size() > 0) {
 			rvec x(initvals.size() + stepsize), y = initvals;
@@ -448,7 +453,7 @@ public:
 				relation_table rels;
 				scn->calc_relations(rels);
 				x << y, traj.segment(i, stepsize);
-				if (!mdl->predict(x, y, rels)) {
+				if (!mdl->predict(sig, x, y, rels)) {
 					return false;
 				}
 			}
@@ -774,7 +779,10 @@ private:
 		
 		int random_step(int maxsteps) {
 			boolvec atoms;
+			propvec_sig sig;
+			
 			cout << "RANDOM" << endl;
+			ci->scn->get_signature(sig);
 			rvec step(ci->outspec->size()), newval;
 			randomize_vec(step, ci->min, ci->max);
 			int numsteps = rand() % maxsteps + 1;
@@ -786,7 +794,7 @@ private:
 				ci->scn->set_properties(state);
 				relation_table rels;
 				ci->scn->calc_relations(rels);
-				if (!ci->mdl->predict(x, state, rels)) {
+				if (!ci->mdl->predict(sig, x, state, rels)) {
 					return false;
 				}
 			}

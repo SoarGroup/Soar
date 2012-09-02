@@ -6,22 +6,19 @@
 #include "common.h"
 #include "timer.h"
 
-void ridge (const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
-void wpcr  (const_mat_view X, const_mat_view Y, const cvec &w, const rvec &x, rvec &yout);
+void wpcr  (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
+void ridge (const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs);
+void ridge2(const_mat_view X, const_mat_view Y, mat &coefs);
 bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept);
 
 class LRModel {
 public:
-	LRModel(const dyn_mat &xdata, const dyn_mat &ydata);
+	LRModel();
 	LRModel(const LRModel &m);
 	virtual ~LRModel();
 	
 	int size() {
-		return members.size();
-	}
-	
-	const std::vector<int>& get_members() const {
-		return members;
+		return xdata.rows();
 	}
 	
 	double get_train_error() {
@@ -40,8 +37,8 @@ public:
 		return isconst;
 	}
 	
-	void add_example(int i, bool update_refit);
-	void add_examples(const std::vector<int> &inds);
+	void init_fit(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &nonzero);
+	void add_example(const rvec &x, const rvec &y, bool update_refit);
 	void del_example(int i);
 	bool predict(const rvec &x, rvec &y);
 	bool predict(const_mat_view X, mat &Y);
@@ -51,27 +48,21 @@ public:
 	void load(std::istream &is);
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 
-	const_mat_view get_member_X();
-	const_mat_view get_member_Y();
-	
 	virtual LRModel* copy() const = 0;
 
 private:
 	virtual bool cli_inspect_sub(std::ostream &os) const = 0;
-	virtual void fit_sub() = 0;
+	virtual void fit_sub(const_mat_view X, const_mat_view Y) = 0;
+	virtual void init_fit_sub(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &nonzero) = 0;
 	virtual bool predict_sub(const rvec &x, rvec &y) = 0;
 	virtual bool predict_sub(const_mat_view X, mat &Y) = 0;
 
-	void update_member_data();
 	void update_error();
 	
-	const dyn_mat &xdata;
-	const dyn_mat &ydata;
-	std::vector<int> members;
-	mat xmdata;
-	mat ymdata;
+	dyn_mat xdata;
+	dyn_mat ydata;
 	double error;
-	bool isconst, refit, members_changed;
+	bool isconst, refit;
 	rvec xtotals, center, constvals;
 	
 	enum Timers {PREDICT_T, FIT_T};
@@ -80,13 +71,9 @@ private:
 
 class PCRModel : public LRModel {
 public:
-	PCRModel(const dyn_mat &xdata, const dyn_mat &ydata);
+	PCRModel();
 	PCRModel(const PCRModel &m);
 	~PCRModel() {}
-	
-	void fit_sub();
-	bool predict_sub(const rvec &x, rvec &y);
-	bool predict_sub(const_mat_view X, mat &Y);
 	
 	LRModel* copy() const {
 		return new PCRModel(*this);
@@ -95,6 +82,11 @@ public:
 	bool cli_inspect_sub(std::ostream &os) const;
 	
 private:
+	void init_fit_sub(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &nonzero);
+	void fit_sub(const_mat_view X, const_mat_view Y);
+	bool predict_sub(const rvec &x, rvec &y);
+	bool predict_sub(const_mat_view X, mat &Y);
+	
 	mat beta;
 	rvec means;
 	rvec intercept;
@@ -102,12 +94,9 @@ private:
 
 class RRModel : public LRModel {
 public:
-	RRModel(const dyn_mat &xdata, const dyn_mat &ydata);
+	RRModel();
 	RRModel(const RRModel &m);
 	
-	void fit_sub();
-	bool predict_sub(const rvec &x, rvec &y);
-	bool predict_sub(const_mat_view X, mat &Y);
 	
 	LRModel *copy() const {
 		return new RRModel(*this);
@@ -116,6 +105,11 @@ public:
 	bool cli_inspect_sub(std::ostream &os) const;
 	
 private:
+	void init_fit_sub(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &nonzero);
+	void fit_sub(const_mat_view X, const_mat_view Y);
+	bool predict_sub(const rvec &x, rvec &y);
+	bool predict_sub(const_mat_view X, mat &Y);
+	
 	mat C;
 	rvec xmean, ymean;
 };

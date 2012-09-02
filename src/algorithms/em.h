@@ -11,7 +11,7 @@ class scene;
 
 class EM {
 public:
-	EM(const dyn_mat &xdata, const dyn_mat &ydata);
+	EM(const std::vector<train_inst> &data, const std::vector<propvec_sig> &sigs);
 	~EM();
 	
 	void new_data();
@@ -27,7 +27,7 @@ public:
 	void load(std::istream &is);
 	
 	// Return the mode with the model that best fits (x, y)
-	int best_mode(const rvec &x, double y, double &besterror) const;
+	int best_mode(const propvec_sig &sig, const rvec &x, double y, double &besterror) const;
 	
 	bool cli_inspect(int first_arg, const std::vector<std::string> &args, std::ostream &os) const;
 	
@@ -36,26 +36,52 @@ public:
 	}
 	
 private:
+	struct model_data_info {
+		std::vector<int> obj_map;  // object variable in model -> object index in instance
+		int row;                   // the row in the model's training matrix where this instance appears
+	};
+	
+	class model_info {
+	public:
+		void save(std::ostream &os) {
+			assert(false);
+		}
+		
+		void load(std::istream &is) {
+			assert(false);
+		}
+		
+		~model_info() {
+			delete model;
+		}
+		
+		LRModel *model;
+		bool stale;
+		std::set<int> stale_points;
+		std::map<int, model_data_info> data_map; // index into 'data' -> info about that training example
+		propvec_sig sig;
+	};
+	
 	void update_eligibility();
 	void update_Py_z(int i, std::set<int> &check);
 	void update_MAP(const std::set<int> &pts);
 	bool remove_models();
 	void mark_model_stale(int i);
-	bool find_new_mode_inds(std::vector<int> &inds) const;
-	double calc_prob(int i, int j) const;
+	bool find_new_mode_inds(const std::set<int> &noise_inds, int sig_ind, std::vector<int> &mode_inds) const;
+	double calc_prob(int m, const propvec_sig &sig, const rvec &x, double y, std::vector<int> &best_assign, double &best_error) const;
+	void model_add_example(int m, int i, bool update);
+	void model_del_example(int m, int i);
+
+	const std::vector<train_inst> &data;
+	const std::vector<propvec_sig> &sigs;
 	
-	const dyn_mat &xdata;
-	const dyn_mat &ydata;
 	dyn_mat Py_z;          // nmodels x ndata
 	dyn_mat eligible;      // nmodels x ndata
 	
-	std::vector<LRModel*> models;
-	std::set<int> stale_models;
-	std::map<int, std::set<int> > stale_points;
+	std::vector<model_info*> models;
 	std::vector<int> map_mode;
 	
-	std::set<int> old_noise_inds;
-	std::set<int> noise_inds;
+	std::map<int, std::set<int> > noise;  // sig index -> data index
 	
 	int ndata, nmodels;
 	
