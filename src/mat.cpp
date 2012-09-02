@@ -15,6 +15,12 @@ dyn_mat::dyn_mat(int nrows, int ncols, int init_row_capacity, int init_col_capac
 dyn_mat::dyn_mat(const dyn_mat &other) 
 : buf(other.buf), r(other.r), c(other.c) {}
 
+dyn_mat::dyn_mat(const_mat_view m)
+: r(m.rows()), c(m.cols())
+{
+	buf = m;
+}
+
 void dyn_mat::resize(int nrows, int ncols) {
 	r = nrows;
 	c = ncols;

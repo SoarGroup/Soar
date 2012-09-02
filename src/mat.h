@@ -38,6 +38,10 @@ typedef Eigen::Stride<Eigen::Dynamic, 1> mat_stride;
 typedef Eigen::Map<mat, Eigen::Unaligned, mat_stride> mat_map;
 typedef Eigen::Map<const mat, Eigen::Unaligned, mat_stride> const_mat_map;
 
+typedef Eigen::Block<      mat_map, Eigen::Dynamic, Eigen::Dynamic, false, true> map_block;
+typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, true,  true> const_map_iblock;
+typedef Eigen::Block<const_mat_map, Eigen::Dynamic, Eigen::Dynamic, false, true> const_map_block;
+
 /*
  If you define a function argument as "const mat &" and a block or a map
  is passed into it, Eigen will implicitly create a copy of the matrix
@@ -64,6 +68,9 @@ public:
 	const_mat_view(const const_mat_iblock &b)  : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
 	const_mat_view(const const_mat_map &m)     : const_mat_map(m) {}
 	const_mat_view(const mat_map &m)           : const_mat_map(m.data(), m.rows(), m.cols(), mat_stride(m.rowStride(), 1)) {}
+	const_mat_view(const map_block &b)         : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const const_map_block &b)   : const_mat_map(b.data(), b.rows(), b.cols(), mat_stride(b.rowStride(), 1)) {}
+	const_mat_view(const_mat_view &m)          : const_mat_map(m) {}
 };
 
 
@@ -77,6 +84,7 @@ public:
 	dyn_mat(int nrows, int ncols);
 	dyn_mat(int nrows, int ncols, int init_row_capacity, int init_col_capacity);
 	dyn_mat(const dyn_mat &other);
+	dyn_mat(const_mat_view m);
 	
 	void resize(int nrows, int ncols);
 	void append_row();
@@ -163,7 +171,7 @@ bool is_normal(const_mat_view m);
  Return indices of columns that have significantly different values,
  meaning the maximum absolute value of the column is greater than
  SAME_THRESH times the minimum absolute value.
-*
+*/
 void get_nonstatic_cols(const_mat_view X, int ncols, std::vector<int> &nonstatic_cols);
 
 /*
