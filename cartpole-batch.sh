@@ -7,6 +7,10 @@ fi
 AGGREGATE=1
 EPISODES=1000
 
+# out/CartPole --rules ../cartpole/cartpole-overgeneral.soar --episodes 1000 --refine-require-episodes 2 --refine-cycles-between-episodes 20 --refine-reinhibit
+# SEED 1346658216 EPISODE 175
+# SEED 1346658357 EPISODE 87
+
 # declare -a VALS=(8 0.5 16 2 \
 #                 \
 #                  8 0.5 16 4 \

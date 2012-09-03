@@ -48,6 +48,9 @@
 
 #include <iostream>
 #include <sstream>
+#include <cmath>
+
+#define IGNORE_CART_POSITION_FAILURE 1346616210
 
 void cart_pole(int action, float *x, float *x_dot, float *theta, float *theta_dot);
 
@@ -595,7 +598,7 @@ int main(int argc, char ** argv) {
         std::cerr << "\nEp " << episode << ' ';
       std::cerr << (game.is_success() ? 'S' : '.');
 
-      game.reinit(false, episode);
+      game.reinit(true, episode);
     }
   
     game.ExecuteCommandLine("command-to-file " + rl_rules_out + " print --rl --full");
@@ -646,7 +649,7 @@ int main(int argc, char ** argv) {
 }
 
 bool CartPole::is_finished() const {
-  return m_state && strcmp("non-terminal", m_state->GetValue());
+  return m_terminal;
 }
 
 bool CartPole::is_success() const {
@@ -685,6 +688,8 @@ void CartPole::reinit(const bool &init_soar, const int &after_episode) {
   m_x_dot = 0;
   m_agent->DestroyWME(m_x);
   m_x = 0;
+  m_agent->DestroyWME(m_reward);
+  m_reward = 0;
   m_agent->DestroyWME(m_step);
   m_step = 0;
   m_agent->DestroyWME(m_state);
@@ -696,8 +701,10 @@ void CartPole::reinit(const bool &init_soar, const int &after_episode) {
   if(init_soar)
     m_agent->InitSoar();
 
+  m_terminal = false;
   m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
   m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
+  m_reward = m_agent->CreateFloatWME(m_agent->GetInputLink(), "reward", 0.0f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", 0.0f);
   m_x_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x-dot", 0.0f);
   m_theta = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta", 0.0f);
@@ -748,12 +755,18 @@ void CartPole::update() {
           float theta_dot = m_theta_dot->GetValue();
           cart_pole(direction_name[0] == 'r', &x, &x_dot, &theta, &theta_dot);
 
-          if(step > 10000 ||
-             get_box(x, x_dot, theta, theta_dot) < 0)
-          {
-//             m_agent->DestroyWME(m_state);
-//             m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "terminal");
+#ifdef IGNORE_CART_POSITION_FAILURE
+          x = 0.0f;
+          x_dot = 0.0f;
+#endif
+
+          if(get_box(x, x_dot, theta, theta_dot) < 0) {
+            m_terminal = true;
             m_state->Update("terminal");
+          }
+          else if(step > 10000) {
+            m_terminal = true;
+            m_agent->StopSelf();
           }
 //           m_agent->DestroyWME(m_step);
 //           m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", step);
@@ -770,6 +783,25 @@ void CartPole::update() {
           m_x_dot->Update(x_dot);
           m_theta->Update(theta);
           m_theta_dot->Update(theta_dot);
+
+          if(m_terminal)
+            m_reward->Update(
+#ifdef IGNORE_CART_POSITION_FAILURE
+                             -1.0f
+#else
+                             -20.0f
+#endif
+            );
+          else {
+            m_reward->Update(
+#ifdef IGNORE_CART_POSITION_FAILURE
+                             0.0f
+#else
+                            -sqrt(fabs(theta) / 0.2094384f)
+                            -sqrt(fabs(x) / 2.4f)
+#endif
+            );
+          }
 
           if(m_min_x > x)
             m_min_x = x;

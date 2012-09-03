@@ -27,8 +27,10 @@ CartPole::CartPole(const std::string &agent_productions,
            remote ? sml::Kernel::CreateKernelInNewThread() :
            sml::Kernel::CreateKernelInCurrentThread(true)),
   m_agent(m_kernel, kernel ? "" : "CartPole"),
+  m_terminal(false),
   m_state(0),
   m_step(0),
+  m_reward(0),
   m_x(0),
   m_x_dot(0),
   m_theta(0),
@@ -54,6 +56,7 @@ CartPole::CartPole(const std::string &agent_productions,
 
   m_state = m_agent->CreateStringWME(m_agent->GetInputLink(), "state", "non-terminal");
   m_step = m_agent->CreateIntWME(m_agent->GetInputLink(), "step", 0);
+  m_reward = m_agent->CreateFloatWME(m_agent->GetInputLink(), "reward", 0.0f);
   m_x = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x", 0.0f);
   m_x_dot = m_agent->CreateFloatWME(m_agent->GetInputLink(), "x-dot", 0.0f);
   m_theta = m_agent->CreateFloatWME(m_agent->GetInputLink(), "theta", 0.0f);
@@ -68,6 +71,7 @@ CartPole::~CartPole() {
   m_agent->DestroyWME(m_theta);
   m_agent->DestroyWME(m_x_dot);
   m_agent->DestroyWME(m_x);
+  m_agent->DestroyWME(m_reward);
   m_agent->DestroyWME(m_step);
   m_agent->DestroyWME(m_state);
 

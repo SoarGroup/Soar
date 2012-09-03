@@ -177,10 +177,8 @@ sp {cartpole*apply*halt
 }
 
 sp {elaborate*reward
-    (state <s> ^name cartpole
-               ^io.input-link.state terminal
+    (state <s> ^io.input-link.reward <r>
                ^reward-link <rl>)
 -->
-    (<rl> ^reward.value -1
-          ^reward.terminal 0)
+    (<rl> ^reward.value <r>)
 }

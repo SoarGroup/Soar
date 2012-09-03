@@ -60,9 +60,11 @@ private:
 
   Soar_Kernel m_kernel;
   Soar_Agent m_agent;
+  bool m_terminal;
 
   sml::StringElement * m_state;
   sml::IntElement * m_step;
+  sml::FloatElement * m_reward;
   sml::FloatElement * m_x;
   sml::FloatElement * m_x_dot;
   sml::FloatElement * m_theta;
