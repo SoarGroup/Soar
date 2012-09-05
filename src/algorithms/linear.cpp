@@ -28,7 +28,7 @@ bool solve(const_mat_view X, const_mat_view Y, mat &C) {
  1. Setting elements whose absolute values are smaller than ZERO_THRESH to 0
  2. collapsing all columns whose elements are identical into a single constant column.
 */
-bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
+bool OLS(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
 	mat X1(X.rows(), X.cols() + 1), Y1, C;
 	vector<int> nonstatic;
 
@@ -54,12 +54,9 @@ bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec 
 		Y1 = Y;
 	}
 	
-	/*
 	if (!solve(X1, Y1, C)) {
 		return false;
 	}
-	*/
-	ridge2(X1, Y1, C);
 
 	coefs.resize(X.cols(), Y.cols());
 	coefs.setConstant(0);
@@ -70,36 +67,37 @@ bool solve2(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec 
 	return true;
 }
 
-void ridge(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs) {
-	mat W = mat::Zero(w.size(), w.size());
-	W.diagonal() = w;
-	mat Z = W * X;
-	mat V = W * Y;
-	mat Zcenter = Z.rowwise() - Z.colwise().mean();
-	mat Vcenter = V.rowwise() - V.colwise().mean();
-	mat A = Zcenter.transpose() * Zcenter;
+bool ridge(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
+	mat Z, V;
+	if (w.size() == 0) {
+		Z = X;
+		V = Y;
+	} else {
+		assert(w.size() == X.rows());
+		mat W = mat::Zero(w.size(), w.size());
+		W.diagonal() = w;
+		Z = W * X;
+		V = W * Y;
+	}
+	
+	rvec Zmean = Z.colwise().mean();
+	rvec Vmean = V.colwise().mean();
+	Z.rowwise() -= Zmean;
+	V.rowwise() -= Vmean;
+	
+	mat A = Z.transpose() * Z;
 	double lambda = RLAMBDA;
 	for (int i = 0; i < A.cols(); ++i) {
 		double inc = nextafter(A(i, i), INFINITY) - A(i, i);
 		lambda = max(lambda, inc);
 	}
 	A.diagonal().array() += lambda;
-	mat B = Z.transpose() * Vcenter;
-	solve(A, B, coefs);
-}
-
-void ridge2(const_mat_view X, const_mat_view Y, mat &coefs) {
-	mat Xcenter = X.rowwise() - X.colwise().mean();
-	mat Ycenter = Y.rowwise() - Y.colwise().mean();
-	mat A = Xcenter.transpose() * Xcenter;
-	double lambda = RLAMBDA;
-	for (int i = 0; i < A.cols(); ++i) {
-		double inc = nextafter(A(i, i), INFINITY) - A(i, i);
-		lambda = max(lambda, inc);
+	mat B = Z.transpose() * V;
+	if (!solve(A, B, coefs)) {
+		return false;
 	}
-	A.diagonal().array() += lambda;
-	mat B = X.transpose() * Ycenter;
-	solve(A, B, coefs);
+	intercept = Vmean - (Zmean * coefs);
+	return true;
 }
 
 /*
@@ -138,7 +136,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 		projected = X1 * components;
 		for (int j = 0; j < maxcomps; ++j) {
-			solve2(projected.leftCols(j), Y1, w, coefs, inter);
+			OLS(projected.leftCols(j), Y1, w, coefs, inter);
 			b = components.leftCols(i) * coefs;
 			errors(j) += (X.row(n) * b + inter - Y.row(n)).array().abs().sum();
 		}
@@ -150,7 +148,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
 		}
 	}
 	projected = X * components;
-	solve2(projected.leftCols(best), Y, cvec(), coefs, inter);
+	OLS(projected.leftCols(best), Y, cvec(), coefs, inter);
 	beta = components.leftCols(best) * coefs;
 	intercept = inter;
 }
@@ -160,7 +158,7 @@ void cross_validate(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta
  the training instances. Also prevent the beta vector from blowing up
  too much.
 */
-void min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
+bool min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &beta, rvec &intercept) {
 	vector<mat> betas;
 	vector<rvec> intercepts;
 	double minerror;
@@ -171,7 +169,9 @@ void min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &bet
 	pca(X, components);
 	projected = X * components;
 	for (int i = 0; i < projected.cols(); ++i) {
-		solve2(projected.leftCols(i), Y, w, coefs, inter);
+		if (!OLS(projected.leftCols(i), Y, w, coefs, inter)) {
+			continue;
+		}
 		b = components.leftCols(i) * coefs;
 		
 		if (b.squaredNorm() > MAX_BETA_NORM) {
@@ -182,7 +182,7 @@ void min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &bet
 		if (error < MODEL_ERROR_THRESH) {
 			beta = b;
 			intercept = inter;
-			return;
+			return true;
 		}
 		
 		if (bestn < 0 || error < minerror) {
@@ -191,33 +191,37 @@ void min_train_error(const_mat_view X, const_mat_view Y, const cvec &w, mat &bet
 			minerror = error;
 		}
 	}
+	return bestn != -1;
 }
 
-void wpcr(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
+bool wpcr(const_mat_view X, const_mat_view Y, const cvec &w, mat &coefs, rvec &intercept) {
 	mat X1;
-	rvec m = X.colwise().mean();
-	X1 = X.rowwise() - m;
-	min_train_error(X1, Y, w, coefs, intercept);
+	rvec xmean = X.colwise().mean(), inter;
+	X1 = X.rowwise() - xmean;
+	if (!min_train_error(X1, Y, w, coefs, inter)) {
+		return false;
+	}
+	intercept = inter - (xmean * coefs);
+	return true;
 }
 
-LRModel::LRModel() 
-: isconst(true), error(INFINITY), refit(true)
+LinearModel::LinearModel(int alg) 
+: isconst(true), error(INFINITY), refit(true), alg(alg)
 {
 	timers.add("predict");
 	timers.add("fit");
 }
 
-LRModel::LRModel(const LRModel &m)
+LinearModel::LinearModel(const LinearModel &m)
 : constvals(m.constvals), isconst(m.isconst),
-  xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true)
+  xtotals(m.xtotals), center(m.center), error(INFINITY), refit(true),
+  coefs(m.coefs), intercept(m.intercept), alg(m.alg)
 {
 	timers.add("predict");
 	timers.add("fit");
 }
 
-LRModel::~LRModel() { }
-
-void LRModel::init_fit(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &nonzero)
+void LinearModel::init_fit(const_mat_view X, const_mat_view Y, const propvec_sig &sig, std::vector<int> &obj_map)
 {
 	isconst = true;
 	for (int i = 1; i < Y.rows(); ++i) {
@@ -233,28 +237,38 @@ void LRModel::init_fit(const_mat_view X, const_mat_view Y, const propvec_sig &si
 		return;
 	}
 	
-	init_fit_sub(X, Y, sig, nonzero);
-	int ncols = 0;
-	for (int i = 0; i < nonzero.size(); ++i) {
-		ncols += sig[nonzero[i]].length;
-	}
-	xdata.resize(0, ncols);
-	ydata.resize(0, Y.cols());
+	fit_sub(X, Y);
 	
-	/*
-	for (int i = 0; i < X.rows(); ++i) {
-		int c1 = 0;
-		for (int j = 0; j < nonzero.size(); ++j) {
-			int c2 = sig[nonzero[j]].start;
-			int n = sig[nonzero[j]].length;
-			xdata.get().block(i, c1, 1, n) = X.block(i, c2, 1, n);
+	// find relevant objects (with nonzero coefficients)
+	int ndims = 0, ndata = X.rows(), nout = Y.cols();
+	for(int i = 0; i < sig.size(); ++i) {
+		for (int j = 0; j < sig[i].length; ++j) {
+			if (coefs.row(sig[i].start + j).sum() > 0.0) {
+				obj_map.push_back(i);
+				ndims += sig[i].length;
+				break;
+			}
 		}
 	}
+	
+	// discard information about irrelevant objects
+	mat coefs2(ndims, nout);
+	xdata.resize(ndata, ndims);
+
+	int i = 0;
+	for (int j = 0; j < obj_map.size(); ++j) {
+		int s = sig[obj_map[j]].start;
+		int l = sig[obj_map[j]].length;
+		coefs2.block(i, 0, l, nout) = coefs.block(s, 0, l, nout);
+		xdata.get().block(0, i, ndata, l) = X.block(0, s, ndata, l);
+		i += l;
+	}
+	coefs = coefs2;
+	xtotals = xdata.get().colwise().sum();	
 	ydata = Y;
-	*/
 }
 
-void LRModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
+int LinearModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
 	assert(xdata.cols() == x.size() && ydata.cols() == y.size());
 	
 	xdata.append_row(x);
@@ -268,7 +282,7 @@ void LRModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
 		if (update_refit) {
 			refit = false;
 		}
-		return;
+		return 0;
 	}
 	
 	xtotals += x;
@@ -281,11 +295,11 @@ void LRModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
 	}
 	
 	if (!isconst && update_refit) {
-		rvec py;
-		if (!predict_sub(x, py)) {
+		if (coefs.size() == 0) {
 			refit = true;
 			error = INFINITY;
 		} else {
+			rvec py = x * coefs + intercept;
 			double e = pow(py(0) - y(0), 2);
 			if (!refit) {
 				/*
@@ -304,9 +318,10 @@ void LRModel::add_example(const rvec &x, const rvec &y, bool update_refit) {
 			error += e;
 		}
 	}
+	return xdata.rows() - 1;
 }
 
-void LRModel::del_example(int r) {
+void LinearModel::del_example(int r) {
 	rvec x = xdata.row(r);
 	xdata.remove_row(r);
 	ydata.remove_row(r);
@@ -340,29 +355,29 @@ void LRModel::del_example(int r) {
 	}
 }
 
-void LRModel::update_error() {
+void LinearModel::update_error() {
 	if (xdata.rows() == 0) {
 		error = INFINITY;
 	} else if (isconst) {
 		error = 0.0;
 	} else {
-		mat P(ydata.rows(), ydata.cols());
-		if (!predict_sub(xdata.get(), P)) {
+		if (coefs.size() == 0) {
 			error = INFINITY;
 		} else {
-			error = (ydata.get() - P).squaredNorm();
+			mat PY = (xdata.get() * coefs).rowwise() + intercept;
+			error = (ydata.get() - PY).squaredNorm();
 		}
 	}
 }
 
-void LRModel::save(ostream &os) const {
+void LinearModel::save(ostream &os) const {
 	os << isconst << endl;
 	save_rvec(os, constvals);
 	xdata.save(os);
 	ydata.save(os);
 }
 
-void LRModel::load(istream &is) {
+void LinearModel::load(istream &is) {
 	int n, x;
 	is >> isconst;
 	load_rvec(is, constvals);
@@ -371,7 +386,7 @@ void LRModel::load(istream &is) {
 	fit();
 }
 
-bool LRModel::predict(const rvec &x, rvec &y) {
+bool LinearModel::predict(const rvec &x, rvec &y) {
 	if (isconst) {
 		y = constvals;
 		return true;
@@ -379,10 +394,15 @@ bool LRModel::predict(const rvec &x, rvec &y) {
 	if (refit) {
 		fit();
 	}
-	return predict_sub(x, y);
+	if (coefs.size() == 0) {
+		return false;
+	}
+	assert(coefs.rows() == x.size());
+	y = x * coefs + intercept;
+	return true;
 }
 
-bool LRModel::predict(const_mat_view X, mat &Y) {
+bool LinearModel::predict(const_mat_view X, mat &Y) {
 	function_timer t(timers.get(PREDICT_T));
 	
 	if (isconst) {
@@ -393,29 +413,54 @@ bool LRModel::predict(const_mat_view X, mat &Y) {
 	if (refit) {
 		fit();
 	}
-	return predict_sub(X, Y);
+	if (coefs.size() == 0) {
+		return false;
+	}
+	assert(coefs.rows() == X.cols());
+	Y = (X * coefs).rowwise() + intercept;
+	return true;
 }
 
-bool LRModel::fit() {
+bool LinearModel::fit() {
 	function_timer t(timers.get(FIT_T));
 	
 	if (!isconst) {
-		fit_sub(xdata.get(), ydata.get());
+		if (!fit_sub(xdata.get(), ydata.get())) {
+			return false;
+		}
 	}
 	update_error();
 	refit = false;
 	return true;
 }
 
-bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
+bool LinearModel::fit_sub(const_mat_view X, const_mat_view Y) {
+	switch (alg) {
+		case 0:
+			return OLS(X, Y, cvec(), coefs, intercept);
+		case 1:
+			return ridge(X, Y, cvec(), coefs, intercept);
+		case 2:
+			return wpcr(X, Y, cvec(), coefs, intercept);
+	}
+	assert(false);
+}
+
+bool LinearModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os) const {
 	if (first_arg >= args.size()) {
 		os << "error:    " << error << endl;
 		bool success;
 		if (isconst) {
 			os << "constant: ";
 			output_rvec(os, constvals) << endl;
-		} else if (!cli_inspect_sub(os)) {
-			return false;
+		} else {
+			os << "intercept: " << intercept << endl;
+			os << "coefs:" << endl;
+			for (int i = 0; i < coefs.rows(); ++i) {
+				os << setw(4) << i << " ";
+				output_rvec(os, coefs.row(i)) << endl;
+			}
+			return true;
 		}
 		os << "subqueries: timing train" << endl;
 		return true;
@@ -433,162 +478,4 @@ bool LRModel::cli_inspect(int first_arg, const vector<string> &args, ostream &os
 	return false;
 }
 
-PCRModel::PCRModel() {}
 
-PCRModel::PCRModel(const PCRModel &m)
-: LRModel(m), beta(m.beta), intercept(m.intercept), means(m.means)
-{}
-
-void PCRModel::fit_sub(const_mat_view X, const_mat_view Y) {
-	means = X.colwise().mean();
-	mat Xc = X.rowwise() - means;
-
-	min_train_error(Xc, Y, cvec(), beta, intercept);
-}
-
-void PCRModel::init_fit_sub(const_mat_view X, const_mat_view Y, const propvec_sig &sig, vector<int> &nonzero) {
-	fit_sub(X, Y);
-	int newrows = 0;
-	for(int i = 0; i < sig.size(); ++i) {
-		for (int j = 0; j < sig[i].length; ++j) {
-			if (beta.row(sig[i].start + j).sum() > 0.0) {
-				nonzero.push_back(i);
-				newrows += sig[i].length;
-				break;
-			}
-		}
-	}
-	
-	// compact beta
-	mat beta2(newrows, beta.cols());
-	rvec means2(newrows);
-	int i = 0;
-	for (int j = 0; j < nonzero.size(); ++j) {
-		int s = sig[nonzero[j]].start;
-		int l = sig[nonzero[j]].length;
-		for (int k = 0; k < l; ++k) {
-			beta2.col(i) = beta.col(s + k);
-			means2(i++) = means(s + k);
-		}
-	}
-	beta = beta2;
-	means = means2;
-}
-
-bool PCRModel::predict_sub(const rvec &x, rvec &y) {
-	if (beta.size() == 0) {
-		return false;
-	}
-	y = (x - means) * beta + intercept;
-	return true;
-}
-
-bool PCRModel::predict_sub(const_mat_view X, mat &Y) {
-	if (beta.size() == 0) {
-		return false;
-	}
-	Y = (X.rowwise() - means) * beta;
-	Y.rowwise() += intercept;
-	return true;
-}
-
-bool PCRModel::cli_inspect_sub(ostream &os) const {
-	os << "intercept: " << intercept << endl;
-	os << "beta:" << endl;
-	for (int i = 0; i < beta.rows(); ++i) {
-		os << setw(4) << i << " ";
-		output_rvec(os, beta.row(i)) << endl;
-	}
-	return true;
-}
-
-RRModel::RRModel() {}
-RRModel::RRModel(const RRModel &m) : LRModel(m), C(m.C), xmean(m.xmean), ymean(m.ymean) {}
-
-void RRModel::fit_sub(const_mat_view X, const_mat_view Y) {
-	/*
-	 I'm not weighting instances right now, but if I did, this
-	 would be the code.
-	*/
-	//W.diagonal() = w;
-	//mat Z = W * get_member_X();
-	//mat V = W * get_member_Y();
-
-	const_mat_view Z(X);
-	const_mat_view V(Y);
-	
-	/*
-	 If you're weighting and Z != X and V != Y, then xmean and
-	 ymean need to be calculated for X and Y.
-	*/
-	xmean = Z.colwise().mean();
-	ymean = V.colwise().mean();
-	
-	mat Zcenter = Z.rowwise() - xmean;
-	mat Vcenter = V.rowwise() - ymean;
-	mat A = Zcenter.transpose() * Zcenter;
-	double lambda = RLAMBDA;
-	for (int i = 0; i < A.cols(); ++i) {
-		double inc = nextafter(A(i, i), INFINITY) - A(i, i);
-		lambda = max(lambda, inc);
-	}
-	A.diagonal().array() += lambda;
-	mat B = Z.transpose() * Vcenter;
-	if (!solve(A, B, C)) {
-		C.resize(0, 0);
-	}
-}
-
-bool RRModel::predict_sub(const rvec &x, rvec &y) {
-	if (C.size() == 0) {
-		return false;
-	}
-	assert(C.rows() == x.size());
-	y = (x - xmean) * C + ymean;
-	return true;
-}
-
-bool RRModel::predict_sub(const_mat_view X, mat &Y) {
-	if (C.size() == 0) {
-		return false;
-	}
-	assert(C.rows() == X.cols());
-	Y = ((X.rowwise() - xmean) * C).rowwise() + ymean;
-	return true;
-}
-
-bool RRModel::cli_inspect_sub(ostream &os) const {
-	os << "C:" << endl << C << endl;
-	os << "xmean:" << endl << xmean << endl;
-	os << "ymean:" << endl << ymean << endl;
-	return true;
-}
-
-void RRModel::init_fit_sub(const_mat_view X, const_mat_view Y, const propvec_sig &sig, vector<int> &nonzero) {
-	fit_sub(X, Y);
-	int newrows = 0;
-	for(int i = 0; i < sig.size(); ++i) {
-		for (int j = 0; j < sig[i].length; ++j) {
-			if (C.row(sig[i].start + j).sum() > 0.0) {
-				nonzero.push_back(i);
-				newrows += sig[i].length;
-				break;
-			}
-		}
-	}
-	
-	// compact
-	mat C2(newrows, C.cols());
-	rvec xmean2(newrows);
-	int i = 0;
-	for (int j = 0; j < nonzero.size(); ++j) {
-		int s = sig[nonzero[j]].start;
-		int l = sig[nonzero[j]].length;
-		for (int k = 0; k < l; ++k) {
-			C2.row(i) = C.row(s + k);
-			xmean2(i++) = xmean(s + k);
-		}
-	}
-	C = C2;
-	xmean = xmean2;
-}

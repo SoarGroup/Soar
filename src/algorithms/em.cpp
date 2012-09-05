@@ -21,9 +21,7 @@ using namespace Eigen;
 
 const int INIT_NMODELS = 1;
 const bool TEST_ELIGIBILITY = false;
-
-//typedef PCRModel LinearModel;
-typedef RRModel LinearModel;
+const int REGRESSION_ALG = 1; // 1 = ridge regression
 
 template <typename T>
 class multi_combination_generator {
@@ -173,7 +171,7 @@ bool mini_em(const_mat_view X, const_mat_view Y, int n, double fit_thresh, int m
 			}
 			LOG(EMDBG) << endl;
 			
-			if (!solve2(Xd, Y, w, C, intercepts)) {
+			if (!OLS(Xd, Y, w, C, intercepts)) {
 				break;
 			}
 			
@@ -219,7 +217,7 @@ bool block_seed(const_mat_view X, const_mat_view Y, int n, double fit_thresh, in
 		int start = rand() % (X.rows() - MODEL_INIT_N);
 		dyn_mat Xb(X.block(start, 0, MODEL_INIT_N, xcols));
 		dyn_mat Yb(Y.block(start, 0, MODEL_INIT_N, ycols));
-		solve2(Xb.get(), Yb.get(), w, C, intercepts);
+		OLS(Xb.get(), Yb.get(), w, C, intercepts);
 
 		predict_all(C, intercepts, Xb.get(), PY);
 		double e = (Yb.get() - PY).rowwise().squaredNorm().sum();
@@ -514,7 +512,7 @@ bool EM::mstep() {
 	for (int i = 0; i < models.size(); ++i) {
 		model_info &minfo = *models[i];
 		if (minfo.stale) {
-			LRModel *m = minfo.model;
+			LinearModel *m = minfo.model;
 			if (m->needs_refit() && m->fit()) {
 				changed = true;
 				map<int, model_data_info>::const_iterator j;
@@ -619,7 +617,7 @@ bool EM::unify_or_add_model() {
 		
 		/*
 		for (int i = 0; i < nmodels; ++i) {
-			LRModel *unified(models[i]->copy());
+			LinearModel *unified(modes[i]->model->copy());
 			unified->add_examples(m->get_members());
 			unified->fit();
 			
@@ -640,7 +638,7 @@ bool EM::unify_or_add_model() {
 		}
 		*/
 		
-		LRModel *m = new LinearModel();
+		LinearModel *m = new LinearModel(REGRESSION_ALG);
 		vector<int> nonzero;
 		m->init_fit(X, Y, sigs[i->first], nonzero);
 		

@@ -55,7 +55,7 @@ private:
 			delete model;
 		}
 		
-		LRModel *model;
+		LinearModel *model;
 		bool stale;
 		std::set<int> stale_points;
 		std::map<int, model_data_info> data_map; // index into 'data' -> info about that training example
