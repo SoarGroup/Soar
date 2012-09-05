@@ -52,6 +52,7 @@ extern void fill_in_new_instantiation_stuff (agent* thisAgent, instantiation *in
 
 /* mvp 5-17-94 */
 extern void build_prohibits_list (agent* thisAgent, instantiation *inst);
+extern void build_CDPS (agent* thisAgent, instantiation *inst);
 
 extern void deallocate_instantiation (agent* thisAgent, instantiation *inst);
 

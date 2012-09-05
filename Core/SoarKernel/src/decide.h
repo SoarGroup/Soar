@@ -63,6 +63,9 @@ extern int GDS_PrintCmd (/****ClientData****/ int clientData,
                          int argc, char *argv[]);
 /* REW: end   09.15.96 */
 
+/* MMA 8-2012 */
+extern void add_to_CDPS (agent* thisAgent, instantiation *inst);
+/* MMA end */
 
 /* ---------------------------------------------------------------------
                       Top-Level Decider Routines

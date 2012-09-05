@@ -230,7 +230,7 @@ void init_sysparams (agent* thisAgent) {
   // JRV: Chunk through local negations by default
   thisAgent->sysparams[CHUNK_THROUGH_LOCAL_NEGATIONS_SYSPARAM] = TRUE;
 
-  // MMA: Chunk through evaluation rules off by default (on now for testing)
+  // MMA: Chunk through evaluation rules off by default
   thisAgent->sysparams[CHUNK_THROUGH_EVALUATION_RULES_SYSPARAM] = FALSE;
 
   thisAgent->sysparams[DECISION_CYCLE_MAX_USEC_INTERRUPT] = 0;
